@@ -86,11 +86,13 @@
 <translation id="3087734570205094154">置底</translation>
 <translation id="3742055079367172538">已拍攝螢幕擷取畫面</translation>
 <translation id="8878886163241303700">延伸螢幕</translation>
+<translation id="714034171374937760">Chromebase</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (藍牙)</translation>
 <translation id="3967919079500697218">您的管理員已停用拍攝螢幕擷取畫面功能。</translation>
 <translation id="372094107052732682">按兩下 Ctrl+Shift+Q 鍵即可結束。</translation>
 <translation id="923686485342484400">按兩下 Ctrl+Shift+Q 鍵即可登出。</translation>
 <translation id="9194617393863864469">登入其他使用者帳戶...</translation>
+<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6803622936009808957">找不到系統支援的解析度，因此無法顯示鏡像。已改為進入延伸桌面。</translation>
 <translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (主要)</translation>
 <translation id="3626637461649818317">剩餘電量：<ph name="PERCENTAGE"/>%</translation>
@@ -104,6 +106,7 @@
 <translation id="2825619548187458965">檔案櫃</translation>
 <translation id="2614835198358683673">您的 Chromebook 可能無法在開機時充電。建議您使用官方提供的充電器。</translation>
 <translation id="4430019312045809116">音量</translation>
+<translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">現有使用者已全部加入這個工作階段。</translation>
 <translation id="1383876407941801731">搜尋</translation>
 <translation id="2204305834655267233">網路資訊</translation>
@@ -146,6 +149,7 @@
 <translation id="3019353588588144572">電池剩餘充電時間：<ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">畫面放大鏡</translation>
 <translation id="882279321799040148">按這裡瀏覽</translation>
+<translation id="5011233892417813670">Chromebook</translation>
 <translation id="1753067873202720523">您的 Chromebook 可能無法在開啟時充電。</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> 不支援 <ph name="SPECIFIED_RESOLUTION"/>，解析度已變更為 <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">啟用行動數據</translation>
@@ -185,6 +189,7 @@
 <translation id="5947494881799873997">還原</translation>
 <translation id="7593891976182323525">搜尋鍵或 Shift 鍵</translation>
 <translation id="7649070708921625228">說明</translation>
+<translation id="164969095109328410">Chrome 裝置</translation>
 <translation id="3050422059534974565">大寫鍵已啟用。
 按下搜尋鍵或 Shift 鍵即可取消。</translation>
 <translation id="397105322502079400">計算中…</translation>

@@ -76,7 +76,6 @@ Chromoting</translation>
 <translation id="1770394049404108959">איני יכול לפתוח את היישום.</translation>
 <translation id="9188433529406846933">מתן הרשאה</translation>
 <translation id="228809120910082333">‏אשר את החשבון ומספר ה-PIN שלך שמפורטים למטה, כדי לאפשר גישה באמצעות Chromoting.</translation>
-<translation id="7605995381616883502">חיבור חדש</translation>
 <translation id="2038229918502634450">מתבצע אתחול של המארח כדי להחיל שינוי במדיניות.</translation>
 <translation id="2851674870054673688">לאחר שהמשתמש יזין את הקוד, השיתוף יתחיל לפעול.</translation>
 <translation id="5593560073513909978">באופן זמני, השירות אינו זמין. נסה שוב מאוחר יותר.</translation>
@@ -262,7 +261,6 @@ Chromoting</translation>
 <translation id="4277463233460010382">‏מחשב זה מוגדר לאפשר ללקוח אחד או יותר להתחבר מבלי להזין PIN.</translation>
 <translation id="837021510621780684">ממחשב זה</translation>
 <translation id="518094545883702183">המידע הזה משמש רק לאבחון הבעיה שדיווחת עליה. הוא זמין רק למי שבוחן את הדוח, ונשמר למשך זמן של 30 ימים לכל היותר.</translation>
-<translation id="1261403020716313927">• תוקנה דליפת זיכרון גדולה בניתוק משולחן עבודה מרוחק.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">אשר</translation>
 <translation id="7215059001581613786">‏הזן PIN המורכב משש ספרות או יותר.</translation>

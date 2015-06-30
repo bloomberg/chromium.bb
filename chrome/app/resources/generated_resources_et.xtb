@@ -65,7 +65,6 @@
 <translation id="3293894718455402932">Laiendus „<ph name="EXTENSION"/>” saab kirjutada ja lugeda märgitud kaustades olevaid kujutise-, video- ja helifaile.</translation>
 <translation id="7180611975245234373">Värskenda</translation>
 <translation id="4940047036413029306">Jutumärk</translation>
-<translation id="6406467842708712906">Vabandust, teid ei saanud sisse logida. Sisselogimine ebaõnnestus, kuna teie konto üksikasju ei saanud tuua.</translation>
 <translation id="1497897566809397301">Luba kohalike andmete seadistamist (soovitatav)</translation>
 <translation id="7627349730328142646">Luba katsed, mille sõnumikeskus märguande eemaldamisel alati üles kerib.</translation>
 <translation id="3275778913554317645">Ava aknana</translation>
@@ -171,7 +170,6 @@
 <translation id="3384773155383850738">Suurim arv soovitusi</translation>
 <translation id="1014321050861012327">Salvesta paroolid automaatselt.</translation>
 <translation id="8677212948402625567">Ahenda kõik ...  </translation>
-<translation id="2056996954182910740">Rakenduste käivitaja lubamine.</translation>
 <translation id="7600965453749440009">Ära kunagi tõlgi: <ph name="LANGUAGE"/></translation>
 <translation id="3208703785962634733">Kinnitamata</translation>
 <translation id="620329680124578183">Ära laadi (soovitatav)</translation>
@@ -576,7 +574,6 @@ Nende ja edasiste juhiste uurimiseks vaadake teenuse <ph name="ACCOUNT_EMAIL"/> 
 <translation id="8206859287963243715">Mobiil</translation>
 <translation id="5610637197759059204">Sisu vertikaalse ülekerimise tulemusel vallanduvate lehe uuesti laadimiste keelamine.</translation>
 <translation id="6435285122322546452">Halda kioski rakendusi ...</translation>
-<translation id="5748409721703101646">Chromebook ei saa võrgu <ph name="NETWORK_NAME"/> kaudu Internetiga ühendust. Valige mõni teine võrk. <ph name="LEARN_MORE_LINK_START"/>Lisateave<ph name="LEARN_MORE_LINK_END"/></translation>
 <translation id="1064835277883315402">Privaatse võrguga liitumine</translation>
 <translation id="872728358380751743">See valik keelab ülekande voogesituse toe videovoogude kodeerimiseks platvormi riistvaraga.</translation>
 <translation id="6508261954199872201">Rakendus: <ph name="APP_NAME"/></translation>
@@ -750,6 +747,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="5759728514498647443">Rakenduse <ph name="APP_NAME"/> kaudu printimiseks saadetud dokumente saab lugeda rakenduse <ph name="APP_NAME"/> järgi.</translation>
 <translation id="2401053206567162910">Seda rakendust praegu selles seadmes ei toetata, aga Chrome'i gnoomid töötavad selle nimel, et see peagi toimima hakkaks.</translation>
 <translation id="3273410961255278341">Saada:</translation>
+<translation id="4255096080864111471">Määrab huviala paanide maksimaalse koguse.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Uus vaheleht</translation>
 <translation id="6567688344210276845">Lehe toimingu jaoks ei õnnestunud laadida ikooni <ph name="ICON"/>.</translation>
@@ -1126,7 +1124,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="5774515636230743468">Manifest:</translation>
 <translation id="1313832887664610176">Ühendus Chromeboxiga on katkenud</translation>
 <translation id="3465566417615315331">Klõpsake oma fotol</translation>
-<translation id="4960944339761782076">Mullide kasutamine lubade taotlemiseks</translation>
 <translation id="7474889694310679759">Kanada inglise klaviatuur</translation>
 <translation id="1817871734039893258">Microsofti failitaaste</translation>
 <translation id="2423578206845792524">Sa&amp;lvesta pilt nimega...</translation>
@@ -1691,6 +1688,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY"/> võib järgmisel korral kasulikuks o
 <translation id="4811502511369621968">Vale e-posti aadress. Kontrollige ja proovige uuesti.</translation>
 <translation id="175196451752279553">&amp;Ava suletud vaheleht uuesti</translation>
 <translation id="8602851771975208551">Teine programm teie arvutis lisas rakenduse, mis võib muuta Chrome'i toimimist.</translation>
+<translation id="9154967591629748964">Huviala paanide maksimaalne arv</translation>
 <translation id="2655386581175833247">Kasutaja sertifikaat:</translation>
 <translation id="5039804452771397117">Luba</translation>
 <translation id="5435964418642993308">Vajutage tagasiminemiseks sisestusklahvi, ajaloo nägemiseks kontekstimenüü klahvi</translation>
@@ -1798,7 +1796,6 @@ Ma arvan, et see sait ei tohiks olla blokeeritud.</translation>
 <translation id="8598687241883907630">Katkestage ühendus oma Google'i kontoga ...</translation>
 <translation id="3195445837372719522">Chromebox koosolekutele vajab järgmist teavet, millisesse domeeni kuulub. Peate selleks oma kontosse sisse logima.</translation>
 <translation id="7920092496846849526">Küsisite vanemalt, kas võite seda lehte külastada.</translation>
-<translation id="5984304957315422459">Vabandage. Teid ei olnud võimalik sisse logida. Sisselogimine ebaõnnestus, kuna teie parooli ei saanud kinnitada.</translation>
 <translation id="9003677638446136377">Kontrolli uuesti</translation>
 <translation id="9187827965378254003">Paistab, et praegu pole saadaval ühtegi katsetust.</translation>
 <translation id="6022526133015258832">Ava täisekraanil</translation>
@@ -1863,6 +1860,7 @@ Pärast uue jälgitava kasutaja loomist saate igal ajal ja igas seadmes saidil w
 <translation id="1901377140875308934">Sisselogimine teenusesse <ph name="SHORT_PRODUCT_NAME"/> ...</translation>
 <translation id="5529098031581368697">Praeguse taustapildi määras „<ph name="APP_NAME"/>”</translation>
 <translation id="5074318175948309511">Uute seadete jõustamiseks peate lehe võib-olla uuesti laadima.</translation>
+<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Ühtegi valikut pole tehtud</translation>
 <translation id="6405640832764359650">Teenuse Google Payments kaardi salvestamise märkeruudu lubamine</translation>
 <translation id="1346104802985271895">Vietnami sisestusviis (TELEX)</translation>
@@ -2070,7 +2068,6 @@ Pärast uue jälgitava kasutaja loomist saate igal ajal ja igas seadmes saidil w
 <translation id="8551388862522347954">Litsentsid</translation>
 <translation id="5525695896049981561">Jah, ma näen seda</translation>
 <translation id="1410616244180625362">Luba saidil <ph name="HOST"/> ka edaspidi kaamera juurde pääseda</translation>
-<translation id="298577602575286468">Chromebooki registreerimine</translation>
 <translation id="8494214181322051417">Uus!</translation>
 <translation id="7959874006162866942">Kas soovite kindlasti installida pistikprogrammi <ph name="PLUGIN_NAME"/>? Installige ainult usaldusväärseid pistikprogramme.</translation>
 <translation id="2937174152333875430">Luba rakenduste käivitaja sünkroonimine</translation>
@@ -2277,7 +2274,6 @@ Pärast uue jälgitava kasutaja loomist saate igal ajal ja igas seadmes saidil w
 <translation id="7053983685419859001">Blokeeri</translation>
 <translation id="7912024687060120840">Kaustas:</translation>
 <translation id="2485056306054380289">Serveri CA-sertifikaat</translation>
-<translation id="5631861698741076898">Vabandust, ei saanud teid sisse logida. Sisselogimine ebaõnnestus, sest see oli konfigureeritud kasutama ebaturvalist URL-i (<ph name="BLOCKED_URL"/>).</translation>
 <translation id="6462109140674788769">Kreeka klaviatuur</translation>
 <translation id="9191610850443814852">Lubab funktsiooni Smart Lock, mis võimaldab Chromebookil telefone avastada funktsiooniga Bluetooth Low Energy, et Chromebook avada, kui telefon on läheduses.</translation>
 <translation id="2727712005121231835">Tegelik suurus</translation>
@@ -2331,7 +2327,6 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="5502500733115278303">Imporditud Firefoxist</translation>
 <translation id="569109051430110155">Automaatne tuvastamine</translation>
 <translation id="8597845839771543242">Vara vorming:</translation>
-<translation id="4408599188496843485">A&amp;bi</translation>
 <translation id="7969525169268594403">sloveeni keel</translation>
 <translation id="5399158067281117682">PIN-koodid ei ühti!</translation>
 <translation id="6277105963844135994">Võrgu ajalõpp</translation>
@@ -2446,7 +2441,6 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="2562685439590298522">Dokumendid</translation>
 <translation id="8673383193459449849">Serveri probleem</translation>
 <translation id="4060383410180771901">Veebisait ei suuda käsitleda päringut <ph name="URL"/> puhul</translation>
-<translation id="5774208114954065213">Soovite tühistada Chromebooki Google'is registreerimise, et keelata asukoha tuvastamine, kaughalduse abil andmete kustutamine ja seadme lukustamine. See nõuab seadme taaskäivitamist. Kas soovite jätkata?</translation>
 <translation id="6710213216561001401">Eelmine</translation>
 <translation id="1108600514891325577">&amp;Peata</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
@@ -2497,7 +2491,6 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="7434509671034404296">Arendaja</translation>
 <translation id="7668654391829183341">Tundmatu seade</translation>
 <translation id="2712173769900027643">Küsi luba</translation>
-<translation id="2053298192223252950">Brauseri Chrome'i osas lubatakse või keelatakse materiaalse disaini elemendid.</translation>
 <translation id="1790550373387225389">Sisene esitlusrežiimi</translation>
 <translation id="6447842834002726250">Küpsised</translation>
 <translation id="8059178146866384858">Fail nimega „$1” on juba olemas. Valige teine ​​nimi.</translation>
@@ -3321,7 +3314,6 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="324743268744517458">Hoiatus. Te pole ühendatud teenuse Google Payments tootmisserveritega. Väljastatud kaardid on kehtetud.</translation>
 <translation id="4711094779914110278">türgi keel</translation>
 <translation id="2572032849266859634">On antud kirjutuskaitstud juurdepääs seadmele <ph name="VOLUME_NAME"/>.</translation>
-<translation id="8193362611902704788">Lubage rakenduste käivitaja. Lubamisel luuakse rakenduste käivitaja operatsioonisüsteemi otseteed.</translation>
 <translation id="5121130586824819730">Teie kõvaketas on täis. Salvestage muusse asukohta või vabastage kõvakettaruumi.</translation>
 <translation id="1875987452136482705">Valik keelab platvormi riistvara kasutamisel WebRTC-s toe videovoogude dekodeerimiseks.</translation>
 <translation id="6164005077879661055">Kõik jälgitava kasutajaga seotud failid ja kohalikud andmed kustutatakse jäädavalt kohe, kui jälgitav kasutaja eemaldatakse. Selle jälgitava kasutaja külastatud veebisaite ja seadeid näeb haldur endiselt aadressil <ph name="MANAGEMENT_URL"/>.</translation>
@@ -3344,7 +3336,6 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="499165176004408815">Kasuta kõrge kontrastiga režiimi</translation>
 <translation id="2928940441164925372">Lubab toimivusega seotud mõõdikute ja sündmuste passiivse kogumise ja võimaldab vaadata andmeid graafiliselt. Andmete vaatamiseks külastage aadressi chrome://performance.</translation>
 <translation id="3289856944988573801">Kasutage värskenduste otsimiseks Etherneti või WiFi-ühendust.</translation>
-<translation id="247500748408468353">Võtke ühendust administraatoriga või proovige uuesti.</translation>
 <translation id="450070808725753129">Kui see on juba loendis kui programm, millele on lubatud võrgujuurdepääs, proovige
         see loendist eemaldada ja siis uuesti lisada.</translation>
 <translation id="8300607741108698921">1-minutiline seadistus</translation>
@@ -3854,7 +3845,6 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="1064912851688322329">Katkestage oma Google'i konto ühendus</translation>
 <translation id="1294298200424241932">Usaldusväärsuse seadete muutmine:</translation>
 <translation id="1407135791313364759">Ava kõik</translation>
-<translation id="1487997194203762088">Sisselogimisel läks midagi valesti.</translation>
 <translation id="1434928358870966081">Keela kiirendatud 2D-lõuend</translation>
 <translation id="331915893283195714">Luba kõikidel saitidel hiirekursor keelata</translation>
 <translation id="8978526688207379569">See sait laadis automaatselt alla mitu faili.</translation>
@@ -4022,7 +4012,6 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="3778740492972734840">&amp;Arendaja tööriistad</translation>
 <translation id="8335971947739877923">Ekspordi ...</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN"/> on nüüd täisekraanil ja teie hiirekursor on keelatud.</translation>
-<translation id="747416882205977201">Soovite registreerida Chromebooki Google'is, et lubada asukoha tuvastamine, kaughalduse abil andmete kustutamine ja seadme lukustamine. See nõuab seadme taaskäivitamist. Kas soovite jätkata?</translation>
 <translation id="38275787300541712">Kui olete valmis, vajutage sisestusklahvi</translation>
 <translation id="7417705661718309329">Google'i kaart</translation>
 <translation id="4058793769387728514">Kontrolli dokumenti kohe</translation>
@@ -4079,7 +4068,6 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="7180865173735832675">Kohandamine</translation>
 <translation id="7054808953701320293">Selge. Ära seda uuesti kuva.</translation>
 <translation id="4903369323166982260">Käivita Chrome Cleanup Tool</translation>
-<translation id="144932861331386147">Chromebooki värskendamiseks looge ühendus Internetiga.</translation>
 <translation id="2938685643439809023">mongoolia keel</translation>
 <translation id="5368720394188453070">Teie telefon on lukus. Avage see sisenemiseks.</translation>
 <translation id="2070909990982335904">Punktiga algavad nimed on reserveeritud süsteemile. Valige teine nimi.</translation>
@@ -4186,7 +4174,6 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="6557565812667414268">Lubatud ainult kõrge punktitihedusega (DPI) ekraanide puhul</translation>
 <translation id="7331991248529612614">Lugejarežiimi nupu animatsiooni lubamine</translation>
 <translation id="5469954281417596308">Järjehoidjate haldur</translation>
-<translation id="106153153543631784">Sisestage oma Chromebooki profiili värskendamiseks parool uuesti.</translation>
 <translation id="3064388234319122767">Transliteratsioon (zdravo → здраво)</translation>
 <translation id="5425722269016440406">Smart Locki väljalülitamiseks peab teil olema võrguühendus, kuna see seade on sünkroonitud teie telefoni ja muude seadmetega. Looge esmalt ühendus võrguga.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
@@ -4809,7 +4796,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME"/>.
 <translation id="7973320858902175766">Komponendi paikamisprogramm</translation>
 <translation id="3654045516529121250">Juurdepääsetavuse seadete lugemine</translation>
 <translation id="2113479184312716848">Ava &amp;fail ...</translation>
-<translation id="4346759900458392803">Chromebooki registreerimise tühistamine</translation>
 <translation id="884264119367021077">Tarneaadress</translation>
 <translation id="634208815998129842">Tegumihaldur</translation>
 <translation id="2735698359135166290">Rumeenia standardne klaviatuur</translation>
@@ -4902,7 +4888,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME"/>.
 <translation id="7209475358897642338">Milline on teie keel?</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME"/> (jälgitav)</translation>
 <translation id="9149866541089851383">Muuda...</translation>
-<translation id="8735794438432839558">Chromebooki sisselogimiseks looge ühendus Internetiga.</translation>
 <translation id="3356395591469757189">Automaattäite soovitused klaviatuuritarviku vaates</translation>
 <translation id="7939412583708276221">Säilita ikkagi</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES"/> üksuse sünkroonimine ...</translation>
@@ -5514,7 +5499,6 @@ Mõned funktsioonid ei pruugi olla saadaval. Veenduge, et profiil on olemas ning
 <translation id="426015154560005552">Araabia klaviatuur</translation>
 <translation id="6793649375377511437">Google'i kohaloleku teave</translation>
 <translation id="4335713051520279344">Arvuti taaskäivitub 1 sekundi pärast. Uurimise jätkamiseks vajutage mis tahes klahvi.</translation>
-<translation id="4775135101712609478">Sisu lubade taotluste kuvamine (nt märguanded, kvoot, kaamera kasutus, mikrofoni kasutus) mullides, mitte teaberibadel.</translation>
 <translation id="7233715388668391168">Virtuaalse klaviatuuri puhul joonistusega sisestamise lubamine/keelamine.</translation>
 <translation id="6264485186158353794">Tagasi turvalisusse</translation>
 <translation id="7705524343798198388">VPN</translation>

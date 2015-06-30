@@ -76,7 +76,6 @@
 <translation id="1770394049404108959">我无法打开此应用。</translation>
 <translation id="9188433529406846933">授权</translation>
 <translation id="228809120910082333">请在下方确认您的帐户和 PIN，以便允许通过 Chrome 远程访问进行访问。</translation>
-<translation id="7605995381616883502">新连接</translation>
 <translation id="2038229918502634450">由于发生了政策变更，主机正在重新启动。</translation>
 <translation id="2851674870054673688">他们输入访问代码后，您的共享会话就会立即开始。</translation>
 <translation id="5593560073513909978">此服务暂时无法使用。请稍后再试。</translation>
@@ -262,7 +261,6 @@
 <translation id="4277463233460010382">此计算机已配置为允许一个或多个客户端无需输入 PIN 即可进行连接。</translation>
 <translation id="837021510621780684">来自此计算机</translation>
 <translation id="518094545883702183">这些信息仅用于诊断您报告的问题，并且只有负责对您报告的问题进行调查的人员才可使用。这些信息的保留时间不会超过 30 天。</translation>
-<translation id="1261403020716313927">• 更正了在与远程桌面断开连接时会出现大量内存泄露的问题。</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">接受</translation>
 <translation id="7215059001581613786">请输入至少包含 6 位数的 PIN。</translation>

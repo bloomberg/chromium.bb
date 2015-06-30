@@ -76,7 +76,6 @@ gazdagép</translation>
 <translation id="1770394049404108959">Nem tudom megnyitni az alkalmazást.</translation>
 <translation id="9188433529406846933">Engedélyezés</translation>
 <translation id="228809120910082333">Kérjük, erősítse meg a fiókot és a PIN kódot alább a Chromoting hozzáférésének engedélyezéséhez.</translation>
-<translation id="7605995381616883502">Új kapcsolat</translation>
 <translation id="2038229918502634450">A gazdagép újraindul egy irányelvváltozás érvénybe léptetése miatt.</translation>
 <translation id="2851674870054673688">Miután beírják a kódot, megkezdődik a megosztási munkamenet.</translation>
 <translation id="5593560073513909978">A szolgáltatás átmenetileg nem érhető el. Kérjük, próbálkozzon újra később.</translation>
@@ -262,7 +261,6 @@ gazdagép</translation>
 <translation id="4277463233460010382">Ez a számítógép úgy van konfigurálva, hogy egy vagy több kliens PIN megadása nélkül csatlakozhasson.</translation>
 <translation id="837021510621780684">Erről a számítógépről</translation>
 <translation id="518094545883702183">Ezt az információt csak az Ön által jelentett probléma diagnosztizálására használjuk. Az adatok csak a jelentés vizsgálója számára érhetők el, és a rendszerünk nem őrzi meg őket 30 napnál tovább.</translation>
-<translation id="1261403020716313927">• A távoli asztallal való kapcsolat megszüntetésekor előforduló nagy memóriaszivárgás javítva.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Elfogadás</translation>
 <translation id="7215059001581613786">Kérjük, legalább hat számjegyből álló PIN kódot adjon meg.</translation>

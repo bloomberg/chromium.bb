@@ -211,7 +211,6 @@
 <translation id="5771382037724542929">Желите ли да замените постојећу датотеку <ph name="FILE_NAME"/> у директоријуму <ph name="DIRECTORY_NAME"/>?</translation>
 <translation id="8627706565932943526">Грешка при синхронизацији</translation>
 <translation id="1807246157184219062">Светлa</translation>
-<translation id="9219103736887031265">Слике</translation>
 <translation id="2904413602477443379">Изаберите директоријум</translation>
 <translation id="7053983685419859001">Блокирај</translation>
 <translation id="8374821112118309944">Морате да ажурирате TalkBack на новију верзију.</translation>
@@ -366,7 +365,6 @@
 <translation id="3158619413803296679">Изабери обележивач</translation>
 <translation id="6138140242378429169">Прилагодите страницу мобилним уређајима</translation>
 <translation id="5345040418939504969">Обележивач <ph name="BOOKMARK_TITLE"/> је избрисан</translation>
-<translation id="7232255641409319872">Дозволите слике на веб-сајтовима које наведете, а за остатак веба их блокирајте</translation>
 <translation id="2360035970720276770">Могуће је преузети само URL-ове који садрже http или https</translation>
 <translation id="7926911226829060241">Отворени обележивачи, историја, лозинке и други садржај се синхронизују са Google налогом.</translation>
 <translation id="4871370605780490696">Додавање обележивача</translation>

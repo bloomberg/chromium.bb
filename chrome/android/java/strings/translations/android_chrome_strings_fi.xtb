@@ -211,7 +211,6 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 <translation id="5771382037724542929">Haluako korvata olemassa olevan tiedoston <ph name="FILE_NAME"/> hakemistossa <ph name="DIRECTORY_NAME"/>?</translation>
 <translation id="8627706565932943526">Synkronointivirhe</translation>
 <translation id="1807246157184219062">Vaalea</translation>
-<translation id="9219103736887031265">Kuvat</translation>
 <translation id="2904413602477443379">Valitse kansio</translation>
 <translation id="7053983685419859001">Estä</translation>
 <translation id="8374821112118309944">TalkBack täytyy päivittää uudempaan versioon.</translation>
@@ -366,7 +365,6 @@ Palaa painamalla edellinen-painiketta.</translation>
 <translation id="3158619413803296679">Valitse kirjanmerkki</translation>
 <translation id="6138140242378429169">Tee sivusta mobiililaitteisiin sopiva</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> poistettiin.</translation>
-<translation id="7232255641409319872">Salli kuvat määrittämissäsi sivustoissa mutta estä ne muissa sivustoissa.</translation>
 <translation id="2360035970720276770">Vain http- tai https-alkuisista URL-osoitteista voi ladata.</translation>
 <translation id="7926911226829060241">Avoimet kirjanmerkit, historia, salasanat ja muita tietoja synkronoidaan Google-tilillesi.</translation>
 <translation id="4871370605780490696">Lisää kirjanmerkki</translation>

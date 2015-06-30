@@ -76,7 +76,6 @@ Host</translation>
 <translation id="1770394049404108959">I can't open the application.</translation>
 <translation id="9188433529406846933">Authorise</translation>
 <translation id="228809120910082333">Please confirm your account and PIN below to allow access by Chromoting.</translation>
-<translation id="7605995381616883502">New connection</translation>
 <translation id="2038229918502634450">Host is restarting, to take into account a policy change.</translation>
 <translation id="2851674870054673688">Once they have entered the code your sharing session will begin.</translation>
 <translation id="5593560073513909978">The service is temporarily unavailable. Please try again later.</translation>
@@ -262,7 +261,6 @@ Desktop Host</translation>
 <translation id="4277463233460010382">This computer is configured to allow one or more clients to connect without entering a PIN.</translation>
 <translation id="837021510621780684">From this computer</translation>
 <translation id="518094545883702183">This information is used only for diagnosing the problem that you are reporting, is available only to someone investigating your report, and is retained for no more than 30 days.</translation>
-<translation id="1261403020716313927">• Fixed large memory leak on disconnection from remote desktop.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Accept</translation>
 <translation id="7215059001581613786">Please enter a PIN consisting of six or more digits.</translation>

@@ -63,7 +63,6 @@
 <translation id="3293894718455402932">«<ph name="EXTENSION"/>» får lese- og skrivetilgang til bilde-, video- og lydfiler i de valgte mappene.</translation>
 <translation id="7180611975245234373">Last inn på nytt</translation>
 <translation id="4940047036413029306">Sitat</translation>
-<translation id="6406467842708712906">Kunne dessverre ikke logge på. Pålogging mislyktes fordi kontodetaljene dine ikke kunne hentes.</translation>
 <translation id="1497897566809397301">Tillat at nettsteder lagrer data på maskinen (anbefales)</translation>
 <translation id="7627349730328142646">Aktivér eksperimentelle funksjoner som gjør at meldingssenteret alltid ruller opp når du fjerner varsler.</translation>
 <translation id="3275778913554317645">Åpne som vindu</translation>
@@ -169,7 +168,6 @@
 <translation id="3384773155383850738">Maksimalt antall forslag</translation>
 <translation id="1014321050861012327">Lagre passord automatisk.</translation>
 <translation id="8677212948402625567">Skjul alle</translation>
-<translation id="2056996954182910740">Aktiver Appvelger.</translation>
 <translation id="7600965453749440009">Oversett aldri <ph name="LANGUAGE"/></translation>
 <translation id="3208703785962634733">Ikke bekreftet</translation>
 <translation id="620329680124578183">Ikke last inn (anbefales)</translation>
@@ -570,7 +568,6 @@ Sjekk e-posten din på <ph name="ACCOUNT_EMAIL"/> for instruksjoner om dette og 
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="5610637197759059204">Slå av sideoppdateringer utløst av vertikalt innhold som har overrullet.</translation>
 <translation id="6435285122322546452">Administrer kioskapper</translation>
-<translation id="5748409721703101646">Chromebooken din kunne ikke koble til Internett via <ph name="NETWORK_NAME"/>. Velg et annet nettverk. <ph name="LEARN_MORE_LINK_START"/>Les mer<ph name="LEARN_MORE_LINK_END"/></translation>
 <translation id="1064835277883315402">Tilkobling til privat nettverk</translation>
 <translation id="872728358380751743">Dette alternativet deaktiverer støtte i Cast Streaming for koding av videostrømmer med bruk av plattformmaskinvare.</translation>
 <translation id="6508261954199872201">Program: <ph name="APP_NAME"/></translation>
@@ -743,6 +740,7 @@ Alle brukere må logge av for å fortsette.</translation>
 <translation id="5759728514498647443">Dokumenter du sender til utskrift via <ph name="APP_NAME"/>, kan leses av <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Denne appen støttes foreløpig ikke på denne enheten, men Chrome-gjengen jobber hardt for å få den til å fungere snart.</translation>
 <translation id="3273410961255278341">Send til:</translation>
+<translation id="4255096080864111471">Angi maks antall paneler for interesseområdet.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Ny fane</translation>
 <translation id="6567688344210276845">Kan ikke laste inn ikonet «<ph name="ICON"/>» for sidehandling.</translation>
@@ -1119,7 +1117,6 @@ Alle brukere må logge av for å fortsette.</translation>
 <translation id="5774515636230743468">Manifest:</translation>
 <translation id="1313832887664610176">Tilkoblingen til Chromebox er brutt</translation>
 <translation id="3465566417615315331">Klikk på bildet ditt</translation>
-<translation id="4960944339761782076">Bruk bobler for tillatelsesforespørsler</translation>
 <translation id="7474889694310679759">Engelsk tastatur (Canada)</translation>
 <translation id="1817871734039893258">Microsoft-filgjenoppretting</translation>
 <translation id="2423578206845792524">Lagre &amp;bildet som...</translation>
@@ -1682,6 +1679,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY"/>) kan være kjekt neste gang
 <translation id="4811502511369621968">Ugyldig e-postadresse. Sjekk den og prøv på nytt.</translation>
 <translation id="175196451752279553">Gj&amp;enåpne den lukkede fanen</translation>
 <translation id="8602851771975208551">Et annet program på datamaskinen la til en app som kan endre måten Chrome fungerer på.</translation>
+<translation id="9154967591629748964">Maks antall paneler for interesseområde</translation>
 <translation id="2655386581175833247">Brukersertifikat:</translation>
 <translation id="5039804452771397117">Tillat</translation>
 <translation id="5435964418642993308">Trykk på Enter for å gå tilbake, eller hurtigmenyknappen for å se på loggen</translation>
@@ -1787,7 +1785,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8598687241883907630">Koble fra Google-kontoen din</translation>
 <translation id="3195445837372719522">Chromebox videokonferanse må vite hvilket domene den hører til. Du må logge på kontoen din for å angi dette.</translation>
 <translation id="7920092496846849526">Du spurte foreldrene dine om det er greit å besøke denne siden.</translation>
-<translation id="5984304957315422459">Beklager. Kunne ikke logge deg på. Påloggingen var mislykket fordi passordet ikke kunne bekreftes.</translation>
 <translation id="9003677638446136377">Sjekk på nytt</translation>
 <translation id="9187827965378254003">Det er dessverre ingen eksperimenter tilgjengelig for øyeblikket.</translation>
 <translation id="6022526133015258832">Åpne i fullskjerm</translation>
@@ -1852,6 +1849,7 @@ Når du har opprettet en ny administrert bruker, kan du når som helst administr
 <translation id="1901377140875308934">Logg på <ph name="SHORT_PRODUCT_NAME"/></translation>
 <translation id="5529098031581368697">Gjeldende bakgrunn er angitt av «<ph name="APP_NAME"/>»</translation>
 <translation id="5074318175948309511">Du må kanskje laste inn denne siden på nytt for at innstillingene skal bli gjeldende.</translation>
+<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Ingen valgt</translation>
 <translation id="6405640832764359650">Slå på avmerkingsboksen for lagring av Google Payments-kort</translation>
 <translation id="1346104802985271895">Vietnamesisk inndatametode (TELEX)</translation>
@@ -2053,7 +2051,6 @@ Når du har opprettet en ny administrert bruker, kan du når som helst administr
 <translation id="8551388862522347954">Lisenser</translation>
 <translation id="5525695896049981561">Ja, jeg ser den</translation>
 <translation id="1410616244180625362">Fortsett å tillate <ph name="HOST"/> å bruke kameraet ditt</translation>
-<translation id="298577602575286468">Registrer Chromebooken din</translation>
 <translation id="8494214181322051417">Nyhet!</translation>
 <translation id="7959874006162866942">Er du sikker på at du vil installere <ph name="PLUGIN_NAME"/>? Du bør bare installere programtillegg du stoler på.</translation>
 <translation id="2937174152333875430">Aktiver synkronisering av appvelgeren</translation>
@@ -2259,7 +2256,6 @@ Når du har opprettet en ny administrert bruker, kan du når som helst administr
 <translation id="7053983685419859001">Blokkér</translation>
 <translation id="7912024687060120840">I mappen:</translation>
 <translation id="2485056306054380289">Tjenerens CA-sertifikat:</translation>
-<translation id="5631861698741076898">Beklager. Du kunne ikke logge på. Påloggingen mislyktes fordi den var konfigurert til å bruke en usikret nettadresse (<ph name="BLOCKED_URL"/>).</translation>
 <translation id="6462109140674788769">Gresk tastatur</translation>
 <translation id="9191610850443814852">Slår på en Smart Lock-innstilling som gjør at Chromebook kan oppdage telefoner over Bluetooth Low Energy for å låse opp Chromebooken når telefonen er i nærheten.</translation>
 <translation id="2727712005121231835">Faktisk størrelse</translation>
@@ -2318,7 +2314,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="5502500733115278303">Importert fra Firefox</translation>
 <translation id="569109051430110155">Oppdag automatisk</translation>
 <translation id="8597845839771543242">Områdeformat:</translation>
-<translation id="4408599188496843485">H&amp;jelp</translation>
 <translation id="7969525169268594403">Slovensk</translation>
 <translation id="5399158067281117682">De personlige kodene stemmer ikke overens.</translation>
 <translation id="6277105963844135994">Tidsavbrudd for nettverket</translation>
@@ -2433,7 +2428,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="2562685439590298522">Google Dokumenter</translation>
 <translation id="8673383193459449849">Problem med tjeneren</translation>
 <translation id="4060383410180771901">Nettstedet kan ikke behandle forespørselen for <ph name="URL"/>.</translation>
-<translation id="5774208114954065213">Du er i ferd med å avregistrere denne Chromebooken hos Google for å deaktivere muligheten til å finne, tømme og låse enheten fra en ekstern plassering. Dette krever at du starter maskinen på nytt. Vil du fortsette?</translation>
 <translation id="6710213216561001401">Forrige</translation>
 <translation id="1108600514891325577">&amp;Stopp</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
@@ -2484,7 +2478,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="7434509671034404296">Utvikler</translation>
 <translation id="7668654391829183341">Ukjent enhet</translation>
 <translation id="2712173769900027643">Be om tillatelse</translation>
-<translation id="2053298192223252950">Slå «material design» på eller av i toppnivået i nettleseren.</translation>
 <translation id="1790550373387225389">Start presentasjonsmodus</translation>
 <translation id="6447842834002726250">Informasjonskapsler</translation>
 <translation id="8059178146866384858">Filen $1 finnes allerede. Velg et annet navn.</translation>
@@ -3147,7 +3140,7 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="1370646789215800222">Vil du fjerne personen?</translation>
 <translation id="725387188884494207">Er du sikker på at du vil slette denne brukere og alle dataene som er tilknyttet vedkommende, fra denne datamaskinen? Denne handlingen kan ikke angres.</translation>
 <translation id="3531250013160506608">Passordets tekstboks</translation>
-<translation id="2169062631698640254">Logg inn likevel</translation>
+<translation id="2169062631698640254">Logg på likevel</translation>
 <translation id="506228266759207354">Deaktiver menyen for siden Ny fane, som gir adgang til faner på andre enheter.</translation>
 <translation id="2478076885740497414">Installér appen</translation>
 <translation id="1781502536226964113">Åpne siden Ny fane</translation>
@@ -3312,7 +3305,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="324743268744517458">Advarsel: Du er ikke koblet til aktive Google Payments-tjenere. Utstedte kort er ugyldige.</translation>
 <translation id="4711094779914110278">Tyrkisk</translation>
 <translation id="2572032849266859634">Skrivebeskyttet tilgang til <ph name="VOLUME_NAME"/> er innvilget.</translation>
-<translation id="8193362611902704788">Aktiver appvelgeren. Når du aktiverer den, opprettes det operativsystem-snarveier til appvelgeren.</translation>
 <translation id="5121130586824819730">Harddisken din er full. Lagre på et annet sted, eller frigjør plass på harddisken.</translation>
 <translation id="1875987452136482705">Dette alternativet deaktiverer støtte i WebRTC for dekoding av videostrømmer ved hjelp plattformsmaskinvare.</translation>
 <translation id="6164005077879661055">Alle filer og lokale data tilknyttet den administrerte brukeren slettes permanent når den administrerte brukeren fjernes. Besøkte nettsteder og innstillinger for denne administrerte brukeren kan fortsatt ses av administratoren på <ph name="MANAGEMENT_URL"/>.</translation>
@@ -3335,7 +3327,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="499165176004408815">Bruk høykontrastmodus</translation>
 <translation id="2928940441164925372">Aktiver passiv innsamling av ytelsesrelaterte beregninger og aktiviteter, og tilby muligheten til å se disse dataene i en grafisk utforming. For å se dataene går du til chrome://performance</translation>
 <translation id="3289856944988573801">For å sjekke etter oppdateringer, kan du bruke Ethernet eller Wi-Fi.</translation>
-<translation id="247500748408468353">Ta kontakt med administratoren din, eller prøv på nytt.</translation>
 <translation id="450070808725753129">Hvis programmet allerede har fått tillatelse til å bruke nettverket, kan du prøve å fjerne det fra listen og så legge det til på nytt.</translation>
 <translation id="8300607741108698921">Konfigurering på ett minutt</translation>
 <translation id="4054376378714379870">Slå på potensielt irriterende sikkerhetsfunksjoner.</translation>
@@ -3568,7 +3559,7 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="1747687775439512873">Deaktiver WiMAX</translation>
 <translation id="6691936601825168937">&amp;Frem</translation>
 <translation id="6566142449942033617">Kan ikke laste inn «<ph name="PLUGIN_PATH"/>» for programtillegg.</translation>
-<translation id="7299337219131431707">Aktiver gjestesurfing</translation>
+<translation id="7299337219131431707">Slå på gjestesurfing</translation>
 <translation id="2312980885338881851">Ojsann! Det ser ut til at du ikke har noen eksisterende overvåkende brukere å importere. Opprett én eller flere fra en annen enhet, og så kan du importere dem hit etterpå.</translation>
 <translation id="6823506025919456619">Du må logge på Chrome for å se enhetene dine</translation>
 <translation id="7065534935986314333">Om systemet</translation>
@@ -3840,7 +3831,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="1064912851688322329">Frakobling av Google-kontoen din</translation>
 <translation id="1294298200424241932">Rediger innstillinger for tillit:</translation>
 <translation id="1407135791313364759">Åpne alle</translation>
-<translation id="1487997194203762088">Noe gikk galt under påloggingen.</translation>
 <translation id="1434928358870966081">Deaktiver akselerert 2D-lerret</translation>
 <translation id="331915893283195714">Tillat alle nettsteder å deaktivere markøren</translation>
 <translation id="8978526688207379569">Dette nettstedet lastet ned flere filer automatisk.</translation>
@@ -4008,7 +3998,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="3778740492972734840">&amp;Utviklerverktøy</translation>
 <translation id="8335971947739877923">Eksporter</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN"/> vises nå i fullskjermsvisning, og har deaktivert markøren din.</translation>
-<translation id="747416882205977201">Du i ferd med å registrere denne Chromebooken hos Google for å aktivere muligheten til å finne, tømme og låse enheten fra en ekstern plassering. Dette krever at du starter maskinen på nytt. Vil du fortsette?</translation>
 <translation id="38275787300541712">Trykk på Enter når du er ferdig</translation>
 <translation id="7417705661718309329">Google Maps</translation>
 <translation id="4058793769387728514">Kontroller dokument nå</translation>
@@ -4065,7 +4054,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="7180865173735832675">Tilpass</translation>
 <translation id="7054808953701320293">Den er grei. Ikke vis meg dette igjen.</translation>
 <translation id="4903369323166982260">Kjør oppryddingsverktøyet for Chrome</translation>
-<translation id="144932861331386147">Du må koble til Internett for å oppdatere Chromebook.</translation>
 <translation id="2938685643439809023">Mongolsk</translation>
 <translation id="5368720394188453070">Telefonen er låst. Lås den opp for å få tilgang.</translation>
 <translation id="2070909990982335904">Navn som starter med et punktum, er reservert for systemet. Velg et annet navn.</translation>
@@ -4172,7 +4160,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="6557565812667414268">Bare aktivert for skjermer med høy DPI</translation>
 <translation id="7331991248529612614">Slå på animasjon av knapper i lesermodus</translation>
 <translation id="5469954281417596308">Bokmerkebehandling</translation>
-<translation id="106153153543631784">Gjenta passordet for å oppdatere Chromebook-profilen din.</translation>
 <translation id="3064388234319122767">Translitterasjon (zdravo → здраво)</translation>
 <translation id="5425722269016440406">Du må være koblet til nettet for å slå av Smart Lock, fordi denne innstillingen er synkronisert til telefonen og andre enheter. Koble til et nettverk først.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
@@ -4792,7 +4779,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="7973320858902175766">Component Patcher</translation>
 <translation id="3654045516529121250">lese tilgjengelighetsinnstillingene dine</translation>
 <translation id="2113479184312716848">Åpne &amp;fil ...</translation>
-<translation id="4346759900458392803">Avregistrer Chromebooken</translation>
 <translation id="884264119367021077">Leveringsadresse</translation>
 <translation id="634208815998129842">Oppgavebehandling</translation>
 <translation id="2735698359135166290">Rumensk standardtastatur</translation>
@@ -4885,7 +4871,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="7209475358897642338">Hva er språket ditt?</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME"/> (administrert)</translation>
 <translation id="9149866541089851383">Rediger</translation>
-<translation id="8735794438432839558">Koble til Internett for å logge deg på Chromebook.</translation>
 <translation id="3356395591469757189">Autofyll-forslag som tastaturtilbehør</translation>
 <translation id="7939412583708276221">Behold uansett</translation>
 <translation id="8579285237314169903">Synkroniserer <ph name="NUMBER_OF_FILES"/> elementer …</translation>
@@ -5493,7 +5478,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="6793649375377511437">Google Copresence-informasjon</translation>
 <translation id="4335713051520279344">Denne datamaskinen starter på nytt om 1 sekund.
 Trykk på en tast for å fortsette økten.</translation>
-<translation id="4775135101712609478">Vis tillatelsesforespørsler for innhold (f.eks. varsler, kvoter, kamerabruk, mikrofonbruk) i bobler i stedet for i statusfelter.</translation>
 <translation id="7233715388668391168">Slår ordføring på/av for det virtuelle tastaturet.</translation>
 <translation id="6264485186158353794">Tilbake til sikkerhet</translation>
 <translation id="7705524343798198388">VPN</translation>

@@ -65,7 +65,6 @@
 <translation id="3293894718455402932">&quot;<ph name="EXTENSION"/>&quot; יוכל לקרוא ולכתוב תמונות, סרטונים וקובצי קול בתיקיות המסומנות.</translation>
 <translation id="7180611975245234373">רענן</translation>
 <translation id="4940047036413029306">מרכאה</translation>
-<translation id="6406467842708712906">אופס, הכניסה נכשלה. הסיבה לכך היא שלא ניתן לאחזר את פרטי החשבון שלך.</translation>
 <translation id="1497897566809397301">אפשר הגדרת נתונים מקומיים (מומלץ)</translation>
 <translation id="7627349730328142646">אפשר ניסויים שמרכז ההודעות תמיד גולל למעלה בעת הסרת הודעה.</translation>
 <translation id="3275778913554317645">פתח כחלון</translation>
@@ -94,7 +93,7 @@
 <translation id="2580889980133367162">תמיד אפשר ל-<ph name="HOST"/> להוריד קבצים מרובים</translation>
 <translation id="8972513834460200407">‏פנה אל מנהל המערכת של הרשת שלך כדי לוודא שחומת האש אינה חוסמת הורדות משרתי Google.</translation>
 <translation id="1444628761356461360">ההגדרה הזו מנוהלת על ידי בעל המכשיר, <ph name="OWNER_EMAIL"/>.</translation>
-<translation id="2850541429955027218">התקן את העיצוב</translation>
+<translation id="2850541429955027218">הוסף את העיצוב</translation>
 <translation id="6562437808764959486">מחלץ תמונת שחזור...</translation>
 <translation id="1260240842868558614">הצג:</translation>
 <translation id="2226449515541314767">‏האפשרות לשלוט שליטה מלאה על מכשירי MIDI נחסמה עבור אתר זה.</translation>
@@ -171,7 +170,6 @@
 <translation id="3384773155383850738">מספר מרבי של הצעות</translation>
 <translation id="1014321050861012327">שמור סיסמאות באופן אוטומטי.</translation>
 <translation id="8677212948402625567">כווץ הכל...</translation>
-<translation id="2056996954182910740">הפעל את מפעיל היישומים.</translation>
 <translation id="7600965453749440009">אל תתרגם לעולם <ph name="LANGUAGE"/></translation>
 <translation id="3208703785962634733">לא מאושר</translation>
 <translation id="620329680124578183">אל תטען (מומלץ)</translation>
@@ -570,7 +568,6 @@
 <translation id="8206859287963243715">סלולארי</translation>
 <translation id="5610637197759059204">השבת טעינות חוזרות של דפים כתוצאה מגלילה אנכית רבה מדי של תוכן.</translation>
 <translation id="6435285122322546452">נהל יישומי קיוסק...</translation>
-<translation id="5748409721703101646">‏ה-Chromebook לא מצליח להתחבר לאינטרנט באמצעות <ph name="NETWORK_NAME"/>. בחר רשת אחרת. <ph name="LEARN_MORE_LINK_START"/>למידע נוסף<ph name="LEARN_MORE_LINK_END"/></translation>
 <translation id="1064835277883315402">הצטרף לרשת פרטית</translation>
 <translation id="872728358380751743">‏אפשרות זו משביתה את התמיכה ב-Cast Streaming עבור קידוד זרמי וידאו באמצעות חומרת פלטפורמה.</translation>
 <translation id="6508261954199872201">יישום: <ph name="APP_NAME"/></translation>
@@ -744,6 +741,7 @@
 <translation id="5759728514498647443">תוכל להשתמש ב-<ph name="APP_NAME"/> כדי לקרוא מסמכים שתשלח להדפסה באמצעות <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">‏היישום הזה לא נתמך כרגע במכשיר הזה, אך הצוות של Chrome עובד במרץ כדי להפוך אותו לזמין בקרוב.</translation>
 <translation id="3273410961255278341">שלח עבור:</translation>
+<translation id="4255096080864111471">ציין את מספר האריחים המקסימלי עבור האזור של תחומי עניין.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">כרטיסייה חדשה</translation>
 <translation id="6567688344210276845">לא היתה אפשרות לטעון את האייקון '<ph name="ICON"/>' עבור פעולת דף.</translation>
@@ -1055,7 +1053,7 @@
 <translation id="8559762987265718583">לא ניתן ליצור חיבור פרטי אל <ph name="BEGIN_BOLD"/><ph name="DOMAIN"/><ph name="END_BOLD"/> מפני שהתאריך והשעה (<ph name="DATE_AND_TIME"/>) במכשיר שלך שגויים.</translation>
 <translation id="2915500479781995473">לשרת זה לא הייתה אפשרות להוכיח שהוא <ph name="DOMAIN"/>; פג תוקפו של אישור האבטחה שלו. ייתכן שמצב זה נגרם בשל תצורה שגויה או שתוקף מיירט את החיבור שלך. שעון המחשב שלך מוגדר כעת ל-<ph name="CURRENT_TIME"/>. האם השעה נכונה? אם לא, עליך לכוון את שעון המערכת ולאחר מכן לרענן דף זה.</translation>
 <translation id="1975841812214822307">הסר...</translation>
-<translation id="108346963417674655">לא ניתן להתחבר בצורה מאובטחת אל השרת. ייתכן שהאתר הזה פעל בעבר, אך יש בעיה בשרת. התחברות אל אתרים כאלה פוגעת ברמת האבטחה בשביל כל המשתמשים ולכן היא הושבתה.</translation>
+<translation id="108346963417674655">לא ניתן להתחבר בצורה מאובטחת אל השרת. ייתכן שהאתר הזה פעל בעבר, אך יש בעיה בשרת. התחברות אל אתרים כאלה פוגעת ברמת האבטחה של כל המשתמשים ולכן היא הושבתה.</translation>
 <translation id="8280151743281770066">ארמנית פונטית</translation>
 <translation id="567881659373499783">גרסה <ph name="PRODUCT_VERSION"/></translation>
 <translation id="8261378640211443080">התוסף הזה לא רשום ב<ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> וייתכן שנוסף ללא ידיעתך.</translation>
@@ -1119,7 +1117,6 @@
 <translation id="5774515636230743468">מניפסט:</translation>
 <translation id="1313832887664610176">‏החיבור ל-Chromebox אבד</translation>
 <translation id="3465566417615315331">לחץ על התמונה שלך</translation>
-<translation id="4960944339761782076">השתמש בבועות לבקשות הרשאה</translation>
 <translation id="7474889694310679759">מקלדת אנגלית (קנדה)</translation>
 <translation id="1817871734039893258">‏שחזור קבצים של Microsoft</translation>
 <translation id="2423578206845792524">שמ&amp;ור תמונה בשם...</translation>
@@ -1309,7 +1306,7 @@
 <translation id="5595485650161345191">ערוך כתובת</translation>
 <translation id="1849186935225320012">‏לדף זה יש שליטה מלאה על מכשירי MIDI.</translation>
 <translation id="7309416673261215716">גרסת תוסף</translation>
-<translation id="760353356052806707">‏תכנית אחרת במחשב התקינה יישום שעשוי לשנות את אופן הפעולה של Chrome.
+<translation id="760353356052806707">‏תכנית אחרת במחשב הוסיפה יישום שעשוי לשנות את אופן הפעולה של Chrome.
 
 <ph name="EXTENSION_NAME"/></translation>
 <translation id="6840313690797192085">$1 PB</translation>
@@ -1332,7 +1329,7 @@
 <translation id="813082847718468539">הצג נתוני אתר</translation>
 <translation id="127353061808977798">גופנים וקידוד</translation>
 <translation id="3122464029669770682">CPU</translation>
-<translation id="4518677423782794009">‏האם Chrome קורס, מציג דפי פתיחה חריגים, מודעות לא צפויות או סרגלי כלים שאי אפשר להיפטר מהם או שמשנים באופן כלשהו את חוויית הגלישה? ייתכן שתוכל לפתור את הבעיה בעזרת כלי הניקוי של Chrome.</translation>
+<translation id="4518677423782794009">‏האם Chrome קורס, מציג דפי פתיחה חריגים, מודעות לא צפויות או סרגלי כלים שאי אפשר להיפטר מהם או שמשנים באופן כלשהו את חוויית הגלישה? ייתכן שתוכל לפתור את הבעיה באמצעות הפעלה של כלי הניקוי של Chrome.</translation>
 <translation id="6080689532560039067">בדוק את שעת המערכת</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6802031077390104172"><ph name="USAGE"/> (<ph name="OID"/>)</translation>
@@ -1359,7 +1356,7 @@
 <translation id="3778152852029592020">ההורדה בוטלה.</translation>
 <translation id="8235613855873080297">השבת תוספי מדיה מוצפנת.</translation>
 <translation id="2148227560636747235">העבר את הכרטיסייה הזו</translation>
-<translation id="3507421388498836150">הרשאות נוכחיות בשביל &quot;<ph name="EXTENSION_NAME"/>&quot;</translation>
+<translation id="3507421388498836150">הרשאות נוכחיות של &quot;<ph name="EXTENSION_NAME"/>&quot;</translation>
 <translation id="7831368056091621108">‏כדי שהתוסף הזה, ההיסטוריה שלך והגדרות Chrome אחרות יהיו זמינים בכל המכשירים שלך.</translation>
 <translation id="5469868506864199649">איטלקית</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
@@ -1682,6 +1679,7 @@
 <translation id="4811502511369621968">כתובת אימייל לא חוקית. בדוק ונסה שוב.</translation>
 <translation id="175196451752279553">פ&amp;תח מחדש את הכרטיסייה הסגורה</translation>
 <translation id="8602851771975208551">‏תכנית אחרת במחשב שלך הוסיפה יישום שעשוי לשנות את אופן הפעולה של Chrome.</translation>
+<translation id="9154967591629748964">מספר אריחים מקסימלי עבור האזור של תחומי עניין</translation>
 <translation id="2655386581175833247">אישור משתמש:</translation>
 <translation id="5039804452771397117">אפשר</translation>
 <translation id="5435964418642993308">‏הקש Enter כדי לחזור, ועל מקש תפריט הקשר כדי להציג היסטוריה </translation>
@@ -1787,7 +1785,6 @@
 <translation id="8598687241883907630">‏נתק את חשבון Google שלך​​...</translation>
 <translation id="3195445837372719522">‏Chromebox לפגישות צריך לדעת לאיזה דומיין הוא שייך. לשם כך תידרש להיכנס לחשבונך.</translation>
 <translation id="7920092496846849526">שאלת את ההורים אם זה בסדר לבקר בדף זה.</translation>
-<translation id="5984304957315422459">אופס. לא ניתן היה להכניס אותך לחשבון. הכניסה נכשלה מפני שלא ניתן היה לאמת את הסיסמה.</translation>
 <translation id="9003677638446136377">בדוק שוב</translation>
 <translation id="9187827965378254003">אוי, נראה שאין ניסויים זמינים כרגע.</translation>
 <translation id="6022526133015258832">פתח במסך מלא</translation>
@@ -1852,6 +1849,7 @@
 <translation id="1901377140875308934">היכנס ל-<ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">הטפט הנוכחי נקבע על ידי '<ph name="APP_NAME"/>'</translation>
 <translation id="5074318175948309511">ייתכן שיהיה צורך לטעון מחדש דף זה על מנת שההגדרות החדשות ייכנסו לתוקף.</translation>
+<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">ללא בחירה</translation>
 <translation id="6405640832764359650">‏הצג את תיבת הסימון לשמירה של כרטיס Google Payments</translation>
 <translation id="1346104802985271895">‏שיטת קלט וייטנאמית (TELEX)</translation>
@@ -2053,7 +2051,6 @@
 <translation id="8551388862522347954">רישיונות</translation>
 <translation id="5525695896049981561">כן, אני רואה אותו</translation>
 <translation id="1410616244180625362">המשך לאפשר ל-<ph name="HOST"/> לגשת למצלמה שלך</translation>
-<translation id="298577602575286468">‏רשום את Chromebook</translation>
 <translation id="8494214181322051417">חדש!</translation>
 <translation id="7959874006162866942">האם אתה בטוח שברצונך להתקין את <ph name="PLUGIN_NAME"/>? עליך להתקין רק תוספים שאתה בוטח בהם.</translation>
 <translation id="2937174152333875430">הפעל סנכרון של מפעיל היישומים</translation>
@@ -2255,7 +2252,6 @@
 <translation id="7053983685419859001">חסום</translation>
 <translation id="7912024687060120840">בתיקייה:</translation>
 <translation id="2485056306054380289">‏אישור CA של שרת:</translation>
-<translation id="5631861698741076898">אופס, הכניסה שלך נכשלה. הסיבה לכך היא שהכניסה הוגדרה להשתמש בכתובת אתר לא-מאובטחת (<ph name="BLOCKED_URL"/>).</translation>
 <translation id="6462109140674788769">מקלדת יוונית</translation>
 <translation id="9191610850443814852">‏הפעלת הגדרה של Smart Lock המאפשרת ל-Chromebook לגלות טלפונים באמצעות Bluetooth Low Energy כדי לבטל את הנעילה של ה-Chromebook כאשר הטלפון נמצא בקרבתו.</translation>
 <translation id="2727712005121231835">גודל ממשי</translation>
@@ -2310,7 +2306,6 @@
 <translation id="5502500733115278303">‏מיובא מ-Firefox</translation>
 <translation id="569109051430110155">איתור אוטומטי</translation>
 <translation id="8597845839771543242">פורמט מאפיין:</translation>
-<translation id="4408599188496843485">ע&amp;זרה</translation>
 <translation id="7969525169268594403">סלובנית</translation>
 <translation id="5399158067281117682">‏קודי ה-PIN אינם תואמים!</translation>
 <translation id="6277105963844135994">תם הזמן הקצוב לתפוגה של הרשת</translation>
@@ -2425,7 +2420,6 @@
 <translation id="2562685439590298522">מסמכים</translation>
 <translation id="8673383193459449849">יש בעיה בשרת</translation>
 <translation id="4060383410180771901">אתר האינטרנט לא יכול לטפל בבקשה עבור <ph name="URL"/>.</translation>
-<translation id="5774208114954065213">‏אתה עומד לבטל את ההרשמה של מכשיר Chromebook זה ב-Google כדי להשבית את היכולת לאיתור, מחיקה ונעילה של המכשיר מרחוק. לשם כך נדרש אתחול. האם ברצונך להמשיך?</translation>
 <translation id="6710213216561001401">הקודם</translation>
 <translation id="1108600514891325577">&amp;הפסק</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
@@ -2476,7 +2470,6 @@
 <translation id="7434509671034404296">למפתחים</translation>
 <translation id="7668654391829183341">מכשיר לא ידוע</translation>
 <translation id="2712173769900027643">בקש רשות</translation>
-<translation id="2053298192223252950">‏הפעל או השבת רכיבים בעיצוב חדשני תלת ממדי ב-Chrome של הדפדפן.</translation>
 <translation id="1790550373387225389">היכנס למצב מצגת</translation>
 <translation id="6447842834002726250">‏קובצי Cookie</translation>
 <translation id="8059178146866384858">קובץ בשם &quot;$ 1&quot; כבר קיים. בחר שם אחר.</translation>
@@ -3226,7 +3219,7 @@
 <translation id="3910699493603749297">מקלדת חמר</translation>
 <translation id="5487982064049856365">שינית לאחרונה את הסיסמה. היכנס באמצעות הסיסמה החדשה.</translation>
 <translation id="2345055320165338418">כשתכונה זו מופעלת, תגובות לסוגי שאילתות מסוימים יופיעו ישירות ברשימת ההצעות בסרגל הכתובות.</translation>
-<translation id="1585717515139318619">‏תכנית אחרת במחשב התקינה עיצוב שעשוי לשנות את אופן הפעולה של Chrome.
+<translation id="1585717515139318619">‏תכנית אחרת במחשב הוסיפה עיצוב שעשוי לשנות את אופן הפעולה של Chrome.
 
 <ph name="EXTENSION_NAME"/></translation>
 <translation id="438503109373656455">אביר</translation>
@@ -3297,7 +3290,6 @@
 <translation id="324743268744517458">‏אזהרה: אינך מחובר לשרתי פעילים של Google Payments. כרטיסים שהונפקו לא יהיו תקפים.</translation>
 <translation id="4711094779914110278">טורקית</translation>
 <translation id="2572032849266859634">ניתנה הרשאה לקריאה בלבד ב-<ph name="VOLUME_NAME"/>.</translation>
-<translation id="8193362611902704788">הפעל את מפעיל היישומים. לאחר ההפעלה, נוצרים קיצורי דרך של מערכת ההפעלה למפעיל היישומים.</translation>
 <translation id="5121130586824819730">הדיסק הקשיח מלא. שמור במיקום אחר או פנה מקום בדיסק הקשיח.</translation>
 <translation id="1875987452136482705">‏אפשרות זו משביתה את התמיכה ב-WebRTC לפענוח זרמי וידאו באמצעות חומרת פלטפורמה.</translation>
 <translation id="6164005077879661055">כל הקבצים והנתונים המקומיים המשויכים למשתמש בפיקוח יימחקו לצמיתות לאחר שמשתמש בפיקוח זה יוסר. המנהל עדיין יוכל לראות את האתרים שבהם משתמש בפיקוח זה ביקר, ואת ההגדרות שלו, בכתובת <ph name="MANAGEMENT_URL"/>.</translation>
@@ -3320,7 +3312,6 @@
 <translation id="499165176004408815">השתמש במצב ניגודיות גבוהה</translation>
 <translation id="2928940441164925372">‏הפעלת איסוף פסיבי של ערכים ואירועים הקשורים לביצועים ומתן האפשרות להצגת נתונים אלה בצורה גרפית. כדי להציג נתונים, בקר בנתיב: chrome://performance.</translation>
 <translation id="3289856944988573801">‏כדי לבדוק אם יש עדכונים, השתמש ב-Ethernet או ב-Wi-Fi.</translation>
-<translation id="247500748408468353">צור קשר עם מנהל המערכת שלך או נסה שוב.</translation>
 <translation id="450070808725753129">אם התוכנית כבר רשומה כתוכנית המורשית לגשת לרשת, נסה להסיר אותה מהרשימה ולהוסיף אותה שוב.</translation>
 <translation id="8300607741108698921">הגדרה בדקה אחת</translation>
 <translation id="4054376378714379870">הפעל תכונות אבטחה שעשויות לעצבן.</translation>
@@ -3824,7 +3815,6 @@
 <translation id="1064912851688322329">‏נתק את חשבון Google שלך</translation>
 <translation id="1294298200424241932">ערוך הגדרות אמון:</translation>
 <translation id="1407135791313364759">פתח הכל</translation>
-<translation id="1487997194203762088">משהו השתבש בכניסה.</translation>
 <translation id="1434928358870966081">השבת בד ציור דו-ממדי מואץ</translation>
 <translation id="331915893283195714">אפשר לכל האתרים להשבית את סמן העכבר</translation>
 <translation id="8978526688207379569">אתר זה הוריד קבצים מרובים באופן אוטומטי.</translation>
@@ -3992,7 +3982,6 @@
 <translation id="3778740492972734840">&amp;כלים עבור מפתחים</translation>
 <translation id="8335971947739877923">ייצוא...</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN"/> הוא כעת במסך מלא והשבית את סמן העכבר שלך.</translation>
-<translation id="747416882205977201">‏אתה עומד לרשום את מכשיר ה-Chromebook הזה ב-Google כדי להפעיל את היכולת לאיתור, מחיקה ונעילה של המכשיר מרחוק. לשם כך נדרש אתחול. האם ברצונך להמשיך?</translation>
 <translation id="38275787300541712">‏הקש על Enter בסיום</translation>
 <translation id="7417705661718309329">‏מפת Google</translation>
 <translation id="4058793769387728514">בדוק מסמך כעת</translation>
@@ -4049,7 +4038,6 @@
 <translation id="7180865173735832675">התאם אישית</translation>
 <translation id="7054808953701320293">הבנתי, אל תציג הודעה זו שוב.</translation>
 <translation id="4903369323166982260">‏הפעל את כלי הניקוי של Chrome</translation>
-<translation id="144932861331386147">‏התחבר לאינטרנט כדי לעדכן את ה-Chromebook שלך.</translation>
 <translation id="2938685643439809023">מונגולית</translation>
 <translation id="5368720394188453070">הטלפון שלך נעול. בטל את הנעילה כדי להיכנס.</translation>
 <translation id="2070909990982335904">שמות המתחילים בנקודה שמורים עבור המערכת. בחר שם אחר.</translation>
@@ -4078,7 +4066,7 @@
 <translation id="308903551226753393">הגדר באופן אוטומטי</translation>
 <translation id="5230516054153933099">חלון</translation>
 <translation id="4992458225095111526">‏אשר פעולת Powerwash</translation>
-<translation id="5027562294707732951">התקן את התוסף</translation>
+<translation id="5027562294707732951">הוסף את התוסף</translation>
 <translation id="951981865514037445"><ph name="URL"/>‏ רוצה להשתמש במיקום המכשיר שלך.</translation>
 <translation id="7387339603919136090">חציון</translation>
 <translation id="2750518858905599015"><ph name="SHORT_PRODUCT_NAME"/> עודכן</translation>
@@ -4155,7 +4143,6 @@
 <translation id="6557565812667414268">‏הפעל רק עבור מסכים עם DPI גבוה</translation>
 <translation id="7331991248529612614">הפעל הנפשה של הלחצן למצב קורא</translation>
 <translation id="5469954281417596308">מנהל הסימניות</translation>
-<translation id="106153153543631784">‏הזן מחדש את הסיסמה כדי לעדכן את פרופיל ה-Chromebook שלך.</translation>
 <translation id="3064388234319122767">‏תעתוק (zdravo → здраво)</translation>
 <translation id="5425722269016440406">‏עליך להיות מחובר לאינטרנט כדי לכבות את Smart Lock, מפני שהגדרה זו מסונכרנת עם הטלפון שלך ועם מכשירים אחרים. תחילה התחבר לרשת.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
@@ -4454,7 +4441,7 @@
 <translation id="3648607100222897006">תכונות ניסיוניות אלה עשויות להשתנות, להפסיק לעבוד או להיעלם בכל עת. איננו מביעים כל אחריות לגבי ההשלכות של הפעלה של אחד מניסויים אלה, וייתכן אף שהדפדפן שלך יתלקח באופן ספונטני. צחוק בצד, הדפדפן עלול למחוק את כל הנתונים שלך, או שהאבטחה והפרטיות שלך ייפגעו בדרכים לא צפויות. כל ניסוי שתאפשר יהפוך לפעיל עבור כל המשתמשים בדפדפן זה. המשך בזהירות.</translation>
 <translation id="8148913456785123871">‏הצג כרטיסים של Google Now במפעיל היישומים</translation>
 <translation id="3937640725563832867">שם חלופי של מנפיק האישור</translation>
-<translation id="1926339101652878330">ההגדרות האלה נשלטות על ידי מדיניות הארגון. צור קשר עם מנהל המערכת שלך לקבלת מידע נוסף.</translation>
+<translation id="1926339101652878330">ההגדרות האלה נשלטות על פי מדיניות הארגון. צור קשר עם מנהל המערכת שלך לקבלת מידע נוסף.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;צפה במקור המסגרת</translation>
 <translation id="8770196827482281187">‏פריסת מקלדת פרסית (פריסת ISIRI 2901)</translation>
@@ -4727,7 +4714,7 @@
 <translation id="7763146744708046348">אל תצבור את הנתונים - פעולה זו עשויה להיות אטית!</translation>
 <translation id="203165784383062719">&amp;אפשרויות בודק האיות</translation>
 <translation id="5626134646977739690">שם:</translation>
-<translation id="1070377999570795893">‏תכנית אחרת במחשב התקינה תוסף שעשוי לשנות את אופן הפעולה של Chrome.
+<translation id="1070377999570795893">‏תכנית אחרת במחשב הוסיפה תוסף שעשוי לשנות את אופן הפעולה של Chrome.
 
 <ph name="EXTENSION_NAME"/></translation>
 <translation id="5854409662653665676">אם אתה נתקל בבעיות לעתים קרובות, תוכל לנסות את הפעולות הבאות לפתירת הבעיה במודול זה:</translation>
@@ -4778,7 +4765,6 @@
 <translation id="7973320858902175766">מתקן הרכיבים</translation>
 <translation id="3654045516529121250">קרא את הגדרות הנגישות שלך</translation>
 <translation id="2113479184312716848">פתח &amp;קובץ...</translation>
-<translation id="4346759900458392803">‏בטל את הרשמת ה-Chromebook</translation>
 <translation id="884264119367021077">כתובת למשלוח</translation>
 <translation id="634208815998129842">מנהל המשימות</translation>
 <translation id="2735698359135166290">מקלדת רומנית רגילה</translation>
@@ -4871,7 +4857,6 @@
 <translation id="7209475358897642338">מהי השפה שלך?</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME"/> (בפיקוח)</translation>
 <translation id="9149866541089851383">ערוך...</translation>
-<translation id="8735794438432839558">‏התחבר לאינטרנט כדי להיכנס אל ה-Chromebook.</translation>
 <translation id="3356395591469757189">הצגת הצעות למילוי אוטומטי כפריט עזר למקלדת</translation>
 <translation id="7939412583708276221">שמור בכל מקרה</translation>
 <translation id="8579285237314169903">מבצע סנכרון ל-<ph name="NUMBER_OF_FILES"/> פריטים...</translation>
@@ -5484,7 +5469,6 @@ Del</translation>
 <translation id="6793649375377511437">‏מידע נוכחות משותפת של Google</translation>
 <translation id="4335713051520279344">מחשב זה יופעל מחדש בעוד שניה אחת.
 הקש על מקש כלשהו כדי להמשיך בסיור.</translation>
-<translation id="4775135101712609478">הצג בקשות להרשאות תוכן (לדוגמה, הודעות, מכסה, שימוש במצלמה, שימוש במיקרופון) בבועות במקום בסרגלי מידע.</translation>
 <translation id="7233715388668391168">הפעל/השבת הקלדת החלקה במקלדת הווירטואלית.</translation>
 <translation id="6264485186158353794">חזרה לחוף מבטחים</translation>
 <translation id="7705524343798198388">VPN</translation>

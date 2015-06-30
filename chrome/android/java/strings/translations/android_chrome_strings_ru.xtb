@@ -211,7 +211,6 @@
 <translation id="5771382037724542929">Вы хотите заменить существующий файл &quot;<ph name="FILE_NAME"/>&quot; в папке &quot;<ph name="DIRECTORY_NAME"/>&quot;?</translation>
 <translation id="8627706565932943526">Ошибка синхронизации</translation>
 <translation id="1807246157184219062">Светлый</translation>
-<translation id="9219103736887031265">Картинки</translation>
 <translation id="2904413602477443379">Выберите папку</translation>
 <translation id="7053983685419859001">Блокировать</translation>
 <translation id="8374821112118309944">Установите последнюю версию TalkBack.</translation>
@@ -366,7 +365,6 @@
 <translation id="3158619413803296679">Выберите закладку</translation>
 <translation id="6138140242378429169">Адаптировать страницу для мобильных устройств</translation>
 <translation id="5345040418939504969">Закладка &quot;<ph name="BOOKMARK_TITLE"/>&quot; удалена</translation>
-<translation id="7232255641409319872">Разрешить изображения на указанных сайтах и блокировать на всех остальных</translation>
 <translation id="2360035970720276770">Скачивать можно только с адресов http и https</translation>
 <translation id="7926911226829060241">Закладки, история, пароли и другие настройки синхронизируются с вашим аккаунтом Google.</translation>
 <translation id="4871370605780490696">Добавить закладку</translation>

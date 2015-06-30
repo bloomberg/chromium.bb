@@ -211,7 +211,6 @@ Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activit
 <translation id="5771382037724542929">Dorești să înlocuiești fișierul <ph name="FILE_NAME"/> existent din <ph name="DIRECTORY_NAME"/>?</translation>
 <translation id="8627706565932943526">Eroare de sincronizare</translation>
 <translation id="1807246157184219062">Luminos</translation>
-<translation id="9219103736887031265">Imagini</translation>
 <translation id="2904413602477443379">Alege un dosar</translation>
 <translation id="7053983685419859001">Blochează</translation>
 <translation id="8374821112118309944">Trebuie să actualizați TalkBack la o versiune mai nouă.</translation>
@@ -366,7 +365,6 @@ Atinge butonul Înapoi pentru a ieși.</translation>
 <translation id="3158619413803296679">Alege un marcaj</translation>
 <translation id="6138140242378429169">Fă pagina adecvată pentru mobil</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> a fost șters</translation>
-<translation id="7232255641409319872">Permite afișarea imaginilor pe site-urile pe care le specifici în timp ce le blochezi pe cele de pe restul site-urilor</translation>
 <translation id="2360035970720276770">Se poate descărca numai de la adresele URL http sau https</translation>
 <translation id="7926911226829060241">Marcajele deschise, istoricul, parolele și altele vor fi sincronizate cu Contul Google.</translation>
 <translation id="4871370605780490696">Adaugă un marcaj</translation>

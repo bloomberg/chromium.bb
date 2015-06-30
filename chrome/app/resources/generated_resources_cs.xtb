@@ -64,7 +64,6 @@
 <translation id="3293894718455402932">Rozšíření <ph name="EXTENSION"/> bude moci číst a zapisovat obrázky, videa a zvukové soubory v zaškrtnutých složkách.</translation>
 <translation id="7180611975245234373">Obnovit</translation>
 <translation id="4940047036413029306">Uvozovky</translation>
-<translation id="6406467842708712906">Jejda, přihlášení se nezdařilo. Přihlášení selhalo, protože se nepodařilo načíst podrobnosti účtu.</translation>
 <translation id="1497897566809397301">Povolit nastavení místních dat (doporučeno)</translation>
 <translation id="7627349730328142646">Povolit experimentální funkci, díky které se zobrazení Centra zpráv po odstranění oznámení vždy posune nahoru</translation>
 <translation id="3275778913554317645">Otevřít jako okno</translation>
@@ -170,7 +169,6 @@
 <translation id="3384773155383850738">Maximální počet návrhů</translation>
 <translation id="1014321050861012327">Ukládat hesla automaticky</translation>
 <translation id="8677212948402625567">Sbalit vše...</translation>
-<translation id="2056996954182910740">Aktivovat spouštěč aplikací</translation>
 <translation id="7600965453749440009">Jazyk <ph name="LANGUAGE"/> nikdy nepřekládat</translation>
 <translation id="3208703785962634733">Nepotvrzeno</translation>
 <translation id="620329680124578183">Nenačítat (doporučeno)</translation>
@@ -566,7 +564,6 @@ Tyto i další pokyny naleznete v e-mailu, který byl odeslán na adresu <ph nam
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="5610637197759059204">Zakáže opětovné načítání stránek aktivované svislým posunutím obsahu přes limit.</translation>
 <translation id="6435285122322546452">Spravovat aplikace pro režim veřejného terminálu...</translation>
-<translation id="5748409721703101646">Chromebook se pomocí sítě <ph name="NETWORK_NAME"/> nemůže připojit k internetu. Zkuste prosím jinou síť. <ph name="LEARN_MORE_LINK_START"/>Další informace<ph name="LEARN_MORE_LINK_END"/></translation>
 <translation id="1064835277883315402">Připojit se k privátní síti</translation>
 <translation id="872728358380751743">Tato možnost deaktivuje podporu kódování videostreamů pomocí hardwaru platformy Cast Streaming.</translation>
 <translation id="6508261954199872201">Aplikace: <ph name="APP_NAME"/></translation>
@@ -737,6 +734,7 @@ Všichni uživatelé se před pokračováním musejí odhlásit.</translation>
 <translation id="5759728514498647443">Dokumenty odeslané k tisku prostřednictvím aplikace <ph name="APP_NAME"/> lze číst v aplikaci <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Tato aplikace není v současné době v tomto zařízení podporována, ale Chromoví skřítci usilovně pracují na tom, aby ji brzy zprovoznili.</translation>
 <translation id="3273410961255278341">Komu odesílat:</translation>
+<translation id="4255096080864111471">Určete maximální počet dlaždic v oblasti zájmu.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Nová karta</translation>
 <translation id="6567688344210276845">Nelze načíst ikonu „<ph name="ICON"/>“ pro akci stránky.</translation>
@@ -1113,7 +1111,6 @@ Všichni uživatelé se před pokračováním musejí odhlásit.</translation>
 <translation id="5774515636230743468">Manifest:</translation>
 <translation id="1313832887664610176">Připojení k zařízení Chromebox bylo ztraceno</translation>
 <translation id="3465566417615315331">Klikněte na svou fotku</translation>
-<translation id="4960944339761782076">Zobrazovat žádosti o oprávnění v bublinách</translation>
 <translation id="7474889694310679759">Kanadská anglická klávesnice</translation>
 <translation id="1817871734039893258">Obnovení souborů Microsoft</translation>
 <translation id="2423578206845792524">Uložit o&amp;brázek jako...</translation>
@@ -1675,6 +1672,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME"/>
 <translation id="4811502511369621968">Neplatná e-mailová adresa. Zkontrolujte zadaný údaj a zkuste to znovu.</translation>
 <translation id="175196451752279553">Znovu ot&amp;evřít zavřenou kartu</translation>
 <translation id="8602851771975208551">Jiný program ve vašem počítači nainstaloval aplikaci, která může měnit funkce Chromu.</translation>
+<translation id="9154967591629748964">Maximální počet dlaždic v oblasti zájmu</translation>
 <translation id="2655386581175833247">Certifikát uživatele:</translation>
 <translation id="5039804452771397117">Povolit</translation>
 <translation id="5435964418642993308">Zpět se dostanete stiskem klávesy Enter, historii zobrazíte pomocí klávesy kontextové nabídky</translation>
@@ -1783,7 +1781,6 @@ Tento web by podle mě neměl být blokován.</translation>
 <translation id="8598687241883907630">Odpojit účet Google...</translation>
 <translation id="3195445837372719522">Služba Chromebox pro videokonference potřebuje vědět, do které domény patří. Přihlaste se ke svému účtu.</translation>
 <translation id="7920092496846849526">Zeptali jste se svého rodiče, zda můžete navštívit tuto stránku.</translation>
-<translation id="5984304957315422459">Jejda, přihlášení selhalo. Přihlášení se nezdařilo, protože nelze ověřit vaše heslo.</translation>
 <translation id="9003677638446136377">Zkontrolovat znovu</translation>
 <translation id="9187827965378254003">Bohužel to vypadá, že nejsou k dispozici žádné experimenty.</translation>
 <translation id="6022526133015258832">Otevřít v režimu celé obrazovky</translation>
@@ -1847,6 +1844,7 @@ Po vytvoření nového dozorovaného uživatele můžete jeho nastavení spravov
 <translation id="1901377140875308934">Přihlásit se do prohlížeče <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Aktuální tapetu nastavila aplikace <ph name="APP_NAME"/></translation>
 <translation id="5074318175948309511">Aby nové nastavení vstoupilo v platnost, pravděpodobně bude nutné načíst stránku znovu.</translation>
+<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Žádný výběr</translation>
 <translation id="6405640832764359650">Aktivovat zaškrtávací políčko k uložení karty do služby Google Payments</translation>
 <translation id="1346104802985271895">Metoda zadávání vietnamštiny (TELEX)</translation>
@@ -2053,7 +2051,6 @@ Po vytvoření nového dozorovaného uživatele můžete jeho nastavení spravov
 <translation id="8551388862522347954">Licence</translation>
 <translation id="5525695896049981561">Ano, vidím jej</translation>
 <translation id="1410616244180625362">Povolit webu <ph name="HOST"/> přístup ke kameře i nadále</translation>
-<translation id="298577602575286468">Zaregistrovat Chromebook</translation>
 <translation id="8494214181322051417">Novinka!</translation>
 <translation id="7959874006162866942">Opravdu chcete nainstalovat plugin <ph name="PLUGIN_NAME"/>? Měli byste instalovat pouze takové pluginy, kterým důvěřujete.</translation>
 <translation id="2937174152333875430">Povolit synchronizaci spouštěče aplikací</translation>
@@ -2253,7 +2250,6 @@ Po vytvoření nového dozorovaného uživatele můžete jeho nastavení spravov
 <translation id="7053983685419859001">Blokovat</translation>
 <translation id="7912024687060120840">Ve složce:</translation>
 <translation id="2485056306054380289">Certif. CA serveru:</translation>
-<translation id="5631861698741076898">Jejda, přihlášení selhalo. Přihlášení se nezdařilo, protože bylo nakonfigurováno k použití nezabezpečené adresy URL (<ph name="BLOCKED_URL"/>).</translation>
 <translation id="6462109140674788769">Řecká klávesnice</translation>
 <translation id="9191610850443814852">Aktivuje nastavení funkce Smart Lock, které Chromebooku umožňuje objevovat telefony prostřednictvím rozhraní Bluetooth Low Energy s cílem odemknout Chromebook, když je v jeho blízkosti telefon.</translation>
 <translation id="2727712005121231835">Skutečná velikost</translation>
@@ -2309,7 +2305,6 @@ Po vytvoření nového dozorovaného uživatele můžete jeho nastavení spravov
 <translation id="5502500733115278303">Importováno z Firefoxu</translation>
 <translation id="569109051430110155">Automatická detekce</translation>
 <translation id="8597845839771543242">Formát vlastnosti:</translation>
-<translation id="4408599188496843485">&amp;Nápověda</translation>
 <translation id="7969525169268594403">slovinština</translation>
 <translation id="5399158067281117682">Kódy PIN nejsou shodné.</translation>
 <translation id="6277105963844135994">Vypršel časový limit sítě</translation>
@@ -2424,7 +2419,6 @@ Po vytvoření nového dozorovaného uživatele můžete jeho nastavení spravov
 <translation id="2562685439590298522">Dokumenty</translation>
 <translation id="8673383193459449849">Problém se serverem</translation>
 <translation id="4060383410180771901">Web požadavek pro adresu <ph name="URL"/> nemůže zpracovat.</translation>
-<translation id="5774208114954065213">Chystáte se zrušit registraci tohoto Chromebooku ve společnosti Google za účelem deaktivace možnosti zařízení vzdáleně vyhledat, smazat a uzamknout. Tato akce bude vyžadovat restart. Opravdu chcete pokračovat?</translation>
 <translation id="6710213216561001401">Předchozí</translation>
 <translation id="1108600514891325577">&amp;Zastavit</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
@@ -2475,7 +2469,6 @@ Po vytvoření nového dozorovaného uživatele můžete jeho nastavení spravov
 <translation id="7434509671034404296">Vývojář</translation>
 <translation id="7668654391829183341">Neznámé zařízení</translation>
 <translation id="2712173769900027643">Požádat o oprávnění</translation>
-<translation id="2053298192223252950">Umožňuje zapnout nebo vypnout prvky vzhledu Material Design na horní liště prohlížeče.</translation>
 <translation id="1790550373387225389">Vstoupit do režimu prezentace</translation>
 <translation id="6447842834002726250">Soubory cookie</translation>
 <translation id="8059178146866384858">Soubor s názvem $1 již existuje. Zvolte prosím jiný název.</translation>
@@ -3303,7 +3296,6 @@ Zde poskytnutý diagnostický nástroj na řešení problémů s připojením v�
 <translation id="324743268744517458">Upozornění: Nejste připojeni k produkčním serverům služby Google Payments. Vydané karty budou neplatné.</translation>
 <translation id="4711094779914110278">turečtina</translation>
 <translation id="2572032849266859634">Byl udělen přístup pouze ke čtení ke svazku <ph name="VOLUME_NAME"/>.</translation>
-<translation id="8193362611902704788">Aktivuje spouštěč aplikací. Po aktivaci vytvoří zástupce operačního systému na spouštěč aplikací.</translation>
 <translation id="5121130586824819730">Pevný disk je plný. Uložte prosím soubor do jiného umístění nebo uvolněte místo na disku.</translation>
 <translation id="1875987452136482705">Tato možnost deaktivuje podporu rozhraní WebRTC k dekódování datových proudů videa pomocí hardwaru platformy.</translation>
 <translation id="6164005077879661055">Po odebrání dozorovaného uživatele budou trvale smazány všechny soubory a místní data, která jsou k němu přiřazena. Navštívené weby a nastavení tohoto dozorovaného uživatele může správce i nadále zobrazit na adrese <ph name="MANAGEMENT_URL"/>.</translation>
@@ -3326,7 +3318,6 @@ Zde poskytnutý diagnostický nástroj na řešení problémů s připojením v�
 <translation id="499165176004408815">Použít režim s vysokým kontrastem</translation>
 <translation id="2928940441164925372">Aktivuje pasivní shromažďování metrik a událostí souvisejících s výkonem a umožní tato data vizualizovat. Pokud chcete data zobrazit, navštivte adresář chrome://performance.</translation>
 <translation id="3289856944988573801">Chcete-li zkontrolovat dostupnost aktualizací, použijte síť Ethernet nebo Wi-Fi.</translation>
-<translation id="247500748408468353">Kontaktujte administrátora nebo to zkuste znovu.</translation>
 <translation id="450070808725753129">Pokud je program již uveden v seznamu programů s oprávněním k přístupu k síti,
         zkuste jej ze seznamu odebrat a znovu přidat.</translation>
 <translation id="8300607741108698921">Nastavit během minuty</translation>
@@ -3836,7 +3827,6 @@ Zde poskytnutý diagnostický nástroj na řešení problémů s připojením v�
 <translation id="1064912851688322329">Odpojit účet Google</translation>
 <translation id="1294298200424241932">Upravit nastavení důvěryhodnosti:</translation>
 <translation id="1407135791313364759">Otevřít vše</translation>
-<translation id="1487997194203762088">Při přihlašování se něco pokazilo.</translation>
 <translation id="1434928358870966081">Deaktivovat akcelerované prvky canvas 2D</translation>
 <translation id="331915893283195714">Povolit webům deaktivovat ukazatel myši</translation>
 <translation id="8978526688207379569">Tento web automaticky stáhl několik souborů.</translation>
@@ -4004,7 +3994,6 @@ Zde poskytnutý diagnostický nástroj na řešení problémů s připojením v�
 <translation id="3778740492972734840">&amp;Nástroje pro vývojáře</translation>
 <translation id="8335971947739877923">Export...</translation>
 <translation id="8667328578593601900">Stránka <ph name="FULLSCREEN_ORIGIN"/> je nyní na celé obrazovce a deaktivovala ukazatel myši.</translation>
-<translation id="747416882205977201">Chystáte se toto zařízení zaregistrovat na Google za účelem aktivace možnosti vzdáleného vyhledání, smazání a uzamčení zařízení. Tato akce bude vyžadovat restart. Opravdu chcete pokračovat?</translation>
 <translation id="38275787300541712">Po dokončení stiskněte klávesu Enter</translation>
 <translation id="7417705661718309329">Mapa Google</translation>
 <translation id="4058793769387728514">Zkontrolovat dokument</translation>
@@ -4061,7 +4050,6 @@ Zde poskytnutý diagnostický nástroj na řešení problémů s připojením v�
 <translation id="7180865173735832675">Personalizovat</translation>
 <translation id="7054808953701320293">Chápu, už mi to nezobrazujte.</translation>
 <translation id="4903369323166982260">Spustit nástroj Chrome Cleanup Tool</translation>
-<translation id="144932861331386147">Chcete-li Chromebook aktualizovat, připojte se k internetu.</translation>
 <translation id="2938685643439809023">mongolština</translation>
 <translation id="5368720394188453070">Telefon je uzamčen. Chcete-li pokračovat, odemkněte jej.</translation>
 <translation id="2070909990982335904">Názvy začínající tečkou jsou vyhrazeny pro systém. Zvolte prosím jiný název.</translation>
@@ -4167,7 +4155,6 @@ Zde poskytnutý diagnostický nástroj na řešení problémů s připojením v�
 <translation id="6557565812667414268">Aktivováno pouze pro monitory s vysokou hodnotou DPI.</translation>
 <translation id="7331991248529612614">Aktivovat animaci tlačítka režimu čtečky</translation>
 <translation id="5469954281417596308">Správce záložek</translation>
-<translation id="106153153543631784">Chcete-li aktualizovat profil v Chromebooku, znovu zadejte heslo.</translation>
 <translation id="3064388234319122767">Přepis (zdravo → здраво)</translation>
 <translation id="5425722269016440406">Chcete-li funkci Smart Lock vypnout, musíte být online, protože toto nastavení je synchronizováno do telefonu a ostatních zařízení. Nejdříve se prosím připojte k síti.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
@@ -4787,7 +4774,6 @@ Zde poskytnutý diagnostický nástroj na řešení problémů s připojením v�
 <translation id="7973320858902175766">Nástroj na opravu komponent</translation>
 <translation id="3654045516529121250">Čtení nastavení usnadnění přístupu</translation>
 <translation id="2113479184312716848">&amp;Otevřít soubor...</translation>
-<translation id="4346759900458392803">Zrušit registraci Chromebooku</translation>
 <translation id="884264119367021077">Dodací adresa</translation>
 <translation id="634208815998129842">Správce úloh</translation>
 <translation id="2735698359135166290">Standardní rumunská klávesnice</translation>
@@ -4880,7 +4866,6 @@ Zde poskytnutý diagnostický nástroj na řešení problémů s připojením v�
 <translation id="7209475358897642338">Jaký je váš jazyk?</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME"/> (dozorovaný)</translation>
 <translation id="9149866541089851383">Upravit...</translation>
-<translation id="8735794438432839558">Chcete-li se přihlásit do Chromebooku, připojte se k internetu.</translation>
 <translation id="3356395591469757189">Zobrazení návrhů automatického vyplňování jako příslušenství klávesnice</translation>
 <translation id="7939412583708276221">Přesto ponechat</translation>
 <translation id="8579285237314169903">Synchronizace <ph name="NUMBER_OF_FILES"/> položek...</translation>
@@ -5491,7 +5476,6 @@ Některé funkce nemusí být dostupné. Zkontrolujte, zda profil existuje a zda
 <translation id="6793649375377511437">Informace o blízkých zařízeních Google</translation>
 <translation id="4335713051520279344">Počítač se za 1 sekundu restartuje.
 Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
-<translation id="4775135101712609478">Zobrazovat žádosti o oprávnění (například oznámení, kvóty, použití fotoaparátu a mikrofonu) v bublinách, namísto informačních panelů.</translation>
 <translation id="7233715388668391168">Umožňuje aktivovat či zakázat psaní gesty na virtuální klávesnici.</translation>
 <translation id="6264485186158353794">Zpět na bezpečnější stránku</translation>
 <translation id="7705524343798198388">Síť VPN</translation>

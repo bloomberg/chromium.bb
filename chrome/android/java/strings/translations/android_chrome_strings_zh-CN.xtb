@@ -211,7 +211,6 @@
 <translation id="5771382037724542929">要替换“<ph name="DIRECTORY_NAME"/>”目录中现有的 <ph name="FILE_NAME"/> 吗？</translation>
 <translation id="8627706565932943526">同步错误</translation>
 <translation id="1807246157184219062">浅色调</translation>
-<translation id="9219103736887031265">图片</translation>
 <translation id="2904413602477443379">选择文件夹</translation>
 <translation id="7053983685419859001">禁止</translation>
 <translation id="8374821112118309944">您需要将“话语提示”更新到更高版本。</translation>
@@ -366,7 +365,6 @@
 <translation id="3158619413803296679">选择书签</translation>
 <translation id="6138140242378429169">使网页适合移动设备</translation>
 <translation id="5345040418939504969">已删除“<ph name="BOOKMARK_TITLE"/>”</translation>
-<translation id="7232255641409319872">允许在您指定的网站上使用图片，同时禁止在其他网站上使用图片</translation>
 <translation id="2360035970720276770">只能从 http 或 https 网址下载</translation>
 <translation id="7926911226829060241">正在将您保存的书签、历史记录、密码等同步到您的 Google 帐户。</translation>
 <translation id="4871370605780490696">添加书签</translation>

@@ -86,11 +86,13 @@
 <translation id="3087734570205094154">底部</translation>
 <translation id="3742055079367172538">已完成屏幕截图</translation>
 <translation id="8878886163241303700">正在扩展屏幕</translation>
+<translation id="714034171374937760">Chromebase</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME"/>（蓝牙）</translation>
 <translation id="3967919079500697218">您的管理员已停用屏幕截图功能。</translation>
 <translation id="372094107052732682">连按两次 Ctrl+Shift+Q 即可退出。</translation>
 <translation id="923686485342484400">连按两次Ctrl+Shift+Q即可退出。</translation>
 <translation id="9194617393863864469">登录其他用户帐户…</translation>
+<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6803622936009808957">找不到系统支持的分辨率，因此无法镜像显示屏。已改为进入扩展桌面。</translation>
 <translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/>（主帐户）</translation>
 <translation id="3626637461649818317">剩余电量：<ph name="PERCENTAGE"/>%</translation>
@@ -104,6 +106,7 @@
 <translation id="2825619548187458965">文件架</translation>
 <translation id="2614835198358683673">您的 Chromebook 在开启期间可能无法充电。建议您使用产品原装的充电器。</translation>
 <translation id="4430019312045809116">音量</translation>
+<translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">所有可参加的用户均已添加到此会话中。</translation>
 <translation id="1383876407941801731">搜索</translation>
 <translation id="2204305834655267233">网络信息</translation>
@@ -146,6 +149,7 @@
 <translation id="3019353588588144572">电池电量将在 <ph name="TIME_REMAINING"/>后充满</translation>
 <translation id="3473479545200714844">屏幕放大镜</translation>
 <translation id="882279321799040148">点击即可查看</translation>
+<translation id="5011233892417813670">Chromebook</translation>
 <translation id="1753067873202720523">您的 Chromebook 在处于打开状态时可能无法充电。</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/>不支持<ph name="SPECIFIED_RESOLUTION"/>。分辨率已改为<ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">启用移动数据</translation>
@@ -185,6 +189,7 @@
 <translation id="5947494881799873997">还原</translation>
 <translation id="7593891976182323525">搜索键或 Shift</translation>
 <translation id="7649070708921625228">帮助</translation>
+<translation id="164969095109328410">Chrome设备</translation>
 <translation id="3050422059534974565">CAPS LOCK 已开启。
 按搜索键或 Shift 可取消。</translation>
 <translation id="397105322502079400">正在计算...</translation>

@@ -64,7 +64,6 @@
 <translation id="3293894718455402932"><ph name="EXTENSION"/> voi lukea ja kirjoittaa kuvia, videoita ja äänitiedostoja valituissa kansioissa.</translation>
 <translation id="7180611975245234373">Päivitä</translation>
 <translation id="4940047036413029306">Lainausm.</translation>
-<translation id="6406467842708712906">Hups, sisäänkirjautuminen epäonnistui, koska tilitietojasi ei voi noutaa.</translation>
 <translation id="1497897566809397301">Salli paikallisten tietojen asettaminen (suositus)</translation>
 <translation id="7627349730328142646">Ottaa käyttöön kokeilun, jossa viestikeskus vierittää aina ylös ilmoituksen poiston yhteydessä.</translation>
 <translation id="3275778913554317645">Avaa ikkunana</translation>
@@ -170,7 +169,6 @@
 <translation id="3384773155383850738">Ehdotusten enimmäismäärä</translation>
 <translation id="1014321050861012327">Tallenna salasanat automaattisesti.</translation>
 <translation id="8677212948402625567">Tiivistä kaikki...</translation>
-<translation id="2056996954182910740">Ota sovellusten käynnistysohjelma käyttöön.</translation>
 <translation id="7600965453749440009">Älä koskaan käännä kieltä <ph name="LANGUAGE"/></translation>
 <translation id="3208703785962634733">Vahvistamaton</translation>
 <translation id="620329680124578183">Älä lataa (suositus)</translation>
@@ -567,7 +565,6 @@ Nämä tiedot ja tarkemmat ohjeet ovat sähköpostissasi <ph name="ACCOUNT_EMAIL
 <translation id="8206859287963243715">Matkapuhelin</translation>
 <translation id="5610637197759059204">Poista sellaiset sivun uudelleenlataukset käytöstä, jotka käynnistyvät sisällön yli vierittämisestä.</translation>
 <translation id="6435285122322546452">Hallinnoi kioskisovelluksia…</translation>
-<translation id="5748409721703101646">Chromebook ei voi muodostaa internetyhteyttä verkon <ph name="NETWORK_NAME"/> kautta. Valitse toinen verkko. <ph name="LEARN_MORE_LINK_START"/>Lisätietoja<ph name="LEARN_MORE_LINK_END"/></translation>
 <translation id="1064835277883315402">Liity VPN-verkkoon</translation>
 <translation id="872728358380751743">Tämä vaihtoehto poistaa käytöstä Cast-suoratoiston tuen videostreamien koodaamisessa käyttöympäristön laitteiston avulla.</translation>
 <translation id="6508261954199872201">Sovellus: <ph name="APP_NAME"/></translation>
@@ -741,6 +738,7 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="5759728514498647443"><ph name="APP_NAME"/> voi lukea dokumentteja, jotka lähetät tulostettavaksi sovelluksen <ph name="APP_NAME"/> kautta.</translation>
 <translation id="2401053206567162910">Tätä sovellusta ei tällä hetkellä tueta tällä laitteella, mutta Chrome-tontut tekevät kovasti töitä ja pyrkivät tuomaan sen käyttöön pian.</translation>
 <translation id="3273410961255278341">Lähetä:</translation>
+<translation id="4255096080864111471">Määritä kiinnostuksen kohteen ruutujen enimmäismäärä.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Uusi välilehti</translation>
 <translation id="6567688344210276845">Kuvakkeen <ph name="ICON"/> lataaminen sivun toimintoa varten epäonnistui.</translation>
@@ -1116,7 +1114,6 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="5774515636230743468">Luettelo:</translation>
 <translation id="1313832887664610176">Yhteys Chromeboxiin katkesi</translation>
 <translation id="3465566417615315331">Klikkaa valokuvaasi</translation>
-<translation id="4960944339761782076">Näytä käyttöoikeuspyynnöt ohjekuplissa</translation>
 <translation id="7474889694310679759">Näppäimistö: englanti (Kanada)</translation>
 <translation id="1817871734039893258">Microsoftin tiedoston palautus</translation>
 <translation id="2423578206845792524">T&amp;allenna kuva nimellä...</translation>
@@ -1679,6 +1676,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="4811502511369621968">Virheellinen sähköpostiosoite. Tarkista tiedot ja yritä uudelleen.</translation>
 <translation id="175196451752279553">A&amp;vaa suljettu välilehti uudelleen</translation>
 <translation id="8602851771975208551">Toinen tietokoneellasi oleva ohjelma lisäsi sovelluksen, joka voi muuttaa Chromen toimintaa.</translation>
+<translation id="9154967591629748964">Kiinnostuksen kohteen ruutujen enimmäismäärä</translation>
 <translation id="2655386581175833247">Käyttäjävarmenne:</translation>
 <translation id="5039804452771397117">Salli</translation>
 <translation id="5435964418642993308">Paina enteriä siirtyäksesi takaisin tai kontekstivalikkonäppäintä nähdäksesi historian</translation>
@@ -1785,7 +1783,6 @@ Tämän sivuston ei pitäisi olla estetty.</translation>
 <translation id="8598687241883907630">Irrota Google-tili...</translation>
 <translation id="3195445837372719522">Chromebox kokouksille -palvelun on tiedettävä, mihin verkkotunnukseen se kuuluu. Tämän vuoksi sinun tulee kirjautua tiliisi.</translation>
 <translation id="7920092496846849526">Pyysit vanhemmiltasi lupaa käydä tällä sivulla.</translation>
-<translation id="5984304957315422459">Hups, kirjautuminen ei onnistunut, koska salasanasi vahvistaminen epäonnistui.</translation>
 <translation id="9003677638446136377">Tarkista uudelleen</translation>
 <translation id="9187827965378254003">Tällä hetkellä ei valitettavasti ole käytettävissä yhtään kokeilua.</translation>
 <translation id="6022526133015258832">Avaa koko ruudulla</translation>
@@ -1850,6 +1847,7 @@ Kun olet luonut uuden valvotun käyttäjän, voit hallinnoida hänen asetuksiaan
 <translation id="1901377140875308934">Kirjaudu tuotteeseen <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697"><ph name="APP_NAME"/> asensi nykyisen taustakuvan</translation>
 <translation id="5074318175948309511">Tämä sivu on ehkä ladattava uudelleen, ennen kuin uudet asetukset tulevat voimaan.</translation>
+<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Ei valintaa</translation>
 <translation id="6405640832764359650">Ota Google Paymentsin kortin tallennus -valintaruutu käyttöön</translation>
 <translation id="1346104802985271895">Vietnamilainen syöttötapa (TELEX)</translation>
@@ -2056,7 +2054,6 @@ Kun olet luonut uuden valvotun käyttäjän, voit hallinnoida hänen asetuksiaan
 <translation id="8551388862522347954">Käyttöoikeudet</translation>
 <translation id="5525695896049981561">Kyllä, näen sen</translation>
 <translation id="1410616244180625362">Anna sivuston <ph name="HOST"/> käyttää edelleen kameraasi</translation>
-<translation id="298577602575286468">Rekisteröi Chromebook</translation>
 <translation id="8494214181322051417">Uutta!</translation>
 <translation id="7959874006162866942">Haluatko varmasti asentaa laajennuksen <ph name="PLUGIN_NAME"/>? Asenna vain laajennuksia, joihin luotat.</translation>
 <translation id="2937174152333875430">Ota sovelluksien käynnistysohjelman synkronointi käyttöön</translation>
@@ -2260,7 +2257,6 @@ Kun olet luonut uuden valvotun käyttäjän, voit hallinnoida hänen asetuksiaan
 <translation id="7053983685419859001">Estä</translation>
 <translation id="7912024687060120840">Kansiossa:</translation>
 <translation id="2485056306054380289">Palvelimen CA-varmenne:</translation>
-<translation id="5631861698741076898">Hups, kirjautuminen ei onnistunut. Kirjautuminen epäonnistui, koska se määritettiin turvattomalla URL-osoitteella (<ph name="BLOCKED_URL"/>).</translation>
 <translation id="6462109140674788769">Näppäimistö: kreikka</translation>
 <translation id="9191610850443814852">Ottaa käyttöön Smart Lock -asetuksen, joka sallii Chromebookin löytää puhelimia Bluetooth Low Energy -yhteyttä käyttämällä. Kun tällä tavoin löydetty puhelin on Chromebookin lähellä, sitä voi käyttää Chromebookin lukituksen avaamiseen.</translation>
 <translation id="2727712005121231835">Todellinen koko</translation>
@@ -2313,7 +2309,6 @@ Kun olet luonut uuden valvotun käyttäjän, voit hallinnoida hänen asetuksiaan
 <translation id="5502500733115278303">Tuotu Firefoxista</translation>
 <translation id="569109051430110155">Automaattinen</translation>
 <translation id="8597845839771543242">Ominaisuuden muoto:</translation>
-<translation id="4408599188496843485">O&amp;hje</translation>
 <translation id="7969525169268594403">sloveeni</translation>
 <translation id="5399158067281117682">PIN-koodit eivät täsmää!</translation>
 <translation id="6277105963844135994">Verkon aikakatkaisu</translation>
@@ -2428,7 +2423,6 @@ Kun olet luonut uuden valvotun käyttäjän, voit hallinnoida hänen asetuksiaan
 <translation id="2562685439590298522">Dokumentit</translation>
 <translation id="8673383193459449849">Palvelinvirhe</translation>
 <translation id="4060383410180771901">Verkkosivusto ei pysty käsittelemään sivun <ph name="URL"/> pyyntöä.</translation>
-<translation id="5774208114954065213">Olet peruuttamassa Chromebookin Google-rekisteröintiä. Tämän jälkeen et enää voi paikantaa, tyhjentää ja lukita laitetta etäyhteyden kautta. Laite täytyy käynnistää uudelleen. Haluatko jatkaa?</translation>
 <translation id="6710213216561001401">Edellinen</translation>
 <translation id="1108600514891325577">Py&amp;säytä</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
@@ -2479,7 +2473,6 @@ Kun olet luonut uuden valvotun käyttäjän, voit hallinnoida hänen asetuksiaan
 <translation id="7434509671034404296">Kehittäjille</translation>
 <translation id="7668654391829183341">Tuntematon laite</translation>
 <translation id="2712173769900027643">Pyydä käyttölupaa</translation>
-<translation id="2053298192223252950">Ota käyttöön tai poista Material design -elementit selaimen yläosassa.</translation>
 <translation id="1790550373387225389">Siirry esitystilaan</translation>
 <translation id="6447842834002726250">Evästeet</translation>
 <translation id="8059178146866384858">Tiedosto nimeltä $1 on jo olemassa. Valitse toinen nimi.</translation>
@@ -3294,7 +3287,6 @@ Kun olet luonut uuden valvotun käyttäjän, voit hallinnoida hänen asetuksiaan
 <translation id="324743268744517458">Varoitus: et ole yhteydessä Google Paymentsin tuotantopalvelimiin. Myönnetyt kortit eivät kelpaa.</translation>
 <translation id="4711094779914110278">turkki</translation>
 <translation id="2572032849266859634">Laajennukselle myönnettiin vain luku -oikeus tallennusvälineeseen <ph name="VOLUME_NAME"/>.</translation>
-<translation id="8193362611902704788">Ota sovelluksien käynnistysohjelma käyttöön. Käyttöönoton yhteydessä käynnistysohjelmaan luodaan käyttöjärjestelmän pikakuvakkeet.</translation>
 <translation id="5121130586824819730">Kiintolevy on täynnä. Tallenna muuhun sijaintiin tai vapauta levytilaa.</translation>
 <translation id="1875987452136482705">Tämä asetus poistaa käytöstä WebRTC:n tuen videoiden suoratoiston dekoodaamiseen alustalaitteistoa käyttäen.</translation>
 <translation id="6164005077879661055">Kaikki valvottuun käyttäjään yhdistetyt tiedostot ja paikalliset tiedot poistetaan
@@ -3319,7 +3311,6 @@ Kun olet luonut uuden valvotun käyttäjän, voit hallinnoida hänen asetuksiaan
 <translation id="499165176004408815">Käytä suuri kontrasti -tilaa</translation>
 <translation id="2928940441164925372">Ota käyttöön tehokkuuteen liittyvien tilastojen ja tapahtumien passiivinen kerääminen ja anna mahdollisuus tarkastella näitä tietoja kuvaajan avulla. Tarkastele tietoja osoitteessa chrome://performance.</translation>
 <translation id="3289856944988573801">Tarkista päivitykset Ethernetin tai Wi-Fin kautta.</translation>
-<translation id="247500748408468353">Ota yhteyttä järjestelmänvalvojaan tai yritä uudelleen.</translation>
 <translation id="450070808725753129">Jos sillä on jo verkon käyttöoikeus, kokeile sen poistamista sallittujen ohjelmien luettelosta
         ja lisäämistä sitten uudelleen.</translation>
 <translation id="8300607741108698921">1 minuutin asennus</translation>
@@ -3825,7 +3816,6 @@ ei saa yhteyttä sivustoon. Syynä on yleensä verkon ongelma, mutta ongelma saa
 <translation id="1064912851688322329">Irrota Google-tilisi</translation>
 <translation id="1294298200424241932">Muokkaa luottamusasetuksia:</translation>
 <translation id="1407135791313364759">Avaa kaikki</translation>
-<translation id="1487997194203762088">Jokin meni vikaan kirjautumisessa.</translation>
 <translation id="1434928358870966081">Poista kiihdytetty 2D canvas käytöstä</translation>
 <translation id="331915893283195714">Anna kaikkien sivustojen poistaa hiiren osoitin käytöstä</translation>
 <translation id="8978526688207379569">Tämä sivusto latasi useita tiedostoja automaattisesti.</translation>
@@ -3993,7 +3983,6 @@ ei saa yhteyttä sivustoon. Syynä on yleensä verkon ongelma, mutta ongelma saa
 <translation id="3778740492972734840">&amp;Kehittäjän työkalut</translation>
 <translation id="8335971947739877923">Vie...</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN"/> on nyt koko ruudun kokoinen ja on poistanut hiiren osoittimen käytöstä.</translation>
-<translation id="747416882205977201">Olet rekisteröimässä Chromebookia Googleen. Tämän jälkeen voit paikantaa, tyhjentää ja lukita laitteen etäyhteyden kautta. Laite täytyy käynnistää uudelleen. Haluatko jatkaa?</translation>
 <translation id="38275787300541712">Paina Enter, kun olet valmis</translation>
 <translation id="7417705661718309329">Google-kartta</translation>
 <translation id="4058793769387728514">Tarkista asiakirja nyt</translation>
@@ -4050,7 +4039,6 @@ ei saa yhteyttä sivustoon. Syynä on yleensä verkon ongelma, mutta ongelma saa
 <translation id="7180865173735832675">Muokkaa</translation>
 <translation id="7054808953701320293">Selvä, älä näytä tätä uudelleen.</translation>
 <translation id="4903369323166982260">Käynnistä Chromen poistotyökalu</translation>
-<translation id="144932861331386147">Muodosta internetyhteys, niin voit päivittää Chromebookin.</translation>
 <translation id="2938685643439809023">mongolia</translation>
 <translation id="5368720394188453070">Puhelimesi on lukittu. Avaa lukitus käyttääksesi sitä.</translation>
 <translation id="2070909990982335904">Pisteellä alkavat nimet on varattu järjestelmän käyttöön. Valitse toinen nimi.</translation>
@@ -4156,7 +4144,6 @@ ei saa yhteyttä sivustoon. Syynä on yleensä verkon ongelma, mutta ongelma saa
 <translation id="6557565812667414268">Otetaan käyttöön vain näytöillä, joissa on korkea DPI</translation>
 <translation id="7331991248529612614">Ota käyttöön lukutilan kuvakkeen animaatio.</translation>
 <translation id="5469954281417596308">Kirjanmerkkien hallinta</translation>
-<translation id="106153153543631784">Päivitä Chromebook-profiilisi kirjoittamalla salasanasi uudelleen.</translation>
 <translation id="3064388234319122767">Translitterointi (zdravo → здраво)</translation>
 <translation id="5425722269016440406">Voit poistaa Smart Lockin käytöstä vain, kun olet yhteydessä verkkoon, koska asetus on synkronoitu puhelimesi ja muiden laitteidesi kanssa. Muodosta ensin verkkoyhteys.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
@@ -4774,7 +4761,6 @@ ei saa yhteyttä sivustoon. Syynä on yleensä verkon ongelma, mutta ongelma saa
 <translation id="7973320858902175766">Komponenttien paikkaaja</translation>
 <translation id="3654045516529121250">Lukea käytettävyysasetuksia.</translation>
 <translation id="2113479184312716848">Avaa &amp;tiedosto...</translation>
-<translation id="4346759900458392803">Peruuta Chromebookin rekisteröinti</translation>
 <translation id="884264119367021077">Toimitusosoite</translation>
 <translation id="634208815998129842">Tehtävänhallinta</translation>
 <translation id="2735698359135166290">Romanialainen vakionäppäimistö</translation>
@@ -4867,7 +4853,6 @@ ei saa yhteyttä sivustoon. Syynä on yleensä verkon ongelma, mutta ongelma saa
 <translation id="7209475358897642338">Mitä kieltä käytät?</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME"/> (valvottu käyttäjä)</translation>
 <translation id="9149866541089851383">Muokkaa...</translation>
-<translation id="8735794438432839558">Kirjaudu Chromebookiin muodostamalla verkkoyhteys.</translation>
 <translation id="3356395591469757189">Automaattisen täytön ehdotukset näppäimistön lisäosana</translation>
 <translation id="7939412583708276221">Säilytä</translation>
 <translation id="8579285237314169903">Synkronoidaan <ph name="NUMBER_OF_FILES"/> kohdetta…</translation>
@@ -5471,7 +5456,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS"/> bittiä):
 <translation id="426015154560005552">Arabialainen näppäimistö</translation>
 <translation id="6793649375377511437">Googlen Copresence-tiedot</translation>
 <translation id="4335713051520279344">Tämä tietokone nollataan 1 sekunnin kuluttua. Paina mitä tahansa näppäintä jatkaaksesi käyttöä.</translation>
-<translation id="4775135101712609478">Näytä sisällön käyttölupapyynnöt (esimerkiksi ilmoitukset, kiintiö, kameran ja mikrofonin käyttö) ohjekuplissa tietopalkkien sijasta.</translation>
 <translation id="7233715388668391168">Poista tai ota käyttöön virtuaalisen näppäimistön piirtokirjoitus.</translation>
 <translation id="6264485186158353794">Takaisin suojaukseen</translation>
 <translation id="7705524343798198388">VPN</translation>

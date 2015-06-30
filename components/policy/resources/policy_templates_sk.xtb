@@ -156,7 +156,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
       Ak toto pravidlo nie je nastavené alebo ak je nastavené na hodnotu False, prehliadač Chrome použije existujúce nastavenia kontroly odvolania online.</translation>
 <translation id="3516856976222674451">Obmedzuje maximálnu dĺžku relácie používateľa.
 
-      Keď je toto pravidlo nastavené, stanovuje maximálny čas, po uplynutí ktorého bude používateľ automaticky odhlásený a relácia sa ukončí. Používateľa o zostávajúcom čase informuje časovač na systémovom paneli.
+      Keď je toto pravidlo nastavené, stanovuje maximálny čas, po uplynutí ktorého bude používateľ automaticky odhlásený a relácia sa ukončí. Používateľa o zostávajúcom čase informuje časovač v oblasti oznámení.
 
       Ak toto pravidlo nastavené nie je, dĺžka relácie nie je obmedzená.
 
@@ -345,7 +345,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="8614804915612153606">Zakáže automatickú aktualizáciu</translation>
 <translation id="4834526953114077364">Odstránia sa najdlhšie neprihlásení používatelia (ktorí sa neprihlásili za posledné 3 mesiace), dokým sa neuvoľní dostatok voľného miesta</translation>
 <translation id="382476126209906314">Konfigurácia predpony TalkGadget pre hostiteľov vzdialeného prístupu</translation>
-<translation id="6561396069801924653">Zobraziť možnosti zjednodušenia prístupu v ponuke systémovej lišty</translation>
+<translation id="6561396069801924653">Zobraziť možnosti dostupnosti v oblasti oznámení</translation>
 <translation id="8104962233214241919">Automaticky vybrať certifikáty klienta pre tieto webové stránky</translation>
 <translation id="2906874737073861391">Zoznam rozšírení AppPack</translation>
 <translation id="4386578721025870401">Stanovte časový limit prihlásenia v režime offline pre používateľa, ktorého totožnosť bola overená prostredníctvom štandardu SAML.
@@ -786,7 +786,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="8285435910062771358">Lupa v režime na celú obrazovku je povolená</translation>
 <translation id="5141670636904227950">Nastaviť predvolený typ lupy obrazovky, ktorý je povolený na prihlasovacej obrazovke</translation>
 <translation id="3864818549971490907">Predvolené nastavenie doplnkov</translation>
-<translation id="7151201297958662315">Určuje, či sa má proces prehliadača <ph name="PRODUCT_NAME"/> spustiť po prihlásení do operačného systému a či má ostať spustený aj po zatvorení posledného okna prehliadača. Aplikácie na pozadí tak môžu ostať aktívne. Proces na pozadí zobrazí na systémovom paneli ikonu, pomocou ktorej ho môžete kedykoľvek ukončiť.
+<translation id="7151201297958662315">Určuje, či sa má proces prehliadača <ph name="PRODUCT_NAME"/> spustiť po prihlásení do operačného systému a či má ostať spustený aj po zatvorení posledného okna prehliadača. Aplikácie na pozadí tak môžu ostať aktívne. Proces na pozadí zobrazí v oblasti oznámení ikonu, pomocou ktorej ho môžete kedykoľvek ukončiť.
 
       Ak je toto pravidlo nastavené na hodnotu true, režim na pozadí je povolený a používateľ ho nemôže ovládať pomocou nastavení prehliadača.
 
@@ -1324,11 +1324,11 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="3034580675120919256">Umožní nastaviť, či môžu webové stránky spúšťať kód JavaScript. Spúšťanie kódu JavaScript sa dá pre všetky webové stránky buď umožniť, alebo naopak zamietnuť.
 
           Ak toto pravidlo ponecháte nenastavené, použije sa pravidlo „AllowJavaScript“ a používateľ to bude môcť zmeniť.</translation>
-<translation id="193900697589383153">Pridá na systémový panel tlačidlo odhlásenia.
+<translation id="193900697589383153">Pridá do oblasti oznámení tlačidlo odhlásenia.
 
-      Ak je toto nastavenie povolené, na systémovom paneli sa počas aktívnej relácie zobrazuje veľké červené tlačidlo odhlásenia (pokiaľ nie je obrazovka uzamknutá).
+      Ak je toto nastavenie povolené, v oblasti oznámení sa počas aktívnej relácie zobrazuje veľké červené tlačidlo odhlásenia (pokiaľ nie je obrazovka uzamknutá).
 
-      Ak je toto nastavenie zakázané alebo nie je nastavené, na systémovom paneli sa nezobrazuje žiadne veľké červené tlačidlo odhlásenia.</translation>
+      Ak je toto nastavenie zakázané alebo nie je nastavené, v oblasti oznámení sa nezobrazuje žiadne veľké červené tlačidlo odhlásenia.</translation>
 <translation id="5111573778467334951">Určte akciu, ktorá sa má uskutočniť po uplynutí určitého času nečinnosti počas prevádzky na batérii.
 
           Keď je toto pravidlo nastavené, určuje akciu, ktorú <ph name="PRODUCT_OS_NAME"/> vykoná, keď používateľ zostane nečinný počas časového obdobia stanoveného časom nečinnosti, ktorý sa dá nakonfigurovať samostatne.
@@ -1538,7 +1538,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
       Ak je toto pravidlo nakonfigurované, nemôže ho používateľ zmeniť a skratka aplikácií sa zobrazí buď vždy, alebo nikdy.</translation>
 <translation id="2299220924812062390">Určiť zoznam povolených doplnkov</translation>
-<translation id="4325690621216251241">Pridať na systémový panel tlačidlo odhlásenia</translation>
+<translation id="4325690621216251241">Pridať do oblasti oznámení tlačidlo odhlásenia</translation>
 <translation id="924557436754151212">Import uložených hesiel z predvoleného prehliadača pri prvom spustení</translation>
 <translation id="1465619815762735808">Kliknutím prehrať</translation>
 <translation id="7227967227357489766">Definuje zoznam používateľov, ktorí majú povolenie prihlásiť sa do zariadenia. Položky majú formát <ph name="USER_WHITELIST_ENTRY_FORMAT"/>, napríklad <ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>. Ak chcete povoliť všetkých používateľov z niektorej domény, použite položky vo formáte <ph name="USER_WHITELIST_ENTRY_WILDCARD"/>.
@@ -1892,15 +1892,15 @@ Zoznam nepovolených položiek ExtensionInstallBlacklist je tomuto pravidlu nadr
       Keď je toto pravidlo nastavené, pri otvorení zobrazenia záložiek sa v prehliadači Chrome zobrazí predvolený priečinok Spravované záložky.
 
       Spravované záložky sa nesynchronizujú do účtu používateľa.</translation>
-<translation id="6757375960964186754">Zobrazuje možnosti zjednodušenia prístupu v systéme <ph name="PRODUCT_OS_NAME"/> v systémovej ponuke.
+<translation id="6757375960964186754">Zobrazuje možnosti dostupnosti v systéme <ph name="PRODUCT_OS_NAME"/> v oblasti oznámení.
 
-          Ak je pravidlo nastavené na hodnotu true, na paneli systémovej ponuky sa vždy zobrazí možnosť zjednodušenia prístupu.
+          Ak je pravidlo nastavené na hodnotu true, v oblasti oznámení sa vždy zobrazia možnosti dostupnosti.
 
-          Ak je pravidlo nastavené na hodnotu false, možnosti zjednodušenia prístupu sa na paneli systémovej ponuky nikdy nezobrazia.
+          Ak je pravidlo nastavené na hodnotu false, možnosti dostupnosti sa v oblasti oznámení nikdy nezobrazia.
 
           Ak toto pravidlo nastavíte, používatelia ho nebudú môcť zmeniť ani prepísať.
 
-          Ak nie je toto pravidlo nastavené, možnosti zjednodušenia prístupu sa na paneli systémovej ponuky nezobrazia, avšak používatelia ich môžu sprístupniť na stránke Nastavenia.</translation>
+          Ak nie je toto pravidlo nastavené, možnosti dostupnosti sa v oblasti oznámení nezobrazia, avšak používatelia ich môžu sprístupniť na stránke Nastavenia.</translation>
 <translation id="8303314579975657113">Určuje, ktorá knižnica GSSAPI sa má použiť na overenie totožnosti protokolu HTTP. Môžete nastaviť buď len názov knižnice, alebo úplnú cestu.
 
           Ak nenastavíte žiadnu možnosť, prehliadač <ph name="PRODUCT_NAME"/> použije predvolený názov knižnice.</translation>

@@ -65,7 +65,6 @@
 <translation id="3293894718455402932">&quot;<ph name="EXTENSION"/>&quot; pourra accéder en lecture et en écriture aux fichiers images, vidéo et audio dans les dossiers sélectionnés.</translation>
 <translation id="7180611975245234373">Actualiser</translation>
 <translation id="4940047036413029306">Guillemet</translation>
-<translation id="6406467842708712906">Petit problème… Échec de la connexion. Impossible de récupérer les informations relatives à votre compte.</translation>
 <translation id="1497897566809397301">Autoriser le stockage des données locales (recommandé)</translation>
 <translation id="7627349730328142646">Activer les tests permettant au Centre de messagerie de toujours effectuer un défilement vers le haut lors de la suppression d'une notification</translation>
 <translation id="3275778913554317645">Ouvrir dans une fenêtre</translation>
@@ -171,7 +170,6 @@
 <translation id="3384773155383850738">Nombre maximal de suggestions</translation>
 <translation id="1014321050861012327">Enregistrer automatiquement les mots de passe</translation>
 <translation id="8677212948402625567">Tout réduire...</translation>
-<translation id="2056996954182910740">Activer le lanceur d'applications</translation>
 <translation id="7600965453749440009">Ne jamais traduire les pages rédigées en <ph name="LANGUAGE"/> </translation>
 <translation id="3208703785962634733">Non confirmé</translation>
 <translation id="620329680124578183">Ne pas charger (recommandé)</translation>
@@ -571,7 +569,6 @@ puis cliquez sur <ph name="BEGIN_BOLD"/>OK<ph name="END_BOLD"/>.</translation>
 <translation id="8206859287963243715">Mobile</translation>
 <translation id="5610637197759059204">Désactive les actualisations de page déclenchées par un défilement vertical prolongé du contenu.</translation>
 <translation id="6435285122322546452">Gérer les applications de kiosque…</translation>
-<translation id="5748409721703101646">Votre Chromebook ne parvient pas se connecter à Internet via le réseau <ph name="NETWORK_NAME"/>. Veuillez choisir un autre réseau. <ph name="LEARN_MORE_LINK_START"/>En savoir plus<ph name="LEARN_MORE_LINK_END"/></translation>
 <translation id="1064835277883315402">Rejoindre un réseau privé</translation>
 <translation id="872728358380751743">Cette option désactive la compatibilité avec l'encodage des flux vidéo à l'aide du matériel de la plate-forme dans Cast Streaming.</translation>
 <translation id="6508261954199872201">Application : <ph name="APP_NAME"/></translation>
@@ -746,6 +743,7 @@ Tous les utilisateurs doivent se déconnecter pour continuer.</translation>
 <translation id="5759728514498647443">Les documents envoyés pour impression via &quot;<ph name="APP_NAME"/>&quot; sont lisibles avec &quot;<ph name="APP_NAME"/>&quot;</translation>
 <translation id="2401053206567162910">Cette application n'est pas compatible avec cet appareil pour le moment, mais les petits lutins de Google Chrome sont à pied d'œuvre pour qu'elle le devienne rapidement.</translation>
 <translation id="3273410961255278341">Envoyer pour :</translation>
+<translation id="4255096080864111471">Indiquer le nombre maximal de mosaïques pour la zone qui vous intéresse</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Nouvel onglet</translation>
 <translation id="6567688344210276845">Impossible de charger l'icône &quot;<ph name="ICON"/>&quot; d'action de page.</translation>
@@ -1122,7 +1120,6 @@ Tous les utilisateurs doivent se déconnecter pour continuer.</translation>
 <translation id="5774515636230743468">Manifeste :</translation>
 <translation id="1313832887664610176">Connexion à Chromebox perdue</translation>
 <translation id="3465566417615315331">Cliquez sur votre photo</translation>
-<translation id="4960944339761782076">Utiliser les info-bulles pour les demandes d'autorisation</translation>
 <translation id="7474889694310679759">Clavier anglais canadien</translation>
 <translation id="1817871734039893258">Récupération de fichier Microsoft</translation>
 <translation id="2423578206845792524">En&amp;registrer l'image sous...</translation>
@@ -1337,7 +1334,7 @@ Calcul de la durée restante</translation>
 <translation id="813082847718468539">Afficher des informations à propos du site</translation>
 <translation id="127353061808977798">Polices et encodage</translation>
 <translation id="3122464029669770682">UC</translation>
-<translation id="4518677423782794009">Chrome plante, affiche des pages de démarrage inhabituelles, des barres d'outils ou des annonces inattendues dont vous n'arrivez pas à vous débarrasser, ou votre expérience de navigation est modifiée de toute autre manière ? Vous pourrez peut-être résoudre le problème en exécutant l'outil de nettoyage de Chrome.</translation>
+<translation id="4518677423782794009">Chrome plante, affiche des pages de démarrage inhabituelles, des barres d'outils ou des annonces inattendues dont vous n'arrivez pas à vous débarrasser, ou votre confort de navigation est modifié de toute autre manière ? Vous pourrez peut-être résoudre le problème en exécutant l'outil de nettoyage de Chrome.</translation>
 <translation id="6080689532560039067">Vérifier l'heure du système</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6802031077390104172"><ph name="USAGE"/> (<ph name="OID"/>)</translation>
@@ -1688,6 +1685,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="4811502511369621968">Adresse e-mail non valide. Veuillez la vérifier, puis réessayer.</translation>
 <translation id="175196451752279553">&amp;Rouvrir l'onglet fermé</translation>
 <translation id="8602851771975208551">Un autre programme sur votre ordinateur a ajouté une application qui risque de modifier le fonctionnement de Google Chrome.</translation>
+<translation id="9154967591629748964">Nombre maximal de mosaïques pour la zone qui vous intéresse</translation>
 <translation id="2655386581175833247">Certificat utilisateur :</translation>
 <translation id="5039804452771397117">Autoriser</translation>
 <translation id="5435964418642993308">Appuyer sur Entrée pour revenir en arrière et sur la touche de menu contextuel pour afficher l'historique</translation>
@@ -1795,7 +1793,6 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="8598687241883907630">Se déconnecter du compte Google…</translation>
 <translation id="3195445837372719522">Le domaine auquel appartient Chromebox pour la visioconférence est requis. Vous allez devoir vous connecter à votre compte.</translation>
 <translation id="7920092496846849526">Une demande d'autorisation a été envoyée à tes parents pour la consultation de cette page.</translation>
-<translation id="5984304957315422459">Petit problème… Échec de la connexion. Impossible de valider votre mot de passe.</translation>
 <translation id="9003677638446136377">Revérifier</translation>
 <translation id="9187827965378254003">Vraiment désolé, aucun prototype n'est disponible pour le moment.</translation>
 <translation id="6022526133015258832">Ouvrir en mode plein écran</translation>
@@ -1860,6 +1857,7 @@ Une fois que vous avez créé un compte utilisateur supervisé, vous pouvez gér
 <translation id="1901377140875308934">Se connecter à <ph name="SHORT_PRODUCT_NAME"/>…</translation>
 <translation id="5529098031581368697">Le fond d'écran actuel a été défini par <ph name="APP_NAME"/>.</translation>
 <translation id="5074318175948309511">Vous devrez peut-être actualiser cette page pour que les nouveaux paramètres soient appliqués.</translation>
+<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Aucune sélection</translation>
 <translation id="6405640832764359650">Activer la case à cocher permettant d'enregistrer des cartes Google Payments</translation>
 <translation id="1346104802985271895">Mode de saisie du vietnamien (TELEX)</translation>
@@ -2067,7 +2065,6 @@ Une fois que vous avez créé un compte utilisateur supervisé, vous pouvez gér
 <translation id="8551388862522347954">Licences</translation>
 <translation id="5525695896049981561">Oui, je le vois</translation>
 <translation id="1410616244180625362">Continuer à autoriser <ph name="HOST"/> à accéder à votre caméra</translation>
-<translation id="298577602575286468">Enregistrer le Chromebook</translation>
 <translation id="8494214181322051417">Nouveau !</translation>
 <translation id="7959874006162866942">Voulez-vous vraiment installer &quot;<ph name="PLUGIN_NAME"/>&quot; ? Veillez à installer uniquement les plug-ins de confiance.</translation>
 <translation id="2937174152333875430">Activer la synchronisation du lanceur d'applications</translation>
@@ -2277,7 +2274,6 @@ Une fois que vous avez créé un compte utilisateur supervisé, vous pouvez gér
 <translation id="7053983685419859001">Bloquer</translation>
 <translation id="7912024687060120840">Dans le dossier :</translation>
 <translation id="2485056306054380289">Certificat de l'autorité de certification du serveur :</translation>
-<translation id="5631861698741076898">Petit problème… La connexion a échoué, car elle a été configurée pour utiliser une URL non sécurisée (<ph name="BLOCKED_URL"/>).</translation>
 <translation id="6462109140674788769">Clavier grec</translation>
 <translation id="9191610850443814852">Active un paramètre Smart Lock permettant à votre Chromebook de détecter les téléphones à l'aide de la technologie Bluetooth Low Energy. Ce système permet de déverrouiller votre Chromebook quand votre téléphone se trouve à proximité.</translation>
 <translation id="2727712005121231835">Taille réelle</translation>
@@ -2336,7 +2332,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="5502500733115278303">Importés depuis Firefox</translation>
 <translation id="569109051430110155">Détection automatique</translation>
 <translation id="8597845839771543242">Format de propriété :</translation>
-<translation id="4408599188496843485">&amp;Aide</translation>
 <translation id="7969525169268594403">Slovène</translation>
 <translation id="5399158067281117682">Les codes PIN sont différents !</translation>
 <translation id="6277105963844135994">Délai d'expiration du réseau dépassé.</translation>
@@ -2451,7 +2446,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="2562685439590298522">Docs</translation>
 <translation id="8673383193459449849">Problème avec le serveur.</translation>
 <translation id="4060383410180771901">Le site Web ne parvient pas à gérer la demande associée à <ph name="URL"/>.</translation>
-<translation id="5774208114954065213">Vous allez annuler l'enregistrement de ce Chromebook auprès de Google afin de désactiver la possibilité de localiser l'appareil, de le verrouiller et d'effacer les données qu'il contient à distance. Cette opération requiert un redémarrage. Souhaitez-vous continuer ?</translation>
 <translation id="6710213216561001401">Précédent</translation>
 <translation id="1108600514891325577">&amp;Arrêter</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/> : <ph name="ERROR"/></translation>
@@ -2502,7 +2496,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="7434509671034404296">Options pour les développeurs</translation>
 <translation id="7668654391829183341">Appareil inconnu</translation>
 <translation id="2712173769900027643">Demander l'autorisation</translation>
-<translation id="2053298192223252950">Activer ou désactiver les éléments Material Design dans le chrome du navigateur</translation>
 <translation id="1790550373387225389">Activer le mode Présentation</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="8059178146866384858">Le fichier nommé &quot;$1&quot; existe déjà. Veuillez choisir un autre nom.</translation>
@@ -3263,7 +3256,7 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="3910699493603749297">Clavier khmer</translation>
 <translation id="5487982064049856365">Vous avez récemment changé de mot de passe. Veuillez vous connecter avec le nouveau mot de passe.</translation>
 <translation id="2345055320165338418">Si cette option est activée, les réponses à certains types de requêtes s'affichent directement dans la liste de suggestions de l'omnibox.</translation>
-<translation id="1585717515139318619">Un thème qui risque de modifier le fonctionnement de Chrome a été ajouté via un autre programme sur votre ordinateur
+<translation id="1585717515139318619">Un thème qui risque de modifier le fonctionnement de Chrome a été ajouté via un autre programme sur votre ordinateur.
 
 <ph name="EXTENSION_NAME"/></translation>
 <translation id="438503109373656455">Longchamp</translation>
@@ -3335,7 +3328,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="324743268744517458">Avertissement : Vous n'êtes pas connecté aux serveurs de production Google Payments. Les cartes émises ne seront pas valides.</translation>
 <translation id="4711094779914110278">Turc</translation>
 <translation id="2572032849266859634">L'accès en lecture seule à &quot;<ph name="VOLUME_NAME"/>&quot; a été accordé.</translation>
-<translation id="8193362611902704788">Activer le lanceur d'applications. Une fois ce paramètre activé, des raccourcis vers le lanceur d'applications sont créés dans le système d'exploitation.</translation>
 <translation id="5121130586824819730">Votre disque dur est saturé. Veuillez enregistrer à un autre emplacement ou libérer de l'espace sur le disque dur.</translation>
 <translation id="1875987452136482705">Cette option permet de désactiver la compatibilité avec la technologie WebRTC pour le décodage de flux vidéo au niveau du matériel de la plate-forme.</translation>
 <translation id="6164005077879661055">Tous les fichiers et les données locales associés à l'utilisateur supervisé seront définitivement supprimés en même temps que cet utilisateur. Le gestionnaire peut toujours accéder aux sites Web consultés par l'utilisateur supervisé et aux paramètres de celui-ci à l'adresse <ph name="MANAGEMENT_URL"/>.</translation>
@@ -3358,7 +3350,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="499165176004408815">Utiliser le mode Contraste élevé</translation>
 <translation id="2928940441164925372">Active la collecte passive de statistiques et d’événements liés aux performances, et propose un affichage graphique de ces données. Pour afficher les données, accédez à chrome://performance.</translation>
 <translation id="3289856944988573801">Pour rechercher des mises à jour, veuillez utiliser une connexion Ethernet ou Wi-Fi.</translation>
-<translation id="247500748408468353">Veuillez contacter votre administrateur ou réessayer.</translation>
 <translation id="450070808725753129">S'il est déjà répertorié en tant que programme autorisé à accéder au réseau,
         essayez de le supprimer de la liste, puis de le rajouter.</translation>
 <translation id="8300607741108698921">Configurer en une minute</translation>
@@ -3866,7 +3857,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="1064912851688322329">Se déconnecter du compte Google</translation>
 <translation id="1294298200424241932">Modifier les paramètres de confiance :</translation>
 <translation id="1407135791313364759">Tout ouvrir</translation>
-<translation id="1487997194203762088">Un problème est survenu lors de la connexion.</translation>
 <translation id="1434928358870966081">Désactiver le Canvas 2D avec accélération matérielle</translation>
 <translation id="331915893283195714">Autoriser tous les sites à désactiver le curseur de la souris</translation>
 <translation id="8978526688207379569">Plusieurs fichiers ont été téléchargés automatiquement via ce site</translation>
@@ -4034,7 +4024,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="3778740492972734840">Outils de &amp;développement</translation>
 <translation id="8335971947739877923">Exporter...</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN"/> est maintenant en mode plein écran et a désactivé le curseur de votre souris.</translation>
-<translation id="747416882205977201">Vous allez enregistrer ce Chromebook auprès de Google afin d'activer la possibilité de localiser l'appareil, de le verrouiller et d'effacer les données qu'il contient à distance. Cette opération requiert un redémarrage. Souhaitez-vous continuer ?</translation>
 <translation id="38275787300541712">Appuyez sur Entrée une fois l'opération terminée</translation>
 <translation id="7417705661718309329">Carte Google</translation>
 <translation id="4058793769387728514">Vérifier le document maintenant</translation>
@@ -4091,7 +4080,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="7180865173735832675">Personnaliser</translation>
 <translation id="7054808953701320293">OK, ne plus afficher</translation>
 <translation id="4903369323166982260">Exécuter l'outil de nettoyage de Chrome</translation>
-<translation id="144932861331386147">Connectez-vous à Internet pour mettre à jour votre Chromebook.</translation>
 <translation id="2938685643439809023">Mongol</translation>
 <translation id="5368720394188453070">Votre téléphone est verrouillé. Déverrouillez-le pour y accéder.</translation>
 <translation id="2070909990982335904">Les noms commençant par un point sont réservés au système. Veuillez sélectionner un autre nom.</translation>
@@ -4198,7 +4186,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="6557565812667414268">Activé uniquement pour les écrans à résolution élevée (PPP)</translation>
 <translation id="7331991248529612614">Activer l'animation du bouton du mode lecteur</translation>
 <translation id="5469954281417596308">Gestionnaire de favoris</translation>
-<translation id="106153153543631784">Saisissez à nouveau votre mot de passe pour mettre à jour votre profil Chromebook</translation>
 <translation id="3064388234319122767">Translittération (zdravo → здраво)</translation>
 <translation id="5425722269016440406">Vous devez être en ligne pour pouvoir désactiver Smart Lock, car ce paramètre est synchronisé avec votre téléphone et d'autres appareils. Pour commencer, veuillez vous connecter à un réseau.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
@@ -4768,7 +4755,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME"/> ?</translation>
 <translation id="7763146744708046348">Ne pas agréger les données (cela peut prendre du temps !)</translation>
 <translation id="203165784383062719">&amp;Options du correcteur orthographique</translation>
 <translation id="5626134646977739690">Nom :</translation>
-<translation id="1070377999570795893">Une extension qui risque de modifier le fonctionnement de Chrome a été ajoutée via un autre programme sur votre ordinateur
+<translation id="1070377999570795893">Une extension qui risque de modifier le fonctionnement de Chrome a été ajoutée via un autre programme sur votre ordinateur.
 
 <ph name="EXTENSION_NAME"/></translation>
 <translation id="5854409662653665676">Si vous rencontrez des problèmes fréquents avec ce module, vous pouvez tenter d'y remédier en suivant la procédure ci-après :</translation>
@@ -4819,7 +4806,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME"/> ?</translation>
 <translation id="7973320858902175766">Application de correctifs aux composants</translation>
 <translation id="3654045516529121250">Lire vos paramètres d'accessibilité</translation>
 <translation id="2113479184312716848">&amp;Ouvrir un fichier...</translation>
-<translation id="4346759900458392803">Annuler l'enregistrement du Chromebook</translation>
 <translation id="884264119367021077">Adresse de livraison</translation>
 <translation id="634208815998129842">Gestionnaire de tâches</translation>
 <translation id="2735698359135166290">Clavier roumain standard</translation>
@@ -4912,7 +4898,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME"/> ?</translation>
 <translation id="7209475358897642338">Quelle est votre langue ?</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME"/> (supervisé)</translation>
 <translation id="9149866541089851383">Modifier...</translation>
-<translation id="8735794438432839558">Veuillez vous connecter à Internet pour accéder à votre Chromebook.</translation>
 <translation id="3356395591469757189">Afficher les suggestions de saisie automatique au-dessus du clavier</translation>
 <translation id="7939412583708276221">Conserver quand même</translation>
 <translation id="8579285237314169903">Synchronisation de <ph name="NUMBER_OF_FILES"/> éléments en cours…</translation>
@@ -5523,7 +5508,6 @@ Il est possible que certaines fonctionnalités ne soient pas disponibles. Veuill
 <translation id="6793649375377511437">Informations sur la présence simultanée Google</translation>
 <translation id="4335713051520279344">Cet ordinateur va être réinitialisé dans 1 seconde.
 Pour poursuivre l'exploration, veuillez appuyer sur n'importe quelle touche.</translation>
-<translation id="4775135101712609478">Afficher les demandes d'autorisations de contenu (par exemple, concernant les notifications, les quotas, l'utilisation de la caméra ou du micro) dans des info-bulles, et non dans des barres d'info</translation>
 <translation id="7233715388668391168">Activer ou désactiver la saisie gestuelle pour le clavier virtuel</translation>
 <translation id="6264485186158353794">Retour à la sécurité</translation>
 <translation id="7705524343798198388">VPN</translation>

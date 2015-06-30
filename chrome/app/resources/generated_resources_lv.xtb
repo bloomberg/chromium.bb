@@ -65,7 +65,6 @@
 <translation id="3293894718455402932">Paplašinājums “<ph name="EXTENSION"/>” varēs lasīt un rakstīt attēlus, videoklipus un skaņas failus atzīmētajās mapēs.</translation>
 <translation id="7180611975245234373">Atsvaidzināt</translation>
 <translation id="4940047036413029306">Jaut.z.</translation>
-<translation id="6406467842708712906">Diemžēl neizdevās pierakstīties, jo nevarēja izgūt jūsu konta datus.</translation>
 <translation id="1497897566809397301">Atļaut saglabāt lokālos datus (ieteicams)</translation>
 <translation id="7627349730328142646">Iespējot eksperimentus, kad paziņojumu noņemšanas gadījumā ziņojumu centrs vienmēr ritinās uz augšu.</translation>
 <translation id="3275778913554317645">Atvērt kā logu</translation>
@@ -171,7 +170,6 @@
 <translation id="3384773155383850738">Maksimālais ierosinājumu skaits</translation>
 <translation id="1014321050861012327">Automātiska paroļu saglabāšana.</translation>
 <translation id="8677212948402625567">Sakļaut visu...</translation>
-<translation id="2056996954182910740">Iespējot lietotņu palaidēju</translation>
 <translation id="7600965453749440009">Nekad netulkot saturu, kas rakstīts <ph name="LANGUAGE"/> valodā</translation>
 <translation id="3208703785962634733">Neapstiprināts</translation>
 <translation id="620329680124578183">Nelādēt (ieteicams)</translation>
@@ -575,7 +573,6 @@ Lūdzu, pārbaudiet savu e-pasta iesūtni (<ph name="ACCOUNT_EMAIL"/>), lai skat
 <translation id="8206859287963243715">Mobilais tālrunis</translation>
 <translation id="5610637197759059204">Atspējot lapas atkārtotas ielādes gadījumus, kas tiek aktivizēti, vertikāli ritinot pāri saturam.</translation>
 <translation id="6435285122322546452">Pārvaldīt kioska lietojumprogrammas...</translation>
-<translation id="5748409721703101646">Jūsu Chromebook datorā nevar izveidot savienojumu ar internetu, izmantojot tīklu <ph name="NETWORK_NAME"/>. Lūdzu, izvēlieties citu tīklu. <ph name="LEARN_MORE_LINK_START"/>Uzziniet vairāk<ph name="LEARN_MORE_LINK_END"/>.</translation>
 <translation id="1064835277883315402">Pievienoties privātam tīklam</translation>
 <translation id="872728358380751743">Šī opcija atspējo Cast Streaming atbalstu video plūsmu dekodēšanai, kas tiek veikta, izmantojot platformas aparatūru.</translation>
 <translation id="6508261954199872201">Lietojumprogramma: <ph name="APP_NAME"/></translation>
@@ -748,6 +745,7 @@ Lai turpinātu, visiem lietotājiem ir jāizrakstās.</translation>
 <translation id="5759728514498647443">Dokumenti, kurus sūtāt drukāšanai, izmantojot lietotni <ph name="APP_NAME"/>, var tikt lasīti lietotnē <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Šī lietotne pašlaik netiek atbalstīta šajā ierīcē, taču Chrome izstrādātāji strādā, lai drīzumā padarītu to pieejamu.</translation>
 <translation id="3273410961255278341">Sūtīt:</translation>
+<translation id="4255096080864111471">Norāda maksimālo mozaīkas attēlu skaitu interesējošajam apgabalam.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Jauna cilne</translation>
 <translation id="6567688344210276845">Nevarēja ielādēt lapas darbības ikonu “<ph name="ICON"/>”.</translation>
@@ -1124,7 +1122,6 @@ Atlicis: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="5774515636230743468">Manifests:</translation>
 <translation id="1313832887664610176">Zaudēts savienojums ar Chromebox datoru</translation>
 <translation id="3465566417615315331">Noklikšķiniet uz sava fotoattēla.</translation>
-<translation id="4960944339761782076">Izmantot burbuļus atļauju pieprasījumiem</translation>
 <translation id="7474889694310679759">Kanādas angļu valodas tastatūra</translation>
 <translation id="1817871734039893258">Microsoft failu atkopšana</translation>
 <translation id="2423578206845792524">Saglabāt attēlu kā ...</translation>
@@ -1688,6 +1685,7 @@ Tiek rēķināts atlikušais laiks</translation>
 <translation id="4811502511369621968">E-pasta adrese nav derīga. Lūdzu, pārbaudiet to un mēģiniet vēlreiz.</translation>
 <translation id="175196451752279553">Vēlr&amp;eiz atvērt aizvērto cilni</translation>
 <translation id="8602851771975208551">Cita datorā instalēta programma ir izraisījusi tādas lietotnes pievienošanu, kas var ietekmēt pārlūkprogrammas Chrome darbību.</translation>
+<translation id="9154967591629748964">Maksimālais mozaīkas attēlu skaits interesējošajam apgabalam</translation>
 <translation id="2655386581175833247">Lietotāja sertifikāts:</translation>
 <translation id="5039804452771397117">Atļaut</translation>
 <translation id="5435964418642993308">Nospiediet taustiņu Enter, lai atgrieztos. Nospiediet kontekstizvēlnes taustiņu, lai redzētu vēsturi</translation>
@@ -1795,7 +1793,6 @@ Es uzskatu, ka šai vietnei nav jābūt bloķētai.</translation>
 <translation id="8598687241883907630">Atvienot savu Google kontu...</translation>
 <translation id="3195445837372719522">Ir jānorāda, kurā domēnā darbojas sistēma “Chromebox sapulcēm”. Lai to izdarītu, jums būs jāpierakstās savā kontā.</translation>
 <translation id="7920092496846849526">Jūs lūdzāt vienam no vecākiem atļauju apmeklēt šo lapu.</translation>
-<translation id="5984304957315422459">Diemžēl pierakstīšanās neizdevās, jo nevarēja verificēt jūsu paroli.</translation>
 <translation id="9003677638446136377">Pārbaudīt vēlreiz</translation>
 <translation id="9187827965378254003">Izskatās, ka pašlaik nav pieejams neviens eksperiments.</translation>
 <translation id="6022526133015258832">Atvērt pilnekrāna režīmu</translation>
@@ -1860,6 +1857,7 @@ Kad esat izveidojis uzraudzītu lietotāju, varat pārvaldīt tā iestatījumus 
 <translation id="1901377140875308934">Pierakstīties pakalpojumā <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Pašreizējo fona tapeti iestatīja <ph name="APP_NAME"/></translation>
 <translation id="5074318175948309511">Lai jaunie iestatījumi tiktu piemēroti, iespējams, šī lapa būs jāielādē atkārtoti.</translation>
+<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Nav atlasīts</translation>
 <translation id="6405640832764359650">Iespējot Google Payments kartes saglabāšanas izvēles rūtiņu</translation>
 <translation id="1346104802985271895">Vjetnamiešu valodas ievades metode (TELEX)</translation>
@@ -2067,7 +2065,6 @@ Kad esat izveidojis uzraudzītu lietotāju, varat pārvaldīt tā iestatījumus 
 <translation id="8551388862522347954">Licences</translation>
 <translation id="5525695896049981561">Jā, es to redzu</translation>
 <translation id="1410616244180625362">Arī turpmāk ļaut vietnei <ph name="HOST"/> piekļūt kamerai</translation>
-<translation id="298577602575286468">Chromebook datora reģistrēšana</translation>
 <translation id="8494214181322051417">Jaunums!</translation>
 <translation id="7959874006162866942">Vai tiešām vēlaties instalēt spraudni <ph name="PLUGIN_NAME"/>? Instalējiet tikai tos spraudņus, kuriem uzticaties.</translation>
 <translation id="2937174152333875430">Iespējot lietotņu palaidēja sinhronizāciju</translation>
@@ -2274,7 +2271,6 @@ Kad esat izveidojis uzraudzītu lietotāju, varat pārvaldīt tā iestatījumus 
 <translation id="7053983685419859001">Bloķēt</translation>
 <translation id="7912024687060120840">Mapē:</translation>
 <translation id="2485056306054380289">Servera CA sertifikāts:</translation>
-<translation id="5631861698741076898">Diemžēl neizdevās pierakstīties, jo konfigurācijā tika norādīts izmantot nedrošu URL (<ph name="BLOCKED_URL"/>).</translation>
 <translation id="6462109140674788769">Grieķu valodas tastatūra</translation>
 <translation id="9191610850443814852">Iespējo Smart Lock iestatījumu, kas ļauj Chromebook datorā noteikt tālruņus, izmantojot tehnoloģiju Bluetooth Low Energy, lai atbloķētu Chromebook datoru, kad tālrunis atrodas tā tuvumā.</translation>
 <translation id="2727712005121231835">Faktiskais izmērs</translation>
@@ -2330,7 +2326,6 @@ Kad esat izveidojis uzraudzītu lietotāju, varat pārvaldīt tā iestatījumus 
 <translation id="5502500733115278303">Importēts no Firefox</translation>
 <translation id="569109051430110155">Automātiska noteikšana</translation>
 <translation id="8597845839771543242">Īpašuma formāts:</translation>
-<translation id="4408599188496843485">P&amp;alīdzība</translation>
 <translation id="7969525169268594403">Slovēņu valoda</translation>
 <translation id="5399158067281117682">PIN nav pareizs.</translation>
 <translation id="6277105963844135994">Radās tīkla noildze.</translation>
@@ -2445,7 +2440,6 @@ Kad esat izveidojis uzraudzītu lietotāju, varat pārvaldīt tā iestatījumus 
 <translation id="2562685439590298522">Dokumenti</translation>
 <translation id="8673383193459449849">Radās servera problēma.</translation>
 <translation id="4060383410180771901">Šī vietne nevar apstrādāt <ph name="URL"/> pieprasījumu.</translation>
-<translation id="5774208114954065213">Jūs gatavojaties atsaukt šī Chromebook datora reģistrāciju Google tīklā, lai atspējotu iespēju attāli atrast un bloķēt ierīci, kā arī attāli notīrīt ierīces datus. Lai pabeigtu reģistrācijas atsaukšanu, dators būs jārestartē. Vai vēlaties turpināt?</translation>
 <translation id="6710213216561001401">Iepriekšējais</translation>
 <translation id="1108600514891325577">&amp;Apturēt</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
@@ -2496,7 +2490,6 @@ Kad esat izveidojis uzraudzītu lietotāju, varat pārvaldīt tā iestatījumus 
 <translation id="7434509671034404296">Izstrādātājs</translation>
 <translation id="7668654391829183341">Nezināma ierīce</translation>
 <translation id="2712173769900027643">Lūgt atļauju</translation>
-<translation id="2053298192223252950">Iespējot vai atspējot materiāla dizaina elementus pārlūka saskarnē.</translation>
 <translation id="1790550373387225389">Atvērt prezentācijas režīmu</translation>
 <translation id="6447842834002726250">Sīkfaili</translation>
 <translation id="8059178146866384858">Fails ar nosaukumu $1 jau eksistē. Izvēlieties citu nosaukumu.</translation>
@@ -3321,7 +3314,6 @@ Kad esat izveidojis uzraudzītu lietotāju, varat pārvaldīt tā iestatījumus 
 <translation id="324743268744517458">Brīdinājums. Nav izveidots savienojums ar Google Payments izstrādes serveriem. Izsniegtās kartītes nebūs derīgas.</translation>
 <translation id="4711094779914110278">Turku valoda</translation>
 <translation id="2572032849266859634">Tika piešķirta tikai lasīšanas piekļuve krātuvei <ph name="VOLUME_NAME"/>.</translation>
-<translation id="8193362611902704788">Iespējot lietotņu palaidēju. Kad lietotņu palaidējs tiek iespējots, uz to tiek izveidotas operētājsistēmas saīsnes.</translation>
 <translation id="5121130586824819730">Cietais disks ir pilns. Saglabājiet citā atrašanās vietā vai atbrīvojiet vietu cietajā diskā.</translation>
 <translation id="1875987452136482705">Šī opcija atspējo WebRTC atbalstu video plūsmu dekodēšanai, kas tiek veikta, izmantojot platformas aparatūru.</translation>
 <translation id="6164005077879661055">Visi faili un lokālie dati, kas ir saistīti ar uzraudzīto lietotāju, tiks neatgriezeniski dzēsti, tiklīdz uzraudzītais lietotājs tiks noņemts. Iespējams, pārzinis joprojām varēs skatīt šī uzraudzītā lietotāja apmeklētās vietnes un iestatījumus (vietnē <ph name="MANAGEMENT_URL"/>).</translation>
@@ -3344,7 +3336,6 @@ Kad esat izveidojis uzraudzītu lietotāju, varat pārvaldīt tā iestatījumus 
 <translation id="499165176004408815">Izmantot augsta kontrasta režīmu</translation>
 <translation id="2928940441164925372">Iespējojiet ar veiktspēju saistītu datu un notikumu pasīvu apkopošanu un skatiet šo informāciju grafiskā veidā. Lai skatītu datus, apmeklējiet lapu chrome://performance.</translation>
 <translation id="3289856944988573801">Lai pārbaudītu, vai ir pieejami atjauninājumi, lūdzu, izmantojiet tīklu Ethernet vai Wi-Fi.</translation>
-<translation id="247500748408468353">Lūdzu, sazinieties ar savu administratoru vai mēģiniet vēlreiz.</translation>
 <translation id="450070808725753129">Ja tā jau ir norādīta kā programma, kurai ir atļauts piekļūt tīklam, pamēģiniet
         noņemt to no saraksta un no jauna pievienot.</translation>
 <translation id="8300607741108698921">1 minūtes iestatīšana</translation>
@@ -3854,7 +3845,6 @@ Vēl jālādē: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="1064912851688322329">Atvienot savu Google kontu</translation>
 <translation id="1294298200424241932">Rediģēt uzticēšanās iestatījumus:</translation>
 <translation id="1407135791313364759">Atvērt visas</translation>
-<translation id="1487997194203762088">Neizdevās pierakstīties.</translation>
 <translation id="1434928358870966081">Atspējot paātrinātu 2D audeklu</translation>
 <translation id="331915893283195714">Ļaut visām vietnēm atspējot peles kursoru</translation>
 <translation id="8978526688207379569">Šī vietne automātiski lejupielādēja vairākus failus.</translation>
@@ -4022,7 +4012,6 @@ Vēl jālādē: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="3778740492972734840">Izstrā&amp;dātāja rīki</translation>
 <translation id="8335971947739877923">Eksportēt...</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN"/> tagad ir redzams pilnekrāna režīmā un ir atspējojis jūsu peles kursoru.</translation>
-<translation id="747416882205977201">Jūs gatavojaties reģistrēt šo Chromebook datoru Google tīklā, lai varētu attāli atrast un bloķēt ierīci, kā arī attāli notīrīt ierīces datus. Lai veiktu reģistrēšanu, dators būs jārestartē. Vai vēlaties turpināt?</translation>
 <translation id="38275787300541712">Kad pabeigts, nospiediet Enter</translation>
 <translation id="7417705661718309329">Google karte</translation>
 <translation id="4058793769387728514">Pārbaudīt dokumentu tagad</translation>
@@ -4079,7 +4068,6 @@ Vēl jālādē: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="7180865173735832675">Piemērot</translation>
 <translation id="7054808953701320293">Sapratu, turpmāk vairs nerādīt!</translation>
 <translation id="4903369323166982260">Palaist Chrome tīrīšanas rīku</translation>
-<translation id="144932861331386147">Lūdzu, izveidojiet savienojumu ar internetu, lai atjauninātu Chromebook datoru.</translation>
 <translation id="2938685643439809023">Mongoļu valoda</translation>
 <translation id="5368720394188453070">Jūsu tālrunis ir bloķēts. Lai tajā ieietu, atbloķējiet to.</translation>
 <translation id="2070909990982335904">Nosaukumi, kas sākas ar punktu, tiek rezervēti sistēmai. Izvēlieties citu nosaukumu.</translation>
@@ -4185,7 +4173,6 @@ Vēl jālādē: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="6557565812667414268">Iespējots tikai augsta DPI displejos</translation>
 <translation id="7331991248529612614">Iespējot lasītāja režīma pogas animāciju</translation>
 <translation id="5469954281417596308">Grāmatzīmju pārvaldnieks</translation>
-<translation id="106153153543631784">Lai atjauninātu savu Chromebook datora profilu, lūdzu, atkārtoti ievadiet paroli.</translation>
 <translation id="3064388234319122767">Transliterācija (zdravo → здраво)</translation>
 <translation id="5425722269016440406">Lai izslēgtu Smart Lock, jums ir jābūt tiešsaistē, jo šis iestatījums ir sinhronizēts ar jūsu tālruni un citām ierīcēm. Lūdzu, vispirms izveidojiet savienojumu ar tīklu.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
@@ -4808,7 +4795,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation
 <translation id="7973320858902175766">Komponentu ielāpu instalētājs</translation>
 <translation id="3654045516529121250">Lasīt jūsu piekļuves iestatījumus</translation>
 <translation id="2113479184312716848">Atvērt failu...</translation>
-<translation id="4346759900458392803">Chromebook datora reģistrācijas atsaukšana</translation>
 <translation id="884264119367021077">Piegādes adrese</translation>
 <translation id="634208815998129842">Uzdevumu pārvaldnieks</translation>
 <translation id="2735698359135166290">Rumāņu standarta tastatūra</translation>
@@ -4901,7 +4887,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation
 <translation id="7209475358897642338">Kāda ir jūsu valoda?</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME"/> (uzraudzītais)</translation>
 <translation id="9149866541089851383">Rediģēt ...</translation>
-<translation id="8735794438432839558">Lai pierakstītos Chromebook datorā, izveidojiet savienojumu ar internetu.</translation>
 <translation id="3356395591469757189">Automātiski aizpildīt ieteikumus tastatūras piederumu skatā</translation>
 <translation id="7939412583708276221">Tik un tā saglabāt</translation>
 <translation id="8579285237314169903">Notiek <ph name="NUMBER_OF_FILES"/> vienumu sinhronizēšana...</translation>
@@ -5515,7 +5500,6 @@ Iespējams, dažas funkcijas nebūs pieejamas. Pārbaudiet, vai profils eksistē
 <translation id="6793649375377511437">Informācija par Google līdzdalību</translation>
 <translation id="4335713051520279344">Šis dators tiks atiestatīts pēc vienas sekundes.
 Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
-<translation id="4775135101712609478">Rādīt satura atļaujas pieprasījumus (piemēram, par paziņojumiem, kvotām, kameras lietošanu, mikrofona lietošanu) burbuļos, nevis informācijas joslā.</translation>
 <translation id="7233715388668391168">Iespējot/atspējot ievadi ar žestiem virtuālajai tastatūrai.</translation>
 <translation id="6264485186158353794">Atpakaļ drošībā</translation>
 <translation id="7705524343798198388">VPN</translation>

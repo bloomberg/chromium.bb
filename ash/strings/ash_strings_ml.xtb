@@ -85,11 +85,13 @@
 <translation id="3087734570205094154">താഴെ</translation>
 <translation id="3742055079367172538">സ്‌ക്രീൻഷോട്ട് എടുത്തു</translation>
 <translation id="8878886163241303700">സ്‌ക്രീൻ വിപുലീകരിക്കുന്നു</translation>
+<translation id="714034171374937760">Chromebase</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (Bluetooth)</translation>
 <translation id="3967919079500697218">സ്ക്രീൻഷോട്ടുകൾ എടുക്കാനുള്ള കഴിവ് നിങ്ങളുടെ അഡ്‌മിനിസ്ട്രേറ്റർ പ്രവർത്തനരഹിതമാക്കി.</translation>
 <translation id="372094107052732682">പുറത്തുപോകുന്നതിന് രണ്ടുതവണ Ctrl+Shift+Q അമർത്തുക.</translation>
 <translation id="923686485342484400">സൈൻ ഔട്ട് ചെയ്യുന്നതിന് രണ്ടു‌തവണ Control Shift Q അമർത്തുക.</translation>
 <translation id="9194617393863864469">മറ്റൊരു ഉപയോക്താവായി സൈൻ ഇൻ ചെയ്യുക...</translation>
+<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6803622936009808957">പിന്തുണയ്‌ക്കുന്ന മിഴിവുകൾ കണ്ടെത്താത്തതിനാൽ പ്രദർശനങ്ങൾ പ്രതിഫലിപ്പിക്കാനായില്ല. പകരം വിപുലീകൃത ഡെസ്‌ക്‌ടോപ്പ് നൽകി.</translation>
 <translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (പ്രാഥമികം)</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>% ശേഷിക്കുന്നു</translation>
@@ -103,6 +105,7 @@
 <translation id="2825619548187458965">ഷെൽഫ്</translation>
 <translation id="2614835198358683673">ഓണായിരിക്കുമ്പോൾ നിങ്ങളുടെ Chromebook ചാർജ് ചെയ്യാനിടയില്ല. ഔദ്യോഗിക ചാർജ്ജർ ഉപയോഗിക്കുന്നത് പരിഗണിക്കുക.</translation>
 <translation id="4430019312045809116">അളവ്</translation>
+<translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">ലഭ്യമായ എല്ലാ ഉപയോക്താക്കളേയും ഈ സെഷനിൽ ഇതിനകം ചേർത്തു.</translation>
 <translation id="1383876407941801731">തിരയൂ</translation>
 <translation id="2204305834655267233">നെറ്റ്‌വർക്ക് വിവരം</translation>
@@ -145,6 +148,7 @@
 <translation id="3019353588588144572">ബാറ്ററി പൂർണ്ണമായി ചാർജ്ജാകുന്നതിന് ശേഷിക്കുന്ന സമയം, <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">സ്‌ക്രീൻ മാഗ്‌നിഫയർ</translation>
 <translation id="882279321799040148">കാണുന്നതിന് ക്ലിക്കുചെയ്യുക</translation>
+<translation id="5011233892417813670">Chromebook</translation>
 <translation id="1753067873202720523">നിങ്ങളുടെ Chromebook ഓണായിരിക്കുമ്പോൾ ചാർജ്ജുചെയ്യാനിടയില്ല.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/>, <ph name="SPECIFIED_RESOLUTION"/> എന്നതിനെ പിന്തുണയ്‌ക്കുന്നില്ല. റസലൂഷൻ <ph name="FALLBACK_RESOLUTION"/> എന്നതിലേക്ക് മാറ്റി.</translation>
 <translation id="1602076796624386989">മൊബൈൽ ഡാറ്റ പ്രാപ്‌തമാക്കുക</translation>
@@ -184,6 +188,7 @@
 <translation id="5947494881799873997">പഴയപടിയാക്കുക</translation>
 <translation id="7593891976182323525">തിരയൽ അല്ലെങ്കിൽ Shift</translation>
 <translation id="7649070708921625228">സഹായം</translation>
+<translation id="164969095109328410">Chrome ഉപകരണം</translation>
 <translation id="3050422059534974565">CAPS LOCK ഓൺ ആണ്.
 റദ്ദാക്കുന്നതിന് തിരയൽ അല്ലെങ്കിൽ Shift അമർത്തുക.</translation>
 <translation id="397105322502079400">കണക്കാക്കുന്നു...</translation>

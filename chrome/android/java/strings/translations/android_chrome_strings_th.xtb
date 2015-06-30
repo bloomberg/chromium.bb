@@ -211,7 +211,6 @@
 <translation id="5771382037724542929">คุณต้องการแทนที่ <ph name="FILE_NAME"/> ที่มีอยู่ใน <ph name="DIRECTORY_NAME"/> ไหม</translation>
 <translation id="8627706565932943526">ข้อผิดพลาดในการซิงค์</translation>
 <translation id="1807246157184219062">สว่าง</translation>
-<translation id="9219103736887031265">ภาพ</translation>
 <translation id="2904413602477443379">เลือกโฟลเดอร์</translation>
 <translation id="7053983685419859001">บล็อก</translation>
 <translation id="8374821112118309944">คุณต้องอัปเดต TalkBack เป็นเวอร์ชันใหม่</translation>
@@ -366,7 +365,6 @@
 <translation id="3158619413803296679">เลือกบุ๊กมาร์ก</translation>
 <translation id="6138140242378429169">ทำให้หน้าเหมาะกับอุปกรณ์เคลื่อนที่</translation>
 <translation id="5345040418939504969">ลบ <ph name="BOOKMARK_TITLE"/> แล้ว</translation>
-<translation id="7232255641409319872">อนุญาตรูปภาพบนเว็บไซต์ที่คุณระบุขณะที่บล็อกรูปภาพสำหรับเว็บอื่นๆ ที่เหลือ</translation>
 <translation id="2360035970720276770">ดาวน์โหลดได้เฉพาะ URL แบบ HTTP หรือ HTTPS</translation>
 <translation id="7926911226829060241">กำลังซิงค์บุ๊กมาร์กที่เปิด ประวัติการเข้าชม รหัสผ่าน และอื่นๆ กับบัญชี Google</translation>
 <translation id="4871370605780490696">เพิ่มบุ๊กมาร์ก</translation>

@@ -211,7 +211,6 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="5771382037724542929">Chcete nahradit existující soubor <ph name="FILE_NAME"/> v adresáři <ph name="DIRECTORY_NAME"/>?</translation>
 <translation id="8627706565932943526">Chyba synchronizace</translation>
 <translation id="1807246157184219062">Světlé</translation>
-<translation id="9219103736887031265">Obrázky</translation>
 <translation id="2904413602477443379">Zvolit složku</translation>
 <translation id="7053983685419859001">Blokovat</translation>
 <translation id="8374821112118309944">Aplikaci TalkBack je potřeba aktualizovat na novější verzi.</translation>
@@ -366,7 +365,6 @@ Ukončíte jej stisknutím tlačítka Zpět.</translation>
 <translation id="3158619413803296679">Vyberte záložku</translation>
 <translation id="6138140242378429169">Optimalizovat stránku pro mobily</translation>
 <translation id="5345040418939504969">Záložka <ph name="BOOKMARK_TITLE"/> byla smazána</translation>
-<translation id="7232255641409319872">Povolit obrázky na webech, které uvedete, ale na zbytku webu jej blokovat</translation>
 <translation id="2360035970720276770">Lze stahovat jen adresy URL typu http nebo https</translation>
 <translation id="7926911226829060241">Záložky, historie, hesla a další údaje se synchronizují s vaším účtem Google.</translation>
 <translation id="4871370605780490696">Přidat záložku</translation>

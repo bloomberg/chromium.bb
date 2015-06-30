@@ -65,7 +65,6 @@
 <translation id="3293894718455402932">A(z) „<ph name="EXTENSION"/>” képeket, videókat és hangfájlokat olvashat és írhat a megjelölt mappákban.</translation>
 <translation id="7180611975245234373">Frissítés</translation>
 <translation id="4940047036413029306">Idézőjel</translation>
-<translation id="6406467842708712906">Hoppá, nem sikerült bejelentkezni, mert a fiókadatokat nem lehetett lekérni.</translation>
 <translation id="1497897566809397301">Helyi adatok mentésének engedélyezése (ajánlott)</translation>
 <translation id="7627349730328142646">Kísérletek engedélyezése, melyek során az Üzenetközpont mindig felfelé görget egy értesítés eltávolítása után.</translation>
 <translation id="3275778913554317645">Megnyitás ablakként</translation>
@@ -171,7 +170,6 @@
 <translation id="3384773155383850738">Maximális javaslatszám</translation>
 <translation id="1014321050861012327">Jelszavak automatikus mentése.</translation>
 <translation id="8677212948402625567">Összes listanézete...</translation>
-<translation id="2056996954182910740">Az Alkalmazásindító engedélyezése.</translation>
 <translation id="7600965453749440009">Soha ne fordítsa le a(z) <ph name="LANGUAGE"/> nyelvű szöveget</translation>
 <translation id="3208703785962634733">Nincs megerősítve</translation>
 <translation id="620329680124578183">Ne töltse be (ajánlott)</translation>
@@ -568,7 +566,6 @@
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="5610637197759059204">A függőlegesen túlgörgetett tartalmak által aktivált oldalbetöltések letiltása.</translation>
 <translation id="6435285122322546452">Kioszkalkalmazások kezelése...</translation>
-<translation id="5748409721703101646">Chromebookja nem tud kapcsolódni az internetre a következőn át: <ph name="NETWORK_NAME"/>. Válasszon másik hálózatot. <ph name="LEARN_MORE_LINK_START"/>További információ<ph name="LEARN_MORE_LINK_END"/></translation>
 <translation id="1064835277883315402">Csatlakozás magánhálózathoz</translation>
 <translation id="872728358380751743">Ez a beállítás letiltja a video-adatfolyamok hardveresen történő kódolását a Cast Streamingben.</translation>
 <translation id="6508261954199872201">Alkalmazás: <ph name="APP_NAME"/></translation>
@@ -742,6 +739,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="5759728514498647443">A(z) <ph name="APP_NAME"/> alkalmazáson keresztül nyomtatásra küldött dokumentumait a(z) <ph name="APP_NAME"/> is elolvashatja.</translation>
 <translation id="2401053206567162910">Az alkalmazást az eszköz jelenleg nem támogatja, de a Chrome-gnómok keményen dolgoznak azon, hogy hamarosan működjön.</translation>
 <translation id="3273410961255278341">Küldés:</translation>
+<translation id="4255096080864111471">Egy érdeklődési terület maximális mozaikszámának meghatározása.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Új lap</translation>
 <translation id="6567688344210276845">Nem sikerült a(z) '<ph name="ICON"/>' ikon betöltése az oldalművelethez.</translation>
@@ -1117,7 +1115,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="5774515636230743468">Megnyilvánulás:</translation>
 <translation id="1313832887664610176">Elveszett a Chromebox eszközzel a kapcsolat</translation>
 <translation id="3465566417615315331">Kattintson a képére</translation>
-<translation id="4960944339761782076">Buborékok használata az engedélykérésekhez</translation>
 <translation id="7474889694310679759">Kanadai angol billentyűzet</translation>
 <translation id="1817871734039893258">Microsoft - fájlhelyreállítás</translation>
 <translation id="2423578206845792524">Ké&amp;p mentése másként...</translation>
@@ -1681,6 +1678,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="4811502511369621968">Érvénytelen e-mail cím. Ellenőrizze, majd próbálja újra.</translation>
 <translation id="175196451752279553">Bezárt lap m&amp;egnyitása</translation>
 <translation id="8602851771975208551">A számítógépen lévő egyik program olyan alkalmazást adott hozzá, amely módosíthatja a Chrome működését.</translation>
+<translation id="9154967591629748964">Egy érdeklődési terület maximális mozaikszáma</translation>
 <translation id="2655386581175833247">Felhasználói tanúsítvány:</translation>
 <translation id="5039804452771397117">Engedélyezés</translation>
 <translation id="5435964418642993308">A visszatéréshez nyomja meg az Entert, az előzmények megtekintéséhez a helyi menü billentyűt</translation>
@@ -1786,7 +1784,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="8598687241883907630">Google-fiók leválasztása...</translation>
 <translation id="3195445837372719522">A videokonferenciákhoz készült Chromebox eszköz tudni szeretné, milyen domainhez tartozik. Ehhez be kell jelentkeznie fiókjába.</translation>
 <translation id="7920092496846849526">Megkérdezted a szülőt, hogy meg szabad-e látogatnod ezt az oldalt.</translation>
-<translation id="5984304957315422459">Hoppá! Nem tudtuk bejelentkeztetni. A bejelentkezés meghiúsult, mivel nem lehetett ellenőrizni a jelszavát.</translation>
 <translation id="9003677638446136377">Ellenőrzés újra</translation>
 <translation id="9187827965378254003">Jaj, úgy tűnik, pillanatnyilag nincs elérhető kísérlet.</translation>
 <translation id="6022526133015258832">Megnyitás teljes képernyőn</translation>
@@ -1851,6 +1848,7 @@ Ha létrehozott egy felügyelt felhasználót, annak beállításait bármikor, 
 <translation id="1901377140875308934">Bejelentkezés a <ph name="SHORT_PRODUCT_NAME"/>-ba...</translation>
 <translation id="5529098031581368697">Az aktuális háttérképet a(z) „<ph name="APP_NAME"/>” állította be</translation>
 <translation id="5074318175948309511">Előfordulhat, hogy az új beállítások életbe lépéséhez az oldal újratöltése szükséges.</translation>
+<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Nincs kiválasztva</translation>
 <translation id="6405640832764359650">Google Payments-kártya mentésének engedélyezése jelölőnégyzet</translation>
 <translation id="1346104802985271895">Vietnami beviteli mód (TELEX)</translation>
@@ -2058,7 +2056,6 @@ Ha létrehozott egy felügyelt felhasználót, annak beállításait bármikor, 
 <translation id="8551388862522347954">Licencek</translation>
 <translation id="5525695896049981561">Igen, látom</translation>
 <translation id="1410616244180625362">A(z) <ph name="HOST"/> továbbra is hozzáférhet az Ön kamerájához</translation>
-<translation id="298577602575286468">Chromebook regisztrálása</translation>
 <translation id="8494214181322051417">Új!</translation>
 <translation id="7959874006162866942">Biztosan telepíteni szeretné a(z) <ph name="PLUGIN_NAME"/> beépülő modult? Csak olyan beépülő modulokat telepítsen, amelyekben megbízik.</translation>
 <translation id="2937174152333875430">Alkalmazásindító-szinkronizálás engedélyezése</translation>
@@ -2264,7 +2261,6 @@ Ha létrehozott egy felügyelt felhasználót, annak beállításait bármikor, 
 <translation id="7053983685419859001">Letiltás</translation>
 <translation id="7912024687060120840">Ebben a mappában:</translation>
 <translation id="2485056306054380289">Szerver CA tanúsítványa:</translation>
-<translation id="5631861698741076898">Hoppá, a bejelentkezés nem sikerült, mert azt egy nem biztonságos URL használatára állították be (<ph name="BLOCKED_URL"/>).</translation>
 <translation id="6462109140674788769">Görög billentyűzet</translation>
 <translation id="9191610850443814852">Engedélyez egy Smart Lock-beállítást, amely lehetővé teszi a Chromebook számára a telefonok megtalálását Bluetooth Low Energy kapcsolaton keresztül a Chromebook zárolásának feloldásához, amikor a telefon annak közelében van.</translation>
 <translation id="2727712005121231835">Valós méret</translation>
@@ -2320,7 +2316,6 @@ Ha létrehozott egy felügyelt felhasználót, annak beállításait bármikor, 
 <translation id="5502500733115278303">A Firefox alkalmazásból importálva</translation>
 <translation id="569109051430110155">Automatikus felismerés</translation>
 <translation id="8597845839771543242">Tulajdonság formátuma:</translation>
-<translation id="4408599188496843485">&amp;Súgó</translation>
 <translation id="7969525169268594403">szlovén</translation>
 <translation id="5399158067281117682">A PIN kódok nem egyeznek!</translation>
 <translation id="6277105963844135994">Hálózati időtúllépés</translation>
@@ -2435,7 +2430,6 @@ Ha létrehozott egy felügyelt felhasználót, annak beállításait bármikor, 
 <translation id="2562685439590298522">Dokumentumok</translation>
 <translation id="8673383193459449849">Szerverhiba</translation>
 <translation id="4060383410180771901">A webhely nem képes kezelni a(z) <ph name="URL"/> URL-re vonatkozó kérelmet.</translation>
-<translation id="5774208114954065213">A Chromebook Google-regisztrációjának törlésére készül, amivel letiltja az eszköz távoli helymeghatározásának, törlésének és zárolásának lehetőségét. A művelet végrehajtásához újra kell indítania eszközét. Folytatja?</translation>
 <translation id="6710213216561001401">Előző</translation>
 <translation id="1108600514891325577">&amp;Leállítás</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
@@ -2486,7 +2480,6 @@ Ha létrehozott egy felügyelt felhasználót, annak beállításait bármikor, 
 <translation id="7434509671034404296">Fejlesztőknek</translation>
 <translation id="7668654391829183341">Ismeretlen eszköz</translation>
 <translation id="2712173769900027643">Engedély kérése</translation>
-<translation id="2053298192223252950">Anyagszerű megjelenésű elemek be- vagy kikapcsolása a böngészőben.</translation>
 <translation id="1790550373387225389">Belépés a prezentáció módba</translation>
 <translation id="6447842834002726250">Cookie-k</translation>
 <translation id="8059178146866384858">A(z) &quot;$1&quot; nevű fájl már létezik. Kérjük, válasszon egy másik nevet.</translation>
@@ -3309,7 +3302,6 @@ Ha létrehozott egy felügyelt felhasználót, annak beállításait bármikor, 
 <translation id="324743268744517458">Figyelem: Nem kapcsolódik éles verziójú Payments-kiszolgálóhoz. A kibocsátott kártyák érvénytelenek lesznek.</translation>
 <translation id="4711094779914110278">török</translation>
 <translation id="2572032849266859634">Csak olvasási hozzáférést kapott a következőhöz: <ph name="VOLUME_NAME"/>.</translation>
-<translation id="8193362611902704788">Az Alkalmazásindító engedélyezése. Az engedélyezéskor az operációs rendszer gyorsparancsokat hoz létre az Alkalmazásindítóhoz.</translation>
 <translation id="5121130586824819730">A merevlemez megtelt. Kérjük, mentsen másik helyre, vagy szabadítson fel elegendő helyet a merevlemezen.</translation>
 <translation id="1875987452136482705">Ez a lehetőség letiltja a támogatást a WebRTC-ben a platformhardvert használó video-adatfolyamok dekódolásához.</translation>
 <translation id="6164005077879661055">Amikor ezt a felügyelt felhasználót eltávolítják, minden hozzá tartozó fájl és helyi adat véglegesen törlődik. A felügyelt felhasználó felkeresett webhelyeit és beállításait a kezelő továbbra is láthatja a következő címen: <ph name="MANAGEMENT_URL"/>.</translation>
@@ -3332,7 +3324,6 @@ Ha létrehozott egy felügyelt felhasználót, annak beállításait bármikor, 
 <translation id="499165176004408815">Nagy kontrasztú mód használata</translation>
 <translation id="2928940441164925372">A teljesítménnyel kapcsolatos mérőszámok és események passzív gyűjtésének engedélyezése, és ezek grafikus megjelenítésének lehetővé tétele. Az adatok megjelenítéséhez látogasson el a chrome://performance helyre.</translation>
 <translation id="3289856944988573801">Kérjük, frissítések kereséséhez Ethernetet vagy Wi-Fit használjon.</translation>
-<translation id="247500748408468353">Kérjük, forduljon rendszergazdájához, vagy próbálja újra.</translation>
 <translation id="450070808725753129">Ha már megjelenik a hálózat elérésére engedélyezett programként, próbálkozzon az eltávolításával, majd az ismételt felvételével a listára.</translation>
 <translation id="8300607741108698921">1 perces beállítás</translation>
 <translation id="4054376378714379870">Esetlegesen bosszantó biztonsági funkciók bekapcsolása.</translation>
@@ -3839,7 +3830,6 @@ Ha létrehozott egy felügyelt felhasználót, annak beállításait bármikor, 
 <translation id="1064912851688322329">Google-fiók leválasztása</translation>
 <translation id="1294298200424241932">Bizalmi beállítások szerkesztése:</translation>
 <translation id="1407135791313364759">Összes megnyitása</translation>
-<translation id="1487997194203762088">Hiba történt a bejelentkezés során.</translation>
 <translation id="1434928358870966081">Gyorsított 2D vászon letiltása</translation>
 <translation id="331915893283195714">Valamennyi webhely számára lehetővé teszi az egérmutató letiltását</translation>
 <translation id="8978526688207379569">Ez a webhely automatikusan letöltött több fájlt.</translation>
@@ -4007,7 +3997,6 @@ Ha létrehozott egy felügyelt felhasználót, annak beállításait bármikor, 
 <translation id="3778740492972734840">Fejlesz&amp;tői eszközök</translation>
 <translation id="8335971947739877923">Exportálás...</translation>
 <translation id="8667328578593601900">A(z) <ph name="FULLSCREEN_ORIGIN"/> most teljes képernyős nézetben van, és letiltotta az egérmutatót.</translation>
-<translation id="747416882205977201">A Chromebook Google-regisztrációjára készül, amivel engedélyezi az eszköz távoli helymeghatározásának, törlésének és zárolásának lehetőségét. A művelet végrehajtásához újra kell indítania eszközét. Folytatja?</translation>
 <translation id="38275787300541712">Nyomja meg az Enter gombot, ha végzett</translation>
 <translation id="7417705661718309329">Google-térkép</translation>
 <translation id="4058793769387728514">Dokumentum ellenőrzése</translation>
@@ -4064,7 +4053,6 @@ Ha létrehozott egy felügyelt felhasználót, annak beállításait bármikor, 
 <translation id="7180865173735832675">Testreszabás</translation>
 <translation id="7054808953701320293">Értem, ne jelenjen meg újra ez az üzenet.</translation>
 <translation id="4903369323166982260">Chrome Cleanup Tool futtatása</translation>
-<translation id="144932861331386147">Csatlakozzon az internethez, hogy frissítse Chromebookját.</translation>
 <translation id="2938685643439809023">mongol</translation>
 <translation id="5368720394188453070">A telefon zárolva van. Oldja fel a belépéshez.</translation>
 <translation id="2070909990982335904">A ponttal kezdődő nevek a rendszer számára vannak fenntartva. Kérjük, válasszon másik nevet.</translation>
@@ -4170,7 +4158,6 @@ Ha létrehozott egy felügyelt felhasználót, annak beállításait bármikor, 
 <translation id="6557565812667414268">Csak nagy képpontsűrűségű kijelzők számára engedélyezett</translation>
 <translation id="7331991248529612614">Olvasási mód gomb animációjának engedélyezése</translation>
 <translation id="5469954281417596308">Könyvjelzőkezelő</translation>
-<translation id="106153153543631784">Kérjük, adja meg újra jelszavát Chromebook-profilja frissítéséhez.</translation>
 <translation id="3064388234319122767">Átírás (zdravo → здраво)</translation>
 <translation id="5425722269016440406">Online állapotban kell lennie a Smart Lock kikapcsolásához, mivel ezt a beállítást a rendszer szinkronizálja telefonjával és egyéb eszközeivel. Előbb csatlakozzon egy hálózathoz.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
@@ -4790,7 +4777,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="7973320858902175766">Összetevő-javító</translation>
 <translation id="3654045516529121250">A kisegítő lehetőségek beállításainak áttekintése</translation>
 <translation id="2113479184312716848">&amp;Fájl megnyitása...</translation>
-<translation id="4346759900458392803">Chromebook regisztrációjának törlése</translation>
 <translation id="884264119367021077">Szállítási cím</translation>
 <translation id="634208815998129842">Feladatkezelő</translation>
 <translation id="2735698359135166290">Hagyományos román billentyűzet</translation>
@@ -4883,7 +4869,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
 <translation id="7209475358897642338">Melyik az Ön nyelve?</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME"/> (felügyelt)</translation>
 <translation id="9149866541089851383">Szerkesztés...</translation>
-<translation id="8735794438432839558">A Chromebookra való bejelentkezéshez kérjük, csatlakozzon az internethez.</translation>
 <translation id="3356395591469757189">Automatikus kitöltés javaslatai a billentyűzet mellett</translation>
 <translation id="7939412583708276221">Megtartás</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES"/> elem szinkronizálása…</translation>
@@ -5496,7 +5481,6 @@ függetlenül a következő kártyára lesz terhelve: <ph name="BACKING_CREDIT_C
 <translation id="426015154560005552">Arab billentyűzet</translation>
 <translation id="6793649375377511437">Google Copresence információk</translation>
 <translation id="4335713051520279344">Ez a számítógép 1 másodperc múlva újraindul. Bármely gomb lenyomásával folytathatja a felfedezését.</translation>
-<translation id="4775135101712609478">A tartalommal kapcsolatos engedélykérések (pl. értesítések, kvótafelhasználás, kamera- vagy mikrofonhasználat) megjelenítése információs sávok helyett buborékokban.</translation>
 <translation id="7233715388668391168">Kézmozdulatokkal történő gépelés be-/kikapcsolása a virtuális billentyűzeten.</translation>
 <translation id="6264485186158353794">Vissza a biztonsághoz</translation>
 <translation id="7705524343798198388">VPN</translation>

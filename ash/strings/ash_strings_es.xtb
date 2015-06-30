@@ -86,11 +86,13 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="3087734570205094154">Inferior</translation>
 <translation id="3742055079367172538">Captura de pantalla hecha</translation>
 <translation id="8878886163241303700">Ampliando pantalla</translation>
+<translation id="714034171374937760">Chromebase</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (Bluetooth)</translation>
 <translation id="3967919079500697218">Tu administrador ha inhabilitado la función para realizar capturas de pantalla.</translation>
 <translation id="372094107052732682">Pulsa Ctrl+Mayús+Q dos veces para salir.</translation>
 <translation id="923686485342484400">Pulsa Control Mayús Q dos veces para cerrar sesión.</translation>
 <translation id="9194617393863864469">Iniciar sesión de otro usuario...</translation>
+<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6803622936009808957">No se han podido duplicar las pantallas porque no se han encontrado resoluciones compatibles. Se ha utilizado el modo de escritorio ampliado en su lugar.</translation>
 <translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (principal)</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>% restante</translation>
@@ -104,6 +106,7 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="2825619548187458965">Estantería</translation>
 <translation id="2614835198358683673">Es posible que tu Chromebook no se cargue mientras esté activado. Te recomendamos que utilices el cargador oficial.</translation>
 <translation id="4430019312045809116">Volumen</translation>
+<translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Todos los usuarios disponibles ya se han añadido a esta sesión.</translation>
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="2204305834655267233">Información de red</translation>
@@ -146,6 +149,7 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="3019353588588144572">Tiempo restante hasta que se cargue la batería por completo: <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="882279321799040148">Haz clic para verla</translation>
+<translation id="5011233892417813670">Chromebook</translation>
 <translation id="1753067873202720523">Es posible que el Chromebook no se cargue mientras esté encendido.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> no admite una resolución de <ph name="SPECIFIED_RESOLUTION"/>. Se ha cambiado la resolución a <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">Habilitar datos móviles</translation>
@@ -185,6 +189,7 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="5947494881799873997">Deshacer</translation>
 <translation id="7593891976182323525">Tecla de búsqueda o Mayús</translation>
 <translation id="7649070708921625228">Ayuda</translation>
+<translation id="164969095109328410">Dispositivo Chrome</translation>
 <translation id="3050422059534974565">El BLOQUEO DE MAYÚSCULAS está activado.
 Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="397105322502079400">Calculando...</translation>

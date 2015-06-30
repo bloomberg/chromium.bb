@@ -65,7 +65,6 @@
 <translation id="3293894718455402932">«<ph name="EXTENSION"/>» قادر خواهد بود که تصاویر، فایل‌های ویدیویی و صوتی را در پوشه‌های علامت زده شده بخواند و بنویسد.</translation>
 <translation id="7180611975245234373">بازخوانی</translation>
 <translation id="4940047036413029306">نقل قول</translation>
-<translation id="6406467842708712906">وای، نمی‌توانید وارد سیستم شوید. ورود به سیستم انجام نشد زیرا جزئیات حساب شما قابل بازیابی نیست.</translation>
 <translation id="1497897566809397301">تنظیم داده‌های محلی مجاز باشد (توصیه می‌شود)</translation>
 <translation id="7627349730328142646">آزمایشاتی را فعال می‌کند که مرکز پیام همیشه با حذف اعلان، به بالا پیمایش کند.</translation>
 <translation id="3275778913554317645">باز کردن به‌عنوان پنجره</translation>
@@ -171,7 +170,6 @@
 <translation id="3384773155383850738">حداکثر تعداد پیشنهادات</translation>
 <translation id="1014321050861012327">گذرواژه‌ها به صورت خودکار ذخیره شوند.</translation>
 <translation id="8677212948402625567">کوچک کردن همه...</translation>
-<translation id="2056996954182910740">راه‌انداز برنامه را فعال کنید.</translation>
 <translation id="7600965453749440009">هرگز <ph name="LANGUAGE"/> ترجمه نشود</translation>
 <translation id="3208703785962634733">تأیید نشده</translation>
 <translation id="620329680124578183">بارگیری نکنید (توصیه می‌شود)</translation>
@@ -568,7 +566,6 @@
 <translation id="8206859287963243715">سلولی</translation>
 <translation id="5610637197759059204">تازه‌سازی‌های صفحه را که با پیمایش عمودی محتوا راه‌اندازی می‌شود، غیرفعال کنید.</translation>
 <translation id="6435285122322546452">مدیریت برنامه‌های کیوسک...</translation>
-<translation id="5748409721703101646">‏دستگاه Chromebook شما نمی‌تواند با استفاده از <ph name="NETWORK_NAME"/> به اینترنت متصل شود. لطفاً شبکه دیگری را انتخاب کنید. <ph name="LEARN_MORE_LINK_START"/>بیشتر بدانید<ph name="LEARN_MORE_LINK_END"/></translation>
 <translation id="1064835277883315402">پیوستن به شبکه خصوصی</translation>
 <translation id="872728358380751743">‏این گزینه پشتیبانی را در پخش جریانی برای کدبندی جریان ویدیویی Cast با استفاده از سخت‌افزار پلتفورم غیرفعال می‌کند.</translation>
 <translation id="6508261954199872201">برنامه: <ph name="APP_NAME"/></translation>
@@ -740,6 +737,7 @@
 <translation id="5759728514498647443">اسنادی که از طریق <ph name="APP_NAME"/> برای چاپ ارسال می‌کنید، می‌توانند توسط <ph name="APP_NAME"/> خوانده شوند.</translation>
 <translation id="2401053206567162910">‏این برنامه فعلاً در این دستگاه پشتیبانی نمی‌شود اما دست‌اندرکاران Chrome سخت تلاش می‌کنند تا به‌زودی این مورد را ممکن سازند.</translation>
 <translation id="3273410961255278341">ارسال برای:</translation>
+<translation id="4255096080864111471">حداکثر تعداد کاشی برای ناحیه مورد نظر را تعیین کنید.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">برگه جدید</translation>
 <translation id="6567688344210276845">بارگیری نماد &quot;<ph name="ICON"/>&quot; برای عملکرد صفحه ممکن نیست.</translation>
@@ -1115,7 +1113,6 @@
 <translation id="5774515636230743468">اظهارنامه:</translation>
 <translation id="1313832887664610176">‏اتصال به Chromebox انجام نشد</translation>
 <translation id="3465566417615315331">روی عکستان کلیک کنید</translation>
-<translation id="4960944339761782076">استفاده از حباب‌ها برای درخواست اجازه</translation>
 <translation id="7474889694310679759">صفحه‌کلید کانادایی انگلیسی</translation>
 <translation id="1817871734039893258">‏بازیابی فایل Microsoft</translation>
 <translation id="2423578206845792524">ذ&amp;خیره فایل تصویری به‌عنوان...</translation>
@@ -1677,6 +1674,7 @@
 <translation id="4811502511369621968">آدرس ایمیل نامعتبر است. لطفاً آن را بررسی کرده، دوباره امتحان کنید.</translation>
 <translation id="175196451752279553">با&amp;ز کردن مجدد برگه بسته</translation>
 <translation id="8602851771975208551">‏برنامه‌ای دیگر بر روی رایانه شما یک برنامه را اضافه کرده است که ممکن است نحوه کارکرد Chrome را تغییر دهد.</translation>
+<translation id="9154967591629748964">حداکثر تعداد کاشی برای ناحیه مورد نظر</translation>
 <translation id="2655386581175833247">گواهی کاربر:</translation>
 <translation id="5039804452771397117">اجازه دادن</translation>
 <translation id="5435964418642993308">‏برای بازگشت به عقب، دکمه Enter و برای مشاهدهٔ سابقه، کلید منوی متن را فشار دهید</translation>
@@ -1784,7 +1782,6 @@
 <translation id="8598687241883907630">‏قطع ارتباط حساب Google شما...</translation>
 <translation id="3195445837372719522">‏Chromebox برای جلسات باید دامنه‌ای را که به آن تعلق دارد بداند. از شما می‌خواهد تا وارد حسابتان شوید.</translation>
 <translation id="7920092496846849526">از والدینتان پرسیدید آیا اجازه بازدید از این صفحه را دارید.</translation>
-<translation id="5984304957315422459">اووه، به سیستم وارد نشدید. به علت تأیید نشدن گذرواژه شما، ورود به سیستم انجام نشد.</translation>
 <translation id="9003677638446136377">بررسی مجدد</translation>
 <translation id="9187827965378254003">وای، به نظر می‌رسد در حال حاضر هیچ آزمایشی موجود نیست.</translation>
 <translation id="6022526133015258832">بازکردن تمام صفحه</translation>
@@ -1849,6 +1846,7 @@
 <translation id="1901377140875308934">ورود به <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">کاغذدیواری فعلی توسط «<ph name="APP_NAME"/>» تنظیم شده است</translation>
 <translation id="5074318175948309511">شاید لازم باشد که این صفحه قبل از اعمال شدن تنظیمات جدید، بارگذاری مجدد شود.</translation>
+<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">چیزی انتخاب نشده است</translation>
 <translation id="6405640832764359650">‏فعال کردن کادر تأیید ذخیره کارت Google Payments</translation>
 <translation id="1346104802985271895">‏روش ورودی ویتنامی (TELEX)</translation>
@@ -2058,7 +2056,6 @@
 <translation id="8551388862522347954">مجوزها</translation>
 <translation id="5525695896049981561">بله، آن را می‌بینم</translation>
 <translation id="1410616244180625362">ادامه اجازه به <ph name="HOST"/> برای دسترسی به دوربین</translation>
-<translation id="298577602575286468">‏ثبت Chromebook</translation>
 <translation id="8494214181322051417">جدید!</translation>
 <translation id="7959874006162866942">‏از نصب <ph name="PLUGIN_NAME"/> مطمئن هستید؟ فقط باید Pluginهایی را نصب کنید که به آنها اعتماد دارید.</translation>
 <translation id="2937174152333875430">فعال کردن همگام‌سازی راه‌انداز برنامه</translation>
@@ -2265,7 +2262,6 @@
 <translation id="7053983685419859001">مسدود کردن</translation>
 <translation id="7912024687060120840">در پوشه:</translation>
 <translation id="2485056306054380289">‏گواهی CA سرور:</translation>
-<translation id="5631861698741076898">وای، به سیستم وارد نشدید. ورود به سیستم ناموفق بود زیرا برای استفاده از یک نشانی اینترنتی غیرامن (<ph name="BLOCKED_URL"/>) پیکربندی شده بود.</translation>
 <translation id="6462109140674788769">صفحه‌کلید یونانی</translation>
 <translation id="9191610850443814852">‏یک تنظیم Smart Lock را فعال می‌کند که به Chromebook اجازه می‌دهد تلفن‌ها را از طریق «انرژی کم بلوتوث» پیدا کند، تا زمانی‌که تلفن در مجاورت آن است، قفل Chromebook را باز کند.</translation>
 <translation id="2727712005121231835">اندازه واقعی</translation>
@@ -2321,7 +2317,6 @@
 <translation id="5502500733115278303">‏وارد شده از Firefox</translation>
 <translation id="569109051430110155">شناسایی خودکار</translation>
 <translation id="8597845839771543242">قالب محصول:</translation>
-<translation id="4408599188496843485">را&amp;هنما</translation>
 <translation id="7969525169268594403">اسلوونیایی</translation>
 <translation id="5399158067281117682">پین ها مطابقت ندارند!</translation>
 <translation id="6277105963844135994">مهلت زمانی شبکه</translation>
@@ -2436,7 +2431,6 @@
 <translation id="2562685439590298522">اسناد</translation>
 <translation id="8673383193459449849">مشکل سرور</translation>
 <translation id="4060383410180771901">این سایت قادر به انجام درخواست <ph name="URL"/> نیست.</translation>
-<translation id="5774208114954065213">‏در حال لغو ثبت این Chromebook در Google هستید تا قابلیت پاک کردن، قفل کردن و تعیین مکان دستگاه از راه دور را غیرفعال کنید. این کار به راه‌اندازی مجدد نیاز دارد. می‌خواهید ادامه دهید؟</translation>
 <translation id="6710213216561001401">قبلی</translation>
 <translation id="1108600514891325577">&amp;توقف</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
@@ -2487,7 +2481,6 @@
 <translation id="7434509671034404296">برنامه‌نویس</translation>
 <translation id="7668654391829183341">دستگاه ناشناس</translation>
 <translation id="2712173769900027643">درخواست اجازه</translation>
-<translation id="2053298192223252950">‏طراحی سه‌بعدی را در chrome مرورگر فعال یا غیرفعال می‌کند.</translation>
 <translation id="1790550373387225389">ورود به حالت ارائه</translation>
 <translation id="6447842834002726250">کوکی‌ها</translation>
 <translation id="8059178146866384858">فایلی به نام &quot;1$&quot; از قبل وجود دارد. لطفاً نام دیگری را انتخاب نمایید.</translation>
@@ -3311,7 +3304,6 @@
 <translation id="324743268744517458">‏هشدار: به سرورهای تولید Google Payments متصل نیستید. کارت‌های صادرشده نامعتبر خواهند بود.</translation>
 <translation id="4711094779914110278">ترکی</translation>
 <translation id="2572032849266859634">مجوز دسترسی فقط خواندنی به <ph name="VOLUME_NAME"/> صادر شد.</translation>
-<translation id="8193362611902704788">راه‌انداز برنامه را فعال کنید. با فعال کردن، میان‌برهای سیستم عامل را در راه‌انداز برنامه ایجاد می‌کند.</translation>
 <translation id="5121130586824819730">دیسک سخت پر است. لطفاً در محل دیگری ذخیره کنید یا فضای بیشتری در دیسک سخت ایجاد کنید.</translation>
 <translation id="1875987452136482705">‏این گزینه پشتیبانی در WebRTC را برای رمزگشایی جریان‌های ویدیویی با استفاده از سخت‌افزار غیرفعال می‌کند.</translation>
 <translation id="6164005077879661055">با حذف این کاربر نظارت‌شده، کلیه فایل‌ها و داده‌های محلی مربوط به کاربر نظارت‌شده برای همیشه حذف خواهند شد. وب‌سایت‌های بازدید شده و تنظیمات این کاربر نظارت‌شده همچنان برای مدیر در <ph name="MANAGEMENT_URL"/> قابل مشاهده خواهد بود.</translation>
@@ -3334,7 +3326,6 @@
 <translation id="499165176004408815">استفاده از حالت کنتراست بالا</translation>
 <translation id="2928940441164925372">‏تجمع منفعل مقیاس‌های اندازه‌گیری عملکرد محور و وریدادها را فعال کنید و گزینه‌ای را فراهم کنید تا این داده‌ها را به سبک گرافیکی مشاهده کنید. برای مشاهده داده، از chrome://performance دیدن کنید.</translation>
 <translation id="3289856944988573801">‏برای بررسی موارد به‌روز لطفاً از کابل شبکه یا Wi-Fi استفاده کنید.</translation>
-<translation id="247500748408468353">لطفاً با سرپرستتان تماس بگیرید یا دوباره امتحان کنید.</translation>
 <translation id="450070808725753129">اگر در لیست برنامه‌های مجاز برای دسترسی به شبکه قرار دارد، سعی کنید آن را از لیست حذف کرده،
         دوباره به لیست اضافه کنید.</translation>
 <translation id="8300607741108698921">تنظیم ۱ دقیقه‌ای</translation>
@@ -3840,7 +3831,6 @@
 <translation id="1064912851688322329">‏قطع ارتباط حساب Google شما</translation>
 <translation id="1294298200424241932">ویرایش تنظیمات اعتماد:</translation>
 <translation id="1407135791313364759">باز کردن همه</translation>
-<translation id="1487997194203762088">هنگام ورود به سیستم خطایی رخ داد.</translation>
 <translation id="1434928358870966081">ازکار انداختن فضای زیاد دو بعدی سریع</translation>
 <translation id="331915893283195714">به همه سایت‌ها اجازه داده شود مکان‌نمای موشواره را غیرفعال کنند</translation>
 <translation id="8978526688207379569">این سایت چند فایل را به صورت خودکار دانلود کرد.</translation>
@@ -4008,7 +3998,6 @@
 <translation id="3778740492972734840">ابزارهای &amp;برنامه نویس</translation>
 <translation id="8335971947739877923">صادر کردن...</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN"/> در حال حاضر تمام صفحه است و مکان‌نمای ماوس شما را غیرفعال کرده است.</translation>
-<translation id="747416882205977201">‏در حال ثبت این Chromebook در Google هستید تا قابلیت پاک کردن، قفل کردن و تعیین مکان دستگاه را از راه دور فعال کنید. این کار به راه‌اندازی مجدد نیاز دارد. می‌خواهید ادامه دهید؟</translation>
 <translation id="38275787300541712">‏پس از انجام کار، Enter را فشار دهید</translation>
 <translation id="7417705661718309329">‏نقشه Google</translation>
 <translation id="4058793769387728514">اکنون سند بررسی شود</translation>
@@ -4065,7 +4054,6 @@
 <translation id="7180865173735832675">سفارشی کردن</translation>
 <translation id="7054808953701320293">متوجه شدم، دیگر به من نشان داده نشود.</translation>
 <translation id="4903369323166982260">‏اجرای ابزار پاک‌سازی Chrome</translation>
-<translation id="144932861331386147">‏لطفاً برای به‌روزرسانی Chromebook خود به اینترنت متصل شوید.</translation>
 <translation id="2938685643439809023">مغولی</translation>
 <translation id="5368720394188453070">تلفنتان قفل است. برای وارد شدن قفل آن را باز کنید.</translation>
 <translation id="2070909990982335904">نام‌هایی که با نقطه شروع می‌شوند برای سیستم رزرو شده‌ند. لطفاً&quot; نام دیگری انتخاب کنید.</translation>
@@ -4171,7 +4159,6 @@
 <translation id="6557565812667414268">فقط برای نمایشگرهای دارای وضوح بالا فعال می‌شود</translation>
 <translation id="7331991248529612614">فعال کردن پویانمایی دکمه حالت خواندن</translation>
 <translation id="5469954281417596308">مدیر نشانک</translation>
-<translation id="106153153543631784">‏برای به‌روزرسانی نمایه Chromebook خودتان، لطفاً گذرواژه‌تان را دوباره وارد کنید.</translation>
 <translation id="3064388234319122767">‏نویسه‌گردانی (zdravo ← ‏здраво)</translation>
 <translation id="5425722269016440406">‏برای خاموش کردن Smart Lock باید آنلاین باشید زیرا این تنظیم با تلفن و سایر دستگاه‌های شما همگام‌سازی می‌شود. لطفاً اول به شبکه متصل شوید.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
@@ -4792,7 +4779,6 @@
 <translation id="7973320858902175766">وصله‌کننده مؤلفه</translation>
 <translation id="3654045516529121250">خواندن تنظیمات دسترس‌پذیری خودتان</translation>
 <translation id="2113479184312716848">باز کردن &amp;فایل...</translation>
-<translation id="4346759900458392803">‏لغو ثبت Chromebook</translation>
 <translation id="884264119367021077">اطلاعات ارسال</translation>
 <translation id="634208815998129842">مدیر فعالیت‌ها</translation>
 <translation id="2735698359135166290">صفحه‌کلید استاندارد رومانیایی</translation>
@@ -4885,7 +4871,6 @@
 <translation id="7209475358897642338">به چه زبانی صحبت می‌کنید؟</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME"/> (تحت نظارت)</translation>
 <translation id="9149866541089851383">ویرایش...</translation>
-<translation id="8735794438432839558">‏برای وارد شدن به سیستم Chromebook خود، لطفاً به اینترنت متصل شوید.</translation>
 <translation id="3356395591469757189">پیشنهادهای تکمیل خودکار به صورت نمای وسیله جانبی صفحه‌کلید</translation>
 <translation id="7939412583708276221">درهر حال حفظ شود</translation>
 <translation id="8579285237314169903">در حال همگام‌سازی <ph name="NUMBER_OF_FILES"/> مورد...</translation>
@@ -5494,7 +5479,6 @@
 <translation id="6793649375377511437">‏اطلاعات Google Copresence</translation>
 <translation id="4335713051520279344">این رایانه بعد از ۱ ثانیه بازنشانی می‌شود.
 کلید دلخواهی را فشار دهید تا کاوش ادامه پیدا کند.</translation>
-<translation id="4775135101712609478">نمایش درخواست‌های مجوز محتوا (به عنوان مثال اعلان‌ها، سهمیه، استفاده از دوربین، استفاده از میکروفون) در حباب‌ها به جای نوارهای اطلاعات.</translation>
 <translation id="7233715388668391168">فعال/غیرفعال کردن ورودی اشاره‌ای برای صفحه‌کلید مجازی.</translation>
 <translation id="6264485186158353794">بازگشت به ایمنی</translation>
 <translation id="7705524343798198388">VPN</translation>

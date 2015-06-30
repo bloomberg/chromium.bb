@@ -86,11 +86,13 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="3087734570205094154">Bas</translation>
 <translation id="3742055079367172538">Capture d'écran réalisée</translation>
 <translation id="8878886163241303700">Extension de l'écran</translation>
+<translation id="714034171374937760">Chromebase</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (Bluetooth)</translation>
 <translation id="3967919079500697218">Votre administrateur a désactivé la fonctionnalité de capture d'écran.</translation>
 <translation id="372094107052732682">Pour quitter, appuyez deux fois sur Ctrl+Maj+Q.</translation>
 <translation id="923686485342484400">Appuyez deux fois sur Contrôle + Maj + Q pour vous déconnecter.</translation>
 <translation id="9194617393863864469">Se connecter avec un autre compte utilisateur…</translation>
+<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6803622936009808957">Impossible de dupliquer les écrans, car aucune résolution compatible n'a été détectée. Le bureau étendu a été activé à la place.</translation>
 <translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (principal)</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/> % restant(s)</translation>
@@ -104,6 +106,7 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="2825619548187458965">Étagère</translation>
 <translation id="2614835198358683673">Votre Chromebook risque de ne pas charger lorsqu'il est allumé. Utilisez plutôt le chargeur officiel.</translation>
 <translation id="4430019312045809116">Volume</translation>
+<translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Tous les utilisateurs disponibles ont déjà été ajoutés à cette session.</translation>
 <translation id="1383876407941801731">Rechercher</translation>
 <translation id="2204305834655267233">Informations réseau</translation>
@@ -146,6 +149,7 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="3019353588588144572">Temps restant avant chargement complet de la batterie : <ph name="TIME_REMAINING"/>.</translation>
 <translation id="3473479545200714844">Loupe</translation>
 <translation id="882279321799040148">Cliquer ici pour afficher la capture d'écran</translation>
+<translation id="5011233892417813670">Chromebook</translation>
 <translation id="1753067873202720523">Votre Chromebook risque de ne pas se charger lorsqu'il est allumé.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> n'est pas compatible avec <ph name="SPECIFIED_RESOLUTION"/>. La résolution a été modifiée pour utiliser <ph name="FALLBACK_RESOLUTION"/>.</translation>
 <translation id="1602076796624386989">Activer les données mobiles</translation>
@@ -185,6 +189,7 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="5947494881799873997">Rétablir</translation>
 <translation id="7593891976182323525">Recherche ou Maj</translation>
 <translation id="7649070708921625228">Aide</translation>
+<translation id="164969095109328410">Appareil Google Chrome</translation>
 <translation id="3050422059534974565">Le VERROUILLAGE DES MAJUSCULES est activé.
 Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="397105322502079400">Calcul en cours…</translation>

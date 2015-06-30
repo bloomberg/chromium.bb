@@ -76,7 +76,6 @@ Chromoting</translation>
 <translation id="1770394049404108959">Non riesco ad aprire l'applicazione.</translation>
 <translation id="9188433529406846933">Autorizza</translation>
 <translation id="228809120910082333">Conferma il tuo account e il PIN per consentire l'accesso tramite Chromoting.</translation>
-<translation id="7605995381616883502">Nuova connessione</translation>
 <translation id="2038229918502634450">L'host si sta riavviando per applicare una modifica alle norme.</translation>
 <translation id="2851674870054673688">Una volta inserito il codice, la sessione di condivisione avrà inizio.</translation>
 <translation id="5593560073513909978">Il servizio non è al momento disponibile. Riprova più tardi.</translation>
@@ -262,7 +261,6 @@ Remote Desktop</translation>
 <translation id="4277463233460010382">Questo computer è configurato per consentire la connessione di uno o più client senza l'inserimento di un codice PIN.</translation>
 <translation id="837021510621780684">Da questo computer</translation>
 <translation id="518094545883702183">Queste informazioni vengono utilizzate soltanto per identificare il problema segnalato, sono disponibili soltanto a chi effettua accertamenti in merito alla tua segnalazione e vengono conservate per massimo 30 giorni.</translation>
-<translation id="1261403020716313927">• Risoluzione della perdita rilevante di memoria al momento della disconnessione da Remote Desktop.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Accetto</translation>
 <translation id="7215059001581613786">Inserisci un PIN formato da almeno sei cifre.</translation>

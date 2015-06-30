@@ -65,7 +65,6 @@
 <translation id="3293894718455402932">Ang &quot;<ph name="EXTENSION"/>&quot; ay makakapagbasa at makakapagsulat ng mga file ng larawan, video at tunog sa mga may check na folder.</translation>
 <translation id="7180611975245234373">I-refresh</translation>
 <translation id="4940047036413029306">Panipi</translation>
-<translation id="6406467842708712906">Oops, hindi ka ma-sign in. Nabigo ang pag-sign in dahil hindi makuha ang mga detalye ng iyong account.</translation>
 <translation id="1497897566809397301">Hayaang maitakda ang lokal na data (inirerekomenda)</translation>
 <translation id="7627349730328142646">I-enable ang mga eksperimento kung saan palaging mag-i-scroll pataas ang message center kapag nag-alis ng notification.</translation>
 <translation id="3275778913554317645">Buksan bilang window</translation>
@@ -171,7 +170,6 @@
 <translation id="3384773155383850738">Maximum na bilang ng mga suhestiyon</translation>
 <translation id="1014321050861012327">Awtomatikong i-save ang mga password.</translation>
 <translation id="8677212948402625567">Tiklupin lahat...</translation>
-<translation id="2056996954182910740">I-enable ang App Launcher.</translation>
 <translation id="7600965453749440009">Huwag isalin kailanman ang <ph name="LANGUAGE"/></translation>
 <translation id="3208703785962634733">Hindi kumpirmado</translation>
 <translation id="620329680124578183">Huwag I-load (Inirekomenda)</translation>
@@ -575,7 +573,6 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL"/> para sa mga ito at mga
 <translation id="8206859287963243715">Cellular</translation>
 <translation id="5610637197759059204">I-disable ang mga pag-reload ng page na nati-trigger ng pag-o-overscroll ng content nang pa-vertical.</translation>
 <translation id="6435285122322546452">Pamahalaan ang mga kiosk application...</translation>
-<translation id="5748409721703101646">Hindi nagawang kumonekta sa Internet ng iyong Chromebook gamit ang <ph name="NETWORK_NAME"/>. Mangyaring pumili ng ibang network. <ph name="LEARN_MORE_LINK_START"/>Matuto nang higit pa<ph name="LEARN_MORE_LINK_END"/></translation>
 <translation id="1064835277883315402">Sumali sa pribadong network</translation>
 <translation id="872728358380751743">Dini-disable ng opsyong ito ang suporta sa Cast Streaming para sa pag-e-encode ng mga video stream gamit ang platform hardware.</translation>
 <translation id="6508261954199872201">App: <ph name="APP_NAME"/></translation>
@@ -749,6 +746,7 @@ Dapat mag-sign out ang lahat ng user upang magpatuloy.</translation>
 <translation id="5759728514498647443">Ang mga dokumentong ipinadadala mo upang i-print sa pamamagitan ng <ph name="APP_NAME"/> ay maaaring buksan ng <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Kasalukuyang hindi sinusuportahan ang app na ito sa device na ito ngunit nagsusumikap nang mabuti ang mga gnome ng Chrome upang mapagana ito sa lalong madaling panahon.</translation>
 <translation id="3273410961255278341">Magpadala para sa:</translation>
+<translation id="4255096080864111471">Tukuyin ang maximum na mga tile para sa lugar ng interes.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Bagong tab</translation>
 <translation id="6567688344210276845">Maaaring hindi mai-load ang icon '<ph name="ICON"/>' para sa pagkilos sa pahina.</translation>
@@ -1125,7 +1123,6 @@ Dapat mag-sign out ang lahat ng user upang magpatuloy.</translation>
 <translation id="5774515636230743468">Manifest:</translation>
 <translation id="1313832887664610176">Nawala ang koneksyon sa Chromebox</translation>
 <translation id="3465566417615315331">I-click ang iyong larawan</translation>
-<translation id="4960944339761782076">Gamitin ang Mga Bubble para sa Mga Kahilingan sa Pahintulot</translation>
 <translation id="7474889694310679759">Canadian English na keyboard</translation>
 <translation id="1817871734039893258">Microsoft File Recovery</translation>
 <translation id="2423578206845792524">I-sa&amp;ve ang larawan bilang...</translation>
@@ -1691,6 +1688,7 @@ Kinakalkula ang natitirang oras</translation>
 <translation id="4811502511369621968">Di-wasto ang email address. Pakitingnan at subukang muli.</translation>
 <translation id="175196451752279553">M&amp;uling buksan ang nakasarang tab</translation>
 <translation id="8602851771975208551">Ang isa pang program sa iyong computer ay nagdagdag ng app na maaaring magpabago sa paraan ng paggana ng Chrome.</translation>
+<translation id="9154967591629748964">Maximum na mga tile para sa lugar ng interes</translation>
 <translation id="2655386581175833247">Certificate ng user:</translation>
 <translation id="5039804452771397117">Payagan</translation>
 <translation id="5435964418642993308">Pindutin ang enter upang bumalik, key ng menu ng konteksto upang makita ang kasaysayan</translation>
@@ -1799,7 +1797,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="8598687241883907630">Idiskonekta ang iyong Google Account...</translation>
 <translation id="3195445837372719522">Kailangang malaman ng Chromebox for meetings kung saang domain ito kabilang. Kakailanganin mong mag-sign in sa iyong account dahil dito.</translation>
 <translation id="7920092496846849526">Tinanong mo ang iyong magulang kung maaari mong bisitahin ang page na ito.</translation>
-<translation id="5984304957315422459">Oops, hindi ka na-sign in. Hindi nakapag-sign in dahil hindi na-verify ang iyong password.</translation>
 <translation id="9003677638446136377">Suriing muli</translation>
 <translation id="9187827965378254003">Naku, mukhang walang kasalukuyang available na mga eksperimento.</translation>
 <translation id="6022526133015258832">Buksan sa Full Screen</translation>
@@ -1864,6 +1861,7 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="1901377140875308934">Mag-sign in sa <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Ang kasalukuyang wallpaper ay itinakda ng '<ph name="APP_NAME"/>'</translation>
 <translation id="5074318175948309511">Maaaring kailangan na muling i-load ang page na ito bago gumana ang mga bagong setting.</translation>
+<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Walang pagpipilian</translation>
 <translation id="6405640832764359650">I-enable ang checkbox para sa pagse-save ng Google Payments card</translation>
 <translation id="1346104802985271895">Paraan ng pag-input na Vietnamese (TELEX)</translation>
@@ -2071,7 +2069,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="8551388862522347954">Mga Lisensya</translation>
 <translation id="5525695896049981561">Oo, nakikita ko ito</translation>
 <translation id="1410616244180625362">Ipagpatuloy ang pagpapahintulot sa <ph name="HOST"/> na i-access ang iyong camera</translation>
-<translation id="298577602575286468">I-enroll ang Chromebook</translation>
 <translation id="8494214181322051417">Bago!</translation>
 <translation id="7959874006162866942">Sigurado ka bang gusto mong i-install ang <ph name="PLUGIN_NAME"/>? Ang mga pinagkakatiwalaan mo lang na plugin ang dapat mong i-install.</translation>
 <translation id="2937174152333875430">I-enable ang Pag-sync sa App Launcher</translation>
@@ -2281,7 +2278,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="7053983685419859001">Harangan</translation>
 <translation id="7912024687060120840">Sa Folder:</translation>
 <translation id="2485056306054380289">Certificate ng server CA:</translation>
-<translation id="5631861698741076898">Oops, hindi ka ma-sign in. Hindi nakapag-sign in dahil naka-configure ito na gumamit ng hindi secure na URL (<ph name="BLOCKED_URL"/>).</translation>
 <translation id="6462109140674788769">Greek na keyboard</translation>
 <translation id="9191610850443814852">Nag-e-enable ng isang Smart Lock na setting na nagbibigay-daan sa Chromebook na tumuklas ng mga telepono sa Bluetooth Low Energy upang i-unlock ang Chromebook kapag malapit dito ang telepono.</translation>
 <translation id="2727712005121231835">Actual Size</translation>
@@ -2337,7 +2333,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="5502500733115278303">Nai-import Mula sa Firefox</translation>
 <translation id="569109051430110155">Awtomatikong nakita</translation>
 <translation id="8597845839771543242">Format ng property:</translation>
-<translation id="4408599188496843485">T&amp;ulong</translation>
 <translation id="7969525169268594403">Slovenian</translation>
 <translation id="5399158067281117682">Hindi nagtutugma ang mga PIN!</translation>
 <translation id="6277105963844135994">Nag-timeout ang network</translation>
@@ -2452,7 +2447,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="2562685439590298522">Docs</translation>
 <translation id="8673383193459449849">Problema sa server</translation>
 <translation id="4060383410180771901">Hindi nagawang pangasiwaan ng website ang kahilingan para sa <ph name="URL"/>.</translation>
-<translation id="5774208114954065213">Ia-unenroll mo na ang Chromebook na ito sa Google upang i-disable ang kakayahan na malayuang hanapin, burahin at i-lock ang device. Mangangailangan ito ng pag-reboot. Gusto mo bang magpatuloy?</translation>
 <translation id="6710213216561001401">Nakaraan</translation>
 <translation id="1108600514891325577">&amp;Huminto</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
@@ -2503,7 +2497,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="7434509671034404296">Bumubuo</translation>
 <translation id="7668654391829183341">Hindi kilalang device</translation>
 <translation id="2712173769900027643">Humingi ng pahintulot</translation>
-<translation id="2053298192223252950">I-enable o i-disable ang mga elemento ng material design sa chrome ng browser.</translation>
 <translation id="1790550373387225389">Pumasok sa Mode na Presentation</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="8059178146866384858">Umiiral na ang file na pinangalanang &quot;$1&quot;. Mangyaring pumili ng ibang pangalan.</translation>
@@ -3334,7 +3327,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="324743268744517458">Babala: Hindi ka nakakonekta sa mga production server ng Google Payments. Hindi tatanggapin ang mga ibinigay na card.</translation>
 <translation id="4711094779914110278">Turkish</translation>
 <translation id="2572032849266859634">Ipinagkaloob na sa <ph name="VOLUME_NAME"/> ang read-only na access.</translation>
-<translation id="8193362611902704788">I-enable ang App Launcher. Sa panahon ng pag-enable, gumagawa ng mga shortcut ng operating system sa App Launcher.</translation>
 <translation id="5121130586824819730">Puno na ang iyong hard disk. Mangyaring i-save sa isa pang lokasyon o magbakante ng espasyo sa hard disk.</translation>
 <translation id="1875987452136482705">Dini-disable ng opsyong ito ang suporta sa WebRTC para sa pagde-decode ng mga video stream gamit ang hardware ng platform.</translation>
 <translation id="6164005077879661055">Permanenteng matatanggal ang lahat ng file at lokal na data na kaugnay ng pinangangasiwaang user sa oras na alisin ang pinangangasiwaang user na ito. Maaari pa ring makita ng manager ang mga nabisitang website at setting para sa pinangangasiwaang user na ito sa <ph name="MANAGEMENT_URL"/>.</translation>
@@ -3357,7 +3349,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="499165176004408815">Gamitin ang high contrast mode</translation>
 <translation id="2928940441164925372">Paganahin ang passive na pagtitipon ng mga sukatan at kaganapang nauugnay sa pagganap at magbigay ng pagpipilian na tingnan ang data na ito sa isang graphical na paraan. Upang tingnan ang data, bisitahin ang chrome://performance.</translation>
 <translation id="3289856944988573801">Upang tumingin ng mga update, mangyaring gumamit ng Ethernet o Wi-Fi.</translation>
-<translation id="247500748408468353">Mangyaring makipag-ugnayan sa iyong administrator o subukan ulit.</translation>
 <translation id="450070808725753129">Kung nakalista na ito bilang isang program na pinapayagang mag-access sa network, subukan
         itong alisin sa listahan at idagdag itong muli.</translation>
 <translation id="8300607741108698921">1-minutong pag-setup</translation>
@@ -3867,7 +3858,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="1064912851688322329">Idiskonekta ang iyong Google Account</translation>
 <translation id="1294298200424241932">I-edit ang mga setting ng pagtitiwala:</translation>
 <translation id="1407135791313364759">Buksan lahat</translation>
-<translation id="1487997194203762088">Nagkaproblema sa pagsa-sign in.</translation>
 <translation id="1434928358870966081">Huwag paganahin ang pinabilis na 2D na canvas</translation>
 <translation id="331915893283195714">Payagan ang lahat ng site na i-disable ang cursor ng mouse</translation>
 <translation id="8978526688207379569">Awtomatikong nag-download ng maraming file ang site na ito.</translation>
@@ -4035,7 +4025,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="3778740492972734840">Mga tool ng Nag-&amp;develop</translation>
 <translation id="8335971947739877923">I-export...</translation>
 <translation id="8667328578593601900">Nasa full screen na ngayon ang <ph name="FULLSCREEN_ORIGIN"/> at hindi pinagana ang cursor ng iyong mouse.</translation>
-<translation id="747416882205977201">Ie-enroll mo na ang Chromebook na ito sa Google upang ma-enable ang kakayahan na malayuang hanapin, burahin at i-lock ang device. Mangangailangan ito ng pag-reboot. Gusto mo bang magpatuloy?</translation>
 <translation id="38275787300541712">Pindutin ang Enter kapag tapos na</translation>
 <translation id="7417705661718309329">Google map</translation>
 <translation id="4058793769387728514">Check Document Now</translation>
@@ -4092,7 +4081,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="7180865173735832675">I-customize</translation>
 <translation id="7054808953701320293">Nakuha ko, huwag na ulit ipakita sa akin.</translation>
 <translation id="4903369323166982260">Patakbuhin ang Chrome Cleanup Tool</translation>
-<translation id="144932861331386147">Mangyaring kumonekta sa Internet upang i-update ang iyong Chromebook.</translation>
 <translation id="2938685643439809023">Mongolian</translation>
 <translation id="5368720394188453070">Naka-lock ang iyong telepono. I-unlock ito upang makapasok.</translation>
 <translation id="2070909990982335904">Nakalaan para sa system ang mga pangalang nagsisimula sa tuldok. Mangyaring pumili ng isa pang pangalan.</translation>
@@ -4200,7 +4188,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="6557565812667414268">Pinagana lang para sa mga high-DPI na display</translation>
 <translation id="7331991248529612614">I-enable ang Animation ng Button para sa Reader Mode</translation>
 <translation id="5469954281417596308">Manager ng bookmark</translation>
-<translation id="106153153543631784">Pakilagay muli ang iyong password upang ma-update ang iyong profile sa Chromebook.</translation>
 <translation id="3064388234319122767">Transliteration (zdravo → здраво)</translation>
 <translation id="5425722269016440406">Online ka dapat upang i-off ang Smart Lock dahil naka-sync ang setting na ito sa iyong telepono at iba pang mga device. Mangyaring kumonekta muna sa isang network.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
@@ -4824,7 +4811,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="7973320858902175766">Pang-patch ng Component</translation>
 <translation id="3654045516529121250">Basahin ang iyong mga setting ng pagiging naa-access</translation>
 <translation id="2113479184312716848">Buksan ang &amp;File...</translation>
-<translation id="4346759900458392803">I-unenroll ang Chromebook</translation>
 <translation id="884264119367021077">Shipping address</translation>
 <translation id="634208815998129842">Task manager</translation>
 <translation id="2735698359135166290">Romanian standard keyboard</translation>
@@ -4919,7 +4905,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="7209475358897642338">Ano ang iyong wika?</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME"/> (Pinangangasiwaan)</translation>
 <translation id="9149866541089851383">I-edit...</translation>
-<translation id="8735794438432839558">Mangyaring kumonekta sa Internet upang makapag-sign in sa iyong Chromebook.</translation>
 <translation id="3356395591469757189">Mga suhestyon sa autofill bilang keyboard accessory view</translation>
 <translation id="7939412583708276221">Panatilihin pa rin</translation>
 <translation id="8579285237314169903">Nagsi-sync ng <ph name="NUMBER_OF_FILES"/> (na) item...</translation>
@@ -5532,7 +5517,6 @@ Maaaring hindi available ang ilang tampok.  Mangyaring suriin na umiiral ang pro
 <translation id="6793649375377511437">Impormasyon ng Copresence sa Google</translation>
 <translation id="4335713051520279344">Ang computer na ito ay magre-reset sa loob ng 1 segundo.
 Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
-<translation id="4775135101712609478">Ipakita ang mga kahilingan sa pahintulot sa nilalaman (hal. mga notification, quota, paggamit sa camera, paggamit sa mikropono) sa mga bubble sa halip ng mga info bar.</translation>
 <translation id="7233715388668391168">I-enable/I-disable ang gesture na pagta-type para sa virtual na keyboard.</translation>
 <translation id="6264485186158353794">Bumalik sa safety</translation>
 <translation id="7705524343798198388">VPN</translation>

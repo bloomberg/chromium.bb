@@ -64,7 +64,6 @@
 <translation id="3293894718455402932">&quot;<ph name="EXTENSION"/>&quot; จะสามารถอ่านและเขียนไฟล์รูปภาพ วิดีโอ และเสียงในโฟลเดอร์ที่เลือกไว้</translation>
 <translation id="7180611975245234373">รีเฟรช</translation>
 <translation id="4940047036413029306">อัญประกาศ</translation>
-<translation id="6406467842708712906">อ๊ะ ไม่สามารถลงชื่อเข้าใช้ได้ การลงชื่อเข้าใช้ล้มเหลวเนื่องจากไม่สามารถเรียกดูรายละเอียดของบัญชีได้</translation>
 <translation id="1497897566809397301">อนุญาตให้วางข้อมูลภายในเครื่อง (แนะนำ)</translation>
 <translation id="7627349730328142646">เปิดใช้การทดลองที่ศูนย์ข้อความจะเลื่อนขึ้นทุกครั้งเมื่อมีการนำการแจ้งเตือนออก</translation>
 <translation id="3275778913554317645">เปิดเป็นหน้าต่าง</translation>
@@ -170,7 +169,6 @@
 <translation id="3384773155383850738">จำนวนคำแนะนำสูงสุด</translation>
 <translation id="1014321050861012327">บันทึกรหัสผ่านอัตโนมัติ</translation>
 <translation id="8677212948402625567">ยุบทั้งหมด...</translation>
-<translation id="2056996954182910740">เปิดใช้เครื่องเรียกใช้งานแอป</translation>
 <translation id="7600965453749440009">ไม่ต้องแปลภาษา<ph name="LANGUAGE"/></translation>
 <translation id="3208703785962634733">ยังไม่ยืนยัน</translation>
 <translation id="620329680124578183">ไม่โหลด (แนะนำ)</translation>
@@ -565,7 +563,6 @@
 <translation id="8206859287963243715">โทรศัพท์มือถือ</translation>
 <translation id="5610637197759059204">ปิดใช้การโหลดหน้าใหม่ที่ทริกเกอร์โดยเนื้อหาการเลื่อนเกินในแนวตั้ง</translation>
 <translation id="6435285122322546452">จัดการแอปพลิเคชันคีออสก์...</translation>
-<translation id="5748409721703101646">Chromebook ของคุณไม่สามารถเชื่อมต่ออินเทอร์เน็ตโดยใช้ <ph name="NETWORK_NAME"/> โปรดเลือกเครือข่ายอื่น <ph name="LEARN_MORE_LINK_START"/>เรียนรู้เพิ่มเติม<ph name="LEARN_MORE_LINK_END"/></translation>
 <translation id="1064835277883315402">เข้าร่วมเครือข่ายส่วนบุคคล</translation>
 <translation id="872728358380751743">ตัวเลือกนี้จะปิดใช้การสนับสนุนสตรีมมิงการส่งสำหรับสตรีมวิดีโอที่เข้ารหัสโดยใช้ฮาร์ดแวร์แพลตฟอร์ม</translation>
 <translation id="6508261954199872201">แอปพลิเคชัน: <ph name="APP_NAME"/></translation>
@@ -735,6 +732,7 @@
 <translation id="5759728514498647443"><ph name="APP_NAME"/> สามารถอ่านเอกสารที่คุณส่งไปพิมพ์ผ่าน <ph name="APP_NAME"/> ได้</translation>
 <translation id="2401053206567162910">ในขณะนี้ แอปพลิเคชันนี้ยังไม่ได้รับการสนับสนุนบนอุปกรณ์นี้ แต่เหล่าบรรดาโนมผู้รอบรู้ของ Chrome กำลังมุ่งมั่นทำงานอย่างหนักเพื่อให้สามารถใช้งานแอปพลิเคชันดังกล่าวได้ในเร็วๆ นี้</translation>
 <translation id="3273410961255278341">ส่งสำหรับ:</translation>
+<translation id="4255096080864111471">ระบุไทล์สูงสุดสำหรับพื้นที่ความสนใจ</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">แท็บใหม่</translation>
 <translation id="6567688344210276845">ไม่สามารถโหลดไอคอน &quot;<ph name="ICON"/>&quot; เพื่อให้เกิดการทำงานบนหน้าเว็บ</translation>
@@ -1110,7 +1108,6 @@
 <translation id="5774515636230743468">จัดการ:</translation>
 <translation id="1313832887664610176">ขาดการเชื่อมต่อกับ Chromebox</translation>
 <translation id="3465566417615315331">คลิกรูปภาพของคุณ</translation>
-<translation id="4960944339761782076">ใช้ลูกโป่งสำหรับคำขอสิทธิ์</translation>
 <translation id="7474889694310679759">แป้นพิมพ์ภาษาอังกฤษแคนาดา</translation>
 <translation id="1817871734039893258">การกู้คืนไฟล์ของ Microsoft</translation>
 <translation id="2423578206845792524">&amp;บันทึกรูปภาพเป็น...</translation>
@@ -1673,6 +1670,7 @@
 <translation id="4811502511369621968">ที่อยู่อีเมลไม่ถูกต้อง โปรดตรวจสอบและลองอีกครั้ง</translation>
 <translation id="175196451752279553">เ&amp;ปิดแท็บที่ถูกปิดขึ้นใหม่</translation>
 <translation id="8602851771975208551">โปรแกรมอื่นในคอมพิวเตอร์ของคุณเพิ่มแอปพลิเคชันที่อาจเปลี่ยนวิธีการทำงานของ Chrome</translation>
+<translation id="9154967591629748964">ไทล์สูงสุดสำหรับพื้นที่ความสนใจ</translation>
 <translation id="2655386581175833247">ใบรับรองผู้ใช้:</translation>
 <translation id="5039804452771397117">อนุญาต</translation>
 <translation id="5435964418642993308">กด Enter เพื่อย้อนกลับ กดแป้นเมนูตามบริบทเพื่อดูประวัติการเข้าชม</translation>
@@ -1780,7 +1778,6 @@
 <translation id="8598687241883907630">หยุดเชื่อมต่อบัญชี Google ของคุณ...</translation>
 <translation id="3195445837372719522">Chromebox วิดีโอคอนเฟอเรนซ์ต้องการทราบโดเมน คุณจึงจะต้องลงชื่อเข้าใช้บัญชีของคุณ</translation>
 <translation id="7920092496846849526">คุณได้ถามผู้ปกครองแล้วว่าสามารถเข้าชมหน้านี้ได้ไหม</translation>
-<translation id="5984304957315422459">อ๊ะ ไม่สามารถลงชื่อเข้าใช้ให้คุณได้ การลงชื่อเข้าใช้ล้มเหลวเนื่องจากไม่สามารถยืนยันรหัสผ่านของคุณ</translation>
 <translation id="9003677638446136377">ตรวจสอบอีกครั้ง</translation>
 <translation id="9187827965378254003">น่าเสียดาย ดูเหมือนว่าขณะนี้ยังไม่มีการทดลองแต่อย่างใด</translation>
 <translation id="6022526133015258832">เปิดแบบเต็มหน้าจอ</translation>
@@ -1845,6 +1842,7 @@
 <translation id="1901377140875308934">ลงชื่อเข้าใช้ <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">วอลเปเปอร์ปัจจุบันตั้งโดย &quot;<ph name="APP_NAME"/>&quot;</translation>
 <translation id="5074318175948309511">อาจต้องโหลดหน้านี้ซ้ำก่อนที่การตั้งค่าใหม่จะมีผล</translation>
+<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">ยังไม่ได้เลือก</translation>
 <translation id="6405640832764359650">เปิดใช้ช่องทำเครื่องหมายการบันทึกบัตร Google Payments</translation>
 <translation id="1346104802985271895">วิธีป้อนข้อมูลภาษาเวียดนาม (TELEX)</translation>
@@ -2052,7 +2050,6 @@
 <translation id="8551388862522347954">ใบอนุญาต</translation>
 <translation id="5525695896049981561">เห็น</translation>
 <translation id="1410616244180625362">อนุญาตให้ <ph name="HOST"/> เข้าถึงกล้องต่อไป</translation>
-<translation id="298577602575286468">ลงทะเบียน Chromebook</translation>
 <translation id="8494214181322051417">ใหม่!</translation>
 <translation id="7959874006162866942">คุณแน่ใจไหมว่าต้องการติดตั้ง <ph name="PLUGIN_NAME"/> คุณควรติดตั้งเฉพาะปลั๊กอินที่คุณไว้ใจเท่านั้น</translation>
 <translation id="2937174152333875430">เปิดใช้การซิงค์เครื่องเรียกใช้งานแอป</translation>
@@ -2259,7 +2256,6 @@
 <translation id="7053983685419859001">บล็อก</translation>
 <translation id="7912024687060120840">ในโฟลเดอร์:</translation>
 <translation id="2485056306054380289">ใบรับรอง CA ของเซิร์ฟเวอร์:</translation>
-<translation id="5631861698741076898">อ๊ะ ไม่สามารถลงชื่อเข้าใช้ให้คุณได้ การลงชื่อเข้าใช้ล้มเหลวเพราะมีการกำหนดค่าให้ใช้ URL ที่ไม่ปลอดภัย (<ph name="BLOCKED_URL"/>)</translation>
 <translation id="6462109140674788769">แป้นพิมพ์ภาษากรีก</translation>
 <translation id="9191610850443814852">เปิดใช้การตั้งค่า Smart Lock ที่อนุญาตให้ Chromebook สำรวจโทรศัพท์ผ่านบลูทูธพลังงานต่ำเพื่อปลดล็อก Chromebook ในเวลาที่โทรศัพท์อยู่ใกล้ๆ</translation>
 <translation id="2727712005121231835">ขนาดจริง</translation>
@@ -2312,7 +2308,6 @@
 <translation id="5502500733115278303">นำเข้าจาก Firefox</translation>
 <translation id="569109051430110155">ตรวจหาอัตโนมัติ</translation>
 <translation id="8597845839771543242">รูปแบบของคุณสมบัติ:</translation>
-<translation id="4408599188496843485">ความ&amp;ช่วยเหลือ</translation>
 <translation id="7969525169268594403">สโลวีเนีย</translation>
 <translation id="5399158067281117682">PIN ไม่ตรงกัน!</translation>
 <translation id="6277105963844135994">ระยะหมดเวลาของเครือข่าย</translation>
@@ -2427,7 +2422,6 @@
 <translation id="2562685439590298522">เอกสาร</translation>
 <translation id="8673383193459449849">ปัญหาของเซิร์ฟเวอร์</translation>
 <translation id="4060383410180771901">เว็บไซต์ไม่สามารถจัดการคำขอสำหรับ <ph name="URL"/></translation>
-<translation id="5774208114954065213">คุณกำลังจะยกเลิกการลงทะเบียน Chromebook เครื่องนี้กับ Google เพื่อปิดใช้ความสามารถในการค้นหา ล้างข้อมูล และล็อกอุปกรณ์ระยะไกล การดำเนินการนี้จำเป็นต้องรีบูตเครื่อง คุณต้องการดำเนินการต่อไหม</translation>
 <translation id="6710213216561001401">ก่อนหน้า</translation>
 <translation id="1108600514891325577">&amp;หยุด</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
@@ -2478,7 +2472,6 @@
 <translation id="7434509671034404296">นักพัฒนา</translation>
 <translation id="7668654391829183341">อุปกรณ์ที่ไม่รู้จัก</translation>
 <translation id="2712173769900027643">ขออนุญาต</translation>
-<translation id="2053298192223252950">เปิดหรือปิดใช้องค์ประกอบดีไซน์ Material ใน Chrome ของเบราว์เซอร์</translation>
 <translation id="1790550373387225389">เข้าสู่โหมดการนำเสนอ</translation>
 <translation id="6447842834002726250">คุกกี้</translation>
 <translation id="8059178146866384858">ไฟล์ชื่อ &quot;$1&quot; มีอยู่แล้ว โปรดเลือกชื่ออื่น</translation>
@@ -3293,7 +3286,6 @@
 <translation id="324743268744517458">คำเตือน: คุณไม่ได้เชื่อมต่อกับเซิร์ฟเวอร์ Google Payments ที่ใช้งานจริง บัตรที่ออกจะไม่สามารถใช้ได้</translation>
 <translation id="4711094779914110278">ตุรกี</translation>
 <translation id="2572032849266859634">ได้รับสิทธิ์ในการอ่าน <ph name="VOLUME_NAME"/> เท่านั้นแล้ว</translation>
-<translation id="8193362611902704788">เปิดใช้เครื่องเรียกใช้งานแอป การเปิดใช้จะสร้างทางลัดสำหรับระบบปฏิบัติการในเครื่องเรียกใช้งานแอป</translation>
 <translation id="5121130586824819730">ฮาร์ดดิสก์ของคุณเต็ม โปรดบันทึกลงในตำแหน่งอื่นหรือเพิ่มเนื้อที่ว่างในฮาร์ดดิสก์</translation>
 <translation id="1875987452136482705">ตัวเลือกนี้จะปิดใช้การสนับสนุนใน WebRTC สำหรับการถอดรหัสสตรีมวิดีโอโดยใช้ฮาร์ดแวร์แพลตฟอร์ม</translation>
 <translation id="6164005077879661055">ไฟล์และข้อมูลในตัวเครื่องทั้งหมดที่เกี่ยวข้องกับผู้ใช้ภายใต้การดูแลจะถูกลบออกอย่างถาวรเมื่อผู้ใช้ภายใต้การดูแลนี้ถูกลบ เว็บไซต์ที่เข้าชมและการตั้งค่าสำหรับผู้ใช้ภายใต้การดูแลนี้อาจจะยังคงมองเห็นได้โดยผู้จัดการที่ <ph name="MANAGEMENT_URL"/></translation>
@@ -3316,7 +3308,6 @@
 <translation id="499165176004408815">ใช้โหมดคอนทราสต์สูง</translation>
 <translation id="2928940441164925372">เปิดใช้งานการรวบรวมเมตริกและกิจกรรมที่เกี่ยวข้องกับประสิทธิภาพในแบบแฝง และมีตัวเลือกให้ดูข้อมูลนี้ในรูปแบบกราฟิก ในการดูข้อมูล ให้ไปที่ chrome://performance</translation>
 <translation id="3289856944988573801">ในการตรวจหาการอัปเดต โปรดใช้อีเทอร์เน็ตหรือ WiFi</translation>
-<translation id="247500748408468353">โปรดติดต่อผู้ดูแลระบบของคุณหรือลองอีกครั้ง</translation>
 <translation id="450070808725753129">หากมีอยู่ในรายการเป็นโปรแกรมที่ได้รับอนุญาตให้เข้าถึงเครือข่ายอยู่แล้ว ให้ลอง
         ลบจากรายการและเพิ่มกลับเข้าไปอีกครั้ง</translation>
 <translation id="8300607741108698921">ติดตั้งใน 1 นาที</translation>
@@ -3825,7 +3816,6 @@
 <translation id="1064912851688322329">หยุดเชื่อมต่อบัญชี Google ของคุณ</translation>
 <translation id="1294298200424241932">แก้ไขการตั้งค่าความเชื่อถือ:</translation>
 <translation id="1407135791313364759">เปิดทั้งหมด</translation>
-<translation id="1487997194203762088">เกิดข้อผิดพลาดในการลงชื่อเข้าใช้</translation>
 <translation id="1434928358870966081">ปิดใช้งาน Canvas 2 มิติที่ได้รับการเร่ง</translation>
 <translation id="331915893283195714">อนุญาตให้ทุกไซต์ปิดใช้งานเคอร์เซอร์เมาส์</translation>
 <translation id="8978526688207379569">ไซต์นี้มีการดาวน์โหลดไฟล์หลายๆ ไฟล์โดยอัตโนมัติ</translation>
@@ -3993,7 +3983,6 @@
 <translation id="3778740492972734840">&amp;เครื่องมือสำหรับนักพัฒนาซอฟต์แวร์</translation>
 <translation id="8335971947739877923">ส่งออก...</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN"/> แสดงแบบเต็มหน้าจออยู่และได้ปิดใช้งานเคอร์เซอร์เมาส์แล้ว</translation>
-<translation id="747416882205977201">คุณกำลังจะลงทะเบียน Chromebook เครื่องนี้กับ Google เพื่อเปิดใช้ความสามารถในการค้นหา ล้างข้อมูล และล็อกอุปกรณ์ระยะไกล การดำเนินการนี้จำเป็นต้องรีบูตเครื่อง คุณต้องการดำเนินการต่อไหม</translation>
 <translation id="38275787300541712">กด Enter เมื่อเสร็จ</translation>
 <translation id="7417705661718309329">แผนที่ Google</translation>
 <translation id="4058793769387728514">ตรวจสอบเอกสารทันที</translation>
@@ -4050,7 +4039,6 @@
 <translation id="7180865173735832675">กำหนดค่า</translation>
 <translation id="7054808953701320293">รับทราบ ไม่ต้องแสดงอีก</translation>
 <translation id="4903369323166982260">เรียกใช้เครื่องมือ Chrome Cleanup</translation>
-<translation id="144932861331386147">โปรดเชื่อมต่ออินเทอร์เน็ตเพื่ออัปเดต Chromebook</translation>
 <translation id="2938685643439809023">มองโกเลีย</translation>
 <translation id="5368720394188453070">โทรศัพท์ล็อกอยู่ โปรดปลดล็อกเพื่อเข้าใช้งาน</translation>
 <translation id="2070909990982335904">ชื่อที่ขึ้นต้นด้วยจุดสงวนไว้สำหรับระบบ โปรดเลือกชื่ออื่น</translation>
@@ -4157,7 +4145,6 @@
 <translation id="6557565812667414268">เปิดใช้งานสำหรับจอแสดงผลแบบ DPI สูงเท่านั้น</translation>
 <translation id="7331991248529612614">เปิดใช้ภาพเคลื่อนไหวปุ่มโหมดนักอ่าน</translation>
 <translation id="5469954281417596308">การจัดการบุ๊กมาร์ก</translation>
-<translation id="106153153543631784">โปรดป้อนรหัสผ่านอีกครั้งเพื่ออัปเดตโปรไฟล์ Chromebook</translation>
 <translation id="3064388234319122767">การทับศัพท์ (zdravo → здраво)</translation>
 <translation id="5425722269016440406">คุณต้องออนไลน์เพื่อปิด Smart Lock เนื่องจากการตั้งค่านี้ได้ซิงค์กับโทรศัพท์และอุปกรณ์อื่นๆ โปรดเชื่อมต่อเครือข่ายก่อน</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
@@ -4777,7 +4764,6 @@
 <translation id="7973320858902175766">ตัวแก้ไขคอมโพเนนต์</translation>
 <translation id="3654045516529121250">อ่านการตั้งค่าการเข้าถึง</translation>
 <translation id="2113479184312716848">เปิดไ&amp;ฟล์...</translation>
-<translation id="4346759900458392803">ยกเลิกการลงทะเบียน Chromebook</translation>
 <translation id="884264119367021077">ที่อยู่จัดส่ง</translation>
 <translation id="634208815998129842">ตัวจัดการงาน</translation>
 <translation id="2735698359135166290">แป้นพิมพ์มาตรฐานโรมาเนีย</translation>
@@ -4870,7 +4856,6 @@
 <translation id="7209475358897642338">ภาษาของคุณคือ</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME"/> (อยู่ภายใต้การดูแล)</translation>
 <translation id="9149866541089851383">แก้ไข...</translation>
-<translation id="8735794438432839558">โปรดเชื่อมต่ออินเทอร์เน็ตเพื่อลงชื่อเข้าใช้ Chromebook</translation>
 <translation id="3356395591469757189">การแนะนำการป้อนข้อความอัตโนมัติเป็นมุมมองเสริมของแป้นพิมพ์</translation>
 <translation id="7939412583708276221">เก็บเอาไว้ ไม่ว่าอย่างไรก็ตาม</translation>
 <translation id="8579285237314169903">กำลังซิงค์ <ph name="NUMBER_OF_FILES"/> รายการ...</translation>
@@ -5480,7 +5465,6 @@
 <translation id="6793649375377511437">ข้อมูล Google Copresence</translation>
 <translation id="4335713051520279344">คอมพิวเตอร์นี้จะรีเซ็ตภายใน 1 วินาที
 กดแป้นใดก็ได้เพื่อสำรวจต่อ</translation>
-<translation id="4775135101712609478">แสดงคำขอสิทธิ์เนื้อหา (เช่น การแจ้งเตือน โควต้า การใช้กล้อง การใช้ไมโครโฟน) ในลูกโป่งแทนแถบข้อมูล</translation>
 <translation id="7233715388668391168">เปิดหรือปิดใช้การป้อนข้อมูลด้วยท่าทางสำหรับแป้นพิมพ์เสมือน</translation>
 <translation id="6264485186158353794">กลับสู่ความปลอดภัย</translation>
 <translation id="7705524343798198388">VPN</translation>

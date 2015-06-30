@@ -65,7 +65,6 @@
 <translation id="3293894718455402932">&quot;<ph name="EXTENSION"/>&quot; चेक किए हुए फ़ोल्डर में चित्र, वीडियो और ध्वनि फ़ाइलों को पढ़ने और लिखने में सक्षम हो जाएगा.</translation>
 <translation id="7180611975245234373">रीफ्रेश करें</translation>
 <translation id="4940047036413029306">कोट</translation>
-<translation id="6406467842708712906">ओह, आपको प्रवेश नहीं कराया जा सका. प्रवेश विफल रहा क्‍योंकि आपके खाता विवरण पुनर्प्राप्‍त नहीं हो सके.</translation>
 <translation id="1497897566809397301">स्थानीय डेटा को सेट होने की अनुमति दें (सुझाये गये) </translation>
 <translation id="7627349730328142646">ये प्रयोग सक्षम करें कि संदेश केंद्र हमेशा सूचना निष्‍कासन पर ऊपर की ओर स्‍क्रॉल हो.</translation>
 <translation id="3275778913554317645">विंडो के रूप में खोलें</translation>
@@ -171,7 +170,6 @@
 <translation id="3384773155383850738">सुझावों की अधिकतम संख्या</translation>
 <translation id="1014321050861012327">अपने आप पासवर्ड सहेजें.</translation>
 <translation id="8677212948402625567">सभी संक्षिप्त करें...</translation>
-<translation id="2056996954182910740">ऐप्स लॉन्चर सक्षम करें.</translation>
 <translation id="7600965453749440009">कभी भी <ph name="LANGUAGE"/> का अनुवाद न करें</translation>
 <translation id="3208703785962634733">पुष्टि न की गई</translation>
 <translation id="620329680124578183">लोड न करें (सुझाव)</translation>
@@ -573,7 +571,6 @@
 <translation id="8206859287963243715">सेलुलर</translation>
 <translation id="5610637197759059204">लंबवत ओवरस्‍क्रॉल करने वाली सामग्री द्वारा ट्रिगर किए गए पृष्‍ठ रीलोड अक्षम करें.</translation>
 <translation id="6435285122322546452">किओस्क ऐप्लिकेशन प्रबंधित करें...</translation>
-<translation id="5748409721703101646">आपका Chrome बुक <ph name="NETWORK_NAME"/> का उपयोग करके इंटरनेट से कनेक्ट नहीं कर पा रहा है. कृपया कोई अन्य नेटवर्क चुनें. <ph name="LEARN_MORE_LINK_START"/>और जानें<ph name="LEARN_MORE_LINK_END"/></translation>
 <translation id="1064835277883315402">निजी नेटवर्क से जुड़ें</translation>
 <translation id="872728358380751743">यह विकल्‍प प्‍लेटफ़ॉर्म हार्डवेयर का उपयोग करके वीडियो स्‍ट्रीम एन्‍कोड करने के लिए कास्‍ट स्‍ट्रीमिंग में समर्थन को अक्षम करता है.</translation>
 <translation id="6508261954199872201">ऐप्‍लिकेशन: <ph name="APP_NAME"/></translation>
@@ -747,6 +744,7 @@
 <translation id="5759728514498647443">आपके द्वारा <ph name="APP_NAME"/> के माध्‍यम से प्रिंट करने के लिए भेजे जाने वाले दस्‍तावेज़ <ph name="APP_NAME"/> द्वारा पढ़े जा सकते हैं.</translation>
 <translation id="2401053206567162910">यह ऐप्स  वर्तमान में इस डिवाइस पर समर्थित नहीं है लेकिन यह जल्दी ही काम करने लगे इसके लिए Chrome gnome इसके लिए कठोर मेहनत कर रहे हैं.</translation>
 <translation id="3273410961255278341">इसके लिए भेजें:</translation>
+<translation id="4255096080864111471">रूचि क्षेत्र के लिए अधिकतम टाइल निर्दिष्ट करें.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">नया टैब</translation>
 <translation id="6567688344210276845">पृष्ठ कार्रवाई के लिए '<ph name="ICON"/>' आइकन लोड नहीं कर सका.</translation>
@@ -1128,7 +1126,6 @@
 <translation id="5774515636230743468">मालसूची:</translation>
 <translation id="1313832887664610176">Chromebox से कनेक्‍शन गुम हो गया है</translation>
 <translation id="3465566417615315331">अपनी फ़ोटो क्‍लिक करें</translation>
-<translation id="4960944339761782076">अनुमति अनुरोधों के लिए बबल का उपयोग करें</translation>
 <translation id="7474889694310679759">कनाडाई अंग्रेज़ी कीबोर्ड</translation>
 <translation id="1817871734039893258">Microsoft फ़ाइल पुनर्प्राप्ति</translation>
 <translation id="2423578206845792524">इस रूप में चित्र स&amp;हेजें...</translation>
@@ -1691,6 +1688,7 @@
 <translation id="4811502511369621968">अमान्य ईमेल पता. कृपया जांचें और पुन: प्रयास करें.</translation>
 <translation id="175196451752279553">बंद किए गए टैब पु&amp;न: खोलें</translation>
 <translation id="8602851771975208551">आपके कंप्यूटर पर किसी अन्य प्रोग्राम ने ऐप्स  जोड़ा है, जो Chrome के काम करने के तरीके को बदल सकता है.</translation>
+<translation id="9154967591629748964">रूचि क्षेत्र के लिए अधिकतम टाइल</translation>
 <translation id="2655386581175833247">उपयोगकर्ता प्रमाणपत्र:</translation>
 <translation id="5039804452771397117">अनुमति दें</translation>
 <translation id="5435964418642993308">वापस जाने के लिए enter दबाएं, इतिहास देखने के लिए प्रसंग मेनू कुंजी दबाएं</translation>
@@ -1799,7 +1797,6 @@
 <translation id="8598687241883907630">अपना Google खाता डिस्‍कनेक्‍ट करें...</translation>
 <translation id="3195445837372719522">मीटिंग के लिए Chromebox को यह जानने की आवश्‍यकता है कि यह किस डोमेन से संबंधित है. इसके लिए आपको अपने खाते में प्रवेश करना होगा.</translation>
 <translation id="7920092496846849526">आपने अपने अभिभावक से पूछा था कि इस पृष्‍ठ पर जाना ठीक है या नहीं.</translation>
-<translation id="5984304957315422459">ओह, आप प्रवेश नहीं कर सके. प्रवेश करना विफ़ल रहा क्योंकि आपका पासवर्ड सत्यापित नहीं किया जा सका.</translation>
 <translation id="9003677638446136377">पुन: जांचें</translation>
 <translation id="9187827965378254003">ओह, ऐसा लगता है कि वर्तमान में कोई प्रयोग उपलब्‍ध नहीं हैं.</translation>
 <translation id="6022526133015258832">पूर्ण स्‍क्रीन खोलें</translation>
@@ -1864,6 +1861,7 @@
 <translation id="1901377140875308934"><ph name="SHORT_PRODUCT_NAME"/> में प्रवेश करें...</translation>
 <translation id="5529098031581368697">वर्तमान वॉलपेपर '<ph name="APP_NAME"/>' द्वारा सेट किया गया है</translation>
 <translation id="5074318175948309511">नई सेटिंग के प्रभावी होने से पहले इस पृष्‍ठ को रीलोड करने की आवश्‍यकता हो सकती है.</translation>
+<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">कोई चयन नहीं</translation>
 <translation id="6405640832764359650">Google पेमेंट्स कार्ड सहेजने का चेकबॉक्स सक्षम करें</translation>
 <translation id="1346104802985271895">वियतनामी इनपुट विधि (TELEX)</translation>
@@ -2071,7 +2069,6 @@
 <translation id="8551388862522347954">लाइसेंस</translation>
 <translation id="5525695896049981561">हां, मुझे वह दिखाई दे रहा है</translation>
 <translation id="1410616244180625362"><ph name="HOST"/> को अपना कैमरा एक्सेस करते रहने दें</translation>
-<translation id="298577602575286468">Chrome बुक का नामांकन करें</translation>
 <translation id="8494214181322051417">नया!</translation>
 <translation id="7959874006162866942">क्‍या आप वाकई <ph name="PLUGIN_NAME"/> को इंस्‍टॉल करना चाहते हैं? आपको केवल वही प्‍लग इन इंस्‍टॉल करने चाहिए जिन पर आपको विश्‍वास है.</translation>
 <translation id="2937174152333875430">ऐप्लिकेशन लॉन्चर समन्वयन सक्षम करें</translation>
@@ -2282,7 +2279,6 @@
 <translation id="7053983685419859001">अवरोधित करें</translation>
 <translation id="7912024687060120840">इस फ़ोल्डर में:</translation>
 <translation id="2485056306054380289">सर्वर CA प्रमाणपत्र:</translation>
-<translation id="5631861698741076898">ओह, आपको प्रवेश नहीं कराया जा सका. प्रवेश विफल रहा क्‍योंकि उसे गैर-सुरक्षित URL (<ph name="BLOCKED_URL"/>) का उपयोग करने के लिए कॉन्‍फ़िगर किया गया था.</translation>
 <translation id="6462109140674788769">यूनानी कीबोर्ड</translation>
 <translation id="9191610850443814852">यह Smart Lock सेटिंग को सक्षम करता है जो Chromebook को ब्लूटूथ निम्न ऊर्जा पर स्थित फ़ोन को खोजने की अनुमति देती है ताकि Chromebook के फ़ोन के नज़दीक होने पर इसे अनलॉक किया जा सके.</translation>
 <translation id="2727712005121231835">वास्तविक आकार</translation>
@@ -2341,7 +2337,6 @@
 <translation id="5502500733115278303">Firefox से आयात किया गया</translation>
 <translation id="569109051430110155">स्वतः पता लगाएं</translation>
 <translation id="8597845839771543242">प्रॉपर्टी का प्रारूप:</translation>
-<translation id="4408599188496843485">स&amp;हायता</translation>
 <translation id="7969525169268594403">स्लोवेनियाई</translation>
 <translation id="5399158067281117682">पिन मेल नहीं खाते!</translation>
 <translation id="6277105963844135994">नेटवर्क समय समाप्त</translation>
@@ -2459,7 +2454,6 @@
 <translation id="2562685439590298522"> दस्तावेज़</translation>
 <translation id="8673383193459449849">सर्वर संबंधी समस्या</translation>
 <translation id="4060383410180771901">वेबसाइट <ph name="URL"/> के अनुरोध का प्रबंध करने में असमर्थ है.</translation>
-<translation id="5774208114954065213">आप डिवाइस का दूरस्थ रूप से पता लगाने, वाइप करने और उसे लॉक करने की क्षमता को अक्षम करने के लिए Google से इस Chrome बुक का नामांकन रद्द करने वाले हैं. इसके लिए रीबूट करने की आवश्यकता होगी. क्या आप जारी रखना चाहते हैं?</translation>
 <translation id="6710213216561001401">पिछला</translation>
 <translation id="1108600514891325577">&amp;रोकें</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
@@ -2510,7 +2504,6 @@
 <translation id="7434509671034404296">डेवलपर</translation>
 <translation id="7668654391829183341">अज्ञात डिवाइस</translation>
 <translation id="2712173769900027643">अनुमति मांगें</translation>
-<translation id="2053298192223252950">ब्राउज़र के chrome में मटीरियल डिज़ाइन तत्‍वों को सक्षम करें.</translation>
 <translation id="1790550373387225389">प्रस्‍तुति‍करण मोड दर्ज करें</translation>
 <translation id="6447842834002726250">कुकी</translation>
 <translation id="8059178146866384858">&quot;$1&quot; नामक फ़ाइल पहले से मौजूद है. कृपया कोई भि‍न्‍न नाम चुनें.</translation>
@@ -3347,7 +3340,6 @@
 <translation id="324743268744517458">चेतावनी: आप उत्पादन Google पेमेंट्स सर्वर से कनेक्ट नहीं हैं. जारी किए गए कार्ड अमान्य होंगे.</translation>
 <translation id="4711094779914110278">तुर्की</translation>
 <translation id="2572032849266859634"><ph name="VOLUME_NAME"/> को केवल पढ़ने के लिए ऐक्‍सेस दे दी गई है.</translation>
-<translation id="8193362611902704788">ऐप्लिकेशन लॉन्चर सक्षम करें. सक्षम करने पर, ऐप्लिकेशन लॉन्चर के लिए ऑपरेटिंग सिस्टम शॉर्टकट बना देता है.</translation>
 <translation id="5121130586824819730">आपकी हार्ड डिस्‍क भर गई है.  कृपया किसी अन्‍य स्‍थान पर सहेजें या हार्ड डिस्‍क पर जगह बनाएं.</translation>
 <translation id="1875987452136482705">यह विकल्प प्लेटफ़ॉर्म हार्डवेयर का उपयोग करके वीडियो स्ट्रीम को डीकोड करने के लिए WebRTC में समर्थन को अक्षम करता है.</translation>
 <translation id="6164005077879661055">इस पर्यवेक्षित उपयोगकर्ता को निकाले जाने के बाद, पर्यवेक्षित उपयोगकर्ता से संबद्ध सभी फ़ाइलें और स्थानीय डेटा को स्थायी रूप से हटा दिया जाएगा. प्रबंधक द्वारा अब भी इस पर्यवेक्षित उपयोगकर्ता द्वारा देखी गईं वेबसाइटें और सेटिंग <ph name="MANAGEMENT_URL"/> पर देखी जा सकेंगी.</translation>
@@ -3370,7 +3362,6 @@
 <translation id="499165176004408815">उच्च कंट्रास्ट मोड उपयोग करें</translation>
 <translation id="2928940441164925372">निष्पादन-संबंधी मेट्रिक्स और ईवेंट का प्रयोग में नहीं एकत्रीकरण सक्षम करें और इस डेटा को ग्राफ़िकल फ़ैशन में देखने का विकल्प प्रदान करें. डेटा देखने के लिए, chrome://performance पर जाएं.</translation>
 <translation id="3289856944988573801">अपडेट की जांच करने के लिए, कृपया Ethernet या वाई-फ़ाई  उपयोग करें.</translation>
-<translation id="247500748408468353">कृपया अपने व्‍यवस्‍थापक से संपर्क करें या पुन: प्रयास करें.</translation>
 <translation id="450070808725753129">यदि वह नेटवर्क एक्सेस करने की अनुमति प्राप्त प्रोग्राम के रूप में पहले से सूचीबद्ध है,
         तो उसे सूची से निकालकर और पुन: जोड़कर देखें.</translation>
 <translation id="8300607741108698921">1 मिनट का सेटअप</translation>
@@ -3879,7 +3870,6 @@
 <translation id="1064912851688322329">अपना Google खाता डिस्‍कनेक्‍ट करें</translation>
 <translation id="1294298200424241932">विश्‍वास सेटिंग संपादित करें:</translation>
 <translation id="1407135791313364759">सभी खोलें</translation>
-<translation id="1487997194203762088">प्रवेश में कुछ गलत हो गया था.</translation>
 <translation id="1434928358870966081">त्वरित 2D कैनवास अक्षम करें</translation>
 <translation id="331915893283195714">सभी साइटों को माउस कर्सर को अक्षम करने दें</translation>
 <translation id="8978526688207379569">इस साइट ने एकाधिक फ़ाइलें स्वचालित रूप से डाउनलोड कीं.</translation>
@@ -4047,7 +4037,6 @@
 <translation id="3778740492972734840">&amp;डेवलपर टूल</translation>
 <translation id="8335971947739877923">निर्यात करें...</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN"/> अब पूर्ण स्‍क्रीन है और आपका माउस कर्सर अक्षम कर दिया गया है.</translation>
-<translation id="747416882205977201">डिवाइस का दूरस्थ रूप से पता लगाने, वाइप करने और उसे लॉक करने की क्षमता को अक्षम करने के लिए आप Google से इस Chrome बुक का नामांकन रद्द करने वाले हैं. इसके लिए रीबूट करने की आवश्यकता होगी. क्या आप जारी रखना चाहते हैं?</translation>
 <translation id="38275787300541712">पूरा हो जाने पर Enter दबाएं</translation>
 <translation id="7417705661718309329">Google मानचित्र</translation>
 <translation id="4058793769387728514">दस्तावेज़ की अभी जांच करें</translation>
@@ -4104,7 +4093,6 @@
 <translation id="7180865173735832675">कस्टमाइज़ करें</translation>
 <translation id="7054808953701320293">समझ लिया, मुझे फिर से न दिखाएं.</translation>
 <translation id="4903369323166982260">Chrome क्‍लीनअप टूल चलाएं</translation>
-<translation id="144932861331386147">अपने Chrome बुक को अपडेट करने के लिए कृपया इंटरनेट से कनेक्ट करें.</translation>
 <translation id="2938685643439809023">मंगोलियाई</translation>
 <translation id="5368720394188453070">आपका फ़ोन लॉक हो गया है. प्रवेश करने के लिए उसे अनलॉक करें.</translation>
 <translation id="2070909990982335904">डॉट से प्रारंभ हो रहे नाम सिस्‍टम के लिए आरक्षित हैं. कृपया कोई अन्‍य नाम चुनें.</translation>
@@ -4211,7 +4199,6 @@
 <translation id="6557565812667414268">केवल उच्च-DPI प्रदर्शनों के लिए सक्षम</translation>
 <translation id="7331991248529612614">रीडर मोड बटन एनिमेशन सक्षम करें</translation>
 <translation id="5469954281417596308">Bookmark manager</translation>
-<translation id="106153153543631784">अपनी Chromebook प्रोफ़ाइल को अपडेट करने के लिए कृपया अपना पासवर्ड पुनः डालें.</translation>
 <translation id="3064388234319122767">लिप्यंतरण (zdravo → здраво)</translation>
 <translation id="5425722269016440406">Smart Lock बंद करने के लिए आपको ऑनलाइन होना होगा क्‍योंकि यह सेटिंग आपके फ़ोन और अन्‍य डिवाइस से समन्‍वयित की जाती है. कृपया पहले किसी नेटवर्क से कनेक्‍ट करें.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
@@ -4835,7 +4822,6 @@
 <translation id="7973320858902175766">घटक पैचर</translation>
 <translation id="3654045516529121250">अपनी पहुंच-योग्यता सेटिंग पढ़ें</translation>
 <translation id="2113479184312716848">&amp;फ़ाइल खोलें...</translation>
-<translation id="4346759900458392803">Chrome बुक का नामांकन रहने दें</translation>
 <translation id="884264119367021077">शिपिंग पता</translation>
 <translation id="634208815998129842">कार्य प्रबंधक</translation>
 <translation id="2735698359135166290">रोमानियाई मानक कीबोर्ड</translation>
@@ -4928,7 +4914,6 @@
 <translation id="7209475358897642338">आपकी भाषा कौन-सी है?</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME"/> (पर्यवेक्षित)</translation>
 <translation id="9149866541089851383">संपादित करें...</translation>
-<translation id="8735794438432839558">अपने Chrome बुक में प्रवेश करने के लिए कृपया इंटरनेट से कनेक्ट करें.</translation>
 <translation id="3356395591469757189">कीबोर्ड एक्सेसरी दृश्य के रूप में स्वतः-भरण सुझाव</translation>
 <translation id="7939412583708276221">फिर भी रखें</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES"/> आइटम समन्‍वयित कर रहा है...</translation>
@@ -5541,7 +5526,6 @@
 <translation id="6793649375377511437">Google Copresence जानकारी</translation>
 <translation id="4335713051520279344">यह कंप्यूटर 1 सेकंड में रीसेट हो जाएगा.
 अन्वेषण जारी रखने के लिए कोई भी कुंजी दबाएं.</translation>
-<translation id="4775135101712609478">सामग्री अनुमति अनुरोधों (उदा. सूचना, कोटा, कैमरा उपयोग, माइक्रोफ़ोन उपयोग) को जानकारी बार के बजाय बबल में दिखाएं.</translation>
 <translation id="7233715388668391168">वर्चुअल कीबोर्ड के लिए जेस्चर लेखन को सक्षम/अक्षम करें.</translation>
 <translation id="6264485186158353794">सुरक्षा पर वापस</translation>
 <translation id="7705524343798198388">VPN</translation>

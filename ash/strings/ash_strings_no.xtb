@@ -87,11 +87,13 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="3087734570205094154">Bunn</translation>
 <translation id="3742055079367172538">Skjermdump tatt</translation>
 <translation id="8878886163241303700">Utvidet skjerm</translation>
+<translation id="714034171374937760">Chromebase</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (Bluetooth)</translation>
 <translation id="3967919079500697218">Muligheten til å ta skjermdumper er deaktivert av administratoren.</translation>
 <translation id="372094107052732682">Trykk Ctrl+Shift+Q to ganger for å avslutte.</translation>
 <translation id="923686485342484400">Trykk på Control+Shift+Q to ganger for å logge av.</translation>
 <translation id="9194617393863864469">Logg på en annen bruker</translation>
+<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6803622936009808957">Kunne ikke speile skjermene fordi ingen støttede oppløsninger ble funnet. Utvidet skrivebord ble brukt i stedet.</translation>
 <translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (primær)</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>% igjen</translation>
@@ -105,6 +107,7 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="2825619548187458965">Hylle</translation>
 <translation id="2614835198358683673">Chromebook kan ikke lades mens den er slått på. Vurder å bruke den offisielle laderen.</translation>
 <translation id="4430019312045809116">Volum</translation>
+<translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Alle tilgjengelige brukere er allerede lagt til i denne økten.</translation>
 <translation id="1383876407941801731">Søk</translation>
 <translation id="2204305834655267233">Nettverksinformasjon</translation>
@@ -147,6 +150,7 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="3019353588588144572">Tid som gjenstår til batteriet er fulladet – <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Skjermforstørrer</translation>
 <translation id="882279321799040148">Klikk for å se den</translation>
+<translation id="5011233892417813670">Chromebook</translation>
 <translation id="1753067873202720523">Chromebook lades kanskje ikke mens den er slått på.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> støtter ikke <ph name="SPECIFIED_RESOLUTION"/>. Oppløsningen ble endret til <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="1602076796624386989">Aktiver mobildata</translation>
@@ -186,6 +190,7 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="5947494881799873997">Tilbakestill</translation>
 <translation id="7593891976182323525">Søk eller Shift</translation>
 <translation id="7649070708921625228">Hjelp</translation>
+<translation id="164969095109328410">Chrome-enhet</translation>
 <translation id="3050422059534974565">Caps Lock er på.
 Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="397105322502079400">Beregner …</translation>

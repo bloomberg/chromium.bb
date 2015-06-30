@@ -64,7 +64,6 @@
 <translation id="3293894718455402932">„<ph name="EXTENSION"/>“ ће моћи да чита и уписује датотеке слика, видео и аудио датотеке у означеним директоријумима.</translation>
 <translation id="7180611975245234373">Освежи</translation>
 <translation id="4940047036413029306">Наводник</translation>
-<translation id="6406467842708712906">Упс, нисмо успели да вас пријавимо. Пријављивање није успело јер нисмо могли да преузмемо податке о налогу.</translation>
 <translation id="1497897566809397301">Дозволи постављање локалних података (препоручено)</translation>
 <translation id="7627349730328142646">Омогући експерименте у којима се центар за поруке увек помера нагоре после уклањања обавештења.</translation>
 <translation id="3275778913554317645">Отвори као прозор</translation>
@@ -170,7 +169,6 @@
 <translation id="3384773155383850738">Максимални број предлога</translation>
 <translation id="1014321050861012327">Аутоматски чувај лозинке.</translation>
 <translation id="8677212948402625567">Скупи све...</translation>
-<translation id="2056996954182910740">Омогући Покретач апликација.</translation>
 <translation id="7600965453749440009">Никад не преводи <ph name="LANGUAGE"/></translation>
 <translation id="3208703785962634733">Непотврђено</translation>
 <translation id="620329680124578183">Не учитавај (препоручено)</translation>
@@ -574,7 +572,6 @@
 <translation id="8206859287963243715">Мобилни уређај</translation>
 <translation id="5610637197759059204">Онемогућите поновна учитавања страница која покреће садржај који се вертикално помера на следећу страницу.</translation>
 <translation id="6435285122322546452">Управљајте киоск апликацијама...</translation>
-<translation id="5748409721703101646">Chromebook не може да се повеже на интернет помоћу <ph name="NETWORK_NAME"/>. Изаберите неку другу мрежу. <ph name="LEARN_MORE_LINK_START"/>Сазнајте више<ph name="LEARN_MORE_LINK_END"/></translation>
 <translation id="1064835277883315402">Придруживање приватној мрежи</translation>
 <translation id="872728358380751743">Ова опција онемогућава подршку у Cast стримингу за кодирање видео стримова помоћу хардвера платформе.</translation>
 <translation id="6508261954199872201">Апл.: <ph name="APP_NAME"/></translation>
@@ -747,6 +744,7 @@
 <translation id="5759728514498647443">Документе које шаљете на штампање преко <ph name="APP_NAME"/> може да чита <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Ова апликација тренутно није подржана на овом уређају, али Chrome патуљци вредно раде да је ускоро поправе.</translation>
 <translation id="3273410961255278341">Пошаљи за:</translation>
+<translation id="4255096080864111471">Наведите максимални број плочица за област за интересовање.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Нова картица</translation>
 <translation id="6567688344210276845">Није могуће учитати икону „<ph name="ICON"/>“ за радњу странице.</translation>
@@ -1123,7 +1121,6 @@
 <translation id="5774515636230743468">Манифест:</translation>
 <translation id="1313832887664610176">Веза са Chromebox-ом је прекинута</translation>
 <translation id="3465566417615315331">Кликните на своју слику</translation>
-<translation id="4960944339761782076">Користи облачиће за захтеве за дозволу</translation>
 <translation id="7474889694310679759">Језик тастатуре: енглески (Канада)</translation>
 <translation id="1817871734039893258">Microsoft опоравак датотека</translation>
 <translation id="2423578206845792524">Са&amp;чувај слику као...</translation>
@@ -1688,6 +1685,7 @@
 <translation id="4811502511369621968">Неважећа имејл адреса. Проверите и покушајте поново.</translation>
 <translation id="175196451752279553">П&amp;оново отвори затворену картицу</translation>
 <translation id="8602851771975208551">Други програм на рачунару је додао апликацију која може да промени начин на који Chrome функционише.</translation>
+<translation id="9154967591629748964">Максимални број плочица за област од интересовања</translation>
 <translation id="2655386581175833247">Сертификат корисника:</translation>
 <translation id="5039804452771397117">Дозволи</translation>
 <translation id="5435964418642993308">Притисните enter да бисте се вратили, а тастер контекстуалног менија да бисте видели историју</translation>
@@ -1796,7 +1794,6 @@
 <translation id="8598687241883907630">Прекини везу са Google налогом...</translation>
 <translation id="3195445837372719522">Chromebox за састанке треба да зна ком домену припада. Због тога је потребно да се пријавите на налог.</translation>
 <translation id="7920092496846849526">Питао/ла си родитеља да ли смеш да посетиш ову страницу.</translation>
-<translation id="5984304957315422459">Упс, нисмо могли да вас пријавимо. Пријављивање није успело јер не можемо да верификујемо лозинку.</translation>
 <translation id="9003677638446136377">Проверите поново</translation>
 <translation id="9187827965378254003">Ах, изгледа да тренутно нема доступних експеримената.</translation>
 <translation id="6022526133015258832">Отвори на целом екрану</translation>
@@ -1861,6 +1858,7 @@
 <translation id="1901377140875308934">Пријави ме на <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Актуелну позадину подешава „<ph name="APP_NAME"/>“</translation>
 <translation id="5074318175948309511">Можда треба поново да учитате ову страницу да би нова подешавања ступила на снагу.</translation>
+<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Није изабрана ниједна ставка</translation>
 <translation id="6405640832764359650">Омогући поље за потврду за чување картице за Google Payments</translation>
 <translation id="1346104802985271895">Вијетнамски метод уноса (TELEX)</translation>
@@ -2060,7 +2058,6 @@
 <translation id="8551388862522347954">Лиценце</translation>
 <translation id="5525695896049981561">Да, видим га</translation>
 <translation id="1410616244180625362">И даље дозвољавај да <ph name="HOST"/> приступа камери</translation>
-<translation id="298577602575286468">Регистрација Chromebook-а</translation>
 <translation id="8494214181322051417">Ново!</translation>
 <translation id="7959874006162866942">Јесте ли сигурни да желите да инсталирате <ph name="PLUGIN_NAME"/>? Треба да инсталирате само додатне компоненте у које имате поверења.</translation>
 <translation id="2937174152333875430">Омогући синхронизацију Покретача апликација</translation>
@@ -2271,7 +2268,6 @@
 <translation id="7053983685419859001">Блокирај</translation>
 <translation id="7912024687060120840">У директоријуму:</translation>
 <translation id="2485056306054380289">CA сертификат сервера:</translation>
-<translation id="5631861698741076898">Упс, не можемо да вас пријавимо. Пријављивање није успело јер је конфигурисано за коришћење небезбедног URL-а (<ph name="BLOCKED_URL"/>).</translation>
 <translation id="6462109140674788769">Језик тастатуре: грчки</translation>
 <translation id="9191610850443814852">Омогућава подешавање за Smart Lock које омогућава да Chromebook открива телефоне преко Bluetooth-а са ниском потрошњом да би се Chromebook откључао када је телефон у близини.</translation>
 <translation id="2727712005121231835">Стварна величина</translation>
@@ -2330,7 +2326,6 @@
 <translation id="5502500733115278303">Увезено из Firefox прегледача</translation>
 <translation id="569109051430110155">Аутоматски откриј</translation>
 <translation id="8597845839771543242">Формат својства:</translation>
-<translation id="4408599188496843485">П&amp;омоћ</translation>
 <translation id="7969525169268594403">словеначки</translation>
 <translation id="5399158067281117682">PIN-ови се не подударају!</translation>
 <translation id="6277105963844135994">Временско ограничење мреже</translation>
@@ -2445,7 +2440,6 @@
 <translation id="2562685439590298522">Документи</translation>
 <translation id="8673383193459449849">Проблем са сервером</translation>
 <translation id="4060383410180771901">Веб-сајт не може да обради захтев за <ph name="URL"/>.</translation>
-<translation id="5774208114954065213">Управо опозивате регистрацију овог Chromebook-а на Google-у да бисте онемогућили даљинско лоцирање, брисање података и закључавање уређаја. За то је потребно поновно покретање уређаја. Желите ли да наставите?</translation>
 <translation id="6710213216561001401">Претходно</translation>
 <translation id="1108600514891325577">&amp;Stop (Заустави)</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
@@ -2496,7 +2490,6 @@
 <translation id="7434509671034404296">Програмер</translation>
 <translation id="7668654391829183341">Непознат уређај</translation>
 <translation id="2712173769900027643">Затражи дозволу</translation>
-<translation id="2053298192223252950">Омогућава или онемогућава елементе дизајна за Material у интерфејсу прегледача.</translation>
 <translation id="1790550373387225389">Enter Presentation Mode (Уђи у режим презентације)</translation>
 <translation id="6447842834002726250">Колачићи</translation>
 <translation id="8059178146866384858">Назив датотеке „$1“већ постоји. Унесите други назив.</translation>
@@ -3327,7 +3320,6 @@
 <translation id="324743268744517458">Упозорење: Нисте повезани са серверима Google Payments-а за производњу. Издате картице ће бити неважеће.</translation>
 <translation id="4711094779914110278">турски</translation>
 <translation id="2572032849266859634">Одобрен је приступ за <ph name="VOLUME_NAME"/> само за читање.</translation>
-<translation id="8193362611902704788">Омогућите Покретач апликација. Када га омогућите, направићете пречице оперативног система до Покретача апликација.</translation>
 <translation id="5121130586824819730">Хард-диск је пун. Сачувајте на другу локацију или направите више простора на хард-диску.</translation>
 <translation id="1875987452136482705">Ова опција онемогућава подршку у WebRTC-у за декодирање видео стримова помоћу хардвера са платформе.</translation>
 <translation id="6164005077879661055">Све датотеке и локални подаци повезани са корисником под надзором ће бити трајно избрисани када уклоните овог корисника под надзором. Менаџер ће можда и даље моћи да види посећене веб-сајтове и подешавања за овог корисника под надзором на <ph name="MANAGEMENT_URL"/>.</translation>
@@ -3350,7 +3342,6 @@
 <translation id="499165176004408815">Користи режим високог контраста</translation>
 <translation id="2928940441164925372">Омогућава пасивно прикупљање показатеља и догађаја у вези са учинком и пружа опцију прегледања ових података у графичком облику. Да бисте прегледали податке, посетите chrome://performance.</translation>
 <translation id="3289856944988573801">Да бисте потражили ажурирања, користите етернет или Wi-Fi.</translation>
-<translation id="247500748408468353">Контактирајте администратора или покушајте поново.</translation>
 <translation id="450070808725753129">Ако је већ наведен као програм коме је дозвољен приступ мрежи, покушајте да
         га уклоните са листе и да га поново додате.</translation>
 <translation id="8300607741108698921">Једноминутно подешавање</translation>
@@ -3857,7 +3848,6 @@
 <translation id="1064912851688322329">Прекид везе са Google налогом...</translation>
 <translation id="1294298200424241932">Измени подешавања поузданости:</translation>
 <translation id="1407135791313364759">Отвори све</translation>
-<translation id="1487997194203762088">Нешто није у реду са пријављивањем.</translation>
 <translation id="1434928358870966081">Онемогућавање убрзаног 2D платна</translation>
 <translation id="331915893283195714">Дозволи да било који сајт онемогући курсор</translation>
 <translation id="8978526688207379569">Овај сајт је аутоматски преузео више датотека.</translation>
@@ -4025,7 +4015,6 @@
 <translation id="3778740492972734840">&amp;Алатке за програмере</translation>
 <translation id="8335971947739877923">Извези...</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN"/> је сада у режиму целог екрана и онемогућио је курсор.</translation>
-<translation id="747416882205977201">Управо региструјете овај Chromebook на Google-у да бисте омогућили даљинско лоцирање, брисање података и закључавање уређаја. За то је потребно поновно покретање уређаја. Желите ли да наставите?</translation>
 <translation id="38275787300541712">Притисните Enter када завршите</translation>
 <translation id="7417705661718309329">Google мапа</translation>
 <translation id="4058793769387728514">Провери документ одмах</translation>
@@ -4082,7 +4071,6 @@
 <translation id="7180865173735832675">Прилагоди</translation>
 <translation id="7054808953701320293">Важи, не приказуј ми ово поново.</translation>
 <translation id="4903369323166982260">Покрени Алатку за чишћење Chrome-а</translation>
-<translation id="144932861331386147">Повежите се са интернетом да бисте ажурирали Chromebook.</translation>
 <translation id="2938685643439809023">монголски</translation>
 <translation id="5368720394188453070">Телефон је закључан. Откључајте га да бисте приступили.</translation>
 <translation id="2070909990982335904">Називи који почињу тачком резервисани су за систем. Изаберите други назив.</translation>
@@ -4188,7 +4176,6 @@
 <translation id="6557565812667414268">Омогућено само за екране високе резолуције</translation>
 <translation id="7331991248529612614">Омогући анимацију дугмета за режим читаоца</translation>
 <translation id="5469954281417596308">Менаџер обележивача</translation>
-<translation id="106153153543631784">Унесите поново лозинку да бисте ажурирали Chromebook профил.</translation>
 <translation id="3064388234319122767">Транслитерација (zdravo → здраво)</translation>
 <translation id="5425722269016440406">Морате да будете онлајн да бисте искључили Smart Lock јер се ово подешавање синхронизује са телефоном и другим уређајима. Прво се повежите са мрежом.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
@@ -4811,7 +4798,6 @@
 <translation id="7973320858902175766">Крпљење компонената</translation>
 <translation id="3654045516529121250">Читање подешавања приступачности</translation>
 <translation id="2113479184312716848">Open &amp;File... (Отвори датотеку)</translation>
-<translation id="4346759900458392803">Опозивање регистрације Chromebook-а</translation>
 <translation id="884264119367021077">Адреса за слање</translation>
 <translation id="634208815998129842">Менаџер задатака</translation>
 <translation id="2735698359135166290">Стандардна тастатура за румунски</translation>
@@ -4904,7 +4890,6 @@
 <translation id="7209475358897642338">Који је ваш језик?</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME"/> (контролисано)</translation>
 <translation id="9149866541089851383">Измени...</translation>
-<translation id="8735794438432839558">Повежите се са интернетом да бисте се пријавили на Chromebook.</translation>
 <translation id="3356395591469757189">Предлози за Аутоматско попуњавање у помоћном приказу на тастатури</translation>
 <translation id="7939412583708276221">Ипак задржи</translation>
 <translation id="8579285237314169903">Синхронизују се ставке (<ph name="NUMBER_OF_FILES"/>)...</translation>
@@ -5517,7 +5502,6 @@
 <translation id="6793649375377511437">Информације о Google Copresence-у</translation>
 <translation id="4335713051520279344">Овај рачунар ће се поново покренути за 1 секунд.
 Притисните било који тастер да бисте наставили да истражујете.</translation>
-<translation id="4775135101712609478">Приказујте захтеве за дозволу за садржај (нпр. обавештења, квоту, употребу камере, употребу микрофона) у облачићима уместо на тракама са информацијама.</translation>
 <translation id="7233715388668391168">Омогућава или онемогућава куцање покретима за виртуелну тастатуру.</translation>
 <translation id="6264485186158353794">Назад на безбедно</translation>
 <translation id="7705524343798198388">VPN</translation>

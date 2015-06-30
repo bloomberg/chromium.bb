@@ -65,7 +65,6 @@
 <translation id="3293894718455402932">&quot;<ph name="EXTENSION"/>&quot; potrà leggere e modificare le immagini, i video e i file audio delle cartelle selezionate.</translation>
 <translation id="7180611975245234373">Aggiorna</translation>
 <translation id="4940047036413029306">Virg.</translation>
-<translation id="6406467842708712906">Spiacenti, impossibile accedere. Accesso non riuscito perché non è stato possibile recuperare i dati dell'account.</translation>
 <translation id="1497897566809397301">Consenti il salvataggio dei dati in locale (consigliata)</translation>
 <translation id="7627349730328142646">Attiva esperimenti di scorrimento verso l'alto nel Centro messaggi per la rimozione di notifiche.</translation>
 <translation id="3275778913554317645">Apri come finestra</translation>
@@ -171,7 +170,6 @@
 <translation id="3384773155383850738">Numero massimo di suggerimenti</translation>
 <translation id="1014321050861012327">Salva automaticamente le password.</translation>
 <translation id="8677212948402625567">Comprimi tutto...</translation>
-<translation id="2056996954182910740">Attiva Avvio applicazioni.</translation>
 <translation id="7600965453749440009">Non tradurre mai <ph name="LANGUAGE"/></translation>
 <translation id="3208703785962634733">Non confermato</translation>
 <translation id="620329680124578183">Non caricare (scelta consigliata)</translation>
@@ -562,7 +560,6 @@
 <translation id="8206859287963243715">Cellulare</translation>
 <translation id="5610637197759059204">Consente di disattivare i ricaricamenti delle pagine attivati dallo scorrimento in verticale oltre i contenuti.</translation>
 <translation id="6435285122322546452">Gestisci applicazioni kiosk...</translation>
-<translation id="5748409721703101646">Il Chromebook non è in grado di connettersi a Internet utilizzando <ph name="NETWORK_NAME"/>. Scegli un'altra rete. <ph name="LEARN_MORE_LINK_START"/>Ulteriori informazioni<ph name="LEARN_MORE_LINK_END"/></translation>
 <translation id="1064835277883315402">Connetti a rete privata</translation>
 <translation id="872728358380751743">Questa opzione consente di disattivare il supporto in Cast Streaming della codifica di video stream utilizzando l'hardware della piattaforma.</translation>
 <translation id="6508261954199872201">Applicazione: <ph name="APP_NAME"/></translation>
@@ -732,6 +729,7 @@ Per continuare, devono disconnettersi tutti gli utenti.</translation>
 <translation id="5759728514498647443">I documenti inviati alla stampante tramite <ph name="APP_NAME"/> possono essere letti da <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Questa applicazione non è attualmente supportata su questo dispositivo, ma i tecnici di Chrome sono al lavoro per farla funzionare al più presto.</translation>
 <translation id="3273410961255278341">Invia per:</translation>
+<translation id="4255096080864111471">Specifica le sezioni massime per l'area di interesse.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Nuova scheda</translation>
 <translation id="6567688344210276845">Impossibile caricare l'icona &quot;<ph name="ICON"/>&quot; per l'azione della pagina.</translation>
@@ -1107,7 +1105,6 @@ Per continuare, devono disconnettersi tutti gli utenti.</translation>
 <translation id="5774515636230743468">Manifest:</translation>
 <translation id="1313832887664610176">Connessione al Chromebox persa</translation>
 <translation id="3465566417615315331">Fai clic sulla tua foto</translation>
-<translation id="4960944339761782076">Utilizza i fumetti per le richieste di autorizzazioni</translation>
 <translation id="7474889694310679759">Tastiera inglese canadese</translation>
 <translation id="1817871734039893258">Ripristino file Microsoft</translation>
 <translation id="2423578206845792524">Sa&amp;lva immagine con nome...</translation>
@@ -1668,6 +1665,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME"/> pu�
 <translation id="4811502511369621968">Indirizzo email non valido. Controlla e riprova.</translation>
 <translation id="175196451752279553">R&amp;iapri scheda chiusa</translation>
 <translation id="8602851771975208551">Un altro programma sul computer ha aggiunto un'applicazione che potrebbe modificare il funzionamento di Chrome.</translation>
+<translation id="9154967591629748964">Sezioni massime per l'area di interesse</translation>
 <translation id="2655386581175833247">Certificato utente:</translation>
 <translation id="5039804452771397117">Consenti</translation>
 <translation id="5435964418642993308">Premi Invio per tornare indietro, il tasto del menu contestuale per visualizzare la cronologia</translation>
@@ -1775,7 +1773,6 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="8598687241883907630">Disconnetti il tuo account Google...</translation>
 <translation id="3195445837372719522">Chromebox per videoconferenze deve sapere a quale dominio appartiene, pertanto dovrai accedere al tuo account.</translation>
 <translation id="7920092496846849526">Hai chiesto ai tuoi genitori l'autorizzazione per visitare questa pagina.</translation>
-<translation id="5984304957315422459">Impossibile eseguire l'accesso poiché non è stato possibile verificare la password.</translation>
 <translation id="9003677638446136377">Controlla</translation>
 <translation id="9187827965378254003">Spiacenti, sembra che al momento non ci siano esperimenti disponibili.</translation>
 <translation id="6022526133015258832">Apri a schermo intero</translation>
@@ -1840,6 +1837,7 @@ Dopo avere creato un nuovo utente supervisionato, puoi gestire le impostazioni i
 <translation id="1901377140875308934">Accedi a <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Lo sfondo attuale è stato impostato da &quot;<ph name="APP_NAME"/>&quot;</translation>
 <translation id="5074318175948309511">Potrebbe essere necessario ricaricare la pagina per applicare le nuove impostazioni.</translation>
+<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Nessuna selezione</translation>
 <translation id="6405640832764359650">Attiva la casella di controllo per salvare carte Google Payments</translation>
 <translation id="1346104802985271895">Metodo di immissione vietnamita (TELEX)</translation>
@@ -2040,7 +2038,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="8551388862522347954">Licenze</translation>
 <translation id="5525695896049981561">Sì, lo vedo</translation>
 <translation id="1410616244180625362">Continua a consentire l'accesso di <ph name="HOST"/> alla webcam</translation>
-<translation id="298577602575286468">Registra il Chromebook</translation>
 <translation id="8494214181322051417">Novità!</translation>
 <translation id="7959874006162866942">Vuoi installare <ph name="PLUGIN_NAME"/>? Dovresti installare soltanto plug-in che ritieni attendibili.</translation>
 <translation id="2937174152333875430">Attiva sincronizzazione di Avvio applicazioni</translation>
@@ -2244,7 +2241,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="7053983685419859001">Blocca</translation>
 <translation id="7912024687060120840">Nella cartella:</translation>
 <translation id="2485056306054380289">Certificato CA del server:</translation>
-<translation id="5631861698741076898">Spiacenti, impossibile eseguire l'accesso. Accesso non riuscito perché è stato configurato l'utilizzo di un URL non protetto (<ph name="BLOCKED_URL"/>).</translation>
 <translation id="6462109140674788769">Tastiera greca</translation>
 <translation id="9191610850443814852">Consente di attivare un'impostazione Smart Lock che consente al Chromebook di rilevare i telefoni tramite la tecnologia Bleutooth Low Energy in modo da sbloccare il Chromebook quando il telefono si trova nelle vicinanze.</translation>
 <translation id="2727712005121231835">Dimensioni reali</translation>
@@ -2300,7 +2296,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="5502500733115278303">Importati da Firefox</translation>
 <translation id="569109051430110155">Rileva automaticamente</translation>
 <translation id="8597845839771543242">Formato proprietà:</translation>
-<translation id="4408599188496843485">G&amp;uida</translation>
 <translation id="7969525169268594403">Sloveno</translation>
 <translation id="5399158067281117682">I PIN non corrispondono.</translation>
 <translation id="6277105963844135994">Timeout di rete</translation>
@@ -2415,7 +2410,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="2562685439590298522">Documenti</translation>
 <translation id="8673383193459449849">Problema con il server</translation>
 <translation id="4060383410180771901">Il sito web non riesce a gestire la richiesta di <ph name="URL"/>.</translation>
-<translation id="5774208114954065213">Stai per annullare la registrazione di questo Chromebook con Google in modo da disattivare la possibilità di localizzare e bloccare il dispositivo, nonché cancellarne i dati da remoto. L'operazione richiederà il riavvio del dispositivo. Continuare?</translation>
 <translation id="6710213216561001401">Indietro</translation>
 <translation id="1108600514891325577">&amp;Interrompi</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
@@ -2466,7 +2460,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="7434509671034404296">Opzioni per sviluppatori</translation>
 <translation id="7668654391829183341">Dispositivo sconosciuto</translation>
 <translation id="2712173769900027643">Chiedi autorizzazione</translation>
-<translation id="2053298192223252950">Consente di attivare o disattivare gli elementi material design nel riquadro del browser.</translation>
 <translation id="1790550373387225389">Passa a modalità Presentazione</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="8059178146866384858">Esiste già un file denominato &quot;$1&quot;. Scegli un altro nome.</translation>
@@ -3289,7 +3282,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="324743268744517458">Avviso. Non sei collegato a server di produzione Google Payments. Le carte emesse non saranno valide.</translation>
 <translation id="4711094779914110278">Turco</translation>
 <translation id="2572032849266859634">È stato concesso l'accesso in sola lettura a <ph name="VOLUME_NAME"/>.</translation>
-<translation id="8193362611902704788">Attiva Avvio applicazioni. All'attivazione, crea scorciatoie del sistema operativo in Avvio applicazioni.</translation>
 <translation id="5121130586824819730">Il disco rigido è pieno. Salva in un'altra posizione o libera spazio sul disco rigido.</translation>
 <translation id="1875987452136482705">Questa opzione consente di disattivare il supporto in WebRTC della decodifica di video stream utilizzando l'hardware della piattaforma.</translation>
 <translation id="6164005077879661055">Tutti i file e i dati locali associati all'utente controllato verranno eliminati definitivamente in seguito alla rimozione dell'utente. Le impostazioni e i siti web visitati relativi all'utente controllato potrebbero essere ancora visibili al gestore all'indirizzo <ph name="MANAGEMENT_URL"/>.</translation>
@@ -3312,7 +3304,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="499165176004408815">Usa modalità ad alto contrasto</translation>
 <translation id="2928940441164925372">Attiva la raccolta passiva di metriche ed eventi relativi al rendimento e offre la possibilità di visualizzare questi dati in un grafico. Per visualizzare i dati, visita chrome://performance.</translation>
 <translation id="3289856944988573801">Per verificare la disponibilità di aggiornamenti, utilizza una rete Ethernet o Wi-Fi.</translation>
-<translation id="247500748408468353">Contatta l'amministratore o riprova.</translation>
 <translation id="450070808725753129">Se è già elencato come programma autorizzato ad accedere alla rete, prova a
         rimuoverlo dall'elenco e ad aggiungerlo di nuovo.</translation>
 <translation id="8300607741108698921">Configurazione in un minuto</translation>
@@ -3814,7 +3805,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="1064912851688322329">Disconnetti il tuo account Google</translation>
 <translation id="1294298200424241932">Modifica le impostazioni di attendibilità:</translation>
 <translation id="1407135791313364759">Apri tutte</translation>
-<translation id="1487997194203762088">Si è verificato un problema durante l'accesso.</translation>
 <translation id="1434928358870966081">Disattiva elementi canvas 2D accelerati</translation>
 <translation id="331915893283195714">Consenti a tutti i siti di disattivare il puntatore del mouse</translation>
 <translation id="8978526688207379569">Questo sito ha scaricato automaticamente più file.</translation>
@@ -3982,7 +3972,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="3778740492972734840">&amp;Strumenti per sviluppatori</translation>
 <translation id="8335971947739877923">Esporta...</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN"/> ora è a schermo intero e ha disattivato il puntatore del mouse.</translation>
-<translation id="747416882205977201">Stai per registrare questo Chromebook con Google in modo da attivare la possibilità di localizzare e bloccare il dispositivo, nonché cancellarne i dati da remoto. L'operazione richiederà il riavvio del dispositivo. Continuare?</translation>
 <translation id="38275787300541712">Al termine, premi Invio</translation>
 <translation id="7417705661718309329">Mappa Google</translation>
 <translation id="4058793769387728514">Controlla documento ora</translation>
@@ -4039,7 +4028,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="7180865173735832675">Personalizza</translation>
 <translation id="7054808953701320293">Non mostrare più questo messaggio.</translation>
 <translation id="4903369323166982260">Esegui Chrome Cleanup Tool</translation>
-<translation id="144932861331386147">Connettiti a Internet per aggiornare il tuo Chromebook.</translation>
 <translation id="2938685643439809023">Mongolo</translation>
 <translation id="5368720394188453070">Il telefono è stato bloccato. Sbloccalo per accedere.</translation>
 <translation id="2070909990982335904">I nomi che iniziano con il punto sono riservati al sistema. Scegli un altro nome.</translation>
@@ -4145,7 +4133,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="6557565812667414268">Attivato solo per display con valore DPI elevato</translation>
 <translation id="7331991248529612614">Attiva animazione del pulsante Modalità Reader</translation>
 <translation id="5469954281417596308">Bookmark Manager</translation>
-<translation id="106153153543631784">Inserisci di nuovo la password per aggiornare il tuo profilo Chromebook.</translation>
 <translation id="3064388234319122767">Traslitterazione (zdravo → здраво)</translation>
 <translation id="5425722269016440406">Devi essere online per poter disattivare Smart Lock perché questa impostazione viene sincronizzata con il telefono e con altri dispositivi. Collegati prima a una rete.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
@@ -4764,7 +4751,6 @@ I dati di accesso del tuo account sono obsoleti.</translation>
 <translation id="7973320858902175766">Component Patcher</translation>
 <translation id="3654045516529121250">Lettura delle impostazioni di accessibilità</translation>
 <translation id="2113479184312716848">Apri &amp;file...</translation>
-<translation id="4346759900458392803">Annulla la registrazione del Chromebook</translation>
 <translation id="884264119367021077">Indirizzo di spedizione</translation>
 <translation id="634208815998129842">Task Manager</translation>
 <translation id="2735698359135166290">Tastiera Rumeno standard</translation>
@@ -4857,7 +4843,6 @@ I dati di accesso del tuo account sono obsoleti.</translation>
 <translation id="7209475358897642338">Qual è la tua lingua?</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME"/> (supervisionato)</translation>
 <translation id="9149866541089851383">Modifica...</translation>
-<translation id="8735794438432839558">Connettiti a Internet per accedere al tuo Chromebook.</translation>
 <translation id="3356395591469757189">Mostra i suggerimenti di Compilazione automatica come accessorio della tastiera</translation>
 <translation id="7939412583708276221">Mantieni comunque</translation>
 <translation id="8579285237314169903">Sincronizzazione di <ph name="NUMBER_OF_FILES"/> elementi...</translation>
@@ -5464,7 +5449,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="6793649375377511437">Info servizio Google Copresence</translation>
 <translation id="4335713051520279344">Il computer verrà reimpostato tra un secondo.
 Premi un tasto qualsiasi per continuare a esplorare.</translation>
-<translation id="4775135101712609478">Mostra le richieste di autorizzazione per i contenuti (ad es. notifiche, spazio di archiviazione, utilizzo di fotocamera e microfono) all'interno di fumetti, anziché in barre delle informazioni.</translation>
 <translation id="7233715388668391168">Attiva/Disattiva la digitazione gestuale per la tastiera virtuale.</translation>
 <translation id="6264485186158353794">Torna nell'area protetta</translation>
 <translation id="7705524343798198388">VPN</translation>

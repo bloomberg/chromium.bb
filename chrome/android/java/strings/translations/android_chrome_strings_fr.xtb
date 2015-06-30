@@ -211,7 +211,6 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="5771382037724542929">Voulez-vous vraiment remplacer le fichier <ph name="FILE_NAME"/> dans le répertoire &quot;<ph name="DIRECTORY_NAME"/>&quot; ?</translation>
 <translation id="8627706565932943526">Erreur de synchronisation.</translation>
 <translation id="1807246157184219062">Clair</translation>
-<translation id="9219103736887031265">Images</translation>
 <translation id="2904413602477443379">Sélectionner un dossier</translation>
 <translation id="7053983685419859001">Bloquer</translation>
 <translation id="8374821112118309944">Vous devez mettre à jour TalkBack vers une version plus récente</translation>
@@ -367,7 +366,6 @@ Appuyez sur le bouton &quot;Retour&quot; pour quitter ce mode.</translation>
 <translation id="3158619413803296679">Sélectionner un favori</translation>
 <translation id="6138140242378429169">Ouvrir la page adaptée aux mobiles</translation>
 <translation id="5345040418939504969">Le favori &quot;<ph name="BOOKMARK_TITLE"/>&quot; a été supprimé.</translation>
-<translation id="7232255641409319872">Autoriser les images sur les sites Web que vous spécifiez, tout en les bloquant pour le reste du Web</translation>
 <translation id="2360035970720276770">Seules les URL &quot;http&quot; et &quot;https&quot; peuvent être téléchargées.</translation>
 <translation id="7926911226829060241">Vos favoris ouverts, votre historique, vos mots de passe et d'autres éléments sont en cours de synchronisation avec votre compte Google.</translation>
 <translation id="4871370605780490696">Ajouter aux favoris</translation>

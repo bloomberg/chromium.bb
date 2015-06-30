@@ -63,7 +63,6 @@
 <translation id="3293894718455402932">“<ph name="EXTENSION"/>”将能够对所选文件夹中的图片、视频和声音文件进行读写操作。</translation>
 <translation id="7180611975245234373">刷新</translation>
 <translation id="4940047036413029306">引号</translation>
-<translation id="6406467842708712906">抱歉，无法登录。无法获取您的帐户详细信息，因此登录失败。</translation>
 <translation id="1497897566809397301">允许设置本地数据（推荐）</translation>
 <translation id="7627349730328142646">启用以下实验性功能：在有通知被移除时，消息中心始终向上滚动。</translation>
 <translation id="3275778913554317645">在窗口中打开</translation>
@@ -169,7 +168,6 @@
 <translation id="3384773155383850738">建议内容的数量上限</translation>
 <translation id="1014321050861012327">自动保存密码。</translation>
 <translation id="8677212948402625567">全部折叠...</translation>
-<translation id="2056996954182910740">启用应用启动器。</translation>
 <translation id="7600965453749440009">一律不翻译<ph name="LANGUAGE"/></translation>
 <translation id="3208703785962634733">未确认</translation>
 <translation id="620329680124578183">不加载（推荐）</translation>
@@ -559,7 +557,6 @@
 <translation id="8206859287963243715">蜂窝网络设备</translation>
 <translation id="5610637197759059204">停用因垂直滚动反弹而触发网页重新加载。</translation>
 <translation id="6435285122322546452">管理信息亭模式下的应用…</translation>
-<translation id="5748409721703101646">您的Chromebook无法通过“<ph name="NETWORK_NAME"/>”连接到互联网。请选择其他网络。<ph name="LEARN_MORE_LINK_START"/>了解详情<ph name="LEARN_MORE_LINK_END"/></translation>
 <translation id="1064835277883315402">加入专用网络</translation>
 <translation id="872728358380751743">选中该选项后，将停止支持 Cast Streaming 中使用平台硬件进行视频流编码的功能。</translation>
 <translation id="6508261954199872201">应用：<ph name="APP_NAME"/></translation>
@@ -729,6 +726,7 @@
 <translation id="5759728514498647443">您通过“<ph name="APP_NAME"/>”发送以进行打印的文档可由“<ph name="APP_NAME"/>”读取。</translation>
 <translation id="2401053206567162910">目前此设备不支持该应用，但 Chrome Gnomes 正设法解决这一问题，使该应用能够尽快在此设备上顺利运行。</translation>
 <translation id="3273410961255278341">发送用途：</translation>
+<translation id="4255096080864111471">指定关注区域的图块数上限。</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">打开新的标签页</translation>
 <translation id="6567688344210276845">无法加载网页操作的“<ph name="ICON"/>”图标。</translation>
@@ -1104,7 +1102,6 @@
 <translation id="5774515636230743468">网址：</translation>
 <translation id="1313832887664610176">与 Chromebox 的连接已断开</translation>
 <translation id="3465566417615315331">点击您的照片</translation>
-<translation id="4960944339761782076">使用气泡显示权限请求</translation>
 <translation id="7474889694310679759">英语（加拿大）键盘</translation>
 <translation id="1817871734039893258">Microsoft 文件恢复</translation>
 <translation id="2423578206845792524">图片另存为(&amp;V)...</translation>
@@ -1665,6 +1662,7 @@
 <translation id="4811502511369621968">电子邮件地址无效。请进行检查，然后重试。</translation>
 <translation id="175196451752279553">重新打开关闭的标签页(&amp;E)</translation>
 <translation id="8602851771975208551">您计算机上的其他程序添加了一个应用，该应用可能会改变 Chrome 的工作方式。</translation>
+<translation id="9154967591629748964">关注区域的图块数上限</translation>
 <translation id="2655386581175833247">用户证书：</translation>
 <translation id="5039804452771397117">允许</translation>
 <translation id="5435964418642993308">按 Enter 键即可返回，按右键菜单键即可查看历史记录</translation>
@@ -1771,7 +1769,6 @@
 <translation id="8598687241883907630">取消与您的 Google 帐户的关联...</translation>
 <translation id="3195445837372719522">Chromebox 会易需要知道它所属的网域，因此您需要登录自己的帐户。</translation>
 <translation id="7920092496846849526">已向您父母提出允许您访问此网页的请求。</translation>
-<translation id="5984304957315422459">抱歉，无法登录。系统无法验证您的密码，所以登录失败。</translation>
 <translation id="9003677638446136377">再次检查</translation>
 <translation id="9187827965378254003">目前似乎没有任何实验。</translation>
 <translation id="6022526133015258832">以全屏模式打开</translation>
@@ -1836,6 +1833,7 @@
 <translation id="1901377140875308934">登录到 <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">当前壁纸是由“<ph name="APP_NAME"/>”设置的</translation>
 <translation id="5074318175948309511">您可能需要重新加载此页面，才能使新设置生效。</translation>
+<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">未选择</translation>
 <translation id="6405640832764359650">显示用于指定是否保存 Google Payments 卡数据的复选框</translation>
 <translation id="1346104802985271895">越南语输入法 (TELEX)</translation>
@@ -2035,7 +2033,6 @@
 <translation id="8551388862522347954">许可</translation>
 <translation id="5525695896049981561">看到了</translation>
 <translation id="1410616244180625362">继续允许 <ph name="HOST"/> 使用您的摄像头</translation>
-<translation id="298577602575286468">注册Chromebook</translation>
 <translation id="8494214181322051417">新功能！</translation>
 <translation id="7959874006162866942">确定要安装“<ph name="PLUGIN_NAME"/>”吗？您应只安装自己信任的插件。</translation>
 <translation id="2937174152333875430">启用应用启动器同步</translation>
@@ -2234,7 +2231,6 @@
 <translation id="7053983685419859001">禁止</translation>
 <translation id="7912024687060120840">在以下文件夹中：</translation>
 <translation id="2485056306054380289">服务器CA证书：</translation>
-<translation id="5631861698741076898">糟糕！您无法登录，因为它被配置为使用不安全的网址(<ph name="BLOCKED_URL"/>)。</translation>
 <translation id="6462109140674788769">希腊语键盘</translation>
 <translation id="9191610850443814852">启用 Smart Lock 设置，让 Chromebook 通过蓝牙低功耗模式发现配对手机，以便配对手机在附近时可用来解锁 Chromebook。</translation>
 <translation id="2727712005121231835">实际大小</translation>
@@ -2293,7 +2289,6 @@
 <translation id="5502500733115278303">从 Firefox 导入</translation>
 <translation id="569109051430110155">自动检测</translation>
 <translation id="8597845839771543242">属性格式：</translation>
-<translation id="4408599188496843485">帮助(&amp;E)</translation>
 <translation id="7969525169268594403">斯洛维尼亚语</translation>
 <translation id="5399158067281117682">PIN 不正确！</translation>
 <translation id="6277105963844135994">网络超时</translation>
@@ -2408,7 +2403,6 @@
 <translation id="2562685439590298522">文档</translation>
 <translation id="8673383193459449849">服务器出现问题</translation>
 <translation id="4060383410180771901">该网站无法处理 <ph name="URL"/> 的请求。</translation>
-<translation id="5774208114954065213">您打算取消在Google注册此Chromebook，以便停用远程定位、清空和锁定此设备的功能。这需要重新启动此设备。要继续吗？</translation>
 <translation id="6710213216561001401">上一个</translation>
 <translation id="1108600514891325577">停止(&amp;S)</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>：<ph name="ERROR"/></translation>
@@ -2459,7 +2453,6 @@
 <translation id="7434509671034404296">开发者</translation>
 <translation id="7668654391829183341">未知设备</translation>
 <translation id="2712173769900027643">请求批准</translation>
-<translation id="2053298192223252950">在浏览器的顶部界面中启用或停用 Material Design 元素。</translation>
 <translation id="1790550373387225389">进入演示模式</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="8059178146866384858">名为“$1”的文件已存在，请选择其他名称。</translation>
@@ -3287,7 +3280,6 @@
 <translation id="324743268744517458">警告：您未连接到生产环境下的 Google Payments 服务器。签发的卡将是无效的卡。</translation>
 <translation id="4711094779914110278">土耳其语</translation>
 <translation id="2572032849266859634">已授予对 <ph name="VOLUME_NAME"/>的只读权限。</translation>
-<translation id="8193362611902704788">启用应用启动器。启用后，将为应用启动器创建操作系统快捷方式。</translation>
 <translation id="5121130586824819730">您的硬盘已满。请保存到其他位置或在硬盘上腾出更多空间。</translation>
 <translation id="1875987452136482705">该选项会停用 WebRTC 对使用平台硬件进行视频流解码的支持。</translation>
 <translation id="6164005077879661055">删除该受监管用户后，与其相关联的所有文件和本地数据都会被永久删除，但管理员仍可以在 <ph name="MANAGEMENT_URL"/> 上查看该用户的设置和访问过的网站。</translation>
@@ -3310,7 +3302,6 @@
 <translation id="499165176004408815">使用高反差模式</translation>
 <translation id="2928940441164925372">启用与效果相关的指标和事件的被动收集功能，并提供以图表方式查看此数据的选项。要查看数据，请访问 chrome://performance。</translation>
 <translation id="3289856944988573801">要检查是否有更新，请使用以太网或 WLAN。</translation>
-<translation id="247500748408468353">请联系您的管理员或重试。</translation>
 <translation id="450070808725753129">如果它已被列为允许访问网络的程序，请尝试将其从列表中删除，然后再重新添加。</translation>
 <translation id="8300607741108698921">1分钟即可完成设置</translation>
 <translation id="4054376378714379870">启用可能非常烦人的安全功能。</translation>
@@ -3814,7 +3805,6 @@
 <translation id="1064912851688322329">取消与您的 Google 帐户的关联</translation>
 <translation id="1294298200424241932">修改信任设置：</translation>
 <translation id="1407135791313364759">全部打开</translation>
-<translation id="1487997194203762088">登录时出错。</translation>
 <translation id="1434928358870966081">停用加速的 2D 画布</translation>
 <translation id="331915893283195714">允许所有网站隐藏鼠标指针</translation>
 <translation id="8978526688207379569">此网站已自动下载多个文件。</translation>
@@ -3982,7 +3972,6 @@
 <translation id="3778740492972734840">开发者工具(&amp;D)</translation>
 <translation id="8335971947739877923">导出...</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN"/> 现处于全屏模式并已隐藏鼠标指针。</translation>
-<translation id="747416882205977201">您即将向Google注册此Chromebook，以便启用远程定位、清空和锁定此设备的功能。这需要重新启动此设备。要继续吗？</translation>
 <translation id="38275787300541712">完成后按 Enter</translation>
 <translation id="7417705661718309329">Google 地图</translation>
 <translation id="4058793769387728514">立即检查文稿</translation>
@@ -4039,7 +4028,6 @@
 <translation id="7180865173735832675">自定义</translation>
 <translation id="7054808953701320293">知道了，以后不要再显示此信息。</translation>
 <translation id="4903369323166982260">运行 Chrome Cleanup Tool</translation>
-<translation id="144932861331386147">请连接到互联网以更新您的 Chromebook。</translation>
 <translation id="2938685643439809023">蒙古语</translation>
 <translation id="5368720394188453070">配对手机已锁定，需将其解锁才能进入。</translation>
 <translation id="2070909990982335904">以点开头的名称仅适用于系统文件，请选择其他名称。</translation>
@@ -4145,7 +4133,6 @@
 <translation id="6557565812667414268">仅对高 DPI 显示屏启用</translation>
 <translation id="7331991248529612614">启用阅读器模式按钮动画</translation>
 <translation id="5469954281417596308">书签管理器</translation>
-<translation id="106153153543631784">请重新输入您的密码，以便更新您的 Chromebook 个人资料。</translation>
 <translation id="3064388234319122767">音译(zdravo → здраво)</translation>
 <translation id="5425722269016440406">您必须联网才能关闭 Smart Lock，因为此设置已同步到您的手机和其他设备。请先连接到网络。</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
@@ -4763,7 +4750,6 @@
 <translation id="7973320858902175766">组件修补程序</translation>
 <translation id="3654045516529121250">读取您的无障碍设置</translation>
 <translation id="2113479184312716848">打开文件(&amp;F)...</translation>
-<translation id="4346759900458392803">取消注册Chromebook</translation>
 <translation id="884264119367021077">送货地址</translation>
 <translation id="634208815998129842">任务管理器</translation>
 <translation id="2735698359135166290">罗马尼亚语标准键盘</translation>
@@ -4856,7 +4842,6 @@
 <translation id="7209475358897642338">您使用什么语言？</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME"/>（受监管用户）</translation>
 <translation id="9149866541089851383">修改...</translation>
-<translation id="8735794438432839558">请连接到互联网以登录您的 Chromebook。</translation>
 <translation id="3356395591469757189">以键盘附件视图的形式显示自动填充建议</translation>
 <translation id="7939412583708276221">仍然保留</translation>
 <translation id="8579285237314169903">正在同步 <ph name="NUMBER_OF_FILES"/> 个文件…</translation>
@@ -5461,7 +5446,6 @@
 <translation id="6793649375377511437">Google Copresence 信息</translation>
 <translation id="4335713051520279344">此计算机将在 1 秒后重置。
 按任意键以继续浏览。</translation>
-<translation id="4775135101712609478">在气泡而非信息栏中显示内容权限请求（例如：通知、配额、摄像头使用请求、麦克风使用请求）。</translation>
 <translation id="7233715388668391168">启用/停用虚拟键盘滑行输入功能。</translation>
 <translation id="6264485186158353794">返回安全连接</translation>
 <translation id="7705524343798198388">VPN</translation>

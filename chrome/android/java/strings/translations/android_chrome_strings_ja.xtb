@@ -211,7 +211,6 @@
 <translation id="5771382037724542929"><ph name="DIRECTORY_NAME"/> 内に既にある <ph name="FILE_NAME"/> を置き換えてもよろしいですか？</translation>
 <translation id="8627706565932943526">同期エラー</translation>
 <translation id="1807246157184219062">明</translation>
-<translation id="9219103736887031265">画像</translation>
 <translation id="2904413602477443379">フォルダを選択</translation>
 <translation id="7053983685419859001">ブロック</translation>
 <translation id="8374821112118309944">TalkBack を最新版に更新する必要があります。</translation>
@@ -366,7 +365,6 @@
 <translation id="3158619413803296679">ブックマークの選択</translation>
 <translation id="6138140242378429169">ページをモバイル向け画面で表示</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> を削除しました</translation>
-<translation id="7232255641409319872">指定するウェブサイト上で画像を許可し、その他のウェブサイト上ではブロックします</translation>
 <translation id="2360035970720276770">ダウンロードできるのは http または https の URL のみです</translation>
 <translation id="7926911226829060241">開いているブックマーク、履歴、パスワード、その他の設定を Google アカウントに同期しています。</translation>
 <translation id="4871370605780490696">ブックマークを追加</translation>

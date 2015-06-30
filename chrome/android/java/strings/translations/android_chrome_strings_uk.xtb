@@ -211,7 +211,6 @@
 <translation id="5771382037724542929">Замінити наявний файл &quot;<ph name="FILE_NAME"/>&quot; у каталозі &quot;<ph name="DIRECTORY_NAME"/>&quot;?</translation>
 <translation id="8627706565932943526">Помилка синхронізації</translation>
 <translation id="1807246157184219062">Світла</translation>
-<translation id="9219103736887031265">Зображення</translation>
 <translation id="2904413602477443379">Вибрати папку</translation>
 <translation id="7053983685419859001">Блокувати</translation>
 <translation id="8374821112118309944">Потрібно оновити додаток TalkBack до новішої версії.</translation>
@@ -366,7 +365,6 @@
 <translation id="3158619413803296679">Вибрати закладку</translation>
 <translation id="6138140242378429169">Налаштувати сторінку для мобільних пристроїв</translation>
 <translation id="5345040418939504969">Закладку &quot;<ph name="BOOKMARK_TITLE"/>&quot; видалено</translation>
-<translation id="7232255641409319872">Дозволити зображення на вказаних веб-сайтах і заборонити їх для решти сайтів</translation>
 <translation id="2360035970720276770">Можна завантажувати лише URL-адреси, які починаються з &quot;http&quot; або &quot;https&quot;</translation>
 <translation id="7926911226829060241">Відкриті закладки, історія, паролі тощо синхронізуються з вашим обліковим записом Google.</translation>
 <translation id="4871370605780490696">Додати закладку</translation>

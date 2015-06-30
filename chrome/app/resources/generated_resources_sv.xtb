@@ -65,7 +65,6 @@
 <translation id="3293894718455402932"><ph name="EXTENSION"/> kan läsa och skriva bilder, video och ljud i de markerade mapparna.</translation>
 <translation id="7180611975245234373">Uppdatera</translation>
 <translation id="4940047036413029306">Citat</translation>
-<translation id="6406467842708712906">Det gick tyvärr inte att logga in. Inloggningen misslyckades eftersom det inte gick att hämta dina kontouppgifter.</translation>
 <translation id="1497897566809397301">Tillåt att lokala data sparas (rekommenderas)</translation>
 <translation id="7627349730328142646">Aktivera experiment som gör att Meddelandecenter alltid rullar upp när en avisering tas bort.</translation>
 <translation id="3275778913554317645">Öppna som fönster</translation>
@@ -171,7 +170,6 @@
 <translation id="3384773155383850738">Max antal förslag</translation>
 <translation id="1014321050861012327">Spara lösenord automatiskt.</translation>
 <translation id="8677212948402625567">Dölj alla...</translation>
-<translation id="2056996954182910740">Aktivera startprogrammet för appar.</translation>
 <translation id="7600965453749440009">Översätt aldrig från <ph name="LANGUAGE"/></translation>
 <translation id="3208703785962634733">Obekräftade</translation>
 <translation id="620329680124578183">Läs inte in (rekommenderas)</translation>
@@ -579,7 +577,6 @@ Läs din e-post på <ph name="ACCOUNT_EMAIL"/>. Där finns dessa och andra anvis
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="5610637197759059204">Inaktiverar nya inläsningar av sidor som utlöses av att någon för markören över innehåll vertikalt.</translation>
 <translation id="6435285122322546452">Hantera kioskappar ...</translation>
-<translation id="5748409721703101646">Chromebook kan inte ansluta till internet med <ph name="NETWORK_NAME"/>. Välj ett annat nätverk. <ph name="LEARN_MORE_LINK_START"/>Läs mer<ph name="LEARN_MORE_LINK_END"/></translation>
 <translation id="1064835277883315402">Anslut till privat nätverk</translation>
 <translation id="872728358380751743">Med det här alternativet inaktiveras stödet för att koda videoströmmar med maskinvara för plattformar i Cast Streaming.</translation>
 <translation id="6508261954199872201">App: <ph name="APP_NAME"/></translation>
@@ -753,6 +750,7 @@ Alla användare måste logga ut för att fortsätta.</translation>
 <translation id="5759728514498647443">Dokument som du skickar till utskrift via <ph name="APP_NAME"/> kan läsas av <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Den här appen stöds för närvarande inte på den här enheten, men tomtenissarna i Chrome-verkstaden arbetar flitigt med att få det att fungera snart.</translation>
 <translation id="3273410961255278341">Skicka för:</translation>
+<translation id="4255096080864111471">Ange maximalt antal paneler för intresseområdet.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Ny flik</translation>
 <translation id="6567688344210276845">Det gick inte att läsa in ikonen <ph name="ICON"/> för sidåtgärden.</translation>
@@ -1128,7 +1126,6 @@ Alla användare måste logga ut för att fortsätta.</translation>
 <translation id="5774515636230743468">Manifest:</translation>
 <translation id="1313832887664610176">Anslutningen till Chromebox avbröts</translation>
 <translation id="3465566417615315331">Klicka på ditt foto</translation>
-<translation id="4960944339761782076">Använda bubblor för tillståndsbegäranden</translation>
 <translation id="7474889694310679759">Kanadensiskt-engelskt tangentbord</translation>
 <translation id="1817871734039893258">Microsofts filåterställning</translation>
 <translation id="2423578206845792524">S&amp;para bild som...</translation>
@@ -1692,6 +1689,7 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY"/> kan vara nå
 <translation id="4811502511369621968">Ogiltig e-postadress. Kontrollera den och försök igen.</translation>
 <translation id="175196451752279553">Ö&amp;ppna en stängd flik igen</translation>
 <translation id="8602851771975208551">Ett annat program i datorn har lagt till en app som kan ändra hur Chrome fungerar.</translation>
+<translation id="9154967591629748964">Maximalt antal paneler för intresseområdet.</translation>
 <translation id="2655386581175833247">Användarcertifikat:</translation>
 <translation id="5039804452771397117">Tillåt</translation>
 <translation id="5435964418642993308">Tryck på Retur om du vill gå bakåt och på snabbmenyn om du vill visa historiken</translation>
@@ -1799,7 +1797,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="8598687241883907630">Koppla bort Google-kontot ...</translation>
 <translation id="3195445837372719522">Chromebox för möten behöver veta vilken domän den tillhör. Därför behöver du logga in på ditt konto.</translation>
 <translation id="7920092496846849526">Du har frågat en förälder om lov att besöka den här sidan.</translation>
-<translation id="5984304957315422459">Det gick inte att logga in. Inloggningen misslyckades eftersom det inte gick att verifiera lösenordet.</translation>
 <translation id="9003677638446136377">Kontrollera igen</translation>
 <translation id="9187827965378254003">Det verkar inte finnas några experimentfunktioner tillgängliga just nu.</translation>
 <translation id="6022526133015258832">Öppna helskärmsläge</translation>
@@ -1864,6 +1861,7 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="1901377140875308934">Logga in i <ph name="SHORT_PRODUCT_NAME"/> ...</translation>
 <translation id="5529098031581368697">Den aktuella bakgrunden har angetts av <ph name="APP_NAME"/></translation>
 <translation id="5074318175948309511">Den här sidan kan behöva läsas in igen innan den nya inställningen börjar gälla.</translation>
+<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Inget val</translation>
 <translation id="6405640832764359650">Aktivera kryssrutan för att spara kort i Google Payments</translation>
 <translation id="1346104802985271895">Vietnamesisk inmatningsmetod (TELEX)</translation>
@@ -2070,7 +2068,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="8551388862522347954">Licenser</translation>
 <translation id="5525695896049981561">Ja, jag ser den</translation>
 <translation id="1410616244180625362">Fortsätt tillåta att <ph name="HOST"/> använder kameran</translation>
-<translation id="298577602575286468">Registrera Chromebook</translation>
 <translation id="8494214181322051417">Tips!</translation>
 <translation id="7959874006162866942">Vill du installera <ph name="PLUGIN_NAME"/>? Installera bara pluginprogram som du litar på.</translation>
 <translation id="2937174152333875430">Aktivera synkronisering av startprogrammet för appar</translation>
@@ -2277,7 +2274,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="7053983685419859001">Blockera</translation>
 <translation id="7912024687060120840">I mappen:</translation>
 <translation id="2485056306054380289">Server CA-certifikat:</translation>
-<translation id="5631861698741076898">Det gick inte att logga in. Inloggningen misslyckades eftersom den har konfigurerats att använda en webbadress som inte är säker (<ph name="BLOCKED_URL"/>).</translation>
 <translation id="6462109140674788769">Grekiskt tangentbord</translation>
 <translation id="9191610850443814852">Aktiverar en Smart Lock-inställning som gör att Chromebook kan upptäcka mobiler via Bluetooth Low Energy för att låsa upp Chromebook när mobilen är i närheten.</translation>
 <translation id="2727712005121231835">Faktisk storlek</translation>
@@ -2333,7 +2329,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="5502500733115278303">Importerat från Firefox</translation>
 <translation id="569109051430110155">Upptäck automatiskt</translation>
 <translation id="8597845839771543242">Format på egenskap:</translation>
-<translation id="4408599188496843485">H&amp;jälp</translation>
 <translation id="7969525169268594403">slovenska</translation>
 <translation id="5399158067281117682">PIN-koderna matchar inte varandra!</translation>
 <translation id="6277105963844135994">Tidsgräns för nätverket</translation>
@@ -2451,7 +2446,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="2562685439590298522">Dokument</translation>
 <translation id="8673383193459449849">Serverfel</translation>
 <translation id="4060383410180771901">Webbplatsen kunde inte hantera din begäran för <ph name="URL"/>.</translation>
-<translation id="5774208114954065213">Du håller på att avregistrera den här Chromebook-enheten hos Google för att inaktivera möjligheten att lokalisera, rensa och låsa den på distans. Det här kräver omstart. Vill du fortsätta?</translation>
 <translation id="6710213216561001401">Föregående</translation>
 <translation id="1108600514891325577">&amp;Stopp</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
@@ -2502,7 +2496,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="7434509671034404296">Utvecklare</translation>
 <translation id="7668654391829183341">Okänd enhet</translation>
 <translation id="2712173769900027643">Begär behörighet</translation>
-<translation id="2053298192223252950">Aktivera eller inaktivera Material Design-element i webbläsaren.</translation>
 <translation id="1790550373387225389">Öppna presentationsläge</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="8059178146866384858">Det finns redan en fil som heter $1. Välj ett annat namn.</translation>
@@ -3326,7 +3319,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="324743268744517458">Varning! Du är inte ansluten till någon aktiv Google Payments-server. Kort som utfärdas är ogiltiga.</translation>
 <translation id="4711094779914110278">turkiska</translation>
 <translation id="2572032849266859634">Skrivskyddad åtkomst till <ph name="VOLUME_NAME"/> har beviljats.</translation>
-<translation id="8193362611902704788">Aktivera startprogrammet för appar. När du aktiverar det skapas genvägar till det i operativsystemet.</translation>
 <translation id="5121130586824819730">Hårddisken är full. Spara på en annan plats eller gör mer plats på hårddisken.</translation>
 <translation id="1875987452136482705">Med det här alternativet inaktiveras stöd i WebRTC för avkodning av videoströmmar med maskinvaran för plattformen.</translation>
 <translation id="6164005077879661055">Alla filer och lokala data som är kopplade till den hanterade användaren tas bort permanent när den hanterade användaren tas bort. Besökta webbplatser och inställningar för den hanterade användaren kan fortfarande vara synliga för den som hanterar användaren på <ph name="MANAGEMENT_URL"/>.</translation>
@@ -3349,7 +3341,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="499165176004408815">Använd högkontrastläge</translation>
 <translation id="2928940441164925372">Aktivera passiv insamling av prestandarelaterad statistik och event och gör det möjligt att visa data grafiskt. Om du vill visa data besöker du chrome://performance.</translation>
 <translation id="3289856944988573801">Använd Ethernet eller Wi-Fi om du vill söka efter uppdateringar.</translation>
-<translation id="247500748408468353">Kontakta administratören eller försök igen.</translation>
 <translation id="450070808725753129">Om den redan finns med på listan över program som har åtkomst till nätverket 
         kan du prova att ta bort den från listan och sedan lägga till den igen.</translation>
 <translation id="8300607741108698921">Konfigureras på en minut</translation>
@@ -3859,7 +3850,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="1064912851688322329">Koppla bort Google-kontot</translation>
 <translation id="1294298200424241932">Redigera inställningar för tillförlitlighet:</translation>
 <translation id="1407135791313364759">Öppna alla</translation>
-<translation id="1487997194203762088">Något gick fel med inloggningen.</translation>
 <translation id="1434928358870966081">Inaktivera accelererad 2D-canvas</translation>
 <translation id="331915893283195714">Tillåt alla webbplatser att inaktivera muspekaren</translation>
 <translation id="8978526688207379569">Den här webbplatsen laddade ned flera filer automatiskt.</translation>
@@ -4027,7 +4017,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="3778740492972734840">&amp;Verktyg för programmerare</translation>
 <translation id="8335971947739877923">Export...</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN"/> visas nu i helskärm och har inaktiverat din muspekare.</translation>
-<translation id="747416882205977201">Du håller på att registrera den här Chromebook-enheten hos Google för att aktivera möjligheten att lokalisera, rensa och låsa den på distans. Det här kräver omstart. Vill du fortsätta?</translation>
 <translation id="38275787300541712">Tryck på Retur när du är klar</translation>
 <translation id="7417705661718309329">Google-karta</translation>
 <translation id="4058793769387728514">Kontrollera dokumentet nu</translation>
@@ -4084,7 +4073,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="7180865173735832675">Anpassa</translation>
 <translation id="7054808953701320293">Visa inte det här igen.</translation>
 <translation id="4903369323166982260">Kör Chrome Cleanup Tool</translation>
-<translation id="144932861331386147">Anslut till internet om du vill uppdatera din Chromebook.</translation>
 <translation id="2938685643439809023">mongoliska</translation>
 <translation id="5368720394188453070">Din mobil är låst. Lås upp den.</translation>
 <translation id="2070909990982335904">Namn som börjar med en punkt är reserverade för systemet. Välj ett annat namn.</translation>
@@ -4191,7 +4179,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="6557565812667414268">Endast aktiverat för skärmar med hög upplösning</translation>
 <translation id="7331991248529612614">Aktivera animering av knappen för läsarläget</translation>
 <translation id="5469954281417596308">Bokmärkeshanteraren</translation>
-<translation id="106153153543631784">Ange lösenordet på nytt för att uppdatera Chromebook-profilen.</translation>
 <translation id="3064388234319122767">Translitterering (zdravo → здраво)</translation>
 <translation id="5425722269016440406">Du måste vara online för att kunna inaktivera Smart Lock eftersom den här inställningen är synkroniserad med din mobil och andra enheter. Anslut först till ett nätverk.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
@@ -4814,7 +4801,6 @@ hanteraren
 <translation id="7973320858902175766">Patchfunktion för komponenter</translation>
 <translation id="3654045516529121250">Läsa tillgänglighetsinställningarna</translation>
 <translation id="2113479184312716848">Öppna fil...</translation>
-<translation id="4346759900458392803">Avregistrera Chromebook</translation>
 <translation id="884264119367021077">Leveransadress</translation>
 <translation id="634208815998129842">Aktivitetshanteraren</translation>
 <translation id="2735698359135166290">Rumänskt standardtangentbord</translation>
@@ -4907,7 +4893,6 @@ hanteraren
 <translation id="7209475358897642338">Vilket språk vill du använda?</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME"/> (kontrollerad)</translation>
 <translation id="9149866541089851383">Redigera...</translation>
-<translation id="8735794438432839558">Anslut till internet om du vill logga in på din Chromebook.</translation>
 <translation id="3356395591469757189">Förslag från Autofyll som tillbehörsvy för tangenbordet</translation>
 <translation id="7939412583708276221">Behåll ändå</translation>
 <translation id="8579285237314169903">Synkroniserar <ph name="NUMBER_OF_FILES"/> objekt ...</translation>
@@ -5520,7 +5505,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="6793649375377511437">Information om Google Copresence</translation>
 <translation id="4335713051520279344">Den här datorn återställs om en sekund.
 Tryck på någon tangent om du vill fortsätta utforska.</translation>
-<translation id="4775135101712609478">Visa begäranden om behörighet för innehåll (till exempel aviseringar, kvoter, kameraanvändning och mikrofonanvändning) i bubblor i stället för i informationsfält.</translation>
 <translation id="7233715388668391168">Aktivera/inaktivera svepskrivning för det virtuella tangentbordet.</translation>
 <translation id="6264485186158353794">Tillbaka till säker webbplats</translation>
 <translation id="7705524343798198388">VPN</translation>

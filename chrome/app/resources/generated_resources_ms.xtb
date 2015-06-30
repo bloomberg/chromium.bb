@@ -65,7 +65,6 @@
 <translation id="3293894718455402932">&quot;<ph name="EXTENSION"/>&quot; akan dapat membaca dan menulis fail imej, video dan bunyi dalam folder yang ditandakan.</translation>
 <translation id="7180611975245234373">Muat semula</translation>
 <translation id="4940047036413029306">Petikan</translation>
-<translation id="6406467842708712906">Op, anda tidak boleh log masuk. Log masuk gagal kerana butiran akaun anda tidak boleh didapatkan semula.</translation>
 <translation id="1497897566809397301">Benarkan data setempat ditetapkan (disyorkan)</translation>
 <translation id="7627349730328142646">Dayakan percubaan yang pusat mesej sentiasa tatal ke atas setelah penyingkiran pemberitahuan.</translation>
 <translation id="3275778913554317645">Buka sebagai tetingkap</translation>
@@ -171,7 +170,6 @@
 <translation id="3384773155383850738">Bilangan maksimum cadangan</translation>
 <translation id="1014321050861012327">Simpan kata laluan secara automatik.</translation>
 <translation id="8677212948402625567">Runtuhkan semua...</translation>
-<translation id="2056996954182910740">Dayakan Pelancar Apl.</translation>
 <translation id="7600965453749440009">Jangan sekali-kali terjemahkan <ph name="LANGUAGE"/></translation>
 <translation id="3208703785962634733">Tidak disahkan</translation>
 <translation id="620329680124578183">Jangan Muatkan (Disyorkan)</translation>
@@ -575,7 +573,6 @@
 <translation id="8206859287963243715">Selular</translation>
 <translation id="5610637197759059204">Lumpuhkan pemuatan semula halaman yang dicetuskan oleh penatalan kandungan menegak yang berlebihan.</translation>
 <translation id="6435285122322546452">Urus apl kios...</translation>
-<translation id="5748409721703101646">Chromebook anda tidak dapat menyambung ke Internet menggunakan <ph name="NETWORK_NAME"/>. Sila pilih rangkaian lain. <ph name="LEARN_MORE_LINK_START"/>Ketahui lebih lanjut<ph name="LEARN_MORE_LINK_END"/></translation>
 <translation id="1064835277883315402">Sertai rangkaian persendirian</translation>
 <translation id="872728358380751743">Pilihan ini melumpuhkan sokongan di Cast Streaming untuk mengekod aliran video yang menggunakan perkakasan platform.</translation>
 <translation id="6508261954199872201">Apl: <ph name="APP_NAME"/></translation>
@@ -744,6 +741,7 @@ Semua pengguna mesti melog keluar untuk meneruskan.</translation>
 <translation id="5759728514498647443">Dokumen yang anda hantar untuk dicetak melalui <ph name="APP_NAME"/> boleh dibaca oleh <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Apl ini tidak disokong pada peranti ini pada masa ini, tetapi gnome Chrome sedang bekerja keras untuk merealisasikannya tidak lama lagi.</translation>
 <translation id="3273410961255278341">Hantar untuk:</translation>
+<translation id="4255096080864111471">Nyatakan jubin maksimum untuk kawasan yang dipilih.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Tab baharu</translation>
 <translation id="6567688344210276845">Tidak dapat memuatkan ikon '<ph name="ICON"/>' untuk tindakan halaman.</translation>
@@ -1127,7 +1125,6 @@ Semua pengguna mesti melog keluar untuk meneruskan.</translation>
 <translation id="5774515636230743468">Ketara:</translation>
 <translation id="1313832887664610176">Sambungan ke Chromebox terputus</translation>
 <translation id="3465566417615315331">Klik foto anda</translation>
-<translation id="4960944339761782076">Gunakan Gelembung untuk Permintaan Kebenaran</translation>
 <translation id="7474889694310679759">Papan kekunci Inggeris Kanada</translation>
 <translation id="1817871734039893258">Pemulihan Fail Microsoft</translation>
 <translation id="2423578206845792524">Si&amp;mpan imej sebagai...</translation>
@@ -1317,7 +1314,7 @@ Psst! <ph name="SHORTCUT_KEY"/> mod Inkognito mungkin akan berguna pada masa aka
 <translation id="5595485650161345191">Edit alamat</translation>
 <translation id="1849186935225320012">Halaman ini mengawal sepenuhnya peranti MIDI.</translation>
 <translation id="7309416673261215716">Versi Sambungan</translation>
-<translation id="760353356052806707">Program lain pada komputer anda telah menambahkan apl yang boleh mengubah cara Chrome berfungsi.
+<translation id="760353356052806707">Atur cara lain pada komputer anda telah menambahkan apl yang boleh mengubah cara Chrome berfungsi.
 
 <ph name="EXTENSION_NAME"/></translation>
 <translation id="6840313690797192085">$1 PB</translation>
@@ -1690,6 +1687,7 @@ Psst! <ph name="SHORTCUT_KEY"/> mod Inkognito mungkin akan berguna pada masa aka
 <translation id="4811502511369621968">Alamat e-mel tidak sah. Sila semak dan cuba lagi.</translation>
 <translation id="175196451752279553">B&amp;uka semula tab yang ditutup</translation>
 <translation id="8602851771975208551">Program lain pada komputer anda menambah apl yang boleh mengubah cara Chrome berfungsi.</translation>
+<translation id="9154967591629748964">Jubin maksimum untuk kawasan yang diminati.</translation>
 <translation id="2655386581175833247">Sijil pengguna:</translation>
 <translation id="5039804452771397117">Benarkan</translation>
 <translation id="5435964418642993308">Tekan masuk untuk undur, kekunci menu konteks untuk melihat sejarah</translation>
@@ -1797,7 +1795,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="8598687241883907630">Putuskan sambungan Akaun Google anda ...</translation>
 <translation id="3195445837372719522">Chromebox untuk mesyuarat perlu tahu golongan domainnya. Untuk mengetahuinya, anda perlu log masuk ke akaun anda.</translation>
 <translation id="7920092496846849526">Anda telah bertanya kepada ibu bapa anda sama ada ok untuk melawat halaman ini.</translation>
-<translation id="5984304957315422459">Oop, tidak boleh mendaftar anda masuk. Daftar masuk gagal kerana kata laluan anda tidak dapat disahkan.</translation>
 <translation id="9003677638446136377">Semak sekali lagi</translation>
 <translation id="9187827965378254003">Oh, nampaknya tiada eksperimen tersedia pada masa ini.</translation>
 <translation id="6022526133015258832">Buka Skrin Penuh</translation>
@@ -1862,6 +1859,7 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="1901377140875308934">Log masuk ke <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Kertas dinding semasa ditetapkan oleh '<ph name="APP_NAME"/>'</translation>
 <translation id="5074318175948309511">Halaman ini mungkin perlu dimuat semula sebelum tetapan baru berkesan.</translation>
+<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Tiada pemilihan</translation>
 <translation id="6405640832764359650">Dayakan kotak pilihan penyimpanan kad Google Payments</translation>
 <translation id="1346104802985271895">Kaedah input bahasa Vietnam (TELEX)</translation>
@@ -2068,7 +2066,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="8551388862522347954">Lesen</translation>
 <translation id="5525695896049981561">Ya, saya melihatnya</translation>
 <translation id="1410616244180625362">Terus benarkan <ph name="HOST"/> mengakses kamera anda</translation>
-<translation id="298577602575286468">Daftar Chromebook</translation>
 <translation id="8494214181322051417">Baharu!</translation>
 <translation id="7959874006162866942">Adakah anda pasti ingin memasang <ph name="PLUGIN_NAME"/>? Anda harus memasang pemalam yang anda percayai sahaja.</translation>
 <translation id="2937174152333875430">Dayakan Penyegerakan Pelancar Apl</translation>
@@ -2278,7 +2275,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="7053983685419859001">Sekat</translation>
 <translation id="7912024687060120840">Dalam Folder:</translation>
 <translation id="2485056306054380289">Sijil CA pelayan:</translation>
-<translation id="5631861698741076898">Op, tidak dapat melog anda masuk. Log masuk gagal kerana telah dikonfigurasikan untuk menggunakan URL tidak selamat (<ph name="BLOCKED_URL"/>).</translation>
 <translation id="6462109140674788769">Papan kekunci Yunani</translation>
 <translation id="9191610850443814852">Mendayakan tetapan Smart Lock yang membenarkan Chromebook untuk menemui telefon melalui Bluetooth Tenaga Rendah untuk membuka kunci Chromebook apabila telefon itu berada berdekatan.</translation>
 <translation id="2727712005121231835">Saiz Sebenar</translation>
@@ -2337,7 +2333,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="5502500733115278303">Diimport Daripada Firefox</translation>
 <translation id="569109051430110155">Auto kesan</translation>
 <translation id="8597845839771543242">Format sifat:</translation>
-<translation id="4408599188496843485">B&amp;antuan</translation>
 <translation id="7969525169268594403">Bahasa Slovenia</translation>
 <translation id="5399158067281117682">PIN tidak sepadan!</translation>
 <translation id="6277105963844135994">Tamat masa rangkaian</translation>
@@ -2456,7 +2451,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="2562685439590298522">Dokumen</translation>
 <translation id="8673383193459449849">Masalah pelayan</translation>
 <translation id="4060383410180771901">Tapak web tidak dapat mengendalikan permintaan untuk <ph name="URL"/>.</translation>
-<translation id="5774208114954065213">Anda akan membatalkan pendaftaran Chromebook ini dengan Google untuk melumpuhkan keupayaan mengesan, memadam bersih dan mengunci peranti. Langkah ini memerlukan but semula. Anda ingin meneruskan?</translation>
 <translation id="6710213216561001401">Sebelumnya</translation>
 <translation id="1108600514891325577">&amp;Berhenti</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
@@ -2507,7 +2501,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="7434509671034404296">Pembangun</translation>
 <translation id="7668654391829183341">Peranti tidak diketahui</translation>
 <translation id="2712173769900027643">Minta kebenaran</translation>
-<translation id="2053298192223252950">Dayakan atau lumpuhkan unsur reka bentuk bahan dalam krom penyemak imbas.</translation>
 <translation id="1790550373387225389">Masukkan Mod Persembahan</translation>
 <translation id="6447842834002726250">Kuki</translation>
 <translation id="8059178146866384858">Fail bernama &quot;$1&quot; sudah wujud. Sila pilih nama berbeza.</translation>
@@ -3346,7 +3339,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="324743268744517458">Amaran: Anda tidak disambungkan pada pelayan Google Payments pengeluaran. Kad yang dikeluarkan tidak sah.</translation>
 <translation id="4711094779914110278">Bahasa Turki</translation>
 <translation id="2572032849266859634">Akses baca sahaja kepada <ph name="VOLUME_NAME"/> telah diberikan.</translation>
-<translation id="8193362611902704788">Dayakan Pelancar Apl. Setelah didayakan, buat pintasan sistem pengendalian kepada Pelancar Apl.</translation>
 <translation id="5121130586824819730">Cakera keras anda telah penuh. Sila simpan ke lokasi lain atau sediakan lagi ruang pada cakera keras.</translation>
 <translation id="1875987452136482705">Pilihan ini melumpuhkan sokongan dalam WebRTC untuk menyahkod aliran video menggunakan perkakasan platform.</translation>
 <translation id="6164005077879661055">Semua fail dan data setempat yang dikaitkan dengan pengguna diselia akan dipadamkan secara kekal apabila pengguna diselia ini dialih keluar. Tapak web yang dilawati dan tetapan untuk pengguna diselia ini masih boleh dilihat oleh pengurus di <ph name="MANAGEMENT_URL"/>.</translation>
@@ -3369,7 +3361,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="499165176004408815">Gunakan mod kontras tinggi</translation>
 <translation id="2928940441164925372">Dayakan pengumpulan pasif metrik dan acara berkaitan prestasi dan berikan pilihan untuk melihat data ini dalam gaya grafik. Untuk melihat data, sila lawati chrome://performance.</translation>
 <translation id="3289856944988573801">Untuk menyemak kemas kini, sila gunakan Ethernet atau Wi-Fi.</translation>
-<translation id="247500748408468353">Sila hubungi pentadbir anda atau cuba lagi.</translation>
 <translation id="450070808725753129">Jika apl telah disenaraikan sebagai program yang dibenarkan untuk mengakses rangkaian, cuba
         alihkannya keluar daripada senarai dan tambahkannya semula.</translation>
 <translation id="8300607741108698921">Persediaan 1 minit</translation>
@@ -3878,7 +3869,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="1064912851688322329">Putuskan sambungan Akaun Google anda</translation>
 <translation id="1294298200424241932">Edit tetapan kepercayaan:</translation>
 <translation id="1407135791313364759">Buka semua</translation>
-<translation id="1487997194203762088">Sesuatu telah berlaku dengan log masuk.</translation>
 <translation id="1434928358870966081">Lumpuhkan kanvas 2D terpecut</translation>
 <translation id="331915893283195714">Benarkan semua tapak untuk melumpuhkan kursor tetikus</translation>
 <translation id="8978526688207379569">Tapak ini memuat turun berbilang fail secara automatik.</translation>
@@ -4046,7 +4036,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="3778740492972734840">&amp;Alat pembangun</translation>
 <translation id="8335971947739877923">Eksport...</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN"/> kini dipaparkan dalam skrin penuh dan telah melumpuhkan kursor tetikus.</translation>
-<translation id="747416882205977201">Anda akan mendaftar Chromebook ini dengan Google untuk melumpuhkan keupayaan mengesan, memadam bersih dan mengunci peranti. Langkah ini memerlukan but semula. Anda ingin meneruskan?</translation>
 <translation id="38275787300541712">Tekan Enter apabila selesai</translation>
 <translation id="7417705661718309329">Peta Google</translation>
 <translation id="4058793769387728514">Periksa Dokumen Sekarang</translation>
@@ -4103,7 +4092,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="7180865173735832675">Peribadikan</translation>
 <translation id="7054808953701320293">Saya faham, jangan tunjukkan kepada saya lagi.</translation>
 <translation id="4903369323166982260">Jalankan Alat Pembersihan Chrome</translation>
-<translation id="144932861331386147">Sila sambung ke Internet untuk mengemas kini Chromebook anda.</translation>
 <translation id="2938685643439809023">Bahasa Mongolia</translation>
 <translation id="5368720394188453070">Telefon anda dikunci. Buka kuncinya untuk masuk.</translation>
 <translation id="2070909990982335904">Nama bermula dengan titik dikhaskan untuk sistem. Sila pilih nama lain.</translation>
@@ -4209,7 +4197,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="6557565812667414268">Dayakan hanya untuk paparan DPI tinggi</translation>
 <translation id="7331991248529612614">Dayakan Animasi Butang Mod Pembaca</translation>
 <translation id="5469954281417596308">Pengurus penanda halaman</translation>
-<translation id="106153153543631784">Sila masukkan semula kata laluan untuk mengemaskinikan profil Chromebook anda.</translation>
 <translation id="3064388234319122767">Pengalihan huruf (zdravo → здраво)</translation>
 <translation id="5425722269016440406">Anda mesti berada dalam talian untuk mematikan Smart Lock kerana tetapan ini disegerakkan ke telefon anda dan peranti lain. Sila bersambung kepada rangkaian dahulu.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
@@ -4832,7 +4819,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="7973320858902175766">Penampal Komponen</translation>
 <translation id="3654045516529121250">Baca tetapan kebolehaksesan anda</translation>
 <translation id="2113479184312716848">Buka &amp;Fail...</translation>
-<translation id="4346759900458392803">Batalkan pendaftaran Chromebook</translation>
 <translation id="884264119367021077">Alamat penghantaran</translation>
 <translation id="634208815998129842">Pengurus tugas</translation>
 <translation id="2735698359135166290">Papan kekunci standard Romania</translation>
@@ -4925,7 +4911,6 @@ Selepas anda membuat pengguna di bawah seliaan baharu, anda boleh mengurus tetap
 <translation id="7209475358897642338">Apakah bahasa anda?</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME"/> (Diselia)</translation>
 <translation id="9149866541089851383">Edit...</translation>
-<translation id="8735794438432839558">Sila sambung ke Internet untuk log masuk ke Chromebook anda.</translation>
 <translation id="3356395591469757189">Paparan cadangan autolengkap sebagai aksesori papan kekunci</translation>
 <translation id="7939412583708276221">Simpan juga</translation>
 <translation id="8579285237314169903">Menyegerakkan <ph name="NUMBER_OF_FILES"/> item...</translation>
@@ -5538,7 +5523,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="6793649375377511437">Maklumat Google Copresence</translation>
 <translation id="4335713051520279344">Komputer ini akan ditetapkan semula dalam 1 saat.
 Tekan sebarang kekunci untuk terus meneroka.</translation>
-<translation id="4775135101712609478">Tunjukkan permintaan kebenaran kandungan (cth. pemberitahuan, kuota, penggunaan kamera, penggunaan mikrofon) dalam gelembung bukannya bar maklumat.</translation>
 <translation id="7233715388668391168">Dayakan/Lumpuhkan taipan gerak isyarat untuk papan kekunci maya.</translation>
 <translation id="6264485186158353794">Kembali ke keselamatan</translation>
 <translation id="7705524343798198388">VPN</translation>

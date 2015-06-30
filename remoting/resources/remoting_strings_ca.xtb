@@ -76,7 +76,6 @@ Host</translation>
 <translation id="1770394049404108959">No puc obrir l'aplicació.</translation>
 <translation id="9188433529406846933">Autoritza</translation>
 <translation id="228809120910082333">Confirmeu el vostre compte i PIN a continuació per permetre l'accés per Chromoting.</translation>
-<translation id="7605995381616883502">Connexió nova</translation>
 <translation id="2038229918502634450">L'amfitrió s'està reiniciant per aplicar un canvi en la política.</translation>
 <translation id="2851674870054673688">Quan hagin introduït el codi, la sessió compartida començarà.</translation>
 <translation id="5593560073513909978">El servei està temporalment no disponible. Torneu-ho a provar més tard.</translation>
@@ -262,7 +261,6 @@ remot de Chrome</translation>
 <translation id="4277463233460010382">La configuració d'aquest ordinador permet que un o més clients es connectin sense introduir cap PIN.</translation>
 <translation id="837021510621780684">Des d'aquest ordinador</translation>
 <translation id="518094545883702183">Aquesta informació només s'utilitza per diagnosticar el problema de què esteu informant. Només hi poden accedir les persones que analitzen l'informe i es conserva com a màxim durant 30 dies.</translation>
-<translation id="1261403020716313927">• Hem corregit una filtració de memòria important en desconnectar-se des d'un escriptori remot.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Accepta</translation>
 <translation id="7215059001581613786">Introduïu un PIN que tingui sis dígits o més.</translation>

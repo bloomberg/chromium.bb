@@ -76,7 +76,6 @@ Host</translation>
 <translation id="1770394049404108959">Ich kann die Anwendung nicht öffnen.</translation>
 <translation id="9188433529406846933">Autorisieren</translation>
 <translation id="228809120910082333">Bestätigen Sie unten Ihr Konto und Ihre PIN, um den Zugriff durch Chromoting zu gestatten.</translation>
-<translation id="7605995381616883502">Neue Verbindung</translation>
 <translation id="2038229918502634450">Der Host wird neu gestartet, um eine Richtlinienänderung zu übernehmen.</translation>
 <translation id="2851674870054673688">Sobald der Nutzer den Code eingibt, beginnt die Freigabesitzung.</translation>
 <translation id="5593560073513909978">Der Dienst ist vorübergehend nicht verfügbar. Bitte versuchen Sie es später erneut.</translation>
@@ -262,7 +261,6 @@ Desktop Host</translation>
 <translation id="4277463233460010382">Dieser Computer wird konfiguriert, um einem oder mehreren Clients das Herstellen einer Verbindung ohne Eingabe einer PIN zu ermöglichen.</translation>
 <translation id="837021510621780684">Von diesem Computer</translation>
 <translation id="518094545883702183">Diese Informationen werden nur zur Diagnose des gemeldeten Problems verwendet. Dabei kann nur die Person auf sie zugreifen, die Ihren Bericht untersucht. Die Informationen werden nach spätestens 30 Tagen gelöscht.</translation>
-<translation id="1261403020716313927">• Großer Speicherverlust bei Verbindungstrennung von Remote Desktop wurde behoben.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Annehmen</translation>
 <translation id="7215059001581613786">Die PIN muss aus mindestens 6 Ziffern bestehen.</translation>

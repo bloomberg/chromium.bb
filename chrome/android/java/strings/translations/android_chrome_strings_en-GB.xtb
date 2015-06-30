@@ -211,7 +211,6 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="5771382037724542929">Do you want to replace the existing <ph name="FILE_NAME"/> in <ph name="DIRECTORY_NAME"/>?</translation>
 <translation id="8627706565932943526">Sync error</translation>
 <translation id="1807246157184219062">Light</translation>
-<translation id="9219103736887031265">Images</translation>
 <translation id="2904413602477443379">Choose a folder</translation>
 <translation id="7053983685419859001">Block</translation>
 <translation id="8374821112118309944">You need to update TalkBack to a newer version.</translation>
@@ -366,7 +365,6 @@ Hit the back button to exit.</translation>
 <translation id="3158619413803296679">Choose a bookmark</translation>
 <translation id="6138140242378429169">Make page mobile-friendly</translation>
 <translation id="5345040418939504969">Deleted <ph name="BOOKMARK_TITLE"/></translation>
-<translation id="7232255641409319872">Allow images on websites that you specify while blocking them for the rest of the web</translation>
 <translation id="2360035970720276770">Can only download http or https URLs</translation>
 <translation id="7926911226829060241">Your open bookmarks, history, passwords and more are being synced with your Google Account.</translation>
 <translation id="4871370605780490696">Add bookmark</translation>

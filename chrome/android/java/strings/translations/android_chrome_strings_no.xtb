@@ -211,7 +211,6 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="5771382037724542929">Vil du erstatte den eksisterende filen <ph name="FILE_NAME"/> i <ph name="DIRECTORY_NAME"/>?</translation>
 <translation id="8627706565932943526">Synkroniseringsfeil</translation>
 <translation id="1807246157184219062">Lys</translation>
-<translation id="9219103736887031265">Bilder</translation>
 <translation id="2904413602477443379">Velg en mappe</translation>
 <translation id="7053983685419859001">Blokkér</translation>
 <translation id="8374821112118309944">Du må oppdatere til en nyere versjon av Talkback.</translation>
@@ -366,7 +365,6 @@ Trykk på tilbake-knappen for å avslutte.</translation>
 <translation id="3158619413803296679">Velg et bokmerke</translation>
 <translation id="6138140242378429169">Gjør siden mobilvennlig</translation>
 <translation id="5345040418939504969">Slettet <ph name="BOOKMARK_TITLE"/></translation>
-<translation id="7232255641409319872">Tillater bilder på nettsteder du oppgir, og blokkerer bilder på alle andre nettsteder.</translation>
 <translation id="2360035970720276770">Kan bare laste ned nettadresser som begynner på «http» eller «https».</translation>
 <translation id="7926911226829060241">Bokmerkene, loggen, passordene og annet som du har åpent, synkroniseres med Google-kontoen din.</translation>
 <translation id="4871370605780490696">Legg til bokmerke</translation>

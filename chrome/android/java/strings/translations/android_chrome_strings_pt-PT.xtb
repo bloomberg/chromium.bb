@@ -211,7 +211,6 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="5771382037724542929">Pretende substituir o ficheiro <ph name="FILE_NAME"/> existente no diretório <ph name="DIRECTORY_NAME"/>?</translation>
 <translation id="8627706565932943526">Erro de sincronização</translation>
 <translation id="1807246157184219062">Claro</translation>
-<translation id="9219103736887031265">Imagens</translation>
 <translation id="2904413602477443379">Escolher uma pasta</translation>
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="8374821112118309944">Tem de atualizar o TalkBack para uma versão mais recente.</translation>
@@ -366,7 +365,6 @@ Clique no botão de retrocesso para sair.</translation>
 <translation id="3158619413803296679">Escolher um marcador</translation>
 <translation id="6138140242378429169">Tornar a página compatível com dispositivos móveis</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> eliminado</translation>
-<translation id="7232255641409319872">Permitir imagens em site especificados e bloqueá-las no resto da Web</translation>
 <translation id="2360035970720276770">Só é possível transferir URLs com http ou https</translation>
 <translation id="7926911226829060241">Os marcadores abertos, o histórico, as palavras-passe e muito mais estão a ser sincronizados com a sua Conta Google.</translation>
 <translation id="4871370605780490696">Adicionar marcador</translation>

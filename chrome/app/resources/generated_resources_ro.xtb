@@ -64,7 +64,6 @@
 <translation id="3293894718455402932">„<ph name="EXTENSION"/>” va putea citi și scrie fișierele imagine, video și audio din dosarele selectate.</translation>
 <translation id="7180611975245234373">Actualizați</translation>
 <translation id="4940047036413029306">Ghilimele</translation>
-<translation id="6406467842708712906">Hopa! Nu te-ai putut conecta. Conectarea nu a reușit, deoarece detaliile contului tău nu au putut fi preluate.</translation>
 <translation id="1497897566809397301">Permite setarea datelor locale (recomandat)</translation>
 <translation id="7627349730328142646">Activează experimentele prin care centrul de mesaje se derulează întotdeauna în sus când este eliminată o notificare.</translation>
 <translation id="3275778913554317645">Deschide ca fereastră</translation>
@@ -170,7 +169,6 @@
 <translation id="3384773155383850738">Numărul maxim de sugestii</translation>
 <translation id="1014321050861012327">Salvați automat parolele.</translation>
 <translation id="8677212948402625567">Restrânge-le pe toate...</translation>
-<translation id="2056996954182910740">Activați Lansatorul de aplicații.</translation>
 <translation id="7600965453749440009">Nu traduce niciodată din <ph name="LANGUAGE"/></translation>
 <translation id="3208703785962634733">Neconfirmat</translation>
 <translation id="620329680124578183">Nu încărca (recomandat)</translation>
@@ -578,7 +576,6 @@ Pentru instrucțiuni suplimentare, verificați-vă e-mailurile la adresa <ph nam
 <translation id="8206859287963243715">Celular</translation>
 <translation id="5610637197759059204">Dezactivează reîncărcările paginii declanșate de conținutul cu derulare suplimentară pe verticală.</translation>
 <translation id="6435285122322546452">Gestionați aplicațiile de tip chioșc...</translation>
-<translation id="5748409721703101646">Chromebookul nu se poate conecta la internet folosind <ph name="NETWORK_NAME"/>. Alegeți altă rețea. <ph name="LEARN_MORE_LINK_START"/>Aflați mai multe<ph name="LEARN_MORE_LINK_END"/></translation>
 <translation id="1064835277883315402">Alăturați-vă rețelei private</translation>
 <translation id="872728358380751743">Această opțiune dezactivează în Cast Streaming compatibilitatea pentru codificarea fluxurilor video folosind hardware-ul platformei.</translation>
 <translation id="6508261954199872201">Aplicație: <ph name="APP_NAME"/></translation>
@@ -752,6 +749,7 @@ Toți utilizatorii trebuie să se deconecteze pentru a continua.</translation>
 <translation id="5759728514498647443">Documentele pe care le trimiți prin <ph name="APP_NAME"/> pentru a fi printate pot fi citite de <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Aplicația nu este acceptată în prezent pe acest gadget, dar experții Chrome se străduie să o pună la dispoziție în curând.</translation>
 <translation id="3273410961255278341">Trimiteți pentru:</translation>
+<translation id="4255096080864111471">Specificați numărul maxim de panouri pentru zona de interes.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Filă nouă</translation>
 <translation id="6567688344210276845">Nu se poate încărca pictograma „<ph name="ICON"/>” pentru acțiunea paginii.</translation>
@@ -1135,7 +1133,6 @@ Toți utilizatorii trebuie să se deconecteze pentru a continua.</translation>
 <translation id="5774515636230743468">Manifest:</translation>
 <translation id="1313832887664610176">Conexiunea la Chromebox s-a pierdut</translation>
 <translation id="3465566417615315331">Dă clic pe fotografia ta</translation>
-<translation id="4960944339761782076">Folosiți baloane pentru solicitări de permisiuni</translation>
 <translation id="7474889694310679759">Tastatură engleză canadiană</translation>
 <translation id="1817871734039893258">Recuperarea fișierelor Microsoft</translation>
 <translation id="2423578206845792524">Sal&amp;vează imaginea ca...</translation>
@@ -1698,6 +1695,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY"/> pentru a 
 <translation id="4811502511369621968">Adresă de e-mail nevalidă. Verificați adresa și încercați din nou.</translation>
 <translation id="175196451752279553">R&amp;edeschide fila închisă</translation>
 <translation id="8602851771975208551">Un alt program de pe computerul dvs. a adăugat o aplicație care poate schimba modul în care funcționează Chrome.</translation>
+<translation id="9154967591629748964">Numărul maxim de panouri pentru zona de interes</translation>
 <translation id="2655386581175833247">Certificat de utilizator:</translation>
 <translation id="5039804452771397117">Permite</translation>
 <translation id="5435964418642993308">Apasă pe Enter pentru a naviga înapoi, pe tasta pentru meniu contextual pentru a afișa istoricul</translation>
@@ -1805,7 +1803,6 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="8598687241883907630">Deconectați Contul dvs. Google...</translation>
 <translation id="3195445837372719522">Chromebox pentru videoconferințe trebuie să știe de ce domeniu aparține. Acest lucru necesită conectarea ta la cont.</translation>
 <translation id="7920092496846849526">Ai întrebat părintele dacă poți accesa această pagină.</translation>
-<translation id="5984304957315422459">Hopa, nu v-am putut conecta. Conectarea nu a reușit, deoarece parola nu a putut fi verificată.</translation>
 <translation id="9003677638446136377">Verifică din nou</translation>
 <translation id="9187827965378254003">Hopa! Se pare că în prezent nu există niciun experiment disponibil.</translation>
 <translation id="6022526133015258832">Deschideți în ecran complet</translation>
@@ -1870,6 +1867,7 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="1901377140875308934">Conectați-vă la <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">Fundalul actual este setat de „<ph name="APP_NAME"/>”</translation>
 <translation id="5074318175948309511">Este posibil să fie necesară reîncărcarea acestei pagini înainte ca noile setări să se aplice.</translation>
+<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Nicio selecție</translation>
 <translation id="6405640832764359650">Activează caseta de selectare pentru salvarea cardului Google Payments</translation>
 <translation id="1346104802985271895">Metoda de introducere a textului în vietnameză (TELEX)</translation>
@@ -2077,7 +2075,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="8551388862522347954">Licențe</translation>
 <translation id="5525695896049981561">Da, îl văd</translation>
 <translation id="1410616244180625362">Permiteți în continuare accesul <ph name="HOST"/> la camera dvs.</translation>
-<translation id="298577602575286468">Înregistrează Chromebookul</translation>
 <translation id="8494214181322051417">Nou!</translation>
 <translation id="7959874006162866942">Sigur dorești să instalezi pluginul <ph name="PLUGIN_NAME"/>? Trebuie să instalezi numai pluginuri de încredere.</translation>
 <translation id="2937174152333875430">Activați sincronizarea Lansatorului de aplicații</translation>
@@ -2287,7 +2284,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="7053983685419859001">Blochează</translation>
 <translation id="7912024687060120840">În dosarul:</translation>
 <translation id="2485056306054380289">Certificat CA server:</translation>
-<translation id="5631861698741076898">Hopa, nu v-am putut conecta. Conectarea a eșuat, deoarece a fost configurată pentru a folosi o adresă URL nesecurizată (<ph name="BLOCKED_URL"/>).</translation>
 <translation id="6462109140674788769">Tastatură greacă</translation>
 <translation id="9191610850443814852">Activează o setare Smart Lock care permite Chromebookului să descopere telefoane prin Bluetooth Low Energy pentru a debloca Chromebookul atunci când telefonul se află în apropiere.</translation>
 <translation id="2727712005121231835">Dimensiunea actuală</translation>
@@ -2346,7 +2342,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="5502500733115278303">Importate din Firefox</translation>
 <translation id="569109051430110155">Detectare automată</translation>
 <translation id="8597845839771543242">Formatul proprietății:</translation>
-<translation id="4408599188496843485">&amp;Ajutor</translation>
 <translation id="7969525169268594403">Slovenă</translation>
 <translation id="5399158067281117682">Codurile PIN nu coincid!</translation>
 <translation id="6277105963844135994">Conectarea la rețea a expirat</translation>
@@ -2464,7 +2459,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="2562685439590298522">Documente</translation>
 <translation id="8673383193459449849">Problemă de server</translation>
 <translation id="4060383410180771901">Site-ul nu poate gestiona solicitarea pentru <ph name="URL"/>.</translation>
-<translation id="5774208114954065213">Vei anula înregistrarea acestui Chromebook la Google pentru a dezactiva capacitatea de localizare, ștergere a datelor și blocare la distanță a dispozitivului. Pentru aceasta, trebuie să îl repornești. Dorești să continui?</translation>
 <translation id="6710213216561001401">Înapoi</translation>
 <translation id="1108600514891325577">&amp;Oprește</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
@@ -2515,7 +2509,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="7434509671034404296">Dezvoltator</translation>
 <translation id="7668654391829183341">Dispozitiv necunoscut</translation>
 <translation id="2712173769900027643">Solicită permisiunea</translation>
-<translation id="2053298192223252950">Activează sau dezactivează elementele de design material din browserul Chrome.</translation>
 <translation id="1790550373387225389">Intră în modul de prezentare</translation>
 <translation id="6447842834002726250">Cookie-uri</translation>
 <translation id="8059178146866384858">Fișierul numit „$1” există deja. Alege alt nume.</translation>
@@ -3353,7 +3346,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="324743268744517458">Avertisment: nu te-ai conectat la serverele Google Payments în versiunea de lansare. Cardurile emise nu vor fi valide.</translation>
 <translation id="4711094779914110278">Turcă</translation>
 <translation id="2572032849266859634">A fost acordat accesul numai în citire la <ph name="VOLUME_NAME"/>.</translation>
-<translation id="8193362611902704788">Activează Lansatorul de aplicații. După activare, creează comenzi rapide din sistemul de operare către Lansatorul de aplicații.</translation>
 <translation id="5121130586824819730">Hard diskul este plin. Salvați în altă locație sau eliberați mai mult spațiu pe hard disk.</translation>
 <translation id="1875987452136482705">Această opțiune dezactivează în WebRTC compatibilitatea pentru decodificarea fluxurilor video utilizând hardware-ul platformei.</translation>
 <translation id="6164005077879661055">Toate fișierele și datele locale asociate acestui utilizator monitorizat vor fi șterse definitiv după eliminarea acestui utilizator monitorizat. Site-urile web accesate și setările acestui utilizator monitorizat pot fi în continuare vizibile pentru manager la <ph name="MANAGEMENT_URL"/>.</translation>
@@ -3376,7 +3368,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="499165176004408815">Utilizați modul de contrast ridicat</translation>
 <translation id="2928940441164925372">Activați colectarea pasivă a statisticilor și a evenimentelor legate de performanță și furnizați opțiunea de a afișa grafic aceste date. Pentru a afișa aceste date, accesați chrome://performance.</translation>
 <translation id="3289856944988573801">Pentru a verifica dacă există actualizări, utilizați Ethernet sau Wi-Fi.</translation>
-<translation id="247500748408468353">Contactați administratorul sau încercați din nou.</translation>
 <translation id="450070808725753129">Dacă este deja inclus ca program căruia i se permite să acceseze rețeaua, încercați
         să-l eliminați din listă și să-l adăugați din nou.</translation>
 <translation id="8300607741108698921">Configurare într-un minut</translation>
@@ -3883,7 +3874,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="1064912851688322329">Deconectați Contul dvs. Google</translation>
 <translation id="1294298200424241932">Editează setările privind încrederea:</translation>
 <translation id="1407135791313364759">Deschideți-le pe toate</translation>
-<translation id="1487997194203762088">A apărut o eroare la conectare.</translation>
 <translation id="1434928358870966081">Dezactivați obiectele Canvas 2D accelerate</translation>
 <translation id="331915893283195714">Permiteți tuturor site-urilor să dezactiveze cursorul mouse-ului</translation>
 <translation id="8978526688207379569">Acest site a descărcat automat mai multe fișiere.</translation>
@@ -4051,7 +4041,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="3778740492972734840">Instrumente pentru &amp;dezvoltatori</translation>
 <translation id="8335971947739877923">Exportă...</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN"/> este acum în modul ecran complet și a dezactivat cursorul mouse-ului dvs.</translation>
-<translation id="747416882205977201">Vei înregistra acest Chromebook la Google pentru a activa capacitatea de localizare, ștergere a datelor și blocare la distanță a dispozitivului. Pentru aceasta, trebuie să îl repornești. Dorești să continui?</translation>
 <translation id="38275787300541712">Apăsați pe Enter când ați terminat</translation>
 <translation id="7417705661718309329">Hartă Google</translation>
 <translation id="4058793769387728514">Verifică acum documentul</translation>
@@ -4108,7 +4097,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="7180865173735832675">Personalizează</translation>
 <translation id="7054808953701320293">Am înțeles, nu mai afișa acest mesaj.</translation>
 <translation id="4903369323166982260">Rulează Instrumentul de curățare Chrome</translation>
-<translation id="144932861331386147">Conectați-vă la internet pentru a vă actualiza Chromebookul.</translation>
 <translation id="2938685643439809023">Mongolă</translation>
 <translation id="5368720394188453070">Telefonul este blocat. Pentru acces, deblochează-l.</translation>
 <translation id="2070909990982335904">Numele care încep cu punct sunt rezervate pentru sistem. Alege alt nume.</translation>
@@ -4214,7 +4202,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="6557565812667414268">Activat numai pentru ecranele de înaltă rezoluție</translation>
 <translation id="7331991248529612614">Activează animația butonului pentru modul cititor</translation>
 <translation id="5469954281417596308">Managerul de marcaje</translation>
-<translation id="106153153543631784">Reintrodu parola pentru a actualiza profilul Chromebookului.</translation>
 <translation id="3064388234319122767">Transliterație (zdravo → здраво)</translation>
 <translation id="5425722269016440406">Trebuie să fii online pentru a dezactiva Smart Lock, deoarece această setare este sincronizată cu telefonul și cu alte dispozitive ale tale. Conectează-te la o rețea mai întâi.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
@@ -4837,7 +4824,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="7973320858902175766">Corector de componente</translation>
 <translation id="3654045516529121250">Citește setările de accesibilitate</translation>
 <translation id="2113479184312716848">Deschide &amp;fișierul...</translation>
-<translation id="4346759900458392803">Anulează înregistrarea Chromebookului</translation>
 <translation id="884264119367021077">Adresa de expediere</translation>
 <translation id="634208815998129842">Manager de activități</translation>
 <translation id="2735698359135166290">Tastatură română standard</translation>
@@ -4930,7 +4916,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="7209475358897642338">Ce limbă doriți să utilizați?</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME"/> (monitorizat)</translation>
 <translation id="9149866541089851383">Editează...</translation>
-<translation id="8735794438432839558">Accesați internetul pentru a vă putea conecta la Chromebook.</translation>
 <translation id="3356395591469757189">Afișează sugestiile de completare automată ca un accesoriu pentru tastatură</translation>
 <translation id="7939412583708276221">Păstrați oricum</translation>
 <translation id="8579285237314169903">Se sincronizează <ph name="NUMBER_OF_FILES"/> (de) elemente...</translation>
@@ -5540,7 +5525,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="6793649375377511437">Informații de coprezență Google</translation>
 <translation id="4335713051520279344">Acest computer se va reseta în 1 secundă.
 Apăsați pe orice tastă pentru a continua explorarea.</translation>
-<translation id="4775135101712609478">Solicitările de permisiuni privind conținutul (de ex., notificări, cotă, folosirea camerei, folosirea microfonului) se afișează în baloane în loc să se afișeze în barele de informații.</translation>
 <translation id="7233715388668391168">Activează/Dezactivează tastarea gestuală pentru tastatura virtuală.</translation>
 <translation id="6264485186158353794">Înapoi la zona sigură</translation>
 <translation id="7705524343798198388">VPN</translation>

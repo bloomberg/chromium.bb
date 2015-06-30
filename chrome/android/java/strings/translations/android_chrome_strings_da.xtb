@@ -211,7 +211,6 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="5771382037724542929">Vil du erstatte den eksisterende <ph name="FILE_NAME"/> i <ph name="DIRECTORY_NAME"/>?</translation>
 <translation id="8627706565932943526">Synkroniseringsfejl</translation>
 <translation id="1807246157184219062">Lys</translation>
-<translation id="9219103736887031265">Billeder</translation>
 <translation id="2904413602477443379">Vælg en mappe</translation>
 <translation id="7053983685419859001">Bloker</translation>
 <translation id="8374821112118309944">Du skal opdatere TalkBack til en nyere version.</translation>
@@ -366,7 +365,6 @@ Tryk på tilbagetasten for at afslutte.</translation>
 <translation id="3158619413803296679">Vælg et bogmærke</translation>
 <translation id="6138140242378429169">Gør siden mobilvenlig</translation>
 <translation id="5345040418939504969">Slettede <ph name="BOOKMARK_TITLE"/></translation>
-<translation id="7232255641409319872">Tillad billeder på de websites, du angiver, mens det blokeres på resten af internettet</translation>
 <translation id="2360035970720276770">Der kan kun downloades webadresser med &quot;http&quot; eller &quot;https&quot;</translation>
 <translation id="7926911226829060241">Åbne bogmærker, historik, adgangskoder m.m. er ved at blive synkroniseret med din Google-konto.</translation>
 <translation id="4871370605780490696">Tilføj bogmærke</translation>

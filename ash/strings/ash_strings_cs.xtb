@@ -84,11 +84,13 @@
 <translation id="3087734570205094154">Až dolů</translation>
 <translation id="3742055079367172538">Byl vytvořen snímek obrazovky</translation>
 <translation id="8878886163241303700">Rozšíření obrazovky</translation>
+<translation id="714034171374937760">Chromebase</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (Bluetooth)</translation>
 <translation id="3967919079500697218">Možnost pořizovat snímky obrazovky byla zakázána správcem.</translation>
 <translation id="372094107052732682">Práci ukončíte dvojitým stisknutím kombinace kláves Ctrl+Shift+Q.</translation>
 <translation id="923686485342484400">Odhlásíte se dvojitým stisknutím kombinace kláves Control Shift Q.</translation>
 <translation id="9194617393863864469">Přihlásit dalšího uživatele...</translation>
+<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6803622936009808957">Zobrazení nelze zrcadlit, protože nebyla nalezena podporovaná rozlišení. Místo toho se spustil režim rozšířené pracovní plochy.</translation>
 <translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (primární)</translation>
 <translation id="3626637461649818317">Zbývá <ph name="PERCENTAGE"/> %</translation>
@@ -102,6 +104,7 @@
 <translation id="2825619548187458965">Polička</translation>
 <translation id="2614835198358683673">Když bude Chromebook zapnutý, možná se nebude nabíjet. Doporučujeme použít oficiální nabíječku.</translation>
 <translation id="4430019312045809116">Hlasitost</translation>
+<translation id="5932901536148835538">Chromebit</translation>
 <translation id="544691375626129091">Do této relace již byli přidáni všichni dostupní uživatelé.</translation>
 <translation id="1383876407941801731">Vyhledávání</translation>
 <translation id="2204305834655267233">Informace o síti</translation>
@@ -144,6 +147,7 @@
 <translation id="3019353588588144572">Čas zbývající do úplného nabití baterie: <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Lupa obrazovky</translation>
 <translation id="882279321799040148">Kliknutím jej zobrazíte</translation>
+<translation id="5011233892417813670">Chromebook</translation>
 <translation id="1753067873202720523">Když bude Chromebook zapnutý, možná se nebude nabíjet.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> rozlišení <ph name="SPECIFIED_RESOLUTION"/> nepodporuje. Rozlišení bylo změněno zpět na <ph name="FALLBACK_RESOLUTION"/>.</translation>
 <translation id="1602076796624386989">Povolit mobilní datové připojení</translation>
@@ -183,6 +187,7 @@
 <translation id="5947494881799873997">Vrátit zpět</translation>
 <translation id="7593891976182323525">Vyhledávání nebo Shift</translation>
 <translation id="7649070708921625228">Nápověda</translation>
+<translation id="164969095109328410">Zařízení Chrome</translation>
 <translation id="3050422059534974565">CAPS LOCK je zapnutý. Vypnete jej stisknutím klávesy Vyhledávání nebo Shift.</translation>
 <translation id="397105322502079400">Probíhá výpočet…</translation>
 <translation id="1013923882670373915">Zařízení Bluetooth „<ph name="DEVICE_NAME"/>“ žádá o povolení ke spárování. Zadejte prosím v zařízení tento kód PIN: <ph name="PINCODE"/></translation>

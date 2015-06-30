@@ -76,7 +76,6 @@ isäntä</translation>
 <translation id="1770394049404108959">Sovellus ei aukea.</translation>
 <translation id="9188433529406846933">Valtuuta</translation>
 <translation id="228809120910082333">Salli käyttö Chromotingin kautta vahvistamalla tilisi ja PIN-koodisi alla.</translation>
-<translation id="7605995381616883502">Uusi yhteys</translation>
 <translation id="2038229918502634450">Isäntä käynnistyy uudelleen ja ottaa käyttöön käytäntöihin tehdyn muutoksen.</translation>
 <translation id="2851674870054673688">Tietokoneen jakaminen aloitetaan käyttäjän annettua käyttökoodin.</translation>
 <translation id="5593560073513909978">Palvelu ei ole tällä hetkellä käytettävissä. Yritä myöhemmin uudelleen.</translation>
@@ -262,7 +261,6 @@ isäntä</translation>
 <translation id="4277463233460010382">Tämä tietokone on määritetty sallimaan vähintään yhden asiakkaan yhteys ilman PIN-koodia.</translation>
 <translation id="837021510621780684">Tältä tietokoneelta</translation>
 <translation id="518094545883702183">Näitä tietoja käytetään vain ilmoittamasi ongelman diagnosointiin, näytetään vain ongelmaasi selvittävälle henkilölle ja säilytetään korkeintaan 30 päivää.</translation>
-<translation id="1261403020716313927">• Korjattu suuri muistivuoto, joka tapahtui etätyöpöytäyhteyden katkettua.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Hyväksy</translation>
 <translation id="7215059001581613786">Anna PIN-koodi, jossa on vähintään kuusi numeroa.</translation>

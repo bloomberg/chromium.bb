@@ -65,7 +65,6 @@
 <translation id="3293894718455402932">&quot;<ph name="EXTENSION"/>&quot; તપાસાયેલ ફોલ્ડર્સમાં છબીઓ, વિડિઓ, અને સાઉન્ડ ફાઇલો વાંચી અને લખી શકવા સમર્થ હશે.</translation>
 <translation id="7180611975245234373">તાજું કરો</translation>
 <translation id="4940047036413029306">ક્વૉટ</translation>
-<translation id="6406467842708712906">અરેરે, તમને સાઇન ઇન કરી શક્યાં નથી. સાઇન ઇન નિષ્ફળ થયું કારણ કે તમારી એકાઉન્ટ વિગતો મેળવી શક્યાં નથી.</translation>
 <translation id="1497897566809397301">સ્થાનિક ડેટાને સેટ થવા દો (ભલામણ કરેલ)</translation>
 <translation id="7627349730328142646">દૂર કરવાની સૂચના પર સંદેશ કેન્દ્ર જેને હંમેશાં ઉપર સ્ક્રોલ કરે છે તે પ્રયોગોને સક્ષમ કરો.</translation>
 <translation id="3275778913554317645">વિંડો તરીકે ખોલો</translation>
@@ -171,7 +170,6 @@
 <translation id="3384773155383850738">સૂચનોની મહત્તમ સંખ્યા</translation>
 <translation id="1014321050861012327">પાસવર્ડ્સને આપમેળે સાચવો.</translation>
 <translation id="8677212948402625567">બધાને સંકુચિત કરો...</translation>
-<translation id="2056996954182910740">એપ લૉન્ચર સક્ષમ કરો.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE"/> નું ક્યારેય અનુવાદ કરશો નહીં</translation>
 <translation id="3208703785962634733">પુષ્ટિ થયેલ નથી</translation>
 <translation id="620329680124578183">લોડ કરશો નહીં (ભલામણ કરેલ)</translation>
@@ -579,7 +577,6 @@
 <translation id="8206859287963243715">સેલ્યુલર</translation>
 <translation id="5610637197759059204">ઊભી રીતે ઓવરસ્ક્રોલ થતી સામગ્રી દ્વારા ટ્રિગર કરવામાં આવેલ પૃષ્ઠ ફરીથી લોડ કરવાનું અક્ષમ કરો.</translation>
 <translation id="6435285122322546452">કિઓસ્ક એપ્લિકેશન્સનું સંચાલન કરો...</translation>
-<translation id="5748409721703101646"><ph name="NETWORK_NAME"/> નો ઉપયોગ કરીને ઇન્ટરનેટથી કનેક્ટ કરવામાં તમારી Chromebook અસમર્થ છે. કૃપા કરીને બીજું નેટવર્ક પસંદ કરો. <ph name="LEARN_MORE_LINK_START"/>વધુ જાણો<ph name="LEARN_MORE_LINK_END"/></translation>
 <translation id="1064835277883315402">ખાનગી નેટવર્કથી જોડાઓ</translation>
 <translation id="872728358380751743">આ વિકલ્પ પ્લેટફોર્મ હાર્ડવેરનો ઉપયોગ કરીને વિડિઓ સ્ટ્રીમ્સ એન્કોડિંગ માટે Cast સ્ટ્રીમિંગમાં સમર્થન અક્ષમ કરે છે.</translation>
 <translation id="6508261954199872201">App: <ph name="APP_NAME"/></translation>
@@ -750,6 +747,7 @@
 <translation id="5759728514498647443">તમે <ph name="APP_NAME"/> મારફતે છાપવા માટે મોકલેલા દસ્તાવેજો <ph name="APP_NAME"/> દ્વારા વાંચી શકાય છે.</translation>
 <translation id="2401053206567162910">આ એપ્લિકેશન હાલમાં આ ઉપકરણ પર સમર્થિત નથી પરંતુ Chrome gnomes તેને જલ્દી કામ કરતું બનાવવા માટે સખત કાર્ય કરે છે.</translation>
 <translation id="3273410961255278341">આ માટે મોકલો:</translation>
+<translation id="4255096080864111471">રુચિ ક્ષેત્ર માટે મહત્તમ ટાઇલ્સનો ઉલ્લેખ કરો.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">નવું ટૅબ</translation>
 <translation id="6567688344210276845">પૃષ્ઠ ક્રિયા માટે આયકન '<ph name="ICON"/>' લોડ કરી શકાયું નથી.</translation>
@@ -1131,7 +1129,6 @@
 <translation id="5774515636230743468">સ્પષ્ટ:</translation>
 <translation id="1313832887664610176">Chromebox પરનું કનેક્શન ગુમાવ્યું</translation>
 <translation id="3465566417615315331">તમારા ફોટા પર ક્લિક કરો</translation>
-<translation id="4960944339761782076">પરવાનગી વિનંતીઓ માટે ફુગાનો ઉપયોગ કરો</translation>
 <translation id="7474889694310679759">કેનેડિયન અંગ્રેજી કીબોર્ડ</translation>
 <translation id="1817871734039893258">Microsoft File Recovery</translation>
 <translation id="2423578206845792524">છબીને આ રૂપે સા&amp;ચવો...</translation>
@@ -1697,6 +1694,7 @@
 <translation id="4811502511369621968">અમાન્ય ઇમેઇલ સરનામું. કૃપા કરીને તપાસો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="175196451752279553">બંધ કરેલું ટેબ ફરિથી ખોલો</translation>
 <translation id="8602851771975208551">તમારા કમ્પ્યુટર પરના બીજા પ્રોગ્રામે એક એપ્લિકેશન ઉમેરી જે Chrome કાર્ય કરે છે તે રીતને બદલી શકે છે.</translation>
+<translation id="9154967591629748964">રુચિ ક્ષેત્ર માટે મહત્તમ ટાઇલ્સ</translation>
 <translation id="2655386581175833247">વપરાશકર્તા પ્રમાણપત્ર:</translation>
 <translation id="5039804452771397117">મંજૂરી આપો</translation>
 <translation id="5435964418642993308">પાછળ જવા માટે એન્ટર અને ઇતિહાસ જોવા માટે સંદર્ભ મેનૂ કી દબાવો</translation>
@@ -1805,7 +1803,6 @@
 <translation id="8598687241883907630">તમારું Google એકાઉન્ટ ડિસ્કનેક્ટ કરો...</translation>
 <translation id="3195445837372719522">મીટિંગ સાથે Chromebox ને તે કયા ડોમેનથી સંબંધિત છે તે જાણવાની જરૂર છે. આ માટે તમારે તમારા એકાઉન્ટમાં સાઇન ઇન કરવાની જરૂર હશે.</translation>
 <translation id="7920092496846849526">આ પૃષ્ઠી મુલાકાત લો તે ઠીક છે તેવું તમે તમારા માતાપિતાને પૂછ્યું છે કે કેમ.</translation>
-<translation id="5984304957315422459">અરેરે, તમને સાઇન ઇન કરી શક્યાં નથી. સાઇન ઇન નિષ્ફળ થયું કારણ કે તમારો પાસવર્ડ ચકાસી શકાયો નથી.</translation>
 <translation id="9003677638446136377">ફરી તપાસો</translation>
 <translation id="9187827965378254003">ઓહ, લાગે છે કે ત્યાં હાલમાં કોઈ પ્રયોગો ઉપલબ્ધ નથી.</translation>
 <translation id="6022526133015258832">પૂર્ણ સ્ક્રીન ખોલો</translation>
@@ -1870,6 +1867,7 @@
 <translation id="1901377140875308934"><ph name="SHORT_PRODUCT_NAME"/> પર સાઇન ઇન કરો...</translation>
 <translation id="5529098031581368697">'<ph name="APP_NAME"/>' દ્વારા વર્તમાન વૉલપેપર સેટ કરવામાં આવ્યું છે</translation>
 <translation id="5074318175948309511">નવી સેટિંગ્સ પ્રભાવમાં આવે તે પહેલાં આ પૃષ્ઠને ફરીથી લોડ કરવાની જરૂર પડી શકે છે.</translation>
+<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">પસંદગી નથી</translation>
 <translation id="6405640832764359650">Google Payments કાર્ડ સાચવવાનું ચેકબોક્સ સક્ષમ કરો</translation>
 <translation id="1346104802985271895">વિયેતનામીઝ ઇનપુટ મેથડ (ટીઇએલઇએક્સ)</translation>
@@ -2077,7 +2075,6 @@
 <translation id="8551388862522347954">લાઇસેંસીસ</translation>
 <translation id="5525695896049981561">હા, મને તે દેખાય છે</translation>
 <translation id="1410616244180625362"><ph name="HOST"/> ને તમારા કૅમેરાને ઍક્સેસ કરવા દેવાનું ચાલુ રાખો</translation>
-<translation id="298577602575286468">Chromebook ની નોંધણી કરો</translation>
 <translation id="8494214181322051417">નવું!</translation>
 <translation id="7959874006162866942">શું તમે ખરેખર <ph name="PLUGIN_NAME"/> ઇન્સ્ટોલ કરવા માંગો છો? તમારે ફક્ત તમે વિશ્વાસ કરતા હોય તે પ્લગિન્સ ઇન્સ્ટોલ કરવા જોઈએ.</translation>
 <translation id="2937174152333875430">એપ લૉન્ચર સમન્વયન સક્ષમ કરો</translation>
@@ -2281,7 +2278,6 @@
 <translation id="7053983685419859001">અવરોધિત કરો</translation>
 <translation id="7912024687060120840">ફોલ્ડરમાં:</translation>
 <translation id="2485056306054380289">સર્વર CA પ્રમાણપત્ર:</translation>
-<translation id="5631861698741076898">અરેરે, તમને સાઇન ઇન કરી શક્યાં નથી. સાઇન ઇન નિષ્ફળ થયું કારણ કે તે બિન-સુરક્ષિત URL નો ઉપયોગ કરવા માટે ગોઠવાયેલું હતું (<ph name="BLOCKED_URL"/>).</translation>
 <translation id="6462109140674788769">ગ્રીક કીબોર્ડ</translation>
 <translation id="9191610850443814852">Smart Lock સેટિંગ સક્ષમ કરે છે જે Chromebook ને અનલોક કરવા માટે જ્યારે ફોન તેની નજીકમાં હોય ત્યારે Bleutooth નીચી ઊર્જા પર ફોનને શોધવામાં Chromebook ને મંજૂરી આપે છે.</translation>
 <translation id="2727712005121231835">વાસ્તવિક કદ</translation>
@@ -2337,7 +2333,6 @@
 <translation id="5502500733115278303">Firefox પરથી આયાત કરેલું</translation>
 <translation id="569109051430110155">સ્વતઃ શોધો</translation>
 <translation id="8597845839771543242">ગુણધર્મનું ફોર્મેટ:</translation>
-<translation id="4408599188496843485">સ&amp;હાય</translation>
 <translation id="7969525169268594403">સ્લોવેનિયન</translation>
 <translation id="5399158067281117682">PIN મેળ ખાતો નથી!</translation>
 <translation id="6277105963844135994">નેટવર્ક ટાઇમઆઉટ</translation>
@@ -2455,7 +2450,6 @@
 <translation id="2562685439590298522">દસ્તાવેજ</translation>
 <translation id="8673383193459449849">સર્વર સમસ્યા</translation>
 <translation id="4060383410180771901">વેબસાઇટ <ph name="URL"/> માટેની વિનંતીને હેન્ડલ કરવામાં અક્ષમ છે.</translation>
-<translation id="5774208114954065213">ઉપકરણને રિમોટલી સ્થિત કરવા, વાઇપ કરવા અને લૉક કરવાની ક્ષમતાને અક્ષમ કરવા માટે Google સાથે આ Chromebook ની નોંધણીને રદ કરવાના છો. આને રીબૂટની જરૂર હશે. શું તમે ચાલુ રાખવા માગો છો?</translation>
 <translation id="6710213216561001401">પહેલાનું</translation>
 <translation id="1108600514891325577">&amp;Stop</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
@@ -2506,7 +2500,6 @@
 <translation id="7434509671034404296">વિકાસકર્તા</translation>
 <translation id="7668654391829183341">અજ્ઞાત ઉપકરણ</translation>
 <translation id="2712173769900027643">પરવાનગી માગો</translation>
-<translation id="2053298192223252950">બ્રાઉઝરના Chrome માં સામગ્રી ડિઝાઇન તત્વોને સક્ષમ અથવા અક્ષમ કરો.</translation>
 <translation id="1790550373387225389">પ્રસ્તુતિ મોડમાં દાખલ થાઓ </translation>
 <translation id="6447842834002726250">કૂકીઝ</translation>
 <translation id="8059178146866384858">&quot;$1&quot; નામવાળી ફાઇલ પહેલાથી અસ્તિત્વમાં છે. કૃપા કરી ભિન્ન નામ પસંદ કરો.</translation>
@@ -3335,7 +3328,6 @@
 <translation id="324743268744517458">ચેતવણી: તમે ઉત્પાદન Google Payments સર્વર્સથી કનેક્ટ થયેલ નથી. રજૂ કરેલા કાર્ડ્સ અમાન્ય હશે.</translation>
 <translation id="4711094779914110278">ટર્કીશ</translation>
 <translation id="2572032849266859634"><ph name="VOLUME_NAME"/> ને માત્ર વાંચવાની ઍક્સેસ મંજૂર કરવામાં આવી છે.</translation>
-<translation id="8193362611902704788">એપ લૉન્ચર સક્ષમ કરો. સક્ષમ કરવા પર, એપ લૉન્ચર માટેનાં ઓપરેટિંગ સિસ્ટમ શૉર્ટકટ્સ બનાવે છે.</translation>
 <translation id="5121130586824819730">તમારી હાર્ડ ડિસ્ક પૂર્ણ ભરેલી છે. કૃપા કરીને અન્ય સ્થાન પર સાચવો અથવા હાર્ડ ડિસ્ક પર વધુ જગ્યા કરો.</translation>
 <translation id="1875987452136482705">આ વિકલ્પ પ્લેટફોર્મ હાર્ડવેરનો ઉપયોગ કરીને વિડિઓ સ્ટ્રીમ્સ ડીકોડ કરવા માટે WebRTC સમર્થનને અક્ષમ કરે છે.</translation>
 <translation id="6164005077879661055">એકવાર આ નિરીક્ષણ કરેલ વપરાશકર્તાને દૂર કરવામાં આવે પછી નિરીક્ષણ કરેલ વપરાશકર્તા સાથે સંકળાયેલી બધી ફાઇલો અને સ્થાનિક ડેટા કાયમી રૂપે કાઢી નાંખવામાં આવશે. નિરીક્ષણ કરેલ વપરાશકર્તા માટે મુલાકાત લીધેલી વેબસાઇટ્સ અને સેટિંગ્સ <ph name="MANAGEMENT_URL"/> પરના સંચાલકને હજી પણ દૃશ્યમાન હોઈ શકે છે.</translation>
@@ -3358,7 +3350,6 @@
 <translation id="499165176004408815">ઉચ્ચ કોન્ટ્રાસ્ટ મોડનો ઉપયોગ કરો</translation>
 <translation id="2928940441164925372">કામગીરી સંબંધિત મેટ્રિક્સ અને ઇવેન્ટ્સ પરોક્ષ રીતે એકત્રિત કરીને સક્ષમ કરો અને આ ડેટાને ગ્રાફિકલ ફેશનમાં જોવા માટેનો વિકલ્પ પ્રદાન કરે છે. ડેટા જોવા માટે, chrome://performance ની મુલાકાત લો.</translation>
 <translation id="3289856944988573801">અપડેટ્સ તપાસવા માટે, કૃપા કરીને ઇથરનેટ અથવા Wi-Fi નો ઉપયોગ કરો.</translation>
-<translation id="247500748408468353">કૃપા કરીને તમારા વ્યવસ્થાપકનો સંપર્ક કરો અથવા ફરી પ્રયાસ કરો.</translation>
 <translation id="450070808725753129">જો તે પહેલાથી જ નેટવર્ક ઍક્સેસ કરવા માટે મંજૂર પ્રોગ્રામ તરીકે સૂચિબદ્ધ હોય, તો
         તેને સૂચિમાંથી દૂર કરીને અને તેને ફરીથી ઉમેરવાનો પ્રયાસ કરો.</translation>
 <translation id="8300607741108698921">1-મિનિટ સેટઅપ</translation>
@@ -3865,7 +3856,6 @@
 <translation id="1064912851688322329">તમારું Google એકાઉન્ટ ડિસ્કનેક્ટ કરો</translation>
 <translation id="1294298200424241932">વિશ્વનીય સેટિંગ્સ સંપાદિત કરો:</translation>
 <translation id="1407135791313364759">બધું ખોલો</translation>
-<translation id="1487997194203762088">સાઇન ઇન કરવામાં કંઈક ખોટું થયું છે.</translation>
 <translation id="1434928358870966081">એક્સિલરેટેડ 2D કેનવાસ અક્ષમ કરો</translation>
 <translation id="331915893283195714">તમામ સાઇટ્સને તમારા માઉસ કર્સરને અક્ષમ કરવાની મંજૂરી આપો</translation>
 <translation id="8978526688207379569">આ સાઇટે બહુવિધ ફાઇલો આપમેળે ડાઉનલોડ કરી છે.</translation>
@@ -4033,7 +4023,6 @@
 <translation id="3778740492972734840">&amp;વિકાસકર્તા  ટુલ્સ</translation>
 <translation id="8335971947739877923">નિકાસ કરો...</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN"/> હવે પૂર્ણ સ્ક્રીનમાં છે અને તમારું માઉસ કર્સર અક્ષમ કરવામાં આવ્યું છે.</translation>
-<translation id="747416882205977201">ઉપકરણને રિમોટલી સ્થિત કરવા, વાઇપ કરવા અને લૉક કરવાની ક્ષમતાને સક્ષમ કરવા માટે Google સાથે આ Chromebook ની નોંધણી કરવાના છો. આને રીબૂટની જરૂર પડશે. શું તમે ચાલુ રાખવા માગો છો?</translation>
 <translation id="38275787300541712">પૂર્ણ થવા પર Enter દબાવો</translation>
 <translation id="7417705661718309329">Google નકશો</translation>
 <translation id="4058793769387728514">હવે દસ્તાવેજ તપાસો</translation>
@@ -4090,7 +4079,6 @@
 <translation id="7180865173735832675">કસ્ટમાઇઝ કરો</translation>
 <translation id="7054808953701320293">સમજાઈ ગયું, મને ફરીથી બતાવશો નહીં.</translation>
 <translation id="4903369323166982260">Chrome ક્લિનઅપ ટૂલ શરૂ કરો</translation>
-<translation id="144932861331386147">તમારી Chromebook અપડેટ કરવા કૃપા કરીને ઇન્ટરનેટથી કનેક્ટ કરો.</translation>
 <translation id="2938685643439809023">મોંગોલિયન</translation>
 <translation id="5368720394188453070">તમારો ફોન લૉક કરેલો છે. દાખલ કરવા માટે તેને અનલૉક કરો.</translation>
 <translation id="2070909990982335904">ડૉટથી પ્રારંભ થતા નામો સિસ્ટમ માટે આરક્ષિત છે. કૃપા કરી બીજું નામ પસંદ કરો.</translation>
@@ -4196,7 +4184,6 @@
 <translation id="6557565812667414268">ફક્ત ઉચ્ચ-DPI પ્રદર્શનો માટે જ સક્ષમ કરેલ છે</translation>
 <translation id="7331991248529612614">રીડર મોડ બટન એનિમેશન સક્ષમ કરો</translation>
 <translation id="5469954281417596308">બુકમાર્ક સંચાલક</translation>
-<translation id="106153153543631784">તમારી Chromebook પ્રોફાઇલને અપડેટ કરવા માટે કૃપા કરીને તમારો પાસવર્ડ ફરીથી દાખલ કરો.</translation>
 <translation id="3064388234319122767">લિવ્યંતરણ (zdravo → здраво)</translation>
 <translation id="5425722269016440406">Smart Lock બંધ કરવા માટે તમારે ઓનલાઇન થવું આવશ્યક છે કારણ કે આ સેટિંગ તમારા ફોન અને અન્ય ઉપકરણો પર સમન્વયિત થાય છે. કૃપા કરીને પહેલા એક નેટવર્કથી કનેક્ટ કરો.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
@@ -4819,7 +4806,6 @@
 <translation id="7973320858902175766">ઘટક પૅચર</translation>
 <translation id="3654045516529121250">તમારી ઍક્સેસિબિલિટી સેટિંગ્સ વાંચો</translation>
 <translation id="2113479184312716848">Open &amp;File...</translation>
-<translation id="4346759900458392803">Chromebook ની નોંધણીને રદ કરો</translation>
 <translation id="884264119367021077">શિપિંગ સરનામું</translation>
 <translation id="634208815998129842">કાર્ય સંચાલક</translation>
 <translation id="2735698359135166290">રોમાનિયન માનક કીબોર્ડ</translation>
@@ -4912,7 +4898,6 @@
 <translation id="7209475358897642338">તમારી ભાષા કઈ છે?</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME"/> (નિરીક્ષિત)</translation>
 <translation id="9149866541089851383">સંપાદિત કરો...</translation>
-<translation id="8735794438432839558">કૃપા કરીને તમારી Chromebook માં સાઇન ઇન કરવા માટે ઇન્ટરનેટથી કનેક્ટ કરો.</translation>
 <translation id="3356395591469757189">કીબોર્ડ સહાયક દૃશ્ય તરીકે સ્વતઃભરણ દૃશ્ય</translation>
 <translation id="7939412583708276221">તો પણ રાખો</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES"/> આઇટમ્સ સમન્વયિત કરી રહ્યાં છે...</translation>
@@ -5239,7 +5224,7 @@
 <translation id="1384211230590313258">સેવા શોધ હેન્ડલર</translation>
 <translation id="6656103420185847513">ફોલ્ડર સંપાદિત કરો</translation>
 <translation id="1937256809970138538">જ્યારે તમારી સ્ક્રીન ચાલુ અને અનલૉક થાય ત્યારે કહો &quot;ઑકે Google&quot;</translation>
-<translation id="8464505512337106916">મહત્વની પ્લગિન સામગ્રી શોધી કાઢો અને ચલાવો (આગ્રહણીય)</translation>
+<translation id="8464505512337106916">મહત્વની પ્લગિન સામગ્રી શોધી કાઢો અને ચલાવો (ભલામણ કરેલ)</translation>
 <translation id="1949433054743893124">છુપામાં જવું તમારા નિયોક્તા, તમારા ઇન્ટરનેટ સેવા પ્રદાતા અથવા તમે મુલાકાત લો છો તે વેબસાઇટથી તમારા બ્રાઉઝિંગને છુપાવતું નથી.</translation>
 <translation id="4193154014135846272">Google દસ્તાવેજ</translation>
 <translation id="4771973620359291008">કોઈ અજ્ઞાત ભૂલ આવી.</translation>
@@ -5522,7 +5507,6 @@
 <translation id="6793649375377511437">Google Copresence માહિતી</translation>
 <translation id="4335713051520279344">આ કમ્પ્યુટર 1 સેકંડમાં ફરીથી સેટ થશે.
 અન્વેષણ ચાલુ રાખવા માટે કોઈપણ કી દબાવો.</translation>
-<translation id="4775135101712609478">સામગ્રી પરવાનગી વિનંતીઓ માહિતી બારને બદલે ફુગામાં (દા.ત. સૂચનાઓ, ક્વોટા, કેમેરા ઉપયોગ, માઇક્રોફોનનો ઉપયોગ) બતાવો.</translation>
 <translation id="7233715388668391168">વર્ચ્યુઅલ કીબોર્ડ માટે હાવભાવથી લખવાનું સક્ષમ/અક્ષમ કરો.</translation>
 <translation id="6264485186158353794">સુરક્ષા પર પાછા</translation>
 <translation id="7705524343798198388">VPN</translation>

@@ -63,7 +63,6 @@
 <translation id="3293894718455402932">টিক চিহ্ন দেওয়া ফোল্ডারগুলিতে &quot;<ph name="EXTENSION"/>&quot; চিত্র, ভিডিও এবং সাউন্ড ফাইলগুলি পড়তে এবং লিখতে পারবে৷</translation>
 <translation id="7180611975245234373">রিফ্রেশ করুন</translation>
 <translation id="4940047036413029306">উদ্ধৃতি</translation>
-<translation id="6406467842708712906">ওহো, আপনাকে সাইন ইন করা যায়নি৷ আপনার অ্যাকাউন্টের বিবরণ প্রাপ্ত না করতে পারায় সাইন-ইন করতে ব্যর্থ হয়েছে৷</translation>
 <translation id="1497897566809397301">স্থানীয় ডেটাকে সেট হওয়ার মঞ্জুরি দিন (প্রস্তাবিত)</translation>
 <translation id="7627349730328142646">এমন পরীক্ষানিরীক্ষাগুলি সক্ষম করে যে সকল ক্ষেত্রে বিজ্ঞপ্তি সরানোর সাথে সাথে বার্তা কেন্দ্র সর্বদা উপরের দিকে স্ক্রোল হয়৷</translation>
 <translation id="3275778913554317645">উইন্ডো হিসাবে খুলুন</translation>
@@ -169,7 +168,6 @@
 <translation id="3384773155383850738">প্রস্তাবনার সর্বাধিক সংখ্যা</translation>
 <translation id="1014321050861012327">স্বয়ংক্রিয়ভাবে পাসওয়ার্ডগুলি সংরক্ষণ করুন।</translation>
 <translation id="8677212948402625567">সকল সঙ্কোচন করুন...</translation>
-<translation id="2056996954182910740">অ্যাপ্লিকেশান লঞ্চার সক্ষম করুন৷</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE"/> কখনও অনুবাদ করবেন না</translation>
 <translation id="3208703785962634733">অনিশ্চিত</translation>
 <translation id="620329680124578183">লোড করবেন না (প্রস্তাবিত)</translation>
@@ -573,7 +571,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="8206859287963243715">সেলুলার</translation>
 <translation id="5610637197759059204">সামগ্রীকে উল্লম্ব অবস্থায় অবিচ্ছিন্নভাবে শায়িত করে পৃষ্ঠা পুনরায় লোড করা অক্ষম করুন৷</translation>
 <translation id="6435285122322546452">kiosk অ্যাপ্লিকেশানগুলি পরিচালনা করুন...</translation>
-<translation id="5748409721703101646">আপনার Chromebook <ph name="NETWORK_NAME"/> এর মাধ্যমে ইন্টারনেটের সাথে সংযুক্ত হতে পারছে না৷ দয়া করে অন্য একটি নেটওয়ার্ক নির্বাচন করুন৷ <ph name="LEARN_MORE_LINK_START"/>আরো জানুন<ph name="LEARN_MORE_LINK_END"/></translation>
 <translation id="1064835277883315402">ব্যক্তিগত নেটওয়ার্কে যোগদান করুন</translation>
 <translation id="872728358380751743">এই বিকল্পটি কাস্ট স্ট্রীমিং-এর মধ্যে প্ল্যাটফর্ম হার্ডওয়্যার ব্যবহার করে ভিডিও স্ট্রীম এনকোডিং-এর জন্য সমর্থন অক্ষম করে৷</translation>
 <translation id="6508261954199872201">App: <ph name="APP_NAME"/></translation>
@@ -745,6 +742,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="5759728514498647443"><ph name="APP_NAME"/>-এর দ্বারা মুদ্রণ করার জন্য আপনার পাঠানো দস্তাবেজগুলি <ph name="APP_NAME"/>-এর মাধ্যমে পঠন করা যায়৷</translation>
 <translation id="2401053206567162910">এই অ্যাপ্লিকেশনটি বর্তমানে এই ডিভাইসে সমর্থিত নয় কিন্তু Chrome gnomes একে দ্রুত কাজের উপযোগী করে তুলতে কঠোর পরিশ্রম করে চলেছে৷</translation>
 <translation id="3273410961255278341">এর জন্য পাঠান:</translation>
+<translation id="4255096080864111471">আগ্রহ এলাকার জন্য সর্বাধিক টাইল উল্লেখ করুন৷</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">নতুন ট্যাব</translation>
 <translation id="6567688344210276845">পৃষ্ঠা ক্রিয়ার জন্য '<ph name="ICON"/>' আইকন লোড করা যায়নি৷</translation>
@@ -1127,7 +1125,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="5774515636230743468">সুস্পষ্ট:</translation>
 <translation id="1313832887664610176">Chromebox এ সংযোগ বিচ্ছিন্ন হয়েছে</translation>
 <translation id="3465566417615315331">আপনার ফটোতে ক্লিক করুন</translation>
-<translation id="4960944339761782076">অনুমতির অনুরোধগুলির জন্য বুদবুদগুলি ব্যবহার করুন</translation>
 <translation id="7474889694310679759">কানাডিয় ইংরাজি কীবোর্ড</translation>
 <translation id="1817871734039893258">Microsoft  ফাইল পুনরুদ্ধার</translation>
 <translation id="2423578206845792524">এই রূপে ছবি সং&amp;রক্ষণ করুন...</translation>
@@ -1691,6 +1688,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="4811502511369621968">অবৈধ ইমেল ঠিকানা৷ দয়া করে পরীক্ষা করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="175196451752279553">বন্ধ ট্যাবটি পু&amp;নঃরায় খুলুন</translation>
 <translation id="8602851771975208551">আপনার কম্পিউটারের অন্য একটি প্রোগ্রাম একটি অ্যাপ্লিকেশন জুড়েছে যা Chrome এর কাজ করার পদ্ধতিকে পাল্টে দিতে পারে৷</translation>
+<translation id="9154967591629748964">আগ্রহ এলাকার জন্য সর্বাধিক টাইল</translation>
 <translation id="2655386581175833247">ব্যবহারকারীর শংসাপত্র:</translation>
 <translation id="5039804452771397117">মঞ্জুরি দিন</translation>
 <translation id="5435964418642993308">ফিরে যেতে এন্টার টিপুন, ইতিহাস দেখতে প্রসঙ্গ মেনু কী</translation>
@@ -1798,7 +1796,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="8598687241883907630">আপনার Google অ্যাকাউন্ট সংযোগ বিচ্ছিন্ন করুন...</translation>
 <translation id="3195445837372719522">মিটিংয়ের জন্য Chromebox এটি কোন ডোমেনের তা জানতে চায়৷ এটির জন্য আপনাকে আপনার অ্যাকাউন্টে সাইন ইন করতে হবে৷</translation>
 <translation id="7920092496846849526">এই পৃষ্ঠাটিতে যাওয়া ঠিক হবে কিনা সেই বিষয়ে আপনি আপনার পিতামাতার অনুমতি নিন৷</translation>
-<translation id="5984304957315422459">ওহো, আপনাকে সাইন ইন করানো গেল না৷ আপনার পাসওয়ার্ড যাচাই করতে না পারায় সাইন-ইন ব্যর্থ হয়েছে৷</translation>
 <translation id="9003677638446136377">আবার পরীক্ষা করে দেখুন</translation>
 <translation id="9187827965378254003">ওহো, দেখে মনে হচ্ছে বর্তমানে কোনও পরীক্ষানিরীক্ষা উপলভ্য নেই৷</translation>
 <translation id="6022526133015258832">পূর্ণ স্ক্রিন খুলুন</translation>
@@ -1863,6 +1860,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="1901377140875308934">এতে সাইন ইন করুন <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697"><ph name="APP_NAME"/> দ্বারা বর্তমান ওয়ালপেপার সেট করা হয়েছে</translation>
 <translation id="5074318175948309511">নতুন সেটিংস কার্যকর করার আগে এই পৃষ্ঠাটি পুনরায় লোড করার প্রয়োজন হতে পারে৷</translation>
+<translation id="7664333939334980398">৬৪</translation>
 <translation id="3947376313153737208">কোনও নির্বাচন নেই</translation>
 <translation id="6405640832764359650">Google Payments কার্ড সংরক্ষণের চেকবাক্স সক্ষম করুন</translation>
 <translation id="1346104802985271895">ভিয়েতনামিস  ইনপুট পদ্ধতি (টেলেক্স)</translation>
@@ -1998,7 +1996,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="1480041086352807611">নমুনা মোড</translation>
 <translation id="3620292326130836921">সব ব্যাকআপ নেওয়া হয়ে গেছে!</translation>
 <translation id="4105563239298244027">Google ড্রাইভের সাথে বিনামূল্যে ১ TB পান</translation>
-<translation id="7724603315864178912">ছেদন</translation>
+<translation id="7724603315864178912">কাটুন</translation>
 <translation id="8456681095658380701">অবৈধ নাম</translation>
 <translation id="3518086201899641494">ক্যাপটিভ পোর্টালগুলির সম্বন্ধে বিজ্ঞপ্তিগুলি</translation>
 <translation id="1976150099241323601">সুরক্ষা ডিভাইসে সাইন করুন</translation>
@@ -2070,7 +2068,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="8551388862522347954">লাইসেন্সগুলি</translation>
 <translation id="5525695896049981561">হ্যাঁ, আমি এটা দেখেছি</translation>
 <translation id="1410616244180625362">আপনার ক্যামেরা অ্যাক্সেস করতে <ph name="HOST"/> এর মঞ্জুরি অবিরত রাখুন</translation>
-<translation id="298577602575286468">Chromebook তালিকাভুক্ত করুন</translation>
 <translation id="8494214181322051417">নতুন!</translation>
 <translation id="7959874006162866942">আপনি কী <ph name="PLUGIN_NAME"/> ইনস্টল করার বিষয়ে নিশ্চিত? শুধুমাত্র যে প্লাগ ইনগুলিকে আপনি বিশ্বাস করেন সেগুলিকেই আপনার ইনস্টল করা উচিত৷</translation>
 <translation id="2937174152333875430">অ্যাপ্লিকেশান লঞ্চার সিঙ্ক সক্ষম করুন</translation>
@@ -2277,7 +2274,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="7053983685419859001">ব্লক করুন</translation>
 <translation id="7912024687060120840">ফোল্ডারে:</translation>
 <translation id="2485056306054380289">সার্ভার CA শংসাপত্র:</translation>
-<translation id="5631861698741076898">ওহো, আপনাকে সাইন ইন করানো যায়নি। একটি অ-নিরাপদ URL (<ph name="BLOCKED_URL"/>) ব্যবহারের জন্য কনফিগার করার  কারণে সাইন ইন ব্যর্থ হয়েছে।</translation>
 <translation id="6462109140674788769">গ্রিক কীবোর্ড</translation>
 <translation id="9191610850443814852">Smart Lock সেটিং সক্ষম করে যা ফোনটি Chromebookটির নিকটে থাকলে সেটিকে আনলক করার জন্য, Chromebook কে Bleutooth কম শক্তি এর মাধ্যমে ফোনগুলি আবিষ্কার করতে দেয়৷</translation>
 <translation id="2727712005121231835">আসল আকার</translation>
@@ -2331,7 +2327,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="5502500733115278303">Firefox থেকে আমদানি করা</translation>
 <translation id="569109051430110155">স্বয়ং সনাক্ত</translation>
 <translation id="8597845839771543242">প্রপার্টি ফর্ম্যাট:</translation>
-<translation id="4408599188496843485">স&amp;হায়তা</translation>
 <translation id="7969525169268594403">স্লোভেনিয়ান</translation>
 <translation id="5399158067281117682">PINগুলি মেলে না!</translation>
 <translation id="6277105963844135994">নেটওয়ার্কের সময় শেষ হয়েছে</translation>
@@ -2450,7 +2445,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="2562685439590298522">দস্তাবেজ</translation>
 <translation id="8673383193459449849">সার্ভার সমস্যা হয়েছে</translation>
 <translation id="4060383410180771901">ওয়েবসাইটটি <ph name="URL"/> এর জন্য অনুরোধ হ্যান্ডেল করতে অক্ষম৷</translation>
-<translation id="5774208114954065213">দূরবর্তী অবস্থান থেকে ডিভাইসের অবস্থান নির্ণয়, ডেটা মুছে দেওয়া এবং লক করার ক্ষমতা অক্ষম করতে আপনি এই Chromebook কে Google এর থেকে অ-তালিকাভুক্ত করতে চলেছেন। এর জন্য Chromebook রিবুট করতে হবে। আপনি কি অবিরত রাখবেন?</translation>
 <translation id="6710213216561001401">পূর্ববর্তী</translation>
 <translation id="1108600514891325577">&amp;Stop</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
@@ -2501,7 +2495,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="7434509671034404296">বিকাশকারী</translation>
 <translation id="7668654391829183341">অজানা ডিভাইস</translation>
 <translation id="2712173769900027643">অনুমতি নিন</translation>
-<translation id="2053298192223252950">ব্রাউজারের সীমানা ক্রোমে মেটারিয়াল ডিজাইন সক্ষম অথবা অক্ষম করুন।</translation>
 <translation id="1790550373387225389">উপস্থাপনা মোড লিখুন</translation>
 <translation id="6447842834002726250">কুকিজ</translation>
 <translation id="8059178146866384858">&quot;$1&quot; নামের ফাইল ইতিমধ্যেই বিদ্যমান৷ দয়া করে কোনো পৃথক নাম চয়ন করুন৷</translation>
@@ -3334,7 +3327,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="324743268744517458">সতর্কতা: আপনি Google Payments উৎপাদন সার্ভারের সাথে সংযুক্ত হয়ে নেই। ইস্যু করা কার্ডগুলি অবৈধ হয়ে যাবে।</translation>
 <translation id="4711094779914110278">তুর্কি</translation>
 <translation id="2572032849266859634"><ph name="VOLUME_NAME"/>-এ শুধুমাত্র পাঠযোগ্য অ্যাক্সেস মঞ্জুর করা হয়েছে৷</translation>
-<translation id="8193362611902704788">অ্যাপ্লিকেশান লঞ্চারটি সক্ষম করুন৷ সক্ষম করা কালীন, অ্যাপ্লিকেশান লঞ্চারে অপারেটিং সিস্টেম শর্টকাটগুলি তৈরি করে৷</translation>
 <translation id="5121130586824819730">আপনার হার্ড ডিস্ক পূর্ণ৷ দয়া করে অন্য কোনো স্থানে সংরক্ষণ করুন অথবা হার্ড ডিস্কে আরো জায়গা তৈরী করুন৷</translation>
 <translation id="1875987452136482705">এই বিকল্পটি প্ল্যাটফর্ম হার্ডওয়্যার ব্যবহার করে ভিডিও স্ট্রীম ডিকোড করার জন্য WebRTC এ সমর্থন অক্ষম করবে৷</translation>
 <translation id="6164005077879661055">একবার এই তত্ত্বাবধানে থাকা ব্যবহারকারী সরানো হলে এর সঙ্গে সংশ্লিষ্ট সমস্ত ফাইল এবং
@@ -3358,7 +3350,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="499165176004408815">উচ্চ কনট্রাস্ট মোড ব্যবহার করুন</translation>
 <translation id="2928940441164925372">কার্যসম্পাদনা সংক্রান্ত পরিসংখ্যান এবং ইভেন্টের পরোক্ষ সংগ্রহ সক্ষম করে এবং একটি নকশাঙ্কিত ভঙ্গিমায় এই ডেটা দেখতে দেওয়ার সুবিধা প্রদান করে৷ ডেটা দেখতে, chrome://performance এ যান৷</translation>
 <translation id="3289856944988573801">আপডেটগুলি পরীক্ষা করার জন্য, দয়া করে Ethernet বা Wi-Fi ব্যবহার করুন৷</translation>
-<translation id="247500748408468353">দয়া করে আপনার প্রশাসকের সাথে যোগাযোগ করুন বা আবার চেষ্টা করুন।</translation>
 <translation id="450070808725753129">নেটওয়ার্ক অ্যাক্সেস করতে এটি ইতিমধ্যেই মঞ্জুরিকৃত প্রোগ্রাম হিসাবে তালিকাতে
         আছে, তালিকাটি থেকে এটি সরানোর চেষ্টা করুন এবং পুনরায় যোগ করুন৷</translation>
 <translation id="8300607741108698921">১-মিনিটের সেটআপ</translation>
@@ -3864,7 +3855,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="1064912851688322329">আপনার Google অ্যাকাউন্ট সংযোগ বিচ্ছিন্ন করুন</translation>
 <translation id="1294298200424241932">বিশ্বস্ত সেটিংস সম্পাদনা করুন:</translation>
 <translation id="1407135791313364759">সব খুলুন</translation>
-<translation id="1487997194203762088">সাইন ইন করার সময় কিছু সমস্যা হয়েছে।</translation>
 <translation id="1434928358870966081">গতিবৃদ্ধি করা 2D ক্যানভাস অক্ষম করুন</translation>
 <translation id="331915893283195714">মাউস কার্সার অক্ষম করতে সব সাইটকে অনুমতি দিন</translation>
 <translation id="8978526688207379569">এই সাইটটি স্বয়ংক্রিয়ভাবে একাধিক ফাইল ডাউনলোড করেছে৷</translation>
@@ -4032,7 +4022,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="3778740492972734840">&amp;বিকাশকারী সরঞ্জাম</translation>
 <translation id="8335971947739877923">রপ্তানি...</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN"/> এখন সম্পূর্ণ স্ক্রীণে আছে এবং আপনার মাউস কার্সারকে অক্ষম করেছে৷</translation>
-<translation id="747416882205977201">দূরবর্তী অবস্থান থেকে ডিভাইসের অবস্থান নির্ণয়, ডেটা মুছে দেওয়া এবং লক করার ক্ষমতা সক্ষম করতে আপনি এই Chromebook কে Google এর থেকে তালিকাভুক্ত করতে চলেছেন। এর জন্য Chromebook রিবুট করতে হবে। আপনি কি অবিরত রাখবেন?</translation>
 <translation id="38275787300541712">সম্পূর্ণ হলে Enter টিপুন</translation>
 <translation id="7417705661718309329">Google মানচিত্র</translation>
 <translation id="4058793769387728514">এখন দস্তাবেজ চেক করুন</translation>
@@ -4089,7 +4078,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="7180865173735832675">কাস্টমাইজ করুন</translation>
 <translation id="7054808953701320293">বুঝেছি, আমাকে এটি পুনরায় দেখাবেন না৷</translation>
 <translation id="4903369323166982260">Chrome পরিষ্কারের সরঞ্জাম চালু করুন</translation>
-<translation id="144932861331386147">আপনার Chromebook আপডেট করার জন্য দয়া করে ইন্টারনেটের সাথে সংযোগ করুন৷</translation>
 <translation id="2938685643439809023">মঙ্গোলীয়</translation>
 <translation id="5368720394188453070">আপনার ফোন লক করা আছে৷ লিখতে আনলক করুন৷</translation>
 <translation id="2070909990982335904">ডট দিয়ে শুরু নমাগুলি সিস্টেমের জন্য সংরক্ষিত৷ দয়া করে অন্য নাম চয়ন করুন৷</translation>
@@ -4196,7 +4184,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="6557565812667414268">শুধুমাত্র উচ্চ DPI প্রদর্শনগুলির জন্য সক্ষমিত</translation>
 <translation id="7331991248529612614">পাঠক মোড বোতাম অ্যানিমেশান সক্রিয় করুন</translation>
 <translation id="5469954281417596308">বুকমার্ক পরিচালক</translation>
-<translation id="106153153543631784">আপনার Chromebook প্রোফাইল আপডেট করার জন্য দয়া করে আপনার পাসওয়ার্ড পুনরায় লিখুন।</translation>
 <translation id="3064388234319122767">লিপ্যন্তরকরণ (zdravo → здраво)</translation>
 <translation id="5425722269016440406">এই সেটিং আপনার ফোন এবং অন্যান্য ডিভাইসের সাথে সিঙ্ক হওয়ার কারণে Smart Lock বন্ধ করতে আপনাকে অনলাইনে থাকতে হবে। দয়া করে প্রথমে একটি নেটওয়ার্কের সাথে সংযুক্ত হোন।</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
@@ -4818,7 +4805,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="7973320858902175766">কম্পোনেন্ট প্যাচার</translation>
 <translation id="3654045516529121250">আপনার অ্যাক্সেসযোগ্যতার সেটিংস পড়ুন</translation>
 <translation id="2113479184312716848">Open &amp;File...</translation>
-<translation id="4346759900458392803">Chromebook অ-তালিকাভুক্ত করুন</translation>
 <translation id="884264119367021077">শিপিং ঠিকানা</translation>
 <translation id="634208815998129842">কার্য পরিচালক</translation>
 <translation id="2735698359135166290">রোমানিয়ান আদর্শ কীবোর্ড</translation>
@@ -4911,7 +4897,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="7209475358897642338">আপনার ভাষা কি?</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME"/> (তত্বাবধানে থাকা)</translation>
 <translation id="9149866541089851383">সম্পাদনা...</translation>
-<translation id="8735794438432839558">দয়া করে আপনার Chromebook এ সাইন ইন করার জন্য ইন্টারনেটের সাথে সংযুক্ত হোন৷</translation>
 <translation id="3356395591469757189">কীবোর্ড আনুষঙ্গিক হিসাবে প্রস্তাবনাগুলি স্বতঃপূর্ণ করুন</translation>
 <translation id="7939412583708276221">যে কোনও অবস্থাতেই রাখুন</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES"/>টি আইটেম সিঙ্ক করা হচ্ছে...</translation>
@@ -5518,7 +5503,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="426015154560005552">আরবি কীবোর্ড</translation>
 <translation id="6793649375377511437">Google Copresence-এব্র তথ্য</translation>
 <translation id="4335713051520279344">এই কম্পিউটার 1 সেকেন্ডে পুনঃসেট হবে৷ অনুসন্ধান চালাতে যে কোনো একটি কী টিপুন৷</translation>
-<translation id="4775135101712609478">দন্ডগুলির পরিবর্তে বুদবুদগুলিতে সামগ্রী অনুমতির অনুরোধগুলি (যেমন, বিজ্ঞপ্তি, কোটা, ক্যামেরার ব্যবহার, মাইক্রোফোনের ব্যবহার) দেখান৷</translation>
 <translation id="7233715388668391168">ভার্চুয়াল কীবোর্ডের জন্য অঙ্গভঙ্গি টাইপিং সক্ষম/অক্ষম করে।</translation>
 <translation id="6264485186158353794">সুরক্ষাতে ফিরুন</translation>
 <translation id="7705524343798198388">VPN</translation>

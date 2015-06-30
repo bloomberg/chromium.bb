@@ -65,7 +65,6 @@
 <translation id="3293894718455402932">&quot;<ph name="EXTENSION"/>&quot; podrá leer y editar archivos de sonido, video e imagen almacenados en las carpetas seleccionadas.</translation>
 <translation id="7180611975245234373">Actualizar</translation>
 <translation id="4940047036413029306">Comilla</translation>
-<translation id="6406467842708712906">¡Uy! No pudiste acceder. Hubo un error de acceso porque no se pudieron recuperar los detalles de tu cuenta.</translation>
 <translation id="1497897566809397301">Permitir que se establezcan datos locales (recomendado)</translation>
 <translation id="7627349730328142646">Habilitar experimentos para que el centro de mensajes siempre se desplace hacia arriba cuando se elimine una notificación</translation>
 <translation id="3275778913554317645">Abrir como ventana</translation>
@@ -171,7 +170,6 @@
 <translation id="3384773155383850738">Cantidad máxima de sugerencias</translation>
 <translation id="1014321050861012327">Guardar contraseñas automáticamente</translation>
 <translation id="8677212948402625567">Contraer todo...</translation>
-<translation id="2056996954182910740">Habilitar el Selector de aplicaciones</translation>
 <translation id="7600965453749440009">Nunca traducir <ph name="LANGUAGE"/></translation>
 <translation id="3208703785962634733">Sin confirmar</translation>
 <translation id="620329680124578183">No cargar (recomendado)</translation>
@@ -568,7 +566,6 @@
 <translation id="8206859287963243715">Celular</translation>
 <translation id="5610637197759059204">Inhabilitar la recarga de páginas activadas mediante el desplazo vertical por el contenido</translation>
 <translation id="6435285122322546452">Administrar las aplicaciones del kiosco</translation>
-<translation id="5748409721703101646">La Chromebook no puede conectarse a Internet a través de <ph name="NETWORK_NAME"/>. Debes elegir otra red. <ph name="LEARN_MORE_LINK_START"/>Más información<ph name="LEARN_MORE_LINK_END"/></translation>
 <translation id="1064835277883315402">Conectarse a una red privada</translation>
 <translation id="872728358380751743">Esta opción inhabilita el soporte de la Transmisión continua para la codificación de transmisiones de video por Internet que usan el hardware de la plataforma.</translation>
 <translation id="6508261954199872201">Aplicación: <ph name="APP_NAME"/></translation>
@@ -741,6 +738,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME"/> podrá leer los documentos que envíes a imprimir a través de <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">Actualmente, este dispositivo no admite esta aplicación, pero los gnomos de Chrome están trabajando arduamente para que la aplicación funcione pronto.</translation>
 <translation id="3273410961255278341">Enviar para:</translation>
+<translation id="4255096080864111471">Especifica la cantidad máxima de mosaicos para el área de interés.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">Nueva pestaña</translation>
 <translation id="6567688344210276845">No se pudo cargar el ícono '<ph name="ICON"/>' para las acciones de la página.</translation>
@@ -1116,7 +1114,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5774515636230743468">Manifiesto:</translation>
 <translation id="1313832887664610176">Se perdió la conexión con la Chromebox</translation>
 <translation id="3465566417615315331">Haz clic en tu foto.</translation>
-<translation id="4960944339761782076">Utilizar cuadros para solicitudes de permiso</translation>
 <translation id="7474889694310679759">Teclado en inglés de Canadá</translation>
 <translation id="1817871734039893258">Recuperación de archivos de Microsoft</translation>
 <translation id="2423578206845792524">Guar&amp;dar imagen como...</translation>
@@ -1329,7 +1326,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="813082847718468539">Consulta la información del sitio</translation>
 <translation id="127353061808977798">Fuentes y codificación</translation>
 <translation id="3122464029669770682">CPU</translation>
-<translation id="4518677423782794009">¿Se producen fallos en Chrome, se muestran páginas de inicio o barras de herramientas inusuales, aparecen anuncios inesperados que no puedes cerrar, o la experiencia de navegación cambia de alguna manera? Puedes solucionar el problema con la herramienta de limpieza de Chrome.</translation>
+<translation id="4518677423782794009">¿Se producen fallos en Chrome, se muestran páginas de inicio o barras de herramientas inusuales, aparecen anuncios inesperados que no puedes cerrar, o la experiencia de navegación cambia de alguna manera? Puedes solucionar el problema con Chrome Cleanup Tool.</translation>
 <translation id="6080689532560039067">Comprobar la hora del sistema</translation>
 <translation id="6092270396854197260">MSPY</translation>
 <translation id="6802031077390104172"><ph name="USAGE"/> (<ph name="OID"/>)</translation>
@@ -1679,6 +1676,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4811502511369621968">La dirección de correo electrónico no es válida. Compruébala y vuelve a intentarlo.</translation>
 <translation id="175196451752279553">Volver a abrir una pestaña cerrada</translation>
 <translation id="8602851771975208551">Otro programa en tu computadora agregó una aplicación que puede cambiar el funcionamiento de Chrome.</translation>
+<translation id="9154967591629748964">Cantidad máxima de mosaicos para el área de interés</translation>
 <translation id="2655386581175833247">Certificado de usuario:</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5435964418642993308">Pulsa enter para volver, tecla para menú contextual para ver historial</translation>
@@ -1787,7 +1785,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="8598687241883907630">Desconecta tu cuenta de Google...</translation>
 <translation id="3195445837372719522">Es necesario que la Chromebox para reuniones conozca el dominio al que pertenece, por lo que deberás acceder a tu cuenta.</translation>
 <translation id="7920092496846849526">Les preguntaste a tus padres si puedes visitar esta página.</translation>
-<translation id="5984304957315422459">No pudo completarse el acceso. Se produjo un error porque no se pudo verificar tu contraseña.</translation>
 <translation id="9003677638446136377">Volver a comprobar</translation>
 <translation id="9187827965378254003">Parece que actualmente no hay ningún experimento disponible.</translation>
 <translation id="6022526133015258832">Abrir en pantalla completa</translation>
@@ -1852,6 +1849,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="1901377140875308934">Accede a <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">&quot;<ph name="APP_NAME"/>&quot; estableció el fondo de pantalla actual.</translation>
 <translation id="5074318175948309511">Es posible que debas actualizar la página para que se aplique la nueva configuración.</translation>
+<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Sin selección</translation>
 <translation id="6405640832764359650">Habilitar la casilla de verificación para guardar tarjetas en Google Payments</translation>
 <translation id="1346104802985271895">Método de entrada vietnamita (TELEX)</translation>
@@ -2059,7 +2057,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="8551388862522347954">Licencias</translation>
 <translation id="5525695896049981561">Lo veo</translation>
 <translation id="1410616244180625362">Seguir permitiendo que <ph name="HOST"/> acceda a la cámara</translation>
-<translation id="298577602575286468">Registrar Chromebook</translation>
 <translation id="8494214181322051417">¡Nuevo!</translation>
 <translation id="7959874006162866942">¿Confirmas que quieres instalar <ph name="PLUGIN_NAME"/>? Se recomienda instalar complementos de confianza únicamente.</translation>
 <translation id="2937174152333875430">Habilitar sincronización del Selector de aplicaciones</translation>
@@ -2266,7 +2263,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7912024687060120840">En carpeta:</translation>
 <translation id="2485056306054380289">Certificado CA del servidor:</translation>
-<translation id="5631861698741076898">Se produjo un error y no se pudo completar el acceso porque está configurado para utilizar una URL no segura (<ph name="BLOCKED_URL"/>).</translation>
 <translation id="6462109140674788769">Teclado griego</translation>
 <translation id="9191610850443814852">Habilita una configuración de Smart Lock que permite que Chromebook detecte teléfonos mediante Bleutooth de baja energía a fin de desbloquear la Chromebook cuando hay un teléfono cerca.</translation>
 <translation id="2727712005121231835">Tamaño real</translation>
@@ -2322,7 +2318,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="5502500733115278303">Importado desde Firefox</translation>
 <translation id="569109051430110155">Detección automática</translation>
 <translation id="8597845839771543242">Formato de la propiedad:</translation>
-<translation id="4408599188496843485">A&amp;yuda</translation>
 <translation id="7969525169268594403">Esloveno</translation>
 <translation id="5399158067281117682">Los números de PIN no coinciden.</translation>
 <translation id="6277105963844135994">Tiempo de espera de red agotado</translation>
@@ -2355,7 +2350,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="389589731200570180">Compartir con usuarios invitados</translation>
 <translation id="1510200760579344855">Este dispositivo fue bloqueado por el administrador de <ph name="SAML_DOMAIN"/>.</translation>
 <translation id="7205869271332034173">SSID:</translation>
-<translation id="3335561837873115802">Obtener la herramienta de limpieza de Chrome</translation>
+<translation id="3335561837873115802">Obtener Chrome Cleanup Tool</translation>
 <translation id="4731351517694976331">Permitir que los servicios de Google accedan a tu ubicación</translation>
 <translation id="5815645614496570556">Dirección X 400</translation>
 <translation id="1223853788495130632">El administrador recomienda un valor específico para esta configuración.</translation>
@@ -2437,7 +2432,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="2562685439590298522">Documentos</translation>
 <translation id="8673383193459449849">Error del servidor</translation>
 <translation id="4060383410180771901">El sitio web no puede procesar la solicitud de <ph name="URL"/>.</translation>
-<translation id="5774208114954065213">Estás a punto de anular el registro de esta Chromebook en Google para inhabilitar la función que permite localizar el dispositivo, bloquearlo y borrar sus datos de forma remota. Para esto, debes reiniciar el dispositivo. ¿Quieres continuar?</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="1108600514891325577">&amp;Interrumpir</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
@@ -2488,7 +2482,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="7434509671034404296">Opciones para desarrolladores</translation>
 <translation id="7668654391829183341">Dispositivo desconocido</translation>
 <translation id="2712173769900027643">Solicitar permiso</translation>
-<translation id="2053298192223252950">Habilita o inhabilita los elementos de material design en el navegador de Chrome.</translation>
 <translation id="1790550373387225389">Acceder al modo Presentación</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="8059178146866384858">El archivo llamado &quot;$1&quot; ya existe. Elige otro nombre.</translation>
@@ -3313,7 +3306,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="324743268744517458">Advertencia: no estás conectado a los servidores de producción de Google Payments; en consecuencia, las tarjetas emitidas no serán válidas.</translation>
 <translation id="4711094779914110278">Turco</translation>
 <translation id="2572032849266859634">Se concedió acceso de solo lectura a <ph name="VOLUME_NAME"/>.</translation>
-<translation id="8193362611902704788">Habilita el Selector de aplicaciones. Al habilitarlo, se crean accesos directos del sistema operativo en el Selector de aplicaciones.</translation>
 <translation id="5121130586824819730">Tu disco duro está lleno. Guarda en otra ubicación o libera espacio en el disco duro.</translation>
 <translation id="1875987452136482705">Esta opción inhabilita la compatibilidad en WebRTC para decodificar transmisiones de video a través del hardware de la plataforma.</translation>
 <translation id="6164005077879661055">Todos los archivos y los datos locales asociados al usuario supervisado se eliminarán de forma permanente una vez que se elimine este usuario supervisado. Es posible que el administrador pueda seguir viendo la configuración y los sitios web visitados de este usuario supervisado en <ph name="MANAGEMENT_URL"/>.</translation>
@@ -3336,7 +3328,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="499165176004408815">Usar el modo de contraste alto</translation>
 <translation id="2928940441164925372">Permite habilitar la recopilación pasiva de acontecimientos e indicadores relacionados con el rendimiento y ofrece la opción de ver estos datos en un gráfico. Para ver los datos, accede a chrome://performance.</translation>
 <translation id="3289856944988573801">Para comprobar si hay actualizaciones, utiliza una conexión Ethernet o Wi-Fi.</translation>
-<translation id="247500748408468353">Comunícate con el administrador o vuelve a intentarlo.</translation>
 <translation id="450070808725753129">Si ya está incluido en la lista como un programa con permiso para acceder a la red, intenta
         eliminarlo de la lista y agregarlo nuevamente.</translation>
 <translation id="8300607741108698921">Configuración en 1 minuto</translation>
@@ -3842,7 +3833,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="1064912851688322329">Desconecta tu cuenta de Google.</translation>
 <translation id="1294298200424241932">Modificar configuración de confiabilidad:</translation>
 <translation id="1407135791313364759">Abrir todas</translation>
-<translation id="1487997194203762088">Se produjo un error al acceder.</translation>
 <translation id="1434928358870966081">Inhabilitar el lienzo 2D acelerado</translation>
 <translation id="331915893283195714">Permitir que todos los sitios inhabiliten el cursor del mouse</translation>
 <translation id="8978526688207379569">Este sitio descargó varios archivos automáticamente</translation>
@@ -4010,7 +4000,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="3778740492972734840">&amp;Herramientas del desarrollador</translation>
 <translation id="8335971947739877923">Exportación...</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN"/> se está visualizando en pantalla completa y ha inhabilitado el cursor del mouse.</translation>
-<translation id="747416882205977201">Estás a punto de registrar esta Chromebook en Google para habilitar la función que permite localizar el dispositivo, bloquearlo y borrar sus datos de forma remota. Para esto, debes reiniciar el dispositivo. ¿Quieres continuar?</translation>
 <translation id="38275787300541712">Presiona Intro al terminar</translation>
 <translation id="7417705661718309329">Mapa de Google</translation>
 <translation id="4058793769387728514">Controlar documento ahora</translation>
@@ -4066,8 +4055,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="5264252276333215551">Conéctate a Internet para iniciar tu aplicación en modo kiosco.</translation>
 <translation id="7180865173735832675">Personalizar</translation>
 <translation id="7054808953701320293">Entendido. No volver a mostrar.</translation>
-<translation id="4903369323166982260">Ejecutar la herramienta de limpieza de Chrome</translation>
-<translation id="144932861331386147">Conéctate a Internet para actualizar tu Chromebook.</translation>
+<translation id="4903369323166982260">Ejecutar Chrome Cleanup Tool</translation>
 <translation id="2938685643439809023">Mongol</translation>
 <translation id="5368720394188453070">El teléfono está bloqueado. Desbloquéalo para ingresar.</translation>
 <translation id="2070909990982335904">Los nombres que comienzan con un punto se reservan para el sistema. Elige otro nombre.</translation>
@@ -4173,7 +4161,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="6557565812667414268">Habilitado solo en pantallas de alta resolución por pulgada</translation>
 <translation id="7331991248529612614">Habilitar la animación del botón del modo de lectura</translation>
 <translation id="5469954281417596308">Administrador de marcadores</translation>
-<translation id="106153153543631784">Vuelve a ingresar la contraseña para actualizar tu perfil de Chromebook</translation>
 <translation id="3064388234319122767">Transliteración (zdravo → здраво)</translation>
 <translation id="5425722269016440406">Debes estar conectado a Internet para activar Smart Lock porque esta configuración se sincroniza al teléfono y a otros dispositivos. Primero, conéctate a una red.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
@@ -4472,7 +4459,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="3648607100222897006">Estas funciones experimentales pueden modificarse, dejar de funcionar o desaparecer en cualquier momento. No ofrecemos ninguna garantía para lo que pueda ocurrir si activas alguno de estos experimentos, y es posible que tu navegador se bloquee repentinamente. Bromas aparte, ten en cuenta que el navegador puede eliminar todos tus datos y que tu seguridad y tu privacidad se podrían ver comprometidas de forma inesperada. Cualquier experimento que actives, se activará  para todos los usuarios de este navegador, así que te recomendamos que actúes con precaución.</translation>
 <translation id="8148913456785123871">Mostrar tarjetas de Google Now en el selector</translation>
 <translation id="3937640725563832867">Nombre alternativo del emisor del certificado</translation>
-<translation id="1926339101652878330">Esta configuración está controlada por una política de la empresa. Ponte en contacto con tu administrador para obtener más información.</translation>
+<translation id="1926339101652878330">Esta configuración se controla por medio de una política de la empresa. Ponte en contacto con tu administrador para obtener más información.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Ver fuente de marco</translation>
 <translation id="8770196827482281187">Método de entrada persa (diseño ISIRI 2901)</translation>
@@ -4794,7 +4781,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="7973320858902175766">Herramienta de revisión de componentes</translation>
 <translation id="3654045516529121250">Leer la configuración de accesibilidad</translation>
 <translation id="2113479184312716848">Abrir &amp;archivo...</translation>
-<translation id="4346759900458392803">Anular registro de Chromebook</translation>
 <translation id="884264119367021077">Dirección de envío</translation>
 <translation id="634208815998129842">Administrador de tareas</translation>
 <translation id="2735698359135166290">Teclado estándar rumano</translation>
@@ -4887,7 +4873,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="7209475358897642338">¿Cuál es tu idioma?</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME"/> (supervisado)</translation>
 <translation id="9149866541089851383">Edición...</translation>
-<translation id="8735794438432839558">Conéctate a Internet para acceder a tu Chromebook.</translation>
 <translation id="3356395591469757189">Sugerencias de Autocompletar como vista adicional del teclado</translation>
 <translation id="7939412583708276221">Continuar de todos modos</translation>
 <translation id="8579285237314169903">Sincronizando <ph name="NUMBER_OF_FILES"/> elementos…</translation>
@@ -5105,7 +5090,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT"/> elementos seleccionados</translation>
 <translation id="4443536555189480885">&amp;Ayuda</translation>
 <translation id="5067867186035333991">Preguntar si <ph name="HOST"/> quiere acceder al micrófono</translation>
-<translation id="219985413780390209">Protegerte a ti y a tu dispositivo contra sitios peligrosos.</translation>
+<translation id="219985413780390209">Protegerte a ti y a tu dispositivo contra sitios peligrosos</translation>
 <translation id="4074900173531346617">Enviar por correo electrónico el certificado del firmante</translation>
 <translation id="437184764829821926">Configuración de fuentes avanzadas</translation>
 <translation id="6165508094623778733">Más información</translation>
@@ -5497,7 +5482,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="6793649375377511437">Información de copresencia de Google</translation>
 <translation id="4335713051520279344">Esta computadora se reiniciará en 1 segundo.
 Presiona cualquier tecla para seguir navegando.</translation>
-<translation id="4775135101712609478">Permite mostrar solicitudes de permiso de contenido (por ejemplo, notificaciones, cuota, uso de cámara, uso de micrófono) en cuadros, en lugar de hacerlo en barras de información.</translation>
 <translation id="7233715388668391168">Permite habilitar o inhabilitar la escritura gestual en el teclado virtual.</translation>
 <translation id="6264485186158353794">Volver a seguridad</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -5533,7 +5517,7 @@ Presiona cualquier tecla para seguir navegando.</translation>
 <translation id="8467473010914675605">Método de entrada coreano</translation>
 <translation id="8759408218731716181">No se puede configurar el acceso múltiple.</translation>
 <translation id="8102535138653976669"><ph name="PRODUCT_NAME"/> sincroniza tus datos con tu Cuenta de Google de forma segura. Mantén todo sincronizado o personaliza los tipos de datos sincronizados y las opciones de encriptación.</translation>
-<translation id="5943961789508834869">{NUM_DOWNLOADS,plural, =1{Un archivo descargado}other{# archivos descargados}}</translation>
+<translation id="5943961789508834869">{NUM_DOWNLOADS,plural, =1{Se descargó un archivo}other{Se descargaron # archivos}}</translation>
 <translation id="3819800052061700452">&amp;Pantalla completa</translation>
 <translation id="48607902311828362">Modo de avión</translation>
 <translation id="711840821796638741">Mostrar marcadores administrados</translation>

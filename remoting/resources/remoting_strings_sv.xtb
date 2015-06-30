@@ -76,7 +76,6 @@ Host</translation>
 <translation id="1770394049404108959">Jag kan inte öppna appen.</translation>
 <translation id="9188433529406846933">Auktorisera</translation>
 <translation id="228809120910082333">Bekräfta ditt konto och pinkoden nedan genom att tillåta åtkomst via Chromoting.</translation>
-<translation id="7605995381616883502">Ny anslutning</translation>
 <translation id="2038229918502634450">Värdenheten startar om för att implementera en ändring i policyn.</translation>
 <translation id="2851674870054673688">När koden anges startar delningssessionen.</translation>
 <translation id="5593560073513909978">Tjänsten är inte tillgänglig för närvarande. Försök igen senare.</translation>
@@ -262,7 +261,6 @@ Desktop Host</translation>
 <translation id="4277463233460010382">Den här datorn är konfigurerad för att tillåta att en eller flera klienter ansluter utan att en pinkod måste anges.</translation>
 <translation id="837021510621780684">Från den här datorn</translation>
 <translation id="518094545883702183">Den här informationen används bara för att diagnostisera det som felrapporten gäller. Bara den som arbetar med ärendet kan se den och den sparas i högst 30 dagar.</translation>
-<translation id="1261403020716313927">• En stor minnesläcka som uppstod när anslutningen till fjärrskrivbordet bröts har åtgärdats.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Acceptera</translation>
 <translation id="7215059001581613786">Ange en PIN-kod som består av minst sex siffror.</translation>

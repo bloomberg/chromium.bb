@@ -76,7 +76,6 @@ Chromoting</translation>
 <translation id="1770394049404108959">No puedo abrir la aplicación.</translation>
 <translation id="9188433529406846933">Autorizar</translation>
 <translation id="228809120910082333">Confirma la cuenta y el PIN a continuación para permitir el acceso de Chromoting.</translation>
-<translation id="7605995381616883502">Nueva conexión</translation>
 <translation id="2038229918502634450">El host se está reiniciando para reflejar un cambio en una política.</translation>
 <translation id="2851674870054673688">Cuando el usuario introduzca el código de acceso, empezará la sesión compartida.</translation>
 <translation id="5593560073513909978">El servicio no está disponible temporalmente. Vuelve a intentarlo más tarde.</translation>
@@ -262,7 +261,6 @@ remoto de Chrome</translation>
 <translation id="4277463233460010382">Este ordenador está configurado para permitir que uno o más clientes se conecten sin introducir un PIN.</translation>
 <translation id="837021510621780684">Conexiones desde este ordenador</translation>
 <translation id="518094545883702183">Esta información solo se utiliza para diagnosticar el problema del que has informado, solo está disponible para la persona que examine tu informe y se conserva durante un período de hasta 30 días.</translation>
-<translation id="1261403020716313927">• Se ha corregido una gran fuga de memoria al producirse una desconexión del escritorio remoto.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="4918086044614829423">Aceptar</translation>
 <translation id="7215059001581613786">Introduce un PIN que tenga como mínimo seis dígitos.</translation>

@@ -211,7 +211,6 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="5771382037724542929">¿Quieres reemplazar el archivo <ph name="FILE_NAME"/> existente en <ph name="DIRECTORY_NAME"/>?</translation>
 <translation id="8627706565932943526">Error al sincronizar</translation>
 <translation id="1807246157184219062">Claro</translation>
-<translation id="9219103736887031265">Imágenes</translation>
 <translation id="2904413602477443379">Elegir una carpeta</translation>
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="8374821112118309944">Debes actualizar a una versión más reciente de TalkBack</translation>
@@ -367,7 +366,6 @@ Para salir de esta vista, presiona el botón Atrás.</translation>
 <translation id="3158619413803296679">Elegir un marcador</translation>
 <translation id="6138140242378429169">Optimizar la página para celulares</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE"/> borrado</translation>
-<translation id="7232255641409319872">Admite las imágenes de los sitios web que especifiques a la vez que las bloquea en el resto de la Web.</translation>
 <translation id="2360035970720276770">Solo se pueden descargar URL &quot;http&quot; o &quot;https&quot;.</translation>
 <translation id="7926911226829060241">Se están sincronizando los marcadores abiertos, el historial, las contraseñas y más elementos con tu cuenta de Google.</translation>
 <translation id="4871370605780490696">Agregar marcador</translation>

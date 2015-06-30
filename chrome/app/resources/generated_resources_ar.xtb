@@ -64,7 +64,6 @@
 <translation id="3293894718455402932">ستتمكن الإضافة &quot;<ph name="EXTENSION"/>&quot; من قراءة وكتابة ملفات الصور ومقاطع الفيديو والملفات الصوتية في المجلدات المحددة.</translation>
 <translation id="7180611975245234373">تحديث</translation>
 <translation id="4940047036413029306">علامة اقتباس</translation>
-<translation id="6406467842708712906">عفوًا، تعذر تسجيل دخولك. أخفق تسجيل الدخول نظرًا لأننا لم نتمكن من استرجاع تفاصيل حسابك.</translation>
 <translation id="1497897566809397301">السماح بتخزين البيانات المحلية (مستحسن)</translation>
 <translation id="7627349730328142646">تمكين التجارب التي دائمًا ما يمررها مركز الرسائل لأعلى بعد إزالة الإشعار.</translation>
 <translation id="3275778913554317645">فتح كنافذة</translation>
@@ -170,7 +169,6 @@
 <translation id="3384773155383850738">أقصى عدد مسموح به من الاقتراحات</translation>
 <translation id="1014321050861012327">حفظ كلمات المرور تلقائيًا.</translation>
 <translation id="8677212948402625567">تصغير الكل...</translation>
-<translation id="2056996954182910740">‏مكِّن Launcher تطبيقات.</translation>
 <translation id="7600965453749440009">عدم الترجمة مطلقًا من اللغة <ph name="LANGUAGE"/></translation>
 <translation id="3208703785962634733">لم يتم تأكيده</translation>
 <translation id="620329680124578183">عدم التحميل (مستحسن)</translation>
@@ -571,7 +569,6 @@
 <translation id="8206859287963243715">خلوي</translation>
 <translation id="5610637197759059204">تعطيل إعادة تحميلات الصفحة الناجمة عن محتوى التمرير لأسفل رأسيًا.</translation>
 <translation id="6435285122322546452">إدارة تطبيقات الكشك...</translation>
-<translation id="5748409721703101646">‏تعذر على جهاز Chromebook الاتصال بالإنترنت عبر <ph name="NETWORK_NAME"/>. الرجاء اختيار شبكة أخرى. <ph name="LEARN_MORE_LINK_START"/>مزيد من المعلومات<ph name="LEARN_MORE_LINK_END"/></translation>
 <translation id="1064835277883315402">الانضمام إلى شبكة خاصة</translation>
 <translation id="872728358380751743">يعطل هذا الخيار الدعم في بث الإرسال لتشفير الفيديوهات المضمنة التي تستخدم أجهزة النظام الأساسي.</translation>
 <translation id="6508261954199872201">التطبيق: <ph name="APP_NAME"/></translation>
@@ -735,6 +732,7 @@
 <translation id="5759728514498647443">يمكن قراءة المستندات التي ترسلها إلى الطباعة عبر <ph name="APP_NAME"/> بواسطة <ph name="APP_NAME"/>.</translation>
 <translation id="2401053206567162910">‏هذا التطبيق ليس متوافقًا حاليًا مع هذا الجهاز ولكن يسعى المختصون في Chrome جاهدين لجعله متوافقًا قريبًا.</translation>
 <translation id="3273410961255278341">الإرسال إلى:</translation>
+<translation id="4255096080864111471">حدد الحد الأقصى لعدد الأجزاء لمنطقة الاهتمامات.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5233638681132016545">علامة تبويب جديدة</translation>
 <translation id="6567688344210276845">تعذر تحميل الرمز '<ph name="ICON"/>' لإجراء المتصفح.</translation>
@@ -1111,7 +1109,6 @@
 <translation id="5774515636230743468">البيان:</translation>
 <translation id="1313832887664610176">‏فُقِد الاتصال مع Chromebox</translation>
 <translation id="3465566417615315331">انقر على صورتك</translation>
-<translation id="4960944339761782076">استخدام الفقاعات التفسيرية لطلبات الأذونات</translation>
 <translation id="7474889694310679759">لوحة المفاتيح الكندية الإنجليزية</translation>
 <translation id="1817871734039893258">‏استرداد ملفات Microsoft</translation>
 <translation id="2423578206845792524">حف&amp;ظ الصورة باسم...</translation>
@@ -1674,6 +1671,7 @@
 <translation id="4811502511369621968">عنوان بريد إلكتروني غير صالح. الرجاء التحقق وإعادة المحاولة.</translation>
 <translation id="175196451752279553">إ&amp;عادة فتح علامة التبويب المغلقة</translation>
 <translation id="8602851771975208551">‏أضاف برنامج آخر بجهاز الكمبيوتر تطبيقًا قد يؤدي إلى تغيير طريقة عمل Chrome.</translation>
+<translation id="9154967591629748964">الحد الأقصى لعدد الأجزاء لمنطقة الاهتمامات</translation>
 <translation id="2655386581175833247">شهادة المستخدم:</translation>
 <translation id="5039804452771397117">سماح</translation>
 <translation id="5435964418642993308">‏اضغط على مفتاح enter للرجوع، ومفتاح قائمة السياقات لعرض السجلّ</translation>
@@ -1782,7 +1780,6 @@
 <translation id="8598687241883907630">‏قطع اتصال حسابك في Google...</translation>
 <translation id="3195445837372719522">‏يحتاج Chromebox للاجتماعات إلى معرفة النطاق الذي ينتمي إليه. هذا سيتطلب منك تسجيل الدخول إلى حسابك.</translation>
 <translation id="7920092496846849526">هل سألت والديك ما إذا كان مناسبًا لك زيارة هذه الصفحة.</translation>
-<translation id="5984304957315422459">عفوًا، لقد تعذّر تسجيل الدخول. لقد فشلت عملية تسجيل الدخول بسبب تعذر التحقق من كلمة المرور.</translation>
 <translation id="9003677638446136377">التحقق مرة أخرى</translation>
 <translation id="9187827965378254003">للأسف لا تتوفر أية تجارب في الوقت الحالي.</translation>
 <translation id="6022526133015258832">فتح في وضع ملء الشاشة</translation>
@@ -1847,6 +1844,7 @@
 <translation id="1901377140875308934">تسجيل الدخول إلى <ph name="SHORT_PRODUCT_NAME"/>...</translation>
 <translation id="5529098031581368697">الخلفية الحالية من إعداد &quot;<ph name="APP_NAME"/>&quot;</translation>
 <translation id="5074318175948309511">قد تحتاج هذه الصفحة إلى إعادة التحميل قبل تنفيذ الإعدادات الجديدة.</translation>
+<translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">لم يتم التحديد</translation>
 <translation id="6405640832764359650">‏تمكين مربع اختيار حفظ Google Payments</translation>
 <translation id="1346104802985271895">‏أسلوب الإدخال الفيتنامي (TELEX)</translation>
@@ -2055,7 +2053,6 @@
 <translation id="8551388862522347954">التراخيص</translation>
 <translation id="5525695896049981561">نعم، أرى ذلك</translation>
 <translation id="1410616244180625362">مواصلة السماح لـ <ph name="HOST"/> بالدخول إلى الكاميرا</translation>
-<translation id="298577602575286468">‏التسجيل في Chromebook</translation>
 <translation id="8494214181322051417">جديد!</translation>
 <translation id="7959874006162866942">هل تريد بالتأكيد تثبيت <ph name="PLUGIN_NAME"/>؟ يجب عليك ألا تثبت سوى المكونات الإضافية التي تثق بها.</translation>
 <translation id="2937174152333875430">‏مكِّن مزامنة Launcher تطبيقات</translation>
@@ -2259,7 +2256,6 @@
 <translation id="7053983685419859001">منع</translation>
 <translation id="7912024687060120840">في المجلد:</translation>
 <translation id="2485056306054380289">‏شهادة المرجع المصدق (CA) للخادم:</translation>
-<translation id="5631861698741076898">‏عفوًا، تعذر تسجيل الدخول. أخفق تسجيل الدخول لأنه تمت تهيئته لاستخدام عنوان URL غير آمن ( <ph name="BLOCKED_URL"/> ).</translation>
 <translation id="6462109140674788769">لوحة المفاتيح اليونانية</translation>
 <translation id="9191610850443814852">‏يُمكن إعداد القفل الذكي الذي يسمح لـ Chromebook باكتشاف الهواتف عبر Bluetooth منخفض الطاقة لإلغاء قفل Chromebook عندما يكون الهاتف قريبًا منه.</translation>
 <translation id="2727712005121231835">الحجم الفعلي</translation>
@@ -2312,7 +2308,6 @@
 <translation id="5502500733115278303">تمّ الاستيراد من متصفّح فايرفوكس</translation>
 <translation id="569109051430110155">الكشف التلقائيّ</translation>
 <translation id="8597845839771543242">شكل الموقع:</translation>
-<translation id="4408599188496843485">م&amp;ساعدة</translation>
 <translation id="7969525169268594403">السلوفينية</translation>
 <translation id="5399158067281117682">أرقام التعريف الشخصية غير متطابقة.</translation>
 <translation id="6277105963844135994">انتهاء مهلة الشبكة</translation>
@@ -2427,7 +2422,6 @@
 <translation id="2562685439590298522">المستندات</translation>
 <translation id="8673383193459449849">مشكلة في الخادم</translation>
 <translation id="4060383410180771901">يتعذر على موقع الويب معالجة طلب <ph name="URL"/>.</translation>
-<translation id="5774208114954065213">‏أنت على وشك إلغاء تسجيل Chromebook بـ Google لتعطيل إمكانية تحديد موقع الجهاز ومسح بياناته وقفله عن بُعد. وهذا يتطلب إعادة التشغيل. هل ترغب في الاستمرار؟</translation>
 <translation id="6710213216561001401">السابق</translation>
 <translation id="1108600514891325577">إي&amp;قاف</translation>
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME"/>: <ph name="ERROR"/></translation>
@@ -2478,7 +2472,6 @@
 <translation id="7434509671034404296">المطوِّر</translation>
 <translation id="7668654391829183341">جهاز غير معروف</translation>
 <translation id="2712173769900027643">طلب إذن</translation>
-<translation id="2053298192223252950">‏تمكين عناصر التصميم متعدد الأبعاد أو تعطيلها في chrome للمتصفح.</translation>
 <translation id="1790550373387225389">الدخول إلى وضع العرض</translation>
 <translation id="6447842834002726250">ملفّات تعريف الارتباط</translation>
 <translation id="8059178146866384858">الملف الذي يحمل الاسم &quot;$1&quot; موجود فعلاً. الرجاء اختيار اسم مختلف.</translation>
@@ -3301,7 +3294,6 @@
 <translation id="324743268744517458">‏تحذير: أنت غير متصل بخوادم Google Payments للإنتاج. لن تكون البطاقات الصادرة صالحة.</translation>
 <translation id="4711094779914110278">التركية</translation>
 <translation id="2572032849266859634">تم منح إذن دخول للقراءة فقط إلى <ph name="VOLUME_NAME"/>.</translation>
-<translation id="8193362611902704788">‏تمكينLauncher تطبيقات. بعد التمكين، يتم إنشاء اختصارات نظام التشغيل لـ Launcher تطبيقات.</translation>
 <translation id="5121130586824819730">القرص الصلب ممتلئ. الرجاء الحفظ في مكان آخر أو توفير مساحة أكبر على القرص الصلب.</translation>
 <translation id="1875987452136482705">‏يعمل هذا الخيار على تعطيل الدعم في WebRTC لفك تشفير بث الفيديو باستخدام جهاز النظام الأساسي.</translation>
 <translation id="6164005077879661055">سيتم حذف جميع الملفات والبيانات المحلية المقترنة بالمستخدم الذي يخضع للإشراف نهائيًا بمجرد 
@@ -3325,7 +3317,6 @@
 <translation id="499165176004408815">استخدام وضع التباين العالي</translation>
 <translation id="2928940441164925372">‏تمكين التجميع السلبي للمقاييس والأحداث المتعلقة بالأداء، وتوفير خيار عرض هذه البيانات بطريقة رسومية. لعرض البيانات، انتقل إلى chrome://performance.</translation>
 <translation id="3289856944988573801">‏للتحقق من وجود تحديثات، يُرجى استخدام شبكة Ethernet أو Wi-Fi.</translation>
-<translation id="247500748408468353">يرجى الاتصال بالمسؤول أو إعادة المحاولة.</translation>
 <translation id="450070808725753129">في حالة كون صفحة الويب مدرجة من قبل كبرنامج مسموح له بالدخول إلى الشبكة، جرّب
         إزالتها من القائمة وإضافتها مرة أخرى.</translation>
 <translation id="8300607741108698921">إعداد لمدة دقيقة</translation>
@@ -3832,7 +3823,6 @@
 <translation id="1064912851688322329">‏قطع الاتصال بحساب Google</translation>
 <translation id="1294298200424241932">تعديل إعدادات الثقة:</translation>
 <translation id="1407135791313364759">فتح الكل</translation>
-<translation id="1487997194203762088">حدث خطأ ما عند تسجيل الدخول.</translation>
 <translation id="1434928358870966081">تعطيل ملء الشاشة ثنائي الأبعاد المسرّع</translation>
 <translation id="331915893283195714">السماح لجميع المواقع بتعطيل مؤشر الماوس</translation>
 <translation id="8978526688207379569">نزَّل هذا الموقع عدة ملفات تلقائيًا.</translation>
@@ -4000,7 +3990,6 @@
 <translation id="3778740492972734840">أ&amp;دوات مطوري البرامج</translation>
 <translation id="8335971947739877923">التصدير...</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN"/> في وضع ملء الشاشة الآن وتم تعطيل مؤشر الماوس.</translation>
-<translation id="747416882205977201">‏أنت على وشك تسجيل Chromebook مع Google لتفعيل إمكانية تحديد موقع الجهاز عن بعد ومسحه وقفله. وهذا يتطلب إعادة التشغيل. هل ترغب في الاستمرار؟</translation>
 <translation id="38275787300541712">‏اضغط على Enter عند الانتهاء</translation>
 <translation id="7417705661718309329">‏خريطة Google</translation>
 <translation id="4058793769387728514">فحص المستند الآن</translation>
@@ -4057,7 +4046,6 @@
 <translation id="7180865173735832675">تخصيص</translation>
 <translation id="7054808953701320293">أعي ذلك، عدم الإظهار لي مرة أخرى.</translation>
 <translation id="4903369323166982260">‏تشغيل أداة تنظيف Chrome</translation>
-<translation id="144932861331386147">‏الرجاء الاتصال بالإنترنت لتحديث جهاز Chromebook.</translation>
 <translation id="2938685643439809023">المنغولية</translation>
 <translation id="5368720394188453070">هاتفك مغلق. ألغ قفله للدخول.</translation>
 <translation id="2070909990982335904">الأسماء البادئة بنقطة محجوزة للنظام. يرجى اختيار اسم آخر.</translation>
@@ -4163,7 +4151,6 @@
 <translation id="6557565812667414268">ممكّنة فقط للشاشات ذات عدد كبير للنقاط لكل بوصة</translation>
 <translation id="7331991248529612614">تمكين الصور المتحركة لزر وضع القارئ</translation>
 <translation id="5469954281417596308">مدير الإشارات</translation>
-<translation id="106153153543631784">‏يُرجى إعادة إدخال كلمة المرور لتحديث ملف التعريف الشخصي في Chromebook.</translation>
 <translation id="3064388234319122767">‏التحويل الصوتي (ذدرافو ← здраво)</translation>
 <translation id="5425722269016440406">‏يجب أن تكون متصلاً بالإنترنت لإيقاف تشغيل Smart Lock لأن هذا الإعداد متزامن مع هاتفك وأجهزة أخرى. يُرجى الاتصال بإحدى الشبكات أولاً.</translation>
 <translation id="5288481194217812690"><ph name="FILENAME"/></translation>
@@ -4784,7 +4771,6 @@
 <translation id="7973320858902175766">أداة تصحيح المُكوّنات</translation>
 <translation id="3654045516529121250">الاطلاع على إعدادات إمكانية الوصول</translation>
 <translation id="2113479184312716848">فتح &amp;ملف...</translation>
-<translation id="4346759900458392803">‏إلغاء تسجيل Chromebook</translation>
 <translation id="884264119367021077">عنوان الشحن</translation>
 <translation id="634208815998129842">إدارة المهام</translation>
 <translation id="2735698359135166290">لوحة المفاتيح الرومانية القياسية</translation>
@@ -4877,7 +4863,6 @@
 <translation id="7209475358897642338">ما اللغة التي تريد استخدامها؟</translation>
 <translation id="140520891692800925">(خاضع للإدارة) <ph name="PROFILE_DISPLAY_NAME"/></translation>
 <translation id="9149866541089851383">تعديل...</translation>
-<translation id="8735794438432839558">‏الرجاء الاتصال بالإنترنت لتسجيل الدخول إلى Chromebook.</translation>
 <translation id="3356395591469757189">اقتراحات الملء التلقائي كعرض ملحقات للوحة المفاتيح</translation>
 <translation id="7939412583708276221">المتابعة على أية حال</translation>
 <translation id="8579285237314169903">جارٍ مزامنة <ph name="NUMBER_OF_FILES"/> من البنود...</translation>
@@ -5487,7 +5472,6 @@
 <translation id="6793649375377511437">‏معلومات Google Copresence</translation>
 <translation id="4335713051520279344">ستتم إعادة تعيين هذا الكمبيوتر في خلال ثانية واحدة.
 اضغط على أي مفتاح لمتابعة الاستكشاف.</translation>
-<translation id="4775135101712609478">إظهار طلبات أذونات المحتوى (على سبيل المثال، الإشعارات والحصة واستخدام الكاميرا واستخدام الميكروفون) في فقاعات تفسيرية بدلاً من أشرطة المعلومات.</translation>
 <translation id="7233715388668391168">تمكين/تعطيل الكتابة بالإيماءات للوحة المفاتيح الظاهرية.</translation>
 <translation id="6264485186158353794">الرجوع إلى وضع الأمان</translation>
 <translation id="7705524343798198388">VPN</translation>

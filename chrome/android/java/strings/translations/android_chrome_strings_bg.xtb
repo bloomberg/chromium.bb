@@ -211,7 +211,6 @@
 <translation id="5771382037724542929">Искате ли да замените съществуващия файл „<ph name="FILE_NAME"/>“ в/ъв „<ph name="DIRECTORY_NAME"/>“?</translation>
 <translation id="8627706565932943526">Грешка при синхронизирането</translation>
 <translation id="1807246157184219062">Светло</translation>
-<translation id="9219103736887031265">Изображения</translation>
 <translation id="2904413602477443379">Избиране на папка</translation>
 <translation id="7053983685419859001">Блокиране</translation>
 <translation id="8374821112118309944">Трябва да актуализирате TalkBack до по-нова версия.</translation>
@@ -366,7 +365,6 @@
 <translation id="3158619413803296679">Избиране на отметка</translation>
 <translation id="6138140242378429169">Направете страницата удобна за мобилни устройства</translation>
 <translation id="5345040418939504969">Изтрихте „<ph name="BOOKMARK_TITLE"/>“</translation>
-<translation id="7232255641409319872">Разрешаване на изображенията за посочени от вас уебсайтове и блокиране за останалата част от мрежата</translation>
 <translation id="2360035970720276770">Могат да се изтеглят само URL адреси, започващи с „http“ или „https“</translation>
 <translation id="7926911226829060241">Вашите отворени отметки, история, пароли и др. се синхронизират с профила ви в Google.</translation>
 <translation id="4871370605780490696">Добавяне на отметка</translation>
