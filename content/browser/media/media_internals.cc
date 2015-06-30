@@ -72,8 +72,6 @@ std::string FormatToString(media::AudioParameters::Format format) {
       return "pcm_low_latency";
     case media::AudioParameters::AUDIO_FAKE:
       return "fake";
-    case media::AudioParameters::AUDIO_LAST_FORMAT:
-      break;
   }
 
   NOTREACHED();

@@ -33,10 +33,10 @@ class MEDIA_EXPORT AudioParameters {
   // TODO(miu): Rename this enum to something that correctly reflects its
   // semantics, such as "TransportScheme."
   enum Format {
-    AUDIO_PCM_LINEAR = 0,     // PCM is 'raw' amplitude samples.
-    AUDIO_PCM_LOW_LATENCY,    // Linear PCM, low latency requested.
-    AUDIO_FAKE,               // Creates a fake AudioOutputStream object.
-    AUDIO_LAST_FORMAT         // Only used for validation of format.
+    AUDIO_PCM_LINEAR = 0,            // PCM is 'raw' amplitude samples.
+    AUDIO_PCM_LOW_LATENCY,           // Linear PCM, low latency requested.
+    AUDIO_FAKE,                      // Creates a fake AudioOutputStream object.
+    AUDIO_FORMAT_LAST = AUDIO_FAKE,  // Only used for validation of format.
   };
 
   enum {

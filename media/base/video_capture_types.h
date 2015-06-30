@@ -32,7 +32,7 @@ enum VideoPixelFormat {
   PIXEL_FORMAT_ARGB,
   PIXEL_FORMAT_MJPEG,
   PIXEL_FORMAT_UNKNOWN,  // Color format not set.
-  PIXEL_FORMAT_MAX,
+  PIXEL_FORMAT_MAX = PIXEL_FORMAT_UNKNOWN,
 };
 
 // Storage type for the pixels. In principle, all combinations of Storage and

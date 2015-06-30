@@ -235,17 +235,6 @@ TEST_F(AlsaPcmOutputStreamTest, ConstructedState) {
                                         mock_manager_.get());
   EXPECT_EQ(AlsaPcmOutputStream::kInError, test_stream->state());
   test_stream->Close();
-
-  // Bad format.
-  AudioParameters bad_format_params(
-      AudioParameters::AUDIO_LAST_FORMAT, kTestChannelLayout, kTestSampleRate,
-      kTestBitsPerSample, kTestFramesPerPacket);
-  test_stream = new AlsaPcmOutputStream(kTestDeviceName,
-                                        bad_format_params,
-                                        &mock_alsa_wrapper_,
-                                        mock_manager_.get());
-  EXPECT_EQ(AlsaPcmOutputStream::kInError, test_stream->state());
-  test_stream->Close();
 }
 
 TEST_F(AlsaPcmOutputStreamTest, LatencyFloor) {

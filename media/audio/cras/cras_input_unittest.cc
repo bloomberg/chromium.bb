@@ -151,19 +151,6 @@ TEST_F(CrasInputStreamTest, BadBitsPerSample) {
   test_stream->Close();
 }
 
-TEST_F(CrasInputStreamTest, BadFormat) {
-  AudioParameters bad_format_params(AudioParameters::AUDIO_LAST_FORMAT,
-                                    kTestChannelLayout,
-                                    kTestSampleRate,
-                                    kTestBitsPerSample,
-                                    kTestFramesPerPacket);
-  CrasInputStream* test_stream = new CrasInputStream(
-      bad_format_params, mock_manager_.get(),
-      AudioManagerBase::kDefaultDeviceId);
-  EXPECT_FALSE(test_stream->Open());
-  test_stream->Close();
-}
-
 TEST_F(CrasInputStreamTest, BadSampleRate) {
   AudioParameters bad_rate_params(kTestFormat,
                                   kTestChannelLayout,

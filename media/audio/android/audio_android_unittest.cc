@@ -60,8 +60,6 @@ static std::string FormatToString(AudioParameters::Format format) {
       return std::string("AUDIO_PCM_LOW_LATENCY");
     case AudioParameters::AUDIO_FAKE:
       return std::string("AUDIO_FAKE");
-    case AudioParameters::AUDIO_LAST_FORMAT:
-      return std::string("AUDIO_LAST_FORMAT");
     default:
       return std::string();
   }

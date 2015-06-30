@@ -31,6 +31,11 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::AudioOutputIPCDelegateState,
 IPC_ENUM_TRAITS_MAX_VALUE(media::SwitchOutputDeviceResult,
                           media::SWITCH_OUTPUT_DEVICE_RESULT_LAST)
 
+IPC_ENUM_TRAITS_MAX_VALUE(media::AudioParameters::Format,
+                          media::AudioParameters::AUDIO_FORMAT_LAST)
+
+IPC_ENUM_TRAITS_MAX_VALUE(media::ChannelLayout, media::CHANNEL_LAYOUT_MAX)
+
 IPC_STRUCT_BEGIN(AudioInputHostMsg_CreateStream_Config)
   IPC_STRUCT_MEMBER(media::AudioParameters, params)
   IPC_STRUCT_MEMBER(bool, automatic_gain_control)

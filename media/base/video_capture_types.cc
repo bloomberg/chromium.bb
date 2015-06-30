@@ -42,7 +42,6 @@ bool VideoCaptureFormat::IsValid() const {
          (frame_size.GetArea() < media::limits::kMaxCanvas) &&
          (frame_rate >= 0.0f) &&
          (frame_rate < media::limits::kMaxFramesPerSecond) &&
-         (pixel_format >= 0) && (pixel_format < PIXEL_FORMAT_MAX) &&
          (pixel_storage != PIXEL_STORAGE_TEXTURE ||
           pixel_format == PIXEL_FORMAT_ARGB);
 }
@@ -109,8 +108,6 @@ std::string VideoCaptureFormat::PixelFormatToString(VideoPixelFormat format) {
       return "NV21";
     case PIXEL_FORMAT_YV12:
       return "YV12";
-    case PIXEL_FORMAT_MAX:
-      break;
   }
   NOTREACHED() << "Invalid VideoPixelFormat provided: " << format;
   return std::string();
