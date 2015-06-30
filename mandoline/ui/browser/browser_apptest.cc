@@ -17,7 +17,7 @@ namespace mandoline {
 class TestBrowser : public Browser {
  public:
   TestBrowser(mojo::ApplicationImpl* app, BrowserDelegate* delegate)
-    : Browser(app, delegate) {}
+    : Browser(app, delegate, GURL()) {}
   ~TestBrowser() override {}
 
   void WaitForOnEmbed() {
