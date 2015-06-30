@@ -183,7 +183,7 @@
             }],
             ['OS!="android" and target_arch=="mipsel"', {
               'variables': {
-                'compiler': '<!(echo ${CXX:=<(sysroot)/../bin/mipsel-linux-gnu-g++})',
+                'compiler': '<!(echo ${CXX:=mipsel-linux-gnu-g++})',
               }
             }],
             ['OS!="android" and target_arch!="arm" and target_arch!="mipsel"', {
