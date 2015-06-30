@@ -36,10 +36,11 @@ bool ReadMessage(int fd, std::string* message) {
   CHECK(message);
 
   int result;
-  int32 message_size;
-  // The file containing the metrics do not leave the device so the writer and
+  int32_t message_size;
+  const int32_t message_header_size = sizeof(message_size);
+  // The file containing the metrics does not leave the device so the writer and
   // the reader will always have the same endianness.
-  result = HANDLE_EINTR(read(fd, &message_size, sizeof(message_size)));
+  result = HANDLE_EINTR(read(fd, &message_size, message_header_size));
   if (result < 0) {
     DPLOG(ERROR) << "reading metrics message header";
     return false;
@@ -48,7 +49,7 @@ bool ReadMessage(int fd, std::string* message) {
     // This indicates a normal EOF.
     return false;
   }
-  if (result < static_cast<int>(sizeof(message_size))) {
+  if (result < message_header_size) {
     DLOG(ERROR) << "bad read size " << result << ", expecting "
                 << sizeof(message_size);
     return false;
@@ -68,7 +69,12 @@ bool ReadMessage(int fd, std::string* message) {
     return true;
   }
 
-  message_size -= sizeof(message_size);  // The message size includes itself.
+  if (message_size < message_header_size) {
+    DLOG(ERROR) << "message too short : " << message_size;
+    return false;
+  }
+
+  message_size -= message_header_size;  // The message size includes itself.
   char buffer[SerializationUtils::kMessageMaxLength];
   if (!base::ReadFromFD(fd, buffer, message_size)) {
     DPLOG(ERROR) << "reading metrics message body";
