@@ -260,7 +260,8 @@ void LinkHighlight::paintContents(WebDisplayItemList* webDisplayItemList, const 
     SkCanvas* canvas = recorder.beginRecording(webClipRect.width, webClipRect.height);
     canvas->translate(-webClipRect.x, -webClipRect.y);
     paintContents(canvas, webClipRect, paintingControl);
-    webDisplayItemList->appendDrawingItem(recorder.endRecording());
+    RefPtr<const SkPicture> picture = adoptRef(recorder.endRecording());
+    webDisplayItemList->appendDrawingItem(picture.get());
 }
 
 void LinkHighlight::startHighlightAnimationIfNeeded()
