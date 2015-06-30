@@ -331,9 +331,11 @@ void AppsMatchChecker::Wait() {
 
 }  // namespace
 
-bool AwaitAllProfilesHaveSameAppsAsVerifier() {
+bool AwaitAllProfilesHaveSameApps() {
   std::vector<Profile*> profiles;
-  profiles.push_back(test()->verifier());
+  if (test()->use_verifier()) {
+    profiles.push_back(test()->verifier());
+  }
   for (int i = 0; i < test()->num_clients(); ++i) {
     profiles.push_back(test()->GetProfile(i));
   }

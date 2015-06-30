@@ -84,10 +84,11 @@ void CopyNTPOrdinals(Profile* source, Profile* destination, int index);
 // Fix any NTP icon collisions that are currently in |profile|.
 void FixNTPOrdinalCollisions(Profile* profile);
 
-// Waits until all profiles have the same set of apps as the verifier.
+// Waits until all profiles have the same set of apps. In case verifier profile
+// is enabled, it waits until all profiles match the verifier.
 //
 // Returns false on time out.
-bool AwaitAllProfilesHaveSameAppsAsVerifier();
+bool AwaitAllProfilesHaveSameApps();
 
 }  // namespace apps_helper
 

@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/pending_extension_info.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
+#include "chrome/browser/extensions/signin/gaia_auth_extension_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -62,7 +63,9 @@ void SyncExtensionHelper::SetupIfNecessary(SyncTest* test) {
   for (int i = 0; i < test->num_clients(); ++i) {
     SetupProfile(test->GetProfile(i));
   }
-  SetupProfile(test->verifier());
+  if (test->use_verifier()) {
+    SetupProfile(test->verifier());
+  }
 
   setup_completed_ = true;
 }
@@ -210,6 +213,11 @@ SyncExtensionHelper::ExtensionStateMap
       extensions::ExtensionSystem::Get(profile)->extension_service();
   for (const scoped_refptr<const Extension>& extension : *extensions) {
     const std::string& id = extension->id();
+    // When doing Chrome account sign in though the Gaia extension, the Gaia
+    // extensions gets installed once and used by multiple profiles.  This will
+    // cause extension list of profiles to not match.
+    if (id == extensions::kGaiaAuthExtensionId)
+      continue;
     ExtensionState& extension_state = extension_state_map[id];
     extension_state.enabled_state =
         extension_service->IsExtensionEnabled(id) ?
@@ -262,7 +270,11 @@ bool SyncExtensionHelper::ExtensionStatesMatch(
       DVLOG(1) << "Extensions for profile " << profile1->GetDebugName()
                << " do not match profile " << profile2->GetDebugName();
       return false;
-    } else if (!it1->second.Equals(it2->second)) {
+    } else if (!sync_datatype_helper::test()->UsingExternalServers() &&
+               !it1->second.Equals(it2->second)) {
+      // If this test is run against real backend servers then we do not expect
+      // to install pending extensions. So, we don't check equality of
+      // ExtensionState of each extension per profile.
       DVLOG(1) << "Extension states for profile " << profile1->GetDebugName()
                << " do not match profile " << profile2->GetDebugName();
       return false;

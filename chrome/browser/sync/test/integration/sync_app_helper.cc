@@ -69,11 +69,16 @@ void LoadApp(content::BrowserContext* context,
   ExtensionService* service =
       extensions::ExtensionSystem::Get(context)->extension_service();
   const extensions::Extension* extension = service->GetInstalledExtension(id);
-  app_state->launch_web_url =
-      extensions::AppLaunchInfo::GetLaunchWebURL(extension);
-  app_state->description = extension->description();
-  app_state->name = extension->name();
-  app_state->from_bookmark = extension->from_bookmark();
+  // GetInstalledExtension(id) returns null if |id| is for a pending extension.
+  // In case of running tests against real backend servers, pending apps won't
+  // be installed.
+  if (extension) {
+    app_state->launch_web_url =
+        extensions::AppLaunchInfo::GetLaunchWebURL(extension);
+    app_state->description = extension->description();
+    app_state->name = extension->name();
+    app_state->from_bookmark = extension->from_bookmark();
+  }
 }
 
 // Returns a map from |profile|'s installed extensions to their state.
@@ -123,8 +128,10 @@ void SyncAppHelper::SetupIfNecessary(SyncTest* test) {
     extensions::ExtensionSystem::Get(
         test->GetProfile(i))->InitForRegularProfile(true);
   }
-  extensions::ExtensionSystem::Get(
-      test->verifier())->InitForRegularProfile(true);
+  if (test->use_verifier()) {
+    extensions::ExtensionSystem::Get(test->verifier())
+        ->InitForRegularProfile(true);
+  }
 
   setup_completed_ = true;
 }
@@ -157,7 +164,11 @@ bool SyncAppHelper::AppStatesMatch(Profile* profile1, Profile* profile2) {
       DVLOG(2) << "Apps for profile " << profile2->GetDebugName()
                << " are not valid.";
       return false;
-    } else if (!it1->second.Equals(it2->second)) {
+    } else if (!sync_datatype_helper::test()->UsingExternalServers() &&
+               !it1->second.Equals(it2->second)) {
+      // If this test is run against real backend servers then we do not expect
+      // to install pending apps. So, we don't check equality of AppStates of
+      // each app per profile.
       DVLOG(2) << "App states for profile " << profile1->GetDebugName()
                << " do not match profile " << profile2->GetDebugName();
       return false;
