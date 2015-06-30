@@ -223,8 +223,13 @@
               # matroskadec.c has a "failed:" label that's only used if some
               # CONFIG_ flags we don't set are set.
               '-Wno-unused-label',
+              # ffmpeg has a lot of unused variables.
+              '-Wno-unused-variable',
               # This fires on `av_assert0(!"valid element size")` in utils.c
               '-Wno-string-conversion',
+              # This fires on `pos_min` and `pos_max` in
+              # autorename_libavformat_utils.c
+              '-Wno-sometimes-uninitialized',
             ],
           },
           'cflags': [
