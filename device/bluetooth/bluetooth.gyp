@@ -23,10 +23,10 @@
       ],
       'sources': [
         # Note: file list duplicated in GN build.
-        'android/bluetooth_adapter_wrapper.cc',
-        'android/bluetooth_adapter_wrapper.h',
         'android/bluetooth_jni_registrar.cc',
         'android/bluetooth_jni_registrar.h',
+        'android/wrappers.cc',
+        'android/wrappers.h',
         'bluetooth_adapter.cc',
         'bluetooth_adapter.h',
         'bluetooth_adapter_android.cc',
@@ -244,8 +244,8 @@
           'target_name': 'device_bluetooth_jni_headers',
           'type': 'none',
           'sources': [
-            'android/java/src/org/chromium/device/bluetooth/BluetoothAdapterWrapper.java',
             'android/java/src/org/chromium/device/bluetooth/ChromeBluetoothAdapter.java',
+            'android/java/src/org/chromium/device/bluetooth/Wrappers.java',
           ],
           'variables': {
             'jni_gen_package': 'device_bluetooth',

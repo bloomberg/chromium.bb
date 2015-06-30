@@ -23,10 +23,10 @@ config("bluetooth_config") {
 
 component("bluetooth") {
   sources = [
-    "android/bluetooth_adapter_wrapper.cc",
-    "android/bluetooth_adapter_wrapper.h",
     "android/bluetooth_jni_registrar.cc",
     "android/bluetooth_jni_registrar.h",
+    "android/wrappers.cc",
+    "android/wrappers.h",
     "bluetooth_adapter.cc",
     "bluetooth_adapter.h",
     "bluetooth_adapter_android.cc",
@@ -251,8 +251,8 @@ static_library("mocks") {
 
 if (is_android) {
   java_sources_needing_jni = [
-    "android/java/src/org/chromium/device/bluetooth/BluetoothAdapterWrapper.java",
     "android/java/src/org/chromium/device/bluetooth/ChromeBluetoothAdapter.java",
+    "android/java/src/org/chromium/device/bluetooth/Wrappers.java",
   ]
 
   generate_jni("jni_headers") {

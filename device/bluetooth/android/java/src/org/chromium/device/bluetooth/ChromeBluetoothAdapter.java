@@ -19,7 +19,7 @@ import org.chromium.base.Log;
 final class ChromeBluetoothAdapter {
     private static final String TAG = "cr.Bluetooth";
 
-    private BluetoothAdapterWrapper mAdapter;
+    private Wrappers.BluetoothAdapterWrapper mAdapter;
 
     /**
      * Constructs a ChromeBluetoothAdapter.
@@ -27,22 +27,24 @@ final class ChromeBluetoothAdapter {
      *                       but may be either null if an adapter is not available
      *                       or a fake for testing.
      */
-    private ChromeBluetoothAdapter(BluetoothAdapterWrapper adapterWrapper) {
+    private ChromeBluetoothAdapter(Wrappers.BluetoothAdapterWrapper adapterWrapper) {
+        mAdapter = adapterWrapper;
         if (adapterWrapper == null) {
             Log.i(TAG, "ChromeBluetoothAdapter created with no adapterWrapper.");
         } else {
             Log.i(TAG, "ChromeBluetoothAdapter created with provided adapterWrapper.");
         }
-        mAdapter = adapterWrapper;
     }
 
     // ---------------------------------------------------------------------------------------------
     // BluetoothAdapterAndroid methods implemented in java:
 
     // Implements BluetoothAdapterAndroid::Create.
+    // 'Object' type must be used because inner class Wrappers.BluetoothAdapterWrapper reference is
+    // not handled by jni_generator.py JavaToJni. http://crbug.com/505554
     @CalledByNative
-    public static ChromeBluetoothAdapter create(BluetoothAdapterWrapper adapterWrapper) {
-        return new ChromeBluetoothAdapter(adapterWrapper);
+    public static ChromeBluetoothAdapter create(Object adapterWrapper) {
+        return new ChromeBluetoothAdapter((Wrappers.BluetoothAdapterWrapper) adapterWrapper);
     }
 
     // Implements BluetoothAdapterAndroid::GetAddress.

@@ -20,7 +20,6 @@ test("device_unittests") {
   sources = [
     "battery/battery_status_manager_win_unittest.cc",
     "battery/battery_status_service_unittest.cc",
-    "bluetooth/bluetooth_adapter_android_unittest.cc",
     "bluetooth/bluetooth_adapter_mac_unittest.mm",
     "bluetooth/bluetooth_adapter_profile_chromeos_unittest.cc",
     "bluetooth/bluetooth_adapter_unittest.cc",
@@ -37,6 +36,10 @@ test("device_unittests") {
     "bluetooth/bluetooth_socket_chromeos_unittest.cc",
     "bluetooth/bluetooth_task_manager_win_unittest.cc",
     "bluetooth/bluetooth_uuid_unittest.cc",
+    "bluetooth/test/bluetooth_test.cc",
+    "bluetooth/test/bluetooth_test.h",
+    "bluetooth/test/bluetooth_test_android.cc",
+    "bluetooth/test/bluetooth_test_android.h",
     "bluetooth/test/test_bluetooth_adapter_observer.cc",
     "bluetooth/test/test_bluetooth_adapter_observer.h",
     "nfc/nfc_chromeos_unittest.cc",
@@ -148,7 +151,7 @@ test("device_unittests") {
 }
 
 if (is_android) {
-  bluetooth_java_sources_needing_jni = [ "bluetooth/test/android/java/src/org/chromium/device/bluetooth/FakeBluetoothAdapter.java" ]
+  bluetooth_java_sources_needing_jni = [ "bluetooth/test/android/java/src/org/chromium/device/bluetooth/Fakes.java" ]
 
   generate_jni("bluetooth_test_jni_headers") {
     sources = bluetooth_java_sources_needing_jni
