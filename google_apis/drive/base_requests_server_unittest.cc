@@ -84,7 +84,7 @@ TEST_F(BaseRequestsServerTest, DownloadFileRequest_ValidFile) {
         test_server_.GetURL("/files/drive/testfile.txt"),
         GetTestCachedFilePath(
             base::FilePath::FromUTF8Unsafe("cached_testfile.txt")));
-    request_sender_->StartRequestWithRetry(request);
+    request_sender_->StartRequestWithAuthRetry(request);
     run_loop.Run();
   }
 
@@ -118,7 +118,7 @@ TEST_F(BaseRequestsServerTest, DownloadFileRequest_NonExistentFile) {
         test_server_.GetURL("/files/gdata/no-such-file.txt"),
         GetTestCachedFilePath(
             base::FilePath::FromUTF8Unsafe("cache_no-such-file.txt")));
-    request_sender_->StartRequestWithRetry(request);
+    request_sender_->StartRequestWithAuthRetry(request);
     run_loop.Run();
   }
   EXPECT_EQ(HTTP_NOT_FOUND, result_code);

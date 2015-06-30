@@ -36,6 +36,7 @@ enum DriveApiErrorCode {
   DRIVE_NO_CONNECTION        = -104,
   DRIVE_NOT_READY            = -105,
   DRIVE_NO_SPACE             = -106,
+  DRIVE_RESPONSE_TOO_LARGE   = -107
 };
 
 // Returns a string representation of DriveApiErrorCode.

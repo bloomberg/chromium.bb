@@ -31,7 +31,7 @@ RequestSender::~RequestSender() {
                              in_flight_requests_.end());
 }
 
-base::Closure RequestSender::StartRequestWithRetry(
+base::Closure RequestSender::StartRequestWithAuthRetry(
     AuthenticatedRequestInterface* request) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -72,7 +72,7 @@ void RequestSender::OnAccessTokenFetched(
 
   if (code == HTTP_SUCCESS) {
     DCHECK(auth_service_->HasAccessToken());
-    StartRequestWithRetry(request.get());
+    StartRequestWithAuthRetry(request.get());
   } else {
     request->OnAuthFailed(code);
   }
@@ -84,7 +84,7 @@ void RequestSender::RetryRequest(AuthenticatedRequestInterface* request) {
   auth_service_->ClearAccessToken();
   // User authentication might have expired - rerun the request to force
   // auth token refresh.
-  StartRequestWithRetry(request);
+  StartRequestWithAuthRetry(request);
 }
 
 void RequestSender::CancelRequest(

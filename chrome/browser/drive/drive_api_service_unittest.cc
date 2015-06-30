@@ -46,7 +46,7 @@ TEST(DriveAPIServiceTest, BatchRequestConfiguratorWithAuthFailure) {
                                     task_runner.get(), kTestUserAgent);
   google_apis::drive::BatchUploadRequest* const request =
       new google_apis::drive::BatchUploadRequest(&sender, url_generator);
-  sender.StartRequestWithRetry(request);
+  sender.StartRequestWithAuthRetry(request);
   BatchRequestConfigurator configurator(
       request->GetWeakPtrAsBatchUploadRequest(), task_runner.get(),
       url_generator, google_apis::CancelCallback());

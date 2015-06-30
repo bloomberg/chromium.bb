@@ -139,7 +139,8 @@ TEST_F(RequestSenderTest, StartAndFinishRequest) {
                                          &finish_reason);
   base::WeakPtr<AuthenticatedRequestInterface> weak_ptr = request->GetWeakPtr();
 
-  base::Closure cancel_closure = request_sender_.StartRequestWithRetry(request);
+  base::Closure cancel_closure =
+      request_sender_.StartRequestWithAuthRetry(request);
   EXPECT_TRUE(!cancel_closure.is_null());
 
   // Start is called with the specified access token. Let it succeed.
@@ -162,7 +163,8 @@ TEST_F(RequestSenderTest, StartAndCancelRequest) {
                                          &finish_reason);
   base::WeakPtr<AuthenticatedRequestInterface> weak_ptr = request->GetWeakPtr();
 
-  base::Closure cancel_closure = request_sender_.StartRequestWithRetry(request);
+  base::Closure cancel_closure =
+      request_sender_.StartRequestWithAuthRetry(request);
   EXPECT_TRUE(!cancel_closure.is_null());
   EXPECT_TRUE(start_called);
 
@@ -182,7 +184,8 @@ TEST_F(RequestSenderTest, NoRefreshToken) {
                                          &finish_reason);
   base::WeakPtr<AuthenticatedRequestInterface> weak_ptr = request->GetWeakPtr();
 
-  base::Closure cancel_closure = request_sender_.StartRequestWithRetry(request);
+  base::Closure cancel_closure =
+      request_sender_.StartRequestWithAuthRetry(request);
   EXPECT_TRUE(!cancel_closure.is_null());
 
   // The request is not started at all because no access token is obtained.
@@ -201,7 +204,8 @@ TEST_F(RequestSenderTest, ValidRefreshTokenAndNoAccessToken) {
                                          &finish_reason);
   base::WeakPtr<AuthenticatedRequestInterface> weak_ptr = request->GetWeakPtr();
 
-  base::Closure cancel_closure = request_sender_.StartRequestWithRetry(request);
+  base::Closure cancel_closure =
+      request_sender_.StartRequestWithAuthRetry(request);
   EXPECT_TRUE(!cancel_closure.is_null());
 
   // Access token should indicate that this is the first retry.
@@ -221,7 +225,8 @@ TEST_F(RequestSenderTest, AccessTokenRejectedSeveralTimes) {
                                          &finish_reason);
   base::WeakPtr<AuthenticatedRequestInterface> weak_ptr = request->GetWeakPtr();
 
-  base::Closure cancel_closure = request_sender_.StartRequestWithRetry(request);
+  base::Closure cancel_closure =
+      request_sender_.StartRequestWithAuthRetry(request);
   EXPECT_TRUE(!cancel_closure.is_null());
 
   EXPECT_TRUE(start_called);

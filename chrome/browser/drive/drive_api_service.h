@@ -26,6 +26,7 @@ class SequencedTaskRunner;
 }
 
 namespace google_apis {
+class FilesListRequestRunner;
 class RequestSender;
 namespace drive {
 class BatchUploadRequest;
@@ -255,6 +256,7 @@ class DriveAPIService : public DriveServiceInterface,
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<google_apis::RequestSender> sender_;
+  scoped_ptr<google_apis::FilesListRequestRunner> files_list_request_runner_;
   base::ObserverList<DriveServiceObserver> observers_;
   google_apis::DriveApiUrlGenerator url_generator_;
   const std::string custom_user_agent_;

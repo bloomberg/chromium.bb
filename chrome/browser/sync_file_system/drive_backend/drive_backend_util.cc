@@ -130,6 +130,7 @@ SyncStatusCode DriveApiErrorCodeToSyncStatusCode(
     case google_apis::HTTP_LENGTH_REQUIRED:
     case google_apis::HTTP_NOT_IMPLEMENTED:
     case google_apis::DRIVE_PARSE_ERROR:
+    case google_apis::DRIVE_RESPONSE_TOO_LARGE:
     case google_apis::DRIVE_OTHER_ERROR:
       return SYNC_STATUS_FAILED;
 

@@ -153,6 +153,8 @@ source_set("google_apis") {
       "drive/drive_api_url_generator.cc",
       "drive/drive_api_url_generator.h",
       "drive/drive_common_callbacks.h",
+      "drive/files_list_request_runner.cc",
+      "drive/files_list_request_runner.h",
       "drive/request_sender.cc",
       "drive/request_sender.h",
       "drive/request_util.cc",

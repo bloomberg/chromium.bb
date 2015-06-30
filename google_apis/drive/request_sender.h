@@ -69,7 +69,8 @@ class RequestSender {
   //
   // Returns a closure to cancel the request. The closure cancels the request
   // if it is in-flight, and does nothing if it is already terminated.
-  base::Closure StartRequestWithRetry(AuthenticatedRequestInterface* request);
+  base::Closure StartRequestWithAuthRetry(
+      AuthenticatedRequestInterface* request);
 
   // Notifies to this RequestSender that |request| has finished.
   // TODO(kinaba): refactor the life time management and make this at private.
@@ -87,7 +88,7 @@ class RequestSender {
   void RetryRequest(AuthenticatedRequestInterface* request);
 
   // Cancels the request. Used for implementing the returned closure of
-  // StartRequestWithRetry.
+  // StartRequestWithAuthRetry.
   void CancelRequest(
       const base::WeakPtr<AuthenticatedRequestInterface>& request);
 
