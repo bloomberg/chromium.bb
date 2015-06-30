@@ -415,7 +415,7 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // thread the message loop runs on, before calling Run().
   // Before BindToCurrentThread() is called only Post*Task() functions can
   // be called on the message loop.
-  scoped_ptr<MessageLoop> CreateUnbound(
+  static scoped_ptr<MessageLoop> CreateUnbound(
       Type type,
       MessagePumpFactoryCallback pump_factory);
 
