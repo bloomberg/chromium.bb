@@ -135,6 +135,54 @@ bool GetMultipartContent(const std::string& predetermined_boundary,
   return true;
 }
 
+// Parses JSON body and returns corresponding DriveApiErrorCode if it is found.
+// The server may return detailed error status in JSON.
+// See https://developers.google.com/drive/handle-errors
+google_apis::DriveApiErrorCode MapJsonError(
+    google_apis::DriveApiErrorCode code,
+    const std::string& error_body) {
+  if (IsSuccessfulDriveApiErrorCode(code))
+    return code;
+
+  DVLOG(1) << error_body;
+  const char kErrorKey[] = "error";
+  const char kErrorErrorsKey[] = "errors";
+  const char kErrorReasonKey[] = "reason";
+  const char kErrorMessageKey[] = "message";
+  const char kErrorReasonRateLimitExceeded[] = "rateLimitExceeded";
+  const char kErrorReasonUserRateLimitExceeded[] = "userRateLimitExceeded";
+  const char kErrorReasonQuotaExceeded[] = "quotaExceeded";
+
+  scoped_ptr<const base::Value> value(google_apis::ParseJson(error_body));
+  const base::DictionaryValue* dictionary = NULL;
+  const base::DictionaryValue* error = NULL;
+  if (value &&
+      value->GetAsDictionary(&dictionary) &&
+      dictionary->GetDictionaryWithoutPathExpansion(kErrorKey, &error)) {
+    // Get error message.
+    std::string message;
+    error->GetStringWithoutPathExpansion(kErrorMessageKey, &message);
+    DLOG(ERROR) << "code: " << code << ", message: " << message;
+
+    // Override the error code based on the reason of the first error.
+    const base::ListValue* errors = NULL;
+    const base::DictionaryValue* first_error = NULL;
+    if (error->GetListWithoutPathExpansion(kErrorErrorsKey, &errors) &&
+        errors->GetDictionary(0, &first_error)) {
+      std::string reason;
+      first_error->GetStringWithoutPathExpansion(kErrorReasonKey, &reason);
+      if (reason == kErrorReasonRateLimitExceeded ||
+          reason == kErrorReasonUserRateLimitExceeded) {
+        return google_apis::HTTP_SERVICE_UNAVAILABLE;
+      }
+      if (reason == kErrorReasonQuotaExceeded)
+        return google_apis::DRIVE_NO_SPACE;
+    }
+  }
+
+  return code;
+}
+
 }  // namespace
 
 namespace google_apis {
@@ -489,45 +537,7 @@ void UrlFetchRequestBase::OnURLFetchComplete(const URLFetcher* source) {
     }
   }
 
-  // The server may return detailed error status in JSON.
-  // See https://developers.google.com/drive/handle-errors
-  if (!IsSuccessfulDriveApiErrorCode(error_code_)) {
-    DVLOG(1) << response_writer_->data();
-
-    const char kErrorKey[] = "error";
-    const char kErrorErrorsKey[] = "errors";
-    const char kErrorReasonKey[] = "reason";
-    const char kErrorMessageKey[] = "message";
-    const char kErrorReasonRateLimitExceeded[] = "rateLimitExceeded";
-    const char kErrorReasonUserRateLimitExceeded[] = "userRateLimitExceeded";
-    const char kErrorReasonQuotaExceeded[] = "quotaExceeded";
-
-    scoped_ptr<base::Value> value(ParseJson(response_writer_->data()));
-    base::DictionaryValue* dictionary = NULL;
-    base::DictionaryValue* error = NULL;
-    if (value &&
-        value->GetAsDictionary(&dictionary) &&
-        dictionary->GetDictionaryWithoutPathExpansion(kErrorKey, &error)) {
-      // Get error message.
-      std::string message;
-      error->GetStringWithoutPathExpansion(kErrorMessageKey, &message);
-      DLOG(ERROR) << "code: " << error_code_ << ", message: " << message;
-
-      // Override the error code based on the reason of the first error.
-      base::ListValue* errors = NULL;
-      base::DictionaryValue* first_error = NULL;
-      if (error->GetListWithoutPathExpansion(kErrorErrorsKey, &errors) &&
-          errors->GetDictionary(0, &first_error)) {
-        std::string reason;
-        first_error->GetStringWithoutPathExpansion(kErrorReasonKey, &reason);
-        if (reason == kErrorReasonRateLimitExceeded ||
-            reason == kErrorReasonUserRateLimitExceeded)
-          error_code_ = HTTP_SERVICE_UNAVAILABLE;
-        if (reason == kErrorReasonQuotaExceeded)
-          error_code_ = DRIVE_NO_SPACE;
-      }
-    }
-  }
+  error_code_ = MapJsonError(error_code_, response_writer_->data());
 
   // Handle authentication failure.
   if (error_code_ == HTTP_UNAUTHORIZED) {
@@ -915,7 +925,7 @@ void MultipartUploadRequestBase::NotifyResult(
                    weak_ptr_factory_.GetWeakPtr(), code,
                    notify_complete_callback));
   } else {
-    NotifyError(code);
+    NotifyError(MapJsonError(code, body));
     notify_complete_callback.Run();
   }
 }

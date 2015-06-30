@@ -479,10 +479,11 @@ class DriveApiRequestsTest : public testing::Test {
         "--BOUNDARY\r\n"
         "Content-Type: application/http\r\n"
         "\r\n"
-        "HTTP/1.1 503 Service Unavailable\r\n"
+        "HTTP/1.1 403 Forbidden\r\n"
         "Content-Type: application/json; charset=UTF-8\r\n"
         "\r\n"
-        "{}\r\n"
+        "{\"error\":{\"errors\": ["
+        " {\"reason\": \"userRateLimitExceeded\"}]}}\r\n"
         "\r\n"
         "--BOUNDARY--\r\n");
     return response.Pass();
