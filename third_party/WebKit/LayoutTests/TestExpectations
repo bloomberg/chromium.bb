@@ -1474,7 +1474,6 @@ crbug.com/498021 [ Linux ] fast/forms/month/month-appearance-l10n.html [ ImageOn
 crbug.com/498021 [ Linux ] fast/text/complex-text-opacity.html [ ImageOnlyFailure ]
 crbug.com/498021 [ Linux ] fast/text/ellipsis-stroked.html [ ImageOnlyFailure ]
 crbug.com/498021 [ Linux ] fast/text/emphasis-complex.html [ ImageOnlyFailure ]
-crbug.com/498021 [ Linux ] fast/text/emphasis-ellipsis-complextext.html [ ImageOnlyFailure ]
 crbug.com/498021 [ Linux ] fast/text/international/complex-joining-using-gpos.html [ ImageOnlyFailure ]
 crbug.com/498021 [ Linux ] fast/text/international/danda-space.html [ ImageOnlyFailure ]
 crbug.com/498021 [ Linux ] fast/text/international/hindi-whitespace.html [ ImageOnlyFailure ]
@@ -1718,3 +1717,5 @@ crbug.com/502308 [ Release ] webexposed/global-interface-listing-dedicated-worke
 crbug.com/502308 [ Debug ] webexposed/global-interface-listing.html [ Failure Slow ]
 crbug.com/502308 [ Debug ] webexposed/global-interface-listing-shared-worker.html [ Failure Slow ]
 crbug.com/502308 [ Debug ] webexposed/global-interface-listing-dedicated-worker.html [ Failure Slow ]
+
+crbug.com/505795 [ Win Mac ] virtual/antialiasedtext/fast/text/emphasis-ellipsis-complextext.html [ Pass ImageOnlyFailure ]
