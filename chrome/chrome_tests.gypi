@@ -3284,21 +3284,6 @@
                 },
               ],
             }],
-            ['OS=="win"', {
-              'targets': [
-                {
-                  'target_name': 'angle_deqp_tests_run',
-                  'type': 'none',
-                  'dependencies': [
-                    '../gpu/gpu.gyp:angle_deqp_tests',
-                    'gpu_tests_base',
-                  ],
-                  'sources': [
-                    'angle_deqp_tests.isolate',
-                  ],
-                },
-              ],
-            }],
           ],
         }],
       ],
