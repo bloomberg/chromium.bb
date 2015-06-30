@@ -577,7 +577,6 @@ void {{v8_class}}::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* script
         return;
     }
     {% endif %}
-    setObjectGroup(isolate, scriptWrappable, wrapper);
 }
 
 {% endif %}

@@ -605,7 +605,6 @@ void V8TestInterface2::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* sc
         isolate->SetReferenceFromGroup(v8::UniqueId(reinterpret_cast<intptr_t>(root)), wrapper);
         return;
     }
-    setObjectGroup(isolate, scriptWrappable, wrapper);
 }
 
 static const V8DOMConfiguration::MethodConfiguration V8TestInterface2Methods[] = {

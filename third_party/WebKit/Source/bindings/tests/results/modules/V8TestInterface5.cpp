@@ -914,7 +914,6 @@ void V8TestInterface5::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* sc
             referencedName->wrap(isolate, creationContext);
         DOMDataStore::setWrapperReference(wrapper, referencedName, isolate);
     }
-    setObjectGroup(isolate, scriptWrappable, wrapper);
 }
 
 // Suppress warning: global constructors, because AttributeConfiguration is trivial
