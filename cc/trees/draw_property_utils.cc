@@ -516,10 +516,6 @@ gfx::Transform DrawTransformFromPropertyTreesInternal(
     const LayerType* layer,
     const TransformTree& tree) {
   const TransformNode* node = tree.Node(layer->transform_tree_index());
-  // TODO(vollick): ultimately we'll need to find this information (whether or
-  // not we establish a render surface) somewhere other than the layer.
-  const TransformNode* target_node =
-      layer->render_surface() ? node : tree.Node(node->data.content_target_id);
 
   gfx::Transform xform;
   const bool owns_non_root_surface = layer->parent() && layer->render_surface();
@@ -533,8 +529,7 @@ gfx::Transform DrawTransformFromPropertyTreesInternal(
                     layer->offset_to_transform_parent().y());
   } else {
     // Surfaces need to apply their sublayer scale.
-    xform.Scale(target_node->data.sublayer_scale.x(),
-                target_node->data.sublayer_scale.y());
+    xform.Scale(node->data.sublayer_scale.x(), node->data.sublayer_scale.y());
   }
   return xform;
 }
