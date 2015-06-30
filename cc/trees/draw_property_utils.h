@@ -94,6 +94,12 @@ DrawOpacityFromPropertyTrees(const Layer* layer, const OpacityTree& tree);
 float CC_EXPORT
 DrawOpacityFromPropertyTrees(const LayerImpl* layer, const OpacityTree& tree);
 
+bool CC_EXPORT
+CanUseLcdTextFromPropertyTrees(const LayerImpl* layer,
+                               bool layers_always_allowed_lcd_text,
+                               bool can_use_lcd_text,
+                               PropertyTrees* property_trees);
+
 }  // namespace cc
 
 #endif  // CC_TREES_DRAW_PROPERTY_UTILS_H_

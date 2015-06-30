@@ -447,6 +447,7 @@ void ComputeVisibleRectsUsingPropertyTreesInternal(
     property_trees->clip_tree.set_needs_update(true);
   ComputeTransforms(&property_trees->transform_tree);
   ComputeClips(&property_trees->clip_tree, property_trees->transform_tree);
+  ComputeOpacities(&property_trees->opacity_tree);
 
   const bool subtree_is_visible_from_ancestor = true;
   std::vector<LayerType*> visible_layer_list;
@@ -604,6 +605,36 @@ float DrawOpacityFromPropertyTrees(const Layer* layer,
 float DrawOpacityFromPropertyTrees(const LayerImpl* layer,
                                    const OpacityTree& tree) {
   return DrawOpacityFromPropertyTreesInternal(layer, tree);
+}
+
+bool CanUseLcdTextFromPropertyTrees(const LayerImpl* layer,
+                                    bool layers_always_allowed_lcd_text,
+                                    bool can_use_lcd_text,
+                                    PropertyTrees* property_trees) {
+  if (layers_always_allowed_lcd_text)
+    return true;
+  if (!can_use_lcd_text)
+    return false;
+  if (!layer->contents_opaque())
+    return false;
+  DCHECK(!property_trees->transform_tree.needs_update());
+  DCHECK(!property_trees->opacity_tree.needs_update());
+
+  const OpacityNode* opacity_node =
+      property_trees->opacity_tree.Node(layer->opacity_tree_index());
+  if (opacity_node->data.screen_space_opacity != 1.f)
+    return false;
+  const TransformNode* transform_node =
+      property_trees->transform_tree.Node(layer->transform_tree_index());
+  if (!transform_node->data.node_and_ancestors_have_only_integer_translation)
+    return false;
+  if (static_cast<int>(layer->offset_to_transform_parent().x()) !=
+      layer->offset_to_transform_parent().x())
+    return false;
+  if (static_cast<int>(layer->offset_to_transform_parent().y()) !=
+      layer->offset_to_transform_parent().y())
+    return false;
+  return true;
 }
 
 }  // namespace cc

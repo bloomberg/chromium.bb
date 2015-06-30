@@ -2477,9 +2477,10 @@ static bool ApproximatelyEqual(const gfx::Transform& a,
   return true;
 }
 
-template <typename LayerType>
-void VerifyPropertyTreeValuesForLayer(LayerType* current_layer,
-                                      PropertyTrees* property_trees) {
+void VerifyPropertyTreeValuesForLayer(LayerImpl* current_layer,
+                                      PropertyTrees* property_trees,
+                                      bool layers_always_allowed_lcd_text,
+                                      bool can_use_lcd_text) {
   const bool visible_rects_match =
       ApproximatelyEqual(current_layer->visible_layer_rect(),
                          current_layer->visible_rect_from_property_trees());
@@ -2505,6 +2506,11 @@ void VerifyPropertyTreeValuesForLayer(LayerType* current_layer,
       << "expected: " << current_layer->draw_opacity()
       << " actual: " << DrawOpacityFromPropertyTrees(
                             current_layer, property_trees->opacity_tree);
+  const bool can_use_lcd_text_match =
+      CanUseLcdTextFromPropertyTrees(
+          current_layer, layers_always_allowed_lcd_text, can_use_lcd_text,
+          property_trees) == current_layer->can_use_lcd_text();
+  CHECK(can_use_lcd_text_match);
 }
 
 void VerifyPropertyTreeValues(
@@ -2520,7 +2526,9 @@ void VerifyPropertyTreeValues(
     LayerImpl* current_layer = *it;
     if (!it.represents_itself() || !current_layer->DrawsContent())
       continue;
-    VerifyPropertyTreeValuesForLayer(current_layer, inputs->property_trees);
+    VerifyPropertyTreeValuesForLayer(current_layer, inputs->property_trees,
+                                     inputs->layers_always_allowed_lcd_text,
+                                     inputs->can_use_lcd_text);
   }
 }
 
