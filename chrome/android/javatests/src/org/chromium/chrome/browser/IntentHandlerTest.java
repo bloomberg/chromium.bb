@@ -192,21 +192,19 @@ public class IntentHandlerTest extends NativeLibraryTestBase {
         Context context = getInstrumentation().getTargetContext();
         Intent foreignIntent = new Intent(Intent.ACTION_VIEW);
         foreignIntent.putExtra(Intent.EXTRA_REFERRER, GOOGLE_URL);
-        assertNull(IntentHandler.getReferrerUrl(foreignIntent, context));
-        assertNull(IntentHandler.getExtraHeadersFromIntent(foreignIntent, true));
+        assertNull(IntentHandler.getReferrerUrlIncludingExtraHeaders(foreignIntent, context));
 
         // Check that EXTRA_REFERRER with android-app URL works.
         final String appUrl = "android-app://com.application/http/www.application.com";
         Intent appIntent = new Intent(Intent.ACTION_VIEW);
         appIntent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(appUrl));
-        assertEquals(appUrl, IntentHandler.getReferrerUrl(appIntent, context));
-        assertNull(IntentHandler.getExtraHeadersFromIntent(appIntent, false));
+        assertEquals(appUrl, IntentHandler.getReferrerUrlIncludingExtraHeaders(appIntent, context));
 
         // Check that EXTRA_REFERRER_NAME with android-app works.
         Intent nameIntent = new Intent(Intent.ACTION_VIEW);
         nameIntent.putExtra(Intent.EXTRA_REFERRER_NAME, appUrl);
-        assertEquals(appUrl, IntentHandler.getReferrerUrl(nameIntent, context));
-        assertNull(IntentHandler.getExtraHeadersFromIntent(nameIntent, false));
+        assertEquals(
+                appUrl, IntentHandler.getReferrerUrlIncludingExtraHeaders(nameIntent, context));
     }
 
     @UiThreadTest
@@ -214,13 +212,15 @@ public class IntentHandlerTest extends NativeLibraryTestBase {
     @Feature({"Android-AppBase"})
     public void testRefererUrl_extraHeadersInclReferer() {
         // Check that invalid header specified in EXTRA_HEADERS isn't used.
+        Context context = getInstrumentation().getTargetContext();
         Bundle bundle = new Bundle();
         bundle.putString("X-custom-header", "X-custom-value");
         bundle.putString("Referer", GOOGLE_URL);
         Intent headersIntent = new Intent(Intent.ACTION_VIEW);
         headersIntent.putExtra(Browser.EXTRA_HEADERS, bundle);
         assertEquals("X-custom-header: X-custom-value",
-                IntentHandler.getExtraHeadersFromIntent(headersIntent, false));
+                IntentHandler.getExtraHeadersFromIntent(headersIntent));
+        assertNull(IntentHandler.getReferrerUrlIncludingExtraHeaders(headersIntent, context));
     }
 
     @UiThreadTest
@@ -228,6 +228,7 @@ public class IntentHandlerTest extends NativeLibraryTestBase {
     @Feature({"Android-AppBase"})
     public void testRefererUrl_extraHeadersInclRefererMultiple() {
         // Check that invalid header specified in EXTRA_HEADERS isn't used.
+        Context context = getInstrumentation().getTargetContext();
         Bundle bundle = new Bundle();
         bundle.putString("X-custom-header", "X-custom-value");
         bundle.putString("X-custom-header-2", "X-custom-value-2");
@@ -235,7 +236,8 @@ public class IntentHandlerTest extends NativeLibraryTestBase {
         Intent headersIntent = new Intent(Intent.ACTION_VIEW);
         headersIntent.putExtra(Browser.EXTRA_HEADERS, bundle);
         assertEquals("X-custom-header-2: X-custom-value-2\nX-custom-header: X-custom-value",
-                IntentHandler.getExtraHeadersFromIntent(headersIntent, false));
+                IntentHandler.getExtraHeadersFromIntent(headersIntent));
+        assertNull(IntentHandler.getReferrerUrlIncludingExtraHeaders(headersIntent, context));
     }
 
     @UiThreadTest
@@ -243,11 +245,12 @@ public class IntentHandlerTest extends NativeLibraryTestBase {
     @Feature({"Android-AppBase"})
     public void testRefererUrl_extraHeadersOnlyReferer() {
         // Check that invalid header specified in EXTRA_HEADERS isn't used.
+        Context context = getInstrumentation().getTargetContext();
         Bundle bundle = new Bundle();
         bundle.putString("Referer", GOOGLE_URL);
         Intent headersIntent = new Intent(Intent.ACTION_VIEW);
         headersIntent.putExtra(Browser.EXTRA_HEADERS, bundle);
-        assertNull(IntentHandler.getExtraHeadersFromIntent(headersIntent, false));
+        assertNull(IntentHandler.getReferrerUrlIncludingExtraHeaders(headersIntent, context));
     }
 
     @UiThreadTest
@@ -261,8 +264,9 @@ public class IntentHandlerTest extends NativeLibraryTestBase {
         Intent headersIntent = new Intent(Intent.ACTION_VIEW);
         headersIntent.putExtra(Browser.EXTRA_HEADERS, bundle);
         headersIntent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(validReferer));
-        assertEquals(validReferer, IntentHandler.getReferrerUrl(headersIntent, context));
-        assertNull(IntentHandler.getExtraHeadersFromIntent(headersIntent, true));
+        assertEquals(validReferer,
+                IntentHandler.getReferrerUrlIncludingExtraHeaders(headersIntent, context));
+        assertNull(IntentHandler.getExtraHeadersFromIntent(headersIntent));
     }
 
     @UiThreadTest
@@ -275,9 +279,9 @@ public class IntentHandlerTest extends NativeLibraryTestBase {
         bundle.putString("Referer", validReferer);
         Intent headersIntent = new Intent(Intent.ACTION_VIEW);
         headersIntent.putExtra(Browser.EXTRA_HEADERS, bundle);
-        assertNull(IntentHandler.getReferrerUrl(headersIntent, context));
-        assertEquals("Referer: " + validReferer,
-                IntentHandler.getExtraHeadersFromIntent(headersIntent, false));
+        assertEquals(validReferer,
+                IntentHandler.getReferrerUrlIncludingExtraHeaders(headersIntent, context));
+        assertNull(IntentHandler.getExtraHeadersFromIntent(headersIntent));
     }
 
     @SmallTest

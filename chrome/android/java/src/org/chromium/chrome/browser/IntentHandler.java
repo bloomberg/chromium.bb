@@ -292,8 +292,8 @@ public class IntentHandler {
             return handleWebSearchIntent(intent);
         }
 
-        String referrerUrl = getReferrerUrl(intent, context);
-        String extraHeaders = getExtraHeadersFromIntent(intent, referrerUrl != null);
+        String referrerUrl = getReferrerUrlIncludingExtraHeaders(intent, context);
+        String extraHeaders = getExtraHeadersFromIntent(intent);
 
         // TODO(joth): Presumably this should check the action too.
         mDelegate.processUrlViewIntent(url, referrerUrl, extraHeaders, tabOpenType,
@@ -327,7 +327,7 @@ public class IntentHandler {
      * @param context The activity that received the intent.
      * @return The URL string or null if none should be used.
      */
-    public static String getReferrerUrl(Intent intent, Context context) {
+    private static String getReferrerUrl(Intent intent, Context context) {
         Uri referrerExtra = getReferrer(intent);
         if (referrerExtra == null) return null;
         String referrerUrl = IntentHandler.getPendingReferrerUrl(
@@ -343,17 +343,41 @@ public class IntentHandler {
     }
 
     /**
+     * Gets the referrer, looking in the Intent extra and in the extra headers extra.
+     *
+     * The referrer extra takes priority over the "extra headers" one.
+     *
+     * @param intent The Intent containing the extras.
+     * @param context The application context.
+     * @return The referrer, or null.
+     */
+    public static String getReferrerUrlIncludingExtraHeaders(Intent intent, Context context) {
+        String referrerUrl = getReferrerUrl(intent, context);
+        if (referrerUrl != null) return referrerUrl;
+
+        Bundle bundleExtraHeaders = IntentUtils.safeGetBundleExtra(intent, Browser.EXTRA_HEADERS);
+        if (bundleExtraHeaders == null) return null;
+        for (String key : bundleExtraHeaders.keySet()) {
+            String value = bundleExtraHeaders.getString(key);
+            if ("referer".equals(key.toLowerCase(Locale.US)) && isValidReferrerHeader(value)) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Add referrer and extra headers to a {@link LoadUrlParams}, if we managed to parse them from
      * the intent.
      * @param params The {@link LoadUrlParams} to add referrer and headers.
      * @param intent The intent we use to parse the extras.
      */
     public static void addReferrerAndHeaders(LoadUrlParams params, Intent intent, Context context) {
-        String referrer = getReferrerUrl(intent, context);
+        String referrer = getReferrerUrlIncludingExtraHeaders(intent, context);
         if (referrer != null) {
             params.setReferrer(new Referrer(referrer, Referrer.REFERRER_POLICY_DEFAULT));
         }
-        String headers = getExtraHeadersFromIntent(intent, referrer != null);
+        String headers = getExtraHeadersFromIntent(intent);
         if (headers != null) params.setVerbatimHeaders(headers);
     }
 
@@ -505,10 +529,11 @@ public class IntentHandler {
     /**
      * Returns a String (or null) containing the extra headers sent by the intent, if any.
      *
+     * This methods skips the referrer header.
+     *
      * @param intent The intent containing the bundle extra with the HTTP headers.
-     * @param skipReferer If true, won't add Referer extra to the headers.
      */
-    public static String getExtraHeadersFromIntent(Intent intent, boolean skipReferer) {
+    public static String getExtraHeadersFromIntent(Intent intent) {
         Bundle bundleExtraHeaders = IntentUtils.safeGetBundleExtra(intent, Browser.EXTRA_HEADERS);
         if (bundleExtraHeaders == null) return null;
         StringBuilder extraHeaders = new StringBuilder();
@@ -516,10 +541,7 @@ public class IntentHandler {
         while (keys.hasNext()) {
             String key = keys.next();
             String value = bundleExtraHeaders.getString(key);
-            if ("referer".equals(key.toLowerCase(Locale.US))
-                    && (skipReferer || !isValidReferrerHeader(value))) {
-                continue;
-            }
+            if ("referer".equals(key.toLowerCase(Locale.US))) continue;
             if (extraHeaders.length() != 0) extraHeaders.append("\n");
             extraHeaders.append(key);
             extraHeaders.append(": ");
