@@ -789,9 +789,10 @@ protected:
         //   (b) a pointer to the head of an on-heap mixin object.
         //
         // We can check it by calling Heap::isHeapObjectAlive(m_raw),
-        // but we cannot call it here because it requres to include T.h.
-        // So we currently implement only the check for (a).
-        if (!IsGarbageCollectedMixin<T>::value)
+        // but we cannot call it here because it requires to include T.h.
+        // So we currently only try to implement the check for (a), but do
+        // not insist that T's definition is in scope.
+        if (IsFullyDefined<T>::value && !IsGarbageCollectedMixin<T>::value)
             ASSERT(HeapObjectHeader::fromPayload(m_raw)->checkHeader());
 #endif
     }

@@ -422,6 +422,21 @@ public:
 };
 template <typename T> const bool NeedsAdjustAndMark<T, false>::value;
 
+// TODO(sof): migrate to wtf/TypeTraits.h
+template<typename T>
+class IsFullyDefined {
+    using TrueType = char;
+    struct FalseType {
+        char dummy[2];
+    };
+
+    template<typename U, size_t sz = sizeof(U)> static TrueType isSizeofKnown(U*);
+    static FalseType isSizeofKnown(...);
+    static T& t;
+public:
+    static const bool value = sizeof(TrueType) == sizeof(isSizeofKnown(&t));
+};
+
 } // namespace blink
 
 #endif
