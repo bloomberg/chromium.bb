@@ -376,36 +376,40 @@ void LayoutBoxModelObject::invalidateDisplayItemClientOnBacking(const DisplayIte
     }
 }
 
-void LayoutBoxModelObject::addChildFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
+void LayoutBoxModelObject::addFocusRingRectsForNormalChildren(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
 {
-    for (LayoutObject* current = slowFirstChild(); current; current = current->nextSibling()) {
-        if (current->isText() || current->isListMarker())
-            continue;
+    for (LayoutObject* child = slowFirstChild(); child; child = child->nextSibling()) {
+        if (!child->isOutOfFlowPositioned())
+            addFocusRingRectsForDescendant(*child, rects, additionalOffset);
+    }
+}
 
-        if (!current->isBox()) {
-            current->addFocusRingRects(rects, additionalOffset);
-            continue;
-        }
+void LayoutBoxModelObject::addFocusRingRectsForDescendant(const LayoutObject& descendant, Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
+{
+    if (descendant.isText() || descendant.isListMarker())
+        return;
 
-        LayoutBox* box = toLayoutBox(current);
-        if (!box->hasLayer()) {
-            box->addFocusRingRects(rects, additionalOffset + box->locationOffset());
-            continue;
-        }
-
+    if (descendant.hasLayer()) {
         Vector<LayoutRect> layerFocusRingRects;
-        box->addFocusRingRects(layerFocusRingRects, LayoutPoint());
+        descendant.addFocusRingRects(layerFocusRingRects, LayoutPoint());
         for (size_t i = 0; i < layerFocusRingRects.size(); ++i) {
-            FloatQuad quadInBox = box->localToContainerQuad(FloatQuad(layerFocusRingRects[i]), this);
+            FloatQuad quadInBox = toLayoutBoxModelObject(descendant).localToContainerQuad(FloatQuad(layerFocusRingRects[i]), this);
             LayoutRect rect = LayoutRect(quadInBox.boundingBox());
             if (!rect.isEmpty()) {
                 rect.moveBy(additionalOffset);
                 rects.append(rect);
             }
         }
+        return;
     }
-}
 
+    if (descendant.isBox()) {
+        descendant.addFocusRingRects(rects, additionalOffset + toLayoutBox(descendant).locationOffset());
+        return;
+    }
+
+    descendant.addFocusRingRects(rects, additionalOffset);
+}
 
 bool LayoutBoxModelObject::calculateHasBoxDecorations() const
 {

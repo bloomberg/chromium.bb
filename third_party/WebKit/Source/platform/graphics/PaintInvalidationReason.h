@@ -28,6 +28,7 @@ enum PaintInvalidationReason {
     PaintInvalidationBecameInvisible,
     PaintInvalidationScroll,
     PaintInvalidationSelection,
+    PaintInvalidationFocusRing,
     PaintInvalidationLayer,
     PaintInvalidationLayoutObjectInsertion,
     PaintInvalidationLayoutObjectRemoval,

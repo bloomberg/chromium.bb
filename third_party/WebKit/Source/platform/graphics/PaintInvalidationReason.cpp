@@ -46,6 +46,8 @@ const char* paintInvalidationReasonToString(PaintInvalidationReason reason)
         return "scroll";
     case PaintInvalidationSelection:
         return "selection";
+    case PaintInvalidationFocusRing:
+        return "focus ring";
     case PaintInvalidationLayer:
         return "layer";
     case PaintInvalidationLayoutObjectInsertion:

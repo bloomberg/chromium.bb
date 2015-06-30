@@ -223,7 +223,8 @@ protected:
     bool hasAutoHeightOrContainingBlockWithAutoHeight() const;
     LayoutBlock* containingBlockForAutoHeightDetection(Length logicalHeight) const;
 
-    void addChildFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const;
+    void addFocusRingRectsForNormalChildren(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const;
+    void addFocusRingRectsForDescendant(const LayoutObject& descendant, Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const;
 
     virtual void addLayerHitTestRects(LayerHitTestRects&, const DeprecatedPaintLayer*, const LayoutPoint&, const LayoutRect&) const override;
 

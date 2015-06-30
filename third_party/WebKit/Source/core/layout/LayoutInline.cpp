@@ -1387,7 +1387,7 @@ void LayoutInline::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoin
         generateLineBoxRects(context);
     }
 
-    addChildFocusRingRects(rects, additionalOffset);
+    addFocusRingRectsForNormalChildren(rects, additionalOffset);
 
     if (LayoutBoxModelObject* continuation = this->continuation()) {
         if (continuation->isInline())

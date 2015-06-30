@@ -1392,6 +1392,12 @@ PaintInvalidationReason LayoutObject::paintInvalidationReason(const LayoutBoxMod
     if (shouldDoFullPaintInvalidation())
         return m_bitfields.fullPaintInvalidationReason();
 
+    // The focus ring may change because of position change of descendants. For simplicity,
+    // just force full paint invalidation if this object is marked for checking paint invalidation
+    // for any reason.
+    if (styleRef().outlineStyleIsAuto())
+        return PaintInvalidationFocusRing;
+
     // If the bounds are the same then we know that none of the statements below
     // can match, so we can early out since we will not need to do any
     // invalidation.

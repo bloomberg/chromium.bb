@@ -2600,7 +2600,11 @@ void LayoutBlock::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint
                 rects.append(rect);
         }
 
-        addChildFocusRingRects(rects, additionalOffset);
+        addFocusRingRectsForNormalChildren(rects, additionalOffset);
+        if (TrackedLayoutBoxListHashSet* positionedObjects = this->positionedObjects()) {
+            for (auto* box : *positionedObjects)
+                addFocusRingRectsForDescendant(*box, rects, additionalOffset);
+        }
     }
 
     if (inlineElementContinuation) {
