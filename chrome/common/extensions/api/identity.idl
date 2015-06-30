@@ -105,7 +105,7 @@ namespace identity {
     // |callback| : Called with an OAuth2 access token as specified by the
     // manifest, or undefined if there was an error.
     static void getAuthToken(optional TokenDetails details,
-                             GetAuthTokenCallback callback);
+                             optional GetAuthTokenCallback callback);
 
     // Retrieves email address and obfuscated gaia id of the user
     // signed into a profile.
@@ -125,7 +125,8 @@ namespace identity {
     // |details| : Token information.
     // |callback| : Called when the token has been removed from the cache.
     static void removeCachedAuthToken(
-        InvalidTokenDetails details, InvalidateAuthTokenCallback callback);
+        InvalidTokenDetails details,
+        optional InvalidateAuthTokenCallback callback);
 
     // Starts an auth flow at the specified URL.
     //
