@@ -22,9 +22,9 @@ class OilpanGCTimesBlinkPerfStress(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'oilpan_gc_times.blink_perf_stress'
 
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     path = os.path.join(blink_perf.BLINK_PERF_BASE_DIR, 'BlinkGC')
-    return blink_perf.CreatePageSetFromPath(path, blink_perf.SKIPPED_FILE)
+    return blink_perf.CreateStorySetFromPath(path, blink_perf.SKIPPED_FILE)
 
 
 class OilpanGCTimesSmoothnessAnimation(perf_benchmark.PerfBenchmark):

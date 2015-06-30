@@ -60,7 +60,7 @@ class RobohornetPro(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'robohornet_pro'
 
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     ps = page_set.PageSet(
         archive_data_file='../page_sets/data/robohornet_pro.json',
         base_dir=os.path.dirname(os.path.abspath(__file__)),

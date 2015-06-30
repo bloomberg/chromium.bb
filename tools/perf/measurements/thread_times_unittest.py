@@ -29,7 +29,7 @@ class ThreadTimesUnitTest(page_test_test_case.PageTestTestCase):
 
   @decorators.Disabled('android')
   def testBasic(self):
-    ps = self.CreatePageSetFromFileInUnittestDataDir('scrollable_page.html')
+    ps = self.CreateStorySetFromFileInUnittestDataDir('scrollable_page.html')
     measurement = thread_times.ThreadTimes()
     timeline_options = self._options
     results = self.RunMeasurement(measurement, ps, options = timeline_options)
@@ -43,7 +43,7 @@ class ThreadTimesUnitTest(page_test_test_case.PageTestTestCase):
 
   @decorators.Disabled('chromeos')  # crbug.com/483212
   def testWithSilkDetails(self):
-    ps = self.CreatePageSetFromFileInUnittestDataDir('scrollable_page.html')
+    ps = self.CreateStorySetFromFileInUnittestDataDir('scrollable_page.html')
     measurement = thread_times.ThreadTimes(report_silk_details=True)
     results = self.RunMeasurement(measurement, ps, options = self._options)
     self.assertEquals(0, len(results.failures))

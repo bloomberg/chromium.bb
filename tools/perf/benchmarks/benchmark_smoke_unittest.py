@@ -46,9 +46,9 @@ def SmokeTestGenerator(benchmark):
     benchmark.options['page_repeat'] = 1
 
     class SinglePageBenchmark(benchmark):  # pylint: disable=W0232
-      def CreatePageSet(self, options):
+      def CreateStorySet(self, options):
         # pylint: disable=E1002
-        ps = super(SinglePageBenchmark, self).CreatePageSet(options)
+        ps = super(SinglePageBenchmark, self).CreateStorySet(options)
         for p in ps.pages:
           p.skip_waits = True
           ps.stories = [p]

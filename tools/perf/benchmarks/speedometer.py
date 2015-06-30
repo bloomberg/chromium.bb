@@ -90,7 +90,7 @@ class Speedometer(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'speedometer'
 
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     ps = page_set.PageSet(
         base_dir=os.path.dirname(os.path.abspath(__file__)),
         archive_data_file='../page_sets/data/speedometer.json',

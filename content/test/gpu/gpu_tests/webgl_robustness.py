@@ -65,7 +65,7 @@ class WebglRobustness(benchmark.Benchmark):
   def Name(cls):
     return 'webgl_robustness'
 
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     ps = page_set.PageSet(
       base_dir=conformance_path,
       serving_dirs=[''])

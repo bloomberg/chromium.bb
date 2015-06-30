@@ -137,7 +137,7 @@ class Sunspider(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'sunspider'
 
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     ps = page_set.PageSet(
         archive_data_file='../page_sets/data/sunspider.json',
         base_dir=os.path.dirname(os.path.abspath(__file__)),

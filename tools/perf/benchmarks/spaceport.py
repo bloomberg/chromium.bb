@@ -112,7 +112,7 @@ class Spaceport(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'spaceport'
 
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     spaceport_dir = os.path.join(util.GetChromiumSrcDir(), 'chrome', 'test',
         'data', 'third_party', 'spaceport')
     ps = page_set.PageSet(base_dir=spaceport_dir)

@@ -15,5 +15,5 @@ class Inbox(perf_benchmark.PerfBenchmark):
   """Runs the timeline based measurement against inbox pageset."""
   test = timeline_based_measurement.TimelineBasedMeasurement
 
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     return inbox.InboxPageSet()

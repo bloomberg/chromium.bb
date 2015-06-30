@@ -97,7 +97,7 @@ class RasterizeAndRecordMicroKeySilkCases(_RasterizeAndRecordMicro):
   def Name(cls):
     return 'rasterize_and_record_micro.key_silk_cases'
 
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     return page_sets.KeySilkCasesPageSet(run_no_page_interactions=True)
 
 
@@ -111,5 +111,5 @@ class RasterizeAndRecordMicroPolymer(_RasterizeAndRecordMicro):
   def Name(cls):
     return 'rasterize_and_record_micro.polymer'
 
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     return page_sets.PolymerPageSet(run_no_page_interactions=True)

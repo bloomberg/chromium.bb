@@ -332,7 +332,7 @@ class ContextLost(benchmark_module.Benchmark):
   # For the record, this would have been another way to get the pages
   # to repeat. pageset_repeat would be another option.
   # options = {'page_repeat': 5}
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     ps = page_set.PageSet(
       base_dir=data_path,
       serving_dirs=set(['']))

@@ -97,7 +97,7 @@ class Maps(cloud_storage_test_base.TestBase):
   def CreateExpectations(self):
     return maps_expectations.MapsExpectations()
 
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     page_set_path = os.path.join(
         util.GetChromiumSrcDir(), 'content', 'test', 'gpu', 'page_sets')
     ps = page_set.PageSet(archive_data_file='data/maps.json',

@@ -47,7 +47,7 @@ class GpuProcess(benchmark.Benchmark):
   def CreateExpectations(self):
     return expectations.GpuProcessExpectations()
 
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     page_set = page_sets.GpuProcessTestsPageSet()
     for page in page_set.pages:
       page.script_to_evaluate_on_commit = test_harness_script

@@ -108,7 +108,7 @@ class DomPerf(perf_benchmark.PerfBenchmark):
     del options
     return _DomPerfMeasurement(len(self.RUN_PARAMS))
 
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     dom_perf_dir = os.path.join(util.GetChromiumSrcDir(), 'data', 'dom_perf')
     ps = page_set.PageSet(base_dir=dom_perf_dir)
     for param in self.RUN_PARAMS:

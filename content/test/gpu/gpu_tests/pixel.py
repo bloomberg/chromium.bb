@@ -161,7 +161,7 @@ class Pixel(cloud_storage_test_base.TestBase):
         '(only used for local testing without a cloud storage account)',
         default=default_reference_image_dir)
 
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     page_set = page_sets.PixelTestsPageSet()
     for page in page_set.pages:
       page.script_to_evaluate_on_commit = test_harness_script

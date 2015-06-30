@@ -39,7 +39,7 @@ class TabSwitchingTypical25(perf_benchmark.PerfBenchmark):
   """
   test = tab_switching.TabSwitching
 
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     return page_sets.Typical25PageSet(run_no_page_interactions=True)
 
   @classmethod

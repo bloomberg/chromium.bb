@@ -86,7 +86,7 @@ class Jetstream(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'jetstream'
 
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     ps = page_set.PageSet(
         archive_data_file='../page_sets/data/jetstream.json',
         base_dir=os.path.dirname(os.path.abspath(__file__)),

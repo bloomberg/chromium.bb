@@ -82,7 +82,7 @@ class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
 
   @decorators.Disabled('chromeos')  # crbug.com/483212
   def testSmoothness(self):
-    ps = self.CreatePageSetFromFileInUnittestDataDir('scrollable_page.html')
+    ps = self.CreateStorySetFromFileInUnittestDataDir('scrollable_page.html')
     measurement = smoothness.Smoothness()
     results = self.RunMeasurement(measurement, ps, options=self._options)
     self.assertEquals(0, len(results.failures))
@@ -114,7 +114,7 @@ class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
 
   @decorators.Enabled('android')  # SurfaceFlinger is android-only
   def testSmoothnessSurfaceFlingerMetricsCalculated(self):
-    ps = self.CreatePageSetFromFileInUnittestDataDir('scrollable_page.html')
+    ps = self.CreateStorySetFromFileInUnittestDataDir('scrollable_page.html')
     measurement = smoothness.Smoothness()
     results = self.RunMeasurement(measurement, ps, options=self._options)
     self.assertEquals(0, len(results.failures))

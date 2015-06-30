@@ -142,7 +142,7 @@ class Octane(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'octane'
 
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     ps = page_set.PageSet(
       archive_data_file='../page_sets/data/octane.json',
       base_dir=os.path.dirname(os.path.abspath(__file__)),

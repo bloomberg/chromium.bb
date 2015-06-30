@@ -61,7 +61,7 @@ class _SessionRestoreTypical25(perf_benchmark.PerfBenchmark):
     is_cold = (self.tag == 'cold')
     return session_restore.SessionRestore(cold=is_cold)
 
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     return page_sets.Typical25PageSet(run_no_page_interactions=True)
 
 # crbug.com/325479, crbug.com/381990

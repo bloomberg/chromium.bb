@@ -56,7 +56,7 @@ class HardwareAcceleratedFeature(benchmark.Benchmark):
   def CreateExpectations(self):
     return expectations.HardwareAcceleratedFeatureExpectations()
 
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     features = ['WebGL', 'Canvas']
 
     ps = page_set.PageSet()

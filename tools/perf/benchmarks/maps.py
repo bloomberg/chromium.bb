@@ -55,7 +55,7 @@ class MapsBenchmark(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'maps'
 
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     page_set_path = os.path.join(
         util.GetChromiumSrcDir(), 'tools', 'perf', 'page_sets')
     ps = page_set_module.PageSet(

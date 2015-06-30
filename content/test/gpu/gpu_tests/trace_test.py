@@ -74,7 +74,7 @@ class _DeviceTraceValidator(_TraceValidatorBase):
 
 class _TraceTestBase(benchmark.Benchmark):
   """Base class for the trace tests."""
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     # Utilize pixel tests page set as a set of simple pages to load.
     page_set = page_sets.PixelTestsPageSet(base_name=self.name)
     for page in page_set.pages:

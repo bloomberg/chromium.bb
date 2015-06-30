@@ -174,7 +174,7 @@ class PageCyclerTop10Mobile(_PageCycler):
   def Name(cls):
     return 'page_cycler.top_10_mobile'
 
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     return page_sets.Top10MobilePageSet(run_no_page_interactions=True)
 
 
@@ -214,7 +214,7 @@ class PageCyclerTypical25(_PageCycler):
   def Name(cls):
     return 'page_cycler.typical_25'
 
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     return page_sets.Typical25PageSet(run_no_page_interactions=True)
 
 # crbug.com/273986: This test is flakey on Windows.
@@ -230,7 +230,7 @@ class PageCyclerOopifTypical25(_PageCycler):
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(['--site-per-process'])
 
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     return page_sets.Typical25PageSet(run_no_page_interactions=True)
 
 

@@ -27,7 +27,7 @@ class RasterizeAndRecordMicroUnitTest(page_test_test_case.PageTestTestCase):
 
   @decorators.Disabled('win', 'chromeos')
   def testRasterizeAndRecordMicro(self):
-    ps = self.CreatePageSetFromFileInUnittestDataDir('blank.html')
+    ps = self.CreateStorySetFromFileInUnittestDataDir('blank.html')
     measurement = rasterize_and_record_micro.RasterizeAndRecordMicro(
         rasterize_repeat=1, record_repeat=1, start_wait_time=0.0,
         report_detailed_results=True)

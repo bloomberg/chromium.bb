@@ -22,7 +22,7 @@ class BlinkStyleTest(page_test_test_case.PageTestTestCase):
 
   @decorators.Disabled('chromeos')  # crbug.com/483212
   def testForParsing(self):
-    ps = self.CreatePageSetFromFileInUnittestDataDir('blink_style.html')
+    ps = self.CreateStorySetFromFileInUnittestDataDir('blink_style.html')
     measurement = blink_style.BlinkStyle()
     results = self.RunMeasurement(measurement, ps, options=self._options)
     self.assertEquals(0, len(results.failures))

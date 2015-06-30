@@ -22,7 +22,7 @@ class SkpicturePrinterUnitTest(page_test_test_case.PageTestTestCase):
 
   @decorators.Disabled('android')
   def testSkpicturePrinter(self):
-    ps = self.CreatePageSetFromFileInUnittestDataDir('blank.html')
+    ps = self.CreateStorySetFromFileInUnittestDataDir('blank.html')
     measurement = skpicture_printer.SkpicturePrinter(self._skp_outdir)
     results = self.RunMeasurement(measurement, ps, options=self._options)
 

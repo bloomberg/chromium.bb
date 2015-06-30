@@ -104,7 +104,7 @@ class _DromaeoBenchmark(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'dromaeo'
 
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     """Makes a PageSet for Dromaeo benchmarks."""
     # Subclasses are expected to define class members called query_param and
     # tag.

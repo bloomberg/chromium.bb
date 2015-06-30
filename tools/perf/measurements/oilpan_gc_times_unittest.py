@@ -156,7 +156,8 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
                                        'oilpan_idle_complete_sweep')))
 
   def testForSmoothness(self):
-    ps = self.CreatePageSetFromFileInUnittestDataDir('create_many_objects.html')
+    ps = self.CreateStorySetFromFileInUnittestDataDir(
+        'create_many_objects.html')
     measurement = oilpan_gc_times.OilpanGCTimesForSmoothness()
     results = self.RunMeasurement(measurement, ps, options=self._options)
     self.assertEquals(0, len(results.failures))
@@ -167,7 +168,8 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
     self.assertLess(0, len(precise) + len(conservative))
 
   def testForBlinkPerf(self):
-    ps = self.CreatePageSetFromFileInUnittestDataDir('create_many_objects.html')
+    ps = self.CreateStorySetFromFileInUnittestDataDir(
+        'create_many_objects.html')
     measurement = oilpan_gc_times.OilpanGCTimesForBlinkPerf()
     results = self.RunMeasurement(measurement, ps, options=self._options)
     self.assertEquals(0, len(results.failures))

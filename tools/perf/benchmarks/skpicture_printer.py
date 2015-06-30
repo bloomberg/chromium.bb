@@ -46,7 +46,7 @@ class SkpicturePrinter(perf_benchmark.PerfBenchmark):
   def CreatePageTest(self, options):
     return skpicture_printer.SkpicturePrinter(options.skp_outdir)
 
-  def CreatePageSet(self, options):
+  def CreateStorySet(self, options):
     page_set_class = _MatchPageSetName(options.page_set_name,
                                        options.page_set_base_dir)
     return page_set_class()
