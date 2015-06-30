@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/os_crypt/os_crypt.h"
 #include "components/password_manager/core/browser/login_database.h"
+#include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -22,6 +23,7 @@ using autofill::PasswordForm;
 using content::BrowserThread;
 using testing::_;
 using testing::ElementsAre;
+using testing::IsEmpty;
 using testing::Pointee;
 
 ACTION(QuitUIMessageLoop) {
@@ -53,6 +55,19 @@ class MockPasswordStoreObserver
 
  private:
   ScopedObserver<PasswordStoreProxyMac, MockPasswordStoreObserver> guard_;
+};
+
+// A mock LoginDatabase that simulates a failing Init() method.
+class BadLoginDatabase : public password_manager::LoginDatabase {
+ public:
+  BadLoginDatabase() : password_manager::LoginDatabase(base::FilePath()) {}
+  ~BadLoginDatabase() override {}
+
+  // LoginDatabase:
+  bool Init() override { return false; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BadLoginDatabase);
 };
 
 class PasswordStoreProxyMacTest : public testing::Test {
@@ -120,6 +135,8 @@ void PasswordStoreProxyMacTest::CreateAndInitPasswordStore(
 }
 
 void PasswordStoreProxyMacTest::ClosePasswordStore() {
+  if (!store_)
+    return;
   store_->Shutdown();
   EXPECT_FALSE(store_->GetBackgroundTaskRunner());
   base::MessageLoop::current()->RunUntilIdle();
@@ -266,4 +283,69 @@ TEST_F(PasswordStoreProxyMacTest, FillLogins) {
   base::MessageLoop::current()->Run();
 }
 
+TEST_F(PasswordStoreProxyMacTest, OperationsOnABadDatabaseSilentlyFail) {
+  // Verify that operations on a PasswordStore with a bad database cause no
+  // explosions, but fail without side effect, return no data and trigger no
+  // notifications.
+  ClosePasswordStore();
+  CreateAndInitPasswordStore(make_scoped_ptr(new BadLoginDatabase));
+  FinishAsyncProcessing();
+  EXPECT_FALSE(login_db());
+
+  // The store should outlive the observer.
+  scoped_refptr<PasswordStoreProxyMac> store_refptr = store();
+  MockPasswordStoreObserver mock_observer(store());
+  EXPECT_CALL(mock_observer, OnLoginsChanged(_)).Times(0);
+
+  // Add a new autofillable login + a blacklisted login.
+  password_manager::PasswordFormData www_form_data = {
+      PasswordForm::SCHEME_HTML, "http://www.facebook.com/",
+      "http://www.facebook.com/index.html", "login", L"username", L"password",
+      L"submit", L"not_joe_user", L"12345", true, false, 1};
+  scoped_ptr<PasswordForm> form =
+      CreatePasswordFormFromDataForTesting(www_form_data);
+  scoped_ptr<PasswordForm> blacklisted_form(new PasswordForm(*form));
+  blacklisted_form->signon_realm = "http://foo.example.com";
+  blacklisted_form->origin = GURL("http://foo.example.com/origin");
+  blacklisted_form->action = GURL("http://foo.example.com/action");
+  blacklisted_form->blacklisted_by_user = true;
+  store()->AddLogin(*form);
+  store()->AddLogin(*blacklisted_form);
+  FinishAsyncProcessing();
+
+  // Get all logins; autofillable logins; blacklisted logins.
+  MockPasswordStoreConsumer mock_consumer;
+  store()->GetLogins(*form, password_manager::PasswordStore::DISALLOW_PROMPT,
+                     &mock_consumer);
+  ON_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(_))
+      .WillByDefault(QuitUIMessageLoop());
+  EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
+  base::MessageLoop::current()->Run();
+
+  store()->GetAutofillableLogins(&mock_consumer);
+  EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
+  base::MessageLoop::current()->Run();
+
+  store()->GetBlacklistLogins(&mock_consumer);
+  EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
+  base::MessageLoop::current()->Run();
+
+  // Report metrics.
+  store()->ReportMetrics("Test Username", true);
+  FinishAsyncProcessing();
+
+  // Change the login.
+  form->password_value = base::ASCIIToUTF16("a different password");
+  store()->UpdateLogin(*form);
+  FinishAsyncProcessing();
+
+  // Delete one login; a range of logins.
+  store()->RemoveLogin(*form);
+  store()->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max());
+  store()->RemoveLoginsSyncedBetween(base::Time(), base::Time::Max());
+  FinishAsyncProcessing();
+
+  // Verify no notifications are fired during shutdown either.
+  ClosePasswordStore();
+}
 }  // namespace

@@ -949,13 +949,11 @@ OSType MacKeychainPasswordFormAdapter::CreatorCodeForSearch() {
 PasswordStoreMac::PasswordStoreMac(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
-    scoped_ptr<AppleKeychain> keychain,
-    password_manager::LoginDatabase* login_db)
+    scoped_ptr<AppleKeychain> keychain)
     : password_manager::PasswordStore(main_thread_runner, db_thread_runner),
       keychain_(keychain.Pass()),
-      login_metadata_db_(login_db) {
+      login_metadata_db_(nullptr) {
   DCHECK(keychain_);
-  login_metadata_db_->set_clear_password_values(true);
 }
 
 PasswordStoreMac::~PasswordStoreMac() {}
@@ -1047,6 +1045,12 @@ PasswordStoreMac::MigrationResult PasswordStoreMac::ImportFromKeychain() {
   for (PasswordForm* form : database_forms)
     login_metadata_db_->UpdateLogin(*form);
   return MIGRATION_OK;
+}
+
+void PasswordStoreMac::set_login_metadata_db(
+    password_manager::LoginDatabase* login_db) {
+  login_metadata_db_ = login_db;
+  login_metadata_db_->set_clear_password_values(true);
 }
 
 bool PasswordStoreMac::Init(

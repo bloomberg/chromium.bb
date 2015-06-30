@@ -42,8 +42,7 @@ class PasswordStoreMac : public password_manager::PasswordStore {
   PasswordStoreMac(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
       scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
-      scoped_ptr<crypto::AppleKeychain> keychain,
-      password_manager::LoginDatabase* login_db);
+      scoped_ptr<crypto::AppleKeychain> keychain);
 
   // Sets the background thread.
   void InitWithTaskRunner(
@@ -59,6 +58,8 @@ class PasswordStoreMac : public password_manager::PasswordStore {
   password_manager::LoginDatabase* login_metadata_db() const {
     return login_metadata_db_;
   }
+
+  void set_login_metadata_db(password_manager::LoginDatabase* login_db);
 
   // To be used for testing.
   crypto::AppleKeychain* keychain() const { return keychain_.get(); }

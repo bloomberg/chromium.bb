@@ -19,8 +19,8 @@ PasswordStoreProxyMac::PasswordStoreProxyMac(
       login_metadata_db_(login_db.Pass()) {
   DCHECK(login_metadata_db_);
   // TODO(vasilii): for now the class is just a wrapper around PasswordStoreMac.
-  password_store_mac_ = new PasswordStoreMac(
-      main_thread_runner, nullptr, keychain.Pass(), login_metadata_db_.get());
+  password_store_mac_ =
+      new PasswordStoreMac(main_thread_runner, nullptr, keychain.Pass());
 }
 
 PasswordStoreProxyMac::~PasswordStoreProxyMac() {
@@ -66,7 +66,10 @@ void PasswordStoreProxyMac::InitOnBackgroundThread() {
   if (!login_metadata_db_->Init()) {
     login_metadata_db_.reset();
     LOG(ERROR) << "Could not create/open login database.";
+    return;
   }
+  if (password_store_mac_)
+    password_store_mac_->set_login_metadata_db(login_metadata_db_.get());
 }
 
 void PasswordStoreProxyMac::ReportMetricsImpl(

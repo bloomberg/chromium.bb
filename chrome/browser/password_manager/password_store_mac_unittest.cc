@@ -1214,8 +1214,11 @@ class PasswordStoreMacTest : public testing::Test {
   void CreateAndInitPasswordStore(password_manager::LoginDatabase* login_db) {
     store_ = new PasswordStoreMac(
         base::ThreadTaskRunnerHandle::Get(), nullptr,
-        make_scoped_ptr<AppleKeychain>(new MockAppleKeychain), login_db);
+        make_scoped_ptr<AppleKeychain>(new MockAppleKeychain));
     store_->InitWithTaskRunner(thread_->task_runner());
+    ASSERT_TRUE(store_->ScheduleTask(
+        base::Bind(&PasswordStoreMac::set_login_metadata_db, store_,
+                   base::Unretained(login_db))));
   }
 
   void ClosePasswordStore() {
