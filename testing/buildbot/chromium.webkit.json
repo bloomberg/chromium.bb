@@ -198,6 +198,9 @@
         "test": "sql_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "sync_unit_tests"
       },
       {
@@ -436,6 +439,9 @@
         "test": "sql_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "sync_unit_tests"
       },
       {

@@ -193,6 +193,9 @@
         "test": "sql_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "sync_unit_tests"
       },
       {
@@ -703,6 +706,9 @@
         "test": "sync_integration_tests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "sync_unit_tests"
       },
       {
@@ -1002,6 +1008,9 @@
         "test": "sync_integration_tests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "sync_unit_tests"
       },
       {
@@ -1285,6 +1294,9 @@
         "test": "sync_integration_tests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "sync_unit_tests"
       },
       {

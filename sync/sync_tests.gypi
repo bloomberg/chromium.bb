@@ -507,5 +507,22 @@
         },
       ],
     }],
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'sync_unit_tests_run',
+          'type': 'none',
+          'dependencies': [
+            'sync_unit_tests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'sync_unit_tests.isolate',
+          ],
+        },
+      ],
+    }],
   ],
 }

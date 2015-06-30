@@ -10,8 +10,31 @@
         ],
       },
     }],
+    ['OS=="linux" or OS=="mac" or OS=="win"', {
+      'variables': {
+        'command': [
+          '../testing/test_env.py',
+          '<(PRODUCT_DIR)/sync_unit_tests<(EXECUTABLE_SUFFIX)',
+          '--brave-new-test-launcher',
+          '--test-launcher-bot-mode',
+          '--asan=<(asan)',
+          '--msan=<(msan)',
+          '--tsan=<(tsan)',
+        ],
+        'files': [
+          '../chrome/test/data/sync/',
+          '../net/tools/testserver/',
+          '../testing/test_env.py',
+          '../third_party/pyftpdlib/',
+          '../third_party/pywebsocket/',
+          '../third_party/tlslite/',
+          '<(PRODUCT_DIR)/pyproto/google/',
+          '<(PRODUCT_DIR)/sync_unit_tests<(EXECUTABLE_SUFFIX)',
+        ],
+      },
+    }],
   ],
   'includes': [
-    '../third_party/icu/icu.isolate',
+    '../base/base.isolate',
   ],
 }
