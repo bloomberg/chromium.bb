@@ -122,6 +122,9 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void OnSwapCompositorFrame(const IPC::Message& message);
   void DestroyOnRenderFrameGone();
 
+  void OnMessageFromBackend(const std::string& message, int call_id);
+  std::string AppendCapabilities(const std::string& message);
+
   class FrameHostHolder;
 
   scoped_ptr<FrameHostHolder> current_;
@@ -144,6 +147,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 #endif
   scoped_ptr<DevToolsProtocolHandler> protocol_handler_;
   bool current_frame_crashed_;
+  std::set<int> get_capabilities_call_ids_;
+  std::vector<std::string> capabilities_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameDevToolsAgentHost);
 };

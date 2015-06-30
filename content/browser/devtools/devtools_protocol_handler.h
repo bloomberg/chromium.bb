@@ -21,7 +21,9 @@ class DevToolsProtocolHandler {
   virtual ~DevToolsProtocolHandler();
 
   void HandleMessage(const std::string& message);
-  bool HandleOptionalMessage(const std::string& message, int* call_id);
+  bool HandleOptionalMessage(const std::string& message,
+                             int* call_id,
+                             std::string* method);
 
   DevToolsProtocolDispatcher* dispatcher() { return &dispatcher_; }
 
@@ -30,7 +32,8 @@ class DevToolsProtocolHandler {
   bool PassCommandToDelegate(base::DictionaryValue* command);
   void HandleCommand(scoped_ptr<base::DictionaryValue> command);
   bool HandleOptionalCommand(scoped_ptr<base::DictionaryValue> command,
-                             int* call_id);
+                             int* call_id,
+                             std::string* method);
 
   DevToolsAgentHost* agent_host_;
   DevToolsProtocolClient client_;

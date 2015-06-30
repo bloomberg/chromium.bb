@@ -5,6 +5,8 @@
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 
 #include "base/basictypes.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -41,6 +43,10 @@ namespace content {
 typedef std::vector<RenderFrameDevToolsAgentHost*> Instances;
 
 namespace {
+
+const char kGetCapabilitiesMethod[] = "Inspector.getCapabilities";
+const char kCapabilitiesResultPath[] = "result.capabilities";
+
 base::LazyInstance<Instances>::Leaky g_instances = LAZY_INSTANCE_INITIALIZER;
 
 static RenderFrameDevToolsAgentHost* FindAgentHost(RenderFrameHost* host) {
@@ -102,7 +108,7 @@ class RenderFrameDevToolsAgentHost::FrameHostHolder {
   bool attached_;
   bool suspended_;
   DevToolsMessageChunkProcessor chunk_processor_;
-  std::vector<std::string> pending_messages_;
+  std::vector<std::pair<std::string, int>> pending_messages_;
   std::map<int, std::string> sent_messages_;
 };
 
@@ -199,11 +205,12 @@ RenderFrameDevToolsAgentHost::FrameHostHolder::ProcessChunkedMessageFromAgent(
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::SendMessageToClient(
     const std::string& message) {
-  sent_messages_.erase(chunk_processor_.last_call_id());
+  int call_id = chunk_processor_.last_call_id();
+  sent_messages_.erase(call_id);
   if (suspended_)
-    pending_messages_.push_back(message);
+    pending_messages_.push_back(std::make_pair(message, call_id));
   else
-    agent_->SendMessageToClient(message);
+    agent_->OnMessageFromBackend(message, call_id);
 }
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::Suspend() {
@@ -212,9 +219,9 @@ void RenderFrameDevToolsAgentHost::FrameHostHolder::Suspend() {
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::Resume() {
   suspended_ = false;
-  for (const std::string& message : pending_messages_)
-    agent_->SendMessageToClient(message);
-  std::vector<std::string> empty;
+  for (const auto& pair : pending_messages_)
+    agent_->OnMessageFromBackend(pair.first, pair.second);
+  std::vector<std::pair<std::string, int>> empty;
   pending_messages_.swap(empty);
 }
 
@@ -310,12 +317,20 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
       current_frame_crashed_(false) {
   DevToolsProtocolDispatcher* dispatcher = protocol_handler_->dispatcher();
   dispatcher->SetDOMHandler(dom_handler_.get());
+  capabilities_.push_back(devtools::dom::Capabilities::DOM);
   dispatcher->SetInputHandler(input_handler_.get());
+  capabilities_.push_back(devtools::input::Capabilities::Input);
   dispatcher->SetInspectorHandler(inspector_handler_.get());
+  capabilities_.push_back(devtools::inspector::Capabilities::Inspector);
   dispatcher->SetNetworkHandler(network_handler_.get());
+  capabilities_.push_back(devtools::network::Capabilities::Network);
   dispatcher->SetPowerHandler(power_handler_.get());
+  capabilities_.push_back(devtools::power::Capabilities::Power);
   dispatcher->SetServiceWorkerHandler(service_worker_handler_.get());
+  capabilities_.push_back(
+      devtools::service_worker::Capabilities::ServiceWorker);
   dispatcher->SetTracingHandler(tracing_handler_.get());
+  capabilities_.push_back(devtools::tracing::Capabilities::Tracing);
 
   if (!host->GetParent()) {
     security_handler_.reset(new devtools::security::SecurityHandler());
@@ -323,13 +338,21 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
     emulation_handler_.reset(
         new devtools::emulation::EmulationHandler(page_handler_.get()));
     dispatcher->SetSecurityHandler(security_handler_.get());
+    capabilities_.push_back(devtools::security::Capabilities::Security);
     dispatcher->SetPageHandler(page_handler_.get());
+    capabilities_.push_back(devtools::page::Capabilities::Page);
     dispatcher->SetEmulationHandler(emulation_handler_.get());
+    capabilities_.push_back(devtools::emulation::Capabilities::Emulation);
   }
 
   SetPending(host);
   CommitPending();
   WebContentsObserver::Observe(WebContents::FromRenderFrameHost(host));
+
+  if (emulation_handler_ && emulation_handler_->IsDeviceEmulationAvailable())
+    capabilities_.push_back(devtools::emulation::Capabilities::DeviceMetrics);
+  if (page_handler_ && page_handler_->IsScreencastAvailable())
+    capabilities_.push_back(devtools::page::Capabilities::Screencast);
 
   g_instances.Get().push_back(this);
   AddRef();  // Balanced in RenderFrameHostDestroyed.
@@ -401,14 +424,48 @@ void RenderFrameDevToolsAgentHost::Detach() {
 bool RenderFrameDevToolsAgentHost::DispatchProtocolMessage(
     const std::string& message) {
   int call_id = 0;
-  if (protocol_handler_->HandleOptionalMessage(message, &call_id))
+  std::string method;
+  if (protocol_handler_->HandleOptionalMessage(message, &call_id, &method))
     return true;
+  if (method == kGetCapabilitiesMethod)
+    get_capabilities_call_ids_.insert(call_id);
 
   if (current_)
     current_->DispatchProtocolMessage(call_id, message);
   if (pending_)
     pending_->DispatchProtocolMessage(call_id, message);
   return true;
+}
+
+void RenderFrameDevToolsAgentHost::OnMessageFromBackend(
+    const std::string& message, int call_id) {
+  if (get_capabilities_call_ids_.find(call_id) !=
+      get_capabilities_call_ids_.end()) {
+    get_capabilities_call_ids_.erase(call_id);
+    SendMessageToClient(AppendCapabilities(message));
+  } else {
+    SendMessageToClient(message);
+  }
+}
+
+std::string RenderFrameDevToolsAgentHost::AppendCapabilities(
+    const std::string& message) {
+  scoped_ptr<base::Value> value = base::JSONReader::Read(message);
+  if (!value || !value->IsType(base::Value::TYPE_DICTIONARY))
+    return message;
+  scoped_ptr<base::DictionaryValue> dict =
+      make_scoped_ptr(static_cast<base::DictionaryValue*>(value.release()));
+  base::ListValue* list;
+  if (!dict->GetList(kCapabilitiesResultPath, &list))
+    return message;
+
+  for (const std::string& capabilitiy : capabilities_) {
+    scoped_ptr<base::StringValue> value(new base::StringValue(capabilitiy));
+    if (list->Find(*value) == list->end())
+      list->Append(value.Pass());
+  }
+  std::string result;
+  return base::JSONWriter::Write(*dict, &result) ? result : message;
 }
 
 void RenderFrameDevToolsAgentHost::InspectElement(int x, int y) {

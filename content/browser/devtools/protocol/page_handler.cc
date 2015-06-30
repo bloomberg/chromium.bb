@@ -271,12 +271,19 @@ Response PageHandler::CaptureScreenshot(DevToolsCommandId command_id) {
 }
 
 Response PageHandler::CanScreencast(bool* result) {
-#if defined(OS_ANDROID)
-  *result = true;
-#else
-  *result = false;
-#endif  // defined(OS_ANDROID)
+  *result = IsScreencastAvailable();
   return Response::OK();
+}
+
+bool PageHandler::IsScreencastAvailable()
+{
+  bool result;
+#if defined(OS_ANDROID)
+  result = true;
+#else
+  result = false;
+#endif  // defined(OS_ANDROID)
+  return result;
 }
 
 Response PageHandler::StartScreencast(const std::string* format,

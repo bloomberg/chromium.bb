@@ -48,6 +48,7 @@ class PageHandler : public NotificationObserver {
   void DidDetachInterstitialPage();
   void SetScreencastListener(ScreencastListener* listener);
   bool screencast_enabled() const { return enabled_ && screencast_enabled_; }
+  bool IsScreencastAvailable();
 
   Response Enable();
   Response Disable();

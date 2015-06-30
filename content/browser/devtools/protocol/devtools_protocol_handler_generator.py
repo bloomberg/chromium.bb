@@ -68,6 +68,8 @@ base::Value* CreateValue(const std::vector<T> param) {
 template<>
 base::Value* CreateValue(const std::string& param);
 
+${capabilities}\
+
 ${types}\
 
 }  // namespace devtools
@@ -100,6 +102,30 @@ ${fields}\
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_DEVTOOLS_PROTOCOL_DEVTOOLS_PROTOCOL_DISPATCHER_H_
+""")
+
+tmpl_domain_capability = string.Template("""\
+  static const char ${capability}[];
+""")
+
+tmpl_domain_capabilities = string.Template("""\
+namespace ${domain} {
+struct Capabilities {
+  static const char ${Domain}[];
+${capabilities}\
+};
+}  // namespace ${domain}
+""")
+
+tmpl_domain_capability_impl = string.Template("""\
+  const char Capabilities::${capability}[] = "${Domain}.${capability_lower}";
+""")
+
+tmpl_domain_capabilities_impl = string.Template("""\
+namespace ${domain} {
+  const char Capabilities::${Domain}[] = "${Domain}";
+${capabilities}\
+}  // namespace ${domain}
 """)
 
 tmpl_typedef = string.Template("""\
@@ -283,6 +309,8 @@ template<>
 base::Value* CreateValue(const std::string& param) {
   return new base::StringValue(param);
 }
+
+${capabilities}\
 
 ${types}\
 
@@ -629,6 +657,8 @@ def ResolveType(json, mapping):
     raise Exception("Unknown type at %s.%s %s" %
         (mapping["Domain"], mapping["command"], mapping["proto_param"]))
 
+capabilities = []
+capabilities_impl = []
 setters = []
 fields = []
 
@@ -645,6 +675,25 @@ for json_domain in all_domains:
   client_method_impls = []
   domain_empty = True
   domain_needs_client = False
+
+  domain_capabilities = []
+  domain_capabilities_impl = []
+  if "capabilities" in json_domain:
+    for json_capability in json_domain["capabilities"]:
+      domain_capabilities.append(tmpl_domain_capability.substitute(
+          domain_map,
+          capability=Capitalize(json_capability["name"])))
+      domain_capabilities_impl.append(tmpl_domain_capability_impl.substitute(
+          domain_map,
+          capability=Capitalize(json_capability["name"]),
+          capability_lower=json_capability["name"]))
+
+  capabilities.append(tmpl_domain_capabilities.substitute(
+      domain_map,
+      capabilities="\n".join(domain_capabilities)))
+  capabilities_impl.append(tmpl_domain_capabilities_impl.substitute(
+      domain_map,
+      capabilities="\n".join(domain_capabilities_impl)))
 
   if "commands" in json_domain:
     for json_command in json_domain["commands"]:
@@ -784,6 +833,7 @@ output_h_file = open(output_h_path, "w")
 output_cc_file = open(output_cc_path, "w")
 
 output_h_file.write(template_h.substitute({},
+    capabilities = "\n".join(capabilities),
     types = "\n".join(type_decls),
     setters = "".join(setters),
     methods = "".join(handler_methods),
@@ -796,5 +846,6 @@ output_cc_file.write(template_cc.substitute({},
     includes = "".join(sorted(includes)),
     fields_init = ",\n      ".join(fields_init),
     methods = "\n".join(handler_method_impls),
+    capabilities = "\n".join(capabilities_impl),
     types = "\n".join(type_impls)))
 output_cc_file.close()
