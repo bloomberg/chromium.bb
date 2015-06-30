@@ -59,4 +59,28 @@ String createCanonicalUUIDString()
     return builder.toString();
 }
 
+static bool isLowercaseHex(char c)
+{
+    return (('0' <= c && c <= '9') || ('a' <= c && c <= 'f'));
+}
+
+bool isValidUUID(const String& uuid)
+{
+    // 32 digits + 4 hyphens = 36 characters.
+    if (uuid.length() != 36)
+        return false;
+
+    for (size_t i = 0; i < uuid.length(); i++) {
+        if (i == 8 || i == 13 || i == 18 || i == 23) {
+            if (uuid[i] != '-')
+                return false;
+        } else {
+            if (!isLowercaseHex(uuid[i]))
+                return false;
+        }
+    }
+
+    return true;
+}
+
 }

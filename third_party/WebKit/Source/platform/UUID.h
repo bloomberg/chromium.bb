@@ -46,6 +46,10 @@ namespace blink {
 // 9, A, or B for y.
 PLATFORM_EXPORT String createCanonicalUUIDString();
 
+// Check that the UUID is a valid UUID. A valid UUID is a string made out of 5 groups
+// of lower case hexadecimal characters separated by hyphens, in the form 8-4-4-4-12.
+PLATFORM_EXPORT bool isValidUUID(const String& uuid);
+
 }
 
 #endif

@@ -314,6 +314,8 @@ interface BluetoothGATTService
     getter uuid
     method constructor
     method getCharacteristic
+interface BluetoothUUID
+    method constructor
 interface CDATASection
     method constructor
 interface CSS

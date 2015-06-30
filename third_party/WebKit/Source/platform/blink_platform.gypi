@@ -943,6 +943,7 @@
       'TestingPlatformSupport.h',
       'TimerTest.cpp',
       'TracedValueTest.cpp',
+      'UUIDTest.cpp',
       'WebScreenInfoTest.cpp',
       'WebVectorTest.cpp',
       'animation/TimingFunctionTest.cpp',
