@@ -118,7 +118,10 @@ source_set("ffmpeg_internal") {
   deps = []
 
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//build/config/compiler:no_incompatible_pointer_warnings",
+  ]
 
   # Since we are not often debugging FFmpeg, and performance is
   # unacceptable without optimization, freeze the optimizations to -O2.
