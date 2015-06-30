@@ -790,6 +790,9 @@ template("create_apk") {
       keystore_path = _keystore_path
       keystore_name = _keystore_name
       keystore_password = _keystore_password
+      deps = [
+        ":${_package_resources_target_name}",
+      ]
     }
   }
 
@@ -1476,6 +1479,9 @@ template("generate_split_manifest") {
 
   action(target_name) {
     depfile = "$target_gen_dir/$target_name.d"
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    }
     args = [
       "--main-manifest",
       rebase_path(invoker.main_manifest, root_build_dir),

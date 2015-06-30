@@ -1300,6 +1300,7 @@ template("android_java_prebuilt") {
 #
 # Variables
 #   android_manifest: Path to AndroidManifest.xml.
+#   android_manifest_dep: Target that generates AndroidManifest (if applicable)
 #   data_deps: List of dependencies needed at runtime. These will be built but
 #     won't change the generated .apk in any way (in fact they may be built
 #     after the .apk is).
@@ -1454,7 +1455,12 @@ template("android_apk") {
     }
   }
 
+  _android_manifest_deps = []
+  if (defined(invoker.android_manifest_dep)) {
+    _android_manifest_deps = [ invoker.android_manifest_dep ]
+  }
   _android_manifest = invoker.android_manifest
+
   _rebased_build_config = rebase_path(_build_config, root_build_dir)
   _create_abi_split =
       defined(invoker.create_abi_split) && invoker.create_abi_split
@@ -1472,7 +1478,7 @@ template("android_apk") {
     build_config = _build_config
     android_manifest = _android_manifest
 
-    deps = _chromium_linker_dep
+    deps = _chromium_linker_dep + _android_manifest_deps
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
@@ -1502,9 +1508,7 @@ template("android_apk") {
     }
 
     build_config = _build_config
-    deps = [
-      ":$build_config_target",
-    ]
+    deps = _android_manifest_deps + [ ":$build_config_target" ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
@@ -1553,9 +1557,7 @@ template("android_apk") {
     supports_android = true
     requires_android = true
     override_build_config = _build_config
-    deps = [
-      ":$build_config_target",
-    ]
+    deps = _android_manifest_deps + [ ":$build_config_target" ]
 
     android_manifest = _android_manifest
     chromium_code = true
@@ -1712,10 +1714,10 @@ template("android_apk") {
     keystore_password = _keystore_password
 
     # This target generates the input file _all_resources_zip_path.
-    deps = [
-      ":$process_resources_target",
-      ":$final_dex_target_name",
-    ]
+    deps = _android_manifest_deps + [
+             ":$process_resources_target",
+             ":$final_dex_target_name",
+           ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
@@ -1744,6 +1746,7 @@ template("android_apk") {
       out_manifest =
           "$gen_dir/split-manifests/${android_app_abi}/AndroidManifest.xml"
       split_name = "abi_${android_app_abi}"
+      deps = _android_manifest_deps
     }
 
     _apk_rule = "${_template_name}__split_apk_abi_${android_app_abi}"
@@ -1769,6 +1772,7 @@ template("android_apk") {
       native_libs_dir = _native_libs_dir
       deps = [
         ":${_template_name}__prepare_native",
+        ":${_manifest_rule}",
       ]
     }
   }
