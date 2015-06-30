@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry.core import browser_finder
-from telemetry.core import browser_finder_exceptions
 from telemetry.core import platform
 from telemetry.core import wpr_modes
+from telemetry.internal.browser import browser_finder
+from telemetry.internal.browser import browser_finder_exceptions
 
 
 class ProfileExtender(object):

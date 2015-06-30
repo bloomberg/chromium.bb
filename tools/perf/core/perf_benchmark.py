@@ -6,7 +6,7 @@ import os
 import sys
 
 from telemetry import benchmark
-from telemetry.core import browser_finder
+from telemetry.internal.browser import browser_finder
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir,
     os.pardir, 'variations'))

@@ -9,8 +9,8 @@ import sys
 import webgl_conformance_expectations
 
 from telemetry import benchmark as benchmark_module
-from telemetry.core import browser_finder
 from telemetry.core import util
+from telemetry.internal.browser import browser_finder
 from telemetry.page import page as page_module
 from telemetry.page import page_test
 from telemetry.page import shared_page_state

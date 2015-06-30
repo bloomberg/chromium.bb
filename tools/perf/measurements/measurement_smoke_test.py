@@ -8,8 +8,8 @@ import os
 import unittest
 
 from telemetry import benchmark as benchmark_module
-from telemetry.core import browser_options
 from telemetry.core import discover
+from telemetry.internal.browser import browser_options
 from telemetry.page import page_test
 from telemetry.unittest_util import options_for_unittests
 from telemetry.web_perf import timeline_based_measurement

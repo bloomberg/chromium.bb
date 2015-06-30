@@ -11,8 +11,8 @@ import unittest
 from core import perf_benchmark
 
 from telemetry import benchmark as benchmark_module
-from telemetry.core import browser_options
 from telemetry.core import discover
+from telemetry.internal.browser import browser_options
 from telemetry.unittest_util import progress_reporter
 
 

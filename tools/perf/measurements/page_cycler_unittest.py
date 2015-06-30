@@ -5,7 +5,7 @@
 import sys
 import unittest
 
-from telemetry.core import browser_options
+from telemetry.internal.browser import browser_options
 from telemetry.internal.results import page_test_results
 from telemetry.internal import story_runner
 from telemetry.unittest_util import simple_mock

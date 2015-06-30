@@ -13,10 +13,10 @@ import sys
 import tempfile
 
 from profile_creators import profile_extender
-from telemetry.core import browser_finder
-from telemetry.core import browser_options
 from telemetry.core import discover
 from telemetry.core import util
+from telemetry.internal.browser import browser_finder
+from telemetry.internal.browser import browser_options
 from telemetry.internal import story_runner
 
 
