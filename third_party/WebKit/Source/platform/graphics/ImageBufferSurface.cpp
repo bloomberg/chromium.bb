@@ -76,21 +76,9 @@ const SkBitmap& ImageBufferSurface::bitmap()
     return canvas()->getDevice()->accessBitmap(false);
 }
 
-const SkBitmap& ImageBufferSurface::cachedBitmap() const
-{
-    DEFINE_STATIC_LOCAL(SkBitmap, nullBitmap, ());
-    return nullBitmap;
-}
-
 void ImageBufferSurface::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode op)
 {
     SkBitmap bmp = bitmap();
-    // For ImageBufferSurface that enables cachedBitmap, Use the cached bitmap for CPU side usage
-    // if it is available, otherwise generate and use it.
-    if (isAccelerated() && cachedBitmapEnabled() && isValid()) {
-        updateCachedBitmapIfNeeded();
-        bmp = cachedBitmap();
-    }
 
     RefPtr<Image> image = BitmapImage::create(bmp);
 

@@ -67,11 +67,7 @@ public:
     virtual bool isAccelerated() const { return false; }
     virtual bool isRecording() const { return false; }
     virtual void didModifyBackingTexture() { }
-    virtual bool cachedBitmapEnabled() const { return false; }
     virtual bool isExpensiveToPaint() { return false; }
-    virtual const SkBitmap& cachedBitmap() const;
-    virtual void invalidateCachedBitmap() { }
-    virtual void updateCachedBitmapIfNeeded() { }
     virtual void setFilterQuality(SkFilterQuality) { }
     virtual void setIsHidden(bool) { }
     virtual void setImageBuffer(ImageBuffer*) { }

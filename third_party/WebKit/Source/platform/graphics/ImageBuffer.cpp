@@ -241,7 +241,6 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBu
 
     context3D->flush();
 
-    m_surface->invalidateCachedBitmap();
     bool result = drawingBuffer->copyToPlatformTexture(context3D, textureId, GL_RGBA,
         GL_UNSIGNED_BYTE, 0, true, false, sourceBuffer);
 

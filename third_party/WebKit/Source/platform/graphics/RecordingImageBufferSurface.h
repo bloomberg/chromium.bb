@@ -54,10 +54,6 @@ public:
     bool restore() override;
     WebLayer* layer() const override;
     bool isAccelerated() const override;
-    bool cachedBitmapEnabled() const override;
-    const SkBitmap& cachedBitmap() const override;
-    void invalidateCachedBitmap() override;
-    void updateCachedBitmapIfNeeded() override;
     void setIsHidden(bool) override;
 
 private:

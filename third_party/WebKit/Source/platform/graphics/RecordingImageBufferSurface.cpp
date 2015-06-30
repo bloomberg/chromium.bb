@@ -266,36 +266,6 @@ bool RecordingImageBufferSurface::isAccelerated() const
     return ImageBufferSurface::isAccelerated();
 }
 
-bool RecordingImageBufferSurface::cachedBitmapEnabled() const
-{
-    if (m_fallbackSurface)
-        return m_fallbackSurface->cachedBitmapEnabled();
-    return ImageBufferSurface::cachedBitmapEnabled();
-}
-
-const SkBitmap& RecordingImageBufferSurface::cachedBitmap() const
-{
-    if (m_fallbackSurface)
-        return m_fallbackSurface->cachedBitmap();
-    return ImageBufferSurface::cachedBitmap();
-}
-
-void RecordingImageBufferSurface::invalidateCachedBitmap()
-{
-    if (m_fallbackSurface)
-        m_fallbackSurface->invalidateCachedBitmap();
-    else
-        ImageBufferSurface::invalidateCachedBitmap();
-}
-
-void RecordingImageBufferSurface::updateCachedBitmapIfNeeded()
-{
-    if (m_fallbackSurface)
-        m_fallbackSurface->updateCachedBitmapIfNeeded();
-    else
-        ImageBufferSurface::updateCachedBitmapIfNeeded();
-}
-
 void RecordingImageBufferSurface::setIsHidden(bool hidden)
 {
     if (m_fallbackSurface)
