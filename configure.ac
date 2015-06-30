@@ -406,7 +406,7 @@ AM_CONDITIONAL([HAVE_MANPAGES_STYLESHEET], [test "x$HAVE_MANPAGES_STYLESHEET" = 
 AC_ARG_ENABLE(valgrind,
               [AS_HELP_STRING([--enable-valgrind],
                              [Build libdrm with  valgrind support (default: auto)])],
-                             [VALGRIND=$enableval], [VALGRIND=yes])
+                             [VALGRIND=$enableval], [VALGRIND=auto])
 PKG_CHECK_MODULES(VALGRIND, [valgrind], [have_valgrind=yes], [have_valgrind=no])
 AC_MSG_CHECKING([whether to enable Valgrind support])
 if test "x$VALGRIND" = xauto; then
