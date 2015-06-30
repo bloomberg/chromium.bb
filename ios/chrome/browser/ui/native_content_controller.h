@@ -29,6 +29,8 @@ class GURL;
 - (instancetype)initWithNibName:(NSString*)nibName
                             url:(const GURL&)url NS_DESIGNATED_INITIALIZER;
 
+- (instancetype)init NS_UNAVAILABLE;
+
 // Initializer with the |url| to be loaded.
 - (instancetype)initWithURL:(const GURL&)url;
 

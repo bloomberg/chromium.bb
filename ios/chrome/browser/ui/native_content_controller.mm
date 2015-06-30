@@ -34,6 +34,11 @@
   return self;
 }
 
+- (instancetype)init {
+  NOTREACHED();
+  return nil;
+}
+
 - (instancetype)initWithURL:(const GURL&)url {
   return [self initWithNibName:nil url:url];
 }
