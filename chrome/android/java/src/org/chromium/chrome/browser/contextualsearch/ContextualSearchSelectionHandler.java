@@ -29,7 +29,8 @@ interface ContextualSearchSelectionHandler {
     /**
      * Handle a new selection of the given type, created at the given x,y position.
      */
-    public void handleSelection(String selection, SelectionType type, float x, float y);
+    public void handleSelection(String selection, boolean isSelectionValid, SelectionType type,
+            float x, float y);
 
     /**
      * Handle a modification to the selection, done at the given x,y position.

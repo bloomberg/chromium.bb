@@ -43,6 +43,7 @@ import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
+import org.chromium.ui.touch_selection.SelectionEventType;
 
 import java.util.concurrent.TimeoutException;
 
@@ -591,16 +592,16 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testDoesContainAWord() {
-        assertTrue(mManager.doesContainAWord("word"));
-        assertTrue(mManager.doesContainAWord("word "));
+        assertTrue(mSelectionController.doesContainAWord("word"));
+        assertTrue(mSelectionController.doesContainAWord("word "));
         assertFalse("Emtpy string should not be considered a word!",
-                mManager.doesContainAWord(""));
+                mSelectionController.doesContainAWord(""));
         assertFalse("Special symbols should not be considered a word!",
-                mManager.doesContainAWord("@"));
+                mSelectionController.doesContainAWord("@"));
         assertFalse("White space should not be considered a word",
-                mManager.doesContainAWord(" "));
-        assertTrue(mManager.doesContainAWord("Q2"));
-        assertTrue(mManager.doesContainAWord("123"));
+                mSelectionController.doesContainAWord(" "));
+        assertTrue(mSelectionController.doesContainAWord("Q2"));
+        assertTrue(mSelectionController.doesContainAWord("123"));
     }
 
     /**
@@ -612,18 +613,18 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     public void testIsValidSelection() {
         StubbedContentViewCore stubbedCvc = new StubbedContentViewCore(
                 getActivity().getBaseContext());
-        assertTrue(mManager.isValidSelection("valid", stubbedCvc));
-        assertFalse(mManager.isValidSelection(" ", stubbedCvc));
+        assertTrue(mSelectionController.isValidSelection("valid", stubbedCvc));
+        assertFalse(mSelectionController.isValidSelection(" ", stubbedCvc));
         stubbedCvc.setIsFocusedNodeEditableForTest(true);
-        assertFalse(mManager.isValidSelection("editable", stubbedCvc));
+        assertFalse(mSelectionController.isValidSelection("editable", stubbedCvc));
         stubbedCvc.setIsFocusedNodeEditableForTest(false);
         String numberString = "0123456789";
         StringBuilder longStringBuilder = new StringBuilder();
         for (int i = 0; i < 11; i++) {
             longStringBuilder.append(numberString);
         }
-        assertTrue(mManager.isValidSelection(numberString, stubbedCvc));
-        assertFalse(mManager.isValidSelection(longStringBuilder.toString(),
+        assertTrue(mSelectionController.isValidSelection(numberString, stubbedCvc));
+        assertFalse(mSelectionController.isValidSelection(longStringBuilder.toString(),
                 stubbedCvc));
     }
 
@@ -1757,5 +1758,33 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
         waitForPanelToCloseAndAssert();
         assertEquals(1, observer.hideCount);
+    }
+
+    /**
+     * Tests that the Contextual Search panel does not reappear when a long-press selection is
+     * modified after the user has taken an action to explicitly dismiss the panel. Also tests
+     * that the panel reappears when a new selection is made.
+     */
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    public void testPreventHandlingCurrentSelectionModification()
+            throws InterruptedException, TimeoutException {
+        longPressNode("intelligence");
+        waitForPanelToPeekAndAssert();
+
+        // Dismiss the Contextual Search panel.
+        scrollBasePage();
+        assertPanelClosedOrUndefined();
+        assertEquals("Intelligence", getSelectedText());
+
+        // Simulate a selection change event and assert that the panel has not reappeared.
+        mManager.onSelectionEvent(SelectionEventType.SELECTION_DRAG_STARTED, 333, 450);
+        mManager.onSelectionEvent(SelectionEventType.SELECTION_DRAG_STOPPED, 303, 450);
+        assertPanelClosedOrUndefined();
+
+        // Select a different word and assert that the panel has appeared.
+        longPressNode("states-far");
+        waitForPanelToPeekAndAssert();
     }
 }

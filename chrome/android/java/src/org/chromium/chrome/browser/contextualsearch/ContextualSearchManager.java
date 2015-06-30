@@ -55,7 +55,6 @@ import org.chromium.ui.base.WindowAndroid;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -72,11 +71,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
     private static final String TAG = "ContextualSearch";
 
-    private static final String CONTAINS_WORD_PATTERN = "(\\w|\\p{L}|\\p{N})+";
-
-    // Max selection length must be limited or the entire request URL can go past the 2K limit.
-    private static final int MAX_SELECTION_LENGTH = 100;
-
     private static final boolean ALWAYS_USE_RESOLVED_SEARCH_TERM = true;
     private static final boolean NEVER_USE_RESOLVED_SEARCH_TERM = false;
 
@@ -91,7 +85,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
     private static final String BLACKLISTED_URL = "about:blank";
 
     private final ContextualSearchSelectionController mSelectionController;
-    private final Pattern mContainsWordPattern;
     private final ChromeActivity mActivity;
     private ViewGroup mParentView;
     private final ViewTreeObserver.OnGlobalFocusChangeListener mOnFocusChangeListener;
@@ -184,7 +177,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
         mActivity = activity;
         mWindowAndroid = windowAndroid;
         mTabPromotionDelegate = tabPromotionDelegate;
-        mContainsWordPattern = Pattern.compile(CONTAINS_WORD_PATTERN);
 
         mSelectionController = new ContextualSearchSelectionController(activity, this);
 
@@ -328,7 +320,15 @@ public class ContextualSearchManager extends ContextualSearchObservable
     }
 
     @Override
-    public void onCloseContextualSearch() {
+    public void onCloseContextualSearch(StateChangeReason reason) {
+        // If the user explicitly closes the panel after establishing a selection with long press,
+        // it should not reappear until a new selection is made. This prevents the panel from
+        // reappearing when a long press selection is modified after the user has taken action to
+        // get rid of the panel. See crbug.com/489461.
+        if (shouldPreventHandlingCurrentSelectionModification(reason)) {
+            mSelectionController.preventHandlingCurrentSelectionModification();
+        }
+
         if (mSearchPanelDelegate == null) return;
 
         // NOTE(pedrosimonetti): hideContextualSearch() will also be called after swiping the
@@ -372,6 +372,19 @@ public class ContextualSearchManager extends ContextualSearchObservable
     }
 
     /**
+     * Returns true if the StateChangeReason corresponds to an explicit action used to close
+     * the Contextual Search panel.
+     * @param reason The reason the panel is closing.
+     */
+    private boolean shouldPreventHandlingCurrentSelectionModification(StateChangeReason reason) {
+        return mSelectionController.getSelectionType() == SelectionType.LONG_PRESS
+                && (reason == StateChangeReason.BACK_PRESS
+                || reason == StateChangeReason.BASE_PAGE_SCROLL
+                || reason == StateChangeReason.SWIPE
+                || reason == StateChangeReason.FLING);
+    }
+
+    /**
      * Called when the system back button is pressed. Will hide the layout.
      */
     public boolean onBackPressed() {
@@ -395,23 +408,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
     @VisibleForTesting
     public void setNetworkCommunicator(ContextualSearchNetworkCommunicator networkCommunicator) {
         mNetworkCommunicator = networkCommunicator;
-    }
-
-    /**
-     * Determines if the given selection is valid or not.
-     * @param selection The selection portion of the context.
-     * @return whether the given selection is considered a valid target for a search.
-     */
-    private boolean isValidSelection(String selection) {
-        return isValidSelection(selection, getBaseContentView());
-    }
-
-    @VisibleForTesting
-    boolean isValidSelection(String selection, ContentViewCore baseContentView) {
-        if (selection.length() > MAX_SELECTION_LENGTH || !doesContainAWord(selection)) {
-            return false;
-        }
-        return (baseContentView != null) && !baseContentView.isFocusedNodeEditable();
     }
 
     /**
@@ -516,16 +512,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
         if (currentTab != null) {
             currentTab.updateTopControlsState(current, animate);
         }
-    }
-
-    /**
-     * Determines if the given selection contains a word or not.
-     * @param selection The the selection to check for a word.
-     * @return Whether the selection contains a word anywhere within it or not.
-     */
-    @VisibleForTesting
-    public boolean doesContainAWord(String selection) {
-        return mContainsWordPattern.matcher(selection).find();
     }
 
     /**
@@ -1192,10 +1178,9 @@ public class ContextualSearchManager extends ContextualSearchObservable
     }
 
     @Override
-    public void handleSelection(String selection, SelectionType type, float x, float y) {
+    public void handleSelection(String selection, boolean isSelectionValid, SelectionType type,
+            float x, float y) {
         if (!selection.isEmpty()) {
-            boolean isSelectionValid = isValidSelection(selection);
-
             StateChangeReason stateChangeReason = type == SelectionType.TAP
                     ? StateChangeReason.TEXT_SELECT_TAP : StateChangeReason.TEXT_SELECT_LONG_PRESS;
             ContextualSearchUma.logSelectionIsValid(isSelectionValid);

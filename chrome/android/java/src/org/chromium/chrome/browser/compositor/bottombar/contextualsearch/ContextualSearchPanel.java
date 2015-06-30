@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 import android.content.Context;
 import android.os.Handler;
 
+import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 
@@ -158,8 +159,8 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     }
 
     @Override
-    protected void onClose() {
-        mManagementDelegate.onCloseContextualSearch();
+    protected void onClose(StateChangeReason reason) {
+        mManagementDelegate.onCloseContextualSearch(reason);
     }
 
     // ============================================================================================

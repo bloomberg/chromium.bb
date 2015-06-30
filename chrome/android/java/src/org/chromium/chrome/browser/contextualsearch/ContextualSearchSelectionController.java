@@ -13,6 +13,8 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.ui.touch_selection.SelectionEventType;
 
+import java.util.regex.Pattern;
+
 /**
  * Controls selection gesture interaction for Contextual Search.
  */
@@ -34,11 +36,17 @@ public class ContextualSearchSelectionController {
     private static final int INVALID_IF_NO_SELECTION_CHANGE_AFTER_TAP_MS = 50;
     private static final double RETAP_DISTANCE_SQUARED_DP = Math.pow(75, 2);
 
+    private static final String CONTAINS_WORD_PATTERN = "(\\w|\\p{L}|\\p{N})+";
+
+    // Max selection length must be limited or the entire request URL can go past the 2K limit.
+    private static final int MAX_SELECTION_LENGTH = 100;
+
     private final ChromeActivity mActivity;
     private final ContextualSearchSelectionHandler mHandler;
     private final Runnable mHandleInvalidTapRunnable;
     private final Handler mRunnableHandler;
     private final float mPxToDp;
+    private final Pattern mContainsWordPattern;
 
     private String mSelectedText;
     private SelectionType mSelectionType;
@@ -46,6 +54,7 @@ public class ContextualSearchSelectionController {
     private boolean mIsSelectionBeingModified;
     private boolean mWasLastTapValid;
     private boolean mIsWaitingForInvalidTapDetection;
+    private boolean mShouldHandleSelectionModification;
 
     private float mX;
     private float mY;
@@ -88,6 +97,8 @@ public class ContextualSearchSelectionController {
                 onInvalidTapDetectionTimeout();
             }
         };
+
+        mContainsWordPattern = Pattern.compile(CONTAINS_WORD_PATTERN);
     }
 
     /**
@@ -97,6 +108,15 @@ public class ContextualSearchSelectionController {
      */
     public ContextualSearchGestureStateListener getGestureStateListener() {
         return new ContextualSearchGestureStateListener();
+    }
+
+    /**
+     * Temporarily prevents the controller from handling selection modification events on the
+     * current selection. Handling will be re-enabled when a new selection is made through either a
+     * tap or long press.
+     */
+    public void preventHandlingCurrentSelectionModification() {
+        mShouldHandleSelectionModification = false;
     }
 
     /**
@@ -148,7 +168,7 @@ public class ContextualSearchSelectionController {
         } else if (mWasTapGestureDetected) {
             mSelectedText = selection;
             mSelectionType = SelectionType.TAP;
-            mHandler.handleSelection(selection, mSelectionType, mX, mY);
+            handleSelection(selection, mSelectionType);
             mWasTapGestureDetected = false;
         }
     }
@@ -176,7 +196,7 @@ public class ContextualSearchSelectionController {
                 break;
             case SelectionEventType.SELECTION_DRAG_STOPPED:
                 mIsSelectionBeingModified = false;
-                shouldHandleSelection = true;
+                shouldHandleSelection = mShouldHandleSelectionModification;
                 break;
             default:
         }
@@ -189,11 +209,23 @@ public class ContextualSearchSelectionController {
                     mX = posXPix;
                     mY = posYPix;
                     mSelectedText = selection;
-                    mHandler.handleSelection(selection, SelectionType.LONG_PRESS, mX, mY);
+                    handleSelection(selection, SelectionType.LONG_PRESS);
                 }
             }
         }
     }
+
+    /**
+     * Re-enables selection modification handling and invokes
+     * ContextualSearchSelectionHandler.handleSelection().
+     * @param selection The text that was selected.
+     * @param type The type of selection made by the user.
+     */
+    private void handleSelection(String selection, SelectionType type) {
+        mShouldHandleSelectionModification = true;
+        mHandler.handleSelection(selection, isValidSelection(selection), type, mX, mY);
+    }
+
 
     /**
      * Resets all internal state of this class, including the tap state.
@@ -301,5 +333,31 @@ public class ContextualSearchSelectionController {
     @VisibleForTesting
     boolean wasAnyTapGestureDetected() {
         return mIsWaitingForInvalidTapDetection;
+    }
+
+    /** Determines if the given selection is valid or not.
+     * @param selection The selection portion of the context.
+     * @return whether the given selection is considered a valid target for a search.
+     */
+    private boolean isValidSelection(String selection) {
+        return isValidSelection(selection, getBaseContentView());
+    }
+
+    @VisibleForTesting
+    boolean isValidSelection(String selection, ContentViewCore baseContentView) {
+        if (selection.length() > MAX_SELECTION_LENGTH || !doesContainAWord(selection)) {
+            return false;
+        }
+        return baseContentView != null && !baseContentView.isFocusedNodeEditable();
+    }
+
+    /**
+     * Determines if the given selection contains a word or not.
+     * @param selection The the selection to check for a word.
+     * @return Whether the selection contains a word anywhere within it or not.
+     */
+    @VisibleForTesting
+    public boolean doesContainAWord(String selection) {
+        return mContainsWordPattern.matcher(selection).find();
     }
 }

@@ -244,8 +244,9 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
 
     /**
      * Event notification that the Panel did get closed.
+     * @param reason The reason the panel is closing.
      */
-    protected abstract void onClose();
+    protected abstract void onClose(StateChangeReason reason);
 
     // ============================================================================================
     // Layout Integration
@@ -760,7 +761,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
             mIsShowing = false;
             destroyPromoView();
             destroyContextualSearchControl();
-            onClose();
+            onClose(reason);
         } else if (state == PanelState.EXPANDED) {
             showPromoViewAtYPosition(getPromoYPx());
         }

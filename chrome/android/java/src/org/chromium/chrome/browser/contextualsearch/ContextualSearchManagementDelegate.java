@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanelDelegate;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.common.TopControlsState;
@@ -98,8 +99,9 @@ public interface ContextualSearchManagementDelegate {
 
     /**
      * Notifies that the Contextual Search Panel did get closed.
+     * @param reason The reason the panel is closing.
      */
-    void onCloseContextualSearch();
+    void onCloseContextualSearch(StateChangeReason reason);
 
     /**
      * Gets the {@code ContentViewCore} associated with Contextual Search Panel.
