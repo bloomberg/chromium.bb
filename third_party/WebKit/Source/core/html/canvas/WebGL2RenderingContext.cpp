@@ -26,7 +26,7 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<WebGL2RenderingContext> WebGL2RenderingContext::create(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs)
+PassOwnPtrWillBeRawPtr<CanvasRenderingContext> WebGL2RenderingContext::Factory::create(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document&)
 {
     if (!RuntimeEnabledFeatures::unsafeES3APIsEnabled()) {
         canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Creation of WebGL2 contexts disabled."));

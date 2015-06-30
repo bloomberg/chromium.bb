@@ -62,7 +62,7 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs)
+PassOwnPtrWillBeRawPtr<CanvasRenderingContext> WebGLRenderingContext::Factory::create(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document&)
 {
     WebGLContextAttributes attributes = toWebGLContextAttributes(attrs);
     OwnPtr<WebGraphicsContext3D> context(createWebGraphicsContext3D(canvas, attributes, 1));

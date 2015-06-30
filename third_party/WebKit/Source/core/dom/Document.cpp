@@ -153,8 +153,6 @@
 #include "core/html/WindowNameCollection.h"
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
-#include "core/html/canvas/CanvasRenderingContext2D.h"
-#include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/html/forms/FormController.h"
 #include "core/html/imports/HTMLImportLoader.h"
 #include "core/html/imports/HTMLImportsController.h"
@@ -4949,11 +4947,16 @@ void Document::detachRange(Range* range)
     m_ranges.remove(range);
 }
 
-void Document::getCSSCanvasContext(const String& type, const String& name, int width, int height, CanvasRenderingContext2DOrWebGLRenderingContext& returnValue)
+ScriptValue Document::getCSSCanvasContext(ScriptState* scriptState, const String& type, const String& name, int width, int height)
 {
     HTMLCanvasElement& element = getCSSCanvasElement(name);
     element.setSize(IntSize(width, height));
-    element.getContext(type, CanvasContextCreationAttributes(), returnValue);
+    CanvasRenderingContext* context = element.getCanvasRenderingContext(type, CanvasContextCreationAttributes());
+    if (!context) {
+        return ScriptValue::createNull(scriptState);
+    }
+
+    return ScriptValue(scriptState, toV8(context, scriptState->context()->Global(), scriptState->isolate()));
 }
 
 HTMLCanvasElement& Document::getCSSCanvasElement(const String& name)

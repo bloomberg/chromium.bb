@@ -26,6 +26,7 @@
 #ifndef WebGLRenderingContext_h
 #define WebGLRenderingContext_h
 
+#include "core/html/canvas/CanvasRenderingContextFactory.h"
 #include "core/html/canvas/WebGLRenderingContextBase.h"
 
 namespace blink {
@@ -33,9 +34,19 @@ namespace blink {
 class WebGLRenderingContext final : public WebGLRenderingContextBase {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassOwnPtrWillBeRawPtr<WebGLRenderingContext> create(HTMLCanvasElement*, const CanvasContextCreationAttributes&);
+    class Factory : public CanvasRenderingContextFactory {
+        WTF_MAKE_NONCOPYABLE(Factory);
+    public:
+        Factory() {}
+        ~Factory() override {};
+
+        PassOwnPtrWillBeRawPtr<CanvasRenderingContext> create(HTMLCanvasElement*, const CanvasContextCreationAttributes&, Document&) override;
+        CanvasRenderingContext::ContextType contextType() const override { return CanvasRenderingContext::ContextWebgl; }
+    };
+
     virtual ~WebGLRenderingContext();
 
+    CanvasRenderingContext::ContextType contextType() const override { return CanvasRenderingContext::ContextWebgl; }
     virtual unsigned version() const override { return 1; }
     virtual String contextName() const override { return "WebGLRenderingContext"; }
     virtual void registerContextExtensions() override;

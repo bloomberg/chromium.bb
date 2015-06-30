@@ -50,6 +50,7 @@
 #include "core/dom/StyleChangeReason.h"
 #include "core/events/EventFactory.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
+#include "core/html/canvas/CanvasRenderingContextFactory.h"
 #include "core/html/parser/HTMLParserThread.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/EventTracer.h"
@@ -115,6 +116,10 @@ void CoreInitializer::init()
     // does not start the threads.
     HTMLParserThread::init();
     ScriptStreamerThread::init();
+
+    // FIXME: This is temporary while canvas rendering context functionality is
+    // being moved to modules.
+    CanvasRenderingContextFactory::init();
 }
 
 void CoreInitializer::shutdown()

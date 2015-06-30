@@ -5,6 +5,7 @@
 #ifndef WebGL2RenderingContext_h
 #define WebGL2RenderingContext_h
 
+#include "core/html/canvas/CanvasRenderingContextFactory.h"
 #include "core/html/canvas/WebGL2RenderingContextBase.h"
 
 namespace blink {
@@ -12,9 +13,19 @@ namespace blink {
 class WebGL2RenderingContext : public WebGL2RenderingContextBase {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassOwnPtrWillBeRawPtr<WebGL2RenderingContext> create(HTMLCanvasElement*, const CanvasContextCreationAttributes&);
+    class Factory : public CanvasRenderingContextFactory {
+        WTF_MAKE_NONCOPYABLE(Factory);
+    public:
+        Factory() {}
+        ~Factory() override {};
+
+        PassOwnPtrWillBeRawPtr<CanvasRenderingContext> create(HTMLCanvasElement*, const CanvasContextCreationAttributes&, Document&) override;
+        CanvasRenderingContext::ContextType contextType() const override { return CanvasRenderingContext::ContextWebgl2; }
+    };
+
     ~WebGL2RenderingContext() override;
 
+    CanvasRenderingContext::ContextType contextType() const override { return CanvasRenderingContext::ContextWebgl2; }
     unsigned version() const override { return 2; }
     String contextName() const override { return "WebGL2RenderingContext"; }
     void registerContextExtensions() override;

@@ -57,8 +57,7 @@ void CanvasRenderingContext2DAPITest::createContext(OpacityMode opacityMode)
     String canvasType("2d");
     CanvasContextCreationAttributes attributes;
     attributes.setAlpha(opacityMode == NonOpaque);
-    CanvasRenderingContext2DOrWebGLRenderingContext result;
-    m_canvasElement->getContext(canvasType, attributes, result);
+    m_canvasElement->getCanvasRenderingContext(canvasType, attributes);
     context2d(); // Calling this for the checks
 }
 

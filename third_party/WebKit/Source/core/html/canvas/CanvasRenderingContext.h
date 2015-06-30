@@ -41,12 +41,28 @@ namespace blink {
 class CanvasImageSource;
 class HTMLCanvasElement;
 
-class CORE_EXPORT CanvasRenderingContext : public NoBaseWillBeGarbageCollectedFinalized<CanvasRenderingContext>, public ActiveDOMObject {
+class CORE_EXPORT CanvasRenderingContext : public NoBaseWillBeGarbageCollectedFinalized<CanvasRenderingContext>, public ActiveDOMObject, public ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(CanvasRenderingContext);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(CanvasRenderingContext);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(CanvasRenderingContext);
 public:
     virtual ~CanvasRenderingContext() { }
+
+    // A Canvas can either be "2D" or "webgl" but never both. If you request a 2D canvas and the existing
+    // context is already 2D, just return that. If the existing context is WebGL, then destroy it
+    // before creating a new 2D context. Vice versa when requesting a WebGL canvas. Requesting a
+    // context with any other type string will destroy any existing context.
+    enum ContextType {
+        // Do not change assigned numbers of existing items: add new features to the end of the list.
+        Context2d = 0,
+        ContextExperimentalWebgl = 2,
+        ContextWebgl = 3,
+        ContextWebgl2 = 4,
+        ContextTypeCount,
+    };
+
+    static ContextType contextTypeFromId(const String& id);
+    static ContextType resolveContextTypeAliases(ContextType);
 
 #if !ENABLE(OILPAN)
     void ref() { m_canvas->ref(); }
@@ -55,6 +71,7 @@ public:
 
     HTMLCanvasElement* canvas() const { return m_canvas; }
 
+    virtual ContextType contextType() const = 0;
     virtual bool is2d() const { return false; }
     virtual bool is3d() const { return false; }
     virtual bool isAccelerated() const { return false; }

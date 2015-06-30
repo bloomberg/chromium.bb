@@ -39,7 +39,9 @@
 #include "core/frame/Settings.h"
 #include "core/html/ImageData.h"
 #include "core/html/canvas/Canvas2DContextAttributes.h"
+#include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContext2D.h"
+#include "core/html/canvas/CanvasRenderingContextFactory.h"
 #include "core/html/canvas/WebGL2RenderingContext.h"
 #include "core/html/canvas/WebGLContextAttributes.h"
 #include "core/html/canvas/WebGLContextEvent.h"
@@ -183,86 +185,81 @@ void HTMLCanvasElement::setWidth(int value)
     setIntegralAttribute(widthAttr, value);
 }
 
+HTMLCanvasElement::ContextFactoryVector& HTMLCanvasElement::renderingContextFactories()
+{
+    ASSERT(isMainThread());
+    DEFINE_STATIC_LOCAL(ContextFactoryVector, s_contextFactories, (CanvasRenderingContext::ContextTypeCount));
+    return s_contextFactories;
+}
+
+CanvasRenderingContextFactory* HTMLCanvasElement::getRenderingContextFactory(int type)
+{
+    ASSERT(type < CanvasRenderingContext::ContextTypeCount);
+    return renderingContextFactories()[type].get();
+}
+
+void HTMLCanvasElement::registerRenderingContextFactory(PassOwnPtr<CanvasRenderingContextFactory> renderingContextFactory)
+{
+    CanvasRenderingContext::ContextType type = renderingContextFactory->contextType();
+    ASSERT(type < CanvasRenderingContext::ContextTypeCount);
+    ASSERT(!renderingContextFactories()[type]);
+    renderingContextFactories()[type] = renderingContextFactory;
+}
+
 ScriptValue HTMLCanvasElement::getContext(ScriptState* scriptState, const String& type, const CanvasContextCreationAttributes& attributes)
 {
-    CanvasRenderingContext2DOrWebGLRenderingContext result;
-    getContext(type, attributes, result);
-    if (result.isNull()) {
+    CanvasRenderingContext* context = getCanvasRenderingContext(type, attributes);
+    if (!context) {
         return ScriptValue::createNull(scriptState);
     }
 
-    if (result.isCanvasRenderingContext2D()) {
-        return wrapCanvasContext(scriptState, this, result.getAsCanvasRenderingContext2D());
-    }
-
-    ASSERT(result.isWebGLRenderingContext());
-    return wrapCanvasContext(scriptState, this, result.getAsWebGLRenderingContext());
+    return ScriptValue(scriptState, toV8(context, scriptState->context()->Global(), scriptState->isolate()));
 }
 
-void HTMLCanvasElement::getContext(const String& type, const CanvasContextCreationAttributes& attributes, CanvasRenderingContext2DOrWebGLRenderingContext& result)
+CanvasRenderingContext* HTMLCanvasElement::getCanvasRenderingContext(const String& type, const CanvasContextCreationAttributes& attributes)
 {
-    // A Canvas can either be "2D" or "webgl" but never both. If you request a 2D canvas and the existing
-    // context is already 2D, just return that. If the existing context is WebGL, then destroy it
-    // before creating a new 2D context. Vice versa when requesting a WebGL canvas. Requesting a
-    // context with any other type string will destroy any existing context.
-    enum ContextType {
-        // Do not change assigned numbers of existing items: add new features to the end of the list.
-        Context2d = 0,
-        ContextExperimentalWebgl = 2,
-        ContextWebgl = 3,
-        ContextWebgl2 = 4,
-        ContextTypeCount,
-    };
+    CanvasRenderingContext::ContextType contextType = CanvasRenderingContext::contextTypeFromId(type);
+
+    // Unknown type.
+    if (contextType == CanvasRenderingContext::ContextTypeCount)
+        return nullptr;
+
+    // Log the aliased context type used.
+    if (!m_context)
+        Platform::current()->histogramEnumeration("Canvas.ContextType", contextType, CanvasRenderingContext::ContextTypeCount);
+
+    contextType = CanvasRenderingContext::resolveContextTypeAliases(contextType);
 
     // FIXME - The code depends on the context not going away once created, to prevent JS from
     // seeing a dangling pointer. So for now we will disallow the context from being changed
     // once it is created.
-    if (type == "2d") {
-        if (m_context && !m_context->is2d())
-            return;
-        if (!m_context) {
-            Platform::current()->histogramEnumeration("Canvas.ContextType", Context2d, ContextTypeCount);
+    if (m_context) {
+        if (m_context->contextType() == contextType)
+            return m_context.get();
 
-            m_context = CanvasRenderingContext2D::create(this, attributes, document());
-            setNeedsCompositingUpdate();
-        }
-        result.setCanvasRenderingContext2D(static_cast<CanvasRenderingContext2D*>(m_context.get()));
-        return;
-    }
-
-    // Accept the the provisional "experimental-webgl" or official "webgl" context ID.
-    ContextType contextType = Context2d;
-    bool is3dContext = true;
-    if (type == "experimental-webgl")
-        contextType = ContextExperimentalWebgl;
-    else if (type == "webgl")
-        contextType = ContextWebgl;
-    else if (type == "webgl2")
-        contextType = ContextWebgl2;
-    else
-        is3dContext = false;
-
-    if (is3dContext) {
-        if (!m_context) {
-            Platform::current()->histogramEnumeration("Canvas.ContextType", contextType, ContextTypeCount);
-            if (contextType == ContextWebgl2) {
-                m_context = WebGL2RenderingContext::create(this, attributes);
-            } else {
-                m_context = WebGLRenderingContext::create(this, attributes);
-            }
-            const ComputedStyle* style = ensureComputedStyle();
-            if (style && m_context)
-                toWebGLRenderingContextBase(m_context.get())->setFilterQuality(style->imageRendering() == ImageRenderingPixelated ? kNone_SkFilterQuality : kLow_SkFilterQuality);
-            setNeedsCompositingUpdate();
-            updateExternallyAllocatedMemory();
-        } else if (!m_context->is3d()) {
+        if (contextType != CanvasRenderingContext::Context2d)
             dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Canvas has an existing, non-WebGL context"));
-            return;
-        }
-        result.setWebGLRenderingContext(static_cast<WebGLRenderingContext*>(m_context.get()));
+
+        return nullptr;
     }
 
-    return;
+    CanvasRenderingContextFactory* factory = getRenderingContextFactory(contextType);
+    if (!factory)
+        return nullptr;
+
+    m_context = factory->create(this, attributes, document());
+    if (!m_context)
+        return nullptr;
+
+    if (m_context->is3d()) {
+        const ComputedStyle* style = ensureComputedStyle();
+        if (style)
+            toWebGLRenderingContextBase(m_context.get())->setFilterQuality(style->imageRendering() == ImageRenderingPixelated ? kNone_SkFilterQuality : kLow_SkFilterQuality);
+        updateExternallyAllocatedMemory();
+    }
+    setNeedsCompositingUpdate();
+
+    return m_context.get();
 }
 
 bool HTMLCanvasElement::shouldBeDirectComposited() const

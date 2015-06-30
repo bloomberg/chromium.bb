@@ -211,12 +211,11 @@ TEST_F(ImageBitmapTest, ImageResourceLifetime)
         imageBitmapDerived = ImageBitmap::create(imageBitmapFromCanvas.get(), IntRect(0, 0, 20, 20));
     }
     CanvasContextCreationAttributes attributes;
-    CanvasRenderingContext2DOrWebGLRenderingContext context;
-    canvasElement->getContext("2d", attributes, context);
+    CanvasRenderingContext2D* context = static_cast<CanvasRenderingContext2D*>(canvasElement->getCanvasRenderingContext("2d", attributes));
     TrackExceptionState exceptionState;
     CanvasImageSourceUnion imageSource;
     imageSource.setImageBitmap(imageBitmapDerived);
-    context.getAsCanvasRenderingContext2D()->drawImage(imageSource, 0, 0, exceptionState);
+    context->drawImage(imageSource, 0, 0, exceptionState);
 }
 
 } // namespace

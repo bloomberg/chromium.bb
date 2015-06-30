@@ -34,6 +34,7 @@
 #include "core/html/canvas/CanvasPathMethods.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContext2DState.h"
+#include "core/html/canvas/CanvasRenderingContextFactory.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
@@ -63,13 +64,22 @@ typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmap Canva
 
 typedef WillBeHeapHashMap<String, RefPtrWillBeMember<MutableStylePropertySet>> MutableStylePropertyMap;
 
-class CORE_EXPORT CanvasRenderingContext2D final : public CanvasRenderingContext, public ScriptWrappable, public CanvasPathMethods {
+class CORE_EXPORT CanvasRenderingContext2D final : public CanvasRenderingContext, public CanvasPathMethods {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassOwnPtrWillBeRawPtr<CanvasRenderingContext2D> create(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document& document)
-    {
-        return adoptPtrWillBeNoop(new CanvasRenderingContext2D(canvas, attrs, document));
-    }
+    class Factory : public CanvasRenderingContextFactory {
+        WTF_MAKE_NONCOPYABLE(Factory);
+    public:
+        Factory() {}
+        ~Factory() override {};
+
+        PassOwnPtrWillBeRawPtr<CanvasRenderingContext> create(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document& document) override
+        {
+            return adoptPtrWillBeNoop(new CanvasRenderingContext2D(canvas, attrs, document));
+        }
+        CanvasRenderingContext::ContextType contextType() const override { return CanvasRenderingContext::Context2d; }
+    };
+
     virtual ~CanvasRenderingContext2D();
 
     void strokeStyle(StringOrCanvasGradientOrCanvasPattern&) const;
@@ -282,6 +292,7 @@ private:
 
     void checkOverdraw(const SkRect&, const SkPaint*, CanvasRenderingContext2DState::ImageType, DrawType);
 
+    CanvasRenderingContext::ContextType contextType() const override { return CanvasRenderingContext::Context2d; }
     virtual bool is2d() const override { return true; }
     virtual bool isAccelerated() const override;
     virtual bool hasAlpha() const override { return m_hasAlpha; }

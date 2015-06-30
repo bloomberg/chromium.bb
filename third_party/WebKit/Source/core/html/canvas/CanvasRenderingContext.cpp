@@ -38,6 +38,27 @@ CanvasRenderingContext::CanvasRenderingContext(HTMLCanvasElement* canvas)
     suspendIfNeeded();
 }
 
+CanvasRenderingContext::ContextType CanvasRenderingContext::contextTypeFromId(const String& id)
+{
+    if (id == "2d")
+        return Context2d;
+    if (id == "experimental-webgl")
+        return ContextExperimentalWebgl;
+    if (id == "webgl")
+        return ContextWebgl;
+    if (id == "webgl2")
+        return ContextWebgl2;
+
+    return ContextTypeCount;
+}
+
+CanvasRenderingContext::ContextType CanvasRenderingContext::resolveContextTypeAliases(CanvasRenderingContext::ContextType type)
+{
+    if (type == ContextExperimentalWebgl)
+        return ContextWebgl;
+    return type;
+}
+
 bool CanvasRenderingContext::wouldTaintOrigin(CanvasImageSource* imageSource)
 {
     const KURL& sourceURL = imageSource->sourceURL();

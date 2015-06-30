@@ -48,6 +48,7 @@ namespace blink {
 class AffineTransform;
 class CanvasContextCreationAttributes;
 class CanvasRenderingContext;
+class CanvasRenderingContextFactory;
 class GraphicsContext;
 class HTMLCanvasElement;
 class Image;
@@ -101,8 +102,8 @@ public:
 
     // Called by HTMLCanvasElement's V8 bindings.
     ScriptValue getContext(ScriptState*, const String&, const CanvasContextCreationAttributes&);
-    // Called by Document::getCSSCanvasContext as well as above getContext() variant.
-    void getContext(const String&, const CanvasContextCreationAttributes&, CanvasRenderingContext2DOrWebGLRenderingContext&);
+    // Called by Document::getCSSCanvasContext as well as above getContext().
+    CanvasRenderingContext* getCanvasRenderingContext(const String&, const CanvasContextCreationAttributes&);
     bool isPaintable() const;
 
     static String toEncodingMimeType(const String& mimeType);
@@ -166,11 +167,17 @@ public:
 
     void createImageBufferUsingSurfaceForTesting(PassOwnPtr<ImageBufferSurface>);
 
+    static void registerRenderingContextFactory(PassOwnPtr<CanvasRenderingContextFactory>);
+
 protected:
     virtual void didMoveToNewDocument(Document& oldDocument) override;
 
 private:
     explicit HTMLCanvasElement(Document&);
+
+    using ContextFactoryVector = Vector<OwnPtr<CanvasRenderingContextFactory>>;
+    static ContextFactoryVector& renderingContextFactories();
+    static CanvasRenderingContextFactory* getRenderingContextFactory(int);
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
