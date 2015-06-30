@@ -12,6 +12,7 @@ import com.google.ipc.invalidation.external.client.types.ObjectId;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.test.invalidation.IntentSavingContext;
 import org.chromium.components.invalidation.InvalidationClientService;
 import org.chromium.components.invalidation.InvalidationService;
 import org.chromium.sync.AndroidSyncSettings;

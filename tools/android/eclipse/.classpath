@@ -33,13 +33,17 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="chrome/android/uiautomator_tests/src"/>
     <classpathentry kind="src" path="chrome/android/junit/src"/>
     <classpathentry kind="src" path="chrome/test/android/javatests/src"/>
-    <classpathentry kind="src" path="chrome/test/android/javatests_staging/src"/>
     <classpathentry kind="src" path="chrome/test/chromedriver/test/webview_shell/java/src"/>
     <classpathentry kind="src" path="components/bookmarks/common/android/java/src"/>
     <classpathentry kind="src" path="components/cronet/android/java/src"/>
     <classpathentry kind="src" path="components/dom_distiller/android/java/src"/>
     <classpathentry kind="src" path="components/gcm_driver/android/java/src"/>
+    <classpathentry kind="src" path="components/invalidation/impl/android/java/src"/>
+    <classpathentry kind="src" path="components/invalidation/impl/android/javatests/src"/>
+    <classpathentry kind="src" path="components/invalidation/impl/android/junit/src"/>
     <classpathentry kind="src" path="components/navigation_interception/android/java/src"/>
+    <classpathentry kind="src" path="components/precache/android/java/src"/>
+    <classpathentry kind="src" path="components/precache/android/javatests/src"/>
     <classpathentry kind="src" path="components/service_tab_launcher/android/java/src"/>
     <classpathentry kind="src" path="components/variations/android/java/src"/>
     <classpathentry kind="src" path="components/web_contents_delegate_android/android/java/src"/>

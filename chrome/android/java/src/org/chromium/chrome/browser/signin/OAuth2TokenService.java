@@ -179,6 +179,7 @@ public final class OAuth2TokenService {
      * @param timeout the timeout.
      * @param unit the unit for |timeout|.
      */
+    @VisibleForTesting
     public static String getOAuth2AccessTokenWithTimeout(
             Context context, @Nullable Activity activity, Account account, String scope,
             long timeout, TimeUnit unit) {

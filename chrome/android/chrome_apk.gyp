@@ -169,6 +169,8 @@
         '../../base/base.gyp:base_java_test_support',
         '../../chrome/chrome.gyp:chrome_java',
         '../../chrome/chrome.gyp:chrome_java_test_support',
+        '../../components/components.gyp:invalidation_javatests',
+        '../../components/components.gyp:precache_javatests',
         '../../components/components.gyp:web_contents_delegate_android_java',
         '../../content/content_shell_and_tests.gyp:content_java_test_support',
         '../../net/net.gyp:net_java',

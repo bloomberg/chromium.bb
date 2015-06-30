@@ -20,6 +20,7 @@ public class SettingsSecureBasedIdentificationGenerator implements UniqueIdentif
     public static final String GENERATOR_ID = "SETTINGS_SECURE_ANDROID_ID";
     private final Context mContext;
 
+    @VisibleForTesting
     public SettingsSecureBasedIdentificationGenerator(Context context) {
         // Since we do not know the lifetime of the given context, we get the application context
         // to ensure it is always possible to use it.

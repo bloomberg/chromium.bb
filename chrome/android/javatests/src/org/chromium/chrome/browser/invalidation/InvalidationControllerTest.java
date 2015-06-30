@@ -15,6 +15,7 @@ import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.test.invalidation.IntentSavingContext;
 import org.chromium.components.invalidation.InvalidationClientService;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.internal_api.pub.base.ModelType;

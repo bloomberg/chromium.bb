@@ -192,6 +192,7 @@ public enum ModelType {
     }
 
     /** Converts a set of {@link ModelType} to a set of string names. */
+    @VisibleForTesting
     public static Set<String> modelTypesToSyncTypesForTest(Set<ModelType> modelTypes) {
         Set<String> objectIds = new HashSet<String>(modelTypes.size());
         for (ModelType modelType : modelTypes) {

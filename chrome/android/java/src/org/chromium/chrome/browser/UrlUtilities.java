@@ -8,6 +8,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -231,6 +232,7 @@ public class UrlUtilities {
      * URL, as specified at
      * https://developer.chrome.com/multidevice/android/intents#syntax.
      */
+    @VisibleForTesting
     public static boolean validateIntentUrl(String url) {
         if (url == null) {
             Log.d(TAG, "url was null");

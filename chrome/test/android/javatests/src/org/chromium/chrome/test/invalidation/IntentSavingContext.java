@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.invalidation;
+package org.chromium.chrome.test.invalidation;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -20,7 +20,7 @@ import java.util.List;
 public class IntentSavingContext extends AdvancedMockContext {
     private final List<Intent> mStartedIntents = new ArrayList<Intent>();
 
-    IntentSavingContext(Context targetContext) {
+    public IntentSavingContext(Context targetContext) {
         super(targetContext);
     }
 
@@ -30,11 +30,11 @@ public class IntentSavingContext extends AdvancedMockContext {
         return new ComponentName(this, getClass());
     }
 
-    int getNumStartedIntents() {
+    public int getNumStartedIntents() {
         return mStartedIntents.size();
     }
 
-    Intent getStartedIntent(int idx) {
+    public Intent getStartedIntent(int idx) {
         return mStartedIntents.get(idx);
     }
 
