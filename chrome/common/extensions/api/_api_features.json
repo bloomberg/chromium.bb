@@ -615,11 +615,6 @@
     "dependencies": ["permission:platformKeys"],
     "contexts": ["blessed_extension"]
   },
-  "platformKeys.verifyTLSServerCertificate": {
-    "channel": "dev",
-    "dependencies": ["permission:platformKeys"],
-    "contexts": ["blessed_extension"]
-  },
   "platformKeysInternal": [{
     "dependencies": ["permission:platformKeys"],
     "internal": true,
