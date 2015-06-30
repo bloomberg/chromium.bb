@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/windows_version.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/helper.h"
@@ -719,7 +720,10 @@ void UpdateCheckDriver::OnUpgradeError(GoogleUpdateErrorCode error_code,
   hresult_ = hresult;
   installer_exit_code_ = installer_exit_code;
   base::string16 error_msg =
-      base::StringPrintf(L"%d: 0x%x", error_code_, hresult_);
+      base::StringPrintf(L"%d: <a href='%s0x%X' target=_blank>0x%X</a>",
+                         error_code_, base::UTF8ToUTF16(
+                             chrome::kUpgradeHelpCenterBaseURL).c_str(),
+                         hresult_, hresult_);
   if (installer_exit_code_ != -1)
     error_msg += base::StringPrintf(L": %d", installer_exit_code_);
   if (system_level_install_)

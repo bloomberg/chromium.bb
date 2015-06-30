@@ -337,6 +337,7 @@ extern const char kExtensionResourceInvalidRequestURL[];
 extern const char kSyncGoogleDashboardURL[];
 
 extern const char kPasswordManagerLearnMoreURL[];
+extern const char kUpgradeHelpCenterBaseURL[];
 extern const char kPasswordManagerAccountDashboardURL[];
 
 // "Learn more" URL for the Settings API, NTP bubble and other settings bubbles
