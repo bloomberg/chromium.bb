@@ -295,8 +295,6 @@ bool NavigatorImpl::NavigateToEntry(
     navigation_data_.reset(new NavigationMetricsData(
         navigation_start, frame_entry.url(), entry.restore_type()));
     // Create the navigation parameters.
-    // TODO(vitalybuka): Move this before AboutToNavigateRenderFrame once
-    // http://crbug.com/408684 is fixed.
     FrameMsg_Navigate_Type::Value navigation_type =
         GetNavigationType(controller_->GetBrowserContext(), entry, reload_type);
     dest_render_frame_host->Navigate(
