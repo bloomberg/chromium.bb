@@ -107,11 +107,9 @@ static const int ImageDragHysteresis = 5;
 static const int TextDragHysteresis = 3;
 static const int GeneralDragHysteresis = 3;
 
-// The amount of time to wait before sending a fake mouse event, triggered
-// during a scroll. The short interval is used if the content responds to the mouse events quickly enough,
-// otherwise the long interval is used.
-static const double fakeMouseMoveShortInterval = 0.1;
-static const double fakeMouseMoveLongInterval = 0.250;
+// The amount of time to wait before sending a fake mouse event triggered
+// during a scroll.
+static const double fakeMouseMoveInterval = 0.1;
 
 // The amount of time to wait for a cursor update on style and layout changes
 // Set to 50Hz, no need to be faster than common screen refresh rate
@@ -149,24 +147,6 @@ public:
 private:
     bool m_isCursorChange;
     Cursor m_cursor;
-};
-
-class MaximumDurationTracker {
-public:
-    explicit MaximumDurationTracker(double *maxDuration)
-        : m_maxDuration(maxDuration)
-        , m_start(monotonicallyIncreasingTime())
-    {
-    }
-
-    ~MaximumDurationTracker()
-    {
-        *m_maxDuration = max(*m_maxDuration, monotonicallyIncreasingTime() - m_start);
-    }
-
-private:
-    double* m_maxDuration;
-    double m_start;
 };
 
 static inline ScrollGranularity wheelGranularityToScrollGranularity(WheelEvent* event)
@@ -236,7 +216,6 @@ EventHandler::EventHandler(LocalFrame* frame)
     , m_touchPressed(false)
     , m_scrollGestureHandlingNode(nullptr)
     , m_lastGestureScrollOverWidget(false)
-    , m_maxMouseMovedDuration(0)
     , m_longTapShouldInvokeContextMenu(false)
     , m_activeIntervalTimer(this, &EventHandler::activeIntervalTimerFired)
     , m_lastShowPressTimestamp(0)
@@ -313,7 +292,6 @@ void EventHandler::clear()
     m_lastGestureScrollOverWidget = false;
     m_previousGestureScrolledNode = nullptr;
     m_scrollbarHandlingScrollGesture = nullptr;
-    m_maxMouseMovedDuration = 0;
     m_touchPressed = false;
     m_pointerIdManager.clear();
     m_mouseDownMayStartDrag = false;
@@ -1041,7 +1019,6 @@ bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& event)
     TRACE_EVENT0("blink", "EventHandler::handleMouseMoveEvent");
 
     RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
-    MaximumDurationTracker maxDurationTracker(&m_maxMouseMovedDuration);
 
     HitTestResult hoveredNode = HitTestResult();
     bool result = handleMouseMoveOrLeaveEvent(event, &hoveredNode);
@@ -2788,18 +2765,11 @@ void EventHandler::dispatchFakeMouseMoveEventSoon()
     if (settings && !settings->deviceSupportsMouse())
         return;
 
-    // If the content has ever taken longer than fakeMouseMoveShortInterval we
-    // reschedule the timer and use a longer time. This will cause the content
-    // to receive these moves only after the user is done scrolling, reducing
-    // pauses during the scroll.
-    if (m_maxMouseMovedDuration > fakeMouseMoveShortInterval) {
-        if (m_fakeMouseMoveEventTimer.isActive())
-            m_fakeMouseMoveEventTimer.stop();
-        m_fakeMouseMoveEventTimer.startOneShot(fakeMouseMoveLongInterval, FROM_HERE);
-    } else {
-        if (!m_fakeMouseMoveEventTimer.isActive())
-            m_fakeMouseMoveEventTimer.startOneShot(fakeMouseMoveShortInterval, FROM_HERE);
-    }
+    // Reschedule the timer, to prevent dispatching mouse move events
+    // during a scroll. This avoids a potential source of scroll jank.
+    if (m_fakeMouseMoveEventTimer.isActive())
+        m_fakeMouseMoveEventTimer.stop();
+    m_fakeMouseMoveEventTimer.startOneShot(fakeMouseMoveInterval, FROM_HERE);
 }
 
 void EventHandler::dispatchFakeMouseMoveEventSoonInQuad(const FloatQuad& quad)
