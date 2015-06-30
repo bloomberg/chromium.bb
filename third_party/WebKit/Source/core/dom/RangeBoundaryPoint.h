@@ -48,7 +48,7 @@ public:
     void clear();
 
     void set(PassRefPtrWillBeRawPtr<Node> container, int offset, Node* childBefore);
-    void setOffset(int offset);
+    void setOffset(int);
 
     void setToBeforeChild(Node&);
     void setToStartOfNode(Node&);

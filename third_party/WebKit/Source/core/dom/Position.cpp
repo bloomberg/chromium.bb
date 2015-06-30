@@ -893,13 +893,14 @@ template <typename Strategy>
 bool PositionAlgorithm<Strategy>::hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject* layoutObject)
 {
     LayoutObject* stop = layoutObject->nextInPreOrderAfterChildren();
-    for (LayoutObject *o = layoutObject->slowFirstChild(); o && o != stop; o = o->nextInPreOrder())
+    for (LayoutObject *o = layoutObject->slowFirstChild(); o && o != stop; o = o->nextInPreOrder()) {
         if (o->nonPseudoNode()) {
             if ((o->isText() && boundingBoxLogicalHeight(o, toLayoutText(o)->linesBoundingBox()))
                 || (o->isBox() && toLayoutBox(o)->pixelSnappedLogicalHeight())
                 || (o->isLayoutInline() && isEmptyInline(o) && boundingBoxLogicalHeight(o, toLayoutInline(o)->linesBoundingBox())))
                 return true;
         }
+    }
     return false;
 }
 
@@ -1267,7 +1268,7 @@ void PositionAlgorithm<Strategy>::getInlineBoxAndOffset(EAffinity affinity, Text
                 prevBox = prevBox->prevLeafChild();
             } while (prevBox && prevBox->bidiLevel() > level);
 
-            if (prevBox && prevBox->bidiLevel() == level)   // For example, abc FED 123 ^ CBA
+            if (prevBox && prevBox->bidiLevel() == level) // For example, abc FED 123 ^ CBA
                 return;
 
             // For example, abc 123 ^ CBA
@@ -1466,9 +1467,9 @@ void PositionAlgorithm<Strategy>::formatForDebugger(char* buffer, unsigned lengt
 {
     StringBuilder result;
 
-    if (isNull())
+    if (isNull()) {
         result.appendLiteral("<null>");
-    else {
+    } else {
         char s[1024];
         result.appendLiteral("offset ");
         result.appendNumber(m_offset);

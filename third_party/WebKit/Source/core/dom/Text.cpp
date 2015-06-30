@@ -305,10 +305,11 @@ bool Text::textLayoutObjectIsNeeded(const ComputedStyle& style, const LayoutObje
         LayoutObject* first = parent.slowFirstChild();
         while (first && first->isFloatingOrOutOfFlowPositioned() && maxSiblingsToVisit--)
             first = first->nextSibling();
-        if (!first || first == layoutObject() || LayoutTreeBuilderTraversal::nextSiblingLayoutObject(*this) == first)
+        if (!first || first == layoutObject() || LayoutTreeBuilderTraversal::nextSiblingLayoutObject(*this) == first) {
             // Whitespace at the start of a block just goes away.  Don't even
             // make a layout object for this text.
             return false;
+        }
     }
     return true;
 }

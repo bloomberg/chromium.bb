@@ -475,9 +475,10 @@ unsigned short TreeScope::comparePosition(const TreeScope& otherScope) const
             if (shadowHost1 != shadowHost2)
                 return shadowHost1->compareDocumentPosition(shadowHost2, Node::TreatShadowTreesAsDisconnected);
 
-            for (const ShadowRoot* child = toShadowRoot(child2->rootNode()).olderShadowRoot(); child; child = child->olderShadowRoot())
+            for (const ShadowRoot* child = toShadowRoot(child2->rootNode()).olderShadowRoot(); child; child = child->olderShadowRoot()) {
                 if (child == child1)
                     return Node::DOCUMENT_POSITION_FOLLOWING;
+            }
 
             return Node::DOCUMENT_POSITION_PRECEDING;
         }

@@ -133,8 +133,9 @@ void PseudoElement::attach(const AttachContext& context)
             layoutObject->addChild(child);
             if (child->isQuote())
                 toLayoutQuote(child)->attachQuote();
-        } else
+        } else {
             child->destroy();
+        }
     }
 }
 
