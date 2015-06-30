@@ -31,8 +31,15 @@ std::string TestFailedMessage(const std::string& msg) {
 }
 
 int GetSubProcessTimeoutTimeInSeconds() {
-  // Previously 10s, but that timed out (just) on Chromecast.
-  return 12;
+#ifdef NDEBUG
+  // Chromecast build lab devices need this much time to complete.
+  // They only run in release.
+  return 30;
+#else
+  // Want a shorter timeout than test runner to get a useful callstack
+  // in debug.
+  return 10;
+#endif
 }
 
 // Returns the number of threads of the current process or -1.
