@@ -5714,7 +5714,6 @@
                   '-Wno-missing-braces',  # http://crbug.com/505297
                   '-Wno-missing-declarations',  # http://crbug.com/505298
                   '-Wno-msvc-include',  # http://crbug.com/505299
-                  '-Wno-null-dereference',  # http://crbug.com/505300
                   '-Wno-overloaded-virtual',  # http://crbug.com/505301
                   '-Wno-parentheses',  # http://crbug.com/505302
                   '-Wno-pointer-sign',  # http://crbug.com/505303

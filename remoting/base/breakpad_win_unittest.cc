@@ -144,7 +144,7 @@ TEST_F(BreakpadWinDeathTest, TestAccessViolation) {
   }
 
   // Generate access violation exception.
-  ASSERT_DEATH(*reinterpret_cast<int*>(NULL) = 1, "");
+  ASSERT_DEATH(*reinterpret_cast<volatile int*>(NULL) = 1, "");
 }
 
 TEST_F(BreakpadWinDeathTest, TestInvalidParameter) {

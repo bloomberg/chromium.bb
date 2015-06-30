@@ -54,7 +54,7 @@ bool SetPropVariantValueForPropertyStore(
 }
 
 void __cdecl ForceCrashOnSigAbort(int) {
-  *((int*)0) = 0x1337;
+  *((volatile int*)0) = 0x1337;
 }
 
 const wchar_t kWindows8OSKRegPath[] =
