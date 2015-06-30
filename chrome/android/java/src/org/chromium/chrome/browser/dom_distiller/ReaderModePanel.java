@@ -559,11 +559,12 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
             // Unfortunately, dismiss() couldn't be used because it might attempt to remove a view
             // while in onLayout, thus causing crash.
             final ReaderModeButtonView buttonView = mReaderModeButtonView;
-            final boolean horizontally = true;
             mReaderModeButtonView.post(new Runnable() {
                 @Override
                 public void run() {
-                    buttonView.dismiss(horizontally);
+                    // Unfortunately, dismiss() couldn't be used because it might attempt
+                    // to remove a view while in onLayout, thus causing crash.
+                    buttonView.removeFromParentView();
                 }
             });
             mReaderModeButtonView = null;
