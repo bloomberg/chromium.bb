@@ -47,6 +47,9 @@ CODEREVIEW_SETTINGS = {
 # we store information about changelists.
 REPOSITORY_ROOT = ""
 
+# Replacement for project name.
+SWITCH_TO_GIT = "SWITCH_TO_GIT_ALREADY"
+
 # Filename where we store repository specific information for gcl.
 CODEREVIEW_SETTINGS_FILE = "codereview.settings"
 CODEREVIEW_SETTINGS_FILE_NOT_FOUND = (
@@ -879,6 +882,10 @@ def CMDupload(change_info, args):
       # Uploading a new patchset.
       upload_arg.append("--issue=%d" % change_info.issue)
 
+      project = GetCodeReviewSetting("PROJECT")
+      if project:
+        upload_arg.append("--project=%s" % SWITCH_TO_GIT)
+
       if not any(i.startswith('--title') or i.startswith('-t') for i in args):
         upload_arg.append('--title= ')
     else:
@@ -919,7 +926,7 @@ def CMDupload(change_info, args):
 
       project = GetCodeReviewSetting("PROJECT")
       if project:
-        upload_arg.append("--project=%s" % project)
+        upload_arg.append("--project=%s" % SWITCH_TO_GIT)
 
     # If we have a lot of files with long paths, then we won't be able to fit
     # the command to "svn diff".  Instead, we generate the diff manually for
