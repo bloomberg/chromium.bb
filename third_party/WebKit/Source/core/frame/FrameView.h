@@ -108,7 +108,6 @@ public:
     bool layoutPending() const;
     bool isInPerformLayout() const;
 
-    bool isLayoutRoot(const LayoutObject&) const;
     void clearLayoutSubtreeRoot(const LayoutObject&);
     int layoutCount() const { return m_layoutCount; }
 

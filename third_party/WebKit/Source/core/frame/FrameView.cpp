@@ -741,11 +741,6 @@ void FrameView::countObjectsNeedingLayout(unsigned& needsLayoutObjects, unsigned
     }
 }
 
-bool FrameView::isLayoutRoot(const LayoutObject& object) const
-{
-    return m_layoutSubtreeRoots.contains(const_cast<LayoutObject*>(&object));
-}
-
 inline void FrameView::forceLayoutParentViewIfNeeded()
 {
     LayoutPart* ownerLayoutObject = m_frame->ownerLayoutObject();
