@@ -33,7 +33,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.PerfTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeMobileApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeferredStartupHandler;
@@ -709,7 +709,7 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
             public Integer call() {
                 TabModelSelector tabModelSelector;
                 if (FeatureUtilities.isDocumentMode(getInstrumentation().getContext())) {
-                    tabModelSelector = ChromeMobileApplication.getDocumentTabModelSelector();
+                    tabModelSelector = ChromeApplication.getDocumentTabModelSelector();
                 } else {
                     tabModelSelector = getActivity().getTabModelSelector();
                 }

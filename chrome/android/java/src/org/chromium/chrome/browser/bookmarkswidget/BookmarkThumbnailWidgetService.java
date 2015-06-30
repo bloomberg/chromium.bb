@@ -25,9 +25,9 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeBrowserProvider.BookmarkNode;
 import org.chromium.chrome.browser.ChromeBrowserProviderClient;
-import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.bookmark.BookmarkColumns;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.sync.AndroidSyncSettings;
@@ -83,7 +83,7 @@ public class BookmarkThumbnailWidgetService extends RemoteViewsService {
     static class BookmarkFactory implements RemoteViewsService.RemoteViewsFactory,
             BookmarkWidgetUpdateListener.UpdateListener {
 
-        private final ChromiumApplication mContext;
+        private final ChromeApplication mContext;
         private final int mWidgetId;
         private final SharedPreferences mPreferences;
         private BookmarkWidgetUpdateListener mUpdateListener;
@@ -91,7 +91,7 @@ public class BookmarkThumbnailWidgetService extends RemoteViewsService {
         private final Object mLock = new Object();
 
         public BookmarkFactory(Context context, int widgetId) {
-            mContext = (ChromiumApplication) context.getApplicationContext();
+            mContext = (ChromeApplication) context.getApplicationContext();
             mWidgetId = widgetId;
             mPreferences = getWidgetState(mContext, mWidgetId);
         }

@@ -18,7 +18,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.chrome.browser.ChromeMobileApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -194,7 +194,7 @@ public class OmahaClient extends IntentService {
      */
     @VisibleForTesting
     RequestGenerator createRequestGenerator(Context context) {
-        return ((ChromeMobileApplication) getApplicationContext()).createOmahaRequestGenerator();
+        return ((ChromeApplication) getApplicationContext()).createOmahaRequestGenerator();
     }
 
     /**

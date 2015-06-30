@@ -14,7 +14,7 @@ import android.os.Build;
 import android.text.TextUtils;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.browser.ChromeMobileApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ForeignSessionHelper.ForeignSession;
 import org.chromium.chrome.browser.ForeignSessionHelper.ForeignSessionTab;
 import org.chromium.chrome.browser.IntentHandler;
@@ -62,7 +62,7 @@ public class DocumentRecentTabsManager extends RecentTabsManager {
         mFinishActivityOnOpen = finishActivityOnOpen;
         mCurrentlyOpenTabs = new ArrayList<CurrentlyOpenTab>();
         mTabModel =
-                ChromeMobileApplication.getDocumentTabModelSelector().getModel(tab.isIncognito());
+                ChromeApplication.getDocumentTabModelSelector().getModel(tab.isIncognito());
         mUpdateOpenTabsObserver = new DocumentTabModel.InitializationObserver(mTabModel) {
                 @Override
                 public boolean isSatisfied(int currentState) {
@@ -164,7 +164,7 @@ public class DocumentRecentTabsManager extends RecentTabsManager {
     @Override
     public void closeTab(CurrentlyOpenTab tab) {
         Tab currentTab =
-                ChromeMobileApplication.getDocumentTabModelSelector().getCurrentTab();
+                ChromeApplication.getDocumentTabModelSelector().getCurrentTab();
         Tab tabOject = TabModelUtils.getTabById(mTabModel, tab.getTabId());
         mTabModel.closeTab(tabOject);
         if (currentTab.getId() == tabOject.getId()) {

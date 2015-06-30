@@ -24,7 +24,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.chrome.browser.ChromiumApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.metrics.LaunchHistogram;
 import org.chromium.chrome.browser.metrics.MemoryUma;
@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.lang.reflect.Field;
-
 
 /**
  * An activity that talks with application and activity level delegates for async initialization.
@@ -137,7 +136,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     public void onStartupFailure() {
         ProcessInitException e =
                 new ProcessInitException(LoaderErrors.LOADER_ERROR_NATIVE_STARTUP_FAILED);
-        ChromiumApplication.reportStartupErrorAndExit(e);
+        ChromeApplication.reportStartupErrorAndExit(e);
     }
 
     /**

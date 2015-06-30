@@ -71,7 +71,7 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/chromium_application.h"
+#include "chrome/browser/android/chrome_application.h"
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -690,7 +690,7 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
 void BrowsingHistoryHandler::HandleClearBrowsingData(
     const base::ListValue* args) {
 #if defined(OS_ANDROID)
-  chrome::android::ChromiumApplication::OpenClearBrowsingData(
+  chrome::android::ChromeApplication::OpenClearBrowsingData(
       web_ui()->GetWebContents());
 #else
   // TODO(beng): This is an improper direct dependency on Browser. Route this

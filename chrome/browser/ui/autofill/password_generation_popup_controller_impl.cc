@@ -35,7 +35,7 @@
 #include "ui/gfx/text_utils.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/chromium_application.h"
+#include "chrome/browser/android/chrome_application.h"
 #endif
 
 namespace autofill {
@@ -233,7 +233,7 @@ void PasswordGenerationPopupControllerImpl::ViewDestroyed() {
 
 void PasswordGenerationPopupControllerImpl::OnSavedPasswordsLinkClicked() {
 #if defined(OS_ANDROID)
-  chrome::android::ChromiumApplication::ShowPasswordSettings();
+  chrome::android::ChromeApplication::ShowPasswordSettings();
 #else
   chrome::ShowSettingsSubPage(
       chrome::FindBrowserWithWebContents(controller_common_.web_contents()),

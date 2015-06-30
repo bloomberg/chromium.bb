@@ -12,7 +12,7 @@ import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
 
-import org.chromium.chrome.browser.ChromeMobileApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
@@ -417,7 +417,7 @@ public class LayoutManagerDocument extends LayoutManager
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         private void changeTabs() {
             DocumentTabModelSelector selector =
-                    ChromeMobileApplication.getDocumentTabModelSelector();
+                    ChromeApplication.getDocumentTabModelSelector();
             TabModel tabModel = selector.getCurrentModel();
             int currentIndex = tabModel.index();
             if (mLastScroll == ScrollDirection.LEFT) {

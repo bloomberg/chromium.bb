@@ -26,7 +26,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/chromium_application.h"
+#include "chrome/browser/android/chrome_application.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/password_manager/account_chooser_infobar_delegate_android.h"
 #endif
@@ -164,7 +164,7 @@ void ManagePasswordsUIController::OnLoginsChanged(
 
 void ManagePasswordsUIController::NavigateToPasswordManagerSettingsPage() {
 #if defined(OS_ANDROID)
-  chrome::android::ChromiumApplication::ShowPasswordSettings();
+  chrome::android::ChromeApplication::ShowPasswordSettings();
 #else
   chrome::ShowSettingsSubPage(
       chrome::FindBrowserWithWebContents(web_contents()),

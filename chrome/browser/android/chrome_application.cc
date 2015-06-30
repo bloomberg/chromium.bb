@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/chromium_application.h"
+#include "chrome/browser/android/chrome_application.h"
 
 #include <vector>
 
@@ -20,7 +20,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/ChromiumApplication_jni.h"
+#include "jni/ChromeApplication_jni.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
@@ -115,34 +115,34 @@ namespace chrome {
 namespace android {
 
 // static
-bool ChromiumApplication::RegisterBindings(JNIEnv* env) {
+bool ChromeApplication::RegisterBindings(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-void ChromiumApplication::ShowAutofillSettings() {
-  Java_ChromiumApplication_showAutofillSettings(
+void ChromeApplication::ShowAutofillSettings() {
+  Java_ChromeApplication_showAutofillSettings(
       base::android::AttachCurrentThread(),
       base::android::GetApplicationContext());
 }
 
-void ChromiumApplication::ShowPasswordSettings() {
-  Java_ChromiumApplication_showPasswordSettings(
+void ChromeApplication::ShowPasswordSettings() {
+  Java_ChromeApplication_showPasswordSettings(
       base::android::AttachCurrentThread(),
       base::android::GetApplicationContext());
 }
 
-void ChromiumApplication::OpenClearBrowsingData(
+void ChromeApplication::OpenClearBrowsingData(
     content::WebContents* web_contents) {
   TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
   DCHECK(tab);
-  Java_ChromiumApplication_openClearBrowsingData(
+  Java_ChromeApplication_openClearBrowsingData(
       base::android::AttachCurrentThread(),
       base::android::GetApplicationContext(),
       tab->GetJavaObject().obj());
 }
 
-bool ChromiumApplication::AreParentalControlsEnabled() {
-  return Java_ChromiumApplication_areParentalControlsEnabled(
+bool ChromeApplication::AreParentalControlsEnabled() {
+  return Java_ChromeApplication_areParentalControlsEnabled(
       base::android::AttachCurrentThread(),
       base::android::GetApplicationContext());
 }

@@ -266,7 +266,7 @@ public class SSLClientCertificateRequest {
 
         final Context appContext = activity.getApplicationContext();
         final PKCS11AuthenticationManager smartCardAuthManager =
-                ((ChromiumApplication) appContext).getPKCS11AuthenticationManager();
+                ((ChromeApplication) appContext).getPKCS11AuthenticationManager();
         if (smartCardAuthManager.isPKCS11AuthEnabled()) {
             // Smart card support is available, prompt the user whether to use it or Android system
             // store.

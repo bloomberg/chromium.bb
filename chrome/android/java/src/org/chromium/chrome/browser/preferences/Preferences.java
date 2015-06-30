@@ -31,7 +31,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromiumApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.feedback.FeedbackCollector;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -67,7 +67,7 @@ public class Preferences extends AppCompatActivity implements
      * TODO(newt): Delete this method once ChromeShellPreferences is deleted.
      */
     protected void startBrowserProcessSync() throws ProcessInitException {
-        ((ChromiumApplication) getApplication()).startBrowserProcessesAndLoadLibrariesSync(true);
+        ((ChromeApplication) getApplication()).startBrowserProcessesAndLoadLibrariesSync(true);
     }
 
     /**
@@ -196,7 +196,7 @@ public class Preferences extends AppCompatActivity implements
     protected void onPause() {
         super.onPause();
         if (sResumedInstance == this) sResumedInstance = null;
-        ChromiumApplication.flushPersistentData();
+        ChromeApplication.flushPersistentData();
     }
 
     /**

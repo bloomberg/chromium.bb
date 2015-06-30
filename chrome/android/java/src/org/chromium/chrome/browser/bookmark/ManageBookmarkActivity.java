@@ -22,7 +22,7 @@ import android.view.WindowManager;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.chrome.browser.ChromiumApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -80,13 +80,13 @@ public class ManageBookmarkActivity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         try {
-            if (getApplication() instanceof ChromiumApplication) {
-                ((ChromiumApplication) getApplication())
+            if (getApplication() instanceof ChromeApplication) {
+                ((ChromeApplication) getApplication())
                         .startBrowserProcessesAndLoadLibrariesSync(true);
             }
         } catch (ProcessInitException e) {
             Log.e(TAG, "Unable to load native library.", e);
-            ChromiumApplication.reportStartupErrorAndExit(e);
+            ChromeApplication.reportStartupErrorAndExit(e);
             return;
         }
         if (!DeviceFormFactor.isTablet(this)) {

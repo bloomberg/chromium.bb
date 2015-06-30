@@ -22,7 +22,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.ChromiumApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -47,8 +47,8 @@ public class ExternalAuthUtils {
      */
     public static ExternalAuthUtils getInstance() {
         if (sInstance.get() == null) {
-            ChromiumApplication application =
-                    (ChromiumApplication) ApplicationStatus.getApplicationContext();
+            ChromeApplication application =
+                    (ChromeApplication) ApplicationStatus.getApplicationContext();
             sInstance.compareAndSet(null, application.createExternalAuthUtils());
         }
         return sInstance.get();

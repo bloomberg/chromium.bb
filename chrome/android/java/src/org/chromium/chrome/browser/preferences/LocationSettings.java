@@ -15,7 +15,7 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.chrome.browser.ChromiumApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
@@ -47,8 +47,8 @@ public class LocationSettings {
     public static LocationSettings getInstance() {
         ThreadUtils.assertOnUiThread();
         if (sInstance == null) {
-            ChromiumApplication application =
-                    (ChromiumApplication) ApplicationStatus.getApplicationContext();
+            ChromeApplication application =
+                    (ChromeApplication) ApplicationStatus.getApplicationContext();
             sInstance = application.createLocationSettings();
         }
         return sInstance;

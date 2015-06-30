@@ -15,8 +15,8 @@
 #include "chrome/browser/android/bookmark/edit_bookmark_helper.h"
 #include "chrome/browser/android/bookmarks/bookmarks_bridge.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_reader.h"
+#include "chrome/browser/android/chrome_application.h"
 #include "chrome/browser/android/chrome_web_contents_delegate_android.h"
-#include "chrome/browser/android/chromium_application.h"
 #include "chrome/browser/android/compositor/compositor_view.h"
 #include "chrome/browser/android/compositor/layer_title_cache.h"
 #include "chrome/browser/android/compositor/scene_layer/contextual_search_scene_layer.h"
@@ -185,13 +185,13 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"CertificateViewer", RegisterCertificateViewer},
     {"ChildAccountFeedbackReporter", RegisterChildAccountFeedbackReporter},
     {"ChildAccountService", RegisterChildAccountService},
+    {"ChromeApplication", ChromeApplication::RegisterBindings},
     {"ChromeBrowserProvider",
      ChromeBrowserProvider::RegisterChromeBrowserProvider},
     {"ChromeHttpAuthHandler",
      ChromeHttpAuthHandler::RegisterChromeHttpAuthHandler},
     {"ChromeWebContentsDelegateAndroid",
      RegisterChromeWebContentsDelegateAndroid},
-    {"ChromiumApplication", ChromiumApplication::RegisterBindings},
     {"CompositorView", RegisterCompositorView},
     {"ConfirmInfoBarDelegate", RegisterConfirmInfoBarDelegate},
     {"ConnectionInfoPopupAndroid",

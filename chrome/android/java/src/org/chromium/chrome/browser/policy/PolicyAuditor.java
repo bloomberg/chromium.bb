@@ -24,7 +24,7 @@ public class PolicyAuditor {
     }
 
     /**
-     * Make it non-obvious to accidentally instantiate this outside of ChromeMobileApplication.
+     * Make it non-obvious to accidentally instantiate this outside of ChromeApplication.
      */
     protected PolicyAuditor() {}
 

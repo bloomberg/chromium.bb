@@ -25,7 +25,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeMobileApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.FrozenNativePage;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
@@ -403,7 +403,7 @@ public class ChromeTab extends Tab {
             boolean success = tabCreator.createsTabsAsynchronously() || tab != null;
             if (success && disposition == WindowOpenDisposition.NEW_POPUP) {
                 PolicyAuditor auditor =
-                        ((ChromeMobileApplication) getApplicationContext()).getPolicyAuditor();
+                        ((ChromeApplication) getApplicationContext()).getPolicyAuditor();
                 auditor.notifyAuditEvent(getApplicationContext(), AuditEvent.OPEN_POPUP_URL_SUCCESS,
                         url, "");
             }
@@ -815,7 +815,7 @@ public class ChromeTab extends Tab {
             @Override
             public void didFinishLoad(long frameId, String validatedUrl, boolean isMainFrame) {
                 PolicyAuditor auditor =
-                        ((ChromeMobileApplication) getApplicationContext()).getPolicyAuditor();
+                        ((ChromeApplication) getApplicationContext()).getPolicyAuditor();
                 auditor.notifyAuditEvent(
                         getApplicationContext(), AuditEvent.OPEN_URL_SUCCESS, validatedUrl, "");
             }
@@ -838,7 +838,7 @@ public class ChromeTab extends Tab {
                 }
 
                 PolicyAuditor auditor =
-                        ((ChromeMobileApplication) getApplicationContext()).getPolicyAuditor();
+                        ((ChromeApplication) getApplicationContext()).getPolicyAuditor();
                 auditor.notifyAuditEvent(getApplicationContext(), AuditEvent.OPEN_URL_FAILURE,
                         failingUrl, description);
                 if (errorCode == BLOCKED_BY_ADMINISTRATOR) {
@@ -898,7 +898,7 @@ public class ChromeTab extends Tab {
             @Override
             public void didAttachInterstitialPage() {
                 PolicyAuditor auditor =
-                        ((ChromeMobileApplication) getApplicationContext()).getPolicyAuditor();
+                        ((ChromeApplication) getApplicationContext()).getPolicyAuditor();
                 auditor.notifyCertificateFailure(getWebContents(), getApplicationContext());
             }
 
@@ -1207,7 +1207,7 @@ public class ChromeTab extends Tab {
          */
         public InterceptNavigationDelegateImpl(ExternalNavigationHandler externalNavHandler) {
             mExternalNavHandler = externalNavHandler;
-            mAuthenticatorHelper = ((ChromeMobileApplication) getApplicationContext())
+            mAuthenticatorHelper = ((ChromeApplication) getApplicationContext())
                     .createAuthenticatorNavigationInterceptor(ChromeTab.this);
         }
 
@@ -1410,7 +1410,7 @@ public class ChromeTab extends Tab {
         @Override
         public void onSSLStateUpdated(Tab tab) {
             PolicyAuditor auditor =
-                    ((ChromeMobileApplication) getApplicationContext()).getPolicyAuditor();
+                    ((ChromeApplication) getApplicationContext()).getPolicyAuditor();
             auditor.notifyCertificateFailure(getWebContents(), getApplicationContext());
             updateFullscreenEnabledState();
         }

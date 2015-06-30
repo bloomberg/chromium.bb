@@ -18,7 +18,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.BookmarkUtils;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeMobileApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.Tab;
@@ -93,7 +93,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
         launchThreeTabs();
 
         final DocumentTabModelSelector selector =
-                ChromeMobileApplication.getDocumentTabModelSelector();
+                ChromeApplication.getDocumentTabModelSelector();
         final Activity lastTrackedActivity = ApplicationStatus.getLastTrackedFocusedActivity();
 
         // Send the user home, then fire an Intent with invalid data.
@@ -132,7 +132,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
         launchThreeTabs();
 
         final DocumentTabModelSelector selector =
-                ChromeMobileApplication.getDocumentTabModelSelector();
+                ChromeApplication.getDocumentTabModelSelector();
         final int lastTabId = selector.getCurrentTabId();
         final Activity lastTrackedActivity = ApplicationStatus.getLastTrackedFocusedActivity();
 
@@ -178,7 +178,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
         launchThreeTabs();
 
         final DocumentTabModelSelector selector =
-                ChromeMobileApplication.getDocumentTabModelSelector();
+                ChromeApplication.getDocumentTabModelSelector();
         final int lastTabId = selector.getCurrentTabId();
 
         final Activity lastTrackedActivity = ApplicationStatus.getLastTrackedFocusedActivity();
@@ -209,7 +209,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
         launchThreeTabs();
 
         final DocumentTabModelSelector selector =
-                ChromeMobileApplication.getDocumentTabModelSelector();
+                ChromeApplication.getDocumentTabModelSelector();
         final int lastTabId = selector.getCurrentTabId();
 
         // Send Chrome to the background, then bring it back.
@@ -235,7 +235,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
         int[] tabIds = launchThreeTabs();
 
         final DocumentTabModelSelector selector =
-                ChromeMobileApplication.getDocumentTabModelSelector();
+                ChromeApplication.getDocumentTabModelSelector();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -260,9 +260,9 @@ public class DocumentModeTest extends DocumentModeTestBase {
     public void testReuseIntent() throws Exception {
         // Create a tab, then send the user back to the Home screen.
         int tabId = launchViaViewIntent(false, URL_1, "Page 1");
-        assertTrue(ChromeMobileApplication.isDocumentTabModelSelectorInitializedForTests());
+        assertTrue(ChromeApplication.isDocumentTabModelSelectorInitializedForTests());
         final DocumentTabModelSelector selector =
-                ChromeMobileApplication.getDocumentTabModelSelector();
+                ChromeApplication.getDocumentTabModelSelector();
         assertEquals(1, selector.getModel(false).getCount());
         launchHomescreenIntent(mContext);
 
@@ -306,12 +306,12 @@ public class DocumentModeTest extends DocumentModeTestBase {
      */
     @MediumTest
     public void testIncognitoLaunches() throws Exception {
-        assertFalse(ChromeMobileApplication.isDocumentTabModelSelectorInitializedForTests());
+        assertFalse(ChromeApplication.isDocumentTabModelSelectorInitializedForTests());
 
         // Make sure that an untrusted Intent can't launch an IncognitoDocumentActivity.
         Instrumentation.ActivityMonitor monitor = getInstrumentation().addMonitor(
                 DocumentActivity.class.getName(), null, false);
-        assertFalse(ChromeMobileApplication.isDocumentTabModelSelectorInitializedForTests());
+        assertFalse(ChromeApplication.isDocumentTabModelSelectorInitializedForTests());
         assertEquals(0, ApplicationStatus.getRunningActivities().size());
         Runnable runnable = new Runnable() {
             @Override
@@ -329,9 +329,9 @@ public class DocumentModeTest extends DocumentModeTestBase {
 
         // Create an Incognito tab via an Intent extra.
         final int firstId = launchViaViewIntent(true, URL_2, "Page 2");
-        assertTrue(ChromeMobileApplication.isDocumentTabModelSelectorInitializedForTests());
+        assertTrue(ChromeApplication.isDocumentTabModelSelectorInitializedForTests());
         final DocumentTabModelSelector selector =
-                ChromeMobileApplication.getDocumentTabModelSelector();
+                ChromeApplication.getDocumentTabModelSelector();
         final TabModel incognitoModel = selector.getModel(true);
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
@@ -383,11 +383,11 @@ public class DocumentModeTest extends DocumentModeTestBase {
     @MediumTest
     public void testIncognitoOpensInBackgroundFromIncognito() throws Exception {
         // Create an Incognito tab via an Intent extra.
-        assertFalse(ChromeMobileApplication.isDocumentTabModelSelectorInitializedForTests());
+        assertFalse(ChromeApplication.isDocumentTabModelSelectorInitializedForTests());
         final int firstId = launchViaLaunchDocumentInstance(true, HREF_LINK, "href link page");
-        assertTrue(ChromeMobileApplication.isDocumentTabModelSelectorInitializedForTests());
+        assertTrue(ChromeApplication.isDocumentTabModelSelectorInitializedForTests());
         final DocumentTabModelSelector selector =
-                ChromeMobileApplication.getDocumentTabModelSelector();
+                ChromeApplication.getDocumentTabModelSelector();
         final TabModel incognitoModel = selector.getModel(true);
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
@@ -421,7 +421,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
     public void testIncognitoNotificationClosesTabs() throws Exception {
         final int regularId = launchViaLaunchDocumentInstance(false, URL_1, "Page 1");
         final DocumentTabModelSelector selector =
-                ChromeMobileApplication.getDocumentTabModelSelector();
+                ChromeApplication.getDocumentTabModelSelector();
         assertFalse(selector.isIncognitoSelected());
 
         final int incognitoId = launchViaLaunchDocumentInstance(true, URL_2, "Page 2");
@@ -457,7 +457,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
     public void testCoveredByChildActivity() throws Exception {
         final int tabId = launchViaLaunchDocumentInstance(false, URL_1, "Page 1");
         final DocumentTabModel model =
-                ChromeMobileApplication.getDocumentTabModelSelector().getModelForTabId(tabId);
+                ChromeApplication.getDocumentTabModelSelector().getModelForTabId(tabId);
         final Tab tab = model.getTabAt(0);
         assertTrue(tab instanceof DocumentTab);
         final DocumentTab documentTab = (DocumentTab) tab;
@@ -524,7 +524,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
         final DocumentActivity regularActivity = (DocumentActivity) activity;
 
         final DocumentTabModelSelector selector =
-                ChromeMobileApplication.getDocumentTabModelSelector();
+                ChromeApplication.getDocumentTabModelSelector();
         final TabModel regularTabModel = selector.getModel(false);
         final TabModel incognitoTabModel = selector.getModel(true);
         final int regularTabId = selector.getCurrentTabId();
@@ -593,7 +593,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
 
         // Save the current tab ID.
         final DocumentTabModelSelector selector =
-                ChromeMobileApplication.getDocumentTabModelSelector();
+                ChromeApplication.getDocumentTabModelSelector();
         final TabModel tabModel = selector.getModel(false);
         final int firstTabId = selector.getCurrentTabId();
         final int firstTabIndex = tabModel.index();
@@ -640,7 +640,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
 
         // Save the current tab ID.
         final DocumentTabModelSelector selector =
-                ChromeMobileApplication.getDocumentTabModelSelector();
+                ChromeApplication.getDocumentTabModelSelector();
         final TabModel tabModel = selector.getModel(false);
         final int firstTabId = selector.getCurrentTabId();
         final int firstTabIndex = tabModel.index();

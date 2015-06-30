@@ -11,7 +11,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
-import org.chromium.chrome.browser.ChromeMobileApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.RecentlyClosedBridge.RecentlyClosedTab;
 import org.chromium.chrome.browser.ntp.CurrentlyOpenTab;
 import org.chromium.chrome.browser.ntp.DocumentRecentTabsManager;
@@ -88,7 +88,7 @@ public class DocumentModeRecentlyClosedTest extends DocumentModeTestBase {
                 TestTabModelDirectory.V2_TEXTAREA.encodedTabState);
 
         final DocumentTabModelSelector selector =
-                ChromeMobileApplication.getDocumentTabModelSelector();
+                ChromeApplication.getDocumentTabModelSelector();
         assertEquals("Wrong tab count", 1, selector.getTotalTabCount());
 
         // Start a DocumentActivity.  Should have two tabs.
@@ -138,7 +138,7 @@ public class DocumentModeRecentlyClosedTest extends DocumentModeTestBase {
         // Open Recent Tabs directly instead of interacting with the dialog and check that there's
         // nothing listed under Recently closed.
         final DocumentTabModelSelector selector =
-                ChromeMobileApplication.getDocumentTabModelSelector();
+                ChromeApplication.getDocumentTabModelSelector();
         final DocumentActivity thirdActivity =
                 (DocumentActivity) ApplicationStatus.getLastTrackedFocusedActivity();
         final DocumentRecentTabsManager recentTabsManager = getRecentTabsManager(thirdActivity);
@@ -231,7 +231,7 @@ public class DocumentModeRecentlyClosedTest extends DocumentModeTestBase {
 
         // Finish the first Task.
         final DocumentTabModelSelector selector =
-                ChromeMobileApplication.getDocumentTabModelSelector();
+                ChromeApplication.getDocumentTabModelSelector();
         assertEquals("Wrong tab count", 3, selector.getTotalTabCount());
         ActivityDelegate delegate =
                 new ActivityDelegate(DocumentActivity.class, IncognitoDocumentActivity.class);

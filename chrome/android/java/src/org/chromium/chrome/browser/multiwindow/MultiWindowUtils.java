@@ -11,8 +11,8 @@ import android.os.Build;
 import android.text.TextUtils;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -32,8 +32,8 @@ public class MultiWindowUtils {
      */
     public static MultiWindowUtils getInstance() {
         if (sInstance.get() == null) {
-            ChromiumApplication application =
-                    (ChromiumApplication) ApplicationStatus.getApplicationContext();
+            ChromeApplication application =
+                    (ChromeApplication) ApplicationStatus.getApplicationContext();
             sInstance.compareAndSet(null, application.createMultiWindowUtils());
         }
         return sInstance.get();

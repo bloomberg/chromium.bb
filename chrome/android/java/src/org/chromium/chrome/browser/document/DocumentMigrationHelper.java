@@ -26,7 +26,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ImportantFileWriterAndroid;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ApplicationLifetime;
-import org.chromium.chrome.browser.ChromeMobileApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabState;
@@ -186,9 +186,9 @@ public class DocumentMigrationHelper {
         List<Integer> tabIdsToRemove = new ArrayList<Integer>();
 
         DocumentTabModelImpl normalTabModel = (DocumentTabModelImpl)
-                ChromeMobileApplication.getDocumentTabModelSelector().getModel(false);
+                ChromeApplication.getDocumentTabModelSelector().getModel(false);
         OffTheRecordDocumentTabModel incognitoTabModel = (OffTheRecordDocumentTabModel)
-                ChromeMobileApplication.getDocumentTabModelSelector().getModel(true);
+                ChromeApplication.getDocumentTabModelSelector().getModel(true);
 
         // TODO(yusufo): Clean up this logic.
         for (int i = 0; i < incognitoTabModel.getCount(); i++) {
@@ -233,7 +233,7 @@ public class DocumentMigrationHelper {
             if (normalTabModel.getCount() != 0) {
                 byte[] listData;
                 listData = TabPersistentStore.serializeTabModelSelector(
-                        ChromeMobileApplication.getDocumentTabModelSelector(), null);
+                        ChromeApplication.getDocumentTabModelSelector(), null);
                 ImportantFileWriterAndroid.writeFileAtomically(tabStatefileName, listData);
             }
         } catch (IOException e) {
@@ -455,7 +455,7 @@ public class DocumentMigrationHelper {
                 activity.getResources().getColor(R.color.default_primary_color));
         am.addAppTask(activity, intent, taskDescription, thumbnail);
         Entry entry = new Entry(tabId, tabState);
-        DocumentTabModelImpl tabModel = (DocumentTabModelImpl) ChromeMobileApplication
+        DocumentTabModelImpl tabModel = (DocumentTabModelImpl) ChromeApplication
                 .getDocumentTabModelSelector().getModel(false);
         tabModel.addEntryForMigration(entry);
     }

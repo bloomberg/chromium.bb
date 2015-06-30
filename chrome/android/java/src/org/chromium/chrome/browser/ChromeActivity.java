@@ -209,7 +209,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     public void postInflationStartup() {
         super.postInflationStartup();
 
-        mWindowAndroid = ((ChromeMobileApplication) getApplicationContext())
+        mWindowAndroid = ((ChromeApplication) getApplicationContext())
                 .createActivityWindowAndroid(this);
         mWindowAndroid.restoreInstanceState(getSavedInstanceState());
         mSnackbarManager = new SnackbarManager(findViewById(android.R.id.content));
@@ -481,7 +481,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         final ProfileSyncService syncService = ProfileSyncService.get(this);
 
         if (syncService.isSyncingUrlsWithKeystorePassphrase()) {
-            mContextReporter = ((ChromeMobileApplication) getApplicationContext()).createGsaHelper()
+            mContextReporter = ((ChromeApplication) getApplicationContext()).createGsaHelper()
                     .getContextReporter(this);
 
             if (mSyncStateChangedListener != null) {
@@ -842,8 +842,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     /**
      * @return A casted version of {@link #getApplication()}.
      */
-    public ChromeMobileApplication getChromeApplication() {
-        return (ChromeMobileApplication) getApplication();
+    public ChromeApplication getChromeApplication() {
+        return (ChromeApplication) getApplication();
     }
 
     /**
@@ -1288,7 +1288,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         // activity which only manages a single tab.
         if (FeatureUtilities.isDocumentMode(this)) {
             mUmaSessionStats.startNewSession(
-                    ChromeMobileApplication.getDocumentTabModelSelector());
+                    ChromeApplication.getDocumentTabModelSelector());
         } else {
             mUmaSessionStats.startNewSession(getTabModelSelector());
         }

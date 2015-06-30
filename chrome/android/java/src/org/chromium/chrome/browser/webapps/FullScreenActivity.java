@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeMobileApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
@@ -49,7 +49,7 @@ public abstract class FullScreenActivity extends ChromeActivity
         final boolean isDocumentMode = FeatureUtilities.isDocumentMode(this);
         if (isDocumentMode) {
             DocumentTabModelSelector selector =
-                    ChromeMobileApplication.getDocumentTabModelSelector();
+                    ChromeApplication.getDocumentTabModelSelector();
             setTabCreators(selector.getTabCreator(false), selector.getTabCreator(true));
         }
 
@@ -58,7 +58,7 @@ public abstract class FullScreenActivity extends ChromeActivity
             public Tab openNewTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent,
                     boolean incognito) {
                 if (isDocumentMode) {
-                    return ChromeMobileApplication.getDocumentTabModelSelector().openNewTab(
+                    return ChromeApplication.getDocumentTabModelSelector().openNewTab(
                             loadUrlParams, type, parent, incognito);
                 } else {
                     return super.openNewTab(loadUrlParams, type, parent, incognito);

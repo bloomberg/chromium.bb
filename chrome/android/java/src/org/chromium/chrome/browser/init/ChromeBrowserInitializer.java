@@ -19,8 +19,8 @@ import org.chromium.base.ResourceExtractor;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.FileProviderHelper;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.content.app.ContentApplication;
@@ -41,7 +41,7 @@ public class ChromeBrowserInitializer {
     private static ChromeBrowserInitializer sChromeBrowserInitiliazer;
 
     private final Handler mHandler;
-    private final ChromiumApplication mApplication;
+    private final ChromeApplication mApplication;
     private boolean mPreInflationStartupComplete;
     private boolean mPostInflationStartupComplete;
     private boolean mNativeInitializationComplete;
@@ -70,7 +70,7 @@ public class ChromeBrowserInitializer {
     }
 
     private ChromeBrowserInitializer(Context context) {
-        mApplication = (ChromiumApplication) context.getApplicationContext();
+        mApplication = (ChromeApplication) context.getApplicationContext();
         mHandler = new Handler(Looper.getMainLooper());
     }
 

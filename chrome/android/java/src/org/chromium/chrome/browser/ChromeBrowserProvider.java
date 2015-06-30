@@ -788,7 +788,7 @@ public class ChromeBrowserProvider extends ContentProvider {
                 public void run() {
                     if (mNativeChromeBrowserProvider != 0) return;
                     try {
-                        ((ChromiumApplication) getContext().getApplicationContext())
+                        ((ChromeApplication) getContext().getApplicationContext())
                                 .startBrowserProcessesAndLoadLibrariesSync(
                                         true /*Start GoogleServicesManager*/);
                     } catch (ProcessInitException e) {

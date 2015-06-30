@@ -63,7 +63,7 @@ public class DeferredStartupHandler {
      * @param application The application object to use for context.
      * @param crashDumpUploadingDisabled Whether crash dump uploading should be disabled.
      */
-    public void onDeferredStartup(final ChromeMobileApplication application,
+    public void onDeferredStartup(final ChromeApplication application,
             final boolean crashDumpUploadingDisabled) {
         if (mDeferredStartupComplete) return;
         ThreadUtils.assertOnUiThread();

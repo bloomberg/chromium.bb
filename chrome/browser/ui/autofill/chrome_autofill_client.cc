@@ -38,7 +38,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/chromium_application.h"
+#include "chrome/browser/android/chrome_application.h"
 #include "chrome/browser/ui/android/autofill/autofill_logger_android.h"
 #else
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -136,7 +136,7 @@ rappor::RapporService* ChromeAutofillClient::GetRapporService() {
 
 void ChromeAutofillClient::ShowAutofillSettings() {
 #if defined(OS_ANDROID)
-  chrome::android::ChromiumApplication::ShowAutofillSettings();
+  chrome::android::ChromeApplication::ShowAutofillSettings();
 #else
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (browser)

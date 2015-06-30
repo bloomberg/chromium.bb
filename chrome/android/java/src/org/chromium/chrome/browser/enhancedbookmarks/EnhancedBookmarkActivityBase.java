@@ -9,7 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.chrome.browser.ChromiumApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.ui.UiUtils;
 
 /**
@@ -24,11 +24,11 @@ abstract class EnhancedBookmarkActivityBase extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         // Ensure that native library is loaded.
         try {
-            ((ChromiumApplication) getApplication())
+            ((ChromeApplication) getApplication())
                     .startBrowserProcessesAndLoadLibrariesSync(true);
         } catch (ProcessInitException e) {
             Log.e(TAG, "Failed to start browser process.", e);
-            ChromiumApplication.reportStartupErrorAndExit(e);
+            ChromeApplication.reportStartupErrorAndExit(e);
         }
     }
 

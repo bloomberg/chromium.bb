@@ -14,7 +14,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.browser.ChromeMobileApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -42,7 +42,7 @@ public class DocumentModeLowEndTest extends DocumentModeTestBase {
         final CallbackHelper tabLoadStartedCallback = new CallbackHelper();
 
         final DocumentTabModelSelector selector =
-                ChromeMobileApplication.getDocumentTabModelSelector();
+                ChromeApplication.getDocumentTabModelSelector();
         selector.addObserver(new EmptyTabModelSelectorObserver() {
             @Override
             public void onNewTabCreated(final Tab newTab) {

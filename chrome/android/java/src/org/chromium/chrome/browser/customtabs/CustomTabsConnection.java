@@ -36,7 +36,7 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromiumApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -185,7 +185,7 @@ class CustomTabsConnection extends ICustomTabsConnectionService.Stub {
             @Override
             @SuppressFBWarnings("DM_EXIT")
             public void run() {
-                ChromiumApplication app = (ChromiumApplication) mApplication;
+                ChromeApplication app = (ChromeApplication) mApplication;
                 try {
                     // TODO(lizeb): Warm up more of the browser.
                     app.startBrowserProcessesAndLoadLibrariesSync(true);

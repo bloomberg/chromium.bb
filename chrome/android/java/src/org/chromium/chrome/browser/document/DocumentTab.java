@@ -8,7 +8,7 @@ import android.graphics.Bitmap;
 
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.ChromeMobileApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.Tab;
@@ -166,7 +166,7 @@ public class DocumentTab extends ChromeTab {
          */
         @Override
         protected TabModel getTabModel() {
-            return ChromeMobileApplication.getDocumentTabModelSelector().getModel(isIncognito());
+            return ChromeApplication.getDocumentTabModelSelector().getModel(isIncognito());
         }
     }
 

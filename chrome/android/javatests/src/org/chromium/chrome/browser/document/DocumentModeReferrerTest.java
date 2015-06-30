@@ -12,7 +12,7 @@ import android.provider.Browser;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.MinAndroidSdkLevel;
-import org.chromium.chrome.browser.ChromeMobileApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
@@ -53,11 +53,11 @@ public class DocumentModeReferrerTest extends DocumentModeTestBase {
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return ChromeMobileApplication.isDocumentTabModelSelectorInitializedForTests();
+                return ChromeApplication.isDocumentTabModelSelectorInitializedForTests();
             }
         }));
 
-        DocumentTabModelSelector selector = ChromeMobileApplication.getDocumentTabModelSelector();
+        DocumentTabModelSelector selector = ChromeApplication.getDocumentTabModelSelector();
         mObserver = new TabModelSelectorTabObserver(selector) {
             @Override
             public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
@@ -105,11 +105,11 @@ public class DocumentModeReferrerTest extends DocumentModeTestBase {
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return ChromeMobileApplication.isDocumentTabModelSelectorInitializedForTests();
+                return ChromeApplication.isDocumentTabModelSelectorInitializedForTests();
             }
         }));
 
-        DocumentTabModelSelector selector = ChromeMobileApplication.getDocumentTabModelSelector();
+        DocumentTabModelSelector selector = ChromeApplication.getDocumentTabModelSelector();
         mObserver = new TabModelSelectorTabObserver(selector) {
             @Override
             public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
@@ -157,11 +157,11 @@ public class DocumentModeReferrerTest extends DocumentModeTestBase {
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return ChromeMobileApplication.isDocumentTabModelSelectorInitializedForTests();
+                return ChromeApplication.isDocumentTabModelSelectorInitializedForTests();
             }
         }));
 
-        DocumentTabModelSelector selector = ChromeMobileApplication.getDocumentTabModelSelector();
+        DocumentTabModelSelector selector = ChromeApplication.getDocumentTabModelSelector();
         mObserver = new TabModelSelectorTabObserver(selector) {
             @Override
             public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
@@ -210,11 +210,11 @@ public class DocumentModeReferrerTest extends DocumentModeTestBase {
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return ChromeMobileApplication.isDocumentTabModelSelectorInitializedForTests();
+                return ChromeApplication.isDocumentTabModelSelectorInitializedForTests();
             }
         }));
 
-        DocumentTabModelSelector selector = ChromeMobileApplication.getDocumentTabModelSelector();
+        DocumentTabModelSelector selector = ChromeApplication.getDocumentTabModelSelector();
         mObserver = new TabModelSelectorTabObserver(selector) {
             @Override
             public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {

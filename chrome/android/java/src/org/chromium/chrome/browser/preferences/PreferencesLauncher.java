@@ -8,7 +8,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 
-import org.chromium.chrome.browser.ChromiumApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 
 /**
  * A utility class for launching Chrome Settings.
@@ -34,7 +34,7 @@ public class PreferencesLauncher {
      * @param fragmentName The name of the fragment to show, or null to show the top-level page.
      */
     public static Intent createIntentForSettingsPage(Context context, String fragmentName) {
-        ChromiumApplication application = (ChromiumApplication) context.getApplicationContext();
+        ChromeApplication application = (ChromeApplication) context.getApplicationContext();
         String activityName = application.getSettingsActivityName();
 
         Intent intent = new Intent();

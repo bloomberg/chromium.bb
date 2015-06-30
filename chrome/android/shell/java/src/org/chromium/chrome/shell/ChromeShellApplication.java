@@ -10,7 +10,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ResourceExtractor;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromiumApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
 import org.chromium.chrome.browser.invalidation.UniqueIdInvalidationClientNameGenerator;
@@ -27,7 +27,7 @@ import java.util.ArrayList;
  * A basic test shell {@link android.app.Application}.  Handles setting up the native library and
  * loading the right resources.
  */
-public class ChromeShellApplication extends ChromiumApplication {
+public class ChromeShellApplication extends ChromeApplication {
 
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chromeshell";
     private static final String COMMAND_LINE_FILE = "/data/local/tmp/chrome-shell-command-line";

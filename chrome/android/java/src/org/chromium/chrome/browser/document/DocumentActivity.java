@@ -24,7 +24,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeMobileApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.Tab;
@@ -135,7 +135,7 @@ public class DocumentActivity extends ChromeActivity {
         DocumentTabModelSelector.setPrioritizedTabId(
                 ActivityDelegate.getTabIdFromIntent(getIntent()));
 
-        mTabModel = ChromeMobileApplication.getDocumentTabModelSelector().getModel(isIncognito());
+        mTabModel = ChromeApplication.getDocumentTabModelSelector().getModel(isIncognito());
         mTabModel.startTabStateLoad();
         updateLastTabId();
 
@@ -144,13 +144,13 @@ public class DocumentActivity extends ChromeActivity {
             public Tab openNewTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent,
                     boolean incognito) {
                 // Triggered via open in new tab context menu on NTP.
-                return ChromeMobileApplication.getDocumentTabModelSelector().openNewTab(
+                return ChromeApplication.getDocumentTabModelSelector().openNewTab(
                         loadUrlParams, type, parent, incognito);
             }
         };
         setTabModelSelector(selector);
-        setTabCreators(ChromeMobileApplication.getDocumentTabModelSelector().getTabCreator(false),
-                ChromeMobileApplication.getDocumentTabModelSelector().getTabCreator(true));
+        setTabCreators(ChromeApplication.getDocumentTabModelSelector().getTabCreator(false),
+                ChromeApplication.getDocumentTabModelSelector().getTabCreator(true));
 
         super.preInflationStartup();
 
@@ -214,7 +214,7 @@ public class DocumentActivity extends ChromeActivity {
 
         if (!preferenceManager.hasAttemptedMigrationOnUpgrade()) {
             InitializationObserver observer = new InitializationObserver(
-                    ChromeMobileApplication.getDocumentTabModelSelector().getModel(false)) {
+                    ChromeApplication.getDocumentTabModelSelector().getModel(false)) {
                 @Override
                 protected void runImmediately() {
                     DocumentMigrationHelper.migrateTabsToDocumentForUpgrade(DocumentActivity.this,
@@ -239,7 +239,7 @@ public class DocumentActivity extends ChromeActivity {
                 Window.PROGRESS_VISIBILITY_OFF);
 
         // Initialize the native-side TabModels so that the Profile is available when necessary.
-        ChromeMobileApplication.getDocumentTabModelSelector().onNativeLibraryReady();
+        ChromeApplication.getDocumentTabModelSelector().onNativeLibraryReady();
         mTabInitializationObserver.runWhenReady();
 
         if (mNeedsToBeAddedToTabModel) {
@@ -364,7 +364,7 @@ public class DocumentActivity extends ChromeActivity {
         super.onResumeWithNative();
 
         if (mDocumentTab != null) {
-            PendingDocumentData pendingData = ChromeMobileApplication.getDocumentTabModelSelector()
+            PendingDocumentData pendingData = ChromeApplication.getDocumentTabModelSelector()
                     .removePendingDocumentData(ActivityDelegate.getTabIdFromIntent(getIntent()));
             if (pendingData != null && pendingData.url != null) {
                 loadLastKnownUrl(pendingData);
@@ -445,14 +445,14 @@ public class DocumentActivity extends ChromeActivity {
 
     @Override
     public void terminateIncognitoSession() {
-        ChromeMobileApplication.getDocumentTabModelSelector().getModel(true).closeAllTabs();
+        ChromeApplication.getDocumentTabModelSelector().getModel(true).closeAllTabs();
     }
 
     private void initializeUI() {
         mDefaultThemeColor = isIncognito()
                 ? getResources().getColor(R.color.incognito_primary_color)
                 : getResources().getColor(R.color.default_primary_color);
-        PendingDocumentData pendingData = ChromeMobileApplication.getDocumentTabModelSelector()
+        PendingDocumentData pendingData = ChromeApplication.getDocumentTabModelSelector()
                 .removePendingDocumentData(ActivityDelegate.getTabIdFromIntent(getIntent()));
         int tabId = determineTabId();
         TabState tabState = mTabModel.getTabStateForDocument(tabId);
@@ -482,7 +482,7 @@ public class DocumentActivity extends ChromeActivity {
                     if (pendingData.url == null) {
                         pendingData.url = determineLastKnownUrl();
                     }
-                    ChromeMobileApplication.getDocumentTabModelSelector().addPendingDocumentData(
+                    ChromeApplication.getDocumentTabModelSelector().addPendingDocumentData(
                             ActivityDelegate.getTabIdFromIntent(getIntent()), pendingData);
                     // Use the URL as the document title until tab is loaded
                     updateTaskDescription(pendingData.url, null);
@@ -652,7 +652,7 @@ public class DocumentActivity extends ChromeActivity {
     }
 
     private void updateLastTabId() {
-        ChromeMobileApplication.getDocumentTabModelSelector().selectModel(isIncognito());
+        ChromeApplication.getDocumentTabModelSelector().selectModel(isIncognito());
         int tabId = mDocumentTab == null
                  ? ActivityDelegate.getTabIdFromIntent(getIntent()) : mDocumentTab.getId();
         mTabModel.setLastShownId(tabId);

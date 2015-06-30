@@ -7,7 +7,7 @@
 #include <cstddef>
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/android/chromium_application.h"
+#include "chrome/browser/android/chrome_application.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -30,7 +30,7 @@ void GeneratedPasswordSavedInfoBarDelegateAndroid::OnInlineLinkClicked() {
             content::Referrer(), NEW_FOREGROUND_TAB,
             ui::PAGE_TRANSITION_LINK, false));
   } else {
-    chrome::android::ChromiumApplication::ShowPasswordSettings();
+    chrome::android::ChromeApplication::ShowPasswordSettings();
   }
 }
 

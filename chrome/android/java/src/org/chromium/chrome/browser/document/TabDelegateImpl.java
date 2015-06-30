@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.document;
 import android.app.Activity;
 import android.text.TextUtils;
 
-import org.chromium.chrome.browser.ChromeMobileApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.UrlConstants;
@@ -96,7 +96,7 @@ public class TabDelegateImpl implements TabDelegate {
 
         // Determine information about the parent Activity.
         Tab parentTab = parentId == Tab.INVALID_TAB_ID
-                ? null : ChromeMobileApplication.getDocumentTabModelSelector().getTabById(parentId);
+                ? null : ChromeApplication.getDocumentTabModelSelector().getTabById(parentId);
         Activity activity = getActivityFromTab(parentTab);
 
         int pageTransition = startedBy == DocumentMetricIds.STARTED_BY_CHROME_HOME_RECENT_TABS

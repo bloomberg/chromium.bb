@@ -45,7 +45,7 @@ public class ChromeServiceTabLauncher extends ServiceTabLauncher {
             loadUrlParams.setReferrer(new Referrer(referrerUrl, referrerPolicy));
 
             TabDelegate tabDelegate =
-                    ChromeMobileApplication.getDocumentTabModelSelector().getTabCreator(incognito);
+                    ChromeApplication.getDocumentTabModelSelector().getTabCreator(incognito);
             tabDelegate.createNewDocumentTab(loadUrlParams, TabLaunchType.FROM_MENU_OR_OVERVIEW,
                     null, ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND, intentSource, requestId);
             return;

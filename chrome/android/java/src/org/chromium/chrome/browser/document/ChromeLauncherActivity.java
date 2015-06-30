@@ -28,7 +28,7 @@ import android.util.Log;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.browser.BookmarkUtils;
-import org.chromium.chrome.browser.ChromeMobileApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
@@ -148,7 +148,7 @@ public class ChromeLauncherActivity extends Activity
         // time at which the intent was received.
         IntentHandler.addTimestampToIntent(getIntent());
         // Initialize the command line in case we've disabled document mode from there.
-        ((ChromeMobileApplication) getApplication()).initCommandLine();
+        ((ChromeApplication) getApplication()).initCommandLine();
 
         // Read partner browser customizations information asynchronously.
         // We want to initialize early because when there is no tabs to restore, we should possibly
@@ -187,7 +187,7 @@ public class ChromeLauncherActivity extends Activity
 
         // Check if we're just closing all of the Incognito tabs.
         if (TextUtils.equals(getIntent().getAction(), ACTION_CLOSE_ALL_INCOGNITO)) {
-            ChromeMobileApplication.getDocumentTabModelSelector().getModel(true).closeAllTabs();
+            ChromeApplication.getDocumentTabModelSelector().getModel(true).closeAllTabs();
             ApiCompatibilityUtils.finishAndRemoveTask(this);
             return;
         }
@@ -388,17 +388,17 @@ public class ChromeLauncherActivity extends Activity
         if (shouldOpenNewTab || !getPackageName().equals(applicationId)) return false;
 
         // Check if there's a Tab that can be clobbered.
-        int tabId = ChromeMobileApplication.getDocumentTabModelSelector().getCurrentTabId();
+        int tabId = ChromeApplication.getDocumentTabModelSelector().getCurrentTabId();
         if (tabId == Tab.INVALID_TAB_ID) return false;
 
         // Try to clobber the page.
         PendingDocumentData data = new PendingDocumentData();
         data.url = url;
         data.originalIntent = new Intent(getIntent());
-        ChromeMobileApplication.getDocumentTabModelSelector().addPendingDocumentData(tabId, data);
+        ChromeApplication.getDocumentTabModelSelector().addPendingDocumentData(tabId, data);
         if (!relaunchTask(tabId)) {
             // Were not able to clobber, will fall through to handle in a new document.
-            ChromeMobileApplication.getDocumentTabModelSelector().removePendingDocumentData(tabId);
+            ChromeApplication.getDocumentTabModelSelector().removePendingDocumentData(tabId);
             return false;
         }
 
@@ -407,9 +407,9 @@ public class ChromeLauncherActivity extends Activity
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private boolean launchLastViewedActivity() {
-        int tabId = ChromeMobileApplication.getDocumentTabModelSelector().getCurrentTabId();
+        int tabId = ChromeApplication.getDocumentTabModelSelector().getCurrentTabId();
         DocumentTabModel model =
-                ChromeMobileApplication.getDocumentTabModelSelector().getModelForTabId(tabId);
+                ChromeApplication.getDocumentTabModelSelector().getModelForTabId(tabId);
         if (tabId != Tab.INVALID_TAB_ID && model != null && !model.isCoveredByChildActivity(tabId)
                 && relaunchTask(tabId)) {
             return true;
@@ -423,7 +423,7 @@ public class ChromeLauncherActivity extends Activity
             if (className == null || !DocumentActivity.isDocumentActivity(className)) continue;
 
             int id = ActivityDelegate.getTabIdFromIntent(task.getTaskInfo().baseIntent);
-            model = ChromeMobileApplication.getDocumentTabModelSelector().getModelForTabId(id);
+            model = ChromeApplication.getDocumentTabModelSelector().getModelForTabId(id);
             if (model != null && model.isCoveredByChildActivity(id)) continue;
 
             if (!moveToFront(task)) continue;
@@ -533,7 +533,7 @@ public class ChromeLauncherActivity extends Activity
         boolean isWebContentsPending = false;
         if (pendingUrlParams != null) {
             int tabId = ActivityDelegate.getTabIdFromIntent(intent);
-            ChromeMobileApplication.getDocumentTabModelSelector().addPendingDocumentData(
+            ChromeApplication.getDocumentTabModelSelector().addPendingDocumentData(
                     tabId, pendingUrlParams);
             isWebContentsPending = pendingUrlParams.webContents != null;
         }
@@ -541,7 +541,7 @@ public class ChromeLauncherActivity extends Activity
         Bundle options = affiliated && !isWebContentsPending
                 ? ActivityOptions.makeTaskLaunchBehind().toBundle() : null;
         if (incognito && !CipherFactory.getInstance().hasCipher()
-                && ChromeMobileApplication.getDocumentTabModelSelector().getModel(true)
+                && ChromeApplication.getDocumentTabModelSelector().getModel(true)
                         .getCount() > 0) {
             // The CipherKeyActivity needs to be run to restore the Incognito decryption key.
             Intent cipherIntent = CipherKeyActivity.createIntent(context, intent, options);
@@ -571,7 +571,7 @@ public class ChromeLauncherActivity extends Activity
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private static Intent createLaunchIntent(
             Context context, Intent oldIntent, String url, boolean incognito, int parentId) {
-        int newTabId = ChromeMobileApplication.getDocumentTabModelSelector().generateValidTabId();
+        int newTabId = ChromeApplication.getDocumentTabModelSelector().generateValidTabId();
 
         // Copy the old Intent so that the extras carry over.
         Intent intent = oldIntent == null ? new Intent() : new Intent(oldIntent);
@@ -671,7 +671,7 @@ public class ChromeLauncherActivity extends Activity
 
             int id = ActivityDelegate.getTabIdFromIntent(info.baseIntent);
             DocumentTabModelSelector.setPrioritizedTabId(id);
-            if (!ChromeMobileApplication.getDocumentTabModelSelector().getModel(incognito)
+            if (!ChromeApplication.getDocumentTabModelSelector().getModel(incognito)
                     .isRetargetable(id)) {
                 continue;
             }

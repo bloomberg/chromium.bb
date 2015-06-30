@@ -105,7 +105,7 @@ import java.util.Locale;
  * Basic application functionality that should be shared among all browser applications that use
  * chrome layer.
  */
-public class ChromiumApplication extends ContentApplication {
+public class ChromeApplication extends ContentApplication {
 
     private static final String TAG = "ChromiumApplication";
     private static final String PREF_BOOT_TIMESTAMP =
@@ -184,7 +184,7 @@ public class ChromiumApplication extends ContentApplication {
     private PolicyManager mPolicyManager = new PolicyManager();
 
     /**
-     * This is called once per ChromeMobileApplication instance, which get created per process
+     * This is called once per ChromeApplication instance, which get created per process
      * (browser OR renderer).  Don't stick anything in here that shouldn't be called multiple times
      * during Chrome's lifetime.
      */
@@ -436,7 +436,7 @@ public class ChromiumApplication extends ContentApplication {
         RevenueStats.getInstance();
         ShortcutHelper.setFullScreenAction(ChromeLauncherActivity.ACTION_START_WEBAPP);
 
-        getPKCS11AuthenticationManager().initialize(ChromiumApplication.this);
+        getPKCS11AuthenticationManager().initialize(ChromeApplication.this);
 
         mDevToolsServer = new DevToolsServer(DEV_TOOLS_SERVER_SOCKET_PREFIX);
         mDevToolsServer.setRemoteDebuggingEnabled(
@@ -787,7 +787,7 @@ public class ChromiumApplication extends ContentApplication {
 
     /**
      * Update the font size after changing the Android accessibility system setting.  Doing so kills
-     * the Activities but it doesn't kill the ChromeMobileApplication, so this should be called in
+     * the Activities but it doesn't kill the ChromeApplication, so this should be called in
      * {@link #onStart} instead of {@link #initialize}.
      */
     private void updateFontSize() {
@@ -822,7 +822,7 @@ public class ChromiumApplication extends ContentApplication {
 
     /**
      * Update the accept languages after changing Android locale setting. Doing so kills the
-     * Activities but it doesn't kill the ChromeMobileApplication, so this should be called in
+     * Activities but it doesn't kill the ChromeApplication, so this should be called in
      * {@link #onStart} instead of {@link #initialize}.
      */
     private void updateAcceptLanguages() {

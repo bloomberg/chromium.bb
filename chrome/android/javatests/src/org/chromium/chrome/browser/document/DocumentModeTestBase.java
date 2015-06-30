@@ -15,7 +15,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeMobileApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.Tab;
@@ -88,7 +88,7 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
         assertFalse(tabIds[0] == tabIds[2]);
         assertFalse(tabIds[1] == tabIds[2]);
         assertEquals(3,
-                ChromeMobileApplication.getDocumentTabModelSelector().getModel(false).getCount());
+                ChromeApplication.getDocumentTabModelSelector().getModel(false).getCount());
         return tabIds;
     }
 
@@ -150,32 +150,32 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
     protected int launchUrlViaRunnable(final boolean incognito, final Runnable runnable,
             final String expectedTitle) throws Exception {
         final int tabCount =
-                ChromeMobileApplication.isDocumentTabModelSelectorInitializedForTests()
-                ? ChromeMobileApplication.getDocumentTabModelSelector().getModel(incognito)
+                ChromeApplication.isDocumentTabModelSelectorInitializedForTests()
+                ? ChromeApplication.getDocumentTabModelSelector().getModel(incognito)
                         .getCount() : 0;
         final int tabId =
-                ChromeMobileApplication.isDocumentTabModelSelectorInitializedForTests()
-                ? ChromeMobileApplication.getDocumentTabModelSelector().getCurrentTabId()
+                ChromeApplication.isDocumentTabModelSelectorInitializedForTests()
+                ? ChromeApplication.getDocumentTabModelSelector().getCurrentTabId()
                 : Tab.INVALID_TAB_ID;
 
         // Wait for the Activity to start up.
-        final DocumentActivity newActivity = (DocumentActivity) ActivityUtils.waitForActivity(
+        final DocumentActivity newActivity = ActivityUtils.waitForActivity(
                 getInstrumentation(),
                 incognito ? IncognitoDocumentActivity.class : DocumentActivity.class, runnable);
 
-        assertTrue(ChromeMobileApplication.isDocumentTabModelSelectorInitializedForTests());
+        assertTrue(ChromeApplication.isDocumentTabModelSelectorInitializedForTests());
         MultiActivityTestBase.waitUntilChromeInForeground();
 
         // Wait until the selector is ready and the Tabs have been added to the DocumentTabModel.
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                if (!ChromeMobileApplication.isDocumentTabModelSelectorInitializedForTests()) {
+                if (!ChromeApplication.isDocumentTabModelSelectorInitializedForTests()) {
                     return false;
                 }
 
                 DocumentTabModelSelector selector =
-                        ChromeMobileApplication.getDocumentTabModelSelector();
+                        ChromeApplication.getDocumentTabModelSelector();
                 if (selector.isIncognitoSelected() != incognito) return false;
                 if (selector.getModel(incognito).getCount() != (tabCount + 1)) return false;
                 if (selector.getCurrentTabId() == tabId) return false;
@@ -184,7 +184,7 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
         }));
 
         waitForFullLoad(newActivity, expectedTitle);
-        return ChromeMobileApplication.getDocumentTabModelSelector().getCurrentTabId();
+        return ChromeApplication.getDocumentTabModelSelector().getCurrentTabId();
     }
 
     /**
@@ -194,7 +194,7 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
         // We expect tab to open in the background, i.e. tab index / id should
         // stay the same.
         final DocumentTabModelSelector selector =
-                ChromeMobileApplication.getDocumentTabModelSelector();
+                ChromeApplication.getDocumentTabModelSelector();
         final TabModel tabModel = selector.getModel(false);
         final int expectedTabCount = tabModel.getCount() + 1;
         final int expectedTabIndex = tabModel.index();

@@ -15,8 +15,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.chrome.browser.ChromeMobileApplication;
-import org.chromium.chrome.browser.ChromiumApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.signin.SigninHelper;
 import org.chromium.content.browser.BrowserStartupController.StartupCallback;
 
@@ -69,11 +68,11 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
                 };
 
                 try {
-                    ((ChromeMobileApplication) context.getApplicationContext())
+                    ((ChromeApplication) context.getApplicationContext())
                             .startChromeBrowserProcessesAsync(startupCallback);
                 } catch (ProcessInitException e) {
                     Log.e(TAG, "Unable to load native library.", e);
-                    ChromiumApplication.reportStartupErrorAndExit(e);
+                    ChromeApplication.reportStartupErrorAndExit(e);
                 }
             } else {
                 // Notify SigninHelper of changed accounts (via shared prefs).

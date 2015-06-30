@@ -8,7 +8,7 @@ import android.app.Activity;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.browser.ChromiumApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.feedback.FeedbackCollector;
 import org.chromium.chrome.browser.feedback.FeedbackReporter;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -25,7 +25,7 @@ public final class ChildAccountFeedbackReporter {
                                       String url) {
         ThreadUtils.assertOnUiThread();
         if (sFeedbackReporter == null) {
-            ChromiumApplication application = (ChromiumApplication) activity.getApplication();
+            ChromeApplication application = (ChromeApplication) activity.getApplication();
             sFeedbackReporter = application.createFeedbackReporter();
         }
         FeedbackCollector collector = FeedbackCollector.create(Profile.getLastUsedProfile(), url);

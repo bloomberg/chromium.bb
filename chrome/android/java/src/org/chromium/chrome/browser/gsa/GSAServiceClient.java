@@ -16,7 +16,7 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
 
-import org.chromium.chrome.browser.ChromeMobileApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 
 /**
  * A simple client that connects and talks to the GSAService using Messages.
@@ -71,7 +71,7 @@ public class GSAServiceClient {
     public GSAServiceClient(Context context) {
         mContext = context;
         mConnection = new GSAServiceConnection();
-        mGsaHelper = ((ChromeMobileApplication) mContext.getApplicationContext())
+        mGsaHelper = ((ChromeApplication) mContext.getApplicationContext())
                 .createGsaHelper();
     }
 

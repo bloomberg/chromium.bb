@@ -79,7 +79,7 @@ by a child template that "extends" this file.
 
     <!-- Set android:largeHeap to "true" to allow more than the default
          Java heap limit (32Mb on Nexus S, 48Mb on Xoom). -->
-    <application android:name="{% block application_name %}org.chromium.chrome.browser.ChromeMobileApplication{% endblock %}"
+    <application android:name="{% block application_name %}org.chromium.chrome.browser.ChromeApplication{% endblock %}"
         android:icon="@mipmap/app_icon"
         android:label="@string/app_name"
         android:largeHeap="false"

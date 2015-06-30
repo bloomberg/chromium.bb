@@ -10,7 +10,7 @@ import android.preference.PreferenceManager;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.JNINamespace;
-import org.chromium.chrome.browser.ChromeMobileApplication;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.Tab;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -30,8 +30,8 @@ public class RevenueStats {
      */
     public static RevenueStats getInstance() {
         if (sInstance.get() == null) {
-            ChromeMobileApplication application =
-                    (ChromeMobileApplication) ApplicationStatus.getApplicationContext();
+            ChromeApplication application =
+                    (ChromeApplication) ApplicationStatus.getApplicationContext();
             sInstance.compareAndSet(null, application.createRevenueStatsInstance());
         }
         return sInstance.get();

@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser;
 
 /**
- * Per-process class that manages classes and functions shared by all of Chrome's Activities.
+ * TODO(aurimas): remove this class when downstream code no longer depends on this class.
  */
-public class ChromeMobileApplication extends ChromiumApplication {
+public class ChromeMobileApplication extends ChromeApplication {
 }

@@ -67,7 +67,7 @@ public class PowerBroadcastReceiverTest extends ChromeTabbedActivityTestBase {
     }
 
     private PowerBroadcastReceiver getPowerBroadcastReceiver() {
-        ChromeMobileApplication app = (ChromeMobileApplication) getActivity().getApplication();
+        ChromeApplication app = (ChromeApplication) getActivity().getApplication();
         return app.getPowerBroadcastReceiver();
     }
 
