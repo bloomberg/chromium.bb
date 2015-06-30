@@ -131,6 +131,7 @@ class CC_EXPORT LayerTreeHost {
 
   void NotifyInputThrottledUntilCommit();
 
+  void LayoutAndUpdateLayers();
   void Composite(base::TimeTicks frame_begin_time);
 
   void FinishAllRendering();

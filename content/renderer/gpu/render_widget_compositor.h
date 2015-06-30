@@ -177,9 +177,10 @@ class CONTENT_EXPORT RenderWidgetCompositor
   cc::LayerTreeHost* layer_tree_host() { return layer_tree_host_.get(); }
 
  private:
-  void ScheduleCommit();
-  bool CommitIsSynchronous() const;
-  void SynchronousCommit();
+  void LayoutAndUpdateLayers();
+  void InvokeLayoutAndPaintCallback();
+  bool CompositeIsSynchronous() const;
+  void SynchronouslyComposite();
 
   int num_failed_recreate_attempts_;
   RenderWidget* widget_;

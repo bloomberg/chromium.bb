@@ -739,11 +739,36 @@ void CompositeAndReadbackAsyncCallback(
   }
 }
 
+bool RenderWidgetCompositor::CompositeIsSynchronous() const {
+  return !compositor_deps_->GetCompositorImplThreadTaskRunner().get() &&
+         !layer_tree_host_->settings().single_thread_proxy_scheduler;
+}
+
 void RenderWidgetCompositor::layoutAndPaintAsync(
     blink::WebLayoutAndPaintAsyncCallback* callback) {
   DCHECK(!temporary_copy_output_request_ && !layout_and_paint_async_callback_);
   layout_and_paint_async_callback_ = callback;
-  ScheduleCommit();
+
+  if (CompositeIsSynchronous()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&RenderWidgetCompositor::LayoutAndUpdateLayers,
+                              weak_factory_.GetWeakPtr()));
+  } else {
+    layer_tree_host_->SetNeedsCommit();
+  }
+}
+
+void RenderWidgetCompositor::LayoutAndUpdateLayers() {
+  DCHECK(CompositeIsSynchronous());
+  layer_tree_host_->LayoutAndUpdateLayers();
+  InvokeLayoutAndPaintCallback();
+}
+
+void RenderWidgetCompositor::InvokeLayoutAndPaintCallback() {
+  if (!layout_and_paint_async_callback_)
+    return;
+  layout_and_paint_async_callback_->didLayoutAndPaint();
+  layout_and_paint_async_callback_ = nullptr;
 }
 
 void RenderWidgetCompositor::compositeAndReadbackAsync(
@@ -752,29 +777,21 @@ void RenderWidgetCompositor::compositeAndReadbackAsync(
   temporary_copy_output_request_ =
       cc::CopyOutputRequest::CreateBitmapRequest(
           base::Bind(&CompositeAndReadbackAsyncCallback, callback));
+
   // Force a commit to happen. The temporary copy output request will
   // be installed after layout which will happen as a part of the commit, for
   // widgets that delay the creation of their output surface.
-  ScheduleCommit();
-}
-
-bool RenderWidgetCompositor::CommitIsSynchronous() const {
-  return !compositor_deps_->GetCompositorImplThreadTaskRunner().get() &&
-         !layer_tree_host_->settings().single_thread_proxy_scheduler;
-}
-
-void RenderWidgetCompositor::ScheduleCommit() {
-  if (CommitIsSynchronous()) {
+  if (CompositeIsSynchronous()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&RenderWidgetCompositor::SynchronousCommit,
+        FROM_HERE, base::Bind(&RenderWidgetCompositor::SynchronouslyComposite,
                               weak_factory_.GetWeakPtr()));
   } else {
     layer_tree_host_->SetNeedsCommit();
   }
 }
 
-void RenderWidgetCompositor::SynchronousCommit() {
-  DCHECK(CommitIsSynchronous());
+void RenderWidgetCompositor::SynchronouslyComposite() {
+  DCHECK(CompositeIsSynchronous());
   layer_tree_host_->Composite(base::TimeTicks::Now());
 }
 
@@ -933,10 +950,7 @@ void RenderWidgetCompositor::DidFailToInitializeOutputSurface() {
 }
 
 void RenderWidgetCompositor::WillCommit() {
-  if (!layout_and_paint_async_callback_)
-    return;
-  layout_and_paint_async_callback_->didLayoutAndPaint();
-  layout_and_paint_async_callback_ = nullptr;
+  InvokeLayoutAndPaintCallback();
 }
 
 void RenderWidgetCompositor::DidCommit() {

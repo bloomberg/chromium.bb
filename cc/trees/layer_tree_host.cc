@@ -635,6 +635,16 @@ void LayerTreeHost::NotifyInputThrottledUntilCommit() {
   proxy_->NotifyInputThrottledUntilCommit();
 }
 
+void LayerTreeHost::LayoutAndUpdateLayers() {
+  DCHECK(!proxy_->HasImplThread());
+  // This function is only valid when not using the scheduler.
+  DCHECK(!settings_.single_thread_proxy_scheduler);
+  SingleThreadProxy* proxy = static_cast<SingleThreadProxy*>(proxy_.get());
+
+  SetLayerTreeHostClientReady();
+  proxy->LayoutAndUpdateLayers();
+}
+
 void LayerTreeHost::Composite(base::TimeTicks frame_begin_time) {
   DCHECK(!proxy_->HasImplThread());
   // This function is only valid when not using the scheduler.
