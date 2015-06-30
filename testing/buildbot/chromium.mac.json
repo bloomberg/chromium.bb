@@ -135,6 +135,9 @@
         "test": "gpu_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "jingle_unittests"
       },
       {
@@ -340,6 +343,9 @@
         "test": "ipc_tests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "jingle_unittests"
       },
       {
@@ -557,6 +563,9 @@
         "test": "ipc_tests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "jingle_unittests"
       },
       {
@@ -774,6 +783,9 @@
         "test": "ipc_tests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "jingle_unittests"
       },
       {
@@ -992,6 +1004,9 @@
         "test": "ipc_tests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "jingle_unittests"
       },
       {

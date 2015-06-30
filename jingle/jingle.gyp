@@ -180,6 +180,25 @@
           ],
         },
       ],
+      'conditions': [
+        ['test_isolation_mode != "noop"', {
+          'targets': [
+            {
+              'target_name': 'jingle_unittests_run',
+              'type': 'none',
+              'dependencies': [
+                'jingle_unittests',
+              ],
+              'includes': [
+                '../build/isolate.gypi',
+              ],
+              'sources': [
+                'jingle_unittests.isolate',
+              ],
+            },
+          ],
+        }],
+      ],
     }, {  # enable_webrtc!=1 and OS=="android"
       'targets': [
         # Stub targets as Android doesn't use libjingle when webrtc is disabled.

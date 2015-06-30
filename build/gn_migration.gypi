@@ -552,6 +552,11 @@
                 '../ui/aura/aura.gyp:aura_unittests_run',
               ],
             }],
+            ['enable_webrtc==1 or OS!="android"', {
+              'dependencies': [
+                '../jingle/jingle.gyp:jingle_unittests_run',
+              ],
+            }],
           ],
         }],
         ['test_isolation_mode!="noop" and use_ash==1', {
