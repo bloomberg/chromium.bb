@@ -43,15 +43,11 @@ cr.define('route_details', function() {
             details.$[elementId].querySelector('span').innerText);
       };
 
-      // Import route_details.html and load_time_data.js before running suite.
+      // Import route_details.html before running suite.
       suiteSetup(function() {
-        return Promise.all([
-          PolymerTest.importHtml(
-              'chrome://media-router/elements/route_details/' +
-              'route_details.html'),
-          PolymerTest.importHtml(
-              'chrome://resources/js/load_time_data.js'),
-        ]);
+        return PolymerTest.importHtml(
+            'chrome://media-router/elements/route_details/' +
+            'route_details.html');
       });
 
       // Initialize a route-details before each test.
