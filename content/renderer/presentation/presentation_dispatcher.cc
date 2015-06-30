@@ -4,6 +4,9 @@
 
 #include "content/renderer/presentation/presentation_dispatcher.h"
 
+#include <algorithm>
+#include <vector>
+
 #include "base/logging.h"
 #include "content/common/presentation/presentation_service.mojom.h"
 #include "content/public/common/presentation_constants.h"
@@ -398,16 +401,15 @@ void PresentationDispatcher::ConnectToPresentationServiceIfNeeded() {
   binding_.Bind(GetProxy(&client_ptr));
   presentation_service_->SetClient(client_ptr.Pass());
 
-  // TODO(imcheng): Uncomment these once they are implemented on the browser
-  // side. (crbug.com/459006)
-  /*
   presentation_service_->ListenForDefaultSessionStart(base::Bind(
       &PresentationDispatcher::OnDefaultSessionStarted,
       base::Unretained(this)));
-  presentation_service_->ListenForSessionStateChange(base::Bind(
-      &PresentationDispatcher::OnSessionStateChange,
-      base::Unretained(this)));
-  */
+
+  // TODO(imcheng): Uncomment this once it is implemented on the browser
+  // side. (crbug.com/459006)
+  // presentation_service_->ListenForSessionStateChange(base::Bind(
+  //     &PresentationDispatcher::OnSessionStateChange,
+  //     base::Unretained(this)));
 }
 
 }  // namespace content
