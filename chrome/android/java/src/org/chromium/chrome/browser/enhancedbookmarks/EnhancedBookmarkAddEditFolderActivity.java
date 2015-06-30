@@ -146,6 +146,7 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
             updateParent(mModel.getDefaultFolder());
         } else {
             // Edit mode
+            mSaveButton.setVisibility(View.GONE);
             dialogTitle.setText(R.string.edit_folder);
             BookmarkItem bookmarkItem = mModel.getBookmarkById(mFolderId);
             updateParent(bookmarkItem.getParentId());
@@ -164,28 +165,23 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
                 EnhancedBookmarkFolderSelectActivity.startFolderSelectActivity(this, mFolderId);
             }
         } else if (v == mSaveButton) {
-            if (!mFolderTitle.validate()) {
-                mFolderTitle.requestFocus();
-                return;
-            }
-
-            String folderTitle = mFolderTitle.getTrimmedText();
-            if (mIsAddMode) {
-                BookmarkId newFolder = mModel.addFolder(mParentId, 0, folderTitle);
-                Intent intent = new Intent();
-                intent.putExtra(INTENT_CREATED_BOOKMARK, newFolder.toString());
-                setResult(RESULT_OK, intent);
-            } else {
-                mModel.setBookmarkTitle(mFolderId, folderTitle);
-            }
-
-            finish();
+            assert mIsAddMode;
+            if (save()) finish();
         } else if (v == mBackButton) {
-            finish();
+            onBackPressed();
         } else if (v == mDeleteButton) {
             // When deleting, wait till the model has done its job and notify us via model observer,
             // and then we finish this activity.
             mModel.deleteBookmarks(mFolderId);
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (!mIsAddMode) {
+            if (save()) finish();
+        } else {
+            super.onBackPressed();
         }
     }
 
@@ -206,6 +202,25 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
         mModel.removeModelObserver(mBookmarkModelObserver);
         mModel.destroy();
         mModel = null;
+    }
+
+    private boolean save() {
+        if (!mFolderTitle.validate()) {
+            mFolderTitle.requestFocus();
+            return false;
+        }
+
+        String folderTitle = mFolderTitle.getTrimmedText();
+        if (mIsAddMode) {
+            BookmarkId newFolder = mModel.addFolder(mParentId, 0, folderTitle);
+            Intent intent = new Intent();
+            intent.putExtra(INTENT_CREATED_BOOKMARK, newFolder.toString());
+            setResult(RESULT_OK, intent);
+        } else {
+            mModel.setBookmarkTitle(mFolderId, folderTitle);
+        }
+
+        return true;
     }
 
     private void updateParent(BookmarkId newParent) {
