@@ -84,8 +84,8 @@ TEST(PathOutput, NinjaEscaping) {
   {
     // Not other weird stuff
     std::ostringstream out;
-    writer.WriteFile(out, SourceFile("//foo/\"foo\\bar\".cc"));
-    EXPECT_EQ("../../foo/\"foo\\bar\".cc", out.str());
+    writer.WriteFile(out, SourceFile("//foo/\"foo\".cc"));
+    EXPECT_EQ("../../foo/\"foo\".cc", out.str());
   }
 }
 
@@ -127,19 +127,18 @@ TEST(PathOutput, NinjaForkEscaping) {
     EXPECT_EQ("../../foo/\\\"foobar\\\".cc", out.str());
   }
 
-
   // Backslashes should get escaped on non-Windows and preserved on Windows.
   writer.set_escape_platform(ESCAPE_PLATFORM_WIN);
   {
     std::ostringstream out;
-    writer.WriteFile(out, SourceFile("//foo\\bar.cc"));
-    EXPECT_EQ("../../foo\\bar.cc", out.str());
+    writer.WriteFile(out, OutputFile("foo\\bar.cc"));
+    EXPECT_EQ("foo\\bar.cc", out.str());
   }
   writer.set_escape_platform(ESCAPE_PLATFORM_POSIX);
   {
     std::ostringstream out;
-    writer.WriteFile(out, SourceFile("//foo\\bar.cc"));
-    EXPECT_EQ("../../foo\\\\bar.cc", out.str());
+    writer.WriteFile(out, OutputFile("foo\\bar.cc"));
+    EXPECT_EQ("foo\\\\bar.cc", out.str());
   }
 }
 

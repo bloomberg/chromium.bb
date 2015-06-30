@@ -242,6 +242,7 @@
         'scope_per_file_provider_unittest.cc',
         'scope_unittest.cc',
         'source_dir_unittest.cc',
+        'source_file_unittest.cc',
         'string_utils_unittest.cc',
         'substitution_pattern_unittest.cc',
         'substitution_writer_unittest.cc',

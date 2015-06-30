@@ -30,12 +30,14 @@ SourceFile::SourceFile(const base::StringPiece& p)
     : value_(p.data(), p.size()) {
   DCHECK(!value_.empty());
   AssertValueSourceFileString(value_);
+  NormalizePath(&value_);
 }
 
 SourceFile::SourceFile(SwapIn, std::string* value) {
   value_.swap(*value);
   DCHECK(!value_.empty());
   AssertValueSourceFileString(value_);
+  NormalizePath(&value_);
 }
 
 SourceFile::~SourceFile() {
