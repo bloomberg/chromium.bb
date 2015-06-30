@@ -540,10 +540,16 @@
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests_run',
             '../ui/accessibility/accessibility.gyp:accessibility_unittests_run',
             '../ui/app_list/app_list.gyp:app_list_unittests_run',
-            '../ui/aura/aura.gyp:aura_unittests_run',
             '../ui/events/events.gyp:events_unittests_run',
             '../ui/message_center/message_center.gyp:message_center_unittests_run',
             '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests_run',
+          ],
+          'conditions': [
+            ['use_aura==1', {
+              'dependencies': [
+                '../ui/aura/aura.gyp:aura_unittests_run',
+              ],
+            }],
           ],
         }],
         ['test_isolation_mode!="noop" and use_ash==1', {
