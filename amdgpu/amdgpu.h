@@ -223,7 +223,7 @@ struct amdgpu_bo_info {
  */
 struct amdgpu_bo_import_result {
 	/** Handle of memory/buffer to use */
-	amdgpu_bo_handle  buf_handle;
+	amdgpu_bo_handle buf_handle;
 
 	 /** Buffer size */
 	uint64_t alloc_size;
@@ -231,7 +231,6 @@ struct amdgpu_bo_import_result {
 	 /** Assigned virtual MC Base Address */
 	uint64_t virtual_mc_base_address;
 };
-
 
 /**
  *
@@ -242,13 +241,13 @@ struct amdgpu_bo_import_result {
  *
 */
 struct amdgpu_gds_resource_info {
-	uint32_t   gds_gfx_partition_size;
-	uint32_t   compute_partition_size;
-	uint32_t   gds_total_size;
-	uint32_t   gws_per_gfx_partition;
-	uint32_t   gws_per_compute_partition;
-	uint32_t   oa_per_gfx_partition;
-	uint32_t   oa_per_compute_partition;
+	uint32_t gds_gfx_partition_size;
+	uint32_t compute_partition_size;
+	uint32_t gds_total_size;
+	uint32_t gws_per_gfx_partition;
+	uint32_t gws_per_compute_partition;
+	uint32_t oa_per_gfx_partition;
+	uint32_t oa_per_compute_partition;
 };
 
 /**
@@ -259,20 +258,19 @@ struct amdgpu_gds_resource_info {
 */
 struct amdgpu_cs_dep_info {
 	/** Context to which the fence belongs */
-	amdgpu_context_handle	context;
+	amdgpu_context_handle context;
 
 	/** To which HW IP type the fence belongs */
-	uint32_t		ip_type;
+	uint32_t ip_type;
 
 	/** IP instance index if there are several IPs of the same type. */
-	uint32_t		ip_instance;
+	uint32_t ip_instance;
 
 	/** Ring index of the HW IP */
-	uint32_t		ring;
+	uint32_t ring;
 
-	/** Specify fence for which we need to check
-	 * submission status.*/
-	uint64_t		fence;
+	/** Specify fence for which we need to check submission status.*/
+	uint64_t fence;
 };
 
 /**
@@ -283,18 +281,17 @@ struct amdgpu_cs_dep_info {
 */
 struct amdgpu_cs_ib_info {
 	/** Special flags */
-	uint64_t      flags;
+	uint64_t flags;
 
 	/** Virtual MC address of the command buffer */
-	uint64_t      ib_mc_address;
+	uint64_t ib_mc_address;
 
 	/**
 	 * Size of Command Buffer to be submitted.
 	 *   - The size is in units of dwords (4 bytes).
-	 *   - Must be less or equal to the size of allocated IB
 	 *   - Could be 0
 	 */
-	uint32_t       size;
+	uint32_t size;
 };
 
 /**
@@ -306,19 +303,19 @@ struct amdgpu_cs_ib_info {
 */
 struct amdgpu_cs_request {
 	/** Specify flags with additional information */
-	uint64_t	flags;
+	uint64_t flags;
 
 	/** Specify HW IP block type to which to send the IB. */
-	unsigned	ip_type;
+	unsigned ip_type;
 
 	/** IP instance index if there are several IPs of the same type. */
-	unsigned	ip_instance;
+	unsigned ip_instance;
 
 	/**
 	 * Specify ring index of the IP. We could have several rings
 	 * in the same IP. E.g. 0 for SDMA0 and 1 for SDMA1.
 	 */
-	uint32_t           ring;
+	uint32_t ring;
 
 	/**
 	 * List handle with resources used by this request.
@@ -355,26 +352,25 @@ struct amdgpu_cs_request {
 struct amdgpu_cs_query_fence {
 
 	/** In which context IB was sent to execution */
-	amdgpu_context_handle  context;
+	amdgpu_context_handle context;
 
 	/** Timeout in nanoseconds. */
-	uint64_t  timeout_ns;
+	uint64_t timeout_ns;
 
 	/** To which HW IP type the fence belongs */
-	unsigned  ip_type;
+	unsigned ip_type;
 
 	/** IP instance index if there are several IPs of the same type. */
 	unsigned ip_instance;
 
 	/** Ring index of the HW IP */
-	uint32_t      ring;
+	uint32_t ring;
 
 	/** Flags */
-	uint64_t  flags;
+	uint64_t flags;
 
-	/** Specify fence for which we need to check
-	 * submission status.*/
-	uint64_t	fence;
+	/** Specify fence for which we need to check submission status.*/
+	uint64_t fence;
 };
 
 /**
@@ -394,7 +390,6 @@ struct amdgpu_buffer_size_alignments {
 	uint64_t size_remote;
 };
 
-
 /**
  * Structure which provide information about heap
  *
@@ -403,7 +398,7 @@ struct amdgpu_buffer_size_alignments {
  */
 struct amdgpu_heap_info {
 	/** Theoretical max. available memory in the given heap */
-	uint64_t  heap_size;
+	uint64_t heap_size;
 
 	/**
 	 * Number of bytes allocated in the heap. This includes all processes
@@ -411,16 +406,14 @@ struct amdgpu_heap_info {
 	 * are allocated, freed, and moved. It cannot be larger than
 	 * heap_size.
 	 */
-	uint64_t  heap_usage;
+	uint64_t heap_usage;
 
 	/**
 	 * Theoretical possible max. size of buffer which
 	 * could be allocated in the given heap
 	 */
-	uint64_t  max_allocation;
+	uint64_t max_allocation;
 };
-
-
 
 /**
  * Describe GPU h/w info needed for UMD correct initialization
@@ -430,7 +423,7 @@ struct amdgpu_heap_info {
 struct amdgpu_gpu_info {
 	/** Asic id */
 	uint32_t asic_id;
-	/**< Chip revision */
+	/** Chip revision */
 	uint32_t chip_rev;
 	/** Chip external revision */
 	uint32_t chip_external_rev;
@@ -496,14 +489,14 @@ struct amdgpu_gpu_info {
  *
 */
 
-
 /**
  *
  * \param   fd            - \c [in]  File descriptor for AMD GPU device
  *                                   received previously as the result of
  *                                   e.g. drmOpen() call.
- *                                   For legacy fd type, the DRI2/DRI3 authentication
- *                                   should be done before calling this function.
+ *                                   For legacy fd type, the DRI2/DRI3
+ *                                   authentication should be done before
+ *                                   calling this function.
  * \param   major_version - \c [out] Major version of library. It is assumed
  *                                   that adding new functionality will cause
  *                                   increase in major version
@@ -525,8 +518,6 @@ int amdgpu_device_initialize(int fd,
 			     uint32_t *minor_version,
 			     amdgpu_device_handle *device_handle);
 
-
-
 /**
  *
  * When access to such library does not needed any more the special
@@ -546,7 +537,6 @@ int amdgpu_device_initialize(int fd,
  *
 */
 int amdgpu_device_deinitialize(amdgpu_device_handle device_handle);
-
 
 /*
  * Memory Management
@@ -652,6 +642,42 @@ int amdgpu_bo_import(amdgpu_device_handle dev,
 		     struct amdgpu_bo_import_result *output);
 
 /**
+ * Request GPU access to user allocated memory e.g. via "malloc"
+ *
+ * \param dev - [in] Device handle. See #amdgpu_device_initialize()
+ * \param cpu - [in] CPU address of user allocated memory which we
+ * want to map to GPU address space (make GPU accessible)
+ * (This address must be correctly aligned).
+ * \param size - [in] Size of allocation (must be correctly aligned)
+ * \param amdgpu_bo_alloc_result - [out] Handle of allocation to be passed as
+ * resource on submission and be used in other operations.
+ *
+ *
+ * \return 0 on success
+ * >0 - AMD specific error code
+ * <0 - Negative POSIX Error code
+ *
+ * \note
+ * This call doesn't guarantee that such memory will be persistently
+ * "locked" / make non-pageable. The purpose of this call is to provide
+ * opportunity for GPU get access to this resource during submission.
+ *
+ * The maximum amount of memory which could be mapped in this call depends
+ * if overcommit is disabled or not. If overcommit is disabled than the max.
+ * amount of memory to be pinned will be limited by left "free" size in total
+ * amount of memory which could be locked simultaneously ("GART" size).
+ *
+ * Supported (theoretical) max. size of mapping is restricted only by
+ * "GART" size.
+ *
+ * It is responsibility of caller to correctly specify access rights
+ * on VA assignment.
+*/
+int amdgpu_create_bo_from_user_mem(amdgpu_device_handle dev,
+				    void *cpu, uint64_t size,
+				    struct amdgpu_bo_alloc_result *info);
+
+/**
  * Free previosuly allocated memory
  *
  * \param   dev	       - \c [in] Device handle. See #amdgpu_device_initialize()
@@ -701,7 +727,6 @@ int amdgpu_bo_cpu_map(amdgpu_bo_handle buf_handle, void **cpu);
 */
 int amdgpu_bo_cpu_unmap(amdgpu_bo_handle buf_handle);
 
-
 /**
  * Wait until a buffer is not used by the device.
  *
@@ -713,7 +738,8 @@ int amdgpu_bo_cpu_unmap(amdgpu_bo_handle buf_handle);
  *                          1 GPU access is in fly or scheduled
  *
  * \return   0 - on success
- *          <0 - AMD specific error code
+ *          >0 - AMD specific error code
+ *          <0 - Negative POSIX Error code
  */
 int amdgpu_bo_wait_for_idle(amdgpu_bo_handle buf_handle,
 			    uint64_t timeout_ns,
@@ -774,28 +800,6 @@ int amdgpu_bo_list_update(amdgpu_bo_list_handle handle,
 			  uint8_t *resource_prios);
 
 /*
- * Special GPU Resources
- *
-*/
-
-
-
-/**
- * Query information about GDS
- *
- * \param   dev	     - \c [in] Device handle. See #amdgpu_device_initialize()
- * \param   gds_info - \c [out] Pointer to structure to get GDS information
- *
- * \return   0 on success\n
- *          >0 - AMD specific error code\n
- *          <0 - Negative POSIX Error code
- *
-*/
-int amdgpu_query_gds_info(amdgpu_device_handle dev,
-			struct amdgpu_gds_resource_info *gds_info);
-
-
-/*
  * GPU Execution context
  *
 */
@@ -854,7 +858,6 @@ int amdgpu_cs_ctx_free(amdgpu_context_handle context);
 */
 int amdgpu_cs_query_reset_state(amdgpu_context_handle context,
 				uint32_t *state, uint32_t *hangs);
-
 
 /*
  * Command Buffers Management
@@ -929,12 +932,10 @@ int amdgpu_cs_submit(amdgpu_context_handle context,
 int amdgpu_cs_query_fence_status(struct amdgpu_cs_query_fence *fence,
 				 uint32_t *expired);
 
-
 /*
  * Query / Info API
  *
 */
-
 
 /**
  * Query allocation size alignments
@@ -953,10 +954,8 @@ int amdgpu_cs_query_fence_status(struct amdgpu_cs_query_fence *fence,
  *
 */
 int amdgpu_query_buffer_size_alignment(amdgpu_device_handle dev,
-					struct amdgpu_buffer_size_alignments
-									*info);
-
-
+				       struct amdgpu_buffer_size_alignments
+						*info);
 
 /**
  * Query firmware versions
@@ -977,8 +976,6 @@ int amdgpu_query_firmware_version(amdgpu_device_handle dev, unsigned fw_type,
 				  unsigned ip_instance, unsigned index,
 				  uint32_t *version, uint32_t *feature);
 
-
-
 /**
  * Query the number of HW IP instances of a certain type.
  *
@@ -992,8 +989,6 @@ int amdgpu_query_firmware_version(amdgpu_device_handle dev, unsigned fw_type,
 */
 int amdgpu_query_hw_ip_count(amdgpu_device_handle dev, unsigned type,
 			     uint32_t *count);
-
-
 
 /**
  * Query engine information
@@ -1014,9 +1009,6 @@ int amdgpu_query_hw_ip_info(amdgpu_device_handle dev, unsigned type,
 			    unsigned ip_instance,
 			    struct drm_amdgpu_info_hw_ip *info);
 
-
-
-
 /**
  * Query heap information
  *
@@ -1032,12 +1024,8 @@ int amdgpu_query_hw_ip_info(amdgpu_device_handle dev, unsigned type,
  *          <0 - Negative POSIX Error code
  *
 */
-int amdgpu_query_heap_info(amdgpu_device_handle dev,
-			    uint32_t heap,
-				uint32_t flags,
-			    struct amdgpu_heap_info *info);
-
-
+int amdgpu_query_heap_info(amdgpu_device_handle dev, uint32_t heap,
+			   uint32_t flags, struct amdgpu_heap_info *info);
 
 /**
  * Get the CRTC ID from the mode object ID
@@ -1053,8 +1041,6 @@ int amdgpu_query_heap_info(amdgpu_device_handle dev,
 */
 int amdgpu_query_crtc_from_id(amdgpu_device_handle dev, unsigned id,
 			      int32_t *result);
-
-
 
 /**
  * Query GPU H/w Info
@@ -1072,8 +1058,6 @@ int amdgpu_query_crtc_from_id(amdgpu_device_handle dev, unsigned id,
 */
 int amdgpu_query_gpu_info(amdgpu_device_handle dev,
 			   struct amdgpu_gpu_info *info);
-
-
 
 /**
  * Query hardware or driver information.
@@ -1094,7 +1078,19 @@ int amdgpu_query_gpu_info(amdgpu_device_handle dev,
 int amdgpu_query_info(amdgpu_device_handle dev, unsigned info_id,
 		      unsigned size, void *value);
 
-
+/**
+ * Query information about GDS
+ *
+ * \param   dev	     - \c [in] Device handle. See #amdgpu_device_initialize()
+ * \param   gds_info - \c [out] Pointer to structure to get GDS information
+ *
+ * \return   0 on success\n
+ *          >0 - AMD specific error code\n
+ *          <0 - Negative POSIX Error code
+ *
+*/
+int amdgpu_query_gds_info(amdgpu_device_handle dev,
+			struct amdgpu_gds_resource_info *gds_info);
 
 /**
  * Read a set of consecutive memory-mapped registers.
@@ -1117,47 +1113,5 @@ int amdgpu_query_info(amdgpu_device_handle dev, unsigned info_id,
 int amdgpu_read_mm_registers(amdgpu_device_handle dev, unsigned dword_offset,
 			     unsigned count, uint32_t instance, uint32_t flags,
 			     uint32_t *values);
-
-
-
-/**
- * Request GPU access to user allocated memory e.g. via "malloc"
- *
- * \param dev - [in] Device handle. See #amdgpu_device_initialize()
- * \param cpu - [in] CPU address of user allocated memory which we
- * want to map to GPU address space (make GPU accessible)
- * (This address must be correctly aligned).
- * \param size - [in] Size of allocation (must be correctly aligned)
- * \param amdgpu_bo_alloc_result - [out] Handle of allocation to be passed as resource
- * on submission and be used in other operations.(e.g. for VA submission)
- * ( Temporally defined amdgpu_bo_alloc_result as parameter for return mc address. )
- *
- *
- * \return 0 on success
- * >0 - AMD specific error code
- * <0 - Negative POSIX Error code
- *
- *
- * \note
- * This call doesn't guarantee that such memory will be persistently
- * "locked" / make non-pageable. The purpose of this call is to provide
- * opportunity for GPU get access to this resource during submission.
- *
- * The maximum amount of memory which could be mapped in this call depends
- * if overcommit is disabled or not. If overcommit is disabled than the max.
- * amount of memory to be pinned will be limited by left "free" size in total
- * amount of memory which could be locked simultaneously ("GART" size).
- *
- * Supported (theoretical) max. size of mapping is restricted only by
- * "GART" size.
- *
- * It is responsibility of caller to correctly specify access rights
- * on VA assignment.
-*/
-int amdgpu_create_bo_from_user_mem(amdgpu_device_handle dev,
-				    void *cpu,
-				    uint64_t size,
-				    struct amdgpu_bo_alloc_result *info);
-
 
 #endif /* #ifdef _AMDGPU_H_ */
