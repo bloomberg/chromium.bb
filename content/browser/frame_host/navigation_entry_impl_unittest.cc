@@ -76,6 +76,27 @@ TEST_F(NavigationEntryTest, NavigationEntryURLs) {
   EXPECT_EQ(ASCIIToUTF16("bar baz.txt"),
             entry1_->GetTitleForDisplay(std::string()));
 
+  // For file:/// URLs, make sure that slashes after the filename are ignored.
+  // Regression test for https://crbug.com/503003.
+  entry1_->SetURL(GURL("file:///foo/bar baz.txt#foo/bar"));
+  EXPECT_EQ(ASCIIToUTF16("bar baz.txt#foo/bar"),
+            entry1_->GetTitleForDisplay(std::string()));
+  entry1_->SetURL(GURL("file:///foo/bar baz.txt?x=foo/bar"));
+  EXPECT_EQ(ASCIIToUTF16("bar baz.txt?x=foo/bar"),
+            entry1_->GetTitleForDisplay(std::string()));
+  entry1_->SetURL(GURL("file:///foo/bar baz.txt#baz/boo?x=foo/bar"));
+  EXPECT_EQ(ASCIIToUTF16("bar baz.txt#baz/boo?x=foo/bar"),
+            entry1_->GetTitleForDisplay(std::string()));
+  entry1_->SetURL(GURL("file:///foo/bar baz.txt?x=foo/bar#baz/boo"));
+  EXPECT_EQ(ASCIIToUTF16("bar baz.txt?x=foo/bar#baz/boo"),
+            entry1_->GetTitleForDisplay(std::string()));
+  entry1_->SetURL(GURL("file:///foo/bar baz.txt#foo/bar#baz/boo"));
+  EXPECT_EQ(ASCIIToUTF16("bar baz.txt#foo/bar#baz/boo"),
+            entry1_->GetTitleForDisplay(std::string()));
+  entry1_->SetURL(GURL("file:///foo/bar baz.txt?x=foo/bar?y=baz/boo"));
+  EXPECT_EQ(ASCIIToUTF16("bar baz.txt?x=foo/bar?y=baz/boo"),
+            entry1_->GetTitleForDisplay(std::string()));
+
   // Title affects GetTitleForDisplay
   entry1_->SetTitle(ASCIIToUTF16("Google"));
   EXPECT_EQ(ASCIIToUTF16("Google"), entry1_->GetTitleForDisplay(std::string()));

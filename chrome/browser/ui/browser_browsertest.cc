@@ -462,6 +462,57 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoTitle) {
   EXPECT_EQ(ASCIIToUTF16("title1.html"), tab_title);
 }
 
+// Check that a file:// URL displays the filename, but no path, with any ref or
+// query parameters following it if the content does not have a <title> tag.
+// Specifically verify the cases where the ref or query parameters have a '/'
+// character in them. This is a regression test for
+// https://crbug.com/503003.
+IN_PROC_BROWSER_TEST_F(BrowserTest, NoTitleFileUrl) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
+    return;
+#endif
+
+  // Note that the host names used and the order of these cases are by design.
+  // There must be unique query parameters and references per case (i.e. the
+  // indexed foo*.com hosts) because if the same query parameter is repeated in
+  // a row, then the navigation may not actually happen, as it will only appear
+  // as a reference change.  Additionally, cases with references first must
+  // appear after a query parameter case since otherwise it will not be a
+  // navigation.
+  struct {
+    std::string suffix;
+    std::string message;
+  } cases[]{
+      {"#https://foo1.com", "file:/// URL with slash in ref"},
+      {"?x=https://foo2.com", "file:/// URL with slash in query parameter"},
+      {"?x=https://foo3.com#https://foo3.com",
+       "file:/// URL with slashes in query parameter and ref"},
+      {"#https://foo4.com?x=https://foo4.com",
+       "file:/// URL with slashes in ref and query parameter"},
+      {"?x=https://foo6.com?x=https://foo6.com",
+       "file:/// URL with slashes in multiple query parameter"},
+      {"#https://foo5.com#https://foo5.com",
+       "file:/// URL with slashes in multiple refs"}};
+
+  GURL prefix_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(kTitle1File));
+  base::string16 tab_title;
+  base::string16 test_title;
+  for (const auto& c : cases) {
+    SCOPED_TRACE(c.message);
+    GURL url(prefix_url.spec() + c.suffix);
+    test_title = ASCIIToUTF16("title1.html" + c.suffix);
+    content::TitleWatcher title_watcher(
+        browser()->tab_strip_model()->GetActiveWebContents(), test_title);
+    ui_test_utils::NavigateToURL(browser(), url);
+    EXPECT_EQ(test_title, title_watcher.WaitAndGetTitle());
+  }
+}
+
 // Launch the app, navigate to a page with a title, check that the app title
 // was set correctly.
 IN_PROC_BROWSER_TEST_F(BrowserTest, Title) {

@@ -229,7 +229,19 @@ const base::string16& NavigationEntryImpl::GetTitleForDisplay(
 
   // For file:// URLs use the filename as the title, not the full path.
   if (GetURL().SchemeIsFile()) {
-    base::string16::size_type slashpos = title.rfind('/');
+    // It is necessary to ignore the reference and query parameters or else
+    // looking for slashes might accidentally return one of those values. See
+    // https://crbug.com/503003.
+    base::string16::size_type refpos = title.find('#');
+    base::string16::size_type querypos = title.find('?');
+    base::string16::size_type lastpos;
+    if (refpos == base::string16::npos)
+      lastpos = querypos;
+    else if (querypos == base::string16::npos)
+      lastpos = refpos;
+    else
+      lastpos = (refpos < querypos) ? refpos : querypos;
+    base::string16::size_type slashpos = title.rfind('/', lastpos);
     if (slashpos != base::string16::npos)
       title = title.substr(slashpos + 1);
   }
