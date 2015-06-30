@@ -225,9 +225,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       paint_time_counter_(PaintTimeCounter::Create()),
       memory_history_(MemoryHistory::Create()),
       debug_rect_history_(DebugRectHistory::Create()),
-      texture_mailbox_deleter_(new TextureMailboxDeleter(
-          proxy_->HasImplThread() ? proxy_->ImplThreadTaskRunner()
-                                  : proxy_->MainThreadTaskRunner())),
+      texture_mailbox_deleter_(new TextureMailboxDeleter(GetTaskRunner())),
       max_memory_needed_bytes_(0),
       device_scale_factor_(1.f),
       resourceless_software_draw_(false),
@@ -2058,15 +2056,12 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
   DCHECK(tile_task_worker_pool_);
   DCHECK(resource_pool_);
 
-  base::SingleThreadTaskRunner* task_runner =
-      proxy_->HasImplThread() ? proxy_->ImplThreadTaskRunner()
-                              : proxy_->MainThreadTaskRunner();
-  DCHECK(task_runner);
+  DCHECK(GetTaskRunner());
   size_t scheduled_raster_task_limit =
       IsSynchronousSingleThreaded() ? std::numeric_limits<size_t>::max()
                                     : settings_.scheduled_raster_task_limit;
   tile_manager_ = TileManager::Create(
-      this, task_runner, resource_pool_.get(),
+      this, GetTaskRunner(), resource_pool_.get(),
       tile_task_worker_pool_->AsTileTaskRunner(), scheduled_raster_task_limit);
 
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
@@ -2076,10 +2071,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
     scoped_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
     scoped_ptr<ResourcePool>* resource_pool,
     scoped_ptr<ResourcePool>* staging_resource_pool) {
-  base::SingleThreadTaskRunner* task_runner =
-      proxy_->HasImplThread() ? proxy_->ImplThreadTaskRunner()
-                              : proxy_->MainThreadTaskRunner();
-  DCHECK(task_runner);
+  DCHECK(GetTaskRunner());
 
   // Pass the single-threaded synchronous task graph runner to the worker pool
   // if we're in synchronous single-threaded mode.
@@ -2096,7 +2088,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
         ResourcePool::Create(resource_provider_.get(), GL_TEXTURE_2D);
 
     *tile_task_worker_pool = BitmapTileTaskWorkerPool::Create(
-        task_runner, task_graph_runner, resource_provider_.get());
+        GetTaskRunner(), task_graph_runner, resource_provider_.get());
     return;
   }
 
@@ -2108,7 +2100,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
         use_msaa_ ? settings_.gpu_rasterization_msaa_sample_count : 0;
 
     *tile_task_worker_pool = GpuTileTaskWorkerPool::Create(
-        task_runner, task_graph_runner, context_provider,
+        GetTaskRunner(), task_graph_runner, context_provider,
         resource_provider_.get(), settings_.use_distance_field_text,
         msaa_sample_count);
     return;
@@ -2127,7 +2119,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
         ResourcePool::Create(resource_provider_.get(), image_target);
 
     *tile_task_worker_pool = ZeroCopyTileTaskWorkerPool::Create(
-        task_runner, task_graph_runner, resource_provider_.get());
+        GetTaskRunner(), task_graph_runner, resource_provider_.get());
     return;
   }
 
@@ -2148,7 +2140,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
             .gpu.max_copy_texture_chromium_size;
 
     *tile_task_worker_pool = OneCopyTileTaskWorkerPool::Create(
-        task_runner, task_graph_runner, context_provider,
+        GetTaskRunner(), task_graph_runner, context_provider,
         resource_provider_.get(), staging_resource_pool_.get(),
         max_copy_texture_chromium_size,
         settings_.use_persistent_map_for_gpu_memory_buffers);
@@ -2164,7 +2156,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
       resource_provider_.get(), GL_TEXTURE_2D);
 
   *tile_task_worker_pool = PixelBufferTileTaskWorkerPool::Create(
-      task_runner, task_graph_runner_, context_provider,
+      GetTaskRunner(), task_graph_runner_, context_provider,
       resource_provider_.get(),
       GetMaxTransferBufferUsageBytes(context_provider->ContextCapabilities(),
                                      settings_.renderer_settings.refresh_rate));

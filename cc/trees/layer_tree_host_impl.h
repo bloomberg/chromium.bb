@@ -645,6 +645,12 @@ class CC_EXPORT LayerTreeHostImpl
   bool ScrollAnimationUpdateTarget(LayerImpl* layer_impl,
                                    const gfx::Vector2dF& scroll_delta);
 
+  base::SingleThreadTaskRunner* GetTaskRunner() const {
+    DCHECK(proxy_);
+    return proxy_->HasImplThread() ? proxy_->ImplThreadTaskRunner()
+                                   : proxy_->MainThreadTaskRunner();
+  }
+
   typedef base::hash_map<UIResourceId, UIResourceData>
       UIResourceMap;
   UIResourceMap ui_resource_map_;
