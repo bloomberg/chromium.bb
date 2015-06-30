@@ -638,7 +638,6 @@
       'common/page_state_serialization_unittest.cc',
       'common/page_zoom_unittest.cc',
       'common/plugin_list_unittest.cc',
-      'common/sandbox_mac_compiler_unittest.mm',
       'common/sandbox_mac_diraccess_unittest.mm',
       'common/sandbox_mac_fontloading_unittest.mm',
       'common/sandbox_mac_system_access_unittest.mm',
