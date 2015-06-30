@@ -672,15 +672,6 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
   TestWithFakeDeviceGetUserMedia(kAudioOnlyCallConstraints, "_getusermedia");
 }
 
-// Test the new 48KHz audio processing path.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
-                       MANUAL_TestCallQualityWithAudioFromFakeDevice48Khz) {
-  const char* kAudio48KhzAudioProcessingConstraints =
-      "{audio: { optional: [{ googAudioProcessing48kHzSupport: true }] } }";
-  TestWithFakeDeviceGetUserMedia(kAudio48KhzAudioProcessingConstraints,
-                                 "_getusermedia_48khz");
-}
-
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
                        MANUAL_TestCallQualityWithAudioFromWebAudio) {
   if (OnWinXp() || OnWin8()) {
