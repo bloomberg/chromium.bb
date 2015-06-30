@@ -15,7 +15,12 @@ namespace {
 
 // Get the priority for a particular device type. The priority returned
 // will be between 0 to 3, the higher number meaning a higher priority.
-uint8 GetDevicePriority(AudioDeviceType type) {
+uint8 GetDevicePriority(AudioDeviceType type, bool is_input) {
+  // Lower the priority of bluetooth mic to prevent unexpected bad eperience
+  // to user because of bluetooth audio profile switching. Make priority to
+  // zero so this mic will never be automatically chosen.
+  if (type == AUDIO_TYPE_BLUETOOTH && is_input)
+    return 0;
   switch (type) {
     case AUDIO_TYPE_HEADPHONE:
     case AUDIO_TYPE_MIC:
@@ -118,7 +123,7 @@ AudioDevice::AudioDevice(const AudioNode& node) {
   else
     display_name = node.device_name;
   device_name = node.device_name;
-  priority = GetDevicePriority(type);
+  priority = GetDevicePriority(type, node.is_input);
   active = node.active;
   plugged_time = node.plugged_time;
 }
