@@ -109,6 +109,7 @@ DEFINE_TRACE(FrameHost)
 {
     visitor->trace(m_page);
     visitor->trace(m_topControls);
+    visitor->trace(m_pinchViewport);
     visitor->trace(m_eventHandlerRegistry);
     visitor->trace(m_consoleMessageStorage);
 }

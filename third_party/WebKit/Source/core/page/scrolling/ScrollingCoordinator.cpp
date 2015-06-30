@@ -80,9 +80,9 @@ WebLayer* toWebLayer(blink::GraphicsLayer* layer)
 
 namespace blink {
 
-PassOwnPtr<ScrollingCoordinator> ScrollingCoordinator::create(Page* page)
+PassOwnPtrWillBeRawPtr<ScrollingCoordinator> ScrollingCoordinator::create(Page* page)
 {
-    return adoptPtr(new ScrollingCoordinator(page));
+    return adoptPtrWillBeNoop(new ScrollingCoordinator(page));
 }
 
 ScrollingCoordinator::ScrollingCoordinator(Page* page)
@@ -97,6 +97,16 @@ ScrollingCoordinator::ScrollingCoordinator(Page* page)
 
 ScrollingCoordinator::~ScrollingCoordinator()
 {
+    ASSERT(!m_page);
+}
+
+DEFINE_TRACE(ScrollingCoordinator)
+{
+    visitor->trace(m_page);
+#if ENABLE(OILPAN)
+    visitor->trace(m_horizontalScrollbars);
+    visitor->trace(m_verticalScrollbars);
+#endif
 }
 
 void ScrollingCoordinator::setShouldHandleScrollGestureOnMainThreadRegion(const Region& region)

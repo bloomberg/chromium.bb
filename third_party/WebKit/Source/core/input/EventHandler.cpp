@@ -232,6 +232,7 @@ DEFINE_TRACE(EventHandler)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_mousePressNode);
+    visitor->trace(m_resizeScrollableArea);
     visitor->trace(m_capturingMouseEventsNode);
     visitor->trace(m_nodeUnderMouse);
     visitor->trace(m_lastNodeUnderMouse);

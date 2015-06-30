@@ -219,7 +219,7 @@ private:
     const OwnPtrWillBeMember<FocusController> m_focusController;
     const OwnPtrWillBeMember<ContextMenuController> m_contextMenuController;
     const OwnPtrWillBeMember<PointerLockController> m_pointerLockController;
-    OwnPtr<ScrollingCoordinator> m_scrollingCoordinator;
+    OwnPtrWillBeMember<ScrollingCoordinator> m_scrollingCoordinator;
     const OwnPtrWillBeMember<UndoStack> m_undoStack;
 
     // Typically, the main frame and Page should both be owned by the embedder,

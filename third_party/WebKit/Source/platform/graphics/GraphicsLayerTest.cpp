@@ -125,8 +125,14 @@ TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations)
     ASSERT_FALSE(m_platformLayer->hasActiveAnimation());
 }
 
-class FakeScrollableArea : public ScrollableArea {
+class FakeScrollableArea : public NoBaseWillBeGarbageCollectedFinalized<FakeScrollableArea>, public ScrollableArea {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FakeScrollableArea);
 public:
+    static PassOwnPtrWillBeRawPtr<FakeScrollableArea> create()
+    {
+        return adoptPtrWillBeNoop(new FakeScrollableArea);
+    }
+
     bool isActive() const override { return false; }
     int scrollSize(ScrollbarOrientation) const override { return 100; }
     bool isScrollCornerVisible() const override { return false; }
@@ -152,21 +158,26 @@ public:
     DoublePoint scrollPositionDouble() const override { return m_scrollPosition; }
     IntPoint scrollPosition() const override { return flooredIntPoint(m_scrollPosition); }
 
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        ScrollableArea::trace(visitor);
+    }
+
 private:
     DoublePoint m_scrollPosition;
 };
 
 TEST_F(GraphicsLayerTest, applyScrollToScrollableArea)
 {
-    FakeScrollableArea scrollableArea;
-    m_graphicsLayer->setScrollableArea(&scrollableArea, false);
+    OwnPtrWillBeRawPtr<FakeScrollableArea> scrollableArea = FakeScrollableArea::create();
+    m_graphicsLayer->setScrollableArea(scrollableArea.get(), false);
 
     WebDoublePoint scrollPosition(7, 9);
     m_platformLayer->setScrollPositionDouble(scrollPosition);
     m_graphicsLayer->didScroll();
 
-    EXPECT_FLOAT_EQ(scrollPosition.x, scrollableArea.scrollPositionDouble().x());
-    EXPECT_FLOAT_EQ(scrollPosition.y, scrollableArea.scrollPositionDouble().y());
+    EXPECT_FLOAT_EQ(scrollPosition.x, scrollableArea->scrollPositionDouble().x());
+    EXPECT_FLOAT_EQ(scrollPosition.y, scrollableArea->scrollPositionDouble().y());
 }
 
 } // namespace blink

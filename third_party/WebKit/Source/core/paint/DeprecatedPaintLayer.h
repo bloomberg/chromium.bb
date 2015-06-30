@@ -700,7 +700,7 @@ private:
     IntRect m_blockSelectionGapsBounds;
 
     OwnPtr<CompositedDeprecatedPaintLayerMapping> m_compositedDeprecatedPaintLayerMapping;
-    OwnPtr<DeprecatedPaintLayerScrollableArea> m_scrollableArea;
+    OwnPtrWillBePersistent<DeprecatedPaintLayerScrollableArea> m_scrollableArea;
 
     CompositedDeprecatedPaintLayerMapping* m_groupedMapping;
 

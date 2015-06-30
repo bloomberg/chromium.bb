@@ -52,6 +52,9 @@ namespace blink {
 struct SameSizeAsScrollableArea {
     virtual ~SameSizeAsScrollableArea();
     IntRect scrollbarDamage[2];
+#if ENABLE(ASSERT) && ENABLE(OILPAN)
+    VerifyEagerFinalization verifyEager;
+#endif
     void* pointer;
     unsigned bitfields : 16;
     IntPoint origin;
@@ -84,6 +87,11 @@ ScrollableArea::ScrollableArea()
 
 ScrollableArea::~ScrollableArea()
 {
+}
+
+void ScrollableArea::clearScrollAnimators()
+{
+    m_animators.clear();
 }
 
 ScrollAnimator* ScrollableArea::scrollAnimator() const

@@ -365,7 +365,7 @@ private:
 
     bool m_svgPan;
 
-    DeprecatedPaintLayerScrollableArea* m_resizeScrollableArea;
+    RawPtrWillBeMember<DeprecatedPaintLayerScrollableArea> m_resizeScrollableArea;
 
     RefPtrWillBeMember<Node> m_capturingMouseEventsNode;
     bool m_eventHandlerWillResetCapturingMouseEventsNode;

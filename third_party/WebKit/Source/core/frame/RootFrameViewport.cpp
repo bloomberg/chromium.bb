@@ -328,5 +328,11 @@ void RootFrameViewport::updateCompositorScrollAnimations()
     layoutViewport().updateCompositorScrollAnimations();
 }
 
+DEFINE_TRACE(RootFrameViewport)
+{
+    visitor->trace(m_visualViewport);
+    visitor->trace(m_layoutViewport);
+    ScrollableArea::trace(visitor);
+}
 
 } // namespace blink

@@ -80,29 +80,17 @@ Scrollbar::Scrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orient
     Widget::setFrameRect(IntRect(0, 0, thickness, thickness));
 
     m_currentPos = scrollableAreaCurrentPos();
-
-#if ENABLE(OILPAN)
-    if (m_scrollableArea)
-        m_animator = m_scrollableArea->scrollAnimator();
-#endif
 }
 
 Scrollbar::~Scrollbar()
 {
-    stopTimerIfNeeded();
-
     m_theme->unregisterScrollbar(this);
+}
 
-#if ENABLE(OILPAN)
-    if (!m_animator)
-        return;
-
-    ASSERT(m_scrollableArea);
-    if (m_orientation == VerticalScrollbar)
-        m_animator->willRemoveVerticalScrollbar(this);
-    else
-        m_animator->willRemoveHorizontalScrollbar(this);
-#endif
+DEFINE_TRACE(Scrollbar)
+{
+    visitor->trace(m_scrollableArea);
+    Widget::trace(visitor);
 }
 
 void Scrollbar::setFrameRect(const IntRect& frameRect)
@@ -155,9 +143,9 @@ void Scrollbar::offsetDidChange()
 
 void Scrollbar::disconnectFromScrollableArea()
 {
+#if !ENABLE(OILPAN)
+    // TODO(Oilpan): remove method once transitioned.
     m_scrollableArea = nullptr;
-#if ENABLE(OILPAN)
-    m_animator = nullptr;
 #endif
 }
 

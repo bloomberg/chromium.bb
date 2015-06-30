@@ -171,6 +171,9 @@ DeprecatedPaintLayer::~DeprecatedPaintLayer()
 
     if (m_reflectionInfo)
         m_reflectionInfo->destroy();
+
+    if (m_scrollableArea)
+        m_scrollableArea->dispose();
 }
 
 String DeprecatedPaintLayer::debugName() const
@@ -1433,18 +1436,16 @@ void DeprecatedPaintLayer::updateReflectionInfo(const ComputedStyle* oldStyle)
 
 void DeprecatedPaintLayer::updateStackingNode()
 {
+    ASSERT(!m_stackingNode);
     if (requiresStackingNode())
         m_stackingNode = adoptPtr(new DeprecatedPaintLayerStackingNode(*layoutObject()));
-    else
-        m_stackingNode = nullptr;
 }
 
 void DeprecatedPaintLayer::updateScrollableArea()
 {
+    ASSERT(!m_scrollableArea);
     if (requiresScrollableArea())
-        m_scrollableArea = adoptPtr(new DeprecatedPaintLayerScrollableArea(*this));
-    else
-        m_scrollableArea = nullptr;
+        m_scrollableArea = DeprecatedPaintLayerScrollableArea::create(*this);
 }
 
 bool DeprecatedPaintLayer::hasOverflowControls() const

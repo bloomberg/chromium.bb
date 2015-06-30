@@ -42,10 +42,13 @@ using testing::AtLeast;
 using testing::Return;
 using testing::_;
 
-class MockScrollableArea : public ScrollableArea {
+class MockScrollableArea : public NoBaseWillBeGarbageCollectedFinalized<MockScrollableArea>, public ScrollableArea {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MockScrollableArea);
 public:
-    MockScrollableArea(bool scrollAnimatorEnabled)
-        : m_scrollAnimatorEnabled(scrollAnimatorEnabled) { }
+    static PassOwnPtrWillBeRawPtr<MockScrollableArea> create(bool scrollAnimatorEnabled)
+    {
+        return adoptPtrWillBeNoop(new MockScrollableArea(scrollAnimatorEnabled));
+    }
 
     MOCK_CONST_METHOD0(isActive, bool());
     MOCK_CONST_METHOD1(scrollSize, int(ScrollbarOrientation));
@@ -71,15 +74,23 @@ public:
     virtual bool scrollAnimatorEnabled() const override { return m_scrollAnimatorEnabled; }
     virtual int pageStep(ScrollbarOrientation) const override { return 0; }
 
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        ScrollableArea::trace(visitor);
+    }
+
 private:
+    explicit MockScrollableArea(bool scrollAnimatorEnabled)
+        : m_scrollAnimatorEnabled(scrollAnimatorEnabled) { }
+
     bool m_scrollAnimatorEnabled;
 };
 
 class MockScrollAnimatorNone : public ScrollAnimatorNone {
 public:
-    static PassRefPtr<MockScrollAnimatorNone> create(ScrollableArea* scrollableArea)
+    static PassOwnPtr<MockScrollAnimatorNone> create(ScrollableArea* scrollableArea)
     {
-        return adoptRef(new MockScrollAnimatorNone(scrollableArea));
+        return adoptPtr(new MockScrollAnimatorNone(scrollableArea));
     }
 
     float currentX() { return m_currentPosX; }
@@ -113,13 +124,13 @@ private:
 
 TEST(ScrollAnimatorEnabled, Enabled)
 {
-    MockScrollableArea scrollableArea(true);
-    RefPtr<MockScrollAnimatorNone> scrollAnimatorNone = MockScrollAnimatorNone::create(&scrollableArea);
+    OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(true);
+    OwnPtr<MockScrollAnimatorNone> scrollAnimatorNone = MockScrollAnimatorNone::create(scrollableArea.get());
 
-    EXPECT_CALL(scrollableArea, scrollSize(_)).Times(AtLeast(1)).WillRepeatedly(Return(1000));
-    EXPECT_CALL(scrollableArea, minimumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint()));
-    EXPECT_CALL(scrollableArea, maximumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint(1000, 1000)));
-    EXPECT_CALL(scrollableArea, setScrollOffset(_, _)).Times(4);
+    EXPECT_CALL(*scrollableArea, scrollSize(_)).Times(AtLeast(1)).WillRepeatedly(Return(1000));
+    EXPECT_CALL(*scrollableArea, minimumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint()));
+    EXPECT_CALL(*scrollableArea, maximumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint(1000, 1000)));
+    EXPECT_CALL(*scrollableArea, setScrollOffset(_, _)).Times(4);
 
     scrollAnimatorNone->userScroll(HorizontalScrollbar, ScrollByLine, 100, 1);
     EXPECT_NE(100, scrollAnimatorNone->currentX());
@@ -148,12 +159,12 @@ TEST(ScrollAnimatorEnabled, Enabled)
 
 TEST(ScrollAnimatorEnabled, Disabled)
 {
-    MockScrollableArea scrollableArea(false);
-    RefPtr<MockScrollAnimatorNone> scrollAnimatorNone = MockScrollAnimatorNone::create(&scrollableArea);
+    OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(false);
+    OwnPtr<MockScrollAnimatorNone> scrollAnimatorNone = MockScrollAnimatorNone::create(scrollableArea.get());
 
-    EXPECT_CALL(scrollableArea, minimumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint()));
-    EXPECT_CALL(scrollableArea, maximumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint(1000, 1000)));
-    EXPECT_CALL(scrollableArea, setScrollOffset(_, _)).Times(4);
+    EXPECT_CALL(*scrollableArea, minimumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint()));
+    EXPECT_CALL(*scrollableArea, maximumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint(1000, 1000)));
+    EXPECT_CALL(*scrollableArea, setScrollOffset(_, _)).Times(4);
 
     scrollAnimatorNone->userScroll(HorizontalScrollbar, ScrollByLine, 100, 1);
     EXPECT_EQ(100, scrollAnimatorNone->currentX());
@@ -181,8 +192,8 @@ public:
     struct SavePerAxisData : public ScrollAnimatorNone::PerAxisData {
         SavePerAxisData(const ScrollAnimatorNone::PerAxisData& data)
             : ScrollAnimatorNone::PerAxisData(0, 768)
-            , m_mockScrollableArea(true)
-            , m_mockScrollAnimatorNone(MockScrollAnimatorNone::create(&m_mockScrollableArea))
+            , m_mockScrollableArea(MockScrollableArea::create(true))
+            , m_mockScrollAnimatorNone(MockScrollAnimatorNone::create(m_mockScrollableArea.get()))
         {
             this->m_currentVelocity = data.m_currentVelocity;
             this->m_desiredPosition = data.m_desiredPosition;
@@ -204,13 +215,13 @@ public:
         {
             return m_currentVelocity == other.m_currentVelocity && m_desiredPosition == other.m_desiredPosition && m_desiredVelocity == other.m_desiredVelocity && m_startPosition == other.m_startPosition && m_startTime == other.m_startTime && m_startVelocity == other.m_startVelocity && m_animationTime == other.m_animationTime && m_lastAnimationTime == other.m_lastAnimationTime && m_attackPosition == other.m_attackPosition && m_attackTime == other.m_attackTime && m_attackCurve == other.m_attackCurve && m_releasePosition == other.m_releasePosition && m_releaseTime == other.m_releaseTime && m_releaseCurve == other.m_releaseCurve;
         }
-        MockScrollableArea m_mockScrollableArea;
-        RefPtr<MockScrollAnimatorNone> m_mockScrollAnimatorNone;
+        OwnPtrWillBePersistent<MockScrollableArea> m_mockScrollableArea;
+        OwnPtr<MockScrollAnimatorNone> m_mockScrollAnimatorNone;
     };
 
     ScrollAnimatorNoneTest()
-        : m_mockScrollableArea(true)
-        , m_mockScrollAnimatorNone(MockScrollAnimatorNone::create(&m_mockScrollableArea))
+        : m_mockScrollableArea(MockScrollableArea::create(true))
+        , m_mockScrollAnimatorNone(MockScrollAnimatorNone::create(m_mockScrollableArea.get()))
     {
     }
 
@@ -245,8 +256,8 @@ public:
     static double kStartTime;
     static double kEndTime;
     float m_currentPosition;
-    MockScrollableArea m_mockScrollableArea;
-    RefPtr<MockScrollAnimatorNone> m_mockScrollAnimatorNone;
+    OwnPtrWillBePersistent<MockScrollableArea> m_mockScrollableArea;
+    OwnPtr<MockScrollAnimatorNone> m_mockScrollAnimatorNone;
     bool m_scrollingDown;
     ScrollAnimatorNone::PerAxisData* m_data;
 };

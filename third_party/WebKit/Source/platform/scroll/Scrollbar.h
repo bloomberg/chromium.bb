@@ -46,7 +46,6 @@ class ScrollableArea;
 class ScrollbarTheme;
 
 class PLATFORM_EXPORT Scrollbar : public Widget, public ScrollbarThemeClient {
-
 public:
     static PassRefPtrWillBeRawPtr<Scrollbar> create(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize);
 
@@ -153,6 +152,13 @@ public:
     virtual DisplayItemClient displayItemClient() const override { return toDisplayItemClient(this); }
     virtual String debugName() const override { return m_orientation == HorizontalScrollbar ? "HorizontalScrollbar" : "VerticalScrollbar"; }
 
+    // Promptly unregister from the theme manager + run finalizers of derived Scrollbars.
+    EAGERLY_FINALIZE();
+#if ENABLE(OILPAN)
+    DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
+#endif
+    DECLARE_VIRTUAL_TRACE();
+
 protected:
     Scrollbar(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize, ScrollbarTheme* = 0);
 
@@ -167,17 +173,10 @@ protected:
     ScrollDirectionPhysical pressedPartScrollDirectionPhysical();
     ScrollGranularity pressedPartScrollGranularity();
 
-    ScrollableArea* m_scrollableArea;
+    RawPtrWillBeMember<ScrollableArea> m_scrollableArea;
     ScrollbarOrientation m_orientation;
     ScrollbarControlSize m_controlSize;
     ScrollbarTheme* m_theme;
-
-#if ENABLE(OILPAN)
-    // To simplify Oilpan finalization, keep a copy of the ScrollableArea's
-    // scroll animator. Scrollbar is responsible for notifying the animator
-    // when it is destructed.
-    RefPtr<ScrollAnimator> m_animator;
-#endif
 
     int m_visibleSize;
     int m_totalSize;

@@ -26,14 +26,12 @@
 
 namespace blink {
 
-class ScrollableAreaStub : public ScrollableArea {
+class ScrollableAreaStub : public NoBaseWillBeGarbageCollectedFinalized<ScrollableAreaStub>, public ScrollableArea {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScrollableAreaStub);
 public:
-    ScrollableAreaStub(const IntSize& viewportSize, const IntSize& contentsSize)
-        : m_userInputScrollableX(true)
-        , m_userInputScrollableY(true)
-        , m_viewportSize(viewportSize)
-        , m_contentsSize(contentsSize)
+    static PassOwnPtrWillBeRawPtr<ScrollableAreaStub> create(const IntSize& viewportSize, const IntSize& contentsSize)
     {
+        return adoptPtrWillBeNoop(new ScrollableAreaStub(viewportSize, contentsSize));
     }
 
     void setViewportSize(const IntSize& viewportSize)
@@ -68,7 +66,20 @@ public:
         m_contentsSize = contentsSize;
     }
 
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        ScrollableArea::trace(visitor);
+    }
+
 protected:
+    ScrollableAreaStub(const IntSize& viewportSize, const IntSize& contentsSize)
+        : m_userInputScrollableX(true)
+        , m_userInputScrollableY(true)
+        , m_viewportSize(viewportSize)
+        , m_contentsSize(contentsSize)
+    {
+    }
+
     void setScrollOffset(const IntPoint& offset, ScrollType) override { m_scrollPosition = offset; }
     void setScrollOffset(const DoublePoint& offset, ScrollType) override { m_scrollPosition = offset; }
     bool shouldUseIntegerScrollOffset() const override { return true; }
@@ -106,9 +117,9 @@ protected:
 
 class RootFrameViewStub : public ScrollableAreaStub {
 public:
-    RootFrameViewStub(const IntSize& viewportSize, const IntSize& contentsSize)
-        : ScrollableAreaStub(viewportSize, contentsSize)
+    static PassOwnPtrWillBeRawPtr<RootFrameViewStub> create(const IntSize& viewportSize, const IntSize& contentsSize)
     {
+        return adoptPtrWillBeNoop(new RootFrameViewStub(viewportSize, contentsSize));
     }
 
     DoublePoint maximumScrollPositionDouble() const override
@@ -117,16 +128,20 @@ public:
     }
 
 private:
+    RootFrameViewStub(const IntSize& viewportSize, const IntSize& contentsSize)
+        : ScrollableAreaStub(viewportSize, contentsSize)
+    {
+    }
+
     int visibleWidth() const override { return m_viewportSize.width(); }
     int visibleHeight() const override { return m_viewportSize.height(); }
 };
 
 class VisualViewportStub : public ScrollableAreaStub {
 public:
-    VisualViewportStub(const IntSize& viewportSize, const IntSize& contentsSize)
-    : ScrollableAreaStub(viewportSize, contentsSize)
-    , m_scale(1)
+    static PassOwnPtrWillBeRawPtr<VisualViewportStub> create(const IntSize& viewportSize, const IntSize& contentsSize)
     {
+        return adoptPtrWillBeNoop(new VisualViewportStub(viewportSize, contentsSize));
     }
 
     DoublePoint maximumScrollPositionDouble() const override
@@ -141,6 +156,12 @@ public:
     void setScale(float scale) { m_scale = scale; }
 
 private:
+    VisualViewportStub(const IntSize& viewportSize, const IntSize& contentsSize)
+        : ScrollableAreaStub(viewportSize, contentsSize)
+        , m_scale(1)
+    {
+    }
+
     int visibleWidth() const override { return m_viewportSize.width() / m_scale; }
     int visibleHeight() const override { return m_viewportSize.height() / m_scale; }
     DoubleRect visibleContentRectDouble(IncludeScrollbarsInRect) const override
@@ -172,18 +193,17 @@ protected:
 TEST_F(RootFrameViewportTest, UserInputScrollable)
 {
     IntSize viewportSize(100, 150);
-    RootFrameViewStub layoutViewport(viewportSize, IntSize(200, 300));
-    VisualViewportStub visualViewport(viewportSize, viewportSize);
+    OwnPtrWillBeRawPtr<RootFrameViewStub> layoutViewport = RootFrameViewStub::create(viewportSize, IntSize(200, 300));
+    OwnPtrWillBeRawPtr<VisualViewportStub> visualViewport = VisualViewportStub::create(viewportSize, viewportSize);
 
-    OwnPtr<ScrollableArea> rootFrameViewport =
-        RootFrameViewport::create(visualViewport, layoutViewport);
+    OwnPtrWillBeRawPtr<ScrollableArea> rootFrameViewport = RootFrameViewport::create(*visualViewport.get(), *layoutViewport.get());
 
-    visualViewport.setScale(2);
+    visualViewport->setScale(2);
 
     // Disable just the layout viewport's horizontal scrolling, the
     // RootFrameViewport should remain scrollable overall.
-    layoutViewport.setUserInputScrollable(false, true);
-    visualViewport.setUserInputScrollable(true, true);
+    layoutViewport->setUserInputScrollable(false, true);
+    visualViewport->setUserInputScrollable(true, true);
 
     EXPECT_TRUE(rootFrameViewport->userInputScrollable(HorizontalScrollbar));
     EXPECT_TRUE(rootFrameViewport->userInputScrollable(VerticalScrollbar));
@@ -191,30 +211,30 @@ TEST_F(RootFrameViewportTest, UserInputScrollable)
     // Layout viewport shouldn't scroll since it's not horizontally scrollable,
     // but visual viewport should.
     rootFrameViewport->userScroll(ScrollRight, ScrollByPixel, 300);
-    EXPECT_POINT_EQ(DoublePoint(0, 0), layoutViewport.scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(50, 0), visualViewport.scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 0), layoutViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(50, 0), visualViewport->scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(50, 0), rootFrameViewport->scrollPositionDouble());
 
     // Disable just the visual viewport's horizontal scrolling, only the layout
     // viewport should scroll.
     rootFrameViewport->setScrollPosition(DoublePoint(), ProgrammaticScroll);
-    layoutViewport.setUserInputScrollable(true, true);
-    visualViewport.setUserInputScrollable(false, true);
+    layoutViewport->setUserInputScrollable(true, true);
+    visualViewport->setUserInputScrollable(false, true);
 
     rootFrameViewport->userScroll(ScrollRight, ScrollByPixel, 300);
-    EXPECT_POINT_EQ(DoublePoint(100, 0), layoutViewport.scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport.scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(100, 0), layoutViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport->scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(100, 0), rootFrameViewport->scrollPositionDouble());
 
     // Disable both viewports' horizontal scrolling, all horizontal scrolling
     // should now be blocked.
     rootFrameViewport->setScrollPosition(DoublePoint(), ProgrammaticScroll);
-    layoutViewport.setUserInputScrollable(false, true);
-    visualViewport.setUserInputScrollable(false, true);
+    layoutViewport->setUserInputScrollable(false, true);
+    visualViewport->setUserInputScrollable(false, true);
 
     rootFrameViewport->userScroll(ScrollRight, ScrollByPixel, 300);
-    EXPECT_POINT_EQ(DoublePoint(0, 0), layoutViewport.scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport.scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 0), layoutViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport->scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 0), rootFrameViewport->scrollPositionDouble());
 
     EXPECT_FALSE(rootFrameViewport->userInputScrollable(HorizontalScrollbar));
@@ -222,8 +242,8 @@ TEST_F(RootFrameViewportTest, UserInputScrollable)
 
     // Vertical scrolling should be unaffected.
     rootFrameViewport->userScroll(ScrollDown, ScrollByPixel, 300);
-    EXPECT_POINT_EQ(DoublePoint(0, 150), layoutViewport.scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 75), visualViewport.scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 150), layoutViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 75), visualViewport->scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 225), rootFrameViewport->scrollPositionDouble());
 
     // Try the same checks as above but for the vertical direction.
@@ -233,8 +253,8 @@ TEST_F(RootFrameViewportTest, UserInputScrollable)
 
     // Disable just the layout viewport's vertical scrolling, the
     // RootFrameViewport should remain scrollable overall.
-    layoutViewport.setUserInputScrollable(true, false);
-    visualViewport.setUserInputScrollable(true, true);
+    layoutViewport->setUserInputScrollable(true, false);
+    visualViewport->setUserInputScrollable(true, true);
 
     EXPECT_TRUE(rootFrameViewport->userInputScrollable(HorizontalScrollbar));
     EXPECT_TRUE(rootFrameViewport->userInputScrollable(VerticalScrollbar));
@@ -242,30 +262,30 @@ TEST_F(RootFrameViewportTest, UserInputScrollable)
     // Layout viewport shouldn't scroll since it's not vertically scrollable,
     // but visual viewport should.
     rootFrameViewport->userScroll(ScrollDown, ScrollByPixel, 300);
-    EXPECT_POINT_EQ(DoublePoint(0, 0), layoutViewport.scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 75), visualViewport.scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 0), layoutViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 75), visualViewport->scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 75), rootFrameViewport->scrollPositionDouble());
 
     // Disable just the visual viewport's vertical scrolling, only the layout
     // viewport should scroll.
     rootFrameViewport->setScrollPosition(DoublePoint(), ProgrammaticScroll);
-    layoutViewport.setUserInputScrollable(true, true);
-    visualViewport.setUserInputScrollable(true, false);
+    layoutViewport->setUserInputScrollable(true, true);
+    visualViewport->setUserInputScrollable(true, false);
 
     rootFrameViewport->userScroll(ScrollDown, ScrollByPixel, 300);
-    EXPECT_POINT_EQ(DoublePoint(0, 150), layoutViewport.scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport.scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 150), layoutViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport->scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 150), rootFrameViewport->scrollPositionDouble());
 
     // Disable both viewports' horizontal scrolling, all vertical scrolling
     // should now be blocked.
     rootFrameViewport->setScrollPosition(DoublePoint(), ProgrammaticScroll);
-    layoutViewport.setUserInputScrollable(true, false);
-    visualViewport.setUserInputScrollable(true, false);
+    layoutViewport->setUserInputScrollable(true, false);
+    visualViewport->setUserInputScrollable(true, false);
 
     rootFrameViewport->userScroll(ScrollDown, ScrollByPixel, 300);
-    EXPECT_POINT_EQ(DoublePoint(0, 0), layoutViewport.scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport.scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 0), layoutViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport->scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 0), rootFrameViewport->scrollPositionDouble());
 
     EXPECT_TRUE(rootFrameViewport->userInputScrollable(HorizontalScrollbar));
@@ -273,8 +293,8 @@ TEST_F(RootFrameViewportTest, UserInputScrollable)
 
     // Horizontal scrolling should be unaffected.
     rootFrameViewport->userScroll(ScrollRight, ScrollByPixel, 300);
-    EXPECT_POINT_EQ(DoublePoint(100, 0), layoutViewport.scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(50, 0), visualViewport.scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(100, 0), layoutViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(50, 0), visualViewport->scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(150, 0), rootFrameViewport->scrollPositionDouble());
 }
 
@@ -284,33 +304,32 @@ TEST_F(RootFrameViewportTest, UserInputScrollable)
 TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll)
 {
     IntSize viewportSize(100, 150);
-    RootFrameViewStub layoutViewport(viewportSize, IntSize(200, 300));
-    VisualViewportStub visualViewport(viewportSize, viewportSize);
+    OwnPtrWillBeRawPtr<RootFrameViewStub> layoutViewport = RootFrameViewStub::create(viewportSize, IntSize(200, 300));
+    OwnPtrWillBeRawPtr<VisualViewportStub> visualViewport = VisualViewportStub::create(viewportSize, viewportSize);
 
-    OwnPtr<ScrollableArea> rootFrameViewport =
-        RootFrameViewport::create(visualViewport, layoutViewport);
+    OwnPtrWillBeRawPtr<ScrollableArea> rootFrameViewport = RootFrameViewport::create(*visualViewport.get(), *layoutViewport.get());
 
-    visualViewport.setScale(2);
+    visualViewport->setScale(2);
 
-    visualViewport.setScrollPosition(DoublePoint(50, 75), ProgrammaticScroll);
+    visualViewport->setScrollPosition(DoublePoint(50, 75), ProgrammaticScroll);
     EXPECT_POINT_EQ(DoublePoint(50, 75), rootFrameViewport->scrollPositionDouble());
 
     // If the scroll animator doesn't update, it will still think it's at (0, 0) and so it
     // may early exit.
     rootFrameViewport->setScrollPosition(DoublePoint(0, 0), ProgrammaticScroll);
     EXPECT_POINT_EQ(DoublePoint(0, 0), rootFrameViewport->scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport.scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport->scrollPositionDouble());
 
     // Try again for scroll()
-    visualViewport.setScrollPosition(DoublePoint(50, 75), ProgrammaticScroll);
+    visualViewport->setScrollPosition(DoublePoint(50, 75), ProgrammaticScroll);
     EXPECT_POINT_EQ(DoublePoint(50, 75), rootFrameViewport->scrollPositionDouble());
 
     rootFrameViewport->userScroll(ScrollLeft, ScrollByPixel, 50);
     EXPECT_POINT_EQ(DoublePoint(0, 75), rootFrameViewport->scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 75), visualViewport.scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 75), visualViewport->scrollPositionDouble());
 
     // Try again for handleWheel.
-    visualViewport.setScrollPosition(DoublePoint(50, 75), ProgrammaticScroll);
+    visualViewport->setScrollPosition(DoublePoint(50, 75), ProgrammaticScroll);
     EXPECT_POINT_EQ(DoublePoint(50, 75), rootFrameViewport->scrollPositionDouble());
 
     PlatformWheelEvent wheelEvent(
@@ -321,15 +340,15 @@ TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll)
         false, false, false, false);
     rootFrameViewport->handleWheel(wheelEvent);
     EXPECT_POINT_EQ(DoublePoint(0, 0), rootFrameViewport->scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport.scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport->scrollPositionDouble());
 
     // Make sure the layout viewport is also accounted for.
-    layoutViewport.setScrollPosition(DoublePoint(100, 150), ProgrammaticScroll);
+    layoutViewport->setScrollPosition(DoublePoint(100, 150), ProgrammaticScroll);
     EXPECT_POINT_EQ(DoublePoint(100, 150), rootFrameViewport->scrollPositionDouble());
 
     rootFrameViewport->userScroll(ScrollLeft, ScrollByPixel, 100);
     EXPECT_POINT_EQ(DoublePoint(0, 150), rootFrameViewport->scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 150), layoutViewport.scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 150), layoutViewport->scrollPositionDouble());
 }
 
 // Test that the scrollIntoView correctly scrolls the main frame
@@ -337,111 +356,109 @@ TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll)
 TEST_F(RootFrameViewportTest, ScrollIntoView)
 {
     IntSize viewportSize(100, 150);
-    RootFrameViewStub layoutViewport(viewportSize, IntSize(200, 300));
-    VisualViewportStub visualViewport(viewportSize, viewportSize);
+    OwnPtrWillBeRawPtr<RootFrameViewStub> layoutViewport = RootFrameViewStub::create(viewportSize, IntSize(200, 300));
+    OwnPtrWillBeRawPtr<VisualViewportStub> visualViewport = VisualViewportStub::create(viewportSize, viewportSize);
 
-    OwnPtr<ScrollableArea> rootFrameViewport =
-        RootFrameViewport::create(visualViewport, layoutViewport);
+    OwnPtrWillBeRawPtr<ScrollableArea> rootFrameViewport = RootFrameViewport::create(*visualViewport.get(), *layoutViewport.get());
 
     // Test that the visual viewport is scrolled if the viewport has been
     // resized (as is the case when the ChromeOS keyboard comes up) but not
     // scaled.
-    visualViewport.setViewportSize(IntSize(100, 100));
+    visualViewport->setViewportSize(IntSize(100, 100));
     rootFrameViewport->scrollIntoView(
         LayoutRect(100, 250, 50, 50),
         ScrollAlignment::alignToEdgeIfNeeded,
         ScrollAlignment::alignToEdgeIfNeeded);
-    EXPECT_POINT_EQ(DoublePoint(50, 150), layoutViewport.scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 50), visualViewport.scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(50, 150), layoutViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 50), visualViewport->scrollPositionDouble());
 
     rootFrameViewport->scrollIntoView(
         LayoutRect(25, 75, 50, 50),
         ScrollAlignment::alignToEdgeIfNeeded,
         ScrollAlignment::alignToEdgeIfNeeded);
-    EXPECT_POINT_EQ(DoublePoint(25, 25), layoutViewport.scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 50), visualViewport.scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(25, 25), layoutViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 50), visualViewport->scrollPositionDouble());
 
     // Reset the pinch viewport's size, scale the page and repeat the test
-    visualViewport.setViewportSize(IntSize(100, 150));
-    visualViewport.setScale(2);
+    visualViewport->setViewportSize(IntSize(100, 150));
+    visualViewport->setScale(2);
     rootFrameViewport->setScrollPosition(DoublePoint(), ProgrammaticScroll);
 
     rootFrameViewport->scrollIntoView(
         LayoutRect(50, 75, 50, 75),
         ScrollAlignment::alignToEdgeIfNeeded,
         ScrollAlignment::alignToEdgeIfNeeded);
-    EXPECT_POINT_EQ(DoublePoint(50, 75), layoutViewport.scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport.scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(50, 75), layoutViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport->scrollPositionDouble());
 
     rootFrameViewport->scrollIntoView(
         LayoutRect(190, 290, 10, 10),
         ScrollAlignment::alignToEdgeIfNeeded,
         ScrollAlignment::alignToEdgeIfNeeded);
-    EXPECT_POINT_EQ(DoublePoint(100, 150), layoutViewport.scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(50, 75), visualViewport.scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(100, 150), layoutViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(50, 75), visualViewport->scrollPositionDouble());
 
     // Scrolling into view the viewport rect itself should be a no-op.
-    visualViewport.setViewportSize(IntSize(100, 100));
-    visualViewport.setScale(1.5f);
-    visualViewport.setScrollPosition(DoublePoint(0, 10), ProgrammaticScroll);
-    layoutViewport.setScrollPosition(DoublePoint(50, 50), ProgrammaticScroll);
+    visualViewport->setViewportSize(IntSize(100, 100));
+    visualViewport->setScale(1.5f);
+    visualViewport->setScrollPosition(DoublePoint(0, 10), ProgrammaticScroll);
+    layoutViewport->setScrollPosition(DoublePoint(50, 50), ProgrammaticScroll);
     rootFrameViewport->setScrollPosition(rootFrameViewport->scrollPositionDouble(), ProgrammaticScroll);
 
     rootFrameViewport->scrollIntoView(
         LayoutRect(rootFrameViewport->visibleContentRectDouble(ExcludeScrollbars)),
         ScrollAlignment::alignToEdgeIfNeeded,
         ScrollAlignment::alignToEdgeIfNeeded);
-    EXPECT_POINT_EQ(DoublePoint(50, 50), layoutViewport.scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 10), visualViewport.scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(50, 50), layoutViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 10), visualViewport->scrollPositionDouble());
 
     rootFrameViewport->scrollIntoView(
         LayoutRect(rootFrameViewport->visibleContentRectDouble(ExcludeScrollbars)),
         ScrollAlignment::alignCenterAlways,
         ScrollAlignment::alignCenterAlways);
-    EXPECT_POINT_EQ(DoublePoint(50, 50), layoutViewport.scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 10), visualViewport.scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(50, 50), layoutViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 10), visualViewport->scrollPositionDouble());
 
     rootFrameViewport->scrollIntoView(
         LayoutRect(rootFrameViewport->visibleContentRectDouble(ExcludeScrollbars)),
         ScrollAlignment::alignTopAlways,
         ScrollAlignment::alignTopAlways);
-    EXPECT_POINT_EQ(DoublePoint(50, 50), layoutViewport.scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 10), visualViewport.scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(50, 50), layoutViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 10), visualViewport->scrollPositionDouble());
 }
 
 // Tests that the setScrollPosition method works correctly with both viewports.
 TEST_F(RootFrameViewportTest, SetScrollPosition)
 {
     IntSize viewportSize(500, 500);
-    RootFrameViewStub layoutViewport(viewportSize, IntSize(1000, 2000));
-    VisualViewportStub visualViewport(viewportSize, viewportSize);
+    OwnPtrWillBeRawPtr<RootFrameViewStub> layoutViewport = RootFrameViewStub::create(viewportSize, IntSize(1000, 2000));
+    OwnPtrWillBeRawPtr<VisualViewportStub> visualViewport = VisualViewportStub::create(viewportSize, viewportSize);
 
-    OwnPtr<ScrollableArea> rootFrameViewport =
-        RootFrameViewport::create(visualViewport, layoutViewport);
+    OwnPtrWillBeRawPtr<ScrollableArea> rootFrameViewport = RootFrameViewport::create(*visualViewport.get(), *layoutViewport.get());
 
-    visualViewport.setScale(2);
+    visualViewport->setScale(2);
 
     // Ensure that the layout viewport scrolls first.
     rootFrameViewport->setScrollPosition(DoublePoint(100, 100), ProgrammaticScroll);
-    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport.scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(100, 100), layoutViewport.scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(100, 100), layoutViewport->scrollPositionDouble());
 
     // Scroll to the layout viewport's extent, the visual viewport should scroll the
     // remainder.
     rootFrameViewport->setScrollPosition(DoublePoint(700, 1700), ProgrammaticScroll);
-    EXPECT_POINT_EQ(DoublePoint(200, 200), visualViewport.scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(500, 1500), layoutViewport.scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(200, 200), visualViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(500, 1500), layoutViewport->scrollPositionDouble());
 
     // Only the visual viewport should scroll further. Make sure it doesn't scroll
     // out of bounds.
     rootFrameViewport->setScrollPosition(DoublePoint(780, 1780), ProgrammaticScroll);
-    EXPECT_POINT_EQ(DoublePoint(250, 250), visualViewport.scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(500, 1500), layoutViewport.scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(250, 250), visualViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(500, 1500), layoutViewport->scrollPositionDouble());
 
     // Scroll all the way back.
     rootFrameViewport->setScrollPosition(DoublePoint(0, 0), ProgrammaticScroll);
-    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport.scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(0, 0), layoutViewport.scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(0, 0), layoutViewport->scrollPositionDouble());
 }
 
 // Tests that the visible rect (i.e. visual viewport rect) is correctly
@@ -449,11 +466,10 @@ TEST_F(RootFrameViewportTest, SetScrollPosition)
 TEST_F(RootFrameViewportTest, VisibleContentRect)
 {
     IntSize viewportSize(500, 401);
-    RootFrameViewStub layoutViewport(viewportSize, IntSize(1000, 2000));
-    VisualViewportStub visualViewport(viewportSize, viewportSize);
+    OwnPtrWillBeRawPtr<RootFrameViewStub> layoutViewport = RootFrameViewStub::create(viewportSize, IntSize(1000, 2000));
+    OwnPtrWillBeRawPtr<VisualViewportStub> visualViewport = VisualViewportStub::create(viewportSize, viewportSize);
 
-    OwnPtr<ScrollableArea> rootFrameViewport =
-        RootFrameViewport::create(visualViewport, layoutViewport);
+    OwnPtrWillBeRawPtr<ScrollableArea> rootFrameViewport = RootFrameViewport::create(*visualViewport.get(), *layoutViewport.get());
 
     rootFrameViewport->setScrollPosition(DoublePoint(100, 75), ProgrammaticScroll);
 
@@ -462,7 +478,7 @@ TEST_F(RootFrameViewportTest, VisibleContentRect)
     EXPECT_SIZE_EQ(DoubleSize(500, 401), rootFrameViewport->visibleContentRect().size());
     EXPECT_SIZE_EQ(DoubleSize(500, 401), rootFrameViewport->visibleContentRectDouble().size());
 
-    visualViewport.setScale(2);
+    visualViewport->setScale(2);
 
     EXPECT_POINT_EQ(DoublePoint(100, 75), rootFrameViewport->visibleContentRect().location());
     EXPECT_POINT_EQ(DoublePoint(100, 75), rootFrameViewport->visibleContentRectDouble().location());
@@ -475,13 +491,12 @@ TEST_F(RootFrameViewportTest, VisibleContentRect)
 TEST_F(RootFrameViewportTest, BasicWheelEvent)
 {
     IntSize viewportSize(100, 100);
-    RootFrameViewStub layoutViewport(viewportSize, IntSize(200, 300));
-    VisualViewportStub visualViewport(viewportSize, viewportSize);
+    OwnPtrWillBeRawPtr<RootFrameViewStub> layoutViewport = RootFrameViewStub::create(viewportSize, IntSize(200, 300));
+    OwnPtrWillBeRawPtr<VisualViewportStub> visualViewport = VisualViewportStub::create(viewportSize, viewportSize);
 
-    OwnPtr<ScrollableArea> rootFrameViewport =
-        RootFrameViewport::create(visualViewport, layoutViewport);
+    OwnPtrWillBeRawPtr<ScrollableArea> rootFrameViewport = RootFrameViewport::create(*visualViewport.get(), *layoutViewport.get());
 
-    visualViewport.setScale(2);
+    visualViewport->setScale(2);
 
     PlatformWheelEvent wheelEvent(
         IntPoint(10, 10), IntPoint(10, 10),
@@ -493,8 +508,8 @@ TEST_F(RootFrameViewportTest, BasicWheelEvent)
     ScrollResult result = rootFrameViewport->handleWheel(wheelEvent);
 
     EXPECT_TRUE(result.didScroll());
-    EXPECT_POINT_EQ(DoublePoint(50, 50), visualViewport.scrollPositionDouble());
-    EXPECT_POINT_EQ(DoublePoint(100, 200), layoutViewport.scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(50, 50), visualViewport->scrollPositionDouble());
+    EXPECT_POINT_EQ(DoublePoint(100, 200), layoutViewport->scrollPositionDouble());
     EXPECT_EQ(350, result.unusedScrollDeltaX);
     EXPECT_EQ(250, result.unusedScrollDeltaY);
 }

@@ -543,6 +543,7 @@ DEFINE_TRACE(Page)
     visitor->trace(m_focusController);
     visitor->trace(m_contextMenuController);
     visitor->trace(m_pointerLockController);
+    visitor->trace(m_scrollingCoordinator);
     visitor->trace(m_undoStack);
     visitor->trace(m_mainFrame);
     visitor->trace(m_validationMessageClient);

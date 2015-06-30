@@ -68,7 +68,7 @@ using blink::GraphicsLayerFactory;
 namespace blink {
 
 PinchViewport::PinchViewport(FrameHost& owner)
-    : m_frameHost(owner)
+    : m_frameHost(&owner)
     , m_scale(1)
     , m_topControlsAdjustment(0)
 {
@@ -77,6 +77,12 @@ PinchViewport::PinchViewport(FrameHost& owner)
 
 PinchViewport::~PinchViewport()
 {
+}
+
+DEFINE_TRACE(PinchViewport)
+{
+    visitor->trace(m_frameHost);
+    ScrollableArea::trace(visitor);
 }
 
 void PinchViewport::setSize(const IntSize& size)

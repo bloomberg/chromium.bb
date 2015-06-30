@@ -72,6 +72,7 @@ struct CompositedSelection;
 typedef unsigned long long DOMTimeStamp;
 
 class CORE_EXPORT FrameView final : public Widget, public ScrollableArea {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FrameView);
 public:
     friend class LayoutView;
     friend class Internals;
@@ -287,7 +288,7 @@ public:
 
     String trackedPaintInvalidationRectsAsText() const;
 
-    typedef HashSet<ScrollableArea*> ScrollableAreaSet;
+    using ScrollableAreaSet = WillBeHeapHashSet<RawPtrWillBeMember<ScrollableArea>>;
     void addScrollableArea(ScrollableArea*);
     void removeScrollableArea(ScrollableArea*);
     const ScrollableAreaSet* scrollableAreas() const { return m_scrollableAreas.get(); }
@@ -785,8 +786,8 @@ private:
     // layoutObject to hold our custom scroll corner.
     LayoutScrollbarPart* m_scrollCorner;
 
-    OwnPtr<ScrollableAreaSet> m_scrollableAreas;
-    OwnPtr<ScrollableAreaSet> m_animatingScrollableAreas;
+    OwnPtrWillBeMember<ScrollableAreaSet> m_scrollableAreas;
+    OwnPtrWillBeMember<ScrollableAreaSet> m_animatingScrollableAreas;
     OwnPtr<ResizerAreaSet> m_resizerAreas;
     OwnPtr<ViewportConstrainedObjectSet> m_viewportConstrainedObjects;
     OwnPtrWillBeMember<FrameViewAutoSizeInfo> m_autoSizeInfo;
@@ -842,7 +843,7 @@ private:
     // Exists only on root frame.
     // TODO(bokan): crbug.com/484188. We should specialize FrameView for the
     // main frame.
-    OwnPtr<ScrollableArea> m_viewportScrollableArea;
+    OwnPtrWillBeMember<ScrollableArea> m_viewportScrollableArea;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)

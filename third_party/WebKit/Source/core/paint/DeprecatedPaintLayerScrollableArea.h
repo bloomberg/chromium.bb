@@ -47,6 +47,7 @@
 #include "core/CoreExport.h"
 #include "core/layout/LayoutBox.h"
 #include "core/paint/DeprecatedPaintLayerFragment.h"
+#include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollableArea.h"
 
 namespace blink {
@@ -61,14 +62,20 @@ class LayoutBox;
 class DeprecatedPaintLayer;
 class LayoutScrollbarPart;
 
-class CORE_EXPORT DeprecatedPaintLayerScrollableArea final : public ScrollableArea {
+class CORE_EXPORT DeprecatedPaintLayerScrollableArea final : public NoBaseWillBeGarbageCollectedFinalized<DeprecatedPaintLayerScrollableArea>, public ScrollableArea {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DeprecatedPaintLayerScrollableArea);
     friend class Internals;
 
 public:
     // FIXME: We should pass in the LayoutBox but this opens a window
     // for crashers during DeprecatedPaintLayer setup (see crbug.com/368062).
-    DeprecatedPaintLayerScrollableArea(DeprecatedPaintLayer&);
+    static PassOwnPtrWillBeRawPtr<DeprecatedPaintLayerScrollableArea> create(DeprecatedPaintLayer& layer)
+    {
+        return adoptPtrWillBeNoop(new DeprecatedPaintLayerScrollableArea(layer));
+    }
+
     virtual ~DeprecatedPaintLayerScrollableArea();
+    void dispose();
 
     bool hasHorizontalScrollbar() const { return horizontalScrollbar(); }
     bool hasVerticalScrollbar() const { return verticalScrollbar(); }
@@ -215,7 +222,11 @@ public:
     IntRect rectForHorizontalScrollbar(const IntRect& borderBoxRect) const;
     IntRect rectForVerticalScrollbar(const IntRect& borderBoxRect) const;
 
+    DECLARE_VIRTUAL_TRACE();
+
 private:
+    explicit DeprecatedPaintLayerScrollableArea(DeprecatedPaintLayer&);
+
     bool hasHorizontalOverflow() const;
     bool hasVerticalOverflow() const;
     bool hasScrollableHorizontalOverflow() const;
@@ -276,14 +287,18 @@ private:
     IntPoint m_cachedOverlayScrollbarOffset;
 
     // For areas with overflow, we have a pair of scrollbars.
-    RefPtrWillBePersistent<Scrollbar> m_hBar;
-    RefPtrWillBePersistent<Scrollbar> m_vBar;
+    RefPtrWillBeMember<Scrollbar> m_hBar;
+    RefPtrWillBeMember<Scrollbar> m_vBar;
 
     // LayoutObject to hold our custom scroll corner.
     LayoutScrollbarPart* m_scrollCorner;
 
     // LayoutObject to hold our custom resizer.
     LayoutScrollbarPart* m_resizer;
+
+#if ENABLE(ASSERT)
+    bool m_hasBeenDisposed;
+#endif
 };
 
 } // namespace blink

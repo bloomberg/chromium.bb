@@ -29,6 +29,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/DoublePoint.h"
+#include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollAnimator.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/Scrollbar.h"
@@ -57,7 +58,16 @@ enum IncludeScrollbarsInRect {
     IncludeScrollbars,
 };
 
+#if ENABLE(OILPAN)
+// Oilpan: Using the transition type WillBeGarbageCollectedMixin is
+// problematic non-Oilpan as the type expands to DummyBase, exporting it
+// also from 'platform' as a result. Bringing about duplicate DummyBases
+// as core also exports same; with component build linking fails as a
+// result. Hence the workaround of not using a transition type.
+class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
+#else
 class PLATFORM_EXPORT ScrollableArea {
+#endif
     WTF_MAKE_NONCOPYABLE(ScrollableArea);
 public:
     static int pixelsPerLineStep();
@@ -289,6 +299,11 @@ public:
     // Subtracts space occupied by this ScrollableArea's scrollbars.
     // Does nothing if overlay scrollbars are enabled.
     IntSize excludeScrollbars(const IntSize&) const;
+
+    // Need to promptly let go of owned animator objects.
+    EAGERLY_FINALIZE();
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
+
 protected:
     ScrollableArea();
 
@@ -299,6 +314,8 @@ protected:
     friend class ScrollAnimator;
     friend class ProgrammaticScrollAnimator;
     void scrollPositionChanged(const DoublePoint&, ScrollType);
+
+    void clearScrollAnimators();
 
 private:
     void programmaticScrollHelper(const DoublePoint&, ScrollBehavior);
@@ -327,7 +344,7 @@ private:
     IntRect m_verticalBarDamage;
 
     struct ScrollableAreaAnimators {
-        RefPtr<ScrollAnimator> scrollAnimator;
+        OwnPtr<ScrollAnimator> scrollAnimator;
         OwnPtr<ProgrammaticScrollAnimator> programmaticScrollAnimator;
     };
 

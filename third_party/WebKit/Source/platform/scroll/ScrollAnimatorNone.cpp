@@ -45,11 +45,11 @@ const double kFrameRate = 60;
 const double kTickTime = 1 / kFrameRate;
 const double kMinimumTimerInterval = .001;
 
-PassRefPtr<ScrollAnimator> ScrollAnimator::create(ScrollableArea* scrollableArea)
+PassOwnPtr<ScrollAnimator> ScrollAnimator::create(ScrollableArea* scrollableArea)
 {
     if (scrollableArea && scrollableArea->scrollAnimatorEnabled())
-        return adoptRef(new ScrollAnimatorNone(scrollableArea));
-    return adoptRef(new ScrollAnimator(scrollableArea));
+        return adoptPtr(new ScrollAnimatorNone(scrollableArea));
+    return adoptPtr(new ScrollAnimator(scrollableArea));
 }
 
 ScrollAnimatorNone::Parameters::Parameters()

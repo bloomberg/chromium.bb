@@ -14,10 +14,13 @@
 
 namespace blink {
 
-class MockScrollableArea : public ScrollableArea {
+class MockScrollableArea : public NoBaseWillBeGarbageCollectedFinalized<MockScrollableArea>, public ScrollableArea {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MockScrollableArea);
 public:
-    MockScrollableArea(const IntPoint& maximumScrollPosition)
-        : m_maximumScrollPosition(maximumScrollPosition) { }
+    static PassOwnPtrWillBeRawPtr<MockScrollableArea> create(const IntPoint& maximumScrollPosition)
+    {
+        return adoptPtrWillBeNoop(new MockScrollableArea(maximumScrollPosition));
+    }
 
     MOCK_CONST_METHOD0(isActive, bool());
     MOCK_CONST_METHOD1(scrollSize, int(ScrollbarOrientation));
@@ -43,7 +46,15 @@ public:
     bool scrollAnimatorEnabled() const override { return false; }
     int pageStep(ScrollbarOrientation) const override { return 0; }
 
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        ScrollableArea::trace(visitor);
+    }
+
 private:
+    explicit MockScrollableArea(const IntPoint& maximumScrollPosition)
+        : m_maximumScrollPosition(maximumScrollPosition) { }
+
     IntPoint m_scrollPosition;
     IntPoint m_maximumScrollPosition;
 };
@@ -113,9 +124,9 @@ private:
 
 TEST_F(ScrollableAreaTest, ScrollAnimatorCurrentPositionShouldBeSync)
 {
-    MockScrollableArea scrollableArea(IntPoint(0, 100));
-    scrollableArea.setScrollPosition(IntPoint(0, 10000), CompositorScroll);
-    EXPECT_EQ(100.0, scrollableArea.scrollAnimator()->currentPosition().y());
+    OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(IntPoint(0, 100));
+    scrollableArea->setScrollPosition(IntPoint(0, 10000), CompositorScroll);
+    EXPECT_EQ(100.0, scrollableArea->scrollAnimator()->currentPosition().y());
 }
 
 } // namespace blink

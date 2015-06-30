@@ -90,6 +90,9 @@ DeprecatedPaintLayerScrollableArea::DeprecatedPaintLayerScrollableArea(Deprecate
     , m_needsCompositedScrolling(false)
     , m_scrollCorner(nullptr)
     , m_resizer(nullptr)
+#if ENABLE(ASSERT)
+    , m_hasBeenDisposed(false)
+#endif
 {
     Node* node = box().node();
     if (node && node->isElementNode()) {
@@ -105,6 +108,11 @@ DeprecatedPaintLayerScrollableArea::DeprecatedPaintLayerScrollableArea(Deprecate
 }
 
 DeprecatedPaintLayerScrollableArea::~DeprecatedPaintLayerScrollableArea()
+{
+    ASSERT(m_hasBeenDisposed);
+}
+
+void DeprecatedPaintLayerScrollableArea::dispose()
 {
     if (inResizeMode() && !box().documentBeingDestroyed()) {
         if (LocalFrame* frame = box().frame())
@@ -142,6 +150,19 @@ DeprecatedPaintLayerScrollableArea::~DeprecatedPaintLayerScrollableArea()
         m_scrollCorner->destroy();
     if (m_resizer)
         m_resizer->destroy();
+
+    clearScrollAnimators();
+
+#if ENABLE(ASSERT)
+    m_hasBeenDisposed = true;
+#endif
+}
+
+DEFINE_TRACE(DeprecatedPaintLayerScrollableArea)
+{
+    visitor->trace(m_hBar);
+    visitor->trace(m_vBar);
+    ScrollableArea::trace(visitor);
 }
 
 HostWindow* DeprecatedPaintLayerScrollableArea::hostWindow() const
@@ -935,7 +956,7 @@ PassRefPtrWillBeRawPtr<Scrollbar> DeprecatedPaintLayerScrollableArea::createScro
 
 void DeprecatedPaintLayerScrollableArea::destroyScrollbar(ScrollbarOrientation orientation)
 {
-    RefPtrWillBePersistent<Scrollbar>& scrollbar = orientation == HorizontalScrollbar ? m_hBar : m_vBar;
+    RefPtrWillBeMember<Scrollbar>& scrollbar = orientation == HorizontalScrollbar ? m_hBar : m_vBar;
     if (!scrollbar)
         return;
 

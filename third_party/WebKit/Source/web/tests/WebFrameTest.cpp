@@ -292,15 +292,9 @@ void PrintTo(ParameterizedWebFrameTestConfig config, ::std::ostream* os)
     }
 }
 
-#if OS(MACOSX) && ENABLE(OILPAN)
-// FIXME(504655): RootLayerScrolls configuration crashes on Mac Oilpan bots.
-INSTANTIATE_TEST_CASE_P(All, ParameterizedWebFrameTest, ::testing::Values(
-    ParameterizedWebFrameTestConfig::Default));
-#else
 INSTANTIATE_TEST_CASE_P(All, ParameterizedWebFrameTest, ::testing::Values(
     ParameterizedWebFrameTestConfig::Default,
     ParameterizedWebFrameTestConfig::RootLayerScrolls));
-#endif
 
 TEST_P(ParameterizedWebFrameTest, ContentText)
 {
@@ -2223,15 +2217,9 @@ protected:
     }
 };
 
-#if OS(MACOSX) && ENABLE(OILPAN)
-// FIXME(504655): RootLayerScrolls configuration crashes on Mac Oilpan bots.
-INSTANTIATE_TEST_CASE_P(All, WebFrameResizeTest, ::testing::Values(
-    ParameterizedWebFrameTestConfig::Default));
-#else
 INSTANTIATE_TEST_CASE_P(All, WebFrameResizeTest, ::testing::Values(
     ParameterizedWebFrameTestConfig::Default,
     ParameterizedWebFrameTestConfig::RootLayerScrolls));
-#endif
 
 TEST_P(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForWidthEqualsDeviceWidth)
 {

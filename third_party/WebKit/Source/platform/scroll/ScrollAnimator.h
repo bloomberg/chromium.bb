@@ -36,7 +36,6 @@
 #include "platform/geometry/FloatSize.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
@@ -44,9 +43,9 @@ class FloatPoint;
 class ScrollableArea;
 class Scrollbar;
 
-class PLATFORM_EXPORT ScrollAnimator : public RefCounted<ScrollAnimator> {
+class PLATFORM_EXPORT ScrollAnimator {
 public:
-    static PassRefPtr<ScrollAnimator> create(ScrollableArea*);
+    static PassOwnPtr<ScrollAnimator> create(ScrollableArea*);
 
     virtual ~ScrollAnimator();
 

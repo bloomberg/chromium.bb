@@ -165,9 +165,7 @@ PassRefPtrWillBeRawPtr<FrameView> FrameView::create(LocalFrame* frame, const Int
 
 FrameView::~FrameView()
 {
-#if ENABLE(ASSERT)
     ASSERT(m_hasBeenDisposed);
-#endif
 #if !ENABLE(OILPAN)
     // Verify that the LocalFrame has a different FrameView or
     // that it is being detached and destructed.
@@ -181,12 +179,16 @@ DEFINE_TRACE(FrameView)
     visitor->trace(m_frame);
     visitor->trace(m_nodeToDraw);
     visitor->trace(m_maintainScrollPositionAnchor);
+    visitor->trace(m_scrollableAreas);
+    visitor->trace(m_animatingScrollableAreas);
     visitor->trace(m_autoSizeInfo);
     visitor->trace(m_horizontalScrollbar);
     visitor->trace(m_verticalScrollbar);
     visitor->trace(m_children);
+    visitor->trace(m_viewportScrollableArea);
 #endif
     Widget::trace(visitor);
+    ScrollableArea::trace(visitor);
 }
 
 void FrameView::reset()
@@ -1869,7 +1871,7 @@ void FrameView::scrollToAnchor()
     LayoutRect rect;
     if (anchorNode != m_frame->document()) {
         rect = anchorNode->boundingBox();
-    } else if (m_frame->settings()->rootLayerScrolls()) {
+    } else if (m_frame->settings() && m_frame->settings()->rootLayerScrolls()) {
         if (Element* documentElement = m_frame->document()->documentElement())
             rect = documentElement->boundingBox();
     }
@@ -2861,7 +2863,7 @@ void FrameView::addScrollableArea(ScrollableArea* scrollableArea)
 {
     ASSERT(scrollableArea);
     if (!m_scrollableAreas)
-        m_scrollableAreas = adoptPtr(new ScrollableAreaSet);
+        m_scrollableAreas = adoptPtrWillBeNoop(new ScrollableAreaSet);
     m_scrollableAreas->add(scrollableArea);
 
     if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
@@ -2882,7 +2884,7 @@ void FrameView::addAnimatingScrollableArea(ScrollableArea* scrollableArea)
 {
     ASSERT(scrollableArea);
     if (!m_animatingScrollableAreas)
-        m_animatingScrollableAreas = adoptPtr(new ScrollableAreaSet);
+        m_animatingScrollableAreas = adoptPtrWillBeNoop(new ScrollableAreaSet);
     m_animatingScrollableAreas->add(scrollableArea);
 }
 
@@ -3058,6 +3060,7 @@ void FrameView::setHasHorizontalScrollbar(bool hasBar)
         if (m_horizontalScrollbar->overlapsResizer())
             adjustScrollbarsAvoidingResizerCount(-1);
         removeChild(m_horizontalScrollbar.get());
+        m_horizontalScrollbar->disconnectFromScrollableArea();
         m_horizontalScrollbar = nullptr;
         if (AXObjectCache* cache = axObjectCache())
             cache->handleScrollbarUpdate(this);
@@ -3086,6 +3089,7 @@ void FrameView::setHasVerticalScrollbar(bool hasBar)
         if (m_verticalScrollbar->overlapsResizer())
             adjustScrollbarsAvoidingResizerCount(-1);
         removeChild(m_verticalScrollbar.get());
+        m_verticalScrollbar->disconnectFromScrollableArea();
         m_verticalScrollbar = nullptr;
         if (AXObjectCache* cache = axObjectCache())
             cache->handleScrollbarUpdate(this);
