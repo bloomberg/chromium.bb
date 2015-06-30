@@ -1088,9 +1088,8 @@ def main(args):
 
   if platform == 'linux':
     # Linux-only: make sure the debian/stable sysroot image is installed
-    install_script = os.path.join(SRC_DIR, 'chrome', 'installer', 'linux',
-                                  'sysroot_scripts',
-                                  'install-debian.wheezy.sysroot.py')
+    install_script = os.path.join(SRC_DIR, 'build', 'linux', 'sysroot_scripts',
+                                  'install-sysroot.py')
 
     buildbot_common.Run([sys.executable, install_script, '--arch=arm'])
     buildbot_common.Run([sys.executable, install_script, '--arch=i386'])

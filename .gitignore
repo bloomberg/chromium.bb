@@ -60,6 +60,7 @@ v8.log
 /build/util/support
 /build/x64/
 /build/linux/bin/eu-strip
+/build/linux/debian_*-sysroot/
 /buildtools
 # The Chrome OS build creates a /c symlink due to http://crbug.com/54866.
 /c
@@ -95,7 +96,6 @@ v8.log
 /chrome/common/extensions/api/api.xml
 /chrome/common/extensions/api/ledger/
 /chrome/Hammer
-/chrome/installer/linux/debian_wheezy_*-sysroot/
 /chrome/installer/linux/internal
 /chrome/installer/mac/internal
 /chrome/installer/mac/third_party/xz/xz

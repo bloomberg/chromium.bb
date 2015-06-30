@@ -75,9 +75,8 @@ def DetectArch(gyp_defines):
 
   # Figure out host arch using build/detect_host_arch.py and
   # set target_arch to host arch
-  SRC_DIR = os.path.abspath(
-      os.path.join(SCRIPT_DIR, '..', '..', '..', '..'))
-  sys.path.append(os.path.join(SRC_DIR, 'build'))
+  build_dir = os.path.dirname(os.path.dirname(os.path.join(SCRIPT_DIR)))
+  sys.path.append(build_dir)
   import detect_host_arch
 
   detected_host_arch = detect_host_arch.HostArch()

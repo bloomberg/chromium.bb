@@ -69,9 +69,9 @@ def FindFiles(input_api, root_dir, start_paths_list, excluded_dirs_list):
     # Swarming tools, doesn't exist in the snapshot
     path_join('tools', 'swarming_client'),
     # ARM sysroot, doesn't exist in the snapshot
-    path_join('chrome', 'installer', 'linux', 'debian_wheezy_arm-sysroot'),
+    path_join('build', 'linux', 'debian_wheezy_arm-sysroot'),
     # Old location (TODO(sbc): Remove this once it no longer exists on any bots)
-    path_join('arm-sysroot'),
+    path_join('chrome', 'installer', 'linux', 'debian_wheezy_arm-sysroot'),
     # Data is not part of open source chromium, but are included on some bots.
     path_join('data'),
     # This is not part of open source chromium, but are included on some bots.

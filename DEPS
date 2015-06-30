@@ -533,16 +533,14 @@ hooks = [
     'action': ['python', 'src/build/download_sdk_extras.py'],
   },
   {
-    # Downloads the Debian Wheezy sysroot to chrome/installer/linux if needed.
+    # Downloads the current stable linux sysroot to build/linux/ if needed.
     # This sysroot updates at about the same rate that the chrome build deps
     # change. This script is a no-op except for linux users who are doing
-    # official chrome builds.
+    # official chrome builds or cross compiling.
     'name': 'sysroot',
     'pattern': '.',
-    'action': [
-        'python',
-        'src/chrome/installer/linux/sysroot_scripts/install-debian.wheezy.sysroot.py',
-        '--running-as-hook'],
+    'action': ['python', 'src/build/linux/sysroot_scripts/install-sysroot.py',
+               '--running-as-hook'],
   },
   {
     # Update the Windows toolchain if necessary.
