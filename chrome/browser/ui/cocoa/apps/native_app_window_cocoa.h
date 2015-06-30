@@ -214,6 +214,9 @@ class NativeAppWindowCocoa : public extensions::NativeAppWindow,
   // handle.
   scoped_ptr<ExtensionKeybindingRegistryCocoa> extension_keybinding_registry_;
 
+  // Tracks the last time the extension asked the window to activate.
+  base::Time last_activate_;
+
   DISALLOW_COPY_AND_ASSIGN(NativeAppWindowCocoa);
 };
 

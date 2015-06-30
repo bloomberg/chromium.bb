@@ -52,6 +52,8 @@ using extensions::AppWindow;
 
 namespace {
 
+const int kActivateThrottlePeriodSeconds = 2;
+
 NSRect GfxToCocoaBounds(gfx::Rect bounds) {
   typedef AppWindow::BoundsSpecification BoundsSpecification;
 
@@ -471,7 +473,20 @@ void NativeAppWindowCocoa::Show() {
     is_hidden_with_app_ = false;
   }
 
-  [window_controller_ showWindow:nil];
+  // Workaround for http://crbug.com/459306. When requests to change key windows
+  // on Mac overlap, AppKit may attempt to make two windows simultaneously have
+  // key status. This causes key events to go the wrong window, and key status
+  // to get "stuck" until Chrome is deactivated. To reduce the possibility of
+  // this occurring, throttle activation requests. To balance a possible Hide(),
+  // always show the window, but don't make it key.
+  base::Time now = base::Time::Now();
+  if (now - last_activate_ <
+      base::TimeDelta::FromSeconds(kActivateThrottlePeriodSeconds)) {
+    [window() orderFront:window_controller_];
+    return;
+  }
+
+  last_activate_ = now;
   [BrowserWindowUtils activateWindowForController:window_controller_];
 }
 
