@@ -16,9 +16,12 @@
                 var mediaKeySession = null;
                 var sessionReadyReceived = false;
                 var encryptedEventCount = 0;
-                var waitingForKeyEventCount = 0;
+                var waitingForKeyEvent = true;
 
-                var keyId = null;
+                // As this code doesn't wait for the 'message' event to avoid
+                // race conditions with 'waitingforkey', specify the key ID
+                // used by the encrypted content.
+                var keyId = stringToUint8Array('0123456789012345');
                 var rawKey = new Uint8Array([0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14, 0xd2, 0x7b,
                                              0x68, 0xef, 0x12, 0x2a, 0xfc, 0xe4, 0xae, 0x3c]);
 
@@ -29,41 +32,23 @@
                     assert_equals(event.type, 'encrypted');
 
                     // The same decryption key is used by both the audio and
-                    // the video streams so only create a session once. To
-                    // avoid issues when comparing the expected.txt file
-                    // (which logs the events in the order they occur), create
-                    // the session on the second event. This also ensures we
+                    // the video streams so only create a session once. Create
+                    // the session on the second event to ensure that we
                     // see both events.
                     if (++encryptedEventCount != 2)
                         return;
 
                     mediaKeySession = video.mediaKeys.createSession();
-                    waitForEventAndRunStep('message', mediaKeySession, onMessage, test);
                     mediaKeySession.generateRequest(event.initDataType, event.initData).catch(function(error) {
                         forceTestFailureFromPromise(test, error);
                     });
-                }
-
-                function onMessage(event)
-                {
-                    assert_true(event instanceof window.MediaKeyMessageEvent);
-                    assert_equals(event.target, mediaKeySession);
-                    assert_equals(event.type, 'message');
-                    assert_equals(event.messageType, 'license-request');
-
-                    keyId = extractSingleKeyIdFromMessage(event.message);
-                    setTimeout(verifyWaitingForKey, 250);
                 }
 
                 function onWaitingForKey(event)
                 {
                     assert_equals(event.target, video);
                     assert_equals(event.type, 'waitingforkey');
-                    ++waitingForKeyEventCount;
-                }
 
-                function verifyWaitingForKey()
-                {
                     // Make sure the video is NOT paused and not progressing
                     // before the session is updated.
                     assert_false(video.paused);
@@ -71,14 +56,15 @@
 
                     // TODO(jrummell): waitingforkey event should only occur
                     // once. http://crbug.com/461903
-                    assert_equals(waitingForKeyEventCount, 2);
+//                  assert_true(waitingForKeyEvent, 'Multiple waitingforkey events');
+                    waitingForKeyEvent = false;
 
+                    // Add the key needed to decrypt.
                     updateSession();
                 }
 
                 function updateSession()
                 {
-                    assert_not_equals(keyId, null);
                     var jwkSet = stringToUint8Array(createJWKSet(createJWK(keyId, rawKey)));
                     mediaKeySession.update(jwkSet).then(function(result) {
                         sessionReadyReceived = true;
@@ -89,7 +75,7 @@
 
                 function onPlaying(event)
                 {
-                    // Not using waitForEventAndRunStep() to avoid too many
+                    // Not using waitForEventAndRunStep() to avoid
                     // EVENT(onTimeUpdate) logs.
                     video.addEventListener('timeupdate', onTimeUpdate, true);
                 }
