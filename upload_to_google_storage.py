@@ -12,7 +12,6 @@ import Queue
 import re
 import stat
 import sys
-import tarfile
 import threading
 import time
 
@@ -208,38 +207,11 @@ def upload_to_google_storage(
   return max_ret_code
 
 
-def create_archives(dirs):
-  archive_names = []
-  for name in dirs:
-    tarname = '%s.tar.gz' % name
-    with tarfile.open(tarname, 'w:gz') as tar:
-      tar.add(name)
-    archive_names.append(tarname)
-  return archive_names
-
-
-def validate_archive_dirs(dirs):
-  # We don't allow .. in paths in our archives.
-  if any(map(lambda x: '..' in x, dirs)):
-    return False
-  # We only allow dirs.
-  if any(map(lambda x: not os.path.isdir(x), dirs)):
-    return False
-  # We don't allow sym links in our archives.
-  if any(map(os.path.islink, dirs)):
-    return False
-  # We required that the subdirectories we are archiving are all just below
-  # cwd.
-  return not any(map(lambda x: x not in next(os.walk('.'))[1], dirs))
-
-
 def main():
   parser = optparse.OptionParser(USAGE_STRING)
   parser.add_option('-b', '--bucket',
                     help='Google Storage bucket to upload to.')
   parser.add_option('-e', '--boto', help='Specify a custom boto file.')
-  parser.add_option('-z', '--archive', action='store_true',
-                    help='Archive directory as a tar.gz file')
   parser.add_option('-f', '--force', action='store_true',
                     help='Force upload even if remote file exists.')
   parser.add_option('-g', '--gsutil_path', default=GSUTIL_DEFAULT_PATH,
@@ -262,15 +234,6 @@ def main():
 
   # Enumerate our inputs.
   input_filenames = get_targets(args, parser, options.use_null_terminator)
-
-  if options.archive:
-    if not validate_archive_dirs(input_filenames):
-      parser.error('Only directories just below cwd are valid entries when '
-                   'using the --archive argument. Entries can not contain .. '
-                   ' and entries can not be symlinks. Entries was %s' %
-                    input_filenames)
-      return 1
-    input_filenames = create_archives(input_filenames)
 
   # Make sure we can find a working instance of gsutil.
   if os.path.exists(GSUTIL_DEFAULT_PATH):
