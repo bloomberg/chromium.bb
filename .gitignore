@@ -36,14 +36,15 @@
 .metadata
 .project
 .pydevproject
-# Settings directory for eclipse
-/.settings
 .checkstyle
 cscope.*
 Session.vim
 tags
 Thumbs.db
 v8.log
+# Settings directories for eclipse
+/.externalToolBuilders/
+/.settings/
 /_out
 /android_emulator_sdk
 /ash/ash_unittests_run.xml
