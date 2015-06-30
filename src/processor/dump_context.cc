@@ -185,6 +185,49 @@ bool DumpContext::GetInstructionPointer(uint64_t* ip) const {
   return true;
 }
 
+bool DumpContext::GetStackPointer(uint64_t* sp) const {
+  BPLOG_IF(ERROR, !sp) << "DumpContext::GetStackPointer requires |sp|";
+  assert(sp);
+  *sp = 0;
+
+  if (!valid_) {
+    BPLOG(ERROR) << "Invalid DumpContext for GetStackPointer";
+    return false;
+  }
+
+  switch (GetContextCPU()) {
+  case MD_CONTEXT_AMD64:
+    *sp = GetContextAMD64()->rsp;
+    break;
+  case MD_CONTEXT_ARM:
+    *sp = GetContextARM()->iregs[MD_CONTEXT_ARM_REG_SP];
+    break;
+  case MD_CONTEXT_ARM64:
+    *sp = GetContextARM64()->iregs[MD_CONTEXT_ARM64_REG_SP];
+    break;
+  case MD_CONTEXT_PPC:
+    *sp = GetContextPPC()->gpr[MD_CONTEXT_PPC_REG_SP];
+    break;
+  case MD_CONTEXT_PPC64:
+    *sp = GetContextPPC64()->gpr[MD_CONTEXT_PPC64_REG_SP];
+    break;
+  case MD_CONTEXT_SPARC:
+    *sp = GetContextSPARC()->g_r[MD_CONTEXT_SPARC_REG_SP];
+    break;
+  case MD_CONTEXT_X86:
+    *sp = GetContextX86()->esp;
+    break;
+  case MD_CONTEXT_MIPS:
+    *sp = GetContextMIPS()->iregs[MD_CONTEXT_MIPS_REG_SP];
+    break;
+  default:
+    // This should never happen.
+    BPLOG(ERROR) << "Unknown CPU architecture in GetStackPointer";
+    return false;
+  }
+  return true;
+}
+
 void DumpContext::SetContextFlags(uint32_t context_flags) {
   context_flags_ = context_flags;
 }

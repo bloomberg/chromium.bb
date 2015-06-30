@@ -67,6 +67,10 @@ class DumpContext : public DumpObject {
   // MDRawContext, since it varies per-CPU architecture.
   bool GetInstructionPointer(uint64_t* ip) const;
 
+  // Similar to the GetInstructionPointer method, this method gets the stack
+  // pointer for all CPU architectures.
+  bool GetStackPointer(uint64_t* sp) const;
+
   // Print a human-readable representation of the object to stdout.
   void Print();
 
