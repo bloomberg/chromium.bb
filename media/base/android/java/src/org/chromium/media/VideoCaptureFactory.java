@@ -4,10 +4,12 @@
 
 package org.chromium.media;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.Log;
@@ -56,15 +58,22 @@ class VideoCaptureFactory {
         }
 
         private static int getNumberOfCameras(Context appContext) {
-            // getNumberOfCameras() would not fail due to lack of permission, but the
-            // following operations on camera would. "No permission" isn't a fatal
-            // error in WebView, specially for those applications which have no purpose
-            // to use a camera, but "load page" requires it. So, output a warning log
-            // and carry on pretending the system has no camera(s).
             if (sNumberOfSystemCameras == -1) {
-                if (PackageManager.PERMISSION_GRANTED
-                        == appContext.getPackageManager().checkPermission(
-                                "android.permission.CAMERA", appContext.getPackageName())) {
+                // getNumberOfCameras() would not fail due to lack of permission, but the
+                // following operations on camera would. "No permission" isn't a fatal
+                // error in WebView, specially for those applications which have no purpose
+                // to use a camera, but "load page" requires it. So, output a warning log
+                // and carry on pretending the system has no camera(s).  This optimization
+                // applies only to pre-M on Android because that is when runtime permissions
+                // were introduced.
+                if (!BuildInfo.isMncOrLater()
+                        && appContext.getPackageManager().checkPermission(
+                                Manifest.permission.CAMERA, appContext.getPackageName())
+                                        != PackageManager.PERMISSION_GRANTED) {
+                    sNumberOfSystemCameras = 0;
+                    Log.w(TAG, "Missing android.permission.CAMERA permission, "
+                            + "no system camera available.");
+                } else {
                     if (isLReleaseOrLater()) {
                         sNumberOfSystemCameras =
                                 VideoCaptureCamera2.getNumberOfCameras(appContext);
@@ -75,10 +84,6 @@ class VideoCaptureFactory {
                             sNumberOfSystemCameras += VideoCaptureTango.numberOfCameras();
                         }
                     }
-                } else {
-                    sNumberOfSystemCameras = 0;
-                    Log.w(TAG, "Missing android.permission.CAMERA permission, "
-                                  + "no system camera available.");
                 }
             }
             return sNumberOfSystemCameras;
