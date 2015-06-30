@@ -1,0 +1,74 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../resources-test.js"></script>
+<script src="../debugger-test.js"></script>
+<script>
+function addIFrame()
+{
+    var iframe = document.createElement("iframe");
+    iframe.setAttribute("src", "./resources/iframe-to-reload.php");
+    document.body.appendChild(iframe);
+}
+
+function navigateIframe()
+{
+    var iframe = document.querySelector("iframe");
+    iframe.setAttribute("src", "./resources/iframe-to-reload.php");
+    document.body.appendChild(iframe);
+}
+
+function test()
+{
+    var sourceFrame;
+
+    InspectorTest.evaluateInPage("addIFrame()", step1);
+    function step1()
+    {
+        InspectorTest.runAfterResourcesAreFinished(["iframe-to-reload.php"], step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.showScriptSource("iframe-to-reload.php", onSourceFrame);
+
+        function onSourceFrame(sourceFrame)
+        {
+            InspectorTest.addResult("Before navigation");
+            InspectorTest.addResult("====================================");
+            InspectorTest.dumpSourceFrameContents(sourceFrame);
+            InspectorTest.addConsoleSniffer(step3);
+            InspectorTest.evaluateInPage("navigateIframe()");
+        }
+    }
+
+    function step3()
+    {
+        InspectorTest.runAfterResourcesAreFinished(["iframe-to-reload.php"], step4);
+    }
+
+    function step4()
+    {
+        InspectorTest.showScriptSource("iframe-to-reload.php", onSourceFrame);
+
+        function onSourceFrame(sourceFrame)
+        {
+            InspectorTest.addResult("After navigation");
+            InspectorTest.addResult("====================================");
+            InspectorTest.dumpSourceFrameContents(sourceFrame);
+            InspectorTest.completeTest();
+        }
+    }
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>
+Verifies that UISourceCode gets updated when corresponding frame is reloaded.
+</p>
+
+</body>
+</html>
