@@ -492,22 +492,52 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
   def testPayloadJson(self):
     """Test how we store the payload description in json."""
-    gen = self._GetStdGenerator(payload=self.delta_payload)
+    gen = self._GetStdGenerator(payload=self.delta_payload, sign=False)
+    # Intentionally don't create signed file, to ensure it's never used.
     osutils.WriteFile(gen.payload_file, 'Fake payload contents.')
+
+    metadata_signatures = ()
+
+    expected_json = (
+        '{"md5_hex": "75218643432e5f621386d4ffcbedf9ba",'
+        ' "metadata_signature": null,'
+        ' "metadata_size": 10,'
+        ' "sha1_hex": "FDwoNOUO+kNwrQJMSLnLDY7iZ/E=",'
+        ' "sha256_hex": "gkm9207E7xbqpNRBFjEPO43nxyp/MNGQfyH3IYrq2kE=",'
+        ' "version": 2}')
+
+    # To really look up the metadata size, we'd need a real payload for parsing.
+    with mock.patch.object(gen, '_MetadataSize', return_value=10) as mock_size:
+      gen._StorePayloadJson(metadata_signatures)
+
+    # Validate we fetched size from the right file.
+    mock_size.assert_called_once_with(gen.payload_file)
+
+    # Validate the results.
+    self.assertEqual(osutils.ReadFile(gen.description_file), expected_json)
+
+  def testPayloadJsonSigned(self):
+    """Test how we store the payload description in json."""
+    gen = self._GetStdGenerator(payload=self.delta_payload, sign=True)
+    # Intentionally don't create unsigned file, to ensure it's never used.
+    osutils.WriteFile(gen.signed_payload_file, 'Fake signed payload contents.')
 
     metadata_signatures = ('1',)
 
     expected_json = (
-        '{"md5_hex": "75218643432e5f621386d4ffcbedf9ba",'
+        '{"md5_hex": "ad8f67319ca16e691108ca703636b3ad",'
         ' "metadata_signature": "MQ==",'
         ' "metadata_size": 10,'
-        ' "sha1_hex": "FDwoNOUO+kNwrQJMSLnLDY7iZ/E=",'
-        ' "sha256_hex": "gkm9207E7xbqpNRBFjEPO43nxyp/MNGQfyH3IYrq2kE=",'
-        ' "version": 1}')
+        ' "sha1_hex": "99zX3vZhTfwRJCi4zGK1A14AY3Y=",'
+        ' "sha256_hex": "yZjWgvsNdzclJzJOleQrTjVFBQy810ZlUAU5+i0okME=",'
+        ' "version": 2}')
 
     # To really look up the metadata size, we'd need a real payload for parsing.
-    with mock.patch.object(gen, '_MetadataSize', return_value=10):
+    with mock.patch.object(gen, '_MetadataSize', return_value=10) as mock_size:
       gen._StorePayloadJson(metadata_signatures)
+
+    # Validate we fetched size from the right file.
+    mock_size.assert_called_once_with(gen.signed_payload_file)
 
     # Validate the results.
     self.assertEqual(osutils.ReadFile(gen.description_file), expected_json)
