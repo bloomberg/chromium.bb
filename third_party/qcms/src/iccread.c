@@ -1363,7 +1363,7 @@ qcms_intent qcms_profile_get_rendering_intent(qcms_profile *profile)
 	return profile->rendering_intent;
 }
 
-icColorSpaceSignature qcms_profile_get_color_space(qcms_profile *profile)
+qcms_color_space qcms_profile_get_color_space(qcms_profile *profile)
 {
 	return profile->color_space;
 }
