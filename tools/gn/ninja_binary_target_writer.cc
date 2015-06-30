@@ -8,6 +8,7 @@
 #include <set>
 #include <sstream>
 
+#include "base/containers/hash_tables.h"
 #include "base/strings/string_util.h"
 #include "tools/gn/config_values_extractors.h"
 #include "tools/gn/deps_iterator.h"
@@ -15,6 +16,7 @@
 #include "tools/gn/escape.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/ninja_utils.h"
+#include "tools/gn/scheduler.h"
 #include "tools/gn/settings.h"
 #include "tools/gn/source_file_type.h"
 #include "tools/gn/string_utils.h"
@@ -293,6 +295,9 @@ void NinjaBinaryTargetWriter::Run() {
 
   // Also link all pch object files.
   obj_files.insert(obj_files.end(), pch_obj_files.begin(), pch_obj_files.end());
+
+  if (!CheckForDuplicateObjectFiles(obj_files))
+    return;
 
   if (target_->output_type() == Target::SOURCE_SET) {
     WriteSourceSetStamp(obj_files);
@@ -790,4 +795,31 @@ OutputFile NinjaBinaryTargetWriter::GetWindowsPCHFile(
   ret.value().append(".pch");
 
   return ret;
+}
+
+bool NinjaBinaryTargetWriter::CheckForDuplicateObjectFiles(
+    const std::vector<OutputFile>& files) const {
+  base::hash_set<std::string> set;
+  for (const auto& file : files) {
+    if (!set.insert(file.value()).second) {
+      Err err(
+          target_->defined_from(),
+          "Duplicate object file",
+          "The target " + target_->label().GetUserVisibleName(false) +
+          "\ngenerates two object files with the same name:\n  " +
+          file.value() + "\n"
+          "\n"
+          "It could be you accidentally have a file listed twice in the\n"
+          "sources. Or, depending on how your toolchain maps sources to\n"
+          "object files, two source files with the same name in different\n"
+          "directories could map to the same object file.\n"
+          "\n"
+          "In the latter case, either rename one of the files or move one of\n"
+          "the sources to a separate source_set to avoid them both being in\n"
+          "the same target.");
+      g_scheduler->FailWithError(err);
+      return false;
+    }
+  }
+  return true;
 }

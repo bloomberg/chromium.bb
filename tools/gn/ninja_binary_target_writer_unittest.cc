@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/ninja_binary_target_writer.h"
+#include "tools/gn/scheduler.h"
 #include "tools/gn/target.h"
 #include "tools/gn/test_with_scope.h"
 
@@ -458,4 +459,24 @@ TEST(NinjaBinaryTargetWriter, WinPrecompiledHeaders) {
                "withpch/obj/build/pch_target.precompile.cc.o\n";
     EXPECT_EQ(pch_win_expected, out.str());
   }
+}
+
+// Should throw an error with the scheduler if a duplicate object file exists.
+// This is dependent on the toolchain's object file mapping.
+TEST(NinjaBinaryTargetWriter, DupeObjFileError) {
+  Scheduler scheduler;
+
+  TestWithScope setup;
+  TestTarget target(setup, "//foo:bar", Target::EXECUTABLE);
+  target.sources().push_back(SourceFile("//a.cc"));
+  target.sources().push_back(SourceFile("//a.cc"));
+
+  EXPECT_FALSE(scheduler.is_failed());
+
+  std::ostringstream out;
+  NinjaBinaryTargetWriter writer(&target, out);
+  writer.Run();
+
+  // Should have issued an error.
+  EXPECT_TRUE(scheduler.is_failed());
 }

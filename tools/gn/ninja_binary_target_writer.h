@@ -116,6 +116,10 @@ class NinjaBinaryTargetWriter : public NinjaTargetWriter {
   // tool type. The tool must support precompiled headers.
   OutputFile GetWindowsPCHFile(Toolchain::ToolType tool_type) const;
 
+  // Checks for duplicates in the given list of output files. If any duplicates
+  // are found, throws an error and return false.
+  bool CheckForDuplicateObjectFiles(const std::vector<OutputFile>& files) const;
+
   const Tool* tool_;
 
   // Cached version of the prefix used for rule types for this toolchain.
