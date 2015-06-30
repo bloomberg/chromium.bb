@@ -389,11 +389,11 @@ static VisiblePosition visualWordPosition(const VisiblePosition& visiblePosition
         bool nextBoxInDifferentBlock = false;
         bool movingIntoNewBox = previouslyVisitedBox != box;
 
-        if (offsetInBox == box->caretMinOffset())
+        if (offsetInBox == box->caretMinOffset()) {
             iter = wordBreakIteratorForMinOffsetBoundary(visiblePosition, textBox, previousBoxLength, previousBoxInDifferentBlock, string, leafBoxes);
-        else if (offsetInBox == box->caretMaxOffset())
+        } else if (offsetInBox == box->caretMaxOffset()) {
             iter = wordBreakIteratorForMaxOffsetBoundary(visiblePosition, textBox, nextBoxInDifferentBlock, string, leafBoxes);
-        else if (movingIntoNewBox) {
+        } else if (movingIntoNewBox) {
             iter = wordBreakIterator(textBox->layoutObject().text(), textBox->start(), textBox->len());
             previouslyVisitedBox = box;
         }
@@ -497,9 +497,9 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
     while (!it.atEnd()) {
         bool inTextSecurityMode = it.node() && it.node()->layoutObject() && it.node()->layoutObject()->style()->textSecurity() != TSNONE;
         // iterate to get chunks until the searchFunction returns a non-zero value.
-        if (!inTextSecurityMode)
+        if (!inTextSecurityMode) {
             it.prependTextTo(string);
-        else {
+        } else {
             // Treat bullets used in the text security mode as regular characters when looking for boundaries
             Vector<UChar, 1024> iteratorString;
             iteratorString.fill('x', it.length());
@@ -521,9 +521,10 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
         return VisiblePosition(it.atEnd() ? it.startPosition() : pos, DOWNSTREAM);
 
     Node* node = it.startContainer();
-    if ((node->isTextNode() && static_cast<int>(next) <= node->maxCharacterOffset()) || (node->layoutObject() && node->layoutObject()->isBR() && !next))
+    if ((node->isTextNode() && static_cast<int>(next) <= node->maxCharacterOffset()) || (node->layoutObject() && node->layoutObject()->isBR() && !next)) {
         // The next variable contains a usable index into a text node
         return VisiblePosition(createLegacyEditingPosition(node, next), DOWNSTREAM);
+    }
 
     // Use the character iterator to translate the next value into a DOM position.
     BackwardsCharacterIterator charIt(start, end);
@@ -832,16 +833,17 @@ static VisiblePosition endPositionForLine(const VisiblePosition& c, LineEndpoint
     }
 
     Position pos;
-    if (isHTMLBRElement(*endNode))
+    if (isHTMLBRElement(*endNode)) {
         pos = positionBeforeNode(endNode);
-    else if (endBox->isInlineTextBox() && endNode->isTextNode()) {
+    } else if (endBox->isInlineTextBox() && endNode->isTextNode()) {
         InlineTextBox* endTextBox = toInlineTextBox(endBox);
         int endOffset = endTextBox->start();
         if (!endTextBox->isLineBreak())
             endOffset += endTextBox->len();
         pos = Position(toText(endNode), endOffset);
-    } else
+    } else {
         pos = positionAfterNode(endNode);
+    }
 
     return VisiblePosition(pos, VP_UPSTREAM_IF_POSSIBLE);
 }

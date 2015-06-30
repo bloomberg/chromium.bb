@@ -417,16 +417,17 @@ void VisibleSelection::setBaseAndExtentToDeepEquivalents()
         m_extent = VisiblePosition(m_extent, m_affinity).deepEquivalent();
 
     // Make sure we do not have a dangling base or extent.
-    if (m_base.isNull() && m_extent.isNull())
+    if (m_base.isNull() && m_extent.isNull()) {
         m_baseIsFirst = true;
-    else if (m_base.isNull()) {
+    } else if (m_base.isNull()) {
         m_base = m_extent;
         m_baseIsFirst = true;
     } else if (m_extent.isNull()) {
         m_extent = m_base;
         m_baseIsFirst = true;
-    } else
+    } else {
         m_baseIsFirst = comparePositions(m_base, m_extent) <= 0;
+    }
 }
 
 void VisibleSelection::setStartRespectingGranularity(TextGranularity granularity, EWordSide wordSide)

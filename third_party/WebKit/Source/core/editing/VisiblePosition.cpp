@@ -365,7 +365,7 @@ Position VisiblePosition::rightVisuallyDistinctCandidate() const
                     prevBox = prevBox->prevLeafChild();
                 } while (prevBox && prevBox->bidiLevel() > level);
 
-                if (prevBox && prevBox->bidiLevel() == level)   // For example, abc FED 123 ^ CBA
+                if (prevBox && prevBox->bidiLevel() == level) // For example, abc FED 123 ^ CBA
                     break;
 
                 // For example, abc 123 ^ CBA or 123 ^ CBA abc
@@ -826,7 +826,7 @@ DEFINE_TRACE(VisiblePosition)
     visitor->trace(m_deepPosition);
 }
 
-}  // namespace blink
+} // namespace blink
 
 #ifndef NDEBUG
 

@@ -27,10 +27,10 @@
 #include "core/editing/TextInsertionBaseCommand.h"
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
-#include "core/events/BeforeTextInsertedEvent.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/editing/FrameSelection.h"
+#include "core/events/BeforeTextInsertedEvent.h"
 #include "core/frame/LocalFrame.h"
 
 namespace blink {

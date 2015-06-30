@@ -234,7 +234,7 @@ private:
     PositionInComposedTree m_startInComposedTree;
     PositionInComposedTree m_endInComposedTree;
 
-    EAffinity m_affinity;           // the upstream/downstream affinity of the caret
+    EAffinity m_affinity; // the upstream/downstream affinity of the caret
 
     // Oilpan: this reference has a lifetime that is at least as long
     // as this object.

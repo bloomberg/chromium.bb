@@ -55,9 +55,9 @@ static CFMutableCharacterSetRef getSmartSet(bool isPreviousCharacter)
         CFCharacterSetAddCharactersInRange(smartSet, CFRangeMake(0x20000, 0xA6D7)); // CJK Ideograph Exntension B
         CFCharacterSetAddCharactersInRange(smartSet, CFRangeMake(0x2F800, 0x021E)); // CJK Compatibility Ideographs (0x2F800 - 0x2FA1D)
 
-        if (isPreviousCharacter)
+        if (isPreviousCharacter) {
             preSmartSet = smartSet;
-        else {
+        } else {
             CFCharacterSetUnion(smartSet, CFCharacterSetGetPredefined(kCFCharacterSetPunctuation));
             postSmartSet = smartSet;
         }

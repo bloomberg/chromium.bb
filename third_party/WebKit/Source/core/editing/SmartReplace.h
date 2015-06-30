@@ -33,7 +33,7 @@
 
 namespace blink {
 
-bool isCharacterSmartReplaceExempt(UChar32 c, bool isPreviousCharacter);
+bool isCharacterSmartReplaceExempt(UChar32, bool isPreviousCharacter);
 
 } // namespace blink
 
