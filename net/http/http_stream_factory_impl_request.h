@@ -48,11 +48,9 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   void AttachJob(HttpStreamFactoryImpl::Job* job);
 
   // Marks completion of the request. Must be called before OnStreamReady().
-  // |job_net_log| is the BoundNetLog of the Job that fulfilled this request.
   void Complete(bool was_npn_negotiated,
                 NextProto protocol_negotiated,
-                bool using_spdy,
-                const BoundNetLog& job_net_log);
+                bool using_spdy);
 
   // If this Request has a |spdy_session_key_|, remove this session from the
   // SpdySessionRequestMap.
@@ -118,12 +116,14 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   const ConnectionAttempts& connection_attempts() const override;
 
  private:
-  // Used to orphan all jobs in |jobs_| other than |job| which becomes "bound"
-  // to the request.
-  void OrphanJobsExcept(Job* job);
+  // Used to bind |job| to the request and orphan all other jobs in |jobs_|.
+  void BindJob(Job* job);
 
   // Used to orphan all jobs in |jobs_|.
   void OrphanJobs();
+
+  // Used to cancel all jobs in |jobs_|.
+  void CancelJobs();
 
   // Called when a Job succeeds.
   void OnJobSucceeded(Job* job);

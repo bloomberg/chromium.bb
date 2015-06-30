@@ -326,10 +326,8 @@ void HttpStreamFactoryImpl::Job::OnStreamReadyCallback() {
   if (IsOrphaned()) {
     stream_factory_->OnOrphanedJobComplete(this);
   } else {
-    request_->Complete(was_npn_negotiated(),
-                       protocol_negotiated(),
-                       using_spdy(),
-                       net_log_);
+    request_->Complete(was_npn_negotiated(), protocol_negotiated(),
+                       using_spdy());
     request_->OnStreamReady(this, server_ssl_config_, proxy_info_,
                             stream_.release());
   }
@@ -346,10 +344,7 @@ void HttpStreamFactoryImpl::Job::OnWebSocketHandshakeStreamReadyCallback() {
 
   MaybeCopyConnectionAttemptsFromSocketOrHandle();
 
-  request_->Complete(was_npn_negotiated(),
-                     protocol_negotiated(),
-                     using_spdy(),
-                     net_log_);
+  request_->Complete(was_npn_negotiated(), protocol_negotiated(), using_spdy());
   request_->OnWebSocketHandshakeStreamReady(this,
                                             server_ssl_config_,
                                             proxy_info_,

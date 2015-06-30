@@ -238,10 +238,7 @@ void HttpStreamFactoryImpl::OnNewSpdySessionReady(
     if (!ContainsKey(spdy_session_request_map_, spdy_session_key))
       break;
     Request* request = *spdy_session_request_map_[spdy_session_key].begin();
-    request->Complete(was_npn_negotiated,
-                      protocol_negotiated,
-                      using_spdy,
-                      net_log);
+    request->Complete(was_npn_negotiated, protocol_negotiated, using_spdy);
     if (for_websockets_) {
       // TODO(ricea): Restore this code path when WebSocket over SPDY
       // implementation is ready.
