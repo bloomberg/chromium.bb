@@ -45,8 +45,7 @@ bool WorkerDevToolsAgentHost::DispatchProtocolMessage(
     return true;
 
   int call_id;
-  std::string method;
-  if (protocol_handler_->HandleOptionalMessage(message, &call_id, &method))
+  if (protocol_handler_->HandleOptionalMessage(message, &call_id))
     return true;
 
   if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first)) {

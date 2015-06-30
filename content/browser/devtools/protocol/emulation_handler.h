@@ -32,7 +32,6 @@ class EmulationHandler : public page::PageHandler::ScreencastListener {
 
   void SetRenderFrameHost(RenderFrameHostImpl* host);
   void Detached();
-  bool IsDeviceEmulationAvailable();
 
   Response SetGeolocationOverride(double* latitude,
                                   double* longitude,

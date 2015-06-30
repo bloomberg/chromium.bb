@@ -112,22 +112,16 @@ Response EmulationHandler::SetTouchEmulationEnabled(
 }
 
 Response EmulationHandler::CanEmulate(bool* result) {
-  *result = IsDeviceEmulationAvailable();
-  return Response::OK();
-}
-
-bool EmulationHandler::IsDeviceEmulationAvailable() {
-  bool result;
 #if defined(OS_ANDROID)
-  result = false;
+  *result = false;
 #else
-  result = true;
+  *result = true;
   if (WebContentsImpl* web_contents = GetWebContents())
-    result &= !web_contents->GetVisibleURL().SchemeIs(kChromeDevToolsScheme);
+    *result &= !web_contents->GetVisibleURL().SchemeIs(kChromeDevToolsScheme);
   if (host_ && host_->GetRenderWidgetHost())
-    result &= !host_->GetRenderWidgetHost()->auto_resize_enabled();
+    *result &= !host_->GetRenderWidgetHost()->auto_resize_enabled();
 #endif  // defined(OS_ANDROID)
-  return result;
+  return Response::OK();
 }
 
 Response EmulationHandler::SetDeviceMetricsOverride(
