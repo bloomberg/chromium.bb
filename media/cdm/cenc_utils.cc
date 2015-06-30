@@ -15,13 +15,16 @@ namespace media {
 // system specific header ('pssh') boxes.
 // ref: https://w3c.github.io/encrypted-media/cenc-format.html
 
-// SystemID for the Common System.
+// CENC SystemID for the Common System.
 // https://w3c.github.io/encrypted-media/cenc-format.html#common-system
-const uint8_t kCommonSystemId[] = { 0x10, 0x77, 0xef, 0xec,
-                                    0xc0, 0xb2, 0x4d, 0x02,
-                                    0xac, 0xe3, 0x3c, 0x1e,
-                                    0x52, 0xe2, 0xfb, 0x4b };
+const uint8_t kCencCommonSystemId[] = {0x10, 0x77, 0xef, 0xec, 0xc0, 0xb2,
+                                       0x4d, 0x02, 0xac, 0xe3, 0x3c, 0x1e,
+                                       0x52, 0xe2, 0xfb, 0x4b};
 
+// Returns true if |input| contains only 1 or more valid 'pssh' boxes, false
+// otherwise. |pssh_boxes| is updated as the set of parsed 'pssh' boxes.
+// Note: All boxes in |input| must be 'pssh' boxes. However, if they can't be
+//       properly parsed (e.g. unsupported version), then they will be skipped.
 static bool ReadAllPsshBoxes(
     const std::vector<uint8_t>& input,
     std::vector<mp4::FullProtectionSystemSpecificHeader>* pssh_boxes) {
@@ -70,27 +73,31 @@ bool ValidatePsshInput(const std::vector<uint8_t>& input) {
   return ReadAllPsshBoxes(input, &children);
 }
 
-bool GetKeyIdsForCommonSystemId(const std::vector<uint8_t>& input,
+bool GetKeyIdsForCommonSystemId(const std::vector<uint8_t>& pssh_boxes,
                                 KeyIdList* key_ids) {
+  // If there are no 'pssh' boxes then no key IDs found.
+  if (pssh_boxes.empty())
+    return false;
+
+  std::vector<mp4::FullProtectionSystemSpecificHeader> children;
+  if (!ReadAllPsshBoxes(pssh_boxes, &children))
+    return false;
+
+  // Check all children for an appropriate 'pssh' box, returning the
+  // key IDs found.
   KeyIdList result;
   std::vector<uint8_t> common_system_id(
-      kCommonSystemId, kCommonSystemId + arraysize(kCommonSystemId));
-
-  if (!input.empty()) {
-    std::vector<mp4::FullProtectionSystemSpecificHeader> children;
-    if (!ReadAllPsshBoxes(input, &children))
-      return false;
-
-    // Check all children for an appropriate 'pssh' box, concatenating any
-    // key IDs found.
-    for (const auto& child : children) {
-      if (child.system_id == common_system_id && child.key_ids.size() > 0)
-        result.insert(result.end(), child.key_ids.begin(), child.key_ids.end());
+      kCencCommonSystemId,
+      kCencCommonSystemId + arraysize(kCencCommonSystemId));
+  for (const auto& child : children) {
+    if (child.system_id == common_system_id) {
+      key_ids->assign(child.key_ids.begin(), child.key_ids.end());
+      return key_ids->size() > 0;
     }
   }
 
-  key_ids->swap(result);
-  return key_ids->size() > 0;
+  // No matching 'pssh' box found.
+  return false;
 }
 
 bool GetPsshData(const std::vector<uint8_t>& input,

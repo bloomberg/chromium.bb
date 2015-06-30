@@ -222,12 +222,11 @@ TEST_F(CencUtilsTest, PSSHVersion0Plus1) {
 
   // Concatentate box1 onto end of box0.
   box0.insert(box0.end(), box1.begin(), box1.end());
-
-  KeyIdList key_ids;
   EXPECT_TRUE(ValidatePsshInput(box0));
-  EXPECT_TRUE(GetKeyIdsForCommonSystemId(box0, &key_ids));
-  EXPECT_EQ(1u, key_ids.size());
-  EXPECT_EQ(key_ids[0], Key1());
+
+  // No key IDs returned as only the first 'pssh' box is processed.
+  KeyIdList key_ids;
+  EXPECT_FALSE(GetKeyIdsForCommonSystemId(box0, &key_ids));
 }
 
 TEST_F(CencUtilsTest, PSSHVersion1Plus0) {
@@ -255,15 +254,10 @@ TEST_F(CencUtilsTest, MultiplePSSHVersion1) {
 
   KeyIdList key_ids;
   EXPECT_TRUE(ValidatePsshInput(box));
-  // TODO(jrummell): GetKeyIdsForCommonSystemId() returns the key IDs out of
-  // all matching boxes. It should only return the key IDs from the first
-  // matching box.
   EXPECT_TRUE(GetKeyIdsForCommonSystemId(box, &key_ids));
-  EXPECT_EQ(4u, key_ids.size());
+  EXPECT_EQ(2u, key_ids.size());
   EXPECT_EQ(key_ids[0], Key1());
   EXPECT_EQ(key_ids[1], Key2());
-  EXPECT_EQ(key_ids[2], Key3());
-  EXPECT_EQ(key_ids[3], Key4());
 }
 
 TEST_F(CencUtilsTest, PsshBoxSmallerThanSize) {
