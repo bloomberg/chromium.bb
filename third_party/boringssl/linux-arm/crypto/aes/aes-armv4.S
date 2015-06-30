@@ -1,3 +1,4 @@
+#if defined(__arm__)
 
 @ ====================================================================
 @ Written by Andy Polyakov <appro@openssl.org> for the OpenSSL
@@ -1195,4 +1196,5 @@ _armv4_AES_decrypt:
 .align	2
 .align	2
 
+#endif
 #endif

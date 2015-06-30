@@ -1,3 +1,4 @@
+#if defined(__aarch64__)
 #include "arm_arch.h"
 
 .text
@@ -1141,3 +1142,4 @@ sha256_block_armv8:
 	ret
 .size	sha256_block_armv8,.-sha256_block_armv8
 .comm	OPENSSL_armcap_P,4,4
+#endif

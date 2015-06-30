@@ -1,4 +1,5 @@
 #if defined(__arm__)
+#if defined(__arm__)
 #include "arm_arch.h"
 
 .syntax	unified
@@ -536,4 +537,5 @@ gcm_ghash_neon:
 .align	2
 .align	2
 
+#endif
 #endif

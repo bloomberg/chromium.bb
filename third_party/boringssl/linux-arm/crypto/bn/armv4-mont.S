@@ -1,3 +1,4 @@
+#if defined(__arm__)
 #include "arm_arch.h"
 
 .text
@@ -584,4 +585,5 @@ bn_mul8x_mont_neon:
 #if __ARM_MAX_ARCH__>=7
 .comm	OPENSSL_armcap_P,4,4
 .hidden	OPENSSL_armcap_P
+#endif
 #endif

@@ -1,3 +1,4 @@
+#if defined(__arm__)
 
 @ ====================================================================
 @ Written by Andy Polyakov <appro@openssl.org> for the OpenSSL
@@ -2573,5 +2574,6 @@ bsaes_xts_decrypt:
 	ldmia	sp!, {r4,r5,r6,r7,r8,r9,r10, pc}	@ return
 
 .size	bsaes_xts_decrypt,.-bsaes_xts_decrypt
+#endif
 #endif
 #endif
