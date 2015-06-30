@@ -263,8 +263,10 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
     match.allowed_to_be_default_match = match.inline_autocompletion.empty() ||
         !PreventInlineAutocomplete(autocomplete_input_);
   }
-  match.EnsureUWYTIsAllowedToBeDefault(autocomplete_input_.canonicalized_url(),
-                                       client()->GetTemplateURLService());
+  match.EnsureUWYTIsAllowedToBeDefault(
+      autocomplete_input_,
+      client()->GetAcceptLanguages(),
+      client()->GetTemplateURLService());
 
   // Format the description autocomplete presentation.
   match.description = info.title();

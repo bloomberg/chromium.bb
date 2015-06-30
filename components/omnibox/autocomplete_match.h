@@ -187,22 +187,35 @@ struct AutocompleteMatch {
   // left empty and the template URL (if any) is determined from the
   // destination's hostname.  The template URL is used to strip off query args
   // other than the search terms themselves that would otherwise prevent doing
-  // proper deduping.
+  // proper deduping.  |input| is used to decide if the scheme is allowed to
+  // be altered during stripping.  If this URL, minus the scheme and separator,
+  // starts with any the terms in input.terms_prefixed_by_http_or_https(), we
+  // avoid converting an HTTPS scheme to HTTP.  This means URLs that differ
+  // only by these schemes won't be marked as dupes, since the distinction
+  // seems to matter to the user.  |languages| is used to format punycoded
+  // domain names to UTF-8 for the aforementioned duplicate detection.
   static GURL GURLToStrippedGURL(const GURL& url,
+                                 const AutocompleteInput& input,
+                                 const std::string& languages,
                                  TemplateURLService* template_url_service,
                                  const base::string16& keyword);
 
   // Computes the stripped destination URL (via GURLToStrippedGURL()) and
-  // stores the result in |stripped_destination_url|.
-  void ComputeStrippedDestinationURL(TemplateURLService* template_url_service);
+  // stores the result in |stripped_destination_url|.  |input| and |languages|
+  // are used for the same purpose as in GURLToStrippedGURL().
+  void ComputeStrippedDestinationURL(
+      const AutocompleteInput& input,
+      const std::string& languages,
+      TemplateURLService* template_url_service);
 
   // Sets |allowed_to_be_default_match| to true if this match is effectively
   // the URL-what-you-typed match (i.e., would be dupped against the UWYT
-  // match when AutocompleteResult merges matches).  |canonical_input_url| is
-  // the AutocompleteInput interpreted as a URL (i.e.,
-  // AutocompleteInput::canonicalized_url()).
-  void EnsureUWYTIsAllowedToBeDefault(const GURL& canonical_input_url,
-                                      TemplateURLService* template_url_service);
+  // match when AutocompleteResult merges matches).  |languages| is used
+  // for the same purpose as in GURLToStrippedGURL().
+  void EnsureUWYTIsAllowedToBeDefault(
+      const AutocompleteInput& input,
+      const std::string& languages,
+      TemplateURLService* template_url_service);
 
   // Gets data relevant to whether there should be any special keyword-related
   // UI shown for this match.  If this match represents a selected keyword, i.e.

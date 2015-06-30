@@ -143,12 +143,21 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
     if (relevance) {
       matches_.push_back(
           ShortcutToACMatch(it->second, relevance, input, fixed_up_input));
-      matches_.back().ComputeStrippedDestinationURL(template_url_service);
+      matches_.back().ComputeStrippedDestinationURL(
+          input, client_->GetAcceptLanguages(), template_url_service);
     }
   }
-  // Remove duplicates.  Duplicates don't need to be preserved in the matches
-  // because they are only used for deletions, and shortcuts deletes matches
-  // based on the URL.
+  // Remove duplicates.  This is important because it's common to have multiple
+  // shortcuts pointing to the same URL, e.g., ma, mai, and mail all pointing
+  // to mail.google.com, so typing "m" will return them all.  If we then simply
+  // clamp to kMaxMatches and let the AutocompleteResult take care of
+  // collapsing the duplicates, we'll effectively only be returning one match,
+  // instead of several possibilities.
+  //
+  // Note that while removing duplicates, we don't populate a match's
+  // |duplicate_matches| field--duplicates don't need to be preserved in the
+  // matches because they are only used for deletions, and this provider
+  // deletes matches based on the URL.
   AutocompleteResult::DedupMatchesByDestination(
       input.current_page_classification(), false, &matches_);
   // Find best matches.
@@ -227,7 +236,8 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
           match.inline_autocompletion.empty();
     }
   }
-  match.EnsureUWYTIsAllowedToBeDefault(input.canonicalized_url(),
+  match.EnsureUWYTIsAllowedToBeDefault(input,
+                                       client_->GetAcceptLanguages(),
                                        client_->GetTemplateURLService());
 
   // Try to mark pieces of the contents and description as matches if they

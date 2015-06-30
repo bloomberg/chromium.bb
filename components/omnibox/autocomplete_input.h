@@ -194,6 +194,15 @@ class AutocompleteInput {
   // focused.
   bool from_omnibox_focus() const { return from_omnibox_focus_; }
 
+  // Returns the terms in |text_| that start with http:// or https:// plus
+  // at least one more character, stored without the scheme.  Used in
+  // duplicate elimination to detect whether, for a given URL, the user may
+  // have started typing that URL with an explicit scheme; see comments on
+  // AutocompleteMatch::GURLToStrippedGURL().
+  const std::vector<base::string16>& terms_prefixed_by_http_or_https() const {
+    return terms_prefixed_by_http_or_https_;
+  }
+
   // Resets all internal variables to the null-constructed state.
   void Clear();
 
@@ -215,6 +224,7 @@ class AutocompleteInput {
   bool allow_exact_keyword_match_;
   bool want_asynchronous_matches_;
   bool from_omnibox_focus_;
+  std::vector<base::string16> terms_prefixed_by_http_or_https_;
 };
 
 #endif  // COMPONENTS_OMNIBOX_AUTOCOMPLETE_INPUT_H_

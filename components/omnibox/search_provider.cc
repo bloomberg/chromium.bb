@@ -1438,7 +1438,7 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
       !navigation.received_after_last_keystroke() &&
       (match.inline_autocompletion.empty() ||
       (!input_.prevent_inline_autocomplete() && !trimmed_whitespace));
-  match.EnsureUWYTIsAllowedToBeDefault(input_.canonicalized_url(),
+  match.EnsureUWYTIsAllowedToBeDefault(input_, client()->GetAcceptLanguages(),
                                        client()->GetTemplateURLService());
 
   match.contents = navigation.match_contents();

@@ -407,7 +407,8 @@ void AutocompleteController::UpdateResult(
     result_.AppendMatches(input_, (*i)->matches());
 
   // Sort the matches and trim to a small number of "best" matches.
-  result_.SortAndCull(input_, template_url_service_);
+  result_.SortAndCull(input_, provider_client_->GetAcceptLanguages(),
+                      template_url_service_);
 
   // Need to validate before invoking CopyOldMatches as the old matches are not
   // valid against the current input.
@@ -418,7 +419,8 @@ void AutocompleteController::UpdateResult(
   if (!done_) {
     // This conditional needs to match the conditional in Start that invokes
     // StartExpireTimer.
-    result_.CopyOldMatches(input_, last_result, template_url_service_);
+    result_.CopyOldMatches(input_, provider_client_->GetAcceptLanguages(),
+                           last_result, template_url_service_);
   }
 
   UpdateKeywordDescriptions(&result_);

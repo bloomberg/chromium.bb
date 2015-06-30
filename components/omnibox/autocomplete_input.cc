@@ -4,6 +4,7 @@
 
 #include "components/omnibox/autocomplete_input.h"
 
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
@@ -28,6 +29,35 @@ void AdjustCursorPositionIfNecessary(size_t num_leading_chars_removed,
     *cursor_position -= num_leading_chars_removed;
   else
     *cursor_position = 0;
+}
+
+// Finds all terms in |text| that start with http:// or https:// plus at least
+// one more character and puts the text after the prefix in
+// |terms_prefixed_by_http_or_https|.
+void PopulateTermsPrefixedByHttpOrHttps(
+    const base::string16& text,
+    std::vector<base::string16>* terms_prefixed_by_http_or_https) {
+  std::vector<base::string16> terms;
+  // Split on whitespace rather than use ICU's word iterator because, for
+  // example, ICU's iterator may break on punctuation (such as ://) or decide
+  // to split a single term in a hostname (if it seems to think that the
+  // hostname is multiple words).  Neither of these behaviors is desirable.
+  base::SplitString(text, ' ', &terms);
+  const std::string separator(url::kStandardSchemeSeparator);
+  for (const auto& term : terms) {
+    const std::string term_utf8(base::UTF16ToUTF8(term));
+    static const char* kSchemes[2] = { url::kHttpScheme, url::kHttpsScheme };
+    for (const char* scheme : kSchemes) {
+      const std::string prefix(scheme + separator);
+      // Doing an ASCII comparison is okay because prefix is ASCII.
+      if (base::StartsWith(term_utf8, prefix,
+                           base::CompareCase::INSENSITIVE_ASCII) &&
+          (term_utf8.length() > prefix.length())) {
+        terms_prefixed_by_http_or_https->push_back(
+            term.substr(prefix.length()));
+      }
+    }
+  }
 }
 
 }  // namespace
@@ -76,6 +106,7 @@ AutocompleteInput::AutocompleteInput(
   GURL canonicalized_url;
   type_ = Parse(text_, desired_tld, scheme_classifier, &parts_, &scheme_,
                 &canonicalized_url);
+  PopulateTermsPrefixedByHttpOrHttps(text_, &terms_prefixed_by_http_or_https_);
 
   if (type_ == metrics::OmniboxInputType::INVALID)
     return;
@@ -538,4 +569,5 @@ void AutocompleteInput::Clear() {
   allow_exact_keyword_match_ = false;
   want_asynchronous_matches_ = true;
   from_omnibox_focus_ = false;
+  terms_prefixed_by_http_or_https_.clear();
 }

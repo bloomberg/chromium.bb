@@ -2495,6 +2495,18 @@ TEST_F(SearchProviderTest, DefaultProviderSuggestRelevanceScoringUrlInput) {
       { { "a.com", AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, true  },
         { "info",  AutocompleteMatchType::SEARCH_SUGGEST,        false },
         kEmptyMatch, kEmptyMatch } },
+
+    // Ensure that if the user explicitly enters a scheme, a navsuggest
+    // result for a URL with a different scheme is not inlineable.
+    { "http://a.com", "[\"http://a.com\","
+               "[\"http://a.com/1\", \"https://a.com/\"],[],[],"
+                "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"],"
+                 "\"google:suggestrelevance\":[9000, 8000]}]",
+      { { "http://a.com/1", AutocompleteMatchType::NAVSUGGEST,   true  },
+        { "https://a.com", AutocompleteMatchType::NAVSUGGEST,    false },
+        { "http://a.com",   AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+                                                                 true  },
+        kEmptyMatch } },
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {

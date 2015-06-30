@@ -5,6 +5,8 @@
 #include "components/omnibox/autocomplete_match.h"
 
 #include "base/basictypes.h"
+#include "base/strings/utf_string_conversions.h"
+#include "components/omnibox/test_scheme_classifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(AutocompleteMatchTest, MoreRelevant) {
@@ -126,4 +128,74 @@ TEST(AutocompleteMatchTest, SupportsDeletion) {
   m.duplicate_matches.push_back(AutocompleteMatch(
       NULL, 0, true, AutocompleteMatchType::URL_WHAT_YOU_TYPED));
   EXPECT_TRUE(m.SupportsDeletion());
+}
+
+TEST(AutocompleteMatchTest, Duplicates) {
+  struct DuplicateCases {
+    const wchar_t* input;
+    const std::string url1;
+    const std::string url2;
+    const bool expected_duplicate;
+  } cases[] = {
+    { L"g", "http://www.google.com/",  "https://www.google.com/",    true },
+    { L"g", "http://www.google.com/",  "http://www.google.com",      true },
+    { L"g", "http://google.com/",      "http://www.google.com/",     true },
+    { L"g", "http://www.google.com/",  "HTTP://www.GOOGLE.com/",     true },
+    { L"g", "http://www.google.com/1", "http://www.google.com/1/",   true },
+    { L"g", "http://www.google.com/",  "http://www.google.com",      true },
+    { L"g", "https://www.google.com/", "http://google.com",          true },
+    { L"g", "http://www.google.com/",  "wss://www.google.com/",      false },
+    { L"g", "http://www.google.com/",  "http://www.google.com/1",    false },
+    { L"g", "http://www.google.com/",  "http://www.goo.com/",        false },
+    { L"g", "http://www.google.com/",  "http://w2.google.com/",      false },
+    { L"g", "http://www.google.com/",  "http://m.google.com/",       false },
+    { L"g", "http://www.google.com/",  "http://www.google.com/?foo", false },
+
+    // Don't allow URLs with different schemes to be considered duplicates for
+    // certain inputs.
+    { L"http://g", "http://google.com/",
+                   "https://google.com/",  false },
+    { L"http://g", "http://blah.com/",
+                   "https://blah.com/",    true  },
+    { L"http://g", "http://google.com/1",
+                   "https://google.com/1", false },
+    { L"http://g hello",    "http://google.com/",
+                            "https://google.com/", false },
+    { L"hello http://g",    "http://google.com/",
+                            "https://google.com/", false },
+    { L"hello http://g",    "http://blah.com/",
+                            "https://blah.com/",   true  },
+    { L"http://b http://g", "http://google.com/",
+                            "https://google.com/", false },
+    { L"http://b http://g", "http://blah.com/",
+                            "https://blah.com/",   false },
+
+    // If the user types unicode that matches the beginning of a
+    // punycode-encoded hostname then consider that a match.
+    { L"x",               "http://xn--1lq90ic7f1rc.cn/",
+                          "https://xn--1lq90ic7f1rc.cn/", true  },
+    { L"http://\x5317 x", "http://xn--1lq90ic7f1rc.cn/",
+                          "https://xn--1lq90ic7f1rc.cn/", false },
+    { L"http://\x89c6 x", "http://xn--1lq90ic7f1rc.cn/",
+                          "https://xn--1lq90ic7f1rc.cn/", true  },
+  };
+
+  for (size_t i = 0; i < arraysize(cases); ++i) {
+    SCOPED_TRACE("input=" + base::WideToUTF8(cases[i].input) +
+                 " url1=" + cases[i].url1 + " url2=" + cases[i].url2);
+    AutocompleteInput input(
+        base::WideToUTF16(cases[i].input), base::string16::npos, std::string(),
+        GURL(), metrics::OmniboxEventProto::INVALID_SPEC, false, false, true,
+        true, false, TestSchemeClassifier());
+    AutocompleteMatch m1(NULL, 100, false,
+                         AutocompleteMatchType::URL_WHAT_YOU_TYPED);
+    m1.destination_url = GURL(cases[i].url1);
+    m1.ComputeStrippedDestinationURL(input, "zh-CN", NULL);
+    AutocompleteMatch m2(NULL, 100, false,
+                         AutocompleteMatchType::URL_WHAT_YOU_TYPED);
+    m2.destination_url = GURL(cases[i].url2);
+    m2.ComputeStrippedDestinationURL(input, "zh-CN", NULL);
+    EXPECT_EQ(cases[i].expected_duplicate,
+              AutocompleteMatch::DestinationsEqual(m1, m2));
+  }
 }
