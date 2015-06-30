@@ -198,5 +198,22 @@
           'includes': [ '../build/apk_test.gypi' ],
         }],
     }],
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'ipc_tests_run',
+          'type': 'none',
+          'dependencies': [
+            'ipc_tests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'ipc_tests.isolate',
+          ],
+        },
+      ],
+    }],
   ],
 }

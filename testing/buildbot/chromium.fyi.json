@@ -1691,6 +1691,9 @@
         "test": "installer_util_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "ipc_tests"
       },
       {
@@ -1836,6 +1839,9 @@
         "test": "installer_util_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "ipc_tests"
       },
       {
@@ -2934,6 +2940,9 @@
         "test": "interactive_ui_tests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "ipc_tests"
       },
       {
@@ -3345,6 +3354,9 @@
         "test": "interactive_ui_tests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "ipc_tests"
       },
       {
