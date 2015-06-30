@@ -43,6 +43,7 @@
 #include "net/http/transport_security_state.h"
 
 namespace base {
+class DictionaryValue;
 class SequencedTaskRunner;
 }
 
@@ -70,12 +71,13 @@ class NET_EXPORT TransportSecurityPersister
   // ImportantFileWriter::DataSerializer:
   //
   // Serializes |transport_security_state_| into |*output|. Returns true if
-  // all DomainStates were serialized correctly.
+  // all STS and PKP states were serialized correctly.
   //
   // The serialization format is JSON; the JSON represents a dictionary of
-  // host:DomainState pairs (host is a string). The DomainState is
-  // represented as a dictionary containing the following keys and value
-  // types (not all keys will always be present):
+  // host:DomainState pairs (host is a string). The DomainState contains
+  // the STS and PKP states and is represented as a dictionary containing
+  // the following keys and value types (not all keys will always be
+  // present):
   //
   //     "sts_include_subdomains": true|false
   //     "pkp_include_subdomains": true|false
@@ -115,6 +117,14 @@ class NET_EXPORT TransportSecurityPersister
   static bool Deserialize(const std::string& serialized,
                           bool* dirty,
                           TransportSecurityState* state);
+
+  // Populates |host| with default values for the STS and PKP states.
+  // These default values represent "null" states and are only useful to keep
+  // the entries in the resulting JSON consistent. The deserializer will ignore
+  // "null" states.
+  // TODO(davidben): This can be removed when the STS and PKP states are stored
+  // independently on disk. https://crbug.com/470295
+  void PopulateEntryWithDefaults(base::DictionaryValue* host);
 
   void CompleteLoad(const std::string& state);
 

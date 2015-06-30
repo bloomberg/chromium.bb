@@ -51,13 +51,16 @@ TEST_F(TransportSecurityPersisterTest, SerializeData1) {
 }
 
 TEST_F(TransportSecurityPersisterTest, SerializeData2) {
-  TransportSecurityState::DomainState domain_state;
+  TransportSecurityState::STSState sts_state;
+  TransportSecurityState::PKPState pkp_state;
   const base::Time current_time(base::Time::Now());
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
   static const char kYahooDomain[] = "yahoo.com";
 
-  EXPECT_FALSE(state_.GetStaticDomainState(kYahooDomain, &domain_state));
-  EXPECT_FALSE(state_.GetDynamicDomainState(kYahooDomain, &domain_state));
+  EXPECT_FALSE(
+      state_.GetStaticDomainState(kYahooDomain, &sts_state, &pkp_state));
+  EXPECT_FALSE(state_.GetDynamicSTSState(kYahooDomain, &sts_state));
+  EXPECT_FALSE(state_.GetDynamicPKPState(kYahooDomain, &pkp_state));
 
   bool include_subdomains = true;
   state_.AddHSTS(kYahooDomain, expiry, include_subdomains);
@@ -67,20 +70,19 @@ TEST_F(TransportSecurityPersisterTest, SerializeData2) {
   EXPECT_TRUE(persister_->SerializeData(&output));
   EXPECT_TRUE(persister_->LoadEntries(output, &dirty));
 
-  EXPECT_TRUE(state_.GetDynamicDomainState(kYahooDomain, &domain_state));
-  EXPECT_EQ(domain_state.sts.upgrade_mode,
-            TransportSecurityState::DomainState::MODE_FORCE_HTTPS);
-  EXPECT_TRUE(state_.GetDynamicDomainState("foo.yahoo.com", &domain_state));
-  EXPECT_EQ(domain_state.sts.upgrade_mode,
-            TransportSecurityState::DomainState::MODE_FORCE_HTTPS);
-  EXPECT_TRUE(state_.GetDynamicDomainState("foo.bar.yahoo.com", &domain_state));
-  EXPECT_EQ(domain_state.sts.upgrade_mode,
-            TransportSecurityState::DomainState::MODE_FORCE_HTTPS);
-  EXPECT_TRUE(
-      state_.GetDynamicDomainState("foo.bar.baz.yahoo.com", &domain_state));
-  EXPECT_EQ(domain_state.sts.upgrade_mode,
-            TransportSecurityState::DomainState::MODE_FORCE_HTTPS);
-  EXPECT_FALSE(state_.GetStaticDomainState("com", &domain_state));
+  EXPECT_TRUE(state_.GetDynamicSTSState(kYahooDomain, &sts_state));
+  EXPECT_EQ(sts_state.upgrade_mode,
+            TransportSecurityState::STSState::MODE_FORCE_HTTPS);
+  EXPECT_TRUE(state_.GetDynamicSTSState("foo.yahoo.com", &sts_state));
+  EXPECT_EQ(sts_state.upgrade_mode,
+            TransportSecurityState::STSState::MODE_FORCE_HTTPS);
+  EXPECT_TRUE(state_.GetDynamicSTSState("foo.bar.yahoo.com", &sts_state));
+  EXPECT_EQ(sts_state.upgrade_mode,
+            TransportSecurityState::STSState::MODE_FORCE_HTTPS);
+  EXPECT_TRUE(state_.GetDynamicSTSState("foo.bar.baz.yahoo.com", &sts_state));
+  EXPECT_EQ(sts_state.upgrade_mode,
+            TransportSecurityState::STSState::MODE_FORCE_HTTPS);
+  EXPECT_FALSE(state_.GetStaticDomainState("com", &sts_state, &pkp_state));
 }
 
 TEST_F(TransportSecurityPersisterTest, SerializeData3) {
@@ -111,11 +113,18 @@ TEST_F(TransportSecurityPersisterTest, SerializeData3) {
                  dynamic_spki_hashes);
 
   // Save a copy of everything.
-  std::map<std::string, TransportSecurityState::DomainState> saved;
-  TransportSecurityState::Iterator i(state_);
-  while (i.HasNext()) {
-    saved[i.hostname()] = i.domain_state();
-    i.Advance();
+  std::set<std::string> sts_saved;
+  TransportSecurityState::STSStateIterator sts_iter(state_);
+  while (sts_iter.HasNext()) {
+    sts_saved.insert(sts_iter.hostname());
+    sts_iter.Advance();
+  }
+
+  std::set<std::string> pkp_saved;
+  TransportSecurityState::PKPStateIterator pkp_iter(state_);
+  while (pkp_iter.HasNext()) {
+    pkp_saved.insert(pkp_iter.hostname());
+    pkp_iter.Advance();
   }
 
   std::string serialized;
@@ -139,12 +148,20 @@ TEST_F(TransportSecurityPersisterTest, SerializeData3) {
 
   // Check that states are the same as saved.
   size_t count = 0;
-  TransportSecurityState::Iterator j(state_);
-  while (j.HasNext()) {
+  TransportSecurityState::STSStateIterator sts_iter2(state_);
+  while (sts_iter2.HasNext()) {
     count++;
-    j.Advance();
+    sts_iter2.Advance();
   }
-  EXPECT_EQ(count, saved.size());
+  EXPECT_EQ(count, sts_saved.size());
+
+  count = 0;
+  TransportSecurityState::PKPStateIterator pkp_iter2(state_);
+  while (pkp_iter2.HasNext()) {
+    count++;
+    pkp_iter2.Advance();
+  }
+  EXPECT_EQ(count, pkp_saved.size());
 }
 
 TEST_F(TransportSecurityPersisterTest, SerializeDataOld) {
@@ -164,44 +181,42 @@ TEST_F(TransportSecurityPersisterTest, SerializeDataOld) {
 }
 
 TEST_F(TransportSecurityPersisterTest, PublicKeyHashes) {
-  TransportSecurityState::DomainState domain_state;
+  TransportSecurityState::PKPState pkp_state;
   static const char kTestDomain[] = "example.com";
-  EXPECT_FALSE(state_.GetDynamicDomainState(kTestDomain, &domain_state));
+  EXPECT_FALSE(state_.GetDynamicPKPState(kTestDomain, &pkp_state));
   HashValueVector hashes;
   std::string failure_log;
-  EXPECT_FALSE(domain_state.CheckPublicKeyPins(hashes, &failure_log));
+  EXPECT_FALSE(pkp_state.CheckPublicKeyPins(hashes, &failure_log));
 
   HashValue sha1(HASH_VALUE_SHA1);
   memset(sha1.data(), '1', sha1.size());
-  domain_state.pkp.spki_hashes.push_back(sha1);
+  pkp_state.spki_hashes.push_back(sha1);
 
-  EXPECT_FALSE(domain_state.CheckPublicKeyPins(hashes, &failure_log));
+  EXPECT_FALSE(pkp_state.CheckPublicKeyPins(hashes, &failure_log));
 
   hashes.push_back(sha1);
-  EXPECT_TRUE(domain_state.CheckPublicKeyPins(hashes, &failure_log));
+  EXPECT_TRUE(pkp_state.CheckPublicKeyPins(hashes, &failure_log));
 
   hashes[0].data()[0] = '2';
-  EXPECT_FALSE(domain_state.CheckPublicKeyPins(hashes, &failure_log));
+  EXPECT_FALSE(pkp_state.CheckPublicKeyPins(hashes, &failure_log));
 
   const base::Time current_time(base::Time::Now());
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
   bool include_subdomains = false;
   state_.AddHSTS(kTestDomain, expiry, include_subdomains);
-  state_.AddHPKP(
-      kTestDomain, expiry, include_subdomains, domain_state.pkp.spki_hashes);
+  state_.AddHPKP(kTestDomain, expiry, include_subdomains,
+                 pkp_state.spki_hashes);
   std::string serialized;
   EXPECT_TRUE(persister_->SerializeData(&serialized));
   bool dirty;
   EXPECT_TRUE(persister_->LoadEntries(serialized, &dirty));
 
-  TransportSecurityState::DomainState new_domain_state;
-  EXPECT_TRUE(state_.GetDynamicDomainState(kTestDomain, &new_domain_state));
-  EXPECT_EQ(1u, new_domain_state.pkp.spki_hashes.size());
-  EXPECT_EQ(sha1.tag, new_domain_state.pkp.spki_hashes[0].tag);
-  EXPECT_EQ(0,
-            memcmp(new_domain_state.pkp.spki_hashes[0].data(),
-                   sha1.data(),
-                   sha1.size()));
+  TransportSecurityState::PKPState new_pkp_state;
+  EXPECT_TRUE(state_.GetDynamicPKPState(kTestDomain, &new_pkp_state));
+  EXPECT_EQ(1u, new_pkp_state.spki_hashes.size());
+  EXPECT_EQ(sha1.tag, new_pkp_state.spki_hashes[0].tag);
+  EXPECT_EQ(
+      0, memcmp(new_pkp_state.spki_hashes[0].data(), sha1.data(), sha1.size()));
 }
 
 }  // namespace

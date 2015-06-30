@@ -522,15 +522,16 @@ TEST_F(HttpSecurityHeadersTest, ValidPKPHeadersSHA256) {
 
 TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPOnly) {
   TransportSecurityState state;
-  TransportSecurityState::DomainState static_domain_state;
+  TransportSecurityState::STSState static_sts_state;
+  TransportSecurityState::PKPState static_pkp_state;
 
   // docs.google.com has preloaded pins.
   std::string domain = "docs.google.com";
   state.enable_static_pins_ = true;
   EXPECT_TRUE(
-      state.GetStaticDomainState(domain, &static_domain_state));
-  EXPECT_GT(static_domain_state.pkp.spki_hashes.size(), 1UL);
-  HashValueVector saved_hashes = static_domain_state.pkp.spki_hashes;
+      state.GetStaticDomainState(domain, &static_sts_state, &static_pkp_state));
+  EXPECT_GT(static_pkp_state.spki_hashes.size(), 1UL);
+  HashValueVector saved_hashes = static_pkp_state.spki_hashes;
 
   // Add a header, which should only update the dynamic state.
   HashValue good_hash = GetTestHashValue(1, HASH_VALUE_SHA1);
@@ -546,29 +547,29 @@ TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPOnly) {
   EXPECT_TRUE(state.AddHPKPHeader(domain, header, ssl_info));
 
   // Expect the static state to remain unchanged.
-  TransportSecurityState::DomainState new_static_domain_state;
-  EXPECT_TRUE(state.GetStaticDomainState(
-      domain, &new_static_domain_state));
+  TransportSecurityState::STSState new_static_sts_state;
+  TransportSecurityState::PKPState new_static_pkp_state;
+  EXPECT_TRUE(state.GetStaticDomainState(domain, &new_static_sts_state,
+                                         &new_static_pkp_state));
   for (size_t i = 0; i < saved_hashes.size(); ++i) {
-    EXPECT_TRUE(HashValuesEqual(saved_hashes[i])(
-        new_static_domain_state.pkp.spki_hashes[i]));
+    EXPECT_TRUE(
+        HashValuesEqual(saved_hashes[i])(new_static_pkp_state.spki_hashes[i]));
   }
 
   // Expect the dynamic state to reflect the header.
-  TransportSecurityState::DomainState dynamic_domain_state;
-  EXPECT_TRUE(state.GetDynamicDomainState(domain, &dynamic_domain_state));
-  EXPECT_EQ(2UL, dynamic_domain_state.pkp.spki_hashes.size());
+  TransportSecurityState::PKPState dynamic_pkp_state;
+  EXPECT_TRUE(state.GetDynamicPKPState(domain, &dynamic_pkp_state));
+  EXPECT_EQ(2UL, dynamic_pkp_state.spki_hashes.size());
 
-  HashValueVector::const_iterator hash =
-      std::find_if(dynamic_domain_state.pkp.spki_hashes.begin(),
-                   dynamic_domain_state.pkp.spki_hashes.end(),
-                   HashValuesEqual(good_hash));
-  EXPECT_NE(dynamic_domain_state.pkp.spki_hashes.end(), hash);
+  HashValueVector::const_iterator hash = std::find_if(
+      dynamic_pkp_state.spki_hashes.begin(),
+      dynamic_pkp_state.spki_hashes.end(), HashValuesEqual(good_hash));
+  EXPECT_NE(dynamic_pkp_state.spki_hashes.end(), hash);
 
-  hash = std::find_if(dynamic_domain_state.pkp.spki_hashes.begin(),
-                      dynamic_domain_state.pkp.spki_hashes.end(),
+  hash = std::find_if(dynamic_pkp_state.spki_hashes.begin(),
+                      dynamic_pkp_state.spki_hashes.end(),
                       HashValuesEqual(backup_hash));
-  EXPECT_NE(dynamic_domain_state.pkp.spki_hashes.end(), hash);
+  EXPECT_NE(dynamic_pkp_state.spki_hashes.end(), hash);
 
   // Expect the overall state to reflect the header, too.
   EXPECT_TRUE(state.HasPublicKeyPins(domain));
@@ -579,32 +580,33 @@ TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPOnly) {
   EXPECT_TRUE(state.CheckPublicKeyPins(
       domain, is_issued_by_known_root, hashes, &failure_log));
 
-  TransportSecurityState::DomainState new_dynamic_domain_state;
-  EXPECT_TRUE(state.GetDynamicDomainState(domain, &new_dynamic_domain_state));
-  EXPECT_EQ(2UL, new_dynamic_domain_state.pkp.spki_hashes.size());
+  TransportSecurityState::PKPState new_dynamic_pkp_state;
+  EXPECT_TRUE(state.GetDynamicPKPState(domain, &new_dynamic_pkp_state));
+  EXPECT_EQ(2UL, new_dynamic_pkp_state.spki_hashes.size());
 
-  hash = std::find_if(new_dynamic_domain_state.pkp.spki_hashes.begin(),
-                      new_dynamic_domain_state.pkp.spki_hashes.end(),
+  hash = std::find_if(new_dynamic_pkp_state.spki_hashes.begin(),
+                      new_dynamic_pkp_state.spki_hashes.end(),
                       HashValuesEqual(good_hash));
-  EXPECT_NE(new_dynamic_domain_state.pkp.spki_hashes.end(), hash);
+  EXPECT_NE(new_dynamic_pkp_state.spki_hashes.end(), hash);
 
-  hash = std::find_if(new_dynamic_domain_state.pkp.spki_hashes.begin(),
-                      new_dynamic_domain_state.pkp.spki_hashes.end(),
+  hash = std::find_if(new_dynamic_pkp_state.spki_hashes.begin(),
+                      new_dynamic_pkp_state.spki_hashes.end(),
                       HashValuesEqual(backup_hash));
-  EXPECT_NE(new_dynamic_domain_state.pkp.spki_hashes.end(), hash);
+  EXPECT_NE(new_dynamic_pkp_state.spki_hashes.end(), hash);
 }
 
 TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPMaxAge0) {
   TransportSecurityState state;
-  TransportSecurityState::DomainState static_domain_state;
+  TransportSecurityState::STSState static_sts_state;
+  TransportSecurityState::PKPState static_pkp_state;
 
   // docs.google.com has preloaded pins.
   std::string domain = "docs.google.com";
   state.enable_static_pins_ = true;
   ASSERT_TRUE(
-      state.GetStaticDomainState(domain, &static_domain_state));
-  EXPECT_GT(static_domain_state.pkp.spki_hashes.size(), 1UL);
-  HashValueVector saved_hashes = static_domain_state.pkp.spki_hashes;
+      state.GetStaticDomainState(domain, &static_sts_state, &static_pkp_state));
+  EXPECT_GT(static_pkp_state.spki_hashes.size(), 1UL);
+  HashValueVector saved_hashes = static_pkp_state.spki_hashes;
 
   // Add a header, which should only update the dynamic state.
   HashValue good_hash = GetTestHashValue(1, HASH_VALUE_SHA1);
@@ -619,21 +621,21 @@ TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPMaxAge0) {
   EXPECT_TRUE(state.AddHPKPHeader(domain, header, ssl_info));
 
   // Expect the static state to remain unchanged.
-  TransportSecurityState::DomainState new_static_domain_state;
-  EXPECT_TRUE(state.GetStaticDomainState(
-      domain, &new_static_domain_state));
-  EXPECT_EQ(saved_hashes.size(),
-            new_static_domain_state.pkp.spki_hashes.size());
+  TransportSecurityState::STSState new_static_sts_state;
+  TransportSecurityState::PKPState new_static_pkp_state;
+  EXPECT_TRUE(state.GetStaticDomainState(domain, &new_static_sts_state,
+                                         &new_static_pkp_state));
+  EXPECT_EQ(saved_hashes.size(), new_static_pkp_state.spki_hashes.size());
   for (size_t i = 0; i < saved_hashes.size(); ++i) {
-    EXPECT_TRUE(HashValuesEqual(saved_hashes[i])(
-        new_static_domain_state.pkp.spki_hashes[i]));
+    EXPECT_TRUE(
+        HashValuesEqual(saved_hashes[i])(new_static_pkp_state.spki_hashes[i]));
   }
 
   // Expect the dynamic state to have pins.
-  TransportSecurityState::DomainState new_dynamic_domain_state;
-  EXPECT_TRUE(state.GetDynamicDomainState(domain, &new_dynamic_domain_state));
-  EXPECT_EQ(2UL, new_dynamic_domain_state.pkp.spki_hashes.size());
-  EXPECT_TRUE(new_dynamic_domain_state.HasPublicKeyPins());
+  TransportSecurityState::PKPState new_dynamic_pkp_state;
+  EXPECT_TRUE(state.GetDynamicPKPState(domain, &new_dynamic_pkp_state));
+  EXPECT_EQ(2UL, new_dynamic_pkp_state.spki_hashes.size());
+  EXPECT_TRUE(new_dynamic_pkp_state.HasPublicKeyPins());
 
   // Now set another header with max-age=0, and check that the pins are
   // cleared in the dynamic state only.
@@ -641,19 +643,18 @@ TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPMaxAge0) {
   EXPECT_TRUE(state.AddHPKPHeader(domain, header, ssl_info));
 
   // Expect the static state to remain unchanged.
-  TransportSecurityState::DomainState new_static_domain_state2;
-  EXPECT_TRUE(state.GetStaticDomainState(
-      domain, &new_static_domain_state2));
-  EXPECT_EQ(saved_hashes.size(),
-            new_static_domain_state2.pkp.spki_hashes.size());
+  TransportSecurityState::PKPState new_static_pkp_state2;
+  EXPECT_TRUE(state.GetStaticDomainState(domain, &static_sts_state,
+                                         &new_static_pkp_state2));
+  EXPECT_EQ(saved_hashes.size(), new_static_pkp_state2.spki_hashes.size());
   for (size_t i = 0; i < saved_hashes.size(); ++i) {
-    EXPECT_TRUE(HashValuesEqual(saved_hashes[i])(
-        new_static_domain_state2.pkp.spki_hashes[i]));
+    EXPECT_TRUE(
+        HashValuesEqual(saved_hashes[i])(new_static_pkp_state2.spki_hashes[i]));
   }
 
   // Expect the dynamic pins to be gone.
-  TransportSecurityState::DomainState new_dynamic_domain_state2;
-  EXPECT_FALSE(state.GetDynamicDomainState(domain, &new_dynamic_domain_state2));
+  TransportSecurityState::PKPState new_dynamic_pkp_state2;
+  EXPECT_FALSE(state.GetDynamicPKPState(domain, &new_dynamic_pkp_state2));
 
   // Expect the exact-matching static policy to continue to apply, even
   // though dynamic policy has been removed. (This policy may change in the
@@ -661,16 +662,16 @@ TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPMaxAge0) {
   EXPECT_TRUE(state.HasPublicKeyPins(domain));
   EXPECT_TRUE(state.ShouldSSLErrorsBeFatal(domain));
   std::string failure_log;
+
   // Damage the hashes to cause a pin validation failure.
-  new_static_domain_state2.pkp.spki_hashes[0].data()[0] ^= 0x80;
-  new_static_domain_state2.pkp.spki_hashes[1].data()[0] ^= 0x80;
-  new_static_domain_state2.pkp.spki_hashes[2].data()[0] ^= 0x80;
+  new_static_pkp_state2.spki_hashes[0].data()[0] ^= 0x80;
+  new_static_pkp_state2.spki_hashes[1].data()[0] ^= 0x80;
+  new_static_pkp_state2.spki_hashes[2].data()[0] ^= 0x80;
+
   const bool is_issued_by_known_root = true;
-  EXPECT_FALSE(
-      state.CheckPublicKeyPins(domain,
-                               is_issued_by_known_root,
-                               new_static_domain_state2.pkp.spki_hashes,
-                               &failure_log));
+  EXPECT_FALSE(state.CheckPublicKeyPins(domain, is_issued_by_known_root,
+                                        new_static_pkp_state2.spki_hashes,
+                                        &failure_log));
   EXPECT_NE(0UL, failure_log.length());
 }
 
@@ -679,18 +680,19 @@ TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPMaxAge0) {
 // dynamic HPKP entry could not affect the HSTS entry for the site.
 TEST_F(HttpSecurityHeadersTest, NoClobberPins) {
   TransportSecurityState state;
-  TransportSecurityState::DomainState domain_state;
+  TransportSecurityState::STSState sts_state;
+  TransportSecurityState::PKPState pkp_state;
 
   // accounts.google.com has preloaded pins.
   std::string domain = "accounts.google.com";
   state.enable_static_pins_ = true;
 
-  // Retrieve the DomainState as it is by default, including its known good
-  // pins.
-  EXPECT_TRUE(state.GetStaticDomainState(domain, &domain_state));
-  HashValueVector saved_hashes = domain_state.pkp.spki_hashes;
-  EXPECT_TRUE(domain_state.ShouldUpgradeToSSL());
-  EXPECT_TRUE(domain_state.HasPublicKeyPins());
+  // Retrieve the static STS and PKP states as it is by default, including its
+  // known good pins.
+  EXPECT_TRUE(state.GetStaticDomainState(domain, &sts_state, &pkp_state));
+  HashValueVector saved_hashes = pkp_state.spki_hashes;
+  EXPECT_TRUE(sts_state.ShouldUpgradeToSSL());
+  EXPECT_TRUE(pkp_state.HasPublicKeyPins());
   EXPECT_TRUE(state.ShouldUpgradeToSSL(domain));
   EXPECT_TRUE(state.HasPublicKeyPins(domain));
 
@@ -720,7 +722,7 @@ TEST_F(HttpSecurityHeadersTest, NoClobberPins) {
 
   EXPECT_TRUE(state.AddHPKPHeader(domain, header, ssl_info));
   // HSTS should still be configured for this domain.
-  EXPECT_TRUE(domain_state.ShouldUpgradeToSSL());
+  EXPECT_TRUE(sts_state.ShouldUpgradeToSSL());
   EXPECT_TRUE(state.ShouldUpgradeToSSL(domain));
   // The dynamic pins, which do not match |saved_hashes|, should take
   // precedence over the static pins and cause the check to fail.

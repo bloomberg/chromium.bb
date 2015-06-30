@@ -169,7 +169,7 @@ var HSTSView = (function() {
 
   function modeToString(m) {
     // These numbers must match those in
-    // TransportSecurityState::DomainState::UpgradeMode.
+    // TransportSecurityState::STSState::UpgradeMode.
     if (m == 0) {
       return 'STRICT';
     } else if (m == 1) {

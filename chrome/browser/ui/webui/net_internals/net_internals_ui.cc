@@ -735,60 +735,66 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSQuery(
     if (!transport_security_state) {
       result->SetString("error", "no TransportSecurityState active");
     } else {
-      net::TransportSecurityState::DomainState static_state;
+      net::TransportSecurityState::STSState static_sts_state;
+      net::TransportSecurityState::PKPState static_pkp_state;
       const bool found_static = transport_security_state->GetStaticDomainState(
-          domain, &static_state);
+          domain, &static_sts_state, &static_pkp_state);
       if (found_static) {
-        result->SetBoolean("has_static_sts",
-                           found_static && static_state.ShouldUpgradeToSSL());
         result->SetInteger("static_upgrade_mode",
-                           static_cast<int>(static_state.sts.upgrade_mode));
+                           static_cast<int>(static_sts_state.upgrade_mode));
         result->SetBoolean("static_sts_include_subdomains",
-                           static_state.sts.include_subdomains);
+                           static_sts_state.include_subdomains);
         result->SetDouble("static_sts_observed",
-                          static_state.sts.last_observed.ToDoubleT());
+                          static_sts_state.last_observed.ToDoubleT());
         result->SetDouble("static_sts_expiry",
-                          static_state.sts.expiry.ToDoubleT());
-        result->SetBoolean("has_static_pkp",
-                           found_static && static_state.HasPublicKeyPins());
+                          static_sts_state.expiry.ToDoubleT());
         result->SetBoolean("static_pkp_include_subdomains",
-                           static_state.pkp.include_subdomains);
+                           static_pkp_state.include_subdomains);
         result->SetDouble("static_pkp_observed",
-                          static_state.pkp.last_observed.ToDoubleT());
+                          static_pkp_state.last_observed.ToDoubleT());
         result->SetDouble("static_pkp_expiry",
-                          static_state.pkp.expiry.ToDoubleT());
+                          static_pkp_state.expiry.ToDoubleT());
         result->SetString("static_spki_hashes",
-                          HashesToBase64String(static_state.pkp.spki_hashes));
-        result->SetString("static_sts_domain", static_state.sts.domain);
-        result->SetString("static_pkp_domain", static_state.pkp.domain);
+                          HashesToBase64String(static_pkp_state.spki_hashes));
+        result->SetString("static_sts_domain", static_sts_state.domain);
+        result->SetString("static_pkp_domain", static_pkp_state.domain);
       }
 
-      net::TransportSecurityState::DomainState dynamic_state;
-      const bool found_dynamic =
-          transport_security_state->GetDynamicDomainState(domain,
-                                                          &dynamic_state);
-      if (found_dynamic) {
+      net::TransportSecurityState::STSState dynamic_sts_state;
+      net::TransportSecurityState::PKPState dynamic_pkp_state;
+      const bool found_sts_dynamic =
+          transport_security_state->GetDynamicSTSState(domain,
+                                                       &dynamic_sts_state);
+
+      const bool found_pkp_dynamic =
+          transport_security_state->GetDynamicPKPState(domain,
+                                                       &dynamic_pkp_state);
+      if (found_sts_dynamic) {
         result->SetInteger("dynamic_upgrade_mode",
-                           static_cast<int>(dynamic_state.sts.upgrade_mode));
+                           static_cast<int>(dynamic_sts_state.upgrade_mode));
         result->SetBoolean("dynamic_sts_include_subdomains",
-                           dynamic_state.sts.include_subdomains);
-        result->SetBoolean("dynamic_pkp_include_subdomains",
-                           dynamic_state.pkp.include_subdomains);
+                           dynamic_sts_state.include_subdomains);
         result->SetDouble("dynamic_sts_observed",
-                          dynamic_state.sts.last_observed.ToDoubleT());
-        result->SetDouble("dynamic_pkp_observed",
-                          dynamic_state.pkp.last_observed.ToDoubleT());
+                          dynamic_sts_state.last_observed.ToDoubleT());
         result->SetDouble("dynamic_sts_expiry",
-                          dynamic_state.sts.expiry.ToDoubleT());
-        result->SetDouble("dynamic_pkp_expiry",
-                          dynamic_state.pkp.expiry.ToDoubleT());
-        result->SetString("dynamic_spki_hashes",
-                          HashesToBase64String(dynamic_state.pkp.spki_hashes));
-        result->SetString("dynamic_sts_domain", dynamic_state.sts.domain);
-        result->SetString("dynamic_pkp_domain", dynamic_state.pkp.domain);
+                          dynamic_sts_state.expiry.ToDoubleT());
+        result->SetString("dynamic_sts_domain", dynamic_sts_state.domain);
       }
 
-      result->SetBoolean("result", found_static || found_dynamic);
+      if (found_pkp_dynamic) {
+        result->SetBoolean("dynamic_pkp_include_subdomains",
+                           dynamic_pkp_state.include_subdomains);
+        result->SetDouble("dynamic_pkp_observed",
+                          dynamic_pkp_state.last_observed.ToDoubleT());
+        result->SetDouble("dynamic_pkp_expiry",
+                          dynamic_pkp_state.expiry.ToDoubleT());
+        result->SetString("dynamic_spki_hashes",
+                          HashesToBase64String(dynamic_pkp_state.spki_hashes));
+        result->SetString("dynamic_pkp_domain", dynamic_pkp_state.domain);
+      }
+
+      result->SetBoolean(
+          "result", found_static || found_sts_dynamic || found_pkp_dynamic);
     }
   }
 

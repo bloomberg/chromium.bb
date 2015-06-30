@@ -35,7 +35,7 @@ class NET_EXPORT_PRIVATE ProofVerifyDetailsChromium
   CertVerifyResult cert_verify_result;
 
   // pinning_failure_log contains a message produced by
-  // TransportSecurityState::DomainState::CheckPublicKeyPins in the event of a
+  // TransportSecurityState::PKPState::CheckPublicKeyPins in the event of a
   // pinning failure. It is a (somewhat) human-readable string.
   std::string pinning_failure_log;
 };

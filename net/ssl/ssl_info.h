@@ -83,7 +83,7 @@ class NET_EXPORT SSLInfo {
   HashValueVector public_key_hashes;
 
   // pinning_failure_log contains a message produced by
-  // TransportSecurityState::DomainState::CheckPublicKeyPins in the event of a
+  // TransportSecurityState::PKPState::CheckPublicKeyPins in the event of a
   // pinning failure. It is a (somewhat) human-readable string.
   std::string pinning_failure_log;
 

@@ -131,44 +131,67 @@ bool TransportSecurityPersister::SerializeData(std::string* output) {
 
   base::DictionaryValue toplevel;
   base::Time now = base::Time::Now();
-  TransportSecurityState::Iterator state(*transport_security_state_);
-  for (; state.HasNext(); state.Advance()) {
-    const std::string& hostname = state.hostname();
-    const TransportSecurityState::DomainState& domain_state =
-        state.domain_state();
 
-    base::DictionaryValue* serialized = new base::DictionaryValue;
-    serialized->SetBoolean(kStsIncludeSubdomains,
-                           domain_state.sts.include_subdomains);
-    serialized->SetBoolean(kPkpIncludeSubdomains,
-                           domain_state.pkp.include_subdomains);
-    serialized->SetDouble(kStsObserved,
-                          domain_state.sts.last_observed.ToDoubleT());
-    serialized->SetDouble(kPkpObserved,
-                          domain_state.pkp.last_observed.ToDoubleT());
-    serialized->SetDouble(kExpiry, domain_state.sts.expiry.ToDoubleT());
-    serialized->SetDouble(kDynamicSPKIHashesExpiry,
-                          domain_state.pkp.expiry.ToDoubleT());
+  // TODO(davidben): Fix the serialization format by splitting the on-disk
+  // representation of the STS and PKP states. https://crbug.com/470295.
+  TransportSecurityState::STSStateIterator sts_iterator(
+      *transport_security_state_);
+  for (; sts_iterator.HasNext(); sts_iterator.Advance()) {
+    const std::string& hostname = sts_iterator.hostname();
+    const TransportSecurityState::STSState& sts_state =
+        sts_iterator.domain_state();
 
-    switch (domain_state.sts.upgrade_mode) {
-      case TransportSecurityState::DomainState::MODE_FORCE_HTTPS:
+    const std::string key = HashedDomainToExternalString(hostname);
+    scoped_ptr<base::DictionaryValue> serialized(new base::DictionaryValue);
+    PopulateEntryWithDefaults(serialized.get());
+
+    serialized->SetBoolean(kStsIncludeSubdomains, sts_state.include_subdomains);
+    serialized->SetDouble(kStsObserved, sts_state.last_observed.ToDoubleT());
+    serialized->SetDouble(kExpiry, sts_state.expiry.ToDoubleT());
+
+    switch (sts_state.upgrade_mode) {
+      case TransportSecurityState::STSState::MODE_FORCE_HTTPS:
         serialized->SetString(kMode, kForceHTTPS);
         break;
-      case TransportSecurityState::DomainState::MODE_DEFAULT:
+      case TransportSecurityState::STSState::MODE_DEFAULT:
         serialized->SetString(kMode, kDefault);
         break;
       default:
-        NOTREACHED() << "DomainState with unknown mode";
-        delete serialized;
+        NOTREACHED() << "STSState with unknown mode";
         continue;
     }
 
-    if (now < domain_state.pkp.expiry) {
-      serialized->Set(kDynamicSPKIHashes,
-                      SPKIHashesToListValue(domain_state.pkp.spki_hashes));
+    toplevel.Set(key, serialized.Pass());
+  }
+
+  TransportSecurityState::PKPStateIterator pkp_iterator(
+      *transport_security_state_);
+  for (; pkp_iterator.HasNext(); pkp_iterator.Advance()) {
+    const std::string& hostname = pkp_iterator.hostname();
+    const TransportSecurityState::PKPState& pkp_state =
+        pkp_iterator.domain_state();
+
+    // See if the current |hostname| already has STS state and, if so, update
+    // that entry.
+    const std::string key = HashedDomainToExternalString(hostname);
+    base::DictionaryValue* serialized = nullptr;
+    if (!toplevel.GetDictionary(key, &serialized)) {
+      scoped_ptr<base::DictionaryValue> serialized_scoped(
+          new base::DictionaryValue);
+      serialized = serialized_scoped.get();
+      PopulateEntryWithDefaults(serialized);
+      toplevel.Set(key, serialized_scoped.Pass());
     }
 
-    toplevel.Set(HashedDomainToExternalString(hostname), serialized);
+    serialized->SetBoolean(kPkpIncludeSubdomains, pkp_state.include_subdomains);
+    serialized->SetDouble(kPkpObserved, pkp_state.last_observed.ToDoubleT());
+    serialized->SetDouble(kDynamicSPKIHashesExpiry,
+                          pkp_state.expiry.ToDoubleT());
+
+    if (now < pkp_state.expiry) {
+      serialized->Set(kDynamicSPKIHashes,
+                      SPKIHashesToListValue(pkp_state.spki_hashes));
+    }
   }
 
   base::JSONWriter::WriteWithOptions(
@@ -204,7 +227,8 @@ bool TransportSecurityPersister::Deserialize(const std::string& serialized,
       continue;
     }
 
-    TransportSecurityState::DomainState domain_state;
+    TransportSecurityState::STSState sts_state;
+    TransportSecurityState::PKPState pkp_state;
 
     // kIncludeSubdomains is a legacy synonym for kStsIncludeSubdomains and
     // kPkpIncludeSubdomains. Parse at least one of these properties,
@@ -212,14 +236,14 @@ bool TransportSecurityPersister::Deserialize(const std::string& serialized,
     bool include_subdomains = false;
     bool parsed_include_subdomains = parsed->GetBoolean(kIncludeSubdomains,
                                                         &include_subdomains);
-    domain_state.sts.include_subdomains = include_subdomains;
-    domain_state.pkp.include_subdomains = include_subdomains;
+    sts_state.include_subdomains = include_subdomains;
+    pkp_state.include_subdomains = include_subdomains;
     if (parsed->GetBoolean(kStsIncludeSubdomains, &include_subdomains)) {
-      domain_state.sts.include_subdomains = include_subdomains;
+      sts_state.include_subdomains = include_subdomains;
       parsed_include_subdomains = true;
     }
     if (parsed->GetBoolean(kPkpIncludeSubdomains, &include_subdomains)) {
-      domain_state.pkp.include_subdomains = include_subdomains;
+      pkp_state.include_subdomains = include_subdomains;
       parsed_include_subdomains = true;
     }
 
@@ -240,15 +264,14 @@ bool TransportSecurityPersister::Deserialize(const std::string& serialized,
 
     const base::ListValue* pins_list = NULL;
     if (parsed->GetList(kDynamicSPKIHashes, &pins_list)) {
-      SPKIHashesFromListValue(*pins_list, &domain_state.pkp.spki_hashes);
+      SPKIHashesFromListValue(*pins_list, &pkp_state.spki_hashes);
     }
 
     if (mode_string == kForceHTTPS || mode_string == kStrict) {
-      domain_state.sts.upgrade_mode =
-          TransportSecurityState::DomainState::MODE_FORCE_HTTPS;
+      sts_state.upgrade_mode =
+          TransportSecurityState::STSState::MODE_FORCE_HTTPS;
     } else if (mode_string == kDefault || mode_string == kPinningOnly) {
-      domain_state.sts.upgrade_mode =
-          TransportSecurityState::DomainState::MODE_DEFAULT;
+      sts_state.upgrade_mode = TransportSecurityState::STSState::MODE_DEFAULT;
     } else {
       LOG(WARNING) << "Unknown TransportSecurityState mode string "
                    << mode_string << " found for entry " << i.key()
@@ -256,35 +279,38 @@ bool TransportSecurityPersister::Deserialize(const std::string& serialized,
       continue;
     }
 
-    domain_state.sts.expiry = base::Time::FromDoubleT(expiry);
-    domain_state.pkp.expiry =
-        base::Time::FromDoubleT(dynamic_spki_hashes_expiry);
+    sts_state.expiry = base::Time::FromDoubleT(expiry);
+    pkp_state.expiry = base::Time::FromDoubleT(dynamic_spki_hashes_expiry);
 
     double sts_observed;
     double pkp_observed;
     if (parsed->GetDouble(kStsObserved, &sts_observed)) {
-      domain_state.sts.last_observed = base::Time::FromDoubleT(sts_observed);
+      sts_state.last_observed = base::Time::FromDoubleT(sts_observed);
     } else if (parsed->GetDouble(kCreated, &sts_observed)) {
       // kCreated is a legacy synonym for both kStsObserved and kPkpObserved.
-      domain_state.sts.last_observed = base::Time::FromDoubleT(sts_observed);
+      sts_state.last_observed = base::Time::FromDoubleT(sts_observed);
     } else {
       // We're migrating an old entry with no observation date. Make sure we
       // write the new date back in a reasonable time frame.
       dirtied = true;
-      domain_state.sts.last_observed = base::Time::Now();
+      sts_state.last_observed = base::Time::Now();
     }
     if (parsed->GetDouble(kPkpObserved, &pkp_observed)) {
-      domain_state.pkp.last_observed = base::Time::FromDoubleT(pkp_observed);
+      pkp_state.last_observed = base::Time::FromDoubleT(pkp_observed);
     } else if (parsed->GetDouble(kCreated, &pkp_observed)) {
-      domain_state.pkp.last_observed = base::Time::FromDoubleT(pkp_observed);
+      pkp_state.last_observed = base::Time::FromDoubleT(pkp_observed);
     } else {
       dirtied = true;
-      domain_state.pkp.last_observed = base::Time::Now();
+      pkp_state.last_observed = base::Time::Now();
     }
 
-    if (domain_state.sts.expiry <= current_time &&
-        domain_state.pkp.expiry <= current_time) {
-      // Make sure we dirty the state if we drop an entry.
+    bool has_sts =
+        sts_state.expiry > current_time && sts_state.ShouldUpgradeToSSL();
+    bool has_pkp =
+        pkp_state.expiry > current_time && pkp_state.HasPublicKeyPins();
+    if (!has_sts && !has_pkp) {
+      // Make sure we dirty the state if we drop an entry. The entries can only
+      // be dropped when both the STS and PKP states are expired or invalid.
       dirtied = true;
       continue;
     }
@@ -295,11 +321,32 @@ bool TransportSecurityPersister::Deserialize(const std::string& serialized,
       continue;
     }
 
-    state->AddOrUpdateEnabledHosts(hashed, domain_state);
+    // Until the on-disk storage is split, there will always be 'null' entries.
+    // We only register entries that have actual state.
+    if (has_sts)
+      state->AddOrUpdateEnabledSTSHosts(hashed, sts_state);
+    if (has_pkp)
+      state->AddOrUpdateEnabledPKPHosts(hashed, pkp_state);
   }
 
   *dirty = dirtied;
   return true;
+}
+
+void TransportSecurityPersister::PopulateEntryWithDefaults(
+    base::DictionaryValue* host) {
+  host->Clear();
+
+  // STS default values.
+  host->SetBoolean(kStsIncludeSubdomains, false);
+  host->SetDouble(kStsObserved, 0.0);
+  host->SetDouble(kExpiry, 0.0);
+  host->SetString(kMode, kDefault);
+
+  // PKP default values.
+  host->SetBoolean(kPkpIncludeSubdomains, false);
+  host->SetDouble(kPkpObserved, 0.0);
+  host->SetDouble(kDynamicSPKIHashesExpiry, 0.0);
 }
 
 void TransportSecurityPersister::CompleteLoad(const std::string& state) {
