@@ -43,7 +43,6 @@ class LayoutTextFragment;
 
 CORE_EXPORT String plainText(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 String plainText(const Position& start, const Position& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
-CORE_EXPORT PassRefPtrWillBeRawPtr<Range> findPlainText(const Range*, const String&, FindOptions);
 CORE_EXPORT void findPlainText(const Position& inputStart, const Position& inputEnd, const String&, FindOptions, Position& resultStart, Position& resultEnd);
 
 String plainText(const PositionInComposedTree& start, const PositionInComposedTree& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);

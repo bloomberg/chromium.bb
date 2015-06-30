@@ -547,13 +547,6 @@ nextMatch:
     return matchedLength;
 }
 
-static PassRefPtrWillBeRawPtr<Range> collapsedToBoundary(const Range* range, bool forward)
-{
-    RefPtrWillBeRawPtr<Range> result = range->cloneRange();
-    result->collapse(!forward);
-    return result.release();
-}
-
 // Check if there's any unpaird surrogate code point.
 // Non-character code points are not checked.
 static bool isValidUTF16(const String& s)
@@ -621,26 +614,6 @@ tryAgain:
 }
 
 static const TextIteratorBehaviorFlags iteratorFlagsForFindPlainText = TextIteratorEntersTextControls | TextIteratorEntersOpenShadowRoots | TextIteratorDoesNotBreakAtReplacedElement;
-
-PassRefPtrWillBeRawPtr<Range> findPlainText(const Range* range, const String& target, FindOptions options)
-{
-    // First, find the text.
-    size_t matchStart;
-    size_t matchLength;
-    {
-        CharacterIterator findIterator(range, iteratorFlagsForFindPlainText);
-        matchLength = findPlainTextInternal(findIterator, target, options, matchStart);
-        if (!matchLength)
-            return collapsedToBoundary(range, !(options & Backwards));
-    }
-
-    // Then, find the document position of the start and the end of the text.
-    CharacterIterator computeRangeIterator(range, iteratorFlagsForFindPlainText);
-    Position resultStart;
-    Position resultEnd;
-    computeRangeIterator.calculateCharacterSubrange(matchStart, matchLength, resultStart, resultEnd);
-    return Range::create(range->ownerDocument(), resultStart, resultEnd);
-}
 
 void findPlainText(const Position& inputStart, const Position& inputEnd, const String& target, FindOptions options, Position& resultStart, Position& resultEnd)
 {
