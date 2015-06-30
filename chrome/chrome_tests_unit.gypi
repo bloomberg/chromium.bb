@@ -13,8 +13,8 @@
       'browser/after_startup_task_utils_unittest.cc',
       'browser/android/bookmarks/partner_bookmarks_shim_unittest.cc',
       'browser/android/contextualsearch/contextual_search_delegate_unittest.cc',
-      'browser/android/history_report/delta_file_commons_unittest.cc',
       'browser/android/history_report/delta_file_backend_leveldb_unittest.cc',
+      'browser/android/history_report/delta_file_commons_unittest.cc',
       'browser/android/history_report/usage_reports_buffer_backend_unittest.cc',
       # TODO(newt): move this to test_support_unit?
       'browser/android/mock_location_settings.cc',
@@ -29,7 +29,6 @@
       'browser/autocomplete/history_quick_provider_unittest.cc',
       'browser/autocomplete/history_url_provider_unittest.cc',
       'browser/autocomplete/in_memory_url_index_unittest.cc',
-      'browser/autocomplete/scored_history_match_unittest.cc',
       'browser/autocomplete/search_provider_unittest.cc',
       'browser/autocomplete/shortcuts_backend_unittest.cc',
       'browser/autocomplete/shortcuts_database_unittest.cc',
