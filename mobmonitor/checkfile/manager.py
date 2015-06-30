@@ -22,6 +22,7 @@ HCEXECUTION_COMPLETED = 1
 
 HCSTATUS_HEALTHY = 0
 
+IN_PROGRESS_DESCRIPTION = 'Health check is currently executing.'
 NULL_DESCRIPTION = ''
 EMPTY_ACTIONS = []
 HEALTHCHECK_STATUS = collections.namedtuple('healthcheck_status',
@@ -36,13 +37,69 @@ HEALTH_CHECK_DEFAULT_ATTRIBUTES = {'CHECK_INTERVAL': CHECK_INTERVAL_DEFAULT_SEC}
 CHECKFILE_DIR = '/etc/mobmonitor/checkfiles/'
 CHECKFILE_ENDING = '_check.py'
 
-SERVICE_STATUS = collections.namedtuple('service_status', ['health_state',
-                                                           'description',
-                                                           'actions'])
+SERVICE_STATUS = collections.namedtuple('service_status',
+                                        ['service', 'health', 'healthchecks'])
 
 
 class CollectionError(Exception):
   """Raise when an error occurs during checkfile collection."""
+
+
+def MapHealthcheckStatusToDict(hcstatus):
+  """Map a manager.HEALTHCHECK_STATUS named tuple to a dictionary.
+
+  Args:
+    hcstatus: A HEALTHCHECK_STATUS object.
+
+  Returns:
+    A dictionary version of the HEALTHCHECK_STATUS object.
+  """
+  return {'name': hcstatus.name, 'health': hcstatus.health,
+          'description': hcstatus.description,
+          'actions': [a.__name__ for a in hcstatus.actions]}
+
+
+def MapServiceStatusToDict(status):
+  """Map a manager.SERVICE_STATUS named tuple to a dictionary.
+
+  Args:
+    status: A SERVICE_STATUS object.
+
+  Returns:
+    A dictionary version of the SERVICE_STATUS object.
+  """
+  hcstatuses = [
+      MapHealthcheckStatusToDict(hcstatus) for hcstatus in status.healthchecks]
+  return {'service': status.service, 'health': status.health,
+          'healthchecks': hcstatuses}
+
+
+def isHealthcheckHealthy(hcstatus):
+  """Test if a health check is perfectly healthy.
+
+  Args:
+    hcstatus: A HEALTHCHECK_STATUS named tuple.
+
+  Returns:
+    True if the hcstatus is perfectly healthy, False otherwise.
+  """
+  if not isinstance(hcstatus, HEALTHCHECK_STATUS):
+    return False
+  return hcstatus.health and not (hcstatus.description or hcstatus.actions)
+
+
+def isServiceHealthy(status):
+  """Test if a service is perfectly healthy.
+
+  Args:
+    status: A SERVICE_STATUS named tuple.
+
+  Returns:
+    True if the status is perfectly healthy, False otherwise.
+  """
+  if not isinstance(status, SERVICE_STATUS):
+    return False
+  return status.health and not status.healthchecks
 
 
 def DetermineHealthcheckStatus(hcname, healthcheck):
@@ -175,6 +232,12 @@ class CheckFileManager(object):
     # healthcheck_status: A HEALTHCHECK_STATUS named tuple.
     self.service_check_results = {}
 
+    # service_states is dict of the following form:
+    #
+    #   {service_name: service_status}
+    #
+    # service_name: As above.
+    # service_status: A SERVICE_STATUS named tuple.
     self.service_states = {}
 
   def Update(self, service, objects, mtime):
@@ -195,9 +258,14 @@ class CheckFileManager(object):
         logging.info('Updated healthcheck "%s" for service "%s" at time "%s"',
                      name, service, mtime)
 
-  def Execute(self):
-    """Execute all health checks and collect healthcheck status information."""
+  def Execute(self, force=False):
+    """Execute all health checks and collect healthcheck status information.
+
+    Args:
+      force: Ignore the health check interval and execute the health checks.
+    """
     for service, healthchecks in self.service_checks.iteritems():
+      # Set default result dictionary if this is a new service.
       self.service_check_results.setdefault(service, {})
 
       for hcname, (_mtime, healthcheck) in healthchecks.iteritems():
@@ -206,8 +274,11 @@ class CheckFileManager(object):
         _, exec_time, status = self.service_check_results[service].get(
             hcname, (None, None, None))
 
-        if exec_time is None or etime > healthcheck.CHECK_INTERVAL + exec_time:
+        if exec_time is None or force or (
+            etime > healthcheck.CHECK_INTERVAL + exec_time):
           # Record the execution status.
+          status = HEALTHCHECK_STATUS(hcname, True, IN_PROGRESS_DESCRIPTION,
+                                      EMPTY_ACTIONS)
           self.service_check_results[service][hcname] = (
               HCEXECUTION_IN_PROGRESS, etime, status)
 
@@ -219,6 +290,21 @@ class CheckFileManager(object):
           # Update the execution and healthcheck status.
           self.service_check_results[service][hcname] = (
               HCEXECUTION_COMPLETED, etime, status)
+
+  def ConsolidateServiceStates(self):
+    """Consolidate health check results and determine service health states."""
+    for service, results in self.service_check_results.iteritems():
+      self.service_states.setdefault(service, {})
+
+      quasi_or_unhealthy_checks = []
+      for (_exec_status, _exec_stime, hcstatus) in results.itervalues():
+        if not isHealthcheckHealthy(hcstatus):
+          quasi_or_unhealthy_checks.append(hcstatus)
+
+      health = all([hc.health for hc in quasi_or_unhealthy_checks])
+
+      self.service_states[service] = SERVICE_STATUS(service, health,
+                                                    quasi_or_unhealthy_checks)
 
   def CollectionExecutionCallback(self):
     """Callback for cherrypy Monitor. Collect checkfiles from the checkdir."""
@@ -247,6 +333,7 @@ class CheckFileManager(object):
                             service_name, file_[:-3], e)
 
     self.Execute()
+    self.ConsolidateServiceStates()
 
   def StartCollectionExecution(self):
     # The Monitor frequency is mis-named. It's the time between
@@ -256,15 +343,14 @@ class CheckFileManager(object):
                                    frequency=self.interval_sec)
     self.monitor.subscribe()
 
-  # TODO (msartori): Implement crbug.com/493318.
   def GetServiceList(self):
     """Return a list of the monitored services.
 
     Returns:
       A list of the services for which we have checks defined.
     """
+    return self.service_states.keys()
 
-  # TODO (msartori): Implement crbug.com/493319.
   def GetStatus(self, service):
     """Query the current health state of the service.
 
@@ -272,15 +358,20 @@ class CheckFileManager(object):
       service: The name of service that we are querying the health state of.
 
     Returns:
-      A named tuple with the following fields:
-        health_state: A boolean, True if all checks passed, False if not.
-        description: A description of the error state. This is provided
-          by the 'diagnose' method of health check classes.
-        actions: A list of actions that can be taken as defined by the health
-          check class.
-    """
+      A SERVICE_STATUS named tuple which has the following fields:
+        service: A string. The service name.
+        health: A boolean. True if all checks passed, False if not.
+        healthchecks: A list of failed or quasi-healthy checks for the service.
+          Each member of the list is a HEALTHCHECK_STATUS and details the
+          appropriate repair actions for that particular health check.
 
-  # TODO (msartori): Implement crbug.com/493320 and crbug.com/505066.
+      If service is not specified, a list of all service states is returned.
+    """
+    if not service:
+      return self.service_states.values()
+
+    return self.service_states.get(service, SERVICE_STATUS(service, False, []))
+
   def RepairService(self, service, action):
     """Execute the repair action on the specified service.
 
@@ -291,3 +382,30 @@ class CheckFileManager(object):
     Returns:
       The same return value of GetStatus(service).
     """
+    # No repair occurs if the service is not specified or is perfectly healthy.
+    status = self.service_states.get(service, None)
+    if status is None:
+      return SERVICE_STATUS(service, False, [])
+    elif isServiceHealthy(status):
+      return self.GetStatus(service)
+
+    # Check that at least one unhealthy/quasi-healthy check specifies this
+    # repair actions. Actions are assumed to be service-centric at this point.
+    repair_func = None
+    for hc in status.healthchecks:
+      for action_func in hc.actions:
+        if action == action_func.__name__:
+          repair_func = action_func
+          break
+
+    # TODO (msartori): Implement crbug.com/503373
+    if repair_func is not None:
+      repair_func()
+
+      # Update the service status and return.
+      # While actions are 'service-centric' from the perspective of the monitor,
+      # actions may have system-wide effect, so we must re-check all services.
+      self.Execute(force=True)
+      self.ConsolidateServiceStates()
+
+    return self.GetStatus(service)

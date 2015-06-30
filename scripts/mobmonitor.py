@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import cherrypy
+import json
 
 from chromite.lib import remote_access
 from chromite.lib import commandline
@@ -24,7 +25,6 @@ class MobMonitorRoot(object):
     """Presents a welcome message."""
     return 'Welcome to the Mob* Monitor!'
 
-  # TODO (msartori): Stub until crbug.com/493318 is implemented.
   @cherrypy.expose
   def GetServiceList(self):
     """Return a list of the monitored services.
@@ -32,9 +32,8 @@ class MobMonitorRoot(object):
     Returns:
       A list of the monitored services.
     """
-    return []
+    return json.dumps(self.checkfile_manager.GetServiceList())
 
-  # TODO (msartori): Stub until crbug.com/493319 is implemented.
   @cherrypy.expose
   def GetStatus(self, service=None):
     """Return the health status of the specified service.
@@ -42,11 +41,22 @@ class MobMonitorRoot(object):
     Args:
       service: The service whose health status is being queried. If service
         is None, return the health status of all monitored services.
-    """
-    return 'GetStatus reached: service="%s"' % service
 
-  # TODO (msartori): Stub until crbug.com/493320 is implemented. Also
-  # need to implement crbug.com/505066.
+    Returns:
+      A list of dictionaries. Each dictionary contains the keys:
+        service: The name of the service.
+        health: A boolean describing the overall service health.
+        healthchecks: A list of unhealthy or quasi-healthy health checks.
+    """
+    service_statuses = self.checkfile_manager.GetStatus(service)
+    if not isinstance(service_statuses, list):
+      service_statuses = [service_statuses]
+
+    result = [
+        manager.MapServiceStatusToDict(status) for status in service_statuses]
+    return json.dumps(result)
+
+  # TODO (msartori): Implement crbug.com/505066.
   @cherrypy.expose
   def RepairService(self, service, action):
     """Execute the repair action on the specified service.
@@ -55,8 +65,8 @@ class MobMonitorRoot(object):
       service: The service that the specified action will be applied to.
       action: The action to be applied.
     """
-    return 'RepairService reached: service="%s", actions="%s"' % (service,
-                                                                  action)
+    status = self.checkfile_manager.RepairService(service, action)
+    return json.dumps(manager.MapServiceStatusToDict(status))
 
 
 def ParseArguments(argv):

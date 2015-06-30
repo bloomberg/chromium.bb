@@ -99,6 +99,10 @@ class RpcExecutor(object):
       If service is not None, a list of dictionaries is returned,
       one for each monitored service.
     """
+    # Urllib encodes None as the string 'None'. Use the empty string instead.
+    if service is None:
+      service = ''
+
     return self.Execute('GetStatus', service=service)
 
   # TODO (msartori): Implement crbug.com/505066.
