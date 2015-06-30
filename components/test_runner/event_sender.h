@@ -119,6 +119,7 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
 
   void TouchStart();
   void TouchMove();
+  void TouchMoveCausingScrollIfUncanceled();
   void TouchCancel();
   void TouchEnd();
 
@@ -165,7 +166,7 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
 
   void DoLeapForward(int milliseconds);
 
-  void SendCurrentTouchEvent(blink::WebInputEvent::Type);
+  void SendCurrentTouchEvent(blink::WebInputEvent::Type, bool);
 
   void GestureEvent(blink::WebInputEvent::Type,
                     gin::Arguments*);

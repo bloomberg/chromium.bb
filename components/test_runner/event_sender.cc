@@ -392,6 +392,7 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void GestureScrollFirstPoint(int x, int y);
   void TouchStart();
   void TouchMove();
+  void TouchMoveCausingScrollIfUncanceled();
   void TouchCancel();
   void TouchEnd();
   void LeapForward(int milliseconds);
@@ -522,6 +523,8 @@ EventSenderBindings::GetObjectTemplateBuilder(v8::Isolate* isolate) {
                  &EventSenderBindings::GestureScrollFirstPoint)
       .SetMethod("touchStart", &EventSenderBindings::TouchStart)
       .SetMethod("touchMove", &EventSenderBindings::TouchMove)
+      .SetMethod("touchMoveCausingScrollIfUncanceled",
+                 &EventSenderBindings::TouchMoveCausingScrollIfUncanceled)
       .SetMethod("touchCancel", &EventSenderBindings::TouchCancel)
       .SetMethod("touchEnd", &EventSenderBindings::TouchEnd)
       .SetMethod("leapForward", &EventSenderBindings::LeapForward)
@@ -569,33 +572,24 @@ EventSenderBindings::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetProperty("forceLayoutOnEvents",
                    &EventSenderBindings::ForceLayoutOnEvents,
                    &EventSenderBindings::SetForceLayoutOnEvents)
-      .SetProperty("dragMode",
-                   &EventSenderBindings::IsDragMode,
+      .SetProperty("dragMode", &EventSenderBindings::IsDragMode,
                    &EventSenderBindings::SetIsDragMode)
 #if defined(OS_WIN)
-      .SetProperty("WM_KEYDOWN",
-                   &EventSenderBindings::WmKeyDown,
+      .SetProperty("WM_KEYDOWN", &EventSenderBindings::WmKeyDown,
                    &EventSenderBindings::SetWmKeyDown)
-      .SetProperty("WM_KEYUP",
-                   &EventSenderBindings::WmKeyUp,
+      .SetProperty("WM_KEYUP", &EventSenderBindings::WmKeyUp,
                    &EventSenderBindings::SetWmKeyUp)
-      .SetProperty("WM_CHAR",
-                   &EventSenderBindings::WmChar,
+      .SetProperty("WM_CHAR", &EventSenderBindings::WmChar,
                    &EventSenderBindings::SetWmChar)
-      .SetProperty("WM_DEADCHAR",
-                   &EventSenderBindings::WmDeadChar,
+      .SetProperty("WM_DEADCHAR", &EventSenderBindings::WmDeadChar,
                    &EventSenderBindings::SetWmDeadChar)
-      .SetProperty("WM_SYSKEYDOWN",
-                   &EventSenderBindings::WmSysKeyDown,
+      .SetProperty("WM_SYSKEYDOWN", &EventSenderBindings::WmSysKeyDown,
                    &EventSenderBindings::SetWmSysKeyDown)
-      .SetProperty("WM_SYSKEYUP",
-                   &EventSenderBindings::WmSysKeyUp,
+      .SetProperty("WM_SYSKEYUP", &EventSenderBindings::WmSysKeyUp,
                    &EventSenderBindings::SetWmSysKeyUp)
-      .SetProperty("WM_SYSCHAR",
-                   &EventSenderBindings::WmSysChar,
+      .SetProperty("WM_SYSCHAR", &EventSenderBindings::WmSysChar,
                    &EventSenderBindings::SetWmSysChar)
-      .SetProperty("WM_SYSDEADCHAR",
-                   &EventSenderBindings::WmSysDeadChar,
+      .SetProperty("WM_SYSDEADCHAR", &EventSenderBindings::WmSysDeadChar,
                    &EventSenderBindings::SetWmSysDeadChar);
 #else
       ;
@@ -713,6 +707,11 @@ void EventSenderBindings::TouchStart() {
 void EventSenderBindings::TouchMove() {
   if (sender_)
     sender_->TouchMove();
+}
+
+void EventSenderBindings::TouchMoveCausingScrollIfUncanceled() {
+  if (sender_)
+    sender_->TouchMoveCausingScrollIfUncanceled();
 }
 
 void EventSenderBindings::TouchCancel() {
@@ -1668,19 +1667,23 @@ void EventSender::GestureScrollFirstPoint(int x, int y) {
 }
 
 void EventSender::TouchStart() {
-  SendCurrentTouchEvent(WebInputEvent::TouchStart);
+  SendCurrentTouchEvent(WebInputEvent::TouchStart, false);
 }
 
 void EventSender::TouchMove() {
-  SendCurrentTouchEvent(WebInputEvent::TouchMove);
+  SendCurrentTouchEvent(WebInputEvent::TouchMove, false);
+}
+
+void EventSender::TouchMoveCausingScrollIfUncanceled() {
+  SendCurrentTouchEvent(WebInputEvent::TouchMove, true);
 }
 
 void EventSender::TouchCancel() {
-  SendCurrentTouchEvent(WebInputEvent::TouchCancel);
+  SendCurrentTouchEvent(WebInputEvent::TouchCancel, false);
 }
 
 void EventSender::TouchEnd() {
-  SendCurrentTouchEvent(WebInputEvent::TouchEnd);
+  SendCurrentTouchEvent(WebInputEvent::TouchEnd, false);
 }
 
 void EventSender::LeapForward(int milliseconds) {
@@ -2008,7 +2011,8 @@ void EventSender::DoLeapForward(int milliseconds) {
   time_offset_ms_ += milliseconds;
 }
 
-void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type) {
+void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type,
+                                        bool causesScrollingIfUncanceled) {
   DCHECK_GT(static_cast<unsigned>(WebTouchEvent::touchesLengthCap),
             touch_points_.size());
   if (force_layout_on_events_)
@@ -2019,6 +2023,7 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type) {
   touch_event.modifiers = touch_modifiers_;
   touch_event.cancelable = touch_cancelable_;
   touch_event.timeStampSeconds = GetCurrentEventTimeSec();
+  touch_event.causesScrollingIfUncanceled = causesScrollingIfUncanceled;
   touch_event.touchesLength = touch_points_.size();
   for (size_t i = 0; i < touch_points_.size(); ++i)
     touch_event.touches[i] = touch_points_[i];
