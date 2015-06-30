@@ -1662,8 +1662,8 @@ crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/animate-elem-52-t.svg [ Failure ]
 crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/extend-namespace-01-f.svg [ Failure ]
 crbug.com/495523 svg/wicd/test-rightsizing-b.xhtml [ Pass Failure ]
 
-
-crbug.com/501564 [ Lion ] fast/text/ellipsis-platform-font-change.html [ Pass Failure ]
+crbug.com/501564 fast/text/ellipsis-platform-font-change.html [ NeedsRebaseline ]
+crbug.com/501564 virtual/antialiasedtext/fast/text/ellipsis-platform-font-change.html [ NeedsRebaseline ]
 
 crbug.com/501769 http/tests/serviceworker/stashed-ports.html [ Pass Failure Timeout ]
 

@@ -1707,6 +1707,17 @@ void LayoutObject::setPseudoStyle(PassRefPtr<ComputedStyle> pseudoStyle)
     setStyle(pseudoStyle);
 }
 
+void LayoutObject::firstLineStyleDidChange(const ComputedStyle& oldStyle, const ComputedStyle& newStyle)
+{
+    StyleDifference diff = oldStyle.visualInvalidationDiff(newStyle);
+    if (diff.hasDifference()) {
+        // TODO(rune@opera.com): We should use the diff to determine whether a repaint vs. layout
+        // is needed, but for now just assume a layout will be required. The diff code
+        // in LayoutObject::setStyle would need to be factored out so that it could be reused.
+        setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::StyleChange);
+    }
+}
+
 void LayoutObject::markContainingBlocksForOverflowRecalc()
 {
     for (LayoutBlock* container = containingBlock(); container && !container->childNeedsOverflowRecalcAfterStyleChange(); container = container->containingBlock())

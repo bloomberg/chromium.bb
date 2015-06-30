@@ -736,6 +736,8 @@ public:
     // and so only should be called when the style is known not to have changed (or from setStyle).
     void setStyleInternal(PassRefPtr<ComputedStyle> style) { m_style = style; }
 
+    void firstLineStyleDidChange(const ComputedStyle& oldStyle, const ComputedStyle& newStyle);
+
     // returns the containing block level element for this element.
     LayoutBlock* containingBlock() const;
 

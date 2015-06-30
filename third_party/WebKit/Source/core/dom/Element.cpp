@@ -1540,23 +1540,20 @@ bool Element::pseudoStyleCacheIsInvalid(const ComputedStyle* currentStyle, Compu
     size_t cacheSize = pseudoStyleCache->size();
     for (size_t i = 0; i < cacheSize; ++i) {
         RefPtr<ComputedStyle> newPseudoStyle;
-        PseudoId pseudoId = pseudoStyleCache->at(i)->styleType();
+        RefPtr<ComputedStyle> oldPseudoStyle = pseudoStyleCache->at(i);
+        PseudoId pseudoId = oldPseudoStyle->styleType();
         if (pseudoId == FIRST_LINE || pseudoId == FIRST_LINE_INHERITED)
             newPseudoStyle = layoutObject()->uncachedFirstLineStyle(newStyle);
         else
             newPseudoStyle = layoutObject()->getUncachedPseudoStyle(PseudoStyleRequest(pseudoId), newStyle, newStyle);
         if (!newPseudoStyle)
             return true;
-        if (*newPseudoStyle != *pseudoStyleCache->at(i)) {
+        if (*oldPseudoStyle != *newPseudoStyle || oldPseudoStyle->font().loadingCustomFonts() != newPseudoStyle->font().loadingCustomFonts()) {
             if (pseudoId < FIRST_INTERNAL_PSEUDOID)
                 newStyle->setHasPseudoStyle(pseudoId);
             newStyle->addCachedPseudoStyle(newPseudoStyle);
-            if (pseudoId == FIRST_LINE || pseudoId == FIRST_LINE_INHERITED) {
-                // FIXME: We should do an actual diff to determine whether a repaint vs. layout
-                // is needed, but for now just assume a layout will be required. The diff code
-                // in LayoutObject::setStyle would need to be factored out so that it could be reused.
-                layoutObject()->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::StyleChange);
-            }
+            if (pseudoId == FIRST_LINE || pseudoId == FIRST_LINE_INHERITED)
+                layoutObject()->firstLineStyleDidChange(*oldPseudoStyle, *newPseudoStyle);
             return true;
         }
     }
