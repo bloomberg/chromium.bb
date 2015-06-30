@@ -6,20 +6,25 @@
 
 from __future__ import print_function
 
-import constants
 import getpass
 import json
 import os
 import time
 
 from chromite.cbuildbot import config_lib
+from chromite.cbuildbot import constants
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import manifest_version
+from chromite.cbuildbot import topology
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cache
 from chromite.lib import git
+from chromite.lib import retry_util
+from chromite.lib import auth
 
+# from third_party
+import httplib2
 
 site_config = config_lib.GetConfig()
 
@@ -85,6 +90,7 @@ class RemoteTryJob(object):
       local_patches: A list of LocalPatch objects.
     """
     self.options = options
+    self.use_buildbucket = options.use_buildbucket
     self.user = getpass.getuser()
     self.repo_cache = cache.DiskCache(self.options.cache_dir)
     cwd = os.path.dirname(os.path.realpath(__file__))
@@ -191,6 +197,68 @@ class RemoteTryJob(object):
         raise ChromiteUpgradeNeeded()
       if val > self.TRYJOB_FORMAT_VERSION:
         raise ChromiteUpgradeNeeded(val)
+
+    if self.use_buildbucket:
+      self._PostConfigToBuildBucket(testjob, dryrun)
+    else:
+      self._PushConfig(workdir, testjob, dryrun, current_time)
+
+  def _BuildBucketAuth(self):
+    return auth.Authorize(auth.GetAccessToken, httplib2.Http())
+
+  def _PostConfigToBuildBucket(self, testjob=False, dryrun=False):
+    """Posts the tryjob config to buildbucket.
+
+    Args:
+      dryrun: Whether to skip the request to buildbucket.
+      testjob: Whether to use the test instance of the buildbucket server.
+
+    Returns:
+      A (response, body) tuple of the response from the buildbucket service.
+    """
+    http = self._BuildBucketAuth()
+
+    host = topology.topology[
+        topology.BUILDBUCKET_TEST_HOST_KEY if testjob
+        else topology.BUILDBUCKET_HOST_KEY]
+    buildbucket_put_url = (
+        'https://{hostname}/_ah/api/buildbucket/v1/builds'.format(
+            hostname=host))
+
+    body = json.dumps({
+        'bucket': 'master.chromiumos.tryserver',
+        'parameters_json': json.dumps(self.values),
+    })
+
+    def try_put():
+      response, _ = http.request(
+          buildbucket_put_url,
+          'PUT',
+          body=body,
+          headers={'Content-Type': 'application/json'},
+      )
+
+      if int(response['status']) // 100 != 2:
+        raise Exception('Got a %s response from Buildbucket.'
+                        % response['status'])
+
+    if dryrun:
+      logging.info('dryrun mode is on; skipping request to buildbucket. '
+                   'Would have made a request with body:\n%s', body)
+      return
+
+    return retry_util.GenericRetry(lambda _: True, 3, try_put)
+
+  def _PushConfig(self, workdir, testjob, dryrun, current_time):
+    """Pushes the tryjob config to Git as a file.
+
+    Args:
+      workdir: see Submit()
+      testjob: see Submit()
+      dryrun: see Submit()
+      current_time: the current time as a string represention of the time since
+        unix epoch.
+    """
     push_branch = manifest_version.PUSH_BRANCH
 
     remote_branch = None
@@ -198,9 +266,7 @@ class RemoteTryJob(object):
       remote_branch = git.RemoteRef('origin', 'refs/remotes/origin/test')
     git.CreatePushBranch(push_branch, workdir, sync=False,
                          remote_push_branch=remote_branch)
-
-    file_name = '%s.%s' % (self.user,
-                           current_time)
+    file_name = '%s.%s' % (self.user, current_time)
     user_dir = os.path.join(workdir, self.user)
     if not os.path.isdir(user_dir):
       os.mkdir(user_dir)

@@ -461,6 +461,10 @@ def _CreateParser():
       parser,
       'Remote Trybot Options (--remote)')
 
+  group.add_option('--use-buildbucket', default=False, action='store_true',
+                   help=('Use buildbucket instead of git to request'
+                         'the tryjob(s).'))
+
   group.add_remote_option('--hwtest', dest='hwtest', action='store_true',
                           default=False,
                           help='Run the HWTest stage (tests on real hardware)')
@@ -1112,6 +1116,7 @@ def main(argv):
       _ConfirmRemoteBuildbotRun()
 
     print('Submitting tryjob...')
+    _SetupConnections(options, build_config)
     tryjob = remote_try.RemoteTryJob(options, args, patch_pool.local_patches)
     tryjob.Submit(testjob=options.test_tryjob, dryrun=False)
     print('Tryjob submitted!')

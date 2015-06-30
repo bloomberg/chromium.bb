@@ -4,8 +4,8 @@
 
 """Module to download and run the CIPD client.
 
-CIPD is the Chrome Infra Package Deployer, a simple method of resolving
-package/architecture/version tuples into GStorage links and installing them.
+CIPD is the Chrome Infra Package Deployer, a simple method of resolving a
+package/version into a GStorage link and installing them.
 
 """
 from __future__ import print_function
@@ -14,16 +14,17 @@ import hashlib
 import json
 import os
 import pprint
+import tempfile
 import urllib
 import urlparse
-
-import third_party.httplib2 as httplib2
 
 import chromite.lib.cros_logging as log
 from chromite.lib import cache
 from chromite.lib import osutils
 from chromite.lib import path_util
+from chromite.lib import cros_build_lib
 
+import httplib2
 
 # The version of CIPD to download.
 # TODO(phobbs) we could make a call to the 'resolveVersion' endpoint
@@ -73,12 +74,13 @@ def _DownloadCIPD(instance_id):
   """
   args = {'instance_id': instance_id, 'package_name': CIPD_PACKAGE}
   _, body = _ChromeInfraRequest('client', request_args=args)
-  if not 'client_binary' in body:
+  if 'client_binary' not in body:
     log.error(
         'Error requesting the link to download CIPD from. Got:\n%s',
         pprint.pformat(body))
+    return
 
-  http = httplib2.Http(cache='.cache')
+  http = httplib2.Http(cache=None)
   response, binary = http.request(uri=body['client_binary']['fetch_url'])
   assert response['status'] == '200', (
       'Got a %s response from Google Storage.' % response['status'])
@@ -113,3 +115,36 @@ def GetCIPDFromCache(instance_id=CIPD_INSTANCE_ID):
   ref = bin_cache.Lookup(key)
   ref.SetDefault('cipd://' + instance_id)
   return ref.path
+
+
+@cros_build_lib.Memoize
+def InstallPackage(cipd_path, package, instance_id, destination,
+                   service_account_json=None):
+  """Installs a package at a given destination using cipd.
+
+  Args:
+    cipd_path: The path to a cipd executable. GetCIPDFromCache can give this.
+    package: A package name.
+    instance_id: The version of the package to install.
+    destination: The folder to install the package under.
+    service_account_json: The path of the service account credentials.
+
+  Returns:
+    The path of the package.
+  """
+  destination = os.path.join(destination, package)
+
+  service_account_flag = []
+  if service_account_json:
+    service_account_flag = ['-service_account_json', service_account_json]
+
+  with tempfile.NamedTemporaryFile() as f:
+    f.write('%s %s' % (package, instance_id))
+    f.flush()
+
+    cros_build_lib.RunCommand(
+        [cipd_path, 'ensure', '-root', destination, '-list', f.name]
+        + service_account_flag,
+        capture_output=True)
+
+  return destination
