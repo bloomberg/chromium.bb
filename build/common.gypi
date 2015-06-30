@@ -5723,7 +5723,6 @@
                   '-Wno-sometimes-uninitialized',  # http://crbug.com/505307
                   '-Wno-switch',  # http://crbug.com/505308
                   '-Wno-unknown-pragmas',  # http://crbug.com/505314
-                  '-Wno-unsequenced',  # http://crbug.com/505315
                   '-Wno-unused-function',  # http://crbug.com/505316
                   '-Wno-unused-private-field',  # http://crbug.com/505317
                   '-Wno-unused-value',  # http://crbug.com/505318
