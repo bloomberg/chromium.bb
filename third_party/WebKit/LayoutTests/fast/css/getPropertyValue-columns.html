@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-</html>
+<html>
   <head>
     <title>-webkit-columns shorthand getPropertyValue test</title>
     <style>
@@ -32,10 +32,10 @@
         return element.style.getPropertyValue("-webkit-columns");
       }
 
-      shouldBeEqualToString('webkitColumnsValue("columns1")', '10px');
-      shouldBeEqualToString('webkitColumnsValue("columns2")', '10');
+      shouldBeEqualToString('webkitColumnsValue("columns1")', '10px auto');
+      shouldBeEqualToString('webkitColumnsValue("columns2")', 'auto 10');
       shouldBeEqualToString('webkitColumnsValue("columns3")', '10px auto');
-      shouldBeEqualToString('webkitColumnsValue("columns4")', 'auto');
+      shouldBeEqualToString('webkitColumnsValue("columns4")', 'auto auto');
       shouldBeEqualToString('webkitColumnsValue("columns5")', 'auto 2');
       shouldBeEqualToString('webkitColumnsValue("columns6")', '10px 2');
       shouldBeEqualToString('webkitColumnsValue("columns7")', 'auto auto');

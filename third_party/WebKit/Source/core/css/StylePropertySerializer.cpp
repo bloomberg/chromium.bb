@@ -732,27 +732,22 @@ String StylePropertySerializer::getShorthandValue(const StylePropertyShorthand& 
     String commonValue;
     StringBuilder result;
     for (unsigned i = 0; i < shorthand.length(); ++i) {
-        if (!m_propertySet.isPropertyImplicit(shorthand.properties()[i])) {
-            const CSSValue* value = m_propertySet.getPropertyCSSValue(shorthand.properties()[i]);
-            if (!value)
-                return String();
-            String valueText = value->cssText();
-            if (!i)
-                commonValue = valueText;
-            else if (!commonValue.isNull() && commonValue != valueText)
-                commonValue = String();
-            if (value->isInitialValue())
-                continue;
-            if (!result.isEmpty())
-                result.append(separator);
-            result.append(valueText);
-        } else
+        const CSSValue* value = m_propertySet.getPropertyCSSValue(shorthand.properties()[i]);
+        if (!value)
+            return String();
+        String valueText = value->cssText();
+        if (!i)
+            commonValue = valueText;
+        else if (!commonValue.isNull() && commonValue != valueText)
             commonValue = String();
+        if (value->isInitialValue())
+            continue;
+        if (!result.isEmpty())
+            result.append(separator);
+        result.append(valueText);
     }
     if (isInitialOrInherit(commonValue))
         return commonValue;
-    if (result.isEmpty())
-        return String();
     return result.toString();
 }
 
