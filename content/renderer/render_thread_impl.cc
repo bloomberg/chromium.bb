@@ -266,23 +266,6 @@ class RenderViewZoomer : public RenderViewVisitor {
   DISALLOW_COPY_AND_ASSIGN(RenderViewZoomer);
 };
 
-class CompositorRasterThread : public base::SimpleThread {
- public:
-  CompositorRasterThread(cc::TaskGraphRunner* task_graph_runner,
-                         const std::string& name_prefix,
-                         base::SimpleThread::Options options)
-      : base::SimpleThread(name_prefix, options),
-        task_graph_runner_(task_graph_runner) {}
-
-  // Overridden from base::SimpleThread:
-  void Run() override { task_graph_runner_->Run(); }
-
- private:
-  cc::TaskGraphRunner* task_graph_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(CompositorRasterThread);
-};
-
 std::string HostToCustomHistogramSuffix(const std::string& host) {
   if (host == "mail.google.com")
     return ".gmail";
@@ -396,6 +379,125 @@ blink::WebGraphicsContext3D::Attributes GetOffscreenAttribs() {
 
 }  // namespace
 
+class RasterWorkerPool : public base::SequencedTaskRunner,
+                         public base::DelegateSimpleThread::Delegate {
+ public:
+  RasterWorkerPool()
+      : namespace_token_(task_graph_runner_.GetNamespaceToken()) {}
+
+  void Start(int num_threads,
+             const base::SimpleThread::Options& thread_options) {
+    DCHECK(threads_.empty());
+    while (threads_.size() < static_cast<size_t>(num_threads)) {
+      scoped_ptr<base::DelegateSimpleThread> thread(
+          new base::DelegateSimpleThread(
+              this, base::StringPrintf(
+                        "CompositorTileWorker%u",
+                        static_cast<unsigned>(threads_.size() + 1)).c_str(),
+              thread_options));
+      thread->Start();
+      threads_.push_back(thread.Pass());
+    }
+  }
+
+  void Shutdown() {
+    // Shutdown raster threads.
+    task_graph_runner_.Shutdown();
+    while (!threads_.empty()) {
+      threads_.back()->Join();
+      threads_.pop_back();
+    }
+  }
+
+  // Overridden from base::TaskRunner:
+  bool PostDelayedTask(const tracked_objects::Location& from_here,
+                       const base::Closure& task,
+                       base::TimeDelta delay) override {
+    return PostNonNestableDelayedTask(from_here, task, delay);
+  }
+
+  bool RunsTasksOnCurrentThread() const override { return true; }
+
+  // Overridden from base::SequencedTaskRunner:
+  bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
+                                  const base::Closure& task,
+                                  base::TimeDelta delay) override {
+    base::AutoLock lock(lock_);
+    DCHECK(!threads_.empty());
+
+    // Remove completed tasks.
+    DCHECK(completed_tasks_.empty());
+    task_graph_runner_.CollectCompletedTasks(namespace_token_,
+                                             &completed_tasks_);
+    DCHECK_LE(completed_tasks_.size(), tasks_.size());
+    DCHECK(std::equal(completed_tasks_.begin(), completed_tasks_.end(),
+                      tasks_.begin()));
+    tasks_.erase(tasks_.begin(), tasks_.begin() + completed_tasks_.size());
+    completed_tasks_.clear();
+
+    tasks_.push_back(make_scoped_refptr(new ClosureTask(task)));
+
+    graph_.Reset();
+    for (const auto& task : tasks_) {
+      cc::TaskGraph::Node node(task.get(), 0, graph_.nodes.size());
+      if (graph_.nodes.size()) {
+        graph_.edges.push_back(
+            cc::TaskGraph::Edge(graph_.nodes.back().task, node.task));
+      }
+      graph_.nodes.push_back(node);
+    }
+
+    task_graph_runner_.ScheduleTasks(namespace_token_, &graph_);
+    return true;
+  }
+
+  // Overridden from base::DelegateSimpleThread::Delegate:
+  void Run() override { task_graph_runner_.Run(); }
+
+  cc::TaskGraphRunner* GetTaskGraphRunner() { return &task_graph_runner_; }
+
+ protected:
+  ~RasterWorkerPool() override {}
+
+ private:
+  // Simple Task for the TaskGraphRunner that wraps a closure.
+  class ClosureTask : public cc::Task {
+   public:
+    ClosureTask(const base::Closure& closure) : closure_(closure) {}
+
+    // Overridden from cc::Task:
+    void RunOnWorkerThread() override {
+      closure_.Run();
+      closure_.Reset();
+    };
+
+   protected:
+    ~ClosureTask() override {}
+
+   private:
+    base::Closure closure_;
+
+    DISALLOW_COPY_AND_ASSIGN(ClosureTask);
+  };
+
+  // The actual threads where work is done.
+  ScopedVector<base::DelegateSimpleThread> threads_;
+  cc::TaskGraphRunner task_graph_runner_;
+
+  // Namespace where the SequencedTaskRunner tasks run.
+  const cc::NamespaceToken namespace_token_;
+
+  // Lock to exclusively access all the following members that are used to
+  // implement the SequencedTaskRunner interface.
+  base::Lock lock_;
+  // List of tasks currently queued up for execution.
+  ClosureTask::Vector tasks_;
+  // Cached vector to avoid allocation when getting the list of complete tasks.
+  ClosureTask::Vector completed_tasks_;
+  // Graph object used for scheduling tasks.
+  cc::TaskGraph graph_;
+};
+
 // For measuring memory usage after each task. Behind a command line flag.
 class MemoryObserver : public base::MessageLoop::TaskObserver {
  public:
@@ -463,7 +565,8 @@ RenderThreadImpl::RenderThreadImpl(const InProcessChildThreadParams& params)
     : ChildThreadImpl(Options::Builder()
                           .InBrowserProcess(params)
                           .UseMojoChannel(ShouldUseMojoChannel())
-                          .Build()) {
+                          .Build()),
+      raster_worker_pool_(new RasterWorkerPool()) {
   Init();
 }
 
@@ -474,7 +577,8 @@ RenderThreadImpl::RenderThreadImpl(
     : ChildThreadImpl(Options::Builder()
                           .UseMojoChannel(ShouldUseMojoChannel())
                           .Build()),
-      main_message_loop_(main_message_loop.Pass()) {
+      main_message_loop_(main_message_loop.Pass()),
+      raster_worker_pool_(new RasterWorkerPool()) {
   Init();
 }
 
@@ -647,8 +751,6 @@ void RenderThreadImpl::Init() {
   memory_pressure_listener_.reset(new base::MemoryPressureListener(
       base::Bind(&RenderThreadImpl::OnMemoryPressure, base::Unretained(this))));
 
-  compositor_task_graph_runner_.reset(new cc::TaskGraphRunner);
-
   is_gather_pixel_refs_enabled_ = false;
 
   int num_raster_threads = 0;
@@ -672,17 +774,8 @@ void RenderThreadImpl::Init() {
     thread_options.set_priority(base::ThreadPriority::BACKGROUND);
   }
 #endif
-  while (compositor_raster_threads_.size() <
-         static_cast<size_t>(num_raster_threads)) {
-    scoped_ptr<CompositorRasterThread> raster_thread(new CompositorRasterThread(
-        compositor_task_graph_runner_.get(),
-        base::StringPrintf("CompositorTileWorker%u",
-                           static_cast<unsigned>(
-                               compositor_raster_threads_.size() + 1)).c_str(),
-        thread_options));
-    raster_thread->Start();
-    compositor_raster_threads_.push_back(raster_thread.Pass());
-  }
+
+  raster_worker_pool_->Start(num_raster_threads, thread_options);
 
   // TODO(boliu): In single process, browser main loop should set up the
   // discardable memory manager, and should skip this if kSingleProcess.
@@ -761,13 +854,7 @@ void RenderThreadImpl::Shutdown() {
 
   compositor_thread_.reset();
 
-  // Shutdown raster threads.
-  compositor_task_graph_runner_->Shutdown();
-  while (!compositor_raster_threads_.empty()) {
-    compositor_raster_threads_.back()->Join();
-    compositor_raster_threads_.pop_back();
-  }
-  compositor_task_graph_runner_.reset();
+  raster_worker_pool_->Shutdown();
 
   main_input_callback_.Cancel();
   input_handler_manager_.reset();
@@ -1460,7 +1547,7 @@ RenderThreadImpl::CreateExternalBeginFrameSource(int routing_id) {
 }
 
 cc::TaskGraphRunner* RenderThreadImpl::GetTaskGraphRunner() {
-  return compositor_task_graph_runner_.get();
+  return raster_worker_pool_->GetTaskGraphRunner();
 }
 
 bool RenderThreadImpl::IsGatherPixelRefsEnabled() {
@@ -1795,6 +1882,10 @@ RenderThreadImpl::GetMediaThreadTaskRunner() {
 #endif
   }
   return media_thread_->task_runner();
+}
+
+base::SequencedTaskRunner* RenderThreadImpl::GetWorkerSequencedTaskRunner() {
+  return raster_worker_pool_.get();
 }
 
 void RenderThreadImpl::SampleGamepads(blink::WebGamepads* data) {

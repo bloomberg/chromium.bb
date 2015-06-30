@@ -103,6 +103,7 @@ class NetInfoDispatcher;
 class P2PSocketDispatcher;
 class PeerConnectionDependencyFactory;
 class PeerConnectionTracker;
+class RasterWorkerPool;
 class RenderProcessObserver;
 class RendererBlinkPlatformImpl;
 class RendererDemuxerAndroid;
@@ -317,6 +318,9 @@ class CONTENT_EXPORT RenderThreadImpl
   // of the thread on which media operations should be run. Must be called
   // on the renderer's main thread.
   scoped_refptr<base::SingleThreadTaskRunner> GetMediaThreadTaskRunner();
+
+  // A SequencedTaskRunner instance that runs tasks on the raster worker pool.
+  base::SequencedTaskRunner* GetWorkerSequencedTaskRunner();
 
   // Causes the idle handler to skip sending idle notifications
   // on the two next scheduled calls, so idle notifications are
@@ -561,8 +565,8 @@ class CONTENT_EXPORT RenderThreadImpl
   // regardless of whether |compositor_thread_| is overriden.
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
 
-  // Threads used by compositor for rasterization.
-  ScopedVector<base::SimpleThread> compositor_raster_threads_;
+  // Pool of workers used for raster operations (e.g., tile rasterization).
+  scoped_refptr<RasterWorkerPool> raster_worker_pool_;
 
   base::CancelableCallback<void(const IPC::Message&)> main_input_callback_;
   scoped_refptr<IPC::MessageFilter> input_event_filter_;
@@ -593,8 +597,6 @@ class CONTENT_EXPORT RenderThreadImpl
       main_thread_compositor_task_runner_;
 
   scoped_refptr<ResourceSchedulingFilter> resource_scheduling_filter_;
-
-  scoped_ptr<cc::TaskGraphRunner> compositor_task_graph_runner_;
 
   // Compositor settings.
   bool is_gpu_rasterization_enabled_;
