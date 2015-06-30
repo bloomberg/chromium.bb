@@ -6,8 +6,8 @@ from core import perf_benchmark
 
 from benchmarks import silk_flags
 from measurements import thread_times
-from telemetry import benchmark
 import page_sets
+from telemetry import benchmark
 
 class _ThreadTimes(perf_benchmark.PerfBenchmark):
   @classmethod

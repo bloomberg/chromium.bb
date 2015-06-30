@@ -5,8 +5,8 @@
 from core import perf_benchmark
 
 from measurements import blink_style
-from telemetry import benchmark
 import page_sets
+from telemetry import benchmark
 
 
 @benchmark.Disabled('reference', 'win8')

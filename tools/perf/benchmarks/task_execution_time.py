@@ -5,8 +5,8 @@
 from core import perf_benchmark
 
 from measurements import task_execution_time
-from telemetry import benchmark
 import page_sets
+from telemetry import benchmark
 
 
 @benchmark.Enabled('android')

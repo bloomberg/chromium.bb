@@ -5,8 +5,8 @@
 from core import perf_benchmark
 
 from measurements import rasterize_and_record_micro
-from telemetry import benchmark
 import page_sets
+from telemetry import benchmark
 
 
 class _RasterizeAndRecordMicro(perf_benchmark.PerfBenchmark):

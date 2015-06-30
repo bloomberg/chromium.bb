@@ -7,8 +7,8 @@ from core import perf_benchmark
 from benchmarks import silk_flags
 from benchmarks import webgl_expectations
 from measurements import smoothness
-from telemetry import benchmark
 import page_sets
+from telemetry import benchmark
 
 
 class SmoothnessTop25(perf_benchmark.PerfBenchmark):

@@ -4,9 +4,9 @@
 
 from core import perf_benchmark
 
-from telemetry import story
 from telemetry import benchmark
 from telemetry.core import discover
+from telemetry import story
 
 from measurements import skpicture_printer
 

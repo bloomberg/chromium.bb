@@ -19,16 +19,16 @@ from telemetry.core import discover
 from telemetry.unittest_util import options_for_unittests
 from telemetry.unittest_util import progress_reporter
 
-from benchmarks import indexeddb_perf
 from benchmarks import image_decoding
-from benchmarks import octane
+from benchmarks import indexeddb_perf
+from benchmarks import jetstream
 from benchmarks import kraken
-from benchmarks import sunspider
+from benchmarks import octane
 from benchmarks import rasterize_and_record_micro
 from benchmarks import repaint
 from benchmarks import spaceport
 from benchmarks import speedometer
-from benchmarks import jetstream
+from benchmarks import sunspider
 
 
 def SmokeTestGenerator(benchmark):

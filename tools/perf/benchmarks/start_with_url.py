@@ -5,8 +5,8 @@
 from core import perf_benchmark
 
 from measurements import startup
-from telemetry import benchmark
 import page_sets
+from telemetry import benchmark
 
 
 class _StartWithUrl(perf_benchmark.PerfBenchmark):

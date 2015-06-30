@@ -5,8 +5,8 @@
 from core import perf_benchmark
 
 from measurements import draw_properties
-from telemetry import benchmark
 import page_sets
+from telemetry import benchmark
 
 
 # This benchmark depends on tracing categories available in M43
