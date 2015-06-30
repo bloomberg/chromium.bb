@@ -5,31 +5,18 @@
 #include "components/bookmarks/browser/bookmark_expanded_state_tracker.h"
 
 #include "base/files/file_path.h"
-#include "base/prefs/pref_service.h"
-#include "base/prefs/pref_service_factory.h"
-#include "base/prefs/testing_pref_store.h"
-#include "base/run_loop.h"
+#include "base/message_loop/message_loop.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
-#include "components/pref_registry/pref_registry_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace bookmarks {
-
-scoped_ptr<PrefService> PrefServiceForTesting() {
-  scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
-      new user_prefs::PrefRegistrySyncable());
-  registry->RegisterListPref(prefs::kBookmarkEditorExpandedNodes,
-                             new base::ListValue);
-  registry->RegisterListPref(prefs::kManagedBookmarks);
-  base::PrefServiceFactory factory;
-  factory.set_user_prefs(make_scoped_refptr(new TestingPrefStore()));
-  return factory.Create(registry.get());
-}
 
 class BookmarkExpandedStateTrackerTest : public testing::Test {
  public:
@@ -42,8 +29,8 @@ class BookmarkExpandedStateTrackerTest : public testing::Test {
   void TearDown() override;
 
   base::MessageLoop message_loop_;
+  TestingPrefServiceSimple prefs_;
   TestBookmarkClient client_;
-  scoped_ptr<PrefService> prefs_;
   scoped_ptr<BookmarkModel> model_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkExpandedStateTrackerTest);
@@ -54,9 +41,11 @@ BookmarkExpandedStateTrackerTest::BookmarkExpandedStateTrackerTest() {}
 BookmarkExpandedStateTrackerTest::~BookmarkExpandedStateTrackerTest() {}
 
 void BookmarkExpandedStateTrackerTest::SetUp() {
-  prefs_ = PrefServiceForTesting();
+  prefs_.registry()->RegisterListPref(prefs::kBookmarkEditorExpandedNodes,
+                                      new base::ListValue);
+  prefs_.registry()->RegisterListPref(prefs::kManagedBookmarks);
   model_.reset(new BookmarkModel(&client_));
-  model_->Load(prefs_.get(), std::string(), base::FilePath(),
+  model_->Load(&prefs_, std::string(), base::FilePath(),
                base::ThreadTaskRunnerHandle::Get(),
                base::ThreadTaskRunnerHandle::Get());
   test::WaitForBookmarkModelToLoad(model_.get());
