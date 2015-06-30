@@ -61,6 +61,13 @@ void SpellCheckerSubMenuObserver::InitMenu(
       l10n_util::GetStringUTF16(
           IDS_CONTENT_CONTEXT_CHECK_SPELLING_WHILE_TYPING));
 
+  // Add a check item "Ask Google for spelling suggestions" item. (This class
+  // does not handle this item because the SpellingMenuObserver class handles it
+  // on behalf of this class.)
+  submenu_model_.AddCheckItem(
+      IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE));
+
   proxy_->AddSubMenu(
       IDC_SPELLCHECK_MENU,
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLCHECK_MENU),
