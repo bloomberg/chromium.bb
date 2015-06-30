@@ -91,7 +91,7 @@ chromeMocks.runtime.sendMessage = function(extensionId, message,
       extensionId === null,
       'The mock only supports sending messages to the same extension.');
   extensionId = chrome.runtime.id;
-  window.requestAnimationFrame(function() {
+  Promise.resolve().then(function() {
     var message_copy = base.deepCopy(message);
     chromeMocks.runtime.onMessage.mock$fire(
         message_copy, {id: extensionId}, responseCallback);
@@ -231,7 +231,7 @@ chromeMocks.Identity.prototype.getAuthToken = function(options, callback) {
     token += JSON.stringify(options['scopes']);
   }
   // Don't use setTimeout because sinon mocks it.
-  window.requestAnimationFrame(callback.bind(null, token));
+  Promise.resolve().then(callback.bind(null, token));
 };
 
 /** @param {string} token */

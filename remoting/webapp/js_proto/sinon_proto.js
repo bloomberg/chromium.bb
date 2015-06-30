@@ -53,6 +53,12 @@ sinon.Expectation.prototype.once = function() {};
 sinon.Expectation.prototype.never = function() {};
 
 /**
+ * @param {number} times
+ * @return {sinon.Expectation}
+ */
+sinon.Expectation.prototype.exactly = function(times) {};
+
+/**
  * @param {...} data
  * @return {sinon.Expectation}
  */
@@ -139,7 +145,7 @@ sinon.Spy.prototype.args;
 sinon.stub = function(opt_obj, opt_method, opt_stubFunction) {};
 
 /**
- * TODO(jrw): rename to |sinon.Stub| for consistency
+* TODO(jrw): rename to |sinon.Stub| for consistency
  * @interface
  * @extends {sinon.Spy}
  */

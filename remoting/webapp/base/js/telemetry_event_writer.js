@@ -29,6 +29,9 @@ remoting.TelemetryEventWriter.Service = function(ipc, eventWriter) {
   this.ipc_ = ipc;
   /** @private {base.Disposables} */
   this.eventHooks_ = new base.Disposables();
+
+  /** @private */
+  this.sessionMonitor_ = new SessionMonitor(this.eventWriter_);
 };
 
 /** @return {Promise} */
@@ -61,12 +64,17 @@ remoting.TelemetryEventWriter.Service.prototype.dispose = function() {
  * @param {string} windowId
  */
 remoting.TelemetryEventWriter.Service.prototype.unbindSession =
-  function(windowId) {};
+  function(windowId) {
+    this.sessionMonitor_.unbindSession(windowId);
+};
 
 /**
+ * @param {string} windowId  The source window id of the IPC.
  * @param {!Object} event  The event to be written to the server.
  */
-remoting.TelemetryEventWriter.Service.prototype.write_ = function(event) {
+remoting.TelemetryEventWriter.Service.prototype.write_ =
+    function(windowId, event) {
+  this.sessionMonitor_.onEvent(windowId, event);
   this.eventWriter_.write(event);
 };
 
@@ -85,7 +93,88 @@ remoting.TelemetryEventWriter.Client = function() {};
  *     logging service.
  */
 remoting.TelemetryEventWriter.Client.write = function(event) {
-  return base.Ipc.invoke(IpcNames.WRITE, event);
+  return base.Ipc.invoke(IpcNames.WRITE, chrome.app.window.current().id, event);
 };
+
+
+/**
+ * @struct
+ * @constructor
+ * @param {remoting.ChromotingEvent} event
+ */
+function SessionInfo(event) {
+  this.event = event;
+  this.timestamp = Date.now();
+}
+
+/**
+ * When a window is closed using the context menu, the foreground page doesn't
+ * have a chance to intercept the close event.
+ * This class keeps track of all foreground windows with ongoing sessions, so
+ * that we can report session termination when they are closed.
+ *
+ * @param {remoting.XhrEventWriter} eventWriter
+ * @constructor
+ */
+var SessionMonitor = function(eventWriter) {
+  /** @private */
+  this.eventWriter_ = eventWriter;
+  /** @private {Map<string, SessionInfo>} */
+  this.sessionMap_ = new Map();
+};
+
+/**
+ * @param {string} windowId
+ * @param {Object} entry
+ */
+SessionMonitor.prototype.onEvent = function(windowId, entry) {
+  var event = /** @type {remoting.ChromotingEvent} */ (base.deepCopy(entry));
+
+  if (event.type !== remoting.ChromotingEvent.Type.SESSION_STATE) {
+    return;
+  }
+
+  if (remoting.ChromotingEvent.isEndOfSession(event)) {
+    this.sessionMap_.delete(windowId);
+  } else {
+    this.sessionMap_.set(windowId, new SessionInfo(event));
+  }
+};
+
+/**
+ * Unbinds a session with |windowId| and log any close events if necessary.
+ * @param {string} windowId
+ */
+SessionMonitor.prototype.unbindSession = function(windowId) {
+  if (this.sessionMap_.has(windowId)) {
+    var sessionInfo = this.sessionMap_.get(windowId);
+    console.assert(sessionInfo !== undefined);
+    var event = inferSessionEndEvent(/** @type {SessionInfo} */ (sessionInfo));
+    this.eventWriter_.write(/** @type {Object} */ (event));
+    this.sessionMap_.delete(windowId);
+  }
+};
+
+/**
+ * @param {SessionInfo} sessionInfo
+ * @return {remoting.ChromotingEvent}
+ */
+function inferSessionEndEvent(sessionInfo) {
+  var event = sessionInfo.event;
+  var SessionState = remoting.ChromotingEvent.SessionState;
+
+  switch (event.session_state) {
+    case SessionState.INITIALIZING:
+    case SessionState.CONNECTING:
+    case SessionState.AUTHENTICATED:
+      event.session_state = SessionState.CONNECTION_CANCELED;
+      break;
+    default:
+      event.session_state = SessionState.CLOSED;
+  }
+  var elapsed = (Date.now() - sessionInfo.timestamp) / 1000.0;
+  event.session_duration +=  elapsed;
+  return event;
+}
 
 })();

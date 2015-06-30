@@ -54,6 +54,7 @@ remoting.XhrEventWriter.prototype.loadPendingRequests = function() {
  * @return {Promise} A promise that resolves on success.
  */
 remoting.XhrEventWriter.prototype.write = function(event) {
+  console.log('Writing Event - ' + JSON.stringify(event));
   this.markPending_(event);
   return this.flush();
 };
@@ -134,7 +135,8 @@ remoting.XhrEventWriter.prototype.doXhr_ = function(requestIds, event) {
   var that = this;
   var XHR_RETRY_ATTEMPTS = 20;
   var xhr = new remoting.AutoRetryXhr(
-      {method: 'POST', url: this.url_, jsonContent: event}, XHR_RETRY_ATTEMPTS);
+      {method: 'POST', url: this.url_, jsonContent: event, useIdentity: true},
+      XHR_RETRY_ATTEMPTS);
   return xhr.start().then(function(response) {
     var error = remoting.Error.fromHttpStatus(response.status);
     // Only store requests that are failed with NETWORK_FAILURE, so that

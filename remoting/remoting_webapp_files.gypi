@@ -389,6 +389,7 @@
     # These JS files are specific to the background page and are not part of
     # the main JS files.
     'remoting_webapp_background_html_js_files': [
+      'webapp/base/js/chromoting_event.js',
       'webapp/base/js/message_window_helper.js',
       'webapp/base/js/message_window_manager.js',
       'webapp/crd/js/activation_handler.js',

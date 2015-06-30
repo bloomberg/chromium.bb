@@ -33,7 +33,7 @@ var remoting = remoting || {};
  * @struct
  */
 remoting.ChromotingEvent = function(type) {
-  /** @private {remoting.ChromotingEvent.Type} */
+  /** @type {remoting.ChromotingEvent.Type} */
   this.type = type;
   /** @private {remoting.ChromotingEvent.Os} */
   this.os;
@@ -47,7 +47,7 @@ remoting.ChromotingEvent = function(type) {
   this.host_version;
   /** @private {string} */
   this.cpu;
-  /** @private {remoting.ChromotingEvent.SessionState} */
+  /** @type {remoting.ChromotingEvent.SessionState} */
   this.session_state;
   /** @private {remoting.ChromotingEvent.ConnectionType} */
   this.connection_type;
@@ -129,6 +129,23 @@ remoting.ChromotingEvent.prototype.setSignalStategyProgress =
  */
 remoting.ChromotingEvent.prototype.setConnectionType = function(type) {
   this.connection_type = toConnectionType(type);
+};
+
+/**
+ * @param {remoting.ChromotingEvent} event
+ * @return {boolean}
+ */
+remoting.ChromotingEvent.isEndOfSession = function(event) {
+  if (event.type !== remoting.ChromotingEvent.Type.SESSION_STATE) {
+    return false;
+  }
+  var endStates = [
+    remoting.ChromotingEvent.SessionState.CLOSED,
+    remoting.ChromotingEvent.SessionState.CONNECTION_DROPPED,
+    remoting.ChromotingEvent.SessionState.CONNECTION_FAILED,
+    remoting.ChromotingEvent.SessionState.CONNECTION_CANCELED
+  ];
+  return endStates.indexOf(event.session_state) !== -1;
 };
 
 /**
