@@ -507,7 +507,6 @@ struct amdgpu_gpu_info {
  *
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
  *
  *
@@ -530,7 +529,6 @@ int amdgpu_device_initialize(int fd,
  *                                   result e.g. of drmOpen() call.
  *
  * \return  0 on success\n
- *         >0 - AMD specific error code\n
  *         <0 - Negative POSIX Error code
  *
  * \sa amdgpu_device_initialize()
@@ -554,7 +552,6 @@ int amdgpu_device_deinitialize(amdgpu_device_handle device_handle);
  *				    information about allocated memory
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
  *
  * \sa amdgpu_bo_free()
@@ -571,7 +568,6 @@ int amdgpu_bo_alloc(amdgpu_device_handle dev,
  * \param   info       - \c [in] Metadata to associated with buffer
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
 */
 int amdgpu_bo_set_metadata(amdgpu_bo_handle buf_handle,
@@ -587,7 +583,6 @@ int amdgpu_bo_set_metadata(amdgpu_bo_handle buf_handle,
  * \param   info       - \c [out]  Structure describing buffer
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
  *
  * \sa amdgpu_bo_set_metadata(), amdgpu_bo_alloc()
@@ -605,7 +600,6 @@ int amdgpu_bo_query_info(amdgpu_bo_handle buf_handle,
  * \param   shared_handle - \c [out] Special "shared" handle
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
  *
  * \sa amdgpu_bo_import()
@@ -627,7 +621,6 @@ int amdgpu_bo_export(amdgpu_bo_handle buf_handle,
  *				     about imported buffer
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
  *
  * \note  Buffer must be "imported" only using new "fd" (different from
@@ -653,9 +646,8 @@ int amdgpu_bo_import(amdgpu_device_handle dev,
  * resource on submission and be used in other operations.
  *
  *
- * \return 0 on success
- * >0 - AMD specific error code
- * <0 - Negative POSIX Error code
+ * \return   0 on success\n
+ *          <0 - Negative POSIX Error code
  *
  * \note
  * This call doesn't guarantee that such memory will be persistently
@@ -684,7 +676,6 @@ int amdgpu_create_bo_from_user_mem(amdgpu_device_handle dev,
  * \param   buf_handle - \c [in]  Buffer handle to free
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
  *
  * \note In the case of memory shared between different applications all
@@ -705,7 +696,6 @@ int amdgpu_bo_free(amdgpu_bo_handle buf_handle);
  * \param   cpu        - \c [out] CPU address to be used for access
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
  *
  * \sa amdgpu_bo_cpu_unmap()
@@ -719,7 +709,6 @@ int amdgpu_bo_cpu_map(amdgpu_bo_handle buf_handle, void **cpu);
  * \param   buf_handle  - \c [in] Buffer handle
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
  *
  * \sa amdgpu_bo_cpu_map()
@@ -738,7 +727,6 @@ int amdgpu_bo_cpu_unmap(amdgpu_bo_handle buf_handle);
  *                          1 GPU access is in fly or scheduled
  *
  * \return   0 - on success
- *          >0 - AMD specific error code
  *          <0 - Negative POSIX Error code
  */
 int amdgpu_bo_wait_for_idle(amdgpu_bo_handle buf_handle,
@@ -756,7 +744,6 @@ int amdgpu_bo_wait_for_idle(amdgpu_bo_handle buf_handle,
  * \param   result		- \c [out] Created BO list handle
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
  *
  * \sa amdgpu_bo_list_destroy()
@@ -773,7 +760,6 @@ int amdgpu_bo_list_create(amdgpu_device_handle dev,
  * \param   handle	- \c [in] BO list handle.
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
  *
  * \sa amdgpu_bo_list_create()
@@ -789,7 +775,6 @@ int amdgpu_bo_list_destroy(amdgpu_bo_list_handle handle);
  * \param   resource_prios      - \c [in] Optional priority for each handle
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
  *
  * \sa amdgpu_bo_list_update()
@@ -818,7 +803,6 @@ int amdgpu_bo_list_update(amdgpu_bo_list_handle handle,
  * \param   context - \c [out] GPU Context handle
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
  *
  * \sa amdgpu_cs_ctx_free()
@@ -834,7 +818,6 @@ int amdgpu_cs_ctx_create(amdgpu_device_handle dev,
  * \param   context - \c [in] GPU Context handle
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
  *
  * \sa amdgpu_cs_ctx_create()
@@ -850,7 +833,6 @@ int amdgpu_cs_ctx_free(amdgpu_context_handle context);
  * \param   hangs   - \c [out] Number of hangs caused by the context.
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
  *
  * \sa amdgpu_cs_ctx_create()
@@ -891,7 +873,6 @@ int amdgpu_cs_query_reset_state(amdgpu_context_handle context,
  *					  submission request
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
  *
  * \note It is required to pass correct resource list with buffer handles
@@ -919,7 +900,6 @@ int amdgpu_cs_submit(amdgpu_context_handle context,
  *				!0 - otherwise
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
  *
  * \note If UMD wants only to check operation status and returned immediately
@@ -949,7 +929,6 @@ int amdgpu_cs_query_fence_status(struct amdgpu_cs_query_fence *fence,
  *			  requirements
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
  *
 */
@@ -968,7 +947,6 @@ int amdgpu_query_buffer_size_alignment(amdgpu_device_handle dev,
  * \param   feature     - \c [out] Pointer to to the "feature" return value
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
  *
 */
@@ -984,7 +962,6 @@ int amdgpu_query_firmware_version(amdgpu_device_handle dev, unsigned fw_type,
  * \param   count    - \c [out] Pointer to structure to get information
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
 */
 int amdgpu_query_hw_ip_count(amdgpu_device_handle dev, unsigned type,
@@ -1002,7 +979,6 @@ int amdgpu_query_hw_ip_count(amdgpu_device_handle dev, unsigned type,
  * \param   info        - \c [out] Pointer to structure to get information
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
 */
 int amdgpu_query_hw_ip_info(amdgpu_device_handle dev, unsigned type,
@@ -1020,7 +996,6 @@ int amdgpu_query_hw_ip_info(amdgpu_device_handle dev, unsigned type,
  * \param   info - \c [in] Pointer to structure to get needed information
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
  *
 */
@@ -1035,7 +1010,6 @@ int amdgpu_query_heap_info(amdgpu_device_handle dev, uint32_t heap,
  * \param   result - \c [in] Pointer to the CRTC ID
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
  *
 */
@@ -1052,7 +1026,6 @@ int amdgpu_query_crtc_from_id(amdgpu_device_handle dev, unsigned id,
  * \param   info - \c [in] Pointer to structure to get needed information
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
  *
 */
@@ -1071,7 +1044,6 @@ int amdgpu_query_gpu_info(amdgpu_device_handle dev,
  * \param   value   - \c [out] Pointer to the return value.
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX error code
  *
 */
@@ -1085,7 +1057,6 @@ int amdgpu_query_info(amdgpu_device_handle dev, unsigned info_id,
  * \param   gds_info - \c [out] Pointer to structure to get GDS information
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX Error code
  *
 */
@@ -1106,7 +1077,6 @@ int amdgpu_query_gds_info(amdgpu_device_handle dev,
  * \param   values       - \c [out] The pointer to return values.
  *
  * \return   0 on success\n
- *          >0 - AMD specific error code\n
  *          <0 - Negative POSIX error code
  *
 */
