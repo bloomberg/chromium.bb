@@ -1202,20 +1202,29 @@ LayoutUnit LayoutBlock::marginIntrinsicLogicalWidthForChild(LayoutBox& child) co
     return margin;
 }
 
-static bool needsLayoutDueToStaticPosition(LayoutObject* child)
+static bool needsLayoutDueToStaticPosition(LayoutBox* child)
 {
-    // When a non-positioned block element moves, it may have positioned children that are implicitly positioned relative to the
-    // non-positioned block. In block flow we can detect these when we layout the non-positioned block (by noticing the change
-    // in the immediate parent's logical top in |adjustPositionedBlock|). In line layout we always need to mark the positioned
-    // child for layout if its statically positioned in the direction in which the object lays out.
-    // crbug.com/490322(rhogan): We probably need to move the block layout case in here too, as marking a positioned object for
-    // layout while laying out an object's children invalidly assumes that our positionedObjects list is in DOM order and that
-    // we could never mark a positioned object for layout *after* we've laid it out in layoutPositionedObjects.
-    if (!child->parent()->childrenInline())
-        return false;
+    // When a non-positioned block element moves, it may have positioned children that are
+    // implicitly positioned relative to the non-positioned block.
     const ComputedStyle* style = child->style();
     bool isHorizontal = style->isHorizontalWritingMode();
-    return style->hasStaticBlockPosition(isHorizontal) || (style->isOriginalDisplayInlineType() && style->hasStaticInlinePosition(isHorizontal));
+    if (style->hasStaticBlockPosition(isHorizontal)) {
+        LayoutBox::LogicalExtentComputedValues computedValues;
+        LayoutUnit currentLogicalTop = child->logicalTop();
+        LayoutUnit currentLogicalHeight = child->logicalHeight();
+        child->computeLogicalHeight(currentLogicalHeight, currentLogicalTop, computedValues);
+        if (computedValues.m_position != currentLogicalTop || computedValues.m_extent != currentLogicalHeight)
+            return true;
+    }
+    if (style->hasStaticInlinePosition(isHorizontal)) {
+        LayoutBox::LogicalExtentComputedValues computedValues;
+        LayoutUnit currentLogicalLeft = child->logicalLeft();
+        LayoutUnit currentLogicalWidth = child->logicalWidth();
+        child->computeLogicalWidth(computedValues);
+        if (computedValues.m_position != currentLogicalLeft || computedValues.m_extent != currentLogicalWidth)
+            return true;
+    }
+    return false;
 }
 
 void LayoutBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayoutBehavior info)
@@ -1237,7 +1246,7 @@ void LayoutBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
             continue;
         }
 
-        if (relayoutChildren || needsLayoutDueToStaticPosition(positionedObject))
+        if (!positionedObject->normalChildNeedsLayout() && (relayoutChildren || needsLayoutDueToStaticPosition(positionedObject)))
             layoutScope.setChildNeedsLayout(positionedObject);
 
         // If relayoutChildren is set and the child has percentage padding or an embedded content box, we also need to invalidate the childs pref widths.
