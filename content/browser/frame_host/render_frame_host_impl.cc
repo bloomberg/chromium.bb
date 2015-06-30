@@ -1340,12 +1340,6 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
   AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
   if ((accessibility_mode != AccessibilityModeOff) && view &&
       RenderFrameHostImpl::IsRFHStateActive(rfh_state())) {
-    if (accessibility_mode & AccessibilityModeFlagPlatform) {
-      GetOrCreateBrowserAccessibilityManager();
-      if (browser_accessibility_manager_)
-        browser_accessibility_manager_->OnAccessibilityEvents(params);
-    }
-
     if (browser_accessibility_manager_) {
       // Get the frame routing ids from out-of-process iframes and
       // browser plugin instance ids from guests and update the mappings in
@@ -1357,6 +1351,12 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
         UpdateGuestFrameAccessibility(
             param.node_to_browser_plugin_instance_id_map);
       }
+    }
+
+    if (accessibility_mode & AccessibilityModeFlagPlatform) {
+      GetOrCreateBrowserAccessibilityManager();
+      if (browser_accessibility_manager_)
+        browser_accessibility_manager_->OnAccessibilityEvents(params);
     }
 
     // Send the updates to the automation extension API.

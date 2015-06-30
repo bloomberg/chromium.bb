@@ -434,6 +434,25 @@ class FrameWatcher : public BrowserMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(FrameWatcher);
 };
 
+// This observer keeps track of the last deleted RenderFrame to avoid
+// accessing it and causing use-after-free condition.
+class RenderFrameDeletedObserver : public WebContentsObserver {
+ public:
+  RenderFrameDeletedObserver(RenderFrameHost* rfh);
+  ~RenderFrameDeletedObserver() override;
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
+  bool deleted();
+  void WaitUntilDeleted();
+
+ private:
+  int process_id_;
+  int routing_id_;
+  bool deleted_;
+  scoped_ptr<base::RunLoop> runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderFrameDeletedObserver);
+};
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_BROWSER_TEST_UTILS_H_
