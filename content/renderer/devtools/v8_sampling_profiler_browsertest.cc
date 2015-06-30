@@ -126,6 +126,7 @@ TEST_F(V8SamplingProfilerTest, V8SamplingEventFired) {
   base::RunLoop().RunUntilIdle();
   sampling_profiler_->WaitSamplingEventForTesting();
   TraceLog::GetInstance()->SetDisabled();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(V8SamplingProfilerTest, V8SamplingJitCodeEventsCollected) {

@@ -593,6 +593,13 @@ void V8SamplingProfiler::StartSamplingThread() {
   sampling_thread_->Start();
 }
 
+void V8SamplingProfiler::StopSamplingThread() {
+  if (!sampling_thread_.get())
+    return;
+  sampling_thread_->Stop();
+  sampling_thread_.reset();
+}
+
 void V8SamplingProfiler::OnTraceLogEnabled() {
   bool enabled;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(
@@ -614,10 +621,9 @@ void V8SamplingProfiler::OnTraceLogEnabled() {
 }
 
 void V8SamplingProfiler::OnTraceLogDisabled() {
-  if (!sampling_thread_.get())
-    return;
-  sampling_thread_->Stop();
-  sampling_thread_.reset();
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&V8SamplingProfiler::StopSamplingThread,
+                                    base::Unretained(this)));
 }
 
 void V8SamplingProfiler::EnableSamplingEventForTesting(int code_added_events,

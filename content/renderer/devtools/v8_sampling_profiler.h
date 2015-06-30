@@ -32,6 +32,7 @@ class CONTENT_EXPORT V8SamplingProfiler final
 
  private:
   void StartSamplingThread();
+  void StopSamplingThread();
 
   scoped_ptr<base::WaitableEvent> waitable_event_for_testing_;
   scoped_ptr<V8SamplingThread> sampling_thread_;
