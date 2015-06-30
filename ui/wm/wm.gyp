@@ -157,4 +157,23 @@
       ],
     },
   ],
+  'conditions': [
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'wm_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'wm_unittests',
+          ],
+          'includes': [
+            '../../build/isolate.gypi',
+          ],
+          'sources': [
+            'wm_unittests.isolate',
+          ],
+        },
+      ],
+    }],
+  ],
 }

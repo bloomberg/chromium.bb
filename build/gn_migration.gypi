@@ -552,6 +552,7 @@
             ['use_aura==1', {
               'dependencies': [
                 '../ui/aura/aura.gyp:aura_unittests_run',
+                '../ui/wm/wm.gyp:wm_unittests_run',
               ],
             }],
             ['enable_webrtc==1 or OS!="android"', {
