@@ -284,6 +284,7 @@ input:disabled:-webkit-any([type='password'],
  */
 
 :-webkit-any(.checkbox, .radio) label {
+  -webkit-user-select: none;
   /* Don't expand horizontally: <http://crbug.com/112091>. */
   align-items: center;
   display: inline-flex;
@@ -297,7 +298,6 @@ input:disabled:-webkit-any([type='password'],
 
 :-webkit-any(.checkbox, .radio) label input ~ span {
   -webkit-margin-start: 0.6em;
-  -webkit-user-select: none;
   /* Make sure long spans wrap at the same horizontal position they start. */
   display: block;
 }
