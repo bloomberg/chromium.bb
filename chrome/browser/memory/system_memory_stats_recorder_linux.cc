@@ -37,6 +37,7 @@ void RecordMemoryStats(RecordMemoryStatsType type) {
   base::SystemMemoryInfoKB memory;
   if (!base::GetSystemMemoryInfo(&memory))
     return;
+#if defined(OS_CHROMEOS)
   // Record graphics GEM object size in a histogram with 50 MB buckets.
   int mem_graphics_gem_mb = 0;
   if (memory.gem_size != -1)
@@ -44,11 +45,12 @@ void RecordMemoryStats(RecordMemoryStatsType type) {
 
   // Record shared memory (used by renderer/GPU buffers).
   int mem_shmem_mb = memory.shmem / 1024;
+#endif
 
   // On Intel, graphics objects are in anonymous pages, but on ARM they are
   // not. For a total "allocated count" add in graphics pages on ARM.
   int mem_allocated_mb = (memory.active_anon + memory.inactive_anon) / 1024;
-#if defined(ARCH_CPU_ARM_FAMILY)
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
   mem_allocated_mb += mem_graphics_gem_mb;
 #endif
 
@@ -57,9 +59,11 @@ void RecordMemoryStats(RecordMemoryStatsType type) {
 
   switch (type) {
     case RECORD_MEMORY_STATS_TAB_DISCARDED: {
+#if defined(OS_CHROMEOS)
       UMA_HISTOGRAM_MEGABYTES_LINEAR("Tabs.Discard.MemGraphicsMB",
                                      mem_graphics_gem_mb);
       UMA_HISTOGRAM_MEGABYTES_LINEAR("Tabs.Discard.MemShmemMB", mem_shmem_mb);
+#endif
       UMA_HISTOGRAM_ALLOCATED_MEGABYTES("Tabs.Discard.MemAllocatedMB",
                                         mem_allocated_mb);
       UMA_HISTOGRAM_AVAILABLE_MEGABYTES("Tabs.Discard.MemAvailableMB",
@@ -67,10 +71,12 @@ void RecordMemoryStats(RecordMemoryStatsType type) {
       break;
     }
     case RECORD_MEMORY_STATS_CONTENTS_OOM_KILLED: {
+#if defined(OS_CHROMEOS)
       UMA_HISTOGRAM_MEGABYTES_LINEAR("Memory.OOMKill.Contents.MemGraphicsMB",
                                      mem_graphics_gem_mb);
       UMA_HISTOGRAM_MEGABYTES_LINEAR("Memory.OOMKill.Contents.MemShmemMB",
                                      mem_shmem_mb);
+#endif
       UMA_HISTOGRAM_ALLOCATED_MEGABYTES(
           "Memory.OOMKill.Contents.MemAllocatedMB", mem_allocated_mb);
       UMA_HISTOGRAM_AVAILABLE_MEGABYTES(
@@ -78,10 +84,12 @@ void RecordMemoryStats(RecordMemoryStatsType type) {
       break;
     }
     case RECORD_MEMORY_STATS_EXTENSIONS_OOM_KILLED: {
+#if defined(OS_CHROMEOS)
       UMA_HISTOGRAM_MEGABYTES_LINEAR("Memory.OOMKill.Extensions.MemGraphicsMB",
                                      mem_graphics_gem_mb);
       UMA_HISTOGRAM_MEGABYTES_LINEAR("Memory.OOMKill.Extensions.MemShmemMB",
                                      mem_shmem_mb);
+#endif
       UMA_HISTOGRAM_ALLOCATED_MEGABYTES(
           "Memory.OOMKill.Extensions.MemAllocatedMB", mem_allocated_mb);
       UMA_HISTOGRAM_AVAILABLE_MEGABYTES(

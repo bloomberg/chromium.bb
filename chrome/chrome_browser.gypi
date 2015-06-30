@@ -626,7 +626,7 @@
       'browser/memory/oom_memory_details.h',
       'browser/memory/oom_priority_manager_chromeos.cc',
       'browser/memory/oom_priority_manager.h',
-      'browser/memory/system_memory_stats_recorder_chromeos.cc',
+      'browser/memory/system_memory_stats_recorder_linux.cc',
       'browser/memory/system_memory_stats_recorder.h',
       'browser/mod_pagespeed/mod_pagespeed_metrics.cc',
       'browser/mod_pagespeed/mod_pagespeed_metrics.h',
