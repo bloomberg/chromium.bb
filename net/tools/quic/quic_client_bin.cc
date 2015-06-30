@@ -207,7 +207,6 @@ int main(int argc, char *argv[]) {
     // For secure QUIC we need to verify the cert chain.a
     cert_verifier.reset(CertVerifier::CreateDefault());
     transport_security_state.reset(new TransportSecurityState);
-    // TODO(rtenneti): Fix "Proof invalid: Missing context" error.
     client.SetProofVerifier(new ProofVerifierChromium(
         cert_verifier.get(), transport_security_state.get()));
   }

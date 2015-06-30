@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "net/quic/crypto/crypto_protocol.h"
+#include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/quic_server_id.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
 
@@ -19,8 +20,11 @@ QuicClientSession::QuicClientSession(const QuicConfig& config,
                                      const QuicServerId& server_id,
                                      QuicCryptoClientConfig* crypto_config)
     : QuicClientSessionBase(connection, config),
-      crypto_stream_(
-          new QuicCryptoClientStream(server_id, this, nullptr, crypto_config)),
+      crypto_stream_(new QuicCryptoClientStream(
+          server_id,
+          this,
+          new ProofVerifyContextChromium(0, BoundNetLog()),
+          crypto_config)),
       respect_goaway_(true) {
 }
 
