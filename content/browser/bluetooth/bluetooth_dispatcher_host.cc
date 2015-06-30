@@ -6,7 +6,7 @@
 // When a device can't be found in the BluetoothAdapter, that generally
 // indicates that it's gone out of range. We reject with a NetworkError in that
 // case.
-// https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothdevice-connectgatt
+// https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothdevice-connectgatt
 
 #include "content/browser/bluetooth/bluetooth_dispatcher_host.h"
 
@@ -62,7 +62,7 @@ const char kCharacteristicNoLongerExits[] =
     "GATT Characteristic no longer exists";
 
 // Defined at
-// https://webbluetoothcg.github.io/web-bluetooth/#dfn-matches-a-filter
+// https://webbluetoothchrome.github.io/web-bluetooth/#dfn-matches-a-filter
 bool MatchesFilter(const std::set<BluetoothUUID>& device_uuids,
                    const content::BluetoothScanFilter& filter) {
   if (filter.services.empty())
@@ -524,7 +524,7 @@ void BluetoothDispatcherHost::OnCreateGATTConnectionError(
     device::BluetoothDevice::ConnectErrorCode error_code) {
   // There was an error creating the ATT Bearer so we reject with
   // NetworkError.
-  // https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothdevice-connectgatt
+  // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothdevice-connectgatt
   Send(new BluetoothMsg_ConnectGATTError(thread_id, request_id,
                                          BluetoothError::NETWORK,
                                          GetConnectErrorMessage(error_code)));

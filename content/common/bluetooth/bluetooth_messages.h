@@ -7,12 +7,12 @@
 
 // Web Bluetooth Security
 // The security mechanisms of Bluetooth are described in the specification:
-// https://webbluetoothcg.github.io/web-bluetooth
+// https://webbluetoothchrome.github.io/web-bluetooth
 //
 // Exerpts:
 //
 // From: Security and privacy considerations
-// http://webbluetoothcg.github.io/web-bluetooth/#security-and-privacy-considerations
+// http://webbluetoothchrome.github.io/web-bluetooth/#security-and-privacy-considerations
 // """
 // When a website requests access to devices using requestDevice, it gets the
 // ability to access all GATT services mentioned in the call. The UA must inform
@@ -54,7 +54,7 @@
 // """
 //
 // From: Device Discovery: requestDevice
-// http://webbluetoothcg.github.io/web-bluetooth/#device-discovery
+// http://webbluetoothchrome.github.io/web-bluetooth/#device-discovery
 // """
 // Even if scanResult is empty, display a prompt to the user requesting that the
 // user select a device from it. The UA should show the user the human-readable
