@@ -106,10 +106,16 @@
         "test": "cast_base_unittests"
       },
       {
+        "test": "cast_crash_unittests"
+      },
+      {
         "test": "cast_media_unittests"
       },
       {
         "test": "cast_shell_browser_test"
+      },
+      {
+        "test": "cast_shell_unittests"
       },
       {
         "args": [
