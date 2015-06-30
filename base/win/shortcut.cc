@@ -73,18 +73,18 @@ bool DoVerbOnFile(uint32_t resource_id, const FilePath& path) {
   ScopedComPtr<Folder> folder;
   hresult = shell_dispatch->NameSpace(
       ScopedVariant(path.DirName().value().c_str()), folder.Receive());
-  if (FAILED(hresult))
+  if (FAILED(hresult) || !folder.get())
     return false;
 
   ScopedComPtr<FolderItem> item;
   hresult = folder->ParseName(ScopedBstr(path.BaseName().value().c_str()),
                               item.Receive());
-  if (FAILED(hresult))
+  if (FAILED(hresult) || !item.get())
     return false;
 
   ScopedComPtr<FolderItemVerbs> verbs;
   hresult = item->Verbs(verbs.Receive());
-  if (FAILED(hresult))
+  if (FAILED(hresult) || !verbs.get())
     return false;
 
   long verb_count = 0;
@@ -95,7 +95,7 @@ bool DoVerbOnFile(uint32_t resource_id, const FilePath& path) {
   for (long i = 0; i < verb_count; ++i) {
     ScopedComPtr<FolderItemVerb> verb;
     hresult = verbs->Item(ScopedVariant(i, VT_I4), verb.Receive());
-    if (FAILED(hresult))
+    if (FAILED(hresult) || !verb.get())
       continue;
     ScopedBstr name;
     hresult = verb->get_Name(name.Receive());
