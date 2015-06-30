@@ -223,6 +223,21 @@ static NaClValidationStatus ValidatorCodeReplacement_x86_64(
   return NaClValidationFailed;
 }
 
+static NaClValidationStatus IsOnInstBoundary_x86_64(
+    uintptr_t guest_addr,
+    uintptr_t addr,
+    const uint8_t *data,
+    size_t size,
+    const NaClCPUFeatures *f) {
+  /* TODO (leslieb) This still needs to be implemented. */
+  UNREFERENCED_PARAMETER(guest_addr);
+  UNREFERENCED_PARAMETER(addr);
+  UNREFERENCED_PARAMETER(data);
+  UNREFERENCED_PARAMETER(size);
+  UNREFERENCED_PARAMETER(f);
+  return NaClValidationFailedNotImplemented;
+}
+
 static const struct NaClValidatorInterface validator = {
   FALSE, /* Optional stubout_mode is not implemented.            */
   TRUE,  /* Optional readonly_text mode is implemented.          */
@@ -234,6 +249,7 @@ static const struct NaClValidatorInterface validator = {
   NaClSetAllCPUFeaturesX86,
   NaClGetCurrentCPUFeaturesX86,
   NaClFixCPUFeaturesX86,
+  IsOnInstBoundary_x86_64,
 };
 
 const struct NaClValidatorInterface *NaClDfaValidatorCreate_x86_64(void) {

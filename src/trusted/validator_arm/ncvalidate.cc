@@ -216,6 +216,21 @@ static NaClValidationStatus ApplyValidatorArm(
   return ok ? NaClValidationSucceeded : NaClValidationFailed;
 }
 
+static NaClValidationStatus IsOnInstBoundaryArm(
+    uintptr_t guest_addr,
+    uintptr_t addr,
+    const uint8_t *data,
+    size_t size,
+    const NaClCPUFeatures *f) {
+  /* TODO (leslieb) This still needs to be implemented. */
+  UNREFERENCED_PARAMETER(guest_addr);
+  UNREFERENCED_PARAMETER(addr);
+  UNREFERENCED_PARAMETER(data);
+  UNREFERENCED_PARAMETER(size);
+  UNREFERENCED_PARAMETER(f);
+  return NaClValidationFailedNotImplemented;
+}
+
 static struct NaClValidatorInterface validator = {
   FALSE, /* Optional stubout_mode is not implemented.            */
   FALSE, /* Optional readonly_text mode is not implemented.      */
@@ -227,6 +242,7 @@ static struct NaClValidatorInterface validator = {
   NaClSetAllCPUFeaturesArm,
   NaClGetCurrentCPUFeaturesArm,
   NaClFixCPUFeaturesArm,
+  IsOnInstBoundaryArm,
 };
 
 const struct NaClValidatorInterface *NaClValidatorCreateArm() {

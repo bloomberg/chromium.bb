@@ -289,6 +289,67 @@ static NaClValidationStatus ValidatorCodeReplacement_x86_32(
   return NaClValidationFailed;
 }
 
+
+struct IsOnInstBoundaryCallbackData {
+  int found_addr;
+  const uint8_t *addr;
+};
+
+static Bool IsOnInstBoundaryCallback(const uint8_t *begin,
+                                     const uint8_t *end,
+                                     uint32_t info,
+                                     void *callback_data) {
+  struct IsOnInstBoundaryCallbackData *data = callback_data;
+  UNREFERENCED_PARAMETER(info);
+  UNREFERENCED_PARAMETER(end);
+
+  /*
+   * For x86-32 superinstructions are at most 2 normal instructions,
+   * therefore every instruction reported will be a valid jump target.
+   * This is not true for x86-64 and chained instructions.
+   */
+  if (begin == data->addr)
+    data->found_addr = TRUE;
+
+  /* We should never invalidate the DFA as a whole. */
+  return TRUE;
+}
+
+static NaClValidationStatus IsOnInstBoundary_x86_32(
+    uintptr_t guest_addr,
+    uintptr_t addr,
+    const uint8_t *data,
+    size_t size,
+    const NaClCPUFeatures *f) {
+  NaClCPUFeaturesX86 *cpu_features = (NaClCPUFeaturesX86 *) f;
+  struct IsOnInstBoundaryCallbackData callback_data;
+
+  uint32_t guest_bundle_addr = (addr & ~kBundleMask);
+  const uint8_t *local_bundle_addr = data + (guest_bundle_addr - guest_addr);
+  int rc;
+
+  /* Check addr is within code boundary. */
+  if (addr < guest_addr || addr >= guest_addr + size)
+    return NaClValidationFailed;
+
+  CHECK(guest_bundle_addr >= guest_addr);
+  CHECK((uint32_t) (guest_addr & ~kBundleMask) == guest_addr);
+  CHECK(size >= kBundleSize);
+
+  callback_data.found_addr = FALSE;
+  callback_data.addr = data + (addr - guest_addr);
+
+  rc = ValidateChunkIA32(local_bundle_addr, kBundleSize,
+                         CALL_USER_CALLBACK_ON_EACH_INSTRUCTION,
+                         cpu_features, IsOnInstBoundaryCallback,
+                         &callback_data);
+
+  CHECK(rc);
+
+  return callback_data.found_addr ? NaClValidationSucceeded
+                                  : NaClValidationFailed;
+}
+
 static const struct NaClValidatorInterface validator = {
   FALSE, /* Optional stubout_mode is not implemented.            */
   TRUE,  /* Optional readonly_text mode is implemented.          */
@@ -300,6 +361,7 @@ static const struct NaClValidatorInterface validator = {
   NaClSetAllCPUFeaturesX86,
   NaClGetCurrentCPUFeaturesX86,
   NaClFixCPUFeaturesX86,
+  IsOnInstBoundary_x86_32,
 };
 
 const struct NaClValidatorInterface *NaClDfaValidatorCreate_x86_32(void) {

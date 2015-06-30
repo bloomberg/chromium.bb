@@ -200,6 +200,20 @@ static NaClValidationStatus ValidatorCopyNotImplemented(
   return NaClValidationFailedNotImplemented;
 }
 
+static NaClValidationStatus IsOnInstBoundaryMips(
+    uintptr_t guest_addr,
+    uintptr_t addr,
+    const uint8_t *data,
+    size_t size,
+    const NaClCPUFeatures *f) {
+  UNREFERENCED_PARAMETER(guest_addr);
+  UNREFERENCED_PARAMETER(addr);
+  UNREFERENCED_PARAMETER(data);
+  UNREFERENCED_PARAMETER(size);
+  UNREFERENCED_PARAMETER(f);
+  return NaClValidationFailedNotImplemented;
+}
+
 static struct NaClValidatorInterface validator = {
   TRUE,  /* Optional stubout_mode is implemented.                    */
   FALSE, /* Optional readonly_text mode is not implemented.          */
@@ -211,6 +225,7 @@ static struct NaClValidatorInterface validator = {
   NaClSetAllCPUFeaturesMips,
   NaClGetCurrentCPUFeaturesMips,
   NaClFixCPUFeaturesMips,
+  IsOnInstBoundaryMips,
 };
 
 const struct NaClValidatorInterface *NaClValidatorCreateMips() {

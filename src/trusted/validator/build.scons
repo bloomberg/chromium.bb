@@ -32,3 +32,18 @@ if env.Bit('build_x86') or env.Bit('build_mips32'):
 
   env.AddNodeToTestSuite(node, ['small_tests', 'validator_tests'],
                          'run_validation_cache_test')
+
+if env.Bit('build_x86_32'):
+  gtest_env = env.MakeGTestEnv()
+
+  validator_debug_stub_test_exe = gtest_env.ComponentProgram(
+      'validator_debug_stub_test',
+      ['validator_debug_stub_test.cc'],
+      EXTRA_LIBS=['validators', 'nrd_xfer'])
+
+  node = gtest_env.CommandTest(
+      'validator_debug_stub_test.out',
+      command=[validator_debug_stub_test_exe])
+
+  env.AddNodeToTestSuite(node, ['small_tests', 'validator_tests'],
+                         'run_validator_debug_stub_test')
