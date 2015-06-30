@@ -86,11 +86,11 @@ void CredentialManagerClient::OnSendCredential(int request_id,
   switch (info.type) {
     case CredentialType::CREDENTIAL_TYPE_FEDERATED:
       credential.reset(new blink::WebFederatedCredential(
-          info.id, info.federation, info.name, info.avatar));
+          info.id, info.federation, info.name, info.icon));
       break;
     case CredentialType::CREDENTIAL_TYPE_PASSWORD:
       credential.reset(new blink::WebPasswordCredential(
-          info.id, info.password, info.name, info.avatar));
+          info.id, info.password, info.name, info.icon));
       break;
     case CredentialType::CREDENTIAL_TYPE_EMPTY:
       // Intentionally empty; we'll send nullptr to the onSuccess call below.

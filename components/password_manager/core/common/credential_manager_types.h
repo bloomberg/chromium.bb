@@ -44,9 +44,9 @@ struct CredentialInfo {
   // property.
   base::string16 name;
 
-  // The address of a user's avatar. Corresponds to WebCredential's avatar
-  // property.
-  GURL avatar;
+  // The address of this credential's icon (e.g. the user's avatar).
+  // Corresponds to WebCredential's icon property.
+  GURL icon;
 
   // Corresponds to WebPasswordCredential's password property.
   base::string16 password;

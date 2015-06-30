@@ -16,12 +16,12 @@ class CredentialManagerTypesTest : public testing::Test {
  public:
   CredentialManagerTypesTest()
       : origin_(GURL("https://example.test/")),
-        avatar_(GURL("https://fast-cdn.test/avatar.png")),
+        icon_(GURL("https://fast-cdn.test/icon.png")),
         federation_(GURL("https://federation.test/")) {}
 
  protected:
   GURL origin_;
-  GURL avatar_;
+  GURL icon_;
   GURL federation_;
 };
 
@@ -40,14 +40,14 @@ TEST_F(CredentialManagerTypesTest, CreatePasswordFormFederation) {
 
   info.id = base::ASCIIToUTF16("id");
   info.name = base::ASCIIToUTF16("name");
-  info.avatar = avatar_;
+  info.icon = icon_;
   info.federation = federation_;
   info.type = CredentialType::CREDENTIAL_TYPE_FEDERATED;
 
   form = CreatePasswordFormFromCredentialInfo(info, origin_);
   ASSERT_NE(nullptr, form.get());
 
-  EXPECT_EQ(info.avatar, form->avatar_url);
+  EXPECT_EQ(info.icon, form->avatar_url);
   EXPECT_EQ(info.name, form->display_name);
   EXPECT_EQ(origin_, form->origin);
   EXPECT_EQ(autofill::PasswordForm::SCHEME_HTML, form->scheme);
@@ -65,14 +65,14 @@ TEST_F(CredentialManagerTypesTest, CreatePasswordFormLocal) {
 
   info.id = base::ASCIIToUTF16("id");
   info.name = base::ASCIIToUTF16("name");
-  info.avatar = avatar_;
+  info.icon = icon_;
   info.password = base::ASCIIToUTF16("password");
   info.type = CredentialType::CREDENTIAL_TYPE_PASSWORD;
 
   form = CreatePasswordFormFromCredentialInfo(info, origin_);
   ASSERT_NE(nullptr, form.get());
 
-  EXPECT_EQ(info.avatar, form->avatar_url);
+  EXPECT_EQ(info.icon, form->avatar_url);
   EXPECT_EQ(info.name, form->display_name);
   EXPECT_EQ(origin_, form->origin);
   EXPECT_EQ(autofill::PasswordForm::SCHEME_HTML, form->scheme);

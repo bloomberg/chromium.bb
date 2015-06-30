@@ -16,7 +16,7 @@ CredentialInfo WebCredentialToCredentialInfo(
   CredentialInfo credential_info;
   credential_info.id = credential.id();
   credential_info.name = credential.name();
-  credential_info.avatar = credential.avatarURL();
+  credential_info.icon = credential.iconURL();
   credential_info.type = credential.isPasswordCredential()
                              ? CredentialType::CREDENTIAL_TYPE_PASSWORD
                              : CredentialType::CREDENTIAL_TYPE_FEDERATED;

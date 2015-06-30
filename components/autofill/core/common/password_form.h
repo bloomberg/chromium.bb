@@ -246,7 +246,10 @@ struct PasswordForm {
   // User friendly name to show in the UI.
   base::string16 display_name;
 
-  // The URL of the user's avatar to display in the UI.
+  // The URL of the user's avatar to display in the UI. Note that the
+  // corresponding property in the Credential Manager is called icon URL.
+  // TODO(msramek): Rename |avatar_url| to |icon_url| to match the naming
+  // in Credential Manager.
   GURL avatar_url;
 
   // The URL of identity provider used for federated login.
