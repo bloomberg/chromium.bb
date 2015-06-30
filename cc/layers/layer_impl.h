@@ -324,6 +324,11 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return is_container_for_fixed_position_layers_;
   }
 
+  bool IsAffectedByPageScale() const { return is_affected_by_page_scale_; }
+  void SetIsAffectedByPageScale(bool is_affected) {
+    is_affected_by_page_scale_ = is_affected;
+  }
+
   gfx::Vector2dF FixedContainerSizeDelta() const;
 
   void SetPositionConstraint(const LayerPositionConstraint& constraint) {
@@ -761,6 +766,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   // Set for the layer that other layers are fixed to.
   bool is_container_for_fixed_position_layers_ : 1;
+
+  bool is_affected_by_page_scale_ : 1;
 
   Region non_fast_scrollable_region_;
   Region touch_event_handler_region_;

@@ -5969,5 +5969,77 @@ class LayerTreeTestReflectionMaskLayerForSurfaceWithUnclippedChild
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeTestReflectionMaskLayerForSurfaceWithUnclippedChild);
 
+class LayerTreeTestPageScaleFlags : public LayerTreeTest {
+ protected:
+  void SetupTree() override {
+    // -root
+    //   -pre page scale
+    //   -page scale
+    //     -page scale child1
+    //       -page scale grandchild
+    //     -page scale child2
+    //   -post page scale
+
+    scoped_refptr<Layer> root = Layer::Create(layer_settings());
+    scoped_refptr<Layer> pre_page_scale = Layer::Create(layer_settings());
+    scoped_refptr<Layer> page_scale = Layer::Create(layer_settings());
+    scoped_refptr<Layer> page_scale_child1 = Layer::Create(layer_settings());
+    scoped_refptr<Layer> page_scale_grandchild =
+        Layer::Create(layer_settings());
+    scoped_refptr<Layer> page_scale_child2 = Layer::Create(layer_settings());
+    scoped_refptr<Layer> post_page_scale = Layer::Create(layer_settings());
+
+    root->AddChild(pre_page_scale);
+    root->AddChild(page_scale);
+    root->AddChild(post_page_scale);
+
+    page_scale->AddChild(page_scale_child1);
+    page_scale->AddChild(page_scale_child2);
+    page_scale_child1->AddChild(page_scale_grandchild);
+
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeTest::SetupTree();
+
+    scoped_refptr<Layer> overscroll_elasticity_layer = nullptr;
+    scoped_refptr<Layer> inner_viewport_scroll_layer = nullptr;
+    scoped_refptr<Layer> outer_viewport_scroll_layer = nullptr;
+    layer_tree_host()->RegisterViewportLayers(
+        overscroll_elasticity_layer, page_scale, inner_viewport_scroll_layer,
+        outer_viewport_scroll_layer);
+
+    affected_by_page_scale_.push_back(page_scale->id());
+    affected_by_page_scale_.push_back(page_scale_child1->id());
+    affected_by_page_scale_.push_back(page_scale_child2->id());
+    affected_by_page_scale_.push_back(page_scale_grandchild->id());
+
+    not_affected_by_page_scale_.push_back(root->id());
+    not_affected_by_page_scale_.push_back(pre_page_scale->id());
+    not_affected_by_page_scale_.push_back(post_page_scale->id());
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    LayerTreeHostCommon::CallFunctionForSubtree(
+        host_impl->sync_tree()->root_layer(), [this](LayerImpl* layer) {
+          const std::vector<int>& list =
+              layer->IsAffectedByPageScale()
+                  ? this->affected_by_page_scale_
+                  : this->not_affected_by_page_scale_;
+          EXPECT_TRUE(std::find(list.begin(), list.end(), layer->id()) !=
+                      list.end());
+        });
+
+    EndTest();
+  }
+
+  void AfterTest() override {}
+
+  std::vector<int> affected_by_page_scale_;
+  std::vector<int> not_affected_by_page_scale_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeTestPageScaleFlags);
+
 }  // namespace
 }  // namespace cc

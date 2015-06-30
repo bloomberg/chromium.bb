@@ -201,7 +201,8 @@ class PictureLayerImplTest : public testing::Test {
                                 const gfx::Size& tile_size,
                                 const Region& invalidation) {
     host_impl_.CreatePendingTree();
-    host_impl_.pending_tree()->PushPageScaleFromMainThread(1.f, 0.25f, 100.f);
+    host_impl_.pending_tree()->PushPageScaleFromMainThread(1.f, 0.00001f,
+                                                           100000.f);
     LayerTreeImpl* pending_tree = host_impl_.pending_tree();
 
     // Steal from the recycled tree if possible.
@@ -244,6 +245,9 @@ class PictureLayerImplTest : public testing::Test {
       float maximum_animation_contents_scale,
       float starting_animation_contents_scale,
       bool animating_transform_to_screen) {
+    host_impl_.SetDeviceScaleFactor(device_scale_factor);
+    host_impl_.SetPageScaleOnActiveTree(page_scale_factor);
+
     layer->draw_properties().ideal_contents_scale = ideal_contents_scale;
     layer->draw_properties().device_scale_factor = device_scale_factor;
     layer->draw_properties().page_scale_factor = page_scale_factor;
@@ -2519,11 +2523,12 @@ TEST_F(PictureLayerImplTest, FirstTilingDuringPinch) {
   // We start with a tiling at scale 1.
   EXPECT_EQ(1.f, pending_layer_->HighResTiling()->contents_scale());
 
-  // When we scale up by 2.3, we get a new tiling that is a power of 2, in this
-  // case 4.
+  // When we page scale up by 2.3, we get a new tiling that is a power of 2, in
+  // this case 4.
   host_impl_.PinchGestureBegin();
   float high_res_scale = 2.3f;
-  SetContentsScaleOnBothLayers(high_res_scale, 1.f, 1.f, 1.f, 0.f, false);
+  SetContentsScaleOnBothLayers(high_res_scale, 1.f, high_res_scale, 1.f, 0.f,
+                               false);
   EXPECT_EQ(4.f, pending_layer_->HighResTiling()->contents_scale());
 }
 

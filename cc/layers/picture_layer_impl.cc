@@ -1152,12 +1152,18 @@ void PictureLayerImpl::UpdateIdealScales() {
   float min_contents_scale = MinimumContentsScale();
   DCHECK_GT(min_contents_scale, 0.f);
 
-  ideal_page_scale_ = draw_properties().page_scale_factor;
-  ideal_device_scale_ = draw_properties().device_scale_factor;
+  ideal_page_scale_ = IsAffectedByPageScale()
+                          ? layer_tree_impl()->current_page_scale_factor()
+                          : 1.f;
+  ideal_device_scale_ = layer_tree_impl()->device_scale_factor();
   ideal_contents_scale_ =
       std::max(draw_properties().ideal_contents_scale, min_contents_scale);
   ideal_source_scale_ =
       ideal_contents_scale_ / ideal_page_scale_ / ideal_device_scale_;
+
+  // TODO(enne): remove these from draw properties.
+  DCHECK_EQ(ideal_page_scale_, draw_properties().page_scale_factor);
+  DCHECK_EQ(ideal_device_scale_, draw_properties().device_scale_factor);
 }
 
 void PictureLayerImpl::GetDebugBorderProperties(
