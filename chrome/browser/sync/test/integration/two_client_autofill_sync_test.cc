@@ -14,6 +14,10 @@
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 
+// The E2E tests are designed to run only against real backend servers. They are
+// disabled on regular bots. TODO(shadi): consolidate this into a common macro.
+#define E2E_ONLY(x) DISABLED_E2ETest_##x
+
 using autofill::AutofillKey;
 using autofill::AutofillTable;
 using autofill::AutofillProfile;
@@ -25,9 +29,11 @@ using autofill_helper::AddProfile;
 using autofill_helper::AwaitKeysMatch;
 using autofill_helper::AwaitProfilesMatch;
 using autofill_helper::CreateAutofillProfile;
+using autofill_helper::CreateUniqueAutofillProfile;
 using autofill_helper::GetAllKeys;
 using autofill_helper::GetAllProfiles;
 using autofill_helper::GetPersonalDataManager;
+using autofill_helper::GetProfileCount;
 using autofill_helper::KeysMatch;
 using autofill_helper::ProfilesMatch;
 using autofill_helper::PROFILE_FRASIER;
@@ -401,4 +407,29 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, NoCreditCardSync) {
 
   PersonalDataManager* pdm = GetPersonalDataManager(1);
   ASSERT_EQ(0U, pdm->GetCreditCards().size());
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest,
+    E2E_ONLY(TwoClientsAddAutofillProfiles)) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // All profiles should sync same autofill profiles.
+  ASSERT_TRUE(AwaitProfilesMatch(0, 1)) <<
+      "Initial autofill profiles did not match for all profiles.";
+
+  // For clean profiles, the autofill profiles count should be zero. We are not
+  // enforcing this, we only check that the final count is equal to initial
+  // count plus new autofill profiles count.
+  int init_autofill_profiles_count = GetProfileCount(0);
+
+  // Add a new autofill profile to the first client.
+  AddProfile(0, CreateUniqueAutofillProfile());
+
+  ASSERT_TRUE(AwaitProfilesMatch(0, 1));
+
+  // Check that the total number of autofill profiles is as expected
+  for (int i = 0; i < num_clients(); ++i) {
+    ASSERT_EQ(GetProfileCount(i), init_autofill_profiles_count + 1) <<
+        "Total autofill profile count is wrong.";
+  }
 }

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/test/integration/autofill_helper.h"
 
+#include "base/guid.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -146,7 +147,7 @@ AutofillProfile CreateAutofillProfile(ProfileType type) {
           "137DE1C3-6A30-4571-AC86-109B1ECFBE7F",
           "Homer", "J.", "Simpson",
           "homer@abc.com", "SNPP",
-          "1 Main St", "PO Box 1", "Springfield", "MA",
+          "742 Evergreen Terrace", "PO Box 1", "Springfield", "MA",
           "94101", "US", "14155551212");
       break;
     case PROFILE_FRASIER:
@@ -162,6 +163,17 @@ AutofillProfile CreateAutofillProfile(ProfileType type) {
           "", "", "", "", "", "", "", "", "", "", "", "");
       break;
   }
+  return profile;
+}
+
+AutofillProfile CreateUniqueAutofillProfile() {
+  AutofillProfile profile;
+  autofill::test::SetProfileInfoWithGuid(&profile,
+      base::GenerateGUID().c_str(),
+      "First", "Middle", "Last",
+      "email@domain.tld", "Company",
+      "123 Main St", "Apt 456", "Nowhere", "OK",
+      "73038", "US", "12345678910");
   return profile;
 }
 

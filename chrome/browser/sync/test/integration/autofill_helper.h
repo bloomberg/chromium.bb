@@ -112,6 +112,9 @@ bool AwaitProfilesMatch(int profile_a, int profile_b);
 // Creates a test autofill profile based on the persona specified in |type|.
 autofill::AutofillProfile CreateAutofillProfile(ProfileType type);
 
+// Creates a test autofill profile with a unique GUID
+autofill::AutofillProfile CreateUniqueAutofillProfile();
+
 }  // namespace autofill_helper
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_AUTOFILL_HELPER_H_
