@@ -1708,6 +1708,9 @@ String CanvasRenderingContext2D::font() const
 
 void CanvasRenderingContext2D::setFont(const String& newFont)
 {
+    if (newFont == state().unparsedFont() && state().hasRealizedFont())
+        return;
+
     // The style resolution required for rendering text is not available in frame-less documents.
     if (!canvas()->document().frame())
         return;
