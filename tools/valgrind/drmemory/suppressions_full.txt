@@ -1912,3 +1912,12 @@ KERNEL32.dll!WriteFile
 *!sessions::SessionBackend::AppendCommandsToFile
 *!sessions::SessionBackend::AppendCommands
 *!base::internal::RunnableAdapter<>::Run
+
+UNADDRESSABLE ACCESS
+name=bug_505734
+webcore_shared.dll!blink::FocusController::focusedOrMainFrame
+content.dll!content::RenderWidget::GetSelectionBounds
+content.dll!content::RenderWidget::UpdateSelectionBounds
+content.dll!content::RenderWidget::WillBeginCompositorFrame
+cc.dll!base::internal::InvokeHelper<>::MakeItSo
+cc.dll!base::internal::Invoker<>::Run
