@@ -37,6 +37,13 @@
             style="@style/EnhancedBookmarkTitleBarButton"
             android:contentDescription="@string/save"
             android:src="@drawable/eb_check_gray" />
+
+        <org.chromium.chrome.browser.widget.TintedImageButton
+            android:id="@+id/delete"
+            style="@style/EnhancedBookmarkTitleBarButton"
+            android:contentDescription="@string/delete"
+            android:src="@drawable/btn_trash"
+            chrome:tint="@color/dark_mode_tint" />
     </LinearLayout>
 
     <View
@@ -88,18 +95,6 @@
                 android:layout_marginBottom="32dp"
                 android:textColor="@color/dark_mode_tint"
                 android:textSize="16sp" />
-
-            <org.chromium.chrome.browser.widget.ButtonCompat
-                android:id="@+id/delete"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_marginBottom="32dp"
-                android:text="@string/delete"
-                android:textAllCaps="true"
-                android:textColor="#343434"
-                android:textSize="14sp"
-                chrome:buttonColor="@color/default_primary_color" />
         </LinearLayout>
     </ScrollView>
 

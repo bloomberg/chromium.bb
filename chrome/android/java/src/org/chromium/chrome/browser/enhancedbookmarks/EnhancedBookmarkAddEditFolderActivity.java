@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -50,7 +49,7 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
 
     // Edit mode member variables
     private BookmarkId mFolderId;
-    private Button mDeleteButton;
+    private ImageButton mDeleteButton;
 
     private BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
         @Override
@@ -135,7 +134,7 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
         mParentTextView = (TextView) findViewById(R.id.parent_folder);
         mFolderTitle = (EditText) findViewById(R.id.folder_title);
         clearErrorWhenNonEmpty(mFolderTitle);
-        mDeleteButton = (Button) findViewById(R.id.delete);
+        mDeleteButton = (ImageButton) findViewById(R.id.delete);
         mBackButton = (ImageButton) findViewById(R.id.back);
         mSaveButton = (ImageButton) findViewById(R.id.save);
 
