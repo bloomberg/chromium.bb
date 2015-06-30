@@ -715,6 +715,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter __proto__
 [Worker] interface PermissionStatus
 [Worker]     getter onchange
+[Worker]     getter state
 [Worker]     getter status
 [Worker]     method constructor
 [Worker]     setter onchange

@@ -132,7 +132,7 @@ void PermissionStatus::stopListening()
     client->stopListening(this);
 }
 
-String PermissionStatus::status() const
+String PermissionStatus::state() const
 {
     switch (m_status) {
     case WebPermissionStatusGranted:

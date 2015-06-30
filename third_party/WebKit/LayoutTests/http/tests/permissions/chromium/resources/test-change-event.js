@@ -11,10 +11,10 @@ if (self.importScripts) {
 async_test(function(t) {
     setPermission('geolocation', 'granted', location.origin, location.origin).then(t.step_func(function() {
         navigator.permissions.query({name:'geolocation'}).then(t.step_func(function(p) {
-            assert_equals(p.status, 'granted');
+            assert_equals(p.state, 'granted');
 
             p.onchange = t.step_func(function() {
-                assert_equals(p.status, 'denied');
+                assert_equals(p.state, 'denied');
 
                 p.onchange = t.step_func(function() {
                     assert_unreached('the permission should not change again.');
@@ -25,7 +25,7 @@ async_test(function(t) {
                 setPermission('geolocation', 'prompt', location.origin, 'https://example.com');
 
                 navigator.permissions.query({name:'geolocation'}).then(t.step_func(function(p) {
-                    assert_equals(p.status, 'denied');
+                    assert_equals(p.state, 'denied');
                     t.done();
                 }));
             });

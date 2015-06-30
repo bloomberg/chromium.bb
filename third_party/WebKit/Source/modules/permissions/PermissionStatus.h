@@ -48,7 +48,7 @@ public:
     void resume() override;
     void stop() override;
 
-    String status() const;
+    String state() const;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
 

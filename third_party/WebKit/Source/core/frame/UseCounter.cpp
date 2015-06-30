@@ -947,6 +947,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case MediaStreamEnded:
         return "'MediaStream.ended' is deprecated and will be removed in M47, around November 2015. Please use 'MediaStream.active' instead.";
 
+    case PermissionStatusStatus:
+        return "PermissionStatus.status is deprecated and will be removed in M47, around November 2015. Please use PermissionStatus.state instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

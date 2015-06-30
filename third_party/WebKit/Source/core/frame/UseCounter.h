@@ -753,6 +753,7 @@ public:
         DOMStringList_Contains_Method_Location = 849,
         NavigatorVibrate = 850,
         NavigatorVibrateSubFrame = 851,
+        PermissionStatusStatus = 852,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

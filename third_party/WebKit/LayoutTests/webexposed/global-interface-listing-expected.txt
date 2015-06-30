@@ -3866,6 +3866,7 @@ interface PeriodicWave
     method constructor
 interface PermissionStatus
     getter onchange
+    getter state
     getter status
     method constructor
     setter onchange
