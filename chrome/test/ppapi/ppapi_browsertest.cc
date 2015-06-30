@@ -481,7 +481,14 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader0) {
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader1) {
   RUN_URLLOADER_SUBTESTS_1;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader2) {
+
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// Flaky on Mac ASAN: http://crbug.com/437411.
+#define MAYBE_URLLoader2 DISABLED_URLLoader2
+#else
+#define MAYBE_URLLoader2 URLLoader2
+#endif
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_URLLoader2) {
   RUN_URLLOADER_SUBTESTS_2;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader3) {
