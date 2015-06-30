@@ -53,7 +53,6 @@ ResolverThread::ResolverThread()
 ResolverThread::~ResolverThread() {}
 
 void ResolverThread::Run() {
-  base::AtExitManager exit_manager;
   base::MessageLoopForIO loop;
 
   net::NetLog net_log;
