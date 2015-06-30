@@ -85,24 +85,21 @@ class ScriptInjectionManager::RFOHelper : public content::RenderFrameObserver {
 
   // Indicate that the frame is no longer valid because it is starting
   // a new load or closing.
-  void InvalidateFrame();
+  void InvalidateAndResetFrame();
 
   // The owning ScriptInjectionManager.
   ScriptInjectionManager* manager_;
 
-  // The set of frames that we are about to notify for DOCUMENT_IDLE. We keep
-  // a set of those that are valid, so we don't notify that an invalid frame
-  // became idle.
-  std::set<content::RenderFrame*> pending_idle_frames_;
+  bool should_run_idle_;
 
   base::WeakPtrFactory<RFOHelper> weak_factory_;
 };
 
-ScriptInjectionManager::RFOHelper::RFOHelper(
-    content::RenderFrame* render_frame,
-    ScriptInjectionManager* manager)
+ScriptInjectionManager::RFOHelper::RFOHelper(content::RenderFrame* render_frame,
+                                             ScriptInjectionManager* manager)
     : content::RenderFrameObserver(render_frame),
       manager_(manager),
+      should_run_idle_(true),
       weak_factory_(this) {
 }
 
@@ -130,7 +127,7 @@ void ScriptInjectionManager::RFOHelper::DidCreateNewDocument() {
   // page was loaded, e.g. by navigating to a javascript: URL before the page
   // has loaded.
   if (manager_->frame_statuses_.count(render_frame()) != 0)
-    InvalidateFrame();
+    InvalidateAndResetFrame();
 }
 
 void ScriptInjectionManager::RFOHelper::DidCreateDocumentElement() {
@@ -139,7 +136,6 @@ void ScriptInjectionManager::RFOHelper::DidCreateDocumentElement() {
 
 void ScriptInjectionManager::RFOHelper::DidFinishDocumentLoad() {
   manager_->StartInjectScripts(render_frame(), UserScript::DOCUMENT_END);
-  pending_idle_frames_.insert(render_frame());
   // We try to run idle in two places: here and DidFinishLoad.
   // DidFinishDocumentLoad() corresponds to completing the document's load,
   // whereas DidFinishLoad corresponds to completing the document and all
@@ -156,10 +152,6 @@ void ScriptInjectionManager::RFOHelper::DidFinishDocumentLoad() {
 
 void ScriptInjectionManager::RFOHelper::DidFinishLoad() {
   // Ensure that we don't block any UI progress by running scripts.
-  // We *don't* add the frame to |pending_idle_frames_| here because
-  // DidFinishDocumentLoad should strictly come before DidFinishLoad, so the
-  // first posted task to RunIdle() pops it out of the set. This ensures we
-  // don't try to run idle twice.
   content::RenderThread::Get()->GetTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&ScriptInjectionManager::RFOHelper::RunIdle,
@@ -168,7 +160,7 @@ void ScriptInjectionManager::RFOHelper::DidFinishLoad() {
 
 void ScriptInjectionManager::RFOHelper::FrameDetached() {
   // The frame is closing - invalidate.
-  InvalidateFrame();
+  InvalidateAndResetFrame();
 }
 
 void ScriptInjectionManager::RFOHelper::OnDestruct() {
@@ -205,14 +197,18 @@ void ScriptInjectionManager::RFOHelper::OnPermitScriptInjection(
 void ScriptInjectionManager::RFOHelper::RunIdle() {
   // Only notify the manager if the frame hasn't either been removed or already
   // had idle run since the task to RunIdle() was posted.
-  if (pending_idle_frames_.count(render_frame()) > 0) {
+  if (should_run_idle_) {
+    should_run_idle_ = false;
     manager_->StartInjectScripts(render_frame(), UserScript::DOCUMENT_IDLE);
-    pending_idle_frames_.erase(render_frame());
   }
 }
 
-void ScriptInjectionManager::RFOHelper::InvalidateFrame() {
-  pending_idle_frames_.erase(render_frame());
+void ScriptInjectionManager::RFOHelper::InvalidateAndResetFrame() {
+  // Invalidate any pending idle injections, and reset the frame inject on idle.
+  weak_factory_.InvalidateWeakPtrs();
+  // We reset to inject on idle, because the frame can be reused (in the case of
+  // navigation).
+  should_run_idle_ = true;
   manager_->InvalidateForFrame(render_frame());
 }
 
@@ -281,6 +277,10 @@ void ScriptInjectionManager::RemoveObserver(RFOHelper* helper) {
 }
 
 void ScriptInjectionManager::InvalidateForFrame(content::RenderFrame* frame) {
+  // If the frame invalidated is the frame being injected into, we need to
+  // note it.
+  active_injection_frames_.erase(frame);
+
   for (ScopedVector<ScriptInjection>::iterator iter =
            pending_injections_.begin();
        iter != pending_injections_.end();) {
@@ -349,13 +349,24 @@ void ScriptInjectionManager::InjectScripts(
   user_script_set_manager_->GetAllInjections(
       &frame_injections, frame, tab_id, run_location);
 
-  ScriptsRunInfo scripts_run_info;
+  // Note that we are running in |frame|.
+  active_injection_frames_.insert(frame);
+
+  ScriptsRunInfo scripts_run_info(frame, run_location);
   std::vector<ScriptInjection*> released_injections;
   frame_injections.release(&released_injections);
-  for (ScriptInjection* injection : released_injections)
+  for (ScriptInjection* injection : released_injections) {
+    // It's possible for the frame to be invalidated in the course of injection
+    // (if a script removes its own frame, for example). If this happens, abort.
+    if (!active_injection_frames_.count(frame))
+      break;
     TryToInject(make_scoped_ptr(injection), run_location, &scripts_run_info);
+  }
 
-  scripts_run_info.LogRun(frame->GetWebFrame(), run_location);
+  // We are done running in the frame.
+  active_injection_frames_.erase(frame);
+
+  scripts_run_info.LogRun();
 }
 
 void ScriptInjectionManager::TryToInject(
@@ -405,13 +416,12 @@ void ScriptInjectionManager::HandleExecuteCode(
       static_cast<UserScript::RunLocation>(params.run_at),
       ExtensionFrameHelper::Get(render_frame)->tab_id()));
 
-  ScriptsRunInfo scripts_run_info;
   FrameStatusMap::const_iterator iter = frame_statuses_.find(render_frame);
+  UserScript::RunLocation run_location =
+      iter == frame_statuses_.end() ? UserScript::UNDEFINED : iter->second;
 
-  TryToInject(
-      injection.Pass(),
-      iter == frame_statuses_.end() ? UserScript::UNDEFINED : iter->second,
-      &scripts_run_info);
+  ScriptsRunInfo scripts_run_info(render_frame, run_location);
+  TryToInject(injection.Pass(), run_location, &scripts_run_info);
 }
 
 void ScriptInjectionManager::HandleExecuteDeclarativeScript(
@@ -428,14 +438,13 @@ void ScriptInjectionManager::HandleExecuteDeclarativeScript(
           url,
           extension_id);
   if (injection.get()) {
-    ScriptsRunInfo scripts_run_info;
+    ScriptsRunInfo scripts_run_info(render_frame, UserScript::BROWSER_DRIVEN);
     // TODO(markdittmer): Use return value of TryToInject for error handling.
     TryToInject(injection.Pass(),
                 UserScript::BROWSER_DRIVEN,
                 &scripts_run_info);
 
-    scripts_run_info.LogRun(render_frame->GetWebFrame(),
-                            UserScript::BROWSER_DRIVEN);
+    scripts_run_info.LogRun();
   }
 }
 
@@ -459,13 +468,13 @@ void ScriptInjectionManager::HandlePermitScriptInjection(int64 request_id) {
   scoped_ptr<ScriptInjection> injection(*iter);
   pending_injections_.weak_erase(iter);
 
-  ScriptsRunInfo scripts_run_info;
+  ScriptsRunInfo scripts_run_info(injection->render_frame(),
+                                  UserScript::RUN_DEFERRED);
   ScriptInjection::InjectionResult res = injection->OnPermissionGranted(
       &scripts_run_info);
   if (res == ScriptInjection::INJECTION_BLOCKED)
     running_injections_.push_back(injection.Pass());
-  scripts_run_info.LogRun(injection->render_frame()->GetWebFrame(),
-                          UserScript::RUN_DEFERRED);
+  scripts_run_info.LogRun();
 }
 
 }  // namespace extensions

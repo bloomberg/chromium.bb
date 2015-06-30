@@ -27,9 +27,9 @@ class ScriptExecutionObserver {
   // Called when script(s) have executed on a page.
   //
   // |executing_scripts_map| contains all extensions that are executing
-  // scripts, mapped to the paths for those scripts. This may be an empty set
-  // if the script has no path associated with it (e.g. in the case of
-  // tabs.executeScript).
+  // scripts, mapped to the paths for those scripts. The paths may be an empty
+  // set if the script has no path associated with it (e.g. in the case of
+  // tabs.executeScript), but there will still be an entry for the extension.
   virtual void OnScriptsExecuted(
       const content::WebContents* web_contents,
       const ExecutingScriptsMap& executing_scripts_map,

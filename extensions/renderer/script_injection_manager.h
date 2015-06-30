@@ -99,6 +99,9 @@ class ScriptInjectionManager : public UserScriptSetManager::Observer {
   // RunLocation of the frame corresponds to the last location that has ran.
   FrameStatusMap frame_statuses_;
 
+  // The frames currently being injected into, so long as that frame is valid.
+  std::set<content::RenderFrame*> active_injection_frames_;
+
   // The collection of RFOHelpers.
   ScopedVector<RFOHelper> rfo_helpers_;
 

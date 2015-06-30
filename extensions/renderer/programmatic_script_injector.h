@@ -27,6 +27,8 @@ class ProgrammaticScriptInjector : public ScriptInjector {
   ~ProgrammaticScriptInjector() override;
 
  private:
+  class FrameWatcher;
+
   // ScriptInjector implementation.
   UserScript::InjectionType script_type() const override;
   bool ShouldExecuteInMainWorld() const override;
@@ -66,8 +68,8 @@ class ProgrammaticScriptInjector : public ScriptInjector {
   // security decisions, to avoid race conditions (e.g. due to navigation).
   GURL effective_url_;
 
-  // The RenderFrame to which we send the response upon completion.
-  content::RenderFrame* render_frame_;
+  // A helper class to hold the render frame and watch for its deletion.
+  scoped_ptr<FrameWatcher> frame_watcher_;
 
   // The results of the script execution.
   base::ListValue results_;

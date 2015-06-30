@@ -42,7 +42,6 @@ class Handler : public content::WebContentsObserver {
         script_observers_(AsWeakPtr(script_observers)),
         host_id_(params.host_id),
         request_id_(params.request_id),
-        num_pending_(0),
         callback_(callback) {
     if (scope == ScriptExecutor::ALL_FRAMES) {
       web_contents->ForEachFrame(base::Bind(&Handler::SendExecuteCode,
@@ -57,9 +56,7 @@ class Handler : public content::WebContentsObserver {
   ~Handler() override {}
 
   // content::WebContentsObserver:
-  void WebContentsDestroyed() override {
-    Finish(kRendererDestroyed, GURL(), base::ListValue());
-  }
+  void WebContentsDestroyed() override { Finish(); }
 
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override {
@@ -82,11 +79,19 @@ class Handler : public content::WebContentsObserver {
     return true;
   }
 
+  void RenderFrameDeleted(
+      content::RenderFrameHost* render_frame_host) override {
+    if (pending_render_frames_.erase(render_frame_host) == 1 &&
+        pending_render_frames_.empty()) {
+      Finish();
+    }
+  }
+
   // Sends an ExecuteCode message to the given frame host, and increments
   // the number of pending messages.
   void SendExecuteCode(const ExtensionMsg_ExecuteCode_Params& params,
                        content::RenderFrameHost* frame) {
-    ++num_pending_;
+    pending_render_frames_.insert(frame);
     frame->Send(new ExtensionMsg_ExecuteCode(frame->GetRoutingID(), params));
   }
 
@@ -97,7 +102,9 @@ class Handler : public content::WebContentsObserver {
                              const GURL& on_url,
                              const base::ListValue& result_list) {
     DCHECK_EQ(request_id_, request_id);
-    DCHECK_GT(num_pending_, 0);
+    DCHECK(!pending_render_frames_.empty());
+    bool erased = pending_render_frames_.erase(render_frame_host) == 1;
+    DCHECK(erased);
     bool is_main_frame = web_contents()->GetMainFrame() == render_frame_host;
 
     // Set the result, if there is one.
@@ -112,31 +119,33 @@ class Handler : public content::WebContentsObserver {
     }
 
     if (is_main_frame) {  // Only use the main frame's error and url.
-      error_ = error;
-      url_ = on_url;
+      main_frame_error_ = error;
+      main_frame_url_ = on_url;
     }
 
     // Wait until the final request finishes before reporting back.
-    if (--num_pending_ > 0)
-      return;
+    if (pending_render_frames_.empty())
+      Finish();
+  }
 
-    if (script_observers_.get() && error.empty() &&
+  void Finish() {
+    if (main_frame_url_.is_empty()) {
+      // We never finished the main frame injection.
+      main_frame_error_ = kRendererDestroyed;
+      results_.Clear();
+    }
+
+    if (script_observers_.get() && main_frame_error_.empty() &&
         host_id_.type() == HostID::EXTENSIONS) {
       ScriptExecutionObserver::ExecutingScriptsMap id_map;
       id_map[host_id_.id()] = std::set<std::string>();
-      FOR_EACH_OBSERVER(ScriptExecutionObserver,
-                        *script_observers_,
-                        OnScriptsExecuted(web_contents(), id_map, on_url));
+      FOR_EACH_OBSERVER(
+          ScriptExecutionObserver, *script_observers_,
+          OnScriptsExecuted(web_contents(), id_map, main_frame_url_));
     }
 
-    Finish(error_, url_, results_);
-  }
-
-  void Finish(const std::string& error,
-              const GURL& url,
-              const base::ListValue& result) {
     if (!callback_.is_null())
-      callback_.Run(error, url, result);
+      callback_.Run(main_frame_error_, main_frame_url_, results_);
     delete this;
   }
 
@@ -148,17 +157,17 @@ class Handler : public content::WebContentsObserver {
   // The request id of the injection.
   int request_id_;
 
-  // The number of still-running injections.
-  int num_pending_;
+  // The hosts of the still-running injections.
+  std::set<content::RenderFrameHost*> pending_render_frames_;
 
   // The results of the injection.
   base::ListValue results_;
 
   // The error from injecting into the main frame.
-  std::string error_;
+  std::string main_frame_error_;
 
   // The url of the main frame.
-  GURL url_;
+  GURL main_frame_url_;
 
   // The callback to run after all injections complete.
   ScriptExecutor::ExecuteScriptCallback callback_;

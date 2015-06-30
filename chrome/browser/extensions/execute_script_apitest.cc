@@ -117,3 +117,9 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, InjectIntoSubframesOnLoad) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/subframes_on_load")) << message_;
 }
+
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, RemovedFrames) {
+  SetupDelayedHostResolver();
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(RunExtensionTest("executescript/removed_frames")) << message_;
+}

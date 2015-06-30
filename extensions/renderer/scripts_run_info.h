@@ -14,8 +14,8 @@
 #include "base/timer/elapsed_timer.h"
 #include "extensions/common/user_script.h"
 
-namespace blink {
-class WebLocalFrame;
+namespace content {
+class RenderFrame;
 }
 
 namespace extensions {
@@ -25,7 +25,8 @@ struct ScriptsRunInfo {
   // Map of extensions IDs to the executing script paths.
   typedef std::map<std::string, std::set<std::string> > ExecutingScriptsMap;
 
-  ScriptsRunInfo();
+  ScriptsRunInfo(content::RenderFrame* render_frame,
+                 UserScript::RunLocation location);
   ~ScriptsRunInfo();
 
   // The number of CSS scripts injected.
@@ -40,9 +41,20 @@ struct ScriptsRunInfo {
   base::ElapsedTimer timer;
 
   // Log information about a given script run.
-  void LogRun(blink::WebLocalFrame* frame, UserScript::RunLocation location);
+  void LogRun();
 
  private:
+  // The routinig id to use to notify the browser of any injections. Since the
+  // frame may be deleted in injection, we don't hold on to a reference to it
+  // directly.
+  int routing_id_;
+
+  // The run location at which injection is happening.
+  UserScript::RunLocation run_location_;
+
+  // The url of the frame, preserved for the same reason as the routing id.
+  GURL frame_url_;
+
   DISALLOW_COPY_AND_ASSIGN(ScriptsRunInfo);
 };
 

@@ -6,32 +6,36 @@
 
 #include "base/metrics/histogram.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_thread.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace extensions {
 
-ScriptsRunInfo::ScriptsRunInfo()
-    : num_css(0u), num_js(0u), num_blocking_js(0u) {
+ScriptsRunInfo::ScriptsRunInfo(content::RenderFrame* render_frame,
+                               UserScript::RunLocation location)
+    : num_css(0u),
+      num_js(0u),
+      num_blocking_js(0u),
+      routing_id_(render_frame->GetRoutingID()),
+      run_location_(location),
+      frame_url_(ScriptContext::GetDataSourceURLForFrame(
+          render_frame->GetWebFrame())) {
 }
 
 ScriptsRunInfo::~ScriptsRunInfo() {
 }
 
-void ScriptsRunInfo::LogRun(blink::WebLocalFrame* frame,
-                            UserScript::RunLocation location) {
+void ScriptsRunInfo::LogRun() {
   // Notify the browser if any extensions are now executing scripts.
   if (!executing_scripts.empty()) {
-    content::RenderFrame* render_frame =
-        content::RenderFrame::FromWebFrame(frame);
-    render_frame->Send(new ExtensionHostMsg_ContentScriptsExecuting(
-        render_frame->GetRoutingID(),
-        executing_scripts,
-        ScriptContext::GetDataSourceURLForFrame(frame)));
+    content::RenderThread::Get()->Send(
+        new ExtensionHostMsg_ContentScriptsExecuting(
+            routing_id_, executing_scripts, frame_url_));
   }
 
-  switch (location) {
+  switch (run_location_) {
     case UserScript::DOCUMENT_START:
       UMA_HISTOGRAM_COUNTS_100("Extensions.InjectStart_CssCount", num_css);
       UMA_HISTOGRAM_COUNTS_100("Extensions.InjectStart_ScriptCount", num_js);
