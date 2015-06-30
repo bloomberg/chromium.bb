@@ -178,6 +178,11 @@ function onHostStateChanged_(state) {
     }
     cleanUp();
   } else if (state == remoting.HostSession.State.ERROR) {
+    // The processing of this message is identical to that of the "error"
+    // message (see it2me_host_facade.js); it is included only to support
+    // old native components that send errors as a host state message.
+    // TODO(jamiewalch): Remove this once there are sufficiently few old
+    //     installations deployed.
     console.error('Host state: ERROR');
     showShareError_(remoting.Error.unexpected());
   } else if (state == remoting.HostSession.State.INVALID_DOMAIN_ERROR) {
@@ -228,10 +233,6 @@ function showShareError_(error) {
  * @return {void} Nothing.
  */
 function it2meConnectFailed_() {
-  // TODO (weitaosu): Instruct the user to install the native messaging host.
-  // We probably want to add a new error code (with the corresponding error
-  // message for sharing error.
-  console.error('Cannot share desktop.');
   showShareError_(remoting.Error.unexpected());
 }
 

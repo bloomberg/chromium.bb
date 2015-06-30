@@ -237,7 +237,8 @@ remoting.It2MeHostFacade.prototype.onIncomingMessage_ =
 
     case 'hostStateChanged':
       var stateString = base.getStringAttr(message, 'state');
-      console.log('hostStateChanged received: ', stateString);
+      var errorMessage = base.getStringAttr(message, 'error_message', '');
+      console.log('hostStateChanged received: ' + stateString);
       var state = remoting.HostSession.State.fromString(stateString);
 
       switch (state) {

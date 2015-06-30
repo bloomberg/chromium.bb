@@ -33,11 +33,12 @@ class IqSender;
 // callback specified in the Init() method.
 class RegisterSupportHostRequest : public SignalStrategy::Listener {
  public:
-  // First parameter is set to true on success. Second parameter is
-  // the new SessionID received from the bot. Third parameter is the
-  // amount of time until that id expires.
-  typedef base::Callback<void(bool, const std::string&,
-                              const base::TimeDelta&)> RegisterCallback;
+  // First  parameter is the new SessionID received from the bot. Second
+  // parameter is the amount of time until that id expires. Third parameter
+  // is an error message if the request failed, or null if it succeeded.
+  typedef base::Callback<void(const std::string&,
+                              const base::TimeDelta&,
+                              const std::string&)> RegisterCallback;
 
   // |signal_strategy| and |key_pair| must outlive this
   // object. |callback| is called when registration response is
@@ -64,11 +65,13 @@ class RegisterSupportHostRequest : public SignalStrategy::Listener {
   scoped_ptr<buzz::XmlElement> CreateSignature(const std::string& jid);
 
   void ProcessResponse(IqRequest* request, const buzz::XmlElement* response);
-  bool ParseResponse(const buzz::XmlElement* response,
-                     std::string* support_id, base::TimeDelta* lifetime);
+  void ParseResponse(const buzz::XmlElement* response,
+                     std::string* support_id, base::TimeDelta* lifetime,
+                     std::string* error_message);
 
   void CallCallback(
-      bool success, const std::string& support_id, base::TimeDelta lifetime);
+      const std::string& support_id, base::TimeDelta lifetime,
+      const std::string& error_message);
 
   SignalStrategy* signal_strategy_;
   scoped_refptr<RsaKeyPair> key_pair_;

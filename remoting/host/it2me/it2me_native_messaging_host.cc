@@ -243,7 +243,9 @@ void It2MeNativeMessagingHost::SendErrorAndExit(
   client_->CloseChannel(std::string());
 }
 
-void It2MeNativeMessagingHost::OnStateChanged(It2MeHostState state) {
+void It2MeNativeMessagingHost::OnStateChanged(
+    It2MeHostState state,
+    const std::string& error_message) {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   state_ = state;
@@ -267,6 +269,14 @@ void It2MeNativeMessagingHost::OnStateChanged(It2MeHostState state) {
 
     case kDisconnected:
       client_username_.clear();
+      break;
+
+    case kError:
+      // kError is an internal-only state, sent to the web-app by a separate
+      // "error" message so that errors that occur before the "connect" message
+      // is sent can be communicated.
+      message->SetString("type", "error");
+      message->SetString("description", error_message);
       break;
 
     default:
@@ -316,4 +326,3 @@ std::string It2MeNativeMessagingHost::HostStateToString(
 }
 
 }  // namespace remoting
-

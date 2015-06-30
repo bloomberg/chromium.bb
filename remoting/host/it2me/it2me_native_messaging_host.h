@@ -41,7 +41,8 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
   void OnStoreAccessCode(const std::string& access_code,
                                  base::TimeDelta access_code_lifetime) override;
   void OnNatPolicyChanged(bool nat_traversal_enabled) override;
-  void OnStateChanged(It2MeHostState state) override;
+  void OnStateChanged(It2MeHostState state,
+                      const std::string& error_message) override;
 
   static std::string HostStateToString(It2MeHostState host_state);
 
@@ -85,4 +86,3 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
 }  // namespace remoting
 
 #endif  // REMOTING_HOST_IT2ME_IT2ME_NATIVE_MESSAGING_HOST_H_
-

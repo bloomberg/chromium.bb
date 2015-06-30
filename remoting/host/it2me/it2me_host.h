@@ -57,7 +57,8 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
     virtual void OnStoreAccessCode(const std::string& access_code,
                                    base::TimeDelta access_code_lifetime) = 0;
     virtual void OnNatPolicyChanged(bool nat_traversal_enabled) = 0;
-    virtual void OnStateChanged(It2MeHostState state) = 0;
+    virtual void OnStateChanged(It2MeHostState state,
+                                const std::string& error_message) = 0;
   };
 
   It2MeHost(
@@ -86,7 +87,10 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   void OnClientAuthenticated(const std::string& jid) override;
   void OnClientDisconnected(const std::string& jid) override;
 
-  void SetStateForTesting(It2MeHostState state) { SetState(state); }
+  void SetStateForTesting(It2MeHostState state,
+                          const std::string& error_message) {
+    SetState(state, error_message);
+  }
 
  protected:
   friend class base::RefCountedThreadSafe<It2MeHost>;
@@ -101,7 +105,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
 
  private:
   // Updates state of the host. Can be called only on the network thread.
-  void SetState(It2MeHostState state);
+  void SetState(It2MeHostState state, const std::string& error_message);
 
   // Returns true if the host is connected.
   bool IsConnected() const;
@@ -120,9 +124,9 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   void FinishConnect();
 
   // Called when the support host registration completes.
-  void OnReceivedSupportID(bool success,
-                           const std::string& support_id,
-                           const base::TimeDelta& lifetime);
+  void OnReceivedSupportID(const std::string& support_id,
+                           const base::TimeDelta& lifetime,
+                           const std::string& error_message);
 
   // Shuts down |host_| on the network thread and posts ShutdownOnUiThread()
   // to shut down UI thread resources.

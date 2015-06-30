@@ -48,8 +48,9 @@ ACTION_P(RemoveListener, list) {
 
 class MockCallback {
  public:
-  MOCK_METHOD3(OnResponse, void(bool result, const std::string& support_id,
-                                const base::TimeDelta& lifetime));
+  MOCK_METHOD3(OnResponse, void(const std::string& support_id,
+                                const base::TimeDelta& lifetime,
+                                const std::string& error_message));
 };
 
 }  // namespace
@@ -127,8 +128,9 @@ TEST_F(RegisterSupportHostRequestTest, Send) {
   EXPECT_EQ(expected_signature, signature->BodyText());
 
   // Generate response and verify that callback is called.
-  EXPECT_CALL(callback_, OnResponse(true, kSupportId,
-                                    base::TimeDelta::FromSeconds(300)));
+  EXPECT_CALL(callback_, OnResponse(kSupportId,
+                                    base::TimeDelta::FromSeconds(300),
+                                    ""));
 
   scoped_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
   response->AddAttr(QName(std::string(), "from"), kTestBotJid);
