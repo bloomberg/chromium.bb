@@ -4993,6 +4993,55 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DefaultBrowser.InteractionResult"
+    enum="MakeChromeDefaultResult">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Results of interaction with set-as-default dialog in first run flow.
+  </summary>
+</histogram>
+
+<histogram name="DefaultBrowser.State" enum="DefaultBrowserState">
+  <obsolete>
+    Deprecated.  No longer tracked.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>Whether Chrome was the default browser when it started up.</summary>
+</histogram>
+
+<histogram name="DefaultBrowserWarning.DontSetAsDefault">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    In the infobar, the user explcitly declined to set Chrome as default.
+  </summary>
+</histogram>
+
+<histogram name="DefaultBrowserWarning.Ignored">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The user ignored the infobar warning that Chrome is not the default.
+  </summary>
+</histogram>
+
+<histogram name="DefaultBrowserWarning.SetAsDefault">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    In the inforbar, the user clicked a button making Chrome the default.
+  </summary>
+</histogram>
+
+<histogram name="DefaultBrowserWarning.SetAsDefaultUI">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>Same as SetAsDefault, but in Windows 8.</summary>
+</histogram>
+
+<histogram name="DefaultBrowserWarning.SetAsDefaultUIFailed">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The user declined to set Chrome as default after system UI was shown.
+  </summary>
+</histogram>
+
 <histogram name="DevTools.ActionTaken" enum="DevToolsAction">
   <owner>sergeyv@chromium.org</owner>
   <owner>vsevik@chromium.org</owner>
@@ -52116,6 +52165,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Arrived at settings menu by another path: entered on, exited on"/>
 </enum>
 
+<enum name="DefaultBrowserState" type="int">
+  <obsolete>
+    Deprecated.  No longer tracked.
+  </obsolete>
+  <int value="0" label="Default"/>
+  <int value="1" label="Not default"/>
+  <int value="2" label="Unknown"/>
+</enum>
+
 <enum name="DefaultSearchChangeOrigin" type="int">
   <int value="0" label="DSP changed by synced Pref"/>
   <int value="1" label="DSP changed by Sync ADD"/>
@@ -60207,6 +60265,13 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="MainFrameStorable" type="int">
   <int value="0" label="Storable"/>
   <int value="1" label="cache-control: no-store"/>
+</enum>
+
+<enum name="MakeChromeDefaultResult" type="int">
+  <int value="0" label="Chrome made default"/>
+  <int value="1" label="No action taken"/>
+  <int value="2" label="Other browser selected"/>
+  <int value="3" label="Chrome made default + Relaunch in Metro"/>
 </enum>
 
 <enum name="ManagedUserPasswordChange" type="int">
