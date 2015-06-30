@@ -145,7 +145,7 @@ public final class CastCrashUploader {
 
                     if (logFile != null) {
                         Log.i(TAG, "Including log file: %s", logFile.getName());
-                        StringBuffer logHeader = new StringBuffer();
+                        StringBuilder logHeader = new StringBuilder();
                         logHeader.append(dumpFirstLine);
                         logHeader.append("\n");
                         logHeader.append(

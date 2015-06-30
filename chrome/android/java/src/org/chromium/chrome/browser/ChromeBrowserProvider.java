@@ -1189,7 +1189,7 @@ public class ChromeBrowserProvider extends ContentProvider {
     }
 
     private static String buildWhereClause(long id, String selection) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(BaseColumns._ID);
         sb.append(" = ");
         sb.append(id);
@@ -1213,7 +1213,7 @@ public class ChromeBrowserProvider extends ContentProvider {
      * @return a SQL where class which is inserted the bookmark condition.
      */
     private static String buildBookmarkWhereClause(String selection, boolean isBookmark) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(BookmarkColumns.BOOKMARK);
         sb.append(isBookmark ? " = 1 " : " = 0");
         if (!TextUtils.isEmpty(selection)) {

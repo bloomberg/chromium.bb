@@ -155,7 +155,7 @@ public class MediaDrmBridge {
      *  This is modified from BytesToHexString() in url/url_canon_unittest.cc.
      */
     private static String bytesToHexString(byte[] bytes) {
-        StringBuffer hexString = new StringBuffer();
+        StringBuilder hexString = new StringBuilder();
         for (int i = 0; i < bytes.length; ++i) {
             hexString.append(HEX_CHAR_LOOKUP[bytes[i] >>> 4]);
             hexString.append(HEX_CHAR_LOOKUP[bytes[i] & 0xf]);

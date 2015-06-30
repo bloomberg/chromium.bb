@@ -55,7 +55,7 @@ public class PepperPluginManager {
         // Assemble the plugin info, according to the format described in
         // pepper_plugin_list.cc.
         // (eg. path<#name><#description><#version>;mimetype)
-        StringBuffer plugin = new StringBuffer(PEPPER_PLUGIN_ROOT);
+        StringBuilder plugin = new StringBuilder(PEPPER_PLUGIN_ROOT);
         plugin.append(filename);
 
         // Find the (optional) name/description/version of the plugin.
@@ -89,7 +89,7 @@ public class PepperPluginManager {
      * @return        Description string for plugins
      */
     public static String getPlugins(final Context context) {
-        StringBuffer ret = new StringBuffer();
+        StringBuilder ret = new StringBuilder();
         PackageManager pm = context.getPackageManager();
         List<ResolveInfo> plugins = pm.queryIntentServices(
                 new Intent(PEPPER_PLUGIN_ACTION),

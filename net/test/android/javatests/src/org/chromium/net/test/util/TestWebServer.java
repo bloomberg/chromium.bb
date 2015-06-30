@@ -540,7 +540,7 @@ public class TestWebServer {
         }
 
         if (reason != null) {
-            StringBuffer buf = new StringBuffer("<html><head><title>");
+            StringBuilder buf = new StringBuilder("<html><head><title>");
             buf.append(reason);
             buf.append("</title></head><body>");
             buf.append(reason);
