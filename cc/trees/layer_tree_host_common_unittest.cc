@@ -1180,8 +1180,6 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     EXPECT_EQ(translate, root->draw_properties().target_space_transform);
     EXPECT_EQ(translate, child->draw_properties().target_space_transform);
     EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
-    EXPECT_EQ(1.f, root->draw_properties().device_scale_factor);
-    EXPECT_EQ(1.f, child->draw_properties().device_scale_factor);
   }
 
   gfx::Transform scale;
@@ -1196,8 +1194,6 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     EXPECT_EQ(scale, root->draw_properties().target_space_transform);
     EXPECT_EQ(scale, child->draw_properties().target_space_transform);
     EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
-    EXPECT_EQ(2.f, root->draw_properties().device_scale_factor);
-    EXPECT_EQ(2.f, child->draw_properties().device_scale_factor);
   }
 
   gfx::Transform rotate;
@@ -1212,8 +1208,6 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     EXPECT_EQ(rotate, root->draw_properties().target_space_transform);
     EXPECT_EQ(rotate, child->draw_properties().target_space_transform);
     EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
-    EXPECT_EQ(1.f, root->draw_properties().device_scale_factor);
-    EXPECT_EQ(1.f, child->draw_properties().device_scale_factor);
   }
 
   gfx::Transform composite;
@@ -1250,9 +1244,6 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     EXPECT_EQ(device_scaled_translate,
               child->draw_properties().target_space_transform);
     EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
-    EXPECT_EQ(device_scale_factor, root->draw_properties().device_scale_factor);
-    EXPECT_EQ(device_scale_factor,
-              child->draw_properties().device_scale_factor);
   }
 
   // Verify it composes correctly with page scale.
@@ -1274,8 +1265,6 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
     EXPECT_EQ(page_scaled_translate,
               child->draw_properties().target_space_transform);
     EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
-    EXPECT_EQ(1.f, root->draw_properties().device_scale_factor);
-    EXPECT_EQ(1.f, child->draw_properties().device_scale_factor);
   }
 
   // Verify that it composes correctly with transforms directly on root layer.
@@ -7527,28 +7516,6 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
   EXPECT_FLOAT_EQ(
       8.f, child2_layer->draw_properties().maximum_animation_contents_scale);
 
-  EXPECT_FLOAT_EQ(1.f, root_layer->draw_properties().page_scale_factor);
-  EXPECT_FLOAT_EQ(1.f, child1_layer->draw_properties().page_scale_factor);
-  EXPECT_FLOAT_EQ(
-      1.f, child1_layer->mask_layer()->draw_properties().page_scale_factor);
-  EXPECT_FLOAT_EQ(1.f,
-                  child1_layer->replica_layer()
-                      ->mask_layer()
-                      ->draw_properties()
-                      .page_scale_factor);
-  EXPECT_FLOAT_EQ(1.f, child2_layer->draw_properties().page_scale_factor);
-
-  EXPECT_FLOAT_EQ(1.f, root_layer->draw_properties().device_scale_factor);
-  EXPECT_FLOAT_EQ(1.f, child1_layer->draw_properties().device_scale_factor);
-  EXPECT_FLOAT_EQ(
-      1.f, child1_layer->mask_layer()->draw_properties().device_scale_factor);
-  EXPECT_FLOAT_EQ(1.f,
-                  child1_layer->replica_layer()
-                      ->mask_layer()
-                      ->draw_properties()
-                      .device_scale_factor);
-  EXPECT_FLOAT_EQ(1.f, child2_layer->draw_properties().device_scale_factor);
-
   // Changing page-scale would affect ideal_contents_scale and
   // maximum_animation_contents_scale.
 
@@ -7593,28 +7560,6 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
   EXPECT_FLOAT_EQ(
       24.f, child2_layer->draw_properties().maximum_animation_contents_scale);
 
-  EXPECT_FLOAT_EQ(1.f, root_layer->draw_properties().page_scale_factor);
-  EXPECT_FLOAT_EQ(3.f, child1_layer->draw_properties().page_scale_factor);
-  EXPECT_FLOAT_EQ(
-      3.f, child1_layer->mask_layer()->draw_properties().page_scale_factor);
-  EXPECT_FLOAT_EQ(3.f,
-                  child1_layer->replica_layer()
-                      ->mask_layer()
-                      ->draw_properties()
-                      .page_scale_factor);
-  EXPECT_FLOAT_EQ(3.f, child2_layer->draw_properties().page_scale_factor);
-
-  EXPECT_FLOAT_EQ(1.f, root_layer->draw_properties().device_scale_factor);
-  EXPECT_FLOAT_EQ(1.f, child1_layer->draw_properties().device_scale_factor);
-  EXPECT_FLOAT_EQ(
-      1.f, child1_layer->mask_layer()->draw_properties().device_scale_factor);
-  EXPECT_FLOAT_EQ(1.f,
-                  child1_layer->replica_layer()
-                      ->mask_layer()
-                      ->draw_properties()
-                      .device_scale_factor);
-  EXPECT_FLOAT_EQ(1.f, child2_layer->draw_properties().device_scale_factor);
-
   // Changing device-scale would affect ideal_contents_scale and
   // maximum_animation_contents_scale.
 
@@ -7649,28 +7594,6 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
                       .maximum_animation_contents_scale);
   EXPECT_FLOAT_EQ(
       96.f, child2_layer->draw_properties().maximum_animation_contents_scale);
-
-  EXPECT_FLOAT_EQ(1.f, root_layer->draw_properties().page_scale_factor);
-  EXPECT_FLOAT_EQ(3.f, child1_layer->draw_properties().page_scale_factor);
-  EXPECT_FLOAT_EQ(
-      3.f, child1_layer->mask_layer()->draw_properties().page_scale_factor);
-  EXPECT_FLOAT_EQ(3.f,
-                  child1_layer->replica_layer()
-                      ->mask_layer()
-                      ->draw_properties()
-                      .page_scale_factor);
-  EXPECT_FLOAT_EQ(3.f, child2_layer->draw_properties().page_scale_factor);
-
-  EXPECT_FLOAT_EQ(4.f, root_layer->draw_properties().device_scale_factor);
-  EXPECT_FLOAT_EQ(4.f, child1_layer->draw_properties().device_scale_factor);
-  EXPECT_FLOAT_EQ(
-      4.f, child1_layer->mask_layer()->draw_properties().device_scale_factor);
-  EXPECT_FLOAT_EQ(4.f,
-                  child1_layer->replica_layer()
-                      ->mask_layer()
-                      ->draw_properties()
-                      .device_scale_factor);
-  EXPECT_FLOAT_EQ(4.f, child2_layer->draw_properties().device_scale_factor);
 }
 
 TEST_F(LayerTreeHostCommonTest, VisibleContentRectInChildRenderSurface) {

@@ -70,8 +70,6 @@ class PictureImageLayerImplTest : public testing::Test {
                                          bool animating_transform_to_screen,
                                          gfx::Rect viewport_rect) {
     layer->draw_properties().ideal_contents_scale = ideal_contents_scale;
-    layer->draw_properties().device_scale_factor = device_scale_factor;
-    layer->draw_properties().page_scale_factor = page_scale_factor;
     layer->draw_properties().maximum_animation_contents_scale =
         maximum_animation_contents_scale;
     layer->draw_properties().screen_space_transform_is_animating =

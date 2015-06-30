@@ -326,7 +326,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
             render_pass->CreateAndAppendDrawQuad<CheckerboardDrawQuad>();
         SkColor color = DebugColors::DefaultCheckerboardColor();
         quad->SetNew(shared_quad_state, geometry_rect, visible_geometry_rect,
-                     color, draw_properties().device_scale_factor);
+                     color, ideal_device_scale_);
       } else {
         SkColor color = SafeOpaqueBackgroundColor();
         SolidColorDrawQuad* quad =
@@ -1160,10 +1160,6 @@ void PictureLayerImpl::UpdateIdealScales() {
       std::max(draw_properties().ideal_contents_scale, min_contents_scale);
   ideal_source_scale_ =
       ideal_contents_scale_ / ideal_page_scale_ / ideal_device_scale_;
-
-  // TODO(enne): remove these from draw properties.
-  DCHECK_EQ(ideal_page_scale_, draw_properties().page_scale_factor);
-  DCHECK_EQ(ideal_device_scale_, draw_properties().device_scale_factor);
 }
 
 void PictureLayerImpl::GetDebugBorderProperties(

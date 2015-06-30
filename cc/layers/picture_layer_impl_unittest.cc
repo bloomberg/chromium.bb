@@ -249,8 +249,6 @@ class PictureLayerImplTest : public testing::Test {
     host_impl_.SetPageScaleOnActiveTree(page_scale_factor);
 
     layer->draw_properties().ideal_contents_scale = ideal_contents_scale;
-    layer->draw_properties().device_scale_factor = device_scale_factor;
-    layer->draw_properties().page_scale_factor = page_scale_factor;
     layer->draw_properties().maximum_animation_contents_scale =
         maximum_animation_contents_scale;
     layer->draw_properties().starting_animation_contents_scale =
