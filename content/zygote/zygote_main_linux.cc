@@ -337,19 +337,14 @@ static void ZygotePreSandboxInit() {
   // cached and there's no more need to access the file system.
   scoped_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
 
-#if defined(USE_NSS_CERTS)
+#if defined(USE_OPENSSL)
+  // Pass BoringSSL a copy of the /dev/urandom file descriptor so RAND_bytes
+  // will work inside the sandbox.
+  RAND_set_urandom_fd(base::GetUrandomFD());
+#else
   // NSS libraries are loaded before sandbox is activated. This is to allow
   // successful initialization of NSS which tries to load extra library files.
   crypto::LoadNSSLibraries();
-#elif defined(USE_OPENSSL)
-  // Read a random byte in order to cause BoringSSL to open a file descriptor
-  // for /dev/urandom.
-  uint8_t scratch;
-  RAND_bytes(&scratch, 1);
-#else
-  // It's possible that another hypothetical crypto stack would not require
-  // pre-sandbox init, but more likely this is just a build configuration error.
-  #error Which SSL library are you using?
 #endif
 #if defined(ENABLE_PLUGINS)
   // Ensure access to the Pepper plugins before the sandbox is turned on.
