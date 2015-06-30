@@ -7,12 +7,12 @@ package org.chromium.chrome.browser;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
-import org.chromium.chrome.shell.ChromeShellActivity;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content_public.browser.LoadUrlParams;
 
@@ -22,53 +22,34 @@ import java.util.concurrent.ExecutionException;
 /**
  * Tests for Tab-related histogram collection.
  */
-public class TabUmaTest extends ChromeShellTestBase {
+public class TabUmaTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+
     private static final String TEST_URL =
             TestHttpServerClient.getUrl("chrome/test/data/android/about.html");
 
-    private ChromeShellActivity mActivity;
+    public TabUmaTest() {
+        super(ChromeActivity.class);
+    }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        mActivity = launchChromeShellWithUrl(TEST_URL);
-        assertTrue(waitForActiveShellToBeDoneLoading());
-
-        // This is to fake a "tab show" event that should be happening
-        // on browser startup, but isn't currently. This code should
-        // eventually be taken out when this issue is fixed.
-        final Tab tab = ThreadUtils.runOnUiThreadBlocking(new Callable<Tab>() {
-            @Override
-            public Tab call() {
-                Tab bgTab = Tab.createTabForLazyLoad(mActivity, false, mActivity.getWindowAndroid(),
-                        TabLaunchType.FROM_LONGPRESS_BACKGROUND, Tab.INVALID_TAB_ID,
-                        new LoadUrlParams(TEST_URL), mActivity.getTabModelSelector());
-                bgTab.initialize(null, null, true);
-                return bgTab;
-            }
-        });
-
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                tab.show(TabSelectionType.FROM_NEW);
-            }
-        });
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
     }
 
     /**
      * Verify that Tab.StatusWhenSwitchedBackToForeground is correctly recording lazy loads.
      */
     @MediumTest
+    @CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)
     @Feature({"Uma"})
-    public void testTabStatusWhenSwitchedToLazyLoads()
-            throws ExecutionException, InterruptedException {
+    public void testTabStatusWhenSwitchedToLazyLoads() throws ExecutionException {
         final Tab tab = ThreadUtils.runOnUiThreadBlocking(new Callable<Tab>() {
             @Override
             public Tab call() {
-                Tab bgTab = Tab.createTabForLazyLoad(mActivity, false, mActivity.getWindowAndroid(),
-                        TabLaunchType.FROM_LONGPRESS_BACKGROUND, Tab.INVALID_TAB_ID,
-                        new LoadUrlParams(TEST_URL), mActivity.getTabModelSelector());
+                Tab bgTab = Tab.createTabForLazyLoad(getActivity(), false,
+                        getActivity().getWindowAndroid(), TabLaunchType.FROM_LONGPRESS_BACKGROUND,
+                        Tab.INVALID_TAB_ID, new LoadUrlParams(TEST_URL),
+                        getActivity().getTabModelSelector());
                 bgTab.initialize(null, null, true);
                 return bgTab;
             }
@@ -119,9 +100,9 @@ public class TabUmaTest extends ChromeShellTestBase {
         final Tab liveBgTab = ThreadUtils.runOnUiThreadBlocking(new Callable<Tab>() {
             @Override
             public Tab call() {
-                Tab bgTab = Tab.createLiveTab(Tab.INVALID_TAB_ID, mActivity, false,
-                        mActivity.getWindowAndroid(), TabLaunchType.FROM_LONGPRESS_BACKGROUND,
-                        Tab.INVALID_TAB_ID, true, mActivity.getTabModelSelector());
+                Tab bgTab = Tab.createLiveTab(Tab.INVALID_TAB_ID, getActivity(), false,
+                        getActivity().getWindowAndroid(), TabLaunchType.FROM_LONGPRESS_BACKGROUND,
+                        Tab.INVALID_TAB_ID, true, getActivity().getTabModelSelector());
                 bgTab.initialize(null, null, true);
                 bgTab.loadUrl(new LoadUrlParams(TEST_URL));
                 bgTab.show(TabSelectionType.FROM_USER);
@@ -136,9 +117,9 @@ public class TabUmaTest extends ChromeShellTestBase {
         final Tab killedBgTab = ThreadUtils.runOnUiThreadBlocking(new Callable<Tab>() {
             @Override
             public Tab call() {
-                Tab bgTab = Tab.createLiveTab(Tab.INVALID_TAB_ID, mActivity, false,
-                        mActivity.getWindowAndroid(), TabLaunchType.FROM_LONGPRESS_BACKGROUND,
-                        Tab.INVALID_TAB_ID, true, mActivity.getTabModelSelector());
+                Tab bgTab = Tab.createLiveTab(Tab.INVALID_TAB_ID, getActivity(), false,
+                        getActivity().getWindowAndroid(), TabLaunchType.FROM_LONGPRESS_BACKGROUND,
+                        Tab.INVALID_TAB_ID, true, getActivity().getTabModelSelector());
                 bgTab.initialize(null, null, true);
                 bgTab.loadUrl(new LoadUrlParams(TEST_URL));
                 // Simulate the renderer being killed by the OS.
@@ -155,9 +136,10 @@ public class TabUmaTest extends ChromeShellTestBase {
         final Tab frozenBgTab = ThreadUtils.runOnUiThreadBlocking(new Callable<Tab>() {
             @Override
             public Tab call() {
-                Tab bgTab = Tab.createTabForLazyLoad(mActivity, false, mActivity.getWindowAndroid(),
-                        TabLaunchType.FROM_LONGPRESS_BACKGROUND, Tab.INVALID_TAB_ID,
-                        new LoadUrlParams(TEST_URL), mActivity.getTabModelSelector());
+                Tab bgTab = Tab.createTabForLazyLoad(getActivity(), false,
+                        getActivity().getWindowAndroid(), TabLaunchType.FROM_LONGPRESS_BACKGROUND,
+                        Tab.INVALID_TAB_ID, new LoadUrlParams(TEST_URL),
+                        getActivity().getTabModelSelector());
                 bgTab.initialize(null, null, true);
                 bgTab.show(TabSelectionType.FROM_USER);
                 return bgTab;
