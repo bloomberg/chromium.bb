@@ -151,11 +151,7 @@ remoting.OptionsMenu.prototype.onShrinkToFit_ = function() {
 };
 
 remoting.OptionsMenu.prototype.onNewConnection_ = function() {
-  chrome.app.window.create('main.html', {
-    'width': 800,
-    'height': 600,
-    'frame': 'none'
-  });
+  base.Ipc.invoke('remoting.ActivationHandler.launch');
 };
 
 remoting.OptionsMenu.prototype.onFullscreen_ = function() {

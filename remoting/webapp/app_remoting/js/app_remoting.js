@@ -87,6 +87,10 @@ remoting.AppRemoting.prototype.startApplication_ = function(token) {
  * @override {remoting.ApplicationInterface}
  */
 remoting.AppRemoting.prototype.exitApplication_ = function() {
-  base.dispose(this.activity_);
+  if (this.activity_) {
+    this.activity_.stop();
+    this.activity_.dispose();
+    this.activity_ = null;
+  }
   this.closeMainWindow_();
 };

@@ -59,7 +59,9 @@ remoting.Me2MeActivity.prototype.start = function() {
 };
 
 remoting.Me2MeActivity.prototype.stop = function() {
-  this.desktopActivity_.stop();
+  if (this.desktopActivity_) {
+    this.desktopActivity_.stop();
+  }
 };
 
 /** @return {remoting.DesktopRemotingActivity} */

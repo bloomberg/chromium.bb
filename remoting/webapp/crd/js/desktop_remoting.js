@@ -145,6 +145,7 @@ remoting.DesktopRemoting.prototype.startApplication_ = function(token) {
 
 /** @override {remoting.ApplicationInterface} */
 remoting.DesktopRemoting.prototype.exitApplication_ = function() {
+  this.disconnect_();
   this.closeMainWindow_();
 };
 
