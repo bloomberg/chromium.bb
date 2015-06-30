@@ -434,7 +434,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSParserFastPaths::parseColor(const String& st
     CSSParserString cssString;
     cssString.init(string);
     CSSValueID valueID = cssValueKeywordID(cssString);
-    if (valueID == CSSValueWebkitText || valueID == CSSValueCurrentcolor
+    if (valueID == CSSValueWebkitText || valueID == CSSValueCurrentcolor || valueID == CSSValueGrey
         || (valueID >= CSSValueAqua && valueID <= CSSValueWindowtext) || valueID == CSSValueMenu
         || (quirksMode && valueID >= CSSValueWebkitFocusRingColor && valueID < CSSValueWebkitText))
         return cssValuePool().createIdentifierValue(valueID);

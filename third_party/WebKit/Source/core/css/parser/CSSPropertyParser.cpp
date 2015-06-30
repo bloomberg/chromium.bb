@@ -563,37 +563,9 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyWebkitTextFillColor:
     case CSSPropertyWebkitTextStrokeColor:
         ASSERT(propId != CSSPropertyTextDecorationColor || RuntimeEnabledFeatures::css3TextDecorationsEnabled());
-
-        if ((id >= CSSValueAqua && id <= CSSValueWebkitText) || id == CSSValueMenu) {
-            validPrimitive = isValueAllowedInMode(id, m_context.mode());
-        } else {
-            if (!inQuirksMode()) {
-                parsedValue = parseColor();
-                if (parsedValue)
-                    m_valueList->next();
-                break;
-            }
-
-            bool acceptQuirkyColors = false;
-            switch (propId) {
-            case CSSPropertyBackgroundColor:
-            case CSSPropertyBorderBottomColor:
-            case CSSPropertyBorderLeftColor:
-            case CSSPropertyBorderRightColor:
-            case CSSPropertyBorderTopColor:
-                if (!inShorthand() || m_currentShorthand == CSSPropertyBorderColor)
-                    acceptQuirkyColors = true;
-                break;
-            case CSSPropertyColor:
-                acceptQuirkyColors = true;
-                break;
-            default:
-                break;
-            }
-            parsedValue = parseColor(0, acceptQuirkyColors);
-            if (parsedValue)
-                m_valueList->next();
-        }
+        parsedValue = parseColor(m_valueList->current(), acceptQuirkyColors(propId));
+        if (parsedValue)
+            m_valueList->next();
         break;
 
     case CSSPropertyCursor: {
@@ -1374,14 +1346,9 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         break;
 
     case CSSPropertyWebkitTapHighlightColor:
-        if ((id >= CSSValueAqua && id <= CSSValueWindowtext) || id == CSSValueMenu
-            || (id >= CSSValueWebkitFocusRingColor && id < CSSValueWebkitText && inQuirksMode())) {
-            validPrimitive = true;
-        } else {
-            parsedValue = parseColor();
-            if (parsedValue)
-                m_valueList->next();
-        }
+        parsedValue = parseTapHighlightColor(m_valueList->current());
+        if (parsedValue)
+            m_valueList->next();
         break;
 
         /* shorthand properties */
@@ -2298,13 +2265,123 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAttr(CSSParserValueList
     return cssValuePool().createValue(attrName, CSSPrimitiveValue::CSS_ATTR);
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseBackgroundColor()
+bool CSSPropertyParser::acceptQuirkyColors(CSSPropertyID propertyId) const
 {
-    CSSValueID id = m_valueList->current()->id;
-    if (id == CSSValueWebkitText || (id >= CSSValueAqua && id <= CSSValueWindowtext) || id == CSSValueMenu || id == CSSValueCurrentcolor ||
-        (id >= CSSValueGrey && id < CSSValueWebkitText && inQuirksMode()))
+    if (!inQuirksMode())
+        return false;
+    switch (propertyId) {
+    case CSSPropertyBackgroundColor:
+    case CSSPropertyBorderBottomColor:
+    case CSSPropertyBorderLeftColor:
+    case CSSPropertyBorderRightColor:
+    case CSSPropertyBorderTopColor:
+        return !inShorthand() || m_currentShorthand == CSSPropertyBorderColor;
+    case CSSPropertyColor:
+        return true;
+    default:
+        break;
+    }
+    return false;
+}
+
+bool CSSPropertyParser::isColorKeyword(CSSValueID id)
+{
+    // Named colors and color keywords:
+    //
+    // <named-color>
+    //   'aqua', 'black', 'blue', ..., 'yellow' (CSS3: "basic color keywords")
+    //   'aliceblue', ..., 'yellowgreen'        (CSS3: "extended color keywords")
+    //   'transparent'
+    //
+    // 'currentcolor'
+    //
+    // <deprecated-system-color>
+    //   'ActiveBorder', ..., 'WindowText'
+    //
+    // WebKit proprietary/internal:
+    //   '-webkit-link'
+    //   '-webkit-activelink'
+    //   '-internal-active-list-box-selection'
+    //   '-internal-active-list-box-selection-text'
+    //   '-internal-inactive-list-box-selection'
+    //   '-internal-inactive-list-box-selection-text'
+    //   '-webkit-focus-ring-color'
+    //
+    // TODO(fs): The "extended color keywords" are not included.
+    return (id >= CSSValueAqua && id <= CSSValueWebkitText) || id == CSSValueMenu;
+}
+
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseColor(const CSSParserValue* value, bool acceptQuirkyColors)
+{
+    CSSValueID id = value->id;
+    if (isColorKeyword(id)) {
+        if (!isValueAllowedInMode(id, m_context.mode()))
+            return nullptr;
         return cssValuePool().createIdentifierValue(id);
-    return parseColor();
+    }
+    RGBA32 c = Color::transparent;
+    if (!parseColorFromValue(value, c, acceptQuirkyColors))
+        return nullptr;
+    return cssValuePool().createColorValue(c);
+}
+
+// Used to parse background-color when part of a shorthand.
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseBackgroundColor(const CSSParserValue* value)
+{
+    CSSValueID id = value->id;
+    // Allow -webkit-text regardless of quirks.
+    if (id == CSSValueWebkitText)
+        return cssValuePool().createIdentifierValue(id);
+    return parseColor(value);
+}
+
+// Used to parse the '-webkit-tap-highlight-color' property.
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseTapHighlightColor(const CSSParserValue* value)
+{
+    CSSValueID id = value->id;
+    // Disallow -webkit-text regardless of quirks.
+    if (id == CSSValueWebkitText)
+        return nullptr;
+    // Allow currentcolor in quirks-mode only.
+    if (id == CSSValueCurrentcolor) {
+        if (!inQuirksMode())
+            return nullptr;
+        return cssValuePool().createIdentifierValue(id);
+    }
+    return parseColor(value);
+}
+
+// Used to parse <color> for CSS gradients.
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseGradientStopColor(const CSSParserValue* value)
+{
+    CSSValueID id = value->id;
+    // Allow -webkit-text regardless of quirks.
+    if (id == CSSValueWebkitText)
+        return cssValuePool().createIdentifierValue(id);
+    return parseColor(value);
+}
+
+// Used to parse colors for -webkit-gradient(...).
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseDeprecatedGradientStopColor(const CSSParserValue* value)
+{
+    // Disallow currentcolor.
+    if (value->id == CSSValueCurrentcolor)
+        return nullptr;
+    return parseGradientStopColor(value);
+}
+
+// Used to parse <color> for SVG properties.
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseSVGColor(const CSSParserValue* value)
+{
+    CSSValueID id = value->id;
+    if (id == CSSValueCurrentcolor)
+        return cssValuePool().createIdentifierValue(id);
+    if ((id >= CSSValueActiveborder && id <= CSSValueWindowtext) || id == CSSValueMenu)
+        return cssValuePool().createColorValue(LayoutTheme::theme().systemColor(id).rgb());
+    RGBA32 c = Color::transparent;
+    if (!parseColorFromValue(value, c))
+        return nullptr;
+    return cssValuePool().createColorValue(c);
 }
 
 bool CSSPropertyParser::parseFillImage(CSSParserValueList* valueList, RefPtrWillBeRawPtr<CSSValue>& value)
@@ -2795,7 +2872,7 @@ bool CSSPropertyParser::parseFillProperty(CSSPropertyID propId, CSSPropertyID& p
 
         switch (propId) {
         case CSSPropertyBackgroundColor:
-            currValue = parseBackgroundColor();
+            currValue = parseBackgroundColor(val);
             if (currValue)
                 m_valueList->next();
             break;
@@ -4972,7 +5049,7 @@ inline int CSSPropertyParser::colorIntFromValue(CSSParserValue* v)
     return static_cast<int>(value);
 }
 
-bool CSSPropertyParser::parseColorParameters(CSSParserValue* value, int* colorArray, bool parseAlpha)
+bool CSSPropertyParser::parseColorParameters(const CSSParserValue* value, int* colorArray, bool parseAlpha)
 {
     CSSParserValueList* args = value->function->args.get();
     CSSParserValue* v = args->current();
@@ -5014,7 +5091,7 @@ bool CSSPropertyParser::parseColorParameters(CSSParserValue* value, int* colorAr
 // and with alpha, the format is
 // hsla(<number>, <percent>, <percent>, <number>)
 // The first value, HUE, is in an angle with a value between 0 and 360
-bool CSSPropertyParser::parseHSLParameters(CSSParserValue* value, double* colorArray, bool parseAlpha)
+bool CSSPropertyParser::parseHSLParameters(const CSSParserValue* value, double* colorArray, bool parseAlpha)
 {
     CSSParserValueList* args = value->function->args.get();
     CSSParserValue* v = args->current();
@@ -5045,15 +5122,7 @@ bool CSSPropertyParser::parseHSLParameters(CSSParserValue* value, double* colorA
     return true;
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseColor(CSSParserValue* value, bool acceptQuirkyColors)
-{
-    RGBA32 c = Color::transparent;
-    if (!parseColorFromValue(value ? value : m_valueList->current(), c, acceptQuirkyColors))
-        return nullptr;
-    return cssValuePool().createColorValue(c);
-}
-
-bool CSSPropertyParser::parseColorFromValue(CSSParserValue* value, RGBA32& result, bool acceptQuirkyColors)
+bool CSSPropertyParser::parseColorFromValue(const CSSParserValue* value, RGBA32& result, bool acceptQuirkyColors)
 {
     if (acceptQuirkyColors && value->unit == CSSPrimitiveValue::CSS_NUMBER
         && value->fValue >= 0. && value->fValue < 1000000. && value->isInt) {
@@ -5272,24 +5341,13 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseShadow(CSSParserVal
 
             context.commitStyle(val);
         } else {
+            if (!context.allowColor)
+                return nullptr;
+
             // The only other type of value that's ok is a color value.
-            RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedColor = nullptr;
-            bool isColor = ((val->id >= CSSValueAqua && val->id <= CSSValueWindowtext) || val->id == CSSValueMenu
-                            || (val->id >= CSSValueWebkitFocusRingColor && val->id <= CSSValueWebkitText && inQuirksMode())
-                            || val->id == CSSValueCurrentcolor);
-            if (isColor) {
-                if (!context.allowColor)
-                    return nullptr;
-                parsedColor = cssValuePool().createIdentifierValue(val->id);
-            }
-
+            RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedColor = parseColor(val);
             if (!parsedColor)
-                // It's not built-in. Try to parse it as a color.
-                parsedColor = parseColor(val);
-
-            if (!parsedColor || !context.allowColor)
-                return nullptr; // This value is not a color or length and is invalid or
-                          // it is a color, but a color isn't allowed at this point.
+                return nullptr;
 
             context.commitColor(parsedColor.release());
         }
@@ -6042,11 +6100,7 @@ bool CSSPropertyParser::parseDeprecatedGradientColorStop(CSSParserValue* a, CSSG
         else
             stop.m_position = cssValuePool().createValue(1, CSSPrimitiveValue::CSS_NUMBER);
 
-        CSSValueID id = args->current()->id;
-        if (id == CSSValueWebkitText || (id >= CSSValueAqua && id <= CSSValueWindowtext) || id == CSSValueMenu)
-            stop.m_color = cssValuePool().createIdentifierValue(id);
-        else
-            stop.m_color = parseColor(args->current());
+        stop.m_color = parseDeprecatedGradientStopColor(args->current());
         if (!stop.m_color)
             return false;
     }
@@ -6068,12 +6122,7 @@ bool CSSPropertyParser::parseDeprecatedGradientColorStop(CSSParserValue* a, CSSG
         if (!consumeComma(args))
             return false;
 
-        stopArg = args->current();
-        CSSValueID id = stopArg->id;
-        if (id == CSSValueWebkitText || (id >= CSSValueAqua && id <= CSSValueWindowtext) || id == CSSValueMenu)
-            stop.m_color = cssValuePool().createIdentifierValue(id);
-        else
-            stop.m_color = parseColor(stopArg);
+        stop.m_color = parseDeprecatedGradientStopColor(args->current());
         if (!stop.m_color)
             return false;
     }
@@ -6638,12 +6687,7 @@ bool CSSPropertyParser::parseGradientColorStops(CSSParserValueList* valueList, C
         // <color-stop> = <color> [ <percentage> | <length> ]?
         // <color-hint> = <length> | <percentage>
         CSSGradientColorStop stop;
-        CSSValueID id = a->id;
-        if (id == CSSValueWebkitText || (id >= CSSValueAqua && id <= CSSValueWindowtext) || id == CSSValueMenu || id == CSSValueCurrentcolor)
-            stop.m_color = cssValuePool().createIdentifierValue(id);
-        else
-            stop.m_color = parseColor(a);
-
+        stop.m_color = parseGradientStopColor(a);
 
         // Two hints in a row are not allowed.
         if (!stop.m_color && (!supportsColorHints || previousStopWasColorHint))
@@ -7653,7 +7697,7 @@ CSSValueID cssValueKeywordID(const CSSParserString& string)
     return string.is8Bit() ? cssValueKeywordID(string.characters8(), length) : cssValueKeywordID(string.characters16(), length);
 }
 
-bool CSSPropertyParser::isSystemColor(int id)
+bool CSSPropertyParser::isSystemColor(CSSValueID id)
 {
     return (id >= CSSValueActiveborder && id <= CSSValueWindowtext) || id == CSSValueMenu;
 }
@@ -7797,19 +7841,16 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
     case CSSPropertyFill: // <paint> | inherit
     case CSSPropertyStroke: // <paint> | inherit
         {
-            if (id == CSSValueNone || id == CSSValueCurrentcolor) {
+            if (id == CSSValueNone) {
                 parsedValue = cssValuePool().createIdentifierValue(id);
-            } else if (isSystemColor(id)) {
-                parsedValue = cssValuePool().createColorValue(LayoutTheme::theme().systemColor(id).rgb());
             } else if (value->unit == CSSPrimitiveValue::CSS_URI) {
-                RGBA32 c = Color::transparent;
                 if (m_valueList->next()) {
                     RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
                     values->append(CSSPrimitiveValue::create(value->string, CSSPrimitiveValue::CSS_URI));
-                    if (parseColorFromValue(m_valueList->current(), c))
-                        parsedValue = cssValuePool().createColorValue(c);
-                    else if (m_valueList->current()->id == CSSValueNone || m_valueList->current()->id == CSSValueCurrentcolor)
+                    if (m_valueList->current()->id == CSSValueNone)
                         parsedValue = cssValuePool().createIdentifierValue(m_valueList->current()->id);
+                    else
+                        parsedValue = parseSVGColor(m_valueList->current());
                     if (parsedValue) {
                         values->append(parsedValue);
                         parsedValue = values;
@@ -7818,7 +7859,7 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
                 if (!parsedValue)
                     parsedValue = CSSPrimitiveValue::create(value->string, CSSPrimitiveValue::CSS_URI);
             } else {
-                parsedValue = parseColor();
+                parsedValue = parseSVGColor(m_valueList->current());
             }
 
             if (parsedValue)
@@ -7829,13 +7870,7 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
     case CSSPropertyStopColor: // TODO : icccolor
     case CSSPropertyFloodColor:
     case CSSPropertyLightingColor:
-        if (isSystemColor(id))
-            parsedValue = cssValuePool().createColorValue(LayoutTheme::theme().systemColor(id).rgb());
-        else if (id == CSSValueCurrentcolor)
-            parsedValue = cssValuePool().createIdentifierValue(id);
-        else // TODO : svgcolor (iccColor)
-            parsedValue = parseColor();
-
+        parsedValue = parseSVGColor(m_valueList->current());
         if (parsedValue)
             m_valueList->next();
 

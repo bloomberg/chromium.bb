@@ -74,7 +74,8 @@ public:
         CSSParserValueList*, const CSSParserContext&,
         WillBeHeapVector<CSSProperty, 256>&, StyleRule::Type);
 
-    static bool isSystemColor(int id);
+    static bool isSystemColor(CSSValueID);
+    static bool isColorKeyword(CSSValueID);
 
 private:
     CSSPropertyParser(CSSParserValueList*, const CSSParserContext&,
@@ -103,8 +104,6 @@ private:
     PassRefPtrWillBeRawPtr<CSSValue> parseQuotes();
 
     PassRefPtrWillBeRawPtr<CSSValue> parseAttr(CSSParserValueList* args);
-
-    PassRefPtrWillBeRawPtr<CSSValue> parseBackgroundColor();
 
     bool parseFillImage(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&);
 
@@ -189,10 +188,17 @@ private:
     PassRefPtrWillBeRawPtr<CSSValue> parseCounter(int defaultValue);
     PassRefPtrWillBeRawPtr<CSSValue> parseCounterContent(CSSParserValueList* args, bool counters);
 
-    bool parseColorParameters(CSSParserValue*, int* colorValues, bool parseAlpha);
-    bool parseHSLParameters(CSSParserValue*, double* colorValues, bool parseAlpha);
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseColor(CSSParserValue* = 0, bool acceptQuirkyColors = false);
-    bool parseColorFromValue(CSSParserValue*, RGBA32&, bool acceptQuirkyColors = false);
+    bool parseColorParameters(const CSSParserValue*, int* colorValues, bool parseAlpha);
+    bool parseHSLParameters(const CSSParserValue*, double* colorValues, bool parseAlpha);
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseColor(const CSSParserValue*, bool acceptQuirkyColors = false);
+    bool parseColorFromValue(const CSSParserValue*, RGBA32&, bool acceptQuirkyColors = false);
+
+    bool acceptQuirkyColors(CSSPropertyID) const;
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseBackgroundColor(const CSSParserValue*);
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseTapHighlightColor(const CSSParserValue*);
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseGradientStopColor(const CSSParserValue*);
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseDeprecatedGradientStopColor(const CSSParserValue*);
+    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseSVGColor(const CSSParserValue*);
 
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseLineHeight();
     bool parseFontSize(bool important);
