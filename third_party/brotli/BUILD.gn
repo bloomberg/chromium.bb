@@ -26,5 +26,13 @@ source_set("brotli") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
+  # Since we are never debug brotli, freeze the optimizations to -O2.
+  if (is_debug) {
+    configs -= [ "//build/config/compiler:no_optimize" ]
+  } else {
+    configs -= [ "//build/config/compiler:optimize" ]
+  }
+  configs += [ "//build/config/compiler:optimize_max" ]
+
   include_dirs = [ "dec" ]
 }

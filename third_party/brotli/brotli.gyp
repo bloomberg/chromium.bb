@@ -29,6 +29,12 @@
         'dec/transform.h',
         'dec/types.h',
       ],
+      'conditions': [
+        ['os_posix==1 and (target_arch=="arm" or target_arch=="armv7" or target_arch=="arm64")', {
+          'cflags!': ['-Os'],
+          'cflags': ['-O2'],
+        }],
+      ],
     },
   ],
 }
