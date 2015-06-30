@@ -31,9 +31,8 @@ public:
     BLINK_PLATFORM_EXPORT bool isPasswordCredential() const;
     BLINK_PLATFORM_EXPORT bool isFederatedCredential() const;
 
-    // TODO(mkwst, msramek): Drop this once Chromium is updated. https://crbug.com/494880
+    // TODO(mkwst): Drop this once Chromium is updated. https://crbug.com/494880
     BLINK_PLATFORM_EXPORT bool isLocalCredential() const { return isPasswordCredential(); }
-    BLINK_PLATFORM_EXPORT WebURL avatarURL() const { return iconURL(); }
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT static WebCredential create(PlatformCredential*);
