@@ -7,29 +7,36 @@
 #include "components/view_manager/connection_manager.h"
 #include "components/view_manager/display_manager.h"
 #include "components/view_manager/public/cpp/types.h"
+#include "components/view_manager/view_manager_root_delegate.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 
 namespace view_manager {
 
 ViewManagerRootImpl::ViewManagerRootImpl(
-    const ViewId& root_view_id,
     ConnectionManager* connection_manager,
     bool is_headless,
     mojo::ApplicationImpl* app_impl,
     const scoped_refptr<gles2::GpuState>& gpu_state)
-    : connection_manager_(connection_manager),
-      root_(connection_manager->CreateServerView(root_view_id)),
+    : delegate_(nullptr),
+      connection_manager_(connection_manager),
+      root_(connection_manager->CreateServerView(
+         RootViewId(connection_manager->GetAndAdvanceNextRootId()))),
       display_manager_(
           DisplayManager::Create(is_headless, app_impl, gpu_state)) {
+  root_->SetBounds(gfx::Rect(800, 600));
+  root_->SetVisible(true);
+  display_manager_->Init(this);
 }
 
 ViewManagerRootImpl::~ViewManagerRootImpl() {
 }
 
-void ViewManagerRootImpl::Init() {
-  root_->SetBounds(gfx::Rect(800, 600));
-  root_->SetVisible(true);
-  display_manager_->Init(this);
+void ViewManagerRootImpl::Init(ViewManagerRootDelegate* delegate) {
+  delegate_ = delegate;
+}
+
+ViewManagerServiceImpl* ViewManagerRootImpl::GetViewManagerService() {
+  return delegate_ ? delegate_->GetViewManagerService() : nullptr;
 }
 
 bool ViewManagerRootImpl::IsViewAttachedToRoot(const ServerView* view) const {
@@ -82,7 +89,8 @@ void ViewManagerRootImpl::OnEvent(mojo::EventPtr event) {
 }
 
 void ViewManagerRootImpl::OnDisplayClosed() {
-  connection_manager_->OnDisplayClosed();
+  if (delegate_)
+    delegate_->OnDisplayClosed();
 }
 
 void ViewManagerRootImpl::OnViewportMetricsChanged(

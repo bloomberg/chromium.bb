@@ -58,6 +58,9 @@ class Browser : public mojo::ViewManagerDelegate,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, ClosingBrowserClosesAppConnection);
+  FRIEND_TEST_ALL_PREFIXES(BrowserTest, TwoBrowsers);
+
+  friend class TestBrowser;
 
   mojo::ApplicationConnection* GetViewManagerConnectionForTesting();
 

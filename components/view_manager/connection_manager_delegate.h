@@ -23,7 +23,7 @@ struct ViewId;
 
 class ConnectionManagerDelegate {
  public:
-  virtual void OnLostConnectionToWindowManager() = 0;
+  virtual void OnNoMoreRootConnections() = 0;
 
   // Creates a ClientConnection in response to Embed() calls on the
   // ConnectionManager.
