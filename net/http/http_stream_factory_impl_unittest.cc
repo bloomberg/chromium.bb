@@ -667,14 +667,75 @@ TEST_P(HttpStreamFactoryTest, UnreachableQuicProxyMarkedAsBad) {
     // The proxy that failed should now be known to the proxy_service as bad.
     const ProxyRetryInfoMap& retry_info =
         session->proxy_service()->proxy_retry_info();
-    // proxy_headers_handler.proxy_info_used.proxy_retry_info();
     EXPECT_EQ(1u, retry_info.size()) << i;
-    // EXPECT_TRUE(waiter.used_proxy_info().is_direct());
+    EXPECT_TRUE(waiter.used_proxy_info().is_direct());
 
     ProxyRetryInfoMap::const_iterator iter = retry_info.find("quic://bad:99");
     EXPECT_TRUE(iter != retry_info.end()) << i;
   }
 }
+
+}  // namespace
+
+TEST_P(HttpStreamFactoryTest, QuicLossyProxyMarkedAsBad) {
+  // Checks if a
+  scoped_ptr<ProxyService> proxy_service;
+  proxy_service.reset(
+      ProxyService::CreateFixedFromPacResult("QUIC bad:99; DIRECT"));
+
+  HttpNetworkSession::Params params;
+  params.enable_quic = true;
+  params.enable_quic_for_proxies = true;
+  scoped_refptr<SSLConfigServiceDefaults> ssl_config_service(
+      new SSLConfigServiceDefaults);
+  HttpServerPropertiesImpl http_server_properties;
+  MockClientSocketFactory socket_factory;
+  params.client_socket_factory = &socket_factory;
+  MockHostResolver host_resolver;
+  params.host_resolver = &host_resolver;
+  TransportSecurityState transport_security_state;
+  params.transport_security_state = &transport_security_state;
+  params.proxy_service = proxy_service.get();
+  params.ssl_config_service = ssl_config_service.get();
+  params.http_server_properties = http_server_properties.GetWeakPtr();
+  params.quic_max_number_of_lossy_connections = 2;
+
+  scoped_refptr<HttpNetworkSession> session;
+  session = new HttpNetworkSession(params);
+  session->quic_stream_factory()->set_require_confirmation(false);
+
+  session->quic_stream_factory()->number_of_lossy_connections_[99] =
+      params.quic_max_number_of_lossy_connections;
+
+  StaticSocketDataProvider socket_data2;
+  socket_data2.set_connect_data(MockConnect(ASYNC, OK));
+  socket_factory.AddSocketDataProvider(&socket_data2);
+
+  // Now request a stream. It should succeed using the second proxy in the
+  // list.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("http://www.google.com");
+
+  SSLConfig ssl_config;
+  StreamRequestWaiter waiter;
+  scoped_ptr<HttpStreamRequest> request(
+      session->http_stream_factory()->RequestStream(
+          request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
+          BoundNetLog()));
+  waiter.WaitForStream();
+
+  // The proxy that failed should now be known to the proxy_service as bad.
+  const ProxyRetryInfoMap& retry_info =
+      session->proxy_service()->proxy_retry_info();
+  EXPECT_EQ(1u, retry_info.size());
+  EXPECT_TRUE(waiter.used_proxy_info().is_direct());
+
+  ProxyRetryInfoMap::const_iterator iter = retry_info.find("quic://bad:99");
+  EXPECT_TRUE(iter != retry_info.end());
+}
+
+namespace {
 
 TEST_P(HttpStreamFactoryTest, PrivacyModeDisablesChannelId) {
   SpdySessionDependencies session_deps(

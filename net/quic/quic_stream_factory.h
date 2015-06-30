@@ -215,6 +215,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
  private:
   class Job;
   friend class test::QuicStreamFactoryPeer;
+  FRIEND_TEST_ALL_PREFIXES(HttpStreamFactoryTest, QuicLossyProxyMarkedAsBad);
 
   // The key used to find session by ip. Includes
   // the ip address, port, and scheme.

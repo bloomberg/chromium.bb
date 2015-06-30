@@ -836,6 +836,10 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
       origin_host = destination.host();
       secure_quic = true;
       ssl_config = &proxy_ssl_config_;
+
+      // If QUIC is disabled on the destination port, return error.
+      if (session_->quic_stream_factory()->IsQuicDisabled(destination.port()))
+        return ERR_QUIC_PROTOCOL_ERROR;
     } else {
       // The certificate of a QUIC alternative server is expected to be valid
       // for the origin of the request (in addition to being valid for the
@@ -970,11 +974,19 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
     return OK;
   }
 
-  if (proxy_info_.is_quic() && using_quic_ &&
-      (result == ERR_QUIC_PROTOCOL_ERROR ||
-       result == ERR_QUIC_HANDSHAKE_FAILED)) {
-    using_quic_ = false;
-    return ReconsiderProxyAfterError(result);
+  if (proxy_info_.is_quic() && using_quic_) {
+    if (result == ERR_QUIC_PROTOCOL_ERROR ||
+        result == ERR_QUIC_HANDSHAKE_FAILED) {
+      using_quic_ = false;
+      return ReconsiderProxyAfterError(result);
+    }
+    // Mark QUIC proxy as bad if QUIC got disabled on the destination port.
+    // Underlying QUIC layer would have closed the connection.
+    HostPortPair destination = proxy_info_.proxy_server().host_port_pair();
+    if (session_->quic_stream_factory()->IsQuicDisabled(destination.port())) {
+      using_quic_ = false;
+      return ReconsiderProxyAfterError(ERR_QUIC_PROTOCOL_ERROR);
+    }
   }
 
   // TODO(willchan): Make this a bit more exact. Maybe there are recoverable
