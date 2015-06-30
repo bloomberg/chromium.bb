@@ -111,7 +111,7 @@ class MemoryTest(benchmark.Benchmark):
     return memory_test_expectations.MemoryTestExpectations()
 
   def CreateStorySet(self, options):
-    page_set = page_sets.MemoryTestsPageSet()
-    for page in page_set.pages:
+    story_set = page_sets.MemoryTestsStorySet()
+    for page in story_set:
       page.script_to_evaluate_on_commit = test_harness_script
-    return page_set
+    return story_set

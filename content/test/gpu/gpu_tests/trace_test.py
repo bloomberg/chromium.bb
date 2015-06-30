@@ -76,10 +76,10 @@ class _TraceTestBase(benchmark.Benchmark):
   """Base class for the trace tests."""
   def CreateStorySet(self, options):
     # Utilize pixel tests page set as a set of simple pages to load.
-    page_set = page_sets.PixelTestsPageSet(base_name=self.name)
-    for page in page_set.pages:
-      page.script_to_evaluate_on_commit = test_harness_script
-    return page_set
+    story_set = page_sets.PixelTestsStorySet(base_name=self.name)
+    for story in story_set:
+      story.script_to_evaluate_on_commit = test_harness_script
+    return story_set
 
 
 class TraceTest(_TraceTestBase):

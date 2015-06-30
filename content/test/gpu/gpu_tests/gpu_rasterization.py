@@ -73,10 +73,10 @@ class GpuRasterization(cloud_storage_test_base.TestBase):
     return 'gpu_rasterization'
 
   def CreateStorySet(self, options):
-    page_set = page_sets.GpuRasterizationTestsPageSet()
-    for page in page_set.pages:
+    story_set = page_sets.GpuRasterizationTestsStorySet()
+    for page in story_set:
       page.script_to_evaluate_on_commit = test_harness_script
-    return page_set
+    return story_set
 
   def CreateExpectations(self):
     return gpu_rasterization_expectations.GpuRasterizationExpectations()

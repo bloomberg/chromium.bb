@@ -5,7 +5,6 @@ import gpu_process_expectations as expectations
 import page_sets
 
 from telemetry import benchmark
-from telemetry.page import page_set
 from telemetry.page import page_test
 
 test_harness_script = r"""
@@ -48,7 +47,7 @@ class GpuProcess(benchmark.Benchmark):
     return expectations.GpuProcessExpectations()
 
   def CreateStorySet(self, options):
-    page_set = page_sets.GpuProcessTestsPageSet()
-    for page in page_set.pages:
+    story_set = page_sets.GpuProcessTestsStorySet()
+    for page in story_set:
       page.script_to_evaluate_on_commit = test_harness_script
-    return page_set
+    return story_set

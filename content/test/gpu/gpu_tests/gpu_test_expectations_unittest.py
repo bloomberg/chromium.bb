@@ -5,7 +5,7 @@ import unittest
 
 from telemetry.core import system_info
 from telemetry.page import page as page_module
-from telemetry.page import page_set
+from telemetry.story import story_set
 
 import gpu_test_expectations
 
@@ -67,14 +67,14 @@ class GpuTestExpectationsTest(unittest.TestCase):
 
   # Ensure retry mechanism is working.
   def testFlakyExpectation(self):
-    ps = page_set.PageSet()
+    ps = story_set.StorySet()
     page = page_module.Page('http://test.com/test1.html', ps)
     self.assertExpectationEquals('pass', page)
     self.assertEquals(5, self.getRetriesForPage(page))
 
   # Ensure the filtering from the TestExpectations superclass still works.
   def testFlakyPerPlatformExpectation(self):
-    ps = page_set.PageSet()
+    ps = story_set.StorySet()
     page1 = page_module.Page('http://test.com/test2.html', ps)
     self.assertExpectationEquals('pass', page1, StubPlatform('win'))
     self.assertEquals(6, self.getRetriesForPage(page1, StubPlatform('win')))

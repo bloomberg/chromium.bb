@@ -5,8 +5,8 @@ import hardware_accelerated_feature_expectations as expectations
 
 from telemetry import benchmark
 from telemetry.page import page as page_module
-from telemetry.page import page_set
 from telemetry.page import page_test
+from telemetry.story import story_set as story_set_module
 
 test_harness_script = r"""
   function VerifyHardwareAccelerated(feature) {
@@ -37,9 +37,9 @@ def safe_feature_name(feature):
   return feature.lower().replace(' ', '_')
 
 class ChromeGpuPage(page_module.Page):
-  def __init__(self, page_set, feature):
+  def __init__(self, story_set, feature):
     super(ChromeGpuPage, self).__init__(
-      url='chrome://gpu', page_set=page_set, base_dir=page_set.base_dir,
+      url='chrome://gpu', page_set=story_set, base_dir=story_set.base_dir,
       name=('HardwareAcceleratedFeature.%s_accelerated' %
             safe_feature_name(feature)))
     self.feature = feature
@@ -59,8 +59,8 @@ class HardwareAcceleratedFeature(benchmark.Benchmark):
   def CreateStorySet(self, options):
     features = ['WebGL', 'Canvas']
 
-    ps = page_set.PageSet()
+    ps = story_set_module.StorySet()
 
     for feature in features:
-      ps.AddUserStory(ChromeGpuPage(page_set=ps, feature=feature))
+      ps.AddStory(ChromeGpuPage(story_set=ps, feature=feature))
     return ps

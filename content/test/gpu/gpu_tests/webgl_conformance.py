@@ -120,9 +120,9 @@ class Webgl2ConformanceValidator(WebglConformanceValidator):
 
 
 class WebglConformancePage(page_module.Page):
-  def __init__(self, page_set, test, expectations):
+  def __init__(self, story_set, test, expectations):
     super(WebglConformancePage, self).__init__(
-      url='file://' + test, page_set=page_set, base_dir=page_set.base_dir,
+      url='file://' + test, page_set=story_set, base_dir=story_set.base_dir,
       shared_page_state_class=shared_page_state.SharedDesktopPageState,
       name=('WebglConformance.%s' %
               test.replace('/', '_').replace('-', '_').
@@ -182,7 +182,7 @@ class WebglConformance(benchmark_module.Benchmark):
 
     expectations = self.GetExpectations()
     for test in tests:
-      ps.AddUserStory(WebglConformancePage(ps, test, expectations))
+      ps.AddStory(WebglConformancePage(ps, test, expectations))
 
     return ps
 

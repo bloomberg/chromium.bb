@@ -162,10 +162,10 @@ class Pixel(cloud_storage_test_base.TestBase):
         default=default_reference_image_dir)
 
   def CreateStorySet(self, options):
-    page_set = page_sets.PixelTestsPageSet()
-    for page in page_set.pages:
+    story_set = page_sets.PixelTestsStorySet()
+    for page in story_set:
       page.script_to_evaluate_on_commit = test_harness_script
-    return page_set
+    return story_set
 
   def CreateExpectations(self):
     return pixel_expectations.PixelExpectations()

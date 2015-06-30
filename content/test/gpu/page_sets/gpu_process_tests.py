@@ -2,22 +2,22 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry.story import story_set as story_set_module
 
 class GpuProcessTestsPage(page_module.Page):
 
-  def __init__(self, url, name, page_set):
-    super(GpuProcessTestsPage, self).__init__(url=url, page_set=page_set,
+  def __init__(self, url, name, story_set):
+    super(GpuProcessTestsPage, self).__init__(url=url, page_set=story_set,
                                               name=name)
 
 
 class FunctionalVideoPage(GpuProcessTestsPage):
 
-  def __init__(self, page_set):
+  def __init__(self, story_set):
     super(FunctionalVideoPage, self).__init__(
       url='file://../../data/gpu/functional_video.html',
       name='GpuProcess.video',
-      page_set=page_set)
+      story_set=story_set)
 
   def RunNavigateSteps(self, action_runner):
     super(FunctionalVideoPage, self).RunNavigateSteps(action_runner)
@@ -27,11 +27,11 @@ class FunctionalVideoPage(GpuProcessTestsPage):
 
 class GpuInfoCompletePage(GpuProcessTestsPage):
 
-  def __init__(self, page_set):
+  def __init__(self, story_set):
     super(GpuInfoCompletePage, self).__init__(
       url='file://../../data/gpu/functional_3d_css.html',
       name='GpuProcess.gpu_info_complete',
-      page_set=page_set)
+      story_set=story_set)
 
   def Validate(self, tab, results):
     # Regression test for crbug.com/454906
@@ -48,12 +48,12 @@ class GpuInfoCompletePage(GpuProcessTestsPage):
       raise page_test.Failure('Must have a non-empty gl_renderer string')
 
 
-class GpuProcessTestsPageSet(page_set_module.PageSet):
+class GpuProcessTestsStorySet(story_set_module.StorySet):
 
   """ Tests that accelerated content triggers the creation of a GPU process """
 
   def __init__(self):
-    super(GpuProcessTestsPageSet, self).__init__(
+    super(GpuProcessTestsStorySet, self).__init__(
       serving_dirs=set(['../../../../content/test/data']))
 
     urls_and_names_list = [
@@ -66,7 +66,7 @@ class GpuProcessTestsPageSet(page_set_module.PageSet):
     ]
 
     for url, name in urls_and_names_list:
-      self.AddUserStory(GpuProcessTestsPage(url, name, self))
+      self.AddStory(GpuProcessTestsPage(url, name, self))
 
-    self.AddUserStory(FunctionalVideoPage(self))
-    self.AddUserStory(GpuInfoCompletePage(self))
+    self.AddStory(FunctionalVideoPage(self))
+    self.AddStory(GpuInfoCompletePage(self))
