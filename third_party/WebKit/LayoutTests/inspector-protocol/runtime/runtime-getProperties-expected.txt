@@ -32,7 +32,7 @@ Properties of array
 Properties of Bound function
   __proto__ own function undefined
   length own number 0
-  name own string 
+  name own string bound Number
 Internal properties
   [[BoundArgs]] object undefined
   [[BoundThis]] object undefined
