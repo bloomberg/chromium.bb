@@ -26,6 +26,8 @@ namespace IPC {
 class Message;
 }
 
+struct ServiceWorkerMsg_MessageToDocument_Params;
+
 namespace content {
 
 class ServiceWorkerMessageFilter;
@@ -36,7 +38,6 @@ class WebServiceWorkerRegistrationImpl;
 struct ServiceWorkerObjectInfo;
 struct ServiceWorkerRegistrationObjectInfo;
 struct ServiceWorkerVersionAttributes;
-struct TransferredMessagePort;
 
 // This class manages communication with the browser process about
 // registration of the service worker, exposed to renderer and worker
@@ -229,12 +230,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcher
                                     int provider_id,
                                     const ServiceWorkerObjectInfo& info,
                                     bool should_notify_controllerchange);
-  void OnPostMessage(
-      int thread_id,
-      int provider_id,
-      const base::string16& message,
-      const std::vector<TransferredMessagePort>& sent_message_ports,
-      const std::vector<int>& new_routing_ids);
+  void OnPostMessage(const ServiceWorkerMsg_MessageToDocument_Params& params);
 
   // Keeps map from handle_id to ServiceWorker object.
   void AddServiceWorker(int handle_id, WebServiceWorkerImpl* worker);

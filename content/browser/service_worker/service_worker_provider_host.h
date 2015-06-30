@@ -158,6 +158,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // Dispatches message event to the document.
   void PostMessage(
+      ServiceWorkerVersion* version,
       const base::string16& message,
       const std::vector<TransferredMessagePort>& sent_message_ports);
 

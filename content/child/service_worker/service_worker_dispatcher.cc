@@ -687,19 +687,15 @@ void ServiceWorkerDispatcher::OnSetControllerServiceWorker(
 }
 
 void ServiceWorkerDispatcher::OnPostMessage(
-    int thread_id,
-    int provider_id,
-    const base::string16& message,
-    const std::vector<TransferredMessagePort>& sent_message_ports,
-    const std::vector<int>& new_routing_ids) {
+    const ServiceWorkerMsg_MessageToDocument_Params& params) {
   // Make sure we're on the main document thread. (That must be the only
   // thread we get this message)
   DCHECK(ChildThreadImpl::current());
-  TRACE_EVENT1("ServiceWorker",
-               "ServiceWorkerDispatcher::OnPostMessage",
-               "Thread ID", thread_id);
+  TRACE_EVENT1("ServiceWorker", "ServiceWorkerDispatcher::OnPostMessage",
+               "Thread ID", params.thread_id);
 
-  ProviderClientMap::iterator found = provider_clients_.find(provider_id);
+  ProviderClientMap::iterator found =
+      provider_clients_.find(params.provider_id);
   if (found == provider_clients_.end()) {
     // For now we do no queueing for messages sent to nonexistent / unattached
     // client.
@@ -708,10 +704,12 @@ void ServiceWorkerDispatcher::OnPostMessage(
 
   blink::WebMessagePortChannelArray ports =
       WebMessagePortChannelImpl::CreatePorts(
-          sent_message_ports, new_routing_ids,
+          params.message_ports, params.new_routing_ids,
           base::ThreadTaskRunnerHandle::Get());
 
-  found->second->dispatchMessageEvent(message, ports);
+  found->second->dispatchMessageEvent(
+      GetServiceWorker(params.service_worker_info, false /* adopt_handle */),
+      params.message, ports);
 }
 
 void ServiceWorkerDispatcher::AddServiceWorker(

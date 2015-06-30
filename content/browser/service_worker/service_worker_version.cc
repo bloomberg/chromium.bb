@@ -1606,7 +1606,7 @@ void ServiceWorkerVersion::OnPostMessageToClient(
     // possibly due to timing issue or bad message.
     return;
   }
-  provider_host->PostMessage(message, sent_message_ports);
+  provider_host->PostMessage(this, message, sent_message_ports);
 }
 
 void ServiceWorkerVersion::OnFocusClient(int request_id,

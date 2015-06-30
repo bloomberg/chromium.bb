@@ -390,6 +390,7 @@ bool ServiceWorkerProviderHost::CanAssociateRegistration(
 }
 
 void ServiceWorkerProviderHost::PostMessage(
+    ServiceWorkerVersion* version,
     const base::string16& message,
     const std::vector<TransferredMessagePort>& sent_message_ports) {
   if (!dispatcher_host_)
@@ -400,11 +401,14 @@ void ServiceWorkerProviderHost::PostMessage(
       UpdateMessagePortsWithNewRoutes(sent_message_ports,
                                       &new_routing_ids);
 
-  Send(new ServiceWorkerMsg_MessageToDocument(
-      kDocumentMainThreadId, provider_id(),
-      message,
-      sent_message_ports,
-      new_routing_ids));
+  ServiceWorkerMsg_MessageToDocument_Params params;
+  params.thread_id = kDocumentMainThreadId;
+  params.provider_id = provider_id();
+  params.service_worker_info = GetOrCreateServiceWorkerHandle(version);
+  params.message = message;
+  params.message_ports = sent_message_ports;
+  params.new_routing_ids = new_routing_ids;
+  Send(new ServiceWorkerMsg_MessageToDocument(params));
 }
 
 void ServiceWorkerProviderHost::Focus(const GetClientInfoCallback& callback) {

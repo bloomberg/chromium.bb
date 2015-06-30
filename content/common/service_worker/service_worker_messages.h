@@ -106,6 +106,15 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerClientQueryOptions)
   IPC_STRUCT_TRAITS_MEMBER(include_uncontrolled)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_BEGIN(ServiceWorkerMsg_MessageToDocument_Params)
+  IPC_STRUCT_MEMBER(int, thread_id)
+  IPC_STRUCT_MEMBER(int, provider_id)
+  IPC_STRUCT_MEMBER(content::ServiceWorkerObjectInfo, service_worker_info)
+  IPC_STRUCT_MEMBER(base::string16, message)
+  IPC_STRUCT_MEMBER(std::vector<content::TransferredMessagePort>, message_ports)
+  IPC_STRUCT_MEMBER(std::vector<int>, new_routing_ids)
+IPC_STRUCT_END()
+
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebGeofencingEventType,
                           blink::WebGeofencingEventTypeLast)
 
@@ -401,13 +410,8 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_SetControllerServiceWorker,
                      bool /* should_notify_controllerchange */)
 
 // Sends a 'message' event to a client document (browser->renderer).
-IPC_MESSAGE_CONTROL5(
-    ServiceWorkerMsg_MessageToDocument,
-    int /* thread_id */,
-    int /* provider_id */,
-    base::string16 /* message */,
-    std::vector<content::TransferredMessagePort> /* sent_message_ports */,
-    std::vector<int> /* new_routing_ids */)
+IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_MessageToDocument,
+                     ServiceWorkerMsg_MessageToDocument_Params)
 
 // Sent via EmbeddedWorker to dispatch events.
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_InstallEvent,
