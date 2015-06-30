@@ -95,11 +95,11 @@ Still reading?
   </issue>
   <issue id="SetJavaScriptEnabled" severity="ignore"/>
   <issue id="UnusedResources">
-    <!--
-      TODO(pkotwicz): Re-enable after the chrome_java and chrome_staging_java
-      targets have been merged. crbug.com/484934
-    -->
-    <ignore path="chrome/android/java/res" />
+    <!-- Used by chrome/android/java/AndroidManifest.xml -->
+    <ignore path="chrome/android/java/res/drawable/window_background.xml" />
+    <ignore path="chrome/android/java/res/xml/bookmark_thumbnail_widget_info.xml" />
+    <ignore path="chrome/android/java/res/xml/file_paths.xml" />
+
     <ignore path="content/shell/android/shell_apk/res/layout/content_shell_activity.xml" />
     <ignore path="content/shell/android/shell_apk/res/values/strings.xml" />
   </issue>
