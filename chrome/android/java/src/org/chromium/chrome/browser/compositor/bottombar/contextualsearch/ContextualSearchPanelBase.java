@@ -15,6 +15,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchOptOutPromo.ContextualSearchPromoHost;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.privacy.ContextualSearchPreferenceFragment;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -88,14 +89,39 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     private static final float SEARCH_BAR_MARGIN_TOP_DP = 16.f;
 
     /**
-     * The padding left of the Search Icon in dps.
+     * The side padding of Search Bar icons in dps.
      */
-    private static final float SEARCH_ICON_PADDING_LEFT_DP = 16.f;
+    private static final float SEARCH_BAR_ICON_SIDE_PADDING_DP = 16.f;
 
     /**
      * The height of the Search Bar's border in dps.
      */
     private static final float SEARCH_BAR_BORDER_HEIGHT_DP = 1.f;
+
+    /**
+     * The opacity of the arrow icon when the Panel is peeking.
+     */
+    private static final float ARROW_ICON_OPACITY_PEEKED = 1.f;
+
+    /**
+     * The opacity of the arrow icon when the Panel is expanded.
+     */
+    private static final float ARROW_ICON_OPACITY_EXPANDED = 1.f;
+
+    /**
+     * The opacity of the arrow icon when the Panel is maximized.
+     */
+    private static final float ARROW_ICON_OPACITY_MAXIMIZED = 0.f;
+
+    /**
+     * The rotation of the arrow icon when the Panel is peeking.
+     */
+    private static final float ARROW_ICON_ROTATION_PEEKED = -90.f;
+
+    /**
+     * The rotation of the arrow icon when the Panel is expanded.
+     */
+    private static final float ARROW_ICON_ROTATION_EXPANDED = -270.f;
 
     /**
      * The height of the Progress Bar in dps.
@@ -115,6 +141,11 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      * The height of the Toolbar in dps.
      */
     private final float mToolbarHeight;
+
+    /**
+     * The padding top of the Search Bar.
+     */
+    private final float mSearchBarPaddingTop;
 
     /**
      * The height of the Search Bar when the Panel is peeking, in dps.
@@ -172,9 +203,11 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         mToolbarHeight = context.getResources().getDimension(
                 R.dimen.control_container_height) * mPxToDp;
 
+        mSearchBarPaddingTop = PANEL_SHADOW_HEIGHT_DP;
+
         mSearchBarHeightPeeking = context.getResources().getDimension(
-                R.dimen.contextual_search_bar_height) * mPxToDp;
-        mSearchBarHeightMaximized = mToolbarHeight + PANEL_SHADOW_HEIGHT_DP;
+                R.dimen.contextual_search_bar_height) * mPxToDp + mSearchBarPaddingTop;
+        mSearchBarHeightMaximized = mToolbarHeight + mSearchBarPaddingTop;
         mSearchBarHeightExpanded =
                 Math.round((mSearchBarHeightPeeking + mSearchBarHeightMaximized) / 2.f);
 
@@ -384,24 +417,35 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     // --------------------------------------------------------------------------------------------
 
     private float mSearchBarMarginTop;
+    private float mSearchBarMarginSide;
     private float mSearchBarHeight;
     private float mSearchBarTextOpacity;
     private boolean mIsSearchBarBorderVisible;
     private float mSearchBarBorderY;
     private float mSearchBarBorderHeight;
 
-    boolean mSearchBarShadowVisible = false;
-    float mSearchBarShadowOpacity = 0.f;
+    private boolean mSearchBarShadowVisible = false;
+    private float mSearchBarShadowOpacity = 0.f;
 
     private float mSearchProviderIconOpacity;
-    private float mSearchIconPaddingLeft;
+
     private float mSearchIconOpacity;
+
+    private float mArrowIconOpacity;
+    private float mArrowIconRotation;
 
     /**
      * @return The top margin of the Contextual Search Bar.
      */
     public float getSearchBarMarginTop() {
         return mSearchBarMarginTop;
+    }
+
+    /**
+     * @return The side margin of the Contextual Search Bar.
+     */
+    public float getSearchBarMarginSide() {
+        return mSearchBarMarginSide;
     }
 
     /**
@@ -461,17 +505,31 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     }
 
     /**
-     * @return The left padding of the search icon.
-     */
-    public float getSearchIconPaddingLeft() {
-        return mSearchIconPaddingLeft;
-    }
-
-    /**
      * @return The opacity of the search icon.
      */
     public float getSearchIconOpacity() {
         return mSearchIconOpacity;
+    }
+
+    /**
+     * @return Whether the arrow icon is visible.
+     */
+    public boolean isArrowIconVisible() {
+        return ContextualSearchFieldTrial.isArrowIconEnabled();
+    }
+
+    /**
+     * @return The opacity of the arrow icon.
+     */
+    public float getArrowIconOpacity() {
+        return mArrowIconOpacity;
+    }
+
+    /**
+     * @return The rotation of the arrow icon, in degrees.
+     */
+    public float getArrowIconRotation() {
+        return mArrowIconRotation;
     }
 
     // --------------------------------------------------------------------------------------------
@@ -617,7 +675,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
 
         // Static values.
         mSearchBarMarginTop = SEARCH_BAR_MARGIN_TOP_DP;
-        mSearchIconPaddingLeft = SEARCH_ICON_PADDING_LEFT_DP;
+        mSearchBarMarginSide = SEARCH_BAR_ICON_SIDE_PADDING_DP;
         mProgressBarHeight = PROGRESS_BAR_HEIGHT_DP;
         mSearchBarBorderHeight = SEARCH_BAR_BORDER_HEIGHT_DP;
 
@@ -645,9 +703,9 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
             panelHeight = mSearchBarHeightPeeking;
         } else if (state == PanelState.EXPANDED) {
             panelHeight = fullscreenHeight * EXPANDED_PANEL_HEIGHT_PERCENTAGE
-                    + PANEL_SHADOW_HEIGHT_DP;
+                    + mSearchBarPaddingTop;
         } else if (state == PanelState.MAXIMIZED) {
-            panelHeight = fullscreenHeight + PANEL_SHADOW_HEIGHT_DP;
+            panelHeight = fullscreenHeight + mSearchBarPaddingTop;
         }
 
         return panelHeight;
@@ -849,6 +907,10 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         // Search icon opacity.
         mSearchIconOpacity = SEARCH_ICON_OPACITY_PEEKED;
 
+        // Arrow Icon.
+        mArrowIconOpacity = ARROW_ICON_OPACITY_PEEKED;
+        mArrowIconRotation = ARROW_ICON_ROTATION_PEEKED;
+
         // Progress Bar.
         mProgressBarOpacity = 0.f;
 
@@ -898,7 +960,14 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         mSearchProviderIconOpacity = SEARCH_PROVIDER_ICON_OPACITY_STATE_PEEKED;
 
         // Search icon opacity.
-        mSearchIconOpacity = SEARCH_ICON_OPACITY_PEEKED;
+        mSearchIconOpacity = SEARCH_ICON_OPACITY_EXPANDED;
+
+        // Arrow Icon.
+        mArrowIconOpacity = ARROW_ICON_OPACITY_EXPANDED;
+        mArrowIconRotation = Math.round(MathUtils.interpolate(
+                ARROW_ICON_ROTATION_PEEKED,
+                ARROW_ICON_ROTATION_EXPANDED,
+                percentage));
 
         // Progress Bar.
         float peekedHeight = getPanelHeightFromState(PanelState.PEEKED);
@@ -961,6 +1030,13 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
                 SEARCH_ICON_OPACITY_MAXIMIZED,
                 percentage);
         mSearchIconOpacity = searchIconOpacity;
+
+        // Arrow Icon.
+        mArrowIconOpacity = MathUtils.interpolate(
+                ARROW_ICON_OPACITY_EXPANDED,
+                ARROW_ICON_OPACITY_MAXIMIZED,
+                percentage);
+        mArrowIconRotation = ARROW_ICON_ROTATION_EXPANDED;
 
         // Progress Bar.
         mProgressBarOpacity = 1.f;
@@ -1044,7 +1120,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         // getPanelFromHeight method). We need the measurement of the portion
         // of the Panel that occludes the page.
         final float expandedHeight = getPanelHeightFromState(expandedState)
-                - PANEL_SHADOW_HEIGHT_DP;
+                - mSearchBarPaddingTop;
 
         // Calculate the offset to center the selection on the available area.
         final float fullscreenHeight = getFullscreenHeight();

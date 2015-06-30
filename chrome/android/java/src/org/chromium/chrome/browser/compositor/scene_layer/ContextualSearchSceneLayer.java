@@ -43,6 +43,7 @@ public class ContextualSearchSceneLayer extends SceneLayer {
         float searchPanelY = mSearchPanel.getContextualSearchPanelY();
         float searchPanelWidth = mSearchPanel.getWidth();
         float searchBarMarginTop = mSearchPanel.getSearchBarMarginTop();
+        float searchBarMarginSide = mSearchPanel.getSearchBarMarginSide();
         float searchBarHeight = mSearchPanel.getSearchBarHeight();
         float searchBarTextOpacity = mSearchPanel.getSearchBarTextOpacity();
 
@@ -54,8 +55,11 @@ public class ContextualSearchSceneLayer extends SceneLayer {
         float searchBarShadowOpacity = mSearchPanel.getSearchBarShadowOpacity();
 
         float searchProviderIconOpacity = mSearchPanel.getSearchProviderIconOpacity();
-        float searchIconPaddingLeft = mSearchPanel.getSearchIconPaddingLeft();
         float searchIconOpacity = mSearchPanel.getSearchIconOpacity();
+
+        boolean arrowIconVisible = mSearchPanel.isArrowIconVisible();
+        float arrowIconOpacity = mSearchPanel.getArrowIconOpacity();
+        float arrowIconRotation = mSearchPanel.getArrowIconRotation();
 
         boolean isProgressBarVisible = mSearchPanel.isProgressBarVisible();
         float progressBarY = mSearchPanel.getProgressBarY();
@@ -69,6 +73,7 @@ public class ContextualSearchSceneLayer extends SceneLayer {
                 R.drawable.contextual_search_bar_shadow,
                 R.drawable.blue_google_icon,
                 R.drawable.ic_search,
+                R.drawable.breadcrumb_arrow,
                 R.drawable.progress_bar_background,
                 R.drawable.progress_bar_foreground,
                 R.id.contextual_search_opt_out_promo,
@@ -79,6 +84,7 @@ public class ContextualSearchSceneLayer extends SceneLayer {
                 searchPanelY * mDpToPx,
                 searchPanelWidth * mDpToPx,
                 searchBarMarginTop * mDpToPx,
+                searchBarMarginSide * mDpToPx,
                 searchBarHeight * mDpToPx,
                 searchBarTextOpacity,
                 searchBarBorderVisible,
@@ -87,8 +93,10 @@ public class ContextualSearchSceneLayer extends SceneLayer {
                 searchBarShadowVisible,
                 searchBarShadowOpacity,
                 searchProviderIconOpacity,
-                searchIconPaddingLeft * mDpToPx,
                 searchIconOpacity,
+                arrowIconVisible,
+                arrowIconOpacity,
+                arrowIconRotation,
                 isProgressBarVisible,
                 progressBarY * mDpToPx,
                 progressBarHeight * mDpToPx,
@@ -122,6 +130,7 @@ public class ContextualSearchSceneLayer extends SceneLayer {
             int searchBarShadowResourceId,
             int searchProviderIconResourceId,
             int searchIconResourceId,
+            int arrowUpResourceId,
             int progressBarBackgroundResourceId,
             int progressBarResourceId,
             int searchPromoResourceId,
@@ -132,6 +141,7 @@ public class ContextualSearchSceneLayer extends SceneLayer {
             float searchPanelY,
             float searchPanelWidth,
             float searchBarMarginTop,
+            float searchBarMarginSide,
             float searchBarHeight,
             float searchBarTextOpacity,
             boolean searchBarBorderVisible,
@@ -140,8 +150,10 @@ public class ContextualSearchSceneLayer extends SceneLayer {
             boolean searchBarShadowVisible,
             float searchBarShadowOpacity,
             float searchProviderIconOpacity,
-            float searchIconPaddingLeft,
             float searchIconOpacity,
+            boolean arrowIconVisible,
+            float arrowIconOpacity,
+            float arrowIconRotation,
             boolean isProgressBarVisible,
             float progressBarY,
             float progressBarHeight,
