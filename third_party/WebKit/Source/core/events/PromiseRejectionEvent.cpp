@@ -48,6 +48,18 @@ ScriptValue PromiseRejectionEvent::reason(ScriptState* state) const
     return ScriptValue(m_scriptState.get(), m_reason.newLocal(m_scriptState->isolate()));
 }
 
+void PromiseRejectionEvent::setWrapperReference(v8::Isolate* isolate, const v8::Persistent<v8::Object>& wrapper)
+{
+    // This might create cross world references. However, the regular code path
+    // will not create them, and if we get a cross world reference here, the
+    // worst thing is that the lifetime is too long (similar to what happens
+    // for DOM trees).
+    if (!m_promise.isEmpty())
+        m_promise.setReference(wrapper, isolate);
+    if (!m_reason.isEmpty())
+        m_reason.setReference(wrapper, isolate);
+}
+
 const AtomicString& PromiseRejectionEvent::interfaceName() const
 {
     return EventNames::PromiseRejectionEvent;

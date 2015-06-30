@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8Binding.h"
 
 namespace blink {
@@ -23,6 +24,12 @@ void V8PromiseRejectionEvent::promiseAttributeGetterCustom(const v8::FunctionCal
     }
 
     v8SetReturnValue(info, promise.v8Value());
+}
+
+void V8PromiseRejectionEvent::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper)
+{
+    PromiseRejectionEvent* event = scriptWrappable->toImpl<PromiseRejectionEvent>();
+    event->setWrapperReference(isolate, wrapper);
 }
 
 } // namespace blink

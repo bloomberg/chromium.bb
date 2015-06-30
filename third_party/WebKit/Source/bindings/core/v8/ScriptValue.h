@@ -179,6 +179,11 @@ public:
 
     bool toString(String&) const;
 
+    void setReference(const v8::Persistent<v8::Object>& parent, v8::Isolate* isolate)
+    {
+        m_value->setReference(parent, isolate);
+    }
+
     static ScriptValue createNull(ScriptState*);
 
 private:

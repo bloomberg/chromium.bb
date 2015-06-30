@@ -54,6 +54,11 @@ public:
 
     bool isEmpty() { return m_value.isEmpty(); }
 
+    void setReference(const v8::Persistent<v8::Object>& parent, v8::Isolate* isolate)
+    {
+        m_value.setReference(parent, isolate);
+    }
+
     bool operator==(const SharedPersistent<T>& other)
     {
         return m_value == other.m_value;

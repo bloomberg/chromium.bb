@@ -6,6 +6,7 @@
 
 [
     RuntimeEnabled=PromiseRejectionEvent,
+    Custom=VisitDOMWrapper,
     Constructor(DOMString type, optional PromiseRejectionEventInit eventInitDict),
     ConstructorCallWith=ScriptState,
     Exposed=(Window,Worker,ServiceWorker),

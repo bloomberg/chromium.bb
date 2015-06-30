@@ -98,6 +98,11 @@ public:
         m_promise.clear();
     }
 
+    void setReference(const v8::Persistent<v8::Object>& parent, v8::Isolate* isolate)
+    {
+        m_promise.setReference(parent, isolate);
+    }
+
     bool operator==(const ScriptPromise& value) const
     {
         return m_promise == value.m_promise;
