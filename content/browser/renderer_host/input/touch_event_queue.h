@@ -40,9 +40,13 @@ class CONTENT_EXPORT TouchEventQueue {
   struct CONTENT_EXPORT Config {
     Config();
 
-    // Controls whether touch ack timeouts will trigger touch cancellation.
-    // Defaults to 200ms.
-    base::TimeDelta touch_ack_timeout_delay;
+    // Touch ack timeout delay for desktop sites. If zero, timeout behavior
+    // is disabled for such sites. Defaults to 200ms.
+    base::TimeDelta desktop_touch_ack_timeout_delay;
+
+    // Touch ack timeout delay for mobile sites. If zero, timeout behavior
+    // is disabled for such sites. Defaults to 1000ms.
+    base::TimeDelta mobile_touch_ack_timeout_delay;
 
     // Whether the platform supports touch ack timeout behavior.
     // Defaults to false (disabled).
@@ -91,6 +95,12 @@ class CONTENT_EXPORT TouchEventQueue {
   // it will take effect only for the following touch sequence.
   void SetAckTimeoutEnabled(bool enabled);
 
+  // Sets whether the current site has a mobile friendly viewport. This
+  // determines which ack timeout delay will be used for *future* touch events.
+  // The default assumption is that the site is *not* mobile-optimized.
+  void SetIsMobileOptimizedSite(bool mobile_optimized_site);
+
+  // Whether ack timeout behavior is supported and enabled for the current site.
   bool IsAckTimeoutEnabled() const;
 
   bool IsForwardingTouches();

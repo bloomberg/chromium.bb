@@ -100,22 +100,6 @@ typedef base::hash_map<RenderWidgetHostID, RenderWidgetHostImpl*>
 base::LazyInstance<RoutingIDWidgetMap> g_routing_id_widget_map =
     LAZY_INSTANCE_INITIALIZER;
 
-int GetInputRouterViewFlagsFromCompositorFrameMetadata(
-    const cc::CompositorFrameMetadata metadata) {
-  int view_flags = InputRouter::VIEW_FLAGS_NONE;
-
-  if (metadata.min_page_scale_factor == metadata.max_page_scale_factor)
-    view_flags |= InputRouter::FIXED_PAGE_SCALE;
-
-  const float window_width_dip = std::ceil(
-      metadata.page_scale_factor * metadata.scrollable_viewport_size.width());
-  const float content_width_css = metadata.root_layer_size.width();
-  if (content_width_css <= window_width_dip)
-    view_flags |= InputRouter::MOBILE_VIEWPORT;
-
-  return view_flags;
-}
-
 // Implements the RenderWidgetHostIterator interface. It keeps a list of
 // RenderWidgetHosts, and makes sure it returns a live RenderWidgetHost at each
 // iteration (or NULL if there isn't any left).
@@ -1457,13 +1441,10 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
 
   latency_tracker_.OnSwapCompositorFrame(&frame->metadata.latency_info);
 
-  input_router_->OnViewUpdated(
-      GetInputRouterViewFlagsFromCompositorFrameMetadata(frame->metadata));
-
-  if (touch_emulator_) {
-    touch_emulator_->SetDoubleTapSupportForPageEnabled(
-        !IsMobileOptimizedFrame(frame->metadata));
-  }
+  bool is_mobile_optimized = IsMobileOptimizedFrame(frame->metadata);
+  input_router_->NotifySiteIsMobileOptimized(is_mobile_optimized);
+  if (touch_emulator_)
+    touch_emulator_->SetDoubleTapSupportForPageEnabled(!is_mobile_optimized);
 
   if (view_) {
     view_->OnSwapCompositorFrame(output_surface_id, frame.Pass());

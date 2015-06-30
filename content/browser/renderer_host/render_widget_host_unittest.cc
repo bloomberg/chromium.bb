@@ -102,7 +102,7 @@ class MockInputRouter : public InputRouter {
     NOTREACHED();
     return NULL;
   }
-  void OnViewUpdated(int view_flags) override {}
+  void NotifySiteIsMobileOptimized(bool is_mobile_optimized) override {}
   void RequestNotificationWhenFlushed() override {}
   bool HasPendingEvents() const override { return false; }
 

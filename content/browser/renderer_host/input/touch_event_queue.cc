@@ -69,15 +69,17 @@ bool HasPointChanged(const WebTouchPoint& point_1,
 class TouchEventQueue::TouchTimeoutHandler {
  public:
   TouchTimeoutHandler(TouchEventQueue* touch_queue,
-                      base::TimeDelta timeout_delay)
+                      base::TimeDelta desktop_timeout_delay,
+                      base::TimeDelta mobile_timeout_delay)
       : touch_queue_(touch_queue),
-        timeout_delay_(timeout_delay),
+        desktop_timeout_delay_(desktop_timeout_delay),
+        mobile_timeout_delay_(mobile_timeout_delay),
         pending_ack_state_(PENDING_ACK_NONE),
         timeout_monitor_(base::Bind(&TouchTimeoutHandler::OnTimeOut,
                                     base::Unretained(this))),
         enabled_(true),
         enabled_for_current_sequence_(false) {
-    DCHECK(timeout_delay != base::TimeDelta());
+    SetUseMobileTimeout(false);
   }
 
   ~TouchTimeoutHandler() {}
@@ -87,6 +89,9 @@ class TouchEventQueue::TouchTimeoutHandler {
       return;
 
     if (!enabled_)
+      return;
+
+    if (current_timeout_delay_.is_zero())
       return;
 
     if (!ShouldTouchTriggerTimeout(event.event))
@@ -99,7 +104,7 @@ class TouchEventQueue::TouchTimeoutHandler {
       return;
 
     timeout_event_ = event;
-    timeout_monitor_.Restart(timeout_delay_);
+    timeout_monitor_.Restart(current_timeout_delay_);
   }
 
   bool ConfirmTouchEvent(InputEventAckState ack_result) {
@@ -151,9 +156,16 @@ class TouchEventQueue::TouchTimeoutHandler {
     }
   }
 
+  void SetUseMobileTimeout(bool use_mobile_timeout) {
+    current_timeout_delay_ =
+        use_mobile_timeout ? mobile_timeout_delay_ : desktop_timeout_delay_;
+  }
+
   bool IsTimeoutTimerRunning() const { return timeout_monitor_.IsRunning(); }
 
-  bool enabled() const { return enabled_; }
+  bool IsEnabled() const {
+    return enabled_ && !current_timeout_delay_.is_zero();
+  }
 
  private:
   enum PendingAckState {
@@ -207,7 +219,9 @@ class TouchEventQueue::TouchTimeoutHandler {
   TouchEventQueue* touch_queue_;
 
   // How long to wait on a touch ack before cancelling the touch sequence.
-  base::TimeDelta timeout_delay_;
+  const base::TimeDelta desktop_timeout_delay_;
+  const base::TimeDelta mobile_timeout_delay_;
+  base::TimeDelta current_timeout_delay_;
 
   // The touch event source for which we expect the next ack.
   PendingAckState pending_ack_state_;
@@ -361,7 +375,8 @@ class CoalescedWebTouchEvent {
 };
 
 TouchEventQueue::Config::Config()
-    : touch_ack_timeout_delay(base::TimeDelta::FromMilliseconds(200)),
+    : desktop_touch_ack_timeout_delay(base::TimeDelta::FromMilliseconds(200)),
+      mobile_touch_ack_timeout_delay(base::TimeDelta::FromMilliseconds(1000)),
       touch_ack_timeout_supported(false) {
 }
 
@@ -379,7 +394,9 @@ TouchEventQueue::TouchEventQueue(TouchEventQueueClient* client,
   DCHECK(client);
   if (config.touch_ack_timeout_supported) {
     timeout_handler_.reset(
-        new TouchTimeoutHandler(this, config.touch_ack_timeout_delay));
+        new TouchTimeoutHandler(this,
+                                config.desktop_touch_ack_timeout_delay,
+                                config.mobile_touch_ack_timeout_delay));
   }
 }
 
@@ -610,8 +627,13 @@ void TouchEventQueue::SetAckTimeoutEnabled(bool enabled) {
     timeout_handler_->SetEnabled(enabled);
 }
 
+void TouchEventQueue::SetIsMobileOptimizedSite(bool mobile_optimized_site) {
+  if (timeout_handler_)
+    timeout_handler_->SetUseMobileTimeout(mobile_optimized_site);
+}
+
 bool TouchEventQueue::IsAckTimeoutEnabled() const {
-  return timeout_handler_ && timeout_handler_->enabled();
+  return timeout_handler_ && timeout_handler_->IsEnabled();
 }
 
 bool TouchEventQueue::HasPendingAsyncTouchMoveForTesting() const {

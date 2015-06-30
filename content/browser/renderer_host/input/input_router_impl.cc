@@ -73,7 +73,6 @@ InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
       move_caret_pending_(false),
       mouse_move_pending_(false),
       mouse_wheel_pending_(false),
-      current_view_flags_(0),
       current_ack_source_(ACK_SOURCE_NONE),
       flush_requested_(false),
       active_renderer_fling_count_(0),
@@ -233,11 +232,8 @@ const NativeWebKeyboardEvent* InputRouterImpl::GetLastKeyboardEvent() const {
   return &key_queue_.front();
 }
 
-void InputRouterImpl::OnViewUpdated(int view_flags) {
-  current_view_flags_ = view_flags;
-
-  // A fixed page scale or mobile viewport should disable the touch ack timeout.
-  UpdateTouchAckTimeoutEnabled();
+void InputRouterImpl::NotifySiteIsMobileOptimized(bool is_mobile_optimized) {
+  touch_event_queue_.SetIsMobileOptimizedSite(is_mobile_optimized);
 }
 
 void InputRouterImpl::RequestNotificationWhenFlushed() {
@@ -618,20 +614,11 @@ void InputRouterImpl::ProcessTouchAck(InputEventAckState ack_result,
 }
 
 void InputRouterImpl::UpdateTouchAckTimeoutEnabled() {
-  // Mobile sites tend to be well-behaved with respect to touch handling, so
-  // they have less need for the touch timeout fallback.
-  const bool fixed_page_scale = (current_view_flags_ & FIXED_PAGE_SCALE) != 0;
-  const bool mobile_viewport = (current_view_flags_ & MOBILE_VIEWPORT) != 0;
-
   // TOUCH_ACTION_NONE will prevent scrolling, in which case the timeout serves
   // little purpose. It's also a strong signal that touch handling is critical
   // to page functionality, so the timeout could do more harm than good.
-  const bool touch_action_none =
-      touch_action_filter_.allowed_touch_action() == TOUCH_ACTION_NONE;
-
-  const bool touch_ack_timeout_enabled = !fixed_page_scale &&
-                                         !mobile_viewport &&
-                                         !touch_action_none;
+  const bool touch_ack_timeout_enabled =
+      touch_action_filter_.allowed_touch_action() != TOUCH_ACTION_NONE;
   touch_event_queue_.SetAckTimeoutEnabled(touch_ack_timeout_enabled);
 }
 

@@ -56,8 +56,9 @@ TouchEventQueue::Config GetTouchEventQueueConfig() {
 #elif defined(OS_ANDROID)
 
 // Default time allowance for the touch ack delay before the touch sequence is
-// cancelled.
-const int kTouchAckTimeoutDelayMs = 200;
+// cancelled, depending on whether the site has a mobile-friendly viewport.
+const int kDesktopTouchAckTimeoutDelayMs = 200;
+const int kMobileTouchAckTimeoutDelayMs = 1000;
 
 GestureEventQueue::Config GetGestureEventQueueConfig() {
   GestureEventQueue::Config config;
@@ -76,8 +77,10 @@ GestureEventQueue::Config GetGestureEventQueueConfig() {
 TouchEventQueue::Config GetTouchEventQueueConfig() {
   TouchEventQueue::Config config;
 
-  config.touch_ack_timeout_delay =
-      base::TimeDelta::FromMilliseconds(kTouchAckTimeoutDelayMs);
+  config.desktop_touch_ack_timeout_delay =
+      base::TimeDelta::FromMilliseconds(kDesktopTouchAckTimeoutDelayMs);
+  config.mobile_touch_ack_timeout_delay =
+      base::TimeDelta::FromMilliseconds(kMobileTouchAckTimeoutDelayMs);
   config.touch_ack_timeout_supported = true;
 
   return config;

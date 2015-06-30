@@ -86,11 +86,18 @@ class TouchEventQueueTest : public testing::Test,
     slop_length_dips_ = slop_length_dips;
   }
 
-  void SetUpForTimeoutTesting(base::TimeDelta timeout_delay) {
+  void SetUpForTimeoutTesting(base::TimeDelta desktop_timeout_delay,
+                              base::TimeDelta mobile_timeout_delay) {
     TouchEventQueue::Config config;
-    config.touch_ack_timeout_delay = timeout_delay;
+    config.desktop_touch_ack_timeout_delay = desktop_timeout_delay;
+    config.mobile_touch_ack_timeout_delay = mobile_timeout_delay;
     config.touch_ack_timeout_supported = true;
     ResetQueueWithConfig(config);
+  }
+
+  void SetUpForTimeoutTesting() {
+    SetUpForTimeoutTesting(DefaultTouchTimeoutDelay(),
+                           DefaultTouchTimeoutDelay());
   }
 
   void SendTouchEvent(WebTouchEvent event) {
@@ -252,6 +259,10 @@ class TouchEventQueueTest : public testing::Test,
   }
 
   void SetAckTimeoutDisabled() { queue_->SetAckTimeoutEnabled(false); }
+
+  void SetIsMobileOptimizedSite(bool is_mobile_optimized) {
+    queue_->SetIsMobileOptimizedSite(is_mobile_optimized);
+  }
 
   bool IsTimeoutRunning() const { return queue_->IsTimeoutRunningForTesting(); }
 
@@ -998,7 +1009,7 @@ TEST_F(TouchEventQueueTest, PendingStart) {
 
 // Tests that the touch timeout is started when sending certain touch types.
 TEST_F(TouchEventQueueTest, TouchTimeoutTypes) {
-  SetUpForTimeoutTesting(DefaultTouchTimeoutDelay());
+  SetUpForTimeoutTesting();
 
   // Sending a TouchStart will start the timeout.
   PressTouchPoint(0, 1);
@@ -1032,7 +1043,7 @@ TEST_F(TouchEventQueueTest, TouchTimeoutTypes) {
 // disabling touch forwarding until the next TouchStart is received after
 // the timeout events are ack'ed.
 TEST_F(TouchEventQueueTest, TouchTimeoutBasic) {
-  SetUpForTimeoutTesting(DefaultTouchTimeoutDelay());
+  SetUpForTimeoutTesting();
 
   // Queue a TouchStart.
   GetAndResetSentEventCount();
@@ -1086,7 +1097,7 @@ TEST_F(TouchEventQueueTest, TouchTimeoutBasic) {
 // Tests that the timeout is never started if the renderer consumes
 // a TouchEvent from the current touch sequence.
 TEST_F(TouchEventQueueTest, NoTouchTimeoutIfRendererIsConsumingGesture) {
-  SetUpForTimeoutTesting(DefaultTouchTimeoutDelay());
+  SetUpForTimeoutTesting();
 
   // Queue a TouchStart.
   PressTouchPoint(0, 1);
@@ -1120,7 +1131,7 @@ TEST_F(TouchEventQueueTest, NoTouchTimeoutIfRendererIsConsumingGesture) {
 // Tests that the timeout is never started if the renderer consumes
 // a TouchEvent from the current touch sequence.
 TEST_F(TouchEventQueueTest, NoTouchTimeoutIfDisabledAfterTouchStart) {
-  SetUpForTimeoutTesting(DefaultTouchTimeoutDelay());
+  SetUpForTimeoutTesting();
 
   // Queue a TouchStart.
   PressTouchPoint(0, 1);
@@ -1146,7 +1157,7 @@ TEST_F(TouchEventQueueTest, NoTouchTimeoutIfDisabledAfterTouchStart) {
 
 // Tests that the timeout is never started if the ack is synchronous.
 TEST_F(TouchEventQueueTest, NoTouchTimeoutIfAckIsSynchronous) {
-  SetUpForTimeoutTesting(DefaultTouchTimeoutDelay());
+  SetUpForTimeoutTesting();
 
   // Queue a TouchStart.
   SetSyncAckResult(INPUT_EVENT_ACK_STATE_CONSUMED);
@@ -1158,7 +1169,7 @@ TEST_F(TouchEventQueueTest, NoTouchTimeoutIfAckIsSynchronous) {
 // Tests that the timeout does not fire if explicitly disabled while an event
 // is in-flight.
 TEST_F(TouchEventQueueTest, NoTouchTimeoutIfDisabledWhileTimerIsActive) {
-  SetUpForTimeoutTesting(DefaultTouchTimeoutDelay());
+  SetUpForTimeoutTesting();
 
   // Queue a TouchStart.
   PressTouchPoint(0, 1);
@@ -1171,10 +1182,47 @@ TEST_F(TouchEventQueueTest, NoTouchTimeoutIfDisabledWhileTimerIsActive) {
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 }
 
+// Tests that the timeout does not fire if the delay is zero.
+TEST_F(TouchEventQueueTest, NoTouchTimeoutIfTimeoutDelayIsZero) {
+  SetUpForTimeoutTesting(base::TimeDelta(), base::TimeDelta());
+
+  // As the delay is zero, timeout behavior should be disabled.
+  PressTouchPoint(0, 1);
+  EXPECT_FALSE(IsTimeoutRunning());
+  RunTasksAndWait(DefaultTouchTimeoutDelay() * 2);
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+}
+
+// Tests that timeout delays for mobile sites take effect when appropriate.
+TEST_F(TouchEventQueueTest, TouchTimeoutConfiguredForMobile) {
+  base::TimeDelta desktop_delay = DefaultTouchTimeoutDelay();
+  base::TimeDelta mobile_delay = base::TimeDelta();
+  SetUpForTimeoutTesting(desktop_delay, mobile_delay);
+
+  // The desktop delay is non-zero, allowing timeout behavior.
+  SetIsMobileOptimizedSite(false);
+
+  PressTouchPoint(0, 1);
+  ASSERT_TRUE(IsTimeoutRunning());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  ReleaseTouchPoint(0);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(2U, GetAndResetAckedEventCount());
+  ASSERT_FALSE(IsTimeoutRunning());
+
+  // The mobile delay is zero, preventing timeout behavior.
+  SetIsMobileOptimizedSite(true);
+
+  PressTouchPoint(0, 1);
+  EXPECT_FALSE(IsTimeoutRunning());
+  RunTasksAndWait(DefaultTouchTimeoutDelay() * 2);
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+}
+
 // Tests that a TouchCancel timeout plays nice when the timed out touch stream
 // turns into a scroll gesture sequence.
 TEST_F(TouchEventQueueTest, TouchTimeoutWithFollowupGesture) {
-  SetUpForTimeoutTesting(DefaultTouchTimeoutDelay());
+  SetUpForTimeoutTesting();
 
   // Queue a TouchStart.
   PressTouchPoint(0, 1);
@@ -1229,7 +1277,7 @@ TEST_F(TouchEventQueueTest, TouchTimeoutWithFollowupGesture) {
 // turns into a scroll gesture sequence, but the original event acks are
 // significantly delayed.
 TEST_F(TouchEventQueueTest, TouchTimeoutWithFollowupGestureAndDelayedAck) {
-  SetUpForTimeoutTesting(DefaultTouchTimeoutDelay());
+  SetUpForTimeoutTesting();
 
   // Queue a TouchStart.
   PressTouchPoint(0, 1);
@@ -1285,7 +1333,7 @@ TEST_F(TouchEventQueueTest, TouchTimeoutWithFollowupGestureAndDelayedAck) {
 // Tests that a delayed TouchEvent ack will not trigger a TouchCancel timeout if
 // the timed-out event had no consumer.
 TEST_F(TouchEventQueueTest, NoCancelOnTouchTimeoutWithoutConsumer) {
-  SetUpForTimeoutTesting(DefaultTouchTimeoutDelay());
+  SetUpForTimeoutTesting();
 
   // Queue a TouchStart.
   PressTouchPoint(0, 1);
@@ -1815,7 +1863,7 @@ TEST_F(TouchEventQueueTest, AsyncTouchFlushedByTouchEnd) {
 // Ensure that async touch dispatch and touch ack timeout interactions work
 // appropriately.
 TEST_F(TouchEventQueueTest, AsyncTouchWithAckTimeout) {
-  SetUpForTimeoutTesting(DefaultTouchTimeoutDelay());
+  SetUpForTimeoutTesting();
 
   // The touchstart should start the timeout.
   PressTouchPoint(0, 0);

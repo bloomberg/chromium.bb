@@ -66,7 +66,7 @@ class CONTENT_EXPORT InputRouterImpl
       const GestureEventWithLatencyInfo& gesture_event) override;
   void SendTouchEvent(const TouchEventWithLatencyInfo& touch_event) override;
   const NativeWebKeyboardEvent* GetLastKeyboardEvent() const override;
-  void OnViewUpdated(int view_flags) override;
+  void NotifySiteIsMobileOptimized(bool is_mobile_optimized) override;
   void RequestNotificationWhenFlushed() override;
   bool HasPendingEvents() const override;
 
@@ -236,9 +236,6 @@ private:
 
   // The time when an input event was sent to the client.
   base::TimeTicks input_event_start_time_;
-
-  // Cached flags from |OnViewUpdated()|, defaults to 0.
-  int current_view_flags_;
 
   // The source of the ack within the scope of |ProcessInputEventAck()|.
   // Defaults to ACK_SOURCE_NONE.

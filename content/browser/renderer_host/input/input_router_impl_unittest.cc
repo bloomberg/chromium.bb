@@ -170,12 +170,16 @@ class InputRouterImplTest : public testing::Test {
     browser_context_.reset();
   }
 
-  void SetUpForTouchAckTimeoutTest(int timeout_ms) {
-    config_.touch_config.touch_ack_timeout_delay =
-        base::TimeDelta::FromMilliseconds(timeout_ms);
+  void SetUpForTouchAckTimeoutTest(int desktop_timeout_ms,
+                                   int mobile_timeout_ms) {
+    config_.touch_config.desktop_touch_ack_timeout_delay =
+        base::TimeDelta::FromMilliseconds(desktop_timeout_ms);
+    config_.touch_config.mobile_touch_ack_timeout_delay =
+        base::TimeDelta::FromMilliseconds(mobile_timeout_ms);
     config_.touch_config.touch_ack_timeout_supported = true;
     TearDown();
     SetUp();
+    input_router()->NotifySiteIsMobileOptimized(false);
   }
 
   void SimulateKeyboardEvent(WebInputEvent::Type type, bool is_shortcut) {
@@ -1224,11 +1228,12 @@ TEST_F(InputRouterImplTest, GestureShowPressIsInOrder) {
   EXPECT_EQ(3U, ack_handler_->GetAndResetAckCount());
 }
 
-// Test that touch ack timeout behavior is properly toggled by view update flags
-// and allowed touch actions.
+// Test that touch ack timeout behavior is properly configured for
+// mobile-optimized sites and allowed touch actions.
 TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
-  const int timeout_ms = 1;
-  SetUpForTouchAckTimeoutTest(timeout_ms);
+  const int kDesktopTimeoutMs = 1;
+  const int kMobileTimeoutMs = 0;
+  SetUpForTouchAckTimeoutTest(kDesktopTimeoutMs, kMobileTimeoutMs);
   ASSERT_TRUE(TouchEventTimeoutEnabled());
 
   // Verify that the touch ack timeout fires upon the delayed ack.
@@ -1236,7 +1241,7 @@ TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
   uint32 touch_press_event_id1 = SendTouchEvent();
   EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
-  RunTasksAndWait(base::TimeDelta::FromMilliseconds(timeout_ms + 1));
+  RunTasksAndWait(base::TimeDelta::FromMilliseconds(kDesktopTimeoutMs + 1));
 
   // The timed-out event should have been ack'ed.
   EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
@@ -1255,21 +1260,12 @@ TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
   ASSERT_TRUE(TouchEventTimeoutEnabled());
 
-  // A fixed page scale or mobile viewport should disable the touch timeout.
-  input_router()->OnViewUpdated(InputRouter::FIXED_PAGE_SCALE);
+  // A mobile-optimized site should use the mobile timeout. For this test that
+  // timeout value is 0, which disables the timeout.
+  input_router()->NotifySiteIsMobileOptimized(true);
   EXPECT_FALSE(TouchEventTimeoutEnabled());
 
-  input_router()->OnViewUpdated(InputRouter::VIEW_FLAGS_NONE);
-  EXPECT_TRUE(TouchEventTimeoutEnabled());
-
-  input_router()->OnViewUpdated(InputRouter::MOBILE_VIEWPORT);
-  EXPECT_FALSE(TouchEventTimeoutEnabled());
-
-  input_router()->OnViewUpdated(InputRouter::MOBILE_VIEWPORT |
-                                InputRouter::FIXED_PAGE_SCALE);
-  EXPECT_FALSE(TouchEventTimeoutEnabled());
-
-  input_router()->OnViewUpdated(InputRouter::VIEW_FLAGS_NONE);
+  input_router()->NotifySiteIsMobileOptimized(false);
   EXPECT_TRUE(TouchEventTimeoutEnabled());
 
   // TOUCH_ACTION_NONE (and no other touch-action) should disable the timeout.
@@ -1307,8 +1303,9 @@ TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
 // the touch timeout.
 TEST_F(InputRouterImplTest,
        TouchAckTimeoutDisabledForTouchSequenceAfterTouchActionNone) {
-  const int timeout_ms = 1;
-  SetUpForTouchAckTimeoutTest(timeout_ms);
+  const int kDesktopTimeoutMs = 1;
+  const int kMobileTimeoutMs = 2;
+  SetUpForTouchAckTimeoutTest(kDesktopTimeoutMs, kMobileTimeoutMs);
   ASSERT_TRUE(TouchEventTimeoutEnabled());
   OnHasTouchEventHandlers(true);
 
@@ -1330,7 +1327,7 @@ TEST_F(InputRouterImplTest,
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
   // Delay the move ack. The timeout should not fire.
-  RunTasksAndWait(base::TimeDelta::FromMilliseconds(timeout_ms + 1));
+  RunTasksAndWait(base::TimeDelta::FromMilliseconds(kDesktopTimeoutMs + 1));
   EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
   SendTouchEventACK(WebInputEvent::TouchMove, INPUT_EVENT_ACK_STATE_CONSUMED,
@@ -1354,7 +1351,7 @@ TEST_F(InputRouterImplTest,
   EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
 
   // Wait for the touch ack timeout to fire.
-  RunTasksAndWait(base::TimeDelta::FromMilliseconds(timeout_ms + 1));
+  RunTasksAndWait(base::TimeDelta::FromMilliseconds(kDesktopTimeoutMs + 1));
   EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
 }
 
