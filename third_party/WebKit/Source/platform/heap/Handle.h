@@ -287,6 +287,7 @@ public:
     T* get() const { return m_raw; }
 
 private:
+    NO_LAZY_SWEEP_SANITIZE_ADDRESS
     void initialize()
     {
         ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
@@ -485,6 +486,7 @@ public:
     T* get() const { return m_raw; }
 
 private:
+    NO_LAZY_SWEEP_SANITIZE_ADDRESS
     void initialize()
     {
         MutexLocker m_locker(ThreadState::globalRootsMutex());
@@ -576,6 +578,7 @@ public:
     }
 
 private:
+    NO_LAZY_SWEEP_SANITIZE_ADDRESS
     void initialize()
     {
         ThreadState* state = ThreadState::current();
