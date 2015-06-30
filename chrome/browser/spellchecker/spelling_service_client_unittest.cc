@@ -335,7 +335,10 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
     client_.SetHTTPResponse(kTests[i].response_status, kTests[i].response_data);
     client_.SetExpectedTextCheckResult(kTests[i].success,
                                        kTests[i].corrected_text);
-    pref->SetString(prefs::kSpellCheckDictionary, kTests[i].language);
+    base::ListValue dictionary;
+    dictionary.AppendString(kTests[i].language);
+    pref->Set(prefs::kSpellCheckDictionaries, dictionary);
+
     client_.RequestTextCheck(
         &profile_,
         kTests[i].request_type,
@@ -370,7 +373,8 @@ TEST_F(SpellingServiceClientTest, AvailableServices) {
   // SpellingServiceClient::IsAvailable() describes why this function returns
   // false for suggestions.) If there is no language set, then we
   // do not allow any remote.
-  pref->SetString(prefs::kSpellCheckDictionary, std::string());
+  pref->Set(prefs::kSpellCheckDictionaries, base::ListValue());
+
   EXPECT_FALSE(client_.IsAvailable(&profile_, kSuggest));
   EXPECT_FALSE(client_.IsAvailable(&profile_, kSpellcheck));
 
@@ -381,7 +385,10 @@ TEST_F(SpellingServiceClientTest, AvailableServices) {
   // If spellcheck is allowed, then suggest is not since spellcheck is a
   // superset of suggest.
   for (size_t i = 0; i < arraysize(kSupported); ++i) {
-    pref->SetString(prefs::kSpellCheckDictionary, kSupported[i]);
+    base::ListValue dictionary;
+    dictionary.AppendString(kSupported[i]);
+    pref->Set(prefs::kSpellCheckDictionaries, dictionary);
+
     EXPECT_FALSE(client_.IsAvailable(&profile_, kSuggest));
     EXPECT_TRUE(client_.IsAvailable(&profile_, kSpellcheck));
   }
@@ -396,7 +403,10 @@ TEST_F(SpellingServiceClientTest, AvailableServices) {
     "uk-UA", "vi-VN",
   };
   for (size_t i = 0; i < arraysize(kUnsupported); ++i) {
-    pref->SetString(prefs::kSpellCheckDictionary, kUnsupported[i]);
+    base::ListValue dictionary;
+    dictionary.AppendString(kUnsupported[i]);
+    pref->Set(prefs::kSpellCheckDictionaries, dictionary);
+
     EXPECT_TRUE(client_.IsAvailable(&profile_, kSuggest));
     EXPECT_FALSE(client_.IsAvailable(&profile_, kSpellcheck));
   }

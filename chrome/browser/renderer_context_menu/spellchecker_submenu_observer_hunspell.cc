@@ -161,10 +161,11 @@ void SpellCheckerSubMenuObserver::ExecuteCommand(int command_id) {
       command_id < IDC_SPELLCHECK_LANGUAGES_LAST) {
     const size_t language = command_id - IDC_SPELLCHECK_LANGUAGES_FIRST;
     if (profile && language < languages_.size()) {
-      StringPrefMember dictionary_language;
-      dictionary_language.Init(prefs::kSpellCheckDictionary,
+      StringListPrefMember dictionary_language;
+      dictionary_language.Init(prefs::kSpellCheckDictionaries,
                                profile->GetPrefs());
-      dictionary_language.SetValue(languages_[language]);
+      dictionary_language.SetValue(
+          std::vector<std::string>(1, languages_[language]));
     }
     return;
   }

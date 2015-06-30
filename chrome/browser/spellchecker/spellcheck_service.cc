@@ -43,10 +43,30 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
   PrefService* prefs = user_prefs::UserPrefs::Get(context);
   pref_change_registrar_.Init(prefs);
 
+  StringListPrefMember dictionaries_pref;
+  dictionaries_pref.Init(prefs::kSpellCheckDictionaries, prefs);
+  std::string first_of_dictionaries;
+  if (!dictionaries_pref.GetValue().empty())
+    first_of_dictionaries = dictionaries_pref.GetValue().front();
+
+  // For preference migration, set the new preference kSpellCheckDictionaries
+  // to be the same as the old kSpellCheckDictionary.
+  StringPrefMember single_dictionary_pref;
+  single_dictionary_pref.Init(prefs::kSpellCheckDictionary, prefs);
+  std::string single_dictionary = single_dictionary_pref.GetValue();
+
+  if (first_of_dictionaries.empty() && !single_dictionary.empty()) {
+    first_of_dictionaries = single_dictionary;
+    dictionaries_pref.SetValue(
+        std::vector<std::string>(1, first_of_dictionaries));
+  }
+
+  single_dictionary_pref.SetValue("");
+
   std::string language_code;
   std::string country_code;
   chrome::spellcheck_common::GetISOLanguageCountryCodeFromLocale(
-      prefs->GetString(prefs::kSpellCheckDictionary),
+      first_of_dictionaries,
       &language_code,
       &country_code);
   feedback_sender_.reset(new spellcheck::FeedbackSender(
@@ -57,7 +77,7 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
       base::Bind(&SpellcheckService::OnEnableAutoSpellCorrectChanged,
                  base::Unretained(this)));
   pref_change_registrar_.Add(
-      prefs::kSpellCheckDictionary,
+      prefs::kSpellCheckDictionaries,
       base::Bind(&SpellcheckService::OnSpellCheckDictionaryChanged,
                  base::Unretained(this)));
  pref_change_registrar_.Add(
@@ -95,10 +115,11 @@ int SpellcheckService::GetSpellCheckLanguages(
     std::vector<std::string>* languages) {
   PrefService* prefs = user_prefs::UserPrefs::Get(context);
   StringPrefMember accept_languages_pref;
-  StringPrefMember dictionary_language_pref;
   accept_languages_pref.Init(prefs::kAcceptLanguages, prefs);
-  dictionary_language_pref.Init(prefs::kSpellCheckDictionary, prefs);
-  std::string dictionary_language = dictionary_language_pref.GetValue();
+
+  std::string dictionary_language;
+  prefs->GetList(prefs::kSpellCheckDictionaries)
+      ->GetString(0, &dictionary_language);
 
   // Now scan through the list of accept languages, and find possible mappings
   // from this list to the existing list of spell check languages.
@@ -291,8 +312,9 @@ void SpellcheckService::OnSpellCheckDictionaryChanged() {
   PrefService* prefs = user_prefs::UserPrefs::Get(context_);
   DCHECK(prefs);
 
-  std::string dictionary =
-      prefs->GetString(prefs::kSpellCheckDictionary);
+  std::string dictionary;
+  prefs->GetList(prefs::kSpellCheckDictionaries)->GetString(0, &dictionary);
+
   hunspell_dictionary_.reset(new SpellcheckHunspellDictionary(
       dictionary, context_->GetRequestContext(), this));
   hunspell_dictionary_->AddObserver(this);

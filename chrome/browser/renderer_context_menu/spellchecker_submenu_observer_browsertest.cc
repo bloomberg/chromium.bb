@@ -130,7 +130,11 @@ IN_PROC_BROWSER_TEST_F(SpellCheckerSubMenuObserverTest, ToggleSpelling) {
       new SpellCheckerSubMenuObserver(menu.get(), menu.get(), 1));
   menu->SetObserver(observer.get());
   menu->GetPrefs()->SetString(prefs::kAcceptLanguages, "en-US");
-  menu->GetPrefs()->SetString(prefs::kSpellCheckDictionary, "en-US");
+
+  base::ListValue dictionary;
+  dictionary.AppendString("en-US");
+  menu->GetPrefs()->Set(prefs::kSpellCheckDictionaries, dictionary);
+
   menu->GetPrefs()->SetBoolean(prefs::kEnableContinuousSpellcheck, true);
   content::ContextMenuParams params;
   observer->InitMenu(params);

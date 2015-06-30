@@ -57,7 +57,7 @@ cr.define('options', function() {
    * @type {string}
    * @const
    */
-  var SPELL_CHECK_DICTIONARY_PREF = 'spellcheck.dictionary';
+  var SPELL_CHECK_DICTIONARIES_PREF = 'spellcheck.dictionaries';
 
   /**
    * The preference that indicates if the Translate feature is enabled.
@@ -187,7 +187,7 @@ cr.define('options', function() {
       Preferences.getInstance().addEventListener(
           TRANSLATE_BLOCKED_LANGUAGES_PREF,
           this.handleTranslateBlockedLanguagesPrefChange_.bind(this));
-      Preferences.getInstance().addEventListener(SPELL_CHECK_DICTIONARY_PREF,
+      Preferences.getInstance().addEventListener(SPELL_CHECK_DICTIONARIES_PREF,
           this.handleSpellCheckDictionaryPrefChange_.bind(this));
       Preferences.getInstance().addEventListener(ENABLE_TRANSLATE,
           this.handleEnableTranslatePrefChange_.bind(this));
@@ -968,11 +968,12 @@ cr.define('options', function() {
      * @private
      */
     handleSpellCheckLanguageButtonClick_: function(e) {
-      var languageCode = e.target.languageCode;
+      var languageCodes = [e.target.languageCode];
       // Save the preference.
-      Preferences.setStringPref(SPELL_CHECK_DICTIONARY_PREF,
-                                languageCode, true);
-      chrome.send('spellCheckLanguageChange', [languageCode]);
+      Preferences.setListPref(SPELL_CHECK_DICTIONARIES_PREF,
+                              languageCodes, true);
+      // The spellCheckLanguageChange argument is only used for logging.
+      chrome.send('spellCheckLanguageChange', [languageCodes.join(',')]);
       chrome.send('coreOptionsUserMetricsAction',
                   ['Options_Languages_SpellCheck']);
     },

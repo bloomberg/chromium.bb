@@ -513,6 +513,7 @@ extern const char kSelectFileLastDirectory[];
 extern const char kHungPluginDetectFrequency[];
 extern const char kPluginMessageResponseTimeout[];
 
+extern const char kSpellCheckDictionaries[];
 extern const char kSpellCheckDictionary[];
 extern const char kSpellCheckUseSpellingService[];
 

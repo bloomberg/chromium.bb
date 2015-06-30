@@ -231,7 +231,10 @@ class SpellingMenuObserverTest : public InProcessBrowserTest {
   void ForceSuggestMode() {
     menu()->GetPrefs()->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
     // Force a non-empty and non-"en" locale so SUGGEST is available.
-    menu()->GetPrefs()->SetString(prefs::kSpellCheckDictionary, "fr");
+    base::ListValue dictionary;
+    dictionary.AppendString("fr");
+    menu()->GetPrefs()->Set(prefs::kSpellCheckDictionaries, dictionary);
+
     ASSERT_TRUE(SpellingServiceClient::IsAvailable(
         menu()->GetBrowserContext(), SpellingServiceClient::SUGGEST));
     ASSERT_FALSE(SpellingServiceClient::IsAvailable(
@@ -311,7 +314,8 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest,
 // this test flaky.)
 IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest, EnableSpellingService) {
   menu()->GetPrefs()->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
-  menu()->GetPrefs()->SetString(prefs::kSpellCheckDictionary, std::string());
+  base::ListValue dictionary;
+  menu()->GetPrefs()->Set(prefs::kSpellCheckDictionaries, dictionary);
 
   InitMenu("wiimode", NULL);
   EXPECT_EQ(static_cast<size_t>(4), menu()->GetMenuSize());
@@ -366,7 +370,10 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest,
   menu()->GetPrefs()->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
 
   // Force a non-empty locale so SPELLCHECK is available.
-  menu()->GetPrefs()->SetString(prefs::kSpellCheckDictionary, "en");
+  base::ListValue dictionary;
+  dictionary.AppendString("en");
+  menu()->GetPrefs()->Set(prefs::kSpellCheckDictionaries, dictionary);
+
   EXPECT_TRUE(SpellingServiceClient::IsAvailable(
       menu()->GetBrowserContext(), SpellingServiceClient::SPELLCHECK));
   InitMenu("asdfkj", "asdf");
@@ -407,7 +414,10 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest,
   menu()->GetPrefs()->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
 
   // Force a non-empty locale so SUGGEST normally would be available.
-  menu()->GetPrefs()->SetString(prefs::kSpellCheckDictionary, "en");
+  base::ListValue dictionary;
+  dictionary.AppendString("en");
+  menu()->GetPrefs()->Set(prefs::kSpellCheckDictionaries, dictionary);
+
   EXPECT_FALSE(SpellingServiceClient::IsAvailable(
       menu()->GetBrowserContext(), SpellingServiceClient::SUGGEST));
   EXPECT_FALSE(SpellingServiceClient::IsAvailable(

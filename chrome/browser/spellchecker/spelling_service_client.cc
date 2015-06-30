@@ -61,12 +61,13 @@ bool SpellingServiceClient::RequestTextCheck(
   const PrefService* pref = user_prefs::UserPrefs::Get(context);
   DCHECK(pref);
 
+  std::string dictionary;
+  pref->GetList(prefs::kSpellCheckDictionaries)->GetString(0, &dictionary);
+
   std::string language_code;
   std::string country_code;
   chrome::spellcheck_common::GetISOLanguageCountryCodeFromLocale(
-      pref->GetString(prefs::kSpellCheckDictionary),
-      &language_code,
-      &country_code);
+      dictionary, &language_code, &country_code);
 
   // Replace typographical apostrophes with typewriter apostrophes, so that
   // server word breaker behaves correctly.
@@ -124,7 +125,8 @@ bool SpellingServiceClient::IsAvailable(
 
   // If the locale for spelling has not been set, the user has not decided to
   // use spellcheck so we don't do anything remote (suggest or spelling).
-  std::string locale = pref->GetString(prefs::kSpellCheckDictionary);
+  std::string locale;
+  pref->GetList(prefs::kSpellCheckDictionaries)->GetString(0, &locale);
   if (locale.empty())
     return false;
 

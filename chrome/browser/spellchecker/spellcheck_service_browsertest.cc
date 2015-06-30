@@ -3,14 +3,17 @@
 // found in the LICENSE file.
 
 #include "base/path_service.h"
+#include "base/prefs/pref_service.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/test/test_utils.h"
 #include "url/gurl.h"
 
@@ -36,8 +39,8 @@ const uint8 kCorruptedBDICT[] = {
 
 class SpellcheckServiceBrowserTest : public InProcessBrowserTest {
  public:
-  Profile* GetProfile() {
-    return browser()->profile();
+  BrowserContext* GetContext() {
+    return static_cast<BrowserContext*>(browser()->profile());
   }
 };
 
@@ -60,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT) {
   base::WaitableEvent event(true, false);
   SpellcheckService::AttachStatusEvent(&event);
 
-  BrowserContext * context = static_cast<BrowserContext*>(GetProfile());
+  BrowserContext* context = GetContext();
 
   // Ensure that the SpellcheckService object does not already exist. Otherwise
   // the next line will not force creation of the SpellcheckService and the
@@ -88,4 +91,40 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT) {
     ADD_FAILURE();
     EXPECT_TRUE(base::DeleteFile(bdict_path, true));
   }
+}
+
+// Checks that preferences migrate correctly.
+IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, PreferencesMigrated) {
+  PrefService* prefs = user_prefs::UserPrefs::Get(GetContext());
+  prefs->Set(prefs::kSpellCheckDictionaries, base::ListValue());
+  prefs->SetString(prefs::kSpellCheckDictionary, "en-US");
+
+  // Create a SpellcheckService which will migrate the preferences.
+  SpellcheckServiceFactory::GetForContext(GetContext());
+
+  // Make sure the preferences have been migrated.
+  std::string new_pref;
+  EXPECT_TRUE(
+      prefs->GetList(prefs::kSpellCheckDictionaries)->GetString(0, &new_pref));
+  EXPECT_EQ("en-US", new_pref);
+  EXPECT_TRUE(prefs->GetString(prefs::kSpellCheckDictionary).empty());
+}
+
+// Checks that preferences are not migrated when they shouldn't be.
+IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, PreferencesNotMigrated) {
+  PrefService* prefs = user_prefs::UserPrefs::Get(GetContext());
+  base::ListValue dictionaries;
+  dictionaries.AppendString("en-US");
+  prefs->Set(prefs::kSpellCheckDictionaries, dictionaries);
+  prefs->SetString(prefs::kSpellCheckDictionary, "fr");
+
+  // Create a SpellcheckService which will migrate the preferences.
+  SpellcheckServiceFactory::GetForContext(GetContext());
+
+  // Make sure the preferences have not been migrated.
+  std::string new_pref;
+  EXPECT_TRUE(
+      prefs->GetList(prefs::kSpellCheckDictionaries)->GetString(0, &new_pref));
+  EXPECT_EQ("en-US", new_pref);
+  EXPECT_TRUE(prefs->GetString(prefs::kSpellCheckDictionary).empty());
 }
