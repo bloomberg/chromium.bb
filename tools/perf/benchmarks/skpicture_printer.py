@@ -4,21 +4,19 @@
 
 from core import perf_benchmark
 
+from telemetry import story
 from telemetry import benchmark
 from telemetry.core import discover
-from telemetry.page import page_set
 
 from measurements import skpicture_printer
 
 
-def _MatchPageSetName(page_set_name, page_set_base_dir):
-  page_sets = []
-  page_sets += discover.DiscoverClasses(page_set_base_dir, page_set_base_dir,
-                                        page_set.PageSet,
-                                        index_by_class_name=True).values()
-  for p in page_sets:
-    if page_set_name == p.Name():
-      return p
+def _MatchPageSetName(story_set_name, story_set_base_dir):
+  story_sets = discover.DiscoverClasses(story_set_base_dir, story_set_base_dir,
+                                        story.StorySet).values()
+  for s in story_sets:
+    if story_set_name == s.Name():
+      return s
   return None
 
 
@@ -47,6 +45,6 @@ class SkpicturePrinter(perf_benchmark.PerfBenchmark):
     return skpicture_printer.SkpicturePrinter(options.skp_outdir)
 
   def CreateStorySet(self, options):
-    page_set_class = _MatchPageSetName(options.page_set_name,
-                                       options.page_set_base_dir)
-    return page_set_class()
+    story_set_class = _MatchPageSetName(options.page_set_name,
+                                        options.page_set_base_dir)
+    return story_set_class()
