@@ -303,10 +303,6 @@ void ImmersiveFullscreenController::SetEnabled(WindowType window_type,
       // Reveal was unsuccessful. Reacquire the revealed locks if appropriate.
       UpdateLocatedEventRevealedLock(NULL);
       UpdateFocusRevealedLock();
-    } else {
-      // Clearing focus is important because it closes focus-related popups like
-      // the touch selection handles.
-      widget_->GetFocusManager()->ClearFocus();
     }
   } else {
     // Stop cursor-at-top tracking.
