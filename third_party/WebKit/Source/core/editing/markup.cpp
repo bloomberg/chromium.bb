@@ -273,14 +273,6 @@ String CreateMarkupAlgorithm<Strategy>::createMarkup(const PositionType& startPo
     return serializer.createMarkup();
 }
 
-String createMarkup(const Range* range, EAnnotateForInterchange shouldAnnotate, ConvertBlocksToInlines convertBlocksToInlines, EAbsoluteURLs shouldResolveURLs, Node* constrainingAncestor)
-{
-    if (!range)
-        return emptyString();
-
-    return CreateMarkupAlgorithm<EditingStrategy>::createMarkup(range->startPosition(), range->endPosition(), shouldAnnotate, convertBlocksToInlines, shouldResolveURLs, constrainingAncestor);
-}
-
 String createMarkup(const Position& startPosition, const Position& endPosition, EAnnotateForInterchange shouldAnnotate, ConvertBlocksToInlines convertBlocksToInlines, EAbsoluteURLs shouldResolveURLs, Node* constrainingAncestor)
 {
     ASSERT(startPosition.compareTo(endPosition) <= 0);

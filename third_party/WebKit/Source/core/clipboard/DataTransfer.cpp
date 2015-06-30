@@ -30,6 +30,7 @@
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransferItem.h"
 #include "core/clipboard/DataTransferItemList.h"
+#include "core/dom/Range.h"
 #include "core/editing/markup.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fileapi/FileList.h"
@@ -354,7 +355,7 @@ void DataTransfer::writeRange(Range* selectedRange, LocalFrame* frame)
     if (!m_dataObject)
         return;
 
-    m_dataObject->setHTMLAndBaseURL(createMarkup(selectedRange, AnnotateForInterchange, ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs), frame->document()->url());
+    m_dataObject->setHTMLAndBaseURL(createMarkup(selectedRange->startPosition(), selectedRange->endPosition(), AnnotateForInterchange, ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs), frame->document()->url());
 
     String str = frame->selectedTextForClipboard();
 #if OS(WIN)
