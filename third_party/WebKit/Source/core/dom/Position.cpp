@@ -81,7 +81,7 @@ static Node* previousRenderedEditable(Node* node)
 }
 
 template <typename Strategy>
-const TreeScope* PositionAlgorithm<Strategy>::commonAncestorTreeScope(const PositionType& a, const PositionType& b)
+const TreeScope* PositionAlgorithm<Strategy>::commonAncestorTreeScope(const PositionAlgorithm<Strategy>& a, const PositionAlgorithm<Strategy>& b)
 {
     if (!a.containerNode() || !b.containerNode())
         return nullptr;
@@ -219,16 +219,16 @@ int PositionAlgorithm<Strategy>::offsetForPositionAfterAnchor() const
 // Neighbor-anchored positions are invalid DOM positions, so they need to be
 // fixed up before handing them off to the Range object.
 template <typename Strategy>
-typename Strategy::PositionType PositionAlgorithm<Strategy>::parentAnchoredEquivalent() const
+PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::parentAnchoredEquivalent() const
 {
     if (!m_anchorNode)
-        return PositionType();
+        return PositionAlgorithm<Strategy>();
 
     // FIXME: This should only be necessary for legacy positions, but is also needed for positions before and after Tables
     if (m_offset <= 0 && (m_anchorType != PositionIsAfterAnchor && m_anchorType != PositionIsAfterChildren)) {
         if (Strategy::parent(*m_anchorNode) && (Strategy::editingIgnoresContent(m_anchorNode.get()) || isRenderedHTMLTableElement(m_anchorNode.get())))
             return inParentBeforeNode(*m_anchorNode);
-        return PositionType(m_anchorNode.get(), 0);
+        return PositionAlgorithm<Strategy>(m_anchorNode.get(), 0);
     }
     if (!m_anchorNode->offsetInCharacters()
         && (m_anchorType == PositionIsAfterAnchor || m_anchorType == PositionIsAfterChildren || static_cast<unsigned>(m_offset) == m_anchorNode->countChildren())
@@ -237,16 +237,16 @@ typename Strategy::PositionType PositionAlgorithm<Strategy>::parentAnchoredEquiv
         return inParentAfterNode(*m_anchorNode);
     }
 
-    return PositionType(containerNode(), computeOffsetInContainerNode());
+    return PositionAlgorithm<Strategy>(containerNode(), computeOffsetInContainerNode());
 }
 
 template <typename Strategy>
-typename Strategy::PositionType PositionAlgorithm<Strategy>::toOffsetInAnchor() const
+PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::toOffsetInAnchor() const
 {
     if (isNull())
-        return PositionType();
+        return PositionAlgorithm<Strategy>();
 
-    return PositionType(containerNode(), computeOffsetInContainerNode());
+    return PositionAlgorithm<Strategy>(containerNode(), computeOffsetInContainerNode());
 }
 
 template <typename Strategy>
@@ -335,7 +335,7 @@ Node* PositionAlgorithm<Strategy>::nodeAsRangePastLastNode() const
 }
 
 template <typename Strategy>
-Node* PositionAlgorithm<Strategy>::commonAncestorContainer(const PositionType& other) const
+Node* PositionAlgorithm<Strategy>::commonAncestorContainer(const PositionAlgorithm<Strategy>& other) const
 {
     return Strategy::commonAncestor(*containerNode(), *other.containerNode());
 }
@@ -384,17 +384,17 @@ int comparePositions(const PositionInComposedTree& positionA, const PositionInCo
 }
 
 template <typename Strategy>
-int PositionAlgorithm<Strategy>::compareTo(const PositionType& other) const
+int PositionAlgorithm<Strategy>::compareTo(const PositionAlgorithm<Strategy>& other) const
 {
     return comparePositions(*this, other);
 }
 
 template <typename Strategy>
-typename Strategy::PositionType PositionAlgorithm<Strategy>::previous(PositionMoveType moveType) const
+PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::previous(PositionMoveType moveType) const
 {
     Node* node = deprecatedNode();
     if (!node)
-        return PositionType(*this);
+        return PositionAlgorithm<Strategy>(*this);
 
     int offset = deprecatedEditingOffset();
     // FIXME: Negative offsets shouldn't be allowed. We should catch this earlier.
@@ -421,17 +421,17 @@ typename Strategy::PositionType PositionAlgorithm<Strategy>::previous(PositionMo
 
     if (ContainerNode* parent = Strategy::parent(*node))
         return createLegacyEditingPosition(parent, node->nodeIndex());
-    return PositionType(*this);
+    return PositionAlgorithm<Strategy>(*this);
 }
 
 template <typename Strategy>
-typename Strategy::PositionType PositionAlgorithm<Strategy>::next(PositionMoveType moveType) const
+PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::next(PositionMoveType moveType) const
 {
     ASSERT(moveType != BackwardDeletion);
 
     Node* node = deprecatedNode();
     if (!node)
-        return PositionType(*this);
+        return PositionAlgorithm<Strategy>(*this);
 
     int offset = deprecatedEditingOffset();
     // FIXME: Negative offsets shouldn't be allowed. We should catch this earlier.
@@ -451,7 +451,7 @@ typename Strategy::PositionType PositionAlgorithm<Strategy>::next(PositionMoveTy
 
     if (ContainerNode* parent = Strategy::parent(*node))
         return createLegacyEditingPosition(parent, node->nodeIndex() + 1);
-    return PositionType(*this);
+    return PositionAlgorithm<Strategy>(*this);
 }
 
 template <typename Strategy>
@@ -513,11 +513,11 @@ bool PositionAlgorithm<Strategy>::atLastEditingPositionForNode() const
 template <typename Strategy>
 bool PositionAlgorithm<Strategy>::atEditingBoundary() const
 {
-    PositionType nextPosition = downstream(CanCrossEditingBoundary);
+    PositionAlgorithm<Strategy> nextPosition = downstream(CanCrossEditingBoundary);
     if (atFirstEditingPositionForNode() && nextPosition.isNotNull() && !nextPosition.deprecatedNode()->hasEditableStyle())
         return true;
 
-    PositionType prevPosition = upstream(CanCrossEditingBoundary);
+    PositionAlgorithm<Strategy> prevPosition = upstream(CanCrossEditingBoundary);
     if (atLastEditingPositionForNode() && prevPosition.isNotNull() && !prevPosition.deprecatedNode()->hasEditableStyle())
         return true;
 
@@ -646,16 +646,16 @@ static bool isStreamer(const typename Strategy::PositionIteratorType& pos)
 // Also, upstream() will return [boundary, 0] for any of the positions from [boundary, 0] to the first candidate
 // in boundary, where endsOfNodeAreVisuallyDistinctPositions(boundary) is true.
 template <typename Strategy>
-typename Strategy::PositionType PositionAlgorithm<Strategy>::upstream(EditingBoundaryCrossingRule rule) const
+PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::upstream(EditingBoundaryCrossingRule rule) const
 {
     Node* startNode = deprecatedNode();
     if (!startNode)
-        return PositionType();
+        return PositionAlgorithm<Strategy>();
 
     // iterate backward from there, looking for a qualified position
     Node* boundary = enclosingVisualBoundary<Strategy>(startNode);
     // FIXME: PositionIterator should respect Before and After positions.
-    typename Strategy::PositionIteratorType lastVisible(m_anchorType == PositionIsAfterAnchor ? createLegacyEditingPosition(m_anchorNode.get(), caretMaxOffset(m_anchorNode.get())) : PositionType(*this));
+    typename Strategy::PositionIteratorType lastVisible(m_anchorType == PositionIsAfterAnchor ? createLegacyEditingPosition(m_anchorNode.get(), caretMaxOffset(m_anchorNode.get())) : PositionAlgorithm<Strategy>(*this));
     typename Strategy::PositionIteratorType currentPos = lastVisible;
     bool startEditable = startNode->hasEditableStyle();
     Node* lastNode = startNode;
@@ -768,16 +768,16 @@ typename Strategy::PositionType PositionAlgorithm<Strategy>::upstream(EditingBou
 // in boundary after the last candidate, where endsOfNodeAreVisuallyDistinctPositions(boundary).
 // FIXME: This function should never be called when the line box tree is dirty. See https://bugs.webkit.org/show_bug.cgi?id=97264
 template <typename Strategy>
-typename Strategy::PositionType PositionAlgorithm<Strategy>::downstream(EditingBoundaryCrossingRule rule) const
+PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::downstream(EditingBoundaryCrossingRule rule) const
 {
     Node* startNode = deprecatedNode();
     if (!startNode)
-        return PositionType();
+        return PositionAlgorithm<Strategy>();
 
     // iterate forward from there, looking for a qualified position
     Node* boundary = enclosingVisualBoundary<Strategy>(startNode);
     // FIXME: PositionIterator should respect Before and After positions.
-    typename Strategy::PositionIteratorType lastVisible(m_anchorType == PositionIsAfterAnchor ? createLegacyEditingPosition(m_anchorNode.get(), caretMaxOffset(m_anchorNode.get())) : PositionType(*this));
+    typename Strategy::PositionIteratorType lastVisible(m_anchorType == PositionIsAfterAnchor ? createLegacyEditingPosition(m_anchorNode.get(), caretMaxOffset(m_anchorNode.get())) : PositionAlgorithm<Strategy>(*this));
     typename Strategy::PositionIteratorType currentPos = lastVisible;
     bool startEditable = startNode->hasEditableStyle();
     Node* lastNode = startNode;
@@ -1039,7 +1039,7 @@ bool PositionAlgorithm<Strategy>::isRenderedCharacter() const
 }
 
 template <typename Strategy>
-bool PositionAlgorithm<Strategy>::rendersInDifferentPosition(const PositionType &pos) const
+bool PositionAlgorithm<Strategy>::rendersInDifferentPosition(const PositionAlgorithm<Strategy> &pos) const
 {
     if (isNull() || pos.isNull())
         return false;
@@ -1167,10 +1167,10 @@ static InlineTextBox* searchAheadForBetterMatch(LayoutObject* layoutObject)
     return 0;
 }
 
-template <typename PositionType>
-PositionType downstreamIgnoringEditingBoundaries(PositionType position)
+template <typename Strategy>
+PositionAlgorithm<Strategy> downstreamIgnoringEditingBoundaries(PositionAlgorithm<Strategy> position)
 {
-    PositionType lastPosition;
+    PositionAlgorithm<Strategy> lastPosition;
     while (position != lastPosition) {
         lastPosition = position;
         position = position.downstream(CanCrossEditingBoundary);
@@ -1178,10 +1178,10 @@ PositionType downstreamIgnoringEditingBoundaries(PositionType position)
     return position;
 }
 
-template <typename PositionType>
-PositionType upstreamIgnoringEditingBoundaries(PositionType position)
+template <typename Strategy>
+PositionAlgorithm<Strategy> upstreamIgnoringEditingBoundaries(PositionAlgorithm<Strategy> position)
 {
-    PositionType lastPosition;
+    PositionAlgorithm<Strategy> lastPosition;
     while (position != lastPosition) {
         lastPosition = position;
         position = position.upstream(CanCrossEditingBoundary);
@@ -1201,11 +1201,11 @@ void PositionAlgorithm<Strategy>::getInlineBoxAndOffset(EAffinity affinity, Text
             // Try a visually equivalent position with possibly opposite editability. This helps in case |this| is in
             // an editable block but surrounded by non-editable positions. It acts to negate the logic at the beginning
             // of LayoutObject::createVisiblePosition().
-            PositionType thisPosition = PositionType(*this);
-            PositionType equivalent = downstreamIgnoringEditingBoundaries<typename Strategy::PositionType>(thisPosition);
+            PositionAlgorithm<Strategy> thisPosition = PositionAlgorithm<Strategy>(*this);
+            PositionAlgorithm<Strategy> equivalent = downstreamIgnoringEditingBoundaries(thisPosition);
             if (equivalent == thisPosition) {
                 equivalent = upstreamIgnoringEditingBoundaries(thisPosition);
-                if (equivalent == thisPosition || downstreamIgnoringEditingBoundaries<typename Strategy::PositionType>(equivalent) == thisPosition)
+                if (equivalent == thisPosition || downstreamIgnoringEditingBoundaries(equivalent) == thisPosition)
                     return;
             }
 

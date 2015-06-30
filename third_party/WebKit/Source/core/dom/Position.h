@@ -57,7 +57,6 @@ template <typename Strategy>
 class CORE_TEMPLATE_CLASS_EXPORT PositionAlgorithm {
     DISALLOW_ALLOCATION();
 public:
-    using PositionType = typename Strategy::PositionType;
     using StrategyType = Strategy;
 
     enum AnchorType : unsigned char {
@@ -86,8 +85,8 @@ public:
         int m_offset;
     };
 
-    static const TreeScope* commonAncestorTreeScope(const PositionType&, const PositionType& b);
-    static PositionType createLegacyEditingPosition(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset);
+    static const TreeScope* commonAncestorTreeScope(const PositionAlgorithm<Strategy>&, const PositionAlgorithm<Strategy>& b);
+    static PositionAlgorithm<Strategy> createLegacyEditingPosition(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset);
 
     PositionAlgorithm(PassRefPtrWillBeRawPtr<Node> anchorNode, LegacyEditingOffset);
 
@@ -110,13 +109,13 @@ public:
     Text* containerText() const;
 
     int computeOffsetInContainerNode() const;  // O(n) for before/after-anchored positions, O(1) for parent-anchored positions
-    PositionType parentAnchoredEquivalent() const; // Convenience method for DOM positions that also fixes up some positions for editing
+    PositionAlgorithm<Strategy> parentAnchoredEquivalent() const; // Convenience method for DOM positions that also fixes up some positions for editing
 
     // Returns |PositionIsAnchor| type |Position| which is compatible with
     // |RangeBoundaryPoint| as safe to pass |Range| constructor. Return value
     // of this function is different from |parentAnchoredEquivalent()| which
     // returns editing specific position.
-    PositionType toOffsetInAnchor() const;
+    PositionAlgorithm<Strategy> toOffsetInAnchor() const;
 
     // Inline O(1) access for Positions which callers know to be parent-anchored
     int offsetInContainerNode() const
@@ -150,7 +149,7 @@ public:
     // behave as |Range| boundary point.
     Node* nodeAsRangePastLastNode() const;
 
-    Node* commonAncestorContainer(const PositionType&) const;
+    Node* commonAncestorContainer(const PositionAlgorithm<Strategy>&) const;
 
     Node* anchorNode() const { return m_anchorNode.get(); }
 
@@ -182,13 +181,13 @@ public:
     // Move up or down the DOM by one position.
     // Offsets are computed using layout text for nodes that have layoutObjects - but note that even when
     // using composed characters, the result may be inside a single user-visible character if a ligature is formed.
-    PositionType previous(PositionMoveType = CodePoint) const;
-    PositionType next(PositionMoveType = CodePoint) const;
+    PositionAlgorithm<Strategy> previous(PositionMoveType = CodePoint) const;
+    PositionAlgorithm<Strategy> next(PositionMoveType = CodePoint) const;
     static int uncheckedPreviousOffset(const Node*, int current);
     static int uncheckedPreviousOffsetForBackwardDeletion(const Node*, int current);
     static int uncheckedNextOffset(const Node*, int current);
 
-    int compareTo(const PositionType&) const;
+    int compareTo(const PositionAlgorithm<Strategy>&) const;
 
     // These can be either inside or just before/after the node, depending on
     // if the node is ignored by editing or not.
@@ -204,13 +203,13 @@ public:
     bool atEndOfTree() const;
 
     // These return useful visually equivalent positions.
-    PositionType upstream(EditingBoundaryCrossingRule = CannotCrossEditingBoundary) const;
-    PositionType downstream(EditingBoundaryCrossingRule = CannotCrossEditingBoundary) const;
+    PositionAlgorithm<Strategy> upstream(EditingBoundaryCrossingRule = CannotCrossEditingBoundary) const;
+    PositionAlgorithm<Strategy> downstream(EditingBoundaryCrossingRule = CannotCrossEditingBoundary) const;
 
     bool isCandidate() const;
     bool inRenderedText() const;
     bool isRenderedCharacter() const;
-    bool rendersInDifferentPosition(const PositionType&) const;
+    bool rendersInDifferentPosition(const PositionAlgorithm<Strategy>&) const;
 
     void getInlineBoxAndOffset(EAffinity, InlineBox*&, int& caretOffset) const;
     void getInlineBoxAndOffset(EAffinity, TextDirection primaryDirection, InlineBox*&, int& caretOffset) const;
@@ -221,17 +220,17 @@ public:
     static bool nodeIsUserSelectNone(Node*);
     static bool nodeIsUserSelectAll(const Node*);
     static Node* rootUserSelectAllForNode(Node*);
-    static PositionType beforeNode(Node* anchorNode);
-    static PositionType afterNode(Node* anchorNode);
-    static PositionType inParentBeforeNode(const Node& anchorNode);
-    static PositionType inParentAfterNode(const Node& anchorNode);
+    static PositionAlgorithm<Strategy> beforeNode(Node* anchorNode);
+    static PositionAlgorithm<Strategy> afterNode(Node* anchorNode);
+    static PositionAlgorithm<Strategy> inParentBeforeNode(const Node& anchorNode);
+    static PositionAlgorithm<Strategy> inParentAfterNode(const Node& anchorNode);
     static int lastOffsetInNode(Node* anchorNode);
-    static PositionType firstPositionInNode(Node* anchorNode);
-    static PositionType lastPositionInNode(Node* anchorNode);
+    static PositionAlgorithm<Strategy> firstPositionInNode(Node* anchorNode);
+    static PositionAlgorithm<Strategy> lastPositionInNode(Node* anchorNode);
     static int minOffsetForNode(Node* anchorNode, int offset);
     static bool offsetIsBeforeLastNodeOffset(int offset, Node* anchorNode);
-    static PositionType firstPositionInOrBeforeNode(Node* anchorNode);
-    static PositionType lastPositionInOrAfterNode(Node* anchorNode);
+    static PositionAlgorithm<Strategy> firstPositionInOrBeforeNode(Node* anchorNode);
+    static PositionAlgorithm<Strategy> lastPositionInOrAfterNode(Node* anchorNode);
 
     void debugPosition(const char* msg = "") const;
 
@@ -270,9 +269,9 @@ using Position = PositionAlgorithm<EditingStrategy>;
 using PositionInComposedTree = PositionAlgorithm<EditingInComposedTreeStrategy>;
 
 template <typename Strategy>
-typename Strategy::PositionType PositionAlgorithm<Strategy>::createLegacyEditingPosition(PassRefPtrWillBeRawPtr<Node> node, int offset)
+PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::createLegacyEditingPosition(PassRefPtrWillBeRawPtr<Node> node, int offset)
 {
-    return PositionType(node, PositionAlgorithm::LegacyEditingOffset(offset));
+    return PositionAlgorithm<Strategy>(node, PositionAlgorithm::LegacyEditingOffset(offset));
 }
 
 inline Position createLegacyEditingPosition(PassRefPtrWillBeRawPtr<Node> node, int offset)
@@ -310,13 +309,13 @@ bool operator!=(const PositionAlgorithm<Strategy>& a, const PositionAlgorithm<St
 // If we ever add a PassPosition we can make these non-inline.
 
 template <typename Strategy>
-typename Strategy::PositionType PositionAlgorithm<Strategy>::inParentBeforeNode(const Node& node)
+PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::inParentBeforeNode(const Node& node)
 {
     // FIXME: This should ASSERT(node.parentNode())
     // At least one caller currently hits this ASSERT though, which indicates
     // that the caller is trying to make a position relative to a disconnected node (which is likely an error)
     // Specifically, editing/deleting/delete-ligature-001.html crashes with ASSERT(node->parentNode())
-    return PositionType(Strategy::parent(node), Strategy::index(node));
+    return PositionAlgorithm<Strategy>(Strategy::parent(node), Strategy::index(node));
 }
 
 inline Position positionInParentBeforeNode(const Node& node)
@@ -325,10 +324,10 @@ inline Position positionInParentBeforeNode(const Node& node)
 }
 
 template <typename Strategy>
-typename Strategy::PositionType PositionAlgorithm<Strategy>::inParentAfterNode(const Node& node)
+PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::inParentAfterNode(const Node& node)
 {
     ASSERT(node.parentNode());
-    return PositionType(Strategy::parent(node), Strategy::index(node) + 1);
+    return PositionAlgorithm<Strategy>(Strategy::parent(node), Strategy::index(node) + 1);
 }
 
 inline Position positionInParentAfterNode(const Node& node)
@@ -338,10 +337,10 @@ inline Position positionInParentAfterNode(const Node& node)
 
 // positionBeforeNode and positionAfterNode return neighbor-anchored positions, construction is O(1)
 template <typename Strategy>
-typename Strategy::PositionType PositionAlgorithm<Strategy>::beforeNode(Node* anchorNode)
+PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::beforeNode(Node* anchorNode)
 {
     ASSERT(anchorNode);
-    return PositionType(anchorNode, PositionIsBeforeAnchor);
+    return PositionAlgorithm<Strategy>(anchorNode, PositionIsBeforeAnchor);
 }
 
 inline Position positionBeforeNode(Node* anchorNode)
@@ -350,10 +349,10 @@ inline Position positionBeforeNode(Node* anchorNode)
 }
 
 template <typename Strategy>
-typename Strategy::PositionType PositionAlgorithm<Strategy>::afterNode(Node* anchorNode)
+PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::afterNode(Node* anchorNode)
 {
     ASSERT(anchorNode);
-    return PositionType(anchorNode, PositionIsAfterAnchor);
+    return PositionAlgorithm<Strategy>(anchorNode, PositionIsAfterAnchor);
 }
 
 inline Position positionAfterNode(Node* anchorNode)
@@ -374,11 +373,11 @@ inline int lastOffsetInNode(Node* node)
 
 // firstPositionInNode and lastPositionInNode return parent-anchored positions, lastPositionInNode construction is O(n) due to countChildren()
 template <typename Strategy>
-typename Strategy::PositionType PositionAlgorithm<Strategy>::firstPositionInNode(Node* anchorNode)
+PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::firstPositionInNode(Node* anchorNode)
 {
     if (anchorNode->isTextNode())
-        return PositionType(anchorNode, 0);
-    return PositionType(anchorNode, PositionIsBeforeChildren);
+        return PositionAlgorithm<Strategy>(anchorNode, 0);
+    return PositionAlgorithm<Strategy>(anchorNode, PositionIsBeforeChildren);
 }
 
 inline Position firstPositionInNode(Node* anchorNode)
@@ -387,11 +386,11 @@ inline Position firstPositionInNode(Node* anchorNode)
 }
 
 template <typename Strategy>
-typename Strategy::PositionType PositionAlgorithm<Strategy>::lastPositionInNode(Node* anchorNode)
+PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::lastPositionInNode(Node* anchorNode)
 {
     if (anchorNode->isTextNode())
-        return PositionType(anchorNode, lastOffsetInNode(anchorNode));
-    return PositionType(anchorNode, PositionIsAfterChildren);
+        return PositionAlgorithm<Strategy>(anchorNode, lastOffsetInNode(anchorNode));
+    return PositionAlgorithm<Strategy>(anchorNode, PositionIsAfterChildren);
 }
 
 inline Position lastPositionInNode(Node* anchorNode)
@@ -436,18 +435,18 @@ inline bool offsetIsBeforeLastNodeOffset(int offset, Node* anchorNode)
 }
 
 template <typename Strategy>
-typename Strategy::PositionType PositionAlgorithm<Strategy>::firstPositionInOrBeforeNode(Node* node)
+PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::firstPositionInOrBeforeNode(Node* node)
 {
     if (!node)
-        return PositionType();
+        return PositionAlgorithm<Strategy>();
     return Strategy::editingIgnoresContent(node) ? beforeNode(node) : firstPositionInNode(node);
 }
 
 template <typename Strategy>
-typename Strategy::PositionType PositionAlgorithm<Strategy>::lastPositionInOrAfterNode(Node* node)
+PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::lastPositionInOrAfterNode(Node* node)
 {
     if (!node)
-        return PositionType();
+        return PositionAlgorithm<Strategy>();
     return Strategy::editingIgnoresContent(node) ? afterNode(node) : lastPositionInNode(node);
 }
 
