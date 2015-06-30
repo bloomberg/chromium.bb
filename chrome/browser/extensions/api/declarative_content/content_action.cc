@@ -216,7 +216,7 @@ struct ContentActionFactory {
   // the extension passed an action that was syntactically correct but
   // semantically incorrect. |bad_message| is set to true in case |dict| does
   // not confirm to the validated JSON specification.
-  typedef scoped_refptr<ContentAction>(*FactoryMethod)(
+  using FactoryMethod = scoped_refptr<ContentAction>(*)(
       content::BrowserContext* /* browser_context */,
       const Extension* /* extension */,
       const base::DictionaryValue* /* dict */,

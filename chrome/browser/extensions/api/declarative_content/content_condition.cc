@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_content/content_constants.h"
 #include "components/url_matcher/url_matcher_factory.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
 
 using url_matcher::URLMatcherConditionFactory;

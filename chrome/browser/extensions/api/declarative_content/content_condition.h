@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/url_matcher/url_matcher.h"
-#include "extensions/browser/api/declarative/declarative_rule.h"
 
 namespace base {
 class Value;
@@ -56,10 +55,6 @@ struct RendererContentMatchData {
 // ContentConditionSet::GetURLMatcherConditionSets.
 class ContentCondition {
  public:
-  // Type trait for the use of
-  // DeclarativeConditionSet<ContentCondition>::IsFulfilled.
-  typedef RendererContentMatchData MatchData;
-
   // Possible states for matching bookmarked state.
   enum BookmarkedStateMatch { NOT_BOOKMARKED, BOOKMARKED, DONT_CARE };
 
@@ -119,8 +114,6 @@ class ContentCondition {
 
   DISALLOW_COPY_AND_ASSIGN(ContentCondition);
 };
-
-typedef DeclarativeConditionSet<ContentCondition> ContentConditionSet;
 
 }  // namespace extensions
 

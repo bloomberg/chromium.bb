@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_content/content_constants.h"
 #include "components/url_matcher/url_matcher.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"

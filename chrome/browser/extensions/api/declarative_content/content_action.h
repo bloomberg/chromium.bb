@@ -6,10 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_CONTENT_ACTION_H_
 
 #include <string>
-#include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "extensions/browser/api/declarative/declarative_rule.h"
 #include "extensions/browser/declarative_user_script_master.h"
 #include "extensions/common/user_script.h"
 
@@ -158,8 +156,6 @@ class RequestContentScript : public ContentAction {
 
   DISALLOW_COPY_AND_ASSIGN(RequestContentScript);
 };
-
-typedef DeclarativeActionSet<ContentAction> ContentActionSet;
 
 }  // namespace extensions
 

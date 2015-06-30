@@ -20,9 +20,10 @@
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_css_condition_tracker.h"
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_is_bookmarked_condition_tracker.h"
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_page_url_condition_tracker.h"
+#include "chrome/browser/extensions/api/declarative_content/declarative_content_rule.h"
+#include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "extensions/browser/api/declarative/declarative_rule.h"
 #include "extensions/browser/api/declarative_content/content_rules_registry.h"
 #include "extensions/browser/info_map.h"
 
@@ -46,17 +47,13 @@ class URLRequest;
 
 namespace extensions {
 
-class RulesRegistryService;
-
-typedef DeclarativeRule<ContentCondition, ContentAction> ContentRule;
-
 // The ChromeContentRulesRegistry is responsible for managing
 // the internal representation of rules for the Declarative Content API.
 //
 // Here is the high level overview of this functionality:
 //
 // RulesRegistry::Rule consists of Conditions and Actions, these are
-// represented as a ContentRule with ContentConditions and
+// represented as a DeclarativeContentRule with ContentConditions and
 // ContentRuleActions.
 //
 // The evaluation of URL related condition attributes (host_suffix, path_prefix)
@@ -145,7 +142,7 @@ class ChromeContentRulesRegistry
   // True if this object is managing the rules for |context|.
   bool ManagingRulesForBrowserContext(content::BrowserContext* context);
 
-  std::set<const ContentRule*> GetMatches(
+  std::set<const DeclarativeContentRule*> GetMatches(
       const RendererContentMatchData& renderer_data,
       bool is_incognito_renderer) const;
 
@@ -159,10 +156,10 @@ class ChromeContentRulesRegistry
   // Evaluates the conditions for tabs in each browser window.
   void EvaluateConditionsForAllTabs();
 
-  typedef std::map<url_matcher::URLMatcherConditionSet::ID, const ContentRule*>
-      URLMatcherIdToRule;
-  typedef std::map<ContentRule::GlobalRuleId, linked_ptr<const ContentRule>>
-      RulesMap;
+  using URLMatcherIdToRule = std::map<url_matcher::URLMatcherConditionSet::ID,
+                                      const DeclarativeContentRule*>;
+  using RulesMap = std::map<DeclarativeContentRule::ExtensionIdRuleIdPair,
+                            linked_ptr<const DeclarativeContentRule>>;
 
   // Map that tells us which ContentRules may match under the condition that
   // the URLMatcherConditionSet::ID was returned by the |url_matcher_|.
@@ -174,7 +171,8 @@ class ChromeContentRulesRegistry
   // This lets us call Revert as appropriate. Note that this is expected to have
   // a key-value pair for every WebContents the registry is tracking, even if
   // the value is the empty set.
-  std::map<content::WebContents*, std::set<const ContentRule*>> active_rules_;
+  std::map<content::WebContents*,
+           std::set<const DeclarativeContentRule*>> active_rules_;
 
   // Responsible for tracking declarative content page URL condition state.
   DeclarativeContentPageUrlConditionTracker page_url_condition_tracker_;
