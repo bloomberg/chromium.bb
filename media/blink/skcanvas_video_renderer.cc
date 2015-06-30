@@ -128,6 +128,21 @@ scoped_ptr<SkImage> CreateSkImageFromVideoFrameYUVTextures(
     gl->WaitSyncPointCHROMIUM(mailbox_holder.sync_point);
     source_textures[i] = gl->CreateAndConsumeTextureCHROMIUM(
         mailbox_holder.texture_target, mailbox_holder.mailbox.name);
+
+    // TODO(dcastagna): avoid this copy once Skia supports native textures
+    // with a texture target different than TEXTURE_2D.
+    // crbug.com/505026
+    if (mailbox_holder.texture_target != GL_TEXTURE_2D) {
+      unsigned texture_copy = 0;
+      gl->GenTextures(1, &texture_copy);
+      DCHECK(texture_copy);
+      gl->BindTexture(GL_TEXTURE_2D, texture_copy);
+      gl->CopyTextureCHROMIUM(GL_TEXTURE_2D, source_textures[i], texture_copy,
+                              GL_RGB, GL_UNSIGNED_BYTE, false, true, false);
+
+      gl->DeleteTextures(1, &source_textures[i]);
+      source_textures[i] = texture_copy;
+    }
   }
   GrBackendObject handles[3] = {
       source_textures[0], source_textures[1], source_textures[2]};

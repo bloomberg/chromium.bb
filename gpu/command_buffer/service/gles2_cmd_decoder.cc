@@ -11918,12 +11918,12 @@ bool GLES2DecoderImpl::ValidateCopyTextureCHROMIUM(
   bool valid_dest_format = dest_internal_format == GL_RGB ||
                            dest_internal_format == GL_RGBA ||
                            dest_internal_format == GL_BGRA_EXT;
-  bool valid_source_format = source_internal_format == GL_ALPHA ||
-                             source_internal_format == GL_RGB ||
-                             source_internal_format == GL_RGBA ||
-                             source_internal_format == GL_LUMINANCE ||
-                             source_internal_format == GL_LUMINANCE_ALPHA ||
-                             source_internal_format == GL_BGRA_EXT;
+  bool valid_source_format =
+      source_internal_format == GL_R8 || source_internal_format == GL_ALPHA ||
+      source_internal_format == GL_RGB || source_internal_format == GL_RGBA ||
+      source_internal_format == GL_LUMINANCE ||
+      source_internal_format == GL_LUMINANCE_ALPHA ||
+      source_internal_format == GL_BGRA_EXT;
   if (!valid_source_format || !valid_dest_format) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
                        "invalid internal format");
