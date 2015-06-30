@@ -503,7 +503,6 @@ def GetDefaultLibPath(config):
   as well as the top level SDK lib folder and the naclports lib
   folder.  We include both 32-bit and 64-bit library paths.
   """
-  assert(config in ('Debug', 'Release'))
   sdk_root = GetSDKRoot()
 
   osname = getos.GetPlatform()
@@ -521,6 +520,22 @@ def GetDefaultLibPath(config):
     'ports/lib/glibc_x86_32/%s' % config,
     'ports/lib/glibc_x86_64/%s' % config,
   ]
+
+  # In some cases (e.g. ASAN, TSAN, STANDALONE) the name of the configuration
+  # can be different to simply Debug or Release.  For example 'msan_Release'.
+  # In this case we search for libraries first in this directory and then
+  # fall back to 'Release'.
+  if config not in ['Debug', 'Release']:
+    config_fallback = 'Release'
+    if 'Debug' in config:
+      config_fallback = 'Debug'
+
+    libpath += [
+      'lib/glibc_x86_32/%s' % config_fallback,
+      'lib/glibc_x86_64/%s' % config_fallback,
+      'ports/lib/glibc_x86_32/%s' % config_fallback,
+      'ports/lib/glibc_x86_64/%s' % config_fallback,
+    ]
 
   bionic_dir = 'toolchain/%s_arm_bionic' % osname
   if os.path.isdir(os.path.join(sdk_root, bionic_dir)):
@@ -546,8 +561,10 @@ def main(args):
   parser.add_argument('--no-default-libpath', action='store_true',
                       help="Don't include the SDK default library paths")
   parser.add_argument('--debug-libs', action='store_true',
-                      help='Use debug library paths when constructing default '
-                           'library path.')
+                      help='Legacy option, do not use')
+  parser.add_argument('--config', default='Release',
+                      help='Use a particular library configuration (normally '
+                           'Debug or Release')
   parser.add_argument('-L', '--library-path', dest='lib_path',
                       action='append', default=[],
                       help='Add DIRECTORY to library search path',
@@ -606,6 +623,11 @@ def main(args):
 
   if options.toolchain is not None:
     sys.stderr.write('warning: option -t/--toolchain is deprecated.\n')
+  if options.debug_libs:
+    sys.stderr.write('warning: --debug-libs is deprecated (use --config).\n')
+    # Implement legacy behavior
+    if not options.config:
+      options.config = 'Debug'
 
   canonicalized = ParseExtraFiles(options.extra_files, sys.stderr)
   if canonicalized is None:
@@ -629,8 +651,7 @@ def main(args):
 
   if not options.no_default_libpath:
     # Add default libraries paths to the end of the search path.
-    config = options.debug_libs and 'Debug' or 'Release'
-    options.lib_path += GetDefaultLibPath(config)
+    options.lib_path += GetDefaultLibPath(options.config)
     for path in options.lib_path:
       Trace('libpath: %s' % path)
 

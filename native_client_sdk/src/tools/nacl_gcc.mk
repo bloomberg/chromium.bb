@@ -477,10 +477,7 @@ endef
 # $2 = Additional create_nmf.py arguments
 #
 NMF := python $(NACL_SDK_ROOT)/tools/create_nmf.py
-ifeq ($(CONFIG),Debug)
-NMF_FLAGS += --debug-libs
-HTML_FLAGS += --debug-libs
-endif
+NMF_FLAGS += --config=$(CONFIG_DIR)
 
 EXECUTABLES = $(GLIBC_SO_LIST)
 ifneq (,$(findstring x86_32,$(ARCHES)))
