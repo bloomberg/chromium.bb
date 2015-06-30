@@ -15,4 +15,7 @@
       },
     }],
   ],
+  'includes': [
+    '../../base/base.isolate',
+  ],
 }

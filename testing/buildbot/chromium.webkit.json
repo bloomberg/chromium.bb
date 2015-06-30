@@ -42,6 +42,9 @@
         "test": "browser_tests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "cacheinvalidation_unittests"
       },
       {
@@ -278,6 +281,9 @@
         "test": "browser_tests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "cacheinvalidation_unittests"
       },
       {
