@@ -90,6 +90,11 @@
           'ENABLE_IDLE_GC=1',
         ],
       }],
+      ['enable_oilpan==0', {
+        'feature_defines': [
+          'ENABLE_LAZY_SWEEPING=1',
+        ],
+      }],
       ['blink_gc_profiling==1', {
         'feature_defines': [
           'ENABLE_GC_PROFILING=1',
