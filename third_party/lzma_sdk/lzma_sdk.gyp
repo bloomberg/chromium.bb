@@ -49,6 +49,10 @@
         '_7ZIP_ST',
         '_LZMA_PROB32',
       ],
+      'variables': {
+        # Upstream uses self-assignment to avoid warnings.
+        'clang_warning_flags': [ '-Wno-self-assign' ]
+      },
       'sources': [
         '<@(lzma_sdk_sources)',
       ],
@@ -72,6 +76,10 @@
             '_7ZIP_ST',
             '_LZMA_PROB32',
           ],
+          'variables': {
+            # Upstream uses self-assignment to avoid warnings.
+            'clang_warning_flags': [ '-Wno-self-assign' ]
+          },
           'include_dirs': [
             '.',
           ],

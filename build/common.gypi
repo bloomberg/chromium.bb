@@ -5719,7 +5719,6 @@
                   '-Wno-pointer-sign',  # http://crbug.com/505303
                   '-Wno-reorder',  # http://crbug.com/505304
                   '-Wno-return-type-c-linkage',  # http://crbug.com/505305
-                  '-Wno-self-assign',  # http://crbug.com/505306
                   '-Wno-sometimes-uninitialized',  # http://crbug.com/505307
                   '-Wno-switch',  # http://crbug.com/505308
                   '-Wno-unknown-pragmas',  # http://crbug.com/505314

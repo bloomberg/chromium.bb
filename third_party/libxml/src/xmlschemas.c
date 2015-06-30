@@ -24201,9 +24201,7 @@ xmlSchemaValidateFacets(xmlSchemaAbstractCtxtPtr actxt,
     * anySimpleType based types), then use the provided
     * type.
     */
-    if (val == NULL)
-	valType = valType;
-    else
+    if (val != NULL)
 	valType = xmlSchemaGetValType(val);
 
     ret = 0;

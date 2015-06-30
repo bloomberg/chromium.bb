@@ -53,4 +53,14 @@ static_library("lzma_sdk") {
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
   public_configs = [ ":lzma_sdk_config" ]
+
+  # Must be in a config because of how GN orders flags (otherwise -Wall will
+  # appear after this, and turn it back on).
+  config("clang_warnings") {
+    if (is_clang) {
+      # Upstream uses self-assignment to avoid warnings.
+      cflags = [ "-Wno-self-assign" ]
+    }
+  }
+  configs += [ ":clang_warnings" ]
 }
