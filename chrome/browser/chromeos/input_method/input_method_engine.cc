@@ -598,6 +598,8 @@ void InputMethodEngine::Disable() {
   if (!CheckProfile())
     return;
   active_component_id_.clear();
+  IMEBridge::Get()->GetInputContextHandler()->CommitText(
+      base::UTF16ToUTF8(composition_text_->text()));
   observer_->OnDeactivated(active_component_id_);
 }
 
