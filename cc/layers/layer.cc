@@ -87,7 +87,6 @@ Layer::Layer(const LayerSettings& settings)
       visited_tracker_(0),
       clip_parent_(nullptr),
       replica_layer_(nullptr),
-      raster_scale_(0.f),
       client_(nullptr),
       frame_timing_requests_dirty_(false) {
   if (!settings.use_compositor_animation_timelines) {
@@ -151,11 +150,8 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
   if (replica_layer_.get())
     replica_layer_->SetLayerTreeHost(host);
 
-  if (host) {
+  if (host)
     RegisterForAnimations(host->animation_registrar());
-    if (host->settings().layer_transforms_should_scale_layer_contents)
-      reset_raster_scale_to_unknown();
-  }
 
   if (host && layer_animation_controller_->has_any_animation())
     host->SetNeedsCommit();
@@ -261,16 +257,6 @@ void Layer::SetParent(Layer* layer) {
     return;
 
   layer_tree_host_->property_trees()->needs_rebuild = true;
-
-  const LayerTreeSettings& settings = layer_tree_host_->settings();
-  if (!settings.layer_transforms_should_scale_layer_contents)
-    return;
-
-  reset_raster_scale_to_unknown();
-  if (mask_layer_.get())
-    mask_layer_->reset_raster_scale_to_unknown();
-  if (replica_layer_.get() && replica_layer_->mask_layer_.get())
-    replica_layer_->mask_layer_->reset_raster_scale_to_unknown();
 }
 
 void Layer::AddChild(scoped_refptr<Layer> child) {

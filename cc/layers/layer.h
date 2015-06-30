@@ -436,14 +436,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
     return paint_properties_;
   }
 
-  // The scale at which contents should be rastered, to match the scale at
-  // which they will drawn to the screen. This scale is a component of the
-  // contents scale but does not include page/device scale factors.
-  // TODO(danakj): This goes away when TiledLayer goes away.
-  void set_raster_scale(float scale) { raster_scale_ = scale; }
-  float raster_scale() const { return raster_scale_; }
-  bool raster_scale_is_unknown() const { return raster_scale_ == 0.f; }
-
   void SetNeedsPushProperties();
   bool needs_push_properties() const { return needs_push_properties_; }
   bool descendant_needs_push_properties() const {
@@ -602,8 +594,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   bool IsPropertyChangeAllowed() const;
 
-  void reset_raster_scale_to_unknown() { raster_scale_ = 0.f; }
-
   // This flag is set when the layer needs to push properties to the impl
   // side.
   bool needs_push_properties_;
@@ -753,9 +743,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   // Replica layer used for reflections.
   scoped_refptr<Layer> replica_layer_;
-
-  // Transient properties.
-  float raster_scale_;
 
   LayerClient* client_;
 
