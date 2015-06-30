@@ -69,14 +69,11 @@ FilterPainter::FilterPainter(DeprecatedPaintLayer& layer, GraphicsContext* conte
             // the layer's filter. See crbug.com/502026.
             if (webFilterOperations->isEmpty())
                 return;
-            OwnPtr<BeginFilterDisplayItem> filterDisplayItem = BeginFilterDisplayItem::create(*m_layoutObject, imageFilter, rootRelativeBounds, webFilterOperations.release());
-
-            context->displayItemList()->add(filterDisplayItem.release());
+            context->displayItemList()->createAndAppend<BeginFilterDisplayItem>(*m_layoutObject, imageFilter, rootRelativeBounds, webFilterOperations.release());
         }
     } else {
-        OwnPtr<BeginFilterDisplayItem> filterDisplayItem = BeginFilterDisplayItem::create(*m_layoutObject, imageFilter, rootRelativeBounds);
-
-        filterDisplayItem->replay(*context);
+        BeginFilterDisplayItem filterDisplayItem(*m_layoutObject, imageFilter, rootRelativeBounds);
+        filterDisplayItem.replay(*context);
     }
 
     m_filterInProgress = true;
@@ -93,11 +90,11 @@ FilterPainter::~FilterPainter()
             if (m_context->displayItemList()->lastDisplayItemIsNoopBegin())
                 m_context->displayItemList()->removeLastDisplayItem();
             else
-                m_context->displayItemList()->add(EndFilterDisplayItem::create(*m_layoutObject));
+                m_context->displayItemList()->createAndAppend<EndFilterDisplayItem>(*m_layoutObject);
         }
     } else {
-        OwnPtr<EndFilterDisplayItem> endFilterDisplayItem = EndFilterDisplayItem::create(*m_layoutObject);
-        endFilterDisplayItem->replay(*m_context);
+        EndFilterDisplayItem endFilterDisplayItem(*m_layoutObject);
+        endFilterDisplayItem.replay(*m_context);
     }
 }
 

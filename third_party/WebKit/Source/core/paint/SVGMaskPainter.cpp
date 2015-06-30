@@ -32,7 +32,7 @@ bool SVGMaskPainter::prepareEffect(const LayoutObject& object, GraphicsContext* 
         ASSERT(context->displayItemList());
         if (context->displayItemList()->displayItemConstructionIsDisabled())
             return true;
-        context->displayItemList()->add(BeginCompositingDisplayItem::create(object, SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect));
+        context->displayItemList()->createAndAppend<BeginCompositingDisplayItem>(object, SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect);
     } else {
         BeginCompositingDisplayItem beginCompositingContent(object, SkXfermode::kSrcOver_Mode, 1, &paintInvalidationRect);
         beginCompositingContent.replay(*context);
@@ -61,7 +61,7 @@ void SVGMaskPainter::finishEffect(const LayoutObject& object, GraphicsContext* c
             if (context->displayItemList()->lastDisplayItemIsNoopBegin())
                 context->displayItemList()->removeLastDisplayItem();
             else
-                context->displayItemList()->add(EndCompositingDisplayItem::create(object));
+                context->displayItemList()->createAndAppend<EndCompositingDisplayItem>(object);
         }
     } else {
         EndCompositingDisplayItem endCompositingContent(object);

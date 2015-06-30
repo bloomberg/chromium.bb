@@ -22,36 +22,19 @@ public:
     };
 #endif
 
-    static PassOwnPtr<DrawingDisplayItem> create(const DisplayItemClientWrapper& client
+    DrawingDisplayItem(const DisplayItemClientWrapper& client
         , Type type
         , PassRefPtr<const SkPicture> picture
 #if ENABLE(ASSERT)
         , UnderInvalidationCheckingMode underInvalidationCheckingMode = CheckPicture
 #endif
         )
-    {
-        return adoptPtr(new DrawingDisplayItem(client
-            , type
-            , picture
-#if ENABLE(ASSERT)
-            , underInvalidationCheckingMode
-#endif
-            ));
-    }
-
-    DrawingDisplayItem(const DisplayItemClientWrapper& client
-        , Type type
-        , PassRefPtr<const SkPicture> picture
-#if ENABLE(ASSERT)
-        , UnderInvalidationCheckingMode underInvalidationCheckingMode
-#endif
-        )
         : DisplayItem(client, type)
         , m_picture(picture && picture->approximateOpCount() ? picture : nullptr)
-    {
 #if ENABLE(ASSERT)
-        m_underInvalidationCheckingMode = underInvalidationCheckingMode;
+        , m_underInvalidationCheckingMode(underInvalidationCheckingMode)
 #endif
+    {
         ASSERT(isDrawingType(type));
     }
 

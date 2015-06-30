@@ -6,15 +6,22 @@
 #define DisplayItemList_h
 
 #include "platform/PlatformExport.h"
+#include "platform/graphics/ListContainer.h"
 #include "platform/graphics/paint/DisplayItem.h"
-#include "platform/graphics/paint/DisplayItems.h"
+#include "platform/graphics/paint/Transform3DDisplayItem.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/Utility.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
 class GraphicsContext;
+
+using DisplayItems = ListContainer<DisplayItem>;
+
+static const size_t kInitialDisplayItemsCapacity = 64;
+static const size_t kMaximumDisplayItemSize = sizeof(BeginTransform3DDisplayItem);
 
 class PLATFORM_EXPORT DisplayItemList {
     WTF_MAKE_NONCOPYABLE(DisplayItemList);
@@ -30,7 +37,18 @@ public:
     void invalidateAll();
 
     // These methods are called during painting.
-    void add(WTF::PassOwnPtr<DisplayItem>);
+    template <typename DisplayItemClass, typename... Args>
+    DisplayItemClass& createAndAppend(Args&&... args)
+    {
+        static_assert(WTF::IsSubclass<DisplayItemClass, DisplayItem>::value,
+            "Can only createAndAppend subclasses of DisplayItem.");
+        static_assert(sizeof(DisplayItemClass) <= kMaximumDisplayItemSize,
+            "DisplayItem subclass is larger than kMaximumDisplayItemSize.");
+
+        DisplayItemClass* displayItem = m_newDisplayItems.allocateAndConstruct<DisplayItemClass>(WTF::forward<Args>(args)...);
+        processNewItem(displayItem);
+        return *displayItem;
+    }
     void beginScope(DisplayItemClient);
     void endScope(DisplayItemClient);
 
@@ -72,7 +90,9 @@ public:
 
 protected:
     DisplayItemList()
-        : m_validlyCachedClientsDirty(false)
+        : m_currentDisplayItems(kMaximumDisplayItemSize, 0)
+        , m_newDisplayItems(kMaximumDisplayItemSize, kInitialDisplayItemsCapacity)
+        , m_validlyCachedClientsDirty(false)
         , m_constructionDisabled(false)
         , m_skippingCacheCount(0)
         , m_numCachedItems(0) { }
@@ -81,6 +101,10 @@ private:
     friend class DisplayItemListTest;
     friend class DisplayItemListPaintTest;
     friend class LayoutObjectDrawingRecorderTest;
+
+    // Set new item state (scopes, cache skipping, etc) for a new item.
+    // TODO(pdr): This only passes a pointer to make the patch easier to review. Change to a reference.
+    void processNewItem(DisplayItem*);
 
     void updateValidlyCachedClientsIfNeeded() const;
 
@@ -100,11 +124,11 @@ private:
 #if ENABLE(ASSERT)
     // The following two methods are for checking under-invalidations
     // (when RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled).
-    void checkCachedDisplayItemIsUnchanged(const DisplayItems::ItemHandle&, DisplayItemIndicesByClientMap&);
+    void checkCachedDisplayItemIsUnchanged(const DisplayItem&, DisplayItemIndicesByClientMap&);
     void checkNoRemainingCachedDisplayItems();
 #endif
 
-    void replay(GraphicsContext&) const;
+    void replay(GraphicsContext&);
 
     DisplayItems m_currentDisplayItems;
     DisplayItems m_newDisplayItems;

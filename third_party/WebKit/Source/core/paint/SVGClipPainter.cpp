@@ -105,7 +105,7 @@ void SVGClipPainter::postApplyStatefulResource(const LayoutObject& target, Graph
                 if (context->displayItemList()->lastDisplayItemIsNoopBegin())
                     context->displayItemList()->removeLastDisplayItem();
                 else
-                    context->displayItemList()->add(EndClipPathDisplayItem::create(target));
+                    context->displayItemList()->createAndAppend<EndClipPathDisplayItem>(target);
             }
         } else {
             EndClipPathDisplayItem endClipPathDisplayItem(target);

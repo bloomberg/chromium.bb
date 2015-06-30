@@ -21,7 +21,7 @@ ScrollRecorder::ScrollRecorder(GraphicsContext& context, const DisplayItemClient
         ASSERT(m_context.displayItemList());
         if (m_context.displayItemList()->displayItemConstructionIsDisabled())
             return;
-        m_context.displayItemList()->add(BeginScrollDisplayItem::create(m_client, m_beginItemType, currentOffset));
+        m_context.displayItemList()->createAndAppend<BeginScrollDisplayItem>(m_client, m_beginItemType, currentOffset);
     } else {
         BeginScrollDisplayItem scrollDisplayItem(m_client, m_beginItemType, currentOffset);
         scrollDisplayItem.replay(m_context);
@@ -37,7 +37,7 @@ ScrollRecorder::~ScrollRecorder()
             if (m_context.displayItemList()->lastDisplayItemIsNoopBegin())
                 m_context.displayItemList()->removeLastDisplayItem();
             else
-                m_context.displayItemList()->add(EndScrollDisplayItem::create(m_client, endItemType));
+                m_context.displayItemList()->createAndAppend<EndScrollDisplayItem>(m_client, endItemType);
         }
     } else {
         EndScrollDisplayItem endScrollDisplayItem(m_client, endItemType);

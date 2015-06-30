@@ -27,7 +27,7 @@ Transform3DRecorder::Transform3DRecorder(GraphicsContext& context, const Display
         ASSERT(m_context.displayItemList());
         if (m_context.displayItemList()->displayItemConstructionIsDisabled())
             return;
-        m_context.displayItemList()->add(BeginTransform3DDisplayItem::create(m_client, m_type, transform));
+        m_context.displayItemList()->createAndAppend<BeginTransform3DDisplayItem>(m_client, m_type, transform);
     } else {
         BeginTransform3DDisplayItem beginTransform(m_client, m_type, transform);
         beginTransform.replay(m_context);
@@ -46,7 +46,7 @@ Transform3DRecorder::~Transform3DRecorder()
             if (m_context.displayItemList()->lastDisplayItemIsNoopBegin())
                 m_context.displayItemList()->removeLastDisplayItem();
             else
-                m_context.displayItemList()->add(EndTransform3DDisplayItem::create(m_client, endType));
+                m_context.displayItemList()->createAndAppend<EndTransform3DDisplayItem>(m_client, endType);
         }
     } else {
         EndTransform3DDisplayItem endTransform(m_client, endType);

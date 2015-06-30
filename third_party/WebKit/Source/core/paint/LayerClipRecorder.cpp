@@ -30,14 +30,13 @@ LayerClipRecorder::LayerClipRecorder(GraphicsContext& graphicsContext, const Lay
         collectRoundedRectClips(*layoutObject.layer(), *localPaintingInfo, graphicsContext, fragmentOffset, paintFlags, rule, *roundedRects);
     }
 
-    OwnPtr<ClipDisplayItem> clipDisplayItem = ClipDisplayItem::create(layoutObject, clipType, snappedClipRect, roundedRects.release());
-    if (!RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        clipDisplayItem->replay(graphicsContext);
-    } else {
-        ASSERT(m_graphicsContext.displayItemList());
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         if (m_graphicsContext.displayItemList()->displayItemConstructionIsDisabled())
             return;
-        m_graphicsContext.displayItemList()->add(clipDisplayItem.release());
+        m_graphicsContext.displayItemList()->createAndAppend<ClipDisplayItem>(layoutObject, m_clipType, snappedClipRect, roundedRects.release());
+    } else {
+        ClipDisplayItem clipDisplayItem(layoutObject, m_clipType, snappedClipRect, roundedRects.release());
+        clipDisplayItem.replay(graphicsContext);
     }
 }
 
@@ -88,7 +87,7 @@ LayerClipRecorder::~LayerClipRecorder()
             if (m_graphicsContext.displayItemList()->lastDisplayItemIsNoopBegin())
                 m_graphicsContext.displayItemList()->removeLastDisplayItem();
             else
-                m_graphicsContext.displayItemList()->add(EndClipDisplayItem::create(m_layoutObject, DisplayItem::clipTypeToEndClipType(m_clipType)));
+                m_graphicsContext.displayItemList()->createAndAppend<EndClipDisplayItem>(m_layoutObject, DisplayItem::clipTypeToEndClipType(m_clipType));
         }
     } else {
         m_graphicsContext.restore();

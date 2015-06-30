@@ -14,13 +14,7 @@
 namespace blink {
 
 class PLATFORM_EXPORT BeginClipPathDisplayItem : public PairedBeginDisplayItem {
-    WTF_MAKE_FAST_ALLOCATED(BeginClipPathDisplayItem);
 public:
-    static PassOwnPtr<BeginClipPathDisplayItem> create(const DisplayItemClientWrapper& client, const Path& clipPath)
-    {
-        return adoptPtr(new BeginClipPathDisplayItem(client, clipPath));
-    }
-
     BeginClipPathDisplayItem(const DisplayItemClientWrapper& client, const Path& clipPath)
         : PairedBeginDisplayItem(client, BeginClipPath)
         , m_clipPath(clipPath.skPath()) { }
@@ -36,13 +30,7 @@ private:
 };
 
 class PLATFORM_EXPORT EndClipPathDisplayItem : public PairedEndDisplayItem {
-    WTF_MAKE_FAST_ALLOCATED(EndClipPathDisplayItem);
 public:
-    static PassOwnPtr<EndClipPathDisplayItem> create(const DisplayItemClientWrapper& client)
-    {
-        return adoptPtr(new EndClipPathDisplayItem(client));
-    }
-
     EndClipPathDisplayItem(const DisplayItemClientWrapper& client)
         : PairedEndDisplayItem(client, EndClipPath) { }
 

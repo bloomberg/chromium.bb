@@ -26,8 +26,6 @@ struct DummyClient {
 
 class DummyDisplayItem : public DisplayItem {
 public:
-    static PassOwnPtr<DummyDisplayItem> create(const DummyClient& client) { return adoptPtr(new DummyDisplayItem(client)); }
-private:
     DummyDisplayItem(const DummyClient& client) : DisplayItem(client, DisplayItem::DrawingFirst) { }
 };
 
@@ -37,16 +35,16 @@ protected:
 
     void processDisplayItem(const DisplayItem& displayItem) { m_builder.processDisplayItem(displayItem); }
     void processDisplayItem(PassOwnPtr<DisplayItem> displayItem) { processDisplayItem(*displayItem); }
-    void processDummyDisplayItem() { processDisplayItem(DummyDisplayItem::create(newDummyClient())); }
+    void processDummyDisplayItem() { processDisplayItem(DummyDisplayItem(newDummyClient())); }
     const DummyClient& processBeginTransform3D(const TransformationMatrix& transform)
     {
         const DummyClient& client = newDummyClient();
-        processDisplayItem(BeginTransform3DDisplayItem::create(client, DisplayItem::Transform3DElementTransform, transform));
+        processDisplayItem(BeginTransform3DDisplayItem(client, DisplayItem::Transform3DElementTransform, transform));
         return client;
     }
     void processEndTransform3D(const DummyClient& client)
     {
-        processDisplayItem(EndTransform3DDisplayItem::create(client, DisplayItem::transform3DTypeToEndTransform3DType(DisplayItem::Transform3DElementTransform)));
+        processDisplayItem(EndTransform3DDisplayItem(client, DisplayItem::transform3DTypeToEndTransform3DType(DisplayItem::Transform3DElementTransform)));
     }
 
 private:

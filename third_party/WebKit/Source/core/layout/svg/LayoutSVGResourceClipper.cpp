@@ -145,7 +145,7 @@ bool LayoutSVGResourceClipper::tryPathOnlyClipping(const LayoutObject& layoutObj
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         if (!context->displayItemList()->displayItemConstructionIsDisabled())
-            context->displayItemList()->add(BeginClipPathDisplayItem::create(layoutObject, clipPath));
+            context->displayItemList()->createAndAppend<BeginClipPathDisplayItem>(layoutObject, clipPath);
     } else {
         BeginClipPathDisplayItem clipPathDisplayItem(layoutObject, clipPath);
         clipPathDisplayItem.replay(*context);

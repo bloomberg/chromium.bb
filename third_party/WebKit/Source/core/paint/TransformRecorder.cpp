@@ -25,7 +25,7 @@ TransformRecorder::TransformRecorder(GraphicsContext& context, const DisplayItem
         ASSERT(m_context.displayItemList());
         if (m_context.displayItemList()->displayItemConstructionIsDisabled())
             return;
-        m_context.displayItemList()->add(BeginTransformDisplayItem::create(m_client, transform));
+        m_context.displayItemList()->createAndAppend<BeginTransformDisplayItem>(m_client, transform);
     } else {
         BeginTransformDisplayItem beginTransform(m_client, transform);
         beginTransform.replay(m_context);
@@ -43,7 +43,7 @@ TransformRecorder::~TransformRecorder()
             if (m_context.displayItemList()->lastDisplayItemIsNoopBegin())
                 m_context.displayItemList()->removeLastDisplayItem();
             else
-                m_context.displayItemList()->add(EndTransformDisplayItem::create(m_client));
+                m_context.displayItemList()->createAndAppend<EndTransformDisplayItem>(m_client);
         }
     } else {
         EndTransformDisplayItem endTransform(m_client);

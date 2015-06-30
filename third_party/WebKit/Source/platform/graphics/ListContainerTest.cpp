@@ -153,6 +153,27 @@ TEST(ListContainerTest, ConstructorCalledInAllocateAndConstruct)
     EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementTwo, derivedElement2->getValue());
 }
 
+TEST(ListContainerTest, AllocateAndConstructWithArguments)
+{
+    // Create a new OwnPtr<SimpleDerivedElement> by passing in a new SimpleDerivedElement.
+    ListContainer<OwnPtr<SimpleDerivedElement>> list1(kCurrentLargestDerivedElementSize);
+    auto* sdeOwnPtr1 = list1.allocateAndConstruct<OwnPtr<SimpleDerivedElement>>(adoptPtr(new SimpleDerivedElementConstructMagicNumberOne()));
+    EXPECT_EQ(1u, list1.size());
+    EXPECT_EQ(sdeOwnPtr1, list1.back());
+    EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementOne, (*sdeOwnPtr1)->getValue());
+    (*sdeOwnPtr1)->setValue(kMagicNumberToUseForSimpleDerivedElementTwo);
+
+    // Transfer an OwnPtr<SimpleDerivedElement> to another list.
+    ListContainer<OwnPtr<SimpleDerivedElement>> list2(kCurrentLargestDerivedElementSize);
+    auto* sdeOwnPtr2 = list2.allocateAndConstruct<OwnPtr<SimpleDerivedElement>>(sdeOwnPtr1->release());
+    EXPECT_EQ(1u, list2.size());
+    EXPECT_EQ(sdeOwnPtr2, list2.back());
+    EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementTwo, (*sdeOwnPtr2)->getValue());
+
+    // Verify the first OwnPtr is null after moving.
+    EXPECT_EQ(nullptr, list1.back()->get());
+}
+
 TEST(ListContainerTest, DestructorCalled)
 {
     ListContainer<DerivedElement> list(kCurrentLargestDerivedElementSize);
@@ -851,6 +872,20 @@ TEST(ListContainerTest, AppendByMovingDoesNotDestruct)
     testing::Mock::VerifyAndClearExpectations(mde1);
     mde1 = static_cast<MockDerivedElement*>(list2.back());
     EXPECT_CALL(*mde1, Destruct());
+}
+
+TEST(ListContainerTest, AppendByMovingReturnsMovedPointer)
+{
+    ListContainer<SimpleDerivedElement> list1(kCurrentLargestDerivedElementSize);
+    ListContainer<SimpleDerivedElement> list2(kCurrentLargestDerivedElementSize);
+    SimpleDerivedElement* simpleElement = list1.allocateAndConstruct<SimpleDerivedElement>();
+
+    SimpleDerivedElement* movedElement1 = list2.appendByMoving(simpleElement);
+    EXPECT_EQ(list2.back(), movedElement1);
+
+    SimpleDerivedElement* movedElement2 = list1.appendByMoving(movedElement1);
+    EXPECT_EQ(list1.back(), movedElement2);
+    EXPECT_NE(movedElement1, movedElement2);
 }
 
 TEST(ListContainerTest, AppendByMovingReplacesSourceWithNewDerivedElement)

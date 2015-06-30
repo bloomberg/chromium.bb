@@ -10,21 +10,6 @@
 
 namespace blink {
 
-BeginFilterDisplayItem::BeginFilterDisplayItem(const DisplayItemClientWrapper& client, PassRefPtr<SkImageFilter> imageFilter, const FloatRect& bounds)
-    : PairedBeginDisplayItem(client, BeginFilter)
-    , m_imageFilter(imageFilter)
-    , m_bounds(bounds)
-{
-}
-
-BeginFilterDisplayItem::BeginFilterDisplayItem(const DisplayItemClientWrapper& client, PassRefPtr<SkImageFilter> imageFilter, const FloatRect& bounds, PassOwnPtr<WebFilterOperations> webFilterOperations)
-    : PairedBeginDisplayItem(client, BeginFilter)
-    , m_imageFilter(imageFilter)
-    , m_webFilterOperations(webFilterOperations)
-    , m_bounds(bounds)
-{
-}
-
 static FloatRect mapImageFilterRect(SkImageFilter* filter, const FloatRect& bounds)
 {
     SkRect filterBounds;

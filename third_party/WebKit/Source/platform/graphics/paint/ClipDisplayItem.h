@@ -16,13 +16,7 @@
 namespace blink {
 
 class PLATFORM_EXPORT ClipDisplayItem : public PairedBeginDisplayItem {
-    WTF_MAKE_FAST_ALLOCATED(ClipDisplayItem);
 public:
-    static PassOwnPtr<ClipDisplayItem> create(const DisplayItemClientWrapper& client, Type type, const IntRect& clipRect, PassOwnPtr<Vector<FloatRoundedRect>> roundedRectClips = nullptr)
-    {
-        return adoptPtr(new ClipDisplayItem(client, type, clipRect, roundedRectClips));
-    }
-
     ClipDisplayItem(const DisplayItemClientWrapper& client, Type type, const IntRect& clipRect, PassOwnPtr<Vector<FloatRoundedRect>> roundedRectClips = nullptr)
         : PairedBeginDisplayItem(client, type)
         , m_clipRect(clipRect)
@@ -38,18 +32,12 @@ private:
 #ifndef NDEBUG
     virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
-    IntRect m_clipRect;
+    const IntRect m_clipRect;
     OwnPtr<Vector<FloatRoundedRect>> m_roundedRectClips;
 };
 
 class PLATFORM_EXPORT EndClipDisplayItem : public PairedEndDisplayItem {
-    WTF_MAKE_FAST_ALLOCATED(EndClipDisplayItem);
 public:
-    static PassOwnPtr<EndClipDisplayItem> create(const DisplayItemClientWrapper& client, Type type)
-    {
-        return adoptPtr(new EndClipDisplayItem(client, type));
-    }
-
     EndClipDisplayItem(const DisplayItemClientWrapper& client, Type type)
         : PairedEndDisplayItem(client, type)
     {

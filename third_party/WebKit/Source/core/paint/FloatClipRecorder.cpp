@@ -21,10 +21,10 @@ FloatClipRecorder::FloatClipRecorder(GraphicsContext& context, const DisplayItem
         ASSERT(m_context.displayItemList());
         if (m_context.displayItemList()->displayItemConstructionIsDisabled())
             return;
-        m_context.displayItemList()->add(FloatClipDisplayItem::create(m_client, m_clipType, clipRect));
+        m_context.displayItemList()->createAndAppend<FloatClipDisplayItem>(m_client, m_clipType, clipRect);
     } else {
-        FloatClipDisplayItem clipDisplayItem(m_client, m_clipType, clipRect);
-        clipDisplayItem.replay(m_context);
+        FloatClipDisplayItem floatClipDisplayItem(m_client, m_clipType, clipRect);
+        floatClipDisplayItem.replay(m_context);
     }
 }
 
@@ -37,7 +37,7 @@ FloatClipRecorder::~FloatClipRecorder()
             if (m_context.displayItemList()->lastDisplayItemIsNoopBegin())
                 m_context.displayItemList()->removeLastDisplayItem();
             else
-                m_context.displayItemList()->add(EndFloatClipDisplayItem::create(m_client, endType));
+                m_context.displayItemList()->createAndAppend<EndFloatClipDisplayItem>(m_client, endType);
         }
     } else {
         EndFloatClipDisplayItem endClipDisplayItem(m_client, endType);

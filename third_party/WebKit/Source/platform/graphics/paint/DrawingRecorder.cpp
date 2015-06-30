@@ -91,16 +91,15 @@ DrawingRecorder::~DrawingRecorder()
                 m_displayItemClient.debugName().utf8().data());
         }
 #endif
-        m_context.displayItemList()->add(CachedDisplayItem::create(m_displayItemClient, DisplayItem::drawingTypeToCachedType(m_displayItemType)));
+        m_context.displayItemList()->createAndAppend<CachedDisplayItem>(m_displayItemClient, DisplayItem::drawingTypeToCachedType(m_displayItemType));
     } else {
-        OwnPtr<DrawingDisplayItem> drawingDisplayItem = DrawingDisplayItem::create(m_displayItemClient
+        m_context.displayItemList()->createAndAppend<DrawingDisplayItem>(m_displayItemClient
             , m_displayItemType
             , m_context.endRecording()
 #if ENABLE(ASSERT)
             , m_underInvalidationCheckingMode
 #endif
             );
-        m_context.displayItemList()->add(drawingDisplayItem.release());
     }
 }
 

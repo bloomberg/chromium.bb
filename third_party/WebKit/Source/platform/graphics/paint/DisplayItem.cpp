@@ -168,6 +168,9 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
     PAINT_PHASE_BASED_DEBUG_STRINGS(BeginSubtree);
     PAINT_PHASE_BASED_DEBUG_STRINGS(EndSubtree);
 
+    if (type == UninitializedType)
+        return "UninitializedType";
+
     switch (type) {
         DEBUG_STRING_CASE(BeginFilter);
         DEBUG_STRING_CASE(EndFilter);

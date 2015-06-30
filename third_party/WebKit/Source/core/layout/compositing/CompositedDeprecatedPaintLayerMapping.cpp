@@ -2132,10 +2132,10 @@ void CompositedDeprecatedPaintLayerMapping::doPaintTask(const GraphicsLayerPaint
             if (context->displayItemList()) {
                 ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
                 if (!context->displayItemList()->displayItemConstructionIsDisabled())
-                    context->displayItemList()->add(ClipDisplayItem::create(*this, DisplayItem::ClipLayerOverflowControls, dirtyRect));
+                    context->displayItemList()->createAndAppend<ClipDisplayItem>(*this, DisplayItem::ClipLayerOverflowControls, dirtyRect);
             } else {
-                OwnPtr<DisplayItem> clipDisplayItem = ClipDisplayItem::create(*this, DisplayItem::ClipLayerOverflowControls, dirtyRect);
-                clipDisplayItem->replay(*context);
+                ClipDisplayItem clipDisplayItem(*this, DisplayItem::ClipLayerOverflowControls, dirtyRect);
+                clipDisplayItem.replay(*context);
             }
         }
         DeprecatedPaintLayerPainter(*paintInfo.paintLayer).paintLayer(context, paintingInfo, paintLayerFlags);
@@ -2146,11 +2146,11 @@ void CompositedDeprecatedPaintLayerMapping::doPaintTask(const GraphicsLayerPaint
                     if (context->displayItemList()->lastDisplayItemIsNoopBegin())
                         context->displayItemList()->removeLastDisplayItem();
                     else
-                        context->displayItemList()->add(EndClipDisplayItem::create(*this, DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerOverflowControls)));
+                        context->displayItemList()->createAndAppend<EndClipDisplayItem>(*this, DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerOverflowControls));
                 }
             } else {
-                OwnPtr<DisplayItem> endClipDisplayItem = EndClipDisplayItem::create(*this, DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerOverflowControls));
-                endClipDisplayItem->replay(*context);
+                EndClipDisplayItem endClipDisplayItem(*this, DisplayItem::clipTypeToEndClipType(DisplayItem::ClipLayerOverflowControls));
+                endClipDisplayItem.replay(*context);
             }
         }
     }

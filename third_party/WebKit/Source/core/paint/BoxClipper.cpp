@@ -59,8 +59,7 @@ BoxClipper::BoxClipper(const LayoutBox& box, const PaintInfo& paintInfo, const L
                 roundedRects = adoptPtr(new Vector<FloatRoundedRect>());
                 roundedRects->append(clipRoundedRect);
             }
-            OwnPtr<ClipDisplayItem> clipDisplayItem = ClipDisplayItem::create(m_box, m_clipType, pixelSnappedIntRect(clipRect), roundedRects.release());
-            m_paintInfo.context->displayItemList()->add(clipDisplayItem.release());
+            m_paintInfo.context->displayItemList()->createAndAppend<ClipDisplayItem>(m_box, m_clipType, pixelSnappedIntRect(clipRect), roundedRects.release());
         }
     } else {
         m_clipType = m_paintInfo.displayItemTypeForClipping();
@@ -69,8 +68,8 @@ BoxClipper::BoxClipper(const LayoutBox& box, const PaintInfo& paintInfo, const L
             roundedRects = adoptPtr(new Vector<FloatRoundedRect>());
             roundedRects->append(clipRoundedRect);
         }
-        OwnPtr<ClipDisplayItem> clipDisplayItem = ClipDisplayItem::create(m_box, m_clipType, pixelSnappedIntRect(clipRect), roundedRects.release());
-        clipDisplayItem->replay(*paintInfo.context);
+        ClipDisplayItem clipDisplayItem(m_box, m_clipType, pixelSnappedIntRect(clipRect), roundedRects.release());
+        clipDisplayItem.replay(*paintInfo.context);
     }
 }
 
@@ -87,7 +86,7 @@ BoxClipper::~BoxClipper()
             if (m_paintInfo.context->displayItemList()->lastDisplayItemIsNoopBegin())
                 m_paintInfo.context->displayItemList()->removeLastDisplayItem();
             else
-                m_paintInfo.context->displayItemList()->add(EndClipDisplayItem::create(m_box, DisplayItem::clipTypeToEndClipType(m_clipType)));
+                m_paintInfo.context->displayItemList()->createAndAppend<EndClipDisplayItem>(m_box, DisplayItem::clipTypeToEndClipType(m_clipType));
         }
     } else {
         EndClipDisplayItem endClipDisplayItem(m_box, DisplayItem::clipTypeToEndClipType(m_clipType));

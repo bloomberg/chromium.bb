@@ -6,6 +6,7 @@
 #define DisplayItem_h
 
 #include "platform/PlatformExport.h"
+#include "platform/graphics/ListContainer.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassOwnPtr.h"
@@ -24,7 +25,7 @@ class WebDisplayItemList;
 class PLATFORM_EXPORT DisplayItem {
 public:
     enum {
-        // Must be kept in sync with core/layout/PaintPhase.h.
+        // Must be kept in sync with core/paint/PaintPhase.h.
         PaintPhaseMax = 12,
     };
 
@@ -177,6 +178,18 @@ public:
         TypeLast = UninitializedType
     };
 
+    DisplayItem(const DisplayItemClientWrapper& client, Type type)
+        : m_client(client.displayItemClient())
+        , m_scopeContainer(nullptr)
+        , m_scopeId(0)
+        , m_type(type)
+        , m_skippedCache(false)
+        , m_ignoredFromList(false)
+#ifndef NDEBUG
+        , m_clientDebugString(client.debugName())
+#endif
+    { }
+
     struct Id {
         Id(DisplayItemClient c, Type t) : client(c), type(t), scopeId(0), scopeContainer(nullptr)
         {
@@ -304,6 +317,9 @@ public:
 
     virtual bool drawsContent() const { return false; }
 
+    bool ignoreFromDisplayList() const { return m_ignoredFromList; }
+    void setIgnoredFromDisplayList() { m_ignoredFromList = true; }
+
 #ifndef NDEBUG
     static WTF::String typeAsDebugString(DisplayItem::Type);
     const WTF::String& clientDebugString() const { return m_clientDebugString; }
@@ -311,25 +327,29 @@ public:
     virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const;
 #endif
 
-protected:
-    DisplayItem(const DisplayItemClientWrapper& client, Type type)
-        : m_client(client.displayItemClient())
+private:
+    // The default DisplayItem constructor is only used by ListContainer::appendByMoving
+    // where an inavlid DisplaItem is constructed at the source location.
+    friend DisplayItem* ListContainer<DisplayItem>::appendByMoving<DisplayItem>(DisplayItem*);
+    DisplayItem()
+        : m_client(nullptr)
         , m_scopeContainer(nullptr)
         , m_scopeId(0)
-        , m_type(type)
+        , m_type(UninitializedType)
         , m_skippedCache(false)
+        , m_ignoredFromList(true)
 #ifndef NDEBUG
-        , m_clientDebugString(client.debugName())
+        , m_clientDebugString("invalid")
 #endif
     { }
 
-private:
     const DisplayItemClient m_client;
     DisplayItemClient m_scopeContainer;
     int m_scopeId;
     static_assert(TypeLast < (1 << 16), "DisplayItem::Type should fit in 16 bits");
     const Type m_type : 16;
     unsigned m_skippedCache : 1;
+    unsigned m_ignoredFromList : 1;
 
 #ifndef NDEBUG
     WTF::String m_clientDebugString;

@@ -17,26 +17,18 @@
 namespace blink {
 
 class PLATFORM_EXPORT BeginFilterDisplayItem : public PairedBeginDisplayItem {
-    WTF_MAKE_FAST_ALLOCATED(BeginFilterDisplayItem);
 public:
-    static PassOwnPtr<BeginFilterDisplayItem> create(const DisplayItemClientWrapper& client, PassRefPtr<SkImageFilter> imageFilter, const FloatRect& bounds)
-    {
-        return adoptPtr(new BeginFilterDisplayItem(client, imageFilter, bounds));
-    }
-
-    static PassOwnPtr<BeginFilterDisplayItem> create(const DisplayItemClientWrapper& client, PassRefPtr<SkImageFilter> imageFilter, const FloatRect& bounds, PassOwnPtr<WebFilterOperations> filterOperations)
-    {
-        return adoptPtr(new BeginFilterDisplayItem(client, imageFilter, bounds, filterOperations));
-    }
+    BeginFilterDisplayItem(const DisplayItemClientWrapper& client, PassRefPtr<SkImageFilter> imageFilter, const FloatRect& bounds, PassOwnPtr<WebFilterOperations> filterOperations = nullptr)
+        : PairedBeginDisplayItem(client, BeginFilter)
+        , m_imageFilter(imageFilter)
+        , m_webFilterOperations(filterOperations)
+        , m_bounds(bounds) { }
 
     virtual void replay(GraphicsContext&) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
     virtual bool drawsContent() const override;
 
 private:
-    BeginFilterDisplayItem(const DisplayItemClientWrapper&, PassRefPtr<SkImageFilter>, const FloatRect& bounds);
-    BeginFilterDisplayItem(const DisplayItemClientWrapper&, PassRefPtr<SkImageFilter>, const FloatRect& bounds, PassOwnPtr<WebFilterOperations>);
-
 #ifndef NDEBUG
     virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
@@ -48,13 +40,7 @@ private:
 };
 
 class PLATFORM_EXPORT EndFilterDisplayItem : public PairedEndDisplayItem {
-    WTF_MAKE_FAST_ALLOCATED(EndFilterDisplayItem);
 public:
-    static PassOwnPtr<EndFilterDisplayItem> create(const DisplayItemClientWrapper& client)
-    {
-        return adoptPtr(new EndFilterDisplayItem(client));
-    }
-
     EndFilterDisplayItem(const DisplayItemClientWrapper& client)
         : PairedEndDisplayItem(client, EndFilter) { }
 

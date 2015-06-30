@@ -27,13 +27,13 @@ LayerFixedPositionRecorder::LayerFixedPositionRecorder(GraphicsContext& graphics
         return;
 
     if (m_isFixedPosition)
-        m_graphicsContext.displayItemList()->add(BeginFixedPositionDisplayItem::create(m_layoutObject));
+        m_graphicsContext.displayItemList()->createAndAppend<BeginFixedPositionDisplayItem>(m_layoutObject);
 
     // TODO(trchen): Adding a pair of display items on every transformed
     // element can be expensive. Investigate whether we can optimize out some
     // of them if applicable.
     if (m_isFixedPositionContainer)
-        m_graphicsContext.displayItemList()->add(BeginFixedPositionContainerDisplayItem::create(m_layoutObject));
+        m_graphicsContext.displayItemList()->createAndAppend<BeginFixedPositionContainerDisplayItem>(m_layoutObject);
 }
 
 LayerFixedPositionRecorder::~LayerFixedPositionRecorder()
@@ -48,14 +48,14 @@ LayerFixedPositionRecorder::~LayerFixedPositionRecorder()
         if (m_graphicsContext.displayItemList()->lastDisplayItemIsNoopBegin())
             m_graphicsContext.displayItemList()->removeLastDisplayItem();
         else
-            m_graphicsContext.displayItemList()->add(EndFixedPositionContainerDisplayItem::create(m_layoutObject));
+            m_graphicsContext.displayItemList()->createAndAppend<EndFixedPositionDisplayItem>(m_layoutObject);
     }
 
     if (m_isFixedPosition) {
         if (m_graphicsContext.displayItemList()->lastDisplayItemIsNoopBegin())
             m_graphicsContext.displayItemList()->removeLastDisplayItem();
         else
-            m_graphicsContext.displayItemList()->add(EndFixedPositionDisplayItem::create(m_layoutObject));
+            m_graphicsContext.displayItemList()->createAndAppend<EndFixedPositionDisplayItem>(m_layoutObject);
     }
 }
 

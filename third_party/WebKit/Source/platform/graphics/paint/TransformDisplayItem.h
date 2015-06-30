@@ -12,13 +12,7 @@
 namespace blink {
 
 class PLATFORM_EXPORT BeginTransformDisplayItem : public PairedBeginDisplayItem {
-    WTF_MAKE_FAST_ALLOCATED(BeginTransformDisplayItem);
 public:
-    static PassOwnPtr<BeginTransformDisplayItem> create(const DisplayItemClientWrapper& client, const AffineTransform& transform)
-    {
-        return adoptPtr(new BeginTransformDisplayItem(client, transform));
-    }
-
     BeginTransformDisplayItem(const DisplayItemClientWrapper& client, const AffineTransform& transform)
         : PairedBeginDisplayItem(client, BeginTransform)
         , m_transform(transform) { }
@@ -35,13 +29,7 @@ private:
 };
 
 class PLATFORM_EXPORT EndTransformDisplayItem : public PairedEndDisplayItem {
-    WTF_MAKE_FAST_ALLOCATED(EndTransformDisplayItem);
 public:
-    static PassOwnPtr<EndTransformDisplayItem> create(const DisplayItemClientWrapper& client)
-    {
-        return adoptPtr(new EndTransformDisplayItem(client));
-    }
-
     EndTransformDisplayItem(const DisplayItemClientWrapper& client)
         : PairedEndDisplayItem(client, EndTransform) { }
 
