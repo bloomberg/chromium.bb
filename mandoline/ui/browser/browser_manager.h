@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/memory/scoped_vector.h"
+#include "mandoline/ui/browser/browser_delegate.h"
 #include "mandoline/ui/browser/public/interfaces/launch_handler.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -28,6 +29,7 @@ class Browser;
 
 // BrowserManager creates and manages the lifetime of Browsers.
 class BrowserManager : public mojo::ApplicationDelegate,
+                       public BrowserDelegate,
                        public LaunchHandler,
                        public mojo::InterfaceFactory<LaunchHandler> {
  public:
@@ -36,11 +38,6 @@ class BrowserManager : public mojo::ApplicationDelegate,
 
   // BrowserManager owns the returned Browser.
   Browser* CreateBrowser();
-
-  // Invoked by |browser| when it has closed.
-  void BrowserClosed(Browser* browser);
-
-  bool InitUIIfNecessary(Browser* browser, mojo::View* view);
 
  private:
   class DevicePixelRatioWaiter;
@@ -54,6 +51,10 @@ class BrowserManager : public mojo::ApplicationDelegate,
   void Initialize(mojo::ApplicationImpl* app) override;
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override;
+
+  // Overridden from BrowserDelegate:
+  bool InitUIIfNecessary(Browser* browser, mojo::View* view) override;
+  void BrowserClosed(Browser* browser) override;
 
   // Overridden from mojo::InterfaceFactory<LaunchHandler>:
   void Create(mojo::ApplicationConnection* connection,

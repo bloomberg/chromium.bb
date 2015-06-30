@@ -40,9 +40,16 @@ class ServiceConnector;
 //
 // Just as with InterfaceFactory, ServiceConnector must outlive
 // ApplicationConnection.
+//
+// An ApplicationConnection's lifetime is managed by an ApplicationImpl. To
+// close a connection, call CloseConnection which will destroy this object.
 class ApplicationConnection {
  public:
-  virtual ~ApplicationConnection();
+  ApplicationConnection();
+
+  // Closes the connection and destroys this object. This is the only valid way
+  // to destroy this object.
+  void CloseConnection();
 
   // See class description for details.
   virtual void SetServiceConnector(ServiceConnector* connector) = 0;
@@ -88,9 +95,20 @@ class ApplicationConnection {
   // Caller does not take ownership.
   virtual ServiceProvider* GetServiceProvider() = 0;
 
+ protected:
+  virtual ~ApplicationConnection();
+
+  // Called to give the derived type to perform some cleanup before destruction.
+  virtual void OnCloseConnection() = 0;
+
  private:
   virtual void SetServiceConnectorForName(ServiceConnector* service_connector,
                                           const std::string& name) = 0;
+
+  // Ensures that CloseConnection can only be called once and the
+  // ApplicationConnection's destructor can only be called after the connection
+  // is closed.
+  bool connection_closed_;
 };
 
 }  // namespace mojo

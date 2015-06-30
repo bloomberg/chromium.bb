@@ -11,7 +11,7 @@
 #include "mandoline/tab/frame.h"
 #include "mandoline/tab/frame_connection.h"
 #include "mandoline/tab/frame_tree.h"
-#include "mandoline/ui/browser/browser_manager.h"
+#include "mandoline/ui/browser/browser_delegate.h"
 #include "mandoline/ui/browser/browser_ui.h"
 #include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/common/common_type_converters.h"
@@ -33,14 +33,14 @@ gfx::Size GetInitialViewportSize() {
 
 }  // namespace
 
-Browser::Browser(mojo::ApplicationImpl* app, BrowserManager* browser_manager)
+Browser::Browser(mojo::ApplicationImpl* app, BrowserDelegate* delegate)
     : view_manager_init_(app, this, this),
       root_(nullptr),
       content_(nullptr),
       omnibox_(nullptr),
       navigator_host_(this),
       app_(app),
-      browser_manager_(browser_manager) {
+      delegate_(delegate) {
   view_manager_init_.connection()->AddService<ViewEmbedder>(this);
 
   ui_.reset(BrowserUI::Create(this, app));
@@ -92,6 +92,10 @@ void Browser::OnDevicePixelRatioAvailable() {
   }
 }
 
+mojo::ApplicationConnection* Browser::GetViewManagerConnectionForTesting() {
+  return view_manager_init_.connection();
+}
+
 void Browser::OnEmbed(mojo::View* root) {
   // Browser does not support being embedded more than once.
   CHECK(!root_);
@@ -105,7 +109,7 @@ void Browser::OnEmbed(mojo::View* root) {
   //             the UI class.
   root_ = root;
 
-  if (!browser_manager_->InitUIIfNecessary(this, root_))
+  if (!delegate_->InitUIIfNecessary(this, root_))
     return;  // We'll be called back from OnDevicePixelRatioAvailable().
   OnDevicePixelRatioAvailable();
 }
@@ -135,7 +139,7 @@ void Browser::OnEmbedForDescendant(mojo::View* view,
 void Browser::OnViewManagerDestroyed(mojo::ViewManager* view_manager) {
   ui_.reset();
   root_ = nullptr;
-  browser_manager_->BrowserClosed(this);
+  delegate_->BrowserClosed(this);
 }
 
 void Browser::OnAccelerator(mojo::EventPtr event) {

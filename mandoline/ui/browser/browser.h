@@ -5,6 +5,7 @@
 #ifndef MANDOLINE_UI_BROWSER_BROWSER_H_
 #define MANDOLINE_UI_BROWSER_BROWSER_H_
 
+#include "base/gtest_prod_util.h"
 #include "components/view_manager/public/cpp/view_manager.h"
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/view_manager/public/cpp/view_manager_init.h"
@@ -26,7 +27,9 @@ class ViewManagerInit;
 
 namespace mandoline {
 
-class BrowserManager;
+FORWARD_DECLARE_TEST(BrowserTest, ClosingBrowserClosesAppConnection);
+
+class BrowserDelegate;
 class BrowserUI;
 class FrameTree;
 
@@ -37,7 +40,7 @@ class Browser : public mojo::ViewManagerDelegate,
                 public mojo::InterfaceFactory<mojo::NavigatorHost>,
                 public mojo::InterfaceFactory<ViewEmbedder> {
  public:
-  Browser(mojo::ApplicationImpl* app, BrowserManager* browser_manager);
+  Browser(mojo::ApplicationImpl* app, BrowserDelegate* delegate);
   ~Browser() override;
 
   void ReplaceContentWithRequest(mojo::URLRequestPtr request);
@@ -54,6 +57,10 @@ class Browser : public mojo::ViewManagerDelegate,
   void OnDevicePixelRatioAvailable();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(BrowserTest, ClosingBrowserClosesAppConnection);
+
+  mojo::ApplicationConnection* GetViewManagerConnectionForTesting();
+
   // Overridden from mojo::ViewManagerDelegate:
   void OnEmbed(mojo::View* root) override;
   void OnEmbedForDescendant(mojo::View* view,
@@ -98,7 +105,7 @@ class Browser : public mojo::ViewManagerDelegate,
 
   scoped_ptr<BrowserUI> ui_;
   mojo::ApplicationImpl* app_;
-  BrowserManager* browser_manager_;
+  BrowserDelegate* delegate_;
 
   scoped_ptr<FrameTree> frame_tree_;
 

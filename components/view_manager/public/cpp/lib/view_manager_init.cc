@@ -50,6 +50,7 @@ ViewManagerInit::ViewManagerInit(ApplicationImpl* app,
 }
 
 ViewManagerInit::~ViewManagerInit() {
+  connection_->CloseConnection();
 }
 
 void ViewManagerInit::OnCreate(InterfaceRequest<ViewManagerClient> request) {

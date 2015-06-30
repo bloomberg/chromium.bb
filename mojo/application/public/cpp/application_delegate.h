@@ -34,6 +34,10 @@ class ApplicationDelegate {
   // Return false to reject the connection entirely.
   virtual bool ConfigureOutgoingConnection(ApplicationConnection* connection);
 
+  // Called when an ApplicationConnection is about to close. After returning,
+  // the |connection| object will be destroyed.
+  virtual void OnWillCloseConnection(ApplicationConnection* connection) {}
+
   // Called before ApplicationImpl::Terminate(). After returning from this call
   // the delegate can no longer rely on the main run loop still running.
   virtual void Quit();

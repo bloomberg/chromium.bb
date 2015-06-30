@@ -4,6 +4,8 @@
 
 #include "mojo/application/public/cpp/application_impl.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/application/public/cpp/application_delegate.h"
@@ -36,23 +38,27 @@ ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
       termination_closure_(termination_closure),
       app_lifetime_helper_(this),
       quit_requested_(false),
+      in_destructor_(false),
       weak_factory_(this) {
 }
 
 void ApplicationImpl::ClearConnections() {
-  for (ServiceRegistryList::iterator i(incoming_service_registries_.begin());
-       i != incoming_service_registries_.end();
-       ++i)
-    delete *i;
-  for (ServiceRegistryList::iterator i(outgoing_service_registries_.begin());
-       i != outgoing_service_registries_.end();
-       ++i)
-    delete *i;
-  incoming_service_registries_.clear();
-  outgoing_service_registries_.clear();
+  // Copy the ServiceRegistryLists because they will be mutated by
+  // ApplicationConnection::CloseConnection.
+  ServiceRegistryList incoming_service_registries(incoming_service_registries_);
+  for (internal::ServiceRegistry* registry : incoming_service_registries)
+    registry->CloseConnection();
+  DCHECK(incoming_service_registries_.empty());
+
+  ServiceRegistryList outgoing_service_registries(outgoing_service_registries_);
+  for (internal::ServiceRegistry* registry : outgoing_service_registries)
+    registry->CloseConnection();
+  DCHECK(outgoing_service_registries_.empty());
 }
 
 ApplicationImpl::~ApplicationImpl() {
+  DCHECK(!in_destructor_);
+  in_destructor_ = true;
   ClearConnections();
   app_lifetime_helper_.ApplicationTerminated();
 }
@@ -70,11 +76,28 @@ ApplicationConnection* ApplicationImpl::ConnectToApplication(
       this, application_url, application_url, remote_services.Pass(),
       local_request.Pass());
   if (!delegate_->ConfigureOutgoingConnection(registry)) {
-    delete registry;
+    registry->CloseConnection();
     return nullptr;
   }
   outgoing_service_registries_.push_back(registry);
   return registry;
+}
+
+void ApplicationImpl::CloseConnection(ApplicationConnection* connection) {
+  if (!in_destructor_)
+    delegate_->OnWillCloseConnection(connection);
+  auto outgoing_it = std::find(outgoing_service_registries_.begin(),
+                               outgoing_service_registries_.end(),
+                               connection);
+  if (outgoing_it != outgoing_service_registries_.end()) {
+    outgoing_service_registries_.erase(outgoing_it);
+    return;
+  }
+  auto incoming_it = std::find(incoming_service_registries_.begin(),
+                               incoming_service_registries_.end(),
+                               connection);
+ if (incoming_it != incoming_service_registries_.end())
+    incoming_service_registries_.erase(incoming_it);
 }
 
 void ApplicationImpl::Initialize(ShellPtr shell, const mojo::String& url) {
@@ -120,7 +143,7 @@ void ApplicationImpl::AcceptConnection(
   internal::ServiceRegistry* registry = new internal::ServiceRegistry(
       this, url, requestor_url, exposed_services.Pass(), services.Pass());
   if (!delegate_->ConfigureIncomingConnection(registry)) {
-    delete registry;
+    registry->CloseConnection();
     return;
   }
   incoming_service_registries_.push_back(registry);

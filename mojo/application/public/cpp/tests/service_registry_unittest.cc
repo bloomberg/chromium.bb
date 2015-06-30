@@ -28,39 +28,43 @@ TEST(ServiceRegistryTest, Ownership) {
 
   // Destruction.
   {
-    ServiceRegistry registry;
-    registry.SetServiceConnectorForName(new TestConnector(&delete_count),
-                                        "TC1");
+    ServiceRegistry* registry = new ServiceRegistry;
+    registry->SetServiceConnectorForName(new TestConnector(&delete_count),
+                                         "TC1");
+    registry->CloseConnection();
   }
   EXPECT_EQ(1, delete_count);
 
   // Removal.
   {
-    ServiceRegistry registry;
+    ServiceRegistry* registry = new ServiceRegistry;
     ServiceConnector* c = new TestConnector(&delete_count);
-    registry.SetServiceConnectorForName(c, "TC1");
-    registry.RemoveServiceConnectorForName("TC1");
+    registry->SetServiceConnectorForName(c, "TC1");
+    registry->RemoveServiceConnectorForName("TC1");
+    registry->CloseConnection();
     EXPECT_EQ(2, delete_count);
   }
 
   // Multiple.
   {
-    ServiceRegistry registry;
-    registry.SetServiceConnectorForName(new TestConnector(&delete_count),
-                                        "TC1");
-    registry.SetServiceConnectorForName(new TestConnector(&delete_count),
-                                        "TC2");
+    ServiceRegistry* registry = new ServiceRegistry;
+    registry->SetServiceConnectorForName(new TestConnector(&delete_count),
+                                         "TC1");
+    registry->SetServiceConnectorForName(new TestConnector(&delete_count),
+                                         "TC2");
+    registry->CloseConnection();
   }
   EXPECT_EQ(4, delete_count);
 
   // Re-addition.
   {
-    ServiceRegistry registry;
-    registry.SetServiceConnectorForName(new TestConnector(&delete_count),
-                                        "TC1");
-    registry.SetServiceConnectorForName(new TestConnector(&delete_count),
-                                        "TC1");
+    ServiceRegistry* registry = new ServiceRegistry;
+    registry->SetServiceConnectorForName(new TestConnector(&delete_count),
+                                         "TC1");
+    registry->SetServiceConnectorForName(new TestConnector(&delete_count),
+                                         "TC1");
     EXPECT_EQ(5, delete_count);
+    registry->CloseConnection();
   }
   EXPECT_EQ(6, delete_count);
 }

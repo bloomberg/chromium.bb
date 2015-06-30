@@ -79,9 +79,13 @@ class ApplicationImpl : public Application,
   // Requests a new connection to an application. Returns a pointer to the
   // connection if the connection is permitted by this application's delegate,
   // or nullptr otherwise. Caller does not take ownership. The pointer remains
-  // valid until an error occurs on the connection with the Shell, or until the
-  // ApplicationImpl is destroyed, whichever occurs first.
+  // valid until an error occurs on the connection with the Shell, until the
+  // ApplicationImpl is destroyed, or until the connection is closed through a
+  // call to ApplicationConnection::CloseConnection.
   ApplicationConnection* ConnectToApplication(mojo::URLRequestPtr request);
+
+  // Closes the |connection|.
+  void CloseConnection(ApplicationConnection* connection);
 
   // Connect to application identified by |request->url| and connect to the
   // service implementation of the interface identified by |Interface|.
@@ -134,6 +138,7 @@ class ApplicationImpl : public Application,
   base::Closure termination_closure_;
   AppLifetimeHelper app_lifetime_helper_;
   bool quit_requested_;
+  bool in_destructor_;
   base::WeakPtrFactory<ApplicationImpl> weak_factory_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ApplicationImpl);

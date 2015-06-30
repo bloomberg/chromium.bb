@@ -65,28 +65,6 @@ Browser* BrowserManager::CreateBrowser() {
   return browser;
 }
 
-void BrowserManager::BrowserClosed(Browser* browser) {
-  scoped_ptr<Browser> browser_owner(browser);
-  DCHECK_GT(browsers_.count(browser), 0u);
-  browsers_.erase(browser);
-  if (browsers_.empty())
-    app_->Terminate();
-}
-
-bool BrowserManager::InitUIIfNecessary(Browser* browser, mojo::View* view) {
-  if (view->viewport_metrics().device_pixel_ratio > 0) {
-#if defined(USE_AURA)
-    if (!aura_init_)
-      aura_init_.reset(new AuraInit(view, app_->shell()));
-#endif
-    return true;
-  }
-  DCHECK(!device_pixel_ratio_waiter_.get());
-  device_pixel_ratio_waiter_.reset(
-      new DevicePixelRatioWaiter(this, browser, view));
-  return false;
-}
-
 void BrowserManager::OnDevicePixelRatioAvailable(Browser* browser,
                                                  mojo::View* view) {
   device_pixel_ratio_waiter_.reset();
@@ -115,6 +93,28 @@ bool BrowserManager::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
   connection->AddService<LaunchHandler>(this);
   return true;
+}
+
+void BrowserManager::BrowserClosed(Browser* browser) {
+  scoped_ptr<Browser> browser_owner(browser);
+  DCHECK_GT(browsers_.count(browser), 0u);
+  browsers_.erase(browser);
+  if (browsers_.empty())
+    app_->Terminate();
+}
+
+bool BrowserManager::InitUIIfNecessary(Browser* browser, mojo::View* view) {
+  if (view->viewport_metrics().device_pixel_ratio > 0) {
+#if defined(USE_AURA)
+    if (!aura_init_)
+      aura_init_.reset(new AuraInit(view, app_->shell()));
+#endif
+    return true;
+  }
+  DCHECK(!device_pixel_ratio_waiter_.get());
+  device_pixel_ratio_waiter_.reset(
+      new DevicePixelRatioWaiter(this, browser, view));
+  return false;
 }
 
 void BrowserManager::Create(mojo::ApplicationConnection* connection,

@@ -30,9 +30,6 @@ ServiceRegistry::ServiceRegistry()
     : application_impl_(nullptr), local_binding_(this) {
 }
 
-ServiceRegistry::~ServiceRegistry() {
-}
-
 void ServiceRegistry::SetServiceConnector(ServiceConnector* connector) {
   service_connector_registry_.set_service_connector(connector);
 }
@@ -63,10 +60,18 @@ ServiceProvider* ServiceRegistry::GetServiceProvider() {
   return remote_service_provider_.get();
 }
 
+void ServiceRegistry::OnCloseConnection() {
+  if (application_impl_)
+    application_impl_->CloseConnection(this);
+}
+
 void ServiceRegistry::ConnectToService(const mojo::String& service_name,
                                        ScopedMessagePipeHandle client_handle) {
   service_connector_registry_.ConnectToService(this, service_name,
                                                client_handle.Pass());
+}
+
+ServiceRegistry::~ServiceRegistry() {
 }
 
 }  // namespace internal
