@@ -6487,6 +6487,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_V8_PAC_MOJO_OUT_OF_PROCESS_DESCRIPTION" desc="Description for the flag to enable out-of-process V8 proxy resolver.">
         Enable Out-of-process V8 Proxy Resolver. Runs the V8 proxy resolver in a utility process instead of inside the browser process.
       </message>
+      <message name="IDS_FLAGS_V8_CACHE_OPTIONS_NAME" desc="Name of V8 cache options flag">
+        V8 caching mode.
+      </message>
+      <message name="IDS_FLAGS_V8_CACHE_OPTIONS_DESCRIPTION" desc="Description of V8 cache options flag">
+        Caching mode for the V8 JavaScript engine.
+      </message>
+      <message name="IDS_FLAGS_V8_CACHE_OPTIONS_PARSE" desc="Name of V8 cache option 'parser'">
+        Cache parsing data.
+      </message>
+      <message name="IDS_FLAGS_V8_CACHE_OPTIONS_CODE" desc="Name of V8 cache option 'code'">
+        Cache generated machine code.
+      </message>
 
       <!-- Data Reduction Proxy -->
       <if expr="is_android">

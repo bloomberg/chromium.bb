@@ -518,6 +518,13 @@ const Experiment::Choice kSupervisedUserSafeSitesChoices[] = {
     "online-check-only" }
 };
 
+const Experiment::Choice kV8CacheOptionsChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED, switches::kV8CacheOptions, "none" },
+  { IDS_FLAGS_V8_CACHE_OPTIONS_PARSE, switches::kV8CacheOptions, "parse" },
+  { IDS_FLAGS_V8_CACHE_OPTIONS_CODE, switches::kV8CacheOptions, "code" },
+};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -2010,6 +2017,12 @@ const Experiment kExperiments[] = {
      kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kEnableAcceleratedMjpegDecode)},
 #endif  // OS_CHROMEOS
+    {"v8-cache-options",
+     IDS_FLAGS_V8_CACHE_OPTIONS_NAME,
+     IDS_FLAGS_V8_CACHE_OPTIONS_DESCRIPTION,
+     kOsAll,
+     MULTI_VALUE_TYPE(kV8CacheOptionsChoices)},
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
