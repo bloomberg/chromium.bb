@@ -381,7 +381,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
         self.assertEqual(cmd, ['add', self.revved_ebuild_path])
       else:
         self.assertTrue(self.m_ebuild.is_stable)
-        self.assertEqual(cmd, ['rm', self.m_ebuild.ebuild_path])
+        self.assertEqual(cmd, ['rm', '-f', self.m_ebuild.ebuild_path])
 
     source_mock = self.PatchObject(portage_util.EBuild, 'GetSourcePath')
     if multi:

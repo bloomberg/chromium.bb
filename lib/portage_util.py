@@ -796,7 +796,7 @@ class EBuild(object):
 
       if self.is_stable:
         self._Print('Removing old ebuild from git')
-        self._RunGit(self.overlay, ['rm', old_ebuild_path])
+        self._RunGit(self.overlay, ['rm', '-f', old_ebuild_path])
 
       return '%s-%s' % (self.package, new_version)
 
