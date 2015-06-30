@@ -311,8 +311,9 @@ int main(int argc, char **argv) {
 #endif
   }
 
-  NACL_REGISTER_SYSCALL(JumpToZeroCrashSyscall, NACL_sys_test_syscall_1);
-  NACL_REGISTER_SYSCALL(JumpIntoSandboxCrashSyscall, NACL_sys_test_syscall_2);
+  NACL_REGISTER_SYSCALL(&app, JumpToZeroCrashSyscall, NACL_sys_test_syscall_1);
+  NACL_REGISTER_SYSCALL(&app, JumpIntoSandboxCrashSyscall,
+                        NACL_sys_test_syscall_2);
 
   RegisterHandlers();
 

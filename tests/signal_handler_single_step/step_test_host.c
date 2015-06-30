@@ -17,8 +17,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_copy.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
-#include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
-#include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
+#include "native_client/src/trusted/service_runtime/nacl_syscall_register.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/tests/signal_handler_single_step/step_test_common.h"
 #include "native_client/tests/signal_handler_single_step/step_test_syscalls.h"
@@ -72,8 +71,6 @@ static void SignalSafePrintf(const char *format, ...) {
  * problem.
  */
 static int32_t TestSyscall(struct NaClAppThread *natp) {
-  NaClCopyDropLock(natp->nap);
-
   /* Check that the trap flag has not been unset by anything unexpected. */
   CHECK(GetTrapFlag());
 
@@ -84,6 +81,8 @@ static int32_t TestSyscall(struct NaClAppThread *natp) {
   }
   return 0;
 }
+
+NACL_DEFINE_SYSCALL_0(TestSyscall)
 
 static void TrapSignalHandler(int signal,
                               const struct NaClSignalContext *context,
@@ -153,12 +152,6 @@ static const struct NaClDebugCallbacks debug_callbacks = {
 
 int main(int argc, char **argv) {
   struct NaClApp app;
-  struct NaClSyscallTableEntry syscall_table[NACL_MAX_SYSCALLS] = {{0}};
-  int index;
-  for (index = 0; index < NACL_MAX_SYSCALLS; index++) {
-    syscall_table[index].handler = NaClSysNotImplementedDecoder;
-  }
-  syscall_table[SINGLE_STEP_TEST_SYSCALL].handler = TestSyscall;
 
   NaClAllModulesInit();
 
@@ -168,7 +161,8 @@ int main(int argc, char **argv) {
   }
   g_description = argv[2];
 
-  CHECK(NaClAppWithSyscallTableCtor(&app, syscall_table));
+  CHECK(NaClAppWithEmptySyscallTableCtor(&app));
+  NACL_REGISTER_SYSCALL(&app, TestSyscall, SINGLE_STEP_TEST_SYSCALL);
 
   app.debug_stub_callbacks = &debug_callbacks;
   NaClSignalHandlerInit();

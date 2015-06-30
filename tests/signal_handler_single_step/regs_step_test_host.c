@@ -311,9 +311,8 @@ int main(int argc, char **argv) {
     NaClLog(LOG_FATAL, "Expected 1 argument: executable filename\n");
   }
 
-  NACL_REGISTER_SYSCALL(TestSyscall, NACL_sys_test_syscall_1);
-
   CHECK(NaClAppCtor(&app));
+  NACL_REGISTER_SYSCALL(&app, TestSyscall, NACL_sys_test_syscall_1);
   CHECK(NaClAppLoadFileFromFilename(&app, argv[1]) == LOAD_OK);
   NaClAppInitialDescriptorHookup(&app);
 

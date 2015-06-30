@@ -34,7 +34,5 @@ static int32_t TestSyscall(struct NaClAppThread *natp) {
 NACL_DEFINE_SYSCALL_0(TestSyscall)
 
 void NaClInjectThreadCaptureSyscall(struct NaClApp *nap) {
-  UNREFERENCED_PARAMETER(nap);
-
-  NACL_REGISTER_SYSCALL(TestSyscall, NACL_sys_test_syscall_1);
+  NACL_REGISTER_SYSCALL(nap, TestSyscall, NACL_sys_test_syscall_1);
 }

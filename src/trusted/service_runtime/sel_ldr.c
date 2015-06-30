@@ -46,7 +46,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_resource.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
-#include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
+#include "native_client/src/trusted/service_runtime/nacl_syscall_list.h"
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
@@ -69,9 +69,9 @@ static int ShouldEnableDynamicLoading(void) {
   return !IsEnvironmentVariableSet("NACL_DISABLE_DYNAMIC_LOADING");
 }
 
-int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
-                                struct NaClSyscallTableEntry *table) {
+int NaClAppWithEmptySyscallTableCtor(struct NaClApp *nap) {
   struct NaClDescEffectorLdr  *effp;
+  int i;
 
   /* Zero-initialize in case we miss any fields below. */
   memset(nap, 0, sizeof(*nap));
@@ -193,7 +193,9 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   nap->threads_launching = 0;
 #endif
 
-  nap->syscall_table = table;
+  for (i = 0; i < NACL_MAX_SYSCALLS; ++i) {
+    nap->syscall_table[i].handler = &NaClSysNotImplementedDecoder;
+  }
 
   nap->module_initialization_state = NACL_MODULE_UNINITIALIZED;
   nap->module_load_status = LOAD_OK;
@@ -313,7 +315,10 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
 }
 
 int NaClAppCtor(struct NaClApp *nap) {
-  return NaClAppWithSyscallTableCtor(nap, nacl_syscall);
+  if (!NaClAppWithEmptySyscallTableCtor(nap))
+    return 0;
+  NaClAppRegisterDefaultSyscalls(nap);
+  return 1;
 }
 
 struct NaClApp *NaClAppCreate(void) {

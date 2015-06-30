@@ -27,7 +27,8 @@ struct nacl_abi_stat;
 
 int32_t NaClSysNotImplementedDecoder(struct NaClAppThread *natp);
 
-void NaClAddSyscall(int num, int32_t (*fn)(struct NaClAppThread *));
+void NaClAddSyscall(struct NaClApp *nap, uint32_t num,
+                    int32_t (*fn)(struct NaClAppThread *));
 
 int32_t NaClSysNull(struct NaClAppThread *natp);
 

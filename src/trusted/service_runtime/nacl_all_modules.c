@@ -23,7 +23,6 @@ void  NaClAllModulesInit(void) {
   NaClGlobalModuleInit();  /* various global variables */
   NaClSrpcModuleInit();
   NaClTlsInit();
-  NaClSyscallTableInit();
   NaClThreadNiceInit();
 }
 

@@ -14,19 +14,13 @@
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_copy.h"
-#include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
+#include "native_client/src/trusted/service_runtime/nacl_syscall_register.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/tests/minnacl/minimal_test_syscalls.h"
 
-static int32_t NotImplementedDecoder(struct NaClAppThread *natp) {
-  NaClCopyDropLock(natp->nap);
-  printf("Error: entered an unexpected syscall!\n");
-  fflush(stdout);
-  _exit(1);
-}
-
 static int32_t MySyscallInvoke(struct NaClAppThread *natp) {
-  NaClCopyDropLock(natp->nap);
+  UNREFERENCED_PARAMETER(natp);
+
   printf("Inside custom test 'invoke' syscall\n");
   fflush(stdout);
   /* Return a value that the test guest program checks for. */
@@ -34,26 +28,22 @@ static int32_t MySyscallInvoke(struct NaClAppThread *natp) {
 }
 
 static int32_t MySyscallExit(struct NaClAppThread *natp) {
-  NaClCopyDropLock(natp->nap);
+  UNREFERENCED_PARAMETER(natp);
+
   printf("Inside custom test 'exit' syscall\n");
   fflush(stdout);
   _exit(0);
 }
 
+NACL_DEFINE_SYSCALL_0(MySyscallInvoke)
+NACL_DEFINE_SYSCALL_0(MySyscallExit)
+
 int main(int argc, char **argv) {
   struct NaClApp app;
   struct NaClApp *nap = &app;
-  struct NaClSyscallTableEntry syscall_table[NACL_MAX_SYSCALLS] = {{0}};
-  int index;
   int use_separate_thread = 0;
 
   NaClHandleBootstrapArgs(&argc, &argv);
-
-  for (index = 0; index < NACL_MAX_SYSCALLS; index++) {
-    syscall_table[index].handler = NotImplementedDecoder;
-  }
-  syscall_table[TEST_SYSCALL_INVOKE].handler = MySyscallInvoke;
-  syscall_table[TEST_SYSCALL_EXIT].handler = MySyscallExit;
 
   if (argc >= 2 && strcmp(argv[1], "--use_separate_thread") == 0) {
     use_separate_thread = 1;
@@ -66,7 +56,10 @@ int main(int argc, char **argv) {
 
   NaClAllModulesInit();
 
-  CHECK(NaClAppWithSyscallTableCtor(&app, syscall_table));
+  CHECK(NaClAppWithEmptySyscallTableCtor(&app));
+  NACL_REGISTER_SYSCALL(nap, MySyscallInvoke, TEST_SYSCALL_INVOKE);
+  NACL_REGISTER_SYSCALL(nap, MySyscallExit, TEST_SYSCALL_EXIT);
+
   CHECK(NaClAppLoadFileFromFilename(&app, argv[1]) == LOAD_OK);
 
   /* These are examples of two different ways to run untrusted code. */

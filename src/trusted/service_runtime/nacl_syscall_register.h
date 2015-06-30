@@ -81,6 +81,7 @@
                           FUNC(natp, sys_args[0], sys_args[1], sys_args[2], \
                                      sys_args[3], sys_args[4], sys_args[5]))
 
-#define NACL_REGISTER_SYSCALL(FUNC, NUM) NaClAddSyscall((NUM), FUNC##Decoder)
+#define NACL_REGISTER_SYSCALL(NAP, FUNC, NUM) \
+    NaClAddSyscall((NAP), (NUM), FUNC##Decoder)
 
 #endif

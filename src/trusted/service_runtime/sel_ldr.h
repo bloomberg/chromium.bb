@@ -47,9 +47,11 @@
 #include "native_client/src/trusted/interval_multiset/nacl_interval_range_tree.h"
 
 #include "native_client/src/trusted/service_runtime/dyn_array.h"
+#include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "native_client/src/trusted/service_runtime/nacl_resource.h"
 #include "native_client/src/trusted/service_runtime/nacl_secure_service.h"
+#include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_mem.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
@@ -231,11 +233,8 @@ struct NaClApp {
   int                       threads_launching;
 #endif
 
-  /*
-   * An array of NaCl syscall handlers. The length of the array must be
-   * at least NACL_MAX_SYSCALLS.
-   */
-  struct NaClSyscallTableEntry *syscall_table;
+  /* Array of NaCl syscall handlers. */
+  struct NaClSyscallTableEntry syscall_table[NACL_MAX_SYSCALLS];
 
   struct NaClSecureService          *secure_service;
 
@@ -430,24 +429,6 @@ struct NaClApp {
 void  NaClAppIncrVerbosity(void);
 
 /*
- * Initializes a NaCl application with the default parameters
- * and the specified syscall table.
- *
- * If invoked after the outer sandbox is enabled, the caller is
- * responsible for initializing the sc_nprocessors_onln member to a
- * sane value.
- *
- * nap is a pointer to the NaCl object that is being filled in.
- *
- * table is the NaCl syscall table. The syscall table must contain at least
- * NACL_MAX_SYSCALLS valid entries.
- *
- * Caution! Syscall handlers must be extremely careful with respect to
- * argument validation, including time-of-check vs time-of-use defense, etc.
- */
-int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
-                                struct NaClSyscallTableEntry *table) NACL_WUR;
-/*
  * Standard Ctor for NaClApp objects.  Installs default syscall
  * handlers.
  *
@@ -458,6 +439,13 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
  * nap is a pointer to the NaCl object that is being filled in.
  */
 int NaClAppCtor(struct NaClApp  *nap) NACL_WUR;
+
+/*
+ * This is the same as NaClAppCtor(), except that it initializes the
+ * NaClApp without registering any syscall handlers.  Syscall handlers
+ * can be added explicitly using NACL_REGISTER_SYSCALL.
+ */
+int NaClAppWithEmptySyscallTableCtor(struct NaClApp *nap) NACL_WUR;
 
 /*
  * Loads a NaCl ELF file into memory in preparation for running it.

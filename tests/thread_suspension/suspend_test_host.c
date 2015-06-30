@@ -496,8 +496,8 @@ int main(int argc, char **argv) {
   CHECK(NaClAppLoadFileFromFilename(&app, argv[1]) == LOAD_OK);
   NaClAppInitialDescriptorHookup(&app);
 
-  NACL_REGISTER_SYSCALL(SpinWaitTestSyscall, NACL_sys_test_syscall_1);
-  NACL_REGISTER_SYSCALL(SimpleTestSyscall, NACL_sys_test_syscall_2);
+  NACL_REGISTER_SYSCALL(&app, SpinWaitTestSyscall, NACL_sys_test_syscall_1);
+  NACL_REGISTER_SYSCALL(&app, SimpleTestSyscall, NACL_sys_test_syscall_2);
 
   /*
    * We reuse the same sandbox for both tests.

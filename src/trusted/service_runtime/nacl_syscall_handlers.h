@@ -16,11 +16,4 @@ struct NaClSyscallTableEntry {
   int32_t (*handler)(struct NaClAppThread *natp);
 };
 
-/* these are defined in the platform specific code */
-extern struct NaClSyscallTableEntry nacl_syscall[];
-
-void NaClSyscallTableInit(void);
-
-EXTERN_C_END
-
 #endif

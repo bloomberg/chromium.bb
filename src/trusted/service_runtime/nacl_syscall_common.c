@@ -64,19 +64,19 @@
 # define SIZE_T_MAX   (~(size_t) 0)
 #endif
 
-struct NaClSyscallTableEntry nacl_syscall[NACL_MAX_SYSCALLS] = {{0}};
-
 
 int32_t NaClSysNotImplementedDecoder(struct NaClAppThread *natp) {
   NaClCopyDropLock(natp->nap);
   return -NACL_ABI_ENOSYS;
 }
 
-void NaClAddSyscall(int num, int32_t (*fn)(struct NaClAppThread *)) {
-  if (nacl_syscall[num].handler != &NaClSysNotImplementedDecoder) {
+void NaClAddSyscall(struct NaClApp *nap, uint32_t num,
+                    int32_t (*fn)(struct NaClAppThread *)) {
+  CHECK(num < NACL_MAX_SYSCALLS);
+  if (nap->syscall_table[num].handler != &NaClSysNotImplementedDecoder) {
     NaClLog(LOG_FATAL, "Duplicate syscall number %d\n", num);
   }
-  nacl_syscall[num].handler = fn;
+  nap->syscall_table[num].handler = fn;
 }
 
 int32_t NaClSysNull(struct NaClAppThread *natp) {
