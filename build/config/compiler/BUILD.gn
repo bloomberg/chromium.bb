@@ -821,7 +821,6 @@ if (is_win) {
       "-Wno-self-assign",  # http://crbug.com/505306
       "-Wno-sometimes-uninitialized",  # http://crbug.com/505307
       "-Wno-switch",  # http://crbug.com/505308
-      "-Wno-tautological-compare",  # http://crbug.com/505309
       "-Wno-unknown-pragmas",  # http://crbug.com/505314
       "-Wno-unsequenced",  # http://crbug.com/505315
       "-Wno-unused-function",  # http://crbug.com/505316
