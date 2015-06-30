@@ -10,6 +10,12 @@
 #   build_ffmpegsumo
 #     When set to zero, will not include ffmpegsumo as a library to be built as
 #     part of the larger chrome binary. Default value is 1.
+#   ffmpeg_component
+#     Set true to build ffmpeg as a shared library. NOTE: this means we should
+#     always consult the value of 'ffmpeg_component' instead of 'component' for
+#     this file. This helps linux chromium packagers that swap out our
+#     ffmpeg.so with their own. See discussion here
+#     https://groups.google.com/a/chromium.org/forum/#!msg/chromium-packagers/R5rcZXWxBEQ/B6k0zzmJbvcJ
 #
 
 {
@@ -54,7 +60,7 @@
       }, {
         'ffmpeg_config%': '<(target_arch)',
       }],
-      ['OS == "mac" or OS == "win" or OS == "openbsd"', {
+      ['OS == "mac" or OS == "win" or OS == "openbsd" or OS == "android"', {
         'os_config%': '<(OS)',
       }, {  # all other Unix OS's use the linux config
         'conditions': [
@@ -74,6 +80,7 @@
     ],
 
     'build_ffmpegsumo%': 1,
+    'ffmpeg_component%': '<(component)',
 
     # Locations for generated artifacts.
     'shared_generated_dir': '<(SHARED_INTERMEDIATE_DIR)/third_party/ffmpeg',
@@ -161,7 +168,7 @@
 
   'targets': [{
     'target_name': 'ffmpeg',
-    'type': '<(component)',
+    'type': '<(ffmpeg_component)',
     'variables': {
       # Path to platform configuration files.
       'platform_config_root': 'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
@@ -254,31 +261,11 @@
               ],
             }],  # target_arch == "ia32"
             ['target_arch == "arm"', {
-              # TODO(ihf): See the long comment in build_ffmpeg.sh
-              # We want to be consistent with CrOS and have configured
-              # ffmpeg for thumb. Protect yourself from -marm.
-              'cflags!': [
-                '-marm',
-              ],
-              'cflags': [
-                '-mthumb',
-                '-march=armv7-a',
-                '-mtune=cortex-a8',
-              ],
               # On arm we use gcc to compile the assembly.
               'sources': [
                 '<@(asm_sources)',
               ],
               'conditions': [
-                ['arm_neon == 0', {
-                  'cflags': [
-                    '-mfpu=vfpv3-d16',
-                  ],
-                }, {
-                  'cflags': [
-                    '-mfpu=neon',
-                  ],
-                }],
                 ['arm_float_abi == "hard"', {
                   'cflags': [
                     '-DHAVE_VFP_ARGS=1'
@@ -290,12 +277,6 @@
                 }],
               ],
             }],
-            ['target_arch == "mipsel"', {
-              'cflags': [
-                '-mips32',
-                '-EL -Wl,-EL',
-              ],
-            }],  # target_arch == "mipsel"
             ['os_posix == 1 and OS != "mac"', {
               'defines': [
                 '_ISOC99_SOURCE',
@@ -318,12 +299,18 @@
               'link_settings': {
                 'libraries': [
                   '-lm',
-                  '-lrt',
                   '-lz',
                 ],
               },
               'conditions': [
-                ['component == "shared_library"', {
+                ['OS != "android"', {
+                  'link_settings': {
+                    'libraries': [
+                      '-lrt',
+                    ],
+                  },
+                }],
+                ['ffmpeg_component == "shared_library"', {
                   # Export all symbols when building as component.
                   'cflags!': [
                     '-fvisibility=hidden',
@@ -377,7 +364,7 @@
                     ],
                   },
                 }],
-                ['component == "shared_library"', {
+                ['ffmpeg_component == "shared_library"', {
                   'xcode_settings': {
                     # GCC version of no -fvisiliity=hidden. Ensures that all
                     # symbols are exported for component builds.
@@ -431,7 +418,7 @@
                     4267
                   ],
                 }],
-                ['component == "shared_library"', {
+                ['ffmpeg_component == "shared_library"', {
                   # Fix warnings about a local symbol being inefficiently imported.
                   'msvs_settings': {
                     'VCCLCompilerTool': {

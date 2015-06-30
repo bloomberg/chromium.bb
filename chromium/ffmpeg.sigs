@@ -75,3 +75,4 @@ int av_image_fill_linesizes(int *linesizes, enum PixelFormat pix_fmt, int width)
 AVBufferRef *av_buffer_create(uint8_t *data, int size, AVFreeOperation free, void *opaque, int flags);
 int avcodec_fill_audio_frame(AVFrame *frame, int nb_channels, enum AVSampleFormat sample_fmt, const uint8_t *buf, int buf_size, int align);
 void *av_buffer_get_opaque(const AVBufferRef *buf);
+int av_get_cpu_flags(void);
