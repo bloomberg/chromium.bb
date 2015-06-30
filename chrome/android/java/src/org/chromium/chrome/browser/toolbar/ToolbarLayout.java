@@ -264,8 +264,12 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     @Override
     public void setBookmarkClickHandler(OnClickListener listener) { }
 
-    @Override
-    public void setCustomTabReturnClickHandler(OnClickListener listener) { }
+
+    /**
+     * Sets the OnClickListener to notify when the close button is pressed in a custom tab.
+     * @param listener The callback that will be notified when the close button is pressed.
+     */
+    public void setCustomTabCloseClickHandler(OnClickListener listener) { }
 
     /**
      * Gives inheriting classes the chance to update the visibility of the
@@ -333,6 +337,11 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * for the current tab changing.
      */
     protected void onPrimaryColorChanged() { }
+
+    /**
+     * Sets the icon resource that the close button in the toolbar (if any) should show.
+     */
+    public void setCloseButtonImageResource(int iconRes) { }
 
     @Override
     public void addCustomActionButton(Bitmap buttonSource, OnClickListener listener) { }

@@ -117,6 +117,7 @@ public class CustomTabActivity extends ChromeActivity {
     @Override
     public void postInflationStartup() {
         super.postInflationStartup();
+        getToolbarManager().setCloseButtonIcon(mIntentDataProvider.getCloseButtonIconResId());
         getToolbarManager().setShowTitle(mIntentDataProvider.getTitleVisibilityState()
                 == CustomTabIntentDataProvider.CUSTOM_TAB_SHOW_PAGE_TITLE);
         getToolbarManager().updatePrimaryColor(mIntentDataProvider.getToolbarColor());

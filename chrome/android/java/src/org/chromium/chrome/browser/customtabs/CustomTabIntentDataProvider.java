@@ -53,10 +53,27 @@ public class CustomTabIntentDataProvider {
 
     /**
      * Extra that changes the background color for the omnibox. colorRes is an int that specifies a
-     * color
+     * color.
      */
     public static final String EXTRA_CUSTOM_TABS_TOOLBAR_COLOR =
             "android.support.CUSTOM_TABS:toolbar_color";
+
+    /**
+     * Extra int that specifies the style of the back button on the toolbar. Default is showing a
+     * cross icon.
+     */
+    public static final String EXTRA_CUSTOM_TABS_CLOSE_BUTTON_STYLE =
+            "android.support.CUSTOM_TABS:close_button_style";
+
+    /**
+     * Uses 'X'-like cross icon for close button.
+     */
+    public static final int CUSTOM_TAB_CLOSE_BUTTON_CROSS = 0;
+
+    /**
+     * Uses '<'-like chevron arrow icon for close button.
+     */
+    public static final int CUSTOM_TAB_CLOSE_BUTTON_ARROW = 1;
 
     /**
      * Extra int that specifies state for showing the page title. Default is showing only the domain
@@ -126,6 +143,7 @@ public class CustomTabIntentDataProvider {
     private final long mSessionId;
     private final Intent mKeepAliveServiceIntent;
     private final int mTitleVisibilityState;
+    private final int mCloseButtonResId;
     private int mToolbarColor;
     private Bitmap mIcon;
     private PendingIntent mActionButtonPendingIntent;
@@ -175,6 +193,17 @@ public class CustomTabIntentDataProvider {
         mAnimationBundle = IntentUtils.safeGetBundleExtra(
                 intent, EXTRA_CUSTOM_TABS_EXIT_ANIMATION_BUNDLE);
 
+        int closeButtonStyle = IntentUtils.safeGetIntExtra(intent,
+                EXTRA_CUSTOM_TABS_CLOSE_BUTTON_STYLE, CUSTOM_TAB_CLOSE_BUTTON_CROSS);
+        switch(closeButtonStyle) {
+            case CustomTabIntentDataProvider.CUSTOM_TAB_CLOSE_BUTTON_ARROW:
+                mCloseButtonResId = R.drawable.btn_chevron_left;
+                break;
+            case CustomTabIntentDataProvider.CUSTOM_TAB_CLOSE_BUTTON_CROSS:
+            default:
+                mCloseButtonResId = R.drawable.btn_close;
+        }
+
         mTitleVisibilityState = IntentUtils.safeGetIntExtra(
                 intent, EXTRA_CUSTOM_TABS_TITLE_VISIBILITY_STATE, CUSTOM_TAB_NO_TITLE);
     }
@@ -216,6 +245,13 @@ public class CustomTabIntentDataProvider {
      */
     public int getToolbarColor() {
         return mToolbarColor;
+    }
+
+    /**
+     * @return The resource id of the close button shown in the custom tab toolbar.
+     */
+    public int getCloseButtonIconResId() {
+        return mCloseButtonResId;
     }
 
     /**

@@ -506,7 +506,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         mToolbar.setOnTabSwitcherClickHandler(tabSwitcherClickHandler);
         mToolbar.setOnNewTabClickHandler(newTabClickHandler);
         mToolbar.setBookmarkClickHandler(bookmarkClickHandler);
-        mToolbar.setCustomTabReturnClickHandler(customTabsBackClickHandler);
+        mToolbar.setCustomTabCloseClickHandler(customTabsBackClickHandler);
 
         mToolbarModel.initializeWithNative();
 
@@ -794,6 +794,13 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
         mToolbarModel.setPrimaryColor(color);
         mToolbar.onPrimaryColorChanged();
+    }
+
+    /**
+     * Sets the icon resource that the close button shows.
+     */
+    public void setCloseButtonIcon(int iconRes) {
+        mToolbar.setCloseButtonImageResource(iconRes);
     }
 
     /**

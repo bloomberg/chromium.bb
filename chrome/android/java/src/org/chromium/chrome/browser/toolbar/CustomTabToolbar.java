@@ -63,7 +63,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar {
     private ImageButton mCustomActionButton;
     private int mSecurityIconType;
     private boolean mUseDarkColors;
-    private TintedImageButton mReturnButton;
+    private TintedImageButton mCloseButton;
     private Animator mSecurityButtonShowAnimator;
     private boolean mBackgroundColorSet;
 
@@ -88,7 +88,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar {
         mSecurityButton = (ImageButton) findViewById(R.id.security_button);
         mSecurityIconType = ConnectionSecurityLevel.NONE;
         mCustomActionButton = (ImageButton) findViewById(R.id.action_button);
-        mReturnButton = (TintedImageButton) findViewById(R.id.back_button);
+        mCloseButton = (TintedImageButton) findViewById(R.id.close_button);
         mSecurityButtonShowAnimator = ObjectAnimator.ofFloat(mSecurityButton, ALPHA, 1);
         mSecurityButtonShowAnimator
                 .setDuration(ToolbarPhone.URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
@@ -122,8 +122,13 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar {
     }
 
     @Override
-    public void setCustomTabReturnClickHandler(OnClickListener listener) {
-        mReturnButton.setOnClickListener(listener);
+    public void setCloseButtonImageResource(int iconRes) {
+        mCloseButton.setImageResource(iconRes);
+    }
+
+    @Override
+    public void setCustomTabCloseClickHandler(OnClickListener listener) {
+        mCloseButton.setOnClickListener(listener);
     }
 
     @Override
@@ -263,7 +268,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar {
         ColorStateList colorStateList = resources.getColorStateList(mUseDarkColors
                 ? R.color.dark_mode_tint : R.color.light_mode_tint);
         mMenuButton.setTint(colorStateList);
-        mReturnButton.setTint(colorStateList);
+        mCloseButton.setTint(colorStateList);
         mUrlBar.setUseDarkTextColors(mUseDarkColors);
 
         int titleTextColor = mUseDarkColors ? resources.getColor(R.color.url_emphasis_default_text)

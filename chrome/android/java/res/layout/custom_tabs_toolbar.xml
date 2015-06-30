@@ -5,10 +5,9 @@
 
 <org.chromium.chrome.browser.toolbar.CustomTabToolbar xmlns:android="http://schemas.android.com/apk/res/android">
     <org.chromium.chrome.browser.widget.TintedImageButton
-        android:id="@+id/back_button"
+        android:id="@+id/close_button"
         style="@style/ToolbarButton"
-        android:layout_gravity="center_vertical"
-        android:src="@drawable/btn_chevron_left" />
+        android:layout_gravity="center_vertical" />
     <ImageButton android:id="@+id/security_button"
         style="@style/LocationBarButton"
         android:layout_width="@dimen/location_bar_icon_width"
