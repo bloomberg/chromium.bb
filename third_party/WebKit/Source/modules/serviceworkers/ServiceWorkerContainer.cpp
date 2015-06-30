@@ -48,6 +48,7 @@
 #include "modules/serviceworkers/ServiceWorkerError.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/weborigin/SchemeRegistry.h"
 #include "public/platform/WebServiceWorker.h"
 #include "public/platform/WebServiceWorkerProvider.h"
 #include "public/platform/WebServiceWorkerRegistration.h"
@@ -213,13 +214,14 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
 
     RefPtr<SecurityOrigin> documentOrigin = executionContext->securityOrigin();
     String errorMessage;
+    // Restrict to secure origins: https://w3c.github.io/webappsec/specs/powerfulfeatures/#settings-privileged
     if (!executionContext->isPrivilegedContext(errorMessage)) {
         resolver->reject(DOMException::create(NotSupportedError, errorMessage));
         return promise;
     }
 
     KURL pageURL = KURL(KURL(), documentOrigin->toString());
-    if (!pageURL.protocolIsInHTTPFamily()) {
+    if (!SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(pageURL.protocol())) {
         resolver->reject(DOMException::create(SecurityError, "Failed to register a ServiceWorker: The URL protocol of the current origin ('" + documentOrigin->toString() + "') is not supported."));
         return promise;
     }
@@ -231,7 +233,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
         resolver->reject(DOMException::create(SecurityError, "Failed to register a ServiceWorker: The origin of the provided scriptURL ('" + scriptOrigin->toString() + "') does not match the current origin ('" + documentOrigin->toString() + "')."));
         return promise;
     }
-    if (!scriptURL.protocolIsInHTTPFamily()) {
+    if (!SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(scriptURL.protocol())) {
         resolver->reject(DOMException::create(SecurityError, "Failed to register a ServiceWorker: The URL protocol of the script ('" + scriptURL.string() + "') is not supported."));
         return promise;
     }
@@ -248,7 +250,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
         resolver->reject(DOMException::create(SecurityError, "Failed to register a ServiceWorker: The origin of the provided scope ('" + patternOrigin->toString() + "') does not match the current origin ('" + documentOrigin->toString() + "')."));
         return promise;
     }
-    if (!patternURL.protocolIsInHTTPFamily()) {
+    if (!SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(patternURL.protocol())) {
         resolver->reject(DOMException::create(SecurityError, "Failed to register a ServiceWorker: The URL protocol of the scope ('" + patternURL.string() + "') is not supported."));
         return promise;
     }
@@ -281,7 +283,7 @@ ScriptPromise ServiceWorkerContainer::getRegistration(ScriptState* scriptState, 
     }
 
     KURL pageURL = KURL(KURL(), documentOrigin->toString());
-    if (!pageURL.protocolIsInHTTPFamily()) {
+    if (!SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(pageURL.protocol())) {
         resolver->reject(DOMException::create(SecurityError, "Failed to get a ServiceWorkerRegistration: The URL protocol of the current origin ('" + documentOrigin->toString() + "') is not supported."));
         return promise;
     }
@@ -317,7 +319,7 @@ ScriptPromise ServiceWorkerContainer::getRegistrations(ScriptState* scriptState)
     }
 
     KURL pageURL = KURL(KURL(), documentOrigin->toString());
-    if (!pageURL.protocolIsInHTTPFamily()) {
+    if (!SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(pageURL.protocol())) {
         resolver->reject(DOMException::create(SecurityError, "Failed to get ServiceWorkerRegistration objects: The URL protocol of the current origin ('" + documentOrigin->toString() + "') is not supported."));
         return promise;
     }

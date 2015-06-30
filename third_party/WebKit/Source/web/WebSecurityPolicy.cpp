@@ -76,6 +76,11 @@ void WebSecurityPolicy::registerURLSchemeAsCORSEnabled(const WebString& scheme)
     SchemeRegistry::registerURLSchemeAsCORSEnabled(scheme);
 }
 
+void WebSecurityPolicy::registerURLSchemeAsAllowingServiceWorkers(const WebString& scheme)
+{
+    SchemeRegistry::registerURLSchemeAsAllowingServiceWorkers(scheme);
+}
+
 void WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy(const WebString& scheme)
 {
     SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy(scheme);

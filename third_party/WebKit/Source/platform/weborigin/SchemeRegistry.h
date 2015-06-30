@@ -87,6 +87,10 @@ public:
     // "Legacy" schemes (e.g. 'ftp:', 'gopher:') which we might want to treat differently from "webby" schemes.
     static bool shouldTreatURLSchemeAsLegacy(const String& scheme);
 
+    // Schemes that can register a service worker.
+    static void registerURLSchemeAsAllowingServiceWorkers(const String& scheme);
+    static bool shouldTreatURLSchemeAsAllowingServiceWorkers(const String& scheme);
+
     // Allow resources from some schemes to load on a page, regardless of its
     // Content Security Policy.
     // This enum should be kept in sync with public/web/WebSecurityPolicy.h.
