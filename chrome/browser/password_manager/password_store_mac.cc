@@ -16,10 +16,12 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/mac/security_wrappers.h"
+#include "components/os_crypt/os_crypt.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_store_change.h"
@@ -433,6 +435,36 @@ bool FillPasswordFormFromKeychainItem(const AppleKeychain& keychain,
     }
   }
   return true;
+}
+
+bool HasChromeCreatorCode(const AppleKeychain& keychain,
+                          const SecKeychainItemRef& keychain_item) {
+  SecKeychainAttributeInfo attr_info;
+  UInt32 tags[] = {kSecCreatorItemAttr};
+  attr_info.count = arraysize(tags);
+  attr_info.tag = tags;
+  attr_info.format = nullptr;
+
+  SecKeychainAttributeList* attr_list;
+  UInt32 password_length;
+  OSStatus result = keychain.ItemCopyAttributesAndData(
+      keychain_item, &attr_info, nullptr, &attr_list,
+      &password_length, nullptr);
+  if (result != noErr)
+    return false;
+  OSType creator_code = 0;
+  for (unsigned int i = 0; i < attr_list->count; i++) {
+    SecKeychainAttribute attr = attr_list->attr[i];
+    if (!attr.data) {
+      continue;
+    }
+    if (attr.tag == kSecCreatorItemAttr) {
+      creator_code = *(static_cast<FourCharCode*>(attr.data));
+      break;
+    }
+  }
+  keychain.ItemFreeAttributesAndData(attr_list, nullptr);
+  return creator_code && creator_code == base::mac::CreatorCodeForApplication();
 }
 
 bool FormsMatchForMerge(const PasswordForm& form_a,
@@ -922,7 +954,7 @@ PasswordStoreMac::PasswordStoreMac(
     : password_manager::PasswordStore(main_thread_runner, db_thread_runner),
       keychain_(keychain.Pass()),
       login_metadata_db_(login_db) {
-  DCHECK(keychain_.get());
+  DCHECK(keychain_);
   login_metadata_db_->set_clear_password_values(true);
 }
 
@@ -932,6 +964,89 @@ void PasswordStoreMac::InitWithTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> background_task_runner) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   db_thread_runner_ = background_task_runner;
+}
+
+PasswordStoreMac::MigrationResult PasswordStoreMac::ImportFromKeychain() {
+  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  if (!login_metadata_db_)
+    return LOGIN_DB_UNAVAILABLE;
+
+  ScopedVector<PasswordForm> database_forms;
+  if (!login_metadata_db_->GetAutofillableLogins(&database_forms))
+    return LOGIN_DB_FAILURE;
+
+  ScopedVector<PasswordForm> uninteresting_forms;
+  internal_keychain_helpers::ExtractNonKeychainForms(&database_forms,
+                                                     &uninteresting_forms);
+  // If there are no passwords to lookup in the Keychain then we're done.
+  if (database_forms.empty())
+    return MIGRATION_OK;
+
+  // Make sure that the encryption key is retrieved from the Keychain so the
+  // encryption can be done.
+  std::string ciphertext;
+  if (!OSCrypt::EncryptString("test", &ciphertext))
+    return ENCRYPTOR_FAILURE;
+
+  // Mute the Keychain.
+  chrome::ScopedSecKeychainSetUserInteractionAllowed user_interaction_allowed(
+      false);
+
+  // Retrieve the passwords.
+  // Get all the password attributes first.
+  std::vector<SecKeychainItemRef> keychain_items;
+  std::vector<internal_keychain_helpers::ItemFormPair> item_form_pairs =
+      internal_keychain_helpers::
+          ExtractAllKeychainItemAttributesIntoPasswordForms(&keychain_items,
+                                                            *keychain_);
+
+  // Next, compare the attributes of the PasswordForms in |database_forms|
+  // against those in |item_form_pairs|, and extract password data for each
+  // matching PasswordForm using its corresponding SecKeychainItemRef.
+  size_t unmerged_forms_count = 0;
+  size_t chrome_owned_locked_forms_count = 0;
+  for (PasswordForm* form : database_forms) {
+    ScopedVector<autofill::PasswordForm> keychain_matches =
+        internal_keychain_helpers::ExtractPasswordsMergeableWithForm(
+            *keychain_, item_form_pairs, *form);
+
+    const PasswordForm* best_match =
+        BestKeychainFormForForm(*form, keychain_matches.get());
+    if (best_match) {
+      form->password_value = best_match->password_value;
+    } else {
+      unmerged_forms_count++;
+      // Check if any corresponding keychain items are created by Chrome.
+      for (const auto& item_form_pair : item_form_pairs) {
+        if (internal_keychain_helpers::FormIsValidAndMatchesOtherForm(
+                *form, *item_form_pair.second) &&
+            internal_keychain_helpers::HasChromeCreatorCode(
+                *keychain_, *item_form_pair.first))
+          chrome_owned_locked_forms_count++;
+      }
+    }
+  }
+  STLDeleteContainerPairSecondPointers(item_form_pairs.begin(),
+                                       item_form_pairs.end());
+  for (SecKeychainItemRef item : keychain_items)
+    keychain_->Free(item);
+
+  if (unmerged_forms_count) {
+    UMA_HISTOGRAM_COUNTS(
+        "PasswordManager.KeychainMigration.NumPasswordsOnFailure",
+        database_forms.size());
+    UMA_HISTOGRAM_COUNTS("PasswordManager.KeychainMigration.NumFailedPasswords",
+                         unmerged_forms_count);
+    UMA_HISTOGRAM_COUNTS(
+        "PasswordManager.KeychainMigration.NumChromeOwnedInaccessiblePasswords",
+        chrome_owned_locked_forms_count);
+    return KEYCHAIN_BLOCKED;
+  }
+  // Now all the passwords are available. It's time to update LoginDatabase.
+  login_metadata_db_->set_clear_password_values(false);
+  for (PasswordForm* form : database_forms)
+    login_metadata_db_->UpdateLogin(*form);
+  return MIGRATION_OK;
 }
 
 bool PasswordStoreMac::Init(

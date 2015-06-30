@@ -139,6 +139,11 @@ bool FillPasswordFormFromKeychainItem(const AppleKeychain& keychain,
                                       autofill::PasswordForm* form,
                                       bool extract_password_data);
 
+// Returns true if |keychain_item| has the application-specific creator code in
+// its attributes.
+bool HasCreatorCode(const AppleKeychain& keychain,
+                    const SecKeychainItemRef& keychain_item);
+
 // Use FormMatchStrictness to configure which forms are considered a match by
 // FormsMatchForMerge:
 enum FormMatchStrictness {

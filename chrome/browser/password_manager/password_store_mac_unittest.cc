@@ -1173,6 +1173,7 @@ class PasswordStoreMacTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(db_dir_.CreateUniqueTempDir());
+    histogram_tester_.reset(new base::HistogramTester);
 
     // Ensure that LoginDatabase will use the mock keychain if it needs to
     // encrypt/decrypt a password.
@@ -1198,8 +1199,12 @@ class PasswordStoreMacTest : public testing::Test {
     // in LoginDatabase. The empty valus do not require encryption and therefore
     // OSCrypt shouldn't call the Keychain. The histogram doesn't cover the
     // internet passwords.
-    EXPECT_FALSE(histogram_tester_.GetHistogramSamplesSinceCreation(
-        "OSX.Keychain.Access"));
+    if (histogram_tester_) {
+      scoped_ptr<base::HistogramSamples> samples =
+          histogram_tester_->GetHistogramSamplesSinceCreation(
+              "OSX.Keychain.Access");
+      EXPECT_TRUE(!samples || samples->TotalCount() == 0);
+    }
   }
 
   static void InitLoginDatabase(password_manager::LoginDatabase* login_db) {
@@ -1304,7 +1309,7 @@ class PasswordStoreMacTest : public testing::Test {
   base::ScopedTempDir db_dir_;
   scoped_ptr<password_manager::LoginDatabase> login_db_;
   scoped_refptr<PasswordStoreMac> store_;
-  base::HistogramTester histogram_tester_;
+  scoped_ptr<base::HistogramTester> histogram_tester_;
 };
 
 TEST_F(PasswordStoreMacTest, TestStoreUpdate) {
@@ -1757,4 +1762,124 @@ TEST_F(PasswordStoreMacTest, StoringAndRetrievingFederatedCredentials) {
   form.password_value = base::UTF8ToUTF16("");  // No password.
 
   VerifyCredentialLifecycle(form);
+}
+
+void CheckMigrationResult(PasswordStoreMac::MigrationResult expected_result,
+                          PasswordStoreMac::MigrationResult result) {
+  EXPECT_EQ(expected_result, result);
+  QuitUIMessageLoop();
+}
+
+// Import the passwords from the Keychain to LoginDatabase.
+TEST_F(PasswordStoreMacTest, ImportFromKeychain) {
+  PasswordForm form1;
+  form1.origin = GURL("http://accounts.google.com/LoginAuth");
+  form1.signon_realm = "http://accounts.google.com/";
+  form1.username_value = ASCIIToUTF16("my_username");
+  form1.password_value = ASCIIToUTF16("my_password");
+
+  PasswordForm form2;
+  form2.origin = GURL("http://facebook.com/Login");
+  form2.signon_realm = "http://facebook.com/";
+  form2.username_value = ASCIIToUTF16("my_username");
+  form2.password_value = ASCIIToUTF16("my_password");
+
+  PasswordForm blacklisted_form;
+  blacklisted_form.origin = GURL("http://badsite.com/Login");
+  blacklisted_form.signon_realm = "http://badsite.com/";
+  blacklisted_form.blacklisted_by_user = true;
+
+  store()->AddLogin(form1);
+  store()->AddLogin(form2);
+  store()->AddLogin(blacklisted_form);
+  FinishAsyncProcessing();
+
+  ASSERT_TRUE(base::PostTaskAndReplyWithResult(
+      thread_->task_runner().get(), FROM_HERE,
+      base::Bind(&PasswordStoreMac::ImportFromKeychain, store()),
+      base::Bind(&CheckMigrationResult, PasswordStoreMac::MIGRATION_OK)));
+  FinishAsyncProcessing();
+
+  // The password should be stored in the database by now.
+  ScopedVector<PasswordForm> matching_items;
+  EXPECT_TRUE(login_db()->GetLogins(form1, &matching_items));
+  ASSERT_EQ(1u, matching_items.size());
+  EXPECT_EQ(form1, *matching_items[0]);
+
+  EXPECT_TRUE(login_db()->GetLogins(form2, &matching_items));
+  ASSERT_EQ(1u, matching_items.size());
+  EXPECT_EQ(form2, *matching_items[0]);
+
+  EXPECT_TRUE(login_db()->GetLogins(blacklisted_form, &matching_items));
+  ASSERT_EQ(1u, matching_items.size());
+  EXPECT_EQ(blacklisted_form, *matching_items[0]);
+
+  // The passwords are encrypted using a key from the Keychain.
+  EXPECT_TRUE(histogram_tester_->GetHistogramSamplesSinceCreation(
+                                     "OSX.Keychain.Access")->TotalCount());
+  histogram_tester_.reset();
+}
+
+// Import a federated credential while the Keychain is locked.
+TEST_F(PasswordStoreMacTest, ImportFederatedFromLockedKeychain) {
+  keychain()->set_locked(true);
+  PasswordForm form1;
+  form1.origin = GURL("http://example.com/Login");
+  form1.signon_realm = "http://example.com/";
+  form1.username_value = ASCIIToUTF16("my_username");
+  form1.federation_url = GURL("https://accounts.google.com/");
+
+  store()->AddLogin(form1);
+  FinishAsyncProcessing();
+  ASSERT_TRUE(base::PostTaskAndReplyWithResult(
+      thread_->task_runner().get(), FROM_HERE,
+      base::Bind(&PasswordStoreMac::ImportFromKeychain, store()),
+      base::Bind(&CheckMigrationResult, PasswordStoreMac::MIGRATION_OK)));
+  FinishAsyncProcessing();
+
+  ScopedVector<PasswordForm> matching_items;
+  EXPECT_TRUE(login_db()->GetLogins(form1, &matching_items));
+  ASSERT_EQ(1u, matching_items.size());
+  EXPECT_EQ(form1, *matching_items[0]);
+}
+
+// Try to import while the Keychain is locked but the encryption key had been
+// read earlier.
+TEST_F(PasswordStoreMacTest, ImportFromLockedKeychainError) {
+  PasswordForm form1;
+  form1.origin = GURL("http://accounts.google.com/LoginAuth");
+  form1.signon_realm = "http://accounts.google.com/";
+  form1.username_value = ASCIIToUTF16("my_username");
+  form1.password_value = ASCIIToUTF16("my_password");
+  store()->AddLogin(form1);
+  FinishAsyncProcessing();
+
+  // Add a second keychain item matching the Database entry.
+  PasswordForm form2 = form1;
+  form2.origin = GURL("http://accounts.google.com/Login");
+  form2.password_value = ASCIIToUTF16("1234");
+  MacKeychainPasswordFormAdapter adapter(keychain());
+  EXPECT_TRUE(adapter.AddPassword(form2));
+
+  keychain()->set_locked(true);
+  ASSERT_TRUE(base::PostTaskAndReplyWithResult(
+      thread_->task_runner().get(), FROM_HERE,
+      base::Bind(&PasswordStoreMac::ImportFromKeychain, store()),
+      base::Bind(&CheckMigrationResult, PasswordStoreMac::KEYCHAIN_BLOCKED)));
+  FinishAsyncProcessing();
+
+  ScopedVector<PasswordForm> matching_items;
+  EXPECT_TRUE(login_db()->GetLogins(form1, &matching_items));
+  ASSERT_EQ(1u, matching_items.size());
+  EXPECT_EQ(base::string16(), matching_items[0]->password_value);
+
+  histogram_tester_->ExpectUniqueSample(
+      "PasswordManager.KeychainMigration.NumPasswordsOnFailure", 1, 1);
+  histogram_tester_->ExpectUniqueSample(
+      "PasswordManager.KeychainMigration.NumFailedPasswords", 1, 1);
+  histogram_tester_->ExpectUniqueSample(
+      "PasswordManager.KeychainMigration.NumChromeOwnedInaccessiblePasswords",
+      2, 1);
+  // Don't test the encryption key access.
+  histogram_tester_.reset();
 }

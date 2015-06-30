@@ -31,6 +31,14 @@ class LoginDatabase;
 // http://dev.chromium.org/developers/design-documents/os-x-password-manager-keychain-integration
 class PasswordStoreMac : public password_manager::PasswordStore {
  public:
+  enum MigrationResult {
+    MIGRATION_OK,
+    LOGIN_DB_UNAVAILABLE,
+    LOGIN_DB_FAILURE,
+    ENCRYPTOR_FAILURE,
+    KEYCHAIN_BLOCKED,
+  };
+
   PasswordStoreMac(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
       scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
@@ -40,6 +48,12 @@ class PasswordStoreMac : public password_manager::PasswordStore {
   // Sets the background thread.
   void InitWithTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> background_task_runner);
+
+  // Reads all the passwords from the Keychain and stores them in LoginDatabase.
+  // After the successful migration PasswordStoreMac should not be used. If the
+  // migration fails, PasswordStoreMac remains the active backend for
+  // PasswordStoreProxyMac.
+  MigrationResult ImportFromKeychain();
 
   // To be used for testing.
   password_manager::LoginDatabase* login_metadata_db() const {

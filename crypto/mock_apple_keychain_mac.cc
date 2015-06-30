@@ -13,7 +13,8 @@ const SecKeychainSearchRef MockAppleKeychain::kDummySearchRef =
     reinterpret_cast<SecKeychainSearchRef>(1000);
 
 MockAppleKeychain::MockAppleKeychain()
-    : next_item_key_(0),
+    : locked_(false),
+      next_item_key_(0),
       search_copy_count_(0),
       keychain_item_copy_count_(0),
       attribute_data_copy_count_(0),
@@ -195,6 +196,9 @@ OSStatus MockAppleKeychain::ItemCopyAttributesAndData(
     return errSecInvalidItemRef;
 
   DCHECK(!itemClass);  // itemClass not implemented in the Mock.
+  if (locked_ && outData)
+    return errSecAuthFailed;
+
   if (attrList)
     *attrList  = &(keychain_attr_list_[key]);
   if (outData) {
@@ -213,6 +217,8 @@ OSStatus MockAppleKeychain::ItemModifyAttributesAndData(
     UInt32 length,
     const void* data) const {
   DCHECK(itemRef);
+  if (locked_)
+    return errSecAuthFailed;
   const char* fail_trigger = "fail_me";
   if (length == strlen(fail_trigger) &&
       memcmp(data, fail_trigger, length) == 0) {
@@ -248,6 +254,8 @@ OSStatus MockAppleKeychain::ItemFreeAttributesAndData(
 }
 
 OSStatus MockAppleKeychain::ItemDelete(SecKeychainItemRef itemRef) const {
+  if (locked_)
+    return errSecAuthFailed;
   MockKeychainItemType key =
       reinterpret_cast<MockKeychainItemType>(itemRef) - 1;
 
@@ -390,6 +398,8 @@ OSStatus MockAppleKeychain::AddInternetPassword(
     UInt32 passwordLength,
     const void* passwordData,
     SecKeychainItemRef* itemRef) const {
+  if (locked_)
+    return errSecAuthFailed;
 
   // Check for the magic duplicate item trigger.
   if (strcmp(serverName, "some.domain.com") == 0)

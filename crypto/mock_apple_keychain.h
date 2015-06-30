@@ -118,6 +118,8 @@ class CRYPTO_EXPORT MockAppleKeychain : public AppleKeychain {
   };
   // Adds a keychain item with the given info to the test set.
   void AddTestItem(const KeychainTestData& item_data);
+
+  void set_locked(bool locked) { locked_ = locked; }
 #endif  // !defined(OS_IOS)
 
   // |FindGenericPassword()| can return different results depending on user
@@ -200,6 +202,10 @@ class CRYPTO_EXPORT MockAppleKeychain : public AppleKeychain {
       UInt32 tag);
 
   static const SecKeychainSearchRef kDummySearchRef;
+
+  // Simulates the state when the user refuses to unclock the Keychain.
+  // If true, reading and modifying a password value result in errSecAuthFailed.
+  bool locked_;
 
   typedef struct KeychainPasswordData {
     KeychainPasswordData() : data(NULL), length(0) {}

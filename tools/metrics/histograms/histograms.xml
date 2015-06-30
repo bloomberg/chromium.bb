@@ -27735,6 +27735,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="PasswordManager.KeychainMigration.NumChromeOwnedInaccessiblePasswords">
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    After migration from the Mac Keychain fails, records the number of passwords
+    in the Keychain owned by Chrome but not accessible by it.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.KeychainMigration.NumFailedPasswords">
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    After migration from the Mac Keychain fails, records the number of passwords
+    in the Chrome Password Manager database for which the corresponding values
+    in the Keychain are not accessible by Chrome.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.KeychainMigration.NumPasswordsOnFailure">
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    After migration from the Mac Keychain fails, records the number of passwords
+    in the Chrome Password Manager database to be migrated. As there is no
+    partial migration, it's the total number of passwords in the DB.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.KWalletDeserializationStatus"
     enum="BooleanSuccess">
   <owner>gcasto@chromium.org</owner>
