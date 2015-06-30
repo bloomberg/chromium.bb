@@ -59,10 +59,6 @@ class ManagePasswordsState {
   // Move to MANAGE_STATE or INACTIVE_STATE for PSL matched passwords.
   void OnPasswordAutofilled(const autofill::PasswordFormMap& password_form_map);
 
-  // Move to BLACKLIST_STATE.
-  void OnBlacklistBlockedAutofill(
-      const autofill::PasswordFormMap& password_form_map);
-
   // Move to INACTIVE_STATE.
   void OnInactive();
 

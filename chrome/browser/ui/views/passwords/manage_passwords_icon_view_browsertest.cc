@@ -69,18 +69,6 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsIconViewTest, ManageState) {
   EXPECT_EQ(IDR_SAVE_PASSWORD_INACTIVE, view()->icon_id());
 }
 
-IN_PROC_BROWSER_TEST_F(ManagePasswordsIconViewTest, BlacklistedState) {
-  SetupBlackistedPassword();
-  EXPECT_EQ(password_manager::ui::BLACKLIST_STATE, view()->state());
-  EXPECT_TRUE(view()->visible());
-  EXPECT_EQ(IDR_SAVE_PASSWORD_DISABLED_INACTIVE, view()->icon_id());
-  EXPECT_EQ(IDS_PASSWORD_MANAGER_TOOLTIP_MANAGE, view()->tooltip_text_id());
-  view()->SetActive(true);
-  EXPECT_EQ(IDR_SAVE_PASSWORD_DISABLED_ACTIVE, view()->icon_id());
-  view()->SetActive(false);
-  EXPECT_EQ(IDR_SAVE_PASSWORD_DISABLED_INACTIVE, view()->icon_id());
-}
-
 IN_PROC_BROWSER_TEST_F(ManagePasswordsIconViewTest, CloseOnClick) {
   SetupPendingPassword();
   EXPECT_TRUE(view()->visible());

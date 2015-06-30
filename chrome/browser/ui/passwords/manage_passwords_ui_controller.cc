@@ -150,7 +150,7 @@ void ManagePasswordsUIController::OnPasswordAutofilled(
 
 void ManagePasswordsUIController::OnBlacklistBlockedAutofill(
     const PasswordFormMap& password_form_map) {
-  passwords_data_.OnBlacklistBlockedAutofill(password_form_map);
+  passwords_data_.OnInactive();
   UpdateBubbleAndIconVisibility();
 }
 

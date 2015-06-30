@@ -75,16 +75,6 @@ TEST_F(ManagePasswordsBubbleBlacklistViewControllerTest,
 
 TEST_F(ManagePasswordsBubbleBlacklistViewControllerTest,
        ShouldDismissAndUnblacklistWhenUnblacklistClicked) {
-  // Unblacklisting requires passwords to exist for the site.
-  scoped_ptr<autofill::PasswordForm> form(new autofill::PasswordForm);
-  form->username_value = base::ASCIIToUTF16("username");
-  form->password_value = base::ASCIIToUTF16("password");
-  form->blacklisted_by_user = true;
-  autofill::PasswordFormMap map;
-  map.insert(base::ASCIIToUTF16("username"), form.Pass());
-  ui_controller()->OnBlacklistBlockedAutofill(map);
-
-  EXPECT_EQ(password_manager::ui::BLACKLIST_STATE, ui_controller()->state());
   NSButton* undoButton = controller().undoBlacklistButton;
   [undoButton performClick:nil];
   EXPECT_TRUE(delegate().dismissed);

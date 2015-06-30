@@ -174,16 +174,6 @@ void ManagePasswordsState::OnPasswordAutofilled(
   }
 }
 
-void ManagePasswordsState::OnBlacklistBlockedAutofill(
-    const autofill::PasswordFormMap& password_form_map) {
-  DCHECK(!password_form_map.empty());
-  ClearData();
-  local_credentials_forms_ = DeepCopyMapToVector(password_form_map);
-  origin_ = local_credentials_forms_.front()->origin;
-  DCHECK(local_credentials_forms_.front()->blacklisted_by_user);
-  SetState(password_manager::ui::BLACKLIST_STATE);
-}
-
 void ManagePasswordsState::OnInactive() {
   ClearData();
   origin_ = GURL();

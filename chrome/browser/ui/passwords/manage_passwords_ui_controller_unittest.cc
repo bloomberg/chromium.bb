@@ -51,7 +51,7 @@ class TestManagePasswordsUIController : public ManagePasswordsUIController {
   void UpdateBubbleAndIconVisibility() override;
   void UpdateAndroidAccountChooserInfoBarVisibility() override;
   void SavePasswordInternal() override {}
-  void NeverSavePasswordInternal() override {}
+  void NeverSavePasswordInternal() override;
 
   base::TimeDelta elapsed_;
 };
@@ -82,6 +82,17 @@ void TestManagePasswordsUIController::UpdateBubbleAndIconVisibility() {
 void TestManagePasswordsUIController::
     UpdateAndroidAccountChooserInfoBarVisibility() {
   OnBubbleShown();
+}
+
+void TestManagePasswordsUIController::NeverSavePasswordInternal() {
+  autofill::PasswordForm blacklisted;
+  blacklisted.origin = this->origin();
+  blacklisted.signon_realm = blacklisted.origin.spec();
+  blacklisted.blacklisted_by_user = true;
+  password_manager::PasswordStoreChange change(
+      password_manager::PasswordStoreChange::ADD, blacklisted);
+  password_manager::PasswordStoreChangeList list(1, change);
+  OnLoginsChanged(list);
 }
 
 }  // namespace
@@ -124,6 +135,10 @@ class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
 
   void CredentialCallback(const password_manager::CredentialInfo& info) {
     credential_info_.reset(new password_manager::CredentialInfo(info));
+  }
+
+  password_manager::StubPasswordManagerClient* client() {
+    return &client_;
   }
 
   scoped_ptr<password_manager::PasswordFormManager> CreateFormManager();
@@ -293,67 +308,41 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedToNonWebbyURL) {
 TEST_F(ManagePasswordsUIControllerTest, BlacklistBlockedAutofill) {
   scoped_ptr<autofill::PasswordForm> test_form(
       new autofill::PasswordForm(test_local_form()));
-  autofill::PasswordForm* test_form_ptr = test_form.get();
   test_form->blacklisted_by_user = true;
   base::string16 kTestUsername = test_form->username_value;
   autofill::PasswordFormMap map;
   map.insert(kTestUsername, test_form.Pass());
   controller()->OnBlacklistBlockedAutofill(map);
 
-  EXPECT_EQ(password_manager::ui::BLACKLIST_STATE, controller()->state());
+  EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->state());
   EXPECT_FALSE(controller()->PasswordPendingUserDecision());
-  EXPECT_EQ(test_form_ptr->origin, controller()->origin());
-  ASSERT_EQ(1u, controller()->GetCurrentForms().size());
-  EXPECT_EQ(kTestUsername, controller()->GetCurrentForms()[0]->username_value);
-
-  // Controller should store a separate copy of the form as it doesn't own it.
-  EXPECT_NE(test_form_ptr, controller()->GetCurrentForms()[0]);
 
   ManagePasswordsIconMock mock;
   controller()->UpdateIconAndBubbleState(&mock);
-  EXPECT_EQ(password_manager::ui::BLACKLIST_STATE, mock.state());
+  EXPECT_EQ(password_manager::ui::INACTIVE_STATE, mock.state());
 }
 
 TEST_F(ManagePasswordsUIControllerTest, ClickedUnblacklist) {
-  base::string16 kTestUsername = base::ASCIIToUTF16("test_username");
-  autofill::PasswordFormMap map;
-  scoped_ptr<autofill::PasswordForm> test_form(
-      new autofill::PasswordForm(test_local_form()));
-  autofill::PasswordForm& test_form_ref = *test_form;
-  map.insert(kTestUsername, test_form.Pass());
-  test_form_ref.blacklisted_by_user = true;
-  controller()->OnBlacklistBlockedAutofill(map);
+  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
+      ManagePasswordsUIControllerMock::CreateFormManager(
+          client(), test_local_form(), ScopedVector<autofill::PasswordForm>()));
+  test_form_manager->ProvisionallySave(
+      test_local_form(),
+      password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  controller()->OnPasswordSubmitted(test_form_manager.Pass());
+  EXPECT_EQ(test_local_form().origin, controller()->origin());
+  controller()->NeverSavePassword();
+  ManagePasswordsIconMock mock;
+  controller()->UpdateIconAndBubbleState(&mock);
+  EXPECT_EQ(password_manager::ui::BLACKLIST_STATE, mock.state());
+  EXPECT_EQ(test_local_form().origin, controller()->origin());
+
   controller()->UnblacklistSite();
-
+  controller()->UpdateIconAndBubbleState(&mock);
+  EXPECT_EQ(password_manager::ui::MANAGE_STATE, mock.state());
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, controller()->state());
   EXPECT_FALSE(controller()->PasswordPendingUserDecision());
   EXPECT_EQ(test_local_form().origin, controller()->origin());
-
-  ManagePasswordsIconMock mock;
-  controller()->UpdateIconAndBubbleState(&mock);
-  EXPECT_EQ(password_manager::ui::MANAGE_STATE, mock.state());
-}
-
-TEST_F(ManagePasswordsUIControllerTest, UnblacklistedElsewhere) {
-  test_local_form().blacklisted_by_user = true;
-  base::string16 kTestUsername = base::ASCIIToUTF16("test_username");
-  autofill::PasswordFormMap map;
-  map.insert(kTestUsername,
-             make_scoped_ptr(new autofill::PasswordForm(test_local_form())));
-  controller()->OnBlacklistBlockedAutofill(map);
-
-  password_manager::PasswordStoreChange change(
-      password_manager::PasswordStoreChange::REMOVE, test_local_form());
-  password_manager::PasswordStoreChangeList list(1, change);
-  controller()->OnLoginsChanged(list);
-
-  EXPECT_EQ(password_manager::ui::MANAGE_STATE, controller()->state());
-  EXPECT_FALSE(controller()->PasswordPendingUserDecision());
-  EXPECT_EQ(test_local_form().origin, controller()->origin());
-
-  ManagePasswordsIconMock mock;
-  controller()->UpdateIconAndBubbleState(&mock);
-  EXPECT_EQ(password_manager::ui::MANAGE_STATE, mock.state());
 }
 
 TEST_F(ManagePasswordsUIControllerTest, BlacklistedElsewhere) {
