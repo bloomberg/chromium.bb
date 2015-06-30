@@ -34,7 +34,6 @@
 class ChromeHttpUserAgentSettings;
 class ChromeNetworkDelegate;
 class ChromeURLRequestContextGetter;
-class CookieSettings;
 class DevToolsNetworkController;
 class HostContentSettingsMap;
 class MediaDeviceIDSalt;
@@ -43,6 +42,10 @@ class SupervisedUserURLFilter;
 
 namespace chrome_browser_net {
 class ResourcePrefetchPredictorObserver;
+}
+
+namespace content_settings {
+class CookieSettings;
 }
 
 namespace data_reduction_proxy {
@@ -134,7 +137,7 @@ class ProfileIOData {
   // that profile.
   extensions::InfoMap* GetExtensionInfoMap() const;
   extensions::ExtensionThrottleManager* GetExtensionThrottleManager() const;
-  CookieSettings* GetCookieSettings() const;
+  content_settings::CookieSettings* GetCookieSettings() const;
   HostContentSettingsMap* GetHostContentSettingsMap() const;
 
   IntegerPrefMember* session_startup_pref() const {
@@ -274,7 +277,7 @@ class ProfileIOData {
 
     base::FilePath path;
     IOThread* io_thread;
-    scoped_refptr<CookieSettings> cookie_settings;
+    scoped_refptr<content_settings::CookieSettings> cookie_settings;
     scoped_refptr<HostContentSettingsMap> host_content_settings_map;
     scoped_refptr<net::SSLConfigService> ssl_config_service;
     scoped_refptr<net::CookieMonster::Delegate> cookie_monster_delegate;
@@ -386,7 +389,8 @@ class ProfileIOData {
       net::HttpNetworkSession* shared_session,
       net::HttpCache::BackendFactory* backend) const;
 
-  void SetCookieSettingsForTesting(CookieSettings* cookie_settings);
+  void SetCookieSettingsForTesting(
+      content_settings::CookieSettings* cookie_settings);
 
  private:
   class ResourceContext : public content::ResourceContext {
@@ -564,7 +568,7 @@ class ProfileIOData {
 
   mutable scoped_ptr<ResourceContext> resource_context_;
 
-  mutable scoped_refptr<CookieSettings> cookie_settings_;
+  mutable scoped_refptr<content_settings::CookieSettings> cookie_settings_;
 
   mutable scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
 

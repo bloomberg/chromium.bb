@@ -14,11 +14,12 @@
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/browsing_data/local_data_container.h"
-#include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/web_site_settings_uma_util.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -318,9 +319,9 @@ static void SetCameraSettingForOrigin(JNIEnv* env, jclass clazz,
       origin, ContentSettingsPattern::Wildcard(), value);
 }
 
-static scoped_refptr<CookieSettings> GetCookieSettings() {
+static scoped_refptr<content_settings::CookieSettings> GetCookieSettings() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  return CookieSettings::Factory::GetForProfile(profile);
+  return CookieSettingsFactory::GetForProfile(profile);
 }
 
 static void GetCookieOrigins(JNIEnv* env,

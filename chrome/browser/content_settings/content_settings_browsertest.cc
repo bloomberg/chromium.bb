@@ -7,7 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
@@ -20,6 +20,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
@@ -139,8 +140,8 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, BasicCookiesHttps) {
 // Verify that cookies are being blocked.
 IN_PROC_BROWSER_TEST_F(ContentSettingsTest, PRE_BlockCookies) {
   ASSERT_TRUE(test_server()->Start());
-  CookieSettings::Factory::GetForProfile(browser()->profile())->
-      SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
+  CookieSettingsFactory::GetForProfile(browser()->profile())
+      ->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
   GURL url = test_server()->GetURL("files/setcookie.html");
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_TRUE(GetCookies(browser()->profile(), url).empty());
@@ -149,10 +150,9 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, PRE_BlockCookies) {
 
 // Ensure that the setting persists.
 IN_PROC_BROWSER_TEST_F(ContentSettingsTest, BlockCookies) {
-  ASSERT_EQ(
-      CONTENT_SETTING_BLOCK,
-      CookieSettings::Factory::GetForProfile(browser()->profile())->
-          GetDefaultCookieSetting(NULL));
+  ASSERT_EQ(CONTENT_SETTING_BLOCK,
+            CookieSettingsFactory::GetForProfile(browser()->profile())
+                ->GetDefaultCookieSetting(NULL));
 }
 
 // Verify that cookies can be allowed and set using exceptions for particular
@@ -160,8 +160,8 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, BlockCookies) {
 IN_PROC_BROWSER_TEST_F(ContentSettingsTest, AllowCookiesUsingExceptions) {
   ASSERT_TRUE(test_server()->Start());
   GURL url = test_server()->GetURL("files/setcookie.html");
-  CookieSettings* settings =
-      CookieSettings::Factory::GetForProfile(browser()->profile()).get();
+  content_settings::CookieSettings* settings =
+      CookieSettingsFactory::GetForProfile(browser()->profile()).get();
   settings->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
 
   ui_test_utils::NavigateToURL(browser(), url);
@@ -179,8 +179,8 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, AllowCookiesUsingExceptions) {
 IN_PROC_BROWSER_TEST_F(ContentSettingsTest, BlockCookiesUsingExceptions) {
   ASSERT_TRUE(test_server()->Start());
   GURL url = test_server()->GetURL("files/setcookie.html");
-  CookieSettings* settings =
-      CookieSettings::Factory::GetForProfile(browser()->profile()).get();
+  content_settings::CookieSettings* settings =
+      CookieSettingsFactory::GetForProfile(browser()->profile()).get();
   settings->SetCookieSetting(ContentSettingsPattern::FromURL(url),
                              ContentSettingsPattern::Wildcard(),
                              CONTENT_SETTING_BLOCK);
@@ -207,8 +207,8 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest,
   // across the restart.
   GURL url = URLRequestMockHTTPJob::GetMockUrl(
       base::FilePath(FILE_PATH_LITERAL("setcookie.html")));
-  CookieSettings* settings =
-      CookieSettings::Factory::GetForProfile(browser()->profile()).get();
+  content_settings::CookieSettings* settings =
+      CookieSettingsFactory::GetForProfile(browser()->profile()).get();
   settings->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
 
   ui_test_utils::NavigateToURL(browser(), url);
@@ -236,8 +236,8 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectLoopCookies) {
 
   GURL test_url = test_server()->GetURL("files/redirect-loop.html");
 
-  CookieSettings::Factory::GetForProfile(browser()->profile())->
-      SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
+  CookieSettingsFactory::GetForProfile(browser()->profile())
+      ->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
 
   ui_test_utils::NavigateToURL(browser(), test_url);
 
@@ -279,8 +279,8 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectCrossOrigin) {
       host_port.port()));
   GURL test_url = test_server()->GetURL("server-redirect?" + redirect);
 
-  CookieSettings::Factory::GetForProfile(browser()->profile())->
-      SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
+  CookieSettingsFactory::GetForProfile(browser()->profile())
+      ->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
 
   ui_test_utils::NavigateToURL(browser(), test_url);
 

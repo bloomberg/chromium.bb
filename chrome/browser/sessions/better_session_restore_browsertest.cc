@@ -14,7 +14,7 @@
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -36,6 +36,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "content/public/browser/web_contents.h"
@@ -437,8 +438,8 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
   // Normally localStorage is restored.
   CheckReloadedPageRestored();
   // ... but not if it's set to clear on exit.
-  CookieSettings::Factory::GetForProfile(browser()->profile())->
-      SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
+  CookieSettingsFactory::GetForProfile(browser()->profile())
+      ->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
 }
 
 IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, LocalStorageClearedOnExit) {
@@ -454,8 +455,8 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PRE_CookiesClearedOnExit) {
   // Normally cookies are restored.
   CheckReloadedPageRestored();
   // ... but not if the content setting is set to clear on exit.
-  CookieSettings::Factory::GetForProfile(browser()->profile())->
-      SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
+  CookieSettingsFactory::GetForProfile(browser()->profile())
+      ->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
 }
 
 IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, CookiesClearedOnExit) {
@@ -514,8 +515,8 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
   Browser* new_browser = QuitBrowserAndRestore(browser(), false);
   CheckReloadedPageRestored(new_browser);
   // ... but not if the content setting is set to clear on exit.
-  CookieSettings::Factory::GetForProfile(new_browser->profile())->
-      SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
+  CookieSettingsFactory::GetForProfile(new_browser->profile())
+      ->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
   // ... unless background mode is active.
   EnableBackgroundMode();
   new_browser = QuitBrowserAndRestore(new_browser, false);
@@ -565,8 +566,8 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
   Browser* new_browser = QuitBrowserAndRestore(browser(), true);
   CheckReloadedPageRestored(new_browser);
   // ... but not if the content setting is set to clear on exit.
-  CookieSettings::Factory::GetForProfile(new_browser->profile())->
-      SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
+  CookieSettingsFactory::GetForProfile(new_browser->profile())
+      ->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
   // ... even if background mode is active.
   EnableBackgroundMode();
   new_browser = QuitBrowserAndRestore(new_browser, true);
@@ -639,8 +640,8 @@ IN_PROC_BROWSER_TEST_F(RestartTest, SessionStorage) {
 
 IN_PROC_BROWSER_TEST_F(RestartTest, PRE_LocalStorageClearedOnExit) {
   StoreDataWithPage("local_storage.html");
-  CookieSettings::Factory::GetForProfile(browser()->profile())->
-      SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
+  CookieSettingsFactory::GetForProfile(browser()->profile())
+      ->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
   Restart();
 }
 
@@ -650,8 +651,8 @@ IN_PROC_BROWSER_TEST_F(RestartTest, LocalStorageClearedOnExit) {
 
 IN_PROC_BROWSER_TEST_F(RestartTest, PRE_CookiesClearedOnExit) {
   StoreDataWithPage("cookies.html");
-  CookieSettings::Factory::GetForProfile(browser()->profile())->
-      SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
+  CookieSettingsFactory::GetForProfile(browser()->profile())
+      ->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
   Restart();
 }
 
@@ -731,8 +732,8 @@ IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, PRE_LocalStorageClearedOnExit) {
   EXPECT_EQ(std::string(url::kAboutBlankURL), web_contents->GetURL().spec());
   NavigateAndCheckStoredData("local_storage.html");
   // ... but not if it's set to clear on exit.
-  CookieSettings::Factory::GetForProfile(browser()->profile())->
-      SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
+  CookieSettingsFactory::GetForProfile(browser()->profile())
+      ->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
 }
 
 IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, LocalStorageClearedOnExit) {
@@ -753,8 +754,8 @@ IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, PRE_CookiesClearedOnExit) {
   EXPECT_EQ(std::string(url::kAboutBlankURL), web_contents->GetURL().spec());
   NavigateAndCheckStoredData("cookies.html");
   // ... but not if the content setting is set to clear on exit.
-  CookieSettings::Factory::GetForProfile(browser()->profile())->
-      SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
+  CookieSettingsFactory::GetForProfile(browser()->profile())
+      ->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
 }
 
 IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, CookiesClearedOnExit) {
@@ -816,8 +817,8 @@ IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, CookiesClearedOnBrowserClose) {
   NavigateAndCheckStoredData(new_browser, "cookies.html");
 
   // ... but not if the content setting is set to clear on exit.
-  CookieSettings::Factory::GetForProfile(new_browser->profile())->
-      SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
+  CookieSettingsFactory::GetForProfile(new_browser->profile())
+      ->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
   // ... unless background mode is active.
   EnableBackgroundMode();
   new_browser = QuitBrowserAndRestore(new_browser, false);
@@ -851,8 +852,8 @@ IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, CookiesClearedOnCloseAllBrowsers) {
   NavigateAndCheckStoredData(new_browser, "cookies.html");
 
   // ... but not if the content setting is set to clear on exit.
-  CookieSettings::Factory::GetForProfile(new_browser->profile())->
-      SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
+  CookieSettingsFactory::GetForProfile(new_browser->profile())
+      ->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
   // ... even if background mode is active.
   EnableBackgroundMode();
   new_browser = QuitBrowserAndRestore(new_browser, true);

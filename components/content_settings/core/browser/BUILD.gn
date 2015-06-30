@@ -31,6 +31,8 @@ static_library("browser") {
     "content_settings_usages_state.h",
     "content_settings_utils.cc",
     "content_settings_utils.h",
+    "cookie_settings.cc",
+    "cookie_settings.h",
     "host_content_settings_map.cc",
     "host_content_settings_map.h",
     "local_shared_objects_counter.h",
@@ -59,6 +61,7 @@ source_set("unit_tests") {
     "content_settings_provider_unittest.cc",
     "content_settings_rule_unittest.cc",
     "content_settings_utils_unittest.cc",
+    "cookie_settings_unittest.cc",
     "plugins_field_trial_unittest.cc",
   ]
 

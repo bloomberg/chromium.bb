@@ -20,7 +20,10 @@ class BrowserPpapiHost;
 class ResourceContext;
 }
 
+namespace content_settings {
 class CookieSettings;
+}
+
 class GURL;
 
 namespace chrome {
@@ -44,15 +47,16 @@ class PepperFlashBrowserHost : public ppapi::host::ResourceHost {
       const base::Time& t);
   int32_t OnGetLocalDataRestrictions(ppapi::host::HostMessageContext* context);
 
-  void GetLocalDataRestrictions(ppapi::host::ReplyMessageContext reply_context,
-                                const GURL& document_url,
-                                const GURL& plugin_url,
-                                scoped_refptr<CookieSettings> cookie_settings);
+  void GetLocalDataRestrictions(
+      ppapi::host::ReplyMessageContext reply_context,
+      const GURL& document_url,
+      const GURL& plugin_url,
+      scoped_refptr<content_settings::CookieSettings> cookie_settings);
 
   content::BrowserPpapiHost* host_;
   int render_process_id_;
   // For fetching the Flash LSO settings.
-  scoped_refptr<CookieSettings> cookie_settings_;
+  scoped_refptr<content_settings::CookieSettings> cookie_settings_;
   base::WeakPtrFactory<PepperFlashBrowserHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperFlashBrowserHost);

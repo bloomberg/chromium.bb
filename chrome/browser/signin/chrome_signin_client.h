@@ -16,7 +16,10 @@
 #include "net/base/network_change_notifier.h"
 #endif
 
+namespace content_settings {
 class CookieSettings;
+}
+
 class Profile;
 
 class ChromeSigninClient
@@ -36,7 +39,8 @@ class ChromeSigninClient
 
   // Utility methods.
   static bool ProfileAllowsSigninCookies(Profile* profile);
-  static bool SettingsAllowSigninCookies(CookieSettings* cookie_settings);
+  static bool SettingsAllowSigninCookies(
+      content_settings::CookieSettings* cookie_settings);
 
   // If |for_ephemeral| is true, special kind of device ID for ephemeral users
   // is generated.

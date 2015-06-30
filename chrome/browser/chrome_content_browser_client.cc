@@ -33,7 +33,7 @@
 #include "chrome/browser/chrome_content_browser_client_parts.h"
 #include "chrome/browser/chrome_net_benchmarking_message_filter.h"
 #include "chrome/browser/chrome_quota_permission_context.h"
-#include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
@@ -97,6 +97,7 @@
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/data_reduction_proxy/content/browser/data_reduction_proxy_message_filter.h"
@@ -1579,7 +1580,8 @@ bool ChromeContentBrowserClient::AllowSetCookie(
     net::CookieOptions* options) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-  CookieSettings* cookie_settings = io_data->GetCookieSettings();
+  content_settings::CookieSettings* cookie_settings =
+      io_data->GetCookieSettings();
   bool allow = cookie_settings->IsSettingCookieAllowed(url, first_party);
 
   BrowserThread::PostTask(
@@ -1594,7 +1596,8 @@ bool ChromeContentBrowserClient::AllowSaveLocalState(
     content::ResourceContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-  CookieSettings* cookie_settings = io_data->GetCookieSettings();
+  content_settings::CookieSettings* cookie_settings =
+      io_data->GetCookieSettings();
   ContentSetting setting = cookie_settings->GetDefaultCookieSetting(NULL);
 
   // TODO(bauerb): Should we also disallow local state if the default is BLOCK?
@@ -1611,7 +1614,8 @@ bool ChromeContentBrowserClient::AllowWorkerDatabase(
     const std::vector<std::pair<int, int> >& render_frames) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-  CookieSettings* cookie_settings = io_data->GetCookieSettings();
+  content_settings::CookieSettings* cookie_settings =
+      io_data->GetCookieSettings();
   bool allow = cookie_settings->IsSettingCookieAllowed(url, url);
 
   // Record access to database for potential display in UI.
@@ -1633,7 +1637,8 @@ void ChromeContentBrowserClient::AllowWorkerFileSystem(
     base::Callback<void(bool)> callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-  CookieSettings* cookie_settings = io_data->GetCookieSettings();
+  content_settings::CookieSettings* cookie_settings =
+      io_data->GetCookieSettings();
   bool allow = cookie_settings->IsSettingCookieAllowed(url, url);
 
 #if defined(ENABLE_EXTENSIONS)
@@ -1726,7 +1731,8 @@ bool ChromeContentBrowserClient::AllowWorkerIndexedDB(
     const std::vector<std::pair<int, int> >& render_frames) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-  CookieSettings* cookie_settings = io_data->GetCookieSettings();
+  content_settings::CookieSettings* cookie_settings =
+      io_data->GetCookieSettings();
   bool allow = cookie_settings->IsSettingCookieAllowed(url, url);
 
   // Record access to IndexedDB for potential display in UI.

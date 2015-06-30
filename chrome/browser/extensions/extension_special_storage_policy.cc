@@ -11,10 +11,11 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/url_constants.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/browser_context.h"
@@ -76,8 +77,9 @@ void LogHostedAppUnlimitedStorageUsage(
 }  // namespace
 
 ExtensionSpecialStoragePolicy::ExtensionSpecialStoragePolicy(
-    CookieSettings* cookie_settings)
-    : cookie_settings_(cookie_settings) {}
+    content_settings::CookieSettings* cookie_settings)
+    : cookie_settings_(cookie_settings) {
+}
 
 ExtensionSpecialStoragePolicy::~ExtensionSpecialStoragePolicy() {}
 

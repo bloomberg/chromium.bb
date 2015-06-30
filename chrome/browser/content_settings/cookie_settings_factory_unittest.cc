@@ -4,8 +4,9 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,8 +18,7 @@ class CookieSettingsFactoryTest : public testing::Test {
  public:
   CookieSettingsFactoryTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        cookie_settings_(
-            CookieSettings::Factory::GetForProfile(&profile_).get()),
+        cookie_settings_(CookieSettingsFactory::GetForProfile(&profile_).get()),
         kBlockedSite("http://ads.thirdparty.com"),
         kAllowedSite("http://good.allays.com"),
         kFirstPartySite("http://cool.things.com"),
@@ -28,7 +28,7 @@ class CookieSettingsFactoryTest : public testing::Test {
   base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   TestingProfile profile_;
-  CookieSettings* cookie_settings_;
+  content_settings::CookieSettings* cookie_settings_;
   const GURL kBlockedSite;
   const GURL kAllowedSite;
   const GURL kFirstPartySite;
@@ -36,8 +36,8 @@ class CookieSettingsFactoryTest : public testing::Test {
 };
 
 TEST_F(CookieSettingsFactoryTest, IncognitoBehaviorOfBlockingRules) {
-  scoped_refptr<CookieSettings> incognito_settings =
-      CookieSettings::Factory::GetForProfile(profile_.GetOffTheRecordProfile());
+  scoped_refptr<content_settings::CookieSettings> incognito_settings =
+      CookieSettingsFactory::GetForProfile(profile_.GetOffTheRecordProfile());
 
   // Modify the regular cookie settings after the incognito cookie settings have
   // been instantiated.
@@ -62,8 +62,8 @@ TEST_F(CookieSettingsFactoryTest, IncognitoBehaviorOfBlockingRules) {
 }
 
 TEST_F(CookieSettingsFactoryTest, IncognitoBehaviorOfBlockingEverything) {
-  scoped_refptr<CookieSettings> incognito_settings =
-      CookieSettings::Factory::GetForProfile(profile_.GetOffTheRecordProfile());
+  scoped_refptr<content_settings::CookieSettings> incognito_settings =
+      CookieSettingsFactory::GetForProfile(profile_.GetOffTheRecordProfile());
 
   // Apply the general blocking to the regular profile.
   cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);

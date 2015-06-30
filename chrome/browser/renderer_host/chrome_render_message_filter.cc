@@ -12,7 +12,7 @@
 #include "base/metrics/field_trial.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/net/predictor.h"
@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/render_messages.h"
 #include "components/content_settings/content/common/content_settings_messages.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/network_hints/common/network_hints_common.h"
 #include "components/network_hints/common/network_hints_messages.h"
 #include "components/rappor/rappor_service.h"
@@ -51,15 +52,14 @@ const uint32 kFilteredMessageClasses[] = {
 
 }  // namespace
 
-ChromeRenderMessageFilter::ChromeRenderMessageFilter(
-    int render_process_id,
-    Profile* profile)
+ChromeRenderMessageFilter::ChromeRenderMessageFilter(int render_process_id,
+                                                     Profile* profile)
     : BrowserMessageFilter(kFilteredMessageClasses,
                            arraysize(kFilteredMessageClasses)),
       render_process_id_(render_process_id),
       profile_(profile),
       predictor_(profile_->GetNetworkPredictor()),
-      cookie_settings_(CookieSettings::Factory::GetForProfile(profile)) {
+      cookie_settings_(CookieSettingsFactory::GetForProfile(profile)) {
 }
 
 ChromeRenderMessageFilter::~ChromeRenderMessageFilter() {

@@ -2,31 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CONTENT_SETTINGS_COOKIE_SETTINGS_H_
-#define CHROME_BROWSER_CONTENT_SETTINGS_COOKIE_SETTINGS_H_
+#ifndef COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_COOKIE_SETTINGS_H_
+#define COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_COOKIE_SETTINGS_H_
 
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/singleton.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "components/keyed_service/content/refcounted_browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 
 class ContentSettingsPattern;
-class CookieSettingsWrapper;
 class GURL;
 class PrefService;
-class Profile;
+
+namespace content_settings {
 
 // A frontend to the cookie settings of |HostContentSettingsMap|. Handles
 // cookie-specific logic such as blocking third-party cookies. Written on the UI
-// thread and read on any thread. One instance per profile.
+// thread and read on any thread.
 class CookieSettings : public RefcountedKeyedService {
  public:
   // Creates a new CookieSettings instance.
@@ -91,9 +90,9 @@ class CookieSettings : public RefcountedKeyedService {
   void ResetCookieSetting(const ContentSettingsPattern& primary_pattern,
                           const ContentSettingsPattern& secondary_pattern);
 
-  // Detaches the |CookieSettings| from all |Profile|-related objects like
-  // |PrefService|. This methods needs to be called before destroying the
-  // |Profile|. Afterwards, only const methods can be called.
+  // Detaches the |CookieSettings| from |PrefService|. This methods needs to be
+  // called before destroying the service. Afterwards, only const methods can be
+  // called.
   void ShutdownOnUIThread() override;
 
   // A helper for applying third party cookie blocking rules.
@@ -104,30 +103,6 @@ class CookieSettings : public RefcountedKeyedService {
       content_settings::SettingSource* source) const;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-
-  class Factory : public RefcountedBrowserContextKeyedServiceFactory {
-   public:
-    // Returns the |CookieSettings| associated with the |profile|.
-    //
-    // This should only be called on the UI thread.
-    static scoped_refptr<CookieSettings> GetForProfile(Profile* profile);
-
-    static Factory* GetInstance();
-
-   private:
-    friend struct DefaultSingletonTraits<Factory>;
-
-    Factory();
-    ~Factory() override;
-
-    // |BrowserContextKeyedBaseFactory| methods:
-    void RegisterProfilePrefs(
-        user_prefs::PrefRegistrySyncable* registry) override;
-    content::BrowserContext* GetBrowserContextToUse(
-        content::BrowserContext* context) const override;
-    scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(
-        content::BrowserContext* context) const override;
-  };
 
  private:
   ~CookieSettings() override;
@@ -149,6 +124,10 @@ class CookieSettings : public RefcountedKeyedService {
   mutable base::Lock lock_;
 
   bool block_third_party_cookies_;
+
+  DISALLOW_COPY_AND_ASSIGN(CookieSettings);
 };
 
-#endif  // CHROME_BROWSER_CONTENT_SETTINGS_COOKIE_SETTINGS_H_
+}  // namespace content_settings
+
+#endif  // COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_COOKIE_SETTINGS_H_

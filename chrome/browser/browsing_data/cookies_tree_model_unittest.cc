@@ -19,9 +19,10 @@
 #include "chrome/browser/browsing_data/mock_browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_quota_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_service_worker_helper.h"
-#include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/mock_settings_observer.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -77,9 +78,10 @@ class CookiesTreeModelTest : public testing::Test {
         new MockBrowsingDataFlashLSOHelper(profile_.get());
 
     const char kExtensionScheme[] = "extensionscheme";
-    scoped_refptr<CookieSettings> cookie_settings =
-        new CookieSettings(profile_->GetHostContentSettingsMap(),
-                           profile_->GetPrefs(), kExtensionScheme);
+    scoped_refptr<content_settings::CookieSettings> cookie_settings =
+        new content_settings::CookieSettings(
+            profile_->GetHostContentSettingsMap(), profile_->GetPrefs(),
+            kExtensionScheme);
 #if defined(ENABLE_EXTENSIONS)
     special_storage_policy_ =
         new ExtensionSpecialStoragePolicy(cookie_settings.get());
@@ -1235,8 +1237,8 @@ TEST_F(CookiesTreeModelTest, ContentSettings) {
   TestingProfile profile;
   HostContentSettingsMap* content_settings =
       profile.GetHostContentSettingsMap();
-  CookieSettings* cookie_settings =
-      CookieSettings::Factory::GetForProfile(&profile).get();
+  content_settings::CookieSettings* cookie_settings =
+      CookieSettingsFactory::GetForProfile(&profile).get();
   MockSettingsObserver observer(content_settings);
 
   CookieTreeRootNode* root =

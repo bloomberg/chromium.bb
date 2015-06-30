@@ -11,7 +11,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_api_constants.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_helpers.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/content_settings.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/plugin_service.h"
 #include "extensions/browser/extension_prefs_scope.h"
@@ -131,7 +132,7 @@ bool ContentSettingsContentSettingGetFunction::RunSync() {
   }
 
   HostContentSettingsMap* map;
-  CookieSettings* cookie_settings;
+  content_settings::CookieSettings* cookie_settings;
   if (incognito) {
     if (!GetProfile()->HasOffTheRecordProfile()) {
       // TODO(bauerb): Allow reading incognito content settings
@@ -140,12 +141,11 @@ bool ContentSettingsContentSettingGetFunction::RunSync() {
       return false;
     }
     map = GetProfile()->GetOffTheRecordProfile()->GetHostContentSettingsMap();
-    cookie_settings = CookieSettings::Factory::GetForProfile(
-        GetProfile()->GetOffTheRecordProfile()).get();
+    cookie_settings = CookieSettingsFactory::GetForProfile(
+                          GetProfile()->GetOffTheRecordProfile()).get();
   } else {
     map = GetProfile()->GetHostContentSettingsMap();
-    cookie_settings =
-        CookieSettings::Factory::GetForProfile(GetProfile()).get();
+    cookie_settings = CookieSettingsFactory::GetForProfile(GetProfile()).get();
   }
 
   ContentSetting setting;

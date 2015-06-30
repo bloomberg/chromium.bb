@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/values.h"
-#include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/test/test_browser_thread.h"
@@ -311,8 +312,8 @@ TEST_F(ExtensionSpecialStoragePolicyTest, OverlappingApps) {
 
 TEST_F(ExtensionSpecialStoragePolicyTest, HasSessionOnlyOrigins) {
   TestingProfile profile;
-  CookieSettings* cookie_settings =
-      CookieSettings::Factory::GetForProfile(&profile).get();
+  content_settings::CookieSettings* cookie_settings =
+      CookieSettingsFactory::GetForProfile(&profile).get();
   policy_ = new ExtensionSpecialStoragePolicy(cookie_settings);
 
   EXPECT_FALSE(policy_->HasSessionOnlyOrigins());

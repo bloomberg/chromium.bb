@@ -16,8 +16,9 @@
 #include "chrome/browser/browsing_data/browsing_data_channel_id_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
-#include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "content/public/common/url_constants.h"
 #include "grit/theme_resources.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -732,7 +733,8 @@ CookieTreeFlashLSONode* CookieTreeHostNode::GetOrCreateFlashLSONode(
 }
 
 void CookieTreeHostNode::CreateContentException(
-    CookieSettings* cookie_settings, ContentSetting setting) const {
+    content_settings::CookieSettings* cookie_settings,
+    ContentSetting setting) const {
   DCHECK(setting == CONTENT_SETTING_ALLOW ||
          setting == CONTENT_SETTING_BLOCK ||
          setting == CONTENT_SETTING_SESSION_ONLY);

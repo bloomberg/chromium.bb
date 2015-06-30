@@ -17,7 +17,6 @@
 #include "net/base/network_delegate_impl.h"
 
 class ChromeExtensionsNetworkDelegate;
-class CookieSettings;
 class PrefService;
 
 template<class T> class PrefMember;
@@ -31,6 +30,10 @@ class Value;
 namespace chrome_browser_net {
 class ConnectInterceptor;
 class Predictor;
+}
+
+namespace content_settings {
+class CookieSettings;
 }
 
 namespace domain_reliability {
@@ -87,7 +90,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   // otherwise the settings are enforced on all observed network requests.
   // Not inlined because we assign a scoped_refptr, which requires us to include
   // the header file. Here we just forward-declare it.
-  void set_cookie_settings(CookieSettings* cookie_settings);
+  void set_cookie_settings(content_settings::CookieSettings* cookie_settings);
 
   // Causes requested URLs to be fed to |predictor| via ConnectInterceptor.
   void set_predictor(chrome_browser_net::Predictor* predictor);
@@ -177,7 +180,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
 
   void* profile_;
   base::FilePath profile_path_;
-  scoped_refptr<CookieSettings> cookie_settings_;
+  scoped_refptr<content_settings::CookieSettings> cookie_settings_;
 
   scoped_ptr<chrome_browser_net::ConnectInterceptor> connect_interceptor_;
 

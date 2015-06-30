@@ -9,11 +9,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_member.h"
-#include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/net/safe_search_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -159,12 +160,12 @@ class ChromeNetworkDelegatePrivacyModeTest : public testing::Test {
 #if defined(ENABLE_EXTENSIONS)
         forwarder_(new extensions::EventRouterForwarder()),
 #endif
-        cookie_settings_(CookieSettings::Factory::GetForProfile(&profile_)
-                             .get()),
+        cookie_settings_(CookieSettingsFactory::GetForProfile(&profile_).get()),
         kBlockedSite("http://ads.thirdparty.com"),
         kAllowedSite("http://good.allays.com"),
         kFirstPartySite("http://cool.things.com"),
-        kBlockedFirstPartySite("http://no.thirdparties.com") {}
+        kBlockedFirstPartySite("http://no.thirdparties.com") {
+  }
 
   void SetUp() override {
     ChromeNetworkDelegate::InitializePrefsOnUIThread(
@@ -199,7 +200,7 @@ class ChromeNetworkDelegatePrivacyModeTest : public testing::Test {
   scoped_refptr<extensions::EventRouterForwarder> forwarder_;
 #endif
   TestingProfile profile_;
-  CookieSettings* cookie_settings_;
+  content_settings::CookieSettings* cookie_settings_;
   BooleanPrefMember enable_referrers_;
   scoped_ptr<net::URLRequest> request_;
   net::TestURLRequestContext context_;

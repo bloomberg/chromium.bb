@@ -13,10 +13,12 @@
 #include "storage/browser/quota/special_storage_policy.h"
 #include "url/gurl.h"
 
-class CookieSettings;
-
 namespace content {
 class BrowserContext;
+}
+
+namespace content_settings {
+class CookieSettings;
 }
 
 namespace extensions {
@@ -28,7 +30,8 @@ class Extension;
 // to determine which origins have these rights.
 class ExtensionSpecialStoragePolicy : public storage::SpecialStoragePolicy {
  public:
-  explicit ExtensionSpecialStoragePolicy(CookieSettings* cookie_settings);
+  explicit ExtensionSpecialStoragePolicy(
+      content_settings::CookieSettings* cookie_settings);
 
   // storage::SpecialStoragePolicy methods used by storage subsystems and the
   // browsing data remover. These methods are safe to call on any thread.
@@ -90,7 +93,7 @@ class ExtensionSpecialStoragePolicy : public storage::SpecialStoragePolicy {
   SpecialCollection file_handler_extensions_;
   SpecialCollection isolated_extensions_;
   SpecialCollection content_capabilities_unlimited_extensions_;
-  scoped_refptr<CookieSettings> cookie_settings_;
+  scoped_refptr<content_settings::CookieSettings> cookie_settings_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SPECIAL_STORAGE_POLICY_H_

@@ -6,7 +6,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
@@ -25,6 +25,7 @@
 #include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
@@ -160,8 +161,8 @@ void InlineLoginUIBrowserTest::AddEmailToOneClickRejectedList(
 }
 
 void InlineLoginUIBrowserTest::AllowSigninCookies(bool enable) {
-  CookieSettings* cookie_settings =
-      CookieSettings::Factory::GetForProfile(browser()->profile()).get();
+  content_settings::CookieSettings* cookie_settings =
+      CookieSettingsFactory::GetForProfile(browser()->profile()).get();
   cookie_settings->SetDefaultCookieSetting(enable ? CONTENT_SETTING_ALLOW
                                                   : CONTENT_SETTING_BLOCK);
 }

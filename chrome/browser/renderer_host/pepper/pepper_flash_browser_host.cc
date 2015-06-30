@@ -5,8 +5,9 @@
 #include "chrome/browser/renderer_host/pepper/pepper_flash_browser_host.h"
 
 #include "base/time/time.h"
-#include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/browser_thread.h"
@@ -35,14 +36,15 @@ namespace chrome {
 namespace {
 
 // Get the CookieSettings on the UI thread for the given render process ID.
-scoped_refptr<CookieSettings> GetCookieSettings(int render_process_id) {
+scoped_refptr<content_settings::CookieSettings> GetCookieSettings(
+    int render_process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderProcessHost* render_process_host =
       RenderProcessHost::FromID(render_process_id);
   if (render_process_host && render_process_host->GetBrowserContext()) {
     Profile* profile =
         Profile::FromBrowserContext(render_process_host->GetBrowserContext());
-    return CookieSettings::Factory::GetForProfile(profile);
+    return CookieSettingsFactory::GetForProfile(profile);
   }
   return NULL;
 }
@@ -135,7 +137,7 @@ void PepperFlashBrowserHost::GetLocalDataRestrictions(
     ppapi::host::ReplyMessageContext reply_context,
     const GURL& document_url,
     const GURL& plugin_url,
-    scoped_refptr<CookieSettings> cookie_settings) {
+    scoped_refptr<content_settings::CookieSettings> cookie_settings) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Lazily initialize |cookie_settings_|. The cookie settings are thread-safe

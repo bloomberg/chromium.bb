@@ -9,7 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
-#include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
@@ -28,6 +28,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/content/common/content_settings_messages.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -352,8 +353,8 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
   bool setting_is_wildcard = false;
 
   if (content_type() == CONTENT_SETTINGS_TYPE_COOKIES) {
-    CookieSettings* cookie_settings =
-        CookieSettings::Factory::GetForProfile(profile()).get();
+    content_settings::CookieSettings* cookie_settings =
+        CookieSettingsFactory::GetForProfile(profile()).get();
     setting = cookie_settings->GetCookieSetting(
         url, url, true, &setting_source);
   } else {

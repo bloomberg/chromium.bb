@@ -13,12 +13,15 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 
-class CookieSettings;
 class GURL;
 class Profile;
 
 namespace chrome_browser_net {
 class Predictor;
+}
+
+namespace content_settings {
+class CookieSettings;
 }
 
 namespace network_hints {
@@ -123,7 +126,7 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   chrome_browser_net::Predictor* predictor_;
 
   // Used to look up permissions at database creation time.
-  scoped_refptr<CookieSettings> cookie_settings_;
+  scoped_refptr<content_settings::CookieSettings> cookie_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderMessageFilter);
 };

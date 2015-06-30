@@ -50,6 +50,8 @@
         'content_settings/core/browser/content_settings_usages_state.h',
         'content_settings/core/browser/content_settings_utils.cc',
         'content_settings/core/browser/content_settings_utils.h',
+        'content_settings/core/browser/cookie_settings.cc',
+        'content_settings/core/browser/cookie_settings.h',
         'content_settings/core/browser/host_content_settings_map.cc',
         'content_settings/core/browser/host_content_settings_map.h',
         'content_settings/core/browser/local_shared_objects_counter.h',
