@@ -739,6 +739,9 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     if (impl.hasStringSequenceMember()) {
         if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "stringSequenceMember"), toV8(impl.stringSequenceMember(), creationContext, isolate))))
             return false;
+    } else {
+        if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "stringSequenceMember"), toV8(Vector<String>(), creationContext, isolate))))
+            return false;
     }
 
     if (impl.hasTestInterface2OrUint8ArrayMember()) {
@@ -778,7 +781,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
         if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceSequenceMember"), toV8(impl.testInterfaceSequenceMember(), creationContext, isolate))))
             return false;
     } else {
-        if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceSequenceMember"), toV8(Vector<RefPtr<TestInterface>>(), creationContext, isolate))))
+        if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceSequenceMember"), toV8(Vector<RefPtr<TestInterfaceImplementation>>(), creationContext, isolate))))
             return false;
     }
 

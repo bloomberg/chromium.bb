@@ -18,8 +18,9 @@ TestDictionary::TestDictionary()
     setOtherDoubleOrStringMember(DoubleOrString::fromString(String("default string value")));
     setRestrictedDoubleMember(3.14);
     setStringOrNullMember(String("default string value"));
+    setStringSequenceMember(Vector<String>());
     setTestInterfaceGarbageCollectedSequenceMember(HeapVector<Member<TestInterfaceGarbageCollected>>());
-    setTestInterfaceSequenceMember(Vector<RefPtr<TestInterface>>());
+    setTestInterfaceSequenceMember(Vector<RefPtr<TestInterfaceImplementation>>());
     setTestInterfaceWillBeGarbageCollectedSequenceMember(WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected>>());
     setUnrestrictedDoubleMember(3.14);
 }

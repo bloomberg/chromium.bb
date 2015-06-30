@@ -61,6 +61,7 @@ private:
     String m_byteStringMember;
     String m_usvStringMember;
     Nullable<Vector<String>> m_stringSequenceMember;
+    Vector<String> m_stringSequenceMemberWithDefault;
     Nullable<Vector<String>> m_stringSequenceOrNullMember;
     String m_enumMember;
     String m_enumMemberWithDefault;

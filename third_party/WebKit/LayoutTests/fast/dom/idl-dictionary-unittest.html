@@ -24,6 +24,7 @@ if (window.internals && internals.dictionaryTest) {
     shouldBeUndefined('dict.byteStringMember');
     shouldBeUndefined('dict.usvStringMember');
     shouldBeUndefined('dict.stringSequenceMember');
+    shouldBe('dict.stringSequenceMemberWithDefault', '[]');
     shouldBeUndefined('dict.stringSequenceOrNullMember');
     shouldBeUndefined('dict.elementMember');
     shouldBeUndefined('dict.elementOrNullMember');
@@ -52,6 +53,7 @@ if (window.internals && internals.dictionaryTest) {
     shouldBeUndefined('dict.usvStringMember');
     shouldBeEqualToString('dict.stringMemberWithDefault', 'defaultStringValue');
     shouldBeUndefined('dict.stringSequenceMember');
+    shouldBe('dict.stringSequenceMemberWithDefault', '[]');
     shouldBeUndefined('dict.stringSequenceOrNullMember');
     shouldBeUndefined('dict.elementMember');
     shouldBeUndefined('dict.elementOrNullMember');
@@ -76,6 +78,7 @@ if (window.internals && internals.dictionaryTest) {
         doubleMember: 3.14,
         unrestrictedDoubleMember: NaN,
         stringSequenceMember: ['foo', 'bar', 'baz'],
+        stringSequenceMemberWithDefault: ['foo', 'bar', 'baz'],
         stringSequenceOrNullMember: [],
         elementMember: element1,
         elementOrNullMember: null,
@@ -101,6 +104,7 @@ if (window.internals && internals.dictionaryTest) {
     shouldBe('dict.doubleMember', '3.14');
     shouldBe('dict.unrestrictedDoubleMember', 'NaN');
     shouldBe('dict.stringSequenceMember', '["foo", "bar", "baz"]');
+    shouldBe('dict.stringSequenceMemberWithDefault', '["foo", "bar", "baz"]');
     shouldBe('dict.stringSequenceOrNullMember', '[]');
     shouldBe('dict.elementMember', 'element1');
     // This will be undefined as the spec says
@@ -258,6 +262,7 @@ if (window.internals && internals.dictionaryTest) {
     shouldBeUndefined('derived.stringMember');
     shouldBeEqualToString('derived.stringMemberWithDefault', 'defaultStringValue');
     shouldBeUndefined('derived.stringSequenceMember');
+    shouldBe('derived.stringSequenceMemberWithDefault', '[]');
     shouldBeUndefined('derived.stringSequenceOrNullMember');
     shouldBeUndefined('derived.elementMember');
     shouldBeUndefined('derived.elementOrNullMember');

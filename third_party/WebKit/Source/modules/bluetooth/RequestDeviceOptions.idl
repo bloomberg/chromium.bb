@@ -6,6 +6,5 @@
 
 dictionary RequestDeviceOptions {
     required sequence<BluetoothScanFilter>  filters;
-    sequence<BluetoothServiceUUID> optionalServices/* = []*/;
-    // TODO: Fix https://crbug.com/500638 and uncomment the default value above.
+    sequence<BluetoothServiceUUID> optionalServices = [];
 };
