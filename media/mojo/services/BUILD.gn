@@ -187,16 +187,37 @@ if (!is_component_build) {
     ]
   }
 
-  # Note, this 'test' must be loaded via mojo_runner as an app:
+  # Note, the following tests must be loaded via mojo_runner as an app, e.g.
   #
   #   out/Debug/mojo_runner mojo:media_apptests
+  #   out/Debug/mojo_runner mojo:media_pipeline_integration_apptests
   #
   mojo_native_application("media_apptests") {
+    testonly = true
+
+    sources = [
+      "media_apptest.cc",
+    ]
+
+    deps = [
+      ":proxy",
+      "//media/base:test_support",
+      "//mojo/application/public/cpp:test_support",
+      "//testing/gmock",
+      "//testing/gtest",
+    ]
+
+    data_deps = [ ":media" ]
+  }
+
+  mojo_native_application("media_pipeline_integration_apptests") {
     testonly = true
 
     deps = [
       "//media/test:mojo_pipeline_integration_tests",
     ]
+
+    data_deps = [ ":media" ]
   }
 }
 
@@ -217,6 +238,9 @@ group("tests") {
   ]
 
   if (!is_component_build) {
-    deps += [ ":media_apptests" ]
+    deps += [
+      ":media_apptests",
+      ":media_pipeline_integration_apptests",
+    ]
   }
 }

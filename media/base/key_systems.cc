@@ -611,8 +611,8 @@ bool KeySystemsImpl::UseAesDecryptor(
   KeySystemInfoMap::const_iterator key_system_iter =
       concrete_key_system_map_.find(concrete_key_system);
   if (key_system_iter == concrete_key_system_map_.end()) {
-      DLOG(FATAL) << concrete_key_system << " is not a known concrete system";
-      return false;
+    DLOG(ERROR) << concrete_key_system << " is not a known concrete system";
+    return false;
   }
 
   return key_system_iter->second.use_aes_decryptor;

@@ -45,6 +45,7 @@ void MojoCdmService::Initialize(
     const mojo::Callback<void(mojo::CdmPromiseResultPtr)>& callback) {
   DVLOG(1) << __FUNCTION__ << ": " << key_system;
   DCHECK(!cdm_);
+  DCHECK_NE(CdmContext::kInvalidCdmId, cdm_id);
 
   SimpleMojoCdmPromise promise(callback);
 
