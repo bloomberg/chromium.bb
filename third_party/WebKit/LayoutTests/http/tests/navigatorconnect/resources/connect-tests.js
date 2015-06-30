@@ -92,7 +92,7 @@ function run_connect_tests(connect_method) {
     }, 'Connection succeeds if service worker accepts connection event async.');
 
   promise_test(function(t) {
-      var scope = sw_scope + '/accepting';
+      var scope = sw_scope + '/accepting-for-name-and-data';
       var sw_url = 'resources/accepting-worker.js';
       return service_worker_unregister_and_register(t, sw_url, scope)
         .then(function(registration) {
