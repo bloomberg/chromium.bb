@@ -744,6 +744,22 @@
             'angle_perftests_main.cc',
           ],
         },
+        {
+          # TODO(jmadill): port this target to the GN build.
+          'target_name': 'angle_deqp_tests',
+          'type': '<(gtest_target_type)',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../base/base.gyp:test_support_base',
+            '../third_party/angle/src/tests/tests.gyp:angle_deqp_gtest_support',
+          ],
+          'includes': [
+            '../third_party/angle/build/common_defines.gypi',
+          ],
+          'sources': [
+            'angle_deqp_tests_main.cc',
+          ],
+        },
       ],
     }],
     ['test_isolation_mode != "noop"', {
