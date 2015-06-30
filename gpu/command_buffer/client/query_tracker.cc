@@ -174,18 +174,17 @@ bool QueryTracker::Query::CheckResultsAvailable(
         helper->IsContextLost()) {
       switch (target()) {
         case GL_COMMANDS_ISSUED_CHROMIUM:
-          result_ = base::saturated_cast<uint32>(info_.sync->result);
+          result_ = info_.sync->result;
           break;
         case GL_LATENCY_QUERY_CHROMIUM:
           // Disabled DCHECK because of http://crbug.com/419236.
           //DCHECK(info_.sync->result >= client_begin_time_us_);
-          result_ = base::saturated_cast<uint32>(
-              info_.sync->result - client_begin_time_us_);
+          result_ = info_.sync->result - client_begin_time_us_;
           break;
         case GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM:
         case GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM:
         default:
-          result_ = static_cast<uint32>(info_.sync->result);
+          result_ = info_.sync->result;
           break;
       }
       state_ = kComplete;
@@ -201,7 +200,7 @@ bool QueryTracker::Query::CheckResultsAvailable(
   return state_ == kComplete;
 }
 
-uint32 QueryTracker::Query::GetResult() const {
+uint64 QueryTracker::Query::GetResult() const {
   DCHECK(state_ == kComplete || state_ == kUninitialized);
   return result_;
 }

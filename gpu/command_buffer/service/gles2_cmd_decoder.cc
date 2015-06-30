@@ -11563,7 +11563,9 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(uint32 immediate_data_size,
         return error::kNoError;
       }
       break;
-    default:
+    case GL_SAMPLES_PASSED:
+    case GL_ANY_SAMPLES_PASSED:
+    case GL_ANY_SAMPLES_PASSED_CONSERVATIVE:
       if (!features().occlusion_query_boolean) {
         LOCAL_SET_GL_ERROR(
             GL_INVALID_OPERATION, "glBeginQueryEXT",
@@ -11571,6 +11573,19 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(uint32 immediate_data_size,
         return error::kNoError;
       }
       break;
+    case GL_TIME_ELAPSED:
+      if (!query_manager_->GPUTimingAvailable()) {
+        LOCAL_SET_GL_ERROR(
+            GL_INVALID_OPERATION, "glBeginQueryEXT",
+            "not enabled for timing queries");
+        return error::kNoError;
+      }
+      break;
+    default:
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_OPERATION, "glBeginQueryEXT",
+          "unknown query target");
+      return error::kNoError;
   }
 
   if (state_.current_queries.find(target) != state_.current_queries.end()) {

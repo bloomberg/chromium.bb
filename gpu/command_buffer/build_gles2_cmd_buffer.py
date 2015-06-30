@@ -3742,6 +3742,12 @@ _FUNCTION_INFO = {
     'pepper_interface': 'Query',
     'extension': "occlusion_query_EXT",
   },
+  'GetQueryObjectui64vEXT': {
+    'gen_cmd': False,
+    'client_test': False,
+    'gl_test_func': 'glGetQueryObjectui64v',
+    'extension': "disjoint_timer_query_EXT",
+  },
   'BindUniformLocationCHROMIUM': {
     'type': 'GLchar',
     'extension': True,
