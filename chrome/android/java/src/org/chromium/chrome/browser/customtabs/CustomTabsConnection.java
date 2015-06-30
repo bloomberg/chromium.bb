@@ -39,6 +39,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WarmupManager;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content.browser.ChildProcessLauncher;
@@ -184,24 +185,25 @@ class CustomTabsConnection extends ICustomTabsConnectionService.Stub {
             @Override
             @SuppressFBWarnings("DM_EXIT")
             public void run() {
+                ChromiumApplication app = (ChromiumApplication) mApplication;
                 try {
                     // TODO(lizeb): Warm up more of the browser.
-                    ChromiumApplication app = (ChromiumApplication) mApplication;
                     app.startBrowserProcessesAndLoadLibrariesSync(true);
-                    final Context context = app.getApplicationContext();
-                    new AsyncTask<Void, Void, Void>() {
-                        @Override
-                        protected Void doInBackground(Void... params) {
-                            ChildProcessLauncher.warmUp(context);
-                            return null;
-                        }
-                    }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 } catch (ProcessInitException e) {
                     Log.e(TAG, "ProcessInitException while starting the browser process.");
                     // Cannot do anything without the native library, and cannot show a
                     // dialog to the user.
                     System.exit(-1);
                 }
+                final Context context = app.getApplicationContext();
+                new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected Void doInBackground(Void... params) {
+                        ChildProcessLauncher.warmUp(context);
+                        return null;
+                    }
+                }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                ChromeBrowserInitializer.initNetworkChangeNotifier(context);
             }
         });
         return RESULT_OK;
@@ -244,8 +246,11 @@ class CustomTabsConnection extends ICustomTabsConnectionService.Stub {
             @Override
             public void run() {
                 if (!TextUtils.isEmpty(url)) {
-                    WarmupManager.getInstance().maybePrefetchDnsForUrlInBackground(
+                    WarmupManager warmupManager = WarmupManager.getInstance();
+                    warmupManager.maybePrefetchDnsForUrlInBackground(
                             mApplication.getApplicationContext(), url);
+                    warmupManager.maybePreconnectUrlAndSubResources(
+                            Profile.getLastUsedProfile(), url);
                 }
                 // Calling with a null or empty url cancels a current prerender.
                 prerenderUrl(sessionId, url, extras);

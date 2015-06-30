@@ -167,7 +167,7 @@ public class ChromeBrowserInitializer {
         initQueue.add(new NativeInitTask() {
             @Override
             public void initFunction() {
-                initNetworkChangeNotifier();
+                initNetworkChangeNotifier(mApplication.getApplicationContext());
             }
         });
 
@@ -246,11 +246,11 @@ public class ChromeBrowserInitializer {
         }
     }
 
-    private void initNetworkChangeNotifier() {
+    public static void initNetworkChangeNotifier(Context context) {
         ThreadUtils.assertOnUiThread();
         TraceEvent.begin("NetworkChangeNotifier.init");
         // Enable auto-detection of network connectivity state changes.
-        NetworkChangeNotifier.init(mApplication);
+        NetworkChangeNotifier.init(context);
         NetworkChangeNotifier.setAutoDetectConnectivityState(true);
         TraceEvent.end("NetworkChangeNotifier.init");
     }
