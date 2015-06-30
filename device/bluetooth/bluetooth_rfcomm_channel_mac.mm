@@ -5,7 +5,7 @@
 #include "device/bluetooth/bluetooth_rfcomm_channel_mac.h"
 
 #include "base/logging.h"
-#include "device/bluetooth/bluetooth_device_mac.h"
+#include "device/bluetooth/bluetooth_classic_device_mac.h"
 #include "device/bluetooth/bluetooth_socket_mac.h"
 
 // A simple delegate class for an open RFCOMM channel that forwards methods to
@@ -137,7 +137,7 @@ void BluetoothRfcommChannelMac::OnChannelOpenComplete(
   }
 
   socket()->OnChannelOpenComplete(
-      BluetoothDeviceMac::GetDeviceAddress([channel getDevice]), status);
+      BluetoothClassicDeviceMac::GetDeviceAddress([channel getDevice]), status);
 }
 
 void BluetoothRfcommChannelMac::OnChannelClosed(

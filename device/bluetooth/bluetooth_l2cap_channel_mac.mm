@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/sdk_forward_declarations.h"
-#include "device/bluetooth/bluetooth_device_mac.h"
+#include "device/bluetooth/bluetooth_classic_device_mac.h"
 #include "device/bluetooth/bluetooth_socket_mac.h"
 
 // A simple delegate class for an open L2CAP channel that forwards methods to
@@ -142,7 +142,7 @@ void BluetoothL2capChannelMac::OnChannelOpenComplete(
   }
 
   socket()->OnChannelOpenComplete(
-      BluetoothDeviceMac::GetDeviceAddress([channel getDevice]), status);
+      BluetoothClassicDeviceMac::GetDeviceAddress([channel getDevice]), status);
 }
 
 void BluetoothL2capChannelMac::OnChannelClosed(

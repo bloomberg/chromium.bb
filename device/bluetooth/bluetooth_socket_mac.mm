@@ -23,8 +23,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "device/bluetooth/bluetooth_adapter_mac.h"
 #include "device/bluetooth/bluetooth_channel_mac.h"
+#include "device/bluetooth/bluetooth_classic_device_mac.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "device/bluetooth/bluetooth_device_mac.h"
 #include "device/bluetooth/bluetooth_l2cap_channel_mac.h"
 #include "device/bluetooth/bluetooth_rfcomm_channel_mac.h"
 #include "net/base/io_buffer.h"
@@ -471,7 +471,7 @@ void BluetoothSocketMac::Connect(
   // Perform an SDP query on the |device| to refresh the cache, in case the
   // services that the |device| advertises have changed since the previous
   // query.
-  DVLOG(1) << BluetoothDeviceMac::GetDeviceAddress(device) << " "
+  DVLOG(1) << BluetoothClassicDeviceMac::GetDeviceAddress(device) << " "
            << uuid_.canonical_value() << ": Sending SDP query.";
   SDPQueryListener* listener =
       [[SDPQueryListener alloc] initWithSocket:this
@@ -542,7 +542,7 @@ void BluetoothSocketMac::OnSDPQueryComplete(
       const base::Closure& success_callback,
       const ErrorCompletionCallback& error_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(1) << BluetoothDeviceMac::GetDeviceAddress(device) << " "
+  DVLOG(1) << BluetoothClassicDeviceMac::GetDeviceAddress(device) << " "
            << uuid_.canonical_value() << ": SDP query complete.";
 
   if (status != kIOReturnSuccess) {
@@ -581,14 +581,14 @@ void BluetoothSocketMac::OnSDPQueryComplete(
   }
 
   if (rfcomm_channel_id != kInvalidRfcommChannelId) {
-    DVLOG(1) << BluetoothDeviceMac::GetDeviceAddress(device) << " "
-             << uuid_.canonical_value() << ": Opening RFCOMM channel: "
-             << rfcomm_channel_id;
+    DVLOG(1) << BluetoothClassicDeviceMac::GetDeviceAddress(device) << " "
+             << uuid_.canonical_value()
+             << ": Opening RFCOMM channel: " << rfcomm_channel_id;
   } else {
     DCHECK_NE(l2cap_psm, kInvalidL2capPsm);
-    DVLOG(1) << BluetoothDeviceMac::GetDeviceAddress(device) << " "
-             << uuid_.canonical_value() << ": Opening L2CAP channel: "
-             << l2cap_psm;
+    DVLOG(1) << BluetoothClassicDeviceMac::GetDeviceAddress(device) << " "
+             << uuid_.canonical_value()
+             << ": Opening L2CAP channel: " << l2cap_psm;
   }
 
   // Note: It's important to set the connect callbacks *prior* to opening the
@@ -610,15 +610,14 @@ void BluetoothSocketMac::OnSDPQueryComplete(
     ReleaseChannel();
     std::stringstream error;
     error << "Failed to connect bluetooth socket ("
-          << BluetoothDeviceMac::GetDeviceAddress(device) << "): (" << status
-          << ")";
+          << BluetoothClassicDeviceMac::GetDeviceAddress(device) << "): ("
+          << status << ")";
     error_callback.Run(error.str());
     return;
   }
 
-  DVLOG(1) << BluetoothDeviceMac::GetDeviceAddress(device) << " "
-           << uuid_.canonical_value()
-           << ": channel opening in background.";
+  DVLOG(1) << BluetoothClassicDeviceMac::GetDeviceAddress(device) << " "
+           << uuid_.canonical_value() << ": channel opening in background.";
 }
 
 void BluetoothSocketMac::OnChannelOpened(

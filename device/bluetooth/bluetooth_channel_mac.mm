@@ -7,7 +7,7 @@
 #import <IOBluetooth/IOBluetooth.h>
 
 #include "base/logging.h"
-#include "device/bluetooth/bluetooth_device_mac.h"
+#include "device/bluetooth/bluetooth_classic_device_mac.h"
 
 namespace device {
 
@@ -23,7 +23,7 @@ void BluetoothChannelMac::SetSocket(BluetoothSocketMac* socket) {
 }
 
 std::string BluetoothChannelMac::GetDeviceAddress() {
-  return BluetoothDeviceMac::GetDeviceAddress(GetDevice());
+  return BluetoothClassicDeviceMac::GetDeviceAddress(GetDevice());
 }
 
 }  // namespace device

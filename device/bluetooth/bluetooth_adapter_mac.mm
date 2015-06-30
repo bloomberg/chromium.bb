@@ -21,7 +21,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "device/bluetooth/bluetooth_device_mac.h"
+#include "device/bluetooth/bluetooth_classic_device_mac.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_socket_mac.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -171,7 +171,7 @@ void BluetoothAdapterMac::DeviceConnected(IOBluetoothDevice* device) {
   // TODO(isherman): Investigate whether this method can be replaced with a call
   // to +registerForConnectNotifications:selector:.
   DVLOG(1) << "Adapter registered a new connection from device with address: "
-           << BluetoothDeviceMac::GetDeviceAddress(device);
+           << BluetoothClassicDeviceMac::GetDeviceAddress(device);
   ClassicDeviceAdded(device);
 }
 
@@ -370,13 +370,14 @@ void BluetoothAdapterMac::PollAdapter() {
 }
 
 void BluetoothAdapterMac::ClassicDeviceAdded(IOBluetoothDevice* device) {
-  std::string device_address = BluetoothDeviceMac::GetDeviceAddress(device);
+  std::string device_address =
+      BluetoothClassicDeviceMac::GetDeviceAddress(device);
 
   // Only notify observers once per device.
   if (devices_.count(device_address))
     return;
 
-  devices_[device_address] = new BluetoothDeviceMac(device);
+  devices_[device_address] = new BluetoothClassicDeviceMac(device);
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer,
                     observers_,
                     DeviceAdded(this, devices_[device_address]));
@@ -404,7 +405,7 @@ void BluetoothAdapterMac::UpdateDevices() {
       continue;
 
     NSDate* last_inquiry_update =
-        static_cast<BluetoothDeviceMac*>(device)->GetLastInquiryUpdate();
+        static_cast<BluetoothClassicDeviceMac*>(device)->GetLastInquiryUpdate();
     if (last_inquiry_update &&
         -[last_inquiry_update timeIntervalSinceNow] < kDiscoveryTimeoutSec)
       continue;

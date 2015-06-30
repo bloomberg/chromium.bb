@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/bluetooth/bluetooth_device_mac.h"
+#include "device/bluetooth/bluetooth_classic_device_mac.h"
 
 #include <string>
 
@@ -58,65 +58,66 @@ BluetoothUUID ExtractUuid(IOBluetoothSDPDataElement* service_class_data) {
 
 }  // namespace
 
-BluetoothDeviceMac::BluetoothDeviceMac(IOBluetoothDevice* device)
+BluetoothClassicDeviceMac::BluetoothClassicDeviceMac(IOBluetoothDevice* device)
     : device_([device retain]) {
 }
 
-BluetoothDeviceMac::~BluetoothDeviceMac() {
+BluetoothClassicDeviceMac::~BluetoothClassicDeviceMac() {
 }
 
-uint32 BluetoothDeviceMac::GetBluetoothClass() const {
+uint32 BluetoothClassicDeviceMac::GetBluetoothClass() const {
   return [device_ classOfDevice];
 }
 
-std::string BluetoothDeviceMac::GetDeviceName() const {
+std::string BluetoothClassicDeviceMac::GetDeviceName() const {
   return base::SysNSStringToUTF8([device_ name]);
 }
 
-std::string BluetoothDeviceMac::GetAddress() const {
+std::string BluetoothClassicDeviceMac::GetAddress() const {
   return GetDeviceAddress(device_);
 }
 
-BluetoothDevice::VendorIDSource BluetoothDeviceMac::GetVendorIDSource() const {
+BluetoothDevice::VendorIDSource BluetoothClassicDeviceMac::GetVendorIDSource()
+    const {
   return VENDOR_ID_UNKNOWN;
 }
 
-uint16 BluetoothDeviceMac::GetVendorID() const {
+uint16 BluetoothClassicDeviceMac::GetVendorID() const {
   return 0;
 }
 
-uint16 BluetoothDeviceMac::GetProductID() const {
+uint16 BluetoothClassicDeviceMac::GetProductID() const {
   return 0;
 }
 
-uint16 BluetoothDeviceMac::GetDeviceID() const {
+uint16 BluetoothClassicDeviceMac::GetDeviceID() const {
   return 0;
 }
 
-bool BluetoothDeviceMac::IsPaired() const {
+bool BluetoothClassicDeviceMac::IsPaired() const {
   return [device_ isPaired];
 }
 
-bool BluetoothDeviceMac::IsConnected() const {
+bool BluetoothClassicDeviceMac::IsConnected() const {
   return [device_ isConnected];
 }
 
-bool BluetoothDeviceMac::IsConnectable() const {
+bool BluetoothClassicDeviceMac::IsConnectable() const {
   return false;
 }
 
-bool BluetoothDeviceMac::IsConnecting() const {
+bool BluetoothClassicDeviceMac::IsConnecting() const {
   return false;
 }
 
-BluetoothDevice::UUIDList BluetoothDeviceMac::GetUUIDs() const {
+BluetoothDevice::UUIDList BluetoothClassicDeviceMac::GetUUIDs() const {
   UUIDList uuids;
   for (IOBluetoothSDPServiceRecord* service_record in [device_ services]) {
     IOBluetoothSDPDataElement* service_class_data =
         [service_record getAttributeDataElement:
-            kBluetoothSDPAttributeIdentifierServiceClassIDList];
+                            kBluetoothSDPAttributeIdentifierServiceClassIDList];
     if ([service_class_data getTypeDescriptor] ==
-            kBluetoothSDPDataElementTypeDataElementSequence) {
+        kBluetoothSDPDataElementTypeDataElementSequence) {
       BluetoothUUID uuid = ExtractUuid(service_class_data);
       if (uuid.IsValid())
         uuids.push_back(uuid);
@@ -125,31 +126,31 @@ BluetoothDevice::UUIDList BluetoothDeviceMac::GetUUIDs() const {
   return uuids;
 }
 
-int16 BluetoothDeviceMac::GetInquiryRSSI() const {
+int16 BluetoothClassicDeviceMac::GetInquiryRSSI() const {
   return kUnknownPower;
 }
 
-int16 BluetoothDeviceMac::GetInquiryTxPower() const {
+int16 BluetoothClassicDeviceMac::GetInquiryTxPower() const {
   NOTIMPLEMENTED();
   return kUnknownPower;
 }
 
-bool BluetoothDeviceMac::ExpectingPinCode() const {
+bool BluetoothClassicDeviceMac::ExpectingPinCode() const {
   NOTIMPLEMENTED();
   return false;
 }
 
-bool BluetoothDeviceMac::ExpectingPasskey() const {
+bool BluetoothClassicDeviceMac::ExpectingPasskey() const {
   NOTIMPLEMENTED();
   return false;
 }
 
-bool BluetoothDeviceMac::ExpectingConfirmation() const {
+bool BluetoothClassicDeviceMac::ExpectingConfirmation() const {
   NOTIMPLEMENTED();
   return false;
 }
 
-void BluetoothDeviceMac::GetConnectionInfo(
+void BluetoothClassicDeviceMac::GetConnectionInfo(
     const ConnectionInfoCallback& callback) {
   ConnectionInfo connection_info;
   if (![device_ isConnected]) {
@@ -171,77 +172,79 @@ void BluetoothDeviceMac::GetConnectionInfo(
   callback.Run(connection_info);
 }
 
-void BluetoothDeviceMac::Connect(
+void BluetoothClassicDeviceMac::Connect(
     PairingDelegate* pairing_delegate,
     const base::Closure& callback,
     const ConnectErrorCallback& error_callback) {
   NOTIMPLEMENTED();
 }
 
-void BluetoothDeviceMac::SetPinCode(const std::string& pincode) {
+void BluetoothClassicDeviceMac::SetPinCode(const std::string& pincode) {
   NOTIMPLEMENTED();
 }
 
-void BluetoothDeviceMac::SetPasskey(uint32 passkey) {
+void BluetoothClassicDeviceMac::SetPasskey(uint32 passkey) {
   NOTIMPLEMENTED();
 }
 
-void BluetoothDeviceMac::ConfirmPairing() {
+void BluetoothClassicDeviceMac::ConfirmPairing() {
   NOTIMPLEMENTED();
 }
 
-void BluetoothDeviceMac::RejectPairing() {
+void BluetoothClassicDeviceMac::RejectPairing() {
   NOTIMPLEMENTED();
 }
 
-void BluetoothDeviceMac::CancelPairing() {
+void BluetoothClassicDeviceMac::CancelPairing() {
   NOTIMPLEMENTED();
 }
 
-void BluetoothDeviceMac::Disconnect(const base::Closure& callback,
-                                    const ErrorCallback& error_callback) {
+void BluetoothClassicDeviceMac::Disconnect(
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
   NOTIMPLEMENTED();
 }
 
-void BluetoothDeviceMac::Forget(const ErrorCallback& error_callback) {
+void BluetoothClassicDeviceMac::Forget(const ErrorCallback& error_callback) {
   NOTIMPLEMENTED();
 }
 
-void BluetoothDeviceMac::ConnectToService(
+void BluetoothClassicDeviceMac::ConnectToService(
     const BluetoothUUID& uuid,
     const ConnectToServiceCallback& callback,
     const ConnectToServiceErrorCallback& error_callback) {
   scoped_refptr<BluetoothSocketMac> socket = BluetoothSocketMac::CreateSocket();
-  socket->Connect(
-      device_.get(), uuid, base::Bind(callback, socket), error_callback);
+  socket->Connect(device_.get(), uuid, base::Bind(callback, socket),
+                  error_callback);
 }
 
-void BluetoothDeviceMac::ConnectToServiceInsecurely(
-      const BluetoothUUID& uuid,
-      const ConnectToServiceCallback& callback,
-      const ConnectToServiceErrorCallback& error_callback) {
+void BluetoothClassicDeviceMac::ConnectToServiceInsecurely(
+    const BluetoothUUID& uuid,
+    const ConnectToServiceCallback& callback,
+    const ConnectToServiceErrorCallback& error_callback) {
   error_callback.Run(kApiUnavailable);
 }
 
-void BluetoothDeviceMac::CreateGattConnection(
-      const GattConnectionCallback& callback,
-      const ConnectErrorCallback& error_callback) {
+void BluetoothClassicDeviceMac::CreateGattConnection(
+    const GattConnectionCallback& callback,
+    const ConnectErrorCallback& error_callback) {
   // TODO(armansito): Implement.
   error_callback.Run(ERROR_UNSUPPORTED_DEVICE);
 }
 
-NSDate* BluetoothDeviceMac::GetLastInquiryUpdate() {
+NSDate* BluetoothClassicDeviceMac::GetLastInquiryUpdate() {
   return [device_ getLastInquiryUpdate];
 }
 
-int BluetoothDeviceMac::GetHostTransmitPower(
+int BluetoothClassicDeviceMac::GetHostTransmitPower(
     BluetoothHCITransmitPowerLevelType power_level_type) const {
   IOBluetoothHostController* controller =
       [IOBluetoothHostController defaultController];
 
   // Bail if the undocumented API is unavailable on this machine.
-  SEL selector = @selector(
-      BluetoothHCIReadTransmitPowerLevel:inType:outTransmitPowerLevel:);
+  SEL selector = @selector(BluetoothHCIReadTransmitPowerLevel:
+                                                       inType:
+                                        outTransmitPowerLevel:);
   if (![controller respondsToSelector:selector])
     return kUnknownPower;
 
@@ -257,7 +260,8 @@ int BluetoothDeviceMac::GetHostTransmitPower(
 }
 
 // static
-std::string BluetoothDeviceMac::GetDeviceAddress(IOBluetoothDevice* device) {
+std::string BluetoothClassicDeviceMac::GetDeviceAddress(
+    IOBluetoothDevice* device) {
   return CanonicalizeAddress(base::SysNSStringToUTF8([device addressString]));
 }
 

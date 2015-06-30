@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_MAC_H_
-#define DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_MAC_H_
+#ifndef DEVICE_BLUETOOTH_BLUETOOTH_CLASSIC_DEVICE_MAC_H_
+#define DEVICE_BLUETOOTH_BLUETOOTH_CLASSIC_DEVICE_MAC_H_
 
 #import <IOBluetooth/IOBluetooth.h>
 
@@ -18,10 +18,10 @@
 
 namespace device {
 
-class BluetoothDeviceMac : public BluetoothDevice {
+class BluetoothClassicDeviceMac : public BluetoothDevice {
  public:
-  explicit BluetoothDeviceMac(IOBluetoothDevice* device);
-  ~BluetoothDeviceMac() override;
+  explicit BluetoothClassicDeviceMac(IOBluetoothDevice* device);
+  ~BluetoothClassicDeviceMac() override;
 
   // BluetoothDevice override
   uint32 GetBluetoothClass() const override;
@@ -86,9 +86,9 @@ class BluetoothDeviceMac : public BluetoothDevice {
 
   base::scoped_nsobject<IOBluetoothDevice> device_;
 
-  DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceMac);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothClassicDeviceMac);
 };
 
 }  // namespace device
 
-#endif  // DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_MAC_H_
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_CLASSIC_DEVICE_MAC_H_
