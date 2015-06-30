@@ -19,7 +19,6 @@ from telemetry.core import discover
 from telemetry.unittest_util import options_for_unittests
 from telemetry.unittest_util import progress_reporter
 
-from benchmarks import dom_perf
 from benchmarks import indexeddb_perf
 from benchmarks import image_decoding
 from benchmarks import octane
@@ -82,7 +81,6 @@ def SmokeTestGenerator(benchmark):
 
 # The list of benchmark modules to be excluded from our smoke tests.
 _BLACK_LIST_TEST_MODULES = {
-    dom_perf,   # Always fails on cq bot.
     image_decoding, # Always fails on Mac10.9 Tests builder.
     indexeddb_perf,  # Always fails on Win7 & Android Tests builder.
     octane,  # Often fails & take long time to timeout on cq bot.
