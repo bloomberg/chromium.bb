@@ -60,5 +60,22 @@
         },
       ],
     }],
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'skia_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'skia_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'skia_unittests.isolate',
+          ],
+        },
+      ],
+    }],
   ],
 }
