@@ -510,10 +510,15 @@ void LinuxDumper::LatePostprocessMappings() {
     }
     if (ehdr.e_type == ET_DYN) {
       // Compute the effective load bias for this mapped library, and update
-      // the mapping to hold that rather than |start_addr|. Where the library
-      // does not contain Android packed relocations, GetEffectiveLoadBias()
-      // returns |start_addr| and the mapping entry is not changed.
-      mapping->start_addr = GetEffectiveLoadBias(&ehdr, mapping->start_addr);
+      // the mapping to hold that rather than |start_addr|, at the same time
+      // adjusting |size| to account for the change in |start_addr|. Where
+      // the library does not contain Android packed relocations,
+      // GetEffectiveLoadBias() returns |start_addr| and the mapping entry
+      // is not changed.
+      const uintptr_t load_bias = GetEffectiveLoadBias(&ehdr,
+                                                       mapping->start_addr);
+      mapping->size += mapping->start_addr - load_bias;
+      mapping->start_addr = load_bias;
     }
   }
 }
