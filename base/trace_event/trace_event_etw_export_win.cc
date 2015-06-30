@@ -171,6 +171,11 @@ void TraceEventETWExport::DisableETWExport() {
 }
 
 // static
+bool TraceEventETWExport::IsETWExportEnabled() {
+  return (GetInstance() && GetInstance()->etw_export_enabled_);
+}
+
+// static
 void TraceEventETWExport::AddEvent(
     char phase,
     const unsigned char* category_group_enabled,
@@ -297,10 +302,6 @@ void TraceEventETWExport::AddCustomEvent(const char* name,
                         arg_value_2, arg_name_3, arg_value_3);
 }
 
-void TraceEventETWExport::Resurrect() {
-  StaticMemorySingletonTraits<TraceEventETWExport>::Resurrect();
-}
-
 // static
 bool TraceEventETWExport::IsCategoryGroupEnabled(
     const char* category_group_name) {
@@ -324,21 +325,23 @@ bool TraceEventETWExport::IsCategoryGroupEnabled(
   return false;
 }
 
-void TraceEventETWExport::UpdateEnabledCategories() {
+bool TraceEventETWExport::UpdateEnabledCategories() {
+  if (etw_match_any_keyword_ == CHROME_Context.MatchAnyKeyword)
+    return false;
+
   // If the keyword has changed, update each category.
   // Chrome_Context.MatchAnyKeyword is set by UIforETW (or other ETW trace
   // recording tools) using the ETW infrastructure. This value will be set in
   // all Chrome processes that have registered their ETW provider.
-  if (etw_match_any_keyword_ != CHROME_Context.MatchAnyKeyword) {
-    etw_match_any_keyword_ = CHROME_Context.MatchAnyKeyword;
-    for (int i = 0; i < ARRAYSIZE(filtered_event_group_names); i++) {
-      if (etw_match_any_keyword_ & (1ULL << i)) {
-        categories_status_[filtered_event_group_names[i]] = true;
-      } else {
-        categories_status_[filtered_event_group_names[i]] = false;
-      }
+  etw_match_any_keyword_ = CHROME_Context.MatchAnyKeyword;
+  for (int i = 0; i < ARRAYSIZE(filtered_event_group_names); i++) {
+    if (etw_match_any_keyword_ & (1ULL << i)) {
+      categories_status_[filtered_event_group_names[i]] = true;
+    } else {
+      categories_status_[filtered_event_group_names[i]] = false;
     }
   }
+
   // Also update the two default categories.
   if (etw_match_any_keyword_ & other_events_keyword_bit) {
     categories_status_[other_events_group_name] = true;
@@ -350,6 +353,8 @@ void TraceEventETWExport::UpdateEnabledCategories() {
   } else {
     categories_status_[disabled_other_events_group_name] = false;
   }
+
+  return true;
 }
 
 bool TraceEventETWExport::IsCategoryEnabled(const char* category_name) const {

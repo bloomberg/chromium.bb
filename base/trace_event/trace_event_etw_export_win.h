@@ -32,9 +32,9 @@ class BASE_EXPORT TraceEventETWExport {
   static void EnableETWExport();
   static void DisableETWExport();
 
-  static bool IsETWExportEnabled() {
-    return (GetInstance() && GetInstance()->etw_match_any_keyword_);
-  }
+  // Returns true if ETW is enabled. For now, this is true if the command line
+  // flag is specified.
+  static bool IsETWExportEnabled();
 
   // Exports an event to ETW. This is mainly used in
   // TraceLog::AddTraceEventWithThreadIdAndTimestamp to export internal events.
@@ -64,15 +64,14 @@ class BASE_EXPORT TraceEventETWExport {
   // Returns true if any category in the group is enabled.
   static bool IsCategoryGroupEnabled(const char* category_group_name);
 
-  void Resurrect();
-
  private:
   // Ensure only the provider can construct us.
   friend struct StaticMemorySingletonTraits<TraceEventETWExport>;
   TraceEventETWExport();
 
   // Updates the list of enabled categories by consulting the ETW keyword.
-  void UpdateEnabledCategories();
+  // Returns true if there was a change, false otherwise.
+  bool UpdateEnabledCategories();
 
   // Returns true if the category is enabled.
   bool IsCategoryEnabled(const char* category_name) const;
