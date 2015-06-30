@@ -30,8 +30,7 @@
 #include "core/paint/FieldsetPainter.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
-using std::min;
-using std::max;
+using namespace std;
 
 namespace blink {
 

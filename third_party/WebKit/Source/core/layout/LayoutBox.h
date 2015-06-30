@@ -620,21 +620,18 @@ public:
     virtual LayoutUnit offsetTop() const override;
 
     LayoutPoint flipForWritingModeForChild(const LayoutBox* child, const LayoutPoint&) const;
-    LayoutUnit flipForWritingMode(LayoutUnit position) const WARN_UNUSED_RETURN
-    {
+    LayoutUnit flipForWritingMode(LayoutUnit position) const WARN_UNUSED_RETURN {
         // The offset is in the block direction (y for horizontal writing modes, x for vertical writing modes).
         if (!UNLIKELY(hasFlippedBlocksWritingMode()))
             return position;
         return logicalHeight() - position;
     }
-    LayoutPoint flipForWritingMode(const LayoutPoint& position) const WARN_UNUSED_RETURN
-    {
+    LayoutPoint flipForWritingMode(const LayoutPoint& position) const WARN_UNUSED_RETURN {
         if (!UNLIKELY(hasFlippedBlocksWritingMode()))
             return position;
         return isHorizontalWritingMode() ? LayoutPoint(position.x(), m_frameRect.height() - position.y()) : LayoutPoint(m_frameRect.width() - position.x(), position.y());
     }
-    LayoutSize flipForWritingMode(const LayoutSize& offset) const WARN_UNUSED_RETURN
-    {
+    LayoutSize flipForWritingMode(const LayoutSize& offset) const WARN_UNUSED_RETURN {
         if (!UNLIKELY(hasFlippedBlocksWritingMode()))
             return offset;
         return isHorizontalWritingMode() ? LayoutSize(offset.width(), m_frameRect.height() - offset.height()) : LayoutSize(m_frameRect.width() - offset.width(), offset.height());
@@ -648,8 +645,7 @@ public:
         else
             rect.setX(m_frameRect.width() - rect.maxX());
     }
-    FloatPoint flipForWritingMode(const FloatPoint& position) const WARN_UNUSED_RETURN
-    {
+    FloatPoint flipForWritingMode(const FloatPoint& position) const WARN_UNUSED_RETURN {
         if (!UNLIKELY(hasFlippedBlocksWritingMode()))
             return position;
         return isHorizontalWritingMode() ? FloatPoint(position.x(), m_frameRect.height() - position.y()) : FloatPoint(m_frameRect.width() - position.x(), position.y());
