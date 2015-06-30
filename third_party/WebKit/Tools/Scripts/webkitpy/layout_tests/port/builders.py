@@ -72,6 +72,7 @@ _deps_builders = {
     "mac-mountainlion": "WebKit Mac10.6 (deps)",
     "mac-mavericks": "WebKit Mac10.6 (deps)",
     "mac-retina": "WebKit Mac10.6 (deps)",
+    "mac-yosemite": "WebKit Mac10.6 (deps)",
 }
 
 
