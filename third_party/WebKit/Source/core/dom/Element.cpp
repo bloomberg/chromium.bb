@@ -1819,13 +1819,13 @@ CustomElementDefinition* Element::customElementDefinition() const
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(ScriptState* scriptState, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(const ScriptState* scriptState, ExceptionState& exceptionState)
 {
     OriginsUsingFeatures::count(scriptState, document(), OriginsUsingFeatures::Feature::ElementCreateShadowRoot);
     return createShadowRoot(exceptionState);
 }
 
-PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(ScriptState* scriptState, ShadowRootInit& shadowRootInitDict, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(const ScriptState* scriptState, const ShadowRootInit& shadowRootInitDict, ExceptionState& exceptionState)
 {
     ASSERT(RuntimeEnabledFeatures::createShadowRootWithParameterEnabled());
     UseCounter::count(document(), UseCounter::ElementCreateShadowRootWithParameter);
