@@ -10,6 +10,9 @@ if not env.Bit('bitcode'):
 # TODO(mseaborn): Add support for x86-64 relocation types.
 if env.Bit('build_x86_64'):
   Return()
+# TODO(sbc): Add support for mips relocation types.
+if env.Bit('build_mips32'):
+  Return()
 
 env.AddBiasForPNaCl()
 env.ComponentLibrary('pnacl_dynloader', ['dynloader.c'])

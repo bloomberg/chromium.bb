@@ -16,6 +16,9 @@ if env['TOOLCHAIN_FEATURE_VERSION'] < 6:
 # TODO(mseaborn): Fix this and enable the test for x86-64.
 if env.Bit('build_x86_64'):
   Return()
+# TODO(sbc): Enable this test for mips.
+if env.Bit('build_mips32'):
+  Return()
 # The sandboxed translator does not support translating PSOs yet.
 if env.Bit('use_sandboxed_translator'):
   Return()
