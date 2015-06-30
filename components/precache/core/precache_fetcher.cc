@@ -14,10 +14,14 @@
 #include "base/containers/hash_tables.h"
 #include "components/precache/core/precache_switches.h"
 #include "components/precache/core/proto/precache.pb.h"
+#include "net/base/completion_callback.h"
 #include "net/base/escape.h"
+#include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "net/url_request/url_fetcher_response_writer.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
@@ -94,6 +98,27 @@ bool ParseProtoFromFetchResponse(const URLFetcher& source,
   return true;
 }
 
+// URLFetcherResponseWriter that ignores the response body, in order to avoid
+// the unnecessary memory usage. Use it rather than the default if you don't
+// care about parsing the response body. We use it below as a means to populate
+// the cache with requested resource URLs.
+class URLFetcherNullWriter : public net::URLFetcherResponseWriter {
+ public:
+  int Initialize(const net::CompletionCallback& callback) override {
+    return net::OK;
+  }
+
+  int Write(net::IOBuffer* buffer,
+            int num_bytes,
+            const net::CompletionCallback& callback) override {
+    return num_bytes;
+  }
+
+  int Finish(const net::CompletionCallback& callback) override {
+    return net::OK;
+  }
+};
+
 }  // namespace
 
 // Class that fetches a URL, and runs the specified callback when the fetch is
@@ -105,8 +130,10 @@ class PrecacheFetcher::Fetcher : public net::URLFetcherDelegate {
  public:
   // Construct a new Fetcher. This will create and start a new URLFetcher for
   // the specified URL using the specified request context.
-  Fetcher(net::URLRequestContextGetter* request_context, const GURL& url,
-          const base::Callback<void(const URLFetcher&)>& callback);
+  Fetcher(net::URLRequestContextGetter* request_context,
+          const GURL& url,
+          const base::Callback<void(const URLFetcher&)>& callback,
+          bool ignore_response_body);
   ~Fetcher() override {}
   void OnURLFetchComplete(const URLFetcher* source) override;
 
@@ -118,13 +145,19 @@ class PrecacheFetcher::Fetcher : public net::URLFetcherDelegate {
 };
 
 PrecacheFetcher::Fetcher::Fetcher(
-    net::URLRequestContextGetter* request_context, const GURL& url,
-    const base::Callback<void(const URLFetcher&)>& callback)
+    net::URLRequestContextGetter* request_context,
+    const GURL& url,
+    const base::Callback<void(const URLFetcher&)>& callback,
+    bool ignore_response_body)
     : callback_(callback) {
   url_fetcher_ = URLFetcher::Create(url, URLFetcher::GET, this);
   url_fetcher_->SetRequestContext(request_context);
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                              net::LOAD_DO_NOT_SEND_COOKIES);
+  if (ignore_response_body) {
+    scoped_ptr<URLFetcherNullWriter> null_writer(new URLFetcherNullWriter);
+    url_fetcher_->SaveResponseWithWriter(null_writer.Pass());
+  }
   url_fetcher_->Start();
 }
 
@@ -160,20 +193,20 @@ void PrecacheFetcher::Start() {
   DCHECK(config_url.is_valid());
 
   // Fetch the precache configuration settings from the server.
-  fetcher_.reset(new Fetcher(request_context_.get(),
-                             config_url,
+  fetcher_.reset(new Fetcher(request_context_.get(), config_url,
                              base::Bind(&PrecacheFetcher::OnConfigFetchComplete,
-                                        base::Unretained(this))));
+                                        base::Unretained(this)),
+                             false /* ignore_response_body */));
 }
 
 void PrecacheFetcher::StartNextFetch() {
   if (!resource_urls_to_fetch_.empty()) {
     // Fetch the next resource URL.
     fetcher_.reset(
-        new Fetcher(request_context_.get(),
-                    resource_urls_to_fetch_.front(),
+        new Fetcher(request_context_.get(), resource_urls_to_fetch_.front(),
                     base::Bind(&PrecacheFetcher::OnResourceFetchComplete,
-                               base::Unretained(this))));
+                               base::Unretained(this)),
+                    true /* ignore_response_body */));
 
     resource_urls_to_fetch_.pop_front();
     return;
@@ -182,10 +215,10 @@ void PrecacheFetcher::StartNextFetch() {
   if (!manifest_urls_to_fetch_.empty()) {
     // Fetch the next manifest URL.
     fetcher_.reset(
-        new Fetcher(request_context_.get(),
-                    manifest_urls_to_fetch_.front(),
+        new Fetcher(request_context_.get(), manifest_urls_to_fetch_.front(),
                     base::Bind(&PrecacheFetcher::OnManifestFetchComplete,
-                               base::Unretained(this))));
+                               base::Unretained(this)),
+                    false /* ignore_response_body */));
 
     manifest_urls_to_fetch_.pop_front();
     return;
