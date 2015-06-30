@@ -33,8 +33,6 @@
     <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
         android:key="microphone_permission_list" />
     <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
-        android:key="images_permission_list" />
-    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
         android:key="javascript_permission_list" />
     <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
         android:key="popup_permission_list" />

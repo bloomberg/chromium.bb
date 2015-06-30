@@ -63,8 +63,6 @@ public class WebsitePermissionsFetcher {
         queue.add(new CookieInfoFetcher());
         // Fullscreen are stored per-origin.
         queue.add(new FullscreenInfoFetcher());
-        // Images exceptions are host-based patterns.
-        queue.add(new ImagesExceptionInfoFetcher());
         // Local storage info is per-origin.
         queue.add(new LocalStorageInfoFetcher());
         // Website storage is per-host.
@@ -133,9 +131,6 @@ public class WebsitePermissionsFetcher {
         } else if (filterHelper.showProtectedMediaSites(filter)) {
             // Protected media identifier permission is per-origin and per-embedder.
             queue.add(new ProtectedMediaIdentifierInfoFetcher());
-        } else if (filterHelper.showImagesSites(filter)) {
-            // Images exceptions are host-based patterns.
-            queue.add(new ImagesExceptionInfoFetcher());
         }
         queue.add(new PermissionsAvailableCallbackRunner());
         queue.next();
@@ -273,28 +268,6 @@ public class WebsitePermissionsFetcher {
                 WebsiteAddress address = WebsiteAddress.create(info.getOrigin());
                 if (address == null) continue;
                 createSiteByOriginAndHost(address).setFullscreenInfo(info);
-            }
-            queue.next();
-        }
-    }
-
-    /**
-     * Class for fetching the images information.
-     */
-    private class ImagesExceptionInfoFetcher implements Task {
-        @Override
-        public void run(TaskQueue queue) {
-            for (ContentSettingException exception
-                    : WebsitePreferenceBridge.getContentSettingsExceptions(
-                            ContentSettingsType.CONTENT_SETTINGS_TYPE_IMAGES)) {
-                // The pattern "*" represents the default setting, not a specific website.
-                if (exception.getPattern().equals("*")) continue;
-                WebsiteAddress address = WebsiteAddress.create(exception.getPattern());
-                if (address == null) continue;
-                Set<Website> sites = findOrCreateSitesByHost(address);
-                for (Website site : sites) {
-                    site.setImagesException(exception);
-                }
             }
             queue.next();
         }

@@ -230,8 +230,6 @@ public class WebsitePreferences extends PreferenceFragment
             return website.site().getFullscreenPermission() == ContentSetting.ASK;
         } else if (mFilter.showGeolocationSites(mCategoryFilter)) {
             return website.site().getGeolocationPermission() == ContentSetting.BLOCK;
-        } else if (mFilter.showImagesSites(mCategoryFilter)) {
-            return website.site().getImagesPermission() == ContentSetting.BLOCK;
         } else if (mFilter.showJavaScriptSites(mCategoryFilter)) {
             return website.site().getJavaScriptPermission() == ContentSetting.BLOCK;
         } else if (mFilter.showMicrophoneSites(mCategoryFilter)) {
@@ -396,8 +394,6 @@ public class WebsitePreferences extends PreferenceFragment
                 PrefServiceBridge.getInstance().setCameraEnabled((boolean) newValue);
             } else if (mFilter.showFullscreenSites(mCategoryFilter)) {
                 PrefServiceBridge.getInstance().setFullscreenAllowed((boolean) newValue);
-            } else if (mFilter.showImagesSites(mCategoryFilter)) {
-                PrefServiceBridge.getInstance().setImagesEnabled((boolean) newValue);
             } else if (mFilter.showJavaScriptSites(mCategoryFilter)) {
                 PrefServiceBridge.getInstance().setJavaScriptEnabled((boolean) newValue);
             } else if (mFilter.showMicrophoneSites(mCategoryFilter)) {
@@ -412,8 +408,7 @@ public class WebsitePreferences extends PreferenceFragment
             }
 
             // Categories that support adding exceptions also manage the 'Add site' preference.
-            if (mFilter.showImagesSites(mCategoryFilter)
-                    || mFilter.showJavaScriptSites(mCategoryFilter)) {
+            if (mFilter.showJavaScriptSites(mCategoryFilter)) {
                 if ((boolean) newValue) {
                     Preference addException = getPreferenceScreen().findPreference(
                             ADD_EXCEPTION_KEY);
@@ -442,8 +437,6 @@ public class WebsitePreferences extends PreferenceFragment
         int resource = 0;
         if (mFilter.showJavaScriptSites(mCategoryFilter)) {
             resource = R.string.website_settings_add_site_description_javascript;
-        } else if (mFilter.showImagesSites(mCategoryFilter)) {
-            resource = R.string.website_settings_add_site_description_images;
         }
         assert resource > 0;
         return getResources().getString(resource);
@@ -496,7 +489,6 @@ public class WebsitePreferences extends PreferenceFragment
         if (mFilter.showGeolocationSites(mCategoryFilter)) {
             return !prefs.isAllowLocationUserModifiable();
         }
-        if (mFilter.showImagesSites(mCategoryFilter)) return prefs.imagesManaged();
         if (mFilter.showJavaScriptSites(mCategoryFilter)) return prefs.javaScriptManaged();
         if (mFilter.showMicrophoneSites(mCategoryFilter)) return !prefs.isMicUserModifiable();
         if (mFilter.showPopupSites(mCategoryFilter)) return prefs.isPopupsManaged();
@@ -533,9 +525,7 @@ public class WebsitePreferences extends PreferenceFragment
         configureGlobalToggles();
 
         if ((mFilter.showJavaScriptSites(mCategoryFilter)
-                && !PrefServiceBridge.getInstance().javaScriptEnabled())
-                || (mFilter.showImagesSites(mCategoryFilter)
-                        && !PrefServiceBridge.getInstance().imagesEnabled())) {
+                && !PrefServiceBridge.getInstance().javaScriptEnabled())) {
             getPreferenceScreen().addPreference(
                     new AddExceptionPreference(getActivity(), ADD_EXCEPTION_KEY,
                             getAddExceptionDialogMessage(), this));
@@ -639,9 +629,6 @@ public class WebsitePreferences extends PreferenceFragment
                 } else if (mFilter.showFullscreenSites(mCategoryFilter)) {
                     globalToggle.setChecked(
                             PrefServiceBridge.getInstance().isFullscreenAllowed());
-                } else if (mFilter.showImagesSites(mCategoryFilter)) {
-                    globalToggle.setChecked(
-                            PrefServiceBridge.getInstance().imagesEnabled());
                 } else if (mFilter.showJavaScriptSites(mCategoryFilter)) {
                     globalToggle.setChecked(PrefServiceBridge.getInstance().javaScriptEnabled());
                 } else if (mFilter.showMicrophoneSites(mCategoryFilter)) {

@@ -162,25 +162,6 @@ public class ContentPreferencesTest extends ChromeShellTestBase {
         });
     }
 
-    private void setEnableImages(final boolean enabled) {
-        final Preferences preferenceActivity =
-                startContentSettingsCategory(ContentPreferences.IMAGES_KEY);
-
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                final WebsitePreferences websitePreferences =
-                        (WebsitePreferences) preferenceActivity.getFragmentForTest();
-                ChromeSwitchPreference images = (ChromeSwitchPreference)
-                        websitePreferences.findPreference(WebsitePreferences.READ_WRITE_TOGGLE_KEY);
-                websitePreferences.onPreferenceChange(images, enabled);
-                assertEquals("Images should be " + (enabled ? "allowed" : "blocked"), enabled,
-                        PrefServiceBridge.getInstance().imagesEnabled());
-            }
-        });
-        preferenceActivity.finish();
-    }
-
     private void setEnablePopups(final boolean enabled) {
         final Preferences preferenceActivity =
                 startContentSettingsCategory(ContentPreferences.POPUPS_KEY);
@@ -299,34 +280,6 @@ public class ContentPreferencesTest extends ChromeShellTestBase {
         // Load the page again and ensure the cookie remains unset.
         loadUrl(url);
         assertEquals("\"\"", runJavaScriptCodeInCurrentTab("getCookie()"));
-    }
-
-    /**
-     * Sets Images to be disabled and make sure it is set correctly.
-     * @throws Exception
-     */
-    @SmallTest
-    @Feature({"Preferences"})
-    public void testImagesBlocked() throws Exception {
-        setEnableImages(false);
-
-        // Test that images don't load.
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/images.html"));
-        assertEquals("0", runJavaScriptCodeInCurrentTab("getImageHeight()"));
-    }
-
-    /**
-     * Sets Images to be Enabled to be true and make sure it is set correctly.
-     * @throws Exception
-     */
-    @SmallTest
-    @Feature({"Preferences"})
-    public void testImagesNotBlocked() throws Exception {
-        setEnableImages(true);
-
-        // Test that images load.
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/images.html"));
-        assertEquals("5", runJavaScriptCodeInCurrentTab("getImageHeight()"));
     }
 
     /**

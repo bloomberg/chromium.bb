@@ -472,9 +472,6 @@ Usage statistics include information such as preferences, button clicks, and mem
       <message name="IDS_ALLOW_THIRD_PARTY_COOKIES_SUMMARY" desc="Summary text for Allow Third Party Cookies preference">
         Third-party websites can save and read cookie data
       </message>
-      <message name="IDS_IMAGES_PERMISSION_TITLE" desc="Title of the permission to show images [CHAR-LIMIT=32]">
-        Images
-      </message>
       <message name="IDS_JAVASCRIPT_PERMISSION_TITLE" desc="Title of the permission to run javascript [CHAR-LIMIT=32]">
         JavaScript
       </message>
@@ -501,9 +498,6 @@ Usage statistics include information such as preferences, button clicks, and mem
       </message>
       <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_DESCRIPTION_JAVASCRIPT" desc="The description for the allow Javascript for website dialog.">
         Allow JavaScript on websites you specify while blocking it for the rest of the web
-      </message>
-      <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_DESCRIPTION_IMAGES" desc="The description for the allow Images on website dialog.">
-        Allow images on websites you specify while blocking them for the rest of the web
       </message>
       <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_SITE_URL" desc="The label for the input field where the user can type a website URL.">
         Site URL
@@ -1180,7 +1174,7 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_INFOBAR_UPDATE_PERMISSIONS_BUTTON_TEXT" desc="Button text shown when Chrome does not have the necessary permission required to complete the requested tasks (e.g. a website has request location information, but Chrome is missing that Android permission).">
         Update permissions
       </message>
-      
+
       <!-- Runtime permission geolocation disclosure strings -->
       <message name="IDS_OMNIBOX_GEOLOCATION_DISCLOSURE" desc="Text shown when a user focuses the Chrome omnibox to inform them that their location will be shared with the search provider to get better local search results.">
         <ph name="SEARCH_ENGINE_URL">%1$s<ex>www.google.com</ex></ph> uses your location to show local search results

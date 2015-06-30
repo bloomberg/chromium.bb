@@ -28,7 +28,6 @@ public class ContentPreferences extends PreferenceFragment
     static final String CAMERA_KEY = "camera";
     static final String COOKIES_KEY = "cookies";
     static final String FULLSCREEN_KEY = "fullscreen";
-    static final String IMAGES_KEY = "images";
     static final String LOCATION_KEY = "device_location";
     static final String MICROPHONE_KEY = "microphone";
     static final String JAVASCRIPT_KEY = "javascript";
@@ -63,8 +62,6 @@ public class ContentPreferences extends PreferenceFragment
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION;
         } else if (MICROPHONE_KEY.equals(key)) {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC;
-        } else if (IMAGES_KEY.equals(key)) {
-            return ContentSettingsType.CONTENT_SETTINGS_TYPE_IMAGES;
         } else if (JAVASCRIPT_KEY.equals(key)) {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT;
         } else if (PUSH_NOTIFICATIONS_KEY.equals(key)) {
@@ -95,7 +92,6 @@ public class ContentPreferences extends PreferenceFragment
         websitePrefs.add(COOKIES_KEY);
         websitePrefs.add(CAMERA_KEY);
         websitePrefs.add(FULLSCREEN_KEY);
-        websitePrefs.add(IMAGES_KEY);
         websitePrefs.add(JAVASCRIPT_KEY);
         websitePrefs.add(MICROPHONE_KEY);
         websitePrefs.add(PUSH_NOTIFICATIONS_KEY);
@@ -111,8 +107,6 @@ public class ContentPreferences extends PreferenceFragment
                 checked = PrefServiceBridge.getInstance().isCameraEnabled();
             } else if (JAVASCRIPT_KEY.equals(prefName)) {
                 checked = PrefServiceBridge.getInstance().javaScriptEnabled();
-            } else if (IMAGES_KEY.equals(prefName)) {
-                checked = PrefServiceBridge.getInstance().imagesEnabled();
             } else if (MICROPHONE_KEY.equals(prefName)) {
                 checked = PrefServiceBridge.getInstance().isMicEnabled();
             } else if (PROTECTED_CONTENT_KEY.equals(prefName)) {

@@ -26,10 +26,6 @@
     <Preference
         android:fragment="org.chromium.chrome.browser.preferences.website.WebsitePreferences"
         android:key="microphone" />
-    <!-- Images -->
-    <Preference
-        android:fragment="org.chromium.chrome.browser.preferences.website.WebsitePreferences"
-        android:key="images" />
     <!-- JavaScript -->
     <Preference
         android:fragment="org.chromium.chrome.browser.preferences.website.WebsitePreferences"

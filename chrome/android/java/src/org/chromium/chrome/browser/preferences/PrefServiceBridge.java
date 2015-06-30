@@ -754,27 +754,6 @@ public final class PrefServiceBridge {
     }
 
     /**
-     * @return Whether the images permission is enabled.
-     */
-    public boolean imagesEnabled() {
-        return isContentSettingEnabled(ContentSettingsType.CONTENT_SETTINGS_TYPE_IMAGES);
-    }
-
-    /**
-     * @return whether Images is managed by policy
-     */
-    public boolean imagesManaged() {
-        return isContentSettingManaged(ContentSettingsType.CONTENT_SETTINGS_TYPE_IMAGES);
-    }
-
-    /**
-     * Sets whether webpages are allowed to load images.
-     */
-    public void setImagesEnabled(boolean enabled) {
-        setContentSettingEnabled(ContentSettingsType.CONTENT_SETTINGS_TYPE_IMAGES, enabled);
-    }
-
-    /**
      * @return Whether the camera permission is enabled.
      */
     public boolean isCameraEnabled() {

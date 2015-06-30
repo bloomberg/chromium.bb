@@ -31,7 +31,6 @@ public class Website implements Serializable {
     private GeolocationInfo mGeolocationInfo;
     private MicrophoneInfo mMicrophoneInfo;
     private MidiInfo mMidiInfo;
-    private ContentSettingException mImagesException;
     private ContentSettingException mJavaScriptException;
     private ContentSettingException mPopupException;
     private ProtectedMediaIdentifierInfo mProtectedMediaIdentifierInfo;
@@ -162,29 +161,6 @@ public class Website implements Serializable {
         if (mMidiInfo != null) {
             mMidiInfo.setContentSetting(value);
         }
-    }
-
-    /**
-     * Returns what permission governs Images access.
-     */
-    public ContentSetting getImagesPermission() {
-        return mImagesException != null ? mImagesException.getContentSetting() : null;
-    }
-
-    /**
-     * Configure Images permission access setting for this site.
-     */
-    public void setImagesPermission(ContentSetting value) {
-        if (mImagesException != null) {
-            mImagesException.setContentSetting(value);
-        }
-    }
-
-    /**
-     * Sets the Images exception info for this Website.
-     */
-    public void setImagesException(ContentSettingException exception) {
-        mImagesException = exception;
     }
 
     /**

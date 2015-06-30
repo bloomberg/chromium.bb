@@ -23,8 +23,6 @@ public class ContentSettingsResources {
                 return R.drawable.permission_fullscreen;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
                 return R.drawable.permission_location;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_IMAGES:
-                return R.drawable.permission_images;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT:
                 return R.drawable.permission_javascript;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
@@ -56,8 +54,6 @@ public class ContentSettingsResources {
                 return R.string.website_settings_fullscreen;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
                 return R.string.website_settings_device_location;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_IMAGES:
-                return R.string.images_permission_title;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT:
                 return R.string.javascript_permission_title;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
@@ -87,8 +83,6 @@ public class ContentSettingsResources {
                 return R.string.fullscreen_permission_title;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
                 return R.string.geolocation_permission_title;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_IMAGES:
-                return R.string.images_permission_title;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT:
                 return R.string.javascript_permission_title;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
@@ -115,7 +109,6 @@ public class ContentSettingsResources {
         switch (contentType) {
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES:
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_FULLSCREEN:
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_IMAGES:
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT:
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS:
                 return ContentSetting.ALLOW;
@@ -141,7 +134,6 @@ public class ContentSettingsResources {
                 return ContentSetting.ASK;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES:
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION:
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_IMAGES:
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT:
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
@@ -207,7 +199,6 @@ public class ContentSettingsResources {
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
                 return R.string.website_settings_category_ask_before_accessing;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_IMAGES:
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT:
                 return R.string.website_settings_category_allowed_recommended;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS:

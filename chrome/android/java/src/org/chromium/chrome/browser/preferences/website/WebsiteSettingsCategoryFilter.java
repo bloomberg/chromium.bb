@@ -14,7 +14,6 @@ public class WebsiteSettingsCategoryFilter {
     private static final String FILTER_ALL_SITES = "all_sites";
     private static final String FILTER_CAMERA = "camera";
     private static final String FILTER_COOKIES = "cookies";
-    private static final String FILTER_IMAGES = "images";
     private static final String FILTER_JAVASCRIPT = "javascript";
     private static final String FILTER_DEVICE_LOCATION = "device_location";
     private static final String FILTER_FULLSCREEN = "fullscreen";
@@ -39,8 +38,6 @@ public class WebsiteSettingsCategoryFilter {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_FULLSCREEN;
         } else if (showGeolocationSites(key)) {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION;
-        } else if (showImagesSites(key)) {
-            return ContentSettingsType.CONTENT_SETTINGS_TYPE_IMAGES;
         } else if (showJavaScriptSites(key)) {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT;
         } else if (showMicrophoneSites(key)) {
@@ -93,14 +90,6 @@ public class WebsiteSettingsCategoryFilter {
      */
     public boolean showGeolocationSites(String filterValue) {
         return filterValue.equals(FILTER_DEVICE_LOCATION);
-    }
-
-    /**
-     * @param filterValue A category value.
-     * @return Whether the category passed is the images category.
-     */
-    public boolean showImagesSites(String filterValue) {
-        return filterValue.equals(FILTER_IMAGES);
     }
 
     /**
