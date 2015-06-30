@@ -886,9 +886,6 @@ crbug.com/439457 [ Release Android ] css3/style-zoomed-image.html [ Crash Pass ]
 crbug.com/439457 [ Release Android ] editing/editability/empty-document-justify-right.html [ Crash Pass ]
 crbug.com/439457 [ Release Android ] editing/input/set-value-on-input-and-type-input.html [ Crash Pass ]
 
-# https://codereview.chromium.org/1213203003
-crbug.com/502531 fast/borders/outline-alpha-block.html [ NeedsRebaseline ]
-
 crbug.com/237245 [ Debug Win7 ] editing/selection/programmatic-selection-on-mac-is-directionless.html [ Pass Timeout ]
 
 crbug.com/453092 editing/inserting/edited-whitespace-1.html [ ImageOnlyFailure Pass ]
