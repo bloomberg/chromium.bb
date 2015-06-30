@@ -62,7 +62,7 @@
             android:orientation="vertical"
             android:clipToPadding="false" >
 
-            <EditText
+            <org.chromium.chrome.browser.widget.EmptyAlertEditText
                 android:id="@+id/folder_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -72,7 +72,8 @@
                 android:hint="@string/title"
                 android:imeOptions="flagNoExtractUi"
                 android:inputType="textCapSentences|textAutoCorrect"
-                android:textSize="24sp" />
+                android:textSize="24sp"
+                chrome:alertMessage="@string/bookmark_missing_title"  />
 
             <TextView
                 android:layout_width="wrap_content"

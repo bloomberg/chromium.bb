@@ -43,9 +43,16 @@ public class EmptyAlertEditText extends AppCompatEditText {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (s.length() != 0 && getError() != null) setError(null);
+                if (s.toString().trim().length() != 0 && getError() != null) setError(null);
             }
         });
+    }
+
+    /**
+     * @return Trimmed text for validation.
+     */
+    public String getTrimmedText() {
+        return getText().toString().trim();
     }
 
     /**
@@ -60,10 +67,10 @@ public class EmptyAlertEditText extends AppCompatEditText {
      * @return Whether the content is empty.
      */
     public boolean validate() {
-        if (getText().length() == 0) {
+        if (getTrimmedText().length() == 0) {
             setError(mAlertMessage);
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 }

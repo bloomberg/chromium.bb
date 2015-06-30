@@ -7,10 +7,7 @@ package org.chromium.chrome.browser.enhancedbookmarks;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -18,6 +15,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel;
+import org.chromium.chrome.browser.widget.EmptyAlertEditText;
 import org.chromium.components.bookmarks.BookmarkId;
 
 import java.util.ArrayList;
@@ -40,7 +38,7 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
     private BookmarkId mParentId;
     private EnhancedBookmarksModel mModel;
     private TextView mParentTextView;
-    private EditText mFolderTitle;
+    private EmptyAlertEditText mFolderTitle;
     private ImageButton mBackButton;
     private ImageButton mSaveButton;
 
@@ -132,8 +130,7 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
         TextView dialogTitle = (TextView) findViewById(R.id.dialog_title);
 
         mParentTextView = (TextView) findViewById(R.id.parent_folder);
-        mFolderTitle = (EditText) findViewById(R.id.folder_title);
-        clearErrorWhenNonEmpty(mFolderTitle);
+        mFolderTitle = (EmptyAlertEditText) findViewById(R.id.folder_title);
         mDeleteButton = (ImageButton) findViewById(R.id.delete);
         mBackButton = (ImageButton) findViewById(R.id.back);
         mSaveButton = (ImageButton) findViewById(R.id.save);
@@ -167,14 +164,12 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
                 EnhancedBookmarkFolderSelectActivity.startFolderSelectActivity(this, mFolderId);
             }
         } else if (v == mSaveButton) {
-            String folderTitle = mFolderTitle.getText().toString();
-
-            if (folderTitle.isEmpty()) {
-                mFolderTitle.setError(getResources().getText(R.string.bookmark_missing_title));
+            if (!mFolderTitle.validate()) {
                 mFolderTitle.requestFocus();
                 return;
             }
 
+            String folderTitle = mFolderTitle.getTrimmedText();
             if (mIsAddMode) {
                 BookmarkId newFolder = mModel.addFolder(mParentId, 0, folderTitle);
                 Intent intent = new Intent();
@@ -183,6 +178,7 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
             } else {
                 mModel.setBookmarkTitle(mFolderId, folderTitle);
             }
+
             finish();
         } else if (v == mBackButton) {
             finish();
@@ -215,28 +211,5 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
     private void updateParent(BookmarkId newParent) {
         mParentId = newParent;
         mParentTextView.setText(mModel.getBookmarkTitle(mParentId));
-    }
-
-    /**
-     * Adds a listener to |textView| that will clear the TextView's error once the user types
-     * something.
-     */
-    private static void clearErrorWhenNonEmpty(final TextView textView) {
-        textView.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void afterTextChanged(Editable s) {
-            }
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.length() != 0) {
-                    textView.setError(null);
-                }
-            }
-        });
     }
 }

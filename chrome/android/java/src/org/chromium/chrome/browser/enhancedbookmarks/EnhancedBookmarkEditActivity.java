@@ -128,13 +128,13 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
 
     @Override
     public void onBackPressed() {
-        String newTitle = mTitleEditText.getText().toString().trim();
-        String newUrl = mUrlEditText.getText().toString().trim();
+        String newTitle = mTitleEditText.getTrimmedText();
+        String newUrl = mUrlEditText.getTrimmedText();
         newUrl = UrlUtilities.fixupUrl(newUrl);
         if (newUrl == null) newUrl = "";
         mUrlEditText.setText(newUrl);
 
-        if (mTitleEditText.validate() || mUrlEditText.validate()) return;
+        if (!mTitleEditText.validate() || !mUrlEditText.validate()) return;
 
         mEnhancedBookmarksModel.setBookmarkTitle(mBookmarkId, newTitle);
         mEnhancedBookmarksModel.setBookmarkUrl(mBookmarkId, newUrl);

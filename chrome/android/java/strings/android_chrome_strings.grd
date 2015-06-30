@@ -1870,7 +1870,7 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_BOOKMARK_FOLDER" desc="Label specifying what folder a bookmark is in. [CHAR-LIMIT=32]">
         Folder
       </message>
-      <message name="IDS_BOOKMARK_MISSING_TITLE" desc="Error message appearing when a user tries to create a bookmark without a title. [CHAR-LIMIT=32]">
+      <message name="IDS_BOOKMARK_MISSING_TITLE" desc="Error message appearing when a user tries to create/edit a bookmark or a folder without a title. [CHAR-LIMIT=32]">
         Title required
       </message>
       <message name="IDS_BOOKMARK_MISSING_URL" desc="Error message appearing when a user tries to create a bookmark without a url. [CHAR-LIMIT=32]">
