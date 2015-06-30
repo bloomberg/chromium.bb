@@ -530,6 +530,7 @@
             '../content/content_shell_and_tests.gyp:content_unittests_run',
             '../courgette/courgette.gyp:courgette_unittests_run',
             '../crypto/crypto.gyp:crypto_unittests_run',
+            '../google_apis/gcm/gcm.gyp:gcm_unit_tests_run',
             '../gpu/gpu.gyp:gpu_unittests_run',
             '../ipc/ipc.gyp:ipc_tests_run',
             '../media/cast/cast.gyp:cast_unittests_run',

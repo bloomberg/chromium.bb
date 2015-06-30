@@ -182,4 +182,23 @@
       ]
     },
   ],
+  'conditions': [
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'gcm_unit_tests_run',
+          'type': 'none',
+          'dependencies': [
+            'gcm_unit_tests',
+          ],
+          'includes': [
+            '../../build/isolate.gypi',
+          ],
+          'sources': [
+            'gcm_unit_tests.isolate',
+          ],
+        },
+      ],
+    }],
+  ],
 }
