@@ -3306,7 +3306,6 @@ interface Navigator
     getter vendorSub
     getter webkitPersistentStorage
     getter webkitTemporaryStorage
-    method connect
     method constructor
     method getBattery
     method getGamepads

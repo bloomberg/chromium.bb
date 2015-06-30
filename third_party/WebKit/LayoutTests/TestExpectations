@@ -1703,11 +1703,4 @@ crbug.com/505422 [ Linux Mac ] http/tests/serviceworker/chromium/stashed-ports-a
 crbug.com/505429 [ Release Mavericks Retina ] http/tests/websocket/close.html [ Pass Timeout ]
 crbug.com/505429 [ Mavericks Retina Win ] http/tests/websocket/close-code-and-reason.html [ Pass Failure ]
 
-crbug.com/502308 [ Release ] webexposed/global-interface-listing.html [ Failure ]
-crbug.com/502308 [ Release ] webexposed/global-interface-listing-shared-worker.html [ Failure ]
-crbug.com/502308 [ Release ] webexposed/global-interface-listing-dedicated-worker.html [ Failure ]
-crbug.com/502308 [ Debug ] webexposed/global-interface-listing.html [ Failure Slow ]
-crbug.com/502308 [ Debug ] webexposed/global-interface-listing-shared-worker.html [ Failure Slow ]
-crbug.com/502308 [ Debug ] webexposed/global-interface-listing-dedicated-worker.html [ Failure Slow ]
-
 crbug.com/505795 [ Win Mac ] virtual/antialiasedtext/fast/text/emphasis-ellipsis-complextext.html [ Pass ImageOnlyFailure ]
