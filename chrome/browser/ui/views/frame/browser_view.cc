@@ -1175,7 +1175,7 @@ void BrowserView::FocusAppMenu() {
 }
 
 void BrowserView::RotatePaneFocus(bool forwards) {
-  GetWidget()->GetFocusManager()->RotatePaneFocus(
+  GetFocusManager()->RotatePaneFocus(
       forwards ?
           views::FocusManager::kForward : views::FocusManager::kBackward,
       views::FocusManager::kWrap);
@@ -1468,6 +1468,12 @@ void BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 // manager to do that.
 void BrowserView::CutCopyPaste(int command_id) {
   // If a WebContents is focused, call its member method.
+  //
+  // We could make WebContents register accelerators and then just use the
+  // plumbing for accelerators below to dispatch these, but it's not clear
+  // whether that would still allow keypresses of ctrl-X/C/V to be sent as
+  // key events (and not accelerators) to the WebContents so it can give the web
+  // page a chance to override them.
   WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
   if (contents) {
     void (WebContents::*method)();
@@ -1486,15 +1492,18 @@ void BrowserView::CutCopyPaste(int command_id) {
       return;
   }
 
-  // Execute the command on the focused view, if possible, by calling
-  // AcceleratorPressed().  Textfields override this to translate and execute
-  // the provided accelerator.
-  views::View* focused = GetFocusManager()->GetFocusedView();
-  if (focused && focused->CanHandleAccelerators()) {
-    ui::Accelerator accelerator;
-    GetAccelerator(command_id, &accelerator);
-    focused->AcceleratorPressed(accelerator);
-  }
+  // Any Views which want to handle the clipboard commands in the Chrome menu
+  // should:
+  //   (a) Register ctrl-X/C/V as accelerators
+  //   (b) Implement CanHandleAccelerators() to not return true unless they're
+  //       focused, as the FocusManager will try all registered accelerator
+  //       handlers, not just the focused one.
+  // Currently, Textfield (which covers the omnibox and find bar, and likely any
+  // other native UI in the future that wants to deal with clipboard commands)
+  // does the above.
+  ui::Accelerator accelerator;
+  GetAccelerator(command_id, &accelerator);
+  GetFocusManager()->ProcessAccelerator(accelerator);
 }
 
 WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
