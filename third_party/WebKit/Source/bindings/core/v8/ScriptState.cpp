@@ -123,7 +123,7 @@ ScriptState* ScriptState::forMainWorld(LocalFrame* frame)
 {
     v8::Isolate* isolate = toIsolate(frame);
     v8::HandleScope handleScope(isolate);
-    return ScriptState::from(toV8Context(frame, DOMWrapperWorld::mainWorld()));
+    return ScriptState::from(toV8ContextEvenIfDetached(frame, DOMWrapperWorld::mainWorld()));
 }
 
 }

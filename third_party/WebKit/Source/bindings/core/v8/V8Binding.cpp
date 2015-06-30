@@ -772,13 +772,18 @@ v8::Local<v8::Context> toV8Context(ExecutionContext* context, DOMWrapperWorld& w
 
 v8::Local<v8::Context> toV8Context(Frame* frame, DOMWrapperWorld& world)
 {
-    if (!frame)
-        return v8::Local<v8::Context>();
-    v8::Local<v8::Context> context = frame->windowProxy(world)->context();
+    v8::Local<v8::Context> context = toV8ContextEvenIfDetached(frame, world);
     if (context.IsEmpty())
         return v8::Local<v8::Context>();
     Frame* attachedFrame = toFrameIfNotDetached(context);
     return frame == attachedFrame ? context : v8::Local<v8::Context>();
+}
+
+v8::Local<v8::Context> toV8ContextEvenIfDetached(Frame* frame, DOMWrapperWorld& world)
+{
+    if (!frame)
+        return v8::Local<v8::Context>();
+    return frame->windowProxy(world)->context();
 }
 
 void crashIfV8IsDead()
