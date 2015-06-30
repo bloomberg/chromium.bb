@@ -182,7 +182,7 @@ bool passesPreflightStatusCheck(const ResourceResponse& response, String& errorD
     //   http://www.w3.org/TR/cors/#cross-origin-request-with-preflight-0
     // https://crbug.com/452394
     if (response.httpStatusCode() < 200 || response.httpStatusCode() >= 300) {
-        errorDescription = "Invalid HTTP status code " + String::number(response.httpStatusCode());
+        errorDescription = "Response for preflight has invalid HTTP status code " + String::number(response.httpStatusCode());
         return false;
     }
 
