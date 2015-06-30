@@ -2771,6 +2771,15 @@ def GetConfig():
 
   _AddPayloadConfigs()
 
+  # Add special builders to help with cbuidlbot development/testing.
+  site_config.Add(
+      'sync-test-cbuildbot',
+      no_hwtest_builder,
+      boards=[],
+      builder_class_name='test_builders.ManifestVersionedSyncBuilder',
+      chroot_replace=True,
+  )
+
   # On release branches, x86-mario is the release master.
   #
   # TODO(dnj): This should go away once the boardless release master is complete

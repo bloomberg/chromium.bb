@@ -203,8 +203,9 @@ class Builder(object):
     args += ['--resume', '--timeout', '0', '--notee', '--nocgroups',
              '--buildroot', os.path.abspath(self._run.options.buildroot)]
 
-    if hasattr(self._run.attrs, 'manifest_manager'):
-      # TODO(mtennant): Is this the same as self._run.attrs.release_tag?
+    # Set --version. Note that --version isn't legal without --buildbot.
+    if (self._run.options.buildbot and
+        hasattr(self._run.attrs, 'manifest_manager')):
       ver = self._run.attrs.manifest_manager.current_version
       args += ['--version', ver]
 

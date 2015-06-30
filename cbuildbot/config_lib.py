@@ -64,6 +64,7 @@ CONFIG_TYPE_DUMP_ORDER = (
     'test-ap-group',
     constants.BRANCH_UTIL_CONFIG,
     constants.PAYLOADS_TYPE,
+    'cbuildbot',
 )
 
 

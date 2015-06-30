@@ -21234,6 +21234,12 @@
             "-chrome_internal"
         ]
     },
+    "sync-test-cbuildbot": {
+        "boards": [],
+        "builder_class_name": "test_builders.ManifestVersionedSyncBuilder",
+        "hw_tests_override": [],
+        "name": "sync-test-cbuildbot"
+    },
     "test-ap-group": {
         "_template": "test-ap",
         "boards": [
