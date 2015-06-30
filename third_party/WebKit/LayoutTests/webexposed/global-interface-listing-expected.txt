@@ -110,40 +110,6 @@ interface ApplicationCacheErrorEvent
     getter status
     getter url
     method constructor
-interface Array
-    attribute length
-    method concat
-    method constructor
-    method copyWithin
-    method entries
-    method every
-    method fill
-    method filter
-    method find
-    method findIndex
-    method forEach
-    method indexOf
-    method join
-    method keys
-    method lastIndexOf
-    method map
-    method pop
-    method push
-    method reduce
-    method reduceRight
-    method reverse
-    method shift
-    method slice
-    method some
-    method sort
-    method splice
-    method toLocaleString
-    method toString
-    method unshift
-interface ArrayBuffer
-    getter byteLength
-    method constructor
-    method slice
 interface Attr
     getter localName
     getter name
@@ -348,10 +314,6 @@ interface BluetoothGATTService
     getter uuid
     method constructor
     method getCharacteristic
-interface Boolean
-    method constructor
-    method toString
-    method valueOf
 interface CDATASection
     method constructor
 interface CSS
@@ -894,54 +856,6 @@ interface DataView
     method setUint16
     method setUint32
     method setUint8
-interface Date
-    method constructor
-    method getDate
-    method getDay
-    method getFullYear
-    method getHours
-    method getMilliseconds
-    method getMinutes
-    method getMonth
-    method getSeconds
-    method getTime
-    method getTimezoneOffset
-    method getUTCDate
-    method getUTCDay
-    method getUTCFullYear
-    method getUTCHours
-    method getUTCMilliseconds
-    method getUTCMinutes
-    method getUTCMonth
-    method getUTCSeconds
-    method getYear
-    method setDate
-    method setFullYear
-    method setHours
-    method setMilliseconds
-    method setMinutes
-    method setMonth
-    method setSeconds
-    method setTime
-    method setUTCDate
-    method setUTCFullYear
-    method setUTCHours
-    method setUTCMilliseconds
-    method setUTCMinutes
-    method setUTCMonth
-    method setUTCSeconds
-    method setYear
-    method toDateString
-    method toGMTString
-    method toISOString
-    method toJSON
-    method toLocaleDateString
-    method toLocaleString
-    method toLocaleTimeString
-    method toString
-    method toTimeString
-    method toUTCString
-    method valueOf
 interface DefaultSessionStartEvent
     getter session
     method constructor
@@ -1394,20 +1308,12 @@ interface Element
     setter outerHTML
     setter scrollLeft
     setter scrollTop
-interface Error
-    attribute message
-    attribute name
-    method constructor
-    method toString
 interface ErrorEvent
     getter colno
     getter error
     getter filename
     getter lineno
     getter message
-    method constructor
-interface EvalError
-    attribute name
     method constructor
 interface Event
     attribute AT_TARGET
@@ -1523,68 +1429,6 @@ interface FileReader
     setter onloadend
     setter onloadstart
     setter onprogress
-interface Float32Array
-    attribute BYTES_PER_ELEMENT
-    getter buffer
-    getter byteLength
-    getter byteOffset
-    getter length
-    method constructor
-    method copyWithin
-    method entries
-    method every
-    method fill
-    method filter
-    method find
-    method findIndex
-    method forEach
-    method indexOf
-    method join
-    method keys
-    method lastIndexOf
-    method map
-    method reduce
-    method reduceRight
-    method reverse
-    method set
-    method slice
-    method some
-    method sort
-    method subarray
-    method toLocaleString
-    method toString
-    method values
-interface Float64Array
-    attribute BYTES_PER_ELEMENT
-    getter buffer
-    getter byteLength
-    getter byteOffset
-    getter length
-    method constructor
-    method copyWithin
-    method entries
-    method every
-    method fill
-    method filter
-    method find
-    method findIndex
-    method forEach
-    method indexOf
-    method join
-    method keys
-    method lastIndexOf
-    method map
-    method reduce
-    method reduceRight
-    method reverse
-    method set
-    method slice
-    method some
-    method sort
-    method subarray
-    method toLocaleString
-    method toString
-    method values
 interface FocusEvent
     getter relatedTarget
     method constructor
@@ -1619,18 +1463,6 @@ interface FormData
     method keys
     method set
     method values
-interface Function
-    attribute length
-    attribute name
-    getter arguments
-    getter caller
-    method apply
-    method bind
-    method call
-    method constructor
-    method toString
-    setter arguments
-    setter caller
 interface GainNode
     getter gain
     method constructor
@@ -3125,99 +2957,6 @@ interface ImageData
 interface InputDevice
     getter firesTouchEvents
     method constructor
-interface Int16Array
-    attribute BYTES_PER_ELEMENT
-    getter buffer
-    getter byteLength
-    getter byteOffset
-    getter length
-    method constructor
-    method copyWithin
-    method entries
-    method every
-    method fill
-    method filter
-    method find
-    method findIndex
-    method forEach
-    method indexOf
-    method join
-    method keys
-    method lastIndexOf
-    method map
-    method reduce
-    method reduceRight
-    method reverse
-    method set
-    method slice
-    method some
-    method sort
-    method subarray
-    method toLocaleString
-    method toString
-    method values
-interface Int32Array
-    attribute BYTES_PER_ELEMENT
-    getter buffer
-    getter byteLength
-    getter byteOffset
-    getter length
-    method constructor
-    method copyWithin
-    method entries
-    method every
-    method fill
-    method filter
-    method find
-    method findIndex
-    method forEach
-    method indexOf
-    method join
-    method keys
-    method lastIndexOf
-    method map
-    method reduce
-    method reduceRight
-    method reverse
-    method set
-    method slice
-    method some
-    method sort
-    method subarray
-    method toLocaleString
-    method toString
-    method values
-interface Int8Array
-    attribute BYTES_PER_ELEMENT
-    getter buffer
-    getter byteLength
-    getter byteOffset
-    getter length
-    method constructor
-    method copyWithin
-    method entries
-    method every
-    method fill
-    method filter
-    method find
-    method findIndex
-    method forEach
-    method indexOf
-    method join
-    method keys
-    method lastIndexOf
-    method map
-    method reduce
-    method reduceRight
-    method reverse
-    method set
-    method slice
-    method some
-    method sort
-    method subarray
-    method toLocaleString
-    method toString
-    method values
 interface KeyboardEvent
     attribute DOM_KEY_LOCATION_LEFT
     attribute DOM_KEY_LOCATION_NUMPAD
@@ -3295,18 +3034,6 @@ interface MIDIPort
     method constructor
     method open
     setter onstatechange
-interface Map
-    getter size
-    method clear
-    method constructor
-    method delete
-    method entries
-    method forEach
-    method get
-    method has
-    method keys
-    method set
-    method values
 interface MediaController
     getter buffered
     getter currentTime
@@ -3702,28 +3429,6 @@ interface Notification
     setter onclose
     setter onerror
     setter onshow
-interface Number
-    method constructor
-    method toExponential
-    method toFixed
-    method toLocaleString
-    method toPrecision
-    method toString
-    method valueOf
-interface Object
-    getter __proto__
-    method __defineGetter__
-    method __defineSetter__
-    method __lookupGetter__
-    method __lookupSetter__
-    method constructor
-    method hasOwnProperty
-    method isPrototypeOf
-    method propertyIsEnumerable
-    method toLocaleString
-    method toString
-    method valueOf
-    setter __proto__
 interface OfflineAudioCompletionEvent
     getter renderedBuffer
     method constructor
@@ -3918,11 +3623,6 @@ interface ProgressEvent
     getter loaded
     getter total
     method constructor
-interface Promise
-    method catch
-    method chain
-    method constructor
-    method then
 interface PromiseRejectionEvent
     getter promise
     getter reason
@@ -3999,9 +3699,6 @@ interface Range
     method setStartBefore
     method surroundContents
     method toString
-interface RangeError
-    attribute name
-    method constructor
 interface ReadableByteStream
     method cancel
     method constructor
@@ -4010,20 +3707,6 @@ interface ReadableStream
     method cancel
     method constructor
     method getReader
-interface ReferenceError
-    attribute name
-    method constructor
-interface RegExp
-    attribute global
-    attribute ignoreCase
-    attribute lastIndex
-    attribute multiline
-    attribute source
-    method compile
-    method constructor
-    method exec
-    method test
-    method toString
 interface RelatedEvent
     getter relatedTarget
     method constructor
@@ -5386,17 +5069,6 @@ interface ServiceWorkerRegistration
     method unregister
     method update
     setter onupdatefound
-interface Set
-    getter size
-    method add
-    method clear
-    method constructor
-    method delete
-    method entries
-    method forEach
-    method has
-    method keys
-    method values
 interface ShadowRoot
     getter activeElement
     getter delegatesFocus
@@ -5469,50 +5141,6 @@ interface StorageEvent
 interface Stream
     getter type
     method constructor
-interface String
-    attribute length
-    method anchor
-    method big
-    method blink
-    method bold
-    method charAt
-    method charCodeAt
-    method codePointAt
-    method concat
-    method constructor
-    method endsWith
-    method fixed
-    method fontcolor
-    method fontsize
-    method includes
-    method indexOf
-    method italics
-    method lastIndexOf
-    method link
-    method localeCompare
-    method match
-    method normalize
-    method repeat
-    method replace
-    method search
-    method slice
-    method small
-    method split
-    method startsWith
-    method strike
-    method sub
-    method substr
-    method substring
-    method sup
-    method toLocaleLowerCase
-    method toLocaleUpperCase
-    method toLowerCase
-    method toString
-    method toUpperCase
-    method trim
-    method trimLeft
-    method trimRight
-    method valueOf
 interface StyleSheet
     getter disabled
     getter href
@@ -5541,10 +5169,6 @@ interface SubtleCrypto
     method unwrapKey
     method verify
     method wrapKey
-interface Symbol
-    method constructor
-    method toString
-    method valueOf
 interface SyncManager
     method constructor
     method getRegistration
@@ -5555,9 +5179,6 @@ interface SyncRegistration
     getter tag
     method constructor
     method unregister
-interface SyntaxError
-    attribute name
-    method constructor
 interface Text
     getter wholeText
     method constructor
@@ -5708,9 +5329,6 @@ interface TreeWalker
     method previousNode
     method previousSibling
     setter currentNode
-interface TypeError
-    attribute name
-    method constructor
 interface UIEvent
     getter charCode
     getter detail
@@ -5724,9 +5342,6 @@ interface UIEvent
     getter which
     method constructor
     method initUIEvent
-interface URIError
-    attribute name
-    method constructor
 interface URL
     getter hash
     getter host
@@ -5751,130 +5366,6 @@ interface URL
     setter protocol
     setter search
     setter username
-interface Uint16Array
-    attribute BYTES_PER_ELEMENT
-    getter buffer
-    getter byteLength
-    getter byteOffset
-    getter length
-    method constructor
-    method copyWithin
-    method entries
-    method every
-    method fill
-    method filter
-    method find
-    method findIndex
-    method forEach
-    method indexOf
-    method join
-    method keys
-    method lastIndexOf
-    method map
-    method reduce
-    method reduceRight
-    method reverse
-    method set
-    method slice
-    method some
-    method sort
-    method subarray
-    method toLocaleString
-    method toString
-    method values
-interface Uint32Array
-    attribute BYTES_PER_ELEMENT
-    getter buffer
-    getter byteLength
-    getter byteOffset
-    getter length
-    method constructor
-    method copyWithin
-    method entries
-    method every
-    method fill
-    method filter
-    method find
-    method findIndex
-    method forEach
-    method indexOf
-    method join
-    method keys
-    method lastIndexOf
-    method map
-    method reduce
-    method reduceRight
-    method reverse
-    method set
-    method slice
-    method some
-    method sort
-    method subarray
-    method toLocaleString
-    method toString
-    method values
-interface Uint8Array
-    attribute BYTES_PER_ELEMENT
-    getter buffer
-    getter byteLength
-    getter byteOffset
-    getter length
-    method constructor
-    method copyWithin
-    method entries
-    method every
-    method fill
-    method filter
-    method find
-    method findIndex
-    method forEach
-    method indexOf
-    method join
-    method keys
-    method lastIndexOf
-    method map
-    method reduce
-    method reduceRight
-    method reverse
-    method set
-    method slice
-    method some
-    method sort
-    method subarray
-    method toLocaleString
-    method toString
-    method values
-interface Uint8ClampedArray
-    attribute BYTES_PER_ELEMENT
-    getter buffer
-    getter byteLength
-    getter byteOffset
-    getter length
-    method constructor
-    method copyWithin
-    method entries
-    method every
-    method fill
-    method filter
-    method find
-    method findIndex
-    method forEach
-    method indexOf
-    method join
-    method keys
-    method lastIndexOf
-    method map
-    method reduce
-    method reduceRight
-    method reverse
-    method set
-    method slice
-    method some
-    method sort
-    method subarray
-    method toLocaleString
-    method toString
-    method values
 interface VTTCue
     getter align
     getter line
@@ -5962,17 +5453,6 @@ interface WaveShaperNode
     method constructor
     setter curve
     setter oversample
-interface WeakMap
-    method constructor
-    method delete
-    method get
-    method has
-    method set
-interface WeakSet
-    method add
-    method constructor
-    method delete
-    method has
 interface WebGLActiveInfo
     getter name
     getter size

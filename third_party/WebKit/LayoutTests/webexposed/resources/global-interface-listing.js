@@ -24,7 +24,45 @@ if (self.importScripts) {
     }
 }
 
-function isConstructor(propertyName) {
+// List of builtin JS constructors; Blink is not controlling what properties these
+// objects have, so exercising them in a Blink test doesn't make sense.
+var jsBuiltins = new Set([
+    'Array',
+    'ArrayBuffer',
+    'Boolean',
+    'Date',
+    'Error',
+    'EvalError',
+    'Float32Array',
+    'Float64Array',
+    'Function',
+    'Int16Array',
+    'Int32Array',
+    'Int8Array',
+    'Map',
+    'Number',
+    'Object',
+    'Promise',
+    'RangeError',
+    'ReferenceError',
+    'RegExp',
+    'Set',
+    'String',
+    'Symbol',
+    'SyntaxError',
+    'TypeError',
+    'Uint16Array',
+    'Uint32Array',
+    'Uint8Array',
+    'Uint8ClampedArray',
+    'URIError',
+    'WeakMap',
+    'WeakSet',
+]);
+
+function isWebIDLConstructor(propertyName) {
+    if (jsBuiltins.has(propertyName))
+        return false;
     var descriptor = Object.getOwnPropertyDescriptor(this, propertyName);
     if (descriptor.value == undefined || descriptor.value.prototype == undefined)
         return false;
@@ -33,7 +71,7 @@ function isConstructor(propertyName) {
 
 // FIXME: List interfaces with NoInterfaceObject specified in their IDL file.
 debug('[INTERFACES]')
-var interfaceNames = Object.getOwnPropertyNames(this).filter(isConstructor);
+var interfaceNames = Object.getOwnPropertyNames(this).filter(isWebIDLConstructor);
 interfaceNames.sort();
 interfaceNames.forEach(function(interfaceName) {
     debug('interface ' + interfaceName);
