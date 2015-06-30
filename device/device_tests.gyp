@@ -195,5 +195,22 @@
         },
       ],
     }],
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'device_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'device_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'device_unittests.isolate',
+          ]
+        }
+      ]
+    }]
   ],
 }
