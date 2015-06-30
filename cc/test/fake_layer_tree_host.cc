@@ -24,6 +24,7 @@ scoped_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
     FakeLayerTreeHostClient* client,
     TestTaskGraphRunner* task_graph_runner) {
   LayerTreeSettings settings;
+  settings.verify_property_trees = true;
   return Create(client, task_graph_runner, settings);
 }
 
