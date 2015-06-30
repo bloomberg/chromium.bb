@@ -61,6 +61,7 @@
 #include "chrome/browser/gpu/gl_string_manager.h"
 #include "chrome/browser/gpu/three_d_api_observer.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
+#include "chrome/browser/memory/oom_priority_manager.h"
 #include "chrome/browser/metrics/field_trial_synchronizer.h"
 #include "chrome/browser/metrics/metrics_services_manager.h"
 #include "chrome/browser/metrics/thread_watcher.h"
@@ -1100,6 +1101,13 @@ void ChromeBrowserMainParts::PreBrowserStart() {
     chrome_extra_parts_[i]->PreBrowserStart();
 
   three_d_observer_.reset(new ThreeDAPIObserver());
+
+#if defined(OS_CHROMEOS)
+  // Start the out-of-memory priority manager here so that we give the most
+  // amount of time for the other services to start up before we start
+  // adjusting the oom priority.
+  g_browser_process->GetOomPriorityManager()->Start();
+#endif
 }
 
 void ChromeBrowserMainParts::PostBrowserStart() {
@@ -1706,6 +1714,10 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   // Android specific MessageLoop
   NOTREACHED();
 #else
+#if defined(OS_CHROMEOS)
+  // TODO(georgesak): Check if this is really needed and remove if possible.
+  g_browser_process->GetOomPriorityManager()->Stop();
+#endif  // defined(OS_CHROMEOS)
 
   // Start watching for jank during shutdown. It gets disarmed when
   // |shutdown_watcher_| object is destructed.

@@ -5,7 +5,6 @@
 #include "base/command_line.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/memory/oom_priority_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -13,7 +12,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/test/test_utils.h"
@@ -30,7 +28,7 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
   using content::WindowedNotificationObserver;
 
   OomPriorityManager* oom_priority_manager =
-      g_browser_process->platform_part()->oom_priority_manager();
+      g_browser_process->GetOomPriorityManager();
   EXPECT_FALSE(oom_priority_manager->recent_tab_discard());
 
   // Get three tabs open.
@@ -163,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
 // discard upon |MEMORY_PRESSURE_LEVEL_CRITICAL| event.
 IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPressureListener) {
   OomPriorityManager* oom_priority_manager =
-      g_browser_process->platform_part()->oom_priority_manager();
+      g_browser_process->GetOomPriorityManager();
   // Get three tabs open.
   content::WindowedNotificationObserver load1(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,

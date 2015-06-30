@@ -26,7 +26,6 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/memory/oom_memory_details.h"
 #include "chrome/browser/memory/system_memory_stats_recorder.h"
 #include "chrome/browser/ui/browser.h"
@@ -202,10 +201,8 @@ void OomPriorityManager::LogMemory(const std::string& title,
 
 // static
 void OomPriorityManager::PurgeMemoryAndDiscardTabs() {
-  if (g_browser_process &&
-      g_browser_process->platform_part()->oom_priority_manager()) {
-    OomPriorityManager* manager =
-        g_browser_process->platform_part()->oom_priority_manager();
+  if (g_browser_process && g_browser_process->GetOomPriorityManager()) {
+    OomPriorityManager* manager = g_browser_process->GetOomPriorityManager();
     manager->PurgeBrowserMemory();
     manager->DiscardTab();
   }

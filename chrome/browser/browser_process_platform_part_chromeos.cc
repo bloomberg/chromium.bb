@@ -19,7 +19,6 @@
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager_default_delegate.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
-#include "chrome/browser/memory/oom_priority_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
@@ -90,13 +89,6 @@ void BrowserProcessPlatformPart::ShutdownSessionManager() {
 session_manager::SessionManager* BrowserProcessPlatformPart::SessionManager() {
   DCHECK(CalledOnValidThread());
   return session_manager_.get();
-}
-
-memory::OomPriorityManager* BrowserProcessPlatformPart::oom_priority_manager() {
-  DCHECK(CalledOnValidThread());
-  if (!oom_priority_manager_.get())
-    oom_priority_manager_.reset(new memory::OomPriorityManager());
-  return oom_priority_manager_.get();
 }
 
 chromeos::ProfileHelper* BrowserProcessPlatformPart::profile_helper() {

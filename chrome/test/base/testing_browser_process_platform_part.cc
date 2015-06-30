@@ -9,10 +9,3 @@ TestingBrowserProcessPlatformPart::TestingBrowserProcessPlatformPart() {
 
 TestingBrowserProcessPlatformPart::~TestingBrowserProcessPlatformPart() {
 }
-
-#if defined(OS_CHROMEOS)
-memory::OomPriorityManager*
-TestingBrowserProcessPlatformPart::oom_priority_manager() {
-  return NULL;
-}
-#endif

@@ -385,6 +385,10 @@ gcm::GCMDriver* TestingBrowserProcess::gcm_driver() {
   return nullptr;
 }
 
+memory::OomPriorityManager* TestingBrowserProcess::GetOomPriorityManager() {
+  return nullptr;
+}
+
 void TestingBrowserProcess::SetSystemRequestContext(
     net::URLRequestContextGetter* context_getter) {
   system_request_context_ = context_getter;

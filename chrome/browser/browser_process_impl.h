@@ -139,6 +139,7 @@ class BrowserProcessImpl : public BrowserProcess,
 #endif
   network_time::NetworkTimeTracker* network_time_tracker() override;
   gcm::GCMDriver* gcm_driver() override;
+  memory::OomPriorityManager* GetOomPriorityManager() override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -306,6 +307,10 @@ class BrowserProcessImpl : public BrowserProcess,
 
 #if !defined(OS_ANDROID)
   scoped_ptr<ChromeDeviceClient> device_client_;
+#endif
+
+#if defined(OS_CHROMEOS)
+  scoped_ptr<memory::OomPriorityManager> oom_priority_manager_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessImpl);

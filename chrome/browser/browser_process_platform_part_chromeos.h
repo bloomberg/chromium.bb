@@ -28,10 +28,6 @@ class DeviceDisablingManagerDefaultDelegate;
 }
 }
 
-namespace memory {
-class OomPriorityManager;
-}
-
 namespace policy {
 class BrowserPolicyConnector;
 class BrowserPolicyConnectorChromeOS;
@@ -72,10 +68,6 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
   // out-of-box or login.
   virtual session_manager::SessionManager* SessionManager();
 
-  // Returns the out-of-memory priority manager.
-  // Virtual for testing (see TestingBrowserProcessPlatformPart).
-  virtual memory::OomPriorityManager* oom_priority_manager();
-
   // Returns the ProfileHelper instance that is used to identify
   // users and their profiles in Chrome OS multi user session.
   chromeos::ProfileHelper* profile_helper();
@@ -109,8 +101,6 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
 
   bool created_profile_helper_;
   scoped_ptr<chromeos::ProfileHelper> profile_helper_;
-
-  scoped_ptr<memory::OomPriorityManager> oom_priority_manager_;
 
   scoped_ptr<chromeos::system::AutomaticRebootManager>
       automatic_reboot_manager_;

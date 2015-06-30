@@ -72,7 +72,6 @@
 #include "chrome/browser/chromeos/upgrade_detector_chromeos.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/memory/oom_priority_manager.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -629,11 +628,6 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- immediately after ChildProcess::WaitForDebugger().
 
-  // Start the out-of-memory priority manager here so that we give the most
-  // amount of time for the other services to start up before we start
-  // adjusting the oom priority.
-  g_browser_process->platform_part()->oom_priority_manager()->Start();
-
   if (ui::ShouldDefaultToNaturalScroll()) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         chromeos::switches::kNaturalScrollDefault);
@@ -666,8 +660,6 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
 // Shut down services before the browser process, etc are destroyed.
 void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   BootTimesRecorder::Get()->AddLogoutTimeMarker("UIMessageLoopEnded", true);
-
-  g_browser_process->platform_part()->oom_priority_manager()->Stop();
 
   // Destroy the application name notifier for Kiosk mode.
   KioskModeIdleAppNameNotification::Shutdown();

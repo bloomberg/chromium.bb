@@ -15,11 +15,6 @@ class TestingBrowserProcessPlatformPart : public BrowserProcessPlatformPart {
   TestingBrowserProcessPlatformPart();
   ~TestingBrowserProcessPlatformPart() override;
 
-#if defined(OS_CHROMEOS)
-  // Overridden from BrowserProcessPlatformPart:
-  memory::OomPriorityManager* oom_priority_manager() override;
-#endif
-
  private:
   DISALLOW_COPY_AND_ASSIGN(TestingBrowserProcessPlatformPart);
 };
