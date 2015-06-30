@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <algorithm>
-#include <string>
-#include <vector>
-
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
@@ -16,17 +12,10 @@ namespace chromeos {
 namespace disks {
 namespace {
 
-const char kDeviceId[] = "device_id";
-const char kDeviceLabel[] = "device_label";
-const char kVendor[] = "vendor";
-const char kProduct[] = "product";
-
 class FakeDiskMountManager : public MockDiskMountManager {
  public:
   void NotifyUnmountDeviceComplete(MountError error) const {
-    for (const UnmountPathCallback& callback : callbacks_) {
-      callback.Run(error);
-    }
+    callback_.Run(error);
   }
 
   const std::vector<std::string>& unmounting_mount_paths() const {
@@ -38,10 +27,10 @@ class FakeDiskMountManager : public MockDiskMountManager {
                    UnmountOptions options,
                    const UnmountPathCallback& callback) override {
     unmounting_mount_paths_.push_back(mount_path);
-    callbacks_.push_back(callback);
+    callback_ = callback;
   }
   std::vector<std::string> unmounting_mount_paths_;
-  std::vector<UnmountPathCallback> callbacks_;
+  UnmountPathCallback callback_;
 };
 
 class SuspendUnmountManagerTest : public testing::Test {
@@ -57,63 +46,36 @@ class SuspendUnmountManagerTest : public testing::Test {
 };
 
 TEST_F(SuspendUnmountManagerTest, Basic) {
-  const std::string kDummyMountPathUsb = "/dummy/mount/usb";
-  const std::string kDummyMountPathSd = "/dummy/mount/sd";
-  const std::string kDummyMountPathUnknown = "/dummy/mount/unknown";
+  const std::string dummy_mount_path = "/dummy/mount";
   disk_mount_manager_.CreateDiskEntryForMountDevice(
       chromeos::disks::DiskMountManager::MountPointInfo(
-          "/dummy/device/usb", kDummyMountPathUsb, chromeos::MOUNT_TYPE_DEVICE,
+          "/dummy/device", dummy_mount_path, chromeos::MOUNT_TYPE_DEVICE,
           chromeos::disks::MOUNT_CONDITION_NONE),
-      kDeviceId, kDeviceLabel, kVendor, kProduct, chromeos::DEVICE_TYPE_USB,
-      1024 * 1024, false /* is_parent */, false /* has_media */,
-      false /* on_boot_device */, true /* on_removable_device */);
-  disk_mount_manager_.CreateDiskEntryForMountDevice(
-      chromeos::disks::DiskMountManager::MountPointInfo(
-          "/dummy/device/sd", kDummyMountPathSd, chromeos::MOUNT_TYPE_DEVICE,
-          chromeos::disks::MOUNT_CONDITION_NONE),
-      kDeviceId, kDeviceLabel, kVendor, kProduct, chromeos::DEVICE_TYPE_SD,
-      1024 * 1024, false /* is_parent */, false /* has_media */,
-      false /* on_boot_device */, true /* on_removable_device */);
-  disk_mount_manager_.CreateDiskEntryForMountDevice(
-      chromeos::disks::DiskMountManager::MountPointInfo(
-          "/dummy/device/unknown", kDummyMountPathUnknown,
-          chromeos::MOUNT_TYPE_DEVICE, chromeos::disks::MOUNT_CONDITION_NONE),
-      kDeviceId, kDeviceLabel, kVendor, kProduct, chromeos::DEVICE_TYPE_UNKNOWN,
-      1024 * 1024, false /* is_parent */, false /* has_media */,
-      false /* on_boot_device */, true /* on_removable_device */);
+      "device_id", "device_label", "Vendor", "Product",
+      chromeos::DEVICE_TYPE_USB, 1024 * 1024, true, true, true, false);
   disk_mount_manager_.SetupDefaultReplies();
   fake_power_client_.SendSuspendImminent();
 
   EXPECT_EQ(1, fake_power_client_.GetNumPendingSuspendReadinessCallbacks());
-  EXPECT_EQ(2u, disk_mount_manager_.unmounting_mount_paths().size());
-  EXPECT_EQ(1u, std::count(disk_mount_manager_.unmounting_mount_paths().begin(),
-                           disk_mount_manager_.unmounting_mount_paths().end(),
-                           kDummyMountPathUsb));
-  EXPECT_EQ(1u, std::count(disk_mount_manager_.unmounting_mount_paths().begin(),
-                           disk_mount_manager_.unmounting_mount_paths().end(),
-                           kDummyMountPathSd));
-  EXPECT_EQ(0u, std::count(disk_mount_manager_.unmounting_mount_paths().begin(),
-                           disk_mount_manager_.unmounting_mount_paths().end(),
-                           kDummyMountPathUnknown));
+  ASSERT_EQ(1u, disk_mount_manager_.unmounting_mount_paths().size());
+  EXPECT_EQ(dummy_mount_path, disk_mount_manager_.unmounting_mount_paths()[0]);
   disk_mount_manager_.NotifyUnmountDeviceComplete(MOUNT_ERROR_NONE);
   EXPECT_EQ(0, fake_power_client_.GetNumPendingSuspendReadinessCallbacks());
 }
 
 TEST_F(SuspendUnmountManagerTest, CancelAndSuspendAgain) {
-  const std::string kDummyMountPath = "/dummy/mount";
+  const std::string dummy_mount_path = "/dummy/mount";
   disk_mount_manager_.CreateDiskEntryForMountDevice(
       chromeos::disks::DiskMountManager::MountPointInfo(
-          "/dummy/device", kDummyMountPath, chromeos::MOUNT_TYPE_DEVICE,
+          "/dummy/device", dummy_mount_path, chromeos::MOUNT_TYPE_DEVICE,
           chromeos::disks::MOUNT_CONDITION_NONE),
-      kDeviceId, kDeviceLabel, kVendor, kProduct, chromeos::DEVICE_TYPE_USB,
-      1024 * 1024, false /* is_parent */, false /* has_media */,
-      false /* on_boot_device */, true /* on_removable_device */);
+      "device_id", "device_label", "Vendor", "Product",
+      chromeos::DEVICE_TYPE_USB, 1024 * 1024, true, true, true, false);
   disk_mount_manager_.SetupDefaultReplies();
   fake_power_client_.SendSuspendImminent();
   EXPECT_EQ(1, fake_power_client_.GetNumPendingSuspendReadinessCallbacks());
   ASSERT_EQ(1u, disk_mount_manager_.unmounting_mount_paths().size());
-  EXPECT_EQ(kDummyMountPath,
-            disk_mount_manager_.unmounting_mount_paths().front());
+  EXPECT_EQ(dummy_mount_path, disk_mount_manager_.unmounting_mount_paths()[0]);
 
   // Suspend cancelled.
   fake_power_client_.SendSuspendDone();
@@ -121,8 +83,7 @@ TEST_F(SuspendUnmountManagerTest, CancelAndSuspendAgain) {
   // Suspend again.
   fake_power_client_.SendSuspendImminent();
   ASSERT_EQ(2u, disk_mount_manager_.unmounting_mount_paths().size());
-  EXPECT_EQ(kDummyMountPath,
-            disk_mount_manager_.unmounting_mount_paths().front());
+  EXPECT_EQ(dummy_mount_path, disk_mount_manager_.unmounting_mount_paths()[1]);
 }
 
 }  // namespace
