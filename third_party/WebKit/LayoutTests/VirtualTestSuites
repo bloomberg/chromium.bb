@@ -131,5 +131,10 @@
     "prefix": "pointerevent",
     "base": "imported/web-platform-tests/pointerevents",
     "args": ["--enable-blink-features=PointerEvent"]
+  },
+  {
+    "prefix": "mediasession",
+    "base": "media/mediasession",
+    "args": ["--enable-blink-features=MediaSession"]
   }
 ]
