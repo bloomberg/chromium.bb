@@ -11,10 +11,10 @@
 </div>
 <script>
 var valueList = ["static", "relative", "absolute", "fixed"]
+var tests = [];
 for (var outerValue of valueList) {
     for (var innerValue of valueList) {
         for (var afterValue of valueList) {
-            var tests = [];
             var outerElement, innerElement, midElement;
             if (outerValue !== afterValue) {
                 outerElement = document.createElement("div");
@@ -116,14 +116,15 @@ for (var outerValue of valueList) {
             innerElement.style.width = "50%";
         }]);
 
-        document.body.offsetHeight;
-        for (var t of tests) {
-            test(function () {
-                t[1]();
-                // No assert() are needed, we just check layout hits no ASSERT nor crash.
-                document.body.offsetHeight;
-            }, t[0]);
-        }
     }
+}
+
+document.body.offsetHeight;
+for (var t of tests) {
+    test(function () {
+        t[1]();
+        // No assert() are needed, we just check layout hits no ASSERT nor crash.
+        document.body.offsetHeight;
+    }, t[0]);
 }
 </script>
