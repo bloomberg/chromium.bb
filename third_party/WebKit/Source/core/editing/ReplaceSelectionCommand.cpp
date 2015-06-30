@@ -182,7 +182,7 @@ ReplacementFragment::ReplacementFragment(Document* document, DocumentFragment* f
     }
 
     RefPtrWillBeRawPtr<Range> range = VisibleSelection::selectionFromContentsOfNode(holder.get()).toNormalizedRange();
-    String text = plainText(range.get(), static_cast<TextIteratorBehavior>(TextIteratorEmitsOriginalText | TextIteratorIgnoresStyleVisibility));
+    String text = range ? plainText(range.get(), static_cast<TextIteratorBehavior>(TextIteratorEmitsOriginalText | TextIteratorIgnoresStyleVisibility)) : emptyString();
 
     removeInterchangeNodes(holder.get());
     removeUnrenderedNodes(holder.get());
