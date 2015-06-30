@@ -101,7 +101,6 @@
 #include "web/WebViewImpl.h"
 #include "wtf/MathExtras.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/ProcessID.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -325,7 +324,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     ASSERT(isMainThread());
     ASSERT(m_webLocalFrameImpl->frame());
 
-    long processId = WTF::getCurrentProcessID();
+    long processId = Platform::current()->getUniqueIdForProcess();
     ASSERT(processId > 0);
     IdentifiersFactory::setProcessId(processId);
     InjectedScriptManager* injectedScriptManager = m_injectedScriptManager.get();

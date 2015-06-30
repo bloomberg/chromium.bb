@@ -44,7 +44,6 @@
 #include "wtf/DataLog.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
-#include "wtf/ProcessID.h"
 #include "wtf/RefCounted.h"
 #include "wtf/ThreadingPrimitives.h"
 #include <unistd.h>
@@ -233,7 +232,7 @@ void StringStats::removeString(StringImpl* string)
 
 void StringStats::printStats()
 {
-    dataLogF("String stats for process id %d:\n", getCurrentProcessID());
+    dataLogF("String stats for process id %d:\n", getpid());
 
     unsigned long long totalNumberCharacters = m_total8BitData + m_total16BitData;
     double percent8Bit = m_totalNumberStrings ? ((double)m_number8BitStrings * 100) / (double)m_totalNumberStrings : 0.0;
