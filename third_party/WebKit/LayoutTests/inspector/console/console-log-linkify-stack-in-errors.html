@@ -4,8 +4,8 @@
 <script src="../../http/tests/inspector/console-test.js"></script>
 <script src="resources/stack-with-sourceUrl.js"></script>
 <script src="resources/stack-with-sourceMap.js"></script>
-<script>
 
+<script>
 function forStack()
 {
     console.log(new Error("line\nbreak").stack);
@@ -52,6 +52,10 @@ console.log("Error broken stack #4\n    at function_name)foob.js:20:30(");
 console.log("Error broken stack #5\n    at function_name foob.js:20:30)");
 console.log("Error broken stack #6\n    at foob.js foob.js:40:70");
 
+//# sourceURL=console-log-linkify-stack-in-errors.html
+</script>
+
+<script>
 function test()
 {
     InspectorTest.evaluateInPageWithTimeout("failure()");

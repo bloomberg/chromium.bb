@@ -2,8 +2,8 @@
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/console-test.js"></script>
-<script>
 
+<script>
 function log(data)
 {
     console.log(data);
@@ -29,7 +29,10 @@ for (var i = 1; i < 5; ++i) {
 }
 a9.length = 11;
 a9.foo = "bar";
+//# sourceURL=console-format-array-prototype.html
+</script>
 
+<script>
 function test()
 {
     loopOverGlobals(0, 10);
