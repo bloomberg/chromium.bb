@@ -14,6 +14,9 @@
 #include "chrome/browser/safe_browsing/safe_browsing_api_handler.h"
 #endif
 
+#if defined(SAFE_BROWSING_SERVICE)
+#include "chrome/browser/renderer_host/data_reduction_proxy_resource_throttle_android.h"
+#endif
 
 ChromeMainDelegateStagingAndroid::ChromeMainDelegateStagingAndroid() {
 }
@@ -28,9 +31,10 @@ bool ChromeMainDelegateStagingAndroid::BasicStartupComplete(int* exit_code) {
 #endif
 
 #if defined(SAFE_BROWSING_SERVICE)
-  spdy_proxy_throttle_factory_ .reset(new SpdyProxyResourceThrottleFactory());
+  data_reduction_proxy_throttle_factory_.reset(
+      new DataReductionProxyResourceThrottleFactory());
   SafeBrowsingResourceThrottleFactory::RegisterFactory(
-      spdy_proxy_throttle_factory_.get());
+      data_reduction_proxy_throttle_factory_.get());
 #endif
   policy::PolicyProviderAndroid::SetShouldWaitForPolicy(true);
 

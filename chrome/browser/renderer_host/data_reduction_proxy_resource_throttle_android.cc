@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/spdy_proxy_resource_throttle.h"
+#include "chrome/browser/renderer_host/data_reduction_proxy_resource_throttle_android.h"
 
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
@@ -33,25 +33,26 @@ using content::ResourceThrottle;
 // checking whether the headers are injected correctly and the SPDY proxy
 // origin is tested properly.
 
-const char* SpdyProxyResourceThrottle::kUnsafeUrlProceedHeader =
+const char* DataReductionProxyResourceThrottle::kUnsafeUrlProceedHeader =
       "X-Unsafe-Url-Proceed";
 
-ResourceThrottle* SpdyProxyResourceThrottleFactory::CreateResourceThrottle(
+ResourceThrottle*
+DataReductionProxyResourceThrottleFactory::CreateResourceThrottle(
     net::URLRequest* request,
     content::ResourceContext* resource_context,
     content::ResourceType resource_type,
     SafeBrowsingService* service) {
 #if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
-  if (io_data->IsOffTheRecord() ||
-      !io_data->IsDataReductionProxyEnabled() ||
+  if (io_data->IsOffTheRecord() || !io_data->IsDataReductionProxyEnabled() ||
       request->url().SchemeIsSecure())
     return new SafeBrowsingResourceThrottle(request, resource_type, service);
 #endif
-  return new SpdyProxyResourceThrottle(request, resource_type, service);
+  return new DataReductionProxyResourceThrottle(request, resource_type,
+                                                service);
 }
 
-SpdyProxyResourceThrottle::SpdyProxyResourceThrottle(
+DataReductionProxyResourceThrottle::DataReductionProxyResourceThrottle(
     net::URLRequest* request,
     content::ResourceType resource_type,
     SafeBrowsingService* safe_browsing)
@@ -62,9 +63,9 @@ SpdyProxyResourceThrottle::SpdyProxyResourceThrottle(
       is_subframe_(resource_type == content::RESOURCE_TYPE_SUB_FRAME) {
 }
 
-SpdyProxyResourceThrottle::~SpdyProxyResourceThrottle() { }
+DataReductionProxyResourceThrottle::~DataReductionProxyResourceThrottle() { }
 
-void SpdyProxyResourceThrottle::WillRedirectRequest(
+void DataReductionProxyResourceThrottle::WillRedirectRequest(
     const net::RedirectInfo& redirect_info,
     bool* defer) {
   CHECK(state_ == STATE_NONE);
@@ -93,28 +94,26 @@ void SpdyProxyResourceThrottle::WillRedirectRequest(
   unsafe_resource.is_subframe = is_subframe_;
   unsafe_resource.threat_type = threat_type;
   unsafe_resource.callback = base::Bind(
-      &SpdyProxyResourceThrottle::OnBlockingPageComplete, AsWeakPtr());
+      &DataReductionProxyResourceThrottle::OnBlockingPageComplete, AsWeakPtr());
   unsafe_resource.render_process_host_id = info->GetChildID();
   unsafe_resource.render_view_id = info->GetRouteID();
 
   *defer = true;
 
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&SpdyProxyResourceThrottle::StartDisplayingBlockingPage,
-          AsWeakPtr(),
-          safe_browsing_->ui_manager(),
-          unsafe_resource));
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          &DataReductionProxyResourceThrottle::StartDisplayingBlockingPage,
+          AsWeakPtr(), safe_browsing_->ui_manager(), unsafe_resource));
 }
 
-const char* SpdyProxyResourceThrottle::GetNameForLogging() const {
-    return "SpdyProxyResourceThrottle";
+const char* DataReductionProxyResourceThrottle::GetNameForLogging() const {
+    return "DataReductionProxyResourceThrottle";
 }
 
 // static
-void SpdyProxyResourceThrottle::StartDisplayingBlockingPage(
-    const base::WeakPtr<SpdyProxyResourceThrottle>& throttle,
+void DataReductionProxyResourceThrottle::StartDisplayingBlockingPage(
+    const base::WeakPtr<DataReductionProxyResourceThrottle>& throttle,
     scoped_refptr<SafeBrowsingUIManager> ui_manager,
     const SafeBrowsingUIManager::UnsafeResource& resource) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -141,7 +140,7 @@ void SpdyProxyResourceThrottle::StartDisplayingBlockingPage(
 // SafeBrowsingService::UrlCheckCallback implementation, called on the IO
 // thread when the user has decided to proceed with the current request, or
 // go back.
-void SpdyProxyResourceThrottle::OnBlockingPageComplete(bool proceed) {
+void DataReductionProxyResourceThrottle::OnBlockingPageComplete(bool proceed) {
   CHECK(state_ == STATE_DISPLAYING_BLOCKING_PAGE);
   state_ = STATE_NONE;
 
@@ -151,7 +150,7 @@ void SpdyProxyResourceThrottle::OnBlockingPageComplete(bool proceed) {
     controller()->Cancel();
 }
 
-SBThreatType SpdyProxyResourceThrottle::CheckUrl() {
+SBThreatType DataReductionProxyResourceThrottle::CheckUrl() {
   SBThreatType result = SB_THREAT_TYPE_SAFE;
 
   // TODO(sgurun) Check for spdy proxy origin.
@@ -173,7 +172,7 @@ SBThreatType SpdyProxyResourceThrottle::CheckUrl() {
   return result;
 }
 
-void SpdyProxyResourceThrottle::ResumeRequest() {
+void DataReductionProxyResourceThrottle::ResumeRequest() {
   CHECK(state_ == STATE_NONE);
 
   // Inject the header before resuming the request.

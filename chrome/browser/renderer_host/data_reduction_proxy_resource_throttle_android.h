@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_SPDY_PROXY_RESOURCE_THROTTLE_H_
-#define CHROME_BROWSER_ANDROID_SPDY_PROXY_RESOURCE_THROTTLE_H_
+#ifndef CHROME_BROWSER_RENDERER_HOST_DATA_REDUCTION_PROXY_RESOURCE_THROTTLE_ANDROID_H_
+#define CHROME_BROWSER_RENDERER_HOST_DATA_REDUCTION_PROXY_RESOURCE_THROTTLE_ANDROID_H_
 
 #include <string>
 #include <vector>
@@ -20,9 +20,9 @@ struct RedirectInfo;
 class URLRequest;
 }
 
-// SpdyProxyResourceThrottle checks that URLs are "safe" before navigating
-// to them. To be considered "safe", a URL must not be tagged as a phishing or
-// malware URL by the SPDY proxy.
+// DataReductionProxyResourceThrottle checks that URLs are "safe" before
+// navigating to them. To be considered "safe", a URL must not be tagged as a
+// phishing or malware URL by the SPDY proxy.
 //
 // If the URL is tagged as unsafe, a warning page is shown and the request
 // remains suspended. If the user decides to cancel, the request is cancelled.
@@ -39,11 +39,11 @@ class URLRequest;
 // X-Malware-Url         Proxy      Identified as malware url
 // X-Unsafe-Url-Proceed  Browser    User requests proceed.
 //
-class SpdyProxyResourceThrottle
+class DataReductionProxyResourceThrottle
     : public content::ResourceThrottle,
-      public base::SupportsWeakPtr<SpdyProxyResourceThrottle> {
+      public base::SupportsWeakPtr<DataReductionProxyResourceThrottle> {
  public:
-  SpdyProxyResourceThrottle(net::URLRequest* request,
+  DataReductionProxyResourceThrottle(net::URLRequest* request,
                             content::ResourceType resource_type,
                             SafeBrowsingService* safe_browsing);
 
@@ -61,7 +61,7 @@ class SpdyProxyResourceThrottle
 
   static const char* kUnsafeUrlProceedHeader;
 
-  ~SpdyProxyResourceThrottle() override;
+  ~DataReductionProxyResourceThrottle() override;
 
   // SafeBrowsingService::UrlCheckCallback implementation.
   void OnBlockingPageComplete(bool proceed);
@@ -72,7 +72,7 @@ class SpdyProxyResourceThrottle
   // Starts displaying the safe browsing interstitial page if it is not
   // prerendering. Called on the UI thread.
   static void StartDisplayingBlockingPage(
-      const base::WeakPtr<SpdyProxyResourceThrottle>& throttle,
+      const base::WeakPtr<DataReductionProxyResourceThrottle>& throttle,
       scoped_refptr<SafeBrowsingUIManager> ui_manager,
       const SafeBrowsingUIManager::UnsafeResource& resource);
 
@@ -90,15 +90,15 @@ class SpdyProxyResourceThrottle
   const bool is_subresource_;
   const bool is_subframe_;
 
-  DISALLOW_COPY_AND_ASSIGN(SpdyProxyResourceThrottle);
+  DISALLOW_COPY_AND_ASSIGN(DataReductionProxyResourceThrottle);
 };
 
-class SpdyProxyResourceThrottleFactory
+class DataReductionProxyResourceThrottleFactory
     : public SafeBrowsingResourceThrottleFactory {
 
  public:
-  SpdyProxyResourceThrottleFactory() { }
-  ~SpdyProxyResourceThrottleFactory() override {}
+  DataReductionProxyResourceThrottleFactory() { }
+  ~DataReductionProxyResourceThrottleFactory() override {}
 
  protected:
   content::ResourceThrottle* CreateResourceThrottle(
@@ -108,7 +108,7 @@ class SpdyProxyResourceThrottleFactory
       SafeBrowsingService* service) override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SpdyProxyResourceThrottleFactory);
+  DISALLOW_COPY_AND_ASSIGN(DataReductionProxyResourceThrottleFactory);
 };
 
-#endif  // CHROME_BROWSER_ANDROID_SPDY_PROXY_RESOURCE_THROTTLE_H_
+#endif  // CHROME_BROWSER_RENDERER_HOST_DATA_REDUCTION_PROXY_RESOURCE_THROTTLE_ANDROID_H_

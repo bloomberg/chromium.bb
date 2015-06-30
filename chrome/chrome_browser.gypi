@@ -2436,8 +2436,8 @@
     # "Safe Browsing Basic" files used for safe browsing in full mode
     # (safe_browsing=1), mobile (=2), and mobile-extended (=3).
     'chrome_browser_safe_browsing_basic_sources': [
-      'browser/android/spdy_proxy_resource_throttle.cc',
-      'browser/android/spdy_proxy_resource_throttle.h',
+      'browser/renderer_host/data_reduction_proxy_resource_throttle_android.cc',
+      'browser/renderer_host/data_reduction_proxy_resource_throttle_android.h',
       'browser/renderer_host/safe_browsing_resource_throttle_factory.cc',
       'browser/renderer_host/safe_browsing_resource_throttle_factory.h',
       'browser/safe_browsing/malware_details.cc',
