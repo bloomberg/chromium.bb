@@ -2,6 +2,7 @@ include_rules = [
   "+jingle/glue",
   "+net",
   "+remoting/client",
+  "+remoting/codec",
   "+remoting/host",
   "+remoting/protocol",
   "+remoting/signaling",
