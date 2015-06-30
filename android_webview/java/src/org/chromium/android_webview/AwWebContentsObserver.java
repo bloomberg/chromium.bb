@@ -23,6 +23,9 @@ public class AwWebContentsObserver extends WebContentsObserver {
     private final WeakReference<AwContents> mAwContents;
     private final WeakReference<AwContentsClient> mAwContentsClient;
 
+    // Whether this webcontents has ever committed any navigation.
+    private boolean mCommittedNavigation;
+
     public AwWebContentsObserver(
             WebContents webContents, AwContents awContents, AwContentsClient awContentsClient) {
         super(webContents);
@@ -93,8 +96,13 @@ public class AwWebContentsObserver extends WebContentsObserver {
 
     @Override
     public void didNavigateAnyFrame(String url, String baseUrl, boolean isReload) {
+        mCommittedNavigation = true;
         final AwContentsClient client = mAwContentsClient.get();
         if (client == null) return;
         client.getCallbackHelper().postDoUpdateVisitedHistory(url, isReload);
+    }
+
+    public boolean didEverCommitNavigation() {
+        return mCommittedNavigation;
     }
 }

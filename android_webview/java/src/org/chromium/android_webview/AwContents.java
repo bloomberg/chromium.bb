@@ -2111,6 +2111,10 @@ public class AwContents implements SmartClipProvider,
 
     public void requestAccessibilitySnapshot(AccessibilitySnapshotCallback callback) {
         if (isDestroyed()) return;
+        if (!mWebContentsObserver.didEverCommitNavigation()) {
+            callback.onAccessibilitySnapshot(null);
+            return;
+        }
         mWebContents.requestAccessibilitySnapshot(callback);
     }
 

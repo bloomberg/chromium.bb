@@ -562,7 +562,9 @@ public class AwContentsTest extends AwTestBase {
         final AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
         final AwContents awContents = testView.getAwContents();
         final CallbackHelper loadHelper = mContentsClient.getOnPageFinishedHelper();
-        loadDataSync(awContents, loadHelper, data, "text/html", false);
+        if (data != null) {
+            loadDataSync(awContents, loadHelper, data, "text/html", false);
+        }
 
         final AccessibilityCallbackHelper callbackHelper = new AccessibilityCallbackHelper();
         final AccessibilitySnapshotCallback callback = new AccessibilitySnapshotCallback() {
@@ -571,14 +573,16 @@ public class AwContentsTest extends AwTestBase {
                 callbackHelper.notifyCalled(root);
             }
         };
-
+        // read the callbackcount before executing the call on UI thread, since it may
+        // synchronously complete.
+        final int callbackCount = callbackHelper.getCallCount();
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 awContents.requestAccessibilitySnapshot(callback);
             }
         });
-        callbackHelper.waitForCallback(callbackHelper.getCallCount());
+        callbackHelper.waitForCallback(callbackCount);
         return callbackHelper.getValue();
     }
 
@@ -704,5 +708,12 @@ public class AwContentsTest extends AwTestBase {
         assertEquals("", root.text);
         AccessibilitySnapshotNode grandChild = root.children.get(0).children.get(0);
         assertFalse(grandChild.hasStyle);
+    }
+
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testRequestAccessibilitySnapshotAboutBlank() throws Throwable {
+        AccessibilitySnapshotNode root = receiveAccessibilitySnapshot(null);
+        assertEquals(null, root);
     }
 }
