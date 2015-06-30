@@ -332,7 +332,7 @@ bool WEBPImageDecoder::createColorTransform(const char* data, size_t size)
         return false;
 
     // We currently only support color profiles for RGB profiled images.
-    ASSERT(icSigRgbData == qcms_profile_get_color_space(inputProfile));
+    ASSERT(rgbData == qcms_profile_get_color_space(inputProfile));
     // The input image pixels are RGBA format.
     qcms_data_type format = QCMS_DATA_RGBA_8;
     // FIXME: Don't force perceptual intent if the image profile contains an intent.
