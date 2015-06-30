@@ -37,6 +37,7 @@
 #include "core/fetch/ResourcePtr.h"
 #include "core/fetch/SubstituteData.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/inspector/InspectorIdentifiers.h"
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentWriter.h"
 #include "core/loader/FrameLoaderTypes.h"
@@ -226,6 +227,8 @@ namespace blink {
         ClientHintsPreferences m_clientHintsPreferences;
         InitialScrollState m_initialScrollState;
     };
+
+    DECLARE_INSPECTOR_IDENTIFIERS(DocumentLoader);
 
 } // namespace blink
 

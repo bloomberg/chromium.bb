@@ -37,6 +37,8 @@ public:
     using IdentifierType = typename Generator::IdentifierType;
     using ReferenceType = RawPtr<WeakIdentifierMap<T, Generator, Traits, false>>;
 
+    WeakIdentifierMap() { requireExplicitInstantiation(); }
+
     ~WeakIdentifierMap()
     {
         ObjectToWeakIdentifierMaps& allMaps = ObjectToWeakIdentifierMaps::instance();
@@ -69,6 +71,8 @@ public:
     }
 
 private:
+    static void requireExplicitInstantiation(); // Prevent usage without DECLARE/DEFINE macros below.
+
     void put(T* object, IdentifierType identifier)
     {
         ASSERT(object && !m_objectToIdentifier.contains(object));
@@ -129,8 +133,8 @@ private:
 
     void objectDestroyed(T* object)
     {
-        int identifier = m_objectToIdentifier.take(object);
-        ASSERT(identifier);
+        IdentifierType identifier = m_objectToIdentifier.take(object);
+        ASSERT(!WTF::isHashTraitsEmptyValue<HashTraits<IdentifierType>>(identifier));
         m_identifierToObject.remove(identifier);
     }
 
@@ -151,6 +155,7 @@ public:
         : m_objectToIdentifier(new ObjectToIdentifier())
         , m_identifierToObject(new IdentifierToObject())
     {
+        requireExplicitInstantiation();
     }
 
     IdentifierType identifier(T* object)
@@ -178,6 +183,8 @@ public:
     }
 
 private:
+    static void requireExplicitInstantiation(); // Prevent usage without DECLARE/DEFINE macros below.
+
     void put(T* object, IdentifierType identifier)
     {
         ASSERT(object && !m_objectToIdentifier->contains(object));
@@ -191,6 +198,14 @@ private:
     Member<ObjectToIdentifier> m_objectToIdentifier;
     Member<IdentifierToObject> m_identifierToObject;
 };
+
+#define DECLARE_WEAK_IDENTIFIER_MAP(T, ...) \
+    template<> void WeakIdentifierMap<T, ##__VA_ARGS__>::requireExplicitInstantiation(); \
+    extern template class WeakIdentifierMap<T, ##__VA_ARGS__>;
+
+#define DEFINE_WEAK_IDENTIFIER_MAP(T, ...) \
+    template class WeakIdentifierMap<T, ##__VA_ARGS__>; \
+    template<> void WeakIdentifierMap<T, ##__VA_ARGS__>::requireExplicitInstantiation() { }
 
 }
 

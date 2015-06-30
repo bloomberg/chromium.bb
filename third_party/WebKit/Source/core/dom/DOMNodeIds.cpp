@@ -8,7 +8,7 @@
 
 namespace blink {
 
-template class WeakIdentifierMap<Node>;
+DEFINE_WEAK_IDENTIFIER_MAP(Node, IdentifierGenerator<int>);
 
 #if !ENABLE(OILPAN)
 void WeakIdentifierMapTraits<Node>::removedFromIdentifierMap(Node* node)

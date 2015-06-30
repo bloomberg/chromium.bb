@@ -18,7 +18,7 @@ template<> struct WeakIdentifierMapTraits<Node> {
 };
 #endif
 
-extern template class WeakIdentifierMap<Node>;
+DECLARE_WEAK_IDENTIFIER_MAP(Node, IdentifierGenerator<int>);
 using WeakNodeMap = WeakIdentifierMap<Node>;
 
 class CORE_EXPORT DOMNodeIds {

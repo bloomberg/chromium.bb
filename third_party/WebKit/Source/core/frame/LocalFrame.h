@@ -32,6 +32,7 @@
 #include "core/frame/Frame.h"
 #include "core/frame/LocalFrameLifecycleNotifier.h"
 #include "core/frame/LocalFrameLifecycleObserver.h"
+#include "core/inspector/InspectorIdentifiers.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/NavigationScheduler.h"
 #include "core/page/FrameTree.h"
@@ -303,6 +304,7 @@ namespace blink {
 
     DEFINE_TYPE_CASTS(LocalFrame, Frame, localFrame, localFrame->isLocalFrame(), localFrame.isLocalFrame());
 
+    DECLARE_INSPECTOR_IDENTIFIERS(LocalFrame);
 } // namespace blink
 
 // During refactoring, there are some places where we need to do type conversions that

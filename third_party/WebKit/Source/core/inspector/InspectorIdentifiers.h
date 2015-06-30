@@ -22,17 +22,28 @@ template<typename T> class InspectorIdentifiers {
 public:
     static String identifier(T* object) { return map().identifier(object); }
     static T* lookup(const String& identifier) { return map().lookup(identifier); }
+    static void notifyObjectDestroyed(T* object) { map().notifyObjectDestroyed(object); }
 
 private:
     using IdentifierMap = WeakIdentifierMap<T, InspectorIdentifierGenerator>;
     InspectorIdentifiers() { }
 
-    static IdentifierMap& map()
-    {
-        DEFINE_STATIC_LOCAL(typename IdentifierMap::ReferenceType, identifierMap, (new IdentifierMap));
-        return *identifierMap;
-    }
+    static IdentifierMap& map();
 };
+
+#define DECLARE_INSPECTOR_IDENTIFIERS(T) \
+    DECLARE_WEAK_IDENTIFIER_MAP(T, InspectorIdentifierGenerator); \
+    template<> InspectorIdentifiers<T>::IdentifierMap& InspectorIdentifiers<T>::map(); \
+    extern template class InspectorIdentifiers<T>;
+
+#define DEFINE_INSPECTOR_IDENTIFIERS(T) \
+    template class InspectorIdentifiers<T>; \
+    DEFINE_WEAK_IDENTIFIER_MAP(T, InspectorIdentifierGenerator); \
+    template<> InspectorIdentifiers<T>::IdentifierMap& InspectorIdentifiers<T>::map() \
+    { \
+        DEFINE_STATIC_LOCAL(IdentifierMap::ReferenceType, identifierMap, (new IdentifierMap)); \
+        return *identifierMap; \
+    }
 
 } // namespace blink
 

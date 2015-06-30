@@ -32,7 +32,6 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "core/dom/DocumentType.h"
-#include "core/dom/WeakIdentifierMap.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
@@ -306,7 +305,7 @@ void LocalFrame::detach(FrameDetachType type)
     // Main motivation is to avoid being dependent on its exact timing (Oilpan.)
     LocalFrameLifecycleNotifier::notifyContextDestroyed();
     m_supplements.clear();
-    WeakIdentifierMap<LocalFrame>::notifyObjectDestroyed(this);
+    InspectorIdentifiers<LocalFrame>::notifyObjectDestroyed(this);
 }
 
 bool LocalFrame::prepareForCommit()
@@ -848,5 +847,7 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameO
     else
         m_instrumentingAgents = localFrameRoot()->m_instrumentingAgents;
 }
+
+DEFINE_INSPECTOR_IDENTIFIERS(LocalFrame);
 
 } // namespace blink
