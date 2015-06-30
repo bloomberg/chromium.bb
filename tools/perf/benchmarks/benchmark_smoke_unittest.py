@@ -51,7 +51,7 @@ def SmokeTestGenerator(benchmark):
         ps = super(SinglePageBenchmark, self).CreatePageSet(options)
         for p in ps.pages:
           p.skip_waits = True
-          ps.user_stories = [p]
+          ps.stories = [p]
           break
         return ps
 

@@ -98,11 +98,11 @@ class PowerTop25(perf_benchmark.PerfBenchmark):
   def CreateStorySet(self, _):
     # Exclude techcrunch.com. It is not suitable for this benchmark because it
     # does not consistently become quiescent within 60 seconds.
-    user_stories = self.page_set()
-    found = next((x for x in user_stories if 'techcrunch.com' in x.url), None)
+    stories = self.page_set()
+    found = next((x for x in stories if 'techcrunch.com' in x.url), None)
     if found:
-      user_stories.RemoveUserStory(found)
-    return user_stories
+      stories.RemoveStory(found)
+    return stories
 
 
 @benchmark.Enabled('linux', 'mac', 'win', 'chromeos')

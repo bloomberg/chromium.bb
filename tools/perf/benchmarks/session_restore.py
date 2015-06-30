@@ -46,15 +46,15 @@ class _SessionRestoreTypical25(perf_benchmark.PerfBenchmark):
     return cls.tag == 'cold' or not is_first_result
 
   def CreateStorySet(self, _):
-    """Return a story set that only has the first user story.
+    """Return a story set that only has the first story.
 
     The session restore measurement skips the navigation step and
     only tests session restore by having the browser start-up.
-    The first user story is used to get WPR set up and hold results.
+    The first story is used to get WPR set up and hold results.
     """
     story_set = self.page_set()
-    for user_story in story_set.user_stories[1:]:
-      story_set.RemoveUserStory(user_story)
+    for story in story_set.stories[1:]:
+      story_set.RemoveStory(story)
     return story_set
 
   def CreatePageTest(self, options):

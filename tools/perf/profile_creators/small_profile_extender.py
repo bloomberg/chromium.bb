@@ -21,8 +21,8 @@ class SmallProfileExtender(
     # Get the list of urls from the typical 25 page set.
     self._page_set = page_sets.Typical25PageSet()
     urls = []
-    for user_story in self._page_set.user_stories:
-      urls.append(user_story.url)
+    for story in self._page_set.stories:
+      urls.append(story.url)
     self._navigation_urls = urls
 
   def GetUrlIterator(self):
@@ -36,7 +36,7 @@ class SmallProfileExtender(
   def WebPageReplayArchivePath(self):
     """Superclass override."""
     return self._page_set.WprFilePathForUserStory(
-        self._page_set.user_stories[0])
+        self._page_set.stories[0])
 
   def FetchWebPageReplayArchives(self):
     """Superclass override."""
