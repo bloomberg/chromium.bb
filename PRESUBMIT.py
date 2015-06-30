@@ -63,7 +63,7 @@ _TEST_ONLY_WARNING = (
 
 _INCLUDE_ORDER_WARNING = (
     'Your #include order seems to be broken. Remember to use the right '
-    'collation (LC_COLLATE=C) and check https://google-styleguide.googlecode'
+    'collation (LC_COLLATE=C) and check\nhttps://google-styleguide.googlecode'
     '.com/svn/trunk/cppguide.html#Names_and_Order_of_Includes')
 
 _BANNED_OBJC_FUNCTIONS = (
@@ -702,33 +702,38 @@ def _CheckIncludeOrderForScope(scope, input_api, file_path, changed_linenums):
   previous_line = ''
   previous_line_num = 0
   problem_linenums = []
+  out_of_order = " - line belongs before previous line"
   for line_num, line in scope:
     if c_system_include_pattern.match(line):
       if state != C_SYSTEM_INCLUDES:
-        problem_linenums.append((line_num, previous_line_num))
+        problem_linenums.append((line_num, previous_line_num,
+            " - C system include file in wrong block"))
       elif previous_line and previous_line > line:
-        problem_linenums.append((line_num, previous_line_num))
+        problem_linenums.append((line_num, previous_line_num,
+            out_of_order))
     elif cpp_system_include_pattern.match(line):
       if state == C_SYSTEM_INCLUDES:
         state = CPP_SYSTEM_INCLUDES
       elif state == CUSTOM_INCLUDES:
-        problem_linenums.append((line_num, previous_line_num))
+        problem_linenums.append((line_num, previous_line_num,
+            " - c++ system include file in wrong block"))
       elif previous_line and previous_line > line:
-        problem_linenums.append((line_num, previous_line_num))
+        problem_linenums.append((line_num, previous_line_num, out_of_order))
     elif custom_include_pattern.match(line):
       if state != CUSTOM_INCLUDES:
         state = CUSTOM_INCLUDES
       elif previous_line and previous_line > line:
-        problem_linenums.append((line_num, previous_line_num))
+        problem_linenums.append((line_num, previous_line_num, out_of_order))
     else:
-      problem_linenums.append(line_num)
+      problem_linenums.append((line_num, previous_line_num,
+          "Unknown include type"))
     previous_line = line
     previous_line_num = line_num
 
   warnings = []
-  for (line_num, previous_line_num) in problem_linenums:
+  for (line_num, previous_line_num, failure_type) in problem_linenums:
     if line_num in changed_linenums or previous_line_num in changed_linenums:
-      warnings.append('    %s:%d' % (file_path, line_num))
+      warnings.append('    %s:%d:%s' % (file_path, line_num, failure_type))
   return warnings
 
 
