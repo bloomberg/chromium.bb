@@ -41,8 +41,6 @@ Browser::Browser(mojo::ApplicationImpl* app, BrowserDelegate* delegate)
       navigator_host_(this),
       app_(app),
       delegate_(delegate) {
-  view_manager_init_.connection()->AddService<ViewEmbedder>(this);
-
   ui_.reset(BrowserUI::Create(this, app));
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
