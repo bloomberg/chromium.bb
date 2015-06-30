@@ -316,14 +316,17 @@ bool NavigatorImpl::NavigateToEntry(
   // Make sure no code called via RFH::Navigate clears the pending entry.
   CHECK_EQ(controller_->GetPendingEntry(), &entry);
 
-  if (entry.GetPageID() == -1) {
-    // HACK!!  This code suppresses javascript: URLs from being added to
-    // session history, which is what we want to do for javascript: URLs that
-    // do not generate content.  What we really need is a message from the
-    // renderer telling us that a new page was not created.  The same message
-    // could be used for mailto: URLs and the like.
-    if (frame_entry.url().SchemeIs(url::kJavaScriptScheme))
-      return false;
+  if (controller_->GetPendingEntryIndex() == -1 &&
+      frame_entry.url().SchemeIs(url::kJavaScriptScheme)) {
+    // If the pending entry index is -1 (which means a new navigation rather
+    // than a history one), and the user typed in a javascript: URL, don't add
+    // it to the session history.
+    //
+    // This is a hack. What we really want is to avoid adding to the history any
+    // URL that doesn't generate content, and what would be great would be if we
+    // had a message from the renderer telling us that a new page was not
+    // created. The same message could be used for mailto: URLs and the like.
+    return false;
   }
 
   // Notify observers about navigation.
