@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.test.MultiActivityTestBase;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
-import org.chromium.chrome.test.util.browser.tabmodel.document.MockStorageDelegate;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
@@ -52,9 +51,6 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
             mContextMenu = menu;
         }
     }
-
-    protected Context mContext;
-    protected MockStorageDelegate mStorageDelegate;
 
     protected void launchHomeIntent(Context context) throws Exception {
         Intent startMain = new Intent(Intent.ACTION_MAIN);
@@ -98,18 +94,7 @@ public class DocumentModeTestBase extends MultiActivityTestBase {
 
     @Override
     public void setUp() throws Exception {
-        mContext = getInstrumentation().getTargetContext();
-
-        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir());
-        DocumentTabModelSelector.setStorageDelegateForTests(mStorageDelegate);
-
         super.setUp();
-    }
-
-    @Override
-    public void tearDown() throws Exception {
-        mStorageDelegate.ensureDirectoryDestroyed();
-        super.tearDown();
     }
 
     /** Starts a DocumentActivity by using firing a VIEW Intent. */

@@ -178,7 +178,7 @@ public class WebappModeTest extends MultiActivityTestBase {
             }
         }));
 
-        assertEquals("Wrong Tab ID was used", 11684, webappActivity.getActivityTab().getId());
+        assertTrue("Smaller Tab ID was used", 11684 <= webappActivity.getActivityTab().getId());
     }
 
     /**

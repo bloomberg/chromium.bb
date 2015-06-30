@@ -21,6 +21,8 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.omaha.OmahaClient;
+import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
+import org.chromium.chrome.test.util.browser.tabmodel.document.MockStorageDelegate;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -76,9 +78,13 @@ public abstract class MultiActivityTestBase extends RestrictedInstrumentationTes
 
     private static final float FLOAT_EPSILON = 0.001f;
 
+    protected MockStorageDelegate mStorageDelegate;
+    protected Context mContext;
+
     @Override
     public void setUp() throws Exception {
         super.setUp();
+        mContext = getInstrumentation().getTargetContext();
 
         // Disable Omaha related activities.
         OmahaClient.setEnableCommunication(false);
@@ -89,6 +95,11 @@ public abstract class MultiActivityTestBase extends RestrictedInstrumentationTes
             Context context = getInstrumentation().getTargetContext();
             MultiActivityTestBase.finishAllChromeTasks(context);
         }
+
+        // Make the DocumentTabModelSelector use a mocked out directory so that test runs don't
+        // interfere with each other.
+        mStorageDelegate = new MockStorageDelegate(mContext.getCacheDir());
+        DocumentTabModelSelector.setStorageDelegateForTests(mStorageDelegate);
     }
 
     @Override
@@ -98,6 +109,7 @@ public abstract class MultiActivityTestBase extends RestrictedInstrumentationTes
             Context context = getInstrumentation().getTargetContext();
             MultiActivityTestBase.finishAllChromeTasks(context);
         }
+        mStorageDelegate.ensureDirectoryDestroyed();
     }
 
     /** Counts how many tasks Chrome has listed in Android's Overview. */
