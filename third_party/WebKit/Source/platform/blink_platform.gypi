@@ -948,6 +948,7 @@
       'WebVectorTest.cpp',
       'animation/TimingFunctionTest.cpp',
       'animation/UnitBezierTest.cpp',
+      'blob/BlobDataTest.cpp',
       'clipboard/ClipboardUtilitiesTest.cpp',
       'fonts/FontCacheTest.cpp',
       'fonts/FontDescriptionTest.cpp',

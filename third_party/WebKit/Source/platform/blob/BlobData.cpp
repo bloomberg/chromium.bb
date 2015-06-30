@@ -45,6 +45,10 @@ namespace blink {
 
 namespace {
 
+// All consecutive items that are accumulate to < this number will have the
+// data appended to the same item.
+static const size_t kMaxConsolidatedItemSizeInBytes = 15 * 1024;
+
 // http://dev.w3.org/2006/webapi/FileAPI/#constructorBlob
 bool isValidBlobType(const String& type)
 {
@@ -122,27 +126,39 @@ void BlobData::appendFileSystemURL(const KURL& url, long long offset, long long 
 
 void BlobData::appendText(const String& text, bool doNormalizeLineEndingsToNative)
 {
-    RefPtr<RawData> data = RawData::create();
-    Vector<char>* buffer = data->mutableData();
-
     CString utf8Text = UTF8Encoding().normalizeAndEncode(text, WTF::EntitiesForUnencodables);
+    RefPtr<RawData> data = nullptr;
+    Vector<char>* buffer;
+    if (canConsolidateData(text.length())) {
+        buffer = m_items.last().data->mutableData();
+    } else {
+        data = RawData::create();
+        buffer = data->mutableData();
+    }
+
     if (doNormalizeLineEndingsToNative) {
         normalizeLineEndingsToNative(utf8Text, *buffer);
     } else {
         buffer->append(utf8Text.data(), utf8Text.length());
     }
 
-    m_items.append(BlobDataItem(data.release()));
+    if (data)
+        m_items.append(BlobDataItem(data.release()));
 }
 
 void BlobData::appendBytes(const void* bytes, size_t length)
 {
+    if (canConsolidateData(length)) {
+        m_items.last().data->mutableData()->append(
+            static_cast<const char*>(bytes),
+            length);
+        return;
+    }
     RefPtr<RawData> data = RawData::create();
     Vector<char>* buffer = data->mutableData();
     buffer->append(static_cast<const char *>(bytes), length);
     m_items.append(BlobDataItem(data.release()));
 }
-
 
 long long BlobData::length() const
 {
@@ -167,6 +183,18 @@ long long BlobData::length() const
         }
     }
     return length;
+}
+
+bool BlobData::canConsolidateData(size_t length)
+{
+    if (m_items.isEmpty())
+        return false;
+    BlobDataItem& lastItem = m_items.last();
+    if (lastItem.type != BlobDataItem::Data)
+        return false;
+    if (lastItem.data->length() + length > kMaxConsolidatedItemSizeInBytes)
+        return false;
+    return true;
 }
 
 BlobDataHandle::BlobDataHandle()

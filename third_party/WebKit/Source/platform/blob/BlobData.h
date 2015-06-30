@@ -184,7 +184,11 @@ public:
     long long length() const;
 
 private:
+    friend class BlobDataTest_Consolidation_Test;
+
     BlobData() { }
+
+    bool canConsolidateData(size_t length);
 
     // Make this private so that the otherwise-generated implicit assignment
     // operator doesn't reference BlobDataItemList's operator=, which would

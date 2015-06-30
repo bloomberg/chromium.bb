@@ -163,11 +163,10 @@ TEST(BodyStreamBufferTest, CreateBlob)
     EXPECT_EQ(10u, callback1->blobHandle()->size());
     WebVector<WebBlobData::Item*> items;
     EXPECT_TRUE(Platform::current()->unitTestSupport()->getBlobItems(callback1->blobHandle()->uuid(), &items));
-    EXPECT_EQ(2u, items.size());
-    EXPECT_EQ(6u, items[0]->data.size());
-    EXPECT_EQ(0, memcmp(items[0]->data.data(), "foobar", 6));
-    EXPECT_EQ(4u, items[1]->data.size());
-    EXPECT_EQ(0, memcmp(items[1]->data.data(), "piyo", 4));
+    // The data has been consolidated.
+    EXPECT_EQ(1u, items.size());
+    EXPECT_EQ(10u, items[0]->data.size());
+    EXPECT_EQ(0, memcmp(items[0]->data.data(), "foobarpiyo", 10));
     EXPECT_FALSE(callback1->exception());
     EXPECT_FALSE(callback2->exception());
 }
