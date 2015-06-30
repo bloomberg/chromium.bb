@@ -597,6 +597,19 @@ drm_output_set_gamma(struct weston_output *output_base,
 		weston_log("set gamma failed: %m\n");
 }
 
+/* Determine the type of vblank synchronization to use for the output.
+ * 
+ * The pipe parameter indicates which CRTC is in use.  Knowing this, we
+ * can determine which vblank sequence type to use for it.  Traditional
+ * cards had only two CRTCs, with CRTC 0 using no special flags, and
+ * CRTC 1 using DRM_VBLANK_SECONDARY.  The first bit of the pipe
+ * parameter indicates this.
+ * 
+ * Bits 1-5 of the pipe parameter are 5 bit wide pipe number between
+ * 0-31.  If this is non-zero it indicates we're dealing with a
+ * multi-gpu situation and we need to calculate the vblank sync
+ * using DRM_BLANK_HIGH_CRTC_MASK.
+ */
 static unsigned int drm_waitvblank_pipe(struct drm_output *output)
 {
 	if (output->pipe > 1)
