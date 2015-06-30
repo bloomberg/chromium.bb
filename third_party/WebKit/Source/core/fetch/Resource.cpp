@@ -322,8 +322,8 @@ bool Resource::passesAccessControlCheck(SecurityOrigin* securityOrigin, String& 
 
 bool Resource::isEligibleForIntegrityCheck(SecurityOrigin* securityOrigin) const
 {
-    String errorDescription;
-    return securityOrigin->canRequest(resourceRequest().url()) || passesAccessControlCheck(securityOrigin, errorDescription);
+    String ignoredErrorDescription;
+    return securityOrigin->canRequest(resourceRequest().url()) || passesAccessControlCheck(securityOrigin, ignoredErrorDescription);
 }
 
 static double currentAge(const ResourceResponse& response, double responseTimestamp)
