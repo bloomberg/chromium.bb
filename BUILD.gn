@@ -71,7 +71,8 @@ config("icu_code") {
       "-Wno-logical-op-parentheses",
       "-Wno-tautological-compare",
       "-Wno-switch",
-    ]
+      "-Wno-parentheses",
+      ]
     if (is_win) {
       cflags += [
         # See http://bugs.icu-project.org/trac/ticket/11122
@@ -481,7 +482,6 @@ component("icuuc") {
   deps = [
     ":icudata",
   ]
-  configs += [ ":icu_code" ]
 
   configs -= [
     "//build/config/compiler:no_rtti",  # ICU uses RTTI.
@@ -492,6 +492,7 @@ component("icuuc") {
     "//build/config/compiler:no_chromium_code",
   ]
 
+  configs += [ ":icu_code" ]
   public_configs = [ ":icu_config" ]
 
   if (is_win || icu_use_data_file) {

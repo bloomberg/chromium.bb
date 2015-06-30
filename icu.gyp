@@ -198,6 +198,9 @@
               '-Wno-logical-op-parentheses',
               # ICU has some `unsigned < 0` checks.
               '-Wno-tautological-compare',
+              # ICU has some code with the pattern:
+              #   if (found = uprv_getWindowsTimeZoneInfo(...))
+              '-Wno-parentheses',
             ],
           },
           # Since ICU wants to internally use its own deprecated APIs, don't
@@ -287,6 +290,9 @@
               # enum (e.g. URES_TABLE32 which is in UResInternalType). This
               # is on purpose.
               '-Wno-switch',
+              # ICU has some code with the pattern:
+              #   if (found = uprv_getWindowsTimeZoneInfo(...))
+              '-Wno-parentheses',
             ],
           },
           'cflags': [
