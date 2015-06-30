@@ -934,6 +934,7 @@ public class ChromeBrowserProvider extends ContentProvider {
          * @return true if the two individual nodes contain the same information.
          * The existence of parent and children nodes is checked, but their contents are not.
          */
+        @VisibleForTesting
         public boolean equalContents(BookmarkNode node) {
             return node != null
                     && mId == node.mId

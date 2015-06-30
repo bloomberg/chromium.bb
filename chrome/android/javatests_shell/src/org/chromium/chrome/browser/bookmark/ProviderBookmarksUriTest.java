@@ -10,7 +10,7 @@ import android.net.Uri;
 
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeBrowserProvider;
-import org.chromium.chrome.browser.test.util.BookmarkUtils;
+import org.chromium.chrome.test.util.browser.BookmarkUtils;
 
 import java.util.Date;
 
