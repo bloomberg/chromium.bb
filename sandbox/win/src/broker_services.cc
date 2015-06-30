@@ -538,6 +538,9 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
     // We can not track the life time of such processes and it is responsibility
     // of the host application to make sure that spawned targets without jobs
     // are terminated when the main application don't need them anymore.
+    // Sandbox policy engine needs to know that these processes are valid
+    // targets for e.g. BrokerDuplicateHandle so track them as peer processes.
+    AddTargetPeer(process_info.process_handle());
   }
 
   *target_info = process_info.Take();
