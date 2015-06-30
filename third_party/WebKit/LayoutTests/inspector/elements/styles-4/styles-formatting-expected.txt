@@ -143,6 +143,18 @@ raw cssText:
     propC: valC;
 }
 
+Running: testFormattedWithMeta
+raw cssText:
+{
+    -webkit-animation: linear;
+    propA: valA;
+    property1: value1;
+    propB: valB;
+    property2: value2;
+    property3: value3;
+    propC: valC;
+}
+
 Running: initUnformattedStyle
 
 Running: testUnformattedInsertStart
