@@ -534,9 +534,9 @@ void MergePasswordForms(ScopedVector<autofill::PasswordForm>* keychain_forms,
     if (best_match) {
       used_keychain_forms.insert(best_match);
       form->password_value = best_match->password_value;
-      merged_forms->push_back(form.release());
+      merged_forms->push_back(form.Pass());
     } else {
-      unused_database_forms.push_back(form.release());
+      unused_database_forms.push_back(form.Pass());
     }
   });
   database_forms->swap(unused_database_forms);
@@ -602,7 +602,7 @@ void GetPasswordsForForms(const AppleKeychain& keychain,
         ExtractPasswordsMergeableWithForm(keychain, item_form_pairs, *form);
 
     ScopedVector<autofill::PasswordForm> db_form_container;
-    db_form_container.push_back(form.release());
+    db_form_container.push_back(form.Pass());
     MergePasswordForms(&keychain_matches, &db_form_container, passwords);
     AppendSecondToFirst(&unused_db_forms, &db_form_container);
   });
@@ -686,7 +686,7 @@ ScopedVector<autofill::PasswordForm> ExtractPasswordsMergeableWithForm(
           true);  // Load password attributes and data.
       // Do not include blacklisted items found in the keychain.
       if (!form_with_password->blacklisted_by_user)
-        matches.push_back(form_with_password.release());
+        matches.push_back(form_with_password.Pass());
     }
   }
   return matches.Pass();
@@ -836,7 +836,7 @@ MacKeychainPasswordFormAdapter::ConvertKeychainItemsToForms(
     scoped_ptr<PasswordForm> form(new PasswordForm());
     if (internal_keychain_helpers::FillPasswordFormFromKeychainItem(
             *keychain_, item, form.get(), true)) {
-      forms.push_back(form.release());
+      forms.push_back(form.Pass());
     }
     keychain_->Free(item);
   }
@@ -1292,7 +1292,7 @@ void PasswordStoreMac::RemoveDatabaseForms(
   MoveAllFormsOut(forms, [this, &removed_forms](
                              scoped_ptr<autofill::PasswordForm> form) {
     if (login_metadata_db_->RemoveLogin(*form))
-      removed_forms.push_back(form.release());
+      removed_forms.push_back(form.Pass());
   });
   removed_forms.swap(*forms);
 }
