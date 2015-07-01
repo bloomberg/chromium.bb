@@ -1070,9 +1070,6 @@ void GLES2GetQueryivEXT(GLenum target, GLenum pname, GLint* params) {
 void GLES2GetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* params) {
   gles2::GetGLContext()->GetQueryObjectuivEXT(id, pname, params);
 }
-void GLES2GetQueryObjectui64vEXT(GLuint id, GLenum pname, GLuint64* params) {
-  gles2::GetGLContext()->GetQueryObjectui64vEXT(id, pname, params);
-}
 void GLES2InsertEventMarkerEXT(GLsizei length, const GLchar* marker) {
   gles2::GetGLContext()->InsertEventMarkerEXT(length, marker);
 }
@@ -2359,10 +2356,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glGetQueryObjectuivEXT",
      reinterpret_cast<GLES2FunctionPointer>(glGetQueryObjectuivEXT),
-    },
-    {
-     "glGetQueryObjectui64vEXT",
-     reinterpret_cast<GLES2FunctionPointer>(glGetQueryObjectui64vEXT),
     },
     {
      "glInsertEventMarkerEXT",

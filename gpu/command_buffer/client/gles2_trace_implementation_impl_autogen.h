@@ -1681,13 +1681,6 @@ void GLES2TraceImplementation::GetQueryObjectuivEXT(GLuint id,
   gl_->GetQueryObjectuivEXT(id, pname, params);
 }
 
-void GLES2TraceImplementation::GetQueryObjectui64vEXT(GLuint id,
-                                                      GLenum pname,
-                                                      GLuint64* params) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetQueryObjectui64vEXT");
-  gl_->GetQueryObjectui64vEXT(id, pname, params);
-}
-
 void GLES2TraceImplementation::InsertEventMarkerEXT(GLsizei length,
                                                     const GLchar* marker) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::InsertEventMarkerEXT");

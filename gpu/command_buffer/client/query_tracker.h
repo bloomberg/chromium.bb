@@ -135,7 +135,7 @@ class GLES2_IMPL_EXPORT QueryTracker {
 
     bool CheckResultsAvailable(CommandBufferHelper* helper);
 
-    uint64 GetResult() const;
+    uint32 GetResult() const;
 
    private:
     friend class QueryTracker;
@@ -152,7 +152,7 @@ class GLES2_IMPL_EXPORT QueryTracker {
     int32 token_;
     uint32 flush_count_;
     uint64 client_begin_time_us_; // Only used for latency query target.
-    uint64 result_;
+    uint32 result_;
   };
 
   QueryTracker(MappedMemoryManager* manager);

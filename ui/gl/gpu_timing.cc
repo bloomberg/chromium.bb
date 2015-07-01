@@ -203,13 +203,15 @@ class TimeElapsedTimerQuery : public TimerQuery {
       return false;
     }
 
-    GLuint done = 0;
-    glGetQueryObjectuiv(gl_query_id_, GL_QUERY_RESULT_AVAILABLE, &done);
+    GLint done = 0;
+    glGetQueryObjectiv(gl_query_id_, GL_QUERY_RESULT_AVAILABLE, &done);
     return !!done;
   }
 
   // Fills out query result start and end, called after IsAvailable() is true.
   void UpdateQueryResults(GPUTimingImpl* gpu_timing) override {
+    DCHECK(IsAvailable(gpu_timing));
+
     GLuint64 result_value = 0;
     glGetQueryObjectui64v(gl_query_id_, GL_QUERY_RESULT, &result_value);
     const int64_t micro_results = NanoToMicro(result_value);
@@ -275,8 +277,8 @@ class TimeStampTimerQuery : public TimerQuery {
 
   // Returns true when UpdateQueryResults() is ready to be called.
   bool IsAvailable(GPUTimingImpl* gpu_timing) override {
-    GLuint done = 0;
-    glGetQueryObjectuiv(gl_query_id_, GL_QUERY_RESULT_AVAILABLE, &done);
+    GLint done = 0;
+    glGetQueryObjectiv(gl_query_id_, GL_QUERY_RESULT_AVAILABLE, &done);
     return !!done;
   }
 

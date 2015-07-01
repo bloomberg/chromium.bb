@@ -573,7 +573,6 @@ const QueryType kQueryTypes[] = {
     {GL_GET_ERROR_QUERY_CHROMIUM, false},
     {GL_COMMANDS_COMPLETED_CHROMIUM, false},
     {GL_ANY_SAMPLES_PASSED_EXT, true},
-    {GL_TIME_ELAPSED, true},
 };
 
 static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
@@ -585,9 +584,7 @@ static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
   // We need to reset the decoder on each iteration, because we lose the
   // context every time.
   GLES2DecoderTestBase::InitState init;
-  init.extensions = "GL_EXT_occlusion_query_boolean"
-                    " GL_ARB_sync"
-                    " GL_ARB_timer_query";
+  init.extensions = "GL_EXT_occlusion_query_boolean GL_ARB_sync";
   init.gl_version = "opengl es 2.0";
   init.has_alpha = true;
   init.request_alpha = true;
@@ -644,16 +641,9 @@ static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
         *gl, GetQueryObjectuiv(service_id, GL_QUERY_RESULT_AVAILABLE_EXT, _))
         .WillOnce(SetArgPointee<2>(1))
         .RetiresOnSaturation();
-    if (query_type.type == GL_TIME_ELAPSED) {
-      EXPECT_CALL(*gl, GetQueryObjectui64v(service_id, GL_QUERY_RESULT_EXT, _))
-          .WillOnce(SetArgPointee<2>(1))
-          .RetiresOnSaturation();
-    } else {
-      EXPECT_CALL(*gl, GetQueryObjectuiv(service_id, GL_QUERY_RESULT_EXT, _))
-          .WillOnce(SetArgPointee<2>(1))
-          .RetiresOnSaturation();
-    }
-    EXPECT_CALL(*gl, DeleteQueries(1, _)).Times(1).RetiresOnSaturation();
+    EXPECT_CALL(*gl, GetQueryObjectuiv(service_id, GL_QUERY_RESULT_EXT, _))
+        .WillOnce(SetArgPointee<2>(1))
+        .RetiresOnSaturation();
   }
   if (query_type.type == GL_COMMANDS_COMPLETED_CHROMIUM) {
 #if DCHECK_IS_ON()
@@ -664,12 +654,6 @@ static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
     EXPECT_CALL(*gl, ClientWaitSync(kGlSync, _, _))
         .WillOnce(Return(GL_ALREADY_SIGNALED))
         .RetiresOnSaturation();
-#if DCHECK_IS_ON()
-    EXPECT_CALL(*gl, IsSync(kGlSync))
-        .WillOnce(Return(GL_TRUE))
-        .RetiresOnSaturation();
-#endif
-    EXPECT_CALL(*gl, DeleteSync(kGlSync)).Times(1).RetiresOnSaturation();
   }
 
   QueryManager* query_manager = test->GetDecoder()->GetQueryManager();
@@ -678,6 +662,18 @@ static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
 
   EXPECT_TRUE(error1 != error::kNoError || error2 != error::kNoError ||
               !process_success);
+
+  if (query_type.is_gl) {
+    EXPECT_CALL(*gl, DeleteQueries(1, _)).Times(1).RetiresOnSaturation();
+  }
+  if (query_type.type == GL_COMMANDS_COMPLETED_CHROMIUM) {
+#if DCHECK_IS_ON()
+    EXPECT_CALL(*gl, IsSync(kGlSync))
+        .WillOnce(Return(GL_TRUE))
+        .RetiresOnSaturation();
+#endif
+    EXPECT_CALL(*gl, DeleteSync(kGlSync)).Times(1).RetiresOnSaturation();
+  }
   test->ResetDecoder();
 }
 

@@ -1283,11 +1283,6 @@ void MojoGLES2Impl::GetQueryObjectuivEXT(GLuint id,
   MojoGLES2MakeCurrent(context_);
   glGetQueryObjectuivEXT(id, pname, params);
 }
-void MojoGLES2Impl::GetQueryObjectui64vEXT(GLuint id,
-                                           GLenum pname,
-                                           GLuint64* params) {
-  NOTREACHED() << "Unimplemented GetQueryObjectui64vEXT.";
-}
 void MojoGLES2Impl::InsertEventMarkerEXT(GLsizei length, const GLchar* marker) {
   NOTREACHED() << "Unimplemented InsertEventMarkerEXT.";
 }

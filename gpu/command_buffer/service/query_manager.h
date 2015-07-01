@@ -16,11 +16,6 @@
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/gpu_export.h"
 
-namespace gfx {
-  class GPUTimer;
-  class GPUTimingClient;
-}
-
 namespace gpu {
 
 class GLES2Decoder;
@@ -193,9 +188,6 @@ class GPU_EXPORT QueryManager {
     return decoder_;
   }
 
-  scoped_ptr<gfx::GPUTimer> CreateGPUTimer(bool elapsed_time);
-  bool GPUTimingAvailable();
-
   void GenQueries(GLsizei n, const GLuint* queries);
   bool IsValidQuery(GLuint id);
 
@@ -248,9 +240,6 @@ class GPU_EXPORT QueryManager {
 
   // Async pixel transfer queries waiting for completion.
   QueryQueue pending_transfer_queries_;
-
-  // Used for timer queries.
-  scoped_refptr<gfx::GPUTimingClient> gpu_timing_client_;
 
   DISALLOW_COPY_AND_ASSIGN(QueryManager);
 };

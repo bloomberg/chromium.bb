@@ -86,6 +86,9 @@ class GL_EXPORT GPUTimer {
   // this object.
   void Destroy(bool have_context);
 
+  // Start an instant timer, start and end will be equal.
+  void Instant();
+
   // Start a timer range.
   void Start();
   void End();

@@ -77,10 +77,10 @@ void GPUTimingFake::ExpectGPUTimerQuery(
   EXPECT_CALL(gl, EndQuery(GL_TIME_ELAPSED))
       .WillRepeatedly(Invoke(this, &GPUTimingFake::FakeGLEndQuery));
 
-  EXPECT_CALL(gl, GetQueryObjectuiv(_, GL_QUERY_RESULT_AVAILABLE,
-                                    NotNull()))
+  EXPECT_CALL(gl, GetQueryObjectiv(_, GL_QUERY_RESULT_AVAILABLE,
+                                        NotNull()))
       .WillRepeatedly(
-          Invoke(this, &GPUTimingFake::FakeGLGetQueryObjectuiv));
+          Invoke(this, &GPUTimingFake::FakeGLGetQueryObjectiv));
 
   EXPECT_CALL(gl, GetQueryObjectui64v(_, GL_QUERY_RESULT, NotNull()))
       .WillRepeatedly(
@@ -149,8 +149,8 @@ void GPUTimingFake::FakeGLEndQuery(GLenum target) {
   }
 }
 
-void GPUTimingFake::FakeGLGetQueryObjectuiv(GLuint id, GLenum pname,
-                                            GLuint* params) {
+void GPUTimingFake::FakeGLGetQueryObjectiv(GLuint id, GLenum pname,
+                                                    GLint* params) {
   switch (pname) {
     case GL_QUERY_RESULT_AVAILABLE: {
       std::map<GLuint, QueryResult>::iterator it = query_results_.find(id);
@@ -160,7 +160,7 @@ void GPUTimingFake::FakeGLGetQueryObjectuiv(GLuint id, GLenum pname,
         *params = 0;
     } break;
     default:
-      FAIL() << "Invalid variable passed to GetQueryObjectuiv: " << pname;
+      FAIL() << "Invalid variable passed to GetQueryObjectiv: " << pname;
   }
 }
 
@@ -189,7 +189,7 @@ void GPUTimingFake::FakeGLGetInteger64v(GLenum pname, GLint64 * data) {
 }
 
 void GPUTimingFake::FakeGLGetQueryObjectui64v(GLuint id, GLenum pname,
-                                              GLuint64* params) {
+                                                       GLuint64* params) {
   switch (pname) {
     case GL_QUERY_RESULT: {
       std::map<GLuint, QueryResult>::iterator it = query_results_.find(id);
