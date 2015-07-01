@@ -17,7 +17,7 @@
 #include "media/base/video_renderer.h"
 #include "media/base/video_renderer_sink.h"
 #include "media/mojo/services/demuxer_stream_provider_shim.h"
-#include "media/mojo/services/renderer_config.h"
+#include "media/mojo/services/mojo_media_client.h"
 #include "media/renderers/audio_renderer_impl.h"
 #include "media/renderers/renderer_impl.h"
 #include "media/renderers/video_renderer_impl.h"
@@ -41,20 +41,20 @@ MojoRendererService::MojoRendererService(
   scoped_refptr<base::SingleThreadTaskRunner> task_runner(
       base::MessageLoop::current()->task_runner());
   scoped_refptr<MediaLog> media_log(new MediaLog());
-  RendererConfig* renderer_config = RendererConfig::Get();
-  audio_renderer_sink_ = renderer_config->GetAudioRendererSink();
-  video_renderer_sink_ = renderer_config->GetVideoRendererSink(task_runner);
+  MojoMediaClient* mojo_media_client = MojoMediaClient::Get();
+  audio_renderer_sink_ = mojo_media_client->GetAudioRendererSink();
+  video_renderer_sink_ = mojo_media_client->GetVideoRendererSink(task_runner);
 
   scoped_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
       task_runner, audio_renderer_sink_.get(),
-      renderer_config->GetAudioDecoders(task_runner,
+      mojo_media_client->GetAudioDecoders(task_runner,
                                         base::Bind(&MediaLog::AddLogEvent,
                                                    media_log)).Pass(),
-      renderer_config->GetAudioHardwareConfig(), media_log));
+      mojo_media_client->GetAudioHardwareConfig(), media_log));
 
   scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
       task_runner, video_renderer_sink_.get(),
-      renderer_config->GetVideoDecoders(task_runner,
+      mojo_media_client->GetVideoDecoders(task_runner,
                                         base::Bind(&MediaLog::AddLogEvent,
                                                    media_log)).Pass(),
       true, nullptr, media_log));

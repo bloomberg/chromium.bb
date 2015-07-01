@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_SERVICES_RENDERER_CONFIG_H_
-#define MEDIA_MOJO_SERVICES_RENDERER_CONFIG_H_
+#ifndef MEDIA_MOJO_SERVICES_MOJO_MEDIA_CLIENT_H_
+#define MEDIA_MOJO_SERVICES_MOJO_MEDIA_CLIENT_H_
 
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_vector.h"
@@ -18,10 +18,10 @@
 namespace media {
 
 // Interface class which clients will extend to override (at compile time) the
-// default audio or video rendering configurations for MojoRendererService.
-class PlatformRendererConfig {
+// default configurations for mojo media services.
+class PlatformMojoMediaClient {
  public:
-  virtual ~PlatformRendererConfig() {};
+  virtual ~PlatformMojoMediaClient() {};
 
   // The list of audio or video decoders for use with the AudioRenderer or
   // VideoRenderer respectively.  Ownership of the decoders is passed to the
@@ -41,17 +41,17 @@ class PlatformRendererConfig {
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) = 0;
 
   // The platform's audio hardware configuration.  Note, this must remain
-  // constant for the lifetime of the PlatformRendererConfig.
+  // constant for the lifetime of the PlatformMojoMediaClient.
   virtual const AudioHardwareConfig& GetAudioHardwareConfig() = 0;
 };
 
-class RendererConfig {
+class MojoMediaClient {
  public:
-  // Returns an instance of the RenderConfig object.  Only one instance will
+  // Returns an instance of the MojoMediaClient object.  Only one instance will
   // exist per process.
-  static RendererConfig* Get();
+  static MojoMediaClient* Get();
 
-  // Copy of the PlatformRendererConfig interface.
+  // Copy of the PlatformMojoMediaClient interface.
   ScopedVector<AudioDecoder> GetAudioDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const LogCB& media_log_cb);
@@ -64,16 +64,16 @@ class RendererConfig {
   const AudioHardwareConfig& GetAudioHardwareConfig();
 
  private:
-  friend struct base::DefaultLazyInstanceTraits<RendererConfig>;
+  friend struct base::DefaultLazyInstanceTraits<MojoMediaClient>;
 
-  RendererConfig();
-  ~RendererConfig();
+  MojoMediaClient();
+  ~MojoMediaClient();
 
-  scoped_ptr<PlatformRendererConfig> renderer_config_;
+  scoped_ptr<PlatformMojoMediaClient> mojo_media_client_;
 
-  DISALLOW_COPY_AND_ASSIGN(RendererConfig);
+  DISALLOW_COPY_AND_ASSIGN(MojoMediaClient);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_MOJO_SERVICES_RENDERER_CONFIG_H_
+#endif  // MEDIA_MOJO_SERVICES_MOJO_MEDIA_CLIENT_H_

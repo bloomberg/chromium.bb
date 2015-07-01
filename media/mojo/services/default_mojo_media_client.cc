@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/mojo/services/renderer_config.h"
+#include "media/mojo/services/mojo_media_client.h"
 
 #include "base/files/file_path.h"
 #include "base/path_service.h"
@@ -25,9 +25,9 @@
 namespace media {
 namespace internal {
 
-class DefaultRendererConfig : public PlatformRendererConfig {
+class DefaultMojoMediaClient : public PlatformMojoMediaClient {
  public:
-  DefaultRendererConfig() {
+  DefaultMojoMediaClient() {
     InitializeMediaLibrary();
 
     // TODO(dalecurtis): We should find a single owner per process for the audio
@@ -98,11 +98,11 @@ class DefaultRendererConfig : public PlatformRendererConfig {
   FakeAudioLogFactory fake_audio_log_factory_;
   scoped_ptr<AudioHardwareConfig> audio_hardware_config_;
 
-  DISALLOW_COPY_AND_ASSIGN(DefaultRendererConfig);
+  DISALLOW_COPY_AND_ASSIGN(DefaultMojoMediaClient);
 };
 
-scoped_ptr<PlatformRendererConfig> CreatePlatformRendererConfig() {
-  return make_scoped_ptr(new DefaultRendererConfig());
+scoped_ptr<PlatformMojoMediaClient> CreatePlatformMojoMediaClient() {
+  return make_scoped_ptr(new DefaultMojoMediaClient());
 }
 
 }  // namespace internal
