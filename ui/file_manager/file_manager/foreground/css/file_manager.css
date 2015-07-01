@@ -399,7 +399,7 @@ body.check-select #share-button > .icon {
       url(../images/files/ui/2x/delete_white.png) 2x);
 }
 
-body.check-select #delete-button {
+body.check-select #delete-button > .icon {
   background-image: -webkit-image-set(
       url(../images/files/ui/delete.png) 1x,
       url(../images/files/ui/2x/delete.png) 2x);
