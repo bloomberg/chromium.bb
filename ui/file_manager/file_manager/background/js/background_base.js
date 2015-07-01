@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @typedef {function(!Array<string>):!Promise} */
-var LaunchHandler;
-
 /**
  * Root class of the background page.
  * @constructor
@@ -40,9 +37,6 @@ function BackgroundBase() {
       return strings;
     }.bind(this));
   }.bind(this));
-
-  /** @private {?LaunchHandler} */
-  this.launchHandler_ = null;
 
   // Initialize handlers.
   chrome.app.runtime.onLaunched.addListener(this.onLaunched_.bind(this));
@@ -95,7 +89,7 @@ BackgroundBase.prototype.onLaunched_ = function(launchData) {
 
 /**
  * Set a handler which is called when an app is launched.
- * @param {!LaunchHandler} handler Function to be called.
+ * @param {!function(Array<string>)} handler Function to be called.
  */
 BackgroundBase.prototype.setLaunchHandler = function(handler) {
   this.launchHandler_ = handler;
