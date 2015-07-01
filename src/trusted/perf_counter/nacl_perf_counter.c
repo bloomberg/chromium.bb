@@ -64,8 +64,9 @@ int NaClPerfCounterMark(struct NaClPerfCounter *sv, const char *ev_name) {
     NaClLog(LOG_ERROR, "NaClPerfCounterMark going beyond buffer size\n");
     return -1;
   }
-  /* busy loop until we succeed, damn it */
-  while (0 != NaClGetTimeOfDay(&(sv->sample_list[sv->samples])));
+  while (0 != NaClGetTimeOfDay(&(sv->sample_list[sv->samples]))) {
+    /* busy loop until we succeed, damn it */
+  }
 
   /*
    * This relies upon memset() inside NaClPerfCounterCtor() for
