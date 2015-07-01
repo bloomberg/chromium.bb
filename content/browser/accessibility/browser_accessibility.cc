@@ -60,14 +60,6 @@ bool BrowserAccessibility::PlatformIsLeaf() const {
 }
 
 uint32 BrowserAccessibility::PlatformChildCount() const {
-  if (GetBoolAttribute(ui::AX_ATTR_IS_AX_TREE_HOST)) {
-    // Check if the child frame currently exists.
-    if (manager_->delegate()->AccessibilityGetChildFrame(GetId()))
-      return 1;
-
-    return 0;
-  }
-
   return PlatformIsLeaf() ? 0 : InternalChildCount();
 }
 
@@ -88,16 +80,14 @@ bool BrowserAccessibility::IsDescendantOf(
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetChild(
     uint32 child_index) const {
-  DCHECK(child_index < PlatformChildCount());
-  BrowserAccessibility* result = nullptr;
+  DCHECK(child_index < InternalChildCount());
+  BrowserAccessibility* result = InternalGetChild(child_index);
 
-  if (GetBoolAttribute(ui::AX_ATTR_IS_AX_TREE_HOST)) {
+  if (result->HasBoolAttribute(ui::AX_ATTR_IS_AX_TREE_HOST)) {
     BrowserAccessibilityManager* child_manager =
-        manager_->delegate()->AccessibilityGetChildFrame(GetId());
+        manager_->delegate()->AccessibilityGetChildFrame(result->GetId());
     if (child_manager)
       result = child_manager->GetRoot();
-  } else {
-    result = InternalGetChild(child_index);
   }
 
   return result;
@@ -160,7 +150,7 @@ BrowserAccessibility* BrowserAccessibility::GetParent() const {
   if (!host_node)
     return NULL;
 
-  return host_node;
+  return host_node->GetParent();
 }
 
 int32 BrowserAccessibility::GetIndexInParent() const {

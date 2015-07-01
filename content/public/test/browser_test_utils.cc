@@ -1013,39 +1013,4 @@ void FrameWatcher::WaitFrames(int frames_to_wait) {
   run_loop.Run();
 }
 
-RenderFrameDeletedObserver::RenderFrameDeletedObserver(
-    RenderFrameHost* rfh)
-    : WebContentsObserver(WebContents::FromRenderFrameHost(rfh)),
-      process_id_(rfh->GetProcess()->GetID()),
-      routing_id_(rfh->GetRoutingID()),
-      deleted_(false) {
-}
-
-RenderFrameDeletedObserver::~RenderFrameDeletedObserver() {
-}
-
-void RenderFrameDeletedObserver::RenderFrameDeleted(
-    RenderFrameHost* render_frame_host) {
-  if (render_frame_host->GetProcess()->GetID() == process_id_ &&
-      render_frame_host->GetRoutingID() == routing_id_) {
-    deleted_ = true;
-
-    if (runner_.get())
-      runner_->Quit();
-  }
-}
-
-bool RenderFrameDeletedObserver::deleted() {
-  return deleted_;
-}
-
-void RenderFrameDeletedObserver::WaitUntilDeleted() {
-  if (deleted_)
-    return;
-
-  runner_.reset(new base::RunLoop());
-  runner_->Run();
-  runner_.reset(nullptr);
-}
-
 }  // namespace content

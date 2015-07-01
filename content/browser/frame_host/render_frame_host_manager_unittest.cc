@@ -33,7 +33,6 @@
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
-#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_notification_tracker.h"
 #include "content/test/test_content_browser_client.h"
@@ -175,6 +174,36 @@ class RenderFrameHostCreatedObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(RenderFrameHostCreatedObserver);
 };
 
+// This observer keeps track of the last deleted RenderFrameHost to avoid
+// accessing it and causing use-after-free condition.
+class RenderFrameHostDeletedObserver : public WebContentsObserver {
+ public:
+  RenderFrameHostDeletedObserver(RenderFrameHost* rfh)
+      : WebContentsObserver(WebContents::FromRenderFrameHost(rfh)),
+        process_id_(rfh->GetProcess()->GetID()),
+        routing_id_(rfh->GetRoutingID()),
+        deleted_(false) {
+  }
+
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override {
+    if (render_frame_host->GetProcess()->GetID() == process_id_ &&
+        render_frame_host->GetRoutingID() == routing_id_) {
+      deleted_ = true;
+    }
+  }
+
+  bool deleted() {
+    return deleted_;
+  }
+
+ private:
+  int process_id_;
+  int routing_id_;
+  bool deleted_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostDeletedObserver);
+};
+
 // This WebContents observer keep track of its RVH change.
 class RenderViewHostChangedObserver : public WebContentsObserver {
  public:
@@ -292,7 +321,7 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
 
     // Use an observer to avoid accessing a deleted renderer later on when the
     // state is being checked.
-    RenderFrameDeletedObserver rfh_observer(old_rfh);
+    RenderFrameHostDeletedObserver rfh_observer(old_rfh);
     RenderViewHostDeletedObserver rvh_observer(old_rfh->GetRenderViewHost());
     active_rfh->SendNavigate(max_page_id + 1, entry_id, true, url);
 
@@ -1353,7 +1382,7 @@ TEST_F(RenderFrameHostManagerTest, CreateSwappedOutOpenerRFHs) {
   RenderFrameHostManager* manager = contents()->GetRenderManagerForTesting();
   TestRenderFrameHost* rfh1 = main_test_rfh();
   scoped_refptr<SiteInstanceImpl> site_instance1 = rfh1->GetSiteInstance();
-  RenderFrameDeletedObserver rfh1_deleted_observer(rfh1);
+  RenderFrameHostDeletedObserver rfh1_deleted_observer(rfh1);
   TestRenderViewHost* rvh1 = test_rvh();
 
   // Create 2 new tabs and simulate them being the opener chain for the main
@@ -1837,7 +1866,7 @@ TEST_F(RenderFrameHostManagerTest, DeleteFrameAfterSwapOutACK) {
   // Navigate to the first page.
   contents()->NavigateAndCommit(kUrl1);
   TestRenderFrameHost* rfh1 = contents()->GetMainFrame();
-  RenderFrameDeletedObserver rfh_deleted_observer(rfh1);
+  RenderFrameHostDeletedObserver rfh_deleted_observer(rfh1);
   EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh1->rfh_state());
 
   // Navigate to new site, simulating onbeforeunload approval.
@@ -1883,7 +1912,7 @@ TEST_F(RenderFrameHostManagerTest, SwapOutFrameAfterSwapOutACK) {
   // Navigate to the first page.
   contents()->NavigateAndCommit(kUrl1);
   TestRenderFrameHost* rfh1 = contents()->GetMainFrame();
-  RenderFrameDeletedObserver rfh_deleted_observer(rfh1);
+  RenderFrameHostDeletedObserver rfh_deleted_observer(rfh1);
   EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh1->rfh_state());
 
   // Increment the number of active frames in SiteInstanceImpl so that rfh1 is
@@ -1932,7 +1961,7 @@ TEST_F(RenderFrameHostManagerTest,
   // Navigate to the first page.
   contents()->NavigateAndCommit(kUrl1);
   TestRenderFrameHost* rfh1 = contents()->GetMainFrame();
-  RenderFrameDeletedObserver rfh_deleted_observer(rfh1);
+  RenderFrameHostDeletedObserver rfh_deleted_observer(rfh1);
   EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh1->rfh_state());
 
   // Increment the number of active frames in SiteInstanceImpl so that rfh1 is
@@ -1991,7 +2020,7 @@ TEST_F(RenderFrameHostManagerTest,
   {
     pending_rfh = contents()->GetFrameTree()->root()->render_manager()
         ->pending_frame_host();
-    RenderFrameDeletedObserver rfh_deleted_observer(pending_rfh);
+    RenderFrameHostDeletedObserver rfh_deleted_observer(pending_rfh);
 
     // Cancel the navigation by simulating a declined beforeunload dialog.
     contents()->GetMainFrame()->OnMessageReceived(
@@ -2009,7 +2038,7 @@ TEST_F(RenderFrameHostManagerTest,
   {
     pending_rfh = contents()->GetFrameTree()->root()->render_manager()
         ->pending_frame_host();
-    RenderFrameDeletedObserver rfh_deleted_observer(pending_rfh);
+    RenderFrameHostDeletedObserver rfh_deleted_observer(pending_rfh);
 
     // Increment the number of active frames in the new SiteInstance, which will
     // cause the pending RFH to be deleted and a RenderFrameProxyHost to be
@@ -2103,8 +2132,8 @@ TEST_F(RenderFrameHostManagerTest, DetachPendingChild) {
   EXPECT_FALSE(contents()->CrossProcessNavigationPending())
     << "There should be no top-level pending navigation.";
 
-  RenderFrameDeletedObserver delete_watcher1(GetPendingFrameHost(iframe1));
-  RenderFrameDeletedObserver delete_watcher2(GetPendingFrameHost(iframe2));
+  RenderFrameHostDeletedObserver delete_watcher1(GetPendingFrameHost(iframe1));
+  RenderFrameHostDeletedObserver delete_watcher2(GetPendingFrameHost(iframe2));
   EXPECT_FALSE(delete_watcher1.deleted());
   EXPECT_FALSE(delete_watcher2.deleted());
 

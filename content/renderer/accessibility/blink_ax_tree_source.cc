@@ -37,7 +37,7 @@ using blink::WebAXObject;
 using blink::WebDocument;
 using blink::WebDocumentType;
 using blink::WebElement;
-using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebNode;
 using blink::WebPlugin;
 using blink::WebPluginContainer;
@@ -421,21 +421,6 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
         dst->AddBoolAttribute(ui::AX_ATTR_IS_AX_TREE_HOST, true);
       }
     }
-
-    // Out-of-process iframe.
-    if (is_iframe && node_to_frame_routing_id_map_) {
-      WebFrame* frame = WebFrame::fromFrameOwnerElement(element);
-
-      if (frame->isWebRemoteFrame()) {
-        RenderFrameProxy* render_frame_proxy =
-            RenderFrameProxy::FromWebFrame(frame);
-
-        DCHECK(render_frame_proxy);
-        (*node_to_frame_routing_id_map_)[dst->id] =
-            render_frame_proxy->routing_id();
-        dst->AddBoolAttribute(ui::AX_ATTR_IS_AX_TREE_HOST, true);
-      }
-    }
   }
 
   if (src.isInLiveRegion()) {
@@ -492,6 +477,23 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
                               UTF16ToUTF8(doctype.name()));
     }
 
+    if (node_to_frame_routing_id_map_ && !src.equals(GetRoot())) {
+      WebLocalFrame* frame = document.frame();
+      RenderFrameImpl* render_frame = RenderFrameImpl::FromWebFrame(frame);
+      if (render_frame) {
+        (*node_to_frame_routing_id_map_)[dst->id] =
+            render_frame->GetRoutingID();
+        dst->AddBoolAttribute(ui::AX_ATTR_IS_AX_TREE_HOST, true);
+      } else {
+        RenderFrameProxy* render_frame_proxy =
+            RenderFrameProxy::FromWebFrame(frame);
+        if (render_frame_proxy) {
+          (*node_to_frame_routing_id_map_)[dst->id] =
+              render_frame_proxy->routing_id();
+          dst->AddBoolAttribute(ui::AX_ATTR_IS_AX_TREE_HOST, true);
+        }
+      }
+    }
   }
 
   if (dst->role == ui::AX_ROLE_TABLE) {
