@@ -35,22 +35,18 @@ InputMethodWin::InputMethodWin(internal::InputMethodDelegate* delegate,
       composing_window_handle_(NULL),
       default_input_language_initialized_(false) {
   SetDelegate(delegate);
+  // Temporarily apply "always-focused" mode for InputMethodWin due to
+  // regression crbug.com/493292 caused by cl
+  // https://codereview.chromium.org/1109333002.
+  // This is only for quick fix in M44.
+  // TODO(shuchen): remove the "always-focused" mode for M45.
+  InputMethodBase::OnFocus();
 }
 
 void InputMethodWin::OnFocus() {
-  InputMethodBase::OnFocus();
-  if (GetTextInputClient())
-    UpdateIMEState();
 }
 
 void InputMethodWin::OnBlur() {
-  ConfirmCompositionText();
-  // Gets the focused text input client before calling parent's OnBlur() because
-  // it will cause GetTextInputClient() returns NULL.
-  ui::TextInputClient* client = GetTextInputClient();
-  InputMethodBase::OnBlur();
-  if (client)
-    UpdateIMEState();
 }
 
 bool InputMethodWin::OnUntranslatedIMEMessage(
