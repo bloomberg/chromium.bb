@@ -417,7 +417,13 @@ void TextFieldInputType::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent* 
     // If the text field has no focus, we don't need to take account of the
     // selection length. The selection is the source of text drag-and-drop in
     // that case, and nothing in the text field will be removed.
-    unsigned selectionLength = element().focused() ? plainText(element().document().frame()->selection().selection().toNormalizedRange().get()).length() : 0;
+    unsigned selectionLength = 0;
+    if (element().focused()) {
+        Position startPosition;
+        Position endPosition;
+        element().document().frame()->selection().selection().toNormalizedPositions(startPosition, endPosition);
+        selectionLength = plainText(startPosition, endPosition).length();
+    }
     ASSERT(oldLength >= selectionLength);
 
     // Selected characters will be removed by the next text event.

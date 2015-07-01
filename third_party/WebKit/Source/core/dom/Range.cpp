@@ -933,7 +933,7 @@ String Range::toString() const
 
 String Range::text() const
 {
-    return plainText(this, TextIteratorEmitsObjectReplacementCharacter);
+    return plainText(startPosition(), endPosition(), TextIteratorEmitsObjectReplacementCharacter);
 }
 
 PassRefPtrWillBeRawPtr<DocumentFragment> Range::createContextualFragment(const String& markup, ExceptionState& exceptionState)

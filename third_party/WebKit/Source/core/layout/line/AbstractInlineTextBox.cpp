@@ -159,10 +159,9 @@ String AbstractInlineTextBox::text() const
     unsigned start = m_inlineTextBox->start();
     unsigned len = m_inlineTextBox->len();
     if (Node* node = m_layoutText->node()) {
-        RefPtrWillBeRawPtr<Range> range = Range::create(node->document());
-        range->setStart(node, start, IGNORE_EXCEPTION);
-        range->setEnd(node, start + len, IGNORE_EXCEPTION);
-        return plainText(range.get(), TextIteratorIgnoresStyleVisibility);
+        if (node->isTextNode())
+            return plainText(Position(node, start), Position(node, start + len), TextIteratorIgnoresStyleVisibility);
+        return plainText(Position(node, Position::PositionIsBeforeAnchor), Position(node, Position::PositionIsAfterAnchor), TextIteratorIgnoresStyleVisibility);
     }
 
     String result = m_layoutText->text().substring(start, len).simplifyWhiteSpace(WTF::DoNotStripWhiteSpace);

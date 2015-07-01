@@ -410,7 +410,7 @@ void SpellChecker::markMisspellingsAfterTypingToWord(const VisiblePosition &word
         return;
 
     // Get the misspelled word.
-    const String misspelledWord = plainText(misspellingRange.get());
+    const String misspelledWord = plainText(misspellingRange->startPosition(), misspellingRange->endPosition());
     String autocorrectedString = textChecker().getAutoCorrectSuggestionForMisspelledWord(misspelledWord);
 
     // If autocorrected word is non empty, replace the misspelled word by this word.

@@ -191,7 +191,7 @@ const String& TextCheckingParagraph::text() const
 {
     ASSERT(m_checkingRange);
     if (m_text.isEmpty())
-        m_text = plainText(paragraphRange().get());
+        m_text = plainText(paragraphRange()->startPosition(), paragraphRange()->endPosition());
     return m_text;
 }
 

@@ -1089,11 +1089,6 @@ static String createPlainText(const typename Strategy::PositionType& start, cons
     return builder.toString();
 }
 
-String plainText(const Range* r, TextIteratorBehaviorFlags behavior)
-{
-    return createPlainText<EditingStrategy>(r->startPosition(), r->endPosition(), behavior);
-}
-
 String plainText(const Position& start, const Position& end, TextIteratorBehaviorFlags behavior)
 {
     return createPlainText<EditingStrategy>(start, end, behavior);

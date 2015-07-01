@@ -1036,7 +1036,7 @@ void Editor::transpose()
     VisibleSelection newSelection(range.get(), DOWNSTREAM);
 
     // Transpose the two characters.
-    String text = plainText(range.get());
+    String text = plainText(range->startPosition(), range->endPosition());
     if (text.length() != 2)
         return;
     String transposed = text.right(1) + text.left(1);
@@ -1054,7 +1054,7 @@ void Editor::addToKillRing(Range* range, bool prepend)
     if (m_shouldStartNewKillRingSequence)
         killRing().startNewSequence();
 
-    String text = plainText(range);
+    String text = plainText(range->startPosition(), range->endPosition());
     if (prepend)
         killRing().prepend(text);
     else

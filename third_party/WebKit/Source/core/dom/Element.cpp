@@ -2497,7 +2497,7 @@ String Element::innerText()
     if (!layoutObject())
         return textContent(true);
 
-    return plainText(rangeOfContents(const_cast<Element*>(this)).get());
+    return plainText(Position(this, Position::PositionIsBeforeChildren), Position(this, Position::PositionIsAfterChildren));
 }
 
 String Element::outerText()
