@@ -75,26 +75,29 @@ crbug.com/24182 http/tests/perf/large-inlined-script.html [ Slow ]
 crbug.com/474121 editing/deleting/password-delete-performance.html [ Slow ]
 crbug.com/237245 [ Debug Win7 ] editing/selection/programmatic-selection-on-mac-is-directionless.html [ Slow ]
 
-# FIXME: Most inspector tests are slow. We should triage and consolidate these bugs and figure out if any are unusually slow.
-webkit.org/b/60109 inspector/elements/edit/edit-dom-actions.html [ Slow ]
-webkit.org/b/84735 [ Win ] http/tests/inspector/change-iframe-src.html [ Slow ]
+# Most inspector tests are slow in Debug.
 webkit.org/b/90488 [ Debug ] inspector/ [ Slow ]
 webkit.org/b/90488 [ Debug ] http/tests/inspector/ [ Slow ]
-webkit.org/b/90488 [ Release ] http/tests/inspector/compiler-source-mapping-debug.html [ Slow ]
 webkit.org/b/90488 [ Debug ] http/tests/inspector-enabled/ [ Slow ]
 webkit.org/b/90488 [ Debug ] inspector-protocol/ [ Slow ]
-crbug.com/243492 http/tests/inspector-enabled/injected-script-discard.html [ Slow ]
+
+# Debugger and profiler tests are slow in Release as well.
+crbug.com/450493 inspector/sources/ [ Slow ]
+crbug.com/450493 inspector-enabled/sources/ [ Slow ]
+crbug.com/450493 http/tests/inspector/sources/ [ Slow ]
+crbug.com/450493 http/tests/inspector/stacktraces/ [ Slow ]
+crbug.com/450493 inspector/profiler/ [ Slow ]
+crbug.com/420008 inspector/tracing/ [ Slow ]
 crbug.com/246190 [ Release ] http/tests/inspector/indexeddb/ [ Slow ]
-crbug.com/247466 [ Release ] inspector-enabled/sources/debugger/script-formatter-console.html [ Slow ]
-crbug.com/247466 [ Release ] inspector-enabled/sources/debugger/linkifier.html [ Slow ]
-crbug.com/247466 [ Release ] inspector/profiler/heap-snapshot-comparison-expansion-preserved-when-sorting.html [ Slow ]
+
+# Random slow tests
+webkit.org/b/90488 [ Release ] http/tests/inspector/compiler-source-mapping-debug.html [ Slow ]
+crbug.com/243492 http/tests/inspector-enabled/injected-script-discard.html [ Slow ]
 crbug.com/327078 http/tests/inspector/network/long-script-content.html [ Slow ]
-crbug.com/247466 [ Debug ] inspector-enabled/sources/debugger/script-formatter-breakpoints-1.html [ Slow ]
-crbug.com/247466 [ Debug ] inspector-enabled/sources/debugger/script-formatter-breakpoints-4.html [ Slow ]
-crbug.com/420008 [ Release ] inspector/tracing [ Slow ]
 crbug.com/420008 [ Release ] inspector/editor/text-editor-word-jumps.html [ Slow ]
 crbug.com/420008 [ Release ] http/tests/inspector/console-xhr-logging.html [ Slow ]
-crbug.com/450493 inspector/sources [ Slow ]
+webkit.org/b/60109 inspector/elements/edit/edit-dom-actions.html [ Slow ]
+webkit.org/b/84735 [ Win ] http/tests/inspector/change-iframe-src.html [ Slow ]
 
 # This test is intentionally SLOW as we're waiting for a connection timeout.
 crbug.com/73609 http/tests/media/video-play-stall.html [ Slow ]
