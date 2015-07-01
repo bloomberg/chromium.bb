@@ -1628,6 +1628,9 @@ crbug.com/492511 [ Mac ] virtual/antialiasedtext/fast/text/atsui-spacing-feature
 #crbug.com/492511 [ Mac ] virtual/antialiasedtext/fast/text/vertical-rl-rtl-linebreak.html [ ImageOnlyFailure ]
 crbug.com/492511 [ Mac ] virtual/antialiasedtext/fast/text/international/arabic-justify.html [ ImageOnlyFailure ]
 
+crbug.com/506240 [ Mac ] fast/text/international/text-shaping-arabic.html [ ImageOnlyFailure ]
+crbug.com/506240 [ Mac ] virtual/antialiasedtext/fast/text/international/text-shaping-arabic.html [ ImageOnlyFailure ]
+
 # Temporary, until [Unforgeable] attributes have the right accessors 'get' and 'set'.
 crbug.com/491006 http/tests/security/cross-origin-access-over-property-descriptor.html [ Failure ]
 
