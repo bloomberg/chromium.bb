@@ -35,7 +35,7 @@ TEST(X509CertificateModelTest, GetCertNameOrNicknameAndGetTitle) {
       net::ImportCertFromFile(net::GetTestCertsDirectory(),
                               "no_subject_common_name_cert.pem"));
   ASSERT_TRUE(no_cn_cert.get());
-#if defined(USE_OPENSSL)
+#if defined(USE_OPENSSL_CERTS)
   EXPECT_EQ("emailAddress=wtc@google.com",
             x509_certificate_model::GetCertNameOrNickname(
                 no_cn_cert->os_cert_handle()));
@@ -50,7 +50,7 @@ TEST(X509CertificateModelTest, GetCertNameOrNicknameAndGetTitle) {
             x509_certificate_model::GetTitle(
                 punycode_cert->os_cert_handle()));
 
-#if defined(USE_OPENSSL)
+#if defined(USE_OPENSSL_CERTS)
   EXPECT_EQ("emailAddress=wtc@google.com",
             x509_certificate_model::GetTitle(
                 no_cn_cert->os_cert_handle()));
@@ -215,7 +215,7 @@ TEST(X509CertificateModelTest, GetTypeCA) {
                               "root_ca_cert.pem"));
   ASSERT_TRUE(cert.get());
 
-#if defined(USE_OPENSSL)
+#if defined(USE_OPENSSL_CERTS)
   // Remove this when OpenSSL build implements the necessary functions.
   EXPECT_EQ(net::OTHER_CERT,
             x509_certificate_model::GetType(cert->os_cert_handle()));
@@ -245,7 +245,7 @@ TEST(X509CertificateModelTest, GetTypeServer) {
                               "google.single.der"));
   ASSERT_TRUE(cert.get());
 
-#if defined(USE_OPENSSL)
+#if defined(USE_OPENSSL_CERTS)
   // Remove this when OpenSSL build implements the necessary functions.
   EXPECT_EQ(net::OTHER_CERT,
             x509_certificate_model::GetType(cert->os_cert_handle()));
@@ -315,7 +315,7 @@ TEST(X509CertificateModelTest, GetCMSString) {
             net::X509Certificate::FORMAT_PKCS7);
 
     ASSERT_EQ(certs.size(), decoded_certs.size());
-#if defined(USE_OPENSSL)
+#if defined(USE_OPENSSL_CERTS)
     for (size_t i = 0; i < certs.size(); ++i)
       EXPECT_TRUE(certs[i]->Equals(decoded_certs[i].get()));
 #else
@@ -397,7 +397,7 @@ TEST(X509CertificateModelTest, ProcessSubjectPublicKeyInfo) {
         "2A 15 84 49 F1 01 BF 9B 30 06 D0 15 A0 1F 9D 51\n"
         "91 47 E1 53 5F EF 5E EC C2 61 79 C2 14 9F C4 E3\n"
         "\n"
-#if defined(USE_OPENSSL)
+#if defined(USE_OPENSSL_CERTS)
         "  Public Exponent (17 bits):\n"
 #else
         "  Public Exponent (24 bits):\n"
