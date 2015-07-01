@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
@@ -139,11 +141,33 @@ void PrintJsonFileInfo() {
          switches::kRefreshTokenFileSwitchName);
 }
 
+// This class exists so that we can create a test suite which does not create
+// its own AtExitManager.  The problem we are working around occurs when
+// the test suite does not create an AtExitManager (e.g. if no tests are run)
+// and the environment object destroys its MessageLoop, then a crash will occur.
+class NoAtExitBaseTestSuite : public base::TestSuite {
+ public:
+  NoAtExitBaseTestSuite(int argc, char** argv)
+      : base::TestSuite(argc, argv, false) {}
+
+  static int RunTestSuite(int argc, char** argv) {
+    return NoAtExitBaseTestSuite(argc, argv).Run();
+  }
+};
+
 }  // namespace
 
 int main(int argc, char** argv) {
+  base::AtExitManager at_exit;
+  base::MessageLoopForIO message_loop;
   testing::InitGoogleTest(&argc, argv);
-  base::TestSuite test_suite(argc, argv);
+
+  if (!base::CommandLine::InitializedForCurrentProcess()) {
+    if (!base::CommandLine::Init(argc, argv)) {
+      LOG(ERROR) << "Failed to initialize command line singleton.";
+      return -1;
+    }
+  }
 
   // The pointer returned here refers to a singleton, since we don't own the
   // lifetime of the object, don't wrap in a scoped_ptr construct or release it.
@@ -171,7 +195,7 @@ int main(int argc, char** argv) {
     PrintAuthCodeInfo();
     return base::LaunchUnitTestsSerially(
         argc, argv,
-        base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite)));
+        base::Bind(&NoAtExitBaseTestSuite::RunTestSuite, argc, argv));
   }
 
   // Verify we received the required input from the command line.
@@ -254,6 +278,5 @@ int main(int argc, char** argv) {
   // Because many tests may access the same remoting host(s), we need to run
   // the tests sequentially so they do not interfere with each other.
   return base::LaunchUnitTestsSerially(
-      argc, argv,
-      base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite)));
+      argc, argv, base::Bind(&NoAtExitBaseTestSuite::RunTestSuite, argc, argv));
 }

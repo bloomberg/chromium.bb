@@ -32,8 +32,7 @@ AppRemotingTestDriverEnvironment::AppRemotingTestDriverEnvironment(
       refresh_token_file_path_(refresh_token_file_path),
       test_access_token_fetcher_(nullptr),
       test_refresh_token_store_(nullptr),
-      test_remote_host_info_fetcher_(nullptr),
-      message_loop_(new base::MessageLoopForIO()) {
+      test_remote_host_info_fetcher_(nullptr) {
   DCHECK(!user_name_.empty());
   DCHECK(service_environment_ < kUnknownEnvironment);
 
@@ -48,6 +47,10 @@ bool AppRemotingTestDriverEnvironment::Initialize(
     const std::string& auth_code) {
   if (!access_token_.empty()) {
     return true;
+  }
+
+  if (!base::MessageLoop::current()) {
+    message_loop_.reset(new base::MessageLoopForIO);
   }
 
   // If a unit test has set |test_refresh_token_store_| then we should use it
