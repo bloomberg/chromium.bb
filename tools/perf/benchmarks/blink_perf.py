@@ -9,9 +9,9 @@ from core import perf_benchmark
 from telemetry import benchmark
 from telemetry.core import util
 from telemetry import page as page_module
-from telemetry.page import page_set
 from telemetry.page import page_test
 from telemetry.page import shared_page_state
+from telemetry import story
 from telemetry.value import list_of_scalar_values
 
 from page_sets import webgl_supported_shared_state
@@ -61,7 +61,7 @@ def CreateStorySetFromPath(path, skipped_file,
     _AddDir(path, tuple(skipped))
   else:
     _AddPage(path)
-  ps = page_set.PageSet(base_dir=os.getcwd()+os.sep,
+  ps = story.StorySet(base_dir=os.getcwd()+os.sep,
                         serving_dirs=serving_dirs)
   for url in page_urls:
     ps.AddUserStory(page_module.Page(

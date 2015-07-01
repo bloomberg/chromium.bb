@@ -13,8 +13,8 @@ from core import perf_benchmark
 from telemetry import benchmark
 from telemetry.core import util
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import page_test
+from telemetry import story
 from telemetry.value import scalar
 
 
@@ -58,9 +58,9 @@ class MapsBenchmark(perf_benchmark.PerfBenchmark):
   def CreateStorySet(self, options):
     page_set_path = os.path.join(
         util.GetChromiumSrcDir(), 'tools', 'perf', 'page_sets')
-    ps = page_set_module.PageSet(
+    ps = story.StorySet(
         archive_data_file='data/maps.json', base_dir=page_set_path,
-        bucket=page_set_module.PUBLIC_BUCKET)
+        cloud_storage_bucket=story.PUBLIC_BUCKET)
     ps.AddUserStory(MapsPage(ps, ps.base_dir))
     return ps
 

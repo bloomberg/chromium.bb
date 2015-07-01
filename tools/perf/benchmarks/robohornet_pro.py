@@ -10,8 +10,8 @@ from core import perf_benchmark
 
 from telemetry import benchmark
 from telemetry import page as page_module
-from telemetry.page import page_set
 from telemetry.page import page_test
+from telemetry import story
 from telemetry.value import scalar
 
 from metrics import power
@@ -61,10 +61,10 @@ class RobohornetPro(perf_benchmark.PerfBenchmark):
     return 'robohornet_pro'
 
   def CreateStorySet(self, options):
-    ps = page_set.PageSet(
+    ps = story.StorySet(
         archive_data_file='../page_sets/data/robohornet_pro.json',
         base_dir=os.path.dirname(os.path.abspath(__file__)),
-        bucket=page_set.PARTNER_BUCKET)
+        cloud_storage_bucket=story.PARTNER_BUCKET)
     ps.AddUserStory(page_module.Page(
         'http://ie.microsoft.com/testdrive/performance/robohornetpro/',
         ps, ps.base_dir,

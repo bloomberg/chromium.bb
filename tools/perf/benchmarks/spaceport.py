@@ -12,8 +12,8 @@ from core import perf_benchmark
 from telemetry import benchmark
 from telemetry.core import util
 from telemetry import page as page_module
-from telemetry.page import page_set
 from telemetry.page import page_test
+from telemetry import story
 from telemetry.value import list_of_scalar_values
 from telemetry.value import scalar
 
@@ -115,6 +115,6 @@ class Spaceport(perf_benchmark.PerfBenchmark):
   def CreateStorySet(self, options):
     spaceport_dir = os.path.join(util.GetChromiumSrcDir(), 'chrome', 'test',
         'data', 'third_party', 'spaceport')
-    ps = page_set.PageSet(base_dir=spaceport_dir)
+    ps = story.StorySet(base_dir=spaceport_dir)
     ps.AddUserStory(page_module.Page('file://index.html', ps, ps.base_dir))
     return ps

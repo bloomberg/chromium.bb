@@ -47,12 +47,12 @@ def SmokeTestGenerator(benchmark):
     class SinglePageBenchmark(benchmark):  # pylint: disable=W0232
       def CreateStorySet(self, options):
         # pylint: disable=E1002
-        ps = super(SinglePageBenchmark, self).CreateStorySet(options)
-        for p in ps.pages:
-          p.skip_waits = True
-          ps.stories = [p]
+        story_set = super(SinglePageBenchmark, self).CreateStorySet(options)
+        for story in story_set.stories:
+          story.skip_waits = True
+          story_set.stories = [story]
           break
-        return ps
+        return story_set
 
     # Set the benchmark's default arguments.
     options = options_for_unittests.GetCopy()

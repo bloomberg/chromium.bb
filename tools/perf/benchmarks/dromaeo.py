@@ -9,8 +9,8 @@ from core import perf_benchmark
 
 from telemetry import benchmark
 from telemetry import page as page_module
-from telemetry.page import page_set
 from telemetry.page import page_test
+from telemetry import story
 from telemetry.value import scalar
 
 from metrics import power
@@ -111,10 +111,10 @@ class _DromaeoBenchmark(perf_benchmark.PerfBenchmark):
     if not hasattr(self, 'query_param') or not hasattr(self, 'tag'):
       raise NotImplementedError('query_param or tag not in Dromaeo benchmark.')
     archive_data_file = '../page_sets/data/dromaeo.%s.json' % self.tag
-    ps = page_set.PageSet(
+    ps = story.StorySet(
         archive_data_file=archive_data_file,
         base_dir=os.path.dirname(os.path.abspath(__file__)),
-        bucket=page_set.PUBLIC_BUCKET)
+        cloud_storage_bucket=story.PUBLIC_BUCKET)
     url = 'http://dromaeo.com?%s' % self.query_param
     ps.AddUserStory(page_module.Page(
         url, ps, ps.base_dir, make_javascript_deterministic=False))

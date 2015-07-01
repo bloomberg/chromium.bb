@@ -26,8 +26,8 @@ from core import perf_benchmark
 
 from telemetry.core import util
 from telemetry import page as page_module
-from telemetry.page import page_set
 from telemetry.page import page_test
+from telemetry import story
 from telemetry.value import scalar
 
 from metrics import memory
@@ -93,6 +93,6 @@ class IndexedDb(perf_benchmark.PerfBenchmark):
   def CreateStorySet(self, options):
     indexeddb_dir = os.path.join(util.GetChromiumSrcDir(), 'chrome', 'test',
                                  'data', 'indexeddb')
-    ps = page_set.PageSet(base_dir=indexeddb_dir)
+    ps = story.StorySet(base_dir=indexeddb_dir)
     ps.AddUserStory(page_module.Page('file://perf_test.html', ps, ps.base_dir))
     return ps

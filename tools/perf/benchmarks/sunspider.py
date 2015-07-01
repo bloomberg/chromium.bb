@@ -8,8 +8,8 @@ import os
 from core import perf_benchmark
 
 from telemetry import page as page_module
-from telemetry.page import page_set
 from telemetry.page import page_test
+from telemetry import story
 from telemetry.value import list_of_scalar_values
 
 from metrics import power
@@ -138,10 +138,10 @@ class Sunspider(perf_benchmark.PerfBenchmark):
     return 'sunspider'
 
   def CreateStorySet(self, options):
-    ps = page_set.PageSet(
+    ps = story.StorySet(
         archive_data_file='../page_sets/data/sunspider.json',
         base_dir=os.path.dirname(os.path.abspath(__file__)),
-        bucket=page_set.PARTNER_BUCKET)
+        cloud_storage_bucket=story.PARTNER_BUCKET)
     ps.AddUserStory(page_module.Page(
         _URL, ps, ps.base_dir, make_javascript_deterministic=False))
     return ps

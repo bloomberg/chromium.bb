@@ -24,8 +24,8 @@ from core import perf_benchmark
 
 from telemetry import benchmark
 from telemetry import page as page_module
-from telemetry.page import page_set
 from telemetry.page import page_test
+from telemetry import story
 from telemetry.util import statistics
 from telemetry.value import list_of_scalar_values
 
@@ -87,10 +87,10 @@ class Jetstream(perf_benchmark.PerfBenchmark):
     return 'jetstream'
 
   def CreateStorySet(self, options):
-    ps = page_set.PageSet(
+    ps = story.StorySet(
         archive_data_file='../page_sets/data/jetstream.json',
         base_dir=os.path.dirname(os.path.abspath(__file__)),
-        bucket=page_set.INTERNAL_BUCKET)
+        cloud_storage_bucket=story.INTERNAL_BUCKET)
     ps.AddUserStory(page_module.Page(
         'http://browserbench.org/JetStream/', ps, ps.base_dir,
         make_javascript_deterministic=False))

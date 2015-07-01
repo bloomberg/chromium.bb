@@ -21,8 +21,8 @@ import os
 from core import perf_benchmark
 
 from telemetry import page as page_module
-from telemetry.page import page_set
 from telemetry.page import page_test
+from telemetry import story
 from telemetry.value import list_of_scalar_values
 
 from metrics import keychain_metric
@@ -91,10 +91,10 @@ class Speedometer(perf_benchmark.PerfBenchmark):
     return 'speedometer'
 
   def CreateStorySet(self, options):
-    ps = page_set.PageSet(
+    ps = story.StorySet(
         base_dir=os.path.dirname(os.path.abspath(__file__)),
         archive_data_file='../page_sets/data/speedometer.json',
-        bucket=page_set.PUBLIC_BUCKET)
+        cloud_storage_bucket=story.PUBLIC_BUCKET)
     ps.AddUserStory(page_module.Page(
         'http://browserbench.org/Speedometer/', ps, ps.base_dir,
         make_javascript_deterministic=False))
