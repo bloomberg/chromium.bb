@@ -1,15 +1,15 @@
-var console = null;
+var consoleDiv = null;
 
 function consoleWrite(text)
 {
-    if (!console && document.body) {
-        console = document.createElement('div');
-        document.body.appendChild(console);
+    if (!consoleDiv && document.body) {
+        consoleDiv = document.createElement('div');
+        document.body.appendChild(consoleDiv);
     }
     var span = document.createElement('span');
     span.appendChild(document.createTextNode(text));
     span.appendChild(document.createElement('br'));
-    console.appendChild(span);
+    consoleDiv.appendChild(span);
 }
 
 // Returns a promise that is fulfilled with true if |initDataType| is supported,

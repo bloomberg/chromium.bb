@@ -1,4 +1,4 @@
-var console = null;
+var consoleDiv = null;
 function getVideoURI(baseFileName)
 {
     var fileExtension =
@@ -9,15 +9,15 @@ function getVideoURI(baseFileName)
 
 function consoleWrite(text)
 {
-    if (!console && document.body)
+    if (!consoleDiv && document.body)
     {
-        console = document.createElement('div');
-        document.body.appendChild(console);
+        consoleDiv = document.createElement('div');
+        document.body.appendChild(consoleDiv);
     }
     var span = document.createElement("span");
     span.appendChild(document.createTextNode(text));
     span.appendChild(document.createElement('br'));
-    console.appendChild(span);
+    consoleDiv.appendChild(span);
 }
 
 function waitForEventAndRunStep(eventName, element, func, stepTest)
