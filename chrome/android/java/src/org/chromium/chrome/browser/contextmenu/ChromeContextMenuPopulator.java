@@ -42,10 +42,9 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     @Override
     public void buildContextMenu(ContextMenu menu, Context context, ContextMenuParams params) {
         if (!TextUtils.isEmpty(params.getLinkUrl()) && !params.getLinkUrl().equals(BLANK_URL)) {
-            menu.setHeaderTitle(params.getLinkUrl());
+            setHeaderText(context, menu, params.getLinkUrl());
         } else if (!TextUtils.isEmpty(params.getTitleText())) {
-            ContextMenuTitleView title = new ContextMenuTitleView(context, params.getTitleText());
-            menu.setHeaderView(title);
+            setHeaderText(context, menu, params.getTitleText());
         }
 
         if (mMenuInflater == null) mMenuInflater = new MenuInflater(context);
@@ -188,5 +187,10 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         }
 
         return true;
+    }
+
+    private void setHeaderText(Context context, ContextMenu menu, String text) {
+        ContextMenuTitleView title = new ContextMenuTitleView(context, text);
+        menu.setHeaderView(title);
     }
 }
