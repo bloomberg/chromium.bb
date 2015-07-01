@@ -47,6 +47,7 @@ class DevToolsTraceSinkProxy : public TracingController::TraceDataSink {
 
 TracingHandler::TracingHandler(TracingHandler::Target target)
     : target_(target),
+      did_initiate_recording_(false),
       weak_factory_(this) {
 }
 
@@ -84,6 +85,8 @@ Response TracingHandler::Start(DevToolsCommandId command_id,
                                const double* buffer_usage_reporting_interval) {
   if (IsRecording())
     return Response::InternalError("Tracing is already started");
+
+  did_initiate_recording_ = true;
 
   base::trace_event::TraceConfig trace_config(
       categories ? *categories : std::string(),
@@ -172,6 +175,7 @@ void TracingHandler::DisableRecording(bool abort) {
   buffer_usage_poll_timer_.reset();
   TracingController::GetInstance()->DisableRecording(
       abort ? nullptr : new DevToolsTraceSinkProxy(weak_factory_.GetWeakPtr()));
+  did_initiate_recording_ = false;
 }
 
 bool TracingHandler::IsRecording() const {

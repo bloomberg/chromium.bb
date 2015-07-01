@@ -42,6 +42,7 @@ class TracingHandler {
                  const double* buffer_usage_reporting_interval);
   Response End(DevToolsCommandId command_id);
   Response GetCategories(DevToolsCommandId command);
+  bool did_initiate_recording() { return did_initiate_recording_; }
 
  private:
   void OnRecordingEnabled(DevToolsCommandId command_id);
@@ -60,6 +61,7 @@ class TracingHandler {
   Target target_;
 
   scoped_ptr<Client> client_;
+  bool did_initiate_recording_;
   base::WeakPtrFactory<TracingHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingHandler);

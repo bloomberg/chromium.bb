@@ -24,7 +24,8 @@ class DevToolsFrameTraceRecorder {
 
   void OnSwapCompositorFrame(
       RenderFrameHostImpl* host,
-      const cc::CompositorFrameMetadata& frame_metadata);
+      const cc::CompositorFrameMetadata& frame_metadata,
+      bool do_capture);
 
  private:
   scoped_refptr<DevToolsFrameTraceRecorderData> pending_frame_data_;

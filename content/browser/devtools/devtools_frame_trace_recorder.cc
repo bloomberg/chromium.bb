@@ -124,14 +124,15 @@ DevToolsFrameTraceRecorder::~DevToolsFrameTraceRecorder() { }
 
 void DevToolsFrameTraceRecorder::OnSwapCompositorFrame(
     RenderFrameHostImpl* host,
-    const cc::CompositorFrameMetadata& frame_metadata) {
+    const cc::CompositorFrameMetadata& frame_metadata,
+    bool do_capture) {
   if (!host)
     return;
 
   bool enabled;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(
       TRACE_DISABLED_BY_DEFAULT("devtools.screenshot"), &enabled);
-  if (!enabled) {
+  if (!enabled || !do_capture) {
     pending_frame_data_ = nullptr;
     return;
   }
