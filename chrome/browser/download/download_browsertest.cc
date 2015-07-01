@@ -55,7 +55,6 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/website_settings/mock_permission_bubble_view.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -1091,12 +1090,6 @@ class DownloadTest : public InProcessBrowserTest {
     EXPECT_EQ(DownloadItem::INTERRUPTED, download->GetState());
     EXPECT_EQ(error, download->GetLastReason());
     return download;
-  }
-
-  void WaitForBubble(MockPermissionBubbleView* mock_bubble) {
-    if (mock_bubble->IsVisible())
-      return;
-    content::RunMessageLoop();
   }
 
  private:
@@ -2968,20 +2961,16 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsBubble) {
   scoped_ptr<content::DownloadTestObserver> downloads_observer(
         CreateWaiter(browser(), 2));
 
-  MockPermissionBubbleView* mock_bubble_view = new MockPermissionBubbleView();
-  PermissionBubbleManager::FromWebContents(
-      browser()->tab_strip_model()->GetActiveWebContents())->
-          SetView(mock_bubble_view);
-  mock_bubble_view->SetBrowserTest(true);
+  PermissionBubbleManager* permission_bubble_manager =
+      PermissionBubbleManager::FromWebContents(
+          browser()->tab_strip_model()->GetActiveWebContents());
+  permission_bubble_manager->DisplayPendingRequests(browser());
+  permission_bubble_manager->set_auto_response_for_test(
+      PermissionBubbleManager::ACCEPT_ALL);
+
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(),
       test_server()->GetURL("files/downloads/download-a_zip_file.html"), 1);
-
-  WaitForBubble(mock_bubble_view);
-
-  ASSERT_TRUE(mock_bubble_view->IsVisible());
-  mock_bubble_view->Accept();
-  ASSERT_FALSE(mock_bubble_view->IsVisible());
 
   // Waits for the download to complete.
   downloads_observer->WaitForFinished();
@@ -2989,7 +2978,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsBubble) {
       DownloadItem::COMPLETE));
 
   browser()->tab_strip_model()->GetActiveWebContents()->Close();
-  delete mock_bubble_view;
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_Renaming) {

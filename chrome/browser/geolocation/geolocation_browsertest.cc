@@ -337,7 +337,6 @@ class GeolocationBrowserTest : public InProcessBrowserTest,
   std::vector<GURL> iframe_urls_;
   double fake_latitude_;
   double fake_longitude_;
-  MockPermissionBubbleView mock_bubble_view_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationBrowserTest);
 };
@@ -392,8 +391,12 @@ bool GeolocationBrowserTest::Initialize(InitializationOptions options) {
   }
   WebContents* web_contents =
       current_browser_->tab_strip_model()->GetActiveWebContents();
-  PermissionBubbleManager::FromWebContents(web_contents)->SetView(
-      &mock_bubble_view_);
+  PermissionBubbleManager* manager =
+      PermissionBubbleManager::FromWebContents(web_contents);
+  // |is_browser_test| is updated by GeolocationNotificationObserver if
+  // PermissionBubbleManager is enabled. Default should be 'false'.
+  MockPermissionBubbleView::SetFactory(manager, false);
+  manager->DisplayPendingRequests(browser());
   if (options != INITIALIZATION_OFFTHERECORD)
     ui_test_utils::NavigateToURL(current_browser_, current_url_);
   LOG(WARNING) << "after navigate";
@@ -428,8 +431,12 @@ void GeolocationBrowserTest::SetFrameHost(const std::string& frame_name) {
 }
 
 void GeolocationBrowserTest::AddGeolocationWatch(bool wait_for_prompt) {
+  WebContents* web_contents =
+      current_browser_->tab_strip_model()->GetActiveWebContents();
+  PermissionBubbleManager* manager =
+      PermissionBubbleManager::FromWebContents(web_contents);
   GeolocationNotificationObserver notification_observer(
-      wait_for_prompt, &mock_bubble_view_);
+      wait_for_prompt, MockPermissionBubbleView::GetFrom(manager));
   notification_observer.AddWatchAndWaitForNotification(render_frame_host_);
   if (wait_for_prompt && !PermissionBubbleManager::Enabled()) {
     EXPECT_TRUE(notification_observer.has_infobar());
@@ -456,12 +463,14 @@ void GeolocationBrowserTest::SetPromptResponse(const GURL& requesting_url,
   const ContentSettingsUsagesState& usages_state =
       content_settings->geolocation_usages_state();
   size_t state_map_size = usages_state.state_map().size();
+  PermissionBubbleManager* manager =
+      PermissionBubbleManager::FromWebContents(web_contents);
 
   if (PermissionBubbleManager::Enabled()) {
     if (allowed)
-      mock_bubble_view_.Accept();
+      MockPermissionBubbleView::GetFrom(manager)->Accept();
     else
-      mock_bubble_view_.Deny();
+      MockPermissionBubbleView::GetFrom(manager)->Deny();
 
     EXPECT_GT(usages_state.state_map().size(), state_map_size);
     GURL requesting_origin(requesting_url.GetOrigin());

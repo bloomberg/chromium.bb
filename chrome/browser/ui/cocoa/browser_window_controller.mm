@@ -615,9 +615,7 @@ using content::WebContents;
 - (void)windowDidBecomeKey:(NSNotification*)notification {
   // We need to activate the controls (in the "WebView"). To do this, get the
   // selected WebContents's RenderWidgetHostView and tell it to activate.
-  if (WebContents* contents =
-          browser_->tab_strip_model()->GetActiveWebContents()) {
-
+  if (WebContents* contents = [self webContents]) {
     WebContents* devtools = DevToolsWindow::GetInTabWebContents(
         contents, NULL);
     if (devtools) {
@@ -644,9 +642,7 @@ using content::WebContents;
 
   // We need to deactivate the controls (in the "WebView"). To do this, get the
   // selected WebContents's RenderWidgetHostView and tell it to deactivate.
-  if (WebContents* contents =
-          browser_->tab_strip_model()->GetActiveWebContents()) {
-
+  if (WebContents* contents = [self webContents]) {
     WebContents* devtools = DevToolsWindow::GetInTabWebContents(
         contents, NULL);
     if (devtools) {
@@ -667,8 +663,7 @@ using content::WebContents;
   [self saveWindowPositionIfNeeded];
 
   // Let the selected RenderWidgetHostView know, so that it can tell plugins.
-  if (WebContents* contents =
-          browser_->tab_strip_model()->GetActiveWebContents()) {
+  if (WebContents* contents = [self webContents]) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetWindowVisibility(false);
   }
@@ -677,8 +672,7 @@ using content::WebContents;
 // Called when we have been unminimized.
 - (void)windowDidDeminiaturize:(NSNotification *)notification {
   // Let the selected RenderWidgetHostView know, so that it can tell plugins.
-  if (WebContents* contents =
-          browser_->tab_strip_model()->GetActiveWebContents()) {
+  if (WebContents* contents = [self webContents]) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetWindowVisibility(true);
   }
@@ -689,8 +683,7 @@ using content::WebContents;
   // Let the selected RenderWidgetHostView know, so that it can tell plugins
   // (unless we are minimized, in which case nothing has really changed).
   if (![[self window] isMiniaturized]) {
-  if (WebContents* contents =
-          browser_->tab_strip_model()->GetActiveWebContents()) {
+    if (WebContents* contents = [self webContents]) {
       if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
         rwhv->SetWindowVisibility(false);
     }
@@ -702,8 +695,7 @@ using content::WebContents;
   // Let the selected RenderWidgetHostView know, so that it can tell plugins
   // (unless we are minimized, in which case nothing has really changed).
   if (![[self window] isMiniaturized]) {
-  if (WebContents* contents =
-          browser_->tab_strip_model()->GetActiveWebContents()) {
+    if (WebContents* contents = [self webContents]) {
       if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
         rwhv->SetWindowVisibility(true);
     }
@@ -1047,8 +1039,7 @@ using content::WebContents;
 
   if (resizeRectDirty) {
     // Send new resize rect to foreground tab.
-    if (content::WebContents* contents =
-            browser_->tab_strip_model()->GetActiveWebContents()) {
+    if (WebContents* contents = [self webContents]) {
       if (content::RenderViewHost* rvh = contents->GetRenderViewHost()) {
         rvh->ResizeRectChanged(windowShim_->GetRootWindowResizerRect());
       }
@@ -1300,17 +1291,13 @@ using content::WebContents;
   if (oldContents) {
     manager = PermissionBubbleManager::FromWebContents(oldContents);
     if (manager)
-      manager->SetView(nullptr);
+      manager->HideBubble();
   }
 
   if (newContents) {
-    if (!permissionBubbleCocoa_.get()) {
-      DCHECK(browser_.get());
-      permissionBubbleCocoa_.reset(new PermissionBubbleCocoa(browser_.get()));
-    }
     manager = PermissionBubbleManager::FromWebContents(newContents);
     if (manager)
-      manager->SetView(permissionBubbleCocoa_.get());
+      manager->DisplayPendingRequests(browser_.get());
   }
 }
 
@@ -1866,8 +1853,9 @@ using content::WebContents;
 }
 
 - (void)dismissPermissionBubble {
-  if (permissionBubbleCocoa_)
-    permissionBubbleCocoa_->Hide();
+  PermissionBubbleManager* manager = [self permissionBubbleManager];
+  if (manager)
+    manager->HideBubble();
 }
 
 // Nil out the weak translate bubble controller reference.
@@ -1943,8 +1931,7 @@ using content::WebContents;
   }
 
   // Let the selected RenderWidgetHostView know, so that it can tell plugins.
-  if (WebContents* contents =
-          browser_->tab_strip_model()->GetActiveWebContents()) {
+  if (WebContents* contents = [self webContents]) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->WindowFrameChanged();
   }
@@ -1962,11 +1949,10 @@ using content::WebContents;
 // "Learn more" link in "Aw snap" page (i.e. crash page or sad tab) is
 // clicked. Decoupling the action from its target makes unit testing possible.
 - (void)openLearnMoreAboutCrashLink:(id)sender {
-  if (WebContents* webContents =
-          browser_->tab_strip_model()->GetActiveWebContents()) {
+  if (WebContents* contents = [self webContents]) {
     OpenURLParams params(GURL(chrome::kCrashReasonURL), Referrer(), CURRENT_TAB,
                          ui::PAGE_TRANSITION_LINK, false);
-    webContents->OpenURL(params);
+    contents->OpenURL(params);
   }
 }
 
@@ -1994,8 +1980,7 @@ using content::WebContents;
     [self resetWindowGrowthState];
 
   // Let the selected RenderWidgetHostView know, so that it can tell plugins.
-  if (WebContents* contents =
-          browser_->tab_strip_model()->GetActiveWebContents()) {
+  if (WebContents* contents = [self webContents]) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->WindowFrameChanged();
   }
@@ -2094,11 +2079,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
   DCHECK(!command.global());
   extension_keybinding_registry_->ExecuteCommand(extension_id,
                                                  command.accelerator());
-}
-
-// For testing purposes.
-- (PermissionBubbleCocoa*)permissionBubbleCocoa {
-  return permissionBubbleCocoa_.get();
 }
 
 @end  // @implementation BrowserWindowController

@@ -870,14 +870,11 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
       InfoBarService::FromWebContents(new_contents));
 
   if (old_contents && PermissionBubbleManager::FromWebContents(old_contents))
-    PermissionBubbleManager::FromWebContents(old_contents)->SetView(nullptr);
+    PermissionBubbleManager::FromWebContents(old_contents)->HideBubble();
 
   if (new_contents && PermissionBubbleManager::FromWebContents(new_contents)) {
-    if (!permission_bubble_.get())
-      permission_bubble_.reset(new PermissionBubbleViewViews(browser_.get()));
-
-    PermissionBubbleManager::FromWebContents(new_contents)->SetView(
-        permission_bubble_.get());
+    PermissionBubbleManager::FromWebContents(new_contents)
+        ->DisplayPendingRequests(browser_.get());
   }
 
   UpdateUIForContents(new_contents);
@@ -1562,7 +1559,7 @@ void BrowserView::TabInsertedAt(WebContents* contents,
 
 void BrowserView::TabDetachedAt(WebContents* contents, int index) {
   if (PermissionBubbleManager::FromWebContents(contents))
-    PermissionBubbleManager::FromWebContents(contents)->SetView(nullptr);
+    PermissionBubbleManager::FromWebContents(contents)->HideBubble();
 
   // We use index here rather than comparing |contents| because by this time
   // the model has already removed |contents| from its list, so
@@ -1580,7 +1577,7 @@ void BrowserView::TabDetachedAt(WebContents* contents, int index) {
 
 void BrowserView::TabDeactivated(WebContents* contents) {
   if (PermissionBubbleManager::FromWebContents(contents))
-    PermissionBubbleManager::FromWebContents(contents)->SetView(nullptr);
+    PermissionBubbleManager::FromWebContents(contents)->HideBubble();
 
   // We do not store the focus when closing the tab to work-around bug 4633.
   // Some reports seem to show that the focus manager and/or focused view can
@@ -2325,8 +2322,9 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   in_process_fullscreen_ = false;
   ToolbarSizeChanged(false);
 
-  if (permission_bubble_.get())
-    permission_bubble_->UpdateAnchorPosition();
+  WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
+  if (contents && PermissionBubbleManager::FromWebContents(contents))
+    PermissionBubbleManager::FromWebContents(contents)->UpdateAnchorPosition();
 }
 
 bool BrowserView::ShouldUseImmersiveFullscreenForUrl(const GURL& url) const {

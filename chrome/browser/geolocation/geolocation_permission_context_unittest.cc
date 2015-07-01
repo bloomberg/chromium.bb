@@ -151,7 +151,6 @@ class GeolocationPermissionContextTests
   // owned by the browser context
   GeolocationPermissionContext* geolocation_permission_context_;
   ClosedInfoBarTracker closed_infobar_tracker_;
-  MockPermissionBubbleView bubble_view_;
   ScopedVector<content::WebContents> extra_tabs_;
 
   // A map between renderer child id and a pair represending the bridge id and
@@ -236,7 +235,10 @@ void GeolocationPermissionContextTests::AddNewTab(const GURL& url) {
 #endif
   InfoBarService::CreateForWebContents(new_tab);
   PermissionBubbleManager::CreateForWebContents(new_tab);
-  PermissionBubbleManager::FromWebContents(new_tab)->SetView(&bubble_view_);
+  PermissionBubbleManager* permission_bubble_manager =
+      PermissionBubbleManager::FromWebContents(new_tab);
+  MockPermissionBubbleView::SetFactory(permission_bubble_manager, false);
+  permission_bubble_manager->DisplayPendingRequests(nullptr);
 
   extra_tabs_.push_back(new_tab);
 }
@@ -276,8 +278,10 @@ void GeolocationPermissionContextTests::SetUp() {
   MockLocationSettings::SetLocationStatus(true, true);
 #endif
   PermissionBubbleManager::CreateForWebContents(web_contents());
-  PermissionBubbleManager::FromWebContents(web_contents())->SetView(
-      &bubble_view_);
+  PermissionBubbleManager* permission_bubble_manager =
+      PermissionBubbleManager::FromWebContents(web_contents());
+  MockPermissionBubbleView::SetFactory(permission_bubble_manager, false);
+  permission_bubble_manager->DisplayPendingRequests(nullptr);
 }
 
 void GeolocationPermissionContextTests::TearDown() {

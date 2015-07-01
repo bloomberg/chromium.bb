@@ -76,8 +76,10 @@ PermissionBubbleManager::PermissionBubbleManager(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       require_user_gesture_(false),
-      bubble_showing_(false),
-      view_(NULL),
+#if !defined(OS_ANDROID)  // No bubbles in android tests.
+      view_factory_(base::Bind(&PermissionBubbleView::Create)),
+#endif
+      view_(nullptr),
       main_frame_has_fully_loaded_(false),
       auto_response_for_test_(NONE),
       weak_factory_(this) {
@@ -122,7 +124,7 @@ void PermissionBubbleManager::AddRequest(PermissionBubbleRequest* request) {
     return;
   }
 
-  if (bubble_showing_) {
+  if (IsBubbleVisible()) {
     if (is_main_frame) {
       content::RecordAction(
           base::UserMetricsAction("PermissionBubbleRequestQueued"));
@@ -172,8 +174,7 @@ void PermissionBubbleManager::CancelRequest(PermissionBubbleRequest* request) {
 
     // We can simply erase the current entry in the request table if we aren't
     // showing the dialog, or if we are showing it and it can accept the update.
-    bool can_erase = !bubble_showing_ ||
-                     !view_ || view_->CanAcceptRequestUpdate();
+    bool can_erase = !IsBubbleVisible() || view_->CanAcceptRequestUpdate();
     if (can_erase) {
       (*requests_iter)->RequestFinished();
       requests_.erase(requests_iter);
@@ -193,23 +194,39 @@ void PermissionBubbleManager::CancelRequest(PermissionBubbleRequest* request) {
   NOTREACHED();  // Callers should not cancel requests that are not pending.
 }
 
-void PermissionBubbleManager::SetView(PermissionBubbleView* view) {
-  if (view == view_)
-    return;
-
+void PermissionBubbleManager::HideBubble() {
   // Disengage from the existing view if there is one.
-  if (view_ != NULL) {
-    view_->SetDelegate(NULL);
-    view_->Hide();
-    bubble_showing_ = false;
-  }
-
-  view_ = view;
-  if (!view)
+  if (!view_)
     return;
 
-  view->SetDelegate(this);
+  view_->SetDelegate(nullptr);
+  view_->Hide();
+  view_.reset();
+}
+
+void PermissionBubbleManager::DisplayPendingRequests(Browser* browser) {
+  if (IsBubbleVisible())
+    return;
+
+  view_ = view_factory_.Run(browser);
+  view_->SetDelegate(this);
+
   TriggerShowBubble();
+}
+
+void PermissionBubbleManager::UpdateAnchorPosition() {
+  if (view_)
+    view_->UpdateAnchorPosition();
+}
+
+bool PermissionBubbleManager::IsBubbleVisible() {
+  return view_ && view_->IsVisible();
+}
+
+gfx::NativeWindow PermissionBubbleManager::GetBubbleWindow() {
+  if (view_)
+    return view_->GetNativeWindow();
+  return nullptr;
 }
 
 void PermissionBubbleManager::RequireUserGesture(bool required) {
@@ -323,7 +340,7 @@ void PermissionBubbleManager::ScheduleShowBubble() {
 void PermissionBubbleManager::TriggerShowBubble() {
   if (!view_)
     return;
-  if (bubble_showing_)
+  if (IsBubbleVisible())
     return;
   if (!main_frame_has_fully_loaded_)
     return;
@@ -350,9 +367,6 @@ void PermissionBubbleManager::TriggerShowBubble() {
     accept_states_.resize(requests_.size(), true);
   }
 
-  // Note: this should appear above Show() for testing, since in that
-  // case we may do in-line calling of finalization.
-  bubble_showing_ = true;
   view_->Show(requests_, accept_states_);
   NotifyBubbleAdded();
 
@@ -364,7 +378,6 @@ void PermissionBubbleManager::TriggerShowBubble() {
 void PermissionBubbleManager::FinalizeBubble() {
   if (view_)
     view_->Hide();
-  bubble_showing_ = false;
 
   std::vector<PermissionBubbleRequest*>::iterator requests_iter;
   for (requests_iter = requests_.begin();

@@ -52,7 +52,6 @@ class DownloadShelfView;
 class ExclusiveAccessBubbleViews;
 class InfoBarContainerView;
 class LocationBarView;
-class PermissionBubbleViewViews;
 class StatusBubbleViews;
 class TabStrip;
 class ToolbarView;
@@ -646,10 +645,6 @@ class BrowserView : public BrowserWindow,
 
   // The Status information bubble that appears at the bottom of the window.
   scoped_ptr<StatusBubbleViews> status_bubble_;
-
-  // The permission bubble view is the toolkit-specific implementation of the
-  // interface used by the manager to display permissions bubbles.
-  scoped_ptr<PermissionBubbleViewViews> permission_bubble_;
 
   // A mapping between accelerators and commands.
   std::map<ui::Accelerator, int> accelerator_table_;

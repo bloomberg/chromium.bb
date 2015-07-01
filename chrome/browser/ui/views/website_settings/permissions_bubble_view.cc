@@ -61,7 +61,7 @@ const int kPermissionIndentSpacing = 12;
 // This class is a MenuButton which is given a PermissionMenuModel. It
 // shows the current checked item in the menu model, and notifies its listener
 // about any updates to the state of the selection.
-// TODO: refactor PermissionMenuButton to work like this and re-use?
+// TODO(gbillock): refactor PermissionMenuButton to work like this and re-use?
 class PermissionCombobox : public views::MenuButton,
                            public views::MenuButtonListener {
  public:
@@ -398,11 +398,17 @@ void PermissionsBubbleDelegateView::UpdateAnchor(
 PermissionBubbleViewViews::PermissionBubbleViewViews(Browser* browser)
     : browser_(browser),
       delegate_(nullptr),
-      bubble_delegate_(nullptr) {}
+      bubble_delegate_(nullptr) {
+  DCHECK(browser);
+}
 
 PermissionBubbleViewViews::~PermissionBubbleViewViews() {
-  if (delegate_)
-    delegate_->SetView(nullptr);
+}
+
+// static
+scoped_ptr<PermissionBubbleView> PermissionBubbleView::Create(
+    Browser* browser) {
+  return make_scoped_ptr(new PermissionBubbleViewViews(browser));
 }
 
 views::View* PermissionBubbleViewViews::GetAnchorView() {
@@ -421,11 +427,6 @@ views::BubbleBorder::Arrow PermissionBubbleViewViews::GetAnchorArrow() {
   if (browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR))
     return views::BubbleBorder::TOP_LEFT;
   return views::BubbleBorder::NONE;
-}
-
-void PermissionBubbleViewViews::UpdateAnchorPosition() {
-  if (IsVisible())
-    bubble_delegate_->UpdateAnchor(GetAnchorView(), GetAnchorArrow());
 }
 
 void PermissionBubbleViewViews::SetDelegate(Delegate* delegate) {
@@ -466,6 +467,17 @@ void PermissionBubbleViewViews::Hide() {
 
 bool PermissionBubbleViewViews::IsVisible() {
   return bubble_delegate_ != nullptr;
+}
+
+void PermissionBubbleViewViews::UpdateAnchorPosition() {
+  if (IsVisible())
+    bubble_delegate_->UpdateAnchor(GetAnchorView(), GetAnchorArrow());
+}
+
+gfx::NativeWindow PermissionBubbleViewViews::GetNativeWindow() {
+  if (bubble_delegate_ && bubble_delegate_->GetWidget())
+    return bubble_delegate_->GetWidget()->GetNativeWindow();
+  return nullptr;
 }
 
 void PermissionBubbleViewViews::Closing() {

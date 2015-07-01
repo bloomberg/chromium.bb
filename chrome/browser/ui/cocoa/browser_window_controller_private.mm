@@ -43,6 +43,7 @@
 #import "chrome/browser/ui/cocoa/website_settings/permission_bubble_cocoa.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -231,8 +232,9 @@ willPositionSheet:(NSWindow*)sheet
 
   // Will update the location of the permission bubble when showing/hiding the
   // top level toolbar in fullscreen.
-  if (permissionBubbleCocoa_)
-    permissionBubbleCocoa_->UpdateAnchorPoint();
+  PermissionBubbleManager* manager = [self permissionBubbleManager];
+  if (manager)
+    manager->UpdateAnchorPosition();
 }
 
 - (void)applyTabStripLayout:(const chrome::TabStripLayout&)layout {
@@ -298,9 +300,10 @@ willPositionSheet:(NSWindow*)sheet
 
   // If the relayout shifts the content area up or down, let the renderer know.
   if (contentShifted) {
-    if (WebContents* contents =
-            browser_->tab_strip_model()->GetActiveWebContents()) {
-      if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
+    WebContents* contents = [self webContents];
+    if (contents) {
+      RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView();
+      if (rwhv)
         rwhv->WindowFrameChanged();
     }
   }
@@ -393,8 +396,10 @@ willPositionSheet:(NSWindow*)sheet
   if (statusBubble_)
     statusBubble_->SwitchParentWindow(destWindow);
 
-  if (permissionBubbleCocoa_)
-    permissionBubbleCocoa_->SetParentWindow(destWindow);
+  // Updates the bubble position.
+  PermissionBubbleManager* manager = [self permissionBubbleManager];
+  if (manager)
+    manager->UpdateAnchorPosition();
 
   // Move the title over.
   [destWindow setTitle:[sourceWindow title]];
@@ -423,8 +428,6 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)permissionBubbleWindowWillClose:(NSNotification*)notification {
-  DCHECK(permissionBubbleCocoa_);
-
   NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
   [center removeObserver:self
                     name:NSWindowWillCloseNotification
@@ -442,12 +445,14 @@ willPositionSheet:(NSWindow*)sheet
       base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
   BOOL showDropdown =
       !fullscreen_for_tab && !kiosk_mode && ([self floatingBarHasFocus]);
-  if (permissionBubbleCocoa_ && permissionBubbleCocoa_->IsVisible()) {
-    DCHECK(permissionBubbleCocoa_->window());
-    // A visible permission bubble will force the dropdown to remain visible.
-    [self lockBarVisibilityForOwner:permissionBubbleCocoa_->window()
-                      withAnimation:NO
-                              delay:NO];
+
+  PermissionBubbleManager* manager = [self permissionBubbleManager];
+  if (manager && manager->IsBubbleVisible()) {
+    NSWindow* bubbleWindow = manager->GetBubbleWindow();
+    DCHECK(bubbleWindow);
+    // A visible permission bubble will force the dropdown to remain
+    // visible.
+    [self lockBarVisibilityForOwner:bubbleWindow withAnimation:NO delay:NO];
     showDropdown = YES;
     // Register to be notified when the permission bubble is closed, to
     // allow fullscreen to hide the dropdown.
@@ -455,8 +460,9 @@ willPositionSheet:(NSWindow*)sheet
     [center addObserver:self
                selector:@selector(permissionBubbleWindowWillClose:)
                    name:NSWindowWillCloseNotification
-                 object:permissionBubbleCocoa_->window()];
+                 object:bubbleWindow];
   }
+
   if (showDropdown) {
     // Turn on layered mode for the window's root view for the entry
     // animation.  Without this, the OS fullscreen animation for entering
@@ -1102,6 +1108,16 @@ willPositionSheet:(NSWindow*)sheet
     return NO;
 
   return [super shouldConstrainFrameRect];
+}
+
+- (WebContents*)webContents {
+  return browser_->tab_strip_model()->GetActiveWebContents();
+}
+
+- (PermissionBubbleManager*)permissionBubbleManager {
+  if (WebContents* contents = [self webContents])
+    return PermissionBubbleManager::FromWebContents(contents);
+  return nil;
 }
 
 @end  // @implementation BrowserWindowController(Private)

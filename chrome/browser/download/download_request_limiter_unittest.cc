@@ -27,12 +27,25 @@ class DownloadRequestLimiterTest;
 
 class FakePermissionBubbleView : public PermissionBubbleView {
  public:
+  class Factory : public base::RefCounted<FakePermissionBubbleView::Factory> {
+   public:
+    explicit Factory(DownloadRequestLimiterTest* test) : test_(test) {}
+
+    scoped_ptr<PermissionBubbleView> Create(Browser* browser) {
+      return make_scoped_ptr(new FakePermissionBubbleView(test_));
+    }
+
+   private:
+    friend class base::RefCounted<FakePermissionBubbleView::Factory>;
+
+    ~Factory() {}
+    DownloadRequestLimiterTest* test_;
+  };
+
   explicit FakePermissionBubbleView(DownloadRequestLimiterTest *test)
       : test_(test), delegate_(NULL) {}
 
   ~FakePermissionBubbleView() override {
-    if (delegate_)
-      delegate_->SetView(NULL);
   }
 
   void Close() {
@@ -50,6 +63,8 @@ class FakePermissionBubbleView : public PermissionBubbleView {
 
   void Hide() override {}
   bool IsVisible() override { return false; }
+  void UpdateAnchorPosition() override{};
+  gfx::NativeWindow GetNativeWindow() override { return nullptr; }
 
  private:
   DownloadRequestLimiterTest* test_;
@@ -70,9 +85,12 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
     InfoBarService::CreateForWebContents(web_contents());
 
     PermissionBubbleManager::CreateForWebContents(web_contents());
-    view_.reset(new FakePermissionBubbleView(this));
-    PermissionBubbleManager::FromWebContents(web_contents())->
-        SetView(view_.get());
+    scoped_refptr<FakePermissionBubbleView::Factory> factory =
+        new FakePermissionBubbleView::Factory(this);
+    PermissionBubbleManager::FromWebContents(web_contents())->view_factory_ =
+        base::Bind(&FakePermissionBubbleView::Factory::Create, factory);
+    PermissionBubbleManager::FromWebContents(web_contents())
+        ->DisplayPendingRequests(nullptr);
 
     testing_action_ = ACCEPT;
     ask_allow_count_ = cancel_count_ = continue_count_ = 0;
@@ -200,7 +218,6 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
  private:
   DownloadRequestInfoBarDelegate::FakeCreateCallback fake_create_callback_;
   scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<FakePermissionBubbleView> view_;
 };
 
 void FakePermissionBubbleView::Show(

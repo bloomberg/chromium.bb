@@ -24,9 +24,6 @@ class PermissionBubbleViewViews : public PermissionBubbleView {
   explicit PermissionBubbleViewViews(Browser* browser);
   ~PermissionBubbleViewViews() override;
 
-  // Updates anchor on fullscreen changes, etc.
-  void UpdateAnchorPosition();
-
   // PermissionBubbleView:
   void SetDelegate(Delegate* delegate) override;
   void Show(const std::vector<PermissionBubbleRequest*>& requests,
@@ -34,6 +31,8 @@ class PermissionBubbleViewViews : public PermissionBubbleView {
   bool CanAcceptRequestUpdate() override;
   void Hide() override;
   bool IsVisible() override;
+  void UpdateAnchorPosition() override;
+  gfx::NativeWindow GetNativeWindow() override;
 
   void Closing();
   void Toggle(int index, bool value);

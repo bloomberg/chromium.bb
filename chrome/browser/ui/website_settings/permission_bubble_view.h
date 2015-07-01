@@ -7,8 +7,13 @@
 
 #include <vector>
 
-class PermissionBubbleRequest;
+#include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
+#include "ui/gfx/native_widget_types.h"
+
+class Browser;
 class PermissionBubbleManager;
+class PermissionBubbleRequest;
 
 // This class is the platform-independent interface through which the permission
 // bubble managers (which are one per tab) communicate to the UI surface.
@@ -26,9 +31,12 @@ class PermissionBubbleView {
     virtual void Accept() = 0;
     virtual void Deny() = 0;
     virtual void Closing() = 0;
-    virtual void SetView(PermissionBubbleView* view) = 0;
   };
 
+  typedef base::Callback<scoped_ptr<PermissionBubbleView>(Browser*)> Factory;
+
+  // Create a platform specific instance.
+  static scoped_ptr<PermissionBubbleView> Create(Browser* browser);
   virtual ~PermissionBubbleView() {}
 
   // Sets the delegate which will receive UI events forwarded from the bubble.
@@ -54,6 +62,13 @@ class PermissionBubbleView {
 
   // Returns true if there is a bubble currently showing.
   virtual bool IsVisible() = 0;
+
+  // Updates where the bubble should be anchored. ex: fullscreen toggle.
+  virtual void UpdateAnchorPosition() = 0;
+
+  // Returns a reference to this bubble's native window.
+  // TODO(hcarmona): Remove this as part of the bubble API work.
+  virtual gfx::NativeWindow GetNativeWindow() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_VIEW_H_

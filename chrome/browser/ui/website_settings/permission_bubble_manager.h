@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_view.h"
@@ -67,10 +68,23 @@ class PermissionBubbleManager
   // at which time the caller is free to delete the request.
   virtual void CancelRequest(PermissionBubbleRequest* request);
 
-  // Sets the active view for the permission bubble. If this is NULL, it
-  // means any existing permission bubble can no longer be shown. Does not
-  // take ownership of the view.
-  void SetView(PermissionBubbleView* view) override;
+  // Hides the bubble.
+  void HideBubble();
+
+  // Will show a permission bubble if there is a pending permission request on
+  // the web contents that the PermissionBubbleManager belongs to.
+  void DisplayPendingRequests(Browser* browser);
+
+  // Will reposition the bubble (may change parent if necessary).
+  void UpdateAnchorPosition();
+
+  // True if a permission bubble is currently visible.
+  // TODO(hcarmona): Remove this as part of the bubble API work.
+  bool IsBubbleVisible();
+
+  // Get the native window of the bubble.
+  // TODO(hcarmona): Remove this as part of the bubble API work.
+  gfx::NativeWindow GetBubbleWindow();
 
   // Controls whether incoming permission requests require user gestures.
   // If |required| is false, requests will be displayed as soon as they come in.
@@ -91,13 +105,16 @@ class PermissionBubbleManager
   }
 
  private:
+  // TODO(felt): Update testing so that it doesn't involve a lot of friends.
   friend class DownloadRequestLimiterTest;
   friend class GeolocationBrowserTest;
   friend class GeolocationPermissionContextTests;
   friend class GeolocationPermissionContextParamTests;
+  friend class MockPermissionBubbleView;
   friend class PermissionBubbleManagerTest;
   friend class PermissionContextBaseTests;
   friend class content::WebContentsUserData<PermissionBubbleManager>;
+  FRIEND_TEST_ALL_PREFIXES(DownloadTest, TestMultipleDownloadsBubble);
 
   explicit PermissionBubbleManager(content::WebContents* web_contents);
 
@@ -156,11 +173,11 @@ class PermissionBubbleManager
   // False by default, unless RequireUserGesture(bool) changes the value.
   bool require_user_gesture_;
 
-  // Whether or not we are showing the bubble in this tab.
-  bool bubble_showing_;
+  // Factory to be used to create views when needed.
+  PermissionBubbleView::Factory view_factory_;
 
-  // Set to the UI surface to be used to display the permissions requests.
-  PermissionBubbleView* view_;
+  // The UI surface to be used to display the permissions requests.
+  scoped_ptr<PermissionBubbleView> view_;
 
   std::vector<PermissionBubbleRequest*> requests_;
   std::vector<PermissionBubbleRequest*> queued_requests_;

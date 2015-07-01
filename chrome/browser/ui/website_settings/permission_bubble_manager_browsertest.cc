@@ -16,35 +16,15 @@
 
 namespace {
 
-// FakePermissionBubbleView is a MockPermissionBubbleView that overrides Show()
-// in order to know how many permissions were requested.
-class FakePermissionBubbleView : public MockPermissionBubbleView {
- public:
-  FakePermissionBubbleView() : show_count_(0), requests_count_(0) {}
-
-  void Show(const std::vector<PermissionBubbleRequest*>& requests,
-            const std::vector<bool>& accept_state) override {
-    MockPermissionBubbleView::Show(requests, accept_state);
-    show_count_++;
-    requests_count_ += requests.size();
-  }
-
-  int show_count() const { return show_count_; }
-  int requests_count() const { return requests_count_; }
-
- private:
-  int show_count_;
-  int requests_count_;
-};
-
 class PermissionBubbleManagerBrowserTest : public InProcessBrowserTest {
  public:
   PermissionBubbleManagerBrowserTest() = default;
   ~PermissionBubbleManagerBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
-    bubble_view_.SetBrowserTest(true);
-    GetPermissionBubbleManager()->SetView(&bubble_view_);
+    PermissionBubbleManager* manager = GetPermissionBubbleManager();
+    MockPermissionBubbleView::SetFactory(manager, true);
+    manager->DisplayPendingRequests(browser());
     InProcessBrowserTest::SetUpOnMainThread();
   }
 
@@ -59,15 +39,14 @@ class PermissionBubbleManagerBrowserTest : public InProcessBrowserTest {
   }
 
   void WaitForPermissionBubble() {
-    if (bubble_view_.IsVisible())
+    if (bubble_view()->IsVisible())
       return;
     content::RunMessageLoop();
   }
 
-  const FakePermissionBubbleView& bubble_view() const { return bubble_view_; }
-
- private:
-  FakePermissionBubbleView bubble_view_;
+  MockPermissionBubbleView* bubble_view() {
+    return MockPermissionBubbleView::GetFrom(GetPermissionBubbleManager());
+  }
 };
 
 // Requests before the load event should be bundled into one bubble.
@@ -80,8 +59,8 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest, RequestsBeforeLoad) {
       1);
   WaitForPermissionBubble();
 
-  EXPECT_EQ(1, bubble_view().show_count());
-  EXPECT_EQ(2, bubble_view().requests_count());
+  EXPECT_EQ(1, bubble_view()->show_count());
+  EXPECT_EQ(2, bubble_view()->requests_count());
 }
 
 // Requests before the load should not be bundled with a request after the load.
@@ -96,8 +75,8 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
       1);
   WaitForPermissionBubble();
 
-  EXPECT_EQ(1, bubble_view().show_count());
-  EXPECT_EQ(1, bubble_view().requests_count());
+  EXPECT_EQ(1, bubble_view()->show_count());
+  EXPECT_EQ(1, bubble_view()->requests_count());
 }
 
 }  // anonymous namespace

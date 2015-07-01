@@ -8,14 +8,24 @@
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_view.h"
 
+class PermissionBubbleManager;
+
 // Provides a skeleton class for unit testing, when trying to test the bubble
 // manager logic. Should not be used for anything that requires actual UI.
 // See example usage in
 // chrome/browser/geolocation/geolocation_permission_context_unittest.cc.
 class MockPermissionBubbleView : public PermissionBubbleView {
  public:
-  MockPermissionBubbleView();
   ~MockPermissionBubbleView() override;
+
+  // Create a MPBV that has |browser_test_| set to true.
+  static scoped_ptr<PermissionBubbleView> CreateBrowserMock(Browser* browser);
+  // Create a MPBV that has |browser_test_| set to false.
+  static scoped_ptr<PermissionBubbleView> CreateUnitMock(Browser* browser);
+
+  static MockPermissionBubbleView* GetFrom(PermissionBubbleManager* manager);
+  static void SetFactory(PermissionBubbleManager* manager,
+                         bool is_browser_test);
 
   // PermissionBubbleView:
   void SetDelegate(Delegate* delegate) override;
@@ -24,6 +34,8 @@ class MockPermissionBubbleView : public PermissionBubbleView {
   bool CanAcceptRequestUpdate() override;
   void Hide() override;
   bool IsVisible() override;
+  void UpdateAnchorPosition() override;
+  gfx::NativeWindow GetNativeWindow() override;
 
   // Wrappers that update the state of the bubble.
   void Accept();
@@ -35,8 +47,16 @@ class MockPermissionBubbleView : public PermissionBubbleView {
   // But that shouldn't be done in unit tests.
   void SetBrowserTest(bool browser_test);
 
+  // Number of times |Show| was called.
+  int show_count() const { return show_count_; }
+  // Number of requests seen by |Show|.
+  int requests_count() const { return requests_count_; }
+
  private:
+  explicit MockPermissionBubbleView(bool browser_test);
   bool visible_;
+  int show_count_;
+  int requests_count_;
   bool can_accept_updates_;
   Delegate* delegate_;
   bool browser_test_;

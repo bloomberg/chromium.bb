@@ -22,7 +22,6 @@ class TestPermissionBubbleViewDelegate : public PermissionBubbleView::Delegate {
   void Accept() override {}
   void Deny() override {}
   void Closing() override {}
-  void SetView(PermissionBubbleView*) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestPermissionBubbleViewDelegate);
