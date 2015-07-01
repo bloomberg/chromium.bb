@@ -982,6 +982,9 @@ crbug.com/350829 [ Win Debug ] virtual/threaded/animations/missing-keyframe-prop
 crbug.com/350829 [ Win Debug ] virtual/threaded/animations/duplicated-keyframes-name-unprefixed-03.html [ Timeout Pass ]
 crbug.com/350829 [ Win Debug ] virtual/threaded/animations/keyframes-unprefixed-03.html [ Timeout Pass ]
 
+crbug.com/313438 [ XP ] svg/custom/relative-sized-use-on-symbol.xhtml [ NeedsRebaseline ]  
+crbug.com/313438 [ XP ] svg/custom/relative-sized-use-without-attributes-on-symbol.xhtml [ NeedsRebaseline ]
+
 crbug.com/352377 svg/animations/repeatn-event-1c.svg [ ImageOnlyFailure Pass ]
 crbug.com/352385 [ Debug ] virtual/threaded/animations/3d/transform-perspective.html [ Timeout Pass ]
 crbug.com/352705 [ Win Debug ] virtual/threaded/animations/sample-on-last-keyframe.html [ Timeout Pass ]
