@@ -9,6 +9,7 @@
 namespace ui {
 
 StubWindow::StubWindow(PlatformWindowDelegate* delegate) : delegate_(delegate) {
+  delegate_->OnAcceleratedWidgetAvailable(gfx::kNullAcceleratedWidget, 1.f);
 }
 
 StubWindow::~StubWindow() {
