@@ -133,9 +133,10 @@ remoting.Host.Options.convertRemapKeys = function(remappings) {
 
 /**
  * Determine whether a host needs to be manually updated. This is the case if
- * the host's major version number is more than 1 lower than that of the web-
- * app (a difference of 1 is tolerated due to the different update mechanisms)
- * and if the host is on-line (off-line hosts are not expected to auto-update).
+ * the host's major version number is more than 2 lower than that of the web-
+ * app (a difference of 2 is tolerated due to the different update mechanisms
+ * and to handle cases where we may skip releasing a version) and if the host is
+ * on-line (off-line hosts are not expected to auto-update).
  *
  * @param {remoting.Host} host The host information from the directory.
  * @param {string|number} webappVersion The version number of the web-app, in
@@ -153,7 +154,7 @@ remoting.Host.needsUpdate = function(host, webappVersion) {
     // so if it's missing then the host is at most version 25.
     hostMajorVersion = 25;
   }
-  return (parseInt(webappVersion, 10) - hostMajorVersion) > 1;
+  return (parseInt(webappVersion, 10) - hostMajorVersion) > 2;
 };
 
 })();
