@@ -217,4 +217,18 @@ TEST_F(StyledMarkupSerializerTest, AcrossShadow)
     EXPECT_EQ(serializedDOM, serializedICT);
 }
 
+TEST_F(StyledMarkupSerializerTest, AcrossInvisibleElements)
+{
+    const char* bodyContent = "<span id='span1' style='display: none'>11</span><span id='span2' style='display: none'>22</span>";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<Element> span1 = document().getElementById("span1");
+    RefPtrWillBeRawPtr<Element> span2 = document().getElementById("span2");
+    Position startDOM = Position::firstPositionInNode(span1.get());
+    Position endDOM = Position::lastPositionInNode(span2.get());
+    EXPECT_EQ("", serializePart<EditingStrategy>(startDOM, endDOM));
+    PositionInComposedTree startICT = PositionInComposedTree::firstPositionInNode(span1.get());
+    PositionInComposedTree endICT = PositionInComposedTree::lastPositionInNode(span2.get());
+    EXPECT_EQ("", serializePart<EditingInComposedTreeStrategy>(startICT, endICT));
+}
+
 } // namespace blink

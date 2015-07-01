@@ -349,7 +349,7 @@ Node* StyledMarkupTraverser<Strategy>::traverse(Node* startNode, Node* pastEnd)
             continue;
 
         ASSERT(n);
-        Node* lastAncestorClosedOrSelf = Strategy::isDescendantOf(*n, *lastClosed) ? lastClosed : n;
+        Node* lastAncestorClosedOrSelf = (lastClosed && Strategy::isDescendantOf(*n, *lastClosed)) ? lastClosed : n;
         for (ContainerNode* parent = Strategy::parent(*lastAncestorClosedOrSelf); parent && parent != nextParent; parent = Strategy::parent(*parent)) {
             // All ancestors that aren't in the ancestorsToClose list should either be a) unrendered:
             if (!parent->layoutObject())
