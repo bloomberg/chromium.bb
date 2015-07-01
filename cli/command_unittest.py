@@ -71,16 +71,6 @@ class TestCommandTest(cros_test_lib.MockTestCase):
     with self.assertRaises(SystemExit):
       parser.parse_args(['--device', 'device'])
 
-  def testBrilloAddDeviceArgument(self):
-    """Tests CliCommand.AddDeviceArgument() for `brillo`."""
-    self.PatchObject(command, 'GetToolset', return_value='brillo')
-    parser = argparse.ArgumentParser()
-    command.CliCommand.AddDeviceArgument(parser)
-    # brillo should have an optional device argument.
-    with self.assertRaises(SystemExit):
-      parser.parse_args(['device'])
-    parser.parse_args(['--device', 'device'])
-
 
 class MockCommand(partial_mock.PartialMock):
   """Mock class for a generic CLI command."""
@@ -144,21 +134,6 @@ class CommandTest(cros_test_lib.MockTestCase):
     # Pick some commands that are likely to not go away.
     self.assertIn('chrome-sdk', cros_commands)
     self.assertIn('flash', cros_commands)
-
-  def testListBrilloCommands(self):
-    """Tests we get a sane `brillo` list back.
-
-    Needs to be separate from testListCrosCommands() because calling
-    ListCommands() twice with both 'brillo' and 'cros' produces a superset
-    rather than two independent sets.
-    """
-    brillo_commands = command.ListCommands('brillo')
-    # Pick some commands that should be in `cros` but not `brillo`.
-    self.assertNotIn('chrome-sdk', brillo_commands)
-    self.assertNotIn('stage', brillo_commands)
-    # Pick some commands that should be in `brillo`.
-    self.assertIn('debug', brillo_commands)
-    self.assertIn('devices', brillo_commands)
 
 
 class FileLoggerSetupTest(cros_test_lib.WorkspaceTestCase):

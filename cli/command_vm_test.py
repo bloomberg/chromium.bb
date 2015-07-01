@@ -116,27 +116,6 @@ class CommandVMTest(object):
     except vm.VMStopError as e:
       logging.warning('Failed to stop the VM: %s', e)
 
-  @TestCommandDecorator('devices')
-  def TestDevices(self):
-    """Tests the devices command."""
-    logging.info('Test to use devices command to set a user-friendly alias '
-                 'name for the VM device.')
-    alias = 'vm_device'
-    cmd = self.BuildCommand('devices', device=self.vm.device_addr,
-                            pos_args=['alias', alias])
-    result = cros_build_lib.RunCommand(cmd, capture_output=True,
-                                       error_code_ok=True)
-    if result.returncode:
-      logging.error('Failed to set an alias for the VM device.')
-      raise CommandError(result.error)
-
-    # Verify that the alias is set correctly.
-    with remote_access.ChromiumOSDeviceHandler(
-        remote_access.LOCALHOST, port=self.vm.port) as device:
-      if device.alias != alias:
-        logging.error('VM alias is "%s", which is not expected.', device.alias)
-        raise CommandError()
-
   @TestCommandDecorator('shell')
   def TestShell(self):
     """Tests the shell command."""
@@ -273,7 +252,6 @@ class CommandVMTest(object):
 
   def RunTests(self):
     """Calls the test functions."""
-    self.TestDevices()
     self.TestShell()
     self.TestDebug()
     self.TestFlash()

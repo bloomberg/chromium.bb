@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""This implements the entry point for CLI toolsets `cros` and `brillo`.
+"""This implements the entry point for the `cros` CLI toolset.
 
-This script is invoked by chromite/bin/{cros,brillo}, which sets up the
+This script is invoked by chromite/bin/cros, which sets up the
 proper execution environment and calls this module's main() function.
 
 In turn, this script looks for a subcommand based on how it was invoked. For
@@ -26,11 +26,6 @@ from chromite.lib import stats
 def GetOptions(my_commands):
   """Returns the argparse to use for commandline parsing."""
   parser = commandline.ArgumentParser(caching=True, default_log_level='notice')
-  if command.GetToolset() == 'brillo':
-    # For brillo commands, we want to store the logs to a file for error
-    # handling at logging level notice.
-    command.SetupFileLogger()
-
   if not command:
     return parser
 
