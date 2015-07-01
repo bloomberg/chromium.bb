@@ -2002,7 +2002,7 @@ list.autocomplete-suggestions > [lead] {
 .suggest-apps-dialog-title.cr-dialog-title {
   /* Entire height: 44px (content-box 22px + padding 11px * 2) */
   font-size: 16px;
-  height: 22px;
+  line-height: 22px;
   margin: 0;
   padding: 11px 18px;
 }
