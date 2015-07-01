@@ -31,14 +31,12 @@ public:
 // DOM tree version of editing algorithm
 class EditingStrategy : public EditingAlgorithm<NodeTraversal> {
 public:
-    using PositionIteratorType = PositionIteratorAlgorithm<EditingStrategy>;
     using PositionType = PositionAlgorithm<EditingStrategy>;
 };
 
 // Composed tree version of editing algorithm
 class EditingInComposedTreeStrategy : public EditingAlgorithm<ComposedTreeTraversal> {
 public:
-    using PositionIteratorType = PositionIteratorAlgorithm<EditingInComposedTreeStrategy>;
     using PositionType = PositionAlgorithm<EditingInComposedTreeStrategy>;
 
     // Don't use |parentOrShadowHostNode()| in composed tree specific algorithm.

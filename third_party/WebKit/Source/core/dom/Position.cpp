@@ -628,7 +628,7 @@ static Node* enclosingVisualBoundary(Node* node)
 // upstream() and downstream() want to return positions that are either in a
 // text node or at just before a non-text node.  This method checks for that.
 template <typename Strategy>
-static bool isStreamer(const typename Strategy::PositionIteratorType& pos)
+static bool isStreamer(const PositionIteratorAlgorithm<Strategy>& pos)
 {
     if (!pos.node())
         return true;
@@ -655,8 +655,8 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::upstream(EditingBoundar
     // iterate backward from there, looking for a qualified position
     Node* boundary = enclosingVisualBoundary<Strategy>(startNode);
     // FIXME: PositionIterator should respect Before and After positions.
-    typename Strategy::PositionIteratorType lastVisible(m_anchorType == PositionIsAfterAnchor ? createLegacyEditingPosition(m_anchorNode.get(), caretMaxOffset(m_anchorNode.get())) : PositionAlgorithm<Strategy>(*this));
-    typename Strategy::PositionIteratorType currentPos = lastVisible;
+    PositionIteratorAlgorithm<Strategy> lastVisible(m_anchorType == PositionIsAfterAnchor ? createLegacyEditingPosition(m_anchorNode.get(), caretMaxOffset(m_anchorNode.get())) : PositionAlgorithm<Strategy>(*this));
+    PositionIteratorAlgorithm<Strategy> currentPos = lastVisible;
     bool startEditable = startNode->hasEditableStyle();
     Node* lastNode = startNode;
     bool boundaryCrossed = false;
@@ -777,8 +777,8 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::downstream(EditingBound
     // iterate forward from there, looking for a qualified position
     Node* boundary = enclosingVisualBoundary<Strategy>(startNode);
     // FIXME: PositionIterator should respect Before and After positions.
-    typename Strategy::PositionIteratorType lastVisible(m_anchorType == PositionIsAfterAnchor ? createLegacyEditingPosition(m_anchorNode.get(), caretMaxOffset(m_anchorNode.get())) : PositionAlgorithm<Strategy>(*this));
-    typename Strategy::PositionIteratorType currentPos = lastVisible;
+    PositionIteratorAlgorithm<Strategy> lastVisible(m_anchorType == PositionIsAfterAnchor ? createLegacyEditingPosition(m_anchorNode.get(), caretMaxOffset(m_anchorNode.get())) : PositionAlgorithm<Strategy>(*this));
+    PositionIteratorAlgorithm<Strategy> currentPos = lastVisible;
     bool startEditable = startNode->hasEditableStyle();
     Node* lastNode = startNode;
     bool boundaryCrossed = false;

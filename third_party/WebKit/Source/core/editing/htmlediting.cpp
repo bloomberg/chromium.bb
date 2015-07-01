@@ -229,7 +229,7 @@ template <typename Strategy>
 typename Strategy::PositionType nextCandidateAlgorithm(const typename Strategy::PositionType& position)
 {
     using PositionType = typename Strategy::PositionType;
-    typename Strategy::PositionIteratorType p(position);
+    PositionIteratorAlgorithm<Strategy> p(position);
     while (!p.atEnd()) {
         p.increment();
         if (p.isCandidate())
@@ -264,7 +264,7 @@ template <typename Strategy>
 typename Strategy::PositionType previousCandidateAlgorithm(const typename Strategy::PositionType& position)
 {
     using PositionType = typename Strategy::PositionType;
-    typename Strategy::PositionIteratorType p(position);
+    PositionIteratorAlgorithm<Strategy> p(position);
     while (!p.atStart()) {
         p.decrement();
         if (p.isCandidate())
