@@ -2,7 +2,6 @@
 # usual OWNERS rules.
 per-file about_flags.cc=*
 
-per-file browser_resources.grd=arv@chromium.org
 per-file browser_resources.grd=bauerb@chromium.org
 per-file browser_resources.grd=dbeam@chromium.org
 per-file browser_resources.grd=estade@chromium.org
