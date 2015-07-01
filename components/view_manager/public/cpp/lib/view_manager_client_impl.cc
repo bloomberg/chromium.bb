@@ -198,6 +198,14 @@ void ViewManagerClientImpl::RemoveView(Id view_id) {
     views_.erase(it);
 }
 
+void ViewManagerClientImpl::SetViewManagerService(
+    ViewManagerServicePtr service) {
+  DCHECK(!service_);
+  DCHECK(service);
+  service_ = service.Pass();
+  service_.set_error_handler(this);
+}
+
 void ViewManagerClientImpl::OnRootDestroyed(View* root) {
   DCHECK_EQ(root, root_);
   root_ = nullptr;

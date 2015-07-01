@@ -31,6 +31,7 @@ class ViewManagerApp : public mojo::ApplicationDelegate,
                        public ConnectionManagerDelegate,
                        public mojo::ErrorHandler,
                        public mojo::InterfaceFactory<mojo::ViewManagerRoot>,
+                       public mojo::InterfaceFactory<mojo::ViewManagerService>,
                        public mojo::InterfaceFactory<mojo::Gpu> {
  public:
   ViewManagerApp();
@@ -43,7 +44,7 @@ class ViewManagerApp : public mojo::ApplicationDelegate,
       mojo::ApplicationConnection* connection) override;
 
   // ConnectionManagerDelegate:
-  void OnNoMoreRootConnections() override;
+  void OnLostConnectionToWindowManager() override;
   ClientConnection* CreateClientConnectionForEmbedAtView(
       ConnectionManager* connection_manager,
       mojo::InterfaceRequest<mojo::ViewManagerService> service_request,
@@ -57,6 +58,11 @@ class ViewManagerApp : public mojo::ApplicationDelegate,
       const ViewId& root_id,
       mojo::ViewManagerClientPtr view_manager_client) override;
 
+  // mojo::InterfaceFactory<mojo::ViewManagerService>:
+  void Create(
+      mojo::ApplicationConnection* connection,
+      mojo::InterfaceRequest<mojo::ViewManagerService> request) override;
+
   // mojo::InterfaceFactory<mojo::ViewManagerRoot>:
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojo::ViewManagerRoot> request) override;
@@ -69,6 +75,7 @@ class ViewManagerApp : public mojo::ApplicationDelegate,
   void OnConnectionError() override;
 
   mojo::ApplicationImpl* app_impl_;
+  scoped_ptr<mojo::Binding<mojo::ViewManagerRoot>> view_manager_root_binding_;
   scoped_ptr<ConnectionManager> connection_manager_;
   mojo::TracingImpl tracing_;
   scoped_refptr<gles2::GpuState> gpu_state_;

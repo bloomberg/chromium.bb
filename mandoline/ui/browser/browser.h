@@ -40,9 +40,7 @@ class Browser : public mojo::ViewManagerDelegate,
                 public mojo::InterfaceFactory<mojo::NavigatorHost>,
                 public mojo::InterfaceFactory<ViewEmbedder> {
  public:
-  Browser(mojo::ApplicationImpl* app,
-          BrowserDelegate* delegate,
-          const GURL& default_url);
+  Browser(mojo::ApplicationImpl* app, BrowserDelegate* delegate);
   ~Browser() override;
 
   void ReplaceContentWithRequest(mojo::URLRequestPtr request);
@@ -60,9 +58,6 @@ class Browser : public mojo::ViewManagerDelegate,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, ClosingBrowserClosesAppConnection);
-  FRIEND_TEST_ALL_PREFIXES(BrowserTest, TwoBrowsers);
-
-  friend class TestBrowser;
 
   mojo::ApplicationConnection* GetViewManagerConnectionForTesting();
 
@@ -99,7 +94,7 @@ class Browser : public mojo::ViewManagerDelegate,
   mojo::View* root_;
   mojo::View* content_;
   mojo::View* omnibox_;
-  GURL default_url_;
+  std::string default_url_;
   mojo::URLRequestPtr pending_request_;
 
   mojo::WeakBindingSet<ViewEmbedder> view_embedder_bindings_;

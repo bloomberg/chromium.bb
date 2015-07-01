@@ -7,9 +7,8 @@
 #include "base/command_line.h"
 #include "components/view_manager/client_connection.h"
 #include "components/view_manager/connection_manager.h"
+#include "components/view_manager/display_manager.h"
 #include "components/view_manager/public/cpp/args.h"
-#include "components/view_manager/view_manager_root_connection.h"
-#include "components/view_manager/view_manager_root_impl.h"
 #include "components/view_manager/view_manager_service_impl.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -52,18 +51,23 @@ void ViewManagerApp::Initialize(ApplicationImpl* app) {
 
   if (!gpu_state_.get())
     gpu_state_ = new gles2::GpuState;
-  connection_manager_.reset(new ConnectionManager(this));
+  connection_manager_.reset(
+      new ConnectionManager(this, is_headless_, app_impl_, gpu_state_));
 }
 
 bool ViewManagerApp::ConfigureIncomingConnection(
     ApplicationConnection* connection) {
+
+  // |connection| originates from the WindowManager. Let it connect directly
+  // to the ViewManager.
+  connection->AddService<ViewManagerService>(this);
   connection->AddService<ViewManagerRoot>(this);
   connection->AddService<Gpu>(this);
 
   return true;
 }
 
-void ViewManagerApp::OnNoMoreRootConnections() {
+void ViewManagerApp::OnLostConnectionToWindowManager() {
   app_impl_->Terminate();
 }
 
@@ -96,25 +100,35 @@ ClientConnection* ViewManagerApp::CreateClientConnectionForEmbedAtView(
 }
 
 void ViewManagerApp::Create(ApplicationConnection* connection,
-                            InterfaceRequest<ViewManagerRoot> request) {
-  DCHECK(connection_manager_.get());
-  // TODO(fsamuel): We need to make sure that only the window manager can create
-  // new roots.
-  scoped_ptr<ViewManagerRootImpl> view_manager_root(
-      new ViewManagerRootImpl(
-          connection_manager_.get(),
-          is_headless_,
-          app_impl_,
-          gpu_state_));
+                            InterfaceRequest<ViewManagerService> request) {
+  if (connection_manager_->has_window_manager_client_connection()) {
+    VLOG(1) << "ViewManager interface requested more than once.";
+    return;
+  }
 
+  scoped_ptr<ViewManagerServiceImpl> service(new ViewManagerServiceImpl(
+      connection_manager_.get(), kInvalidConnectionId, RootViewId(0)));
   mojo::ViewManagerClientPtr client;
   connection->ConnectToService(&client);
+  scoped_ptr<ClientConnection> client_connection(
+      new DefaultClientConnection(service.Pass(), connection_manager_.get(),
+                                  request.Pass(), client.Pass()));
+  connection_manager_->SetWindowManagerClientConnection(
+      client_connection.Pass());
+}
 
-  // ViewManagerRootConnection manages its own lifetime.
-  new ViewManagerRootConnectionImpl(request.Pass(),
-                                    view_manager_root.Pass(),
-                                    client.Pass(),
-                                    connection_manager_.get());
+void ViewManagerApp::Create(ApplicationConnection* connection,
+                            InterfaceRequest<ViewManagerRoot> request) {
+  if (view_manager_root_binding_.get()) {
+    VLOG(1) << "ViewManagerRoot requested more than once.";
+    return;
+  }
+
+  // ConfigureIncomingConnection() must have been called before getting here.
+  DCHECK(connection_manager_.get());
+  view_manager_root_binding_.reset(new mojo::Binding<ViewManagerRoot>(
+      connection_manager_->view_manager_root(), request.Pass()));
+  view_manager_root_binding_->set_error_handler(this);
 }
 
 void ViewManagerApp::Create(

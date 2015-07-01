@@ -14,7 +14,6 @@
 namespace view_manager {
 
 class ConnectionManager;
-class ViewManagerRootDelegate;
 class ViewManagerServiceImpl;
 
 // ViewManagerRootImpl is an implementation of the ViewManagerRoot interface.
@@ -28,18 +27,17 @@ class ViewManagerRootImpl : public DisplayManagerDelegate,
   // TODO(fsamuel): All these parameters are just plumbing for creating
   // DisplayManagers. We should probably just store these common parameters
   // in the DisplayManagerFactory and pass them along on DisplayManager::Create.
-  ViewManagerRootImpl(ConnectionManager* connection_manager,
+  ViewManagerRootImpl(const ViewId& root_view_id,
+                      ConnectionManager* connection_manager,
                       bool is_headless,
                       mojo::ApplicationImpl* app_impl,
                       const scoped_refptr<gles2::GpuState>& gpu_state);
   ~ViewManagerRootImpl() override;
 
   // Initializes state that depends on the existence of a ViewManagerRootImpl.
-  void Init(ViewManagerRootDelegate* delegate);
+  void Init();
 
-  ViewManagerServiceImpl* GetViewManagerService();
-
-  mojo::ViewManagerRootClient* client() const { return client_.get(); }
+  mojo::ViewManagerRootClient* client() { return client_.get(); }
 
   // Returns whether |view| is a descendant of this root but not itself a
   // root view.
@@ -76,7 +74,6 @@ class ViewManagerRootImpl : public DisplayManagerDelegate,
       const mojo::ViewportMetrics& old_metrics,
       const mojo::ViewportMetrics& new_metrics) override;
 
-  ViewManagerRootDelegate* delegate_;
   ConnectionManager* const connection_manager_;
   mojo::ViewManagerRootClientPtr client_;
   scoped_ptr<ServerView> root_;

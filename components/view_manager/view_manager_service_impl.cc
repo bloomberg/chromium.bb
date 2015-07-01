@@ -200,7 +200,7 @@ bool ViewManagerServiceImpl::Embed(const ViewId& view_id,
   if (!client.get() || !CanEmbed(view_id))
     return false;
   PrepareForEmbed(view_id);
-  ignore_result(connection_manager_->EmbedAtView(id_, view_id, client.Pass()));
+  connection_manager_->EmbedAtView(id_, view_id, client.Pass());
   return true;
 }
 

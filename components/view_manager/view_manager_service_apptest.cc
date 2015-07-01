@@ -458,7 +458,7 @@ class ViewManagerServiceAppTest : public mojo::test::ApplicationTestBase,
 
   // Various connections. |vm1()|, being the first connection, has special
   // permissions (it's treated as the window manager).
-  ViewManagerService* vm1() { return vm_client1_->service(); }
+  ViewManagerService* vm1() { return vm1_.get(); }
   ViewManagerService* vm2() { return vm_client2_->service(); }
   ViewManagerService* vm3() { return vm_client3_->service(); }
 
@@ -471,7 +471,7 @@ class ViewManagerServiceAppTest : public mojo::test::ApplicationTestBase,
 
   void EstablishSecondConnection(bool create_initial_view) {
     if (create_initial_view)
-      ASSERT_TRUE(CreateView(vm1(), BuildViewId(1, 1)));
+      ASSERT_TRUE(CreateView(vm1_.get(), BuildViewId(1, 1)));
     ASSERT_NO_FATAL_FAILURE(
         EstablishSecondConnectionWithRoot(BuildViewId(1, 1)));
 
@@ -525,8 +525,9 @@ class ViewManagerServiceAppTest : public mojo::test::ApplicationTestBase,
     request->url = mojo::String::From("mojo:view_manager");
     ApplicationConnection* vm_connection =
         application_impl()->ConnectToApplication(request.Pass());
-    vm_connection->AddService(client_factory_.get());
+    vm_connection->ConnectToService(&vm1_);
     vm_connection->ConnectToService(&view_manager_root_);
+    vm_connection->AddService(client_factory_.get());
     vm_client1_ = client_factory_->WaitForInstance();
     ASSERT_TRUE(vm_client1_);
     // Next we should get an embed call on the "window manager" client.
@@ -553,6 +554,7 @@ class ViewManagerServiceAppTest : public mojo::test::ApplicationTestBase,
   mojo::ViewManagerRootPtr view_manager_root_;
 
  private:
+  mojo::ViewManagerServicePtr vm1_;
   scoped_ptr<ViewManagerClientFactory> client_factory_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ViewManagerServiceAppTest);
@@ -573,8 +575,6 @@ TEST_F(ViewManagerServiceAppTest, TwoClientsGetDifferentConnectionIds) {
 TEST_F(ViewManagerServiceAppTest, ViewsRemovedWhenEmbedding) {
   // Two views 1 and 2. 2 is parented to 1.
   ASSERT_TRUE(CreateView(vm1(), BuildViewId(1, 1)));
-  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 2), BuildViewId(1, 1)));
-
   ASSERT_TRUE(CreateView(vm1(), BuildViewId(1, 2)));
   ASSERT_TRUE(AddView(vm1(), BuildViewId(1, 1), BuildViewId(1, 2)));
 

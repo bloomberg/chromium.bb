@@ -40,11 +40,6 @@ tests = [
     "type": "gtest_isolated",
     "args": ["--use-headless-config"]
   },
-  {
-    "test": "mojo:mandoline_browser_apptests",
-    "type": "gtest_isolated",
-    "args": ["--use-headless-config"]
-  },
 ]
 
 # TODO(msw): Get these tests passing on Android too. http://crbug.com/486220

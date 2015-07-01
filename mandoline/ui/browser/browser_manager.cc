@@ -4,18 +4,11 @@
 
 #include "mandoline/ui/browser/browser_manager.h"
 
-#include "base/command_line.h"
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "mandoline/ui/browser/browser.h"
 
 namespace mandoline {
-
-namespace {
-
-const char kGoogleURL[] = "http://www.google.com";
-
-}  // namespace
 
 // TODO(sky): make ViewManager not do anything until device_pixel_ratio is
 // determined. At which point this can be nuked.
@@ -65,9 +58,9 @@ BrowserManager::~BrowserManager() {
   DCHECK(browsers_.empty());
 }
 
-Browser* BrowserManager::CreateBrowser(const GURL& default_url) {
+Browser* BrowserManager::CreateBrowser() {
   DCHECK(app_);
-  Browser* browser = new Browser(app_, this, default_url);
+  Browser* browser = new Browser(app_, this);
   browsers_.insert(browser);
   return browser;
 }
@@ -93,17 +86,7 @@ void BrowserManager::LaunchURL(const mojo::String& url) {
 
 void BrowserManager::Initialize(mojo::ApplicationImpl* app) {
   app_ = app;
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  // Create a Browser for each valid URL in the command line.
-  for (const auto& arg : command_line->GetArgs()) {
-    GURL url(arg);
-    if (url.is_valid())
-      CreateBrowser(url);
-  }
-  // If there were no valid URLs in the command line create a Browser with the
-  // default URL.
-  if (browsers_.empty())
-    CreateBrowser(GURL(kGoogleURL));
+  CreateBrowser();
 }
 
 bool BrowserManager::ConfigureIncomingConnection(

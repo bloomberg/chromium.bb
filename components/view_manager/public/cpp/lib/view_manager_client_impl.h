@@ -71,6 +71,8 @@ class ViewManagerClientImpl : public ViewManager,
   void AddView(View* view);
   void RemoveView(Id view_id);
 
+  void SetViewManagerService(ViewManagerServicePtr service);
+
   bool is_embed_root() const { return is_embed_root_; }
 
   // Called after the root view's observers have been notified of destruction

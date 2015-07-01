@@ -14,7 +14,6 @@
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/common/weak_binding_set.h"
-#include "url/gurl.h"
 
 #if defined(USE_AURA)
 #include "mandoline/ui/aura/aura_init.h"
@@ -38,7 +37,7 @@ class BrowserManager : public mojo::ApplicationDelegate,
   ~BrowserManager() override;
 
   // BrowserManager owns the returned Browser.
-  Browser* CreateBrowser(const GURL& default_url);
+  Browser* CreateBrowser();
 
  private:
   class DevicePixelRatioWaiter;
