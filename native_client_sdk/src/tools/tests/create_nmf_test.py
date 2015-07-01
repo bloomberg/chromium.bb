@@ -75,6 +75,8 @@ class TestDefaultLibpath(unittest.TestCase):
 
   def testFallbackPath(self):
     paths = create_nmf.GetDefaultLibPath('foo_Debug')
+    if sys.platform == 'win32':
+      paths = [p.replace('\\', '/') for p in paths]
     path_base = '/dummy/path/lib/glibc_x86_64/foo_Debug'
     path_fallback = '/dummy/path/lib/glibc_x86_64/Debug'
     self.assertIn(path_base, paths)
@@ -82,6 +84,8 @@ class TestDefaultLibpath(unittest.TestCase):
     self.assertGreater(paths.index(path_fallback), paths.index(path_base))
 
     paths = create_nmf.GetDefaultLibPath('foo_bar')
+    if sys.platform == 'win32':
+      paths = [p.replace('\\', '/') for p in paths]
     path_base = '/dummy/path/lib/glibc_x86_64/foo_bar'
     path_fallback = '/dummy/path/lib/glibc_x86_64/Release'
     self.assertIn(path_base, paths)
