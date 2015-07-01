@@ -51,16 +51,7 @@ void LoadGaiaAuthExtension(BrowserContext* context) {
     return;
   }
 
-  int manifest_resource_id = IDR_GAIA_AUTH_MANIFEST;
-
-#if defined(OS_CHROMEOS)
-  if (chromeos::system::InputDeviceSettings::Get()
-          ->ForceKeyboardDrivenUINavigation()) {
-    manifest_resource_id = IDR_GAIA_AUTH_KEYBOARD_MANIFEST;
-  }
-#endif
-
-  component_loader->Add(manifest_resource_id,
+  component_loader->Add(IDR_GAIA_AUTH_MANIFEST,
                         base::FilePath(FILE_PATH_LITERAL("gaia_auth")));
 }
 
