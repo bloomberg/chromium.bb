@@ -906,6 +906,15 @@ NaClErrorCode NaClElfImageLoadDynamically(
     int32_t result;
 
     /*
+     * By checking if filesz is larger than memsz, we no longer run the risk of
+     * a malicious ELF object overrunning into the trusted address space when
+     * reading data of size "filez" into a buffer of size "memsz".
+     */
+    if (filesz > memsz) {
+      return LOAD_UNLOADABLE;
+    }
+
+    /*
      * We check for PT_LOAD directly rather than using the "loadable"
      * array because we are not using NaClElfImageValidateProgramHeaders()
      * to fill out the "loadable" array for this ELF object.  This ELF
