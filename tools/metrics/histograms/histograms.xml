@@ -48406,6 +48406,29 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Audio.AecSystemDelayJump" units="milliseconds">
+  <owner>bjornv@chromium.org</owner>
+  <summary>
+    The AEC in WebRTC keeps a buffer to mimic the audio buffers in the lower
+    layers. This histogram logs a sudden positive jump in buffer size. Since we
+    detect jumps in the capture thread, only positive values are feasible. Note
+    that the difference in milliseconds is logged and not the actual AEC system
+    delay value. Sampled every time the AEC system delay changes more than 50
+    milliseconds.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Audio.ReportedStreamDelayJump" units="milliseconds">
+  <owner>bjornv@chromium.org</owner>
+  <summary>
+    The difference in stream delay reported to WebRTC by Chrome. Since we detect
+    jumps in the capture thread, only positive values are feasible. Note that
+    the difference in milliseconds is logged and not the actual stream delay
+    value. Sampled every time the stream delay changes more than 50
+    milliseconds.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Audio.TargetBitrateInKbps" units="kbps">
   <owner>hlundin@chromium.org</owner>
   <summary>
