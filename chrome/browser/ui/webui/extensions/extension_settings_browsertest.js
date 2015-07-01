@@ -123,17 +123,10 @@ ExtensionSettingsWebUITest.prototype = {
   },
 };
 
-GEN('#if defined(OS_CHROMEOS)');  // Flaky on ChromeOS; http://crbug.com/506321.
-GEN('#define MAYBE_testDeveloperModeNoExtensions ' +
-    'DISABLED_testDeveloperModeNoExtensions');
-GEN('#else');
-GEN('#define MAYBE_testDeveloperModeNoExtensions ' +
-    'testDeveloperModeNoExtensions');
-GEN('#endif');
-
+// Flaky: http://crbug.com/505506.
 // Verify that developer mode doesn't change behavior when the number of
 // extensions changes.
-TEST_F('ExtensionSettingsWebUITest', 'testDeveloperModeNoExtensions',
+TEST_F('ExtensionSettingsWebUITest', 'DISABLED_testDeveloperModeNoExtensions',
        function() {
   this.testDeveloperMode();
 });
