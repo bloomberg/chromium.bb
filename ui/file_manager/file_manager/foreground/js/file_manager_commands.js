@@ -690,13 +690,14 @@ CommandHandler.COMMANDS_['delete'] = /** @type {Command} */ ({
       return;
     }
 
-    // If it contains an entry which is on read only volume, disable command.
+    // If it contains an entry which is on read only volume or no item is
+    // selected, disable command.
     var containsReadOnlyEntry = entries.some(function(entry) {
       var locationInfo = fileManager.volumeManager.getLocationInfo(entry);
       return locationInfo && locationInfo.isReadOnly;
     });
 
-    event.canExecute = !containsReadOnlyEntry;
+    event.canExecute = !containsReadOnlyEntry && entries.length > 0;
     event.command.setHidden(false);
   }
 });

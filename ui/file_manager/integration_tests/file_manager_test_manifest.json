@@ -14,6 +14,7 @@
       "file_manager/background.js",
       "file_manager/copy_between_windows.js",
       "file_manager/create_new_folder.js",
+      "file_manager/delete.js",
       "file_manager/drive_specific.js",
       "file_manager/file_dialog.js",
       "file_manager/file_display.js",
