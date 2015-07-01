@@ -517,7 +517,8 @@ class CustomTabsConnection extends ICustomTabsConnectionService.Stub {
             mPrerender = null;
         }
         if (TextUtils.isEmpty(url)) return;
-        Intent extrasIntent = new Intent().putExtras(extras);
+        Intent extrasIntent = new Intent();
+        if (extras != null) extrasIntent.putExtras(extras);
         if (IntentHandler.getExtraHeadersFromIntent(extrasIntent) != null) return;
         if (mExternalPrerenderHandler == null) {
             mExternalPrerenderHandler = new ExternalPrerenderHandler();
