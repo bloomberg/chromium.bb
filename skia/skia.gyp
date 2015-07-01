@@ -130,7 +130,6 @@
         # Note: file list duplicated in GN build.
         'public/interfaces/bitmap.mojom',
         'public/type_converters.cc',
-        'public/type_converters.h',
       ],
     },
   ],

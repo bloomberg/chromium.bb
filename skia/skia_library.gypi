@@ -30,7 +30,6 @@
 
     '../third_party/skia/src/ports/SkImageDecoder_empty.cpp',
     '../third_party/skia/src/images/SkScaledBitmapSampler.cpp',
-    '../third_party/skia/src/images/SkScaledBitmapSampler.h',
 
     '../third_party/skia/src/ports/SkFontConfigInterface_direct.cpp',
 
@@ -45,7 +44,6 @@
 
     '../third_party/skia/src/ports/SkFontHost_FreeType.cpp',
     '../third_party/skia/src/ports/SkFontHost_FreeType_common.cpp',
-    '../third_party/skia/src/ports/SkFontHost_FreeType_common.h',
     '../third_party/skia/src/ports/SkFontHost_mac.cpp',
     '../third_party/skia/src/ports/SkFontHost_win.cpp',
     "../third_party/skia/src/ports/SkFontMgr_android.cpp",
@@ -57,88 +55,44 @@
     '../third_party/skia/src/ports/SkOSFile_stdio.cpp',
     '../third_party/skia/src/ports/SkOSFile_win.cpp',
     '../third_party/skia/src/ports/SkScalerContext_win_dw.cpp',
-    '../third_party/skia/src/ports/SkScalerContext_win_dw.h',
     '../third_party/skia/src/ports/SkTime_Unix.cpp',
     '../third_party/skia/src/ports/SkTLS_pthread.cpp',
     '../third_party/skia/src/ports/SkTLS_win.cpp',
     '../third_party/skia/src/ports/SkTypeface_win_dw.cpp',
-    '../third_party/skia/src/ports/SkTypeface_win_dw.h',
 
     '../third_party/skia/src/sfnt/SkOTTable_name.cpp',
-    '../third_party/skia/src/sfnt/SkOTTable_name.h',
     '../third_party/skia/src/sfnt/SkOTUtils.cpp',
-    '../third_party/skia/src/sfnt/SkOTUtils.h',
-
-    '../third_party/skia/include/core/SkFontStyle.h',
-
-    '../third_party/skia/include/images/SkMovie.h',
-    '../third_party/skia/include/images/SkPageFlipper.h',
-
-    '../third_party/skia/include/ports/SkFontConfigInterface.h',
-    '../third_party/skia/include/ports/SkFontMgr.h',
-    '../third_party/skia/include/ports/SkFontMgr_indirect.h',
-    '../third_party/skia/include/ports/SkRemotableFontMgr.h',
-    '../third_party/skia/include/ports/SkTypeface_win.h',
   ],
 
   # Exclude all unused files in skia utils.gypi file
   'sources!': [
-  '../third_party/skia/include/utils/SkBoundaryPatch.h',
-  '../third_party/skia/include/utils/SkFrontBufferedStream.h',
-  '../third_party/skia/include/utils/SkCamera.h',
-  '../third_party/skia/include/utils/SkCanvasStateUtils.h',
-  '../third_party/skia/include/utils/SkCubicInterval.h',
-  '../third_party/skia/include/utils/SkCullPoints.h',
-  '../third_party/skia/include/utils/SkDebugUtils.h',
-  '../third_party/skia/include/utils/SkDumpCanvas.h',
-  '../third_party/skia/include/utils/SkEventTracer.h',
-  '../third_party/skia/include/utils/SkInterpolator.h',
-  '../third_party/skia/include/utils/SkLayer.h',
-  '../third_party/skia/include/utils/SkMeshUtils.h',
-  '../third_party/skia/include/utils/SkNinePatch.h',
-  '../third_party/skia/include/utils/SkParsePaint.h',
-  '../third_party/skia/include/utils/SkParsePath.h',
-  '../third_party/skia/include/utils/SkRandom.h',
-
   '../third_party/skia/src/utils/SkBitmapHasher.cpp',
-  '../third_party/skia/src/utils/SkBitmapHasher.h',
   '../third_party/skia/src/utils/SkBoundaryPatch.cpp',
   '../third_party/skia/src/utils/SkFrontBufferedStream.cpp',
   '../third_party/skia/src/utils/SkCamera.cpp',
-  '../third_party/skia/src/utils/SkCanvasStack.h',
   '../third_party/skia/src/utils/SkCubicInterval.cpp',
   '../third_party/skia/src/utils/SkCullPoints.cpp',
   '../third_party/skia/src/utils/SkDumpCanvas.cpp',
-  '../third_party/skia/src/utils/SkFloatUtils.h',
   '../third_party/skia/src/utils/SkInterpolator.cpp',
   '../third_party/skia/src/utils/SkLayer.cpp',
   '../third_party/skia/src/utils/SkMD5.cpp',
-  '../third_party/skia/src/utils/SkMD5.h',
   '../third_party/skia/src/utils/SkMeshUtils.cpp',
   '../third_party/skia/src/utils/SkNinePatch.cpp',
   '../third_party/skia/src/utils/SkOSFile.cpp',
   '../third_party/skia/src/utils/SkParsePath.cpp',
   '../third_party/skia/src/utils/SkSHA1.cpp',
-  '../third_party/skia/src/utils/SkSHA1.h',
-  '../third_party/skia/src/utils/SkTFitsIn.h',
-  '../third_party/skia/src/utils/SkTLogic.h',
 
   # We don't currently need to change thread affinity, so leave out this complexity for now.
   "../third_party/skia/src/utils/SkThreadUtils_pthread_mach.cpp",
   "../third_party/skia/src/utils/SkThreadUtils_pthread_linux.cpp",
 
 #windows
-  '../third_party/skia/include/utils/win/SkAutoCoInitialize.h',
-  '../third_party/skia/include/utils/win/SkHRESULT.h',
-  '../third_party/skia/include/utils/win/SkIStream.h',
-  '../third_party/skia/include/utils/win/SkTScopedComPtr.h',
   '../third_party/skia/src/utils/win/SkAutoCoInitialize.cpp',
   '../third_party/skia/src/utils/win/SkIStream.cpp',
   '../third_party/skia/src/utils/win/SkWGL_win.cpp',
 
 #testing
   '../third_party/skia/src/fonts/SkGScalerContext.cpp',
-  '../third_party/skia/src/fonts/SkGScalerContext.h',
   ],
 
   'include_dirs': [
@@ -323,16 +277,11 @@
         '../third_party/skia/src/ports/SkFontMgr_win_dw.cpp',
         '../third_party/skia/src/ports/SkRemotableFontMgr_win_dw.cpp',
         '../third_party/skia/src/ports/SkScalerContext_win_dw.cpp',
-        '../third_party/skia/src/ports/SkScalerContext_win_dw.h',
         '../third_party/skia/src/ports/SkTypeface_win_dw.cpp',
-        '../third_party/skia/src/ports/SkTypeface_win_dw.h',
 
-        '../third_party/skia/src/utils/win/SkDWrite.h',
         '../third_party/skia/src/utils/win/SkDWrite.cpp',
         '../third_party/skia/src/utils/win/SkDWriteFontFileStream.cpp',
-        '../third_party/skia/src/utils/win/SkDWriteFontFileStream.h',
         '../third_party/skia/src/utils/win/SkDWriteGeometrySink.cpp',
-        '../third_party/skia/src/utils/win/SkDWriteGeometrySink.h',
         '../third_party/skia/src/utils/win/SkHRESULT.cpp',
       ],
     }],

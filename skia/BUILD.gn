@@ -277,58 +277,33 @@ config("skia_library_config") {
 component("skia") {
   sources = [
     # Chrome sources.
-    "config/SkUserConfig.h",
     "ext/SkDiscardableMemory_chrome.cc",
-    "ext/SkDiscardableMemory_chrome.h",
     "ext/SkMemory_new_handler.cpp",
     "ext/analysis_canvas.cc",
-    "ext/analysis_canvas.h",
     "ext/benchmarking_canvas.cc",
-    "ext/benchmarking_canvas.h",
-    "ext/bitmap_platform_device.h",
     "ext/convolver.cc",
-    "ext/convolver.h",
     "ext/event_tracer_impl.cc",
-    "ext/event_tracer_impl.h",
     "ext/fontmgr_default_win.cc",
-    "ext/fontmgr_default_win.h",
     "ext/google_logging.cc",
     "ext/image_operations.cc",
-    "ext/image_operations.h",
     "ext/opacity_filter_canvas.cc",
-    "ext/opacity_filter_canvas.h",
     "ext/pixel_ref_utils.cc",
-    "ext/pixel_ref_utils.h",
     "ext/platform_canvas.cc",
-    "ext/platform_canvas.h",
     "ext/platform_device.cc",
-    "ext/platform_device.h",
     "ext/platform_device_linux.cc",
     "ext/platform_device_mac.cc",
     "ext/platform_device_win.cc",
     "ext/recursive_gaussian_convolution.cc",
-    "ext/recursive_gaussian_convolution.h",
-    "ext/refptr.h",
     "ext/skia_utils_base.cc",
-    "ext/skia_utils_base.h",
-    "ext/skia_utils_ios.h",
     "ext/skia_utils_ios.mm",
-    "ext/skia_utils_mac.h",
     "ext/skia_utils_mac.mm",
     "ext/skia_utils_win.cc",
-    "ext/skia_utils_win.h",
   ]
 
   if (current_cpu == "x86" || current_cpu == "x64") {
-    sources += [
-      "ext/convolver_SSE2.cc",
-      "ext/convolver_SSE2.h",
-    ]
+    sources += [ "ext/convolver_SSE2.cc" ]
   } else if (current_cpu == "mipsel" && mips_dsp_rev >= 2) {
-    sources += [
-      "ext/convolver_mips_dspr2.cc",
-      "ext/convolver_mips_dspr2.h",
-    ]
+    sources += [ "ext/convolver_mips_dspr2.cc" ]
   }
 
   # The skia gypi values are relative to the skia_dir, so we need to rebase.
@@ -341,10 +316,7 @@ component("skia") {
   allow_circular_includes_from = [ ":skia_opts" ]
 
   if (current_cpu == "arm") {
-    sources += [
-      "//third_party/skia/src/core/SkUtilsArm.cpp",
-      "//third_party/skia/src/core/SkUtilsArm.h",
-    ]
+    sources += [ "//third_party/skia/src/core/SkUtilsArm.cpp" ]
   }
 
   # GPU
@@ -355,44 +327,21 @@ component("skia") {
 
   # Remove unused util files include in utils.gypi
   sources -= [
-    "//third_party/skia/include/utils/SkBoundaryPatch.h",
-    "//third_party/skia/include/utils/SkCamera.h",
-    "//third_party/skia/include/utils/SkCanvasStateUtils.h",
-    "//third_party/skia/include/utils/SkCubicInterval.h",
-    "//third_party/skia/include/utils/SkCullPoints.h",
-    "//third_party/skia/include/utils/SkDebugUtils.h",
-    "//third_party/skia/include/utils/SkDumpCanvas.h",
-    "//third_party/skia/include/utils/SkEventTracer.h",
-    "//third_party/skia/include/utils/SkFrontBufferedStream.h",
-    "//third_party/skia/include/utils/SkInterpolator.h",
-    "//third_party/skia/include/utils/SkLayer.h",
-    "//third_party/skia/include/utils/SkMeshUtils.h",
-    "//third_party/skia/include/utils/SkNinePatch.h",
-    "//third_party/skia/include/utils/SkParsePaint.h",
-    "//third_party/skia/include/utils/SkParsePath.h",
-    "//third_party/skia/include/utils/SkRandom.h",
     "//third_party/skia/src/utils/SkBitmapHasher.cpp",
-    "//third_party/skia/src/utils/SkBitmapHasher.h",
     "//third_party/skia/src/utils/SkBoundaryPatch.cpp",
     "//third_party/skia/src/utils/SkCamera.cpp",
-    "//third_party/skia/src/utils/SkCanvasStack.h",
     "//third_party/skia/src/utils/SkCubicInterval.cpp",
     "//third_party/skia/src/utils/SkCullPoints.cpp",
     "//third_party/skia/src/utils/SkDumpCanvas.cpp",
-    "//third_party/skia/src/utils/SkFloatUtils.h",
     "//third_party/skia/src/utils/SkFrontBufferedStream.cpp",
     "//third_party/skia/src/utils/SkInterpolator.cpp",
     "//third_party/skia/src/utils/SkLayer.cpp",
     "//third_party/skia/src/utils/SkMD5.cpp",
-    "//third_party/skia/src/utils/SkMD5.h",
     "//third_party/skia/src/utils/SkMeshUtils.cpp",
     "//third_party/skia/src/utils/SkNinePatch.cpp",
     "//third_party/skia/src/utils/SkOSFile.cpp",
     "//third_party/skia/src/utils/SkParsePath.cpp",
     "//third_party/skia/src/utils/SkSHA1.cpp",
-    "//third_party/skia/src/utils/SkSHA1.h",
-    "//third_party/skia/src/utils/SkTFitsIn.h",
-    "//third_party/skia/src/utils/SkTLogic.h",
 
     # We don't currently need to change thread affinity, so leave out this complexity for now.
     "//third_party/skia/src/utils/SkThreadUtils_pthread_linux.cpp",
@@ -400,7 +349,6 @@ component("skia") {
 
     #testing
     "//third_party/skia/src/fonts/SkGScalerContext.cpp",
-    "//third_party/skia/src/fonts/SkGScalerContext.h",
   ]
 
   if (is_win) {
@@ -421,10 +369,6 @@ component("skia") {
   if (is_win) {
     sources -= [
       #windows
-      "//third_party/skia/include/utils/win/SkAutoCoInitialize.h",
-      "//third_party/skia/include/utils/win/SkHRESULT.h",
-      "//third_party/skia/include/utils/win/SkIStream.h",
-      "//third_party/skia/include/utils/win/SkTScopedComPtr.h",
       "//third_party/skia/src/utils/win/SkAutoCoInitialize.cpp",
       "//third_party/skia/src/utils/win/SkIStream.cpp",
       "//third_party/skia/src/utils/win/SkWGL_win.cpp",
@@ -449,10 +393,8 @@ component("skia") {
       "//third_party/skia/src/ports/SkOSFile_win.cpp",
       "//third_party/skia/src/ports/SkRemotableFontMgr_win_dw.cpp",
       "//third_party/skia/src/ports/SkScalerContext_win_dw.cpp",
-      "//third_party/skia/src/ports/SkScalerContext_win_dw.h",
       "//third_party/skia/src/ports/SkTLS_win.cpp",
       "//third_party/skia/src/ports/SkTypeface_win_dw.cpp",
-      "//third_party/skia/src/ports/SkTypeface_win_dw.h",
     ]
   }
   if (!is_android) {
@@ -483,25 +425,13 @@ component("skia") {
 
   # Select the right BitmapPlatformDevice.
   if (is_win) {
-    sources += [
-      "ext/bitmap_platform_device_win.cc",
-      "ext/bitmap_platform_device_win.h",
-    ]
+    sources += [ "ext/bitmap_platform_device_win.cc" ]
   } else if (is_mac) {
-    sources += [
-      "ext/bitmap_platform_device_mac.cc",
-      "ext/bitmap_platform_device_mac.h",
-    ]
+    sources += [ "ext/bitmap_platform_device_mac.cc" ]
   } else if (use_cairo) {
-    sources += [
-      "ext/bitmap_platform_device_cairo.cc",
-      "ext/bitmap_platform_device_cairo.h",
-    ]
+    sources += [ "ext/bitmap_platform_device_cairo.cc" ]
   } else {
-    sources += [
-      "ext/bitmap_platform_device_skia.cc",
-      "ext/bitmap_platform_device_skia.h",
-    ]
+    sources += [ "ext/bitmap_platform_device_skia.cc" ]
   }
 
   if (is_clang) {
