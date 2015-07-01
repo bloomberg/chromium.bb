@@ -39,6 +39,10 @@ source_set("cloud_print_service_lib") {
     "//net",
     "//url",
   ]
+
+  if (is_clang) {
+    cflags = [ "-Wno-parentheses" ]
+  }
 }
 
 grit("service_resources") {

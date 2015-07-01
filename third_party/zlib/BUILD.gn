@@ -102,17 +102,20 @@ static_library("minizip") {
     defines = [ "USE_FILE32API" ]
   }
 
-  if (is_clang) {
-    # zlib uses `if ((a == b))` for some reason.
-    cflags = [ "-Wno-parentheses-equality" ]
-  }
-
   deps = [
     ":zlib",
   ]
 
+  config("minizip_warnings") {
+    if (is_clang) {
+      # zlib uses `if ((a == b))` for some reason.
+      cflags = [ "-Wno-parentheses-equality" ]
+    }
+  }
+
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [ ":minizip_warnings" ]
   public_configs = [ ":zlib_config" ]
 }
 

@@ -814,7 +814,6 @@ if (is_win) {
       "-Wno-missing-declarations",  # http://crbug.com/505298
       "-Wno-msvc-include",  # http://crbug.com/505299
       "-Wno-overloaded-virtual",  # http://crbug.com/505301
-      "-Wno-parentheses",  # http://crbug.com/505302
       "-Wno-pointer-sign",  # http://crbug.com/505303
       "-Wno-reorder",  # http://crbug.com/505304
       "-Wno-return-type-c-linkage",  # http://crbug.com/505305

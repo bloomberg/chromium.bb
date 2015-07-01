@@ -80,11 +80,15 @@
         },
         'conditions': [
           ['clang==1', {
-            # atlapp.h contains a global "using namespace WTL;".
             # TODO: Remove once cloud_print_service_config.cc no longer depends
             # on atlapp.h, http://crbug.com/5027
             'VCCLCompilerTool': {
-              'AdditionalOptions': ['-Wno-header-hygiene'],
+              'AdditionalOptions': [
+                # atlapp.h contains a global "using namespace WTL;".
+                '-Wno-header-hygiene',
+                # atlgdi.h does an intentional assignment in an if conditional.
+                '-Wno-parentheses',
+              ],
             },
           }],
         ],
