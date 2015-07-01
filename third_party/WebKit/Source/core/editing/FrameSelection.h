@@ -302,6 +302,7 @@ private:
 
     RefPtrWillBeMember<Node> m_previousCaretNode; // The last node which painted the caret. Retained for clearing the old caret when it moves.
     LayoutRect m_previousCaretRect;
+    CaretVisibility m_previousCaretVisibility;
 
     RefPtrWillBeMember<EditingStyle> m_typingStyle;
 

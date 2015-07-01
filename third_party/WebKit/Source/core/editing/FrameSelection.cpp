@@ -1296,7 +1296,10 @@ void FrameSelection::invalidateCaretRect()
     LayoutRect newRect = localCaretRect(m_selection, PositionWithAffinity(m_selection.start(), m_selection.affinity()), layoutObject);
     Node* newNode = layoutObject ? layoutObject->node() : nullptr;
 
-    if (!m_caretBlinkTimer.isActive() && newNode == m_previousCaretNode && newRect == m_previousCaretRect)
+    if (!m_caretBlinkTimer.isActive()
+        && newNode == m_previousCaretNode
+        && newRect == m_previousCaretRect
+        && caretVisibility() == m_previousCaretVisibility)
         return;
 
     LayoutView* view = m_frame->document()->layoutView();
@@ -1307,6 +1310,7 @@ void FrameSelection::invalidateCaretRect()
 
     m_previousCaretNode = newNode;
     m_previousCaretRect = newRect;
+    m_previousCaretVisibility = caretVisibility();
 }
 
 void FrameSelection::paintCaret(GraphicsContext* context, const LayoutPoint& paintOffset, const LayoutRect& clipRect)
