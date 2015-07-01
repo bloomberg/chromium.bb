@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.partnercustomizations;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
-import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsProvider;
 
 /**
  * Basic shared functionality for partner customization integration tests.
@@ -22,7 +21,8 @@ public abstract class BasePartnerBrowserCustomizationIntegrationTest extends
     protected void setUp() throws Exception {
         PartnerBrowserCustomizations.ignoreBrowserProviderSystemPackageCheckForTests(true);
         PartnerBrowserCustomizations.setProviderAuthorityForTests(
-                TestPartnerBrowserCustomizationsProvider.class.getName());
+                "org.chromium.chrome.test.partnercustomizations");
+
         super.setUp();
     }
 }
