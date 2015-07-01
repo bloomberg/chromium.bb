@@ -333,13 +333,8 @@ class CrossProcessFrameTreeBrowserTest : public ContentBrowserTest {
 };
 
 // Ensure that we can complete a cross-process subframe navigation.
-#if defined(OS_ANDROID)
-#define MAYBE_CreateCrossProcessSubframeProxies DISABLED_CreateCrossProcessSubframeProxies
-#else
-#define MAYBE_CreateCrossProcessSubframeProxies CreateCrossProcessSubframeProxies
-#endif
 IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
-                       MAYBE_CreateCrossProcessSubframeProxies) {
+                       CreateCrossProcessSubframeProxies) {
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   NavigateToURL(shell(), main_url);
 
