@@ -12,6 +12,7 @@
 #include "third_party/icu/source/common/unicode/uversion.h"
 #include "third_party/icu/source/i18n/unicode/calendar.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
+#include "third_party/icu/source/i18n/unicode/tzfmt.h"
 
 namespace base {
 namespace {
@@ -21,10 +22,19 @@ const Time::Exploded kTestDateTimeExploded = {
   15, 42, 7, 0    // 15:42:07.000
 };
 
-base::string16 GetShortTimeZone() {
+// Returns difference between the local time and GMT formatted as string.
+// This function gets |time| because the difference depends on time,
+// see https://en.wikipedia.org/wiki/Daylight_saving_time for details.
+base::string16 GetShortTimeZone(const Time& time) {
+  UErrorCode status = U_ZERO_ERROR;
   scoped_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
+  scoped_ptr<icu::TimeZoneFormat> zone_formatter(
+      icu::TimeZoneFormat::createInstance(icu::Locale::getDefault(), status));
+  EXPECT_TRUE(U_SUCCESS(status));
   icu::UnicodeString name;
-  zone->getDisplayName(true, icu::TimeZone::SHORT, name);
+  zone_formatter->format(UTZFMT_STYLE_SPECIFIC_SHORT, *zone,
+                         static_cast<UDate>(time.ToDoubleT() * 1000),
+                         name, nullptr);
   return base::string16(name.getBuffer(), name.length());
 }
 
@@ -143,7 +153,7 @@ TEST(TimeFormattingTest, TimeFormatDateUS) {
 
   EXPECT_EQ(ASCIIToUTF16("4/30/11, 3:42:07 PM"),
             TimeFormatShortDateAndTime(time));
-  EXPECT_EQ(ASCIIToUTF16("4/30/11, 3:42:07 PM ") + GetShortTimeZone(),
+  EXPECT_EQ(ASCIIToUTF16("4/30/11, 3:42:07 PM ") + GetShortTimeZone(time),
             TimeFormatShortDateAndTimeWithTimeZone(time));
 
   EXPECT_EQ(ASCIIToUTF16("Saturday, April 30, 2011 at 3:42:07 PM"),
@@ -164,7 +174,7 @@ TEST(TimeFormattingTest, TimeFormatDateGB) {
   EXPECT_EQ(ASCIIToUTF16("30/04/2011"), TimeFormatShortDateNumeric(time));
   EXPECT_EQ(ASCIIToUTF16("30/04/2011, 15:42:07"),
             TimeFormatShortDateAndTime(time));
-  EXPECT_EQ(ASCIIToUTF16("30/04/2011, 15:42:07 ") + GetShortTimeZone(),
+  EXPECT_EQ(ASCIIToUTF16("30/04/2011, 15:42:07 ") + GetShortTimeZone(time),
             TimeFormatShortDateAndTimeWithTimeZone(time));
   EXPECT_EQ(ASCIIToUTF16("Saturday, 30 April 2011 at 15:42:07"),
             TimeFormatFriendlyDateAndTime(time));
