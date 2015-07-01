@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -89,7 +90,8 @@ class BackgroundSyncServiceImplTest : public testing::Test {
  public:
   BackgroundSyncServiceImplTest()
       : thread_bundle_(
-            new TestBrowserThreadBundle(TestBrowserThreadBundle::IO_MAINLOOP)) {
+            new TestBrowserThreadBundle(TestBrowserThreadBundle::IO_MAINLOOP)),
+        network_change_notifier_(net::NetworkChangeNotifier::CreateMock()) {
     default_sync_registration_ = SyncRegistration::New();
   }
 
@@ -119,6 +121,14 @@ class BackgroundSyncServiceImplTest : public testing::Test {
 
     background_sync_context_ = new BackgroundSyncContextImpl();
     background_sync_context_->Init(embedded_worker_helper_->context_wrapper());
+
+    // Tests do not expect the sync event to fire immediately after
+    // register (and cleanup up the sync registrations).  Prevent the sync
+    // event from firing by setting the network state to have no connection.
+    // NOTE: The setup of the network connection must happen after the
+    //       BackgroundSyncManager has been setup.
+    net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+        net::NetworkChangeNotifier::CONNECTION_NONE);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -183,6 +193,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   }
 
   scoped_ptr<TestBrowserThreadBundle> thread_bundle_;
+  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_ptr<EmbeddedWorkerTestHelper> embedded_worker_helper_;
   scoped_ptr<base::PowerMonitor> power_monitor_;
   scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;
