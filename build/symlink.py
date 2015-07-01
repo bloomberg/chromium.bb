@@ -9,6 +9,7 @@
 import errno
 import optparse
 import os.path
+import shutil
 import sys
 
 
@@ -29,7 +30,10 @@ def Main(argv):
       os.symlink(s, t)
     except OSError, e:
       if e.errno == errno.EEXIST and options.force:
-        os.remove(t)
+        if os.path.isdir(t):
+          shutil.rmtree(t, ignore_errors=True)
+        else:
+          os.remove(t)
         os.symlink(s, t)
       else:
         raise
