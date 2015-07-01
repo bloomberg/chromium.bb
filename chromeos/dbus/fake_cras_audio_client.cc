@@ -66,6 +66,14 @@ void FakeCrasAudioClient::Init(dbus::Bus* bus) {
   input_2.type = "USB";
   input_2.name = "Mic";
   node_list_.push_back(input_2);
+
+  AudioNode input_3;
+  input_3.is_input = true;
+  input_3.id = 20003;
+  input_3.device_name = "Fake Mick Jack";
+  input_3.type = "MIC";
+  input_3.name = "Some type of Mic";
+  node_list_.push_back(input_3);
 }
 
 void FakeCrasAudioClient::AddObserver(Observer* observer) {

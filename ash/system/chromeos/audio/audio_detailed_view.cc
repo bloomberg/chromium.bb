@@ -38,6 +38,9 @@ base::string16 GetAudioDeviceName(const chromeos::AudioDevice& device) {
       return l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_AUDIO_HDMI_DEVICE,
           base::UTF8ToUTF16(device.display_name));
+    case chromeos::AUDIO_TYPE_MIC:
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_AUDIO_MIC_JACK_DEVICE);
     default:
       return base::UTF8ToUTF16(device.display_name);
   }
