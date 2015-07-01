@@ -143,7 +143,6 @@ def write_ninja(path, options):
   ])
   static_libraries['base']['sources'].extend([
       'base/at_exit.cc',
-      'base/atomicops_internals_x86_gcc.cc',
       'base/base_paths.cc',
       'base/base_switches.cc',
       'base/callback_internal.cc',

@@ -90,18 +90,6 @@
           ],
         }],
         ['OS == "android" and _toolset == "target"', {
-          'conditions': [
-            ['target_arch == "ia32" or target_arch == "x64"', {
-              'sources/': [
-                ['include', '^atomicops_internals_x86_gcc\\.cc$'],
-              ],
-            }],
-            ['target_arch == "mipsel"', {
-              'sources/': [
-                ['include', '^atomicops_internals_mips_gcc\\.cc$'],
-              ],
-            }],
-          ],
           'dependencies': [
             'base_java',
             'base_jni_headers',

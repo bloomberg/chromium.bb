@@ -91,11 +91,8 @@
           'atomic_ref_count.h',
           'atomic_sequence_num.h',
           'atomicops.h',
-          'atomicops_internals_gcc.h',
           'atomicops_internals_mac.h',
           'atomicops_internals_portable.h',
-          'atomicops_internals_x86_gcc.cc',
-          'atomicops_internals_x86_gcc.h',
           'atomicops_internals_x86_msvc.h',
           'barrier_closure.cc',
           'barrier_closure.h',
@@ -773,9 +770,6 @@
               'sources/': [
                 ['exclude', '^nix/'],
               ],
-              'sources!': [
-                'atomicops_internals_x86_gcc.cc',
-              ],
           }],
           ['<(use_glib)==0 or >(nacl_untrusted_build)==1', {
               'sources!': [
@@ -860,7 +854,6 @@
             ],
             'sources/': [
               # Pull in specific files for host builds.
-              ['include', '^atomicops_internals_x86_gcc\\.cc$'],
               ['include', '^threading/platform_thread_linux\\.cc$'],
             ],
           }],
