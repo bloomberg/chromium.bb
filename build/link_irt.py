@@ -162,7 +162,7 @@ class IRTLinker(CommandRunner):
     tls_edit_cmd = [FixPath(self.tls_edit), pre_tls_edit_out, out]
     tls_edit_err = self.Run(tls_edit_cmd, possibly_script=False)
     if tls_edit_err:
-      raise Error('FAILED with %d: %s' % (err, ' '.join(tls_edit_cmd)))
+      raise Error('FAILED with %d: %s' % (tls_edit_err, ' '.join(tls_edit_cmd)))
 
   def SandboxBaseCheck(self):
     """

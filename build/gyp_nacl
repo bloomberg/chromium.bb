@@ -10,12 +10,12 @@ import sys
 
 print 'Updating projects from gyp files...'
 
-try:
-  import gyp
-except ImportError, e:
-  sys.path.append(os.path.join(os.path.dirname(sys.argv[0]),
-                               '..', '..', 'tools', 'gyp', 'pylib'))
-  import gyp
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+NACL_DIR = os.path.dirname(SCRIPT_DIR)
+GYP_DIR = os.path.join(os.path.dirname(NACL_DIR), 'tools', 'gyp')
+sys.path.insert(0, os.path.join(GYP_DIR, 'pylib'))
+
+import gyp
 
 if __name__ == '__main__':
   if not os.environ.get('GYP_GENERATORS'):
