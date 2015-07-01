@@ -65,9 +65,12 @@ void GeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& 
     RefPtr<Pattern> picturePattern = Pattern::createPicturePattern(tilePicture);
     picturePattern->setPatternSpaceTransform(patternTransform);
 
-    GraphicsContextStateSaver saver(*destContext);
-    destContext->setFillPattern(picturePattern);
-    destContext->fillRect(destRect, destContext->fillColor(), compositeOp);
+    SkPaint fillPaint = destContext->fillPaint();
+    fillPaint.setShader(picturePattern->shader());
+    fillPaint.setColor(SK_ColorBLACK);
+    fillPaint.setXfermodeMode(compositeOp);
+
+    destContext->drawRect(destRect, fillPaint);
 }
 
 } // namespace blink

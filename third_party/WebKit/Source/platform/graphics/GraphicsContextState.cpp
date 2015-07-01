@@ -34,10 +34,8 @@ GraphicsContextState::GraphicsContextState(const GraphicsContextState& other)
     , m_strokeData(other.m_strokeData)
     , m_strokeColor(other.m_strokeColor)
     , m_strokeGradient(other.m_strokeGradient)
-    , m_strokePattern(other.m_strokePattern)
     , m_fillColor(other.m_fillColor)
     , m_fillGradient(other.m_fillGradient)
-    , m_fillPattern(other.m_fillPattern)
     , m_looper(other.m_looper)
     , m_textDrawingMode(other.m_textDrawingMode)
     , m_colorFilter(other.m_colorFilter)
@@ -80,7 +78,6 @@ void GraphicsContextState::setStrokeThickness(float thickness)
 void GraphicsContextState::setStrokeColor(const Color& color)
 {
     m_strokeGradient.clear();
-    m_strokePattern.clear();
     m_strokeColor = color;
     m_strokePaint.setColor(color.rgb());
     m_strokePaint.setShader(0);
@@ -89,19 +86,9 @@ void GraphicsContextState::setStrokeColor(const Color& color)
 void GraphicsContextState::setStrokeGradient(const PassRefPtr<Gradient> gradient, float alpha)
 {
     m_strokeColor = Color::black;
-    m_strokePattern.clear();
     m_strokeGradient = gradient;
     m_strokePaint.setColor(scaleAlpha(SK_ColorBLACK, alpha));
     m_strokePaint.setShader(m_strokeGradient->shader());
-}
-
-void GraphicsContextState::setStrokePattern(const PassRefPtr<Pattern> pattern, float alpha)
-{
-    m_strokeColor = Color::black;
-    m_strokeGradient.clear();
-    m_strokePattern = pattern;
-    m_strokePaint.setColor(scaleAlpha(SK_ColorBLACK, alpha));
-    m_strokePaint.setShader(m_strokePattern->shader());
 }
 
 void GraphicsContextState::setLineCap(LineCap cap)
@@ -126,7 +113,6 @@ void GraphicsContextState::setFillColor(const Color& color)
 {
     m_fillColor = color;
     m_fillGradient.clear();
-    m_fillPattern.clear();
     m_fillPaint.setColor(color.rgb());
     m_fillPaint.setShader(0);
 }
@@ -134,19 +120,9 @@ void GraphicsContextState::setFillColor(const Color& color)
 void GraphicsContextState::setFillGradient(const PassRefPtr<Gradient> gradient, float alpha)
 {
     m_fillColor = Color::black;
-    m_fillPattern.clear();
     m_fillGradient = gradient;
     m_fillPaint.setColor(scaleAlpha(SK_ColorBLACK, alpha));
     m_fillPaint.setShader(m_fillGradient->shader());
-}
-
-void GraphicsContextState::setFillPattern(const PassRefPtr<Pattern> pattern, float alpha)
-{
-    m_fillColor = Color::black;
-    m_fillGradient.clear();
-    m_fillPattern = pattern;
-    m_fillPaint.setColor(scaleAlpha(SK_ColorBLACK, alpha));
-    m_fillPaint.setShader(m_fillPattern->shader());
 }
 
 // Shadow. (This will need tweaking if we use draw loopers for other things.)

@@ -33,7 +33,6 @@
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/Path.h"
-#include "platform/graphics/Pattern.h"
 #include "platform/graphics/StrokeData.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
@@ -75,9 +74,6 @@ public:
     Gradient* strokeGradient() const { return m_strokeGradient.get(); }
     void setStrokeGradient(const PassRefPtr<Gradient>, float);
 
-    Pattern* strokePattern() const { return m_strokePattern.get(); }
-    void setStrokePattern(const PassRefPtr<Pattern>, float);
-
     const StrokeData& strokeData() const { return m_strokeData; }
     void setStrokeStyle(StrokeStyle);
     void setStrokeThickness(float);
@@ -92,9 +88,6 @@ public:
 
     Gradient* fillGradient() const { return m_fillGradient.get(); }
     void setFillGradient(const PassRefPtr<Gradient>, float);
-
-    Pattern* fillPattern() const { return m_fillPattern.get(); }
-    void setFillPattern(const PassRefPtr<Pattern>, float);
 
     // Shadow. (This will need tweaking if we use draw loopers for other things.)
     SkDrawLooper* drawLooper() const { return m_looper.get(); }
@@ -128,11 +121,9 @@ private:
 
     Color m_strokeColor;
     RefPtr<Gradient> m_strokeGradient;
-    RefPtr<Pattern> m_strokePattern;
 
     Color m_fillColor;
     RefPtr<Gradient> m_fillGradient;
-    RefPtr<Pattern> m_fillPattern;
 
     RefPtr<SkDrawLooper> m_looper;
 

@@ -111,9 +111,6 @@ public:
     Color strokeColor() const { return immutableState()->strokeColor(); }
     void setStrokeColor(const Color& color) { mutableState()->setStrokeColor(color); }
 
-    Pattern* strokePattern() const { return immutableState()->strokePattern(); }
-    void setStrokePattern(PassRefPtr<Pattern>, float alpha = 1);
-
     Gradient* strokeGradient() const { return immutableState()->strokeGradient(); }
     void setStrokeGradient(PassRefPtr<Gradient>, float alpha = 1);
 
@@ -124,8 +121,6 @@ public:
 
     Color fillColor() const { return immutableState()->fillColor(); }
     void setFillColor(const Color& color) { mutableState()->setFillColor(color); }
-
-    void setFillPattern(PassRefPtr<Pattern>, float alpha = 1);
 
     void setFillGradient(PassRefPtr<Gradient>, float alpha = 1);
 
