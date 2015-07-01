@@ -85,7 +85,7 @@ RecursiveMutex& ThreadState::threadAttachMutex()
 
 ThreadState::ThreadState()
     : m_thread(currentThread())
-    , m_persistents(adoptPtr(new PersistentAnchor()))
+    , m_persistentRegion(adoptPtr(new PersistentRegion()))
     , m_startOfStack(reinterpret_cast<intptr_t*>(StackFrameDepth::getStackStart()))
     , m_endOfStack(reinterpret_cast<intptr_t*>(StackFrameDepth::getStackStart()))
     , m_safePointScopeMarker(nullptr)
@@ -243,14 +243,13 @@ void ThreadState::cleanup()
 
         // Do thread local GC's as long as the count of thread local Persistents
         // changes and is above zero.
-        PersistentAnchor* anchor = m_persistents.get();
         int oldCount = -1;
-        int currentCount = anchor->numberOfPersistents();
+        int currentCount = persistentRegion()->numberOfPersistents();
         ASSERT(currentCount >= 0);
         while (currentCount != oldCount) {
             Heap::collectGarbageForTerminatingThread(this);
             oldCount = currentCount;
-            currentCount = anchor->numberOfPersistents();
+            currentCount = persistentRegion()->numberOfPersistents();
         }
         // We should not have any persistents left when getting to this point,
         // if we have it is probably a bug so adding a debug ASSERT to catch this.
@@ -280,13 +279,7 @@ void ThreadState::detach()
 void ThreadState::visitPersistentRoots(Visitor* visitor)
 {
     TRACE_EVENT0("blink_gc", "ThreadState::visitPersistentRoots");
-    {
-        // All threads are at safepoints so this is not strictly necessary.
-        // However we acquire the mutex to make mutation and traversal of this
-        // list symmetrical.
-        MutexLocker locker(globalRootsMutex());
-        globalRoots().tracePersistentNodes(visitor);
-    }
+    crossThreadPersistentRegion().tracePersistentNodes(visitor);
 
     for (ThreadState* state : attachedThreads())
         state->visitPersistents(visitor);
@@ -373,7 +366,7 @@ void ThreadState::visitStack(Visitor* visitor)
 
 void ThreadState::visitPersistents(Visitor* visitor)
 {
-    m_persistents->tracePersistentNodes(visitor);
+    m_persistentRegion->tracePersistentNodes(visitor);
     if (m_traceDOMWrappers) {
         TRACE_EVENT0("blink_gc", "V8GCController::traceDOMWrappers");
         m_traceDOMWrappers(m_isolate, visitor);
@@ -542,16 +535,10 @@ void ThreadState::threadLocalWeakProcessing()
         ScriptForbiddenScope::exit();
 }
 
-PersistentAnchor& ThreadState::globalRoots()
+CrossThreadPersistentRegion& ThreadState::crossThreadPersistentRegion()
 {
-    AtomicallyInitializedStaticReference(PersistentAnchor, anchor, new PersistentAnchor);
-    return anchor;
-}
-
-Mutex& ThreadState::globalRootsMutex()
-{
-    AtomicallyInitializedStaticReference(Mutex, mutex, new Mutex);
-    return mutex;
+    AtomicallyInitializedStaticReference(CrossThreadPersistentRegion, persistentRegion, new CrossThreadPersistentRegion());
+    return persistentRegion;
 }
 
 bool ThreadState::shouldForceMemoryPressureGC()

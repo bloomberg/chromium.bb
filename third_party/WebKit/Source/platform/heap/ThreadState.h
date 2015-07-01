@@ -52,12 +52,13 @@ namespace blink {
 
 class BasePage;
 class CallbackStack;
+class CrossThreadPersistentRegion;
 struct GCInfo;
 class GarbageCollectedMixinConstructorMarker;
 class HeapObjectHeader;
 class PageMemoryRegion;
 class PageMemory;
-class PersistentAnchor;
+class PersistentRegion;
 class BaseHeap;
 class SafePointAwareMutexLocker;
 class SafePointBarrier;
@@ -472,13 +473,11 @@ public:
     BasePage* findPageFromAddress(const void* pointer) { return findPageFromAddress(reinterpret_cast<Address>(const_cast<void*>(pointer))); }
 #endif
 
-    // List of persistent roots allocated on the given thread.
-    PersistentAnchor* roots() const { return m_persistents.get(); }
+    // A region of PersistentNodes allocated on the given thread.
+    PersistentRegion* persistentRegion() const { return m_persistentRegion.get(); }
 
-    // List of global persistent roots not owned by any particular thread.
-    // globalRootsMutex must be acquired before any modifications.
-    static PersistentAnchor& globalRoots();
-    static Mutex& globalRootsMutex();
+    // A region of PersistentNodes not owned by any particular thread.
+    static CrossThreadPersistentRegion& crossThreadPersistentRegion();
 
     // Visit local thread stack and trace all pointers conservatively.
     void visitStack(Visitor*);
@@ -733,7 +732,7 @@ private:
     static uint8_t s_mainThreadStateStorage[];
 
     ThreadIdentifier m_thread;
-    OwnPtr<PersistentAnchor> m_persistents;
+    OwnPtr<PersistentRegion> m_persistentRegion;
     StackState m_stackState;
     intptr_t* m_startOfStack;
     intptr_t* m_endOfStack;

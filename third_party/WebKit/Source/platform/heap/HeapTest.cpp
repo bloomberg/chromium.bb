@@ -606,90 +606,56 @@ protected:
         DEFINE_INLINE_TRACE() { }
     };
 
-    class BookEnd;
+    class PersistentChain;
 
-    class PersistentStore {
+    class RefCountedChain : public RefCounted<RefCountedChain> {
     public:
-        static PersistentStore* create(int count, int* gcCount, BookEnd* bookend)
+        static RefCountedChain* create(int count)
         {
-            return new PersistentStore(count, gcCount, bookend);
-        }
-
-        void advance()
-        {
-            (*m_gcCount)++;
-            m_store.removeLast();
-            // Remove reference to BookEnd when there are no Persistent<Local>s left.
-            // The BookEnd object will then be swept out at the next GC, and pre-finalized,
-            // causing this PersistentStore instance to be destructed, along with
-            // the Persistent<BookEnd>. It being the very last Persistent<>, causing the
-            // GC loop in ThreadState::detach() to terminate.
-            if (!m_store.size())
-                m_bookend = nullptr;
+            return new RefCountedChain(count);
         }
 
     private:
-        PersistentStore(int count, int* gcCount, BookEnd* bookend)
+        explicit RefCountedChain(int count)
         {
-            m_gcCount = gcCount;
-            m_bookend = bookend;
-            for (int i = 0; i < count; ++i)
-                m_store.append(Persistent<ThreadPersistentHeapTester::Local>(new ThreadPersistentHeapTester::Local()));
+            if (count > 0) {
+                --count;
+                m_persistentChain = PersistentChain::create(count);
+            }
         }
 
-        Vector<Persistent<Local>> m_store;
-        Persistent<BookEnd> m_bookend;
-        int* m_gcCount;
+        Persistent<PersistentChain> m_persistentChain;
     };
 
-    class BookEnd final : public GarbageCollected<BookEnd> {
-        USING_PRE_FINALIZER(BookEnd, dispose);
+    class PersistentChain : public GarbageCollectedFinalized<PersistentChain> {
     public:
-        BookEnd()
-            : m_store(nullptr)
+        static PersistentChain* create(int count)
         {
-            ThreadState::current()->registerPreFinalizer(this);
+            return new PersistentChain(count);
         }
 
-        void initialize(PersistentStore* store)
-        {
-            m_store = store;
-        }
-
-        void dispose()
-        {
-            delete m_store;
-        }
-
-        DEFINE_INLINE_TRACE()
-        {
-            ASSERT(m_store);
-            m_store->advance();
-        }
+        DEFINE_INLINE_TRACE() { }
 
     private:
-        PersistentStore* m_store;
+        explicit PersistentChain(int count)
+        {
+            m_refCountedChain = adoptRef(RefCountedChain::create(count));
+        }
+
+        RefPtr<RefCountedChain> m_refCountedChain;
     };
 
     virtual void runThread() override
     {
         ThreadState::attach();
 
-        const int iterations = 5;
-        int gcCount = 0;
-        BookEnd* bookend = new BookEnd();
-        PersistentStore* store = PersistentStore::create(iterations, &gcCount, bookend);
-        bookend->initialize(store);
-
-        bookend = nullptr;
-        store = nullptr;
+        PersistentChain::create(100);
 
         // Upon thread detach, GCs will run until all persistents have been
         // released. We verify that the draining of persistents proceeds
         // as expected by dropping one Persistent<> per GC until there
         // are none left.
         ThreadState::detach();
-        EXPECT_EQ(iterations, gcCount);
         atomicDecrement(&m_threadsToFinish);
     }
 };

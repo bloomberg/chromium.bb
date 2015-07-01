@@ -49,6 +49,8 @@
       'PageMemory.h',
       'PagePool.cpp',
       'PagePool.h',
+      'PersistentNode.cpp',
+      'PersistentNode.h',
       'SafePoint.cpp',
       'SafePoint.h',
       'StackFrameDepth.cpp',

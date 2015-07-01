@@ -26,6 +26,8 @@ source_set("heap") {
     "PageMemory.h",
     "PagePool.cpp",
     "PagePool.h",
+    "PersistentNode.cpp",
+    "PersistentNode.h",
     "StackFrameDepth.cpp",
     "StackFrameDepth.h",
     "SafePoint.cpp",
