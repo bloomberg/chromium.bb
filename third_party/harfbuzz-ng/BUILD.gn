@@ -4,7 +4,6 @@
 
 import("//build/config/chrome_build.gni")
 import("//build/config/linux/pkg_config.gni")
-import("//build/config/ui.gni")
 
 # The GYP build supports system harfbuzz for non-official builds when using
 # pangoft2 1.31.0 or greater (which pulls it in).
@@ -17,15 +16,18 @@ import("//build/config/ui.gni")
 declare_args() {
   # Since version 1.31.0, pangoft2 which we depend on pulls in harfbuzz
   # anyways. However, we want to have control of the version of harfbuzz
-  # we use, so don't use system harfbuzz unless we are building for
-  # chrome os, where we have the system harfbuzz under control.
-  use_system_harfbuzz =
-      is_linux && is_chromeos && exec_script(pkg_config_script,
-                                             pkg_config_args + [
-                                                   "--atleast-version=1.31.0",
-                                                   "pangoft2",
-                                                 ],
-                                             "value")
+  # we use, so don't use system harfbuzz for official builds, unless we
+  # are building for chrome os, where we have the system harfbuzz under
+  # control as well. We also do not want to use the system harfbuzz
+  # when cross-compiling for ARM.
+  use_system_harfbuzz = is_linux && (is_chromeos || (!is_official_build &&
+                                                     current_cpu != "arm")) &&
+                        exec_script(pkg_config_script,
+                                    pkg_config_args + [
+                                          "--atleast-version=1.31.0",
+                                          "pangoft2",
+                                        ],
+                                    "value")
 }
 
 if (use_system_harfbuzz) {
@@ -163,25 +165,6 @@ if (use_system_harfbuzz) {
         "src/hb-coretext.h",
       ]
       defines += [ "HAVE_CORETEXT" ]
-    }
-
-    # When without -fvisibility=hidden for pango to use the harfbuzz
-    # in the tree, all symbols pango needs must be included, or
-    # pango uses mixed versions of harfbuzz and leads to crash.
-    # See crbug.com/462689.
-    if (is_linux && use_pango && !is_chromeos && !is_official_build &&
-        current_cpu != "arm") {
-      configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
-      configs += [
-        "//build/config/linux:freetype2",
-        "//build/config/linux:glib",
-      ]
-      sources += [
-        "src/hb-ft.cc",
-        "src/hb-ft.h",
-        "src/hb-glib.cc",
-        "src/hb-glib.h",
-      ]
     }
   }
 }
