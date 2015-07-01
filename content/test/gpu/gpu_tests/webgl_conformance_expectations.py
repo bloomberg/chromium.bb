@@ -205,6 +205,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('deqp/data/gles2/shaders/conversions.html',
         ['mac', 'amd'], bug=478572)
 
+    # Mac 10.10 / AMD Failures
+    self.Flaky('conformance/rendering/many-draw-calls.html',
+        ['mac', 'yosemite', 'amd', 'debug'], bug=505814)
+
     # Mac 10.8 / ATI failures
     self.Fail(
         'conformance/rendering/' +
