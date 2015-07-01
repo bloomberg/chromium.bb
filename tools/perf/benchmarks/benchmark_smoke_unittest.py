@@ -11,7 +11,6 @@ of every benchmark would run impractically long.
 
 import os
 import sys
-import time
 import unittest
 
 from telemetry import benchmark as benchmark_module
@@ -68,13 +67,8 @@ def SmokeTestGenerator(benchmark):
     benchmark.ProcessCommandLineArgs(None, options)
     benchmark_module.ProcessCommandLineArgs(None, options)
 
-    current = time.time()
-    try:
-      self.assertEqual(0, SinglePageBenchmark().Run(options),
+    self.assertEqual(0, SinglePageBenchmark().Run(options),
                        msg='Failed: %s' % benchmark)
-    finally:
-      print 'Benchmark %s run takes %i seconds' % (
-          benchmark.Name(), time.time() - current)
 
   return BenchmarkSmokeTest
 
