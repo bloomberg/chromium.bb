@@ -746,7 +746,7 @@ ChannelConfig CoreAudioUtil::GetChannelConfig(const std::string& device_id,
   ScopedComPtr<IAudioClient> client(
       CreateClient(device_id, data_flow, eConsole));
 
-  WAVEFORMATPCMEX format = {0};
+  WAVEFORMATPCMEX format = {};
   if (!client.get() || FAILED(GetSharedModeMixFormat(client.get(), &format)))
     return 0;
 
