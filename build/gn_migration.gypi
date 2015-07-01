@@ -543,6 +543,7 @@
             '../sql/sql.gyp:sql_unittests_run',
             '../sync/sync.gyp:sync_unit_tests_run',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests_run',
+            '../tools/gn/gn.gyp:gn_unittests_run',
             '../ui/accessibility/accessibility.gyp:accessibility_unittests_run',
             '../ui/app_list/app_list.gyp:app_list_unittests_run',
             '../ui/events/events.gyp:events_unittests_run',
@@ -551,6 +552,21 @@
             '../url/url.gyp:url_unittests_run',
           ],
           'conditions': [
+            ['OS=="linux"', {
+              'dependencies': [
+                '../sandbox/sandbox.gyp:sandbox_linux_unittests_run',
+              ],
+            }],
+            ['OS=="mac"', {
+              'dependencies': [
+                '../sandbox/sandbox.gyp:sandbox_mac_unittests_run',
+              ],
+            }],
+            ['use_ash==1', {
+              'dependencies': [
+                '../ash/ash.gyp:ash_unittests_run',
+              ],
+            }],
             ['use_aura==1', {
               'dependencies': [
                 '../ui/aura/aura.gyp:aura_unittests_run',
@@ -562,16 +578,6 @@
                 '../jingle/jingle.gyp:jingle_unittests_run',
               ],
             }],
-          ],
-        }],
-        ['test_isolation_mode!="noop" and use_ash==1', {
-          'dependencies': [
-            '../ash/ash.gyp:ash_unittests_run',
-          ],
-        }],
-        ['test_isolation_mode!="noop" and OS=="linux"', {
-          'dependencies': [
-            '../sandbox/sandbox.gyp:sandbox_linux_unittests_run',
           ],
         }],
         ['use_openssl==1', {

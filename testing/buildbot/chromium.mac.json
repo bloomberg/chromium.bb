@@ -439,6 +439,9 @@
         "test": "remoting_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "sandbox_mac_unittests"
       },
       {
@@ -680,6 +683,9 @@
         "test": "remoting_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "sandbox_mac_unittests"
       },
       {
@@ -921,6 +927,9 @@
         "test": "remoting_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "sandbox_mac_unittests"
       },
       {
@@ -1163,6 +1172,9 @@
         "test": "remoting_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "sandbox_mac_unittests"
       },
       {
