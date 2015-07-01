@@ -40,6 +40,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -1028,10 +1029,15 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * Starts asynchronously taking the compositor activity screenshot.
      * @param getBitmapCallback The callback to call once the screenshot is taken, or when failed.
      */
-    public void startTakingCompositorActivityScreenshot(GetBitmapCallback getBitmapCallback) {
+    public void startTakingCompositorActivityScreenshot(final GetBitmapCallback getBitmapCallback) {
         ContentReadbackHandler readbackHandler = getContentReadbackHandler();
         if (readbackHandler == null || getWindowAndroid() == null) {
-            getBitmapCallback.onFinishGetBitmap(null, ReadbackResponse.SURFACE_UNAVAILABLE);
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    getBitmapCallback.onFinishGetBitmap(null, ReadbackResponse.SURFACE_UNAVAILABLE);
+                }
+            });
         } else {
             readbackHandler.getCompositorBitmapAsync(getWindowAndroid(), getBitmapCallback);
         }

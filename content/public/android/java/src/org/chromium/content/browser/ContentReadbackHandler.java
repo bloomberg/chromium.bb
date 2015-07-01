@@ -103,9 +103,15 @@ public abstract class ContentReadbackHandler {
      * @param windowAndroid The window that hosts the compositor.
      * @param callback      The callback to be executed after readback completes.
      */
-    public void getCompositorBitmapAsync(WindowAndroid windowAndroid, GetBitmapCallback callback) {
+    public void getCompositorBitmapAsync(
+            WindowAndroid windowAndroid, final GetBitmapCallback callback) {
         if (!readyForReadback()) {
-            callback.onFinishGetBitmap(null, ReadbackResponse.SURFACE_UNAVAILABLE);
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    callback.onFinishGetBitmap(null, ReadbackResponse.SURFACE_UNAVAILABLE);
+                }
+            });
             return;
         }
         ThreadUtils.assertOnUiThread();
