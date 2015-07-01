@@ -182,20 +182,6 @@ def SetProperties(device, options):
     device_settings.ConfigureContentSettings(
         device, device_settings.NETWORK_DISABLED_SETTINGS)
 
-  if options.min_battery_level is not None:
-    try:
-      battery = battery_utils.BatteryUtils(device)
-      battery.ChargeDeviceToLevel(options.min_battery_level)
-    except device_errors.CommandFailedError as e:
-      logging.exception('Unable to charge device to specified level.')
-
-  if options.max_battery_temp is not None:
-    try:
-      battery = battery_utils.BatteryUtils(device)
-      battery.LetBatteryCoolToTemperature(options.max_battery_temp)
-    except device_errors.CommandFailedError as e:
-      logging.exception('Unable to let battery cool to specified temperature.')
-
 def _ConfigureLocalProperties(device, java_debug=True):
   """Set standard readonly testing device properties prior to reboot."""
   local_props = [
@@ -222,6 +208,20 @@ def _ConfigureLocalProperties(device, java_debug=True):
 
 
 def FinishProvisioning(device, options):
+  if options.min_battery_level is not None:
+    try:
+      battery = battery_utils.BatteryUtils(device)
+      battery.ChargeDeviceToLevel(options.min_battery_level)
+    except device_errors.CommandFailedError:
+      logging.exception('Unable to charge device to specified level.')
+
+  if options.max_battery_temp is not None:
+    try:
+      battery = battery_utils.BatteryUtils(device)
+      battery.LetBatteryCoolToTemperature(options.max_battery_temp)
+    except device_errors.CommandFailedError:
+      logging.exception('Unable to let battery cool to specified temperature.')
+
   device.RunShellCommand(
       ['date', '-s', time.strftime('%Y%m%d.%H%M%S', time.gmtime())],
       as_root=True, check_return=True)
