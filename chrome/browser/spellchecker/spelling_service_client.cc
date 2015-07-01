@@ -116,11 +116,13 @@ bool SpellingServiceClient::IsAvailable(
     ServiceType type) {
   const PrefService* pref = user_prefs::UserPrefs::Get(context);
   DCHECK(pref);
-  // If prefs don't allow spellchecking or if the context is off the record,
-  // the spelling service should be unavailable.
+  // If prefs don't allow spellchecking, if the context is off the record, or if
+  // multilingual spellchecking is enabled the spelling service should be
+  // unavailable.
   if (!pref->GetBoolean(prefs::kEnableContinuousSpellcheck) ||
       !pref->GetBoolean(prefs::kSpellCheckUseSpellingService) ||
-      context->IsOffTheRecord())
+      context->IsOffTheRecord() ||
+      chrome::spellcheck_common::IsMultilingualSpellcheckEnabled())
     return false;
 
   // If the locale for spelling has not been set, the user has not decided to

@@ -817,6 +817,14 @@ const Experiment kExperiments[] = {
      kOsWin | kOsLinux | kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kEnableSpellingAutoCorrect)},
 #endif
+#if defined(ENABLE_SPELLCHECK) && \
+    (defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS))
+    {"enable-multilingual-spellchecker",
+     IDS_FLAGS_ENABLE_MULTILINGUAL_SPELLCHECKER_NAME,
+     IDS_FLAGS_ENABLE_MULTILINGUAL_SPELLCHECKER_DESCRIPTION,
+     kOsWin | kOsLinux | kOsCrOS,
+     SINGLE_VALUE_TYPE(switches::kEnableMultilingualSpellChecker)},
+#endif
     {"enable-scroll-prediction",
      IDS_FLAGS_ENABLE_SCROLL_PREDICTION_NAME,
      IDS_FLAGS_ENABLE_SCROLL_PREDICTION_DESCRIPTION,

@@ -55,6 +55,9 @@ void GetISOLanguageCountryCodeFromLocale(const std::string& locale,
                                          std::string* language_code,
                                          std::string* country_code);
 
+// Returns true if multilingual spellchecker is enabled.
+bool IsMultilingualSpellcheckEnabled();
+
 }  // namespace spellcheck_common
 }  // namespace chrome
 

@@ -271,6 +271,7 @@ extern const char kSpeculativeResourcePrefetchingDisabled[];
 extern const char kSpeculativeResourcePrefetchingEnabled[];
 extern const char kSpeculativeResourcePrefetchingLearning[];
 #if defined(ENABLE_SPELLCHECK)
+extern const char kEnableMultilingualSpellChecker[];
 extern const char kEnableSpellingAutoCorrect[];
 extern const char kEnableSpellingFeedbackFieldTrial[];
 extern const char kSpellingServiceFeedbackUrl[];

@@ -986,6 +986,10 @@ const char kSpeculativeResourcePrefetchingLearning[] = "learning";
 const char kSpeculativeResourcePrefetchingEnabled[] = "enabled";
 
 #if defined(ENABLE_SPELLCHECK)
+// Enables the multilingual spellchecker.
+const char kEnableMultilingualSpellChecker[] =
+    "enable-multilingual-spellchecker";
+
 // Enables auto correction for misspelled words.
 const char kEnableSpellingAutoCorrect[]     = "enable-spelling-auto-correct";
 

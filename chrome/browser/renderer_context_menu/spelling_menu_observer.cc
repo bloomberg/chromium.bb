@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/confirm_bubble.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_result.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/render_view_host.h"
@@ -164,13 +165,17 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
       spellcheck_service->GetMetrics()->RecordSuggestionStats(1);
   }
 
-  // If word is misspelled, give option for "Add to dictionary" and a check item
-  // "Ask Google for suggestions".
+  // If word is misspelled, give option for "Add to dictionary" and, if
+  // multilingual spellchecking is not enabled, a check item "Ask Google for
+  // suggestions".
   proxy_->AddMenuItem(IDC_SPELLCHECK_ADD_TO_DICTIONARY,
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY));
 
-  proxy_->AddCheckItem(IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,
-      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE));
+  if (!chrome::spellcheck_common::IsMultilingualSpellcheckEnabled()) {
+    proxy_->AddCheckItem(
+        IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,
+        l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE));
+  }
 
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
@@ -205,7 +210,9 @@ bool SpellingMenuObserver::IsCommandIdChecked(int command_id) {
   Profile* profile = Profile::FromBrowserContext(proxy_->GetBrowserContext());
 
   if (command_id == IDC_CONTENT_CONTEXT_SPELLING_TOGGLE)
-    return integrate_spelling_service_.GetValue() && !profile->IsOffTheRecord();
+    return integrate_spelling_service_.GetValue() &&
+           !profile->IsOffTheRecord() &&
+           !chrome::spellcheck_common::IsMultilingualSpellcheckEnabled();
   if (command_id == IDC_CONTENT_CONTEXT_AUTOCORRECT_SPELLING_TOGGLE)
     return autocorrect_spelling_.GetValue() && !profile->IsOffTheRecord();
   return false;
@@ -231,7 +238,8 @@ bool SpellingMenuObserver::IsCommandIdEnabled(int command_id) {
 
     case IDC_CONTENT_CONTEXT_SPELLING_TOGGLE:
       return integrate_spelling_service_.IsUserModifiable() &&
-             !profile->IsOffTheRecord();
+             !profile->IsOffTheRecord() &&
+             !chrome::spellcheck_common::IsMultilingualSpellcheckEnabled();
 
     case IDC_CONTENT_CONTEXT_AUTOCORRECT_SPELLING_TOGGLE:
       return integrate_spelling_service_.IsUserModifiable() &&

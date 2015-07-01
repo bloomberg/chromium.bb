@@ -4,9 +4,11 @@
 
 #include "chrome/common/spellcheck_common.h"
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "chrome/common/chrome_switches.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
 #include "third_party/icu/source/common/unicode/urename.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
@@ -179,6 +181,11 @@ void GetISOLanguageCountryCodeFromLocale(const std::string& locale,
   }
   *language_code = std::string(language);
   *country_code = std::string(country);
+}
+
+bool IsMultilingualSpellcheckEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableMultilingualSpellChecker);
 }
 
 }  // namespace spellcheck_common

@@ -80,10 +80,12 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
       prefs::kSpellCheckDictionaries,
       base::Bind(&SpellcheckService::OnSpellCheckDictionaryChanged,
                  base::Unretained(this)));
- pref_change_registrar_.Add(
-     prefs::kSpellCheckUseSpellingService,
-     base::Bind(&SpellcheckService::OnUseSpellingServiceChanged,
-                base::Unretained(this)));
+  if (!chrome::spellcheck_common::IsMultilingualSpellcheckEnabled()) {
+    pref_change_registrar_.Add(
+        prefs::kSpellCheckUseSpellingService,
+        base::Bind(&SpellcheckService::OnUseSpellingServiceChanged,
+                   base::Unretained(this)));
+  }
   pref_change_registrar_.Add(
       prefs::kEnableContinuousSpellcheck,
       base::Bind(&SpellcheckService::InitForAllRenderers,
