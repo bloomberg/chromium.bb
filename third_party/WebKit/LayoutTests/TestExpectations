@@ -445,7 +445,7 @@ crbug.com/498321 [ Mac ] fast/reflections/reflection-with-zoom.html [ Skip ]
 
 crbug.com/381684 [ Win Android Mac ] fonts/family-fallback-gardiner.html [ Skip ]
 
-crbug.com/451577 [ Win ] inspector/console [ Slow ]
+crbug.com/451577 inspector/console [ Slow ]
 
 crbug.com/463023 inspector/sources/debugger-breakpoints/debugger-reload-breakpoints-with-source-maps.html [ Failure Pass ]
 
