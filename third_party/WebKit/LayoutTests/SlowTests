@@ -94,7 +94,7 @@ crbug.com/247466 [ Debug ] inspector-enabled/sources/debugger/script-formatter-b
 crbug.com/420008 [ Release ] inspector/tracing [ Slow ]
 crbug.com/420008 [ Release ] inspector/editor/text-editor-word-jumps.html [ Slow ]
 crbug.com/420008 [ Release ] http/tests/inspector/console-xhr-logging.html [ Slow ]
-crbug.com/450493 inspector/sources/debugger [ Slow ]
+crbug.com/450493 inspector/sources [ Slow ]
 
 # This test is intentionally SLOW as we're waiting for a connection timeout.
 crbug.com/73609 http/tests/media/video-play-stall.html [ Slow ]
@@ -210,5 +210,3 @@ crbug.com/459009 crypto/subtle/ [ Slow ]
 crbug.com/24182 [ Debug ] animations/interpolation/transform-interpolation.html [ Slow ]
 crbug.com/24182 [ Debug ] animations/interpolation/webkit-transform-interpolation.html [ Slow ]
 
-crbug.com/498539 inspector/sources/debugger-step/debugger-step-into-async1.html [ Slow ]
-crbug.com/498539 inspector/sources/debugger-step/debugger-step-into-async2.html [ Slow ]
