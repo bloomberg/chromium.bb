@@ -10,7 +10,7 @@
  * Example:
  *
  *    <core-animated-pages>
- *      <cr-settings-internet-page prefs="{{prefs}}">
+ *      <cr-settings-internet-page prefs='{{prefs}}'>
  *      </cr-settings-internet-page>
  *      ... other pages ...
  *    </core-animated-pages>

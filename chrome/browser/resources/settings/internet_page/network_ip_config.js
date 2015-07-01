@@ -8,7 +8,7 @@
  * when 'editable' is true.
  */
 Polymer({
-  is: 'cr-network-ip-config',
+  is: 'network-ip-config',
 
   properties: {
     /**
@@ -188,7 +188,7 @@ Polymer({
   /**
    * Event triggered when the network property list changes.
    * @param {!{detail: { field: string, value: string}}} event The
-   *     cr-network-property-list changed event.
+   *     network-property-list changed event.
    * @private
    */
   onIPChanged_: function(event) {
@@ -196,7 +196,7 @@ Polymer({
 
     var field = event.detail.field;
     var value = event.detail.value;
-    console.debug('IP.onIPChanged: ' + field + " -> " + value);
+    console.debug('IP.onIPChanged: ' + field + ' -> ' + value);
     // Note: |field| includes the 'ipv4.' prefix.
     this.set('ipConfig.' + field, value);
     this.fire('changed', {

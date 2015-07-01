@@ -48,7 +48,7 @@ var NetworkStateListObject;
 var NETWORK_TYPES = ['Ethernet', 'WiFi', 'Cellular', 'WiMAX', 'VPN'];
 
 Polymer({
-  is: 'cr-network-summary',
+  is: 'network-summary',
 
   properties: {
     /**
@@ -142,7 +142,7 @@ Polymer({
   },
 
   /**
-   * Event triggered when the WiFi cr-network-summary-item is expanded.
+   * Event triggered when the WiFi network-summary-item is expanded.
    * @param {!{detail: {expanded: boolean, type: string}}} event
    * @private
    */
@@ -152,7 +152,7 @@ Polymer({
   },
 
   /**
-   * Event triggered when a cr-network-summary-item is selected.
+   * Event triggered when a network-summary-item is selected.
    * @param {!{detail: !CrOnc.NetworkStateProperties}} event
    * @private
    */
@@ -166,7 +166,7 @@ Polymer({
   },
 
   /**
-   * Event triggered when the enabled state of a cr-network-summary-item is
+   * Event triggered when the enabled state of a network-summary-item is
    * toggled.
    * @param {!{detail: {enabled: boolean, type: string}}} event
    * @private
@@ -317,7 +317,7 @@ Polymer({
   },
 
   /**
-   * Sets 'networkStates[type]' which will update the cr-network-list-item
+   * Sets 'networkStates[type]' which will update the network-list-item
    * associated with 'type'.
    * @param {string} type The network type.
    * @param {?CrOnc.NetworkStateProperties} state The state properties for the

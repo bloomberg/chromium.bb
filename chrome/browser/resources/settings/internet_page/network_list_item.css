@@ -14,7 +14,7 @@ span {
   padding: 4px;
 }
 
-#divOuter.listItem:hover {
+#divOuter.list-item:hover {
   background-color: lightgrey;
 }
 

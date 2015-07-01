@@ -9,12 +9,12 @@
 (function() {
 
 /**
- * Polymer class definition for 'cr-network-list'.
+ * Polymer class definition for 'network-list'.
  * TODO(stevenjb): Update with iron-list(?) once implemented in Polymer 1.0.
- * @element cr-network-list
+ * @element network-list
  */
 Polymer({
-  is: 'cr-network-list',
+  is: 'network-list',
 
   properties: {
     /**
@@ -50,7 +50,7 @@ Polymer({
    * Polymer maxHeight changed method.
    */
   maxHeightChanged_: function() {
-    this.$.container.style.maxHeight = this.maxHeight + "px";
+    this.$.container.style.maxHeight = this.maxHeight + 'px';
   },
 
   /**
@@ -64,7 +64,7 @@ Polymer({
 
   /**
    * Event triggered when a list item is selected.
-   * @param {!{target: !CrNetworkListItem}} event
+   * @param {!{target: !NetworkListItem}} event
    * @private
    */
   onSelected_: function(event) {

@@ -2,8 +2,8 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_onc/cr_onc_types.html">
 
-<dom-module id="cr-network-nameservers">
-  <link rel="import" type="css" href="cr_network_nameservers.css">
+<dom-module id="network-nameservers">
+  <link rel="import" type="css" href="network_nameservers.css">
   <template>
     <div id="outer" class="layout vertical">
       <div>
@@ -15,24 +15,24 @@
         </select>
       </div>
       <div class="layout horizontal">
-        <paper-input-container>
+        <paper-input-container no-label-float>
           <input id="nameserver0" is="iron-input" value="[[nameservers.0]]"
               disabled="[[!canEdit_(editable, nameserversType)]]"
               on-blur="onValueChanged_">
         </paper-input-container>
-        <paper-input-container>
+        <paper-input-container no-label-float>
           <input id="nameserver1" is="iron-input" value="[[nameservers.1]]"
               disabled="[[!canEdit_(editable, nameserversType)]]"
               on-blur="onValueChanged_">
         </paper-input-container>
       </div>
       <div class="layout horizontal">
-        <paper-input-container>
+        <paper-input-container no-label-float>
           <input id="nameserver2" is="iron-input" value="[[nameservers.2]]"
               disabled="[[!canEdit_(editable, nameserversType)]]"
               on-blur="onValueChanged_">
         </paper-input-container>
-        <paper-input-container>
+        <paper-input-container no-label-float>
           <input id="nameserver3" is="iron-input" value="[[nameservers.3]]"
               disabled="[[!canEdit_(editable, nameserversType)]]"
               on-blur="onValueChanged_">
@@ -40,5 +40,5 @@
       </div>
     </div>
   </template>
-  <script src="cr_network_nameservers.js"></script>
+  <script src="network_nameservers.js"></script>
 </dom-module>

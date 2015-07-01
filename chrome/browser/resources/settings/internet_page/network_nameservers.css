@@ -10,8 +10,5 @@ select {
 }
 
 paper-input-container {
-  margin-bottom: -1px;
-  margin-left: 5px;
-  margin-right: 5px;
-  margin-top: -30px;
+  margin: -10px 5px 0 5px;
 }

@@ -6,7 +6,7 @@
  * @fileoverview Polymer element for displaying network nameserver options.
  */
 Polymer({
-  is: 'cr-network-nameservers',
+  is: 'network-nameservers',
 
   properties: {
     /**
@@ -50,7 +50,7 @@ Polymer({
      */
     nameserverTypeNames_: {
       type: Array,
-      value: [ 'automatic', 'google', 'custom' ],
+      value: ['automatic', 'google', 'custom'],
       readOnly: true
     },
   },

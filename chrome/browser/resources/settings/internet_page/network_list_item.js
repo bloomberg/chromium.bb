@@ -43,11 +43,11 @@ function getConnectionStateText(state, name) {
 };
 
 /**
- * Polymer class definition for 'cr-network-list-item'.
- * @element cr-network-list-item
+ * Polymer class definition for 'network-list-item'.
+ * @element network-list-item
  */
 Polymer({
-  is: 'cr-network-list-item',
+  is: 'network-list-item',
 
   properties: {
     /**
@@ -67,7 +67,7 @@ Polymer({
      * stand-alone item (e.g. as part of a summary) and displays the name
      * of the network type plus the network name and connection state.
      */
-    isListItem:  {
+    isListItem: {
       type: Boolean,
       value: false
     },
@@ -106,8 +106,8 @@ Polymer({
    * @return {string} The class name based on isListItem.
    * @private
    */
-  isListItemClass_:  function(isListItem) {
-    return isListItem ? "isListItem" : "";
+  isListItemClass_: function(isListItem) {
+    return isListItem ? 'list-item' : '';
   }
 });
 })();

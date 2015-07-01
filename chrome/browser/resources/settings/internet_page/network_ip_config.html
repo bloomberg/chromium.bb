@@ -1,21 +1,21 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_checkbox/cr_checkbox.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_network_property_list/cr_network_property_list.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_onc/cr_onc_types.html">
+<link rel="import" href="network_property_list.html">
 
-<dom-module id="cr-network-ip-config">
-  <link rel="import" type="css" href="cr_network_ip_config.css">
+<dom-module id="network-ip-config">
+  <link rel="import" type="css" href="network_ip_config.css">
   <template>
     <div id="outer" class="layout vertical">
       <cr-checkbox checked="{{automatic}}" disabled="[[!editable]]">
           Configure IP Address Automatically
       </cr-checkbox>
-      <cr-network-property-list
+      <network-property-list
           fields="[[ipConfigFields_]]" network-state="[[ipConfig]]"
           edit-field-types="[[getIPEditFields_(ipConfig, editable, automatic)]]"
           on-changed="onIPChanged_">
-      </cr-network-property-list>
+      </network-property-list>
     </div>
   </template>
-  <script src="cr_network_ip_config.js"></script>
+  <script src="network_ip_config.js"></script>
 </dom-module>

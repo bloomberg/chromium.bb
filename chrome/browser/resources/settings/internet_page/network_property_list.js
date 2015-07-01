@@ -12,7 +12,7 @@
  * TODO(stevenjb): Translate the keys and (where appropriate) values.
  */
 Polymer({
-  is: 'cr-network-property-list',
+  is: 'network-property-list',
 
   properties: {
     /**

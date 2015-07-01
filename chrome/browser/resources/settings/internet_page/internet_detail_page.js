@@ -56,7 +56,7 @@ Polymer({
      * Reflects the selected settings page. We use this to extract guid from
      * window.location.href when this page is navigated to. This is a
      * workaround for a bug in the 1.0 version of more-routing where
-     * selected-params="{{params}}" is not correctly setting params in
+     * selected-params='{{params}}' is not correctly setting params in
      * settings_main.html. TODO(stevenjb): Remove once more-routing is fixed.
      */
     selectedPage: {
@@ -298,7 +298,7 @@ Polymer({
    * Event triggered when the IP Config or NameServers element changes.
    * @param {!{detail: { field: string,
    *                     value: string|CrOnc.IPConfigProperties}}} event
-   *     The cr-network-ip-config or cr-network-nameservers changed event.
+   *     The network-ip-config or network-nameservers changed event.
    * @private
    */
   onIPConfigChanged_: function(event) {

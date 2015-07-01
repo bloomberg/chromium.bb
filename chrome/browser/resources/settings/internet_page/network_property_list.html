@@ -1,9 +1,10 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_onc/cr_onc_types.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/paper-styles.html">
 
-<dom-module name="cr-network-property-list">
-  <link rel="import" type="css" href="cr_network_property_list.css">
+<dom-module name="network-property-list">
+  <link rel="import" type="css" href="network_property_list.css">
   <template>
     <div class="layout horizontal">
       <div class="layout vertical">
@@ -23,7 +24,7 @@
           </div>
           <div class="layout horizontal" hidden$=
                "[[!showEdit_(networkState, editFieldTypes, item, 'String')]]">
-            <paper-input-container>
+            <paper-input-container no-label-float>
               <input id="[[item]]" is="iron-input"
                   value="[[getPropertyValue_(networkState, item)]]"
                   on-blur="onValueChanged_">
@@ -34,5 +35,5 @@
       </div>
     </div>
   </template>
-  <script src="cr_network_property_list.js"></script>
+  <script src="network_property_list.js"></script>
 </dom-module>

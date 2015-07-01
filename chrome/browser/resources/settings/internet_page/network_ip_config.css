@@ -2,18 +2,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-span {
+cr-checkbox {
   margin-bottom: 10px;
 }
 
-span.fill {
-  border-bottom-color: grey;
-  border-bottom-style: dotted;
-  border-width: thin;
-  min-width: 20px;
-}
-
-paper-input-container {
-  margin-bottom: -1px;
-  margin-top: -30px;
+network-property-list {
+  margin-left: 28px;
 }

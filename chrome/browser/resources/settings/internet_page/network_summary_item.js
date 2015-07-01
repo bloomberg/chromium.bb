@@ -12,7 +12,7 @@
 var DeviceStateProperties;
 
 Polymer({
-  is: 'cr-network-summary-item',
+  is: 'network-summary-item',
 
   properties: {
     /**
@@ -35,7 +35,7 @@ Polymer({
     /**
      * True if this item should be hidden. We need this computed property so
      * that it can default to true, hiding this element, since no changed event
-     * will be fired for deviceState if it is undefined (in CrNetworkSummary).
+     * will be fired for deviceState if it is undefined (in NetworkSummary).
      */
     isHidden: {
       type: Boolean,
@@ -171,8 +171,8 @@ Polymer({
   },
 
   /**
-   * Event triggered when a cr-network-item is the network list is selected.
-   * @param {!{detail: CrNetworkListItem}} event
+   * Event triggered when a network-list-item is the network list is selected.
+   * @param {!{detail: NetworkListItem}} event
    * @private
    */
   onListItemSelected_: function(event) {

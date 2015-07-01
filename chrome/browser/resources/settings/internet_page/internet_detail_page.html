@@ -4,9 +4,9 @@
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_onc/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_network_icon/cr_network_icon.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_network_ip_config/cr_network_ip_config.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_network_nameservers/cr_network_nameservers.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_network_property_list/cr_network_property_list.html">
+<link rel="import" href="network_ip_config.html">
+<link rel="import" href="network_nameservers.html">
+<link rel="import" href="network_property_list.html">
 
 <dom-module id="cr-settings-internet-detail-page">
   <link rel="import" type="css" href="chrome://md-settings/settings_page/settings_page.css">
@@ -30,21 +30,21 @@
             Automatically connect to this network
           </cr-checkbox>
 
-          <cr-network-property-list
+          <network-property-list
               fields="[[getInfoFields_(networkState)]]"
               network-state="[[networkState]]">
-          </cr-network-property-list>
+          </network-property-list>
 
           <div class="layout vertical"
               hidden$="[[!hasNetworkSection_(networkState)]]">
-            <cr-network-ip-config editable
+            <network-ip-config editable
                 network-state="[[networkState]]"
                 on-changed="onIPConfigChanged_">
-            </cr-network-ip-config>
-            <cr-network-nameservers editable
+            </network-ip-config>
+            <network-nameservers editable
                 network-state="[[networkState]]"
                 on-changed="onIPConfigChanged_">
-            </cr-network-nameservers>
+            </network-nameservers>
           </div>
 
           <div class="layout horizontal center">
@@ -66,10 +66,10 @@
           <div id="advancedDiv" class="layout vertical"
               hidden$="[[!hasAdvancedOrDeviceFields_(networkState)]]">
             <cr-collapse opened="[[advancedExpanded]]">
-              <cr-network-property-list
+              <network-property-list
                   fields="[[getAdvancedFields_(networkState)]]"
                   network-state="[[networkState]]">
-              </cr-network-property-list>
+              </network-property-list>
 
               <div class="layout vertical"
                   hidden$="[[!hasDeviceFields_(networkState)]]">
@@ -77,10 +77,10 @@
                   Device
                 </cr-button>
                 <cr-collapse opened="[[deviceExpanded]]">
-                  <cr-network-property-list
+                  <network-property-list
                       fields="[[getDeviceFields_(networkState)]]"
                       network-state="[[networkState]]">
-                  </cr-network-property-list>
+                  </network-property-list>
                 </cr-collapse>
               </div>
             </cr-collapse>
