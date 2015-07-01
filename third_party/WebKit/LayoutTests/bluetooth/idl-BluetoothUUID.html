@@ -150,13 +150,15 @@ test(function() {
   var func = function() {};
 
   // cannonicalUUID
-  assert_equals(BluetoothUUID.canonicalUUID(object), base_uuid);
+  assert_throws(new TypeError, function() {BluetoothUUID.canonicalUUID(object)});
+  // [] converts to "", which converts to 0 before the range check.
   assert_equals(BluetoothUUID.canonicalUUID(array), base_uuid);
-  assert_equals(BluetoothUUID.canonicalUUID(func), base_uuid);
-  assert_equals(BluetoothUUID.canonicalUUID(undefined), base_uuid);
+  assert_throws(new TypeError, function() {BluetoothUUID.canonicalUUID(func)});
+  assert_throws(new TypeError, function() {BluetoothUUID.canonicalUUID(undefined)});
   assert_equals(BluetoothUUID.canonicalUUID(null), base_uuid);
   assert_equals(BluetoothUUID.canonicalUUID(false), base_uuid);
-  assert_equals(BluetoothUUID.canonicalUUID(NaN), base_uuid);
+  assert_equals(BluetoothUUID.canonicalUUID(true), BluetoothUUID.canonicalUUID(1));
+  assert_throws(new TypeError, function() {BluetoothUUID.canonicalUUID(NaN)});
 
   // getService
   assert_throws("SyntaxError", function() {

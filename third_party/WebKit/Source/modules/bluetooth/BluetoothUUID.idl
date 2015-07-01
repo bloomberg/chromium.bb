@@ -15,7 +15,7 @@
     [RaisesException] static UUID getCharacteristic((DOMString or unsigned long) name);
     [RaisesException] static UUID getDescriptor((DOMString or unsigned long) name);
 
-    static UUID canonicalUUID(unsigned long alias);
+    static UUID canonicalUUID([EnforceRange] unsigned long alias);
 };
 
 typedef DOMString UUID;
