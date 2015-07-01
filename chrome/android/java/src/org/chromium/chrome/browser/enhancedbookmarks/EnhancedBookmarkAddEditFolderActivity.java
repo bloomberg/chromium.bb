@@ -151,6 +151,7 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
             BookmarkItem bookmarkItem = mModel.getBookmarkById(mFolderId);
             updateParent(bookmarkItem.getParentId());
             mFolderTitle.setText(bookmarkItem.getTitle());
+            mFolderTitle.setSelection(mFolderTitle.getText().length());
         }
         mParentTextView.setText(mModel.getBookmarkTitle(mParentId));
     }
