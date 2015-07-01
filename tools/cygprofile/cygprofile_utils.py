@@ -40,24 +40,3 @@ def DetectArchitecture(default='arm'):
     return match.group(1)
   else:
     return default
-
-
-def InvertMapping(x_to_ys):
-  """Given a map x -> [y1, y2...] returns inverse mapping y->[x1, x2...]."""
-  y_to_xs = {}
-  for x, ys in x_to_ys.items():
-    for y in ys:
-      y_to_xs.setdefault(y, []).append(x)
-  return y_to_xs
-
-
-def GetObjDir(libchrome):
-  """Get the path to the obj directory corresponding to the given libchrome.
-
-  Assumes libchrome is in for example .../Release/lib/libchrome.so and object
-  files are in .../Release/obj.
-  """
-  # TODO(azarchs): Pass obj path in explicitly where needed rather than relying
-  # on the above assumption.
-  return os.path.abspath(os.path.join(
-      os.path.dirname(libchrome), '../obj'))

@@ -12,10 +12,9 @@ import logging
 import multiprocessing
 import optparse
 import os
-import re
+import tempfile
 import string
 import sys
-import tempfile
 
 import cygprofile_utils
 import symbol_extractor
@@ -26,6 +25,7 @@ def _ParseLogLines(log_file_lines):
 
   Args:
     log_file_lines: array of lines in log file produced by profiled run
+    lib_name: library or executable containing symbols
 
     Below is an example of a small log file:
     5086e000-52e92000 r-xp 00000000 b3:02 51276      libchromeview.so
@@ -125,38 +125,12 @@ def _AllSymbolInfos(object_filenames):
   return result
 
 
-def _SameCtorOrDtorNames(symbol1, symbol2):
-  """Returns True if two symbols refer to the same constructor or destructor.
-
-  The Itanium C++ ABI specifies dual constructor and destructor
-  emmission (section 5.1.4.3):
-  https://refspecs.linuxbase.org/cxxabi-1.83.html#mangling-special
-  To avoid fully parsing all mangled symbols, a heuristic is used with c++filt.
-
-  Note: some compilers may name generated copies differently.  If this becomes
-  an issue this heuristic will need to be updated.
-  """
-  # Check if this is the understood case of constructor/destructor
-  # signatures. GCC emits up to three types of constructor/destructors:
-  # complete, base, and allocating.  If they're all the same they'll
-  # get folded together.
-  return (re.search('(C[123]|D[012])E', symbol1) and
-          symbol_extractor.DemangleSymbol(symbol1) ==
-          symbol_extractor.DemangleSymbol(symbol2))
-
-
-def GetSymbolToSectionsMapFromObjectFiles(obj_dir):
-  """Scans object files to create a {symbol: linker section(s)} map.
-
-  Args:
-    obj_dir: The root of the output object file directory, which will be
-             scanned for .o files to form the mapping.
-
-  Returns:
-    A map {symbol_name: [section_name1, section_name2...]}
+def _GetSymbolToSectionMapFromObjectFiles(obj_dir):
+  """ Creates a mapping from symbol to linker section name by scanning all
+      the object files.
   """
   object_files = _GetObjectFileNames(obj_dir)
-  symbol_to_sections_map = {}
+  symbol_to_section_map = {}
   symbol_warnings = cygprofile_utils.WarningCollector(300)
   symbol_infos = _AllSymbolInfos(object_files)
   for symbol_info in symbol_infos:
@@ -164,24 +138,18 @@ def GetSymbolToSectionsMapFromObjectFiles(obj_dir):
     if symbol.startswith('.LTHUNK'):
       continue
     section = symbol_info.section
-    if ((symbol in symbol_to_sections_map) and
-        (symbol_info.section not in symbol_to_sections_map[symbol])):
-      symbol_to_sections_map[symbol].append(section)
-
-      if not _SameCtorOrDtorNames(
-          symbol, symbol_to_sections_map[symbol][0].lstrip('.text.')):
-        symbol_warnings.Write('Symbol ' + symbol +
-                              ' unexpectedly in more than one section: ' +
-                              ', '.join(symbol_to_sections_map[symbol]))
-    elif not section.startswith('.text.'):
+    if ((symbol in symbol_to_section_map) and
+        (symbol_to_section_map[symbol] != symbol_info.section)):
+      symbol_warnings.Write('Symbol ' + symbol +
+                            ' in conflicting sections ' + section +
+                            ' and ' + symbol_to_section_map[symbol])
+    elif not section.startswith('.text'):
       symbol_warnings.Write('Symbol ' + symbol +
                             ' in incorrect section ' + section)
     else:
-      # In most cases we expect just one item in this list, and maybe 4 or so in
-      # the worst case.
-      symbol_to_sections_map[symbol] = [section]
+      symbol_to_section_map[symbol] = section
   symbol_warnings.WriteEnd('bad sections')
-  return symbol_to_sections_map
+  return symbol_to_section_map
 
 
 def _WarnAboutDuplicates(offsets):
@@ -204,18 +172,15 @@ def _WarnAboutDuplicates(offsets):
   return ok
 
 
-def _OutputOrderfile(offsets, offset_to_symbol_infos, symbol_to_sections_map,
+def _OutputOrderfile(offsets, offset_to_symbol_infos, symbol_to_section_map,
                      output_file):
   """Outputs the orderfile to output_file.
 
   Args:
     offsets: Iterable of offsets to match to section names
     offset_to_symbol_infos: {offset: [SymbolInfo]}
-    symbol_to_sections_map: {name: [section1, section2]}
+    symbol_to_section_map: {name: section}
     output_file: file-like object to write the results to
-
-  Returns:
-    True if all symbols were found in the library.
   """
   success = True
   unknown_symbol_warnings = cygprofile_utils.WarningCollector(300)
@@ -225,12 +190,11 @@ def _OutputOrderfile(offsets, offset_to_symbol_infos, symbol_to_sections_map,
     try:
       symbol_infos = _FindSymbolInfosAtOffset(offset_to_symbol_infos, offset)
       for symbol_info in symbol_infos:
-        if symbol_info.name in symbol_to_sections_map:
-          sections = symbol_to_sections_map[symbol_info.name]
-          for section in sections:
-            if not section in output_sections:
-              output_file.write(section + '\n')
-              output_sections.add(section)
+        if symbol_info.name in symbol_to_section_map:
+          section = symbol_to_section_map[symbol_info.name]
+          if not section in output_sections:
+            output_file.write(section + '\n')
+            output_sections.add(section)
         else:
           unknown_symbol_warnings.Write(
               'No known section for symbol ' + symbol_info.name)
@@ -258,14 +222,15 @@ def main():
   (log_filename, lib_filename, output_filename) = argv[1:]
   symbol_extractor.SetArchitecture(options.arch)
 
-  obj_dir = cygprofile_utils.GetObjDir(lib_filename)
+  obj_dir = os.path.abspath(os.path.join(
+      os.path.dirname(lib_filename), '../obj'))
 
   log_file_lines = map(string.rstrip, open(log_filename).readlines())
   offsets = _ParseLogLines(log_file_lines)
   _WarnAboutDuplicates(offsets)
 
   offset_to_symbol_infos = _GroupLibrarySymbolInfosByOffset(lib_filename)
-  symbol_to_sections_map = GetSymbolToSectionsMapFromObjectFiles(obj_dir)
+  symbol_to_section_map = _GetSymbolToSectionMapFromObjectFiles(obj_dir)
 
   success = False
   temp_filename = None
@@ -274,7 +239,7 @@ def main():
     (fd, temp_filename) = tempfile.mkstemp(dir=os.path.dirname(output_filename))
     output_file = os.fdopen(fd, 'w')
     ok = _OutputOrderfile(
-        offsets, offset_to_symbol_infos, symbol_to_sections_map, output_file)
+        offsets, offset_to_symbol_infos, symbol_to_section_map, output_file)
     output_file.close()
     os.rename(temp_filename, output_filename)
     temp_filename = None
