@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/web_state/wk_web_view_ssl_error_util.h"
+#import "ios/web/web_state/wk_web_view_security_util.h"
 
 #import <Foundation/Foundation.h>
 #include <Security/Security.h>
@@ -17,9 +17,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-namespace web {
 namespace {
+// Subject for testing self-signed certificate.
+const char kTestSubject[] = "self-signed";
+}  // namespace
 
+namespace web {
 // Returns an autoreleased certificate chain for testing. Chain will contain a
 // single self-signed cert with |subject| as a subject.
 NSArray* MakeTestCertChain(const std::string& subject) {
@@ -37,12 +40,19 @@ NSArray* MakeTestCertChain(const std::string& subject) {
   return result;
 }
 
-// Test class for wk_web_view_ssl_error_util functions.
-typedef PlatformTest WKWebViewSSLErrorUtilTest;
+// Test class for wk_web_view_security_util functions.
+typedef PlatformTest WKWebViewSecurityUtilTest;
+
+// Tests CreateCertFromChain with self-signed cert.
+TEST_F(WKWebViewSecurityUtilTest, CreationCertFromChain) {
+  scoped_refptr<net::X509Certificate> cert =
+      web::CreateCertFromChain(MakeTestCertChain(kTestSubject));
+  EXPECT_TRUE(cert->subject().GetDisplayName() == kTestSubject);
+}
 
 // Tests that IsWKWebViewSSLError returns true for NSError with NSURLErrorDomain
 // domain and NSURLErrorSecureConnectionFailed error code.
-TEST_F(WKWebViewSSLErrorUtilTest, CheckSecureConnectionFailedError) {
+TEST_F(WKWebViewSecurityUtilTest, CheckSecureConnectionFailedError) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
 
   EXPECT_TRUE(web::IsWKWebViewSSLError(
@@ -53,7 +63,7 @@ TEST_F(WKWebViewSSLErrorUtilTest, CheckSecureConnectionFailedError) {
 
 // Tests that IsWKWebViewSSLError returns true for NSError with NSURLErrorDomain
 // domain and NSURLErrorClientCertificateRequired error code.
-TEST_F(WKWebViewSSLErrorUtilTest, CheckCannotLoadFromNetworkError) {
+TEST_F(WKWebViewSecurityUtilTest, CheckCannotLoadFromNetworkError) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
 
   EXPECT_TRUE(web::IsWKWebViewSSLError(
@@ -64,7 +74,7 @@ TEST_F(WKWebViewSSLErrorUtilTest, CheckCannotLoadFromNetworkError) {
 
 // Tests that IsWKWebViewSSLError returns false for NSError with empty domain
 // and NSURLErrorClientCertificateRequired error code.
-TEST_F(WKWebViewSSLErrorUtilTest, CheckCannotLoadFromNetworkErrorWithNoDomain) {
+TEST_F(WKWebViewSecurityUtilTest, CheckCannotLoadFromNetworkErrorWithNoDomain) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
 
   EXPECT_FALSE(web::IsWKWebViewSSLError(
@@ -75,7 +85,7 @@ TEST_F(WKWebViewSSLErrorUtilTest, CheckCannotLoadFromNetworkErrorWithNoDomain) {
 
 // Tests that IsWKWebViewSSLError returns false for NSError with
 // NSURLErrorDomain domain and NSURLErrorDataLengthExceedsMaximum error code.
-TEST_F(WKWebViewSSLErrorUtilTest, CheckDataLengthExceedsMaximumError) {
+TEST_F(WKWebViewSecurityUtilTest, CheckDataLengthExceedsMaximumError) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
 
   EXPECT_FALSE(web::IsWKWebViewSSLError(
@@ -86,7 +96,7 @@ TEST_F(WKWebViewSSLErrorUtilTest, CheckDataLengthExceedsMaximumError) {
 
 // Tests that IsWKWebViewSSLError returns false for NSError with
 // NSURLErrorDomain domain and NSURLErrorCannotLoadFromNetwork error code.
-TEST_F(WKWebViewSSLErrorUtilTest, CheckCannotCreateFileError) {
+TEST_F(WKWebViewSecurityUtilTest, CheckCannotCreateFileError) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
 
   EXPECT_FALSE(web::IsWKWebViewSSLError(
@@ -96,7 +106,7 @@ TEST_F(WKWebViewSSLErrorUtilTest, CheckCannotCreateFileError) {
 }
 
 // Tests GetSSLInfoFromWKWebViewSSLError with NSError without user info.
-TEST_F(WKWebViewSSLErrorUtilTest, SSLInfoFromErrorWithoutUserInfo) {
+TEST_F(WKWebViewSecurityUtilTest, SSLInfoFromErrorWithoutUserInfo) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
 
   NSError* badDateError =
@@ -112,7 +122,7 @@ TEST_F(WKWebViewSSLErrorUtilTest, SSLInfoFromErrorWithoutUserInfo) {
 }
 
 // Tests GetSSLInfoFromWKWebViewSSLError with NSError without cert.
-TEST_F(WKWebViewSSLErrorUtilTest, SSLInfoFromErrorWithoutCert) {
+TEST_F(WKWebViewSecurityUtilTest, SSLInfoFromErrorWithoutCert) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
 
   NSError* untrustedCertError = [NSError
@@ -129,10 +139,9 @@ TEST_F(WKWebViewSSLErrorUtilTest, SSLInfoFromErrorWithoutCert) {
 }
 
 // Tests GetSSLInfoFromWKWebViewSSLError with NSError and self-signed cert.
-TEST_F(WKWebViewSSLErrorUtilTest, SSLInfoFromErrorWithCert) {
+TEST_F(WKWebViewSecurityUtilTest, SSLInfoFromErrorWithCert) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
 
-  const std::string kTestSubject = "self-signed";
   NSError* unknownCertError =
       [NSError errorWithDomain:NSURLErrorDomain
                           code:NSURLErrorServerCertificateHasUnknownRoot
@@ -145,8 +154,7 @@ TEST_F(WKWebViewSSLErrorUtilTest, SSLInfoFromErrorWithCert) {
   web::GetSSLInfoFromWKWebViewSSLError(unknownCertError, &info);
   EXPECT_TRUE(info.is_valid());
   EXPECT_EQ(net::CERT_STATUS_INVALID, info.cert_status);
-  EXPECT_EQ(kTestSubject, info.cert->subject().GetDisplayName());
+  EXPECT_TRUE(info.cert->subject().GetDisplayName() == kTestSubject);
 }
 
-}  // namespace
 }  // namespace web

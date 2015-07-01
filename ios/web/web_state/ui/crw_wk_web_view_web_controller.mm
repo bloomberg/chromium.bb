@@ -38,7 +38,7 @@
 #include "ios/web/public/cert_store.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/ssl_status.h"
-#import "ios/web/web_state/wk_web_view_ssl_error_util.h"
+#import "ios/web/web_state/wk_web_view_security_util.h"
 #include "net/ssl/ssl_info.h"
 #endif
 

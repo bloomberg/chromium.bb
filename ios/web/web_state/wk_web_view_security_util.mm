@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/web_state/wk_web_view_ssl_error_util.h"
+#import "ios/web/web_state/wk_web_view_security_util.h"
 
 #include "base/strings/sys_string_conversions.h"
 #include "net/cert/x509_certificate.h"
@@ -29,21 +29,9 @@ net::X509Certificate* CreateCertFromSubject(NSString* subject) {
                                   expiration_date);
 }
 
-// Creates certificate from array of SecCertificateRef objects.
-net::X509Certificate* CreateCertFromChain(NSArray* certs) {
-  if (certs.count == 0)
-    return nullptr;
-  net::X509Certificate::OSCertHandles intermediates;
-  for (NSUInteger i = 1; i < certs.count; i++) {
-    intermediates.push_back(reinterpret_cast<SecCertificateRef>(certs[i]));
-  }
-  return net::X509Certificate::CreateFromHandle(
-      reinterpret_cast<SecCertificateRef>(certs[0]), intermediates);
-}
-
 // Creates certificate using information extracted from NSError.
-net::X509Certificate* CreateCertFromSSLError(NSError* error) {
-  net::X509Certificate* cert = CreateCertFromChain(
+scoped_refptr<net::X509Certificate> CreateCertFromSSLError(NSError* error) {
+  scoped_refptr<net::X509Certificate> cert = web::CreateCertFromChain(
       error.userInfo[web::kNSErrorPeerCertificateChainKey]);
   if (cert)
     return cert;
@@ -75,6 +63,17 @@ net::CertStatus GetCertStatusFromNSErrorCode(NSInteger code) {
 
 
 namespace web {
+
+scoped_refptr<net::X509Certificate> CreateCertFromChain(NSArray* certs) {
+  if (certs.count == 0)
+    return nullptr;
+  net::X509Certificate::OSCertHandles intermediates;
+  for (NSUInteger i = 1; i < certs.count; i++) {
+    intermediates.push_back(reinterpret_cast<SecCertificateRef>(certs[i]));
+  }
+  return net::X509Certificate::CreateFromHandle(
+      reinterpret_cast<SecCertificateRef>(certs[0]), intermediates);
+}
 
 BOOL IsWKWebViewSSLError(NSError* error) {
   // SSL errors range is (-2000..-1200], represented by kCFURLError constants:
