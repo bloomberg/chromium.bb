@@ -297,7 +297,6 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
   EXPECT_EQ("", GetCookies(url));
 }
 
-#if !defined(OS_MACOSX)
 // Tests that the onbeforeunload and onunload logic is short-circuited if the
 // old renderer is gone.  In that case, we don't want to wait for the old
 // renderer to run the handlers.
@@ -306,7 +305,14 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 // app isn't stripped of debug symbols, this takes about five minutes to
 // complete and isn't conducive to quick turnarounds. As we don't currently
 // strip the app on the build bots, this is bad times.
-IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, CrossSiteAfterCrash) {
+// Also disabled on Android (http://crbug.com/506188).
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#define MAYBE_CrossSiteAfterCrash DISABLED_CrossSiteAfterCrash
+#else
+#define MAYBE_CrossSiteAfterCrash CrossSiteAfterCrash
+#endif
+IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
+                       MAYBE_CrossSiteAfterCrash) {
   // Make sure we have a live process before trying to kill it.
   NavigateToURL(shell(), GURL("about:blank"));
 
@@ -323,7 +329,6 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, CrossSiteAfterCrash) {
   CheckTitleTest(GetMockURL("content-sniffer-test0.html"),
                  "Content Sniffer Test 0");
 }
-#endif  // !defined(OS_MACOSX)
 
 // Tests that cross-site navigations work when the new page does not go through
 // the BufferedEventHandler (e.g., non-http{s} URLs).  (Bug 1225872)
