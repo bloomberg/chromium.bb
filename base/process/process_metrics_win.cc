@@ -260,7 +260,7 @@ static BOOL InternalGetPerformanceInfo(
           GetProcAddress(psapi_dll, "GetPerformanceInfo"));
 
     if (!GetPerformanceInfo_func) {
-      // The function could not be loaded!
+      // The function could be loaded!
       memset(pPerformanceInformation, 0, cb);
       return FALSE;
     }

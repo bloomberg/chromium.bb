@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/process/process_metrics.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -18,7 +19,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/private_working_set_snapshot.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/task_manager/background_information.h"
@@ -274,11 +274,6 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
       task_manager,
       scoped_ptr<WebContentsInformation>(
           new task_manager::GuestInformation())));
-#if defined(OS_WIN)
-  working_set_snapshot_.reset(new PrivateWorkingSetSnapshot);
-  working_set_snapshot_->AddToMonitorList("chrome");
-  working_set_snapshot_->AddToMonitorList("nacl64");
-#endif
 }
 
 void TaskManagerModel::AddObserver(TaskManagerModelObserver* observer) {
@@ -583,13 +578,10 @@ bool TaskManagerModel::GetPhysicalMemory(int index, size_t* result) const {
     // On Linux private memory is also resident. Just use it.
     values.physical_memory = ws_usage.priv * 1024;
 #else
-    // Memory = working_set.private which is working set minus shareable. This
-    // avoids the unpredictable counting that occurs when calculating memory as
-    // working set minus shared (renderer code counted when one tab is open and
-    // not counted when two or more are open) and it is much more efficient to
-    // calculate on Windows.
+    // Memory = working_set.private + working_set.shareable.
+    // We exclude the shared memory.
     values.physical_memory = iter->second->GetWorkingSetSize();
-    values.physical_memory -= ws_usage.shareable * 1024;
+    values.physical_memory -= ws_usage.shared * 1024;
 #endif
   }
   *result = values.physical_memory;
@@ -1131,38 +1123,9 @@ void TaskManagerModel::ModelChanged() {
   FOR_EACH_OBSERVER(TaskManagerModelObserver, observer_list_, OnModelChanged());
 }
 
-void TaskManagerModel::RefreshPhysicalMemoryFromWorkingSetSnapshot() {
-#if defined(OS_WIN)
-  // Collect working-set data for all monitored processes in one operation, to
-  // avoid the inefficiency of retrieving it one at a time.
-  working_set_snapshot_->Sample();
-
-  for (size_t i = 0; i < resources_.size(); ++i) {
-    size_t private_working_set =
-        working_set_snapshot_->GetPrivateWorkingSet(GetProcessId(i));
-
-    // If working-set data is available then use it. If not then
-    // GetWorkingSetKBytes will retrieve the data. This is rare except on
-    // Windows XP where GetWorkingSetKBytes will always be used.
-    if (private_working_set) {
-      // Fill in the cache with the retrieved private working set value.
-      base::ProcessHandle handle = GetResource(i)->GetProcess();
-      PerProcessValues& values(per_process_cache_[handle]);
-      values.is_physical_memory_valid = true;
-      // Note that the other memory fields are *not* filled in.
-      values.physical_memory = private_working_set;
-    }
-  }
-#else
-// This is a NOP on other platforms because they can efficiently retrieve
-// the private working-set data on a per-process basis.
-#endif
-}
-
 void TaskManagerModel::Refresh() {
   per_resource_cache_.clear();
   per_process_cache_.clear();
-  RefreshPhysicalMemoryFromWorkingSetSnapshot();
 
 #if !defined(DISABLE_NACL)
   nacl::NaClBrowser* nacl_browser = nacl::NaClBrowser::GetInstance();

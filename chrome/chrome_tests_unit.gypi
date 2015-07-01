@@ -199,7 +199,6 @@
       'browser/prerender/prerender_resource_throttle_unittest.cc',
       'browser/prerender/prerender_unittest.cc',
       'browser/prerender/prerender_util_unittest.cc',
-      'browser/private_working_set_snapshot_win_unittest.cc',
       'browser/process_info_snapshot_mac_unittest.cc',
       'browser/process_singleton_win_unittest.cc',
       'browser/profiles/file_path_verifier_win_unittest.cc',
