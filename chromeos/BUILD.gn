@@ -31,7 +31,6 @@ component("chromeos") {
     "//crypto",
     "//crypto:platform",
     "//google_apis",
-    "//net/third_party/nss/ssl:libssl",
     "//third_party/icu",
     "//third_party/libxml",
     "//third_party/protobuf:protobuf_lite",

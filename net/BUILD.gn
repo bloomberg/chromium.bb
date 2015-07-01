@@ -706,7 +706,7 @@ source_set("test_support") {
     public_deps += [ "//third_party/protobuf:py_proto" ]
   }
 
-  if (!use_openssl && (use_nss_certs || is_ios)) {
+  if (use_nss_certs || is_ios) {
     public_deps += [ "//crypto:platform" ]
   }
 

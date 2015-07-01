@@ -605,7 +605,7 @@
             '../third_party/protobuf/protobuf.gyp:py_proto',
           ],
         }],
-        ['use_openssl == 0 and (use_nss_certs == 1 or OS == "ios")', {
+        ['use_nss_certs == 1 or OS == "ios"', {
           'conditions': [
             [ 'desktop_linux == 1 or chromeos == 1', {
               'dependencies': [
