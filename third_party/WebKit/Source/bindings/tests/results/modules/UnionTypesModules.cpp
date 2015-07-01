@@ -59,6 +59,10 @@ BooleanOrString::BooleanOrString(const BooleanOrString&) = default;
 BooleanOrString::~BooleanOrString() = default;
 BooleanOrString& BooleanOrString::operator=(const BooleanOrString&) = default;
 
+DEFINE_TRACE(BooleanOrString)
+{
+}
+
 void V8BooleanOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, BooleanOrString& impl, ExceptionState& exceptionState)
 {
     if (v8Value.IsEmpty())

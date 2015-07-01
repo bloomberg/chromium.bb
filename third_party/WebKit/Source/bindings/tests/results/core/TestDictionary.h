@@ -51,6 +51,10 @@ public:
     const DoubleOrString& doubleOrStringMember() const { return m_doubleOrStringMember; }
     void setDoubleOrStringMember(const DoubleOrString& value) { m_doubleOrStringMember = value; }
 
+    bool hasDoubleOrStringSequenceMember() const { return !m_doubleOrStringSequenceMember.isNull(); }
+    const HeapVector<DoubleOrString>& doubleOrStringSequenceMember() const { return m_doubleOrStringSequenceMember.get(); }
+    void setDoubleOrStringSequenceMember(const HeapVector<DoubleOrString>& value) { m_doubleOrStringSequenceMember = value; }
+
     bool hasElementOrNullMember() const { return m_elementOrNullMember; }
     PassRefPtrWillBeRawPtr<Element> elementOrNullMember() const { return m_elementOrNullMember; }
     void setElementOrNullMember(PassRefPtrWillBeRawPtr<Element> value) { m_elementOrNullMember = value; }
@@ -169,6 +173,7 @@ private:
     Nullable<bool> m_createMember;
     Nullable<double> m_doubleOrNullMember;
     DoubleOrString m_doubleOrStringMember;
+    Nullable<HeapVector<DoubleOrString>> m_doubleOrStringSequenceMember;
     RefPtrWillBeMember<Element> m_elementOrNullMember;
     String m_enumMember;
     Nullable<Vector<String>> m_enumSequenceMember;

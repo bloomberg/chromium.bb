@@ -32,5 +32,6 @@ dictionary InternalDictionary {
     object objectMember;
     object? objectOrNullMemberWithDefault = null;
     (double or DOMString) doubleOrStringMember;
+    sequence<(double or DOMString)> doubleOrStringSequenceMember;
     EventTarget? eventTargetOrNullMember = null;
 };

@@ -57,7 +57,6 @@ void {{container.cpp_class}}::set{{member.type_name}}({{member.rvalue_cpp_type}}
 {{container.cpp_class}}::~{{container.cpp_class}}() = default;
 {{container.cpp_class}}& {{container.cpp_class}}::operator=(const {{container.cpp_class}}&) = default;
 
-{% if container.needs_trace %}
 DEFINE_TRACE({{container.cpp_class}})
 {
     {% for member in container.members if member.is_traceable %}
@@ -65,7 +64,6 @@ DEFINE_TRACE({{container.cpp_class}})
     {% endfor %}
 }
 
-{% endif %}
 void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{container.cpp_class}}& impl, ExceptionState& exceptionState)
 {
     if (v8Value.IsEmpty())

@@ -136,6 +136,22 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     }
 
     {
+        v8::Local<v8::Value> doubleOrStringSequenceMemberValue;
+        if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "doubleOrStringSequenceMember")).ToLocal(&doubleOrStringSequenceMemberValue)) {
+            exceptionState.rethrowV8Exception(block.Exception());
+            return;
+        }
+        if (doubleOrStringSequenceMemberValue.IsEmpty() || doubleOrStringSequenceMemberValue->IsUndefined()) {
+            // Do nothing.
+        } else {
+            HeapVector<DoubleOrString> doubleOrStringSequenceMember = toImplArray<HeapVector<DoubleOrString>>(doubleOrStringSequenceMemberValue, 0, isolate, exceptionState);
+            if (exceptionState.hadException())
+                return;
+            impl.setDoubleOrStringSequenceMember(doubleOrStringSequenceMember);
+        }
+    }
+
+    {
         v8::Local<v8::Value> elementOrNullMemberValue;
         if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "elementOrNullMember")).ToLocal(&elementOrNullMemberValue)) {
             exceptionState.rethrowV8Exception(block.Exception());
@@ -651,6 +667,11 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
             return false;
     } else {
         if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "doubleOrStringMember"), toV8(DoubleOrString::fromDouble(3.14), creationContext, isolate))))
+            return false;
+    }
+
+    if (impl.hasDoubleOrStringSequenceMember()) {
+        if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "doubleOrStringSequenceMember"), toV8(impl.doubleOrStringSequenceMember(), creationContext, isolate))))
             return false;
     }
 

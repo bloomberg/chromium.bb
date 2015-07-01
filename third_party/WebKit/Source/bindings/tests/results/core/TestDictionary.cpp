@@ -27,9 +27,13 @@ TestDictionary::TestDictionary()
 
 DEFINE_TRACE(TestDictionary)
 {
+    visitor->trace(m_doubleOrStringMember);
+    visitor->trace(m_doubleOrStringSequenceMember);
     visitor->trace(m_elementOrNullMember);
     visitor->trace(m_eventTargetMember);
     visitor->trace(m_internalDictionarySequenceMember);
+    visitor->trace(m_otherDoubleOrStringMember);
+    visitor->trace(m_testInterface2OrUint8ArrayMember);
     visitor->trace(m_testInterfaceGarbageCollectedMember);
     visitor->trace(m_testInterfaceGarbageCollectedOrNullMember);
     visitor->trace(m_testInterfaceGarbageCollectedSequenceMember);

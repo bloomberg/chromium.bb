@@ -36,6 +36,8 @@ public:
     BooleanOrString(const BooleanOrString&);
     ~BooleanOrString();
     BooleanOrString& operator=(const BooleanOrString&);
+    DECLARE_TRACE();
+
 private:
     enum SpecificTypes {
         SpecificTypeNone,

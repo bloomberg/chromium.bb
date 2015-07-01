@@ -323,12 +323,10 @@ IdlTypeBase.gc_type = property(gc_type)
 def is_traceable(idl_type):
     return (idl_type.is_garbage_collected
             or idl_type.is_will_be_garbage_collected
-            or idl_type.is_dictionary
-            or idl_type.is_union_type)
+            or idl_type.is_dictionary)
 
 IdlTypeBase.is_traceable = property(is_traceable)
-IdlUnionType.is_traceable = property(
-    lambda self: any((member_type.is_traceable for member_type in self.member_types)))
+IdlUnionType.is_traceable = property(lambda self: True)
 IdlArrayOrSequenceType.is_traceable = property(
     lambda self: self.element_type.is_traceable)
 

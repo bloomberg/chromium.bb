@@ -29,10 +29,8 @@ public:
     {{container.cpp_class}}(const {{container.cpp_class}}&);
     ~{{container.cpp_class}}();
     {{container.cpp_class}}& operator=(const {{container.cpp_class}}&);
-    {% if container.needs_trace %}
     DECLARE_TRACE();
 
-    {% endif %}
 private:
     enum SpecificTypes {
         SpecificTypeNone,

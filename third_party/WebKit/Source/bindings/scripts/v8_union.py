@@ -121,7 +121,6 @@ def container_context(union_type, interfaces_info):
         'includes_nullable_type': union_type.includes_nullable_type,
         'interface_types': interface_types,
         'members': members,
-        'needs_trace': any(member['is_traceable'] for member in members),
         'numeric_type': numeric_type,
         'string_type': string_type,
         'type_string': str(union_type),

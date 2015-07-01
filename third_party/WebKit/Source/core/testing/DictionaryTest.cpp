@@ -63,6 +63,8 @@ void DictionaryTest::set(const InternalDictionary& testingDictionary)
     m_objectOrNullMemberWithDefault = testingDictionary.objectOrNullMemberWithDefault();
     if (testingDictionary.hasDoubleOrStringMember())
         m_doubleOrStringMember = testingDictionary.doubleOrStringMember();
+    if (testingDictionary.hasDoubleOrStringSequenceMember())
+        m_doubleOrStringSequenceMember = testingDictionary.doubleOrStringSequenceMember();
     m_eventTargetOrNullMember = testingDictionary.eventTargetOrNullMember();
 }
 
@@ -107,6 +109,8 @@ void DictionaryTest::get(InternalDictionary& result)
     result.setObjectOrNullMemberWithDefault(m_objectOrNullMemberWithDefault);
     if (!m_doubleOrStringMember.isNull())
         result.setDoubleOrStringMember(m_doubleOrStringMember);
+    if (!m_doubleOrStringSequenceMember.isNull())
+        result.setDoubleOrStringSequenceMember(m_doubleOrStringSequenceMember.get());
     result.setEventTargetOrNullMember(m_eventTargetOrNullMember);
 }
 
@@ -163,6 +167,7 @@ DEFINE_TRACE(DictionaryTest)
 {
     visitor->trace(m_elementMember);
     visitor->trace(m_elementOrNullMember);
+    visitor->trace(m_doubleOrStringSequenceMember);
     visitor->trace(m_eventTargetOrNullMember);
 }
 

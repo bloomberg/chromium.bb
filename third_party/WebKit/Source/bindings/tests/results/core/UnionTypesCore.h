@@ -51,6 +51,8 @@ public:
     ArrayBufferOrArrayBufferViewOrDictionary(const ArrayBufferOrArrayBufferViewOrDictionary&);
     ~ArrayBufferOrArrayBufferViewOrDictionary();
     ArrayBufferOrArrayBufferViewOrDictionary& operator=(const ArrayBufferOrArrayBufferViewOrDictionary&);
+    DECLARE_TRACE();
+
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -109,6 +111,8 @@ public:
     BooleanOrStringOrUnrestrictedDouble(const BooleanOrStringOrUnrestrictedDouble&);
     ~BooleanOrStringOrUnrestrictedDouble();
     BooleanOrStringOrUnrestrictedDouble& operator=(const BooleanOrStringOrUnrestrictedDouble&);
+    DECLARE_TRACE();
+
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -162,6 +166,8 @@ public:
     DoubleOrString(const DoubleOrString&);
     ~DoubleOrString();
     DoubleOrString& operator=(const DoubleOrString&);
+    DECLARE_TRACE();
+
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -324,6 +330,8 @@ public:
     StringOrArrayBufferOrArrayBufferView(const StringOrArrayBufferOrArrayBufferView&);
     ~StringOrArrayBufferOrArrayBufferView();
     StringOrArrayBufferOrArrayBufferView& operator=(const StringOrArrayBufferOrArrayBufferView&);
+    DECLARE_TRACE();
+
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -377,6 +385,8 @@ public:
     StringOrDouble(const StringOrDouble&);
     ~StringOrDouble();
     StringOrDouble& operator=(const StringOrDouble&);
+    DECLARE_TRACE();
+
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -428,6 +438,8 @@ public:
     StringOrStringSequence(const StringOrStringSequence&);
     ~StringOrStringSequence();
     StringOrStringSequence& operator=(const StringOrStringSequence&);
+    DECLARE_TRACE();
+
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -479,6 +491,8 @@ public:
     TestEnumOrDouble(const TestEnumOrDouble&);
     ~TestEnumOrDouble();
     TestEnumOrDouble& operator=(const TestEnumOrDouble&);
+    DECLARE_TRACE();
+
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -530,6 +544,8 @@ public:
     TestInterface2OrUint8Array(const TestInterface2OrUint8Array&);
     ~TestInterface2OrUint8Array();
     TestInterface2OrUint8Array& operator=(const TestInterface2OrUint8Array&);
+    DECLARE_TRACE();
+
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -634,6 +650,8 @@ public:
     TestInterfaceOrLong(const TestInterfaceOrLong&);
     ~TestInterfaceOrLong();
     TestInterfaceOrLong& operator=(const TestInterfaceOrLong&);
+    DECLARE_TRACE();
+
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -685,6 +703,8 @@ public:
     TestInterfaceOrTestInterfaceEmpty(const TestInterfaceOrTestInterfaceEmpty&);
     ~TestInterfaceOrTestInterfaceEmpty();
     TestInterfaceOrTestInterfaceEmpty& operator=(const TestInterfaceOrTestInterfaceEmpty&);
+    DECLARE_TRACE();
+
 private:
     enum SpecificTypes {
         SpecificTypeNone,
@@ -789,6 +809,8 @@ public:
     UnrestrictedDoubleOrString(const UnrestrictedDoubleOrString&);
     ~UnrestrictedDoubleOrString();
     UnrestrictedDoubleOrString& operator=(const UnrestrictedDoubleOrString&);
+    DECLARE_TRACE();
+
 private:
     enum SpecificTypes {
         SpecificTypeNone,

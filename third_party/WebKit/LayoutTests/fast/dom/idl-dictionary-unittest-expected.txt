@@ -28,6 +28,7 @@ PASS dict.enumOrNullMember is undefined.
 PASS dict.objectMember is undefined.
 PASS dict.objectOrNullMemberWithDefault is null
 PASS dict.doubleOrStringMember is undefined.
+PASS dict.doubleOrStringSequenceMember is undefined.
 PASS dict.eventTargetOrNullMember is null
 
 Test for setting undefined
@@ -75,6 +76,7 @@ PASS dict.enumArrayMember is ["foo", "bar", "baz"]
 PASS dict.objectMember is testObject1
 PASS dict.objectOrNullMemberWithDefault is testObject2
 PASS dict.doubleOrStringMember is 3.14
+PASS dict.doubleOrStringSequenceMember is [3.14, "Hello"]
 PASS dict.eventTargetOrNullMember is element1
 
 Additional test for union type members
