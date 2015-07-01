@@ -59,9 +59,6 @@ bool HistoryClientImpl::CanAddURL(const GURL& url) {
 }
 
 void HistoryClientImpl::NotifyProfileError(sql::InitStatus init_status) {
-  // TODO(ios): error while loading the History database are not reported to
-  // the user on iOS. http://crbug.com/504834
-  NOTIMPLEMENTED();
 }
 
 scoped_ptr<history::HistoryBackendClient>
