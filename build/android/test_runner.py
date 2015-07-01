@@ -606,6 +606,11 @@ def AddPerfTestOptions(parser):
   group.add_argument(
       '--dry-run', action='store_true',
       help='Just print the steps without executing.')
+  # Uses 0.1 degrees C because that's what Android does.
+  group.add_argument(
+      '--max-battery-temp', type=int,
+      help='Only start tests when the battery is at or below the given '
+           'temperature (0.1 C)')
   group.add_argument('single_step_command', nargs='*', action=SingleStepAction,
                      help='If --single-step is specified, the command to run.')
   AddCommonOptions(parser)
@@ -630,7 +635,7 @@ def ProcessPerfTestOptions(args):
       args.steps, args.flaky_steps, args.output_json_list,
       args.print_step, args.no_timeout, args.test_filter,
       args.dry_run, args.single_step, args.collect_chartjson_data,
-      args.output_chartjson_data)
+      args.output_chartjson_data, args.max_battery_temp)
 
 
 def AddPythonTestOptions(parser):
