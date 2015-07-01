@@ -276,7 +276,7 @@ TransformOperation* animatableValueToTransformOperation(const AnimatableValue* v
 // FIXME: Generate this function.
 void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverState& state, const AnimatableValue* value)
 {
-    ASSERT(CSSPropertyMetadata::isAnimatableProperty(property));
+    ASSERT(CSSPropertyMetadata::isInterpolableProperty(property));
     if (value->isUnknown()) {
         StyleBuilder::applyProperty(property, state, toAnimatableUnknown(value)->toCSSValue().get());
         return;

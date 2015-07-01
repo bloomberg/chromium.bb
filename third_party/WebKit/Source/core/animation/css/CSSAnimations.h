@@ -59,7 +59,7 @@ public:
     bool isTransitionAnimationForInspector(const Animation&) const;
 
     static const StylePropertyShorthand& propertiesForTransitionAll();
-    static bool isAllowedAnimation(CSSPropertyID);
+    static bool isAnimatableProperty(CSSPropertyID);
     static PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> calculateUpdate(const Element* animatingElement, Element&, const ComputedStyle&, ComputedStyle* parentStyle, StyleResolver*);
 
     void setPendingUpdate(PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> update) { m_pendingUpdate = update; }

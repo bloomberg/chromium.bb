@@ -19,8 +19,8 @@
 
 
 // Flags which go into CSSPropertyMetadata:
-// - animatable
-// The animatable flag indicates whether a property can be animated by CSS
+// - interpolable
+// The interpolable flag indicates whether a property can be animated by CSS
 // animations and transitions. If this flag is set, the property should also be
 // added to the switch statements in AnimatedStyleBuilder, CSSPropertyEquality,
 // and CSSAnimatableValueFactory.
@@ -81,17 +81,17 @@
 
 // High Priority and all other font properties.
 // Other properties can depend upon high priority properties (e.g. font-size / ems)
-color animatable, inherited, custom_all
+color interpolable, inherited, custom_all
 direction inherited, custom_value
 font-family inherited, font, type_name=FontDescription::FamilyDescription, name_for_methods=FamilyDescription, converter=convertFontFamily
 font-kerning inherited, font, type_name=FontDescription::Kerning, name_for_methods=Kerning
-font-size animatable, inherited, font, name_for_methods=Size, converter=convertFontSize
-font-size-adjust runtime_flag=CSSFontSizeAdjust, animatable, inherited, font, name_for_methods=SizeAdjust, converter=convertFontSizeAdjust
+font-size interpolable, inherited, font, name_for_methods=Size, converter=convertFontSize
+font-size-adjust runtime_flag=CSSFontSizeAdjust, interpolable, inherited, font, name_for_methods=SizeAdjust, converter=convertFontSizeAdjust
 font-stretch inherited, font, type_name=FontStretch, name_for_methods=Stretch
 font-style inherited, font, type_name=FontStyle, name_for_methods=Style
 font-variant inherited, font, type_name=FontVariant, name_for_methods=Variant
 font-variant-ligatures inherited, font, name_for_methods=VariantLigatures, converter=convertFontVariantLigatures
-font-weight animatable, inherited, font, type_name=FontWeight, name_for_methods=Weight, converter=convertFontWeight
+font-weight interpolable, inherited, font, type_name=FontWeight, name_for_methods=Weight, converter=convertFontWeight
 -webkit-font-feature-settings inherited, font, name_for_methods=FeatureSettings, converter=convertFontFeatureSettings
 -webkit-font-smoothing inherited, font, type_name=FontSmoothingMode
 -webkit-locale inherited, custom_value
@@ -116,44 +116,44 @@ backface-visibility
 background-attachment custom_all
 background-blend-mode custom_all
 background-clip custom_all
-background-color animatable, custom_all
-background-image animatable, custom_all
+background-color interpolable, custom_all
+background-image interpolable, custom_all
 background-origin custom_all
-background-position-x animatable, custom_all
-background-position-y animatable, custom_all
+background-position-x interpolable, custom_all
+background-position-y interpolable, custom_all
 background-repeat-x custom_all
 background-repeat-y custom_all
-background-size animatable, custom_all
-baseline-shift animatable, svg, custom_inherit, custom_value
-border-bottom-color animatable, custom_all
-border-bottom-left-radius animatable, initial=initialBorderRadius, converter=convertRadius
-border-bottom-right-radius animatable, initial=initialBorderRadius, converter=convertRadius
+background-size interpolable, custom_all
+baseline-shift interpolable, svg, custom_inherit, custom_value
+border-bottom-color interpolable, custom_all
+border-bottom-left-radius interpolable, initial=initialBorderRadius, converter=convertRadius
+border-bottom-right-radius interpolable, initial=initialBorderRadius, converter=convertRadius
 border-bottom-style type_name=EBorderStyle, initial=initialBorderStyle
-border-bottom-width animatable, initial=initialBorderWidth, converter=convertLineWidth<unsigned>
+border-bottom-width interpolable, initial=initialBorderWidth, converter=convertLineWidth<unsigned>
 border-collapse inherited
-border-image-outset animatable, custom_all
+border-image-outset interpolable, custom_all
 border-image-repeat custom_all
-border-image-slice animatable, custom_all
-border-image-source animatable, custom_value
-border-image-width animatable, custom_all
-border-left-color animatable, custom_all
+border-image-slice interpolable, custom_all
+border-image-source interpolable, custom_value
+border-image-width interpolable, custom_all
+border-left-color interpolable, custom_all
 border-left-style type_name=EBorderStyle, initial=initialBorderStyle
-border-left-width animatable, initial=initialBorderWidth, converter=convertLineWidth<unsigned>
-border-right-color animatable, custom_all
+border-left-width interpolable, initial=initialBorderWidth, converter=convertLineWidth<unsigned>
+border-right-color interpolable, custom_all
 border-right-style type_name=EBorderStyle, initial=initialBorderStyle
-border-right-width animatable, initial=initialBorderWidth, converter=convertLineWidth<unsigned>
-border-top-color animatable, custom_all
-border-top-left-radius animatable, initial=initialBorderRadius, converter=convertRadius
-border-top-right-radius animatable, initial=initialBorderRadius, converter=convertRadius
+border-right-width interpolable, initial=initialBorderWidth, converter=convertLineWidth<unsigned>
+border-top-color interpolable, custom_all
+border-top-left-radius interpolable, initial=initialBorderRadius, converter=convertRadius
+border-top-right-radius interpolable, initial=initialBorderRadius, converter=convertRadius
 border-top-style type_name=EBorderStyle, initial=initialBorderStyle
-border-top-width animatable, initial=initialBorderWidth, converter=convertLineWidth<unsigned>
-bottom animatable, initial=initialOffset, converter=convertLengthOrAuto
-box-shadow animatable, converter=convertShadow
+border-top-width interpolable, initial=initialBorderWidth, converter=convertLineWidth<unsigned>
+bottom interpolable, initial=initialOffset, converter=convertLengthOrAuto
+box-shadow interpolable, converter=convertShadow
 box-sizing
 buffered-rendering svg
 caption-side inherited
 clear
-clip animatable, converter=convertClip, custom_all
+clip interpolable, converter=convertClip, custom_all
 clip-path svg, name_for_methods=ClipperResource, converter=convertFragmentIdentifier
 clip-rule inherited, svg, type_name=WindRule
 color-interpolation inherited, svg
@@ -164,23 +164,23 @@ content custom_all
 counter-increment custom_all
 counter-reset custom_all
 cursor inherited, custom_all
-cx animatable, svg, converter=convertLength
-cy animatable, svg, converter=convertLength
+cx interpolable, svg, converter=convertLength
+cy interpolable, svg, converter=convertLength
 display
 dominant-baseline svg
 empty-cells inherited, type_name=EEmptyCell
-fill animatable, inherited, svg, setter=setFillPaint, custom_all
-fill-opacity animatable, inherited, svg, converter=convertNumberOrPercentage
+fill interpolable, inherited, svg, setter=setFillPaint, custom_all
+fill-opacity interpolable, inherited, svg, converter=convertNumberOrPercentage
 fill-rule inherited, svg, type_name=WindRule
 filter svg, name_for_methods=FilterResource, converter=convertFragmentIdentifier
-flex-basis animatable, converter=convertLengthOrAuto
+flex-basis interpolable, converter=convertLengthOrAuto
 flex-direction
-flex-grow animatable, type_name=float
-flex-shrink animatable, type_name=float
+flex-grow interpolable, type_name=float
+flex-shrink interpolable, type_name=float
 flex-wrap
 float type_name=EFloat, name_for_methods=Floating
-flood-color animatable, svg, converter=convertSVGColor
-flood-opacity animatable, svg, converter=convertNumberOrPercentage
+flood-color interpolable, svg, converter=convertSVGColor
+flood-opacity interpolable, svg, converter=convertNumberOrPercentage
 glyph-orientation-horizontal inherited, svg, converter=convertGlyphOrientation
 glyph-orientation-vertical inherited, svg, custom_value
 grid-auto-columns runtime_flag=CSSGridLayout, converter=convertGridTrackSize
@@ -193,67 +193,67 @@ grid-row-start runtime_flag=CSSGridLayout, converter=convertGridPosition
 grid-template-areas runtime_flag=CSSGridLayout, custom_all
 grid-template-columns runtime_flag=CSSGridLayout, custom_all
 grid-template-rows runtime_flag=CSSGridLayout, custom_all
-height animatable, initial=initialSize, converter=convertLengthSizing
+height interpolable, initial=initialSize, converter=convertLengthSizing
 image-rendering inherited
 isolation runtime_flag=CSSCompositing
 justify-content initial=initialContentAlignment, converter=convertContentAlignmentData
 justify-items runtime_flag=CSSGridLayout, initial=initialSelfAlignment, converter=convertSelfOrDefaultAlignmentData
 justify-self runtime_flag=CSSGridLayout, initial=initialSelfAlignment, converter=convertSelfOrDefaultAlignmentData
-left animatable, initial=initialOffset, converter=convertLengthOrAuto
-letter-spacing animatable, inherited, initial=initialLetterWordSpacing, converter=convertSpacing
-lighting-color animatable, svg, converter=convertSVGColor
-line-height animatable, inherited, getter=specifiedLineHeight, converter=convertLineHeight
-list-style-image animatable, inherited, custom_value
+left interpolable, initial=initialOffset, converter=convertLengthOrAuto
+letter-spacing interpolable, inherited, initial=initialLetterWordSpacing, converter=convertSpacing
+lighting-color interpolable, svg, converter=convertSVGColor
+line-height interpolable, inherited, getter=specifiedLineHeight, converter=convertLineHeight
+list-style-image interpolable, inherited, custom_value
 list-style-position inherited
 list-style-type inherited
-margin-bottom animatable, initial=initialMargin, converter=convertQuirkyLength
-margin-left animatable, initial=initialMargin, converter=convertQuirkyLength
-margin-right animatable, initial=initialMargin, converter=convertQuirkyLength
-margin-top animatable, initial=initialMargin, converter=convertQuirkyLength
+margin-bottom interpolable, initial=initialMargin, converter=convertQuirkyLength
+margin-left interpolable, initial=initialMargin, converter=convertQuirkyLength
+margin-right interpolable, initial=initialMargin, converter=convertQuirkyLength
+margin-top interpolable, initial=initialMargin, converter=convertQuirkyLength
 marker-end inherited, svg, name_for_methods=MarkerEndResource, converter=convertFragmentIdentifier
 marker-mid inherited, svg, name_for_methods=MarkerMidResource, converter=convertFragmentIdentifier
 marker-start inherited, svg, name_for_methods=MarkerStartResource, converter=convertFragmentIdentifier
 mask svg, name_for_methods=MaskerResource, converter=convertFragmentIdentifier
 mask-source-type runtime_flag=CSSMaskSourceType, custom_all
 mask-type svg
-max-height animatable, initial=initialMaxSize, converter=convertLengthMaxSizing
-max-width animatable, initial=initialMaxSize, converter=convertLengthMaxSizing
-min-height animatable, initial=initialMinSize, converter=convertLengthSizing
-min-width animatable, initial=initialMinSize, converter=convertLengthSizing
+max-height interpolable, initial=initialMaxSize, converter=convertLengthMaxSizing
+max-width interpolable, initial=initialMaxSize, converter=convertLengthMaxSizing
+min-height interpolable, initial=initialMinSize, converter=convertLengthSizing
+min-width interpolable, initial=initialMinSize, converter=convertLengthSizing
 mix-blend-mode runtime_flag=CSSCompositing, type_name=blink::WebBlendMode, name_for_methods=BlendMode
-motion-offset runtime_flag=CSSMotionPath, animatable, converter=convertLength
+motion-offset runtime_flag=CSSMotionPath, interpolable, converter=convertLength
 motion-path runtime_flag=CSSMotionPath, custom_all
-motion-rotation runtime_flag=CSSMotionPath, animatable, custom_all
+motion-rotation runtime_flag=CSSMotionPath, interpolable, custom_all
 object-fit type_name=ObjectFit
-object-position animatable, converter=convertPosition
-opacity animatable, type_name=float
+object-position interpolable, converter=convertPosition
+opacity interpolable, type_name=float
 order type_name=int
-orphans animatable, inherited, type_name=short, custom_all
-outline-color animatable, custom_all
-outline-offset animatable, converter=convertComputedLength<int>
+orphans interpolable, inherited, type_name=short, custom_all
+outline-color interpolable, custom_all
+outline-offset interpolable, converter=convertComputedLength<int>
 outline-style custom_all
-outline-width animatable, converter=convertLineWidth<unsigned short>
+outline-width interpolable, converter=convertLineWidth<unsigned short>
 overflow-wrap inherited
 overflow-x type_name=EOverflow
 overflow-y type_name=EOverflow
-padding-bottom animatable, initial=initialPadding, converter=convertLength
-padding-left animatable, initial=initialPadding, converter=convertLength
-padding-right animatable, initial=initialPadding, converter=convertLength
-padding-top animatable, initial=initialPadding, converter=convertLength
+padding-bottom interpolable, initial=initialPadding, converter=convertLength
+padding-left interpolable, initial=initialPadding, converter=convertLength
+padding-right interpolable, initial=initialPadding, converter=convertLength
+padding-top interpolable, initial=initialPadding, converter=convertLength
 page-break-after type_name=EPageBreak, initial=initialPageBreak
 page-break-before type_name=EPageBreak, initial=initialPageBreak
 page-break-inside type_name=EPageBreak, initial=initialPageBreak
 paint-order inherited, svg, converter=convertPaintOrder
-perspective animatable, converter=convertPerspective
-perspective-origin animatable, converter=convertPerspectiveOrigin
+perspective interpolable, converter=convertPerspective
+perspective-origin interpolable, converter=convertPerspectiveOrigin
 pointer-events inherited
 position
 quotes inherited, converter=convertQuotes
 resize custom_value
-right animatable, initial=initialOffset, converter=convertLengthOrAuto
-r animatable, svg, converter=convertLength
-rx animatable, svg, converter=convertLength
-ry animatable, svg, converter=convertLength
+right interpolable, initial=initialOffset, converter=convertLengthOrAuto
+r interpolable, svg, converter=convertLength
+rx interpolable, svg, converter=convertLength
+ry interpolable, svg, converter=convertLength
 scroll-behavior runtime_flag=CSSOMSmoothScroll, type_name=ScrollBehavior
 scroll-blocks-on runtime_flag=CSSScrollBlocksOn, converter=convertFlags<WebScrollBlocksOn>
 scroll-snap-type runtime_flag=CSSScrollSnapPoints, type_name=ScrollSnapType
@@ -261,22 +261,22 @@ scroll-snap-points-x runtime_flag=CSSScrollSnapPoints, converter=convertSnapPoin
 scroll-snap-points-y runtime_flag=CSSScrollSnapPoints, converter=convertSnapPoints
 scroll-snap-destination runtime_flag=CSSScrollSnapPoints, converter=convertPosition
 scroll-snap-coordinate runtime_flag=CSSScrollSnapPoints, converter=convertSnapCoordinates
-shape-image-threshold animatable, type_name=float
-shape-margin animatable, converter=convertLength
-shape-outside animatable, converter=convertShapeValue
+shape-image-threshold interpolable, type_name=float
+shape-margin interpolable, converter=convertLength
+shape-outside interpolable, converter=convertShapeValue
 shape-rendering inherited, svg
 size custom_all
 speak inherited
-stop-color animatable, svg, converter=convertSVGColor
-stop-opacity animatable, svg, converter=convertNumberOrPercentage
-stroke animatable, inherited, svg, setter=setStrokePaint, custom_all
-stroke-dasharray animatable, inherited, svg, name_for_methods=StrokeDashArray, converter=convertStrokeDasharray
-stroke-dashoffset animatable, inherited, svg, name_for_methods=StrokeDashOffset, converter=convertLength
+stop-color interpolable, svg, converter=convertSVGColor
+stop-opacity interpolable, svg, converter=convertNumberOrPercentage
+stroke interpolable, inherited, svg, setter=setStrokePaint, custom_all
+stroke-dasharray interpolable, inherited, svg, name_for_methods=StrokeDashArray, converter=convertStrokeDasharray
+stroke-dashoffset interpolable, inherited, svg, name_for_methods=StrokeDashOffset, converter=convertLength
 stroke-linecap svg, inherited, type_name=LineCap, name_for_methods=CapStyle
 stroke-linejoin svg, inherited, type_name=LineJoin, name_for_methods=JoinStyle
-stroke-miterlimit animatable, inherited, svg, type_name=float, name_for_methods=StrokeMiterLimit
-stroke-opacity animatable, inherited, svg, converter=convertNumberOrPercentage
-stroke-width animatable, inherited, svg, converter=convertUnzoomedLength
+stroke-miterlimit interpolable, inherited, svg, type_name=float, name_for_methods=StrokeMiterLimit
+stroke-opacity interpolable, inherited, svg, converter=convertNumberOrPercentage
+stroke-width interpolable, inherited, svg, converter=convertUnzoomedLength
 table-layout
 tab-size inherited, converter=convertLengthOrTabSpaces
 text-align inherited, custom_value
@@ -284,41 +284,41 @@ text-align-last runtime_flag=CSS3Text, inherited, type_name=TextAlignLast
 text-anchor inherited, svg
 // FIXME: We shouldn't switch between shorthand/not shorthand based on a runtime flag
 text-decoration use_handlers_for=CSSPropertyTextDecorationLine, longhands=text-decoration-line;text-decoration-style;text-decoration-color
-text-decoration-color runtime_flag=CSS3TextDecorations, animatable, custom_all
+text-decoration-color runtime_flag=CSS3TextDecorations, interpolable, custom_all
 text-decoration-line runtime_flag=CSS3TextDecorations, name_for_methods=TextDecoration, converter=convertFlags<TextDecoration>
 text-decoration-style runtime_flag=CSS3TextDecorations, type_name=TextDecorationStyle
-text-indent animatable, inherited, custom_all
+text-indent interpolable, inherited, custom_all
 text-justify runtime_flag=CSS3Text, inherited, type_name=TextJustify
 text-overflow type_name=TextOverflow
-text-shadow animatable, inherited, converter=convertShadow
+text-shadow interpolable, inherited, converter=convertShadow
 text-transform inherited
 text-underline-position runtime_flag=CSS3TextDecorations, inherited, type_name=TextUnderlinePosition
-top animatable, initial=initialOffset, converter=convertLengthOrAuto
+top interpolable, initial=initialOffset, converter=convertLengthOrAuto
 touch-action converter=convertFlags<TouchAction>
-transform animatable, custom_value
-transform-origin animatable, converter=convertTransformOrigin
+transform interpolable, custom_value
+transform-origin interpolable, converter=convertTransformOrigin
 transform-style name_for_methods=TransformStyle3D
-translate runtime_flag=CSSIndependentTransformProperties, converter=convertTranslate, animatable
-rotate runtime_flag=CSSIndependentTransformProperties, converter=convertRotate, animatable
-scale runtime_flag=CSSIndependentTransformProperties, converter=convertScale, animatable
+translate runtime_flag=CSSIndependentTransformProperties, converter=convertTranslate, interpolable
+rotate runtime_flag=CSSIndependentTransformProperties, converter=convertRotate, interpolable
+scale runtime_flag=CSSIndependentTransformProperties, converter=convertScale, interpolable
 transition-delay custom_all
 transition-duration custom_all
 transition-property custom_all
 transition-timing-function custom_all
 unicode-bidi
 vector-effect svg
-vertical-align animatable, custom_inherit, custom_value
-visibility animatable, inherited
-x animatable, svg, converter=convertLength
-y animatable, svg, converter=convertLength
+vertical-align interpolable, custom_inherit, custom_value
+visibility interpolable, inherited
+x interpolable, svg, converter=convertLength
+y interpolable, svg, converter=convertLength
 -webkit-appearance type_name=ControlPart
 -webkit-app-region custom_all
 -webkit-background-clip use_handlers_for=CSSPropertyBackgroundClip
 -webkit-background-composite custom_all
 -webkit-background-origin use_handlers_for=CSSPropertyBackgroundOrigin
--webkit-border-horizontal-spacing animatable, inherited, name_for_methods=HorizontalBorderSpacing, converter=convertComputedLength<short>
+-webkit-border-horizontal-spacing interpolable, inherited, name_for_methods=HorizontalBorderSpacing, converter=convertComputedLength<short>
 -webkit-border-image initial=initialNinePieceImage, custom_value
--webkit-border-vertical-spacing animatable, inherited, name_for_methods=VerticalBorderSpacing, converter=convertComputedLength<short>
+-webkit-border-vertical-spacing interpolable, inherited, name_for_methods=VerticalBorderSpacing, converter=convertComputedLength<short>
 -webkit-box-align type_name=EBoxAlignment
 -webkit-box-decoration-break
 -webkit-box-direction inherited
@@ -329,18 +329,18 @@ y animatable, svg, converter=convertLength
 -webkit-box-orient
 -webkit-box-pack
 -webkit-box-reflect converter=convertBoxReflect
--webkit-clip-path animatable, custom_value
+-webkit-clip-path interpolable, custom_value
 -webkit-column-break-after type_name=EPageBreak, initial=initialPageBreak
 -webkit-column-break-before type_name=EPageBreak, initial=initialPageBreak
 -webkit-column-break-inside type_name=EPageBreak, initial=initialPageBreak
--webkit-column-count animatable, type_name=unsigned short, custom_all
--webkit-column-gap animatable, converter=convertComputedLength<float>, custom_all
--webkit-column-rule-color animatable, custom_all
+-webkit-column-count interpolable, type_name=unsigned short, custom_all
+-webkit-column-gap interpolable, converter=convertComputedLength<float>, custom_all
+-webkit-column-rule-color interpolable, custom_all
 -webkit-column-rule-style type_name=EBorderStyle, initial=initialBorderStyle
--webkit-column-rule-width animatable, converter=convertLineWidth<unsigned short>
+-webkit-column-rule-width interpolable, converter=convertLineWidth<unsigned short>
 -webkit-column-span type_name=ColumnSpan
--webkit-column-width animatable, converter=convertComputedLength<float>, custom_all
--webkit-filter animatable, custom_value
+-webkit-column-width interpolable, converter=convertComputedLength<float>, custom_all
+-webkit-filter interpolable, custom_value
 -webkit-highlight inherited, converter=convertString<CSSValueNone>
 -webkit-hyphenate-character inherited, name_for_methods=HyphenationString, converter=convertString<CSSValueAuto>
 -webkit-line-box-contain inherited, converter=convertLineBoxContain
@@ -350,22 +350,22 @@ y animatable, svg, converter=convertLength
 -webkit-margin-before-collapse type_name=EMarginCollapse
 -webkit-margin-bottom-collapse type_name=EMarginCollapse, name_for_methods=MarginAfterCollapse
 -webkit-margin-top-collapse type_name=EMarginCollapse, name_for_methods=MarginBeforeCollapse
--webkit-mask-box-image-outset animatable, custom_all
+-webkit-mask-box-image-outset interpolable, custom_all
 -webkit-mask-box-image-repeat custom_all
--webkit-mask-box-image-slice animatable, custom_all
--webkit-mask-box-image-source animatable, custom_value
--webkit-mask-box-image-width animatable, custom_all
+-webkit-mask-box-image-slice interpolable, custom_all
+-webkit-mask-box-image-source interpolable, custom_value
+-webkit-mask-box-image-width interpolable, custom_all
 -webkit-mask-clip custom_all
 -webkit-mask-composite custom_all
--webkit-mask-image animatable, custom_all
+-webkit-mask-image interpolable, custom_all
 -webkit-mask-origin custom_all
--webkit-mask-position-x animatable, custom_all
--webkit-mask-position-y animatable, custom_all
+-webkit-mask-position-x interpolable, custom_all
+-webkit-mask-position-y interpolable, custom_all
 -webkit-mask-repeat-x custom_all
 -webkit-mask-repeat-y custom_all
--webkit-mask-size animatable, custom_all
--webkit-perspective-origin-x animatable, converter=convertLength
--webkit-perspective-origin-y animatable, converter=convertLength
+-webkit-mask-size interpolable, custom_all
+-webkit-perspective-origin-x interpolable, converter=convertLength
+-webkit-perspective-origin-y interpolable, converter=convertLength
 -webkit-print-color-adjust inherited, type_name=PrintColorAdjust
 -webkit-rtl-ordering inherited, type_name=Order, setter=setRTLOrdering, initial=initialRTLOrdering
 -webkit-ruby-position inherited, type_name=RubyPosition
@@ -376,24 +376,24 @@ y animatable, svg, converter=convertLength
 -webkit-text-emphasis-style inherited, custom_all
 -webkit-text-fill-color inherited, custom_all
 -webkit-text-security inherited
--webkit-text-stroke-color animatable, inherited, custom_all
+-webkit-text-stroke-color interpolable, inherited, custom_all
 -webkit-text-stroke-width inherited, converter=convertTextStrokeWidth
--webkit-transform-origin-x animatable, converter=convertLength
--webkit-transform-origin-y animatable, converter=convertLength
--webkit-transform-origin-z animatable, converter=convertComputedLength<float>
+-webkit-transform-origin-x interpolable, converter=convertLength
+-webkit-transform-origin-y interpolable, converter=convertLength
+-webkit-transform-origin-z interpolable, converter=convertComputedLength<float>
 -webkit-user-drag
 -webkit-user-modify inherited
 -webkit-user-select inherited
 white-space inherited
-widows animatable, inherited, type_name=short, custom_all
-width animatable, initial=initialSize, converter=convertLengthSizing
+widows interpolable, inherited, type_name=short, custom_all
+width interpolable, initial=initialSize, converter=convertLengthSizing
 will-change custom_all
 word-break inherited
-word-spacing animatable, inherited, initial=initialLetterWordSpacing, converter=convertSpacing
+word-spacing interpolable, inherited, initial=initialLetterWordSpacing, converter=convertSpacing
 // UAs must treat 'word-wrap' as an alternate name for the 'overflow-wrap' property. So using the same handlers.
 word-wrap inherited, name_for_methods=OverflowWrap
 writing-mode inherited, svg, type_name=SVGWritingMode
-z-index animatable, type_name=int, custom_all
+z-index interpolable, type_name=int, custom_all
 
 // Non-standard direction aware properties
 

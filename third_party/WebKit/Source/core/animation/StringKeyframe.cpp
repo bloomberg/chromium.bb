@@ -55,14 +55,14 @@ StringKeyframe::StringKeyframe(const StringKeyframe& copyFrom)
 void StringKeyframe::setPropertyValue(CSSPropertyID property, const String& value, Element* element, StyleSheetContents* styleSheetContents)
 {
     ASSERT(property != CSSPropertyInvalid);
-    if (CSSAnimations::isAllowedAnimation(property))
+    if (CSSAnimations::isAnimatableProperty(property))
         m_propertySet->setProperty(property, value, false, styleSheetContents);
 }
 
 void StringKeyframe::setPropertyValue(CSSPropertyID property, PassRefPtrWillBeRawPtr<CSSValue> value)
 {
     ASSERT(property != CSSPropertyInvalid);
-    ASSERT(CSSAnimations::isAllowedAnimation(property));
+    ASSERT(CSSAnimations::isAnimatableProperty(property));
     m_propertySet->setProperty(property, value, false);
 }
 
@@ -161,8 +161,8 @@ const Vector<const InterpolationType*>* applicableTypesForProperty(CSSPropertyID
     if (entry != applicableTypesMap.end())
         return entry->value;
 
-    // TODO(alancutter): Support all animatable CSS properties here so we can stop falling back to the old StyleInterpolation implementation.
-    if (CSSPropertyMetadata::isAnimatableProperty(property))
+    // TODO(alancutter): Support all interpolable CSS properties here so we can stop falling back to the old StyleInterpolation implementation.
+    if (CSSPropertyMetadata::isInterpolableProperty(property))
         return nullptr;
 
     auto applicableTypes = new Vector<const InterpolationType*>();
@@ -197,7 +197,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyfram
 
     ASSERT(fromCSSValue && toCSSValue);
 
-    if (!CSSPropertyMetadata::isAnimatableProperty(property)) {
+    if (!CSSPropertyMetadata::isInterpolableProperty(property)) {
         if (fromCSSValue == toCSSValue)
             return ConstantStyleInterpolation::create(fromCSSValue, property);
 

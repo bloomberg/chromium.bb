@@ -12,7 +12,7 @@ namespace blink {
 class CSSPropertyMetadata {
 public:
     static bool isEnabledProperty(CSSPropertyID);
-    static bool isAnimatableProperty(CSSPropertyID);
+    static bool isInterpolableProperty(CSSPropertyID);
     static bool isInheritedProperty(CSSPropertyID);
 
     static void filterEnabledCSSPropertiesIntoVector(const CSSPropertyID*, size_t length, Vector<CSSPropertyID>&);

@@ -100,7 +100,9 @@ static PassRefPtrWillBeRawPtr<StringKeyframeEffectModel> createKeyframeEffectMod
                     timingFunction = CSSTimingData::initialTimingFunction();
                 }
                 keyframe->setEasing(timingFunction.release());
-            } else if (CSSPropertyMetadata::isAnimatableProperty(property)) {
+            } else if (CSSPropertyMetadata::isInterpolableProperty(property)) {
+                // TODO(alancutter): We should allow animation of non-interpolable properties as well.
+                // https://lists.w3.org/Archives/Public/www-style/2012Nov/0261.html
                 keyframe->setPropertyValue(property, properties.propertyAt(j).value());
             }
         }
@@ -551,7 +553,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
                 CSSPropertyID id = propertyList.length() ? propertyList.properties()[j] : property;
 
                 if (!animateAll) {
-                    if (CSSPropertyMetadata::isAnimatableProperty(id))
+                    if (CSSPropertyMetadata::isInterpolableProperty(id))
                         listedProperties.set(id);
                     else
                         continue;
@@ -751,7 +753,7 @@ const StylePropertyShorthand& CSSAnimations::propertiesForTransitionAll()
                 || id == CSSPropertyWebkitTransformOriginY
                 || id == CSSPropertyWebkitTransformOriginZ)
                 continue;
-            if (CSSPropertyMetadata::isAnimatableProperty(id))
+            if (CSSPropertyMetadata::isInterpolableProperty(id))
                 properties.append(id);
         }
         propertyShorthand = StylePropertyShorthand(CSSPropertyInvalid, properties.begin(), properties.size());
@@ -759,9 +761,9 @@ const StylePropertyShorthand& CSSAnimations::propertiesForTransitionAll()
     return propertyShorthand;
 }
 
-// KeyframeEffect properties are not allowed to be affected by Web Animations.
-// http://dev.w3.org/fxtf/web-animations/#not-animatable
-bool CSSAnimations::isAllowedAnimation(CSSPropertyID property)
+// Properties that affect animations are not allowed to be affected by animations.
+// http://w3c.github.io/web-animations/#not-animatable-section
+bool CSSAnimations::isAnimatableProperty(CSSPropertyID property)
 {
     switch (property) {
     case CSSPropertyAnimation:
