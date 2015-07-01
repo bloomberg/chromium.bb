@@ -2529,6 +2529,9 @@
             'browser/ui/tests/ui_gfx_image_unittest.cc',
             'renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc',
             'tools/convert_dict/convert_dict_unittest.cc',
+            # This tests the function GetSpellCheckLanguages which is not used
+            # on Mac.
+            'browser/spellchecker/spellcheck_service_unittest.cc',
           ],
           # TODO(mark): We really want this for all non-static library targets,
           # but when we tried to pull it up to the common.gypi level, it broke

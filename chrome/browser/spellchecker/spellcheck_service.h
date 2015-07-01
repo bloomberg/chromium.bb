@@ -23,6 +23,7 @@ class SpellCheckHostMetrics;
 
 namespace base {
 class WaitableEvent;
+class SupportsUserData;
 }
 
 namespace content {
@@ -68,15 +69,8 @@ class SpellcheckService : public KeyedService,
   // returns the index of the current spell check language in the vector.
   // TODO(port): this should take a vector of base::string16, but the
   // implementation has some dependencies in l10n util that need porting first.
-  static int GetSpellCheckLanguages(content::BrowserContext* context,
+  static int GetSpellCheckLanguages(base::SupportsUserData* context,
                                     std::vector<std::string>* languages);
-
-  // Computes a vector of strings which are to be displayed in the context
-  // menu from |accept_languages| and |dictionary_language|.
-  static void GetSpellCheckLanguagesFromAcceptLanguages(
-      const std::vector<std::string>& accept_languages,
-      const std::string& dictionary_language,
-      std::vector<std::string>* languages);
 
   // Signals the event attached by AttachTestEvent() to report the specified
   // event to browser tests. This function is called by this class and its

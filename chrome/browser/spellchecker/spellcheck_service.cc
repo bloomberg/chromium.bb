@@ -113,7 +113,7 @@ base::WeakPtr<SpellcheckService> SpellcheckService::GetWeakPtr() {
 
 // static
 int SpellcheckService::GetSpellCheckLanguages(
-    content::BrowserContext* context,
+    base::SupportsUserData* context,
     std::vector<std::string>* languages) {
   PrefService* prefs = user_prefs::UserPrefs::Get(context);
   StringPrefMember accept_languages_pref;
@@ -136,22 +136,6 @@ int SpellcheckService::GetSpellCheckLanguages(
   base::SplitString(accept_languages_pref.GetValue(), ',', &accept_languages);
 #endif  // !OS_MACOSX
 
-  GetSpellCheckLanguagesFromAcceptLanguages(
-      accept_languages, dictionary_language, languages);
-
-  for (size_t i = 0; i < languages->size(); ++i) {
-    if ((*languages)[i] == dictionary_language)
-      return i;
-  }
-  return -1;
-}
-
-// static
-void SpellcheckService::GetSpellCheckLanguagesFromAcceptLanguages(
-    const std::vector<std::string>& accept_languages,
-    const std::string& dictionary_language,
-    std::vector<std::string>* languages) {
-  // The current dictionary language should be there.
   languages->push_back(dictionary_language);
 
   for (std::vector<std::string>::const_iterator i = accept_languages.begin();
@@ -160,10 +144,17 @@ void SpellcheckService::GetSpellCheckLanguagesFromAcceptLanguages(
         chrome::spellcheck_common::GetCorrespondingSpellCheckLanguage(*i);
     if (!language.empty() &&
         std::find(languages->begin(), languages->end(), language) ==
-        languages->end()) {
+            languages->end()) {
       languages->push_back(language);
     }
   }
+
+  for (size_t i = 0; i < languages->size(); ++i) {
+    if ((*languages)[i] == dictionary_language)
+      return i;
+  }
+
+  return -1;
 }
 
 // static
