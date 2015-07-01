@@ -75,11 +75,11 @@ def main():
     try:
       device.Install(apk, reinstall=args.keep_data)
     except device_errors.CommandFailedError:
-      logging.exception('Failed to install %s', args.apk)
+      logging.exception('Failed to install %s', args.apk_name)
       device_blacklist.ExtendBlacklist([str(device)])
       logging.warning('Blacklisting %s', str(device))
     except device_errors.CommandTimeoutError:
-      logging.exception('Timed out while installing %s', args.apk)
+      logging.exception('Timed out while installing %s', args.apk_name)
       device_blacklist.ExtendBlacklist([str(device)])
       logging.warning('Blacklisting %s', str(device))
 
