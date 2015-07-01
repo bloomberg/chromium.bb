@@ -27,11 +27,30 @@ var audioPlayerCreateOptions = {
   width: 292
 };
 
+function AudioPlayerBackground() {
+  BackgroundBase.call(this);
+};
+
+AudioPlayerBackground.prototype.__proto__ = BackgroundBase.prototype;
+
+/**
+ * Called when an app is restarted.
+ */
+AudioPlayerBackground.prototype.onRestarted_ = function() {
+  audioPlayer.reopen(function() {
+    // If the audioPlayer is reopened, change its window's icon. Otherwise
+    // there is no reopened window so just skip the call of setIcon.
+    if (audioPlayer.rawAppWindow)
+      audioPlayer.setIcon(AUDIO_PLAYER_ICON);
+  });
+}
+
+
 /**
  * Backgound object. This is necessary for AppWindowWrapper.
  * @type {BackgroundBase}
  */
-var background = new BackgroundBase();
+var background = new AudioPlayerBackground();
 
 /**
  * Wrapper of audio player window.
@@ -41,88 +60,23 @@ var audioPlayer = new SingletonAppWindowWrapper(AUDIO_PLAYER_APP_URL,
                                                 audioPlayerCreateOptions);
 
 /**
- * Queue to serialize initialization.
- * @type {AsyncUtil.Queue}
- */
-var initializeQueue = new AsyncUtil.Queue();
-
-// Initializes the strings. This needs for the volume manager.
-initializeQueue.run(function(fulfill) {
-  chrome.fileManagerPrivate.getStrings(function(stringData) {
-    loadTimeData.data = stringData;
-    fulfill();
-  });
-});
-
-// Initializes the volume manager. This needs for isolated entries.
-initializeQueue.run(function(fulfill) {
-  VolumeManager.getInstance(fulfill);
-});
-
-// Registers the handlers.
-chrome.app.runtime.onLaunched.addListener(onLaunched);
-chrome.app.runtime.onRestarted.addListener(onRestarted);
-
-/**
- * Called when an app is launched.
- * @param {Object} launchData Launch data.
- */
-function onLaunched(launchData) {
-  if (!launchData || !launchData.items || launchData.items.length == 0)
-    return;
-
-  var playlist = {};
-
-  initializeQueue.run(function(fulfill) {
-    var isolatedEntries = launchData.items.map(function(item) {
-      return item.entry;
-    });
-
-    chrome.fileManagerPrivate.resolveIsolatedEntries(isolatedEntries,
-        function(externalEntries) {
-          var urls = util.entriesToURLs(externalEntries);
-          playlist = {items: urls, position: 0};
-          fulfill();
-        });
-  });
-
-  initializeQueue.run(function(fulfill) {
-    open(playlist, false);
-    fulfill();
-  });
-}
-
-/**
- * Called when an app is restarted.
- */
-function onRestarted() {
-  audioPlayer.reopen(function() {
-    // If the audioPlayer is reopened, change its window's icon. Otherwise
-    // there is no reopened window so just skip the call of setIcon.
-    if (audioPlayer.rawAppWindow)
-      audioPlayer.setIcon(AUDIO_PLAYER_ICON);
-  });
-}
-
-/**
  * Opens player window.
  * @param {Object} playlist List of audios to play and index to start playing.
  * @param {boolean} reopen
  * @return {Promise} Promise to be fulfilled on success, or rejected on error.
  */
-function open(playlist, reopen) {
-  var items = playlist.items;
-  var position = playlist.position;
-  var startUrl = (position < items.length) ? items[position] : '';
+function open(urls) {
+  var position = 0;
+  var startUrl = (position < urls.length) ? urls[position] : '';
 
   return new Promise(function(fulfill, reject) {
-    if (items.length === 0) {
+    if (urls.length === 0) {
       reject('No file to open.');
       return;
     }
 
     // Gets the current list of the children of the parent.
-    window.webkitResolveLocalFileSystemURL(items[0], function(fileEntry) {
+    window.webkitResolveLocalFileSystemURL(urls[0], function(fileEntry) {
       fileEntry.getParent(function(parentEntry) {
         var dirReader = parentEntry.createReader();
         var entries = [];
@@ -156,7 +110,7 @@ function open(playlist, reopen) {
     return new Promise(function(fulfill, reject) {
       var urls = util.entriesToURLs(audioEntries);
       audioPlayer.launch({items: urls, position: position},
-                         reopen,
+                         false,
                          fulfill.bind(null, null));
     });
   }).then(function() {
@@ -168,3 +122,5 @@ function open(playlist, reopen) {
     return Promise.reject(error);
   });
 }
+
+background.setLaunchHandler(open);

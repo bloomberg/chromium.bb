@@ -28,56 +28,6 @@ var windowCreateOptions = {
  */
 var background = new BackgroundBase();
 
-/**
- * Queue to serialize initialization.
- * @type {AsyncUtil.Queue}
- */
-var initializeQueue = new AsyncUtil.Queue();
-
-// Initializes the strings. This needs for the volume manager.
-initializeQueue.run(function(fulfill) {
-  chrome.fileManagerPrivate.getStrings(function(stringData) {
-    loadTimeData.data = stringData;
-    fulfill();
-  }.wrap());
-}.wrap());
-
-// Initializes the volume manager. This needs for isolated entries.
-initializeQueue.run(function(fulfill) {
-  VolumeManager.getInstance(fulfill);
-}.wrap());
-
-// Registers the handlers.
-chrome.app.runtime.onLaunched.addListener(onLaunched);
-
-/**
- * Called when an app is launched.
- * @param {Object} launchData Launch data.
- */
-function onLaunched(launchData) {
-  if (!launchData || !launchData.items || launchData.items.length == 0)
-    return;
-
-  var playlist = {};
-
-  initializeQueue.run(function(fulfill) {
-    var isolatedEntries = launchData.items.map(function(item) {
-      return item.entry;
-    }.wrap());
-
-    chrome.fileManagerPrivate.resolveIsolatedEntries(isolatedEntries,
-        function(externalEntries) {
-          var urls = util.entriesToURLs(externalEntries);
-          playlist = {items: urls, position: 0};
-          fulfill();
-        }.wrap());
-  }.wrap());
-
-  initializeQueue.run(function(fulfill) {
-    openVideoPlayerWindow(playlist, false);
-    fulfill();
-  }.wrap());
-}
 
 var generateWindowId = (function() {
   var seq = 0;
@@ -89,17 +39,15 @@ var generateWindowId = (function() {
 /**
  * Opens player window.
  * @param {Object} playlist List of videos to play and index to start playing.
- * @param {boolean} reopen True if reopen, false otherwise.
  * @return {Promise} Promise to be fulfilled on success, or rejected on error.
  */
-function openVideoPlayerWindow(playlist, reopen) {
-  var items = playlist.items;
-  var position = playlist.position;
-  var startUrl = (position < items.length) ? items[position] : '';
+function openVideoPlayerWindow(urls) {
+  var position = 0;
+  var startUrl = (position < urls.length) ? urls[position] : '';
   var windowId = null;
 
   return new Promise(function(fulfill, reject) {
-    util.URLsToEntries(items).then(function(result) {
+    util.URLsToEntries(urls).then(function(result) {
       fulfill(result.entries);
     }.wrap()).catch(reject);
   }.wrap()).then(function(entries) {
@@ -122,7 +70,7 @@ function openVideoPlayerWindow(playlist, reopen) {
 
       videoPlayer.launch(
           {items: urls, position: position},
-          reopen,
+          false,
           fulfill.bind(null, videoPlayer));
     }.wrap());
   }.wrap()).then(function(videoPlayer) {
@@ -140,3 +88,5 @@ function openVideoPlayerWindow(playlist, reopen) {
     return Promise.reject(error);
   }.wrap());
 }
+
+background.setLaunchHandler(openVideoPlayerWindow);

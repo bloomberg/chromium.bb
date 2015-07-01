@@ -9,7 +9,7 @@
  *
  */
 test.util.async.openAudioPlayer = function(urls, callback) {
-  open({items: urls, position: 0}, false).then(callback);
+  open(urls).then(callback);
 };
 
 // Register the test utils.

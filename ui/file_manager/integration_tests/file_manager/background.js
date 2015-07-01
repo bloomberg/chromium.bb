@@ -103,8 +103,11 @@ StepsRunner.prototype.run_ = function(steps) {
 
   this.steps_ = this.steps_.map(function(f) {
     return chrome.test.callbackPass(function() {
-      this.steps_.shift();
-      f.apply(this, arguments);
+      var args = arguments;
+      return new Promise(function(resolve, reject) {
+        this.steps_.shift();
+        f.apply(this, args);
+      }.bind(this));
     }.bind(this));
   }.bind(this));
 

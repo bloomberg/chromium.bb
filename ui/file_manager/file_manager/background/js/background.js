@@ -95,12 +95,6 @@ function FileBrowserBackground() {
       this.tracker);
 
   /**
-   * Promise of string data.
-   * @private {!Promise}
-   */
-  this.initializationPromise_ = this.startInitialization_();
-
-  /**
    * String assets.
    * @type {Object<string>}
    */
@@ -114,12 +108,19 @@ function FileBrowserBackground() {
 
   // Initialize handlers.
   chrome.fileBrowserHandler.onExecute.addListener(this.onExecute_.bind(this));
-  chrome.app.runtime.onLaunched.addListener(this.onLaunched_.bind(this));
-  chrome.app.runtime.onRestarted.addListener(this.onRestarted_.bind(this));
   chrome.runtime.onMessageExternal.addListener(
       this.onExternalMessageReceived_.bind(this));
   chrome.contextMenus.onClicked.addListener(
       this.onContextMenuClicked_.bind(this));
+
+  // Initializa string and volume manager related stuffs.
+  this.initializationPromise_.then(function(strings) {
+    this.stringData = strings;
+    this.initContextMenu_();
+
+    this.fileOperationManager = new FileOperationManager(this.volumeManager_);
+    this.fileOperationHandler_ = new FileOperationHandler(this);
+  }.bind(this));
 
   // Handle newly mounted FSP file systems. Workaround for crbug.com/456648.
   // TODO(mtomasz): Replace this hack with a proper solution.
@@ -132,31 +133,6 @@ function FileBrowserBackground() {
 }
 
 FileBrowserBackground.prototype.__proto__ = BackgroundBase.prototype;
-
-/**
- * @return {!Promise}
- * @private
- */
-FileBrowserBackground.prototype.startInitialization_ = function() {
-  var stringsPromise = new Promise(function(fulfill) {
-    chrome.fileManagerPrivate.getStrings(fulfill);
-  }).then(function(strings) {
-    loadTimeData.data = strings;
-    this.stringData = strings;
-    this.initContextMenu_();
-  }.bind(this));
-
-  // Volume Manager should be initialized after strings because volume name is
-  // localized.
-  var volumeManagerPromise = stringsPromise.then(function() {
-    return VolumeManager.getInstance();
-  }).then(function(volumeManager) {
-    this.fileOperationManager = new FileOperationManager(volumeManager);
-    this.fileOperationHandler_ = new FileOperationHandler(this);
-  }.bind(this));
-
-  return volumeManagerPromise;
-};
 
 /**
  * Register callback to be invoked after initialization.
@@ -481,21 +457,24 @@ FileBrowserBackground.prototype.onExecute_ = function(action, details) {
 /**
  * Launches the app.
  * @private
+ * @override
  */
 FileBrowserBackground.prototype.onLaunched_ = function() {
-  if (nextFileManagerWindowID == 0) {
-    // The app just launched. Remove window state records that are not needed
-    // any more.
-    chrome.storage.local.get(function(items) {
-      for (var key in items) {
-        if (items.hasOwnProperty(key)) {
-          if (key.match(FILES_ID_PATTERN))
-            chrome.storage.local.remove(key);
+  this.initializationPromise_.then(function() {
+    if (nextFileManagerWindowID == 0) {
+      // The app just launched. Remove window state records that are not needed
+      // any more.
+      chrome.storage.local.get(function(items) {
+        for (var key in items) {
+          if (items.hasOwnProperty(key)) {
+            if (key.match(FILES_ID_PATTERN))
+              chrome.storage.local.remove(key);
+          }
         }
-      }
-    });
-  }
-  launchFileManager(null, undefined, LaunchType.FOCUS_ANY_OR_CREATE);
+      });
+    }
+    launchFileManager(null, undefined, LaunchType.FOCUS_ANY_OR_CREATE);
+  });
 };
 
 /** @const {string} */
@@ -517,6 +496,7 @@ FileBrowserBackground.prototype.onExternalMessageReceived_ =
 /**
  * Restarted the app, restore windows.
  * @private
+ * @override
  */
 FileBrowserBackground.prototype.onRestarted_ = function() {
   // Reopen file manager windows.

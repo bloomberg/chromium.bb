@@ -37,7 +37,7 @@ function launch(testVolumeName, volumeType, entries, opt_selected) {
   var appWindow = null;
   return entriesPromise.then(function(urls) {
     return remoteCallAudioPlayer.callRemoteTestUtil(
-        'openAudioPlayer', null, [urls, 0]);
+        'openAudioPlayer', null, [urls]);
   }).then(function(windowId) {
     appWindow = windowId;
     return remoteCallAudioPlayer.waitForElement(appWindow, 'body');

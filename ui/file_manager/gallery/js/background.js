@@ -29,65 +29,12 @@ var background = new BackgroundBase();
 var gallery = new SingletonAppWindowWrapper('gallery.html',
     windowCreateOptions);
 
-// Initializes the strings. This needs for the volume manager.
-var loadTimeDataPromise = new Promise(function(fulfill, reject) {
-  chrome.fileManagerPrivate.getStrings(function(stringData) {
-    loadTimeData.data = stringData;
-    fulfill(true);
-  });
-});
-
-// Initializes the volume manager. This needs for isolated entries.
-var volumeManagerPromise = new Promise(function(fulfill, reject) {
-  VolumeManager.getInstance(fulfill);
-});
-
-/**
- * Queue to serialize initialization.
- * @type {!Promise}
- */
-window.initializePromise = Promise.all([loadTimeDataPromise,
-                                     volumeManagerPromise]);
-
-// Registers the handlers.
-chrome.app.runtime.onLaunched.addListener(onLaunched);
-
-/**
- * Called when an app is launched.
- *
- * @param {!Object} launchData Launch data. See the manual of chrome.app.runtime
- *     .onLaunched for detail.
- */
-function onLaunched(launchData) {
-  // Skip if files are not selected.
-  if (!launchData || !launchData.items || launchData.items.length == 0)
-    return;
-
-  window.initializePromise.then(function() {
-    var isolatedEntries = launchData.items.map(function(item) {
-      return item.entry;
-    });
-
-    // Obtains entries in non-isolated file systems.
-    // The entries in launchData are stored in the isolated file system.
-    // We need to map the isolated entries to the normal entries to retrieve
-    // their parent directory.
-    chrome.fileManagerPrivate.resolveIsolatedEntries(
-        isolatedEntries,
-        function(externalEntries) {
-          var urls = util.entriesToURLs(externalEntries);
-          openGalleryWindow(urls, false);
-        });
-  });
-}
-
 /**
  * Opens gallery window.
  * @param {!Array<string>} urls List of URL to show.
- * @param {boolean} reopen True if reopen, false otherwise.
  * @return {!Promise} Promise to be fulfilled on success, or rejected on error.
  */
-function openGalleryWindow(urls, reopen) {
+function openGalleryWindow(urls) {
   return new Promise(function(fulfill, reject) {
     util.URLsToEntries(urls).then(function(result) {
       fulfill(util.entriesToURLs(result.entries));
@@ -100,7 +47,7 @@ function openGalleryWindow(urls, reopen) {
     return new Promise(function(fulfill, reject) {
       gallery.launch(
           {urls: urls},
-          reopen,
+          false,
           fulfill.bind(null, gallery));
     }).then(function(gallery) {
       var galleryDocument = gallery.rawAppWindow.contentWindow.document;
@@ -120,3 +67,5 @@ function openGalleryWindow(urls, reopen) {
     return Promise.reject(error);
   });
 }
+
+background.setLaunchHandler(openGalleryWindow);

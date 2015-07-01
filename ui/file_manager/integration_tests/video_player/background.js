@@ -37,7 +37,7 @@ function launch(testVolumeName, volumeType, entries, opt_selected) {
   var appWindow = null;
   return entriesPromise.then(function(urls) {
     return remoteCallVideoPlayer.callRemoteTestUtil(
-        'openVideoPlayer', null, [urls, 0]);
+        'openVideoPlayer', null, [urls]);
   }).then(function(windowId) {
     appWindow = windowId;
     return remoteCallVideoPlayer.waitForElement(appWindow, 'body');
