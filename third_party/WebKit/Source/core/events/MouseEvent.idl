@@ -54,16 +54,21 @@
                                        [Default=Undefined] optional unsigned short button,
                                        [Default=Undefined] optional EventTarget? relatedTarget);
 
+    // CSSOM View Module
+    // http://dev.w3.org/csswg/cssom-view/#extensions-to-the-mouseevent-interface
+    // TODO(philipj): These attributes should be of type double, and the spec
+    // also redefines screenX/Y and clientX/Y as double.
+    [MeasureAs=MouseEventX] readonly attribute long x;
+    [MeasureAs=MouseEventY] readonly attribute long y;
+    [MeasureAs=MouseEventOffsetX] readonly attribute long offsetX;
+    [MeasureAs=MouseEventOffsetY] readonly attribute long offsetY;
+
     // Pointer Lock
     // https://dvcs.w3.org/hg/pointerlock/raw-file/default/index.html#extensions-to-the-mouseevent-interface
     [MeasureAs=MouseEventMovementX] readonly attribute long movementX;
     [MeasureAs=MouseEventMovementY] readonly attribute long movementY;
 
     // Non-standard
-    [MeasureAs=MouseEventOffsetX] readonly attribute long offsetX;
-    [MeasureAs=MouseEventOffsetY] readonly attribute long offsetY;
-    [MeasureAs=MouseEventX] readonly attribute long x;
-    [MeasureAs=MouseEventY] readonly attribute long y;
     [MeasureAs=MouseEventFromElement] readonly attribute Node fromElement;
     [MeasureAs=MouseEventToElement] readonly attribute Node toElement;
     [MeasureAs=MouseEventWhich] readonly attribute long which;
