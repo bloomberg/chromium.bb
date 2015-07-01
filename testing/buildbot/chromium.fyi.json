@@ -3762,7 +3762,7 @@
       {
         "args": [
           "--site-per-process",
-          "--gtest_filter=-*.AllowTargetedNavigationsAfterSwap:*.DisownOpener:*.PreventSpoofFromSubframeAndReplace:SessionHistoryTest.CrossFrameFormBackForward:SessionHistoryTest.FrameBackForward:*.SupportCrossProcessPostMessageWithMessagePort:DevToolsProtocolTest.NavigationPreservesMessages"
+          "--gtest_filter=-*.PreventSpoofFromSubframeAndReplace:SessionHistoryTest.CrossFrameFormBackForward:SessionHistoryTest.FrameBackForward:*.SupportCrossProcessPostMessageWithMessagePort:DevToolsProtocolTest.NavigationPreservesMessages"
         ],
         "test": "content_browsertests"
       },
@@ -3793,7 +3793,7 @@
       {
         "args": [
           "--site-per-process",
-          "--gtest_filter=-*.AllowTargetedNavigationsAfterSwap:*.DisownOpener:*.PreventSpoofFromSubframeAndReplace:SessionHistoryTest.CrossFrameFormBackForward:SessionHistoryTest.FrameBackForward:*.SupportCrossProcessPostMessageWithMessagePort:DevToolsProtocolTest.NavigationPreservesMessages"
+          "--gtest_filter=-*.PreventSpoofFromSubframeAndReplace:SessionHistoryTest.CrossFrameFormBackForward:SessionHistoryTest.FrameBackForward:*.SupportCrossProcessPostMessageWithMessagePort:DevToolsProtocolTest.NavigationPreservesMessages"
         ],
         "test": "content_browsertests"
       },
