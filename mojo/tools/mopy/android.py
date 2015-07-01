@@ -269,15 +269,15 @@ class AndroidShell(object):
     parameters = [p.replace(',', '\,') for p in parameters]
     cmd += ['--esa', '%s.extras' % self.target_package, ','.join(parameters)]
 
-    atexit.register(self.StopShell)
+    atexit.register(self.kill)
     with open(os.devnull, 'w') as devnull:
       cmd_process = subprocess.Popen(cmd, stdout=devnull)
       if logcat_process:
         self._WaitForProcessIdAndStartGdb(logcat_process)
       cmd_process.wait()
 
-  def StopShell(self):
-    """Stops the mojo shell."""
+  def kill(self):
+    """Stops the mojo shell; matches the Popen.kill method signature."""
     self.device.ForceStop(self.target_package)
 
   def ShowLogs(self, stdout=sys.stdout):

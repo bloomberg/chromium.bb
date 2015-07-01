@@ -3,11 +3,12 @@
 # found in the LICENSE file.
 
 import logging
-import multiprocessing
 import os
+import Queue
 import re
 import subprocess
 import sys
+import threading
 import time
 
 from mopy.config import Config
@@ -141,19 +142,27 @@ def _build_command_line(config, args, apptest):
 # TODO(msw): Determine proper test timeout durations (starting small).
 def _run_test_with_timeout(config, shell, args, apptest, timeout_in_seconds=10):
   """Run the test with a timeout; return the output or raise an exception."""
-  result = multiprocessing.Queue()
-  process = multiprocessing.Process(
-      target=_run_test, args=(config, shell, args, apptest, result))
-  process.start()
-  process.join(timeout_in_seconds)
-  if process.is_alive():
-    process.terminate()
-    process.join()
+  result = Queue.Queue()
+  thread = threading.Thread(target=_run_test,
+                            args=(config, shell, args, apptest, result))
+  thread.start()
+  process_or_shell = result.get()
+  thread.join(timeout_in_seconds)
+
+  if thread.is_alive():
+    try:
+      process_or_shell.kill()
+    except OSError:
+      pass  # The process may have ended after checking |is_alive|.
     return "Error: Test timeout after %s seconds" % timeout_in_seconds
-  (output, exception) = result.get()
-  if exception:
-    raise Exception(output + "\n" + exception)
-  return output
+
+  if not result.empty():
+    (output, exception) = result.get()
+    if exception:
+      raise Exception("%s%s%s" % (output, "\n" if output else "", exception))
+    return output
+
+  return "Error: Test exited with no output."
 
 
 def _run_test(config, shell, args, apptest, result):
@@ -163,9 +172,17 @@ def _run_test(config, shell, args, apptest, result):
   try:
     if (config.target_os != Config.OS_ANDROID):
       command = _build_command_line(config, args, apptest)
-      output = subprocess.check_output(command, stderr=subprocess.STDOUT)
+      process = subprocess.Popen(command, stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
+      result.put(process)
+      process.wait()
+      if not process.poll():
+        output = str(process.stdout.read())
+      else:
+        exception = "Error: Test exited with code: %d" % process.returncode
     else:
       assert shell
+      result.put(shell)
       (r, w) = os.pipe()
       with os.fdopen(r, "r") as rf:
         with os.fdopen(w, "w") as wf:
@@ -175,5 +192,4 @@ def _run_test(config, shell, args, apptest, result):
   except Exception as e:
     output = e.output if hasattr(e, 'output') else ""
     exception = str(e)
-  finally:
-    result.put((output, exception))
+  result.put((output, exception))
