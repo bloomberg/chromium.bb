@@ -449,7 +449,7 @@ int HTMLImageElement::naturalWidth() const
     if (!imageLoader().image())
         return 0;
 
-    return imageLoader().image()->imageSizeForLayoutObject(layoutObject(), 1.0f, ImageResource::IntrinsicSize).width();
+    return imageLoader().image()->imageSizeForLayoutObject(layoutObject(), m_imageDevicePixelRatio, ImageResource::IntrinsicCorrectedToDPR).width();
 }
 
 int HTMLImageElement::naturalHeight() const
@@ -457,7 +457,7 @@ int HTMLImageElement::naturalHeight() const
     if (!imageLoader().image())
         return 0;
 
-    return imageLoader().image()->imageSizeForLayoutObject(layoutObject(), 1.0f, ImageResource::IntrinsicSize).height();
+    return imageLoader().image()->imageSizeForLayoutObject(layoutObject(), m_imageDevicePixelRatio, ImageResource::IntrinsicCorrectedToDPR).height();
 }
 
 const String& HTMLImageElement::currentSrc() const

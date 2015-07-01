@@ -81,7 +81,8 @@ public:
 
     enum SizeType {
         NormalSize, // Report the size of the image associated with a certain layoutObject
-        IntrinsicSize // Report the intrinsic size, i.e. ignore whatever has been set extrinsically.
+        IntrinsicSize, // Report the intrinsic size, i.e. ignore whatever has been set extrinsically.
+        IntrinsicCorrectedToDPR, // Report the intrinsic size corrected to account for image density.
     };
     // This method takes a zoom multiplier that can be used to increase the natural size of the image by the zoom.
     LayoutSize imageSizeForLayoutObject(const LayoutObject*, float multiplier, SizeType = NormalSize); // returns the size of the complete image.

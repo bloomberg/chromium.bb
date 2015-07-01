@@ -301,6 +301,9 @@ LayoutSize ImageResource::imageSizeForLayoutObject(const LayoutObject* layoutObj
     else
         imageSize = LayoutSize(m_image->size());
 
+    if (sizeType == IntrinsicCorrectedToDPR && m_hasDevicePixelRatioHeaderValue && m_devicePixelRatioHeaderValue > 0)
+        multiplier = 1.0 / m_devicePixelRatioHeaderValue;
+
     if (multiplier == 1.0f)
         return imageSize;
 
@@ -430,6 +433,7 @@ void ImageResource::responseReceived(const ResourceResponse& response, PassOwnPt
             m_devicePixelRatioHeaderValue = 1.0;
             m_hasDevicePixelRatioHeaderValue = false;
         }
+
     }
     Resource::responseReceived(response, handle);
 }
