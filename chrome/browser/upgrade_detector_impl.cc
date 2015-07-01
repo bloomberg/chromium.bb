@@ -176,6 +176,7 @@ base::Version GetCurrentlyInstalledVersionImpl(Version* critical_update) {
     DLOG(ERROR) << "Failed to get current file version";
     return installed_version;
   }
+  base::TrimWhitespaceASCII(reply, base::TRIM_ALL, &reply);
 
   installed_version = Version(reply);
 #endif
