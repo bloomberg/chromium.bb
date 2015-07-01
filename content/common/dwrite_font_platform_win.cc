@@ -790,35 +790,43 @@ bool FontCollectionLoader::LoadFontListFromRegistry() {
     if (regkey.GetValueNameAt(idx, &name) == ERROR_SUCCESS &&
         regkey.ReadValue(name.c_str(), &value) == ERROR_SUCCESS) {
       base::FilePath path(value.c_str());
-      // We need to check if file name is the only component that exists,
-      // we will ignore all other registry entries.
-      std::vector<base::FilePath::StringType> components;
-      path.GetComponents(&components);
-      if (components.size() == 1 ||
-          base::FilePath::CompareEqualIgnoreCase(system_font_path.value(),
-                                                 path.DirName().value())) {
-        bool should_ignore = false;
-        for (const auto& ignore : kFontsToIgnore) {
-          if (base::FilePath::CompareEqualIgnoreCase(path.value(), ignore)) {
+      // We need to check if path in registry is absolute, if it is then
+      // we check if it is same as DIR_WINDOWS_FONTS otherwise we ignore.
+      bool absolute = path.IsAbsolute();
+      if (absolute &&
+          !base::FilePath::CompareEqualIgnoreCase(system_font_path.value(),
+                                                  path.DirName().value())) {
+        continue;
+      }
+
+      // Ignore if path ends with a separator.
+      if (path.EndsWithSeparator())
+        continue;
+
+      if (absolute)
+        value = path.BaseName().value();
+
+      bool should_ignore = false;
+      for (const auto& ignore : kFontsToIgnore) {
+        if (base::FilePath::CompareEqualIgnoreCase(value, ignore)) {
+          should_ignore = true;
+          break;
+        }
+      }
+      // DirectWrite doesn't support bitmap/vector fonts and Adobe type 1
+      // fonts, we will ignore those font extensions.
+      // MSDN article: http://goo.gl/TfCOA
+      if (!should_ignore) {
+        for (const auto& ignore : kFontExtensionsToIgnore) {
+          if (path.MatchesExtension(ignore)) {
             should_ignore = true;
             break;
           }
         }
-        // DirectWrite doesn't support bitmap/vector fonts and Adobe type 1
-        // fonts, we will ignore those font extensions.
-        // MSDN article: http://goo.gl/TfCOA
-        if (!should_ignore) {
-          for (const auto& ignore : kFontExtensionsToIgnore) {
-            if (path.MatchesExtension(ignore)) {
-              should_ignore = true;
-              break;
-            }
-          }
-        }
-
-        if (!should_ignore)
-          reg_fonts_.push_back(value.c_str());
       }
+
+      if (!should_ignore)
+        reg_fonts_.push_back(value.c_str());
     }
   }
   UMA_HISTOGRAM_COUNTS("DirectWrite.Fonts.Loaded", reg_fonts_.size());
