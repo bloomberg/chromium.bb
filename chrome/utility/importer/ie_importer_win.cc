@@ -306,7 +306,7 @@ GURL ReadFaviconURLFromInternetShortcut(IUniformResourceLocator* url_locator) {
     return GURL();
   }
 
-  PROPSPEC properties[] = {{PRSPEC_PROPID, PID_IS_ICONFILE}};
+  PROPSPEC properties[] = {{PRSPEC_PROPID, {PID_IS_ICONFILE}}};
   // ReadMultiple takes a non-const array of PROPVARIANTs, but since this code
   // only needs an array of size 1: a non-const pointer to |output| is
   // equivalent.

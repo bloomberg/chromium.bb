@@ -719,8 +719,8 @@ bool PrintSystemWin::ValidatePrintTicket(
                                print_ticket_data.length(),
                                &bytes_written);
     DCHECK(bytes_written == print_ticket_data.length());
-    LARGE_INTEGER pos = {0};
-    ULARGE_INTEGER new_pos = {0};
+    LARGE_INTEGER pos = {};
+    ULARGE_INTEGER new_pos = {};
     print_ticket_stream->Seek(pos, STREAM_SEEK_SET, &new_pos);
     base::win::ScopedBstr error;
     base::win::ScopedComPtr<IStream> result_ticket_stream;

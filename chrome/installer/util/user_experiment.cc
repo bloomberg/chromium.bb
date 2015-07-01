@@ -69,7 +69,7 @@ base::string16 GetWelcomeBackUrl() {
 // 100 nanosecond units. For example 5:30 pm of June 15, 2009 is 3580464.
 int FileTimeToHours(const FILETIME& time) {
   const ULONGLONG k100sNanoSecsToHours = 10000000LL * 60 * 60;
-  ULARGE_INTEGER uli = {time.dwLowDateTime, time.dwHighDateTime};
+  ULARGE_INTEGER uli = {{time.dwLowDateTime, time.dwHighDateTime}};
   return static_cast<int>(uli.QuadPart / k100sNanoSecsToHours);
 }
 

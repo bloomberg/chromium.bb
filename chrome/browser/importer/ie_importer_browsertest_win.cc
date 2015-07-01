@@ -188,7 +188,7 @@ bool CreateUrlFileWithFavicon(const base::FilePath& file,
                                           property_storage.Receive()))) {
       return false;
     }
-    PROPSPEC properties[] = {{PRSPEC_PROPID, PID_IS_ICONFILE}};
+    PROPSPEC properties[] = {{PRSPEC_PROPID, {PID_IS_ICONFILE}}};
     // WriteMultiple takes an array of PROPVARIANTs, but since this code only
     // needs an array of size 1: a pointer to |pv_icon| is equivalent.
     base::win::ScopedPropVariant pv_icon;

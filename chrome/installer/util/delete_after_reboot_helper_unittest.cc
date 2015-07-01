@@ -129,7 +129,8 @@ TEST_F(DeleteAfterRebootHelperTest, TestStringListToMultiSZConversions) {
   }
 
   StringTest failures[] = {
-      L"malformed", reinterpret_cast<const wchar_t*>("oddnumb\0\0"), 9, 1};
+      {L"malformed", reinterpret_cast<const wchar_t*>("oddnumb\0\0"), 9, 1},
+  };
 
   for (int i = 0; i < arraysize(failures); i++) {
     std::vector<PendingMove> string_list;

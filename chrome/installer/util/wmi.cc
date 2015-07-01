@@ -114,12 +114,12 @@ bool WMIProcess::Launch(const std::wstring& command_line, int* process_id) {
     return false;
 
   // We're only expecting int32 or uint32 values, so no need for ScopedVariant.
-  VARIANT ret_value = {VT_EMPTY};
+  VARIANT ret_value = {{{VT_EMPTY}}};
   hr = out_params->Get(L"ReturnValue", 0, &ret_value, NULL, 0);
   if (FAILED(hr) || 0 != V_I4(&ret_value))
     return false;
 
-  VARIANT pid = {VT_EMPTY};
+  VARIANT pid = {{{VT_EMPTY}}};
   hr = out_params->Get(L"ProcessId", 0, &pid, NULL, 0);
   if (FAILED(hr) || 0 == V_I4(&pid))
     return false;
