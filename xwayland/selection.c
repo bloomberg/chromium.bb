@@ -119,8 +119,9 @@ weston_wm_get_incr_chunk(struct weston_wm *wm)
 	} else {
 		weston_log("transfer complete\n");
 		close(wm->data_source_fd);
-		free(reply);
 	}
+
+	free(reply);
 }
 
 struct x11_data_source {
@@ -192,8 +193,10 @@ weston_wm_get_selection_targets(struct weston_wm *wm)
 	}
 
 	source = malloc(sizeof *source);
-	if (source == NULL)
+	if (source == NULL) {
+		free(reply);
 		return;
+	}
 
 	wl_signal_init(&source->base.destroy_signal);
 	source->base.accept = data_source_accept;
@@ -237,12 +240,13 @@ weston_wm_get_selection_data(struct weston_wm *wm)
 	if (reply->type == wm->atom.incr) {
 		dump_property(wm, wm->atom.wl_selection, reply);
 		wm->incr = 1;
-		free(reply);
 	} else {
 		dump_property(wm, wm->atom.wl_selection, reply);
 		wm->incr = 0;
 		weston_wm_write_property(wm, reply);
 	}
+
+	free(reply);
 }
 
 static void
