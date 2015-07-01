@@ -78,7 +78,7 @@ PermissionBubbleManager::PermissionBubbleManager(
       require_user_gesture_(false),
       bubble_showing_(false),
       view_(NULL),
-      request_url_has_loaded_(false),
+      main_frame_has_fully_loaded_(false),
       auto_response_for_test_(NONE),
       weak_factory_(this) {
 }
@@ -216,8 +216,14 @@ void PermissionBubbleManager::RequireUserGesture(bool required) {
   require_user_gesture_ = required;
 }
 
+void PermissionBubbleManager::DidNavigateMainFrame(
+    const content::LoadCommittedDetails& details,
+    const content::FrameNavigateParams& params) {
+  main_frame_has_fully_loaded_ = false;
+}
+
 void PermissionBubbleManager::DocumentOnLoadCompletedInMainFrame() {
-  request_url_has_loaded_ = true;
+  main_frame_has_fully_loaded_ = true;
   // This is scheduled because while all calls to the browser have been
   // issued at DOMContentLoaded, they may be bouncing around in scheduled
   // callbacks finding the UI thread still. This makes sure we allow those
@@ -228,8 +234,7 @@ void PermissionBubbleManager::DocumentOnLoadCompletedInMainFrame() {
 
 void PermissionBubbleManager::DocumentLoadedInFrame(
     content::RenderFrameHost* render_frame_host) {
-  if (request_url_has_loaded_)
-    ScheduleShowBubble();
+  ScheduleShowBubble();
 }
 
 void PermissionBubbleManager::NavigationEntryCommitted(
@@ -303,6 +308,11 @@ void PermissionBubbleManager::Closing() {
 }
 
 void PermissionBubbleManager::ScheduleShowBubble() {
+  // ::ScheduleShowBubble() will be called again when the main frame will be
+  // loaded.
+  if (!main_frame_has_fully_loaded_)
+    return;
+
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
@@ -315,7 +325,7 @@ void PermissionBubbleManager::TriggerShowBubble() {
     return;
   if (bubble_showing_)
     return;
-  if (!request_url_has_loaded_)
+  if (!main_frame_has_fully_loaded_)
     return;
   if (requests_.empty() && queued_requests_.empty() &&
       queued_frame_requests_.empty()) {

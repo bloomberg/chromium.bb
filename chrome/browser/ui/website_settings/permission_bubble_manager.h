@@ -102,6 +102,9 @@ class PermissionBubbleManager
   explicit PermissionBubbleManager(content::WebContents* web_contents);
 
   // WebContentsObserver:
+  void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) override;
   void DocumentOnLoadCompletedInMainFrame() override;
   void DocumentLoadedInFrame(
       content::RenderFrameHost* render_frame_host) override;
@@ -166,7 +169,7 @@ class PermissionBubbleManager
   // URL of the main frame in the WebContents to which this manager is attached.
   // TODO(gbillock): if there are iframes in the page, we need to deal with it.
   GURL request_url_;
-  bool request_url_has_loaded_;
+  bool main_frame_has_fully_loaded_;
 
   std::vector<bool> accept_states_;
 

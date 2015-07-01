@@ -514,6 +514,7 @@
       'browser/ui/website_settings/mock_permission_bubble_view.h',
       'browser/ui/website_settings/permission_bubble_browser_test_util.cc',
       'browser/ui/website_settings/permission_bubble_browser_test_util.h',
+      'browser/ui/website_settings/permission_bubble_manager_browsertest.cc',
       'browser/ui/webui/bidi_checker_web_ui_test.cc',
       'browser/ui/webui/bidi_checker_web_ui_test.h',
       'browser/ui/webui/bookmarks_ui_browsertest.cc',
