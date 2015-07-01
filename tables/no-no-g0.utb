@@ -161,8 +161,9 @@ lowercase \x00F3 4-135       # DEC 243 ó
 lowercase \x00F4 4-135       # DEC 244 ô
 
 # Some diacritic characters
-uplow \x00CC\x00EC 45-24     # latin small letter i with grave - latin capital letter i with grave
-uplow \x0160\x0161 46-234    # Šš LATIN CAPITAL LETTER S WITH CARON - LATIN SMALL LETTER S WITH CARON
+#uplow \x00CC\x00EC 45-24     # latin small letter i with grave - latin capital letter i with grave
+#uplow \x0160\x0161 46-234    # Šš LATIN CAPITAL LETTER S WITH CARON - LATIN SMALL LETTER S WITH CARON
+include latinLetterDef6Dots_diacritics.uti
 
 # ------------------- End char definitions --------------------
 
