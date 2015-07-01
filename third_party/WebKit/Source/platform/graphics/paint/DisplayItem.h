@@ -190,33 +190,37 @@ public:
 #endif
     { }
 
+    // Ids are for matching new DisplayItems with existing DisplayItems.
     struct Id {
-        Id(DisplayItemClient c, Type t) : client(c), type(t), scopeId(0), scopeContainer(nullptr)
-        {
-            ASSERT(c);
-        }
+        Id(const DisplayItemClient client, const Type type, const int scopeId, const DisplayItemClient scopeContainer)
+            : client(client)
+            , type(type)
+            , scopeId(scopeId)
+            , scopeContainer(scopeContainer) { }
 
-        bool operator==(const Id& other) const
+        bool matches(const DisplayItem& item) const
         {
-            return client == other.client
-                && type == other.type
-                && scopeId == other.scopeId
-                && scopeContainer == other.scopeContainer;
-        }
-
-        bool equalToExceptForType(const Id& other, DisplayItem::Type overrideType) const
-        {
-            return client == other.client
-                && type == overrideType
-                && scopeId == other.scopeId
-                && scopeContainer == other.scopeContainer;
+            // We should always convert to non-cached types before matching.
+            ASSERT(!isCachedType(item.m_type));
+            ASSERT(!isCachedType(type));
+            return client == item.m_client
+                && type == item.m_type
+                && scopeId == item.m_scopeId
+                && scopeContainer == item.m_scopeContainer;
         }
 
         const DisplayItemClient client;
         const Type type;
-        int scopeId;
-        DisplayItemClient scopeContainer;
+        const int scopeId;
+        const DisplayItemClient scopeContainer;
     };
+
+    // Return the Id with cached types converted to non-cached types
+    // (e.g., Type::CachedSVGImage -> Type::SVGImage).
+    Id nonCachedId() const
+    {
+        return Id(m_client, isCachedType(m_type) ? cachedTypeToDrawingType(m_type) : m_type, m_scopeId, m_scopeContainer);
+    }
 
     virtual ~DisplayItem() { }
 
@@ -224,17 +228,6 @@ public:
 
     DisplayItemClient client() const { return m_client; }
     Type type() const { return m_type; }
-    Id id() const
-    {
-        Id result(m_client, m_type);
-        result.scopeId = m_scopeId;
-        result.scopeContainer = m_scopeContainer;
-        return result;
-    }
-    bool idsEqual(const DisplayItem& other, Type overrideType) const
-    {
-        return id().equalToExceptForType(other.id(), overrideType);
-    }
 
     void setScope(int scopeId, DisplayItemClient scopeContainer)
     {

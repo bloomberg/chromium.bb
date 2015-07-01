@@ -116,10 +116,10 @@ private:
     // Temporarily used during merge to find out-of-order display items.
     using DisplayItemIndicesByClientMap = HashMap<DisplayItemClient, Vector<size_t>>;
 
-    static size_t findMatchingItemFromIndex(const DisplayItem::Id&, DisplayItem::Type matchingType, const DisplayItemIndicesByClientMap&, const DisplayItems&);
+    static size_t findMatchingItemFromIndex(const DisplayItem::Id&, const DisplayItemIndicesByClientMap&, const DisplayItems&);
     static void addItemToIndex(DisplayItemClient, DisplayItem::Type, size_t index, DisplayItemIndicesByClientMap&);
-    DisplayItems::Iterator findOutOfOrderCachedItem(DisplayItems::Iterator currentIt, const DisplayItem::Id&, DisplayItem::Type, DisplayItemIndicesByClientMap&);
-    DisplayItems::Iterator findOutOfOrderCachedItemForward(DisplayItems::Iterator currentIt, const DisplayItem::Id&, DisplayItem::Type, DisplayItemIndicesByClientMap&);
+    DisplayItems::Iterator findOutOfOrderCachedItem(DisplayItems::Iterator currentIt, const DisplayItem::Id&, DisplayItemIndicesByClientMap&);
+    DisplayItems::Iterator findOutOfOrderCachedItemForward(DisplayItems::Iterator currentIt, const DisplayItem::Id&, DisplayItemIndicesByClientMap&);
 
 #if ENABLE(ASSERT)
     // The following two methods are for checking under-invalidations

@@ -82,7 +82,7 @@ void DisplayItemList::processNewItem(DisplayItem* displayItem)
         displayItem->setScope(m_scopeStack.last().id, m_scopeStack.last().client);
 
 #if ENABLE(ASSERT)
-    size_t index = findMatchingItemFromIndex(displayItem->id(), displayItem->type(), m_newDisplayItemIndicesByClient, m_newDisplayItems);
+    size_t index = findMatchingItemFromIndex(displayItem->nonCachedId(), m_newDisplayItemIndicesByClient, m_newDisplayItems);
     if (index != kNotFound) {
 #ifndef NDEBUG
         showDebugData();
@@ -146,7 +146,7 @@ bool DisplayItemList::clientCacheIsValid(DisplayItemClient client) const
     return m_validlyCachedClients.contains(client);
 }
 
-size_t DisplayItemList::findMatchingItemFromIndex(const DisplayItem::Id& id, DisplayItem::Type matchingType, const DisplayItemIndicesByClientMap& displayItemIndicesByClient, const DisplayItems& list)
+size_t DisplayItemList::findMatchingItemFromIndex(const DisplayItem::Id& id, const DisplayItemIndicesByClientMap& displayItemIndicesByClient, const DisplayItems& list)
 {
     DisplayItemIndicesByClientMap::const_iterator it = displayItemIndicesByClient.find(id.client);
     if (it == displayItemIndicesByClient.end())
@@ -157,7 +157,7 @@ size_t DisplayItemList::findMatchingItemFromIndex(const DisplayItem::Id& id, Dis
         // TODO(pdr): elementAt is not cheap so this should be refactored (See crbug.com/505965).
         const DisplayItem& existingItem = *list.elementAt(index);
         ASSERT(existingItem.ignoreFromDisplayList() || existingItem.client() == id.client);
-        if (!existingItem.ignoreFromDisplayList() && existingItem.id().equalToExceptForType(id, matchingType))
+        if (!existingItem.ignoreFromDisplayList() && id.matches(existingItem))
             return index;
     }
 
@@ -176,20 +176,19 @@ void DisplayItemList::addItemToIndex(DisplayItemClient client, DisplayItem::Type
     indices.append(index);
 }
 
-DisplayItems::Iterator DisplayItemList::findOutOfOrderCachedItem(DisplayItems::Iterator currentIt, const DisplayItem::Id& id, DisplayItem::Type matchingType, DisplayItemIndicesByClientMap& displayItemIndicesByClient)
+DisplayItems::Iterator DisplayItemList::findOutOfOrderCachedItem(DisplayItems::Iterator currentIt, const DisplayItem::Id& id, DisplayItemIndicesByClientMap& displayItemIndicesByClient)
 {
-    ASSERT(DisplayItem::isCachedType(id.type));
     ASSERT(clientCacheIsValid(id.client));
 
-    size_t foundIndex = findMatchingItemFromIndex(id, matchingType, displayItemIndicesByClient, m_currentDisplayItems);
+    size_t foundIndex = findMatchingItemFromIndex(id, displayItemIndicesByClient, m_currentDisplayItems);
     if (foundIndex != kNotFound)
         return m_currentDisplayItems.iteratorAt(foundIndex);
 
-    return findOutOfOrderCachedItemForward(currentIt, id, matchingType, displayItemIndicesByClient);
+    return findOutOfOrderCachedItemForward(currentIt, id, displayItemIndicesByClient);
 }
 
 // Find forward for the item and index all skipped indexable items.
-DisplayItems::Iterator DisplayItemList::findOutOfOrderCachedItemForward(DisplayItems::Iterator currentIt, const DisplayItem::Id& id, DisplayItem::Type matchingType, DisplayItemIndicesByClientMap& displayItemIndicesByClient)
+DisplayItems::Iterator DisplayItemList::findOutOfOrderCachedItemForward(DisplayItems::Iterator currentIt, const DisplayItem::Id& id, DisplayItemIndicesByClientMap& displayItemIndicesByClient)
 {
     DisplayItems::Iterator currentEnd = m_currentDisplayItems.end();
     for (; currentIt != currentEnd; ++currentIt) {
@@ -197,7 +196,7 @@ DisplayItems::Iterator DisplayItemList::findOutOfOrderCachedItemForward(DisplayI
         if (!item.ignoreFromDisplayList()
             && DisplayItem::isDrawingType(item.type())
             && m_validlyCachedClients.contains(item.client())) {
-            if (item.id().equalToExceptForType(id, matchingType))
+            if (id.matches(item))
                 return currentIt;
 
             addItemToIndex(item.client(), item.type(), currentIt.index(), displayItemIndicesByClient);
@@ -269,20 +268,21 @@ void DisplayItemList::commitNewDisplayItems()
     DisplayItems::Iterator currentEnd = m_currentDisplayItems.end();
     for (DisplayItems::Iterator newIt = m_newDisplayItems.begin(); newIt != m_newDisplayItems.end(); ++newIt) {
         const DisplayItem& newDisplayItem = **newIt;
-        DisplayItem::Type matchingType = newDisplayItem.type();
-        if (DisplayItem::isCachedType(newDisplayItem.type()))
-            matchingType = DisplayItem::cachedTypeToDrawingType(matchingType);
+        const DisplayItem::Id newDisplayItemId = newDisplayItem.nonCachedId();
+        bool newDisplayItemHasCachedType = newDisplayItem.type() != newDisplayItemId.type;
+
         bool isSynchronized = currentIt != currentEnd
             && !currentIt->ignoreFromDisplayList()
-            && currentIt->id().equalToExceptForType(newDisplayItem.id(), matchingType);
+            && newDisplayItemId.matches(**currentIt);
 
-        if (DisplayItem::isCachedType(newDisplayItem.type())) {
+        if (newDisplayItemHasCachedType) {
             ASSERT(!RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled());
+            ASSERT(DisplayItem::isCachedType(newDisplayItem.type()));
             ASSERT(clientCacheIsValid(newDisplayItem.client()));
             if (isSynchronized) {
                 updatedList.appendByMoving(*currentIt);
             } else {
-                DisplayItems::Iterator foundIt = findOutOfOrderCachedItem(currentIt, newDisplayItem.id(), matchingType, displayItemIndicesByClient);
+                DisplayItems::Iterator foundIt = findOutOfOrderCachedItem(currentIt, newDisplayItemId, displayItemIndicesByClient);
                 isSynchronized = (foundIt == currentIt);
 
 #ifndef NDEBUG
@@ -388,7 +388,7 @@ void DisplayItemList::checkCachedDisplayItemIsUnchanged(const DisplayItem& displ
     // If checking under-invalidation, we always generate new display item even if the client is not invalidated.
     // Checks if the new picture is the same as the cached old picture. If the new picture is different but
     // the client is not invalidated, issue error about under-invalidation.
-    size_t index = findMatchingItemFromIndex(displayItem.id(), displayItem.type(), displayItemIndicesByClient, m_currentDisplayItems);
+    size_t index = findMatchingItemFromIndex(displayItem.nonCachedId(), displayItemIndicesByClient, m_currentDisplayItems);
     if (index == kNotFound) {
         showUnderInvalidationError("ERROR: under-invalidation: no cached display item", displayItem);
         ASSERT_NOT_REACHED();
