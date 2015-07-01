@@ -17,10 +17,10 @@
         "LayoutText #text",
         "RootInlineBox",
         "LayoutBlockFlow DIV id='inner-target'",
+        "LayoutBlockFlow BODY",
         "LayoutBlockFlow DIV id='inner-target'",
         "LayoutText #text",
-        "InlineTextBox 'abc'",
-        "LayoutBlockFlow BODY"
+        "InlineTextBox 'abc'"
       ]
     }
   ]
