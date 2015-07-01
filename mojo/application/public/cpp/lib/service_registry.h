@@ -41,6 +41,8 @@ class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
   void RemoveServiceConnectorForName(const std::string& interface_name);
 
  private:
+  ~ServiceRegistry() override;
+
   // ApplicationConnection overrides.
   void OnCloseConnection() override;
 
@@ -51,11 +53,6 @@ class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
   ApplicationImpl* application_impl_;
   const std::string connection_url_;
   const std::string remote_url_;
-
- private:
-  ~ServiceRegistry() override;
-
-  Application* application_;
   Binding<ServiceProvider> local_binding_;
   ServiceProviderPtr remote_service_provider_;
   ServiceConnectorRegistry service_connector_registry_;

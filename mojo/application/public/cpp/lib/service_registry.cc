@@ -60,6 +60,9 @@ ServiceProvider* ServiceRegistry::GetServiceProvider() {
   return remote_service_provider_.get();
 }
 
+ServiceRegistry::~ServiceRegistry() {
+}
+
 void ServiceRegistry::OnCloseConnection() {
   if (application_impl_)
     application_impl_->CloseConnection(this);
@@ -69,9 +72,6 @@ void ServiceRegistry::ConnectToService(const mojo::String& service_name,
                                        ScopedMessagePipeHandle client_handle) {
   service_connector_registry_.ConnectToService(this, service_name,
                                                client_handle.Pass());
-}
-
-ServiceRegistry::~ServiceRegistry() {
 }
 
 }  // namespace internal
