@@ -188,7 +188,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
         gaiaParams.enterpriseDomain = data.management_domain;
         gaiaParams.emailDomain = data.management_domain;
       }
-      gaiaParams.flow = 'enterprise';
+      gaiaParams.flow = data.flow;
       this.authenticator_.load(cr.login.Authenticator.AuthMode.DEFAULT,
                                gaiaParams);
 

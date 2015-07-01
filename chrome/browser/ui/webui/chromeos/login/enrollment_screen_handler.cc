@@ -12,9 +12,12 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/signin/gaia_auth_extension_loader.h"
@@ -580,6 +583,13 @@ void EnrollmentScreenHandler::DoShow() {
   screen_data.SetString("enrollment_mode",
                         EnrollmentModeToUIMode(config_.mode));
   screen_data.SetString("management_domain", config_.management_domain);
+
+  const bool cfm = g_browser_process->platform_part()
+                       ->browser_policy_connector_chromeos()
+                       ->GetDeviceCloudPolicyManager()
+                       ->IsRemoraRequisition();
+  screen_data.SetString("flow", cfm ? "cfm" : "enterprise");
+
   const bool is_server_triggered_enrollment =
       config_.mode == policy::EnrollmentConfig::MODE_SERVER_ADVERTISED ||
       config_.mode == policy::EnrollmentConfig::MODE_SERVER_FORCED;
