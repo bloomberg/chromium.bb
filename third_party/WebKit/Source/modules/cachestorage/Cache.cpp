@@ -203,10 +203,15 @@ public:
         if (m_completed)
             return;
         m_completed = true;
+        m_resolver->reject(exception);
+    }
 
-        ScriptState* state = m_resolver->scriptState();
-        ScriptState::Scope scope(state);
-        m_resolver->reject(V8ThrowException::createTypeError(state->isolate(), exception->toString()));
+    void onError(v8::Local<v8::Value> exception)
+    {
+        if (m_completed)
+            return;
+        m_completed = true;
+        m_resolver->reject(exception);
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
@@ -429,14 +434,22 @@ ScriptPromise Cache::putImpl(ScriptState* scriptState, const HeapVector<Member<R
 
     for (size_t i = 0; i < requests.size(); ++i) {
         KURL url(KURL(), requests[i]->url());
-        if (!url.protocolIsInHTTPFamily())
-            return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Request scheme '" + url.protocol() + "' is unsupported"));
-        if (requests[i]->method() != "GET")
-            return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Request method '" + requests[i]->method() + "' is unsupported"));
-        if (requests[i]->hasBody() && requests[i]->bodyUsed())
-            return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Request body is already used"));
-        if (responses[i]->hasBody() && responses[i]->bodyUsed())
-            return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Response body is already used"));
+        if (!url.protocolIsInHTTPFamily()) {
+            barrierCallback->onError(V8ThrowException::createTypeError(scriptState->isolate(), "Request scheme '" + url.protocol() + "' is unsupported"));
+            return promise;
+        }
+        if (requests[i]->method() != "GET") {
+            barrierCallback->onError(V8ThrowException::createTypeError(scriptState->isolate(), "Request method '" + requests[i]->method() + "' is unsupported"));
+            return promise;
+        }
+        if (requests[i]->hasBody() && requests[i]->bodyUsed()) {
+            barrierCallback->onError(V8ThrowException::createTypeError(scriptState->isolate(), "Request body is already used"));
+            return promise;
+        }
+        if (responses[i]->hasBody() && responses[i]->bodyUsed()) {
+            barrierCallback->onError(V8ThrowException::createTypeError(scriptState->isolate(), "Response body is already used"));
+            return promise;
+        }
 
         if (requests[i]->hasBody())
             requests[i]->lockBody(Body::PassBody);
