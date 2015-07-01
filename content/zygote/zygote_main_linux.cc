@@ -425,15 +425,15 @@ static void EnterNamespaceSandbox(LinuxSandbox* linux_sandbox,
 }
 
 #if defined(SANITIZER_COVERAGE)
-const size_t kSanitizerMaxMessageLength = 1 * 1024 * 1024;
+static int g_sanitizer_message_length = 1 * 1024 * 1024;
 
 // A helper process which collects code coverage data from the renderers over a
 // socket and dumps it to a file. See http://crbug.com/336212 for discussion.
 static void SanitizerCoverageHelper(int socket_fd, int file_fd) {
-  scoped_ptr<char[]> buffer(new char[kSanitizerMaxMessageLength]);
+  scoped_ptr<char[]> buffer(new char[g_sanitizer_message_length]);
   while (true) {
     ssize_t received_size = HANDLE_EINTR(
-        recv(socket_fd, buffer.get(), kSanitizerMaxMessageLength, 0));
+        recv(socket_fd, buffer.get(), g_sanitizer_message_length, 0));
     PCHECK(received_size >= 0);
     if (received_size == 0)
       // All clients have closed the socket. We should die.
@@ -456,6 +456,19 @@ static void CreateSanitizerCoverageSocketPair(int fds[2]) {
   PCHECK(0 == socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds));
   PCHECK(0 == shutdown(fds[0], SHUT_WR));
   PCHECK(0 == shutdown(fds[1], SHUT_RD));
+
+  // Find the right buffer size.
+  int* buf_size = &g_sanitizer_message_length;
+  while (*buf_size) {
+    if (0 == setsockopt(fds[0], SOL_SOCKET, SO_RCVBUF,
+                        buf_size, sizeof(*buf_size)) &&
+        0 == setsockopt(fds[1], SOL_SOCKET, SO_SNDBUF,
+                        buf_size, sizeof(*buf_size))) {
+      break;
+    }
+    *buf_size /= 2;
+  }
+  PCHECK(*buf_size > 0);
 }
 
 static pid_t ForkSanitizerCoverageHelper(
@@ -523,7 +536,7 @@ bool ZygoteMain(const MainFunctionParams& params,
   linux_sandbox->sanitizer_args()->coverage_sandboxed = 1;
   linux_sandbox->sanitizer_args()->coverage_fd = sancov_socket_fds[1];
   linux_sandbox->sanitizer_args()->coverage_max_block_size =
-      kSanitizerMaxMessageLength;
+      g_sanitizer_message_length;
   // Zygote termination will block until the helper process exits, which will
   // not happen until the write end of the socket is closed everywhere. Make
   // sure the init process does not hold on to it.
