@@ -42,19 +42,19 @@ class WebBluetooth {
 public:
     virtual ~WebBluetooth() { }
 
-    // BluetoothDiscovery Methods:
-    // See https://webbluetoothcg.github.io/web-bluetooth/#idl-def-bluetoothdiscovery
+    // Bluetooth Methods:
+    // See https://webbluetoothchrome.github.io/web-bluetooth/#device-discovery
     // WebBluetoothRequestDeviceCallbacks ownership transferred to the client.
     virtual void requestDevice(const WebRequestDeviceOptions&, WebBluetoothRequestDeviceCallbacks*) { }
 
     // BluetoothDevice methods:
-    // See https://webbluetoothcg.github.io/web-bluetooth/#idl-def-bluetoothdevice
+    // See https://webbluetoothchrome.github.io/web-bluetooth/#idl-def-bluetoothdevice
     // WebBluetoothConnectGATTCallbacks ownership transferred to the callee.
     virtual void connectGATT(const WebString& /* deviceInstanceID */,
         WebBluetoothConnectGATTCallbacks*) { }
 
     // BluetoothGATTRemoteServer methods:
-    // See https://webbluetoothcg.github.io/web-bluetooth/#idl-def-bluetoothgattremoteserver
+    // See https://webbluetoothchrome.github.io/web-bluetooth/#idl-def-bluetoothgattremoteserver
     virtual void disconnect() { }
     virtual void getPrimaryService(const WebString& deviceInstanceID,
         const WebString& serviceUUID,
@@ -62,13 +62,13 @@ public:
     // virtual void getPrimaryServices() { }
 
     // BluetoothGATTService methods:
-    // See https://webbluetoothcg.github.io/web-bluetooth/#idl-def-bluetoothgattservice
+    // See https://webbluetoothchrome.github.io/web-bluetooth/#idl-def-bluetoothgattservice
     virtual void getCharacteristic(const WebString& serviceInstanceID,
         const WebString& characteristicUUID,
         WebBluetoothGetCharacteristicCallbacks*) { }
 
     // BluetoothGATTCharacteristic methods:
-    // See https://webbluetoothcg.github.io/web-bluetooth/#bluetoothgattcharacteristic
+    // See https://webbluetoothchrome.github.io/web-bluetooth/#bluetoothgattcharacteristic
     virtual void readValue(const WebString& characteristicInstanceID,
         WebBluetoothReadValueCallbacks*) { }
 };

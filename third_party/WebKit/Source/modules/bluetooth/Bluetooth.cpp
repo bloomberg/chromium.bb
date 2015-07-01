@@ -29,7 +29,7 @@ static DOMException* convertRequestDeviceOptions(const RequestDeviceOptions& opt
             for (const String& service : filter.services()) {
                 // TODO(jyasskin): https://crbug.com/500630: Pass the services
                 // through BluetoothUUID.getService() per
-                // https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetooth-requestdevice
+                // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetooth-requestdevice
                 services.append(service);
             }
             filters.append(WebBluetoothScanFilter(services));
@@ -41,7 +41,7 @@ static DOMException* convertRequestDeviceOptions(const RequestDeviceOptions& opt
         for (const String& optionalService : options.optionalServices()) {
             // TODO(jyasskin): https://crbug.com/500630: Pass the services
             // through BluetoothUUID.getService() per
-            // https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetooth-requestdevice
+            // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetooth-requestdevice
             optionalServices.append(optionalService);
         }
         result.optionalServices.assign(optionalServices);
