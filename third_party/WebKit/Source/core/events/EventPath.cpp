@@ -110,8 +110,6 @@ void EventPath::calculatePath()
     WillBeHeapVector<RawPtrWillBeMember<Node>, 64> nodesInPath;
     Node* current = m_node;
     nodesInPath.append(current);
-    if (!m_node->inDocument())
-        current = nullptr;
     while (current) {
         if (m_event && current->keepEventInNode(m_event))
             break;
