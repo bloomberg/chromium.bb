@@ -97,7 +97,7 @@ NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
   BOOL _changingHistoryState;
 
   // CRWWebUIManager object for loading WebUI pages.
-  base::scoped_nsobject<CRWWebUIManager> web_ui_manager_;
+  base::scoped_nsobject<CRWWebUIManager> _webUIManager;
 }
 
 // Response's MIME type of the last known navigation.
@@ -805,13 +805,13 @@ NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 
 - (void)createWebUIForURL:(const GURL&)URL {
   [super createWebUIForURL:URL];
-  web_ui_manager_.reset(
+  _webUIManager.reset(
       [[CRWWebUIManager alloc] initWithWebState:self.webStateImpl]);
 }
 
 - (void)clearWebUI {
   [super clearWebUI];
-  web_ui_manager_.reset();
+  _webUIManager.reset();
 }
 
 #pragma mark -
