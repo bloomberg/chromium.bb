@@ -29,13 +29,14 @@
  */
 
 #include "config.h"
-
 #include "public/web/WebPageSerializer.h"
 
+#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLAllCollection.h"
+#include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTableElement.h"
@@ -49,8 +50,11 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
-#include "public/web/WebLocalFrame.h"
+#include "public/web/WebFrame.h"
 #include "public/web/WebPageSerializerClient.h"
+#include "public/web/WebView.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WebPageSerializerImpl.h"
 #include "web/WebViewImpl.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringConcatenate.h"
@@ -59,11 +63,98 @@ namespace blink {
 
 namespace {
 
+KURL getSubResourceURLFromElement(Element* element)
+{
+    ASSERT(element);
+    const QualifiedName& attributeName = element->subResourceAttributeName();
+    if (attributeName == QualifiedName::null())
+        return KURL();
+
+    String value = element->getAttribute(attributeName);
+    // Ignore javascript content.
+    if (value.isEmpty() || value.stripWhiteSpace().startsWith("javascript:", TextCaseInsensitive))
+        return KURL();
+
+    return element->document().completeURL(value);
+}
+
+void retrieveResourcesForElement(Element* element,
+                                 Vector<LocalFrame*>* visitedFrames,
+                                 Vector<LocalFrame*>* framesToVisit,
+                                 Vector<KURL>* frameURLs,
+                                 Vector<KURL>* resourceURLs)
+{
+    ASSERT(element);
+    // If the node is a frame, we'll process it later in retrieveResourcesForFrame.
+    if (isHTMLFrameElementBase(*element) || isHTMLObjectElement(*element) || isHTMLEmbedElement(*element)) {
+        Frame* frame = toHTMLFrameOwnerElement(element)->contentFrame();
+        if (frame && frame->isLocalFrame()) {
+            if (!visitedFrames->contains(toLocalFrame(frame)))
+                framesToVisit->append(toLocalFrame(frame));
+            return;
+        }
+    }
+
+    KURL url = getSubResourceURLFromElement(element);
+    if (url.isEmpty() || !url.isValid())
+        return; // No subresource for this node.
+
+    // Ignore URLs that have a non-standard protocols. Since the FTP protocol
+    // does no have a cache mechanism, we skip it as well.
+    if (!url.protocolIsInHTTPFamily() && !url.isLocalFile())
+        return;
+
+    if (!resourceURLs->contains(url))
+        resourceURLs->append(url);
+}
+
+void retrieveResourcesForFrame(LocalFrame* frame,
+    const WebVector<WebCString>& supportedSchemes,
+    Vector<LocalFrame*>* visitedFrames,
+    Vector<LocalFrame*>* framesToVisit,
+    Vector<KURL>* frameURLs,
+    Vector<KURL>* resourceURLs)
+{
+    KURL frameURL = frame->loader().documentLoader()->request().url();
+
+    // If the frame's URL is invalid, ignore it, it is not retrievable.
+    if (!frameURL.isValid())
+        return;
+
+    // Ignore frames from unsupported schemes.
+    bool isValidScheme = false;
+    for (size_t i = 0; i < supportedSchemes.size(); ++i) {
+        if (frameURL.protocolIs(static_cast<CString>(supportedSchemes[i]).data())) {
+            isValidScheme = true;
+            break;
+        }
+    }
+    if (!isValidScheme)
+        return;
+
+    // If we have already seen that frame, ignore it.
+    if (visitedFrames->contains(frame))
+        return;
+    visitedFrames->append(frame);
+    if (!frameURLs->contains(frameURL))
+        frameURLs->append(frameURL);
+
+    // Now get the resources associated with each node of the document.
+    RefPtrWillBeRawPtr<HTMLAllCollection> allElements = frame->document()->all();
+    for (unsigned i = 0; i < allElements->length(); ++i) {
+        Element* element = allElements->item(i);
+        retrieveResourcesForElement(element,
+                                    visitedFrames, framesToVisit,
+                                    frameURLs, resourceURLs);
+    }
+}
+
 class MHTMLPageSerializerDelegate final : public PageSerializer::Delegate {
 public:
     ~MHTMLPageSerializerDelegate() override;
     bool shouldIgnoreAttribute(const Attribute&) override;
 };
+
 
 MHTMLPageSerializerDelegate::~MHTMLPageSerializerDelegate()
 {
@@ -121,28 +212,57 @@ WebCString WebPageSerializer::serializeToMHTMLUsingBinaryEncoding(WebView* view)
     return WebCString(mhtml->data(), mhtml->size());
 }
 
-bool WebPageSerializer::serialize(WebLocalFrame* frame, bool recursive, WebPageSerializerClient* client,
-    const WebVector<WebURL>& links, const WebVector<WebString>& localPaths, const WebString& localDirectoryName)
+bool WebPageSerializer::serialize(WebLocalFrame* frame,
+                                  bool recursive,
+                                  WebPageSerializerClient* client,
+                                  const WebVector<WebURL>& links,
+                                  const WebVector<WebString>& localPaths,
+                                  const WebString& localDirectoryName)
 {
-    ASSERT(frame);
-    ASSERT(client);
-    ASSERT(links.size() == localPaths.size());
+    WebPageSerializerImpl serializerImpl(
+        frame, recursive, client, links, localPaths, localDirectoryName);
+    return serializerImpl.serialize();
+}
 
-    Vector<SerializedResource> resources;
-    PageSerializer serializer(&resources, nullptr);
+bool WebPageSerializer::retrieveAllResources(WebView* view,
+                                             const WebVector<WebCString>& supportedSchemes,
+                                             WebVector<WebURL>* resourceURLs,
+                                             WebVector<WebURL>* frameURLs) {
+    WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(view->mainFrame());
+    if (!mainFrame)
+        return false;
 
-    serializer.setRewriteURLFolder(localDirectoryName);
-    for (size_t i = 0; i < links.size(); i++) {
-        KURL url = links[i];
-        serializer.registerRewriteURL(url.string(), localPaths[i]);
+    Vector<LocalFrame*> framesToVisit;
+    Vector<LocalFrame*> visitedFrames;
+    Vector<KURL> frameKURLs;
+    Vector<KURL> resourceKURLs;
+
+    // Let's retrieve the resources from every frame in this page.
+    framesToVisit.append(mainFrame->frame());
+    while (!framesToVisit.isEmpty()) {
+        LocalFrame* frame = framesToVisit[0];
+        framesToVisit.remove(0);
+        retrieveResourcesForFrame(frame, supportedSchemes,
+                                  &visitedFrames, &framesToVisit,
+                                  &frameKURLs, &resourceKURLs);
     }
 
-    serializer.serialize(toWebViewImpl(frame->view())->page());
-
-    for (SerializedResource& resource : resources) {
-        client->didSerializeDataForFrame(resource.url, WebCString(resource.data->data(), resource.data->size()), WebPageSerializerClient::CurrentFrameIsFinished);
+    // Converts the results to WebURLs.
+    WebVector<WebURL> resultResourceURLs(resourceKURLs.size());
+    for (size_t i = 0; i < resourceKURLs.size(); ++i) {
+        resultResourceURLs[i] = resourceKURLs[i];
+        // A frame's src can point to the same URL as another resource, keep the
+        // resource URL only in such cases.
+        size_t index = frameKURLs.find(resourceKURLs[i]);
+        if (index != kNotFound)
+            frameKURLs.remove(index);
     }
-    client->didSerializeDataForFrame(KURL(), WebCString("", 0), WebPageSerializerClient::AllFramesAreFinished);
+    *resourceURLs = resultResourceURLs;
+    WebVector<WebURL> resultFrameURLs(frameKURLs.size());
+    for (size_t i = 0; i < frameKURLs.size(); ++i)
+        resultFrameURLs[i] = frameKURLs[i];
+    *frameURLs = resultFrameURLs;
+
     return true;
 }
 
@@ -155,7 +275,8 @@ WebString WebPageSerializer::generateMetaCharsetDeclaration(const WebString& cha
 WebString WebPageSerializer::generateMarkOfTheWebDeclaration(const WebURL& url)
 {
     return String::format("\n<!-- saved from url=(%04d)%s -->\n",
-        static_cast<int>(url.spec().length()), url.spec().data());
+                          static_cast<int>(url.spec().length()),
+                          url.spec().data());
 }
 
 WebString WebPageSerializer::generateBaseTagDeclaration(const WebString& baseTarget)
