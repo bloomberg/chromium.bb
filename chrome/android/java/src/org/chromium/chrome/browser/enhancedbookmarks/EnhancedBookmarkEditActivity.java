@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.enhancedbookmarks;
 
-import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -104,12 +103,13 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
                 mEnhancedBookmarksModel.getBookmarkTitle(bookmarkItem.getParentId()));
     }
 
-    @SuppressLint("AlwaysShowAction")
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        mDeleteButton = menu.add(R.string.enhanced_bookmark_action_bar_delete).setIcon(
-                TintedDrawable.constructTintedDrawable(getResources(), R.drawable.btn_trash));
-        mDeleteButton.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        mDeleteButton = menu.add(R.string.enhanced_bookmark_action_bar_delete)
+                .setIcon(TintedDrawable.constructTintedDrawable(
+                        getResources(), R.drawable.btn_trash))
+                .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+
         return super.onCreateOptionsMenu(menu);
     }
 

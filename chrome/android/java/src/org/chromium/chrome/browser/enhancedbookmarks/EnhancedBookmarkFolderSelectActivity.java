@@ -8,12 +8,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -54,7 +55,6 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
     private BookmarkId mParentId;
     private FolderListAdapter mBookmarkIdsAdapter;
     private ListView mBookmarkIdsList;
-    private ImageButton mBackButton;
 
     private BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
         @Override
@@ -133,13 +133,11 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
         setContentView(R.layout.eb_folder_select_activity);
         mBookmarkIdsList = (ListView) findViewById(R.id.eb_folder_list);
         mBookmarkIdsList.setOnItemClickListener(this);
-        mBackButton = (ImageButton) findViewById(R.id.back);
-        mBackButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         updateFolderList();
     }
 
@@ -168,6 +166,15 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
         }
         mBookmarkIdsAdapter = new FolderListAdapter(entryList, this);
         mBookmarkIdsList.setAdapter(mBookmarkIdsAdapter);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

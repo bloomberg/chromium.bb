@@ -9,31 +9,13 @@
     android:minHeight="@dimen/enhanced_bookmark_minimum_dialog_size_tablet"
     android:orientation="vertical" >
 
-    <LinearLayout
-        android:id="@+id/title_holder"
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/toolbar_height_no_shadow"
-        android:background="?attr/colorPrimary"
-        android:orientation="horizontal" >
-
-        <ImageButton
-            android:id="@+id/back"
-            style="@style/EnhancedBookmarkTitleBarButton"
-            android:contentDescription="@string/accessibility_toolbar_btn_back"
-            android:src="@drawable/eb_back_normal" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical"
-            android:singleLine="true"
-            android:text="@string/enhanced_bookmark_choose_folder"
-            android:textColor="#343434"
-            android:textSize="20sp" />
-    </LinearLayout>
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary" />
 
     <View
-        android:id="@+id/shadow"
         android:layout_width="match_parent"
         android:layout_height="4dp"
         android:layout_marginBottom="-4dp"

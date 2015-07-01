@@ -7,8 +7,11 @@ package org.chromium.chrome.browser.enhancedbookmarks;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageButton;
+import android.view.View.OnClickListener;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
@@ -16,6 +19,7 @@ import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel;
 import org.chromium.chrome.browser.widget.EmptyAlertEditText;
+import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.bookmarks.BookmarkId;
 
 import java.util.ArrayList;
@@ -26,8 +30,8 @@ import java.util.List;
  * mode and editing mode. Depending on different modes, it should be started via two static creator
  * functions.
  */
-public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActivityBase implements
-        View.OnClickListener {
+public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActivityBase
+        implements OnClickListener {
     static final String INTENT_IS_ADD_MODE = "EnhancedBookmarkAddEditFolderActivity.isAddMode";
     static final String INTENT_BOOKMARK_ID = "EnhancedBookmarkAddEditFolderActivity.BookmarkId";
     static final String
@@ -39,15 +43,14 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
     private EnhancedBookmarksModel mModel;
     private TextView mParentTextView;
     private EmptyAlertEditText mFolderTitle;
-    private ImageButton mBackButton;
-    private ImageButton mSaveButton;
 
     // Add mode member variable
     private List<BookmarkId> mBookmarksToMove;
+    private MenuItem mSaveButton;
 
     // Edit mode member variables
     private BookmarkId mFolderId;
-    private ImageButton mDeleteButton;
+    private MenuItem mDeleteButton;
 
     private BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
         @Override
@@ -127,54 +130,77 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
                     getIntent().getStringExtra(INTENT_BOOKMARK_ID));
         }
         setContentView(R.layout.eb_add_edit_folder_activity);
-        TextView dialogTitle = (TextView) findViewById(R.id.dialog_title);
 
         mParentTextView = (TextView) findViewById(R.id.parent_folder);
         mFolderTitle = (EmptyAlertEditText) findViewById(R.id.folder_title);
-        mDeleteButton = (ImageButton) findViewById(R.id.delete);
-        mBackButton = (ImageButton) findViewById(R.id.back);
-        mSaveButton = (ImageButton) findViewById(R.id.save);
 
-        mBackButton.setOnClickListener(this);
-        mSaveButton.setOnClickListener(this);
         mParentTextView.setOnClickListener(this);
-        mDeleteButton.setOnClickListener(this);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         if (mIsAddMode) {
-            mDeleteButton.setVisibility(View.GONE);
-            dialogTitle.setText(R.string.add_folder);
+            getSupportActionBar().setTitle(R.string.add_folder);
             updateParent(mModel.getDefaultFolder());
         } else {
             // Edit mode
-            mSaveButton.setVisibility(View.GONE);
-            dialogTitle.setText(R.string.edit_folder);
+            getSupportActionBar().setTitle(R.string.edit_folder);
             BookmarkItem bookmarkItem = mModel.getBookmarkById(mFolderId);
             updateParent(bookmarkItem.getParentId());
             mFolderTitle.setText(bookmarkItem.getTitle());
             mFolderTitle.setSelection(mFolderTitle.getText().length());
         }
+
         mParentTextView.setText(mModel.getBookmarkTitle(mParentId));
     }
 
     @Override
     public void onClick(View v) {
-        if (v == mParentTextView) {
-            if (mIsAddMode) {
-                EnhancedBookmarkFolderSelectActivity.startNewFolderSelectActivity(this,
-                        mBookmarksToMove);
-            } else {
-                EnhancedBookmarkFolderSelectActivity.startFolderSelectActivity(this, mFolderId);
-            }
-        } else if (v == mSaveButton) {
+        assert v == mParentTextView;
+
+        if (mIsAddMode) {
+            EnhancedBookmarkFolderSelectActivity.startNewFolderSelectActivity(
+                    this, mBookmarksToMove);
+        } else {
+            EnhancedBookmarkFolderSelectActivity.startFolderSelectActivity(this, mFolderId);
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if (mIsAddMode) {
+            mSaveButton = menu.add(R.string.save)
+                    .setIcon(R.drawable.eb_check_gray)
+                    .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+        } else {
+            mDeleteButton = menu.add(R.string.enhanced_bookmark_action_bar_delete)
+                    .setIcon(TintedDrawable.constructTintedDrawable(
+                            getResources(), R.drawable.btn_trash))
+                    .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+        }
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        } else if (item == mSaveButton) {
             assert mIsAddMode;
             if (save()) finish();
-        } else if (v == mBackButton) {
-            onBackPressed();
-        } else if (v == mDeleteButton) {
-            // When deleting, wait till the model has done its job and notify us via model observer,
-            // and then we finish this activity.
+            return true;
+        } else if (item == mDeleteButton) {
+            assert !mIsAddMode;
+            // When deleting, wait till the model has done its job and notified us via model
+            // observer, and then we finish this activity.
             mModel.deleteBookmarks(mFolderId);
+            return true;
         }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

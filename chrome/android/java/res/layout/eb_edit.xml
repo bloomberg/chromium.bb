@@ -13,9 +13,8 @@
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
-        android:minHeight="?attr/actionBarSize" />
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary" />
 
     <View
         android:layout_width="match_parent"
@@ -87,5 +86,4 @@
             </org.chromium.chrome.browser.widget.FloatLabelLayout>
         </LinearLayout>
     </ScrollView>
-
 </LinearLayout>

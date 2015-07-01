@@ -11,40 +11,11 @@
     android:minHeight="@dimen/enhanced_bookmark_minimum_dialog_size_tablet"
     android:orientation="vertical" >
 
-    <LinearLayout
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/toolbar_height_no_shadow"
-        android:background="@color/default_primary_color" >
-
-        <ImageButton
-            android:id="@+id/back"
-            style="@style/EnhancedBookmarkTitleBarButton"
-            android:contentDescription="@string/accessibility_toolbar_btn_back"
-            android:src="@drawable/eb_back_normal" />
-
-        <TextView
-            android:id="@+id/dialog_title"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center_vertical"
-            android:singleLine="true"
-            android:textColor="#343434"
-            android:textSize="20sp" />
-
-        <ImageButton
-            android:id="@+id/save"
-            style="@style/EnhancedBookmarkTitleBarButton"
-            android:contentDescription="@string/save"
-            android:src="@drawable/eb_check_gray" />
-
-        <org.chromium.chrome.browser.widget.TintedImageButton
-            android:id="@+id/delete"
-            style="@style/EnhancedBookmarkTitleBarButton"
-            android:contentDescription="@string/delete"
-            android:src="@drawable/btn_trash"
-            chrome:tint="@color/dark_mode_tint" />
-    </LinearLayout>
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary" />
 
     <View
         android:layout_width="match_parent"
