@@ -76,11 +76,13 @@ size_t VideoCaptureFormat::ImageAllocationSize() const {
   return result_frame_size;
 }
 
-std::string VideoCaptureFormat::ToString() const {
+//static
+std::string VideoCaptureFormat::ToString(const VideoCaptureFormat& format) {
   return base::StringPrintf("(%s)@%.3ffps, pixel format: %s storage: %s.",
-                            frame_size.ToString().c_str(), frame_rate,
-                            PixelFormatToString(pixel_format).c_str(),
-                            PixelStorageToString(pixel_storage).c_str());
+                            format.frame_size.ToString().c_str(),
+                            format.frame_rate,
+                            PixelFormatToString(format.pixel_format).c_str(),
+                            PixelStorageToString(format.pixel_storage).c_str());
 }
 
 //static

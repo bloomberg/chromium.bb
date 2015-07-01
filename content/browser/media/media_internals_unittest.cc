@@ -160,7 +160,8 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
       kFrameSize.ToString().c_str(), kFrameRate,
       media::VideoCaptureFormat::PixelFormatToString(kPixelFormat).c_str(),
       media::VideoCaptureFormat::PixelStorageToString(kPixelStorage).c_str());
-  EXPECT_EQ(expected_string, capture_format.ToString());
+  EXPECT_EQ(expected_string,
+            media::VideoCaptureFormat::ToString(capture_format));
 }
 
 TEST_F(MediaInternalsVideoCaptureDeviceTest,
@@ -207,7 +208,7 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
 #endif
   ExpectString("name", "dummy");
   base::ListValue expected_list;
-  expected_list.AppendString(format_hd.ToString());
+  expected_list.AppendString(media::VideoCaptureFormat::ToString(format_hd));
   ExpectListOfStrings("formats", expected_list);
 #if defined(OS_LINUX)
   ExpectString("captureApi", "V4L2 SPLANE");

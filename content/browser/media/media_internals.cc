@@ -580,7 +580,7 @@ void MediaInternals::UpdateVideoCaptureDeviceCapabilities(
   for (const auto& video_capture_device_info : video_capture_device_infos) {
     base::ListValue* format_list = new base::ListValue();
     for (const auto& format : video_capture_device_info.supported_formats)
-      format_list->AppendString(format.ToString());
+      format_list->AppendString(media::VideoCaptureFormat::ToString(format));
 
     base::DictionaryValue* device_dict = new base::DictionaryValue();
     device_dict->SetString("id", video_capture_device_info.name.id());

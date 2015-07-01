@@ -158,17 +158,17 @@ void VideoCaptureHost::OnStartCapture(int device_id,
                                       const media::VideoCaptureParams& params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "VideoCaptureHost::OnStartCapture:"
-           << " session_id=" << session_id
-           << ", device_id=" << device_id
-           << ", format=" << params.requested_format.ToString()
-           << "@" << params.requested_format.frame_rate
-           << " (" << (params.resolution_change_policy ==
-                           media::RESOLUTION_POLICY_FIXED_RESOLUTION ?
-                           "fixed resolution" :
-                           (params.resolution_change_policy ==
-                                media::RESOLUTION_POLICY_FIXED_ASPECT_RATIO ?
-                                "fixed aspect ratio" : "variable resolution"))
-           << ")";
+           << " session_id=" << session_id << ", device_id=" << device_id
+           << ", format="
+           << media::VideoCaptureFormat::ToString(params.requested_format)
+           << "@" << params.requested_format.frame_rate << " ("
+           << (params.resolution_change_policy ==
+                       media::RESOLUTION_POLICY_FIXED_RESOLUTION
+                   ? "fixed resolution"
+                   : (params.resolution_change_policy ==
+                              media::RESOLUTION_POLICY_FIXED_ASPECT_RATIO
+                          ? "fixed aspect ratio"
+                          : "variable resolution")) << ")";
   VideoCaptureControllerID controller_id(device_id);
   if (entries_.find(controller_id) != entries_.end()) {
     Send(new VideoCaptureMsg_StateChanged(device_id,

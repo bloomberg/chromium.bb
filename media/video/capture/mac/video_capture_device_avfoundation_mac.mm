@@ -89,7 +89,8 @@ media::VideoPixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
           frameRate.maxFrameRate,
           pixelFormat);
       formats->push_back(format);
-      DVLOG(2) << name.name() << " " << format.ToString();
+      DVLOG(2) << name.name() << " "
+               << media::VideoCaptureFormat::ToString(format);
     }
   }
 

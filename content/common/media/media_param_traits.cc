@@ -77,8 +77,8 @@ bool ParamTraits<VideoCaptureFormat>::Read(const Message* m,
 
 void ParamTraits<VideoCaptureFormat>::Log(const VideoCaptureFormat& p,
                                           std::string* l) {
-  l->append(
-      base::StringPrintf("<VideoCaptureFormat> %s", p.ToString().c_str()));
+  l->append(base::StringPrintf("<VideoCaptureFormat> %s",
+                               media::VideoCaptureFormat::ToString(p).c_str()));
 }
 
 }

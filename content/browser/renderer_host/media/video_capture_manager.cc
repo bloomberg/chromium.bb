@@ -457,7 +457,8 @@ void VideoCaptureManager::StartCaptureForClient(
     const DoneCB& done_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "VideoCaptureManager::StartCaptureForClient #" << session_id
-           << ", request: " << params.requested_format.ToString();
+           << ", request: "
+           << media::VideoCaptureFormat::ToString(params.requested_format);
 
   DeviceEntry* entry = GetOrCreateDeviceEntry(session_id);
   if (!entry) {

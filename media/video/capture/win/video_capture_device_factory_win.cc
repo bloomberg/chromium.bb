@@ -285,7 +285,7 @@ static void GetDeviceSupportedFormatsDirectShow(const Name& device,
           kSecondsToReferenceTime / static_cast<float>(h->AvgTimePerFrame) :
           0.0f;
       formats->push_back(format);
-      DVLOG(1) << device.name() << " " << format.ToString();
+      DVLOG(1) << device.name() << " " << VideoCaptureFormat::ToString(format);
     }
   }
 }
@@ -347,7 +347,8 @@ static void GetDeviceSupportedFormatsMediaFoundation(
     formats->push_back(capture_format);
     ++stream_index;
 
-    DVLOG(1) << device.name() << " " << capture_format.ToString();
+    DVLOG(1) << device.name() << " "
+             << VideoCaptureFormat::ToString(capture_format);
   }
 }
 

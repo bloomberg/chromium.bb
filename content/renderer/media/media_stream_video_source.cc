@@ -475,7 +475,8 @@ void MediaStreamVideoSource::OnSupportedFormats(
   }
 
   state_ = STARTING;
-  DVLOG(3) << "Starting the capturer with " << current_format_.ToString();
+  DVLOG(3) << "Starting the capturer with "
+           << media::VideoCaptureFormat::ToString(current_format_);
 
   StartSourceImpl(
       current_format_,

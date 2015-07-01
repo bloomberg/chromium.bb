@@ -87,8 +87,7 @@ struct MEDIA_EXPORT VideoCaptureFormat {
                      VideoPixelFormat pixel_format,
                      VideoPixelStorage pixel_storage);
 
-  // TODO(mcasas): Remove this method http://crbug.com/501134.
-  std::string ToString() const;
+  static std::string ToString(const VideoCaptureFormat& format);
   static std::string PixelFormatToString(VideoPixelFormat format);
   static std::string PixelStorageToString(VideoPixelStorage storage);
 

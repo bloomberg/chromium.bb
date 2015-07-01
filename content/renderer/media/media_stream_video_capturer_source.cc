@@ -160,7 +160,7 @@ void SetScreenCastParamsFromConstraints(
   }
 
   DVLOG(1) << "SetScreenCastParamsFromConstraints: "
-           << params->requested_format.ToString()
+           << media::VideoCaptureFormat::ToString(params->requested_format)
            << " with resolution change policy "
            << params->resolution_change_policy;
 }

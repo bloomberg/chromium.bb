@@ -183,7 +183,8 @@ void DeckLinkCaptureDelegate::AllocateAndStart(
     return;
   }
 #if !defined(NDEBUG)
-  DVLOG(1) << "Requested format: " << params.requested_format.ToString();
+  DVLOG(1) << "Requested format: "
+           << media::VideoCaptureFormat::ToString(params.requested_format);
   CFStringRef format_name = NULL;
   if (chosen_display_mode->GetName(&format_name) == S_OK)
     DVLOG(1) << "Chosen format: " << base::SysCFStringRefToUTF8(format_name);
@@ -422,7 +423,7 @@ void VideoCaptureDeviceDeckLinkMac::EnumerateDeviceCapabilities(
           GetDisplayModeFrameRate(display_mode),
           PIXEL_FORMAT_UNKNOWN);
       supported_formats->push_back(format);
-      DVLOG(2) << device.name() << " " << format.ToString();
+      DVLOG(2) << device.name() << " " << VideoCaptureFormat::ToString(format);
       display_mode.Release();
     }
     return;

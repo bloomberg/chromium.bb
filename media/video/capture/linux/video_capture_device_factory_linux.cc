@@ -118,7 +118,7 @@ static void GetSupportedFormatsForV4L2BufferType(
       for (const auto& frame_rate : frame_rates) {
         supported_format.frame_rate = frame_rate;
         supported_formats->push_back(supported_format);
-        DVLOG(1) << supported_format.ToString();
+        DVLOG(1) << VideoCaptureFormat::ToString(supported_format);
       }
     }
   }

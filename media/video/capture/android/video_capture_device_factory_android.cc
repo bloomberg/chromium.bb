@@ -125,7 +125,8 @@ void VideoCaptureDeviceFactoryAndroid::GetDeviceSupportedFormats(
                                                                   format.obj()),
         pixel_format);
     capture_formats->push_back(capture_format);
-    DVLOG(1) << device.name() << " " << capture_format.ToString();
+    DVLOG(1) << device.name() << " "
+             << VideoCaptureFormat::ToString(capture_format);
   }
 }
 

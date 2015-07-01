@@ -38,7 +38,8 @@ void ScreenCaptureDeviceCore::AllocateAndStart(
       !(params.requested_format.pixel_format == PIXEL_FORMAT_ARGB &&
         params.requested_format.pixel_storage == PIXEL_STORAGE_TEXTURE)) {
     const std::string error_msg = base::StringPrintf(
-        "unsupported format: %s", params.requested_format.ToString().c_str());
+        "unsupported format: %s",
+        VideoCaptureFormat::ToString(params.requested_format).c_str());
     DVLOG(1) << error_msg;
     client->OnError(error_msg);
     return;
