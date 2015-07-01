@@ -2972,7 +2972,7 @@
         {
           "comment": "Bullet Points: Example 11",
           "xfail": false,
-          "input": "•      Før kunne foreldre og elever søke om fritak fra faget kristendom. Da fikk elevene faget alternativ livssynsundervisning i stedet.",
+          "input": "• Før kunne foreldre og elever søke om fritak fra faget kristendom. Da fikk elevene faget alternativ livssynsundervisning i stedet.",
           "output": "⠶ ⠠⠋⠪⠗ ⠅⠥⠝⠝⠑ ⠋⠕⠗⠑⠇⠙⠗⠑ ⠕⠛ ⠑⠇⠑⠧⠑⠗ ⠎⠪⠅⠑ ⠕⠍ ⠋⠗⠊⠞⠁⠅ ⠋⠗⠁ ⠋⠁⠛⠑⠞ ⠅⠗⠊⠎⠞⠑⠝⠙⠕⠍⠄ ⠠⠙⠁ ⠋⠊⠅⠅ ⠑⠇⠑⠧⠑⠝⠑ ⠋⠁⠛⠑⠞ ⠁⠇⠞⠑⠗⠝⠁⠞⠊⠧ ⠇⠊⠧⠎⠎⠽⠝⠎⠥⠝⠙⠑⠗⠧⠊⠎⠝⠊⠝⠛ ⠊ ⠎⠞⠑⠙⠑⠞⠄"
         }
       ]
@@ -2982,7 +2982,7 @@
         {
           "comment": "Bullet Points: Example 12",
           "xfail": false,
-          "input": "•      I 1997 ble de to fagene slått sammen til ett fag: kristendoms-, religions- og livssynskunnskap (KRL).",
+          "input": "• I 1997 ble de to fagene slått sammen til ett fag: kristendoms-, religions- og livssynskunnskap (KRL).",
           "output": "⠶ ⠠⠊ ⠼⠁⠊⠊⠛ ⠃⠇⠑ ⠙⠑ ⠞⠕ ⠋⠁⠛⠑⠝⠑ ⠎⠇⠡⠞⠞ ⠎⠁⠍⠍⠑⠝ ⠞⠊⠇ ⠑⠞⠞ ⠋⠁⠛⠒ ⠅⠗⠊⠎⠞⠑⠝⠙⠕⠍⠎⠤⠂ ⠗⠑⠇⠊⠛⠊⠕⠝⠎⠤ ⠕⠛ ⠇⠊⠧⠎⠎⠽⠝⠎⠅⠥⠝⠝⠎⠅⠁⠏ ⠦⠠⠠⠅⠗⠇⠴⠄"
         }
       ]
@@ -2992,7 +2992,7 @@
         {
           "comment": "Bullet Points: Example 13",
           "xfail": false,
-          "input": "•      Det ble gjort mindre endringer i KRL-faget i 2001 og 2005, og det ble enklere å søke om fritak fra aktiviteter i faget.",
+          "input": "• Det ble gjort mindre endringer i KRL-faget i 2001 og 2005, og det ble enklere å søke om fritak fra aktiviteter i faget.",
           "output": "⠶ ⠠⠙⠑⠞ ⠃⠇⠑ ⠛⠚⠕⠗⠞ ⠍⠊⠝⠙⠗⠑ ⠑⠝⠙⠗⠊⠝⠛⠑⠗ ⠊ ⠠⠠⠅⠗⠇⠤⠋⠁⠛⠑⠞ ⠊ ⠼⠃⠚⠚⠁ ⠕⠛ ⠼⠃⠚⠚⠑⠂ ⠕⠛ ⠙⠑⠞ ⠃⠇⠑ ⠑⠝⠅⠇⠑⠗⠑ ⠡ ⠎⠪⠅⠑ ⠕⠍ ⠋⠗⠊⠞⠁⠅ ⠋⠗⠁ ⠁⠅⠞⠊⠧⠊⠞⠑⠞⠑⠗ ⠊ ⠋⠁⠛⠑⠞⠄"
         }
       ]

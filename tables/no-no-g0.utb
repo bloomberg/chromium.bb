@@ -81,6 +81,7 @@ sign ■ 123456                # Filled square
 sign □ 123456                # Empty square
 sign ● 2356                  # Filled circle
 sign ○ 2356                  # Empty circle
+sign • 2356                  # Bullet
 
 uplow Αα 1                   # alpha
 uplow Ββ 12                  # beta
@@ -110,7 +111,6 @@ uplow Ωω 2456                # omega
 uplow \x00C8\x00E8 2346      # e with grave è x00C8 / 00E8
 uplow \x00C9\x00E9 123456    # e with acute é x00C9 / 00E9
 uplow \x00CA\x00EA 126       # e with circumflex x00CA / 00EA
-uplow \x00CB\x00EB 25-15     # e with diaeresis ë x00CB / 00EB
 uplow \x010C\x010D 146       # c with caron x00CE / 00EE
 uplow \x00CF\x00EF 34        # i with diaeresis x00CF / 00EF
 uplow \x00D3\x00F3 1456      # o with acute ó x00D3 / 00F3
@@ -163,7 +163,7 @@ lowercase \x00F4 4-135       # DEC 244 ô
 # Some diacritic characters
 #uplow \x00CC\x00EC 45-24     # latin small letter i with grave - latin capital letter i with grave
 #uplow \x0160\x0161 46-234    # Šš LATIN CAPITAL LETTER S WITH CARON - LATIN SMALL LETTER S WITH CARON
-include latinLetterDef6Dots_diacritics.uti
+include no-no-latinLetterDef6Dots_diacritics.uti
 
 # ------------------- End char definitions --------------------
 
