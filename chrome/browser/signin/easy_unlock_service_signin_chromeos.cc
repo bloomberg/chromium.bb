@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
 #include "chrome/browser/signin/easy_unlock_metrics.h"
-#include "chrome/browser/signin/proximity_auth_facade.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/tpm/tpm_token_loader.h"
 
@@ -224,7 +223,7 @@ void EasyUnlockServiceSignin::InitializeInternal() {
 
   chromeos::LoginState::Get()->AddObserver(this);
   proximity_auth::ScreenlockBridge* screenlock_bridge =
-      GetScreenlockBridgeInstance();
+      proximity_auth::ScreenlockBridge::Get();
   screenlock_bridge->AddObserver(this);
   if (!screenlock_bridge->focused_user_id().empty())
     OnFocusedUserChanged(screenlock_bridge->focused_user_id());
@@ -236,7 +235,7 @@ void EasyUnlockServiceSignin::ShutdownInternal() {
   service_active_ = false;
 
   weak_ptr_factory_.InvalidateWeakPtrs();
-  GetScreenlockBridgeInstance()->RemoveObserver(this);
+  proximity_auth::ScreenlockBridge::Get()->RemoveObserver(this);
   chromeos::LoginState::Get()->RemoveObserver(this);
   STLDeleteContainerPairSecondPointers(user_data_.begin(), user_data_.end());
   user_data_.clear();

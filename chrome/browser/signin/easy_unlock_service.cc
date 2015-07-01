@@ -21,11 +21,11 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/chrome_proximity_auth_client.h"
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
 #include "chrome/browser/signin/easy_unlock_service_factory.h"
 #include "chrome/browser/signin/easy_unlock_service_observer.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/proximity_auth_facade.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -457,7 +457,8 @@ EasyUnlockScreenlockStateHandler*
     return NULL;
   if (!screenlock_state_handler_) {
     screenlock_state_handler_.reset(new EasyUnlockScreenlockStateHandler(
-        GetUserEmail(), GetHardlockState(), GetScreenlockBridgeInstance()));
+        GetUserEmail(), GetHardlockState(),
+        proximity_auth::ScreenlockBridge::Get()));
   }
   return screenlock_state_handler_.get();
 }
@@ -695,7 +696,7 @@ void EasyUnlockService::UpdateAppState() {
         !proximity_auth_ble_system_) {
       proximity_auth_ble_system_.reset(
           new proximity_auth::ProximityAuthBleSystem(
-              GetScreenlockBridgeInstance(), &proximity_auth_client_,
+              proximity_auth::ScreenlockBridge::Get(), &proximity_auth_client_,
               CreateCryptAuthClientFactory()));
     }
 

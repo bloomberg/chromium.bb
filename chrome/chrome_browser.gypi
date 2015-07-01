@@ -1498,8 +1498,6 @@
       'browser/signin/easy_unlock_service_regular.h',
       'browser/signin/easy_unlock_service_signin_chromeos.cc',
       'browser/signin/easy_unlock_service_signin_chromeos.h',
-      'browser/signin/proximity_auth_facade.cc',
-      'browser/signin/proximity_auth_facade.h',
       'browser/speech/extension_api/tts_engine_extension_api.cc',
       'browser/speech/extension_api/tts_engine_extension_api.h',
       'browser/speech/extension_api/tts_engine_extension_observer.cc',

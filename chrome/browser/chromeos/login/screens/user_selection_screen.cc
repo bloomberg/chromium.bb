@@ -19,7 +19,6 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
-#include "chrome/browser/signin/proximity_auth_facade.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "components/proximity_auth/screenlock_bridge.h"
@@ -120,14 +119,14 @@ UserSelectionScreen::UserSelectionScreen(const std::string& display_type)
 }
 
 UserSelectionScreen::~UserSelectionScreen() {
-  GetScreenlockBridgeInstance()->SetLockHandler(nullptr);
+  proximity_auth::ScreenlockBridge::Get()->SetLockHandler(nullptr);
   ui::UserActivityDetector* activity_detector = ui::UserActivityDetector::Get();
   if (activity_detector->HasObserver(this))
     activity_detector->RemoveObserver(this);
 }
 
 void UserSelectionScreen::InitEasyUnlock() {
-  GetScreenlockBridgeInstance()->SetLockHandler(this);
+  proximity_auth::ScreenlockBridge::Get()->SetLockHandler(this);
 }
 
 void UserSelectionScreen::SetLoginDisplayDelegate(

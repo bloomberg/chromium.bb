@@ -11,7 +11,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/proximity_auth_facade.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -274,7 +273,7 @@ void EasyUnlockServiceRegular::SetAutoPairingResult(
 }
 
 void EasyUnlockServiceRegular::InitializeInternal() {
-  GetScreenlockBridgeInstance()->AddObserver(this);
+  proximity_auth::ScreenlockBridge::Get()->AddObserver(this);
   registrar_.Init(profile()->GetPrefs());
   registrar_.Add(
       prefs::kEasyUnlockAllowed,
@@ -293,7 +292,7 @@ void EasyUnlockServiceRegular::ShutdownInternal() {
 
   turn_off_flow_status_ = EasyUnlockService::IDLE;
   registrar_.RemoveAll();
-  GetScreenlockBridgeInstance()->RemoveObserver(this);
+  proximity_auth::ScreenlockBridge::Get()->RemoveObserver(this);
 }
 
 bool EasyUnlockServiceRegular::IsAllowedInternal() const {

@@ -15,6 +15,9 @@
 namespace proximity_auth {
 namespace {
 
+base::LazyInstance<ScreenlockBridge> g_screenlock_bridge_instance =
+    LAZY_INSTANCE_INITIALIZER;
+
 // Ids for the icons that are supported by lock screen and signin screen
 // account picker as user pod custom icons.
 // The id's should be kept in sync with values used by user_pod_row.js.
@@ -47,12 +50,6 @@ std::string GetIdForIcon(ScreenlockBridge::UserPodCustomIcon icon) {
 }
 
 }  // namespace
-
-ScreenlockBridge::ScreenlockBridge() : lock_handler_(nullptr) {
-}
-
-ScreenlockBridge::~ScreenlockBridge() {
-}
 
 ScreenlockBridge::UserPodCustomIconOptions::UserPodCustomIconOptions()
     : autoshow_tooltip_(false),
@@ -113,6 +110,11 @@ void ScreenlockBridge::UserPodCustomIconOptions::SetTrialRun() {
   is_trial_run_ = true;
 }
 
+// static
+ScreenlockBridge* ScreenlockBridge::Get() {
+  return g_screenlock_bridge_instance.Pointer();
+}
+
 void ScreenlockBridge::SetLockHandler(LockHandler* lock_handler) {
   DCHECK(lock_handler_ == nullptr || lock_handler == nullptr);
 
@@ -168,6 +170,12 @@ void ScreenlockBridge::AddObserver(Observer* observer) {
 
 void ScreenlockBridge::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+ScreenlockBridge::ScreenlockBridge() : lock_handler_(nullptr) {
+}
+
+ScreenlockBridge::~ScreenlockBridge() {
 }
 
 }  // namespace proximity_auth

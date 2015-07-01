@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -23,9 +24,6 @@ namespace proximity_auth {
 // used solely for the lock screen anymore.
 class ScreenlockBridge {
  public:
-  ScreenlockBridge();
-  ~ScreenlockBridge();
-
   // User pod icons supported by lock screen / signin screen UI.
   enum UserPodCustomIcon {
     USER_POD_CUSTOM_ICON_NONE,
@@ -154,6 +152,8 @@ class ScreenlockBridge {
     virtual ~Observer() {}
   };
 
+  static ScreenlockBridge* Get();
+
   void SetLockHandler(LockHandler* lock_handler);
   void SetFocusedUser(const std::string& user_id);
 
@@ -171,7 +171,14 @@ class ScreenlockBridge {
   std::string focused_user_id() const { return focused_user_id_; }
 
  private:
-  LockHandler* lock_handler_;    // Not owned
+  friend struct base::DefaultLazyInstanceTraits<ScreenlockBridge>;
+  friend struct base::DefaultDeleter<ScreenlockBridge>;
+
+  ScreenlockBridge();
+  ~ScreenlockBridge();
+
+  LockHandler* lock_handler_;  // Not owned
+
   // The last focused user's id.
   std::string focused_user_id_;
   base::ObserverList<Observer, true> observers_;

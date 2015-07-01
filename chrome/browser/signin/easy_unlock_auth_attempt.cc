@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
-#include "chrome/browser/signin/proximity_auth_facade.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
@@ -51,26 +50,29 @@ void DefaultAuthAttemptFinalizedHandler(
     const std::string& user_id,
     const std::string& key_secret,
     const std::string& key_label) {
-  if (!GetScreenlockBridgeInstance()->IsLocked())
+  if (!proximity_auth::ScreenlockBridge::Get()->IsLocked())
     return;
 
   switch (auth_attempt_type) {
     case EasyUnlockAuthAttempt::TYPE_UNLOCK:
       if (success) {
-        GetScreenlockBridgeInstance()->lock_handler()->Unlock(user_id);
+        proximity_auth::ScreenlockBridge::Get()->lock_handler()->Unlock(
+            user_id);
       } else {
-        GetScreenlockBridgeInstance()->lock_handler()->EnableInput();
+        proximity_auth::ScreenlockBridge::Get()->lock_handler()->EnableInput();
       }
       return;
     case EasyUnlockAuthAttempt::TYPE_SIGNIN:
       if (success) {
-        GetScreenlockBridgeInstance()->lock_handler()->AttemptEasySignin(
-            user_id, key_secret, key_label);
+        proximity_auth::ScreenlockBridge::Get()
+            ->lock_handler()
+            ->AttemptEasySignin(user_id, key_secret, key_label);
       } else {
         // Attempting signin with an empty secret is equivalent to canceling the
         // attempt.
-        GetScreenlockBridgeInstance()->lock_handler()->AttemptEasySignin(
-            user_id, std::string(), std::string());
+        proximity_auth::ScreenlockBridge::Get()
+            ->lock_handler()
+            ->AttemptEasySignin(user_id, std::string(), std::string());
       }
       return;
   }
@@ -100,11 +102,12 @@ EasyUnlockAuthAttempt::~EasyUnlockAuthAttempt() {
 bool EasyUnlockAuthAttempt::Start() {
   DCHECK_EQ(STATE_IDLE, state_);
 
-  if (!GetScreenlockBridgeInstance()->IsLocked())
+  if (!proximity_auth::ScreenlockBridge::Get()->IsLocked())
     return false;
 
   proximity_auth::ScreenlockBridge::LockHandler::AuthType auth_type =
-      GetScreenlockBridgeInstance()->lock_handler()->GetAuthType(user_id_);
+      proximity_auth::ScreenlockBridge::Get()->lock_handler()->GetAuthType(
+          user_id_);
 
   if (auth_type != proximity_auth::ScreenlockBridge::LockHandler::USER_CLICK) {
     Cancel(user_id_);
@@ -126,7 +129,7 @@ void EasyUnlockAuthAttempt::FinalizeUnlock(const std::string& user_id,
   if (state_ != STATE_RUNNING || user_id != user_id_)
     return;
 
-  if (!GetScreenlockBridgeInstance()->IsLocked())
+  if (!proximity_auth::ScreenlockBridge::Get()->IsLocked())
     return;
 
   if (type_ != TYPE_UNLOCK) {
@@ -145,7 +148,7 @@ void EasyUnlockAuthAttempt::FinalizeSignin(const std::string& user_id,
   if (state_ != STATE_RUNNING || user_id != user_id_)
     return;
 
-  if (!GetScreenlockBridgeInstance()->IsLocked())
+  if (!proximity_auth::ScreenlockBridge::Get()->IsLocked())
     return;
 
   if (type_ != TYPE_SIGNIN) {

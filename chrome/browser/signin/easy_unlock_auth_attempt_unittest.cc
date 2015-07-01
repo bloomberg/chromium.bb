@@ -6,7 +6,6 @@
 
 #include "base/macros.h"
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
-#include "chrome/browser/signin/proximity_auth_facade.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -217,7 +216,7 @@ class EasyUnlockAuthAttemptUnlockTest : public testing::Test {
   }
 
   void TearDown() override {
-    GetScreenlockBridgeInstance()->SetLockHandler(NULL);
+    proximity_auth::ScreenlockBridge::Get()->SetLockHandler(NULL);
     auth_attempt_.reset();
   }
 
@@ -225,7 +224,8 @@ class EasyUnlockAuthAttemptUnlockTest : public testing::Test {
   void InitScreenLock() {
     lock_handler_.reset(new TestLockHandler(kTestUser1));
     lock_handler_->set_state(TestLockHandler::STATE_ATTEMPTING_UNLOCK);
-    GetScreenlockBridgeInstance()->SetLockHandler(lock_handler_.get());
+    proximity_auth::ScreenlockBridge::Get()->SetLockHandler(
+        lock_handler_.get());
   }
 
   scoped_ptr<EasyUnlockAuthAttempt> auth_attempt_;
@@ -237,7 +237,7 @@ class EasyUnlockAuthAttemptUnlockTest : public testing::Test {
 };
 
 TEST_F(EasyUnlockAuthAttemptUnlockTest, StartWhenNotLocked) {
-  ASSERT_FALSE(GetScreenlockBridgeInstance()->IsLocked());
+  ASSERT_FALSE(proximity_auth::ScreenlockBridge::Get()->IsLocked());
 
   EXPECT_FALSE(auth_attempt_->Start());
   EXPECT_EQ(0u, app_manager_->auth_attempt_count());
@@ -245,7 +245,7 @@ TEST_F(EasyUnlockAuthAttemptUnlockTest, StartWhenNotLocked) {
 
 TEST_F(EasyUnlockAuthAttemptUnlockTest, StartWhenAuthTypeIsPassword) {
   InitScreenLock();
-  ASSERT_TRUE(GetScreenlockBridgeInstance()->IsLocked());
+  ASSERT_TRUE(proximity_auth::ScreenlockBridge::Get()->IsLocked());
   ASSERT_EQ(TestLockHandler::STATE_ATTEMPTING_UNLOCK, lock_handler_->state());
 
   lock_handler_->set_auth_type(
@@ -260,7 +260,7 @@ TEST_F(EasyUnlockAuthAttemptUnlockTest, StartWhenAuthTypeIsPassword) {
 TEST_F(EasyUnlockAuthAttemptUnlockTest,
        StartWhenDispatchingAuthAttemptEventFails) {
   InitScreenLock();
-  ASSERT_TRUE(GetScreenlockBridgeInstance()->IsLocked());
+  ASSERT_TRUE(proximity_auth::ScreenlockBridge::Get()->IsLocked());
   ASSERT_EQ(TestLockHandler::STATE_ATTEMPTING_UNLOCK, lock_handler_->state());
 
   app_manager_->set_auth_attempt_should_fail(true);
@@ -273,7 +273,7 @@ TEST_F(EasyUnlockAuthAttemptUnlockTest,
 
 TEST_F(EasyUnlockAuthAttemptUnlockTest, ResetBeforeFinalizeUnlock) {
   InitScreenLock();
-  ASSERT_TRUE(GetScreenlockBridgeInstance()->IsLocked());
+  ASSERT_TRUE(proximity_auth::ScreenlockBridge::Get()->IsLocked());
   ASSERT_EQ(TestLockHandler::STATE_ATTEMPTING_UNLOCK, lock_handler_->state());
 
   ASSERT_TRUE(auth_attempt_->Start());
@@ -288,7 +288,7 @@ TEST_F(EasyUnlockAuthAttemptUnlockTest, ResetBeforeFinalizeUnlock) {
 
 TEST_F(EasyUnlockAuthAttemptUnlockTest, FinalizeUnlockFailure) {
   InitScreenLock();
-  ASSERT_TRUE(GetScreenlockBridgeInstance()->IsLocked());
+  ASSERT_TRUE(proximity_auth::ScreenlockBridge::Get()->IsLocked());
   ASSERT_EQ(TestLockHandler::STATE_ATTEMPTING_UNLOCK, lock_handler_->state());
 
   ASSERT_TRUE(auth_attempt_->Start());
@@ -303,7 +303,7 @@ TEST_F(EasyUnlockAuthAttemptUnlockTest, FinalizeUnlockFailure) {
 
 TEST_F(EasyUnlockAuthAttemptUnlockTest, FinalizeSigninCalled) {
   InitScreenLock();
-  ASSERT_TRUE(GetScreenlockBridgeInstance()->IsLocked());
+  ASSERT_TRUE(proximity_auth::ScreenlockBridge::Get()->IsLocked());
   ASSERT_EQ(TestLockHandler::STATE_ATTEMPTING_UNLOCK, lock_handler_->state());
 
   ASSERT_TRUE(auth_attempt_->Start());
@@ -320,7 +320,7 @@ TEST_F(EasyUnlockAuthAttemptUnlockTest, FinalizeSigninCalled) {
 
 TEST_F(EasyUnlockAuthAttemptUnlockTest, UnlockSucceeds) {
   InitScreenLock();
-  ASSERT_TRUE(GetScreenlockBridgeInstance()->IsLocked());
+  ASSERT_TRUE(proximity_auth::ScreenlockBridge::Get()->IsLocked());
   ASSERT_EQ(TestLockHandler::STATE_ATTEMPTING_UNLOCK, lock_handler_->state());
 
   ASSERT_TRUE(auth_attempt_->Start());
@@ -335,7 +335,7 @@ TEST_F(EasyUnlockAuthAttemptUnlockTest, UnlockSucceeds) {
 
 TEST_F(EasyUnlockAuthAttemptUnlockTest, FinalizeUnlockCalledForWrongUser) {
   InitScreenLock();
-  ASSERT_TRUE(GetScreenlockBridgeInstance()->IsLocked());
+  ASSERT_TRUE(proximity_auth::ScreenlockBridge::Get()->IsLocked());
   ASSERT_EQ(TestLockHandler::STATE_ATTEMPTING_UNLOCK, lock_handler_->state());
 
   ASSERT_TRUE(auth_attempt_->Start());
@@ -370,7 +370,7 @@ class EasyUnlockAuthAttemptSigninTest : public testing::Test {
   }
 
   void TearDown() override {
-    GetScreenlockBridgeInstance()->SetLockHandler(NULL);
+    proximity_auth::ScreenlockBridge::Get()->SetLockHandler(NULL);
     auth_attempt_.reset();
   }
 
@@ -378,7 +378,8 @@ class EasyUnlockAuthAttemptSigninTest : public testing::Test {
   void InitScreenLock() {
     lock_handler_.reset(new TestLockHandler(kTestUser1));
     lock_handler_->set_state(TestLockHandler::STATE_ATTEMPTING_SIGNIN);
-    GetScreenlockBridgeInstance()->SetLockHandler(lock_handler_.get());
+    proximity_auth::ScreenlockBridge::Get()->SetLockHandler(
+        lock_handler_.get());
   }
 
   scoped_ptr<EasyUnlockAuthAttempt> auth_attempt_;
@@ -390,7 +391,7 @@ class EasyUnlockAuthAttemptSigninTest : public testing::Test {
 };
 
 TEST_F(EasyUnlockAuthAttemptSigninTest, StartWhenNotLocked) {
-  ASSERT_FALSE(GetScreenlockBridgeInstance()->IsLocked());
+  ASSERT_FALSE(proximity_auth::ScreenlockBridge::Get()->IsLocked());
 
   EXPECT_FALSE(auth_attempt_->Start());
   EXPECT_EQ(0u, app_manager_->auth_attempt_count());
@@ -398,7 +399,7 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, StartWhenNotLocked) {
 
 TEST_F(EasyUnlockAuthAttemptSigninTest, StartWhenAuthTypeIsPassword) {
   InitScreenLock();
-  ASSERT_TRUE(GetScreenlockBridgeInstance()->IsLocked());
+  ASSERT_TRUE(proximity_auth::ScreenlockBridge::Get()->IsLocked());
   ASSERT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
 
   lock_handler_->set_auth_type(
@@ -413,7 +414,7 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, StartWhenAuthTypeIsPassword) {
 TEST_F(EasyUnlockAuthAttemptSigninTest,
        StartWhenDispatchingAuthAttemptEventFails) {
   InitScreenLock();
-  ASSERT_TRUE(GetScreenlockBridgeInstance()->IsLocked());
+  ASSERT_TRUE(proximity_auth::ScreenlockBridge::Get()->IsLocked());
   ASSERT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
 
   app_manager_->set_auth_attempt_should_fail(true);
@@ -426,7 +427,7 @@ TEST_F(EasyUnlockAuthAttemptSigninTest,
 
 TEST_F(EasyUnlockAuthAttemptSigninTest, ResetBeforeFinalizeSignin) {
   InitScreenLock();
-  ASSERT_TRUE(GetScreenlockBridgeInstance()->IsLocked());
+  ASSERT_TRUE(proximity_auth::ScreenlockBridge::Get()->IsLocked());
   ASSERT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
 
   ASSERT_TRUE(auth_attempt_->Start());
@@ -441,7 +442,7 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, ResetBeforeFinalizeSignin) {
 
 TEST_F(EasyUnlockAuthAttemptSigninTest, FinalizeSigninWithEmtpySecret) {
   InitScreenLock();
-  ASSERT_TRUE(GetScreenlockBridgeInstance()->IsLocked());
+  ASSERT_TRUE(proximity_auth::ScreenlockBridge::Get()->IsLocked());
   ASSERT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
 
   ASSERT_TRUE(auth_attempt_->Start());
@@ -456,7 +457,7 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, FinalizeSigninWithEmtpySecret) {
 
 TEST_F(EasyUnlockAuthAttemptSigninTest, FinalizeSigninWithEmtpyKey) {
   InitScreenLock();
-  ASSERT_TRUE(GetScreenlockBridgeInstance()->IsLocked());
+  ASSERT_TRUE(proximity_auth::ScreenlockBridge::Get()->IsLocked());
   ASSERT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
 
   ASSERT_TRUE(auth_attempt_->Start());
@@ -471,7 +472,7 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, FinalizeSigninWithEmtpyKey) {
 
 TEST_F(EasyUnlockAuthAttemptSigninTest, SigninSuccess) {
   InitScreenLock();
-  ASSERT_TRUE(GetScreenlockBridgeInstance()->IsLocked());
+  ASSERT_TRUE(proximity_auth::ScreenlockBridge::Get()->IsLocked());
   ASSERT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
 
   ASSERT_TRUE(auth_attempt_->Start());
@@ -488,7 +489,7 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, SigninSuccess) {
 
 TEST_F(EasyUnlockAuthAttemptSigninTest, WrongWrappedSecret) {
   InitScreenLock();
-  ASSERT_TRUE(GetScreenlockBridgeInstance()->IsLocked());
+  ASSERT_TRUE(proximity_auth::ScreenlockBridge::Get()->IsLocked());
   ASSERT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
 
   ASSERT_TRUE(auth_attempt_->Start());
@@ -503,7 +504,7 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, WrongWrappedSecret) {
 
 TEST_F(EasyUnlockAuthAttemptSigninTest, InvalidSessionKey) {
   InitScreenLock();
-  ASSERT_TRUE(GetScreenlockBridgeInstance()->IsLocked());
+  ASSERT_TRUE(proximity_auth::ScreenlockBridge::Get()->IsLocked());
   ASSERT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
 
   ASSERT_TRUE(auth_attempt_->Start());
@@ -518,7 +519,7 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, InvalidSessionKey) {
 
 TEST_F(EasyUnlockAuthAttemptSigninTest, FinalizeUnlockCalled) {
   InitScreenLock();
-  ASSERT_TRUE(GetScreenlockBridgeInstance()->IsLocked());
+  ASSERT_TRUE(proximity_auth::ScreenlockBridge::Get()->IsLocked());
   ASSERT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
 
   ASSERT_TRUE(auth_attempt_->Start());
@@ -533,7 +534,7 @@ TEST_F(EasyUnlockAuthAttemptSigninTest, FinalizeUnlockCalled) {
 
 TEST_F(EasyUnlockAuthAttemptSigninTest, FinalizeSigninCalledForWrongUser) {
   InitScreenLock();
-  ASSERT_TRUE(GetScreenlockBridgeInstance()->IsLocked());
+  ASSERT_TRUE(proximity_auth::ScreenlockBridge::Get()->IsLocked());
   ASSERT_EQ(TestLockHandler::STATE_ATTEMPTING_SIGNIN, lock_handler_->state());
 
   ASSERT_TRUE(auth_attempt_->Start());

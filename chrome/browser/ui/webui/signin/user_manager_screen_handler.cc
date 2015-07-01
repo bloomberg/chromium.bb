@@ -25,7 +25,6 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/local_auth.h"
-#include "chrome/browser/signin/proximity_auth_facade.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -39,6 +38,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/proximity_auth/screenlock_bridge.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -302,7 +302,7 @@ UserManagerScreenHandler::UserManagerScreenHandler()
 }
 
 UserManagerScreenHandler::~UserManagerScreenHandler() {
-  GetScreenlockBridgeInstance()->SetLockHandler(NULL);
+  proximity_auth::ScreenlockBridge::Get()->SetLockHandler(NULL);
 }
 
 void UserManagerScreenHandler::ShowBannerMessage(
@@ -394,7 +394,7 @@ void UserManagerScreenHandler::HandleInitialize(const base::ListValue* args) {
   desktop_type_ = chrome::GetHostDesktopTypeForNativeView(
       web_ui()->GetWebContents()->GetNativeView());
 
-  GetScreenlockBridgeInstance()->SetLockHandler(this);
+  proximity_auth::ScreenlockBridge::Get()->SetLockHandler(this);
 }
 
 void UserManagerScreenHandler::HandleAddUser(const base::ListValue* args) {

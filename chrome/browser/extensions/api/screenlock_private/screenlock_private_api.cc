@@ -9,9 +9,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_proximity_auth_client.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
-#include "chrome/browser/signin/proximity_auth_facade.h"
 #include "chrome/common/extensions/api/screenlock_private.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "components/proximity_auth/screenlock_bridge.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/event_router.h"
 
@@ -52,8 +52,8 @@ ScreenlockPrivateGetLockedFunction::ScreenlockPrivateGetLockedFunction() {}
 ScreenlockPrivateGetLockedFunction::~ScreenlockPrivateGetLockedFunction() {}
 
 bool ScreenlockPrivateGetLockedFunction::RunAsync() {
-  SetResult(
-      new base::FundamentalValue(GetScreenlockBridgeInstance()->IsLocked()));
+  SetResult(new base::FundamentalValue(
+      proximity_auth::ScreenlockBridge::Get()->IsLocked()));
   SendResponse(error_.empty());
   return true;
 }
@@ -77,9 +77,9 @@ bool ScreenlockPrivateSetLockedFunction::RunAsync() {
       // TODO(tbarzic): Move this logic to a new easyUnlockPrivate function.
       service->SetTrialRun();
     }
-    GetScreenlockBridgeInstance()->Lock();
+    proximity_auth::ScreenlockBridge::Get()->Lock();
   } else {
-    GetScreenlockBridgeInstance()->Unlock(
+    proximity_auth::ScreenlockBridge::Get()->Unlock(
         service->proximity_auth_client()->GetAuthenticatedUsername());
   }
   SendResponse(error_.empty());
@@ -107,7 +107,7 @@ bool ScreenlockPrivateAcceptAuthAttemptFunction::RunSync() {
 ScreenlockPrivateEventRouter::ScreenlockPrivateEventRouter(
     content::BrowserContext* context)
     : browser_context_(context) {
-  GetScreenlockBridgeInstance()->AddObserver(this);
+  proximity_auth::ScreenlockBridge::Get()->AddObserver(this);
 }
 
 ScreenlockPrivateEventRouter::~ScreenlockPrivateEventRouter() {}
@@ -149,7 +149,7 @@ ScreenlockPrivateEventRouter::GetFactoryInstance() {
 }
 
 void ScreenlockPrivateEventRouter::Shutdown() {
-  GetScreenlockBridgeInstance()->RemoveObserver(this);
+  proximity_auth::ScreenlockBridge::Get()->RemoveObserver(this);
 }
 
 bool ScreenlockPrivateEventRouter::OnAuthAttempted(
