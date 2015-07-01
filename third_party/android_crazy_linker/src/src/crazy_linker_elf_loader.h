@@ -73,6 +73,9 @@ class ElfLoader {
 
   const ELF::Phdr* loaded_phdr_;  // points to the loaded program header.
 
+  void* reserved_start_;  // Real first page of reserved address space.
+  size_t reserved_size_;  // Real size in bytes of reserved address space.
+
   // Individual steps used by ::LoadAt()
   bool ReadElfHeader(Error* error);
   bool ReadProgramHeader(Error* error);

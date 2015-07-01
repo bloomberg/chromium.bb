@@ -22,6 +22,13 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+// See commentary in crazy_linker_elf_loader.cpp for the effect of setting
+// this.  If changing there, change here also.
+//
+// For more, see:
+//   https://crbug.com/504410
+#define RESERVE_BREAKPAD_GUARD_REGION 1
+
 // Set this to 1 to enable debug traces to the Android log.
 // Note that LOG() from "base/logging.h" cannot be used, since it is
 // in base/ which hasn't been loaded yet.
@@ -626,6 +633,13 @@ jboolean CanUseSharedRelro(JNIEnv* env, jclass clazz) {
 }
 
 jlong GetRandomBaseLoadAddress(JNIEnv* env, jclass clazz, jlong bytes) {
+#if RESERVE_BREAKPAD_GUARD_REGION
+  // Add a Breakpad guard region.  16Mb should be comfortably larger than
+  // the largest relocation packer saving we expect to encounter.
+  static const size_t kBreakpadGuardRegionBytes = 16 * 1024 * 1024;
+  bytes += kBreakpadGuardRegionBytes;
+#endif
+
   void* address =
       mmap(NULL, bytes, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
   if (address == MAP_FAILED) {
@@ -633,6 +647,13 @@ jlong GetRandomBaseLoadAddress(JNIEnv* env, jclass clazz, jlong bytes) {
     return 0;
   }
   munmap(address, bytes);
+
+#if RESERVE_BREAKPAD_GUARD_REGION
+  // Allow for a Breakpad guard region ahead of the returned address.
+  address = reinterpret_cast<void*>(
+      reinterpret_cast<uintptr_t>(address) + kBreakpadGuardRegionBytes);
+#endif
+
   LOG_INFO("%s: Random base load address is %p\n", __FUNCTION__, address);
   return static_cast<jlong>(reinterpret_cast<uintptr_t>(address));
 }
