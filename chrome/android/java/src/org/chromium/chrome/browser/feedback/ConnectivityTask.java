@@ -16,6 +16,8 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 /**
  * A utility class for checking if the device is currently connected to the Internet by using
  * both available network stacks, and checking over both HTTP and HTTPS.
@@ -101,6 +103,16 @@ public class ConnectivityTask {
             default:
                 throw new IllegalArgumentException("Unknown result value: " + result);
         }
+    }
+
+    /**
+     * ConnectivityResult is the callback for when the result of a connectivity check is ready.
+     */
+    interface ConnectivityResult {
+        /**
+         * Called when the FeedbackData is ready.
+         */
+        void onResult(FeedbackData feedbackData);
     }
 
     /**
@@ -202,15 +214,28 @@ public class ConnectivityTask {
             Log.v(TAG, "Got result for " + getHumanReadableString(mType) + ": result = "
                             + getHumanReadableString(result));
             mResult.put(mType, result);
+            if (isDone()) postCallbackResult();
+        }
+
+        private void postCallbackResult() {
+            if (mCallback == null) return;
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mCallback.onResult(get());
+                }
+            });
         }
     }
 
     private final Map<Type, Integer> mResult = new EnumMap<Type, Integer>(Type.class);
     private final int mTimeoutMs;
+    private final ConnectivityResult mCallback;
     private final long mStartCheckTimeMs;
 
-    private ConnectivityTask(Profile profile, int timeoutMs) {
+    private ConnectivityTask(Profile profile, int timeoutMs, ConnectivityResult callback) {
         mTimeoutMs = timeoutMs;
+        mCallback = callback;
         mStartCheckTimeMs = SystemClock.elapsedRealtime();
         for (Type t : Type.values()) {
             SingleTypeTask task = new SingleTypeTask(t);
@@ -251,16 +276,20 @@ public class ConnectivityTask {
      * Starts an asynchronous request for checking whether the device is currently connected to the
      * Internet using both the Chrome and the Android system network stack.
      *
-     * The result can be retrieved by calling {@link #get}, and this call must happen from the main
+     * The result will be given back in the {@link ConnectivityResult} callback that is passed in,
+     * either when all results have been gathered successfully or if a timeout happened. The result
+     * can also be retrieved by calling {@link #get}, and this call must happen from the main
      * thread. {@link #isDone} can be used to see if all requests have been completed. It is OK to
      * get the result before {@link #isDone()} returns true.
      *
      * @param profile the context to do the check in.
      * @param timeoutMs number of milliseconds to wait before giving up waiting for a connection.
+     * @param callback the callback for the result. May be null.
      * @return a ConnectivityTask to retrieve the results.
      */
-    public static ConnectivityTask create(Profile profile, int timeoutMs) {
+    public static ConnectivityTask create(
+            Profile profile, int timeoutMs, @Nullable ConnectivityResult callback) {
         ThreadUtils.assertOnUiThread();
-        return new ConnectivityTask(profile, timeoutMs);
+        return new ConnectivityTask(profile, timeoutMs, callback);
     }
 }

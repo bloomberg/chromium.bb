@@ -73,7 +73,8 @@ public class FeedbackCollector {
         mData = new HashMap<>();
         mProfile = profile;
         mUrl = url;
-        mConnectivityTask = ConnectivityTask.create(mProfile, DEFAULT_ASYNC_COLLECTION_TIMEOUT_MS);
+        mConnectivityTask =
+                ConnectivityTask.create(mProfile, DEFAULT_ASYNC_COLLECTION_TIMEOUT_MS, null);
     }
 
     /**
