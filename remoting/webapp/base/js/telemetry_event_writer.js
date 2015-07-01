@@ -45,7 +45,7 @@ remoting.TelemetryEventWriter.Service.prototype.init = function() {
         new base.ChromeEventHook(chrome.runtime.onSuspend,
                                  this.onSuspend_.bind(this)));
 
-    this.ipc_.register(IpcNames.WRITE, this.write_.bind(this));
+    this.ipc_.register(IpcNames.WRITE, this.write.bind(this));
     this.eventWriter_.flush();
   }
   // Only listen for new incoming requests after we have loaded the pending
@@ -72,9 +72,9 @@ remoting.TelemetryEventWriter.Service.prototype.unbindSession =
  * @param {string} windowId  The source window id of the IPC.
  * @param {!Object} event  The event to be written to the server.
  */
-remoting.TelemetryEventWriter.Service.prototype.write_ =
+remoting.TelemetryEventWriter.Service.prototype.write =
     function(windowId, event) {
-  this.sessionMonitor_.onEvent(windowId, event);
+  this.sessionMonitor_.trackSessionStateChanges(windowId, event);
   this.eventWriter_.write(event);
 };
 
@@ -137,7 +137,7 @@ var SessionMonitor = function(eventWriter) {
  * @param {string} windowId
  * @param {Object} entry
  */
-SessionMonitor.prototype.onEvent = function(windowId, entry) {
+SessionMonitor.prototype.trackSessionStateChanges = function(windowId, entry) {
   var event = /** @type {remoting.ChromotingEvent} */ (base.deepCopy(entry));
 
   if (event.type !== remoting.ChromotingEvent.Type.SESSION_STATE) {

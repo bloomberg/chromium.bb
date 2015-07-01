@@ -397,6 +397,7 @@ remoting_webapp_background_html_all_js_files += [
   "base/js/oauth2.js",
   "base/js/oauth2_api.js",
   "base/js/oauth2_api_impl.js",
+  "base/js/platform.js",
   "base/js/plugin_settings.js",
   "base/js/telemetry_event_writer.js",
   "base/js/typecheck.js",

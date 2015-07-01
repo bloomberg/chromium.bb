@@ -408,6 +408,7 @@
       'webapp/base/js/oauth2.js',
       'webapp/base/js/oauth2_api.js',
       'webapp/base/js/oauth2_api_impl.js',
+      'webapp/base/js/platform.js',
       'webapp/base/js/plugin_settings.js',
       'webapp/base/js/telemetry_event_writer.js',
       'webapp/base/js/typecheck.js',

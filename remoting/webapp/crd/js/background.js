@@ -42,10 +42,10 @@ BackgroundPage.prototype.preInit_ = function() {
 
   if (base.isAppsV2()) {
     this.appLauncher_ = new remoting.V2AppLauncher();
-    this.activationHandler_ = new remoting.ActivationHandler(
-        base.Ipc.getInstance(), this.appLauncher_);
     this.telemetryService_ = remoting.TelemetryEventWriter.Service.create();
     this.telemetryService_.init();
+    this.activationHandler_ = new remoting.ActivationHandler(
+        base.Ipc.getInstance(), this.appLauncher_, this.telemetryService_);
     this.disposables_.add(new base.EventHook(
         this.activationHandler_, remoting.ActivationHandler.Events.windowClosed,
         this.telemetryService_.unbindSession.bind(this.telemetryService_)));

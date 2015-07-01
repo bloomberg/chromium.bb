@@ -17,11 +17,12 @@ var NEW_WINDOW_MENU_ID_ = 'new-window';
  *
  * @param {base.Ipc} ipc
  * @param {remoting.V2AppLauncher} appLauncher
+ * @param {remoting.TelemetryEventWriter.Service} telemetryService
  * @extends {base.EventSourceImpl}
  * @implements {base.Disposable}
  * @constructor
  */
-remoting.ActivationHandler = function (ipc, appLauncher) {
+remoting.ActivationHandler = function (ipc, appLauncher, telemetryService) {
   base.inherits(this, base.EventSourceImpl);
   this.defineEvents(base.values(remoting.ActivationHandler.Events));
 
@@ -33,6 +34,9 @@ remoting.ActivationHandler = function (ipc, appLauncher) {
 
   /** @private {Map<string, base.Disposable>} */
   this.windowClosedHooks_ = new Map();
+
+  /** @private */
+  this.telemetryService_ = telemetryService;
 
   chrome.contextMenus.create({
      id: NEW_WINDOW_MENU_ID_,
@@ -87,7 +91,7 @@ remoting.ActivationHandler.prototype.onContextMenu_ = function(info) {
  * @private
  */
 remoting.ActivationHandler.prototype.onRestart_ = function(id) {
-  this.appLauncher_.restart(id).then(this.registerCloseListener_.bind(this));
+  this.appLauncher_.restart(id).then(this.onWindowCreated_.bind(this));
 };
 
 /**
@@ -103,7 +107,7 @@ remoting.ActivationHandler.prototype.onLaunched_ = function() {
  * @private
  */
 remoting.ActivationHandler.prototype.createWindow_ = function() {
-  this.appLauncher_.launch().then(this.registerCloseListener_.bind(this));
+  this.appLauncher_.launch().then(this.onWindowCreated_.bind(this));
 };
 
 /**
@@ -111,8 +115,15 @@ remoting.ActivationHandler.prototype.createWindow_ = function() {
  *
  * @private
  */
-remoting.ActivationHandler.prototype.registerCloseListener_ = function(
+remoting.ActivationHandler.prototype.onWindowCreated_ = function(
     windowId) {
+  // Send the client heartbeat.
+  var event =
+      new remoting.ChromotingEvent(remoting.ChromotingEvent.Type.HEARTBEAT);
+  event.role = remoting.ChromotingEvent.Role.CLIENT;
+  this.telemetryService_.write(''/* No window Id for background page */, event);
+
+  // Register close handler.
   var appWindow = chrome.app.window.get(windowId);
   console.assert(!this.windowClosedHooks_.has(windowId),
                 'Duplicate close listener attached to window : ' + windowId);
