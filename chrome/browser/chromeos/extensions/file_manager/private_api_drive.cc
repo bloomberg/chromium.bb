@@ -458,6 +458,10 @@ class SingleEntryPropertiesGetterForFileSystemProvider {
 
     if (!metadata->thumbnail.empty())
       properties_->thumbnail_url.reset(new std::string(metadata->thumbnail));
+    if (!metadata->mime_type.empty()) {
+      properties_->content_mime_type.reset(
+          new std::string(metadata->mime_type));
+    }
 
     CompleteGetEntryProperties(base::File::FILE_OK);
   }
