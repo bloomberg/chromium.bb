@@ -1645,69 +1645,6 @@ TEST_F(NavigationControllerTest, Back_NewPending) {
   EXPECT_EQ(kUrl1, controller.GetPendingEntry()->GetURL());
 }
 
-// Receives a back message when there is a different renavigation already
-// pending.
-TEST_F(NavigationControllerTest, Back_OtherBackPending) {
-  NavigationControllerImpl& controller = controller_impl();
-  const GURL kUrl1("http://foo/1");
-  const GURL kUrl2("http://foo/2");
-  const GURL kUrl3("http://foo/3");
-
-  // First navigate three places so we have some back history.
-  main_test_rfh()->SendRendererInitiatedNavigationRequest(kUrl1, true);
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigate(0, 0, true, kUrl1);
-  main_test_rfh()->SendRendererInitiatedNavigationRequest(kUrl2, true);
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigate(1, 0, true, kUrl2);
-  main_test_rfh()->SendRendererInitiatedNavigationRequest(kUrl3, true);
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigate(2, 0, true, kUrl3);
-
-  // With nothing pending, say we get a renderer back navigation request to the
-  // second entry.
-  controller.GoToOffset(-1);
-  int entry_id = controller.GetPendingEntry()->GetUniqueID();
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigate(1, entry_id, false, kUrl2);
-
-  // We know all the entries have the same site instance, so we can just grab
-  // a random one for looking up other entries.
-  SiteInstance* site_instance =
-      controller.GetLastCommittedEntry()->site_instance();
-
-  // That second URL should be the last committed and it should have gotten the
-  // new title.
-  EXPECT_EQ(kUrl2, controller.GetEntryWithPageID(site_instance, 1)->GetURL());
-  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
-
-  // Now go forward to the last item again and say it was committed.
-  controller.GoForward();
-  entry_id = controller.GetPendingEntry()->GetUniqueID();
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigate(2, entry_id, false, kUrl3);
-
-  // Now start going back one to the second page. It will be pending.
-  controller.GoBack();
-  EXPECT_EQ(1, controller.GetPendingEntryIndex());
-  EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
-
-  // Now have the renderer request a navigation back to the first page. This
-  // will not match the pending one.
-  controller.GoToOffset(-2);
-  entry_id = controller.GetPendingEntry()->GetUniqueID();
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigate(0, entry_id, false, kUrl1);
-
-  // The committed navigation should clear the pending entry.
-  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
-
-  // But the navigated entry should be the last committed.
-  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(kUrl1, controller.GetLastCommittedEntry()->GetURL());
-}
-
 // Tests what happens when we navigate forward successfully.
 TEST_F(NavigationControllerTest, Forward) {
   NavigationControllerImpl& controller = controller_impl();
