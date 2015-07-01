@@ -275,10 +275,7 @@ int CastBrowserMainParts::PreCreateThreads() {
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
                                  aura::TestScreen::Create(gfx::Size(0, 0)));
 #endif
-  return 0;
-}
 
-void CastBrowserMainParts::PreMainMessageLoopRun() {
 #if !defined(OS_ANDROID)
   // Set GL strings so GPU config code can make correct feature blacklisting/
   // whitelisting decisions.
@@ -289,6 +286,10 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
       sys_info->GetGlVersion());
 #endif  // !defined(OS_ANDROID)
 
+  return 0;
+}
+
+void CastBrowserMainParts::PreMainMessageLoopRun() {
   scoped_refptr<PrefRegistrySimple> pref_registry(new PrefRegistrySimple());
   metrics::RegisterPrefs(pref_registry.get());
   cast_browser_process_->SetPrefService(

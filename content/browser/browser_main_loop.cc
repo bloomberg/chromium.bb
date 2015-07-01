@@ -641,6 +641,14 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
 }
 
 int BrowserMainLoop::PreCreateThreads() {
+  // Need to initialize in-process GpuDataManager before creating threads.
+  // It's unsafe to append the gpu command line switches to the global
+  // CommandLine::ForCurrentProcess object after threads are created.
+  // Also need to initialize before BrowserMainParts::PreCreateThreads, so
+  // BrowserMainParts has a hook to set GpuDataManager strings before
+  // starting Gpu process.
+  GpuDataManagerImpl::GetInstance()->Initialize();
+
   if (parts_) {
     TRACE_EVENT0("startup",
         "BrowserMainLoop::CreateThreads:PreCreateThreads");
@@ -682,13 +690,6 @@ int BrowserMainLoop::PreCreateThreads() {
     AVFoundationGlue::InitializeAVFoundation();
   }
 #endif
-
-  // Need to initialize in-process GpuDataManager before creating threads.
-  // It's unsafe to append the gpu command line switches to the global
-  // CommandLine::ForCurrentProcess object after threads are created.
-  if (UsingInProcessGpu()) {
-    GpuDataManagerImpl::GetInstance()->Initialize();
-  }
 
 #if !defined(OS_IOS) && (!defined(GOOGLE_CHROME_BUILD) || defined(OS_ANDROID))
   // Single-process is an unsupported and not fully tested mode, so
@@ -1110,10 +1111,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   base::PlatformThread::SetThreadPriority(base::PlatformThread::CurrentHandle(),
                                           base::ThreadPriority::DISPLAY);
 #endif
-
-  if (!UsingInProcessGpu()) {
-    GpuDataManagerImpl::GetInstance()->Initialize();
-  }
 
   bool always_uses_gpu = true;
   bool established_gpu_channel = false;
