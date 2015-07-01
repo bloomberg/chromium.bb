@@ -136,30 +136,28 @@ void SyncBackendHostImpl::Initialize(
     factory_switches.pre_commit_updates_policy =
         InternalComponentsFactory::FORCE_ENABLE_PRE_COMMIT_UPDATE_AVOIDANCE;
   }
+  syncer::PassphraseTransitionClearDataOption clear_data_option =
+      syncer::PASSPHRASE_TRANSITION_DO_NOT_CLEAR_DATA;
+  if (cl->HasSwitch(switches::kSyncEnableClearDataOnPassphraseEncryption))
+    clear_data_option = syncer::PASSPHRASE_TRANSITION_CLEAR_DATA;
 
   scoped_ptr<DoInitializeOptions> init_opts(new DoInitializeOptions(
-      registrar_->sync_thread()->message_loop(),
-      registrar_.get(),
-      routing_info,
-      workers,
-      extensions_activity_monitor_.GetExtensionsActivity(),
-      event_handler,
-      sync_service_url,
+      registrar_->sync_thread()->message_loop(), registrar_.get(), routing_info,
+      workers, extensions_activity_monitor_.GetExtensionsActivity(),
+      event_handler, sync_service_url,
       network_resources->GetHttpPostProviderFactory(
           make_scoped_refptr(profile_->GetRequestContext()),
           base::Bind(&UpdateNetworkTime),
           core_->GetRequestContextCancelationSignal()),
-      credentials,
-      invalidator_ ? invalidator_->GetInvalidatorClientId() : "",
-      sync_manager_factory.Pass(),
-      delete_sync_data_folder,
+      credentials, invalidator_ ? invalidator_->GetInvalidatorClientId() : "",
+      sync_manager_factory.Pass(), delete_sync_data_folder,
       sync_prefs_->GetEncryptionBootstrapToken(),
       sync_prefs_->GetKeystoreEncryptionBootstrapToken(),
       scoped_ptr<InternalComponentsFactory>(
-          new syncer::InternalComponentsFactoryImpl(factory_switches)).Pass(),
-      unrecoverable_error_handler.Pass(),
-      report_unrecoverable_error_function,
-      saved_nigori_state.Pass()));
+          new syncer::InternalComponentsFactoryImpl(factory_switches))
+          .Pass(),
+      unrecoverable_error_handler.Pass(), report_unrecoverable_error_function,
+      saved_nigori_state.Pass(), clear_data_option));
   InitCore(init_opts.Pass());
 }
 

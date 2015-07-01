@@ -213,12 +213,14 @@ SyncEncryptionHandlerImpl::SyncEncryptionHandlerImpl(
     UserShare* user_share,
     Encryptor* encryptor,
     const std::string& restored_key_for_bootstrapping,
-    const std::string& restored_keystore_key_for_bootstrapping)
+    const std::string& restored_keystore_key_for_bootstrapping,
+    PassphraseTransitionClearDataOption clear_data_option)
     : user_share_(user_share),
       vault_unsafe_(encryptor, SensitiveTypes()),
       encrypt_everything_(false),
       passphrase_type_(IMPLICIT_PASSPHRASE),
       nigori_overwrite_count_(0),
+      clear_data_option_(clear_data_option),
       weak_ptr_factory_(this) {
   // Restore the cryptographer's previous keys. Note that we don't add the
   // keystore keys into the cryptographer here, in case a migration was pending.
@@ -1534,8 +1536,10 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
 
   if (new_encrypt_everything &&
       (new_passphrase_type == FROZEN_IMPLICIT_PASSPHRASE ||
-       new_passphrase_type == CUSTOM_PASSPHRASE))
+       new_passphrase_type == CUSTOM_PASSPHRASE)) {
+    UpdateNigoriForTransitionToPassphraseEncryption(trans);
     NotifyObserversOfLocalCustomPassphrase(trans);
+  }
 
   switch (new_passphrase_type) {
     case KEYSTORE_PASSPHRASE:
@@ -1697,6 +1701,15 @@ base::Time SyncEncryptionHandlerImpl::GetExplicitPassphraseTime() const {
   else if (passphrase_type_ == CUSTOM_PASSPHRASE)
     return custom_passphrase_time();
   return base::Time();
+}
+
+void SyncEncryptionHandlerImpl::UpdateNigoriForTransitionToPassphraseEncryption(
+    WriteTransaction* trans) {
+  DCHECK(trans);
+  if (clear_data_option_ != PASSPHRASE_TRANSITION_CLEAR_DATA)
+    return;
+  // TODO(maniscalco): Update the Nigori node to record the fact the user has
+  // begun the transition to passphrase encryption (crbug.com/505917).
 }
 
 }  // namespace browser_sync

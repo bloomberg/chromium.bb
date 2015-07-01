@@ -40,8 +40,8 @@ struct DoInitializeOptions {
       scoped_ptr<syncer::InternalComponentsFactory> internal_components_factory,
       scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
       const base::Closure& report_unrecoverable_error_function,
-      scoped_ptr<syncer::SyncEncryptionHandler::NigoriState>
-          saved_nigori_state);
+      scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state,
+      syncer::PassphraseTransitionClearDataOption clear_data_option);
   ~DoInitializeOptions();
 
   base::MessageLoop* sync_loop;
@@ -64,6 +64,7 @@ struct DoInitializeOptions {
   scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler;
   base::Closure report_unrecoverable_error_function;
   scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state;
+  const syncer::PassphraseTransitionClearDataOption clear_data_option;
 };
 
 // Helper struct to handle currying params to

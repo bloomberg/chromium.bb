@@ -97,7 +97,8 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
       const std::string& key_for_bootstrapping) {
     encryption_handler_.reset(new SyncEncryptionHandlerImpl(
         user_share(), &encryptor_, key_for_bootstrapping,
-        std::string() /* keystore key for bootstrapping */));
+        std::string() /* keystore key for bootstrapping */,
+        PASSPHRASE_TRANSITION_DO_NOT_CLEAR_DATA));
     encryption_handler_->AddObserver(&observer_);
   }
 
@@ -378,10 +379,9 @@ TEST_F(SyncEncryptionHandlerImplTest, NigoriEncryptionTypes) {
   sync_pb::NigoriSpecifics nigori;
 
   StrictMock<SyncEncryptionHandlerObserverMock> observer2;
-  SyncEncryptionHandlerImpl handler2(user_share(),
-                                     &encryptor_,
-                                     std::string(),
-                                     std::string() /* bootstrap tokens */);
+  SyncEncryptionHandlerImpl handler2(user_share(), &encryptor_, std::string(),
+                                     std::string() /* bootstrap tokens */,
+                                     PASSPHRASE_TRANSITION_DO_NOT_CLEAR_DATA);
   handler2.AddObserver(&observer2);
 
   // Just set the sensitive types (shouldn't trigger any notifications).
@@ -714,10 +714,10 @@ TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreMigratesAndUpdatesBootstrap) {
 
   // Now make sure a new encryption handler can correctly parse the bootstrap
   // token.
-  SyncEncryptionHandlerImpl handler2(user_share(),
-                                     &encryptor_,
+  SyncEncryptionHandlerImpl handler2(user_share(), &encryptor_,
                                      std::string(),  // Cryptographer bootstrap.
-                                     keystore_bootstrap);
+                                     keystore_bootstrap,
+                                     PASSPHRASE_TRANSITION_DO_NOT_CLEAR_DATA);
 
   {
     WriteTransaction trans(FROM_HERE, user_share());

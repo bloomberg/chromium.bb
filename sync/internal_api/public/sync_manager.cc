@@ -20,8 +20,8 @@ SyncManager::InitArgs::InitArgs()
     : extensions_activity(NULL),
       change_delegate(NULL),
       encryptor(NULL),
-      cancelation_signal(NULL) {
-}
+      cancelation_signal(NULL),
+      clear_data_option(PASSPHRASE_TRANSITION_DO_NOT_CLEAR_DATA) {}
 
 SyncManager::InitArgs::~InitArgs() {}
 

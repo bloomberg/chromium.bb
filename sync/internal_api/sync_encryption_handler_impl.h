@@ -46,11 +46,15 @@ class SYNC_EXPORT_PRIVATE SyncEncryptionHandlerImpl
     : public SyncEncryptionHandler,
       public syncable::NigoriHandler {
  public:
+  // |clear_data_option| controls whether this object should update the Nigori
+  // node to indiciate that we are to clear server data as part of the
+  // transition to passphrase encryption.
   SyncEncryptionHandlerImpl(
       UserShare* user_share,
       Encryptor* encryptor,
       const std::string& restored_key_for_bootstrapping,
-      const std::string& restored_keystore_key_for_bootstrapping);
+      const std::string& restored_keystore_key_for_bootstrapping,
+      PassphraseTransitionClearDataOption clear_data_option);
   ~SyncEncryptionHandlerImpl() override;
 
   // SyncEncryptionHandler implementation.
@@ -272,6 +276,10 @@ class SYNC_EXPORT_PRIVATE SyncEncryptionHandlerImpl
   // Notify observers when a custom passphrase is set by this device.
   void NotifyObserversOfLocalCustomPassphrase(WriteTransaction* trans);
 
+  // Update the Nigori node to indicate that we're transitioning to passphrsae
+  // encryption.
+  void UpdateNigoriForTransitionToPassphraseEncryption(WriteTransaction* trans);
+
   base::ThreadChecker thread_checker_;
 
   base::ObserverList<SyncEncryptionHandler::Observer> observers_;
@@ -313,6 +321,8 @@ class SYNC_EXPORT_PRIVATE SyncEncryptionHandlerImpl
   // if there is no custom passphrase or the custom passphrase was set
   // before support for this field was added.
   base::Time custom_passphrase_time_;
+
+  const PassphraseTransitionClearDataOption clear_data_option_;
 
   base::WeakPtrFactory<SyncEncryptionHandlerImpl> weak_ptr_factory_;
 

@@ -272,6 +272,10 @@ class SYNC_EXPORT SyncManager {
 
     // Optional nigori state to be restored.
     scoped_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state;
+
+    // Whether sync should clear server data when transitioning to passphrase
+    // encryption.
+    PassphraseTransitionClearDataOption clear_data_option;
   };
 
   SyncManager();

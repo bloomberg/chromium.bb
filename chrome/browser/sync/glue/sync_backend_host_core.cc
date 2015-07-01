@@ -72,7 +72,8 @@ DoInitializeOptions::DoInitializeOptions(
     scoped_ptr<syncer::InternalComponentsFactory> internal_components_factory,
     scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
     const base::Closure& report_unrecoverable_error_function,
-    scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state)
+    scoped_ptr<syncer::SyncEncryptionHandler::NigoriState> saved_nigori_state,
+    syncer::PassphraseTransitionClearDataOption clear_data_option)
     : sync_loop(sync_loop),
       registrar(registrar),
       routing_info(routing_info),
@@ -91,8 +92,8 @@ DoInitializeOptions::DoInitializeOptions(
       internal_components_factory(internal_components_factory.Pass()),
       unrecoverable_error_handler(unrecoverable_error_handler.Pass()),
       report_unrecoverable_error_function(report_unrecoverable_error_function),
-      saved_nigori_state(saved_nigori_state.Pass()) {
-}
+      saved_nigori_state(saved_nigori_state.Pass()),
+      clear_data_option(clear_data_option) {}
 
 DoInitializeOptions::~DoInitializeOptions() {}
 
@@ -453,6 +454,7 @@ void SyncBackendHostCore::DoInitialize(
       options->report_unrecoverable_error_function;
   args.cancelation_signal = &stop_syncing_signal_;
   args.saved_nigori_state = options->saved_nigori_state.Pass();
+  args.clear_data_option = options->clear_data_option;
   sync_manager_->Init(&args);
 }
 
