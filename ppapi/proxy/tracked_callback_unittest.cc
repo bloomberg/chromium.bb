@@ -163,7 +163,7 @@ class CallbackShutdownTest : public TrackedCallbackTest {
 }  // namespace
 
 // Tests that callbacks are properly aborted on module shutdown.
-TEST_F(CallbackShutdownTest, AbortOnShutdown) {
+TEST_F(CallbackShutdownTest, DISABLED_AbortOnShutdown) {
   ProxyAutoLock lock;
   scoped_refptr<Resource> resource(
       new Resource(OBJECT_IS_PROXY, pp_instance()));
@@ -394,7 +394,7 @@ class CallbackMockResource : public Resource {
 }  // namespace
 
 // Test that callbacks get aborted on the last resource unref.
-TEST_F(CallbackResourceTest, AbortOnNoRef) {
+TEST_F(CallbackResourceTest, DISABLED_AbortOnNoRef) {
   // Test several things: Unref-ing a resource (to zero refs) with callbacks
   // which (1) have been run, (2) have been aborted, (3) haven't been completed.
   // Check that the uncompleted one gets aborted, and that the others don't get
@@ -442,7 +442,7 @@ TEST_F(CallbackResourceTest, AbortOnNoRef) {
 
 // Test that "resurrecting" a resource (getting a new ID for a |Resource|)
 // doesn't resurrect callbacks.
-TEST_F(CallbackResourceTest, Resurrection) {
+TEST_F(CallbackResourceTest, DISABLED_Resurrection) {
   scoped_refptr<CallbackMockResource> resource(
       CallbackMockResource::Create(pp_instance()));
   resource->CreateCallbacksOnLoop(thread().message_loop());
