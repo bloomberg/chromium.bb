@@ -126,6 +126,19 @@
             'extensions_browsertests.isolate',
           ],
         },
+        {
+          'target_name': 'extensions_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'extensions_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'extensions_unittests.isolate',
+          ],
+        }
       ],
     }],
   ],
