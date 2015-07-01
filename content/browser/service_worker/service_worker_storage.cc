@@ -1434,9 +1434,9 @@ ServiceWorkerDiskCache* ServiceWorkerStorage::disk_cache() {
   if (old_disk_cache_deletion_needed_) {
     // Lazily delete the old diskcache.
     BrowserThread::PostAfterStartupTask(
-        FROM_HERE, database_task_manager_->GetTaskRunner(),
-        base::Bind(&DeleteOldDiskCacheInDB, database_.get(),
-                   GetOldDiskCachePath()));
+        FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
+        base::Bind(&ServiceWorkerStorage::DeleteOldDiskCache,
+                   weak_factory_.GetWeakPtr()));
   }
 
   ServiceWorkerMetrics::RecordDiskCacheMigrationResult(
@@ -1470,9 +1470,9 @@ void ServiceWorkerStorage::DidSetDiskCacheMigrationNotNeeded(
 
   // Lazily delete the old diskcache and update the database.
   BrowserThread::PostAfterStartupTask(
-      FROM_HERE, database_task_manager_->GetTaskRunner(),
-      base::Bind(&DeleteOldDiskCacheInDB, database_.get(),
-                 GetOldDiskCachePath()));
+      FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
+      base::Bind(&ServiceWorkerStorage::DeleteOldDiskCache,
+                 weak_factory_.GetWeakPtr()));
 
   ServiceWorkerMetrics::RecordDiskCacheMigrationResult(
       ServiceWorkerMetrics::MIGRATION_OK);
@@ -1511,6 +1511,15 @@ void ServiceWorkerStorage::OnDiskCacheInitialized(int rv) {
     ScheduleDeleteAndStartOver();
   }
   ServiceWorkerMetrics::CountInitDiskCacheResult(rv == net::OK);
+}
+
+void ServiceWorkerStorage::DeleteOldDiskCache() {
+  DCHECK(state_ == INITIALIZED || state_ == DISABLED) << state_;
+  if (IsDisabled())
+    return;
+  database_task_manager_->GetTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&ServiceWorkerStorage::DeleteOldDiskCacheInDB,
+                            database_.get(), GetOldDiskCachePath()));
 }
 
 void ServiceWorkerStorage::StartPurgingResources(

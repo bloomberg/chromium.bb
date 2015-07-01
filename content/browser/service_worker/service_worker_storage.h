@@ -405,6 +405,8 @@ class CONTENT_EXPORT ServiceWorkerStorage
   void InitializeDiskCache();
   void OnDiskCacheInitialized(int rv);
 
+  void DeleteOldDiskCache();
+
   void StartPurgingResources(const std::vector<int64>& ids);
   void StartPurgingResources(const ResourceList& resources);
   void ContinuePurgingResources();
