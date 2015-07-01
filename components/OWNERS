@@ -26,7 +26,6 @@ per-file browsing_data.gypi=bauerb@chromium.org
 per-file browsing_data.gypi=michaeln@chromium.org
 
 per-file cdm.gypi=ddorwin@chromium.org
-per-file cdm.gypi=scherkus@chromium.org
 per-file cdm.gypi=xhwang@chromium.org
 
 per-file cloud_devices*=gene@chromium.org
