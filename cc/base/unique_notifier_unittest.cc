@@ -50,12 +50,26 @@ TEST_F(UniqueNotifierTest, Schedule) {
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(2, NotificationCount());
 
+    // Schedule and cancel.
+    notifier.Schedule();
+    notifier.Cancel();
+
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(2, NotificationCount());
+
+    notifier.Schedule();
+    notifier.Cancel();
+    notifier.Schedule();
+
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(3, NotificationCount());
+
     notifier.Schedule();
   }
 
   // Notifier went out of scope, so we don't expect to get a notification.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2, NotificationCount());
+  EXPECT_EQ(3, NotificationCount());
 }
 
 }  // namespace

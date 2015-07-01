@@ -22,6 +22,10 @@ UniqueNotifier::UniqueNotifier(base::SequencedTaskRunner* task_runner,
 UniqueNotifier::~UniqueNotifier() {
 }
 
+void UniqueNotifier::Cancel() {
+  notification_pending_ = false;
+}
+
 void UniqueNotifier::Schedule() {
   if (notification_pending_)
     return;
@@ -33,6 +37,9 @@ void UniqueNotifier::Schedule() {
 }
 
 void UniqueNotifier::Notify() {
+  if (!notification_pending_)
+    return;
+
   // Note that the order here is important in case closure schedules another
   // run.
   notification_pending_ = false;

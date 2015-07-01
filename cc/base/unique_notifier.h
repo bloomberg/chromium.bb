@@ -29,6 +29,9 @@ class CC_EXPORT UniqueNotifier {
   // pending, then only one notification will take place.
   void Schedule();
 
+  // Cancel a pending notification, if one was scheduled.
+  void Cancel();
+
  private:
   void Notify();
 
