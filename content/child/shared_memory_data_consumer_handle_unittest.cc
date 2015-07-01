@@ -331,6 +331,28 @@ TEST_P(SharedMemoryDataConsumerHandleTest, CloseBeforeReading) {
   EXPECT_EQ(0u, read);
 }
 
+TEST_P(SharedMemoryDataConsumerHandleTest, CloseWithDataBeforeZeroRead) {
+  writer_->AddData(NewFixedData("hello"));
+  writer_->Close();
+
+  size_t read = 88;
+  auto reader = handle_->ObtainReader(nullptr);
+  Result result = reader->read(nullptr, 0, kNone, &read);
+
+  EXPECT_EQ(kOk, result);
+  EXPECT_EQ(0u, read);
+}
+
+TEST_P(SharedMemoryDataConsumerHandleTest, CloseWithoutDataBeforeZeroRead) {
+  writer_->Close();
+
+  size_t read = 88;
+  auto reader = handle_->ObtainReader(nullptr);
+  Result result = reader->read(nullptr, 0, kNone, &read);
+
+  EXPECT_EQ(kDone, result);
+}
+
 TEST_P(SharedMemoryDataConsumerHandleTest, AddMultipleData) {
   writer_->AddData(NewFixedData("Once "));
   writer_->AddData(NewFixedData("upon "));

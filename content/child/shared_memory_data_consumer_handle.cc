@@ -360,7 +360,11 @@ Result SharedMemoryDataConsumerHandle::ReaderImpl::read(
     context_->Consume(read_size);
   }
   *read_size_to_return = total_read_size;
-  return total_read_size ? Ok : context_->result() == Done ? Done : ShouldWait;
+  if (total_read_size || !context_->IsEmpty())
+    return Ok;
+  if (context_->result() == Done)
+    return Done;
+  return ShouldWait;
 }
 
 Result SharedMemoryDataConsumerHandle::ReaderImpl::beginRead(
