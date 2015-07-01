@@ -478,13 +478,14 @@ String StylePropertySerializer::borderSpacingValue(const StylePropertyShorthand&
     return horizontalValueCSSText + ' ' + verticalValueCSSText;
 }
 
-void StylePropertySerializer::appendFontLonghandValueIfExplicit(CSSPropertyID propertyID, StringBuilder& result, String& commonValue) const
+void StylePropertySerializer::appendFontLonghandValueIfNotNormal(CSSPropertyID propertyID, StringBuilder& result, String& commonValue) const
 {
     int foundPropertyIndex = m_propertySet.findPropertyIndex(propertyID);
     if (foundPropertyIndex == -1)
-        return; // All longhands must have at least implicit values if "font" is specified.
+        return;
 
-    if (m_propertySet.propertyAt(foundPropertyIndex).isImplicit()) {
+    const CSSValue* val = m_propertySet.propertyAt(foundPropertyIndex).value();
+    if (val->isPrimitiveValue() && toCSSPrimitiveValue(val)->getValueID() == CSSValueNormal) {
         commonValue = String();
         return;
     }
@@ -523,19 +524,17 @@ String StylePropertySerializer::fontValue() const
 
     PropertyValueForSerializer fontSizeProperty = m_propertySet.propertyAt(fontSizePropertyIndex);
     PropertyValueForSerializer fontFamilyProperty = m_propertySet.propertyAt(fontFamilyPropertyIndex);
-    if (fontSizeProperty.isImplicit() || fontFamilyProperty.isImplicit())
-        return emptyString();
 
     String commonValue = fontSizeProperty.value()->cssText();
     StringBuilder result;
-    appendFontLonghandValueIfExplicit(CSSPropertyFontStyle, result, commonValue);
-    appendFontLonghandValueIfExplicit(CSSPropertyFontVariant, result, commonValue);
-    appendFontLonghandValueIfExplicit(CSSPropertyFontWeight, result, commonValue);
-    appendFontLonghandValueIfExplicit(CSSPropertyFontStretch, result, commonValue);
+    appendFontLonghandValueIfNotNormal(CSSPropertyFontStyle, result, commonValue);
+    appendFontLonghandValueIfNotNormal(CSSPropertyFontVariant, result, commonValue);
+    appendFontLonghandValueIfNotNormal(CSSPropertyFontWeight, result, commonValue);
+    appendFontLonghandValueIfNotNormal(CSSPropertyFontStretch, result, commonValue);
     if (!result.isEmpty())
         result.append(' ');
     result.append(fontSizeProperty.value()->cssText());
-    appendFontLonghandValueIfExplicit(CSSPropertyLineHeight, result, commonValue);
+    appendFontLonghandValueIfNotNormal(CSSPropertyLineHeight, result, commonValue);
     if (!result.isEmpty())
         result.append(' ');
     result.append(fontFamilyProperty.value()->cssText());
