@@ -19,10 +19,6 @@ crbug.com/474440 [ Mac ] plugins/destroy-reentry.html [ Pass Timeout Crash ]
 
 crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
 
-crbug.com/501857 transforms/transform-focus-ring-repaint.html [ NeedsRebaseline ]
-crbug.com/501857 fast/repaint/focus-ring-on-child-move.html [ NeedsRebaseline ]
-crbug.com/501857 fast/repaint/focus-layers.html [ NeedsRebaseline ]
-
 # In root-layer-scrolls, the scrollbars make the scroll offsets difficult to compute.
 crbug.com/487948 virtual/rootlayerscrolls/fast/scrolling/keyboard-scroll-page-scale.html [ Failure ]
 crbug.com/487948 virtual/rootlayerscrolls/fast/scrolling/editor-command-scroll-page-scale.html [ Failure ]
