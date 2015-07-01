@@ -16,6 +16,8 @@ import org.chromium.chrome.browser.profiles.Profile;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 
 /**
@@ -23,7 +25,7 @@ import java.net.URL;
  */
 @JNINamespace("chrome::android")
 public final class ConnectivityChecker {
-    private static final String TAG = "Feedback";
+    private static final String TAG = "cr.feedback";
 
     private static final String DEFAULT_HTTP_NO_CONTENT_URL =
             "http://clients4.google.com/generate_204";
@@ -40,7 +42,7 @@ public final class ConnectivityChecker {
         /**
          * Called when the result of the connectivity check is ready.
          */
-        void onResult(boolean connected);
+        void onResult(int result);
     }
 
     @VisibleForTesting
@@ -48,6 +50,15 @@ public final class ConnectivityChecker {
         ThreadUtils.assertOnUiThread();
         sHttpNoContentUrl = httpUrl;
         sHttpsNoContentUrl = httpsUrl;
+    }
+
+    private static void postResult(final ConnectivityCheckerCallback callback, final int result) {
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                callback.onResult(result);
+            }
+        });
     }
 
     /**
@@ -65,26 +76,29 @@ public final class ConnectivityChecker {
      * @param callback the callback which will get the result.
      */
     public static void checkConnectivitySystemNetworkStack(
-            boolean useHttps, int timeoutMs, final ConnectivityCheckerCallback callback) {
-        try {
-            URL url = useHttps ? new URL(sHttpsNoContentUrl) : new URL(sHttpNoContentUrl);
-            checkConnectivitySystemNetworkStack(url, timeoutMs, callback);
-        } catch (MalformedURLException e) {
-            Log.w(TAG, "Failed to predefined URL: " + e);
-            ThreadUtils.postOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    callback.onResult(false);
-                }
-            });
-        }
+            boolean useHttps, int timeoutMs, ConnectivityCheckerCallback callback) {
+        String url = useHttps ? sHttpsNoContentUrl : sHttpNoContentUrl;
+        checkConnectivitySystemNetworkStack(url, timeoutMs, callback);
     }
 
     static void checkConnectivitySystemNetworkStack(
-            final URL url, final int timeoutMs, final ConnectivityCheckerCallback callback) {
-        new AsyncTask<String, Void, Boolean>() {
+            String urlStr, final int timeoutMs, final ConnectivityCheckerCallback callback) {
+        if (!nativeIsUrlValid(urlStr)) {
+            Log.w(TAG, "Predefined URL invalid.");
+            postResult(callback, ConnectivityCheckResult.ERROR);
+            return;
+        }
+        final URL url;
+        try {
+            url = new URL(urlStr);
+        } catch (MalformedURLException e) {
+            Log.w(TAG, "Failed to parse predefined URL: " + e);
+            postResult(callback, ConnectivityCheckResult.ERROR);
+            return;
+        }
+        new AsyncTask<String, Void, Integer>() {
             @Override
-            protected Boolean doInBackground(String... strings) {
+            protected Integer doInBackground(String... strings) {
                 try {
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setInstanceFollowRedirects(false);
@@ -96,15 +110,23 @@ public final class ConnectivityChecker {
 
                     conn.connect();
                     int responseCode = conn.getResponseCode();
-                    return responseCode == HttpURLConnection.HTTP_NO_CONTENT;
+                    if (responseCode == HttpURLConnection.HTTP_NO_CONTENT) {
+                        return ConnectivityCheckResult.CONNECTED;
+                    } else {
+                        return ConnectivityCheckResult.NOT_CONNECTED;
+                    }
+                } catch (SocketTimeoutException e) {
+                    return ConnectivityCheckResult.TIMEOUT;
+                } catch (ProtocolException e) {
+                    return ConnectivityCheckResult.ERROR;
                 } catch (IOException e) {
-                    return false;
+                    return ConnectivityCheckResult.NOT_CONNECTED;
                 }
             }
 
             @Override
-            protected void onPostExecute(Boolean connected) {
-                callback.onResult(connected);
+            protected void onPostExecute(Integer result) {
+                callback.onResult(result);
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
@@ -139,12 +161,14 @@ public final class ConnectivityChecker {
     }
 
     @CalledByNative
-    private static void executeCallback(Object callback, boolean connected) {
-        ((ConnectivityCheckerCallback) callback).onResult(connected);
+    private static void executeCallback(Object callback, int result) {
+        ((ConnectivityCheckerCallback) callback).onResult(result);
     }
 
     private ConnectivityChecker() {}
 
     private static native void nativeCheckConnectivity(
             Profile profile, String url, long timeoutMs, ConnectivityCheckerCallback callback);
+
+    private static native boolean nativeIsUrlValid(String url);
 }

@@ -25,25 +25,39 @@ namespace chrome {
 namespace android {
 
 namespace {
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.feedback
+// GENERATED_JAVA_PREFIX_TO_STRIP: CONNECTIVITY_CHECK_RESULT_
+enum ConnectivityCheckResult {
+  CONNECTIVITY_CHECK_RESULT_UNKNOWN = 0,
+  CONNECTIVITY_CHECK_RESULT_CONNECTED = 1,
+  CONNECTIVITY_CHECK_RESULT_NOT_CONNECTED = 2,
+  CONNECTIVITY_CHECK_RESULT_TIMEOUT = 3,
+  CONNECTIVITY_CHECK_RESULT_ERROR = 4,
+  CONNECTIVITY_CHECK_RESULT_END = 5
+};
 
-void ExecuteCallback(jobject callback, bool connected) {
+void ExecuteCallback(jobject callback, ConnectivityCheckResult result) {
+  CHECK(result >= CONNECTIVITY_CHECK_RESULT_UNKNOWN);
+  CHECK(result < CONNECTIVITY_CHECK_RESULT_END);
   Java_ConnectivityChecker_executeCallback(base::android::AttachCurrentThread(),
-                                           callback, connected);
+                                           callback, result);
 }
 
 void ExecuteCallbackFromRef(
     base::android::ScopedJavaGlobalRef<jobject>* callback,
-    bool connected) {
-  ExecuteCallback(callback->obj(), connected);
+    ConnectivityCheckResult result) {
+  ExecuteCallback(callback->obj(), result);
 }
 
-void PostCallback(JNIEnv* env, jobject j_callback, bool connected) {
+void PostCallback(JNIEnv* env,
+                  jobject j_callback,
+                  ConnectivityCheckResult result) {
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ExecuteCallbackFromRef,
                  base::Owned(new base::android::ScopedJavaGlobalRef<jobject>(
                      env, j_callback)),
-                 connected));
+                 result));
 }
 
 // A utility class for checking if the device is currently connected to the
@@ -62,8 +76,9 @@ class ConnectivityChecker : public net::URLFetcherDelegate {
   // net::URLFetcherDelegate implementation:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  // Cancels the URLFetcher, and triggers the callback with a negative result.
-  void Cancel();
+  // Cancels the URLFetcher, and triggers the callback with a negative result
+  // and the timeout flag set.
+  void OnTimeout();
 
  private:
   // The context in which the connectivity check is performed.
@@ -98,7 +113,12 @@ void ConnectivityChecker::OnURLFetchComplete(const net::URLFetcher* source) {
   int response_code = source->GetResponseCode();
 
   bool connected = status.is_success() && response_code == net::HTTP_NO_CONTENT;
-  ExecuteCallback(java_callback_.obj(), connected);
+  if (connected) {
+    ExecuteCallback(java_callback_.obj(), CONNECTIVITY_CHECK_RESULT_CONNECTED);
+  } else {
+    ExecuteCallback(java_callback_.obj(),
+                    CONNECTIVITY_CHECK_RESULT_NOT_CONNECTED);
+  }
 
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
@@ -129,15 +149,15 @@ void ConnectivityChecker::StartAsyncCheck() {
   url_fetcher_->Start();
   expiration_timer_.reset(new base::OneShotTimer<ConnectivityChecker>());
   expiration_timer_->Start(FROM_HERE, timeout_, this,
-                           &ConnectivityChecker::Cancel);
+                           &ConnectivityChecker::OnTimeout);
 }
 
-void ConnectivityChecker::Cancel() {
+void ConnectivityChecker::OnTimeout() {
   if (is_being_destroyed_)
     return;
   is_being_destroyed_ = true;
   url_fetcher_.reset();
-  ExecuteCallback(java_callback_.obj(), false);
+  ExecuteCallback(java_callback_.obj(), CONNECTIVITY_CHECK_RESULT_TIMEOUT);
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
@@ -151,12 +171,12 @@ void CheckConnectivity(JNIEnv* env,
                        jobject j_callback) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   if (!profile) {
-    PostCallback(env, j_callback, false);
+    PostCallback(env, j_callback, CONNECTIVITY_CHECK_RESULT_ERROR);
     return;
   }
   GURL url(base::android::ConvertJavaStringToUTF8(env, j_url));
   if (!url.is_valid()) {
-    PostCallback(env, j_callback, false);
+    PostCallback(env, j_callback, CONNECTIVITY_CHECK_RESULT_ERROR);
     return;
   }
 
@@ -165,6 +185,11 @@ void CheckConnectivity(JNIEnv* env,
       profile, url, base::TimeDelta::FromMilliseconds(j_timeout_ms),
       base::android::ScopedJavaLocalRef<jobject>(env, j_callback));
   connectivity_checker->StartAsyncCheck();
+}
+
+jboolean IsUrlValid(JNIEnv* env, jclass clazz, jstring j_url) {
+  GURL url(base::android::ConvertJavaStringToUTF8(env, j_url));
+  return url.is_valid();
 }
 
 bool RegisterConnectivityChecker(JNIEnv* env) {

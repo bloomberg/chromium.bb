@@ -71,30 +71,47 @@ public class ConnectivityTask {
     @VisibleForTesting
     static final String SYSTEM_HTTPS_KEY = "HTTPS connection check (Android network stack)";
 
+    private static String getHumanReadableString(Type type) {
+        switch (type) {
+            case CHROME_HTTP:
+                return CHROME_HTTP_KEY;
+            case CHROME_HTTPS:
+                return CHROME_HTTPS_KEY;
+            case SYSTEM_HTTP:
+                return SYSTEM_HTTP_KEY;
+            case SYSTEM_HTTPS:
+                return SYSTEM_HTTPS_KEY;
+            default:
+                throw new IllegalArgumentException("Unknown connection type: " + type);
+        }
+    }
+
+    static String getHumanReadableString(int result) {
+        switch (result) {
+            case ConnectivityCheckResult.UNKNOWN:
+                return "UNKNOWN";
+            case ConnectivityCheckResult.CONNECTED:
+                return "CONNECTED";
+            case ConnectivityCheckResult.NOT_CONNECTED:
+                return "NOT_CONNECTED";
+            case ConnectivityCheckResult.TIMEOUT:
+                return "TIMEOUT";
+            case ConnectivityCheckResult.ERROR:
+                return "ERROR";
+            default:
+                throw new IllegalArgumentException("Unknown result value: " + result);
+        }
+    }
+
     /**
      * FeedbackData contains the set of information that is to be included in a feedback report.
      */
     static final class FeedbackData {
-        private final Map<Type, Result> mConnections;
+        private final Map<Type, Integer> mConnections;
         private final int mTimeoutMs;
         private final long mElapsedTimeMs;
 
-        private static String getHumanReadableString(Type type) {
-            switch (type) {
-                case CHROME_HTTP:
-                    return CHROME_HTTP_KEY;
-                case CHROME_HTTPS:
-                    return CHROME_HTTPS_KEY;
-                case SYSTEM_HTTP:
-                    return SYSTEM_HTTP_KEY;
-                case SYSTEM_HTTPS:
-                    return SYSTEM_HTTPS_KEY;
-                default:
-                    throw new IllegalArgumentException("Unknown connection type: " + type);
-            }
-        }
-
-        FeedbackData(Map<Type, Result> connections, int timeoutMs, long elapsedTimeMs) {
+        FeedbackData(Map<Type, Integer> connections, int timeoutMs, long elapsedTimeMs) {
             mConnections = connections;
             mTimeoutMs = timeoutMs;
             mElapsedTimeMs = elapsedTimeMs;
@@ -105,7 +122,7 @@ public class ConnectivityTask {
          * types.
          */
         @VisibleForTesting
-        Map<Type, Result> getConnections() {
+        Map<Type, Integer> getConnections() {
             return Collections.unmodifiableMap(mConnections);
         }
 
@@ -130,8 +147,9 @@ public class ConnectivityTask {
          */
         Map<String, String> toMap() {
             Map<String, String> map = new HashMap<>();
-            for (Map.Entry<Type, Result> entry : mConnections.entrySet()) {
-                map.put(getHumanReadableString(entry.getKey()), entry.getValue().name());
+            for (Map.Entry<Type, Integer> entry : mConnections.entrySet()) {
+                map.put(getHumanReadableString(entry.getKey()),
+                        getHumanReadableString(entry.getValue()));
             }
             map.put(CONNECTION_CHECK_TIMEOUT_MS, String.valueOf(mTimeoutMs));
             map.put(CONNECTION_CHECK_ELAPSED_MS, String.valueOf(mElapsedTimeMs));
@@ -143,12 +161,6 @@ public class ConnectivityTask {
      * The type of network stack and connectivity check this result is about.
      */
     public enum Type { CHROME_HTTP, CHROME_HTTPS, SYSTEM_HTTP, SYSTEM_HTTPS }
-
-    /**
-     * The result from the connectivity check. Will be {@link Result#UNKNOWN} if the result is not
-     * ready yet.
-     */
-    public enum Result { UNKNOWN, NOT_CONNECTED, CONNECTED }
 
     private class SingleTypeTask implements ConnectivityChecker.ConnectivityCheckerCallback {
         private final Type mType;
@@ -185,14 +197,15 @@ public class ConnectivityTask {
         }
 
         @Override
-        public void onResult(boolean connected) {
-            Log.v(TAG, "Got result for " + mType + ": connected = " + connected);
-            Result result = connected ? Result.CONNECTED : Result.NOT_CONNECTED;
+        public void onResult(int result) {
+            ThreadUtils.assertOnUiThread();
+            Log.v(TAG, "Got result for " + getHumanReadableString(mType) + ": result = "
+                            + getHumanReadableString(result));
             mResult.put(mType, result);
         }
     }
 
-    private final Map<Type, Result> mResult = new EnumMap<Type, Result>(Type.class);
+    private final Map<Type, Integer> mResult = new EnumMap<Type, Integer>(Type.class);
     private final int mTimeoutMs;
     private final long mStartCheckTimeMs;
 
@@ -215,19 +228,19 @@ public class ConnectivityTask {
 
     /**
      * Retrieves the connectivity that has been collected up until this call. This method fills in
-     * {@link Result#UNKNOWN} for results that have not been retrieved yet.
+     * {@link ConnectivityCheckResult#UNKNOWN} for results that have not been retrieved yet.
      *
      * @return the {@link FeedbackData}.
      */
     public FeedbackData get() {
         ThreadUtils.assertOnUiThread();
-        Map<Type, Result> result = new EnumMap<Type, Result>(Type.class);
+        Map<Type, Integer> result = new EnumMap<Type, Integer>(Type.class);
         // Ensure the map is filled with a result for all {@link Type}s.
         for (Type type : Type.values()) {
             if (mResult.containsKey(type)) {
                 result.put(type, mResult.get(type));
             } else {
-                result.put(type, Result.UNKNOWN);
+                result.put(type, ConnectivityCheckResult.UNKNOWN);
             }
         }
         long elapsedTimeMs = SystemClock.elapsedRealtime() - mStartCheckTimeMs;
@@ -244,7 +257,7 @@ public class ConnectivityTask {
      *
      * @param profile the context to do the check in.
      * @param timeoutMs number of milliseconds to wait before giving up waiting for a connection.
-     * @return a Future to retrieve the results.
+     * @return a ConnectivityTask to retrieve the results.
      */
     public static ConnectivityTask create(Profile profile, int timeoutMs) {
         ThreadUtils.assertOnUiThread();

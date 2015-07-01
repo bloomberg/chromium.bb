@@ -3951,6 +3951,15 @@
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
         {
+          # GN: //chrome/android:chrome_android_java_enums_srcjar
+          'target_name': 'connectivity_check_result_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'browser/android/feedback/connectivity_checker.cc',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
+        },
+        {
           # GN: //chrome/android:resource_id_javagen
           'target_name': 'resource_id_java',
           'type': 'none',

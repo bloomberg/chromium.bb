@@ -8,8 +8,8 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.feedback.ConnectivityTask.FeedbackData;
-import org.chromium.chrome.browser.feedback.ConnectivityTask.Result;
 import org.chromium.chrome.browser.feedback.ConnectivityTask.Type;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content.browser.test.util.Criteria;
@@ -24,9 +24,9 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class ConnectivityTaskTest extends ConnectivityCheckerTestBase {
     private static final int RESULT_CHECK_INTERVAL_MS = 10;
-    public static final String TAG = "cr.feedback";
 
     @MediumTest
+    @Feature({"Feedback"})
     public void testNormalCaseShouldWork() throws InterruptedException {
         final AtomicReference<ConnectivityTask> task = new AtomicReference<>();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -47,29 +47,38 @@ public class ConnectivityTaskTest extends ConnectivityCheckerTestBase {
         }, TIMEOUT_MS, RESULT_CHECK_INTERVAL_MS);
         assertTrue("Should be finished by now.", gotResult);
         FeedbackData feedback = getResult(task);
-        Map<Type, Result> result = feedback.getConnections();
-        assertEquals("Should have 4 results.", 4, result.size());
-        for (Map.Entry<Type, Result> re : result.entrySet()) {
-            switch (re.getKey()) {
-                case CHROME_HTTP:
-                case SYSTEM_HTTP:
-                    assertEquals(
-                            "Wrong result for " + re.getKey(), Result.CONNECTED, re.getValue());
-                    break;
-                case CHROME_HTTPS:
-                case SYSTEM_HTTPS:
-                    assertEquals(
-                            "Wrong result for " + re.getKey(), Result.NOT_CONNECTED, re.getValue());
-                    break;
-                default:
-                    fail("Failed to recognize type " + re.getKey());
-            }
-        }
-        assertTrue("The elapsed time should be non-negative.", feedback.getElapsedTimeMs() >= 0);
+        verifyConnections(feedback, ConnectivityCheckResult.NOT_CONNECTED);
         assertEquals("The timeout value is wrong.", TIMEOUT_MS, feedback.getTimeoutMs());
     }
 
+    private static void verifyConnections(FeedbackData feedback, int expectedHttpsValue) {
+        Map<Type, Integer> results = feedback.getConnections();
+        assertEquals("Should have 4 results.", 4, results.size());
+        for (Map.Entry<Type, Integer> result : results.entrySet()) {
+            switch (result.getKey()) {
+                case CHROME_HTTP:
+                case SYSTEM_HTTP:
+                    assertResult(ConnectivityCheckResult.CONNECTED, result);
+                    break;
+                case CHROME_HTTPS:
+                case SYSTEM_HTTPS:
+                    assertResult(expectedHttpsValue, result);
+                    break;
+                default:
+                    fail("Failed to recognize type " + result.getKey());
+            }
+        }
+        assertTrue("The elapsed time should be non-negative.", feedback.getElapsedTimeMs() >= 0);
+    }
+
+    private static void assertResult(int expectedValue, Map.Entry<Type, Integer> actualEntry) {
+        assertEquals("Wrong result for " + actualEntry.getKey(),
+                ConnectivityTask.getHumanReadableString(expectedValue),
+                ConnectivityTask.getHumanReadableString(actualEntry.getValue()));
+    }
+
     @MediumTest
+    @Feature({"Feedback"})
     public void testTwoTimeoutsShouldFillInTheRest() throws InterruptedException {
         final AtomicReference<ConnectivityTask> task = new AtomicReference<>();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -90,35 +99,18 @@ public class ConnectivityTaskTest extends ConnectivityCheckerTestBase {
         }, TIMEOUT_MS / 5, RESULT_CHECK_INTERVAL_MS);
         assertFalse("Should not be finished by now.", gotResult);
         FeedbackData feedback = getResult(task);
-        Map<Type, Result> result = feedback.getConnections();
-
-        assertEquals("Should have 4 results.", 4, result.size());
-        for (Map.Entry<Type, Result> re : result.entrySet()) {
-            switch (re.getKey()) {
-                case CHROME_HTTP:
-                case SYSTEM_HTTP:
-                    assertEquals(
-                            "Wrong result for " + re.getKey(), Result.CONNECTED, re.getValue());
-                    break;
-                case CHROME_HTTPS:
-                case SYSTEM_HTTPS:
-                    assertEquals("Wrong result for " + re.getKey(), Result.UNKNOWN, re.getValue());
-                    break;
-                default:
-                    fail("Failed to recognize type " + re.getKey());
-            }
-        }
-        assertTrue("The elapsed time should be non-negative.", feedback.getElapsedTimeMs() >= 0);
+        verifyConnections(feedback, ConnectivityCheckResult.UNKNOWN);
         assertEquals("The timeout value is wrong.", TIMEOUT_MS, feedback.getTimeoutMs());
     }
 
     @SmallTest
+    @Feature({"Feedback"})
     public void testFeedbackDataConversion() {
-        Map<Type, Result> connectionMap = new HashMap<>();
-        connectionMap.put(Type.CHROME_HTTP, Result.NOT_CONNECTED);
-        connectionMap.put(Type.CHROME_HTTPS, Result.CONNECTED);
-        connectionMap.put(Type.SYSTEM_HTTP, Result.UNKNOWN);
-        connectionMap.put(Type.SYSTEM_HTTPS, Result.CONNECTED);
+        Map<Type, Integer> connectionMap = new HashMap<>();
+        connectionMap.put(Type.CHROME_HTTP, ConnectivityCheckResult.NOT_CONNECTED);
+        connectionMap.put(Type.CHROME_HTTPS, ConnectivityCheckResult.CONNECTED);
+        connectionMap.put(Type.SYSTEM_HTTP, ConnectivityCheckResult.UNKNOWN);
+        connectionMap.put(Type.SYSTEM_HTTPS, ConnectivityCheckResult.CONNECTED);
 
         FeedbackData feedback = new FeedbackData(connectionMap, 42, 21);
         Map<String, String> map = feedback.toMap();
