@@ -63,7 +63,7 @@ public:
     virtual void appendElement(StringBuilder&, Element&, Namespaces*);
     void appendOpenTag(StringBuilder&, const Element&, Namespaces*);
     void appendCloseTag(StringBuilder&, const Element&);
-    void appendAttribute(StringBuilder&, const Element&, const Attribute&, Namespaces*);
+    virtual void appendAttribute(StringBuilder&, const Element&, const Attribute&, Namespaces*);
 
     EntityMask entityMaskForText(const Text&) const;
 

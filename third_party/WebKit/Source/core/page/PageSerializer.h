@@ -76,6 +76,9 @@ public:
     // vector is the top frame serialized content.
     void serialize(Page*);
 
+    void registerRewriteURL(const String& from, const String& to);
+    void setRewriteURLFolder(const String&);
+
     KURL urlForBlankFrame(LocalFrame*);
 
     Delegate* delegate();
@@ -104,6 +107,8 @@ private:
 
     using BlankFrameURLMap = WillBeHeapHashMap<RawPtrWillBeMember<LocalFrame>, KURL>;
     BlankFrameURLMap m_blankFrameURLs;
+    HashMap<String, String> m_rewriteURLs;
+    String m_rewriteFolder;
     unsigned m_blankFrameCounter;
 
     OwnPtr<Delegate> m_delegate;

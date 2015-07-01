@@ -80,6 +80,11 @@ protected:
         m_folder = WebString::fromUTF8(folder);
     }
 
+    void setRewriteURLFolder(const char* folder)
+    {
+        m_rewriteFolder = folder;
+    }
+
     void registerURL(const char* url, const char* file, const char* mimeType)
     {
         registerMockedURLLoad(KURL(m_baseUrl, url), WebString::fromUTF8(file), m_folder, WebString::fromUTF8(mimeType));
@@ -104,10 +109,20 @@ protected:
         Platform::current()->unitTestSupport()->registerMockedErrorURL(KURL(m_baseUrl, file), response, error);
     }
 
+    void registerRewriteURL(const char* fromURL, const char* toURL)
+    {
+        m_rewriteURLs.add(fromURL, toURL);
+    }
+
     void serialize(const char* url)
     {
         FrameTestHelpers::loadFrame(m_helper.webView()->mainFrame(), KURL(m_baseUrl, url).string().utf8().data());
         PageSerializer serializer(&m_resources, nullptr);
+
+        serializer.setRewriteURLFolder(m_rewriteFolder);
+        for (const auto& rewriteURL: m_rewriteURLs)
+            serializer.registerRewriteURL(rewriteURL.key, rewriteURL.value);
+
         serializer.serialize(m_helper.webViewImpl()->mainFrameImpl()->frame()->page());
     }
 
@@ -155,6 +170,8 @@ private:
     WebString m_folder;
     KURL m_baseUrl;
     Vector<SerializedResource> m_resources;
+    HashMap<String, String> m_rewriteURLs;
+    String m_rewriteFolder;
 };
 
 TEST_F(PageSerializerTest, HTMLElements)
@@ -395,6 +412,45 @@ TEST_F(PageSerializerTest, DataURIMorphing)
 
     EXPECT_EQ(2U, getResources().size());
     EXPECT_TRUE(isSerialized("page_with_morphing_data.html", "text/html"));
+}
+
+TEST_F(PageSerializerTest, RewriteLinksSimple)
+{
+    setBaseFolder("pageserializer/rewritelinks/");
+    setRewriteURLFolder("folder");
+
+    registerURL("rewritelinks_simple.html", "text/html");
+    registerURL("absolute.png", "image.png", "image/png");
+    registerURL("relative.png", "image.png", "image/png");
+    registerRewriteURL("http://www.test.com/absolute.png", "a.png");
+    registerRewriteURL("http://www.test.com/relative.png", "b.png");
+
+    serialize("rewritelinks_simple.html");
+
+    EXPECT_EQ(3U, getResources().size());
+    EXPECT_NE(getSerializedData("rewritelinks_simple.html", "text/html").find("\"folder/a.png\""), kNotFound);
+    EXPECT_NE(getSerializedData("rewritelinks_simple.html", "text/html").find("\"folder/b.png\""), kNotFound);
+}
+
+TEST_F(PageSerializerTest, RewriteLinksBase)
+{
+    setBaseFolder("pageserializer/rewritelinks/");
+    setRewriteURLFolder("folder");
+
+    registerURL("rewritelinks_base.html", "text/html");
+    registerURL("images/here/image.png", "image.png", "image/png");
+    registerURL("images/here/or/in/here/image.png", "image.png", "image/png");
+    registerURL("or/absolute.png", "image.png", "image/png");
+    registerRewriteURL("http://www.test.com/images/here/image.png", "a.png");
+    registerRewriteURL("http://www.test.com/images/here/or/in/here/image.png", "b.png");
+    registerRewriteURL("http://www.test.com/or/absolute.png", "c.png");
+
+    serialize("rewritelinks_base.html");
+
+    EXPECT_EQ(4U, getResources().size());
+    EXPECT_NE(getSerializedData("rewritelinks_base.html", "text/html").find("\"folder/a.png\""), kNotFound);
+    EXPECT_NE(getSerializedData("rewritelinks_base.html", "text/html").find("\"folder/b.png\""), kNotFound);
+    EXPECT_NE(getSerializedData("rewritelinks_base.html", "text/html").find("\"folder/c.png\""), kNotFound);
 }
 
 // Test that we don't regress https://bugs.webkit.org/show_bug.cgi?id=99105
