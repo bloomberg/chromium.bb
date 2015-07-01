@@ -111,11 +111,14 @@ class CONTENT_EXPORT NavigationControllerImpl
   // Return the index of the entry with the given unique id, or -1 if not found.
   int GetEntryIndexWithUniqueID(int nav_entry_id) const;
 
-  // Return the entry with the corresponding instance and page_id, or NULL if
+  // Return the entry with the corresponding instance and page_id, or null if
   // not found.
   NavigationEntryImpl* GetEntryWithPageID(
       SiteInstance* instance,
       int32 page_id) const;
+
+  // Return the entry with the given unique id, or null if not found.
+  NavigationEntryImpl* GetEntryWithUniqueID(int nav_entry_id) const;
 
   // Whether the given frame has committed any navigations yet.
   // This currently only returns true in --site-per-process mode.

@@ -418,6 +418,12 @@ NavigationEntryImpl* NavigationControllerImpl::GetEntryWithPageID(
   return (index != -1) ? entries_[index] : nullptr;
 }
 
+NavigationEntryImpl*
+NavigationControllerImpl::GetEntryWithUniqueID(int nav_entry_id) const {
+  int index = GetEntryIndexWithUniqueID(nav_entry_id);
+  return (index != -1) ? entries_[index] : nullptr;
+}
+
 bool NavigationControllerImpl::HasCommittedRealLoad(
     FrameTreeNode* frame_tree_node) const {
   NavigationEntryImpl* last_committed = GetLastCommittedEntry();
@@ -1224,9 +1230,19 @@ void NavigationControllerImpl::RendererDidNavigateInPage(
     bool* did_replace_entry) {
   DCHECK(!rfh->GetParent()) <<
       "Blink should only tell us about in-page navs for the main frame.";
-  // We're guaranteed to have an entry for this one.
-  NavigationEntryImpl* existing_entry = GetEntryWithPageID(
-      rfh->GetSiteInstance(), params.page_id);
+
+  NavigationEntryImpl* existing_entry;
+  if (params.nav_entry_id) {
+    // This is a browser-initiated history navigation across an existing
+    // fragment navigation or pushState-created entry.
+    existing_entry = GetEntryWithUniqueID(params.nav_entry_id);
+  } else {
+    // This is renderer-initiated. The only kinds of renderer-initated
+    // navigations that are IN_PAGE are history.replaceState, which lands us at
+    // the last committed entry.
+    existing_entry = GetLastCommittedEntry();
+  }
+  DCHECK(existing_entry);
 
   // Reference fragment navigation. We're guaranteed to have the last_committed
   // entry and it will be the same page as the new navigation (minus the
@@ -1248,8 +1264,7 @@ void NavigationControllerImpl::RendererDidNavigateInPage(
 
   // If a transient entry was removed, the indices might have changed, so we
   // have to query the entry index again.
-  last_committed_entry_index_ =
-      GetEntryIndexWithPageID(rfh->GetSiteInstance(), params.page_id);
+  last_committed_entry_index_ = GetIndexOfEntry(existing_entry);
 }
 
 void NavigationControllerImpl::RendererDidNavigateNewSubframe(
