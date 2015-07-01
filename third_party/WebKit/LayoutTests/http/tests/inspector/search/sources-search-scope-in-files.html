@@ -31,6 +31,7 @@ function test()
     {
         WebInspector.inspectorView.showViewInDrawer("search");
         fs.reportCreated();
+        InspectorTest.addResult("Total uiSourceCodes: " + WebInspector.workspace.uiSourceCodes().length);
         InspectorTest.runTestSuite(testSuite);
     }
 
