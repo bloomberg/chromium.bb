@@ -22,17 +22,23 @@ class FetchDataConsumerHandle : public WebDataConsumerHandle {
 public:
     class Reader : public WebDataConsumerHandle::Reader {
     public:
+        enum BlobSizePolicy {
+            // The returned blob must have a valid size (i.e. != kuint64max).
+            DisallowBlobWithInvalidSize,
+            // The returned blob can have an invalid size.
+            AllowBlobWithInvalidSize
+        };
+
         // Drains the data as a BlobDataHandle.
         // If this function returns non-null BlobDataHandle:
         // - The bytes that will be read from the returned BlobDataHandle
         //   must be idential to the bytes that would be read through
         //   WebDataConsumerHandle::Reader APIs without calling this function.
-        // - Subsequent calls to read() / beginRead() returns |Done|.
-        // - The returned blob handle has a valid size (i.e. != kuint64max).
+        // - Subsequent calls to read() / beginRead() return |Done|.
         // This function can return |nullptr|, and in such cases this
-        // functions is no-op.
+        // function is no-op.
         // This function returns |nullptr| when called during two-phase read.
-        virtual PassRefPtr<BlobDataHandle> drainAsBlobDataHandle() { return nullptr; }
+        virtual PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(BlobSizePolicy = DisallowBlobWithInvalidSize) { return nullptr; }
     };
 
     // TODO(yhirano): obtainReader() is currently non-virtual override, and

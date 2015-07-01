@@ -28,6 +28,7 @@ const WebDataConsumerHandle::Result kOk = WebDataConsumerHandle::Ok;
 const WebDataConsumerHandle::Result kUnexpectedError = WebDataConsumerHandle::UnexpectedError;
 const WebDataConsumerHandle::Result kDone = WebDataConsumerHandle::Done;
 const WebDataConsumerHandle::Flags kNone = WebDataConsumerHandle::FlagNone;
+const FetchDataConsumerHandle::Reader::BlobSizePolicy kDisallowBlobWithInvalidSize = FetchDataConsumerHandle::Reader::DisallowBlobWithInvalidSize;
 
 class MockReader : public FetchDataConsumerHandle::Reader {
 public:
@@ -38,7 +39,7 @@ public:
     MOCK_METHOD4(read, Result(void*, size_t, Flags, size_t*));
     MOCK_METHOD3(beginRead, Result(const void**, Flags, size_t*));
     MOCK_METHOD1(endRead, Result(size_t));
-    MOCK_METHOD0(drainAsBlobDataHandle, PassRefPtr<BlobDataHandle>());
+    MOCK_METHOD1(drainAsBlobDataHandle, PassRefPtr<BlobDataHandle>(BlobSizePolicy));
 
     ~MockReader() override
     {
@@ -72,7 +73,7 @@ TEST(FetchDataLoaderTest, LoadAsBlob)
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*handle, obtainReaderInternal(_)).WillOnce(DoAll(SaveArg<0>(&client), Return(reader.get())));
-    EXPECT_CALL(*reader, drainAsBlobDataHandle()).WillOnce(Return(nullptr));
+    EXPECT_CALL(*reader, drainAsBlobDataHandle(kDisallowBlobWithInvalidSize)).WillOnce(Return(nullptr));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(static_cast<const void*>(kQuickBrownFox)), SetArgPointee<2>(kQuickBrownFoxLengthWithTerminatingNull), Return(kOk)));
     EXPECT_CALL(*reader, endRead(kQuickBrownFoxLengthWithTerminatingNull)).WillOnce(Return(kOk));
@@ -112,7 +113,7 @@ TEST(FetchDataLoaderTest, LoadAsBlobFailed)
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*handle, obtainReaderInternal(_)).WillOnce(DoAll(SaveArg<0>(&client), Return(reader.get())));
-    EXPECT_CALL(*reader, drainAsBlobDataHandle()).WillOnce(Return(nullptr));
+    EXPECT_CALL(*reader, drainAsBlobDataHandle(kDisallowBlobWithInvalidSize)).WillOnce(Return(nullptr));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*reader, beginRead(_, kNone, _)).WillOnce(DoAll(SetArgPointee<0>(static_cast<const void*>(kQuickBrownFox)), SetArgPointee<2>(kQuickBrownFoxLengthWithTerminatingNull), Return(kOk)));
     EXPECT_CALL(*reader, endRead(kQuickBrownFoxLengthWithTerminatingNull)).WillOnce(Return(kOk));
@@ -147,7 +148,7 @@ TEST(FetchDataLoaderTest, LoadAsBlobCancel)
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*handle, obtainReaderInternal(_)).WillOnce(Return(reader.get()));
-    EXPECT_CALL(*reader, drainAsBlobDataHandle()).WillOnce(Return(nullptr));
+    EXPECT_CALL(*reader, drainAsBlobDataHandle(kDisallowBlobWithInvalidSize)).WillOnce(Return(nullptr));
     EXPECT_CALL(checkpoint, Call(2));
     EXPECT_CALL(*reader, destruct());
     EXPECT_CALL(checkpoint, Call(3));
@@ -180,7 +181,7 @@ TEST(FetchDataLoaderTest, LoadAsBlobViaDrainAsBlobDataHandleWithSameContentType)
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*handle, obtainReaderInternal(_)).WillOnce(Return(reader.get()));
-    EXPECT_CALL(*reader, drainAsBlobDataHandle()).WillOnce(Return(inputBlobDataHandle));
+    EXPECT_CALL(*reader, drainAsBlobDataHandle(kDisallowBlobWithInvalidSize)).WillOnce(Return(inputBlobDataHandle));
     EXPECT_CALL(*reader, destruct());
     EXPECT_CALL(*fetchDataLoaderClient, didFetchDataLoadedBlobHandleMock(_)).WillOnce(SaveArg<0>(&blobDataHandle));
     EXPECT_CALL(checkpoint, Call(2));
@@ -219,7 +220,7 @@ TEST(FetchDataLoaderTest, LoadAsBlobViaDrainAsBlobDataHandleWithDifferentContent
     InSequence s;
     EXPECT_CALL(checkpoint, Call(1));
     EXPECT_CALL(*handle, obtainReaderInternal(_)).WillOnce(Return(reader.get()));
-    EXPECT_CALL(*reader, drainAsBlobDataHandle()).WillOnce(Return(inputBlobDataHandle));
+    EXPECT_CALL(*reader, drainAsBlobDataHandle(kDisallowBlobWithInvalidSize)).WillOnce(Return(inputBlobDataHandle));
     EXPECT_CALL(*reader, destruct());
     EXPECT_CALL(*fetchDataLoaderClient, didFetchDataLoadedBlobHandleMock(_)).WillOnce(SaveArg<0>(&blobDataHandle));
     EXPECT_CALL(checkpoint, Call(2));
