@@ -154,8 +154,8 @@ bool ServiceResolverThunk::IsFunctionAService(void* local_thunk) const {
     // See if it's the Win8 signature.
     ServiceEntryW8* w8_service = &function_code.original_w8;
     if (!IsService(&w8_service->mov_r10_rcx_mov_eax) ||
-        w8_service->mov_1 != kMov1 || w8_service->mov_1 != kMov1 ||
-        w8_service->mov_1 != kMov1) {
+        w8_service->mov_1 != kMov1 || w8_service->mov_2 != kMov2 ||
+        w8_service->mov_3 != kMov3) {
       return false;
     }
   }
