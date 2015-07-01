@@ -194,8 +194,6 @@
       'WebPagePopupImpl.cpp',
       'WebPagePopupImpl.h',
       'WebPageSerializer.cpp',
-      'WebPageSerializerImpl.cpp',
-      'WebPageSerializerImpl.h',
       'WebPerformance.cpp',
       'WebPluginContainerImpl.cpp',
       'WebPluginContainerImpl.h',
@@ -299,7 +297,6 @@
       'tests/WebImageTest.cpp',
       'tests/WebInputEventConversionTest.cpp',
       'tests/WebInputEventFactoryTestMac.mm',
-      'tests/WebPageSerializerTest.cpp',
       'tests/WebPluginContainerTest.cpp',
       'tests/WebScopedWindowFocusAllowedIndicatorTest.cpp',
       'tests/WebSearchableFormDataTest.cpp',
@@ -311,13 +308,6 @@
       'tests/WebViewTest.cpp',
     ],
     'conditions': [
-      ['OS=="win"',
-        {
-          'web_unittest_files': [
-            'tests/WebPageSerializerTest.cpp',
-          ],
-        }
-      ],
       ['OS!="mac"',
         {
           'web_unittest_files': [
