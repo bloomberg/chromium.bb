@@ -10,7 +10,7 @@ import page_sets
 from telemetry import benchmark
 
 
-@benchmark.Disabled('win')  # crbug.com/416502
+@benchmark.Disabled('win', 'android')  # crbug.com/416502, crbug.com/505854
 class V8GarbageCollectionCases(perf_benchmark.PerfBenchmark):
   """Measure V8 GC metrics on the garbage collection cases."""
   test = v8_gc_times.V8GCTimes
