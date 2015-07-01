@@ -172,10 +172,11 @@ class TouchActionBrowserTest : public ContentBrowserTest {
 // Mac doesn't yet have a gesture recognizer, so can't support turning touch
 // events into scroll gestures.
 // Will be fixed with http://crbug.com/337142
+// Flaky on Android, see https://crbug.com/376668.
 //
 // Verify the test infrastructure works - we can touch-scroll the page and get a
 // touchcancel as expected.
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
 #define MAYBE_DefaultAuto DISABLED_DefaultAuto
 #else
 #define MAYBE_DefaultAuto DefaultAuto
@@ -195,7 +196,8 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_DefaultAuto) {
 // Verify that touching a touch-action: none region disables scrolling and
 // enables all touch events to be sent.
 // Disabled on MacOS because it doesn't support touch input.
-#if defined(OS_MACOSX)
+// Disabled on Android due to flakiness, see https://crbug.com/376668.
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
 #define MAYBE_TouchActionNone DISABLED_TouchActionNone
 #else
 #define MAYBE_TouchActionNone TouchActionNone
