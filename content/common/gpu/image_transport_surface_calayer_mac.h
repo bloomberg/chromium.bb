@@ -42,12 +42,16 @@ class CALayerStorageProvider
   base::Closure LayerShareGroupContextDirtiedCallback();
   bool LayerHasPendingDraw() const;
   void LayerDoDraw(const gfx::Rect& dirty_rect);
+  void LayerUnblockBrowserIfNeeded();
   CAContext* LayerCAContext() { return context_.get(); }
 
   // ui::GpuSwitchingObserver implementation.
   void OnGpuSwitched() override;
 
  private:
+  void CreateLayerAndRequestDraw(bool can_use_ns_cgl_surface,
+                                 bool should_draw_immediately,
+                                 const gfx::Rect& dirty_rect);
   void DrawImmediatelyAndUnblockBrowser();
 
   // The browser will be blocked while there is a frame that was sent to it but
@@ -68,8 +72,10 @@ class CALayerStorageProvider
   // drawInCGLContext, or if we should force it with displayIfNeeded.
   bool throttling_disabled_;
 
-  // Set when a new swap occurs, and un-set when |layer_| draws that frame.
-  bool has_pending_draw_;
+  // Set when a new swap occurs, and un-set when the frame is acked to the
+  // browser. This is when the CAOpenGLLayer draws or when then NSCGLSurface
+  // is committed.
+  bool has_pending_ack_;
 
   // The texture with the pixels to draw, and the share group it is allocated
   // in.

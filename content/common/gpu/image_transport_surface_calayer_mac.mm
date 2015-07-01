@@ -83,6 +83,7 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info,
 // Private CALayer API.
 @interface CALayer (Private)
 - (void)setContentsChanged;
+- (void)_didCommitLayer:(CATransaction*)transaction;
 @end
 
 @interface ImageTransportCAOpenGLLayer : CAOpenGLLayer {
@@ -239,7 +240,7 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info,
 
   if (storageProvider_) {
     storageProvider_->LayerDoDraw(gfx::Rect(pixelSize_));
-
+    storageProvider_->LayerUnblockBrowserIfNeeded();
     // A trace value of 0 indicates that there is no longer a pending swap ack.
     TRACE_COUNTER_ID1("gpu", "CALayerPendingSwap", self, 0);
   } else {
@@ -291,6 +292,11 @@ bool CanUseNSCGLSurface(const gpu::gles2::FeatureInfo* feature_info,
     pixelSize_ = pixelSize;
   }
   return self;
+}
+
+- (void)_didCommitLayer:(CATransaction*)transaction {
+  storageProvider_->LayerUnblockBrowserIfNeeded();
+  [super _didCommitLayer:transaction];
 }
 
 - (BOOL)drawNewFrame:(gfx::Rect)dirtyRect {
@@ -360,7 +366,7 @@ CALayerStorageProvider::CALayerStorageProvider(
       gpu_vsync_disabled_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuVsync)),
       throttling_disabled_(false),
-      has_pending_draw_(false),
+      has_pending_ack_(false),
       fbo_texture_(0),
       fbo_scale_factor_(1),
       program_(0),
@@ -566,7 +572,7 @@ void CALayerStorageProvider::FrameSizeChanged(const gfx::Size& pixel_size,
 
 void CALayerStorageProvider::SwapBuffers(const gfx::Rect& dirty_rect) {
   TRACE_EVENT0("gpu", "CALayerStorageProvider::SwapBuffers");
-  DCHECK(!has_pending_draw_);
+  DCHECK(!has_pending_ack_);
 
   // Recreate the CALayer on the new GPU if a GPU switch has occurred. Note
   // that the CAContext will retain a reference to the old CALayer until the
@@ -589,7 +595,7 @@ void CALayerStorageProvider::SwapBuffers(const gfx::Rect& dirty_rect) {
 
   // Set the pending draw flag only after potentially destroying the old layer
   // (otherwise destroying it will un-set the flag).
-  has_pending_draw_ = true;
+  has_pending_ack_ = true;
 
   // Allocate a CAContext to use to transport the CALayer to the browser
   // process, if needed.
@@ -601,6 +607,28 @@ void CALayerStorageProvider::SwapBuffers(const gfx::Rect& dirty_rect) {
     [context_ retain];
   }
 
+  // Create the appropriate CALayer (if needed) and request that it draw.
+  bool should_draw_immediately = gpu_vsync_disabled_ || throttling_disabled_;
+  CreateLayerAndRequestDraw(
+      can_use_ns_cgl_surface, should_draw_immediately, dirty_rect);
+
+  // CoreAnimation may not call the function to un-block the browser in a
+  // timely manner (or ever). Post a task to force the draw and un-block
+  // the browser (at the next cycle through the run-loop if drawing is to
+  // be immediate, and at a timeout of 1/6th of a second otherwise).
+  if (has_pending_ack_) {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&CALayerStorageProvider::DrawImmediatelyAndUnblockBrowser,
+                   pending_draw_weak_factory_.GetWeakPtr()),
+        should_draw_immediately ? base::TimeDelta() :
+                                  base::TimeDelta::FromSeconds(1) / 6);
+  }
+}
+
+void CALayerStorageProvider::CreateLayerAndRequestDraw(
+    bool can_use_ns_cgl_surface, bool should_draw_immediately,
+    const gfx::Rect& dirty_rect) {
   // Attempt to use the NSCGLSurface API if nothing suggests that it will fail.
   if (can_use_ns_cgl_surface) {
     if (!ns_cgl_surface_layer_) {
@@ -633,38 +661,26 @@ void CALayerStorageProvider::SwapBuffers(const gfx::Rect& dirty_rect) {
     // happen.
     [context_ setLayer:ca_opengl_layer_];
 
-    // Sometimes calling -[CAContext setLayer:] will result in the layer getting
-    // an immediate draw. If that happend, we're done.
-    if (!has_pending_draw_)
-      return;
-
-    // Tell CoreAnimation to draw our frame.
-    if (gpu_vsync_disabled_ || throttling_disabled_) {
-      DrawImmediatelyAndUnblockBrowser();
-    } else {
+    // Tell CoreAnimation to draw our frame. Note that sometimes, calling
+    // -[CAContext setLayer:] will result in the layer getting an immediate
+    // draw. If that happend, we're done.
+    if (!should_draw_immediately && has_pending_ack_) {
       [ca_opengl_layer_ requestDrawNewFrame];
-    }
-
-    if (has_pending_draw_) {
-      // If CoreAnimation doesn't end up drawing our frame, un-block the browser
-      // after a timeout of 1/6th of a second has passed.
-      base::MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&CALayerStorageProvider::DrawImmediatelyAndUnblockBrowser,
-                     pending_draw_weak_factory_.GetWeakPtr()),
-          base::TimeDelta::FromSeconds(1) / 6);
     }
   }
 }
 
 void CALayerStorageProvider::DrawImmediatelyAndUnblockBrowser() {
-  CHECK(has_pending_draw_);
-  [ca_opengl_layer_ drawPendingFrameImmediately];
+  DCHECK(has_pending_ack_);
 
-  // Sometimes, the setNeedsDisplay+displayIfNeeded pairs have no effect. This
-  // can happen if the NSView that this layer is attached to isn't in the
-  // window hierarchy (e.g, tab capture of a backgrounded tab). In this case,
-  // the frame will never be seen, so drop it.
+  if (ca_opengl_layer_) {
+    // Beware that sometimes, the setNeedsDisplay+displayIfNeeded pairs have no
+    // effect. This can happen if the NSView that this layer is attached to
+    // isn't in the window hierarchy (e.g, tab capture of a backgrounded tab).
+    // In this case, the frame will never be seen, so drop it.
+    [ca_opengl_layer_ drawPendingFrameImmediately];
+  }
+
   UnblockBrowserIfNeeded();
 }
 
@@ -674,7 +690,7 @@ void CALayerStorageProvider::WillWriteToBackbuffer() {
   // like context lost, or changing context, this will not be true. If there
   // exists a pending draw, flush it immediately to maintain a consistent
   // state.
-  if (has_pending_draw_)
+  if (has_pending_ack_)
     DrawImmediatelyAndUnblockBrowser();
 }
 
@@ -796,13 +812,14 @@ void CALayerStorageProvider::LayerDoDraw(const gfx::Rect& dirty_rect) {
   while ((error = glGetError()) != GL_NO_ERROR) {
     LOG(ERROR) << "OpenGL error hit while drawing frame: " << error;
   }
+}
 
-  // Allow forward progress in the context now that the swap is complete.
+void CALayerStorageProvider::LayerUnblockBrowserIfNeeded() {
   UnblockBrowserIfNeeded();
 }
 
 bool CALayerStorageProvider::LayerHasPendingDraw() const {
-  return has_pending_draw_;
+  return has_pending_ack_;
 }
 
 void CALayerStorageProvider::OnGpuSwitched() {
@@ -810,10 +827,10 @@ void CALayerStorageProvider::OnGpuSwitched() {
 }
 
 void CALayerStorageProvider::UnblockBrowserIfNeeded() {
-  if (!has_pending_draw_)
+  if (!has_pending_ack_)
     return;
   pending_draw_weak_factory_.InvalidateWeakPtrs();
-  has_pending_draw_ = false;
+  has_pending_ack_ = false;
   transport_surface_->SendSwapBuffers(
       ui::SurfaceHandleFromCAContextID([context_ contextId]),
       fbo_pixel_size_,
