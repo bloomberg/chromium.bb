@@ -742,4 +742,23 @@
       'includes': ['../build/protoc.gypi'],
     },
   ],
+  'conditions': [
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'chromeos_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'chromeos_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'chromeos_unittests.isolate',
+          ],
+        },
+      ],
+    }],
+  ],
 }
