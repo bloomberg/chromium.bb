@@ -23,9 +23,9 @@ public class KeyUtils {
      * {@link View#dispatchKeyEventPreIme(KeyEvent)} and {@link View#dispatchKeyEvent(KeyEvent)} of
      * the view itself
      * <p>
-     * The event injecting framework requires INJECT_EVENTS permission and that has been flaky on
-     * our perf bots.  So until a root cause of the issue can be found, we should use this instead
-     * of the functionality provided by {@link #sendKeys(int...)}.
+     * The event injecting framework will fail with a SecurityException if another window is
+     * on top of Chrome ("Injecting to another application requires INJECT_EVENTS permission"). So,
+     * we should use this instead of {@link android.test.InstrumentationTestCase#sendKeys(int...)}.
      *
      * @param i The application being instrumented.
      * @param v The view to receive the key event.

@@ -8,7 +8,6 @@
       package="org.chromium.content_shell_apk.tests">
     <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="22" />
     <uses-permission android:name="android.permission.RUN_INSTRUMENTATION" />
-    <uses-permission android:name="android.permission.INJECT_EVENTS" />
     <!-- We add an application tag here just so that we can indicate that this
          package needs to link against the android.test library, which is
          needed when building test cases. -->

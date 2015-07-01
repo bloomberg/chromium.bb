@@ -83,8 +83,6 @@ Still reading?
     <ignore path="AndroidManifest.xml"/>
   </issue>
   <issue id="Overdraw" severity="ignore"/>
-  <!-- TODO(newt): remove if INJECT_EVENTS is not needed crbug.com/502028 -->
-  <issue id="ProtectedPermissions" severity="ignore"/>
   <issue id="Recycle" severity="ignore"/>
   <issue id="Registered" severity="ignore"/>
   <issue id="RtlCompat" severity="ignore"/>
