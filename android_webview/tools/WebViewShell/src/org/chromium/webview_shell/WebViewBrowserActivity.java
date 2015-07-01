@@ -164,7 +164,16 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
 
     private void initializeSettings(WebSettings settings) {
         settings.setJavaScriptEnabled(true);
+
+        // configure local storage apis and their database paths.
+        settings.setAppCachePath(getDir("appcache", 0).getPath());
+        settings.setGeolocationDatabasePath(getDir("geolocation", 0).getPath());
+        settings.setDatabasePath(getDir("databases", 0).getPath());
+
+        settings.setAppCacheEnabled(true);
         settings.setGeolocationEnabled(true);
+        settings.setDatabaseEnabled(true);
+        settings.setDomStorageEnabled(true);
     }
 
     private void about() {
