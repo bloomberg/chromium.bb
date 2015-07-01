@@ -268,7 +268,7 @@ class MEDIA_EXPORT VideoRendererImpl
 
   // Indicates that Render() was called with |background_rendering| set to true,
   // so we've entered a background rendering mode where dropped frames are not
-  // counted.
+  // counted.  Must be accessed under |lock_| once |sink_| is started.
   bool was_background_rendering_;
 
   // Indicates whether or not media time is currently progressing or not.

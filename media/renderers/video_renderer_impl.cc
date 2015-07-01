@@ -734,9 +734,9 @@ bool VideoRendererImpl::HaveReachedBufferingCap() {
 void VideoRendererImpl::StartSink() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_GT(algorithm_->frames_queued(), 0u);
-  sink_->Start(this);
   sink_started_ = true;
   was_background_rendering_ = false;
+  sink_->Start(this);
 }
 
 void VideoRendererImpl::StopSink() {
