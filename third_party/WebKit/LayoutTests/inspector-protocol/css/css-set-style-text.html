@@ -37,7 +37,12 @@ function test()
         InspectorTest.sendCommandOrDie("CSS.getStyleSheetText", { styleSheetId: styleSheetId }, onInitialStyleSheetText);
     }
 
-    function dumpAndNext(next)
+    function dumpAndCall(next)
+    {
+        return InspectorTest.loadAndDumpMatchingRules.bind(InspectorTest, documentNodeId, "#test", next);
+    }
+
+    function dumpUndoAndNext(next)
     {
         return InspectorTest.loadAndDumpMatchingRules.bind(InspectorTest, documentNodeId, "#test", InspectorTest.undoAndNext(next));
     }
@@ -56,7 +61,34 @@ function test()
                 styleSheetId: styleSheetId,
                 range: { startLine: 0, startColumn: 7, endLine: 2, endColumn: 0 },
                 text: "\n    content: 'EDITED';\n",
-            }, dumpAndNext(next));
+            }, dumpUndoAndNext(next));
+        },
+
+        function testSetStyleTwice(next)
+        {
+            setStyleText({
+                styleSheetId: styleSheetId,
+                range: { startLine: 0, startColumn: 7, endLine: 2, endColumn: 0 },
+                text: "\n    color: green;\n    padding: 0 4px;\n    cursor: pointer\n",
+            }, dumpAndCall(step2));
+
+            function step2()
+            {
+                setStyleText({
+                    styleSheetId: styleSheetId,
+                    range: { startLine: 0, startColumn: 7, endLine: 4, endColumn: 0 },
+                    text: "\n    color: green;\n    padding: 0 6px;\n    cursor: pointer\n",
+                }, dumpAndCall(step3));
+            }
+
+            function step3()
+            {
+                setStyleText({
+                    styleSheetId: styleSheetId,
+                    range: { startLine: 0, startColumn: 7, endLine: 4, endColumn: 0 },
+                    text: "\n    color: green;\n    padding: 0 8px;\n    cursor: pointer\n",
+                }, dumpUndoAndNext(next));
+            }
         },
 
         function testSetStylePoorContent(next)
@@ -65,7 +97,7 @@ function test()
                 styleSheetId: styleSheetId,
                 range: { startLine: 0, startColumn: 7, endLine: 2, endColumn: 0 },
                 text: "}",
-            }, dumpAndNext(next));
+            }, dumpUndoAndNext(next));
         },
 
         function testSetStyleInMedia(next)
@@ -74,7 +106,7 @@ function test()
                 styleSheetId: styleSheetId,
                 range: { startLine: 13, startColumn: 11, endLine: 15, endColumn: 4 },
                 text: "\n        content: 'EDITED';\n        color: red;\n        /** foo */\n    ",
-            }, dumpAndNext(next));
+            }, dumpUndoAndNext(next));
         },
 
         function testDeleteStyleBody(next)
@@ -83,7 +115,7 @@ function test()
                 styleSheetId: styleSheetId,
                 range: { startLine: 13, startColumn: 11, endLine: 15, endColumn: 4 },
                 text: "",
-            }, dumpAndNext(next));
+            }, dumpUndoAndNext(next));
         },
 
         function testSetStylePoorRange(next)
@@ -92,7 +124,7 @@ function test()
                 styleSheetId: styleSheetId,
                 range: { startLine: 11, startColumn: 11, endLine: 15, endColumn: 4 },
                 text: "\n        content: 'EDITED';\n",
-            }, dumpAndNext(next));
+            }, dumpUndoAndNext(next));
         },
 
         function testSetStyleOpenComment(next)
@@ -101,7 +133,7 @@ function test()
                 styleSheetId: styleSheetId,
                 range: { startLine: 13, startColumn: 11, endLine: 15, endColumn: 4 },
                 text: "\n        content: 'EDITED'/* ;\n",
-            }, dumpAndNext(next));
+            }, dumpUndoAndNext(next));
         },
 
         function testSetStyleOfRemovedRule(next)
@@ -113,7 +145,7 @@ function test()
                     styleSheetId: styleSheetId,
                     range: { startLine: 0, startColumn: 7, endLine: 2, endColumn: 0 },
                     text: "\n    content: 'EDITED';\n",
-                }, dumpAndNext(next));
+                }, dumpUndoAndNext(next));
             }
         }
    ];

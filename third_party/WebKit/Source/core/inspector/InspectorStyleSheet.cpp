@@ -599,6 +599,47 @@ void diff(const Vector<String>& listA, const Vector<String>& listB, IndexMap* aT
     delete [] backtrack;
 }
 
+String canonicalCSSText(RefPtrWillBeRawPtr<CSSRule> rule)
+{
+    if (rule->type() != CSSRule::STYLE_RULE)
+        return rule->cssText();
+    RefPtr<CSSStyleRule> styleRule = toCSSStyleRule(rule.get());
+
+    Vector<String> propertyNames;
+    HashSet<String> propertyNameSet;
+    CSSStyleDeclaration* style = styleRule->style();
+    for (unsigned i = 0; i < style->length(); ++i) {
+        String name = style->item(i);
+        String shorthand = style->getPropertyShorthand(name);
+        if (!shorthand.isEmpty())
+            name = shorthand;
+        if (propertyNameSet.contains(name))
+            continue;
+        propertyNames.append(name);
+        propertyNameSet.add(name);
+    }
+    std::sort(propertyNames.begin(), propertyNames.end(), WTF::codePointCompareLessThan);
+
+    StringBuilder builder;
+    builder.append(styleRule->selectorText());
+    builder.append("{");
+    for (unsigned i = 0; i < propertyNames.size(); ++i) {
+        String name = propertyNames.at(i);
+        builder.append(" ");
+        builder.append(name);
+        builder.append(":");
+        builder.append(style->getPropertyValue(name));
+        if (!style->getPropertyPriority(name).isEmpty()) {
+            builder.append(" ");
+            builder.append(style->getPropertyPriority(name));
+        }
+        builder.append(";");
+    }
+    builder.append("}");
+
+    return builder.toString();
+}
+
 } // namespace
 
 namespace blink {
@@ -1481,7 +1522,7 @@ RefPtrWillBeRawPtr<CSSRule> InspectorStyleSheet::ruleForSourceData(RefPtrWillBeR
 
     // Check that CSSOM did not mutate this rule.
     RefPtrWillBeRawPtr<CSSRule> result = m_cssomFlatRules.at(it->value);
-    if (m_parsedFlatRules.at(index)->cssText() != result->cssText())
+    if (canonicalCSSText(m_parsedFlatRules.at(index)) != canonicalCSSText(result))
         return nullptr;
     return result;
 }
@@ -1504,7 +1545,7 @@ RefPtrWillBeRawPtr<CSSRuleSourceData> InspectorStyleSheet::sourceDataForRule(Ref
 
     // Check that CSSOM did not mutate this rule.
     RefPtrWillBeRawPtr<CSSRule> parsedRule = m_parsedFlatRules.at(it->value);
-    if (rule->cssText() != parsedRule->cssText())
+    if (canonicalCSSText(rule) != canonicalCSSText(parsedRule))
         return nullptr;
 
     return m_sourceData->at(it->value);
@@ -1545,9 +1586,9 @@ void InspectorStyleSheet::mapSourceDataToCSSOM()
     Vector<String> cssomRulesText = Vector<String>();
     Vector<String> parsedRulesText = Vector<String>();
     for (size_t i = 0; i < cssomRules.size(); ++i)
-        cssomRulesText.append(cssomRules.at(i)->cssText());
+        cssomRulesText.append(canonicalCSSText(cssomRules.at(i)));
     for (size_t j = 0; j < parsedRules.size(); ++j)
-        parsedRulesText.append(parsedRules.at(j)->cssText());
+        parsedRulesText.append(canonicalCSSText(parsedRules.at(j)));
 
     diff(cssomRulesText, parsedRulesText, &m_ruleToSourceData, &m_sourceDataToRule);
 }

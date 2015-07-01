@@ -67,6 +67,155 @@ Dumping matched rules:
     }
 Dumping inherited rules: 
 
+Running test: testSetStyleTwice
+==== Style sheet text ====
+#test {
+    color: green;
+    padding: 0 4px;
+    cursor: pointer
+}
+
+#test {
+    /* resetting some properties */
+    line-height: 1;
+    font-family: "Arial";
+    color: blue;
+    display: flex; /* flex FTW! */
+}
+
+@media (min-width: 1px) {
+    #test {
+        font-size: 200%;
+    }
+
+    #test {
+    }
+}
+
+
+Dumping matched rules: 
+*#test* {    regular
+    color: green;
+    padding: 0 4px;
+    cursor: pointer;
+    padding-top: 0px;
+    padding-right: 4px;
+    padding-bottom: 0px;
+    padding-left: 4px;
+}
+*#test* {    regular
+    line-height: 1;
+    font-family: "Arial";
+    color: blue;
+    display: flex;
+}
+@media (min-width: 1px)
+    *#test* {    regular
+        font-size: 200%;
+    }
+@media (min-width: 1px)
+    *#test* {    regular
+    }
+Dumping inherited rules: 
+==== Style sheet text ====
+#test {
+    color: green;
+    padding: 0 6px;
+    cursor: pointer
+}
+
+#test {
+    /* resetting some properties */
+    line-height: 1;
+    font-family: "Arial";
+    color: blue;
+    display: flex; /* flex FTW! */
+}
+
+@media (min-width: 1px) {
+    #test {
+        font-size: 200%;
+    }
+
+    #test {
+    }
+}
+
+
+Dumping matched rules: 
+*#test* {    regular
+    color: green;
+    padding: 0 6px;
+    cursor: pointer;
+    padding-top: 0px;
+    padding-right: 6px;
+    padding-bottom: 0px;
+    padding-left: 6px;
+}
+*#test* {    regular
+    line-height: 1;
+    font-family: "Arial";
+    color: blue;
+    display: flex;
+}
+@media (min-width: 1px)
+    *#test* {    regular
+        font-size: 200%;
+    }
+@media (min-width: 1px)
+    *#test* {    regular
+    }
+Dumping inherited rules: 
+==== Style sheet text ====
+#test {
+    color: green;
+    padding: 0 8px;
+    cursor: pointer
+}
+
+#test {
+    /* resetting some properties */
+    line-height: 1;
+    font-family: "Arial";
+    color: blue;
+    display: flex; /* flex FTW! */
+}
+
+@media (min-width: 1px) {
+    #test {
+        font-size: 200%;
+    }
+
+    #test {
+    }
+}
+
+
+Dumping matched rules: 
+*#test* {    regular
+    color: green;
+    padding: 0 8px;
+    cursor: pointer;
+    padding-top: 0px;
+    padding-right: 8px;
+    padding-bottom: 0px;
+    padding-left: 8px;
+}
+*#test* {    regular
+    line-height: 1;
+    font-family: "Arial";
+    color: blue;
+    display: flex;
+}
+@media (min-width: 1px)
+    *#test* {    regular
+        font-size: 200%;
+    }
+@media (min-width: 1px)
+    *#test* {    regular
+    }
+Dumping inherited rules: 
+
 Running test: testSetStylePoorContent
 Expected protocol error: SyntaxError Style text is not valid.
 Dumping matched rules: 
