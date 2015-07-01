@@ -13,12 +13,12 @@ import android.util.Pair;
 import android.util.SparseIntArray;
 
 import org.chromium.base.ImportantFileWriterAndroid;
+import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.util.StreamUtil;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;

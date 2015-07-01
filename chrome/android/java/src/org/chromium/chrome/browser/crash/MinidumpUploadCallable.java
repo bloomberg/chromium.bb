@@ -9,12 +9,12 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import org.chromium.base.StreamUtil;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.preferences.privacy.CrashReportingPermissionManager;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.util.HttpURLConnectionFactory;
 import org.chromium.chrome.browser.util.HttpURLConnectionFactoryImpl;
-import org.chromium.chrome.browser.util.StreamUtil;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;

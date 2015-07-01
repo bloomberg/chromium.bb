@@ -8,7 +8,7 @@ import android.content.Context;
 import android.util.Base64;
 
 import org.chromium.base.Log;
-import org.chromium.chrome.browser.util.StreamUtil;
+import org.chromium.base.StreamUtil;
 
 import java.io.File;
 import java.io.FileNotFoundException;

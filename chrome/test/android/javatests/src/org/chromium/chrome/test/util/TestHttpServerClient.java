@@ -6,7 +6,7 @@ package org.chromium.chrome.test.util;
 
 import junit.framework.Assert;
 
-import org.chromium.chrome.browser.util.StreamUtil;
+import org.chromium.base.StreamUtil;
 
 import java.io.IOException;
 import java.io.InputStream;

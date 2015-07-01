@@ -9,9 +9,9 @@ import android.util.Log;
 
 import junit.framework.Assert;
 
+import org.chromium.base.StreamUtil;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.tabmodel.document.StorageDelegate;
-import org.chromium.chrome.browser.util.StreamUtil;
 
 import java.io.File;
 import java.io.FileInputStream;

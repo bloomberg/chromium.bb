@@ -8,9 +8,9 @@ import android.content.Context;
 import android.util.Log;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.StreamUtil;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.tabmodel.TabPersister;
-import org.chromium.chrome.browser.util.StreamUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

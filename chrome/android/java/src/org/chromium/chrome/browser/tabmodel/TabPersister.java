@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.tabmodel;
 
 import android.util.Log;
 
+import org.chromium.base.StreamUtil;
 import org.chromium.chrome.browser.TabState;
-import org.chromium.chrome.browser.util.StreamUtil;
 
 import java.io.File;
 import java.io.FileNotFoundException;

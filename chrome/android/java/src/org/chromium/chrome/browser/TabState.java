@@ -8,8 +8,8 @@ import android.os.Handler;
 import android.util.Log;
 import android.util.Pair;
 
+import org.chromium.base.StreamUtil;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.util.StreamUtil;
 import org.chromium.content.browser.crypto.CipherFactory;
 import org.chromium.content_public.browser.WebContents;
 
