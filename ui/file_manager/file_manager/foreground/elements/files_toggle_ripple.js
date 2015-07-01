@@ -34,10 +34,15 @@ var FilesToggleRipple = Polymer({
     if (newValue === oldValue)
       return;
 
-    if (newValue)
-      this.performActivateAnimation_();
-    else
-      this.performDeactivateAnimation_();
+    // Perform animation when it's not initial value change.
+    if (oldValue !== undefined) {
+      if (newValue)
+        this.performActivateAnimation_();
+      else
+        this.performDeactivateAnimation_();
+    }
+
+    this.$.ripple.classList.toggle('activated', newValue);
   },
 
   /**
@@ -86,8 +91,6 @@ var FilesToggleRipple = Polymer({
         offset: 1
       }
     ], 750);
-
-    this.$.ripple.classList.add('activated');
   },
 
   /**
@@ -125,7 +128,5 @@ var FilesToggleRipple = Polymer({
         offset: 1
       }
     ], 150);
-
-    this.$.ripple.classList.remove('activated');
   }
 });
