@@ -175,6 +175,8 @@ class ServiceWorkerDiskCacheMigratorTest : public testing::Test {
     reader->ReadInfo(info_buffer.get(), cb1.callback());
     int rv = cb1.WaitForResult();
     EXPECT_LT(0, rv);
+    ASSERT_TRUE(info_buffer->http_info);
+    ASSERT_TRUE(info_buffer->http_info->headers);
     EXPECT_EQ("OK", info_buffer->http_info->headers->GetStatusText());
 
     // Verify the response metadata.
