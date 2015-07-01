@@ -103,7 +103,7 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
 
   void PerformBackNavigationViaSliderCallbacks() {
     // Sets slide direction to BACK, sets screenshot from NavEntry at
-    // offset -1  on layer_delegate_.
+    // offset -1 on layer_delegate_.
     scoped_ptr<aura::Window> window(
         GetOverlay()->CreateBackWindow(GetBackSlideWindowBounds()));
     bool window_created = window;
@@ -116,7 +116,7 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
       EXPECT_EQ(GetOverlay()->direction_, OverscrollNavigationOverlay::NONE);
     window->SetBounds(gfx::Rect(root_window()->bounds().size()));
     GetOverlay()->OnOverscrollCompleted(window.Pass());
-    main_test_rfh()->PrepareForCommit();
+    contents()->GetPendingMainFrame()->PrepareForCommit();
     if (window_created)
       EXPECT_TRUE(contents()->CrossProcessNavigationPending());
     else
@@ -264,8 +264,8 @@ TEST_F(OverscrollNavigationOverlayTest, CancelAfterSuccessfulNavigation) {
 
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   NavigationEntry* pending = contents()->GetController().GetPendingEntry();
-  main_test_rfh()->SendNavigate(
-      0, pending->GetUniqueID(), false, pending->GetURL());
+  contents()->GetPendingMainFrame()->SendNavigate(
+      pending->GetPageID(), pending->GetUniqueID(), false, pending->GetURL());
   EXPECT_EQ(contents()->GetURL(), third());
 }
 
@@ -280,8 +280,8 @@ TEST_F(OverscrollNavigationOverlayTest, Navigation_PaintUpdate) {
   EXPECT_TRUE(GetOverlay()->web_contents());
 
   NavigationEntry* pending = contents()->GetController().GetPendingEntry();
-  main_test_rfh()->SendNavigate(
-      0, pending->GetUniqueID(), false, pending->GetURL());
+  contents()->GetPendingMainFrame()->SendNavigate(
+      pending->GetPageID(), pending->GetUniqueID(), false, pending->GetURL());
   ReceivePaintUpdate();
 
   // Navigation was committed and the paint update was received - we should no
@@ -304,8 +304,8 @@ TEST_F(OverscrollNavigationOverlayTest, Navigation_LoadingUpdate) {
   contents()->TestSetIsLoading(false);
   EXPECT_FALSE(GetOverlay()->web_contents());
   NavigationEntry* pending = contents()->GetController().GetPendingEntry();
-  main_test_rfh()->SendNavigate(
-      0, pending->GetUniqueID(), false, pending->GetURL());
+  contents()->GetPendingMainFrame()->SendNavigate(
+      pending->GetPageID(), pending->GetUniqueID(), false, pending->GetURL());
   EXPECT_EQ(contents()->GetURL(), third());
 }
 

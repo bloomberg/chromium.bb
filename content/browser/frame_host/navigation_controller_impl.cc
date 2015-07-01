@@ -1147,14 +1147,22 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
   // We should only get here for main frame navigations.
   DCHECK(!rfh->GetParent());
 
-  // This is a back/forward navigation. The existing page for the ID is
-  // guaranteed to exist by ClassifyNavigation, and we just need to update it
-  // with new information from the renderer.
-  int entry_index = GetEntryIndexWithPageID(rfh->GetSiteInstance(),
-                                            params.page_id);
-  CHECK(entry_index >= 0 &&
-        entry_index < static_cast<int>(entries_.size()));
-  NavigationEntryImpl* entry = entries_[entry_index];
+  NavigationEntryImpl* entry;
+  if (params.intended_as_new_entry) {
+    // This was intended as a new entry but the pending entry was lost in the
+    // meanwhile and no new page was created. We are stuck at the last committed
+    // entry.
+    entry = GetLastCommittedEntry();
+  } else if (params.nav_entry_id) {
+    // This is a browser-initiated navigation (back/forward/reload).
+    entry = GetEntryWithUniqueID(params.nav_entry_id);
+  } else {
+    // This is renderer-initiated. The only kinds of renderer-initated
+    // navigations that are EXISTING_PAGE are reloads and location.replace,
+    // which land us at the last committed entry.
+    entry = GetLastCommittedEntry();
+  }
+  DCHECK(entry);
 
   // The URL may have changed due to redirects.
   entry->set_page_type(params.url_is_unreachable ? PAGE_TYPE_ERROR
@@ -1192,8 +1200,7 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
 
   // If a transient entry was removed, the indices might have changed, so we
   // have to query the entry index again.
-  last_committed_entry_index_ =
-      GetEntryIndexWithPageID(rfh->GetSiteInstance(), params.page_id);
+  last_committed_entry_index_ = GetIndexOfEntry(entry);
 }
 
 void NavigationControllerImpl::RendererDidNavigateToSamePage(
