@@ -54,21 +54,17 @@ BoxClipper::BoxClipper(const LayoutBox& box, const PaintInfo& paintInfo, const L
         ASSERT(m_paintInfo.context->displayItemList());
         if (!m_paintInfo.context->displayItemList()->displayItemConstructionIsDisabled()) {
             m_clipType = m_paintInfo.displayItemTypeForClipping();
-            OwnPtr<Vector<FloatRoundedRect>> roundedRects;
-            if (hasBorderRadius) {
-                roundedRects = adoptPtr(new Vector<FloatRoundedRect>());
-                roundedRects->append(clipRoundedRect);
-            }
-            m_paintInfo.context->displayItemList()->createAndAppend<ClipDisplayItem>(m_box, m_clipType, pixelSnappedIntRect(clipRect), roundedRects.release());
+            Vector<FloatRoundedRect> roundedRects;
+            if (hasBorderRadius)
+                roundedRects.append(clipRoundedRect);
+            m_paintInfo.context->displayItemList()->createAndAppend<ClipDisplayItem>(m_box, m_clipType, pixelSnappedIntRect(clipRect), roundedRects);
         }
     } else {
         m_clipType = m_paintInfo.displayItemTypeForClipping();
-        OwnPtr<Vector<FloatRoundedRect>> roundedRects;
-        if (hasBorderRadius) {
-            roundedRects = adoptPtr(new Vector<FloatRoundedRect>());
-            roundedRects->append(clipRoundedRect);
-        }
-        ClipDisplayItem clipDisplayItem(m_box, m_clipType, pixelSnappedIntRect(clipRect), roundedRects.release());
+        Vector<FloatRoundedRect> roundedRects;
+        if (hasBorderRadius)
+            roundedRects.append(clipRoundedRect);
+        ClipDisplayItem clipDisplayItem(m_box, m_clipType, pixelSnappedIntRect(clipRect), roundedRects);
         clipDisplayItem.replay(*paintInfo.context);
     }
 }

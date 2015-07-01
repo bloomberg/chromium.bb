@@ -17,25 +17,15 @@ void ClipDisplayItem::replay(GraphicsContext& context)
     context.save();
     context.clipRect(m_clipRect, NotAntiAliased, SkRegion::kIntersect_Op);
 
-    if (!m_roundedRectClips)
-        return;
-
-    for (const FloatRoundedRect& roundedRect : *m_roundedRectClips)
+    for (const FloatRoundedRect& roundedRect : m_roundedRectClips)
         context.clipRoundedRect(roundedRect, SkRegion::kIntersect_Op);
 }
 
 void ClipDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
 {
-    if (!m_roundedRectClips) {
-        WebVector<SkRRect> webRoundedRects;
-        list->appendClipItem(m_clipRect, webRoundedRects);
-        return;
-    }
-
-    Vector<FloatRoundedRect>& roundedRects = *m_roundedRectClips;
-    WebVector<SkRRect> webRoundedRects(roundedRects.size());
-    for (size_t i = 0; i < roundedRects.size(); ++i) {
-        FloatRoundedRect::Radii rectRadii = roundedRects[i].radii();
+    WebVector<SkRRect> webRoundedRects(m_roundedRectClips.size());
+    for (size_t i = 0; i < m_roundedRectClips.size(); ++i) {
+        FloatRoundedRect::Radii rectRadii = m_roundedRectClips[i].radii();
         SkVector skRadii[4];
         skRadii[SkRRect::kUpperLeft_Corner].set(SkIntToScalar(rectRadii.topLeft().width()),
             SkIntToScalar(rectRadii.topLeft().height()));
@@ -46,7 +36,7 @@ void ClipDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
         skRadii[SkRRect::kLowerLeft_Corner].set(SkIntToScalar(rectRadii.bottomLeft().width()),
             SkIntToScalar(rectRadii.bottomLeft().height()));
         SkRRect skRoundedRect;
-        skRoundedRect.setRectRadii(roundedRects[i].rect(), skRadii);
+        skRoundedRect.setRectRadii(m_roundedRectClips[i].rect(), skRadii);
         webRoundedRects[i] = skRoundedRect;
     }
     list->appendClipItem(m_clipRect, webRoundedRects);

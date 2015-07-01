@@ -24,18 +24,17 @@ LayerClipRecorder::LayerClipRecorder(GraphicsContext& graphicsContext, const Lay
     , m_clipType(clipType)
 {
     IntRect snappedClipRect = pixelSnappedIntRect(clipRect.rect());
-    OwnPtr<Vector<FloatRoundedRect>> roundedRects;
+    Vector<FloatRoundedRect> roundedRects;
     if (localPaintingInfo && clipRect.hasRadius()) {
-        roundedRects = adoptPtr(new Vector<FloatRoundedRect>());
-        collectRoundedRectClips(*layoutObject.layer(), *localPaintingInfo, graphicsContext, fragmentOffset, paintFlags, rule, *roundedRects);
+        collectRoundedRectClips(*layoutObject.layer(), *localPaintingInfo, graphicsContext, fragmentOffset, paintFlags, rule, roundedRects);
     }
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         if (m_graphicsContext.displayItemList()->displayItemConstructionIsDisabled())
             return;
-        m_graphicsContext.displayItemList()->createAndAppend<ClipDisplayItem>(layoutObject, m_clipType, snappedClipRect, roundedRects.release());
+        m_graphicsContext.displayItemList()->createAndAppend<ClipDisplayItem>(layoutObject, m_clipType, snappedClipRect, roundedRects);
     } else {
-        ClipDisplayItem clipDisplayItem(layoutObject, m_clipType, snappedClipRect, roundedRects.release());
+        ClipDisplayItem clipDisplayItem(layoutObject, m_clipType, snappedClipRect, roundedRects);
         clipDisplayItem.replay(graphicsContext);
     }
 }

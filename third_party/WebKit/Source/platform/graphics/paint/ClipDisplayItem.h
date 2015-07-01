@@ -17,12 +17,17 @@ namespace blink {
 
 class PLATFORM_EXPORT ClipDisplayItem : public PairedBeginDisplayItem {
 public:
-    ClipDisplayItem(const DisplayItemClientWrapper& client, Type type, const IntRect& clipRect, PassOwnPtr<Vector<FloatRoundedRect>> roundedRectClips = nullptr)
+    ClipDisplayItem(const DisplayItemClientWrapper& client, Type type, const IntRect& clipRect)
         : PairedBeginDisplayItem(client, type)
         , m_clipRect(clipRect)
-        , m_roundedRectClips(roundedRectClips)
     {
         ASSERT(isClipType(type));
+    }
+
+    ClipDisplayItem(const DisplayItemClientWrapper& client, Type type, const IntRect& clipRect, Vector<FloatRoundedRect>& roundedRectClips)
+        : ClipDisplayItem(client, type, clipRect)
+    {
+        m_roundedRectClips.swap(roundedRectClips);
     }
 
     virtual void replay(GraphicsContext&) override;
@@ -33,7 +38,7 @@ private:
     virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
     const IntRect m_clipRect;
-    OwnPtr<Vector<FloatRoundedRect>> m_roundedRectClips;
+    Vector<FloatRoundedRect> m_roundedRectClips;
 };
 
 class PLATFORM_EXPORT EndClipDisplayItem : public PairedEndDisplayItem {
