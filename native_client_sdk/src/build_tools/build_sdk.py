@@ -865,18 +865,24 @@ def BuildStepBuildPNaClComponent(version, revision):
   # TODO(sbc): figure out how to compensate for this in some way such that
   # revisions always go forward for a given version.
   buildbot_common.BuildStep('PNaCl Component')
+  # Version numbers must follow the format specified in:
+  # https://developer.chrome.com/extensions/manifest/version
+  # So ensure that rev_major/rev_minor don't overflow and ensure there
+  # are no leading zeros.
   if len(revision) > 4:
-    rev_minor = revision[-4:]
-    rev_major = revision[:-4]
+    rev_minor = int(revision[-4:])
+    rev_major = int(revision[:-4])
     version = "0.%s.%s.%s" % (version, rev_major, rev_minor)
   else:
     version = "0.%s.0.%s" % (version, revision)
-  buildbot_common.Run(['./make_pnacl_component.sh', version], cwd=SCRIPT_DIR)
+  buildbot_common.Run(['./make_pnacl_component.sh',
+                       'pnacl_multicrx_%s.zip' % revision,
+                       version], cwd=SCRIPT_DIR)
 
 
-def BuildStepArchivePNaClComponent():
+def BuildStepArchivePNaClComponent(revision):
   buildbot_common.BuildStep('Archive PNaCl Component')
-  Archive('pnacl_multicrx.zip', OUT_DIR)
+  Archive('pnacl_multicrx_%s.zip' % revision, OUT_DIR)
 
 
 def BuildStepArchiveSDKTools():
@@ -1183,7 +1189,7 @@ def main(args):
         BuildStepArchiveBundle('naclports', pepper_ver, chrome_revision,
                                nacl_revision, ports_tarfile)
       BuildStepArchiveSDKTools()
-      BuildStepArchivePNaClComponent()
+      BuildStepArchivePNaClComponent(chrome_revision)
 
   return 0
 

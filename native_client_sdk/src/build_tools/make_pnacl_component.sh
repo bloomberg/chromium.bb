@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This script builds out/pnacl_multicrx.zip for upload to the Chrome
+# This script builds out/pnacl_multicrx_<rev>.zip for upload to the Chrome
 # Web Store. It runs gyp + ninja once for each architecture and assembles
 # the results along with a manifest file.
 
@@ -26,12 +26,13 @@ run_gyp() {
 
 individual_packages() {
   export GYP_GENERATOR_FLAGS="output_dir=out_pnacl"
+  local base_out_dir=out
 
   # arm
   rm -rf out_pnacl/
   GYP_DEFINES="target_arch=arm" run_gyp
   ninja -C out_pnacl/Release/ pnacl_support_extension
-  local target_dir=out/pnacl_arm
+  local target_dir=${base_out_dir}/pnacl_arm
   mkdir -p ${target_dir}
   cp out_pnacl/Release/pnacl/* ${target_dir}/.
 
@@ -39,7 +40,7 @@ individual_packages() {
   rm -rf out_pnacl/
   GYP_DEFINES="target_arch=ia32" run_gyp
   ninja -C out_pnacl/Release/ pnacl_support_extension
-  target_dir=out/pnacl_x86_32
+  target_dir=${base_out_dir}/pnacl_x86_32
   mkdir -p ${target_dir}
   cp out_pnacl/Release/pnacl/* ${target_dir}/.
 
@@ -47,14 +48,16 @@ individual_packages() {
   rm -rf out_pnacl/
   GYP_DEFINES="target_arch=x64" run_gyp
   ninja -C out_pnacl/Release/ pnacl_support_extension
-  target_dir=out/pnacl_x86_64
+  target_dir=${base_out_dir}/pnacl_x86_64
   mkdir -p ${target_dir}
   cp out_pnacl/Release/pnacl/* ${target_dir}/.
 }
 
 multi_crx() {
-  local version=$1
-  local target_dir=out/pnacl_multicrx
+  local outfile=$1
+  local version=$2
+  local base_out_dir=out
+  local target_dir=${base_out_dir}/pnacl_multicrx
   mkdir -p ${target_dir}
   cat > ${target_dir}/manifest.json <<EOF
 {
@@ -82,22 +85,22 @@ EOF
 
   for arch in x86_32 x86_64 arm; do
     local sub_dir="${target_dir}/_platform_specific/${arch}"
-    local src_dir="out/pnacl_${arch}"
+    local src_dir="${base_out_dir}/pnacl_${arch}"
     mkdir -p ${sub_dir}
     cp ${src_dir}/pnacl_public_* ${sub_dir}/.
   done
-  (cd ${target_dir} && zip -r ../$(basename ${target_dir}).zip .)
-  ls -l ${target_dir}.zip
-  echo "DONE: created ${target_dir}.zip -- upload that!"
+  (cd ${target_dir} && zip -r ../${outfile} . && ls -l ../${outfile})
+  echo "DONE: created ${outfile} -- upload that!"
   echo "You can also delete ${target_dir} later (the pre-zipped contents)."
 }
 
-if [ $# != 1 ]; then
-  echo "Usage: $0 <rev_number>"
+if [ $# != 2 ]; then
+  echo "Usage: $0 <outfile> <rev_number>"
   exit 1
 fi
 
-version="$1"
-echo "Buidling pnacl_multicrx.zip version=$version"
+outfile="$1"
+version="$2"
+echo "Building file ${outfile} version=${version}"
 individual_packages
-multi_crx $version
+multi_crx ${outfile} ${version}
