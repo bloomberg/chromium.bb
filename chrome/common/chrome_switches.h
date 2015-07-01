@@ -128,6 +128,7 @@ extern const char kEnableExtensionActivityLogging[];
 extern const char kEnableExtensionActivityLogTesting[];
 extern const char kEnableFastUnload[];
 extern const char kEnableLinkableEphemeralApps[];
+extern const char kEnableMaterialDesignDownloads[];
 extern const char kEnableMaterialDesignSettings[];
 extern const char kEnableMediaRouter[];
 extern const char kEnableNaCl[];
@@ -389,6 +390,7 @@ extern const char kEnablePluginPowerSaver[];
 #endif
 
 bool AboutInSettingsEnabled();
+bool MdDownloadsEnabled();
 bool MdSettingsEnabled();
 bool MediaRouterEnabled();
 bool NewOfflineErrorPageEnabled();

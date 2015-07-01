@@ -26,6 +26,8 @@
       </if>
       <if expr="not is_android">
         <structure name="IDR_DOWNLOADS_HTML" file="resources\downloads\downloads.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
+        <!-- TODO(dbeam): remove flattening from all new MD UIs. -->
+        <structure name="IDR_MD_DOWNLOADS_HTML" file="resources\md_downloads\downloads.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
       </if>
       <if expr="enable_extensions">
         <structure name="IDR_EXTENSIONS_HTML" file="resources\extensions\extensions.html" flattenhtml="true" type="chrome_html" />
@@ -129,6 +131,7 @@
         <include name="IDR_DOWNLOAD_ITEM_JS" file="resources\downloads\item.js" type="BINDATA" />
         <include name="IDR_DOWNLOAD_ITEM_VIEW_JS" file="resources\downloads\item_view.js" type="BINDATA" />
         <include name="IDR_DOWNLOAD_MANAGER_JS" file="resources\downloads\manager.js" type="BINDATA" />
+        <include name="IDR_MD_DOWNLOAD_MANAGER_JS" file="resources\md_downloads\manager.js" type="BINDATA" />
       </if>
       <if expr="enable_extensions">
         <include name="IDR_EXTENSION_COMMAND_LIST_JS" file="resources\extensions\extension_command_list.js" flattenhtml="true" type="BINDATA" />

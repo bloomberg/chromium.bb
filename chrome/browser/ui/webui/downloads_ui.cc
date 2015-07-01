@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/downloads_dom_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -89,11 +90,17 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
                      !profile->IsSupervised());
 
   source->SetJsonPath("strings.js");
-  source->AddResourcePath("item.js", IDR_DOWNLOAD_ITEM_JS);
-  source->AddResourcePath("item_view.js", IDR_DOWNLOAD_ITEM_VIEW_JS);
-  source->AddResourcePath("focus_row.js", IDR_DOWNLOAD_FOCUS_ROW_JS);
-  source->AddResourcePath("manager.js", IDR_DOWNLOAD_MANAGER_JS);
-  source->SetDefaultResource(IDR_DOWNLOADS_HTML);
+
+  if (switches::MdDownloadsEnabled()) {
+    source->AddResourcePath("manager.js", IDR_MD_DOWNLOAD_MANAGER_JS);
+    source->SetDefaultResource(IDR_MD_DOWNLOADS_HTML);
+  } else {
+    source->AddResourcePath("item.js", IDR_DOWNLOAD_ITEM_JS);
+    source->AddResourcePath("item_view.js", IDR_DOWNLOAD_ITEM_VIEW_JS);
+    source->AddResourcePath("focus_row.js", IDR_DOWNLOAD_FOCUS_ROW_JS);
+    source->AddResourcePath("manager.js", IDR_DOWNLOAD_MANAGER_JS);
+    source->SetDefaultResource(IDR_DOWNLOADS_HTML);
+  }
 
   return source;
 }

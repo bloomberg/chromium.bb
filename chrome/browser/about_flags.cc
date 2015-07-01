@@ -1710,6 +1710,8 @@ const Experiment kExperiments[] = {
      kOsDesktop,
      SINGLE_VALUE_TYPE(
          switches::kEnableMessageCenterAlwaysScrollUpUponNotificationRemoval)},
+#endif
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
     {"enable-md-settings",
      IDS_FLAGS_ENABLE_MATERIAL_DESIGN_SETTINGS_NAME,
      IDS_FLAGS_ENABLE_MATERIAL_DESIGN_SETTINGS_DESCRIPTION,
@@ -2022,7 +2024,13 @@ const Experiment kExperiments[] = {
      IDS_FLAGS_V8_CACHE_OPTIONS_DESCRIPTION,
      kOsAll,
      MULTI_VALUE_TYPE(kV8CacheOptionsChoices)},
-
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+    {"enable-md-downloads",
+     IDS_FLAGS_ENABLE_MATERIAL_DESIGN_DOWNLOADS_NAME,
+     IDS_FLAGS_ENABLE_MATERIAL_DESIGN_DOWNLOADS_DESCRIPTION,
+     kOsDesktop,
+     SINGLE_VALUE_TYPE(switches::kEnableMaterialDesignDownloads)},
+#endif
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

@@ -1,0 +1,29 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+body {
+  font-family: Roboto;
+}
+
+#downloads-toolbar {
+  background: rgb(63, 85, 102);
+  color: white;
+}
+
+#search-term label {
+  color: rgba(255, 255, 255, .5);
+}
+
+#search-term .label-is-highlighted label,
+#search-term input {
+  color: white;
+}
+
+#search-term .unfocused-line {
+  background-color: rgba(255, 255, 255, .5);
+}
+
+#search-term .focused-line {
+  background-color: white;
+}

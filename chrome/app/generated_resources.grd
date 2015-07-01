@@ -5379,6 +5379,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
           If enabled, the chrome://md-settings/ URL loads the Material Design settings page.
       </message>
 
+      <!-- Material Design version of chrome://downloads -->
+      <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_DOWNLOADS_NAME" desc="Name for the flag to enable the material design downloads page.">
+          Enable Material Design downloads
+      </message>
+      <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_DOWNLOADS_DESCRIPTION" desc="Description for the flag to enable the material design downloads page.">
+          If enabled, the chrome://downloads/ URL loads the Material Design downloads page.
+      </message>
+
       <!-- Packaged Apps -->
       <message name="IDS_APP_INSTALL_TITLE" desc="Caption for installing an ephemeral app">
         Install app

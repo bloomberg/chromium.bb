@@ -439,6 +439,9 @@ const char kEnableFastUnload[]         = "enable-fast-unload";
 // Enables experimentation with launching ephemeral apps via hyperlinks.
 const char kEnableLinkableEphemeralApps[]   = "enable-linkable-ephemeral-apps";
 
+// Enables an experimental Material Design version of chrome://downloads.
+const char kEnableMaterialDesignDownloads[] = "enable-md-downloads";
+
 // Enables the material design Settings feature.
 const char kEnableMaterialDesignSettings[]  = "enable-md-settings";
 
@@ -1319,6 +1322,11 @@ bool AboutInSettingsEnabled() {
   return SettingsWindowEnabled() &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
              ::switches::kDisableAboutInSettings);
+}
+
+bool MdDownloadsEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::kEnableMaterialDesignDownloads);
 }
 
 bool MdSettingsEnabled() {
