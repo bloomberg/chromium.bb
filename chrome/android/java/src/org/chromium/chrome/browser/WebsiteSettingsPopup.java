@@ -242,6 +242,8 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
     // Animation which is currently running, if there is one.
     private AnimatorSet mCurrentAnimation = null;
 
+    private boolean mDismissWithoutAnimation;
+
     // The full URL from the URL bar, which is copied to the user's clipboard when they select 'Copy
     // URL'.
     private String mFullUrl;
@@ -338,7 +340,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
 
             @Override
             public void dismiss() {
-                if (DeviceFormFactor.isTablet(mContext)) {
+                if (DeviceFormFactor.isTablet(mContext) || mDismissWithoutAnimation) {
                     // Dismiss the dialog without any custom animations on tablet.
                     super.dismiss();
                 } else {
@@ -384,6 +386,9 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
             @Override
             public void destroy() {
                 super.destroy();
+                // Force the dialog to close immediately in case the destroy was from Chrome
+                // quitting.
+                mDismissWithoutAnimation = true;
                 mDialog.dismiss();
             }
         };
