@@ -424,5 +424,22 @@
         },  # target app_shell_helper
       ],
     }],  # OS=="mac"
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'app_shell_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'app_shell_unittests',
+          ],
+          'includes': [
+            '../../build/isolate.gypi',
+          ],
+          'sources': [
+            'app_shell_unittests.isolate',
+          ],
+        },
+      ],
+    }],
   ],
 }
