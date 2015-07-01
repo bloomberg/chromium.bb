@@ -195,10 +195,10 @@ public class ConnectivityTaskTest extends ConnectivityCheckerTestBase {
         assertEquals("UNKNOWN", map.get(ConnectivityTask.SYSTEM_HTTP_KEY));
         assertTrue(map.containsKey(ConnectivityTask.SYSTEM_HTTPS_KEY));
         assertEquals("CONNECTED", map.get(ConnectivityTask.SYSTEM_HTTPS_KEY));
-        assertTrue(map.containsKey(ConnectivityTask.CONNECTION_CHECK_TIMEOUT_MS));
-        assertEquals("42", map.get(ConnectivityTask.CONNECTION_CHECK_TIMEOUT_MS));
-        assertTrue(map.containsKey(ConnectivityTask.CONNECTION_CHECK_ELAPSED_MS));
-        assertEquals("21", map.get(ConnectivityTask.CONNECTION_CHECK_ELAPSED_MS));
+        assertTrue(map.containsKey(ConnectivityTask.CONNECTION_CHECK_TIMEOUT_KEY));
+        assertEquals("42", map.get(ConnectivityTask.CONNECTION_CHECK_TIMEOUT_KEY));
+        assertTrue(map.containsKey(ConnectivityTask.CONNECTION_CHECK_ELAPSED_KEY));
+        assertEquals("21", map.get(ConnectivityTask.CONNECTION_CHECK_ELAPSED_KEY));
     }
 
     private static FeedbackData getResult(final AtomicReference<ConnectivityTask> task) {

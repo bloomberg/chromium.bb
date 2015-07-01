@@ -31,7 +31,7 @@ public class ConnectivityTask {
      * This string is user visible.
      */
     @VisibleForTesting
-    static final String CONNECTION_CHECK_TIMEOUT_MS = "Connection check timeout (ms)";
+    static final String CONNECTION_CHECK_TIMEOUT_KEY = "Connection check timeout (ms)";
 
     /**
      * The key for the data describing how long time from the connection check was started,
@@ -39,7 +39,7 @@ public class ConnectivityTask {
      * This string is user visible.
      */
     @VisibleForTesting
-    static final String CONNECTION_CHECK_ELAPSED_MS = "Connection check elapsed (ms)";
+    static final String CONNECTION_CHECK_ELAPSED_KEY = "Connection check elapsed (ms)";
 
     /**
      * The key for the data describing whether Chrome was able to successfully connect to the
@@ -163,8 +163,8 @@ public class ConnectivityTask {
                 map.put(getHumanReadableString(entry.getKey()),
                         getHumanReadableString(entry.getValue()));
             }
-            map.put(CONNECTION_CHECK_TIMEOUT_MS, String.valueOf(mTimeoutMs));
-            map.put(CONNECTION_CHECK_ELAPSED_MS, String.valueOf(mElapsedTimeMs));
+            map.put(CONNECTION_CHECK_TIMEOUT_KEY, String.valueOf(mTimeoutMs));
+            map.put(CONNECTION_CHECK_ELAPSED_KEY, String.valueOf(mElapsedTimeMs));
             return map;
         }
     }
@@ -233,10 +233,16 @@ public class ConnectivityTask {
     private final ConnectivityResult mCallback;
     private final long mStartCheckTimeMs;
 
-    private ConnectivityTask(Profile profile, int timeoutMs, ConnectivityResult callback) {
+    @VisibleForTesting
+    ConnectivityTask(Profile profile, int timeoutMs, ConnectivityResult callback) {
         mTimeoutMs = timeoutMs;
         mCallback = callback;
         mStartCheckTimeMs = SystemClock.elapsedRealtime();
+        init(profile, timeoutMs);
+    }
+
+    @VisibleForTesting
+    void init(Profile profile, int timeoutMs) {
         for (Type t : Type.values()) {
             SingleTypeTask task = new SingleTypeTask(t);
             task.start(profile, timeoutMs);

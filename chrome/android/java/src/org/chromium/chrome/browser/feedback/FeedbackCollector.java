@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.profiles.Profile;
 
@@ -30,7 +31,8 @@ public class FeedbackCollector {
     /**
      * A user visible string describing the current URL.
      */
-    private static final String URL_KEY = "URL";
+    @VisibleForTesting
+    static final String URL_KEY = "URL";
 
     /**
      * A user visible string describing whether the data reduction proxy is enabled.
@@ -38,14 +40,15 @@ public class FeedbackCollector {
     private static final String DATA_REDUCTION_PROXY_ENABLED_KEY = "Data reduction proxy enabled";
 
     /**
-     * The default timeout for gathering data asynchronously.
+     * The timeout (ms) for gathering connection data.
      */
-    private static final int DEFAULT_ASYNC_COLLECTION_TIMEOUT_MS = 1000;
+    private static final int CONNECTIVITY_CHECK_TIMEOUT_MS = 1000;
 
     private final Map<String, String> mData;
     private final Profile mProfile;
     private final String mUrl;
-    private final ConnectivityTask mConnectivityTask;
+    // Not final because created during init. Should be used as a final member.
+    protected ConnectivityTask mConnectivityTask;
 
     /**
      * An optional description for the feedback report.
@@ -69,12 +72,17 @@ public class FeedbackCollector {
         return new FeedbackCollector(profile, url);
     }
 
-    private FeedbackCollector(Profile profile, String url) {
+    @VisibleForTesting
+    FeedbackCollector(Profile profile, String url) {
         mData = new HashMap<>();
         mProfile = profile;
         mUrl = url;
-        mConnectivityTask =
-                ConnectivityTask.create(mProfile, DEFAULT_ASYNC_COLLECTION_TIMEOUT_MS, null);
+        init();
+    }
+
+    @VisibleForTesting
+    void init() {
+        mConnectivityTask = ConnectivityTask.create(mProfile, CONNECTIVITY_CHECK_TIMEOUT_MS, null);
     }
 
     /**
