@@ -237,7 +237,7 @@ public:
         , m_safePointScope(state)
         , m_parkedAllThreads(false)
     {
-        m_state->checkThread();
+        ASSERT(m_state->checkThread());
         if (LIKELY(ThreadState::stopThreads())) {
             Heap::preGC();
             m_parkedAllThreads = true;

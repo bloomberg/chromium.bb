@@ -146,7 +146,7 @@ public:
         if (m_state->isMainThread())
             TRACE_EVENT_SET_SAMPLING_STATE("blink_gc", "BlinkGCWaiting");
 
-        m_state->checkThread();
+        ASSERT(m_state->checkThread());
 
         // TODO(haraken): In an unlikely coincidence that two threads decide
         // to collect garbage at the same time, avoid doing two GCs in

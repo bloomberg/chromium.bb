@@ -108,7 +108,7 @@ ThreadState::ThreadState()
     , m_nextFreeListSnapshotTime(-std::numeric_limits<double>::infinity())
 #endif
 {
-    checkThread();
+    ASSERT(checkThread());
     ASSERT(!**s_threadSpecific);
     **s_threadSpecific = this;
 
@@ -131,7 +131,7 @@ ThreadState::ThreadState()
 
 ThreadState::~ThreadState()
 {
-    checkThread();
+    ASSERT(checkThread());
     delete m_threadLocalWeakCallbackStack;
     m_threadLocalWeakCallbackStack = nullptr;
     for (int i = 0; i < NumberOfHeaps; ++i)
@@ -212,14 +212,14 @@ void ThreadState::attach()
 
 void ThreadState::cleanupPages()
 {
-    checkThread();
+    ASSERT(checkThread());
     for (int i = 0; i < NumberOfHeaps; ++i)
         m_heaps[i]->cleanupPages();
 }
 
 void ThreadState::cleanup()
 {
-    checkThread();
+    ASSERT(checkThread());
     {
         // Grab the threadAttachMutex to ensure only one thread can shutdown at
         // a time and that no other thread can do a global GC. It also allows
@@ -474,6 +474,7 @@ void ThreadState::pushThreadLocalWeakCallback(void* object, WeakCallback callbac
 
 bool ThreadState::popAndInvokeThreadLocalWeakCallback(Visitor* visitor)
 {
+    ASSERT(checkThread());
     // For weak processing we should never reach orphaned pages since orphaned
     // pages are not traced and thus objects on those pages are never be
     // registered as objects on orphaned pages. We cannot assert this here since
@@ -512,6 +513,7 @@ bool ThreadState::popAndInvokeThreadLocalWeakCallback(Visitor* visitor)
 
 void ThreadState::threadLocalWeakProcessing()
 {
+    ASSERT(checkThread());
     ASSERT(!sweepForbidden());
     TRACE_EVENT0("blink_gc", "ThreadState::threadLocalWeakProcessing");
     SweepForbiddenScope forbiddenScope(this);
@@ -632,7 +634,7 @@ bool ThreadState::shouldForceConservativeGC()
 
 void ThreadState::scheduleGCIfNeeded()
 {
-    checkThread();
+    ASSERT(checkThread());
     // Allocation is allowed during sweeping, but those allocations should not
     // trigger nested GCs.
     if (isSweepingInProgress())
@@ -653,6 +655,7 @@ void ThreadState::scheduleGCIfNeeded()
 
 void ThreadState::performIdleGC(double deadlineSeconds)
 {
+    ASSERT(checkThread());
     ASSERT(isMainThread());
 
     if (gcState() != IdleGCScheduled)
@@ -672,6 +675,7 @@ void ThreadState::performIdleGC(double deadlineSeconds)
 
 void ThreadState::performIdleLazySweep(double deadlineSeconds)
 {
+    ASSERT(checkThread());
     ASSERT(isMainThread());
 
     // If we are not in a sweeping phase, there is nothing to do here.
@@ -716,7 +720,7 @@ void ThreadState::performIdleLazySweep(double deadlineSeconds)
 
 void ThreadState::scheduleIdleGC()
 {
-    // Idle GC is supported only in the main thread.
+    // TODO(haraken): Idle GC should be supported in worker threads as well.
     if (!isMainThread())
         return;
 
@@ -731,7 +735,7 @@ void ThreadState::scheduleIdleGC()
 
 void ThreadState::scheduleIdleLazySweep()
 {
-    // Idle complete sweep is supported only in the main thread.
+    // TODO(haraken): Idle complete sweep should be supported in worker threads.
     if (!isMainThread())
         return;
 
@@ -742,6 +746,7 @@ void ThreadState::scheduleIdleLazySweep()
 
 void ThreadState::schedulePreciseGC()
 {
+    ASSERT(checkThread());
     if (isSweepingInProgress()) {
         setGCState(SweepingAndPreciseGCScheduled);
         return;
@@ -783,13 +788,13 @@ void ThreadState::setGCState(GCState gcState)
 {
     switch (gcState) {
     case NoGCScheduled:
-        checkThread();
+        ASSERT(checkThread());
         VERIFY_STATE_TRANSITION(m_gcState == Sweeping || m_gcState == SweepingAndIdleGCScheduled);
         break;
     case IdleGCScheduled:
     case PreciseGCScheduled:
     case FullGCScheduled:
-        checkThread();
+        ASSERT(checkThread());
         VERIFY_STATE_TRANSITION(m_gcState == NoGCScheduled || m_gcState == IdleGCScheduled || m_gcState == PreciseGCScheduled || m_gcState == FullGCScheduled || m_gcState == SweepingAndIdleGCScheduled || m_gcState == SweepingAndPreciseGCScheduled);
         completeSweep();
         break;
@@ -803,12 +808,12 @@ void ThreadState::setGCState(GCState gcState)
         VERIFY_STATE_TRANSITION(m_gcState == GCRunning);
         break;
     case Sweeping:
-        checkThread();
+        ASSERT(checkThread());
         VERIFY_STATE_TRANSITION(m_gcState == EagerSweepScheduled || m_gcState == LazySweepScheduled);
         break;
     case SweepingAndIdleGCScheduled:
     case SweepingAndPreciseGCScheduled:
-        checkThread();
+        ASSERT(checkThread());
         VERIFY_STATE_TRANSITION(m_gcState == Sweeping || m_gcState == SweepingAndIdleGCScheduled || m_gcState == SweepingAndPreciseGCScheduled);
         break;
     default:
@@ -830,7 +835,7 @@ ThreadState::GCState ThreadState::gcState() const
 
 void ThreadState::didV8MajorGC()
 {
-    checkThread();
+    ASSERT(checkThread());
     if (isMainThread()) {
         // Lower the estimated live object size because the V8 major GC is
         // expected to have collected a lot of DOM wrappers and dropped
@@ -847,7 +852,7 @@ void ThreadState::didV8MajorGC()
 
 void ThreadState::runScheduledGC(StackState stackState)
 {
-    checkThread();
+    ASSERT(checkThread());
     if (stackState != NoHeapPointersOnStack)
         return;
 
@@ -960,7 +965,7 @@ void ThreadState::postGC(GCType gcType)
 
 void ThreadState::preSweep()
 {
-    checkThread();
+    ASSERT(checkThread());
     if (gcState() != EagerSweepScheduled && gcState() != LazySweepScheduled)
         return;
 
@@ -1031,6 +1036,7 @@ void ThreadState::poisonEagerHeap(Poisoning poisoning)
 
 void ThreadState::eagerSweep()
 {
+    ASSERT(checkThread());
     // Some objects need to be finalized promptly and cannot be handled
     // by lazy sweeping. Keep those in a designated heap and sweep it
     // eagerly.
@@ -1054,6 +1060,7 @@ void ThreadState::eagerSweep()
 
 void ThreadState::completeSweep()
 {
+    ASSERT(checkThread());
     // If we are not in a sweeping phase, there is nothing to do here.
     if (!isSweepingInProgress())
         return;
@@ -1087,6 +1094,7 @@ void ThreadState::completeSweep()
 
 void ThreadState::postSweep()
 {
+    ASSERT(checkThread());
     Heap::reportMemoryUsageForTracing();
 
     if (isMainThread()) {
@@ -1115,7 +1123,7 @@ void ThreadState::postSweep()
 
 void ThreadState::prepareHeapForTermination()
 {
-    checkThread();
+    ASSERT(checkThread());
     for (int i = 0; i < NumberOfHeaps; ++i)
         m_heaps[i]->prepareHeapForTermination();
 }
@@ -1151,7 +1159,7 @@ void ThreadState::resumeThreads()
 
 void ThreadState::safePoint(StackState stackState)
 {
-    checkThread();
+    ASSERT(checkThread());
     runScheduledGC(stackState);
     ASSERT(!m_atSafePoint);
     m_stackState = stackState;
@@ -1189,7 +1197,7 @@ NO_SANITIZE_ADDRESS static void* adjustScopeMarkerForAdressSanitizer(void* scope
 
 void ThreadState::enterSafePoint(StackState stackState, void* scopeMarker)
 {
-    checkThread();
+    ASSERT(checkThread());
 #ifdef ADDRESS_SANITIZER
     if (stackState == HeapPointersOnStack)
         scopeMarker = adjustScopeMarkerForAdressSanitizer(scopeMarker);
@@ -1205,7 +1213,7 @@ void ThreadState::enterSafePoint(StackState stackState, void* scopeMarker)
 
 void ThreadState::leaveSafePoint(SafePointAwareMutexLocker* locker)
 {
-    checkThread();
+    ASSERT(checkThread());
     ASSERT(m_atSafePoint);
     s_safePointBarrier->leaveSafePoint(this, locker);
     m_atSafePoint = false;
@@ -1242,7 +1250,7 @@ void ThreadState::copyStackUntilSafePointScope()
 
 void ThreadState::addInterruptor(Interruptor* interruptor)
 {
-    checkThread();
+    ASSERT(checkThread());
     SafePointScope scope(HeapPointersOnStack);
     {
         MutexLocker locker(threadAttachMutex());
@@ -1252,7 +1260,7 @@ void ThreadState::addInterruptor(Interruptor* interruptor)
 
 void ThreadState::removeInterruptor(Interruptor* interruptor)
 {
-    checkThread();
+    ASSERT(checkThread());
     SafePointScope scope(HeapPointersOnStack);
     {
         MutexLocker locker(threadAttachMutex());
@@ -1288,7 +1296,7 @@ void ThreadState::unlockThreadAttachMutex()
 
 void ThreadState::invokePreFinalizers()
 {
-    checkThread();
+    ASSERT(checkThread());
     ASSERT(!sweepForbidden());
     TRACE_EVENT0("blink_gc", "ThreadState::invokePreFinalizers");
 
@@ -1342,6 +1350,7 @@ int ThreadState::heapIndexOfVectorHeapLeastRecentlyExpanded(int beginHeapIndex, 
 
 BaseHeap* ThreadState::expandedVectorBackingHeap(size_t gcInfoIndex)
 {
+    ASSERT(checkThread());
     size_t entryIndex = gcInfoIndex & likelyToBePromptlyFreedArrayMask;
     --m_likelyToBePromptlyFreed[entryIndex];
     int heapIndex = m_vectorBackingHeapIndex;
@@ -1359,6 +1368,7 @@ void ThreadState::allocationPointAdjusted(int heapIndex)
 
 void ThreadState::promptlyFreed(size_t gcInfoIndex)
 {
+    ASSERT(checkThread());
     size_t entryIndex = gcInfoIndex & likelyToBePromptlyFreedArrayMask;
     // See the comment in vectorBackingHeap() for why this is +3.
     m_likelyToBePromptlyFreed[entryIndex] += 3;

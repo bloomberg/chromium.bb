@@ -210,14 +210,14 @@ private:
     void initialize()
     {
         ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-        state->checkThread();
+        ASSERT(state->checkThread());
         m_persistentNode = state->persistentRegion()->allocatePersistentNode(this, TraceMethodDelegate<Persistent<T>, &Persistent<T>::trace>::trampoline);
     }
 
     void uninitialize()
     {
         ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-        state->checkThread();
+        ASSERT(state->checkThread());
         state->persistentRegion()->freePersistentNode(m_persistentNode);
     }
 
@@ -487,14 +487,14 @@ private:
     void initialize()
     {
         ThreadState* state = ThreadState::current();
-        state->checkThread();
+        ASSERT(state->checkThread());
         m_persistentNode = state->persistentRegion()->allocatePersistentNode(this, TraceMethodDelegate<PersistentHeapCollectionBase<Collection>, &PersistentHeapCollectionBase<Collection>::trace>::trampoline);
     }
 
     void uninitialize()
     {
         ThreadState* state = ThreadState::current();
-        state->checkThread();
+        ASSERT(state->checkThread());
         state->persistentRegion()->freePersistentNode(m_persistentNode);
     }
 

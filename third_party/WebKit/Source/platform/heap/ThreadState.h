@@ -317,7 +317,9 @@ public:
     }
 
     bool isMainThread() const { return this == mainThreadState(); }
-    void checkThread() const { ASSERT(m_thread == currentThread()); }
+#if ENABLE(ASSERT)
+    bool checkThread() const { return m_thread == currentThread(); }
+#endif
 
     void didV8MajorGC();
 
@@ -543,7 +545,7 @@ public:
     void registerPreFinalizer(T* self)
     {
         static_assert(sizeof(&T::invokePreFinalizer) > 0, "USING_PRE_FINALIZER(T) must be defined.");
-        checkThread();
+        ASSERT(checkThread());
         ASSERT(!sweepForbidden());
         auto it = m_preFinalizers.find(self);
         Vector<PreFinalizerCallback>* callbackVector;
@@ -561,7 +563,7 @@ public:
     void unregisterPreFinalizer(T* self)
     {
         static_assert(sizeof(&T::invokePreFinalizer) > 0, "USING_PRE_FINALIZER(T) must be defined.");
-        checkThread();
+        ASSERT(checkThread());
         // Ignore pre-finalizers called during pre-finalizers or destructors.
         if (sweepForbidden())
             return;
@@ -592,6 +594,7 @@ public:
     // constructed.
     void enterGCForbiddenScopeIfNeeded(GarbageCollectedMixinConstructorMarker* gcMixinMarker)
     {
+        ASSERT(checkThread());
         if (!m_gcMixinMarker) {
             enterGCForbiddenScope();
             m_gcMixinMarker = gcMixinMarker;
@@ -599,6 +602,7 @@ public:
     }
     void leaveGCForbiddenScopeIfNeeded(GarbageCollectedMixinConstructorMarker* gcMixinMarker)
     {
+        ASSERT(checkThread());
         if (m_gcMixinMarker == gcMixinMarker) {
             leaveGCForbiddenScope();
             m_gcMixinMarker = nullptr;
@@ -633,6 +637,7 @@ public:
     //
     BaseHeap* vectorBackingHeap(size_t gcInfoIndex)
     {
+        ASSERT(checkThread());
         size_t entryIndex = gcInfoIndex & likelyToBePromptlyFreedArrayMask;
         --m_likelyToBePromptlyFreed[entryIndex];
         int heapIndex = m_vectorBackingHeapIndex;
