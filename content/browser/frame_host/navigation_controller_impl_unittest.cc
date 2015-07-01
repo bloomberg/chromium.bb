@@ -1009,7 +1009,6 @@ TEST_F(NavigationControllerTest, LoadURL_IgnorePreemptsPending) {
   // renderer to send a FrameNavigate with page_id -1 and nav_entry_id 0.
   // PlzNavigate: this will stop the old navigation and start a new one.
   main_test_rfh()->SendRendererInitiatedNavigationRequest(kExistingURL, true);
-  main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigate(-1, 0, false, kExistingURL);
 
   // This should clear the pending entry and notify of a navigation state

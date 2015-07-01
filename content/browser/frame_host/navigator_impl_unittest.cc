@@ -145,7 +145,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   GetLoaderForNavigationRequest(request)
       ->CallOnResponseStarted(response, MakeEmptyStream());
   EXPECT_TRUE(DidRenderFrameHostRequestCommit(main_test_rfh()));
-  EXPECT_EQ(NavigationRequest::RESPONSE_STARTED, request->state());
+  EXPECT_TRUE(main_test_rfh()->is_loading());
+  EXPECT_FALSE(node->navigation_request());
 
   // Commit the navigation.
   main_test_rfh()->SendNavigate(0, entry_id, true, kUrl);
@@ -153,7 +154,6 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   EXPECT_EQ(SiteInstanceImpl::GetSiteForURL(browser_context(), kUrl),
             main_test_rfh()->GetSiteInstance()->GetSiteURL());
   EXPECT_EQ(kUrl, contents()->GetLastCommittedURL());
-  EXPECT_FALSE(node->navigation_request());
   EXPECT_FALSE(node->render_manager()->pending_frame_host());
 
   // The main RenderFrameHost should not have been changed, and the renderer
@@ -198,7 +198,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   GetLoaderForNavigationRequest(request)
       ->CallOnResponseStarted(response, MakeEmptyStream());
   EXPECT_TRUE(DidRenderFrameHostRequestCommit(main_test_rfh()));
-  EXPECT_EQ(NavigationRequest::RESPONSE_STARTED, request->state());
+  EXPECT_TRUE(main_test_rfh()->is_loading());
+  EXPECT_FALSE(node->navigation_request());
 
   // Commit the navigation.
   main_test_rfh()->SendNavigate(1, 0, true, kUrl2);
@@ -206,7 +207,6 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   EXPECT_EQ(SiteInstanceImpl::GetSiteForURL(browser_context(), kUrl2),
             main_test_rfh()->GetSiteInstance()->GetSiteURL());
   EXPECT_EQ(kUrl2, contents()->GetLastCommittedURL());
-  EXPECT_FALSE(node->navigation_request());
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
   EXPECT_FALSE(node->render_manager()->pending_frame_host());
 }
@@ -243,13 +243,13 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   GetLoaderForNavigationRequest(request)
       ->CallOnResponseStarted(response, MakeEmptyStream());
   EXPECT_TRUE(DidRenderFrameHostRequestCommit(main_test_rfh()));
-  EXPECT_EQ(NavigationRequest::RESPONSE_STARTED, request->state());
+  EXPECT_TRUE(main_test_rfh()->is_loading());
+  EXPECT_FALSE(node->navigation_request());
 
   // Commit the navigation.
   main_test_rfh()->SendNavigate(1, 0, true, kUrl2);
   EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, main_test_rfh()->rfh_state());
   EXPECT_EQ(kUrl2, contents()->GetLastCommittedURL());
-  EXPECT_FALSE(node->navigation_request());
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
   EXPECT_FALSE(node->render_manager()->pending_frame_host());
 
@@ -992,13 +992,10 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, DataUrls) {
   // Navigate to a data url. The request should not have been sent to the IO
   // thread but committed immediately.
   int entry_id = RequestNavigation(node, kUrl2);
-  NavigationRequest* navigation_request = node->navigation_request();
-  ASSERT_TRUE(navigation_request);
-  EXPECT_EQ(NavigationRequest::RESPONSE_STARTED,
-            navigation_request->state());
-  EXPECT_FALSE(navigation_request->loader_for_testing());
   TestRenderFrameHost* speculative_rfh = GetSpeculativeRenderFrameHost(node);
   ASSERT_TRUE(speculative_rfh);
+  EXPECT_TRUE(speculative_rfh->is_loading());
+  EXPECT_FALSE(node->navigation_request());
   speculative_rfh->SendNavigate(0, entry_id, true, kUrl2);
   EXPECT_EQ(main_test_rfh(), speculative_rfh);
 
@@ -1009,11 +1006,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, DataUrls) {
   // sent to the IO thread, nor committed.
   TestRenderFrameHost* main_rfh = main_test_rfh();
   main_rfh->SendRendererInitiatedNavigationRequest(kUrl2, true);
-  navigation_request = node->navigation_request();
-  ASSERT_TRUE(navigation_request);
-  EXPECT_EQ(NavigationRequest::RESPONSE_STARTED,
-            navigation_request->state());
-  EXPECT_FALSE(navigation_request->loader_for_testing());
+  EXPECT_TRUE(main_rfh->is_loading());
+  EXPECT_FALSE(node->navigation_request());
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
 }
 

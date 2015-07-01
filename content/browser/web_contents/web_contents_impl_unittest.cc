@@ -1321,7 +1321,6 @@ TEST_F(WebContentsImplTest, NavigationEntryContentStateNewWindow) {
   // Navigate to about:blank.
   const GURL url(url::kAboutBlankURL);
   orig_rfh->SendRendererInitiatedNavigationRequest(url, false);
-  orig_rfh->PrepareForCommit();
   contents()->TestDidNavigate(orig_rfh, 1, 0, true, url,
                               ui::PAGE_TRANSITION_TYPED);
 
@@ -2898,7 +2897,6 @@ TEST_F(WebContentsImplTest, StartStopEventsBalance) {
   // DidStartLoading and DidStopLoading messages.
   {
     subframe->SendRendererInitiatedNavigationRequest(initial_url, false);
-    subframe->PrepareForCommit();
     subframe->OnMessageReceived(
         FrameHostMsg_DidStartLoading(subframe->GetRoutingID(), true));
     subframe->SendNavigateWithTransition(1, 0, false, initial_url,

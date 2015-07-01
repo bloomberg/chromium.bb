@@ -350,14 +350,6 @@ bool NavigatorImpl::NavigateToPendingEntry(
 void NavigatorImpl::DidNavigate(
     RenderFrameHostImpl* render_frame_host,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& input_params) {
-  // PlzNavigate
-  // The navigation request has been committed so the browser process doesn't
-  // need to care about it anymore.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation)) {
-    render_frame_host->frame_tree_node()->ResetNavigationRequest(true);
-  }
-
   FrameHostMsg_DidCommitProvisionalLoad_Params params(input_params);
   FrameTree* frame_tree = render_frame_host->frame_tree_node()->frame_tree();
   bool use_site_per_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -716,10 +708,6 @@ void NavigatorImpl::CommitNavigation(FrameTreeNode* frame_tree_node,
                                       navigation_request->common_params(),
                                       navigation_request->request_params());
 
-  // When navigating to a Javascript url, no commit is expected from the
-  // RenderFrameHost, therefore the NavigationRequest should be reset right now.
-  if (navigation_request->common_params().url.SchemeIs(url::kJavaScriptScheme))
-    frame_tree_node->ResetNavigationRequest(true);
 }
 
 // PlzNavigate

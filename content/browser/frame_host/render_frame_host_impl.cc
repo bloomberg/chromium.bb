@@ -1809,7 +1809,14 @@ void RenderFrameHostImpl::CommitNavigation(
   // TODO(clamy): Release the stream handle once the renderer has finished
   // reading it.
   stream_handle_ = body.Pass();
-  pending_commit_ = true;
+
+  // When navigating to a Javascript url, no commit is expected from the
+  // RenderFrameHost, nor should the throbber start.
+  if (!common_params.url.SchemeIs(url::kJavaScriptScheme)) {
+    pending_commit_ = true;
+    is_loading_ = true;
+  }
+  frame_tree_node_->ResetNavigationRequest(true);
 }
 
 void RenderFrameHostImpl::FailedNavigation(
@@ -1823,6 +1830,10 @@ void RenderFrameHostImpl::FailedNavigation(
 
   Send(new FrameMsg_FailedNavigation(routing_id_, common_params, request_params,
                                      has_stale_copy_in_cache, error_code));
+
+  // An error page is expected to commit, hence why is_loading_ is set to true.
+  is_loading_ = true;
+  frame_tree_node_->ResetNavigationRequest(true);
 }
 
 void RenderFrameHostImpl::SetUpMojoIfNeeded() {

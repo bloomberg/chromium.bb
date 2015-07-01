@@ -183,12 +183,24 @@ void TestWebContents::CommitPendingNavigation() {
   // replaced without a pending frame being created, and we don't get the right
   // values for the RFH to navigate: we try to use the old one that has been
   // deleted in the meantime.
-  GetMainFrame()->PrepareForCommit();
+  // Note that for some synchronous navigations (about:blank, javascript
+  // urls, etc.) there will be no NavigationRequest, and no simulation of the
+  // network stack is required.
+  bool browser_side_navigation =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation);
+  if (!browser_side_navigation ||
+      GetMainFrame()->frame_tree_node()->navigation_request()) {
+    GetMainFrame()->PrepareForCommit();
+  }
 
   TestRenderFrameHost* old_rfh = GetMainFrame();
   TestRenderFrameHost* rfh = GetPendingMainFrame();
   if (!rfh)
     rfh = old_rfh;
+  CHECK_IMPLIES(browser_side_navigation, rfh->is_loading());
+  CHECK_IMPLIES(browser_side_navigation,
+                !rfh->frame_tree_node()->navigation_request());
 
   int page_id = entry->GetPageID();
   if (page_id == -1) {
