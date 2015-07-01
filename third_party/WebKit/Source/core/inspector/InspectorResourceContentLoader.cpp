@@ -164,9 +164,10 @@ DEFINE_TRACE(InspectorResourceContentLoader)
     visitor->trace(m_inspectedFrame);
 }
 
-void InspectorResourceContentLoader::dispose()
+void InspectorResourceContentLoader::didCommitLoadForLocalFrame(LocalFrame* frame)
 {
-    stop();
+    if (frame == m_inspectedFrame)
+        stop();
 }
 
 void InspectorResourceContentLoader::stop()
@@ -178,6 +179,8 @@ void InspectorResourceContentLoader::stop()
     m_resources.clear();
     // Make sure all callbacks are called to prevent infinite waiting time.
     checkDone();
+    m_allRequestsStarted = false;
+    m_started = false;
 }
 
 bool InspectorResourceContentLoader::hasFinished()

@@ -59,6 +59,7 @@
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorProfilerAgent.h"
 #include "core/inspector/InspectorResourceAgent.h"
+#include "core/inspector/InspectorResourceContentLoader.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/InspectorTimelineAgent.h"
@@ -313,6 +314,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
 #endif
     , m_instrumentingAgents(m_webLocalFrameImpl->frame()->instrumentingAgents())
     , m_injectedScriptManager(InjectedScriptManager::createForPage())
+    , m_resourceContentLoader(InspectorResourceContentLoader::create(m_webLocalFrameImpl->frame()))
     , m_state(adoptPtrWillBeNoop(new InspectorCompositeState(this)))
     , m_overlay(overlay)
     , m_cssAgent(nullptr)
@@ -333,7 +335,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     m_inspectorAgent = inspectorAgentPtr.get();
     m_agents.append(inspectorAgentPtr.release());
 
-    OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(m_webLocalFrameImpl->frame(), m_overlay));
+    OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(m_webLocalFrameImpl->frame(), m_overlay, m_resourceContentLoader.get()));
     m_pageAgent = pageAgentPtr.get();
     m_agents.append(pageAgentPtr.release());
 
@@ -402,6 +404,7 @@ DEFINE_TRACE(WebDevToolsAgentImpl)
 {
     visitor->trace(m_instrumentingAgents);
     visitor->trace(m_injectedScriptManager);
+    visitor->trace(m_resourceContentLoader);
     visitor->trace(m_state);
     visitor->trace(m_overlay);
     visitor->trace(m_asyncCallTracker);
@@ -428,6 +431,7 @@ void WebDevToolsAgentImpl::willBeDestroyed()
 
     detach();
     m_injectedScriptManager->disconnect();
+    m_resourceContentLoader->stop();
     m_agents.discardAgents();
     m_instrumentingAgents->reset();
 }
@@ -444,7 +448,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
     m_resourceAgent = resourceAgentPtr.get();
     m_agents.append(resourceAgentPtr.release());
 
-    OwnPtrWillBeRawPtr<InspectorCSSAgent> cssAgentPtr(InspectorCSSAgent::create(m_domAgent, m_pageAgent, m_resourceAgent));
+    OwnPtrWillBeRawPtr<InspectorCSSAgent> cssAgentPtr(InspectorCSSAgent::create(m_domAgent, m_pageAgent, m_resourceAgent, m_resourceContentLoader.get()));
     m_cssAgent = cssAgentPtr.get();
     m_agents.append(cssAgentPtr.release());
 
@@ -601,6 +605,7 @@ bool WebDevToolsAgentImpl::handleTouchEvent(LocalFrame* frame, const PlatformTou
 
 void WebDevToolsAgentImpl::didCommitLoadForLocalFrame(LocalFrame* frame)
 {
+    m_resourceContentLoader->didCommitLoadForLocalFrame(frame);
     m_agents.didCommitLoadForLocalFrame(frame);
 }
 

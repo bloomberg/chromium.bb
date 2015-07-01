@@ -21,20 +21,25 @@ class CORE_EXPORT InspectorResourceContentLoader final : public NoBaseWillBeGarb
     WTF_MAKE_NONCOPYABLE(InspectorResourceContentLoader);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InspectorResourceContentLoader);
 public:
-    explicit InspectorResourceContentLoader(LocalFrame*);
+    static PassOwnPtrWillBeRawPtr<InspectorResourceContentLoader> create(LocalFrame* inspectedFrame)
+    {
+        return adoptPtrWillBeNoop(new InspectorResourceContentLoader(inspectedFrame));
+    }
+
     void ensureResourcesContentLoaded(VoidCallback*);
     ~InspectorResourceContentLoader();
     DECLARE_TRACE();
-    void dispose();
-    bool hasFinished();
     void stop();
+    void didCommitLoadForLocalFrame(LocalFrame*);
 
 private:
     class ResourceClient;
 
+    explicit InspectorResourceContentLoader(LocalFrame*);
     void resourceFinished(ResourceClient*);
     void checkDone();
     void start();
+    bool hasFinished();
 
     PersistentHeapVectorWillBeHeapVector<Member<VoidCallback> > m_callbacks;
     bool m_allRequestsStarted;

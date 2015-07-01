@@ -35,7 +35,6 @@
 #include "core/CoreExport.h"
 #include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
-#include "core/inspector/InspectorResourceContentLoader.h"
 #include "core/page/ChromeClient.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
@@ -73,7 +72,7 @@ public:
         OtherResource
     };
 
-    static PassOwnPtrWillBeRawPtr<InspectorPageAgent> create(LocalFrame* inspectedFrame, InspectorOverlay*);
+    static PassOwnPtrWillBeRawPtr<InspectorPageAgent> create(LocalFrame* inspectedFrame, InspectorOverlay*, InspectorResourceContentLoader*);
     void setDeferredAgents(InspectorDebuggerAgent*, InspectorCSSAgent*);
 
     static Vector<Document*> importsForFrame(LocalFrame*);
@@ -122,7 +121,6 @@ public:
     // Inspector Controller API
     void disable(ErrorString*) override;
     void restore() override;
-    void discardAgent() override;
 
     // Cross-agents API
     static DocumentLoader* assertDocumentLoader(ErrorString*, LocalFrame*);
@@ -132,14 +130,13 @@ public:
     LocalFrame* inspectedFrame() const { return m_inspectedFrame.get(); }
     LocalFrame* findFrameWithSecurityOrigin(const String& originRawString);
     bool screencastEnabled();
-    InspectorResourceContentLoader* resourceContentLoader() { return m_inspectorResourceContentLoader.get(); }
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
     class GetResourceContentLoadListener;
 
-    InspectorPageAgent(LocalFrame* inspectedFrame, InspectorOverlay*);
+    InspectorPageAgent(LocalFrame* inspectedFrame, InspectorOverlay*, InspectorResourceContentLoader*);
 
     void finishReload();
     void getResourceContentAfterResourcesContentLoaded(const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback>);
@@ -158,7 +155,7 @@ private:
     bool m_enabled;
     bool m_reloading;
 
-    OwnPtrWillBeMember<InspectorResourceContentLoader> m_inspectorResourceContentLoader;
+    RawPtrWillBeMember<InspectorResourceContentLoader> m_inspectorResourceContentLoader;
 };
 
 

@@ -51,6 +51,7 @@ class Document;
 class Element;
 class InspectorFrontend;
 class InspectorResourceAgent;
+class InspectorResourceContentLoader;
 class MediaList;
 class Node;
 class LayoutObject;
@@ -95,9 +96,9 @@ public:
     static CSSStyleRule* asCSSStyleRule(CSSRule*);
     static CSSMediaRule* asCSSMediaRule(CSSRule*);
 
-    static PassOwnPtrWillBeRawPtr<InspectorCSSAgent> create(InspectorDOMAgent* domAgent, InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent)
+    static PassOwnPtrWillBeRawPtr<InspectorCSSAgent> create(InspectorDOMAgent* domAgent, InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent, InspectorResourceContentLoader* resourceContentLoader)
     {
-        return adoptPtrWillBeNoop(new InspectorCSSAgent(domAgent, pageAgent, resourceAgent));
+        return adoptPtrWillBeNoop(new InspectorCSSAgent(domAgent, pageAgent, resourceAgent, resourceContentLoader));
     }
 
     static void collectAllDocumentStyleSheets(Document*, WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet> >&);
@@ -153,7 +154,7 @@ private:
 
     static void collectStyleSheets(CSSStyleSheet*, WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet> >&);
 
-    InspectorCSSAgent(InspectorDOMAgent*, InspectorPageAgent*, InspectorResourceAgent*);
+    InspectorCSSAgent(InspectorDOMAgent*, InspectorPageAgent*, InspectorResourceAgent*, InspectorResourceContentLoader*);
 
     typedef WillBeHeapHashMap<String, RefPtrWillBeMember<InspectorStyleSheet> > IdToInspectorStyleSheet;
     typedef WillBeHeapHashMap<String, RefPtrWillBeMember<InspectorStyleSheetForInlineStyle> > IdToInspectorStyleSheetForInlineStyle;
@@ -196,6 +197,7 @@ private:
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     RawPtrWillBeMember<InspectorResourceAgent> m_resourceAgent;
+    RawPtrWillBeMember<InspectorResourceContentLoader> m_resourceContentLoader;
 
     IdToInspectorStyleSheet m_idToInspectorStyleSheet;
     IdToInspectorStyleSheetForInlineStyle m_idToInspectorStyleSheetForInlineStyle;

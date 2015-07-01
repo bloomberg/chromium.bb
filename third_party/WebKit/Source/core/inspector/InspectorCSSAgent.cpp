@@ -434,11 +434,12 @@ CSSMediaRule* InspectorCSSAgent::asCSSMediaRule(CSSRule* rule)
     return toCSSMediaRule(rule);
 }
 
-InspectorCSSAgent::InspectorCSSAgent(InspectorDOMAgent* domAgent, InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent)
+InspectorCSSAgent::InspectorCSSAgent(InspectorDOMAgent* domAgent, InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent, InspectorResourceContentLoader* resourceContentLoader)
     : InspectorBaseAgent<InspectorCSSAgent, InspectorFrontend::CSS>("CSS")
     , m_domAgent(domAgent)
     , m_pageAgent(pageAgent)
     , m_resourceAgent(resourceAgent)
+    , m_resourceContentLoader(resourceContentLoader)
     , m_lastStyleSheetId(1)
     , m_creatingViaInspectorStyleSheet(false)
     , m_isSettingStyleSheetText(false)
@@ -500,12 +501,7 @@ void InspectorCSSAgent::enable(ErrorString* errorString, PassRefPtrWillBeRawPtr<
         return;
     }
     m_state->setBoolean(CSSAgentState::cssAgentEnabled, true);
-    if (!m_pageAgent->resourceContentLoader()) {
-        wasEnabled();
-        prpCallback->sendSuccess();
-        return;
-    }
-    m_pageAgent->resourceContentLoader()->ensureResourcesContentLoaded(new InspectorCSSAgent::InspectorResourceContentLoaderCallback(this, prpCallback));
+    m_resourceContentLoader->ensureResourcesContentLoaded(new InspectorCSSAgent::InspectorResourceContentLoaderCallback(this, prpCallback));
 }
 
 void InspectorCSSAgent::wasEnabled()
@@ -1529,6 +1525,7 @@ DEFINE_TRACE(InspectorCSSAgent)
     visitor->trace(m_domAgent);
     visitor->trace(m_pageAgent);
     visitor->trace(m_resourceAgent);
+    visitor->trace(m_resourceContentLoader);
 #if ENABLE(OILPAN)
     visitor->trace(m_idToInspectorStyleSheet);
     visitor->trace(m_idToInspectorStyleSheetForInlineStyle);

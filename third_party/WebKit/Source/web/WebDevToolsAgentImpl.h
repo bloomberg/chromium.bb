@@ -50,6 +50,7 @@ class GraphicsLayer;
 class InspectorInspectorAgent;
 class InspectorOverlay;
 class InspectorPageAgent;
+class InspectorResourceContentLoader;
 class LocalFrame;
 class Page;
 class PageConsoleAgent;
@@ -140,6 +141,7 @@ private:
 
     RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
     OwnPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
+    OwnPtrWillBeMember<InspectorResourceContentLoader> m_resourceContentLoader;
     OwnPtrWillBeMember<InspectorCompositeState> m_state;
     RawPtrWillBeMember<InspectorOverlay> m_overlay;
     OwnPtrWillBeMember<AsyncCallTracker> m_asyncCallTracker;
