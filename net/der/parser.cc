@@ -180,10 +180,10 @@ bool Parser::ReadSequence(Parser* out) {
 }
 
 bool Parser::ReadUint64(uint64_t* out) {
-  Input encodedInt;
-  if (!ReadTag(kInteger, &encodedInt))
+  Input encoded_int;
+  if (!ReadTag(kInteger, &encoded_int))
     return false;
-  return ParseUint64(encodedInt, out);
+  return ParseUint64(encoded_int, out);
 }
 
 }  // namespace der
