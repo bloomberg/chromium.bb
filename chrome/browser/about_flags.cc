@@ -1917,14 +1917,16 @@ const Experiment kExperiments[] = {
      kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableMediaRouter)},
 #endif  // defined(ENABLE_MEDIA_ROUTER)
-// Since kEnableLauncherSearchProviderApi is not available when app list is
-// disabled, flag guard enable-launcher-search-provider-api.
+// Since Drive Search is not available when app list is disabled, flag guard
+// enable-drive-search-in-chrome-launcher flag.
 #if defined(ENABLE_APP_LIST)
-    {"enable-launcher-search-provider-api",
-     IDS_FLAGS_ENABLE_LAUNCHER_SEARCH_PROVIDER_API,
-     IDS_FLAGS_ENABLE_LAUNCHER_SEARCH_PROVIDER_API_DESCRIPTION,
+    {"enable-drive-search-in-app-launcher",
+     IDS_FLAGS_ENABLE_DRIVE_SEARCH_IN_CHROME_LAUNCHER,
+     IDS_FLAGS_ENABLE_DRIVE_SEARCH_IN_CHROME_LAUNCHER_DESCRIPTION,
      kOsCrOS,
-     SINGLE_VALUE_TYPE(app_list::switches::kEnableLauncherSearchProviderApi)},
+     ENABLE_DISABLE_VALUE_TYPE(
+         app_list::switches::kEnableDriveSearchInChromeLauncher,
+         app_list::switches::kDisableDriveSearchInChromeLauncher)},
 #endif  // defined(ENABLE_APP_LIST)
 #if defined(OS_CHROMEOS)
     {"disable-mtp-write-support",

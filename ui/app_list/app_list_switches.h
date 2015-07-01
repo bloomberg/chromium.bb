@@ -23,7 +23,8 @@ APP_LIST_EXPORT extern const char kEnableNewAppListMixer[];
 APP_LIST_EXPORT extern const char kDisableNewAppListMixer[];
 APP_LIST_EXPORT extern const char kEnableSyncAppList[];
 APP_LIST_EXPORT extern const char kDisableSyncAppList[];
-APP_LIST_EXPORT extern const char kEnableLauncherSearchProviderApi[];
+APP_LIST_EXPORT extern const char kEnableDriveSearchInChromeLauncher[];
+APP_LIST_EXPORT extern const char kDisableDriveSearchInChromeLauncher[];
 APP_LIST_EXPORT extern const char kResetAppListInstallState[];
 
 #if defined(OS_MACOSX)
@@ -49,7 +50,7 @@ bool APP_LIST_EXPORT ShouldNotDismissOnBlur();
 
 bool APP_LIST_EXPORT IsDriveAppsInAppListEnabled();
 
-bool APP_LIST_EXPORT IsLauncherSearchProviderApiEnabled();
+bool APP_LIST_EXPORT IsDriveSearchInChromeLauncherEnabled();
 
 #if defined(OS_MACOSX)
 bool APP_LIST_EXPORT IsMacViewsAppListEnabled();

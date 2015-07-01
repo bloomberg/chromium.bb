@@ -105,7 +105,7 @@ scoped_ptr<SearchController> CreateSearchController(
   // LauncherSearchProvider is added only when flag is enabled and running on
   // Chrome OS.
 #if defined(OS_CHROMEOS)
-  if (app_list::switches::IsLauncherSearchProviderApiEnabled()) {
+  if (app_list::switches::IsDriveSearchInChromeLauncherEnabled()) {
     size_t search_api_group_id =
         controller->AddGroup(kMaxLauncherSearchResults, 0.0, 1.0);
     controller->AddProvider(
