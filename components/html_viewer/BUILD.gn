@@ -180,7 +180,15 @@ source_set("lib") {
 
 mojo_native_application("html_viewer") {
   sources = [
+    "content_handler_impl.cc",
+    "content_handler_impl.h",
+    "html_document_application_delegate.cc",
+    "html_document_application_delegate.h",
     "html_viewer.cc",
+    "html_viewer.h",
+    "html_viewer_main.cc",
+    "html_viewer_switches.cc",
+    "html_viewer_switches.h",
   ]
   deps = [
     ":html_viewer_resources_grit",
