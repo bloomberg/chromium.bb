@@ -5,7 +5,7 @@
 #ifndef PrimitiveInterpolation_h
 #define PrimitiveInterpolation_h
 
-#include "core/animation/AnimationValue.h"
+#include "core/animation/InterpolationValue.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 #include <cmath>
@@ -20,7 +20,7 @@ class PrimitiveInterpolation : public NoBaseWillBeGarbageCollectedFinalized<Prim
 public:
     virtual ~PrimitiveInterpolation() { }
 
-    virtual void interpolate(double fraction, OwnPtrWillBeMember<AnimationValue>& result) const = 0;
+    virtual void interpolate(double fraction, OwnPtrWillBeMember<InterpolationValue>& result) const = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
@@ -30,14 +30,14 @@ class PairwisePrimitiveInterpolation : public PrimitiveInterpolation {
 public:
     virtual ~PairwisePrimitiveInterpolation() { }
 
-    static PassOwnPtrWillBeRawPtr<PairwisePrimitiveInterpolation> create(const AnimationType& type, PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue)
+    static PassOwnPtrWillBeRawPtr<PairwisePrimitiveInterpolation> create(const InterpolationType& type, PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue)
     {
         return adoptPtrWillBeNoop(new PairwisePrimitiveInterpolation(type, start, end, nonInterpolableValue));
     }
 
-    PassOwnPtrWillBeRawPtr<AnimationValue> initialValue() const
+    PassOwnPtrWillBeRawPtr<InterpolationValue> initialValue() const
     {
-        return AnimationValue::create(m_type, m_start->clone(), m_nonInterpolableValue);
+        return InterpolationValue::create(m_type, m_start->clone(), m_nonInterpolableValue);
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
@@ -49,14 +49,14 @@ public:
     }
 
 private:
-    PairwisePrimitiveInterpolation(const AnimationType& type, PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue)
+    PairwisePrimitiveInterpolation(const InterpolationType& type, PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue)
         : m_type(type)
         , m_start(start)
         , m_end(end)
         , m_nonInterpolableValue(nonInterpolableValue)
     { }
 
-    virtual void interpolate(double fraction, OwnPtrWillBeMember<AnimationValue>& result) const override final
+    virtual void interpolate(double fraction, OwnPtrWillBeMember<InterpolationValue>& result) const override final
     {
         ASSERT(result);
         ASSERT(&result->type() == &m_type);
@@ -64,7 +64,7 @@ private:
         m_start->interpolate(*m_end, fraction, result->interpolableValue());
     }
 
-    const AnimationType& m_type;
+    const InterpolationType& m_type;
     OwnPtrWillBeMember<InterpolableValue> m_start;
     OwnPtrWillBeMember<InterpolableValue> m_end;
     RefPtrWillBeMember<NonInterpolableValue> m_nonInterpolableValue;
@@ -75,7 +75,7 @@ class FlipPrimitiveInterpolation : public PrimitiveInterpolation {
 public:
     virtual ~FlipPrimitiveInterpolation() { }
 
-    static PassOwnPtrWillBeRawPtr<FlipPrimitiveInterpolation> create(PassOwnPtrWillBeRawPtr<AnimationValue> start, PassOwnPtrWillBeRawPtr<AnimationValue> end)
+    static PassOwnPtrWillBeRawPtr<FlipPrimitiveInterpolation> create(PassOwnPtrWillBeRawPtr<InterpolationValue> start, PassOwnPtrWillBeRawPtr<InterpolationValue> end)
     {
         return adoptPtrWillBeNoop(new FlipPrimitiveInterpolation(start, end));
     }
@@ -88,7 +88,7 @@ public:
     }
 
 private:
-    FlipPrimitiveInterpolation(PassOwnPtrWillBeRawPtr<AnimationValue> start, PassOwnPtrWillBeRawPtr<AnimationValue> end)
+    FlipPrimitiveInterpolation(PassOwnPtrWillBeRawPtr<InterpolationValue> start, PassOwnPtrWillBeRawPtr<InterpolationValue> end)
         : m_start(start)
         , m_end(end)
         , m_lastFraction(std::numeric_limits<double>::quiet_NaN())
@@ -97,7 +97,7 @@ private:
         ASSERT(m_end);
     }
 
-    virtual void interpolate(double fraction, OwnPtrWillBeMember<AnimationValue>& result) const override final
+    virtual void interpolate(double fraction, OwnPtrWillBeMember<InterpolationValue>& result) const override final
     {
         // TODO(alancutter): Remove this optimisation once Oilpan is default.
         if (!std::isnan(m_lastFraction) && (fraction < 0.5) == (m_lastFraction < 0.5))
@@ -106,8 +106,8 @@ private:
         m_lastFraction = fraction;
     }
 
-    OwnPtrWillBeMember<AnimationValue> m_start;
-    OwnPtrWillBeMember<AnimationValue> m_end;
+    OwnPtrWillBeMember<InterpolationValue> m_start;
+    OwnPtrWillBeMember<InterpolationValue> m_end;
     mutable double m_lastFraction;
 };
 

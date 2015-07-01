@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AnimationType_h
-#define AnimationType_h
+#ifndef InterpolationType_h
+#define InterpolationType_h
 
 #include "core/animation/InterpolableValue.h"
 #include "core/animation/NonInterpolableValue.h"
@@ -18,7 +18,7 @@ class StyleResolverState;
 // A singleton that:
 // - Converts from animation keyframe(s) to interpolation compatible representations: maybeConvertPairwise() and maybeConvertSingle()
 // - Applies interpolation compatible representations of values to a StyleResolverState: apply()
-class AnimationType {
+class InterpolationType {
 public:
     CSSPropertyID property() const { return m_property; }
 
@@ -36,12 +36,12 @@ public:
         return nullptr;
     }
 
-    virtual PassOwnPtrWillBeRawPtr<AnimationValue> maybeConvertSingle(const CSSPropertySpecificKeyframe&, const StyleResolverState*, ConversionCheckers&) const = 0;
+    virtual PassOwnPtrWillBeRawPtr<InterpolationValue> maybeConvertSingle(const CSSPropertySpecificKeyframe&, const StyleResolverState*, ConversionCheckers&) const = 0;
 
     virtual void apply(const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&) const = 0;
 
 protected:
-    AnimationType(CSSPropertyID property)
+    InterpolationType(CSSPropertyID property)
         : m_property(property)
     { }
 
@@ -50,4 +50,4 @@ protected:
 
 } // namespace blink
 
-#endif // AnimationType_h
+#endif // InterpolationType_h

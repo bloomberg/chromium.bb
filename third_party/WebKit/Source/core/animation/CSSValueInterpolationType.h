@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSValueAnimationType_h
-#define CSSValueAnimationType_h
+#ifndef CSSValueInterpolationType_h
+#define CSSValueInterpolationType_h
 
-#include "core/animation/AnimationType.h"
+#include "core/animation/InterpolationType.h"
 
 namespace blink {
 
 // Never supports pairwise conversion while always supporting single conversion.
 // A catch all for default for CSSValues.
-class CSSValueAnimationType : public AnimationType {
+class CSSValueInterpolationType : public InterpolationType {
 public:
-    CSSValueAnimationType(CSSPropertyID property)
-        : AnimationType(property)
+    CSSValueInterpolationType(CSSPropertyID property)
+        : InterpolationType(property)
     { }
 
-    virtual PassOwnPtrWillBeRawPtr<AnimationValue> maybeConvertSingle(const CSSPropertySpecificKeyframe&, const StyleResolverState*, ConversionCheckers&) const override final;
+    virtual PassOwnPtrWillBeRawPtr<InterpolationValue> maybeConvertSingle(const CSSPropertySpecificKeyframe&, const StyleResolverState*, ConversionCheckers&) const override final;
     virtual void apply(const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&) const override final;
 };
 
@@ -51,4 +51,4 @@ DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(DefaultNonInterpolableValue);
 
 } // namespace blink
 
-#endif // CSSValueAnimationType_h
+#endif // CSSValueInterpolationType_h

@@ -10,11 +10,11 @@
 namespace blink {
 
 InvalidatableStyleInterpolation::InvalidatableStyleInterpolation(
-    const Vector<const AnimationType*>& animationTypes,
+    const Vector<const InterpolationType*>& interpolationTypes,
     const CSSPropertySpecificKeyframe& startKeyframe,
     const CSSPropertySpecificKeyframe& endKeyframe)
-    : StyleInterpolation(nullptr, nullptr, animationTypes.first()->property())
-    , m_animationTypes(animationTypes)
+    : StyleInterpolation(nullptr, nullptr, interpolationTypes.first()->property())
+    , m_interpolationTypes(interpolationTypes)
     , m_startKeyframe(startKeyframe)
     , m_endKeyframe(endKeyframe)
 {
@@ -24,8 +24,8 @@ InvalidatableStyleInterpolation::InvalidatableStyleInterpolation(
 
 bool InvalidatableStyleInterpolation::maybeCachePairwiseConversion(const StyleResolverState* state) const
 {
-    for (const auto& animationType : m_animationTypes) {
-        OwnPtrWillBeRawPtr<PairwisePrimitiveInterpolation> pairwiseConversion = animationType->maybeConvertPairwise(m_startKeyframe, m_endKeyframe, state, m_conversionCheckers);
+    for (const auto& interpolationType : m_interpolationTypes) {
+        OwnPtrWillBeRawPtr<PairwisePrimitiveInterpolation> pairwiseConversion = interpolationType->maybeConvertPairwise(m_startKeyframe, m_endKeyframe, state, m_conversionCheckers);
         if (pairwiseConversion) {
             m_cachedValue = pairwiseConversion->initialValue();
             m_cachedConversion = pairwiseConversion.release();
@@ -43,10 +43,10 @@ void InvalidatableStyleInterpolation::interpolate(int, double fraction)
     // We defer the interpolation to ensureValidInterpolation() if m_cachedConversion is null.
 }
 
-PassOwnPtrWillBeRawPtr<AnimationValue> InvalidatableStyleInterpolation::convertSingleKeyframe(const CSSPropertySpecificKeyframe& keyframe, const StyleResolverState& state) const
+PassOwnPtrWillBeRawPtr<InterpolationValue> InvalidatableStyleInterpolation::convertSingleKeyframe(const CSSPropertySpecificKeyframe& keyframe, const StyleResolverState& state) const
 {
-    for (const auto& animationType : m_animationTypes) {
-        OwnPtrWillBeRawPtr<AnimationValue> result = animationType->maybeConvertSingle(keyframe, &state, m_conversionCheckers);
+    for (const auto& interpolationType : m_interpolationTypes) {
+        OwnPtrWillBeRawPtr<InterpolationValue> result = interpolationType->maybeConvertSingle(keyframe, &state, m_conversionCheckers);
         if (result)
             return result.release();
     }

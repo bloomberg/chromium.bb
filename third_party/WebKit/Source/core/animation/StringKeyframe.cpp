@@ -6,8 +6,7 @@
 #include "core/animation/StringKeyframe.h"
 
 #include "core/animation/AngleSVGInterpolation.h"
-#include "core/animation/AnimationType.h"
-#include "core/animation/CSSValueAnimationType.h"
+#include "core/animation/CSSValueInterpolationType.h"
 #include "core/animation/ColorStyleInterpolation.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/ConstantStyleInterpolation.h"
@@ -19,6 +18,7 @@
 #include "core/animation/ImageStyleInterpolation.h"
 #include "core/animation/IntegerOptionalIntegerSVGInterpolation.h"
 #include "core/animation/IntegerSVGInterpolation.h"
+#include "core/animation/InterpolationType.h"
 #include "core/animation/InvalidatableStyleInterpolation.h"
 #include "core/animation/LegacyStyleInterpolation.h"
 #include "core/animation/LengthBoxStyleInterpolation.h"
@@ -153,9 +153,9 @@ InterpolationRange setRange(CSSPropertyID id)
     }
 }
 
-const Vector<const AnimationType*>* applicableTypesForProperty(CSSPropertyID property)
+const Vector<const InterpolationType*>* applicableTypesForProperty(CSSPropertyID property)
 {
-    using ApplicableTypesMap = HashMap<CSSPropertyID, const Vector<const AnimationType*>*>;
+    using ApplicableTypesMap = HashMap<CSSPropertyID, const Vector<const InterpolationType*>*>;
     DEFINE_STATIC_LOCAL(ApplicableTypesMap, applicableTypesMap, ());
     auto entry = applicableTypesMap.find(property);
     if (entry != applicableTypesMap.end())
@@ -165,8 +165,8 @@ const Vector<const AnimationType*>* applicableTypesForProperty(CSSPropertyID pro
     if (CSSPropertyMetadata::isAnimatableProperty(property))
         return nullptr;
 
-    auto applicableTypes = new Vector<const AnimationType*>();
-    applicableTypes->append(new CSSValueAnimationType(property));
+    auto applicableTypes = new Vector<const InterpolationType*>();
+    applicableTypes->append(new CSSValueInterpolationType(property));
     applicableTypesMap.add(property, applicableTypes);
     return applicableTypes;
 }
@@ -176,7 +176,7 @@ const Vector<const AnimationType*>* applicableTypesForProperty(CSSPropertyID pro
 PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::CSSPropertySpecificKeyframe::maybeCreateInterpolation(PropertyHandle propertyHandle, Keyframe::PropertySpecificKeyframe& end, Element* element, const ComputedStyle* baseStyle) const
 {
     CSSPropertyID property = propertyHandle.cssProperty();
-    const Vector<const AnimationType*>* applicableTypes = applicableTypesForProperty(property);
+    const Vector<const InterpolationType*>* applicableTypes = applicableTypesForProperty(property);
     if (applicableTypes)
         return InvalidatableStyleInterpolation::create(*applicableTypes, *this, toCSSPropertySpecificKeyframe(end));
 

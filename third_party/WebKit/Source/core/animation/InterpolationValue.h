@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AnimationValue_h
-#define AnimationValue_h
+#ifndef InterpolationValue_h
+#define InterpolationValue_h
 
 #include "core/animation/InterpolableValue.h"
 #include "core/animation/NonInterpolableValue.h"
@@ -11,21 +11,21 @@
 
 namespace blink {
 
-class AnimationType;
+class InterpolationType;
 
-class AnimationValue : public NoBaseWillBeGarbageCollectedFinalized<AnimationValue> {
+class InterpolationValue : public NoBaseWillBeGarbageCollectedFinalized<InterpolationValue> {
 public:
-    static PassOwnPtrWillBeRawPtr<AnimationValue> create(const AnimationType& type, PassOwnPtrWillBeRawPtr<InterpolableValue> interpolableValue, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
+    static PassOwnPtrWillBeRawPtr<InterpolationValue> create(const InterpolationType& type, PassOwnPtrWillBeRawPtr<InterpolableValue> interpolableValue, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
     {
-        return adoptPtrWillBeNoop(new AnimationValue(type, interpolableValue, nonInterpolableValue));
+        return adoptPtrWillBeNoop(new InterpolationValue(type, interpolableValue, nonInterpolableValue));
     }
 
-    PassOwnPtrWillBeRawPtr<AnimationValue> clone() const
+    PassOwnPtrWillBeRawPtr<InterpolationValue> clone() const
     {
         return create(m_type, m_interpolableValue->clone(), m_nonInterpolableValue);
     }
 
-    const AnimationType& type() const { return m_type; }
+    const InterpolationType& type() const { return m_type; }
     const InterpolableValue& interpolableValue() const { return *m_interpolableValue; }
     InterpolableValue& interpolableValue() { return *m_interpolableValue; }
     const NonInterpolableValue* nonInterpolableValue() const { return m_nonInterpolableValue.get(); }
@@ -37,7 +37,7 @@ public:
     }
 
 private:
-    AnimationValue(const AnimationType& type, PassOwnPtrWillBeRawPtr<InterpolableValue> interpolableValue, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
+    InterpolationValue(const InterpolationType& type, PassOwnPtrWillBeRawPtr<InterpolableValue> interpolableValue, PassRefPtrWillBeRawPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
         : m_type(type)
         , m_interpolableValue(interpolableValue)
         , m_nonInterpolableValue(nonInterpolableValue)
@@ -45,13 +45,13 @@ private:
         ASSERT(this->m_interpolableValue);
     }
 
-    const AnimationType& m_type;
+    const InterpolationType& m_type;
     OwnPtrWillBeMember<InterpolableValue> m_interpolableValue;
     RefPtrWillBeMember<NonInterpolableValue> m_nonInterpolableValue;
 
-    friend class AnimationType;
+    friend class InterpolationType;
 };
 
 } // namespace blink
 
-#endif // AnimationValue_h
+#endif // InterpolationValue_h
