@@ -151,7 +151,7 @@
           'build_glibc': 0,
           'build_irt': 0,
           'build_nonsfi_helper': 0,
-          'disable_glibc%': 1,
+          'disable_glibc%': 0,
           'disable_bionic%': 1,
           'extra_args': [],
           'enable_x86_32': 0,
@@ -169,9 +169,11 @@
           'nacl_newlib_tc_root': '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_arm_newlib',
           'tc_lib_dir_bionic_arm': '<(SHARED_INTERMEDIATE_DIR)/tc_bionic/libarm',
           'tc_lib_dir_newlib_arm': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm',
+          'tc_lib_dir_glibc_arm': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/libarm',
           'tc_lib_dir_irt_arm': '<(SHARED_INTERMEDIATE_DIR)/tc_irt/libarm',
           'tc_lib_dir_nonsfi_helper_arm': '<(SHARED_INTERMEDIATE_DIR)/tc_nonsfi_helper/libarm',
           'tc_include_dir_newlib': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/include',
+          'tc_include_dir_glibc': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/include',
           'tc_include_dir_bionic': '<(SHARED_INTERMEDIATE_DIR)/tc_bionic/include',
           'include_dirs': ['<(DEPTH)'],
           'defines': [
@@ -677,6 +679,86 @@
     ['target_arch=="arm"', {
       'target_defaults': {
         'target_conditions': [
+          # arm glibc nexe action
+          ['nexe_target!="" and build_glibc!=0', {
+            'variables': {
+               'tool_name': 'glibc',
+               'out_glibc_arm%': '<(PRODUCT_DIR)/>(nexe_target)_glibc_arm.nexe',
+               'objdir_glibc_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm/>(_target_name)',
+            },
+            'actions': [
+              {
+                'action_name': 'build glibc arm nexe',
+                'variables': {
+                  'source_list_glibc_arm%': '^|(<(tool_name)-arm.>(_target_name).source_list.gypcmd ^(_sources) ^(sources) ^(native_sources))',
+                },
+                'msvs_cygwin_shell': 0,
+                'description': 'building >(out_glibc_arm)',
+                'inputs': [
+                   '<@(common_inputs)',
+                   '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources) >(native_sources))',
+                   '>@(extra_deps)',
+                   '^(source_list_glibc_arm)',
+                   '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_arm_glibc/nacl_arm_glibc.json',
+                ],
+                'outputs': ['>(out_glibc_arm)'],
+                'action': [
+                  '<@(common_args)',
+                  '>@(extra_args)',
+                  '--arch', 'arm',
+                  '--build', 'glibc_nexe',
+                  '--name', '>(out_glibc_arm)',
+                  '--objdir', '>(objdir_glibc_arm)',
+                  '--include-dirs=>(tc_include_dir_glibc) ^(include_dirs) >(_include_dirs)',
+                  '--compile_flags=<(arm_compile_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                  '--gomadir', '<(gomadir)',
+                  '--defines=^(defines) >(_defines)',
+                  '--link_flags=-B>(tc_lib_dir_glibc_arm) -L>(tc_lib_dir_glibc_arm) ^(link_flags) >(_link_flags)',
+                  '--source-list=^(source_list_glibc_arm)',
+                ],
+              },
+            ],
+          }],
+          # arm glibc library action
+          ['nlib_target!="" and build_glibc!=0', {
+            'variables': {
+              'tool_name': 'glibc',
+              'out_glibc_arm%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libarm/>(nlib_target)',
+              'objdir_glibc_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm/>(_target_name)',
+            },
+            'actions': [
+              {
+                'action_name': 'build glibc arm nlib',
+                 'variables': {
+                   'source_list_glibc_arm%': '^|(<(tool_name)-arm.>(_target_name).source_list.gypcmd ^(_sources) ^(sources) ^(native_sources))',
+                 },
+                'msvs_cygwin_shell': 0,
+                'description': 'building >(out_glibc_arm)',
+                'inputs': [
+                   '<@(common_inputs)',
+                   '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources) >(native_sources))',
+                   '>@(extra_deps)',
+                   '^(source_list_glibc_arm)',
+                   '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_arm_glibc/nacl_arm_glibc.json',
+                ],
+                'outputs': ['>(out_glibc_arm)'],
+                'action': [
+                  '<@(common_args)',
+                  '>@(extra_args)',
+                  '--arch', 'arm',
+                  '--build', 'glibc_nlib',
+                  '--name', '>(out_glibc_arm)',
+                  '--objdir', '>(objdir_glibc_arm)',
+                  '--include-dirs=>(tc_include_dir_glibc) ^(include_dirs) >(_include_dirs)',
+                  '--compile_flags=<(arm_compile_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                  '--gomadir', '<(gomadir)',
+                  '--defines=^(defines) >(_defines)',
+                  '--link_flags=-B>(tc_lib_dir_glibc_arm) ^(link_flags) >(_link_flags)',
+                  '--source-list=^(source_list_glibc_arm)',
+                ],
+              },
+            ],
+          }],
           # arm newlib nexe action
           ['nexe_target!="" and build_newlib!=0', {
             'variables': {
@@ -1162,8 +1244,8 @@
     }], # end target_arch = mips
     ['target_arch=="ia32" or target_arch=="x64"', {
       'target_defaults': {
-        # x86-64 glibc nexe action
         'target_conditions': [
+           # x86-64 glibc nexe action
            ['nexe_target!="" and build_glibc!=0 and enable_x86_64!=0 and disable_glibc==0', {
              'variables': {
                 'tool_name': 'glibc',

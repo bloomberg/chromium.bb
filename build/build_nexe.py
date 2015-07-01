@@ -172,9 +172,6 @@ class Builder(CommandRunner):
     if toolname not in ['newlib', 'glibc']:
       raise Error('Toolchain of type %s not supported.' % toolname)
 
-    if arch == 'arm' and toolname == 'glibc':
-      raise Error('arm glibc not yet supported.')
-
     if arch == 'mips' and toolname == 'glibc':
       raise Error('mips glibc not supported.')
 
