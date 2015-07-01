@@ -4,6 +4,7 @@
 
 package org.chromium.webview_shell;
 
+import android.os.Environment;
 import android.test.ActivityInstrumentationTestCase2;
 
 import org.chromium.base.Log;
@@ -25,8 +26,16 @@ public class WebViewLayoutTest
         extends ActivityInstrumentationTestCase2<WebViewLayoutTestActivity> {
 
     private static final String TAG = "WebViewLayoutTest";
-    private static final String PATH_PREFIX = "/data/local/tmp/webview_test/";
+
+    private static final String EXTERNAL_PREFIX =
+            Environment.getExternalStorageDirectory().getAbsolutePath() + "/";
+    private static final String BASE_WEBVIEW_TEST_PATH = "android_webview/tools/WebViewShell/test/";
+    private static final String BASE_BLINK_TEST_PATH = "third_party/WebKit/LayoutTests/";
+    private static final String PATH_WEBVIEW_PREFIX = EXTERNAL_PREFIX + BASE_WEBVIEW_TEST_PATH;
+    private static final String PATH_BLINK_PREFIX = EXTERNAL_PREFIX + BASE_BLINK_TEST_PATH;
+
     private static final long TIMEOUT_SECONDS = 20;
+
     private WebViewLayoutTestActivity mTestActivity;
 
     public WebViewLayoutTest() {
@@ -51,27 +60,40 @@ public class WebViewLayoutTest
     }
 
     public void testSimple() throws Exception {
-        runTest("experimental/basic-logging.html", "experimental/basic-logging-expected.txt");
+        runWebViewLayoutTest("experimental/basic-logging.html",
+                             "experimental/basic-logging-expected.txt");
     }
 
     public void testGlobalInterface() throws Exception {
-        runTest("webexposed/global-interface-listing.html",
-                "webexposed/global-interface-listing-expected.txt");
+        runBlinkLayoutTest("webexposed/global-interface-listing.html",
+                           "webexposed/global-interface-listing-expected.txt");
     }
 
     // test helper methods
+
+    private void runWebViewLayoutTest(final String fileName, final String fileNameExpected)
+            throws Exception {
+        runTest(PATH_WEBVIEW_PREFIX + fileName, PATH_WEBVIEW_PREFIX + fileNameExpected);
+    }
+
+    private void runBlinkLayoutTest(final String fileName, final String fileNameExpected)
+            throws Exception {
+        ensureJsTestCopied();
+        runTest(PATH_BLINK_PREFIX + fileName, PATH_WEBVIEW_PREFIX + fileNameExpected);
+    }
+
     private void runTest(final String fileName, final String fileNameExpected)
             throws FileNotFoundException, IOException, InterruptedException, TimeoutException {
-        loadUrlWebViewAsync("file://" + PATH_PREFIX + fileName, mTestActivity);
+        loadUrlWebViewAsync("file://" + fileName, mTestActivity);
 
         if (getInstrumentation().isRebaseline()) {
-            // this is the rebase line process;
+            // this is the rebaseline process
             mTestActivity.waitForFinish(TIMEOUT_SECONDS, TimeUnit.SECONDS);
             String result = mTestActivity.getTestResult();
-            writeFile(fileNameExpected, result, mTestActivity.getFilesDir());
+            writeFile(fileNameExpected, result, true);
             Log.i(TAG, "file: " + fileNameExpected + " --> rebaselined, length=" + result.length());
         } else {
-            String expected = readFile(PATH_PREFIX + fileNameExpected);
+            String expected = readFile(fileNameExpected);
             mTestActivity.waitForFinish(TIMEOUT_SECONDS, TimeUnit.SECONDS);
             String result = mTestActivity.getTestResult();
             assertEquals(expected, result);
@@ -88,6 +110,16 @@ public class WebViewLayoutTest
         });
     }
 
+    private static void ensureJsTestCopied() throws IOException {
+        File jsTestFile = new File(PATH_BLINK_PREFIX + "resources/js-test.js");
+        if (jsTestFile.exists()) return;
+        String original = readFile(PATH_WEBVIEW_PREFIX + "resources/js-test.js");
+        writeFile(PATH_BLINK_PREFIX + "resources/js-test.js", original, false);
+    }
+
+    /**
+     * Reads a file and returns it's contents as string.
+     */
     private static String readFile(String fileName) throws IOException {
         FileInputStream inputStream = new FileInputStream(new File(fileName));
         try {
@@ -109,14 +141,26 @@ public class WebViewLayoutTest
         }
     }
 
-    private static void writeFile(final String fileName, final String contents,
-            final File internalFilesDir) throws FileNotFoundException, IOException {
-        File fileOut = new File(internalFilesDir, fileName);
+    /**
+     * Writes a file with the given fileName and contents. If overwrite is true overwrites any
+     * exisiting file with the same file name. If the file does not exist any intermediate
+     * required directories are created.
+     */
+    private static void writeFile(final String fileName, final String contents, boolean overwrite)
+            throws FileNotFoundException, IOException {
+        File fileOut = new File(fileName);
+
+        if (fileOut.exists() && !overwrite) {
+            return;
+        }
+
         String absolutePath = fileOut.getAbsolutePath();
-        String path = absolutePath.substring(0, absolutePath.lastIndexOf("/"));
-        boolean mkdirsSuccess = new File(path).mkdirs();
-        if (!mkdirsSuccess)
-            throw new IOException("failed to create directories: " + path);
+        File filePath = new File(absolutePath.substring(0, absolutePath.lastIndexOf("/")));
+
+        if (!filePath.exists()) {
+            if (!filePath.mkdirs())
+                throw new IOException("failed to create directories: " + filePath);
+        }
 
         FileOutputStream outputStream = new FileOutputStream(fileOut);
         try {
