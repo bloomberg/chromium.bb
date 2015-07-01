@@ -88,6 +88,10 @@ public class LibraryLoader {
     // {@link asyncPrefetchLibrariesToMemory} has been called.
     private final AtomicBoolean mPrefetchLibraryHasBeenCalled;
 
+    // The number of milliseconds it took to load all the native libraries, which
+    // will be reported via UMA. Set once when the libraries are done loading.
+    private long mLibraryLoadTimeMs;
+
     /**
      * @param libraryProcessType the process the shared library is loaded in. refer to
      *                           LibraryProcessType for possible values.
@@ -313,8 +317,9 @@ public class LibraryLoader {
                 }
 
                 long stopTime = SystemClock.uptimeMillis();
+                mLibraryLoadTimeMs = stopTime - startTime;
                 Log.i(TAG, String.format("Time to load native libraries: %d ms (timestamps %d-%d)",
-                        stopTime - startTime,
+                        mLibraryLoadTimeMs,
                         startTime % 10000,
                         stopTime % 10000));
 
@@ -435,7 +440,8 @@ public class LibraryLoader {
         if (Linker.isUsed()) {
             nativeRecordChromiumAndroidLinkerBrowserHistogram(mIsUsingBrowserSharedRelros,
                                                               mLoadAtFixedAddressFailed,
-                                                              getLibraryLoadFromApkStatus(context));
+                                                              getLibraryLoadFromApkStatus(context),
+                                                              mLibraryLoadTimeMs);
         }
     }
 
@@ -464,7 +470,8 @@ public class LibraryLoader {
                                                  boolean loadAtFixedAddressFailed) {
         if (Linker.isUsed()) {
             nativeRegisterChromiumAndroidLinkerRendererHistogram(requestedSharedRelro,
-                                                                 loadAtFixedAddressFailed);
+                                                                 loadAtFixedAddressFailed,
+                                                                 mLibraryLoadTimeMs);
         }
     }
 
@@ -491,18 +498,22 @@ public class LibraryLoader {
     // Method called to record statistics about the Chromium linker operation for the main
     // browser process. Indicates whether the linker attempted relro sharing for the browser,
     // and if it did, whether the library failed to load at a fixed address. Also records
-    // support for loading a library directly from the APK file.
+    // support for loading a library directly from the APK file, and the number of milliseconds
+    // it took to load the libraries.
     private native void nativeRecordChromiumAndroidLinkerBrowserHistogram(
             boolean isUsingBrowserSharedRelros,
             boolean loadAtFixedAddressFailed,
-            int libraryLoadFromApkStatus);
+            int libraryLoadFromApkStatus,
+            long libraryLoadTime);
 
     // Method called to register (for later recording) statistics about the Chromium linker
     // operation for a renderer process. Indicates whether the linker attempted relro sharing,
-    // and if it did, whether the library failed to load at a fixed address.
+    // and if it did, whether the library failed to load at a fixed address. Also records the
+    // number of milliseconds it took to load the libraries.
     private native void nativeRegisterChromiumAndroidLinkerRendererHistogram(
             boolean requestedSharedRelro,
-            boolean loadAtFixedAddressFailed);
+            boolean loadAtFixedAddressFailed,
+            long libraryLoadTime);
 
     // Get the version of the native library. This is needed so that we can check we
     // have the right version before initializing the (rest of the) JNI.

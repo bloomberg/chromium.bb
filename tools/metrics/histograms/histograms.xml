@@ -3363,6 +3363,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ChromiumAndroidLinker.BrowserLoadTime" units="milliseconds">
+  <owner>rsesek@chromium.org</owner>
+  <summary>
+    The amount of time it took to load the native libraries in the browser
+    process.
+  </summary>
+</histogram>
+
 <histogram name="ChromiumAndroidLinker.BrowserStates"
     enum="ChromiumAndroidLinkerBrowserState">
   <owner>simonb@chromium.org</owner>
@@ -3399,6 +3407,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </obsolete>
   <owner>simonb@chromium.org</owner>
   <summary>Load at fixed address failed.</summary>
+</histogram>
+
+<histogram name="ChromiumAndroidLinker.RendererLoadTime" units="milliseconds">
+  <owner>rsesek@chromium.org</owner>
+  <summary>
+    The amount of time it took to load the native libraries in the renderer
+    process.
+  </summary>
 </histogram>
 
 <histogram name="ChromiumAndroidLinker.RendererStates"
