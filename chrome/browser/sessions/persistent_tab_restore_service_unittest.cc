@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -641,7 +642,7 @@ TEST_F(PersistentTabRestoreServiceTest, PruneEntries) {
     SerializedNavigationEntry navigation =
         SerializedNavigationEntryTestHelper::CreateNavigation(
             base::StringPrintf("http://%d", static_cast<int>(i)),
-            base::StringPrintf("%d", static_cast<int>(i)));
+            base::SizeTToString(i));
 
     Tab* tab = new Tab();
     tab->navigations.push_back(navigation);

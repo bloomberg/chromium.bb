@@ -17,7 +17,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
-#include "base/strings/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/common/extensions/image_writer/image_writer_util_mac.h"
 #include "chrome/utility/image_writer/disk_unmounter_mac.h"
@@ -107,7 +107,7 @@ bool ImageWriter::OpenDevice() {
   }
 
   // Build the command line.
-  std::string rdwr = base::StringPrintf("%d", O_RDWR);
+  std::string rdwr = base::IntToString(O_RDWR);
 
   base::CommandLine cmd_line = base::CommandLine(base::FilePath(kAuthOpenPath));
   cmd_line.AppendSwitch("-stdoutpipe");

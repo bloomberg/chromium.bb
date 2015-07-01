@@ -203,7 +203,7 @@ gpu::CollectInfoResult CollectDriverInfo(gpu::GPUInfo* gpu_info) {
 
   GLint max_samples = 0;
   glGetIntegervFn(GL_MAX_SAMPLES, &max_samples);
-  gpu_info->max_msaa_samples = base::StringPrintf("%d", max_samples);
+  gpu_info->max_msaa_samples = base::IntToString(max_samples);
 
   bool supports_robustness =
       gpu_info->gl_extensions.find("GL_EXT_robustness") != std::string::npos ||

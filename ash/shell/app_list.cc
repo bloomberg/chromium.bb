@@ -15,8 +15,8 @@
 #include "base/files/file_path.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_item_list.h"
@@ -215,7 +215,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     for (int i = 0; i < static_cast<int>(WindowTypeShelfItem::LAST_TYPE); ++i) {
       WindowTypeShelfItem::Type type =
           static_cast<WindowTypeShelfItem::Type>(i);
-      std::string id = base::StringPrintf("%d", i);
+      std::string id = base::IntToString(i);
       scoped_ptr<WindowTypeShelfItem> shelf_item(
           new WindowTypeShelfItem(id, type));
       model_->AddItem(shelf_item.Pass());

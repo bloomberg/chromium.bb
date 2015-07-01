@@ -7,7 +7,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/strings/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
@@ -195,14 +195,14 @@ TEST_F(ExtensionSettingsFrontendTest,
   // Sync storage should run out after ~100K.
   scoped_ptr<base::Value> kilobyte = util::CreateKilobyte();
   for (int i = 0; i < 100; ++i) {
-    sync_storage->Set(DEFAULTS, base::StringPrintf("%d", i), *kilobyte);
+    sync_storage->Set(DEFAULTS, base::IntToString(i), *kilobyte);
   }
 
   EXPECT_TRUE(sync_storage->Set(DEFAULTS, "WillError", *kilobyte)->HasError());
 
   // Local storage shouldn't run out after ~100K.
   for (int i = 0; i < 100; ++i) {
-    local_storage->Set(DEFAULTS, base::StringPrintf("%d", i), *kilobyte);
+    local_storage->Set(DEFAULTS, base::IntToString(i), *kilobyte);
   }
 
   EXPECT_FALSE(
@@ -211,7 +211,7 @@ TEST_F(ExtensionSettingsFrontendTest,
   // Local storage should run out after ~5MB.
   scoped_ptr<base::Value> megabyte = util::CreateMegabyte();
   for (int i = 0; i < 5; ++i) {
-    local_storage->Set(DEFAULTS, base::StringPrintf("%d", i), *megabyte);
+    local_storage->Set(DEFAULTS, base::IntToString(i), *megabyte);
   }
 
   EXPECT_TRUE(local_storage->Set(DEFAULTS, "WillError", *megabyte)->HasError());

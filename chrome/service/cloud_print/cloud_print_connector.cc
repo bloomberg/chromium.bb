@@ -618,7 +618,7 @@ void CloudPrintConnector::OnReceivePrinterCaps(
   net::AddMultipartValueForUpload(kPrinterDescValue,
       info.printer_description, mime_boundary, std::string(), &post_data);
   net::AddMultipartValueForUpload(kPrinterStatusValue,
-      base::StringPrintf("%d", info.printer_status),
+      base::IntToString(info.printer_status),
       mime_boundary, std::string(), &post_data);
   // Add local_settings with a current XMPP ping interval.
   net::AddMultipartValueForUpload(kPrinterLocalSettingsValue,

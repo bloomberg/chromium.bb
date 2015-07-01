@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -164,7 +165,7 @@ void InitializeCrashpad(const std::string& process_type) {
 
   SetCrashKeyValue("ptype", browser_process ? base::StringPiece("browser")
                                             : base::StringPiece(process_type));
-  SetCrashKeyValue("pid", base::StringPrintf("%d", getpid()));
+  SetCrashKeyValue("pid", base::IntToString(getpid()));
 
   logging::SetLogMessageHandler(LogMessageHandler);
 

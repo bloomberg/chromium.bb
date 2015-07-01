@@ -20,7 +20,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "sync/engine/backoff_delay_provider.h"
@@ -2817,7 +2816,7 @@ TEST_F(SyncerTest, CommitManyItemsInOneGo_Success) {
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     for (uint32 i = 0; i < items_to_commit; i++) {
-      string nameutf8 = base::StringPrintf("%d", i);
+      string nameutf8 = base::UintToString(i);
       string name(nameutf8.begin(), nameutf8.end());
       MutableEntry e(&trans, CREATE, BOOKMARKS, trans.root_id(), name);
       e.PutIsUnsynced(true);
@@ -2840,7 +2839,7 @@ TEST_F(SyncerTest, CommitManyItemsInOneGo_PostBufferFail) {
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     for (uint32 i = 0; i < items_to_commit; i++) {
-      string nameutf8 = base::StringPrintf("%d", i);
+      string nameutf8 = base::UintToString(i);
       string name(nameutf8.begin(), nameutf8.end());
       MutableEntry e(&trans, CREATE, BOOKMARKS, trans.root_id(), name);
       e.PutIsUnsynced(true);
@@ -2870,7 +2869,7 @@ TEST_F(SyncerTest, CommitManyItemsInOneGo_CommitConflict) {
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     for (uint32 i = 0; i < items_to_commit; i++) {
-      string nameutf8 = base::StringPrintf("%d", i);
+      string nameutf8 = base::UintToString(i);
       string name(nameutf8.begin(), nameutf8.end());
       MutableEntry e(&trans, CREATE, BOOKMARKS, trans.root_id(), name);
       e.PutIsUnsynced(true);

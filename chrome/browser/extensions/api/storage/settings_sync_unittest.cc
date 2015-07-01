@@ -9,7 +9,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/strings/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
 #include "chrome/browser/extensions/api/storage/syncable_settings_storage.h"
@@ -1431,8 +1431,7 @@ static void UnlimitedSyncStorageTestCallback(ValueStore* sync_storage) {
   // permission can't apply to sync.
   scoped_ptr<base::Value> kilobyte = util::CreateKilobyte();
   for (int i = 0; i < 100; ++i) {
-    sync_storage->Set(
-        ValueStore::DEFAULTS, base::StringPrintf("%d", i), *kilobyte);
+    sync_storage->Set(ValueStore::DEFAULTS, base::IntToString(i), *kilobyte);
   }
 
   EXPECT_TRUE(sync_storage->Set(ValueStore::DEFAULTS, "WillError", *kilobyte)
@@ -1443,8 +1442,7 @@ static void UnlimitedLocalStorageTestCallback(ValueStore* local_storage) {
   // Local storage should never run out.
   scoped_ptr<base::Value> megabyte = util::CreateMegabyte();
   for (int i = 0; i < 7; ++i) {
-    local_storage->Set(
-        ValueStore::DEFAULTS, base::StringPrintf("%d", i), *megabyte);
+    local_storage->Set(ValueStore::DEFAULTS, base::IntToString(i), *megabyte);
   }
 
   EXPECT_FALSE(local_storage->Set(ValueStore::DEFAULTS, "WontError", *megabyte)

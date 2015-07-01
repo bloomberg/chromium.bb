@@ -4,9 +4,9 @@
 
 #include "chromeos/network/network_util.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
@@ -54,7 +54,7 @@ std::string PrefixLengthToNetmask(int32 prefix_length) {
       netmask += ".";
     int value = remainder == 0 ? 0 :
         ((2L << (remainder - 1)) - 1) << (8 - remainder);
-    netmask += base::StringPrintf("%d", value);
+    netmask += base::IntToString(value);
   }
   return netmask;
 }

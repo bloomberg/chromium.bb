@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "third_party/libphonenumber/src/phonenumber_api.h"
@@ -150,7 +149,7 @@ bool ParsePhoneNumber(const base::string16& value,
   if (i18n_number->has_country_code() &&
       i18n_number->country_code_source() != PhoneNumber::FROM_DEFAULT_COUNTRY) {
     *country_code = base::UTF8ToUTF16(
-        base::StringPrintf("%d", i18n_number->country_code()));
+        base::IntToString(i18n_number->country_code()));
   }
 
   // The region might be different from what we started with.

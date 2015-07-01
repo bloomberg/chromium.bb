@@ -171,10 +171,8 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
     converter_command.AppendSwitchPath("--frames_dir", GetWorkingDir());
     converter_command.AppendSwitchPath("--output_file",
                                        captured_video_filename);
-    converter_command.AppendSwitchASCII("--width",
-                                        base::StringPrintf("%d", width));
-    converter_command.AppendSwitchASCII("--height",
-                                        base::StringPrintf("%d", height));
+    converter_command.AppendSwitchASCII("--width", base::IntToString(width));
+    converter_command.AppendSwitchASCII("--height", base::IntToString(height));
     converter_command.AppendSwitchASCII("--delete_frames", "true");
 
     // We produce an output file that will later be used as an input to the
@@ -244,9 +242,9 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
     compare_command.AppendArg("--frame_analyzer");
     compare_command.AppendArgPath(path_to_analyzer);
     compare_command.AppendArg("--yuv_frame_width");
-    compare_command.AppendArg(base::StringPrintf("%d", width));
+    compare_command.AppendArg(base::IntToString(width));
     compare_command.AppendArg("--yuv_frame_height");
-    compare_command.AppendArg(base::StringPrintf("%d", height));
+    compare_command.AppendArg(base::IntToString(height));
     compare_command.AppendArg("--zxing_path");
     compare_command.AppendArgPath(path_to_zxing);
     compare_command.AppendArg("--ffmpeg_path");

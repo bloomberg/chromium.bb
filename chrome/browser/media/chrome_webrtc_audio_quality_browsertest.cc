@@ -11,6 +11,7 @@
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/scoped_native_library.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -242,11 +243,11 @@ class AudioRecorder {
     command_line.AppendArgPath(output_file);
     command_line.AppendArg("trim");
     command_line.AppendArg("0");
-    command_line.AppendArg(base::StringPrintf("%d", duration_sec));
+    command_line.AppendArg(base::IntToString(duration_sec));
 #else
     command_line.SetProgram(base::FilePath("arecord"));
     command_line.AppendArg("-d");
-    command_line.AppendArg(base::StringPrintf("%d", duration_sec));
+    command_line.AppendArg(base::IntToString(duration_sec));
     command_line.AppendArg("-f");
     command_line.AppendArg("cd");
     command_line.AppendArg("-c");
@@ -303,7 +304,7 @@ bool ForceMicrophoneVolumeTo100Percent() {
     const std::string kHundredPercentVolume = "65536";
     base::CommandLine command_line(base::FilePath(FILE_PATH_LITERAL("pacmd")));
     command_line.AppendArg("set-source-volume");
-    command_line.AppendArg(base::StringPrintf("%d", device_index));
+    command_line.AppendArg(base::IntToString(device_index));
     command_line.AppendArg(kHundredPercentVolume);
     DVLOG(0) << "Running " << command_line.GetCommandLineString();
     if (!base::GetAppOutput(command_line, &result)) {

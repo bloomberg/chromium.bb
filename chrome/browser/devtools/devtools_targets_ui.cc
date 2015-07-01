@@ -8,6 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -480,8 +481,7 @@ void PortForwardingStatusSerializer::PortStatusChanged(
     const PortStatusMap& port_status_map = sit->second;
     for (PortStatusMap::const_iterator it = port_status_map.begin();
          it != port_status_map.end(); ++it) {
-      port_status_dict->SetInteger(
-          base::StringPrintf("%d", it->first), it->second);
+      port_status_dict->SetInteger(base::IntToString(it->first), it->second);
     }
 
     base::DictionaryValue* device_status_dict = new base::DictionaryValue();

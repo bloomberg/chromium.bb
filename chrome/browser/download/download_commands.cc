@@ -4,7 +4,7 @@
 
 #include "chrome/browser/download/download_commands.h"
 
-#include "base/strings/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_extensions.h"
@@ -67,8 +67,7 @@ GURL DownloadCommands::GetLearnMoreURLForInterruptedDownload() const {
       learn_more_url, g_browser_process->GetApplicationLocale());
   return net::AppendQueryParameter(
       learn_more_url, "ctx",
-      base::StringPrintf("%d",
-                         static_cast<int>(download_item_->GetLastReason())));
+      base::IntToString(static_cast<int>(download_item_->GetLastReason())));
 }
 
 gfx::Image DownloadCommands::GetCommandIcon(Command command) {

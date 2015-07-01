@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -46,8 +47,8 @@ class GeolocationChromeOsWifiDataProviderTest : public testing::Test {
         std::string mac_address =
             base::StringPrintf("%02X:%02X:%02X:%02X:%02X:%02X",
                                i, j, 3, 4, 5, 6);
-        std::string channel = base::StringPrintf("%d", i * 10 + j);
-        std::string strength = base::StringPrintf("%d", i * 100 + j);
+        std::string channel = base::IntToString(i * 10 + j);
+        std::string strength = base::IntToString(i * 100 + j);
         properties.SetStringWithoutPathExpansion(
             shill::kGeoMacAddressProperty, mac_address);
         properties.SetStringWithoutPathExpansion(

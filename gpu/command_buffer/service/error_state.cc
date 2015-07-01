@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/logger.h"
@@ -170,7 +171,7 @@ void ErrorStateImpl::SetGLErrorInvalidParami(
         filename, line, error, function_name,
         (std::string("trying to set ") +
          GLES2Util::GetStringEnum(pname) + " to " +
-         base::StringPrintf("%d", param)).c_str());
+         base::IntToString(param)).c_str());
   }
 }
 

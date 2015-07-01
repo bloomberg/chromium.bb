@@ -4,6 +4,9 @@
 
 #include "components/browser_watcher/watcher_client_win.h"
 
+#include <stdint.h>
+#include <stdlib.h>
+
 #include <string>
 
 #include "base/base_switches.h"
@@ -13,7 +16,6 @@
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/scoped_handle.h"
@@ -36,12 +38,12 @@ bool IsValidParentProcessHandle(base::CommandLine& cmd_line,
   std::string str_handle =
       cmd_line.GetSwitchValueASCII(switch_name);
 
-  unsigned int_handle = 0;
-  if (!base::StringToUint(str_handle, &int_handle))
+  size_t integer_handle = 0;
+  if (!base::StringToSizeT(str_handle, &integer_handle))
     return false;
 
   base::ProcessHandle handle =
-      reinterpret_cast<base::ProcessHandle>(int_handle);
+      reinterpret_cast<base::ProcessHandle>(integer_handle);
   // Verify that we can get the associated process id.
   base::ProcessId parent_id = base::GetProcId(handle);
   if (parent_id == 0) {
@@ -57,6 +59,13 @@ bool IsValidParentProcessHandle(base::CommandLine& cmd_line,
   }
 
   return true;
+}
+
+std::string HandleToString(HANDLE handle) {
+  // A HANDLE is a void* pointer, which is the same size as a size_t,
+  // so we can use reinterpret_cast<> on it.
+  size_t integer_handle = reinterpret_cast<size_t>(handle);
+  return base::SizeTToString(integer_handle);
 }
 
 MULTIPROCESS_TEST_MAIN(VerifyParentHandle) {
@@ -110,18 +119,15 @@ class WatcherClientTest : public base::MultiProcessTest {
     base::CommandLine ret = base::GetMultiProcessTestChildBaseCommandLine();
 
     ret.AppendSwitchASCII(switches::kTestChildProcess, "VerifyParentHandle");
-    ret.AppendSwitchASCII(kParentHandle,
-                          base::StringPrintf("%d", parent_handle));
+    ret.AppendSwitchASCII(kParentHandle, HandleToString(parent_handle));
 
     switch (handle_policy) {
       case LEAK_HANDLE:
-        ret.AppendSwitchASCII(kLeakHandle,
-                              base::StringPrintf("%d", self_.Get()));
+        ret.AppendSwitchASCII(kLeakHandle, HandleToString(self_.Get()));
         break;
 
       case NO_LEAK_HANDLE:
-        ret.AppendSwitchASCII(kNoLeakHandle,
-                              base::StringPrintf("%d", self_.Get()));
+        ret.AppendSwitchASCII(kNoLeakHandle, HandleToString(self_.Get()));
         break;
 
       default:

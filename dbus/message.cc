@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "dbus/object_path.h"
@@ -101,7 +102,7 @@ std::string Message::ToStringInternal(const std::string& indent,
         uint8 value = 0;
         if (!reader->PopByte(&value))
           return kBrokenMessage;
-        output += indent + "byte " + base::StringPrintf("%d", value) + "\n";
+        output += indent + "byte " + base::IntToString(value) + "\n";
         break;
       }
       case BOOL: {
@@ -115,21 +116,21 @@ std::string Message::ToStringInternal(const std::string& indent,
         int16 value = 0;
         if (!reader->PopInt16(&value))
           return kBrokenMessage;
-        output += indent + "int16 " + base::StringPrintf("%d", value) + "\n";
+        output += indent + "int16 " + base::IntToString(value) + "\n";
         break;
       }
       case UINT16: {
         uint16 value = 0;
         if (!reader->PopUint16(&value))
           return kBrokenMessage;
-        output += indent + "uint16 " + base::StringPrintf("%d", value) + "\n";
+        output += indent + "uint16 " + base::IntToString(value) + "\n";
         break;
       }
       case INT32: {
         int32 value = 0;
         if (!reader->PopInt32(&value))
           return kBrokenMessage;
-        output += indent + "int32 " + base::StringPrintf("%d", value) + "\n";
+        output += indent + "int32 " + base::IntToString(value) + "\n";
         break;
       }
       case UINT32: {
@@ -228,7 +229,7 @@ std::string Message::ToStringInternal(const std::string& indent,
         if (!reader->PopFileDescriptor(&file_descriptor))
           return kBrokenMessage;
         output += indent + "fd#" +
-                  base::StringPrintf("%d", file_descriptor.value()) + "\n";
+                  base::IntToString(file_descriptor.value()) + "\n";
         break;
       }
       default:

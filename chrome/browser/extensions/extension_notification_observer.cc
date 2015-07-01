@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/strings/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "extensions/common/extension.h"
 
 namespace extensions {
@@ -24,7 +24,7 @@ std::string Str(const std::vector<extensions::NotificationType>& types) {
     if (needs_comma)
       str += ",";
     needs_comma = true;
-    str += base::StringPrintf("%d", *it);
+    str += base::IntToString(*it);
   }
   str += "]";
   return str;

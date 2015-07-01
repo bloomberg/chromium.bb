@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/md5.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
@@ -742,7 +743,7 @@ void PrinterJobHandler::OnReceivePrinterCaps(
   }
   if (printer_info.printer_status != printer_info_.printer_status) {
     net::AddMultipartValueForUpload(kPrinterStatusValue,
-        base::StringPrintf("%d", printer_info.printer_status), mime_boundary,
+        base::IntToString(printer_info.printer_status), mime_boundary,
         std::string(), &post_data);
   }
 

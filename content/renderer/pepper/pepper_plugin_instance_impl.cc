@@ -12,6 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -3196,8 +3197,8 @@ void PepperPluginInstanceImpl::SetSizeAttributesForFullscreen() {
     return;
   blink::WebScreenInfo info = render_frame_->GetRenderWidget()->screenInfo();
   screen_size_for_fullscreen_ = gfx::Size(info.rect.width, info.rect.height);
-  std::string width = StringPrintf("%d", screen_size_for_fullscreen_.width());
-  std::string height = StringPrintf("%d", screen_size_for_fullscreen_.height());
+  std::string width = base::IntToString(screen_size_for_fullscreen_.width());
+  std::string height = base::IntToString(screen_size_for_fullscreen_.height());
 
   WebElement element = container_->element();
   element.setAttribute(WebString::fromUTF8(kWidth), WebString::fromUTF8(width));

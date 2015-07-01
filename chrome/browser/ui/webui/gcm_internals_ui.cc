@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/format_macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -83,7 +84,7 @@ void SetReceivingInfo(
     row->AppendDouble(it->time.ToJsTime());
     row->AppendString(it->app_id);
     row->AppendString(it->from);
-    row->AppendString(base::StringPrintf("%d", it->message_byte_size));
+    row->AppendString(base::IntToString(it->message_byte_size));
     row->AppendString(it->event);
     row->AppendString(it->details);
   }

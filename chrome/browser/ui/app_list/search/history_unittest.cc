@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/ui/app_list/search/history_factory.h"
@@ -241,7 +241,7 @@ TEST_F(SearchHistoryTest, PromoteSecondary) {
 
 TEST_F(SearchHistoryTest, MaxPrimary) {
   for (size_t i = 0; i < kMaxPrimary; ++i) {
-    std::string query = base::StringPrintf("%d", static_cast<int>(i));
+    std::string query = base::SizeTToString(i);
     history()->AddLaunchEvent(query, "app");
   }
   EXPECT_EQ(kMaxPrimary, associations().size());
@@ -275,7 +275,7 @@ TEST_F(SearchHistoryTest, MaxSecondary) {
   const char kQuery[] = "query";
   history()->AddLaunchEvent(kQuery, "primary");
   for (size_t i = 0; i < kMaxSecondary; ++i) {
-    std::string result_id = base::StringPrintf("%d", static_cast<int>(i));
+    std::string result_id = base::SizeTToString(i);
     history()->AddLaunchEvent(kQuery, result_id);
   }
 

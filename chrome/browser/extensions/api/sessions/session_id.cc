@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/sessions/session_id.h"
 
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 
 namespace extensions {
 
@@ -42,8 +41,8 @@ bool SessionId::IsForeign() const {
 
 std::string SessionId::ToString() const {
   return IsForeign() ?
-      (session_tag_ + kIdSeparator + base::StringPrintf("%d", id_))
-      : base::StringPrintf("%d", id_);
+      (session_tag_ + kIdSeparator + base::IntToString(id_))
+      : base::IntToString(id_);
 }
 
 }  // namespace extensions

@@ -12,7 +12,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
-#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -104,7 +103,7 @@ CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   std::string glsl_version_string = GetGLString(GL_SHADING_LANGUAGE_VERSION);
   GLint max_samples = 0;
   glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
-  gpu_info->max_msaa_samples = base::StringPrintf("%d", max_samples);
+  gpu_info->max_msaa_samples = base::IntToString(max_samples);
 
   gfx::GLWindowSystemBindingInfo window_system_binding_info;
   if (GetGLWindowSystemBindingInfo(&window_system_binding_info)) {
