@@ -1595,8 +1595,11 @@ TEST_F(RenderFrameHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
   EXPECT_FALSE(
       opener1_manager->GetSwappedOutRenderViewHost(rfh1->GetSiteInstance()));
   opener1->NavigateAndCommit(kUrl2);
-  EXPECT_TRUE(
-      opener1_manager->GetSwappedOutRenderViewHost(rfh1->GetSiteInstance()));
+  RenderViewHostImpl* swapped_out_rvh =
+      opener1_manager->GetSwappedOutRenderViewHost(rfh1->GetSiteInstance());
+  EXPECT_TRUE(swapped_out_rvh);
+  EXPECT_TRUE(swapped_out_rvh->is_swapped_out_);
+  EXPECT_FALSE(swapped_out_rvh->is_active());
 
   // Fake a process crash.
   rfh1->GetProcess()->SimulateCrash();

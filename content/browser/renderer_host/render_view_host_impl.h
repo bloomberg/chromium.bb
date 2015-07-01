@@ -381,6 +381,8 @@ class CONTENT_EXPORT RenderViewHostImpl
   friend class TestRenderViewHost;
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, BasicRenderFrameHost);
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, RoutingIdSane);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
+                           CleanUpSwappedOutRVHOnProcessCrash);
 
   // TODO(creis): Move to a private namespace on RenderFrameHostImpl.
   // Delay to wait on closing the WebContents for a beforeunload/unload handler

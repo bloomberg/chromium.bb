@@ -1120,6 +1120,16 @@ void RenderFrameHostImpl::OnSwappedOut() {
   TRACE_EVENT_ASYNC_END0("navigation", "RenderFrameHostImpl::SwapOut", this);
   swapout_event_monitor_timeout_->Stop();
 
+
+  // If this is a main frame RFH that's about to be deleted, update its RVH's
+  // swapped-out state here, since SetState won't be called once this RFH is
+  // deleted below. https://crbug.com/505887
+  if (frame_tree_node_->IsMainFrame() &&
+      frame_tree_node_->render_manager()->IsPendingDeletion(this)) {
+    render_view_host_->set_is_active(false);
+    render_view_host_->set_is_swapped_out(true);
+  }
+
   if (frame_tree_node_->render_manager()->DeleteFromPendingList(this)) {
     // We are now deleted.
     return;
