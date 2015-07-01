@@ -47,20 +47,22 @@ bool IsBlacklistedPlugin(const WebPluginInfo& info) {
   // its name. Be careful about adding any more plugins to this list though,
   // since it's easy to accidentally blacklist plugins that support lots of
   // MIME types.
-  for (std::vector<WebPluginMimeType>::const_iterator i =
-           info.mime_types.begin(); i != info.mime_types.end(); ++i) {
+  for (const WebPluginMimeType& mime : info.mime_types) {
     // The Gears plugin is Safari-specific, so don't load it.
-    if (i->mime_type == "application/x-googlegears")
+    if (mime.mime_type == "application/x-googlegears")
       return true;
   }
 
   // Versions of Flip4Mac 2.3 before 2.3.6 often hang the renderer, so don't
   // load them.
-  if (base::StartsWith(info.name, base::ASCIIToUTF16("Flip4Mac Windows Media"),
-                       false) &&
-      base::StartsWith(info.version, base::ASCIIToUTF16("2.3"), false)) {
-    std::vector<base::string16> components;
-    base::SplitString(info.version, '.', &components);
+  if (base::StartsWith(info.name,
+                       base::ASCIIToUTF16("Flip4Mac Windows Media"),
+                       base::CompareCase::INSENSITIVE_ASCII) &&
+      base::StartsWith(info.version, base::ASCIIToUTF16("2.3"),
+                       base::CompareCase::SENSITIVE)) {
+    std::vector<base::StringPiece16> components = base::SplitStringPiece(
+        info.version, base::ASCIIToUTF16("."), base::TRIM_WHITESPACE,
+        base::SPLIT_WANT_ALL);
     int bugfix_version = 0;
     return (components.size() >= 3 &&
             base::StringToInt(components[2], &bugfix_version) &&
@@ -144,8 +146,8 @@ bool ReadPlistPluginInfo(const base::FilePath& filename, CFBundleRef bundle,
     // Remove PDF from the list of types handled by QuickTime, since it provides
     // a worse experience than just downloading the PDF.
     if (mime.mime_type == "application/pdf" &&
-        base::StartsWithASCII(filename.BaseName().value(), "QuickTime",
-                              false)) {
+        base::StartsWith(filename.BaseName().value(), "QuickTime",
+                         base::CompareCase::INSENSITIVE_ASCII)) {
       continue;
     }
 

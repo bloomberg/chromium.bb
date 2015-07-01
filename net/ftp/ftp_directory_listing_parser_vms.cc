@@ -206,11 +206,13 @@ bool ParseFtpDirectoryListingVms(
   // to distinguish it from "ls -l" format).
   bool seen_error = false;
 
+  base::string16 total_of = base::ASCIIToUTF16("Total of ");
+  base::char16 space[2] = { ' ', 0 };
   for (size_t i = 0; i < lines.size(); i++) {
     if (lines[i].empty())
       continue;
 
-    if (base::StartsWith(lines[i], base::ASCIIToUTF16("Total of "), true)) {
+    if (base::StartsWith(lines[i], total_of, base::CompareCase::SENSITIVE)) {
       // After the "total" line, all following lines must be empty.
       for (size_t j = i + 1; j < lines.size(); j++)
         if (!lines[j].empty())
@@ -229,8 +231,9 @@ bool ParseFtpDirectoryListingVms(
       continue;
     }
 
-    std::vector<base::string16> columns;
-    base::SplitString(base::CollapseWhitespace(lines[i], false), ' ', &columns);
+    std::vector<base::string16> columns = base::SplitString(
+        base::CollapseWhitespace(lines[i], false), space,
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
     if (columns.size() == 1) {
       // There can be no continuation if the current line is the last one.
@@ -247,11 +250,10 @@ bool ParseFtpDirectoryListingVms(
       }
 
       // Join the current and next line and split them into columns.
-      base::SplitString(
+      columns = base::SplitString(
           base::CollapseWhitespace(
-              lines[i - 1] + base::ASCIIToUTF16(" ") + lines[i], false),
-          ' ',
-          &columns);
+              lines[i - 1] + space + lines[i], false),
+          space, base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     }
 
     FtpDirectoryListingEntry entry;

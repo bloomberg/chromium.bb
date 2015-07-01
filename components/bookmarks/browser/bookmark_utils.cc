@@ -259,10 +259,13 @@ void MakeTitleUnique(const BookmarkModel* model,
                      const GURL& url,
                      base::string16* title) {
   base::hash_set<base::string16> titles;
+  base::string16 original_title_lower = base::i18n::ToLower(*title);
   for (int i = 0; i < parent->child_count(); i++) {
     const BookmarkNode* node = parent->GetChild(i);
     if (node->is_url() && (url == node->url()) &&
-        base::StartsWith(node->GetTitle(), *title, false)) {
+        base::StartsWith(base::i18n::ToLower(node->GetTitle()),
+                         original_title_lower,
+                         base::CompareCase::SENSITIVE)) {
       titles.insert(node->GetTitle());
     }
   }

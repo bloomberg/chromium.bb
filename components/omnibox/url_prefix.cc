@@ -5,6 +5,7 @@
 #include "components/omnibox/url_prefix.h"
 
 #include "base/basictypes.h"
+#include "base/i18n/case_conversion.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 
@@ -71,7 +72,10 @@ const URLPrefix* URLPrefix::BestURLPrefix(const base::string16& text,
 bool URLPrefix::PrefixMatch(const URLPrefix& prefix,
                             const base::string16& text,
                             const base::string16& prefix_suffix) {
-  return base::StartsWith(text, prefix.prefix + prefix_suffix, false);
+  return base::StartsWith(
+      base::i18n::ToLower(text),
+      base::i18n::ToLower(prefix.prefix + prefix_suffix),
+      base::CompareCase::SENSITIVE);
 }
 
 // static

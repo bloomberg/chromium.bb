@@ -4,6 +4,7 @@
 
 #include "components/omnibox/answers_cache.h"
 
+#include "base/i18n/case_conversion.h"
 #include "base/strings/string_util.h"
 
 AnswersQueryData::AnswersQueryData() {
@@ -20,10 +21,12 @@ AnswersCache::~AnswersCache() {
 }
 
 AnswersQueryData AnswersCache::GetTopAnswerEntry(const base::string16& query) {
-  base::string16 collapsed_query = base::CollapseWhitespace(query, false);
+  base::string16 collapsed_query = base::i18n::ToLower(
+      base::CollapseWhitespace(query, false));
   for (Cache::iterator it = cache_.begin(); it != cache_.end(); ++it) {
     // If the query text starts with trimmed input, this is valid prefetch data.
-    if (base::StartsWith(it->full_query_text, collapsed_query, false)) {
+    if (base::StartsWith(base::i18n::ToLower(it->full_query_text),
+                         collapsed_query, base::CompareCase::SENSITIVE)) {
       // Move the touched item to the front of the list.
       cache_.splice(cache_.begin(), cache_, it);
       return cache_.front();

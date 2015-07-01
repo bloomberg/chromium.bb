@@ -794,7 +794,8 @@ base::string16 FormatUrlWithAdjustments(
 
   // If we need to strip out http do it after the fact.
   if (omit_http &&
-      base::StartsWith(url_string, base::ASCIIToUTF16(kHTTP), true)) {
+      base::StartsWith(url_string, base::ASCIIToUTF16(kHTTP),
+                       base::CompareCase::SENSITIVE)) {
     const size_t kHTTPSize = arraysize(kHTTP) - 1;
     url_string = url_string.substr(kHTTPSize);
     // Because offsets in the |adjustments| are already calculated with respect

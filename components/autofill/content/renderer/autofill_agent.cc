@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/i18n/case_conversion.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
@@ -87,18 +88,21 @@ void GetDataListSuggestions(const WebInputElement& element,
   if (!ignore_current_value) {
     prefix = element.editingValue();
     if (element.isMultiple() && element.isEmailField()) {
-      std::vector<base::string16> parts;
-      base::SplitStringDontTrim(prefix, ',', &parts);
+      const base::char16 comma[2] = { ',', 0 };
+      std::vector<base::string16> parts = base::SplitString(
+          prefix, comma, base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
       if (parts.size() > 0) {
         base::TrimWhitespace(parts[parts.size() - 1], base::TRIM_LEADING,
                              &prefix);
       }
     }
   }
+  prefix = base::i18n::ToLower(prefix);
   for (WebOptionElement option = options.firstItem().to<WebOptionElement>();
        !option.isNull(); option = options.nextItem().to<WebOptionElement>()) {
-    if (!base::StartsWith(option.value(), prefix, false) ||
-        option.value() == prefix || !element.isValidValue(option.value()))
+    if (!base::StartsWith(base::i18n::ToLower(base::string16(option.value())),
+                          prefix, base::CompareCase::SENSITIVE) ||
+        !element.isValidValue(option.value()))
       continue;
 
     values->push_back(option.value());

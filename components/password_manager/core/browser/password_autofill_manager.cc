@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
@@ -66,8 +67,11 @@ void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
                     const base::string16& current_username,
                     std::vector<autofill::Suggestion>* suggestions,
                     bool show_all) {
-  if (show_all || base::StartsWith(fill_data.username_field.value,
-                                   current_username, false)) {
+  base::string16 lower_username = base::i18n::ToLower(current_username);
+
+  if (show_all ||
+      base::StartsWith(base::i18n::ToLower(fill_data.username_field.value),
+                       lower_username, base::CompareCase::SENSITIVE)) {
     autofill::Suggestion suggestion(
         ReplaceEmptyUsername(fill_data.username_field.value));
     suggestion.label = GetHumanReadableRealm(fill_data.preferred_realm);
@@ -76,7 +80,9 @@ void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
   }
 
   for (const auto& login : fill_data.additional_logins) {
-    if (show_all || base::StartsWith(login.first, current_username, false)) {
+    if (show_all ||
+        base::StartsWith(base::i18n::ToLower(login.first), lower_username,
+                         base::CompareCase::SENSITIVE)) {
       autofill::Suggestion suggestion(ReplaceEmptyUsername(login.first));
       suggestion.label = GetHumanReadableRealm(login.second.realm);
       suggestion.frontend_id = autofill::POPUP_ITEM_ID_PASSWORD_ENTRY;
@@ -87,7 +93,8 @@ void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
   for (const auto& usernames : fill_data.other_possible_usernames) {
     for (size_t i = 0; i < usernames.second.size(); ++i) {
       if (show_all ||
-          base::StartsWith(usernames.second[i], current_username, false)) {
+          base::StartsWith(base::i18n::ToLower(usernames.second[i]),
+                           lower_username, base::CompareCase::SENSITIVE)) {
         autofill::Suggestion suggestion(
             ReplaceEmptyUsername(usernames.second[i]));
         suggestion.label = GetHumanReadableRealm(usernames.first.realm);

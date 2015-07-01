@@ -47,11 +47,14 @@ bool SetExperimentLabel(const wchar_t* brand_code,
                     &entries);
 
   // Keep all labels, but the one we want to add/replace.
+  base::string16 label_and_separator(label);
+  label_and_separator.push_back('=');
   base::string16 new_labels;
-  for (std::vector<base::string16>::const_iterator it = entries.begin();
-       it != entries.end(); ++it) {
-    if (!it->empty() && !base::StartsWith(*it, label + L"=", true)) {
-      new_labels += *it;
+  for (const base::string16& entry : entries) {
+    if (!entry.empty() &&
+        !base::StartsWith(entry, label_and_separator,
+                          base::CompareCase::SENSITIVE)) {
+      new_labels += entry;
       new_labels += google_update::kExperimentLabelSeparator;
     }
   }

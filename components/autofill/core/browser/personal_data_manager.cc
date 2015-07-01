@@ -9,6 +9,7 @@
 #include <iterator>
 
 #include "base/command_line.h"
+#include "base/i18n/case_conversion.h"
 #include "base/i18n/timezone.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -795,7 +796,8 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
       continue;
     base::string16 value_canon =
         AutofillProfile::CanonicalizeProfileString(value);
-    if (base::StartsWith(value_canon, field_contents_canon, true)) {
+    if (base::StartsWith(value_canon, field_contents_canon,
+                         base::CompareCase::SENSITIVE)) {
       // Prefix match, add suggestion.
       matched_profiles.push_back(profile);
       suggestions.push_back(Suggestion(value));
@@ -854,12 +856,15 @@ std::vector<Suggestion> PersonalDataManager::GetCreditCardSuggestions(
     return std::vector<Suggestion>();
 
   std::list<const CreditCard*> cards_to_suggest;
+  base::string16 field_contents_lower = base::i18n::ToLower(field_contents);
   for (const CreditCard* credit_card : GetCreditCards()) {
     // The value of the stored data for this field type in the |credit_card|.
     base::string16 creditcard_field_value =
         credit_card->GetInfo(type, app_locale_);
     if (creditcard_field_value.empty())
       continue;
+    base::string16 creditcard_field_lower =
+        base::i18n::ToLower(creditcard_field_value);
 
     // For card number fields, suggest the card if:
     // - the number matches any part of the card, or
@@ -867,13 +872,14 @@ std::vector<Suggestion> PersonalDataManager::GetCreditCardSuggestions(
     // For other fields, require that the field contents match the beginning of
     // the stored data.
     if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
-      if (creditcard_field_value.find(field_contents) == base::string16::npos &&
+      if (creditcard_field_lower.find(field_contents_lower) ==
+              base::string16::npos &&
           (credit_card->record_type() != CreditCard::MASKED_SERVER_CARD ||
            field_contents.size() >= 6)) {
         continue;
       }
-    } else if (!base::StartsWith(creditcard_field_value, field_contents,
-                                 false)) {
+    } else if (!base::StartsWith(creditcard_field_lower, field_contents_lower,
+                                 base::CompareCase::SENSITIVE)) {
       continue;
     }
 

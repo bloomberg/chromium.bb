@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/i18n/case_conversion.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -380,7 +381,10 @@ void GetPasswordForm(
         nonscript_modified_values->find(username_element);
       if (username_iterator != nonscript_modified_values->end()) {
         base::string16 typed_username_value = username_iterator->second;
-        if (!base::StartsWith(username_value, typed_username_value, false)) {
+        if (!base::StartsWith(
+                base::i18n::ToLower(username_value),
+                base::i18n::ToLower(typed_username_value),
+                base::CompareCase::SENSITIVE)) {
           // We check that |username_value| was not obtained by autofilling
           // |typed_username_value|. In case when it was, |typed_username_value|
           // is incomplete, so we should leave autofilled value.

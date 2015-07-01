@@ -103,7 +103,8 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, DynamicTitle1) {
   GURL url(embedded_test_server()->GetURL("/dynamic1.html"));
   base::string16 title;
   ASSERT_TRUE(GetPopupTitle(url, &title));
-  EXPECT_TRUE(base::StartsWith(title, ASCIIToUTF16("My Popup Title"), true))
+  EXPECT_TRUE(base::StartsWith(title, ASCIIToUTF16("My Popup Title"),
+              base::CompareCase::SENSITIVE))
       << "Actual title: " << title;
 }
 
@@ -115,7 +116,8 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, DynamicTitle2) {
   GURL url(embedded_test_server()->GetURL("/dynamic2.html"));
   base::string16 title;
   ASSERT_TRUE(GetPopupTitle(url, &title));
-  EXPECT_TRUE(base::StartsWith(title, ASCIIToUTF16("My Dynamic Title"), true))
+  EXPECT_TRUE(base::StartsWith(title, ASCIIToUTF16("My Dynamic Title"),
+                               base::CompareCase::SENSITIVE))
       << "Actual title: " << title;
 }
 
@@ -266,7 +268,8 @@ namespace {
 scoped_ptr<net::test_server::HttpResponse> NoContentResponseHandler(
     const std::string& path,
     const net::test_server::HttpRequest& request) {
-  if (!base::StartsWithASCII(path, request.relative_url, true))
+  if (!base::StartsWith(path, request.relative_url,
+                        base::CompareCase::SENSITIVE))
     return scoped_ptr<net::test_server::HttpResponse>();
 
   scoped_ptr<net::test_server::BasicHttpResponse> http_response(
@@ -448,7 +451,8 @@ namespace {
 scoped_ptr<net::test_server::HttpResponse> HandleRedirectRequest(
     const std::string& request_path,
     const net::test_server::HttpRequest& request) {
-  if (!base::StartsWithASCII(request.relative_url, request_path, true))
+  if (!base::StartsWith(request.relative_url, request_path,
+                        base::CompareCase::SENSITIVE))
     return scoped_ptr<net::test_server::HttpResponse>();
 
   scoped_ptr<net::test_server::BasicHttpResponse> http_response(

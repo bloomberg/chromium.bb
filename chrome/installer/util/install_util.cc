@@ -18,6 +18,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/strings/string_util.h"
@@ -393,7 +394,17 @@ bool InstallUtil::IsPerUserInstall(const base::FilePath& exe_path) {
     env->SetVar(kEnvProgramFilesPath,
                 base::WideToUTF8(program_files_path.value()));
   }
-  return !base::StartsWith(exe_path.value(), program_files_path.value(), false);
+
+  // Return true if the program files path is not a case-insensitive prefix of
+  // the exe path.
+  if (exe_path.value().size() < program_files_path.value().size())
+    return true;
+  DWORD prefix_len =
+      base::saturated_cast<DWORD>(program_files_path.value().size());
+  return ::CompareString(LOCALE_USER_DEFAULT, NORM_IGNORECASE,
+                         exe_path.value().data(), prefix_len,
+                         program_files_path.value().data(), prefix_len) !=
+      CSTR_EQUAL;
 }
 
 bool InstallUtil::IsMultiInstall(BrowserDistribution* dist,

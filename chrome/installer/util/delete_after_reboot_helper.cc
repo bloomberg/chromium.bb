@@ -17,6 +17,7 @@
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/win/registry.h"
 
@@ -326,20 +327,26 @@ HRESULT GetPendingMovesValue(std::vector<PendingMove>* pending_moves) {
 bool MatchPendingDeletePath(const base::FilePath& short_form_needle,
                             const base::FilePath& reg_path) {
   // Stores the path stored in each entry.
-  std::wstring match_path(reg_path.value());
+  base::string16 match_path(reg_path.value());
 
   // First chomp the prefix since that will mess up GetShortPathName.
-  std::wstring prefix(L"\\??\\");
-  if (base::StartsWith(match_path, prefix, false))
-    match_path = match_path.substr(4);
+  base::StringPiece16 prefix(L"\\??\\");
+  if (base::StartsWith(match_path, prefix, base::CompareCase::SENSITIVE))
+    match_path = match_path.substr(prefix.size());
 
   // Get the short path name of the entry.
   base::FilePath short_match_path(GetShortPathName(base::FilePath(match_path)));
 
-  // Now compare the paths. If it isn't one we're looking for, add it
-  // to the list to keep.
-  return base::StartsWith(short_match_path.value(), short_form_needle.value(),
-                          false);
+  // Now compare the paths. It's a match if short_form_needle is a
+  // case-insensitive prefix of short_match_path.
+  if (short_match_path.value().size() < short_form_needle.value().size())
+    return false;
+  DWORD prefix_len =
+      base::saturated_cast<DWORD>(short_form_needle.value().size());
+  return ::CompareString(LOCALE_USER_DEFAULT, NORM_IGNORECASE,
+                         short_match_path.value().data(), prefix_len,
+                         short_form_needle.value().data(), prefix_len) ==
+      CSTR_EQUAL;
 }
 
 // Removes all pending moves for the given |directory| and any contained

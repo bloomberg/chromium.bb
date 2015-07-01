@@ -148,7 +148,8 @@ void SearchSuggestionParser::SuggestResult::ClassifyMatchContents(
         suggestion_.length() - match_contents_.length();
     // Ensure the query starts with the input text, and ends with the match
     // contents, and the input text has an overlap with contents.
-    if (base::StartsWith(suggestion_, input_text, true) &&
+    if (base::StartsWith(suggestion_, input_text,
+                         base::CompareCase::SENSITIVE) &&
         base::EndsWith(suggestion_, match_contents_, true) &&
         (input_text.length() > contents_index)) {
       lookup_text = input_text.substr(contents_index);

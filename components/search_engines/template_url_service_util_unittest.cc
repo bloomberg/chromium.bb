@@ -96,6 +96,7 @@ TEST(TemplateURLServiceUtilTest, RemoveDuplicatePrepopulateIDs) {
   for (TemplateURLService::TemplateURLVector::const_iterator itr =
        local_turls.begin(); itr != local_turls.end(); ++itr) {
     EXPECT_TRUE(base::StartsWith((*itr)->keyword(),
-                                 base::ASCIIToUTF16("winner"), true));
+                                 base::ASCIIToUTF16("winner"),
+                                 base::CompareCase::SENSITIVE));
   }
 }

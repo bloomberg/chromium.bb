@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
+#include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -298,7 +299,9 @@ bool ReadFile(const base::FilePath& file_path,
       break;
 
     // Process the record if it is within the |root| subtree.
-    if (base::StartsWith(key_name, root, false))
+    if (base::StartsWith(base::i18n::ToLower(key_name),
+                         base::i18n::ToLower(root),
+                         base::CompareCase::SENSITIVE))
       HandleRecord(key_name.substr(root.size()), value, type, data, dict);
   }
 

@@ -689,8 +689,10 @@ void ModuleEnumerator::CollapsePath(Module* entry) {
   base::string16 location = entry->location;
   for (PathMapping::const_iterator mapping = path_mapping_.begin();
        mapping != path_mapping_.end(); ++mapping) {
-    base::string16 prefix = mapping->first;
-    if (base::StartsWith(location, prefix, false)) {
+    const base::string16& prefix = mapping->first;
+    if (base::StartsWith(base::i18n::ToLower(location),
+                         base::i18n::ToLower(prefix),
+                         base::CompareCase::SENSITIVE)) {
       base::string16 new_location = mapping->second +
                               location.substr(prefix.length() - 1);
       size_t length = new_location.length() - mapping->second.length();
@@ -734,8 +736,10 @@ void ModuleEnumerator::MatchAgainstBlacklist() {
     // for blacklisting individually. Mark them as suspicious if we haven't
     // classified them as bad yet.
     if (module->status == NOT_MATCHED || module->status == GOOD) {
-      if (base::StartsWith(module->location, L"%temp%", false) ||
-          base::StartsWith(module->location, L"%tmp%", false)) {
+      if (base::StartsWith(module->location, L"%temp%",
+                           base::CompareCase::INSENSITIVE_ASCII) ||
+          base::StartsWith(module->location, L"%tmp%",
+                           base::CompareCase::INSENSITIVE_ASCII)) {
         module->status = SUSPECTED_BAD;
       }
     }

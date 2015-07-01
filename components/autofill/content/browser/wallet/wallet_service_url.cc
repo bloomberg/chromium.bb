@@ -206,9 +206,11 @@ bool IsSignInContinueUrl(const GURL& url, size_t* user_index) {
 
 bool IsSignInRelatedUrl(const GURL& url) {
   size_t unused;
-  return url.GetOrigin() == GetAddAccountUrl().GetOrigin() ||
-         base::StartsWith(base::UTF8ToUTF16(url.GetOrigin().host()),
-                          base::ASCIIToUTF16("accounts."), false) ||
+  // Origins are host names which are canonicalized, so case-sensitive is OK.
+  GURL origin = url.GetOrigin();
+  return origin == GetAddAccountUrl().GetOrigin() ||
+         base::StartsWith(origin.host(), "accounts.",
+                          base::CompareCase::SENSITIVE) ||
          IsSignInContinueUrl(url, &unused);
 }
 

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/i18n/case_conversion.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
@@ -225,7 +226,7 @@ bool DoUsernamesMatch(const base::string16& username1,
                       bool exact_match) {
   if (exact_match)
     return username1 == username2;
-  return base::StartsWith(username1, username2, true);
+  return base::StartsWith(username1, username2, base::CompareCase::SENSITIVE);
 }
 
 // Returns |true| if the given element is editable. Otherwise, returns |false|.
@@ -284,25 +285,32 @@ bool GetSuggestionsStats(const PasswordFormFillData& fill_data,
                          bool show_all,
                          bool* suggestions_present) {
   *suggestions_present = false;
+  base::string16 current_username_lower = base::i18n::ToLower(current_username);
 
   for (const auto& usernames : fill_data.other_possible_usernames) {
     for (size_t i = 0; i < usernames.second.size(); ++i) {
       if (show_all ||
-          base::StartsWith(usernames.second[i], current_username, false)) {
+          base::StartsWith(
+              base::i18n::ToLower(base::string16(usernames.second[i])),
+              current_username_lower, base::CompareCase::SENSITIVE)) {
         *suggestions_present = true;
         return true;
       }
     }
   }
 
-  if (show_all || base::StartsWith(fill_data.username_field.value,
-                                   current_username, false)) {
+  if (show_all ||
+      base::StartsWith(base::i18n::ToLower(fill_data.username_field.value),
+                       current_username_lower, base::CompareCase::SENSITIVE)) {
     *suggestions_present = true;
     return false;
   }
 
   for (const auto& login : fill_data.additional_logins) {
-    if (show_all || base::StartsWith(login.first, current_username, false)) {
+    if (show_all ||
+        base::StartsWith(base::i18n::ToLower(login.first),
+                         current_username_lower,
+                         base::CompareCase::SENSITIVE)) {
       *suggestions_present = true;
       return false;
     }
