@@ -16,7 +16,6 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.feedback.FeedbackCollector;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
@@ -92,7 +91,7 @@ public class TranslatePreferences extends PreferenceFragment {
         if (itemId == R.id.menu_id_translate_help) {
             HelpAndFeedback.getInstance(getActivity())
                     .show(getActivity(), getString(R.string.help_context_translate),
-                            FeedbackCollector.create(Profile.getLastUsedProfile(), null));
+                            Profile.getLastUsedProfile(), null);
             return true;
         }
         return false;

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.feedback;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -14,11 +15,17 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.shell.ChromeShellActivity;
 import org.chromium.chrome.shell.ChromeShellTab;
 import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.content.browser.test.util.UiUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
+import javax.annotation.Nullable;
 
 /**
  * Test for {@link FeedbackCollector}.
@@ -39,15 +46,48 @@ public class FeedbackCollectorTest extends ChromeShellTestBase {
      * no real tasks are started during creation.
      */
     class TestFeedbackCollector extends FeedbackCollector {
-        TestFeedbackCollector(Profile profile, String url) {
-            super(profile, url);
+        private final AtomicBoolean mTimedOut = new AtomicBoolean(false);
+
+        TestFeedbackCollector(
+                Activity activity, Profile profile, String url, FeedbackResult callback) {
+            super(activity, profile, url, callback);
         }
 
         @Override
-        void init() {
+        void init(Activity activity) {
             mTestConnectivityTask =
                     new TestConnectivityTask(mProfile, CONNECTIVITY_TASK_TIMEOUT_MS, null);
             mConnectivityTask = mTestConnectivityTask;
+        }
+
+        @Override
+        public void onResult(final ConnectivityTask.FeedbackData feedbackData) {
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    TestFeedbackCollector.super.onResult(feedbackData);
+                }
+            });
+        }
+
+        @Override
+        public void onGotBitmap(@Nullable final Bitmap bitmap, final boolean success) {
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    TestFeedbackCollector.super.onGotBitmap(bitmap, success);
+                }
+            });
+        }
+
+        @Override
+        void maybePostResult() {
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    TestFeedbackCollector.super.maybePostResult();
+                }
+            });
         }
 
         @Override
@@ -109,6 +149,15 @@ public class FeedbackCollectorTest extends ChromeShellTestBase {
                 }
             });
         }
+
+        @Override
+        boolean hasTimedOut() {
+            return mTimedOut.get();
+        }
+
+        void setTimedOut(boolean timedOut) {
+            mTimedOut.set(timedOut);
+        }
     }
 
     static class TestConnectivityTask extends ConnectivityTask {
@@ -150,7 +199,7 @@ public class FeedbackCollectorTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"Feedback"})
     public void testGatheringOfData() {
-        mCollector = createCollector("http://www.example.com/");
+        mCollector = createCollector("http://www.example.com/", null);
         ConnectivityTask.FeedbackData feedbackData = createFeedbackData();
         mTestConnectivityTask.setFeedbackData(feedbackData);
         mCollector.setDescription("some description");
@@ -166,6 +215,113 @@ public class FeedbackCollectorTest extends ChromeShellTestBase {
         assertEquals(bitmap, mCollector.getScreenshot());
     }
 
+    @SmallTest
+    @Feature({"Feedback"})
+    public void testGatheringOfDataWithCallback() throws InterruptedException {
+        final Semaphore semaphore = new Semaphore(0);
+        final AtomicBoolean hasResult = new AtomicBoolean(false);
+        FeedbackCollector.FeedbackResult callback = new FeedbackCollector.FeedbackResult() {
+            @Override
+            public void onResult(FeedbackCollector collector) {
+                hasResult.set(true);
+                semaphore.release();
+            }
+        };
+        mCollector = createCollector("http://www.example.com/", callback);
+        assertFalse("Result should not be ready directly after creation.", hasResult.get());
+        ConnectivityTask.FeedbackData feedbackData = createFeedbackData();
+        mCollector.onResult(feedbackData);
+        assertFalse("Result should not be ready after connectivity data.", hasResult.get());
+        mCollector.setDescription("some description");
+        mCollector.add("foo", "bar");
+        Bitmap bitmap = createBitmap();
+        mCollector.onGotBitmap(bitmap, true);
+
+        // Wait until the callback has been called.
+        assertTrue("Failed to acquire semaphore.", semaphore.tryAcquire(1, TimeUnit.SECONDS));
+        assertTrue("Result should be ready after retrieving all data.", hasResult.get());
+
+        Bundle bundle = mCollector.getBundle();
+        assertEquals("http://www.example.com/", bundle.getString(FeedbackCollector.URL_KEY));
+        assertEquals("CONNECTED", bundle.getString(ConnectivityTask.CHROME_HTTPS_KEY));
+        assertEquals("some description", mCollector.getDescription());
+        assertEquals("bar", bundle.getString("foo"));
+        assertEquals(bitmap, mCollector.getScreenshot());
+    }
+
+    @SmallTest
+    @Feature({"Feedback"})
+    public void testGatheringOfDataTimesOut() throws InterruptedException {
+        final Semaphore semaphore = new Semaphore(0);
+        final AtomicBoolean hasResult = new AtomicBoolean(false);
+        FeedbackCollector.FeedbackResult callback = new FeedbackCollector.FeedbackResult() {
+            @Override
+            public void onResult(FeedbackCollector collector) {
+                hasResult.set(true);
+                semaphore.release();
+            }
+        };
+        mCollector = createCollector(null, callback);
+        assertFalse("Result should not be ready directly after creation.", hasResult.get());
+        ConnectivityTask.FeedbackData feedbackData = createFeedbackData();
+        // Set the feedback data on the connectivity task instead of through callback.
+        mTestConnectivityTask.setFeedbackData(feedbackData);
+        assertFalse("Result should not be ready after connectivity data.", hasResult.get());
+        Bitmap bitmap = createBitmap();
+        mCollector.onGotBitmap(bitmap, true);
+
+        // This timeout task should trigger the callback.
+        mCollector.setTimedOut(true);
+        mCollector.maybePostResult();
+        UiUtils.settleDownUI(getInstrumentation());
+
+        // Wait until the callback has been called.
+        assertTrue("Failed to acquire semaphore.", semaphore.tryAcquire(1, TimeUnit.SECONDS));
+        assertTrue("Result should be ready after retrieving all data.", hasResult.get());
+
+        Bundle bundle = mCollector.getBundle();
+        assertEquals("CONNECTED", bundle.getString(ConnectivityTask.CHROME_HTTPS_KEY));
+        assertEquals(bitmap, mCollector.getScreenshot());
+    }
+
+    @SmallTest
+    @Feature({"Feedback"})
+    public void testGatheringOfDataAlwaysWaitForScreenshot() throws InterruptedException {
+        final Semaphore semaphore = new Semaphore(0);
+        final AtomicBoolean hasResult = new AtomicBoolean(false);
+        FeedbackCollector.FeedbackResult callback = new FeedbackCollector.FeedbackResult() {
+            @Override
+            public void onResult(FeedbackCollector collector) {
+                hasResult.set(true);
+                semaphore.release();
+            }
+        };
+        mCollector = createCollector(null, callback);
+        assertFalse("Result should not be ready directly after creation.", hasResult.get());
+        ConnectivityTask.FeedbackData feedbackData = createFeedbackData();
+        mCollector.onResult(feedbackData);
+        assertFalse("Result should not be ready after connectivity data.", hasResult.get());
+
+        // This timeout task should not trigger the callback.
+        mCollector.setTimedOut(true);
+        mCollector.maybePostResult();
+        UiUtils.settleDownUI(getInstrumentation());
+        assertFalse("Result should not be ready after timeout.", hasResult.get());
+
+        // Trigger callback by finishing taking the screenshot.
+        Bitmap bitmap = createBitmap();
+        mCollector.onGotBitmap(bitmap, true);
+
+        // Wait until the callback has been called.
+        assertTrue("Failed to acquire semaphore.", semaphore.tryAcquire(1, TimeUnit.SECONDS));
+        assertTrue("Result should be ready after retrieving all data.", hasResult.get());
+
+        Bundle bundle = mCollector.getBundle();
+        // The FeedbackData should have been gathered from the ConnectivityTask directly.
+        assertEquals("CONNECTED", bundle.getString(ConnectivityTask.CHROME_HTTPS_KEY));
+        assertEquals(bitmap, mCollector.getScreenshot());
+    }
+
     private static ConnectivityTask.FeedbackData createFeedbackData() {
         Map<ConnectivityTask.Type, Integer> connections = new HashMap<>();
         connections.put(ConnectivityTask.Type.CHROME_HTTPS, ConnectivityCheckResult.CONNECTED);
@@ -176,11 +332,12 @@ public class FeedbackCollectorTest extends ChromeShellTestBase {
         return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_4444);
     }
 
-    private TestFeedbackCollector createCollector(final String url) {
+    private TestFeedbackCollector createCollector(
+            final String url, final FeedbackCollector.FeedbackResult callback) {
         return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<TestFeedbackCollector>() {
             @Override
             public TestFeedbackCollector call() {
-                return new TestFeedbackCollector(mProfile, url);
+                return new TestFeedbackCollector(mActivity, mProfile, url, callback);
             }
         });
     }

@@ -73,7 +73,6 @@ import org.chromium.chrome.browser.dom_distiller.ReaderModeActivityDelegate;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkUtils;
-import org.chromium.chrome.browser.feedback.FeedbackCollector;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.gsa.ContextReporter;
 import org.chromium.chrome.browser.gsa.GSAServiceClient;
@@ -1261,20 +1260,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         } else if (id == R.id.help_id) {
             // Since reading back the compositor is asynchronous, we need to do the readback
             // before starting the GoogleHelp.
-            final String helpContextId = HelpAndFeedback.getHelpContextIdFromUrl(
+            String helpContextId = HelpAndFeedback.getHelpContextIdFromUrl(
                     this, currentTab.getUrl(), getCurrentTabModel().isIncognito());
-            final Activity mainActivity = this;
-            final FeedbackCollector collector =
-                    FeedbackCollector.create(currentTab.getProfile(), currentTab.getUrl());
-            startTakingCompositorActivityScreenshot(new GetBitmapCallback() {
-                @Override
-                public void onFinishGetBitmap(Bitmap bitmap, int response) {
-                    collector.setScreenshot(bitmap);
-                    HelpAndFeedback.getInstance(mainActivity)
-                            .show(mainActivity, helpContextId, collector);
-                    RecordUserAction.record("MobileMenuFeedback");
-                }
-            });
+            HelpAndFeedback.getInstance(this)
+                    .show(this, helpContextId, currentTab.getProfile(), currentTab.getUrl());
+            RecordUserAction.record("MobileMenuFeedback");
         } else {
             return false;
         }

@@ -32,7 +32,6 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.feedback.FeedbackCollector;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 
@@ -234,7 +233,7 @@ public class Preferences extends AppCompatActivity implements
             return true;
         } else if (item.getItemId() == R.id.menu_id_help_general) {
             HelpAndFeedback.getInstance(this).show(this, getString(R.string.help_context_settings),
-                    FeedbackCollector.create(Profile.getLastUsedProfile(), null));
+                    Profile.getLastUsedProfile(), null);
             return true;
         }
         return super.onOptionsItemSelected(item);

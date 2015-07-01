@@ -18,8 +18,10 @@ import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.feedback.FeedbackCollector;
+import org.chromium.chrome.browser.profiles.Profile;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Launches an activity that displays a relevant support page and has an option to provide feedback.
@@ -52,8 +54,29 @@ public class HelpAndFeedback {
      *                    context and will be used to show a more relevant help page.
      * @param collector the {@link FeedbackCollector} to use for extra data. Must not be null.
      */
-    public void show(Activity activity, String helpContext, @Nonnull FeedbackCollector collector) {
+    protected void show(
+            Activity activity, String helpContext, @Nonnull FeedbackCollector collector) {
         launchFallbackSupportUri(activity);
+    }
+
+    /**
+     * Starts an activity showing a help page for the specified context ID.
+     *
+     * @param activity The activity to use for starting the help activity and to take a
+     *                 screenshot of.
+     * @param helpContext One of the CONTEXT_* constants. This should describe the user's current
+     *                    context and will be used to show a more relevant help page.
+     * @param profile the current profile.
+     * @param url the current URL. May be null.
+     */
+    public void show(final Activity activity, final String helpContext, Profile profile,
+            @Nullable String url) {
+        FeedbackCollector.create(activity, profile, url, new FeedbackCollector.FeedbackResult() {
+            @Override
+            public void onResult(FeedbackCollector collector) {
+                show(activity, helpContext, collector);
+            }
+        });
     }
 
     /**

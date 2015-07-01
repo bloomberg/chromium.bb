@@ -17,7 +17,6 @@ import android.view.MenuItem;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
-import org.chromium.chrome.browser.feedback.FeedbackCollector;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.precache.PrecacheLauncher;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
@@ -281,7 +280,7 @@ public class PrivacyPreferences extends PreferenceFragment
         if (item.getItemId() == R.id.menu_id_help_privacy) {
             HelpAndFeedback.getInstance(getActivity())
                     .show(getActivity(), getString(R.string.help_context_privacy),
-                            FeedbackCollector.create(Profile.getLastUsedProfile(), null));
+                            Profile.getLastUsedProfile(), null);
             return true;
         }
         return false;

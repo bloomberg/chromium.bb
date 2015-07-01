@@ -33,17 +33,24 @@ public final class DomDistillerFeedbackReporter {
      * @param good True if the feedback is good and false if not.
      */
     @CalledByNative
-    public static void reportFeedbackWithWindow(WindowAndroid window, String url, boolean good) {
+    public static void reportFeedbackWithWindow(
+            WindowAndroid window, String url, final boolean good) {
         ThreadUtils.assertOnUiThread();
-        Activity activity = window.getActivity().get();
+        final Activity activity = window.getActivity().get();
         if (sFeedbackReporter == null) {
             ChromeApplication application = (ChromeApplication) activity.getApplication();
             sFeedbackReporter = application.createFeedbackReporter();
         }
-        FeedbackCollector collector = FeedbackCollector.create(Profile.getLastUsedProfile(), url);
-        String quality = good ? DISTILLATION_QUALITY_GOOD : DISTILLATION_QUALITY_BAD;
-        collector.add(DISTILLATION_QUALITY_KEY, quality);
-        sFeedbackReporter.reportFeedback(activity, collector);
+        FeedbackCollector.create(activity, Profile.getLastUsedProfile(), url,
+                new FeedbackCollector.FeedbackResult() {
+                    @Override
+                    public void onResult(FeedbackCollector collector) {
+                        String quality =
+                                good ? DISTILLATION_QUALITY_GOOD : DISTILLATION_QUALITY_BAD;
+                        collector.add(DISTILLATION_QUALITY_KEY, quality);
+                        sFeedbackReporter.reportFeedback(activity, collector);
+                    }
+                });
     }
 
     private DomDistillerFeedbackReporter() {}

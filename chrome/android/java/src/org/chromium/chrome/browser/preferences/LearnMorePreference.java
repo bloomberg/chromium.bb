@@ -14,7 +14,6 @@ import android.view.View.OnClickListener;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.feedback.FeedbackCollector;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 
@@ -38,7 +37,7 @@ public class LearnMorePreference extends Preference {
     protected void onClick() {
         HelpAndFeedback.getInstance(getContext())
                 .show((Activity) getContext(), getContext().getString(mHelpContext),
-                        FeedbackCollector.create(Profile.getLastUsedProfile(), null));
+                        Profile.getLastUsedProfile(), null);
     }
 
     @Override

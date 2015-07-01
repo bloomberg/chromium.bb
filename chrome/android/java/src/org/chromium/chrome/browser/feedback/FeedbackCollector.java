@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser.feedback;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.text.TextUtils;
 
 import org.chromium.base.ThreadUtils;
@@ -27,7 +29,8 @@ import javax.annotation.Nullable;
  *
  * Interacting with the {@link FeedbackCollector} is only allowed on the main thread.
  */
-public class FeedbackCollector {
+public class FeedbackCollector
+        implements ConnectivityTask.ConnectivityResult, ScreenshotTask.ScreenshotTaskCallback {
     /**
      * A user visible string describing the current URL.
      */
@@ -40,13 +43,23 @@ public class FeedbackCollector {
     private static final String DATA_REDUCTION_PROXY_ENABLED_KEY = "Data reduction proxy enabled";
 
     /**
-     * The timeout (ms) for gathering connection data.
+     * The timeout (ms) for gathering data asynchronously.
+     * This timeout is ignored for taking screenshots.
      */
-    private static final int CONNECTIVITY_CHECK_TIMEOUT_MS = 1000;
+    private static final int TIMEOUT_MS = 500;
+
+    /**
+     * The timeout (ms) for gathering connection data.
+     * This may be more than the main timeout as taking the screenshot can take more time than
+     * {@link #TIMEOUT_MS}.
+     */
+    private static final int CONNECTIVITY_CHECK_TIMEOUT_MS = 5000;
 
     private final Map<String, String> mData;
     private final Profile mProfile;
     private final String mUrl;
+    private final FeedbackResult mCallback;
+    private final long mCollectionStartTime;
     // Not final because created during init. Should be used as a final member.
     protected ConnectivityTask mConnectivityTask;
 
@@ -61,28 +74,116 @@ public class FeedbackCollector {
     private Bitmap mScreenshot;
 
     /**
+     * A flag indicating whether gathering connection data has finished.
+     */
+    private boolean mConnectivityTaskFinished;
+
+    /**
+     * A flag indicating whether taking a screenshot has finished.
+     */
+    private boolean mScreenshotTaskFinished;
+
+    /**
+     * A flag indicating whether the result has already been posted. This is used to ensure that
+     * the result is not posted again if a timeout happens.
+     */
+    private boolean mResultPosted;
+
+    /**
+     * A callback for when the gathering of feedback data has finished. This may be called either
+     * when all data has been collected, or after a timeout.
+     */
+    public interface FeedbackResult {
+        /**
+         * Called when feedback data collection result is ready.
+         * @param collector the {@link FeedbackCollector} to retrieve the data from.
+         */
+        void onResult(FeedbackCollector collector);
+    }
+
+    /**
      * Creates a {@link FeedbackCollector} and starts asynchronous operations to gather extra data.
      * @param profile the current Profile.
      * @param url The URL of the current tab to include in the feedback the user sends, if any.
      *            This parameter may be null.
+     * @param callback The callback which is invoked when feedback gathering is finished.
      * @return the created {@link FeedbackCollector}.
      */
-    public static FeedbackCollector create(Profile profile, @Nullable String url) {
+    public static FeedbackCollector create(
+            Activity activity, Profile profile, @Nullable String url, FeedbackResult callback) {
         ThreadUtils.assertOnUiThread();
-        return new FeedbackCollector(profile, url);
+        return new FeedbackCollector(activity, profile, url, callback);
     }
 
     @VisibleForTesting
-    FeedbackCollector(Profile profile, String url) {
+    FeedbackCollector(Activity activity, Profile profile, String url, FeedbackResult callback) {
         mData = new HashMap<>();
         mProfile = profile;
         mUrl = url;
-        init();
+        mCallback = callback;
+        mCollectionStartTime = SystemClock.elapsedRealtime();
+        init(activity);
     }
 
     @VisibleForTesting
-    void init() {
-        mConnectivityTask = ConnectivityTask.create(mProfile, CONNECTIVITY_CHECK_TIMEOUT_MS, null);
+    void init(Activity activity) {
+        postTimeoutTask();
+        mConnectivityTask = ConnectivityTask.create(mProfile, CONNECTIVITY_CHECK_TIMEOUT_MS, this);
+        ScreenshotTask.create(activity, this);
+    }
+
+    /**
+     * {@link ConnectivityTask.ConnectivityResult} implementation.
+     */
+    @Override
+    public void onResult(ConnectivityTask.FeedbackData feedbackData) {
+        ThreadUtils.assertOnUiThread();
+        mConnectivityTaskFinished = true;
+        Map<String, String> connectivityMap = feedbackData.toMap();
+        mData.putAll(connectivityMap);
+        maybePostResult();
+    }
+
+    /**
+     * {@link ScreenshotTask.ScreenshotTaskCallback} implementation.
+     */
+    @Override
+    public void onGotBitmap(@Nullable Bitmap bitmap, boolean success) {
+        ThreadUtils.assertOnUiThread();
+        mScreenshotTaskFinished = true;
+        if (success) mScreenshot = bitmap;
+        maybePostResult();
+    }
+
+    private void postTimeoutTask() {
+        ThreadUtils.postOnUiThreadDelayed(new Runnable() {
+            @Override
+            public void run() {
+                maybePostResult();
+            }
+        }, TIMEOUT_MS);
+    }
+
+    @VisibleForTesting
+    void maybePostResult() {
+        ThreadUtils.assertOnUiThread();
+        if (mCallback == null) return;
+        if (mResultPosted) return;
+        // Always wait for screenshot.
+        if (!mScreenshotTaskFinished) return;
+        if (!mConnectivityTaskFinished && !hasTimedOut()) return;
+        mResultPosted = true;
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mCallback.onResult(FeedbackCollector.this);
+            }
+        });
+    }
+
+    @VisibleForTesting
+    boolean hasTimedOut() {
+        return SystemClock.elapsedRealtime() - mCollectionStartTime > TIMEOUT_MS;
     }
 
     /**
@@ -148,6 +249,7 @@ public class FeedbackCollector {
     }
 
     private void addConnectivityData() {
+        if (mConnectivityTaskFinished) return;
         Map<String, String> connectivityMap = mConnectivityTask.get().toMap();
         mData.putAll(connectivityMap);
     }
