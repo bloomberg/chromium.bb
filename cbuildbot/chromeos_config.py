@@ -631,7 +631,6 @@ _waterfall_config_map = {
         'panther_moblab-release',
         'rush_ryu-release',
         'smaug-release',
-        'lakitu-release',
         'guado_moblab-release',
 
         # Experimental PFQs.
@@ -2233,7 +2232,8 @@ def GetConfig():
   site_config.AddConfig(
       _release, 'lakitu-release',
       _base_configs['lakitu'],
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE]
+      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+      important=True
   )
 
   site_config.AddConfig(

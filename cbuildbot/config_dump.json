@@ -9856,6 +9856,7 @@
         "hw_tests": [],
         "hwqual": false,
         "image_test": false,
+        "important": true,
         "name": "lakitu-release",
         "sync_chrome": false,
         "upload_gce_images": true,
