@@ -1608,14 +1608,20 @@ TEST_F(RenderFrameHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
   EXPECT_TRUE(render_frame_proxy_host);
   EXPECT_FALSE(render_frame_proxy_host->is_render_frame_proxy_live());
 
-  // Expect the swapped out RVH to exist.
+  // Expect the swapped out RVH to exist but not be live.
   EXPECT_TRUE(
       opener1_manager->GetSwappedOutRenderViewHost(rfh1->GetSiteInstance()));
+  EXPECT_FALSE(
+      opener1_manager->GetSwappedOutRenderViewHost(rfh1->GetSiteInstance())
+          ->IsRenderViewLive());
 
   // Reload the initial tab. This should recreate the opener's swapped out RVH
   // in the original SiteInstance.
   contents()->GetController().Reload(true);
   contents()->GetMainFrame()->PrepareForCommit();
+  EXPECT_TRUE(
+      opener1_manager->GetSwappedOutRenderViewHost(rfh1->GetSiteInstance())
+          ->IsRenderViewLive());
   EXPECT_EQ(opener1_manager->GetSwappedOutRenderViewHost(
                                  rfh1->GetSiteInstance())->GetRoutingID(),
             contents()->GetMainFrame()->GetRenderViewHost()->opener_route_id());

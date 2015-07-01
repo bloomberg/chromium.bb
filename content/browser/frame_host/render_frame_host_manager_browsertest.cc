@@ -14,6 +14,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -61,6 +62,19 @@ void OpenUrlViaClickTarget(const internal::ToRenderFrameHost& adapter,
                            const GURL& url) {
   EXPECT_TRUE(ExecuteScript(adapter,
       std::string(kOpenUrlViaClickTargetFunc) + "(\"" + url.spec() + "\");"));
+}
+
+Shell* OpenPopup(const internal::ToRenderFrameHost& opener,
+                 const std::string& name) {
+  ShellAddedObserver new_shell_observer;
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      opener,
+      "window.domAutomationController.send(!!window.open('', '" + name + "'));",
+      &success));
+  EXPECT_TRUE(success);
+  Shell* new_shell = new_shell_observer.GetShell();
+  return new_shell;
 }
 
 }  // anonymous namespace
@@ -563,15 +577,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       shell()->web_contents()->GetSiteInstance());
   EXPECT_TRUE(orig_site_instance.get() != NULL);
 
-  // Create a popup with a 'foo' window.name.
-  ShellAddedObserver new_shell_observer;
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell()->web_contents(),
-      "window.domAutomationController.send(!!window.open('', 'foo'));",
-      &success));
-  EXPECT_TRUE(success);
-  Shell* new_shell = new_shell_observer.GetShell();
+  // Open a popup using window.open with a 'foo' window.name.
+  Shell* new_shell = OpenPopup(shell()->web_contents(), "foo");
 
   // The window.name for the new popup should be "foo".
   std::string name;
@@ -1858,6 +1865,68 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
             root->current_frame_host()->GetSiteInstance()->GetId());
   EXPECT_FALSE(RenderFrameHost::FromID(initial_process_id, initial_rfh_id));
   EXPECT_FALSE(RenderViewHost::FromID(initial_process_id, initial_rvh_id));
+}
+
+// Ensure that the opener chain proxies and RVHs are properly reinitialized if
+// a tab crashes and reloads.  See https://crbug.com/505090.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       ReinitializeOpenerChainAfterCrashAndReload) {
+  StartEmbeddedServer();
+
+  GURL main_url = embedded_test_server()->GetURL("/title1.html");
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  scoped_refptr<SiteInstance> orig_site_instance(
+      shell()->web_contents()->GetSiteInstance());
+  EXPECT_TRUE(orig_site_instance);
+
+  // Open a popup and navigate it cross-site.
+  Shell* new_shell = OpenPopup(shell()->web_contents(), "foo");
+  FrameTreeNode* popup_root =
+      static_cast<WebContentsImpl*>(new_shell->web_contents())
+          ->GetFrameTree()
+          ->root();
+
+  GURL cross_site_url =
+      embedded_test_server()->GetURL("foo.com", "/title2.html");
+  EXPECT_TRUE(NavigateToURL(new_shell, cross_site_url));
+
+  scoped_refptr<SiteInstance> foo_site_instance(
+      new_shell->web_contents()->GetSiteInstance());
+  EXPECT_NE(foo_site_instance, orig_site_instance);
+
+  // Kill the popup's process.
+  RenderProcessHost* popup_process =
+      popup_root->current_frame_host()->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      popup_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  popup_process->Shutdown(0, false);
+  crash_observer.Wait();
+  EXPECT_FALSE(popup_root->current_frame_host()->IsRenderFrameLive());
+  EXPECT_FALSE(
+      popup_root->current_frame_host()->render_view_host()->IsRenderViewLive());
+
+  // The swapped-out RVH and proxy for the opener page in the foo.com
+  // SiteInstance should not be live.
+  RenderFrameHostManager* opener_manager = root->render_manager();
+  RenderViewHostImpl* opener_rvh =
+      opener_manager->GetSwappedOutRenderViewHost(foo_site_instance.get());
+  EXPECT_TRUE(opener_rvh);
+  EXPECT_FALSE(opener_rvh->IsRenderViewLive());
+  RenderFrameProxyHost* opener_rfph =
+      opener_manager->GetRenderFrameProxyHost(foo_site_instance.get());
+  EXPECT_TRUE(opener_rfph);
+  EXPECT_FALSE(opener_rfph->is_render_frame_proxy_live());
+
+  // Re-navigate the popup to the same URL and check that this recreates the
+  // opener's swapped out RVH and proxy in the foo.com SiteInstance.
+  EXPECT_TRUE(NavigateToURL(new_shell, cross_site_url));
+  EXPECT_TRUE(opener_rvh->IsRenderViewLive());
+  EXPECT_TRUE(opener_rfph->is_render_frame_proxy_live());
 }
 
 }  // namespace content

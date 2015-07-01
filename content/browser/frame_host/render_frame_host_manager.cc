@@ -1688,7 +1688,13 @@ void RenderFrameHostManager::EnsureRenderViewInitialized(
 
   // Recreate the opener chain.
   int opener_route_id = CreateOpenerProxiesIfNeeded(instance);
+
+  // If the proxy in |instance| doesn't exist, this RenderView is not swapped
+  // out and shouldn't be reinitialized here.
   RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(instance);
+  if (!proxy)
+    return;
+
   InitRenderView(render_view_host, opener_route_id, proxy->GetRoutingID(),
                  false);
   proxy->set_render_frame_proxy_created(true);
@@ -2296,7 +2302,7 @@ int RenderFrameHostManager::CreateOpenerProxies(SiteInstance* instance) {
   // (when in site-per-process mode), so it is safe to exit early.
   FrameTree* frame_tree = frame_tree_node_->frame_tree();
   RenderViewHostImpl* rvh = frame_tree->GetRenderViewHost(instance);
-  if (rvh)
+  if (rvh && rvh->IsRenderViewLive())
     return rvh->GetRoutingID();
 
   int render_view_routing_id = MSG_ROUTING_NONE;
@@ -2305,6 +2311,9 @@ int RenderFrameHostManager::CreateOpenerProxies(SiteInstance* instance) {
     // RenderFrameProxyHosts for the new SiteInstance.
     frame_tree->CreateProxiesForSiteInstance(nullptr, instance);
     rvh = frame_tree->GetRenderViewHost(instance);
+    render_view_routing_id = rvh->GetRoutingID();
+  } else if (rvh && !rvh->IsRenderViewLive()) {
+    EnsureRenderViewInitialized(rvh, instance);
     render_view_routing_id = rvh->GetRoutingID();
   } else {
     // Create a swapped out RenderView in the given SiteInstance if none exists,
