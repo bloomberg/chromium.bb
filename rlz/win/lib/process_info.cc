@@ -57,7 +57,7 @@ bool GetUserGroup(long* group) {
   // as an admin)
   DWORD user_groups[] =  {DOMAIN_ALIAS_RID_ADMINS,
                           DOMAIN_ALIAS_RID_POWER_USERS};
-  SID_IDENTIFIER_AUTHORITY nt_authority = SECURITY_NT_AUTHORITY;
+  SID_IDENTIFIER_AUTHORITY nt_authority = {SECURITY_NT_AUTHORITY};
 
   for (int i = 0; i < arraysize(user_groups) && *group == 0; ++i) {
     PSID current_group;
