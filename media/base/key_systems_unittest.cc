@@ -19,24 +19,6 @@
 #include "media/base/media_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// Death tests are not always available, including on Android.
-// EXPECT_DEBUG_DEATH_PORTABLE executes tests correctly except in the case that
-// death tests are not available and NDEBUG is not defined.
-#if defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
-#define EXPECT_DEBUG_DEATH_PORTABLE(statement, regex) \
-  EXPECT_DEBUG_DEATH(statement, regex)
-#else
-#if defined(NDEBUG)
-#define EXPECT_DEBUG_DEATH_PORTABLE(statement, regex) \
-  do { statement; } while (false)
-#else
-#include "base/logging.h"
-#define EXPECT_DEBUG_DEATH_PORTABLE(statement, regex) \
-  LOG(WARNING) << "Death tests are not supported on this platform.\n" \
-               << "Statement '" #statement "' cannot be verified.";
-#endif  // defined(NDEBUG)
-#endif  // defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
-
 namespace media {
 
 // These are the (fake) key systems that are registered for these tests.
@@ -406,12 +388,7 @@ TEST_F(KeySystemsTest, Basic_UnrecognizedKeySystem) {
   EXPECT_FALSE(IsSupportedKeySystem(kUnrecognized));
 
   EXPECT_EQ("Unknown", GetKeySystemNameForUMA(kUnrecognized));
-
-  bool can_use = false;
-  EXPECT_DEBUG_DEATH_PORTABLE(
-      can_use = CanUseAesDecryptor(kUnrecognized),
-      "x-org.example.unrecognized is not a known concrete system");
-  EXPECT_FALSE(can_use);
+  EXPECT_FALSE(CanUseAesDecryptor(kUnrecognized));
 
 #if defined(ENABLE_PEPPER_CDMS)
   std::string type;
@@ -494,10 +471,8 @@ TEST_F(KeySystemsTest, Parent_NoParentRegistered) {
 
   // The parent is not supported for most things.
   EXPECT_EQ("Unknown", GetKeySystemNameForUMA(kUsesAesParent));
-  bool result = false;
-  EXPECT_DEBUG_DEATH_PORTABLE(result = CanUseAesDecryptor(kUsesAesParent),
-                              "x-org.example is not a known concrete system");
-  EXPECT_FALSE(result);
+  EXPECT_FALSE(CanUseAesDecryptor(kUsesAesParent));
+
 #if defined(ENABLE_PEPPER_CDMS)
   std::string type;
   EXPECT_DEBUG_DEATH(type = GetPepperType(kUsesAesParent),
@@ -613,10 +588,8 @@ TEST_F(KeySystemsTest, Parent_ParentRegistered) {
 
   // The parent is not supported for most things.
   EXPECT_EQ("Unknown", GetKeySystemNameForUMA(kExternalParent));
-  bool result = false;
-  EXPECT_DEBUG_DEATH_PORTABLE(result = CanUseAesDecryptor(kExternalParent),
-                              "x-com.example is not a known concrete system");
-  EXPECT_FALSE(result);
+  EXPECT_FALSE(CanUseAesDecryptor(kExternalParent));
+
 #if defined(ENABLE_PEPPER_CDMS)
   std::string type;
   EXPECT_DEBUG_DEATH(type = GetPepperType(kExternalParent),
