@@ -420,6 +420,9 @@ def _CreateParser():
   parser.add_remote_option('--profile', default=None, type='string',
                            action='store', dest='profile',
                            help='Name of profile to sub-specify board variant.')
+  parser.add_option('-c', '--config_repo',
+                    help=('Cloneable path to the git repository containing '
+                          'the site configuration to use.'))
 
   #
   # Patch selection options.
@@ -1021,13 +1024,29 @@ def _SetupConnections(options, build_config):
     graphite.StatsFactory.SetupMock()
 
 
+def _SetupSiteConfig(options):
+  """Setup our SiteConfig is specified or preset already.
+
+  Args:
+    options: Parsed command line options.
+
+  Returns:
+    SiteConfig instance to use for this build.
+  """
+  if options.config_repo:
+    raise NotImplementedError('Can\'t yet fetch a site configuration.')
+
+  # Use the site specific config, if we specified a site config, or if it
+  # is already present because we are in a repo checkout that specifies one.
+  if options.config_repo or os.path.exists(constants.SITE_CONFIG_FILE):
+    return config_lib.LoadConfigFromFile(constants.SITE_CONFIG_FILE)
+
+  # Fall back to default Chrome OS configuration.
+  return config_lib.LoadConfigFromFile(constants.CHROMEOS_CONFIG_FILE)
+
+
 # TODO(build): This function is too damn long.
 def main(argv):
-
-  # The location of the SiteConfig is still hardcoded in a Chrome OS specific
-  # way... for now.
-  site_config = config_lib.LoadConfigFromFile()
-
   # Turn on strict sudo checks.
   cros_build_lib.STRICT_SUDO = True
 
@@ -1036,6 +1055,9 @@ def main(argv):
 
   parser = _CreateParser()
   options, args = _ParseCommandLine(parser, argv)
+
+  # Fetch our site_config now, because we need it to do anything else.
+  site_config = _SetupSiteConfig(options)
 
   if options.list:
     _PrintValidConfigs(site_config, options.print_all)

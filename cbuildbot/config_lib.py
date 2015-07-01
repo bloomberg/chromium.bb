@@ -9,15 +9,9 @@ from __future__ import print_function
 import copy
 import itertools
 import json
-import os
 
 from chromite.cbuildbot import constants
 from chromite.lib import osutils
-
-
-# TODO: Update to point into site specific config repository, when we have one.
-CONFIG_FILE = os.path.join(constants.CHROMITE_DIR, 'cbuildbot',
-                           'config_dump.json')
 
 
 GS_PATH_DEFAULT = 'default' # Means gs://chromeos-image-archive/ + bot_id
@@ -1073,7 +1067,7 @@ class SiteConfig(dict):
 # Methods related to loading/saving Json.
 #
 
-def LoadConfigFromFile(config_file=CONFIG_FILE):
+def LoadConfigFromFile(config_file=constants.CHROMEOS_CONFIG_FILE):
   """Load a Config a Json encoded file."""
   json_string = osutils.ReadFile(config_file)
   return LoadConfigFromString(json_string)

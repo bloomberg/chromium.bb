@@ -37,6 +37,12 @@ CHROMITE_BIN_DIR = os.path.join(CHROMITE_DIR, 'bin')
 PATH_TO_CBUILDBOT = os.path.join(CHROMITE_BIN_SUBDIR, 'cbuildbot')
 DEFAULT_CHROOT_DIR = 'chroot'
 
+SITE_CONFIG_DIR = os.path.join(CHROMITE_DIR, 'config')
+SITE_CONFIG_FILE = os.path.join(SITE_CONFIG_DIR, 'config_dump.json')
+
+CHROMEOS_CONFIG_FILE = os.path.join(CHROMITE_DIR, 'cbuildbot',
+                                    'config_dump.json')
+
 # The following define the location for storing toolchain packages and
 # SDK overlay tarballs created during SDK builder runs. The paths are relative
 # to the build root's chroot, which guarantees that they are reachable from it
