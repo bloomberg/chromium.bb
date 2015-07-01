@@ -5701,9 +5701,7 @@
                   # TODO(hans): Make this list shorter eventually, http://crbug.com/504657
                   '-Qunused-arguments',  # http://crbug.com/504658
                   '-Wno-c++11-compat-deprecated-writable-strings',  # http://crbug.com/504659
-                  '-Wno-deprecated-declarations',  # http://crbug.com/504660
                   '-Wno-empty-body',  # http://crbug.com/504661
-                  '-Wno-enum-conversion',  # http://crbug.com/504662
                   '-Wno-extra-tokens',  # http://crbug.com/504663
                   '-Wno-ignored-attributes',  # http://crbug.com/504695
                   '-Wno-incompatible-pointer-types',  # http://crbug.com/504696
@@ -5716,7 +5714,6 @@
                   '-Wno-overloaded-virtual',  # http://crbug.com/505301
                   '-Wno-pointer-sign',  # http://crbug.com/505303
                   '-Wno-reorder',  # http://crbug.com/505304
-                  '-Wno-return-type-c-linkage',  # http://crbug.com/505305
                   '-Wno-sometimes-uninitialized',  # http://crbug.com/505307
                   '-Wno-switch',  # http://crbug.com/505308
                   '-Wno-unknown-pragmas',  # http://crbug.com/505314
