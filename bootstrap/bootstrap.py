@@ -154,7 +154,7 @@ def install(deps):
          os.path.join(ROOT, '.wheelcache'), '-f', ipath] + requirements)
 
 
-def activate_env(env, deps, quiet):
+def activate_env(env, deps, quiet=False):
   if hasattr(sys, 'real_prefix'):
     LOGGER.error('Already activated environment!')
     return
