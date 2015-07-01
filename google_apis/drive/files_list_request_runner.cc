@@ -5,6 +5,8 @@
 #include "google_apis/drive/files_list_request_runner.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 #include "google_apis/drive/drive_api_requests.h"
 #include "google_apis/drive/request_sender.h"
@@ -27,6 +29,8 @@ CancelCallback FilesListRequestRunner::CreateAndStartWithSizeBackoff(
     const std::string& q,
     const std::string& fields,
     const FileListCallback& callback) {
+  UMA_HISTOGRAM_COUNTS_1000("Drive.FilesListRequestRunner.MaxResults",
+                            max_results);
   base::Closure* const cancel_callback = new base::Closure;
   drive::FilesListRequest* const request = new drive::FilesListRequest(
       request_sender_, url_generator_,
@@ -60,6 +64,9 @@ void FilesListRequestRunner::OnCompleted(int max_results,
                                          scoped_ptr<FileList> entry) {
   if (!request_completed_callback_for_testing_.is_null())
     request_completed_callback_for_testing_.Run();
+
+  UMA_HISTOGRAM_SPARSE_SLOWLY(
+      "Drive.FilesListRequestRunner.ApiErrorCode", error);
 
   if (error == google_apis::DRIVE_RESPONSE_TOO_LARGE && max_results > 1) {
     CreateAndStartWithSizeBackoff(max_results / 2, q, fields, callback);

@@ -7345,6 +7345,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Drive.FilesListRequestRunner.ApiErrorCode"
+    enum="DriveApiErrorCode">
+  <owner>mtomasz@chromium.org</owner>
+  <summary>
+    Error codes returned by the Drive API for files list requests executed via
+    the FilesListRequestRunner class.
+  </summary>
+</histogram>
+
+<histogram name="Drive.FilesListRequestRunner.MaxResults">
+  <owner>mtomasz@chromium.org</owner>
+  <summary>
+    Maximum number of results for each files list request using the Drive API.
+  </summary>
+</histogram>
+
 <histogram name="Drive.FullFeedLoadTime" units="milliseconds">
   <owner>joshwoodward@google.com</owner>
   <summary>
@@ -52771,6 +52787,37 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="DragDropEventSource" type="int">
   <int value="0" label="Mouse"/>
   <int value="1" label="Touch"/>
+</enum>
+
+<enum name="DriveApiErrorCode" type="int">
+<!-- Generated from google_apis/drive/drive_api_error_codes.h -->
+
+  <int value="200" label="HTTP_SUCCESS"/>
+  <int value="201" label="HTTP_CREATED"/>
+  <int value="204" label="HTTP_NO_CONTENT"/>
+  <int value="302" label="HTTP_FOUND"/>
+  <int value="304" label="HTTP_NOT_MODIFIED"/>
+  <int value="308" label="HTTP_RESUME_INCOMPLETE"/>
+  <int value="400" label="HTTP_BAD_REQUEST"/>
+  <int value="401" label="HTTP_UNAUTHORIZED"/>
+  <int value="403" label="HTTP_FORBIDDEN"/>
+  <int value="404" label="HTTP_NOT_FOUND"/>
+  <int value="409" label="HTTP_CONFLICT"/>
+  <int value="410" label="HTTP_GONE"/>
+  <int value="411" label="HTTP_LENGTH_REQUIRED"/>
+  <int value="412" label="HTTP_PRECONDITION"/>
+  <int value="500" label="HTTP_INTERNAL_SERVER_ERROR"/>
+  <int value="501" label="HTTP_NOT_IMPLEMENTED"/>
+  <int value="502" label="HTTP_BAD_GATEWAY"/>
+  <int value="503" label="HTTP_SERVICE_UNAVAILABLE"/>
+  <int value="1000" label="DRIVE_PARSE_ERROR"/>
+  <int value="1001" label="DRIVE_FILE_ERROR"/>
+  <int value="1002" label="DRIVE_CANCELLED"/>
+  <int value="1003" label="DRIVE_OTHER_ERROR"/>
+  <int value="1004" label="DRIVE_NO_CONNECTION"/>
+  <int value="1005" label="DRIVE_NOT_READY"/>
+  <int value="1006" label="DRIVE_NO_SPACE"/>
+  <int value="1007" label="DRIVE_RESPONSE_TOO_LARGE"/>
 </enum>
 
 <enum name="DriveCacheDBOpenStatus" type="int">

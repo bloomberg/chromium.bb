@@ -9,7 +9,8 @@
 
 namespace google_apis {
 
-// HTTP errors that can be returned by Drive API service.
+// HTTP errors that can be returned by Drive API service. Keep all the values
+// positive, as they are used for UMA histograms.
 enum DriveApiErrorCode {
   HTTP_SUCCESS               = 200,
   HTTP_CREATED               = 201,
@@ -29,14 +30,15 @@ enum DriveApiErrorCode {
   HTTP_NOT_IMPLEMENTED       = 501,
   HTTP_BAD_GATEWAY           = 502,
   HTTP_SERVICE_UNAVAILABLE   = 503,
-  DRIVE_PARSE_ERROR          = -100,
-  DRIVE_FILE_ERROR           = -101,
-  DRIVE_CANCELLED            = -102,
-  DRIVE_OTHER_ERROR          = -103,
-  DRIVE_NO_CONNECTION        = -104,
-  DRIVE_NOT_READY            = -105,
-  DRIVE_NO_SPACE             = -106,
-  DRIVE_RESPONSE_TOO_LARGE   = -107
+  DRIVE_PARSE_ERROR          = 1000,
+  DRIVE_FILE_ERROR           = 1001,
+  DRIVE_CANCELLED            = 1002,
+  DRIVE_OTHER_ERROR          = 1003,
+  DRIVE_NO_CONNECTION        = 1004,
+  DRIVE_NOT_READY            = 1005,
+  DRIVE_NO_SPACE             = 1006,
+  DRIVE_RESPONSE_TOO_LARGE   = 1007
+  // If modified, update the enum mapping in histograms.xml.
 };
 
 // Returns a string representation of DriveApiErrorCode.
