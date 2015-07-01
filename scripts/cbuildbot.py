@@ -843,6 +843,10 @@ def _PostParseCheck(parser, options, args, site_config):
     args: The args returned by optparse.
     site_config: config_lib.SiteConfig containing all config info.
   """
+  if not args:
+    parser.error('Invalid usage: no configuration targets provided.'
+                 'Use -h to see usage.  Use -l to list supported configs.')
+
   if not options.branch:
     options.branch = git.GetChromiteTrackingBranch()
 
@@ -923,7 +927,7 @@ def _PostParseCheck(parser, options, args, site_config):
                        '`cbuildbot --list --all`')
 
 
-def _ParseCommandLine(parser, argv, site_config):
+def _ParseCommandLine(parser, argv):
   """Completely parse the commandline arguments"""
   (options, args) = parser.parse_args(argv)
 
@@ -935,16 +939,6 @@ def _ParseCommandLine(parser, argv, site_config):
   if options.output_api_version:
     print(constants.REEXEC_API_VERSION)
     sys.exit(0)
-
-  if options.list:
-    if args:
-      cros_build_lib.Die('No arguments expected with the --list options.')
-    _PrintValidConfigs(site_config, options.print_all)
-    sys.exit(0)
-
-  if not args:
-    parser.error('Invalid usage: no configuration targets provided.'
-                 'Use -h to see usage.  Use -l to list supported configs.')
 
   _FinishParsing(options, args)
   return options, args
@@ -1041,7 +1035,11 @@ def main(argv):
   os.umask(0o22)
 
   parser = _CreateParser()
-  (options, args) = _ParseCommandLine(parser, argv, site_config)
+  options, args = _ParseCommandLine(parser, argv)
+
+  if options.list:
+    _PrintValidConfigs(site_config, options.print_all)
+    sys.exit(0)
 
   _PostParseCheck(parser, options, args, site_config)
 
