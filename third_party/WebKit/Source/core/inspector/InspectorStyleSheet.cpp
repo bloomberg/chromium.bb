@@ -603,7 +603,7 @@ String canonicalCSSText(RefPtrWillBeRawPtr<CSSRule> rule)
 {
     if (rule->type() != CSSRule::STYLE_RULE)
         return rule->cssText();
-    RefPtr<CSSStyleRule> styleRule = toCSSStyleRule(rule.get());
+    RefPtrWillBeRawPtr<CSSStyleRule> styleRule = toCSSStyleRule(rule.get());
 
     Vector<String> propertyNames;
     HashSet<String> propertyNameSet;
