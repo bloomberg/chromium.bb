@@ -110,6 +110,7 @@ static_library("test_support") {
     deps += [
       "//device/media_transfer_protocol",
       "//device/media_transfer_protocol:mtp_file_entry_proto",
+      "//device/media_transfer_protocol:mtp_storage_info_proto",
     ]
   }
 }
