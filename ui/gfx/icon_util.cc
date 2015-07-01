@@ -322,7 +322,7 @@ HICON IconUtil::CreateCursorFromDIB(const gfx::Size& icon_size,
                                     const gfx::Point& hotspot,
                                     const void* dib_bits,
                                     size_t dib_size) {
-  BITMAPINFO icon_bitmap_info = {0};
+  BITMAPINFO icon_bitmap_info = {};
   gfx::CreateBitmapHeader(
       icon_size.width(),
       icon_size.height(),

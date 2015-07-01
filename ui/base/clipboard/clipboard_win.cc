@@ -778,7 +778,7 @@ void ClipboardWin::WriteBitmap(const SkBitmap& bitmap) {
   // pointer.  Someone has to memcpy it into GDI, it might as well be us here.
 
   // TODO(darin): share data in gfx/bitmap_header.cc somehow
-  BITMAPINFO bm_info = {0};
+  BITMAPINFO bm_info = {};
   bm_info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
   bm_info.bmiHeader.biWidth = bitmap.width();
   bm_info.bmiHeader.biHeight = -bitmap.height();  // sets vertical orientation

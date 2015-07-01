@@ -17,7 +17,7 @@ namespace gfx {
 namespace {
 
 FontRenderParams::SubpixelRendering GetSubpixelRenderingGeometry() {
-  DISPLAY_DEVICE display_device = {sizeof(DISPLAY_DEVICE), 0};
+  DISPLAY_DEVICE display_device = {sizeof(DISPLAY_DEVICE)};
   for (int i = 0; EnumDisplayDevices(nullptr, i, &display_device, 0); ++i) {
     // TODO(scottmg): We only support the primary device currently.
     if (display_device.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) {

@@ -83,7 +83,7 @@ int CalculateCursorHeight(HCURSOR cursor_handle) {
   ICONINFO icon = {0};
   GetIconInfo(cursor_handle, &icon);
 
-  BITMAPINFO bitmap_info = {0};
+  BITMAPINFO bitmap_info = {};
   bitmap_info.bmiHeader.biSize = sizeof(bitmap_info.bmiHeader);
   if (GetDIBits(hdc, icon.hbmMask, 0, 0, NULL, &bitmap_info, DIB_RGB_COLORS) ==
       0)

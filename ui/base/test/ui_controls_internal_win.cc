@@ -199,7 +199,7 @@ bool SendKeyPressImpl(HWND window,
     return true;
   }
 
-  INPUT input[8] = { 0 };  // 8, assuming all the modifiers are activated.
+  INPUT input[8] = {};  // 8, assuming all the modifiers are activated.
 
   UINT i = 0;
   if (control) {
