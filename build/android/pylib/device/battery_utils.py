@@ -25,9 +25,12 @@ _DEVICE_PROFILES = [
   {
     'name': 'Nexus 4',
     'witness_file': '/sys/module/pm8921_charger/parameters/disabled',
-    'enable_command': 'echo 0 > /sys/module/pm8921_charger/parameters/disabled',
-    'disable_command':
-        'echo 1 > /sys/module/pm8921_charger/parameters/disabled',
+    'enable_command': (
+        'echo 0 > /sys/module/pm8921_charger/parameters/disabled && '
+        'dumpsys battery reset'),
+    'disable_command': (
+        'echo 1 > /sys/module/pm8921_charger/parameters/disabled && '
+        'dumpsys battery set ac 0 && dumpsys battery set usb 0'),
     'charge_counter': None,
     'voltage': None,
     'current': None,
@@ -41,11 +44,13 @@ _DEVICE_PROFILES = [
     'witness_file': '/sys/kernel/debug/bq24192/INPUT_SRC_CONT',
     'enable_command': (
         'echo 0x4A > /sys/kernel/debug/bq24192/INPUT_SRC_CONT && '
-        'echo 1 > /sys/class/power_supply/usb/online'),
+        'echo 1 > /sys/class/power_supply/usb/online &&'
+        'dumpsys battery reset'),
     'disable_command': (
         'echo 0xCA > /sys/kernel/debug/bq24192/INPUT_SRC_CONT && '
         'chmod 644 /sys/class/power_supply/usb/online && '
-        'echo 0 > /sys/class/power_supply/usb/online'),
+        'echo 0 > /sys/class/power_supply/usb/online && '
+        'dumpsys battery set ac 0 && dumpsys battery set usb 0'),
     'charge_counter': None,
     'voltage': None,
     'current': None,
@@ -53,8 +58,12 @@ _DEVICE_PROFILES = [
   {
     'name': 'Nexus 6',
     'witness_file': None,
-    'enable_command': None,
-    'disable_command': None,
+    'enable_command': (
+        'echo 1 > /sys/class/power_supply/battery/charging_enabled && '
+        'dumpsys battery reset'),
+    'disable_command': (
+        'echo 0 > /sys/class/power_supply/battery/charging_enabled && '
+        'dumpsys battery set ac 0 && dumpsys battery set usb 0'),
     'charge_counter': (
         '/sys/class/power_supply/max170xx_battery/charge_counter_ext'),
     'voltage': '/sys/class/power_supply/max170xx_battery/voltage_now',
@@ -63,8 +72,14 @@ _DEVICE_PROFILES = [
   {
     'name': 'Nexus 9',
     'witness_file': None,
-    'enable_command': None,
-    'disable_command': None,
+    'enable_command': (
+        'echo Disconnected > '
+        '/sys/bus/i2c/drivers/bq2419x/0-006b/input_cable_state && '
+        'dumpsys battery reset'),
+    'disable_command': (
+        'echo Connected > '
+        '/sys/bus/i2c/drivers/bq2419x/0-006b/input_cable_state && '
+        'dumpsys battery set ac 0 && dumpsys battery set usb 0'),
     'charge_counter': (
         '/sys/class/power_supply/max170xx_battery/charge_counter_ext'),
     'voltage': '/sys/class/power_supply/max170xx_battery/voltage_now',
