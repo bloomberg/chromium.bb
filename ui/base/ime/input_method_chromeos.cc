@@ -190,15 +190,19 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
     gfx::Rect rect;
     while (client->GetCompositionCharacterBounds(i++, &rect))
       rects.push_back(rect);
-  } else {
-    rects.push_back(caret_rect);
   }
 
-  if (rects.size() > 0) {
-    composition_head = rects[0];
-    if (GetEngine())
-      GetEngine()->SetCompositionBounds(rects);
-  }
+  // Pepper don't support composition bounds, so fallback to caret bounds to
+  // avoid bad user experience (the IME window moved to upper left corner).
+  // For case of no composition at present, also use caret bounds which is
+  // required by the IME extension for certain features (e.g. physical keyboard
+  // autocorrect).
+  if (rects.empty())
+    rects.push_back(caret_rect);
+
+  composition_head = rects[0];
+  if (GetEngine())
+    GetEngine()->SetCompositionBounds(rects);
 
   chromeos::IMECandidateWindowHandlerInterface* candidate_window =
       chromeos::IMEBridge::Get()->GetCandidateWindowHandler();
