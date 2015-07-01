@@ -361,6 +361,8 @@ def EscapeJson(data):
 def HasNoPerfResults(builder):
   if 'pnacl-buildonly-spec' in builder:
     return True
+  if 'android' in builder:
+    return True
   return builder in [
       'asan',
       'mac-toolchain_arm',
