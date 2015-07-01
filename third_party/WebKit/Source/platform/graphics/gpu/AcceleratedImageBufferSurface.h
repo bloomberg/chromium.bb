@@ -49,6 +49,7 @@ public:
     bool isAccelerated() const override { return true; }
     void didModifyBackingTexture() override;
     PassRefPtr<SkImage> newImageSnapshot() const override;
+    Platform3DObject getBackingTextureHandleForOverwrite() override;
 
 private:
     OwnPtr<SkSurface> m_surface;

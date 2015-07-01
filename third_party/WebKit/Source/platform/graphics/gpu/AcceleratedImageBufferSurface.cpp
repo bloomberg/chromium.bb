@@ -72,4 +72,11 @@ PassRefPtr<SkImage> AcceleratedImageBufferSurface::newImageSnapshot() const
     return adoptRef(m_surface->newImageSnapshot());
 }
 
+Platform3DObject AcceleratedImageBufferSurface::getBackingTextureHandleForOverwrite()
+{
+    if (!m_surface)
+        return 0;
+    return m_surface->getTextureHandle(SkSurface::kDiscardWrite_TextureHandleAccess);
+}
+
 } // namespace blink

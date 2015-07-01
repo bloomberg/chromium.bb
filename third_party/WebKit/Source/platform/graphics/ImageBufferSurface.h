@@ -77,6 +77,7 @@ public:
     virtual void willOverwriteCanvas() { }
     virtual void draw(GraphicsContext*, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode);
     virtual void setHasExpensiveOp() { }
+    virtual Platform3DObject getBackingTextureHandleForOverwrite() { return 0; }
 
     // May return nullptr if the surface is GPU-backed and the GPU context was lost.
     virtual PassRefPtr<SkImage> newImageSnapshot() const = 0;

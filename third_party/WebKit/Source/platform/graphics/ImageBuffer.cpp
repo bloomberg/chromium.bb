@@ -230,12 +230,9 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBu
     if (!provider)
         return false;
     WebGraphicsContext3D* context3D = provider->context3d();
-    RefPtr<SkImage> textureImage = m_surface->newImageSnapshot();
-    if (!context3D || !textureImage)
+    if (!context3D)
         return false;
-    ASSERT(textureImage->isTextureBacked());
-    // Get the texture ID, flushing pending operations if needed.
-    Platform3DObject textureId = textureImage->getTextureHandle(true);
+    Platform3DObject textureId = m_surface->getBackingTextureHandleForOverwrite();
     if (!textureId)
         return false;
 
