@@ -143,10 +143,7 @@ void Scrollbar::offsetDidChange()
 
 void Scrollbar::disconnectFromScrollableArea()
 {
-#if !ENABLE(OILPAN)
-    // TODO(Oilpan): remove method once transitioned.
     m_scrollableArea = nullptr;
-#endif
 }
 
 void Scrollbar::setProportion(int visibleSize, int totalSize)
