@@ -14,6 +14,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_generation_manager.h"
 #include "google_apis/gaia/identity_provider.h"
+#include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/keyed_service_provider.h"
@@ -148,7 +149,7 @@ void AutofillClientIOS::DidFillOrPreviewField(
 }
 
 scoped_refptr<AutofillWebDataService> AutofillClientIOS::GetDatabase() {
-  return ios::GetKeyedServiceProvider()->GetAutofillWebDataForBrowserState(
+  return ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
       browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
 }
 

@@ -17,6 +17,7 @@
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/translate/translate_accept_languages_factory.h"
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
+#include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/public/provider/chrome/browser/keyed_service_provider.h"
 
 // This method gets the instance of each ServiceFactory. We do this so that
@@ -39,6 +40,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   ios::SigninErrorControllerFactory::GetInstance();
   ios::StartupTaskRunnerServiceFactory::GetInstance();
   ios::TopSitesFactory::GetInstance();
+  ios::WebDataServiceFactory::GetInstance();
   suggestions::SuggestionsServiceFactory::GetInstance();
   SyncSetupServiceFactory::GetInstance();
   TranslateAcceptLanguagesFactory::GetInstance();

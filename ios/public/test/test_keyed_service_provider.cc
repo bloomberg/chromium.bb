@@ -102,17 +102,6 @@ SigninManager* TestKeyedServiceProvider::GetSigninManagerForBrowserState(
   return nullptr;
 }
 
-KeyedServiceBaseFactory* TestKeyedServiceProvider::GetAutofillWebDataFactory() {
-  return MissingServiceKeyedServiceFactory::GetInstance();
-}
-
-scoped_refptr<autofill::AutofillWebDataService>
-TestKeyedServiceProvider::GetAutofillWebDataForBrowserState(
-    ChromeBrowserState* browser_state,
-    ServiceAccessType access_type) {
-  return scoped_refptr<autofill::AutofillWebDataService>(nullptr);
-}
-
 KeyedServiceBaseFactory*
 TestKeyedServiceProvider::GetPersonalDataManagerFactory() {
   return MissingServiceKeyedServiceFactory::GetInstance();

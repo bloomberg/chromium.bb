@@ -15,7 +15,6 @@ class ProfileOAuth2TokenServiceIOS;
 class SigninManager;
 
 namespace autofill {
-class AutofillWebDataService;
 class PersonalDataManager;
 }
 
@@ -70,15 +69,6 @@ class KeyedServiceProvider {
   // Returns an instance of SigninManager tied to |browser_state|.
   virtual SigninManager* GetSigninManagerForBrowserState(
       ChromeBrowserState* browser_state) = 0;
-
-  // Returns the autofill::AutofillWebDataService factory for dependencies.
-  virtual KeyedServiceBaseFactory* GetAutofillWebDataFactory() = 0;
-
-  // Returns an instance of autofill::AutofillWebDataService tied to
-  // |browser_state|.
-  virtual scoped_refptr<autofill::AutofillWebDataService>
-  GetAutofillWebDataForBrowserState(ChromeBrowserState* browser_state,
-                                    ServiceAccessType access_type) = 0;
 
   // Returns the autofill::PersonalDataManager factory for dependencies.
   virtual KeyedServiceBaseFactory* GetPersonalDataManagerFactory() = 0;
