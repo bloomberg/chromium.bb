@@ -120,7 +120,7 @@ BackgroundSyncServiceImpl::BackgroundSyncServiceImpl(
 }
 
 void BackgroundSyncServiceImpl::Register(content::SyncRegistrationPtr options,
-                                         int64_t serviceWorkerRegistrationId,
+                                         int64_t sw_registration_id,
                                          const RegisterCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -131,7 +131,7 @@ void BackgroundSyncServiceImpl::Register(content::SyncRegistrationPtr options,
       background_sync_context_->background_sync_manager();
   DCHECK(background_sync_manager);
   background_sync_manager->Register(
-      serviceWorkerRegistrationId, *(reg.get()),
+      sw_registration_id, *(reg.get()),
       base::Bind(&BackgroundSyncServiceImpl::OnRegisterResult,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
@@ -140,14 +140,14 @@ void BackgroundSyncServiceImpl::Unregister(
     BackgroundSyncPeriodicity periodicity,
     int64_t id,
     const mojo::String& tag,
-    int64_t serviceWorkerRegistrationId,
+    int64_t sw_registration_id,
     const UnregisterCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BackgroundSyncManager* background_sync_manager =
       background_sync_context_->background_sync_manager();
   DCHECK(background_sync_manager);
   background_sync_manager->Unregister(
-      serviceWorkerRegistrationId, tag, content::SYNC_ONE_SHOT, id,
+      sw_registration_id, tag, content::SYNC_ONE_SHOT, id,
       base::Bind(&BackgroundSyncServiceImpl::OnUnregisterResult,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
@@ -155,36 +155,35 @@ void BackgroundSyncServiceImpl::Unregister(
 void BackgroundSyncServiceImpl::GetRegistration(
     BackgroundSyncPeriodicity periodicity,
     const mojo::String& tag,
-    int64_t serviceWorkerRegistrationId,
+    int64_t sw_registration_id,
     const GetRegistrationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BackgroundSyncManager* background_sync_manager =
       background_sync_context_->background_sync_manager();
   DCHECK(background_sync_manager);
   background_sync_manager->GetRegistration(
-      serviceWorkerRegistrationId, tag.get(),
-      static_cast<SyncPeriodicity>(periodicity),
+      sw_registration_id, tag.get(), static_cast<SyncPeriodicity>(periodicity),
       base::Bind(&BackgroundSyncServiceImpl::OnRegisterResult,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void BackgroundSyncServiceImpl::GetRegistrations(
     BackgroundSyncPeriodicity periodicity,
-    int64_t serviceWorkerRegistrationId,
+    int64_t sw_registration_id,
     const GetRegistrationsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BackgroundSyncManager* background_sync_manager =
       background_sync_context_->background_sync_manager();
   DCHECK(background_sync_manager);
   background_sync_manager->GetRegistrations(
-      serviceWorkerRegistrationId, static_cast<SyncPeriodicity>(periodicity),
+      sw_registration_id, static_cast<SyncPeriodicity>(periodicity),
       base::Bind(&BackgroundSyncServiceImpl::OnGetRegistrationsResult,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void BackgroundSyncServiceImpl::GetPermissionStatus(
     BackgroundSyncPeriodicity periodicity,
-    int64_t serviceWorkerRegistrationId,
+    int64_t sw_registration_id,
     const GetPermissionStatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 

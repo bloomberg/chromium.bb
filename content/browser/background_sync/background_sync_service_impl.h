@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_SERVICE_IMPL_H_
 #define CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_SERVICE_IMPL_H_
 
+#include <vector>
+
 #include "base/memory/ref_counted.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/common/background_sync_service.mojom.h"
@@ -36,23 +38,23 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
 
   // BackgroundSyncService methods:
   void Register(content::SyncRegistrationPtr options,
-                int64_t serviceWorkerRegistrationId,
+                int64_t sw_registration_id,
                 const RegisterCallback& callback) override;
   void Unregister(BackgroundSyncPeriodicity periodicity,
                   int64_t id,
                   const mojo::String& tag,
-                  int64_t serviceWorkerRegistrationId,
+                  int64_t sw_registration_id,
                   const UnregisterCallback& callback) override;
   void GetRegistration(BackgroundSyncPeriodicity periodicity,
                        const mojo::String& tag,
-                       int64_t serviceWorkerRegistrationId,
+                       int64_t sw_registration_id,
                        const GetRegistrationCallback& callback) override;
   void GetRegistrations(BackgroundSyncPeriodicity periodicity,
-                        int64_t serviceWorkerRegistrationId,
+                        int64_t sw_registration_id,
                         const GetRegistrationsCallback& callback) override;
   void GetPermissionStatus(
       BackgroundSyncPeriodicity periodicity,
-      int64_t serviceWorkerRegistrationId,
+      int64_t sw_registration_id,
       const GetPermissionStatusCallback& callback) override;
 
   void OnRegisterResult(
