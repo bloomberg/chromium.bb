@@ -108,6 +108,9 @@ public class EmptyTabObserver implements TabObserver {
             boolean isNavigationToDifferentPage, boolean isFragmentNavigation, int statusCode) { }
 
     @Override
+    public void didFirstVisuallyNonEmptyPaint(Tab tab) { }
+
+    @Override
     public void onDidChangeThemeColor(int color) { }
 
     @Override

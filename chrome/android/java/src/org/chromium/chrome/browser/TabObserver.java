@@ -262,6 +262,12 @@ public interface TabObserver {
             boolean isNavigationToDifferentPage, boolean isFragmentNavigation, int statusCode);
 
     /**
+     * Called when the page has painted something non-empty.
+     * @param tab The notifying {@link Tab}.
+     */
+    public void didFirstVisuallyNonEmptyPaint(Tab tab);
+
+    /**
      * Called when the theme color is changed
      * @param color the new color in ARGB format.
      */

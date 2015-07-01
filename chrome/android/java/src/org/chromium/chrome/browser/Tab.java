@@ -665,6 +665,13 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         }
 
         @Override
+        public void didFirstVisuallyNonEmptyPaint() {
+            for (TabObserver observer : mObservers) {
+                observer.didFirstVisuallyNonEmptyPaint(Tab.this);
+            }
+        }
+
+        @Override
         public void didChangeThemeColor(int color) {
             for (TabObserver observer : mObservers) {
                 observer.onDidChangeThemeColor(color);

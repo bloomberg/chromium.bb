@@ -405,13 +405,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (mTabModelSelectorTabObserver != null) mTabModelSelectorTabObserver.destroy();
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(tabModelSelector) {
             @Override
-            public void onDidNavigateMainFrame(Tab tab, String url, String baseUrl,
-                    boolean isNavigationToDifferentPage, boolean isFragmentNavigation,
-                    int statusCode) {
+            public void didFirstVisuallyNonEmptyPaint(Tab tab) {
                 if (!tab.isNativePage() && !tab.isIncognito()
                         && DataReductionProxySettings.getInstance().wasLoFiModeActiveOnMainFrame()
                         && DataReductionProxySettings.getInstance().canUseDataReductionProxy(
-                                url)) {
+                                tab.getUrl())) {
                     if (tab.isHidden()) {
                         TabObserver tabObserver = new EmptyTabObserver() {
                             @Override
