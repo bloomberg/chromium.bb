@@ -18,7 +18,7 @@ sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT,
                              'third_party',
                              'trace-viewer'))
 # pylint: disable=F0401
-from trace_viewer.build import trace2html
+from tracing.build import trace2html
 
 
 def _PackageTracesAsHtml(trace_files, html_file):
