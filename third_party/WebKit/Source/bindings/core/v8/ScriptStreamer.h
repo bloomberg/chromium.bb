@@ -47,10 +47,7 @@ public:
     // Returns false if we cannot stream the given encoding.
     static bool convertEncoding(const char* encodingName, v8::ScriptCompiler::StreamedSource::Encoding*);
 
-    bool isFinished() const
-    {
-        return m_loadingFinished && (m_parsingFinished || m_streamingSuppressed);
-    }
+    bool isFinished() const;
 
     v8::ScriptCompiler::StreamedSource* source() { return m_source.get(); }
     ScriptResource* resource() const { return m_resource; }
@@ -148,7 +145,7 @@ private:
     // For recording metrics for different types of scripts separately.
     PendingScript::Type m_scriptType;
 
-    Mutex m_mutex;
+    mutable Mutex m_mutex;
 
     // Encoding of the streamed script. Saved for sanity checking purposes.
     v8::ScriptCompiler::StreamedSource::Encoding m_encoding;

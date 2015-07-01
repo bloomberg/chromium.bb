@@ -383,6 +383,12 @@ bool ScriptStreamer::convertEncoding(const char* encodingName, v8::ScriptCompile
     return false;
 }
 
+bool ScriptStreamer::isFinished() const
+{
+    MutexLocker locker(m_mutex);
+    return m_loadingFinished && (m_parsingFinished || m_streamingSuppressed);
+}
+
 void ScriptStreamer::streamingCompleteOnBackgroundThread()
 {
     ASSERT(!isMainThread());
@@ -597,11 +603,9 @@ void ScriptStreamer::notifyFinishedToClient()
     // function calling notifyFinishedToClient was already scheduled in the task
     // queue and the upper layer decided that it's not interested in the script
     // and called removeClient.
-    {
-        MutexLocker locker(m_mutex);
-        if (!isFinished())
-            return;
-    }
+    if (!isFinished())
+        return;
+
     if (m_client)
         m_client->notifyFinished(m_resource);
 }
