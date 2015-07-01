@@ -313,6 +313,12 @@ class InputApi(object):
 
     self.cpu_count = multiprocessing.cpu_count()
 
+    # this is done here because in RunTests, the current working directory has
+    # changed, which causes Pool() to explode fantastically when run on windows
+    # (because it tries to load the __main__ module, which imports lots of
+    # things relative to the current working directory).
+    self._run_tests_pool = multiprocessing.Pool(self.cpu_count)
+
     # The local path of the currently-being-processed presubmit script.
     self._current_presubmit_path = os.path.dirname(presubmit_path)
 
@@ -492,11 +498,8 @@ class InputApi(object):
         if self.verbose:
           t.info = _PresubmitNotifyResult
     if len(tests) > 1 and parallel:
-      pool = multiprocessing.Pool()
       # async recipe works around multiprocessing bug handling Ctrl-C
-      msgs.extend(pool.map_async(CallCommand, tests).get(99999))
-      pool.close()
-      pool.join()
+      msgs.extend(self._run_tests_pool.map_async(CallCommand, tests).get(99999))
     else:
       msgs.extend(map(CallCommand, tests))
     return [m for m in msgs if m]

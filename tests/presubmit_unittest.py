@@ -2529,13 +2529,15 @@ class CannedChecksUnittest(PresubmitTestsBase):
     pylintrc = os.path.join(_ROOT, 'pylintrc')
 
     CommHelper(input_api,
-        ['pyyyyython', pylint, '--args-on-stdin', '--disable=cyclic-import',
-         '--jobs=2'],
-        env=mox.IgnoreArg(), stdin='file1.py\n--rcfile=%s' % pylintrc)
+        ['pyyyyython', pylint, '--args-on-stdin'],
+        env=mox.IgnoreArg(), stdin=
+               '--rcfile=%s\n--disable=cyclic-import\n--jobs=2\nfile1.py'
+               % pylintrc)
     CommHelper(input_api,
-        ['pyyyyython', pylint, '--args-on-stdin', '--disable=all',
-         '--enable=cyclic-import'],
-        env=mox.IgnoreArg(), stdin='file1.py\n--rcfile=%s' % pylintrc)
+        ['pyyyyython', pylint, '--args-on-stdin'],
+        env=mox.IgnoreArg(), stdin=
+               '--rcfile=%s\n--disable=all\n--enable=cyclic-import\nfile1.py'
+               % pylintrc)
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.RunPylint(

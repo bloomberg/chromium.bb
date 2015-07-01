@@ -671,7 +671,8 @@ class PyLinter(configuration.OptionsManagerMixIn,
             files_or_modules = (files_or_modules,)
 
         if self.config.jobs == 1:
-            self._do_check(files_or_modules)
+            with fix_import_path(files_or_modules):
+                self._do_check(files_or_modules)
         else:
             # Hack that permits running pylint, on Windows, with -m switch
             # and with --jobs, as in 'python -2 -m pylint .. --jobs'.
@@ -1252,8 +1253,8 @@ group are mutually exclusive.'),
 
         # insert current working directory to the python path to have a correct
         # behaviour
-        with fix_import_path(args):
-            if self.linter.config.profile:
+        if self.linter.config.profile:
+            with fix_import_path(args):
                 print('** profiled run', file=sys.stderr)
                 import cProfile, pstats
                 cProfile.runctx('linter.check(%r)' % args, globals(), locals(),
@@ -1262,9 +1263,9 @@ group are mutually exclusive.'),
                 data.strip_dirs()
                 data.sort_stats('time', 'calls')
                 data.print_stats(30)
-            else:
-                linter.check(args)
-            linter.generate_reports()
+        else:
+            linter.check(args)
+        linter.generate_reports()
         if exit:
             sys.exit(self.linter.msg_status)
 

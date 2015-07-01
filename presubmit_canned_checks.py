@@ -771,29 +771,30 @@ def GetPylint(input_api, output_api, white_list=None, black_list=None,
   env['PYTHONPATH'] = input_api.os_path.pathsep.join(
       extra_paths_list + sys.path).encode('utf8')
 
-  def GetPylintCmd(files, extra, parallel):
+  def GetPylintCmd(flist, extra, parallel):
     # Windows needs help running python files so we explicitly specify
     # the interpreter to use. It also has limitations on the size of
     # the command-line, so we pass arguments via a pipe.
     cmd = [input_api.python_executable,
            input_api.os_path.join(_HERE, 'third_party', 'pylint.py'),
            '--args-on-stdin']
-    if len(files) == 1:
-      description = files[0]
+    if len(flist) == 1:
+      description = flist[0]
     else:
-      description = '%s files' % len(files)
+      description = '%s files' % len(flist)
 
+    args = extra_args[:]
     if extra:
-      cmd.extend(extra)
+      args.extend(extra)
       description += ' using %s' % (extra,)
     if parallel:
-      cmd.append('--jobs=%s' % input_api.cpu_count)
+      args.append('--jobs=%s' % input_api.cpu_count)
       description += ' on %d cores' % input_api.cpu_count
 
     return input_api.Command(
         name='Pylint (%s)' % description,
         cmd=cmd,
-        kwargs={'env': env, 'stdin': '\n'.join(files + extra_args)},
+        kwargs={'env': env, 'stdin': '\n'.join(args + flist)},
         message=error_type)
 
   # Always run pylint and pass it all the py files at once.
@@ -807,12 +808,18 @@ def GetPylint(input_api, output_api, white_list=None, black_list=None,
   if True:
     # pylint's cycle detection doesn't work in parallel, so spawn a second,
     # single-threaded job for just that check.
-    return [
-      GetPylintCmd(files, ["--disable=cyclic-import"], True),
-      GetPylintCmd(files, ["--disable=all", "--enable=cyclic-import"], False)
-    ]
+
+    # Some PRESUBMITs explicitly mention cycle detection.
+    if not any('R0401' in a or 'cyclic-import' in a for a in extra_args):
+      return [
+        GetPylintCmd(files, ["--disable=cyclic-import"], True),
+        GetPylintCmd(files, ["--disable=all", "--enable=cyclic-import"], False)
+      ]
+    else:
+      return [ GetPylintCmd(files, [], True) ]
+
   else:
-    return map(lambda x: GetPylintCmd([x], extra_args, 1), files)
+    return map(lambda x: GetPylintCmd([x], [], 1), files)
 
 
 def RunPylint(input_api, *args, **kwargs):
