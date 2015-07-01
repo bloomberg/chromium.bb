@@ -91,8 +91,8 @@ HRESULT StreamFromPrintTicket(const std::string& print_ticket,
                    base::checked_cast<ULONG>(print_ticket.length()),
                    &bytes_written);
   DCHECK(bytes_written == print_ticket.length());
-  LARGE_INTEGER pos = {0};
-  ULARGE_INTEGER new_pos = {0};
+  LARGE_INTEGER pos = {};
+  ULARGE_INTEGER new_pos = {};
   (*stream)->Seek(pos, STREAM_SEEK_SET, &new_pos);
   return S_OK;
 }
