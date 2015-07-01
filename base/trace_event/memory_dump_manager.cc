@@ -137,6 +137,9 @@ void InitializeThreadLocalEventBufferIfSupported() {
 const char* const MemoryDumpManager::kTraceCategoryForTesting = kTraceCategory;
 
 // static
+const uint64 MemoryDumpManager::kInvalidTracingProcessId = 0;
+
+// static
 const int MemoryDumpManager::kMaxConsecutiveFailuresCount = 3;
 
 // static

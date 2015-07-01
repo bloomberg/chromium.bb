@@ -192,6 +192,7 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
 
 bool ChildDiscardableSharedMemoryManager::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd) {
+  base::AutoLock lock(lock_);
   return heap_.OnMemoryDump(pmd);
 }
 

@@ -36,7 +36,7 @@ class MemoryDumpSessionState;
 // RequestDumpPoint(). The extension by Un(RegisterDumpProvider).
 class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
  public:
-  static const uint64 kInvalidTracingProcessId = 0;
+  static const uint64 kInvalidTracingProcessId;
   static const char* const kTraceCategoryForTesting;
 
   static MemoryDumpManager* GetInstance();
@@ -96,10 +96,7 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   // by child processes and only when tracing is enabled. This is intended to
   // express cross-process sharing of memory dumps on the child-process side,
   // without having to know its own child process id.
-  uint64 tracing_process_id() const {
-    DCHECK_NE(kInvalidTracingProcessId, tracing_process_id_);
-    return tracing_process_id_;
-  }
+  uint64 tracing_process_id() const { return tracing_process_id_; }
 
  private:
   // Descriptor struct used to hold information about registered MDPs. It is
@@ -141,7 +138,7 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
       MemoryDumpProvider* mdp,
       scoped_refptr<ProcessMemoryDumpHolder> pmd_holder);
 
-  // Pass kInvalidTracingProcessId for invalidating the id.
+  // Pass kInvalidTracingProcessId to invalidate the id.
   void set_tracing_process_id(uint64 id) {
     DCHECK(tracing_process_id_ == kInvalidTracingProcessId ||
            id == kInvalidTracingProcessId || tracing_process_id_ == id);

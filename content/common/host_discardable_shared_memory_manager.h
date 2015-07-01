@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/containers/hash_tables.h"
+#include "base/format_macros.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/discardable_shared_memory.h"
 #include "base/memory/memory_pressure_listener.h"
@@ -16,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_handle.h"
 #include "base/synchronization/lock.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -25,7 +27,8 @@ typedef int32_t DiscardableSharedMemoryId;
 // discardable memory segments for the browser process and child processes.
 // This class is thread-safe and instances can safely be used on any thread.
 class CONTENT_EXPORT HostDiscardableSharedMemoryManager
-    : public base::DiscardableMemoryAllocator {
+    : public base::DiscardableMemoryAllocator,
+      public base::trace_event::MemoryDumpProvider {
  public:
   HostDiscardableSharedMemoryManager();
   ~HostDiscardableSharedMemoryManager() override;
@@ -36,6 +39,9 @@ class CONTENT_EXPORT HostDiscardableSharedMemoryManager
   // Overridden from base::DiscardableMemoryAllocator:
   scoped_ptr<base::DiscardableMemory> AllocateLockedDiscardableMemory(
       size_t size) override;
+
+  // Overridden from base::trace_event::MemoryDumpProvider:
+  bool OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) override;
 
   // This allocates a discardable memory segment for |process_handle|.
   // A valid shared memory handle is returned on success.

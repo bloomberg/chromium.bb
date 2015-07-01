@@ -6,8 +6,10 @@
 
 #include <algorithm>
 
+#include "base/format_macros.h"
 #include "base/memory/discardable_shared_memory.h"
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/memory_dump_manager.h"
 
 namespace content {
 namespace {
@@ -338,7 +340,7 @@ void DiscardableSharedMemoryHeap::ReleaseMemory(
 void DiscardableSharedMemoryHeap::OnMemoryDump(
     const base::DiscardableSharedMemory* shared_memory,
     size_t size,
-    int32_t id,
+    int32_t segment_id,
     base::trace_event::ProcessMemoryDump* pmd) {
   size_t allocated_objects_count = 0;
   size_t allocated_objects_size_in_bytes = 0;
@@ -355,7 +357,7 @@ void DiscardableSharedMemoryHeap::OnMemoryDump(
   }
 
   std::string segment_dump_name =
-      base::StringPrintf("discardable/segment_%d", id);
+      base::StringPrintf("discardable/segment_%d", segment_id);
   base::trace_event::MemoryAllocatorDump* segment_dump =
       pmd->CreateAllocatorDump(segment_dump_name);
   segment_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
@@ -370,6 +372,29 @@ void DiscardableSharedMemoryHeap::OnMemoryDump(
   obj_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                       base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                       static_cast<uint64_t>(allocated_objects_size_in_bytes));
+
+  // Emit an ownership edge towards a global allocator dump node. This allows
+  // to avoid double-counting segments when both browser and child process emit
+  // them. In the special case of single-process-mode, this will be the only
+  // dumper active and the single ownership edge will become a no-op in the UI.
+  const uint64 tracing_process_id =
+      base::trace_event::MemoryDumpManager::GetInstance()->tracing_process_id();
+  base::trace_event::MemoryAllocatorDumpGuid shared_segment_guid =
+      GetSegmentGUIDForTracing(tracing_process_id, segment_id);
+  pmd->CreateSharedGlobalAllocatorDump(shared_segment_guid);
+
+  // By creating an edge with a higher |importance| (w.r.t. browser-side dumps)
+  // the tracing UI will account the effective size of the segment to the child.
+  const int kImportance = 2;
+  pmd->AddOwnershipEdge(segment_dump->guid(), shared_segment_guid, kImportance);
+}
+
+// static
+base::trace_event::MemoryAllocatorDumpGuid
+DiscardableSharedMemoryHeap::GetSegmentGUIDForTracing(uint64 tracing_process_id,
+                                                      int32 segment_id) {
+  return base::trace_event::MemoryAllocatorDumpGuid(base::StringPrintf(
+      "discardable-x-process/%" PRIx64 "/%d", tracing_process_id, segment_id));
 }
 
 }  // namespace content

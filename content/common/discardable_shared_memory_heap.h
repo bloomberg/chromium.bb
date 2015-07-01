@@ -88,6 +88,12 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
   // Dumps memory statistics for chrome://tracing.
   bool OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd);
 
+  // Returns a unique identifier for a given tuple of (process id, segment id)
+  // that can be used to match memory dumps across different processes.
+  static base::trace_event::MemoryAllocatorDumpGuid GetSegmentGUIDForTracing(
+      uint64 tracing_process_id,
+      int32 segment_id);
+
  private:
   class ScopedMemorySegment {
    public:
@@ -128,7 +134,7 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
   // Dumps memory statistics about a memory segment for chrome://tracing.
   void OnMemoryDump(const base::DiscardableSharedMemory* shared_memory,
                     size_t size,
-                    int32_t id,
+                    int32_t segment_id,
                     base::trace_event::ProcessMemoryDump* pmd);
 
   size_t block_size_;
