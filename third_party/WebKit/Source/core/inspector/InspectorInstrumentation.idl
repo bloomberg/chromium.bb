@@ -215,7 +215,7 @@ interface InspectorInstrumentation {
     [Resource, Inline=FastReturn]
     InspectorInstrumentationCookie willRecalculateStyle([Keep] Document*);
 
-    [Resource, Page, Inline=FastReturn]
+    [Resource, Inline=FastReturn]
     void didRecalculateStyle(const InspectorInstrumentationCookie&, int elementCount);
 
     [Resource, Inline=FastReturn]

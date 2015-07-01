@@ -794,12 +794,6 @@ void InspectorPageAgent::didResizeMainFrame()
     frontend()->frameResized();
 }
 
-void InspectorPageAgent::didRecalculateStyle(int)
-{
-    if (m_enabled)
-        m_overlay->update();
-}
-
 PassRefPtr<TypeBuilder::Page::Frame> InspectorPageAgent::buildObjectForFrame(LocalFrame* frame)
 {
     RefPtr<TypeBuilder::Page::Frame> frameObject = TypeBuilder::Page::Frame::create()

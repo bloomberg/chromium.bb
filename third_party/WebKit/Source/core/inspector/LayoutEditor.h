@@ -18,6 +18,7 @@ namespace blink {
 
 class JSONObject;
 class InspectorCSSAgent;
+class CSSPrimitiveValue;
 
 class CORE_EXPORT LayoutEditor final: public NoBaseWillBeGarbageCollectedFinalized<LayoutEditor>, public InspectorOverlayHost::LayoutEditorListener {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LayoutEditor);
@@ -34,6 +35,8 @@ public:
 
 private:
     explicit LayoutEditor(InspectorCSSAgent*);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> getPropertyCSSValue(CSSPropertyID) const;
+    PassRefPtr<JSONObject> createValueDescription(const String&) const;
 
     // InspectorOverlayHost::LayoutEditorListener implementation.
     void overlayStartedPropertyChange(const String&) override;

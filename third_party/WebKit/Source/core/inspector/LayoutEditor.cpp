@@ -18,7 +18,7 @@ namespace blink {
 
 namespace {
 
-PassRefPtr<JSONObject> createAnchor(float x, float y, const String& propertyName, FloatPoint deltaVector)
+PassRefPtr<JSONObject> createAnchor(float x, float y, const String& propertyName, FloatPoint deltaVector, PassRefPtr<JSONObject> valueDescription)
 {
     RefPtr<JSONObject> object = JSONObject::create();
     object->setNumber("x", x);
@@ -29,7 +29,7 @@ PassRefPtr<JSONObject> createAnchor(float x, float y, const String& propertyName
     deltaVectorJSON->setNumber("x", deltaVector.x());
     deltaVectorJSON->setNumber("y", deltaVector.y());
     object->setObject("deltaVector", deltaVectorJSON.release());
-
+    object->setObject("propertyValue", valueDescription);
     return object.release();
 }
 
@@ -120,10 +120,38 @@ PassRefPtr<JSONObject> LayoutEditor::buildJSONInfo() const
 
     RefPtr<JSONObject> object = JSONObject::create();
     RefPtr<JSONArray> anchors = JSONArray::create();
-    anchors->pushObject(createAnchor(xLeft, yLeft, "padding-left", orthoLeft));
-    anchors->pushObject(createAnchor(xRight, yRight, "padding-right", orthoRight));
-    object->setArray("anchors", anchors.release());
 
+    RefPtr<JSONObject> paddingLeftDescription = createValueDescription("padding-left");
+    if (paddingLeftDescription)
+        anchors->pushObject(createAnchor(xLeft, yLeft, "padding-left", orthoLeft, paddingLeftDescription.release()));
+
+    RefPtr<JSONObject> paddingRightDescription = createValueDescription("padding-right");
+    if (paddingRightDescription)
+        anchors->pushObject(createAnchor(xRight, yRight, "padding-right", orthoRight, paddingRightDescription.release()));
+
+    object->setArray("anchors", anchors.release());
+    return object.release();
+}
+
+RefPtrWillBeRawPtr<CSSPrimitiveValue> LayoutEditor::getPropertyCSSValue(CSSPropertyID property) const
+{
+    RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> computedStyleInfo = CSSComputedStyleDeclaration::create(m_node, true);
+    RefPtrWillBeRawPtr<CSSValue> cssValue = computedStyleInfo->getPropertyCSSValue(property);
+    if (!cssValue->isPrimitiveValue())
+        return nullptr;
+
+    return toCSSPrimitiveValue(cssValue.get());
+}
+
+PassRefPtr<JSONObject> LayoutEditor::createValueDescription(const String& propertyName) const
+{
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> cssValue = getPropertyCSSValue(cssPropertyID(propertyName));
+    if (!cssValue)
+        return nullptr;
+
+    RefPtr<JSONObject> object = JSONObject::create();
+    object->setNumber("value", cssValue->getFloatValue());
+    object->setString("unit", "px");
     return object.release();
 }
 
@@ -133,14 +161,13 @@ void LayoutEditor::overlayStartedPropertyChange(const String& anchorName)
     if (!m_node || !m_changingProperty)
         return;
 
-    RefPtrWillBeRawPtr<CSSComputedStyleDeclaration> computedStyleInfo = CSSComputedStyleDeclaration::create(m_node, true);
-    RefPtrWillBeRawPtr<CSSValue> cssValue = computedStyleInfo->getPropertyCSSValue(m_changingProperty);
-    if (!cssValue->isPrimitiveValue()) {
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> cssValue = getPropertyCSSValue(m_changingProperty);
+    if (!cssValue) {
         m_changingProperty = CSSPropertyInvalid;
         return;
     }
 
-    m_propertyInitialValue = toCSSPrimitiveValue(cssValue.get())->getFloatValue();
+    m_propertyInitialValue = cssValue->getFloatValue();
 }
 
 void LayoutEditor::overlayPropertyChanged(float cssDelta)

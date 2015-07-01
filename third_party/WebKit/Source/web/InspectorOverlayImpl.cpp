@@ -315,12 +315,12 @@ void InspectorOverlayImpl::drawNodeHighlight()
         highlight.appendEventTargetQuads(m_eventTargetNode.get(), m_nodeHighlightConfig);
 
     RefPtr<JSONObject> highlightJSON = highlight.asJSONObject();
+    evaluateInOverlay("drawHighlight", highlightJSON.release());
     if (m_layoutEditor) {
         RefPtr<JSONObject> layoutEditorInfo = m_layoutEditor->buildJSONInfo();
         if (layoutEditorInfo)
-            highlightJSON->setObject("layoutEditorInfo", layoutEditorInfo.release());
+            evaluateInOverlay("showLayoutEditor", layoutEditorInfo.release());
     }
-    evaluateInOverlay("drawHighlight", highlightJSON.release());
 }
 
 void InspectorOverlayImpl::drawQuadHighlight()
