@@ -12,7 +12,12 @@
 namespace cc {
 namespace {
 
-TEST(DisplayListRecordingSourceTest, DiscardablePixelRefsWithTransform) {
+class DisplayListRecordingSourceTest : public testing::Test {
+ public:
+  void SetUp() override {}
+};
+
+TEST_F(DisplayListRecordingSourceTest, DiscardablePixelRefsWithTransform) {
   gfx::Size grid_cell_size(128, 128);
   gfx::Rect recorded_viewport(256, 256);
 
@@ -160,6 +165,50 @@ TEST(DisplayListRecordingSourceTest, DiscardablePixelRefsWithTransform) {
     EXPECT_TRUE(pixel_refs[5] == discardable_bitmap[1][1].pixelRef());
     EXPECT_EQ(6u, pixel_refs.size());
   }
+}
+
+TEST_F(DisplayListRecordingSourceTest, ExposesEnoughNewAreaEmpty) {
+  // Both empty means there is nothing to do.
+  EXPECT_FALSE(DisplayListRecordingSource::ExposesEnoughNewArea(gfx::Rect(),
+                                                                gfx::Rect()));
+  // Going from empty to non-empty means we must re-record because it could be
+  // the first frame after construction or Clear.
+  EXPECT_TRUE(DisplayListRecordingSource::ExposesEnoughNewArea(
+      gfx::Rect(), gfx::Rect(1, 1)));
+
+  // Going from non-empty to empty is not special-cased.
+  EXPECT_FALSE(DisplayListRecordingSource::ExposesEnoughNewArea(gfx::Rect(1, 1),
+                                                                gfx::Rect()));
+}
+
+TEST_F(DisplayListRecordingSourceTest, ExposesEnoughNewAreaNotBigEnough) {
+  gfx::Rect current_recorded_viewport(100, 100, 100, 100);
+  EXPECT_FALSE(DisplayListRecordingSource::ExposesEnoughNewArea(
+      current_recorded_viewport, gfx::Rect(100, 100, 90, 90)));
+  EXPECT_FALSE(DisplayListRecordingSource::ExposesEnoughNewArea(
+      current_recorded_viewport, gfx::Rect(100, 100, 100, 100)));
+  EXPECT_FALSE(DisplayListRecordingSource::ExposesEnoughNewArea(
+      current_recorded_viewport, gfx::Rect(0, 0, 200, 200)));
+}
+
+TEST_F(DisplayListRecordingSourceTest, ExposesEnoughNewAreaScrollScenarios) {
+  gfx::Rect current_recorded_viewport(100, 100, 100, 100);
+
+  gfx::Rect new_recorded_viewport(current_recorded_viewport);
+  new_recorded_viewport.Offset(512, 0);
+  EXPECT_FALSE(DisplayListRecordingSource::ExposesEnoughNewArea(
+      current_recorded_viewport, new_recorded_viewport));
+  new_recorded_viewport.Offset(0, 512);
+  EXPECT_FALSE(DisplayListRecordingSource::ExposesEnoughNewArea(
+      current_recorded_viewport, new_recorded_viewport));
+
+  new_recorded_viewport.Offset(1, 0);
+  EXPECT_TRUE(DisplayListRecordingSource::ExposesEnoughNewArea(
+      current_recorded_viewport, new_recorded_viewport));
+
+  new_recorded_viewport.Offset(-1, 1);
+  EXPECT_TRUE(DisplayListRecordingSource::ExposesEnoughNewArea(
+      current_recorded_viewport, new_recorded_viewport));
 }
 
 }  // namespace

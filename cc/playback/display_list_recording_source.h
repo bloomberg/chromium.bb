@@ -35,6 +35,11 @@ class CC_EXPORT DisplayListRecordingSource : public RecordingSource {
   bool IsSuitableForGpuRasterization() const override;
   void SetUnsuitableForGpuRasterizationForTesting() override;
   gfx::Size GetTileGridSizeForTesting() const override;
+  // Returns true if the new recorded viewport exposes enough new area to be
+  // worth re-recording.
+  static bool ExposesEnoughNewArea(
+      const gfx::Rect& current_recorded_viewport,
+      const gfx::Rect& potential_new_recorded_viewport);
 
  protected:
   void Clear();

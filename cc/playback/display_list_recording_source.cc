@@ -23,6 +23,12 @@ const int kPixelDistanceToRecord = 8000;
 // operations.
 const int kOpCountThatIsOkToAnalyze = 10;
 
+// This is the distance, in layer space, by which the recorded viewport has to
+// change before causing a paint of the new content. For example, it means
+// that one has to scroll a very large page by 512 pixels before we will
+// re-record a new DisplayItemList for an updated recorded viewport.
+const int kMinimumDistanceBeforeUpdatingRecordedViewport = 512;
+
 #ifdef NDEBUG
 const bool kDefaultClearCanvasSetting = false;
 #else
@@ -55,6 +61,29 @@ DisplayListRecordingSource::DisplayListRecordingSource(
 DisplayListRecordingSource::~DisplayListRecordingSource() {
 }
 
+// This method only really makes sense to call if the size of the layer didn't
+// change.
+bool DisplayListRecordingSource::ExposesEnoughNewArea(
+    const gfx::Rect& current_recorded_viewport,
+    const gfx::Rect& potential_new_recorded_viewport) {
+  // If both are empty, nothing to do.
+  if (current_recorded_viewport.IsEmpty() &&
+      potential_new_recorded_viewport.IsEmpty())
+    return false;
+
+  // Re-record when going from empty to not-empty, to cover cases where
+  // the layer is recorded for the first time, or otherwise becomes visible.
+  if (current_recorded_viewport.IsEmpty())
+    return true;
+
+  // Only return true if the new viewport includes area outside of a skirt
+  // around the existng viewport.
+  gfx::Rect expanded_viewport(current_recorded_viewport);
+  expanded_viewport.Inset(-kMinimumDistanceBeforeUpdatingRecordedViewport,
+                          -kMinimumDistanceBeforeUpdatingRecordedViewport);
+  return !expanded_viewport.Contains(potential_new_recorded_viewport);
+}
+
 bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
     ContentLayerClient* painter,
     Region* invalidation,
@@ -70,12 +99,19 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
     updated = true;
   }
 
-  gfx::Rect old_recorded_viewport = recorded_viewport_;
-  recorded_viewport_ = visible_layer_rect;
-  recorded_viewport_.Inset(-pixel_record_distance_, -pixel_record_distance_);
-  recorded_viewport_.Intersect(gfx::Rect(GetSize()));
+  // The recorded viewport is the visible layer rect, expanded
+  // by the pixel record distance, up to a maximum of the total
+  // layer size.
+  gfx::Rect potential_new_recorded_viewport = visible_layer_rect;
+  potential_new_recorded_viewport.Inset(-pixel_record_distance_,
+                                        -pixel_record_distance_);
+  potential_new_recorded_viewport.Intersect(gfx::Rect(GetSize()));
 
-  if (recorded_viewport_ != old_recorded_viewport) {
+  if (updated || ExposesEnoughNewArea(potential_new_recorded_viewport,
+                                      recorded_viewport_)) {
+    gfx::Rect old_recorded_viewport = recorded_viewport_;
+    recorded_viewport_ = potential_new_recorded_viewport;
+
     // Invalidate newly-exposed and no-longer-exposed areas.
     Region newly_exposed_region(recorded_viewport_);
     newly_exposed_region.Subtract(old_recorded_viewport);
