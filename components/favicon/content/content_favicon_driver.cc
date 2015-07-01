@@ -84,13 +84,13 @@ bool ContentFaviconDriver::IsOffTheRecord() {
 
 GURL ContentFaviconDriver::GetActiveURL() {
   content::NavigationEntry* entry =
-      web_contents()->GetController().GetActiveEntry();
+      web_contents()->GetController().GetLastCommittedEntry();
   return entry ? entry->GetURL() : GURL();
 }
 
 base::string16 ContentFaviconDriver::GetActiveTitle() {
   content::NavigationEntry* entry =
-      web_contents()->GetController().GetActiveEntry();
+      web_contents()->GetController().GetLastCommittedEntry();
   return entry ? entry->GetTitle() : base::string16();
 }
 
@@ -119,8 +119,8 @@ void ContentFaviconDriver::SetActiveFaviconImage(const gfx::Image& image) {
 }
 
 content::FaviconStatus& ContentFaviconDriver::GetFaviconStatus() {
-  DCHECK(web_contents()->GetController().GetActiveEntry());
-  return web_contents()->GetController().GetActiveEntry()->GetFavicon();
+  DCHECK(web_contents()->GetController().GetLastCommittedEntry());
+  return web_contents()->GetController().GetLastCommittedEntry()->GetFavicon();
 }
 
 ContentFaviconDriver::ContentFaviconDriver(
