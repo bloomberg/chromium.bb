@@ -7,6 +7,7 @@
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/browser_window_layout.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 
 class BrowserWindowLayoutTest : public testing::Test {
  public:
@@ -56,21 +57,17 @@ class BrowserWindowLayoutTest : public testing::Test {
 TEST_F(BrowserWindowLayoutTest, TestAllViews) {
   chrome::LayoutOutput output = [layout computeLayout];
 
-  EXPECT_TRUE(
-      NSEqualRects(NSMakeRect(0, 585, 600, 37), output.tabStripLayout.frame));
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(502, 589, 63, 28),
-                           output.tabStripLayout.avatarFrame));
+  EXPECT_NSEQ(NSMakeRect(0, 585, 600, 37), output.tabStripLayout.frame);
+  EXPECT_NSEQ(NSMakeRect(502, 589, 63, 28), output.tabStripLayout.avatarFrame);
   EXPECT_EQ(70, output.tabStripLayout.leftIndent);
   EXPECT_EQ(98, output.tabStripLayout.rightIndent);
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 553, 600, 32), output.toolbarFrame));
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 527, 600, 26), output.bookmarkFrame));
-  EXPECT_TRUE(NSEqualRects(NSZeroRect, output.fullscreenBackingBarFrame));
+  EXPECT_NSEQ(NSMakeRect(0, 553, 600, 32), output.toolbarFrame);
+  EXPECT_NSEQ(NSMakeRect(0, 527, 600, 26), output.bookmarkFrame);
+  EXPECT_NSEQ(NSZeroRect, output.fullscreenBackingBarFrame);
   EXPECT_EQ(527, output.findBarMaxY);
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 455, 600, 111), output.infoBarFrame));
-  EXPECT_TRUE(
-      NSEqualRects(NSMakeRect(0, 0, 600, 44), output.downloadShelfFrame));
-  EXPECT_TRUE(
-      NSEqualRects(NSMakeRect(0, 44, 600, 411), output.contentAreaFrame));
+  EXPECT_NSEQ(NSMakeRect(0, 455, 600, 111), output.infoBarFrame);
+  EXPECT_NSEQ(NSMakeRect(0, 0, 600, 44), output.downloadShelfFrame);
+  EXPECT_NSEQ(NSMakeRect(0, 44, 600, 411), output.contentAreaFrame);
 }
 
 TEST_F(BrowserWindowLayoutTest, TestAllViewsFullscreen) {
@@ -78,24 +75,19 @@ TEST_F(BrowserWindowLayoutTest, TestAllViewsFullscreen) {
 
   chrome::LayoutOutput output = [layout computeLayout];
 
-  EXPECT_TRUE(
-      NSEqualRects(NSMakeRect(0, 585, 600, 37), output.tabStripLayout.frame));
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(533, 589, 63, 28),
-                           output.tabStripLayout.avatarFrame));
+  EXPECT_NSEQ(NSMakeRect(0, 585, 600, 37), output.tabStripLayout.frame);
+  EXPECT_NSEQ(NSMakeRect(533, 589, 63, 28), output.tabStripLayout.avatarFrame);
   EXPECT_EQ(0, output.tabStripLayout.leftIndent);
   EXPECT_FALSE(output.tabStripLayout.addCustomWindowControls);
   EXPECT_EQ(67, output.tabStripLayout.rightIndent);
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 553, 600, 32), output.toolbarFrame));
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 527, 600, 26), output.bookmarkFrame));
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 527, 600, 95),
-                           output.fullscreenBackingBarFrame));
+  EXPECT_NSEQ(NSMakeRect(0, 553, 600, 32), output.toolbarFrame);
+  EXPECT_NSEQ(NSMakeRect(0, 527, 600, 26), output.bookmarkFrame);
+  EXPECT_NSEQ(NSMakeRect(0, 527, 600, 95), output.fullscreenBackingBarFrame);
   EXPECT_EQ(527, output.findBarMaxY);
   EXPECT_EQ(527, output.fullscreenExitButtonMaxY);
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 455, 600, 111), output.infoBarFrame));
-  EXPECT_TRUE(
-      NSEqualRects(NSMakeRect(0, 0, 600, 44), output.downloadShelfFrame));
-  EXPECT_TRUE(
-      NSEqualRects(NSMakeRect(0, 44, 600, 411), output.contentAreaFrame));
+  EXPECT_NSEQ(NSMakeRect(0, 455, 600, 111), output.infoBarFrame);
+  EXPECT_NSEQ(NSMakeRect(0, 0, 600, 44), output.downloadShelfFrame);
+  EXPECT_NSEQ(NSMakeRect(0, 44, 600, 411), output.contentAreaFrame);
 }
 
 // In fullscreen mode for Yosemite, the tab strip's left indent should be
@@ -116,24 +108,19 @@ TEST_F(BrowserWindowLayoutTest, TestAllViewsFullscreenMenuBarShowing) {
 
   chrome::LayoutOutput output = [layout computeLayout];
 
-  EXPECT_TRUE(
-      NSEqualRects(NSMakeRect(0, 575, 600, 37), output.tabStripLayout.frame));
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(533, 579, 63, 28),
-                           output.tabStripLayout.avatarFrame));
+  EXPECT_NSEQ(NSMakeRect(0, 575, 600, 37), output.tabStripLayout.frame);
+  EXPECT_NSEQ(NSMakeRect(533, 579, 63, 28), output.tabStripLayout.avatarFrame);
   EXPECT_EQ(0, output.tabStripLayout.leftIndent);
   EXPECT_FALSE(output.tabStripLayout.addCustomWindowControls);
   EXPECT_EQ(67, output.tabStripLayout.rightIndent);
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 543, 600, 32), output.toolbarFrame));
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 517, 600, 26), output.bookmarkFrame));
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 517, 600, 95),
-                           output.fullscreenBackingBarFrame));
+  EXPECT_NSEQ(NSMakeRect(0, 543, 600, 32), output.toolbarFrame);
+  EXPECT_NSEQ(NSMakeRect(0, 517, 600, 26), output.bookmarkFrame);
+  EXPECT_NSEQ(NSMakeRect(0, 517, 600, 95), output.fullscreenBackingBarFrame);
   EXPECT_EQ(517, output.findBarMaxY);
   EXPECT_EQ(517, output.fullscreenExitButtonMaxY);
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 445, 600, 111), output.infoBarFrame));
-  EXPECT_TRUE(
-      NSEqualRects(NSMakeRect(0, 0, 600, 44), output.downloadShelfFrame));
-  EXPECT_TRUE(
-      NSEqualRects(NSMakeRect(0, 44, 600, 411), output.contentAreaFrame));
+  EXPECT_NSEQ(NSMakeRect(0, 445, 600, 111), output.infoBarFrame);
+  EXPECT_NSEQ(NSMakeRect(0, 0, 600, 44), output.downloadShelfFrame);
+  EXPECT_NSEQ(NSMakeRect(0, 44, 600, 411), output.contentAreaFrame);
 }
 
 TEST_F(BrowserWindowLayoutTest, TestPopupWindow) {
@@ -145,18 +132,17 @@ TEST_F(BrowserWindowLayoutTest, TestPopupWindow) {
 
   chrome::LayoutOutput output = [layout computeLayout];
 
-  EXPECT_TRUE(NSEqualRects(NSZeroRect, output.tabStripLayout.frame));
-  EXPECT_TRUE(NSEqualRects(NSZeroRect, output.tabStripLayout.avatarFrame));
+  EXPECT_NSEQ(NSZeroRect, output.tabStripLayout.frame);
+  EXPECT_NSEQ(NSZeroRect, output.tabStripLayout.avatarFrame);
   EXPECT_EQ(0, output.tabStripLayout.leftIndent);
   EXPECT_EQ(0, output.tabStripLayout.rightIndent);
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(1, 568, 598, 32), output.toolbarFrame));
-  EXPECT_TRUE(NSEqualRects(NSZeroRect, output.bookmarkFrame));
-  EXPECT_TRUE(NSEqualRects(NSZeroRect, output.fullscreenBackingBarFrame));
+  EXPECT_NSEQ(NSMakeRect(1, 568, 598, 32), output.toolbarFrame);
+  EXPECT_NSEQ(NSZeroRect, output.bookmarkFrame);
+  EXPECT_NSEQ(NSZeroRect, output.fullscreenBackingBarFrame);
   EXPECT_EQ(567, output.findBarMaxY);
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 495, 600, 72), output.infoBarFrame));
-  EXPECT_TRUE(NSEqualRects(NSZeroRect, output.downloadShelfFrame));
-  EXPECT_TRUE(
-      NSEqualRects(NSMakeRect(0, 0, 600, 495), output.contentAreaFrame));
+  EXPECT_NSEQ(NSMakeRect(0, 495, 600, 72), output.infoBarFrame);
+  EXPECT_NSEQ(NSZeroRect, output.downloadShelfFrame);
+  EXPECT_NSEQ(NSMakeRect(0, 0, 600, 495), output.contentAreaFrame);
 }
 
 // Old style avatar button is on the right of the fullscreen button.
@@ -215,7 +201,7 @@ TEST_F(BrowserWindowLayoutTest, TestInfobarLayoutWithoutToolbarOrLocationBar) {
 
   chrome::LayoutOutput output = [layout computeLayout];
 
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(0, 528, 600, 72), output.infoBarFrame));
+  EXPECT_NSEQ(NSMakeRect(0, 528, 600, 72), output.infoBarFrame);
 }
 
 // Tests that the avatar button is not aligned on the half pixel.
@@ -224,6 +210,5 @@ TEST_F(BrowserWindowLayoutTest, TestAvatarButtonPixelAlignment) {
 
   chrome::LayoutOutput output = [layout computeLayout];
 
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(537, 589, 28, 28),
-                           output.tabStripLayout.avatarFrame));
+  EXPECT_NSEQ(NSMakeRect(537, 589, 28, 28), output.tabStripLayout.avatarFrame);
 }

@@ -24,6 +24,7 @@
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/common/constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#import "testing/gtest_mac.h"
 #import "ui/base/test/nswindow_fullscreen_notification_waiter.h"
 #import "ui/base/test/windowed_nsnotification_observer.h"
 #import "ui/gfx/mac/nswindow_frame_controls.h"
@@ -282,23 +283,23 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, Minimize) {
 
   // Native minimize, Restore.
   [ns_window miniaturize:nil];
-  EXPECT_TRUE(NSEqualRects(initial_frame, [ns_window frame]));
+  EXPECT_NSEQ(initial_frame, [ns_window frame]);
   EXPECT_TRUE(window->IsMinimized());
   EXPECT_TRUE([ns_window isMiniaturized]);
 
   app_window->Restore();
-  EXPECT_TRUE(NSEqualRects(initial_frame, [ns_window frame]));
+  EXPECT_NSEQ(initial_frame, [ns_window frame]);
   EXPECT_FALSE(window->IsMinimized());
   EXPECT_FALSE([ns_window isMiniaturized]);
 
   // Minimize, native restore.
   app_window->Minimize();
-  EXPECT_TRUE(NSEqualRects(initial_frame, [ns_window frame]));
+  EXPECT_NSEQ(initial_frame, [ns_window frame]);
   EXPECT_TRUE(window->IsMinimized());
   EXPECT_TRUE([ns_window isMiniaturized]);
 
   [ns_window deminiaturize:nil];
-  EXPECT_TRUE(NSEqualRects(initial_frame, [ns_window frame]));
+  EXPECT_NSEQ(initial_frame, [ns_window frame]);
   EXPECT_FALSE(window->IsMinimized());
   EXPECT_FALSE([ns_window isMiniaturized]);
 }
@@ -329,7 +330,7 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, Maximize) {
   [ns_window zoom:nil];
   [watcher wait];
   EXPECT_EQ(initial_restored_bounds, window->GetRestoredBounds());
-  EXPECT_TRUE(NSEqualRects(maximized_frame, [ns_window frame]));
+  EXPECT_NSEQ(maximized_frame, [ns_window frame]);
   EXPECT_TRUE(window->IsMaximized());
 
   watcher.reset([[WindowedNSNotificationObserver alloc]
@@ -338,7 +339,7 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, Maximize) {
   app_window->Restore();
   [watcher wait];
   EXPECT_EQ(initial_restored_bounds, window->GetRestoredBounds());
-  EXPECT_TRUE(NSEqualRects(initial_frame, [ns_window frame]));
+  EXPECT_NSEQ(initial_frame, [ns_window frame]);
   EXPECT_FALSE(window->IsMaximized());
 
   // Maximize, native restore.
@@ -348,7 +349,7 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, Maximize) {
   app_window->Maximize();
   [watcher wait];
   EXPECT_EQ(initial_restored_bounds, window->GetRestoredBounds());
-  EXPECT_TRUE(NSEqualRects(maximized_frame, [ns_window frame]));
+  EXPECT_NSEQ(maximized_frame, [ns_window frame]);
   EXPECT_TRUE(window->IsMaximized());
 
   watcher.reset([[WindowedNSNotificationObserver alloc]
@@ -357,7 +358,7 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, Maximize) {
   [ns_window zoom:nil];
   [watcher wait];
   EXPECT_EQ(initial_restored_bounds, window->GetRestoredBounds());
-  EXPECT_TRUE(NSEqualRects(initial_frame, [ns_window frame]));
+  EXPECT_NSEQ(initial_frame, [ns_window frame]);
   EXPECT_FALSE(window->IsMaximized());
 }
 
@@ -385,7 +386,7 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, MaximizeConstrained) {
   app_window->Maximize();
   [watcher wait];
   EXPECT_EQ(initial_restored_bounds, window->GetRestoredBounds());
-  EXPECT_TRUE(NSEqualRects(maximized_frame, [ns_window frame]));
+  EXPECT_NSEQ(maximized_frame, [ns_window frame]);
   EXPECT_TRUE(window->IsMaximized());
 
   watcher.reset([[WindowedNSNotificationObserver alloc]
@@ -394,7 +395,7 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, MaximizeConstrained) {
   app_window->Restore();
   [watcher wait];
   EXPECT_EQ(initial_restored_bounds, window->GetRestoredBounds());
-  EXPECT_TRUE(NSEqualRects(initial_frame, [ns_window frame]));
+  EXPECT_NSEQ(initial_frame, [ns_window frame]);
   EXPECT_FALSE(window->IsMaximized());
 }
 
@@ -419,30 +420,30 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, MinimizeMaximize) {
                    object:ns_window]);
   app_window->Maximize();
   [watcher wait];
-  EXPECT_TRUE(NSEqualRects(maximized_frame, [ns_window frame]));
+  EXPECT_NSEQ(maximized_frame, [ns_window frame]);
   EXPECT_TRUE(window->IsMaximized());
 
   app_window->Minimize();
-  EXPECT_TRUE(NSEqualRects(maximized_frame, [ns_window frame]));
+  EXPECT_NSEQ(maximized_frame, [ns_window frame]);
   EXPECT_FALSE(window->IsMaximized());
   EXPECT_TRUE(window->IsMinimized());
   EXPECT_TRUE([ns_window isMiniaturized]);
 
   app_window->Restore();
-  EXPECT_TRUE(NSEqualRects(initial_frame, [ns_window frame]));
+  EXPECT_NSEQ(initial_frame, [ns_window frame]);
   EXPECT_FALSE(window->IsMaximized());
   EXPECT_FALSE(window->IsMinimized());
   EXPECT_FALSE([ns_window isMiniaturized]);
 
   // Minimize, Maximize.
   app_window->Minimize();
-  EXPECT_TRUE(NSEqualRects(initial_frame, [ns_window frame]));
+  EXPECT_NSEQ(initial_frame, [ns_window frame]);
   EXPECT_TRUE(window->IsMinimized());
   EXPECT_TRUE([ns_window isMiniaturized]);
 
   app_window->Maximize();
   EXPECT_TRUE([ns_window isVisible]);
-  EXPECT_TRUE(NSEqualRects(maximized_frame, [ns_window frame]));
+  EXPECT_NSEQ(maximized_frame, [ns_window frame]);
   EXPECT_TRUE(window->IsMaximized());
   EXPECT_FALSE(window->IsMinimized());
   EXPECT_FALSE([ns_window isMiniaturized]);
@@ -473,7 +474,7 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest,
                    object:ns_window]);
   app_window->Maximize();
   [watcher wait];
-  EXPECT_TRUE(NSEqualRects(maximized_frame, [ns_window frame]));
+  EXPECT_NSEQ(maximized_frame, [ns_window frame]);
   EXPECT_TRUE(window->IsMaximized());
 
   EXPECT_EQ(0, [waiter enterCount]);
@@ -484,12 +485,12 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest,
 
   app_window->Restore();
   [waiter waitForEnterCount:1 exitCount:1];
-  EXPECT_TRUE(NSEqualRects(maximized_frame, [ns_window frame]));
+  EXPECT_NSEQ(maximized_frame, [ns_window frame]);
   EXPECT_TRUE(window->IsMaximized());
   EXPECT_FALSE(window->IsFullscreen());
 
   app_window->Restore();
-  EXPECT_TRUE(NSEqualRects(initial_frame, [ns_window frame]));
+  EXPECT_NSEQ(initial_frame, [ns_window frame]);
   EXPECT_FALSE(window->IsMaximized());
 
   // Fullscreen, Maximize, Restore.
@@ -504,7 +505,7 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest,
 
   app_window->Restore();
   [waiter waitForEnterCount:2 exitCount:2];
-  EXPECT_TRUE(NSEqualRects(initial_frame, [ns_window frame]));
+  EXPECT_NSEQ(initial_frame, [ns_window frame]);
   EXPECT_FALSE(window->IsMaximized());
   EXPECT_FALSE(window->IsFullscreen());
 }

@@ -10,6 +10,7 @@
 #import "chrome/browser/ui/cocoa/styled_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/styled_text_field_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 
 namespace {
 
@@ -131,14 +132,14 @@ TEST_F(StyledTextFieldTest, ResetFieldEditorBase) {
   EXPECT_EQ(0, [cell_ rightMargin]);
   [cell_ setLeftMargin:10];
   [field_ resetFieldEditorFrameIfNeeded];
-  EXPECT_FALSE(NSEqualRects(baseEditorFrame, EditorFrame()));
+  EXPECT_NSNE(baseEditorFrame, EditorFrame());
   EXPECT_TRUE(NSContainsRect(baseEditorFrame, EditorFrame()));
 
   // Resetting the margin and using -resetFieldEditorFrameIfNeeded should result
   // in the same frame as the standard focus machinery.
   [cell_ setLeftMargin:0];
   [field_ resetFieldEditorFrameIfNeeded];
-  EXPECT_TRUE(NSEqualRects(baseEditorFrame, EditorFrame()));
+  EXPECT_NSEQ(baseEditorFrame, EditorFrame());
 }
 
 // Test that the field editor gets the same bounds when focus is delivered by
@@ -157,14 +158,14 @@ TEST_F(StyledTextFieldTest, ResetFieldEditorLeftMargin) {
   // Clearing the margin should result in a strictly larger editor frame.
   [cell_ setLeftMargin:0];
   [field_ resetFieldEditorFrameIfNeeded];
-  EXPECT_FALSE(NSEqualRects(baseEditorFrame, EditorFrame()));
+  EXPECT_NSNE(baseEditorFrame, EditorFrame());
   EXPECT_TRUE(NSContainsRect(EditorFrame(), baseEditorFrame));
 
   // Setting the same margin and using -resetFieldEditorFrameIfNeeded should
   // result in the same frame as the standard focus machinery.
   [cell_ setLeftMargin:kLeftMargin];
   [field_ resetFieldEditorFrameIfNeeded];
-  EXPECT_TRUE(NSEqualRects(baseEditorFrame, EditorFrame()));
+  EXPECT_NSEQ(baseEditorFrame, EditorFrame());
 }
 
 // Test that the field editor gets the same bounds when focus is delivered by
@@ -183,14 +184,14 @@ TEST_F(StyledTextFieldTest, ResetFieldEditorRightMargin) {
   // Clearing the margin should result in a strictly larger editor frame.
   [cell_ setRightMargin:0];
   [field_ resetFieldEditorFrameIfNeeded];
-  EXPECT_FALSE(NSEqualRects(baseEditorFrame, EditorFrame()));
+  EXPECT_NSNE(baseEditorFrame, EditorFrame());
   EXPECT_TRUE(NSContainsRect(EditorFrame(), baseEditorFrame));
 
   // Setting the same margin and using -resetFieldEditorFrameIfNeeded should
   // result in the same frame as the standard focus machinery.
   [cell_ setRightMargin:kRightMargin];
   [field_ resetFieldEditorFrameIfNeeded];
-  EXPECT_TRUE(NSEqualRects(baseEditorFrame, EditorFrame()));
+  EXPECT_NSEQ(baseEditorFrame, EditorFrame());
 }
 
 }  // namespace

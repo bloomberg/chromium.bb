@@ -496,7 +496,7 @@ TEST_F(StatusBubbleMacTest, UpdateSizeAndPosition) {
   NSRect rect_before = [GetWindow() frame];
   bubble_->UpdateSizeAndPosition();
   NSRect rect_after = [GetWindow() frame];
-  EXPECT_TRUE(NSEqualRects(rect_before, rect_after));
+  EXPECT_NSEQ(rect_before, rect_after);
 
   // Move the window and call resize; only the origin should change.
   NSWindow* window = test_window();
@@ -534,7 +534,7 @@ TEST_F(StatusBubbleMacTest, MovingWindowUpdatesPosition) {
   // Show the bubble and make sure it has the same origin as |window|.
   bubble_->SetStatus(UTF8ToUTF16("Showing"));
   StatusBubbleWindow* child = GetWindow();
-  EXPECT_TRUE(NSEqualPoints([window frame].origin, [child frame].origin));
+  EXPECT_NSEQ([window frame].origin, [child frame].origin);
 
   // Hide the bubble, move the window, and show it again.
   bubble_->Hide();
@@ -545,7 +545,7 @@ TEST_F(StatusBubbleMacTest, MovingWindowUpdatesPosition) {
 
   // The bubble should reattach in the correct location.
   child = GetWindow();
-  EXPECT_TRUE(NSEqualPoints([window frame].origin, [child frame].origin));
+  EXPECT_NSEQ([window frame].origin, [child frame].origin);
 }
 
 TEST_F(StatusBubbleMacTest, StatuBubbleRespectsBaseFrameLimits) {
@@ -554,7 +554,7 @@ TEST_F(StatusBubbleMacTest, StatuBubbleRespectsBaseFrameLimits) {
   // Show the bubble and make sure it has the same origin as |window|.
   bubble_->SetStatus(UTF8ToUTF16("Showing"));
   StatusBubbleWindow* child = GetWindow();
-  EXPECT_TRUE(NSEqualPoints([window frame].origin, [child frame].origin));
+  EXPECT_NSEQ([window frame].origin, [child frame].origin);
 
   // Hide the bubble, change base frame offset, and show it again.
   bubble_->Hide();
@@ -570,7 +570,7 @@ TEST_F(StatusBubbleMacTest, StatuBubbleRespectsBaseFrameLimits) {
   NSPoint expectedOrigin = [window frame].origin;
   expectedOrigin.x += baseFrameOffset.x;
   expectedOrigin.y += baseFrameOffset.y;
-  EXPECT_TRUE(NSEqualPoints(expectedOrigin, [child frame].origin));
+  EXPECT_NSEQ(expectedOrigin, [child frame].origin);
 }
 
 TEST_F(StatusBubbleMacTest, ExpandBubble) {

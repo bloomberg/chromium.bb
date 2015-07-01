@@ -9,6 +9,7 @@
 #import "chrome/browser/ui/cocoa/website_settings/permission_bubble_cocoa.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_browser_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#import "testing/gtest_mac.h"
 #import "ui/base/cocoa/fullscreen_window_manager.h"
 
 namespace {
@@ -84,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest,
   LocationBarViewMac* location_bar_bridge = [controller locationBarBridge];
   NSPoint expected = location_bar_bridge->GetPageInfoBubblePoint();
   expected = [window convertBaseToScreen:expected];
-  EXPECT_TRUE(NSEqualPoints(expected, anchor));
+  EXPECT_NSEQ(expected, anchor);
   bubble.Hide();
 }
 
@@ -102,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest,
   NSRect frame = [window frame];
   NSPoint expected = NSMakePoint(frame.size.width / 2, frame.size.height);
   expected = [window convertBaseToScreen:expected];
-  EXPECT_TRUE(NSEqualPoints(expected, anchor));
+  EXPECT_NSEQ(expected, anchor);
   bubble.Hide();
 }
 
@@ -120,6 +121,6 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest,
 
   // The bubble should be in different places depending if the location bar is
   // available or not.
-  EXPECT_FALSE(NSEqualPoints(withLocationBar, withoutLocationBar));
+  EXPECT_NSNE(withLocationBar, withoutLocationBar);
   bubble.Hide();
 }

@@ -6,6 +6,7 @@
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/fullscreen_window.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 @interface PerformCloseUIItem : NSObject<NSValidatedUserInterfaceItem>
@@ -32,7 +33,7 @@ TEST_F(FullscreenWindowTest, Basics) {
   EXPECT_TRUE([window canBecomeKeyWindow]);
   EXPECT_TRUE([window canBecomeMainWindow]);
   EXPECT_EQ(NSBorderlessWindowMask, [window styleMask]);
-  EXPECT_TRUE(NSEqualRects([[NSScreen mainScreen] frame], [window frame]));
+  EXPECT_NSEQ([[NSScreen mainScreen] frame], [window frame]);
   EXPECT_FALSE([window isReleasedWhenClosed]);
 }
 

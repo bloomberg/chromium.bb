@@ -9,6 +9,7 @@
 #import "base/mac/scoped_nsautorelease_pool.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#import "testing/gtest_mac.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/native/native_view_host_test_base.h"
 #include "ui/views/view.h"
@@ -84,7 +85,7 @@ TEST_F(NativeViewHostMacTest, Attach) {
 
   EXPECT_FALSE([native_view_ superview]);
   EXPECT_FALSE([native_view_ window]);
-  EXPECT_TRUE(NSEqualRects(NSZeroRect, [native_view_ frame]));
+  EXPECT_NSEQ(NSZeroRect, [native_view_ frame]);
 
   host()->Attach(native_view_);
   EXPECT_TRUE([native_view_ superview]);
@@ -92,8 +93,7 @@ TEST_F(NativeViewHostMacTest, Attach) {
 
   // Expect the top-left to be 10 pixels below the titlebar.
   int bottom = toplevel()->GetClientAreaBoundsInScreen().height() - 10 - 60;
-  EXPECT_TRUE(NSEqualRects(NSMakeRect(10, bottom, 80, 60),
-                           [native_view_ frame]));
+  EXPECT_NSEQ(NSMakeRect(10, bottom, 80, 60), [native_view_ frame]);
 
   DestroyHost();
 }

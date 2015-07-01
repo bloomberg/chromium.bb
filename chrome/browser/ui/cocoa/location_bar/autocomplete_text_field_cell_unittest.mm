@@ -17,6 +17,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/star_decoration.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
@@ -155,7 +156,7 @@ TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
 
   // The cursor frame should stay the same throughout.
   const NSRect cursorFrame([cell textCursorFrameForFrame:bounds]);
-  EXPECT_TRUE(NSEqualRects(cursorFrame, bounds));
+  EXPECT_NSEQ(cursorFrame, bounds);
 
   // At default settings, everything goes to the text area.
   textFrame = [cell textFrameForFrame:bounds];
@@ -205,7 +206,7 @@ TEST_F(AutocompleteTextFieldCellTest, DrawingRectForBounds) {
   mock_right_decoration0_.SetVisible(false);
   drawingRect = [cell drawingRectForBounds:bounds];
   EXPECT_FALSE(NSIsEmptyRect(drawingRect));
-  EXPECT_TRUE(NSEqualRects(drawingRect, originalDrawingRect));
+  EXPECT_NSEQ(drawingRect, originalDrawingRect);
 }
 
 // Test that left decorations are at the correct edge of the cell.

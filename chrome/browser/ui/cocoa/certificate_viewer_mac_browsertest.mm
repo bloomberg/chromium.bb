@@ -15,6 +15,7 @@
 #include "net/base/test_data_directory.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
+#import "testing/gtest_mac.h"
 #include "ui/base/cocoa/window_size_constants.h"
 
 using web_modal::WebContentsModalDialogManager;
@@ -70,11 +71,10 @@ IN_PROC_BROWSER_TEST_F(SSLCertificateViewerCocoaTest, HideShow) {
   // Switch to another tab and verify that the sheet is hidden.
   AddBlankTabAndShow(browser());
   EXPECT_EQ(0.0, [sheetWindow alphaValue]);
-  EXPECT_TRUE(
-      NSEqualRects(ui::kWindowSizeDeterminedLater, [sheetWindow frame]));
+  EXPECT_NSEQ(ui::kWindowSizeDeterminedLater, [sheetWindow frame]);
 
   // Switch back and verify that the sheet is shown.
   chrome::SelectNumberedTab(browser(), 0);
   EXPECT_EQ(1.0, [sheetWindow alphaValue]);
-  EXPECT_TRUE(NSEqualRects(sheetFrame, [sheetWindow frame]));
+  EXPECT_NSEQ(sheetFrame, [sheetWindow frame]);
 }

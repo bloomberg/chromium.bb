@@ -184,7 +184,7 @@ TEST_F(TextInputClientMacTest, GetRectForRange) {
   EXPECT_EQ(1U, ipc_sink().message_count());
   EXPECT_TRUE(ipc_sink().GetUniqueMessageMatching(
       TextInputClientMsg_FirstRectForCharacterRange::ID));
-  EXPECT_TRUE(NSEqualRects(kSuccessValue, rect));
+  EXPECT_NSEQ(kSuccessValue, rect);
 }
 
 TEST_F(TextInputClientMacTest, TimeoutRectForRange) {
@@ -192,7 +192,7 @@ TEST_F(TextInputClientMacTest, TimeoutRectForRange) {
   EXPECT_EQ(1U, ipc_sink().message_count());
   EXPECT_TRUE(ipc_sink().GetUniqueMessageMatching(
       TextInputClientMsg_FirstRectForCharacterRange::ID));
-  EXPECT_TRUE(NSEqualRects(NSZeroRect, rect));
+  EXPECT_NSEQ(NSZeroRect, rect);
 }
 
 TEST_F(TextInputClientMacTest, GetSubstring) {

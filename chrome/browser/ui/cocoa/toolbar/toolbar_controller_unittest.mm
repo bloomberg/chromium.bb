@@ -18,6 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 // An NSView that fakes out hitTest:.
@@ -202,9 +203,9 @@ TEST_F(ToolbarControllerTest, DontToggleWhenNoToolbar) {
   [bar_ showOptionalHomeButton];
   EXPECT_EQ([homeButton isHidden], YES);
   NSRect newLocationBarFrame = [locationBar frame];
-  EXPECT_TRUE(NSEqualRects(locationBarFrame, newLocationBarFrame));
+  EXPECT_NSEQ(locationBarFrame, newLocationBarFrame);
   newLocationBarFrame = [locationBar frame];
-  EXPECT_TRUE(NSEqualRects(locationBarFrame, newLocationBarFrame));
+  EXPECT_NSEQ(locationBarFrame, newLocationBarFrame);
 }
 
 TEST_F(ToolbarControllerTest, BookmarkBubblePoint) {

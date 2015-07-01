@@ -8,6 +8,7 @@
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_text_field_cell.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 @interface FindBarTextFieldCell (ExposedForTesting)
@@ -102,7 +103,7 @@ TEST_F(FindBarTextFieldCellTest, TextFrame) {
   EXPECT_TRUE(NSContainsRect(bounds, textFrame));
   EXPECT_EQ(NSMinX(bounds), NSMinX(textFrame));
   EXPECT_EQ(NSMaxX(bounds), NSMaxX(textFrame));
-  EXPECT_TRUE(NSEqualRects(cursorFrame, textFrame));
+  EXPECT_NSEQ(cursorFrame, textFrame);
 
   // Setting an active match leaves text frame to left.
   [cell_ setActiveMatch:4 of:5];
@@ -111,8 +112,7 @@ TEST_F(FindBarTextFieldCellTest, TextFrame) {
   EXPECT_FALSE(NSIsEmptyRect(textFrame));
   EXPECT_TRUE(NSContainsRect(bounds, textFrame));
   EXPECT_LT(NSMaxX(textFrame), NSMaxX(bounds));
-  EXPECT_TRUE(NSEqualRects(cursorFrame, textFrame));
-
+  EXPECT_NSEQ(cursorFrame, textFrame);
 }
 
 // The editor frame should be slightly inset from the text frame.
