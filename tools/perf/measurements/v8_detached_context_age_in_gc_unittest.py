@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry.core import wpr_modes
 from telemetry.internal.results import page_test_results
 from telemetry.page import page as page_module
 from telemetry.unittest_util import options_for_unittests
 from telemetry.unittest_util import page_test_test_case
+from telemetry.util import wpr_modes
 
 from measurements import v8_detached_context_age_in_gc
 

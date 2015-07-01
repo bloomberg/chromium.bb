@@ -6,7 +6,7 @@ import json
 import logging
 import re
 
-from telemetry.core import camel_case
+from telemetry.internal.util import camel_case
 from telemetry.value import list_of_scalar_values
 
 from metrics import Metric

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from telemetry.core import platform
-from telemetry.core import wpr_modes
+from telemetry.util import wpr_modes
 from telemetry.internal.browser import browser_finder
 from telemetry.internal.browser import browser_finder_exceptions
 

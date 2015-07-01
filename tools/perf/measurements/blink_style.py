@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from itertools import starmap
 from collections import defaultdict
-from telemetry.core import util
+from itertools import starmap
 from telemetry.core import exceptions
+from telemetry.core import util
 from telemetry.page import action_runner
 from telemetry.page import page_test
 from telemetry.value import scalar

@@ -4,11 +4,11 @@
 
 import logging
 
-from telemetry.core import wpr_modes
 from telemetry import decorators
 from telemetry.page import page_test
 from telemetry.unittest_util import options_for_unittests
 from telemetry.unittest_util import page_test_test_case
+from telemetry.util import wpr_modes
 
 from measurements import rasterize_and_record_micro
 
