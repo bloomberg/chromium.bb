@@ -27,9 +27,13 @@ var audioPlayerCreateOptions = {
   width: 292
 };
 
+/**
+ * @constructor
+ * @extends {BackgroundBase}
+ */
 function AudioPlayerBackground() {
   BackgroundBase.call(this);
-};
+}
 
 AudioPlayerBackground.prototype.__proto__ = BackgroundBase.prototype;
 
@@ -43,7 +47,7 @@ AudioPlayerBackground.prototype.onRestarted_ = function() {
     if (audioPlayer.rawAppWindow)
       audioPlayer.setIcon(AUDIO_PLAYER_ICON);
   });
-}
+};
 
 
 /**
@@ -61,9 +65,9 @@ var audioPlayer = new SingletonAppWindowWrapper(AUDIO_PLAYER_APP_URL,
 
 /**
  * Opens player window.
- * @param {Object} playlist List of audios to play and index to start playing.
- * @param {boolean} reopen
- * @return {Promise} Promise to be fulfilled on success, or rejected on error.
+ * @param {!Array<string>} urls List of audios to play and index to start
+ *     playing.
+ * @return {!Promise} Promise to be fulfilled on success, or rejected on error.
  */
 function open(urls) {
   var position = 0;

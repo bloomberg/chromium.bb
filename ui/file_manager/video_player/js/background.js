@@ -38,8 +38,9 @@ var generateWindowId = (function() {
 
 /**
  * Opens player window.
- * @param {Object} playlist List of videos to play and index to start playing.
- * @return {Promise} Promise to be fulfilled on success, or rejected on error.
+ * @param {!Array<string>} urls List of videos to play and index to start
+ *     playing.
+ * @return {!Promise} Promise to be fulfilled on success, or rejected on error.
  */
 function openVideoPlayerWindow(urls) {
   var position = 0;
