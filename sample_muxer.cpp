@@ -492,7 +492,7 @@ int main(int argc, char* argv[]) {
             return EXIT_FAILURE;
 
           mkvmuxer::Frame muxer_frame;
-          if (!muxer_frame.Init(data, data_len))
+          if (!muxer_frame.Init(data, frame.len))
             return EXIT_FAILURE;
           muxer_frame.set_track_number(track_type == Track::kAudio ? aud_track :
                                                                      vid_track);
