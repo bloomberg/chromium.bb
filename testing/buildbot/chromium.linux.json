@@ -688,6 +688,9 @@
         "test": "printing_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "remoting_unittests"
       },
       {
@@ -996,6 +999,9 @@
         "test": "printing_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "remoting_unittests"
       },
       {
@@ -1294,6 +1300,9 @@
         "test": "printing_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "remoting_unittests"
       },
       {

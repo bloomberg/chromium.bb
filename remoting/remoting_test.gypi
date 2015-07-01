@@ -612,6 +612,23 @@
           'includes': [ 'remoting_webapp.gypi', ],
         },  # end of target 'remoting_webapp_browser_test'
       ]
-    }]
+    }],
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'remoting_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'remoting_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'remoting_unittests.isolate',
+          ],
+        },
+      ],
+    }],
   ] # end of 'conditions'
 }
