@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/extensions/component_extensions_whitelist/whitelist.h"
+#include "chrome/browser/extensions/data_deleter.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/pdf/pdf_extension_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -265,18 +266,8 @@ void ComponentLoader::Reload(const std::string& extension_id) {
 }
 
 void ComponentLoader::Load(const ComponentExtensionInfo& info) {
-  // TODO(abarth): We should REQUIRE_MODERN_MANIFEST_VERSION once we've updated
-  //               our component extensions to the new manifest version.
-  int flags = Extension::REQUIRE_KEY;
-
   std::string error;
-
-  scoped_refptr<const Extension> extension(Extension::Create(
-      info.root_directory,
-      Manifest::COMPONENT,
-      *info.manifest,
-      flags,
-      &error));
+  scoped_refptr<const Extension> extension(CreateExtension(info, &error));
   if (!extension.get()) {
     LOG(ERROR) << error;
     return;
@@ -418,9 +409,13 @@ void ComponentLoader::AddGoogleNowExtension() {
   }
 #endif  // defined(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
 
+  const int google_now_manifest_id = IDR_GOOGLE_NOW_MANIFEST;
+  const base::FilePath root_directory =
+      base::FilePath(FILE_PATH_LITERAL("google_now"));
   if (enabled) {
-    Add(IDR_GOOGLE_NOW_MANIFEST,
-        base::FilePath(FILE_PATH_LITERAL("google_now")));
+    Add(google_now_manifest_id, root_directory);
+  } else {
+    DeleteData(google_now_manifest_id, root_directory);
   }
 #endif  // defined(ENABLE_GOOGLE_NOW)
 }
@@ -509,6 +504,19 @@ void ComponentLoader::AddWebStoreApp() {
                             base::FilePath(FILE_PATH_LITERAL("web_store")),
                             IDS_WEBSTORE_NAME_STORE,
                             IDS_WEBSTORE_APP_DESCRIPTION);
+}
+
+scoped_refptr<const Extension> ComponentLoader::CreateExtension(
+    const ComponentExtensionInfo& info, std::string* utf8_error) {
+  // TODO(abarth): We should REQUIRE_MODERN_MANIFEST_VERSION once we've updated
+  //               our component extensions to the new manifest version.
+  int flags = Extension::REQUIRE_KEY;
+  return Extension::Create(
+      info.root_directory,
+      Manifest::COMPONENT,
+      *info.manifest,
+      flags,
+      utf8_error);
 }
 
 // static
@@ -680,6 +688,27 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 
   Add(IDR_CRYPTOTOKEN_MANIFEST,
       base::FilePath(FILE_PATH_LITERAL("cryptotoken")));
+}
+
+void ComponentLoader::DeleteData(int manifest_resource_id,
+                                 const base::FilePath& root_directory) {
+  std::string manifest_contents =
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+          manifest_resource_id).as_string();
+  base::DictionaryValue* manifest = ParseManifest(manifest_contents);
+  if (!manifest)
+    return;
+
+  ComponentExtensionInfo info(manifest, root_directory);
+  std::string error;
+  scoped_refptr<const Extension> extension(CreateExtension(info, &error));
+  if (!extension.get()) {
+    LOG(ERROR) << error;
+    return;
+  }
+
+  DataDeleter::StartDeleting(
+      profile_, extension.get(), base::Bind(base::DoNothing));
 }
 
 void ComponentLoader::UnloadComponent(ComponentExtensionInfo* component) {

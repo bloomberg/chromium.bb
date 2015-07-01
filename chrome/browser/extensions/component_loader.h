@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 
@@ -18,6 +19,8 @@ class PrefService;
 class Profile;
 
 namespace extensions {
+
+class Extension;
 
 // For registering, loading, and unloading component extensions.
 class ComponentLoader {
@@ -153,6 +156,15 @@ class ComponentLoader {
   void AddHotwordAudioVerificationApp();
   void AddKeyboardApp();
   void AddWebStoreApp();
+
+  scoped_refptr<const Extension> CreateExtension(
+      const ComponentExtensionInfo& info, std::string* utf8_error);
+
+  // Deletes the extension storage for an extension that has not yet been
+  // loaded. If the extension has been loaded, use ComponentLoader::Remove
+  // instead.
+  void DeleteData(int manifest_resource_id,
+                  const base::FilePath& root_directory);
 
   // Unloads |component| from the memory.
   void UnloadComponent(ComponentExtensionInfo* component);
