@@ -101,41 +101,63 @@ ImageEditor.Mode.Adjust.prototype.reset = function() {
 /** @override */
 ImageEditor.Mode.Adjust.prototype.update = function(options) {
   ImageEditor.Mode.prototype.update.apply(this, arguments);
-
-  // We assume filter names are used in the UI directly.
-  // This will have to change with i18n.
-  this.filter_ = this.createFilter(options);
-
-  this.updatePreviewImage();
-  assert(this.previewImageData_);
-  assert(this.originalImageData);
-
-  ImageUtil.trace.resetTimer('preview');
-  this.filter_(this.previewImageData_, this.originalImageData, 0, 0);
-  ImageUtil.trace.reportTimer('preview');
-
-  this.canvas_.getContext('2d').putImageData(
-      this.previewImageData_, 0, 0);
+  this.updatePreviewImage_(options);
 };
 
 /**
  * Copy the source image data for the preview.
  * Use the cached copy if the viewport has not changed.
+ * @param {Object} options Options that describe the filter. It it is null, it
+ *     does not update current filter.
+ * @private
  */
-ImageEditor.Mode.Adjust.prototype.updatePreviewImage = function() {
+ImageEditor.Mode.Adjust.prototype.updatePreviewImage_ = function(options) {
+  assert(this.getViewport());
+
+  var isPreviewImageInvalidated = false;
+
+  // Update filter.
+  if (options) {
+    // We assume filter names are used in the UI directly.
+    // This will have to change with i18n.
+    this.filter_ = this.createFilter(options);
+    isPreviewImageInvalidated = true;
+  }
+
+  // Update canvas size and/or transformation.
   if (!this.previewImageData_ ||
-      this.viewportGeneration_ != this.getViewport().getCacheGeneration()) {
+      this.viewportGeneration_ !== this.getViewport().getCacheGeneration()) {
     this.viewportGeneration_ = this.getViewport().getCacheGeneration();
 
-    if (!this.canvas_) {
+    if (!this.canvas_)
       this.canvas_ = this.getImageView().createOverlayCanvas();
-    }
 
     this.getImageView().setupDeviceBuffer(this.canvas_);
-
     this.originalImageData = this.getImageView().copyScreenImageData();
     this.previewImageData_ = this.getImageView().copyScreenImageData();
+
+    isPreviewImageInvalidated = true;
+  } else {
+    this.getImageView().setTransform_(
+        assert(this.canvas_), assert(this.getViewport()));
   }
+
+  // Update preview image with applying filter.
+  if (isPreviewImageInvalidated) {
+    assert(this.originalImageData);
+    assert(this.previewImageData_);
+
+    ImageUtil.trace.resetTimer('preview');
+    this.filter_(this.previewImageData_, this.originalImageData, 0, 0);
+    ImageUtil.trace.reportTimer('preview');
+
+    this.canvas_.getContext('2d').putImageData(this.previewImageData_, 0, 0);
+  }
+};
+
+/** @override */
+ImageEditor.Mode.Adjust.prototype.draw = function() {
+  this.updatePreviewImage_(null);
 };
 
 /*
