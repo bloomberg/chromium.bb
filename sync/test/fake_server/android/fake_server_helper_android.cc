@@ -154,11 +154,10 @@ void FakeServerHelperAndroid::InjectBookmarkEntity(
   fake_server::EntityBuilderFactory entity_builder_factory;
   fake_server::BookmarkEntityBuilder bookmark_builder =
       entity_builder_factory.NewBookmarkEntityBuilder(
-          base::android::ConvertJavaStringToUTF8(env, title), gurl);
+          base::android::ConvertJavaStringToUTF8(env, title));
   bookmark_builder.SetParentId(
           base::android::ConvertJavaStringToUTF8(env, parent_id));
-  scoped_ptr<fake_server::FakeServerEntity> bookmark = bookmark_builder.Build();
-  fake_server_ptr->InjectEntity(bookmark.Pass());
+  fake_server_ptr->InjectEntity(bookmark_builder.BuildBookmark(gurl));
 }
 
 base::android::ScopedJavaLocalRef<jstring>

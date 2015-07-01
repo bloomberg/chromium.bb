@@ -24,6 +24,7 @@ using bookmarks_helper::AwaitCountBookmarksWithTitlesMatching;
 using bookmarks_helper::AwaitCountBookmarksWithUrlsMatching;
 using bookmarks_helper::CountBookmarksWithTitlesMatching;
 using bookmarks_helper::CountBookmarksWithUrlsMatching;
+using bookmarks_helper::CountFoldersWithTitlesMatching;
 using bookmarks_helper::Create1xFaviconFromPNGFile;
 using bookmarks_helper::GetBookmarkBarNode;
 using bookmarks_helper::GetBookmarkModel;
@@ -215,10 +216,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
 IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, InjectedBookmark) {
   std::string title = "Montreal Canadiens";
   fake_server::EntityBuilderFactory entity_builder_factory;
-  scoped_ptr<fake_server::FakeServerEntity> entity =
-      entity_builder_factory.NewBookmarkEntityBuilder(
-          title, GURL("http://canadiens.nhl.com")).Build();
-  fake_server_->InjectEntity(entity.Pass());
+  fake_server::BookmarkEntityBuilder bookmark_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder(title);
+  fake_server_->InjectEntity(bookmark_builder.BuildBookmark(
+      GURL("http://canadiens.nhl.com")));
 
   DisableVerifier();
   ASSERT_TRUE(SetupClients());
@@ -340,10 +341,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
                        DownloadDeletedBookmark) {
   std::string title = "Patrick Star";
   fake_server::EntityBuilderFactory entity_builder_factory;
-  scoped_ptr<fake_server::FakeServerEntity> entity =
-      entity_builder_factory.NewBookmarkEntityBuilder(
-          title, GURL("http://en.wikipedia.org/wiki/Patrick_Star")).Build();
-  fake_server_->InjectEntity(entity.Pass());
+  fake_server::BookmarkEntityBuilder bookmark_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder(title);
+  fake_server_->InjectEntity(bookmark_builder.BuildBookmark(
+      GURL("http://en.wikipedia.org/wiki/Patrick_Star")));
 
   DisableVerifier();
   ASSERT_TRUE(SetupSync());
@@ -373,10 +374,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
   GURL updated_url = GURL("https://en.wikipedia.org/wiki/Xylem");
 
   fake_server::EntityBuilderFactory entity_builder_factory;
-  scoped_ptr<fake_server::FakeServerEntity> entity =
-      entity_builder_factory.NewBookmarkEntityBuilder(
-          title, original_url).Build();
-  fake_server_->InjectEntity(entity.Pass());
+  fake_server::BookmarkEntityBuilder bookmark_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder(title);
+  fake_server_->InjectEntity(bookmark_builder.BuildBookmark(original_url));
 
   DisableVerifier();
   ASSERT_TRUE(SetupSync());
@@ -405,4 +405,20 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
   ASSERT_EQ(0, CountBookmarksWithUrlsMatching(kSingleProfileIndex,
                                               original_url));
   ASSERT_EQ(1, CountBookmarksWithTitlesMatching(kSingleProfileIndex, title));
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, DownloadBookmarkFolder) {
+  const std::string title = "Seattle Sounders FC";
+  fake_server::EntityBuilderFactory entity_builder_factory;
+  fake_server::BookmarkEntityBuilder bookmark_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder(title);
+  fake_server_->InjectEntity(bookmark_builder.BuildFolder());
+
+  DisableVerifier();
+  ASSERT_TRUE(SetupClients());
+  ASSERT_EQ(0, CountFoldersWithTitlesMatching(kSingleProfileIndex, title));
+
+  ASSERT_TRUE(SetupSync());
+
+  ASSERT_EQ(1, CountFoldersWithTitlesMatching(kSingleProfileIndex, title));
 }

@@ -26,8 +26,7 @@ class EntityBuilderFactory {
   explicit EntityBuilderFactory(const std::string& cache_guid);
   virtual ~EntityBuilderFactory();
 
-  BookmarkEntityBuilder NewBookmarkEntityBuilder(const std::string& title,
-                                                 const GURL& url);
+  BookmarkEntityBuilder NewBookmarkEntityBuilder(const std::string& title);
 
  private:
   // An identifier used when creating entities. This value is used similarly to

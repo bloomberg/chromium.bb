@@ -27,10 +27,9 @@ EntityBuilderFactory::~EntityBuilderFactory() {
 }
 
 BookmarkEntityBuilder EntityBuilderFactory::NewBookmarkEntityBuilder(
-    const string& title, const GURL& url) {
+    const string& title) {
   --latest_client_item_id_;
   BookmarkEntityBuilder builder(title,
-                                url,
                                 cache_guid_,
                                 base::Int64ToString(latest_client_item_id_));
   return builder;

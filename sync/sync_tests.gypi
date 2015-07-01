@@ -138,8 +138,6 @@
         'test/fake_server/bookmark_entity.h',
         'test/fake_server/bookmark_entity_builder.cc',
         'test/fake_server/bookmark_entity_builder.h',
-        'test/fake_server/entity_builder.cc',
-        'test/fake_server/entity_builder.h',
         'test/fake_server/entity_builder_factory.cc',
         'test/fake_server/entity_builder_factory.h',
         'test/fake_server/fake_server.cc',
