@@ -44,12 +44,12 @@ class OAuth2LoginVerifier : public GaiaCookieManagerService::Observer {
                       const std::string& oauthlogin_access_token);
   ~OAuth2LoginVerifier() override;
 
-  // Initiates verification of GAIA cookies in |profile|'s cookie jar.
-  void VerifyUserCookies(Profile* profile);
+  // Initiates verification of GAIA cookies in the cookie jar.
+  void VerifyUserCookies();
 
   // Attempts to restore session from OAuth2 refresh token minting all necessary
   // tokens along the way (OAuth2 access token, SID/LSID, GAIA service token).
-  void VerifyProfileTokens(Profile* profile);
+  void VerifyProfileTokens();
 
  private:
   // GaiaCookieManagerService::Observer

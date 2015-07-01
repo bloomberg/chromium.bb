@@ -30,7 +30,7 @@ OAuth2LoginVerifier::~OAuth2LoginVerifier() {
   cookie_manager_service_->RemoveObserver(this);
 }
 
-void OAuth2LoginVerifier::VerifyUserCookies(Profile* profile) {
+void OAuth2LoginVerifier::VerifyUserCookies() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::vector<gaia::ListedAccount> accounts;
@@ -40,7 +40,7 @@ void OAuth2LoginVerifier::VerifyUserCookies(Profile* profile) {
   }
 }
 
-void OAuth2LoginVerifier::VerifyProfileTokens(Profile* profile) {
+void OAuth2LoginVerifier::VerifyProfileTokens() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (access_token_.empty()) {
     cookie_manager_service_->AddAccountToCookie(primary_account_id_);

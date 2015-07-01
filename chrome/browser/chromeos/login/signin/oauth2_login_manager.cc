@@ -273,7 +273,7 @@ void OAuth2LoginManager::VerifySessionCookies() {
       GetPrimaryAccountId(), oauthlogin_access_token_));
 
   if (restore_strategy_ == RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN) {
-    login_verifier_->VerifyUserCookies(user_profile_);
+    login_verifier_->VerifyUserCookies();
     return;
   }
 
@@ -282,7 +282,7 @@ void OAuth2LoginManager::VerifySessionCookies() {
 
 void OAuth2LoginManager::RestoreSessionCookies() {
   SetSessionRestoreState(SESSION_RESTORE_IN_PROGRESS);
-  login_verifier_->VerifyProfileTokens(user_profile_);
+  login_verifier_->VerifyProfileTokens();
 }
 
 void OAuth2LoginManager::Shutdown() {
