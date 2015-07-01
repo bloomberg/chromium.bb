@@ -77,7 +77,9 @@ class PlatformKeysVerifyTLSServerCertificateFunction
   ~PlatformKeysVerifyTLSServerCertificateFunction() override;
   ResponseAction Run() override;
 
-  void FinishedVerification(const std::string& error, int result);
+  void FinishedVerification(const std::string& error,
+                            int verify_result,
+                            int cert_status);
 
   DECLARE_EXTENSION_FUNCTION("platformKeys.verifyTLSServerCertificate",
                              PLATFORMKEYS_VERIFYTLSSERVERCERTIFICATE);

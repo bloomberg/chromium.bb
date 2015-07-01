@@ -482,7 +482,10 @@ function testVerifyTrusted() {
     hostname: "l1_leaf"
   };
   chrome.platformKeys.verifyTLSServerCertificate(
-      details, callbackPass(function(result) { assertTrue(result.trusted); }));
+      details, callbackPass(function(result) {
+        assertTrue(result.trusted);
+        assertEq([], result.debug_errors);
+      }));
 }
 
 function testVerifyTrustedChain() {
@@ -492,7 +495,10 @@ function testVerifyTrustedChain() {
     hostname: "l2_leaf"
   };
   chrome.platformKeys.verifyTLSServerCertificate(
-      details, callbackPass(function(result) { assertTrue(result.trusted); }));
+      details, callbackPass(function(result) {
+        assertTrue(result.trusted);
+        assertEq([], result.debug_errors);
+      }));
 }
 
 function testVerifyCommonNameInvalid() {
@@ -503,7 +509,10 @@ function testVerifyCommonNameInvalid() {
     hostname: "abc.example"
   };
   chrome.platformKeys.verifyTLSServerCertificate(
-      details, callbackPass(function(result) { assertFalse(result.trusted); }));
+      details, callbackPass(function(result) {
+        assertFalse(result.trusted);
+        assertEq(["COMMON_NAME_INVALID"], result.debug_errors);
+      }));
 }
 
 function testVerifyUntrusted() {
@@ -512,7 +521,11 @@ function testVerifyUntrusted() {
     hostname: "127.0.0.1"
   };
   chrome.platformKeys.verifyTLSServerCertificate(
-      details, callbackPass(function(result) { assertFalse(result.trusted); }));
+      details, callbackPass(function(result) {
+        assertFalse(result.trusted);
+        assertEq(["COMMON_NAME_INVALID", "AUTHORITY_INVALID"],
+                 result.debug_errors);
+      }));
 }
 
 var testSuites = {

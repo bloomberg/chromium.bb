@@ -71,10 +71,19 @@ namespace platformKeys {
   };
 
   dictionary VerificationResult {
-    // The result of the trust verificaiton: true if trust for the given
+    // The result of the trust verification: true if trust for the given
     // verification details could be established and false if trust is rejected
     // for any reason.
     boolean trusted;
+
+    // If the trust verification failed, this array contains the errors reported
+    // by the underlying network layer. Otherwise, this array is empty.
+    //
+    // <strong>Note:</strong> This list is meant for debugging only and may not
+    // contain all relevant errors. The errors returned may change in future
+    // revisions of this API, and are not guaranteed to be forwards or backwards
+    // compatible.
+    DOMString[] debug_errors;
   };
 
   // |matches|: The list of certificates that match the request, that the

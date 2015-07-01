@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
@@ -66,6 +67,17 @@ void BuildWebCryptoRSAAlgorithmDictionary(const PublicKeyInfo& key_info,
           reinterpret_cast<const char*>(defaultPublicExponent),
           arraysize(defaultPublicExponent)));
 }
+
+const struct NameValuePair {
+  const char* const name;
+  const int value;
+} kCertStatusErrors[] = {
+#define CERT_STATUS_FLAG(name, value) \
+  { #name, value }                    \
+  ,
+#include "net/cert/cert_status_flags_list.h"
+#undef CERT_STATUS_FLAG
+};
 
 }  // namespace
 
@@ -332,7 +344,8 @@ PlatformKeysVerifyTLSServerCertificateFunction::Run() {
 
 void PlatformKeysVerifyTLSServerCertificateFunction::FinishedVerification(
     const std::string& error,
-    int verify_result_code) {
+    int verify_result,
+    int cert_status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!error.empty()) {
@@ -341,7 +354,18 @@ void PlatformKeysVerifyTLSServerCertificateFunction::FinishedVerification(
   }
 
   api_pk::VerificationResult result;
-  result.trusted = verify_result_code == net::OK;
+  result.trusted = verify_result == net::OK;
+  if (net::IsCertificateError(verify_result)) {
+    // Only report errors, not internal informational statuses.
+    const int masked_cert_status = cert_status & net::CERT_STATUS_ALL_ERRORS;
+    for (size_t i = 0; i < arraysize(kCertStatusErrors); ++i) {
+      if ((masked_cert_status & kCertStatusErrors[i].value) ==
+          kCertStatusErrors[i].value) {
+        result.debug_errors.push_back(kCertStatusErrors[i].name);
+      }
+    }
+  }
+
   Respond(ArgumentList(
       api_pk::VerifyTLSServerCertificate::Results::Create(result)));
 }

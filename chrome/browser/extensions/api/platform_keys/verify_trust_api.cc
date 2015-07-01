@@ -66,7 +66,7 @@ class VerifyTrustAPI::IOPart {
   void CallBackWithResult(const VerifyCallback& callback,
                           scoped_ptr<net::CertVerifyResult> verify_result,
                           RequestState* request_state,
-                          int result);
+                          int return_value);
 
   // One CertVerifier per extension to verify trust. Each verifier is created on
   // first usage and deleted when this IOPart is destructed or the respective
@@ -127,18 +127,21 @@ void VerifyTrustAPI::OnExtensionUnloaded(
 
 void VerifyTrustAPI::FinishedVerificationOnUI(const VerifyCallback& ui_callback,
                                               const std::string& error,
-                                              int result) {
+                                              int return_value,
+                                              int cert_status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  ui_callback.Run(error, result);
+  ui_callback.Run(error, return_value, cert_status);
 }
 
 // static
 void VerifyTrustAPI::CallBackOnUI(const VerifyCallback& ui_callback,
                                   const std::string& error,
-                                  int result) {
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   base::Bind(ui_callback, error, result));
+                                  int return_value,
+                                  int cert_status) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(ui_callback, error, return_value, cert_status));
 }
 
 VerifyTrustAPI::IOPart::~IOPart() {
@@ -153,14 +156,14 @@ void VerifyTrustAPI::IOPart::Verify(scoped_ptr<Params> params,
   const api::platform_keys::VerificationDetails& details = params->details;
 
   if (details.server_certificate_chain.empty()) {
-    callback.Run(kErrorEmptyCertificateChain, 0);
+    callback.Run(kErrorEmptyCertificateChain, 0, 0);
     return;
   }
 
   std::vector<base::StringPiece> der_cert_chain;
   for (const std::vector<char>& cert_der : details.server_certificate_chain) {
     if (cert_der.empty()) {
-      callback.Run(platform_keys::kErrorInvalidX509Cert, 0);
+      callback.Run(platform_keys::kErrorInvalidX509Cert, 0, 0);
       return;
     }
     der_cert_chain.push_back(base::StringPiece(
@@ -170,7 +173,7 @@ void VerifyTrustAPI::IOPart::Verify(scoped_ptr<Params> params,
   scoped_refptr<net::X509Certificate> cert_chain(
       net::X509Certificate::CreateFromDERCertChain(der_cert_chain));
   if (!cert_chain) {
-    callback.Run(platform_keys::kErrorInvalidX509Cert, 0);
+    callback.Run(platform_keys::kErrorInvalidX509Cert, 0, 0);
     return;
   }
 
@@ -194,13 +197,13 @@ void VerifyTrustAPI::IOPart::Verify(scoped_ptr<Params> params,
       base::Bind(&IOPart::CallBackWithResult, base::Unretained(this), callback,
                  base::Passed(&verify_result), base::Owned(request_state)));
 
-  const int result = verifier->Verify(
+  const int return_value = verifier->Verify(
       cert_chain.get(), details.hostname, ocsp_response, flags,
       net::SSLConfigService::GetCRLSet().get(), verify_result_ptr,
       bound_callback, &request_state->request, *net_log);
 
-  if (result != net::ERR_IO_PENDING) {
-    bound_callback.Run(result);
+  if (return_value != net::ERR_IO_PENDING) {
+    bound_callback.Run(return_value);
     return;
   }
 }
@@ -214,10 +217,11 @@ void VerifyTrustAPI::IOPart::CallBackWithResult(
     const VerifyCallback& callback,
     scoped_ptr<net::CertVerifyResult> verify_result,
     RequestState* request_state,
-    int result) {
+    int return_value) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  callback.Run(std::string() /* no error message */, result);
+  callback.Run(std::string() /* no error message */, return_value,
+               verify_result->cert_status);
 }
 
 }  // namespace extensions

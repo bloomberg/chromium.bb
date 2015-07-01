@@ -37,12 +37,13 @@ struct Params;
 class VerifyTrustAPI : public BrowserContextKeyedAPI,
                        public ExtensionRegistryObserver {
  public:
-  // Will be called with |result| set to the verification result (net::OK if the
-  // certificate is trusted or a net error code) or if an error occured during
-  // processing the parameters, |error| is set to an english error message and
-  // |result| must be ignored.
-  using VerifyCallback =
-      base::Callback<void(const std::string& error, int result)>;
+  // Will be called with |return_value| set to the verification result (net::OK
+  // if the certificate is trusted, otherwise a net error code) and
+  // |cert_status| to the bitwise-OR of CertStatus flags. If an error occured
+  // during processing the parameters, |error| is set to an english error
+  // message and |return_value| and |cert_status| must be ignored.
+  using VerifyCallback = base::Callback<
+      void(const std::string& error, int return_value, int cert_status)>;
   using Params = api::platform_keys::VerifyTLSServerCertificate::Params;
 
   // Consumers should use the factory instead of this constructor.
@@ -80,12 +81,14 @@ class VerifyTrustAPI : public BrowserContextKeyedAPI,
   // Calls |ui_callback| with the given parameters.
   void FinishedVerificationOnUI(const VerifyCallback& ui_callback,
                                 const std::string& error,
-                                int result);
+                                int return_value,
+                                int cert_status);
 
   // Calls |ui_callback| on the UIThread with the given arguments.
   static void CallBackOnUI(const VerifyCallback& ui_callback,
                            const std::string& error,
-                           int result);
+                           int return_value,
+                           int cert_status);
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "VerifyTrustAPI"; }
