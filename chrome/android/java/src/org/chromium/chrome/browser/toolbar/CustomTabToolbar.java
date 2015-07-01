@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -51,11 +53,14 @@ import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.components.dom_distiller.core.DomDistillerService;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 /**
  * The Toolbar layout to be used for a custom tab. This is used for both phone and tablet UIs.
  */
 public class CustomTabToolbar extends ToolbarLayout implements LocationBar {
+    private static final int CUSTOM_TAB_TOOLBAR_SLIDE_DURATION_MS = 200;
+    private static final int CUSTOM_TAB_TOOLBAR_FADE_DURATION_MS = 150;
     private View mUrlInfoContainer;
     private UrlBar mUrlBar;
     private TextView mTitleBar;
@@ -64,7 +69,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar {
     private int mSecurityIconType;
     private boolean mUseDarkColors;
     private TintedImageButton mCloseButton;
-    private Animator mSecurityButtonShowAnimator;
+
+    private AnimatorSet mSecurityButtonShowAnimator;
     private boolean mBackgroundColorSet;
 
     /**
@@ -89,9 +95,31 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar {
         mSecurityIconType = ConnectionSecurityLevel.NONE;
         mCustomActionButton = (ImageButton) findViewById(R.id.action_button);
         mCloseButton = (TintedImageButton) findViewById(R.id.close_button);
-        mSecurityButtonShowAnimator = ObjectAnimator.ofFloat(mSecurityButton, ALPHA, 1);
-        mSecurityButtonShowAnimator
-                .setDuration(ToolbarPhone.URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
+        populateToolbarAnimations();
+    }
+
+    private void populateToolbarAnimations() {
+        mSecurityButtonShowAnimator = new AnimatorSet();
+        int securityIconButtonWidth =
+                getResources().getDimensionPixelSize(R.dimen.location_bar_icon_width);
+        Animator urlInfoContainerTranslateAnimator =
+                ObjectAnimator.ofFloat(mUrlInfoContainer, TRANSLATION_X, securityIconButtonWidth);
+        urlInfoContainerTranslateAnimator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
+        urlInfoContainerTranslateAnimator.setDuration(CUSTOM_TAB_TOOLBAR_SLIDE_DURATION_MS);
+
+        Animator securityButtonAlphaAnimator = ObjectAnimator.ofFloat(mSecurityButton, ALPHA, 1);
+        securityButtonAlphaAnimator.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
+        securityButtonAlphaAnimator.setDuration(CUSTOM_TAB_TOOLBAR_FADE_DURATION_MS);
+        securityButtonAlphaAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mSecurityButton.setVisibility(VISIBLE);
+                mUrlInfoContainer.setTranslationX(0);
+            }
+        });
+
+        mSecurityButtonShowAnimator.playSequentially(
+                urlInfoContainerTranslateAnimator, securityButtonAlphaAnimator);
     }
 
     @Override
@@ -344,7 +372,6 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar {
             mSecurityButton.setVisibility(GONE);
         } else {
             if (mSecurityButtonShowAnimator.isRunning()) mSecurityButtonShowAnimator.cancel();
-            mSecurityButton.setVisibility(VISIBLE);
             mSecurityButtonShowAnimator.start();
             mUrlBar.deEmphasizeUrl();
         }
