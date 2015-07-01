@@ -45,7 +45,6 @@ typedef enum {
 	YCbCrData	/* ‘YCbr' */ = 0x59436272,
 	YxyData		/* ‘Yxy ’ */ = 0x59787920,
 	rgbData		/* ‘RGB ’ */ = 0x52474220,
-	icSigRgbData = rgbData, // XXX: temporary alias for blink
 	grayData	/* ‘GRAY’ */ = 0x47524159,
 	hsvData		/* ‘HSV ’ */ = 0x48535620,
 	hlsData		/* ‘HLS ’ */ = 0x484C5320,
