@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 from page_sets import key_mobile_sites_pages
 from page_sets import repaint_helpers
@@ -37,14 +37,14 @@ class KeyMobileSitesRepaintPage(page_module.Page):
         action_runner, mode=self._mode, width=self._width, height=self._height)
 
 
-class KeyMobileSitesRepaintPageSet(page_set_module.PageSet):
+class KeyMobileSitesRepaintPageSet(story.StorySet):
 
   """ Key mobile sites with repaint interactions. """
 
   def __init__(self, mode='viewport', width=None, height=None):
     super(KeyMobileSitesRepaintPageSet, self).__init__(
       archive_data_file='data/key_mobile_sites_repaint.json',
-      bucket=page_set_module.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
 
     # Add pages with predefined classes that contain custom navigation logic.

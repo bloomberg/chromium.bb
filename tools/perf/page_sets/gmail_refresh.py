@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 class GmailRefreshPage(page_module.Page):
@@ -22,7 +22,7 @@ class GmailRefreshPage(page_module.Page):
     action_runner.ReloadPage()
 
 
-class GmailRefreshPageSet(page_set_module.PageSet):
+class GmailRefreshPageSet(story.StorySet):
 
   """
   Description: Chrome Endure control test to test gmail page reload
@@ -31,6 +31,6 @@ class GmailRefreshPageSet(page_set_module.PageSet):
   def __init__(self):
     super(GmailRefreshPageSet, self).__init__(
       archive_data_file='data/gmail_refresh.json',
-      bucket=page_set_module.PUBLIC_BUCKET)
+      cloud_storage_bucket=story.PUBLIC_BUCKET)
 
     self.AddUserStory(GmailRefreshPage(self))

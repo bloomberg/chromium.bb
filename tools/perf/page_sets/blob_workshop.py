@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import page_test as page_test
+from telemetry import story
 
 
 NUM_BLOB_MASS_CREATE_READS = 15
@@ -65,7 +65,7 @@ class BlobMassCreate(page_module.Page):
       raise page_test.Failure('Errors on page: ' + ', '.join(self.errors))
 
 
-class BlobWorkshopPageSet(page_set_module.PageSet):
+class BlobWorkshopPageSet(story.StorySet):
   """The BlobWorkshop page set."""
 
   def __init__(self):

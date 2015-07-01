@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 class MobileMemoryPage(page_module.Page):
@@ -73,14 +73,14 @@ class ScrollPage(MobileMemoryPage):
       action_runner.ScrollPage()
 
 
-class MobileMemoryPageSet(page_set_module.PageSet):
+class MobileMemoryPageSet(story.StorySet):
 
   """ Mobile sites with interesting memory characteristics """
 
   def __init__(self):
     super(MobileMemoryPageSet, self).__init__(
         archive_data_file='data/mobile_memory.json',
-        bucket=page_set_module.PARTNER_BUCKET)
+        cloud_storage_bucket=story.PARTNER_BUCKET)
 
     self.AddUserStory(GmailPage(self))
     self.AddUserStory(GoogleSearchPage(self))

@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 class Typical25Page(page_module.Page):
@@ -22,14 +22,14 @@ class Typical25Page(page_module.Page):
       action_runner.ScrollPage()
 
 
-class Typical25PageSet(page_set_module.PageSet):
+class Typical25PageSet(story.StorySet):
 
   """ Pages designed to represent the median, not highly optimized web """
 
   def __init__(self, run_no_page_interactions=False):
     super(Typical25PageSet, self).__init__(
       archive_data_file='data/typical_25.json',
-      bucket=page_set_module.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
     urls_list = [
       # Why: Alexa games #48

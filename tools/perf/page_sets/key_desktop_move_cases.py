@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 class KeyDesktopMoveCasesPage(page_module.Page):
@@ -109,14 +109,14 @@ class GoogleMapsPage(KeyDesktopMoveCasesPage):
     # TODO(ssid): Add zoom gestures after fixing bug crbug.com/462214.
 
 
-class KeyDesktopMoveCasesPageSet(page_set_module.PageSet):
+class KeyDesktopMoveCasesPageSet(story.StorySet):
 
   """ Special cases for move gesture """
 
   def __init__(self):
     super(KeyDesktopMoveCasesPageSet, self).__init__(
       archive_data_file='data/key_desktop_move_cases.json',
-      bucket=page_set_module.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
     self.AddUserStory(GmailMouseScrollPage(self))
     self.AddUserStory(GoogleMapsPage(self))

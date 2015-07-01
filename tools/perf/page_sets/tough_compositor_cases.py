@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 class ToughCompositorPage(page_module.Page):
@@ -40,14 +40,14 @@ class ToughCompositorWaitPage(ToughCompositorPage):
       action_runner.Wait(8)
 
 
-class ToughCompositorCasesPageSet(page_set_module.PageSet):
+class ToughCompositorCasesPageSet(story.StorySet):
 
   """ Touch compositor sites """
 
   def __init__(self):
     super(ToughCompositorCasesPageSet, self).__init__(
       archive_data_file='data/tough_compositor_cases.json',
-      bucket=page_set_module.PUBLIC_BUCKET)
+      cloud_storage_bucket=story.PUBLIC_BUCKET)
 
     scroll_urls_list = [
       # Why: Baseline CC scrolling page. A long page with only text. """

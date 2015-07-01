@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class ToughEnergyCasesPage(page_module.Page):
@@ -33,13 +33,13 @@ class GooglePage(ToughEnergyCasesPage):
         'document.getElementById("gb") !== null')
 
 
-class ToughEnergyCasesPageSet(page_set_module.PageSet):
+class ToughEnergyCasesPageSet(story.StorySet):
   """Pages for measuring Chrome power draw."""
 
   def __init__(self):
     super(ToughEnergyCasesPageSet, self).__init__(
         archive_data_file='data/tough_energy_cases.json',
-        bucket=page_set_module.PARTNER_BUCKET)
+        cloud_storage_bucket=story.PARTNER_BUCKET)
 
     # TODO: this part of the test is disabled because it fails when
     # run with replay data and not with live data.  See crbug.com/465692

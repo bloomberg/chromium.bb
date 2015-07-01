@@ -4,7 +4,7 @@
 from page_sets import fling_gesture_supported_shared_state
 
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class SimpleFlingPage(page_module.Page):
@@ -31,14 +31,14 @@ class SimpleFlingPage(page_module.Page):
                               distance='500',
                               speed_in_pixels_per_second=5000)
 
-class SimpleMobileSitesFlingPageSet(page_set_module.PageSet):
+class SimpleMobileSitesFlingPageSet(story.StorySet):
 
   """ Simple mobile sites """
 
   def __init__(self):
     super(SimpleMobileSitesFlingPageSet, self).__init__(
       archive_data_file='data/simple_mobile_sites.json',
-      bucket=page_set_module.PUBLIC_BUCKET)
+      cloud_storage_bucket=story.PUBLIC_BUCKET)
 
     fling_page_list = [
       # Why: Scrolls moderately complex pages (up to 60 layers)

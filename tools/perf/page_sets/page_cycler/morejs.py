@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 class MorejsPage(page_module.Page):
 
@@ -10,7 +10,7 @@ class MorejsPage(page_module.Page):
     super(MorejsPage, self).__init__(url=url, page_set=page_set)
 
 
-class MorejsPageSet(page_set_module.PageSet):
+class MorejsPageSet(story.StorySet):
 
   """ More JS page_cycler benchmark """
 
@@ -18,7 +18,7 @@ class MorejsPageSet(page_set_module.PageSet):
     super(MorejsPageSet, self).__init__(
       # pylint: disable=C0301
       serving_dirs=set(['../../../../data/page_cycler/morejs']),
-      bucket=page_set_module.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
     urls_list = [
       'file://../../../../data/page_cycler/morejs/blog.chromium.org/',

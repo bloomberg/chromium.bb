@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 # pylint: disable=W0401,W0614
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class SpinningBallsPage(page_module.Page):
@@ -27,7 +27,7 @@ class SpinningBallsPage(page_module.Page):
       action_runner.Wait(15)
 
 
-class GarbageCollectionCasesPageSet(page_set_module.PageSet):
+class GarbageCollectionCasesPageSet(story.StorySet):
 
   """
   Description: GC test cases
@@ -36,6 +36,6 @@ class GarbageCollectionCasesPageSet(page_set_module.PageSet):
   def __init__(self):
     super(GarbageCollectionCasesPageSet, self).__init__(
       archive_data_file='data/garbage_collection_cases.json',
-      bucket=page_set_module.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
     self.AddUserStory(SpinningBallsPage(self))

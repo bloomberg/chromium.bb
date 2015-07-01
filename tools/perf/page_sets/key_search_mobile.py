@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 class KeySearchMobilePage(page_module.Page):
@@ -19,14 +19,14 @@ class KeySearchMobilePage(page_module.Page):
       action_runner.ScrollPage()
 
 
-class KeySearchMobilePageSet(page_set_module.PageSet):
+class KeySearchMobilePageSet(story.StorySet):
 
   """ Key mobile search queries on google """
 
   def __init__(self):
     super(KeySearchMobilePageSet, self).__init__(
       archive_data_file='data/key_search_mobile.json',
-      bucket=page_set_module.PUBLIC_BUCKET)
+      cloud_storage_bucket=story.PUBLIC_BUCKET)
 
     urls_list = [
       # Why: An empty page should be as snappy as possible

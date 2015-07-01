@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 from page_sets import key_mobile_sites_pages
 
@@ -20,14 +20,14 @@ class KeyMobileSitesPage(page_module.Page):
     self.action_on_load_complete = action_on_load_complete
 
 
-class KeyMobileSitesPageSet(page_set_module.PageSet):
+class KeyMobileSitesPageSet(story.StorySet):
 
   """ Key mobile sites with smooth interactions. """
 
   def __init__(self):
     super(KeyMobileSitesPageSet, self).__init__(
       archive_data_file='data/key_mobile_sites.json',
-      bucket=page_set_module.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
 
     # Add pages with predefined classes that contain custom navigation logic.

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class KeyDesktopSitesPage(page_module.Page):
@@ -105,14 +105,14 @@ class GoogleDocPage(KeyDesktopSitesPage):
         'document.getElementsByClassName("kix-appview-editor").length')
 
 
-class KeyDesktopSitesPageSet(page_set_module.PageSet):
+class KeyDesktopSitesPageSet(story.StorySet):
 
   """ Sites of Interest """
 
   def __init__(self):
     super(KeyDesktopSitesPageSet, self).__init__(
       archive_data_file='data/key_desktop_sites.json',
-      bucket=page_set_module.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
     self.AddUserStory(FacebookPage(self))
     self.AddUserStory(GmailPage(self))

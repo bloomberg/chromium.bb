@@ -4,8 +4,8 @@
 from page_sets import android_screen_restoration_shared_state
 
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 class KeyIdlePowerPage(page_module.Page):
@@ -38,7 +38,7 @@ class KeyIdlePowerPage(page_module.Page):
       action_runner.Wait(20)
 
 
-class KeyIdlePowerCasesPageSet(page_set_module.PageSet):
+class KeyIdlePowerCasesPageSet(story.StorySet):
 
   """ Key idle power cases """
 

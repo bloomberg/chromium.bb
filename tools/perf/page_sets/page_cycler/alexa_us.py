@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class AlexaUsPage(page_module.Page):
@@ -11,7 +11,7 @@ class AlexaUsPage(page_module.Page):
     super(AlexaUsPage, self).__init__(url=url, page_set=page_set)
 
 
-class AlexaUsPageSet(page_set_module.PageSet):
+class AlexaUsPageSet(story.StorySet):
 
   """ Alexa US page_cycler benchmark  """
 

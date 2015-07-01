@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 class ToughSchedulingCasesPage(page_module.Page):
@@ -389,14 +389,14 @@ class SecondBatchJsPage(ToughSchedulingCasesPage):
       action_runner.WaitForJavaScriptCondition('window.__finished')
 
 
-class ToughSchedulingCasesPageSet(page_set_module.PageSet):
+class ToughSchedulingCasesPageSet(story.StorySet):
 
   """Tough scheduler latency test cases."""
 
   def __init__(self):
     super(ToughSchedulingCasesPageSet, self).__init__(
         archive_data_file='data/tough_scheduling_cases.json',
-        bucket=page_set_module.INTERNAL_BUCKET)
+        cloud_storage_bucket=story.INTERNAL_BUCKET)
 
     # Why: Simple scrolling baseline
     self.AddUserStory(ToughSchedulingCasesPage(

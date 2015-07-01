@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 class SimplePage(page_module.Page):
@@ -31,14 +31,14 @@ class SimpleScrollPage(SimplePage):
     with action_runner.CreateGestureInteraction('ScrollAction'):
       action_runner.ScrollPage(direction='down', speed_in_pixels_per_second=300)
 
-class SimpleMobileSitesPageSet(page_set_module.PageSet):
+class SimpleMobileSitesPageSet(story.StorySet):
 
   """ Simple mobile sites """
 
   def __init__(self):
     super(SimpleMobileSitesPageSet, self).__init__(
       archive_data_file='data/simple_mobile_sites.json',
-      bucket=page_set_module.PUBLIC_BUCKET)
+      cloud_storage_bucket=story.PUBLIC_BUCKET)
 
     scroll_page_list = [
       # Why: Scrolls moderately complex pages (up to 60 layers)

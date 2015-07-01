@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 from page_sets import top_pages
 
@@ -77,14 +77,14 @@ class ESPNSmoothPage(top_pages.ESPNPage):
       action_runner.ScrollPage(left_start_ratio=0.1)
 
 
-class Top25SmoothPageSet(page_set_module.PageSet):
+class Top25SmoothPageSet(story.StorySet):
 
   """ Pages hand-picked for 2012 CrOS scrolling tuning efforts. """
 
   def __init__(self):
     super(Top25SmoothPageSet, self).__init__(
         archive_data_file='data/top_25_smooth.json',
-        bucket=page_set_module.PARTNER_BUCKET)
+        cloud_storage_bucket=story.PARTNER_BUCKET)
 
     desktop_state_class = shared_page_state.SharedDesktopPageState
 

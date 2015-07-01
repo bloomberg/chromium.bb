@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class StartupPagesRecordPage(page_module.Page):
@@ -12,7 +12,7 @@ class StartupPagesRecordPage(page_module.Page):
     self.archive_data_file = 'data/startup_pages.json'
 
 
-class StartupPagesRecordPageSet(page_set_module.PageSet):
+class StartupPagesRecordPageSet(story.StorySet):
 
   """ Pages to record data for testing starting Chrome with a URL.
       We can't use startup_pages.json with record_wpr, since record_wpr

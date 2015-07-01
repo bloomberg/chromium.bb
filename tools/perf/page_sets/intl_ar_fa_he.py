@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 class IntlArFaHePage(page_module.Page):
@@ -15,14 +15,14 @@ class IntlArFaHePage(page_module.Page):
     self.archive_data_file = 'data/intl_ar_fa_he.json'
 
 
-class IntlArFaHePageSet(page_set_module.PageSet):
+class IntlArFaHePageSet(story.StorySet):
 
   """ Popular pages in right-to-left languages Arabic, Farsi and Hebrew. """
 
   def __init__(self):
     super(IntlArFaHePageSet, self).__init__(
       archive_data_file='data/intl_ar_fa_he.json',
-      bucket=page_set_module.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
     urls_list = [
       'http://msn.co.il/',

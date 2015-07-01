@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 class PolymerPage(page_module.Page):
@@ -215,12 +215,12 @@ class PolymerSampler(PolymerPage):
                                  speed_in_pixels_per_second=300)
 
 
-class PolymerPageSet(page_set_module.PageSet):
+class PolymerPageSet(story.StorySet):
 
   def __init__(self, run_no_page_interactions=False):
     super(PolymerPageSet, self).__init__(
       archive_data_file='data/polymer.json',
-      bucket=page_set_module.PUBLIC_BUCKET)
+      cloud_storage_bucket=story.PUBLIC_BUCKET)
 
     self.AddUserStory(PolymerCalculatorPage(self, run_no_page_interactions))
     self.AddUserStory(PolymerShadowPage(self, run_no_page_interactions))

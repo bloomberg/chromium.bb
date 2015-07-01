@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class ToughCanvasCasesPage(page_module.Page):
@@ -30,7 +30,7 @@ class MicrosofFirefliesPage(ToughCanvasCasesPage):
       page_set=page_set)
 
 
-class ToughCanvasCasesPageSet(page_set_module.PageSet):
+class ToughCanvasCasesPageSet(story.StorySet):
 
   """
   Description: Self-driven Canvas2D animation examples
@@ -39,7 +39,7 @@ class ToughCanvasCasesPageSet(page_set_module.PageSet):
   def __init__(self):
     super(ToughCanvasCasesPageSet, self).__init__(
       archive_data_file='data/tough_canvas_cases.json',
-      bucket=page_set_module.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
     # Crashes on Galaxy Nexus. crbug.com/314131
     # self.AddUserStory(MicrosofFirefliesPage(self))

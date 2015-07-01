@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 _SCROLL_LIST_ITEM = ('.scroll-list-item .%s')
 _NUM_REPEATS_FOR_EMAIL_OPEN = 40
@@ -73,14 +73,14 @@ class InboxPage(page_module.Page):
     action_runner.Wait(10)
 
 
-class InboxPageSet(page_set_module.PageSet):
+class InboxPageSet(story.StorySet):
 
   """Inbox page set."""
 
   def __init__(self):
     super(InboxPageSet, self).__init__(
         archive_data_file='data/inbox_data.json',
-        bucket=page_set_module.INTERNAL_BUCKET
+        cloud_storage_bucket=story.INTERNAL_BUCKET
         )
 
     self.AddUserStory(InboxPage(self))

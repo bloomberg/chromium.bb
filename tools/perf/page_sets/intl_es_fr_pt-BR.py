@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 class IntlEsFrPtBrPage(page_module.Page):
@@ -15,7 +15,7 @@ class IntlEsFrPtBrPage(page_module.Page):
     self.archive_data_file = 'data/intl_es_fr_pt-BR.json'
 
 
-class IntlEsFrPtBrPageSet(page_set_module.PageSet):
+class IntlEsFrPtBrPageSet(story.StorySet):
 
   """
   Popular pages in Romance languages Spanish, French and Brazilian Portuguese.
@@ -24,7 +24,7 @@ class IntlEsFrPtBrPageSet(page_set_module.PageSet):
   def __init__(self):
     super(IntlEsFrPtBrPageSet, self).__init__(
       archive_data_file='data/intl_es_fr_pt-BR.json',
-      bucket=page_set_module.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
     urls_list = [
       'http://elmundo.es/',

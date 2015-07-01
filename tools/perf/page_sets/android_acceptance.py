@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 class AndroidAcceptancePage(page_module.Page):
@@ -20,14 +20,14 @@ class AndroidAcceptancePage(page_module.Page):
     action_runner.Wait(40)
 
 
-class AndroidAcceptancePageSet(page_set_module.PageSet):
+class AndroidAcceptancePageSet(story.StorySet):
 
   """ Pages used in android acceptance testing. """
 
   def __init__(self):
     super(AndroidAcceptancePageSet, self).__init__(
       archive_data_file='data/android_acceptance.json',
-      bucket=page_set_module.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
     urls_list = [
        'http://www.amazon.com',

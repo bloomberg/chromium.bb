@@ -5,8 +5,8 @@ import json
 import os
 
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 __location__ = os.path.realpath(
@@ -29,7 +29,7 @@ class Alexa1To10000Page(page_module.Page):
       action_runner.ScrollPage()
 
 
-class Alexa1To10000PageSet(page_set_module.PageSet):
+class Alexa1To10000PageSet(story.StorySet):
   """ Top 1-10000 Alexa global.
       Generated on 2013-09-03 13:59:53.459117 by rmistry using
       create_page_set.py.

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class BloatPage(page_module.Page):
@@ -11,7 +11,7 @@ class BloatPage(page_module.Page):
     super(BloatPage, self).__init__(url=url, page_set=page_set)
 
 
-class BloatPageSet(page_set_module.PageSet):
+class BloatPageSet(story.StorySet):
 
   """ Bloat page_cycler benchmark """
 
@@ -19,7 +19,7 @@ class BloatPageSet(page_set_module.PageSet):
     super(BloatPageSet, self).__init__(
       # pylint: disable=C0301
       serving_dirs=set(['../../../../data/page_cycler/bloat']),
-      bucket=page_set_module.PUBLIC_BUCKET)
+      cloud_storage_bucket=story.PUBLIC_BUCKET)
 
     self.AddUserStory(BloatPage(
       'file://../../../../data/page_cycler/bloat/gmail_load_cleardot/',

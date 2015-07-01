@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 # The PageSet searches for pages relative to the directory the page class is
@@ -11,7 +11,7 @@ class BlankPage(page_module.Page):
   pass
 
 
-class FiveBlankPagesPageSet(page_set_module.PageSet):
+class FiveBlankPagesPageSet(story.StorySet):
 
   """ Five blank pages. """
 

@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 class ToughImageCasesPage(page_module.Page):
@@ -14,7 +14,7 @@ class ToughImageCasesPage(page_module.Page):
         shared_page_state_class=shared_page_state.SharedDesktopPageState)
 
 
-class ToughImageCasesPageSet(page_set_module.PageSet):
+class ToughImageCasesPageSet(story.StorySet):
 
   """ A collection of image-heavy sites. """
 

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class ToughTextureUploadCasesPage(page_module.Page):
@@ -19,7 +19,7 @@ class ToughTextureUploadCasesPage(page_module.Page):
       action_runner.Wait(10)
 
 
-class ToughTextureUploadCasesPageSet(page_set_module.PageSet):
+class ToughTextureUploadCasesPageSet(story.StorySet):
 
   """
   Description: A collection of texture upload performance tests

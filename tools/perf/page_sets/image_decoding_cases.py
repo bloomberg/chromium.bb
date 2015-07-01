@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 class ImageDecodingCasesPage(page_module.Page):
 
@@ -13,7 +13,7 @@ class ImageDecodingCasesPage(page_module.Page):
     with action_runner.CreateInteraction('DecodeImage'):
       action_runner.Wait(5)
 
-class ImageDecodingCasesPageSet(page_set_module.PageSet):
+class ImageDecodingCasesPageSet(story.StorySet):
 
   """ A directed benchmark of accelerated jpeg image decoding performance """
 

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class SwiffyPage(page_module.Page):
@@ -31,13 +31,13 @@ class SwiffyPage(page_module.Page):
       action_runner.Wait(10)
 
 
-class ToughAdCasesPageSet(page_set_module.PageSet):
+class ToughAdCasesPageSet(story.StorySet):
   """Pages for measuring performance with advertising content."""
 
   def __init__(self):
     super(ToughAdCasesPageSet, self).__init__(
         archive_data_file='data/tough_ad_cases.json',
-        bucket=page_set_module.INTERNAL_BUCKET)
+        cloud_storage_bucket=story.INTERNAL_BUCKET)
 
     base_url = 'http://localhost:8000'
 

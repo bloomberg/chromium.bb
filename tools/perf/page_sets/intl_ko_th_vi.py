@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 class IntlKoThViPage(page_module.Page):
@@ -15,14 +15,14 @@ class IntlKoThViPage(page_module.Page):
     self.archive_data_file = 'data/intl_ko_th_vi.json'
 
 
-class IntlKoThViPageSet(page_set_module.PageSet):
+class IntlKoThViPageSet(story.StorySet):
 
   """ Popular pages in Korean, Thai and Vietnamese. """
 
   def __init__(self):
     super(IntlKoThViPageSet, self).__init__(
       archive_data_file='data/intl_ko_th_vi.json',
-      bucket=page_set_module.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
     urls_list = [
       # Why: #7 site in Vietnam

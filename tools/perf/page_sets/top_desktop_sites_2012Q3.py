@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from telemetry.page import page
-from telemetry.page import page_set
+from telemetry import story
 
 
 TOP_2013_URLS = [
@@ -259,13 +259,13 @@ class Top2012Q3Page(page.Page):
       action_runner.ScrollPage()
 
 
-class Top2012Q3PageSet(page_set.PageSet):
+class Top2012Q3PageSet(story.StorySet):
   """ Pages hand-picked from top-lists in Q32012. """
 
   def __init__(self):
     super(Top2012Q3PageSet, self).__init__(
       archive_data_file='data/2012Q3.json',
-      bucket=page_set.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
 
     for url in TOP_2013_URLS:

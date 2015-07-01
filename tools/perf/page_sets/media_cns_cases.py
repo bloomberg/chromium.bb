@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class BasicPlayPage(page_module.Page):
@@ -40,7 +40,7 @@ class SeekBeforeAndAfterPlayheadPage(BasicPlayPage):
     self.SeekBeforeAndAfterPlayhead(action_runner)
 
 
-class MediaCnsCasesPageSet(page_set_module.PageSet):
+class MediaCnsCasesPageSet(story.StorySet):
 
   """ Media benchmark on network constrained conditions. """
 

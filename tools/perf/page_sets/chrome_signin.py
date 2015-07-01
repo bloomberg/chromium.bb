@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 from page_sets.login_helpers import chrome_login
 
@@ -16,7 +16,7 @@ class ChromeSigninPage(page_module.Page):
         url='chrome://signin-internals',
         page_set=page_set,
         credentials_path='data/chrome_signin_credentials.json',
-        credentials_bucket=page_set_module.INTERNAL_BUCKET,
+        credentials_bucket=story.INTERNAL_BUCKET,
         shared_page_state_class=shared_page_state.SharedDesktopPageState)
 
   def RunPageInteractions(self, action_runner):
@@ -26,10 +26,10 @@ class ChromeSigninPage(page_module.Page):
         credentials_path=self.credentials_path)
 
 
-class ChromeSigninPageSet(page_set_module.PageSet):
+class ChromeSigninPageSet(story.StorySet):
 
   def __init__(self):
     super(ChromeSigninPageSet, self).__init__(
         archive_data_file='data/chrome_signin_archive.json',
-        bucket=page_set_module.INTERNAL_BUCKET)
+        cloud_storage_bucket=story.INTERNAL_BUCKET)
     self.AddUserStory(ChromeSigninPage(self))

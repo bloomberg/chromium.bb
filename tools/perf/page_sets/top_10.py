@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 class SimplePage(page_module.Page):
@@ -86,13 +86,13 @@ class Facebook(SimplePage):
     action_runner.WaitForElement(text='About')
 
 
-class Top10PageSet(page_set_module.PageSet):
+class Top10PageSet(story.StorySet):
   """10 Pages chosen from Alexa top sites"""
 
   def __init__(self):
     super(Top10PageSet, self).__init__(
       archive_data_file='data/top_10.json',
-      bucket=page_set_module.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
     # top google property; a google tab is often open
     self.AddUserStory(Google(self))

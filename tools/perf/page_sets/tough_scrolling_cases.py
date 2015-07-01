@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 from telemetry.internal.actions import page_action
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class ToughFastScrollingCasesPage(page_module.Page):
@@ -24,7 +24,7 @@ class ToughFastScrollingCasesPage(page_module.Page):
           speed_in_pixels_per_second=self.speed_in_pixels_per_second,
           synthetic_gesture_source=self.synthetic_gesture_source)
 
-class ToughScrollingCasesPageSet(page_set_module.PageSet):
+class ToughScrollingCasesPageSet(story.StorySet):
 
   """
   Description: A collection of difficult scrolling tests

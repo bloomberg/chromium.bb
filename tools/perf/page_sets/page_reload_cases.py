@@ -1,8 +1,8 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 from page_sets import top_pages
 
@@ -26,14 +26,14 @@ def _CreatePageClassWithReload(page_cls):
   return DerivedSmoothPage
 
 
-class PageReloadCasesPageSet(page_set_module.PageSet):
+class PageReloadCasesPageSet(story.StorySet):
 
   """ Pages for testing GC efficiency on page reload. """
 
   def __init__(self):
     super(PageReloadCasesPageSet, self).__init__(
         archive_data_file='data/top_25.json',
-        bucket=page_set_module.PARTNER_BUCKET)
+        cloud_storage_bucket=story.PARTNER_BUCKET)
 
     shared_desktop_state = shared_page_state.SharedDesktopPageState
 

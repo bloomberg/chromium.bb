@@ -2,20 +2,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page
-from telemetry.page import page_set
 from telemetry.page import shared_page_state
+from telemetry import story
 
 from page_sets import top_pages
 
 
-class Top25PageSet(page_set.PageSet):
+class Top25PageSet(story.StorySet):
 
   """ Page set consists of top 25 pages with only navigation actions. """
 
   def __init__(self):
     super(Top25PageSet, self).__init__(
         archive_data_file='data/top_25.json',
-        bucket=page_set.PARTNER_BUCKET)
+        cloud_storage_bucket=story.PARTNER_BUCKET)
 
     shared_desktop_state = shared_page_state.SharedDesktopPageState
     self.AddUserStory(top_pages.GoogleWebSearchPage(self, shared_desktop_state))

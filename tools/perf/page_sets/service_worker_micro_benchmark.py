@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from telemetry.page import page as page
-from telemetry.page import page_set as page_set
+from telemetry import story
 
 
 archive_data_file_path = 'data/service_worker_micro_benchmark.json'
@@ -17,13 +17,13 @@ class ServiceWorkerBenchmarkPage(page.Page):
     action_runner.WaitForJavaScriptCondition('window.done')
 
 
-class ServiceWorkerMicroBenchmarkPageSet(page_set.PageSet):
+class ServiceWorkerMicroBenchmarkPageSet(story.StorySet):
   """Page set for micro benchmarking of each functions with ServiceWorker"""
 
   def __init__(self):
     super(ServiceWorkerMicroBenchmarkPageSet, self).__init__(
         archive_data_file=archive_data_file_path,
-        bucket=page_set.PUBLIC_BUCKET)
+        cloud_storage_bucket=story.PUBLIC_BUCKET)
 
     # pylint: disable=C0301
     # The code of localhost:8091 is placed in

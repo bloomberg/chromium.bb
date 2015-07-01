@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 class Typical10MobilePage(page_module.Page):
@@ -57,24 +57,24 @@ urls_list = [
 ]
 
 
-class Typical10MobilePageSet(page_set_module.PageSet):
+class Typical10MobilePageSet(story.StorySet):
   """10 typical mobile pages, used for power testing."""
 
   def __init__(self):
     super(Typical10MobilePageSet, self).__init__(
         archive_data_file='data/typical_10_mobile.json',
-        bucket=page_set_module.PARTNER_BUCKET)
+        cloud_storage_bucket=story.PARTNER_BUCKET)
 
     for url in urls_list:
       self.AddUserStory(Typical10MobilePage(url, self))
 
-class Typical10MobileReloadPageSet(page_set_module.PageSet):
+class Typical10MobileReloadPageSet(story.StorySet):
   """10 typical mobile pages, used for reloading power testing."""
 
   def __init__(self):
     super(Typical10MobileReloadPageSet, self).__init__(
         archive_data_file='data/typical_10_mobile.json',
-        bucket=page_set_module.PARTNER_BUCKET)
+        cloud_storage_bucket=story.PARTNER_BUCKET)
 
     for url in urls_list:
       self.AddUserStory(Typical10MobileReloadPage(url, self))

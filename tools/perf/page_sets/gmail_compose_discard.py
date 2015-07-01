@@ -5,8 +5,8 @@
 import re
 
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 def _CreateXpathFunction(xpath):
@@ -59,7 +59,7 @@ class GmailComposeDiscardPage(page_module.Page):
     action_runner.Wait(1)
 
 
-class GmailComposeDiscardPageSet(page_set_module.PageSet):
+class GmailComposeDiscardPageSet(story.StorySet):
 
   """
   Description: Gmail endure test: compose and discard an email.

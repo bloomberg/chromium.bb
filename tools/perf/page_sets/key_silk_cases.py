@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 class KeySilkCasesPage(page_module.Page):
@@ -705,14 +705,14 @@ class Masonry(KeySilkCasesPage):
       action_runner.WaitForJavaScriptCondition('window.done')
 
 
-class KeySilkCasesPageSet(page_set_module.PageSet):
+class KeySilkCasesPageSet(story.StorySet):
 
   """ Pages hand-picked for project Silk. """
 
   def __init__(self, run_no_page_interactions=False):
     super(KeySilkCasesPageSet, self).__init__(
       archive_data_file='data/key_silk_cases.json',
-      bucket=page_set_module.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
     self.AddUserStory(Page1(self, run_no_page_interactions))
     self.AddUserStory(Page2(self, run_no_page_interactions))

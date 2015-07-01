@@ -4,8 +4,8 @@
 
 import os
 
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 from page_sets import top_7_stress
 from page_sets import top_pages
@@ -47,14 +47,14 @@ def _CreateIdleMultiTabPageClass(base_page_cls, base_js):
   return DerivedIdleMultiTabPage
 
 
-class IdleMultiTabCasesPageSet(page_set_module.PageSet):
+class IdleMultiTabCasesPageSet(story.StorySet):
 
   """ Pages for testing GC efficiency on idle pages. """
 
   def __init__(self):
     super(IdleMultiTabCasesPageSet, self).__init__(
         archive_data_file='data/top_25.json',
-        bucket=page_set_module.PARTNER_BUCKET)
+        cloud_storage_bucket=story.PARTNER_BUCKET)
     with open(os.path.join(os.path.dirname(__file__),
               'idle_multi_tab_cases.js')) as f:
       base_js = f.read()

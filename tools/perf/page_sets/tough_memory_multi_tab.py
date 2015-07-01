@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 class ToughMemoryMultiTabPage(page_module.Page):
@@ -15,7 +15,7 @@ class ToughMemoryMultiTabPage(page_module.Page):
     self.archive_data_file = 'data/key_mobile_sites.json'
 
 
-class ToughMemoryMultiTabPageSet(page_set_module.PageSet):
+class ToughMemoryMultiTabPageSet(story.StorySet):
 
   """ Mobile sites for exercising multi-tab memory issues """
 

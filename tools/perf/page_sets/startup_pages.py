@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class StartedPage(page_module.Page):
@@ -19,7 +19,7 @@ class StartedPage(page_module.Page):
     self.RunNavigateSteps(action_runner)
 
 
-class StartupPagesPageSet(page_set_module.PageSet):
+class StartupPagesPageSet(story.StorySet):
 
   """ Pages for testing starting Chrome with a URL.
   Note that this file can't be used with record_wpr, since record_wpr requires
@@ -30,7 +30,7 @@ class StartupPagesPageSet(page_set_module.PageSet):
   def __init__(self):
     super(StartupPagesPageSet, self).__init__(
         archive_data_file='data/startup_pages.json',
-        bucket=page_set_module.PARTNER_BUCKET)
+        cloud_storage_bucket=story.PARTNER_BUCKET)
 
     # Typical page.
     self.AddUserStory(StartedPage('about:blank', 'about:blank', self))

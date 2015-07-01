@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 def _GetCurrentLocation(action_runner):
@@ -306,14 +306,14 @@ class FacebookPage(Top7StressPage):
         'document.documentElement.scrollHeight - window.innerHeight - '
         'window.pageYOffset > 0')
 
-class Top7StressPageSet(page_set_module.PageSet):
+class Top7StressPageSet(story.StorySet):
 
   """ Pages hand-picked for stress testing. """
 
   def __init__(self):
     super(Top7StressPageSet, self).__init__(
       archive_data_file='data/top_7_stress.json',
-      bucket=page_set_module.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
     self.AddUserStory(GoogleWebSearchPage(self))
     self.AddUserStory(GmailPage(self))

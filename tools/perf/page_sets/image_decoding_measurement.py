@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class ImageDecodingMeasurementPage(page_module.Page):
@@ -18,7 +18,7 @@ class ImageDecodingMeasurementPage(page_module.Page):
     action_runner.WaitForJavaScriptCondition('isDone')
 
 
-class ImageDecodingMeasurementPageSet(page_set_module.PageSet):
+class ImageDecodingMeasurementPageSet(story.StorySet):
 
   """ A directed benchmark of image decoding performance """
 

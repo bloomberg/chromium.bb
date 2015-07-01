@@ -4,7 +4,7 @@
 from page_sets import diagonal_scrolling_supported_shared_state
 
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class ToughScrollingWhileZoomedInCasesPage(page_module.Page):
@@ -37,7 +37,7 @@ class ToughScrollingWhileZoomedInCasesPage(page_module.Page):
           speed_in_pixels_per_second=10000)
 
 
-class ToughScrollingWhileZoomedInCasesPageSet(page_set_module.PageSet):
+class ToughScrollingWhileZoomedInCasesPageSet(story.StorySet):
   """
   Description: A collection of difficult scrolling tests
   """
@@ -45,7 +45,7 @@ class ToughScrollingWhileZoomedInCasesPageSet(page_set_module.PageSet):
   def __init__(self):
     super(ToughScrollingWhileZoomedInCasesPageSet, self).__init__(
         archive_data_file='data/tough_pinch_zoom_cases.json',
-        bucket=page_set_module.PARTNER_BUCKET)
+        cloud_storage_bucket=story.PARTNER_BUCKET)
 
     # The following urls were chosen because they tend to have >15%
     # mean_pixels_approximated at this scrolling speed.

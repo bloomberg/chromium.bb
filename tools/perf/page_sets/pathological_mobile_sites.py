@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 class PathologicalMobileSitesPage(page_module.Page):
@@ -19,14 +19,14 @@ class PathologicalMobileSitesPage(page_module.Page):
       action_runner.ScrollPage()
 
 
-class PathologicalMobileSitesPageSet(page_set_module.PageSet):
+class PathologicalMobileSitesPageSet(story.StorySet):
 
   """Pathologically bad and janky sites on mobile."""
 
   def __init__(self):
     super(PathologicalMobileSitesPageSet, self).__init__(
         archive_data_file='data/pathological_mobile_sites.json',
-        bucket=page_set_module.PARTNER_BUCKET)
+        cloud_storage_bucket=story.PARTNER_BUCKET)
 
     sites = ['http://edition.cnn.com',
              'http://m.espn.go.com/nhl/rankings',

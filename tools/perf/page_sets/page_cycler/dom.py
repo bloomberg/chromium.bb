@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class DomPage(page_module.Page):
@@ -11,7 +11,7 @@ class DomPage(page_module.Page):
     super(DomPage, self).__init__(url=url, page_set=page_set)
 
 
-class DomPageSet(page_set_module.PageSet):
+class DomPageSet(story.StorySet):
 
   """ DOM page_cycler benchmark """
 

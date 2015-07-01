@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class BlankPage(page_module.Page):
@@ -10,7 +10,7 @@ class BlankPage(page_module.Page):
     super(BlankPage, self).__init__(url, page_set=page_set)
 
 
-class BlankPageSet(page_set_module.PageSet):
+class BlankPageSet(story.StorySet):
   """A single blank page."""
 
   def __init__(self):

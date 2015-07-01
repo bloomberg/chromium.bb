@@ -40,6 +40,6 @@ class MemoryMultiTab(page_test.PageTest):
 
   def ValidateAndMeasurePage(self, page, tab, results):
     # Finalize measurement on the last tab.
-    if len(tab.browser.tabs) == len(page.page_set.pages):
+    if len(tab.browser.tabs) == len(page.story_set.stories):
       self._memory_metric.Stop(page, self._first_tab)
       self._memory_metric.AddResults(self._first_tab, results)

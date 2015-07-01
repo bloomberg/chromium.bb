@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 class ToughPinchZoomCasesPage(page_module.Page):
@@ -234,14 +234,14 @@ class YahooAnswersPage(ToughPinchZoomCasesPage):
       action_runner.PinchElement(selector='#ya-content-apps')
 
 
-class ToughPinchZoomCasesPageSet(page_set_module.PageSet):
+class ToughPinchZoomCasesPageSet(story.StorySet):
 
   """ Set of pages that are tricky to pinch-zoom """
 
   def __init__(self):
     super(ToughPinchZoomCasesPageSet, self).__init__(
       archive_data_file='data/tough_pinch_zoom_cases.json',
-      bucket=page_set_module.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
     self.AddUserStory(GoogleSearchPage(self))
     self.AddUserStory(GmailPage(self))

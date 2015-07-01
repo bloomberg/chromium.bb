@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 from page_sets import polymer
 
@@ -37,7 +37,7 @@ class PaperCalculatorHitTest(polymer.PolymerPage):
       action_runner.TapElement(element_function='''window.__tapTarget''')
 
 
-class KeyHitTestCasesPageSet(page_set_module.PageSet):
+class KeyHitTestCasesPageSet(story.StorySet):
 
   def __init__(self):
     super(KeyHitTestCasesPageSet, self).__init__()

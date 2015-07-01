@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 class Top10MobilePage(page_module.Page):
 
@@ -21,14 +21,14 @@ class Top10MobilePage(page_module.Page):
       action_runner.ScrollPage()
 
 
-class Top10MobilePageSet(page_set_module.PageSet):
+class Top10MobilePageSet(story.StorySet):
 
   """ Top 10 mobile sites """
 
   def __init__(self, run_no_page_interactions=False):
     super(Top10MobilePageSet, self).__init__(
       archive_data_file='data/top_10_mobile.json',
-      bucket=page_set_module.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
     urls_list = [
       # Why: #1 (Alexa) most visited page worldwide, picked a reasonable

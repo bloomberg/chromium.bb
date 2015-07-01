@@ -3,19 +3,19 @@
 # found in the LICENSE file.
 
 from telemetry.page import page as page
-from telemetry.page import page_set as page_set
+from telemetry import story
 
 
 archive_data_file_path = 'data/service_worker.json'
 
 
-class ServiceWorkerPageSet(page_set.PageSet):
+class ServiceWorkerPageSet(story.StorySet):
   """Page set of applications using ServiceWorker"""
 
   def __init__(self):
     super(ServiceWorkerPageSet, self).__init__(
         archive_data_file=archive_data_file_path,
-        bucket=page_set.PARTNER_BUCKET)
+        cloud_storage_bucket=story.PARTNER_BUCKET)
 
     # Why: the first application using ServiceWorker
     # 1st time: registration

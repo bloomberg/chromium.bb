@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class ToughVideoCasesPage(page_module.Page):
@@ -498,14 +498,14 @@ class Page36(ToughVideoCasesPage):
   def RunPageInteractions(self, action_runner):
     self.SeekBeforeAndAfterPlayhead(action_runner)
 
-class ToughVideoCasesPageSet(page_set_module.PageSet):
+class ToughVideoCasesPageSet(story.StorySet):
 
   """
   Description: Video Stack Perf benchmark
   """
   def __init__(self):
     super(ToughVideoCasesPageSet, self).__init__(
-            bucket=page_set_module.PARTNER_BUCKET)
+            cloud_storage_bucket=story.PARTNER_BUCKET)
 
     self.AddUserStory(Page1(self))
     self.AddUserStory(Page2(self))

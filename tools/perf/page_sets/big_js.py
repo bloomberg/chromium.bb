@@ -2,17 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
-class BigJsPageSet(page_set_module.PageSet):
+class BigJsPageSet(story.StorySet):
 
   """ Sites which load and run big JavaScript files."""
 
   def __init__(self):
     super(BigJsPageSet, self).__init__(
       archive_data_file='data/big_js.json',
-      bucket=page_set_module.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
     # www.foo.com is a dummy page to make it easier to run only one interesting
     # page at a time. You can't just run the interesting page on its own: Page

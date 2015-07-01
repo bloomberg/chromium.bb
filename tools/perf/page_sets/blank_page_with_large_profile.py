@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 from page_sets import pregenerated_large_profile_shared_state
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class BlankPageWithLargeProfile(page_module.Page):
@@ -14,7 +14,7 @@ class BlankPageWithLargeProfile(page_module.Page):
         PregeneratedLargeProfileSharedState)
 
 
-class BlankPageSetWithLargeProfile(page_set_module.PageSet):
+class BlankPageSetWithLargeProfile(story.StorySet):
   """A single blank page loaded with a large profile."""
 
   def __init__(self):

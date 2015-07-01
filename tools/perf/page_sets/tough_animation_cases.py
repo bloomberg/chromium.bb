@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class ToughAnimationCasesPage(page_module.Page):
@@ -21,7 +21,7 @@ class ToughAnimationCasesPage(page_module.Page):
     with action_runner.CreateInteraction('ToughAnimation'):
       action_runner.Wait(10)
 
-class ToughAnimationCasesPageSet(page_set_module.PageSet):
+class ToughAnimationCasesPageSet(story.StorySet):
 
   """
   Description: A collection of animation performance tests
@@ -30,7 +30,7 @@ class ToughAnimationCasesPageSet(page_set_module.PageSet):
   def __init__(self):
     super(ToughAnimationCasesPageSet, self).__init__(
       archive_data_file='data/tough_animation_cases.json',
-      bucket=page_set_module.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
     urls_list_one = [
       # Why: Tests the balls animation implemented with SVG animations.

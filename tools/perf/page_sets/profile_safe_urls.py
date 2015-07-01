@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 from profile_creators import profile_safe_url_list
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 class ProfileSafeUrlPage(page_module.Page):
@@ -17,13 +17,13 @@ class ProfileSafeUrlPage(page_module.Page):
     self.credentials = 'google'
 
 
-class ProfileSafeUrlsPageSet(page_set_module.PageSet):
+class ProfileSafeUrlsPageSet(story.StorySet):
   """Safe urls used for profile generation."""
 
   def __init__(self):
     super(ProfileSafeUrlsPageSet, self).__init__(
       archive_data_file='data/profile_safe_urls.json',
-      bucket=page_set_module.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
     # Only use the first 500 urls to prevent the .wpr files from getting too
     # big.

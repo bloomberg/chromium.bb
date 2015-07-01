@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
 from telemetry.page import shared_page_state
+from telemetry import story
 
 
 class ToughLayoutCasesPage(page_module.Page):
@@ -15,7 +15,7 @@ class ToughLayoutCasesPage(page_module.Page):
     self.archive_data_file = 'data/tough_layout_cases.json'
 
 
-class ToughLayoutCasesPageSet(page_set_module.PageSet):
+class ToughLayoutCasesPageSet(story.StorySet):
 
   """
   The slowest layouts observed in the alexa top 1 million sites in  July 2013.
@@ -24,7 +24,7 @@ class ToughLayoutCasesPageSet(page_set_module.PageSet):
   def __init__(self):
     super(ToughLayoutCasesPageSet, self).__init__(
       archive_data_file='data/tough_layout_cases.json',
-      bucket=page_set_module.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
     urls_list = [
       'http://oilevent.com',

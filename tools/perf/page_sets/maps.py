@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 from page_sets import webgl_supported_shared_state
 
@@ -28,13 +28,13 @@ class MapsPage(page_module.Page):
       action_runner.WaitForJavaScriptCondition('window.testDone', 120)
 
 
-class MapsPageSet(page_set_module.PageSet):
+class MapsPageSet(story.StorySet):
 
   """ Google Maps examples """
 
   def __init__(self):
     super(MapsPageSet, self).__init__(
         archive_data_file='data/maps.json',
-        bucket=page_set_module.PUBLIC_BUCKET)
+        cloud_storage_bucket=story.PUBLIC_BUCKET)
 
     self.AddUserStory(MapsPage(self))
