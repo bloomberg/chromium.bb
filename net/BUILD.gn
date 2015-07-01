@@ -244,21 +244,25 @@ component("net") {
       "socket/ssl_client_socket_openssl.h",
       "socket/ssl_server_socket_openssl.cc",
       "socket/ssl_server_socket_openssl.h",
-      "ssl/openssl_platform_key.h",
-      "ssl/openssl_platform_key_nss.cc",
       "ssl/openssl_ssl_util.cc",
       "ssl/openssl_ssl_util.h",
       "ssl/ssl_client_session_cache_openssl.cc",
       "ssl/ssl_client_session_cache_openssl.h",
+      "ssl/ssl_platform_key.h",
+      "ssl/threaded_ssl_private_key.cc",
+      "ssl/threaded_ssl_private_key.h",
     ]
     if (is_mac) {
-      sources -= [ "ssl/openssl_platform_key_mac.cc" ]
+      sources -= [ "ssl/ssl_platform_key_mac.cc" ]
     }
     if (is_win) {
       sources -= [
         "cert/sha256_legacy_support_openssl_win.cc",
-        "ssl/openssl_platform_key_win.cc",
+        "ssl/ssl_platform_key_win.cc",
       ]
+    }
+    if (use_nss_certs) {
+      sources -= [ "ssl/ssl_platform_key_nss.cc" ]
     }
   }
 
@@ -279,13 +283,22 @@ component("net") {
     if (is_android) {
       sources -= [ "base/openssl_private_key_store_android.cc" ]
     }
-  } else if (is_android) {
-    # Android doesn't use these even when using OpenSSL.
+  } else {
+    if (is_android) {
+      # Android doesn't use these even when using OpenSSL.
+      sources -= [
+        "base/openssl_private_key_store_memory.cc",
+        "cert/cert_database_openssl.cc",
+        "cert/cert_verify_proc_openssl.cc",
+        "cert/test_root_certs_openssl.cc",
+      ]
+    }
+
+    # TODO(davidben): Remove these exclusions when use_openssl_certs builds also
+    # use the SSLPrivateKey machinery.
     sources -= [
-      "base/openssl_private_key_store_memory.cc",
-      "cert/cert_database_openssl.cc",
-      "cert/cert_verify_proc_openssl.cc",
-      "cert/test_root_certs_openssl.cc",
+      "ssl/threaded_ssl_private_key.cc",
+      "ssl/threaded_ssl_private_key.h",
     ]
   }
 
@@ -338,9 +351,7 @@ component("net") {
         "ssl/client_cert_store_chromeos.h",
       ]
     }
-    if (use_openssl) {
-      sources -= [ "ssl/openssl_platform_key_nss.cc" ]
-    }
+    sources -= [ "ssl/ssl_platform_key_nss.cc" ]
   } else if (use_openssl) {
     # client_cert_store_nss.c requires NSS_CmpCertChainWCANames from NSS's
     # libssl, but our bundled copy is not built in OpenSSL ports. Pull that file

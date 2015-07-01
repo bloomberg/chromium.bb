@@ -453,6 +453,9 @@ EVENT_TYPE(SSL_SERVER_HANDSHAKE)
 // The SSL server requested a client certificate.
 EVENT_TYPE(SSL_CLIENT_CERT_REQUESTED)
 
+// The SSL stack blocked on a private key operation.
+EVENT_TYPE(SSL_PRIVATE_KEY_OPERATION)
+
 // The start/end of getting a domain-bound certificate and private key.
 //
 // The END event will contain the following parameters on failure:

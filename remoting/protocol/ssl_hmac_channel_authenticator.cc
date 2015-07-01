@@ -14,16 +14,21 @@
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/cert_verify_result.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/transport_security_state.h"
-#include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
-#include "net/socket/ssl_client_socket_openssl.h"
 #include "net/socket/ssl_server_socket.h"
 #include "net/ssl/ssl_config_service.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/auth_util.h"
+
+#if defined(OS_NACL)
+#include "net/socket/ssl_client_socket_openssl.h"
+#else
+#include "net/socket/client_socket_factory.h"
+#endif
 
 namespace remoting {
 namespace protocol {

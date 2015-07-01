@@ -174,14 +174,14 @@
           'socket/ssl_client_socket_openssl.h',
           'socket/ssl_server_socket_openssl.cc',
           'socket/ssl_server_socket_openssl.h',
-          'ssl/openssl_platform_key.h',
-          'ssl/openssl_platform_key_mac.cc',
-          'ssl/openssl_platform_key_nss.cc',
-          'ssl/openssl_platform_key_win.cc',
           'ssl/openssl_ssl_util.cc',
           'ssl/openssl_ssl_util.h',
           'ssl/ssl_client_session_cache_openssl.cc',
           'ssl/ssl_client_session_cache_openssl.h',
+          'ssl/ssl_platform_key.h',
+          'ssl/ssl_platform_key_nss.cc',
+          'ssl/threaded_ssl_private_key.cc',
+          'ssl/threaded_ssl_private_key.h',
         ],
       },
     ],
@@ -220,6 +220,13 @@
           'cert/x509_certificate_openssl.cc',
           'ssl/openssl_client_key_store.cc',
           'ssl/openssl_client_key_store.h',
+        ],
+    }, {
+        'sources!': [
+          # TODO(davidben): Remove these exclusions when use_openssl_certs
+          # builds also use the SSLPrivateKey machinery.
+          'ssl/threaded_ssl_private_key.cc',
+          'ssl/threaded_ssl_private_key.h',
         ],
     }],
     [ 'use_glib == 1', {
@@ -273,7 +280,7 @@
           'ssl/client_cert_store_chromeos.h',
           'ssl/client_cert_store_nss.cc',
           'ssl/client_cert_store_nss.h',
-          'ssl/openssl_platform_key_nss.cc',
+          'ssl/ssl_platform_key_nss.cc',
           'third_party/mozilla_security_manager/nsKeygenHandler.cpp',
           'third_party/mozilla_security_manager/nsKeygenHandler.h',
           'third_party/mozilla_security_manager/nsNSSCertificateDB.cpp',
