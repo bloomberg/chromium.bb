@@ -274,4 +274,19 @@
       ],
     }
   ],
+  'conditions': [
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'gn_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'gn_unittests',
+          ],
+          'includes': [ '../../build/isolate.gypi' ],
+          'sources': [ 'gn_unittests.isolate' ],
+        },
+      ],
+    }],
+  ],
 }
