@@ -120,6 +120,17 @@ def should_generate_code(definitions):
     return definitions.interfaces or definitions.dictionaries
 
 
+def depends_on_union_types(idl_type):
+    """Returns true when a given idl_type depends on union containers
+    directly.
+    """
+    if idl_type.is_union_type:
+        return True
+    if idl_type.is_array_or_sequence_type:
+        return idl_type.element_type.is_union_type
+    return False
+
+
 class TypedefResolver(Visitor):
     def __init__(self, info_provider):
         self.info_provider = info_provider
@@ -150,7 +161,7 @@ class TypedefResolver(Visitor):
             if not idl_type:
                 continue
             resolved_idl_type = idl_type.resolve_typedefs(self.typedefs)
-            if resolved_idl_type.is_union_type:
+            if depends_on_union_types(resolved_idl_type):
                 self.additional_includes.add(
                     self.info_provider.include_path_for_union_types)
             # Need to re-assign the attribute, not just mutate idl_type, since

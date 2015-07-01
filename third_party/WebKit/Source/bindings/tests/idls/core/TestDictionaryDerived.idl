@@ -8,4 +8,5 @@
     DOMString derivedStringMember;
     DOMString derivedStringMemberWithDefault = "default string value";
     required long requiredLongMember;
+    sequence<DOMStringOrDouble> stringOrDoubleSequenceMember;
 };

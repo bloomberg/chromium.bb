@@ -8,6 +8,7 @@
 #include "V8TestDictionaryDerived.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/UnionTypesCore.h"
 #include "bindings/core/v8/V8TestDictionary.h"
 
 namespace blink {
@@ -80,6 +81,22 @@ void V8TestDictionaryDerivedImplementedAs::toImpl(v8::Isolate* isolate, v8::Loca
         }
     }
 
+    {
+        v8::Local<v8::Value> stringOrDoubleSequenceMemberValue;
+        if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "stringOrDoubleSequenceMember")).ToLocal(&stringOrDoubleSequenceMemberValue)) {
+            exceptionState.rethrowV8Exception(block.Exception());
+            return;
+        }
+        if (stringOrDoubleSequenceMemberValue.IsEmpty() || stringOrDoubleSequenceMemberValue->IsUndefined()) {
+            // Do nothing.
+        } else {
+            HeapVector<StringOrDouble> stringOrDoubleSequenceMember = toImplArray<HeapVector<StringOrDouble>>(stringOrDoubleSequenceMemberValue, 0, isolate, exceptionState);
+            if (exceptionState.hadException())
+                return;
+            impl.setStringOrDoubleSequenceMember(stringOrDoubleSequenceMember);
+        }
+    }
+
 }
 
 v8::Local<v8::Value> toV8(const TestDictionaryDerivedImplementedAs& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
@@ -112,6 +129,11 @@ bool toV8TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplement
             return false;
     } else {
         ASSERT_NOT_REACHED();
+    }
+
+    if (impl.hasStringOrDoubleSequenceMember()) {
+        if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "stringOrDoubleSequenceMember"), toV8(impl.stringOrDoubleSequenceMember(), creationContext, isolate))))
+            return false;
     }
 
     return true;

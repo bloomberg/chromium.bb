@@ -8,9 +8,11 @@
 #define TestDictionaryDerivedImplementedAs_h
 
 #include "bindings/core/v8/Nullable.h"
+#include "bindings/core/v8/UnionTypesCore.h"
 #include "bindings/tests/idls/core/TestDictionary.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -32,12 +34,17 @@ public:
     int requiredLongMember() const { return m_requiredLongMember.get(); }
     void setRequiredLongMember(int value) { m_requiredLongMember = value; }
 
+    bool hasStringOrDoubleSequenceMember() const { return !m_stringOrDoubleSequenceMember.isNull(); }
+    const HeapVector<StringOrDouble>& stringOrDoubleSequenceMember() const { return m_stringOrDoubleSequenceMember.get(); }
+    void setStringOrDoubleSequenceMember(const HeapVector<StringOrDouble>& value) { m_stringOrDoubleSequenceMember = value; }
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
     String m_derivedStringMember;
     String m_derivedStringMemberWithDefault;
     Nullable<int> m_requiredLongMember;
+    Nullable<HeapVector<StringOrDouble>> m_stringOrDoubleSequenceMember;
 
     friend class V8TestDictionaryDerivedImplementedAs;
 };

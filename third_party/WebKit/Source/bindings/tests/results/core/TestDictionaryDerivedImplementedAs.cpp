@@ -17,6 +17,7 @@ TestDictionaryDerivedImplementedAs::TestDictionaryDerivedImplementedAs()
 
 DEFINE_TRACE(TestDictionaryDerivedImplementedAs)
 {
+    visitor->trace(m_stringOrDoubleSequenceMember);
     TestDictionary::trace(visitor);
 }
 
