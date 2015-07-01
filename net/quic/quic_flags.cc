@@ -40,7 +40,7 @@ int64 FLAGS_quic_time_wait_list_seconds = 5;
 int64 FLAGS_quic_time_wait_list_max_connections = 50000;
 
 // Enables server-side support for QUIC stateless rejects.
-bool FLAGS_enable_quic_stateless_reject_support = false;
+bool FLAGS_enable_quic_stateless_reject_support = true;
 
 // If true, flow controller may grow the receive window size if necessary.
 bool FLAGS_quic_auto_tune_receive_window = true;
