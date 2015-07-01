@@ -14,13 +14,7 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 
-namespace content {
-class BrowserContext;
-}  // namespace content
-
 namespace proximity_auth {
-
-class ProximityAuthClient;
 
 // ScreenlockBridge brings together the screenLockPrivate API and underlying
 // support. On ChromeOS, it delegates calls to the ScreenLocker. On other
@@ -29,8 +23,7 @@ class ProximityAuthClient;
 // used solely for the lock screen anymore.
 class ScreenlockBridge {
  public:
-  // |client| is not owned and must outlive this object.
-  explicit ScreenlockBridge(ProximityAuthClient* client);
+  ScreenlockBridge();
   ~ScreenlockBridge();
 
   // User pod icons supported by lock screen / signin screen UI.
@@ -165,8 +158,10 @@ class ScreenlockBridge {
   void SetFocusedUser(const std::string& user_id);
 
   bool IsLocked() const;
-  void Lock(content::BrowserContext* browser_context);
-  void Unlock(content::BrowserContext* browser_context);
+  void Lock();
+
+  // Unlocks the screen for the authenticated user with the given |user_email|.
+  void Unlock(const std::string& user_email);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -176,7 +171,6 @@ class ScreenlockBridge {
   std::string focused_user_id() const { return focused_user_id_; }
 
  private:
-  ProximityAuthClient* client_;  // Not owned. Must outlive this object.
   LockHandler* lock_handler_;    // Not owned
   // The last focused user's id.
   std::string focused_user_id_;

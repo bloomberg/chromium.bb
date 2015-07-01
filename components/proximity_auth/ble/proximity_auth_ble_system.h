@@ -15,10 +15,6 @@
 #include "components/proximity_auth/cryptauth/cryptauth_client.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 
-namespace content {
-class BrowserContext;
-}
-
 namespace device {
 class BluetoothGattConnection;
 }
@@ -29,6 +25,7 @@ class BluetoothLowEnergyConnection;
 class BluetoothLowEnergyConnectionFinder;
 class Connection;
 class ConnectionFinder;
+class ProximityAuthClient;
 
 // This is the main entry point to start Proximity Auth over Bluetooth Low
 // Energy. This is the underlying system for the Smart Lock features. It will
@@ -39,7 +36,7 @@ class ProximityAuthBleSystem : public ScreenlockBridge::Observer,
  public:
   ProximityAuthBleSystem(
       ScreenlockBridge* screenlock_bridge,
-      content::BrowserContext* browser_context,
+      ProximityAuthClient* proximity_auth_client,
       scoped_ptr<CryptAuthClientFactory> cryptauth_client_factory);
   ~ProximityAuthBleSystem() override;
 
@@ -65,7 +62,7 @@ class ProximityAuthBleSystem : public ScreenlockBridge::Observer,
 
     virtual void AddObserver(ScreenlockBridge::Observer* observer);
     virtual void RemoveObserver(ScreenlockBridge::Observer* observer);
-    virtual void Unlock(content::BrowserContext* browser_context);
+    virtual void Unlock(ProximityAuthClient* client);
 
    protected:
     ScreenlockBridgeAdapter();
@@ -76,8 +73,8 @@ class ProximityAuthBleSystem : public ScreenlockBridge::Observer,
   };
 
   // Used for testing.
-  ProximityAuthBleSystem(ScreenlockBridgeAdapter* screenlock_bridge,
-                         content::BrowserContext* browser_context);
+  ProximityAuthBleSystem(scoped_ptr<ScreenlockBridgeAdapter> screenlock_bridge,
+                         ProximityAuthClient* proximity_auth_client);
 
   // Virtual for testing.
   virtual ConnectionFinder* CreateConnectionFinder();
@@ -102,8 +99,8 @@ class ProximityAuthBleSystem : public ScreenlockBridge::Observer,
 
   scoped_ptr<ScreenlockBridgeAdapter> screenlock_bridge_;
 
-  content::BrowserContext*
-      browser_context_;  // Not owned. Must outlive this object.
+  // Not owned. Must outlive this object.
+  ProximityAuthClient* proximity_auth_client_;
 
   // Creates CryptAuth client instances to make API calls.
   scoped_ptr<CryptAuthClientFactory> cryptauth_client_factory_;

@@ -38,11 +38,11 @@ class ProximityAuthBleSystemTestable : public ProximityAuthBleSystem {
 
     MOCK_METHOD1(AddObserver, void(ScreenlockBridge::Observer*));
     MOCK_METHOD1(RemoveObserver, void(ScreenlockBridge::Observer*));
-    MOCK_METHOD1(Unlock, void(content::BrowserContext*));
+    MOCK_METHOD1(Unlock, void(ProximityAuthClient*));
   };
 
   ProximityAuthBleSystemTestable(ScreenlockBridgeAdapter* screenlock_bridge)
-      : ProximityAuthBleSystem(screenlock_bridge, nullptr) {}
+      : ProximityAuthBleSystem(make_scoped_ptr(screenlock_bridge), nullptr) {}
 
   ConnectionFinder* CreateConnectionFinder() override {
     return new NiceMock<MockConnectionFinder>();

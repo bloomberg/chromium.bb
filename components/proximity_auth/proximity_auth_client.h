@@ -7,31 +7,17 @@
 
 #include <string>
 
-#include "base/macros.h"
-
-namespace content {
-class BrowserContext;
-}  // namespace content
-
 namespace proximity_auth {
 
 // An interface that needs to be supplied to the Proximity Auth component by its
-// embedder.
+// embedder. There should be one |ProximityAuthClient| per
+// |content::BrowserContext|.
 class ProximityAuthClient {
  public:
-  // Returns the authenticated username for |browser_context|.
-  virtual std::string GetAuthenticatedUsername(
-      content::BrowserContext* browser_context) const = 0;
-
-  // Locks the screen for |browser_context|.
-  virtual void Lock(content::BrowserContext* browser_context) = 0;
-
- protected:
-  ProximityAuthClient() {}
   virtual ~ProximityAuthClient() {}
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(ProximityAuthClient);
+  // Returns the authenticated username.
+  virtual std::string GetAuthenticatedUsername() const = 0;
 };
 
 }  // namespace proximity_auth

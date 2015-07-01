@@ -260,6 +260,7 @@ class EasyUnlockService::PowerMonitor
 
 EasyUnlockService::EasyUnlockService(Profile* profile)
     : profile_(profile),
+      proximity_auth_client_(profile),
       bluetooth_detector_(new BluetoothDetector(this)),
       shut_down_(false),
       tpm_key_checked_(false),
@@ -694,7 +695,7 @@ void EasyUnlockService::UpdateAppState() {
         !proximity_auth_ble_system_) {
       proximity_auth_ble_system_.reset(
           new proximity_auth::ProximityAuthBleSystem(
-              GetScreenlockBridgeInstance(), profile_,
+              GetScreenlockBridgeInstance(), &proximity_auth_client_,
               CreateCryptAuthClientFactory()));
     }
 

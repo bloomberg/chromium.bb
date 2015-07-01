@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/strings/string16.h"
-#include "components/proximity_auth/proximity_auth_client.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -49,9 +48,7 @@ std::string GetIdForIcon(ScreenlockBridge::UserPodCustomIcon icon) {
 
 }  // namespace
 
-ScreenlockBridge::ScreenlockBridge(ProximityAuthClient* client)
-    : client_(client), lock_handler_(nullptr) {
-  DCHECK(client_);
+ScreenlockBridge::ScreenlockBridge() : lock_handler_(nullptr) {
 }
 
 ScreenlockBridge::~ScreenlockBridge() {
@@ -150,19 +147,19 @@ bool ScreenlockBridge::IsLocked() const {
   return lock_handler_ != nullptr;
 }
 
-void ScreenlockBridge::Lock(content::BrowserContext* browser_context) {
+void ScreenlockBridge::Lock() {
 #if defined(OS_CHROMEOS)
   chromeos::SessionManagerClient* session_manager =
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
   session_manager->RequestLockScreen();
 #else
-  client_->Lock(browser_context);
+  NOTIMPLEMENTED();
 #endif
 }
 
-void ScreenlockBridge::Unlock(content::BrowserContext* browser_context) {
+void ScreenlockBridge::Unlock(const std::string& user_email) {
   if (lock_handler_)
-    lock_handler_->Unlock(client_->GetAuthenticatedUsername(browser_context));
+    lock_handler_->Unlock(user_email);
 }
 
 void ScreenlockBridge::AddObserver(Observer* observer) {

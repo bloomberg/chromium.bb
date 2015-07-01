@@ -16,6 +16,7 @@
 #include "components/proximity_auth/cryptauth/cryptauth_client.h"
 #include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/proximity_auth/logging/logging.h"
+#include "components/proximity_auth/proximity_auth_client.h"
 #include "components/proximity_auth/remote_device.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
@@ -70,17 +71,17 @@ void ProximityAuthBleSystem::ScreenlockBridgeAdapter::RemoveObserver(
 }
 
 void ProximityAuthBleSystem::ScreenlockBridgeAdapter::Unlock(
-    content::BrowserContext* browser_context) {
-  screenlock_bridge_->Unlock(browser_context);
+    ProximityAuthClient* client) {
+  screenlock_bridge_->Unlock(client->GetAuthenticatedUsername());
 }
 
 ProximityAuthBleSystem::ProximityAuthBleSystem(
     ScreenlockBridge* screenlock_bridge,
-    content::BrowserContext* browser_context,
+    ProximityAuthClient* proximity_auth_client,
     scoped_ptr<CryptAuthClientFactory> cryptauth_client_factory)
     : screenlock_bridge_(new ProximityAuthBleSystem::ScreenlockBridgeAdapter(
           screenlock_bridge)),
-      browser_context_(browser_context),
+      proximity_auth_client_(proximity_auth_client),
       cryptauth_client_factory_(cryptauth_client_factory.Pass()),
       is_polling_screen_state_(false),
       weak_ptr_factory_(this) {
@@ -89,10 +90,10 @@ ProximityAuthBleSystem::ProximityAuthBleSystem(
 }
 
 ProximityAuthBleSystem::ProximityAuthBleSystem(
-    ScreenlockBridgeAdapter* screenlock_bridge,
-    content::BrowserContext* browser_context)
-    : screenlock_bridge_(screenlock_bridge),
-      browser_context_(browser_context),
+    scoped_ptr<ScreenlockBridgeAdapter> screenlock_bridge,
+    ProximityAuthClient* proximity_auth_client)
+    : screenlock_bridge_(screenlock_bridge.Pass()),
+      proximity_auth_client_(proximity_auth_client),
       is_polling_screen_state_(false),
       weak_ptr_factory_(this) {
   PA_LOG(INFO) << "Starting Proximity Auth over Bluetooth Low Energy.";
@@ -210,7 +211,7 @@ void ProximityAuthBleSystem::OnMessageReceived(const Connection& connection,
   // the Proximity Auth Unlock Manager migration to C++ is done.
   if (message.payload() == kScreenUnlocked) {
     PA_LOG(INFO) << "Device unlocked. Unlock.";
-    screenlock_bridge_->Unlock(browser_context_);
+    screenlock_bridge_->Unlock(proximity_auth_client_);
   }
 }
 

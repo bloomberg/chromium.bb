@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/signin/chrome_proximity_auth_client.h"
 #include "chrome/browser/signin/easy_unlock_auth_attempt.h"
 #include "chrome/browser/signin/easy_unlock_metrics.h"
 #include "chrome/browser/signin/easy_unlock_screenlock_state_handler.h"
@@ -225,6 +226,10 @@ class EasyUnlockService : public KeyedService,
   CreateCryptAuthClientFactory() override;
   cryptauth::DeviceClassifier GetDeviceClassifier() override;
 
+  ChromeProximityAuthClient* proximity_auth_client() {
+    return &proximity_auth_client_;
+  }
+
  protected:
   explicit EasyUnlockService(Profile* profile);
   ~EasyUnlockService() override;
@@ -328,7 +333,9 @@ class EasyUnlockService : public KeyedService,
 
   void EnsureTpmKeyPresentIfNeeded();
 
-  Profile* profile_;
+  Profile* const profile_;
+
+  ChromeProximityAuthClient proximity_auth_client_;
 
   scoped_ptr<EasyUnlockAppManager> app_manager_;
 

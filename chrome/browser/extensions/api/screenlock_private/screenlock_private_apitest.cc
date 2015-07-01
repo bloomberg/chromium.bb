@@ -95,6 +95,9 @@ class ScreenlockPrivateApiTest : public ExtensionApiTest,
   DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateApiTest);
 };
 
+// Locking is currently implemented only on ChromeOS.
+#if defined(OS_CHROMEOS)
+
 // Time out under MSan. http://crbug.com/478091
 // Flaky under LSan on ChromeOS. http://crbug.com/482002
 #if defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER) && defined(OS_CHROMEOS)
@@ -112,5 +115,7 @@ IN_PROC_BROWSER_TEST_F(ScreenlockPrivateApiTest, MAYBE_LockUnlock) {
 IN_PROC_BROWSER_TEST_F(ScreenlockPrivateApiTest, MAYBE_AuthType) {
   RunTest("screenlock_private/auth_type");
 }
+
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace extensions

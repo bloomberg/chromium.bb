@@ -1480,6 +1480,8 @@
       'browser/search/hotword_service.h',
       'browser/search/hotword_service_factory.cc',
       'browser/search/hotword_service_factory.h',
+      'browser/signin/chrome_proximity_auth_client.cc',
+      'browser/signin/chrome_proximity_auth_client.h',
       'browser/signin/easy_unlock_app_manager.cc',
       'browser/signin/easy_unlock_app_manager.h',
       'browser/signin/easy_unlock_auth_attempt.cc',
