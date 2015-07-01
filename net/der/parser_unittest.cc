@@ -15,7 +15,7 @@ namespace test {
 
 TEST(ParserTest, ConsumesAllBytesOfTLV) {
   const uint8_t der[] = {0x04, 0x00};
-  Parser parser(Input(der, sizeof(der)));
+  Parser parser((Input(der)));
   Tag tag;
   Input value;
   ASSERT_TRUE(parser.ReadTagAndValue(&tag, &value));
@@ -25,7 +25,7 @@ TEST(ParserTest, ConsumesAllBytesOfTLV) {
 
 TEST(ParserTest, CanReadRawTLV) {
   const uint8_t der[] = {0x02, 0x01, 0x01};
-  Parser parser(Input(der, sizeof(der)));
+  Parser parser((Input(der)));
   Input tlv;
   ASSERT_TRUE(parser.ReadRawTLV(&tlv));
   ByteReader tlv_reader(tlv);
@@ -40,7 +40,7 @@ TEST(ParserTest, IgnoresContentsOfInnerValues) {
   // This is a SEQUENCE which has one member. The member is another SEQUENCE
   // with an invalid encoding - its length is too long.
   const uint8_t der[] = {0x30, 0x02, 0x30, 0x7e};
-  Parser parser(Input(der, sizeof(der)));
+  Parser parser((Input(der)));
   Tag tag;
   Input value;
   ASSERT_TRUE(parser.ReadTagAndValue(&tag, &value));
@@ -51,7 +51,7 @@ TEST(ParserTest, FailsIfLengthOverlapsAnotherTLV) {
   // the second is an INTEGER. The SEQUENCE contains an INTEGER, but its length
   // is longer than what it has contents for.
   const uint8_t der[] = {0x30, 0x02, 0x02, 0x01, 0x02, 0x01, 0x01};
-  Parser parser(Input(der, sizeof(der)));
+  Parser parser((Input(der)));
 
   Parser inner_sequence;
   ASSERT_TRUE(parser.ReadSequence(&inner_sequence));
@@ -68,7 +68,7 @@ TEST(ParserTest, FailsIfLengthOverlapsAnotherTLV) {
 
 TEST(ParserTest, CanSkipOptionalTagAtEndOfInput) {
   const uint8_t der[] = {0x02, 0x01, 0x01};
-  Parser parser(Input(der, sizeof(der)));
+  Parser parser((Input(der)));
 
   Tag tag;
   Input value;
@@ -81,7 +81,7 @@ TEST(ParserTest, CanSkipOptionalTagAtEndOfInput) {
 
 TEST(ParserTest, SkipOptionalTagDoesntConsumePresentNonMatchingTLVs) {
   const uint8_t der[] = {0x02, 0x01, 0x01};
-  Parser parser(Input(der, sizeof(der)));
+  Parser parser((Input(der)));
 
   bool present;
   ASSERT_TRUE(parser.SkipOptionalTag(0x04, &present));
@@ -94,7 +94,7 @@ TEST(ParserTest, SkipOptionalTagDoesntConsumePresentNonMatchingTLVs) {
 TEST(ParserTest, TagNumbersAboveThirtyUnsupported) {
   // Context-specific class, tag number 31, length 0.
   const uint8_t der[] = {0x9f, 0x1f, 0x00};
-  Parser parser(Input(der, sizeof(der)));
+  Parser parser((Input(der)));
 
   Tag tag;
   Input value;
@@ -104,7 +104,7 @@ TEST(ParserTest, TagNumbersAboveThirtyUnsupported) {
 
 TEST(ParserTest, IncompleteEncodingTagOnly) {
   const uint8_t der[] = {0x01};
-  Parser parser(Input(der, sizeof(der)));
+  Parser parser((Input(der)));
 
   Tag tag;
   Input value;
@@ -116,7 +116,7 @@ TEST(ParserTest, IncompleteEncodingLengthTruncated) {
   // Tag: octet string; length: long form, should have 2 total octets, but
   // the last one is missing. (There's also no value.)
   const uint8_t der[] = {0x04, 0x81};
-  Parser parser(Input(der, sizeof(der)));
+  Parser parser((Input(der)));
 
   Tag tag;
   Input value;
@@ -127,7 +127,7 @@ TEST(ParserTest, IncompleteEncodingLengthTruncated) {
 TEST(ParserTest, IncompleteEncodingValueShorterThanLength) {
   // Tag: octet string; length: 2; value: first octet 'T', second octet missing.
   const uint8_t der[] = {0x04, 0x02, 0x84};
-  Parser parser(Input(der, sizeof(der)));
+  Parser parser((Input(der)));
 
   Tag tag;
   Input value;
@@ -137,7 +137,7 @@ TEST(ParserTest, IncompleteEncodingValueShorterThanLength) {
 
 TEST(ParserTest, LengthMustBeEncodedWithMinimumNumberOfOctets) {
   const uint8_t der[] = {0x01, 0x81, 0x01, 0x00};
-  Parser parser(Input(der, sizeof(der)));
+  Parser parser((Input(der)));
 
   Tag tag;
   Input value;
@@ -161,7 +161,7 @@ TEST(ParserTest, LengthMustNotHaveLeadingZeroes) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  Parser parser(Input(der, sizeof(der)));
+  Parser parser((Input(der)));
 
   Tag tag;
   Input value;
@@ -172,7 +172,7 @@ TEST(ParserTest, LengthMustNotHaveLeadingZeroes) {
 TEST(ParserTest, ReadConstructedFailsForNonConstructedTags) {
   // Tag number is for SEQUENCE, but the constructed bit isn't set.
   const uint8_t der[] = {0x10, 0x00};
-  Parser parser(Input(der, sizeof(der)));
+  Parser parser((Input(der)));
 
   Tag expected_tag = 0x10;
   Parser sequence_parser;
@@ -187,7 +187,7 @@ TEST(ParserTest, ReadConstructedFailsForNonConstructedTags) {
 
 TEST(ParserTest, CannotAdvanceAfterReadOptionalTag) {
   const uint8_t der[] = {0x02, 0x01, 0x01};
-  Parser parser(Input(der, sizeof(der)));
+  Parser parser((Input(der)));
 
   Input value;
   bool present;
