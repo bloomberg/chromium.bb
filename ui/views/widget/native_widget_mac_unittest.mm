@@ -35,6 +35,10 @@
 - (void)setWindowStateForEnd;
 @end
 
+@interface NSWindow (PrivateAPI)
+- (BOOL)_isTitleHidden;
+@end
+
 namespace views {
 namespace test {
 
@@ -704,6 +708,92 @@ TEST_F(NativeWidgetMacTest, NativeProperties) {
   EXPECT_FALSE([dialog_widget->GetNativeWindow() canBecomeMainWindow]);
 
   regular_widget->CloseNow();
+}
+
+NSData* WindowContentsAsTIFF(NSWindow* window) {
+  NSView* frame_view = [[window contentView] superview];
+  EXPECT_TRUE(frame_view);
+
+  // Inset to mask off left and right edges which vary in HighDPI.
+  NSRect bounds = NSInsetRect([frame_view bounds], 4, 0);
+
+  // On 10.6, the grippy changes appearance slightly when painted the second
+  // time in a textured window. Since this test cares about the window title,
+  // cut off the bottom of the window.
+  bounds.size.height -= 40;
+  bounds.origin.y += 40;
+
+  NSBitmapImageRep* bitmap =
+      [frame_view bitmapImageRepForCachingDisplayInRect:bounds];
+  EXPECT_TRUE(bitmap);
+
+  [frame_view cacheDisplayInRect:bounds toBitmapImageRep:bitmap];
+  NSData* tiff = [bitmap TIFFRepresentation];
+  EXPECT_TRUE(tiff);
+  return tiff;
+}
+
+class CustomTitleWidgetDelegate : public WidgetDelegate {
+ public:
+  CustomTitleWidgetDelegate(Widget* widget)
+      : widget_(widget), should_show_title_(true) {}
+
+  void set_title(const base::string16& title) { title_ = title; }
+  void set_should_show_title(bool show) { should_show_title_ = show; }
+
+  // WidgetDelegate:
+  base::string16 GetWindowTitle() const override { return title_; }
+  bool ShouldShowWindowTitle() const override { return should_show_title_; }
+  Widget* GetWidget() override { return widget_; };
+  const Widget* GetWidget() const override { return widget_; };
+
+ private:
+  Widget* widget_;
+  base::string16 title_;
+  bool should_show_title_;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomTitleWidgetDelegate);
+};
+
+// Test that undocumented title-hiding API we're using does the job.
+TEST_F(NativeWidgetMacTest, DoesHideTitle) {
+  // Same as CreateTopLevelPlatformWidget but with a custom delegate.
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  Widget* widget = new Widget;
+  params.native_widget = new NativeWidgetCapture(widget);
+  CustomTitleWidgetDelegate delegate(widget);
+  params.delegate = &delegate;
+  params.bounds = gfx::Rect(0, 0, 800, 600);
+  widget->Init(params);
+  widget->Show();
+
+  NSWindow* ns_window = widget->GetNativeWindow();
+  // Disable color correction so we can read unmodified values from the bitmap.
+  [ns_window setColorSpace:[NSColorSpace sRGBColorSpace]];
+
+  EXPECT_EQ(base::string16(), delegate.GetWindowTitle());
+  EXPECT_NSEQ(@"", [ns_window title]);
+  NSData* empty_title_data = WindowContentsAsTIFF(ns_window);
+
+  delegate.set_title(base::ASCIIToUTF16("This is a title"));
+  widget->UpdateWindowTitle();
+  NSData* this_title_data = WindowContentsAsTIFF(ns_window);
+
+  // The default window with a title should look different from the
+  // window with an empty title.
+  EXPECT_FALSE([empty_title_data isEqualToData:this_title_data]);
+
+  delegate.set_should_show_title(false);
+  delegate.set_title(base::ASCIIToUTF16("This is another title"));
+  widget->UpdateWindowTitle();
+  NSData* hidden_title_data = WindowContentsAsTIFF(ns_window);
+
+  // With our magic setting, the window with a title should look the
+  // same as the window with an empty title.
+  EXPECT_TRUE([ns_window _isTitleHidden]);
+  EXPECT_TRUE([empty_title_data isEqualToData:hidden_title_data]);
+
+  widget->CloseNow();
 }
 
 }  // namespace test

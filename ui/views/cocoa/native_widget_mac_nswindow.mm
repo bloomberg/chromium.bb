@@ -8,11 +8,16 @@
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/widget/native_widget_mac.h"
+#include "ui/views/widget/widget_delegate.h"
 
 @interface NativeWidgetMacNSWindow ()
 - (ViewsNSWindowDelegate*)viewsNSWindowDelegate;
 - (views::Widget*)viewsWidget;
 - (BOOL)hasViewsMenuActive;
+
+// Private API on NSWindow, determines whether the title is drawn on the title
+// bar. The title is still visible in menus, Expose, etc.
+- (BOOL)_isTitleHidden;
 @end
 
 @implementation NativeWidgetMacNSWindow
@@ -29,6 +34,13 @@
   views::MenuController* menuController =
       views::MenuController::GetActiveInstance();
   return menuController && menuController->owner() == [self viewsWidget];
+}
+
+- (BOOL)_isTitleHidden {
+  if (![self delegate])
+    return NO;
+
+  return ![self viewsWidget]->widget_delegate()->ShouldShowWindowTitle();
 }
 
 // Ignore [super canBecome{Key,Main}Window]. The default is NO for windows with
