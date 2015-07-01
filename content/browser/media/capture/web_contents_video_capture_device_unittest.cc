@@ -905,27 +905,6 @@ TEST_F(WebContentsVideoCaptureDeviceTest, GoesThroughAllTheMotions) {
   device()->StopAndDeAllocate();
 }
 
-TEST_F(WebContentsVideoCaptureDeviceTest, RejectsInvalidAllocateParams) {
-  media::VideoCaptureParams capture_params;
-  capture_params.requested_format.frame_size.SetSize(1280, 720);
-  capture_params.requested_format.frame_rate = -2;
-  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&media::VideoCaptureDevice::AllocateAndStart,
-                 base::Unretained(device()),
-                 capture_params,
-                 base::Passed(client_observer()->PassClient())));
-  ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForError());
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&media::VideoCaptureDevice::StopAndDeAllocate,
-                 base::Unretained(device())));
-  base::RunLoop().RunUntilIdle();
-}
-
 TEST_F(WebContentsVideoCaptureDeviceTest, BadFramesGoodFrames) {
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(kTestWidth, kTestHeight);
