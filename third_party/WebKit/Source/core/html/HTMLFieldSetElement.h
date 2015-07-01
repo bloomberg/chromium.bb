@@ -58,6 +58,7 @@ private:
     virtual void childrenChanged(const ChildrenChange&) override;
     virtual bool areAuthorShadowsAllowed() const override { return false; }
     virtual bool isSubmittableElement() override;
+    virtual bool alwaysCreateUserAgentShadowRoot() const override { return false; }
 
     static void invalidateDisabledStateUnder(Element&);
     void refreshElementsIfNeeded() const;
