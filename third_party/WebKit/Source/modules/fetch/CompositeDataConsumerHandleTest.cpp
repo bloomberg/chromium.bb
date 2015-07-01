@@ -425,7 +425,13 @@ TEST(CompositeDataConsumerHandleTest, UpdateReaderWhileUpdating)
         test.result());
 }
 
-TEST(CompositeDataConsumerHandleTest, UpdateTwiceAtOnce)
+// Disabled on Android due to flakiness (https://crbug.com/506261).
+#if OS(ANDROID)
+#define MAYBE_UpdateTwiceAtOnce DISABLED_UpdateTwiceAtOnce
+#else
+#define MAYBE_UpdateTwiceAtOnce UpdateTwiceAtOnce
+#endif
+TEST(CompositeDataConsumerHandleTest, MAYBE_UpdateTwiceAtOnce)
 {
     ThreadingRegistrationUpdateTwiceAtOneTimeTest test;
     test.run();
