@@ -299,7 +299,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
     old_handles = self._driver.GetWindowHandles()
     self._driver.FindElement('id', 'link').Click()
-    new_window_handle = self.WaitForNewWindow(driver, old_handles)
+    new_window_handle = self.WaitForNewWindow(self._driver, old_handles)
     self.assertNotEqual(None, new_window_handle)
     self._driver.SwitchToWindow(new_window_handle)
     self.assertEquals(new_window_handle, self._driver.GetCurrentWindowHandle())
@@ -320,7 +320,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
     old_handles = self._driver.GetWindowHandles()
     self._driver.FindElement('id', 'link').Click()
-    self.assertNotEqual(None, WaitForNewWindow(driver, old_handles))
+    self.assertNotEqual(None, self.WaitForNewWindow(self._driver, old_handles))
 
   def testSwitchToWindow(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
@@ -329,7 +329,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     window1_handle = self._driver.GetCurrentWindowHandle()
     old_handles = self._driver.GetWindowHandles()
     self._driver.FindElement('id', 'link').Click()
-    new_window_handle = WaitForNewWindow(driver, old_handles)
+    new_window_handle = self.WaitForNewWindow(self._driver, old_handles)
     self.assertNotEqual(None, new_window_handle)
     self._driver.SwitchToWindow(new_window_handle)
     self.assertEquals(new_window_handle, self._driver.GetCurrentWindowHandle())
@@ -644,7 +644,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.Load(self._http_server.GetUrl() + '/newwindow')
     old_windows = self._driver.GetWindowHandles()
     self._driver.FindElement('tagName', 'a').Click()
-    new_window = self.WaitForNewWindow(driver, old_windows)
+    new_window = self.WaitForNewWindow(self._driver, old_windows)
     self.assertNotEqual(None, new_window)
 
     self.assertFalse(self._driver.IsLoading())
@@ -657,7 +657,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     old_handles = self._driver.GetWindowHandles()
     self._driver.ExecuteScript('window.open("about:blank")')
-    new_window_handle = WaitForNewWindow(driver, old_handles)
+    new_window_handle = self.WaitForNewWindow(self._driver, old_handles)
     self.assertNotEqual(None, new_window_handle)
 
   def testNoSuchFrame(self):
@@ -1086,7 +1086,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     old_handles = self._driver.GetWindowHandles()
     self.assertEquals(1, len(old_handles))
     self._driver.ExecuteScript('setTimeout(function(){window.print();}, 0);')
-    new_window_handle = WaitForNewWindow(driver, old_handles)
+    new_window_handle = self.WaitForNewWindow(self._driver, old_handles)
     self.assertNotEqual(None, new_window_handle)
     self._driver.SwitchToWindow(new_window_handle)
     self.assertEquals('chrome://print/', self._driver.GetCurrentUrl())
