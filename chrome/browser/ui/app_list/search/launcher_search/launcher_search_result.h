@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/search/launcher_search/extension_badged_icon_image.h"
+#include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader.h"
 #include "extensions/common/extension.h"
 #include "ui/app_list/search_result.h"
 #include "url/gurl.h"
@@ -17,7 +17,7 @@
 namespace app_list {
 
 class LauncherSearchResult : public SearchResult,
-                             public ExtensionBadgedIconImage::Observer {
+                             public LauncherSearchIconImageLoader::Observer {
  public:
   LauncherSearchResult(
       const std::string& item_id,
@@ -31,18 +31,19 @@ class LauncherSearchResult : public SearchResult,
   scoped_ptr<SearchResult> Duplicate() const override;
   void Open(int event_flags) override;
 
-  void OnIconImageChanged(ExtensionBadgedIconImage* image) override;
+  void OnIconImageChanged(LauncherSearchIconImageLoader* image_loader) override;
+  void OnBadgeIconImageChanged(
+      LauncherSearchIconImageLoader* image_loader) override;
 
  private:
   // Constructor for duplicating a result.
-  LauncherSearchResult(const std::string& item_id,
-                       const int discrete_value_relevance,
-                       Profile* profile,
-                       const extensions::Extension* extension,
-                       const linked_ptr<ExtensionBadgedIconImage>& icon_image);
+  LauncherSearchResult(
+      const std::string& item_id,
+      const int discrete_value_relevance,
+      Profile* profile,
+      const extensions::Extension* extension,
+      const linked_ptr<LauncherSearchIconImageLoader>& icon_image_loader);
   void Initialize();
-
-  void UpdateIcon();
 
   // Returns search result ID. The search result ID is comprised of the
   // extension ID and the extension-supplied item ID. This is to avoid naming
@@ -54,7 +55,7 @@ class LauncherSearchResult : public SearchResult,
   const int discrete_value_relevance_;
   Profile* profile_;
   const extensions::Extension* extension_;
-  linked_ptr<ExtensionBadgedIconImage> icon_image_;
+  linked_ptr<LauncherSearchIconImageLoader> icon_image_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherSearchResult);
 };

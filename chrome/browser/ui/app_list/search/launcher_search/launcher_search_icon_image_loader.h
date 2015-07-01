@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_LAUNCHER_SEARCH_EXTENSION_BADGED_ICON_IMAGE_H_
-#define CHROME_BROWSER_UI_APP_LIST_SEARCH_LAUNCHER_SEARCH_EXTENSION_BADGED_ICON_IMAGE_H_
+#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_LAUNCHER_SEARCH_LAUNCHER_SEARCH_ICON_IMAGE_LOADER_H_
+#define CHROME_BROWSER_UI_APP_LIST_SEARCH_LAUNCHER_SEARCH_LAUNCHER_SEARCH_ICON_IMAGE_LOADER_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/launcher_search_provider/error_reporter.h"
@@ -15,26 +15,31 @@
 
 namespace app_list {
 
-// Provides an icon image which is badged with extension icon. If custom icon
-// image is not specified, extension icon will be used.
-class ExtensionBadgedIconImage {
+// Loads icons of launcher search results.
+class LauncherSearchIconImageLoader {
  public:
   class Observer {
    public:
     // Called when icon image is changed. To obtain the new image, call
     // GetIconImage method.
-    virtual void OnIconImageChanged(ExtensionBadgedIconImage* image) = 0;
+    virtual void OnIconImageChanged(
+        LauncherSearchIconImageLoader* image_loader) = 0;
+
+    // Called when badge icon image is changed. To obtain the new image, call
+    // GetBadgeIconImage method.
+    virtual void OnBadgeIconImageChanged(
+        LauncherSearchIconImageLoader* image_loader) = 0;
   };
 
   // If |custom_icon_url| is empty, uses the extension icon.
-  ExtensionBadgedIconImage(
+  LauncherSearchIconImageLoader(
       const GURL& custom_icon_url,
       Profile* profile,
       const extensions::Extension* extension,
       const int icon_dimension,
       scoped_ptr<chromeos::launcher_search_provider::ErrorReporter>
           error_reporter);
-  virtual ~ExtensionBadgedIconImage();
+  virtual ~LauncherSearchIconImageLoader();
 
   // Load resources caller must call this function to generate icon image.
   void LoadResources();
@@ -46,8 +51,11 @@ class ExtensionBadgedIconImage {
   // Removes |observer|.
   void RemoveObserver(Observer* observer);
 
-  // Returns badged icon image
+  // Returns icon image.
   const gfx::ImageSkia& GetIconImage() const;
+
+  // Returns badge icon image.
+  const gfx::ImageSkia& GetBadgeIconImage() const;
 
  protected:
   // Loads |extension| icon and returns it as sync if possible. When it loads
@@ -71,26 +79,24 @@ class ExtensionBadgedIconImage {
   const gfx::Size icon_size_;
 
  private:
-  // Updates icon image.
-  void Update();
-
-  // Sets new icon image, and notify to observers.
-  void SetIconImage(const gfx::ImageSkia& image);
+  // Notifies to observers.
+  void NotifyObserversIconImageChange();
+  void NotifyObserversBadgeIconImageChange();
 
   // Returns truncated icon url. Since max_size includes trailing ..., it should
   // be larger than 3.
   std::string GetTruncatedIconUrl(const uint32 max_size);
 
+  scoped_ptr<chromeos::launcher_search_provider::ErrorReporter> error_reporter_;
+
   gfx::ImageSkia extension_icon_image_;
   gfx::ImageSkia custom_icon_image_;
-  gfx::ImageSkia badged_icon_image_;
 
-  scoped_ptr<chromeos::launcher_search_provider::ErrorReporter> error_reporter_;
   std::set<Observer*> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionBadgedIconImage);
+  DISALLOW_COPY_AND_ASSIGN(LauncherSearchIconImageLoader);
 };
 
 }  // namespace app_list
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_LAUNCHER_SEARCH_EXTENSION_BADGED_ICON_IMAGE_H_
+#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_LAUNCHER_SEARCH_LAUNCHER_SEARCH_ICON_IMAGE_LOADER_H_

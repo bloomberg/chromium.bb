@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/search/launcher_search/extension_badged_icon_image_impl.h"
+#include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader_impl.h"
 
 #include "chrome/browser/extensions/extension_util.h"
 #include "extensions/browser/image_loader.h"
@@ -11,25 +11,25 @@
 
 namespace app_list {
 
-ExtensionBadgedIconImageImpl::ExtensionBadgedIconImageImpl(
+LauncherSearchIconImageLoaderImpl::LauncherSearchIconImageLoaderImpl(
     const GURL& custom_icon_url,
     Profile* profile,
     const extensions::Extension* extension,
     const int icon_dimension,
     scoped_ptr<chromeos::launcher_search_provider::ErrorReporter>
         error_reporter)
-    : ExtensionBadgedIconImage(custom_icon_url,
-                               profile,
-                               extension,
-                               icon_dimension,
-                               error_reporter.Pass()),
+    : LauncherSearchIconImageLoader(custom_icon_url,
+                                    profile,
+                                    extension,
+                                    icon_dimension,
+                                    error_reporter.Pass()),
       weak_ptr_factory_(this) {
 }
 
-ExtensionBadgedIconImageImpl::~ExtensionBadgedIconImageImpl() {
+LauncherSearchIconImageLoaderImpl::~LauncherSearchIconImageLoaderImpl() {
 }
 
-const gfx::ImageSkia& ExtensionBadgedIconImageImpl::LoadExtensionIcon() {
+const gfx::ImageSkia& LauncherSearchIconImageLoaderImpl::LoadExtensionIcon() {
   extension_icon_image_.reset(new extensions::IconImage(
       profile_, extension_, extensions::IconsInfo::GetIcons(extension_),
       icon_size_.width(), extensions::util::GetDefaultExtensionIcon(), this));
@@ -37,7 +37,7 @@ const gfx::ImageSkia& ExtensionBadgedIconImageImpl::LoadExtensionIcon() {
   return extension_icon_image_->image_skia();
 }
 
-void ExtensionBadgedIconImageImpl::LoadIconResourceFromExtension() {
+void LauncherSearchIconImageLoaderImpl::LoadIconResourceFromExtension() {
   const base::FilePath& file_path =
       extensions::file_util::ExtensionURLToRelativeFilePath(icon_url_);
   const extensions::ExtensionResource& resource =
@@ -47,23 +47,22 @@ void ExtensionBadgedIconImageImpl::LoadIconResourceFromExtension() {
   // DPI is done in BadgedIconSource.
   std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
   info_list.push_back(extensions::ImageLoader::ImageRepresentation(
-      resource,
-      extensions::ImageLoader::ImageRepresentation::RESIZE_WHEN_LARGER,
+      resource, extensions::ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
       gfx::Size(icon_size_.width() * 2, icon_size_.height() * 2),
       ui::SCALE_FACTOR_200P));
   extensions::ImageLoader::Get(profile_)->LoadImagesAsync(
       extension_, info_list,
-      base::Bind(&ExtensionBadgedIconImageImpl::OnCustomIconImageLoaded,
+      base::Bind(&LauncherSearchIconImageLoaderImpl::OnCustomIconImageLoaded,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ExtensionBadgedIconImageImpl::OnExtensionIconImageChanged(
+void LauncherSearchIconImageLoaderImpl::OnExtensionIconImageChanged(
     extensions::IconImage* image) {
   DCHECK_EQ(extension_icon_image_, image);
   OnExtensionIconChanged(extension_icon_image_->image_skia());
 }
 
-void ExtensionBadgedIconImageImpl::OnCustomIconImageLoaded(
+void LauncherSearchIconImageLoaderImpl::OnCustomIconImageLoaded(
     const gfx::Image& image) {
   OnCustomIconLoaded(image.AsImageSkia());
 }

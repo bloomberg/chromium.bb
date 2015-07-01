@@ -1639,7 +1639,7 @@
     ],
     # ChromeOS only sources of app_list.
     'chrome_unit_tests_app_list_chromeos_sources': [
-      'browser/ui/app_list/search/launcher_search/extension_badged_icon_image_unittest.cc',
+      'browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader_unittest.cc',
     ],
   },
   'targets': [

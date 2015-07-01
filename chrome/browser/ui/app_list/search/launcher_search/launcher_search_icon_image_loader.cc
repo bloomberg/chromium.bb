@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/search/launcher_search/extension_badged_icon_image.h"
+#include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader.h"
 
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/launcher_search_provider/error_reporter.h"
@@ -19,42 +19,11 @@ const int kTruncatedIconUrlMaxSize = 100;
 const char kWarningMessagePrefix[] =
     "[chrome.launcherSearchProvider.setSearchResults]";
 
-class BadgedIconSource : public gfx::CanvasImageSource {
- public:
-  BadgedIconSource(const gfx::ImageSkia& custom_icon,
-                   const gfx::ImageSkia& extension_icon,
-                   const gfx::Size& icon_size)
-      : CanvasImageSource(icon_size, false),
-        custom_icon_(custom_icon),
-        extension_icon_(extension_icon) {}
-
-  void Draw(gfx::Canvas* canvas) override {
-    canvas->DrawImageInt(custom_icon_, 0, 0, custom_icon_.size().width(),
-                         custom_icon_.height(), 0, 0, size().width(),
-                         size().height(), true);
-
-    // Badged icon size is 2/3 of custom icon.
-    const int badge_dimension = size().width() * 2 / 3;
-    const gfx::Size badge_size = gfx::Size(badge_dimension, badge_dimension);
-    canvas->DrawImageInt(extension_icon_, 0, 0, extension_icon_.size().width(),
-                         extension_icon_.size().height(),
-                         size().width() - badge_size.width(),
-                         size().height() - badge_size.height(),
-                         badge_size.width(), badge_size.height(), true);
-  }
-
- private:
-  const gfx::ImageSkia custom_icon_;
-  const gfx::ImageSkia extension_icon_;
-
-  DISALLOW_COPY_AND_ASSIGN(BadgedIconSource);
-};
-
 }  // namespace
 
 namespace app_list {
 
-ExtensionBadgedIconImage::ExtensionBadgedIconImage(
+LauncherSearchIconImageLoader::LauncherSearchIconImageLoader(
     const GURL& icon_url,
     Profile* profile,
     const extensions::Extension* extension,
@@ -68,13 +37,16 @@ ExtensionBadgedIconImage::ExtensionBadgedIconImage(
       error_reporter_(error_reporter.Pass()) {
 }
 
-ExtensionBadgedIconImage::~ExtensionBadgedIconImage() {
+LauncherSearchIconImageLoader::~LauncherSearchIconImageLoader() {
 }
 
-void ExtensionBadgedIconImage::LoadResources() {
-  // Loads extension icon image.
+void LauncherSearchIconImageLoader::LoadResources() {
+  DCHECK(custom_icon_image_.isNull());
+
+  // Loads extension icon image and set it as main icon image.
   extension_icon_image_ = LoadExtensionIcon();
-  Update();
+  CHECK(!extension_icon_image_.isNull());
+  NotifyObserversIconImageChange();
 
   // If valid icon_url is provided as chrome-extension scheme with the host of
   // |extension|, load custom icon.
@@ -100,67 +72,83 @@ void ExtensionBadgedIconImage::LoadResources() {
   LoadIconResourceFromExtension();
 }
 
-void ExtensionBadgedIconImage::AddObserver(Observer* observer) {
+void LauncherSearchIconImageLoader::AddObserver(Observer* observer) {
   observers_.insert(observer);
 }
 
-void ExtensionBadgedIconImage::RemoveObserver(Observer* observer) {
+void LauncherSearchIconImageLoader::RemoveObserver(Observer* observer) {
   observers_.erase(observer);
 }
 
-const gfx::ImageSkia& ExtensionBadgedIconImage::GetIconImage() const {
-  return badged_icon_image_;
+const gfx::ImageSkia& LauncherSearchIconImageLoader::GetIconImage() const {
+  // If no custom icon is supplied, return the extension icon.
+  if (custom_icon_image_.isNull())
+    return extension_icon_image_;
+
+  return custom_icon_image_;
 }
 
-void ExtensionBadgedIconImage::OnExtensionIconChanged(
+const gfx::ImageSkia& LauncherSearchIconImageLoader::GetBadgeIconImage() const {
+  // If a custom icon is supplied, badge it with the extension icon.
+  if (!custom_icon_image_.isNull())
+    return extension_icon_image_;
+
+  return custom_icon_image_;  // Returns as an empty image.
+}
+
+void LauncherSearchIconImageLoader::OnExtensionIconChanged(
     const gfx::ImageSkia& image) {
+  CHECK(!image.isNull());
+
   extension_icon_image_ = image;
-  Update();
+
+  if (custom_icon_image_.isNull()) {
+    // When |custom_icon_image_| is not set, extension icon image will be shown
+    // as a main icon.
+    NotifyObserversIconImageChange();
+  } else {
+    // When |custom_icon_image_| is set, extension icon image will be shown as a
+    // badge icon.
+    NotifyObserversBadgeIconImageChange();
+  }
 }
 
-void ExtensionBadgedIconImage::OnCustomIconLoaded(const gfx::ImageSkia& image) {
+void LauncherSearchIconImageLoader::OnCustomIconLoaded(
+    const gfx::ImageSkia& image) {
   if (image.isNull()) {
     std::vector<std::string> params;
     params.push_back(kWarningMessagePrefix);
     params.push_back(GetTruncatedIconUrl(kTruncatedIconUrlMaxSize));
     error_reporter_->Warn(ReplaceStringPlaceholders(
         "$1 Failed to load icon URL: $2", params, nullptr));
+
     return;
   }
 
+  const bool previously_unbadged = custom_icon_image_.isNull();
   custom_icon_image_ = image;
-  Update();
+  NotifyObserversIconImageChange();
+
+  // If custom_icon_image_ is not set before, extension icon moves from main
+  // icon to badge icon. We need to notify badge icon image change after we set
+  // custom_icon_image_ to return proper image in GetBadgeIconImage method.
+  if (previously_unbadged)
+    NotifyObserversBadgeIconImageChange();
 }
 
-void ExtensionBadgedIconImage::Update() {
-  // If extension_icon_image is not available, return immediately.
-  if (extension_icon_image_.isNull())
-    return;
-
-  // When custom icon image is not available, simply use extension icon image
-  // without badge.
-  if (custom_icon_image_.isNull()) {
-    SetIconImage(extension_icon_image_);
-    return;
-  }
-
-  // Create badged icon image.
-  gfx::ImageSkia badged_icon_image(
-      new BadgedIconSource(custom_icon_image_, extension_icon_image_,
-                           icon_size_),
-      icon_size_);
-  SetIconImage(badged_icon_image);
-}
-
-void ExtensionBadgedIconImage::SetIconImage(const gfx::ImageSkia& icon_image) {
-  badged_icon_image_ = icon_image;
-
+void LauncherSearchIconImageLoader::NotifyObserversIconImageChange() {
   for (auto* observer : observers_) {
     observer->OnIconImageChanged(this);
   }
 }
 
-std::string ExtensionBadgedIconImage::GetTruncatedIconUrl(
+void LauncherSearchIconImageLoader::NotifyObserversBadgeIconImageChange() {
+  for (auto* observer : observers_) {
+    observer->OnBadgeIconImageChanged(this);
+  }
+}
+
+std::string LauncherSearchIconImageLoader::GetTruncatedIconUrl(
     const uint32 max_size) {
   CHECK(max_size > 3);
 
