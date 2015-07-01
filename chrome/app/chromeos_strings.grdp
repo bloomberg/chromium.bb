@@ -109,12 +109,6 @@ Press any key to continue exploring.
   <message name="IDS_FILE_SYSTEM_PROVIDER_UNRESPONSIVE_ABORT_BUTTON" desc="Label of the button on the notification about an operation(s) taking to long.">
     Abort
   </message>
-  <message name="IDS_FILE_BROWSER_ARCHIVE_DIRECTORY_LABEL" desc="/archive directory label.">
-    Archives
-  </message>
-  <message name="IDS_FILE_BROWSER_REMOVABLE_DIRECTORY_LABEL" desc="/removable directory label.">
-    External Storage
-  </message>
   <message name="IDS_FILE_BROWSER_DRIVE_DIRECTORY_LABEL" desc="/drive directory label.">
     Google Drive
   </message>
@@ -274,9 +268,6 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_ACTION_OPEN_GSLIDES" desc="Title of the action to open a Google Slides document.">
     Slides
   </message>
-  <message name="IDS_FILE_BROWSER_ACTION_WATCH" desc="Title of the action to watch a video.">
-    Watch
-  </message>
   <message name="IDS_FILE_BROWSER_ACTION_LISTEN" desc="Title of the action to play an audio file.">
     Listen
   </message>
@@ -325,23 +316,14 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_GALLERY_ASPECT_RATIO_1_1" desc="Button label to fix aspect to 1:1 ratio when cropping.">
     1x1
   </message>
-  <message name="IDS_FILE_BROWSER_GALLERY_ASPECT_RATIO_4_6" desc="Button label to fix aspect to 4:6 ratio when cropping.">
-    4x6
-  </message>
   <message name="IDS_FILE_BROWSER_GALLERY_ASPECT_RATIO_6_4" desc="Button label to fix aspect to 6:4 ratio when cropping.">
     6x4
-  </message>
-  <message name="IDS_FILE_BROWSER_GALLERY_ASPECT_RATIO_5_7" desc="Button label to fix aspect to 5:7 ratio when cropping.">
-    5x7
   </message>
   <message name="IDS_FILE_BROWSER_GALLERY_ASPECT_RATIO_7_5" desc="Button label to fix aspect to 7:5 ratio when cropping.">
     7x5
   </message>
   <message name="IDS_FILE_BROWSER_GALLERY_ASPECT_RATIO_16_9" desc="Button label to fix aspect to 16:9 ratio when cropping.">
     16x9
-  </message>
-  <message name="IDS_FILE_BROWSER_GALLERY_ASPECT_RATIO_9_16" desc="Button label to fix aspect to 9:16 ratio when cropping.">
-    9x16
   </message>
   <message name="IDS_FILE_BROWSER_GALLERY_EXPOSURE" desc="In the Gallery, the title on the button that applies the Brightness/Contrast filter to a photo.">
     Brightness
@@ -385,17 +367,11 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_GALLERY_IMAGE_ERROR" desc="In the Gallery, message informing that the image failed to load.">
     This file could not be displayed.
   </message>
-  <message name="IDS_FILE_BROWSER_GALLERY_IMAGE_TOO_BIG_ERROR" desc="In the Gallery, message informing that the image is too big to be displayed.">
-    This file is too large to be opened.
-  </message>
   <message name="IDS_FILE_BROWSER_AUDIO_ERROR" desc="In the Audio Player, message informing that the file could not be played.">
     This file could not be played.
   </message>
   <message name="IDS_FILE_BROWSER_GALLERY_IMAGE_OFFLINE" desc="In the Gallery, message informing that the image could be displayed in the offline mode.">
     This image is not available offline.
-  </message>
-  <message name="IDS_FILE_BROWSER_GALLERY_VIDEO_OFFLINE" desc="In the Gallery, message informing that the video could not be played in the offline mode.">
-    This video is not available offline.
   </message>
   <message name="IDS_FILE_BROWSER_AUDIO_OFFLINE" desc="In the Audio Player, message informing that the audio file could not be played in the offline mode.">
     This file is not available offline.
@@ -809,12 +785,6 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_DRIVE_OUT_OF_SPACE_HEADER" desc="Message informing the user that there is not enough space to make the selected file(s) available offline.">
     You have run out of space
   </message>
-  <message name="IDS_FILE_BROWSER_DRIVE_SERVER_OUT_OF_SPACE_HEADER" desc="Message informing the user that there is not enough space on server side to store a new file.">
-    You have run out of space in Google Drive
-  </message>
-  <message name="IDS_FILE_BROWSER_DRIVE_LOADING" desc="Message informing the user that we are loading content of Google Drive.">
-    Hang with us. We’re fetching your files.
-  </message>
   <message name="IDS_FILE_BROWSER_DRIVE_CANNOT_REACH" desc="Message informing the user that Google Drive can not be reached at this moment.">
     Google Drive cannot be reached at this time.
   </message>
@@ -825,9 +795,6 @@ Press any key to continue exploring.
     To save "<ph name="FILE_NAME">$1<ex>document.pdf</ex></ph>" offline you must free up an additional <ph name="TOTAL_FILE_SIZE">$2<ex>3.3 MB</ex></ph> of space:<ph name="MARKUP_1">&lt;br&gt;<ex>&lt;br&gt;</ex></ph>
     <ph name="MARKUP_2">&lt;ul&gt;&lt;li&gt;<ex>&lt;ul&gt;&lt;li&gt;</ex></ph>unpin files that you no longer need to access offline<ph name="MARKUP_3">&lt;/li&gt;<ex>>&lt;/li&gt;</ex></ph>
     <ph name="MARKUP_4">&lt;li&gt;<ex>&lt;li&gt;</ex></ph>delete files from your Downloads folder<ph name="MARKUP_5">&lt;/li&gt;&lt;/ul&gt;<ex>&lt;/li&gt;&lt;/ul&gt;</ex></ph>
-  </message>
-  <message name="IDS_FILE_BROWSER_DRIVE_SERVER_OUT_OF_SPACE_MESSAGE" desc="Message informing the user how to make more space available on Google Drive server side.">
-    You do not have enough space in Google Drive to save "<ph name="FILE_NAME">$1<ex>document.pdf</ex></ph>". Please remove files or <ph name="BEGIN_LINK">&lt;a target='_blank' href='$2'&gt;</ph>buy more storage space<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
   </message>
   <message name="IDS_FILE_BROWSER_DRIVE_NOT_REACHED" desc="Message informing that Drive is unreachable and encuraging user to log out from the device and log back in.">
     Google Drive could not be reached. Please <ph name="BEGIN_LINK">&lt;a href="javascript://"&gt;<ex>&lt;a href="javascript://"&gt;</ex></ph>log out<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> and log back in.
@@ -1022,12 +989,6 @@ Press any key to continue exploring.
     (default)
   </message>
 
-  <message name="IDS_FILE_BROWSER_VIEW_TYPE_LABEL" desc="In File Manager, the label for the button menu to switch view types (e.g., list view or thumbnail view)">
-    View
-  </message>
-  <message name="IDS_FILE_BROWSER_DETAIL_VIEW_TOOLTIP" desc="Tooltip for the List View button.">
-    List view
-  </message>
   <message name="IDS_FILE_BROWSER_THUMBNAIL_VIEW_TOOLTIP" desc="Tooltip for the Thumbnail View button.">
     Thumbnail view
   </message>
@@ -2270,7 +2231,7 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_CENTER_FOCUS" desc="In the settings tab, the text next to the checkbox for centering focus for screen magnifier.">
     Keep magnifier focus centered on screen
-  </message>  
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_OFF" desc="In the settings tab, the option indication the screen magnifier is off.">
     Off
   </message>
