@@ -27,6 +27,9 @@ class NET_EXPORT_PRIVATE QuicReliableClientStream : public QuicDataStream {
    public:
     Delegate() {}
 
+    // Called when headers are available.
+    virtual void OnHeadersAvailable(StringPiece headers) = 0;
+
     // Called when data is received.
     // Returns network error code. OK when it successfully receives data.
     virtual int OnDataReceived(const char* data, int length) = 0;
@@ -54,6 +57,7 @@ class NET_EXPORT_PRIVATE QuicReliableClientStream : public QuicDataStream {
   ~QuicReliableClientStream() override;
 
   // QuicDataStream
+  void OnStreamHeadersComplete(bool fin, size_t frame_len) override;
   uint32 ProcessData(const char* data, uint32 data_len) override;
   void OnClose() override;
   void OnCanWrite() override;

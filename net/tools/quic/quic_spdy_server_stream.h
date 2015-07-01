@@ -29,6 +29,9 @@ class QuicSpdyServerStream : public QuicDataStream {
   QuicSpdyServerStream(QuicStreamId id, QuicSpdySession* session);
   ~QuicSpdyServerStream() override;
 
+  // QuicDataStream
+  void OnStreamHeadersComplete(bool fin, size_t frame_len) override;
+
   // ReliableQuicStream implementation called by the session when there's
   // data for us.
   uint32 ProcessData(const char* data, uint32 data_len) override;

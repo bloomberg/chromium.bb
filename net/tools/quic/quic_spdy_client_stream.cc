@@ -44,22 +44,16 @@ void QuicSpdyClientStream::OnStreamHeadersComplete(bool fin,
                                                    size_t frame_len) {
   header_bytes_read_ = frame_len;
   QuicDataStream::OnStreamHeadersComplete(fin, frame_len);
+  if (!ParseResponseHeaders(decompressed_headers().data(),
+                            decompressed_headers().length())) {
+    Reset(QUIC_BAD_APPLICATION_PAYLOAD);
+    return;
+  }
+  MarkHeadersConsumed(decompressed_headers().length());
 }
 
 uint32 QuicSpdyClientStream::ProcessData(const char* data, uint32 data_len) {
-  if (!headers_decompressed()) {
-    // Let the headers data accumulate in the underlying QuicDataStream.
-    return 0;
-  }
-  if (response_headers_.empty()) {
-    if (!ParseResponseHeaders(data, data_len)) {
-      // Headers were invalid.
-      Reset(QUIC_BAD_APPLICATION_PAYLOAD);
-      return 0;
-    }
-  } else {
-    data_.append(data, data_len);
-  }
+  data_.append(data, data_len);
   DCHECK(!response_headers_.empty());
   if (content_length_ >= 0 &&
       static_cast<int>(data_.size()) > content_length_) {

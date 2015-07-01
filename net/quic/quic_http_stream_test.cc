@@ -83,6 +83,8 @@ class AutoClosingStream : public QuicHttpStream {
       : QuicHttpStream(session) {
   }
 
+  void OnHeadersAvailable(StringPiece headers) override { Close(false); }
+
   int OnDataReceived(const char* data, int length) override {
     Close(false);
     return OK;
@@ -188,6 +190,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     socket->Connect(peer_addr_);
     runner_ = new TestTaskRunner(&clock_);
     send_algorithm_ = new MockSendAlgorithm();
+    EXPECT_CALL(*send_algorithm_, InRecovery()).WillRepeatedly(Return(false));
+    EXPECT_CALL(*send_algorithm_, InSlowStart()).WillRepeatedly(Return(false));
     EXPECT_CALL(*send_algorithm_,
                 OnPacketSent(_, _, _, _, _)).WillRepeatedly(Return(true));
     EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillRepeatedly(
@@ -400,13 +404,10 @@ TEST_P(QuicHttpStreamTest, GetRequestLargeResponse) {
   headers[":status"] = "200 OK";
   headers[":version"] = "HTTP/1.1";
   headers["content-type"] = "text/plain";
-  headers["big6"] = std::string(10000, 'x');  // Lots of x's.
+  headers["big6"] = std::string(1000, 'x');  // Lots of x's.
 
-  std::string response =
-      SpdyUtils::SerializeUncompressedHeaders(headers, GetParam());
-  EXPECT_LT(4096u, response.length());
-  stream_->OnDataReceived(response.data(), response.length());
-  stream_->OnClose(QUIC_NO_ERROR);
+  response_headers_ = headers;
+  ProcessPacket(ConstructResponseHeadersPacket(2, kFin));
 
   // Now that the headers have been processed, the callback will return.
   EXPECT_EQ(OK, callback_.WaitForResult());

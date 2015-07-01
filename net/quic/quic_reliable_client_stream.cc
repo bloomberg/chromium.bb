@@ -22,12 +22,26 @@ QuicReliableClientStream::~QuicReliableClientStream() {
     delegate_->OnClose(connection_error());
 }
 
+void QuicReliableClientStream::OnStreamHeadersComplete(bool fin,
+                                                       size_t frame_len) {
+  QuicDataStream::OnStreamHeadersComplete(fin, frame_len);
+  if (delegate_) {
+    delegate_->OnHeadersAvailable(decompressed_headers());
+    MarkHeadersConsumed(decompressed_headers().length());
+  }
+}
+
 uint32 QuicReliableClientStream::ProcessData(const char* data,
                                              uint32 data_len) {
   // TODO(rch): buffer data if we don't have a delegate.
   if (!delegate_) {
     DLOG(ERROR) << "Missing delegate";
     Reset(QUIC_STREAM_CANCELLED);
+    return 0;
+  }
+
+  if (!FinishedReadingHeaders()) {
+    // Buffer the data in the sequencer until the headers have been read.
     return 0;
   }
 

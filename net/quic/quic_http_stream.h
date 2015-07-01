@@ -60,6 +60,7 @@ class NET_EXPORT_PRIVATE QuicHttpStream :
   void SetPriority(RequestPriority priority) override;
 
   // QuicReliableClientStream::Delegate implementation
+  void OnHeadersAvailable(StringPiece headers) override;
   int OnDataReceived(const char* data, int length) override;
   void OnClose(QuicErrorCode error) override;
   void OnError(int error) override;
@@ -97,7 +98,7 @@ class NET_EXPORT_PRIVATE QuicHttpStream :
   int DoReadResponseHeaders();
   int DoReadResponseHeadersComplete(int rv);
 
-  int ParseResponseHeaders();
+  int ParseResponseHeaders(StringPiece headers);
 
   void BufferResponseBody(const char* data, int length);
 
@@ -138,9 +139,6 @@ class NET_EXPORT_PRIVATE QuicHttpStream :
 
   // Serialized HTTP request.
   std::string request_;
-
-  // Buffer into which response header data is read.
-  scoped_refptr<GrowableIOBuffer> read_buf_;
 
   // We buffer the response body as it arrives asynchronously from the stream.
   // TODO(rch): This is infinite buffering, which is bad.

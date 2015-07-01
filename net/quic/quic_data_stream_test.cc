@@ -121,11 +121,32 @@ TEST_P(QuicDataStreamTest, ProcessHeaders) {
       SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
   stream_->OnStreamHeadersPriority(QuicUtils::HighestPriority());
   stream_->OnStreamHeaders(headers);
-  EXPECT_EQ(headers, stream_->data());
+  EXPECT_EQ("", stream_->data());
+  EXPECT_EQ(headers, stream_->decompressed_headers());
   stream_->OnStreamHeadersComplete(false, headers.size());
   EXPECT_EQ(QuicUtils::HighestPriority(), stream_->EffectivePriority());
-  EXPECT_EQ(headers, stream_->data());
+  EXPECT_EQ("", stream_->data());
+  EXPECT_EQ(headers, stream_->decompressed_headers());
   EXPECT_FALSE(stream_->IsDoneReading());
+}
+
+TEST_P(QuicDataStreamTest, MarkHeadersConsumed) {
+  Initialize(kShouldProcessData);
+
+  string headers =
+      SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
+  string body = "this is the body";
+
+  stream_->OnStreamHeaders(headers);
+  stream_->OnStreamHeadersComplete(false, headers.size());
+  EXPECT_EQ(headers, stream_->decompressed_headers());
+
+  headers.erase(0, 10);
+  stream_->MarkHeadersConsumed(10);
+  EXPECT_EQ(headers, stream_->decompressed_headers());
+
+  stream_->MarkHeadersConsumed(headers.length());
+  EXPECT_EQ("", stream_->decompressed_headers());
 }
 
 TEST_P(QuicDataStreamTest, ProcessHeadersAndBody) {
@@ -136,12 +157,15 @@ TEST_P(QuicDataStreamTest, ProcessHeadersAndBody) {
   string body = "this is the body";
 
   stream_->OnStreamHeaders(headers);
-  EXPECT_EQ(headers, stream_->data());
+  EXPECT_EQ("", stream_->data());
+  EXPECT_EQ(headers, stream_->decompressed_headers());
   stream_->OnStreamHeadersComplete(false, headers.size());
+  EXPECT_EQ(headers, stream_->decompressed_headers());
+  stream_->MarkHeadersConsumed(headers.length());
   QuicStreamFrame frame(kClientDataStreamId1, false, 0, StringPiece(body));
   stream_->OnStreamFrame(frame);
-
-  EXPECT_EQ(headers + body, stream_->data());
+  EXPECT_EQ("", stream_->decompressed_headers());
+  EXPECT_EQ(body, stream_->data());
 }
 
 TEST_P(QuicDataStreamTest, ProcessHeadersAndBodyFragments) {
@@ -160,6 +184,9 @@ TEST_P(QuicDataStreamTest, ProcessHeadersAndBodyFragments) {
       stream_->OnStreamHeaders(fragment);
     }
     stream_->OnStreamHeadersComplete(false, headers.size());
+    ASSERT_EQ(headers, stream_->decompressed_headers())
+        << "fragment_size: " << fragment_size;
+    stream_->MarkHeadersConsumed(headers.length());
     for (size_t offset = 0; offset < body.size(); offset += fragment_size) {
       size_t remaining_data = body.size() - offset;
       StringPiece fragment(body.data() + offset,
@@ -168,8 +195,7 @@ TEST_P(QuicDataStreamTest, ProcessHeadersAndBodyFragments) {
                             StringPiece(fragment));
       stream_->OnStreamFrame(frame);
     }
-    ASSERT_EQ(headers + body,
-              stream_->data()) << "fragment_size: " << fragment_size;
+    ASSERT_EQ(body, stream_->data()) << "fragment_size: " << fragment_size;
   }
 }
 
@@ -187,6 +213,9 @@ TEST_P(QuicDataStreamTest, ProcessHeadersAndBodyFragmentsSplit) {
                          headers.size() - split_point);
     stream_->OnStreamHeaders(headers2);
     stream_->OnStreamHeadersComplete(false, headers.size());
+    ASSERT_EQ(headers, stream_->decompressed_headers())
+        << "split_point: " << split_point;
+    stream_->MarkHeadersConsumed(headers.length());
 
     StringPiece fragment1(body.data(), split_point);
     QuicStreamFrame frame1(kClientDataStreamId1, false, 0,
@@ -199,8 +228,7 @@ TEST_P(QuicDataStreamTest, ProcessHeadersAndBodyFragmentsSplit) {
                            StringPiece(fragment2));
     stream_->OnStreamFrame(frame2);
 
-    ASSERT_EQ(headers + body,
-              stream_->data()) << "split_point: " << split_point;
+    ASSERT_EQ(body, stream_->data()) << "split_point: " << split_point;
   }
 }
 
@@ -212,22 +240,18 @@ TEST_P(QuicDataStreamTest, ProcessHeadersAndBodyReadv) {
   string body = "this is the body";
 
   stream_->OnStreamHeaders(headers);
-  EXPECT_EQ(headers, stream_->data());
   stream_->OnStreamHeadersComplete(false, headers.size());
   QuicStreamFrame frame(kClientDataStreamId1, false, 0, StringPiece(body));
   stream_->OnStreamFrame(frame);
+  stream_->MarkHeadersConsumed(headers.length());
 
   char buffer[2048];
-  ASSERT_LT(headers.length() + body.length(), arraysize(buffer));
+  ASSERT_LT(body.length(), arraysize(buffer));
   struct iovec vec;
   vec.iov_base = buffer;
   vec.iov_len = arraysize(buffer);
 
   size_t bytes_read = stream_->Readv(&vec, 1);
-  EXPECT_EQ(headers.length(), bytes_read);
-  EXPECT_EQ(headers, string(buffer, bytes_read));
-
-  bytes_read = stream_->Readv(&vec, 1);
   EXPECT_EQ(body.length(), bytes_read);
   EXPECT_EQ(body, string(buffer, bytes_read));
 }
@@ -239,21 +263,20 @@ TEST_P(QuicDataStreamTest, ProcessHeadersAndBodyIncrementalReadv) {
       SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
   string body = "this is the body";
   stream_->OnStreamHeaders(headers);
-  EXPECT_EQ(headers, stream_->data());
   stream_->OnStreamHeadersComplete(false, headers.size());
   QuicStreamFrame frame(kClientDataStreamId1, false, 0, StringPiece(body));
   stream_->OnStreamFrame(frame);
+  stream_->MarkHeadersConsumed(headers.length());
 
   char buffer[1];
   struct iovec vec;
   vec.iov_base = buffer;
   vec.iov_len = arraysize(buffer);
 
-  string data = headers + body;
-  for (size_t i = 0; i < data.length(); ++i) {
+  for (size_t i = 0; i < body.length(); ++i) {
     size_t bytes_read = stream_->Readv(&vec, 1);
     ASSERT_EQ(1u, bytes_read);
-    EXPECT_EQ(data.data()[i], buffer[0]);
+    EXPECT_EQ(body.data()[i], buffer[0]);
   }
 }
 
@@ -264,10 +287,10 @@ TEST_P(QuicDataStreamTest, ProcessHeadersUsingReadvWithMultipleIovecs) {
       SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
   string body = "this is the body";
   stream_->OnStreamHeaders(headers);
-  EXPECT_EQ(headers, stream_->data());
   stream_->OnStreamHeadersComplete(false, headers.size());
   QuicStreamFrame frame(kClientDataStreamId1, false, 0, StringPiece(body));
   stream_->OnStreamFrame(frame);
+  stream_->MarkHeadersConsumed(headers.length());
 
   char buffer1[1];
   char buffer2[1];
@@ -276,12 +299,12 @@ TEST_P(QuicDataStreamTest, ProcessHeadersUsingReadvWithMultipleIovecs) {
   vec[0].iov_len = arraysize(buffer1);
   vec[1].iov_base = buffer2;
   vec[1].iov_len = arraysize(buffer2);
-  string data = headers + body;
-  for (size_t i = 0; i < data.length(); i += 2) {
+
+  for (size_t i = 0; i < body.length(); i += 2) {
     size_t bytes_read = stream_->Readv(vec, 2);
     ASSERT_EQ(2u, bytes_read) << i;
-    ASSERT_EQ(data.data()[i], buffer1[0]) << i;
-    ASSERT_EQ(data.data()[i + 1], buffer2[0]) << i;
+    ASSERT_EQ(body.data()[i], buffer1[0]) << i;
+    ASSERT_EQ(body.data()[i + 1], buffer2[0]) << i;
   }
 }
 
@@ -345,7 +368,6 @@ TEST_P(QuicDataStreamTest, StreamFlowControlNoWindowUpdateIfNotConsumed) {
   string body;
   GenerateBody(&body, kWindow / 3);
   stream_->OnStreamHeaders(headers);
-  EXPECT_EQ(headers, stream_->data());
   stream_->OnStreamHeadersComplete(false, headers.size());
 
   QuicStreamFrame frame1(kClientDataStreamId1, false, 0, StringPiece(body));
@@ -385,8 +407,8 @@ TEST_P(QuicDataStreamTest, StreamFlowControlWindowUpdate) {
   string body;
   GenerateBody(&body, kWindow / 3);
   stream_->OnStreamHeaders(headers);
-  EXPECT_EQ(headers, stream_->data());
   stream_->OnStreamHeadersComplete(false, headers.size());
+  stream_->MarkHeadersConsumed(headers.length());
 
   QuicStreamFrame frame1(kClientDataStreamId1, false, 0, StringPiece(body));
   stream_->OnStreamFrame(frame1);
@@ -435,8 +457,10 @@ TEST_P(QuicDataStreamTest, ConnectionFlowControlWindowUpdate) {
       SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
   stream_->OnStreamHeaders(headers);
   stream_->OnStreamHeadersComplete(false, headers.size());
+  stream_->MarkHeadersConsumed(headers.length());
   stream2_->OnStreamHeaders(headers);
   stream2_->OnStreamHeadersComplete(false, headers.size());
+  stream2_->MarkHeadersConsumed(headers.length());
 
   // Each stream gets a quarter window of data. This should not trigger a
   // WINDOW_UPDATE for either stream, nor for the connection.
@@ -477,7 +501,6 @@ TEST_P(QuicDataStreamTest, StreamFlowControlViolation) {
   string headers =
       SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
   stream_->OnStreamHeaders(headers);
-  EXPECT_EQ(headers, stream_->data());
   stream_->OnStreamHeadersComplete(false, headers.size());
 
   // Receive data to overflow the window, violating flow control.
@@ -509,7 +532,6 @@ TEST_P(QuicDataStreamTest, ConnectionFlowControlViolation) {
   string headers =
       SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
   stream_->OnStreamHeaders(headers);
-  EXPECT_EQ(headers, stream_->data());
   stream_->OnStreamHeadersComplete(false, headers.size());
 
   // Send enough data to overflow the connection level flow control window.

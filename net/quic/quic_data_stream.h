@@ -91,6 +91,9 @@ class NET_EXPORT_PRIVATE QuicDataStream : public ReliableQuicStream {
       bool fin,
       QuicAckNotifier::DelegateInterface* ack_notifier_delegate);
 
+  // Marks |bytes_consumed| of the headers data as consumed.
+  void MarkHeadersConsumed(size_t bytes_consumed);
+
   // This block of functions wraps the sequencer's functions of the same
   // name.  These methods return uncompressed data until that has
   // been fully processed.  Then they simply delegate to the sequencer.
@@ -104,6 +107,10 @@ class NET_EXPORT_PRIVATE QuicDataStream : public ReliableQuicStream {
 
   bool headers_decompressed() const { return headers_decompressed_; }
 
+  const std::string& decompressed_headers() const {
+    return decompressed_headers_;
+  }
+
  protected:
   // Sets priority_ to priority.  This should only be called before bytes are
   // written to the server.
@@ -112,14 +119,12 @@ class NET_EXPORT_PRIVATE QuicDataStream : public ReliableQuicStream {
   // instead.
   QuicPriority priority() const { return priority_; }
 
+  bool FinishedReadingHeaders() const;
+
  private:
   friend class test::QuicDataStreamPeer;
   friend class test::ReliableQuicStreamPeer;
   friend class QuicStreamUtils;
-
-  uint32 ProcessHeaderData();
-
-  bool FinishedReadingHeaders();
 
   QuicSpdySession* spdy_session_;
 

@@ -24,8 +24,6 @@
 
 namespace net {
 
-static const size_t kHeaderBufInitialSize = 4096;
-
 QuicHttpStream::QuicHttpStream(const base::WeakPtr<QuicClientSession>& session)
     : next_state_(STATE_NONE),
       session_(session),
@@ -38,7 +36,6 @@ QuicHttpStream::QuicHttpStream(const base::WeakPtr<QuicClientSession>& session)
       response_info_(nullptr),
       response_status_(OK),
       response_headers_received_(false),
-      read_buf_(new GrowableIOBuffer()),
       closed_stream_received_bytes_(0),
       user_buffer_len_(0),
       weak_factory_(this) {
@@ -306,25 +303,15 @@ void QuicHttpStream::SetPriority(RequestPriority priority) {
   priority_ = priority;
 }
 
+void QuicHttpStream::OnHeadersAvailable(StringPiece headers) {
+  int rv = ParseResponseHeaders(headers);
+  if (rv != ERR_IO_PENDING && !callback_.is_null()) {
+    DoCallback(rv);
+  }
+}
+
 int QuicHttpStream::OnDataReceived(const char* data, int length) {
   DCHECK_NE(0, length);
-  // Are we still reading the response headers.
-  if (!response_headers_received_) {
-    // Grow the read buffer if necessary.
-    if (read_buf_->RemainingCapacity() < length) {
-      size_t additional_capacity = length - read_buf_->RemainingCapacity();
-      if (additional_capacity < kHeaderBufInitialSize)
-        additional_capacity = kHeaderBufInitialSize;
-      read_buf_->SetCapacity(read_buf_->capacity() + additional_capacity);
-    }
-    memcpy(read_buf_->data(), data, length);
-    read_buf_->set_offset(read_buf_->offset() + length);
-    int rv = ParseResponseHeaders();
-    if (rv != ERR_IO_PENDING && !callback_.is_null()) {
-      DoCallback(rv);
-    }
-    return OK;
-  }
 
   if (callback_.is_null()) {
     BufferResponseBody(data, length);
@@ -529,22 +516,14 @@ int QuicHttpStream::DoSendBodyComplete(int rv) {
   return OK;
 }
 
-int QuicHttpStream::ParseResponseHeaders() {
-  size_t read_buf_len = static_cast<size_t>(read_buf_->offset());
+int QuicHttpStream::ParseResponseHeaders(StringPiece headers_data) {
   SpdyFramer framer(GetSpdyVersion());
   SpdyHeaderBlock headers;
-  char* data = read_buf_->StartOfBuffer();
-  size_t len = framer.ParseHeaderBlockInBuffer(data, read_buf_->offset(),
-                                               &headers);
-
-  if (len == 0) {
-    return ERR_IO_PENDING;
-  }
-
-  // Save the remaining received data.
-  size_t delta = read_buf_len - len;
-  if (delta > 0) {
-    BufferResponseBody(data + len, delta);
+  size_t len = framer.ParseHeaderBlockInBuffer(headers_data.data(),
+                                               headers_data.length(), &headers);
+  if (len == 0 || len != headers_data.length()) {
+    DLOG(WARNING) << "Invalid headers";
+    return ERR_QUIC_PROTOCOL_ERROR;
   }
 
   // The URLRequest logs these headers, so only log to the QuicSession's

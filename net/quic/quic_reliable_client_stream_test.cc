@@ -29,6 +29,7 @@ class MockDelegate : public QuicReliableClientStream::Delegate {
 
   MOCK_METHOD0(OnSendData, int());
   MOCK_METHOD2(OnSendDataComplete, int(int, bool*));
+  MOCK_METHOD1(OnHeadersAvailable, void(StringPiece));
   MOCK_METHOD2(OnDataReceived, int(const char*, int));
   MOCK_METHOD1(OnClose, void(QuicErrorCode));
   MOCK_METHOD1(OnError, void(int));
@@ -94,18 +95,32 @@ TEST_P(QuicReliableClientStreamTest, OnFinRead) {
   InitializeHeaders();
   std::string uncompressed_headers =
       SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
-  EXPECT_CALL(delegate_, OnDataReceived(StrEq(uncompressed_headers.data()),
-                                        uncompressed_headers.size()));
+  EXPECT_CALL(delegate_, OnHeadersAvailable(StringPiece(uncompressed_headers)));
   QuicStreamOffset offset = 0;
   stream_->OnStreamHeaders(uncompressed_headers);
   stream_->OnStreamHeadersComplete(false, uncompressed_headers.length());
+  EXPECT_TRUE(stream_->decompressed_headers().empty());
 
   QuicStreamFrame frame2(kTestStreamId, true, offset, StringPiece());
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
   stream_->OnStreamFrame(frame2);
 }
 
+TEST_P(QuicReliableClientStreamTest, ProcessDataBeforeHeaders) {
+  const char data[] = "hello world!";
+  EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
+
+  EXPECT_EQ(0u, stream_->ProcessData(data, arraysize(data)));
+}
+
 TEST_P(QuicReliableClientStreamTest, ProcessData) {
+  InitializeHeaders();
+  std::string uncompressed_headers =
+      SpdyUtils::SerializeUncompressedHeaders(headers_, GetParam());
+  EXPECT_CALL(delegate_, OnHeadersAvailable(StringPiece(uncompressed_headers)));
+  stream_->OnStreamHeaders(uncompressed_headers);
+  stream_->OnStreamHeadersComplete(false, uncompressed_headers.length());
+
   const char data[] = "hello world!";
   EXPECT_CALL(delegate_, OnDataReceived(StrEq(data), arraysize(data)));
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
@@ -114,6 +129,9 @@ TEST_P(QuicReliableClientStreamTest, ProcessData) {
 }
 
 TEST_P(QuicReliableClientStreamTest, ProcessDataWithError) {
+  EXPECT_CALL(delegate_, OnHeadersAvailable(StringPiece("")));
+  stream_->OnStreamHeadersComplete(false, 0);  // Send empty headers.
+
   const char data[] = "hello world!";
   EXPECT_CALL(delegate_,
               OnDataReceived(StrEq(data),
