@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/base64.h"
-#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/time/tick_clock.h"
@@ -20,9 +19,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
-#include "components/variations/variations_associated_data.h"
 #include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_server.h"
 #include "net/socket/socket_test_util.h"
@@ -49,9 +46,6 @@ const char kOldSuccessSessionKey[] = "OldSecretSessionKey";
 const char kPersistedOrigin[] = "https://persisted.net:443";
 const char kPersistedFallback[] = "persisted.net:80";
 const char kPersistedSessionKey[] = "PersistedSessionKey";
-
-const char kConfigServiceFieldTrial[] = "DataReductionProxyConfigService";
-const char kConfigServiceURLParam[] = "url";
 
 }  // namespace
 
@@ -385,85 +379,6 @@ TEST_F(DataReductionProxyConfigServiceClientTest, ConfigDisabled) {
   EXPECT_TRUE(configurator()->proxies_for_http().empty());
   EXPECT_TRUE(configurator()->proxies_for_https().empty());
   EXPECT_EQ(base::TimeDelta::FromDays(1), config_client()->GetDelay());
-}
-
-TEST_F(DataReductionProxyConfigServiceClientTest, GetConfigServiceURL) {
-  const struct {
-    std::string trial_group_value;
-    std::string trial_url_param;
-  } variations[] = {
-      {
-       "Enabled", "http://enabled.config-service/",
-      },
-      {
-       "Disabled", "http://disabled.config-service/",
-      },
-      {
-       "EnabledOther", "http://other.config-service/",
-      },
-  };
-
-  variations::testing::ClearAllVariationParams();
-  for (const auto& variation : variations) {
-    std::map<std::string, std::string> variation_params;
-    variation_params[kConfigServiceURLParam] = variation.trial_url_param;
-    ASSERT_TRUE(variations::AssociateVariationParams(
-        kConfigServiceFieldTrial, variation.trial_group_value,
-        variation_params));
-  }
-
-  const struct {
-    std::string test_case;
-    std::string flag_value;
-    std::string trial_group_value;
-    GURL expected;
-  } tests[] = {
-      {
-       "Nothing set", "", "", GURL(),
-      },
-      {
-       "Only command line set",
-       "http://commandline.config-service/",
-       "",
-       GURL("http://commandline.config-service/"),
-      },
-      {
-       "Enabled group", "", "Enabled", GURL("http://enabled.config-service/"),
-      },
-      {
-       "Disabled group",
-       "",
-       "Disabled",
-       GURL("http://disabled.config-service/"),
-      },
-      {
-       "Alternate enabled group",
-       "",
-       "EnabledOther",
-       GURL("http://other.config-service/"),
-      },
-      {
-       "Command line precedence",
-       "http://commandline.config-service/",
-       "Enabled",
-       GURL("http://commandline.config-service/"),
-      },
-  };
-
-  for (const auto& test : tests) {
-    // Reset all flags.
-    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
-    if (!test.flag_value.empty()) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-          switches::kDataReductionProxyConfigURL, test.flag_value);
-    }
-    base::FieldTrialList field_trial_list(nullptr);
-    if (!test.trial_group_value.empty()) {
-      base::FieldTrialList::CreateFieldTrial(kConfigServiceFieldTrial,
-                                             test.trial_group_value);
-    }
-    EXPECT_EQ(test.expected, params::GetConfigServiceURL()) << test.test_case;
-  }
 }
 
 TEST_F(DataReductionProxyConfigServiceClientTest, RemoteConfigSuccess) {
