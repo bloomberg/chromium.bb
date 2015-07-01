@@ -103,9 +103,12 @@ class PasswordStore : protected PasswordStoreSync,
   // Removes the matching PasswordForm from the secure password store (async).
   virtual void RemoveLogin(const autofill::PasswordForm& form);
 
-  // Removes all logins created in the given date range.
+  // Removes all logins created in the given date range. If |completion| is not
+  // null, it will be posted to the |main_thread_runner_| after deletions have
+  // be completed and notification have been sent out.
   virtual void RemoveLoginsCreatedBetween(base::Time delete_begin,
-                                          base::Time delete_end);
+                                          base::Time delete_end,
+                                          const base::Closure& completion);
 
   // Removes all logins synced in the given date range.
   virtual void RemoveLoginsSyncedBetween(base::Time delete_begin,
@@ -315,7 +318,8 @@ class PasswordStore : protected PasswordStoreSync,
       const autofill::PasswordForm& new_form,
       const autofill::PasswordForm& old_primary_key);
   void RemoveLoginsCreatedBetweenInternal(base::Time delete_begin,
-                                          base::Time delete_end);
+                                          base::Time delete_end,
+                                          const base::Closure& completion);
   void RemoveLoginsSyncedBetweenInternal(base::Time delete_begin,
                                          base::Time delete_end);
 

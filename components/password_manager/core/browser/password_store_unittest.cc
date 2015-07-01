@@ -407,6 +407,45 @@ TEST_F(PasswordStoreTest, UpdateLoginPrimaryKeyFields) {
   base::MessageLoop::current()->RunUntilIdle();
 }
 
+// Verify that RemoveLoginsCreatedBetween() fires the completion callback after
+// deletions have been performed and notifications have been sent out. Whether
+// the correct logins are removed or not is verified in detail in other tests.
+TEST_F(PasswordStoreTest, RemoveLoginsCreatedBetweenCallbackIsCalled) {
+  /* clang-format off */
+  static const PasswordFormData kTestCredential =
+      {PasswordForm::SCHEME_HTML,
+       kTestWebRealm1,
+       kTestWebOrigin1,
+       "", L"", L"username_element_1",  L"password_element_1",
+       L"username_value_1",
+       L"", true, true, 1};
+  /* clang-format on */
+
+  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
+      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
+      make_scoped_ptr(new LoginDatabase(test_login_db_file_path()))));
+  store->Init(syncer::SyncableService::StartSyncFlare());
+
+  scoped_ptr<PasswordForm> test_form(
+      CreatePasswordFormFromDataForTesting(kTestCredential));
+  store->AddLogin(*test_form);
+  base::MessageLoop::current()->RunUntilIdle();
+
+  MockPasswordStoreObserver mock_observer;
+  store->AddObserver(&mock_observer);
+
+  EXPECT_CALL(mock_observer, OnLoginsChanged(testing::SizeIs(1u)));
+  store->RemoveLoginsCreatedBetween(
+      base::Time::FromDoubleT(0), base::Time::FromDoubleT(2),
+      base::MessageLoop::current()->QuitClosure());
+  base::MessageLoop::current()->Run();
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+
+  store->RemoveObserver(&mock_observer);
+  store->Shutdown();
+  base::MessageLoop::current()->RunUntilIdle();
+}
+
 // When no Android applications are actually affiliated with the realm of the
 // observed form, GetLoginsWithAffiliations() should still return the exact and
 // PSL matching results, but not any stored Android credentials.
@@ -722,7 +761,8 @@ TEST_F(PasswordStoreTest, MAYBE_UpdatePasswordsStoredForAffiliatedWebsites) {
           base::ThreadTaskRunnerHandle::Get(),
           make_scoped_ptr(new LoginDatabase(test_login_db_file_path()))));
       store->Init(syncer::SyncableService::StartSyncFlare());
-      store->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max());
+      store->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max(),
+                                        base::Closure());
 
       // Set up the initial test data set.
       ScopedVector<PasswordForm> all_credentials;

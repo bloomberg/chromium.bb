@@ -220,10 +220,12 @@ void PasswordStoreProxyMacTest::CheckRemoveLoginsBetween(bool check_created) {
   list.push_back(password_manager::PasswordStoreChange(
       password_manager::PasswordStoreChange::REMOVE, old_form));
   EXPECT_CALL(mock_observer, OnLoginsChanged(list));
-  if (check_created)
-    store()->RemoveLoginsCreatedBetween(base::Time(), next_day);
-  else
+  if (check_created) {
+    store()->RemoveLoginsCreatedBetween(base::Time(), next_day,
+                                        base::Closure());
+  } else {
     store()->RemoveLoginsSyncedBetween(base::Time(), next_day);
+  }
   FinishAsyncProcessing();
 }
 
@@ -341,7 +343,8 @@ TEST_F(PasswordStoreProxyMacTest, OperationsOnABadDatabaseSilentlyFail) {
 
   // Delete one login; a range of logins.
   store()->RemoveLogin(*form);
-  store()->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max());
+  store()->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max(),
+                                      base::Closure());
   store()->RemoveLoginsSyncedBetween(base::Time(), base::Time::Max());
   FinishAsyncProcessing();
 

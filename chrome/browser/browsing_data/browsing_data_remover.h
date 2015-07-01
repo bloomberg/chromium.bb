@@ -328,6 +328,9 @@ class BrowsingDataRemover
   void ClearPnaclCacheOnIOThread(base::Time begin, base::Time end);
 #endif
 
+  // Callback for when passwords for the requested time range have been cleared.
+  void OnClearedPasswords();
+
   // Callback for when Cookies has been deleted. Invokes NotifyAndDeleteIfDone.
   void OnClearedCookies(int num_deleted);
 
@@ -414,6 +417,7 @@ class BrowsingDataRemover
   bool waiting_for_clear_nacl_cache_;
   bool waiting_for_clear_network_predictor_;
   bool waiting_for_clear_networking_history_;
+  bool waiting_for_clear_passwords_;
   bool waiting_for_clear_platform_keys_;
   bool waiting_for_clear_plugin_data_;
   bool waiting_for_clear_pnacl_cache_;

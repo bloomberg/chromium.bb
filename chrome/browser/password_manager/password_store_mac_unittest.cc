@@ -1560,10 +1560,12 @@ void CheckRemoveLoginsBetween(PasswordStoreMacTest* test, bool check_created) {
   EXPECT_EQ(1u, matching_items.size());
 
   // Remove facebook.
-  void (PasswordStore::*method)(base::Time, base::Time) =
-      check_created ? &PasswordStore::RemoveLoginsCreatedBetween
-                    : &PasswordStore::RemoveLoginsSyncedBetween;
-  (test->store()->*method)(base::Time(), next_day);
+  if (check_created) {
+    test->store()->RemoveLoginsCreatedBetween(base::Time(), next_day,
+                                              base::Closure());
+  } else {
+    test->store()->RemoveLoginsSyncedBetween(base::Time(), next_day);
+  }
   password_manager::PasswordStoreChangeList list;
   form_facebook_old->password_value.clear();
   form_facebook->password_value.clear();
@@ -1583,7 +1585,12 @@ void CheckRemoveLoginsBetween(PasswordStoreMacTest* test, bool check_created) {
   EXPECT_EQ(1u, matching_items.size());
 
   // Remove form_other.
-  (test->store()->*method)(next_day, base::Time());
+  if (check_created) {
+    test->store()->RemoveLoginsCreatedBetween(next_day, base::Time(),
+                                              base::Closure());
+  } else {
+    test->store()->RemoveLoginsSyncedBetween(next_day, base::Time());
+  }
   form_other->password_value.clear();
   list.push_back(password_manager::PasswordStoreChange(
       password_manager::PasswordStoreChange::REMOVE, *form_other));
@@ -1640,7 +1647,8 @@ TEST_F(PasswordStoreMacTest, TestRemoveLoginsMultiProfile) {
   EXPECT_TRUE(login_db()->GetLogins(*www_form, &matching_items));
   EXPECT_EQ(1u, matching_items.size());
 
-  store_->RemoveLoginsCreatedBetween(base::Time(), base::Time());
+  store_->RemoveLoginsCreatedBetween(base::Time(), base::Time(),
+                                     base::Closure());
   FinishAsyncProcessing();
 
   // Check the second facebook form is gone.

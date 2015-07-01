@@ -112,10 +112,12 @@ void PasswordStore::RemoveLogin(const PasswordForm& form) {
   ScheduleTask(base::Bind(&PasswordStore::RemoveLoginInternal, this, form));
 }
 
-void PasswordStore::RemoveLoginsCreatedBetween(base::Time delete_begin,
-                                               base::Time delete_end) {
+void PasswordStore::RemoveLoginsCreatedBetween(
+    base::Time delete_begin,
+    base::Time delete_end,
+    const base::Closure& completion) {
   ScheduleTask(base::Bind(&PasswordStore::RemoveLoginsCreatedBetweenInternal,
-                          this, delete_begin, delete_end));
+                          this, delete_begin, delete_end, completion));
 }
 
 void PasswordStore::RemoveLoginsSyncedBetween(base::Time delete_begin,
@@ -333,11 +335,15 @@ void PasswordStore::UpdateLoginWithPrimaryKeyInternal(
   NotifyLoginsChanged(all_changes);
 }
 
-void PasswordStore::RemoveLoginsCreatedBetweenInternal(base::Time delete_begin,
-                                                       base::Time delete_end) {
+void PasswordStore::RemoveLoginsCreatedBetweenInternal(
+    base::Time delete_begin,
+    base::Time delete_end,
+    const base::Closure& completion) {
   PasswordStoreChangeList changes =
       RemoveLoginsCreatedBetweenImpl(delete_begin, delete_end);
   NotifyLoginsChanged(changes);
+  if (!completion.is_null())
+    main_thread_runner_->PostTask(FROM_HERE, completion);
 }
 
 void PasswordStore::RemoveLoginsSyncedBetweenInternal(base::Time delete_begin,

@@ -215,6 +215,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_nacl_cache_(false),
       waiting_for_clear_network_predictor_(false),
       waiting_for_clear_networking_history_(false),
+      waiting_for_clear_passwords_(false),
       waiting_for_clear_platform_keys_(false),
       waiting_for_clear_plugin_data_(false),
       waiting_for_clear_pnacl_cache_(false),
@@ -563,8 +564,13 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
         PasswordStoreFactory::GetForProfile(
             profile_, ServiceAccessType::EXPLICIT_ACCESS).get();
 
-    if (password_store)
-      password_store->RemoveLoginsCreatedBetween(delete_begin_, delete_end_);
+    if (password_store) {
+      waiting_for_clear_passwords_ = true;
+      password_store->RemoveLoginsCreatedBetween(
+          delete_begin_, delete_end_,
+          base::Bind(&BrowsingDataRemover::OnClearedPasswords,
+                     base::Unretained(this)));
+    }
   }
 
   if (remove_mask & REMOVE_FORM_DATA) {
@@ -805,6 +811,7 @@ bool BrowsingDataRemover::AllDone() {
          !waiting_for_clear_nacl_cache_ &&
          !waiting_for_clear_network_predictor_ &&
          !waiting_for_clear_networking_history_ &&
+         !waiting_for_clear_passwords_ &&
          !waiting_for_clear_platform_keys_ &&
          !waiting_for_clear_plugin_data_ &&
          !waiting_for_clear_pnacl_cache_ &&
@@ -1003,6 +1010,13 @@ void BrowsingDataRemover::OnClearPlatformKeys(
   NotifyAndDeleteIfDone();
 }
 #endif
+
+
+void BrowsingDataRemover::OnClearedPasswords() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  waiting_for_clear_passwords_ = false;
+  NotifyAndDeleteIfDone();
+}
 
 void BrowsingDataRemover::OnClearedCookies(int num_deleted) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {

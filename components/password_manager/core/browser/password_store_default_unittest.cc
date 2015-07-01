@@ -247,7 +247,8 @@ TEST_F(PasswordStoreDefaultTest, OperationsOnABadDatabaseSilentlyFail) {
   // Delete one login; a range of logins.
   bad_store->RemoveLogin(*form);
   base::MessageLoop::current()->RunUntilIdle();
-  bad_store->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max());
+  bad_store->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max(),
+                                        base::Closure());
   base::MessageLoop::current()->RunUntilIdle();
   bad_store->RemoveLoginsSyncedBetween(base::Time(), base::Time::Max());
   base::MessageLoop::current()->RunUntilIdle();
