@@ -61,6 +61,15 @@ var TESTS = [
         });
     },
 
+    function testOpenInvalidURL() {
+        synthesizeNotificationClick().then(function(e) {
+            clients.openWindow('http://[test].com').catch(function(error) {
+                self.postMessage('openWindow() can not open an invalid url');
+                self.postMessage('openWindow() error is: ' + error.name);
+            }).then(runNextTestOrQuit);
+        });
+    },
+
     function testOpenViewSource() {
         synthesizeNotificationClick().then(function(e) {
             clients.openWindow('view-source://http://test.com').catch(function(c) {

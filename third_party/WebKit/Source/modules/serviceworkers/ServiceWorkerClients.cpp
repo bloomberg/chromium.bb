@@ -115,7 +115,7 @@ ScriptPromise ServiceWorkerClients::openWindow(ScriptState* scriptState, const S
 
     KURL parsedUrl = KURL(toWorkerGlobalScope(context)->location()->url(), url);
     if (!parsedUrl.isValid()) {
-        resolver->reject(DOMException::create(SyntaxError, "'" + url + "' is not a valid URL."));
+        resolver->reject(V8ThrowException::createTypeError(scriptState->isolate(), "'" + url + "' is not a valid URL."));
         return promise;
     }
 
