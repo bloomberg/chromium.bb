@@ -1062,7 +1062,7 @@ CSSStyleRule* InspectorStyleSheet::insertCSSOMRuleBySourceRange(const SourceRang
 {
     ASSERT(m_sourceData);
 
-    RefPtrWillBeRawPtr<CSSRuleSourceData> containingRuleSourceData;
+    RefPtrWillBeRawPtr<CSSRuleSourceData> containingRuleSourceData = nullptr;
     for (size_t i = 0; i < m_sourceData->size(); ++i) {
         RefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceData = m_sourceData->at(i);
         if (ruleSourceData->ruleHeaderRange.start < sourceRange.start && sourceRange.start < ruleSourceData->ruleBodyRange.start) {
@@ -1196,7 +1196,7 @@ void InspectorStyleSheet::innerSetText(const String& text, bool markAsLocallyMod
     RefPtrWillBeRawPtr<StyleSheetContents> styleSheet = StyleSheetContents::create(m_pageStyleSheet->contents()->parserContext());
     StyleSheetHandler handler(text, m_pageStyleSheet->ownerDocument(), ruleTree.get());
     CSSParser::parseSheetForInspector(m_pageStyleSheet->contents()->parserContext(), styleSheet.get(), text, handler);
-    RefPtrWillBeRawPtr<CSSStyleSheet> sourceDataSheet;
+    RefPtrWillBeRawPtr<CSSStyleSheet> sourceDataSheet = nullptr;
     if (toCSSImportRule(m_pageStyleSheet->ownerRule()))
         sourceDataSheet = CSSStyleSheet::create(styleSheet, toCSSImportRule(m_pageStyleSheet->ownerRule()));
     else
@@ -1641,7 +1641,7 @@ PassRefPtrWillBeRawPtr<InspectorStyle> InspectorStyleSheetForInlineStyle::inspec
 {
     if (!m_inspectorStyle) {
         const String& text = elementStyleText();
-        RefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceData;
+        RefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceData = nullptr;
         if (text.isEmpty()) {
             ruleSourceData = CSSRuleSourceData::create(StyleRule::Style);
             ruleSourceData->ruleBodyRange.start = 0;
