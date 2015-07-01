@@ -2552,14 +2552,15 @@ ExclusiveAccessContext* BrowserView::GetExclusiveAccessContext() {
 bool BrowserView::DoCutCopyPasteForWebContents(
     WebContents* contents,
     void (WebContents::*method)()) {
-  // Using RWH interface rather than a fake key event for a WebContent is
-  // important since a fake event might be consumed by the web content.
-  if (contents->GetRenderWidgetHostView()->HasFocus()) {
-    (contents->*method)();
-    return true;
-  }
-
-  return false;
+  // It's possible for a non-null WebContents to have a null RWHV if it's
+  // crashed or otherwise been killed.
+  content::RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView();
+  if (!rwhv || !rwhv->HasFocus())
+    return false;
+  // Calling |method| rather than using a fake key event is important since a
+  // fake event might be consumed by the web content.
+  (contents->*method)();
+  return true;
 }
 
 void BrowserView::ActivateAppModalDialog() const {
