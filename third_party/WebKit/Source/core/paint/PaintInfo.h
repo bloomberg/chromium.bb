@@ -75,7 +75,6 @@ struct PaintInfo {
         return !paintingRoot || paintingRoot == layoutObject;
     }
 
-    bool forceBlackText() const { return paintBehavior & PaintBehaviorForceBlackText; }
     bool isRenderingClipPathAsMaskImage() const { return paintBehavior & PaintBehaviorRenderingClipPathAsMask; }
 
     bool skipRootBackground() const { return paintBehavior & PaintBehaviorSkipRootBackground; }

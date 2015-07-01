@@ -58,7 +58,6 @@ enum PaintPhase {
 enum PaintBehaviorFlags {
     PaintBehaviorNormal = 0,
     PaintBehaviorSelectionOnly = 1 << 0,
-    PaintBehaviorForceBlackText = 1 << 1,
     PaintBehaviorFlattenCompositingLayers = 1 << 2,
     PaintBehaviorRenderingClipPathAsMask = 1 << 3,
     PaintBehaviorSkipRootBackground = 1 << 4,

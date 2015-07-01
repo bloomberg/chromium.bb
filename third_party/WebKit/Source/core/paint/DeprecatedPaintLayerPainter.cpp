@@ -256,8 +256,6 @@ void DeprecatedPaintLayerPainter::paintLayerContents(GraphicsContext* context, c
         FilterPainter filterPainter(m_paintLayer, context, offsetFromRoot, layerFragments.isEmpty() ? ClipRect() : layerFragments[0].backgroundRect, localPaintingInfo, paintFlags,
             rootRelativeBounds, rootRelativeBoundsComputed);
 
-        ASSERT(!(localPaintingInfo.paintBehavior & PaintBehaviorForceBlackText));
-
         bool shouldPaintBackground = isPaintingCompositedBackground && shouldPaintContent && !selectionOnly;
         bool shouldPaintNegZOrderList = (isPaintingScrollingContent && isPaintingOverflowContents) || (!isPaintingScrollingContent && isPaintingCompositedBackground);
         bool shouldPaintOwnContents = isPaintingCompositedForeground && shouldPaintContent;

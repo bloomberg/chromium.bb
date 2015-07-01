@@ -138,8 +138,9 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     }
 
     // Determine text colors.
-    TextPainter::Style textStyle = TextPainter::textPaintingStyle(m_inlineTextBox.layoutObject(), styleToUse, paintInfo.forceBlackText(), isPrinting);
-    TextPainter::Style selectionStyle = TextPainter::selectionPaintingStyle(m_inlineTextBox.layoutObject(), haveSelection, paintInfo.forceBlackText(), isPrinting, textStyle);
+    bool usesTextAsClip = paintInfo.phase == PaintPhaseTextClip;
+    TextPainter::Style textStyle = TextPainter::textPaintingStyle(m_inlineTextBox.layoutObject(), styleToUse, usesTextAsClip, isPrinting);
+    TextPainter::Style selectionStyle = TextPainter::selectionPaintingStyle(m_inlineTextBox.layoutObject(), haveSelection, usesTextAsClip, isPrinting, textStyle);
     bool paintSelectedTextOnly = (paintInfo.phase == PaintPhaseSelection);
     bool paintSelectedTextSeparately = !paintSelectedTextOnly && textStyle != selectionStyle;
 

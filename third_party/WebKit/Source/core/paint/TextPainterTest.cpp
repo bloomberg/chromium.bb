@@ -44,7 +44,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_Simple)
     document().view()->updateLayoutAndStyleForPainting();
 
     TextPainter::Style textStyle = TextPainter::textPaintingStyle(
-        *layoutText(), layoutText()->styleRef(), false /* forceBlackText */, false /* isPrinting */);
+        *layoutText(), layoutText()->styleRef(), false /* usesTextAsClip */, false /* isPrinting */);
     EXPECT_EQ(Color(0, 0, 255), textStyle.fillColor);
     EXPECT_EQ(Color(0, 0, 255), textStyle.strokeColor);
     EXPECT_EQ(Color(0, 0, 255), textStyle.emphasisMarkColor);
@@ -62,7 +62,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_AllProperties)
     document().view()->updateLayoutAndStyleForPainting();
 
     TextPainter::Style textStyle = TextPainter::textPaintingStyle(
-        *layoutText(), layoutText()->styleRef(), false /* forceBlackText */, false /* isPrinting */);
+        *layoutText(), layoutText()->styleRef(), false /* usesTextAsClip */, false /* isPrinting */);
     EXPECT_EQ(Color(255, 0, 0), textStyle.fillColor);
     EXPECT_EQ(Color(0, 255, 0), textStyle.strokeColor);
     EXPECT_EQ(Color(0, 0, 255), textStyle.emphasisMarkColor);
@@ -75,7 +75,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_AllProperties)
     EXPECT_EQ(Color(255, 255, 0), textStyle.shadow->shadows()[0].color().color());
 }
 
-TEST_F(TextPainterTest, TextPaintingStyle_ForceBlackText)
+TEST_F(TextPainterTest, TextPaintingStyle_UsesTextAsClip)
 {
     document().body()->setInlineStyleProperty(CSSPropertyWebkitTextFillColor, CSSValueRed);
     document().body()->setInlineStyleProperty(CSSPropertyWebkitTextStrokeColor, CSSValueLime);
@@ -85,7 +85,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_ForceBlackText)
     document().view()->updateLayoutAndStyleForPainting();
 
     TextPainter::Style textStyle = TextPainter::textPaintingStyle(
-        *layoutText(), layoutText()->styleRef(), true /* forceBlackText */, false /* isPrinting */);
+        *layoutText(), layoutText()->styleRef(), true /* usesTextAsClip */, false /* isPrinting */);
     EXPECT_EQ(Color::black, textStyle.fillColor);
     EXPECT_EQ(Color::black, textStyle.strokeColor);
     EXPECT_EQ(Color::black, textStyle.emphasisMarkColor);
@@ -104,7 +104,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_ForceBackgroundToWhite_NoAdjustmentNee
     document().view()->updateLayoutAndStyleForPainting();
 
     TextPainter::Style textStyle = TextPainter::textPaintingStyle(
-        *layoutText(), layoutText()->styleRef(), false /* forceBlackText */, true /* isPrinting */);
+        *layoutText(), layoutText()->styleRef(), false /* usesTextAsClip */, true /* isPrinting */);
     EXPECT_EQ(Color(255, 0, 0), textStyle.fillColor);
     EXPECT_EQ(Color(0, 255, 0), textStyle.strokeColor);
     EXPECT_EQ(Color(0, 0, 255), textStyle.emphasisMarkColor);
@@ -121,7 +121,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_ForceBackgroundToWhite_Darkened)
     document().view()->updateLayoutAndStyleForPainting();
 
     TextPainter::Style textStyle = TextPainter::textPaintingStyle(
-        *layoutText(), layoutText()->styleRef(), false /* forceBlackText */, true /* isPrinting */);
+        *layoutText(), layoutText()->styleRef(), false /* usesTextAsClip */, true /* isPrinting */);
     EXPECT_EQ(Color(255, 220, 220).dark(), textStyle.fillColor);
     EXPECT_EQ(Color(220, 255, 220).dark(), textStyle.strokeColor);
     EXPECT_EQ(Color(220, 220, 255).dark(), textStyle.emphasisMarkColor);

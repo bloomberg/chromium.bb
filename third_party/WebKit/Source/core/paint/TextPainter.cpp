@@ -116,11 +116,12 @@ static Color textColorForWhiteBackground(Color textColor)
 }
 
 // static
-TextPainter::Style TextPainter::textPaintingStyle(LayoutObject& layoutObject, const ComputedStyle& style, bool forceBlackText, bool isPrinting)
+TextPainter::Style TextPainter::textPaintingStyle(LayoutObject& layoutObject, const ComputedStyle& style, bool usesTextAsClip, bool isPrinting)
 {
     TextPainter::Style textStyle;
 
-    if (forceBlackText) {
+    if (usesTextAsClip) {
+        // When we use the text as a clip, we only care about the alpha, thus we make all the colors black.
         textStyle.currentColor = Color::black;
         textStyle.fillColor = Color::black;
         textStyle.strokeColor = Color::black;
@@ -152,20 +153,20 @@ TextPainter::Style TextPainter::textPaintingStyle(LayoutObject& layoutObject, co
     return textStyle;
 }
 
-TextPainter::Style TextPainter::selectionPaintingStyle(LayoutObject& layoutObject, bool haveSelection, bool forceBlackText, bool isPrinting, const TextPainter::Style& textStyle)
+TextPainter::Style TextPainter::selectionPaintingStyle(LayoutObject& layoutObject, bool haveSelection, bool usesTextAsClip, bool isPrinting, const TextPainter::Style& textStyle)
 {
     TextPainter::Style selectionStyle = textStyle;
 
     if (haveSelection) {
-        if (!forceBlackText) {
+        if (!usesTextAsClip) {
             selectionStyle.fillColor = layoutObject.selectionForegroundColor();
             selectionStyle.emphasisMarkColor = layoutObject.selectionEmphasisMarkColor();
         }
 
         if (const ComputedStyle* pseudoStyle = layoutObject.getCachedPseudoStyle(SELECTION)) {
-            selectionStyle.strokeColor = forceBlackText ? Color::black : layoutObject.resolveColor(*pseudoStyle, CSSPropertyWebkitTextStrokeColor);
+            selectionStyle.strokeColor = usesTextAsClip ? Color::black : layoutObject.resolveColor(*pseudoStyle, CSSPropertyWebkitTextStrokeColor);
             selectionStyle.strokeWidth = pseudoStyle->textStrokeWidth();
-            selectionStyle.shadow = forceBlackText ? 0 : pseudoStyle->textShadow();
+            selectionStyle.shadow = usesTextAsClip ? 0 : pseudoStyle->textShadow();
         }
 
         // Text shadows are disabled when printing. http://crbug.com/258321

@@ -52,9 +52,10 @@ void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutP
     else if (paintInfo.phase == PaintPhaseSelection)
         return;
 
-    TextPainter::Style textStyle = TextPainter::textPaintingStyle(m_ellipsisBox.layoutObject(), style, paintInfo.forceBlackText(), isPrinting);
+    bool usesTextAsClip = paintInfo.phase == PaintPhaseTextClip;
+    TextPainter::Style textStyle = TextPainter::textPaintingStyle(m_ellipsisBox.layoutObject(), style, usesTextAsClip, isPrinting);
     if (haveSelection)
-        textStyle = TextPainter::selectionPaintingStyle(m_ellipsisBox.layoutObject(), true, paintInfo.forceBlackText(), isPrinting, textStyle);
+        textStyle = TextPainter::selectionPaintingStyle(m_ellipsisBox.layoutObject(), true, usesTextAsClip, isPrinting, textStyle);
 
     TextRun textRun = constructTextRun(&m_ellipsisBox.layoutObject(), font, m_ellipsisBox.ellipsisStr(), style, TextRun::AllowTrailingExpansion);
     LayoutPoint textOrigin(boxOrigin.x(), boxOrigin.y() + font.fontMetrics().ascent());
