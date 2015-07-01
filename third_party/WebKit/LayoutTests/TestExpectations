@@ -630,6 +630,11 @@ crbug.com/267206 [ Mac ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeo
 crbug.com/267206 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Pass Timeout ]
 
+crbug.com/441671 fast/repaint/in-scaled-iframe.html [ NeedsRebaseline ]
+crbug.com/441671 fast/repaint/paint-invalidation-with-reparent-across-frame-boundaries.html [ NeedsRebaseline ]
+crbug.com/441671 svg/as-object/nested-embedded-svg-size-changes-no-layout-triggers-1.html [ NeedsRebaseline ]
+crbug.com/441671 svg/as-object/nested-embedded-svg-size-changes-no-layout-triggers-2.html [ NeedsRebaseline ]
+
 crbug.com/267302 [ Win ] http/tests/htmlimports/import-script-block-crossorigin-dynamic.html [ Pass Failure ]
 
 crbug.com/268111 [ Win Release ] http/tests/inspector/appcache/appcache-swap.html [ Pass Timeout ]

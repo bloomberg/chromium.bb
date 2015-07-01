@@ -2359,6 +2359,11 @@ LayoutObject* LayoutObject::container(const LayoutBoxModelObject* paintInvalidat
     return o;
 }
 
+LayoutObject* LayoutObject::containerCrossingFrameBoundaries() const
+{
+    return isLayoutView() ? frame()->ownerLayoutObject() : container();
+}
+
 bool LayoutObject::isSelectionBorder() const
 {
     SelectionState st = selectionState();
@@ -3109,7 +3114,7 @@ static PaintInvalidationReason documentLifecycleBasedPaintInvalidationReason(con
 
 inline void LayoutObject::markContainerChainForPaintInvalidation()
 {
-    for (LayoutObject* container = this->container(); container && !container->shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState(); container = container->container())
+    for (LayoutObject* container = this->containerCrossingFrameBoundaries(); container && !container->shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState(); container = container->containerCrossingFrameBoundaries())
         container->setSelfMayNeedPaintInvalidation();
 }
 

@@ -1099,21 +1099,21 @@ void FrameView::layout()
 // method would setNeedsRedraw on the GraphicsLayers with invalidations and
 // let the compositor pick which to actually draw.
 // See http://crbug.com/306706
-void FrameView::invalidateTreeIfNeeded(Vector<LayoutObject*>& pendingDelayedPaintInvalidations)
+void FrameView::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidationState)
 {
+    lifecycle().advanceTo(DocumentLifecycle::InPaintInvalidation);
+
     ASSERT(layoutView());
     LayoutView& rootForPaintInvalidation = *layoutView();
     ASSERT(!rootForPaintInvalidation.needsLayout());
 
     TRACE_EVENT1("blink", "FrameView::invalidateTree", "root", rootForPaintInvalidation.debugName().ascii());
 
-    PaintInvalidationState rootPaintInvalidationState(rootForPaintInvalidation, pendingDelayedPaintInvalidations);
-
     // In slimming paint mode we do per-object invalidation.
     if (m_doFullPaintInvalidation && !RuntimeEnabledFeatures::slimmingPaintEnabled())
         layoutView()->compositor()->fullyInvalidatePaint();
 
-    rootForPaintInvalidation.invalidateTreeIfNeeded(rootPaintInvalidationState);
+    rootForPaintInvalidation.invalidateTreeIfNeeded(paintInvalidationState);
 
     // Invalidate the paint of the frameviews scrollbars if needed
     if (hasVerticalBarDamage())
@@ -1128,6 +1128,9 @@ void FrameView::invalidateTreeIfNeeded(Vector<LayoutObject*>& pendingDelayedPain
 
     if (m_frame->selection().isCaretBoundsDirty())
         m_frame->selection().invalidateCaretRect();
+
+    m_doFullPaintInvalidation = false;
+    lifecycle().advanceTo(DocumentLifecycle::PaintInvalidationClean);
 }
 
 DocumentLifecycle& FrameView::lifecycle() const
@@ -2586,22 +2589,26 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
 
 void FrameView::invalidateTreeIfNeededRecursive()
 {
-    // FIXME: We should be more aggressive at cutting tree traversals.
-    lifecycle().advanceTo(DocumentLifecycle::InPaintInvalidation);
+    ASSERT(layoutView());
+    TRACE_EVENT1("blink", "FrameView::invalidateTreeIfNeededRecursive", "root", layoutView()->debugName().ascii());
 
     Vector<LayoutObject*> pendingDelayedPaintInvalidations;
+    PaintInvalidationState rootPaintInvalidationState(*layoutView(), pendingDelayedPaintInvalidations);
 
-    invalidateTreeIfNeeded(pendingDelayedPaintInvalidations);
+    invalidateTreeIfNeeded(rootPaintInvalidationState);
 
+    // Some frames may be not reached during the above invalidateTreeIfNeeded because
+    // - the frame is a detached frame; or
+    // - it didn't need paint invalidation.
+    // We need to call invalidateTreeIfNeededRecursive() for such frames to finish required
+    // paint invalidation and advance their life cycle state.
     for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (!child->isLocalFrame())
             continue;
-
-        toLocalFrame(child)->view()->invalidateTreeIfNeededRecursive();
+        FrameView* childFrameView = toLocalFrame(child)->view();
+        if (childFrameView->lifecycle().state() < DocumentLifecycle::PaintInvalidationClean)
+            childFrameView->invalidateTreeIfNeededRecursive();
     }
-
-    m_doFullPaintInvalidation = false;
-    lifecycle().advanceTo(DocumentLifecycle::PaintInvalidationClean);
 
     // Process objects needing paint invalidation on the next frame. See the definition of PaintInvalidationDelayedFull for more details.
     for (auto& target : pendingDelayedPaintInvalidations)

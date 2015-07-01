@@ -62,6 +62,9 @@ protected:
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
     virtual CursorDirective getCursor(const LayoutPoint&, Cursor&) const override final;
 
+    // Overridden to invalidate the child frame if any.
+    virtual void invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState&) override;
+
 private:
     virtual CompositingReasons additionalCompositingReasons() const override;
 

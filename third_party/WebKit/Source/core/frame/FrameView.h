@@ -63,6 +63,7 @@ class LayoutEmbeddedObject;
 class LayoutObject;
 class LayoutScrollbarPart;
 class LayoutView;
+class PaintInvalidationState;
 class Page;
 class ScrollingCoordinator;
 class TracedValue;
@@ -597,6 +598,9 @@ protected:
         TemporaryChange<bool> m_scope;
     };
 
+    // Only for LayoutPart to traverse into sub frames during paint invalidation.
+    void invalidateTreeIfNeeded(PaintInvalidationState&);
+
 private:
     explicit FrameView(LocalFrame*);
 
@@ -629,8 +633,6 @@ private:
     void performLayout(bool inSubtreeLayout);
     void scheduleOrPerformPostLayoutTasks();
     void performPostLayoutTasks();
-
-    void invalidateTreeIfNeeded(Vector<LayoutObject*>& pendingDelayedPaintInvalidations);
 
     DocumentLifecycle& lifecycle() const;
 

@@ -331,4 +331,15 @@ bool LayoutPart::setWidgetGeometry(const LayoutRect& frame)
     return widget->frameRect().size() != newFrame.size();
 }
 
+void LayoutPart::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& paintInvalidationState)
+{
+    if (widget() && widget()->isFrameView()) {
+        FrameView* childFrameView = toFrameView(widget());
+        PaintInvalidationState childViewPaintInvalidationState(*childFrameView->layoutView(), paintInvalidationState);
+        toFrameView(widget())->invalidateTreeIfNeeded(childViewPaintInvalidationState);
+    }
+
+    LayoutReplaced::invalidatePaintOfSubtreesIfNeeded(paintInvalidationState);
+}
+
 }

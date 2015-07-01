@@ -13,7 +13,7 @@
 
 namespace blink {
 
-PaintInvalidationState::PaintInvalidationState(const LayoutView& layoutView, Vector<LayoutObject*>& pendingDelayedPaintInvalidations)
+PaintInvalidationState::PaintInvalidationState(const LayoutView& layoutView, Vector<LayoutObject*>& pendingDelayedPaintInvalidations, PaintInvalidationState* ownerPaintInvalidationState)
     : m_clipped(false)
     , m_cachedOffsetsEnabled(true)
     , m_forceCheckForPaintInvalidation(false)
@@ -22,10 +22,13 @@ PaintInvalidationState::PaintInvalidationState(const LayoutView& layoutView, Vec
 {
     bool establishesPaintInvalidationContainer = layoutView == m_paintInvalidationContainer;
     if (!establishesPaintInvalidationContainer) {
-        if (!layoutView.supportsPaintInvalidationStateCachedOffsets()) {
+        if ((ownerPaintInvalidationState && !ownerPaintInvalidationState->m_cachedOffsetsEnabled)
+            || !layoutView.supportsPaintInvalidationStateCachedOffsets()) {
             m_cachedOffsetsEnabled = false;
             return;
         }
+        if (ownerPaintInvalidationState && ownerPaintInvalidationState->m_forceCheckForPaintInvalidation)
+            m_forceCheckForPaintInvalidation = true;
         FloatPoint point = layoutView.localToContainerPoint(FloatPoint(), &m_paintInvalidationContainer, TraverseDocumentBoundaries);
         m_paintOffset = LayoutSize(point.x(), point.y());
     }
