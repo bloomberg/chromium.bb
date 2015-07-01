@@ -22,16 +22,17 @@ dist_pkgdata_DATA =				\
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA =
 
-if ENABLE_SCANNER
-wayland_scanner = $(top_builddir)/wayland-scanner
 bin_PROGRAMS = wayland-scanner
 wayland_scanner_SOURCES = src/scanner.c
 wayland_scanner_CFLAGS = $(EXPAT_CFLAGS) $(AM_CFLAGS)
 wayland_scanner_LDADD = $(EXPAT_LIBS) libwayland-util.la
-$(BUILT_SOURCES) : wayland-scanner
 pkgconfig_DATA += src/wayland-scanner.pc
-else
+
+if USE_HOST_SCANNER
 wayland_scanner = wayland-scanner
+else
+$(BUILT_SOURCES) : wayland-scanner
+wayland_scanner = $(top_builddir)/wayland-scanner
 endif
 
 libwayland_util_la_CFLAGS = $(AM_CFLAGS)

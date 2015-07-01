@@ -59,11 +59,11 @@ AC_ARG_ENABLE([libraries],
 	      [],
 	      [enable_libraries=yes])
 
-AC_ARG_ENABLE([scanner],
-              [AC_HELP_STRING([--disable-scanner],
-                              [Disable compilation of wayland-scanner])],
+AC_ARG_WITH([host-scanner],
+              [AC_HELP_STRING([--with-host-scanner],
+                              [Use installed wayland-scanner from host PATH during build])],
               [],
-              [enable_scanner=yes])
+              [with_host_scanner=no])
 
 AC_ARG_ENABLE([documentation],
 	      [AC_HELP_STRING([--disable-documentation],
@@ -71,7 +71,7 @@ AC_ARG_ENABLE([documentation],
 	      [],
 	      [enable_documentation=yes])
 
-AM_CONDITIONAL(ENABLE_SCANNER, test "x$enable_scanner" = xyes)
+AM_CONDITIONAL(USE_HOST_SCANNER, test "x$with_host_scanner" = xyes)
 
 AM_CONDITIONAL(ENABLE_LIBRARIES, test "x$enable_libraries" = xyes)
 
@@ -94,18 +94,16 @@ if test "x$enable_libraries" = "xyes"; then
 	AC_CHECK_HEADERS([execinfo.h])
 fi
 
-if test "x$enable_scanner" = "xyes"; then
-	PKG_CHECK_MODULES(EXPAT, [expat], [],
-		[AC_CHECK_HEADERS(expat.h, [],
-			[AC_MSG_ERROR([Can't find expat.h. Please install expat.])])
-		 SAVE_LIBS="$LIBS"
-		 AC_SEARCH_LIBS(XML_ParserCreate, expat, [],
-			[AC_MSG_ERROR([Can't find expat library. Please install expat.])])
-		 EXPAT_LIBS="$LIBS"
-		 LIBS="$SAVE_LIBS"
-		 AC_SUBST(EXPAT_LIBS)
-		])
-fi
+PKG_CHECK_MODULES(EXPAT, [expat], [],
+	[AC_CHECK_HEADERS(expat.h, [],
+		[AC_MSG_ERROR([Can't find expat.h. Please install expat.])])
+	 SAVE_LIBS="$LIBS"
+	 AC_SEARCH_LIBS(XML_ParserCreate, expat, [],
+		[AC_MSG_ERROR([Can't find expat library. Please install expat.])])
+	 EXPAT_LIBS="$LIBS"
+	 LIBS="$SAVE_LIBS"
+	 AC_SUBST(EXPAT_LIBS)
+	])
 
 AC_PATH_PROG(XSLTPROC, xsltproc)
 AM_CONDITIONAL([HAVE_XSLTPROC], [test "x$XSLTPROC" != "x"])
