@@ -85,6 +85,7 @@ public abstract class MultiActivityTestBase extends RestrictedInstrumentationTes
     public void setUp() throws Exception {
         super.setUp();
         mContext = getInstrumentation().getTargetContext();
+        CommandLineFlags.setUp(mContext, getClass().getMethod(getName()));
 
         // Disable Omaha related activities.
         OmahaClient.setEnableCommunication(false);
