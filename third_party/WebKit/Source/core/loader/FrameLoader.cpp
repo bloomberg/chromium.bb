@@ -240,7 +240,8 @@ void FrameLoader::saveScrollState()
     if (needsHistoryItemRestore(m_loadType) && !m_frame->view()->wasScrolledByUser())
         return;
 
-    m_currentItem->setScrollPoint(m_frame->view()->scrollPosition());
+    if (ScrollableArea* layoutScrollableArea = m_frame->view()->layoutViewportScrollableArea())
+        m_currentItem->setScrollPoint(layoutScrollableArea->scrollPosition());
     m_currentItem->setPinchViewportScrollPoint(m_frame->host()->pinchViewport().visibleRect().location());
 
     if (m_frame->isMainFrame())

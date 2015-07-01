@@ -459,6 +459,10 @@ void DeprecatedPaintLayerScrollableArea::setScrollOffset(const DoublePoint& newS
     if (AXObjectCache* cache = box().document().existingAXObjectCache())
         cache->handleScrollPositionChanged(&box());
     box().view()->clearHitTestCache();
+
+    // Inform the FrameLoader of the new scroll position, so it can be restored when navigating back.
+    if (layer()->isRootLayer())
+        frameView->frame().loader().saveScrollState();
 }
 
 IntPoint DeprecatedPaintLayerScrollableArea::scrollPosition() const

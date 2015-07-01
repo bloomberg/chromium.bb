@@ -887,7 +887,7 @@ TEST_F(PinchViewportTest, TestRestoredFromLegacyHistoryItem)
 
 // Test that navigation to a new page with a different sized main frame doesn't
 // clobber the history item's main frame scroll offset. crbug.com/371867
-TEST_F(PinchViewportTest, TestNavigateToSmallerFrameViewHistoryItemClobberBug)
+TEST_P(ParameterizedPinchViewportTest, TestNavigateToSmallerFrameViewHistoryItemClobberBug)
 {
     initializeWithAndroidSettings();
     webViewImpl()->resize(IntSize(400, 400));
