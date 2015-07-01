@@ -76,7 +76,14 @@ PlayerUtils.registerEMEEventListeners = function(player) {
         var session = message.target.mediaKeys.createSession();
         addMediaKeySessionListeners(session);
         session.generateRequest(message.initDataType, message.initData)
-            .catch(function(error) { Utils.failTest(error, KEY_ERROR); });
+            .catch(function(error) {
+              // Ignore the error if a crash is expected. This ensures that
+              // the decoder actually detects and reports the error.
+              if (this.testConfig.keySystem !=
+                  'org.chromium.externalclearkey.crash') {
+                Utils.failTest(error, KEY_ERROR);
+              }
+            });
       }
     } catch (e) {
       Utils.failTest(e);

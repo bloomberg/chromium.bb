@@ -26,6 +26,10 @@ ClearKeyPlayer.prototype.onMessage = function(message) {
   var key = Utils.getDefaultKey(this.testConfig.forceInvalidResponse);
   var jwkSet = Utils.createJWKData(initData, key);
   message.target.update(jwkSet).catch(function(error) {
-    Utils.failTest(error, KEY_ERROR);
+    // Ignore the error if a crash is expected. This ensures that the decoder
+    // actually detects and reports the error.
+    if (this.testConfig.keySystem != 'org.chromium.externalclearkey.crash') {
+      Utils.failTest(error, KEY_ERROR);
+    }
   });
 };

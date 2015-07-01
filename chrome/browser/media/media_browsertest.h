@@ -26,7 +26,6 @@ class MediaBrowserTest : public InProcessBrowserTest,
   // TODO(xhwang): Report detailed errors, e.g. "ERROR-3".
   static const char kError[];
   static const char kFailed[];
-  static const char kPluginCrashed[];
 
   MediaBrowserTest();
   ~MediaBrowserTest() override;

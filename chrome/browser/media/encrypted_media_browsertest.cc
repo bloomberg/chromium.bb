@@ -657,20 +657,20 @@ IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, InitializeCDMFail) {
                        kEmeNotSupportedError);
 }
 
-// When CDM crashes, we should still get a decode error.
-// crbug.com/386657
-IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, DISABLED_CDMCrashDuringDecode) {
+// When CDM crashes, we should still get a decode error. |kError| is reported
+// when the HTMLVideoElement error event fires, indicating an error happened
+// during playback.
+IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, CDMCrashDuringDecode) {
   IgnorePluginCrash();
   TestNonPlaybackCases(kExternalClearKeyCrashKeySystem, kError);
 }
 
 // Testing that the media browser test does fail on plugin crash.
-// crbug.com/386657
-IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, DISABLED_CDMExpectedCrash) {
+IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, CDMExpectedCrash) {
   // Plugin crash is not ignored by default, the test is expected to fail.
   EXPECT_NONFATAL_FAILURE(
       TestNonPlaybackCases(kExternalClearKeyCrashKeySystem, kError),
-      "plugin crash");
+      "Failing test due to plugin crash.");
 }
 
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, FileIOTest) {

@@ -19,7 +19,6 @@
 const char MediaBrowserTest::kEnded[] = "ENDED";
 const char MediaBrowserTest::kError[] = "ERROR";
 const char MediaBrowserTest::kFailed[] = "FAILED";
-const char MediaBrowserTest::kPluginCrashed[] = "PLUGIN_CRASHED";
 
 MediaBrowserTest::MediaBrowserTest() : ignore_plugin_crash_(false) {
 }
@@ -67,7 +66,6 @@ void MediaBrowserTest::AddWaitForTitles(content::TitleWatcher* title_watcher) {
   title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEnded));
   title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kError));
   title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kFailed));
-  title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kPluginCrashed));
 }
 
 void MediaBrowserTest::PluginCrashed(const base::FilePath& plugin_path,
@@ -75,9 +73,6 @@ void MediaBrowserTest::PluginCrashed(const base::FilePath& plugin_path,
   DVLOG(0) << "Plugin crashed: " << plugin_path.value();
   if (ignore_plugin_crash_)
     return;
-  // Update document title to quit TitleWatcher early.
-  web_contents()->GetController().GetActiveEntry()
-      ->SetTitle(base::ASCIIToUTF16(kPluginCrashed));
   ADD_FAILURE() << "Failing test due to plugin crash.";
 }
 
