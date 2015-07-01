@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Process;
 import android.util.Log;
 import android.util.SparseArray;
@@ -256,6 +257,26 @@ public class WindowAndroid {
     }
 
     /**
+     * Determine whether access to file is granted.
+     */
+    public boolean hasFileAccess() {
+        return true;
+    }
+
+    /**
+     * Requests the access to files.
+     * @param callback The callback to be notified whether access were granted.
+     */
+    public void requestFileAccess(final FileAccessCallback callback) {
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                callback.onFileAccessResult(false);
+            }
+        });
+    }
+
+    /**
      * Displays an error message with a provided error message string.
      * @param error The error message string to be displayed.
      */
@@ -377,6 +398,17 @@ public class WindowAndroid {
          * @param grantResults Whether the permissions were granted.
          */
         void onRequestPermissionsResult(String[] permissions, int[] grantResults);
+    }
+
+    /**
+     * Callback for file access requests.
+     */
+    public interface FileAccessCallback {
+        /**
+         * Called upon completing a file access request.
+         * @param granted Whether file access is granted.
+         */
+        void onFileAccessResult(boolean granted);
     }
 
     /**
