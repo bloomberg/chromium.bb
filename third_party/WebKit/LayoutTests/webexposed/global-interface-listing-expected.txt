@@ -5031,14 +5031,12 @@ interface ServicePort
     method postMessage
 interface ServicePortCollection
     getter onclose
-    getter onconnect
     getter onmessage
     method connect
     method constructor
     method match
     method matchAll
     setter onclose
-    setter onconnect
     setter onmessage
 interface ServiceWorker
     getter onerror

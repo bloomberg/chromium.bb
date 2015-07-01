@@ -59,7 +59,6 @@ PASS oldChildWindow.navigator.productSub is newChildWindow.navigator.productSub
 PASS oldChildWindow.navigator.serviceWorker.controller is newChildWindow.navigator.serviceWorker.controller
 PASS oldChildWindow.navigator.serviceWorker.oncontrollerchange is newChildWindow.navigator.serviceWorker.oncontrollerchange
 PASS oldChildWindow.navigator.services.onclose is newChildWindow.navigator.services.onclose
-PASS oldChildWindow.navigator.services.onconnect is newChildWindow.navigator.services.onconnect
 PASS oldChildWindow.navigator.services.onmessage is newChildWindow.navigator.services.onmessage
 PASS oldChildWindow.navigator.userAgent is newChildWindow.navigator.userAgent
 PASS oldChildWindow.navigator.vendor is newChildWindow.navigator.vendor

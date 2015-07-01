@@ -12,9 +12,7 @@
     [CallWith=ScriptState, RaisesException] Promise<ServicePort> connect(DOMString url, optional ServicePortConnectOptions options);
     [CallWith=ScriptState] Promise<ServicePort> match(ServicePortMatchOptions options);
     [CallWith=ScriptState] Promise<sequence<ServicePort>> matchAll(optional ServicePortMatchOptions options);
-    // TODO(mek): The spec has [Exposed=ServiceWorker] for onconnect, this is not currently
-    // supported by blink bindings, so figure out if this is needed.
-    attribute EventHandler onconnect;
+    [Exposed=ServiceWorker] attribute EventHandler onconnect;
     attribute EventHandler onmessage;
     attribute EventHandler onclose;
 };

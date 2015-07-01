@@ -59,7 +59,6 @@ PASS childWindow.navigator.productSub is window.navigator.productSub
 FAIL childWindow.navigator.serviceWorker.controller should be null. Threw exception TypeError: Cannot read property 'controller' of null
 FAIL childWindow.navigator.serviceWorker.oncontrollerchange should be null. Threw exception TypeError: Cannot read property 'oncontrollerchange' of null
 PASS childWindow.navigator.services.onclose is null
-PASS childWindow.navigator.services.onconnect is null
 PASS childWindow.navigator.services.onmessage is null
 PASS childWindow.navigator.userAgent is ''
 PASS childWindow.navigator.vendor is window.navigator.vendor
