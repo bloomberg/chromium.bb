@@ -154,15 +154,18 @@ void BlockPainter::paintAsInlineBlock(LayoutObject& layoutObject, const PaintInf
     }
 }
 
+static inline LayoutRect visualOverflowRectWithPaintOffset(const LayoutBlock& layoutBox, const LayoutPoint& paintOffset)
+{
+    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
+        return LayoutRect();
+    LayoutRect bounds = layoutBox.visualOverflowRect();
+    bounds.moveBy(paintOffset);
+    return bounds;
+}
+
 void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     const PaintPhase paintPhase = paintInfo.phase;
-
-    LayoutRect bounds;
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        bounds = m_layoutBlock.visualOverflowRect();
-        bounds.moveBy(paintOffset);
-    }
 
     if ((paintPhase == PaintPhaseBlockBackground || paintPhase == PaintPhaseChildBlockBackground)
         && m_layoutBlock.style()->visibility() == VISIBLE
@@ -213,7 +216,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         // Don't paint focus ring for anonymous block continuation because the
         // inline element having outline-style:auto paints the whole focus ring.
         if (!m_layoutBlock.style()->outlineStyleIsAuto() || !m_layoutBlock.isAnonymousBlockContinuation())
-            ObjectPainter(m_layoutBlock).paintOutline(paintInfo, LayoutRect(paintOffset, m_layoutBlock.size()), bounds);
+            ObjectPainter(m_layoutBlock).paintOutline(paintInfo, LayoutRect(paintOffset, m_layoutBlock.size()), visualOverflowRectWithPaintOffset(m_layoutBlock, paintOffset));
     }
 
     if (paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseChildOutlines)
@@ -222,7 +225,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
     // If the caret's node's layout object's containing block is this block, and the paint action is PaintPhaseForeground,
     // then paint the caret.
     if (paintPhase == PaintPhaseForeground && hasCaret()) {
-        LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlock, DisplayItem::Caret, bounds);
+        LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlock, DisplayItem::Caret, visualOverflowRectWithPaintOffset(m_layoutBlock, paintOffset));
         if (!recorder.canUseCachedDrawing())
             paintCarets(paintInfo, paintOffset);
     }
