@@ -13,7 +13,7 @@
 
 #define SCOPED_FILE_TRACE_WITH_SIZE(name, size) \
     FileTracing::ScopedTrace scoped_file_trace; \
-    if (scoped_file_trace.ShouldInitialize()) \
+    if (FileTracing::IsCategoryEnabled()) \
       scoped_file_trace.Initialize(FILE_TRACING_PREFIX "::" name, this, size)
 
 #define SCOPED_FILE_TRACE(name) SCOPED_FILE_TRACE_WITH_SIZE(name, 0)
@@ -25,6 +25,9 @@ class FilePath;
 
 class BASE_EXPORT FileTracing {
  public:
+  // Whether the file tracing category is enabled.
+  static bool IsCategoryEnabled();
+
   class Provider {
    public:
     // Whether the file tracing category is currently enabled.
@@ -60,9 +63,6 @@ class BASE_EXPORT FileTracing {
    public:
     ScopedTrace();
     ~ScopedTrace();
-
-    // Whether this trace should be initialized or not.
-    bool ShouldInitialize() const;
 
     // Called only if the tracing category is enabled. |name| is the name of the
     // event to trace (e.g. "Read", "Write") and must have an application

@@ -52,7 +52,7 @@ File::File(Error error_details)
 
 File::File(RValue other)
     : file_(other.object->TakePlatformFile()),
-      path_(other.object->path_),
+      tracing_path_(other.object->tracing_path_),
       error_details_(other.object->error_details()),
       created_(other.object->created()),
       async_(other.object->async_) {
@@ -76,7 +76,7 @@ File& File::operator=(RValue other) {
   if (this != other.object) {
     Close();
     SetPlatformFile(other.object->TakePlatformFile());
-    path_ = other.object->path_;
+    tracing_path_ = other.object->tracing_path_;
     error_details_ = other.object->error_details();
     created_ = other.object->created();
     async_ = other.object->async_;
@@ -90,9 +90,10 @@ void File::Initialize(const FilePath& path, uint32 flags) {
     error_details_ = FILE_ERROR_ACCESS_DENIED;
     return;
   }
-  path_ = path;
+  if (FileTracing::IsCategoryEnabled())
+    tracing_path_ = path;
   SCOPED_FILE_TRACE("Initialize");
-  DoInitialize(flags);
+  DoInitialize(path, flags);
 }
 #endif
 
