@@ -176,6 +176,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Sets the View of this RenderWidgetHost.
   void SetView(RenderWidgetHostViewBase* view);
 
+  RenderWidgetHostDelegate* delegate() const { return delegate_; }
+
   int surface_id() const { return surface_id_; }
 
   bool empty() const { return current_size_.IsEmpty(); }

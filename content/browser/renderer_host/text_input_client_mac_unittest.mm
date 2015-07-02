@@ -27,6 +27,11 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  public:
   MockRenderWidgetHostDelegate() {}
   ~MockRenderWidgetHostDelegate() override {}
+
+ private:
+  void Cut() override {}
+  void Copy() override {}
+  void Paste() override {}
 };
 
 // This test does not test the WebKit side of the dictionary system (which

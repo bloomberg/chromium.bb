@@ -38,6 +38,7 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
+#include "content/browser/renderer_host/render_widget_host_delegate.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_dictionary_helper.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
 #include "content/browser/renderer_host/render_widget_resize_helper.h"
@@ -3082,15 +3083,17 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)cut:(id)sender {
-  WebContents* web_contents = renderWidgetHostView_->GetWebContents();
-  if (web_contents)
-    web_contents->Cut();
+  content::RenderWidgetHostDelegate* render_widget_host_delegate =
+      renderWidgetHostView_->render_widget_host_->delegate();
+  if (render_widget_host_delegate)
+    render_widget_host_delegate->Cut();
 }
 
 - (void)copy:(id)sender {
-  WebContents* web_contents = renderWidgetHostView_->GetWebContents();
-  if (web_contents)
-    web_contents->Copy();
+  content::RenderWidgetHostDelegate* render_widget_host_delegate =
+      renderWidgetHostView_->render_widget_host_->delegate();
+  if (render_widget_host_delegate)
+    render_widget_host_delegate->Copy();
 }
 
 - (void)copyToFindPboard:(id)sender {
@@ -3100,9 +3103,10 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)paste:(id)sender {
-  WebContents* web_contents = renderWidgetHostView_->GetWebContents();
-  if (web_contents)
-    web_contents->Paste();
+  content::RenderWidgetHostDelegate* render_widget_host_delegate =
+      renderWidgetHostView_->render_widget_host_->delegate();
+  if (render_widget_host_delegate)
+    render_widget_host_delegate->Paste();
 }
 
 - (void)pasteAndMatchStyle:(id)sender {

@@ -28,6 +28,10 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  public:
   MockRenderWidgetHostDelegate() {}
   ~MockRenderWidgetHostDelegate() override {}
+ private:
+  void Cut() override {}
+  void Copy() override {}
+  void Paste() override {}
 };
 
 class MockCrossProcessFrameConnector : public CrossProcessFrameConnector {

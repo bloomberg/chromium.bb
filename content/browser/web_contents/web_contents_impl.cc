@@ -2034,6 +2034,25 @@ BrowserAccessibilityManager*
   return rfh ? rfh->GetOrCreateBrowserAccessibilityManager() : nullptr;
 }
 
+void WebContentsImpl::MoveRangeSelectionExtent(const gfx::Point& extent) {
+  RenderFrameHost* focused_frame = GetFocusedFrame();
+  if (!focused_frame)
+    return;
+
+  focused_frame->Send(new InputMsg_MoveRangeSelectionExtent(
+      focused_frame->GetRoutingID(), extent));
+}
+
+void WebContentsImpl::SelectRange(const gfx::Point& base,
+                                  const gfx::Point& extent) {
+  RenderFrameHost* focused_frame = GetFocusedFrame();
+  if (!focused_frame)
+    return;
+
+  focused_frame->Send(
+      new InputMsg_SelectRange(focused_frame->GetRoutingID(), base, extent));
+}
+
 void WebContentsImpl::UpdatePreferredSize(const gfx::Size& pref_size) {
   const gfx::Size old_size = GetPreferredSize();
   preferred_size_ = pref_size;
@@ -3351,25 +3370,6 @@ void WebContentsImpl::SetIsLoading(bool is_loading,
       det = Details<LoadNotificationDetails>(details);
   NotificationService::current()->Notify(
       type, Source<NavigationController>(&controller_), det);
-}
-
-void WebContentsImpl::MoveRangeSelectionExtent(const gfx::Point& extent) {
-  RenderFrameHost* focused_frame = GetFocusedFrame();
-  if (!focused_frame)
-    return;
-
-  focused_frame->Send(new InputMsg_MoveRangeSelectionExtent(
-      focused_frame->GetRoutingID(), extent));
-}
-
-void WebContentsImpl::SelectRange(const gfx::Point& base,
-                                  const gfx::Point& extent) {
-  RenderFrameHost* focused_frame = GetFocusedFrame();
-  if (!focused_frame)
-    return;
-
-  focused_frame->Send(
-      new InputMsg_SelectRange(focused_frame->GetRoutingID(), base, extent));
 }
 
 void WebContentsImpl::UpdateMaxPageIDIfNecessary(RenderViewHost* rvh) {

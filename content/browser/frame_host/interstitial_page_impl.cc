@@ -29,6 +29,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/frame_messages.h"
+#include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -426,6 +427,36 @@ AccessibilityMode InterstitialPageImpl::GetAccessibilityMode() const {
     return static_cast<WebContentsImpl*>(web_contents_)->GetAccessibilityMode();
   else
     return AccessibilityModeOff;
+}
+
+void InterstitialPageImpl::Cut() {
+  FrameTreeNode* focused_node = frame_tree_.GetFocusedFrame();
+  if (!focused_node)
+    return;
+
+  focused_node->current_frame_host()->Send(
+      new InputMsg_Cut(focused_node->current_frame_host()->GetRoutingID()));
+  RecordAction(base::UserMetricsAction("Cut"));
+}
+
+void InterstitialPageImpl::Copy() {
+  FrameTreeNode* focused_node = frame_tree_.GetFocusedFrame();
+  if (!focused_node)
+    return;
+
+  focused_node->current_frame_host()->Send(
+      new InputMsg_Copy(focused_node->current_frame_host()->GetRoutingID()));
+  RecordAction(base::UserMetricsAction("Copy"));
+}
+
+void InterstitialPageImpl::Paste() {
+  FrameTreeNode* focused_node = frame_tree_.GetFocusedFrame();
+  if (!focused_node)
+    return;
+
+  focused_node->current_frame_host()->Send(
+      new InputMsg_Paste(focused_node->current_frame_host()->GetRoutingID()));
+  RecordAction(base::UserMetricsAction("Paste"));
 }
 
 RenderViewHostDelegateView* InterstitialPageImpl::GetDelegateView() {

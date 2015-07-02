@@ -15,6 +15,10 @@ class WebMouseWheelEvent;
 class WebGestureEvent;
 }
 
+namespace gfx {
+class Point;
+}
+
 namespace content {
 
 class BrowserAccessibilityManager;
@@ -74,6 +78,18 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // or create it if it doesn't exist.
   virtual BrowserAccessibilityManager*
       GetOrCreateRootBrowserAccessibilityManager();
+
+  // Send OS Cut/Copy/Paste actions to the focused frame.
+  virtual void Cut() = 0;
+  virtual void Copy() = 0;
+  virtual void Paste() = 0;
+
+  // Requests the renderer to move the selection extent to a new position.
+  virtual void MoveRangeSelectionExtent(const gfx::Point& extent) {}
+
+  // Requests the renderer to select the region between two points in the
+  // currently focused frame.
+  virtual void SelectRange(const gfx::Point& base, const gfx::Point& extent) {}
 
 #if defined(OS_WIN)
   virtual gfx::NativeViewAccessible GetParentNativeViewAccessible();

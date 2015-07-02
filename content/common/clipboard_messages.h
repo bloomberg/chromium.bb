@@ -26,6 +26,9 @@ typedef std::map<base::string16, base::string16> CustomDataMap;
 
 #endif  // CONTENT_COMMON_CLIPBOARD_MESSAGES_H_
 
+#undef IPC_MESSAGE_EXPORT
+#define IPC_MESSAGE_EXPORT CONTENT_EXPORT
+
 #define IPC_MESSAGE_START ClipboardMsgStart
 
 IPC_ENUM_TRAITS_MAX_VALUE(content::ClipboardFormat,

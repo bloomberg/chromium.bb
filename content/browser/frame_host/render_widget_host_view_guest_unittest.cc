@@ -31,6 +31,12 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  public:
   MockRenderWidgetHostDelegate() {}
   ~MockRenderWidgetHostDelegate() override {}
+
+ private:
+  // RenderWidgetHostDelegate:
+  void Cut() override {}
+  void Copy() override {}
+  void Paste() override {}
 };
 
 class RenderWidgetHostViewGuestTest : public testing::Test {

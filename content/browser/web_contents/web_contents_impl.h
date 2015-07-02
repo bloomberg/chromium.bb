@@ -503,7 +503,6 @@ class CONTENT_EXPORT WebContentsImpl
   void SetIsVirtualKeyboardRequested(bool requested) override;
   bool IsVirtualKeyboardRequested() override;
 
-
   // NavigatorDelegate ---------------------------------------------------------
 
   void DidStartProvisionalLoad(RenderFrameHostImpl* render_frame_host,
@@ -564,6 +563,12 @@ class CONTENT_EXPORT WebContentsImpl
   BrowserAccessibilityManager* GetRootBrowserAccessibilityManager() override;
   BrowserAccessibilityManager* GetOrCreateRootBrowserAccessibilityManager()
       override;
+  // Following three functions are already listed under WebContents overrides.
+  // void Cut() override;
+  // void Copy() override;
+  // void Paste() override;
+  void MoveRangeSelectionExtent(const gfx::Point& extent) override;
+  void SelectRange(const gfx::Point& base, const gfx::Point& extent) override;
 
   // RenderFrameHostManager::Delegate ------------------------------------------
 
@@ -660,13 +665,6 @@ class CONTENT_EXPORT WebContentsImpl
                     LoadNotificationDetails* details) override;
 
   typedef base::Callback<void(WebContents*)> CreatedCallback;
-
-  // Requests the renderer to move the selection extent to a new position.
-  void MoveRangeSelectionExtent(const gfx::Point& extent);
-
-  // Requests the renderer to select the region between two points in the
-  // currently focused frame.
-  void SelectRange(const gfx::Point& base, const gfx::Point& extent);
 
   // Forces overscroll to be disabled (used by touch emulation).
   void SetForceDisableOverscrollContent(bool force_disable);

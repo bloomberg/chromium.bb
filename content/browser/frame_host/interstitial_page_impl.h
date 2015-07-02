@@ -105,6 +105,9 @@ class CONTENT_EXPORT InterstitialPageImpl
                    const base::string16& title,
                    base::i18n::TextDirection title_direction) override;
   AccessibilityMode GetAccessibilityMode() const override;
+  void Cut() override;
+  void Copy() override;
+  void Paste() override;
 
   // RenderViewHostDelegate implementation:
   RenderViewHostDelegateView* GetDelegateView() override;
