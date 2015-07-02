@@ -659,6 +659,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     profile_ = profile;
     controller_ = controller;
 
+    CGFloat availableWidth = frameRect.size.width;
+    NSSize textSize = [profileName sizeWithAttributes:@{
+      NSFontAttributeName : [self font]
+    }];
+
     if (editingAllowed) {
       // Show an "edit" pencil icon when hovering over. In the default state,
       // we need to create an empty placeholder of the correct size, so that
@@ -711,13 +716,16 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
           base::SysNSStringToUTF16(profileName))
                                     forAttribute:NSAccessibilityTitleAttribute];
 
-      NSSize textSize = [profileName sizeWithAttributes:@{
+      // Recompute the available width for the name since the icon takes space.
+      availableWidth -= [hoverImage size].width * 2;
+      // The profileNameTextField_ might size the text differently.
+      textSize = [profileName sizeWithAttributes:@{
         NSFontAttributeName : [profileNameTextField_ font]
       }];
-
-      if (textSize.width > frameRect.size.width - [hoverImage size].width * 2)
-        [self setToolTip:profileName];
     }
+
+    if (textSize.width > availableWidth)
+      [self setToolTip:profileName];
 
     [[self cell] accessibilitySetOverrideValue:NSAccessibilityButtonRole
                                   forAttribute:NSAccessibilityRoleAttribute];
