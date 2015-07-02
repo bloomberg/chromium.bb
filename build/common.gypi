@@ -5712,7 +5712,6 @@
                   '-Wno-overloaded-virtual',  # http://crbug.com/505301
                   '-Wno-pointer-sign',  # http://crbug.com/505303
                   '-Wno-reorder',  # http://crbug.com/505304
-                  '-Wno-sometimes-uninitialized',  # http://crbug.com/505307
                   '-Wno-switch',  # http://crbug.com/505308
                   '-Wno-unknown-pragmas',  # http://crbug.com/505314
                   '-Wno-unused-function',  # http://crbug.com/505316
