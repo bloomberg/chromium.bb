@@ -142,12 +142,13 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
 
   void SetAcceptLanguages(const std::string& accept_languages);
 
+  void PostAccessibilityEvent(const blink::WebAXObject&, blink::WebAXEvent);
+
  protected:
   WebTestProxyBase();
   ~WebTestProxyBase();
 
   void ScheduleAnimation();
-  void PostAccessibilityEvent(const blink::WebAXObject&, blink::WebAXEvent);
   void StartDragging(blink::WebLocalFrame* frame,
                      const blink::WebDragData& data,
                      blink::WebDragOperationsMask mask,
@@ -315,11 +316,6 @@ class WebTestProxy : public Base, public WebTestProxyBase {
 
   // WebViewClient implementation.
   virtual void scheduleAnimation() { WebTestProxyBase::ScheduleAnimation(); }
-  virtual void postAccessibilityEvent(const blink::WebAXObject& object,
-                                      blink::WebAXEvent event) {
-    WebTestProxyBase::PostAccessibilityEvent(object, event);
-    Base::postAccessibilityEvent(object, event);
-  }
   virtual void startDragging(blink::WebLocalFrame* frame,
                              const blink::WebDragData& data,
                              blink::WebDragOperationsMask mask,

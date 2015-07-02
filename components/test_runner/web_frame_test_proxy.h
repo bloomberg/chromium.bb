@@ -281,6 +281,12 @@ class WebFrameTestProxy : public Base {
     Base::didStopLoading();
   }
 
+  virtual void postAccessibilityEvent(const blink::WebAXObject& object,
+                                      blink::WebAXEvent event) {
+    base_proxy_->PostAccessibilityEvent(object, event);
+    Base::postAccessibilityEvent(object, event);
+  }
+
  private:
   WebTestProxyBase* base_proxy_;
 
