@@ -257,6 +257,26 @@ void IndexedDBFactoryImpl::DeleteDatabase(
     return;
   }
 
+  std::vector<base::string16> names = backing_store->GetDatabaseNames(&s);
+  if (!s.ok()) {
+    DLOG(ERROR) << "Internal error getting database names";
+    IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
+                                 "Internal error opening backing store for "
+                                 "indexedDB.deleteDatabase.");
+    callbacks->OnError(error);
+    backing_store = NULL;
+    if (s.IsCorruption())
+      HandleBackingStoreCorruption(origin_url, error);
+    return;
+  }
+  if (!ContainsValue(names, name)) {
+    const int64 version = 0;
+    callbacks->OnSuccess(version);
+    backing_store = NULL;
+    ReleaseBackingStore(origin_url, false /* immediate */);
+    return;
+  }
+
   scoped_refptr<IndexedDBDatabase> database = IndexedDBDatabase::Create(
       name, backing_store.get(), this, unique_identifier, &s);
   if (!database.get()) {
