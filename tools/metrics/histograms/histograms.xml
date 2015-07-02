@@ -56945,6 +56945,64 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="801" label="InputTypeFileSecureOrigin"/>
   <int value="802" label="InputTypeFileInsecureOrigin"/>
   <int value="803" label="V8HashChangeEvent_InitHashChangeEvent_Method"/>
+  <int value="804" label="ElementCreateShadowRootWithParameter"/>
+  <int value="805" label="V8KeyboardEvent_KeyIdentifier_AttributeGetter"/>
+  <int value="806"
+      label="V8SecurityPolicyViolationEvent_DocumentURI_AttributeGetter"/>
+  <int value="807"
+      label="V8SecurityPolicyViolationEvent_BlockedURI_AttributeGetter"/>
+  <int value="808"
+      label="V8SecurityPolicyViolationEvent_StatusCode_AttributeGetter"/>
+  <int value="809" label="HTMLLinkElementDisabled"/>
+  <int value="810" label="V8HTMLLinkElement_Disabled_AttributeGetter"/>
+  <int value="811" label="V8HTMLLinkElement_Disabled_AttributeSetter"/>
+  <int value="812" label="V8HTMLStyleElement_Disabled_AttributeGetter"/>
+  <int value="813" label="V8HTMLStyleElement_Disabled_AttributeSetter"/>
+  <int value="814" label="V8FileReader_ReadAsBinaryString_Method"/>
+  <int value="815" label="V8FileReaderSync_ReadAsBinaryString_Method"/>
+  <int value="816" label="V8DOMError_Constructor"/>
+  <int value="817" label="V8DOMError_Name_AttributeGetter"/>
+  <int value="818" label="V8DOMError_Message_AttributeGetter"/>
+  <int value="819" label="V8FileReader_Error_AttributeGetter"/>
+  <int value="820" label="V8IDBRequest_Error_AttributeGetter"/>
+  <int value="821" label="V8IDBTransaction_Error_AttributeGetter"/>
+  <int value="822" label="V8DOMStringList_Item_Method"/>
+  <int value="823" label="V8Location_AncestorOrigins_AttributeGetter"/>
+  <int value="824" label="V8IDBDatabase_ObjectStoreNames_AttributeGetter"/>
+  <int value="825" label="V8IDBObjectStore_IndexNames_AttributeGetter"/>
+  <int value="826" label="V8IDBTransaction_ObjectStoreNames_AttributeGetter"/>
+  <int value="827" label="V8Navigator_GetStorageUpdates_Method"/>
+  <int value="828" label="V8TextTrackCueList_Item_Method"/>
+  <int value="829" label="V8TextTrackList_Item_Method"/>
+  <int value="830" label="TextInputFired"/>
+  <int value="831" label="V8TextEvent_Data_AttributeGetter"/>
+  <int value="832" label="V8TextEvent_InitTextEvent_Method"/>
+  <int value="833" label="V8SVGSVGElement_UseCurrentView_AttributeGetter"/>
+  <int value="834" label="V8SVGSVGElement_CurrentView_AttributeGetter"/>
+  <int value="835" label="ClientHintsDPR"/>
+  <int value="836" label="ClientHintsResourceWidth"/>
+  <int value="837" label="ClientHintsViewportWidth"/>
+  <int value="838" label="SRIElementIntegrityAttributeButIneligible"/>
+  <int value="839" label="FormDataAppendFile"/>
+  <int value="840" label="FormDataAppendFileWithFilename"/>
+  <int value="841" label="FormDataAppendBlob"/>
+  <int value="842" label="FormDataAppendBlobWithFilename"/>
+  <int value="843" label="FormDataAppendNull"/>
+  <int value="844" label="HTMLDocumentCreateAttributeNameNotLowercase"/>
+  <int value="845"
+      label="NonHTMLElementSetAttributeNodeFromHTMLDocumentNameNotLowercase"/>
+  <int value="846" label="DOMStringList_Item_AttributeGetter_IndexedDB"/>
+  <int value="847" label="DOMStringList_Item_AttributeGetter_Location"/>
+  <int value="848" label="DOMStringList_Contains_Method_IndexedDB"/>
+  <int value="849" label="DOMStringList_Contains_Method_Location"/>
+  <int value="850" label="NavigatorVibrate"/>
+  <int value="851" label="NavigatorVibrateSubFrame"/>
+  <int value="852" label="PermissionStatusStatus"/>
+  <int value="853" label="V8XPathEvaluator_Constructor"/>
+  <int value="854" label="V8XPathEvaluator_CreateExpression_Method"/>
+  <int value="855" label="V8XPathEvaluator_CreateNSResolver_Method"/>
+  <int value="856" label="V8XPathEvaluator_Evaluate_Method"/>
+  <int value="857" label="RequestMIDIAccess"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
