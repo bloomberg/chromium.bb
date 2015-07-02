@@ -29,37 +29,37 @@ namespace base {
 
 SharedMemory::SharedMemory()
     : mapped_file_(NULL),
+      mapped_size_(0),
       memory_(NULL),
       read_only_(false),
-      mapped_size_(0),
       requested_size_(0) {
 }
 
 SharedMemory::SharedMemory(const std::wstring& name)
-    : mapped_file_(NULL),
+    : name_(name),
+      mapped_file_(NULL),
+      mapped_size_(0),
       memory_(NULL),
       read_only_(false),
-      requested_size_(0),
-      mapped_size_(0),
-      name_(name) {
+      requested_size_(0) {
 }
 
 SharedMemory::SharedMemory(const SharedMemoryHandle& handle, bool read_only)
     : mapped_file_(handle),
+      mapped_size_(0),
       memory_(NULL),
       read_only_(read_only),
-      requested_size_(0),
-      mapped_size_(0) {
+      requested_size_(0) {
 }
 
 SharedMemory::SharedMemory(const SharedMemoryHandle& handle,
                            bool read_only,
                            ProcessHandle process)
     : mapped_file_(NULL),
+      mapped_size_(0),
       memory_(NULL),
       read_only_(read_only),
-      requested_size_(0),
-      mapped_size_(0) {
+      requested_size_(0) {
   ::DuplicateHandle(process, handle,
                     GetCurrentProcess(), &mapped_file_,
                     read_only_ ? FILE_MAP_READ : FILE_MAP_READ |

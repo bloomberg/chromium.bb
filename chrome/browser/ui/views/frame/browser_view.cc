@@ -461,8 +461,8 @@ BrowserView::BrowserView()
       initialized_(false),
       in_process_fullscreen_(false),
 #if defined(OS_WIN)
-      hung_window_detector_(&hung_plugin_action_),
       ticker_(0),
+      hung_window_detector_(&hung_plugin_action_),
 #endif
       force_location_bar_focus_(false),
       activate_modal_dialog_factory_(this) {

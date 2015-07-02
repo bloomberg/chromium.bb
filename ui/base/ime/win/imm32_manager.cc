@@ -117,9 +117,9 @@ bool IsRTLPrimaryLangID(LANGID lang) {
 namespace ui {
 
 IMM32Manager::IMM32Manager()
-    : ime_status_(false),
+    : is_composing_(false),
+      ime_status_(false),
       input_language_id_(LANG_USER_DEFAULT),
-      is_composing_(false),
       system_caret_(false),
       caret_rect_(-1, -1, 0, 0),
       use_composition_window_(false) {

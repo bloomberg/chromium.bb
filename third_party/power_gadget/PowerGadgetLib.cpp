@@ -104,6 +104,7 @@ static bool GetLibraryLocation(wstring& strLocation)
 CIntelPowerGadgetLib::CIntelPowerGadgetLib(void) :
 	pInitialize(NULL),
 	pGetNumNodes(NULL),
+	pGetNumMsrs(NULL),
 	pGetMsrName(NULL),
 	pGetMsrFunc(NULL),
 	pGetIAFrequency(NULL),
@@ -117,8 +118,7 @@ CIntelPowerGadgetLib::CIntelPowerGadgetLib(void) :
 	pGetBaseFrequency(NULL),
 	pGetPowerData(NULL),
 	pStartLog(NULL),
-	pStopLog(NULL),
-	pGetNumMsrs(NULL)
+	pStopLog(NULL)
 {
 	wstring strLocation;
 	if (GetLibraryLocation(strLocation) == false)

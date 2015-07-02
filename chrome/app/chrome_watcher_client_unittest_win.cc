@@ -124,11 +124,11 @@ MULTIPROCESS_TEST_MAIN(ChromeWatcherClientTestProcess) {
 class ChromeWatcherClientThread : public base::SimpleThread {
  public:
   ChromeWatcherClientThread()
-      : client_(base::Bind(&ChromeWatcherClientThread::GenerateCommandLine,
+      : SimpleThread("ChromeWatcherClientTest thread"),
+        client_(base::Bind(&ChromeWatcherClientThread::GenerateCommandLine,
                            base::Unretained(this))),
         complete_(false, false),
-        result_(false),
-        SimpleThread("ChromeWatcherClientTest thread") {}
+        result_(false) {}
 
   // Waits up to |timeout| for the call to EnsureInitialized to complete. If it
   // does, sets |result| to the return value of EnsureInitialized and returns

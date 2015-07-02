@@ -295,8 +295,7 @@ void NativeThemeWin::Paint(SkCanvas* canvas,
 }
 
 NativeThemeWin::NativeThemeWin()
-    : theme_dll_(LoadLibrary(L"uxtheme.dll")),
-      draw_theme_(NULL),
+    : draw_theme_(NULL),
       draw_theme_ex_(NULL),
       get_theme_color_(NULL),
       get_theme_content_rect_(NULL),
@@ -306,6 +305,7 @@ NativeThemeWin::NativeThemeWin()
       set_theme_properties_(NULL),
       is_theme_active_(NULL),
       get_theme_int_(NULL),
+      theme_dll_(LoadLibrary(L"uxtheme.dll")),
       color_change_listener_(this),
       is_using_high_contrast_(false),
       is_using_high_contrast_valid_(false) {

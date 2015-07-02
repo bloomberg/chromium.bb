@@ -994,14 +994,13 @@ GURL EnumerateModulesModel::GetFirstNotableConflict() {
   return url;
 }
 
-
 EnumerateModulesModel::EnumerateModulesModel()
     : limited_mode_(false),
       scanning_(false),
       conflict_notification_acknowledged_(false),
       confirmed_bad_modules_detected_(0),
-      suspected_bad_modules_detected_(0),
-      modules_to_notify_about_(0) {
+      modules_to_notify_about_(0),
+      suspected_bad_modules_detected_(0) {
   lock = new base::Lock();
 }
 

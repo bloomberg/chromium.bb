@@ -51,11 +51,11 @@ NetworkChangeNotifierWin::NetworkChangeNotifierWin()
     : NetworkChangeNotifier(NetworkChangeCalculatorParamsWin()),
       is_watching_(false),
       sequential_failures_(0),
-      weak_factory_(this),
       dns_config_service_thread_(new DnsConfigServiceThread()),
       last_computed_connection_type_(RecomputeCurrentConnectionType()),
-      last_announced_offline_(
-          last_computed_connection_type_ == CONNECTION_NONE) {
+      last_announced_offline_(last_computed_connection_type_ ==
+                              CONNECTION_NONE),
+      weak_factory_(this) {
   memset(&addr_overlapped_, 0, sizeof addr_overlapped_);
   addr_overlapped_.hEvent = WSACreateEvent();
 }

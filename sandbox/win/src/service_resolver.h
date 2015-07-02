@@ -16,8 +16,10 @@ class ServiceResolverThunk : public ResolverThunk {
  public:
   // The service resolver needs a child process to write to.
   ServiceResolverThunk(HANDLE process, bool relaxed)
-      : process_(process), ntdll_base_(NULL),
-        relaxed_(relaxed), relative_jump_(0) {}
+      : ntdll_base_(NULL),
+        process_(process),
+        relaxed_(relaxed),
+        relative_jump_(0) {}
   ~ServiceResolverThunk() override {}
 
   // Implementation of Resolver::Setup.

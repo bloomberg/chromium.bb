@@ -84,11 +84,11 @@ FilePickerSessionBase::FilePickerSessionBase(ChromeAppViewAsh* app_view,
                                              const base::string16& title,
                                              const base::string16& filter,
                                              const base::FilePath& default_path)
-    : app_view_(app_view),
+    : success_(false),
       title_(title),
       filter_(filter),
       default_path_(default_path),
-      success_(false) {
+      app_view_(app_view) {
 }
 
 bool FilePickerSessionBase::DoFilePicker() {

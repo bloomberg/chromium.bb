@@ -16,10 +16,9 @@ struct ModuleInfo {
   ModuleInfo(const base::char16* const module_name,
              uintptr_t module_base_address,
              uint32_t module_size)
-      : base_address(module_base_address),
-        size(module_size),
-        name(module_name) {
-  }
+      : name(module_name),
+        base_address(module_base_address),
+        size(module_size) {}
 
   // Sorts modules by their base address.
   bool operator< (const ModuleInfo& compare) const {

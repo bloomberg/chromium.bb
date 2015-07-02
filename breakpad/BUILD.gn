@@ -771,6 +771,14 @@ if (is_win) {
       "src/common/windows/string_utils-inl.h",
       "src/google_breakpad/common/minidump_format.h",
     ]
+    config("breakpad_handler_warnings") {
+      if (is_clang) {
+        # See https://code.google.com/p/google-breakpad/issues/detail?id=658.
+        cflags = [ "-Wno-reorder" ]
+      }
+    }
+
+    configs += [ ":breakpad_handler_warnings" ]
   }
 
   source_set("breakpad_sender") {

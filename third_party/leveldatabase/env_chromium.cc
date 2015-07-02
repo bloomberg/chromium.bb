@@ -509,11 +509,11 @@ ChromiumEnv::ChromiumEnv()
     : ChromiumEnv("LevelDBEnv", false /* make_backup */) {}
 
 ChromiumEnv::ChromiumEnv(const std::string& name, bool make_backup)
-    : name_(name),
+    : kMaxRetryTimeMillis(1000),
+      name_(name),
       make_backup_(make_backup),
       bgsignal_(&mu_),
-      started_bgthread_(false),
-      kMaxRetryTimeMillis(1000) {
+      started_bgthread_(false) {
   uma_ioerror_base_name_ = name_ + ".IOError.BFE";
 }
 

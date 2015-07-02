@@ -46,8 +46,8 @@ class HangMonitorThread {
  public:
   // Instantiates the background thread.
   HangMonitorThread()
-      : event_received_(false, false),
-        event_(WindowHangMonitor::WINDOW_NOT_FOUND),
+      : event_(WindowHangMonitor::WINDOW_NOT_FOUND),
+        event_received_(false, false),
         thread_("HangMonitorThread") {}
 
   ~HangMonitorThread() {

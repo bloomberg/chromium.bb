@@ -100,15 +100,15 @@ class BrowserMonitor {
 };
 
 BrowserMonitor::BrowserMonitor(base::RunLoop* run_loop,
-                               const base::char16* registry_path) :
-    browser_exited_(true, false),  // manual reset, initially non-signalled.
-    exit_code_watcher_(registry_path),
-    end_session_watcher_window_(
-        base::Bind(&BrowserMonitor::OnEndSessionMessage,
-                   base::Unretained(this))),
-    background_thread_("BrowserWatcherThread"),
-    run_loop_(run_loop),
-    main_thread_(base::ThreadTaskRunnerHandle::Get()) {
+                               const base::char16* registry_path)
+    : exit_code_watcher_(registry_path),
+      end_session_watcher_window_(
+          base::Bind(&BrowserMonitor::OnEndSessionMessage,
+                     base::Unretained(this))),
+      background_thread_("BrowserWatcherThread"),
+      browser_exited_(true, false),  // manual reset, initially non-signalled.
+      run_loop_(run_loop),
+      main_thread_(base::ThreadTaskRunnerHandle::Get()) {
 }
 
 BrowserMonitor::~BrowserMonitor() {

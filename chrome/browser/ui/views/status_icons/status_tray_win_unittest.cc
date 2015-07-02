@@ -42,8 +42,7 @@ class FakeStatusTrayStateChangerProxy : public StatusTrayStateChangerProxy {
 class FakeStatusIconObserver : public StatusIconObserver {
  public:
   FakeStatusIconObserver()
-      : balloon_clicked_(false),
-        status_icon_click_count_(0) {}
+      : status_icon_click_count_(0), balloon_clicked_(false) {}
   void OnStatusIconClicked() override { ++status_icon_click_count_; }
   void OnBalloonClicked() override { balloon_clicked_ = true; }
   bool balloon_clicked() const { return balloon_clicked_; }

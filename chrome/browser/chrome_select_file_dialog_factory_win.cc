@@ -219,7 +219,7 @@ class GetSaveFileNameClient : public content::UtilityProcessHostClient {
 };
 
 GetSaveFileNameClient::GetSaveFileNameClient()
-    : event_(true, false), one_based_filter_index_(0) {
+    : one_based_filter_index_(0), event_(true, false) {
 }
 
 void GetSaveFileNameClient::WaitForCompletion() {

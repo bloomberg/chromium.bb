@@ -75,18 +75,20 @@ inline WAVEHDR* PCMWaveOutAudioOutputStream::GetBuffer(int n) const {
 }
 
 PCMWaveOutAudioOutputStream::PCMWaveOutAudioOutputStream(
-    AudioManagerWin* manager, const AudioParameters& params, int num_buffers,
+    AudioManagerWin* manager,
+    const AudioParameters& params,
+    int num_buffers,
     UINT device_id)
     : state_(PCMA_BRAND_NEW),
       manager_(manager),
-      device_id_(device_id),
-      waveout_(NULL),
       callback_(NULL),
       num_buffers_(num_buffers),
       buffer_size_(params.GetBytesPerBuffer()),
       volume_(1),
       channels_(params.channels()),
       pending_bytes_(0),
+      device_id_(device_id),
+      waveout_(NULL),
       waiting_handle_(NULL),
       audio_bus_(AudioBus::Create(params)) {
   format_.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;

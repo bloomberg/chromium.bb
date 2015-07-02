@@ -49,9 +49,9 @@ class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
 class FakeAudioInputCallback : public AudioInputStream::AudioInputCallback {
  public:
   FakeAudioInputCallback()
-      : error_(false),
+      : num_received_audio_frames_(0),
         data_event_(false, false),
-        num_received_audio_frames_(0) {}
+        error_(false) {}
 
   bool error() const { return error_; }
   int num_received_audio_frames() const { return num_received_audio_frames_; }

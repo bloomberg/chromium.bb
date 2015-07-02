@@ -20,7 +20,8 @@ const char kUserUnregistrationEntryPoint[] = "DllUnregisterUserServer";
 SelfRegWorkItem::SelfRegWorkItem(const std::wstring& dll_path,
                                  bool do_register,
                                  bool user_level_registration)
-    : do_register_(do_register), dll_path_(dll_path),
+    : dll_path_(dll_path),
+      do_register_(do_register),
       user_level_registration_(user_level_registration) {
 }
 

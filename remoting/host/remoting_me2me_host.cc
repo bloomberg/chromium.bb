@@ -416,10 +416,10 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
       enable_gnubby_auth_(false),
       enable_window_capture_(false),
       window_id_(0),
+      self_(this),
 #if defined(REMOTING_MULTI_PROCESS)
       desktop_session_connector_(nullptr),
 #endif  // defined(REMOTING_MULTI_PROCESS)
-      self_(this),
       exit_code_out_(exit_code_out),
       signal_parent_(false),
       shutdown_watchdog_(shutdown_watchdog) {

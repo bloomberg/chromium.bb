@@ -36,10 +36,10 @@ void IncrementOffset(OVERLAPPED* overlapped, DWORD count) {
 }  // namespace
 
 FileStream::Context::Context(const scoped_refptr<base::TaskRunner>& task_runner)
-    : io_context_(),
-      async_in_progress_(false),
+    : async_in_progress_(false),
       orphaned_(false),
       task_runner_(task_runner),
+      io_context_(),
       async_read_initiated_(false),
       async_read_completed_(false),
       io_complete_for_read_received_(false),
@@ -50,11 +50,11 @@ FileStream::Context::Context(const scoped_refptr<base::TaskRunner>& task_runner)
 
 FileStream::Context::Context(base::File file,
                              const scoped_refptr<base::TaskRunner>& task_runner)
-    : io_context_(),
-      file_(file.Pass()),
+    : file_(file.Pass()),
       async_in_progress_(false),
       orphaned_(false),
       task_runner_(task_runner),
+      io_context_(),
       async_read_initiated_(false),
       async_read_completed_(false),
       io_complete_for_read_received_(false),

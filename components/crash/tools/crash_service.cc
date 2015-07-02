@@ -152,8 +152,8 @@ const char CrashService::kDumpsDir[]          = "dumps-dir";
 const char CrashService::kPipeName[]          = "pipe-name";
 
 CrashService::CrashService()
-    : sender_(NULL),
-      dumper_(NULL),
+    : dumper_(NULL),
+      sender_(NULL),
       requests_handled_(0),
       requests_sent_(0),
       clients_connected_(0),

@@ -260,10 +260,7 @@ base::win::ScopedHandle g_shared_font_cache;
 // tracking various cache region requests by direct write.
 class FontCacheWriter {
  public:
-  FontCacheWriter()
-      : cookie_counter_(0),
-        count_font_entries_ignored_(0) {
-  }
+  FontCacheWriter() : count_font_entries_ignored_(0), cookie_counter_(0) {}
 
   ~FontCacheWriter() {
     if (static_cache_.get()) {

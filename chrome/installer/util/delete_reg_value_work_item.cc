@@ -19,8 +19,8 @@ DeleteRegValueWorkItem::DeleteRegValueWorkItem(HKEY predefined_root,
       key_path_(key_path),
       value_name_(value_name),
       wow64_access_(wow64_access),
-      previous_type_(0),
-      status_(DELETE_VALUE) {
+      status_(DELETE_VALUE),
+      previous_type_(0) {
   DCHECK(wow64_access == 0 ||
          wow64_access == KEY_WOW64_32KEY ||
          wow64_access == KEY_WOW64_64KEY);

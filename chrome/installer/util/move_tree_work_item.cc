@@ -21,10 +21,10 @@ MoveTreeWorkItem::MoveTreeWorkItem(const base::FilePath& source_path,
     : source_path_(source_path),
       dest_path_(dest_path),
       temp_dir_(temp_dir),
-      duplicate_option_(duplicate_option),
       moved_to_dest_path_(false),
       moved_to_backup_(false),
-      source_moved_to_backup_(false) {
+      source_moved_to_backup_(false),
+      duplicate_option_(duplicate_option) {
 }
 
 bool MoveTreeWorkItem::Do() {

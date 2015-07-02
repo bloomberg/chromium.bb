@@ -173,8 +173,7 @@ void DeleteAutorunKeys(const base::FilePath& user_data_dir) {
 }  // namespace
 
 ChromeLauncher::ChromeLauncher(const base::FilePath& user_data)
-    : stop_event_(true, true),
-      user_data_(user_data) {
+    : user_data_(user_data), stop_event_(true, true) {
 }
 
 ChromeLauncher::~ChromeLauncher() {

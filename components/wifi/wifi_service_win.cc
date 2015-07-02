@@ -491,11 +491,12 @@ WiFiServiceImpl::WiFiServiceImpl()
       WlanGetProfile_function_(NULL),
       WlanOpenHandle_function_(NULL),
       WlanRegisterNotification_function_(NULL),
-      WlanSaveTemporaryProfile_function_(NULL),
       WlanScan_function_(NULL),
       WlanSetProfile_function_(NULL),
+      WlanSaveTemporaryProfile_function_(NULL),
       client_(NULL),
-      enable_notify_network_changed_(true) {}
+      enable_notify_network_changed_(true) {
+}
 
 WiFiServiceImpl::~WiFiServiceImpl() { UnInitialize(); }
 

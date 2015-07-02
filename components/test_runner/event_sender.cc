@@ -1078,7 +1078,18 @@ EventSender::SavedEvent::SavedEvent()
       modifiers(0) {}
 
 EventSender::EventSender(TestInterfaces* interfaces)
-    : interfaces_(interfaces),
+    :
+#if defined(OS_WIN)
+      wm_key_down_(0),
+      wm_key_up_(0),
+      wm_char_(0),
+      wm_dead_char_(0),
+      wm_sys_key_down_(0),
+      wm_sys_key_up_(0),
+      wm_sys_char_(0),
+      wm_sys_dead_char_(0),
+#endif
+      interfaces_(interfaces),
       delegate_(NULL),
       view_(NULL),
       force_layout_on_events_(false),
@@ -1091,17 +1102,8 @@ EventSender::EventSender(TestInterfaces* interfaces)
       current_drag_effect_(blink::WebDragOperationNone),
       time_offset_ms_(0),
       click_count_(0),
-#if defined(OS_WIN)
-      wm_key_down_(0),
-      wm_key_up_(0),
-      wm_char_(0),
-      wm_dead_char_(0),
-      wm_sys_key_down_(0),
-      wm_sys_key_up_(0),
-      wm_sys_char_(0),
-      wm_sys_dead_char_(0),
-#endif
-      weak_factory_(this) {}
+      weak_factory_(this) {
+}
 
 EventSender::~EventSender() {}
 

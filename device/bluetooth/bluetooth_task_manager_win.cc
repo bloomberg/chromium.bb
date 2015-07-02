@@ -125,10 +125,10 @@ BluetoothTaskManagerWin::ServiceRecordState::~ServiceRecordState() {
 }
 
 BluetoothTaskManagerWin::DeviceState::DeviceState()
-    : bluetooth_class(0),
-      visible(false),
+    : visible(false),
       connected(false),
-      authenticated(false) {
+      authenticated(false),
+      bluetooth_class(0) {
 }
 
 BluetoothTaskManagerWin::DeviceState::~DeviceState() {

@@ -38,8 +38,8 @@ void Noop() {
 
 HidServiceWin::HidServiceWin(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
-    : device_observer_(this),
-      file_task_runner_(file_task_runner),
+    : file_task_runner_(file_task_runner),
+      device_observer_(this),
       weak_factory_(this) {
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
   DCHECK(task_runner_.get());

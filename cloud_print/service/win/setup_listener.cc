@@ -27,10 +27,10 @@ const wchar_t SetupListener::kSetupPipeName[] =
     L"\\\\.\\pipe\\CloudPrintServiceSetup";
 
 SetupListener::SetupListener(const base::string16& user)
-    : done_event_(new base::WaitableEvent(true, false)),
-      ipc_thread_(new base::Thread("ipc_thread")),
+    : is_xps_available_(false),
       succeded_(false),
-      is_xps_available_(false) {
+      done_event_(new base::WaitableEvent(true, false)),
+      ipc_thread_(new base::Thread("ipc_thread")) {
   ipc_thread_->StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
   ipc_thread_->message_loop()->PostTask(

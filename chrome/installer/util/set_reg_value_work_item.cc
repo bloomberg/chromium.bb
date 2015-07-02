@@ -23,9 +23,9 @@ SetRegValueWorkItem::SetRegValueWorkItem(HKEY predefined_root,
       value_name_(value_name),
       overwrite_(overwrite),
       wow64_access_(wow64_access),
-      status_(SET_VALUE),
       type_(REG_SZ),
-      previous_type_(0) {
+      previous_type_(0),
+      status_(SET_VALUE) {
   DCHECK(wow64_access == 0 ||
          wow64_access == KEY_WOW64_32KEY ||
          wow64_access == KEY_WOW64_64KEY);
@@ -44,9 +44,9 @@ SetRegValueWorkItem::SetRegValueWorkItem(HKEY predefined_root,
       value_name_(value_name),
       overwrite_(overwrite),
       wow64_access_(wow64_access),
-      status_(SET_VALUE),
       type_(REG_DWORD),
-      previous_type_(0) {
+      previous_type_(0),
+      status_(SET_VALUE) {
   DCHECK(wow64_access == 0 ||
          wow64_access == KEY_WOW64_32KEY ||
          wow64_access == KEY_WOW64_64KEY);
@@ -65,9 +65,9 @@ SetRegValueWorkItem::SetRegValueWorkItem(HKEY predefined_root,
       value_name_(value_name),
       overwrite_(overwrite),
       wow64_access_(wow64_access),
-      status_(SET_VALUE),
       type_(REG_QWORD),
-      previous_type_(0) {
+      previous_type_(0),
+      status_(SET_VALUE) {
   DCHECK(wow64_access == 0 ||
          wow64_access == KEY_WOW64_32KEY ||
          wow64_access == KEY_WOW64_64KEY);

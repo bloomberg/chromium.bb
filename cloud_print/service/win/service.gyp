@@ -93,6 +93,12 @@
           }],
         ],
       },
+      'variables': {
+        'clang_warning_flags': [
+          # atlgdi.h fails with -Wreorder enabled.
+          '-Wno-reorder',
+        ]
+      },
     },
     {
       'target_name': 'cloud_print_service_setup',

@@ -30,10 +30,10 @@ WindowHangMonitor::WindowHangMonitor(base::TimeDelta ping_interval,
                                      base::TimeDelta timeout,
                                      const WindowEventCallback& callback)
     : callback_(callback),
-      outstanding_ping_(nullptr),
-      timer_(false /* don't retain user task */, false /* don't repeat */),
       ping_interval_(ping_interval),
-      hang_timeout_(timeout) {
+      hang_timeout_(timeout),
+      timer_(false /* don't retain user task */, false /* don't repeat */),
+      outstanding_ping_(nullptr) {
 }
 
 WindowHangMonitor::~WindowHangMonitor() {

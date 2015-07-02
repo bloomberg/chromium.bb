@@ -306,7 +306,8 @@ class HWNDMessageHandler::ScopedRedrawLock {
 long HWNDMessageHandler::last_touch_message_time_ = 0;
 
 HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
-    : delegate_(delegate),
+    : msg_handled_(FALSE),
+      delegate_(delegate),
       fullscreen_handler_(new FullscreenHandler),
       waiting_for_close_now_(false),
       remove_standard_frame_(false),
@@ -326,7 +327,6 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       in_size_loop_(false),
       touch_down_contexts_(0),
       last_mouse_hwheel_time_(0),
-      msg_handled_(FALSE),
       dwm_transition_desired_(false),
       autohide_factory_(this),
       weak_factory_(this) {

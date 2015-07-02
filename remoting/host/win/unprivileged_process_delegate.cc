@@ -218,8 +218,8 @@ UnprivilegedProcessDelegate::UnprivilegedProcessDelegate(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_ptr<base::CommandLine> target_command)
     : io_task_runner_(io_task_runner),
-      event_handler_(nullptr),
-      target_command_(target_command.Pass()) {
+      target_command_(target_command.Pass()),
+      event_handler_(nullptr) {
 }
 
 UnprivilegedProcessDelegate::~UnprivilegedProcessDelegate() {

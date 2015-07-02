@@ -13,9 +13,9 @@
 namespace sandbox {
 
 RestrictedToken::RestrictedToken()
-    : init_(false),
-      effective_token_(NULL),
-      integrity_level_(INTEGRITY_LEVEL_LAST) {
+    : effective_token_(NULL),
+      integrity_level_(INTEGRITY_LEVEL_LAST),
+      init_(false) {
 }
 
 RestrictedToken::~RestrictedToken() {

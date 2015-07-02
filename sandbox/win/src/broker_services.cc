@@ -125,8 +125,10 @@ uint32_t GenerateTokenCacheKey(const sandbox::PolicyBase* policy) {
 namespace sandbox {
 
 BrokerServicesBase::BrokerServicesBase()
-    : thread_pool_(NULL), job_port_(NULL), no_targets_(NULL),
-      job_thread_(NULL) {
+    : job_port_(NULL),
+      no_targets_(NULL),
+      job_thread_(NULL),
+      thread_pool_(NULL) {
 }
 
 // The broker uses a dedicated worker thread that services the job completion

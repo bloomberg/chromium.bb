@@ -37,11 +37,11 @@ GpuWatchdogThread::GpuWatchdogThread(int timeout)
       watched_message_loop_(base::MessageLoop::current()),
       timeout_(base::TimeDelta::FromMilliseconds(timeout)),
       armed_(false),
+      task_observer_(this),
 #if defined(OS_WIN)
       watched_thread_handle_(0),
       arm_cpu_time_(),
 #endif
-      task_observer_(this),
       suspended_(false),
 #if defined(USE_X11)
       display_(NULL),

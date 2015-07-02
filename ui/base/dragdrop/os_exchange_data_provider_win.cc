@@ -119,7 +119,7 @@ static void CloneFormatEtc(FORMATETC* source, FORMATETC* clone) {
 FormatEtcEnumerator::FormatEtcEnumerator(
     DataObjectImpl::StoredData::const_iterator start,
     DataObjectImpl::StoredData::const_iterator end)
-    : ref_count_(0), cursor_(0) {
+    : cursor_(0), ref_count_(0) {
   // Copy FORMATETC data from our source into ourselves.
   while (start != end) {
     FORMATETC* format_etc = new FORMATETC;

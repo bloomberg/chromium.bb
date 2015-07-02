@@ -369,7 +369,7 @@ struct CreateOrUpdateShortcutsParams {
       base::FilePath profile_path,
       ProfileShortcutManagerWin::CreateOrUpdateMode create_mode,
       ProfileShortcutManagerWin::NonProfileShortcutAction action)
-      : profile_path(profile_path), create_mode(create_mode), action(action) {}
+      : create_mode(create_mode), action(action), profile_path(profile_path) {}
   ~CreateOrUpdateShortcutsParams() {}
 
   ProfileShortcutManagerWin::CreateOrUpdateMode create_mode;

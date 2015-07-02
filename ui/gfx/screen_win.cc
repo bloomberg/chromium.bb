@@ -87,9 +87,10 @@ std::vector<gfx::Display> GetDisplays() {
 namespace gfx {
 
 ScreenWin::ScreenWin()
-    : displays_(GetDisplays()),
-      singleton_hwnd_observer_(new SingletonHwndObserver(
-          base::Bind(&ScreenWin::OnWndProc, base::Unretained(this)))) {}
+    : singleton_hwnd_observer_(new SingletonHwndObserver(
+          base::Bind(&ScreenWin::OnWndProc, base::Unretained(this)))),
+      displays_(GetDisplays()) {
+}
 
 ScreenWin::~ScreenWin() {}
 

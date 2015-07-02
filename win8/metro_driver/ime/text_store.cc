@@ -22,7 +22,6 @@ const TsViewCookie kViewCookie = 1;
 TextStore::TextStore()
     : text_store_acp_sink_mask_(0),
       window_handle_(NULL),
-      delegate_(NULL),
       committed_size_(0),
       selection_start_(0),
       selection_end_(0),
@@ -30,7 +29,8 @@ TextStore::TextStore()
       current_lock_type_(0),
       category_manager_(NULL),
       display_attribute_manager_(NULL),
-      input_scope_(NULL) {
+      input_scope_(NULL),
+      delegate_(NULL) {
 }
 
 TextStore::~TextStore() {

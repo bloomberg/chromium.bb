@@ -27,12 +27,12 @@ PCMWaveInAudioInputStream::PCMWaveInAudioInputStream(
     const std::string& device_id)
     : state_(kStateEmpty),
       manager_(manager),
-      device_id_(device_id),
-      wavein_(NULL),
       callback_(NULL),
       num_buffers_(num_buffers),
-      buffer_(NULL),
       channels_(params.channels()),
+      device_id_(device_id),
+      wavein_(NULL),
+      buffer_(NULL),
       audio_bus_(media::AudioBus::Create(params)) {
   DCHECK_GT(num_buffers_, 0);
   format_.wFormatTag = WAVE_FORMAT_PCM;
