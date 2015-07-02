@@ -447,7 +447,7 @@ int main(int argc, char* argv[]) {
   // NSS is only needed for SFI NaCl.
   // Allows NSS to fopen() /dev/urandom.
   sandbox::InitLibcUrandomOverrides();
-#if defined(USE_NSS_CERTS)
+#if !defined(USE_OPENSSL)
   // Configure NSS for use inside the NaCl process.
   // The fork check has not caused problems for NaCl, but this appears to be
   // best practice (see other places LoadNSSLibraries is called.)
@@ -459,7 +459,7 @@ int main(int argc, char* argv[]) {
   // Load shared libraries before sandbox is raised.
   // NSS is needed to perform hashing for validation caching.
   crypto::LoadNSSLibraries();
-#endif  // defined(USE_NSS_CERTS)
+#endif  // !defined(USE_OPENSSL)
 #endif  // defined(OS_NACL_NONSFI)
   const NaClLoaderSystemInfo system_info = {
 #if !defined(OS_NACL_NONSFI)
