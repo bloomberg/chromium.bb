@@ -204,14 +204,14 @@ protected:
 
 private:
     AtomicString m_type;
-    bool m_canBubble;
-    bool m_cancelable;
+    unsigned m_canBubble:1;
+    unsigned m_cancelable:1;
 
-    bool m_propagationStopped;
-    bool m_immediatePropagationStopped;
-    bool m_defaultPrevented;
-    bool m_defaultHandled;
-    bool m_cancelBubble;
+    unsigned m_propagationStopped:1;
+    unsigned m_immediatePropagationStopped:1;
+    unsigned m_defaultPrevented:1;
+    unsigned m_defaultHandled:1;
+    unsigned m_cancelBubble:1;
 
     unsigned short m_eventPhase;
     RefPtrWillBeMember<EventTarget> m_currentTarget;
