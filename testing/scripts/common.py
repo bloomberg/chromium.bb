@@ -64,10 +64,10 @@ def run_command(argv):
 def run_runtest(cmd_args, runtest_args):
   return run_command([
       sys.executable,
-      os.path.join(cmd_args.paths['build'], 'scripts', 'tools', 'runit.py'),
-      '--show-path',
-      sys.executable,
-      os.path.join(cmd_args.paths['build'], 'scripts', 'slave', 'runtest.py'),
+      os.path.join(
+          cmd_args.paths['checkout'], 'infra', 'scripts', 'runtest_wrapper.py'),
+      '--path-build', cmd_args.paths['build'],
+      '--',
       '--target', cmd_args.build_config_fs,
       '--xvfb',
       '--builder-name', cmd_args.properties['buildername'],
