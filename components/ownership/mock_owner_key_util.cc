@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "crypto/nss_key_util.h"
+#include "crypto/nss_util.h"
 #include "crypto/rsa_private_key.h"
 
 namespace ownership {
@@ -52,6 +53,8 @@ void MockOwnerKeyUtil::SetPublicKeyFromPrivateKey(
 }
 
 void MockOwnerKeyUtil::SetPrivateKey(scoped_ptr<crypto::RSAPrivateKey> key) {
+  crypto::EnsureNSSInit();
+
   CHECK(key->ExportPublicKey(&public_key_));
 
   std::vector<uint8_t> key_exported;
