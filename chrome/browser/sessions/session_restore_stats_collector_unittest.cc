@@ -55,6 +55,8 @@ class MockStatsReportingDelegate : public StatsReportingDelegate {
   }
 
   void ExpectReportTabLoaderStatsCalled(size_t tab_count,
+                                        size_t tabs_deferred,
+                                        size_t tabs_load_started,
                                         size_t tabs_loaded,
                                         int foreground_tab_first_loaded_ms,
                                         int foreground_tab_first_paint_ms,
@@ -64,6 +66,8 @@ class MockStatsReportingDelegate : public StatsReportingDelegate {
     report_tab_loader_stats_call_count_--;
 
     EXPECT_EQ(tab_count, tab_loader_stats_.tab_count);
+    EXPECT_EQ(tabs_deferred, tab_loader_stats_.tabs_deferred);
+    EXPECT_EQ(tabs_load_started, tab_loader_stats_.tabs_load_started);
     EXPECT_EQ(tabs_loaded, tab_loader_stats_.tabs_loaded);
     EXPECT_EQ(base::TimeDelta::FromMilliseconds(foreground_tab_first_loaded_ms),
               tab_loader_stats_.foreground_tab_first_loaded);
@@ -319,7 +323,8 @@ TEST_F(SessionRestoreStatsCollectorTest, SingleTabPaintBeforeLoad) {
 
   Tick();  // 2ms.
   GenerateLoadStop(0);
-  mock_reporting_delegate.ExpectReportTabLoaderStatsCalled(1, 1, 2, 1, 2, 1);
+  mock_reporting_delegate.ExpectReportTabLoaderStatsCalled(1, 0, 1, 1, 2, 1, 2,
+                                                           1);
   mock_reporting_delegate.ExpectReportStatsCollectorDeathCalled();
 }
 
@@ -337,7 +342,8 @@ TEST_F(SessionRestoreStatsCollectorTest, SingleTabPaintAfterLoad) {
 
   Tick();  // 2ms.
   GenerateRenderWidgetHostDidUpdateBackingStore(0);
-  mock_reporting_delegate.ExpectReportTabLoaderStatsCalled(1, 1, 1, 2, 1, 1);
+  mock_reporting_delegate.ExpectReportTabLoaderStatsCalled(1, 0, 1, 1, 1, 2, 1,
+                                                           1);
   mock_reporting_delegate.ExpectReportStatsCollectorDeathCalled();
 }
 
@@ -378,7 +384,8 @@ TEST_F(SessionRestoreStatsCollectorTest, MultipleTabsLoadSerially) {
 
   Tick();  // 7ms.
   GenerateLoadStop(2);
-  mock_reporting_delegate.ExpectReportTabLoaderStatsCalled(3, 3, 2, 1, 7, 1);
+  mock_reporting_delegate.ExpectReportTabLoaderStatsCalled(3, 0, 3, 3, 2, 1, 7,
+                                                           1);
   mock_reporting_delegate.ExpectReportStatsCollectorDeathCalled();
   mock_reporting_delegate.EnsureNoUnexpectedCalls();
 }
@@ -418,7 +425,8 @@ TEST_F(SessionRestoreStatsCollectorTest, MultipleTabsLoadSimultaneously) {
   mock_reporting_delegate.EnsureNoUnexpectedCalls();
   Tick();  // 6ms.
   GenerateLoadStop(2);
-  mock_reporting_delegate.ExpectReportTabLoaderStatsCalled(3, 3, 2, 1, 6, 2);
+  mock_reporting_delegate.ExpectReportTabLoaderStatsCalled(3, 0, 3, 3, 2, 1, 6,
+                                                           2);
   mock_reporting_delegate.ExpectReportStatsCollectorDeathCalled();
   mock_reporting_delegate.EnsureNoUnexpectedCalls();
 }
@@ -444,7 +452,8 @@ TEST_F(SessionRestoreStatsCollectorTest, DeferredTabs) {
   // Foreground tab finishes loading and stats get reported.
   Tick();  // 2ms.
   GenerateLoadStop(0);
-  mock_reporting_delegate.ExpectReportTabLoaderStatsCalled(2, 1, 2, 1, 2, 1);
+  mock_reporting_delegate.ExpectReportTabLoaderStatsCalled(2, 1, 1, 1, 2, 1, 2,
+                                                           1);
   mock_reporting_delegate.EnsureNoUnexpectedCalls();
 
   // Background tab starts loading, paints and stops loading. This fires off a
@@ -491,7 +500,8 @@ TEST_F(SessionRestoreStatsCollectorTest, FocusSwitchNoForegroundPaintOrLoad) {
   // stats to be emitted, but with empty foreground paint and load values.
   Tick();  // 3ms.
   GenerateRenderWidgetHostDidUpdateBackingStore(1);
-  mock_reporting_delegate.ExpectReportTabLoaderStatsCalled(1, 1, 0, 0, 2, 1);
+  mock_reporting_delegate.ExpectReportTabLoaderStatsCalled(1, 0, 1, 1, 0, 0, 2,
+                                                           1);
   mock_reporting_delegate.ExpectReportStatsCollectorDeathCalled();
   mock_reporting_delegate.EnsureNoUnexpectedCalls();
 }
@@ -527,7 +537,8 @@ TEST_F(SessionRestoreStatsCollectorTest, FocusSwitchNoForegroundPaint) {
   // stats to be emitted, but with an empty foreground paint value.
   Tick();  // 3ms.
   GenerateRenderWidgetHostDidUpdateBackingStore(1);
-  mock_reporting_delegate.ExpectReportTabLoaderStatsCalled(1, 1, 1, 0, 1, 1);
+  mock_reporting_delegate.ExpectReportTabLoaderStatsCalled(1, 0, 1, 1, 1, 0, 1,
+                                                           1);
   mock_reporting_delegate.ExpectReportStatsCollectorDeathCalled();
   mock_reporting_delegate.EnsureNoUnexpectedCalls();
 }
@@ -543,7 +554,8 @@ TEST_F(SessionRestoreStatsCollectorTest, LoadingTabDestroyedBeforePaint) {
 
   // Destroy the tab. Expect all timings to be zero.
   GenerateWebContentsDestroyed(0);
-  mock_reporting_delegate.ExpectReportTabLoaderStatsCalled(1, 0, 0, 0, 0, 1);
+  mock_reporting_delegate.ExpectReportTabLoaderStatsCalled(1, 0, 1, 0, 0, 0, 0,
+                                                           1);
   mock_reporting_delegate.ExpectReportStatsCollectorDeathCalled();
   mock_reporting_delegate.EnsureNoUnexpectedCalls();
 }
@@ -563,7 +575,8 @@ TEST_F(SessionRestoreStatsCollectorTest, LoadingTabDestroyedAfterPaint) {
 
   // Destroy the tab. Expect both load timings to be zero.
   GenerateWebContentsDestroyed(0);
-  mock_reporting_delegate.ExpectReportTabLoaderStatsCalled(1, 0, 0, 1, 0, 1);
+  mock_reporting_delegate.ExpectReportTabLoaderStatsCalled(1, 0, 1, 0, 0, 1, 0,
+                                                           1);
   mock_reporting_delegate.ExpectReportStatsCollectorDeathCalled();
   mock_reporting_delegate.EnsureNoUnexpectedCalls();
 }
@@ -585,7 +598,8 @@ TEST_F(SessionRestoreStatsCollectorTest, BrowseAwayBeforePaint) {
   // Reload the tab. Expect the paint timing to be zero.
   Tick();  // 2 ms.
   GenerateLoadStart(0);
-  mock_reporting_delegate.ExpectReportTabLoaderStatsCalled(1, 1, 1, 0, 1, 1);
+  mock_reporting_delegate.ExpectReportTabLoaderStatsCalled(1, 0, 1, 1, 1, 0, 1,
+                                                           1);
   mock_reporting_delegate.ExpectReportStatsCollectorDeathCalled();
   mock_reporting_delegate.EnsureNoUnexpectedCalls();
 }
@@ -610,7 +624,8 @@ TEST_F(SessionRestoreStatsCollectorTest, DiscardDeferredTabs) {
   // with all zero timings.
   Tick();  // 2 ms.
   GenerateWebContentsDestroyed(0);
-  mock_reporting_delegate.ExpectReportTabLoaderStatsCalled(2, 0, 0, 0, 0, 1);
+  mock_reporting_delegate.ExpectReportTabLoaderStatsCalled(2, 1, 1, 0, 0, 0, 0,
+                                                           1);
   mock_reporting_delegate.EnsureNoUnexpectedCalls();
 
   // Destroy the background tab. The collector should release itself.

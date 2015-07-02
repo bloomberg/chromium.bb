@@ -66350,6 +66350,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="A tab's content was automatically loaded"/>
   <int value="2" label="The loading of a tab's content was deferred"/>
   <int value="3" label="A deferred tab's content was loaded via user action"/>
+  <int value="4" label="A tab's content automatically started to load"/>
 </enum>
 
 <enum name="SessionStartupPref" type="int">
@@ -73806,6 +73807,28 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="The time to perform the 'open' operation on a ServiceWorker
              CacheStorage, which gets or creates a cache."/>
   <affected-histogram name="ServiceWorkerCache.CacheStorage"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="SessionRestoreTabCountMemoryPressure">
+  <suffix name="MemoryPressure"
+      label="Total tabs involved in session restore that encountered memory
+             pressure."/>
+  <suffix name="MemoryPressure_Loaded"
+      label="Tabs fully loaded before memory pressure."/>
+  <suffix name="MemoryPressure_LoadStarted"
+      label="Tabs started to load before memory pressure."/>
+  <suffix name="MemoryPressure_Deferred"
+      label="Tabs deferred by memory pressure."/>
+  <suffix name="NoMemoryPressure"
+      label="Total tabs involved in a session restore that did not encounter
+             memory pressure."/>
+  <suffix name="NoMemoryPressure_Loaded"
+      label="Tabs fully loaded in a session restore that did not encounter
+             memory pressure."/>
+  <suffix name="NoMemoryPressure_LoadStarted"
+      label="Tabs started to load in a session restore that did not encounter
+             memory pressure."/>
+  <affected-histogram name="SessionRestore.TabCount"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SessionRestoreTabCounts">

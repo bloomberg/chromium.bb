@@ -52,6 +52,8 @@ enum SessionRestoreTabActionsUma {
   // Incremented for each session-restore-deferred tab that is subsequently
   // loaded.
   SESSION_RESTORE_TAB_ACTIONS_UMA_DEFERRED_TAB_LOADED = 3,
+  // Incremented for each tab that starts loading due to the session restore.
+  SESSION_RESTORE_TAB_ACTIONS_UMA_TAB_LOAD_STARTED = 4,
   // The size of this enum. Must be the last entry.
   SESSION_RESTORE_TAB_ACTIONS_UMA_MAX,
 };
@@ -92,7 +94,11 @@ bool IsShowing(NavigationController* tab) {
 }  // namespace
 
 SessionRestoreStatsCollector::TabLoaderStats::TabLoaderStats()
-    : tab_count(0u), tabs_loaded(0u), parallel_tab_loads(0u) {
+    : tab_count(0u),
+      tabs_deferred(0u),
+      tabs_load_started(0u),
+      tabs_loaded(0u),
+      parallel_tab_loads(0u) {
 }
 
 SessionRestoreStatsCollector::TabState::TabState(
@@ -157,6 +163,7 @@ void SessionRestoreStatsCollector::DeferTab(NavigationController* tab) {
   DCHECK(!tab_state->is_deferred);
   tab_state->is_deferred = true;
   ++deferred_tab_count_;
+  ++tab_loader_stats_.tabs_deferred;
 
   // A tab that didn't start loading before it was deferred is not to be
   // actively monitored for loading.
@@ -390,6 +397,7 @@ void SessionRestoreStatsCollector::MarkTabAsLoading(TabState* tab_state) {
   ++loading_tab_count_;
 
   if (!done_tracking_non_deferred_tabs_) {
+    ++tab_loader_stats_.tabs_load_started;
     tab_loader_stats_.parallel_tab_loads =
         std::max(tab_loader_stats_.parallel_tab_loads, loading_tab_count_);
   }
@@ -420,6 +428,27 @@ void SessionRestoreStatsCollector::UmaStatsReportingDelegate::
   UMA_HISTOGRAM_COUNTS_100("SessionRestore.TabCount",
                            tab_loader_stats.tab_count);
 
+  // Emit suffix specializations of the SessionRestore.TabCount metric.
+  if (tab_loader_stats.tabs_deferred) {
+    UMA_HISTOGRAM_COUNTS_100("SessionRestore.TabCount_MemoryPressure",
+                             tab_loader_stats.tab_count);
+    UMA_HISTOGRAM_COUNTS_100("SessionRestore.TabCount_MemoryPressure_Loaded",
+                             tab_loader_stats.tabs_loaded);
+    UMA_HISTOGRAM_COUNTS_100(
+        "SessionRestore.TabCount_MemoryPressure_LoadStarted",
+        tab_loader_stats.tabs_load_started);
+    UMA_HISTOGRAM_COUNTS_100("SessionRestore.TabCount_MemoryPressure_Deferred",
+                             tab_loader_stats.tabs_deferred);
+  } else {
+    UMA_HISTOGRAM_COUNTS_100("SessionRestore.TabCount_NoMemoryPressure",
+                             tab_loader_stats.tab_count);
+    UMA_HISTOGRAM_COUNTS_100("SessionRestore.TabCount_NoMemoryPressure_Loaded",
+                             tab_loader_stats.tabs_loaded);
+    UMA_HISTOGRAM_COUNTS_100(
+        "SessionRestore.TabCount_NoMemoryPressure_LoadStarted",
+        tab_loader_stats.tabs_load_started);
+  }
+
   EmitUmaSessionRestoreActionEvent(SESSION_RESTORE_ACTIONS_UMA_INITIATED);
 
   for (size_t i = 0; i < tab_loader_stats.tab_count; ++i) {
@@ -430,6 +459,11 @@ void SessionRestoreStatsCollector::UmaStatsReportingDelegate::
   for (size_t i = 0; i < tab_loader_stats.tabs_loaded; ++i) {
     EmitUmaSessionRestoreTabActionEvent(
         SESSION_RESTORE_TAB_ACTIONS_UMA_TAB_LOADED);
+  }
+
+  for (size_t i = 0; i < tab_loader_stats.tabs_load_started; ++i) {
+    EmitUmaSessionRestoreTabActionEvent(
+        SESSION_RESTORE_TAB_ACTIONS_UMA_TAB_LOAD_STARTED);
   }
 
   if (!tab_loader_stats.foreground_tab_first_loaded.is_zero()) {

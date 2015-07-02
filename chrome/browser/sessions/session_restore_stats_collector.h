@@ -57,12 +57,25 @@ class SessionRestoreStatsCollector
     // The number of tabs involved in all overlapping session restores being
     // tracked by this SessionRestoreStatsCollector. This corresponds to the
     // "SessionRestore.TabCount" metric and one bucket of the
-    // "SessionRestore.TabActions" histogram.
+    // "SessionRestore.TabActions" histogram. If any tabs were deferred it also
+    // corresponds to the "SessionRestore.TabCount.MemoryPressure.Total"
+    // histogram.
     size_t tab_count;
 
-    // The number of tabs loaded automatically because they are active, and
+    // The number of restored tabs that were deferred. Corresponds to the
+    // "SessionRestore.TabCount.MemoryPressure.Deferred" histogram.
+    size_t tabs_deferred;
+
+    // The number of tabs whose loading was automatically started because they
+    // are active or explicitly caused to be loaded by the TabLoader. This
+    // corresponds to one bucket of the "SessionRestore.TabActions" histogram
+    // and the "SessionRestore.TabCount.MemoryPressure.LoadStarted".
+    size_t tabs_load_started;
+
+    // The number of tabs loaded automatically because they are active, or
     // explicitly caused to be loaded by the TabLoader. This corresponds to one
-    // bucket of the "SessionRestore.TabActions" histogram.
+    // bucket of the "SessionRestore.TabActions" histogram, and the
+    // "SessionRestore.TabCount.MemoryPressure.Loaded" histogram.
     size_t tabs_loaded;
 
     // The time elapsed between |restore_started| and reception of the first
@@ -197,7 +210,7 @@ class SessionRestoreStatsCollector
   // Counts the current number of actively loading tabs.
   size_t loading_tab_count_;
 
-  // Counts the number of deferred tabs.
+  // Counts the current number of deferred tabs.
   size_t deferred_tab_count_;
 
   // Notification registrar.
