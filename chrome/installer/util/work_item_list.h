@@ -120,6 +120,16 @@ class WorkItemList : public WorkItem {
                                            int64 value_data,
                                            bool overwrite);
 
+  // Add a SetRegValueWorkItem that sets a registry value based on the value
+  // provided by |get_value_callback| given the existing value under
+  // |key_path\value_name|.
+  virtual WorkItem* AddSetRegValueWorkItem(
+      HKEY predefined_root,
+      const std::wstring& key_path,
+      REGSAM wow64_access,
+      const std::wstring& value_name,
+      const WorkItem::GetValueFromExistingCallback& get_value_callback);
+
   // Add a SelfRegWorkItem that registers or unregisters a DLL at the
   // specified path. If user_level_registration is true, then alternate
   // registration and unregistration entry point names will be used.

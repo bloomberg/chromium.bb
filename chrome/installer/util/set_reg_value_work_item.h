@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "chrome/installer/util/work_item.h"
 
 // A WorkItem subclass that sets a registry value with REG_SZ, REG_DWORD, or
@@ -63,6 +64,13 @@ class SetRegValueWorkItem : public WorkItem {
                       int64 value_data,
                       bool overwrite);
 
+  // Implies |overwrite_| and TYPE_SZ for now.
+  SetRegValueWorkItem(HKEY predefined_root,
+                      const std::wstring& key_path,
+                      REGSAM wow64_access,
+                      const std::wstring& value_name,
+                      const GetValueFromExistingCallback& get_value_callback);
+
   // Root key of the target key under which the value is set. The root key can
   // only be one of the predefined keys on Windows.
   HKEY predefined_root_;
@@ -72,6 +80,10 @@ class SetRegValueWorkItem : public WorkItem {
 
   // Name of the value to be set.
   std::wstring value_name_;
+
+  // If this is set, it will be used to get the desired value to be set based on
+  // the existing value in the registry.
+  const GetValueFromExistingCallback get_value_callback_;
 
   // Whether to overwrite the existing value under the target key.
   bool overwrite_;

@@ -37,6 +37,12 @@ class FilePath;
 // sequence of actions during install/update/uninstall.
 class WorkItem {
  public:
+  // A callback that returns the desired value based on the |existing_value|.
+  // |existing_value| will be empty if the value didn't previously exist or
+  // existed under a non-string type.
+  using GetValueFromExistingCallback =
+      base::Callback<std::wstring(const std::wstring& existing_value)>;
+
   // All registry operations can be instructed to operate on a specific view
   // of the registry by specifying a REGSAM value to the wow64_access parameter.
   // The wow64_access parameter can be one of:
@@ -157,6 +163,16 @@ class WorkItem {
       const std::wstring& value_name,
       int64 value_data,
       bool overwrite);
+
+  // Create a SetRegValueWorkItem that sets a registry value based on the value
+  // provided by |get_value_callback| given the existing value under
+  // |key_path\value_name|.
+  static SetRegValueWorkItem* CreateSetRegValueWorkItem(
+      HKEY predefined_root,
+      const std::wstring& key_path,
+      REGSAM wow64_access,
+      const std::wstring& value_name,
+      const GetValueFromExistingCallback& get_value_callback);
 
   // Add a SelfRegWorkItem that registers or unregisters a DLL at the
   // specified path.

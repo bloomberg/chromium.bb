@@ -131,6 +131,19 @@ SetRegValueWorkItem* WorkItem::CreateSetRegValueWorkItem(
                                  overwrite);
 }
 
+SetRegValueWorkItem* WorkItem::CreateSetRegValueWorkItem(
+    HKEY predefined_root,
+    const std::wstring& key_path,
+    REGSAM wow64_access,
+    const std::wstring& value_name,
+    const GetValueFromExistingCallback& get_value_callback) {
+  return new SetRegValueWorkItem(predefined_root,
+                                 key_path,
+                                 wow64_access,
+                                 value_name,
+                                 get_value_callback);
+}
+
 SelfRegWorkItem* WorkItem::CreateSelfRegWorkItem(const std::wstring& dll_path,
                                                  bool do_register,
                                                  bool user_level_registration) {
