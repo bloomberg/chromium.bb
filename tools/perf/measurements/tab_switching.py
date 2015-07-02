@@ -10,7 +10,6 @@ between when a tab was first requested to be shown, and when it was painted.
 Power usage is also measured.
 """
 
-import json
 import time
 
 from telemetry.core import util
@@ -63,17 +62,13 @@ class TabSwitching(page_test.PageTest):
   def ValidateAndMeasurePage(self, page, tab, results):
     """On the last tab, cycle through each tab that was opened and then record
     a single histogram for the tab switching metric."""
-    browser = tab.browser
-    if len(browser.tabs) != len(page.story_set.stories):
+    if len(tab.browser.tabs) != len(page.story_set.stories):
       return
-
-    if browser.tabs < 2:
-      raise Exception('Should have at least two tabs for tab switching')
 
     # Measure power usage of tabs after quiescence.
     util.WaitFor(tab.HasReachedQuiescence, 60)
 
-    if browser.platform.CanMonitorPower():
+    if tab.browser.platform.CanMonitorPower():
       self._power_metric.Start(page, tab)
       time.sleep(TabSwitching.SAMPLE_TIME)
       self._power_metric.Stop(page, tab)
@@ -86,31 +81,26 @@ class TabSwitching(page_test.PageTest):
         histogram_type, histogram_name, tab)
     prev_histogram = first_histogram
 
-    for tab_to_switch in browser.tabs:
-      tab_to_switch.Activate()
+    for t in tab.browser.tabs:
+      t.Activate()
       def _IsDone():
         cur_histogram = histogram_util.GetHistogram(
-            histogram_type, histogram_name, tab_to_switch)
+            histogram_type, histogram_name, tab)
         diff_histogram = histogram_util.SubtractHistogram(
             cur_histogram, prev_histogram)
-        # TODO(deanliao): Add SubtractHistogramRawValue to process histogram
-        #     object instead of JSON string.
-        diff_histogram_count = json.loads(diff_histogram).get('count', 0)
-        return diff_histogram_count > 0
+        return diff_histogram
       util.WaitFor(_IsDone, 30)
-
-      # We need to get histogram again instead of getting cur_histogram as
-      # variables modified inside inner function cannot be retrieved. However,
-      # inner function can see external scope's variables.
       prev_histogram = histogram_util.GetHistogram(
-          histogram_type, histogram_name, tab_to_switch)
+          histogram_type, histogram_name, tab)
 
-    last_histogram = prev_histogram
-    total_diff_histogram = histogram_util.SubtractHistogram(last_histogram,
-                                                            first_histogram)
+    last_histogram = histogram_util.GetHistogram(
+        histogram_type, histogram_name, tab)
+    diff_histogram = histogram_util.SubtractHistogram(last_histogram,
+        first_histogram)
+
     results.AddSummaryValue(
         histogram.HistogramValue(None, display_name, 'ms',
-                                 raw_value_json=total_diff_histogram,
+                                 raw_value_json=diff_histogram,
                                  important=False))
 
     keychain_metric.KeychainMetric().AddResults(tab, results)
