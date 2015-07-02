@@ -231,8 +231,9 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             return;
         }
 
+        Context context = getWrappedCurrentApplicationContext();
         try {
-            LibraryLoader.get(LibraryProcessType.PROCESS_WEBVIEW).ensureInitialized();
+            LibraryLoader.get(LibraryProcessType.PROCESS_WEBVIEW).ensureInitialized(context);
         } catch (ProcessInitException e) {
             throw new RuntimeException("Error initializing WebView library", e);
         }
@@ -241,7 +242,6 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         PathService.override(DIR_RESOURCE_PAKS_ANDROID, "/system/framework/webview/paks");
 
         // Make sure that ResourceProvider is initialized before starting the browser process.
-        Context context = getWrappedCurrentApplicationContext();
         setUpResources(context);
         ResourceBundle.initializeLocalePaks(context, R.array.locale_paks);
         initPlatSupportLibrary();

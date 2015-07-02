@@ -350,20 +350,6 @@ crazy_status_t crazy_library_find_from_address(
     void* address,
     crazy_library_t** library) _CRAZY_PUBLIC;
 
-// Return the full path of |lib_name| in the zip file
-// (lib/<abi>/crazy.<lib_name>). The result is returned in
-// |buffer[0..buffer_size - 1]|. If |buffer_size| is too small,
-// CRAZY_STATUS_FAILURE is returned.
-crazy_status_t crazy_library_file_path_in_zip_file(const char* lib_name,
-                                                   char* buffer,
-                                                   size_t buffer_size)
-    _CRAZY_PUBLIC;
-
-// Check whether |lib_name| is page aligned and uncompressed in |zipfile_name|.
-crazy_status_t crazy_linker_check_library_is_mappable_in_zip_file(
-    const char* zipfile_name,
-    const char* lib_name) _CRAZY_PUBLIC;
-
 // Close a library. This decrements its reference count. If it reaches
 // zero, the library be unloaded from the process.
 void crazy_library_close(crazy_library_t* library) _CRAZY_PUBLIC;

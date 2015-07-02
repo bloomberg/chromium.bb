@@ -15,7 +15,6 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.AccessedByNative;
 
-import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -806,44 +805,6 @@ public class Linker {
     }
 
     /**
-     * Get the full library path in zip file (lib/<abi>/crazy.<lib_name>).
-     *
-     * @param library The library's base name.
-     * @return the library path.
-     */
-    public static String getLibraryFilePathInZipFile(String library) throws FileNotFoundException {
-        synchronized (Linker.class) {
-            ensureInitializedLocked();
-
-            String path = nativeGetLibraryFilePathInZipFile(library);
-            if (path.equals("")) {
-                throw new FileNotFoundException(
-                        "Failed to retrieve path in zip file for library " + library);
-            }
-            return path;
-        }
-    }
-
-    /**
-     * Check whether a library is page aligned and uncompressed in the APK file.
-     *
-     * @param apkFile Filename of the APK.
-     * @param library The library's base name.
-     * @return true if page aligned and uncompressed.
-     */
-    public static boolean checkLibraryIsMappableInApk(String apkFile, String library) {
-        synchronized (Linker.class) {
-            ensureInitializedLocked();
-
-            if (DEBUG) Log.i(TAG, "checkLibraryIsMappableInApk: " + apkFile + ", " + library);
-            boolean aligned = nativeCheckLibraryIsMappableInApk(apkFile, library);
-            if (DEBUG) Log.i(TAG, library + " is " + (aligned ? "" : "NOT ")
-                    + "page aligned in " + apkFile);
-            return aligned;
-        }
-    }
-
-    /**
      * Move activity from the native thread to the main UI thread.
      * Called from native code on its own thread.  Posts a callback from
      * the UI thread back to native code.
@@ -938,25 +899,6 @@ public class Linker {
      * @return address to pass to future mmap, or 0 on error.
      */
     private static native long nativeGetRandomBaseLoadAddress(long sizeBytes);
-
-    /**
-      * Native method used to get the full library path in zip file
-      * (lib/<abi>/crazy.<lib_name>).
-      *
-      * @param library The library's base name.
-      * @return the library path (or empty string on failure).
-      */
-    private static native String nativeGetLibraryFilePathInZipFile(String library);
-
-    /**
-     * Native method which checks whether a library is page aligned and
-     * uncompressed in the APK file.
-     *
-     * @param apkFile Filename of the APK.
-     * @param library The library's base name.
-     * @return true if page aligned and uncompressed.
-     */
-    private static native boolean nativeCheckLibraryIsMappableInApk(String apkFile, String library);
 
     /**
      * Record information for a given library.

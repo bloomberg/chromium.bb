@@ -54,8 +54,6 @@ Local Modifications:
 
 - Re-order application of relocation sections to match the system linker.
 
-- Add method for enabling/disabling the memory fallback (disabled by default).
-
 - Add a check whether file is uncompressed in zip file.
 
 - Fix -Wreorder warning (error with -Werror) in class ElfLoader.

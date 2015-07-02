@@ -97,7 +97,8 @@ public class ServiceRegistryTest extends ContentShellTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
+        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized(
+                getInstrumentation().getTargetContext());
         launchContentShellWithUrl("about://blank");
         mNativeTestEnvironment = ShellMojoTestUtils.setupTestEnvironment();
     }

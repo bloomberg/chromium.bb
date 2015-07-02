@@ -512,7 +512,7 @@ public class ChromeApplication extends ContentApplication {
         initCommandLine();
         Context context = getApplicationContext();
         LibraryLoader libraryLoader = LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER);
-        libraryLoader.ensureInitialized(context, true);
+        libraryLoader.ensureInitialized(context);
         libraryLoader.asyncPrefetchLibrariesToMemory();
         BrowserStartupController.get(context, LibraryProcessType.PROCESS_BROWSER)
                 .startBrowserProcessesSync(false);

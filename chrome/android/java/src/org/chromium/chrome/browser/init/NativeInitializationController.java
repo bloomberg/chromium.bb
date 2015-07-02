@@ -80,7 +80,7 @@ class NativeInitializationController {
                 try {
                     LibraryLoader libraryLoader =
                             LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER);
-                    libraryLoader.ensureInitialized(mContext.getApplicationContext(), true);
+                    libraryLoader.ensureInitialized(mContext.getApplicationContext());
                     // The prefetch is done after the library load for two reasons:
                     // - It is easier to know the library location after it has
                     //   been loaded.

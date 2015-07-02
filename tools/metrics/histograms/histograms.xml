@@ -59486,7 +59486,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Not supported">obsolete</int>
   <int value="2" label="Supported">obsolete</int>
   <int value="3" label="Successful"/>
-  <int value="4" label="Used unpack library fallback"/>
+  <int value="4" label="Used unpack library fallback">obsolete</int>
   <int value="5" label="Used no map executable support fallback">obsolete</int>
 </enum>
 

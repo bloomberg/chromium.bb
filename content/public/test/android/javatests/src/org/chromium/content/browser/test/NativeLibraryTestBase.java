@@ -62,7 +62,8 @@ public class NativeLibraryTestBase extends InstrumentationTestCase {
             }
         } else {
             try {
-                LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
+                LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER)
+                        .ensureInitialized(getInstrumentation().getTargetContext());
             } catch (ProcessInitException e) {
                 throw new Error(e);
             }

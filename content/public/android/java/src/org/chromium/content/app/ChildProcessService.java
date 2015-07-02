@@ -162,7 +162,7 @@ public class ChildProcessService extends Service {
                     boolean loadAtFixedAddressFailed = false;
                     try {
                         LibraryLoader.get(LibraryProcessType.PROCESS_CHILD)
-                                .loadNow(getApplicationContext(), false);
+                                .loadNow(getApplicationContext());
                         isLoaded = true;
                     } catch (ProcessInitException e) {
                         if (requestedSharedRelro) {
@@ -177,7 +177,7 @@ public class ChildProcessService extends Service {
                         Linker.disableSharedRelros();
                         try {
                             LibraryLoader.get(LibraryProcessType.PROCESS_CHILD)
-                                    .loadNow(getApplicationContext(), false);
+                                    .loadNow(getApplicationContext());
                             isLoaded = true;
                         } catch (ProcessInitException e) {
                             Log.e(TAG, "Failed to load native library on retry", e);

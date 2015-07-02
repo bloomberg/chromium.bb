@@ -282,7 +282,7 @@ public class BrowserStartupController {
 
         // Normally Main.java will have already loaded the library asynchronously, we only need
         // to load it here if we arrived via another flow, e.g. bookmark access & sync setup.
-        LibraryLoader.get(mLibraryProcessType).ensureInitialized(mContext, true);
+        LibraryLoader.get(mLibraryProcessType).ensureInitialized(mContext);
 
         Runnable postResourceExtraction = new Runnable() {
             @Override

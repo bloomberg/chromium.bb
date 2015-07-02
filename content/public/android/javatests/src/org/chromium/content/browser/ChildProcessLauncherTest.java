@@ -247,6 +247,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        LibraryLoader.get(LibraryProcessType.PROCESS_CHILD).ensureInitialized();
+        LibraryLoader.get(LibraryProcessType.PROCESS_CHILD)
+                .ensureInitialized(getInstrumentation().getContext());
     }
 }

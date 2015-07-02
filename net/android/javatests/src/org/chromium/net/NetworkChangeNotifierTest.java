@@ -101,7 +101,8 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
+        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER)
+                .ensureInitialized(getInstrumentation().getTargetContext());
         createTestNotifier(WatchForChanges.ONLY_WHEN_APP_IN_FOREGROUND);
     }
 

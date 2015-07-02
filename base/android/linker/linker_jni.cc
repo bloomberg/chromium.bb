@@ -658,52 +658,6 @@ jlong GetRandomBaseLoadAddress(JNIEnv* env, jclass clazz, jlong bytes) {
   return static_cast<jlong>(reinterpret_cast<uintptr_t>(address));
 }
 
-// Get the full path of a library in the zip file
-// (lib/<abi>/crazy.<lib_name>).
-//
-// |env| is the current JNI environment handle.
-// |clazz| is the static class handle which is not used here.
-// |lib_name| is the library base name.
-// Returns the full path (or empty string on failure).
-jstring GetLibraryFilePathInZipFile(JNIEnv* env,
-                                    jclass clazz,
-                                    jstring lib_name) {
-  String lib_name_str(env, lib_name);
-  const char* lib_name_c_str = lib_name_str.c_str();
-  char buffer[kMaxFilePathLengthInZip + 1];
-  if (crazy_library_file_path_in_zip_file(
-          lib_name_c_str, buffer, sizeof(buffer)) == CRAZY_STATUS_FAILURE) {
-    LOG_ERROR("%s: Failed to get full filename for library '%s'",
-              __FUNCTION__, lib_name_c_str);
-    buffer[0] = '\0';
-  }
-  return env->NewStringUTF(buffer);
-}
-
-// Check whether a library is page aligned and uncompressed in the APK file.
-//
-// |env| is the current JNI environment handle.
-// |clazz| is the static class handle which is not used here.
-// |apkfile_name| is the filename of the APK.
-// |library_name| is the library base name.
-// Returns true if page aligned and uncompressed.
-jboolean CheckLibraryIsMappableInApk(JNIEnv* env, jclass clazz,
-                                     jstring apkfile_name,
-                                     jstring library_name) {
-  String apkfile_name_str(env, apkfile_name);
-  const char* apkfile_name_c_str = apkfile_name_str.c_str();
-  String library_name_str(env, library_name);
-  const char* library_name_c_str = library_name_str.c_str();
-
-  LOG_INFO("%s: Checking if %s is page-aligned and uncompressed in %s\n",
-           __FUNCTION__, library_name_c_str, apkfile_name_c_str);
-  jboolean mappable = crazy_linker_check_library_is_mappable_in_zip_file(
-      apkfile_name_c_str, library_name_c_str) == CRAZY_STATUS_SUCCESS;
-  LOG_INFO("%s: %s\n", __FUNCTION__, mappable ? "Mappable" : "NOT mappable");
-
-  return mappable;
-}
-
 const JNINativeMethod kNativeMethods[] = {
     {"nativeLoadLibrary",
      "("
@@ -754,19 +708,7 @@ const JNINativeMethod kNativeMethods[] = {
      ")"
      "J",
      reinterpret_cast<void*>(&GetRandomBaseLoadAddress)},
-    {"nativeGetLibraryFilePathInZipFile",
-     "("
-     "Ljava/lang/String;"
-     ")"
-     "Ljava/lang/String;",
-     reinterpret_cast<void*>(&GetLibraryFilePathInZipFile)},
-    {"nativeCheckLibraryIsMappableInApk",
-     "("
-     "Ljava/lang/String;"
-     "Ljava/lang/String;"
-     ")"
-     "Z",
-     reinterpret_cast<void*>(&CheckLibraryIsMappableInApk)}, };
+};
 
 }  // namespace
 

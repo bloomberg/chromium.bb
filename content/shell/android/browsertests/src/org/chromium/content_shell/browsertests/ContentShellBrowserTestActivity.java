@@ -64,7 +64,8 @@ public abstract class ContentShellBrowserTestActivity extends NativeBrowserTestA
     @SuppressFBWarnings("DM_EXIT")
     protected void initializeBrowserProcess() {
         try {
-            LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
+            LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER)
+                    .ensureInitialized(getApplicationContext());
         } catch (ProcessInitException e) {
             Log.e(TAG, "Cannot load content_browsertests.", e);
             System.exit(-1);

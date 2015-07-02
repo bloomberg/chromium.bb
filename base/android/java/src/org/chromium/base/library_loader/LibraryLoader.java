@@ -18,7 +18,6 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.PackageUtils;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -75,10 +74,6 @@ public class LibraryLoader {
     // APK file directly.
     private boolean mLibraryWasLoadedFromApk;
 
-    // One-way switch becomes false if the Chromium library should be loaded
-    // directly from the APK file but it was compressed or not aligned.
-    private boolean mLibraryIsMappableInApk = true;
-
     // The type of process the shared library is loaded in.
     // This member can be accessed from multiple threads simultaneously, so it have to be
     // final (like now) or be protected in some way (volatile of synchronized).
@@ -115,35 +110,17 @@ public class LibraryLoader {
     }
 
     /**
-     * The same as ensureInitialized(null, false), should only be called
-     * by non-browser processes.
-     *
-     * @throws ProcessInitException
-     */
-    @VisibleForTesting
-    public void ensureInitialized() throws ProcessInitException {
-        ensureInitialized(null, false);
-    }
-
-    /**
      *  This method blocks until the library is fully loaded and initialized.
      *
-     *  @param context The context in which the method is called, the caller
-     *    may pass in a null context if it doesn't know in which context it
-     *    is running.
-     *
-     *  @param shouldDeleteFallbackLibraries The flag tells whether the method
-     *    should delete the fallback libraries or not.
+     *  @param context The context in which the method is called.
      */
-    public void ensureInitialized(
-            Context context, boolean shouldDeleteFallbackLibraries)
-            throws ProcessInitException {
+    public void ensureInitialized(Context context) throws ProcessInitException {
         synchronized (sLock) {
             if (mInitialized) {
                 // Already initialized, nothing to do.
                 return;
             }
-            loadAlreadyLocked(context, shouldDeleteFallbackLibraries);
+            loadAlreadyLocked(context);
             initializeAlreadyLocked();
         }
     }
@@ -156,32 +133,19 @@ public class LibraryLoader {
     }
 
     /**
-     * The same as loadNow(null, false), should only be called by
-     * non-browser process.
-     *
-     * @throws ProcessInitException
-     */
-    public void loadNow() throws ProcessInitException {
-        loadNow(null, false);
-    }
-
-    /**
      * Loads the library and blocks until the load completes. The caller is responsible
      * for subsequently calling ensureInitialized().
      * May be called on any thread, but should only be called once. Note the thread
      * this is called on will be the thread that runs the native code's static initializers.
      * See the comment in doInBackground() for more considerations on this.
      *
-     * @param context The context the code is running, or null if it doesn't have one.
-     * @param shouldDeleteFallbackLibraries The flag tells whether the method
-     *   should delete the old fallback libraries or not.
+     * @param context The context the code is running.
      *
      * @throws ProcessInitException if the native library failed to load.
      */
-    public void loadNow(Context context, boolean shouldDeleteFallbackLibraries)
-            throws ProcessInitException {
+    public void loadNow(Context context) throws ProcessInitException {
         synchronized (sLock) {
-            loadAlreadyLocked(context, shouldDeleteFallbackLibraries);
+            loadAlreadyLocked(context);
         }
     }
 
@@ -223,26 +187,17 @@ public class LibraryLoader {
     }
 
     // Invoke System.loadLibrary(...), triggering JNI_OnLoad in native code
-    private void loadAlreadyLocked(
-            Context context, boolean shouldDeleteFallbackLibraries)
-            throws ProcessInitException {
+    private void loadAlreadyLocked(Context context) throws ProcessInitException {
         try {
             if (!mLoaded) {
                 assert !mInitialized;
 
                 long startTime = SystemClock.uptimeMillis();
                 boolean useChromiumLinker = Linker.isUsed();
-                boolean fallbackWasUsed = false;
 
                 if (useChromiumLinker) {
                     // Determine the APK file path.
-                    String apkFilePath = null;
-                    if (context != null) {
-                        apkFilePath = getLibraryApkPath(context);
-                    } else {
-                        Log.w(TAG, "could not check load from APK support due to null context");
-                    }
-
+                    String apkFilePath = getLibraryApkPath(context);
                     // Load libraries using the Chromium linker.
                     Linker.prepareLibraryLoad();
 
@@ -258,26 +213,11 @@ public class LibraryLoader {
                         // Determine where the library should be loaded from.
                         String zipFilePath = null;
                         String libFilePath = System.mapLibraryName(library);
-                        if (apkFilePath != null && Linker.isInZipFile()) {
-                            // The library is in the APK file.
-                            if (!Linker.checkLibraryIsMappableInApk(apkFilePath, libFilePath)) {
-                                mLibraryIsMappableInApk = false;
-                            }
-                            if (mLibraryIsMappableInApk) {
-                                // Load directly from the APK.
-                                zipFilePath = apkFilePath;
-                                Log.i(TAG, "Loading " + library + " directly from within "
-                                        + apkFilePath);
-                            } else {
-                                // Unpack library fallback.
-                                Log.i(TAG, "Loading " + library
-                                        + " using unpack library fallback from within "
-                                        + apkFilePath);
-                                libFilePath = LibraryLoaderHelper.buildFallbackLibrary(
-                                        context, library);
-                                fallbackWasUsed = true;
-                                Log.i(TAG, "Built fallback library " + libFilePath);
-                            }
+                        if (Linker.isInZipFile()) {
+                            // Load directly from the APK.
+                            zipFilePath = apkFilePath;
+                            Log.i(TAG,
+                                    "Loading " + library + " directly from within " + apkFilePath);
                         } else {
                             // The library is in its own file.
                             Log.i(TAG, "Loading " + library);
@@ -308,12 +248,6 @@ public class LibraryLoader {
                     for (String library : NativeLibraries.LIBRARIES) {
                         System.loadLibrary(library);
                     }
-                }
-
-                if (!fallbackWasUsed && context != null
-                        && shouldDeleteFallbackLibraries) {
-                    LibraryLoaderHelper.deleteLibrariesAsynchronously(
-                            context, LibraryLoaderHelper.LOAD_FROM_APK_FALLBACK_DIR);
                 }
 
                 long stopTime = SystemClock.uptimeMillis();
@@ -452,10 +386,6 @@ public class LibraryLoader {
 
         if (mLibraryWasLoadedFromApk) {
             return LibraryLoadFromApkStatusCodes.SUCCESSFUL;
-        }
-
-        if (!mLibraryIsMappableInApk) {
-            return LibraryLoadFromApkStatusCodes.USED_UNPACK_LIBRARY_FALLBACK;
         }
 
         // There were no libraries to be loaded directly from the APK file.
