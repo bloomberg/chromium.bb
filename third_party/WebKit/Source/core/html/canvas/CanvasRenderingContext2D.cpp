@@ -1745,7 +1745,7 @@ void CanvasRenderingContext2D::setFont(const String& newFont)
     // Map the <canvas> font into the text style. If the font uses keywords like larger/smaller, these will work
     // relative to the canvas.
     RefPtr<ComputedStyle> newStyle = ComputedStyle::create();
-    canvas()->document().updateLayoutTreeIfNeeded();
+    canvas()->document().updateLayoutTreeForNodeIfNeeded(canvas());
     if (const ComputedStyle* computedStyle = canvas()->ensureComputedStyle()) {
         FontDescription elementFontDescription(computedStyle->fontDescription());
         // Reset the computed size to avoid inheriting the zoom factor from the <canvas> element.
@@ -1820,7 +1820,7 @@ static inline TextDirection toTextDirection(CanvasRenderingContext2DState::Direc
 String CanvasRenderingContext2D::direction() const
 {
     if (state().direction() == CanvasRenderingContext2DState::DirectionInherit)
-        canvas()->document().updateLayoutTreeIfNeeded();
+        canvas()->document().updateLayoutTreeForNodeIfNeeded(canvas());
     return toTextDirection(state().direction(), canvas()) == RTL ? rtl : ltr;
 }
 
@@ -1870,7 +1870,7 @@ PassRefPtrWillBeRawPtr<TextMetrics> CanvasRenderingContext2D::measureText(const 
     if (!canvas()->document().frame())
         return metrics.release();
 
-    canvas()->document().updateLayoutTreeIfNeeded();
+    canvas()->document().updateLayoutTreeForNodeIfNeeded(canvas());
     const Font& font = accessFont();
 
     TextDirection direction;
@@ -1917,7 +1917,7 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
     // accessFont needs the style to be up to date, but updating style can cause script to run,
     // (e.g. due to autofocus) which can free the canvas (set size to 0, for example), so update
     // style before grabbing the drawingCanvas.
-    canvas()->document().updateLayoutTreeIfNeeded();
+    canvas()->document().updateLayoutTreeForNodeIfNeeded(canvas());
 
     if (!drawingCanvas())
         return;

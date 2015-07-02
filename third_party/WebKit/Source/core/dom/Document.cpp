@@ -1892,6 +1892,8 @@ void Document::updateLayoutTreeForNodeIfNeeded(Node* node)
         return;
     if (!needsLayoutTreeUpdate())
         return;
+    if (!node->inDocument())
+        return;
 
     bool needsRecalc = needsFullLayoutTreeUpdate() || node->needsStyleRecalc() || node->needsStyleInvalidation();
 
