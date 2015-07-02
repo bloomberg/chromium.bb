@@ -215,8 +215,6 @@
       'browser/extensions/api/declarative_content/content_condition.h',
       'browser/extensions/api/declarative_content/content_constants.cc',
       'browser/extensions/api/declarative_content/content_constants.h',
-      'browser/extensions/api/declarative_content/declarative_content_action_set.cc',
-      'browser/extensions/api/declarative_content/declarative_content_action_set.h',
       'browser/extensions/api/declarative_content/declarative_content_condition_set.cc',
       'browser/extensions/api/declarative_content/declarative_content_condition_set.h',
       'browser/extensions/api/declarative_content/declarative_content_condition_tracker_delegate.cc',

@@ -12,35 +12,23 @@
 #include "chrome/browser/extensions/api/declarative_content/content_condition.h"
 #include "components/url_matcher/url_matcher.h"
 
-namespace base {
-class Value;
-}
-
-namespace content {
-class BrowserContext;
-}
-
 namespace extensions {
-
-class Extension;
 
 // This class stores a set of conditions that may be part of a
 // DeclarativeContentRule.  If any condition is fulfilled, the Actions of the
 // DeclarativeContentRule can be triggered.
 class DeclarativeContentConditionSet {
  public:
-  using Values = std::vector<linked_ptr<base::Value>>;
   using Conditions = std::vector<linked_ptr<const ContentCondition>>;
   using const_iterator = Conditions::const_iterator;
+  using URLMatcherIdToCondition =
+      std::map<url_matcher::URLMatcherConditionSet::ID,
+               const ContentCondition*>;
 
-  // Factory method that creates a DeclarativeContentConditionSet for
-  // |extension| according to the JSON array |conditions| passed by the
-  // extension API. Sets |error| and returns NULL in case of an error.
-  static scoped_ptr<DeclarativeContentConditionSet> Create(
-      const Extension* extension,
-      url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
-      const Values& condition_values,
-      std::string* error);
+  DeclarativeContentConditionSet(
+      const Conditions& conditions,
+      const URLMatcherIdToCondition& match_id_to_condition,
+      const std::vector<const ContentCondition*>& conditions_without_urls);
 
   ~DeclarativeContentConditionSet();
 
@@ -69,15 +57,6 @@ class DeclarativeContentConditionSet {
   }
 
  private:
-  using URLMatcherIdToCondition =
-      std::map<url_matcher::URLMatcherConditionSet::ID,
-               const ContentCondition*>;
-
-  DeclarativeContentConditionSet(
-      const Conditions& conditions,
-      const URLMatcherIdToCondition& match_id_to_condition,
-      const std::vector<const ContentCondition*>& conditions_without_urls);
-
   const URLMatcherIdToCondition match_id_to_condition_;
   const Conditions conditions_;
   const std::vector<const ContentCondition*> conditions_without_urls_;

@@ -13,7 +13,6 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time/time.h"
 #include "chrome/browser/extensions/api/declarative_content/content_action.h"
 #include "chrome/browser/extensions/api/declarative_content/content_condition.h"
 #include "chrome/browser/extensions/api/declarative_content/declarative_content_condition_tracker_delegate.h"
@@ -25,7 +24,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/api/declarative_content/content_rules_registry.h"
-#include "extensions/browser/info_map.h"
 
 class ContentPermissions;
 
@@ -121,10 +119,6 @@ class ChromeContentRulesRegistry
  protected:
   ~ChromeContentRulesRegistry() override;
 
-  // Virtual for testing:
-  virtual base::Time GetExtensionInstallationTime(
-      const std::string& extension_id) const;
-
  private:
   // Specifies what to do with evaluation requests.
   // TODO(wittman): Try to eliminate the need for IGNORE after refactoring to
@@ -156,9 +150,10 @@ class ChromeContentRulesRegistry
   // Evaluates the conditions for tabs in each browser window.
   void EvaluateConditionsForAllTabs();
 
+  using ExtensionRuleIdPair = std::pair<const Extension*, std::string>;
   using URLMatcherIdToRule = std::map<url_matcher::URLMatcherConditionSet::ID,
                                       const DeclarativeContentRule*>;
-  using RulesMap = std::map<DeclarativeContentRule::ExtensionIdRuleIdPair,
+  using RulesMap = std::map<ExtensionRuleIdPair,
                             linked_ptr<const DeclarativeContentRule>>;
 
   // Map that tells us which ContentRules may match under the condition that
@@ -193,8 +188,6 @@ class ChromeContentRulesRegistry
 
   // Manages our notification registrations.
   content::NotificationRegistrar registrar_;
-
-  scoped_refptr<InfoMap> extension_info_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentRulesRegistry);
 };
