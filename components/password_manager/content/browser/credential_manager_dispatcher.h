@@ -44,11 +44,6 @@ class CredentialManagerDispatcher
   ~CredentialManagerDispatcher() override;
 
   // Called in response to an IPC from the renderer, triggered by a page's call
-  // to 'navigator.credentials.notifyFailedSignIn'.
-  virtual void OnNotifyFailedSignIn(int request_id,
-                                    const password_manager::CredentialInfo&);
-
-  // Called in response to an IPC from the renderer, triggered by a page's call
   // to 'navigator.credentials.notifySignedIn'.
   virtual void OnNotifySignedIn(int request_id,
                                 const password_manager::CredentialInfo&);

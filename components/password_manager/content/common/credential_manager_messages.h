@@ -37,15 +37,6 @@ IPC_STRUCT_TRAITS_END()
 // ----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser
 
-// Passes the notification from 'navigator.credentials.notifyFailedSignIn()' up
-// to the browser process in order to suppress the automatic bubble which would
-// pop up in order to prompt the user to save the credential she used for
-// signin. The browser process will respond with a
-// CredentialManagerMsg_AcknowledgeFailedSignedIn message.
-IPC_MESSAGE_ROUTED2(CredentialManagerHostMsg_NotifyFailedSignIn,
-                    int /* request_id */,
-                    password_manager::CredentialInfo /* credential */)
-
 // Passes the notification from 'navigator.credentials.notifySignedIn()' up to
 // the browser process in order to (among other things) prompt the user to save
 // the credential she used for signin. The browser process will respond with a
@@ -71,11 +62,6 @@ IPC_MESSAGE_ROUTED3(CredentialManagerHostMsg_RequestCredential,
 
 // ----------------------------------------------------------------------------
 // Messages sent from the browser to the renderer
-
-// Notify the renderer that the browser process has finished processing a
-// CredentialManagerHostMsg_NotifyFailedSignedIn message.
-IPC_MESSAGE_ROUTED1(CredentialManagerMsg_AcknowledgeFailedSignIn,
-                    int /* request_id */)
 
 // Notify the renderer that the browser process has finished processing a
 // CredentialManagerHostMsg_NotifySignedIn message.

@@ -51,8 +51,6 @@ CredentialManagerClient::~CredentialManagerClient() {
 bool CredentialManagerClient::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(CredentialManagerClient, message)
-    IPC_MESSAGE_HANDLER(CredentialManagerMsg_AcknowledgeFailedSignIn,
-                        OnAcknowledgeFailedSignIn)
     IPC_MESSAGE_HANDLER(CredentialManagerMsg_AcknowledgeSignedIn,
                         OnAcknowledgeSignedIn)
     IPC_MESSAGE_HANDLER(CredentialManagerMsg_AcknowledgeRequireUserMediation,
@@ -63,10 +61,6 @@ bool CredentialManagerClient::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void CredentialManagerClient::OnAcknowledgeFailedSignIn(int request_id) {
-  RespondToNotificationCallback(request_id, &failed_sign_in_callbacks_);
 }
 
 void CredentialManagerClient::OnAcknowledgeSignedIn(int request_id) {
@@ -113,15 +107,6 @@ void CredentialManagerClient::OnRejectCredentialRequest(
 
 // -----------------------------------------------------------------------------
 // Dispatch messages from the renderer to the browser.
-
-void CredentialManagerClient::dispatchFailedSignIn(
-    const blink::WebCredential& credential,
-    blink::WebCredentialManagerClient::NotificationCallbacks* callbacks) {
-  int request_id = failed_sign_in_callbacks_.Add(callbacks);
-  CredentialInfo info(WebCredentialToCredentialInfo(credential));
-  Send(new CredentialManagerHostMsg_NotifyFailedSignIn(
-      routing_id(), request_id, info));
-}
 
 void CredentialManagerClient::dispatchSignedIn(
     const blink::WebCredential& credential,

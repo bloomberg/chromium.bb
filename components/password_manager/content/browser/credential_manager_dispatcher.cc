@@ -40,8 +40,6 @@ bool CredentialManagerDispatcher::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(CredentialManagerDispatcher, message)
-    IPC_MESSAGE_HANDLER(CredentialManagerHostMsg_NotifyFailedSignIn,
-                        OnNotifyFailedSignIn);
     IPC_MESSAGE_HANDLER(CredentialManagerHostMsg_NotifySignedIn,
                         OnNotifySignedIn);
     IPC_MESSAGE_HANDLER(CredentialManagerHostMsg_RequireUserMediation,
@@ -51,15 +49,6 @@ bool CredentialManagerDispatcher::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void CredentialManagerDispatcher::OnNotifyFailedSignIn(int request_id,
-                                                       const CredentialInfo&) {
-  DCHECK(request_id);
-  // TODO(mkwst): This is a stub.
-  web_contents()->GetRenderViewHost()->Send(
-      new CredentialManagerMsg_AcknowledgeFailedSignIn(
-          web_contents()->GetRenderViewHost()->GetRoutingID(), request_id));
 }
 
 void CredentialManagerDispatcher::OnNotifySignedIn(

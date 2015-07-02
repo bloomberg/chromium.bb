@@ -54,7 +54,6 @@ class CredentialManagerClient : public blink::WebCredentialManagerClient,
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // Message handlers for messages from the browser process:
-  virtual void OnAcknowledgeFailedSignIn(int request_id);
   virtual void OnAcknowledgeSignedIn(int request_id);
   virtual void OnAcknowledgeRequireUserMediation(int request_id);
   virtual void OnSendCredential(int request_id,
@@ -64,9 +63,6 @@ class CredentialManagerClient : public blink::WebCredentialManagerClient,
       blink::WebCredentialManagerError::ErrorType error_type);
 
   // blink::WebCredentialManager:
-  virtual void dispatchFailedSignIn(
-      const blink::WebCredential& credential,
-      WebCredentialManagerClient::NotificationCallbacks* callbacks);
   virtual void dispatchSignedIn(
       const blink::WebCredential& credential,
       WebCredentialManagerClient::NotificationCallbacks* callbacks);

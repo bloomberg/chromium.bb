@@ -26,8 +26,6 @@ class MockCredentialManagerClient : public blink::WebCredentialManagerClient {
   void SetResponse(blink::WebCredential* credential);
 
   // blink::WebCredentialManager:
-  virtual void dispatchFailedSignIn(const blink::WebCredential& credential,
-                                    NotificationCallbacks* callbacks);
   virtual void dispatchSignedIn(const blink::WebCredential& credential,
                                 NotificationCallbacks* callbacks);
   virtual void dispatchRequireUserMediation(NotificationCallbacks* callbacks);

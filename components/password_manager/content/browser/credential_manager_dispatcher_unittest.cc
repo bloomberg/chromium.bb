@@ -214,18 +214,6 @@ class CredentialManagerDispatcherTest
   scoped_ptr<CredentialManagerDispatcher> dispatcher_;
 };
 
-TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnNotifyFailedSignIn) {
-  CredentialInfo info;
-  info.type = CredentialType::CREDENTIAL_TYPE_PASSWORD;
-  dispatcher()->OnNotifyFailedSignIn(kRequestId, info);
-
-  const uint32 kMsgID = CredentialManagerMsg_AcknowledgeFailedSignIn::ID;
-  const IPC::Message* message =
-      process()->sink().GetFirstMessageMatching(kMsgID);
-  EXPECT_TRUE(message);
-  process()->sink().ClearMessages();
-}
-
 TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnNotifySignedIn) {
   CredentialInfo info(
       form_, password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
