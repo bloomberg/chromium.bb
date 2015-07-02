@@ -133,6 +133,8 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
         setContentView(R.layout.eb_folder_select_activity);
         mBookmarkIdsList = (ListView) findViewById(R.id.eb_folder_list);
         mBookmarkIdsList.setOnItemClickListener(this);
+        mBookmarkIdsAdapter = new FolderListAdapter(this);
+        mBookmarkIdsList.setAdapter(mBookmarkIdsAdapter);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -164,8 +166,8 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
             entryList.add(new FolderListEntry(folder, depthList.get(i), title,
                     folder.equals(mParentId), FolderListEntry.TYPE_NORMAL));
         }
-        mBookmarkIdsAdapter = new FolderListAdapter(entryList, this);
-        mBookmarkIdsList.setAdapter(mBookmarkIdsAdapter);
+
+        mBookmarkIdsAdapter.setEntryList(entryList);
     }
 
     @Override
@@ -255,10 +257,9 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
         private final int mBasePadding;
         private final int mPaddingIncrement;
 
-        List<FolderListEntry> mEntryList;
+        List<FolderListEntry> mEntryList = new ArrayList<FolderListEntry>();
 
-        public FolderListAdapter(List<FolderListEntry> entryList, Context context) {
-            mEntryList = entryList;
+        public FolderListAdapter(Context context) {
             mBasePadding = context.getResources()
                     .getDimensionPixelSize(R.dimen.enhanced_bookmark_folder_item_left);
             mPaddingIncrement = mBasePadding * 2;
@@ -310,6 +311,11 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
             setUpPadding(entry, textView);
 
             return textView;
+        }
+
+        void setEntryList(List<FolderListEntry> entryList) {
+            mEntryList = entryList;
+            notifyDataSetChanged();
         }
 
         /**
