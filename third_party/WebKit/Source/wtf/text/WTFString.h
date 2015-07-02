@@ -199,6 +199,9 @@ public:
     // Find a single character or string, also with match function & latin1 forms.
     size_t find(UChar c, unsigned start = 0) const
         { return m_impl ? m_impl->find(c, start) : kNotFound; }
+    size_t find(LChar c, unsigned start = 0) const
+        { return m_impl ? m_impl->find(c, start) : kNotFound; }
+    size_t find(char c, unsigned start = 0) const { return find(static_cast<LChar>(c), start); }
 
     size_t find(const String& str) const
         { return m_impl ? m_impl->find(str.impl()) : kNotFound; }
@@ -248,8 +251,8 @@ public:
     void prependTo(Vector<UChar, inlineCapacity>&, unsigned pos = 0, unsigned len = UINT_MAX) const;
 
     UChar32 characterStartingAt(unsigned) const;
-
-    bool contains(UChar c) const { return find(c) != kNotFound; }
+    template<typename CharacterType>
+    bool contains(CharacterType c) const { return find(c) != kNotFound; }
     bool contains(const LChar* str, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const { return find(str, 0, caseSensitivity) != kNotFound; }
     bool contains(const String& str, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const { return find(str, 0, caseSensitivity) != kNotFound; }
 
