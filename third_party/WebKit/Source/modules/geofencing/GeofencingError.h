@@ -7,6 +7,7 @@
 
 #include "platform/heap/Handle.h"
 #include "public/platform/WebGeofencingError.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -18,8 +19,7 @@ class GeofencingError {
 public:
     // For CallbackPromiseAdapter.
     typedef WebGeofencingError WebType;
-    static DOMException* take(ScriptPromiseResolver*, WebType* webErrorRaw);
-    static void dispose(WebType* webErrorRaw);
+    static DOMException* take(ScriptPromiseResolver*, PassOwnPtr<WebType> webError);
 
 private:
     GeofencingError() = delete;

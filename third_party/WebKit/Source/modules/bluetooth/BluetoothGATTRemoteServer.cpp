@@ -23,14 +23,9 @@ BluetoothGATTRemoteServer::BluetoothGATTRemoteServer(PassOwnPtr<WebBluetoothGATT
 {
 }
 
-BluetoothGATTRemoteServer* BluetoothGATTRemoteServer::take(ScriptPromiseResolver*, WebBluetoothGATTRemoteServer* webGATTRawPointer)
+BluetoothGATTRemoteServer* BluetoothGATTRemoteServer::take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothGATTRemoteServer> webGATT)
 {
-    return new BluetoothGATTRemoteServer(adoptPtr(webGATTRawPointer));
-}
-
-void BluetoothGATTRemoteServer::dispose(WebBluetoothGATTRemoteServer* webGATTRaw)
-{
-    delete webGATTRaw;
+    return new BluetoothGATTRemoteServer(webGATT);
 }
 
 ScriptPromise BluetoothGATTRemoteServer::getPrimaryService(ScriptState* scriptState, String serviceUUID)

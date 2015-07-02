@@ -14,7 +14,6 @@
 #include "modules/bluetooth/BluetoothGATTRemoteServer.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/bluetooth/WebBluetooth.h"
-#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -23,14 +22,9 @@ BluetoothDevice::BluetoothDevice(PassOwnPtr<WebBluetoothDevice> webDevice)
 {
 }
 
-BluetoothDevice* BluetoothDevice::take(ScriptPromiseResolver*, WebBluetoothDevice* webDeviceRawPointer)
+BluetoothDevice* BluetoothDevice::take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothDevice> webDevice)
 {
-    return new BluetoothDevice(adoptPtr(webDeviceRawPointer));
-}
-
-void BluetoothDevice::dispose(WebBluetoothDevice* webDeviceRaw)
-{
-    delete webDeviceRaw;
+    return new BluetoothDevice(webDevice);
 }
 
 unsigned BluetoothDevice::deviceClass(bool& isNull)

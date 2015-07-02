@@ -65,21 +65,18 @@ public:
 
     virtual void onSuccess(WebServiceWorkerRegistration* registration) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
-            ServiceWorkerRegistration::dispose(registration);
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        }
         m_resolver->resolve(ServiceWorkerRegistration::take(m_resolver.get(), registration));
     }
 
-    // Takes ownership of |error|.
-    virtual void onError(WebServiceWorkerError* error) override
+    // Takes ownership of |errorRaw|.
+    virtual void onError(WebServiceWorkerError* errorRaw) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
-            ServiceWorkerError::dispose(error);
+        OwnPtr<WebServiceWorkerError> error = adoptPtr(errorRaw);
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        }
-        m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
+        m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error.release()));
     }
 
 private:
@@ -95,10 +92,8 @@ public:
 
     virtual void onSuccess(WebServiceWorkerRegistration* registration) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
-            ServiceWorkerRegistration::dispose(registration);
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        }
         if (!registration) {
             // Resolve the promise with undefined.
             m_resolver->resolve();
@@ -107,14 +102,13 @@ public:
         m_resolver->resolve(ServiceWorkerRegistration::take(m_resolver.get(), registration));
     }
 
-    // Takes ownership of |error|.
-    virtual void onError(WebServiceWorkerError* error) override
+    // Takes ownership of |errorRaw|.
+    virtual void onError(WebServiceWorkerError* errorRaw) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
-            ServiceWorkerError::dispose(error);
+        OwnPtr<WebServiceWorkerError> error = adoptPtr(errorRaw);
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        }
-        m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
+        m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error.release()));
     }
 
 private:
@@ -132,21 +126,18 @@ public:
     virtual void onSuccess(WebVector<WebServiceWorkerRegistration*>* registrationsRaw) override
     {
         OwnPtr<WebVector<WebServiceWorkerRegistration*>> registrations = adoptPtr(registrationsRaw);
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
-            ServiceWorkerRegistrationArray::dispose(registrations.release());
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        }
         m_resolver->resolve(ServiceWorkerRegistrationArray::take(m_resolver.get(), registrations.release()));
     }
 
-    // Takes ownership of |error|.
-    virtual void onError(WebServiceWorkerError* error) override
+    // Takes ownership of |errorRaw|.
+    virtual void onError(WebServiceWorkerError* errorRaw) override
     {
-        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
-            ServiceWorkerError::dispose(error);
+        OwnPtr<WebServiceWorkerError> error = adoptPtr(errorRaw);
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        }
-        m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
+        m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error.release()));
     }
 
 private:

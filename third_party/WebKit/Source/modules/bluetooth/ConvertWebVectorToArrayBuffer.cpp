@@ -5,24 +5,15 @@
 #include "config.h"
 #include "modules/bluetooth/ConvertWebVectorToArrayBuffer.h"
 
-#include "wtf/OwnPtr.h"
-
 namespace blink {
 
-PassRefPtr<DOMArrayBuffer> ConvertWebVectorToArrayBuffer::take(ScriptPromiseResolver*, WebVector<uint8_t>* webVectorRawPointer)
+PassRefPtr<DOMArrayBuffer> ConvertWebVectorToArrayBuffer::take(ScriptPromiseResolver*, PassOwnPtr<WebVector<uint8_t>> webVector)
 {
-    OwnPtr<WebVector<uint8_t>> webVector = adoptPtr(webVectorRawPointer);
-
     static_assert(sizeof(*webVector->data()) == 1, "uint8_t should be a single byte");
 
     RefPtr<DOMArrayBuffer> domBuffer = DOMArrayBuffer::create(webVector->data(), webVector->size());
 
     return domBuffer;
-}
-
-void ConvertWebVectorToArrayBuffer::dispose(WebVector<uint8_t>* webBufferRaw)
-{
-    delete webBufferRaw;
 }
 
 } // namespace blink

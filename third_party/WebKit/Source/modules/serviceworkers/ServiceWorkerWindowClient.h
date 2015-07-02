@@ -10,6 +10,7 @@
 #include "modules/serviceworkers/ServiceWorkerClient.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -22,8 +23,7 @@ public:
     // To be used by CallbackPromiseAdapter.
     typedef WebServiceWorkerClientInfo WebType;
 
-    static ServiceWorkerWindowClient* take(ScriptPromiseResolver*, WebType*);
-    static void dispose(WebType*);
+    static ServiceWorkerWindowClient* take(ScriptPromiseResolver*, PassOwnPtr<WebType>);
 
     static ServiceWorkerWindowClient* create(const WebServiceWorkerClientInfo&);
     ~ServiceWorkerWindowClient() override;

@@ -17,14 +17,9 @@
 
 namespace blink {
 
-ServiceWorkerWindowClient* ServiceWorkerWindowClient::take(ScriptPromiseResolver*, ServiceWorkerWindowClient::WebType* webClientRaw)
+ServiceWorkerWindowClient* ServiceWorkerWindowClient::take(ScriptPromiseResolver*, PassOwnPtr<ServiceWorkerWindowClient::WebType> webClient)
 {
-    return ServiceWorkerWindowClient::create(*webClientRaw);
-}
-
-void ServiceWorkerWindowClient::dispose(ServiceWorkerWindowClient::WebType* webClientRaw)
-{
-    delete webClientRaw;
+    return ServiceWorkerWindowClient::create(*webClient);
 }
 
 ServiceWorkerWindowClient* ServiceWorkerWindowClient::create(const WebServiceWorkerClientInfo& info)

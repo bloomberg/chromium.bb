@@ -14,7 +14,6 @@
 #include "modules/bluetooth/BluetoothGATTCharacteristic.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/bluetooth/WebBluetooth.h"
-#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -23,17 +22,12 @@ BluetoothGATTService::BluetoothGATTService(PassOwnPtr<WebBluetoothGATTService> w
 {
 }
 
-BluetoothGATTService* BluetoothGATTService::take(ScriptPromiseResolver*, WebBluetoothGATTService* webServiceRawPointer)
+BluetoothGATTService* BluetoothGATTService::take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothGATTService> webService)
 {
-    if (!webServiceRawPointer) {
+    if (!webService) {
         return nullptr;
     }
-    return new BluetoothGATTService(adoptPtr(webServiceRawPointer));
-}
-
-void BluetoothGATTService::dispose(WebBluetoothGATTService* webService)
-{
-    delete webService;
+    return new BluetoothGATTService(webService);
 }
 
 ScriptPromise BluetoothGATTService::getCharacteristic(ScriptState* scriptState,

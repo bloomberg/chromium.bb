@@ -10,15 +10,9 @@
 namespace blink {
 
 // static
-AppBannerPromptResult* AppBannerPromptResult::take(ScriptPromiseResolver* resolver, blink::WebAppBannerPromptResult* webInstance)
+AppBannerPromptResult* AppBannerPromptResult::take(ScriptPromiseResolver* resolver, PassOwnPtr<WebAppBannerPromptResult> webInstance)
 {
     return AppBannerPromptResult::create(webInstance->platform, webInstance->outcome);
-}
-
-// static
-void AppBannerPromptResult::dispose(blink::WebAppBannerPromptResult* webInstance)
-{
-    delete webInstance;
 }
 
 AppBannerPromptResult::~AppBannerPromptResult()

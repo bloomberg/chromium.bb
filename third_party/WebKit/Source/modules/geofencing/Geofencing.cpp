@@ -18,6 +18,7 @@
 #include "public/platform/WebCircularGeofencingRegion.h"
 #include "public/platform/WebGeofencingProvider.h"
 #include "public/platform/WebGeofencingRegistration.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -27,18 +28,12 @@ namespace {
 class RegionArray {
 public:
     typedef WebVector<WebGeofencingRegistration> WebType;
-    static HeapVector<Member<GeofencingRegion>> take(ScriptPromiseResolver* resolver, WebType* regionsRaw)
+    static HeapVector<Member<GeofencingRegion>> take(ScriptPromiseResolver* resolver, PassOwnPtr<WebType> webRegions)
     {
-        OwnPtr<WebType> webRegions = adoptPtr(regionsRaw);
         HeapVector<Member<GeofencingRegion>> regions;
         for (size_t i = 0; i < webRegions->size(); ++i)
             regions.append(CircularGeofencingRegion::create((*webRegions)[i].id, (*webRegions)[i].region));
         return regions;
-    }
-
-    static void dispose(WebType* regionsRaw)
-    {
-        delete regionsRaw;
     }
 
 private:

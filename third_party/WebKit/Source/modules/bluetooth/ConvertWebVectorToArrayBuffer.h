@@ -8,6 +8,7 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebVector.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -20,8 +21,7 @@ class ConvertWebVectorToArrayBuffer {
 public:
     // Interface required by CallbackPromiseAdapter:
     typedef WebVector<uint8_t> WebType;
-    static PassRefPtr<DOMArrayBuffer> take(ScriptPromiseResolver*, WebVector<uint8_t>*);
-    static void dispose(WebVector<uint8_t>*);
+    static PassRefPtr<DOMArrayBuffer> take(ScriptPromiseResolver*, PassOwnPtr<WebVector<uint8_t>>);
 
 private:
     ConvertWebVectorToArrayBuffer() = delete;

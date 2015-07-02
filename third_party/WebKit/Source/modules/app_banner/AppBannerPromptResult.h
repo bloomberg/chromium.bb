@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "public/platform/modules/app_banner/WebAppBannerPromptResult.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -20,8 +21,7 @@ class AppBannerPromptResult final : public GarbageCollectedFinalized<AppBannerPr
 public:
     // Support for CallbackPromiseAdapter:
     typedef blink::WebAppBannerPromptResult WebType;
-    static AppBannerPromptResult* take(ScriptPromiseResolver*, blink::WebAppBannerPromptResult* webInstance);
-    static void dispose(blink::WebAppBannerPromptResult* webInstance);
+    static AppBannerPromptResult* take(ScriptPromiseResolver*, PassOwnPtr<WebAppBannerPromptResult> webInstance);
 
     static AppBannerPromptResult* create(const AtomicString& platform, WebAppBannerPromptResult::Outcome outcome)
     {

@@ -14,7 +14,6 @@
 #include "modules/bluetooth/ConvertWebVectorToArrayBuffer.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/bluetooth/WebBluetooth.h"
-#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -23,17 +22,12 @@ BluetoothGATTCharacteristic::BluetoothGATTCharacteristic(PassOwnPtr<WebBluetooth
 {
 }
 
-BluetoothGATTCharacteristic* BluetoothGATTCharacteristic::take(ScriptPromiseResolver*, WebBluetoothGATTCharacteristic* webCharacteristicRawPointer)
+BluetoothGATTCharacteristic* BluetoothGATTCharacteristic::take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothGATTCharacteristic> webCharacteristic)
 {
-    if (!webCharacteristicRawPointer) {
+    if (!webCharacteristic) {
         return nullptr;
     }
-    return new BluetoothGATTCharacteristic(adoptPtr(webCharacteristicRawPointer));
-}
-
-void BluetoothGATTCharacteristic::dispose(WebBluetoothGATTCharacteristic* webCharacteristic)
-{
-    delete webCharacteristic;
+    return new BluetoothGATTCharacteristic(webCharacteristic);
 }
 
 ScriptPromise BluetoothGATTCharacteristic::readValue(ScriptState* scriptState)

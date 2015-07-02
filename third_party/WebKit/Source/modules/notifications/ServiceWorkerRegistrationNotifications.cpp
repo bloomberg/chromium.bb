@@ -23,6 +23,7 @@
 #include "public/platform/WebSerializedOrigin.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
 #include "public/platform/modules/notifications/WebNotificationManager.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 namespace {
@@ -33,20 +34,12 @@ class NotificationArray {
 public:
     using WebType = WebVector<WebPersistentNotificationInfo>;
 
-    static HeapVector<Member<Notification>> take(ScriptPromiseResolver* resolver, WebType* notificationInfosRaw)
+    static HeapVector<Member<Notification>> take(ScriptPromiseResolver* resolver, PassOwnPtr<WebType> notificationInfos)
     {
-        OwnPtr<WebType> notificationInfos = adoptPtr(notificationInfosRaw);
         HeapVector<Member<Notification>> notifications;
-
         for (const WebPersistentNotificationInfo& notificationInfo : *notificationInfos)
             notifications.append(Notification::create(resolver->executionContext(), notificationInfo.persistentId, notificationInfo.data));
-
         return notifications;
-    }
-
-    static void dispose(WebType* notificationInfosRaw)
-    {
-        delete notificationInfosRaw;
     }
 
 private:

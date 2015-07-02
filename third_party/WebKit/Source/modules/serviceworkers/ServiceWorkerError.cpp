@@ -44,9 +44,8 @@ static DOMException* createException(ExceptionCode code, const String& defaultMe
 }
 
 // static
-DOMException* ServiceWorkerError::take(ScriptPromiseResolver*, WebType* webErrorRaw)
+DOMException* ServiceWorkerError::take(ScriptPromiseResolver*, PassOwnPtr<WebType> webError)
 {
-    OwnPtr<WebType> webError = adoptPtr(webErrorRaw);
     switch (webError->errorType) {
     case WebServiceWorkerError::ErrorTypeAbort:
         return createException(AbortError, "The Service Worker operation was aborted.", webError->message);
@@ -74,12 +73,6 @@ DOMException* ServiceWorkerError::take(ScriptPromiseResolver*, WebType* webError
     }
     ASSERT_NOT_REACHED();
     return DOMException::create(UnknownError);
-}
-
-// static
-void ServiceWorkerError::dispose(WebType* webErrorRaw)
-{
-    delete webErrorRaw;
 }
 
 } // namespace blink

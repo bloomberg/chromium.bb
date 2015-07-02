@@ -8,13 +8,11 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "public/platform/modules/bluetooth/WebBluetoothError.h"
-#include "wtf/OwnPtr.h"
 
 namespace blink {
 
-DOMException* BluetoothError::take(ScriptPromiseResolver*, WebBluetoothError* webErrorRawPointer)
+DOMException* BluetoothError::take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothError> webError)
 {
-    OwnPtr<WebBluetoothError> webError = adoptPtr(webErrorRawPointer);
     switch (webError->errorType) {
     case WebBluetoothError::AbortError:
         return DOMException::create(AbortError, webError->message);
@@ -35,11 +33,6 @@ DOMException* BluetoothError::take(ScriptPromiseResolver*, WebBluetoothError* we
     }
     ASSERT_NOT_REACHED();
     return DOMException::create(UnknownError);
-}
-
-void BluetoothError::dispose(WebBluetoothError* webErrorRaw)
-{
-    delete webErrorRaw;
 }
 
 } // namespace blink

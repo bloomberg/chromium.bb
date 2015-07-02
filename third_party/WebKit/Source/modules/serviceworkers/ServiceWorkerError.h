@@ -44,8 +44,7 @@ class ServiceWorkerError {
 public:
     // For CallbackPromiseAdapter
     typedef WebServiceWorkerError WebType;
-    static DOMException* take(ScriptPromiseResolver*, WebType* webErrorRaw);
-    static void dispose(WebType* webErrorRaw);
+    static DOMException* take(ScriptPromiseResolver*, PassOwnPtr<WebType> webError);
 
 private:
     WTF_MAKE_NONCOPYABLE(ServiceWorkerError);

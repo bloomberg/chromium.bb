@@ -16,6 +16,7 @@
 #include "modules/serviceworkers/ServiceWorkerWindowClient.h"
 #include "public/platform/WebServiceWorkerClientQueryOptions.h"
 #include "public/platform/WebServiceWorkerClientsInfo.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
@@ -26,9 +27,8 @@ namespace {
 class ClientArray {
 public:
     typedef WebServiceWorkerClientsInfo WebType;
-    static HeapVector<Member<ServiceWorkerClient>> take(ScriptPromiseResolver*, WebType* webClientsRaw)
+    static HeapVector<Member<ServiceWorkerClient>> take(ScriptPromiseResolver*, PassOwnPtr<WebType> webClients)
     {
-        OwnPtr<WebType> webClients = adoptPtr(webClientsRaw);
         HeapVector<Member<ServiceWorkerClient>> clients;
         for (size_t i = 0; i < webClients->clients.size(); ++i) {
             const WebServiceWorkerClientInfo& client = webClients->clients[i];
@@ -38,10 +38,6 @@ public:
                 clients.append(ServiceWorkerClient::create(client));
         }
         return clients;
-    }
-    static void dispose(WebType* webClientsRaw)
-    {
-        delete webClientsRaw;
     }
 
 private:

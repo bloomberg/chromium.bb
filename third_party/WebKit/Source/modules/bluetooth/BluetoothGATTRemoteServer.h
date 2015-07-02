@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Heap.h"
 #include "public/platform/modules/bluetooth/WebBluetoothGATTRemoteServer.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -31,8 +32,7 @@ public:
 
     // Interface required by CallbackPromiseAdapter:
     typedef WebBluetoothGATTRemoteServer WebType;
-    static BluetoothGATTRemoteServer* take(ScriptPromiseResolver*, WebBluetoothGATTRemoteServer*);
-    static void dispose(WebBluetoothGATTRemoteServer*);
+    static BluetoothGATTRemoteServer* take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothGATTRemoteServer>);
 
     // Interface required by Garbage Collectoin:
     DEFINE_INLINE_TRACE() { }

@@ -26,10 +26,8 @@ PushSubscriptionCallbacks::~PushSubscriptionCallbacks()
 
 void PushSubscriptionCallbacks::onSuccess(WebPushSubscription* webPushSubscription)
 {
-    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
-        PushSubscription::dispose(webPushSubscription);
+    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
         return;
-    }
 
     if (!webPushSubscription) {
         m_resolver->resolve(v8::Null(m_resolver->scriptState()->isolate()));
@@ -40,11 +38,10 @@ void PushSubscriptionCallbacks::onSuccess(WebPushSubscription* webPushSubscripti
 
 void PushSubscriptionCallbacks::onError(WebPushError* error)
 {
-    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
-        PushError::dispose(error);
+    OwnPtr<WebPushError> ownError = adoptPtr(error);
+    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
         return;
-    }
-    m_resolver->reject(PushError::take(m_resolver.get(), error));
+    m_resolver->reject(PushError::take(m_resolver.get(), ownError.release()));
 }
 
 } // namespace blink
