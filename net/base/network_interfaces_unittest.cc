@@ -488,9 +488,9 @@ TEST(NetUtilTest, GetNetworkListTrimming) {
 
   NetworkInterfaceList results;
   sockaddr_storage addresses[2];
-  IP_ADAPTER_ADDRESSES adapter_address = {0};
-  IP_ADAPTER_UNICAST_ADDRESS address = {0};
-  IP_ADAPTER_PREFIX adapter_prefix = {0};
+  IP_ADAPTER_ADDRESSES adapter_address = {};
+  IP_ADAPTER_UNICAST_ADDRESS address = {};
+  IP_ADAPTER_PREFIX adapter_prefix = {};
   adapter_address.FirstUnicastAddress = &address;
   adapter_address.FirstPrefix = &adapter_prefix;
 
