@@ -3438,8 +3438,9 @@ void EventHandler::dispatchPointerEventsForTouchEvent(const PlatformTouchEvent& 
         const unsigned& pointerId = point.id();
         const PlatformTouchPoint::State pointState = point.state();
 
-        if (pointState == PlatformTouchPoint::TouchStationary)
+        if (pointState == PlatformTouchPoint::TouchStationary || !touchInfo.knownTarget)
             continue;
+
         bool pointerReleasedOrCancelled =
             pointState == PlatformTouchPoint::TouchReleased || pointState == PlatformTouchPoint::TouchCancelled;
         const AtomicString& eventName(pointerEventNameForTouchPointState(pointState));
