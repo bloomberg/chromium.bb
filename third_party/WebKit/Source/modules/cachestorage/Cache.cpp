@@ -176,7 +176,6 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_resolver);
-        visitor->trace(m_values);
     }
 
 private:
