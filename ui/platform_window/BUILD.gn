@@ -18,18 +18,17 @@ source_set("platform_window") {
 }
 
 group("platform_impls") {
+  deps = [
+    "//ui/platform_window/stub",
+  ]
   if (is_android) {
-    deps = [
+    deps += [
       "//ui/platform_window/android",
       "//ui/platform_window/android:jni_headers",
     ]
   } else if (use_x11) {
-    deps = [
-      "//ui/platform_window/x11",
-    ]
+    deps += [ "//ui/platform_window/x11" ]
   } else if (is_win) {
-    deps = [
-      "//ui/platform_window/win",
-    ]
+    deps += [ "//ui/platform_window/win" ]
   }
 }
