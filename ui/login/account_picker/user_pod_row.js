@@ -2584,8 +2584,7 @@ cr.define('login', function() {
       if (layout.columns != this.columns || layout.rows != this.rows)
         this.placePods_();
 
-      if (Oobe.getInstance().virtualKeyboardShown)
-        this.scrollFocusedPodIntoView();
+      this.scrollFocusedPodIntoView();
     },
 
     /**
@@ -2783,9 +2782,7 @@ cr.define('login', function() {
           chrome.send('focusPod', [podToFocus.user.username]);
         this.firstShown_ = false;
         this.lastFocusedPod_ = podToFocus;
-
-        if (Oobe.getInstance().virtualKeyboardShown)
-          this.scrollFocusedPodIntoView();
+        this.scrollFocusedPodIntoView();
       }
       this.insideFocusPod_ = false;
       this.keyboardActivated_ = false;

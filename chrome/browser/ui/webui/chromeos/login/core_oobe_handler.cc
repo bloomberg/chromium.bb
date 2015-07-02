@@ -230,10 +230,6 @@ void CoreOobeHandler::ShowControlBar(bool show) {
   CallJS("showControlBar", show);
 }
 
-void CoreOobeHandler::SetKeyboardState(bool shown, const gfx::Rect& bounds) {
-  CallJS("setKeyboardState", shown, bounds.width(), bounds.height());
-}
-
 void CoreOobeHandler::SetClientAreaSize(int width, int height) {
   CallJS("setClientAreaSize", width, height);
 }
@@ -387,7 +383,6 @@ void CoreOobeHandler::UpdateKeyboardState() {
   if (keyboard_controller) {
     gfx::Rect bounds = keyboard_controller->current_keyboard_bounds();
     ShowControlBar(bounds.IsEmpty());
-    SetKeyboardState(!bounds.IsEmpty(), bounds);
   }
 }
 

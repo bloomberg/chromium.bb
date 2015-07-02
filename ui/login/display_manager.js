@@ -205,24 +205,6 @@ cr.define('cr.ui.login', function() {
     forceKeyboardFlow_: false,
 
     /**
-     * Whether virtual keyboard is shown.
-     * @type {boolean}
-     */
-    virtualKeyboardShown_: false,
-
-    /**
-     * Virtual keyboard width.
-     * @type {number}
-     */
-    virtualKeyboardWidth_: 0,
-
-    /**
-     * Virtual keyboard height.
-     * @type {number}
-     */
-    virtualKeyboardHeight_: 0,
-
-    /**
      * Type of UI.
      * @type {string}
      */
@@ -273,28 +255,6 @@ cr.define('cr.ui.login', function() {
 
     set headerHidden(hidden) {
       $('login-header-bar').hidden = hidden;
-    },
-
-    /**
-     * Virtual keyboard state (hidden/shown).
-     * @param {boolean} hidden Whether keyboard is shown.
-     */
-    get virtualKeyboardShown() {
-      return this.virtualKeyboardShown_;
-    },
-
-    set virtualKeyboardShown(shown) {
-      this.virtualKeyboardShown_ = shown;
-    },
-
-    /**
-     * Sets the current size of the virtual keyboard.
-     * @param {number} width keyboard width
-     * @param {number} height keyboard height
-     */
-    setVirtualKeyboardSize: function(width, height) {
-      this.virtualKeyboardWidth_ = width;
-      this.virtualKeyboardHeight_ = height;
     },
 
     /**
