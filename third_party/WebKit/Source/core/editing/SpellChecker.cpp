@@ -561,6 +561,8 @@ void SpellChecker::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask
         *checkingLength = sentenceToCheck.checkingLength();
 
     RefPtrWillBeRawPtr<SpellCheckRequest> request = SpellCheckRequest::create(resolveTextCheckingTypeMask(textCheckingOptions), TextCheckingProcessBatch, checkRange, paragraphRange, requestNumber);
+    if (!request)
+        return;
 
     if (asynchronous) {
         m_spellCheckRequester->requestCheckingFor(request);

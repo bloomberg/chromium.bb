@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<ul contenteditable>
+<li id="foo"></li>
+</ul>
+<script>
+test(function() {
+    if (!window.internals)
+        return;
+    internals.settings.setUnifiedTextCheckerEnabled(true);
+    window.getSelection().selectAllChildren(document.getElementById('foo'));
+    document.execCommand('insertParagraph');
+}, 'spelling');
+</script>
