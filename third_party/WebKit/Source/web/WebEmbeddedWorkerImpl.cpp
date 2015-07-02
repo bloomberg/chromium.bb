@@ -305,6 +305,8 @@ void WebEmbeddedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame)
         DenyCrossOriginRequests,
         nullptr,
         bind(&WebEmbeddedWorkerImpl::onScriptLoaderFinished, this));
+    // Do nothing here since onScriptLoaderFinished() might have been already
+    // invoked and |this| might have been deleted at this point.
 }
 
 void WebEmbeddedWorkerImpl::sendProtocolMessage(int callId, const WebString& message, const WebString& state)

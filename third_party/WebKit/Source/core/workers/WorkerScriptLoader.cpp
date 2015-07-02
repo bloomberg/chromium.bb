@@ -47,7 +47,6 @@ WorkerScriptLoader::WorkerScriptLoader()
     , m_failed(false)
     , m_identifier(0)
     , m_appCacheID(0)
-    , m_finishing(false)
     , m_requestContext(WebURLRequest::RequestContextWorker)
 {
 }
@@ -95,6 +94,9 @@ void WorkerScriptLoader::loadAsynchronously(ExecutionContext& executionContext, 
     resourceLoaderOptions.allowCredentials = AllowStoredCredentials;
 
     m_threadableLoader = ThreadableLoader::create(executionContext, this, *request, options, resourceLoaderOptions);
+    if (m_failed)
+        notifyFinished();
+    // Do nothing here since notifyFinished() could delete |this|.
 }
 
 const KURL& WorkerScriptLoader::responseURL() const
@@ -115,7 +117,7 @@ void WorkerScriptLoader::didReceiveResponse(unsigned long identifier, const Reso
 {
     ASSERT_UNUSED(handle, !handle);
     if (response.httpStatusCode() / 100 != 2 && response.httpStatusCode()) {
-        m_failed = true;
+        notifyError();
         return;
     }
     m_identifier = identifier;
@@ -153,16 +155,10 @@ void WorkerScriptLoader::didReceiveCachedMetadata(const char* data, int size)
 
 void WorkerScriptLoader::didFinishLoading(unsigned long identifier, double)
 {
-    if (m_failed) {
-        notifyError();
-        return;
-    }
-
-    if (m_decoder)
+    if (!m_failed && m_decoder)
         m_script.append(m_decoder->flush());
 
-    if (m_finishedCallback)
-        (*m_finishedCallback)();
+    notifyFinished();
 }
 
 void WorkerScriptLoader::didFail(const ResourceError&)
@@ -173,12 +169,6 @@ void WorkerScriptLoader::didFail(const ResourceError&)
 void WorkerScriptLoader::didFailRedirectCheck()
 {
     notifyError();
-}
-
-void WorkerScriptLoader::notifyError()
-{
-    m_failed = true;
-    notifyFinished();
 }
 
 void WorkerScriptLoader::cancel()
@@ -192,14 +182,26 @@ String WorkerScriptLoader::script()
     return m_script.toString();
 }
 
+void WorkerScriptLoader::notifyError()
+{
+    m_failed = true;
+    // notifyError() could be called before ThreadableLoader::create() returns
+    // e.g. from didFail(), and in that case m_threadableLoader is not yet set
+    // (i.e. still null).
+    // Since the callback invocation in notifyFinished() potentially delete
+    // |this| object, the callback invocation should be postponed until the
+    // create() call returns. See loadAsynchronously() for the postponed call.
+    if (m_threadableLoader)
+        notifyFinished();
+}
+
 void WorkerScriptLoader::notifyFinished()
 {
-    if (!m_finishedCallback || m_finishing)
+    if (!m_finishedCallback)
         return;
 
-    m_finishing = true;
-    if (m_finishedCallback)
-        (*m_finishedCallback)();
+    OwnPtr<Closure> callback = m_finishedCallback.release();
+    (*callback)();
 }
 
 void WorkerScriptLoader::processContentSecurityPolicy(const ResourceResponse& response)

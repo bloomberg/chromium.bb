@@ -181,6 +181,8 @@ void WebSharedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame)
         DenyCrossOriginRequests,
         bind(&WebSharedWorkerImpl::didReceiveScriptLoaderResponse, this),
         bind(&WebSharedWorkerImpl::onScriptLoaderFinished, this));
+    // Do nothing here since onScriptLoaderFinished() might have been already
+    // invoked and |this| might have been deleted at this point.
 }
 
 bool WebSharedWorkerImpl::isControlledByServiceWorker(WebDataSource& dataSource)

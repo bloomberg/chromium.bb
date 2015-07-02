@@ -54,14 +54,13 @@ public:
     ~WorkerScriptLoader() override;
 
     void loadSynchronously(ExecutionContext&, const KURL&, CrossOriginRequestPolicy);
-    // TODO: finishedCallback is not currently guaranteed to be invoked if used
-    // from worker context and the worker shuts down in the middle of an
+    // TODO: |finishedCallback| is not currently guaranteed to be invoked if
+    // used from worker context and the worker shuts down in the middle of an
     // operation. This will cause leaks when we support nested workers.
+    // Note that callbacks could be invoked before loadAsynchronously() returns.
     void loadAsynchronously(ExecutionContext&, const KURL&, CrossOriginRequestPolicy, PassOwnPtr<Closure> responseCallback, PassOwnPtr<Closure> finishedCallback);
 
-    void notifyError();
-
-    // This will immediately lead to notifyFinished() if loadAsynchronously
+    // This will immediately invoke |finishedCallback| if loadAsynchronously()
     // is in progress.
     void cancel();
 
@@ -90,6 +89,7 @@ public:
 
 private:
     PassOwnPtr<ResourceRequest> createResourceRequest();
+    void notifyError();
     void notifyFinished();
 
     void processContentSecurityPolicy(const ResourceResponse&);
@@ -107,7 +107,6 @@ private:
     bool m_failed;
     unsigned long m_identifier;
     long long m_appCacheID;
-    bool m_finishing;
     OwnPtr<Vector<char>> m_cachedMetadata;
     WebURLRequest::RequestContext m_requestContext;
     RefPtr<ContentSecurityPolicy> m_contentSecurityPolicy;
