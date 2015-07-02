@@ -469,7 +469,7 @@ class BatteryUtils(object):
       else:
         logging.info('Current battery temperature: %s', temp)
       return int(temp) <= target_temp
-
+    self.EnableBatteryUpdates()
     logging.info('Waiting for the device to cool down to %s (0.1 C)',
                  target_temp)
     timeout_retry.WaitFor(cool_device, wait_period=wait_period)

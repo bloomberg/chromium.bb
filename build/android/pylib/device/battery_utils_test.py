@@ -372,12 +372,14 @@ class BatteryUtilsLetBatteryCoolToTemperatureTest(BatteryUtilsTest):
   @mock.patch('time.sleep', mock.Mock())
   def testLetBatteryCoolToTemperature_startUnder(self):
     with self.assertCalls(
+        (self.call.battery.EnableBatteryUpdates(), []),
         (self.call.battery.GetBatteryInfo(), {'temperature': '500'})):
       self.battery.LetBatteryCoolToTemperature(600)
 
   @mock.patch('time.sleep', mock.Mock())
   def testLetBatteryCoolToTemperature_startOver(self):
     with self.assertCalls(
+        (self.call.battery.EnableBatteryUpdates(), []),
         (self.call.battery.GetBatteryInfo(), {'temperature': '500'}),
         (self.call.battery.GetBatteryInfo(), {'temperature': '400'})):
       self.battery.LetBatteryCoolToTemperature(400)
