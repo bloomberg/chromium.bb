@@ -608,7 +608,6 @@ void NormalPageHeap::snapshotFreeList(TracedValue& json)
 }
 #endif
 
-NO_SANITIZE_ADDRESS
 void NormalPageHeap::allocatePage()
 {
     threadState()->shouldFlushHeapDoesNotContainCache();
@@ -647,9 +646,11 @@ void NormalPageHeap::allocatePage()
 #if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
     // Allow the following addToFreeList() to add the newly allocated memory
     // to the free list.
+    ASAN_UNPOISON_MEMORY_REGION(page->payload(), page->payloadSize());
     Address address = page->payload();
     for (size_t i = 0; i < page->payloadSize(); i++)
         address[i] = reuseAllowedZapValue;
+    ASAN_POISON_MEMORY_REGION(page->payload(), page->payloadSize());
 #endif
     addToFreeList(page->payload(), page->payloadSize());
 }
