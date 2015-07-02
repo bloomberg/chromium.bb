@@ -9,6 +9,7 @@
 #include "base/ios/ios_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace test {
 class ClipboardRecentContentIOSTestHelper : public ClipboardRecentContentIOS {

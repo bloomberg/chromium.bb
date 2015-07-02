@@ -48,19 +48,18 @@ ClipboardRecentContent* ClipboardRecentContent::GetInstance() {
 }
 
 - (void)dealloc {
-  [[NSNotificationCenter defaultCenter]
-      removeObserver:self
-                name:UIPasteboardChangedNotification
-              object:[UIPasteboard generalPasteboard]];
-  [[NSNotificationCenter defaultCenter]
-      removeObserver:self
-                name:UIApplicationDidBecomeActiveNotification
-              object:[UIPasteboard generalPasteboard]];
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
 }
 
 - (void)pasteboardChangedNotification:(NSNotification*)notification {
-  _delegate->PasteboardChanged();
+  if (_delegate) {
+    _delegate->PasteboardChanged();
+  }
+}
+
+- (void)disconnect {
+  _delegate = nullptr;
 }
 
 @end
@@ -175,6 +174,7 @@ void ClipboardRecentContentIOS::Init(base::TimeDelta uptime) {
 }
 
 ClipboardRecentContentIOS::~ClipboardRecentContentIOS() {
+  [notificationBridge_ disconnect];
 }
 
 GURL ClipboardRecentContentIOS::URLFromPasteboard() {
