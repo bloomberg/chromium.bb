@@ -246,6 +246,7 @@ div.splitter {
 .dialog-header {
   align-items: center;
   background: rgb(33, 150, 243);
+  box-sizing: border-box;
   color: white;
   display: flex;
   flex: none;
@@ -257,6 +258,7 @@ div.splitter {
 
 body.check-select .dialog-header {
   background: white;
+  border-bottom: 1px solid rgb(219, 219, 219);
   color: rgb(90, 90, 90);
 }
 
