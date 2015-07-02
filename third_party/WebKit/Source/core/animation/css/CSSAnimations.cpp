@@ -442,6 +442,9 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         RefPtrWillBeRawPtr<KeyframeEffect> transition = KeyframeEffect::create(element, model, inertAnimation->specifiedTiming(), KeyframeEffect::TransitionPriority, eventDelegate.release());
         transition->setName(inertAnimation->name());
         RefPtrWillBeRawPtr<Animation> animation = element->document().timeline().play(transition.get());
+        // Set the current time as the start time for retargeted transitions
+        if (retargetedCompositorTransitions.contains(id))
+            animation->setStartTime(element->document().timeline().currentTime());
         animation->update(TimingUpdateOnDemand);
         runningTransition.animation = animation;
         m_transitions.set(id, runningTransition);
