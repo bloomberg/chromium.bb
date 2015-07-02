@@ -35,8 +35,7 @@ interface HTMLTableElement : HTMLElement {
     HTMLElement createTBody();
     readonly attribute HTMLCollection rows;
     [RaisesException] HTMLElement insertRow(optional long index = -1);
-    // TODO(philipj): The index argument should not be optional.
-    [RaisesException] void deleteRow([Default=Undefined] optional long index);
+    [RaisesException] void deleteRow(long index);
     // attribute boolean sortable;
     // void stopSorting();
 

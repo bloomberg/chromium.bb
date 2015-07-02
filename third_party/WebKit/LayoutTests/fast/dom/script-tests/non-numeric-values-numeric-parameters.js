@@ -238,7 +238,7 @@ shouldBe("nonNumericPolicy('createHTMLSelectElement().item(x)')", "'any type all
 // HTMLTableElement
 
 shouldBe("nonNumericPolicy('createHTMLTableElement().insertRow(x)')", "'any type allowed'");
-shouldBe("nonNumericPolicy('createHTMLTableElement().deleteRow(x)')", "'any type allowed'");
+shouldBe("nonNumericPolicy('createHTMLTableElement().deleteRow(x)')", "'any type allowed (but not omitted)'");
 
 // HTMLTableRowElement
 
@@ -248,7 +248,7 @@ shouldBe("nonNumericPolicy('createHTMLTableRowElement().deleteCell(x)')", "'any 
 // HTMLTableSectionElement
 
 shouldBe("nonNumericPolicy('createHTMLTableSectionElement().insertRow(x)')", "'any type allowed'");
-shouldBe("nonNumericPolicy('createHTMLTableSectionElement().deleteRow(x)')", "'any type allowed'");
+shouldBe("nonNumericPolicy('createHTMLTableSectionElement().deleteRow(x)')", "'any type allowed (but not omitted)'");
 
 // HTMLInputElement
 
