@@ -536,7 +536,7 @@ unsigned MultiColumnFragmentainerGroup::columnIndexAtOffset(LayoutUnit offsetInF
     }
 
     if (m_columnHeight)
-        return (offsetInFlowThread - m_logicalTopInFlowThread).toFloat() / m_columnHeight.toFloat();
+        return ((offsetInFlowThread - m_logicalTopInFlowThread) / m_columnHeight).floor();
     return 0;
 }
 
