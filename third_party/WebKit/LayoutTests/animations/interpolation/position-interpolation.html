@@ -26,10 +26,23 @@
 <script src="resources/interpolation-test.js"></script>
 <script>
 assertNoInterpolation({
-  method: 'Web Animations',
   property: 'position',
   from: 'absolute',
-  to: 'static'
+  to: 'static',
 });
+assertInterpolation({
+  property: 'position',
+  from: '',
+  to: 'absolute',
+  method: 'CSS Animations',
+}, [
+  {at: -1, is: 'static'},
+  {at: 0, is: 'static'},
+  {at: 0.25, is: 'static'},
+  {at: 0.5, is: 'absolute'},
+  {at: 0.75, is: 'absolute'},
+  {at: 1, is: 'absolute'},
+  {at: 2, is: 'absolute'},
+]);
 </script>
 </body>

@@ -100,9 +100,7 @@ static PassRefPtrWillBeRawPtr<StringKeyframeEffectModel> createKeyframeEffectMod
                     timingFunction = CSSTimingData::initialTimingFunction();
                 }
                 keyframe->setEasing(timingFunction.release());
-            } else if (CSSPropertyMetadata::isInterpolableProperty(property)) {
-                // TODO(alancutter): We should allow animation of non-interpolable properties as well.
-                // https://lists.w3.org/Archives/Public/www-style/2012Nov/0261.html
+            } else if (CSSAnimations::isAnimatableProperty(property)) {
                 keyframe->setPropertyValue(property, properties.propertyAt(j).value());
             }
         }

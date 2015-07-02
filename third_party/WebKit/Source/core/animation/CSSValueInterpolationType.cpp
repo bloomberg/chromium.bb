@@ -16,7 +16,9 @@ PassOwnPtrWillBeRawPtr<InterpolationValue> CSSValueInterpolationType::maybeConve
 
 void CSSValueInterpolationType::apply(const InterpolableValue&, const NonInterpolableValue* nonInterpolableValue, StyleResolverState& state) const
 {
-    StyleBuilder::applyProperty(m_property, state, toDefaultNonInterpolableValue(nonInterpolableValue)->cssValue());
+    CSSValue* value = toDefaultNonInterpolableValue(nonInterpolableValue)->cssValue();
+    if (value)
+        StyleBuilder::applyProperty(m_property, state, value);
 }
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(DefaultNonInterpolableValue);
