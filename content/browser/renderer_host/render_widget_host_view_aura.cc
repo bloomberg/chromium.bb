@@ -1617,10 +1617,6 @@ void RenderWidgetHostViewAura::InsertChar(base::char16 ch, int flags) {
   }
 }
 
-gfx::NativeWindow RenderWidgetHostViewAura::GetAttachedWindow() const {
-  return window_;
-}
-
 ui::TextInputType RenderWidgetHostViewAura::GetTextInputType() const {
   return text_input_type_;
 }

@@ -56,10 +56,6 @@ void PrefixSelector::InsertChar(base::char16 ch, int flags) {
   OnTextInput(base::string16(1, ch));
 }
 
-gfx::NativeWindow PrefixSelector::GetAttachedWindow() const {
-  return prefix_delegate_->GetWidget()->GetNativeWindow();
-}
-
 ui::TextInputType PrefixSelector::GetTextInputType() const {
   return ui::TEXT_INPUT_TYPE_TEXT;
 }

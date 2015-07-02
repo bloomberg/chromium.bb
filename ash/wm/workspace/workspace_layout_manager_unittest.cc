@@ -27,8 +27,6 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/base/ime/dummy_text_input_client.h"
-#include "ui/base/ime/input_method.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/screen.h"
@@ -1039,39 +1037,12 @@ class WorkspaceLayoutManagerKeyboardTest : public test::AshTestBase {
     keyboard_bounds_ = bounds;
   }
 
-  void Focus(ui::TextInputClient* text_input_client) {
-    aura::Window* root_window =
-        ash::Shell::GetInstance()->GetPrimaryRootWindow();
-    ui::InputMethod* input_method = root_window->GetHost()->GetInputMethod();
-    input_method->SetFocusedTextInputClient(text_input_client);
-  }
-
-  void Blur(ui::TextInputClient* text_input_client) {
-    aura::Window* root_window =
-        ash::Shell::GetInstance()->GetPrimaryRootWindow();
-    ui::InputMethod* input_method = root_window->GetHost()->GetInputMethod();
-    input_method->SetFocusedTextInputClient(NULL);
-  }
-
  private:
   gfx::Insets restore_work_area_insets_;
   gfx::Rect keyboard_bounds_;
   WorkspaceLayoutManager* layout_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManagerKeyboardTest);
-};
-
-class FakeTextInputClient : public ui::DummyTextInputClient {
- public:
-  explicit FakeTextInputClient(gfx::NativeWindow window) : window_(window) {}
-  ~FakeTextInputClient() override {}
-
-  gfx::NativeWindow GetAttachedWindow() const override { return window_; }
-
- private:
-  gfx::NativeWindow window_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeTextInputClient);
 };
 
 // Tests that when a child window gains focus the top level window containing it
@@ -1094,8 +1065,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, ChildWindowFocused) {
       &delegate2, -1, work_area));
   parent_window->AddChild(window.get());
 
-  FakeTextInputClient text_input_client(window.get());
-  Focus(&text_input_client);
+  wm::ActivateWindow(window.get());
 
   int available_height =
       Shell::GetScreen()->GetPrimaryDisplay().bounds().height() -
@@ -1111,8 +1081,6 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, ChildWindowFocused) {
   HideKeyboard();
   EXPECT_EQ(initial_window_bounds.ToString(),
             parent_window->bounds().ToString());
-
-  Blur(&text_input_client);
 }
 
 TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
@@ -1129,12 +1097,11 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
   scoped_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
       &delegate, -1, work_area));
 
-  FakeTextInputClient text_input_client(window.get());
-  Focus(&text_input_client);
-
   int available_height =
       Shell::GetScreen()->GetPrimaryDisplay().bounds().height() -
       keyboard_bounds.height();
+
+  wm::ActivateWindow(window.get());
 
   EXPECT_EQ(gfx::Rect(work_area).ToString(), window->bounds().ToString());
   ShowKeyboard();
@@ -1167,8 +1134,6 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
             window->bounds().ToString());
   HideKeyboard();
   EXPECT_EQ(occluded_window_bounds.ToString(), window->bounds().ToString());
-
-  Blur(&text_input_client);
 }
 
 }  // namespace ash

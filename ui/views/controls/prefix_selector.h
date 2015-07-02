@@ -30,7 +30,6 @@ class VIEWS_EXPORT PrefixSelector : public ui::TextInputClient {
   void ClearCompositionText() override;
   void InsertText(const base::string16& text) override;
   void InsertChar(base::char16 ch, int flags) override;
-  gfx::NativeWindow GetAttachedWindow() const override;
   ui::TextInputType GetTextInputType() const override;
   ui::TextInputMode GetTextInputMode() const override;
   int GetTextInputFlags() const override;

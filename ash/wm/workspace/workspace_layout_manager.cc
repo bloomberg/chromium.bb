@@ -23,8 +23,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/ime/input_method.h"
-#include "ui/base/ime/text_input_client.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
@@ -134,12 +132,7 @@ void WorkspaceLayoutManager::SetChildBounds(
 
 void WorkspaceLayoutManager::OnKeyboardBoundsChanging(
     const gfx::Rect& new_bounds) {
-  ui::InputMethod* input_method = root_window_->GetHost()->GetInputMethod();
-  ui::TextInputClient* text_input_client = input_method->GetTextInputClient();
-  if (!text_input_client)
-    return;
-  aura::Window *window =
-      text_input_client->GetAttachedWindow()->GetToplevelWindow();
+  aura::Window* window = wm::GetActiveWindow()->GetToplevelWindow();
   if (!window || !window_->Contains(window))
     return;
   wm::WindowState* window_state = wm::GetWindowState(window);

@@ -57,9 +57,6 @@ class UI_BASE_IME_EXPORT TextInputClient {
 
   // Input context information -------------------------------------------------
 
-  // Returns native window to which input context is bound.
-  virtual gfx::NativeWindow GetAttachedWindow() const = 0;
-
   // Returns current text input type. It could be changed and even becomes
   // TEXT_INPUT_TYPE_NONE at runtime.
   virtual ui::TextInputType GetTextInputType() const = 0;

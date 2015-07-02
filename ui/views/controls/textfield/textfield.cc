@@ -1473,21 +1473,6 @@ void Textfield::InsertChar(base::char16 ch, int flags) {
   }
 }
 
-gfx::NativeWindow Textfield::GetAttachedWindow() const {
-  // Imagine the following hierarchy.
-  //   [NativeWidget A] - FocusManager
-  //     [View]
-  //     [NativeWidget B]
-  //       [View]
-  //         [View X]
-  // An important thing is that [NativeWidget A] owns Win32 input focus even
-  // when [View X] is logically focused by FocusManager. As a result, an Win32
-  // IME may want to interact with the native view of [NativeWidget A] rather
-  // than that of [NativeWidget B]. This is why we need to call
-  // GetTopLevelWidget() here.
-  return GetWidget()->GetTopLevelWidget()->GetNativeWindow();
-}
-
 ui::TextInputType Textfield::GetTextInputType() const {
   if (read_only() || !enabled())
     return ui::TEXT_INPUT_TYPE_NONE;
