@@ -175,8 +175,7 @@ class WebFrameTestProxy : public Base {
 
   virtual void showContextMenu(
       const blink::WebContextMenuData& context_menu_data) {
-    base_proxy_->ShowContextMenu(Base::GetWebFrame(),
-                                 context_menu_data);
+    base_proxy_->ShowContextMenu(context_menu_data);
     Base::showContextMenu(context_menu_data);
   }
 

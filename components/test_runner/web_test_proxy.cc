@@ -8,6 +8,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -450,11 +451,33 @@ bool WebTestProxyBase::RunFileChooser(
 }
 
 void WebTestProxyBase::ShowValidationMessage(
-    const base::string16& message,
-    const base::string16& sub_message) {
+    const blink::WebString& main_message,
+    blink::WebTextDirection main_message_hint,
+    const blink::WebString& sub_message,
+    blink::WebTextDirection sub_message_hint) {
+  base::string16 wrapped_main_text = main_message;
+  base::string16 wrapped_sub_text = sub_message;
+
+  if (main_message_hint == blink::WebTextDirectionLeftToRight) {
+    wrapped_main_text =
+        base::i18n::GetDisplayStringInLTRDirectionality(wrapped_main_text);
+  } else if (main_message_hint == blink::WebTextDirectionRightToLeft &&
+             !base::i18n::IsRTL()) {
+    base::i18n::WrapStringWithRTLFormatting(&wrapped_main_text);
+  }
+
+  if (!wrapped_sub_text.empty()) {
+    if (sub_message_hint == blink::WebTextDirectionLeftToRight) {
+      wrapped_sub_text =
+          base::i18n::GetDisplayStringInLTRDirectionality(wrapped_sub_text);
+    } else if (sub_message_hint == blink::WebTextDirectionRightToLeft) {
+      base::i18n::WrapStringWithRTLFormatting(&wrapped_sub_text);
+    }
+  }
   delegate_->PrintMessage("ValidationMessageClient: main-message=" +
-                          base::UTF16ToUTF8(message) + " sub-message=" +
-                          base::UTF16ToUTF8(sub_message) + "\n");
+                          base::UTF16ToUTF8(wrapped_main_text) +
+                          " sub-message=" +
+                          base::UTF16ToUTF8(wrapped_sub_text) + "\n");
 }
 
 std::string WebTestProxyBase::CaptureTree(
@@ -946,7 +969,6 @@ void WebTestProxyBase::DidStopLoading() {
 }
 
 void WebTestProxyBase::ShowContextMenu(
-    blink::WebLocalFrame* frame,
     const blink::WebContextMenuData& context_menu_data) {
   test_interfaces_->GetEventSender()->SetContextMenuData(context_menu_data);
 }

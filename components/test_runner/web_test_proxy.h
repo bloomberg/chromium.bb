@@ -106,8 +106,10 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
       const blink::WebVector<blink::WebColorSuggestion>& suggestions);
   bool RunFileChooser(const blink::WebFileChooserParams& params,
                       blink::WebFileChooserCompletion* completion);
-  void ShowValidationMessage(const base::string16& message,
-                             const base::string16& sub_message);
+  void ShowValidationMessage(const blink::WebString& main_message,
+                             blink::WebTextDirection main_message_hint,
+                             const blink::WebString& sub_message,
+                             blink::WebTextDirection sub_message_hint);
   void HideValidationMessage();
   void MoveValidationMessage(const blink::WebRect& anchor_in_root_view);
 
@@ -164,8 +166,7 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
                                  const blink::WebPluginParams& params);
   void SetStatusText(const blink::WebString& text);
   void DidStopLoading();
-  void ShowContextMenu(blink::WebLocalFrame* frame,
-                       const blink::WebContextMenuData& data);
+  void ShowContextMenu(const blink::WebContextMenuData& data);
   blink::WebUserMediaClient* GetUserMediaClient();
   void PrintPage(blink::WebLocalFrame* frame);
   blink::WebSpeechRecognizer* GetSpeechRecognizer();
@@ -384,14 +385,8 @@ class WebTestProxy : public Base, public WebTestProxyBase {
                                      blink::WebTextDirection main_message_hint,
                                      const blink::WebString& sub_message,
                                      blink::WebTextDirection sub_message_hint) {
-    base::string16 wrapped_main_text = main_message;
-    base::string16 wrapped_sub_text = sub_message;
-
-    Base::SetValidationMessageDirection(&wrapped_main_text, main_message_hint,
-                                        &wrapped_sub_text, sub_message_hint);
-
-    WebTestProxyBase::ShowValidationMessage(
-        wrapped_main_text, wrapped_sub_text);
+    WebTestProxyBase::ShowValidationMessage(main_message, main_message_hint,
+                                            sub_message, sub_message_hint);
   }
   virtual void postSpellCheckEvent(const blink::WebString& event_name) {
     WebTestProxyBase::PostSpellCheckEvent(event_name);

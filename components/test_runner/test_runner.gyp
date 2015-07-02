@@ -20,6 +20,7 @@
       'dependencies': [
         'resources',
         '../../base/base.gyp:base',
+        '../../base/base.gyp:base_i18n',
         '../../cc/cc.gyp:cc',
         '../../gin/gin.gyp:gin',
         '../../gpu/gpu.gyp:gpu',

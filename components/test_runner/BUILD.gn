@@ -87,7 +87,8 @@ component("test_runner") {
 
   deps = [
     ":resources",
-    "//base",
+    "//base:base",
+    "//base:i18n",
     "//cc",
     "//gin",
     "//gpu",
