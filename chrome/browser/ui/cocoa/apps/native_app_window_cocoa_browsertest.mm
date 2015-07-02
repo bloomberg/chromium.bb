@@ -26,6 +26,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #import "testing/gtest_mac.h"
 #import "ui/base/test/nswindow_fullscreen_notification_waiter.h"
+#import "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #import "ui/base/test/windowed_nsnotification_observer.h"
 #import "ui/gfx/mac/nswindow_frame_controls.h"
 
@@ -220,6 +221,8 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest,
 IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, Fullscreen) {
   if (!base::mac::IsOSLionOrLater())
     return;
+
+  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
 
   extensions::AppWindow* app_window =
       CreateTestAppWindow("{\"alwaysOnTop\": true }");
@@ -450,10 +453,12 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, MinimizeMaximize) {
 }
 
 // Test Maximize, Fullscreen, Restore combinations.
-// TODO(jackhou): Enable this when we can mock out fullscreen.
-// See http://crbug.com/502150
-IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest,
-                       DISABLED_MaximizeFullscreen) {
+IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, MaximizeFullscreen) {
+  if (base::mac::IsOSSnowLeopard())
+    return;
+
+  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
+
   SetUpAppWithWindows(1);
   AppWindow* app_window = GetFirstAppWindow();
   extensions::NativeAppWindow* window = app_window->GetBaseWindow();
@@ -592,6 +597,7 @@ void TestControls(AppWindow* app_window) {
   // If a window is made fullscreen by the API, fullscreen should be enabled so
   // the user can exit fullscreen.
   if (base::mac::IsOSLionOrLater()) {
+    ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
     base::scoped_nsobject<NSWindowFullscreenNotificationWaiter> waiter([
         [NSWindowFullscreenNotificationWaiter alloc] initWithWindow:ns_window]);
     app_window->SetFullscreen(AppWindow::FULLSCREEN_TYPE_WINDOW_API, true);

@@ -15,6 +15,8 @@
 
 @implementation WindowedNSNotificationObserver
 
+@synthesize notificationCount = notificationCount_;
+
 - (id)initForNotification:(NSString*)name {
   return [self initForNotification:name object:nil];
 }

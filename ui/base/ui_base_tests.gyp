@@ -83,6 +83,7 @@
         'models/tree_node_model_unittest.cc',
         'test/data/resource.h',
         'test/test_clipboard_unittest.cc',
+        'test/scoped_fake_nswindow_fullscreen_unittest.mm',
         'text/bytes_formatting_unittest.cc',
         'touch/selection_bound_unittest.cc',
         'user_activity/user_activity_detector_unittest.cc',

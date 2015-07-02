@@ -567,6 +567,8 @@ source_set("test_support") {
   sources = [
     "test/nswindow_fullscreen_notification_waiter.h",
     "test/nswindow_fullscreen_notification_waiter.mm",
+    "test/scoped_fake_nswindow_fullscreen.h",
+    "test/scoped_fake_nswindow_fullscreen.mm",
     "test/test_clipboard.cc",
     "test/test_clipboard.h",
     "test/ui_controls.h",
@@ -644,6 +646,7 @@ test("ui_base_unittests") {
     "resource/data_pack_unittest.cc",
     "resource/resource_bundle_unittest.cc",
     "test/run_all_unittests.cc",
+    "test/scoped_fake_nswindow_fullscreen_unittest.mm",
     "test/test_clipboard_unittest.cc",
     "user_activity/user_activity_detector_unittest.cc",
   ]

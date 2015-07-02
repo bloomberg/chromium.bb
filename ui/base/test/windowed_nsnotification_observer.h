@@ -24,6 +24,8 @@ class RunLoop;
   base::RunLoop* runLoop_;
 }
 
+@property(readonly, nonatomic) int notificationCount;
+
 // Watch for an NSNotification on the default notification center for the given
 // |notificationSender|, or a nil object if omitted.
 - (id)initForNotification:(NSString*)name;
