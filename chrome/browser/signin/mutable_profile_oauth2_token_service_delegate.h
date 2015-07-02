@@ -1,9 +1,9 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_MUTABLE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
-#define COMPONENTS_SIGNIN_CORE_BROWSER_MUTABLE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
+#ifndef CHROME_BROWSER_SIGNIN_MUTABLE_PROFILE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
+#define CHROME_BROWSER_SIGNIN_MUTABLE_PROFILE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
 
 #include "base/memory/scoped_vector.h"
 #include "base/threading/thread_checker.h"
@@ -13,30 +13,46 @@
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "net/base/backoff_entry.h"
 
-// A specialization of ProfileOAuth2TokenService that can can mutate its OAuth2
-// tokens.
-//
-// Note: This class is just a placeholder for now. Methods used to mutate
-// the tokens are currently being migrated from ProfileOAuth2TokenService.
-class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
-                                         public WebDataServiceConsumer  {
+class MutableProfileOAuth2TokenServiceDelegate
+    : public OAuth2TokenServiceDelegate,
+      public WebDataServiceConsumer {
  public:
-  // ProfileOAuth2TokenService overrides.
-  void Shutdown() override;
-  std::vector<std::string> GetAccounts() override;
+  MutableProfileOAuth2TokenServiceDelegate(
+      SigninClient* client,
+      SigninErrorController* signin_error_controller);
+  ~MutableProfileOAuth2TokenServiceDelegate() override;
 
-  // The below three methods should be called only on the thread on which this
-  // object was created.
+  // OAuth2TokenServiceDelegate overrides.
+  OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
+      const std::string& account_id,
+      net::URLRequestContextGetter* getter,
+      OAuth2AccessTokenConsumer* consumer) override;
+
+  // Updates the internal cache of the result from the most-recently-completed
+  // auth request (used for reporting errors to the user).
+  void UpdateAuthError(const std::string& account_id,
+                       const GoogleServiceAuthError& error) override;
+
+  bool RefreshTokenIsAvailable(const std::string& account_id) const override;
+  std::vector<std::string> GetAccounts() override;
+  net::URLRequestContextGetter* GetRequestContext() const override;
+
   void LoadCredentials(const std::string& primary_account_id) override;
   void UpdateCredentials(const std::string& account_id,
                          const std::string& refresh_token) override;
   void RevokeAllCredentials() override;
-  bool RefreshTokenIsAvailable(const std::string& account_id) const override;
 
   // Revokes credentials related to |account_id|.
-  void RevokeCredentials(const std::string& account_id);
+  void RevokeCredentials(const std::string& account_id) override;
 
- protected:
+  // Overridden from OAuth2TokenServiceDelegate.
+  void Shutdown() override;
+
+ private:
+  friend class MutableProfileOAuth2TokenServiceDelegateTest;
+
+  class RevokeServerRefreshToken;
+
   class AccountInfo : public SigninErrorController::AuthStatusProvider {
    public:
     AccountInfo(SigninErrorController* signin_error_controller,
@@ -45,9 +61,7 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
     ~AccountInfo() override;
 
     const std::string& refresh_token() const { return refresh_token_; }
-    void set_refresh_token(const std::string& token) {
-      refresh_token_ = token;
-    }
+    void set_refresh_token(const std::string& token) { refresh_token_ = token; }
 
     void SetLastAuthError(const GoogleServiceAuthError& error);
 
@@ -64,51 +78,22 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
     DISALLOW_COPY_AND_ASSIGN(AccountInfo);
   };
 
-  // Maps the |account_id| of accounts known to ProfileOAuth2TokenService
-  // to information about the account.
-  typedef std::map<std::string, linked_ptr<AccountInfo> > AccountInfoMap;
-
-  friend class ProfileOAuth2TokenServiceFactory;
-  friend class MutableProfileOAuth2TokenServiceTest;
-
-  MutableProfileOAuth2TokenService();
-  ~MutableProfileOAuth2TokenService() override;
-
-  // OAuth2TokenService implementation.
-  OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
-      const std::string& account_id,
-      net::URLRequestContextGetter* getter,
-      OAuth2AccessTokenConsumer* consumer) override;
-  net::URLRequestContextGetter* GetRequestContext() override;
-
-  // Updates the internal cache of the result from the most-recently-completed
-  // auth request (used for reporting errors to the user).
-  void UpdateAuthError(const std::string& account_id,
-                       const GoogleServiceAuthError& error) override;
-
-  virtual std::string GetRefreshToken(const std::string& account_id) const;
-
-  bool HasPersistentError(const std::string& account_id);
-
-  AccountInfoMap& refresh_tokens() { return refresh_tokens_; }
-
- private:
-  class RevokeServerRefreshToken;
-
-  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceTest,
-                           TokenServiceUpdateClearsCache);
-  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceTest,
+  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
                            PersistenceDBUpgrade);
-  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceTest,
-                           PersistenceLoadCredentials);
-  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceTest,
-                           CanonicalizeAccountId);
-  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceTest,
+  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
                            FetchPersistentError);
-  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceTest,
+  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
+                           PersistenceLoadCredentials);
+  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
+                           GetAccounts);
+  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
                            RetryBackoff);
-  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceTest,
+  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
+                           CanonicalizeAccountId);
+  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
                            CanonAndNonCanonAccountId);
+  FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
+                           ShutdownService);
 
   // WebDataServiceConsumer implementation:
   void OnWebDataServiceRequestDone(WebDataServiceBase::Handle handle,
@@ -133,6 +118,11 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
   // Cancels any outstanding fetch for tokens from the web database.
   void CancelWebTokenFetch();
 
+  std::string GetRefreshToken(const std::string& account_id) const;
+
+  // Maps the |account_id| of accounts known to ProfileOAuth2TokenService
+  // to information about the account.
+  typedef std::map<std::string, linked_ptr<AccountInfo>> AccountInfoMap;
   // In memory refresh token store mapping account_id to refresh_token.
   AccountInfoMap refresh_tokens_;
 
@@ -154,7 +144,9 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
   net::BackoffEntry backoff_entry_;
   GoogleServiceAuthError backoff_error_;
 
-  DISALLOW_COPY_AND_ASSIGN(MutableProfileOAuth2TokenService);
-};
+  SigninClient* client_;
+  SigninErrorController* signin_error_controller_;
 
-#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_MUTABLE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
+  DISALLOW_COPY_AND_ASSIGN(MutableProfileOAuth2TokenServiceDelegate);
+};
+#endif

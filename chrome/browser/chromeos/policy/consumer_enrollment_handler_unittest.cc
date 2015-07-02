@@ -82,8 +82,8 @@ class ConsumerEnrollmentHandlerTest : public testing::Test {
         ->SetAuthenticatedAccountInfo(kTestOwner, kTestOwner);
 
     // Issue a fake refresh token.
-    GetFakeProfileOAuth2TokenService()->IssueRefreshTokenForUser(kTestOwner,
-                                                                 "fake_token");
+    GetFakeProfileOAuth2TokenService()->UpdateCredentials(kTestOwner,
+                                                          "fake_token");
   }
 
   FakeProfileOAuth2TokenService* GetFakeProfileOAuth2TokenService() {

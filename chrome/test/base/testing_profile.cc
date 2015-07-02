@@ -107,7 +107,7 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/signin/android_profile_oauth2_token_service.h"
+#include "chrome/browser/signin/oauth2_token_service_delegate_android.h"
 #endif
 
 #if defined(ENABLE_SUPERVISED_USERS)
@@ -409,7 +409,7 @@ void TestingProfile::Init() {
 
 #if defined(OS_ANDROID)
   // Make sure token service knows its running in tests.
-  AndroidProfileOAuth2TokenService::set_is_testing_profile();
+  OAuth2TokenServiceDelegateAndroid::set_is_testing_profile();
 #endif
 
   // Normally this would happen during browser startup, but for tests

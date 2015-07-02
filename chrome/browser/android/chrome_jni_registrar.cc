@@ -89,7 +89,7 @@
 #include "chrome/browser/prerender/external_prerender_handler_android.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/search_engines/template_url_service_android.h"
-#include "chrome/browser/signin/android_profile_oauth2_token_service.h"
+#include "chrome/browser/signin/oauth2_token_service_delegate_android.h"
 #include "chrome/browser/speech/tts_android.h"
 #include "chrome/browser/ssl/connection_security_android.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_feedback_reporter_android.h"
@@ -158,8 +158,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"AccessibilityUtils", AccessibilityUtil::Register},
     {"AccountChooserInfoBar", RegisterAccountChooserInfoBar},
     {"AccountManagementScreenHelper", AccountManagementScreenHelper::Register},
-    {"AndroidProfileOAuth2TokenService",
-     AndroidProfileOAuth2TokenService::Register},
     {"AnswersImageBridge", RegisterAnswersImageBridge},
     {"AppBannerInfoBarAndroid", RegisterAppBannerInfoBarAndroid},
     {"AppBannerInfoBarDelegateAndroid",
@@ -250,6 +248,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"NewTabPagePrefs", NewTabPagePrefs::RegisterNewTabPagePrefs},
     {"NotificationUIManager",
      NotificationUIManagerAndroid::RegisterNotificationUIManager},
+    {"OAuth2TokenServiceDelegateAndroid",
+     OAuth2TokenServiceDelegateAndroid::Register},
     {"OmniboxPrerender", RegisterOmniboxPrerender},
     {"OmniboxUrlEmphasizer",
      OmniboxUrlEmphasizer::RegisterOmniboxUrlEmphasizer},

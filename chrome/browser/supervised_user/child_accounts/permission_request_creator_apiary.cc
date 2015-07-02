@@ -232,9 +232,8 @@ void PermissionRequestCreatorApiary::OnURLFetchComplete(
     (*it)->access_token_expired = true;
     OAuth2TokenService::ScopeSet scopes;
     scopes.insert(GetApiScope());
-    oauth2_token_service_->InvalidateToken(account_id_,
-                                           scopes,
-                                           (*it)->access_token);
+    oauth2_token_service_->InvalidateAccessToken(account_id_, scopes,
+                                                 (*it)->access_token);
     StartFetching(*it);
     return;
   }

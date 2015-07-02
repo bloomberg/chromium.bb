@@ -2138,8 +2138,8 @@ void ProfileSyncService::RequestAccessToken() {
   // token again.
   const std::string& account_id = signin_->GetAccountIdToUse();
   if (!access_token_.empty()) {
-    oauth2_token_service_->InvalidateToken(
-        account_id, oauth2_scopes, access_token_);
+    oauth2_token_service_->InvalidateAccessToken(account_id, oauth2_scopes,
+                                                 access_token_);
   }
 
   access_token_.clear();

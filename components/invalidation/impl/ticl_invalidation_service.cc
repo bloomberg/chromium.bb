@@ -192,7 +192,8 @@ void TiclInvalidationService::RequestAccessToken() {
   // token again.
   const std::string& account_id = identity_provider_->GetActiveAccountId();
   OAuth2TokenService* token_service = identity_provider_->GetTokenService();
-  token_service->InvalidateToken(account_id, oauth2_scopes, access_token_);
+  token_service->InvalidateAccessToken(account_id, oauth2_scopes,
+                                       access_token_);
   access_token_.clear();
   access_token_request_ =
       token_service->StartRequest(account_id, oauth2_scopes, this);

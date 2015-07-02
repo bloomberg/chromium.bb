@@ -72,10 +72,10 @@ class MockOAuth2TokenService : public FakeOAuth2TokenService {
                         const ScopeSet& scopes) override;
 
   // OAuth2TokenService:
-  void InvalidateOAuth2Token(const std::string& account_id,
-                             const std::string& client_id,
-                             const ScopeSet& scopes,
-                             const std::string& access_token) override;
+  void InvalidateAccessTokenImpl(const std::string& account_id,
+                                 const std::string& client_id,
+                                 const ScopeSet& scopes,
+                                 const std::string& access_token) override;
 
   void AddTokenToQueue(const std::string& token);
   bool IsTokenValid(const std::string& token) const;
@@ -135,7 +135,7 @@ void MockOAuth2TokenService::SetTokenInvalid(const std::string& token) {
   valid_tokens_.erase(token);
 }
 
-void MockOAuth2TokenService::InvalidateOAuth2Token(
+void MockOAuth2TokenService::InvalidateAccessTokenImpl(
     const std::string& account_id,
     const std::string& client_id,
     const ScopeSet& scopes,

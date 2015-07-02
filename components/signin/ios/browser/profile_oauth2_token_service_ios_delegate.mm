@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/ios/browser/profile_oauth2_token_service_ios.h"
+#include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 
 #include <Foundation/Foundation.h>
 
@@ -100,7 +100,8 @@ SSOAccessTokenFetcher::SSOAccessTokenFetcher(
   DCHECK(provider_);
 }
 
-SSOAccessTokenFetcher::~SSOAccessTokenFetcher() {}
+SSOAccessTokenFetcher::~SSOAccessTokenFetcher() {
+}
 
 void SSOAccessTokenFetcher::Start(const std::string& client_id,
                                   const std::string& client_secret,
@@ -112,7 +113,9 @@ void SSOAccessTokenFetcher::Start(const std::string& client_id,
                  weak_factory_.GetWeakPtr()));
 }
 
-void SSOAccessTokenFetcher::CancelRequest() { request_was_cancelled_ = true; }
+void SSOAccessTokenFetcher::CancelRequest() {
+  request_was_cancelled_ = true;
+}
 
 void SSOAccessTokenFetcher::OnAccessTokenResponse(NSString* token,
                                                   NSDate* expiration,
@@ -134,7 +137,7 @@ void SSOAccessTokenFetcher::OnAccessTokenResponse(NSString* token,
 
 }  // namespace
 
-ProfileOAuth2TokenServiceIOS::AccountInfo::AccountInfo(
+ProfileOAuth2TokenServiceIOSDelegate::AccountInfo::AccountInfo(
     SigninErrorController* signin_error_controller,
     const std::string& account_id)
     : signin_error_controller_(signin_error_controller),
@@ -146,11 +149,11 @@ ProfileOAuth2TokenServiceIOS::AccountInfo::AccountInfo(
   signin_error_controller_->AddProvider(this);
 }
 
-ProfileOAuth2TokenServiceIOS::AccountInfo::~AccountInfo() {
+ProfileOAuth2TokenServiceIOSDelegate::AccountInfo::~AccountInfo() {
   signin_error_controller_->RemoveProvider(this);
 }
 
-void ProfileOAuth2TokenServiceIOS::AccountInfo::SetLastAuthError(
+void ProfileOAuth2TokenServiceIOSDelegate::AccountInfo::SetLastAuthError(
     const GoogleServiceAuthError& error) {
   if (error.state() != last_auth_error_.state()) {
     last_auth_error_ = error;
@@ -158,46 +161,43 @@ void ProfileOAuth2TokenServiceIOS::AccountInfo::SetLastAuthError(
   }
 }
 
-std::string ProfileOAuth2TokenServiceIOS::AccountInfo::GetAccountId() const {
+std::string ProfileOAuth2TokenServiceIOSDelegate::AccountInfo::GetAccountId()
+    const {
   return account_id_;
 }
 
 GoogleServiceAuthError
-ProfileOAuth2TokenServiceIOS::AccountInfo::GetAuthStatus() const {
+ProfileOAuth2TokenServiceIOSDelegate::AccountInfo::GetAuthStatus() const {
   return last_auth_error_;
 }
 
-ProfileOAuth2TokenServiceIOS::ProfileOAuth2TokenServiceIOS()
-    : ProfileOAuth2TokenService() {
+ProfileOAuth2TokenServiceIOSDelegate::ProfileOAuth2TokenServiceIOSDelegate(
+    SigninClient* client,
+    SigninErrorController* signin_error_controller)
+    : client_(client), signin_error_controller_(signin_error_controller) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(client);
+  DCHECK(signin_error_controller);
+}
+
+ProfileOAuth2TokenServiceIOSDelegate::~ProfileOAuth2TokenServiceIOSDelegate() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-ProfileOAuth2TokenServiceIOS::~ProfileOAuth2TokenServiceIOS() {
+void ProfileOAuth2TokenServiceIOSDelegate::Shutdown() {
   DCHECK(thread_checker_.CalledOnValidThread());
-}
-
-void ProfileOAuth2TokenServiceIOS::Initialize(
-    SigninClient* client, SigninErrorController* signin_error_controller) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ProfileOAuth2TokenService::Initialize(client, signin_error_controller);
-}
-
-void ProfileOAuth2TokenServiceIOS::Shutdown() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  CancelAllRequests();
   accounts_.clear();
-  ProfileOAuth2TokenService::Shutdown();
 }
 
 ios::ProfileOAuth2TokenServiceIOSProvider*
-ProfileOAuth2TokenServiceIOS::GetProvider() {
+ProfileOAuth2TokenServiceIOSDelegate::GetProvider() {
   ios::ProfileOAuth2TokenServiceIOSProvider* provider =
-      client()->GetIOSProvider();
+      client_->GetIOSProvider();
   DCHECK(provider);
   return provider;
 }
 
-void ProfileOAuth2TokenServiceIOS::LoadCredentials(
+void ProfileOAuth2TokenServiceIOSDelegate::LoadCredentials(
     const std::string& primary_account_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -210,7 +210,7 @@ void ProfileOAuth2TokenServiceIOS::LoadCredentials(
   FireRefreshTokensLoaded();
 }
 
-void ProfileOAuth2TokenServiceIOS::ReloadCredentials(
+void ProfileOAuth2TokenServiceIOSDelegate::ReloadCredentials(
     const std::string& primary_account_id) {
   DCHECK(!primary_account_id.empty());
   DCHECK(primary_account_id_.empty() ||
@@ -219,7 +219,7 @@ void ProfileOAuth2TokenServiceIOS::ReloadCredentials(
   ReloadCredentials();
 }
 
-void ProfileOAuth2TokenServiceIOS::ReloadCredentials() {
+void ProfileOAuth2TokenServiceIOSDelegate::ReloadCredentials() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (primary_account_id_.empty()) {
     // Avoid loading the credentials if there is no primary account id.
@@ -229,8 +229,7 @@ void ProfileOAuth2TokenServiceIOS::ReloadCredentials() {
   std::vector<std::string> new_accounts(GetProvider()->GetAllAccountIds());
   if (GetExcludeAllSecondaryAccounts()) {
     // Only keep the |primary_account_id| in the list of new accounts.
-    if (std::find(new_accounts.begin(),
-                  new_accounts.end(),
+    if (std::find(new_accounts.begin(), new_accounts.end(),
                   primary_account_id_) != new_accounts.end()) {
       new_accounts.clear();
       new_accounts.push_back(primary_account_id_);
@@ -274,7 +273,7 @@ void ProfileOAuth2TokenServiceIOS::ReloadCredentials() {
   }
 }
 
-void ProfileOAuth2TokenServiceIOS::UpdateCredentials(
+void ProfileOAuth2TokenServiceIOSDelegate::UpdateCredentials(
     const std::string& account_id,
     const std::string& refresh_token) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -282,7 +281,7 @@ void ProfileOAuth2TokenServiceIOS::UpdateCredentials(
                   "authentication.";
 }
 
-void ProfileOAuth2TokenServiceIOS::RevokeAllCredentials() {
+void ProfileOAuth2TokenServiceIOSDelegate::RevokeAllCredentials() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   ScopedBatchChange batch(this);
@@ -293,41 +292,17 @@ void ProfileOAuth2TokenServiceIOS::RevokeAllCredentials() {
   DCHECK_EQ(0u, accounts_.size());
   primary_account_id_.clear();
   ClearExcludedSecondaryAccounts();
-  // |RemoveAccount| should have cancelled all the requests and cleared the
-  // cache, account-by-account. This extra-cleaning should do nothing unless
-  // something went wrong and some cache values and/or pending requests were not
-  // linked to any valid account.
-  CancelAllRequests();
-  ClearCache();
 }
 
 OAuth2AccessTokenFetcher*
-ProfileOAuth2TokenServiceIOS::CreateAccessTokenFetcher(
+ProfileOAuth2TokenServiceIOSDelegate::CreateAccessTokenFetcher(
     const std::string& account_id,
     net::URLRequestContextGetter* getter,
     OAuth2AccessTokenConsumer* consumer) {
   return new SSOAccessTokenFetcher(consumer, GetProvider(), account_id);
 }
 
-void ProfileOAuth2TokenServiceIOS::InvalidateOAuth2Token(
-    const std::string& account_id,
-    const std::string& client_id,
-    const ScopeSet& scopes,
-    const std::string& access_token) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // Call |ProfileOAuth2TokenService::InvalidateOAuth2Token| to clear the
-  // cached access token.
-  ProfileOAuth2TokenService::InvalidateOAuth2Token(account_id,
-                                                   client_id,
-                                                   scopes,
-                                                   access_token);
-
-  // There is no need to inform the authentication library that the access
-  // token is invalid as it never caches the token.
-}
-
-std::vector<std::string> ProfileOAuth2TokenServiceIOS::GetAccounts() {
+std::vector<std::string> ProfileOAuth2TokenServiceIOSDelegate::GetAccounts() {
   DCHECK(thread_checker_.CalledOnValidThread());
   std::vector<std::string> account_ids;
   for (auto i = accounts_.begin(); i != accounts_.end(); ++i)
@@ -335,7 +310,7 @@ std::vector<std::string> ProfileOAuth2TokenServiceIOS::GetAccounts() {
   return account_ids;
 }
 
-bool ProfileOAuth2TokenServiceIOS::RefreshTokenIsAvailable(
+bool ProfileOAuth2TokenServiceIOSDelegate::RefreshTokenIsAvailable(
     const std::string& account_id) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -343,7 +318,7 @@ bool ProfileOAuth2TokenServiceIOS::RefreshTokenIsAvailable(
   return iter != accounts_.end() && !iter->second->marked_for_removal();
 }
 
-void ProfileOAuth2TokenServiceIOS::UpdateAuthError(
+void ProfileOAuth2TokenServiceIOSDelegate::UpdateAuthError(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -365,31 +340,30 @@ void ProfileOAuth2TokenServiceIOS::UpdateAuthError(
 
 // Clear the authentication error state and notify all observers that a new
 // refresh token is available so that they request new access tokens.
-void ProfileOAuth2TokenServiceIOS::AddOrUpdateAccount(
+void ProfileOAuth2TokenServiceIOSDelegate::AddOrUpdateAccount(
     const std::string& account_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!account_id.empty());
 
   bool account_present = accounts_.count(account_id) > 0;
-  if (account_present && accounts_[account_id]->GetAuthStatus().state() ==
-                             GoogleServiceAuthError::NONE) {
+  if (account_present &&
+      accounts_[account_id]->GetAuthStatus().state() ==
+          GoogleServiceAuthError::NONE) {
     // No need to update the account if it is already a known account and if
     // there is no auth error.
     return;
   }
 
-  if (account_present) {
-    CancelRequestsForAccount(account_id);
-    ClearCacheForAccount(account_id);
-  } else {
+  if (!account_present) {
     accounts_[account_id].reset(
-        new AccountInfo(signin_error_controller(), account_id));
+        new AccountInfo(signin_error_controller_, account_id));
   }
+
   UpdateAuthError(account_id, GoogleServiceAuthError::AuthErrorNone());
   FireRefreshTokenAvailable(account_id);
 }
 
-void ProfileOAuth2TokenServiceIOS::RemoveAccount(
+void ProfileOAuth2TokenServiceIOSDelegate::RemoveAccount(
     const std::string& account_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!account_id.empty());
@@ -400,17 +374,15 @@ void ProfileOAuth2TokenServiceIOS::RemoveAccount(
     // for |account_id| triggered while an account is being removed will get a
     // user not signed up error response.
     accounts_[account_id]->set_marked_for_removal(true);
-    CancelRequestsForAccount(account_id);
-    ClearCacheForAccount(account_id);
     accounts_.erase(account_id);
     FireRefreshTokenRevoked(account_id);
   }
 }
 
 std::set<std::string>
-ProfileOAuth2TokenServiceIOS::GetExcludedSecondaryAccounts() {
+ProfileOAuth2TokenServiceIOSDelegate::GetExcludedSecondaryAccounts() {
   const base::ListValue* excluded_secondary_accounts_pref =
-      client()->GetPrefs()->GetList(
+      client_->GetPrefs()->GetList(
           prefs::kTokenServiceExcludedSecondaryAccounts);
   std::set<std::string> excluded_secondary_accounts;
   for (base::Value* pref_value : *excluded_secondary_accounts_pref) {
@@ -421,13 +393,13 @@ ProfileOAuth2TokenServiceIOS::GetExcludedSecondaryAccounts() {
   return excluded_secondary_accounts;
 }
 
-void ProfileOAuth2TokenServiceIOS::ExcludeSecondaryAccounts(
+void ProfileOAuth2TokenServiceIOSDelegate::ExcludeSecondaryAccounts(
     const std::vector<std::string>& account_ids) {
   for (const auto& account_id : account_ids)
     ExcludeSecondaryAccount(account_id);
 }
 
-void ProfileOAuth2TokenServiceIOS::ExcludeSecondaryAccount(
+void ProfileOAuth2TokenServiceIOSDelegate::ExcludeSecondaryAccount(
     const std::string& account_id) {
   if (GetExcludeAllSecondaryAccounts()) {
     // Avoid excluding individual secondary accounts when all secondary
@@ -436,7 +408,7 @@ void ProfileOAuth2TokenServiceIOS::ExcludeSecondaryAccount(
   }
 
   DCHECK(!account_id.empty());
-  ListPrefUpdate update(client()->GetPrefs(),
+  ListPrefUpdate update(client_->GetPrefs(),
                         prefs::kTokenServiceExcludedSecondaryAccounts);
   base::ListValue* excluded_secondary_accounts = update.Get();
   for (base::Value* pref_value : *excluded_secondary_accounts) {
@@ -449,7 +421,7 @@ void ProfileOAuth2TokenServiceIOS::ExcludeSecondaryAccount(
   excluded_secondary_accounts->AppendString(account_id);
 }
 
-void ProfileOAuth2TokenServiceIOS::IncludeSecondaryAccount(
+void ProfileOAuth2TokenServiceIOSDelegate::IncludeSecondaryAccount(
     const std::string& account_id) {
   if (GetExcludeAllSecondaryAccounts()) {
     // Avoid including individual secondary accounts when all secondary
@@ -466,7 +438,7 @@ void ProfileOAuth2TokenServiceIOS::IncludeSecondaryAccount(
   // ensures that |account_id| is actually included even in cases when the
   // preference value was corrupted (see bug http://crbug.com/453470 as
   // example).
-  ListPrefUpdate update(client()->GetPrefs(),
+  ListPrefUpdate update(client_->GetPrefs(),
                         prefs::kTokenServiceExcludedSecondaryAccounts);
   base::ListValue* excluded_secondary_accounts = update.Get();
   base::ListValue::iterator it = excluded_secondary_accounts->begin();
@@ -481,19 +453,18 @@ void ProfileOAuth2TokenServiceIOS::IncludeSecondaryAccount(
   }
 }
 
-bool ProfileOAuth2TokenServiceIOS::GetExcludeAllSecondaryAccounts() {
-  return client()->GetPrefs()->GetBoolean(
+bool ProfileOAuth2TokenServiceIOSDelegate::GetExcludeAllSecondaryAccounts() {
+  return client_->GetPrefs()->GetBoolean(
       prefs::kTokenServiceExcludeAllSecondaryAccounts);
 }
 
-void ProfileOAuth2TokenServiceIOS::ExcludeAllSecondaryAccounts() {
-  client()->GetPrefs()->SetBoolean(
+void ProfileOAuth2TokenServiceIOSDelegate::ExcludeAllSecondaryAccounts() {
+  client_->GetPrefs()->SetBoolean(
       prefs::kTokenServiceExcludeAllSecondaryAccounts, true);
 }
 
-void ProfileOAuth2TokenServiceIOS::ClearExcludedSecondaryAccounts() {
-  client()->GetPrefs()->ClearPref(
+void ProfileOAuth2TokenServiceIOSDelegate::ClearExcludedSecondaryAccounts() {
+  client_->GetPrefs()->ClearPref(
       prefs::kTokenServiceExcludeAllSecondaryAccounts);
-  client()->GetPrefs()->ClearPref(
-      prefs::kTokenServiceExcludedSecondaryAccounts);
+  client_->GetPrefs()->ClearPref(prefs::kTokenServiceExcludedSecondaryAccounts);
 }

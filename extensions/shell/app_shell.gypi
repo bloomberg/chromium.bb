@@ -63,6 +63,8 @@
       'browser/shell_network_controller_chromeos.h',
       'browser/shell_network_delegate.cc',
       'browser/shell_network_delegate.h',
+      'browser/shell_oauth2_token_service_delegate.cc',
+      'browser/shell_oauth2_token_service_delegate.h',
       'browser/shell_oauth2_token_service.cc',
       'browser/shell_oauth2_token_service.h',
       'browser/shell_prefs.cc',

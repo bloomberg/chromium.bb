@@ -264,7 +264,7 @@ void RealPanWalletClient::StartTokenFetch(bool invalidate_old) {
   IdentityProvider* identity = delegate_->GetIdentityProvider();
   if (invalidate_old) {
     DCHECK(!access_token_.empty());
-    identity->GetTokenService()->InvalidateToken(
+    identity->GetTokenService()->InvalidateAccessToken(
         identity->GetActiveAccountId(), wallet_scopes, access_token_);
   }
   access_token_.clear();

@@ -34,7 +34,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/signin/core/browser/mutable_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -841,9 +840,8 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
 
 void ProfileChooserView::RemoveAccount() {
   DCHECK(!account_id_to_remove_.empty());
-  MutableProfileOAuth2TokenService* oauth2_token_service =
-      ProfileOAuth2TokenServiceFactory::GetPlatformSpecificForProfile(
-      browser_->profile());
+  ProfileOAuth2TokenService* oauth2_token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile());
   if (oauth2_token_service) {
     oauth2_token_service->RevokeCredentials(account_id_to_remove_);
     PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_REMOVE_ACCT);

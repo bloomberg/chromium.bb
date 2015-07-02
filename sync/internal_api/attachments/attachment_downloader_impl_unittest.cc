@@ -54,10 +54,10 @@ class MockOAuth2TokenService : public FakeOAuth2TokenService {
                         const std::string& client_secret,
                         const ScopeSet& scopes) override;
 
-  void InvalidateOAuth2Token(const std::string& account_id,
-                             const std::string& client_id,
-                             const ScopeSet& scopes,
-                             const std::string& access_token) override;
+  void InvalidateAccessTokenImpl(const std::string& account_id,
+                                 const std::string& client_id,
+                                 const ScopeSet& scopes,
+                                 const std::string& access_token) override;
 
  private:
   base::WeakPtr<RequestImpl> last_request_;
@@ -94,7 +94,7 @@ void MockOAuth2TokenService::FetchOAuth2Token(
   last_request_ = request->AsWeakPtr();
 }
 
-void MockOAuth2TokenService::InvalidateOAuth2Token(
+void MockOAuth2TokenService::InvalidateAccessTokenImpl(
     const std::string& account_id,
     const std::string& client_id,
     const ScopeSet& scopes,

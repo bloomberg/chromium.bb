@@ -113,7 +113,7 @@ TEST_F(StartupControllerTest, Basic) {
   signin()->set_account(kTestUser);
   controller()->TryStart();
   EXPECT_FALSE(started());
-  token_service()->IssueRefreshTokenForUser(kTestUser, kTestToken);
+  token_service()->UpdateCredentials(kTestUser, kTestToken);
   const bool deferred_start =
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSyncDisableDeferredStartup);
@@ -130,7 +130,7 @@ TEST_F(StartupControllerTest, NotRequested) {
   sync_prefs()->SetSyncSetupCompleted();
   sync_prefs()->SetSyncRequested(false);
   signin()->set_account(kTestUser);
-  token_service()->IssueRefreshTokenForUser(kTestUser, kTestToken);
+  token_service()->UpdateCredentials(kTestUser, kTestToken);
   controller()->TryStart();
   EXPECT_FALSE(started());
   EXPECT_EQ(kStateStringNotStarted,
@@ -142,7 +142,7 @@ TEST_F(StartupControllerTest, Managed) {
   sync_prefs()->SetSyncSetupCompleted();
   sync_prefs()->SetManagedForTest(true);
   signin()->set_account(kTestUser);
-  token_service()->IssueRefreshTokenForUser(kTestUser, kTestToken);
+  token_service()->UpdateCredentials(kTestUser, kTestToken);
   controller()->TryStart();
   EXPECT_FALSE(started());
   EXPECT_EQ(kStateStringNotStarted,
@@ -154,7 +154,7 @@ TEST_F(StartupControllerTest, Managed) {
 TEST_F(StartupControllerTest, DataTypeTriggered) {
   sync_prefs()->SetSyncSetupCompleted();
   signin()->set_account(kTestUser);
-  token_service()->IssueRefreshTokenForUser(kTestUser, kTestToken);
+  token_service()->UpdateCredentials(kTestUser, kTestToken);
   controller()->TryStart();
   EXPECT_FALSE(started());
   EXPECT_EQ(kStateStringDeferred,
@@ -176,7 +176,7 @@ TEST_F(StartupControllerTest, DataTypeTriggered) {
 TEST_F(StartupControllerTest, FallbackTimer) {
   sync_prefs()->SetSyncSetupCompleted();
   signin()->set_account(kTestUser);
-  token_service()->IssueRefreshTokenForUser(kTestUser, kTestToken);
+  token_service()->UpdateCredentials(kTestUser, kTestToken);
   controller()->TryStart();
   EXPECT_FALSE(started());
   base::RunLoop().RunUntilIdle();
@@ -196,7 +196,7 @@ TEST_F(StartupControllerTest, NoDeferralWithoutSessionsSync) {
   controller()->Reset(syncer::UserTypes());
   sync_prefs()->SetSyncSetupCompleted();
   signin()->set_account(kTestUser);
-  token_service()->IssueRefreshTokenForUser(kTestUser, kTestToken);
+  token_service()->UpdateCredentials(kTestUser, kTestToken);
   controller()->TryStart();
   EXPECT_TRUE(started());
 }
@@ -214,7 +214,7 @@ TEST_F(StartupControllerTest, FallbackTimerWaits) {
 // may be implicit due to the platform).
 TEST_F(StartupControllerTest, FirstSetup) {
   signin()->set_account(kTestUser);
-  token_service()->IssueRefreshTokenForUser(kTestUser, kTestToken);
+  token_service()->UpdateCredentials(kTestUser, kTestToken);
   controller()->TryStart();
 
   if (browser_defaults::kSyncAutoStarts) {
@@ -229,7 +229,7 @@ TEST_F(StartupControllerTest, FirstSetup) {
 TEST_F(StartupControllerTest, Reset) {
   sync_prefs()->SetSyncSetupCompleted();
   signin()->set_account(kTestUser);
-  token_service()->IssueRefreshTokenForUser(kTestUser, kTestToken);
+  token_service()->UpdateCredentials(kTestUser, kTestToken);
   controller()->TryStart();
   const bool deferred_start =
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -248,7 +248,7 @@ TEST_F(StartupControllerTest, Reset) {
 // Test that setup-in-progress tracking is persistent across a Reset.
 TEST_F(StartupControllerTest, ResetDuringSetup) {
   signin()->set_account(kTestUser);
-  token_service()->IssueRefreshTokenForUser(kTestUser, kTestToken);
+  token_service()->UpdateCredentials(kTestUser, kTestToken);
 
   // Simulate UI telling us setup is in progress.
   controller()->set_setup_in_progress(true);

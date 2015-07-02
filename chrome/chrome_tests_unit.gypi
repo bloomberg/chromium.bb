@@ -794,6 +794,7 @@
       'browser/signin/easy_unlock_auth_attempt_unittest.cc',
       'browser/signin/easy_unlock_screenlock_state_handler_unittest.cc',
       'browser/signin/easy_unlock_service_unittest_chromeos.cc',
+      'browser/signin/mutable_profile_oauth2_token_service_delegate_unittest.cc',
       'browser/sync/glue/extensions_activity_monitor_unittest.cc',
       'browser/sync_file_system/drive_backend/callback_helper_unittest.cc',
       'browser/sync_file_system/drive_backend/callback_tracker_unittest.cc',

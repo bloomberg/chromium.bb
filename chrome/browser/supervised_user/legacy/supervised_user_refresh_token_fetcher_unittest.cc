@@ -135,7 +135,7 @@ void SupervisedUserRefreshTokenFetcherTest::StartFetching() {
 void SupervisedUserRefreshTokenFetcherTest::StartFetchingWithDeviceId(
     const std::string& device_id) {
   device_id_ = device_id;
-  oauth2_token_service_.IssueRefreshToken(kOAuth2RefreshToken);
+  oauth2_token_service_.UpdateCredentials("account_id", kOAuth2RefreshToken);
   token_fetcher_ = SupervisedUserRefreshTokenFetcher::Create(
       &oauth2_token_service_,
       kAccountId,

@@ -65,7 +65,7 @@ ExtensionFunction::ResponseAction IdentityGetAuthTokenFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   ShellOAuth2TokenService* service = ShellOAuth2TokenService::GetInstance();
-  std::string account_id = service->account_id();
+  std::string account_id = service->AccountId();
   if (account_id.empty())
     return RespondNow(Error(kErrorNoUserAccount));
 
@@ -85,7 +85,7 @@ ExtensionFunction::ResponseAction IdentityGetAuthTokenFunction::Run() {
   // that will be returned to the app.
   std::set<std::string> no_scopes;
   access_token_request_ =
-      service->StartRequest(service->account_id(), no_scopes, this);
+      service->StartRequest(service->AccountId(), no_scopes, this);
   return RespondLater();
 }
 

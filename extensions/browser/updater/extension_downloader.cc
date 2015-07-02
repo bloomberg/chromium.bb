@@ -915,9 +915,8 @@ bool ExtensionDownloader::IterateFetchCredentialsAfterFailure(
         DCHECK(identity_provider_.get());
         OAuth2TokenService::ScopeSet webstore_scopes;
         webstore_scopes.insert(kWebstoreOAuth2Scope);
-        identity_provider_->GetTokenService()->InvalidateToken(
-            identity_provider_->GetActiveAccountId(),
-            webstore_scopes,
+        identity_provider_->GetTokenService()->InvalidateAccessToken(
+            identity_provider_->GetActiveAccountId(), webstore_scopes,
             access_token_);
         access_token_.clear();
         return true;

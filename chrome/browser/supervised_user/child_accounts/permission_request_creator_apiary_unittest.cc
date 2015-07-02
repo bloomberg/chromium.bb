@@ -38,7 +38,7 @@ class PermissionRequestCreatorApiaryTest : public testing::Test {
         permission_creator_(&token_service_,
                             kAccountId,
                             request_context_.get()) {
-    token_service_.IssueRefreshTokenForUser(kAccountId, "refresh_token");
+    token_service_.UpdateCredentials(kAccountId, "refresh_token");
   }
 
  protected:

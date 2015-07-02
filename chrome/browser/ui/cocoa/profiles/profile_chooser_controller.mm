@@ -48,7 +48,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/signin/core/browser/mutable_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
@@ -1097,8 +1096,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 - (IBAction)removeAccount:(id)sender {
   DCHECK(!accountIdToRemove_.empty());
-  ProfileOAuth2TokenServiceFactory::GetPlatformSpecificForProfile(
-      browser_->profile())->RevokeCredentials(accountIdToRemove_);
+  ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile())
+      ->RevokeCredentials(accountIdToRemove_);
   [self postActionPerformed:ProfileMetrics::PROFILE_DESKTOP_MENU_REMOVE_ACCT];
   accountIdToRemove_.clear();
 

@@ -56,8 +56,6 @@
         'signin/core/browser/device_activity_fetcher.h',
         'signin/core/browser/gaia_cookie_manager_service.cc',
         'signin/core/browser/gaia_cookie_manager_service.h',
-        'signin/core/browser/mutable_profile_oauth2_token_service.cc',
-        'signin/core/browser/mutable_profile_oauth2_token_service.h',
         'signin/core/browser/profile_oauth2_token_service.cc',
         'signin/core/browser/profile_oauth2_token_service.h',
         'signin/core/browser/refresh_token_annotation_request.cc',
@@ -85,13 +83,6 @@
         'signin/core/browser/webdata/token_web_data.h',
       ],
       'conditions': [
-        ['OS=="android" or OS=="ios"', {
-          'sources!': [
-            # Not used on Android nor iOS.
-            'signin/core/browser/mutable_profile_oauth2_token_service.cc',
-            'signin/core/browser/mutable_profile_oauth2_token_service.h',
-          ],
-        }],
         ['chromeos==1', {
           'sources!': [
             'signin/core/browser/signin_manager.cc',
@@ -141,8 +132,8 @@
             'signin/ios/browser/merge_session_observer_bridge.mm',
             'signin/ios/browser/oauth2_token_service_observer_bridge.h',
             'signin/ios/browser/oauth2_token_service_observer_bridge.mm',
-            'signin/ios/browser/profile_oauth2_token_service_ios.h',
-            'signin/ios/browser/profile_oauth2_token_service_ios.mm',
+            'signin/ios/browser/profile_oauth2_token_service_ios_delegate.h',
+            'signin/ios/browser/profile_oauth2_token_service_ios_delegate.mm',
           ],
         },
       ],

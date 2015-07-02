@@ -125,7 +125,7 @@ void ProfileSyncAuthProvider::RespondToTokenRequest(
 
 void ProfileSyncAuthProvider::InvalidateAccessToken(const std::string& token) {
   DCHECK(CalledOnValidThread());
-  token_service_->InvalidateToken(account_id_, oauth2_scope_, token);
+  token_service_->InvalidateAccessToken(account_id_, oauth2_scope_, token);
 }
 
 scoped_ptr<syncer::SyncAuthProvider>

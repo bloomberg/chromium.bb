@@ -205,9 +205,8 @@ void SupervisedUserRefreshTokenFetcherImpl::OnURLFetchComplete(
   int response_code = source->GetResponseCode();
   if (response_code == net::HTTP_UNAUTHORIZED && !access_token_expired_) {
     access_token_expired_ = true;
-    oauth2_token_service_->InvalidateToken(account_id_,
-                                           OAuth2TokenService::ScopeSet(),
-                                           access_token_);
+    oauth2_token_service_->InvalidateAccessToken(
+        account_id_, OAuth2TokenService::ScopeSet(), access_token_);
     StartFetching();
     return;
   }

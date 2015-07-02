@@ -105,7 +105,7 @@ void UbertokenFetcher::OnUberAuthTokenFailure(
     // The access token is invalid.  Tell the token service.
     OAuth2TokenService::ScopeSet scopes;
     scopes.insert(GaiaConstants::kOAuth1LoginScope);
-    token_service_->InvalidateToken(account_id_, scopes, access_token_);
+    token_service_->InvalidateAccessToken(account_id_, scopes, access_token_);
 
     // In case the access was just stale, try one more time.
     if (!second_access_token_request_) {

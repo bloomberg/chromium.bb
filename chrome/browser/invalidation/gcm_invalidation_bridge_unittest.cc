@@ -68,7 +68,7 @@ class GCMInvalidationBridgeTest : public ::testing::Test {
     FakeProfileOAuth2TokenService* token_service =
         (FakeProfileOAuth2TokenService*)
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
-    token_service->IssueRefreshTokenForUser("", "fake_refresh_token");
+    token_service->UpdateCredentials("", "fake_refresh_token");
     gcm_driver_.reset(new CustomFakeGCMDriver());
 
     identity_provider_.reset(new FakeIdentityProvider(token_service));

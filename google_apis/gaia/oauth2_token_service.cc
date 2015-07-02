@@ -18,6 +18,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
+#include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 
 int OAuth2TokenService::max_fetch_retry_num_ = 5;
@@ -77,16 +78,6 @@ void OAuth2TokenService::RequestImpl::InformConsumer(
     consumer_->OnGetTokenSuccess(this, access_token, expiration_date);
   else
     consumer_->OnGetTokenFailure(this, error);
-}
-
-OAuth2TokenService::ScopedBatchChange::ScopedBatchChange(
-    OAuth2TokenService* token_service) : token_service_(token_service) {
-  DCHECK(token_service_);
-  token_service_->StartBatchChanges();
-}
-
-OAuth2TokenService::ScopedBatchChange::~ScopedBatchChange() {
-  token_service_->EndBatchChanges();
 }
 
 // Class that fetches an OAuth2 access token for a given account id and set of
@@ -392,7 +383,9 @@ OAuth2TokenService::Consumer::Consumer(const std::string& id)
 OAuth2TokenService::Consumer::~Consumer() {
 }
 
-OAuth2TokenService::OAuth2TokenService() : batch_change_depth_(0) {
+OAuth2TokenService::OAuth2TokenService(OAuth2TokenServiceDelegate* delegate)
+    : delegate_(delegate) {
+  DCHECK(delegate_);
 }
 
 OAuth2TokenService::~OAuth2TokenService() {
@@ -401,12 +394,16 @@ OAuth2TokenService::~OAuth2TokenService() {
       pending_fetchers_.begin(), pending_fetchers_.end());
 }
 
+OAuth2TokenServiceDelegate* OAuth2TokenService::GetDelegate() {
+  return delegate_.get();
+}
+
 void OAuth2TokenService::AddObserver(Observer* observer) {
-  observer_list_.AddObserver(observer);
+  delegate_->AddObserver(observer);
 }
 
 void OAuth2TokenService::RemoveObserver(Observer* observer) {
-  observer_list_.RemoveObserver(observer);
+  delegate_->RemoveObserver(observer);
 }
 
 void OAuth2TokenService::AddDiagnosticsObserver(DiagnosticsObserver* observer) {
@@ -416,10 +413,6 @@ void OAuth2TokenService::AddDiagnosticsObserver(DiagnosticsObserver* observer) {
 void OAuth2TokenService::RemoveDiagnosticsObserver(
     DiagnosticsObserver* observer) {
   diagnostics_observer_list_.RemoveObserver(observer);
-}
-
-std::vector<std::string> OAuth2TokenService::GetAccounts() {
-  return std::vector<std::string>();
 }
 
 scoped_ptr<OAuth2TokenService::Request> OAuth2TokenService::StartRequest(
@@ -449,6 +442,10 @@ OAuth2TokenService::StartRequestForClient(
       client_secret,
       scopes,
       consumer);
+}
+
+net::URLRequestContextGetter* OAuth2TokenService::GetRequestContext() const {
+  return delegate_->GetRequestContext();
 }
 
 scoped_ptr<OAuth2TokenService::Request>
@@ -481,7 +478,6 @@ OAuth2TokenService::StartRequestForClientWithContext(
   tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422460 OAuth2TokenService::StartRequestForClientWithContext 1"));
-
   scoped_ptr<RequestImpl> request(new RequestImpl(account_id, consumer));
   FOR_EACH_OBSERVER(DiagnosticsObserver, diagnostics_observer_list_,
                     OnAccessTokenRequested(account_id,
@@ -568,6 +564,13 @@ void OAuth2TokenService::FetchOAuth2Token(RequestImpl* request,
                               request->AsWeakPtr());
 }
 
+OAuth2AccessTokenFetcher* OAuth2TokenService::CreateAccessTokenFetcher(
+    const std::string& account_id,
+    net::URLRequestContextGetter* getter,
+    OAuth2AccessTokenConsumer* consumer) {
+  return delegate_->CreateAccessTokenFetcher(account_id, getter, consumer);
+}
+
 void OAuth2TokenService::StartCacheLookupRequest(
     RequestImpl* request,
     const OAuth2TokenService::RequestParameters& request_parameters,
@@ -589,24 +592,39 @@ void OAuth2TokenService::StartCacheLookupRequest(
       cache_entry->expiration_date));
 }
 
-void OAuth2TokenService::InvalidateToken(const std::string& account_id,
-                                         const ScopeSet& scopes,
-                                         const std::string& access_token) {
-  InvalidateOAuth2Token(account_id,
-                        GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
-                        scopes,
-                        access_token);
+std::vector<std::string> OAuth2TokenService::GetAccounts() const {
+  return delegate_->GetAccounts();
 }
 
-void OAuth2TokenService::InvalidateTokenForClient(
+bool OAuth2TokenService::RefreshTokenIsAvailable(
+    const std::string& account_id) const {
+  return delegate_->RefreshTokenIsAvailable(account_id);
+}
+
+void OAuth2TokenService::RevokeAllCredentials() {
+  CancelAllRequests();
+  ClearCache();
+  delegate_->RevokeAllCredentials();
+}
+
+void OAuth2TokenService::InvalidateAccessToken(
+    const std::string& account_id,
+    const ScopeSet& scopes,
+    const std::string& access_token) {
+  InvalidateAccessTokenImpl(account_id,
+                            GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
+                            scopes, access_token);
+}
+
+void OAuth2TokenService::InvalidateAccessTokenForClient(
     const std::string& account_id,
     const std::string& client_id,
     const ScopeSet& scopes,
     const std::string& access_token) {
-  InvalidateOAuth2Token(account_id, client_id, scopes, access_token);
+  InvalidateAccessTokenImpl(account_id, client_id, scopes, access_token);
 }
 
-void OAuth2TokenService::InvalidateOAuth2Token(
+void OAuth2TokenService::InvalidateAccessTokenImpl(
     const std::string& account_id,
     const std::string& client_id,
     const ScopeSet& scopes,
@@ -617,6 +635,7 @@ void OAuth2TokenService::InvalidateOAuth2Token(
                         account_id,
                         scopes),
       access_token);
+  delegate_->InvalidateAccessToken(account_id, client_id, scopes, access_token);
 }
 
 void OAuth2TokenService::OnFetchComplete(Fetcher* fetcher) {
@@ -711,6 +730,10 @@ bool OAuth2TokenService::RemoveCacheEntry(
   }
   return false;
 }
+void OAuth2TokenService::UpdateAuthError(const std::string& account_id,
+                                         const GoogleServiceAuthError& error) {
+  delegate_->UpdateAuthError(account_id, error);
+}
 
 void OAuth2TokenService::RegisterCacheEntry(
     const std::string& client_id,
@@ -725,12 +748,6 @@ void OAuth2TokenService::RegisterCacheEntry(
                                                      scopes)];
   token.access_token = access_token;
   token.expiration_date = expiration_date;
-}
-
-void OAuth2TokenService::UpdateAuthError(
-    const std::string& account_id,
-    const GoogleServiceAuthError& error) {
-  // Default implementation does nothing.
 }
 
 void OAuth2TokenService::ClearCache() {
@@ -792,51 +809,6 @@ void OAuth2TokenService::CancelFetchers(
        ++iter) {
     (*iter)->Cancel();
   }
-}
-
-void OAuth2TokenService::FireRefreshTokenAvailable(
-    const std::string& account_id) {
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 OAuth2TokenService::FireRefreshTokenAvailable"));
-
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnRefreshTokenAvailable(account_id));
-}
-
-void OAuth2TokenService::FireRefreshTokenRevoked(
-    const std::string& account_id) {
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnRefreshTokenRevoked(account_id));
-}
-
-void OAuth2TokenService::FireRefreshTokensLoaded() {
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
-  // fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422460 OAuth2TokenService::FireRefreshTokensLoaded"));
-
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnRefreshTokensLoaded());
-}
-
-void OAuth2TokenService::StartBatchChanges() {
-  ++batch_change_depth_;
-  if (batch_change_depth_ == 1)
-    FOR_EACH_OBSERVER(Observer, observer_list_, OnStartBatchChanges());
-}
-
-void OAuth2TokenService::EndBatchChanges() {
-  --batch_change_depth_;
-  DCHECK_LE(0, batch_change_depth_);
-  if (batch_change_depth_ == 0)
-    FOR_EACH_OBSERVER(Observer, observer_list_, OnEndBatchChanges());
-}
-
-int OAuth2TokenService::cache_size_for_testing() const {
-  return token_cache_.size();
 }
 
 void OAuth2TokenService::set_max_authorization_token_fetch_retries_for_testing(

@@ -22,7 +22,7 @@
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/android_profile_oauth2_token_service.h"
+#include "chrome/browser/signin/oauth2_token_service_delegate_android.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
@@ -265,13 +265,14 @@ void SigninManagerAndroid::ClearLastSignedInUser() {
 void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env, jobject obj) {
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile_);
-    // Just fire the events and let the Account Reconcilor handles everything.
-    AndroidProfileOAuth2TokenService* token_service =
-        ProfileOAuth2TokenServiceFactory::GetPlatformSpecificForProfile(
-            profile_);
-    const std::string& primary_acct =
-        signin_manager->GetAuthenticatedAccountId();
-    token_service->ValidateAccounts(primary_acct, true);
+  // With the account consistency enabled let the account Reconcilor handles
+  // everything.
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+  const std::string& primary_acct = signin_manager->GetAuthenticatedAccountId();
+
+  static_cast<OAuth2TokenServiceDelegateAndroid*>(token_service->GetDelegate())
+      ->ValidateAccounts(primary_acct, true);
 }
 
 jboolean SigninManagerAndroid::IsSigninAllowedByPolicy(JNIEnv* env,

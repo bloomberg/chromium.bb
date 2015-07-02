@@ -7,18 +7,10 @@
 
 #include <string>
 
-#include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "google_apis/gaia/oauth2_token_service.h"
-
-namespace net {
-class URLRequestContextGetter;
-}
-
-class GoogleServiceAuthError;
-class SigninClient;
-class SigninErrorController;
+#include "google_apis/gaia/oauth2_token_service_delegate.h"
 
 // ProfileOAuth2TokenService is a KeyedService that retrieves
 // OAuth2 access tokens for a given set of scopes using the OAuth2 login
@@ -35,19 +27,14 @@ class SigninErrorController;
 // Note: requests should be started from the UI thread. To start a
 // request from other thread, please use OAuth2TokenServiceRequest.
 class ProfileOAuth2TokenService : public OAuth2TokenService,
+                                  public OAuth2TokenService::Observer,
                                   public KeyedService {
  public:
+  ProfileOAuth2TokenService(OAuth2TokenServiceDelegate* delegate);
   ~ProfileOAuth2TokenService() override;
-
-  // Initializes this token service with the SigninClient.
-  virtual void Initialize(SigninClient* client,
-                          SigninErrorController* signin_error_controller);
 
   // KeyedService implementation.
   void Shutdown() override;
-
-  // Lists account IDs of all accounts with a refresh token.
-  std::vector<std::string> GetAccounts() override;
 
   // Loads credentials from a backing persistent store to make them available
   // after service is used between profile restarts.
@@ -65,40 +52,11 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   virtual void UpdateCredentials(const std::string& account_id,
                                  const std::string& refresh_token);
 
-  // Revokes all credentials handled by the object.
-  virtual void RevokeAllCredentials();
-
-  SigninClient* client() const { return client_; }
-
- protected:
-  ProfileOAuth2TokenService();
-
-  // OAuth2TokenService overrides.
-  // Note: These methods are overriden so that ProfileOAuth2TokenService is a
-  // concrete class.
-
-  // Simply returns NULL and should be overriden by subsclasses.
-  net::URLRequestContextGetter* GetRequestContext() override;
-
-  // Updates the internal cache of the result from the most-recently-completed
-  // auth request (used for reporting errors to the user).
-  void UpdateAuthError(const std::string& account_id,
-                       const GoogleServiceAuthError& error) override;
-
-  // Validate that the account_id argument is valid.  This method DCHECKs
-  // when invalid.
-  void ValidateAccountId(const std::string& account_id) const;
-
-  SigninErrorController* signin_error_controller() {
-    return signin_error_controller_;
-  }
+  virtual void RevokeCredentials(const std::string& account_id);
 
  private:
-  // The client with which this instance was initialized, or NULL.
-  SigninClient* client_;
-
-  // The error controller with which this instance was initialized, or NULL.
-  SigninErrorController* signin_error_controller_;
+  void OnRefreshTokenAvailable(const std::string& account_id) override;
+  void OnRefreshTokenRevoked(const std::string& account_id) override;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileOAuth2TokenService);
 };

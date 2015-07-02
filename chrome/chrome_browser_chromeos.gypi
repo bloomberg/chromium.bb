@@ -958,6 +958,8 @@
         'browser/chromeos/settings/device_identity_provider.h',
         'browser/chromeos/settings/device_oauth2_token_service.cc',
         'browser/chromeos/settings/device_oauth2_token_service.h',
+        'browser/chromeos/settings/device_oauth2_token_service_delegate.cc',
+        'browser/chromeos/settings/device_oauth2_token_service_delegate.h',
         'browser/chromeos/settings/device_oauth2_token_service_factory.cc',
         'browser/chromeos/settings/device_oauth2_token_service_factory.h',
         'browser/chromeos/settings/device_settings_cache.cc',

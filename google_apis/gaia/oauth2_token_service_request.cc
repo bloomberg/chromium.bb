@@ -314,7 +314,7 @@ InvalidateCore::~InvalidateCore() {
 
 void InvalidateCore::StartOnTokenServiceThread() {
   DCHECK(token_service_task_runner()->BelongsToCurrentThread());
-  token_service()->InvalidateToken(account_id_, scopes_, access_token_);
+  token_service()->InvalidateAccessToken(account_id_, scopes_, access_token_);
 }
 
 void InvalidateCore::StopOnTokenServiceThread() {

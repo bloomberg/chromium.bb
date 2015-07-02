@@ -53,7 +53,8 @@ class GCDApiFlowTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    token_service_.set_request_context(request_context_.get());
+    token_service_.GetFakeOAuth2TokenServiceDelegate()->set_request_context(
+        request_context_.get());
     token_service_.AddAccount(account_id_);
     ui_thread_.Stop();  // HACK: Fake being on the UI thread
 

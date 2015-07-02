@@ -13,9 +13,9 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/signin/android_profile_oauth2_token_service.h"
+#include "chrome/browser/signin/oauth2_token_service_delegate_android.h"
 #else
-#include "components/signin/core/browser/mutable_profile_oauth2_token_service.h"
+#include "chrome/browser/signin/mutable_profile_oauth2_token_service_delegate.h"
 #endif
 
 ProfileOAuth2TokenServiceFactory::ProfileOAuth2TokenServiceFactory()
@@ -38,14 +38,6 @@ ProfileOAuth2TokenServiceFactory::GetForProfile(Profile* profile) {
 }
 
 // static
-ProfileOAuth2TokenServiceFactory::PlatformSpecificOAuth2TokenService*
-ProfileOAuth2TokenServiceFactory::GetPlatformSpecificForProfile(
-    Profile* profile) {
-  return static_cast<PlatformSpecificOAuth2TokenService*>(
-      GetForProfile(profile));
-}
-
-// static
 ProfileOAuth2TokenServiceFactory*
     ProfileOAuth2TokenServiceFactory::GetInstance() {
   return Singleton<ProfileOAuth2TokenServiceFactory>::get();
@@ -53,11 +45,17 @@ ProfileOAuth2TokenServiceFactory*
 
 KeyedService* ProfileOAuth2TokenServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
+#if defined(OS_ANDROID)
+  OAuth2TokenServiceDelegateAndroid* delegate =
+      new OAuth2TokenServiceDelegateAndroid();
+  delegate->Initialize();
+#else
   Profile* profile = static_cast<Profile*>(context);
-  PlatformSpecificOAuth2TokenService* service =
-      new PlatformSpecificOAuth2TokenService();
-  service->Initialize(
-      ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),
-      SigninErrorControllerFactory::GetInstance()->GetForProfile(profile));
+  MutableProfileOAuth2TokenServiceDelegate* delegate =
+      new MutableProfileOAuth2TokenServiceDelegate(
+          ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),
+          SigninErrorControllerFactory::GetInstance()->GetForProfile(profile));
+#endif
+  ProfileOAuth2TokenService* service = new ProfileOAuth2TokenService(delegate);
   return service;
 }

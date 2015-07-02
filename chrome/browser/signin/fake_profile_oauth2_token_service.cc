@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 
 FakeProfileOAuth2TokenService::PendingRequest::PendingRequest() {
 }
@@ -16,60 +17,12 @@ FakeProfileOAuth2TokenService::PendingRequest::~PendingRequest() {
 }
 
 FakeProfileOAuth2TokenService::FakeProfileOAuth2TokenService()
-    : auto_post_fetch_response_on_message_loop_(false),
+    : ProfileOAuth2TokenService(new FakeOAuth2TokenServiceDelegate(nullptr)),
+      auto_post_fetch_response_on_message_loop_(false),
       weak_ptr_factory_(this) {
 }
 
 FakeProfileOAuth2TokenService::~FakeProfileOAuth2TokenService() {
-}
-
-bool FakeProfileOAuth2TokenService::RefreshTokenIsAvailable(
-    const std::string& account_id) const {
-  return !GetRefreshToken(account_id).empty();
-}
-
-void FakeProfileOAuth2TokenService::LoadCredentials(
-    const std::string& primary_account_id) {
-  // Empty implementation as FakeProfileOAuth2TokenService does not have any
-  // credentials to load.
-}
-
-std::vector<std::string> FakeProfileOAuth2TokenService::GetAccounts() {
-  std::vector<std::string> account_ids;
-  for (std::map<std::string, std::string>::const_iterator iter =
-           refresh_tokens_.begin(); iter != refresh_tokens_.end(); ++iter) {
-    account_ids.push_back(iter->first);
-  }
-  return account_ids;
-}
-
-void FakeProfileOAuth2TokenService::UpdateCredentials(
-    const std::string& account_id,
-    const std::string& refresh_token) {
-  IssueRefreshTokenForUser(account_id, refresh_token);
-}
-
-void FakeProfileOAuth2TokenService::IssueRefreshToken(
-    const std::string& token) {
-  IssueRefreshTokenForUser("account_id", token);
-}
-
-void FakeProfileOAuth2TokenService::IssueRefreshTokenForUser(
-    const std::string& account_id,
-    const std::string& token) {
-  ScopedBatchChange batch(this);
-  if (token.empty()) {
-    refresh_tokens_.erase(account_id);
-    FireRefreshTokenRevoked(account_id);
-  } else {
-    refresh_tokens_[account_id] = token;
-    FireRefreshTokenAvailable(account_id);
-    // TODO(atwilson): Maybe we should also call FireRefreshTokensLoaded() here?
-  }
-}
-
-void FakeProfileOAuth2TokenService::IssueAllRefreshTokensLoaded() {
-  FireRefreshTokensLoaded();
 }
 
 void FakeProfileOAuth2TokenService::IssueAllTokensForAccount(
@@ -151,20 +104,6 @@ void FakeProfileOAuth2TokenService::CompleteRequests(
   }
 }
 
-std::string FakeProfileOAuth2TokenService::GetRefreshToken(
-    const std::string& account_id) const {
-  std::map<std::string, std::string>::const_iterator it =
-      refresh_tokens_.find(account_id);
-  if (it != refresh_tokens_.end())
-    return it->second;
-  return std::string();
-}
-
-net::URLRequestContextGetter*
-FakeProfileOAuth2TokenService::GetRequestContext() {
-  return NULL;
-}
-
 std::vector<FakeProfileOAuth2TokenService::PendingRequest>
 FakeProfileOAuth2TokenService::GetPendingRequests() {
   std::vector<PendingRequest> valid_requests;
@@ -200,16 +139,7 @@ void FakeProfileOAuth2TokenService::FetchOAuth2Token(
   }
 }
 
-OAuth2AccessTokenFetcher*
-FakeProfileOAuth2TokenService::CreateAccessTokenFetcher(
-    const std::string& account_id,
-    net::URLRequestContextGetter* getter,
-    OAuth2AccessTokenConsumer* consumer) {
-  NOTREACHED();
-  return NULL;
-}
-
-void FakeProfileOAuth2TokenService::InvalidateOAuth2Token(
+void FakeProfileOAuth2TokenService::InvalidateAccessTokenImpl(
     const std::string& account_id,
     const std::string& client_id,
     const ScopeSet& scopes,

@@ -11,12 +11,6 @@
 class ProfileOAuth2TokenService;
 class Profile;
 
-#if defined(OS_ANDROID)
-class AndroidProfileOAuth2TokenService;
-#else
-class MutableProfileOAuth2TokenService;
-#endif
-
 // Singleton that owns all ProfileOAuth2TokenServices and associates them with
 // Profiles. Listens for the Profile's destruction notification and cleans up
 // the associated ProfileOAuth2TokenService.
@@ -29,29 +23,11 @@ class ProfileOAuth2TokenServiceFactory
   // incognito).
   static ProfileOAuth2TokenService* GetForProfile(Profile* profile);
 
-  // Returns the platform specific instance of ProfileOAuth2TokenService
-  // associated with this profile (creating one if none exists). Returns NULL
-  // if this profile cannot have a ProfileOAuth2TokenService (for example,
-  // if |profile| is incognito).
-  #if defined(OS_ANDROID)
-  static AndroidProfileOAuth2TokenService* GetPlatformSpecificForProfile(
-      Profile* profile);
-  #else
-  static MutableProfileOAuth2TokenService* GetPlatformSpecificForProfile(
-      Profile* profile);
-  #endif
-
   // Returns an instance of the ProfileOAuth2TokenServiceFactory singleton.
   static ProfileOAuth2TokenServiceFactory* GetInstance();
 
  private:
   friend struct DefaultSingletonTraits<ProfileOAuth2TokenServiceFactory>;
-
-#if defined(OS_ANDROID)
-  typedef AndroidProfileOAuth2TokenService PlatformSpecificOAuth2TokenService;
-#else
-  typedef MutableProfileOAuth2TokenService PlatformSpecificOAuth2TokenService;
-#endif
 
   ProfileOAuth2TokenServiceFactory();
   ~ProfileOAuth2TokenServiceFactory() override;

@@ -10,6 +10,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_oauth2_token_service_delegate.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/token_encryptor.h"
@@ -128,9 +129,11 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   }
 
   void CreateService() {
-    oauth2_service_.reset(new DeviceOAuth2TokenService(
-        request_context_getter_.get(), scoped_testing_local_state_.Get()));
-    oauth2_service_->max_refresh_token_validation_retries_ = 0;
+    DeviceOAuth2TokenServiceDelegate* delegate =
+        new DeviceOAuth2TokenServiceDelegate(request_context_getter_.get(),
+                                             scoped_testing_local_state_.Get());
+    delegate->max_refresh_token_validation_retries_ = 0;
+    oauth2_service_.reset(new DeviceOAuth2TokenService(delegate));
     oauth2_service_->set_max_authorization_token_fetch_retries_for_testing(0);
   }
 
@@ -156,8 +159,9 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
     if (!RefreshTokenIsAvailable())
       return std::string();
 
-    return oauth2_service_->GetRefreshToken(
-        oauth2_service_->GetRobotAccountId());
+    return static_cast<DeviceOAuth2TokenServiceDelegate*>(
+               oauth2_service_->GetDelegate())
+        ->GetRefreshToken(oauth2_service_->GetRobotAccountId());
   }
 
   // A utility method to return fake URL results, for testing the refresh token

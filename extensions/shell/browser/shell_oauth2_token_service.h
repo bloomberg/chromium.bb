@@ -30,29 +30,10 @@ class ShellOAuth2TokenService : public OAuth2TokenService {
   // Returns the single instance for app_shell.
   static ShellOAuth2TokenService* GetInstance();
 
-  std::string account_id() const { return account_id_; }
-
-  // Sets the current user account and refresh token.
   void SetRefreshToken(const std::string& account_id,
                        const std::string& refresh_token);
 
-  // OAuth2TokenService:
-  bool RefreshTokenIsAvailable(const std::string& account_id) const override;
-  OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
-      const std::string& account_id,
-      net::URLRequestContextGetter* getter,
-      OAuth2AccessTokenConsumer* consumer) override;
-  net::URLRequestContextGetter* GetRequestContext() override;
-
- private:
-  // Not owned.
-  content::BrowserContext* browser_context_;
-
-  // User account id, such as "foo@gmail.com".
-  std::string account_id_;
-
-  // Cached copy of an OAuth2 refresh token. Not stored on disk.
-  std::string refresh_token_;
+  std::string AccountId() const;
 
   DISALLOW_COPY_AND_ASSIGN(ShellOAuth2TokenService);
 };

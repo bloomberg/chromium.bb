@@ -5,11 +5,7 @@
 #ifndef GOOGLE_APIS_GAIA_FAKE_OAUTH2_TOKEN_SERVICE_H_
 #define GOOGLE_APIS_GAIA_FAKE_OAUTH2_TOKEN_SERVICE_H_
 
-#include <set>
-#include <string>
-
-#include "base/compiler_specific.h"
-#include "base/memory/weak_ptr.h"
+#include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 namespace net {
@@ -21,8 +17,6 @@ class FakeOAuth2TokenService : public OAuth2TokenService {
  public:
   FakeOAuth2TokenService();
   ~FakeOAuth2TokenService() override;
-
-  std::vector<std::string> GetAccounts() override;
 
   void AddAccount(const std::string& account_id);
   void RemoveAccount(const std::string& account_id);
@@ -36,9 +30,7 @@ class FakeOAuth2TokenService : public OAuth2TokenService {
       const std::string& account_id,
       const GoogleServiceAuthError& auth_error);
 
-  void set_request_context(net::URLRequestContextGetter* request_context) {
-    request_context_ = request_context;
-  }
+  FakeOAuth2TokenServiceDelegate* GetFakeOAuth2TokenServiceDelegate();
 
  protected:
   // OAuth2TokenService overrides.
@@ -49,12 +41,10 @@ class FakeOAuth2TokenService : public OAuth2TokenService {
                         const std::string& client_secret,
                         const ScopeSet& scopes) override;
 
-  void InvalidateOAuth2Token(const std::string& account_id,
-                             const std::string& client_id,
-                             const ScopeSet& scopes,
-                             const std::string& access_token) override;
-
-  bool RefreshTokenIsAvailable(const std::string& account_id) const override;
+  void InvalidateAccessTokenImpl(const std::string& account_id,
+                                 const std::string& client_id,
+                                 const ScopeSet& scopes,
+                                 const std::string& access_token) override;
 
  private:
   struct PendingRequest {
@@ -68,18 +58,7 @@ class FakeOAuth2TokenService : public OAuth2TokenService {
     base::WeakPtr<RequestImpl> request;
   };
 
-  // OAuth2TokenService overrides.
-  net::URLRequestContextGetter* GetRequestContext() override;
-
-  OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
-      const std::string& account_id,
-      net::URLRequestContextGetter* getter,
-      OAuth2AccessTokenConsumer* consumer) override;
-
-  std::set<std::string> account_ids_;
   std::vector<PendingRequest> pending_requests_;
-
-  net::URLRequestContextGetter* request_context_;  // weak
 
   DISALLOW_COPY_AND_ASSIGN(FakeOAuth2TokenService);
 };

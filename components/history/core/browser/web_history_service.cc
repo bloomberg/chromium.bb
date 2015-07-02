@@ -111,9 +111,8 @@ class RequestImpl : public WebHistoryService::Request,
     if (response_code_ == net::HTTP_UNAUTHORIZED && ++auth_retry_count_ <= 1) {
       OAuth2TokenService::ScopeSet oauth_scopes;
       oauth_scopes.insert(kHistoryOAuthScope);
-      token_service_->InvalidateToken(
-          signin_manager_->GetAuthenticatedAccountId(),
-          oauth_scopes,
+      token_service_->InvalidateAccessToken(
+          signin_manager_->GetAuthenticatedAccountId(), oauth_scopes,
           access_token_);
 
       access_token_.clear();

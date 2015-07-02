@@ -40,7 +40,7 @@ class ProfileSyncAuthProviderTest : public ::testing::Test {
     FakeProfileOAuth2TokenService* token_service =
         (FakeProfileOAuth2TokenService*)
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get());
-    token_service->IssueRefreshTokenForUser(kAccountId, "fake_refresh_token");
+    token_service->UpdateCredentials(kAccountId, "fake_refresh_token");
 
     auth_provider_frontend_.reset(new ProfileSyncAuthProvider(
         token_service, kAccountId, GaiaConstants::kChromeSyncOAuth2Scope));

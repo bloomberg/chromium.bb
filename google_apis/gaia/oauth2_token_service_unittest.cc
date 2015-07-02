@@ -6,6 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
@@ -43,9 +44,8 @@ class RetryingTestingOAuth2TokenServiceConsumer
 
 class TestOAuth2TokenService : public OAuth2TokenService {
  public:
-  explicit TestOAuth2TokenService(net::TestURLRequestContextGetter* getter)
-      : request_context_getter_(getter) {
-  }
+  explicit TestOAuth2TokenService(FakeOAuth2TokenServiceDelegate* delegate)
+      : OAuth2TokenService(delegate) {}
 
   void CancelAllRequestsForTest() { CancelAllRequests(); }
 
@@ -53,49 +53,17 @@ class TestOAuth2TokenService : public OAuth2TokenService {
     CancelRequestsForAccount(account_id);
   }
 
-  // For testing: set the refresh token to be used.
-  void set_refresh_token(const std::string& account_id,
-                         const std::string& refresh_token) {
-    if (refresh_token.empty())
-      refresh_tokens_.erase(account_id);
-    else
-      refresh_tokens_[account_id] = refresh_token;
+  FakeOAuth2TokenServiceDelegate* GetFakeOAuth2TokenServiceDelegate() {
+    return static_cast<FakeOAuth2TokenServiceDelegate*>(GetDelegate());
   }
-
-  bool RefreshTokenIsAvailable(const std::string& account_id) const override {
-    std::map<std::string, std::string>::const_iterator it =
-        refresh_tokens_.find(account_id);
-
-    return it != refresh_tokens_.end();
-  };
-
- private:
-  // OAuth2TokenService implementation.
-  net::URLRequestContextGetter* GetRequestContext() override {
-    return request_context_getter_.get();
-  }
-
-  OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
-      const std::string& account_id,
-      net::URLRequestContextGetter* getter,
-      OAuth2AccessTokenConsumer* consumer) override {
-    std::map<std::string, std::string>::const_iterator it =
-        refresh_tokens_.find(account_id);
-    DCHECK(it != refresh_tokens_.end());
-    std::string refresh_token(it->second);
-    return new OAuth2AccessTokenFetcherImpl(consumer, getter, refresh_token);
-  };
-
-  std::map<std::string, std::string> refresh_tokens_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
 };
 
 class OAuth2TokenServiceTest : public testing::Test {
  public:
   void SetUp() override {
-    oauth2_service_.reset(
-        new TestOAuth2TokenService(new net::TestURLRequestContextGetter(
-            message_loop_.task_runner())));
+    oauth2_service_.reset(new TestOAuth2TokenService(
+        new FakeOAuth2TokenServiceDelegate(new net::TestURLRequestContextGetter(
+            message_loop_.task_runner()))));
     account_id_ = "test_user@gmail.com";
   }
 
@@ -123,7 +91,8 @@ TEST_F(OAuth2TokenServiceTest, NoOAuth2RefreshToken) {
 }
 
 TEST_F(OAuth2TokenServiceTest, FailureShouldNotRetry) {
-  oauth2_service_->set_refresh_token(account_id_, "refreshToken");
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      account_id_, "refreshToken");
   scoped_ptr<OAuth2TokenService::Request> request(
       oauth2_service_->StartRequest(account_id_,
                                     OAuth2TokenService::ScopeSet(),
@@ -143,7 +112,8 @@ TEST_F(OAuth2TokenServiceTest, FailureShouldNotRetry) {
 }
 
 TEST_F(OAuth2TokenServiceTest, SuccessWithoutCaching) {
-  oauth2_service_->set_refresh_token(account_id_, "refreshToken");
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      account_id_, "refreshToken");
   scoped_ptr<OAuth2TokenService::Request> request(
       oauth2_service_->StartRequest(account_id_,
                                     OAuth2TokenService::ScopeSet(),
@@ -172,7 +142,8 @@ TEST_F(OAuth2TokenServiceTest, SuccessWithCaching) {
   OAuth2TokenService::ScopeSet scopes2;
   scopes2.insert("s3");
 
-  oauth2_service_->set_refresh_token(account_id_, "refreshToken");
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      account_id_, "refreshToken");
 
   // First request.
   scoped_ptr<OAuth2TokenService::Request> request(
@@ -218,7 +189,8 @@ TEST_F(OAuth2TokenServiceTest, SuccessWithCaching) {
 }
 
 TEST_F(OAuth2TokenServiceTest, SuccessAndExpirationAndFailure) {
-  oauth2_service_->set_refresh_token(account_id_, "refreshToken");
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      account_id_, "refreshToken");
 
   // First request.
   scoped_ptr<OAuth2TokenService::Request> request(
@@ -257,7 +229,8 @@ TEST_F(OAuth2TokenServiceTest, SuccessAndExpirationAndFailure) {
 }
 
 TEST_F(OAuth2TokenServiceTest, SuccessAndExpirationAndSuccess) {
-  oauth2_service_->set_refresh_token(account_id_, "refreshToken");
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      account_id_, "refreshToken");
 
   // First request.
   scoped_ptr<OAuth2TokenService::Request> request(
@@ -296,7 +269,8 @@ TEST_F(OAuth2TokenServiceTest, SuccessAndExpirationAndSuccess) {
 }
 
 TEST_F(OAuth2TokenServiceTest, RequestDeletedBeforeCompletion) {
-  oauth2_service_->set_refresh_token(account_id_, "refreshToken");
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      account_id_, "refreshToken");
 
   scoped_ptr<OAuth2TokenService::Request> request(
       oauth2_service_->StartRequest(account_id_,
@@ -318,7 +292,8 @@ TEST_F(OAuth2TokenServiceTest, RequestDeletedBeforeCompletion) {
 }
 
 TEST_F(OAuth2TokenServiceTest, RequestDeletedAfterCompletion) {
-  oauth2_service_->set_refresh_token(account_id_, "refreshToken");
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      account_id_, "refreshToken");
 
   scoped_ptr<OAuth2TokenService::Request> request(oauth2_service_->StartRequest(
       account_id_, OAuth2TokenService::ScopeSet(), &consumer_));
@@ -340,7 +315,8 @@ TEST_F(OAuth2TokenServiceTest, RequestDeletedAfterCompletion) {
 }
 
 TEST_F(OAuth2TokenServiceTest, MultipleRequestsForTheSameScopesWithOneDeleted) {
-  oauth2_service_->set_refresh_token(account_id_, "refreshToken");
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      account_id_, "refreshToken");
 
   scoped_ptr<OAuth2TokenService::Request> request(oauth2_service_->StartRequest(
       account_id_, OAuth2TokenService::ScopeSet(), &consumer_));
@@ -363,7 +339,8 @@ TEST_F(OAuth2TokenServiceTest, MultipleRequestsForTheSameScopesWithOneDeleted) {
 
 TEST_F(OAuth2TokenServiceTest, ClearedRefreshTokenFailsSubsequentRequests) {
   // We have a valid refresh token; the first request is successful.
-  oauth2_service_->set_refresh_token(account_id_, "refreshToken");
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      account_id_, "refreshToken");
   scoped_ptr<OAuth2TokenService::Request> request(oauth2_service_->StartRequest(
       account_id_, OAuth2TokenService::ScopeSet(), &consumer_));
   base::RunLoop().RunUntilIdle();
@@ -377,7 +354,8 @@ TEST_F(OAuth2TokenServiceTest, ClearedRefreshTokenFailsSubsequentRequests) {
   EXPECT_EQ("token", consumer_.last_token_);
 
   // The refresh token is no longer available; subsequent requests fail.
-  oauth2_service_->set_refresh_token(account_id_, "");
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      account_id_, "");
   request = oauth2_service_->StartRequest(account_id_,
       OAuth2TokenService::ScopeSet(), &consumer_);
   base::RunLoop().RunUntilIdle();
@@ -387,7 +365,8 @@ TEST_F(OAuth2TokenServiceTest, ClearedRefreshTokenFailsSubsequentRequests) {
 
 TEST_F(OAuth2TokenServiceTest,
        ChangedRefreshTokenDoesNotAffectInFlightRequests) {
-  oauth2_service_->set_refresh_token(account_id_, "first refreshToken");
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      account_id_, "first refreshToken");
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert("s1");
   scopes.insert("s2");
@@ -402,7 +381,8 @@ TEST_F(OAuth2TokenServiceTest,
   ASSERT_TRUE(fetcher1);
 
   // Note |request| is still pending when the refresh token changes.
-  oauth2_service_->set_refresh_token(account_id_, "second refreshToken");
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      account_id_, "second refreshToken");
 
   // A 2nd request (using the new refresh token) that occurs and completes
   // while the 1st request is in flight is successful.
@@ -428,7 +408,8 @@ TEST_F(OAuth2TokenServiceTest,
 }
 
 TEST_F(OAuth2TokenServiceTest, ServiceShutDownBeforeFetchComplete) {
-  oauth2_service_->set_refresh_token(account_id_, "refreshToken");
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      account_id_, "refreshToken");
   scoped_ptr<OAuth2TokenService::Request> request(oauth2_service_->StartRequest(
       account_id_, OAuth2TokenService::ScopeSet(), &consumer_));
   base::RunLoop().RunUntilIdle();
@@ -443,7 +424,8 @@ TEST_F(OAuth2TokenServiceTest, ServiceShutDownBeforeFetchComplete) {
 }
 
 TEST_F(OAuth2TokenServiceTest, RetryingConsumer) {
-  oauth2_service_->set_refresh_token(account_id_, "refreshToken");
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      account_id_, "refreshToken");
   RetryingTestingOAuth2TokenServiceConsumer consumer(oauth2_service_.get(),
       account_id_);
   scoped_ptr<OAuth2TokenService::Request> request(oauth2_service_->StartRequest(
@@ -471,7 +453,8 @@ TEST_F(OAuth2TokenServiceTest, RetryingConsumer) {
 
 TEST_F(OAuth2TokenServiceTest, InvalidateToken) {
   OAuth2TokenService::ScopeSet scopes;
-  oauth2_service_->set_refresh_token(account_id_, "refreshToken");
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      account_id_, "refreshToken");
 
   // First request.
   scoped_ptr<OAuth2TokenService::Request> request(
@@ -501,7 +484,8 @@ TEST_F(OAuth2TokenServiceTest, InvalidateToken) {
   EXPECT_EQ("token", consumer_.last_token_);
 
   // Invalidating the token should return a new token on the next request.
-  oauth2_service_->InvalidateToken(account_id_, scopes, consumer_.last_token_);
+  oauth2_service_->InvalidateAccessToken(account_id_, scopes,
+                                         consumer_.last_token_);
   scoped_ptr<OAuth2TokenService::Request> request3(
       oauth2_service_->StartRequest(account_id_, scopes, &consumer_));
   base::RunLoop().RunUntilIdle();
@@ -518,12 +502,14 @@ TEST_F(OAuth2TokenServiceTest, InvalidateToken) {
 }
 
 TEST_F(OAuth2TokenServiceTest, CancelAllRequests) {
-  oauth2_service_->set_refresh_token(account_id_, "refreshToken");
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      account_id_, "refreshToken");
   scoped_ptr<OAuth2TokenService::Request> request(
       oauth2_service_->StartRequest(account_id_, OAuth2TokenService::ScopeSet(),
           &consumer_));
 
-  oauth2_service_->set_refresh_token("account_id_2", "refreshToken2");
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      "account_id_2", "refreshToken2");
   scoped_ptr<OAuth2TokenService::Request> request2(
       oauth2_service_->StartRequest(account_id_, OAuth2TokenService::ScopeSet(),
           &consumer_));
@@ -546,14 +532,16 @@ TEST_F(OAuth2TokenServiceTest, CancelRequestsForAccount) {
                                            scope_set_1.end());
   scope_set_2.insert("scope3");
 
-  oauth2_service_->set_refresh_token(account_id_, "refreshToken");
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      account_id_, "refreshToken");
   scoped_ptr<OAuth2TokenService::Request> request1(
       oauth2_service_->StartRequest(account_id_, scope_set_1, &consumer_));
   scoped_ptr<OAuth2TokenService::Request> request2(
       oauth2_service_->StartRequest(account_id_, scope_set_2, &consumer_));
 
   std::string account_id_2("account_id_2");
-  oauth2_service_->set_refresh_token(account_id_2, "refreshToken2");
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      account_id_2, "refreshToken2");
   scoped_ptr<OAuth2TokenService::Request> request3(
       oauth2_service_->StartRequest(account_id_2, scope_set_1, &consumer_));
 
@@ -582,7 +570,8 @@ TEST_F(OAuth2TokenServiceTest, SameScopesRequestedForDifferentClients) {
   scope_set.insert("scope2");
 
   std::string refresh_token("refreshToken");
-  oauth2_service_->set_refresh_token(account_id_, refresh_token);
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      account_id_, refresh_token);
 
   scoped_ptr<OAuth2TokenService::Request> request1(
       oauth2_service_->StartRequestForClient(account_id_,
@@ -647,4 +636,42 @@ TEST_F(OAuth2TokenServiceTest, RequestParametersOrderTest) {
       }
     }
   }
+}
+
+TEST_F(OAuth2TokenServiceTest, UpdateClearsCache) {
+  std::string kEmail = "test@gmail.com";
+  std::set<std::string> scope_list;
+  scope_list.insert("scope");
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      kEmail, "refreshToken");
+  scoped_ptr<OAuth2TokenService::Request> request(
+      oauth2_service_->StartRequest(kEmail, scope_list, &consumer_));
+  base::RunLoop().RunUntilIdle();
+  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher);
+  fetcher->set_response_code(net::HTTP_OK);
+  fetcher->SetResponseString(GetValidTokenResponse("token", 3600));
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(0, consumer_.number_of_errors_);
+  EXPECT_EQ("token", consumer_.last_token_);
+  EXPECT_EQ(1, (int)oauth2_service_->token_cache_.size());
+
+  // Signs out and signs in
+  oauth2_service_->RevokeAllCredentials();
+
+  EXPECT_EQ(0, (int)oauth2_service_->token_cache_.size());
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      kEmail, "refreshToken");
+  request = oauth2_service_->StartRequest(kEmail, scope_list, &consumer_);
+  base::RunLoop().RunUntilIdle();
+  fetcher = factory_.GetFetcherByID(0);
+  // ASSERT_TRUE(fetcher);
+  fetcher->set_response_code(net::HTTP_OK);
+  fetcher->SetResponseString(GetValidTokenResponse("another token", 3600));
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  EXPECT_EQ(2, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(0, consumer_.number_of_errors_);
+  EXPECT_EQ("another token", consumer_.last_token_);
+  EXPECT_EQ(1, (int)oauth2_service_->token_cache_.size());
 }

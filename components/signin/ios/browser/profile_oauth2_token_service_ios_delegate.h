@@ -1,46 +1,37 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-#ifndef COMPONENTS_SIGNIN_IOS_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_IOS_H_
-#define COMPONENTS_SIGNIN_IOS_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_IOS_H_
+#ifndef COMPONENTS_SIGNIN_IOS_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_IOS_DELEGATE_H_
+#define COMPONENTS_SIGNIN_IOS_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_IOS_DELEGATE_H_
 
 #include <string>
 
+#include "base/memory/linked_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
+#include "google_apis/gaia/oauth2_token_service_delegate.h"
 
-class OAuth2AccessTokenFetcher;
-
-namespace ios{
+namespace ios {
 class ProfileOAuth2TokenServiceIOSProvider;
 }
 
-// A specialization of ProfileOAuth2TokenService that will be returned by
-// ProfileOAuth2TokenServiceFactory for OS_IOS when iOS authentication service
-// is used to lookup OAuth2 tokens.
-//
-// See |ProfileOAuth2TokenService| for usage details.
-//
-// Note: Requests should be started from the UI thread. To start a
-// request from aother thread, please use OAuth2TokenServiceRequest.
-class ProfileOAuth2TokenServiceIOS : public ProfileOAuth2TokenService {
+class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
  public:
+  ProfileOAuth2TokenServiceIOSDelegate(
+      SigninClient* client,
+      SigninErrorController* signin_error_controller);
+  ~ProfileOAuth2TokenServiceIOSDelegate() override;
+
+  OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
+      const std::string& account_id,
+      net::URLRequestContextGetter* getter,
+      OAuth2AccessTokenConsumer* consumer) override;
+
   // KeyedService
   void Shutdown() override;
 
-  // OAuth2TokenService
   bool RefreshTokenIsAvailable(const std::string& account_id) const override;
 
-  void InvalidateOAuth2Token(const std::string& account_id,
-                             const std::string& client_id,
-                             const ScopeSet& scopes,
-                             const std::string& access_token) override;
-
-  // ProfileOAuth2TokenService
-  void Initialize(SigninClient* client,
-                  SigninErrorController* signin_error_controller) override;
   void LoadCredentials(const std::string& primary_account_id) override;
   std::vector<std::string> GetAccounts() override;
   void UpdateAuthError(const std::string& account_id,
@@ -76,34 +67,11 @@ class ProfileOAuth2TokenServiceIOS : public ProfileOAuth2TokenService {
   // this change to be effective.
   void ExcludeAllSecondaryAccounts();
 
- protected:
-  friend class ProfileOAuth2TokenServiceFactory;
-  friend class ProfileOAuth2TokenServiceIOSTest;
-  FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceIOSTest,
-                           ExcludeSecondaryAccounts);
-  FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceIOSTest,
+ private:
+  friend class ProfileOAuth2TokenServiceIOSDelegateTest;
+  FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceIOSDelegateTest,
                            LoadRevokeCredentialsClearsExcludedAccounts);
 
-  ProfileOAuth2TokenServiceIOS();
-  ~ProfileOAuth2TokenServiceIOS() override;
-
-  OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
-      const std::string& account_id,
-      net::URLRequestContextGetter* getter,
-      OAuth2AccessTokenConsumer* consumer) override;
-
-  // Protected and virtual to be overriden by fake for testing.
-
-  // Adds |account_id| to |accounts_| if it does not exist or udpates
-  // the auth error state of |account_id| if it exists. Fires
-  // |OnRefreshTokenAvailable| if the account info is updated.
-  virtual void AddOrUpdateAccount(const std::string& account_id);
-
-  // Removes |account_id| from |accounts_|. Fires |OnRefreshTokenRevoked|
-  // if the account info is removed.
-  virtual void RemoveAccount(const std::string& account_id);
-
- private:
   class AccountInfo : public SigninErrorController::AuthStatusProvider {
    public:
     AccountInfo(SigninErrorController* signin_error_controller,
@@ -130,9 +98,18 @@ class ProfileOAuth2TokenServiceIOS : public ProfileOAuth2TokenService {
     DISALLOW_COPY_AND_ASSIGN(AccountInfo);
   };
 
+  // Adds |account_id| to |accounts_| if it does not exist or udpates
+  // the auth error state of |account_id| if it exists. Fires
+  // |OnRefreshTokenAvailable| if the account info is updated.
+  void AddOrUpdateAccount(const std::string& account_id);
+
+  // Removes |account_id| from |accounts_|. Fires |OnRefreshTokenRevoked|
+  // if the account info is removed.
+  void RemoveAccount(const std::string& account_id);
+
   // Maps the |account_id| of accounts known to ProfileOAuth2TokenService
   // to information about the account.
-  typedef std::map<std::string, linked_ptr<AccountInfo> > AccountInfoMap;
+  typedef std::map<std::string, linked_ptr<AccountInfo>> AccountInfoMap;
 
   // Returns the iOS provider;
   ios::ProfileOAuth2TokenServiceIOSProvider* GetProvider();
@@ -157,7 +134,12 @@ class ProfileOAuth2TokenServiceIOS : public ProfileOAuth2TokenService {
   // ProfileOAuth2TokenService from multiple threads in upstream code.
   base::ThreadChecker thread_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(ProfileOAuth2TokenServiceIOS);
-};
+  // The client with which this instance was initialied, or NULL.
+  SigninClient* client_;
 
-#endif  // COMPONENTS_SIGNIN_IOS_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_IOS_H_
+  // The error controller with which this instance was initialized, or NULL.
+  SigninErrorController* signin_error_controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProfileOAuth2TokenServiceIOSDelegate);
+};
+#endif  // COMPONENTS_SIGNIN_IOS_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_IOS_DELEGATE_H_

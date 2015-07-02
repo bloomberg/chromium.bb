@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_ANDROID_PROFILE_OAUTH2_TOKEN_SERVICE_H_
-#define CHROME_BROWSER_SIGNIN_ANDROID_PROFILE_OAUTH2_TOKEN_SERVICE_H_
+#ifndef CHROME_BROWSER_SIGNIN_DELEGATE_ANDROID_OAUTH2_TOKEN_SERVICE_H_
+#define CHROME_BROWSER_SIGNIN_DELEGATE_ANDROID_OAUTH2_TOKEN_SERVICE_H_
 
 #include <jni.h>
 #include <string>
@@ -14,38 +14,38 @@
 #include "base/time/time.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/oauth2_token_service_delegate.h"
 
-// A specialization of ProfileOAuth2TokenService that will be returned by
-// ProfileOAuth2TokenServiceFactory for OS_ANDROID.  This instance uses
+// A specialization of OAuth2TokenServiceDelegate that will be returned by
+// OAuth2TokenServiceDelegateFactory for OS_ANDROID.  This instance uses
 // native Android features to lookup OAuth2 tokens.
 //
-// See |ProfileOAuth2TokenService| for usage details.
+// See |OAuth2TokenServiceDelegate| for usage details.
 //
 // Note: requests should be started from the UI thread. To start a
 // request from other thread, please use OAuth2TokenServiceRequest.
-class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
+class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
  public:
-  // Registers the AndroidProfileOAuth2TokenService's native methods through
+  // Registers the OAuth2TokenServiceDelegateAndroid's native methods through
   // JNI.
   static bool Register(JNIEnv* env);
 
-  // Creates a new instance of the AndroidProfileOAuth2TokenService.
-  static AndroidProfileOAuth2TokenService* Create();
+  // Creates a new instance of the OAuth2TokenServiceDelegateAndroid.
+  static OAuth2TokenServiceDelegateAndroid* Create();
 
   // Returns a reference to the Java instance of this service.
-  static jobject GetForProfile(
-      JNIEnv* env, jclass clazz, jobject j_profile_android);
+  static jobject GetForProfile(JNIEnv* env,
+                               jclass clazz,
+                               jobject j_profile_android);
 
   // Called by the TestingProfile class to disable account validation in
   // tests.  This prevents the token service from trying to look up system
   // accounts which requires special permission.
-  static void set_is_testing_profile() {
-    is_testing_profile_ = true;
-  }
+  static void set_is_testing_profile() { is_testing_profile_ = true; }
 
-  // ProfileOAuth2TokenService overrides:
-  void Initialize(SigninClient* client,
-                  SigninErrorController* signin_error_controller) override;
+  void Initialize();
+
+  // OAuth2TokenServiceDelegate overrides:
   bool RefreshTokenIsAvailable(const std::string& account_id) const override;
   void UpdateAuthError(const std::string& account_id,
                        const GoogleServiceAuthError& error) override;
@@ -87,8 +87,8 @@ class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
 
  protected:
   friend class ProfileOAuth2TokenServiceFactory;
-  AndroidProfileOAuth2TokenService();
-  ~AndroidProfileOAuth2TokenService() override;
+  OAuth2TokenServiceDelegateAndroid();
+  ~OAuth2TokenServiceDelegateAndroid() override;
 
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
       const std::string& account_id,
@@ -97,9 +97,9 @@ class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
 
   // Overridden from OAuth2TokenService to intercept token fetch requests and
   // redirect them to the Account Manager.
-  void InvalidateOAuth2Token(const std::string& account_id,
+  void InvalidateAccessToken(const std::string& account_id,
                              const std::string& client_id,
-                             const ScopeSet& scopes,
+                             const OAuth2TokenService::ScopeSet& scopes,
                              const std::string& access_token) override;
 
   // Called to notify observers when a refresh token is available.
@@ -125,7 +125,7 @@ class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
 
   static bool is_testing_profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(AndroidProfileOAuth2TokenService);
+  DISALLOW_COPY_AND_ASSIGN(OAuth2TokenServiceDelegateAndroid);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_ANDROID_PROFILE_OAUTH2_TOKEN_SERVICE_H_
+#endif  // CHROME_BROWSER_SIGNIN_DELEGATE_ANDROID_OAUTH2_TOKEN_SERVICE_H_

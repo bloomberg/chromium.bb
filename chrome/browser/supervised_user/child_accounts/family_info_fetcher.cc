@@ -202,7 +202,7 @@ void FamilyInfoFetcher::OnURLFetchComplete(
     access_token_expired_ = true;
     OAuth2TokenService::ScopeSet scopes;
     scopes.insert(kScope);
-    token_service_->InvalidateToken(account_id_, scopes, access_token_);
+    token_service_->InvalidateAccessToken(account_id_, scopes, access_token_);
     StartFetching();
     return;
   }

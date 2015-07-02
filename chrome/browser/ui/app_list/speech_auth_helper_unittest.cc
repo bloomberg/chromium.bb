@@ -60,8 +60,8 @@ class SpeechAuthHelperTest : public testing::Test {
 
  protected:
   void SetupRefreshToken() {
-    GetFakeProfileOAuth2TokenService()->IssueRefreshTokenForUser(
-        kTestUser, "fake_refresh_token");
+    GetFakeProfileOAuth2TokenService()->UpdateCredentials(kTestUser,
+                                                          "fake_refresh_token");
   }
 
   FakeProfileOAuth2TokenService* GetFakeProfileOAuth2TokenService() {

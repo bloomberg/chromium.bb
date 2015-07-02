@@ -119,6 +119,5 @@ TEST_F(SigninTrackerTest, SignInSucceeds) {
   std::string account_id = service->SeedAccountInfo(gaia_id, email);
 
   mock_signin_manager_->SetAuthenticatedAccountInfo(gaia_id, email);
-  fake_oauth2_token_service_->IssueRefreshTokenForUser(account_id,
-                                                       "refresh_token");
+  fake_oauth2_token_service_->UpdateCredentials(account_id, "refresh_token");
 }

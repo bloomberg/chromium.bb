@@ -388,7 +388,8 @@ void UploadJobImpl::OnURLFetchComplete(const net::URLFetcher* source) {
     upload_fetcher_.reset();
     OAuth2TokenService::ScopeSet scope_set;
     scope_set.insert(GaiaConstants::kDeviceManagementServiceOAuth);
-    token_service_->InvalidateToken(account_id_, scope_set, access_token_);
+    token_service_->InvalidateAccessToken(account_id_, scope_set,
+                                          access_token_);
     access_token_.clear();
     RequestAccessToken();
     return;

@@ -14,8 +14,6 @@ static_library("browser") {
     "device_activity_fetcher.h",
     "gaia_cookie_manager_service.cc",
     "gaia_cookie_manager_service.h",
-    "mutable_profile_oauth2_token_service.cc",
-    "mutable_profile_oauth2_token_service.h",
     "profile_oauth2_token_service.cc",
     "profile_oauth2_token_service.h",
     "refresh_token_annotation_request.cc",
@@ -58,13 +56,6 @@ static_library("browser") {
     "//components/os_crypt",
     "//components/webdata/common",
   ]
-
-  if (is_android) {
-    sources -= [
-      "mutable_profile_oauth2_token_service.cc",
-      "mutable_profile_oauth2_token_service.h",
-    ]
-  }
 
   if (is_chromeos) {
     sources -= [ "signin_manager.cc" ]

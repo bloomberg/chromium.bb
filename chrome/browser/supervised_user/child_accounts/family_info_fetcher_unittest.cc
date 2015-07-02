@@ -281,7 +281,7 @@ TEST_F(FamilyInfoFetcherTest, NoRefreshToken) {
   // After all refresh tokens have been loaded, there is still no token for our
   // user, so we expect a token error.
   EXPECT_CALL(*this, OnFailure(FamilyInfoFetcher::TOKEN_ERROR));
-  token_service_.IssueAllRefreshTokensLoaded();
+  token_service_.LoadCredentials("");
 }
 
 TEST_F(FamilyInfoFetcherTest, GetTokenFailure) {

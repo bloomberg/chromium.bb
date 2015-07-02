@@ -10,12 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-
-#if defined(OS_ANDROID)
-#include "chrome/browser/signin/android_profile_oauth2_token_service.h"
-#else
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#endif
 
 // Helper class to simplify writing unittests that depend on an instance of
 // ProfileOAuth2TokenService.
@@ -38,11 +33,7 @@
 // IssueErrorForScope(scopes, GoogleServiceAuthError(INVALID_GAIA_CREDENTIALS));
 //
 class FakeProfileOAuth2TokenService
-#if defined(OS_ANDROID)
-  : public AndroidProfileOAuth2TokenService {
-#else
   : public ProfileOAuth2TokenService {
-#endif
  public:
   struct PendingRequest {
     PendingRequest();
@@ -57,32 +48,6 @@ class FakeProfileOAuth2TokenService
 
   FakeProfileOAuth2TokenService();
   ~FakeProfileOAuth2TokenService() override;
-
-  // Overriden to make sure it works on Android.
-  bool RefreshTokenIsAvailable(const std::string& account_id) const override;
-
-  // Overriden to make sure it works on iOS.
-  void LoadCredentials(const std::string& primary_account_id) override;
-
-  std::vector<std::string> GetAccounts() override;
-
-  // Overriden to make sure it works on Android.  Simply calls
-  // IssueRefreshToken().
-  void UpdateCredentials(const std::string& account_id,
-                         const std::string& refresh_token) override;
-
-  // Sets the current refresh token. If |token| is non-empty, this will invoke
-  // OnRefreshTokenAvailable() on all Observers, otherwise this will invoke
-  // OnRefreshTokenRevoked().
-  void IssueRefreshToken(const std::string& token);
-
-  // TODO(fgorski,rogerta): Merge with UpdateCredentials when this class fully
-  // supports multiple accounts.
-  void IssueRefreshTokenForUser(const std::string& account_id,
-                                const std::string& token);
-
-  // Fire OnRefreshTokensLoaded on all observers.
-  void IssueAllRefreshTokensLoaded();
 
   // Gets a list of active requests (can be used by tests to validate that the
   // correct request has been issued).
@@ -122,17 +87,10 @@ class FakeProfileOAuth2TokenService
                         const std::string& client_secret,
                         const ScopeSet& scopes) override;
 
-  OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
-      const std::string& account_id,
-      net::URLRequestContextGetter* getter,
-      OAuth2AccessTokenConsumer* consumer) override;
-
-  void InvalidateOAuth2Token(const std::string& account_id,
-                             const std::string& client_id,
-                             const ScopeSet& scopes,
-                             const std::string& access_token) override;
-
-  net::URLRequestContextGetter* GetRequestContext() override;
+  void InvalidateAccessTokenImpl(const std::string& account_id,
+                                 const std::string& client_id,
+                                 const ScopeSet& scopes,
+                                 const std::string& access_token) override;
 
  private:
   // Helper function to complete pending requests - if |all_scopes| is true,
@@ -147,12 +105,7 @@ class FakeProfileOAuth2TokenService
                         const std::string& access_token,
                         const base::Time& expiration);
 
-  std::string GetRefreshToken(const std::string& account_id) const;
-
   std::vector<PendingRequest> pending_requests_;
-
-  // Maps account ids to their refresh token strings.
-  std::map<std::string, std::string> refresh_tokens_;
 
   // If true, then this fake service will post responses to
   // |FetchOAuth2Token| on the current run loop. There is no need to call

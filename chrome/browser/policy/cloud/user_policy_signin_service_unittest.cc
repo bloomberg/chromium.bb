@@ -137,7 +137,7 @@ class UserPolicySigninServiceTest : public testing::Test {
     // a valid login token, while on other platforms, the login refresh token
     // is specified directly.
 #if defined(OS_ANDROID)
-    GetTokenService()->IssueRefreshTokenForUser(
+    GetTokenService()->UpdateCredentials(
         AccountTrackerService::PickAccountIdForAccount(
             profile_.get()->GetPrefs(), kTestGaiaId, kTestUser),
         "oauth2_login_refresh_token");
@@ -430,7 +430,7 @@ TEST_F(UserPolicySigninServiceSignedInTest, InitWhileSignedIn) {
   ASSERT_FALSE(IsRequestActive());
 
   // Make oauth token available.
-  GetTokenService()->IssueRefreshTokenForUser(
+  GetTokenService()->UpdateCredentials(
       SigninManagerFactory::GetForProfile(profile_.get())
           ->GetAuthenticatedAccountId(),
       "oauth_login_refresh_token");
@@ -451,7 +451,7 @@ TEST_F(UserPolicySigninServiceSignedInTest, InitWhileSignedInOAuthError) {
   ASSERT_FALSE(IsRequestActive());
 
   // Make oauth token available.
-  GetTokenService()->IssueRefreshTokenForUser(
+  GetTokenService()->UpdateCredentials(
       SigninManagerFactory::GetForProfile(profile_.get())
           ->GetAuthenticatedAccountId(),
       "oauth_login_refresh_token");
@@ -479,7 +479,7 @@ TEST_F(UserPolicySigninServiceTest, SignInAfterInit) {
   mock_store_->NotifyStoreLoaded();
 
   // Make oauth token available.
-  GetTokenService()->IssueRefreshTokenForUser(
+  GetTokenService()->UpdateCredentials(
       SigninManagerFactory::GetForProfile(profile_.get())
           ->GetAuthenticatedAccountId(),
       "oauth_login_refresh_token");
@@ -506,7 +506,7 @@ TEST_F(UserPolicySigninServiceTest, SignInWithNonEnterpriseUser) {
   mock_store_->NotifyStoreLoaded();
 
   // Make oauth token available.
-  GetTokenService()->IssueRefreshTokenForUser(
+  GetTokenService()->UpdateCredentials(
       SigninManagerFactory::GetForProfile(profile_.get())
           ->GetAuthenticatedAccountId(),
       "oauth_login_refresh_token");
@@ -527,7 +527,7 @@ TEST_F(UserPolicySigninServiceTest, UnregisteredClient) {
       ->SetAuthenticatedAccountInfo(kTestGaiaId, kTestUser);
 
   // Make oauth token available.
-  GetTokenService()->IssueRefreshTokenForUser(
+  GetTokenService()->UpdateCredentials(
       SigninManagerFactory::GetForProfile(profile_.get())
           ->GetAuthenticatedAccountId(),
       "oauth_login_refresh_token");
@@ -557,7 +557,7 @@ TEST_F(UserPolicySigninServiceTest, RegisteredClient) {
       ->SetAuthenticatedAccountInfo(kTestGaiaId, kTestUser);
 
   // Make oauth token available.
-  GetTokenService()->IssueRefreshTokenForUser(
+  GetTokenService()->UpdateCredentials(
       SigninManagerFactory::GetForProfile(profile_.get())
           ->GetAuthenticatedAccountId(),
       "oauth_login_refresh_token");
