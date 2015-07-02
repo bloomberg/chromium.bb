@@ -13,13 +13,12 @@
 description('When adding focus ring rects, we should avoid adding line box rects of recursive inlines repeatedly');
 onload = function() {
   document.body.offsetTop;
-  // 6 focus ring rects:
+  // 5 focus ring rects:
   // - 0-2: line boxes of the focused span;
-  // - 3: anonymous continuation block;
-  // - 4: the inner block
-  // - 5: root line box of the inner block
+  // - 3: the inner block
+  // - 4: root line box of the inner block
   if (window.testRunner && window.internals)
-    shouldBe("internals.focusRingRects(document.getElementById('focus')).length", "6");
+    shouldBe("internals.focusRingRects(document.getElementById('focus')).length", "5");
 };
 </script>
 <div id="container">

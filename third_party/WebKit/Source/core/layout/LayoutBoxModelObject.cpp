@@ -379,8 +379,17 @@ void LayoutBoxModelObject::invalidateDisplayItemClientOnBacking(const DisplayIte
 void LayoutBoxModelObject::addFocusRingRectsForNormalChildren(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
 {
     for (LayoutObject* child = slowFirstChild(); child; child = child->nextSibling()) {
-        if (!child->isOutOfFlowPositioned())
-            addFocusRingRectsForDescendant(*child, rects, additionalOffset);
+        // Focus rings of out-of-flow positioned descendants are handled in LayoutBlock::addFocusRingRects().
+        if (child->isOutOfFlowPositioned())
+            continue;
+
+        // Focus ring of an element continuation or anonymous block continuation is added when we iterate the continuation chain.
+        // See LayoutBlock::addFocusRingRects() and LayoutInline::addFocusRingRects().
+        if (child->isElementContinuation()
+            || (child->isLayoutBlock() && toLayoutBlock(child)->isAnonymousBlockContinuation()))
+            continue;
+
+        addFocusRingRectsForDescendant(*child, rects, additionalOffset);
     }
 }
 

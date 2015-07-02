@@ -2582,11 +2582,12 @@ void LayoutBlock::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint
         bool prevInlineHasLineBox = toLayoutInline(inlineElementContinuation->node()->layoutObject())->firstLineBox();
         LayoutUnit topMargin = prevInlineHasLineBox ? collapsedMarginBefore() : LayoutUnit();
         LayoutUnit bottomMargin = nextInlineHasLineBox ? collapsedMarginAfter() : LayoutUnit();
-        LayoutRect rect(additionalOffset, size());
-        rect.expandEdges(topMargin, 0, bottomMargin, 0);
-
-        if (!rect.isEmpty())
-            rects.append(rect);
+        if (topMargin || bottomMargin) {
+            LayoutRect rect(additionalOffset, size());
+            rect.expandEdges(topMargin, 0, bottomMargin, 0);
+            if (!rect.isEmpty())
+                rects.append(rect);
+        }
     } else if (size().width() && size().height()) {
         rects.append(LayoutRect(additionalOffset, size()));
     }

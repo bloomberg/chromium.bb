@@ -247,7 +247,7 @@ TEST_F(PrintContextTest, LinkTargetComplex)
     EXPECT_EQ(MockCanvas::DrawRect, operations[1].type);
     EXPECT_SKRECT_EQ(0, 10, 122, 20, operations[1].rect);
     EXPECT_EQ(MockCanvas::DrawRect, operations[2].type);
-    EXPECT_SKRECT_EQ(0, 30, kPageWidth, 30, operations[2].rect);
+    EXPECT_SKRECT_EQ(0, 30, 133, 30, operations[2].rect);
     EXPECT_EQ(MockCanvas::DrawRect, operations[3].type);
     EXPECT_SKRECT_EQ(0, 100, 144, 40, operations[3].rect);
     EXPECT_EQ(MockCanvas::DrawRect, operations[4].type);
