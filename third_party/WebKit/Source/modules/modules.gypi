@@ -769,6 +769,8 @@
       'fetch/BodyStreamBuffer.h',
       'fetch/DataConsumerTee.cpp',
       'fetch/DataConsumerTee.h',
+      'fetch/FetchBlobDataConsumerHandle.cpp',
+      'fetch/FetchBlobDataConsumerHandle.h',
       'fetch/FetchDataConsumerHandle.h',
       'fetch/FetchDataLoader.cpp',
       'fetch/FetchDataLoader.h',
