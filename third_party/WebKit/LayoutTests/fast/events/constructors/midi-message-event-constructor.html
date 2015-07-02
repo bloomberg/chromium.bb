@@ -26,13 +26,15 @@ shouldBe("new MIDIMessageEvent('eventType', { cancelable: true }).cancelable", "
 shouldBe("new MIDIMessageEvent('eventType', { receivedTime: 3.14 }).receivedTime", "3.14");
 
 // data is passed.
-shouldBeEqualToString("new MIDIMessageEvent('eventType', { data: new Uint8Array(16) }).data.toString()", "[object Uint8Array]");
+var data = new Uint8Array(16);
+shouldEvaluateTo("new MIDIMessageEvent('eventType', { data: data }).data", data);
 
 // All initializers are passed.
-shouldBe("new MIDIMessageEvent('eventType', { bubbles: true, cancelable: true, receivedTime: 1976.0501, data: new Uint8Array(3) }).bubbles", "true");
-shouldBe("new MIDIMessageEvent('eventType', { bubbles: true, cancelable: true, receivedTime: 1976.0501, data: new Uint8Array(3) }).cancelable", "true");
-shouldBe("new MIDIMessageEvent('eventType', { bubbles: true, cancelable: true, receivedTime: 1976.0501, data: new Uint8Array(3) }).receivedTime", "1976.0501");
-shouldBeEqualToString("new MIDIMessageEvent('eventType', { bubbles: true, cancelable: true, receivedTime: 1976.0501, data: new Uint8Array(3) }).data.toString()", "[object Uint8Array]");
+data = new Uint8Array(3);
+shouldBe("new MIDIMessageEvent('eventType', { bubbles: true, cancelable: true, receivedTime: 1976.0501, data: data }).bubbles", "true");
+shouldBe("new MIDIMessageEvent('eventType', { bubbles: true, cancelable: true, receivedTime: 1976.0501, data: data }).cancelable", "true");
+shouldBe("new MIDIMessageEvent('eventType', { bubbles: true, cancelable: true, receivedTime: 1976.0501, data: data }).receivedTime", "1976.0501");
+shouldEvaluateTo("new MIDIMessageEvent('eventType', { bubbles: true, cancelable: true, receivedTime: 1976.0501, data: data }).data", data);
 
 </script>
 </body>

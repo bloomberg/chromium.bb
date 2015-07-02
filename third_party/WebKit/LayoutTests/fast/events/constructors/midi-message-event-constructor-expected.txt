@@ -12,11 +12,11 @@ PASS new MIDIMessageEvent('eventType', { bubbles: true }).bubbles is true
 PASS new MIDIMessageEvent('eventType', { cancelable: false }).cancelable is false
 PASS new MIDIMessageEvent('eventType', { cancelable: true }).cancelable is true
 PASS new MIDIMessageEvent('eventType', { receivedTime: 3.14 }).receivedTime is 3.14
-PASS new MIDIMessageEvent('eventType', { data: new Uint8Array(16) }).data.toString() is "[object Uint8Array]"
-PASS new MIDIMessageEvent('eventType', { bubbles: true, cancelable: true, receivedTime: 1976.0501, data: new Uint8Array(3) }).bubbles is true
-PASS new MIDIMessageEvent('eventType', { bubbles: true, cancelable: true, receivedTime: 1976.0501, data: new Uint8Array(3) }).cancelable is true
-PASS new MIDIMessageEvent('eventType', { bubbles: true, cancelable: true, receivedTime: 1976.0501, data: new Uint8Array(3) }).receivedTime is 1976.0501
-PASS new MIDIMessageEvent('eventType', { bubbles: true, cancelable: true, receivedTime: 1976.0501, data: new Uint8Array(3) }).data.toString() is "[object Uint8Array]"
+PASS new MIDIMessageEvent('eventType', { data: data }).data == '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0' is true
+PASS new MIDIMessageEvent('eventType', { bubbles: true, cancelable: true, receivedTime: 1976.0501, data: data }).bubbles is true
+PASS new MIDIMessageEvent('eventType', { bubbles: true, cancelable: true, receivedTime: 1976.0501, data: data }).cancelable is true
+PASS new MIDIMessageEvent('eventType', { bubbles: true, cancelable: true, receivedTime: 1976.0501, data: data }).receivedTime is 1976.0501
+PASS new MIDIMessageEvent('eventType', { bubbles: true, cancelable: true, receivedTime: 1976.0501, data: data }).data == '0,0,0' is true
 PASS successfullyParsed is true
 
 TEST COMPLETE
