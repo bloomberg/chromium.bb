@@ -997,6 +997,7 @@
       'browser/notifications/desktop_notification_profile_util_unittest.cc',
       'browser/notifications/message_center_notifications_unittest.cc',
       'browser/notifications/message_center_settings_controller_unittest.cc',
+      'browser/notifications/notification_permission_context_unittest.cc',
       'browser/notifications/platform_notification_service_unittest.cc',
     ],
     'chrome_unit_tests_full_safe_browsing_sources': [

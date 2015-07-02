@@ -28,15 +28,8 @@
 #include "url/url_constants.h"
 
 #if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/extension_set.h"
-#include "extensions/common/permissions/api_permission.h"
-#include "extensions/common/permissions/permissions_data.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -126,53 +119,6 @@ PlatformNotificationServiceImpl::CheckPermissionOnUIThread(
   Profile* profile = Profile::FromBrowserContext(browser_context);
   DCHECK(profile);
 
-#if defined(ENABLE_EXTENSIONS)
-  // Extensions support an API permission named "notification". This will grant
-  // not only grant permission for using the Chrome App extension API, but also
-  // for the Web Notification API.
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(browser_context);
-  extensions::ProcessMap* process_map =
-      extensions::ProcessMap::Get(browser_context);
-  extensions::ExtensionSet extensions;
-
-  DesktopNotificationService* desktop_notification_service =
-      DesktopNotificationServiceFactory::GetForProfile(profile);
-  DCHECK(desktop_notification_service);
-
-  // If |origin| is an enabled extension, only select that one. Otherwise select
-  // all extensions whose web content matches |origin|.
-  if (origin.SchemeIs(extensions::kExtensionScheme)) {
-    const extensions::Extension* extension = registry->GetExtensionById(
-        origin.host(), extensions::ExtensionRegistry::ENABLED);
-    if (extension)
-      extensions.Insert(extension);
-    } else {
-      for (const auto& extension : registry->enabled_extensions()) {
-        if (extension->web_extent().MatchesSecurityOrigin(origin))
-          extensions.Insert(extension);
-    }
-  }
-
-  // Check if any of the selected extensions have the "notification" API
-  // permission, are active in |render_process_id| and has not been manually
-  // disabled by the user. If all of that is true, grant permission.
-  for (const auto& extension : extensions) {
-    if (!extension->permissions_data()->HasAPIPermission(
-        extensions::APIPermission::kNotifications))
-      continue;
-
-    if (!process_map->Contains(extension->id(), render_process_id))
-      continue;
-
-    NotifierId notifier_id(NotifierId::APPLICATION, extension->id());
-    if (!desktop_notification_service->IsNotifierEnabled(notifier_id))
-      continue;
-
-    return blink::WebNotificationPermissionAllowed;
-  }
-#endif
-
   ContentSetting setting =
       DesktopNotificationProfileUtil::GetContentSetting(profile, origin);
 
@@ -192,25 +138,7 @@ PlatformNotificationServiceImpl::CheckPermissionOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
-#if defined(ENABLE_EXTENSIONS)
-  extensions::InfoMap* extension_info_map = io_data->GetExtensionInfoMap();
 
-  // We want to see if there is an extension that hasn't been manually disabled
-  // that has the notifications permission and applies to this security origin.
-  // First, get the list of extensions with permission for the origin.
-  extensions::ExtensionSet extensions;
-  extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(
-      origin,
-      render_process_id,
-      extensions::APIPermission::kNotifications,
-      &extensions);
-  for (const auto& extension : extensions) {
-    if (!extension_info_map->AreNotificationsDisabled(extension->id()))
-      return blink::WebNotificationPermissionAllowed;
-  }
-#endif
-
-  // No enabled extensions exist, so check the normal host content settings.
   HostContentSettingsMap* host_content_settings_map =
       io_data->GetHostContentSettingsMap();
   ContentSetting setting = host_content_settings_map->GetContentSetting(

@@ -26472,6 +26472,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Notifications.DifferentRequestingEmbeddingOrigins"
     enum="Boolean">
+  <obsolete>
+    Deprecated July 2015. No longer tracked since M42.
+  </obsolete>
   <owner>peter@chromium.org</owner>
   <summary>
     Records if the requesting and embedding origins are different when

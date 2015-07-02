@@ -14,7 +14,6 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_object_proxy.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
-#include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
@@ -50,8 +49,7 @@ void DesktopNotificationService::RegisterProfilePrefs(
 }
 
 DesktopNotificationService::DesktopNotificationService(Profile* profile)
-    : PermissionContextBase(profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS),
-      profile_(profile)
+    : profile_(profile)
 #if defined(ENABLE_EXTENSIONS)
       ,
       extension_registry_observer_(this)
@@ -85,55 +83,6 @@ DesktopNotificationService::DesktopNotificationService(Profile* profile)
 }
 
 DesktopNotificationService::~DesktopNotificationService() {
-}
-
-void DesktopNotificationService::RequestNotificationPermission(
-    content::WebContents* web_contents,
-    const PermissionRequestID& request_id,
-    const GURL& requesting_origin,
-    bool user_gesture,
-    const BrowserPermissionCallback& result_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-#if defined(ENABLE_EXTENSIONS)
-  extensions::InfoMap* extension_info_map =
-      extensions::ExtensionSystem::Get(profile_)->info_map();
-  const extensions::Extension* extension = NULL;
-  if (extension_info_map) {
-    extensions::ExtensionSet extensions;
-    extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(
-        requesting_origin,
-        request_id.render_process_id(),
-        extensions::APIPermission::kNotifications,
-        &extensions);
-    for (extensions::ExtensionSet::const_iterator iter = extensions.begin();
-         iter != extensions.end(); ++iter) {
-      if (IsNotifierEnabled(NotifierId(
-              NotifierId::APPLICATION, (*iter)->id()))) {
-        extension = iter->get();
-        break;
-      }
-    }
-  }
-  if (IsExtensionWithPermissionOrSuggestInConsole(
-          extensions::APIPermission::kNotifications, extension,
-          web_contents->GetMainFrame())) {
-    result_callback.Run(CONTENT_SETTING_ALLOW);
-    return;
-  }
-#endif
-
-  // Track whether the requesting and embedding origins are different when
-  // permission to display Web Notifications is being requested.
-  UMA_HISTOGRAM_BOOLEAN("Notifications.DifferentRequestingEmbeddingOrigins",
-                        requesting_origin.GetOrigin() !=
-                            web_contents->GetLastCommittedURL().GetOrigin());
-
-  RequestPermission(web_contents,
-                    request_id,
-                    requesting_origin,
-                    user_gesture,
-                    result_callback);
 }
 
 bool DesktopNotificationService::IsNotifierEnabled(
@@ -231,30 +180,6 @@ void DesktopNotificationService::OnExtensionUninstalled(
   SetNotifierEnabled(notifier_id, true);
 }
 #endif
-
-// Unlike other permission types, granting a notification for a given origin
-// will not take into account the |embedder_origin|, it will only be based
-// on the requesting iframe origin.
-// TODO(mukai) Consider why notifications behave differently than
-// other permissions. crbug.com/416894
-void DesktopNotificationService::UpdateContentSetting(
-    const GURL& requesting_origin,
-    const GURL& embedder_origin,
-    ContentSetting content_setting) {
-  DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
-         content_setting == CONTENT_SETTING_BLOCK);
-
-  if (content_setting == CONTENT_SETTING_ALLOW) {
-    DesktopNotificationProfileUtil::GrantPermission(
-        profile_, requesting_origin);
-  } else {
-    DesktopNotificationProfileUtil::DenyPermission(profile_, requesting_origin);
-  }
-}
-
-bool DesktopNotificationService::IsRestrictedToSecureOrigins() const {
-  return false;
-}
 
 void DesktopNotificationService::FirePermissionLevelChangedEvent(
     const NotifierId& notifier_id, bool enabled) {

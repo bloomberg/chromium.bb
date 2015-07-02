@@ -7,21 +7,14 @@
 
 #include <set>
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_member.h"
 #include "base/scoped_observer.h"
-#include "base/strings/string16.h"
-#include "chrome/browser/content_settings/permission_context_base.h"
-#include "components/content_settings/core/common/content_settings.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/message_center/notifier_settings.h"
-#include "url/gurl.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_registry_observer.h"
@@ -41,10 +34,9 @@ class PrefRegistrySyncable;
 
 // The DesktopNotificationService is an object, owned by the Profile,
 // which provides the creation of desktop "toasts" to web pages and workers.
-class DesktopNotificationService : public PermissionContextBase
+class DesktopNotificationService : public KeyedService
 #if defined(ENABLE_EXTENSIONS)
-                                   ,
-                                   public extensions::ExtensionRegistryObserver
+                                 , public extensions::ExtensionRegistryObserver
 #endif
                                    {
  public:
@@ -53,15 +45,6 @@ class DesktopNotificationService : public PermissionContextBase
 
   explicit DesktopNotificationService(Profile* profile);
   ~DesktopNotificationService() override;
-
-  // Requests Web Notification permission for |requesting_frame|. The |callback|
-  // will be invoked after the user has made a decision.
-  void RequestNotificationPermission(
-      content::WebContents* web_contents,
-      const PermissionRequestID& request_id,
-      const GURL& requesting_origin,
-      bool user_gesture,
-      const BrowserPermissionCallback& result_callback);
 
   // Returns true if the notifier with |notifier_id| is allowed to send
   // notifications.
@@ -89,12 +72,6 @@ class DesktopNotificationService : public PermissionContextBase
                               const extensions::Extension* extension,
                               extensions::UninstallReason reason) override;
 #endif
-
-  // PermissionContextBase:
-  void UpdateContentSetting(const GURL& requesting_origin,
-                            const GURL& embedder_origin,
-                            ContentSetting content_setting) override;
-  bool IsRestrictedToSecureOrigins() const override;
 
   // The profile which owns this object.
   Profile* profile_;

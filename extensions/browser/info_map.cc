@@ -129,42 +129,26 @@ void InfoMap::UnregisterAllExtensionsInProcess(int process_id) {
   process_map_.RemoveAllFromProcess(process_id);
 }
 
-void InfoMap::GetExtensionsWithAPIPermissionForSecurityOrigin(
+bool InfoMap::SecurityOriginHasAPIPermission(
     const GURL& origin,
     int process_id,
-    APIPermission::ID permission,
-    ExtensionSet* extensions) const {
-  DCHECK(extensions);
-
+    APIPermission::ID permission) const {
+  CheckOnValidThread();
   if (origin.SchemeIs(kExtensionScheme)) {
     const std::string& id = origin.host();
     const Extension* extension = extensions_.GetByID(id);
-    if (extension &&
+    return extension &&
+           extension->permissions_data()->HasAPIPermission(permission) &&
+           process_map_.Contains(id, process_id);
+  }
+  for (const auto& extension : extensions_) {
+    if (extension->web_extent().MatchesSecurityOrigin(origin) &&
         extension->permissions_data()->HasAPIPermission(permission) &&
-        process_map_.Contains(id, process_id)) {
-      extensions->Insert(extension);
-    }
-    return;
-  }
-
-  ExtensionSet::const_iterator i = extensions_.begin();
-  for (; i != extensions_.end(); ++i) {
-    if ((*i)->web_extent().MatchesSecurityOrigin(origin) &&
-        process_map_.Contains((*i)->id(), process_id) &&
-        (*i)->permissions_data()->HasAPIPermission(permission)) {
-      extensions->Insert(*i);
+        process_map_.Contains(extension->id(), process_id)) {
+      return true;
     }
   }
-}
-
-bool InfoMap::SecurityOriginHasAPIPermission(const GURL& origin,
-                                             int process_id,
-                                             APIPermission::ID permission)
-    const {
-  ExtensionSet extensions;
-  GetExtensionsWithAPIPermissionForSecurityOrigin(
-      origin, process_id, permission, &extensions);
-  return !extensions.is_empty();
+  return false;
 }
 
 // This function is security sensitive. Bugs could cause problems that break

@@ -8,8 +8,8 @@
 #include "chrome/browser/geolocation/geolocation_permission_context_factory.h"
 #include "chrome/browser/media/midi_permission_context.h"
 #include "chrome/browser/media/midi_permission_context_factory.h"
-#include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "chrome/browser/notifications/notification_permission_context.h"
+#include "chrome/browser/notifications/notification_permission_context_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/push_messaging_permission_context.h"
 #include "chrome/browser/push_messaging/push_messaging_permission_context_factory.h"
@@ -30,10 +30,10 @@ PermissionContextBase* PermissionContext::Get(Profile* profile,
   switch (permission_type) {
     case PermissionType::GEOLOCATION:
       return GeolocationPermissionContextFactory::GetForProfile(profile);
-    case PermissionType::NOTIFICATIONS:
-      return DesktopNotificationServiceFactory::GetForProfile(profile);
     case PermissionType::MIDI_SYSEX:
       return MidiPermissionContextFactory::GetForProfile(profile);
+    case PermissionType::NOTIFICATIONS:
+      return NotificationPermissionContextFactory::GetForProfile(profile);
     case PermissionType::PUSH_MESSAGING:
       return PushMessagingPermissionContextFactory::GetForProfile(profile);
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
@@ -57,8 +57,8 @@ const std::list<KeyedServiceBaseFactory*>& PermissionContext::GetFactories() {
 
   if (factories.empty()) {
     factories.push_back(GeolocationPermissionContextFactory::GetInstance());
-    factories.push_back(DesktopNotificationServiceFactory::GetInstance());
     factories.push_back(MidiPermissionContextFactory::GetInstance());
+    factories.push_back(NotificationPermissionContextFactory::GetInstance());
     factories.push_back(PushMessagingPermissionContextFactory::GetInstance());
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
     factories.push_back(
