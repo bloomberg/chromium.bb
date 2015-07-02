@@ -257,7 +257,9 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, Legacy
         m_pendingScript = PendingScript(m_element, m_resource.get());
         LocalFrame* frame = m_element->document().frame();
         if (frame) {
-            ScriptStreamer::startStreaming(m_pendingScript, PendingScript::Async, frame->settings(), ScriptState::forMainWorld(frame));
+            ScriptState* scriptState = ScriptState::forMainWorld(frame);
+            if (scriptState->contextIsValid())
+                ScriptStreamer::startStreaming(m_pendingScript, PendingScript::Async, frame->settings(), scriptState);
         }
         contextDocument->scriptRunner()->queueScriptForExecution(this, ScriptRunner::ASYNC_EXECUTION);
         // Note that watchForLoad can immediately call notifyFinished.

@@ -613,6 +613,7 @@ void ScriptStreamer::notifyFinishedToClient()
 bool ScriptStreamer::startStreamingInternal(PendingScript& script, PendingScript::Type scriptType, Settings* settings, ScriptState* scriptState)
 {
     ASSERT(isMainThread());
+    ASSERT(scriptState->contextIsValid());
     ScriptResource* resource = script.resource();
     if (resource->isLoaded()) {
         Platform::current()->histogramEnumeration(notStreamingReasonHistogramName(scriptType), AlreadyLoaded, NotStreamingReasonEnd);
@@ -632,11 +633,6 @@ bool ScriptStreamer::startStreamingInternal(PendingScript& script, PendingScript
     // We cannot filter out short scripts, even if we wait for the HTTP headers
     // to arrive: the Content-Length HTTP header is not sent for chunked
     // downloads.
-
-    if (!scriptState->contextIsValid()) {
-        Platform::current()->histogramEnumeration(notStreamingReasonHistogramName(scriptType), ContextNotValid, NotStreamingReasonEnd);
-        return false;
-    }
 
     // Decide what kind of cached data we should produce while streaming. Only
     // produce parser cache if the non-streaming compile takes advantage of it.

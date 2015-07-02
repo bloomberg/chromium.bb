@@ -284,8 +284,11 @@ void HTMLScriptRunner::requestParsingBlockingScript(Element* element)
     // in the cache. Callers will attempt to run the m_parserBlockingScript
     // if possible before returning control to the parser.
     if (!m_parserBlockingScript.isReady()) {
-        if (m_document->frame())
-            ScriptStreamer::startStreaming(m_parserBlockingScript, PendingScript::ParsingBlocking, m_document->frame()->settings(), ScriptState::forMainWorld(m_document->frame()));
+        if (m_document->frame()) {
+            ScriptState* scriptState = ScriptState::forMainWorld(m_document->frame());
+            if (scriptState->contextIsValid())
+                ScriptStreamer::startStreaming(m_parserBlockingScript, PendingScript::ParsingBlocking, m_document->frame()->settings(), scriptState);
+        }
 
         m_parserBlockingScript.watchForLoad(this);
     }
@@ -297,8 +300,11 @@ void HTMLScriptRunner::requestDeferredScript(Element* element)
     if (!requestPendingScript(pendingScript, element))
         return;
 
-    if (m_document->frame() && !pendingScript.isReady())
-        ScriptStreamer::startStreaming(pendingScript, PendingScript::Deferred, m_document->frame()->settings(), ScriptState::forMainWorld(m_document->frame()));
+    if (m_document->frame() && !pendingScript.isReady()) {
+        ScriptState* scriptState = ScriptState::forMainWorld(m_document->frame());
+        if (scriptState->contextIsValid())
+            ScriptStreamer::startStreaming(pendingScript, PendingScript::Deferred, m_document->frame()->settings(), scriptState);
+    }
 
     ASSERT(pendingScript.resource());
     m_scriptsToExecuteAfterParsing.append(pendingScript);
