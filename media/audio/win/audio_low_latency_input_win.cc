@@ -16,24 +16,6 @@ using base::win::ScopedComPtr;
 using base::win::ScopedCOMInitializer;
 
 namespace media {
-namespace {
-
-// Returns true if |device| represents the default communication capture device.
-bool IsDefaultCommunicationDevice(IMMDeviceEnumerator* enumerator,
-                                  IMMDevice* device) {
-  ScopedComPtr<IMMDevice> communications;
-  if (FAILED(enumerator->GetDefaultAudioEndpoint(eCapture, eCommunications,
-                                                 communications.Receive()))) {
-    return false;
-  }
-
-  base::win::ScopedCoMem<WCHAR> communications_id, device_id;
-  device->GetId(&device_id);
-  communications->GetId(&communications_id);
-  return lstrcmpW(communications_id, device_id) == 0;
-}
-
-}  // namespace
 
 WASAPIAudioInputStream::WASAPIAudioInputStream(AudioManagerWin* manager,
                                                const AudioParameters& params,
@@ -281,73 +263,6 @@ bool WASAPIAudioInputStream::IsMuted() {
     DLOG(WARNING) << "Failed to get input master volume.";
 
   return is_muted != FALSE;
-}
-
-// static
-AudioParameters WASAPIAudioInputStream::GetInputStreamParameters(
-    const std::string& device_id) {
-  int sample_rate = 48000;
-  ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
-
-  base::win::ScopedCoMem<WAVEFORMATEX> audio_engine_mix_format;
-  int effects = AudioParameters::NO_EFFECTS;
-  if (SUCCEEDED(GetMixFormat(device_id, &audio_engine_mix_format, &effects))) {
-    sample_rate = static_cast<int>(audio_engine_mix_format->nSamplesPerSec);
-    channel_layout = audio_engine_mix_format->nChannels == 1 ?
-        CHANNEL_LAYOUT_MONO : CHANNEL_LAYOUT_STEREO;
-  }
-
-  // Use 10ms frame size as default.
-  int frames_per_buffer = sample_rate / 100;
-  return AudioParameters(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, sample_rate,
-      16, frames_per_buffer, effects);
-}
-
-// static
-HRESULT WASAPIAudioInputStream::GetMixFormat(const std::string& device_id,
-                                             WAVEFORMATEX** device_format,
-                                             int* effects) {
-  DCHECK(effects);
-
-  // It is assumed that this static method is called from a COM thread, i.e.,
-  // CoInitializeEx() is not called here to avoid STA/MTA conflicts.
-  ScopedComPtr<IMMDeviceEnumerator> enumerator;
-  HRESULT hr = enumerator.CreateInstance(__uuidof(MMDeviceEnumerator), NULL,
-                                         CLSCTX_INPROC_SERVER);
-  if (FAILED(hr))
-    return hr;
-
-  ScopedComPtr<IMMDevice> endpoint_device;
-  if (device_id == AudioManagerBase::kDefaultDeviceId) {
-    // Retrieve the default capture audio endpoint.
-    hr = enumerator->GetDefaultAudioEndpoint(eCapture, eConsole,
-                                             endpoint_device.Receive());
-  } else if (device_id == AudioManagerBase::kLoopbackInputDeviceId) {
-    // Get the mix format of the default playback stream.
-    hr = enumerator->GetDefaultAudioEndpoint(eRender, eConsole,
-                                             endpoint_device.Receive());
-  } else {
-    // Retrieve a capture endpoint device that is specified by an endpoint
-    // device-identification string.
-    hr = enumerator->GetDevice(base::UTF8ToUTF16(device_id).c_str(),
-                               endpoint_device.Receive());
-  }
-
-  if (FAILED(hr))
-    return hr;
-
-  *effects =
-      IsDefaultCommunicationDevice(enumerator.get(), endpoint_device.get())
-          ? AudioParameters::DUCKING
-          : AudioParameters::NO_EFFECTS;
-
-  ScopedComPtr<IAudioClient> audio_client;
-  hr = endpoint_device->Activate(__uuidof(IAudioClient),
-                                 CLSCTX_INPROC_SERVER,
-                                 NULL,
-                                 audio_client.ReceiveVoid());
-  return SUCCEEDED(hr) ? audio_client->GetMixFormat(device_format) : hr;
 }
 
 void WASAPIAudioInputStream::Run() {

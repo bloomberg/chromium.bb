@@ -15,6 +15,7 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_propvariant.h"
 #include "base/win/windows_version.h"
+#include "media/audio/audio_manager_base.h"
 #include "media/base/media_switches.h"
 
 using base::win::ScopedCoMem;
@@ -141,6 +142,11 @@ static std::string GetDeviceID(IMMDevice* device) {
   if (SUCCEEDED(device->GetId(&device_id_com)))
     base::WideToUTF8(device_id_com, wcslen(device_id_com), &device_id);
   return device_id;
+}
+
+static bool IsDeviceActive(IMMDevice* device) {
+  DWORD state = DEVICE_STATE_DISABLED;
+  return SUCCEEDED(device->GetState(&state)) && (state & DEVICE_STATE_ACTIVE);
 }
 
 static HRESULT GetDeviceFriendlyNameInternal(IMMDevice* device,
@@ -303,13 +309,9 @@ ScopedComPtr<IMMDevice> CoreAudioUtil::CreateDefaultDevice(EDataFlow data_flow,
 
   // Verify that the audio endpoint device is active, i.e., that the audio
   // adapter that connects to the endpoint device is present and enabled.
-  DWORD state = DEVICE_STATE_DISABLED;
-  hr = endpoint_device->GetState(&state);
-  if (SUCCEEDED(hr)) {
-    if (!(state & DEVICE_STATE_ACTIVE)) {
-      DVLOG(1) << "Selected endpoint device is not active";
-      endpoint_device.Release();
-    }
+  if (!IsDeviceActive(endpoint_device.get())) {
+    DVLOG(1) << "Selected endpoint device is not active";
+    endpoint_device.Release();
   }
   return endpoint_device;
 }
@@ -337,6 +339,18 @@ ScopedComPtr<IMMDevice> CoreAudioUtil::CreateDevice(
       base::UTF8ToUTF16(device_id).c_str(), endpoint_device.Receive());
   DVLOG_IF(1, FAILED(hr)) << "IMMDeviceEnumerator::GetDevice: "
                           << std::hex << hr;
+
+  if (FAILED(hr)) {
+    DVLOG(1) << "IMMDeviceEnumerator::GetDevice: " << std::hex << hr;
+    return endpoint_device;
+  }
+
+  // Verify that the audio endpoint device is active, i.e., that the audio
+  // adapter that connects to the endpoint device is present and enabled.
+  if (!IsDeviceActive(endpoint_device.get())) {
+    DVLOG(1) << "Selected endpoint device is not active";
+    endpoint_device.Release();
+  }
   return endpoint_device;
 }
 
@@ -722,10 +736,22 @@ HRESULT CoreAudioUtil::GetPreferredAudioParameters(
   return hr;
 }
 
-HRESULT CoreAudioUtil::GetPreferredAudioParameters(
-    const std::string& device_id, AudioParameters* params) {
+HRESULT CoreAudioUtil::GetPreferredAudioParameters(const std::string& device_id,
+                                                   bool is_output_device,
+                                                   AudioParameters* params) {
   DCHECK(IsSupported());
-  ScopedComPtr<IMMDevice> device(CreateDevice(device_id));
+
+  ScopedComPtr<IMMDevice> device;
+  if (device_id == AudioManagerBase::kDefaultDeviceId) {
+    device = CoreAudioUtil::CreateDefaultDevice(
+        is_output_device ? eRender : eCapture, eConsole);
+  } else if (device_id == AudioManagerBase::kLoopbackInputDeviceId) {
+    DCHECK(!is_output_device);
+    device = CoreAudioUtil::CreateDefaultDevice(eRender, eConsole);
+  } else {
+    device = CreateDevice(device_id);
+  }
+
   if (!device.get()) {
     // Map NULL-pointer to new error code which can be different from the
     // actual error code. The exact value is not important here.
@@ -738,7 +764,35 @@ HRESULT CoreAudioUtil::GetPreferredAudioParameters(
     // actual error code. The exact value is not important here.
     return AUDCLNT_E_ENDPOINT_CREATE_FAILED;
   }
-  return GetPreferredAudioParameters(client.get(), params);
+
+  HRESULT hr = GetPreferredAudioParameters(client.get(), params);
+  if (FAILED(hr) || is_output_device || !params->IsValid())
+    return hr;
+
+  // The following functionality is only for input devices.
+  DCHECK(!is_output_device);
+
+  // TODO(dalecurtis): Old code rewrote != 1 channels to stereo, do we still
+  // need to do the same thing?
+  if (params->channels() != 1) {
+    params->Reset(params->format(), CHANNEL_LAYOUT_STEREO, 2,
+                  params->sample_rate(), params->bits_per_sample(),
+                  params->frames_per_buffer());
+  }
+
+  ScopedComPtr<IMMDevice> communications_device(
+      CreateDefaultDevice(eCapture, eCommunications));
+  if (communications_device &&
+      GetDeviceID(communications_device.get()) == GetDeviceID(device.get())) {
+    // Raise the 'DUCKING' flag for default communication devices.
+    *params =
+        AudioParameters(params->format(), params->channel_layout(),
+                        params->channels(), params->sample_rate(),
+                        params->bits_per_sample(), params->frames_per_buffer(),
+                        params->effects() | AudioParameters::DUCKING);
+  }
+
+  return hr;
 }
 
 ChannelConfig CoreAudioUtil::GetChannelConfig(const std::string& device_id,

@@ -303,14 +303,18 @@ void AudioManagerWin::GetAudioOutputDeviceNames(
 
 AudioParameters AudioManagerWin::GetInputStreamParameters(
     const std::string& device_id) {
+  HRESULT hr = E_FAIL;
   AudioParameters parameters;
-  if (!core_audio_supported()) {
+  if (core_audio_supported()) {
+    hr = CoreAudioUtil::GetPreferredAudioParameters(device_id, false,
+                                                    &parameters);
+  }
+
+  if (FAILED(hr) || !parameters.IsValid()) {
     // Windows Wave implementation is being used.
     parameters = AudioParameters(
-        AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_STEREO, 48000,
-        16, kFallbackBufferSize, AudioParameters::NO_EFFECTS);
-  } else  {
-    parameters = WASAPIAudioInputStream::GetInputStreamParameters(device_id);
+        AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_STEREO, 48000, 16,
+        kFallbackBufferSize, AudioParameters::NO_EFFECTS);
   }
 
   int user_buffer_size = GetUserBufferSize();
@@ -440,9 +444,9 @@ AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
     } else {
       AudioParameters params;
       HRESULT hr = CoreAudioUtil::GetPreferredAudioParameters(
-          output_device_id.empty() ?
-              GetDefaultOutputDeviceID() : output_device_id,
-          &params);
+          output_device_id.empty() ? GetDefaultOutputDeviceID()
+                                   : output_device_id,
+          true, &params);
       if (SUCCEEDED(hr)) {
         bits_per_sample = params.bits_per_sample();
         buffer_size = params.frames_per_buffer();

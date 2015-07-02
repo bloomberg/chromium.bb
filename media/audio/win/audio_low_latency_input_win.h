@@ -106,9 +106,6 @@ class MEDIA_EXPORT WASAPIAudioInputStream
 
   bool started() const { return started_; }
 
-  // Returns the default hardware audio parameters of the specific device.
-  static AudioParameters GetInputStreamParameters(const std::string& device_id);
-
  private:
   // DelegateSimpleThread::Delegate implementation.
   void Run() override;
@@ -122,14 +119,6 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   HRESULT GetAudioEngineStreamFormat();
   bool DesiredFormatIsSupported();
   HRESULT InitializeAudioEngine();
-
-  // Retrieves the stream format that the audio engine uses for its internal
-  // processing/mixing of shared-mode streams.
-  // |effects| is a an AudioParameters::effects() flag that will have the
-  // DUCKING flag raised for only the default communication device.
-  static HRESULT GetMixFormat(const std::string& device_id,
-                              WAVEFORMATEX** device_format,
-                              int* effects);
 
   // Our creator, the audio manager needs to be notified when we close.
   AudioManagerWin* manager_;

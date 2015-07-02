@@ -162,10 +162,9 @@ static bool HasCoreAudioAndInputDevices(AudioManager* audio_man) {
 class AudioInputStreamWrapper {
  public:
   explicit AudioInputStreamWrapper(AudioManager* audio_manager)
-      : audio_man_(audio_manager),
-        default_params_(
-            audio_manager->GetInputStreamParameters(
-                  AudioManagerBase::kDefaultDeviceId)) {
+      : audio_man_(audio_manager) {
+    EXPECT_TRUE(SUCCEEDED(CoreAudioUtil::GetPreferredAudioParameters(
+        AudioManagerBase::kDefaultDeviceId, false, &default_params_)));
     EXPECT_EQ(format(), AudioParameters::AUDIO_PCM_LOW_LATENCY);
     frames_per_buffer_ = default_params_.frames_per_buffer();
     // We expect the default buffer size to be a 10ms buffer.
@@ -206,7 +205,7 @@ class AudioInputStreamWrapper {
   }
 
   AudioManager* audio_man_;
-  const AudioParameters default_params_;
+  AudioParameters default_params_;
   int frames_per_buffer_;
 };
 
@@ -265,8 +264,9 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamHardwareSampleRate) {
   for (media::AudioDeviceNames::const_iterator it = device_names.begin();
        it != device_names.end(); ++it) {
     // Retrieve the hardware sample rate given a specified audio input device.
-    AudioParameters params = WASAPIAudioInputStream::GetInputStreamParameters(
-        it->unique_id);
+    AudioParameters params;
+    ASSERT_TRUE(SUCCEEDED(CoreAudioUtil::GetPreferredAudioParameters(
+        it->unique_id, false, &params)));
     EXPECT_GE(params.sample_rate(), 0);
   }
 }
