@@ -32,7 +32,6 @@ void SharedMemIPCClient::FreeBuffer(void* buffer) {
   ChannelControl* channel = control_->channels;
   LONG result = ::InterlockedExchange(&channel[num].state, kFreeChannel);
   DCHECK_NE(kFreeChannel, static_cast<ChannelState>(result));
-  result;
 }
 
 // The constructor simply casts the shared memory to the internal

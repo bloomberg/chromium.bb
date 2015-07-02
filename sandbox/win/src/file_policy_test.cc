@@ -74,7 +74,7 @@ SBOX_TESTS_COMMAND int File_Create(int argc, wchar_t **argv) {
 
 SBOX_TESTS_COMMAND int File_Win32Create(int argc, wchar_t **argv) {
   if (argc != 1) {
-    SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
+    return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
   }
 
   base::string16 full_path = MakePathToSys(argv[0], false);
