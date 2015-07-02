@@ -315,8 +315,8 @@ IPC_STRUCT_BEGIN(ViewHostMsg_CreateWindow_Params)
   IPC_STRUCT_MEMBER(int64, session_storage_namespace_id)
 
   // The name of the resulting frame that should be created (empty if none
-  // has been specified).
-  IPC_STRUCT_MEMBER(base::string16, frame_name)
+  // has been specified). UTF8 encoded string.
+  IPC_STRUCT_MEMBER(std::string, frame_name)
 
   // The routing id of the frame initiating the open.
   IPC_STRUCT_MEMBER(int, opener_render_frame_id)

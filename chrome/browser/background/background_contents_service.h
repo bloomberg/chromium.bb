@@ -115,7 +115,7 @@ class BackgroundContentsService : private content::NotificationObserver,
       int route_id,
       int main_frame_route_id,
       Profile* profile,
-      const base::string16& frame_name,
+      const std::string& frame_name,
       const base::string16& application_id,
       const std::string& partition_id,
       content::SessionStorageNamespace* session_storage_namespace);
@@ -184,7 +184,7 @@ class BackgroundContentsService : private content::NotificationObserver,
   // and navigates to the passed |url|.
   void LoadBackgroundContents(Profile* profile,
                               const GURL& url,
-                              const base::string16& frame_name,
+                              const std::string& frame_name,
                               const base::string16& appid);
 
   // Invoked when a new BackgroundContents is opened.
@@ -228,7 +228,7 @@ class BackgroundContentsService : private content::NotificationObserver,
     // The BackgroundContents whose information we are tracking.
     BackgroundContents* contents;
     // The name of the top level frame for this BackgroundContents.
-    base::string16 frame_name;
+    std::string frame_name;
   };
 
   // Map associating currently loaded BackgroundContents with their parent

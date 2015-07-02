@@ -117,7 +117,7 @@ class PrerenderContents::WebContentsDelegateImpl
       int route_id,
       int main_frame_route_id,
       WindowContainerType window_container_type,
-      const base::string16& frame_name,
+      const std::string& frame_name,
       const GURL& target_url,
       const std::string& partition_id,
       SessionStorageNamespace* session_storage_namespace) override {

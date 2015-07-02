@@ -83,9 +83,8 @@ class MockBackgroundContents : public BackgroundContents {
   }
 
   void SendOpenedNotification(BackgroundContentsService* service) {
-    base::string16 frame_name = base::ASCIIToUTF16("background");
     BackgroundContentsOpenedDetails details = {
-        this, frame_name, appid_ };
+        this, "background", appid_ };
     service->BackgroundContentsOpened(&details, profile_);
   }
 

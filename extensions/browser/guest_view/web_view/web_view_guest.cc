@@ -1283,16 +1283,15 @@ content::WebContents* WebViewGuest::OpenURLFromTab(
 
 void WebViewGuest::WebContentsCreated(WebContents* source_contents,
                                       int opener_render_frame_id,
-                                      const base::string16& frame_name,
+                                      const std::string& frame_name,
                                       const GURL& target_url,
                                       content::WebContents* new_contents) {
   auto guest = WebViewGuest::FromWebContents(new_contents);
   CHECK(guest);
   guest->SetOpener(this);
-  std::string guest_name = base::UTF16ToUTF8(frame_name);
-  guest->name_ = guest_name;
+  guest->name_ = frame_name;
   pending_new_windows_.insert(
-      std::make_pair(guest, NewWindowInfo(target_url, guest_name)));
+      std::make_pair(guest, NewWindowInfo(target_url, frame_name)));
 }
 
 void WebViewGuest::EnterFullscreenModeForTab(content::WebContents* web_contents,

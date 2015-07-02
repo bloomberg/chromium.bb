@@ -1687,7 +1687,7 @@ void WebContentsImpl::CreateNewWindow(
   CreateParams create_params(GetBrowserContext(), site_instance.get());
   create_params.routing_id = route_id;
   create_params.main_frame_routing_id = main_frame_route_id;
-  create_params.main_frame_name = base::UTF16ToUTF8(params.frame_name);
+  create_params.main_frame_name = params.frame_name;
   create_params.opener_render_process_id = GetRenderProcessHost()->GetID();
   create_params.opener_render_frame_id = params.opener_render_frame_id;
   create_params.opener_suppressed = params.opener_suppressed;

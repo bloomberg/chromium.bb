@@ -221,7 +221,7 @@ bool WebContentsDelegateAndroid::ShouldCreateWebContents(
     int route_id,
     int main_frame_route_id,
     WindowContainerType window_container_type,
-    const base::string16& frame_name,
+    const std::string& frame_name,
     const GURL& target_url,
     const std::string& partition_id,
     content::SessionStorageNamespace* session_storage_namespace) {
@@ -246,7 +246,7 @@ bool WebContentsDelegateAndroid::OnGoToEntryOffset(int offset) {
 
 void WebContentsDelegateAndroid::WebContentsCreated(
     WebContents* source_contents, int opener_render_frame_id,
-    const base::string16& frame_name, const GURL& target_url,
+    const std::string& frame_name, const GURL& target_url,
     WebContents* new_contents) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
@@ -265,7 +265,7 @@ void WebContentsDelegateAndroid::WebContentsCreated(
       obj.obj(),
       jsource_contents.obj(),
       opener_render_frame_id,
-      base::android::ConvertUTF16ToJavaString(env, frame_name).Release(),
+      base::android::ConvertUTF8ToJavaString(env, frame_name).Release(),
       base::android::ConvertUTF8ToJavaString(env, target_url.spec()).Release(),
       jnew_contents.obj());
 }

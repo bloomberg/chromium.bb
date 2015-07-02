@@ -295,7 +295,7 @@ class CONTENT_EXPORT WebContentsDelegate {
       int route_id,
       int main_frame_route_id,
       WindowContainerType window_container_type,
-      const base::string16& frame_name,
+      const std::string& frame_name,
       const GURL& target_url,
       const std::string& partition_id,
       SessionStorageNamespace* session_storage_namespace);
@@ -304,7 +304,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // typically happens when popups are created.
   virtual void WebContentsCreated(WebContents* source_contents,
                                   int opener_render_frame_id,
-                                  const base::string16& frame_name,
+                                  const std::string& frame_name,
                                   const GURL& target_url,
                                   WebContents* new_contents) {}
 

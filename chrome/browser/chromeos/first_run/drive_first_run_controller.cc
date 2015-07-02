@@ -166,7 +166,7 @@ class DriveWebContentsManager : public content::WebContentsObserver,
       int route_id,
       int main_frame_route_id,
       WindowContainerType window_container_type,
-      const base::string16& frame_name,
+      const std::string& frame_name,
       const GURL& target_url,
       const std::string& partition_id,
       content::SessionStorageNamespace* session_storage_namespace) override;
@@ -282,11 +282,10 @@ bool DriveWebContentsManager::ShouldCreateWebContents(
     int route_id,
     int main_frame_route_id,
     WindowContainerType window_container_type,
-    const base::string16& frame_name,
+    const std::string& frame_name,
     const GURL& target_url,
     const std::string& partition_id,
     content::SessionStorageNamespace* session_storage_namespace) {
-
   if (window_container_type == WINDOW_CONTAINER_TYPE_NORMAL)
     return true;
 

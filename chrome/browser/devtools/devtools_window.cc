@@ -885,7 +885,7 @@ void DevToolsWindow::AddNewContents(WebContents* source,
 
 void DevToolsWindow::WebContentsCreated(WebContents* source_contents,
                                         int opener_render_frame_id,
-                                        const base::string16& frame_name,
+                                        const std::string& frame_name,
                                         const GURL& target_url,
                                         WebContents* new_contents) {
   if (target_url.SchemeIs(content::kChromeDevToolsScheme) &&
