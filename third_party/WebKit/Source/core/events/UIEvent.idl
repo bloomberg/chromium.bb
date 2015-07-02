@@ -34,12 +34,6 @@
                                     [Default=Undefined] optional Window? view,
                                     [Default=Undefined] optional long detail);
 
-    // Non-standard
-    [MeasureAs=UIEventLayerX] readonly attribute long layerX;
-    [MeasureAs=UIEventLayerY] readonly attribute long layerY;
-    [MeasureAs=UIEventPageX] readonly attribute long pageX;
-    [MeasureAs=UIEventPageY] readonly attribute long pageY;
-
     // FIXME: these belong on the KeyboardEvent interface
     [MeasureAs=UIEventCharCode] readonly attribute long charCode;
     [MeasureAs=UIEventKeyCode] readonly attribute long keyCode;

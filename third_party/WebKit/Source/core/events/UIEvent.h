@@ -65,12 +65,6 @@ public:
     virtual int keyCode() const;
     virtual int charCode() const;
 
-    virtual int layerX();
-    virtual int layerY();
-
-    virtual int pageX() const;
-    virtual int pageY() const;
-
     virtual int which() const;
 
     DECLARE_VIRTUAL_TRACE();

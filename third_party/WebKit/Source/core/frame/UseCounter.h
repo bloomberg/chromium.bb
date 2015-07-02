@@ -433,10 +433,6 @@ public:
         RequestFileSystem = 508,
         RequestFileSystemWorker = 509,
         RequestFileSystemSyncWorker = 510,
-        UIEventLayerX = 511,
-        UIEventLayerY = 512,
-        UIEventPageX = 513,
-        UIEventPageY = 514,
         DevToolsConsoleProfile = 518,
         SVGStyleElementTitle = 519,
         PictureSourceSrc = 520,
@@ -759,6 +755,8 @@ public:
         V8XPathEvaluator_CreateNSResolver_Method = 855,
         V8XPathEvaluator_Evaluate_Method = 856,
         RequestMIDIAccess = 857,
+        V8MouseEvent_LayerX_AttributeGetter = 858,
+        V8MouseEvent_LayerY_AttributeGetter = 859,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

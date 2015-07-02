@@ -58,6 +58,8 @@
     // http://dev.w3.org/csswg/cssom-view/#extensions-to-the-mouseevent-interface
     // TODO(philipj): These attributes should be of type double, and the spec
     // also redefines screenX/Y and clientX/Y as double.
+    readonly attribute long             pageX;
+    readonly attribute long             pageY;
     [MeasureAs=MouseEventX] readonly attribute long x;
     [MeasureAs=MouseEventY] readonly attribute long y;
     [MeasureAs=MouseEventOffsetX] readonly attribute long offsetX;
@@ -74,6 +76,8 @@
     [MeasureAs=MouseEventWhich] readonly attribute long which;
     [DeprecateAs=PrefixedMouseEventMovementX, ImplementedAs=movementX] readonly attribute long webkitMovementX;
     [DeprecateAs=PrefixedMouseEventMovementY, ImplementedAs=movementY] readonly attribute long webkitMovementY;
+    [Measure] readonly attribute long layerX;
+    [Measure] readonly attribute long layerY;
 
     // FIXME: dataTransfer belongs on the DragEvent interface. crbug.com/498504
     readonly attribute DataTransfer dataTransfer;

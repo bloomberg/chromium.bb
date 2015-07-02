@@ -85,26 +85,6 @@ int UIEvent::charCode() const
     return 0;
 }
 
-int UIEvent::layerX()
-{
-    return 0;
-}
-
-int UIEvent::layerY()
-{
-    return 0;
-}
-
-int UIEvent::pageX() const
-{
-    return 0;
-}
-
-int UIEvent::pageY() const
-{
-    return 0;
-}
-
 int UIEvent::which() const
 {
     return 0;

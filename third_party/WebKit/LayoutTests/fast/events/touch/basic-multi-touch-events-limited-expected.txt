@@ -7,8 +7,6 @@ PASS lastEvent.type is "touchstart"
 PASS lastEvent.touches.length is 2
 PASS lastEvent.changedTouches.length is 2
 PASS lastEvent.targetTouches.length is 2
-PASS lastEvent.pageX is 0
-PASS lastEvent.pageY is 0
 PASS lastEvent.touches[0].pageX is 10
 PASS lastEvent.touches[0].pageY is 10
 PASS lastEvent.touches[0].clientX is 10
@@ -43,8 +41,6 @@ PASS lastEvent.type is "touchmove"
 PASS lastEvent.touches.length is 2
 PASS lastEvent.changedTouches.length is 2
 PASS lastEvent.targetTouches.length is 2
-PASS lastEvent.pageX is 0
-PASS lastEvent.pageY is 0
 PASS lastEvent.touches[0].pageX is 15
 PASS lastEvent.touches[0].pageY is 15
 PASS lastEvent.touches[0].clientX is 15
@@ -79,8 +75,6 @@ PASS lastEvent.type is "touchend"
 PASS lastEvent.touches.length is 0
 PASS lastEvent.changedTouches.length is 2
 PASS lastEvent.targetTouches.length is 0
-PASS lastEvent.pageX is 0
-PASS lastEvent.pageY is 0
 PASS lastEvent.changedTouches[0].pageX is 15
 PASS lastEvent.changedTouches[0].pageY is 15
 PASS lastEvent.changedTouches[0].clientX is 15

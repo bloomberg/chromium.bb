@@ -2839,11 +2839,15 @@ interface MouseEvent
     getter ctrlKey
     getter dataTransfer
     getter fromElement
+    getter layerX
+    getter layerY
     getter metaKey
     getter movementX
     getter movementY
     getter offsetX
     getter offsetY
+    getter pageX
+    getter pageY
     getter relatedTarget
     getter screenX
     getter screenY
@@ -4818,10 +4822,6 @@ interface UIEvent
     getter charCode
     getter detail
     getter keyCode
-    getter layerX
-    getter layerY
-    getter pageX
-    getter pageY
     getter view
     getter which
     method constructor

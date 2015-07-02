@@ -47,10 +47,6 @@ shouldBe("testInitEvent('Keyboard', '\"a\", false, true, window, \"b\", 1001, fa
 shouldBe("testInitEvent('Keyboard', '\"a\", false, true, window, \"b\", 1001, false, false, false, false, true').detail", "0");
 shouldBe("testInitEvent('Keyboard', '\"a\", false, true, window, \"b\", 1001, false, false, false, false, false').keyCode", "0");
 shouldBe("testInitEvent('Keyboard', '\"a\", false, true, window, \"b\", 1001, false, false, false, false, false').charCode", "0");
-shouldBe("testInitEvent('Keyboard', '\"a\", false, true, window, \"b\", 1001, false, false, false, false, false').layerX", "0");
-shouldBe("testInitEvent('Keyboard', '\"a\", false, true, window, \"b\", 1001, false, false, false, false, false').layerY", "0");
-shouldBe("testInitEvent('Keyboard', '\"a\", false, true, window, \"b\", 1001, false, false, false, false, false').pageX", "0");
-shouldBe("testInitEvent('Keyboard', '\"a\", false, true, window, \"b\", 1001, false, false, false, false, false').pageY", "0");
 shouldBe("testInitEvent('Keyboard', '\"a\", false, true, window, \"b\", 1001, false, false, false, false, false').which", "0");
 
 shouldBe("testInitEvent('Message', '\"a\", false, false, \"b\", \"c\", \"d\", window, null').type", "'a'");
@@ -156,10 +152,6 @@ shouldBe("testInitEvent('Text', '\"a\", false, false, window, null').data", "'nu
 shouldBe("testInitEvent('Text', '\"a\", false, false, window, \"b\"').detail", "0");
 shouldBe("testInitEvent('Text', '\"a\", false, false, window, \"b\"').keyCode", "0");
 shouldBe("testInitEvent('Text', '\"a\", false, false, window, \"b\"').charCode", "0");
-shouldBe("testInitEvent('Text', '\"a\", false, false, window, \"b\"').layerX", "0");
-shouldBe("testInitEvent('Text', '\"a\", false, false, window, \"b\"').layerY", "0");
-shouldBe("testInitEvent('Text', '\"a\", false, false, window, \"b\"').pageX", "0");
-shouldBe("testInitEvent('Text', '\"a\", false, false, window, \"b\"').pageY", "0");
 shouldBe("testInitEvent('Text', '\"a\", false, false, window, \"b\"').which", "0");
 
 shouldBe("testInitEvent('UI', '\"a\", false, false, window, 1001').type", "'a'");
@@ -173,10 +165,6 @@ shouldBe("testInitEvent('UI', '\"a\", false, false, null, 1001').view", "null");
 shouldBe("testInitEvent('UI', '\"a\", false, false, window, 1001').detail", "1001");
 shouldBe("testInitEvent('UI', '\"a\", false, false, window, 1001').keyCode", "0");
 shouldBe("testInitEvent('UI', '\"a\", false, false, window, 1001').charCode", "0");
-shouldBe("testInitEvent('UI', '\"a\", false, false, window, 1001').layerX", "0");
-shouldBe("testInitEvent('UI', '\"a\", false, false, window, 1001').layerY", "0");
-shouldBe("testInitEvent('UI', '\"a\", false, false, window, 1001').pageX", "0");
-shouldBe("testInitEvent('UI', '\"a\", false, false, window, 1001').pageY", "0");
 shouldBe("testInitEvent('UI', '\"a\", false, false, window, 1001').which", "0");
 
 // WheelEvent has no init function yet; roughly speaking, we are waiting for that part of DOM 3 to stabilize.

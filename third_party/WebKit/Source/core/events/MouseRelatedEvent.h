@@ -43,16 +43,16 @@ namespace blink {
         int movementX() const { return m_movementDelta.x(); }
         int movementY() const { return m_movementDelta.y(); }
         const LayoutPoint& clientLocation() const { return m_clientLocation; }
-        virtual int layerX() override final;
-        virtual int layerY() override final;
+        int layerX();
+        int layerY();
         int offsetX();
         int offsetY();
         // FIXME: rename isSimulated to fromKeyboard() and replace m_isSimulated with a new value
         // in PlatformMouseEvent::SyntheticEventType. isSimulated() is only true for synthetic
         // mouse events that derive from keyboard input, which do not have a position.
         bool isSimulated() const { return m_isSimulated; }
-        virtual int pageX() const override final;
-        virtual int pageY() const override final;
+        int pageX() const;
+        int pageY() const;
         int x() const;
         int y() const;
 
