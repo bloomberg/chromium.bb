@@ -610,7 +610,8 @@ drm_output_set_gamma(struct weston_output *output_base,
  * multi-gpu situation and we need to calculate the vblank sync
  * using DRM_BLANK_HIGH_CRTC_MASK.
  */
-static unsigned int drm_waitvblank_pipe(struct drm_output *output)
+static unsigned int
+drm_waitvblank_pipe(struct drm_output *output)
 {
 	if (output->pipe > 1)
 		return (output->pipe << DRM_VBLANK_HIGH_CRTC_SHIFT) &
