@@ -2,9 +2,9 @@
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/console-test.js"></script>
+<script src="../../http/tests/inspector/workspace-test.js"></script>
 <script src="resources/stack-with-sourceUrl.js"></script>
 <script src="resources/stack-with-sourceMap.js"></script>
-
 <script>
 function forStack()
 {
@@ -59,14 +59,17 @@ console.log("Error broken stack #6\n    at foob.js foob.js:40:70");
 function test()
 {
     InspectorTest.evaluateInPageWithTimeout("failure()");
-    InspectorTest.waitUntilMessageReceived(dumpMessages);
+    InspectorTest.waitUntilMessageReceived(waitForUISourceCode);
+    function waitForUISourceCode()
+    {
+        InspectorTest.waitForGivenUISourceCode("stack-with-sourceMap.coffee", dumpMessages);
+    }
 
     function dumpMessages()
     {
         InspectorTest.dumpConsoleMessages(false, true);
         InspectorTest.completeTest();
     }
-
 }
 </script>
 </head>

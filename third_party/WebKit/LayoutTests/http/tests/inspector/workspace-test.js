@@ -160,4 +160,24 @@ InspectorTest.refreshFileSystemProjects = function(callback)
     barrier.callWhenDone(callback);
 }
 
+InspectorTest.waitForGivenUISourceCode = function(name, callback)
+{
+    var uiSourceCodes = WebInspector.workspace.uiSourceCodes();
+    for (var i = 0; i < uiSourceCodes.length; ++i) {
+        if (uiSourceCodes[i].name() === name) {
+            setImmediate(callback);
+            return;
+        }
+    }
+    WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
+
+    function uiSourceCodeAdded(event)
+    {
+        if (event.data.name() === name) {
+            WebInspector.workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
+            setImmediate(callback);
+        }
+    }
+}
+
 };
