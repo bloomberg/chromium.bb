@@ -18,6 +18,7 @@ class FakeStringProvider : public StringProvider {
 
   // StringProvider implementation
   base::string16 GetDoneString() override;
+  base::string16 GetOKString() override;
   base::string16 GetProductName() override;
 };
 

@@ -1,0 +1,126 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#import "ios/chrome/browser/geolocation/omnibox_geolocation_local_state.h"
+
+#import <CoreLocation/CoreLocation.h>
+
+#include "base/logging.h"
+#include "base/mac/scoped_nsobject.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
+#include "ios/chrome/browser/application_context.h"
+#import "ios/chrome/browser/geolocation/location_manager.h"
+#import "ios/chrome/browser/pref_names.h"
+
+@interface OmniboxGeolocationLocalState () {
+  base::scoped_nsobject<LocationManager> locationManager_;
+}
+
+- (int)intForPath:(const char*)path;
+- (void)setInt:(int)value forPath:(const char*)path;
+- (std::string)stringForPath:(const char*)path;
+- (void)setString:(const std::string&)value forPath:(const char*)path;
+
+@end
+
+@implementation OmniboxGeolocationLocalState
+
++ (void)registerLocalState:(PrefRegistrySimple*)registry {
+  registry->RegisterIntegerPref(
+      prefs::kOmniboxGeolocationAuthorizationState,
+      geolocation::kAuthorizationStateNotDeterminedWaiting);
+  registry->RegisterStringPref(
+      prefs::kOmniboxGeolocationLastAuthorizationAlertVersion, "");
+}
+
+- (instancetype)initWithLocationManager:(LocationManager*)locationManager {
+  DCHECK(locationManager);
+  self = [super init];
+  if (self) {
+    locationManager_.reset([locationManager retain]);
+  }
+  return self;
+}
+
+- (instancetype)init {
+  NOTREACHED();
+  return nil;
+}
+
+- (geolocation::AuthorizationState)authorizationState {
+  int authorizationState =
+      [self intForPath:prefs::kOmniboxGeolocationAuthorizationState];
+  // Sanitize the stored value: if the value is corrupt, then treat it as
+  // kAuthorizationStateNotDeterminedWaiting.
+  switch (authorizationState) {
+    case geolocation::kAuthorizationStateNotDeterminedWaiting:
+    case geolocation::kAuthorizationStateNotDeterminedSystemPrompt:
+    case geolocation::kAuthorizationStateDenied:
+    case geolocation::kAuthorizationStateAuthorized:
+      break;
+    default:
+      authorizationState = geolocation::kAuthorizationStateNotDeterminedWaiting;
+      break;
+  }
+
+  switch ([locationManager_ authorizationStatus]) {
+    case kCLAuthorizationStatusNotDetermined:
+      // If the user previously authorized or denied geolocation but reset the
+      // system settings, then start over.
+      if (authorizationState == geolocation::kAuthorizationStateAuthorized ||
+          authorizationState == geolocation::kAuthorizationStateDenied) {
+        authorizationState =
+            geolocation::kAuthorizationStateNotDeterminedWaiting;
+      }
+      break;
+
+    case kCLAuthorizationStatusRestricted:
+    case kCLAuthorizationStatusDenied:
+      authorizationState = geolocation::kAuthorizationStateDenied;
+      break;
+
+    case kCLAuthorizationStatusAuthorized:
+    case kCLAuthorizationStatusAuthorizedWhenInUse:
+      break;
+  }
+
+  return static_cast<geolocation::AuthorizationState>(authorizationState);
+}
+
+- (void)setAuthorizationState:
+        (geolocation::AuthorizationState)authorizationState {
+  [self setInt:authorizationState
+       forPath:prefs::kOmniboxGeolocationAuthorizationState];
+}
+
+- (std::string)lastAuthorizationAlertVersion {
+  return [self
+      stringForPath:prefs::kOmniboxGeolocationLastAuthorizationAlertVersion];
+}
+
+- (void)setLastAuthorizationAlertVersion:(std::string)value {
+  [self setString:value
+          forPath:prefs::kOmniboxGeolocationLastAuthorizationAlertVersion];
+}
+
+#pragma mark - Private
+
+- (int)intForPath:(const char*)path {
+  return GetApplicationContext()->GetLocalState()->GetInteger(path);
+}
+
+- (void)setInt:(int)value forPath:(const char*)path {
+  GetApplicationContext()->GetLocalState()->SetInteger(path, value);
+}
+
+- (std::string)stringForPath:(const char*)path {
+  return GetApplicationContext()->GetLocalState()->GetString(path);
+}
+
+- (void)setString:(const std::string&)value forPath:(const char*)path {
+  GetApplicationContext()->GetLocalState()->SetString(path, value);
+}
+
+@end

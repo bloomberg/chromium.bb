@@ -6,6 +6,7 @@
 
 #include "ios/chrome/browser/browser_state/browser_state_keyed_service_factories.h"
 #include "ios/chrome/browser/chrome_paths.h"
+#include "ios/chrome/test/testing_application_context.h"
 #include "ios/public/test/test_chrome_browser_provider.h"
 #include "ios/public/test/test_chrome_provider_initializer.h"
 #include "ios/web/public/web_client.h"
@@ -27,18 +28,21 @@ class IOSChromeUnitTestSuiteInitializer
     web::SetWebClient(web_client_.get());
     test_ios_chrome_provider_initializer_.reset(
         new ios::TestChromeProviderInitializer());
+    application_context_.reset(new TestingApplicationContext);
   }
 
   void OnTestEnd(const testing::TestInfo& test_info) override {
     web_client_.reset();
     web::SetWebClient(nullptr);
     test_ios_chrome_provider_initializer_.reset();
+    application_context_.reset();
   }
 
  private:
   scoped_ptr<web::WebClient> web_client_;
   scoped_ptr<ios::TestChromeProviderInitializer>
       test_ios_chrome_provider_initializer_;
+  scoped_ptr<ApplicationContext> application_context_;
   DISALLOW_COPY_AND_ASSIGN(IOSChromeUnitTestSuiteInitializer);
 };
 

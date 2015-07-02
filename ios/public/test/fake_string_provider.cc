@@ -16,6 +16,10 @@ base::string16 FakeStringProvider::GetDoneString() {
   return base::string16();
 }
 
+base::string16 FakeStringProvider::GetOKString() {
+  return base::string16();
+}
+
 base::string16 FakeStringProvider::GetProductName() {
   return base::string16();
 }

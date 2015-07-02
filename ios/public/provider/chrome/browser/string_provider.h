@@ -15,11 +15,10 @@ class StringProvider {
   StringProvider() {}
   virtual ~StringProvider() {}
 
-  // Strings used in //ios/chrome.
-  // TODO(droger): Find a long term solution for strings used in //ios/chrome.
-
   // Returns a generic "Done" string.
   virtual base::string16 GetDoneString() = 0;
+  // Returns a generic "OK" string.
+  virtual base::string16 GetOKString() = 0;
   // Returns the product name (e.g. "Google Chrome").
   virtual base::string16 GetProductName() = 0;
 };

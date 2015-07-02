@@ -11,6 +11,7 @@
       'type': '<(gtest_target_type)',
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../base/base.gyp:base_prefs_test_support',
         '../../base/base.gyp:test_support_base',
         '../../components/components.gyp:bookmarks_test_support',
         '../../components/components.gyp:enhanced_bookmarks_test_support',
@@ -37,6 +38,7 @@
         'browser/experimental_flags_unittest.mm',
         'browser/geolocation/CLLocation+XGeoHeaderTest.mm',
         'browser/geolocation/location_manager_unittest.mm',
+        'browser/geolocation/omnibox_geolocation_local_state_unittest.mm',
         'browser/install_time_util_unittest.mm',
         'browser/installation_notifier_unittest.mm',
         'browser/memory/memory_wedge_unittest.cc',
