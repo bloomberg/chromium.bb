@@ -762,10 +762,12 @@ v8::Local<v8::Context> toV8Context(ExecutionContext* context, DOMWrapperWorld& w
     ASSERT(context);
     if (context->isDocument()) {
         if (LocalFrame* frame = toDocument(context)->frame())
-            return frame->script().windowProxy(world)->context();
+            return toV8Context(frame, world);
     } else if (context->isWorkerGlobalScope()) {
-        if (WorkerScriptController* script = toWorkerGlobalScope(context)->script())
-            return script->context();
+        if (WorkerScriptController* script = toWorkerGlobalScope(context)->script()) {
+            if (script->scriptState()->contextIsValid())
+                return script->scriptState()->context();
+        }
     }
     return v8::Local<v8::Context>();
 }
