@@ -1712,7 +1712,9 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& event)
 
     LayoutPoint vPoint = view->rootFrameToContents(event.position());
 
-    HitTestRequest request(HitTestRequest::ReadOnly);
+    // Pass Active to ensure that hit-test result in current document if otherwise empty
+    // TODO(majidvp): Avoid using Active to trigger hit-testing fallback. See http://crbug.com/505825
+    HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
     HitTestResult result(request, vPoint);
     doc->layoutView()->hitTest(result);
 

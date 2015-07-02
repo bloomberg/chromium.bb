@@ -1579,6 +1579,9 @@ bool DeprecatedPaintLayer::hitTest(HitTestResult& result)
         // exited the WebView, and so hit testing over a scrollbar hits the content document.
         // In addtion, it is possible for the mouse to stay in the document but there is no element.
         // At that time, the events of the mouse should be fired.
+        // TODO(majidvp): This should apply more consistently across different event types and we
+        // should not use RequestType for it. Perhaps best for it to be done at a higher level. See
+        // http://crbug.com/505825
         LayoutPoint hitPoint = hitTestLocation.point();
         if (!request.isChildFrameHitTest() && ((request.active() || request.release()) || (request.move() && hitTestArea.contains(hitPoint.x(), hitPoint.y()))) && isRootLayer()) {
             layoutObject()->updateHitTestResult(result, toLayoutView(layoutObject())->flipForWritingMode(hitTestLocation.point()));
