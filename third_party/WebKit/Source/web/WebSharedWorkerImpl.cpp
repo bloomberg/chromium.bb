@@ -80,24 +80,6 @@ namespace blink {
 // TODO(toyoshim): Share implementation with WebEmbeddedWorkerImpl as much as
 // possible.
 
-// This function is called on the main thread to force to initialize some static
-// values used in WebKit before any worker thread is started. This is because in
-// our worker processs, we do not run any WebKit code in main thread and thus
-// when multiple workers try to start at the same time, we might hit crash due
-// to contention for initializing static values.
-static void initializeWebKitStaticValues()
-{
-    static bool initialized = false;
-    if (!initialized) {
-        initialized = true;
-        // Note that we have to pass a URL with valid protocol in order to follow
-        // the path to do static value initializations.
-        RefPtr<SecurityOrigin> origin =
-            SecurityOrigin::create(KURL(ParsedURLString, "http://localhost"));
-        origin.release();
-    }
-}
-
 WebSharedWorkerImpl::WebSharedWorkerImpl(WebSharedWorkerClient* client)
     : m_webView(0)
     , m_mainFrame(0)
@@ -107,7 +89,6 @@ WebSharedWorkerImpl::WebSharedWorkerImpl(WebSharedWorkerClient* client)
     , m_pauseWorkerContextOnStart(false)
     , m_isPausedOnStart(false)
 {
-    initializeWebKitStaticValues();
 }
 
 WebSharedWorkerImpl::~WebSharedWorkerImpl()
