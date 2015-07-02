@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.UiUtils;
+import org.chromium.net.ConnectionType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -331,7 +332,8 @@ public class FeedbackCollectorTest extends ChromeActivityTestCaseBase<ChromeActi
     private static ConnectivityTask.FeedbackData createFeedbackData() {
         Map<ConnectivityTask.Type, Integer> connections = new HashMap<>();
         connections.put(ConnectivityTask.Type.CHROME_HTTPS, ConnectivityCheckResult.CONNECTED);
-        return new ConnectivityTask.FeedbackData(connections, 10, 10);
+        return new ConnectivityTask.FeedbackData(
+                connections, 10, 10, ConnectionType.CONNECTION_3G, 4.2);
     }
 
     private static Bitmap createBitmap() {

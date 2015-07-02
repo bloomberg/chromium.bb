@@ -10,6 +10,8 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.net.ConnectionType;
+import org.chromium.net.NetworkChangeNotifier;
 
 import java.util.Collections;
 import java.util.EnumMap;
@@ -40,6 +42,21 @@ public class ConnectivityTask {
      */
     @VisibleForTesting
     static final String CONNECTION_CHECK_ELAPSED_KEY = "Connection check elapsed (ms)";
+
+    /**
+     * The key for the data describing the current connection type.
+     * This string is user visible.
+     */
+    @VisibleForTesting
+    static final String CONNECTION_TYPE_KEY = "Connection type";
+
+    /**
+     * The key for the data describing the bandwidth of the current connection. The data is
+     * represented as Mbps.
+     * This string is user visible.
+     */
+    @VisibleForTesting
+    static final String CONNECTION_BANDWIDTH_KEY = "Connection bandwidth (Mbps)";
 
     /**
      * The key for the data describing whether Chrome was able to successfully connect to the
@@ -73,7 +90,7 @@ public class ConnectivityTask {
     @VisibleForTesting
     static final String SYSTEM_HTTPS_KEY = "HTTPS connection check (Android network stack)";
 
-    private static String getHumanReadableString(Type type) {
+    private static String getHumanReadableType(Type type) {
         switch (type) {
             case CHROME_HTTP:
                 return CHROME_HTTP_KEY;
@@ -88,7 +105,7 @@ public class ConnectivityTask {
         }
     }
 
-    static String getHumanReadableString(int result) {
+    static String getHumanReadableResult(int result) {
         switch (result) {
             case ConnectivityCheckResult.UNKNOWN:
                 return "UNKNOWN";
@@ -102,6 +119,29 @@ public class ConnectivityTask {
                 return "ERROR";
             default:
                 throw new IllegalArgumentException("Unknown result value: " + result);
+        }
+    }
+
+    static String getHumanReadableConnectionType(int connectionType) {
+        switch (connectionType) {
+            case ConnectionType.CONNECTION_UNKNOWN:
+                return "Unknown";
+            case ConnectionType.CONNECTION_ETHERNET:
+                return "Ethernet";
+            case ConnectionType.CONNECTION_WIFI:
+                return "WiFi";
+            case ConnectionType.CONNECTION_2G:
+                return "2G";
+            case ConnectionType.CONNECTION_3G:
+                return "3G";
+            case ConnectionType.CONNECTION_4G:
+                return "4G";
+            case ConnectionType.CONNECTION_NONE:
+                return "NONE";
+            case ConnectionType.CONNECTION_BLUETOOTH:
+                return "Bluetooth";
+            default:
+                return "Unknown connection type " + connectionType;
         }
     }
 
@@ -122,11 +162,16 @@ public class ConnectivityTask {
         private final Map<Type, Integer> mConnections;
         private final int mTimeoutMs;
         private final long mElapsedTimeMs;
+        private final int mConnectionType;
+        private final double mBandwidthInMbps;
 
-        FeedbackData(Map<Type, Integer> connections, int timeoutMs, long elapsedTimeMs) {
+        FeedbackData(Map<Type, Integer> connections, int timeoutMs, long elapsedTimeMs,
+                int connectionType, double bandwidthInMbps) {
             mConnections = connections;
             mTimeoutMs = timeoutMs;
             mElapsedTimeMs = elapsedTimeMs;
+            mConnectionType = connectionType;
+            mBandwidthInMbps = bandwidthInMbps;
         }
 
         /**
@@ -160,11 +205,13 @@ public class ConnectivityTask {
         Map<String, String> toMap() {
             Map<String, String> map = new HashMap<>();
             for (Map.Entry<Type, Integer> entry : mConnections.entrySet()) {
-                map.put(getHumanReadableString(entry.getKey()),
-                        getHumanReadableString(entry.getValue()));
+                map.put(getHumanReadableType(entry.getKey()),
+                        getHumanReadableResult(entry.getValue()));
             }
             map.put(CONNECTION_CHECK_TIMEOUT_KEY, String.valueOf(mTimeoutMs));
             map.put(CONNECTION_CHECK_ELAPSED_KEY, String.valueOf(mElapsedTimeMs));
+            map.put(CONNECTION_TYPE_KEY, getHumanReadableConnectionType(mConnectionType));
+            map.put(CONNECTION_BANDWIDTH_KEY, String.valueOf(mBandwidthInMbps));
             return map;
         }
     }
@@ -211,8 +258,8 @@ public class ConnectivityTask {
         @Override
         public void onResult(int result) {
             ThreadUtils.assertOnUiThread();
-            Log.v(TAG, "Got result for " + getHumanReadableString(mType) + ": result = "
-                            + getHumanReadableString(result));
+            Log.v(TAG, "Got result for " + getHumanReadableType(mType) + ": result = "
+                            + getHumanReadableResult(result));
             mResult.put(mType, result);
             if (isDone()) postCallbackResult();
         }
@@ -275,7 +322,10 @@ public class ConnectivityTask {
             }
         }
         long elapsedTimeMs = SystemClock.elapsedRealtime() - mStartCheckTimeMs;
-        return new FeedbackData(result, mTimeoutMs, elapsedTimeMs);
+        NetworkChangeNotifier ncn = NetworkChangeNotifier.getInstance();
+        int connectionType = ncn.getCurrentConnectionType();
+        double bandwidthInMbps = ncn.getCurrentMaxBandwidthInMbps();
+        return new FeedbackData(result, mTimeoutMs, elapsedTimeMs, connectionType, bandwidthInMbps);
     }
 
     /**
