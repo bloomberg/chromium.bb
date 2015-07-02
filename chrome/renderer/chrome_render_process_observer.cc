@@ -166,11 +166,17 @@ class ResourceUsageReporterImpl : public ResourceUsageReporter {
     usage_data_->reports_v8_stats = true;
     callback_ = callback;
 
-    if (observer_ && observer_->webkit_initialized()) {
-      WebCache::ResourceTypeStats stats;
-      WebCache::getResourceTypeStats(&stats);
-      usage_data_->web_cache_stats = ResourceTypeStats::From(stats);
+    // Since it is not safe to call any Blink or V8 functions until Blink has
+    // been initialized (which also initializes V8), early out and send 0 back
+    // for all resources.
+    if (!observer_ || !observer_->webkit_initialized()) {
+      SendResults();
+      return;
     }
+
+    WebCache::ResourceTypeStats stats;
+    WebCache::getResourceTypeStats(&stats);
+    usage_data_->web_cache_stats = ResourceTypeStats::From(stats);
 
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     if (isolate) {
