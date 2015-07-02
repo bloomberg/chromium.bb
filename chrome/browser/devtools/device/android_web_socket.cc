@@ -147,7 +147,7 @@ class AndroidDeviceManager::AndroidWebSocket::WebSocketImpl {
 AndroidDeviceManager::AndroidWebSocket::AndroidWebSocket(
     scoped_refptr<Device> device,
     const std::string& socket_name,
-    const std::string& url,
+    const std::string& path,
     Delegate* delegate)
     : device_(device.get()),
       socket_impl_(nullptr),
@@ -158,7 +158,7 @@ AndroidDeviceManager::AndroidWebSocket::AndroidWebSocket(
   DCHECK(device_);
   device_->sockets_.insert(this);
   device_->HttpUpgrade(
-      socket_name, url, net::WebSocketEncoder::kClientExtensions,
+      socket_name, path, net::WebSocketEncoder::kClientExtensions,
       base::Bind(&AndroidWebSocket::Connected, weak_factory_.GetWeakPtr()));
 }
 
@@ -224,7 +224,7 @@ void AndroidDeviceManager::AndroidWebSocket::Terminate() {
 AndroidDeviceManager::AndroidWebSocket*
 AndroidDeviceManager::Device::CreateWebSocket(
     const std::string& socket_name,
-    const std::string& url,
+    const std::string& path,
     AndroidWebSocket::Delegate* delegate) {
-  return new AndroidWebSocket(this, socket_name, url, delegate);
+  return new AndroidWebSocket(this, socket_name, path, delegate);
 }

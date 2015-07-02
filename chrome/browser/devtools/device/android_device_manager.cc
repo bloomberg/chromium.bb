@@ -356,7 +356,7 @@ void AndroidDeviceManager::DeviceProvider::SendJsonRequest(
 void AndroidDeviceManager::DeviceProvider::HttpUpgrade(
     const std::string& serial,
     const std::string& socket_name,
-    const std::string& url,
+    const std::string& path,
     const std::string& extensions,
     const HttpUpgradeCallback& callback) {
   std::string extensions_with_new_line =
@@ -366,7 +366,7 @@ void AndroidDeviceManager::DeviceProvider::HttpUpgrade(
       socket_name,
       base::Bind(&HttpRequest::HttpUpgradeRequest,
                  base::StringPrintf(kWebSocketUpgradeRequest,
-                                    url.c_str(),
+                                    path.c_str(),
                                     extensions_with_new_line.c_str()),
                  callback));
 }
@@ -411,13 +411,13 @@ void AndroidDeviceManager::Device::SendJsonRequest(
 
 void AndroidDeviceManager::Device::HttpUpgrade(
     const std::string& socket_name,
-    const std::string& url,
+    const std::string& path,
     const std::string& extensions,
     const HttpUpgradeCallback& callback) {
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DeviceProvider::HttpUpgrade, provider_, serial_, socket_name,
-                 url, extensions,
+                 path, extensions,
                  base::Bind(&PostHttpUpgradeCallback,
                             base::ThreadTaskRunnerHandle::Get(), callback)));
 }

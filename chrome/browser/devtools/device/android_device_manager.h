@@ -86,7 +86,7 @@ class AndroidDeviceManager : public base::NonThreadSafe {
     AndroidWebSocket(
         scoped_refptr<Device> device,
         const std::string& socket_name,
-        const std::string& url,
+        const std::string& path,
         AndroidWebSocket::Delegate* delegate);
     void Connected(int result,
                    const std::string& extensions,
@@ -118,12 +118,12 @@ class AndroidDeviceManager : public base::NonThreadSafe {
                          const CommandCallback& callback);
 
     void HttpUpgrade(const std::string& socket_name,
-                     const std::string& url,
+                     const std::string& path,
                      const std::string& extensions,
                      const HttpUpgradeCallback& callback);
     AndroidWebSocket* CreateWebSocket(
         const std::string& socket_name,
-        const std::string& url,
+        const std::string& path,
         AndroidWebSocket::Delegate* delegate);
 
     std::string serial() { return serial_; }
@@ -174,7 +174,7 @@ class AndroidDeviceManager : public base::NonThreadSafe {
 
     virtual void HttpUpgrade(const std::string& serial,
                              const std::string& socket_name,
-                             const std::string& url,
+                             const std::string& path,
                              const std::string& extensions,
                              const HttpUpgradeCallback& callback);
 

@@ -260,7 +260,7 @@ class DevToolsAndroidBridge : public KeyedService {
                        const JsonRequestCallback& callback);
 
   void SendProtocolCommand(const BrowserId& browser_id,
-                           const std::string& debug_url,
+                           const std::string& target_path,
                            const std::string& method,
                            scoped_ptr<base::DictionaryValue> params,
                            const base::Closure callback);
