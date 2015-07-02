@@ -124,11 +124,12 @@ bool LayoutReplaced::shouldPaint(const PaintInfo& paintInfo, const LayoutPoint& 
     if (style()->visibility() != VISIBLE)
         return false;
 
-    LayoutPoint adjustedPaintOffset = paintOffset + location();
+    LayoutRect paintRect(visualOverflowRect());
+    paintRect.moveBy(paintOffset + location());
 
     // Early exit if the element touches the edges.
-    LayoutUnit top = adjustedPaintOffset.y() + visualOverflowRect().y();
-    LayoutUnit bottom = adjustedPaintOffset.y() + visualOverflowRect().maxY();
+    LayoutUnit top = paintRect.y();
+    LayoutUnit bottom = paintRect.maxY();
     if (isSelected() && inlineBoxWrapper()) {
         LayoutUnit selTop = paintOffset.y() + inlineBoxWrapper()->root().selectionTop();
         LayoutUnit selBottom = paintOffset.y() + selTop + inlineBoxWrapper()->root().selectionHeight();
@@ -136,7 +137,7 @@ bool LayoutReplaced::shouldPaint(const PaintInfo& paintInfo, const LayoutPoint& 
         bottom = std::max(selBottom, bottom);
     }
 
-    if (adjustedPaintOffset.x() + visualOverflowRect().x() >= paintInfo.rect.maxX() || adjustedPaintOffset.x() + visualOverflowRect().maxX() <= paintInfo.rect.x())
+    if (paintRect.x() >= paintInfo.rect.maxX() || paintRect.maxX() <= paintInfo.rect.x())
         return false;
 
     if (top >= paintInfo.rect.maxY() || bottom <= paintInfo.rect.y())
