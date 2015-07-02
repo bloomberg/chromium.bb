@@ -2370,20 +2370,6 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseDeprecatedGrad
     return parseGradientStopColor(value);
 }
 
-// Used to parse <color> for SVG properties.
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseSVGColor(const CSSParserValue* value)
-{
-    CSSValueID id = value->id;
-    if (id == CSSValueCurrentcolor)
-        return cssValuePool().createIdentifierValue(id);
-    if ((id >= CSSValueActiveborder && id <= CSSValueWindowtext) || id == CSSValueMenu)
-        return cssValuePool().createColorValue(LayoutTheme::theme().systemColor(id).rgb());
-    RGBA32 c = Color::transparent;
-    if (!parseColorFromValue(value, c))
-        return nullptr;
-    return cssValuePool().createColorValue(c);
-}
-
 bool CSSPropertyParser::parseFillImage(CSSParserValueList* valueList, RefPtrWillBeRawPtr<CSSValue>& value)
 {
     if (valueList->current()->id == CSSValueNone) {
@@ -7850,7 +7836,7 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
                     if (m_valueList->current()->id == CSSValueNone)
                         parsedValue = cssValuePool().createIdentifierValue(m_valueList->current()->id);
                     else
-                        parsedValue = parseSVGColor(m_valueList->current());
+                        parsedValue = parseColor(m_valueList->current());
                     if (parsedValue) {
                         values->append(parsedValue);
                         parsedValue = values;
@@ -7859,7 +7845,7 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
                 if (!parsedValue)
                     parsedValue = CSSPrimitiveValue::create(value->string, CSSPrimitiveValue::CSS_URI);
             } else {
-                parsedValue = parseSVGColor(m_valueList->current());
+                parsedValue = parseColor(m_valueList->current());
             }
 
             if (parsedValue)
@@ -7870,7 +7856,7 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
     case CSSPropertyStopColor: // TODO : icccolor
     case CSSPropertyFloodColor:
     case CSSPropertyLightingColor:
-        parsedValue = parseSVGColor(m_valueList->current());
+        parsedValue = parseColor(m_valueList->current());
         if (parsedValue)
             m_valueList->next();
 

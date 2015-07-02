@@ -871,15 +871,6 @@ StyleColor StyleBuilderConverter::convertStyleColor(StyleResolverState& state, C
     return state.document().textLinkColors().colorFromPrimitiveValue(primitiveValue, Color(), forVisitedLink);
 }
 
-Color StyleBuilderConverter::convertSVGColor(StyleResolverState& state, CSSValue* value)
-{
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->isRGBColor())
-        return primitiveValue->getRGBA32Value();
-    ASSERT(primitiveValue->getValueID() == CSSValueCurrentcolor);
-    return state.style()->color();
-}
-
 float StyleBuilderConverter::convertTextStrokeWidth(StyleResolverState& state, CSSValue* value)
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);

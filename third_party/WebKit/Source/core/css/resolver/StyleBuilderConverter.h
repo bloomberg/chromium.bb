@@ -90,7 +90,6 @@ public:
     template <CSSValueID IdForNone> static AtomicString convertString(StyleResolverState&, CSSValue*);
     static PassRefPtr<SVGDashArray> convertStrokeDasharray(StyleResolverState&, CSSValue*);
     static StyleColor convertStyleColor(StyleResolverState&, CSSValue*, bool forVisitedLink = false);
-    static Color convertSVGColor(StyleResolverState&, CSSValue*);
     static float convertTextStrokeWidth(StyleResolverState&, CSSValue*);
     static TransformOrigin convertTransformOrigin(StyleResolverState&, CSSValue*);
 
