@@ -1,4 +1,5 @@
 namespace="FetchInitiatorType"
+export="CORE_EXPORT"
 
 beacon
 css
