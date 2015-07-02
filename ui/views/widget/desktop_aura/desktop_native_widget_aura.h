@@ -179,7 +179,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   gfx::Size GetMaximumSize() const override;
   void OnBoundsChanged(const gfx::Rect& old_bounds,
                        const gfx::Rect& new_bounds) override {}
-  ui::TextInputClient* GetFocusedTextInputClient() override;
   gfx::NativeCursor GetCursor(const gfx::Point& point) override;
   int GetNonClientComponent(const gfx::Point& point) const override;
   bool ShouldDescendIntoChildForEventHandling(

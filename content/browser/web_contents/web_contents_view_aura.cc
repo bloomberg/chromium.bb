@@ -1123,10 +1123,6 @@ void WebContentsViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
   }
 }
 
-ui::TextInputClient* WebContentsViewAura::GetFocusedTextInputClient() {
-  return nullptr;
-}
-
 gfx::NativeCursor WebContentsViewAura::GetCursor(const gfx::Point& point) {
   return gfx::kNullCursor;
 }

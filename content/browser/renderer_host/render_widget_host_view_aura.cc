@@ -1844,10 +1844,6 @@ void RenderWidgetHostViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
     GetInputMethod()->OnCaretBoundsChanged(this);
 }
 
-ui::TextInputClient* RenderWidgetHostViewAura::GetFocusedTextInputClient() {
-  return GetTextInputClient();
-}
-
 gfx::NativeCursor RenderWidgetHostViewAura::GetCursor(const gfx::Point& point) {
   if (mouse_locked_)
     return ui::kCursorNone;
@@ -2688,8 +2684,8 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
 
 void RenderWidgetHostViewAura::DetachFromInputMethod() {
   ui::InputMethod* input_method = GetInputMethod();
-  if (input_method && input_method->GetTextInputClient() == this)
-    input_method->SetFocusedTextInputClient(NULL);
+  if (input_method)
+    input_method->DetachTextInputClient(this);
 }
 
 void RenderWidgetHostViewAura::ForwardKeyboardEvent(

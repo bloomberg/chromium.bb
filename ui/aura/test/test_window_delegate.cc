@@ -51,10 +51,6 @@ void TestWindowDelegate::OnBoundsChanged(const gfx::Rect& old_bounds,
                                          const gfx::Rect& new_bounds) {
 }
 
-ui::TextInputClient* TestWindowDelegate::GetFocusedTextInputClient() {
-  return &text_input_client_;
-}
-
 gfx::NativeCursor TestWindowDelegate::GetCursor(const gfx::Point& point) {
   return gfx::kNullCursor;
 }

@@ -609,10 +609,6 @@ void Window::ConvertRectToTarget(const Window* source,
   rect->set_origin(origin);
 }
 
-ui::TextInputClient* Window::GetFocusedTextInputClient() {
-  return delegate_ ? delegate_->GetFocusedTextInputClient() : nullptr;
-}
-
 void Window::MoveCursorTo(const gfx::Point& point_in_window) {
   Window* root_window = GetRootWindow();
   DCHECK(root_window);

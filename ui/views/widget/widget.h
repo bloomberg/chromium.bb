@@ -565,9 +565,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   FocusManager* GetFocusManager();
   const FocusManager* GetFocusManager() const;
 
-  // Returns the focused text input client within this widget.
-  ui::TextInputClient* GetFocusedTextInputClient();
-
   // Returns the ui::InputMethod for this widget.
   ui::InputMethod* GetInputMethod();
 

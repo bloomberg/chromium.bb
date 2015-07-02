@@ -743,10 +743,6 @@ void NativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,
     delegate_->OnNativeWidgetSizeChanged(new_bounds.size());
 }
 
-ui::TextInputClient* NativeWidgetAura::GetFocusedTextInputClient() {
-  return GetWidget()->GetFocusedTextInputClient();
-}
-
 gfx::NativeCursor NativeWidgetAura::GetCursor(const gfx::Point& point) {
   return cursor_;
 }

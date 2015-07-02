@@ -218,10 +218,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
                                   const Window* target,
                                   gfx::Rect* rect);
 
-  // Returns the focused text input client within this window.
-  // This function does not look at child windows.
-  ui::TextInputClient* GetFocusedTextInputClient();
-
   // Moves the cursor to the specified location relative to the window.
   void MoveCursorTo(const gfx::Point& point_in_window);
 

@@ -49,7 +49,6 @@ class DemoWindowDelegate : public aura::WindowDelegate {
 
   void OnBoundsChanged(const gfx::Rect& old_bounds,
                        const gfx::Rect& new_bounds) override {}
-  ui::TextInputClient* GetFocusedTextInputClient() override { return nullptr; }
   gfx::NativeCursor GetCursor(const gfx::Point& point) override {
     return gfx::kNullCursor;
   }

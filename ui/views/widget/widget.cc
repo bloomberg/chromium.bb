@@ -771,10 +771,6 @@ const FocusManager* Widget::GetFocusManager() const {
   return toplevel_widget ? toplevel_widget->focus_manager_.get() : NULL;
 }
 
-ui::TextInputClient* Widget::GetFocusedTextInputClient() {
-  return nullptr;
-}
-
 ui::InputMethod* Widget::GetInputMethod() {
   if (is_top_level()) {
     // Only creates the shared the input method instance on top level widget.
