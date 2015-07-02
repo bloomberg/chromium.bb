@@ -418,7 +418,8 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
     ProfileOAuth2TokenService* token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(browser()->profile());
 
-    token_service->UpdateCredentials("user@host.com", "MyFakeToken");
+    token_service->UpdateCredentials(
+        signin_manager->GetAuthenticatedAccountId(), "MyFakeToken");
 
     AddLibrary(base::FilePath(FILE_PATH_LITERAL("local_discovery_ui_test.js")));
   }

@@ -251,12 +251,11 @@ IN_PROC_BROWSER_TEST_F(OptionsUIBrowserTest, MAYBE_VerifyManagedSignout) {
 
 IN_PROC_BROWSER_TEST_F(OptionsUIBrowserTest, VerifyUnmanagedSignout) {
   const std::string user = "test@example.com";
-  std::string account_id =
-      AccountTrackerServiceFactory::GetForProfile(browser()->profile())
+  AccountTrackerServiceFactory::GetForProfile(browser()->profile())
       ->SeedAccountInfo("12345", user);
   SigninManager* signin =
       SigninManagerFactory::GetForProfile(browser()->profile());
-  signin->OnExternalSigninCompleted(account_id);
+  signin->OnExternalSigninCompleted(user);
 
   NavigateToSettingsFrame();
 
