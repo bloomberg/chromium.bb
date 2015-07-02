@@ -1035,6 +1035,8 @@ crbug.com/374936 [ Linux Win Debug ] svg/dynamic-updates/SVGImageElement-dom-pre
 crbug.com/374936 [ Linux Win Debug ] svg/dynamic-updates/SVGImageElement-dom-height-attr.html [ ImageOnlyFailure Pass ]
 crbug.com/374936 [ Linux Win Debug ] svg/dynamic-updates/SVGImageElement-dom-width-attr.html [ ImageOnlyFailure Pass ]
 
+crbug.com/506525 [ XP ] paint/masks/fieldset-mask.html [ ImageOnlyFailure ]
+
 crbug.com/375565 [ Mac ] fast/repaint/caret-with-transformation.html [ Pass Failure ]
 
 crbug.com/375567 web-animations-api/w3c/simple-keyframes.html [ Pass Failure ]
