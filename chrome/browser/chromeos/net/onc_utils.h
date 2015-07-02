@@ -29,7 +29,7 @@ namespace onc {
 
 // Translates |onc_proxy_settings|, which has to be a valid ONC ProxySettings
 // dictionary, to a ProxyConfig dictionary (see
-// chrome/browser/prefs/proxy_config_dictionary.h).
+// components/proxy_config/proxy_config_dictionary.h).
 //
 // This function is used to translate ONC ProxySettings to the "ProxyConfig"
 // field of the Shill configuration.

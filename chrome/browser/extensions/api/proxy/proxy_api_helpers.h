@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "chrome/browser/prefs/proxy_prefs.h"
+#include "components/proxy_config/proxy_prefs.h"
 #include "net/proxy/proxy_config.h"
 
 class ProxyConfigDictionary;

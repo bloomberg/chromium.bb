@@ -9,9 +9,9 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
-#include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/proxy_config/proxy_config_dictionary.h"
 #include "ui/base/ui_base_switches.h"
 
 namespace {

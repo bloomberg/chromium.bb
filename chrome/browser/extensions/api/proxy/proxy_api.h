@@ -13,7 +13,7 @@
 #include "base/memory/singleton.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
-#include "chrome/browser/prefs/proxy_prefs.h"
+#include "components/proxy_config/proxy_prefs.h"
 
 namespace base {
 class Value;

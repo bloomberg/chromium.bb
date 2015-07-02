@@ -8,8 +8,8 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/proxy/proxy_api_constants.h"
 #include "chrome/browser/extensions/api/proxy/proxy_api_helpers.h"
-#include "chrome/browser/prefs/proxy_config_dictionary.h"
-#include "chrome/browser/prefs/proxy_prefs.h"
+#include "components/proxy_config/proxy_config_dictionary.h"
+#include "components/proxy_config/proxy_prefs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {

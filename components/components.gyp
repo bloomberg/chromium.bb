@@ -55,6 +55,7 @@
     'policy.gypi',
     'precache.gypi',
     'pref_registry.gypi',
+    'proxy_config.gypi',
     'query_parser.gypi',
     'rappor.gypi',
     'renderer_context_menu.gypi',

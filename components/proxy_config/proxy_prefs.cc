@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prefs/proxy_prefs.h"
+#include "components/proxy_config/proxy_prefs.h"
 
 #include "base/basictypes.h"
 #include "base/logging.h"

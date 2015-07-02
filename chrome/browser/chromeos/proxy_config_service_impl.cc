@@ -14,8 +14,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/net/proxy_config_handler.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/prefs/proxy_config_dictionary.h"
-#include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/network/network_profile.h"
 #include "chromeos/network/network_profile_handler.h"
@@ -23,6 +21,8 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/proxy_config/proxy_config_dictionary.h"
+#include "components/proxy_config/proxy_prefs.h"
 #include "components/user_manager/user_manager.h"
 
 namespace chromeos {

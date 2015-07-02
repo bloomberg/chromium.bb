@@ -61,7 +61,7 @@
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 #include "base/prefs/scoped_user_pref_update.h"
-#include "chrome/browser/prefs/proxy_prefs.h"
+#include "components/proxy_config/proxy_prefs.h"
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 #if defined(OS_CHROMEOS)

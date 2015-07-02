@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREFS_PROXY_PREFS_H_
-#define CHROME_BROWSER_PREFS_PROXY_PREFS_H_
+#ifndef COMPONENTS_PROXY_CONFIG_PROXY_PREFS_H_
+#define COMPONENTS_PROXY_CONFIG_PROXY_PREFS_H_
 
 #include <string>
+
+#include "components/proxy_config/proxy_config_export.h"
 
 namespace ProxyPrefs {
 
@@ -13,7 +15,7 @@ namespace ProxyPrefs {
 // the constants, because numeric values are exposed to users.
 // If you add an enum constant, you should also add a string to
 // kProxyModeNames in the .cc file.
-enum ProxyMode {
+enum PROXY_CONFIG_EXPORT ProxyMode {
   // Direct connection to the network, other proxy preferences are ignored.
   MODE_DIRECT = 0,
 
@@ -36,7 +38,7 @@ enum ProxyMode {
 };
 
 // State of proxy configuration.
-enum ConfigState {
+enum PROXY_CONFIG_EXPORT ConfigState {
   // Configuration is from policy.
   CONFIG_POLICY,
   // Configuration is from extension.
@@ -53,18 +55,19 @@ enum ConfigState {
 
 // Constants for string values used to specify the proxy mode through externally
 // visible APIs, e.g. through policy or the proxy extension API.
-extern const char kDirectProxyModeName[];
-extern const char kAutoDetectProxyModeName[];
-extern const char kPacScriptProxyModeName[];
-extern const char kFixedServersProxyModeName[];
-extern const char kSystemProxyModeName[];
+PROXY_CONFIG_EXPORT extern const char kDirectProxyModeName[];
+PROXY_CONFIG_EXPORT extern const char kAutoDetectProxyModeName[];
+PROXY_CONFIG_EXPORT extern const char kPacScriptProxyModeName[];
+PROXY_CONFIG_EXPORT extern const char kFixedServersProxyModeName[];
+PROXY_CONFIG_EXPORT extern const char kSystemProxyModeName[];
 
-bool IntToProxyMode(int in_value, ProxyMode* out_value);
-bool StringToProxyMode(const std::string& in_value, ProxyMode* out_value);
+PROXY_CONFIG_EXPORT bool IntToProxyMode(int in_value, ProxyMode* out_value);
+PROXY_CONFIG_EXPORT bool StringToProxyMode(const std::string& in_value,
+                                           ProxyMode* out_value);
 // Ownership of the return value is NOT passed to the caller.
-const char* ProxyModeToString(ProxyMode mode);
-std::string ConfigStateToDebugString(ConfigState state);
+PROXY_CONFIG_EXPORT const char* ProxyModeToString(ProxyMode mode);
+PROXY_CONFIG_EXPORT std::string ConfigStateToDebugString(ConfigState state);
 
 }  // namespace ProxyPrefs
 
-#endif  // CHROME_BROWSER_PREFS_PROXY_PREFS_H_
+#endif  // COMPONENTS_PROXY_CONFIG_PROXY_PREFS_H_

@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREFS_PROXY_CONFIG_DICTIONARY_H_
-#define CHROME_BROWSER_PREFS_PROXY_CONFIG_DICTIONARY_H_
+#ifndef COMPONENTS_PROXY_CONFIG_PROXY_CONFIG_DICTIONARY_H_
+#define COMPONENTS_PROXY_CONFIG_PROXY_CONFIG_DICTIONARY_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/prefs/proxy_prefs.h"
+#include "components/proxy_config/proxy_config_export.h"
+#include "components/proxy_config/proxy_prefs.h"
 
 namespace base {
 class DictionaryValue;
@@ -24,7 +25,7 @@ class DictionaryValue;
 //   bypass_list: string
 // }
 // See proxy_config_dictionary.cc for the structure of the respective strings.
-class ProxyConfigDictionary {
+class PROXY_CONFIG_EXPORT ProxyConfigDictionary {
  public:
   // Creates a deep copy of |dict| and leaves ownership to caller.
   explicit ProxyConfigDictionary(const base::DictionaryValue* dict);
@@ -60,4 +61,4 @@ class ProxyConfigDictionary {
   DISALLOW_COPY_AND_ASSIGN(ProxyConfigDictionary);
 };
 
-#endif  // CHROME_BROWSER_PREFS_PROXY_CONFIG_DICTIONARY_H_
+#endif  // COMPONENTS_PROXY_CONFIG_PROXY_CONFIG_DICTIONARY_H_

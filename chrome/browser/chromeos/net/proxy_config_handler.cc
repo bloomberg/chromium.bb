@@ -10,7 +10,6 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/net/onc_utils.h"
-#include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_service_client.h"
@@ -20,6 +19,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/proxy_config/proxy_config_dictionary.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 

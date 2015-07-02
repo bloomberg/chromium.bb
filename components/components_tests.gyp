@@ -464,6 +464,10 @@
       'proximity_auth/throttled_bluetooth_connection_finder_unittest.cc',
       'proximity_auth/wire_message_unittest.cc',
     ],
+    'proxy_config_unittest_sources': [
+      'proxy_config/proxy_config_dictionary_unittest.cc',
+      'proxy_config/proxy_prefs_unittest.cc',
+    ],
     'query_parser_unittest_sources': [
       'query_parser/query_parser_unittest.cc',
       'query_parser/snippet_unittest.cc',
@@ -710,6 +714,7 @@
         '<@(packed_ct_ev_whitelist_unittest_sources)',
         '<@(password_manager_unittest_sources)',
         '<@(precache_unittest_sources)',
+        '<@(proxy_config_unittest_sources)',
         '<@(query_parser_unittest_sources)',
         '<@(rappor_unittest_sources)',
         '<@(search_unittest_sources)',
@@ -817,6 +822,7 @@
         'components.gyp:password_manager_core_browser_test_support',
         'components.gyp:precache_core',
         'components.gyp:pref_registry_test_support',
+        'components.gyp:proxy_config',
         'components.gyp:query_parser',
         'components.gyp:rappor',
         'components.gyp:rappor_test_support',

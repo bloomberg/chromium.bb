@@ -183,8 +183,6 @@
       'browser/prefs/pref_model_associator_unittest.cc',
       'browser/prefs/prefs_syncable_service_unittest.cc',
       'browser/prefs/profile_pref_store_manager_unittest.cc',
-      'browser/prefs/proxy_config_dictionary_unittest.cc',
-      'browser/prefs/proxy_prefs_unittest.cc',
       'browser/prefs/session_startup_pref_unittest.cc',
       'browser/prefs/tracked/device_id_unittest.cc',
       'browser/prefs/tracked/mock_validation_delegate.cc',
@@ -2528,12 +2526,12 @@
           ],
           'sources': [ '<@(chrome_unit_tests_mac_sources)' ],
           'sources!': [
-            'browser/ui/tests/ui_gfx_image_unittest.cc',
-            'renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc',
-            'tools/convert_dict/convert_dict_unittest.cc',
             # This tests the function GetSpellCheckLanguages which is not used
             # on Mac.
             'browser/spellchecker/spellcheck_service_unittest.cc',
+            'browser/ui/tests/ui_gfx_image_unittest.cc',
+            'renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc',
+            'tools/convert_dict/convert_dict_unittest.cc',
           ],
           # TODO(mark): We really want this for all non-static library targets,
           # but when we tried to pull it up to the common.gypi level, it broke

@@ -5,7 +5,7 @@
 #include <string>
 
 #include "base/values.h"
-#include "chrome/browser/prefs/proxy_prefs.h"
+#include "components/proxy_config/proxy_prefs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(ProxyPrefsTest, StringToProxyMode) {

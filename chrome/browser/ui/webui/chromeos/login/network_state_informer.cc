@@ -11,10 +11,10 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/net/proxy_config_handler.h"
-#include "chrome/browser/prefs/proxy_config_dictionary.h"
-#include "chrome/browser/prefs/proxy_prefs.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "components/proxy_config/proxy_config_dictionary.h"
+#include "components/proxy_config/proxy_prefs.h"
 #include "net/proxy/proxy_config.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 

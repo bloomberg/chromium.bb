@@ -14,7 +14,7 @@
 #include "chrome/browser/extensions/api/proxy/proxy_api_helpers.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/prefs/proxy_config_dictionary.h"
+#include "components/proxy_config/proxy_config_dictionary.h"
 #include "net/base/net_errors.h"
 
 namespace extensions {

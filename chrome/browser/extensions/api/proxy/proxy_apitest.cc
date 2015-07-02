@@ -5,11 +5,11 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/proxy_config/proxy_config_dictionary.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/result_catcher.h"
 

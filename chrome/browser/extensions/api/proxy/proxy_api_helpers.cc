@@ -20,7 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/proxy/proxy_api_constants.h"
-#include "chrome/browser/prefs/proxy_config_dictionary.h"
+#include "components/proxy_config/proxy_config_dictionary.h"
 #include "extensions/common/error_utils.h"
 #include "net/base/data_url.h"
 #include "net/proxy/proxy_config.h"
