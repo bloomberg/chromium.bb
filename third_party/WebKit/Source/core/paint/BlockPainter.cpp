@@ -205,7 +205,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         if (paintPhase != PaintPhaseSelfOutline)
             paintContents(scrolledPaintInfo, paintOffset);
 
-        if (!m_layoutBlock.document().printing())
+        if (paintPhase == PaintPhaseForeground && !m_layoutBlock.document().printing())
             m_layoutBlock.paintSelection(scrolledPaintInfo, paintOffset); // Fill in gaps in selection on lines and between blocks.
 
         if (paintPhase == PaintPhaseFloat || paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip)

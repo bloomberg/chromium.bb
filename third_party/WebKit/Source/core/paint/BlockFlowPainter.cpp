@@ -49,35 +49,37 @@ void BlockFlowPainter::paintFloats(const PaintInfo& paintInfo, const LayoutPoint
 
 void BlockFlowPainter::paintSelection(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (m_layoutBlockFlow.shouldPaintSelectionGaps() && paintInfo.phase == PaintPhaseForeground) {
-        LayoutUnit lastTop = 0;
-        LayoutUnit lastLeft = m_layoutBlockFlow.logicalLeftSelectionOffset(&m_layoutBlockFlow, lastTop);
-        LayoutUnit lastRight = m_layoutBlockFlow.logicalRightSelectionOffset(&m_layoutBlockFlow, lastTop);
+    ASSERT(paintInfo.phase == PaintPhaseForeground);
+    if (!m_layoutBlockFlow.shouldPaintSelectionGaps())
+        return;
 
-        LayoutRect bounds;
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-            bounds = m_layoutBlockFlow.visualOverflowRect();
-            bounds.moveBy(paintOffset);
-        }
-        LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlockFlow, DisplayItem::SelectionGap, bounds);
-        ClipScope clipScope(paintInfo.context);
+    LayoutUnit lastTop = 0;
+    LayoutUnit lastLeft = m_layoutBlockFlow.logicalLeftSelectionOffset(&m_layoutBlockFlow, lastTop);
+    LayoutUnit lastRight = m_layoutBlockFlow.logicalRightSelectionOffset(&m_layoutBlockFlow, lastTop);
 
-        LayoutRect gapRectsBounds = m_layoutBlockFlow.selectionGaps(&m_layoutBlockFlow, paintOffset, LayoutSize(), lastTop, lastLeft, lastRight,
-            recorder.canUseCachedDrawing() ? nullptr : &paintInfo,
-            recorder.canUseCachedDrawing() ? nullptr : &clipScope);
-        // TODO(wkorman): Rework below to process paint invalidation rects during layout rather than paint.
-        if (!gapRectsBounds.isEmpty()) {
-            DeprecatedPaintLayer* layer = m_layoutBlockFlow.enclosingLayer();
-            gapRectsBounds.moveBy(-paintOffset);
-            if (!m_layoutBlockFlow.hasLayer()) {
-                LayoutRect localBounds(gapRectsBounds);
-                m_layoutBlockFlow.flipForWritingMode(localBounds);
-                gapRectsBounds = LayoutRect(m_layoutBlockFlow.localToContainerQuad(FloatRect(localBounds), layer->layoutObject()).enclosingBoundingBox());
-                if (layer->layoutObject()->hasOverflowClip())
-                    gapRectsBounds.move(layer->layoutBox()->scrolledContentOffset());
-            }
-            layer->addBlockSelectionGapsBounds(gapRectsBounds);
+    LayoutRect bounds;
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        bounds = m_layoutBlockFlow.visualOverflowRect();
+        bounds.moveBy(paintOffset);
+    }
+    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlockFlow, DisplayItem::SelectionGap, bounds);
+    ClipScope clipScope(paintInfo.context);
+
+    LayoutRect gapRectsBounds = m_layoutBlockFlow.selectionGaps(&m_layoutBlockFlow, paintOffset, LayoutSize(), lastTop, lastLeft, lastRight,
+        recorder.canUseCachedDrawing() ? nullptr : &paintInfo,
+        recorder.canUseCachedDrawing() ? nullptr : &clipScope);
+    // TODO(wkorman): Rework below to process paint invalidation rects during layout rather than paint.
+    if (!gapRectsBounds.isEmpty()) {
+        DeprecatedPaintLayer* layer = m_layoutBlockFlow.enclosingLayer();
+        gapRectsBounds.moveBy(-paintOffset);
+        if (!m_layoutBlockFlow.hasLayer()) {
+            LayoutRect localBounds(gapRectsBounds);
+            m_layoutBlockFlow.flipForWritingMode(localBounds);
+            gapRectsBounds = LayoutRect(m_layoutBlockFlow.localToContainerQuad(FloatRect(localBounds), layer->layoutObject()).enclosingBoundingBox());
+            if (layer->layoutObject()->hasOverflowClip())
+                gapRectsBounds.move(layer->layoutBox()->scrolledContentOffset());
         }
+        layer->addBlockSelectionGapsBounds(gapRectsBounds);
     }
 }
 
