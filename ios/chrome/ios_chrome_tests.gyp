@@ -45,6 +45,7 @@
         'browser/net/image_fetcher_unittest.mm',
         'browser/net/metrics_network_client_unittest.mm',
         'browser/net/retryable_url_fetcher_unittest.mm',
+        'browser/signin/gaia_auth_fetcher_ios_unittest.mm',
         'browser/snapshots/snapshot_cache_unittest.mm',
         'browser/snapshots/snapshots_util_unittest.mm',
         'browser/translate/translate_service_ios_unittest.cc',
