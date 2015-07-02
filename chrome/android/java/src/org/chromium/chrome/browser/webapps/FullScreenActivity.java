@@ -10,14 +10,12 @@ import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
+import org.chromium.chrome.browser.document.TabDelegateImpl;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
-import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.content_public.browser.LoadUrlParams;
 
@@ -36,6 +34,9 @@ public abstract class FullScreenActivity extends ChromeActivity
         implements FullScreenActivityTab.TopControlsVisibilityDelegate {
     private FullScreenActivityTab mTab;
 
+    private final TabDelegateImpl mRegularTabCreator = new TabDelegateImpl(false);
+    private final TabDelegateImpl mIncognitoTabCreator = new TabDelegateImpl(true);
+
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -46,23 +47,13 @@ public abstract class FullScreenActivity extends ChromeActivity
     public void preInflationStartup() {
         super.preInflationStartup();
 
-        final boolean isDocumentMode = FeatureUtilities.isDocumentMode(this);
-        if (isDocumentMode) {
-            DocumentTabModelSelector selector =
-                    ChromeApplication.getDocumentTabModelSelector();
-            setTabCreators(selector.getTabCreator(false), selector.getTabCreator(true));
-        }
-
-        setTabModelSelector(new SingleTabModelSelector(this, false, !isDocumentMode) {
+        setTabCreators(mRegularTabCreator, mIncognitoTabCreator);
+        setTabModelSelector(new SingleTabModelSelector(this, false, false) {
             @Override
             public Tab openNewTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent,
                     boolean incognito) {
-                if (isDocumentMode) {
-                    return ChromeApplication.getDocumentTabModelSelector().openNewTab(
-                            loadUrlParams, type, parent, incognito);
-                } else {
-                    return super.openNewTab(loadUrlParams, type, parent, incognito);
-                }
+                getTabCreator(incognito).createNewTab(loadUrlParams, type, parent);
+                return null;
             }
         });
     }

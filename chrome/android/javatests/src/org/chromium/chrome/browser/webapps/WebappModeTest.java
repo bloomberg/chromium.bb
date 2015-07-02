@@ -14,9 +14,10 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -223,11 +224,8 @@ public class WebappModeTest extends MultiActivityTestBase {
 
     /**
      * Ensure WebappActivities can't be launched without proper security checks.
-     *
-     * https://crbug.com/490473
-     * @MediumTest
      */
-    @DisabledTest
+    @MediumTest
     public void testWebappRequiresValidMac() throws Exception {
         // Try to start a WebappActivity.  Fail because the Intent is insecure.
         fireWebappIntent(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, false);
@@ -260,20 +258,34 @@ public class WebappModeTest extends MultiActivityTestBase {
     @DisableInTabbedMode
     @MediumTest
     public void testWebappHandlesWindowOpenInDocumentMode() throws Exception {
-        // Start the WebappActivity.  We CAN use ActivityUtils.waitForActivity() because
-        // document mode only runs on L devices.
-        Runnable webappRunnable = new Runnable() {
+        triggerWindowOpenAndWaitForLoad(DocumentActivity.class);
+    }
+
+    /**
+     * Tests that WebappActivities handle window.open() properly in tabbed mode.
+     */
+    @CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)
+    @MediumTest
+    public void testWebappHandlesWindowOpenInTabbedMode() throws Exception {
+        triggerWindowOpenAndWaitForLoad(ChromeTabbedActivity.class);
+    }
+
+    private <T extends ChromeActivity> void triggerWindowOpenAndWaitForLoad(Class<T> classToWaitFor)
+            throws Exception {
+        // Start the WebappActivity.  We can't use ActivityUtils.waitForActivity() because
+        // of the way WebappActivity is instanced on pre-L devices.
+        fireWebappIntent(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true);
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
-            public void run() {
-                try {
-                    fireWebappIntent(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true);
-                } catch (Exception e) {
-                    fail();
-                }
+            public boolean isSatisfied() {
+                Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
+                return lastActivity instanceof WebappActivity
+                        && lastActivity.findViewById(android.R.id.content).hasWindowFocus();
             }
-        };
-        final WebappActivity webappActivity = ActivityUtils.waitForActivity(
-                getInstrumentation(), WebappActivity.class, webappRunnable);
+        }));
+        assertTrue(isNumberOfRunningActivitiesCorrect(1));
+        final WebappActivity webappActivity =
+                (WebappActivity) ApplicationStatus.getLastTrackedFocusedActivity();
 
         // Load up the test page.
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
@@ -285,7 +297,7 @@ public class WebappModeTest extends MultiActivityTestBase {
         assertTrue(CriteriaHelper.pollForCriteria(
                 new TabLoadObserver(webappActivity.getActivityTab(), ONCLICK_LINK)));
 
-        // Do a plain click to make the link open in a new foreground Document via a window.open().
+        // Do a plain click to make the link open in the main browser via a window.open().
         // If the window is opened successfully, javascript on the first page triggers and changes
         // its URL as a signal for this test.
         Runnable fgTrigger = new Runnable() {
@@ -294,12 +306,11 @@ public class WebappModeTest extends MultiActivityTestBase {
                 try {
                     DOMUtils.clickNode(null, webappActivity.getCurrentContentViewCore(), "body");
                 } catch (Exception e) {
-
                 }
             }
         };
         ChromeActivity secondActivity = ActivityUtils.waitForActivity(
-                getInstrumentation(), DocumentActivity.class, fgTrigger);
+                getInstrumentation(), classToWaitFor, fgTrigger);
         waitForFullLoad(secondActivity, "Page 4");
         assertEquals("New WebContents was not created",
                 SUCCESS_URL, webappActivity.getActivityTab().getUrl());

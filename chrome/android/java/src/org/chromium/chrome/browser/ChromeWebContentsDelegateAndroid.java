@@ -63,6 +63,11 @@ public class ChromeWebContentsDelegateAndroid extends WebContentsDelegateAndroid
     }
 
     @CalledByNative
+    public boolean shouldResumeRequestsForCreatedWindow() {
+        return true;
+    }
+
+    @CalledByNative
     public boolean addNewContents(WebContents sourceWebContents, WebContents webContents,
             int disposition, Rect initialPosition, boolean userGesture) {
         return false;

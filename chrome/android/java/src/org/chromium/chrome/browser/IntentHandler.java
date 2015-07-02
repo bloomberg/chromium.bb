@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 
 import java.util.ArrayList;
@@ -68,9 +69,14 @@ public class IntentHandler {
     public static final String EXTRA_STARTED_BY = "com.android.chrome.started_by";
 
     /**
-     * Document mode: A pointer to a native web contents object to associate with the given tab.
+     * A pointer to a native web contents object to associate with the given tab.
      */
-    public static final String EXTRA_NATIVE_WEB_CONTENTS = "com.android.chrome.native_web_contents";
+    public static final String EXTRA_WEB_CONTENTS = "com.android.chrome.web_contents";
+
+    /**
+     * Indicates whether a WebContents passed via the Intent has been paused.
+     */
+    public static final String EXTRA_WEB_CONTENTS_PAUSED = "com.android.chrome.web_contents_paused";
 
     /**
      * The tab id of the parent tab, if any.
@@ -865,5 +871,22 @@ public class IntentHandler {
             return sPendingReferrer.second;
         }
         return null;
+    }
+
+    /**
+     * Retrieves a WebContents that has been parceled into the Intent.  If the WebContents was
+     * created in a different process, it is dropped on the floor.
+     * @return WebContents if one exists in the Intent AND it was created in the same process.
+     *         null otherwise.
+     */
+    public static WebContents getWebContentsFromIntent(Intent intent) {
+        WebContents deliveredContents = null;
+        if (intent != null) {
+            // The Intent may have been fired with a pre-created WebContents in it.
+            intent.setExtrasClassLoader(WebContents.class.getClassLoader());
+            deliveredContents = IntentUtils.safeGetParcelableExtra(intent, EXTRA_WEB_CONTENTS);
+            intent.setExtrasClassLoader(null);
+        }
+        return deliveredContents;
     }
 }

@@ -4,12 +4,9 @@
 
 package org.chromium.chrome.test.util.browser.tabmodel.document;
 
-import android.app.Activity;
-
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -21,11 +18,6 @@ public class MockTabDelegate implements TabDelegate {
     @Override
     public boolean createsTabsAsynchronously() {
         return true;
-    }
-
-    @Override
-    public Tab getActivityTab(ActivityDelegate delgate, Activity activity) {
-        return null;
     }
 
     @Override

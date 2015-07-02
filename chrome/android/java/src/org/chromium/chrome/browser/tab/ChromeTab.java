@@ -370,6 +370,14 @@ public class ChromeTab extends Tab {
         }
 
         @Override
+        public boolean shouldResumeRequestsForCreatedWindow() {
+            // Pause the WebContents if an Activity has to be created for it first.
+            TabCreator tabCreator = mActivity.getTabCreator(isIncognito());
+            assert tabCreator != null;
+            return !tabCreator.createsTabsAsynchronously();
+        }
+
+        @Override
         public void webContentsCreated(WebContents sourceWebContents, long openerRenderFrameId,
                 String frameName, String targetUrl, WebContents newWebContents) {
             super.webContentsCreated(sourceWebContents, openerRenderFrameId, frameName,
@@ -563,7 +571,6 @@ public class ChromeTab extends Tab {
         private boolean hasAudibleAudio() {
             return !isClosing() && super.nativeHasAudibleAudio(getWebContents());
         }
-
     }
 
     /**

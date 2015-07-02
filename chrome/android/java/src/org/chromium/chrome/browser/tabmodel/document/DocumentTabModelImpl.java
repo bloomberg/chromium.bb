@@ -25,6 +25,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabState;
+import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.document.DocumentMetricIds;
 import org.chromium.chrome.browser.document.IncognitoNotificationManager;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
@@ -256,12 +257,17 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
     public Tab getTabAt(int index) {
         if (index < 0 || index >= getCount()) return null;
 
-        // Return a live tab if the corresponding Activity is currently alive.
+        // Return a live tab if the corresponding DocumentActivity is currently alive.
         int tabId = mTabIdList.get(index);
         List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
         for (WeakReference<Activity> activityRef : activities) {
-            Tab tab = getTabDelegate(isIncognito()).getActivityTab(
-                    mActivityDelegate, activityRef.get());
+            Activity activity = activityRef.get();
+            if (!(activity instanceof DocumentActivity)
+                    || !mActivityDelegate.isValidActivity(isIncognito(), activity.getIntent())) {
+                continue;
+            }
+
+            Tab tab = ((DocumentActivity) activity).getActivityTab();
             int documentId = tab == null ? Tab.INVALID_TAB_ID : tab.getId();
             if (documentId == tabId) return tab;
         }

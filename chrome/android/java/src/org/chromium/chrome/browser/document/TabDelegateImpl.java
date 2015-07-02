@@ -5,16 +5,22 @@
 package org.chromium.chrome.browser.document;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.text.TextUtils;
 
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PageTransition;
@@ -24,6 +30,8 @@ import org.chromium.ui.base.PageTransition;
  * TODO(dfalcantara): delete or refactor this after upstreaming.
  */
 public class TabDelegateImpl implements TabDelegate {
+
+    private static final String TAG = "cr.document";
     private boolean mIsIncognito;
 
     /**
@@ -37,15 +45,6 @@ public class TabDelegateImpl implements TabDelegate {
     @Override
     public boolean createsTabsAsynchronously() {
         return true;
-    }
-
-    @Override
-    public Tab getActivityTab(ActivityDelegate activityDelegate, Activity activity) {
-        if (!(activity instanceof DocumentActivity)
-                || !activityDelegate.isValidActivity(mIsIncognito, activity.getIntent())) {
-            return null;
-        }
-        return ((DocumentActivity) activity).getActivityTab();
     }
 
     /**
@@ -87,23 +86,42 @@ public class TabDelegateImpl implements TabDelegate {
         // Tabs can't be launched in affiliated mode when a webcontents exists.
         assert type != TabLaunchType.FROM_LONGPRESS_BACKGROUND;
 
-        // TODO(dfalcantara): Pipe information about paused WebContents from native.
-        PendingDocumentData data = new PendingDocumentData();
-        data.webContents = webContents;
-        data.webContentsPaused = startedBy != DocumentMetricIds.STARTED_BY_CHROME_HOME_RECENT_TABS;
-
         if (url == null) url = "";
 
-        // Determine information about the parent Activity.
-        Tab parentTab = parentId == Tab.INVALID_TAB_ID
-                ? null : ChromeApplication.getDocumentTabModelSelector().getTabById(parentId);
-        Activity activity = getActivityFromTab(parentTab);
-
+        Context context = ApplicationStatus.getApplicationContext();
         int pageTransition = startedBy == DocumentMetricIds.STARTED_BY_CHROME_HOME_RECENT_TABS
                 ? PageTransition.RELOAD : PageTransition.AUTO_TOPLEVEL;
-        ChromeLauncherActivity.launchDocumentInstance(activity, mIsIncognito,
-                ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND, url, startedBy, pageTransition,
-                data);
+        // TODO(dfalcantara): Pipe information about paused WebContents from native.
+        boolean isWebContentsPaused =
+                startedBy != DocumentMetricIds.STARTED_BY_CHROME_HOME_RECENT_TABS;
+
+        if (FeatureUtilities.isDocumentMode(context)) {
+            PendingDocumentData data = new PendingDocumentData();
+            data.webContents = webContents;
+            data.webContentsPaused = isWebContentsPaused;
+
+            // Determine information about the parent Activity.
+            Tab parentTab = parentId == Tab.INVALID_TAB_ID ? null
+                    : ChromeApplication.getDocumentTabModelSelector().getTabById(parentId);
+            Activity parentActivity = getActivityFromTab(parentTab);
+
+            ChromeLauncherActivity.launchDocumentInstance(parentActivity, mIsIncognito,
+                    ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND, url, startedBy, pageTransition,
+                    data);
+        } else {
+            // TODO(dfalcantara): Unify the document-mode path with this path so that both go
+            //                    through the ChromeLauncherActivity via an Intent.
+            Intent tabbedIntent = new Intent(Intent.ACTION_VIEW);
+            tabbedIntent.setClass(context, ChromeLauncherActivity.class);
+            tabbedIntent.setData(Uri.parse(url));
+            tabbedIntent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, mIsIncognito);
+            tabbedIntent.putExtra(IntentHandler.EXTRA_WEB_CONTENTS, webContents);
+            tabbedIntent.putExtra(IntentHandler.EXTRA_WEB_CONTENTS_PAUSED, isWebContentsPaused);
+            tabbedIntent.putExtra(IntentHandler.EXTRA_PAGE_TRANSITION_TYPE, pageTransition);
+            tabbedIntent.putExtra(IntentHandler.EXTRA_PARENT_TAB_ID, parentId);
+            tabbedIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            IntentHandler.startActivityForTrustedIntent(tabbedIntent, context);
+        }
     }
 
     @Override
@@ -146,7 +164,12 @@ public class TabDelegateImpl implements TabDelegate {
             documentStartedBy = DocumentMetricIds.STARTED_BY_OPTIONS_MENU;
         }
 
-        createNewDocumentTab(loadUrlParams, type, parent, launchMode, documentStartedBy, null);
+        if (FeatureUtilities.isDocumentMode(ApplicationStatus.getApplicationContext())) {
+            createNewDocumentTab(loadUrlParams, type, parent, launchMode, documentStartedBy, null);
+        } else {
+            // TODO(dfalcantara): Implement this.  https://crbug.com/451453.
+            Log.e(TAG, "TabDelegateImpl.createNewTab() not implemented.");
+        }
 
         // Tab is created aysnchronously.  Can't return it yet.
         return null;

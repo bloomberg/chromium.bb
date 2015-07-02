@@ -236,6 +236,7 @@ public class FullScreenActivityTab extends ChromeTab {
                     mClipboard.setText(text, text);
                     return true;
                 } else if (itemId == R.id.menu_id_open_in_chrome) {
+                    // TODO(dfalcantara): Merge into the TabDelegate. (https://crbug.com/451453)
                     Intent chromeIntent =
                             new Intent(Intent.ACTION_VIEW, Uri.parse(params.getLinkUrl()));
                     chromeIntent.setPackage(getApplicationContext().getPackageName());
@@ -306,13 +307,7 @@ public class FullScreenActivityTab extends ChromeTab {
         return new FullScreenTabWebContentsDelegateAndroid();
     }
 
-    /**
-     * A FullScreenActivityTab is meant to be used for WebappActivities which
-     * behave slightly differently from tabs. The main difference being that
-     * it doesn't have a notion of active tab. Thus, some WebContentsDelegate
-     * method have to be redefined.
-     */
-    public class FullScreenTabWebContentsDelegateAndroid
+    private class FullScreenTabWebContentsDelegateAndroid
             extends TabChromeWebContentsDelegateAndroidImpl {
         @Override
         public void activateContents() {

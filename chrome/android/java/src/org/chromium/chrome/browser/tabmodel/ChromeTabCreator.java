@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.UrlConstants;
@@ -18,6 +19,7 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.service_tab_launcher.ServiceTabLauncher;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -111,15 +113,35 @@ public class ChromeTabCreator implements TabCreatorManager.TabCreator {
         try {
             TraceEvent.begin("ChromeTabCreator.createNewTab");
             int parentId = parent != null ? parent.getId() : Tab.INVALID_TAB_ID;
+            WebContents webContents = IntentHandler.getWebContentsFromIntent(intent);
+            boolean isWebContentsPaused = false;
+            if (webContents != null) {
+                // The WebContents comes with additional data, but it shouldn't be used if the
+                // WebContents itself couldn't be parsed out.
+                parentId = IntentUtils.safeGetIntExtra(
+                        intent, IntentHandler.EXTRA_PARENT_TAB_ID, Tab.INVALID_TAB_ID);
+                isWebContentsPaused = IntentUtils.safeGetBooleanExtra(
+                        intent, IntentHandler.EXTRA_WEB_CONTENTS_PAUSED, false);
+            }
+
             // Sanitize the url.
             loadUrlParams.setUrl(UrlUtilities.fixupUrl(loadUrlParams.getUrl()));
             loadUrlParams.setTransitionType(getTransitionType(type));
 
-            boolean openInForeground = mOrderController.willOpenInForeground(type, mIncognito);
+            boolean openInForeground = mOrderController.willOpenInForeground(type, mIncognito)
+                    || webContents != null;
             ChromeTab tab;
-            // On low memory devices the tabs opened in background are not loaded automatically to
-            // preserve resources (cpu, memory, strong renderer binding) for the foreground tab.
-            if (!openInForeground && SysUtils.isLowEndDevice()) {
+            if (webContents != null) {
+                tab = ChromeTab.createLiveTab(Tab.INVALID_TAB_ID, mActivity, mIncognito,
+                        mNativeWindow, type, parentId, !openInForeground);
+                tab.initialize(webContents, mTabContentManager, !openInForeground);
+                tab.getTabRedirectHandler().updateIntent(intent);
+
+                if (isWebContentsPaused) webContents.resumeLoadingCreatedWebContents();
+            } else if (!openInForeground && SysUtils.isLowEndDevice()) {
+                // On low memory devices the tabs opened in background are not loaded automatically
+                // to preserve resources (cpu, memory, strong renderer binding) for the foreground
+                // tab.
                 tab = ChromeTab.createTabForLazyLoad(mActivity, mIncognito, mNativeWindow, type,
                         parentId, loadUrlParams);
                 tab.initialize(null, mTabContentManager, !openInForeground);
@@ -129,7 +151,7 @@ public class ChromeTabCreator implements TabCreatorManager.TabCreator {
                 tab = ChromeTab.createLiveTab(Tab.INVALID_TAB_ID, mActivity, mIncognito,
                         mNativeWindow, type, parentId, !openInForeground);
 
-                WebContents webContents =
+                webContents =
                         WarmupManager.getInstance().hasPrerenderedUrl(loadUrlParams.getUrl())
                         ? WarmupManager.getInstance().takePrerenderedWebContents() : null;
                 tab.initialize(webContents, mTabContentManager, !openInForeground);

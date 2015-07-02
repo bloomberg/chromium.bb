@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.tabmodel.document;
 
-import android.app.Activity;
-
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -16,14 +14,6 @@ import org.chromium.content_public.browser.WebContents;
  * Provides Tabs to a DocumentTabModel.
  */
 public interface TabDelegate extends TabCreator {
-    /**
-     * Returns the Tab for the given Activity.
-     * @param delgate Stores information about DocumentActivities.
-     * @param activity Activity to grab the Tab of.
-     * @return Tab for the DocumentActivity, if it is a valid DocumentActivity.  Null otherwise.
-     */
-    Tab getActivityTab(ActivityDelegate activityDelegate, Activity activity);
-
     /**
      * Creates a Tab to host the given WebContents asynchronously.
      * @param webContents WebContents that has been pre-created.

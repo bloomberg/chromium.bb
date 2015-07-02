@@ -307,8 +307,14 @@ WebContents* ChromeWebContentsDelegateAndroid::OpenURLFromTab(
 }
 
 bool ChromeWebContentsDelegateAndroid::ShouldResumeRequestsForCreatedWindow() {
-  return chrome::android::GetDocumentModeValue() ==
-      chrome::android::RUNNING_MODE_TABBED_MODE;
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return true;
+
+  return Java_ChromeWebContentsDelegateAndroid_shouldResumeRequestsForCreatedWindow(
+      env,
+      obj.obj());
 }
 
 void ChromeWebContentsDelegateAndroid::AddNewContents(
