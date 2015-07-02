@@ -89,13 +89,6 @@
                     'src/untrusted/irt_stub/libppapi.a',
                   ],
                 },
-                {
-                  'destination': '>(tc_lib_dir_glibc_arm)',
-                  'files': [
-                    'src/untrusted/irt_stub/libppapi.a',
-                    'src/untrusted/irt_stub/libppapi.so',
-                  ],
-                },
               ]
             }],
             ['target_arch=="mipsel"', {
