@@ -39,12 +39,13 @@ const char kSCTCountHistogram[] =
 class MultiLogCTVerifierTest : public ::testing::Test {
  public:
   void SetUp() override {
-    scoped_ptr<CTLogVerifier> log(CTLogVerifier::Create(
+    scoped_refptr<CTLogVerifier> log(CTLogVerifier::Create(
         ct::GetTestPublicKey(), kLogDescription, "https://ct.example.com"));
     ASSERT_TRUE(log);
+    log_verifiers_.push_back(log);
 
     verifier_.reset(new MultiLogCTVerifier());
-    verifier_->AddLog(log.Pass());
+    verifier_->AddLogs(log_verifiers_);
     std::string der_test_cert(ct::GetDerEncodedX509Cert());
     chain_ = X509Certificate::CreateFromBytes(
         der_test_cert.data(),
@@ -193,6 +194,7 @@ class MultiLogCTVerifierTest : public ::testing::Test {
   scoped_ptr<MultiLogCTVerifier> verifier_;
   scoped_refptr<X509Certificate> chain_;
   scoped_refptr<X509Certificate> embedded_sct_chain_;
+  std::vector<scoped_refptr<CTLogVerifier>> log_verifiers_;
 };
 
 TEST_F(MultiLogCTVerifierTest, VerifiesEmbeddedSCT) {

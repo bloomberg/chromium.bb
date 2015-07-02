@@ -676,24 +676,11 @@ void IOThread::Init() {
 
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
   // is fixed.
-  tracked_objects::ScopedTracker tracking_profile7(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "466432 IOThread::InitAsync::CreateMultiLogVerifier"));
-  net::MultiLogCTVerifier* ct_verifier = new net::MultiLogCTVerifier();
-  globals_->cert_transparency_verifier.reset(ct_verifier);
-
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
-  // is fixed.
   tracked_objects::ScopedTracker tracking_profile8(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "466432 IOThread::InitAsync::CreateLogVerifiers::Start"));
-  // Add built-in logs
-  ct_verifier->AddLogs(net::ct::CreateLogVerifiersForKnownLogs());
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile9(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "466432 IOThread::InitAsync::CreateLogVerifiers::End"));
+  std::vector<scoped_refptr<net::CTLogVerifier>> ct_logs(
+      net::ct::CreateLogVerifiersForKnownLogs());
 
   // Add logs from command line
   if (command_line.HasSwitch(switches::kCertificateTransparencyLog)) {
@@ -714,14 +701,29 @@ void IOThread::Init() {
       std::string ct_public_key_data;
       CHECK(base::Base64Decode(log_metadata[1], &ct_public_key_data))
           << "Unable to decode CT public key.";
-      scoped_ptr<net::CTLogVerifier> external_log_verifier(
+      scoped_refptr<net::CTLogVerifier> external_log_verifier(
           net::CTLogVerifier::Create(ct_public_key_data, log_description,
                                      log_url));
       CHECK(external_log_verifier) << "Unable to parse CT public key.";
       VLOG(1) << "Adding log with description " << log_description;
-      ct_verifier->AddLog(external_log_verifier.Pass());
+      ct_logs.push_back(external_log_verifier);
     }
   }
+
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile9(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466432 IOThread::InitAsync::CreateLogVerifiers::End"));
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile7(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466432 IOThread::InitAsync::CreateMultiLogVerifier"));
+  net::MultiLogCTVerifier* ct_verifier = new net::MultiLogCTVerifier();
+  globals_->cert_transparency_verifier.reset(ct_verifier);
+  // Add built-in logs
+  ct_verifier->AddLogs(ct_logs);
 
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
   // is fixed.

@@ -27,7 +27,7 @@ class CTLogVerifierTest : public ::testing::Test {
   }
 
  protected:
-  scoped_ptr<CTLogVerifier> log_;
+  scoped_refptr<CTLogVerifier> log_;
 };
 
 TEST_F(CTLogVerifierTest, VerifiesCertSCT) {
@@ -95,7 +95,7 @@ TEST_F(CTLogVerifierTest, ExcessDataInPublicKey) {
   std::string key = ct::GetTestPublicKey();
   key += "extra";
 
-  scoped_ptr<CTLogVerifier> log =
+  scoped_refptr<CTLogVerifier> log =
       CTLogVerifier::Create(key, "testlog", "https://ct.example.com");
   EXPECT_FALSE(log);
 }

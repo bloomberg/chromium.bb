@@ -15,17 +15,16 @@ namespace net {
 
 namespace ct {
 
-ScopedVector<CTLogVerifier> CreateLogVerifiersForKnownLogs() {
-  ScopedVector<CTLogVerifier> verifiers;
+std::vector<scoped_refptr<CTLogVerifier>> CreateLogVerifiersForKnownLogs() {
+  std::vector<scoped_refptr<CTLogVerifier>> verifiers;
   for (size_t i = 0; i < arraysize(kCTLogList); ++i) {
     const CTLogInfo& log(kCTLogList[i]);
     base::StringPiece key(log.log_key, arraysize(log.log_key) - 1);
 
-    verifiers.push_back(
-        CTLogVerifier::Create(key, log.log_name, log.log_url).release());
+    verifiers.push_back(CTLogVerifier::Create(key, log.log_name, log.log_url));
   }
 
-  return verifiers.Pass();
+  return verifiers;
 }
 
 }  // namespace ct

@@ -11,17 +11,17 @@
 namespace net {
 
 // static
-scoped_ptr<CTLogVerifier> CTLogVerifier::Create(
+scoped_refptr<CTLogVerifier> CTLogVerifier::Create(
     const base::StringPiece& public_key,
     const base::StringPiece& description,
     const base::StringPiece& url) {
   GURL log_url(url.as_string());
   if (!log_url.is_valid())
     return nullptr;
-  scoped_ptr<CTLogVerifier> result(new CTLogVerifier(description, log_url));
+  scoped_refptr<CTLogVerifier> result(new CTLogVerifier(description, log_url));
   if (!result->Init(public_key))
-    result.reset();
-  return result.Pass();
+    return nullptr;
+  return result;
 }
 
 CTLogVerifier::CTLogVerifier(const base::StringPiece& description,

@@ -60,26 +60,12 @@ MultiLogCTVerifier::MultiLogCTVerifier() { }
 
 MultiLogCTVerifier::~MultiLogCTVerifier() { }
 
-void MultiLogCTVerifier::AddLog(scoped_ptr<CTLogVerifier> log_verifier) {
-  DCHECK(log_verifier);
-  if (!log_verifier)
-    return;
-
-  linked_ptr<CTLogVerifier> log(log_verifier.release());
-  logs_[log->key_id()] = log;
-}
-
 void MultiLogCTVerifier::AddLogs(
-    ScopedVector<CTLogVerifier> log_verifiers) {
-  for (ScopedVector<CTLogVerifier>::iterator it =
-       log_verifiers.begin(); it != log_verifiers.end(); ++it) {
-    linked_ptr<CTLogVerifier> log(*it);
-    VLOG(1) << "Adding CT log: " << log->description();
-    logs_[log->key_id()] = log;
+    const std::vector<scoped_refptr<CTLogVerifier>>& log_verifiers) {
+  for (const auto& log_verifier : log_verifiers) {
+    VLOG(1) << "Adding CT log: " << log_verifier->description();
+    logs_[log_verifier->key_id()] = log_verifier;
   }
-
-  // Ownership of the pointers in |log_verifiers| is transferred to |logs_|
-  log_verifiers.weak_clear();
 }
 
 int MultiLogCTVerifier::Verify(
@@ -204,7 +190,7 @@ bool MultiLogCTVerifier::VerifySingleSCT(
     ct::CTVerifyResult* result) {
 
   // Assume this SCT is untrusted until proven otherwise.
-  IDToLogMap::iterator it = logs_.find(sct->log_id);
+  const auto& it = logs_.find(sct->log_id);
   if (it == logs_.end()) {
     DVLOG(1) << "SCT does not match any known log.";
     result->unknown_logs_scts.push_back(sct);

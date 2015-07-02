@@ -52,7 +52,7 @@ class CTObjectsExtractorTest : public ::testing::Test {
  protected:
   CertificateList precert_chain_;
   scoped_refptr<X509Certificate> test_cert_;
-  scoped_ptr<CTLogVerifier> log_;
+  scoped_refptr<CTLogVerifier> log_;
 };
 
 // Test that an SCT can be extracted and the extracted SCT contains the
