@@ -41,6 +41,10 @@ void ServiceRegistry::SetServiceConnectorForName(
                                                          interface_name);
 }
 
+ServiceProvider* ServiceRegistry::GetLocalServiceProvider() {
+  return this;
+}
+
 void ServiceRegistry::RemoveServiceConnectorForName(
     const std::string& interface_name) {
   service_connector_registry_.RemoveServiceConnectorForName(interface_name);

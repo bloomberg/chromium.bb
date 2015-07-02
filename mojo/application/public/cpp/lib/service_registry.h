@@ -37,6 +37,7 @@ class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
   const std::string& GetConnectionURL() override;
   const std::string& GetRemoteApplicationURL() override;
   ServiceProvider* GetServiceProvider() override;
+  ServiceProvider* GetLocalServiceProvider() override;
 
   void RemoveServiceConnectorForName(const std::string& interface_name);
 

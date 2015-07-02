@@ -31,6 +31,8 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
       scoped_ptr<mojo::AppRefCount> parent_app_refcount);
 
  private:
+  class ServiceConnectorQueue;
+
   ~HTMLDocumentApplicationDelegate() override;
 
   // Callback from the quit closure. We key off this rather than
@@ -39,7 +41,7 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
   // HTMLDocumentApplicationDelegates).
   void OnTerminate();
 
-  // ApplicationDelegate;
+  // ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override;
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override;
@@ -48,6 +50,7 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
   void OnHTMLDocumentDeleted2(HTMLDocumentOOPIF* document);
   void OnResponseReceived(mojo::URLLoaderPtr loader,
                           mojo::ApplicationConnection* connection,
+                          scoped_ptr<ServiceConnectorQueue> connector_queue,
                           mojo::URLResponsePtr response);
 
   mojo::ApplicationImpl app_;

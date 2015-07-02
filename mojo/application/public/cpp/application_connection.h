@@ -95,6 +95,10 @@ class ApplicationConnection {
   // Caller does not take ownership.
   virtual ServiceProvider* GetServiceProvider() = 0;
 
+  // Returns the local application's ServiceProvider interface. The return
+  // value is owned by this connection.
+  virtual ServiceProvider* GetLocalServiceProvider() = 0;
+
  protected:
   virtual ~ApplicationConnection();
 

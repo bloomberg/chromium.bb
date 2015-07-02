@@ -24,6 +24,45 @@ bool EnableOOPIFs() {
 
 }  // namespace
 
+// ServiceConnectorQueue records all incoming service requests and processes
+// them once PushRequestsTo() is called. This is useful if you need to delay
+// processing incoming service requests.
+class HTMLDocumentApplicationDelegate::ServiceConnectorQueue
+    : public mojo::ServiceConnector {
+ public:
+  ServiceConnectorQueue() {}
+  ~ServiceConnectorQueue() override {}
+
+  void PushRequestsTo(mojo::ApplicationConnection* connection) {
+    ScopedVector<Request> requests;
+    requests_.swap(requests);
+    for (Request* request : requests) {
+      connection->GetLocalServiceProvider()->ConnectToService(
+          request->interface_name, request->handle.Pass());
+    }
+  }
+
+ private:
+  struct Request {
+    std::string interface_name;
+    mojo::ScopedMessagePipeHandle handle;
+  };
+
+  // mojo::ServiceConnector:
+  void ConnectToService(mojo::ApplicationConnection* application_connection,
+                        const std::string& interface_name,
+                        mojo::ScopedMessagePipeHandle handle) override {
+    scoped_ptr<Request> request(new Request);
+    request->interface_name = interface_name;
+    request->handle = handle.Pass();
+    requests_.push_back(request.Pass());
+  }
+
+  ScopedVector<Request> requests_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceConnectorQueue);
+};
+
 HTMLDocumentApplicationDelegate::HTMLDocumentApplicationDelegate(
     mojo::InterfaceRequest<mojo::Application> request,
     mojo::URLResponsePtr response,
@@ -75,9 +114,15 @@ void HTMLDocumentApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
 bool HTMLDocumentApplicationDelegate::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
   if (initial_response_) {
-    OnResponseReceived(mojo::URLLoaderPtr(), connection,
+    OnResponseReceived(mojo::URLLoaderPtr(), connection, nullptr,
                        initial_response_.Pass());
   } else {
+    // HTMLDocument provides services, but is created asynchronously. Queue up
+    // requests until the HTMLDocument is created.
+    scoped_ptr<ServiceConnectorQueue> service_connector_queue(
+        new ServiceConnectorQueue);
+    connection->SetServiceConnector(service_connector_queue.get());
+
     mojo::URLLoaderPtr loader;
     url_loader_factory_->CreateURLLoader(GetProxy(&loader));
     mojo::URLRequestPtr request(mojo::URLRequest::New());
@@ -91,7 +136,8 @@ bool HTMLDocumentApplicationDelegate::ConfigureIncomingConnection(
     raw_loader->Start(
         request.Pass(),
         base::Bind(&HTMLDocumentApplicationDelegate::OnResponseReceived,
-                   base::Unretained(this), base::Passed(&loader), connection));
+                   base::Unretained(this), base::Passed(&loader), connection,
+                   base::Passed(&service_connector_queue)));
   }
   return true;
 }
@@ -111,6 +157,7 @@ void HTMLDocumentApplicationDelegate::OnHTMLDocumentDeleted2(
 void HTMLDocumentApplicationDelegate::OnResponseReceived(
     mojo::URLLoaderPtr loader,
     mojo::ApplicationConnection* connection,
+    scoped_ptr<ServiceConnectorQueue> connector_queue,
     mojo::URLResponsePtr response) {
   // HTMLDocument is destroyed when the hosting view is destroyed, or
   // explicitly from our destructor.
@@ -127,6 +174,11 @@ void HTMLDocumentApplicationDelegate::OnResponseReceived(
                    base::Unretained(this)));
     HTMLDocument* document = new HTMLDocument(&params);
     documents_.insert(document);
+  }
+
+  if (connector_queue) {
+    connector_queue->PushRequestsTo(connection);
+    connection->SetServiceConnector(nullptr);
   }
 }
 
