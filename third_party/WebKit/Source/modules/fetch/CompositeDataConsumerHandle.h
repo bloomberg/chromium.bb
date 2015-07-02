@@ -17,6 +17,7 @@ namespace blink {
 // owns a web data consumer handle and delegates methods. A user can update
 // the handle by using |update| method.
 class MODULES_EXPORT CompositeDataConsumerHandle final : public WebDataConsumerHandle {
+    WTF_MAKE_NONCOPYABLE(CompositeDataConsumerHandle);
 public:
     // |handle| must not be null and must not be locked.
     static PassOwnPtr<CompositeDataConsumerHandle> create(PassOwnPtr<WebDataConsumerHandle> handle)
