@@ -47421,7 +47421,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WebCore.FeatureObserver" enum="FeatureObserver">
-  <owner>eseidel@chromium.org</owner>
+  <owner>dglazkov@chromium.org</owner>
   <summary>
     Count of how many instances of WebCore::Page use various features. Each
     WebCore::Page instance has a WebCore::UseCounter instance. It records and
@@ -47432,7 +47432,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="WebCore.FeatureObserver.CSSProperties"
     enum="MappedCSSProperties">
-  <owner>eseidel@chromium.org</owner>
   <owner>mikelawther@chromium.org</owner>
   <summary>
     Records usage of CSS properties used on a page, either statically or
