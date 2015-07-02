@@ -20,6 +20,7 @@ char *file_name;
 int translation_mode = 0;
 
 int errors = 0;
+int count = 0;
 
 int
 error(char *msg, yaml_event_t *event) {
@@ -114,6 +115,8 @@ read_test(yaml_parser_t *parser, char *tables_list) {
 
   if (check_translation_with_mode(tables_list, word, NULL, translation, translation_mode))
     errors++;
+
+  count++;
   free(word);
   free(translation);
 
@@ -239,7 +242,7 @@ main(int argc, char *argv[]) {
 
   assert(!fclose(file));
 
-  printf("%s (%d tests)\n", (errors ? "FAILURE" : "SUCCESS"), errors);
+  printf("%s (%d tests)\n", (errors ? "FAILURE" : "SUCCESS"), count);
 
   return errors ? 1 : 0;
 }
