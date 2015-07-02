@@ -440,7 +440,8 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, EmptyBlob) {
   EXPECT_EQ(2, RequestBlobFileCount());
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed, BlobDidAck) {
+// Very flaky on many bots. See crbug.com/459835
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed, DISABLED_BlobDidAck) {
   SimpleTest(GetTestUrl("indexeddb", "blob_did_ack.html"));
   // Wait for idle so that the blob ack has time to be received/processed by
   // the browser process.
