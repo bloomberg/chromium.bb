@@ -13,6 +13,7 @@
 #include "chrome/browser/banners/app_banner_data_fetcher_desktop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/content_switches.h"
@@ -76,6 +77,9 @@ class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
+    // Make sure app banners are disabled in the browser, otherwise they will
+    // interfere with the test.
+    command_line->AppendSwitch(switches::kDisableAddToShelf);
   }
 
  protected:

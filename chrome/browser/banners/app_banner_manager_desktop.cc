@@ -4,7 +4,9 @@
 
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/banners/app_banner_data_fetcher_desktop.h"
+#include "chrome/common/chrome_switches.h"
 #include "extensions/common/constants.h"
 
 namespace {
@@ -16,6 +18,16 @@ int kMinimumIconSize = extension_misc::EXTENSION_ICON_LARGE;
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(banners::AppBannerManagerDesktop);
 
 namespace banners {
+
+bool AppBannerManagerDesktop::IsEnabled() {
+#if defined(OS_CHROMEOS)
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableAddToShelf);
+#else
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableAddToShelf);
+#endif
+}
 
 AppBannerDataFetcher* AppBannerManagerDesktop::CreateAppBannerDataFetcher(
     base::WeakPtr<AppBannerDataFetcher::Delegate> weak_delegate,

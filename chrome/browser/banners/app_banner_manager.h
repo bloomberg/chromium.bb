@@ -30,7 +30,6 @@ class AppBannerDataFetcher;
 class AppBannerManager : public content::WebContentsObserver,
                          public AppBannerDataFetcher::Delegate {
  public:
-  static bool IsEnabled();
   static void DisableSecureSchemeCheckForTesting();
 
   // Returns whether or not the URLs match for everything except for the ref.

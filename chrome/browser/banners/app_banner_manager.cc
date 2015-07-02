@@ -4,7 +4,6 @@
 
 #include "chrome/browser/banners/app_banner_manager.h"
 
-#include "base/metrics/field_trial.h"
 #include "chrome/browser/banners/app_banner_data_fetcher.h"
 #include "chrome/browser/banners/app_banner_debug_log.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
@@ -96,10 +95,6 @@ bool AppBannerManager::IsFetcherActive() {
 
 void AppBannerManager::DisableSecureSchemeCheckForTesting() {
   gDisableSecureCheckForTesting = true;
-}
-
-bool AppBannerManager::IsEnabled() {
-  return base::FieldTrialList::FindFullName("AppBanners") == "Enabled";
 }
 
 }  // namespace banners

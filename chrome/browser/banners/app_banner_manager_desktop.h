@@ -15,6 +15,9 @@ class AppBannerManagerDesktop
     : public AppBannerManager,
       public content::WebContentsUserData<AppBannerManagerDesktop> {
 
+ public:
+  static bool IsEnabled();
+
  protected:
   AppBannerDataFetcher* CreateAppBannerDataFetcher(
       base::WeakPtr<AppBannerDataFetcher::Delegate> weak_delegate,

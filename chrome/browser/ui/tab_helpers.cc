@@ -196,8 +196,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   ThumbnailTabHelper::CreateForWebContents(web_contents);
   web_modal::WebContentsModalDialogManager::CreateForWebContents(web_contents);
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAddToShelf)) {
+  if (banners::AppBannerManagerDesktop::IsEnabled()) {
     banners::AppBannerManagerDesktop::CreateForWebContents(web_contents);
   }
 #endif
