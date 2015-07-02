@@ -30,7 +30,8 @@ from benchmarks import speedometer
 from benchmarks import sunspider
 
 
-def SmokeTestGenerator(benchmark):
+def SmokeTestGenerator(benchmark, num_pages=1):
+  """Generates a benchmark that includes first N pages from pageset."""
   # NOTE TO SHERIFFS: DO NOT DISABLE THIS TEST.
   #
   # This smoke test dynamically tests all benchmarks. So disabling it for one
@@ -47,10 +48,11 @@ def SmokeTestGenerator(benchmark):
       def CreateStorySet(self, options):
         # pylint: disable=E1002
         story_set = super(SinglePageBenchmark, self).CreateStorySet(options)
-        for story in story_set.stories:
+        stories = []
+        for story in story_set.stories[:num_pages]:
           story.skip_waits = True
-          story_set.stories = [story]
-          break
+          stories.append(story)
+        story_set.stories = stories
         return story_set
 
     # Set the benchmark's default arguments.
@@ -120,7 +122,11 @@ def load_tests(loader, standard_tests, pattern):
     class BenchmarkSmokeTest(unittest.TestCase):
       pass
 
-    method = SmokeTestGenerator(benchmark)
+    # It is wrong to give tab_switching only one page to switch.
+    if 'tab_switching' in benchmark.Name():
+      method = SmokeTestGenerator(benchmark, num_pages=2)
+    else:
+      method = SmokeTestGenerator(benchmark)
 
     # Make sure any decorators are propagated from the original declaration.
     # (access to protected members) pylint: disable=W0212
