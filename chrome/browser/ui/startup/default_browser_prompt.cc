@@ -43,18 +43,18 @@ namespace {
 // modal system UI.
 void SetChromeAsDefaultBrowser(bool interactive_flow, PrefService* prefs) {
   if (interactive_flow) {
-    UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.SetAsDefaultUI", 1);
+    UMA_HISTOGRAM_BOOLEAN("DefaultBrowserWarning.SetAsDefaultUI", true);
     if (!ShellIntegration::SetAsDefaultBrowserInteractive()) {
-      UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.SetAsDefaultUIFailed", 1);
+      UMA_HISTOGRAM_BOOLEAN("DefaultBrowserWarning.SetAsDefaultUIFailed", true);
     } else if (ShellIntegration::GetDefaultBrowser() ==
                ShellIntegration::NOT_DEFAULT) {
       // If the interaction succeeded but we are still not the default browser
       // it likely means the user simply selected another browser from the
       // panel. We will respect this choice and write it down as 'no, thanks'.
-      UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.DontSetAsDefault", 1);
+      UMA_HISTOGRAM_BOOLEAN("DefaultBrowserWarning.DontSetAsDefault", true);
     }
   } else {
-    UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.SetAsDefault", 1);
+    UMA_HISTOGRAM_BOOLEAN("DefaultBrowserWarning.SetAsDefault", true);
     ShellIntegration::SetAsDefaultBrowser();
   }
 }
@@ -131,7 +131,7 @@ DefaultBrowserInfoBarDelegate::DefaultBrowserInfoBarDelegate(
 
 DefaultBrowserInfoBarDelegate::~DefaultBrowserInfoBarDelegate() {
   if (!action_taken_)
-    UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.Ignored", 1);
+    UMA_HISTOGRAM_BOOLEAN("DefaultBrowserWarning.Ignored", true);
 }
 
 int DefaultBrowserInfoBarDelegate::GetIconID() const {
@@ -170,7 +170,7 @@ bool DefaultBrowserInfoBarDelegate::Accept() {
 
 bool DefaultBrowserInfoBarDelegate::Cancel() {
   action_taken_ = true;
-  UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.DontSetAsDefault", 1);
+  UMA_HISTOGRAM_BOOLEAN("DefaultBrowserWarning.DontSetAsDefault", true);
   // User clicked "Don't ask me again", remember that.
   prefs_->SetBoolean(prefs::kCheckDefaultBrowser, false);
   return true;
