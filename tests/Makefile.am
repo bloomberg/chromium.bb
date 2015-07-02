@@ -133,7 +133,10 @@ logging_SOURCES =				\
 findTable_SOURCES =				\
 	findTable.c
 
-check_yaml_SOURCES = check_yaml.c
+check_yaml_SOURCES = 				\
+	brl_checks.c				\
+	brl_checks.h				\
+	check_yaml.c
 
 # Note that this is not currently included in check_programs below
 # otherwise make check would never complete.
@@ -142,7 +145,7 @@ infiniteTranslationLoop_SOURCES =				\
 	brl_checks.h				\
 	infiniteTranslationLoop.c
 
-check_PROGRAMS =				\
+program_TESTS =					\
 	pass2					\
 	pass2_inpos				\
 	inpos					\
@@ -168,10 +171,11 @@ check_PROGRAMS =				\
 	typeform				\
 	pass0_typebuf				\
 	hash_collision                          \
-	resolve_table                          \
-	logging                          \
-	findTable \
-	check_yaml
+	resolve_table                          	\
+	logging                          	\
+	findTable
+
+check_PROGRAMS = $(program_TESTS) check_yaml
 
 
 dist_check_SCRIPTS =		\
@@ -200,9 +204,14 @@ XFAIL_TESTS =					\
 # The hash_collision currently fails. The first translation works but subsequent ones fail. 
 XFAIL_TESTS += hash_collision
 
+dist_yaml_TESTS = en-gb-g1_harness.yaml
+TEST_EXTENSIONS = .yaml
+YAML_LOG_COMPILER = ./check_yaml
+
 TESTS =				\
-	$(check_PROGRAMS)	\
-	$(dist_check_SCRIPTS)
+	$(program_TESTS)	\
+	$(dist_check_SCRIPTS)   \
+	$(dist_yaml_TESTS)
 
 TESTS_ENVIRONMENT =																	\
 	LOUIS_TABLEPATH=$(top_srcdir)/tables,$(top_srcdir)/tests/tables,$(top_srcdir)/tests/tables/moreTables,$(top_srcdir)/tests/tablesWithMetadata,	\
