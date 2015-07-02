@@ -174,6 +174,24 @@ TEST_F(CanvasRenderingContext2DAPITest, DefaultAttributeValues)
     EXPECT_EQ(String("rgba(0, 0, 0, 0)"), context2d()->shadowColor());
 }
 
+TEST_F(CanvasRenderingContext2DAPITest, LineDashStateSave)
+{
+    createContext(NonOpaque);
+
+    Vector<float> simpleDash;
+    simpleDash.append(4);
+    simpleDash.append(2);
+
+    context2d()->setLineDash(simpleDash);
+    EXPECT_EQ(simpleDash, context2d()->getLineDash());
+    context2d()->save();
+    // Realize the save.
+    context2d()->scale(2, 2);
+    EXPECT_EQ(simpleDash, context2d()->getLineDash());
+    context2d()->restore();
+    EXPECT_EQ(simpleDash, context2d()->getLineDash());
+}
+
 TEST_F(CanvasRenderingContext2DAPITest, CreateImageData)
 {
     createContext(NonOpaque);
