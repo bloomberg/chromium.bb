@@ -23,8 +23,7 @@ struct DefaultSingletonTraits;
 // utility process. Utility process crashes are detected and the utility
 // process is automatically restarted.
 class UtilityProcessMojoProxyResolverFactory
-    : public net::MojoProxyResolverFactory,
-      public mojo::ErrorHandler {
+    : public net::MojoProxyResolverFactory {
  public:
   static UtilityProcessMojoProxyResolverFactory* GetInstance();
 
@@ -41,8 +40,8 @@ class UtilityProcessMojoProxyResolverFactory
   UtilityProcessMojoProxyResolverFactory();
   ~UtilityProcessMojoProxyResolverFactory() override;
 
-  // Overridden from mojo::ErrorHandler:
-  void OnConnectionError() override;
+  // Error handler callback for |resolver_factory_|.
+  void OnConnectionError();
 
   // Invoked each time a proxy resolver is destroyed.
   void OnResolverDestroyed();

@@ -37,7 +37,6 @@ namespace media_router {
 // Also handles the suspension and wakeup of the component extension.
 class MediaRouterMojoImpl : public MediaRouter,
                             public interfaces::MediaRouter,
-                            public mojo::ErrorHandler,
                             public KeyedService {
  public:
   ~MediaRouterMojoImpl() override;
@@ -150,8 +149,8 @@ class MediaRouterMojoImpl : public MediaRouter,
       const PresentationSessionMessageCallback& message_cb,
       mojo::Array<interfaces::RouteMessagePtr> messages);
 
-  // mojo::ErrorHandler implementation.
-  void OnConnectionError() override;
+  // Error handler callback for |binding_| and |media_route_provider_|.
+  void OnConnectionError();
 
   // interfaces::MediaRouter implementation.
   void RegisterMediaRouteProvider(

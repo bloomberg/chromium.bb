@@ -53,7 +53,9 @@ void UtilityProcessMojoProxyResolverFactory::CreateProcessAndConnect() {
         utility_process_host->GetServiceRegistry();
     service_registry->ConnectToRemoteService(
         mojo::GetProxy(&resolver_factory_));
-    resolver_factory_.set_error_handler(this);
+    resolver_factory_.set_connection_error_handler(
+        base::Bind(&UtilityProcessMojoProxyResolverFactory::OnConnectionError,
+                   base::Unretained(this)));
     weak_utility_process_host_ = utility_process_host->AsWeakPtr();
   } else {
     LOG(ERROR) << "Unable to connect to utility process";

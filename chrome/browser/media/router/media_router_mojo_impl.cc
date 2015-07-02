@@ -109,7 +109,8 @@ void MediaRouterMojoImpl::BindToMojoRequest(
 
   binding_.reset(
       new mojo::Binding<interfaces::MediaRouter>(this, request.Pass()));
-  binding_->set_error_handler(this);
+  binding_->set_connection_error_handler(base::Bind(
+      &MediaRouterMojoImpl::OnConnectionError, base::Unretained(this)));
 
   media_route_provider_extension_id_ = extension_id;
 }
@@ -130,7 +131,8 @@ void MediaRouterMojoImpl::RegisterMediaRouteProvider(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   media_route_provider_ = media_route_provider_ptr.Pass();
-  media_route_provider_.set_error_handler(this);
+  media_route_provider_.set_connection_error_handler(base::Bind(
+      &MediaRouterMojoImpl::OnConnectionError, base::Unretained(this)));
   callback.Run(instance_id_);
   ExecutePendingRequests();
 }

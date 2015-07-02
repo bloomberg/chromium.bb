@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/common/resource_usage_reporter.mojom.h"
 #include "third_party/WebKit/public/web/WebCache.h"
@@ -70,8 +69,6 @@ class ProcessResourceUsage {
   blink::WebCache::ResourceTypeStats GetWebCoreCacheStats() const;
 
  private:
-  class ErrorHandler;
-
   // Mojo IPC callback.
   void OnRefreshDone(ResourceUsageDataPtr data);
 
@@ -83,7 +80,6 @@ class ProcessResourceUsage {
 
   ResourceUsageDataPtr stats_;
 
-  scoped_ptr<ErrorHandler> error_handler_;
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessResourceUsage);

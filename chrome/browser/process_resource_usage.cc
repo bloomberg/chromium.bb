@@ -10,28 +10,12 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/common/resource_usage_reporter_type_converters.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
-
-class ProcessResourceUsage::ErrorHandler : public mojo::ErrorHandler {
- public:
-  explicit ErrorHandler(ProcessResourceUsage* usage) : usage_(usage) {}
-
-  // mojo::ErrorHandler implementation:
-  void OnConnectionError() override;
-
- private:
-  ProcessResourceUsage* usage_;  // Not owned.
-};
-
-void ProcessResourceUsage::ErrorHandler::OnConnectionError() {
-  usage_->RunPendingRefreshCallbacks();
-}
 
 ProcessResourceUsage::ProcessResourceUsage(ResourceUsageReporterPtr service)
-    : service_(service.Pass()),
-      update_in_progress_(false),
-      error_handler_(new ErrorHandler(this)) {
-  service_.set_error_handler(error_handler_.get());
+    : service_(service.Pass()), update_in_progress_(false) {
+  service_.set_connection_error_handler(
+      base::Bind(&ProcessResourceUsage::RunPendingRefreshCallbacks,
+                 base::Unretained(this)));
 }
 
 ProcessResourceUsage::~ProcessResourceUsage() {
