@@ -40,6 +40,8 @@ class NET_EXPORT MultiLogCTVerifier : public CTVerifier {
              ct::CTVerifyResult* result,
              const BoundNetLog& net_log) override;
 
+  void SetObserver(Observer* observer) override;
+
  private:
   // Verify a list of SCTs from |encoded_sct_list| over |expected_entry|,
   // placing the verification results in |result|. The SCTs in the list
@@ -47,18 +49,21 @@ class NET_EXPORT MultiLogCTVerifier : public CTVerifier {
   bool VerifySCTs(const std::string& encoded_sct_list,
                   const ct::LogEntry& expected_entry,
                   ct::SignedCertificateTimestamp::Origin origin,
+                  X509Certificate* cert,
                   ct::CTVerifyResult* result);
 
   // Verifies a single, parsed SCT against all logs.
-  bool VerifySingleSCT(
-      scoped_refptr<ct::SignedCertificateTimestamp> sct,
-      const ct::LogEntry& expected_entry,
-      ct::CTVerifyResult* result);
+  bool VerifySingleSCT(scoped_refptr<ct::SignedCertificateTimestamp> sct,
+                       const ct::LogEntry& expected_entry,
+                       X509Certificate* cert,
+                       ct::CTVerifyResult* result);
 
   // Mapping from a log's ID to the verifier for this log.
   // A log's ID is the SHA-256 of the log's key, as defined in section 3.2.
   // of RFC6962.
   std::map<std::string, scoped_refptr<CTLogVerifier>> logs_;
+
+  Observer* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiLogCTVerifier);
 };

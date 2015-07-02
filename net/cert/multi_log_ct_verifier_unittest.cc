@@ -26,7 +26,11 @@
 #include "net/log/test_net_log_entry.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/ct_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::_;
+using testing::Mock;
 
 namespace net {
 
@@ -35,6 +39,13 @@ namespace {
 const char kLogDescription[] = "somelog";
 const char kSCTCountHistogram[] =
     "Net.CertificateTransparency.SCTsPerConnection";
+
+class MockSCTObserver : public CTVerifier::Observer {
+ public:
+  MOCK_METHOD2(OnSCTVerified,
+               void(X509Certificate* cert,
+                    const ct::SignedCertificateTimestamp* sct));
+};
 
 class MultiLogCTVerifierTest : public ::testing::Test {
  public:
@@ -299,6 +310,27 @@ TEST_F(MultiLogCTVerifierTest, CountsZeroSCTsCorrectly) {
   EXPECT_FALSE(VerifySinglePrecertificateChain(chain_));
   ASSERT_EQ(connections_without_scts + 1,
             GetValueFromHistogram(kSCTCountHistogram, 0));
+}
+
+TEST_F(MultiLogCTVerifierTest, NotifiesOfValidSCT) {
+  MockSCTObserver observer;
+  verifier_->SetObserver(&observer);
+
+  EXPECT_CALL(observer, OnSCTVerified(embedded_sct_chain_.get(), _));
+  ASSERT_TRUE(VerifySinglePrecertificateChain(embedded_sct_chain_));
+}
+
+TEST_F(MultiLogCTVerifierTest, StopsNotifyingCorrectly) {
+  MockSCTObserver observer;
+  verifier_->SetObserver(&observer);
+
+  EXPECT_CALL(observer, OnSCTVerified(embedded_sct_chain_.get(), _)).Times(1);
+  ASSERT_TRUE(VerifySinglePrecertificateChain(embedded_sct_chain_));
+  Mock::VerifyAndClearExpectations(&observer);
+
+  EXPECT_CALL(observer, OnSCTVerified(embedded_sct_chain_.get(), _)).Times(0);
+  verifier_->SetObserver(nullptr);
+  ASSERT_TRUE(VerifySinglePrecertificateChain(embedded_sct_chain_));
 }
 
 }  // namespace

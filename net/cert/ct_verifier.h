@@ -5,20 +5,35 @@
 #ifndef NET_CERT_CT_VERIFIER_H_
 #define NET_CERT_CT_VERIFIER_H_
 
+#include <string>
+
 #include "net/base/net_export.h"
 
 namespace net {
 
 namespace ct {
 struct CTVerifyResult;
+struct SignedCertificateTimestamp;
 }  // namespace ct
 
 class BoundNetLog;
+class CTLogVerifier;
 class X509Certificate;
 
 // Interface for verifying Signed Certificate Timestamps over a certificate.
 class NET_EXPORT CTVerifier {
  public:
+  class NET_EXPORT Observer {
+   public:
+    // Called for each Signed Certificate Timestamp from a known log that vas
+    // verified successfully (i.e. the signature verifies). |sct| is the
+    // Signed Certificate Timestamp, |cert| is the certificate it applies to.
+    // The certificate is needed to calculate the hash of the log entry,
+    // necessary for checking inclusion in the log.
+    virtual void OnSCTVerified(X509Certificate* cert,
+                               const ct::SignedCertificateTimestamp* sct) = 0;
+  };
+
   virtual ~CTVerifier() {}
 
   // Verifies SCTs embedded in the certificate itself, SCTs embedded in a
@@ -36,6 +51,12 @@ class NET_EXPORT CTVerifier {
                      const std::string& sct_list_from_tls_extension,
                      ct::CTVerifyResult* result,
                      const BoundNetLog& net_log) = 0;
+
+  // Registers |observer| to receive notifications of validated SCTs. Does not
+  // take ownership of the observer as the observer may be performing
+  // URLRequests which have to be cancelled before this object is destroyed.
+  // Setting |observer| to nullptr has the effect of stopping all notifications.
+  virtual void SetObserver(Observer* observer) = 0;
 };
 
 }  // namespace net

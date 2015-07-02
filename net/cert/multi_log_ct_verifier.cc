@@ -56,7 +56,8 @@ void LogNumSCTsToUMA(const ct::CTVerifyResult& result) {
 
 }  // namespace
 
-MultiLogCTVerifier::MultiLogCTVerifier() { }
+MultiLogCTVerifier::MultiLogCTVerifier() : observer_(nullptr) {
+}
 
 MultiLogCTVerifier::~MultiLogCTVerifier() { }
 
@@ -66,6 +67,10 @@ void MultiLogCTVerifier::AddLogs(
     VLOG(1) << "Adding CT log: " << log_verifier->description();
     logs_[log_verifier->key_id()] = log_verifier;
   }
+}
+
+void MultiLogCTVerifier::SetObserver(Observer* observer) {
+  observer_ = observer;
 }
 
 int MultiLogCTVerifier::Verify(
@@ -91,15 +96,11 @@ int MultiLogCTVerifier::Verify(
     ct::LogEntry precert_entry;
 
     has_verified_scts =
-        ct::GetPrecertLogEntry(
-            cert->os_cert_handle(),
-            cert->GetIntermediateCertificates().front(),
-            &precert_entry) &&
-        VerifySCTs(
-            embedded_scts,
-            precert_entry,
-            ct::SignedCertificateTimestamp::SCT_EMBEDDED,
-            result);
+        ct::GetPrecertLogEntry(cert->os_cert_handle(),
+                               cert->GetIntermediateCertificates().front(),
+                               &precert_entry) &&
+        VerifySCTs(embedded_scts, precert_entry,
+                   ct::SignedCertificateTimestamp::SCT_EMBEDDED, cert, result);
   }
 
   std::string sct_list_from_ocsp;
@@ -123,16 +124,12 @@ int MultiLogCTVerifier::Verify(
   ct::LogEntry x509_entry;
   if (ct::GetX509LogEntry(cert->os_cert_handle(), &x509_entry)) {
     has_verified_scts |= VerifySCTs(
-        sct_list_from_ocsp,
-        x509_entry,
-        ct::SignedCertificateTimestamp::SCT_FROM_OCSP_RESPONSE,
-        result);
+        sct_list_from_ocsp, x509_entry,
+        ct::SignedCertificateTimestamp::SCT_FROM_OCSP_RESPONSE, cert, result);
 
     has_verified_scts |= VerifySCTs(
-        sct_list_from_tls_extension,
-        x509_entry,
-        ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION,
-        result);
+        sct_list_from_tls_extension, x509_entry,
+        ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION, cert, result);
   }
 
   NetLog::ParametersCallback net_log_checked_callback =
@@ -154,6 +151,7 @@ bool MultiLogCTVerifier::VerifySCTs(
     const std::string& encoded_sct_list,
     const ct::LogEntry& expected_entry,
     ct::SignedCertificateTimestamp::Origin origin,
+    X509Certificate* cert,
     ct::CTVerifyResult* result) {
   if (logs_.empty())
     return false;
@@ -178,7 +176,7 @@ bool MultiLogCTVerifier::VerifySCTs(
     }
     decoded_sct->origin = origin;
 
-    verified |= VerifySingleSCT(decoded_sct, expected_entry, result);
+    verified |= VerifySingleSCT(decoded_sct, expected_entry, cert, result);
   }
 
   return verified;
@@ -187,8 +185,8 @@ bool MultiLogCTVerifier::VerifySCTs(
 bool MultiLogCTVerifier::VerifySingleSCT(
     scoped_refptr<ct::SignedCertificateTimestamp> sct,
     const ct::LogEntry& expected_entry,
+    X509Certificate* cert,
     ct::CTVerifyResult* result) {
-
   // Assume this SCT is untrusted until proven otherwise.
   const auto& it = logs_.find(sct->log_id);
   if (it == logs_.end()) {
@@ -217,6 +215,8 @@ bool MultiLogCTVerifier::VerifySingleSCT(
 
   LogSCTStatusToUMA(ct::SCT_STATUS_OK);
   result->verified_scts.push_back(sct);
+  if (observer_)
+    observer_->OnSCTVerified(cert, sct.get());
   return true;
 }
 

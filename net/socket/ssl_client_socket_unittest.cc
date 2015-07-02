@@ -683,6 +683,7 @@ class MockCTVerifier : public CTVerifier {
                            const std::string&,
                            ct::CTVerifyResult*,
                            const BoundNetLog&));
+  MOCK_METHOD1(SetObserver, void(CTVerifier::Observer*));
 };
 
 class SSLClientSocketTest : public PlatformTest {
