@@ -31,8 +31,8 @@
 //XXX: could use a bettername
 typedef uint16_t uint16_fract_t;
 
-float lut_interp_linear(double value, uint16_t *table, size_t length);
-float lut_interp_linear_float(float value, float *table, size_t length);
+float lut_interp_linear(double input_value, uint16_t *table, size_t length);
+float lut_interp_linear_float(float input_value, float *table, size_t length);
 uint16_t lut_interp_linear16(uint16_t input_value, uint16_t *table, size_t length);
 
 
