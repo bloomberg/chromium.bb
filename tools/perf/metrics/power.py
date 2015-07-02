@@ -102,6 +102,8 @@ class PowerMetric(Metric):
     application_energy_consumption_mwh = (
         self._results.get('application_energy_consumption_mwh'))
     total_energy_consumption_mwh = self._results.get('energy_consumption_mwh')
+    fuel_gauge_energy_consumption_mwh = (
+        self._results.get('fuel_gauge_energy_consumption_mwh'))
 
     if (PowerMetric._quiescent_power_draw_mwh and
         application_energy_consumption_mwh is None and
@@ -109,6 +111,11 @@ class PowerMetric(Metric):
       application_energy_consumption_mwh = max(
           total_energy_consumption_mwh - PowerMetric._quiescent_power_draw_mwh,
           0)
+
+    if fuel_gauge_energy_consumption_mwh is not None:
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, 'fuel_gauge_energy_consumption_mwh', 'mWh',
+          fuel_gauge_energy_consumption_mwh))
 
     if total_energy_consumption_mwh is not None:
       results.AddValue(scalar.ScalarValue(
