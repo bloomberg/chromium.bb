@@ -9,11 +9,11 @@
 #include "core/page/Page.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/DeprecatedPaintLayerScrollableArea.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ScrollbarPainter.h"
 #include "core/paint/TransformRecorder.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
 
 namespace blink {
 
@@ -37,7 +37,7 @@ void ScrollableAreaPainter::paintResizer(GraphicsContext* context, const IntPoin
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled() && !absRect.intersects(damageRect))
         return;
 
-    DrawingRecorder recorder(*context, m_scrollableArea.box(), DisplayItem::Resizer, absRect);
+    LayoutObjectDrawingRecorder recorder(*context, m_scrollableArea.box(), DisplayItem::Resizer, absRect);
     if (recorder.canUseCachedDrawing())
         return;
 
@@ -191,7 +191,7 @@ void ScrollableAreaPainter::paintScrollCorner(GraphicsContext* context, const In
     if (m_scrollableArea.hasOverlayScrollbars())
         return;
 
-    DrawingRecorder recorder(*context, m_scrollableArea.box(), DisplayItem::ScrollbarCorner, absRect);
+    LayoutObjectDrawingRecorder recorder(*context, m_scrollableArea.box(), DisplayItem::ScrollbarCorner, absRect);
     if (recorder.canUseCachedDrawing())
         return;
 

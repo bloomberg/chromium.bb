@@ -14,13 +14,13 @@
 #include "core/page/Page.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/DeprecatedPaintLayerPainter.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/ScrollbarPainter.h"
 #include "core/paint/TransformRecorder.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/ClipRecorder.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/scroll/ScrollbarTheme.h"
 
 namespace blink {
@@ -82,7 +82,7 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
 
     if (fillWithRed) {
         IntRect contentRect(IntPoint(), m_frameView.contentsSize());
-        DrawingRecorder drawingRecorder(*context, *m_frameView.layoutView(), DisplayItem::DebugRedFill, contentRect);
+        LayoutObjectDrawingRecorder drawingRecorder(*context, *m_frameView.layoutView(), DisplayItem::DebugRedFill, contentRect);
         if (!drawingRecorder.canUseCachedDrawing())
             context->fillRect(contentRect, Color(0xFF, 0, 0));
     }
@@ -173,7 +173,7 @@ void FramePainter::paintScrollCorner(GraphicsContext* context, const IntRect& co
     if (m_frameView.scrollCorner()) {
         bool needsBackground = m_frameView.frame().isMainFrame();
         if (needsBackground) {
-            DrawingRecorder drawingRecorder(*context, *m_frameView.layoutView(), DisplayItem::ScrollbarCorner, cornerRect);
+            LayoutObjectDrawingRecorder drawingRecorder(*context, *m_frameView.layoutView(), DisplayItem::ScrollbarCorner, cornerRect);
             if (!drawingRecorder.canUseCachedDrawing())
                 context->fillRect(cornerRect, m_frameView.baseBackgroundColor());
         }
