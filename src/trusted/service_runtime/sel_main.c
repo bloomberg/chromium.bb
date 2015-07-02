@@ -423,7 +423,7 @@ static void NaClSelLdrParseArgs(int argc, char **argv,
       fprintf(stderr, "DEBUG MODE ENABLED (skip validator)\n");
   }
 
-  if (options->verbosity) {
+  if (options->verbosity > 0) {
     int         ix;
     char const  *separator = "";
 
@@ -878,8 +878,9 @@ int NaClSelLdrMain(int argc, char **argv) {
  done:
   fflush(stdout);
 
-  if (options->verbosity) {
-    printf("Dumping vmmap.\n"); fflush(stdout);
+  if (options->verbosity > 0) {
+    printf("Dumping vmmap.\n");
+    fflush(stdout);
     PrintVmmap(nap);
     fflush(stdout);
   }
