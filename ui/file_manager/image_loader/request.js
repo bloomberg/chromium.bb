@@ -9,7 +9,7 @@
  *   taskId: number,
  *   timestamp: (number|undefined),
  *   url: string,
- *   orientation: ImageOrientation,
+ *   orientation: !ImageOrientation,
  *   colorSpace: ?ColorSpace
  * }}
  */

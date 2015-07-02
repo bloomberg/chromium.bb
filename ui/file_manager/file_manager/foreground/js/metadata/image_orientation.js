@@ -124,3 +124,11 @@ ImageOrientation.prototype.cancelImageOrientation = function(
   // Apply the transform.
   context.setTransform(this.a, this.b, this.c, this.d, offsetX, offsetY);
 };
+
+/**
+ * Checks if the orientation represents identity transformation or not.
+ * @return {boolean}
+ */
+ImageOrientation.prototype.isIdentity = function() {
+  return this.a === 1 && this.b === 0 && this.c === 0 && this.d === 1;
+};
