@@ -79,6 +79,8 @@ crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/service
 crbug.com/493895 inspector/sources/debugger-breakpoints/dom-breakpoints.html [ Pass Timeout ]
 crbug.com/411175 [ XP ] svg/custom/svg-fonts-without-missing-glyph.xhtml [ Failure Pass ]
 
+crbug.com/504701 paint/masks/fieldset-mask.html [ NeedsRebaseline ]
+
 # This batch is flaky:
 crbug.com/310679 [ Mac ] fast/events/scale-and-scroll-iframe-body.html [ ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/events/scale-and-scroll-iframe-window.html [ ImageOnlyFailure Pass ]

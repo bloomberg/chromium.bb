@@ -93,6 +93,10 @@ void FieldsetPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& p
         paintRect.move(xOff, 0);
     }
 
+    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutFieldset, paintInfo.phase, paintRect);
+    if (recorder.canUseCachedDrawing())
+        return;
+
     BoxPainter(m_layoutFieldset).paintMaskImages(paintInfo, paintRect);
 }
 

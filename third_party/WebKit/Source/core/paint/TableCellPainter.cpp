@@ -210,7 +210,12 @@ void TableCellPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& 
     if (!tableElt->collapseBorders() && m_layoutTableCell.style()->emptyCells() == HIDE && !m_layoutTableCell.firstChild())
         return;
 
-    BoxPainter(m_layoutTableCell).paintMaskImages(paintInfo, paintBounds(paintOffset, DoNotAddOffsetFromParent));
+    LayoutRect paintRect = paintBounds(paintOffset, DoNotAddOffsetFromParent);
+    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutTableCell, paintInfo.phase, paintRect);
+    if (recorder.canUseCachedDrawing())
+        return;
+
+    BoxPainter(m_layoutTableCell).paintMaskImages(paintInfo, paintRect);
 }
 
 LayoutRect TableCellPainter::paintBounds(const LayoutPoint& paintOffset, PaintBoundOffsetBehavior paintBoundOffsetBehavior)
