@@ -85,18 +85,18 @@ void DrmWindowTest::SetUp() {
 
   drm_device_manager_.reset(new ui::DrmDeviceManager(nullptr));
 
-  scoped_ptr<ui::DrmWindow> window_delegate(new ui::DrmWindow(
+  scoped_ptr<ui::DrmWindow> window(new ui::DrmWindow(
       kDefaultWidgetHandle, drm_device_manager_.get(), screen_manager_.get()));
-  window_delegate->Initialize();
-  window_delegate->OnBoundsChanged(
+  window->Initialize();
+  window->OnBoundsChanged(
       gfx::Rect(gfx::Size(kDefaultMode.hdisplay, kDefaultMode.vdisplay)));
-  screen_manager_->AddWindow(kDefaultWidgetHandle, window_delegate.Pass());
+  screen_manager_->AddWindow(kDefaultWidgetHandle, window.Pass());
 }
 
 void DrmWindowTest::TearDown() {
-  scoped_ptr<ui::DrmWindow> delegate =
+  scoped_ptr<ui::DrmWindow> window =
       screen_manager_->RemoveWindow(kDefaultWidgetHandle);
-  delegate->Shutdown();
+  window->Shutdown();
   message_loop_.reset();
 }
 

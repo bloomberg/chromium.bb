@@ -83,9 +83,8 @@ void GbmSurfaceBuffer::Destroy(gbm_bo* buffer, void* data) {
 
 }  // namespace
 
-GbmSurface::GbmSurface(DrmWindow* window_delegate,
-                       const scoped_refptr<GbmDevice>& gbm)
-    : GbmSurfaceless(window_delegate, NULL),
+GbmSurface::GbmSurface(DrmWindow* window, const scoped_refptr<GbmDevice>& gbm)
+    : GbmSurfaceless(window, NULL),
       gbm_(gbm),
       native_surface_(NULL),
       current_buffer_(NULL),
@@ -102,12 +101,12 @@ GbmSurface::~GbmSurface() {
 
 bool GbmSurface::Initialize() {
   // If we're initializing the surface without a controller (possible on startup
-  // where the surface creation can happen before the native window delegate
+  // where the surface creation can happen before the native window
   // IPCs arrive), initialize the size to a valid value such that surface
   // creation doesn't fail.
   gfx::Size size(1, 1);
-  if (window_delegate_->GetController()) {
-    size = window_delegate_->GetController()->GetModeSize();
+  if (window_->GetController()) {
+    size = window_->GetController()->GetModeSize();
   }
   // TODO(dnicoara) Check underlying system support for pixel format.
   native_surface_ = gbm_surface_create(
@@ -153,7 +152,7 @@ bool GbmSurface::OnSwapBuffersAsync(const SwapCompletionCallback& callback) {
   }
 
   // The primary buffer is a special case.
-  window_delegate_->QueueOverlayPlane(OverlayPlane(primary));
+  window_->QueueOverlayPlane(OverlayPlane(primary));
 
   if (!GbmSurfaceless::OnSwapBuffersAsync(
           base::Bind(&GbmSurface::OnSwapBuffersCallback,

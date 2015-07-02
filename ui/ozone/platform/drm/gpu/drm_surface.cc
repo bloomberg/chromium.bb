@@ -35,9 +35,8 @@ scoped_refptr<DrmBuffer> AllocateBuffer(const scoped_refptr<DrmDevice>& drm,
 
 }  // namespace
 
-DrmSurface::DrmSurface(DrmWindow* window_delegate)
-    : window_delegate_(window_delegate),
-      weak_ptr_factory_(this) {
+DrmSurface::DrmSurface(DrmWindow* window)
+    : window_(window), weak_ptr_factory_(this) {
 }
 
 DrmSurface::~DrmSurface() {
@@ -52,7 +51,7 @@ void DrmSurface::ResizeCanvas(const gfx::Size& viewport_size) {
       viewport_size.width(), viewport_size.height(), kOpaque_SkAlphaType);
   surface_ = skia::AdoptRef(SkSurface::NewRaster(info));
 
-  HardwareDisplayController* controller = window_delegate_->GetController();
+  HardwareDisplayController* controller = window_->GetController();
   if (!controller)
     return;
 
@@ -77,7 +76,7 @@ void DrmSurface::PresentCanvas(const gfx::Rect& damage) {
 }
 
 scoped_ptr<gfx::VSyncProvider> DrmSurface::CreateVSyncProvider() {
-  return make_scoped_ptr(new DrmVSyncProvider(window_delegate_));
+  return make_scoped_ptr(new DrmVSyncProvider(window_));
 }
 
 void DrmSurface::SchedulePageFlip() {
@@ -96,11 +95,11 @@ void DrmSurface::SchedulePageFlip() {
   pending_image_ = nullptr;
   pending_image_damage_ = gfx::Rect();
 
-  window_delegate_->QueueOverlayPlane(OverlayPlane(back_buffer_));
+  window_->QueueOverlayPlane(OverlayPlane(back_buffer_));
 
   // Update our front buffer pointer.
   std::swap(front_buffer_, back_buffer_);
-  pending_pageflip_ = window_delegate_->SchedulePageFlip(
+  pending_pageflip_ = window_->SchedulePageFlip(
       false /* is_sync */,
       base::Bind(&DrmSurface::OnPageFlip, weak_ptr_factory_.GetWeakPtr()));
 }

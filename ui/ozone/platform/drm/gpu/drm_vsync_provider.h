@@ -13,13 +13,13 @@ class DrmWindow;
 
 class DrmVSyncProvider : public gfx::VSyncProvider {
  public:
-  DrmVSyncProvider(DrmWindow* window_delegate);
+  DrmVSyncProvider(DrmWindow* window);
   ~DrmVSyncProvider() override;
 
   void GetVSyncParameters(const UpdateVSyncCallback& callback) override;
 
  private:
-  DrmWindow* window_delegate_;  // Not owned.
+  DrmWindow* window_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(DrmVSyncProvider);
 };

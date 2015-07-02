@@ -25,7 +25,7 @@ class HardwareDisplayController;
 
 class OZONE_EXPORT DrmSurface : public SurfaceOzoneCanvas {
  public:
-  DrmSurface(DrmWindow* window_delegate);
+  DrmSurface(DrmWindow* window);
   ~DrmSurface() override;
 
   // SurfaceOzoneCanvas:
@@ -41,7 +41,7 @@ class OZONE_EXPORT DrmSurface : public SurfaceOzoneCanvas {
   // has completed.
   void OnPageFlip(gfx::SwapResult result);
 
-  DrmWindow* window_delegate_;
+  DrmWindow* window_;
 
   // The actual buffers used for painting.
   scoped_refptr<DrmBuffer> front_buffer_;

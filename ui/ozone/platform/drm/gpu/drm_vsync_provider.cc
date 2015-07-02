@@ -10,15 +10,14 @@
 
 namespace ui {
 
-DrmVSyncProvider::DrmVSyncProvider(DrmWindow* window_delegate)
-    : window_delegate_(window_delegate) {
+DrmVSyncProvider::DrmVSyncProvider(DrmWindow* window) : window_(window) {
 }
 
 DrmVSyncProvider::~DrmVSyncProvider() {
 }
 
 void DrmVSyncProvider::GetVSyncParameters(const UpdateVSyncCallback& callback) {
-  HardwareDisplayController* controller = window_delegate_->GetController();
+  HardwareDisplayController* controller = window_->GetController();
   if (!controller)
     return;
 

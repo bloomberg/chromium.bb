@@ -26,7 +26,7 @@ class GbmDevice;
 // surface and is updated via an EGLSurface.
 class GbmSurface : public GbmSurfaceless {
  public:
-  GbmSurface(DrmWindow* window_delegate, const scoped_refptr<GbmDevice>& gbm);
+  GbmSurface(DrmWindow* window, const scoped_refptr<GbmDevice>& gbm);
   ~GbmSurface() override;
 
   bool Initialize();

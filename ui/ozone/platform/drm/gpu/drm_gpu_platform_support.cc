@@ -230,15 +230,15 @@ bool DrmGpuPlatformSupport::OnMessageReceived(const IPC::Message& message) {
 }
 
 void DrmGpuPlatformSupport::OnCreateWindow(gfx::AcceleratedWidget widget) {
-  scoped_ptr<DrmWindow> delegate(
+  scoped_ptr<DrmWindow> window(
       new DrmWindow(widget, drm_device_manager_, screen_manager_));
-  delegate->Initialize();
-  screen_manager_->AddWindow(widget, delegate.Pass());
+  window->Initialize();
+  screen_manager_->AddWindow(widget, window.Pass());
 }
 
 void DrmGpuPlatformSupport::OnDestroyWindow(gfx::AcceleratedWidget widget) {
-  scoped_ptr<DrmWindow> delegate = screen_manager_->RemoveWindow(widget);
-  delegate->Shutdown();
+  scoped_ptr<DrmWindow> window = screen_manager_->RemoveWindow(widget);
+  window->Shutdown();
 }
 
 void DrmGpuPlatformSupport::OnWindowBoundsChanged(gfx::AcceleratedWidget widget,

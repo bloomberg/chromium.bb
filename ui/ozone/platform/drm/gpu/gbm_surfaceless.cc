@@ -19,10 +19,9 @@ void EmptyPageFlipCallback(gfx::SwapResult result) {
 }
 }  // namespace
 
-GbmSurfaceless::GbmSurfaceless(DrmWindow* window_delegate,
+GbmSurfaceless::GbmSurfaceless(DrmWindow* window,
                                DrmDeviceManager* drm_device_manager)
-    : window_delegate_(window_delegate),
-      drm_device_manager_(drm_device_manager) {
+    : window_(window), drm_device_manager_(drm_device_manager) {
 }
 
 GbmSurfaceless::~GbmSurfaceless() {
@@ -38,17 +37,17 @@ bool GbmSurfaceless::ResizeNativeWindow(const gfx::Size& viewport_size) {
 }
 
 bool GbmSurfaceless::OnSwapBuffers() {
-  return window_delegate_->SchedulePageFlip(true /* is_sync */,
-                                            base::Bind(&EmptyPageFlipCallback));
+  return window_->SchedulePageFlip(true /* is_sync */,
+                                   base::Bind(&EmptyPageFlipCallback));
 }
 
 bool GbmSurfaceless::OnSwapBuffersAsync(
     const SwapCompletionCallback& callback) {
-  return window_delegate_->SchedulePageFlip(false /* is_sync */, callback);
+  return window_->SchedulePageFlip(false /* is_sync */, callback);
 }
 
 scoped_ptr<gfx::VSyncProvider> GbmSurfaceless::CreateVSyncProvider() {
-  return make_scoped_ptr(new DrmVSyncProvider(window_delegate_));
+  return make_scoped_ptr(new DrmVSyncProvider(window_));
 }
 
 bool GbmSurfaceless::IsUniversalDisplayLinkDevice() {
@@ -58,7 +57,7 @@ bool GbmSurfaceless::IsUniversalDisplayLinkDevice() {
       drm_device_manager_->GetDrmDevice(gfx::kNullAcceleratedWidget);
   DCHECK(drm_primary);
 
-  HardwareDisplayController* controller = window_delegate_->GetController();
+  HardwareDisplayController* controller = window_->GetController();
   if (!controller)
     return false;
   scoped_refptr<DrmDevice> drm = controller->GetAllocationDrmDevice();

@@ -33,12 +33,15 @@ struct OverlayCheck_Params;
 class ScanoutBufferGenerator;
 class ScreenManager;
 
-// A delegate of the platform window (DrmWindow) on the GPU process. This is
-// used to keep track of window state changes such that each platform window is
-// correctly associated with a display.
-// A window is associated with the display whose bounds contains the window
-// bounds. If there's no suitable display, the window is disconnected and its
-// contents will not be visible.
+// The GPU object representing a window.
+//
+// The main purpose of this object is to associate drawing surfaces with
+// displays. A surface created with the same id as the window (from
+// GetAcceleratedWidget()) will paint onto that window. A window with
+// the same bounds as a display will paint onto that display.
+//
+// If there's no display whose bounds match the window's, the window is
+// disconnected and its contents will not be visible to the user.
 class OZONE_EXPORT DrmWindow {
  public:
   DrmWindow(gfx::AcceleratedWidget widget,
@@ -53,7 +56,7 @@ class OZONE_EXPORT DrmWindow {
 
   void Shutdown();
 
-  // Returns the accelerated widget associated with the delegate.
+  // Returns the accelerated widget associated with the window.
   gfx::AcceleratedWidget GetAcceleratedWidget();
 
   // Returns the current controller the window is displaying on. Callers should

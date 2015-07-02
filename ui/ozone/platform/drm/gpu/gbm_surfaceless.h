@@ -22,8 +22,7 @@ class DrmWindow;
 // presentation.
 class GbmSurfaceless : public SurfaceOzoneEGL {
  public:
-  GbmSurfaceless(DrmWindow* window_delegate,
-                 DrmDeviceManager* drm_device_manager);
+  GbmSurfaceless(DrmWindow* window, DrmDeviceManager* drm_device_manager);
   ~GbmSurfaceless() override;
 
   // SurfaceOzoneEGL:
@@ -35,7 +34,7 @@ class GbmSurfaceless : public SurfaceOzoneEGL {
   bool IsUniversalDisplayLinkDevice() override;
 
  protected:
-  DrmWindow* window_delegate_;
+  DrmWindow* window_;
   DrmDeviceManager* drm_device_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmSurfaceless);
