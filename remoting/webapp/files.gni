@@ -195,11 +195,15 @@ remoting_webapp_shared_js_host_files = [
 
 # Logging and stats JavaScript files.
 remoting_webapp_shared_js_logging_files = [
+  "base/js/chromoting_event.js",
   "base/js/format_iq.js",
+  "base/js/logger.js",
   "base/js/log_to_server.js",
   "base/js/server_log_entry.js",
   "base/js/session_logger.js",
   "base/js/stats_accumulator.js",
+  "base/js/telemetry_event_writer.js",
+  "base/js/xhr_event_writer.js",
 ]
 
 # Remoting signaling files.
@@ -377,8 +381,6 @@ remoting_webapp_template_background = "crd/html/template_background.html"
 # These JS files are specific to the background page and are not part of
 # the main JS files.
 remoting_webapp_background_html_js_files = [
-  "base/js/message_window_helper.js",
-  "base/js/message_window_manager.js",
   "crd/js/activation_handler.js",
   "crd/js/app_launcher.js",
   "crd/js/background.js",
