@@ -14,8 +14,8 @@
           'target_name': 'skia_library',
           'type': 'static_library',
           'includes': [
-            'skia_library.gypi',
             'skia_common.gypi',
+            'skia_library.gypi',
             '../build/android/increase_size_for_speed.gypi',
             # Disable LTO due to compiler error
             # in mems_in_disjoint_alias_sets_p, at alias.c:393
@@ -56,9 +56,12 @@
           'target_name': 'skia',
           'type': 'shared_library',
           'includes': [
-            'skia_library.gypi',
-            'skia_chrome.gypi',
+            # Include skia_common.gypi first since it contains filename
+            # exclusion rules. This allows the following includes to override
+            # the exclusion rules.
             'skia_common.gypi',
+            'skia_chrome.gypi',
+            'skia_library.gypi',
             '../build/android/increase_size_for_speed.gypi',
           ],
           'defines': [
