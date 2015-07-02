@@ -11,6 +11,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "content/browser/background_sync/background_sync_network_observer.h"
 #include "content/browser/background_sync/background_sync_power_observer.h"
+#include "content/browser/background_sync/background_sync_registration_options.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/public/browser/browser_thread.h"
@@ -60,7 +61,13 @@ BackgroundSyncManager::~BackgroundSyncManager() {
 
 BackgroundSyncManager::RegistrationKey::RegistrationKey(
     const BackgroundSyncRegistration& registration)
-    : RegistrationKey(registration.tag, registration.periodicity) {
+    : RegistrationKey(registration.options.tag,
+                      registration.options.periodicity) {
+}
+
+BackgroundSyncManager::RegistrationKey::RegistrationKey(
+    const BackgroundSyncRegistrationOptions& options)
+    : RegistrationKey(options.tag, options.periodicity) {
 }
 
 BackgroundSyncManager::RegistrationKey::RegistrationKey(
@@ -71,11 +78,9 @@ BackgroundSyncManager::RegistrationKey::RegistrationKey(
 
 void BackgroundSyncManager::Register(
     int64 sw_registration_id,
-    const BackgroundSyncRegistration& sync_registration,
+    const BackgroundSyncRegistrationOptions& options,
     const StatusAndRegistrationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK_EQ(BackgroundSyncRegistration::kInvalidRegistrationId,
-            sync_registration.id);
 
   if (disabled_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -84,10 +89,10 @@ void BackgroundSyncManager::Register(
     return;
   }
 
-  op_scheduler_.ScheduleOperation(base::Bind(
-      &BackgroundSyncManager::RegisterImpl, weak_ptr_factory_.GetWeakPtr(),
-      sw_registration_id, sync_registration,
-      MakeStatusAndRegistrationCompletion(callback)));
+  op_scheduler_.ScheduleOperation(
+      base::Bind(&BackgroundSyncManager::RegisterImpl,
+                 weak_ptr_factory_.GetWeakPtr(), sw_registration_id, options,
+                 MakeStatusAndRegistrationCompletion(callback)));
 }
 
 void BackgroundSyncManager::Unregister(
@@ -254,11 +259,12 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
             &registrations->registration_map[registration_key];
 
         registration->id = registration_proto.id();
-        registration->tag = registration_proto.tag();
-        registration->periodicity = registration_proto.periodicity();
-        registration->min_period = registration_proto.min_period();
-        registration->network_state = registration_proto.network_state();
-        registration->power_state = registration_proto.power_state();
+        registration->options.tag = registration_proto.tag();
+        registration->options.periodicity = registration_proto.periodicity();
+        registration->options.min_period = registration_proto.min_period();
+        registration->options.network_state =
+            registration_proto.network_state();
+        registration->options.power_state = registration_proto.power_state();
         registration->sync_state = registration_proto.sync_state();
         if (registration->sync_state == SYNC_STATE_FIRING) {
           // If the browser (or worker) closed while firing the event, consider
@@ -286,7 +292,7 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
 
 void BackgroundSyncManager::RegisterImpl(
     int64 sw_registration_id,
-    const BackgroundSyncRegistration& sync_registration,
+    const BackgroundSyncRegistrationOptions& options,
     const StatusAndRegistrationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -297,16 +303,17 @@ void BackgroundSyncManager::RegisterImpl(
     return;
   }
 
-  const BackgroundSyncRegistration* existing_registration = LookupRegistration(
-      sw_registration_id, RegistrationKey(sync_registration));
-  if (existing_registration &&
-      existing_registration->Equals(sync_registration)) {
+  const BackgroundSyncRegistration* existing_registration =
+      LookupRegistration(sw_registration_id, RegistrationKey(options));
+  if (existing_registration && existing_registration->options.Equals(options)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, ERROR_TYPE_OK, *existing_registration));
     return;
   }
 
-  BackgroundSyncRegistration new_registration = sync_registration;
+  BackgroundSyncRegistration new_registration;
+  new_registration.options = options;
+
   BackgroundSyncRegistrations* registrations =
       &sw_to_registrations_map_[sw_registration_id];
   new_registration.id = registrations->next_id++;
@@ -427,11 +434,11 @@ void BackgroundSyncManager::StoreRegistrations(
     BackgroundSyncRegistrationProto* registration_proto =
         registrations_proto.add_registration();
     registration_proto->set_id(registration.id);
-    registration_proto->set_tag(registration.tag);
-    registration_proto->set_periodicity(registration.periodicity);
-    registration_proto->set_min_period(registration.min_period);
-    registration_proto->set_network_state(registration.network_state);
-    registration_proto->set_power_state(registration.power_state);
+    registration_proto->set_tag(registration.options.tag);
+    registration_proto->set_periodicity(registration.options.periodicity);
+    registration_proto->set_min_period(registration.options.min_period);
+    registration_proto->set_network_state(registration.options.network_state);
+    registration_proto->set_power_state(registration.options.power_state);
     registration_proto->set_sync_state(registration.sync_state);
   }
   std::string serialized;
@@ -631,7 +638,7 @@ void BackgroundSyncManager::GetRegistrationsImpl(
     for (const auto& tag_and_registration : registrations.registration_map) {
       const BackgroundSyncRegistration& registration =
           tag_and_registration.second;
-      if (registration.periodicity == periodicity)
+      if (registration.options.periodicity == periodicity)
         out_registrations.push_back(registration);
     }
   }
@@ -645,16 +652,17 @@ bool BackgroundSyncManager::IsRegistrationReadyToFire(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // TODO(jkarlin): Add support for firing periodic registrations.
-  if (registration.periodicity == SYNC_PERIODIC)
+  if (registration.options.periodicity == SYNC_PERIODIC)
     return false;
 
   if (registration.sync_state != SYNC_STATE_PENDING)
     return false;
 
-  DCHECK_EQ(SYNC_ONE_SHOT, registration.periodicity);
+  DCHECK_EQ(SYNC_ONE_SHOT, registration.options.periodicity);
 
-  return network_observer_->NetworkSufficient(registration.network_state) &&
-         power_observer_->PowerSufficient(registration.power_state);
+  return network_observer_->NetworkSufficient(
+             registration.options.network_state) &&
+         power_observer_->PowerSufficient(registration.options.power_state);
 }
 
 void BackgroundSyncManager::SchedulePendingRegistrations() {
@@ -667,7 +675,7 @@ void BackgroundSyncManager::SchedulePendingRegistrations() {
       const BackgroundSyncRegistration& registration =
           key_and_registration.second;
       if (registration.sync_state == SYNC_STATE_PENDING) {
-        if (registration.periodicity == SYNC_ONE_SHOT) {
+        if (registration.options.periodicity == SYNC_ONE_SHOT) {
           keep_browser_alive_for_one_shot = true;
         } else {
           // TODO(jkarlin): Support keeping the browser alive for periodic
@@ -814,7 +822,7 @@ void BackgroundSyncManager::EventCompleteImpl(
     return;
   }
 
-  if (registration->periodicity == SYNC_ONE_SHOT) {
+  if (registration->options.periodicity == SYNC_ONE_SHOT) {
     if (status_code != SERVICE_WORKER_OK) {
       // TODO(jkarlin) Fire the sync event on the next page load controlled by
       // this registration. (crbug.com/479665)

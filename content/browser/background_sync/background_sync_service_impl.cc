@@ -6,6 +6,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/browser/background_sync/background_sync_context_impl.h"
+#include "content/browser/background_sync/background_sync_registration_options.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -15,16 +16,15 @@ namespace {
 // TODO(iclelland): Move these converters to mojo::TypeConverter template
 // specializations.
 
-scoped_ptr<BackgroundSyncManager::BackgroundSyncRegistration>
-ToBackgroundSyncRegistration(const SyncRegistrationPtr& in) {
-  scoped_ptr<BackgroundSyncManager::BackgroundSyncRegistration> out(
-      new BackgroundSyncManager::BackgroundSyncRegistration());
-  out->tag = in->tag;
-  out->id = in->id;
-  out->min_period = in->min_period_ms;
-  out->power_state = static_cast<SyncPowerState>(in->power_state);
-  out->network_state = static_cast<SyncNetworkState>(in->network_state);
-  out->periodicity = static_cast<SyncPeriodicity>(in->periodicity);
+BackgroundSyncRegistrationOptions ToBackgroundSyncRegistrationOptions(
+    const SyncRegistrationPtr& in) {
+  BackgroundSyncRegistrationOptions out;
+
+  out.tag = in->tag;
+  out.min_period = in->min_period_ms;
+  out.power_state = static_cast<SyncPowerState>(in->power_state);
+  out.network_state = static_cast<SyncNetworkState>(in->network_state);
+  out.periodicity = static_cast<SyncPeriodicity>(in->periodicity);
   return out;
 }
 
@@ -32,14 +32,14 @@ SyncRegistrationPtr ToMojoRegistration(
     const BackgroundSyncManager::BackgroundSyncRegistration& in) {
   SyncRegistrationPtr out(content::SyncRegistration::New());
   out->id = in.id;
-  out->tag = in.tag;
-  out->min_period_ms = in.min_period;
+  out->tag = in.options.tag;
+  out->min_period_ms = in.options.min_period;
   out->periodicity =
-      static_cast<content::BackgroundSyncPeriodicity>(in.periodicity);
+      static_cast<content::BackgroundSyncPeriodicity>(in.options.periodicity);
   out->power_state =
-      static_cast<content::BackgroundSyncPowerState>(in.power_state);
-  out->network_state =
-      static_cast<content::BackgroundSyncNetworkState>(in.network_state);
+      static_cast<content::BackgroundSyncPowerState>(in.options.power_state);
+  out->network_state = static_cast<content::BackgroundSyncNetworkState>(
+      in.options.network_state);
   return out.Pass();
 }
 
@@ -124,14 +124,14 @@ void BackgroundSyncServiceImpl::Register(content::SyncRegistrationPtr options,
                                          const RegisterCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  scoped_ptr<BackgroundSyncManager::BackgroundSyncRegistration> reg =
-      ToBackgroundSyncRegistration(options);
+  BackgroundSyncRegistrationOptions mgr_options =
+      ToBackgroundSyncRegistrationOptions(options);
 
   BackgroundSyncManager* background_sync_manager =
       background_sync_context_->background_sync_manager();
   DCHECK(background_sync_manager);
   background_sync_manager->Register(
-      sw_registration_id, *(reg.get()),
+      sw_registration_id, mgr_options,
       base::Bind(&BackgroundSyncServiceImpl::OnRegisterResult,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }

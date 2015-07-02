@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/background_sync/background_sync.pb.h"
+#include "content/browser/background_sync/background_sync_registration_options.h"
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_storage.h"
@@ -59,21 +60,11 @@ class CONTENT_EXPORT BackgroundSyncManager
     BackgroundSyncRegistration() {}
 
     bool Equals(const BackgroundSyncRegistration& other) const {
-      return this->tag == other.tag && this->periodicity == other.periodicity &&
-             this->min_period == other.min_period &&
-             network_state == other.network_state &&
-             power_state == other.power_state;
+      return options.Equals(other.options);
     }
 
-    // Registrations options from the specification
-    std::string tag;
-    int64 min_period = 0;
-    SyncNetworkState network_state = NETWORK_STATE_ONLINE;
-    SyncPowerState power_state = POWER_STATE_AVOID_DRAINING;
-
-    // Implementation specific members
+    BackgroundSyncRegistrationOptions options;
     RegistrationId id = kInvalidRegistrationId;
-    SyncPeriodicity periodicity = SYNC_ONE_SHOT;
     SyncState sync_state = SYNC_STATE_PENDING;
   };
 
@@ -95,7 +86,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   // registration will have a unique id. It may also have altered parameters if
   // the user or UA chose different parameters than those supplied.
   void Register(int64 sw_registration_id,
-                const BackgroundSyncRegistration& sync_registration,
+                const BackgroundSyncRegistrationOptions& options,
                 const StatusAndRegistrationCallback& callback);
 
   // Removes the background sync with tag |sync_registration_tag|, periodicity
@@ -153,6 +144,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   class RegistrationKey {
    public:
     explicit RegistrationKey(const BackgroundSyncRegistration& registration);
+    explicit RegistrationKey(const BackgroundSyncRegistrationOptions& options);
     RegistrationKey(const std::string& tag, SyncPeriodicity periodicity);
     RegistrationKey(const RegistrationKey& other) = default;
     RegistrationKey& operator=(const RegistrationKey& other) = default;
@@ -220,7 +212,7 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   // Register callbacks
   void RegisterImpl(int64 sw_registration_id,
-                    const BackgroundSyncRegistration& sync_registration,
+                    const BackgroundSyncRegistrationOptions& options,
                     const StatusAndRegistrationCallback& callback);
   void RegisterDidStore(int64 sw_registration_id,
                         const BackgroundSyncRegistration& sync_registration,
