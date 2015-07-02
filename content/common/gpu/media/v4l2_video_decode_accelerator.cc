@@ -30,20 +30,20 @@
     SetErrorState(x);                          \
   } while (0)
 
-#define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value)              \
-  do {                                                             \
-    if (device_->Ioctl(type, arg) != 0) {                          \
-      PLOG(ERROR) << __func__ << "(): ioctl() failed: " << #type;  \
-      NOTIFY_ERROR(PLATFORM_FAILURE);                              \
-      return value;                                                \
-    }                                                              \
+#define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value, type_str)        \
+  do {                                                                 \
+    if (device_->Ioctl(type, arg) != 0) {                              \
+      PLOG(ERROR) << __func__ << "(): ioctl() failed: " << type_str;   \
+      NOTIFY_ERROR(PLATFORM_FAILURE);                                  \
+      return value;                                                    \
+    }                                                                  \
   } while (0)
 
 #define IOCTL_OR_ERROR_RETURN(type, arg) \
-  IOCTL_OR_ERROR_RETURN_VALUE(type, arg, ((void)0))
+  IOCTL_OR_ERROR_RETURN_VALUE(type, arg, ((void)0), #type)
 
 #define IOCTL_OR_ERROR_RETURN_FALSE(type, arg) \
-  IOCTL_OR_ERROR_RETURN_VALUE(type, arg, false)
+  IOCTL_OR_ERROR_RETURN_VALUE(type, arg, false, #type)
 
 #define IOCTL_OR_LOG_ERROR(type, arg)                              \
   do {                                                             \
