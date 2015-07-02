@@ -26,9 +26,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Eventually we should implement XSLTException:
-// http://lxr.mozilla.org/seamonkey/source/content/xsl/public/nsIXSLTException.idl
-// http://bugs.webkit.org/show_bug.cgi?id=5446
+// There is no spec for XSLTProcessor. It was first implemented in Gecko and
+// their interface definition remains the closest thing to a spec:
+// https://hg.mozilla.org/mozilla-central/file/012853bd80b7/dom/webidl/XSLTProcessor.webidl
 
 [
     GarbageCollected,
@@ -39,11 +39,14 @@
     TypeChecking=Interface,
 ] interface XSLTProcessor {
 
-    void importStylesheet(Node stylesheet);
-    // FIXME: These return null on failure; should throw exceptions instead.
-    [CustomElementCallbacks] DocumentFragment? transformToFragment(Node source, Document docVal);
+    void importStylesheet(Node style);
+    // TODO(philipj): In Gecko, the transformTo*() methods throw an exception in
+    // case of error instead of returning null.
+    [CustomElementCallbacks] DocumentFragment? transformToFragment(Node source, Document output);
     [CustomElementCallbacks] Document? transformToDocument(Node source);
 
+    // TODO(philipj): In Gecko, it's possible to set and get back any parameter
+    // value, not just DOMString.
     void setParameter(DOMString? namespaceURI, DOMString localName, DOMString value);
     DOMString? getParameter(DOMString? namespaceURI, DOMString localName);
     void removeParameter(DOMString? namespaceURI, DOMString localName);
@@ -52,4 +55,3 @@
     void reset();
 
 };
-

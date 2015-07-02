@@ -17,9 +17,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// http://www.w3.org/TR/DOM-Level-3-XPath/xpath.html#XPathResult
+
 [
     GarbageCollected
 ] interface XPathResult {
+    // XPathResultType
     const unsigned short ANY_TYPE                       = 0;
     const unsigned short NUMBER_TYPE                    = 1;
     const unsigned short STRING_TYPE                    = 2;

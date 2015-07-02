@@ -17,10 +17,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// http://www.w3.org/TR/DOM-Level-3-XPath/xpath.html#XPathEvaluator
+
 [
     TypeChecking=Interface,
 ] partial interface Document {
-    // DOM Level 3 XPath (XPathEvaluator interface)
     [MeasureAs=DocumentXPathCreateExpression, RaisesException] XPathExpression createExpression(DOMString expression, optional XPathNSResolver? resolver = null);
 
     [MeasureAs=DocumentXPathCreateNSResolver] XPathNSResolver createNSResolver(Node nodeResolver);
