@@ -2071,13 +2071,12 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseScrollSnapPoints()
             return nullptr;
 
         CSSParserValue* repeatValue = arguments->valueAt(0);
-        if (!validUnit(repeatValue, FNonNeg | FLength | FPercent))
-            return nullptr;
-
-        RefPtrWillBeRawPtr<CSSFunctionValue> result = CSSFunctionValue::create(CSSValueRepeat);
-        result->append(parseValidPrimitive(repeatValue->id, repeatValue));
-        m_valueList->next();
-        return result.release();
+        if (validUnit(repeatValue, FNonNeg | FLength | FPercent) && (m_parsedCalculation || value->fValue > 0)) {
+            RefPtrWillBeRawPtr<CSSFunctionValue> result = CSSFunctionValue::create(CSSValueRepeat);
+            result->append(parseValidPrimitive(repeatValue->id, repeatValue));
+            m_valueList->next();
+            return result.release();
+        }
     }
 
     return nullptr;

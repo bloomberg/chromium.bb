@@ -33,6 +33,9 @@ div#container {
 <div class="test" property="scroll-snap-points-y" style="scroll-snap-points-y: repeat(100%);" expected="repeat(100%)" desc="percentage points repeat along y axis" ></div>
 <div class="test" property="scroll-snap-points-y" style="scroll-snap-points-y: repeat(25px);" expected="repeat(25px)" desc="pixel points repeat along y axis" ></div>
 <div class="test" property="scroll-snap-points-y" style="scroll-snap-points-y: repeat(calc(25px + 1%));" expected="repeat(calc(25px + 1%))" desc="calc repeat along y axis" ></div>
+<div class="test" property="scroll-snap-points-y" style="scroll-snap-points-x: repeat(0px);" expected="none" desc="reject zero" ></div>
+<div class="test" property="scroll-snap-points-y" style="scroll-snap-points-y: repeat(-1px);" expected="none" desc="reject negative" ></div>
+
 
 
 <div class="test" property="scroll-snap-destination" style="scroll-snap-destination: 10px 50px;" expected="10px 50px" desc="pixel/pixel destination" ></div>

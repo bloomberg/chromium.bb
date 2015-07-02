@@ -57,6 +57,12 @@ PASS style.scrollSnapPointsY is "repeat(25px)"
 Test case: calc repeat along y axis
 PASS style.scrollSnapPointsY is "repeat(calc(25px + 1%))"
 
+Test case: reject zero
+PASS style.scrollSnapPointsY is "none"
+
+Test case: reject negative
+PASS style.scrollSnapPointsY is "none"
+
 Test case: pixel/pixel destination
 PASS style.scrollSnapDestination is "10px 50px"
 
