@@ -885,8 +885,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   HRESULT hr = static_cast<IAccessible*>(document_accessible.get())
                    ->QueryInterface(service_provider.Receive());
   ASSERT_EQ(S_OK, hr);
-  const GUID refguid = {0x0c539790, 0x12e4, 0x11cf,
-                        0xb6, 0x61, 0x00, 0xaa, 0x00, 0x4c, 0xd6, 0xd8};
+  const GUID refguid = {0x0c539790,
+                        0x12e4,
+                        0x11cf,
+                        {0xb6, 0x61, 0x00, 0xaa, 0x00, 0x4c, 0xd6, 0xd8}};
   base::win::ScopedComPtr<ISimpleDOMNode> document_isimpledomnode;
   hr = static_cast<IServiceProvider*>(service_provider.get())
            ->QueryService(

@@ -272,7 +272,7 @@ bool ShouldSetJobLevel(const base::CommandLine& cmd_line) {
     return true;
 
   // ...or there is a job but the JOB_OBJECT_LIMIT_BREAKAWAY_OK limit is set.
-  JOBOBJECT_EXTENDED_LIMIT_INFORMATION job_info = {0};
+  JOBOBJECT_EXTENDED_LIMIT_INFORMATION job_info = {};
   if (!::QueryInformationJobObject(NULL,
                                    JobObjectExtendedLimitInformation, &job_info,
                                    sizeof(job_info), NULL)) {
