@@ -413,6 +413,7 @@ interface CSSViewportRule
     method constructor
 interface Cache
     method add
+    method addAll
     method constructor
     method delete
     method keys

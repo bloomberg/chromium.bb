@@ -38,7 +38,7 @@ public:
     ScriptPromise match(ScriptState*, const RequestInfo&, const CacheQueryOptions&, ExceptionState&);
     ScriptPromise matchAll(ScriptState*, const RequestInfo&, const CacheQueryOptions&, ExceptionState&);
     ScriptPromise add(ScriptState*, const RequestInfo&, ExceptionState&);
-    ScriptPromise addAll(ScriptState*, const Vector<ScriptValue>&);
+    ScriptPromise addAll(ScriptState*, const HeapVector<RequestInfo>&, ExceptionState&);
     ScriptPromise deleteFunction(ScriptState*, const RequestInfo&, const CacheQueryOptions&, ExceptionState&);
     ScriptPromise put(ScriptState*, const RequestInfo&, Response*, ExceptionState&);
     ScriptPromise keys(ScriptState*, ExceptionState&);
@@ -57,7 +57,7 @@ private:
 
     ScriptPromise matchImpl(ScriptState*, const Request*, const CacheQueryOptions&);
     ScriptPromise matchAllImpl(ScriptState*, const Request*, const CacheQueryOptions&);
-    ScriptPromise addAllImpl(ScriptState*, const Vector<Request*>&, ExceptionState&);
+    ScriptPromise addAllImpl(ScriptState*, const HeapVector<Member<Request>>&, ExceptionState&);
     ScriptPromise deleteImpl(ScriptState*, const Request*, const CacheQueryOptions&);
     ScriptPromise putImpl(ScriptState*, const HeapVector<Member<Request>>&, const HeapVector<Member<Response>>&);
     ScriptPromise keysImpl(ScriptState*);

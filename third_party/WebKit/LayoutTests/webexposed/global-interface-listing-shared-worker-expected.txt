@@ -13,6 +13,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method slice
 [Worker] interface Cache
 [Worker]     method add
+[Worker]     method addAll
 [Worker]     method constructor
 [Worker]     method delete
 [Worker]     method keys

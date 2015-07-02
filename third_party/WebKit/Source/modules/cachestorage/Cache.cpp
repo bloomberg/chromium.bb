@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "bindings/modules/v8/V8Response.h"
 #include "core/dom/DOMException.h"
@@ -135,45 +136,141 @@ private:
     RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
 };
 
-ScriptPromise rejectAsNotImplemented(ScriptState* scriptState)
-{
-    return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError, "Cache is not implemented"));
-}
+// This class provides Promise.all() for ScriptPromise.
+// TODO(nhiroki): Move this somewhere else so that other components can reuse.
+// TODO(nhiroki): Unfortunately, we have to go through V8 to wait for the fetch
+// promise. It should be better to achieve this only within C++ world.
+class CacheStoragePromiseAll final : public GarbageCollectedFinalized<CacheStoragePromiseAll> {
+public:
+    CacheStoragePromiseAll(Vector<ScriptPromise> promises, PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
+        : m_numberOfPendingPromises(promises.size())
+        , m_resolver(resolver)
+    {
+        m_values.resize(promises.size());
+        for (size_t i = 0; i < promises.size(); ++i)
+            promises[i].then(createFulfillFunction(i), createRejectFunction());
+    }
+
+    void onFulfilled(size_t index, const ScriptValue& value)
+    {
+        ASSERT(index < m_values.size());
+        if (m_isSettled)
+            return;
+        m_values[index] = value;
+        if (--m_numberOfPendingPromises > 0)
+            return;
+        m_isSettled = true;
+        m_resolver->resolve(m_values);
+    }
+
+    void onRejected(const ScriptValue& value)
+    {
+        if (m_isSettled)
+            return;
+        m_isSettled = true;
+        m_resolver->reject(value);
+    }
+
+    ScriptPromise promise() { return m_resolver->promise(); }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_resolver);
+        visitor->trace(m_values);
+    }
+
+private:
+    class AdapterFunction : public ScriptFunction {
+    public:
+        enum ResolveType {
+            Fulfilled,
+            Rejected,
+        };
+
+        static v8::Local<v8::Function> create(ScriptState* scriptState, ResolveType resolveType, size_t index, CacheStoragePromiseAll* promiseAll)
+        {
+            AdapterFunction* self = new AdapterFunction(scriptState, resolveType, index, promiseAll);
+            return self->bindToV8Function();
+        }
+
+        DEFINE_INLINE_VIRTUAL_TRACE()
+        {
+            visitor->trace(m_promiseAll);
+            ScriptFunction::trace(visitor);
+        }
+
+    private:
+        AdapterFunction(ScriptState* scriptState, ResolveType resolveType, size_t index, CacheStoragePromiseAll* promiseAll)
+            : ScriptFunction(scriptState)
+            , m_resolveType(resolveType)
+            , m_index(index)
+            , m_promiseAll(promiseAll) { }
+
+        ScriptValue call(ScriptValue value) override
+        {
+            if (m_resolveType == Fulfilled)
+                m_promiseAll->onFulfilled(m_index, value);
+            else
+                m_promiseAll->onRejected(value);
+            return ScriptValue(scriptState(), m_promiseAll->promise().v8Value());
+        }
+
+        const ResolveType m_resolveType;
+        const size_t m_index;
+        Member<CacheStoragePromiseAll> m_promiseAll;
+    };
+
+    v8::Local<v8::Function> createFulfillFunction(size_t index)
+    {
+        return AdapterFunction::create(m_resolver->scriptState(), AdapterFunction::Fulfilled, index, this);
+    }
+
+    v8::Local<v8::Function> createRejectFunction()
+    {
+        return AdapterFunction::create(m_resolver->scriptState(), AdapterFunction::Rejected, 0, this);
+    }
+
+    size_t m_numberOfPendingPromises;
+    RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;
+    bool m_isSettled = false;
+    Vector<ScriptValue> m_values;
+};
 
 } // namespace
 
 class Cache::FetchResolvedForAdd final : public ScriptFunction {
 public:
-    static v8::Local<v8::Function> create(ScriptState* scriptState, Cache* cache, Request* request)
+    static v8::Local<v8::Function> create(ScriptState* scriptState, Cache* cache, const HeapVector<Member<Request>>& requests)
     {
-        FetchResolvedForAdd* self = new FetchResolvedForAdd(scriptState, cache, request);
+        FetchResolvedForAdd* self = new FetchResolvedForAdd(scriptState, cache, requests);
         return self->bindToV8Function();
     }
 
     ScriptValue call(ScriptValue value) override
     {
-        Response* response = V8Response::toImplWithTypeCheck(scriptState()->isolate(), value.v8Value());
-        ScriptPromise putPromise = m_cache->putImpl(scriptState(), HeapVector<Member<Request>>(1, m_request), HeapVector<Member<Response>>(1, response));
+        NonThrowableExceptionState exceptionState;
+        HeapVector<Member<Response>> responses = toMemberNativeArray<Response, V8Response>(value.v8Value(), m_requests.size(), scriptState()->isolate(), exceptionState);
+        ScriptPromise putPromise = m_cache->putImpl(scriptState(), m_requests, responses);
         return ScriptValue(scriptState(), putPromise.v8Value());
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_cache);
-        visitor->trace(m_request);
+        visitor->trace(m_requests);
         ScriptFunction::trace(visitor);
     }
 
 private:
-    FetchResolvedForAdd(ScriptState* scriptState, Cache* cache, Request* request)
+    FetchResolvedForAdd(ScriptState* scriptState, Cache* cache, const HeapVector<Member<Request>>& requests)
         : ScriptFunction(scriptState)
         , m_cache(cache)
-        , m_request(request)
+        , m_requests(requests)
     {
     }
 
     Member<Cache> m_cache;
-    Member<Request> m_request;
+    HeapVector<Member<Request>> m_requests;
 };
 
 class Cache::BarrierCallbackForPut final : public GarbageCollectedFinalized<BarrierCallbackForPut> {
@@ -298,25 +395,32 @@ ScriptPromise Cache::matchAll(ScriptState* scriptState, const RequestInfo& reque
 ScriptPromise Cache::add(ScriptState* scriptState, const RequestInfo& request, ExceptionState& exceptionState)
 {
     ASSERT(!request.isNull());
-    Request* newRequest;
+    HeapVector<Member<Request>> requests;
     if (request.isRequest()) {
-        newRequest = request.getAsRequest();
+        requests.append(request.getAsRequest());
     } else {
-        newRequest = Request::create(scriptState, request.getAsUSVString(), exceptionState);
-
+        requests.append(Request::create(scriptState, request.getAsUSVString(), exceptionState));
         if (exceptionState.hadException())
             return ScriptPromise();
     }
 
-    Vector<Request*> requestVector;
-    requestVector.append(newRequest);
-    return addAllImpl(scriptState, requestVector, exceptionState);
+    return addAllImpl(scriptState, requests, exceptionState);
 }
 
-ScriptPromise Cache::addAll(ScriptState* scriptState, const Vector<ScriptValue>& rawRequests)
+ScriptPromise Cache::addAll(ScriptState* scriptState, const HeapVector<RequestInfo>& rawRequests, ExceptionState& exceptionState)
 {
-    // FIXME: Implement this.
-    return rejectAsNotImplemented(scriptState);
+    HeapVector<Member<Request>> requests;
+    for (RequestInfo request : rawRequests) {
+        if (request.isRequest()) {
+            requests.append(request.getAsRequest());
+        } else {
+            requests.append(Request::create(scriptState, request.getAsUSVString(), exceptionState));
+            if (exceptionState.hadException())
+                return ScriptPromise();
+        }
+    }
+
+    return addAllImpl(scriptState, requests, exceptionState);
 }
 
 ScriptPromise Cache::deleteFunction(ScriptState* scriptState, const RequestInfo& request, const CacheQueryOptions& options, ExceptionState& exceptionState)
@@ -394,23 +498,25 @@ ScriptPromise Cache::matchAllImpl(ScriptState* scriptState, const Request* reque
     return promise;
 }
 
-ScriptPromise Cache::addAllImpl(ScriptState* scriptState, const Vector<Request*>& requests, ExceptionState& exceptionState)
+ScriptPromise Cache::addAllImpl(ScriptState* scriptState, const HeapVector<Member<Request>>& requests, ExceptionState& exceptionState)
 {
-    // TODO(gavinp,nhiroki): Implement addAll for more than one element.
-    ASSERT(requests.size() == 1);
-
     Vector<RequestInfo> requestInfos;
     requestInfos.resize(requests.size());
+    Vector<ScriptPromise> promises;
+    promises.resize(requests.size());
     for (size_t i = 0; i < requests.size(); ++i) {
         if (!requests[i]->url().protocolIsInHTTPFamily())
             return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Add/AddAll does not support schemes other than \"http\" or \"https\""));
         if (requests[i]->method() != "GET")
             return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Add/AddAll only supports the GET request method."));
         requestInfos[i].setRequest(requests[i]);
+
+        promises[i] = m_scopedFetcher->fetch(scriptState, requestInfos[i], Dictionary(), exceptionState);
     }
 
-    ScriptPromise fetchPromise = m_scopedFetcher->fetch(scriptState, requestInfos[0], Dictionary(), exceptionState);
-    return fetchPromise.then(FetchResolvedForAdd::create(scriptState, this, requests[0]));
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    CacheStoragePromiseAll* promiseAll = new CacheStoragePromiseAll(promises, resolver.get());
+    return promiseAll->promise().then(FetchResolvedForAdd::create(scriptState, this, requests));
 }
 
 ScriptPromise Cache::deleteImpl(ScriptState* scriptState, const Request* request, const CacheQueryOptions& options)

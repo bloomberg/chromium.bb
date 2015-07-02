@@ -17,10 +17,7 @@
     // [CallWith=ScriptState, RaisesException] Promise<sequence<Response>> matchAll(RequestInfo request, optional CacheQueryOptions options);
 
     [CallWith=ScriptState, RaisesException] Promise<void> add(RequestInfo request);
-
-    // FIXME: Implement addAll(): http://crbug.com/427652
-    // [CallWith=ScriptState] Promise<void> addAll(sequence<RequestInfo> requests);
-
+    [RuntimeEnabled=ServiceWorkerCacheAddAll, CallWith=ScriptState, RaisesException] Promise<void> addAll(sequence<RequestInfo> requests);
     [CallWith=ScriptState, RaisesException] Promise<void> put(RequestInfo request, Response response);
     [CallWith=ScriptState, ImplementedAs=deleteFunction, RaisesException] Promise<boolean> delete(RequestInfo request, optional CacheQueryOptions options);
     [CallWith=ScriptState, RaisesException] Promise<sequence<Response>> keys(optional RequestInfo request, optional CacheQueryOptions options);
