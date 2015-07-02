@@ -109,7 +109,7 @@ public:
         , m_decoder(decoder)
         , m_callback(callback)
     {
-        m_loader = adoptPtr(new FileReaderLoader(FileReaderLoader::ReadByClient, this));
+        m_loader = FileReaderLoader::create(FileReaderLoader::ReadByClient, this);
     }
 
     virtual ~InspectorFileReaderLoaderClient() { }

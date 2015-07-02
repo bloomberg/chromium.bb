@@ -191,7 +191,7 @@ private:
                     return onClose();
             } else {
                 FileReaderLoader::ReadType readType = FileReaderLoader::ReadAsArrayBuffer;
-                m_loader = adoptPtr(new FileReaderLoader(readType, this));
+                m_loader = FileReaderLoader::create(readType, this);
                 m_loader->start(executionContext(), m_blobDataHandle);
             }
         }
@@ -391,7 +391,7 @@ void Body::readAsyncFromBlob(PassRefPtr<BlobDataHandle> handle)
         ASSERT_NOT_REACHED();
     }
 
-    m_loader = adoptPtr(new FileReaderLoader(readType, this));
+    m_loader = FileReaderLoader::create(readType, this);
     m_loader->start(m_resolver->scriptState()->executionContext(), blobHandle);
 
     return;

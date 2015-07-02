@@ -52,6 +52,7 @@ class TextResourceDecoder;
 class ThreadableLoader;
 
 class CORE_EXPORT FileReaderLoader final : public ThreadableLoaderClient {
+    WTF_MAKE_FAST_ALLOCATED(FileReaderLoader);
 public:
     enum ReadType {
         ReadAsArrayBuffer,
@@ -62,6 +63,11 @@ public:
     };
 
     // If client is given, do the loading asynchronously. Otherwise, load synchronously.
+    static PassOwnPtr<FileReaderLoader> create(ReadType readType, FileReaderLoaderClient* client)
+    {
+        return adoptPtr(new FileReaderLoader(readType, client));
+    }
+
     FileReaderLoader(ReadType, FileReaderLoaderClient*);
     virtual ~FileReaderLoader();
 

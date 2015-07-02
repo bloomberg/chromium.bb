@@ -40,34 +40,33 @@
 
 namespace blink {
 
-    class ResourceError;
-    class ResourceResponse;
-    class ResourceTimingInfo;
+class ResourceError;
+class ResourceResponse;
+class ResourceTimingInfo;
 
-    class CORE_EXPORT ThreadableLoaderClient {
-        WTF_MAKE_NONCOPYABLE(ThreadableLoaderClient);
-        WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ThreadableLoaderClient);
-    public:
-        virtual void didSendData(unsigned long long /*bytesSent*/, unsigned long long /*totalBytesToBeSent*/) { }
+class CORE_EXPORT ThreadableLoaderClient {
+    WTF_MAKE_NONCOPYABLE(ThreadableLoaderClient);
+public:
+    virtual void didSendData(unsigned long long /*bytesSent*/, unsigned long long /*totalBytesToBeSent*/) { }
 
-        virtual void didReceiveResponse(unsigned long /*identifier*/, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) { }
-        virtual void didReceiveData(const char*, unsigned /*dataLength*/) { }
-        virtual void didReceiveCachedMetadata(const char*, int /*dataLength*/) { }
-        virtual void didFinishLoading(unsigned long /*identifier*/, double /*finishTime*/) { }
-        virtual void didFail(const ResourceError&) { }
-        virtual void didFailAccessControlCheck(const ResourceError& error) { didFail(error); }
-        virtual void didFailRedirectCheck() { }
-        virtual void didReceiveResourceTiming(const ResourceTimingInfo&) { }
+    virtual void didReceiveResponse(unsigned long /*identifier*/, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) { }
+    virtual void didReceiveData(const char*, unsigned /*dataLength*/) { }
+    virtual void didReceiveCachedMetadata(const char*, int /*dataLength*/) { }
+    virtual void didFinishLoading(unsigned long /*identifier*/, double /*finishTime*/) { }
+    virtual void didFail(const ResourceError&) { }
+    virtual void didFailAccessControlCheck(const ResourceError& error) { didFail(error); }
+    virtual void didFailRedirectCheck() { }
+    virtual void didReceiveResourceTiming(const ResourceTimingInfo&) { }
 
-        virtual bool isDocumentThreadableLoaderClient() { return false; }
+    virtual bool isDocumentThreadableLoaderClient() { return false; }
 
-        virtual void didDownloadData(int /*dataLength*/) { }
+    virtual void didDownloadData(int /*dataLength*/) { }
 
-        virtual ~ThreadableLoaderClient() { }
+    virtual ~ThreadableLoaderClient() { }
 
-    protected:
-        ThreadableLoaderClient() { }
-    };
+protected:
+    ThreadableLoaderClient() { }
+};
 
 } // namespace blink
 

@@ -47,6 +47,7 @@ namespace blink {
 // passed to and used on the main thread. Each did* method records the given
 // data so that they can be run on the worker thread later (by run()).
 class WorkerLoaderClientBridgeSyncHelper : public ThreadableLoaderClient {
+    WTF_MAKE_FAST_ALLOCATED(WorkerLoaderClientBridgeSyncHelper);
 public:
     static PassOwnPtr<WorkerLoaderClientBridgeSyncHelper> create(ThreadableLoaderClientWrapper*, PassOwnPtr<WebWaitableEvent>);
     virtual ~WorkerLoaderClientBridgeSyncHelper();

@@ -74,7 +74,7 @@ inline EventSource::EventSource(ExecutionContext* context, const KURL& url, cons
 {
 }
 
-PassRefPtrWillBeRawPtr<EventSource> EventSource::create(ExecutionContext* context, const String& url, const EventSourceInit& eventSourceInit, ExceptionState& exceptionState)
+EventSource* EventSource::create(ExecutionContext* context, const String& url, const EventSourceInit& eventSourceInit, ExceptionState& exceptionState)
 {
     if (url.isEmpty()) {
         exceptionState.throwDOMException(SyntaxError, "Cannot open an EventSource to an empty URL.");
@@ -94,12 +94,11 @@ PassRefPtrWillBeRawPtr<EventSource> EventSource::create(ExecutionContext* contex
         return nullptr;
     }
 
-    RefPtrWillBeRawPtr<EventSource> source = adoptRefWillBeNoop(new EventSource(context, fullURL, eventSourceInit));
+    EventSource* source = new EventSource(context, fullURL, eventSourceInit);
 
     source->scheduleInitialConnect();
     source->suspendIfNeeded();
-
-    return source.release();
+    return source;
 }
 
 EventSource::~EventSource()
@@ -424,6 +423,13 @@ void EventSource::parseEventStreamLine(unsigned bufPos, int fieldLength, int lin
 void EventSource::stop()
 {
     close();
+
+    // (Non)Oilpan: In order to make Worker shutdowns clean,
+    // deref the loader. This will in turn deref its
+    // RefPtr<WorkerGlobalScope>.
+    //
+    // Worth doing regardless, it is no longer of use.
+    m_loader = nullptr;
 }
 
 bool EventSource::hasPendingActivity() const
@@ -441,7 +447,7 @@ PassRefPtrWillBeRawPtr<MessageEvent> EventSource::createMessageEvent()
 
 DEFINE_TRACE(EventSource)
 {
-    EventTargetWithInlineData::trace(visitor);
+    RefCountedGarbageCollectedEventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

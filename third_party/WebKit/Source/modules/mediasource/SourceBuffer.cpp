@@ -662,7 +662,7 @@ void SourceBuffer::appendStreamInternal(Stream* stream, ExceptionState& exceptio
     // 4. Asynchronously run the stream append loop algorithm with stream and maxSize.
 
     stream->neuter();
-    m_loader = adoptPtr(new FileReaderLoader(FileReaderLoader::ReadByClient, this));
+    m_loader = FileReaderLoader::create(FileReaderLoader::ReadByClient, this);
     m_stream = stream;
     m_appendStreamAsyncPartRunner.runAsync();
 }
