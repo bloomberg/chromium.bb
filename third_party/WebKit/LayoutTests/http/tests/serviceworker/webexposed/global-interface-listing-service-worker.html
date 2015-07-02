@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ServiceWorkerGlobalScope expose test.</title>
+  <script src="../../resources/testharness.js"></script>
+  <script src="../../resources/testharnessreport.js"></script>
+  <script src="../resources/test-helpers.js"></script>
+</head>
+<body>
+  <script>
+
+    async_test(function(t) {
+        service_worker_unregister_and_register(
+            t, 'resources/global-interface-listing-worker.js',
+            'resources/global-interface-listing-worker')
+          .then(function(registration) {
+              var sw = registration.installing;
+              var message_channel = new MessageChannel;
+              message_channel.port1.onmessage = t.step_func(on_message);
+              sw.postMessage(null, [message_channel.port2]);
+            }).catch(unreached_rejection(t));
+
+        function on_message(evt) {
+          var pre = document.createElement('pre');
+          pre.appendChild(document.createTextNode(evt.data.result.join('\n')));
+          document.body.appendChild(pre);
+
+          service_worker_unregister_and_done(t);
+        };
+      }, 'Verify the interface of ServiceWorkerGlobalScope');
+
+  </script>
+</body>
+</html>

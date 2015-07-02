@@ -53,6 +53,11 @@
   },
   {
     "prefix": "stable",
+    "base": "http/tests/serviceworker/webexposed",
+    "args": ["--stable-release-mode"]
+  },
+  {
+    "prefix": "stable",
     "base": "animations-unprefixed",
     "args": ["--stable-release-mode"]
   },
