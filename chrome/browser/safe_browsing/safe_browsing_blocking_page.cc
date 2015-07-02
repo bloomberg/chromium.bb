@@ -84,6 +84,12 @@ const char kEventNameHarmful[] = "harmful_interstitial_";
 const char kEventNamePhishing[] = "phishing_interstitial_";
 const char kEventNameOther[] = "safebrowsing_other_interstitial_";
 
+// Constants for the V4 phishing string upgrades.
+const char kReportPhishingErrorUrl[] =
+    "https://www.google.com/safebrowsing/report_error/";
+const char kReportPhishingErrorTrial[] = "SafeBrowsingReportPhishingErrorLink";
+const char kReportPhishingErrorEnabled[] = "Enabled";
+
 base::LazyInstance<SafeBrowsingBlockingPage::UnsafeResourceMap>
     g_unsafe_resource_map = LAZY_INSTANCE_INITIALIZER;
 
@@ -309,6 +315,18 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& page_cmd) {
       // User has opened up the hidden text.
       metrics_helper()->RecordUserInteraction(
           SecurityInterstitialMetricsHelper::SHOW_ADVANCED);
+      break;
+    }
+    case CMD_REPORT_PHISHING_ERROR: {
+      // User wants to report a phishing error.
+      metrics_helper()->RecordUserInteraction(
+          SecurityInterstitialMetricsHelper::REPORT_PHISHING_ERROR);
+      GURL phishing_error_url(kReportPhishingErrorUrl);
+      phishing_error_url = google_util::AppendGoogleLocaleParam(
+          phishing_error_url, g_browser_process->GetApplicationLocale());
+      OpenURLParams params(phishing_error_url, Referrer(), CURRENT_TAB,
+                           ui::PAGE_TRANSITION_LINK, false);
+      web_contents()->OpenURL(params);
       break;
     }
   }
@@ -659,9 +677,17 @@ void SafeBrowsingBlockingPage::PopulatePhishingLoadTimeData(
       "explanationParagraph",
       l10n_util::GetStringFUTF16(IDS_PHISHING_V3_EXPLANATION_PARAGRAPH,
                                  GetFormattedHostName()));
-  load_time_data->SetString(
-      "finalParagraph",
-      l10n_util::GetStringUTF16(IDS_PHISHING_V3_PROCEED_PARAGRAPH));
+
+  if (base::FieldTrialList::FindFullName(kReportPhishingErrorTrial) ==
+      kReportPhishingErrorEnabled) {
+    load_time_data->SetString(
+        "finalParagraph", l10n_util::GetStringUTF16(
+                              IDS_PHISHING_V4_PROCEED_AND_REPORT_PARAGRAPH));
+  } else {
+    load_time_data->SetString(
+        "finalParagraph",
+        l10n_util::GetStringUTF16(IDS_PHISHING_V3_PROCEED_PARAGRAPH));
+  }
 
   PopulateExtendedReportingOption(load_time_data);
 }

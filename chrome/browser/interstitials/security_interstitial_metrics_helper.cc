@@ -154,6 +154,7 @@ void SecurityInterstitialMetricsHelper::RecordUserInteraction(
     case SET_EXTENDED_REPORTING_ENABLED:
     case SET_EXTENDED_REPORTING_DISABLED:
     case EXTENDED_REPORTING_IS_ENABLED:
+    case REPORT_PHISHING_ERROR:
     case MAX_INTERACTION:
       break;
   }

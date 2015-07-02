@@ -23,6 +23,8 @@ var CMD_OPEN_LOGIN = 7;
 var CMD_DO_REPORT = 8;
 var CMD_DONT_REPORT = 9;
 var CMD_OPEN_REPORTING_PRIVACY = 10;
+// Report a phishing error.
+var CMD_REPORT_PHISHING_ERROR = 11;
 
 /**
  * A convenience method for sending commands to the parent page.
@@ -169,6 +171,15 @@ function setupEvents() {
         sendCommand(CMD_SHOW_MORE_SECTION);
         expandedDetails = true;
       }
+    });
+  }
+
+  // TODO(felt): This should be simplified once the Finch trial is no longer
+  // needed.
+  if (interstitialType == 'SAFEBROWSING' &&
+      loadTimeData.getBoolean('phishing') && $('report-error-link')) {
+    $('report-error-link').addEventListener('click', function(event) {
+      sendCommand(CMD_REPORT_PHISHING_ERROR);
     });
   }
 

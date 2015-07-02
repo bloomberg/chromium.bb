@@ -53,6 +53,8 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
     CMD_DO_REPORT = 8,
     CMD_DONT_REPORT = 9,
     CMD_OPEN_REPORTING_PRIVACY = 10,
+    // Report a phishing error
+    CMD_REPORT_PHISHING_ERROR = 11,
   };
 
   SecurityInterstitialPage(content::WebContents* web_contents,
