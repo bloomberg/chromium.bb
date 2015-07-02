@@ -49,7 +49,7 @@ read_tables(yaml_parser_t *parser, char *tables_list) {
 
   if (!yaml_parser_parse(parser, &event) ||
       (event.type != YAML_SEQUENCE_START_EVENT))
-    error("tables sequence expected", &event);
+    yaml_error(YAML_SEQUENCE_START_EVENT, &event);
 
   yaml_event_delete(&event);
 
@@ -75,7 +75,7 @@ read_flags(yaml_parser_t *parser) {
   yaml_event_t event;
   if (!yaml_parser_parse(parser, &event) ||
       (event.type != YAML_MAPPING_START_EVENT))
-    error("flags mapping expected", &event);
+    yaml_error(YAML_MAPPING_START_EVENT, &event);
 
   yaml_event_delete(&event);
 
@@ -122,7 +122,7 @@ read_test(yaml_parser_t *parser, char *tables_list) {
 
   if (!yaml_parser_parse(parser, &event) ||
       (event.type != YAML_SEQUENCE_END_EVENT))
-    error("sequence end expected", &event);
+    yaml_error(YAML_SEQUENCE_END_EVENT, &event);
 
   yaml_event_delete(&event);
 }
@@ -132,7 +132,7 @@ read_tests(yaml_parser_t *parser, char *tables_list) {
   yaml_event_t event;
   if (!yaml_parser_parse(parser, &event) ||
       (event.type != YAML_SEQUENCE_START_EVENT))
-    error("Tables sequence expected", &event);
+    yaml_error(YAML_SEQUENCE_START_EVENT, &event);
 
   yaml_event_delete(&event);
 
