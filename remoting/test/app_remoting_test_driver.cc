@@ -22,11 +22,12 @@ const char kAuthCodeSwitchName[] = "authcode";
 const char kHelpSwitchName[] = "help";
 const char kLoggingLevelSwitchName[] = "verbosity";
 const char kRefreshTokenFileSwitchName[] = "refresh-token-file";
+const char kReleaseHostsAfterTestingSwitchName[] = "release-hosts-after-tests";
 const char kServiceEnvironmentSwitchName[] = "environment";
 const char kShowHostAvailabilitySwitchName[] = "show-host-availability";
 const char kSingleProcessTestsSwitchName[] = "single-process-tests";
 const char kUserNameSwitchName[] = "username";
-}
+}  // namespace switches
 
 namespace {
 
@@ -80,6 +81,10 @@ void PrintUsage() {
       "  %s: Retrieves and displays the connection status for all known "
       "hosts, no tests will be run\n",
       switches::kShowHostAvailabilitySwitchName);
+  printf(
+      "  %s: Send a message to the service after all tests have been run to "
+      "release remote hosts the tool used for testing.\n",
+      switches::kReleaseHostsAfterTestingSwitchName);
   printf(
       "  %s: Specifies the optional logging level of the tool (0-3)."
       " [default: off]\n",
@@ -198,38 +203,42 @@ int main(int argc, char** argv) {
         base::Bind(&NoAtExitBaseTestSuite::RunTestSuite, argc, argv));
   }
 
+  remoting::test::AppRemotingTestDriverEnvironment::EnvironmentOptions options;
+
   // Verify we received the required input from the command line.
-  std::string user_name(
-      command_line->GetSwitchValueASCII(switches::kUserNameSwitchName));
-  if (user_name.empty()) {
+  options.user_name =
+      command_line->GetSwitchValueASCII(switches::kUserNameSwitchName);
+  if (options.user_name.empty()) {
     LOG(ERROR) << "No user name passed in, can't authenticate without that!";
     PrintUsage();
     return -1;
   }
-  DVLOG(1) << "Running tests as: " << user_name;
+  DVLOG(1) << "Running tests as: " << options.user_name;
 
   // Check to see if the user passed in a one time use auth_code for
   // refreshing their credentials.
   std::string auth_code(
       command_line->GetSwitchValueASCII(switches::kAuthCodeSwitchName));
 
-  base::FilePath refresh_token_file_path(
-      command_line->GetSwitchValuePath(switches::kRefreshTokenFileSwitchName));
+  options.refresh_token_file_path =
+      command_line->GetSwitchValuePath(switches::kRefreshTokenFileSwitchName);
+
+  options.release_hosts_when_done =
+      command_line->HasSwitch(switches::kReleaseHostsAfterTestingSwitchName);
 
   // If the user passed in a service environment, use it, otherwise set a
   // default value.
-  remoting::test::ServiceEnvironment service_environment;
   std::string service_environment_switch(command_line->GetSwitchValueASCII(
       switches::kServiceEnvironmentSwitchName));
   if (service_environment_switch.empty() ||
       service_environment_switch == "dev") {
-    service_environment =
+    options.service_environment =
         remoting::test::ServiceEnvironment::kDeveloperEnvironment;
   } else if (service_environment_switch == "test") {
-    service_environment =
+    options.service_environment =
         remoting::test::ServiceEnvironment::kTestingEnvironment;
   } else if (service_environment_switch == "staging") {
-    service_environment =
+    options.service_environment =
         remoting::test::ServiceEnvironment::kStagingEnvironment;
   } else {
     LOG(ERROR) << "Invalid " << switches::kServiceEnvironmentSwitchName
@@ -255,8 +264,7 @@ int main(int argc, char** argv) {
   // The GTest framework will own the lifetime of this object once
   // it is registered below.
   scoped_ptr<remoting::test::AppRemotingTestDriverEnvironment> shared_data(
-      new remoting::test::AppRemotingTestDriverEnvironment(
-          user_name, refresh_token_file_path, service_environment));
+      new remoting::test::AppRemotingTestDriverEnvironment(options));
 
   if (!shared_data->Initialize(auth_code)) {
     // If we failed to initialize our shared data object, then bail.
@@ -265,9 +273,9 @@ int main(int argc, char** argv) {
 
   if (command_line->HasSwitch(switches::kShowHostAvailabilitySwitchName)) {
     // When this flag is specified, we will retrieve connection information
-    // for all known applications and report the status.  No tests will be run.
+    // for all known applications and report the status.  Tests can be skipped
+    // using a gtest_filter flag.
     shared_data->ShowHostAvailability();
-    return 0;
   }
 
   // Since we've successfully set up our shared_data object, we'll assign the

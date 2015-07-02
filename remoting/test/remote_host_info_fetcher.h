@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "remoting/test/app_remoting_service_urls.h"
 #include "remoting/test/remote_host_info.h"
 
 namespace net {
@@ -22,28 +23,6 @@ class URLRequestContextGetter;
 
 namespace remoting {
 namespace test {
-
-// Used by the RemoteHostInfoFetcher to make HTTP requests and also by the
-// unittests for this class to set fake response data for these URLs.
-const char kDevServiceEnvironmentUrlFormat[] =
-    "https://www-googleapis-test.sandbox.google.com/appremoting/v1beta1_dev/"
-    "applications/%s/run";
-const char kTestServiceEnvironmentUrlFormat[] =
-    "https://www-googleapis-test.sandbox.google.com/appremoting/v1beta1/"
-    "applications/%s/run";
-const char kStagingServiceEnvironmentUrlFormat[] =
-    "https://www-googleapis-test.sandbox.google.com/appremoting/"
-    "v1beta1_staging/applications/%s/run";
-
-// Specifies the service API to call for app remoting host information.
-// Note: When adding new environments, add them before kUnknownEnvironment as
-//       the last entry is used for bounds checking.
-enum ServiceEnvironment {
-  kDeveloperEnvironment,
-  kTestingEnvironment,
-  kStagingEnvironment,
-  kUnknownEnvironment
-};
 
 // Supplied by the client for each remote host info request and returns a valid,
 // initialized RemoteHostInfo object on success.

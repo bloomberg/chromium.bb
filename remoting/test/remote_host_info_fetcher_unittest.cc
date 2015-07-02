@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -88,20 +87,19 @@ void RemoteHostInfoFetcherTest::SetUp() {
   message_loop_.reset(new base::MessageLoopForIO);
 
   dev_service_environment_url_ =
-      base::StringPrintf(kDevServiceEnvironmentUrlFormat, kTestApplicationId);
+      GetRunApplicationUrl(kTestApplicationId, kDeveloperEnvironment);
   SetFakeResponse(GURL(dev_service_environment_url_),
                   kRemoteHostInfoEmptyResponse, net::HTTP_NOT_FOUND,
                   net::URLRequestStatus::FAILED);
 
   test_service_environment_url_ =
-      base::StringPrintf(kTestServiceEnvironmentUrlFormat, kTestApplicationId);
+      GetRunApplicationUrl(kTestApplicationId, kTestingEnvironment);
   SetFakeResponse(GURL(test_service_environment_url_),
                   kRemoteHostInfoEmptyResponse, net::HTTP_NOT_FOUND,
                   net::URLRequestStatus::FAILED);
 
   staging_service_environment_url_ =
-      base::StringPrintf(kStagingServiceEnvironmentUrlFormat,
-                         kTestApplicationId);
+      GetRunApplicationUrl(kTestApplicationId, kStagingEnvironment);
   SetFakeResponse(GURL(staging_service_environment_url_),
                   kRemoteHostInfoEmptyResponse, net::HTTP_NOT_FOUND,
                   net::URLRequestStatus::FAILED);

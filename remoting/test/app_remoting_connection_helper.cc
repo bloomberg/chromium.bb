@@ -66,6 +66,8 @@ bool AppRemotingConnectionHelper::StartConnection() {
   if (!remote_host_info.IsReadyForConnection()) {
     return false;
   }
+  remoting::test::AppRemotingSharedData->AddHostToReleaseList(
+      application_details_.application_id, remote_host_info.host_id);
 
   DCHECK(!run_loop_ || !run_loop_->running());
   run_loop_.reset(new base::RunLoop());

@@ -23,6 +23,7 @@ namespace remoting {
 namespace test {
 
 class AccessTokenFetcher;
+class AppRemotingReportIssueRequest;
 class RefreshTokenStore;
 struct RemoteHostInfo;
 
@@ -31,9 +32,17 @@ struct RemoteHostInfo;
 // access tokens and retrieving remote host connection information.
 class AppRemotingTestDriverEnvironment : public testing::Environment {
  public:
-  AppRemotingTestDriverEnvironment(const std::string& user_name,
-                                   const base::FilePath& refresh_token_file,
-                                   ServiceEnvironment service_environment);
+  struct EnvironmentOptions {
+    EnvironmentOptions();
+    ~EnvironmentOptions();
+
+    std::string user_name;
+    base::FilePath refresh_token_file_path;
+    ServiceEnvironment service_environment;
+    bool release_hosts_when_done;
+  };
+
+  explicit AppRemotingTestDriverEnvironment(const EnvironmentOptions& options);
   ~AppRemotingTestDriverEnvironment() override;
 
   // Returns false if a valid access token cannot be retrieved.
@@ -48,6 +57,11 @@ class AppRemotingTestDriverEnvironment : public testing::Environment {
   bool GetRemoteHostInfoForApplicationId(const std::string& application_id,
                                          RemoteHostInfo* remote_host_info);
 
+  // Adds the host_id to the list of hosts that will be released after the tests
+  // have all been run.
+  void AddHostToReleaseList(const std::string& application_id,
+                            const std::string& host_id);
+
   // Retrieves connection information for all known applications and displays
   // their availability to STDOUT.
   void ShowHostAvailability();
@@ -61,6 +75,8 @@ class AppRemotingTestDriverEnvironment : public testing::Environment {
   // they remain valid until the AppRemotingTestDriverEnvironment instance has
   // been destroyed.
   void SetAccessTokenFetcherForTest(AccessTokenFetcher* access_token_fetcher);
+  void SetAppRemotingReportIssueRequestForTest(
+      AppRemotingReportIssueRequest* app_remoting_report_issue_request);
   void SetRefreshTokenStoreForTest(RefreshTokenStore* refresh_token_store);
   void SetRemoteHostInfoFetcherForTest(
       RemoteHostInfoFetcher* remote_host_info_fetcher);
@@ -111,11 +127,19 @@ class AppRemotingTestDriverEnvironment : public testing::Environment {
   // Service API to target when retrieving remote host connection information.
   ServiceEnvironment service_environment_;
 
+  // Specifies whether to tell the service to release the remote hosts we
+  // requested after the tests have completed.
+  bool release_hosts_when_done_;
+
   // Path to a JSON file containing refresh tokens.
   base::FilePath refresh_token_file_path_;
 
   // Access token fetcher used by TestDriverEnvironment tests.
   remoting::test::AccessTokenFetcher* test_access_token_fetcher_;
+
+  // AppRemotingReportIssueRequest used by TestDriverEnvironment tests.
+  remoting::test::AppRemotingReportIssueRequest*
+      test_app_remoting_report_issue_request_;
 
   // RefreshTokenStore used by TestDriverEnvironment tests.
   remoting::test::RefreshTokenStore* test_refresh_token_store_;
@@ -125,6 +149,10 @@ class AppRemotingTestDriverEnvironment : public testing::Environment {
 
   // Used for running network request tasks.
   scoped_ptr<base::MessageLoopForIO> message_loop_;
+
+  // Contains the host ids to release when the environment is torn down.
+  // The key is the application id and the value is a list of hosts.
+  std::map<std::string, std::vector<std::string>> host_ids_to_release_;
 
   // Contains the names of all supported remote applications.
   // Once initialized, this vector is not modified.

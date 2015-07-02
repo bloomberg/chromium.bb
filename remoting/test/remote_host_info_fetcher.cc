@@ -8,7 +8,6 @@
 #include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -43,30 +42,13 @@ bool RemoteHostInfoFetcher::RetrieveRemoteHostInfo(
 
   DVLOG(2) << "RemoteHostInfoFetcher::RetrieveRemoteHostInfo() called";
 
-  std::string service_url;
-  switch (service_environment) {
-    case kDeveloperEnvironment:
-      DVLOG(1) << "Configuring service request for dev environment";
-      service_url = base::StringPrintf(kDevServiceEnvironmentUrlFormat,
-                                       application_id.c_str());
-      break;
-
-    case kTestingEnvironment:
-      DVLOG(1) << "Configuring service request for test environment";
-      service_url = base::StringPrintf(kTestServiceEnvironmentUrlFormat,
-                                       application_id.c_str());
-      break;
-
-    case kStagingEnvironment:
-      DVLOG(1) << "Configuring service request for staging environment";
-      service_url = base::StringPrintf(kStagingServiceEnvironmentUrlFormat,
-                                       application_id.c_str());
-      break;
-
-    default:
-      LOG(ERROR) << "Unrecognized service type: " << service_environment;
-      return false;
+  std::string service_url(
+      GetRunApplicationUrl(application_id, service_environment));
+  if (service_url.empty()) {
+    LOG(ERROR) << "Unrecognized service type: " << service_environment;
+    return false;
   }
+  DVLOG(1) << "Using remote host service request url: " << service_url;
 
   remote_host_info_callback_ = callback;
 
