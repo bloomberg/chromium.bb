@@ -68,6 +68,10 @@ const char kLearnMoreMalwareUrlV2[] =
 const char kLearnMorePhishingUrlV2[] =
     "https://www.google.com/transparencyreport/safebrowsing/";
 
+// Constants for the V4 phishing string upgrades.
+const char kSocialEngineeringTrial[] = "SafeBrowsingSocialEngineeringStrings";
+const char kSocialEngineeringEnabled[] = "Enabled";
+
 // After a malware interstitial where the user opted-in to the report
 // but clicked "proceed anyway", we delay the call to
 // MalwareDetails::FinishCollection() by this much time (in
@@ -637,15 +641,20 @@ void SafeBrowsingBlockingPage::PopulateHarmfulLoadTimeData(
 
 void SafeBrowsingBlockingPage::PopulatePhishingLoadTimeData(
     base::DictionaryValue* load_time_data) {
+  bool use_social_engineering_strings =
+      base::FieldTrialList::FindFullName(kSocialEngineeringTrial) ==
+      kSocialEngineeringEnabled;
   load_time_data->SetBoolean("phishing", true);
   load_time_data->SetString(
-      "heading",
-      l10n_util::GetStringUTF16(IDS_PHISHING_V3_HEADING));
+      "heading", l10n_util::GetStringUTF16(use_social_engineering_strings
+                                               ? IDS_PHISHING_V4_HEADING
+                                               : IDS_PHISHING_V3_HEADING));
   load_time_data->SetString(
       "primaryParagraph",
-      l10n_util::GetStringFUTF16(
-          IDS_PHISHING_V3_PRIMARY_PARAGRAPH,
-          GetFormattedHostName()));
+      l10n_util::GetStringFUTF16(use_social_engineering_strings
+                                     ? IDS_PHISHING_V4_PRIMARY_PARAGRAPH
+                                     : IDS_PHISHING_V3_PRIMARY_PARAGRAPH,
+                                 GetFormattedHostName()));
   load_time_data->SetString(
       "explanationParagraph",
       l10n_util::GetStringFUTF16(IDS_PHISHING_V3_EXPLANATION_PARAGRAPH,
