@@ -9,6 +9,7 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -23,7 +24,6 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/tree/tree_view_controller.h"
-#include "ui/views/ime/input_method.h"
 #include "ui/views/resources/grit/views_resources.h"
 
 using ui::TreeModel;
@@ -95,6 +95,12 @@ TreeView::TreeView()
 TreeView::~TreeView() {
   if (model_)
     model_->RemoveObserver(this);
+
+  if (GetInputMethod() && selector_.get()) {
+    // TreeView should have been blurred before destroy.
+    DCHECK(selector_.get() != GetInputMethod()->GetTextInputClient());
+  }
+
   if (focus_manager_) {
     focus_manager_->RemoveFocusChangeListener(this);
     focus_manager_ = NULL;
@@ -370,12 +376,6 @@ bool TreeView::OnMousePressed(const ui::MouseEvent& event) {
   return OnClickOrTap(event);
 }
 
-ui::TextInputClient* TreeView::GetTextInputClient() {
-  if (!selector_)
-    selector_.reset(new PrefixSelector(this));
-  return selector_.get();
-}
-
 void TreeView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP) {
     if (OnClickOrTap(*event))
@@ -618,17 +618,19 @@ void TreeView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void TreeView::OnFocus() {
-  GetInputMethod()->OnFocus();
+  if (GetInputMethod())
+    GetInputMethod()->SetFocusedTextInputClient(GetPrefixSelector());
   View::OnFocus();
   SchedulePaintForNode(selected_node_);
 
   // Notify the InputMethod so that it knows to query the TextInputClient.
   if (GetInputMethod())
-    GetInputMethod()->OnCaretBoundsChanged(this);
+    GetInputMethod()->OnCaretBoundsChanged(GetPrefixSelector());
 }
 
 void TreeView::OnBlur() {
-  GetInputMethod()->OnBlur();
+  if (GetInputMethod())
+    GetInputMethod()->DetachTextInputClient(GetPrefixSelector());
   SchedulePaintForNode(selected_node_);
   if (selector_)
     selector_->OnViewBlur();
@@ -1001,6 +1003,12 @@ bool TreeView::ExpandImpl(TreeModelNode* model_node) {
     return_value = true;
   }
   return return_value;
+}
+
+PrefixSelector* TreeView::GetPrefixSelector() {
+  if (!selector_)
+    selector_.reset(new PrefixSelector(this));
+  return selector_.get();
 }
 
 // InternalNode ----------------------------------------------------------------

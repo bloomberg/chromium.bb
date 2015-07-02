@@ -60,7 +60,6 @@ class ThemeProvider;
 namespace views {
 
 class DesktopWindowTreeHost;
-class InputMethod;
 class NativeWidget;
 class NonClientFrameView;
 class TooltipManager;
@@ -569,15 +568,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Returns the focused text input client within this widget.
   ui::TextInputClient* GetFocusedTextInputClient();
 
-  // Returns the InputMethod for this widget.
-  // Note that all widgets in a widget hierarchy share the same input method.
-  InputMethod* GetInputMethod();
-  const InputMethod* GetInputMethod() const;
-
   // Returns the ui::InputMethod for this widget.
-  // TODO(yukishiino): Rename this method to GetInputMethod once we remove
-  // views::InputMethod.
-  ui::InputMethod* GetHostInputMethod();
+  ui::InputMethod* GetInputMethod();
 
   // Starts a drag operation for the specified view. This blocks until the drag
   // operation completes. |view| can be NULL.
@@ -802,7 +794,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   void OnScrollEvent(ui::ScrollEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   bool ExecuteCommand(int command_id) override;
-  InputMethod* GetInputMethodDirect() override;
   const std::vector<ui::Layer*>& GetRootLayers() override;
   bool HasHitTestMask() const override;
   void GetHitTestMask(gfx::Path* mask) const override;
@@ -865,14 +856,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // the delegate wants to use a specified bounds.
   bool GetSavedWindowPlacement(gfx::Rect* bounds,
                                ui::WindowShowState* show_state);
-
-  // Creates and initializes a new InputMethod and returns it, otherwise null.
-  scoped_ptr<InputMethod> CreateInputMethod();
-
-  // Sets a different InputMethod instance to this widget. The instance
-  // must not be initialized, the ownership will be assumed by the widget.
-  // It's only for testing purpose.
-  void ReplaceInputMethod(InputMethod* input_method);
 
   internal::NativeWidgetPrivate* native_widget_;
 
@@ -937,8 +920,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // when the widget is shown. Set this value to false to override
   // initial focus for the widget.
   bool focus_on_creation_;
-
-  mutable scoped_ptr<InputMethod> input_method_;
 
   // See |is_top_level()| accessor.
   bool is_top_level_;

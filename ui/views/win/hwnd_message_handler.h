@@ -24,7 +24,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/sequential_id_generator.h"
 #include "ui/gfx/win/window_impl.h"
-#include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/views_export.h"
 
 namespace gfx {
@@ -41,7 +40,6 @@ namespace views {
 
 class FullscreenHandler;
 class HWNDMessageHandlerDelegate;
-class InputMethod;
 class WindowsSessionChangeObserver;
 
 // These two messages aren't defined in winuser.h, but they are sent to windows
@@ -111,7 +109,6 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
 // TODO(beng): This object should eventually *become* the WindowImpl.
 class VIEWS_EXPORT HWNDMessageHandler :
     public gfx::WindowImpl,
-    public internal::InputMethodDelegate,
     public ui::WindowEventTarget {
  public:
   explicit HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate);
@@ -207,9 +204,6 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
  private:
   typedef std::set<DWORD> TouchIDs;
-
-  // Overridden from internal::InputMethodDelegate:
-  void DispatchKeyEventPostIME(const ui::KeyEvent& key) override;
 
   // Overridden from WindowImpl:
   HICON GetDefaultWindowIcon() const override;

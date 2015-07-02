@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
@@ -78,6 +79,10 @@ MenuItemView* SubmenuView::GetMenuItemAt(int index) {
   }
   NOTREACHED();
   return NULL;
+}
+
+PrefixSelector* SubmenuView::GetPrefixSelector() {
+  return &prefix_selector_;
 }
 
 void SubmenuView::ChildPreferredSizeChanged(View* child) {
@@ -182,10 +187,6 @@ void SubmenuView::GetAccessibleState(ui::AXViewState* state) {
   if (GetMenuItem())
     GetMenuItem()->GetAccessibleState(state);
   state->role = ui::AX_ROLE_MENU_LIST_POPUP;
-}
-
-ui::TextInputClient* SubmenuView::GetTextInputClient() {
-  return &prefix_selector_;
 }
 
 void SubmenuView::PaintChildren(const ui::PaintContext& context) {

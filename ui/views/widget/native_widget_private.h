@@ -23,10 +23,8 @@ class OSExchangeData;
 }
 
 namespace views {
-class InputMethod;
 class TooltipManager;
 namespace internal {
-class InputMethodDelegate;
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetPrivate interface
@@ -133,19 +131,8 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   // Returns true if this native widget is capturing events.
   virtual bool HasCapture() const = 0;
 
-  // Returns the InputMethod for this native widget.
-  // Note that all widgets in a widget hierarchy share the same input method.
-  // TODO(suzhe): rename to GetInputMethod() when NativeWidget implementation
-  // class doesn't inherit Widget anymore.
-  virtual InputMethod* CreateInputMethod() = 0;
-
-  // Returns the InputMethodDelegate for this native widget.
-  virtual InputMethodDelegate* GetInputMethodDelegate() = 0;
-
   // Returns the ui::InputMethod for this native widget.
-  // TODO(yukishiino): Rename this method to GetInputMethod once we remove
-  // views::InputMethod.
-  virtual ui::InputMethod* GetHostInputMethod() = 0;
+  virtual ui::InputMethod* GetInputMethod() = 0;
 
   // Centers the window and sizes it to the specified size.
   virtual void CenterWindow(const gfx::Size& size) = 0;

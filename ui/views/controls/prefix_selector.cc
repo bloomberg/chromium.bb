@@ -5,6 +5,7 @@
 #include "ui/views/controls/prefix_selector.h"
 
 #include "base/i18n/case_conversion.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/range/range.h"
 #include "ui/views/controls/prefix_delegate.h"

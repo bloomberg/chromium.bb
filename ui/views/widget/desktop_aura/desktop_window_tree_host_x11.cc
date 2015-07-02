@@ -40,7 +40,6 @@
 #include "ui/gfx/screen.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/corewm/tooltip_aura.h"
-#include "ui/views/ime/input_method.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/views_switches.h"
@@ -908,12 +907,9 @@ void DesktopWindowTreeHostX11::OnRootViewLayout() {
 }
 
 void DesktopWindowTreeHostX11::OnNativeWidgetFocus() {
-  native_widget_delegate_->AsWidget()->GetInputMethod()->OnFocus();
 }
 
 void DesktopWindowTreeHostX11::OnNativeWidgetBlur() {
-  if (xwindow_)
-    native_widget_delegate_->AsWidget()->GetInputMethod()->OnBlur();
 }
 
 bool DesktopWindowTreeHostX11::IsAnimatingClosed() const {

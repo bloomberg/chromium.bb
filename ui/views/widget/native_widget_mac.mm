@@ -213,16 +213,8 @@ bool NativeWidgetMac::HasCapture() const {
   return bridge_ && bridge_->HasCapture();
 }
 
-InputMethod* NativeWidgetMac::CreateInputMethod() {
-  return bridge_ ? bridge_->CreateInputMethod() : NULL;
-}
-
-internal::InputMethodDelegate* NativeWidgetMac::GetInputMethodDelegate() {
-  return bridge_.get();
-}
-
-ui::InputMethod* NativeWidgetMac::GetHostInputMethod() {
-  return bridge_ ? bridge_->GetHostInputMethod() : NULL;
+ui::InputMethod* NativeWidgetMac::GetInputMethod() {
+  return bridge_ ? bridge_->GetInputMethod() : NULL;
 }
 
 void NativeWidgetMac::CenterWindow(const gfx::Size& size) {

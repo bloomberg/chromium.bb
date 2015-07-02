@@ -28,7 +28,6 @@ class TouchEvent;
 }
 
 namespace views {
-class InputMethod;
 class Widget;
 
 namespace internal {
@@ -124,11 +123,6 @@ class VIEWS_EXPORT NativeWidgetDelegate {
 
   // Runs the specified native command. Returns true if the command is handled.
   virtual bool ExecuteCommand(int command_id) = 0;
-
-  // Returns the input method of the widget this delegate is associated with.
-  // Note that this does not use the top level widget, so may return NULL
-  // if the widget doesn't have input method.
-  virtual InputMethod* GetInputMethodDirect() = 0;
 
   // Returns the child Layers of the Widgets layer that were created by Views.
   virtual const std::vector<ui::Layer*>& GetRootLayers() = 0;

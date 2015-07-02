@@ -109,10 +109,6 @@ const char* WebView::GetClassName() const {
   return kViewClassName;
 }
 
-ui::TextInputClient* WebView::GetTextInputClient() {
-  return NULL;
-}
-
 scoped_ptr<content::WebContents> WebView::SwapWebContents(
     scoped_ptr<content::WebContents> new_web_contents) {
   if (wc_owner_)

@@ -223,16 +223,6 @@
       'focus/view_storage.h',
       'focus/widget_focus_manager.cc',
       'focus/widget_focus_manager.h',
-      'ime/input_method.h',
-      'ime/input_method_base.cc',
-      'ime/input_method_base.h',
-      'ime/input_method_bridge.cc',
-      'ime/input_method_bridge.h',
-      'ime/input_method_delegate.h',
-      'ime/mock_input_method.cc',
-      'ime/mock_input_method.h',
-      'ime/null_input_method.cc',
-      'ime/null_input_method.h',
       'layout/box_layout.cc',
       'layout/box_layout.h',
       'layout/fill_layout.cc',
@@ -576,7 +566,6 @@
       'window/dialog_delegate_unittest.cc',
     ],
     'views_unittests_desktop_sources': [
-      'ime/input_method_bridge_unittest.cc',
       'widget/desktop_widget_unittest.cc',
     ],
     'views_unittests_aura_sources': [
@@ -902,7 +891,6 @@
           'sources!': [
             'bubble/bubble_window_targeter_unittest.cc',
             'controls/native/native_view_host_unittest.cc',
-            'ime/input_method_bridge_unittest.cc',
             'widget/window_reorderer_unittest.cc',
           ]
         }],

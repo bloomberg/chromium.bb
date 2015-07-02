@@ -124,7 +124,6 @@ class VIEWS_EXPORT TreeView : public ui::TreeModelObserver,
   gfx::Size GetPreferredSize() const override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
-  ui::TextInputClient* GetTextInputClient() override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void ShowContextMenu(const gfx::Point& p,
                        ui::MenuSourceType source_type) override;
@@ -329,6 +328,8 @@ class VIEWS_EXPORT TreeView : public ui::TreeModelObserver,
   // Implementation of Expand(). Returns true if at least one node was expanded
   // that previously wasn't.
   bool ExpandImpl(ui::TreeModelNode* model_node);
+
+  PrefixSelector* GetPrefixSelector();
 
   // The model, may be null.
   ui::TreeModel* model_;

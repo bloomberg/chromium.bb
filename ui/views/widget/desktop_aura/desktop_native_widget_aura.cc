@@ -27,8 +27,6 @@
 #include "ui/views/corewm/tooltip.h"
 #include "ui/views/corewm/tooltip_controller.h"
 #include "ui/views/drag_utils.h"
-#include "ui/views/ime/input_method_bridge.h"
-#include "ui/views/ime/null_input_method.h"
 #include "ui/views/view_constants_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_capture_client.h"
 #include "ui/views/widget/desktop_aura/desktop_cursor_loader_updater.h"
@@ -385,7 +383,7 @@ void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
           view_for_activation->GetWidget()->GetNativeView());
       // Refreshes the focus info to IMF in case that IMF cached the old info
       // about focused text input client when it was "inactive".
-      GetHostInputMethod()->OnFocus();
+      GetInputMethod()->OnFocus();
     }
   } else {
     // If we're not active we need to deactivate the corresponding
@@ -395,7 +393,7 @@ void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
     aura::Window* active_window = activation_client->GetActiveWindow();
     if (active_window) {
       activation_client->DeactivateWindow(active_window);
-      GetHostInputMethod()->OnBlur();
+      GetInputMethod()->OnBlur();
     }
   }
 }
@@ -633,17 +631,8 @@ bool DesktopNativeWidgetAura::HasCapture() const {
       desktop_window_tree_host_->HasCapture();
 }
 
-InputMethod* DesktopNativeWidgetAura::CreateInputMethod() {
-  return new InputMethodBridge(this, GetHostInputMethod(), false);
-}
-
-internal::InputMethodDelegate*
-    DesktopNativeWidgetAura::GetInputMethodDelegate() {
-  return this;
-}
-
-ui::InputMethod* DesktopNativeWidgetAura::GetHostInputMethod() {
-  return host()->GetInputMethod();
+ui::InputMethod* DesktopNativeWidgetAura::GetInputMethod() {
+  return host() ? host()->GetInputMethod() : nullptr;
 }
 
 void DesktopNativeWidgetAura::CenterWindow(const gfx::Size& size) {
@@ -1133,29 +1122,10 @@ void DesktopNativeWidgetAura::OnWindowFocused(aura::Window* gained_focus,
   if (content_window_ == gained_focus) {
     desktop_window_tree_host_->OnNativeWidgetFocus();
     native_widget_delegate_->OnNativeFocus();
-
-    // If focus is moving from a descendant Window to |content_window_| then
-    // native activation hasn't changed. Still, the InputMethod must be informed
-    // of the Window focus change.
-    InputMethod* input_method = GetWidget()->GetInputMethod();
-    if (input_method)
-      input_method->OnFocus();
   } else if (content_window_ == lost_focus) {
     desktop_window_tree_host_->OnNativeWidgetBlur();
     native_widget_delegate_->OnNativeBlur();
   }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// DesktopNativeWidgetAura, views::internal::InputMethodDelegate:
-
-void DesktopNativeWidgetAura::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
-  FocusManager* focus_manager =
-      native_widget_delegate_->AsWidget()->GetFocusManager();
-  native_widget_delegate_->OnKeyEvent(const_cast<ui::KeyEvent*>(&key));
-  if (key.handled() || !focus_manager)
-    return;
-  focus_manager->OnKeyEvent(key);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

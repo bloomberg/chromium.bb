@@ -90,7 +90,6 @@ class WEBVIEW_EXPORT WebView : public View,
 
   // Overridden from View:
   const char* GetClassName() const override;
-  ui::TextInputClient* GetTextInputClient() override;
 
  protected:
   // Swaps the owned WebContents |wc_owner_| with |new_web_contents|. Returns

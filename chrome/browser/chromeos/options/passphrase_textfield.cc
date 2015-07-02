@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/options/passphrase_textfield.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "ui/views/ime/input_method.h"
 
 namespace chromeos {
 
@@ -29,7 +28,6 @@ void PassphraseTextfield::OnFocus() {
   if (show_fake_ && !changed_)
     ClearFakePassphrase();
   Textfield::OnFocus();
-  GetInputMethod()->OnFocus();
 }
 
 void PassphraseTextfield::OnBlur() {
@@ -37,7 +35,6 @@ void PassphraseTextfield::OnBlur() {
   if (show_fake_ && text().empty())
     SetFakePassphrase();
   Textfield::OnBlur();
-  GetInputMethod()->OnFocus();
 }
 
 std::string PassphraseTextfield::GetPassphrase() {

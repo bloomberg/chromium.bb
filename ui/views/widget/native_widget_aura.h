@@ -12,7 +12,6 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/events/event_constants.h"
-#include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -34,7 +33,6 @@ class WindowReorderer;
 
 class VIEWS_EXPORT NativeWidgetAura
     : public internal::NativeWidgetPrivate,
-      public internal::InputMethodDelegate,
       public aura::WindowDelegate,
       public aura::WindowObserver,
       public aura::client::ActivationDelegate,
@@ -71,9 +69,7 @@ class VIEWS_EXPORT NativeWidgetAura
   void SetCapture() override;
   void ReleaseCapture() override;
   bool HasCapture() const override;
-  InputMethod* CreateInputMethod() override;
-  internal::InputMethodDelegate* GetInputMethodDelegate() override;
-  ui::InputMethod* GetHostInputMethod() override;
+  ui::InputMethod* GetInputMethod() override;
   void CenterWindow(const gfx::Size& size) override;
   void GetWindowPlacement(gfx::Rect* bounds,
                           ui::WindowShowState* maximized) const override;
@@ -137,9 +133,6 @@ class VIEWS_EXPORT NativeWidgetAura
   bool IsTranslucentWindowOpacitySupported() const override;
   void OnSizeConstraintsChanged() override;
   void RepostNativeEvent(gfx::NativeEvent native_event) override;
-
-  // Overridden from views::InputMethodDelegate:
-  void DispatchKeyEventPostIME(const ui::KeyEvent& key) override;
 
   // Overridden from aura::WindowDelegate:
   gfx::Size GetMinimumSize() const override;

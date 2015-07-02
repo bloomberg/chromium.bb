@@ -26,8 +26,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/views/drag_utils.h"
-#include "ui/views/ime/input_method_bridge.h"
-#include "ui/views/ime/null_input_method.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/native_widget_delegate.h"
 #include "ui/views/widget/root_view.h"
@@ -266,20 +265,11 @@ bool NativeWidgetAura::HasCapture() const {
   return window_ && window_->HasCapture();
 }
 
-InputMethod* NativeWidgetAura::CreateInputMethod() {
+ui::InputMethod* NativeWidgetAura::GetInputMethod() {
   if (!window_)
-    return NULL;
-
-  return new InputMethodBridge(this, GetHostInputMethod(), true);
-}
-
-internal::InputMethodDelegate* NativeWidgetAura::GetInputMethodDelegate() {
-  return this;
-}
-
-ui::InputMethod* NativeWidgetAura::GetHostInputMethod() {
+    return nullptr;
   aura::Window* root_window = window_->GetRootWindow();
-  return root_window->GetHost()->GetInputMethod();
+  return root_window ? root_window->GetHost()->GetInputMethod() : nullptr;
 }
 
 void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
@@ -726,17 +716,6 @@ void NativeWidgetAura::RepostNativeEvent(gfx::NativeEvent native_event) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeWidgetAura, views::InputMethodDelegate implementation:
-
-void NativeWidgetAura::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
-  FocusManager* focus_manager = GetWidget()->GetFocusManager();
-  delegate_->OnKeyEvent(const_cast<ui::KeyEvent*>(&key));
-  if (key.handled() || !focus_manager)
-    return;
-  focus_manager->OnKeyEvent(key);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, aura::WindowDelegate implementation:
 
 gfx::Size NativeWidgetAura::GetMinimumSize() const {
@@ -870,21 +849,15 @@ void NativeWidgetAura::OnWindowPropertyChanged(aura::Window* window,
 
 void NativeWidgetAura::OnKeyEvent(ui::KeyEvent* event) {
   DCHECK(window_);
-  if (event->is_char()) {
-    // If a ui::InputMethod object is attached to the root window, character
-    // events are handled inside the object and are not passed to this function.
-    // If such object is not attached, character events might be sent (e.g. on
-    // Windows). In this case, we just skip these.
-    return;
-  }
   // Renderer may send a key event back to us if the key event wasn't handled,
   // and the window may be invisible by that time.
   if (!window_->IsVisible())
     return;
-  InputMethod* input_method = GetWidget()->GetInputMethod();
-  if (!input_method)
-    return;
-  input_method->DispatchKeyEvent(*event);
+
+  FocusManager* focus_manager = GetWidget()->GetFocusManager();
+  delegate_->OnKeyEvent(event);
+  if (!event->handled() && focus_manager)
+    focus_manager->OnKeyEvent(*event);
   event->SetHandled();
 }
 
@@ -942,29 +915,10 @@ void NativeWidgetAura::OnWindowActivated(
 
 void NativeWidgetAura::OnWindowFocused(aura::Window* gained_focus,
                                        aura::Window* lost_focus) {
-  if (window_ == gained_focus) {
-    // In aura, it is possible for child native widgets to take input and focus,
-    // this differs from the behavior on windows.
-    if (GetWidget()->GetInputMethod())  // Null in tests.
-      GetWidget()->GetInputMethod()->OnFocus();
+  if (window_ == gained_focus)
     delegate_->OnNativeFocus();
-  } else if (window_ == lost_focus) {
-    // GetInputMethod() recreates the input method if it's previously been
-    // destroyed.  If we get called during destruction, the input method will be
-    // gone, and creating a new one and telling it that we lost the focus will
-    // trigger a DCHECK (the new input method doesn't think that we have the
-    // focus and doesn't expect a blur).  OnBlur() shouldn't be called during
-    // destruction unless WIDGET_OWNS_NATIVE_WIDGET is set (which is just the
-    // case in tests).
-    if (!destroying_) {
-      if (GetWidget()->GetInputMethod())
-        GetWidget()->GetInputMethod()->OnBlur();
-    } else {
-      DCHECK_EQ(ownership_, Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
-    }
-
+  else if (window_ == lost_focus)
     delegate_->OnNativeBlur();
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

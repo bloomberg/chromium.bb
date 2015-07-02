@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/compositor/canvas_painter.h"
 #import "ui/events/cocoa/cocoa_event_utils.h"
@@ -16,7 +17,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/menu/menu_controller.h"
-#include "ui/views/ime/input_method.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 

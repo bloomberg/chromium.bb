@@ -35,6 +35,7 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -48,7 +49,6 @@
 #include "ui/views/border.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/textfield/textfield.h"
-#include "ui/views/ime/input_method.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
@@ -187,7 +187,7 @@ void OmniboxViewViews::SaveStateToTab(content::WebContents* tab) {
   // session here.  It may affect the selection status, so order is
   // also important.
   if (IsIMEComposing()) {
-    GetTextInputClient()->ConfirmCompositionText();
+    ConfirmCompositionText();
     GetInputMethod()->CancelComposition(this);
   }
 
@@ -578,8 +578,7 @@ bool OmniboxViewViews::IsImeShowingPopup() const {
 #if defined(OS_CHROMEOS)
   return ime_candidate_window_open_;
 #else
-  const views::InputMethod* input_method = this->GetInputMethod();
-  return input_method && input_method->IsCandidatePopupOpen();
+  return GetInputMethod() ? GetInputMethod()->IsCandidatePopupOpen() : false;
 #endif
 }
 

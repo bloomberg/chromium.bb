@@ -104,5 +104,11 @@ ui::EventProcessor* WidgetTest::GetEventProcessor(Widget* widget) {
   return widget->GetNativeWindow()->GetHost()->event_processor();
 }
 
+// static
+ui::internal::InputMethodDelegate* WidgetTest::GetInputMethodDelegateForWidget(
+    Widget* widget) {
+  return widget->GetNativeWindow()->GetRootWindow()->GetHost();
+}
+
 }  // namespace test
 }  // namespace views

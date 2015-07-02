@@ -62,7 +62,7 @@ class TreeViewTest : public ViewsTestBase {
   void CollapseOrSelectParent();
   void ExpandOrSelectChild();
   int GetRowCount();
-  PrefixSelector* selector() { return tree_.selector_.get(); }
+  PrefixSelector* selector() { return tree_.GetPrefixSelector(); }
 
   ui::TreeNodeModel<TestNode > model_;
   TreeView tree_;
@@ -392,7 +392,6 @@ TEST_F(TreeViewTest, ExpandOrSelectChild) {
 TEST_F(TreeViewTest, SelectOnKeyStroke) {
   tree_.SetModel(&model_);
   tree_.ExpandAll(model_.GetRoot());
-  tree_.GetTextInputClient();
   selector()->InsertText(ASCIIToUTF16("b"));
   EXPECT_EQ("b", GetSelectedNodeTitle());
   selector()->InsertText(ASCIIToUTF16("1"));

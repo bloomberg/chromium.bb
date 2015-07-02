@@ -46,6 +46,11 @@ class PrefixSelectorTest : public ViewsTestBase {
   PrefixSelectorTest() {
     selector_.reset(new PrefixSelector(&delegate_));
   }
+  ~PrefixSelectorTest() override {
+    // Explicitly release |selector_| here which can happen before releasing
+    // |delegate_|.
+    selector_.reset();
+  }
 
  protected:
   scoped_ptr<PrefixSelector> selector_;

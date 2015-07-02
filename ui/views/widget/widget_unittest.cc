@@ -310,8 +310,6 @@ TEST_F(WidgetTest, GetTopLevelWidget_Native) {
 // when window activation changes.
 TEST_F(WidgetTest, ChangeActivation) {
   Widget* top1 = CreateTopLevelPlatformWidget();
-  // CreateInputMethod before activated
-  top1->GetInputMethod();
   top1->Show();
   RunPendingMessages();
 
@@ -322,8 +320,6 @@ TEST_F(WidgetTest, ChangeActivation) {
   top1->Activate();
   RunPendingMessages();
 
-  // Create InputMethod after deactivated.
-  top2->GetInputMethod();
   top2->Activate();
   RunPendingMessages();
 
@@ -802,7 +798,6 @@ class WidgetWithDestroyedNativeViewTest : public ViewsTestBase {
     widget->GetThemeProvider();
     widget->GetNativeTheme();
     widget->GetFocusManager();
-    widget->GetInputMethod();
     widget->SchedulePaintInRect(gfx::Rect(0, 0, 1, 2));
     widget->IsMouseEventsEnabled();
     widget->SetNativeWindowProperty("xx", widget);

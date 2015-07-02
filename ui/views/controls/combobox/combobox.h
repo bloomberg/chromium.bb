@@ -102,7 +102,6 @@ class VIEWS_EXPORT Combobox : public MenuDelegate,
   void OnFocus() override;
   void OnBlur() override;
   void GetAccessibleState(ui::AXViewState* state) override;
-  ui::TextInputClient* GetTextInputClient() override;
   void Layout() override;
 
   // Overridden from MenuDelegate:
@@ -163,6 +162,8 @@ class VIEWS_EXPORT Combobox : public MenuDelegate,
 
   // Handles the clicking event.
   void HandleClickEvent();
+
+  PrefixSelector* GetPrefixSelector();
 
   // Our model. Not owned.
   ui::ComboboxModel* model_;

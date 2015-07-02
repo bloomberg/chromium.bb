@@ -10,7 +10,6 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -32,7 +31,6 @@ namespace wm {
 class CompoundEventFilter;
 class CursorManager;
 class FocusController;
-class InputMethodEventFilter;
 class ShadowController;
 class VisibilityController;
 class WindowModalityController;
@@ -58,7 +56,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
       public aura::client::ActivationDelegate,
       public aura::client::ActivationChangeObserver,
       public aura::client::FocusChangeObserver,
-      public views::internal::InputMethodDelegate,
       public aura::client::DragDropDelegate,
       public aura::WindowTreeHostObserver {
  public:
@@ -112,9 +109,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   void SetCapture() override;
   void ReleaseCapture() override;
   bool HasCapture() const override;
-  InputMethod* CreateInputMethod() override;
-  internal::InputMethodDelegate* GetInputMethodDelegate() override;
-  ui::InputMethod* GetHostInputMethod() override;
+  ui::InputMethod* GetInputMethod() override;
   void CenterWindow(const gfx::Size& size) override;
   void GetWindowPlacement(gfx::Rect* bounds,
                           ui::WindowShowState* maximized) const override;
@@ -218,9 +213,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // Overridden from aura::client::FocusChangeObserver:
   void OnWindowFocused(aura::Window* gained_focus,
                        aura::Window* lost_focus) override;
-
-  // Overridden from views::internal::InputMethodDelegate:
-  void DispatchKeyEventPostIME(const ui::KeyEvent& key) override;
 
   // Overridden from aura::client::DragDropDelegate:
   void OnDragEntered(const ui::DropTargetEvent& event) override;

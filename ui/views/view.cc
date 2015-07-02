@@ -19,6 +19,7 @@
 #include "ui/accessibility/ax_enums.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/compositor/clip_transform_recorder.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/dip_util.h"
@@ -1010,18 +1011,10 @@ void View::OnTouchEvent(ui::TouchEvent* event) {
 void View::OnGestureEvent(ui::GestureEvent* event) {
 }
 
-ui::TextInputClient* View::GetTextInputClient() {
-  return NULL;
-}
-
-InputMethod* View::GetInputMethod() {
-  Widget* widget = GetWidget();
-  return widget ? widget->GetInputMethod() : NULL;
-}
-
-const InputMethod* View::GetInputMethod() const {
-  const Widget* widget = GetWidget();
-  return widget ? widget->GetInputMethod() : NULL;
+const ui::InputMethod* View::GetInputMethod() const {
+  Widget* widget = const_cast<Widget*>(GetWidget());
+  return widget ? const_cast<const ui::InputMethod*>(widget->GetInputMethod())
+                : nullptr;
 }
 
 scoped_ptr<ViewTargeter>

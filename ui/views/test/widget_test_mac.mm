@@ -8,6 +8,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
+#import "ui/views/cocoa/bridged_native_widget.h"
 #include "ui/views/widget/root_view.h"
 
 @interface IsKeyWindowDonor : NSObject
@@ -106,6 +107,12 @@ ui::EventProcessor* WidgetTest::GetEventProcessor(Widget* widget) {
 // static
 scoped_ptr<WidgetTest::FakeActivation> WidgetTest::FakeWidgetIsActiveAlways() {
   return make_scoped_ptr(new FakeActivationMac);
+}
+
+// static
+ui::internal::InputMethodDelegate* WidgetTest::GetInputMethodDelegateForWidget(
+    Widget* widget) {
+  return NativeWidgetMac::GetBridgeForNativeWindow(widget->GetNativeWindow());
 }
 
 }  // namespace test

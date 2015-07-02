@@ -15,6 +15,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/x/x11_util.h"
@@ -24,7 +25,6 @@
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/views/controls/textfield/textfield.h"
-#include "ui/views/ime/input_method.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/x11_property_change_waiter.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
@@ -262,8 +262,10 @@ TEST_F(DesktopWindowTreeHostX11Test, InputMethodFocus) {
   textfield->RequestFocus();
 
   EXPECT_FALSE(widget->IsActive());
-  EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE,
-            widget->GetInputMethod()->GetTextInputType());
+  // TODO(shuchen): uncomment the below check once the
+  // "default-focused-input-method" logic is removed in aura::WindowTreeHost.
+  //EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE,
+  //          widget->GetInputMethod()->GetTextInputType());
 
   widget->Activate();
 

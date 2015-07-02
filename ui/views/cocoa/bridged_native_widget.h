@@ -10,12 +10,12 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/base/ime/input_method_delegate.h"
 #include "ui/compositor/layer_owner.h"
 #import "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #import "ui/views/cocoa/bridged_native_widget_owner.h"
 #import "ui/views/cocoa/cocoa_mouse_capture_delegate.h"
 #import "ui/views/focus/focus_manager.h"
-#include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
 
@@ -29,20 +29,20 @@ class InputMethod;
 namespace views {
 
 class CocoaMouseCapture;
-class InputMethod;
 class NativeWidgetMac;
 class View;
 
 // A bridge to an NSWindow managed by an instance of NativeWidgetMac or
 // DesktopNativeWidgetMac. Serves as a helper class to bridge requests from the
 // NativeWidgetMac to the Cocoa window. Behaves a bit like an aura::Window.
-class VIEWS_EXPORT BridgedNativeWidget : public ui::LayerDelegate,
-                                         public ui::LayerOwner,
-                                         public internal::InputMethodDelegate,
-                                         public CocoaMouseCaptureDelegate,
-                                         public FocusChangeListener,
-                                         public ui::AcceleratedWidgetMacNSView,
-                                         public BridgedNativeWidgetOwner {
+class VIEWS_EXPORT BridgedNativeWidget
+    : public ui::LayerDelegate,
+      public ui::LayerOwner,
+      public ui::internal::InputMethodDelegate,
+      public CocoaMouseCaptureDelegate,
+      public FocusChangeListener,
+      public ui::AcceleratedWidgetMacNSView,
+      public BridgedNativeWidgetOwner {
  public:
   // Ways of changing the visibility of the bridged NSWindow.
   enum WindowVisibilityState {
@@ -142,8 +142,7 @@ class VIEWS_EXPORT BridgedNativeWidget : public ui::LayerDelegate,
   void OnSizeConstraintsChanged();
 
   // See widget.h for documentation.
-  InputMethod* CreateInputMethod();
-  ui::InputMethod* GetHostInputMethod();
+  ui::InputMethod* GetInputMethod();
 
   // The restored bounds will be derived from the current NSWindow frame unless
   // fullscreen or transitioning between fullscreen states.
@@ -169,8 +168,8 @@ class VIEWS_EXPORT BridgedNativeWidget : public ui::LayerDelegate,
   bool target_fullscreen_state() const { return target_fullscreen_state_; }
   bool window_visible() { return window_visible_; }
 
-  // Overridden from internal::InputMethodDelegate:
-  void DispatchKeyEventPostIME(const ui::KeyEvent& key) override;
+  // Overridden from ui::internal::InputMethodDelegate:
+  bool DispatchKeyEventPostIME(const ui::KeyEvent& key) override;
 
  private:
   // Closes all child windows. BridgedNativeWidget children will be destroyed.

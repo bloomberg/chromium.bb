@@ -52,6 +52,8 @@ class VIEWS_EXPORT SubmenuView : public PrefixDelegate,
   // Returns the MenuItemView at the specified index.
   MenuItemView* GetMenuItemAt(int index);
 
+  PrefixSelector* GetPrefixSelector();
+
   // Positions and sizes the child views. This tiles the views vertically,
   // giving each child the available width.
   void Layout() override;
@@ -59,7 +61,6 @@ class VIEWS_EXPORT SubmenuView : public PrefixDelegate,
 
   // Override from View.
   void GetAccessibleState(ui::AXViewState* state) override;
-  ui::TextInputClient* GetTextInputClient() override;
 
   // Painting.
   void PaintChildren(const ui::PaintContext& context) override;

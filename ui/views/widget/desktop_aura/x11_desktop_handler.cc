@@ -15,7 +15,6 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/x/x11_error_tracker.h"
-#include "ui/views/ime/input_method.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 
 namespace {

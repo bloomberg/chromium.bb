@@ -22,6 +22,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -32,7 +33,6 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/ime/input_method.h"
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
@@ -234,7 +234,7 @@ void FindBarView::ClearMatchCount() {
 
 void FindBarView::SetFocusAndSelection(bool select_all) {
   find_text_->RequestFocus();
-  GetInputMethod()->ShowImeIfNeeded();
+  GetWidget()->GetInputMethod()->ShowImeIfNeeded();
   if (select_all && !find_text_->text().empty())
     find_text_->SelectAll(true);
 }

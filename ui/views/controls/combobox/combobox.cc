@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
@@ -32,7 +33,6 @@
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/controls/prefix_selector.h"
 #include "ui/views/controls/textfield/textfield.h"
-#include "ui/views/ime/input_method.h"
 #include "ui/views/mouse_constants.h"
 #include "ui/views/painter.h"
 #include "ui/views/resources/grit/views_resources.h"
@@ -273,6 +273,11 @@ Combobox::Combobox(ui::ComboboxModel* model)
 
 Combobox::~Combobox() {
   model_->RemoveObserver(this);
+
+  if (GetInputMethod() && selector_.get()) {
+    // Combobox should have been blurred before destroy.
+    DCHECK(selector_.get() != GetInputMethod()->GetTextInputClient());
+  }
 }
 
 // static
@@ -333,12 +338,6 @@ void Combobox::SetInvalid(bool invalid) {
 
   UpdateBorder();
   SchedulePaint();
-}
-
-ui::TextInputClient* Combobox::GetTextInputClient() {
-  if (!selector_)
-    selector_.reset(new PrefixSelector(this));
-  return selector_.get();
 }
 
 void Combobox::Layout() {
@@ -540,14 +539,18 @@ void Combobox::OnPaint(gfx::Canvas* canvas) {
 }
 
 void Combobox::OnFocus() {
-  GetInputMethod()->OnFocus();
+  if (GetInputMethod())
+    GetInputMethod()->SetFocusedTextInputClient(GetPrefixSelector());
+
   View::OnFocus();
   // Border renders differently when focused.
   SchedulePaint();
 }
 
 void Combobox::OnBlur() {
-  GetInputMethod()->OnBlur();
+  if (GetInputMethod())
+    GetInputMethod()->DetachTextInputClient(GetPrefixSelector());
+
   if (selector_)
     selector_->OnViewBlur();
   // Border renders differently when focused.
@@ -863,6 +866,12 @@ gfx::Size Combobox::ArrowSize() const {
   return native_theme_for_arrow->GetPartSize(ui::NativeTheme::kComboboxArrow,
                                              ui::NativeTheme::kNormal,
                                              ignored);
+}
+
+PrefixSelector* Combobox::GetPrefixSelector() {
+  if (!selector_)
+    selector_.reset(new PrefixSelector(this));
+  return selector_.get();
 }
 
 }  // namespace views

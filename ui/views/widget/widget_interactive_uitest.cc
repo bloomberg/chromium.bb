@@ -22,7 +22,6 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_test_api.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/ime/input_method.h"
 #include "ui/views/test/focus_manager_test.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/touchui/touch_selection_controller_impl.h"
@@ -1564,43 +1563,6 @@ TEST_F(WidgetInputMethodInteractiveTest, TwoWindows) {
 #endif
 
   parent->CloseNow();
-}
-
-// Test input method focus changes affected by focus changes cross 2 top
-// windows.
-TEST_F(WidgetInputMethodInteractiveTest, TwoTopWindows) {
-  Widget* widget1 = CreateWidget();
-  Widget* widget2 = CreateWidget();
-  Textfield* textfield1 = new Textfield;
-  Textfield* textfield2 = new Textfield;
-  textfield2->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
-  widget1->GetRootView()->AddChildView(textfield1);
-  widget2->GetRootView()->AddChildView(textfield2);
-
-  // Do the initial shows synchronously. Otherwise, on X11, the window server
-  // messages may be interleaved with the activation requests below.
-  ShowSync(widget1);
-  ShowSync(widget2);
-
-  textfield1->RequestFocus();
-  textfield2->RequestFocus();
-
-  ActivateSync(widget1);
-
-  EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT,
-            widget1->GetInputMethod()->GetTextInputType());
-  EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE,
-            widget2->GetInputMethod()->GetTextInputType());
-
-  ActivateSync(widget2);
-
-  EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE,
-            widget1->GetInputMethod()->GetTextInputType());
-  EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD,
-            widget2->GetInputMethod()->GetTextInputType());
-
-  widget2->CloseNow();
-  widget1->CloseNow();
 }
 
 // Test input method focus changes affected by textfield's state changes.

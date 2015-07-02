@@ -50,6 +50,7 @@ class Transform;
 namespace ui {
 struct AXViewState;
 class Compositor;
+class InputMethod;
 class Layer;
 class NativeTheme;
 class PaintContext;
@@ -66,7 +67,6 @@ class ContextMenuController;
 class DragController;
 class FocusManager;
 class FocusTraversable;
-class InputMethod;
 class LayoutManager;
 class NativeViewAccessibility;
 class ScrollView;
@@ -692,15 +692,13 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
     return notify_enter_exit_on_child_;
   }
 
-  // Returns the View's TextInputClient instance or NULL if the View doesn't
-  // support text input.
-  virtual ui::TextInputClient* GetTextInputClient();
-
   // Convenience method to retrieve the InputMethod associated with the
-  // Widget that contains this view. Returns NULL if this view is not part of a
-  // view hierarchy with a Widget.
-  virtual InputMethod* GetInputMethod();
-  virtual const InputMethod* GetInputMethod() const;
+  // Widget that contains this view.
+  ui::InputMethod* GetInputMethod() {
+    return const_cast<ui::InputMethod*>(
+        const_cast<const View*>(this)->GetInputMethod());
+  }
+  const ui::InputMethod* GetInputMethod() const;
 
   // Sets a new ViewTargeter for the view, and returns the previous
   // ViewTargeter.

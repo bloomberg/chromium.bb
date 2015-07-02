@@ -25,8 +25,6 @@
 #include "ui/views/cocoa/tooltip_manager_mac.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 #import "ui/views/cocoa/widget_owner_nswindow_adapter.h"
-#include "ui/views/ime/input_method_bridge.h"
-#include "ui/views/ime/null_input_method.h"
 #include "ui/views/view.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget_mac.h"
@@ -707,15 +705,12 @@ void BridgedNativeWidget::OnSizeConstraintsChanged() {
                                     shows_fullscreen_controls);
 }
 
-InputMethod* BridgedNativeWidget::CreateInputMethod() {
-  return new InputMethodBridge(this, GetHostInputMethod(), true);
-}
-
-ui::InputMethod* BridgedNativeWidget::GetHostInputMethod() {
+ui::InputMethod* BridgedNativeWidget::GetInputMethod() {
   if (!input_method_) {
-    // Delegate is NULL because Mac IME does not need DispatchKeyEventPostIME
-    // callbacks.
-    input_method_ = ui::CreateInputMethod(NULL, nil);
+    input_method_ = ui::CreateInputMethod(this, nil);
+    // For now, use always-focused mode on Mac for the input method.
+    // TODO(tapted): Move this to OnWindowKeyStatusChangedTo() and balance.
+    input_method_->OnFocus();
   }
   return input_method_.get();
 }
@@ -757,11 +752,12 @@ void BridgedNativeWidget::CreateLayer(ui::LayerType layer_type,
 ////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidget, internal::InputMethodDelegate:
 
-void BridgedNativeWidget::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
+bool BridgedNativeWidget::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
   DCHECK(focus_manager_);
   native_widget_mac_->GetWidget()->OnKeyEvent(const_cast<ui::KeyEvent*>(&key));
   if (!key.handled())
-    focus_manager_->OnKeyEvent(key);
+    return !focus_manager_->OnKeyEvent(key);
+  return key.handled();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -784,9 +780,12 @@ void BridgedNativeWidget::OnWillChangeFocus(View* focused_before,
 
 void BridgedNativeWidget::OnDidChangeFocus(View* focused_before,
                                            View* focused_now) {
-  ui::TextInputClient* input_client =
-      focused_now ? focused_now->GetTextInputClient() : NULL;
-  [bridged_view_ setTextInputClient:input_client];
+  ui::InputMethod* input_method =
+      native_widget_mac_->GetWidget()->GetInputMethod();
+  if (input_method) {
+    ui::TextInputClient* input_client = input_method->GetTextInputClient();
+    [bridged_view_ setTextInputClient:input_client];
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

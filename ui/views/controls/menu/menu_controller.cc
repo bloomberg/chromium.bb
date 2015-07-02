@@ -2078,7 +2078,7 @@ bool MenuController::SelectByChar(base::char16 character) {
     return AcceptOrSelect(item, details);
 
   if (is_combobox_) {
-    item->GetSubmenu()->GetTextInputClient()->InsertChar(character, 0);
+    item->GetSubmenu()->GetPrefixSelector()->InsertChar(character, 0);
   } else {
     // If no mnemonics found, look at first character of titles.
     details = FindChildForMnemonic(item, key, &TitleMatchesMnemonic);

@@ -848,13 +848,6 @@ void HWNDMessageHandler::SizeConstraintsChanged() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// HWNDMessageHandler, InputMethodDelegate implementation:
-
-void HWNDMessageHandler::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
-  SetMsgHandled(delegate_->HandleKeyEvent(key));
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // HWNDMessageHandler, gfx::WindowImpl overrides:
 
 HICON HWNDMessageHandler::GetDefaultWindowIcon() const {
@@ -1623,7 +1616,7 @@ LRESULT HWNDMessageHandler::OnKeyEvent(UINT message,
       hwnd(), message, w_param, l_param, static_cast<DWORD>(GetMessageTime())};
   ui::KeyEvent key(msg);
   if (!delegate_->HandleUntranslatedKeyEvent(key))
-    DispatchKeyEventPostIME(key);
+    SetMsgHandled(FALSE);
   return 0;
 }
 

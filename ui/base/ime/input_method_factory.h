@@ -26,6 +26,7 @@ UI_BASE_IME_EXPORT scoped_ptr<InputMethod> CreateInputMethod(
 
 // Makes CreateInputMethod return a MockInputMethod.
 UI_BASE_IME_EXPORT void SetUpInputMethodFactoryForTesting();
+UI_BASE_IME_EXPORT void SetUpInputMethodForTesting(InputMethod* input_method);
 
 }  // namespace ui;
 

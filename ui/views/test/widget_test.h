@@ -18,6 +18,9 @@
 #endif
 
 namespace ui {
+namespace internal {
+class InputMethodDelegate;
+}
 class EventProcessor;
 }
 
@@ -129,6 +132,10 @@ class WidgetTest : public ViewsTestBase {
   // aura::WindowEventDispatcher. Otherwise, it is a bridge to the OS event
   // processor.
   static ui::EventProcessor* GetEventProcessor(Widget* widget);
+
+  // Get the InputMethodDelegate, for setting on a Mock InputMethod in tests.
+  static ui::internal::InputMethodDelegate* GetInputMethodDelegateForWidget(
+      Widget* widget);
 
 #if defined(OS_MACOSX)
   static scoped_ptr<FakeActivation> FakeWidgetIsActiveAlways();

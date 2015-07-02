@@ -12,6 +12,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drag_utils.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/base/touch/selection_bound.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/canvas_painter.h"
@@ -31,7 +32,6 @@
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/drag_utils.h"
-#include "ui/views/ime/input_method.h"
 #include "ui/views/metrics.h"
 #include "ui/views/native_cursor.h"
 #include "ui/views/painter.h"
@@ -298,7 +298,12 @@ Textfield::Textfield()
   AddAccelerator(ui::Accelerator(ui::VKEY_V, ui::EF_CONTROL_DOWN));
 }
 
-Textfield::~Textfield() {}
+Textfield::~Textfield() {
+  if (GetInputMethod()) {
+    // The textfield should have been blurred before destroy.
+    DCHECK(this != GetInputMethod()->GetTextInputClient());
+  }
+}
 
 void Textfield::SetReadOnly(bool read_only) {
   // Update read-only without changing the focusable state (or active, etc.).
@@ -722,10 +727,6 @@ bool Textfield::OnKeyPressed(const ui::KeyEvent& event) {
   return handled;
 }
 
-ui::TextInputClient* Textfield::GetTextInputClient() {
-  return this;
-}
-
 void Textfield::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
@@ -1005,7 +1006,8 @@ void Textfield::OnFocus() {
   GetRenderText()->set_focused(true);
   cursor_visible_ = true;
   SchedulePaint();
-  GetInputMethod()->OnFocus();
+  if (GetInputMethod())
+    GetInputMethod()->SetFocusedTextInputClient(this);
   OnCaretBoundsChanged();
 
   const size_t caret_blink_ms = Textfield::GetCaretBlinkMs();
@@ -1021,7 +1023,8 @@ void Textfield::OnFocus() {
 
 void Textfield::OnBlur() {
   GetRenderText()->set_focused(false);
-  GetInputMethod()->OnBlur();
+  if (GetInputMethod())
+    GetInputMethod()->DetachTextInputClient(this);
   cursor_repaint_timer_.Stop();
   if (cursor_visible_) {
     cursor_visible_ = false;

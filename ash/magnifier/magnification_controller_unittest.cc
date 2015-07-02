@@ -148,7 +148,7 @@ class MagnificationControllerTest: public test::AshTestBase {
 
   ui::InputMethod* GetInputMethod() {
     DCHECK(text_input_view_);
-    return text_input_view_->GetWidget()->GetHostInputMethod();
+    return text_input_view_->GetWidget()->GetInputMethod();
   }
 
   DISALLOW_COPY_AND_ASSIGN(MagnificationControllerTest);

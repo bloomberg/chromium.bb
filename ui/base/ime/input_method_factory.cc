@@ -23,6 +23,8 @@
 
 namespace {
 
+ui::InputMethod* g_input_method_for_testing = nullptr;
+
 bool g_input_method_set_for_testing = false;
 
 bool g_create_input_method_called = false;
@@ -36,6 +38,12 @@ scoped_ptr<InputMethod> CreateInputMethod(
     gfx::AcceleratedWidget widget) {
   if (!g_create_input_method_called)
     g_create_input_method_called = true;
+
+  if (g_input_method_for_testing) {
+    ui::InputMethod* ret = g_input_method_for_testing;
+    g_input_method_for_testing = nullptr;
+    return make_scoped_ptr(ret);
+  }
 
   if (g_input_method_set_for_testing)
     return make_scoped_ptr(new MockInputMethod(delegate));
@@ -66,6 +74,10 @@ void SetUpInputMethodFactoryForTesting() {
       << "ui::SetUpInputMethodFactoryForTesting earlier.";
 
   g_input_method_set_for_testing = true;
+}
+
+void SetUpInputMethodForTesting(InputMethod* input_method) {
+  g_input_method_for_testing = input_method;
 }
 
 }  // namespace ui
