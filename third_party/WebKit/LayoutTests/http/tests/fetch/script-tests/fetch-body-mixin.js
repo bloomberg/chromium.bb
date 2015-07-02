@@ -44,9 +44,11 @@ sequential_promise_test(function(test) {
     }, 'FetchStreamTest');
 
 sequential_promise_test(function(test) {
-    return fetch('/fetch/resources/doctype.html')
+    return fetch('/fetch/resources/progressive.php')
       .then(function(response) {
           var p1 = response.text();
+          // Because progressive.php takes some time to load, we expect
+          // response.text() is not yet completed here.
           var p2 = response.text().then(function() {
               return Promise.reject(new Error('resolved unexpectedly'));
             }, function(e) {
@@ -55,7 +57,7 @@ sequential_promise_test(function(test) {
           return Promise.all([p1, p2]);
         })
       .then(function(results) {
-          assert_equals(results[0], '<!DOCTYPE html>\n');
+          assert_equals(results[0].length, 190);
           assert_equals(results[1].name, 'TypeError');
         })
     }, 'FetchTwiceTest');
