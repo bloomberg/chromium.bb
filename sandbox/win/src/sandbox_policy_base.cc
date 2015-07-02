@@ -501,8 +501,8 @@ void PolicyBase::ClearSharedHandles() {
 Dispatcher* PolicyBase::OnMessageReady(IPCParams* ipc,
                                        CallbackGeneric* callback) {
   DCHECK(callback);
-  static const IPCParams ping1 = {IPC_PING1_TAG, UINT32_TYPE};
-  static const IPCParams ping2 = {IPC_PING2_TAG, INOUTPTR_TYPE};
+  static const IPCParams ping1 = {IPC_PING1_TAG, {UINT32_TYPE}};
+  static const IPCParams ping2 = {IPC_PING2_TAG, {INOUTPTR_TYPE}};
 
   if (ping1.Matches(ipc) || ping2.Matches(ipc)) {
     *callback = reinterpret_cast<CallbackGeneric>(

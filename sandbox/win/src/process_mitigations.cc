@@ -122,7 +122,7 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
 
   // Enable ASLR policies.
   if (flags & MITIGATION_RELOCATE_IMAGE) {
-    PROCESS_MITIGATION_ASLR_POLICY policy = { 0 };
+    PROCESS_MITIGATION_ASLR_POLICY policy = {};
     policy.EnableForceRelocateImages = true;
     policy.DisallowStrippedImages = (flags &
         MITIGATION_RELOCATE_IMAGE_REQUIRED) ==
@@ -137,7 +137,7 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
 
   // Enable strict handle policies.
   if (flags & MITIGATION_STRICT_HANDLE_CHECKS) {
-    PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY policy = { 0 };
+    PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY policy = {};
     policy.HandleExceptionsPermanentlyEnabled =
         policy.RaiseExceptionOnInvalidHandleReference = true;
 
@@ -150,7 +150,7 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
 
   // Enable system call policies.
   if (flags & MITIGATION_WIN32K_DISABLE) {
-    PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY policy = { 0 };
+    PROCESS_MITIGATION_SYSTEM_CALL_DISABLE_POLICY policy = {};
     policy.DisallowWin32kSystemCalls = true;
 
     if (!set_process_mitigation_policy(ProcessSystemCallDisablePolicy, &policy,
@@ -162,7 +162,7 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
 
   // Enable system call policies.
   if (flags & MITIGATION_EXTENSION_DLL_DISABLE) {
-    PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY policy = { 0 };
+    PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY policy = {};
     policy.DisableExtensionPoints = true;
 
     if (!set_process_mitigation_policy(ProcessExtensionPointDisablePolicy,

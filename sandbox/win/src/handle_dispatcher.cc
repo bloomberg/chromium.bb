@@ -20,10 +20,10 @@ namespace sandbox {
 HandleDispatcher::HandleDispatcher(PolicyBase* policy_base)
     : policy_base_(policy_base) {
   static const IPCCall duplicate_handle_proxy = {
-    {IPC_DUPLICATEHANDLEPROXY_TAG, VOIDPTR_TYPE, UINT32_TYPE, UINT32_TYPE,
-     UINT32_TYPE},
-    reinterpret_cast<CallbackGeneric>(&HandleDispatcher::DuplicateHandleProxy)
-  };
+      {IPC_DUPLICATEHANDLEPROXY_TAG,
+       {VOIDPTR_TYPE, UINT32_TYPE, UINT32_TYPE, UINT32_TYPE}},
+      reinterpret_cast<CallbackGeneric>(
+          &HandleDispatcher::DuplicateHandleProxy)};
 
   ipc_calls_.push_back(duplicate_handle_proxy);
 }

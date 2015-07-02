@@ -26,8 +26,8 @@ DWORD Job::Init(JobLevel security_level,
   if (!job_handle_)
     return ::GetLastError();
 
-  JOBOBJECT_EXTENDED_LIMIT_INFORMATION jeli = {0};
-  JOBOBJECT_BASIC_UI_RESTRICTIONS jbur = {0};
+  JOBOBJECT_EXTENDED_LIMIT_INFORMATION jeli = {};
+  JOBOBJECT_BASIC_UI_RESTRICTIONS jbur = {};
 
   // Set the settings for the different security levels. Note: The higher levels
   // inherit from the lower levels.

@@ -23,10 +23,15 @@ namespace sandbox {
 NamedPipeDispatcher::NamedPipeDispatcher(PolicyBase* policy_base)
     : policy_base_(policy_base) {
   static const IPCCall create_params = {
-    {IPC_CREATENAMEDPIPEW_TAG, WCHAR_TYPE, UINT32_TYPE, UINT32_TYPE,
-     UINT32_TYPE, UINT32_TYPE, UINT32_TYPE, UINT32_TYPE},
-    reinterpret_cast<CallbackGeneric>(&NamedPipeDispatcher::CreateNamedPipe)
-  };
+      {IPC_CREATENAMEDPIPEW_TAG,
+       {WCHAR_TYPE,
+        UINT32_TYPE,
+        UINT32_TYPE,
+        UINT32_TYPE,
+        UINT32_TYPE,
+        UINT32_TYPE,
+        UINT32_TYPE}},
+      reinterpret_cast<CallbackGeneric>(&NamedPipeDispatcher::CreateNamedPipe)};
 
   ipc_calls_.push_back(create_params);
 }

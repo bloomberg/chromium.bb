@@ -584,16 +584,12 @@ class UnitTestIPCDispatcher : public Dispatcher {
 };
 
 UnitTestIPCDispatcher::UnitTestIPCDispatcher() {
-  static const IPCCall call_one = {
-    {CALL_ONE_TAG, VOIDPTR_TYPE, UINT32_TYPE},
-    reinterpret_cast<CallbackGeneric>(
-        &UnitTestIPCDispatcher::CallOneHandler)
-  };
-  static const IPCCall call_two = {
-    {CALL_TWO_TAG, VOIDPTR_TYPE, UINT32_TYPE},
-    reinterpret_cast<CallbackGeneric>(
-        &UnitTestIPCDispatcher::CallTwoHandler)
-  };
+  static const IPCCall call_one = {{CALL_ONE_TAG, {VOIDPTR_TYPE, UINT32_TYPE}},
+                                   reinterpret_cast<CallbackGeneric>(
+                                       &UnitTestIPCDispatcher::CallOneHandler)};
+  static const IPCCall call_two = {{CALL_TWO_TAG, {VOIDPTR_TYPE, UINT32_TYPE}},
+                                   reinterpret_cast<CallbackGeneric>(
+                                       &UnitTestIPCDispatcher::CallTwoHandler)};
   ipc_calls_.push_back(call_one);
   ipc_calls_.push_back(call_two);
 }

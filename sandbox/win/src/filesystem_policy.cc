@@ -255,9 +255,9 @@ bool FileSystemPolicy::CreateFileAction(EvalResult eval_result,
     *nt_status = STATUS_ACCESS_DENIED;
     return false;
   }
-  IO_STATUS_BLOCK io_block = {0};
-  UNICODE_STRING uni_name = {0};
-  OBJECT_ATTRIBUTES obj_attributes = {0};
+  IO_STATUS_BLOCK io_block = {};
+  UNICODE_STRING uni_name = {};
+  OBJECT_ATTRIBUTES obj_attributes = {};
   SECURITY_QUALITY_OF_SERVICE security_qos = GetAnonymousQOS();
 
   InitObjectAttribs(file, attributes, NULL, &obj_attributes,
@@ -289,9 +289,9 @@ bool FileSystemPolicy::OpenFileAction(EvalResult eval_result,
   }
   // An NtOpen is equivalent to an NtCreate with FileAttributes = 0 and
   // CreateDisposition = FILE_OPEN.
-  IO_STATUS_BLOCK io_block = {0};
-  UNICODE_STRING uni_name = {0};
-  OBJECT_ATTRIBUTES obj_attributes = {0};
+  IO_STATUS_BLOCK io_block = {};
+  UNICODE_STRING uni_name = {};
+  OBJECT_ATTRIBUTES obj_attributes = {};
   SECURITY_QUALITY_OF_SERVICE security_qos = GetAnonymousQOS();
 
   InitObjectAttribs(file, attributes, NULL, &obj_attributes,

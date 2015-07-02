@@ -20,14 +20,12 @@ namespace sandbox {
 SyncDispatcher::SyncDispatcher(PolicyBase* policy_base)
     : policy_base_(policy_base) {
   static const IPCCall create_params = {
-    {IPC_CREATEEVENT_TAG, WCHAR_TYPE, UINT32_TYPE, UINT32_TYPE},
-    reinterpret_cast<CallbackGeneric>(&SyncDispatcher::CreateEvent)
-  };
+      {IPC_CREATEEVENT_TAG, {WCHAR_TYPE, UINT32_TYPE, UINT32_TYPE}},
+      reinterpret_cast<CallbackGeneric>(&SyncDispatcher::CreateEvent)};
 
   static const IPCCall open_params = {
-    {IPC_OPENEVENT_TAG, WCHAR_TYPE, UINT32_TYPE},
-    reinterpret_cast<CallbackGeneric>(&SyncDispatcher::OpenEvent)
-  };
+      {IPC_OPENEVENT_TAG, {WCHAR_TYPE, UINT32_TYPE}},
+      reinterpret_cast<CallbackGeneric>(&SyncDispatcher::OpenEvent)};
 
   ipc_calls_.push_back(create_params);
   ipc_calls_.push_back(open_params);

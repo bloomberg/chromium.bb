@@ -120,7 +120,7 @@ void POCDLL_API TestGetHandle(HANDLE log) {
       // iterate and always increase the buffer size until the function
       // succeeds. (Or at least does not fail with STATUS_BUFFER_OVERFLOW)
       ULONG size_file = MAX_PATH;
-      IO_STATUS_BLOCK status_block = {0};
+      IO_STATUS_BLOCK status_block = {};
       do {
         // Delete the previous buffer create. The buffer was too small
         if (file_name) {

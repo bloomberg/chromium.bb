@@ -309,7 +309,7 @@ DWORD SetTokenIntegrityLevel(HANDLE token, IntegrityLevel integrity_level) {
   if (!::ConvertStringSidToSid(integrity_level_str, &integrity_sid))
     return ::GetLastError();
 
-  TOKEN_MANDATORY_LABEL label = {0};
+  TOKEN_MANDATORY_LABEL label = {};
   label.Label.Attributes = SE_GROUP_INTEGRITY;
   label.Label.Sid = integrity_sid;
 

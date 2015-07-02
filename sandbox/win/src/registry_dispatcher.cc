@@ -42,15 +42,18 @@ namespace sandbox {
 RegistryDispatcher::RegistryDispatcher(PolicyBase* policy_base)
     : policy_base_(policy_base) {
   static const IPCCall create_params = {
-    {IPC_NTCREATEKEY_TAG, WCHAR_TYPE, UINT32_TYPE, VOIDPTR_TYPE, UINT32_TYPE,
-     UINT32_TYPE, UINT32_TYPE},
-    reinterpret_cast<CallbackGeneric>(&RegistryDispatcher::NtCreateKey)
-  };
+      {IPC_NTCREATEKEY_TAG,
+       {WCHAR_TYPE,
+        UINT32_TYPE,
+        VOIDPTR_TYPE,
+        UINT32_TYPE,
+        UINT32_TYPE,
+        UINT32_TYPE}},
+      reinterpret_cast<CallbackGeneric>(&RegistryDispatcher::NtCreateKey)};
 
   static const IPCCall open_params = {
-    {IPC_NTOPENKEY_TAG, WCHAR_TYPE, UINT32_TYPE, VOIDPTR_TYPE, UINT32_TYPE},
-    reinterpret_cast<CallbackGeneric>(&RegistryDispatcher::NtOpenKey)
-  };
+      {IPC_NTOPENKEY_TAG, {WCHAR_TYPE, UINT32_TYPE, VOIDPTR_TYPE, UINT32_TYPE}},
+      reinterpret_cast<CallbackGeneric>(&RegistryDispatcher::NtOpenKey)};
 
   ipc_calls_.push_back(create_params);
   ipc_calls_.push_back(open_params);

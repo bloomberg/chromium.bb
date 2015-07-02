@@ -97,34 +97,30 @@ namespace sandbox {
 ThreadProcessDispatcher::ThreadProcessDispatcher(PolicyBase* policy_base)
     : policy_base_(policy_base) {
   static const IPCCall open_thread = {
-    {IPC_NTOPENTHREAD_TAG, UINT32_TYPE, UINT32_TYPE},
-    reinterpret_cast<CallbackGeneric>(
-        &ThreadProcessDispatcher::NtOpenThread)
-  };
+      {IPC_NTOPENTHREAD_TAG, {UINT32_TYPE, UINT32_TYPE}},
+      reinterpret_cast<CallbackGeneric>(
+          &ThreadProcessDispatcher::NtOpenThread)};
 
   static const IPCCall open_process = {
-    {IPC_NTOPENPROCESS_TAG, UINT32_TYPE, UINT32_TYPE},
-    reinterpret_cast<CallbackGeneric>(
-        &ThreadProcessDispatcher::NtOpenProcess)
-  };
+      {IPC_NTOPENPROCESS_TAG, {UINT32_TYPE, UINT32_TYPE}},
+      reinterpret_cast<CallbackGeneric>(
+          &ThreadProcessDispatcher::NtOpenProcess)};
 
   static const IPCCall process_token = {
-    {IPC_NTOPENPROCESSTOKEN_TAG, VOIDPTR_TYPE, UINT32_TYPE},
-    reinterpret_cast<CallbackGeneric>(
-        &ThreadProcessDispatcher::NtOpenProcessToken)
-  };
+      {IPC_NTOPENPROCESSTOKEN_TAG, {VOIDPTR_TYPE, UINT32_TYPE}},
+      reinterpret_cast<CallbackGeneric>(
+          &ThreadProcessDispatcher::NtOpenProcessToken)};
 
   static const IPCCall process_tokenex = {
-    {IPC_NTOPENPROCESSTOKENEX_TAG, VOIDPTR_TYPE, UINT32_TYPE, UINT32_TYPE},
-    reinterpret_cast<CallbackGeneric>(
-        &ThreadProcessDispatcher::NtOpenProcessTokenEx)
-  };
+      {IPC_NTOPENPROCESSTOKENEX_TAG, {VOIDPTR_TYPE, UINT32_TYPE, UINT32_TYPE}},
+      reinterpret_cast<CallbackGeneric>(
+          &ThreadProcessDispatcher::NtOpenProcessTokenEx)};
 
   static const IPCCall create_params = {
-    {IPC_CREATEPROCESSW_TAG, WCHAR_TYPE, WCHAR_TYPE, WCHAR_TYPE, INOUTPTR_TYPE},
-    reinterpret_cast<CallbackGeneric>(
-        &ThreadProcessDispatcher::CreateProcessW)
-  };
+      {IPC_CREATEPROCESSW_TAG,
+       {WCHAR_TYPE, WCHAR_TYPE, WCHAR_TYPE, INOUTPTR_TYPE}},
+      reinterpret_cast<CallbackGeneric>(
+          &ThreadProcessDispatcher::CreateProcessW)};
 
   ipc_calls_.push_back(open_thread);
   ipc_calls_.push_back(open_process);
