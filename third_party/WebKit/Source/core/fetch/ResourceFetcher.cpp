@@ -939,9 +939,9 @@ bool ResourceFetcher::isLoadedBy(ResourceFetcher* possibleOwner) const
     return this == possibleOwner;
 }
 
-bool ResourceFetcher::canAccessRedirect(Resource* resource, ResourceRequest& request, const ResourceResponse& redirectResponse, ResourceLoaderOptions& options)
+bool ResourceFetcher::canAccessRedirect(Resource* resource, ResourceRequest& newRequest, const ResourceResponse& redirectResponse, ResourceLoaderOptions& options)
 {
-    if (!context().canRequest(resource->type(), request, request.url(), options, resource->isUnusedPreload(), FetchRequest::UseDefaultOriginRestrictionForType))
+    if (!context().canRequest(resource->type(), newRequest, newRequest.url(), options, resource->isUnusedPreload(), FetchRequest::UseDefaultOriginRestrictionForType))
         return false;
     if (options.corsEnabled == IsCORSEnabled) {
         SecurityOrigin* sourceOrigin = options.securityOrigin.get();
@@ -950,13 +950,13 @@ bool ResourceFetcher::canAccessRedirect(Resource* resource, ResourceRequest& req
 
         String errorMessage;
         StoredCredentials withCredentials = resource->lastResourceRequest().allowStoredCredentials() ? AllowStoredCredentials : DoNotAllowStoredCredentials;
-        if (!CrossOriginAccessControl::handleRedirect(sourceOrigin, request, redirectResponse, withCredentials, options, errorMessage)) {
+        if (!CrossOriginAccessControl::handleRedirect(sourceOrigin, newRequest, redirectResponse, withCredentials, options, errorMessage)) {
             resource->setCORSFailed();
             context().addConsoleMessage(errorMessage);
             return false;
         }
     }
-    if (resource->type() == Resource::Image && shouldDeferImageLoad(request.url()))
+    if (resource->type() == Resource::Image && shouldDeferImageLoad(newRequest.url()))
         return false;
     return true;
 }

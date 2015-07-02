@@ -216,13 +216,13 @@ bool CrossOriginAccessControl::isLegalRedirectLocation(const KURL& requestURL, S
     return true;
 }
 
-bool CrossOriginAccessControl::handleRedirect(SecurityOrigin* securityOrigin, ResourceRequest& request, const ResourceResponse& redirectResponse, StoredCredentials withCredentials, ResourceLoaderOptions& options, String& errorMessage)
+bool CrossOriginAccessControl::handleRedirect(SecurityOrigin* securityOrigin, ResourceRequest& newRequest, const ResourceResponse& redirectResponse, StoredCredentials withCredentials, ResourceLoaderOptions& options, String& errorMessage)
 {
     // http://www.w3.org/TR/cors/#redirect-steps terminology:
     const KURL& originalURL = redirectResponse.url();
-    const KURL& requestURL = request.url();
+    const KURL& newURL = newRequest.url();
 
-    bool redirectCrossOrigin = !securityOrigin->canRequest(requestURL);
+    bool redirectCrossOrigin = !securityOrigin->canRequest(newURL);
 
     // Same-origin request URLs that redirect are allowed without checking access.
     if (!securityOrigin->canRequest(originalURL)) {
@@ -230,7 +230,7 @@ bool CrossOriginAccessControl::handleRedirect(SecurityOrigin* securityOrigin, Re
         String errorDescription;
 
         // Steps 3 & 4 - check if scheme and other URL restrictions hold.
-        bool allowRedirect = isLegalRedirectLocation(requestURL, errorDescription);
+        bool allowRedirect = isLegalRedirectLocation(newURL, errorDescription);
         if (allowRedirect) {
             // Step 5: perform resource sharing access check.
             allowRedirect = passesAccessControlCheck(redirectResponse, withCredentials, securityOrigin, errorDescription);
@@ -238,7 +238,7 @@ bool CrossOriginAccessControl::handleRedirect(SecurityOrigin* securityOrigin, Re
                 RefPtr<SecurityOrigin> originalOrigin = SecurityOrigin::create(originalURL);
                 // Step 6: if the request URL origin is not same origin as the original URL's,
                 // set the source origin to a globally unique identifier.
-                if (!originalOrigin->canRequest(requestURL)) {
+                if (!originalOrigin->canRequest(newURL)) {
                     options.securityOrigin = SecurityOrigin::createUnique();
                     securityOrigin = options.securityOrigin.get();
                 }
@@ -252,8 +252,8 @@ bool CrossOriginAccessControl::handleRedirect(SecurityOrigin* securityOrigin, Re
     }
     if (redirectCrossOrigin) {
         // If now to a different origin, update/set Origin:.
-        request.clearHTTPOrigin();
-        request.setHTTPOrigin(securityOrigin->toAtomicString());
+        newRequest.clearHTTPOrigin();
+        newRequest.setHTTPOrigin(securityOrigin->toAtomicString());
         // If the user didn't request credentials in the first place, update our
         // state so we neither request them nor expect they must be allowed.
         if (options.credentialsRequested == ClientDidNotRequestCredentials)
