@@ -249,8 +249,6 @@ private:
 
     virtual void layout() override;
 
-    virtual void paintObject(const PaintInfo&, const LayoutPoint&) override;
-
     virtual void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 
     int borderSpacingForRow(unsigned row) const { return m_grid[row].rowLayoutObject ? table()->vBorderSpacing() : 0; }

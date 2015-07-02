@@ -1397,11 +1397,6 @@ CellSpan LayoutTableSection::spannedColumns(const LayoutRect& flippedRect) const
 }
 
 
-void LayoutTableSection::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
-{
-    TableSectionPainter(*this).paintObject(paintInfo, paintOffset);
-}
-
 void LayoutTableSection::imageChanged(WrappedImagePtr, const IntRect*)
 {
     // FIXME: Examine cells and issue paint invalidations of only the rect the image paints in.

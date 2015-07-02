@@ -17,9 +17,9 @@ public:
     TableSectionPainter(LayoutTableSection& layoutTableSection) : m_layoutTableSection(layoutTableSection) { }
 
     void paint(const PaintInfo&, const LayoutPoint&);
-    void paintObject(const PaintInfo&, const LayoutPoint&);
 
 private:
+    void paintObject(const PaintInfo&, const LayoutPoint&);
     void paintCell(LayoutTableCell*, const PaintInfo&, const LayoutPoint&);
 
     LayoutTableSection& m_layoutTableSection;

@@ -241,7 +241,7 @@ protected:
 
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
 public:
-    virtual void paintObject(const PaintInfo&, const LayoutPoint&) override;
+    virtual void paintObject(const PaintInfo&, const LayoutPoint&);
     virtual void paintChildren(const PaintInfo&, const LayoutPoint&);
 
     // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to LayoutBlockFlow
