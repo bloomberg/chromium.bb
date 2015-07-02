@@ -78,7 +78,10 @@ public:
         return scriptState;
     }
 
+    // The context of the returned ScriptState may have been already detached.
+    // You must check scriptState->contextIsValid() before using the context.
     static ScriptState* forMainWorld(LocalFrame*);
+    static ScriptState* forWorld(LocalFrame*, DOMWrapperWorld&);
 
     v8::Isolate* isolate() const { return m_isolate; }
     DOMWrapperWorld& world() const { return *m_world; }

@@ -121,9 +121,18 @@ LocalDOMWindow* ScriptState::domWindow() const
 
 ScriptState* ScriptState::forMainWorld(LocalFrame* frame)
 {
+    ASSERT(frame);
     v8::Isolate* isolate = toIsolate(frame);
     v8::HandleScope handleScope(isolate);
     return ScriptState::from(toV8ContextEvenIfDetached(frame, DOMWrapperWorld::mainWorld()));
+}
+
+ScriptState* ScriptState::forWorld(LocalFrame* frame, DOMWrapperWorld& world)
+{
+    ASSERT(frame);
+    v8::Isolate* isolate = toIsolate(frame);
+    v8::HandleScope handleScope(isolate);
+    return ScriptState::from(toV8ContextEvenIfDetached(frame, world));
 }
 
 }

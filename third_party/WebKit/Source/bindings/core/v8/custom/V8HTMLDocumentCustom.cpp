@@ -57,31 +57,33 @@ void V8HTMLDocument::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
     HTMLDocument* htmlDocument = V8HTMLDocument::toImpl(info.Holder());
 
     if (info.Length() > 2) {
-        if (RefPtrWillBeRawPtr<LocalFrame> frame = htmlDocument->frame()) {
-            // Fetch the global object for the frame.
-            v8::Local<v8::Context> context = toV8Context(frame.get(), DOMWrapperWorld::current(info.GetIsolate()));
-            // Bail out if we cannot get the context.
-            if (context.IsEmpty())
-                return;
-            v8::Local<v8::Object> global = context->Global();
-            // Get the open property of the global object.
-            v8::Local<v8::Value> function = global->Get(v8AtomicString(info.GetIsolate(), "open"));
-            // Failed; return without throwing (new) exception.
-            if (function.IsEmpty())
-                return;
-            // If the open property is not a function throw a type error.
-            if (!function->IsFunction()) {
-                V8ThrowException::throwTypeError(info.GetIsolate(), "open is not a function");
-                return;
-            }
-            // Wrap up the arguments and call the function.
-            OwnPtr<v8::Local<v8::Value>[]> params = adoptArrayPtr(new v8::Local<v8::Value>[info.Length()]);
-            for (int i = 0; i < info.Length(); i++)
-                params[i] = info[i];
+        RefPtrWillBeRawPtr<LocalFrame> frame = htmlDocument->frame();
+        if (!frame)
+            return;
 
-            v8SetReturnValue(info, frame->script().callFunction(v8::Local<v8::Function>::Cast(function), global, info.Length(), params.get()));
+        // Fetch the global object for the frame.
+        v8::Local<v8::Context> context = toV8Context(frame.get(), DOMWrapperWorld::current(info.GetIsolate()));
+        // Bail out if we cannot get the context.
+        if (context.IsEmpty())
+            return;
+        v8::Local<v8::Object> global = context->Global();
+        // Get the open property of the global object.
+        v8::Local<v8::Value> function = global->Get(v8AtomicString(info.GetIsolate(), "open"));
+        // Failed; return without throwing (new) exception.
+        if (function.IsEmpty())
+            return;
+        // If the open property is not a function throw a type error.
+        if (!function->IsFunction()) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), "open is not a function");
             return;
         }
+        // Wrap up the arguments and call the function.
+        OwnPtr<v8::Local<v8::Value>[]> params = adoptArrayPtr(new v8::Local<v8::Value>[info.Length()]);
+        for (int i = 0; i < info.Length(); i++)
+            params[i] = info[i];
+
+        v8SetReturnValue(info, frame->script().callFunction(v8::Local<v8::Function>::Cast(function), global, info.Length(), params.get()));
+        return;
     }
 
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "open", "Document", info.Holder(), info.GetIsolate());
