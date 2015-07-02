@@ -275,8 +275,10 @@ void SetClient(const base::string16& experiment_group, bool last_write) {
     // Use it to write the experiment results.
     GoogleUpdateSettings::WriteGoogleUpdateSystemClientKey(
         reg_key_handle, google_update::kRegClientField, experiment_group);
-    if (last_write)
-      CloseHandle((HANDLE) reg_key_handle);
+    if (last_write) {
+      CloseHandle(
+          reinterpret_cast<HANDLE>(static_cast<uintptr_t>(reg_key_handle)));
+    }
   } else {
     // Write to HKCU.
     GoogleUpdateSettings::SetClient(experiment_group);

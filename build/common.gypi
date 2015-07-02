@@ -5704,7 +5704,6 @@
                   '-Wno-extra-tokens',  # http://crbug.com/504663
                   '-Wno-ignored-attributes',  # http://crbug.com/504695
                   '-Wno-incompatible-pointer-types',  # http://crbug.com/504696
-                  '-Wno-int-to-void-pointer-cast',  # http://crbug.com/504697
                   '-Wno-invalid-noreturn',  # http://crbug.com/504698
                   '-Wno-logical-op-parentheses',  # http://crbug.com/504699
                   '-Wno-microsoft',  # http://crbug.com/505296

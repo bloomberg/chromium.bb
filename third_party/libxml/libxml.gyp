@@ -212,6 +212,8 @@
               '-Wno-tautological-pointer-compare',
               # See http://crbug.com/138571#c8
               '-Wno-ignored-attributes',
+              # libxml casts from int to long to void*.
+              '-Wno-int-to-void-pointer-cast',
             ],
           },
           'include_dirs': [
