@@ -776,11 +776,17 @@ bool JSONParser::DecodeUTF16(std::string* dest_string) {
 
     uint32 code_point = CBU16_GET_SUPPLEMENTARY(code_unit16_high,
                                                 code_unit16_low);
+    if (!IsValidCharacter(code_point))
+      return false;
+
     offset = 0;
     CBU8_APPEND_UNSAFE(code_unit8, offset, code_point);
   } else {
     // Not a surrogate.
     DCHECK(CBU16_IS_SINGLE(code_unit16_high));
+    if (!IsValidCharacter(code_unit16_high))
+      return false;
+
     CBU8_APPEND_UNSAFE(code_unit8, offset, code_unit16_high);
   }
 
@@ -789,6 +795,8 @@ bool JSONParser::DecodeUTF16(std::string* dest_string) {
 }
 
 void JSONParser::DecodeUTF8(const int32& point, StringBuilder* dest) {
+  DCHECK(IsValidCharacter(point));
+
   // Anything outside of the basic ASCII plane will need to be decoded from
   // int32 to a multi-byte sequence.
   if (point < kExtendedASCIIStart) {
