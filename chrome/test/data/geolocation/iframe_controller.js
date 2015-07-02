@@ -1,5 +1,7 @@
-<html>
-<script>
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 var iframe_hosts = ['http://127.0.0.1', 'http://localhost'];
 function getIFrameSrc(iframe_id) {
   var port = location.port;
@@ -17,11 +19,3 @@ function addIFrame(iframe_id, iframe_src) {
   }
   return "" + iframe_id;
 }
-</script>
-<body>
-<iframe id="iframe_0" name="iframe_0"></iframe>
-<iframe id="iframe_1" name="iframe_1"></iframe>
-Testing Geolocation with iframes.
-</body>
-</html>
-
