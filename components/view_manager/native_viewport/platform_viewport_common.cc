@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "components/view_manager/native_viewport/platform_viewport_headless.h"
 #include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
@@ -16,7 +17,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
-#include "ui/platform_window/stub/stub_window.h"
 
 #if defined(OS_WIN)
 #include "ui/platform_window/win/win_window.h"
@@ -42,8 +42,8 @@ float ConvertUIWheelValueToMojoValue(int offset) {
 class PlatformViewportCommon : public PlatformViewport,
                                public ui::PlatformWindowDelegate {
  public:
-  PlatformViewportCommon(Delegate* delegate, bool headless)
-      : delegate_(delegate), headless_(headless) {}
+  explicit PlatformViewportCommon(Delegate* delegate) : delegate_(delegate) {
+  }
 
   ~PlatformViewportCommon() override {
     // Destroy the platform-window while |this| is still alive.
@@ -58,17 +58,13 @@ class PlatformViewportCommon : public PlatformViewport,
     metrics_ = mojo::ViewportMetrics::New();
     metrics_->size_in_pixels = mojo::Size::From(bounds.size());
 
-    if (headless_) {
-      platform_window_.reset(new ui::StubWindow(this));
-    } else {
 #if defined(OS_WIN)
-      platform_window_.reset(new ui::WinWindow(this, bounds));
+    platform_window_.reset(new ui::WinWindow(this, bounds));
 #elif defined(USE_X11)
-      platform_window_.reset(new ui::X11Window(this));
+    platform_window_.reset(new ui::X11Window(this));
 #elif defined(OS_ANDROID)
-      platform_window_.reset(new ui::PlatformWindowAndroid(this));
+    platform_window_.reset(new ui::PlatformWindowAndroid(this));
 #endif
-    }
     platform_window_->SetBounds(bounds);
   }
 
@@ -175,7 +171,6 @@ class PlatformViewportCommon : public PlatformViewport,
 
   scoped_ptr<ui::PlatformWindow> platform_window_;
   Delegate* delegate_;
-  bool headless_;
   mojo::ViewportMetricsPtr metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformViewportCommon);
@@ -184,7 +179,9 @@ class PlatformViewportCommon : public PlatformViewport,
 // static
 scoped_ptr<PlatformViewport> PlatformViewport::Create(Delegate* delegate,
                                                       bool headless) {
-  return make_scoped_ptr(new PlatformViewportCommon(delegate, headless));
+  if (headless)
+    return PlatformViewportHeadless::Create(delegate);
+  return make_scoped_ptr(new PlatformViewportCommon(delegate));
 }
 
 }  // namespace native_viewport

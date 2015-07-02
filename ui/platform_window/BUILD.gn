@@ -32,5 +32,4 @@ group("platform_impls") {
       "//ui/platform_window/win",
     ]
   }
-  deps += [ "//ui/platform_window/stub" ]
 }

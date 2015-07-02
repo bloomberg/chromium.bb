@@ -10,7 +10,14 @@ source_set("native_viewport") {
     "onscreen_context_provider.h",
     "platform_viewport.h",
     "platform_viewport_common.cc",
+    "platform_viewport_headless.cc",
+    "platform_viewport_headless.h",
+    "platform_viewport_stub.cc",
   ]
+
+  if (!is_ios) {
+    sources -= [ "platform_viewport_stub.cc" ]
+  }
 
   deps = [
     "//base",
