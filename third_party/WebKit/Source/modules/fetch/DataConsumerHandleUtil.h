@@ -26,7 +26,7 @@ MODULES_EXPORT PassOwnPtr<WebDataConsumerHandle> createDoneDataConsumerHandle();
 MODULES_EXPORT PassOwnPtr<WebDataConsumerHandle> createUnexpectedErrorDataConsumerHandle();
 
 // Returns a FetchDataConsumerHandle that wraps WebDataConsumerHandle.
-MODULES_EXPORT PassOwnPtr<FetchDataConsumerHandle> createFetchDataConsumerHandleFromWebHandle(PassOwnPtr<WebDataConsumerHandle>);
+PassOwnPtr<FetchDataConsumerHandle> createFetchDataConsumerHandleFromWebHandle(PassOwnPtr<WebDataConsumerHandle>);
 
 // A helper class to call Client::didGetReadable() asynchronously after
 // Reader creation.

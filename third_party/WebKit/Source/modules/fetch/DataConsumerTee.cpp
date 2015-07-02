@@ -7,8 +7,6 @@
 
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ExecutionContext.h"
-#include "modules/fetch/DataConsumerHandleUtil.h"
-#include "modules/fetch/FetchBlobDataConsumerHandle.h"
 #include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/heap/Handle.h"
@@ -422,22 +420,6 @@ void DataConsumerTee::create(ExecutionContext* executionContext, PassOwnPtr<WebD
 
     *dest1 = adoptPtr(new DestinationHandle(DestinationContext::Proxy::create(context1, tracker)));
     *dest2 = adoptPtr(new DestinationHandle(DestinationContext::Proxy::create(context2, tracker)));
-}
-
-void DataConsumerTee::create(ExecutionContext* executionContext, PassOwnPtr<FetchDataConsumerHandle> src, OwnPtr<FetchDataConsumerHandle>* dest1, OwnPtr<FetchDataConsumerHandle>* dest2)
-{
-    RefPtr<BlobDataHandle> blobDataHandle = src->obtainReader(nullptr)->drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::AllowBlobWithInvalidSize);
-    if (blobDataHandle) {
-        *dest1 = FetchBlobDataConsumerHandle::create(executionContext, blobDataHandle);
-        *dest2 = FetchBlobDataConsumerHandle::create(executionContext, blobDataHandle);
-        return;
-    }
-
-    OwnPtr<WebDataConsumerHandle> webDest1, webDest2;
-    DataConsumerTee::create(executionContext, static_cast<PassOwnPtr<WebDataConsumerHandle>>(src), &webDest1, &webDest2);
-    *dest1 = createFetchDataConsumerHandleFromWebHandle(webDest1.release());
-    *dest2 = createFetchDataConsumerHandleFromWebHandle(webDest2.release());
-    return;
 }
 
 } // namespace blink

@@ -25,18 +25,10 @@
 namespace blink {
 namespace {
 
-using ::testing::InSequence;
-using ::testing::Return;
-using ::testing::StrictMock;
-using ::testing::_;
-using Checkpoint = StrictMock<::testing::MockFunction<void(int)>>;
-
 using Result = WebDataConsumerHandle::Result;
 using Thread = DataConsumerHandleTestUtil::Thread;
 const Result kDone = WebDataConsumerHandle::Done;
 const Result kUnexpectedError = WebDataConsumerHandle::UnexpectedError;
-const FetchDataConsumerHandle::Reader::BlobSizePolicy kDisallowBlobWithInvalidSize = FetchDataConsumerHandle::Reader::DisallowBlobWithInvalidSize;
-const FetchDataConsumerHandle::Reader::BlobSizePolicy kAllowBlobWithInvalidSize = FetchDataConsumerHandle::Reader::AllowBlobWithInvalidSize;
 
 using Command = DataConsumerHandleTestUtil::Command;
 using Handle = DataConsumerHandleTestUtil::ReplayingHandle;
@@ -51,21 +43,20 @@ String toString(const Vector<char>& v)
     return String(v.data(), v.size());
 }
 
-template<typename Handle>
 class TeeCreationThread {
 public:
-    void run(PassOwnPtr<Handle> src, OwnPtr<Handle>* dest1, OwnPtr<Handle>* dest2)
+    void run(PassOwnPtr<WebDataConsumerHandle> src, OwnPtr<WebDataConsumerHandle>* dest1, OwnPtr<WebDataConsumerHandle>* dest2)
     {
         m_thread = adoptPtr(new Thread("src thread", Thread::WithExecutionContext));
         m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
-        m_thread->thread()->postTask(FROM_HERE, new Task(threadSafeBind(&TeeCreationThread<Handle>::runInternal, AllowCrossThreadAccess(this), src, AllowCrossThreadAccess(dest1), AllowCrossThreadAccess(dest2))));
+        m_thread->thread()->postTask(FROM_HERE, new Task(threadSafeBind(&TeeCreationThread::runInternal, AllowCrossThreadAccess(this), src, AllowCrossThreadAccess(dest1), AllowCrossThreadAccess(dest2))));
         m_waitableEvent->wait();
     }
 
     Thread* thread() { return m_thread.get(); }
 
 private:
-    void runInternal(PassOwnPtr<Handle> src, OwnPtr<Handle>* dest1, OwnPtr<Handle>* dest2)
+    void runInternal(PassOwnPtr<WebDataConsumerHandle> src, OwnPtr<WebDataConsumerHandle>* dest1, OwnPtr<WebDataConsumerHandle>* dest2)
     {
         DataConsumerTee::create(m_thread->executionContext(), src, dest1, dest2);
         m_waitableEvent->signal();
@@ -75,31 +66,6 @@ private:
     OwnPtr<WebWaitableEvent> m_waitableEvent;
 };
 
-// TODO(hiroshige): Merge similar classes into DataConsumerHandleTestUtil.h/cpp.
-class MockFetchDataConsumerHandle : public FetchDataConsumerHandle {
-public:
-    static PassOwnPtr<StrictMock<MockFetchDataConsumerHandle>> create() { return adoptPtr(new StrictMock<MockFetchDataConsumerHandle>); }
-    MOCK_METHOD1(obtainReaderInternal, Reader*(Client*));
-};
-
-class MockFetchDataConsumerReader : public FetchDataConsumerHandle::Reader {
-public:
-    static PassOwnPtr<StrictMock<MockFetchDataConsumerReader>> create() { return adoptPtr(new StrictMock<MockFetchDataConsumerReader>); }
-
-    using Result = WebDataConsumerHandle::Result;
-    using Flags = WebDataConsumerHandle::Flags;
-    MOCK_METHOD4(read, Result(void*, size_t, Flags, size_t*));
-    MOCK_METHOD3(beginRead, Result(const void**, Flags, size_t*));
-    MOCK_METHOD1(endRead, Result(size_t));
-    MOCK_METHOD1(drainAsBlobDataHandle, PassRefPtr<BlobDataHandle>(BlobSizePolicy));
-
-    ~MockFetchDataConsumerReader() override
-    {
-        destruct();
-    }
-    MOCK_METHOD0(destruct, void());
-};
-
 TEST(DataConsumerTeeTest, CreateDone)
 {
     OwnPtr<Handle> src(Handle::create());
@@ -107,7 +73,7 @@ TEST(DataConsumerTeeTest, CreateDone)
 
     src->add(Command(Command::Done));
 
-    OwnPtr<TeeCreationThread<WebDataConsumerHandle>> t = adoptPtr(new TeeCreationThread<WebDataConsumerHandle>());
+    OwnPtr<TeeCreationThread> t = adoptPtr(new TeeCreationThread());
     t->run(src.release(), &dest1, &dest2);
 
     ASSERT_TRUE(dest1);
@@ -137,7 +103,7 @@ TEST(DataConsumerTeeTest, Read)
     src->add(Command(Command::Wait));
     src->add(Command(Command::Done));
 
-    OwnPtr<TeeCreationThread<WebDataConsumerHandle>> t = adoptPtr(new TeeCreationThread<WebDataConsumerHandle>());
+    OwnPtr<TeeCreationThread> t = adoptPtr(new TeeCreationThread());
     t->run(src.release(), &dest1, &dest2);
 
     ASSERT_TRUE(dest1);
@@ -170,7 +136,7 @@ TEST(DataConsumerTeeTest, TwoPhaseRead)
     src->add(Command(Command::Wait));
     src->add(Command(Command::Done));
 
-    OwnPtr<TeeCreationThread<WebDataConsumerHandle>> t = adoptPtr(new TeeCreationThread<WebDataConsumerHandle>());
+    OwnPtr<TeeCreationThread> t = adoptPtr(new TeeCreationThread());
     t->run(src.release(), &dest1, &dest2);
 
     ASSERT_TRUE(dest1);
@@ -198,7 +164,7 @@ TEST(DataConsumerTeeTest, Error)
     src->add(Command(Command::Data, "world"));
     src->add(Command(Command::Error));
 
-    OwnPtr<TeeCreationThread<WebDataConsumerHandle>> t = adoptPtr(new TeeCreationThread<WebDataConsumerHandle>());
+    OwnPtr<TeeCreationThread> t = adoptPtr(new TeeCreationThread());
     t->run(src.release(), &dest1, &dest2);
 
     ASSERT_TRUE(dest1);
@@ -227,7 +193,7 @@ TEST(DataConsumerTeeTest, StopSource)
     src->add(Command(Command::Data, "hello, "));
     src->add(Command(Command::Data, "world"));
 
-    OwnPtr<TeeCreationThread<WebDataConsumerHandle>> t = adoptPtr(new TeeCreationThread<WebDataConsumerHandle>());
+    OwnPtr<TeeCreationThread> t = adoptPtr(new TeeCreationThread());
     t->run(src.release(), &dest1, &dest2);
 
     ASSERT_TRUE(dest1);
@@ -255,7 +221,7 @@ TEST(DataConsumerTeeTest, DetachSource)
     src->add(Command(Command::Data, "hello, "));
     src->add(Command(Command::Data, "world"));
 
-    OwnPtr<TeeCreationThread<WebDataConsumerHandle>> t = adoptPtr(new TeeCreationThread<WebDataConsumerHandle>());
+    OwnPtr<TeeCreationThread> t = adoptPtr(new TeeCreationThread());
     t->run(src.release(), &dest1, &dest2);
 
     ASSERT_TRUE(dest1);
@@ -282,7 +248,7 @@ TEST(DataConsumerTeeTest, DetachSourceAfterReadingDone)
     src->add(Command(Command::Data, "world"));
     src->add(Command(Command::Done));
 
-    OwnPtr<TeeCreationThread<WebDataConsumerHandle>> t = adoptPtr(new TeeCreationThread<WebDataConsumerHandle>());
+    OwnPtr<TeeCreationThread> t = adoptPtr(new TeeCreationThread());
     t->run(src.release(), &dest1, &dest2);
 
     ASSERT_TRUE(dest1);
@@ -312,7 +278,7 @@ TEST(DataConsumerTeeTest, DetachOneDestination)
     src->add(Command(Command::Data, "world"));
     src->add(Command(Command::Done));
 
-    OwnPtr<TeeCreationThread<WebDataConsumerHandle>> t = adoptPtr(new TeeCreationThread<WebDataConsumerHandle>());
+    OwnPtr<TeeCreationThread> t = adoptPtr(new TeeCreationThread());
     t->run(src.release(), &dest1, &dest2);
 
     ASSERT_TRUE(dest1);
@@ -336,7 +302,7 @@ TEST(DataConsumerTeeTest, DetachBothDestinationsShouldStopSourceReader)
     src->add(Command(Command::Data, "hello, "));
     src->add(Command(Command::Data, "world"));
 
-    OwnPtr<TeeCreationThread<WebDataConsumerHandle>> t = adoptPtr(new TeeCreationThread<WebDataConsumerHandle>());
+    OwnPtr<TeeCreationThread> t = adoptPtr(new TeeCreationThread());
     t->run(src.release(), &dest1, &dest2);
 
     ASSERT_TRUE(dest1);
@@ -348,95 +314,6 @@ TEST(DataConsumerTeeTest, DetachBothDestinationsShouldStopSourceReader)
     // Collect garbage to finalize the source reader.
     Heap::collectAllGarbage();
     context->detached()->wait();
-}
-
-TEST(FetchDataConsumerTeeTest, Create)
-{
-    RefPtr<BlobDataHandle> blobDataHandle = BlobDataHandle::create();
-    OwnPtr<MockFetchDataConsumerHandle> src(MockFetchDataConsumerHandle::create());
-    OwnPtr<MockFetchDataConsumerReader> reader(MockFetchDataConsumerReader::create());
-
-    Checkpoint checkpoint;
-    InSequence s;
-    EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*src, obtainReaderInternal(_)).WillOnce(Return(reader.get()));
-    EXPECT_CALL(*reader, drainAsBlobDataHandle(kAllowBlobWithInvalidSize)).WillOnce(Return(blobDataHandle));
-    EXPECT_CALL(*reader, destruct());
-    EXPECT_CALL(checkpoint, Call(2));
-
-    // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.leakPtr());
-
-    OwnPtr<FetchDataConsumerHandle> dest1, dest2;
-    OwnPtr<TeeCreationThread<FetchDataConsumerHandle>> t = adoptPtr(new TeeCreationThread<FetchDataConsumerHandle>());
-
-    checkpoint.Call(1);
-    t->run(src.release(), &dest1, &dest2);
-    checkpoint.Call(2);
-
-    ASSERT_TRUE(dest1);
-    ASSERT_TRUE(dest2);
-    EXPECT_EQ(blobDataHandle, dest1->obtainReader(nullptr)->drainAsBlobDataHandle(kAllowBlobWithInvalidSize));
-    EXPECT_EQ(blobDataHandle, dest2->obtainReader(nullptr)->drainAsBlobDataHandle(kAllowBlobWithInvalidSize));
-}
-
-TEST(FetchDataConsumerTeeTest, CreateFromBlobWithInvalidSize)
-{
-    RefPtr<BlobDataHandle> blobDataHandle = BlobDataHandle::create(BlobData::create(), -1);
-    OwnPtr<MockFetchDataConsumerHandle> src(MockFetchDataConsumerHandle::create());
-    OwnPtr<MockFetchDataConsumerReader> reader(MockFetchDataConsumerReader::create());
-
-    Checkpoint checkpoint;
-    InSequence s;
-    EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*src, obtainReaderInternal(_)).WillOnce(Return(reader.get()));
-    EXPECT_CALL(*reader, drainAsBlobDataHandle(kAllowBlobWithInvalidSize)).WillOnce(Return(blobDataHandle));
-    EXPECT_CALL(*reader, destruct());
-    EXPECT_CALL(checkpoint, Call(2));
-
-    // |reader| is adopted by |obtainReader|.
-    ASSERT_TRUE(reader.leakPtr());
-
-    OwnPtr<FetchDataConsumerHandle> dest1, dest2;
-    OwnPtr<TeeCreationThread<FetchDataConsumerHandle>> t = adoptPtr(new TeeCreationThread<FetchDataConsumerHandle>());
-
-    checkpoint.Call(1);
-    t->run(src.release(), &dest1, &dest2);
-    checkpoint.Call(2);
-
-    ASSERT_TRUE(dest1);
-    ASSERT_TRUE(dest2);
-    EXPECT_FALSE(dest1->obtainReader(nullptr)->drainAsBlobDataHandle(kDisallowBlobWithInvalidSize));
-    EXPECT_EQ(blobDataHandle, dest1->obtainReader(nullptr)->drainAsBlobDataHandle(kAllowBlobWithInvalidSize));
-    EXPECT_FALSE(dest2->obtainReader(nullptr)->drainAsBlobDataHandle(kDisallowBlobWithInvalidSize));
-    EXPECT_EQ(blobDataHandle, dest2->obtainReader(nullptr)->drainAsBlobDataHandle(kAllowBlobWithInvalidSize));
-}
-
-TEST(FetchDataConsumerTeeTest, CreateDone)
-{
-    OwnPtr<Handle> src(Handle::create());
-    OwnPtr<FetchDataConsumerHandle> dest1, dest2;
-
-    src->add(Command(Command::Done));
-
-    OwnPtr<TeeCreationThread<FetchDataConsumerHandle>> t = adoptPtr(new TeeCreationThread<FetchDataConsumerHandle>());
-    t->run(createFetchDataConsumerHandleFromWebHandle(src.release()), &dest1, &dest2);
-
-    ASSERT_TRUE(dest1);
-    ASSERT_TRUE(dest2);
-
-    EXPECT_FALSE(dest1->obtainReader(nullptr)->drainAsBlobDataHandle(kAllowBlobWithInvalidSize));
-    EXPECT_FALSE(dest2->obtainReader(nullptr)->drainAsBlobDataHandle(kAllowBlobWithInvalidSize));
-
-    HandleReaderRunner<HandleReader> r1(dest1.release()), r2(dest2.release());
-
-    OwnPtr<HandleReadResult> res1 = r1.wait();
-    OwnPtr<HandleReadResult> res2 = r2.wait();
-
-    EXPECT_EQ(kDone, res1->result());
-    EXPECT_EQ(0u, res1->data().size());
-    EXPECT_EQ(kDone, res2->result());
-    EXPECT_EQ(0u, res2->data().size());
 }
 
 } // namespace
