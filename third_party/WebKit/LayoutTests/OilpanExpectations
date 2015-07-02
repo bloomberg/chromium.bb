@@ -47,7 +47,7 @@ crbug.com/397425 [ Debug ] fast/forms/select/menulist-appearance-basic.html [ Ti
 crbug.com/389648 [ Mac Debug ] fast/text-autosizing/table-inflation-crash.html [ Timeout ]
 crbug.com/456357 [ Mac Debug ] virtual/slimmingpaint/fast/overflow/line-clamp.html [ Timeout ]
 
-crbug.com/344239 inspector-protocol/heap-profiler/heap-objects-tracking.html [ Pass Timeout ]
+crbug.com/344239 [ Release ] inspector-protocol/heap-profiler/heap-objects-tracking.html [ Slow ]
 
 crbug.com/356742 [ Win ] svg/as-image/animated-svg-animation-control.html
 
