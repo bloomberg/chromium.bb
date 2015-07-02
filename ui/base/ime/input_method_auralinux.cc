@@ -161,6 +161,7 @@ void InputMethodAuraLinux::OnTextInputTypeChanged(
 void InputMethodAuraLinux::OnCaretBoundsChanged(const TextInputClient* client) {
   if (!IsTextInputClientFocused(client))
     return;
+  NotifyTextInputCaretBoundsChanged(client);
   context_->SetCursorLocation(GetTextInputClient()->GetCaretBounds());
 }
 
