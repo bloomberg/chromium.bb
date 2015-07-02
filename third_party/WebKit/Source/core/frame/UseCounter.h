@@ -758,6 +758,7 @@ public:
         V8XPathEvaluator_CreateExpression_Method = 854,
         V8XPathEvaluator_CreateNSResolver_Method = 855,
         V8XPathEvaluator_Evaluate_Method = 856,
+        RequestMIDIAccess = 857,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
