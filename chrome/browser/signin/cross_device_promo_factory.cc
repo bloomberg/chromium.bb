@@ -43,7 +43,7 @@ CrossDevicePromoFactory* CrossDevicePromoFactory::GetInstance() {
 void CrossDevicePromoFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* user_prefs) {
   user_prefs->RegisterBooleanPref(prefs::kCrossDevicePromoOptedOut, false);
-  user_prefs->RegisterBooleanPref(prefs::kCrossDevicePromoActive, false);
+  user_prefs->RegisterBooleanPref(prefs::kCrossDevicePromoShouldBeShown, false);
   user_prefs->RegisterInt64Pref(
       prefs::kCrossDevicePromoObservedSingleAccountCookie,
       base::Time().ToInternalValue());

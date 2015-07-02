@@ -575,7 +575,7 @@ extern const char kSignInPromoShowNTPBubble[];
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
 extern const char kCrossDevicePromoOptedOut[];
-extern const char kCrossDevicePromoActive[];
+extern const char kCrossDevicePromoShouldBeShown[];
 extern const char kCrossDevicePromoObservedSingleAccountCookie[];
 extern const char kCrossDevicePromoNextFetchListDevicesTime[];
 extern const char kCrossDevicePromoNumDevices[];

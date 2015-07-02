@@ -33,8 +33,10 @@
 
 namespace {
 
-int64 InOneHour() {
-  return (base::Time::Now() + base::TimeDelta::FromHours(1)).ToInternalValue();
+typedef std::map<std::string, std::string> VariationsMap;
+
+int64 InTwoHours() {
+  return (base::Time::Now() + base::TimeDelta::FromHours(2)).ToInternalValue();
 }
 
 }  // namespace
@@ -42,31 +44,31 @@ int64 InOneHour() {
 class CrossDevicePromoObserver : public CrossDevicePromo::Observer {
  public:
   explicit CrossDevicePromoObserver(CrossDevicePromo* promo)
-      : active_(false),
-        times_set_active_(0),
-        times_set_inactive_(0),
+      : eligible_(false),
+        times_set_eligible_(0),
+        times_set_ineligible_(0),
         promo_(promo) {
     promo->AddObserver(this);
   }
 
   ~CrossDevicePromoObserver() { promo_->RemoveObserver(this); }
 
-  void OnPromoActivationChanged(bool active) override {
-    active_ = active;
-    if (active)
-      times_set_active_++;
+  void OnPromoEligibilityChanged(bool eligible) override {
+    eligible_ = eligible;
+    if (eligible)
+      ++times_set_eligible_;
     else
-      times_set_inactive_++;
+      ++times_set_ineligible_;
   }
 
-  bool is_active() { return active_; }
-  int times_set_active() { return times_set_active_; }
-  int times_set_inactive() { return times_set_inactive_; }
+  bool is_eligible() const { return eligible_; }
+  int times_set_eligible() const { return times_set_eligible_; }
+  int times_set_inactive() const { return times_set_ineligible_; }
 
  private:
-  bool active_;
-  int times_set_active_;
-  int times_set_inactive_;
+  bool eligible_;
+  int times_set_eligible_;
+  int times_set_ineligible_;
   CrossDevicePromo* promo_;
 
   DISALLOW_COPY_AND_ASSIGN(CrossDevicePromoObserver);
@@ -75,9 +77,14 @@ class CrossDevicePromoObserver : public CrossDevicePromo::Observer {
 class CrossDevicePromoTest : public ::testing::Test {
  public:
   CrossDevicePromoTest();
+
   void SetUp() override;
 
+  // Destroys any variations which might be defined, and starts fresh.
   void ResetFieldTrialList();
+
+  // Defines a default set of variation parameters for promo initialization.
+  void InitPromoVariation();
 
   CrossDevicePromo* promo() { return cross_device_promo_; }
   TestingProfile* profile() { return profile_; }
@@ -89,18 +96,6 @@ class CrossDevicePromoTest : public ::testing::Test {
   }
   net::FakeURLFetcherFactory* fetcher_factory() {
     return &fake_url_fetcher_factory_;
-  }
-
-  void InitPromoVariation() {
-    std::map<std::string, std::string> variations_params;
-    variations_params["HoursBetweenSyncDeviceChecks"] = "1";
-    variations_params["DaysToVerifySingleUserProfile"] = "0";
-    variations_params["MinutesBetweenBrowsingSessions"] = "0";
-    variations_params["MinutesMaxContextSwitchDuration"] = "10";
-    variations_params["RPCThrottle"] = "0";
-    EXPECT_TRUE(variations::AssociateVariationParams("CrossDevicePromo", "A",
-                                                     variations_params));
-    base::FieldTrialList::CreateFieldTrial("CrossDevicePromo", "A");
   }
 
  private:
@@ -117,6 +112,10 @@ class CrossDevicePromoTest : public ::testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(CrossDevicePromoTest);
 };
+
+CrossDevicePromoTest::CrossDevicePromoTest() : fake_url_fetcher_factory_(NULL) {
+  ResetFieldTrialList();
+}
 
 void CrossDevicePromoTest::SetUp() {
   testing_profile_manager_.reset(
@@ -145,11 +144,8 @@ void CrossDevicePromoTest::SetUp() {
 
   signin_manager_ = static_cast<FakeSigninManagerForTesting*>(
       SigninManagerFactory::GetForProfile(profile()));
-  cross_device_promo_ = CrossDevicePromoFactory::GetForProfile(profile());
-}
 
-CrossDevicePromoTest::CrossDevicePromoTest() : fake_url_fetcher_factory_(NULL) {
-  ResetFieldTrialList();
+  cross_device_promo_ = CrossDevicePromoFactory::GetForProfile(profile());
 }
 
 void CrossDevicePromoTest::ResetFieldTrialList() {
@@ -160,6 +156,27 @@ void CrossDevicePromoTest::ResetFieldTrialList() {
       new base::FieldTrialList(new metrics::SHA1EntropyProvider("foo")));
   variations::testing::ClearAllVariationParams();
 }
+
+void CrossDevicePromoTest::InitPromoVariation() {
+  VariationsMap variations_params;
+  variations_params[
+      CrossDevicePromo::kParamHoursBetweenDeviceActivityChecks] = "2";
+  variations_params[
+      CrossDevicePromo::kParamDaysToVerifySingleUserProfile] = "0";
+  variations_params[
+      CrossDevicePromo::kParamMinutesBetweenBrowsingSessions] = "0";
+  variations_params[
+      CrossDevicePromo::kParamMinutesMaxContextSwitchDuration] = "10";
+  variations_params[
+      CrossDevicePromo::kParamRPCThrottle] = "0";
+  EXPECT_TRUE(variations::AssociateVariationParams(
+      CrossDevicePromo::kCrossDevicePromoFieldTrial, "A", variations_params));
+  base::FieldTrialList::CreateFieldTrial(
+      CrossDevicePromo::kCrossDevicePromoFieldTrial, "A");
+}
+
+// Tests for incrementally large portions flow that determines if the promo
+// should be shown.
 
 TEST_F(CrossDevicePromoTest, Uninitialized) {
   ASSERT_TRUE(promo());
@@ -172,7 +189,7 @@ TEST_F(CrossDevicePromoTest, Uninitialized) {
                                          signin_metrics::NO_VARIATIONS_CONFIG,
                                          2);
   histogram_tester()->ExpectTotalCount("Signin.XDevicePromo.Eligibility", 0);
-  ASSERT_FALSE(prefs()->GetBoolean(prefs::kCrossDevicePromoOptedOut));
+  EXPECT_FALSE(prefs()->GetBoolean(prefs::kCrossDevicePromoOptedOut));
 }
 
 TEST_F(CrossDevicePromoTest, UnitializedOptedOut) {
@@ -180,10 +197,10 @@ TEST_F(CrossDevicePromoTest, UnitializedOptedOut) {
 
   promo()->OptOut();
   // Opting out doesn't de-activate a never-active promo.
-  ASSERT_EQ(0, observer.times_set_inactive());
-  ASSERT_TRUE(prefs()->GetBoolean(prefs::kCrossDevicePromoOptedOut));
+  EXPECT_EQ(0, observer.times_set_inactive());
+  EXPECT_TRUE(prefs()->GetBoolean(prefs::kCrossDevicePromoOptedOut));
 
-  // Never initialize a promo that is opted out.
+  // An opted-out promo will never be initialized.
   EXPECT_FALSE(promo()->CheckPromoEligibilityForTesting());
   histogram_tester()->ExpectBucketCount("Signin.XDevicePromo.Initialized",
                                         signin_metrics::NO_VARIATIONS_CONFIG,
@@ -199,18 +216,21 @@ TEST_F(CrossDevicePromoTest, PartiallyInitialized) {
                                          signin_metrics::NO_VARIATIONS_CONFIG,
                                          1);
 
-  std::map<std::string, std::string> variations_params;
-  variations_params["HoursBetweenSyncDeviceChecks"] = "1";
-  variations_params["DaysToVerifySingleUserProfile"] = "1";
-  ASSERT_TRUE(variations::AssociateVariationParams("CrossDevicePromo", "A",
-                                                   variations_params));
-  base::FieldTrialList::CreateFieldTrial("CrossDevicePromo", "A");
+  VariationsMap variations_params;
+  variations_params[
+      CrossDevicePromo::kParamHoursBetweenDeviceActivityChecks] = "1";
+  variations_params[
+      CrossDevicePromo::kParamDaysToVerifySingleUserProfile] = "1";
+  EXPECT_TRUE(variations::AssociateVariationParams(
+      CrossDevicePromo::kCrossDevicePromoFieldTrial, "A", variations_params));
+  base::FieldTrialList::CreateFieldTrial(
+      CrossDevicePromo::kCrossDevicePromoFieldTrial, "A");
 
   EXPECT_FALSE(promo()->CheckPromoEligibilityForTesting());
   histogram_tester()->ExpectUniqueSample("Signin.XDevicePromo.Initialized",
                                          signin_metrics::NO_VARIATIONS_CONFIG,
                                          2);
-  ASSERT_FALSE(histogram_tester()->GetHistogramSamplesSinceCreation(
+  EXPECT_FALSE(histogram_tester()->GetHistogramSamplesSinceCreation(
       "Signin.XDevicePromo.Eligibility"));
 }
 
@@ -296,12 +316,12 @@ TEST_F(CrossDevicePromoTest, TrackAccountsInCookie) {
   base::RunLoop().RunUntilIdle();
 
   base::Time after_setting_cookies = base::Time::Now();
-  ASSERT_TRUE(prefs()->HasPrefPath(
+  EXPECT_TRUE(prefs()->HasPrefPath(
       prefs::kCrossDevicePromoObservedSingleAccountCookie));
-  ASSERT_LE(
+  EXPECT_LE(
       before_setting_cookies.ToInternalValue(),
       prefs()->GetInt64(prefs::kCrossDevicePromoObservedSingleAccountCookie));
-  ASSERT_GE(
+  EXPECT_GE(
       after_setting_cookies.ToInternalValue(),
       prefs()->GetInt64(prefs::kCrossDevicePromoObservedSingleAccountCookie));
 
@@ -311,9 +331,9 @@ TEST_F(CrossDevicePromoTest, TrackAccountsInCookie) {
   EXPECT_FALSE(cookie_manager_service()->ListAccounts(&accounts));
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_TRUE(prefs()->HasPrefPath(
+  EXPECT_TRUE(prefs()->HasPrefPath(
       prefs::kCrossDevicePromoObservedSingleAccountCookie));
-  ASSERT_GE(
+  EXPECT_GE(
       after_setting_cookies.ToInternalValue(),
       prefs()->GetInt64(prefs::kCrossDevicePromoObservedSingleAccountCookie));
 
@@ -323,12 +343,12 @@ TEST_F(CrossDevicePromoTest, TrackAccountsInCookie) {
   EXPECT_FALSE(cookie_manager_service()->ListAccounts(&accounts));
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_TRUE(prefs()->HasPrefPath(
+  EXPECT_TRUE(prefs()->HasPrefPath(
       prefs::kCrossDevicePromoObservedSingleAccountCookie));
-  ASSERT_LE(
+  EXPECT_LE(
       before_setting_cookies.ToInternalValue(),
       prefs()->GetInt64(prefs::kCrossDevicePromoObservedSingleAccountCookie));
-  ASSERT_GE(
+  EXPECT_GE(
       after_setting_cookies.ToInternalValue(),
       prefs()->GetInt64(prefs::kCrossDevicePromoObservedSingleAccountCookie));
 
@@ -338,7 +358,7 @@ TEST_F(CrossDevicePromoTest, TrackAccountsInCookie) {
   EXPECT_FALSE(cookie_manager_service()->ListAccounts(&accounts));
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_FALSE(prefs()->HasPrefPath(
+  EXPECT_FALSE(prefs()->HasPrefPath(
       prefs::kCrossDevicePromoObservedSingleAccountCookie));
 }
 
@@ -372,7 +392,7 @@ TEST_F(CrossDevicePromoTest, SingleAccountEligibility) {
   {
     base::HistogramTester test_single_account;
     prefs()->SetInt64(prefs::kCrossDevicePromoObservedSingleAccountCookie,
-                      InOneHour());
+                      InTwoHours());
     EXPECT_FALSE(promo()->CheckPromoEligibilityForTesting());
     test_single_account.ExpectBucketCount(
         "Signin.XDevicePromo.Eligibility",
@@ -390,13 +410,13 @@ TEST_F(CrossDevicePromoTest, NumDevicesEligibility) {
   EXPECT_FALSE(cookie_manager_service()->ListAccounts(&accounts));
   base::RunLoop().RunUntilIdle();
 
-  // Ensure we appropriate schedule a check for listing devices.
+  // Ensure we appropriate schedule a check for device activity.
   {
     base::HistogramTester test_missing_list_devices;
     int64 earliest_time_to_check_list_devices =
         base::Time::Now().ToInternalValue();
     EXPECT_FALSE(promo()->CheckPromoEligibilityForTesting());
-    int64 latest_time_to_check_list_devices = InOneHour();
+    int64 latest_time_to_check_list_devices = InTwoHours();
     test_missing_list_devices.ExpectUniqueSample(
         "Signin.XDevicePromo.Eligibility",
         signin_metrics::UNKNOWN_COUNT_DEVICES, 1);
@@ -408,23 +428,23 @@ TEST_F(CrossDevicePromoTest, NumDevicesEligibility) {
     EXPECT_GT(latest_time_to_check_list_devices, when_to_check_list_devices);
   }
 
-  // Don't reschedule the list devices check if there's one pending.
+  // Don't reschedule the device activity check if there's one pending.
   {
     base::HistogramTester test_unknown_devices;
-    int64 list_devices_time = InOneHour();
+    int64 list_devices_time = InTwoHours();
     prefs()->SetInt64(prefs::kCrossDevicePromoNextFetchListDevicesTime,
                       list_devices_time);
     EXPECT_FALSE(promo()->CheckPromoEligibilityForTesting());
     test_unknown_devices.ExpectUniqueSample(
         "Signin.XDevicePromo.Eligibility",
         signin_metrics::UNKNOWN_COUNT_DEVICES, 1);
-    // The scheduled time to call ListDevices should not have changed.
-    ASSERT_EQ(
+    // The scheduled time to fetch device activity should not have changed.
+    EXPECT_EQ(
         list_devices_time,
         prefs()->GetInt64(prefs::kCrossDevicePromoNextFetchListDevicesTime));
   }
 
-  // Execute the list devices check if it's time.
+  // Execute the device activity fetch if it's time.
   {
     base::HistogramTester test_unknown_devices;
     prefs()->SetInt64(prefs::kCrossDevicePromoNextFetchListDevicesTime,
@@ -443,15 +463,21 @@ TEST_F(CrossDevicePromoTest, NumDevicesEligibility) {
 
 TEST_F(CrossDevicePromoTest, ThrottleDeviceActivityCall) {
   // Start with a variation (fully throttled), signed in, one account in cookie.
-  std::map<std::string, std::string> variations_params;
-  variations_params["HoursBetweenSyncDeviceChecks"] = "1";
-  variations_params["DaysToVerifySingleUserProfile"] = "0";
-  variations_params["MinutesBetweenBrowsingSessions"] = "0";
-  variations_params["MinutesMaxContextSwitchDuration"] = "10";
-  variations_params["RPCThrottle"] = "101";
-  EXPECT_TRUE(variations::AssociateVariationParams("CrossDevicePromo", "A",
-                                                   variations_params));
-  base::FieldTrialList::CreateFieldTrial("CrossDevicePromo", "A");
+  VariationsMap variations_params;
+  variations_params[
+      CrossDevicePromo::kParamHoursBetweenDeviceActivityChecks] = "1";
+  variations_params[
+      CrossDevicePromo::kParamDaysToVerifySingleUserProfile] = "0";
+  variations_params[
+      CrossDevicePromo::kParamMinutesBetweenBrowsingSessions] = "0";
+  variations_params[
+      CrossDevicePromo::kParamMinutesMaxContextSwitchDuration] = "10";
+  variations_params[
+      CrossDevicePromo::kParamRPCThrottle] = "100";
+  EXPECT_TRUE(variations::AssociateVariationParams(
+      CrossDevicePromo::kCrossDevicePromoFieldTrial, "A", variations_params));
+  base::FieldTrialList::CreateFieldTrial(
+      CrossDevicePromo::kCrossDevicePromoFieldTrial, "A");
 
   EXPECT_FALSE(promo()->CheckPromoEligibilityForTesting());
   cookie_manager_service()->set_list_accounts_fetched_once_for_testing(false);
@@ -460,7 +486,7 @@ TEST_F(CrossDevicePromoTest, ThrottleDeviceActivityCall) {
   EXPECT_FALSE(cookie_manager_service()->ListAccounts(&accounts));
   base::RunLoop().RunUntilIdle();
 
-  // Ensure Device Activity Fetch gets throttled.
+  // Ensure device activity fetches get throttled.
   {
     base::HistogramTester test_throttle_rpc;
     prefs()->SetInt64(prefs::kCrossDevicePromoNextFetchListDevicesTime,
@@ -473,7 +499,8 @@ TEST_F(CrossDevicePromoTest, ThrottleDeviceActivityCall) {
 }
 
 TEST_F(CrossDevicePromoTest, NumDevicesKnown) {
-  // Start with a variation, signed in, and one account, sync devices in 1 hour.
+  // Start with a variation, signed in, and one account, fetch device activity
+  // in two hours.
   InitPromoVariation();
   EXPECT_FALSE(promo()->CheckPromoEligibilityForTesting());
   cookie_manager_service()->set_list_accounts_fetched_once_for_testing(false);
@@ -482,9 +509,10 @@ TEST_F(CrossDevicePromoTest, NumDevicesKnown) {
   EXPECT_FALSE(cookie_manager_service()->ListAccounts(&accounts));
   base::RunLoop().RunUntilIdle();
   prefs()->SetInt64(prefs::kCrossDevicePromoNextFetchListDevicesTime,
-                    InOneHour());
+                    InTwoHours());
 
-  // If there is no device present.
+  // Verify that knowing there are no devices for this account logs the
+  // appropriate metric for ineligibility.
   {
     base::HistogramTester test_no_devices;
     prefs()->SetInteger(prefs::kCrossDevicePromoNumDevices, 0);
@@ -493,7 +521,8 @@ TEST_F(CrossDevicePromoTest, NumDevicesKnown) {
                                        signin_metrics::ZERO_DEVICES, 1);
   }
 
-  // If there is one device present.
+  // Verify that knowing there is another device for this account results in the
+  // promo being eligible to be shown.
   {
     prefs()->SetInteger(prefs::kCrossDevicePromoNumDevices, 1);
     EXPECT_TRUE(promo()->CheckPromoEligibilityForTesting());
@@ -501,7 +530,8 @@ TEST_F(CrossDevicePromoTest, NumDevicesKnown) {
 }
 
 TEST_F(CrossDevicePromoTest, FetchDeviceResults) {
-  // Start with a variation, signed in, and one account, sync devices in 1 hour.
+  // Start with a variation, signed in, and one account, fetch device activity
+  // in 2 hours.
   InitPromoVariation();
   EXPECT_FALSE(promo()->CheckPromoEligibilityForTesting());
   cookie_manager_service()->set_list_accounts_fetched_once_for_testing(false);
@@ -513,24 +543,28 @@ TEST_F(CrossDevicePromoTest, FetchDeviceResults) {
                     base::Time::Now().ToInternalValue());
   prefs()->SetInteger(prefs::kCrossDevicePromoNumDevices, 1);
 
-  // If there is no device found.
+  // Verify that if the device activity fetcher returns zero devices the
+  // eligibility metric will report a ZERO_DEVICES event, and will not report
+  // the promo as eligible to be shown.
   {
     base::HistogramTester test_no_devices;
     std::vector<DeviceActivityFetcher::DeviceActivity> devices;
-    int64 in_one_hour = InOneHour();
+    int64 in_two_hours = InTwoHours();
     promo()->OnFetchDeviceActivitySuccess(devices);
     EXPECT_LE(
-        in_one_hour,
+        in_two_hours,
         prefs()->GetInt64(prefs::kCrossDevicePromoNextFetchListDevicesTime));
     EXPECT_EQ(0, prefs()->GetInteger(prefs::kCrossDevicePromoNumDevices));
     test_no_devices.ExpectUniqueSample("Signin.XDevicePromo.Eligibility",
                                        signin_metrics::ZERO_DEVICES, 1);
   }
 
-  // If there is one device found. It was recently active.
+  // Verify that if the device activity fetcher returns one device that was
+  // recently active, the promo is marked as eligible and the eligibility
+  // metric reports an ELIGIBLE event.
   {
     CrossDevicePromoObserver observer(promo());
-    ASSERT_FALSE(observer.is_active());
+    EXPECT_FALSE(observer.is_eligible());
     base::HistogramTester test_one_device;
     std::vector<DeviceActivityFetcher::DeviceActivity> devices;
     base::Time device_last_active =
@@ -540,25 +574,27 @@ TEST_F(CrossDevicePromoTest, FetchDeviceResults) {
     device.name = "Aslan";
     devices.push_back(device);
 
-    int64 in_one_hour = InOneHour();
+    int64 in_two_hours = InTwoHours();
     promo()->OnFetchDeviceActivitySuccess(devices);
     EXPECT_LE(
-        in_one_hour,
+        in_two_hours,
         prefs()->GetInt64(prefs::kCrossDevicePromoNextFetchListDevicesTime));
     EXPECT_EQ(1, prefs()->GetInteger(prefs::kCrossDevicePromoNumDevices));
     EXPECT_EQ(device_last_active.ToInternalValue(),
               prefs()->GetInt64(prefs::kCrossDevicePromoLastDeviceActiveTime));
-    EXPECT_TRUE(prefs()->GetBoolean(prefs::kCrossDevicePromoActive));
+    EXPECT_TRUE(prefs()->GetBoolean(prefs::kCrossDevicePromoShouldBeShown));
     test_one_device.ExpectUniqueSample("Signin.XDevicePromo.Eligibility",
                                        signin_metrics::ELIGIBLE, 1);
-    EXPECT_TRUE(observer.is_active());
-    EXPECT_EQ(1, observer.times_set_active());
+    EXPECT_TRUE(observer.is_eligible());
+    EXPECT_EQ(1, observer.times_set_eligible());
   }
 
-  // If there is one device found. It was not recently active.
+  // Verify that if the device activity fetcher returns one device that was not
+  // recently active then the eligibility metric will report a NO_ACTIVE_DEVICES
+  // event, and will not report the promo as eligible to be shown.
   {
     CrossDevicePromoObserver observer(promo());
-    ASSERT_FALSE(observer.is_active());
+    EXPECT_FALSE(observer.is_eligible());
     base::HistogramTester test_one_device;
     std::vector<DeviceActivityFetcher::DeviceActivity> devices;
     base::Time device_last_active =
@@ -568,24 +604,26 @@ TEST_F(CrossDevicePromoTest, FetchDeviceResults) {
     device.name = "Aslan";
     devices.push_back(device);
 
-    int64 in_one_hour = InOneHour();
+    int64 in_two_hours = InTwoHours();
     promo()->OnFetchDeviceActivitySuccess(devices);
     EXPECT_LE(
-        in_one_hour,
+        in_two_hours,
         prefs()->GetInt64(prefs::kCrossDevicePromoNextFetchListDevicesTime));
     EXPECT_EQ(1, prefs()->GetInteger(prefs::kCrossDevicePromoNumDevices));
     EXPECT_EQ(device_last_active.ToInternalValue(),
               prefs()->GetInt64(prefs::kCrossDevicePromoLastDeviceActiveTime));
-    EXPECT_FALSE(prefs()->GetBoolean(prefs::kCrossDevicePromoActive));
+    EXPECT_FALSE(prefs()->GetBoolean(prefs::kCrossDevicePromoShouldBeShown));
     test_one_device.ExpectUniqueSample("Signin.XDevicePromo.Eligibility",
                                        signin_metrics::NO_ACTIVE_DEVICES, 1);
-    EXPECT_FALSE(observer.is_active());
+    EXPECT_FALSE(observer.is_eligible());
   }
 
-  // If there are two devices found, one recently.
+  // Verify that if the device activity fetcher returns two devices and one was
+  // recently active, that the promo is eligible to be shown and the last active
+  // time is stored properly.
   {
     CrossDevicePromoObserver observer(promo());
-    ASSERT_FALSE(observer.is_active());
+    EXPECT_FALSE(observer.is_eligible());
     base::HistogramTester test_two_devices;
     std::vector<DeviceActivityFetcher::DeviceActivity> devices;
     base::Time device1_last_active =
@@ -601,18 +639,18 @@ TEST_F(CrossDevicePromoTest, FetchDeviceResults) {
     device2.name = "Balrog";
     devices.push_back(device2);
 
-    int64 in_one_hour = InOneHour();
+    int64 in_two_hours = InTwoHours();
     promo()->OnFetchDeviceActivitySuccess(devices);
     EXPECT_LE(
-        in_one_hour,
+        in_two_hours,
         prefs()->GetInt64(prefs::kCrossDevicePromoNextFetchListDevicesTime));
     EXPECT_EQ(2, prefs()->GetInteger(prefs::kCrossDevicePromoNumDevices));
     EXPECT_EQ(device2_last_active.ToInternalValue(),
               prefs()->GetInt64(prefs::kCrossDevicePromoLastDeviceActiveTime));
-    EXPECT_TRUE(prefs()->GetBoolean(prefs::kCrossDevicePromoActive));
+    EXPECT_TRUE(prefs()->GetBoolean(prefs::kCrossDevicePromoShouldBeShown));
     test_two_devices.ExpectUniqueSample("Signin.XDevicePromo.Eligibility",
                                         signin_metrics::ELIGIBLE, 1);
-    EXPECT_TRUE(observer.is_active());
-    EXPECT_EQ(1, observer.times_set_active());
+    EXPECT_TRUE(observer.is_eligible());
+    EXPECT_EQ(1, observer.times_set_eligible());
   }
 }

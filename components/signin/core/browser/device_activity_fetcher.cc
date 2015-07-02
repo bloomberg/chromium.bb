@@ -160,6 +160,7 @@ void DeviceActivityFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   std::vector<DeviceActivity> devices;
   // TODO(mlerman): Fill |devices| from the proto in |source|.
 
+  // Call this last as OnFetchDeviceActivitySuccess will delete |this|.
   observer_->OnFetchDeviceActivitySuccess(devices);
 }
 

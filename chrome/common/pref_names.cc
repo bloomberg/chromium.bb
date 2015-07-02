@@ -1598,8 +1598,8 @@ const char kSignInPromoShowNTPBubble[] = "sync_promo.show_ntp_bubble";
 // Boolean tracking whether the user chose to opt out of the x-device promo.
 const char kCrossDevicePromoOptedOut[] = "x_device_promo.opted_out";
 
-// Boolean tracking whether the x-device promo is currently active.
-const char kCrossDevicePromoActive[] = "x_device_promo.active";
+// Boolean tracking whether the x-device promo should be shown.
+const char kCrossDevicePromoShouldBeShown[] = "x_device_promo.should_be_shown";
 
 // Int64, representing the time when we first observed a single GAIA account in
 // the cookie. If the most recent observation does not contain exactly one
