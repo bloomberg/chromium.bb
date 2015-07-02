@@ -86,8 +86,7 @@ int check_with_mode(
     const char *tableList, const char *str, const char *typeform,
     const char *expected, int mode, int direction)
 {
-  widechar *inbuf;
-  widechar *outbuf;
+  widechar *inbuf, *outbuf, *expectedbuf;
   int inlen;
   int outlen;
   int i, rv = 0;
@@ -101,6 +100,7 @@ int check_with_mode(
   outlen = inlen * 10;
   inbuf = malloc(sizeof(widechar) * inlen);
   outbuf = malloc(sizeof(widechar) * outlen);
+  expectedbuf = malloc(sizeof(widechar) * expectedlen);
   if (typeform != NULL)
     {
       typeformbuf = malloc(outlen);
@@ -126,7 +126,8 @@ int check_with_mode(
       return 1;
     }
 
-  for (i = 0; i < outlen && i < expectedlen && expected[i] == outbuf[i]; i++);
+  expectedlen = extParseChars(expected, expectedbuf);
+  for (i = 0; i < outlen && i < expectedlen && expectedbuf[i] == outbuf[i]; i++);
   if (i < outlen || i < expectedlen)
     {
       rv = 1;
@@ -139,12 +140,12 @@ int check_with_mode(
       if (i < outlen && i < expectedlen) 
 	{
 	  printf("Diff: Expected '%c' but recieved '%c' in index %d\n",
-		 expected[i], outbuf[i], i);
+		 expectedbuf[i], outbuf[i], i);
 	}
       else if (i < expectedlen)
 	{
 	  printf("Diff: Expected '%c' but recieved nothing in index %d\n",
-		 expected[i], i);
+		 expectedbuf[i], i);
 	}
       else 
 	{
@@ -155,6 +156,7 @@ int check_with_mode(
 
   free(inbuf);
   free(outbuf);
+  free(expectedbuf);
   free(typeformbuf);
   lou_free();
   return rv;
