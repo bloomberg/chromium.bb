@@ -85,16 +85,17 @@ static NPClass V8NPObjectClass = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-static ScriptState* mainWorldScriptState(v8::Isolate* isolate, NPP npp, NPObject* npObject)
+static ScriptState* mainWorldScriptState(v8::Isolate* isolate, NPObject* npObject)
 {
     ASSERT(npObject->_class == &V8NPObjectClass);
     V8NPObject* object = reinterpret_cast<V8NPObject*>(npObject);
     LocalDOMWindow* window = object->rootObject;
-    if (!window || !window->isCurrentlyDisplayedInFrame())
-        return 0;
-    v8::HandleScope handleScope(isolate);
-    v8::Local<v8::Context> context = toV8Context(object->rootObject->frame(), DOMWrapperWorld::mainWorld());
-    return ScriptState::from(context);
+    if (!window || !window->frame())
+        return nullptr;
+    ScriptState* scriptState = ScriptState::forMainWorld(window->frame());
+    if (!scriptState->contextIsValid())
+        return nullptr;
+    return scriptState;
 }
 
 static PassOwnPtr<v8::Local<v8::Value>[]> createValueListFromVariantArgs(v8::Isolate* isolate, const NPVariant* arguments, uint32_t argumentCount, NPObject* owner)
@@ -249,7 +250,7 @@ bool _NPN_Invoke(NPP npp, NPObject* npObject, NPIdentifier methodName, const NPV
     }
 
     // FIXME: should use the plugin's owner frame as the security context.
-    ScriptState* scriptState = mainWorldScriptState(isolate, npp, npObject);
+    ScriptState* scriptState = mainWorldScriptState(isolate, npObject);
     if (!scriptState)
         return false;
 
@@ -302,7 +303,7 @@ bool _NPN_InvokeDefault(NPP npp, NPObject* npObject, const NPVariant* arguments,
 
     VOID_TO_NPVARIANT(*result);
 
-    ScriptState* scriptState = mainWorldScriptState(isolate, npp, npObject);
+    ScriptState* scriptState = mainWorldScriptState(isolate, npObject);
     if (!scriptState)
         return false;
 
@@ -353,7 +354,7 @@ bool _NPN_EvaluateHelper(NPP npp, bool popupsAllowed, NPObject* npObject, NPStri
         return false;
 
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    ScriptState* scriptState = mainWorldScriptState(isolate, npp, npObject);
+    ScriptState* scriptState = mainWorldScriptState(isolate, npObject);
     if (!scriptState)
         return false;
 
@@ -388,7 +389,7 @@ bool _NPN_GetProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName, NP
 
     if (V8NPObject* object = npObjectToV8NPObject(npObject)) {
         v8::Isolate* isolate = v8::Isolate::GetCurrent();
-        ScriptState* scriptState = mainWorldScriptState(isolate, npp, npObject);
+        ScriptState* scriptState = mainWorldScriptState(isolate, npObject);
         if (!scriptState)
             return false;
 
@@ -420,7 +421,7 @@ bool _NPN_SetProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName, co
 
     if (V8NPObject* object = npObjectToV8NPObject(npObject)) {
         v8::Isolate* isolate = v8::Isolate::GetCurrent();
-        ScriptState* scriptState = mainWorldScriptState(isolate, npp, npObject);
+        ScriptState* scriptState = mainWorldScriptState(isolate, npObject);
         if (!scriptState)
             return false;
 
@@ -447,7 +448,7 @@ bool _NPN_RemoveProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName)
         return false;
 
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    ScriptState* scriptState = mainWorldScriptState(isolate, npp, npObject);
+    ScriptState* scriptState = mainWorldScriptState(isolate, npObject);
     if (!scriptState)
         return false;
     ScriptState::Scope scope(scriptState);
@@ -465,7 +466,7 @@ bool _NPN_HasProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName)
 
     if (V8NPObject* object = npObjectToV8NPObject(npObject)) {
         v8::Isolate* isolate = v8::Isolate::GetCurrent();
-        ScriptState* scriptState = mainWorldScriptState(isolate, npp, npObject);
+        ScriptState* scriptState = mainWorldScriptState(isolate, npObject);
         if (!scriptState)
             return false;
         ScriptState::Scope scope(scriptState);
@@ -487,7 +488,7 @@ bool _NPN_HasMethod(NPP npp, NPObject* npObject, NPIdentifier methodName)
 
     if (V8NPObject* object = npObjectToV8NPObject(npObject)) {
         v8::Isolate* isolate = v8::Isolate::GetCurrent();
-        ScriptState* scriptState = mainWorldScriptState(isolate, npp, npObject);
+        ScriptState* scriptState = mainWorldScriptState(isolate, npObject);
         if (!scriptState)
             return false;
         ScriptState::Scope scope(scriptState);
@@ -515,7 +516,7 @@ void _NPN_SetException(NPObject* npObject, const NPUTF8 *message)
     }
 
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    ScriptState* scriptState = mainWorldScriptState(isolate, 0, npObject);
+    ScriptState* scriptState = mainWorldScriptState(isolate, npObject);
     if (!scriptState)
         return;
 
@@ -531,7 +532,7 @@ bool _NPN_Enumerate(NPP npp, NPObject* npObject, NPIdentifier** identifier, uint
         return false;
 
     if (V8NPObject* object = npObjectToV8NPObject(npObject)) {
-        ScriptState* scriptState = mainWorldScriptState(v8::Isolate::GetCurrent(), npp, npObject);
+        ScriptState* scriptState = mainWorldScriptState(v8::Isolate::GetCurrent(), npObject);
         if (!scriptState)
             return false;
         ScriptState::Scope scope(scriptState);
@@ -587,7 +588,7 @@ bool _NPN_Construct(NPP npp, NPObject* npObject, const NPVariant* arguments, uin
         return false;
 
     if (V8NPObject* object = npObjectToV8NPObject(npObject)) {
-        ScriptState* scriptState = mainWorldScriptState(v8::Isolate::GetCurrent(), npp, npObject);
+        ScriptState* scriptState = mainWorldScriptState(v8::Isolate::GetCurrent(), npObject);
         if (!scriptState)
             return false;
         ScriptState::Scope scope(scriptState);
