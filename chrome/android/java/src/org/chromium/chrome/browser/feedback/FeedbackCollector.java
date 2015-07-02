@@ -209,6 +209,7 @@ public class FeedbackCollector
     /**
      * @return the default description to invoke feedback with.
      */
+    @VisibleForTesting
     public String getDescription() {
         ThreadUtils.assertOnUiThread();
         return mDescription;
@@ -218,6 +219,7 @@ public class FeedbackCollector
      * Sets the screenshot to use for the feedback report.
      * @param screenshot the user visible screenshot.
      */
+    @VisibleForTesting
     public void setScreenshot(Bitmap screenshot) {
         ThreadUtils.assertOnUiThread();
         mScreenshot = screenshot;
@@ -226,6 +228,7 @@ public class FeedbackCollector
     /**
      * @return the screenshot to use for the feedback report.
      */
+    @VisibleForTesting
     public Bitmap getScreenshot() {
         ThreadUtils.assertOnUiThread();
         return mScreenshot;
@@ -234,6 +237,7 @@ public class FeedbackCollector
     /**
      * @return the collected data as a {@link Bundle}.
      */
+    @VisibleForTesting
     public Bundle getBundle() {
         ThreadUtils.assertOnUiThread();
         addUrl();

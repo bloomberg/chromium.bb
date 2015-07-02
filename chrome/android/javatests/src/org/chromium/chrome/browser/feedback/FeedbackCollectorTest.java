@@ -11,10 +11,9 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.shell.ChromeShellActivity;
-import org.chromium.chrome.shell.ChromeShellTab;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.UiUtils;
 
 import java.util.HashMap;
@@ -30,13 +29,17 @@ import javax.annotation.Nullable;
 /**
  * Test for {@link FeedbackCollector}.
  */
-public class FeedbackCollectorTest extends ChromeShellTestBase {
+public class FeedbackCollectorTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final int CONNECTIVITY_TASK_TIMEOUT_MS = 10;
 
-    private ChromeShellActivity mActivity;
+    private ChromeActivity mActivity;
     private Profile mProfile;
     private TestFeedbackCollector mCollector;
     private TestConnectivityTask mTestConnectivityTask;
+
+    public FeedbackCollectorTest() {
+        super(ChromeActivity.class);
+    }
 
     /**
      * Class for facilitating testing of {@link FeedbackCollector}. All public methods are
@@ -185,15 +188,18 @@ public class FeedbackCollectorTest extends ChromeShellTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mActivity = launchChromeShellWithBlankPage();
-        assertTrue(waitForActiveShellToBeDoneLoading());
+        mActivity = getActivity();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ChromeShellTab tab = mActivity.getActiveTab();
-                mProfile = tab.getProfile();
+                mProfile = Profile.getLastUsedProfile();
             }
         });
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
     }
 
     @SmallTest

@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.feedback;
 
-import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 
@@ -16,7 +15,7 @@ import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.params.HttpParams;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.net.test.BaseHttpTestServer;
 
 import java.io.IOException;
@@ -28,7 +27,7 @@ import java.net.Socket;
  * It includes a {@link ConnectivityTestServer} which is set up and torn down automatically
  * for tests.
  */
-public class ConnectivityCheckerTestBase extends ChromeShellTestBase {
+public class ConnectivityCheckerTestBase extends NativeLibraryTestBase {
     static final int TIMEOUT_MS = 5000;
     /**
      * Port number which spells out DUMMY on a numeric keypad.
@@ -176,8 +175,7 @@ public class ConnectivityCheckerTestBase extends ChromeShellTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        Context targetContext = getInstrumentation().getTargetContext();
-        startChromeBrowserProcessSync(targetContext);
+        loadNativeLibraryAndInitBrowserProcess();
         mTestServer = new ConnectivityTestServer();
         mTestServerThread = new Thread(mTestServer);
         mTestServerThread.start();
