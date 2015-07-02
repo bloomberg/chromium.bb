@@ -21,6 +21,8 @@
 #include "public/platform/WebWaitableEvent.h"
 #include "wtf/Deque.h"
 #include "wtf/Locker.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
@@ -322,6 +324,98 @@ public:
         RefPtr<Context> m_context;
     };
 
+    class HandleReadResult final {
+    public:
+        HandleReadResult(WebDataConsumerHandle::Result result, const Vector<char>& data) : m_result(result), m_data(data) { }
+        WebDataConsumerHandle::Result result() const { return m_result; }
+        const Vector<char>& data() const { return m_data; }
+
+    private:
+        const WebDataConsumerHandle::Result m_result;
+        const Vector<char> m_data;
+    };
+
+    // HandleReader reads all data from the given WebDataConsumerHandle using
+    // Reader::read on the thread on which it is created. When reading is done
+    // or failed, it calls the given callback with the result.
+    class HandleReader final : public WebDataConsumerHandle::Client {
+    public:
+        using OnFinishedReading = WTF::Function<void(PassOwnPtr<HandleReadResult>)>;
+
+        HandleReader(PassOwnPtr<WebDataConsumerHandle>, PassOwnPtr<OnFinishedReading>);
+        void didGetReadable() override;
+
+    private:
+        void runOnFinishedReading(PassOwnPtr<HandleReadResult>);
+
+        OwnPtr<WebDataConsumerHandle::Reader> m_reader;
+        OwnPtr<OnFinishedReading> m_onFinishedReading;
+        Vector<char> m_data;
+    };
+
+    // HandleTwoPhaseReader does the same as HandleReader, but it uses
+    // |beginRead| / |endRead| instead of |read|.
+    class HandleTwoPhaseReader final : public WebDataConsumerHandle::Client {
+    public:
+        using OnFinishedReading = WTF::Function<void(PassOwnPtr<HandleReadResult>)>;
+
+        HandleTwoPhaseReader(PassOwnPtr<WebDataConsumerHandle>, PassOwnPtr<OnFinishedReading>);
+        void didGetReadable() override;
+
+    private:
+        void runOnFinishedReading(PassOwnPtr<HandleReadResult>);
+
+        OwnPtr<WebDataConsumerHandle::Reader> m_reader;
+        OwnPtr<OnFinishedReading> m_onFinishedReading;
+        Vector<char> m_data;
+    };
+
+    // HandleReaderRunner<T> creates a dedicated thread and run T on the thread
+    // where T is one of HandleReader and HandleTwophaseReader.
+    template <typename T>
+    class HandleReaderRunner final {
+    public:
+        explicit HandleReaderRunner(PassOwnPtr<WebDataConsumerHandle> handle)
+            : m_thread(adoptPtr(new Thread("reading thread")))
+            , m_event(adoptPtr(Platform::current()->createWaitableEvent()))
+            , m_isDone(false)
+        {
+            m_thread->thread()->postTask(FROM_HERE, new Task(threadSafeBind(&HandleReaderRunner::start, AllowCrossThreadAccess(this), handle)));
+        }
+        ~HandleReaderRunner()
+        {
+            wait();
+        }
+
+        PassOwnPtr<HandleReadResult> wait()
+        {
+            if (m_isDone)
+                return nullptr;
+            m_event->wait();
+            m_isDone = true;
+            return m_result.release();
+        }
+
+    private:
+        void start(PassOwnPtr<WebDataConsumerHandle> handle)
+        {
+            m_handleReader = adoptPtr(new T(handle, bind<PassOwnPtr<HandleReadResult>>(&HandleReaderRunner::onFinished, this)));
+        }
+
+        void onFinished(PassOwnPtr<HandleReadResult> result)
+        {
+            m_handleReader = nullptr;
+            m_result = result;
+            m_event->signal();
+        }
+
+        OwnPtr<Thread> m_thread;
+        OwnPtr<WebWaitableEvent> m_event;
+        OwnPtr<HandleReadResult> m_result;
+        bool m_isDone;
+
+        OwnPtr<T> m_handleReader;
+    };
 };
 
 } // namespace blink

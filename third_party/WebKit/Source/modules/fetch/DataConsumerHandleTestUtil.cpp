@@ -236,4 +236,69 @@ void DataConsumerHandleTestUtil::ReplayingHandle::add(const Command& command)
     m_context->add(command);
 }
 
+DataConsumerHandleTestUtil::HandleReader::HandleReader(PassOwnPtr<WebDataConsumerHandle> handle, PassOwnPtr<OnFinishedReading> onFinishedReading)
+    : m_reader(handle->obtainReader(this))
+    , m_onFinishedReading(onFinishedReading)
+{
+}
+
+void DataConsumerHandleTestUtil::HandleReader::didGetReadable()
+{
+    WebDataConsumerHandle::Result r = WebDataConsumerHandle::UnexpectedError;
+    char buffer[3];
+    while (true) {
+        size_t size;
+        r = m_reader->read(buffer, sizeof(buffer), WebDataConsumerHandle::FlagNone, &size);
+        if (r == WebDataConsumerHandle::ShouldWait)
+            return;
+        if (r != WebDataConsumerHandle::Ok)
+            break;
+        m_data.append(buffer, size);
+    }
+    OwnPtr<HandleReadResult> result = adoptPtr(new HandleReadResult(r, m_data));
+    m_data.clear();
+    Platform::current()->currentThread()->postTask(FROM_HERE, new Task(bind(&HandleReader::runOnFinishedReading, this, result.release())));
+    m_reader = nullptr;
+}
+
+void DataConsumerHandleTestUtil::HandleReader::runOnFinishedReading(PassOwnPtr<HandleReadResult> result)
+{
+    ASSERT(m_onFinishedReading);
+    (*m_onFinishedReading.release())(result);
+}
+
+DataConsumerHandleTestUtil::HandleTwoPhaseReader::HandleTwoPhaseReader(PassOwnPtr<WebDataConsumerHandle> handle, PassOwnPtr<OnFinishedReading> onFinishedReading)
+    : m_reader(handle->obtainReader(this))
+    , m_onFinishedReading(onFinishedReading)
+{
+}
+
+void DataConsumerHandleTestUtil::HandleTwoPhaseReader::didGetReadable()
+{
+    WebDataConsumerHandle::Result r = WebDataConsumerHandle::UnexpectedError;
+    while (true) {
+        const void* buffer = nullptr;
+        size_t size;
+        r = m_reader->beginRead(&buffer, WebDataConsumerHandle::FlagNone, &size);
+        if (r == WebDataConsumerHandle::ShouldWait)
+            return;
+        if (r != WebDataConsumerHandle::Ok)
+            break;
+        // Read smaller than available in order to test |endRead|.
+        size_t readSize = std::min(size, std::max(size * 2 / 3, static_cast<size_t>(1)));
+        m_data.append(static_cast<const char*>(buffer), readSize);
+        m_reader->endRead(readSize);
+    }
+    OwnPtr<HandleReadResult> result = adoptPtr(new HandleReadResult(r, m_data));
+    m_data.clear();
+    Platform::current()->currentThread()->postTask(FROM_HERE, new Task(bind(&HandleTwoPhaseReader::runOnFinishedReading, this, result.release())));
+    m_reader = nullptr;
+}
+
+void DataConsumerHandleTestUtil::HandleTwoPhaseReader::runOnFinishedReading(PassOwnPtr<HandleReadResult> result)
+{
+    ASSERT(m_onFinishedReading);
+    (*m_onFinishedReading.release())(result);
+}
+
 } // namespace blink

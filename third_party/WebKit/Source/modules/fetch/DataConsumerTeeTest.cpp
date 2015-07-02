@@ -27,115 +27,21 @@ namespace {
 
 using Result = WebDataConsumerHandle::Result;
 using Thread = DataConsumerHandleTestUtil::Thread;
-const WebDataConsumerHandle::Flags kNone = WebDataConsumerHandle::FlagNone;
-const Result kOk = WebDataConsumerHandle::Ok;
-const Result kShouldWait = WebDataConsumerHandle::ShouldWait;
 const Result kDone = WebDataConsumerHandle::Done;
 const Result kUnexpectedError = WebDataConsumerHandle::UnexpectedError;
 
 using Command = DataConsumerHandleTestUtil::Command;
 using Handle = DataConsumerHandleTestUtil::ReplayingHandle;
+using HandleReader = DataConsumerHandleTestUtil::HandleReader;
+using HandleTwoPhaseReader = DataConsumerHandleTestUtil::HandleTwoPhaseReader;
+using HandleReadResult = DataConsumerHandleTestUtil::HandleReadResult;
+template <typename T>
+using HandleReaderRunner = DataConsumerHandleTestUtil::HandleReaderRunner<T>;
 
-class HandleReader : public WebDataConsumerHandle::Client {
-public:
-    HandleReader() : m_finalResult(kOk) { }
-
-    // Need to wait for the event signal after this function is called.
-    void start(PassOwnPtr<WebDataConsumerHandle> handle)
-    {
-        m_thread = adoptPtr(new Thread("reading thread"));
-        m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
-        m_thread->thread()->postTask(FROM_HERE, new Task(threadSafeBind(&HandleReader::obtainReader, AllowCrossThreadAccess(this), handle)));
-    }
-
-    void didGetReadable() override
-    {
-        Result r = kOk;
-        char buffer[3];
-        while (true) {
-            size_t size;
-            r = m_reader->read(buffer, sizeof(buffer), kNone, &size);
-            if (r == kShouldWait)
-                return;
-            if (r != kOk)
-                break;
-            m_readString.append(String(buffer, size));
-        }
-        m_finalResult = r;
-        m_reader = nullptr;
-        m_waitableEvent->signal();
-    }
-
-    WebWaitableEvent* waitableEvent() { return m_waitableEvent.get(); }
-
-    // These should be accessed after the thread joins.
-    const String& readString() const { return m_readString; }
-    Result finalResult() const { return m_finalResult; }
-
-private:
-    void obtainReader(PassOwnPtr<WebDataConsumerHandle> handle)
-    {
-        m_reader = handle->obtainReader(this);
-    }
-
-    OwnPtr<Thread> m_thread;
-    OwnPtr<WebDataConsumerHandle::Reader> m_reader;
-    String m_readString;
-    Result m_finalResult;
-    OwnPtr<WebWaitableEvent> m_waitableEvent;
-};
-
-class HandleTwoPhaseReader : public WebDataConsumerHandle::Client {
-public:
-    HandleTwoPhaseReader() : m_finalResult(kOk) { }
-
-    // Need to wait for the event signal after this function is called.
-    void start(PassOwnPtr<WebDataConsumerHandle> handle)
-    {
-        m_thread = adoptPtr(new Thread("reading thread"));
-        m_waitableEvent = adoptPtr(Platform::current()->createWaitableEvent());
-        m_thread->thread()->postTask(FROM_HERE, new Task(threadSafeBind(&HandleTwoPhaseReader::obtainReader, AllowCrossThreadAccess(this), handle)));
-    }
-
-    void didGetReadable() override
-    {
-        Result r = kOk;
-        while (true) {
-            const void* buffer = nullptr;
-            size_t size;
-            r = m_reader->beginRead(&buffer, kNone, &size);
-            if (r == kShouldWait)
-                return;
-            if (r != kOk)
-                break;
-            // Read smaller than availabe in order to test |endRead|.
-            size_t readSize = std::max(size * 2 / 3, static_cast<size_t>(1));
-            m_readString.append(String(static_cast<const char*>(buffer), readSize));
-            m_reader->endRead(readSize);
-        }
-        m_finalResult = r;
-        m_reader = nullptr;
-        m_waitableEvent->signal();
-    }
-
-    WebWaitableEvent* waitableEvent() { return m_waitableEvent.get(); }
-
-    // These should be accessed after the thread joins.
-    const String& readString() const { return m_readString; }
-    Result finalResult() const { return m_finalResult; }
-
-private:
-    void obtainReader(PassOwnPtr<WebDataConsumerHandle> handle)
-    {
-        m_reader = handle->obtainReader(this);
-    }
-
-    OwnPtr<Thread> m_thread;
-    OwnPtr<WebDataConsumerHandle::Reader> m_reader;
-    String m_readString;
-    Result m_finalResult;
-    OwnPtr<WebWaitableEvent> m_waitableEvent;
-};
+String toString(const Vector<char>& v)
+{
+    return String(v.data(), v.size());
+}
 
 class TeeCreationThread {
 public:
@@ -173,18 +79,15 @@ TEST(DataConsumerTeeTest, CreateDone)
     ASSERT_TRUE(dest1);
     ASSERT_TRUE(dest2);
 
-    HandleReader r1, r2;
-    r1.start(dest1.release());
-    r2.start(dest2.release());
+    HandleReaderRunner<HandleReader> r1(dest1.release()), r2(dest2.release());
 
-    r1.waitableEvent()->wait();
-    r2.waitableEvent()->wait();
+    OwnPtr<HandleReadResult> res1 = r1.wait();
+    OwnPtr<HandleReadResult> res2 = r2.wait();
 
-    EXPECT_EQ(kDone, r1.finalResult());
-    EXPECT_EQ(String(), r1.readString());
-
-    EXPECT_EQ(kDone, r2.finalResult());
-    EXPECT_EQ(String(), r2.readString());
+    EXPECT_EQ(kDone, res1->result());
+    EXPECT_EQ(0u, res1->data().size());
+    EXPECT_EQ(kDone, res2->result());
+    EXPECT_EQ(0u, res2->data().size());
 }
 
 TEST(DataConsumerTeeTest, Read)
@@ -206,18 +109,17 @@ TEST(DataConsumerTeeTest, Read)
     ASSERT_TRUE(dest1);
     ASSERT_TRUE(dest2);
 
-    HandleReader r1, r2;
-    r1.start(dest1.release());
-    r2.start(dest2.release());
+    HandleReaderRunner<HandleReader> r1(dest1.release());
+    HandleReaderRunner<HandleReader> r2(dest2.release());
 
-    r1.waitableEvent()->wait();
-    r2.waitableEvent()->wait();
+    OwnPtr<HandleReadResult> res1 = r1.wait();
+    OwnPtr<HandleReadResult> res2 = r2.wait();
 
-    EXPECT_EQ(kDone, r1.finalResult());
-    EXPECT_EQ("hello, world", r1.readString());
+    EXPECT_EQ(kDone, res1->result());
+    EXPECT_EQ("hello, world", toString(res1->data()));
 
-    EXPECT_EQ(kDone, r2.finalResult());
-    EXPECT_EQ("hello, world", r2.readString());
+    EXPECT_EQ(kDone, res2->result());
+    EXPECT_EQ("hello, world", toString(res2->data()));
 }
 
 TEST(DataConsumerTeeTest, TwoPhaseRead)
@@ -240,18 +142,17 @@ TEST(DataConsumerTeeTest, TwoPhaseRead)
     ASSERT_TRUE(dest1);
     ASSERT_TRUE(dest2);
 
-    HandleTwoPhaseReader r1, r2;
-    r1.start(dest1.release());
-    r2.start(dest2.release());
+    HandleReaderRunner<HandleTwoPhaseReader> r1(dest1.release());
+    HandleReaderRunner<HandleTwoPhaseReader> r2(dest2.release());
 
-    r1.waitableEvent()->wait();
-    r2.waitableEvent()->wait();
+    OwnPtr<HandleReadResult> res1 = r1.wait();
+    OwnPtr<HandleReadResult> res2 = r2.wait();
 
-    EXPECT_EQ(kDone, r1.finalResult());
-    EXPECT_EQ("hello, world", r1.readString());
+    EXPECT_EQ(kDone, res1->result());
+    EXPECT_EQ("hello, world", toString(res1->data()));
 
-    EXPECT_EQ(kDone, r2.finalResult());
-    EXPECT_EQ("hello, world", r2.readString());
+    EXPECT_EQ(kDone, res2->result());
+    EXPECT_EQ("hello, world", toString(res2->data()));
 }
 
 TEST(DataConsumerTeeTest, Error)
@@ -269,15 +170,14 @@ TEST(DataConsumerTeeTest, Error)
     ASSERT_TRUE(dest1);
     ASSERT_TRUE(dest2);
 
-    HandleReader r1, r2;
-    r1.start(dest1.release());
-    r2.start(dest2.release());
+    HandleReaderRunner<HandleReader> r1(dest1.release());
+    HandleReaderRunner<HandleReader> r2(dest2.release());
 
-    r1.waitableEvent()->wait();
-    r2.waitableEvent()->wait();
+    OwnPtr<HandleReadResult> res1 = r1.wait();
+    OwnPtr<HandleReadResult> res2 = r2.wait();
 
-    EXPECT_EQ(kUnexpectedError, r1.finalResult());
-    EXPECT_EQ(kUnexpectedError, r2.finalResult());
+    EXPECT_EQ(kUnexpectedError, res1->result());
+    EXPECT_EQ(kUnexpectedError, res2->result());
 }
 
 void postStop(Thread* thread)
@@ -299,19 +199,18 @@ TEST(DataConsumerTeeTest, StopSource)
     ASSERT_TRUE(dest1);
     ASSERT_TRUE(dest2);
 
-    HandleReader r1, r2;
-    r1.start(dest1.release());
-    r2.start(dest2.release());
+    HandleReaderRunner<HandleReader> r1(dest1.release());
+    HandleReaderRunner<HandleReader> r2(dest2.release());
 
     // We can pass a raw pointer because the subsequent |wait| calls ensure
     // t->thread() is alive.
     t->thread()->thread()->postTask(FROM_HERE, new Task(threadSafeBind(postStop, AllowCrossThreadAccess(t->thread()))));
 
-    r1.waitableEvent()->wait();
-    r2.waitableEvent()->wait();
+    OwnPtr<HandleReadResult> res1 = r1.wait();
+    OwnPtr<HandleReadResult> res2 = r2.wait();
 
-    EXPECT_EQ(kUnexpectedError, r1.finalResult());
-    EXPECT_EQ(kUnexpectedError, r2.finalResult());
+    EXPECT_EQ(kUnexpectedError, res1->result());
+    EXPECT_EQ(kUnexpectedError, res2->result());
 }
 
 TEST(DataConsumerTeeTest, DetachSource)
@@ -328,17 +227,16 @@ TEST(DataConsumerTeeTest, DetachSource)
     ASSERT_TRUE(dest1);
     ASSERT_TRUE(dest2);
 
-    HandleReader r1, r2;
-    r1.start(dest1.release());
-    r2.start(dest2.release());
+    HandleReaderRunner<HandleReader> r1(dest1.release());
+    HandleReaderRunner<HandleReader> r2(dest2.release());
 
     t = nullptr;
 
-    r1.waitableEvent()->wait();
-    r2.waitableEvent()->wait();
+    OwnPtr<HandleReadResult> res1 = r1.wait();
+    OwnPtr<HandleReadResult> res2 = r2.wait();
 
-    EXPECT_EQ(kUnexpectedError, r1.finalResult());
-    EXPECT_EQ(kUnexpectedError, r2.finalResult());
+    EXPECT_EQ(kUnexpectedError, res1->result());
+    EXPECT_EQ(kUnexpectedError, res2->result());
 }
 
 TEST(DataConsumerTeeTest, DetachSourceAfterReadingDone)
@@ -356,20 +254,19 @@ TEST(DataConsumerTeeTest, DetachSourceAfterReadingDone)
     ASSERT_TRUE(dest1);
     ASSERT_TRUE(dest2);
 
-    HandleReader r1, r2;
-    r1.start(dest1.release());
-    r1.waitableEvent()->wait();
+    HandleReaderRunner<HandleReader> r1(dest1.release());
+    OwnPtr<HandleReadResult> res1 = r1.wait();
 
-    EXPECT_EQ(kDone, r1.finalResult());
-    EXPECT_EQ("hello, world", r1.readString());
+    EXPECT_EQ(kDone, res1->result());
+    EXPECT_EQ("hello, world", toString(res1->data()));
 
     t = nullptr;
 
-    r2.start(dest2.release());
-    r2.waitableEvent()->wait();
+    HandleReaderRunner<HandleReader> r2(dest2.release());
+    OwnPtr<HandleReadResult> res2 = r2.wait();
 
-    EXPECT_EQ(kDone, r2.finalResult());
-    EXPECT_EQ("hello, world", r2.readString());
+    EXPECT_EQ(kDone, res2->result());
+    EXPECT_EQ("hello, world", toString(res2->data()));
 }
 
 TEST(DataConsumerTeeTest, DetachOneDestination)
@@ -389,12 +286,11 @@ TEST(DataConsumerTeeTest, DetachOneDestination)
 
     dest1 = nullptr;
 
-    HandleReader r2;
-    r2.start(dest2.release());
-    r2.waitableEvent()->wait();
+    HandleReaderRunner<HandleReader> r2(dest2.release());
+    OwnPtr<HandleReadResult> res2 = r2.wait();
 
-    EXPECT_EQ(kDone, r2.finalResult());
-    EXPECT_EQ("hello, world", r2.readString());
+    EXPECT_EQ(kDone, res2->result());
+    EXPECT_EQ("hello, world", toString(res2->data()));
 }
 
 TEST(DataConsumerTeeTest, DetachBothDestinationsShouldStopSourceReader)
