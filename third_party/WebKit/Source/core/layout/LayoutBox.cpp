@@ -2709,8 +2709,9 @@ LayoutUnit LayoutBox::containingBlockLogicalWidthForPositioned(const LayoutBoxMo
     if (style()->position() == FixedPosition && containingBlock->isLayoutView()) {
         const LayoutView* view = toLayoutView(containingBlock);
         if (FrameView* frameView = view->frameView()) {
-            LayoutRect viewportRect = LayoutRect(frameView->visibleContentRect());
-            return containingBlock->isHorizontalWritingMode() ? viewportRect.width() : viewportRect.height();
+            // Don't use visibleContentRect since the DeprecatedPaintLayer's size has not been set yet.
+            IntSize viewportSize = frameView->layoutViewportScrollableArea()->excludeScrollbars(frameView->frameRect().size());
+            return containingBlock->isHorizontalWritingMode() ? viewportSize.width() : viewportSize.height();
         }
     }
 
@@ -2752,8 +2753,9 @@ LayoutUnit LayoutBox::containingBlockLogicalHeightForPositioned(const LayoutBoxM
     if (style()->position() == FixedPosition && containingBlock->isLayoutView()) {
         const LayoutView* view = toLayoutView(containingBlock);
         if (FrameView* frameView = view->frameView()) {
-            LayoutRect viewportRect = LayoutRect(frameView->visibleContentRect());
-            return containingBlock->isHorizontalWritingMode() ? viewportRect.height() : viewportRect.width();
+            // Don't use visibleContentRect since the DeprecatedPaintLayer's size has not been set yet.
+            IntSize viewportSize = frameView->layoutViewportScrollableArea()->excludeScrollbars(frameView->frameRect().size());
+            return containingBlock->isHorizontalWritingMode() ? viewportSize.height() : viewportSize.width();
         }
     }
 

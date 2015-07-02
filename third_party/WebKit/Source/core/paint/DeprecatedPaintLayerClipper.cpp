@@ -81,6 +81,8 @@ static void applyClipRects(const ClipRectsContext& context, LayoutObject& layout
         clipRects.setOverflowClipRect(intersection(newOverflowClip, clipRects.overflowClipRect()));
         if (layoutObject.isPositioned())
             clipRects.setPosClipRect(intersection(newOverflowClip, clipRects.posClipRect()));
+        if (layoutObject.isLayoutView())
+            clipRects.setFixedClipRect(intersection(newOverflowClip, clipRects.fixedClipRect()));
     }
 
     if (layoutObject.hasClip()) {
