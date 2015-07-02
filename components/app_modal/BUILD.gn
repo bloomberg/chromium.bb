@@ -12,7 +12,7 @@ static_library("app_modal") {
     "app_modal_dialog_queue.h",
     "javascript_app_modal_dialog.cc",
     "javascript_app_modal_dialog.h",
-    "javascript_dialog_extension_client.h",
+    "javascript_dialog_extensions_client.h",
     "javascript_dialog_manager.cc",
     "javascript_dialog_manager.h",
     "javascript_native_dialog_factory.h",
@@ -20,10 +20,14 @@ static_library("app_modal") {
   ]
 
   deps = [
+    "//base",
+    "//base:i18n",
     "//components/strings",
     "//content/public/browser",
     "//content/public/common",
+    "//net",
     "//skia",
+    "//ui/base",
   ]
 
   if (use_aura) {
@@ -34,6 +38,11 @@ static_library("app_modal") {
     sources += [
       "views/javascript_app_modal_dialog_views.cc",
       "views/javascript_app_modal_dialog_views.h",
+    ]
+
+    deps += [
+      "//components/constrained_window",
+      "//ui/views",
     ]
   }
 }
