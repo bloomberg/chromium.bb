@@ -31,7 +31,8 @@ void SuspendUnmountManager::SuspendImminent() {
     return;
   std::set<std::string> mount_paths;
   for (const auto& pair : disk_mount_manager_->disks()) {
-    if (pair.second->device_type() == DEVICE_TYPE_USB &&
+    if ((pair.second->device_type() == DEVICE_TYPE_USB ||
+         pair.second->device_type() == DEVICE_TYPE_SD) &&
         !pair.second->mount_path().empty()) {
       mount_paths.insert(pair.second->mount_path());
     }
