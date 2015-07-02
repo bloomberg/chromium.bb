@@ -929,6 +929,10 @@ bool GoogleUpdateSettings::SetExperimentLabels(
         system_install ? dist->GetStateMediumKey() : dist->GetStateKey());
     RegKey client_state(
         reg_root, client_state_path.c_str(), KEY_SET_VALUE | KEY_WOW64_32KEY);
+    // It is possible that the registry keys do not yet exist or have not yet
+    // been ACLed by Google Update to be user writable.
+    if (!client_state.Valid())
+      return false;
     if (experiment_labels.empty()) {
       success = client_state.DeleteValue(google_update::kExperimentLabels)
           == ERROR_SUCCESS;
