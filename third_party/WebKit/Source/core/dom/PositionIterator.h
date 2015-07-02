@@ -41,12 +41,10 @@ template <typename Strategy>
 class PositionIteratorAlgorithm {
     STACK_ALLOCATED();
 public:
-    using PositionType = typename Strategy::PositionType;
-
-    explicit PositionIteratorAlgorithm(const PositionType&);
+    explicit PositionIteratorAlgorithm(const PositionAlgorithm<Strategy>&);
     PositionIteratorAlgorithm();
 
-    operator PositionType() const;
+    operator PositionAlgorithm<Strategy>() const;
 
     void increment();
     void decrement();
