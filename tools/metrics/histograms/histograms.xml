@@ -5011,50 +5011,58 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DefaultBrowser.InteractionResult"
     enum="MakeChromeDefaultResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gab@chromium.org</owner>
   <summary>
-    Results of interaction with set-as-default dialog in first run flow.
+    Results of interaction with set-as-default dialog in Win8+ first run flow.
   </summary>
 </histogram>
 
 <histogram name="DefaultBrowser.State" enum="DefaultBrowserState">
-  <obsolete>
-    Deprecated.  No longer tracked.
-  </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gab@chromium.org</owner>
   <summary>Whether Chrome was the default browser when it started up.</summary>
 </histogram>
 
-<histogram name="DefaultBrowserWarning.DontSetAsDefault">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+<histogram name="DefaultBrowserWarning.DontSetAsDefault" enum="BooleanHit">
+  <owner>gab@chromium.org</owner>
   <summary>
-    In the infobar, the user explcitly declined to set Chrome as default.
+    In the make-default infobar, the user explicitly declined to set Chrome as
+    default. Or, on OSes requiring the SetAsDefaultUI, the user explicitly chose
+    another browser as default from the interactive UI. TODO(gab): Split the
+    interactive signal into a separate histogram.
   </summary>
 </histogram>
 
-<histogram name="DefaultBrowserWarning.Ignored">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+<histogram name="DefaultBrowserWarning.Ignored" enum="BooleanHit">
+  <owner>gab@chromium.org</owner>
   <summary>
-    The user ignored the infobar warning that Chrome is not the default.
+    The user ignored the make-default infobar (it was eventually dismissed along
+    with its associated web content without the user interacting with it).
   </summary>
 </histogram>
 
-<histogram name="DefaultBrowserWarning.SetAsDefault">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+<histogram name="DefaultBrowserWarning.SetAsDefault" enum="BooleanHit">
+  <owner>gab@chromium.org</owner>
   <summary>
-    In the inforbar, the user clicked a button making Chrome the default.
+    In the make-default infobar, the user clicked a button making Chrome the
+    default.
   </summary>
 </histogram>
 
-<histogram name="DefaultBrowserWarning.SetAsDefaultUI">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>Same as SetAsDefault, but in Windows 8.</summary>
+<histogram name="DefaultBrowserWarning.SetAsDefaultUI" enum="BooleanHit">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Same as SetAsDefault, but in Win8+ (resulting in interactive UI instead of
+    automatic takeover). Successes == these reports minus reports for
+    DefaultBrowserWarning.SetAsDefaultUIFailed and some
+    DefaultBrowserWarning.DontSetAsDefault. TODO(gab): Improve reporting here.
+  </summary>
 </histogram>
 
-<histogram name="DefaultBrowserWarning.SetAsDefaultUIFailed">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+<histogram name="DefaultBrowserWarning.SetAsDefaultUIFailed" enum="BooleanHit">
+  <owner>gab@chromium.org</owner>
   <summary>
-    The user declined to set Chrome as default after system UI was shown.
+    The user dismissed the interactive SetAsDefaultUI without making an explicit
+    choice (or the UI failed to come up for another reason).
   </summary>
 </histogram>
 
@@ -52221,11 +52229,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="DefaultBrowserState" type="int">
-  <obsolete>
-    Deprecated.  No longer tracked.
-  </obsolete>
-  <int value="0" label="Default"/>
-  <int value="1" label="Not default"/>
+  <int value="0" label="Not Default"/>
+  <int value="1" label="Default"/>
   <int value="2" label="Unknown"/>
 </enum>
 
@@ -60358,9 +60363,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 
 <enum name="MakeChromeDefaultResult" type="int">
   <int value="0" label="Chrome made default"/>
-  <int value="1" label="No action taken"/>
+  <int value="1" label="Dialog closed without explicit choice"/>
   <int value="2" label="Other browser selected"/>
-  <int value="3" label="Chrome made default + Relaunch in Metro"/>
+  <int value="3" label="Chrome made default + Relaunch in Metro (obsolete)"/>
 </enum>
 
 <enum name="ManagedUserPasswordChange" type="int">

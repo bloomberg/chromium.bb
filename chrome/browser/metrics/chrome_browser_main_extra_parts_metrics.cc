@@ -138,6 +138,12 @@ void RecordStartupMetricsOnBlockingPool() {
                             availability,
                             bluetooth_utility::BLUETOOTH_AVAILABILITY_COUNT);
 #endif   // defined(OS_MACOSX) && !defined(OS_IOS)
+
+  // Record whether Chrome is the default browser or not.
+  ShellIntegration::DefaultWebClientState default_state =
+      ShellIntegration::GetDefaultBrowser();
+  UMA_HISTOGRAM_ENUMERATION("DefaultBrowser.State", default_state,
+                            ShellIntegration::NUM_DEFAULT_STATES);
 }
 
 void RecordLinuxGlibcVersion() {
