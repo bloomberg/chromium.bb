@@ -20,9 +20,6 @@ class PositionIteratorAlgorithm;
 template <typename Traversal>
 class EditingAlgorithm : public Traversal {
 public:
-    // |disconnected| is optional output parameter having true if specified
-    // positions don't have common ancestor.
-    static short comparePositions(Node* containerA, int offsetA, Node* containerB, int offsetB, bool* disconnected = nullptr);
     static bool isEmptyNonEditableNodeInEditable(const Node*);
     static bool editingIgnoresContent(const Node*);
     static int lastOffsetForEditing(const Node*);

@@ -380,7 +380,7 @@ int comparePositions(const PositionInComposedTree& positionA, const PositionInCo
     Node* containerB = positionB.containerNode();
     int offsetA = positionA.computeOffsetInContainerNode();
     int offsetB = positionB.computeOffsetInContainerNode();
-    return EditingInComposedTreeStrategy::comparePositions(containerA, offsetA, containerB, offsetB);
+    return comparePositionsInComposedTree(containerA, offsetA, containerB, offsetB);
 }
 
 template <typename Strategy>

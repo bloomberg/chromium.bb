@@ -35,9 +35,9 @@
 #include "core/dom/NodeWithIndex.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/Text.h"
-#include "core/editing/EditingStrategy.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
+#include "core/editing/htmlediting.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/markup.h"
 #include "core/events/ScopedEventQueue.h"
@@ -379,7 +379,7 @@ short Range::compareBoundaryPoints(unsigned how, const Range* sourceRange, Excep
 short Range::compareBoundaryPoints(Node* containerA, int offsetA, Node* containerB, int offsetB, ExceptionState& exceptionState)
 {
     bool disconnected = false;
-    short result = EditingStrategy::comparePositions(containerA, offsetA, containerB, offsetB, &disconnected);
+    short result = comparePositionsInDOMTree(containerA, offsetA, containerB, offsetB, &disconnected);
     if (disconnected) {
         exceptionState.throwDOMException(WrongDocumentError, "The two ranges are in separate documents.");
         return 0;

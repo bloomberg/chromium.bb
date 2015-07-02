@@ -155,6 +155,10 @@ PositionInComposedTree lastEditablePositionBeforePositionInRoot(const PositionIn
 
 // comparision functions on Position
 
+// |disconnected| is optional output parameter having true if specified
+// positions don't have common ancestor.
+int comparePositionsInDOMTree(Node* containerA, int offsetA, Node* containerB, int offsetB, bool* disconnected = nullptr);
+int comparePositionsInComposedTree(Node* containerA, int offsetA, Node* containerB, int offsetB, bool* disconnected = nullptr);
 int comparePositions(const Position&, const Position&);
 int comparePositions(const PositionWithAffinity&, const PositionWithAffinity&);
 
