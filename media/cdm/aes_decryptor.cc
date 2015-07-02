@@ -526,7 +526,9 @@ void AesDecryptor::ResetDecoder(StreamType stream_type) {
 }
 
 void AesDecryptor::DeinitializeDecoder(StreamType stream_type) {
-  NOTREACHED() << "AesDecryptor does not support audio/video decoding";
+  // AesDecryptor does not support audio/video decoding, but since this can be
+  // called any time after InitializeAudioDecoder/InitializeVideoDecoder,
+  // nothing to be done here.
 }
 
 bool AesDecryptor::AddDecryptionKey(const std::string& session_id,
