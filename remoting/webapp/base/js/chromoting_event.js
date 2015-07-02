@@ -49,7 +49,7 @@ remoting.ChromotingEvent = function(type) {
   this.cpu;
   /** @type {remoting.ChromotingEvent.SessionState} */
   this.session_state;
-  /** @private {remoting.ChromotingEvent.ConnectionType} */
+  /** @type {remoting.ChromotingEvent.ConnectionType} */
   this.connection_type;
   /** @private {string} */
   this.application_id;
@@ -106,32 +106,6 @@ remoting.ChromotingEvent.prototype.init_ = function() {
 };
 
 /**
- * @param {remoting.ClientSession.State} state
- * @param {remoting.Error} error
- */
-remoting.ChromotingEvent.prototype.setSessionState = function(state, error) {
-  this.connection_error = toConnectionError(error);
-  this.session_state = toSessionState(state);
-};
-
-/**
- * @param {remoting.SignalStrategy.Type} type
- * @param {remoting.FallbackSignalStrategy.Progress} progress
- */
-remoting.ChromotingEvent.prototype.setSignalStategyProgress =
-    function(type, progress) {
-  this.signal_strategy_progress = toSignalStrategyProgress(progress);
-  this.signal_strategy_type = toSignalStrategyType(type);
-};
-
-/**
- * @param {string} type
- */
-remoting.ChromotingEvent.prototype.setConnectionType = function(type) {
-  this.connection_type = toConnectionType(type);
-};
-
-/**
  * @param {remoting.ChromotingEvent} event
  * @return {boolean}
  */
@@ -147,127 +121,6 @@ remoting.ChromotingEvent.isEndOfSession = function(event) {
   ];
   return endStates.indexOf(event.session_state) !== -1;
 };
-
-/**
- * TODO(kelvinp): Consolidate the two enums (crbug.com/504200)
- * @param {remoting.ClientSession.State} state
- * @return {remoting.ChromotingEvent.SessionState}
- */
-function toSessionState(state) {
-  var SessionState = remoting.ChromotingEvent.SessionState;
-  switch(state) {
-    case remoting.ClientSession.State.UNKNOWN:
-      return SessionState.UNKNOWN;
-    case remoting.ClientSession.State.INITIALIZING:
-      return SessionState.INITIALIZING;
-    case remoting.ClientSession.State.CONNECTING:
-      return SessionState.CONNECTING;
-    case remoting.ClientSession.State.AUTHENTICATED:
-      return SessionState.AUTHENTICATED;
-    case remoting.ClientSession.State.CONNECTED:
-      return SessionState.CONNECTED;
-    case remoting.ClientSession.State.CLOSED:
-      return SessionState.CLOSED;
-    case remoting.ClientSession.State.FAILED:
-      return SessionState.CONNECTION_FAILED;
-    case remoting.ClientSession.State.CONNECTION_DROPPED:
-      return SessionState.CONNECTION_DROPPED;
-    case remoting.ClientSession.State.CONNECTION_CANCELED:
-      return SessionState.CONNECTION_CANCELED;
-    default:
-      throw new Error('Unknown session state : ' + state);
-  }
-}
-
-/**
- * @param {remoting.Error} error
- * @return {remoting.ChromotingEvent.ConnectionError}
- */
-function toConnectionError(error) {
-  var ConnectionError = remoting.ChromotingEvent.ConnectionError;
-  switch (error.getTag()) {
-    case remoting.Error.Tag.NONE:
-      return ConnectionError.NONE;
-    case remoting.Error.Tag.INVALID_ACCESS_CODE:
-      return ConnectionError.INVALID_ACCESS_CODE;
-    case remoting.Error.Tag.MISSING_PLUGIN:
-      return ConnectionError.MISSING_PLUGIN;
-    case remoting.Error.Tag.AUTHENTICATION_FAILED:
-      return ConnectionError.AUTHENTICATION_FAILED;
-    case remoting.Error.Tag.HOST_IS_OFFLINE:
-      return ConnectionError.HOST_OFFLINE;
-    case remoting.Error.Tag.INCOMPATIBLE_PROTOCOL:
-      return ConnectionError.INCOMPATIBLE_PROTOCOL;
-    case remoting.Error.Tag.BAD_PLUGIN_VERSION:
-      return ConnectionError.ERROR_BAD_PLUGIN_VERSION;
-    case remoting.Error.Tag.NETWORK_FAILURE:
-      return ConnectionError.NETWORK_FAILURE;
-    case remoting.Error.Tag.HOST_OVERLOAD:
-      return ConnectionError.HOST_OVERLOAD;
-    case remoting.Error.Tag.P2P_FAILURE:
-      return ConnectionError.P2P_FAILURE;
-    case remoting.Error.Tag.CLIENT_SUSPENDED:
-      return ConnectionError.CLIENT_SUSPENDED;
-    case remoting.Error.Tag.UNEXPECTED:
-      return ConnectionError.UNEXPECTED;
-    default:
-      throw new Error('Unknown error Tag : ' + error.getTag());
-  }
-}
-
-/**
- * @param {remoting.SignalStrategy.Type} type
- * @return {remoting.ChromotingEvent.SignalStrategyType}
- */
-function toSignalStrategyType(type) {
-  switch (type) {
-    case remoting.SignalStrategy.Type.XMPP:
-      return remoting.ChromotingEvent.SignalStrategyType.XMPP;
-    case remoting.SignalStrategy.Type.WCS:
-      return remoting.ChromotingEvent.SignalStrategyType.WCS;
-    default:
-      throw new Error('Unknown signal strategy type : ' + type);
-  }
-}
-
-/**
- * @param {remoting.FallbackSignalStrategy.Progress} progress
- * @return {remoting.ChromotingEvent.SignalStrategyProgress}
- */
-function toSignalStrategyProgress(progress) {
-  var Progress = remoting.FallbackSignalStrategy.Progress;
-  switch (progress) {
-    case Progress.SUCCEEDED:
-      return remoting.ChromotingEvent.SignalStrategyProgress.SUCCEEDED;
-    case Progress.FAILED:
-      return remoting.ChromotingEvent.SignalStrategyProgress.FAILED;
-    case Progress.TIMED_OUT:
-      return remoting.ChromotingEvent.SignalStrategyProgress.TIMED_OUT;
-    case Progress.SUCCEEDED_LATE:
-      return remoting.ChromotingEvent.SignalStrategyProgress.SUCCEEDED_LATE;
-    case Progress.FAILED_LATE:
-      return remoting.ChromotingEvent.SignalStrategyProgress.FAILED_LATE;
-    default:
-      throw new Error('Unknown signal strategy progress :=' + progress);
-  }
-}
-
-/**
- * @param {string} type
- * @return {remoting.ChromotingEvent.ConnectionType}
- */
-function toConnectionType(type) {
-  switch (type) {
-    case 'direct':
-      return remoting.ChromotingEvent.ConnectionType.DIRECT;
-    case 'stun':
-      return remoting.ChromotingEvent.ConnectionType.STUN;
-    case 'relay':
-      return remoting.ChromotingEvent.ConnectionType.RELAY;
-    default:
-      throw new Error('Unknown ConnectionType :=' + type);
-  }
-}
 
 })();
 
