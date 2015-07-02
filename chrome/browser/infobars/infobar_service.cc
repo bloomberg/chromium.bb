@@ -28,8 +28,10 @@ infobars::InfoBarDelegate::NavigationDetails
   navigation_details.is_navigation_to_different_page =
       details.is_navigation_to_different_page();
   navigation_details.did_replace_entry = details.did_replace_entry;
-  navigation_details.is_redirect =
-      ui::PageTransitionIsRedirect(details.entry->GetTransitionType());
+  const ui::PageTransition transition = details.entry->GetTransitionType();
+  navigation_details.is_reload =
+      ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD);
+  navigation_details.is_redirect = ui::PageTransitionIsRedirect(transition);
   return navigation_details;
 }
 

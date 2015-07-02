@@ -28,6 +28,8 @@ NavigationDetailsFromLoadCommittedDetails(
       ui::PageTransitionIsMainFrame(transition) && !load_details.is_in_page;
   // web::LoadCommittedDetails doesn't store this information, default to false.
   navigation_details.did_replace_entry = false;
+  navigation_details.is_reload =
+      ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD);
   navigation_details.is_redirect = ui::PageTransitionIsRedirect(transition);
 
   return navigation_details;

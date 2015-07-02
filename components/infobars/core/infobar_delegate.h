@@ -63,6 +63,7 @@ class InfoBarDelegate {
     bool is_navigation_to_different_page;
     // True if the entry replaced the existing one.
     bool did_replace_entry;
+    bool is_reload;
     bool is_redirect;
   };
 
@@ -125,6 +126,7 @@ class InfoBarDelegate {
   virtual translate::TranslateInfoBarDelegate* AsTranslateInfoBarDelegate();
 
   void set_infobar(InfoBar* infobar) { infobar_ = infobar; }
+  void set_nav_entry_id(int nav_entry_id) { nav_entry_id_ = nav_entry_id; }
 
  protected:
   InfoBarDelegate();
@@ -134,6 +136,9 @@ class InfoBarDelegate {
  private:
   // The InfoBar associated with us.
   InfoBar* infobar_;
+
+  // The ID of the active navigation entry at the time we became owned.
+  int nav_entry_id_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarDelegate);
 };

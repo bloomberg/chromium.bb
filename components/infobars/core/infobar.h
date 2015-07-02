@@ -50,9 +50,9 @@ class InfoBar : public gfx::AnimationDelegate {
   InfoBarDelegate* delegate() const { return delegate_.get(); }
   void set_container(InfoBarContainer* container) { container_ = container; }
 
-  // Sets |owner_|.  This must only be called once as there's no way to extract
-  // an infobar from its owner without deleting it, for reparenting in another
-  // tab.
+  // Sets |owner_|.  This also sets the nav entry ID on |delegate_|.  This must
+  // only be called once as there's no way to extract an infobar from its owner
+  // without deleting it, for reparenting in another tab.
   void SetOwner(InfoBarManager* owner);
 
   // Makes the infobar visible.  If |animate| is true, the infobar is then
