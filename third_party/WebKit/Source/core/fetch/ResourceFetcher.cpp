@@ -193,7 +193,7 @@ bool ResourceFetcher::canAccessResource(Resource* resource, SecurityOrigin* sour
     if (!sourceOrigin)
         sourceOrigin = context().securityOrigin();
 
-    if (sourceOrigin->canRequest(url))
+    if (sourceOrigin->canRequestNoSuborigin(url))
         return true;
 
     String errorDescription;
