@@ -191,11 +191,6 @@ void GetMonitoringStatus(const WebUIDataSource::GotDataCallback& callback) {
   callback.Run(monitoring_options_base64);
 }
 
-void TracingCallbackWrapper(const WebUIDataSource::GotDataCallback& callback,
-                            base::RefCountedString* data) {
-  callback.Run(data);
-}
-
 void TracingCallbackWrapperBase64(
     const WebUIDataSource::GotDataCallback& callback,
     base::RefCountedString* data) {
@@ -224,11 +219,6 @@ bool OnBeginJSONRequest(const std::string& path,
     return TracingController::GetInstance()->GetTraceBufferUsage(
         base::Bind(OnTraceBufferStatusResult, callback));
   }
-  if (path == "json/end_recording") {
-    return TracingController::GetInstance()->DisableRecording(
-        TracingController::CreateStringSink(
-            base::Bind(TracingCallbackWrapper, callback)));
-  }
   if (path == "json/end_recording_compressed") {
     return TracingController::GetInstance()->DisableRecording(
         TracingController::CreateCompressedStringSink(
@@ -244,12 +234,6 @@ bool OnBeginJSONRequest(const std::string& path,
   if (path == "json/end_monitoring") {
     return TracingController::GetInstance()->DisableMonitoring(
         base::Bind(OnMonitoringDisabled, callback));
-  }
-  if (path == "json/capture_monitoring") {
-    TracingController::GetInstance()->CaptureMonitoringSnapshot(
-        TracingController::CreateStringSink(
-            base::Bind(TracingCallbackWrapper, callback)));
-    return true;
   }
   if (path == "json/capture_monitoring_compressed") {
     TracingController::GetInstance()->CaptureMonitoringSnapshot(
