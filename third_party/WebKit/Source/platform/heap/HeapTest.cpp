@@ -1198,6 +1198,7 @@ public:
     {
         EXPECT_FALSE(s_disposeWasCalledForPreFinalizerBase);
         EXPECT_TRUE(s_disposeWasCalledForPreFinalizerSubClass);
+        EXPECT_TRUE(s_disposeWasCalledForPreFinalizerMixin);
         EXPECT_FALSE(m_wasDestructed);
         s_disposeWasCalledForPreFinalizerBase = true;
     }
@@ -1218,6 +1219,8 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { }
     void dispose()
     {
+        EXPECT_FALSE(s_disposeWasCalledForPreFinalizerBase);
+        EXPECT_TRUE(s_disposeWasCalledForPreFinalizerSubClass);
         EXPECT_FALSE(s_disposeWasCalledForPreFinalizerMixin);
         EXPECT_FALSE(m_wasDestructed);
         s_disposeWasCalledForPreFinalizerMixin = true;
@@ -1243,6 +1246,7 @@ public:
     {
         EXPECT_FALSE(s_disposeWasCalledForPreFinalizerBase);
         EXPECT_FALSE(s_disposeWasCalledForPreFinalizerSubClass);
+        EXPECT_FALSE(s_disposeWasCalledForPreFinalizerMixin);
         EXPECT_FALSE(m_wasDestructed);
         s_disposeWasCalledForPreFinalizerSubClass = true;
     }

@@ -256,6 +256,7 @@ void ThreadState::cleanup()
         ASSERT(!currentCount);
         // All of pre-finalizers should be consumed.
         ASSERT(m_preFinalizers.isEmpty());
+        ASSERT(m_orderedPreFinalizers.isEmpty());
         RELEASE_ASSERT(gcState() == NoGCScheduled);
 
         // Add pages to the orphaned page pool to ensure any global GCs from this point
@@ -1303,25 +1304,23 @@ void ThreadState::invokePreFinalizers()
     if (isMainThread())
         ScriptForbiddenScope::enter();
 
+    ASSERT(m_preFinalizers.size() == m_orderedPreFinalizers.size());
     SweepForbiddenScope forbiddenScope(this);
-    Vector<void*> deadObjects;
-    for (auto& it : m_preFinalizers) {
-        void* object = it.key;
-        Vector<PreFinalizerCallback>* callbackVector = it.value.get();
-        size_t preFinalizerCount = callbackVector->size();
-        ASSERT(preFinalizerCount >= 1);
-        // Call the pre-finalizers in the reverse order in which they
-        // are registered.
-        if (!(callbackVector->at(preFinalizerCount - 1))(object))
+    Vector<PreFinalizer*> deadPreFinalizers;
+    // Call the pre-finalizers in the reverse order in which they
+    // are registered.
+    for (auto it = m_orderedPreFinalizers.rbegin(); it != m_orderedPreFinalizers.rend(); ++it) {
+        PreFinalizer* preFinalizer = it->get();
+        if (!(preFinalizer->callback())(preFinalizer->object()))
             continue;
-        deadObjects.append(object);
-        for (int i = preFinalizerCount - 2; i >= 0; --i) {
-            bool ret = (callbackVector->at(i))(object);
-            ASSERT_UNUSED(ret, ret);
-        }
+        deadPreFinalizers.append(preFinalizer);
+        auto removeIt = m_preFinalizers.find(std::pair<void*, PreFinalizerCallback>(preFinalizer->object(), preFinalizer->callback()));
+        ASSERT(removeIt != m_preFinalizers.end());
+        m_preFinalizers.remove(removeIt);
     }
     // FIXME: removeAll is inefficient.  It can shrink repeatedly.
-    m_preFinalizers.removeAll(deadObjects);
+    m_orderedPreFinalizers.removeAll(deadPreFinalizers);
+    ASSERT(m_preFinalizers.size() == m_orderedPreFinalizers.size());
 
     if (isMainThread())
         ScriptForbiddenScope::exit();
