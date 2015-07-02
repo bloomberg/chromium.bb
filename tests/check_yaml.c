@@ -36,7 +36,7 @@ yaml_error(yaml_event_type_t expected, yaml_event_t *event) {
   exit (EXIT_FAILURE);
 }
 
-int
+void
 read_tables(yaml_parser_t *parser, char *tables_list) {
   yaml_event_t event;
   if (!yaml_parser_parse(parser, &event) ||
