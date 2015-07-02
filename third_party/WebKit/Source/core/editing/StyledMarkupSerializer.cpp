@@ -48,8 +48,8 @@ namespace blink {
 
 namespace {
 
-template<typename PositionType>
-TextOffset toTextOffset(const PositionType& position)
+template<typename Strategy>
+TextOffset toTextOffset(const PositionAlgorithm<Strategy>& position)
 {
     if (position.isNull())
         return TextOffset();
@@ -123,7 +123,7 @@ bool StyledMarkupTraverser<Strategy>::convertBlocksToInlines() const
 }
 
 template<typename Strategy>
-StyledMarkupSerializer<Strategy>::StyledMarkupSerializer(EAbsoluteURLs shouldResolveURLs, EAnnotateForInterchange shouldAnnotate, const PositionType& start, const PositionType& end, Node* highestNodeToBeSerialized, ConvertBlocksToInlines convertBlocksToInlines)
+StyledMarkupSerializer<Strategy>::StyledMarkupSerializer(EAbsoluteURLs shouldResolveURLs, EAnnotateForInterchange shouldAnnotate, const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, Node* highestNodeToBeSerialized, ConvertBlocksToInlines convertBlocksToInlines)
     : m_start(start)
     , m_end(end)
     , m_shouldResolveURLs(shouldResolveURLs)
@@ -150,8 +150,8 @@ static bool needInterchangeNewlineAt(const VisiblePosition& v)
     return needInterchangeNewlineAfter(v.previous());
 }
 
-template<typename PositionType>
-static bool areSameRanges(Node* node, const PositionType& startPosition, const PositionType& endPosition)
+template<typename Strategy>
+static bool areSameRanges(Node* node, const PositionAlgorithm<Strategy>& startPosition, const PositionAlgorithm<Strategy>& endPosition)
 {
     ASSERT(node);
     Position otherStartPosition;
@@ -186,7 +186,7 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
 
         firstNode = visibleStart.next().deepEquivalent().deprecatedNode();
 
-        if (pastEnd && Strategy::PositionType::beforeNode(firstNode).compareTo(Strategy::PositionType::beforeNode(pastEnd)) >= 0) {
+        if (pastEnd && PositionAlgorithm<Strategy>::beforeNode(firstNode).compareTo(PositionAlgorithm<Strategy>::beforeNode(pastEnd)) >= 0) {
             // This condition hits in editing/pasteboard/copy-display-none.html.
             return markupAccumulator.takeResults();
         }

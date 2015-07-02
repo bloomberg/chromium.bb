@@ -41,17 +41,16 @@ namespace blink {
 template<typename Strategy>
 class StyledMarkupSerializer final {
     STACK_ALLOCATED();
-    using PositionType = typename Strategy::PositionType;
 public:
-    StyledMarkupSerializer(EAbsoluteURLs, EAnnotateForInterchange, const PositionType& start, const PositionType& end, Node* highestNodeToBeSerialized, ConvertBlocksToInlines);
+    StyledMarkupSerializer(EAbsoluteURLs, EAnnotateForInterchange, const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, Node* highestNodeToBeSerialized, ConvertBlocksToInlines);
 
     String createMarkup();
 
 private:
     bool shouldAnnotate() const { return m_shouldAnnotate == AnnotateForInterchange; }
 
-    const PositionType m_start;
-    const PositionType m_end;
+    const PositionAlgorithm<Strategy> m_start;
+    const PositionAlgorithm<Strategy> m_end;
     const EAbsoluteURLs m_shouldResolveURLs;
     const EAnnotateForInterchange m_shouldAnnotate;
     const RefPtrWillBeMember<Node> m_highestNodeToBeSerialized;
