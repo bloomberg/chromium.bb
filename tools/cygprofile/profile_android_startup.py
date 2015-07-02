@@ -26,7 +26,7 @@ from pylib.device import device_utils
 from pylib.device import intent
 
 sys.path.append(os.path.join(sys.path[0], '..', '..', 'tools', 'telemetry'))
-from telemetry.core import webpagereplay
+from telemetry.internal.util import webpagereplay
 
 sys.path.append(os.path.join(sys.path[0], '..', '..',
     'third_party', 'webpagereplay'))

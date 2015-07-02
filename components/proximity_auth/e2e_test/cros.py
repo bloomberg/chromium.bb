@@ -17,10 +17,10 @@ if telemetry_dir not in sys.path:
 
 from telemetry.core import browser_options
 from telemetry.core import browser_finder
-from telemetry.core import extension_to_load
 from telemetry.core import exceptions
 from telemetry.core import util
 from telemetry.core.platform import cros_interface
+from telemetry.internal.browser import extension_to_load
 
 logger = logging.getLogger('proximity_auth.%s' % __name__)
 
