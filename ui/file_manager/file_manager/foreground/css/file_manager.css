@@ -610,6 +610,11 @@ body.check-select #files-selected-label {
   text-transform: none;
 }
 
+#cancel-selection-button > span {
+  display: inline-block;
+  vertical-align: middle;
+}
+
 #cancel-selection-button .icon-arrow-back {
   -webkit-margin-end: 8px;
   background-image: -webkit-image-set(
