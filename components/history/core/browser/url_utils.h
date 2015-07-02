@@ -41,6 +41,10 @@ bool IsPathPrefix(const std::string& p1, const std::string& p2);
 // If |url| is neither HTTP nor HTTPS, returns an empty URL.
 GURL ToggleHTTPAndHTTPS(const GURL& url);
 
+// Returns the host of the given URL, canonicalized as it would be for
+// HistoryService::TopHosts().
+std::string HostForTopHosts(const GURL& url);
+
 }  // namespace history
 
 #endif  // COMPONENTS_HISTORY_CORE_BROWSER_URL_UTILS_H_

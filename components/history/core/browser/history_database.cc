@@ -18,6 +18,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "components/history/core/browser/url_utils.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
@@ -208,10 +209,7 @@ TopHostsList HistoryDatabase::TopHosts(int num_hosts) {
       continue;
 
     int64 visit_count = url_sql.ColumnInt64(1);
-    std::string host = url.host();
-    if (base::StartsWithASCII(host, "www.", true))
-      host.assign(host, 4, std::string::npos);
-    host_count[host] += visit_count;
+    host_count[HostForTopHosts(url)] += visit_count;
 
     // kMaxHostsInMemory is well above typical values for
     // History.MonthlyHostCount, but here to guard against unbounded memory

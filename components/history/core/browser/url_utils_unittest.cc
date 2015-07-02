@@ -126,6 +126,13 @@ TEST(HistoryUrlUtilsTest, ToggleHTTPAndHTTPS) {
             ToggleHTTPAndHTTPS(GURL("ftp://www.google.com/")));
 }
 
+TEST(HistoryUrlUtilsTest, HostForTopHosts) {
+  EXPECT_EQ("foo.com", HostForTopHosts(GURL("https://foo.com/bar")));
+  EXPECT_EQ("foo.com", HostForTopHosts(GURL("http://foo.com:999/bar")));
+  EXPECT_EQ("foo.com", HostForTopHosts(GURL("http://www.foo.com/bar")));
+  EXPECT_EQ("foo.com", HostForTopHosts(GURL("HtTP://WWw.FoO.cOM/BAR")));
+}
+
 }  // namespace
 
 }  // namespace history

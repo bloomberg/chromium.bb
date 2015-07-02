@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/hash_tables.h"
 #include "base/containers/mru_cache.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
@@ -202,6 +203,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Computes the |num_hosts| most-visited hostnames in the past 30 days. See
   // history_service.h for details. Returns an empty list if db_ is not
   // initialized.
+  //
+  // As a side effect, caches the list of top hosts for the purposes of
+  // generating internal metrics.
   TopHostsList TopHosts(int num_hosts) const;
 
   // Navigation ----------------------------------------------------------------
@@ -521,6 +525,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, TopHosts_OnlyLast30Days);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, TopHosts_MaxNumHosts);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, TopHosts_IgnoreUnusualURLs);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, RecordTopHostsMetrics);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, UpdateVisitDuration);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, ExpireHistoryForTimes);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, DeleteFTSIndexDatabases);
@@ -738,6 +743,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                          const URLRows& rows,
                          const std::set<GURL>& favicon_urls) override;
 
+  void RecordTopHostsMetrics(const GURL& url);
+
   // Deleting all history ------------------------------------------------------
 
   // Deletes all history. This is a special case of deleting that is separated
@@ -835,6 +842,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Listens for the system being under memory pressure.
   scoped_ptr<base::MemoryPressureListener> memory_pressure_listener_;
+
+  // Map from host to index in the TopHosts list. It is updated only by
+  // TopHosts(), so it's usually stale.
+  mutable base::hash_map<std::string, int> host_ranks_;
 
   // List of observers
   base::ObserverList<HistoryBackendObserver> observers_;

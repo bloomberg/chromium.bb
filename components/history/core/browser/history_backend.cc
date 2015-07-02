@@ -37,6 +37,7 @@
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/browser/page_usage_data.h"
 #include "components/history/core/browser/typed_url_syncable_service.h"
+#include "components/history/core/browser/url_utils.h"
 #include "components/history/core/browser/visit_filter.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "sql/error_delegate_util.h"
@@ -88,6 +89,8 @@ const int kMaxRedirectCount = 32;
 // The number of days old a history entry can be before it is considered "old"
 // and is deleted.
 const int kExpireDaysThreshold = 90;
+
+const int kMaxTopHostsForMetrics = 50;
 
 // Converts from PageUsageData to MostVisitedURL. |redirects| is a
 // list of redirects for this URL. Empty list means no redirects.
@@ -418,7 +421,13 @@ TopHostsList HistoryBackend::TopHosts(int num_hosts) const {
   if (!db_)
     return TopHostsList();
 
-  return db_->TopHosts(num_hosts);
+  auto top_hosts = db_->TopHosts(num_hosts);
+
+  host_ranks_.clear();
+  int i = 0;
+  for (const auto& host_count : top_hosts)
+    host_ranks_[host_count.first] = i++;
+  return top_hosts;
 }
 
 void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
@@ -733,6 +742,15 @@ void HistoryBackend::CloseAllDatabases() {
   }
 }
 
+void HistoryBackend::RecordTopHostsMetrics(const GURL& url) {
+  auto it = host_ranks_.find(HostForTopHosts(url));
+  int host_rank = it != host_ranks_.end() ? it->second : kMaxTopHostsForMetrics;
+
+  // Convert index from 0-based to 1-based.
+  UMA_HISTOGRAM_ENUMERATION("History.TopHostsVisitsByRank", host_rank + 1,
+                            kMaxTopHostsForMetrics + 2);
+}
+
 std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
     const GURL& url,
     Time time,
@@ -752,6 +770,11 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
         !ui::PageTransitionIsRedirect(transition)) ||
        transition_type == ui::PAGE_TRANSITION_KEYWORD_GENERATED))
     typed_increment = 1;
+
+  if (!host_ranks_.empty() && visit_source == SOURCE_BROWSED &&
+      (transition & ui::PAGE_TRANSITION_CHAIN_END)) {
+    RecordTopHostsMetrics(url);
+  }
 
   // See if this URL is already in the DB.
   URLRow url_info(url);

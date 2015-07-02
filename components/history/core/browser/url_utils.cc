@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/strings/string_util.h"
 #include "url/gurl.h"
 
 namespace history {
@@ -83,6 +84,14 @@ GURL ToggleHTTPAndHTTPS(const GURL& url) {
   GURL::Replacements replacement;
   replacement.SetScheme(new_scheme.c_str(), comp);
   return url.ReplaceComponents(replacement);
+}
+
+std::string HostForTopHosts(const GURL& url) {
+  std::string host = url.host();
+  base::StringToLowerASCII(&host);
+  if (base::StartsWith(host, "www.", base::CompareCase::SENSITIVE))
+    host.assign(host, 4, std::string::npos);
+  return host;
 }
 
 }  // namespace history

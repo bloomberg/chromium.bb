@@ -19,11 +19,15 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_samples.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/favicon_base/favicon_usage_data.h"
 #include "components/history/core/browser/history_backend_client.h"
@@ -53,6 +57,7 @@
 namespace {
 
 using ::testing::ElementsAre;
+using base::HistogramBase;
 
 const int kTinyEdgeSize = 10;
 const int kSmallEdgeSize = 16;
@@ -3038,6 +3043,50 @@ TEST_F(HistoryBackendTest, TopHosts_IgnoreUnusualURLs) {
   }
 
   EXPECT_THAT(backend_->TopHosts(5), ElementsAre(std::make_pair("cnn.com", 3)));
+}
+
+TEST_F(HistoryBackendTest, RecordTopHostsMetrics) {
+  base::HistogramTester histogram;
+
+  // Load initial URLs for the purpose of populating host_ranks_.
+  std::vector<GURL> urls;
+  urls.push_back(GURL("http://cnn.com/us"));
+  urls.push_back(GURL("http://cnn.com/intl"));
+  urls.push_back(GURL("http://dogtopia.com/"));
+  for (const auto& url : urls) {
+    backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_LINK,
+                           history::SOURCE_BROWSED);
+  }
+
+  // Compute host_ranks_ for RecordTopHostsMetrics.
+  EXPECT_THAT(backend_->TopHosts(3),
+              ElementsAre(std::make_pair("cnn.com", 2),
+                          std::make_pair("dogtopia.com", 1)));
+
+  // Load URLs to record top-hosts metrics for.
+  urls.clear();
+  urls.push_back(GURL("http://cnn.com/us"));
+  urls.push_back(GURL("http://www.unipresse.com/"));
+  for (const auto& url : urls) {
+    backend_->AddPageVisit(url, base::Time::Now(), 0,
+                           ui::PAGE_TRANSITION_CHAIN_END,
+                           history::SOURCE_BROWSED);
+  }
+
+  // Extract list of histogram samples.
+  std::vector<std::pair<HistogramBase::Sample, HistogramBase::Count>> samples;
+  scoped_ptr<base::HistogramSamples> snapshot =
+      histogram.GetHistogramSamplesSinceCreation(
+          "History.TopHostsVisitsByRank");
+  for (auto it = snapshot->Iterator(); !it->Done(); it->Next()) {
+    HistogramBase::Sample sample;
+    HistogramBase::Count count;
+    it->Get(&sample, nullptr, &count);
+    samples.push_back(std::make_pair(sample, count));
+  }
+
+  EXPECT_THAT(samples,
+              ElementsAre(std::make_pair(1, 1), std::make_pair(51, 1)));
 }
 
 TEST_F(HistoryBackendTest, UpdateVisitDuration) {

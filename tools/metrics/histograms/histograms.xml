@@ -13168,6 +13168,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="History.TopHostsVisitsByRank" units="rank">
+  <owner>twifkak@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Page visits to each of a user's top 50 hosts. The bucket is the 1-based rank
+    of the host. Visits to all other hosts go into the 51st bucket.
+    Android-only. Only counts the last URL in a redirect chain. The list of top
+    hosts is computed approximately nightly. This means that a given day will
+    likely include a recalculation of top hosts, and therefore a given bucket
+    may represent two different hosts at different times of day.
+  </summary>
+</histogram>
+
 <histogram name="History.TopSitesRecoveredPercentage" units="%">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
