@@ -38,7 +38,6 @@ public:
     explicit LayoutSVGImage(SVGImageElement*);
     virtual ~LayoutSVGImage();
 
-    bool updateImageViewport();
     virtual void setNeedsBoundariesUpdate() override { m_needsBoundariesUpdate = true; }
     virtual void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
 
@@ -65,6 +64,8 @@ private:
     virtual void layout() override;
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
 
+    void updateBoundingBox();
+    void updateImageContainerSize();
     FloatSize computeImageViewportSize(ImageResource&) const;
 
     virtual bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;

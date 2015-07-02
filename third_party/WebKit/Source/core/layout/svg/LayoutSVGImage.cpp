@@ -88,32 +88,29 @@ static bool containerSizeIsSetForLayoutObject(ImageResource& cachedImage, const 
     return !image->isSVGImage() || image != cachedImage.imageForLayoutObject(layoutObject);
 }
 
-bool LayoutSVGImage::updateImageViewport()
+void LayoutSVGImage::updateImageContainerSize()
 {
-    SVGImageElement* image = toSVGImageElement(element());
+    ImageResource* cachedImage = m_imageResource->cachedImage();
+    if (!cachedImage || !cachedImage->usesImageContainerSize())
+        return;
+    FloatSize imageViewportSize = computeImageViewportSize(*cachedImage);
+    if (LayoutSize(imageViewportSize) != m_imageResource->imageSize(styleRef().effectiveZoom())
+        || !containerSizeIsSetForLayoutObject(*cachedImage, this)) {
+        m_imageResource->setContainerSizeForLayoutObject(roundedIntSize(imageViewportSize));
+    }
+}
+
+void LayoutSVGImage::updateBoundingBox()
+{
     FloatRect oldBoundaries = m_objectBoundingBox;
 
-    SVGLengthContext lengthContext(image);
+    SVGLengthContext lengthContext(element());
     m_objectBoundingBox = FloatRect(
         lengthContext.valueForLength(styleRef().svgStyle().x(), styleRef(), SVGLengthMode::Width),
         lengthContext.valueForLength(styleRef().svgStyle().y(), styleRef(), SVGLengthMode::Height),
         lengthContext.valueForLength(styleRef().width(), styleRef(), SVGLengthMode::Width),
         lengthContext.valueForLength(styleRef().height(), styleRef(), SVGLengthMode::Height));
-    bool boundsChanged = oldBoundaries != m_objectBoundingBox;
-
-    bool updatedViewport = false;
-    ImageResource* cachedImage = m_imageResource->cachedImage();
-    if (cachedImage && cachedImage->usesImageContainerSize()) {
-        FloatSize imageViewportSize = computeImageViewportSize(*cachedImage);
-        if (LayoutSize(imageViewportSize) != m_imageResource->imageSize(styleRef().effectiveZoom())
-            || !containerSizeIsSetForLayoutObject(*cachedImage, this)) {
-            m_imageResource->setContainerSizeForLayoutObject(roundedIntSize(imageViewportSize));
-            updatedViewport = true;
-        }
-    }
-
-    m_needsBoundariesUpdate |= boundsChanged;
-    return updatedViewport || boundsChanged;
+    m_needsBoundariesUpdate |= oldBoundaries != m_objectBoundingBox;
 }
 
 void LayoutSVGImage::layout()
@@ -121,7 +118,8 @@ void LayoutSVGImage::layout()
     ASSERT(needsLayout());
     LayoutAnalyzer::Scope analyzer(*this);
 
-    updateImageViewport();
+    updateBoundingBox();
+    updateImageContainerSize();
 
     bool transformOrBoundariesUpdate = m_needsTransformUpdate || m_needsBoundariesUpdate;
     if (m_needsTransformUpdate) {
@@ -180,18 +178,14 @@ bool LayoutSVGImage::nodeAtFloatPoint(HitTestResult& result, const FloatPoint& p
 
 void LayoutSVGImage::imageChanged(WrappedImagePtr, const IntRect*)
 {
-    // The image resource defaults to nullImage until the resource arrives.
-    // This empty image may be cached by SVG resources which must be invalidated.
-    if (SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(this))
-        resources->removeClientFromCache(this);
-
-    // Eventually notify parent resources, that we've changed.
+    // Notify parent resources that we've changed. This also invalidates
+    // references from resources (filters) that may have a cached
+    // representation of this image/layout object.
     LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(this, false);
 
     // Update the SVGImageCache sizeAndScales entry in case image loading finished after layout.
     // (https://bugs.webkit.org/show_bug.cgi?id=99489)
-    m_objectBoundingBox = FloatRect();
-    updateImageViewport();
+    updateImageContainerSize();
 
     m_bufferedForeground.clear();
 
