@@ -588,9 +588,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_EQ("foo", name);
 
   // Now navigate the new tab to a different site.
-  GURL cross_site_url(embedded_test_server()->GetURL("foo.com",
-                                                     "/title2.html"));
-  EXPECT_TRUE(NavigateToURL(new_shell, cross_site_url));
+  GURL foo_url(embedded_test_server()->GetURL("foo.com", "/title2.html"));
+  EXPECT_TRUE(NavigateToURL(new_shell, foo_url));
   scoped_refptr<SiteInstance> new_site_instance(
       new_shell->web_contents()->GetSiteInstance());
   EXPECT_NE(orig_site_instance, new_site_instance);
@@ -601,6 +600,22 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       new_shell->web_contents(),
       "window.domAutomationController.send(window.name);", &name));
   EXPECT_EQ("foo", name);
+
+  // Open another popup from the 'foo' popup and navigate it cross-site.
+  Shell* new_shell2 = OpenPopup(new_shell->web_contents(), "bar");
+  GURL bar_url(embedded_test_server()->GetURL("bar.com", "/title3.html"));
+  EXPECT_TRUE(NavigateToURL(new_shell2, bar_url));
+
+  // Check that the new popup's window.opener has name "foo", which verifies
+  // that new swapped-out RenderViews also propagate window.name.  This has to
+  // be done via window.open, since window.name isn't readable cross-origin.
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      new_shell2->web_contents(),
+      "window.domAutomationController.send("
+      "    window.opener === window.open('','foo'));",
+      &success));
+  EXPECT_TRUE(success);
 }
 
 // Test for crbug.com/99202.  PostMessage calls should still work after

@@ -779,7 +779,11 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
     selection_strategy = WebSettings::SelectionStrategyType::Direction;
   webview()->settings()->setSelectionStrategy(selection_strategy);
 
-  if (!params.replicated_frame_state.name.empty()) {
+  // Set the main frame's name.  Only needs to be done for WebLocalFrames,
+  // since the remote case was handled as part of SetReplicatedState on the
+  // proxy above.
+  if (!params.replicated_frame_state.name.empty() &&
+      webview()->mainFrame()->isWebLocalFrame()) {
     webview()->mainFrame()->setName(
         blink::WebString::fromUTF8(params.replicated_frame_state.name));
   }
