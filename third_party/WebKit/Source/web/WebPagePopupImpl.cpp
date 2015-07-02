@@ -168,10 +168,6 @@ private:
         WebLocalFrameImpl* frame = WebLocalFrameImpl::fromFrame(m_popup->m_popupClient->ownerElement().document().frame());
         if (obj && frame && frame->client())
             frame->client()->postAccessibilityEvent(WebAXObject(obj), static_cast<WebAXEvent>(notification));
-
-        // FIXME: Delete these lines once Chromium only uses the frame client interface, above.
-        if (obj && m_popup->m_webView->client())
-            m_popup->m_webView->client()->postAccessibilityEvent(WebAXObject(obj), static_cast<WebAXEvent>(notification));
     }
 
     void setToolTip(const String& tooltipText, TextDirection dir) override

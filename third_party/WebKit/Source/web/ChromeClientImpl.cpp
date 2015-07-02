@@ -674,10 +674,6 @@ void ChromeClientImpl::postAccessibilityNotification(AXObject* obj, AXObjectCach
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(obj->document()->axObjectCacheOwner().frame());
     if (webframe && webframe->client())
         webframe->client()->postAccessibilityEvent(WebAXObject(obj), toWebAXEvent(notification));
-
-    // FIXME: delete these lines once Chrome only uses the frame client interface, above.
-    if (m_webView->client())
-        m_webView->client()->postAccessibilityEvent(WebAXObject(obj), toWebAXEvent(notification));
 }
 
 String ChromeClientImpl::acceptLanguages()

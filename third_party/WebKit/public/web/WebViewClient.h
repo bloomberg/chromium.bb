@@ -217,12 +217,6 @@ public:
     virtual int historyForwardListCount() { return 0; }
 
 
-    // Accessibility -------------------------------------------------------
-
-    // Notifies embedder about an accessibility event.
-    virtual void postAccessibilityEvent(const WebAXObject&, WebAXEvent) { }
-
-
     // Developer tools -----------------------------------------------------
 
     // Called to notify the client that the inspector's settings were
