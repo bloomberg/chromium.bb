@@ -7953,6 +7953,46 @@ TEST_F(LayerTreeHostCommonTest, PropertyTreesAccountForFixedParentOffset) {
             grandchild->visible_rect_from_property_trees());
 }
 
+// Ensures that the property tree code accounts for offsets between fixed
+// position containers and their transform tree parents, when a fixed position
+// layer's container is its layer tree parent, but this parent doesn't have its
+// own transform tree node.
+TEST_F(LayerTreeHostCommonTest,
+       PropertyTreesAccountForFixedParentOffsetWhenContainerIsParent) {
+  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  scoped_refptr<Layer> child = Layer::Create(layer_settings());
+  scoped_refptr<LayerWithForcedDrawsContent> grandchild =
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
+
+  root->AddChild(child);
+  child->AddChild(grandchild);
+
+  gfx::Transform identity_transform;
+  SetLayerPropertiesForTesting(root.get(), identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false);
+  SetLayerPropertiesForTesting(child.get(), identity_transform, gfx::Point3F(),
+                               gfx::PointF(1000, 1000), gfx::Size(50, 50), true,
+                               false);
+  SetLayerPropertiesForTesting(grandchild.get(), identity_transform,
+                               gfx::Point3F(), gfx::PointF(-1000, -1000),
+                               gfx::Size(50, 50), true, false);
+
+  root->SetMasksToBounds(true);
+  child->SetIsContainerForFixedPositionLayers(true);
+  LayerPositionConstraint constraint;
+  constraint.set_is_fixed_position(true);
+  grandchild->SetPositionConstraint(constraint);
+
+  root->SetIsContainerForFixedPositionLayers(true);
+
+  host()->SetRootLayer(root);
+
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+
+  EXPECT_EQ(gfx::Rect(0, 0, 50, 50),
+            grandchild->visible_rect_from_property_trees());
+}
+
 TEST_F(LayerTreeHostCommonTest, CombineClipsUsingContentTarget) {
   // In the following layer tree, the layer |box|'s render target is |surface|.
   // |surface| also creates a transform node. We want to combine clips for |box|

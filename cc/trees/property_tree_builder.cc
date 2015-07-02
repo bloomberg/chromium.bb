@@ -204,13 +204,10 @@ bool AddTransformNodeIfNeeded(
     } else if (!is_fixed) {
       source_offset = transform_parent->offset_to_transform_parent();
     } else {
-      if (data_from_ancestor.transform_tree_parent !=
-          data_from_ancestor.transform_fixed_parent) {
-        source_offset = data_from_ancestor.transform_tree_parent
-                            ->offset_to_transform_parent();
-        source_index =
-            data_from_ancestor.transform_tree_parent->transform_tree_index();
-      }
+      source_offset = data_from_ancestor.transform_tree_parent
+                          ->offset_to_transform_parent();
+      source_index =
+          data_from_ancestor.transform_tree_parent->transform_tree_index();
       source_offset += data_from_ancestor.scroll_compensation_adjustment;
     }
   }
