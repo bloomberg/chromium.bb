@@ -5700,14 +5700,12 @@
 
                   # TODO(hans): Make this list shorter eventually, http://crbug.com/504657
                   '-Qunused-arguments',  # http://crbug.com/504658
-                  '-Wno-c++11-compat-deprecated-writable-strings',  # http://crbug.com/504659
                   '-Wno-empty-body',  # http://crbug.com/504661
                   '-Wno-extra-tokens',  # http://crbug.com/504663
                   '-Wno-ignored-attributes',  # http://crbug.com/504695
                   '-Wno-incompatible-pointer-types',  # http://crbug.com/504696
                   '-Wno-int-to-void-pointer-cast',  # http://crbug.com/504697
                   '-Wno-invalid-noreturn',  # http://crbug.com/504698
-                  '-Wno-logical-op-parentheses',  # http://crbug.com/504699
                   '-Wno-microsoft',  # http://crbug.com/505296
                   '-Wno-missing-braces',  # http://crbug.com/505297
                   '-Wno-msvc-include',  # http://crbug.com/505299
