@@ -29,7 +29,7 @@ const der::Input ServerAuth() {
   // arc, defined in section 4.2.1.12 as:
   // id-kp OBJECT IDENTIFIER ::= { id-pkix 3 }
   //
-  // With id-pkix defined in RFC 5280  section 4.2.2 as:
+  // With id-pkix defined in RFC 5280 section 4.2.2 as:
   // id-pkix  OBJECT IDENTIFIER  ::=
   //          { iso(1) identified-organization(3) dod(6) internet(1)
   //                  security(5) mechanisms(5) pkix(7) }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_CERT_INTERNAL_EKU_H_
-#define NET_CERT_INTERNAL_EKU_H_
+#ifndef NET_CERT_INTERNAL_EXTENDED_KEY_USAGE_H_
+#define NET_CERT_INTERNAL_EXTENDED_KEY_USAGE_H_
 
 #include <vector>
 
@@ -34,4 +34,4 @@ NET_EXPORT bool ParseEKUExtension(const der::Input& extension_value,
 
 }  // namespace net
 
-#endif  // NET_CERT_INTERNAL_EKU_H_
+#endif  // NET_CERT_INTERNAL_EXTENDED_KEY_USAGE_H_
