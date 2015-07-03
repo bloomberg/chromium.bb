@@ -32,6 +32,7 @@
 
 #include "public/web/WebLeakDetector.h"
 
+#include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "core/dom/ActiveDOMObject.h"
@@ -134,6 +135,7 @@ void WebLeakDetectorImpl::delayedReport(Timer<WebLeakDetectorImpl>*)
     result.numberOfLiveRenderObjects = result.numberOfLiveLayoutObjects;
     result.numberOfLiveResources = Resource::instanceCount();
     result.numberOfLiveActiveDOMObjects = ActiveDOMObject::instanceCount();
+    result.numberOfLiveScriptPromises = ScriptPromise::instanceCount();
 
     m_client->onLeakDetectionComplete(result);
 

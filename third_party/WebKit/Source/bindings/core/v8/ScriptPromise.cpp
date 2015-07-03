@@ -52,6 +52,8 @@ struct WithScriptState {
 
 } // namespace
 
+unsigned ScriptPromise::s_instanceCount = 0;
+
 ScriptPromise::InternalResolver::InternalResolver(ScriptState* scriptState)
     : m_resolver(scriptState, v8::Promise::Resolver::New(scriptState->context())) { }
 
@@ -85,9 +87,16 @@ void ScriptPromise::InternalResolver::reject(v8::Local<v8::Value> value)
     clear();
 }
 
+ScriptPromise::ScriptPromise()
+{
+    ++s_instanceCount;
+}
+
 ScriptPromise::ScriptPromise(ScriptState* scriptState, v8::Local<v8::Value> value)
     : m_scriptState(scriptState)
 {
+    ++s_instanceCount;
+
     if (value.IsEmpty())
         return;
 
@@ -97,6 +106,19 @@ ScriptPromise::ScriptPromise(ScriptState* scriptState, v8::Local<v8::Value> valu
         return;
     }
     m_promise = ScriptValue(scriptState, value);
+}
+
+ScriptPromise::ScriptPromise(const ScriptPromise& other)
+{
+    ++s_instanceCount;
+
+    this->m_scriptState = other.m_scriptState;
+    this->m_promise = other.m_promise;
+}
+
+ScriptPromise::~ScriptPromise()
+{
+    --s_instanceCount;
 }
 
 ScriptPromise ScriptPromise::then(v8::Local<v8::Function> onFulfilled, v8::Local<v8::Function> onRejected)

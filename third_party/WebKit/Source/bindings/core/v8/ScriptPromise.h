@@ -50,11 +50,15 @@ class DOMException;
 class CORE_EXPORT ScriptPromise final {
 public:
     // Constructs an empty promise.
-    ScriptPromise() { }
+    ScriptPromise();
 
     // Constructs a ScriptPromise from |promise|.
     // If |promise| is not a Promise object, throws a v8 TypeError.
     ScriptPromise(ScriptState*, v8::Local<v8::Value> promise);
+
+    ScriptPromise(const ScriptPromise&);
+
+    ~ScriptPromise();
 
     ScriptPromise then(v8::Local<v8::Function> onFulfilled, v8::Local<v8::Function> onRejected = v8::Local<v8::Function>());
 
@@ -127,6 +131,8 @@ public:
 
     static v8::Local<v8::Promise> rejectRaw(ScriptState*, v8::Local<v8::Value>);
 
+    static unsigned instanceCount() { return s_instanceCount; }
+
     // This is a utility class intended to be used internally.
     // ScriptPromiseResolver is for general purpose.
     class CORE_EXPORT InternalResolver final {
@@ -145,6 +151,8 @@ public:
 private:
     RefPtr<ScriptState> m_scriptState;
     ScriptValue m_promise;
+
+    static unsigned s_instanceCount;
 };
 
 } // namespace blink
