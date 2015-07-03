@@ -4046,6 +4046,81 @@ TEST_F(LayerTreeHostImplTest, ScrollNonAxisAlignedRotatedLayer) {
   }
 }
 
+TEST_F(LayerTreeHostImplTest, ScrollPerspectiveTransformedLayer) {
+  // When scrolling an element with perspective, the distance scrolled
+  // depends on the point at which the scroll begins.
+  LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  int child_clip_layer_id = 6;
+  int child_layer_id = 7;
+
+  // Create a child layer that is rotated on its x axis, with perspective.
+  scoped_ptr<LayerImpl> clip_layer =
+      LayerImpl::Create(host_impl_->active_tree(), child_clip_layer_id);
+  scoped_ptr<LayerImpl> child = CreateScrollableLayer(
+      child_layer_id, scroll_layer->bounds(), clip_layer.get());
+  LayerImpl* child_ptr = child.get();
+  gfx::Transform perspective_transform;
+  perspective_transform.Translate(-50.0, -50.0);
+  perspective_transform.ApplyPerspectiveDepth(20);
+  perspective_transform.RotateAboutXAxis(45);
+  perspective_transform.Translate(50.0, 50.0);
+  clip_layer->SetTransform(perspective_transform);
+
+  clip_layer->SetBounds(gfx::Size(child_ptr->bounds().width() / 2,
+                                  child_ptr->bounds().height() / 2));
+  // The transform depends on the layer's transform origin, and the child layer
+  // is a different size than the clip, so make sure the clip layer's origin
+  // lines up over the child.
+  clip_layer->SetTransformOrigin(gfx::Point3F(
+      clip_layer->bounds().width(), clip_layer->bounds().height(), 0.f));
+  clip_layer->AddChild(child.Pass());
+  scroll_layer->AddChild(clip_layer.Pass());
+
+  gfx::Size surface_size(50, 50);
+  host_impl_->SetViewportSize(surface_size);
+
+  scoped_ptr<ScrollAndScaleSet> scroll_info;
+
+  gfx::Vector2d gesture_scroll_deltas[4];
+  gesture_scroll_deltas[0] = gfx::Vector2d(4, 10);
+  gesture_scroll_deltas[1] = gfx::Vector2d(4, 10);
+  gesture_scroll_deltas[2] = gfx::Vector2d(10, 0);
+  gesture_scroll_deltas[3] = gfx::Vector2d(10, 0);
+
+  gfx::Vector2d expected_scroll_deltas[4];
+  // Perspective affects the vertical delta by a different
+  // amount depending on the vertical position of the |viewport_point|.
+  expected_scroll_deltas[0] = gfx::Vector2d(2, 8);
+  expected_scroll_deltas[1] = gfx::Vector2d(1, 4);
+  // Deltas which start with the same vertical position of the
+  // |viewport_point| are subject to identical perspective effects.
+  expected_scroll_deltas[2] = gfx::Vector2d(4, 0);
+  expected_scroll_deltas[3] = gfx::Vector2d(4, 0);
+
+  gfx::Point viewport_point(1, 1);
+
+  // Scroll in screen coordinates with a gesture. Each scroll starts
+  // where the previous scroll ended, but the scroll position is reset
+  // for each scroll.
+  for (int i = 0; i < 4; ++i) {
+    child_ptr->SetScrollDelta(gfx::Vector2dF());
+    DrawFrame();
+    EXPECT_EQ(InputHandler::SCROLL_STARTED,
+              host_impl_->ScrollBegin(viewport_point, InputHandler::GESTURE));
+    host_impl_->ScrollBy(viewport_point, gesture_scroll_deltas[i]);
+    viewport_point += gesture_scroll_deltas[i];
+    host_impl_->ScrollEnd();
+
+    scroll_info = host_impl_->ProcessScrollDeltas();
+    EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(), child_layer_id,
+                                   expected_scroll_deltas[i]));
+
+    // The root scroll layer should not have scrolled, because the input delta
+    // was close to the layer's axis of movement.
+    EXPECT_EQ(scroll_info->scrolls.size(), 1u);
+  }
+}
+
 TEST_F(LayerTreeHostImplTest, ScrollScaledLayer) {
   LayerImpl* scroll_layer =
       SetupScrollAndContentsLayers(gfx::Size(100, 100));
