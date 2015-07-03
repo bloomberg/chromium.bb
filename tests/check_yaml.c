@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <error.h>
 #include "liblouis.h"
 #include "brl_checks.h"
 
@@ -23,17 +24,15 @@ int errors = 0;
 int count = 0;
 
 int
-error(char *msg, yaml_event_t *event) {
-  printf("%s:%zu: error: %s\n", file_name, event->start_mark.line, msg);
-  exit (EXIT_FAILURE);
+simple_error(const char *msg, yaml_event_t *event) {
+  error_at_line(EXIT_FAILURE, 0, file_name, event->start_mark.line, msg);
 }
 
 int
 yaml_error(yaml_event_type_t expected, yaml_event_t *event) {
-  printf("%s:%zu: error: expected %s (actual %s)\n",
-	 file_name, event->start_mark.line,
-	 event_names[expected], event_names[event->type]);
-  exit (EXIT_FAILURE);
+  error_at_line(EXIT_FAILURE, 0, file_name, event->start_mark.line,
+		"Expected %s (actual %s)",
+		event_names[expected], event_names[event->type]);
 }
 
 void
@@ -42,7 +41,7 @@ read_tables(yaml_parser_t *parser, char *tables_list) {
   if (!yaml_parser_parse(parser, &event) ||
       (event.type != YAML_SCALAR_EVENT) ||
       strcmp(event.data.scalar.value, "tables")) {
-    error("tables expected", &event);
+    simple_error("tables expected", &event);
   }
 
   yaml_event_delete(&event);
@@ -57,7 +56,7 @@ read_tables(yaml_parser_t *parser, char *tables_list) {
   char *p = tables_list;
   while (!done) {
     if (!yaml_parser_parse(parser, &event)) {
-      error("Error in YAML", &event);
+      simple_error("Error in YAML", &event);
     }
     if (event.type == YAML_SEQUENCE_END_EVENT) {
       done = 1;
@@ -82,7 +81,7 @@ read_flags(yaml_parser_t *parser) {
   int done = 0;
   while (!done) {
     if (!yaml_parser_parse(parser, &event)) {
-      error("Error in YAML", &event);
+      simple_error("Error in YAML", &event);
     }
     if (event.type == YAML_MAPPING_END_EVENT) {
       done = 1;
@@ -152,7 +151,7 @@ read_options (yaml_parser_t *parser, int *xfail, translationModes *mode, char *t
 	yaml_event_delete(&event);
       }
       if (!parse_error)
-	error("Error in YAML", &event);
+	simple_error("Error in YAML", &event);
       if (event.type != YAML_SEQUENCE_END_EVENT)
 	yaml_error(YAML_SEQUENCE_END_EVENT, &event);
     } else if (!strcmp(option_name, "typeform")) {
@@ -175,13 +174,12 @@ read_options (yaml_parser_t *parser, int *xfail, translationModes *mode, char *t
 	yaml_error(YAML_SCALAR_EVENT, &event);
       yaml_event_delete(&event);
     } else {
-      char *message;
-      asprintf(&message, "Unsupported option %s", option_name);
-      error(message, &event);
+      error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+		    "Unsupported option %s", option_name)
     }
   }
   if (!parse_error)
-    error("Error in YAML", &event);
+    simple_error("Error in YAML", &event);
   if (event.type != YAML_MAPPING_END_EVENT)
     yaml_error(YAML_MAPPING_END_EVENT, &event);
   yaml_event_delete(&event);
@@ -198,20 +196,20 @@ read_test(yaml_parser_t *parser, char *tables_list) {
 
   if (!yaml_parser_parse(parser, &event) ||
       (event.type != YAML_SCALAR_EVENT))
-    error("Word expected", &event);
+    simple_error("Word expected", &event);
 
   word = strndup(event.data.scalar.value, event.data.scalar.length);
   yaml_event_delete(&event);
 
   if (!yaml_parser_parse(parser, &event) ||
       (event.type != YAML_SCALAR_EVENT))
-    error("Translation expected", &event);
+    simple_error("Translation expected", &event);
 
   translation = strndup(event.data.scalar.value, event.data.scalar.length);
   yaml_event_delete(&event);
 
   if (!yaml_parser_parse(parser, &event))
-    error("Error in YAML", &event);
+    simple_error("Error in YAML", &event);
 
   if (event.type == YAML_MAPPING_START_EVENT) {
     yaml_event_delete(&event);
@@ -225,7 +223,7 @@ read_test(yaml_parser_t *parser, char *tables_list) {
     yaml_event_delete(&event);
     /* do translation */
   } else {
-    error("Unexpected event", &event);
+    simple_error("Unexpected event", &event);
   }
 
   if (xfail != check_translation_with_mode(tables_list, word, typeform, translation, translation_mode))
@@ -250,7 +248,7 @@ read_tests(yaml_parser_t *parser, char *tables_list) {
   int done = 0;
   while (!done) {
     if (!yaml_parser_parse(parser, &event)) {
-      error("Error in YAML", &event);
+      simple_error("Error in YAML", &event);
     }
     if (event.type == YAML_SEQUENCE_END_EVENT) {
       done = 1;
@@ -259,7 +257,7 @@ read_tests(yaml_parser_t *parser, char *tables_list) {
       yaml_event_delete(&event);
       read_test(parser, tables_list);
     } else {
-      error("Unexpected event", &event);
+      simple_error("Unexpected event", &event);
     }
   }
 }
@@ -288,7 +286,11 @@ main(int argc, char *argv[]) {
       (event.type != YAML_STREAM_START_EVENT)) {
     yaml_error(YAML_STREAM_START_EVENT, &event);
   }
-  printf("Encoding %s\n", encoding_names[event.data.stream_start.encoding]);
+
+  if (event.data.stream_start.encoding != YAML_UTF8_ENCODING)
+    error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+		  "UTF-8 encoding expected (%s instead)",
+		  encoding_names[event.data.stream_start.encoding]);
   yaml_event_delete(&event);
 
   if (!yaml_parser_parse(&parser, &event) ||
@@ -319,7 +321,7 @@ main(int argc, char *argv[]) {
     if (!yaml_parser_parse(&parser, &event) ||
 	(event.type != YAML_SCALAR_EVENT) ||
 	strcmp(event.data.scalar.value, "tests")) {
-      error("tests expected", &event);
+      simple_error("tests expected", &event);
     }
     yaml_event_delete(&event);
     read_tests(&parser, tables_list);
@@ -328,7 +330,7 @@ main(int argc, char *argv[]) {
     yaml_event_delete(&event);
     read_tests(&parser, tables_list);
   } else {
-    error("flags or tests expected", &event);
+    simple_error("flags or tests expected", &event);
   }
 
   if (!yaml_parser_parse(&parser, &event) ||
