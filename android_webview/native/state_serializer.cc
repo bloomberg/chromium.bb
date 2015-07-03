@@ -113,13 +113,13 @@ bool RestoreFromPickle(base::PickleIterator* iterator,
       &restored_entries);
   DCHECK_EQ(0u, restored_entries.size());
 
-  if (controller.GetActiveEntry()) {
+  if (controller.GetLastCommittedEntry()) {
     // Set up the file access rights for the selected navigation entry.
     // TODO(joth): This is duplicated from chrome/.../session_restore.cc and
     // should be shared e.g. in  NavigationController. http://crbug.com/68222
     const int id = web_contents->GetRenderProcessHost()->GetID();
     const content::PageState& page_state =
-        controller.GetActiveEntry()->GetPageState();
+        controller.GetLastCommittedEntry()->GetPageState();
     const std::vector<base::FilePath>& file_paths =
         page_state.GetReferencedFiles();
     for (std::vector<base::FilePath>::const_iterator file = file_paths.begin();

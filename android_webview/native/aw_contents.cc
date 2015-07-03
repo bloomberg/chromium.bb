@@ -691,7 +691,7 @@ void AwContents::OnReceivedIcon(const GURL& icon_url, const SkBitmap& bitmap) {
     return;
 
   content::NavigationEntry* entry =
-      web_contents_->GetController().GetActiveEntry();
+      web_contents_->GetController().GetLastCommittedEntry();
 
   if (entry) {
     entry->GetFavicon().valid = true;
@@ -743,12 +743,12 @@ void AwContents::OnNewPicture() {
   }
 }
 
-base::android::ScopedJavaLocalRef<jbyteArray>
-    AwContents::GetCertificate(JNIEnv* env,
-                               jobject obj) {
+base::android::ScopedJavaLocalRef<jbyteArray> AwContents::GetCertificate(
+    JNIEnv* env,
+    jobject obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::NavigationEntry* entry =
-      web_contents_->GetController().GetActiveEntry();
+      web_contents_->GetController().GetLastCommittedEntry();
   if (!entry)
     return ScopedJavaLocalRef<jbyteArray>();
   // Get the certificate

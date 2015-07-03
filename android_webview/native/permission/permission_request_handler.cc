@@ -19,21 +19,22 @@ namespace android_webview {
 
 namespace {
 
-int GetActiveEntryID(content::WebContents* web_contents) {
+int GetLastCommittedEntryID(content::WebContents* web_contents) {
   if (!web_contents) return 0;
 
-  content::NavigationEntry* active_entry =
-      web_contents->GetController().GetActiveEntry();
-  return active_entry ? active_entry->GetUniqueID() : 0;
+  content::NavigationEntry* entry =
+      web_contents->GetController().GetLastCommittedEntry();
+  return entry ? entry->GetUniqueID() : 0;
 }
 
 }  // namespace
 
 PermissionRequestHandler::PermissionRequestHandler(
-    PermissionRequestHandlerClient* client, content::WebContents* web_contents)
+    PermissionRequestHandlerClient* client,
+    content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       client_(client),
-      contents_unique_id_(GetActiveEntryID(web_contents)) {
+      contents_unique_id_(GetLastCommittedEntryID(web_contents)) {
 }
 
 PermissionRequestHandler::~PermissionRequestHandler() {
