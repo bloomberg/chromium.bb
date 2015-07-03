@@ -13,9 +13,6 @@
   flex: none;
   /* Use bold until we get Roboto medium. crbug.com/368442. */
   font-weight: bold;
-  height: 32px;
-  margin: 0 0.29em;
-  min-width: 16px;
   outline: none;
   padding: 8px;
   position: relative;

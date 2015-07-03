@@ -252,7 +252,6 @@ div.splitter {
   flex: none;
   flex-direction: row;
   height: 48px;
-  margin: 0;
   transition: background 220ms ease;
 }
 
@@ -264,6 +263,13 @@ body.check-select .dialog-header {
 
 .dialog-header > .spacer {
   flex: auto;
+}
+
+.dialog-header paper-button,
+.dialog-header button {
+  height: 32px;
+  margin: 0 8px;
+  min-width: 32px;
 }
 
 .dialog-header button {
@@ -281,23 +287,6 @@ body.check-select .dialog-header {
 body.check-select button,
 body.check-select button:hover {
   color: rgb(90, 90, 90);
-}
-
-.dialog-header .icon-button {
-  -webkit-margin-end: 4px;
-  -webkit-margin-start: 12px;
-  background-color: transparent;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 16px 16px;
-  border: 0;
-  border-radius: 2px;
-  flex: none;
-  height: 32px;
-  line-height: 16px;
-  min-width: 32px;
-  padding: 0;
-  width: 32px;
 }
 
 .dialog-header .icon-button > paper-ripple {
@@ -328,8 +317,9 @@ body.check-select .dialog-header
   width: 16px;
 }
 
-.dialog-header paper-button::shadow > .button-content {
-  padding: 8px;
+.dialog-header paper-button::shadow > paper-material {
+  padding: 0 8px;
+  line-height: 32px;
 }
 
 .dialog-header button.icon-button {
@@ -340,13 +330,8 @@ body.check-select .dialog-header
   background-repeat: no-repeat;
   border: 0;
   box-shadow: none;
-  display: block;
-  height: 32px;
-  min-width: 0;
   outline: none;
-  padding: 0;
   position: relative;
-  width: 32px;
 }
 
 .dialog-header button.icon-button > iron-icon {
@@ -356,7 +341,7 @@ body.check-select .dialog-header
 .dialog-header button.icon-button > .icon {
   background-position: center;
   background-repeat: no-repeat;
-  height: 32px;
+  height: 100%;
   left: 0;
   position: absolute;
   width: 32px;
@@ -461,7 +446,7 @@ body.check-select #gear-button {
 }
 
 .cloud-import-combo-button > .buttons > #cloud-import-button {
-  -webkit-margin-start: 0;
+  -webkit-margin-start: -4px;
 }
 
 .cloud-import-combo-button > .buttons > #cloud-import-details-button {
@@ -481,7 +466,7 @@ body.check-select #gear-button {
 }
 
 #cloud-import-details-button {
-  -webkit-margin-start: -11px;
+  -webkit-margin-start: -28px;
   width: 24px;
 }
 
@@ -599,8 +584,8 @@ html[dir='rtl'] #cloud-import-details {
 }
 
 #files-selected-label {
+  -webkit-margin-start: 20px;
   display: none;
-  margin: 0 10px;
 }
 
 body.check-select #files-selected-label {
@@ -608,7 +593,6 @@ body.check-select #files-selected-label {
 }
 
 #cancel-selection-button {
-  margin: 0 8px;
   text-transform: none;
 }
 
@@ -905,14 +889,11 @@ html[dir='rtl'] #search-box .clear {
 
 /* The container for breadcrumb elements. */
 .breadcrumbs {
-  -webkit-margin-start: 12px;
   align-items: center;
   display: flex;
-  flex: auto;
   flex-direction: row;
-  line-height: 20px;
+  flex: auto;
   overflow: hidden;
-  padding-top: 1px;
 }
 
 body.check-select .breadcrumbs {
@@ -927,6 +908,10 @@ body.check-select .breadcrumbs {
   content: '...';
 }
 
+.breadcrumbs > [collapsed] .name {
+  display: none;
+}
+
 .breadcrumbs > [collapsed] {
   box-sizing: content-box !important;
   width: 1em;
@@ -934,20 +919,22 @@ body.check-select .breadcrumbs {
 
 /* A single directory name in the list of path breadcrumbs. */
 .breadcrumbs .breadcrumb-path {
+  -webkit-margin-end: 0;  /* An arrow is used as a spacer instead. */
   box-sizing: border-box;
   cursor: pointer;
   flex: none;
   font-size: 14px;
   /* Use bold until we get Roboto medium. crbug.com/368442. */
   font-weight: bold;
-  margin-left: 0;
-  margin-right: 0;
   min-width: 0;
-  padding-left: 9px;
-  padding-right: 9px;
+  padding: 0 9px;
   text-overflow: ellipsis;
   text-transform: none;
   white-space: nowrap;
+}
+
+.breadcrumbs .breadcrumb-path:not(:first-child) {
+  -webkit-margin-start: 0;  /* An arrow is used as a spacer instead. */
 }
 
 .breadcrumbs .breadcrumb-path:active {
@@ -1685,11 +1672,6 @@ body.check-select #list-container list li[selected] .detail-thumbnail
 #tasks-menu cr-menu-item:not(.change-default) {
   background-position: left 10px center;
   padding-left: 32px;
-}
-
-#share-button {
-  display: block;
-  min-width: 0;  /* overrride */
 }
 
 .detail-name > * {
