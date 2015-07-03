@@ -81,6 +81,7 @@
         'models/list_model_unittest.cc',
         'models/list_selection_model_unittest.cc',
         'models/tree_node_model_unittest.cc',
+        'resource/material_design/material_design_controller_unittest.cc',
         'test/data/resource.h',
         'test/test_clipboard_unittest.cc',
         'test/scoped_fake_nswindow_fullscreen_unittest.mm',
@@ -95,11 +96,6 @@
         '../..',
       ],
       'conditions': [
-        ['OS=="chromeos" or OS=="linux" or OS=="win"', {
-          'sources': [
-            'resource/material_design/material_design_controller_unittest.cc',
-          ]
-        }],
         ['OS!="ios"', {
           'sources' : [ '<@(_all_sources)' ],
         }, {  # OS=="ios"

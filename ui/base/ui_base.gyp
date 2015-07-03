@@ -257,6 +257,8 @@
         'page_transition_types.h',
         'resource/data_pack.cc',
         'resource/data_pack.h',
+        'resource/material_design/material_design_controller.cc',
+        'resource/material_design/material_design_controller.h',
         'resource/resource_bundle.cc',
         'resource/resource_bundle.h',
         'resource/resource_bundle_android.cc',
@@ -355,12 +357,6 @@
         }],
       ],
       'conditions': [
-        ['OS=="chromeos" or OS=="linux" or OS=="win"', {
-          'sources': [
-            'resource/material_design/material_design_controller.cc',
-            'resource/material_design/material_design_controller.h',
-          ]
-        }],
         ['OS=="ios"', {
           # iOS only uses a subset of UI.
           'sources/': [
@@ -656,6 +652,8 @@
         'test/ios/keyboard_appearance_listener.mm',
         'test/ios/ui_view_test_utils.h',
         'test/ios/ui_view_test_utils.mm',
+        'test/material_design_controller_test_api.cc',
+        'test/material_design_controller_test_api.h',
         'test/test_clipboard.cc',
         'test/test_clipboard.h',
         'test/ui_controls.h',
@@ -669,12 +667,6 @@
         '../..',
       ],
       'conditions': [
-        ['OS=="chromeos" or OS=="linux" or OS=="win"', {
-          'sources': [
-            'test/material_design_controller_test_api.cc',
-            'test/material_design_controller_test_api.h',
-          ]
-        }],
         ['OS!="ios"', {
           'dependecies': [
             'ime/ui_base_ime.gyp:ui_base_ime',

@@ -209,6 +209,8 @@ component("base") {
     "page_transition_types.h",
     "resource/data_pack.cc",
     "resource/data_pack.h",
+    "resource/material_design/material_design_controller.cc",
+    "resource/material_design/material_design_controller.h",
     "resource/resource_bundle.cc",
     "resource/resource_bundle.h",
     "resource/resource_bundle_android.cc",
@@ -282,13 +284,6 @@ component("base") {
     "window_open_disposition.h",
     "work_area_watcher_observer.h",
   ]
-
-  if (is_chromeos || is_linux || is_win) {
-    sources += [
-      "resource/material_design/material_design_controller.cc",
-      "resource/material_design/material_design_controller.h",
-    ]
-  }
 
   if (is_win) {
     sources += [ "touch/touch_device_win.cc" ]
@@ -565,6 +560,8 @@ component("base") {
 source_set("test_support") {
   testonly = true
   sources = [
+    "test/material_design_controller_test_api.cc",
+    "test/material_design_controller_test_api.h",
     "test/nswindow_fullscreen_notification_waiter.h",
     "test/nswindow_fullscreen_notification_waiter.mm",
     "test/scoped_fake_nswindow_fullscreen.h",
@@ -604,13 +601,6 @@ source_set("test_support") {
     deps += [ "//ui/base/ime" ]
   }
 
-  if (is_chromeos || is_linux || is_win) {
-    sources += [
-      "test/material_design_controller_test_api.cc",
-      "test/material_design_controller_test_api.h",
-    ]
-  }
-
   if (!use_aura) {
     sources -= [ "test/ui_controls_aura.cc" ]
   } else if (is_win) {
@@ -644,17 +634,13 @@ test("ui_base_unittests") {
     "models/tree_node_iterator_unittest.cc",
     "resource/data_pack_literal.cc",
     "resource/data_pack_unittest.cc",
+    "resource/material_design/material_design_controller_unittest.cc",
     "resource/resource_bundle_unittest.cc",
     "test/run_all_unittests.cc",
     "test/scoped_fake_nswindow_fullscreen_unittest.mm",
     "test/test_clipboard_unittest.cc",
     "user_activity/user_activity_detector_unittest.cc",
   ]
-
-  if (is_chromeos || is_linux || is_win) {
-    sources +=
-        [ "resource/material_design/material_design_controller_unittest.cc" ]
-  }
 
   if (is_android) {
     sources -= [ "user_activity/user_activity_detector_unittest.cc" ]
