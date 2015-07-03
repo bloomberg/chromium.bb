@@ -73,6 +73,10 @@
           # libflac converts between FLAC__StreamDecoderState and
           # FLAC__StreamDecoderInitStatus a lot in stream_decoder.c.
           '-Wno-conversion',
+          # libflac contains constants that are only used in certain
+          # compile-time cases, which triggers unused-const-variable warnings in
+          # other cases.
+          '-Wno-unused-const-variable',
         ],
       },
     },
