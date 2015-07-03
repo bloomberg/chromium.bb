@@ -248,11 +248,6 @@ void WebRuntimeFeatures::enableWebGLImageChromium(bool enable)
     RuntimeEnabledFeatures::setWebGLImageChromiumEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableWebMIDI(bool enable)
-{
-    return RuntimeEnabledFeatures::setWebMIDIEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableXSLT(bool enable)
 {
     RuntimeEnabledFeatures::setXSLTEnabled(enable);

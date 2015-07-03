@@ -32,7 +32,6 @@
 
 [
     Constructor(DOMString type, optional MIDIMessageEventInit eventInitDict),
-    RuntimeEnabled=WebMIDI,
 ] interface MIDIMessageEvent : Event {
     readonly attribute double receivedTime;
     readonly attribute Uint8Array data;

@@ -29,7 +29,6 @@
  */
 
 [
-    RuntimeEnabled=WebMIDI,
     SetWrapperReferenceTo(MIDIAccess midiAccess),
 ] interface MIDIInput : MIDIPort {
     attribute EventHandler onmidimessage;

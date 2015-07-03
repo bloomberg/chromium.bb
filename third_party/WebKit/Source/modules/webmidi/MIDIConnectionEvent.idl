@@ -32,7 +32,6 @@
 
 [
     Constructor(DOMString type, optional MIDIConnectionEventInit eventInitDict),
-    RuntimeEnabled=WebMIDI,
 ] interface MIDIConnectionEvent : Event {
     readonly attribute MIDIPort port;
 };

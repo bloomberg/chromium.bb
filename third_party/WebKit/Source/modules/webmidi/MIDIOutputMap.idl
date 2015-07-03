@@ -7,7 +7,6 @@
 
 [
     GarbageCollected,
-    RuntimeEnabled=WebMIDI,
 ] interface MIDIOutputMap {
     readonly attribute unsigned long size;
     readonly maplike<DOMString, MIDIOutput>;

@@ -32,7 +32,6 @@
 // http://cwilso.github.io/web-midi-api/#idl-def-MIDIOutput
 
 [
-    RuntimeEnabled=WebMIDI,
     SetWrapperReferenceTo(MIDIAccess midiAccess),
 ] interface MIDIOutput : MIDIPort {
     // TODO(toyoshim): implement void clear()
