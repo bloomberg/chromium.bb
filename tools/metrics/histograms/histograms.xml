@@ -48457,7 +48457,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="WebRTC.Audio.ReportedStreamDelayJump" units="milliseconds">
+<histogram name="WebRTC.Audio.PlatformReportedStreamDelayJump"
+    units="milliseconds">
   <owner>bjornv@chromium.org</owner>
   <summary>
     The difference in stream delay reported to WebRTC by Chrome. Since we detect
