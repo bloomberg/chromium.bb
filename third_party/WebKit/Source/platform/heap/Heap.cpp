@@ -812,7 +812,10 @@ bool NormalPageHeap::shrinkObject(HeapObjectHeader* header, size_t newSize)
     }
     ASSERT(shrinkSize >= sizeof(HeapObjectHeader));
     ASSERT(header->gcInfoIndex() > 0);
-    HeapObjectHeader* freedHeader = new (NotNull, header->payloadEnd() - shrinkSize) HeapObjectHeader(shrinkSize, header->gcInfoIndex());
+    Address shrinkAddress = header->payloadEnd() - shrinkSize;
+    FILL_ZERO_IF_PRODUCTION(shrinkAddress, shrinkSize);
+    ASAN_POISON_MEMORY_REGION(shrinkAddress, shrinkSize);
+    HeapObjectHeader* freedHeader = new (NotNull, shrinkAddress) HeapObjectHeader(shrinkSize, header->gcInfoIndex());
     freedHeader->markPromptlyFreed();
     ASSERT(pageFromObject(reinterpret_cast<Address>(header)) == findPageFromAddress(reinterpret_cast<Address>(header)));
     m_promptlyFreedSize += shrinkSize;
