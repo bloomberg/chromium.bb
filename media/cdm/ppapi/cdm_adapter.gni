@@ -86,9 +86,6 @@ template("cdm_adapter") {
     if (defined(invoker.deps)) {
       deps = invoker.deps
     }
-    if (defined(invoker.direct_dependent_configs)) {
-      direct_dependent_configs = invoker.direct_dependent_configs
-    }
     if (defined(invoker.forward_dependent_configs_from)) {
       forward_dependent_configs_from = invoker.forward_dependent_configs_from
     }
