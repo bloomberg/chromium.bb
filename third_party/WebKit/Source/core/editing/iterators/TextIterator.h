@@ -178,6 +178,9 @@ private:
     bool m_handledFirstLetter;
     // Used when stopsOnFormControls() is true to determine if the iterator should keep advancing.
     bool m_shouldStop;
+    // Used for use counter |InnerTextWithShadowTree| and
+    // |SelectionToStringWithShadowTree|, we should not use other purpose.
+    bool m_handleShadowRoot;
 
     // Contains state of emitted text.
     TextIteratorTextState m_textState;

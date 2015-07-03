@@ -1145,7 +1145,7 @@ bool Editor::findString(const String& target, FindOptions options)
 {
     VisibleSelection selection = frame().selection().selection();
 
-    RefPtrWillBeRawPtr<Range> resultRange = rangeOfString(target, selection.firstRange().get(), options);
+    RefPtrWillBeRawPtr<Range> resultRange = rangeOfString(target, selection.firstRange().get(), static_cast<FindOptions>(options | FindAPICall));
 
     if (!resultRange)
         return false;

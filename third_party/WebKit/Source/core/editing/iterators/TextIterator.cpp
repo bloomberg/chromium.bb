@@ -39,6 +39,7 @@
 #include "core/editing/iterators/CharacterIterator.h"
 #include "core/editing/iterators/WordAwareIterator.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -133,6 +134,7 @@ TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(const typename Strategy::
     , m_behavior(adjustBehaviorFlags<Strategy>(behavior))
     , m_handledFirstLetter(false)
     , m_shouldStop(false)
+    , m_handleShadowRoot(false)
     // The call to emitsOriginalText() must occur after m_behavior is initialized.
     , m_textState(emitsOriginalText())
 {
@@ -188,6 +190,17 @@ void TextIteratorAlgorithm<Strategy>::initialize(Node* startContainer, int start
 template<typename Strategy>
 TextIteratorAlgorithm<Strategy>::~TextIteratorAlgorithm()
 {
+    if (!m_handleShadowRoot)
+        return;
+    Document* document = ownerDocument();
+    if (!document)
+        return;
+    if (m_behavior & TextIteratorForInnerText)
+        UseCounter::count(document, UseCounter::InnerTextWithShadowTree);
+    if (m_behavior & TextIteratorForSelectionToString)
+        UseCounter::count(document, UseCounter::SelectionToStringWithShadowTree);
+    if (m_behavior & TextIteratorForWindowFind)
+        UseCounter::count(document, UseCounter::WindowFindWithShadowTree);
 }
 
 template<typename Strategy>
@@ -257,6 +270,7 @@ void TextIteratorAlgorithm<Strategy>::advance()
             if (m_node->isShadowRoot()) {
                 // A shadow root doesn't have a layoutObject, but we want to visit children anyway.
                 m_iterationProgress = m_iterationProgress < HandledNode ? HandledNode : m_iterationProgress;
+                m_handleShadowRoot = true;
             } else {
                 m_iterationProgress = HandledChildren;
             }

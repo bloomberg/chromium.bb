@@ -628,7 +628,10 @@ void findPlainText(const Position& inputStart, const Position& inputEnd, const S
     size_t matchStart;
     size_t matchLength;
     {
-        CharacterIterator findIterator(inputStart, inputEnd, iteratorFlagsForFindPlainText);
+        TextIteratorBehaviorFlags behavior = iteratorFlagsForFindPlainText;
+        if (options & FindAPICall)
+            behavior |= TextIteratorForWindowFind;
+        CharacterIterator findIterator(inputStart, inputEnd, behavior);
         matchLength = findPlainTextInternal(findIterator, target, options, matchStart);
         if (!matchLength) {
             const Position& collapseTo = options & Backwards ? inputStart : inputEnd;

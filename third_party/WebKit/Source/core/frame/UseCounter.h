@@ -757,6 +757,9 @@ public:
         RequestMIDIAccess = 857,
         V8MouseEvent_LayerX_AttributeGetter = 858,
         V8MouseEvent_LayerY_AttributeGetter = 859,
+        InnerTextWithShadowTree = 860,
+        SelectionToStringWithShadowTree = 861,
+        WindowFindWithShadowTree = 862,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

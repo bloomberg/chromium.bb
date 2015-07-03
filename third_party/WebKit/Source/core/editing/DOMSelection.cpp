@@ -505,7 +505,7 @@ String DOMSelection::toString()
 
     Position start, end;
     if (m_frame->selection().selection().toNormalizedPositions(start, end))
-        return plainText(start, end);
+        return plainText(start, end, TextIteratorForSelectionToString);
     return emptyString();
 }
 

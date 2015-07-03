@@ -37,7 +37,10 @@ enum FindOptionFlag {
     Backwards = 1 << 3,
     WrapAround = 1 << 4,
     StartInSelection = 1 << 5,
-    WholeWord = 1 << 6 // WholeWord should imply AtWordStarts
+    WholeWord = 1 << 6, // WholeWord should imply AtWordStarts
+    // TODO(yosin) Once find UI works on composed tree and it doesn't use
+    // |rangeOfString()|, we should get rid of |FindAPICall| enum member.
+    FindAPICall = 1 << 7, // Used for Window.find or execCommand('find')
 };
 
 typedef unsigned FindOptions;
