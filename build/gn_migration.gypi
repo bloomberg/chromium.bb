@@ -579,6 +579,11 @@
                 '../jingle/jingle.gyp:jingle_unittests_run',
               ],
             }],
+            ['disable_nacl==0 and disable_nacl_untrusted==0', {
+              'dependencies': [
+                '../components/nacl.gyp:nacl_loader_unittests_run',
+              ]
+            }],
           ],
         }],
         ['use_openssl==1', {

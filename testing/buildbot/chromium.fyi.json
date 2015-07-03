@@ -300,6 +300,9 @@
         "test": "nacl_helper_nonsfi_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "nacl_loader_unittests"
       },
       {
@@ -3102,6 +3105,9 @@
         "test": "nacl_helper_nonsfi_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "nacl_loader_unittests"
       },
       {
@@ -3549,6 +3555,9 @@
         "test": "nacl_helper_nonsfi_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "nacl_loader_unittests"
       },
       {
