@@ -46,17 +46,13 @@ public:
 
     WARN_UNUSED_RETURN bool commit()
     {
+        WTF::recommitSystemPages(m_base, m_size);
         return WTF::setSystemPagesAccessible(m_base, m_size);
     }
 
     void decommit()
     {
-        // TODO(haraken): Consider if we can replace the following code
-        // with decommitSystemPages().
-#if OS(POSIX)
-        // TODO(haraken): Consider using MADV_FREE on MacOS.
-        madvise(m_base, m_size, MADV_DONTNEED);
-#endif
+        WTF::decommitSystemPages(m_base, m_size);
         WTF::setSystemPagesInaccessible(m_base, m_size);
     }
 
