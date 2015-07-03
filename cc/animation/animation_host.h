@@ -10,6 +10,8 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
+#include "cc/animation/animation_events.h"
 #include "cc/base/cc_export.h"
 #include "cc/trees/mutator_host_client.h"
 
@@ -72,6 +74,51 @@ class CC_EXPORT AnimationHost {
   AnimationRegistrar* animation_registrar() const {
     return animation_registrar_.get();
   }
+
+  void SetSupportsScrollAnimations(bool supports_scroll_animations);
+  bool SupportsScrollAnimations() const;
+  bool NeedsAnimateLayers() const;
+
+  bool ActivateAnimations();
+  bool AnimateLayers(base::TimeTicks monotonic_time);
+  bool UpdateAnimationState(bool start_ready_animations,
+                            AnimationEventsVector* events);
+
+  scoped_ptr<AnimationEventsVector> CreateEvents();
+  void SetAnimationEvents(scoped_ptr<AnimationEventsVector> events);
+
+  bool ScrollOffsetAnimationWasInterrupted(int layer_id) const;
+
+  bool IsAnimatingFilterProperty(int layer_id) const;
+  bool IsAnimatingOpacityProperty(int layer_id) const;
+  bool IsAnimatingTransformProperty(int layer_id) const;
+
+  bool HasPotentiallyRunningOpacityAnimation(int layer_id) const;
+  bool HasPotentiallyRunningTransformAnimation(int layer_id) const;
+
+  bool FilterIsAnimatingOnImplOnly(int layer_id) const;
+  bool OpacityIsAnimatingOnImplOnly(int layer_id) const;
+  bool TransformIsAnimatingOnImplOnly(int layer_id) const;
+
+  bool HasFilterAnimationThatInflatesBounds(int layer_id) const;
+  bool HasTransformAnimationThatInflatesBounds(int layer_id) const;
+  bool HasAnimationThatInflatesBounds(int layer_id) const;
+
+  bool FilterAnimationBoundsForBox(int layer_id,
+                                   const gfx::BoxF& box,
+                                   gfx::BoxF* bounds) const;
+  bool TransformAnimationBoundsForBox(int layer_id,
+                                      const gfx::BoxF& box,
+                                      gfx::BoxF* bounds) const;
+
+  bool HasOnlyTranslationTransforms(int layer_id) const;
+  bool AnimationsPreserveAxisAlignment(int layer_id) const;
+
+  bool MaximumTargetScale(int layer_id, float* max_scale) const;
+  bool AnimationStartScale(int layer_id, float* start_scale) const;
+
+  bool HasAnyAnimation(int layer_id) const;
+  bool HasActiveAnimation(int layer_id) const;
 
  private:
   explicit AnimationHost(ThreadInstance thread_instance);

@@ -156,7 +156,13 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
   if (host)
     RegisterForAnimations(host->animation_registrar());
 
-  if (host && layer_animation_controller_->has_any_animation())
+  bool has_any_animation = false;
+  if (layer_animation_controller_)
+    has_any_animation = layer_animation_controller_->has_any_animation();
+  else if (layer_tree_host_)
+    has_any_animation = layer_tree_host_->HasAnyAnimation(this);
+
+  if (host && has_any_animation)
     host->SetNeedsCommit();
 }
 
@@ -502,7 +508,11 @@ void Layer::SetFilters(const FilterOperations& filters) {
 }
 
 bool Layer::FilterIsAnimating() const {
-  return layer_animation_controller_->IsAnimatingProperty(Animation::FILTER);
+  DCHECK(layer_tree_host_);
+  return layer_animation_controller_
+             ? layer_animation_controller_->IsAnimatingProperty(
+                   Animation::FILTER)
+             : layer_tree_host_->IsAnimatingFilterProperty(this);
 }
 
 void Layer::SetBackgroundFilters(const FilterOperations& filters) {
@@ -522,7 +532,24 @@ void Layer::SetOpacity(float opacity) {
 }
 
 bool Layer::OpacityIsAnimating() const {
-  return layer_animation_controller_->IsAnimatingProperty(Animation::OPACITY);
+  DCHECK(layer_tree_host_);
+  return layer_animation_controller_
+             ? layer_animation_controller_->IsAnimatingProperty(
+                   Animation::OPACITY)
+             : layer_tree_host_->IsAnimatingOpacityProperty(this);
+}
+
+bool Layer::HasPotentiallyRunningOpacityAnimation() const {
+  if (layer_animation_controller_) {
+    if (Animation* animation =
+            layer_animation_controller()->GetAnimation(Animation::OPACITY)) {
+      return !animation->is_finished();
+    }
+    return false;
+  } else {
+    DCHECK(layer_tree_host_);
+    return layer_tree_host_->HasPotentiallyRunningOpacityAnimation(this);
+  }
 }
 
 bool Layer::OpacityCanAnimateOnImplThread() const {
@@ -706,11 +733,39 @@ void Layer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
 }
 
 bool Layer::AnimationsPreserveAxisAlignment() const {
-  return layer_animation_controller_->AnimationsPreserveAxisAlignment();
+  DCHECK(layer_tree_host_);
+  return layer_animation_controller_
+             ? layer_animation_controller_->AnimationsPreserveAxisAlignment()
+             : layer_tree_host_->AnimationsPreserveAxisAlignment(this);
 }
 
 bool Layer::TransformIsAnimating() const {
-  return layer_animation_controller_->IsAnimatingProperty(Animation::TRANSFORM);
+  DCHECK(layer_tree_host_);
+  return layer_animation_controller_
+             ? layer_animation_controller_->IsAnimatingProperty(
+                   Animation::TRANSFORM)
+             : layer_tree_host_->IsAnimatingTransformProperty(this);
+}
+
+bool Layer::HasPotentiallyRunningTransformAnimation() const {
+  if (layer_animation_controller_) {
+    if (Animation* animation =
+            layer_animation_controller()->GetAnimation(Animation::TRANSFORM)) {
+      return !animation->is_finished();
+    }
+    return false;
+  } else {
+    DCHECK(layer_tree_host_);
+    return layer_tree_host_->HasPotentiallyRunningTransformAnimation(this);
+  }
+}
+
+bool Layer::ScrollOffsetAnimationWasInterrupted() const {
+  DCHECK(layer_tree_host_);
+  return layer_animation_controller_
+             ? layer_animation_controller_
+                   ->scroll_offset_animation_was_interrupted()
+             : layer_tree_host_->ScrollOffsetAnimationWasInterrupted(this);
 }
 
 void Layer::SetScrollParent(Layer* parent) {
@@ -1220,7 +1275,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   // the pending tree will clobber any impl-side scrolling occuring on the
   // active tree. To do so, avoid scrolling the pending tree along with it
   // instead of trying to undo that scrolling later.
-  if (layer_animation_controller_->scroll_offset_animation_was_interrupted())
+  if (ScrollOffsetAnimationWasInterrupted())
     layer->PushScrollOffsetFromMainThreadAndClobberActiveValue(scroll_offset_);
   else
     layer->PushScrollOffsetFromMainThread(scroll_offset_);
@@ -1260,8 +1315,9 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
 
   layer->SetStackingOrderChanged(stacking_order_changed_);
 
-  layer_animation_controller_->PushAnimationUpdatesTo(
-      layer->layer_animation_controller());
+  if (layer->layer_animation_controller() && layer_animation_controller_)
+    layer_animation_controller_->PushAnimationUpdatesTo(
+        layer->layer_animation_controller());
 
   if (frame_timing_requests_dirty_) {
     layer->SetFrameTimingRequests(frame_timing_requests_);
@@ -1476,6 +1532,7 @@ void Layer::RemoveAnimation(int animation_id,
 
 void Layer::SetLayerAnimationControllerForTest(
     scoped_refptr<LayerAnimationController> controller) {
+  DCHECK(layer_animation_controller_);
   layer_animation_controller_->RemoveValueObserver(this);
   layer_animation_controller_ = controller;
   layer_animation_controller_->AddValueObserver(this);
@@ -1483,8 +1540,10 @@ void Layer::SetLayerAnimationControllerForTest(
 }
 
 bool Layer::HasActiveAnimation() const {
-  DCHECK(layer_animation_controller_);
-  return layer_animation_controller_->HasActiveAnimation();
+  DCHECK(layer_tree_host_);
+  return layer_animation_controller_
+             ? layer_animation_controller_->HasActiveAnimation()
+             : layer_tree_host_->HasActiveAnimation(this);
 }
 
 void Layer::RegisterForAnimations(AnimationRegistrar* registrar) {

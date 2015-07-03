@@ -256,7 +256,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   HeadsUpDisplayLayer* hud_layer() const { return hud_layer_.get(); }
 
   Proxy* proxy() const { return proxy_.get(); }
-
   AnimationRegistrar* animation_registrar() const {
     return animation_registrar_.get();
   }
@@ -340,6 +339,16 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
       int layer_id,
       LayerTreeType tree_type,
       const gfx::ScrollOffset& scroll_offset) override;
+
+  bool ScrollOffsetAnimationWasInterrupted(const Layer* layer) const;
+  bool IsAnimatingFilterProperty(const Layer* layer) const;
+  bool IsAnimatingOpacityProperty(const Layer* layer) const;
+  bool IsAnimatingTransformProperty(const Layer* layer) const;
+  bool HasPotentiallyRunningOpacityAnimation(const Layer* layer) const;
+  bool HasPotentiallyRunningTransformAnimation(const Layer* layer) const;
+  bool AnimationsPreserveAxisAlignment(const Layer* layer) const;
+  bool HasAnyAnimation(const Layer* layer) const;
+  bool HasActiveAnimation(const Layer* layer) const;
 
  protected:
   explicit LayerTreeHost(InitParams* params);

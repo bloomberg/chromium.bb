@@ -121,15 +121,18 @@ LayerTreeHost::LayerTreeHost(InitParams* params)
       surface_id_namespace_(0u),
       next_surface_sequence_(1u) {
   DCHECK(task_graph_runner_);
-  if (settings_.accelerated_animation_enabled)
-    animation_registrar_ = AnimationRegistrar::Create();
+
+  if (settings_.accelerated_animation_enabled) {
+    if (settings_.use_compositor_animation_timelines) {
+      animation_host_ = AnimationHost::Create(ThreadInstance::MAIN);
+      animation_host_->SetMutatorHostClient(this);
+    } else {
+      animation_registrar_ = AnimationRegistrar::Create();
+    }
+  }
+
   rendering_stats_instrumentation_->set_record_rendering_stats(
       debug_state_.RecordRenderingStats());
-
-  if (settings_.use_compositor_animation_timelines) {
-    animation_host_ = AnimationHost::Create(ThreadInstance::MAIN);
-    animation_host_->SetMutatorHostClient(this);
-  }
 }
 
 void LayerTreeHost::InitializeThreaded(
@@ -163,8 +166,12 @@ void LayerTreeHost::InitializeProxy(scoped_ptr<Proxy> proxy) {
   proxy_ = proxy.Pass();
   proxy_->Start();
   if (settings_.accelerated_animation_enabled) {
-    animation_registrar_->set_supports_scroll_animations(
-        proxy_->SupportsImplScrolling());
+    if (animation_host_)
+      animation_host_->SetSupportsScrollAnimations(
+          proxy_->SupportsImplScrolling());
+    else
+      animation_registrar_->set_supports_scroll_animations(
+          proxy_->SupportsImplScrolling());
   }
 }
 
@@ -513,7 +520,10 @@ void LayerTreeHost::SetNextCommitForcesRedraw() {
 void LayerTreeHost::SetAnimationEvents(
     scoped_ptr<AnimationEventsVector> events) {
   DCHECK(proxy_->IsMainThread());
-  animation_registrar_->SetAnimationEvents(events.Pass());
+  if (animation_host_)
+    animation_host_->SetAnimationEvents(events.Pass());
+  else
+    animation_registrar_->SetAnimationEvents(events.Pass());
 }
 
 void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> root_layer) {
@@ -921,11 +931,16 @@ void LayerTreeHost::AnimateLayers(base::TimeTicks monotonic_time) {
     return;
 
   AnimationEventsVector events;
-  if (animation_registrar_->AnimateLayers(monotonic_time)) {
-    animation_registrar_->UpdateAnimationState(true, &events);
-    if (!events.empty())
-      property_trees_.needs_rebuild = true;
+  if (animation_host_) {
+    if (animation_host_->AnimateLayers(monotonic_time))
+      animation_host_->UpdateAnimationState(true, &events);
+  } else {
+    if (animation_registrar_->AnimateLayers(monotonic_time))
+      animation_registrar_->UpdateAnimationState(true, &events);
   }
+
+  if (!events.empty())
+    property_trees_.needs_rebuild = true;
 }
 
 UIResourceId LayerTreeHost::CreateUIResource(UIResourceClient* client) {
@@ -1132,6 +1147,63 @@ void LayerTreeHost::SetLayerScrollOffsetMutated(
   LayerAnimationValueObserver* layer = LayerById(layer_id);
   DCHECK(layer);
   layer->OnScrollOffsetAnimated(scroll_offset);
+}
+
+bool LayerTreeHost::ScrollOffsetAnimationWasInterrupted(
+    const Layer* layer) const {
+  return animation_host_
+             ? animation_host_->ScrollOffsetAnimationWasInterrupted(layer->id())
+             : false;
+}
+
+bool LayerTreeHost::IsAnimatingFilterProperty(const Layer* layer) const {
+  return animation_host_
+             ? animation_host_->IsAnimatingFilterProperty(layer->id())
+             : false;
+}
+
+bool LayerTreeHost::IsAnimatingOpacityProperty(const Layer* layer) const {
+  return animation_host_
+             ? animation_host_->IsAnimatingOpacityProperty(layer->id())
+             : false;
+}
+
+bool LayerTreeHost::IsAnimatingTransformProperty(const Layer* layer) const {
+  return animation_host_
+             ? animation_host_->IsAnimatingTransformProperty(layer->id())
+             : false;
+}
+
+bool LayerTreeHost::HasPotentiallyRunningOpacityAnimation(
+    const Layer* layer) const {
+  return animation_host_
+             ? animation_host_->HasPotentiallyRunningOpacityAnimation(
+                   layer->id())
+             : false;
+}
+
+bool LayerTreeHost::HasPotentiallyRunningTransformAnimation(
+    const Layer* layer) const {
+  return animation_host_
+             ? animation_host_->HasPotentiallyRunningTransformAnimation(
+                   layer->id())
+             : false;
+}
+
+bool LayerTreeHost::AnimationsPreserveAxisAlignment(const Layer* layer) const {
+  return animation_host_
+             ? animation_host_->AnimationsPreserveAxisAlignment(layer->id())
+             : true;
+}
+
+bool LayerTreeHost::HasAnyAnimation(const Layer* layer) const {
+  return animation_host_ ? animation_host_->HasAnyAnimation(layer->id())
+                         : false;
+}
+
+bool LayerTreeHost::HasActiveAnimation(const Layer* layer) const {
+  return animation_host_ ? animation_host_->HasActiveAnimation(layer->id())
+                         : false;
 }
 
 }  // namespace cc

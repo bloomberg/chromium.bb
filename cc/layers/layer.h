@@ -135,6 +135,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetOpacity(float opacity);
   float opacity() const { return opacity_; }
   bool OpacityIsAnimating() const;
+  bool HasPotentiallyRunningOpacityAnimation() const;
   virtual bool OpacityCanAnimateOnImplThread() const;
 
   void SetBlendMode(SkXfermode::Mode blend_mode);
@@ -188,11 +189,14 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetTransform(const gfx::Transform& transform);
   const gfx::Transform& transform() const { return transform_; }
   bool TransformIsAnimating() const;
+  bool HasPotentiallyRunningTransformAnimation() const;
   bool AnimationsPreserveAxisAlignment() const;
   bool transform_is_invertible() const { return transform_is_invertible_; }
 
   void SetTransformOrigin(const gfx::Point3F&);
   gfx::Point3F transform_origin() const { return transform_origin_; }
+
+  bool ScrollOffsetAnimationWasInterrupted() const;
 
   void SetScrollParent(Layer* parent);
 
@@ -400,8 +404,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void PauseAnimation(int animation_id, double time_offset);
   void RemoveAnimation(int animation_id);
   void RemoveAnimation(int animation_id, Animation::TargetProperty property);
-
-  LayerAnimationController* layer_animation_controller() {
+  LayerAnimationController* layer_animation_controller() const {
     return layer_animation_controller_.get();
   }
   void SetLayerAnimationControllerForTest(

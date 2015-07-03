@@ -90,13 +90,16 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
   DCHECK_GT(layer_id_, 0);
   DCHECK(layer_tree_impl_);
   layer_tree_impl_->RegisterLayer(this);
-  AnimationRegistrar* registrar = layer_tree_impl_->GetAnimationRegistrar();
-  layer_animation_controller_ =
-      registrar->GetAnimationControllerForId(layer_id_);
-  layer_animation_controller_->AddValueObserver(this);
-  if (IsActive()) {
-    layer_animation_controller_->set_value_provider(this);
-    layer_animation_controller_->set_layer_animation_delegate(this);
+
+  if (!layer_tree_impl_->settings().use_compositor_animation_timelines) {
+    AnimationRegistrar* registrar = layer_tree_impl_->GetAnimationRegistrar();
+    layer_animation_controller_ =
+        registrar->GetAnimationControllerForId(layer_id_);
+    layer_animation_controller_->AddValueObserver(this);
+    if (IsActive()) {
+      layer_animation_controller_->set_value_provider(this);
+      layer_animation_controller_->set_layer_animation_delegate(this);
+    }
   }
   SetNeedsPushProperties();
 }
@@ -104,9 +107,11 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
 LayerImpl::~LayerImpl() {
   DCHECK_EQ(DRAW_MODE_NONE, current_draw_mode_);
 
-  layer_animation_controller_->RemoveValueObserver(this);
-  layer_animation_controller_->remove_value_provider(this);
-  layer_animation_controller_->remove_layer_animation_delegate(this);
+  if (layer_animation_controller_) {
+    layer_animation_controller_->RemoveValueObserver(this);
+    layer_animation_controller_->remove_value_provider(this);
+    layer_animation_controller_->remove_layer_animation_delegate(this);
+  }
 
   if (!copy_requests_.empty() && layer_tree_impl_->IsActiveTree())
     layer_tree_impl()->RemoveLayerWithCopyOutputRequest(this);
@@ -1008,10 +1013,16 @@ void LayerImpl::SetFilters(const FilterOperations& filters) {
 }
 
 bool LayerImpl::FilterIsAnimating() const {
-  return layer_animation_controller_->IsAnimatingProperty(Animation::FILTER);
+  return layer_animation_controller_
+             ? layer_animation_controller_->IsAnimatingProperty(
+                   Animation::FILTER)
+             : layer_tree_impl_->IsAnimatingFilterProperty(this);
 }
 
 bool LayerImpl::FilterIsAnimatingOnImplOnly() const {
+  if (!layer_animation_controller_)
+    return layer_tree_impl_->FilterIsAnimatingOnImplOnly(this);
+
   Animation* filter_animation =
       layer_animation_controller_->GetAnimation(Animation::FILTER);
   return filter_animation && filter_animation->is_impl_only();
@@ -1051,10 +1062,28 @@ void LayerImpl::SetOpacity(float opacity) {
 }
 
 bool LayerImpl::OpacityIsAnimating() const {
-  return layer_animation_controller_->IsAnimatingProperty(Animation::OPACITY);
+  return layer_animation_controller_
+             ? layer_animation_controller_->IsAnimatingProperty(
+                   Animation::OPACITY)
+             : layer_tree_impl_->IsAnimatingOpacityProperty(this);
+}
+
+bool LayerImpl::HasPotentiallyRunningOpacityAnimation() const {
+  if (layer_animation_controller_) {
+    if (Animation* animation =
+            layer_animation_controller()->GetAnimation(Animation::OPACITY)) {
+      return !animation->is_finished();
+    }
+    return false;
+  } else {
+    return layer_tree_impl_->HasPotentiallyRunningOpacityAnimation(this);
+  }
 }
 
 bool LayerImpl::OpacityIsAnimatingOnImplOnly() const {
+  if (!layer_animation_controller_)
+    return layer_tree_impl_->OpacityIsAnimatingOnImplOnly(this);
+
   Animation* opacity_animation =
       layer_animation_controller_->GetAnimation(Animation::OPACITY);
   return opacity_animation && opacity_animation->is_impl_only();
@@ -1133,13 +1162,90 @@ void LayerImpl::SetTransformAndInvertibility(const gfx::Transform& transform,
 }
 
 bool LayerImpl::TransformIsAnimating() const {
-  return layer_animation_controller_->IsAnimatingProperty(Animation::TRANSFORM);
+  return layer_animation_controller_
+             ? layer_animation_controller_->IsAnimatingProperty(
+                   Animation::TRANSFORM)
+             : layer_tree_impl_->IsAnimatingTransformProperty(this);
+}
+
+bool LayerImpl::HasPotentiallyRunningTransformAnimation() const {
+  if (layer_animation_controller_) {
+    if (Animation* animation =
+            layer_animation_controller()->GetAnimation(Animation::TRANSFORM)) {
+      return !animation->is_finished();
+    }
+    return false;
+  } else {
+    return layer_tree_impl_->HasPotentiallyRunningTransformAnimation(this);
+  }
 }
 
 bool LayerImpl::TransformIsAnimatingOnImplOnly() const {
+  if (!layer_animation_controller_)
+    return layer_tree_impl_->TransformIsAnimatingOnImplOnly(this);
+
   Animation* transform_animation =
       layer_animation_controller_->GetAnimation(Animation::TRANSFORM);
   return transform_animation && transform_animation->is_impl_only();
+}
+
+bool LayerImpl::HasOnlyTranslationTransforms() const {
+  if (!layer_animation_controller_)
+    return layer_tree_impl_->HasOnlyTranslationTransforms(this);
+
+  return layer_animation_controller_->HasOnlyTranslationTransforms();
+}
+
+bool LayerImpl::MaximumTargetScale(float* max_scale) const {
+  if (!layer_animation_controller_)
+    return layer_tree_impl_->MaximumTargetScale(this, max_scale);
+
+  return layer_animation_controller_->MaximumTargetScale(max_scale);
+}
+
+bool LayerImpl::AnimationStartScale(float* start_scale) const {
+  if (!layer_animation_controller_)
+    return layer_tree_impl_->AnimationStartScale(this, start_scale);
+
+  return layer_animation_controller_->AnimationStartScale(start_scale);
+}
+
+bool LayerImpl::HasFilterAnimationThatInflatesBounds() const {
+  if (!layer_animation_controller_)
+    return layer_tree_impl_->HasFilterAnimationThatInflatesBounds(this);
+
+  return layer_animation_controller_->HasFilterAnimationThatInflatesBounds();
+}
+
+bool LayerImpl::HasTransformAnimationThatInflatesBounds() const {
+  if (!layer_animation_controller_)
+    return layer_tree_impl_->HasTransformAnimationThatInflatesBounds(this);
+
+  return layer_animation_controller_->HasTransformAnimationThatInflatesBounds();
+}
+
+bool LayerImpl::HasAnimationThatInflatesBounds() const {
+  if (!layer_animation_controller_)
+    return layer_tree_impl_->HasAnimationThatInflatesBounds(this);
+
+  return layer_animation_controller_->HasAnimationThatInflatesBounds();
+}
+
+bool LayerImpl::FilterAnimationBoundsForBox(const gfx::BoxF& box,
+                                            gfx::BoxF* bounds) const {
+  if (!layer_animation_controller_)
+    return layer_tree_impl_->FilterAnimationBoundsForBox(this, box, bounds);
+
+  return layer_animation_controller_->FilterAnimationBoundsForBox(box, bounds);
+}
+
+bool LayerImpl::TransformAnimationBoundsForBox(const gfx::BoxF& box,
+                                               gfx::BoxF* bounds) const {
+  if (!layer_animation_controller_)
+    return layer_tree_impl_->TransformAnimationBoundsForBox(this, box, bounds);
+
+  return layer_animation_controller_->TransformAnimationBoundsForBox(box,
+                                                                     bounds);
 }
 
 void LayerImpl::SetUpdateRect(const gfx::Rect& update_rect) {
@@ -1594,7 +1700,9 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
 
   state->SetBoolean(
       "has_animation_bounds",
-      layer_animation_controller()->HasAnimationThatInflatesBounds());
+      layer_animation_controller_
+          ? layer_animation_controller_->HasAnimationThatInflatesBounds()
+          : layer_tree_impl_->HasAnimationThatInflatesBounds(this));
 
   gfx::BoxF box;
   if (LayerUtils::GetAnimationBounds(*this, &box))

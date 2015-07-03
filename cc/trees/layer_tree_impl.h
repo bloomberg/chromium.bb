@@ -345,6 +345,33 @@ class CC_EXPORT LayerTreeImpl {
   bool IsExternalScrollActive() const;
   void DidUpdateScrollOffset(int layer_id);
 
+  bool IsAnimatingFilterProperty(const LayerImpl* layer) const;
+  bool IsAnimatingOpacityProperty(const LayerImpl* layer) const;
+  bool IsAnimatingTransformProperty(const LayerImpl* layer) const;
+
+  bool HasPotentiallyRunningOpacityAnimation(const LayerImpl* layer) const;
+  bool HasPotentiallyRunningTransformAnimation(const LayerImpl* layer) const;
+
+  bool FilterIsAnimatingOnImplOnly(const LayerImpl* layer) const;
+  bool OpacityIsAnimatingOnImplOnly(const LayerImpl* layer) const;
+  bool TransformIsAnimatingOnImplOnly(const LayerImpl* layer) const;
+
+  bool HasOnlyTranslationTransforms(const LayerImpl* layer) const;
+
+  bool MaximumTargetScale(const LayerImpl* layer, float* max_scale) const;
+  bool AnimationStartScale(const LayerImpl* layer, float* start_scale) const;
+
+  bool HasFilterAnimationThatInflatesBounds(const LayerImpl* layer) const;
+  bool HasTransformAnimationThatInflatesBounds(const LayerImpl* layer) const;
+  bool HasAnimationThatInflatesBounds(const LayerImpl* layer) const;
+
+  bool FilterAnimationBoundsForBox(const LayerImpl* layer,
+                                   const gfx::BoxF& box,
+                                   gfx::BoxF* bounds) const;
+  bool TransformAnimationBoundsForBox(const LayerImpl* layer,
+                                      const gfx::BoxF& box,
+                                      gfx::BoxF* bounds) const;
+
  protected:
   explicit LayerTreeImpl(
       LayerTreeHostImpl* layer_tree_host_impl,

@@ -9,6 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "cc/animation/animation.h"
+#include "cc/animation/animation_host.h"
 #include "cc/animation/animation_registrar.h"
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/animation/timing_function.h"
@@ -358,8 +359,11 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
   void UpdateAnimationState(bool start_ready_animations) override {
     LayerTreeHostImpl::UpdateAnimationState(start_ready_animations);
     bool has_unfinished_animation = false;
+    AnimationRegistrar* registrar =
+        animation_registrar() ? animation_registrar()
+                              : animation_host()->animation_registrar();
     for (const auto& it :
-         animation_registrar()->active_animation_controllers_for_testing()) {
+         registrar->active_animation_controllers_for_testing()) {
       if (it.second->HasActiveAnimation()) {
         has_unfinished_animation = true;
         break;
@@ -596,6 +600,33 @@ void LayerTreeTest::PostAddLongAnimationToMainThread(
                  1.0));
 }
 
+void LayerTreeTest::PostAddAnimationToMainThreadPlayer(
+    AnimationPlayer* player_to_receive_animation) {
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&LayerTreeTest::DispatchAddAnimationToPlayer,
+                 main_thread_weak_ptr_,
+                 base::Unretained(player_to_receive_animation), 0.000004));
+}
+
+void LayerTreeTest::PostAddInstantAnimationToMainThreadPlayer(
+    AnimationPlayer* player_to_receive_animation) {
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&LayerTreeTest::DispatchAddAnimationToPlayer,
+                 main_thread_weak_ptr_,
+                 base::Unretained(player_to_receive_animation), 0.0));
+}
+
+void LayerTreeTest::PostAddLongAnimationToMainThreadPlayer(
+    AnimationPlayer* player_to_receive_animation) {
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&LayerTreeTest::DispatchAddAnimationToPlayer,
+                 main_thread_weak_ptr_,
+                 base::Unretained(player_to_receive_animation), 1.0));
+}
+
 void LayerTreeTest::PostSetDeferCommitsToMainThread(bool defer_commits) {
   main_task_runner_->PostTask(
       FROM_HERE,
@@ -731,6 +762,17 @@ void LayerTreeTest::DispatchAddAnimation(Layer* layer_to_receive_animation,
   if (layer_to_receive_animation) {
     AddOpacityTransitionToLayer(
         layer_to_receive_animation, animation_duration, 0, 0.5, true);
+  }
+}
+
+void LayerTreeTest::DispatchAddAnimationToPlayer(
+    AnimationPlayer* player_to_receive_animation,
+    double animation_duration) {
+  DCHECK(!proxy() || proxy()->IsMainThread());
+
+  if (player_to_receive_animation) {
+    AddOpacityTransitionToPlayer(player_to_receive_animation,
+                                 animation_duration, 0, 0.5, true);
   }
 }
 

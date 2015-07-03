@@ -13,17 +13,15 @@ namespace cc {
 namespace {
 
 bool HasAnimationThatInflatesBounds(const LayerImpl& layer) {
-  return layer.layer_animation_controller()->HasAnimationThatInflatesBounds();
+  return layer.HasAnimationThatInflatesBounds();
 }
 
 bool HasFilterAnimationThatInflatesBounds(const LayerImpl& layer) {
-  return layer.layer_animation_controller()
-      ->HasFilterAnimationThatInflatesBounds();
+  return layer.HasFilterAnimationThatInflatesBounds();
 }
 
 bool HasTransformAnimationThatInflatesBounds(const LayerImpl& layer) {
-  return layer.layer_animation_controller()
-      ->HasTransformAnimationThatInflatesBounds();
+  return layer.HasTransformAnimationThatInflatesBounds();
 }
 
 inline bool HasAncestorTransformAnimation(const LayerImpl& layer) {
@@ -112,16 +110,14 @@ bool LayerUtils::GetAnimationBounds(const LayerImpl& layer_in, gfx::BoxF* out) {
     // Perform the inflation
     if (HasFilterAnimationThatInflatesBounds(*layer)) {
       gfx::BoxF inflated;
-      if (!layer->layer_animation_controller()->FilterAnimationBoundsForBox(
-              box, &inflated))
+      if (!layer->FilterAnimationBoundsForBox(box, &inflated))
         return false;
       box = inflated;
     }
 
     if (HasTransformAnimationThatInflatesBounds(*layer)) {
       gfx::BoxF inflated;
-      if (!layer->layer_animation_controller()->TransformAnimationBoundsForBox(
-              box, &inflated))
+      if (!layer->TransformAnimationBoundsForBox(box, &inflated))
         return false;
       box = inflated;
     }

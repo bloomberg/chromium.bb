@@ -300,6 +300,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void SetOpacity(float opacity);
   float opacity() const { return opacity_; }
   bool OpacityIsAnimating() const;
+  bool HasPotentiallyRunningOpacityAnimation() const;
   bool OpacityIsAnimatingOnImplOnly() const;
 
   void SetBlendMode(SkXfermode::Mode);
@@ -535,10 +536,24 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void SetTransform(const gfx::Transform& transform);
   const gfx::Transform& transform() const { return transform_; }
   bool TransformIsAnimating() const;
+  bool HasPotentiallyRunningTransformAnimation() const;
   bool TransformIsAnimatingOnImplOnly() const;
+  bool HasOnlyTranslationTransforms() const;
   void SetTransformAndInvertibility(const gfx::Transform& transform,
                                     bool transform_is_invertible);
   bool transform_is_invertible() const { return transform_is_invertible_; }
+
+  bool MaximumTargetScale(float* max_scale) const;
+  bool AnimationStartScale(float* start_scale) const;
+
+  bool HasFilterAnimationThatInflatesBounds() const;
+  bool HasTransformAnimationThatInflatesBounds() const;
+  bool HasAnimationThatInflatesBounds() const;
+
+  bool FilterAnimationBoundsForBox(const gfx::BoxF& box,
+                                   gfx::BoxF* bounds) const;
+  bool TransformAnimationBoundsForBox(const gfx::BoxF& box,
+                                      gfx::BoxF* bounds) const;
 
   // Note this rect is in layer space (not content space).
   void SetUpdateRect(const gfx::Rect& update_rect);

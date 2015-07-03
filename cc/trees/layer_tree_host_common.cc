@@ -964,8 +964,7 @@ static inline void CalculateAnimationContentsScale(
   // scales and translations. We treat all non-translations as potentially
   // affecting scale. Animations that include non-translation/scale components
   // will cause the computation of MaximumScale below to fail.
-  bool layer_is_animating_scale =
-      !layer->layer_animation_controller()->HasOnlyTranslationTransforms();
+  bool layer_is_animating_scale = !layer->HasOnlyTranslationTransforms();
 
   if (!layer_is_animating_scale && !ancestor_is_animating_scale) {
     *combined_maximum_animation_contents_scale = 0.f;
@@ -1002,13 +1001,11 @@ static inline void CalculateAnimationContentsScale(
 
   float layer_maximum_animated_scale = 0.f;
   float layer_start_animated_scale = 0.f;
-  if (!layer->layer_animation_controller()->MaximumTargetScale(
-          &layer_maximum_animated_scale)) {
+  if (!layer->MaximumTargetScale(&layer_maximum_animated_scale)) {
     *combined_maximum_animation_contents_scale = 0.f;
     return;
   }
-  if (!layer->layer_animation_controller()->AnimationStartScale(
-          &layer_start_animated_scale)) {
+  if (!layer->AnimationStartScale(&layer_start_animated_scale)) {
     *combined_starting_animation_contents_scale = 0.f;
     return;
   }

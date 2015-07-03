@@ -32,6 +32,7 @@
 #include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/property_tree_builder.h"
+#include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
@@ -1623,6 +1624,133 @@ void LayerTreeImpl::SetPendingPageScaleAnimation(
 scoped_ptr<PendingPageScaleAnimation>
     LayerTreeImpl::TakePendingPageScaleAnimation() {
   return pending_page_scale_animation_.Pass();
+}
+
+bool LayerTreeImpl::IsAnimatingFilterProperty(const LayerImpl* layer) const {
+  return layer_tree_host_impl_->animation_host()
+             ? layer_tree_host_impl_->animation_host()
+                   ->IsAnimatingFilterProperty(layer->id())
+             : false;
+}
+
+bool LayerTreeImpl::IsAnimatingOpacityProperty(const LayerImpl* layer) const {
+  return layer_tree_host_impl_->animation_host()
+             ? layer_tree_host_impl_->animation_host()
+                   ->IsAnimatingOpacityProperty(layer->id())
+             : false;
+}
+
+bool LayerTreeImpl::IsAnimatingTransformProperty(const LayerImpl* layer) const {
+  return layer_tree_host_impl_->animation_host()
+             ? layer_tree_host_impl_->animation_host()
+                   ->IsAnimatingTransformProperty(layer->id())
+             : false;
+}
+
+bool LayerTreeImpl::HasPotentiallyRunningOpacityAnimation(
+    const LayerImpl* layer) const {
+  return layer_tree_host_impl_->animation_host()
+             ? layer_tree_host_impl_->animation_host()
+                   ->HasPotentiallyRunningOpacityAnimation(layer->id())
+             : false;
+}
+
+bool LayerTreeImpl::HasPotentiallyRunningTransformAnimation(
+    const LayerImpl* layer) const {
+  return layer_tree_host_impl_->animation_host()
+             ? layer_tree_host_impl_->animation_host()
+                   ->HasPotentiallyRunningTransformAnimation(layer->id())
+             : false;
+}
+
+bool LayerTreeImpl::FilterIsAnimatingOnImplOnly(const LayerImpl* layer) const {
+  return layer_tree_host_impl_->animation_host()
+             ? layer_tree_host_impl_->animation_host()
+                   ->FilterIsAnimatingOnImplOnly(layer->id())
+             : false;
+}
+
+bool LayerTreeImpl::OpacityIsAnimatingOnImplOnly(const LayerImpl* layer) const {
+  return layer_tree_host_impl_->animation_host()
+             ? layer_tree_host_impl_->animation_host()
+                   ->OpacityIsAnimatingOnImplOnly(layer->id())
+             : false;
+}
+
+bool LayerTreeImpl::TransformIsAnimatingOnImplOnly(
+    const LayerImpl* layer) const {
+  return layer_tree_host_impl_->animation_host()
+             ? layer_tree_host_impl_->animation_host()
+                   ->TransformIsAnimatingOnImplOnly(layer->id())
+             : false;
+}
+
+bool LayerTreeImpl::HasOnlyTranslationTransforms(const LayerImpl* layer) const {
+  return layer_tree_host_impl_->animation_host()
+             ? layer_tree_host_impl_->animation_host()
+                   ->HasOnlyTranslationTransforms(layer->id())
+             : true;
+}
+
+bool LayerTreeImpl::MaximumTargetScale(const LayerImpl* layer,
+                                       float* max_scale) const {
+  *max_scale = 0.f;
+  return layer_tree_host_impl_->animation_host()
+             ? layer_tree_host_impl_->animation_host()->MaximumTargetScale(
+                   layer->id(), max_scale)
+             : true;
+}
+
+bool LayerTreeImpl::AnimationStartScale(const LayerImpl* layer,
+                                        float* start_scale) const {
+  *start_scale = 0.f;
+  return layer_tree_host_impl_->animation_host()
+             ? layer_tree_host_impl_->animation_host()->AnimationStartScale(
+                   layer->id(), start_scale)
+             : true;
+}
+
+bool LayerTreeImpl::HasFilterAnimationThatInflatesBounds(
+    const LayerImpl* layer) const {
+  return layer_tree_host_impl_->animation_host()
+             ? layer_tree_host_impl_->animation_host()
+                   ->HasFilterAnimationThatInflatesBounds(layer->id())
+             : false;
+}
+
+bool LayerTreeImpl::HasTransformAnimationThatInflatesBounds(
+    const LayerImpl* layer) const {
+  return layer_tree_host_impl_->animation_host()
+             ? layer_tree_host_impl_->animation_host()
+                   ->HasTransformAnimationThatInflatesBounds(layer->id())
+             : false;
+}
+
+bool LayerTreeImpl::HasAnimationThatInflatesBounds(
+    const LayerImpl* layer) const {
+  return layer_tree_host_impl_->animation_host()
+             ? layer_tree_host_impl_->animation_host()
+                   ->HasAnimationThatInflatesBounds(layer->id())
+             : false;
+}
+
+bool LayerTreeImpl::FilterAnimationBoundsForBox(const LayerImpl* layer,
+                                                const gfx::BoxF& box,
+                                                gfx::BoxF* bounds) const {
+  return layer_tree_host_impl_->animation_host()
+             ? layer_tree_host_impl_->animation_host()
+                   ->FilterAnimationBoundsForBox(layer->id(), box, bounds)
+             : false;
+}
+
+bool LayerTreeImpl::TransformAnimationBoundsForBox(const LayerImpl* layer,
+                                                   const gfx::BoxF& box,
+                                                   gfx::BoxF* bounds) const {
+  *bounds = gfx::BoxF();
+  return layer_tree_host_impl_->animation_host()
+             ? layer_tree_host_impl_->animation_host()
+                   ->TransformAnimationBoundsForBox(layer->id(), box, bounds)
+             : true;
 }
 
 }  // namespace cc

@@ -63,16 +63,6 @@ static ClipNode* GetClipParent(const DataForRecursion<LayerType>& data,
 }
 
 template <typename LayerType>
-static bool HasPotentiallyRunningAnimation(LayerType* layer,
-                                           Animation::TargetProperty property) {
-  if (Animation* animation =
-          layer->layer_animation_controller()->GetAnimation(property)) {
-    return !animation->is_finished();
-  }
-  return false;
-}
-
-template <typename LayerType>
 static bool RequiresClipNode(LayerType* layer,
                              const DataForRecursion<LayerType>& data,
                              int parent_transform_id,
@@ -174,11 +164,8 @@ bool AddTransformNodeIfNeeded(
       !layer->transform().IsIdentityOr2DTranslation();
 
   const bool has_potentially_animated_transform =
-      HasPotentiallyRunningAnimation(layer, Animation::TRANSFORM);
-
-  const bool has_animated_transform =
-      layer->layer_animation_controller()->IsAnimatingProperty(
-          Animation::TRANSFORM);
+      layer->HasPotentiallyRunningTransformAnimation();
+  const bool has_animated_transform = layer->TransformIsAnimating();
 
   const bool has_surface = !!layer->render_surface();
 
@@ -343,12 +330,12 @@ bool AddTransformNodeIfNeeded(
 }
 
 bool IsAnimatingOpacity(Layer* layer) {
-  return HasPotentiallyRunningAnimation(layer, Animation::OPACITY) ||
+  return layer->HasPotentiallyRunningOpacityAnimation() ||
          layer->OpacityCanAnimateOnImplThread();
 }
 
 bool IsAnimatingOpacity(LayerImpl* layer) {
-  return HasPotentiallyRunningAnimation(layer, Animation::OPACITY);
+  return layer->HasPotentiallyRunningOpacityAnimation();
 }
 
 template <typename LayerType>

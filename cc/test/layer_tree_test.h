@@ -13,6 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
+class AnimationPlayer;
 class FakeExternalBeginFrameSource;
 class FakeLayerTreeHostClient;
 class FakeOutputSurface;
@@ -137,6 +138,12 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void PostAddAnimationToMainThread(Layer* layer_to_receive_animation);
   void PostAddInstantAnimationToMainThread(Layer* layer_to_receive_animation);
   void PostAddLongAnimationToMainThread(Layer* layer_to_receive_animation);
+  void PostAddAnimationToMainThreadPlayer(
+      AnimationPlayer* player_to_receive_animation);
+  void PostAddInstantAnimationToMainThreadPlayer(
+      AnimationPlayer* player_to_receive_animation);
+  void PostAddLongAnimationToMainThreadPlayer(
+      AnimationPlayer* player_to_receive_animation);
   void PostSetDeferCommitsToMainThread(bool defer_commits);
   void PostSetNeedsCommitToMainThread();
   void PostSetNeedsUpdateLayersToMainThread();
@@ -166,6 +173,9 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   virtual void DispatchAddAnimation(Layer* layer_to_receive_animation,
                                     double animation_duration);
+  virtual void DispatchAddAnimationToPlayer(
+      AnimationPlayer* player_to_receive_animation,
+      double animation_duration);
   void DispatchSetDeferCommits(bool defer_commits);
   void DispatchSetNeedsCommit();
   void DispatchSetNeedsUpdateLayers();

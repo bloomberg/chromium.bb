@@ -230,7 +230,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       max_memory_needed_bytes_(0),
       device_scale_factor_(1.f),
       resourceless_software_draw_(false),
-      animation_registrar_(AnimationRegistrar::Create()),
+      animation_registrar_(),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       micro_benchmark_controller_(this),
       shared_bitmap_manager_(shared_bitmap_manager),
@@ -241,16 +241,22 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       is_likely_to_require_a_draw_(false),
       frame_timing_tracker_(FrameTimingTracker::Create(this)) {
   if (settings.use_compositor_animation_timelines) {
-    animation_host_ = AnimationHost::Create(ThreadInstance::IMPL);
-    animation_host_->SetMutatorHostClient(this);
+    if (settings.accelerated_animation_enabled) {
+      animation_host_ = AnimationHost::Create(ThreadInstance::IMPL);
+      animation_host_->SetMutatorHostClient(this);
+      animation_host_->SetSupportsScrollAnimations(
+          proxy_->SupportsImplScrolling());
+    }
+  } else {
+    animation_registrar_ = AnimationRegistrar::Create();
+    animation_registrar_->set_supports_scroll_animations(
+        proxy_->SupportsImplScrolling());
   }
 
   DCHECK(proxy_->IsImplThread());
   DCHECK_IMPLIES(settings.use_one_copy, !settings.use_zero_copy);
   DCHECK_IMPLIES(settings.use_zero_copy, !settings.use_one_copy);
   DidVisibilityChange(this, visible_);
-  animation_registrar_->set_supports_scroll_animations(
-      proxy_->SupportsImplScrolling());
 
   SetDebugState(settings.initial_debug_state);
 
@@ -294,6 +300,12 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   recycle_tree_ = nullptr;
   pending_tree_ = nullptr;
   active_tree_ = nullptr;
+
+  if (animation_host_) {
+    animation_host_->ClearTimelines();
+    animation_host_->SetMutatorHostClient(nullptr);
+  }
+
   DestroyTileManager();
 }
 
@@ -1563,7 +1575,9 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
 
   if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE) {
     bool disable_picture_quad_image_filtering =
-        IsActivelyScrolling() || animation_registrar_->needs_animate_layers();
+        IsActivelyScrolling() ||
+        (animation_host_ ? animation_host_->NeedsAnimateLayers()
+                         : animation_registrar_->needs_animate_layers());
 
     scoped_ptr<SoftwareRenderer> temp_software_renderer =
         SoftwareRenderer::Create(this, &settings_.renderer_settings,
@@ -3103,18 +3117,31 @@ void LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
   if (!settings_.accelerated_animation_enabled || !active_tree_->root_layer())
     return;
 
-  if (animation_registrar_->AnimateLayers(monotonic_time))
-    SetNeedsAnimate();
+  if (animation_host_) {
+    if (animation_host_->AnimateLayers(monotonic_time))
+      SetNeedsAnimate();
+  } else {
+    if (animation_registrar_->AnimateLayers(monotonic_time))
+      SetNeedsAnimate();
+  }
 }
 
 void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {
   if (!settings_.accelerated_animation_enabled || !active_tree_->root_layer())
     return;
 
-  scoped_ptr<AnimationEventsVector> events =
-      animation_registrar_->CreateEvents();
-  const bool has_active_animations = animation_registrar_->UpdateAnimationState(
-      start_ready_animations, events.get());
+  bool has_active_animations = false;
+  scoped_ptr<AnimationEventsVector> events;
+
+  if (animation_host_) {
+    events = animation_host_->CreateEvents();
+    has_active_animations = animation_host_->UpdateAnimationState(
+        start_ready_animations, events.get());
+  } else {
+    events = animation_registrar_->CreateEvents();
+    has_active_animations = animation_registrar_->UpdateAnimationState(
+        start_ready_animations, events.get());
+  }
 
   if (!events->empty())
     client_->PostAnimationEventsToMainThreadOnImplThread(events.Pass());
@@ -3127,8 +3154,13 @@ void LayerTreeHostImpl::ActivateAnimations() {
   if (!settings_.accelerated_animation_enabled || !active_tree_->root_layer())
     return;
 
-  if (animation_registrar_->ActivateAnimations())
-    SetNeedsAnimate();
+  if (animation_host_) {
+    if (animation_host_->ActivateAnimations())
+      SetNeedsAnimate();
+  } else {
+    if (animation_registrar_->ActivateAnimations())
+      SetNeedsAnimate();
+  }
 }
 
 std::string LayerTreeHostImpl::LayerTreeAsJson() const {
