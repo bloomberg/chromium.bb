@@ -6,6 +6,7 @@
 #define COMPONENTS_POLICY_CORE_COMMON_POLICY_PROVIDER_ANDROID_DELEGATE_H_
 
 #include "base/compiler_specific.h"
+#include "components/policy/policy_export.h"
 
 namespace policy {
 
