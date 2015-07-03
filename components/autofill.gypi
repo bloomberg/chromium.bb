@@ -340,7 +340,6 @@
             '../sql/sql.gyp:sql',
             '../third_party/icu/icu.gyp:icui18n',
             '../third_party/icu/icu.gyp:icuuc',
-            '../third_party/libjingle/libjingle.gyp:libjingle',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
             '../ui/base/ui_base.gyp:ui_base',
             '../ui/gfx/gfx.gyp:gfx',

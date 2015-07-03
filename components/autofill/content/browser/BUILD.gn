@@ -65,7 +65,6 @@ static_library("browser") {
     "//sql",
     "//third_party/icu",
     "//third_party/libphonenumber",
-    "//third_party/libjingle",
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",

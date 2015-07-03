@@ -6,7 +6,6 @@ include_rules = [
   "+google_apis/google_api_keys.h",
   "+gpu/config/gpu_info.h",
   "+sql",
-  "+third_party/libjingle",
   "+third_party/libphonenumber",  # For phone number i18n.
 ]
 
