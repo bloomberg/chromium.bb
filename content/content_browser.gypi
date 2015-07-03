@@ -463,6 +463,8 @@
       'browser/background_sync/background_sync_network_observer.h',
       'browser/background_sync/background_sync_power_observer.cc',
       'browser/background_sync/background_sync_power_observer.h',
+      'browser/background_sync/background_sync_registration.cc',
+      'browser/background_sync/background_sync_registration.h',
       'browser/background_sync/background_sync_registration_options.cc',
       'browser/background_sync/background_sync_registration_options.h',
       'browser/background_sync/background_sync_service_impl.cc',

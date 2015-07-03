@@ -57,17 +57,15 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
       int64_t sw_registration_id,
       const GetPermissionStatusCallback& callback) override;
 
-  void OnRegisterResult(
-      const RegisterCallback& callback,
-      BackgroundSyncManager::ErrorType error,
-      const BackgroundSyncManager::BackgroundSyncRegistration& result);
+  void OnRegisterResult(const RegisterCallback& callback,
+                        BackgroundSyncManager::ErrorType error,
+                        const BackgroundSyncRegistration& result);
   void OnUnregisterResult(const UnregisterCallback& callback,
                           BackgroundSyncManager::ErrorType error);
   void OnGetRegistrationsResult(
       const GetRegistrationsCallback& callback,
       BackgroundSyncManager::ErrorType error,
-      const std::vector<BackgroundSyncManager::BackgroundSyncRegistration>&
-          result);
+      const std::vector<BackgroundSyncRegistration>& result);
 
   scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;
   mojo::StrongBinding<BackgroundSyncService> binding_;

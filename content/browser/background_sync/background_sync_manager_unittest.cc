@@ -282,7 +282,7 @@ class BackgroundSyncManagerTest : public testing::Test {
   void StatusAndRegistrationCallback(
       bool* was_called,
       BackgroundSyncManager::ErrorType error,
-      const BackgroundSyncManager::BackgroundSyncRegistration& registration) {
+      const BackgroundSyncRegistration& registration) {
     *was_called = true;
     callback_error_ = error;
     callback_registration_ = registration;
@@ -291,8 +291,7 @@ class BackgroundSyncManagerTest : public testing::Test {
   void StatusAndRegistrationsCallback(
       bool* was_called,
       BackgroundSyncManager::ErrorType error,
-      const std::vector<BackgroundSyncManager::BackgroundSyncRegistration>&
-          registrations) {
+      const std::vector<BackgroundSyncRegistration>& registrations) {
     *was_called = true;
     callback_error_ = error;
     callback_registrations_ = registrations;
@@ -361,20 +360,18 @@ class BackgroundSyncManagerTest : public testing::Test {
     return callback_error_ == BackgroundSyncManager::ERROR_TYPE_OK;
   }
 
-  bool Unregister(const BackgroundSyncManager::BackgroundSyncRegistration&
-                      sync_registration) {
+  bool Unregister(const BackgroundSyncRegistration& sync_registration) {
     return UnregisterWithServiceWorkerId(sw_registration_id_1_,
                                          sync_registration);
   }
 
   bool UnregisterWithServiceWorkerId(
       int64 sw_registration_id,
-      const BackgroundSyncManager::BackgroundSyncRegistration&
-          sync_registration) {
+      const BackgroundSyncRegistration& sync_registration) {
     bool was_called = false;
     background_sync_manager_->Unregister(
-        sw_registration_id, sync_registration.options.tag,
-        sync_registration.options.periodicity, sync_registration.id,
+        sw_registration_id, sync_registration.options()->tag,
+        sync_registration.options()->periodicity, sync_registration.id(),
         base::Bind(&BackgroundSyncManagerTest::StatusCallback,
                    base::Unretained(this), &was_called));
     base::RunLoop().RunUntilIdle();
@@ -400,7 +397,7 @@ class BackgroundSyncManagerTest : public testing::Test {
 
     if (callback_error_ == BackgroundSyncManager::ERROR_TYPE_OK) {
       EXPECT_STREQ(sync_options.tag.c_str(),
-                   callback_registration_.options.tag.c_str());
+                   callback_registration_.options()->tag.c_str());
     }
 
     return callback_error_ == BackgroundSyncManager::ERROR_TYPE_OK;
@@ -493,9 +490,8 @@ class BackgroundSyncManagerTest : public testing::Test {
 
   // Callback values.
   BackgroundSyncManager::ErrorType callback_error_;
-  BackgroundSyncManager::BackgroundSyncRegistration callback_registration_;
-  std::vector<BackgroundSyncManager::BackgroundSyncRegistration>
-      callback_registrations_;
+  BackgroundSyncRegistration callback_registration_;
+  std::vector<BackgroundSyncRegistration> callback_registrations_;
   ServiceWorkerStatusCode callback_sw_status_code_;
   int sync_events_called_;
   ServiceWorkerVersion::StatusCallback sync_fired_callback_;
@@ -508,10 +504,8 @@ TEST_F(BackgroundSyncManagerTest, Register) {
 TEST_F(BackgroundSyncManagerTest, RegistractionIntact) {
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_STREQ(sync_options_1_.tag.c_str(),
-               callback_registration_.options.tag.c_str());
-  EXPECT_NE(
-      BackgroundSyncManager::BackgroundSyncRegistration::kInvalidRegistrationId,
-      callback_registration_.id);
+               callback_registration_.options()->tag.c_str());
+  EXPECT_TRUE(callback_registration_.IsValid());
 }
 
 TEST_F(BackgroundSyncManagerTest, RegisterWithoutLiveSWRegistration) {
@@ -530,21 +524,19 @@ TEST_F(BackgroundSyncManagerTest, RegisterWithoutActiveSWRegistration) {
 
 TEST_F(BackgroundSyncManagerTest, RegisterExistingKeepsId) {
   EXPECT_TRUE(Register(sync_options_1_));
-  BackgroundSyncManager::BackgroundSyncRegistration first_registration =
-      callback_registration_;
+  BackgroundSyncRegistration first_registration = callback_registration_;
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_TRUE(callback_registration_.Equals(first_registration));
-  EXPECT_EQ(first_registration.id, callback_registration_.id);
+  EXPECT_EQ(first_registration.id(), callback_registration_.id());
 }
 
 TEST_F(BackgroundSyncManagerTest, RegisterOverwrites) {
   EXPECT_TRUE(Register(sync_options_1_));
-  BackgroundSyncManager::BackgroundSyncRegistration first_registration =
-      callback_registration_;
+  BackgroundSyncRegistration first_registration = callback_registration_;
 
   sync_options_1_.min_period = 100;
   EXPECT_TRUE(Register(sync_options_1_));
-  EXPECT_LT(first_registration.id, callback_registration_.id);
+  EXPECT_LT(first_registration.id(), callback_registration_.id());
   EXPECT_FALSE(callback_registration_.Equals(first_registration));
 }
 
@@ -558,9 +550,9 @@ TEST_F(BackgroundSyncManagerTest, RegisterOverlappingPeriodicAndOneShotTags) {
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_TRUE(Register(sync_options_2_));
   EXPECT_TRUE(GetRegistration(sync_options_1_));
-  EXPECT_EQ(SYNC_PERIODIC, callback_registration_.options.periodicity);
+  EXPECT_EQ(SYNC_PERIODIC, callback_registration_.options()->periodicity);
   EXPECT_TRUE(GetRegistration(sync_options_2_));
-  EXPECT_EQ(SYNC_ONE_SHOT, callback_registration_.options.periodicity);
+  EXPECT_EQ(SYNC_ONE_SHOT, callback_registration_.options()->periodicity);
 }
 
 TEST_F(BackgroundSyncManagerTest, RegisterBadBackend) {
@@ -608,7 +600,7 @@ TEST_F(BackgroundSyncManagerTest, GetRegistrationsOne) {
   EXPECT_TRUE(GetRegistrations(sync_options_1_.periodicity));
 
   EXPECT_EQ(1u, callback_registrations_.size());
-  sync_options_1_.Equals(callback_registrations_[0].options);
+  sync_options_1_.Equals(*callback_registrations_[0].options());
 }
 
 TEST_F(BackgroundSyncManagerTest, GetRegistrationsTwo) {
@@ -619,8 +611,8 @@ TEST_F(BackgroundSyncManagerTest, GetRegistrationsTwo) {
   EXPECT_TRUE(GetRegistrations(sync_options_1_.periodicity));
 
   EXPECT_EQ(2u, callback_registrations_.size());
-  sync_options_1_.Equals(callback_registrations_[0].options);
-  sync_options_2_.Equals(callback_registrations_[1].options);
+  sync_options_1_.Equals(*callback_registrations_[0].options());
+  sync_options_2_.Equals(*callback_registrations_[1].options());
 }
 
 TEST_F(BackgroundSyncManagerTest, GetRegistrationsPeriodicity) {
@@ -631,11 +623,11 @@ TEST_F(BackgroundSyncManagerTest, GetRegistrationsPeriodicity) {
 
   EXPECT_TRUE(GetRegistrations(SYNC_ONE_SHOT));
   EXPECT_EQ(1u, callback_registrations_.size());
-  sync_options_1_.Equals(callback_registrations_[0].options);
+  sync_options_1_.Equals(*callback_registrations_[0].options());
 
   EXPECT_TRUE(GetRegistrations(SYNC_PERIODIC));
   EXPECT_EQ(1u, callback_registrations_.size());
-  sync_options_2_.Equals(callback_registrations_[0].options);
+  sync_options_2_.Equals(*callback_registrations_[0].options());
 }
 
 TEST_F(BackgroundSyncManagerTest, GetRegistrationsBadBackend) {
@@ -658,7 +650,7 @@ TEST_F(BackgroundSyncManagerTest, Unregister) {
 
 TEST_F(BackgroundSyncManagerTest, UnregisterWrongId) {
   EXPECT_TRUE(Register(sync_options_1_));
-  callback_registration_.id += 1;
+  callback_registration_.set_id(callback_registration_.id() + 1);
   EXPECT_FALSE(Unregister(callback_registration_));
 }
 
@@ -669,8 +661,8 @@ TEST_F(BackgroundSyncManagerTest, Reregister) {
 }
 
 TEST_F(BackgroundSyncManagerTest, UnregisterNonExisting) {
-  BackgroundSyncManager::BackgroundSyncRegistration nonexistant_registration;
-  nonexistant_registration.id = 1;
+  BackgroundSyncRegistration nonexistant_registration;
+  nonexistant_registration.set_id(1);
   EXPECT_FALSE(Unregister(nonexistant_registration));
   EXPECT_EQ(BackgroundSyncManager::ERROR_TYPE_NOT_FOUND, callback_error_);
 }
@@ -698,19 +690,18 @@ TEST_F(BackgroundSyncManagerTest, UnregisterBadBackend) {
 
 TEST_F(BackgroundSyncManagerTest, RegistrationIncreasesId) {
   EXPECT_TRUE(Register(sync_options_1_));
-  BackgroundSyncManager::BackgroundSyncRegistration registered_sync =
-      callback_registration_;
-  BackgroundSyncManager::BackgroundSyncRegistration::RegistrationId cur_id =
-      callback_registration_.id;
+  BackgroundSyncRegistration registered_sync = callback_registration_;
+  BackgroundSyncRegistration::RegistrationId cur_id =
+      callback_registration_.id();
 
   EXPECT_TRUE(GetRegistration(sync_options_1_));
   EXPECT_TRUE(Register(sync_options_2_));
-  EXPECT_LT(cur_id, callback_registration_.id);
-  cur_id = callback_registration_.id;
+  EXPECT_LT(cur_id, callback_registration_.id());
+  cur_id = callback_registration_.id();
 
   EXPECT_TRUE(Unregister(registered_sync));
   EXPECT_TRUE(Register(sync_options_1_));
-  EXPECT_LT(cur_id, callback_registration_.id);
+  EXPECT_LT(cur_id, callback_registration_.id());
 }
 
 TEST_F(BackgroundSyncManagerTest, RebootRecovery) {
@@ -762,8 +753,7 @@ TEST_F(BackgroundSyncManagerTest, SequentialOperations) {
   // the operations complete sequentially.
   SetupDelayedBackgroundSyncManager();
 
-  const int64 kExpectedInitialId =
-      BackgroundSyncManager::BackgroundSyncRegistration::kInitialId;
+  const int64 kExpectedInitialId = BackgroundSyncRegistration::kInitialId;
 
   bool register_called = false;
   bool unregister_called = false;
@@ -798,7 +788,7 @@ TEST_F(BackgroundSyncManagerTest, SequentialOperations) {
   test_background_sync_manager_->Continue();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(register_called);
-  EXPECT_EQ(kExpectedInitialId, callback_registration_.id);
+  EXPECT_EQ(kExpectedInitialId, callback_registration_.id());
   EXPECT_EQ(BackgroundSyncManager::ERROR_TYPE_OK, callback_error_);
   // Unregister should be blocked while storing to the backend.
   EXPECT_FALSE(unregister_called);
@@ -886,54 +876,54 @@ TEST_F(BackgroundSyncManagerTest, DisabledManagerWorksAfterDeleteAndStartOver) {
 }
 
 TEST_F(BackgroundSyncManagerTest, RegistrationEqualsId) {
-  BackgroundSyncManager::BackgroundSyncRegistration reg_1;
-  BackgroundSyncManager::BackgroundSyncRegistration reg_2;
+  BackgroundSyncRegistration reg_1;
+  BackgroundSyncRegistration reg_2;
 
   EXPECT_TRUE(reg_1.Equals(reg_2));
-  reg_2.id = reg_1.id + 1;
+  reg_2.set_id(reg_1.id() + 1);
   EXPECT_TRUE(reg_1.Equals(reg_2));
 }
 
 TEST_F(BackgroundSyncManagerTest, RegistrationEqualsTag) {
-  BackgroundSyncManager::BackgroundSyncRegistration reg_1;
-  BackgroundSyncManager::BackgroundSyncRegistration reg_2;
+  BackgroundSyncRegistration reg_1;
+  BackgroundSyncRegistration reg_2;
   EXPECT_TRUE(reg_1.Equals(reg_2));
-  reg_2.options.tag = "bar";
+  reg_2.options()->tag = "bar";
   EXPECT_FALSE(reg_1.Equals(reg_2));
 }
 
 TEST_F(BackgroundSyncManagerTest, RegistrationEqualsPeriodicity) {
-  BackgroundSyncManager::BackgroundSyncRegistration reg_1;
-  BackgroundSyncManager::BackgroundSyncRegistration reg_2;
+  BackgroundSyncRegistration reg_1;
+  BackgroundSyncRegistration reg_2;
   EXPECT_TRUE(reg_1.Equals(reg_2));
-  reg_1.options.periodicity = SYNC_PERIODIC;
-  reg_2.options.periodicity = SYNC_ONE_SHOT;
+  reg_1.options()->periodicity = SYNC_PERIODIC;
+  reg_2.options()->periodicity = SYNC_ONE_SHOT;
   EXPECT_FALSE(reg_1.Equals(reg_2));
 }
 
 TEST_F(BackgroundSyncManagerTest, RegistrationEqualsMinPeriod) {
-  BackgroundSyncManager::BackgroundSyncRegistration reg_1;
-  BackgroundSyncManager::BackgroundSyncRegistration reg_2;
+  BackgroundSyncRegistration reg_1;
+  BackgroundSyncRegistration reg_2;
   EXPECT_TRUE(reg_1.Equals(reg_2));
-  reg_2.options.min_period = reg_1.options.min_period + 1;
+  reg_2.options()->min_period = reg_1.options()->min_period + 1;
   EXPECT_FALSE(reg_1.Equals(reg_2));
 }
 
 TEST_F(BackgroundSyncManagerTest, RegistrationEqualsNetworkState) {
-  BackgroundSyncManager::BackgroundSyncRegistration reg_1;
-  BackgroundSyncManager::BackgroundSyncRegistration reg_2;
+  BackgroundSyncRegistration reg_1;
+  BackgroundSyncRegistration reg_2;
   EXPECT_TRUE(reg_1.Equals(reg_2));
-  reg_1.options.network_state = NETWORK_STATE_ANY;
-  reg_2.options.network_state = NETWORK_STATE_ONLINE;
+  reg_1.options()->network_state = NETWORK_STATE_ANY;
+  reg_2.options()->network_state = NETWORK_STATE_ONLINE;
   EXPECT_FALSE(reg_1.Equals(reg_2));
 }
 
 TEST_F(BackgroundSyncManagerTest, RegistrationEqualsPowerState) {
-  BackgroundSyncManager::BackgroundSyncRegistration reg_1;
-  BackgroundSyncManager::BackgroundSyncRegistration reg_2;
+  BackgroundSyncRegistration reg_1;
+  BackgroundSyncRegistration reg_2;
   EXPECT_TRUE(reg_1.Equals(reg_2));
-  reg_1.options.power_state = POWER_STATE_AUTO;
-  reg_2.options.power_state = POWER_STATE_AVOID_DRAINING;
+  reg_1.options()->power_state = POWER_STATE_AUTO;
+  reg_2.options()->power_state = POWER_STATE_AVOID_DRAINING;
   EXPECT_FALSE(reg_1.Equals(reg_2));
 }
 
@@ -957,14 +947,14 @@ TEST_F(BackgroundSyncManagerTest, StoreAndRetrievePreservesValues) {
   SetupBackgroundSyncManager();
 
   EXPECT_TRUE(GetRegistration(options));
-  EXPECT_TRUE(options.Equals(callback_registration_.options));
+  EXPECT_TRUE(options.Equals(*callback_registration_.options()));
 }
 
 TEST_F(BackgroundSyncManagerTest, EmptyTagSupported) {
   sync_options_1_.tag = "a";
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_TRUE(GetRegistration(sync_options_1_));
-  EXPECT_TRUE(sync_options_1_.Equals(callback_registration_.options));
+  EXPECT_TRUE(sync_options_1_.Equals(*callback_registration_.options()));
   EXPECT_TRUE(Unregister(callback_registration_));
   EXPECT_FALSE(GetRegistration(sync_options_1_));
 }
@@ -981,15 +971,15 @@ TEST_F(BackgroundSyncManagerTest, OverlappingPeriodicAndOneShotTags) {
   EXPECT_TRUE(Register(sync_options_2_));
 
   EXPECT_TRUE(GetRegistration(sync_options_1_));
-  EXPECT_EQ(SYNC_PERIODIC, callback_registration_.options.periodicity);
+  EXPECT_EQ(SYNC_PERIODIC, callback_registration_.options()->periodicity);
   EXPECT_TRUE(GetRegistration(sync_options_2_));
-  EXPECT_EQ(SYNC_ONE_SHOT, callback_registration_.options.periodicity);
+  EXPECT_EQ(SYNC_ONE_SHOT, callback_registration_.options()->periodicity);
 
   EXPECT_TRUE(GetRegistration(sync_options_1_));
   EXPECT_TRUE(Unregister(callback_registration_));
   EXPECT_FALSE(GetRegistration(sync_options_1_));
   EXPECT_TRUE(GetRegistration(sync_options_2_));
-  EXPECT_EQ(SYNC_ONE_SHOT, callback_registration_.options.periodicity);
+  EXPECT_EQ(SYNC_ONE_SHOT, callback_registration_.options()->periodicity);
 
   EXPECT_TRUE(Unregister(callback_registration_));
   EXPECT_FALSE(GetRegistration(sync_options_2_));

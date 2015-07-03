@@ -6,7 +6,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/browser/background_sync/background_sync_context_impl.h"
-#include "content/browser/background_sync/background_sync_registration_options.h"
+#include "content/browser/background_sync/background_sync_registration.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -28,18 +28,17 @@ BackgroundSyncRegistrationOptions ToBackgroundSyncRegistrationOptions(
   return out;
 }
 
-SyncRegistrationPtr ToMojoRegistration(
-    const BackgroundSyncManager::BackgroundSyncRegistration& in) {
+SyncRegistrationPtr ToMojoRegistration(const BackgroundSyncRegistration& in) {
   SyncRegistrationPtr out(content::SyncRegistration::New());
-  out->id = in.id;
-  out->tag = in.options.tag;
-  out->min_period_ms = in.options.min_period;
-  out->periodicity =
-      static_cast<content::BackgroundSyncPeriodicity>(in.options.periodicity);
+  out->id = in.id();
+  out->tag = in.options()->tag;
+  out->min_period_ms = in.options()->min_period;
+  out->periodicity = static_cast<content::BackgroundSyncPeriodicity>(
+      in.options()->periodicity);
   out->power_state =
-      static_cast<content::BackgroundSyncPowerState>(in.options.power_state);
+      static_cast<content::BackgroundSyncPowerState>(in.options()->power_state);
   out->network_state = static_cast<content::BackgroundSyncNetworkState>(
-      in.options.network_state);
+      in.options()->network_state);
   return out.Pass();
 }
 
@@ -196,7 +195,7 @@ void BackgroundSyncServiceImpl::GetPermissionStatus(
 void BackgroundSyncServiceImpl::OnRegisterResult(
     const RegisterCallback& callback,
     BackgroundSyncManager::ErrorType error,
-    const BackgroundSyncManager::BackgroundSyncRegistration& result) {
+    const BackgroundSyncRegistration& result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   SyncRegistrationPtr mojoResult = ToMojoRegistration(result);
   callback.Run(static_cast<content::BackgroundSyncError>(error),
@@ -213,8 +212,7 @@ void BackgroundSyncServiceImpl::OnUnregisterResult(
 void BackgroundSyncServiceImpl::OnGetRegistrationsResult(
     const GetRegistrationsCallback& callback,
     BackgroundSyncManager::ErrorType error,
-    const std::vector<BackgroundSyncManager::BackgroundSyncRegistration>&
-        result_registrations) {
+    const std::vector<BackgroundSyncRegistration>& result_registrations) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   mojo::Array<content::SyncRegistrationPtr> mojo_registrations(0);
   for (const auto& registration : result_registrations)

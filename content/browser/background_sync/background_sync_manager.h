@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/background_sync/background_sync.pb.h"
-#include "content/browser/background_sync/background_sync_registration_options.h"
+#include "content/browser/background_sync/background_sync_registration.h"
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_storage.h"
@@ -49,23 +49,6 @@ class CONTENT_EXPORT BackgroundSyncManager
     ERROR_TYPE_STORAGE,
     ERROR_TYPE_NOT_FOUND,
     ERROR_TYPE_NO_SERVICE_WORKER
-  };
-
-  // TODO(jkarlin): Remove this and use the struct from IPC messages once it
-  // lands.
-  struct CONTENT_EXPORT BackgroundSyncRegistration {
-    using RegistrationId = int64;
-    static const RegistrationId kInvalidRegistrationId;
-    static const RegistrationId kInitialId;
-    BackgroundSyncRegistration() {}
-
-    bool Equals(const BackgroundSyncRegistration& other) const {
-      return options.Equals(other.options);
-    }
-
-    BackgroundSyncRegistrationOptions options;
-    RegistrationId id = kInvalidRegistrationId;
-    SyncState sync_state = SYNC_STATE_PENDING;
   };
 
   using StatusCallback = base::Callback<void(ErrorType)>;
