@@ -14,6 +14,7 @@
 #include "modules/compositorworker/CompositorWorkerThread.h"
 #include "platform/NotImplemented.h"
 #include "platform/ThreadSafeFunctional.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebWaitableEvent.h"
 #include <gtest/gtest.h>
@@ -81,7 +82,7 @@ private:
 
 } // namespace
 
-class CompositorWorkerManagerTest : public testing::Test {
+class CompositorWorkerManagerTest : public ::testing::Test {
 public:
     void SetUp() override
     {
@@ -128,6 +129,12 @@ public:
         waitEvent->wait();
     }
 
+    void waitForWaitableEventAfterIteratingCurrentLoop(WebWaitableEvent* waitEvent)
+    {
+        testing::runPendingTasks();
+        waitEvent->wait();
+    }
+
     bool managerHasThread() const
     {
         return CompositorWorkerManager::instance()->m_thread;
@@ -156,7 +163,7 @@ TEST_F(CompositorWorkerManagerTest, Basic)
 {
     OwnPtr<WebWaitableEvent> creationEvent = adoptPtr(Platform::current()->createWaitableEvent());
     RefPtr<CompositorWorkerThread> compositorWorker = createCompositorWorker(creationEvent.get());
-    creationEvent->wait();
+    waitForWaitableEventAfterIteratingCurrentLoop(creationEvent.get());
     checkWorkerCanExecuteScript(compositorWorker.get());
     compositorWorker->terminateAndWait();
 }
@@ -169,7 +176,7 @@ TEST_F(CompositorWorkerManagerTest, CreateSecondAndTerminateFirst)
     RefPtr<CompositorWorkerThread> firstWorker = createCompositorWorker(firstCreationEvent.get());
     WebThreadSupportingGC* firstThread = &CompositorWorkerManager::instance()->compositorWorkerThread();
     ASSERT(firstThread);
-    firstCreationEvent->wait();
+    waitForWaitableEventAfterIteratingCurrentLoop(firstCreationEvent.get());
     v8::Isolate* firstIsolate = firstWorker->isolate();
     ASSERT(firstIsolate);
 
@@ -182,7 +189,7 @@ TEST_F(CompositorWorkerManagerTest, CreateSecondAndTerminateFirst)
     // thread and Isolate as the first worker.
     WebThreadSupportingGC* secondThread = &CompositorWorkerManager::instance()->compositorWorkerThread();
     ASSERT(secondThread);
-    secondCreationEvent->wait();
+    waitForWaitableEventAfterIteratingCurrentLoop(secondCreationEvent.get());
     EXPECT_EQ(firstThread, secondThread);
 
     v8::Isolate* secondIsolate = secondWorker->isolate();
@@ -208,7 +215,7 @@ TEST_F(CompositorWorkerManagerTest, TerminateFirstAndCreateSecond)
     OwnPtr<WebWaitableEvent> creationEvent = adoptPtr(Platform::current()->createWaitableEvent());
     RefPtr<CompositorWorkerThread> compositorWorker = createCompositorWorker(creationEvent.get());
     WebThreadSupportingGC* firstThread = &CompositorWorkerManager::instance()->compositorWorkerThread();
-    creationEvent->wait();
+    waitForWaitableEventAfterIteratingCurrentLoop(creationEvent.get());
     ASSERT(compositorWorker->isolate());
     compositorWorker->terminateAndWait();
 
@@ -218,12 +225,12 @@ TEST_F(CompositorWorkerManagerTest, TerminateFirstAndCreateSecond)
     compositorWorker = createCompositorWorker(creationEvent.get());
     WebThreadSupportingGC* secondThread = &CompositorWorkerManager::instance()->compositorWorkerThread();
     EXPECT_NE(firstThread, secondThread);
-    creationEvent->wait();
+    waitForWaitableEventAfterIteratingCurrentLoop(creationEvent.get());
 
     // Jump over to the worker's thread to verify that the Isolate is set up correctly and execute script.
     OwnPtr<WebWaitableEvent> checkEvent = adoptPtr(Platform::current()->createWaitableEvent());
     secondThread->platformThread().postTask(FROM_HERE, threadSafeBind(&checkCurrentIsolate, AllowCrossThreadAccess(compositorWorker->isolate()), AllowCrossThreadAccess(checkEvent.get())));
-    checkEvent->wait();
+    waitForWaitableEventAfterIteratingCurrentLoop(checkEvent.get());
     checkWorkerCanExecuteScript(compositorWorker.get());
 
     compositorWorker->terminateAndWait();
@@ -234,7 +241,7 @@ TEST_F(CompositorWorkerManagerTest, CreatingSecondDuringTerminationOfFirst)
 {
     OwnPtr<WebWaitableEvent> firstCreationEvent = adoptPtr(Platform::current()->createWaitableEvent());
     RefPtr<TestCompositorWorkerThread> firstWorker = createCompositorWorker(firstCreationEvent.get());
-    firstCreationEvent->wait();
+    waitForWaitableEventAfterIteratingCurrentLoop(firstCreationEvent.get());
     v8::Isolate* firstIsolate = firstWorker->isolate();
     ASSERT(firstIsolate);
 
@@ -246,7 +253,7 @@ TEST_F(CompositorWorkerManagerTest, CreatingSecondDuringTerminationOfFirst)
     firstWorker->terminateAndWait();
     ASSERT(secondWorker);
 
-    secondCreationEvent->wait();
+    waitForWaitableEventAfterIteratingCurrentLoop(secondCreationEvent.get());
     v8::Isolate* secondIsolate = secondWorker->isolate();
     ASSERT(secondIsolate);
     EXPECT_EQ(firstIsolate, secondIsolate);
