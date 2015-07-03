@@ -15,6 +15,7 @@ namespace content {
 
 // The options passed to BackgroundSyncManager::Registration.
 struct CONTENT_EXPORT BackgroundSyncRegistrationOptions {
+  BackgroundSyncRegistrationOptions();
   bool Equals(const BackgroundSyncRegistrationOptions& other) const;
 
   std::string tag;
