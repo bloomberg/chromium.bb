@@ -14,22 +14,21 @@
 
 namespace net {
 
-class MojoProxyResolverImpl::Job : public mojo::ErrorHandler {
+class MojoProxyResolverImpl::Job {
  public:
   Job(interfaces::ProxyResolverRequestClientPtr client,
       MojoProxyResolverImpl* resolver,
       const GURL& url);
-  ~Job() override;
+  ~Job();
 
   void Start();
 
   net::ProxyResolver::RequestHandle request_handle() { return request_handle_; }
 
  private:
-  // mojo::ErrorHandler override.
-  // This is invoked in response to the client disconnecting, indicating
-  // cancellation.
-  void OnConnectionError() override;
+  // Mojo error handler. This is invoked in response to the client
+  // disconnecting, indicating cancellation.
+  void OnConnectionError();
 
   void GetProxyDone(int error);
 
@@ -96,7 +95,8 @@ void MojoProxyResolverImpl::Job::Start() {
     GetProxyDone(result);
     return;
   }
-  client_.set_error_handler(this);
+  client_.set_connection_error_handler(base::Bind(
+      &MojoProxyResolverImpl::Job::OnConnectionError, base::Unretained(this)));
   resolver_->request_handle_to_job_.insert(
       std::make_pair(request_handle_, this));
 }

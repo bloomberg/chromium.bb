@@ -16,13 +16,13 @@ namespace net {
 // Handles host resolution for a single request and sends a response when done.
 // Also detects connection errors for HostResolverRequestClient and cancels the
 // outstanding resolve request. Owned by MojoHostResolverImpl.
-class MojoHostResolverImpl::Job : public mojo::ErrorHandler {
+class MojoHostResolverImpl::Job {
  public:
   Job(MojoHostResolverImpl* resolver_service,
       net::HostResolver* resolver,
       const net::HostResolver::RequestInfo& request_info,
       interfaces::HostResolverRequestClientPtr client);
-  ~Job() override;
+  ~Job();
 
   void Start();
 
@@ -30,8 +30,8 @@ class MojoHostResolverImpl::Job : public mojo::ErrorHandler {
   // Completion callback for the HostResolver::Resolve request.
   void OnResolveDone(int result);
 
-  // Overridden from mojo::ErrorHandler:
-  void OnConnectionError() override;
+  // Mojo error handler.
+  void OnConnectionError();
 
   MojoHostResolverImpl* resolver_service_;
   net::HostResolver* resolver_;
@@ -79,7 +79,8 @@ MojoHostResolverImpl::Job::Job(
       request_info_(request_info),
       client_(client.Pass()),
       handle_(nullptr) {
-  client_.set_error_handler(this);
+  client_.set_connection_error_handler(base::Bind(
+      &MojoHostResolverImpl::Job::OnConnectionError, base::Unretained(this)));
 }
 
 void MojoHostResolverImpl::Job::Start() {

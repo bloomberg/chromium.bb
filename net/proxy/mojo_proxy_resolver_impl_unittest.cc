@@ -16,13 +16,11 @@
 #include "net/test/event_waiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 
 namespace net {
 namespace {
 
-class TestRequestClient : public interfaces::ProxyResolverRequestClient,
-                          public mojo::ErrorHandler {
+class TestRequestClient : public interfaces::ProxyResolverRequestClient {
  public:
   enum Event {
     RESULT_RECEIVED,
@@ -43,8 +41,8 @@ class TestRequestClient : public interfaces::ProxyResolverRequestClient,
   void ReportResult(int32_t error,
                     mojo::Array<interfaces::ProxyServerPtr> results) override;
 
-  // mojo::ErrorHandler override.
-  void OnConnectionError() override;
+  // Mojo error handler.
+  void OnConnectionError();
 
   bool done_ = false;
   Error error_ = ERR_FAILED;
@@ -58,7 +56,8 @@ class TestRequestClient : public interfaces::ProxyResolverRequestClient,
 TestRequestClient::TestRequestClient(
     mojo::InterfaceRequest<interfaces::ProxyResolverRequestClient> request)
     : binding_(this, request.Pass()) {
-  binding_.set_error_handler(this);
+  binding_.set_connection_error_handler(base::Bind(
+      &TestRequestClient::OnConnectionError, base::Unretained(this)));
 }
 
 void TestRequestClient::WaitForResult() {

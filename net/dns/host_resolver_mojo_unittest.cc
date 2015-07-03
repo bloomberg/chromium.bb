@@ -15,7 +15,6 @@
 #include "net/test/event_waiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 
 namespace net {
 namespace {
@@ -24,11 +23,11 @@ void Fail(int result) {
   FAIL() << "Unexpected callback called with error " << result;
 }
 
-class MockMojoHostResolverRequest : public mojo::ErrorHandler {
+class MockMojoHostResolverRequest {
  public:
   MockMojoHostResolverRequest(interfaces::HostResolverRequestClientPtr client,
                               const base::Closure& error_callback);
-  void OnConnectionError() override;
+  void OnConnectionError();
 
  private:
   interfaces::HostResolverRequestClientPtr client_;
@@ -39,7 +38,8 @@ MockMojoHostResolverRequest::MockMojoHostResolverRequest(
     interfaces::HostResolverRequestClientPtr client,
     const base::Closure& error_callback)
     : client_(client.Pass()), error_callback_(error_callback) {
-  client_.set_error_handler(this);
+  client_.set_connection_error_handler(base::Bind(
+      &MockMojoHostResolverRequest::OnConnectionError, base::Unretained(this)));
 }
 
 void MockMojoHostResolverRequest::OnConnectionError() {
@@ -83,8 +83,7 @@ struct HostResolverAction {
   Error error = OK;
 };
 
-class MockMojoHostResolver : public interfaces::HostResolver,
-                             public mojo::ErrorHandler {
+class MockMojoHostResolver : public interfaces::HostResolver {
  public:
   MockMojoHostResolver(mojo::InterfaceRequest<interfaces::HostResolver> request,
                        const base::Closure& resolver_connection_error_callback,
@@ -102,8 +101,7 @@ class MockMojoHostResolver : public interfaces::HostResolver,
   void Resolve(interfaces::HostResolverRequestInfoPtr request_info,
                interfaces::HostResolverRequestClientPtr client) override;
 
-  // mojo::ErrorHandler override.
-  void OnConnectionError() override;
+  void OnConnectionError();
 
   mojo::Binding<interfaces::HostResolver> binding_;
   ScopedVector<HostResolverAction> actions_;
@@ -121,7 +119,8 @@ MockMojoHostResolver::MockMojoHostResolver(
     : binding_(this, request.Pass()),
       resolver_connection_error_callback_(resolver_connection_error_callback),
       request_connection_error_callback_(request_connection_error_callback) {
-  binding_.set_error_handler(this);
+  binding_.set_connection_error_handler(base::Bind(
+      &MockMojoHostResolver::OnConnectionError, base::Unretained(this)));
 }
 
 MockMojoHostResolver::~MockMojoHostResolver() {

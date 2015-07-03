@@ -16,20 +16,19 @@
 #include "net/dns/mojo_host_type_converters.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 
 namespace net {
 
 namespace {
 
-class TestRequestClient : public interfaces::HostResolverRequestClient,
-                          public mojo::ErrorHandler {
+class TestRequestClient : public interfaces::HostResolverRequestClient {
  public:
   explicit TestRequestClient(
       mojo::InterfaceRequest<interfaces::HostResolverRequestClient> req)
       : done_(false), binding_(this, req.Pass()) {
-    binding_.set_error_handler(this);
+    binding_.set_connection_error_handler(base::Bind(
+        &TestRequestClient::OnConnectionError, base::Unretained(this)));
   }
 
   void WaitForResult();
@@ -42,8 +41,8 @@ class TestRequestClient : public interfaces::HostResolverRequestClient,
   // Overridden from interfaces::HostResolverRequestClient.
   void ReportResult(int32_t error, interfaces::AddressListPtr results) override;
 
-  // Overridden from mojo::ErrorHandler.
-  void OnConnectionError() override;
+  // Mojo error handler.
+  void OnConnectionError();
 
   bool done_;
   base::Closure run_loop_quit_closure_;

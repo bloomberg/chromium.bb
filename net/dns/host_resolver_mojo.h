@@ -11,7 +11,6 @@
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/interfaces/host_resolver_service.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 
 namespace net {
 class AddressList;
@@ -19,7 +18,7 @@ class BoundNetLog;
 
 // A HostResolver implementation that delegates to an interfaces::HostResolver
 // mojo interface.
-class HostResolverMojo : public HostResolver, public mojo::ErrorHandler {
+class HostResolverMojo : public HostResolver {
  public:
   HostResolverMojo(interfaces::HostResolverPtr resolver,
                    const base::Closure& disconnect_callback);
@@ -45,8 +44,8 @@ class HostResolverMojo : public HostResolver, public mojo::ErrorHandler {
  private:
   class Job;
 
-  // mojo::ErrorHandler override.
-  void OnConnectionError() override;
+  // Mojo error handler.
+  void OnConnectionError();
 
   int ResolveFromCacheInternal(const RequestInfo& info,
                                const HostCache::Key& key,

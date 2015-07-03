@@ -27,7 +27,6 @@
 #include "net/proxy/proxy_resolver_script_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 #include "url/gurl.h"
 
 namespace net {

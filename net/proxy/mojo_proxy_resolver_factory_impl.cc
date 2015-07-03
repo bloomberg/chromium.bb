@@ -14,7 +14,6 @@
 #include "net/proxy/proxy_resolver_factory.h"
 #include "net/proxy/proxy_resolver_v8.h"
 #include "net/proxy/proxy_resolver_v8_tracing_wrapper.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 
 namespace net {
 namespace {
@@ -35,7 +34,7 @@ scoped_ptr<ProxyResolverFactory> CreateDefaultProxyResolver(
 // A class to manage the lifetime of a MojoProxyResolverImpl and a
 // HostResolverMojo. An instance will remain while the message pipes for both
 // mojo connections remain open.
-class MojoProxyResolverHolder : public mojo::ErrorHandler {
+class MojoProxyResolverHolder {
  public:
   MojoProxyResolverHolder(
       scoped_ptr<HostResolverMojo> host_resolver,
@@ -43,8 +42,8 @@ class MojoProxyResolverHolder : public mojo::ErrorHandler {
       mojo::InterfaceRequest<interfaces::ProxyResolver> request);
 
  private:
-  // mojo::ErrorHandler override.
-  void OnConnectionError() override;
+  // Mojo error handler.
+  void OnConnectionError();
 
   scoped_ptr<HostResolverMojo> host_resolver_;
   MojoProxyResolverImpl mojo_proxy_resolver_;
@@ -60,7 +59,8 @@ MojoProxyResolverHolder::MojoProxyResolverHolder(
     : host_resolver_(host_resolver.Pass()),
       mojo_proxy_resolver_(proxy_resolver_impl.Pass()),
       binding_(&mojo_proxy_resolver_, request.Pass()) {
-  binding_.set_error_handler(this);
+  binding_.set_connection_error_handler(base::Bind(
+      &MojoProxyResolverHolder::OnConnectionError, base::Unretained(this)));
   host_resolver_->set_disconnect_callback(base::Bind(
       &MojoProxyResolverHolder::OnConnectionError, base::Unretained(this)));
 }
@@ -71,7 +71,7 @@ void MojoProxyResolverHolder::OnConnectionError() {
 
 }  // namespace
 
-class MojoProxyResolverFactoryImpl::Job : public mojo::ErrorHandler {
+class MojoProxyResolverFactoryImpl::Job {
  public:
   Job(MojoProxyResolverFactoryImpl* parent,
       const scoped_refptr<ProxyResolverScriptData>& pac_script,
@@ -80,11 +80,11 @@ class MojoProxyResolverFactoryImpl::Job : public mojo::ErrorHandler {
       interfaces::HostResolverPtr host_resolver,
       interfaces::ProxyResolverErrorObserverPtr error_observer,
       interfaces::ProxyResolverFactoryRequestClientPtr client);
-  ~Job() override;
+  ~Job();
 
  private:
-  // mojo::ErrorHandler override.
-  void OnConnectionError() override;
+  // Mojo error handler.
+  void OnConnectionError();
 
   void OnProxyResolverCreated(int error);
 
@@ -117,7 +117,9 @@ MojoProxyResolverFactoryImpl::Job::Job(
           host_resolver_.get(),
           ProxyResolverErrorObserverMojo::Create(error_observer.Pass()))),
       client_ptr_(client.Pass()) {
-  client_ptr_.set_error_handler(this);
+  client_ptr_.set_connection_error_handler(
+      base::Bind(&MojoProxyResolverFactoryImpl::Job::OnConnectionError,
+                 base::Unretained(this)));
   factory_->CreateProxyResolver(
       pac_script, &proxy_resolver_impl_,
       base::Bind(&MojoProxyResolverFactoryImpl::Job::OnProxyResolverCreated,

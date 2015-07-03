@@ -24,7 +24,6 @@
 #include "net/proxy/proxy_resolver_error_observer.h"
 #include "net/proxy/proxy_resolver_script_data.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 
 namespace net {
 namespace {
@@ -67,7 +66,7 @@ void ErrorObserverHolder::OnPacScriptError(int32_t line_number,
 // This implementation reports disconnections from the Mojo service (i.e. if the
 // service is out-of-process and that process crashes) using the error code
 // ERR_PAC_SCRIPT_TERMINATED.
-class ProxyResolverMojo : public ProxyResolver, public mojo::ErrorHandler {
+class ProxyResolverMojo : public ProxyResolver {
  public:
   // Constructs a ProxyResolverMojo that connects to a mojo proxy resolver
   // implementation using |resolver_ptr|. The implementation uses
@@ -95,8 +94,8 @@ class ProxyResolverMojo : public ProxyResolver, public mojo::ErrorHandler {
  private:
   class Job;
 
-  // Overridden from mojo::ErrorHandler:
-  void OnConnectionError() override;
+  // Mojo error handler.
+  void OnConnectionError();
 
   void RemoveJob(Job* job);
 
@@ -119,8 +118,7 @@ class ProxyResolverMojo : public ProxyResolver, public mojo::ErrorHandler {
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverMojo);
 };
 
-class ProxyResolverMojo::Job : public interfaces::ProxyResolverRequestClient,
-                               public mojo::ErrorHandler {
+class ProxyResolverMojo::Job : public interfaces::ProxyResolverRequestClient {
  public:
   Job(ProxyResolverMojo* resolver,
       const GURL& url,
@@ -135,8 +133,8 @@ class ProxyResolverMojo::Job : public interfaces::ProxyResolverRequestClient,
   LoadState load_state() { return LOAD_STATE_RESOLVING_PROXY_FOR_URL; }
 
  private:
-  // Overridden from mojo::ErrorHandler:
-  void OnConnectionError() override;
+  // Mojo error handler.
+  void OnConnectionError();
 
   // Overridden from interfaces::ProxyResolverRequestClient:
   void ReportResult(
@@ -161,7 +159,8 @@ ProxyResolverMojo::Job::Job(ProxyResolverMojo* resolver,
       results_(results),
       callback_(callback),
       binding_(this) {
-  binding_.set_error_handler(this);
+  binding_.set_connection_error_handler(base::Bind(
+      &ProxyResolverMojo::Job::OnConnectionError, base::Unretained(this)));
 
   interfaces::ProxyResolverRequestClientPtr client_ptr;
   binding_.Bind(mojo::GetProxy(&client_ptr));
@@ -215,7 +214,8 @@ ProxyResolverMojo::ProxyResolverMojo(
       mojo_host_resolver_binding_(host_resolver_binding.Pass()),
       error_observer_(error_observer.Pass()),
       on_delete_callback_runner_(on_delete_callback_runner.Pass()) {
-  mojo_proxy_resolver_ptr_.set_error_handler(this);
+  mojo_proxy_resolver_ptr_.set_connection_error_handler(base::Bind(
+      &ProxyResolverMojo::OnConnectionError, base::Unretained(this)));
 }
 
 ProxyResolverMojo::~ProxyResolverMojo() {
@@ -275,7 +275,6 @@ LoadState ProxyResolverMojo::GetLoadState(RequestHandle request) const {
 
 class ProxyResolverFactoryMojo::Job
     : public interfaces::ProxyResolverFactoryRequestClient,
-      public mojo::ErrorHandler,
       public ProxyResolverFactory::Request {
  public:
   Job(ProxyResolverFactoryMojo* factory,
@@ -305,16 +304,20 @@ class ProxyResolverFactoryMojo::Job
     on_delete_callback_runner_ = factory_->mojo_proxy_factory_->CreateResolver(
         mojo::String::From(pac_script->utf16()), mojo::GetProxy(&resolver_ptr_),
         host_resolver_ptr.Pass(), error_observer_ptr.Pass(), client_ptr.Pass());
-    resolver_ptr_.set_error_handler(this);
-    binding_.set_error_handler(this);
+    resolver_ptr_.set_connection_error_handler(
+        base::Bind(&ProxyResolverFactoryMojo::Job::OnConnectionError,
+                   base::Unretained(this)));
+    binding_.set_connection_error_handler(
+        base::Bind(&ProxyResolverFactoryMojo::Job::OnConnectionError,
+                   base::Unretained(this)));
   }
 
-  void OnConnectionError() override { ReportResult(ERR_PAC_SCRIPT_TERMINATED); }
+  void OnConnectionError() { ReportResult(ERR_PAC_SCRIPT_TERMINATED); }
 
  private:
   void ReportResult(int32_t error) override {
-    resolver_ptr_.set_error_handler(nullptr);
-    binding_.set_error_handler(nullptr);
+    resolver_ptr_.set_connection_error_handler(mojo::Closure());
+    binding_.set_connection_error_handler(mojo::Closure());
     if (error == OK) {
       resolver_->reset(new ProxyResolverMojo(
           resolver_ptr_.Pass(), host_resolver_.Pass(),

@@ -11,7 +11,6 @@
 #include "net/test/event_waiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 
 namespace net {
 namespace {
@@ -59,7 +58,6 @@ class TestProxyResolverFactory : public MockAsyncProxyResolverFactory {
 
 class MojoProxyResolverFactoryImplTest
     : public testing::Test,
-      public mojo::ErrorHandler,
       public interfaces::ProxyResolverFactoryRequestClient {
  public:
   void SetUp() override {
@@ -72,7 +70,7 @@ class MojoProxyResolverFactoryImplTest
     mock_factory_ = mock_factory_owner_.get();
   }
 
-  void OnConnectionError() override { waiter_.NotifyEvent(CONNECTION_ERROR); }
+  void OnConnectionError() { waiter_.NotifyEvent(CONNECTION_ERROR); }
 
   scoped_ptr<ProxyResolverFactory> CreateFakeProxyResolverFactory(
       HostResolver* host_resolver,
@@ -113,7 +111,9 @@ TEST_F(MojoProxyResolverFactoryImplTest, DisconnectHostResolver) {
   factory_->CreateResolver(
       mojo::String::From(kScriptData), mojo::GetProxy(&proxy_resolver),
       host_resolver.Pass(), error_observer.Pass(), client_ptr.Pass());
-  proxy_resolver.set_error_handler(this);
+  proxy_resolver.set_connection_error_handler(
+      base::Bind(&MojoProxyResolverFactoryImplTest::OnConnectionError,
+                 base::Unretained(this)));
   waiter_.WaitForEvent(RESOLVER_CREATED);
   EXPECT_EQ(0, instances_destroyed_);
   ASSERT_EQ(1u, mock_factory_->pending_requests().size());
@@ -137,7 +137,9 @@ TEST_F(MojoProxyResolverFactoryImplTest, DisconnectProxyResolverClient) {
   mojo::InterfaceRequest<interfaces::HostResolver> host_resolver_request =
       mojo::GetProxy(&host_resolver);
   mojo::Binding<interfaces::HostResolver> binding(nullptr, &host_resolver);
-  binding.set_error_handler(this);
+  binding.set_connection_error_handler(
+      base::Bind(&MojoProxyResolverFactoryImplTest::OnConnectionError,
+                 base::Unretained(this)));
   interfaces::ProxyResolverErrorObserverPtr error_observer;
   mojo::GetProxy(&error_observer);
   interfaces::ProxyResolverFactoryRequestClientPtr client_ptr;
@@ -146,7 +148,9 @@ TEST_F(MojoProxyResolverFactoryImplTest, DisconnectProxyResolverClient) {
   factory_->CreateResolver(
       mojo::String::From(kScriptData), mojo::GetProxy(&proxy_resolver),
       host_resolver.Pass(), error_observer.Pass(), client_ptr.Pass());
-  proxy_resolver.set_error_handler(this);
+  proxy_resolver.set_connection_error_handler(
+      base::Bind(&MojoProxyResolverFactoryImplTest::OnConnectionError,
+                 base::Unretained(this)));
   waiter_.WaitForEvent(RESOLVER_CREATED);
   EXPECT_EQ(0, instances_destroyed_);
   ASSERT_EQ(1u, mock_factory_->pending_requests().size());
@@ -177,7 +181,9 @@ TEST_F(MojoProxyResolverFactoryImplTest, DisconnectBoth) {
   factory_->CreateResolver(
       mojo::String::From(kScriptData), mojo::GetProxy(&proxy_resolver),
       host_resolver.Pass(), error_observer.Pass(), client_ptr.Pass());
-  proxy_resolver.set_error_handler(this);
+  proxy_resolver.set_connection_error_handler(
+      base::Bind(&MojoProxyResolverFactoryImplTest::OnConnectionError,
+                 base::Unretained(this)));
   waiter_.WaitForEvent(RESOLVER_CREATED);
   EXPECT_EQ(0, instances_destroyed_);
   ASSERT_EQ(1u, mock_factory_->pending_requests().size());
@@ -209,7 +215,9 @@ TEST_F(MojoProxyResolverFactoryImplTest, Error) {
   factory_->CreateResolver(
       mojo::String::From(kScriptData), mojo::GetProxy(&proxy_resolver),
       host_resolver.Pass(), error_observer.Pass(), client_ptr.Pass());
-  proxy_resolver.set_error_handler(this);
+  proxy_resolver.set_connection_error_handler(
+      base::Bind(&MojoProxyResolverFactoryImplTest::OnConnectionError,
+                 base::Unretained(this)));
   waiter_.WaitForEvent(RESOLVER_CREATED);
   EXPECT_EQ(0, instances_destroyed_);
   ASSERT_EQ(1u, mock_factory_->pending_requests().size());
@@ -236,7 +244,9 @@ TEST_F(MojoProxyResolverFactoryImplTest,
   factory_->CreateResolver(
       mojo::String::From(kScriptData), mojo::GetProxy(&proxy_resolver),
       host_resolver.Pass(), error_observer.Pass(), client_ptr.Pass());
-  proxy_resolver.set_error_handler(this);
+  proxy_resolver.set_connection_error_handler(
+      base::Bind(&MojoProxyResolverFactoryImplTest::OnConnectionError,
+                 base::Unretained(this)));
   waiter_.WaitForEvent(RESOLVER_CREATED);
   EXPECT_EQ(0, instances_destroyed_);
   ASSERT_EQ(1u, mock_factory_->pending_requests().size());
@@ -256,7 +266,9 @@ TEST_F(MojoProxyResolverFactoryImplTest,
   mojo::InterfaceRequest<interfaces::HostResolver> host_resolver_request =
       mojo::GetProxy(&host_resolver);
   mojo::Binding<interfaces::HostResolver> binding(nullptr, &host_resolver);
-  binding.set_error_handler(this);
+  binding.set_connection_error_handler(
+      base::Bind(&MojoProxyResolverFactoryImplTest::OnConnectionError,
+                 base::Unretained(this)));
   interfaces::ProxyResolverErrorObserverPtr error_observer;
   mojo::GetProxy(&error_observer);
   interfaces::ProxyResolverFactoryRequestClientPtr client_ptr;
@@ -265,7 +277,9 @@ TEST_F(MojoProxyResolverFactoryImplTest,
   factory_->CreateResolver(
       mojo::String::From(kScriptData), mojo::GetProxy(&proxy_resolver),
       host_resolver.Pass(), error_observer.Pass(), client_ptr.Pass());
-  proxy_resolver.set_error_handler(this);
+  proxy_resolver.set_connection_error_handler(
+      base::Bind(&MojoProxyResolverFactoryImplTest::OnConnectionError,
+                 base::Unretained(this)));
   waiter_.WaitForEvent(RESOLVER_CREATED);
   EXPECT_EQ(0, instances_destroyed_);
   ASSERT_EQ(1u, mock_factory_->pending_requests().size());
@@ -282,7 +296,9 @@ TEST_F(MojoProxyResolverFactoryImplTest,
   mojo::InterfaceRequest<interfaces::HostResolver> host_resolver_request =
       mojo::GetProxy(&host_resolver);
   mojo::Binding<interfaces::HostResolver> binding(nullptr, &host_resolver);
-  binding.set_error_handler(this);
+  binding.set_connection_error_handler(
+      base::Bind(&MojoProxyResolverFactoryImplTest::OnConnectionError,
+                 base::Unretained(this)));
   interfaces::ProxyResolverErrorObserverPtr error_observer;
   mojo::GetProxy(&error_observer);
   interfaces::ProxyResolverFactoryRequestClientPtr client_ptr;
@@ -291,8 +307,12 @@ TEST_F(MojoProxyResolverFactoryImplTest,
   factory_->CreateResolver(
       mojo::String::From(kScriptData), mojo::GetProxy(&proxy_resolver),
       host_resolver.Pass(), error_observer.Pass(), client_ptr.Pass());
-  proxy_resolver.set_error_handler(this);
-  client_binding.set_error_handler(this);
+  proxy_resolver.set_connection_error_handler(
+      base::Bind(&MojoProxyResolverFactoryImplTest::OnConnectionError,
+                 base::Unretained(this)));
+  client_binding.set_connection_error_handler(
+      base::Bind(&MojoProxyResolverFactoryImplTest::OnConnectionError,
+                 base::Unretained(this)));
   waiter_.WaitForEvent(RESOLVER_CREATED);
   EXPECT_EQ(0, instances_destroyed_);
   ASSERT_EQ(1u, mock_factory_->pending_requests().size());
