@@ -944,7 +944,9 @@ v8::Local<v8::Value> WebLocalFrameImpl::callFunctionEvenIfScriptDisabled(v8::Loc
 
 v8::Local<v8::Context> WebLocalFrameImpl::mainWorldScriptContext() const
 {
-    return toV8Context(frame(), DOMWrapperWorld::mainWorld());
+    ScriptState* scriptState = ScriptState::forMainWorld(frame());
+    ASSERT(scriptState->contextIsValid());
+    return scriptState->context();
 }
 
 void WebLocalFrameImpl::reload(bool ignoreCache)

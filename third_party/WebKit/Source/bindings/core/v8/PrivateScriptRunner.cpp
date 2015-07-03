@@ -229,11 +229,8 @@ static void initializeHolderIfNeeded(ScriptState* scriptState, v8::Local<v8::Obj
 v8::Local<v8::Value> PrivateScriptRunner::installClassIfNeeded(Document* document, String className)
 {
     v8::HandleScope handleScope(toIsolate(document));
-    v8::Local<v8::Context> context = toV8Context(document->contextDocument().get(), DOMWrapperWorld::privateScriptIsolatedWorld());
-    if (context.IsEmpty())
-        return v8::Local<v8::Value>();
-    ScriptState* scriptState = ScriptState::from(context);
-    if (!scriptState->executionContext())
+    ScriptState* scriptState = ScriptState::forWorld(document->contextDocument()->frame(), DOMWrapperWorld::privateScriptIsolatedWorld());
+    if (!scriptState->contextIsValid())
         return v8::Local<v8::Value>();
 
     ScriptState::Scope scope(scriptState);
