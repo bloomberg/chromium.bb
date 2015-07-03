@@ -99,25 +99,18 @@ void AffiliationBackend::CancelPrefetch(const FacetURI& facet_uri,
 void AffiliationBackend::TrimCache() {
   DCHECK(thread_checker_ && thread_checker_->CalledOnValidThread());
 
-  // Discard all equivalence classes except those that contain >= 1 facet for
-  // which there is a FacetManager claiming that it needs to keep the data.
   std::vector<AffiliatedFacetsWithUpdateTime> all_affiliations;
   cache_->GetAllAffiliations(&all_affiliations);
-  for (const auto& affiliation : all_affiliations) {
-    bool can_discard = true;
-    for (const auto& facet_uri : affiliation.facets) {
-      FacetManager* facet_manager = facet_managers_.get(facet_uri);
-      if (facet_manager && !facet_manager->CanCachedDataBeDiscarded()) {
-        can_discard = false;
-        break;
-      }
-    }
-    if (can_discard) {
-      // The database should not be serving empty equivalence classes.
-      CHECK(affiliation.facets.size());
-      cache_->DeleteAffiliationsForFacet(affiliation.facets[0]);
-    }
-  }
+  for (const auto& affiliation : all_affiliations)
+    DiscardCachedDataIfNoLongerNeeded(affiliation.facets);
+}
+
+void AffiliationBackend::TrimCacheForFacet(const FacetURI& facet_uri) {
+  DCHECK(thread_checker_ && thread_checker_->CalledOnValidThread());
+
+  AffiliatedFacetsWithUpdateTime affiliation;
+  if (cache_->GetAffiliationsForFacet(facet_uri, &affiliation))
+    DiscardCachedDataIfNoLongerNeeded(affiliation.facets);
 }
 
 // static
@@ -133,6 +126,22 @@ FacetManager* AffiliationBackend::GetOrCreateFacetManager(
     facet_managers_.add(facet_uri, new_manager.Pass());
   }
   return facet_managers_.get(facet_uri);
+}
+
+void AffiliationBackend::DiscardCachedDataIfNoLongerNeeded(
+    const AffiliatedFacets& affiliated_facets) {
+  DCHECK(thread_checker_ && thread_checker_->CalledOnValidThread());
+
+  // Discard the equivalence class if there is no facet in the class whose
+  // FacetManager claims that it needs to keep the data.
+  for (const auto& facet_uri : affiliated_facets) {
+    FacetManager* facet_manager = facet_managers_.get(facet_uri);
+    if (facet_manager && !facet_manager->CanCachedDataBeDiscarded())
+      return;
+  }
+
+  CHECK(!affiliated_facets.empty());
+  cache_->DeleteAffiliationsForFacet(affiliated_facets[0]);
 }
 
 void AffiliationBackend::OnSendNotification(const FacetURI& facet_uri) {

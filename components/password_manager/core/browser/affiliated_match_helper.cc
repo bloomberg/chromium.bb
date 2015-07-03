@@ -216,16 +216,29 @@ void AffiliatedMatchHelper::ScheduleVerifyAffiliationsForDummyFacets(
 
 void AffiliatedMatchHelper::OnLoginsChanged(
     const PasswordStoreChangeList& changes) {
+  std::vector<FacetURI> facet_uris_to_trim;
   for (const PasswordStoreChange& change : changes) {
     FacetURI facet_uri;
     if (!IsAndroidApplicationCredential(change.form(), &facet_uri))
       continue;
 
-    if (change.type() == PasswordStoreChange::ADD)
+    if (change.type() == PasswordStoreChange::ADD) {
       affiliation_service_->Prefetch(facet_uri, base::Time::Max());
-    else if (change.type() == PasswordStoreChange::REMOVE)
+    } else if (change.type() == PasswordStoreChange::REMOVE) {
+      // Stop keeping affiliation information fresh for deleted Android logins,
+      // and make a note to potentially remove any unneeded cached data later.
+      facet_uris_to_trim.push_back(facet_uri);
       affiliation_service_->CancelPrefetch(facet_uri, base::Time::Max());
+    }
   }
+
+  // When the primary key for a login is updated, |changes| will contain both a
+  // REMOVE and ADD change for that login. Cached affiliation data should not be
+  // deleted in this case. A simple solution is to call TrimCacheForFacet()
+  // always after Prefetch() calls -- the trimming logic will detect that there
+  // is an active prefetch and not delete the corresponding data.
+  for (const FacetURI& facet_uri : facet_uris_to_trim)
+    affiliation_service_->TrimCacheForFacet(facet_uri);
 }
 
 void AffiliatedMatchHelper::OnGetPasswordStoreResults(

@@ -232,6 +232,9 @@ class AffiliationBackendTest : public testing::Test {
     testing::Mock::VerifyAndClearExpectations(mock_consumer());
   }
 
+  // TODO(engedy): Within this test fixture, the word "failure" refers to GTest
+  // failures, simulated network failures (above), and also AffiliationService
+  // failure callbacks. Make this less ambiguous.
   void GetAffiliationsAndExpectFailureWithoutFetch(const FacetURI& facet_uri) {
     GetAffiliations(mock_consumer(), facet_uri, StrategyOnCacheMiss::FAIL);
     ASSERT_NO_FATAL_FAILURE(ExpectFailureWithoutFetch(mock_consumer()));
@@ -812,7 +815,7 @@ TEST_F(AffiliationBackendTest, TrimCacheDiscardsDataWithoutFacetManagers) {
 }
 
 // Verify removal of equivalence classes that contain only facets for which
-// there are either no FacetManagers, or only such that do not need the data.
+// there are only FacetManagers that do not need the data.
 TEST_F(AffiliationBackendTest,
        TrimCacheDiscardsDataNoLongerNeededByFacetManagers) {
   FacetURI facet_uri(FacetURI::FromCanonicalSpec(kTestFacetURIAlpha1));
@@ -854,6 +857,34 @@ TEST_F(AffiliationBackendTest, TrimCacheRetainsDataThatNeededByFacetManagers) {
   EXPECT_FALSE(IsCachedDataFreshForFacet(facet_uri));
   ASSERT_NO_FATAL_FAILURE(
       GetAffiliationsAndExpectFailureWithoutFetch(facet_uri));
+}
+
+// Verify that TrimCacheForFacet() only removes the equivalence class for the
+// given facet, and preserves others (even if they could be discarded).
+TEST_F(AffiliationBackendTest,
+       TrimCacheForFacetOnlyRemovesDataForTheGivenFacet) {
+  FacetURI preserved_facet_uri(FacetURI::FromCanonicalSpec(kTestFacetURIBeta1));
+  ASSERT_NO_FATAL_FAILURE(GetAffiliationsAndExpectFetchAndThenResult(
+      FacetURI::FromCanonicalSpec(kTestFacetURIAlpha1),
+      GetTestEquivalenceClassAlpha()));
+  ASSERT_NO_FATAL_FAILURE(GetAffiliationsAndExpectFetchAndThenResult(
+      preserved_facet_uri, GetTestEquivalenceClassBeta()));
+  EXPECT_EQ(2u, GetNumOfEquivalenceClassInDatabase());
+
+  backend()->TrimCacheForFacet(
+      FacetURI::FromCanonicalSpec(kTestFacetURIAlpha2));
+  EXPECT_EQ(1u, GetNumOfEquivalenceClassInDatabase());
+
+  // Also verify that the last update time of the affiliation data is preserved,
+  // i.e., that it expires when it would normally have expired.
+  AdvanceTime(GetCacheHardExpiryPeriod() - Epsilon());
+  EXPECT_TRUE(IsCachedDataFreshForFacet(preserved_facet_uri));
+  ASSERT_NO_FATAL_FAILURE(ExpectThatEquivalenceClassIsServedFromCache(
+      GetTestEquivalenceClassBeta()));
+  AdvanceTime(Epsilon());
+  EXPECT_FALSE(IsCachedDataFreshForFacet(preserved_facet_uri));
+  ASSERT_NO_FATAL_FAILURE(
+      GetAffiliationsAndExpectFailureWithoutFetch(preserved_facet_uri));
 }
 
 TEST_F(AffiliationBackendTest, NothingExplodesWhenShutDownDuringFetch) {

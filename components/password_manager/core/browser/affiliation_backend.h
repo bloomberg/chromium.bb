@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/containers/scoped_ptr_hash_map.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -78,6 +79,7 @@ class AffiliationBackend : public FacetManagerHost,
   void CancelPrefetch(const FacetURI& facet_uri,
                       const base::Time& keep_fresh_until);
   void TrimCache();
+  void TrimCacheForFacet(const FacetURI& facet_uri);
 
   // Deletes the cache database file at |db_path|, and all auxiliary files. The
   // database must be closed before calling this.
@@ -85,10 +87,18 @@ class AffiliationBackend : public FacetManagerHost,
 
  private:
   friend class AffiliationBackendTest;
+  FRIEND_TEST_ALL_PREFIXES(
+      AffiliationBackendTest,
+      DiscardCachedDataIfNoLongerNeededWithEmptyAffiliation);
 
   // Retrieves the FacetManager corresponding to |facet_uri|, creating it and
   // storing it into |facet_managers_| if it did not exist.
   FacetManager* GetOrCreateFacetManager(const FacetURI& facet_uri);
+
+  // Discards cached data corresponding to |affiliated_facets| unless there are
+  // FacetManagers that still need the data.
+  void DiscardCachedDataIfNoLongerNeeded(
+      const AffiliatedFacets& affiliated_facets);
 
   // Scheduled by RequestNotificationAtTime() to be called back at times when a
   // FacetManager needs to be notified.
