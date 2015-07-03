@@ -3837,8 +3837,7 @@
       },
       {
         "args": [
-          "--site-per-process",
-          "--gtest_filter=-NavigatorTestWithBrowserSideNavigation.BeginNavigation"
+          "--site-per-process"
         ],
         "test": "content_unittests"
       },
@@ -3868,8 +3867,7 @@
       },
       {
         "args": [
-          "--site-per-process",
-          "--gtest_filter=-NavigatorTestWithBrowserSideNavigation.BeginNavigation"
+          "--site-per-process"
         ],
         "test": "content_unittests"
       },
