@@ -4,10 +4,9 @@
 
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 
-#include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"

@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/base_paths.h"
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
@@ -202,7 +201,7 @@ void VerifyModelMatchesNode(TestNode* expected, const BookmarkNode* actual) {
 
 void VerifyNoDuplicateIDs(BookmarkModel* model) {
   ui::TreeNodeIterator<const BookmarkNode> it(model->root_node());
-  base::hash_set<int64> ids;
+  base::hash_set<int64_t> ids;
   while (it.has_next())
     ASSERT_TRUE(ids.insert(it.Next()->id()).second);
 }

@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_BOOKMARKS_BROWSER_STARTUP_TASK_RUNNER_SERVICE_H_
 #define COMPONENTS_BOOKMARKS_BROWSER_STARTUP_TASK_RUNNER_SERVICE_H_
 
-#include "base/basictypes.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"

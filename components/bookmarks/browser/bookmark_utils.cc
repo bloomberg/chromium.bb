@@ -4,14 +4,15 @@
 
 #include "components/bookmarks/browser/bookmark_utils.h"
 
+#include <stdint.h>
 #include <utility>
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
+#include "base/macros.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
@@ -124,7 +125,7 @@ bool HasSelectedAncestor(BookmarkModel* model,
   return HasSelectedAncestor(model, selected_nodes, node->parent());
 }
 
-const BookmarkNode* GetNodeByID(const BookmarkNode* node, int64 id) {
+const BookmarkNode* GetNodeByID(const BookmarkNode* node, int64_t id) {
   if (node->id() == id)
     return node;
 
@@ -466,10 +467,10 @@ const BookmarkNode* GetParentForNewNodes(
 }
 
 void DeleteBookmarkFolders(BookmarkModel* model,
-                           const std::vector<int64>& ids) {
+                           const std::vector<int64_t>& ids) {
   // Remove the folders that were removed. This has to be done after all the
   // other changes have been committed.
-  for (std::vector<int64>::const_iterator iter = ids.begin();
+  for (std::vector<int64_t>::const_iterator iter = ids.begin();
        iter != ids.end();
        ++iter) {
     const BookmarkNode* node = GetBookmarkNodeByID(model, *iter);
@@ -537,7 +538,8 @@ bool IsBookmarkedByUser(BookmarkModel* model, const GURL& url) {
   return false;
 }
 
-const BookmarkNode* GetBookmarkNodeByID(const BookmarkModel* model, int64 id) {
+const BookmarkNode* GetBookmarkNodeByID(const BookmarkModel* model,
+                                        int64_t id) {
   // TODO(sky): TreeNode needs a method that visits all nodes using a predicate.
   return GetNodeByID(model->root_node(), id);
 }

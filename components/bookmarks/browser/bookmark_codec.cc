@@ -64,7 +64,7 @@ base::Value* BookmarkCodec::Encode(
     const BookmarkNode* other_folder_node,
     const BookmarkNode* mobile_folder_node,
     const BookmarkNode::MetaInfoMap* model_meta_info_map,
-    int64 sync_transaction_version) {
+    int64_t sync_transaction_version) {
   ids_reassigned_ = false;
   InitializeChecksum();
   base::DictionaryValue* roots = new base::DictionaryValue();
@@ -92,7 +92,7 @@ base::Value* BookmarkCodec::Encode(
 bool BookmarkCodec::Decode(BookmarkNode* bb_node,
                            BookmarkNode* other_folder_node,
                            BookmarkNode* mobile_folder_node,
-                           int64* max_id,
+                           int64_t* max_id,
                            const base::Value& value) {
   ids_.clear();
   ids_reassigned_ = false;
@@ -126,9 +126,9 @@ base::Value* BookmarkCodec::EncodeNode(const BookmarkNode* node) {
     UpdateChecksumWithUrlNode(id, title, url);
   } else {
     value->SetString(kTypeKey, kTypeFolder);
-    value->SetString(kDateModifiedKey,
-                     base::Int64ToString(node->date_folder_modified().
-                                   ToInternalValue()));
+    value->SetString(
+        kDateModifiedKey,
+        base::Int64ToString(node->date_folder_modified().ToInternalValue()));
     UpdateChecksumWithFolderNode(id, title);
 
     base::ListValue* child_values = new base::ListValue();
@@ -268,7 +268,7 @@ bool BookmarkCodec::DecodeNode(const base::DictionaryValue& value,
   }
 
   std::string id_string;
-  int64 id = 0;
+  int64_t id = 0;
   if (ids_valid_) {
     if (!value.GetString(kIdKey, &id_string) ||
         !base::StringToInt64(id_string, &id) ||
@@ -287,7 +287,7 @@ bool BookmarkCodec::DecodeNode(const base::DictionaryValue& value,
   std::string date_added_string;
   if (!value.GetString(kDateAddedKey, &date_added_string))
     date_added_string = base::Int64ToString(Time::Now().ToInternalValue());
-  int64 internal_time;
+  int64_t internal_time;
   base::StringToInt64(date_added_string, &internal_time);
 
   std::string type_string;
@@ -332,7 +332,7 @@ bool BookmarkCodec::DecodeNode(const base::DictionaryValue& value,
     }
 
     node->set_type(BookmarkNode::FOLDER);
-    int64 internal_time;
+    int64_t internal_time;
     base::StringToInt64(last_modified_date, &internal_time);
     node->set_date_folder_modified(Time::FromInternalValue(internal_time));
 
@@ -351,7 +351,7 @@ bool BookmarkCodec::DecodeNode(const base::DictionaryValue& value,
   node->SetTitle(title);
   node->set_date_added(Time::FromInternalValue(internal_time));
 
-  int64 sync_transaction_version = node->sync_transaction_version();
+  int64_t sync_transaction_version = node->sync_transaction_version();
   BookmarkNode::MetaInfoMap meta_info_map;
   if (!DecodeMetaInfo(value, &meta_info_map, &sync_transaction_version))
     return false;
@@ -370,7 +370,7 @@ bool BookmarkCodec::DecodeNode(const base::DictionaryValue& value,
 
 bool BookmarkCodec::DecodeMetaInfo(const base::DictionaryValue& value,
                                    BookmarkNode::MetaInfoMap* meta_info_map,
-                                   int64* sync_transaction_version) {
+                                   int64_t* sync_transaction_version) {
   DCHECK(meta_info_map);
   DCHECK(sync_transaction_version);
   meta_info_map->clear();

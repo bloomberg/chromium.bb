@@ -5,12 +5,13 @@
 #ifndef COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_MODEL_H_
 #define COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_MODEL_H_
 
+#include <stdint.h>
 #include <map>
 #include <set>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -257,7 +258,7 @@ class BookmarkModel : public KeyedService {
   void ClearStore();
 
   // Returns the next node ID.
-  int64 next_node_id() const { return next_node_id_; }
+  int64_t next_node_id() const { return next_node_id_; }
 
   // Returns the object responsible for tracking the set of expanded nodes in
   // the bookmark editor.
@@ -294,7 +295,7 @@ class BookmarkModel : public KeyedService {
 
   // Sets the sync transaction version of |node|.
   void SetNodeSyncTransactionVersion(const BookmarkNode* node,
-                                     int64 sync_transaction_version);
+                                     int64_t sync_transaction_version);
 
   // Notify BookmarkModel that the favicons for |urls| have changed and have to
   // be refetched. This notification is sent by BookmarkClient.
@@ -387,12 +388,12 @@ class BookmarkModel : public KeyedService {
   void EndGroupedChanges();
 
   // Generates and returns the next node ID.
-  int64 generate_next_node_id();
+  int64_t generate_next_node_id();
 
   // Sets the maximum node ID to the given value.
   // This is used by BookmarkCodec to report the maximum ID after it's done
   // decoding since during decoding codec assigns node IDs.
-  void set_next_node_id(int64 id) { next_node_id_ = id; }
+  void set_next_node_id(int64_t id) { next_node_id_ = id; }
 
   // Creates and returns a new BookmarkLoadDetails. It's up to the caller to
   // delete the returned object.
@@ -413,7 +414,7 @@ class BookmarkModel : public KeyedService {
   BookmarkPermanentNode* mobile_node_;
 
   // The maximum ID assigned to the bookmark nodes in the model.
-  int64 next_node_id_;
+  int64_t next_node_id_;
 
   // The observers.
   base::ObserverList<BookmarkModelObserver> observers_;

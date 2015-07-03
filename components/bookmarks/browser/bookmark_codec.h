@@ -5,10 +5,11 @@
 #ifndef COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_CODEC_H_
 #define COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_CODEC_H_
 
+#include <stdint.h>
 #include <set>
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/md5.h"
 #include "base/strings/string16.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -47,7 +48,7 @@ class BookmarkCodec {
                       const BookmarkNode* other_folder_node,
                       const BookmarkNode* mobile_folder_node,
                       const BookmarkNode::MetaInfoMap* model_meta_info_map,
-                      int64 sync_transaction_version);
+                      int64_t sync_transaction_version);
 
   // Decodes the previously encoded value to the specified nodes as well as
   // setting |max_node_id| to the greatest node id. Returns true on success,
@@ -57,7 +58,7 @@ class BookmarkCodec {
   bool Decode(BookmarkNode* bb_node,
               BookmarkNode* other_folder_node,
               BookmarkNode* mobile_folder_node,
-              int64* max_node_id,
+              int64_t* max_node_id,
               const base::Value& value);
 
   // Returns the checksum computed during last encoding/decoding call.
@@ -76,7 +77,7 @@ class BookmarkCodec {
   }
 
   // Return the sync transaction version of the bookmark model root.
-  int64 model_sync_transaction_version() const {
+  int64_t model_sync_transaction_version() const {
     return model_sync_transaction_version_;
   }
 
@@ -147,7 +148,7 @@ class BookmarkCodec {
   // meta_info_map and sync_transaction_version must not be NULL.
   bool DecodeMetaInfo(const base::DictionaryValue& value,
                       BookmarkNode::MetaInfoMap* meta_info_map,
-                      int64* sync_transaction_version);
+                      int64_t* sync_transaction_version);
 
   // Decodes the meta info from the supplied sub-node dictionary. The values
   // found will be inserted in meta_info_map with the given prefix added to the
@@ -185,7 +186,7 @@ class BookmarkCodec {
 
   // Contains the id of each of the nodes found in the file. Used to determine
   // if we have duplicates.
-  std::set<int64> ids_;
+  std::set<int64_t> ids_;
 
   // MD5 context used to compute MD5 hash of all bookmark data.
   base::MD5Context md5_context_;
@@ -195,13 +196,13 @@ class BookmarkCodec {
   std::string stored_checksum_;
 
   // Maximum ID assigned when decoding data.
-  int64 maximum_id_;
+  int64_t maximum_id_;
 
   // Meta info set on bookmark model root.
   BookmarkNode::MetaInfoMap model_meta_info_map_;
 
   // Sync transaction version set on bookmark model root.
-  int64 model_sync_transaction_version_;
+  int64_t model_sync_transaction_version_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkCodec);
 };
