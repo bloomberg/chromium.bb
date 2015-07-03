@@ -96,7 +96,7 @@ benchmark(const char *s, void (*f)(void))
 	       s, elapsed.tv_sec, elapsed.tv_nsec);
 }
 
-int main(int argc, char *argv[])
+int main(void)
 {
 	benchmark("noop", noop_conversion);
 	benchmark("magic", magic_conversion);
