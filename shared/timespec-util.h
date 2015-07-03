@@ -26,6 +26,9 @@
 #ifndef TIMESPEC_UTIL_H
 #define TIMESPEC_UTIL_H
 
+#include <stdint.h>
+#include <assert.h>
+
 #define NSEC_PER_SEC 1000000000
 
 /* Subtract timespecs
@@ -57,5 +60,16 @@ timespec_to_nsec(const struct timespec *a)
 	return (int64_t)a->tv_sec * NSEC_PER_SEC + a->tv_nsec;
 }
 
+/* Convert milli-Hertz to nanoseconds
+ *
+ * \param mhz frequency in mHz, not zero
+ * \return period in nanoseconds
+ */
+static inline int64_t
+millihz_to_nsec(uint32_t mhz)
+{
+	assert(mhz > 0);
+	return 1000000000000LL / mhz;
+}
 
 #endif /* TIMESPEC_UTIL_H */

@@ -2349,7 +2349,7 @@ weston_output_finish_frame(struct weston_output *output,
 	TL_POINT("core_repaint_finished", TLP_OUTPUT(output),
 		 TLP_VBLANK(stamp), TLP_END);
 
-	refresh_nsec = 1000000000000LL / output->current_mode->refresh;
+	refresh_nsec = millihz_to_nsec(output->current_mode->refresh);
 	weston_presentation_feedback_present_list(&output->feedback_list,
 						  output, refresh_nsec, stamp,
 						  output->msc,
