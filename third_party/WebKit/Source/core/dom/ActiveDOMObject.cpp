@@ -31,6 +31,8 @@
 
 namespace blink {
 
+unsigned ActiveDOMObject::s_instanceCount = 0;
+
 ActiveDOMObject::ActiveDOMObject(ExecutionContext* executionContext)
     : ContextLifecycleObserver(executionContext, ActiveDOMObjectType)
 #if ENABLE(ASSERT)
@@ -38,10 +40,13 @@ ActiveDOMObject::ActiveDOMObject(ExecutionContext* executionContext)
 #endif
 {
     ASSERT(!executionContext || executionContext->isContextThread());
+    ++s_instanceCount;
 }
 
 ActiveDOMObject::~ActiveDOMObject()
 {
+    --s_instanceCount;
+
     // ActiveDOMObject may be inherited by a sub-class whose life-cycle
     // exceeds that of the associated ExecutionContext. In those cases,
     // m_executionContext would/should have been nullified by

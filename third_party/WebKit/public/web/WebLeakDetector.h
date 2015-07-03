@@ -46,6 +46,7 @@ public:
         unsigned numberOfLiveRenderObjects;
         unsigned numberOfLiveLayoutObjects;
         unsigned numberOfLiveResources;
+        unsigned numberOfLiveActiveDOMObjects;
     };
 
     virtual void onLeakDetectionComplete(const Result&) = 0;
