@@ -66,7 +66,8 @@ namespace ui {
 DataPack::DataPack(ui::ScaleFactor scale_factor)
     : resource_count_(0),
       text_encoding_type_(BINARY),
-      scale_factor_(scale_factor) {
+      scale_factor_(scale_factor),
+      has_only_material_design_assets_(false) {
 }
 
 DataPack::~DataPack() {
@@ -231,6 +232,10 @@ ui::ScaleFactor DataPack::GetScaleFactor() const {
   return scale_factor_;
 }
 
+bool DataPack::HasOnlyMaterialDesignAssets() const {
+  return has_only_material_design_assets_;
+}
+
 #if DCHECK_IS_ON()
 void DataPack::CheckForDuplicateResources(
     const ScopedVector<ResourceHandle>& packs) {
@@ -240,9 +245,15 @@ void DataPack::CheckForDuplicateResources(
     const uint16 resource_id = entry->resource_id;
     const float resource_scale = GetScaleForScaleFactor(scale_factor_);
     for (const ResourceHandle* handle : packs) {
-      DCHECK_IMPLIES(
-          GetScaleForScaleFactor(handle->GetScaleFactor()) == resource_scale,
-          !handle->HasResource(resource_id));
+      if (HasOnlyMaterialDesignAssets() !=
+          handle->HasOnlyMaterialDesignAssets()) {
+        continue;
+      }
+      if (GetScaleForScaleFactor(handle->GetScaleFactor()) != resource_scale)
+        continue;
+      DCHECK(!handle->HasResource(resource_id)) << "Duplicate resource "
+                                                << resource_id << " with scale "
+                                                << resource_scale;
     }
   }
 }

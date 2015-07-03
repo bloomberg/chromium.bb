@@ -206,12 +206,24 @@ bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
 
 void ResourceBundle::AddDataPackFromPath(const base::FilePath& path,
                                          ScaleFactor scale_factor) {
-  AddDataPackFromPathInternal(path, scale_factor, false);
+  AddDataPackFromPathInternal(path, scale_factor, false, false);
 }
 
 void ResourceBundle::AddOptionalDataPackFromPath(const base::FilePath& path,
                                          ScaleFactor scale_factor) {
-  AddDataPackFromPathInternal(path, scale_factor, true);
+  AddDataPackFromPathInternal(path, scale_factor, true, false);
+}
+
+void ResourceBundle::AddMaterialDesignDataPackFromPath(
+    const base::FilePath& path,
+    ScaleFactor scale_factor) {
+  AddDataPackFromPathInternal(path, scale_factor, false, true);
+}
+
+void ResourceBundle::AddOptionalMaterialDesignDataPackFromPath(
+    const base::FilePath& path,
+    ScaleFactor scale_factor) {
+  AddDataPackFromPathInternal(path, scale_factor, true, true);
 }
 
 void ResourceBundle::AddDataPackFromFile(base::File file,
@@ -631,9 +643,11 @@ void ResourceBundle::FreeImages() {
   images_.clear();
 }
 
-void ResourceBundle::AddDataPackFromPathInternal(const base::FilePath& path,
-                                                 ScaleFactor scale_factor,
-                                                 bool optional) {
+void ResourceBundle::AddDataPackFromPathInternal(
+    const base::FilePath& path,
+    ScaleFactor scale_factor,
+    bool optional,
+    bool has_only_material_assets) {
   // Do not pass an empty |path| value to this method. If the absolute path is
   // unknown pass just the pack file name.
   DCHECK(!path.empty());
@@ -646,8 +660,8 @@ void ResourceBundle::AddDataPackFromPathInternal(const base::FilePath& path,
   if (pack_path.empty() || !pack_path.IsAbsolute())
     return;
 
-  scoped_ptr<DataPack> data_pack(
-      new DataPack(scale_factor));
+  scoped_ptr<DataPack> data_pack(new DataPack(scale_factor));
+  data_pack->set_has_only_material_design_assets(has_only_material_assets);
   if (data_pack->LoadFromPath(pack_path)) {
     AddDataPack(data_pack.release());
   } else if (!optional) {

@@ -181,6 +181,15 @@ class UI_BASE_EXPORT ResourceBundle {
   void AddOptionalDataPackFromPath(const base::FilePath& path,
                                    ScaleFactor scale_factor);
 
+  // The same as AddDataPackFromPath() and AddOptionalDataPackFromPath(),
+  // except the data pack is flagged as containing only material design assets.
+  // TODO(tdanderson): These methods are temporary and should be removed after
+  //                   the transition to material design in the browser UI.
+  void AddMaterialDesignDataPackFromPath(const base::FilePath& path,
+                                         ScaleFactor scale_factor);
+  void AddOptionalMaterialDesignDataPackFromPath(const base::FilePath& path,
+                                                 ScaleFactor scale_factor);
+
   // Changes the locale for an already-initialized ResourceBundle, returning the
   // name of the newly-loaded locale.  Future calls to get strings will return
   // the strings for this new locale.  This has no effect on existing or future
@@ -284,6 +293,8 @@ class UI_BASE_EXPORT ResourceBundle {
   FRIEND_TEST_ALL_PREFIXES(ResourceBundleTest, DelegateGetPathForLocalePack);
   FRIEND_TEST_ALL_PREFIXES(ResourceBundleTest, DelegateGetImageNamed);
   FRIEND_TEST_ALL_PREFIXES(ResourceBundleTest, DelegateGetNativeImageNamed);
+  FRIEND_TEST_ALL_PREFIXES(ResourceBundleImageTest,
+                           CountMaterialDesignDataPacksInResourceBundle);
 
   friend class ResourceBundleImageTest;
   friend class ResourceBundleTest;
@@ -306,11 +317,14 @@ class UI_BASE_EXPORT ResourceBundle {
   // Load the main resources.
   void LoadCommonResources();
 
-  // Implementation for AddDataPackFromPath and AddOptionalDataPackFromPath, if
-  // the pack is not |optional| logs an error on failure to load.
+  // Implementation for the public methods which add a DataPack from a path. If
+  // |optional| is false, an error is logged on failure to load. Sets the
+  // member |has_only_material_design_assets_| on the created DataPack to the
+  // value of |has_only_material_assets|.
   void AddDataPackFromPathInternal(const base::FilePath& path,
                                    ScaleFactor scale_factor,
-                                   bool optional);
+                                   bool optional,
+                                   bool has_only_material_assets);
 
   // Inserts |data_pack| to |data_pack_| and updates |max_scale_factor_|
   // accordingly.

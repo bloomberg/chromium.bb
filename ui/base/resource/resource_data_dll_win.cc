@@ -60,4 +60,8 @@ ScaleFactor ResourceDataDLL::GetScaleFactor() const {
   return ui::SCALE_FACTOR_NONE;
 }
 
+bool ResourceDataDLL::HasOnlyMaterialDesignAssets() const {
+  return false;
+}
+
 }  // namespace ui
