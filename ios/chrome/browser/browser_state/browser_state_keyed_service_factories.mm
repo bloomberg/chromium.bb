@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/browser_state/browser_state_keyed_service_factories.h"
 
 #include "ios/chrome/browser/bookmarks/startup_task_runner_service_factory.h"
+#include "ios/chrome/browser/content_settings/cookie_settings_factory.h"
 #include "ios/chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "ios/chrome/browser/enhanced_bookmarks/bookmark_image_service_factory.h"
 #include "ios/chrome/browser/enhanced_bookmarks/bookmark_server_cluster_service_factory.h"
@@ -35,6 +36,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   enhanced_bookmarks::BookmarkServerClusterServiceFactory::GetInstance();
   enhanced_bookmarks::EnhancedBookmarkModelFactory::GetInstance();
   ios::BookmarkUndoServiceFactory::GetInstance();
+  ios::CookieSettingsFactory::GetInstance();
   ios::FaviconServiceFactory::GetInstance();
   ios::HistoryServiceFactory::GetInstance();
   ios::SigninErrorControllerFactory::GetInstance();
