@@ -7,10 +7,6 @@
 
 namespace blink {
 
-MediaSession::MediaSession()
-{
-}
-
 MediaSession* MediaSession::create()
 {
     return new MediaSession;

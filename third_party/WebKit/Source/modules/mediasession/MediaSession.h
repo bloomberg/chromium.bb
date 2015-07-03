@@ -21,7 +21,7 @@ public:
     DEFINE_INLINE_TRACE() { }
 
 private:
-    MediaSession();
+    MediaSession() = default;
 };
 
 } // namespace blink
