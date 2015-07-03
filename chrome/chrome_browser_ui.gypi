@@ -902,8 +902,6 @@
       'browser/ui/cocoa/chrome_event_processing_window.mm',
       'browser/ui/cocoa/clickhold_button_cell.h',
       'browser/ui/cocoa/clickhold_button_cell.mm',
-      'browser/ui/cocoa/command_observer_bridge.h',
-      'browser/ui/cocoa/command_observer_bridge.mm',
       'browser/ui/cocoa/confirm_bubble_cocoa.h',
       'browser/ui/cocoa/confirm_bubble_cocoa.mm',
       'browser/ui/cocoa/confirm_bubble_controller.h',

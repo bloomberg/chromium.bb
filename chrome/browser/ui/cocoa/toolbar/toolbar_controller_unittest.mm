@@ -6,11 +6,14 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/prefs/pref_service.h"
+#include "base/run_loop.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
@@ -39,6 +42,26 @@
 
 @end
 
+// Records the last command id and enabled state it has received so it can be
+// queried by the tests to see if we got a notification or not.
+@interface TestToolbarController : ToolbarController {
+ @private
+  int lastCommand_;  // Id of last received state change.
+  bool lastState_;   // State of last received state change.
+}
+@property(nonatomic, readonly) int lastCommand;
+@property(nonatomic, readonly) bool lastState;
+@end
+
+@implementation TestToolbarController
+@synthesize lastCommand = lastCommand_;
+@synthesize lastState = lastState_;
+- (void)enabledStateChangedForCommand:(int)command enabled:(bool)enabled {
+  [super enabledStateChangedForCommand:command enabled:enabled];
+  lastCommand_ = command;
+  lastState_ = enabled;
+}
+@end
 
 namespace {
 
@@ -63,12 +86,11 @@ class ToolbarControllerTest : public CocoaProfileTest {
     updater->UpdateCommandEnabled(IDC_BACK, false);
     updater->UpdateCommandEnabled(IDC_FORWARD, false);
     resizeDelegate_.reset([[ViewResizerPong alloc] init]);
-    bar_.reset(
-        [[ToolbarController alloc]
-            initWithCommands:browser()->command_controller()->command_updater()
-                     profile:profile()
-                     browser:browser()
-              resizeDelegate:resizeDelegate_.get()]);
+    bar_.reset([[TestToolbarController alloc]
+        initWithCommands:browser()->command_controller()->command_updater()
+                 profile:profile()
+                 browser:browser()
+          resizeDelegate:resizeDelegate_.get()]);
     EXPECT_TRUE([bar_ view]);
     NSView* parent = [test_window() contentView];
     [parent addSubview:[bar_ view]];
@@ -93,7 +115,7 @@ class ToolbarControllerTest : public CocoaProfileTest {
   }
 
   base::scoped_nsobject<ViewResizerPong> resizeDelegate_;
-  base::scoped_nsobject<ToolbarController> bar_;
+  base::scoped_nsobject<TestToolbarController> bar_;
 };
 
 TEST_VIEW(ToolbarControllerTest, [bar_ view])
@@ -148,6 +170,11 @@ TEST_F(ToolbarControllerTest, UpdateEnabledState) {
   chrome::UpdateCommandEnabled(browser(), IDC_FORWARD, true);
   CommandUpdater* updater = browser()->command_controller()->command_updater();
   CompareState(updater, [bar_ toolbarViews]);
+
+  // Change an unwatched command and ensure the last state does not change.
+  updater->UpdateCommandEnabled(IDC_MinimumLabelValue, false);
+  EXPECT_EQ([bar_ lastCommand], IDC_FORWARD);
+  EXPECT_EQ([bar_ lastState], true);
 }
 
 // Focus the location bar and make sure that it's the first responder.
@@ -252,6 +279,30 @@ TEST_F(ToolbarControllerTest, HoverButtonForEvent) {
       [[ImageButtonCell alloc] init]);
   [button setCell:cell.get()];
   EXPECT_TRUE([bar_ hoverButtonForEvent:nil]);
+}
+
+class BrowserRemovedObserver : public chrome::BrowserListObserver {
+ public:
+  BrowserRemovedObserver() { BrowserList::AddObserver(this); }
+  ~BrowserRemovedObserver() override { BrowserList::RemoveObserver(this); }
+  void WaitUntilBrowserRemoved() { run_loop_.Run(); }
+  void OnBrowserRemoved(Browser* browser) override { run_loop_.Quit(); }
+
+ private:
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserRemovedObserver);
+};
+
+// Test that ToolbarController can be destroyed after the Browser.
+// This can happen because the ToolbarController is retained by both the
+// BrowserWindowController and -[ToolbarController view], the latter of which is
+// autoreleased.
+TEST_F(ToolbarControllerTest, ToolbarDestroyedAfterBrowser) {
+  BrowserRemovedObserver observer;
+  CloseBrowserWindow();
+  observer.WaitUntilBrowserRemoved();
+  // |bar_| is released in TearDown().
 }
 
 }  // namespace

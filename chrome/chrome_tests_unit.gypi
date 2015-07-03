@@ -373,7 +373,6 @@
       'browser/ui/cocoa/cocoa_profile_test.mm',
       'browser/ui/cocoa/cocoa_test_helper.h',
       'browser/ui/cocoa/cocoa_test_helper.mm',
-      'browser/ui/cocoa/command_observer_bridge_unittest.mm',
       'browser/ui/cocoa/confirm_bubble_controller_unittest.mm',
       'browser/ui/cocoa/confirm_quit_panel_controller_unittest.mm',
       'browser/ui/cocoa/constrained_window/constrained_window_alert_unittest.mm',
