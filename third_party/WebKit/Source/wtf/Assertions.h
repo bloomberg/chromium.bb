@@ -127,7 +127,7 @@ using WTF::FrameToNameScope;
 
 /* IMMEDIATE_CRASH() - Like CRASH() below but crashes in the fastest, simplest possible way with no attempt at logging. */
 #ifndef IMMEDIATE_CRASH
-#if COMPILER(GCC)
+#if COMPILER(GCC) || COMPILER(CLANG)
 #define IMMEDIATE_CRASH() __builtin_trap()
 #else
 #define IMMEDIATE_CRASH() ((void)(*(volatile char*)0 = 0))
