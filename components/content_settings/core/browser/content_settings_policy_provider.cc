@@ -48,6 +48,7 @@ const char* kPrefToManageType[] = {
 #endif
   nullptr,  // No policy for default value of app banners
   nullptr,  // No policy for default value of site engagement
+  nullptr,  // No policy for default value of durable storage
 };
 static_assert(arraysize(kPrefToManageType) == CONTENT_SETTINGS_NUM_TYPES,
               "kPrefToManageType should have CONTENT_SETTINGS_NUM_TYPES "

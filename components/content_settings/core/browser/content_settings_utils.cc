@@ -51,6 +51,7 @@ const char* kTypeNames[] = {
 #endif
   "app-banner",
   "site-engagement",
+  "durable-storage"
 };
 static_assert(arraysize(kTypeNames) == CONTENT_SETTINGS_NUM_TYPES,
               "kTypeNames should have CONTENT_SETTINGS_NUM_TYPES elements");

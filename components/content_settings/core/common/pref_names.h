@@ -44,6 +44,7 @@ extern const char kDefaultProtectedMediaIdentifierSetting[];
 #endif
 extern const char kDefaultAppBannerSetting[];
 extern const char kDefaultSiteEngagementSetting[];
+extern const char kDefaultDurableStorageSetting[];
 
 extern const char kMigratedDefaultMediaStreamSetting[];
 
@@ -75,6 +76,7 @@ extern const char kContentSettingsProtectedMediaIdentifierPatternPairs[];
 #endif
 extern const char kContentSettingsAppBannerPatternPairs[];
 extern const char kContentSettingsSiteEngagementPatternPairs[];
+extern const char kContentSettingsDurableStoragePatternPairs[];
 
 extern const char kMigratedContentSettingsPatternPairs[];
 

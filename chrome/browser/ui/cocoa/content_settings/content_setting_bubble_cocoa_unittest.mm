@@ -115,7 +115,8 @@ TEST_F(ContentSettingBubbleControllerTest, Init) {
         i == CONTENT_SETTINGS_TYPE_PUSH_MESSAGING ||
         i == CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS ||
         i == CONTENT_SETTINGS_TYPE_APP_BANNER ||
-        i == CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT) {
+        i == CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT ||
+        i == CONTENT_SETTINGS_TYPE_DURABLE_STORAGE) {
       // These types have no bubble.
       continue;
     }

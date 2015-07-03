@@ -95,6 +95,7 @@ const char* kContentSettingsExceptionsPrefs[] = {
 #endif
     prefs::kContentSettingsAppBannerPatternPairs,
     prefs::kContentSettingsSiteEngagementPatternPairs,
+    prefs::kContentSettingsDurableStoragePatternPairs,
 };
 static_assert(arraysize(kContentSettingsExceptionsPrefs)
               == CONTENT_SETTINGS_NUM_TYPES,

@@ -782,6 +782,10 @@ void ContentSettingsHandler::UpdateExceptionsViewFromModel(
       // to track engagement with various origins, and is not a user visible
       // content setting.
       break;
+    case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
+      // Durable storage is not yet user visible. TODO(dgrogan): Make it so.
+      // https://crbug.com/482814
+      break;
     default:
       UpdateExceptionsViewFromHostContentSettingsMap(type);
       break;
@@ -806,6 +810,7 @@ void ContentSettingsHandler::UpdateOTRExceptionsViewFromModel(
     case CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS:
     case CONTENT_SETTINGS_TYPE_APP_BANNER:
     case CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT:
+    case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
       break;
     default:
       UpdateExceptionsViewFromOTRHostContentSettingsMap(type);

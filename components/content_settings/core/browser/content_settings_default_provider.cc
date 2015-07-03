@@ -66,6 +66,7 @@ const DefaultContentSettingInfo kDefaultSettings[] = {
 #endif
   {prefs::kDefaultAppBannerSetting, CONTENT_SETTING_DEFAULT},
   {prefs::kDefaultSiteEngagementSetting, CONTENT_SETTING_DEFAULT},
+  {prefs::kDefaultDurableStorageSetting, CONTENT_SETTING_ASK},
 };
 static_assert(arraysize(kDefaultSettings) == CONTENT_SETTINGS_NUM_TYPES,
               "kDefaultSettings should have CONTENT_SETTINGS_NUM_TYPES "
