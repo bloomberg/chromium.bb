@@ -295,6 +295,11 @@
               # ICU has some code with the pattern:
               #   if (found = uprv_getWindowsTimeZoneInfo(...))
               '-Wno-parentheses',
+              # ICU generally has no unused variables, but there are a few
+              # places where this warning triggers.
+              # See https://codereview.chromium.org/1222643002/ and
+              # http://www.icu-project.org/trac/ticket/11759.
+              "-Wno-unused-const-variable",
             ],
           },
           'cflags': [
