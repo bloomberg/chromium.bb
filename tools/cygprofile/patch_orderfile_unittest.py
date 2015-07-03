@@ -10,12 +10,15 @@ import symbol_extractor
 
 
 class TestPatchOrderFile(unittest.TestCase):
-  def testRemoveClone(self):
-    no_clone = "this.does.not.contain.clone"
-    self.assertEquals(no_clone, patch_orderfile._RemoveClone(no_clone))
-    with_clone = "this.does.contain.clone."
+  def testRemoveSuffixes(self):
+    no_clone = 'this.does.not.contain.clone'
+    self.assertEquals(no_clone, patch_orderfile.RemoveSuffixes(no_clone))
+    with_clone = 'this.does.contain.clone.'
     self.assertEquals(
-        "this.does.contain", patch_orderfile._RemoveClone(with_clone))
+        'this.does.contain', patch_orderfile.RemoveSuffixes(with_clone))
+    with_part = 'this.is.a.part.42'
+    self.assertEquals(
+        'this.is.a', patch_orderfile.RemoveSuffixes(with_part))
 
   def testAliasClonedSymbols(self):
     symbol_infos = [
@@ -45,10 +48,9 @@ class TestPatchOrderFile(unittest.TestCase):
     self.assertEquals(len(offset_to_symbol_infos), 1)
     self.assertEquals(tuple(offset_to_symbol_infos[0x42]), symbol_infos)
 
-  def testExpandSymbols(self):
+  def testSymbolsWithSameOffset(self):
     symbol_name = "dummySymbol"
     symbol_name2 = "other"
-    profiled_symbol_names = [symbol_name, "symbolThatShouldntMatch"]
     name_to_symbol_infos = {symbol_name: [
         symbol_extractor.SymbolInfo(symbol_name, 0x42, 0x12,
                                     section='.text')]}
@@ -57,29 +59,93 @@ class TestPatchOrderFile(unittest.TestCase):
                                            section='.text'),
                symbol_extractor.SymbolInfo(symbol_name2, 0x42, 0x12,
                                            section='.text')]}
-    symbol_names = patch_orderfile._ExpandSymbols(
-        profiled_symbol_names, name_to_symbol_infos, offset_to_symbol_infos)
-    self.assertEquals(len(symbol_names), 3)
+    symbol_names = patch_orderfile._SymbolsWithSameOffset(
+        symbol_name, name_to_symbol_infos, offset_to_symbol_infos)
+    self.assertEquals(len(symbol_names), 2)
     self.assertEquals(symbol_names[0], symbol_name)
     self.assertEquals(symbol_names[1], symbol_name2)
-    self.assertEquals(symbol_names[2], "symbolThatShouldntMatch")
+    self.assertEquals([], patch_orderfile._SymbolsWithSameOffset(
+        "symbolThatShouldntMatch",
+        name_to_symbol_infos, offset_to_symbol_infos))
 
-  def testPrintSymbolWithPrefixes(self):
-    class FakeOutputFile(object):
-      def __init__(self):
-        self.output = ''
-      def write(self, s):
-        self.output = self.output + s
-    test_symbol = "dummySymbol"
-    symbol_names = [test_symbol]
-    fake_output = FakeOutputFile()
-    patch_orderfile._PrintSymbolsWithPrefixes(symbol_names, fake_output)
-    expected_output = """.text.startup.dummySymbol
-.text.hot.dummySymbol
-.text.unlikely.dummySymbol
-.text.dummySymbol
-"""
-    self.assertEquals(fake_output.output, expected_output)
+  def testSectionNameToSymbols(self):
+    mapping = {'.text.foo': ['foo'],
+               '.text.startup.bar': ['bar', 'bar1']}
+    self.assertEquals(list(patch_orderfile._SectionNameToSymbols(
+                      '.text.foo', mapping)),
+                      ['foo'])
+    self.assertEquals(list(patch_orderfile._SectionNameToSymbols(
+                      '.text.startup.bar', mapping)),
+                      ['bar', 'bar1'])
+    self.assertEquals(list(patch_orderfile._SectionNameToSymbols(
+                      '.text.startup.bar', mapping)),
+                      ['bar', 'bar1'])
+    self.assertEquals(list(patch_orderfile._SectionNameToSymbols(
+                      '.text.hot.foobar', mapping)),
+                      ['foobar'])
+    self.assertEquals(list(patch_orderfile._SectionNameToSymbols(
+                      '.text.startup.*', mapping)),
+                      [])
+
+  def testSectionMatchingRules(self):
+    symbol_name1 = 'symbol1'
+    symbol_name2 = 'symbol2'
+    symbol_name3 = 'symbol3'
+    section_name1 = '.text.' + symbol_name1
+    section_name3 = '.text.foo'
+    suffixed = set([section_name3])
+    name_to_symbol_infos = {symbol_name1: [
+        symbol_extractor.SymbolInfo(symbol_name1, 0x42, 0x12,
+                                    section='.text')]}
+    offset_to_symbol_infos = {
+        0x42: [symbol_extractor.SymbolInfo(symbol_name1, 0x42, 0x12,
+                                           section='.text'),
+               symbol_extractor.SymbolInfo(symbol_name2, 0x42, 0x12,
+                                           section='.text')]}
+    section_to_symbols_map = {section_name1: [symbol_name1],
+                              section_name3: [symbol_name1, symbol_name3]}
+    symbol_to_sections_map = {symbol_name1:
+                                  [section_name1, section_name3],
+                              symbol_name3: [section_name3]}
+    expected = [
+        section_name1,
+        section_name3,
+        section_name3 + '.*',
+        '.text.startup.' + symbol_name1,
+        '.text.hot.' + symbol_name1,
+        '.text.unlikely.' + symbol_name1,
+        '.text.startup.symbol2',
+        '.text.hot.symbol2',
+        '.text.unlikely.symbol2',
+        '.text.symbol2']
+    self.assertEqual(expected, list(patch_orderfile._SectionMatchingRules(
+        section_name1, name_to_symbol_infos, offset_to_symbol_infos,
+        section_to_symbols_map, symbol_to_sections_map, suffixed)))
+
+  def testUniqueGenerator(self):
+    @patch_orderfile._UniqueGenerator
+    def TestIterator():
+      yield 1
+      yield 2
+      yield 1
+      yield 3
+
+    self.assertEqual(list(TestIterator()), [1,2,3])
+
+  def testCombineSectionListsByPrimaryName(self):
+    self.assertEqual(patch_orderfile._CombineSectionListsByPrimaryName(
+        {'foo': ['.text.foo', '.text.bar.constprop.1'],
+         'foo.part.1': ['.text.baz'],
+         'foobar': ['.text.foobar']}),
+        {'foo': ['.text.foo', '.text.bar', '.text.baz'],
+         'foobar': ['.text.foobar']})
+
+  def testSectionsWithSuffixes(self):
+     self.assertEqual(patch_orderfile._SectionsWithSuffixes(
+        {'foo': ['.text.foo', '.text.bar.constprop.1'],
+         'foo.part.1': ['.text.baz'],
+         'foobar': ['.text.foobar']}),
+        set(['.text.bar']))
 
 
 if __name__ == "__main__":
