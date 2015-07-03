@@ -553,8 +553,6 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   base::string16 RunSyncTestWithConsoleOutput(
       const std::string& worker_url,
       ServiceWorkerStatusCode expected_status) {
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    command_line->AppendSwitch(switches::kEnableServiceWorkerSync);
     RunOnIOThread(
         base::Bind(&self::SetUpRegistrationOnIOThread, this, worker_url));
     return SyncOnRegisteredWorkerWithConsoleOutput(expected_status);
@@ -1153,28 +1151,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   ASSERT_FALSE(blob_data_handle);
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
-                       SyncAbortedWithoutFlag) {
-  RunOnIOThread(base::Bind(
-      &self::SetUpRegistrationOnIOThread, this, "/service_worker/sync.js"));
-
-  // Run the sync event.
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
-  base::RunLoop sync_run_loop;
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&self::SyncEventOnIOThread,
-                                     this,
-                                     sync_run_loop.QuitClosure(),
-                                     &status));
-  sync_run_loop.Run();
-  ASSERT_EQ(SERVICE_WORKER_ERROR_ABORT, status);
-}
-
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, SyncEventHandled) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(switches::kEnableServiceWorkerSync);
-
   RunOnIOThread(base::Bind(
       &self::SetUpRegistrationOnIOThread, this, "/service_worker/sync.js"));
   ServiceWorkerFetchEventResult result;

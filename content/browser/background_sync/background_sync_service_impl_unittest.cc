@@ -126,7 +126,9 @@ class BackgroundSyncServiceImplTest : public testing::Test {
     // register (and cleanup up the sync registrations).  Prevent the sync
     // event from firing by setting the network state to have no connection.
     // NOTE: The setup of the network connection must happen after the
-    //       BackgroundSyncManager has been setup.
+    //       BackgroundSyncManager has been setup, including any asynchronous
+    //       initialization.
+    base::RunLoop().RunUntilIdle();
     net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
         net::NetworkChangeNotifier::CONNECTION_NONE);
     base::RunLoop().RunUntilIdle();

@@ -1447,11 +1447,6 @@ const Experiment kExperiments[] = {
      IDS_FLAGS_ENABLE_LINKABLE_EPHEMERAL_APPS_DESCRIPTION,
      kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableLinkableEphemeralApps)},
-    {"enable-service-worker-sync",
-     IDS_FLAGS_ENABLE_SERVICE_WORKER_SYNC_NAME,
-     IDS_FLAGS_ENABLE_SERVICE_WORKER_SYNC_DESCRIPTION,
-     kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableServiceWorkerSync)},
 #if defined(OS_ANDROID)
     {"disable-click-delay",
      IDS_FLAGS_DISABLE_CLICK_DELAY_NAME,

@@ -131,7 +131,6 @@ CONTENT_EXPORT extern const char kEnableStaleWhileRevalidate[];
 CONTENT_EXPORT extern const char kEnableStatsTable[];
 CONTENT_EXPORT extern const char kEnableStrictMixedContentChecking[];
 CONTENT_EXPORT extern const char kEnableStrictPowerfulFeatureRestrictions[];
-CONTENT_EXPORT extern const char kEnableServiceWorkerSync[];
 CONTENT_EXPORT extern const char kEnableTcpFastOpen[];
 CONTENT_EXPORT extern const char kEnableThreadedCompositing[];
 CONTENT_EXPORT extern const char kEnableTracing[];

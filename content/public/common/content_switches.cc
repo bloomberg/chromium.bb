@@ -440,9 +440,6 @@ const char kEnableStrictMixedContentChecking[] =
 const char kEnableStrictPowerfulFeatureRestrictions[] =
     "enable-strict-powerful-feature-restrictions";
 
-// Enable support for sync events in ServiceWorkers.
-const char kEnableServiceWorkerSync[]       = "enable-service-worker-sync";
-
 // Enable use of experimental TCP sockets API for sending data in the
 // SYN packet.
 const char kEnableTcpFastOpen[]             = "enable-tcp-fastopen";

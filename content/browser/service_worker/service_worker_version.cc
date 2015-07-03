@@ -785,13 +785,6 @@ void ServiceWorkerVersion::DispatchFetchEvent(
 
 void ServiceWorkerVersion::DispatchSyncEvent(const StatusCallback& callback) {
   DCHECK_EQ(ACTIVATED, status()) << status();
-
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableServiceWorkerSync)) {
-    callback.Run(SERVICE_WORKER_ERROR_ABORT);
-    return;
-  }
-
   if (running_status() != RUNNING) {
     // Schedule calling this method after starting the worker.
     StartWorker(base::Bind(&RunTaskAfterStartWorker,
@@ -1371,12 +1364,7 @@ void ServiceWorkerVersion::OnSyncEventFinished(
   }
 
   ServiceWorkerStatusCode status = SERVICE_WORKER_OK;
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableServiceWorkerSync)) {
-    // Avoid potential race condition where flag is disabled after a sync event
-    // was dispatched
-    status = SERVICE_WORKER_ERROR_ABORT;
-  } else if (result == blink::WebServiceWorkerEventResultRejected) {
+  if (result == blink::WebServiceWorkerEventResultRejected) {
     status = SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED;
   }
 
