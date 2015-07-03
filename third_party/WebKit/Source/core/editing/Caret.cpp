@@ -224,9 +224,9 @@ void CaretBase::invalidateLocalCaretRect(Node* node, const LayoutRect& rect)
 
 bool CaretBase::shouldRepaintCaret(Node& node) const
 {
-    // If PositionIsBeforeAnchor or PositionIsAfterAnchor, carets need to be
-    // repainted not only when the node is contentEditable but also when its
-    // parentNode() is contentEditable.
+    // If PositionAnchorType::BeforeAnchor or PositionAnchorType::AfterAnchor,
+    // carets need to be repainted not only when the node is contentEditable but
+    // also when its parentNode() is contentEditable.
     return node.isContentEditable() || (node.parentNode() && node.parentNode()->isContentEditable());
 }
 

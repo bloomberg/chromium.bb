@@ -642,7 +642,7 @@ static bool isEnclosedBy(const PositionInComposedTree& position, const Node& nod
     ASSERT(position.isNotNull());
     Node* anchorNode = position.anchorNode();
     if (anchorNode == node)
-        return position.anchorType() != PositionInComposedTree::PositionIsAfterAnchor && position.anchorType() != PositionInComposedTree::PositionIsBeforeAnchor;
+        return position.anchorType() != PositionAnchorType::AfterAnchor && position.anchorType() != PositionAnchorType::BeforeAnchor;
 
     return ComposedTreeTraversal::isDescendantOf(*anchorNode, node);
 }
@@ -801,7 +801,7 @@ void VisibleSelection::setWithoutValidation(const PositionInComposedTree& base, 
 static PositionInComposedTree adjustPositionInComposedTreeForStart(const PositionInComposedTree& position, Node* shadowHost)
 {
     if (isEnclosedBy(position, *shadowHost)) {
-        if (position.anchorType() == PositionInComposedTree::PositionIsBeforeChildren)
+        if (position.anchorType() == PositionAnchorType::BeforeChildren)
             return PositionInComposedTree::beforeNode(shadowHost);
         return PositionInComposedTree::afterNode(shadowHost);
     }
@@ -835,7 +835,7 @@ static Position adjustPositionForEnd(const Position& currentPosition, Node* star
 PositionInComposedTree adjustPositionInComposedTreeForEnd(const PositionInComposedTree& position, Node* shadowHost)
 {
     if (isEnclosedBy(position, *shadowHost)) {
-        if (position.anchorType() == PositionInComposedTree::PositionIsAfterChildren)
+        if (position.anchorType() == PositionAnchorType::AfterChildren)
             return PositionInComposedTree::afterNode(shadowHost);
         return PositionInComposedTree::beforeNode(shadowHost);
     }
@@ -1133,7 +1133,7 @@ static bool isValidPosition(const Position& position)
     if (!position.inDocument())
         return false;
 
-    if (position.anchorType() != Position::PositionIsOffsetInAnchor)
+    if (position.anchorType() != PositionAnchorType::OffsetInAnchor)
         return true;
 
     if (position.offsetInContainerNode() < 0)

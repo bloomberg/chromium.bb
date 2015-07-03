@@ -275,12 +275,12 @@ TEST_F(TextIteratorTest, StartingAtNodeInShadowRoot)
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
     Node* outerDiv = document().getElementById("outer");
     Node* spanInShadow = shadowRoot->firstChild();
-    Position start(spanInShadow, Position::PositionIsBeforeChildren);
-    Position end(outerDiv, Position::PositionIsAfterChildren);
+    Position start(spanInShadow, PositionAnchorType::BeforeChildren);
+    Position end(outerDiv, PositionAnchorType::AfterChildren);
     EXPECT_EQ("[ shadow][text][ iterator.]", iteratePartial<DOMTree>(start, end, TextIteratorEntersOpenShadowRoots));
 
-    PositionInComposedTree startInComposedTree(spanInShadow, PositionInComposedTree::PositionIsBeforeChildren);
-    PositionInComposedTree endInComposedTree(outerDiv, PositionInComposedTree::PositionIsAfterChildren);
+    PositionInComposedTree startInComposedTree(spanInShadow, PositionAnchorType::BeforeChildren);
+    PositionInComposedTree endInComposedTree(outerDiv, PositionAnchorType::AfterChildren);
     EXPECT_EQ("[text][ shadow][ iterator.]", iteratePartial<ComposedTree>(startInComposedTree, endInComposedTree, TextIteratorEntersOpenShadowRoots));
 }
 
@@ -292,12 +292,12 @@ TEST_F(TextIteratorTest, FinishingAtNodeInShadowRoot)
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = createShadowRootForElementWithIDAndSetInnerHTML(document(), "host", shadowContent);
     Node* outerDiv = document().getElementById("outer");
     Node* spanInShadow = shadowRoot->firstChild();
-    Position start(outerDiv, Position::PositionIsBeforeChildren);
-    Position end(spanInShadow, Position::PositionIsAfterChildren);
+    Position start(outerDiv, PositionAnchorType::BeforeChildren);
+    Position end(spanInShadow, PositionAnchorType::AfterChildren);
     EXPECT_EQ("[Hello, ][ shadow]", iteratePartial<DOMTree>(start, end, TextIteratorEntersOpenShadowRoots));
 
-    PositionInComposedTree startInComposedTree(outerDiv, PositionInComposedTree::PositionIsBeforeChildren);
-    PositionInComposedTree endInComposedTree(spanInShadow, PositionInComposedTree::PositionIsAfterChildren);
+    PositionInComposedTree startInComposedTree(outerDiv, PositionAnchorType::BeforeChildren);
+    PositionInComposedTree endInComposedTree(spanInShadow, PositionAnchorType::AfterChildren);
     EXPECT_EQ("[Hello, ][text][ shadow]", iteratePartial<ComposedTree>(startInComposedTree, endInComposedTree, TextIteratorEntersOpenShadowRoots));
 }
 

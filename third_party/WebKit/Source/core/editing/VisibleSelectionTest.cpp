@@ -82,7 +82,7 @@ TEST_F(VisibleSelectionTest, ShadowCrossing)
 
     VisibleSelection selection(Position::firstPositionInNode(one.get()), Position::lastPositionInNode(shadowRoot.get()));
 
-    EXPECT_EQ(Position(host.get(), Position::PositionIsBeforeAnchor), selection.start());
+    EXPECT_EQ(Position(host.get(), PositionAnchorType::BeforeAnchor), selection.start());
     EXPECT_EQ(Position(one->firstChild(), 0), selection.end());
     EXPECT_EQ(PositionInComposedTree(one->firstChild(), 0), selection.startInComposedTree());
     EXPECT_EQ(PositionInComposedTree(six->firstChild(), 2), selection.endInComposedTree());
@@ -124,7 +124,7 @@ TEST_F(VisibleSelectionTest, ShadowNested)
 
     VisibleSelection selection(Position::firstPositionInNode(one.get()), Position::lastPositionInNode(shadowRoot2.get()));
 
-    EXPECT_EQ(Position(host.get(), Position::PositionIsBeforeAnchor), selection.start());
+    EXPECT_EQ(Position(host.get(), PositionAnchorType::BeforeAnchor), selection.start());
     EXPECT_EQ(Position(one->firstChild(), 0), selection.end());
     EXPECT_EQ(PositionInComposedTree(eight->firstChild(), 2), selection.startInComposedTree());
     EXPECT_EQ(PositionInComposedTree(one->firstChild(), 0), selection.endInComposedTree());

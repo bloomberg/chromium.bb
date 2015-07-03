@@ -25,8 +25,8 @@ template <typename Tree>
 std::string StyledMarkupSerializerTest::serialize(EAnnotateForInterchange shouldAnnotate)
 {
     using PositionType = typename Tree::PositionType;
-    PositionType start = PositionType(document().body(), PositionType::PositionIsBeforeChildren);
-    PositionType end = PositionType(document().body(), PositionType::PositionIsAfterChildren);
+    PositionType start = PositionType(document().body(), PositionAnchorType::BeforeChildren);
+    PositionType end = PositionType(document().body(), PositionAnchorType::AfterChildren);
     return createMarkup(start, end, shouldAnnotate).utf8().data();
 }
 

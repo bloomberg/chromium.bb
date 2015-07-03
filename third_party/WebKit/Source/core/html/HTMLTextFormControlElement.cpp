@@ -730,7 +730,7 @@ String HTMLTextFormControlElement::valueWithHardLineBreaks() const
 
 HTMLTextFormControlElement* enclosingTextFormControl(const Position& position)
 {
-    ASSERT(position.isNull() || position.anchorType() == Position::PositionIsOffsetInAnchor
+    ASSERT(position.isNull() || position.anchorType() == PositionAnchorType::OffsetInAnchor
         || position.containerNode() || !position.anchorNode()->shadowHost()
         || (position.anchorNode()->parentNode() && position.anchorNode()->parentNode()->isShadowRoot()));
     return enclosingTextFormControl(position.containerNode());
@@ -771,8 +771,8 @@ HTMLElement* HTMLTextFormControlElement::innerEditorElement() const
 
 static Position innerNodePosition(const Position& innerPosition)
 {
-    ASSERT(innerPosition.anchorType() != Position::PositionIsBeforeAnchor);
-    ASSERT(innerPosition.anchorType() != Position::PositionIsAfterAnchor);
+    ASSERT(innerPosition.anchorType() != PositionAnchorType::BeforeAnchor);
+    ASSERT(innerPosition.anchorType() != PositionAnchorType::AfterAnchor);
     HTMLElement* element = toHTMLElement(innerPosition.anchorNode());
     ASSERT(element);
     RefPtrWillBeRawPtr<NodeList> childNodes = element->childNodes();
@@ -782,10 +782,10 @@ static Position innerNodePosition(const Position& innerPosition)
     unsigned offset = 0;
 
     switch (innerPosition.anchorType()) {
-    case Position::PositionIsOffsetInAnchor:
+    case PositionAnchorType::OffsetInAnchor:
         offset = std::max(0, std::min(innerPosition.offsetInContainerNode(), static_cast<int>(childNodes->length())));
         break;
-    case Position::PositionIsAfterChildren:
+    case PositionAnchorType::AfterChildren:
         offset = childNodes->length();
         break;
     default:
@@ -793,13 +793,13 @@ static Position innerNodePosition(const Position& innerPosition)
     }
 
     if (offset == childNodes->length())
-        return Position(element->lastChild(), Position::PositionIsAfterAnchor);
+        return Position(element->lastChild(), PositionAnchorType::AfterAnchor);
 
     Node* node = childNodes->item(offset);
     if (node->isTextNode())
         return Position(toText(node), 0);
 
-    return Position(node, Position::PositionIsBeforeAnchor);
+    return Position(node, PositionAnchorType::BeforeAnchor);
 }
 
 enum FindOption {
@@ -814,9 +814,9 @@ static Position findWordBoundary(const HTMLElement* innerEditor, const Position&
     Vector<Text*> textList;
 
     if (startPosition.anchorNode()->isTextNode())
-        ASSERT(startPosition.anchorType() == Position::PositionIsOffsetInAnchor);
+        ASSERT(startPosition.anchorType() == PositionAnchorType::OffsetInAnchor);
     if (endPosition.anchorNode()->isTextNode())
-        ASSERT(endPosition.anchorType() == Position::PositionIsOffsetInAnchor);
+        ASSERT(endPosition.anchorType() == PositionAnchorType::OffsetInAnchor);
 
     // Traverse text nodes.
     for (Node* node = startPosition.anchorNode(); node; node = NodeTraversal::next(*node, innerEditor)) {
@@ -900,7 +900,7 @@ static Position endOfPrevious(const Node& node, HTMLElement* innerEditor)
         return Position();
 
     if (isHTMLBRElement(previousNode))
-        return Position(previousNode, Position::PositionIsAfterAnchor);
+        return Position(previousNode, PositionAnchorType::AfterAnchor);
 
     if (previousNode->isTextNode())
         return Position(toText(previousNode), toText(previousNode)->length());
@@ -916,9 +916,9 @@ static Position previousIfPositionIsAfterLineBreak(const Position& position, HTM
     // Move back if position is just after line break.
     if (isHTMLBRElement(*position.anchorNode())) {
         switch (position.anchorType()) {
-        case Position::PositionIsAfterAnchor:
-            return Position(position.anchorNode(), Position::PositionIsBeforeAnchor);
-        case Position::PositionIsBeforeAnchor:
+        case PositionAnchorType::AfterAnchor:
+            return Position(position.anchorNode(), PositionAnchorType::BeforeAnchor);
+        case PositionAnchorType::BeforeAnchor:
             return previousIfPositionIsAfterLineBreak(endOfPrevious(*position.anchorNode(), innerEditor), innerEditor);
         default:
             ASSERT_NOT_REACHED();
@@ -960,8 +960,8 @@ Position HTMLTextFormControlElement::startOfSentence(const Position& position)
     for (Node* node = pivotPosition.anchorNode(); node; node = NodeTraversal::previous(*node, innerEditor)) {
         bool isPivotNode = (node == pivotPosition.anchorNode());
 
-        if (isHTMLBRElement(node) && (!isPivotNode || pivotPosition.anchorType() == Position::PositionIsAfterAnchor))
-            return Position(node, Position::PositionIsAfterAnchor);
+        if (isHTMLBRElement(node) && (!isPivotNode || pivotPosition.anchorType() == PositionAnchorType::AfterAnchor))
+            return Position(node, PositionAnchorType::AfterAnchor);
 
         if (node->isTextNode()) {
             Text* textNode = toText(node);
@@ -996,7 +996,7 @@ Position HTMLTextFormControlElement::endOfSentence(const Position& position)
         bool isPivotNode = node == pivotPosition.anchorNode();
 
         if (isHTMLBRElement(node))
-            return Position(node, Position::PositionIsAfterAnchor);
+            return Position(node, PositionAnchorType::AfterAnchor);
 
         if (node->isTextNode()) {
             Text* textNode = toText(node);

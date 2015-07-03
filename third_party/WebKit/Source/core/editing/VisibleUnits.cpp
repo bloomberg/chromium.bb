@@ -1144,7 +1144,7 @@ VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossi
     Node* node = startNode;
     ContainerNode* highestRoot = highestEditableRoot(p);
     int offset = p.deprecatedEditingOffset();
-    Position::AnchorType type = p.anchorType();
+    PositionAnchorType type = p.anchorType();
 
     Node* n = startNode;
     bool startNodeIsEditable = startNode->hasEditableStyle();
@@ -1173,7 +1173,7 @@ VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossi
 
         if (r->isText() && toLayoutText(r)->resolvedTextLength()) {
             ASSERT_WITH_SECURITY_IMPLICATION(n->isTextNode());
-            type = Position::PositionIsOffsetInAnchor;
+            type = PositionAnchorType::OffsetInAnchor;
             if (style.preserveNewline()) {
                 LayoutText* text = toLayoutText(r);
                 int i = text->textLength();
@@ -1190,17 +1190,15 @@ VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossi
             n = NodeTraversal::previousPostOrder(*n, startBlock);
         } else if (editingIgnoresContent(n) || isRenderedTableElement(n)) {
             node = n;
-            type = Position::PositionIsBeforeAnchor;
+            type = PositionAnchorType::BeforeAnchor;
             n = n->previousSibling() ? n->previousSibling() : NodeTraversal::previousPostOrder(*n, startBlock);
         } else {
             n = NodeTraversal::previousPostOrder(*n, startBlock);
         }
     }
 
-    if (type == Position::PositionIsOffsetInAnchor) {
-        ASSERT(type == Position::PositionIsOffsetInAnchor || !offset);
+    if (type == PositionAnchorType::OffsetInAnchor)
         return VisiblePosition(Position(node, offset), DOWNSTREAM);
-    }
 
     return VisiblePosition(Position(node, type), DOWNSTREAM);
 }
@@ -1222,7 +1220,7 @@ VisiblePosition endOfParagraph(const VisiblePosition &c, EditingBoundaryCrossing
     Node* node = startNode;
     ContainerNode* highestRoot = highestEditableRoot(p);
     int offset = p.deprecatedEditingOffset();
-    Position::AnchorType type = p.anchorType();
+    PositionAnchorType type = p.anchorType();
 
     Node* n = startNode;
     bool startNodeIsEditable = startNode->hasEditableStyle();
@@ -1254,7 +1252,7 @@ VisiblePosition endOfParagraph(const VisiblePosition &c, EditingBoundaryCrossing
         if (r->isText() && toLayoutText(r)->resolvedTextLength()) {
             ASSERT_WITH_SECURITY_IMPLICATION(n->isTextNode());
             int length = toLayoutText(r)->textLength();
-            type = Position::PositionIsOffsetInAnchor;
+            type = PositionAnchorType::OffsetInAnchor;
             if (style.preserveNewline()) {
                 LayoutText* text = toLayoutText(r);
                 int o = n == startNode ? offset : 0;
@@ -1268,14 +1266,14 @@ VisiblePosition endOfParagraph(const VisiblePosition &c, EditingBoundaryCrossing
             n = NodeTraversal::next(*n, stayInsideBlock);
         } else if (editingIgnoresContent(n) || isRenderedTableElement(n)) {
             node = n;
-            type = Position::PositionIsAfterAnchor;
+            type = PositionAnchorType::AfterAnchor;
             n = NodeTraversal::nextSkippingChildren(*n, stayInsideBlock);
         } else {
             n = NodeTraversal::next(*n, stayInsideBlock);
         }
     }
 
-    if (type == Position::PositionIsOffsetInAnchor)
+    if (type == PositionAnchorType::OffsetInAnchor)
         return VisiblePosition(Position(node, offset), DOWNSTREAM);
 
     return VisiblePosition(Position(node, type), DOWNSTREAM);

@@ -53,23 +53,23 @@ enum PositionMoveType {
     BackwardDeletion // Subject to platform conventions.
 };
 
+enum class PositionAnchorType : unsigned {
+    OffsetInAnchor,
+    BeforeAnchor,
+    AfterAnchor,
+    BeforeChildren,
+    AfterChildren,
+};
+
 template <typename Strategy>
 class CORE_TEMPLATE_CLASS_EXPORT PositionAlgorithm {
     DISALLOW_ALLOCATION();
 public:
     using StrategyType = Strategy;
 
-    enum AnchorType : unsigned char {
-        PositionIsOffsetInAnchor,
-        PositionIsBeforeAnchor,
-        PositionIsAfterAnchor,
-        PositionIsBeforeChildren,
-        PositionIsAfterChildren,
-    };
-
     PositionAlgorithm()
         : m_offset(0)
-        , m_anchorType(PositionIsOffsetInAnchor)
+        , m_anchorType(PositionAnchorType::OffsetInAnchor)
         , m_isLegacyEditingPosition(false)
     {
     }
@@ -91,7 +91,7 @@ public:
     PositionAlgorithm(PassRefPtrWillBeRawPtr<Node> anchorNode, LegacyEditingOffset);
 
     // For creating before/after positions:
-    PositionAlgorithm(PassRefPtrWillBeRawPtr<Node> anchorNode, AnchorType);
+    PositionAlgorithm(PassRefPtrWillBeRawPtr<Node> anchorNode, PositionAnchorType);
 
     // For creating offset positions:
     // FIXME: This constructor should eventually go away. See bug 63040.
@@ -99,9 +99,9 @@ public:
 
     PositionAlgorithm(const PositionAlgorithm&);
 
-    AnchorType anchorType() const { return m_anchorType; }
+    PositionAnchorType anchorType() const { return m_anchorType; }
 
-    void clear() { m_anchorNode.clear(); m_offset = 0; m_anchorType = PositionIsOffsetInAnchor; m_isLegacyEditingPosition = false; }
+    void clear() { m_anchorNode.clear(); m_offset = 0; m_anchorType = PositionAnchorType::OffsetInAnchor; m_isLegacyEditingPosition = false; }
 
     // These are always DOM compliant values.  Editing positions like [img, 0] (aka [img, before])
     // will return img->parentNode() and img->nodeIndex() from these functions.
@@ -120,14 +120,14 @@ public:
     // Inline O(1) access for Positions which callers know to be parent-anchored
     int offsetInContainerNode() const
     {
-        ASSERT(anchorType() == PositionIsOffsetInAnchor);
+        ASSERT(anchorType() == PositionAnchorType::OffsetInAnchor);
         return m_offset;
     }
 
     // New code should not use this function.
     int deprecatedEditingOffset() const
     {
-        if (m_isLegacyEditingPosition || (m_anchorType != PositionIsAfterAnchor && m_anchorType != PositionIsAfterChildren))
+        if (m_isLegacyEditingPosition || (m_anchorType != PositionAnchorType::AfterAnchor && m_anchorType != PositionAnchorType::AfterChildren))
             return m_offset;
         return offsetForPositionAfterAnchor();
     }
@@ -137,7 +137,7 @@ public:
     Node* computeNodeAfterPosition() const;
 
     // Returns node as |Range::firstNode()|. This position must be a
-    // |PositionIs::OffsetInAhcor| to behave as |Range| boundary point.
+    // |PositionAnchorType::OffsetInAhcor| to behave as |Range| boundary point.
     Node* nodeAsRangeFirstNode() const;
 
     // Similar to |nodeAsRangeLastNode()|, but returns a node in a range.
@@ -145,7 +145,7 @@ public:
 
     // Returns a node as past last as same as |Range::pastLastNode()|. This
     // function is supposed to used in HTML serialization and plain text
-    // iterator. This position must be a |PositionIs::OffsetInAhcor| to
+    // iterator. This position must be a |PositionAnchorType::OffsetInAhcor| to
     // behave as |Range| boundary point.
     Node* nodeAsRangePastLastNode() const;
 
@@ -166,8 +166,8 @@ public:
         return container ? container->rootEditableElement() : 0;
     }
 
-    // These should only be used for PositionIsOffsetInAnchor positions, unless
-    // the position is a legacy editing position.
+    // These should only be used for PositionAnchorType::OffsetInAnchor
+    // positions, unless the position is a legacy editing position.
     void moveToPosition(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset);
     void moveToOffset(int offset);
 
@@ -251,14 +251,14 @@ private:
 
     int renderedOffset() const;
 
-    static AnchorType anchorTypeForLegacyEditingPosition(Node* anchorNode, int offset);
+    static PositionAnchorType anchorTypeForLegacyEditingPosition(Node* anchorNode, int offset);
 
     RefPtrWillBeMember<Node> m_anchorNode;
     // m_offset can be the offset inside m_anchorNode, or if editingIgnoresContent(m_anchorNode)
     // returns true, then other places in editing will treat m_offset == 0 as "before the anchor"
     // and m_offset > 0 as "after the anchor node".  See parentAnchoredEquivalent for more info.
     int m_offset;
-    AnchorType m_anchorType;
+    PositionAnchorType m_anchorType;
     bool m_isLegacyEditingPosition;
 };
 
@@ -288,8 +288,8 @@ bool operator==(const PositionAlgorithm<Strategy>& a, const PositionAlgorithm<St
     if (a.anchorNode() != b.anchorNode() || a.anchorType() != b.anchorType())
         return false;
 
-    if (a.anchorType() != PositionAlgorithm<Strategy>::PositionIsOffsetInAnchor) {
-        // Note: |m_offset| only has meaning when |PositionIsOffsetInAnchor|.
+    if (a.anchorType() != PositionAnchorType::OffsetInAnchor) {
+        // Note: |m_offset| only has meaning when |PositionAnchorType::OffsetInAnchor|.
         return true;
     }
 
@@ -340,7 +340,7 @@ template <typename Strategy>
 PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::beforeNode(Node* anchorNode)
 {
     ASSERT(anchorNode);
-    return PositionAlgorithm<Strategy>(anchorNode, PositionIsBeforeAnchor);
+    return PositionAlgorithm<Strategy>(anchorNode, PositionAnchorType::BeforeAnchor);
 }
 
 inline Position positionBeforeNode(Node* anchorNode)
@@ -352,7 +352,7 @@ template <typename Strategy>
 PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::afterNode(Node* anchorNode)
 {
     ASSERT(anchorNode);
-    return PositionAlgorithm<Strategy>(anchorNode, PositionIsAfterAnchor);
+    return PositionAlgorithm<Strategy>(anchorNode, PositionAnchorType::AfterAnchor);
 }
 
 inline Position positionAfterNode(Node* anchorNode)
@@ -377,7 +377,7 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::firstPositionInNode(Nod
 {
     if (anchorNode->isTextNode())
         return PositionAlgorithm<Strategy>(anchorNode, 0);
-    return PositionAlgorithm<Strategy>(anchorNode, PositionIsBeforeChildren);
+    return PositionAlgorithm<Strategy>(anchorNode, PositionAnchorType::BeforeChildren);
 }
 
 inline Position firstPositionInNode(Node* anchorNode)
@@ -390,7 +390,7 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::lastPositionInNode(Node
 {
     if (anchorNode->isTextNode())
         return PositionAlgorithm<Strategy>(anchorNode, lastOffsetInNode(anchorNode));
-    return PositionAlgorithm<Strategy>(anchorNode, PositionIsAfterChildren);
+    return PositionAlgorithm<Strategy>(anchorNode, PositionAnchorType::AfterChildren);
 }
 
 inline Position lastPositionInNode(Node* anchorNode)

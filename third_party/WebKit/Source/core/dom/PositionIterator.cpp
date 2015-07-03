@@ -174,12 +174,13 @@ bool PositionIteratorAlgorithm<Strategy>::isCandidate() const
 
     if (layoutObject->isBR()) {
         // For br element, the condition
-        // |(!Strategy::hasChildren(*m_anchorNode) || m_nodeAfterPositionInAnchor)|
-        // corresponds to the condition
-        // |m_anchorType != PositionIsAfterAnchor| in Position.isCandaite.
-        // Both conditions say this position is not in tail of the element.
-        // If conditions lose consitency, VisiblePosition::canonicalPosition
-        // will fail on |canonicalizeCandidate(previousCandidate(position))|,
+        // |(!Strategy::hasChildren(*m_anchorNode) ||
+        //   m_nodeAfterPositionInAnchor)| corresponds to the condition
+        // |m_anchorType != PositionAnchorType::AfterAnchor| in
+        // |Position.isCandaite|. Both conditions say this position is not in
+        // tail of the element. If conditions lose consistency,
+        // VisiblePosition::canonicalPosition will fail on
+        // |canonicalizeCandidate(previousCandidate(position))|,
         // because previousCandidate returns a Position converted from
         // a "Candidate" PositionIterator and cannonicalizeCandidate(Position)
         // assumes the Position is "Candidate".

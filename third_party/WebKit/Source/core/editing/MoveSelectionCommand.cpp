@@ -47,12 +47,12 @@ void MoveSelectionCommand::doApply()
 
     // Update the position otherwise it may become invalid after the selection is deleted.
     Position selectionEnd = endingSelection().end();
-    if (pos.anchorType() == Position::PositionIsOffsetInAnchor && selectionEnd.anchorType() == Position::PositionIsOffsetInAnchor
+    if (pos.anchorType() == PositionAnchorType::OffsetInAnchor && selectionEnd.anchorType() == PositionAnchorType::OffsetInAnchor
         && selectionEnd.containerNode() == pos.containerNode() && selectionEnd.offsetInContainerNode() < pos.offsetInContainerNode()) {
         pos.moveToOffset(pos.offsetInContainerNode() - selectionEnd.offsetInContainerNode());
 
         Position selectionStart = endingSelection().start();
-        if (selectionStart.anchorType() == Position::PositionIsOffsetInAnchor && selectionStart.containerNode() == pos.containerNode())
+        if (selectionStart.anchorType() == PositionAnchorType::OffsetInAnchor && selectionStart.containerNode() == pos.containerNode())
             pos.moveToOffset(pos.offsetInContainerNode() + selectionStart.offsetInContainerNode());
     }
 

@@ -14,9 +14,8 @@ class Node;
 
 std::ostream& operator<<(std::ostream&, const Node&);
 std::ostream& operator<<(std::ostream&, const Node*);
-std::ostream& operator<<(std::ostream&, Position::AnchorType);
+std::ostream& operator<<(std::ostream&, PositionAnchorType);
 std::ostream& operator<<(std::ostream&, const Position&);
-std::ostream& operator<<(std::ostream&, PositionInComposedTree::AnchorType);
 std::ostream& operator<<(std::ostream&, const PositionInComposedTree&);
 
 } // namespace blink

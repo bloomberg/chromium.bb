@@ -1123,25 +1123,25 @@ void updatePositionForNodeRemoval(Position& position, Node& node)
     if (position.isNull())
         return;
     switch (position.anchorType()) {
-    case Position::PositionIsBeforeChildren:
+    case PositionAnchorType::BeforeChildren:
         if (node.containsIncludingShadowDOM(position.containerNode()))
             position = positionInParentBeforeNode(node);
         break;
-    case Position::PositionIsAfterChildren:
+    case PositionAnchorType::AfterChildren:
         if (node.containsIncludingShadowDOM(position.containerNode()))
             position = positionInParentAfterNode(node);
         break;
-    case Position::PositionIsOffsetInAnchor:
+    case PositionAnchorType::OffsetInAnchor:
         if (position.containerNode() == node.parentNode() && static_cast<unsigned>(position.offsetInContainerNode()) > node.nodeIndex())
             position.moveToOffset(position.offsetInContainerNode() - 1);
         else if (node.containsIncludingShadowDOM(position.containerNode()))
             position = positionInParentBeforeNode(node);
         break;
-    case Position::PositionIsAfterAnchor:
+    case PositionAnchorType::AfterAnchor:
         if (node.containsIncludingShadowDOM(position.anchorNode()))
             position = positionInParentAfterNode(node);
         break;
-    case Position::PositionIsBeforeAnchor:
+    case PositionAnchorType::BeforeAnchor:
         if (node.containsIncludingShadowDOM(position.anchorNode()))
             position = positionInParentBeforeNode(node);
         break;

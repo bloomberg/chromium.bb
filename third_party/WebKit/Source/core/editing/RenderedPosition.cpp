@@ -43,20 +43,20 @@ static inline LayoutObject* layoutObjectFromPosition(const Position& position)
     ASSERT(position.isNotNull());
     Node* layoutObjectNode = nullptr;
     switch (position.anchorType()) {
-    case Position::PositionIsOffsetInAnchor:
+    case PositionAnchorType::OffsetInAnchor:
         layoutObjectNode = position.computeNodeAfterPosition();
         if (!layoutObjectNode || !layoutObjectNode->layoutObject())
             layoutObjectNode = position.anchorNode()->lastChild();
         break;
 
-    case Position::PositionIsBeforeAnchor:
-    case Position::PositionIsAfterAnchor:
+    case PositionAnchorType::BeforeAnchor:
+    case PositionAnchorType::AfterAnchor:
         break;
 
-    case Position::PositionIsBeforeChildren:
+    case PositionAnchorType::BeforeChildren:
         layoutObjectNode = position.anchorNode()->firstChild();
         break;
-    case Position::PositionIsAfterChildren:
+    case PositionAnchorType::AfterChildren:
         layoutObjectNode = position.anchorNode()->lastChild();
         break;
     }

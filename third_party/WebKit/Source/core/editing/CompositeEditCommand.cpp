@@ -417,7 +417,7 @@ void CompositeEditCommand::moveRemainingSiblingsToNewParent(Node* node, Node* pa
 
 void CompositeEditCommand::updatePositionForNodeRemovalPreservingChildren(Position& position, Node& node)
 {
-    int offset = (position.anchorType() == Position::PositionIsOffsetInAnchor) ? position.offsetInContainerNode() : 0;
+    int offset = (position.anchorType() == PositionAnchorType::OffsetInAnchor) ? position.offsetInContainerNode() : 0;
     updatePositionForNodeRemoval(position, node);
     if (offset)
         position.moveToOffset(offset);
@@ -538,15 +538,15 @@ Position CompositeEditCommand::positionOutsideTabSpan(const Position& pos)
         return pos;
 
     switch (pos.anchorType()) {
-    case Position::PositionIsBeforeChildren:
-    case Position::PositionIsAfterChildren:
+    case PositionAnchorType::BeforeChildren:
+    case PositionAnchorType::AfterChildren:
         ASSERT_NOT_REACHED();
         return pos;
-    case Position::PositionIsOffsetInAnchor:
+    case PositionAnchorType::OffsetInAnchor:
         break;
-    case Position::PositionIsBeforeAnchor:
+    case PositionAnchorType::BeforeAnchor:
         return positionInParentBeforeNode(*pos.anchorNode());
-    case Position::PositionIsAfterAnchor:
+    case PositionAnchorType::AfterAnchor:
         return positionInParentAfterNode(*pos.anchorNode());
     }
 
@@ -614,7 +614,7 @@ bool CompositeEditCommand::shouldRebalanceLeadingWhitespaceFor(const String& tex
 bool CompositeEditCommand::canRebalance(const Position& position) const
 {
     Node* node = position.containerNode();
-    if (position.anchorType() != Position::PositionIsOffsetInAnchor || !node || !node->isTextNode())
+    if (position.anchorType() != PositionAnchorType::OffsetInAnchor || !node || !node->isTextNode())
         return false;
 
     Text* textNode = toText(node);

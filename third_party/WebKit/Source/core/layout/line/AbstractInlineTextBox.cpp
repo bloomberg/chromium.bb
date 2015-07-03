@@ -161,7 +161,7 @@ String AbstractInlineTextBox::text() const
     if (Node* node = m_layoutText->node()) {
         if (node->isTextNode())
             return plainText(Position(node, start), Position(node, start + len), TextIteratorIgnoresStyleVisibility);
-        return plainText(Position(node, Position::PositionIsBeforeAnchor), Position(node, Position::PositionIsAfterAnchor), TextIteratorIgnoresStyleVisibility);
+        return plainText(Position(node, PositionAnchorType::BeforeAnchor), Position(node, PositionAnchorType::AfterAnchor), TextIteratorIgnoresStyleVisibility);
     }
 
     String result = m_layoutText->text().substring(start, len).simplifyWhiteSpace(WTF::DoNotStripWhiteSpace);

@@ -2497,7 +2497,7 @@ String Element::innerText()
     if (!layoutObject())
         return textContent(true);
 
-    return plainText(Position(this, Position::PositionIsBeforeChildren), Position(this, Position::PositionIsAfterChildren));
+    return plainText(Position(this, PositionAnchorType::BeforeChildren), Position(this, PositionAnchorType::AfterChildren));
 }
 
 String Element::outerText()

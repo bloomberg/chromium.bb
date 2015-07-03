@@ -39,34 +39,29 @@ std::ostream& printPosition(std::ostream& ostream, const PositionType& position)
     if (position.isNull())
         return ostream << "null";
     ostream << position.anchorNode() << "@";
-    if (position.anchorType() == PositionType::PositionIsOffsetInAnchor)
+    if (position.anchorType() == PositionAnchorType::OffsetInAnchor)
         return ostream << position.offsetInContainerNode();
-    return ostream << static_cast<Position::AnchorType>(position.anchorType());
+    return ostream << position.anchorType();
 }
 
 } // namespace
 
-std::ostream& operator<<(std::ostream& ostream, Position::AnchorType anchorType)
+std::ostream& operator<<(std::ostream& ostream, PositionAnchorType anchorType)
 {
     switch (anchorType) {
-    case Position::PositionIsAfterAnchor:
+    case PositionAnchorType::AfterAnchor:
         return ostream << "afterAnchor";
-    case Position::PositionIsAfterChildren:
+    case PositionAnchorType::AfterChildren:
         return ostream << "afterChildren";
-    case Position::PositionIsBeforeAnchor:
+    case PositionAnchorType::BeforeAnchor:
         return ostream << "beforeAnchor";
-    case Position::PositionIsBeforeChildren:
+    case PositionAnchorType::BeforeChildren:
         return ostream << "beforeChildren";
-    case Position::PositionIsOffsetInAnchor:
+    case PositionAnchorType::OffsetInAnchor:
         return ostream << "offsetInAnchor";
     }
     ASSERT_NOT_REACHED();
     return ostream << "anchorType=" << static_cast<int>(anchorType);
-}
-
-std::ostream& operator<<(std::ostream& ostream, PositionInComposedTree::AnchorType anchorType)
-{
-    return ostream << static_cast<Position::AnchorType>(anchorType);
 }
 
 // |std::ostream| version of |Node::showNode|
