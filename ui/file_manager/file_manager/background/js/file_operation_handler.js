@@ -4,31 +4,25 @@
 
 /**
  * An event handler of the background page for file operations.
- * @param {FileBrowserBackground} background Background page.
+ * @param {!FileOperationManager} fileOperationManager
+ * @param {!ProgressCenter} progressCenter
  * @constructor
  * @struct
  */
-var FileOperationHandler = function(background) {
-  /**
-   * Background page.
-   * @type {FileBrowserBackground}
-   * @private
-   */
-  this.background_ = background;
-
+var FileOperationHandler = function(fileOperationManager, progressCenter) {
   /**
    * File operation manager.
-   * @type {FileOperationManager}
+   * @type {!FileOperationManager}
    * @private
    */
-  this.fileOperationManager_ = background.fileOperationManager;
+  this.fileOperationManager_ = fileOperationManager;
 
   /**
    * Progress center.
-   * @type {ProgressCenter}
+   * @type {!ProgressCenter}
    * @private
    */
-  this.progressCenter_ = background.progressCenter;
+  this.progressCenter_ = progressCenter;
 
   /**
    * Pending items of delete operation.

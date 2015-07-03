@@ -119,7 +119,8 @@ function FileBrowserBackground() {
     this.initContextMenu_();
 
     this.fileOperationManager = new FileOperationManager(this.volumeManager_);
-    this.fileOperationHandler_ = new FileOperationHandler(this);
+    this.fileOperationHandler_ = new FileOperationHandler(
+        this.fileOperationManager, this.progressCenter);
   }.bind(this));
 
   // Handle newly mounted FSP file systems. Workaround for crbug.com/456648.
