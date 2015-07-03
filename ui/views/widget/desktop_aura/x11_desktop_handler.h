@@ -86,6 +86,9 @@ class VIEWS_EXPORT X11DesktopHandler : public ui::PlatformEventDispatcher,
   // The native root window.
   ::Window x_root_window_;
 
+  // The last known active X window
+  ::Window x_active_window_;
+
   // The X11 server time of the most recent mouse click, touch, or key press
   // on a Chrome window.
   unsigned long wm_user_time_ms_;
