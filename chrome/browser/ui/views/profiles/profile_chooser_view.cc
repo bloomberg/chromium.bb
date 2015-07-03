@@ -672,12 +672,13 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
 
   views::GridLayout* layout;
   views::View* sub_view;
+  views::View* view_to_focus = nullptr;
   switch (view_mode_) {
     case profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN:
     case profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT:
     case profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH:
       layout = CreateSingleColumnLayout(this, kFixedGaiaViewWidth);
-      sub_view = CreateGaiaSigninView();
+      sub_view = CreateGaiaSigninView(&view_to_focus);
       break;
     case profiles::BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL:
       layout = CreateSingleColumnLayout(this, kFixedAccountRemovalViewWidth);
@@ -711,6 +712,8 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
   Layout();
   if (GetBubbleFrameView())
     SizeToContents();
+  if (view_to_focus)
+    view_to_focus->RequestFocus();
 }
 
 void ProfileChooserView::WindowClosing() {
@@ -1498,7 +1501,8 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
   }
 }
 
-views::View* ProfileChooserView::CreateGaiaSigninView() {
+views::View* ProfileChooserView::CreateGaiaSigninView(
+    views::View** signin_content_view) {
   GURL url;
   int message_id;
 
@@ -1542,6 +1546,8 @@ views::View* ProfileChooserView::CreateGaiaSigninView() {
   TitleCard* title_card = new TitleCard(l10n_util::GetStringUTF16(message_id),
                                         this,
                                         &gaia_signin_cancel_button_);
+  if (signin_content_view)
+    *signin_content_view = web_view;
   return TitleCard::AddPaddedTitleCard(
       web_view, title_card, kFixedGaiaViewWidth);
 }

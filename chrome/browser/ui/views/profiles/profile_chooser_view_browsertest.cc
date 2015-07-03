@@ -28,6 +28,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "ui/events/event_utils.h"
+#include "ui/views/controls/webview/webview.h"
 
 // ChromeOS and mobile platforms don't have a ProfileChooserView.
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -67,6 +68,21 @@ void SetupProfilesForLock(Profile* signed_in) {
     supervised->GetPath()), signed_in_email);
 
   EXPECT_TRUE(profiles::IsLockAvailable(signed_in));
+}
+
+views::View* FindWebView(views::View* view) {
+  std::queue<views::View*> queue;
+  queue.push(view);
+  while (!queue.empty()) {
+    views::View* current = queue.front();
+    queue.pop();
+    if (current->GetClassName() == views::WebView::kViewClassName)
+      return current;
+
+    for (int i = 0; i < current->child_count(); ++i)
+      queue.push(current->child_at(i));
+  }
+  return nullptr;
 }
 
 }  // namespace
@@ -148,11 +164,38 @@ class ProfileChooserViewExtensionsTest : public ExtensionBrowserTest {
     return window_close_observer_.get();
   }
 
+  ProfileChooserView* current_profile_bubble() {
+    return ProfileChooserView::profile_bubble_;
+  }
+
+  void ShowSigninView() {
+    DCHECK(current_profile_bubble());
+    DCHECK(current_profile_bubble()->avatar_menu_);
+    current_profile_bubble()->ShowView(
+        profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN,
+        current_profile_bubble()->avatar_menu_.get());
+    base::MessageLoop::current()->RunUntilIdle();
+  }
+
  private:
   scoped_ptr<content::WindowedNotificationObserver> window_close_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileChooserViewExtensionsTest);
 };
+
+// crbug.com/502370
+IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, ContentAreaHasFocus) {
+  ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
+
+  ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView(browser()));
+
+  ShowSigninView();
+
+  ASSERT_TRUE(current_profile_bubble());
+  views::View* web_view = FindWebView(current_profile_bubble());
+  ASSERT_TRUE(web_view);
+  EXPECT_TRUE(web_view->HasFocus());
+}
 
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, ViewProfileUMA) {
   ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
