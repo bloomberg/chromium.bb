@@ -27,20 +27,6 @@ import subprocess
 import sys
 import tempfile
 
-# The following note was added in 2010 by nsylvain:
-#
-# sys.path needs to be modified here because python2.6 automatically adds the
-# system "google" module (/usr/lib/pymodules/python2.6/google) to sys.modules
-# when we import "chromium_config" (I don't know why it does this). This causes
-# the import of our local "google.*" modules to fail because python seems to
-# only look for a system "google.*", even if our path is in sys.path before
-# importing "google.*". If we modify sys.path here, before importing
-# "chromium_config", python2.6 properly uses our path to find our "google.*"
-# (even though it still automatically adds the system "google" module to
-# sys.modules, and probably should still be using that to resolve "google.*",
-# which I really don't understand).
-sys.path.insert(0, os.path.abspath('src/tools/python'))
-
 from common import chromium_utils
 from common import gtest_utils
 
@@ -83,11 +69,6 @@ LOG_PROCESSOR_CLASSES = {
     'graphing': performance_log_processor.GraphingLogProcessor,
     'pagecycler': performance_log_processor.GraphingPageCyclerLogProcessor,
 }
-
-
-def _GetTempCount():
-  """Returns the number of files and directories inside the temporary dir."""
-  return len(os.listdir(tempfile.gettempdir()))
 
 
 def _LaunchDBus():
@@ -521,30 +502,12 @@ def _GetBlinkRevision(options):
   return webkit_revision
 
 
-def _GetTelemetryRevisions(options):
-  """Fills in the same revisions fields that process_log_utils does."""
-
-  versions = {}
-  versions['rev'] = _GetMainRevision(options)
-  versions['webkit_rev'] = _GetBlinkRevision(options)
-  versions['webrtc_rev'] = options.build_properties.get('got_webrtc_revision')
-  versions['v8_rev'] = options.build_properties.get('got_v8_revision')
-  versions['ver'] = options.build_properties.get('version')
-  versions['git_revision'] = options.build_properties.get('git_revision')
-  # There are a lot of "bad" revisions to check for, so clean them all up here.
-  for key in versions.keys():
-    if not versions[key] or versions[key] == 'undefined':
-      del versions[key]
-  return versions
-
-
-def _CreateLogProcessor(log_processor_class, options, telemetry_info):
+def _CreateLogProcessor(log_processor_class, options):
   """Creates a log processor instance.
 
   Args:
     log_processor_class: A subclass of PerformanceLogProcessor or similar class.
     options: Command-line options (from OptionParser).
-    telemetry_info: dict of info for run_benchmark runs.
 
   Returns:
     An instance of a log processor class, or None.
@@ -552,12 +515,7 @@ def _CreateLogProcessor(log_processor_class, options, telemetry_info):
   if not log_processor_class:
     return None
 
-  if log_processor_class.__name__ == 'TelemetryResultsProcessor':
-    tracker_obj = log_processor_class(
-        telemetry_info['filename'],
-        telemetry_info['is_ref'],
-        telemetry_info['cleanup_dir'])
-  elif log_processor_class.__name__ == 'GTestLogParser':
+  if log_processor_class.__name__ == 'GTestLogParser':
     tracker_obj = log_processor_class()
   elif log_processor_class.__name__ == 'GTestJSONParser':
     tracker_obj = log_processor_class(
@@ -578,76 +536,6 @@ def _CreateLogProcessor(log_processor_class, options, telemetry_info):
   return tracker_obj
 
 
-def _GetSupplementalColumns(build_dir, supplemental_colummns_file_name):
-  """Reads supplemental columns data from a file.
-
-  Args:
-    build_dir: Build dir name.
-    supplemental_columns_file_name: Name of a file which contains the
-        supplemental columns data (in JSON format).
-
-  Returns:
-    A dict of supplemental data to send to the dashboard.
-  """
-  supplemental_columns = {}
-  supplemental_columns_file = os.path.join(build_dir,
-                                           results_dashboard.CACHE_DIR,
-                                           supplemental_colummns_file_name)
-  if os.path.exists(supplemental_columns_file):
-    with file(supplemental_columns_file, 'r') as f:
-      supplemental_columns = json.loads(f.read())
-  return supplemental_columns
-
-
-def _ResultsDashboardDict(options):
-  """Generates a dict of info needed by the results dashboard.
-
-  Args:
-    options: Program arguments.
-
-  Returns:
-    dict containing data the dashboard needs.
-  """
-  build_dir = os.path.abspath(options.build_dir)
-  supplemental_columns = _GetSupplementalColumns(
-      build_dir, options.supplemental_columns_file)
-  extra_columns = options.perf_config
-  if extra_columns:
-    supplemental_columns.update(extra_columns)
-  fields = {
-      'system': _GetPerfID(options),
-      'test': options.test_type,
-      'url': options.results_url,
-      'mastername': options.build_properties.get('mastername'),
-      'buildername': options.build_properties.get('buildername'),
-      'buildnumber': options.build_properties.get('buildnumber'),
-      'build_dir': build_dir,
-      'supplemental_columns': supplemental_columns,
-      'revisions': _GetTelemetryRevisions(options),
-  }
-  return fields
-
-
-def _GenerateDashboardJson(log_processor, args):
-  """Generates chartjson to send to the dashboard.
-
-  Args:
-    log_processor: An instance of a log processor class, which has been used to
-        process the test output, so it contains the test results.
-    args: Dict of additional args to send to results_dashboard.
-  """
-  assert log_processor.IsChartJson()
-
-  chart_json = log_processor.ChartJson()
-  if chart_json:
-    return results_dashboard.MakeDashboardJsonV1(
-        chart_json,
-        args['revisions'], args['system'], args['mastername'],
-        args['buildername'], args['buildnumber'],
-        args['supplemental_columns'], log_processor.IsReferenceBuild())
-  return None
-
-
 def _WriteLogProcessorResultsToOutput(log_processor, log_output_file):
   """Writes the log processor's results to a file.
 
@@ -663,170 +551,6 @@ def _WriteLogProcessorResultsToOutput(log_processor, log_output_file):
       'flakes': log_processor.FlakyTests(),
     }
     json.dump(results, f)
-
-
-def _WriteChartJsonToOutput(chartjson_file, log_processor, args):
-  """Writes the dashboard chartjson to a file for display in the waterfall.
-
-  Args:
-  chartjson_file: Path to the file to write the chartjson.
-    log_processor: An instance of a log processor class, which has been used to
-        process the test output, so it contains the test results.
-    args: Dict of additional args to send to results_dashboard.
-  """
-  assert log_processor.IsChartJson()
-
-  chartjson_data = _GenerateDashboardJson(log_processor, args)
-
-  with open(chartjson_file, 'w') as f:
-    json.dump(chartjson_data, f)
-
-
-def _SendResultsToDashboard(log_processor, args):
-  """Sends results from a log processor instance to the dashboard.
-
-  Args:
-    log_processor: An instance of a log processor class, which has been used to
-        process the test output, so it contains the test results.
-    args: Dict of additional args to send to results_dashboard.
-
-  Returns:
-    True if no errors occurred.
-  """
-  if args['system'] is None:
-    # perf_id not specified in factory properties.
-    print 'Error: No system name (perf_id) specified when sending to dashboard.'
-    return True
-
-  results = None
-  if log_processor.IsChartJson():
-    results = _GenerateDashboardJson(log_processor, args)
-    if not results:
-      print 'Error: No json output from telemetry.'
-      print '@@@STEP_FAILURE@@@'
-    log_processor.Cleanup()
-  else:
-    charts = _GetDataFromLogProcessor(log_processor)
-    results = results_dashboard.MakeListOfPoints(
-        charts, args['system'], args['test'], args['mastername'],
-        args['buildername'], args['buildnumber'], args['supplemental_columns'])
-
-  if not results:
-    return False
-
-  logging.debug(json.dumps(results, indent=2))
-  return results_dashboard.SendResults(results, args['url'], args['build_dir'])
-
-
-def _GetDataFromLogProcessor(log_processor):
-  """Returns a mapping of chart names to chart data.
-
-  Args:
-    log_processor: A log processor (aka results tracker) object.
-
-  Returns:
-    A dictionary mapping chart name to lists of chart data.
-    put together in log_processor. Each chart data dictionary contains:
-      "traces": A dictionary mapping trace names to value, stddev pairs.
-      "units": Units for the chart.
-      "rev": A revision number or git hash.
-      Plus other revision keys, e.g. webkit_rev, ver, v8_rev.
-  """
-  charts = {}
-  for log_file_name, line_list in log_processor.PerformanceLogs().iteritems():
-    if not log_file_name.endswith('-summary.dat'):
-      # The log processor data also contains "graphs list" file contents,
-      # which we can ignore.
-      continue
-    chart_name = log_file_name.replace('-summary.dat', '')
-
-    # It's assumed that the log lines list has length one, because for each
-    # graph name only one line is added in log_processor in the method
-    # GraphingLogProcessor._CreateSummaryOutput.
-    if len(line_list) != 1:
-      print 'Error: Unexpected log processor line list: %s' % str(line_list)
-      continue
-    line = line_list[0].rstrip()
-    try:
-      charts[chart_name] = json.loads(line)
-    except ValueError:
-      print 'Error: Could not parse JSON: %s' % line
-  return charts
-
-
-def _BuildCoverageGtestExclusions(options, args):
-  """Appends a list of GTest exclusion filters to the args list."""
-  gtest_exclusions = {
-    'win32': {
-      'browser_tests': (
-        'ChromeNotifierDelegateBrowserTest.ClickTest',
-        'ChromeNotifierDelegateBrowserTest.ButtonClickTest',
-        'SyncFileSystemApiTest.GetFileStatuses',
-        'SyncFileSystemApiTest.WriteFileThenGetUsage',
-        'NaClExtensionTest.HostedApp',
-        'MediaGalleriesPlatformAppBrowserTest.MediaGalleriesCopyToNoAccess',
-        'PlatformAppBrowserTest.ComponentAppBackgroundPage',
-        'BookmarksTest.CommandAgainGoesBackToBookmarksTab',
-        'NotificationBitmapFetcherBrowserTest.OnURLFetchFailureTest',
-        'PreservedWindowPlacementIsMigrated.Test',
-        'ShowAppListBrowserTest.ShowAppListFlag',
-        '*AvatarMenuButtonTest.*',
-        'NotificationBitmapFetcherBrowserTest.HandleImageFailedTest',
-        'NotificationBitmapFetcherBrowserTest.OnImageDecodedTest',
-        'NotificationBitmapFetcherBrowserTest.StartTest',
-      )
-    },
-    'darwin2': {},
-    'linux2': {},
-  }
-  gtest_exclusion_filters = []
-  if sys.platform in gtest_exclusions:
-    excldict = gtest_exclusions.get(sys.platform)
-    if options.test_type in excldict:
-      gtest_exclusion_filters = excldict[options.test_type]
-  args.append('--gtest_filter=-' + ':'.join(gtest_exclusion_filters))
-
-
-def _UploadProfilingData(options, args):
-  """Archives profiling data to Google Storage."""
-  # args[1] has --gtest-filter argument.
-  if len(args) < 2:
-    return 0
-
-  builder_name = options.build_properties.get('buildername')
-  if ((builder_name != 'XP Perf (dbg) (2)' and
-       builder_name != 'Linux Perf (lowmem)') or
-      options.build_properties.get('mastername') != 'chromium.perf' or
-      not options.build_properties.get('got_revision')):
-    return 0
-
-  gtest_filter = args[1]
-  if gtest_filter is None:
-    return 0
-  gtest_name = ''
-  if gtest_filter.find('StartupTest.*') > -1:
-    gtest_name = 'StartupTest'
-  else:
-    return 0
-
-  build_dir = os.path.normpath(os.path.abspath(options.build_dir))
-
-  # archive_profiling_data.py is in /b/build/scripts/slave and
-  # build_dir is /b/build/slave/SLAVE_NAME/build/src/build.
-  profiling_archive_tool = os.path.join(build_dir, '..', '..', '..', '..', '..',
-                                        'scripts', 'slave',
-                                        'archive_profiling_data.py')
-
-  if sys.platform == 'win32':
-    python = 'python_slave'
-  else:
-    python = 'python'
-
-  revision = options.build_properties.get('got_revision')
-  cmd = [python, profiling_archive_tool, '--revision', revision,
-         '--builder-name', builder_name, '--test-name', gtest_name]
-
-  return chromium_utils.RunCommand(cmd)
 
 
 def _UploadGtestJsonSummary(json_path, build_properties, test_exe, step_name):
@@ -984,16 +708,6 @@ def _GenerateRunIsolatedCommand(build_dir, test_exe_path, options, command):
   return isolate_command
 
 
-def _GetPerfID(options):
-  if options.perf_id:
-    perf_id = options.perf_id
-  else:
-    perf_id = options.factory_properties.get('perf_id')
-    if options.factory_properties.get('add_perf_id_suffix'):
-      perf_id += options.build_properties.get('perf_id_suffix')
-  return perf_id
-
-
 def _GetSanitizerSymbolizeCommand(strip_path_prefix=None, json_file_name=None):
   script_path = os.path.abspath(os.path.join('src', 'tools', 'valgrind',
                                              'asan', 'asan_symbolize.py'))
@@ -1037,7 +751,7 @@ def _MainParse(options, _args):
     return 0
 
   log_processor_class = _SelectLogProcessor(options, False)
-  log_processor = _CreateLogProcessor(log_processor_class, options, None)
+  log_processor = _CreateLogProcessor(log_processor_class, options)
 
   if options.generate_json_file:
     if os.path.exists(options.test_output_xml):
@@ -1075,7 +789,6 @@ def _MainMac(options, args, extra_env):
   if len(args) < 1:
     raise chromium_utils.MissingArgument('Usage: %s' % USAGE)
 
-  telemetry_info = _UpdateRunBenchmarkArgs(args, options)
   test_exe = args[0]
   if options.run_python_script:
     build_dir = os.path.normpath(os.path.abspath(options.build_dir))
@@ -1099,9 +812,8 @@ def _MainMac(options, args, extra_env):
   # If --annotate=list was passed, list the log processor classes and exit.
   if _ListLogProcessors(options.annotate):
     return 0
-  log_processor_class = _SelectLogProcessor(options, bool(telemetry_info))
-  log_processor = _CreateLogProcessor(
-      log_processor_class, options, telemetry_info)
+  log_processor_class = _SelectLogProcessor(options, False)
+  log_processor = _CreateLogProcessor(log_processor_class, options)
 
   if options.generate_json_file:
     if os.path.exists(options.test_output_xml):
@@ -1139,118 +851,6 @@ def _MainMac(options, args, extra_env):
         options.test_type, result, log_processor,
         perf_dashboard_id=options.perf_dashboard_id)
 
-  if options.chartjson_file and telemetry_info:
-    _WriteChartJsonToOutput(options.chartjson_file,
-                            log_processor,
-                            _ResultsDashboardDict(options))
-
-  if options.results_url:
-    if not _SendResultsToDashboard(
-        log_processor, _ResultsDashboardDict(options)):
-      return 1
-
-  return result
-
-
-def _MainIOS(options, args, extra_env):
-  """Runs the test on iOS."""
-  if len(args) < 1:
-    raise chromium_utils.MissingArgument('Usage: %s' % USAGE)
-
-  def kill_simulator():
-    chromium_utils.RunCommand(['/usr/bin/killall', 'iPhone Simulator'])
-
-  # For iOS tests, the args come in in the following order:
-  #   [0] test display name formatted as 'test_name (device[ ios_version])'
-  #   [1:] gtest args (e.g. --gtest_print_time)
-
-  # Set defaults in case the device family and iOS version can't be parsed out
-  # of |args|
-  device = 'iPhone Retina (4-inch)'
-  ios_version = '7.1'
-
-  # Parse the test_name and device from the test display name.
-  # The expected format is: <test_name> (<device>)
-  result = re.match(r'(.*) \((.*)\)$', args[0])
-  if result is not None:
-    test_name, device = result.groups()
-    # Check if the device has an iOS version. The expected format is:
-    # <device_name><space><ios_version>, where ios_version may have 2 or 3
-    # numerals (e.g. '4.3.11' or '5.0').
-    result = re.match(r'(.*) (\d+\.\d+(\.\d+)?)$', device)
-    if result is not None:
-      device = result.groups()[0]
-      ios_version = result.groups()[1]
-  else:
-    # If first argument is not in the correct format, log a warning but
-    # fall back to assuming the first arg is the test_name and just run
-    # on the iphone simulator.
-    test_name = args[0]
-    print ('Can\'t parse test name, device, and iOS version. '
-           'Running %s on %s %s' % (test_name, device, ios_version))
-
-  # Build the args for invoking iossim, which will install the app on the
-  # simulator and launch it, then dump the test results to stdout.
-
-  build_dir = os.path.normpath(os.path.abspath(options.build_dir))
-  app_exe_path = os.path.join(
-      build_dir, options.target + '-iphonesimulator', test_name + '.app')
-  test_exe_path = os.path.join(
-      build_dir, 'ninja-iossim', options.target, 'iossim')
-  tmpdir = tempfile.mkdtemp()
-  command = [test_exe_path,
-      '-d', device,
-      '-s', ios_version,
-      '-t', '120',
-      '-u', tmpdir,
-      app_exe_path, '--'
-  ]
-  command.extend(args[1:])
-
-  # If --annotate=list was passed, list the log processor classes and exit.
-  if _ListLogProcessors(options.annotate):
-    return 0
-  log_processor = _CreateLogProcessor(
-      LOG_PROCESSOR_CLASSES['gtest'], options, None)
-
-  # Make sure the simulator isn't running.
-  kill_simulator()
-
-  # Nuke anything that appears to be stale chrome items in the temporary
-  # directory from previous test runs (i.e.- from crashes or unittest leaks).
-  slave_utils.RemoveChromeTemporaryFiles()
-
-  dirs_to_cleanup = [tmpdir]
-  crash_files_before = set([])
-  crash_files_after = set([])
-  crash_files_before = set(crash_utils.list_crash_logs())
-
-  result = _RunGTestCommand(options, command, extra_env, log_processor)
-
-  # Because test apps kill themselves, iossim sometimes returns non-zero
-  # status even though all tests have passed.  Check the log_processor to
-  # see if the test run was successful.
-  if log_processor.CompletedWithoutFailure():
-    result = 0
-  else:
-    result = 1
-
-  if result != 0:
-    crash_utils.wait_for_crash_logs()
-  crash_files_after = set(crash_utils.list_crash_logs())
-
-  kill_simulator()
-
-  new_crash_files = crash_files_after.difference(crash_files_before)
-  crash_utils.print_new_crash_files(new_crash_files)
-
-  for a_dir in dirs_to_cleanup:
-    try:
-      chromium_utils.RemoveDirectory(a_dir)
-    except OSError as e:
-      print >> sys.stderr, e
-      # Don't fail.
-
   return result
 
 
@@ -1278,7 +878,6 @@ def _MainLinux(options, args, extra_env):
       slave_utils.GypFlagIsOn(options, 'chromeos')):
     special_xvfb_dir = xvfb_path
 
-  telemetry_info = _UpdateRunBenchmarkArgs(args, options)
   test_exe = args[0]
   if options.run_python_script:
     test_exe_path = test_exe
@@ -1329,9 +928,8 @@ def _MainLinux(options, args, extra_env):
   # If --annotate=list was passed, list the log processor classes and exit.
   if _ListLogProcessors(options.annotate):
     return 0
-  log_processor_class = _SelectLogProcessor(options, bool(telemetry_info))
-  log_processor = _CreateLogProcessor(
-      log_processor_class, options, telemetry_info)
+  log_processor_class = _SelectLogProcessor(options, False)
+  log_processor = _CreateLogProcessor(log_processor_class, options)
 
   if options.generate_json_file:
     if os.path.exists(options.test_output_xml):
@@ -1394,16 +992,6 @@ def _MainLinux(options, args, extra_env):
         options.test_type, result, log_processor,
         perf_dashboard_id=options.perf_dashboard_id)
 
-  if options.chartjson_file and telemetry_info:
-    _WriteChartJsonToOutput(options.chartjson_file,
-                            log_processor,
-                            _ResultsDashboardDict(options))
-
-  if options.results_url:
-    if not _SendResultsToDashboard(
-        log_processor, _ResultsDashboardDict(options)):
-      return 1
-
   return result
 
 
@@ -1425,7 +1013,6 @@ def _MainWin(options, args, extra_env):
   if len(args) < 1:
     raise chromium_utils.MissingArgument('Usage: %s' % USAGE)
 
-  telemetry_info = _UpdateRunBenchmarkArgs(args, options)
   test_exe = args[0]
   build_dir = os.path.abspath(options.build_dir)
   if options.run_python_script:
@@ -1454,9 +1041,8 @@ def _MainWin(options, args, extra_env):
   # If --annotate=list was passed, list the log processor classes and exit.
   if _ListLogProcessors(options.annotate):
     return 0
-  log_processor_class = _SelectLogProcessor(options, bool(telemetry_info))
-  log_processor = _CreateLogProcessor(
-      log_processor_class, options, telemetry_info)
+  log_processor_class = _SelectLogProcessor(options, False)
+  log_processor = _CreateLogProcessor(log_processor_class, options)
 
   if options.generate_json_file:
     if os.path.exists(options.test_output_xml):
@@ -1489,16 +1075,6 @@ def _MainWin(options, args, extra_env):
         options.test_type, result, log_processor,
         perf_dashboard_id=options.perf_dashboard_id)
 
-  if options.chartjson_file and telemetry_info:
-    _WriteChartJsonToOutput(options.chartjson_file,
-                            log_processor,
-                            _ResultsDashboardDict(options))
-
-  if options.results_url:
-    if not _SendResultsToDashboard(
-        log_processor, _ResultsDashboardDict(options)):
-      return 1
-
   return result
 
 
@@ -1526,7 +1102,7 @@ def _MainAndroid(options, args, extra_env):
   if _ListLogProcessors(options.annotate):
     return 0
   log_processor_class = _SelectLogProcessor(options, False)
-  log_processor = _CreateLogProcessor(log_processor_class, options, None)
+  log_processor = _CreateLogProcessor(log_processor_class, options)
 
   if options.generate_json_file:
     if os.path.exists(options.test_output_xml):
@@ -1557,44 +1133,7 @@ def _MainAndroid(options, args, extra_env):
         options.test_type, result, log_processor,
         perf_dashboard_id=options.perf_dashboard_id)
 
-  if options.results_url:
-    if not _SendResultsToDashboard(
-        log_processor, _ResultsDashboardDict(options)):
-      return 1
-
   return result
-
-
-def _UpdateRunBenchmarkArgs(args, options):
-  """Updates the arguments for telemetry run_benchmark commands.
-
-  Ensures that --output=chartjson is set and adds a --output argument.
-
-  Arguments:
-    args: list of command line arguments, starts with 'run_benchmark' for
-          telemetry tests.
-
-  Returns:
-    None if not a telemetry test, otherwise a
-    dict containing the output filename and whether it is a reference build.
-  """
-  if not options.chartjson_file:
-    return {}
-
-  if args[0].endswith('run_benchmark'):
-    is_ref = '--browser=reference' in args
-    output_dir = tempfile.mkdtemp()
-    args.extend(['--output-dir=%s' % output_dir])
-    temp_filename = os.path.join(output_dir, 'results-chart.json')
-    return {'filename': temp_filename, 'is_ref': is_ref, 'cleanup_dir': True}
-  elif args[0].endswith('test_runner.py'):
-    (_, temp_json_filename) = tempfile.mkstemp()
-    args.extend(['--output-chartjson-data=%s' % temp_json_filename])
-    return {'filename': temp_json_filename,
-            'is_ref': False,
-            'cleanup_dir': False}
-
-  return None
 
 
 def _ConfigureSanitizerTools(options, args, extra_env):
@@ -1896,19 +1435,10 @@ def main():
           '--results-directory is required with --generate-json-file=True')
       return 1
 
-    if options.factory_properties.get('coverage_gtest_exclusions', False):
-      _BuildCoverageGtestExclusions(options, args)
-
-    temp_files = _GetTempCount()
     if options.parse_input:
       result = _MainParse(options, args)
     elif sys.platform.startswith('darwin'):
-      test_platform = options.factory_properties.get(
-          'test_platform', options.test_platform)
-      if test_platform in ('ios-simulator',):
-        result = _MainIOS(options, args, extra_env)
-      else:
-        result = _MainMac(options, args, extra_env)
+      result = _MainMac(options, args, extra_env)
     elif sys.platform == 'win32':
       result = _MainWin(options, args, extra_env)
     elif sys.platform == 'linux2':
@@ -1921,20 +1451,6 @@ def main():
       sys.stderr.write('Unknown sys.platform value %s\n' % repr(sys.platform))
       return 1
 
-    _UploadProfilingData(options, args)
-
-    new_temp_files = _GetTempCount()
-    if temp_files > new_temp_files:
-      print >> sys.stderr, (
-          'Confused: %d files were deleted from %s during the test run') % (
-              (temp_files - new_temp_files), tempfile.gettempdir())
-    elif temp_files < new_temp_files:
-      print >> sys.stderr, (
-          '%d new files were left in %s: Fix the tests to clean up themselves.'
-          ) % ((new_temp_files - temp_files), tempfile.gettempdir())
-      # TODO(maruel): Make it an error soon. Not yet since I want to iron
-      # out all the remaining cases before.
-      #result = 1
     return result
   finally:
     if did_launch_dbus:
