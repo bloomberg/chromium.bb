@@ -130,8 +130,8 @@ net::RequestPriority ConvertWebKitPriorityToNetPriority(
   }
 }
 
-// Extracts info from a data scheme URL into |info| and |data|. Returns net::OK
-// if successful. Returns a net error code otherwise. Exported only for testing.
+// Extracts info from a data scheme URL |url| into |info| and |data|. Returns
+// net::OK if successful. Returns a net error code otherwise.
 int GetInfoFromDataURL(const GURL& url,
                        ResourceResponseInfo* info,
                        std::string* data) {
