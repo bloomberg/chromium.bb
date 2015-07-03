@@ -8,24 +8,36 @@ which file gets used and test the changes on trybots before landing."""
 
 
 import argparse
+import copy
 import os
 import subprocess
 import sys
 
 
+SRC_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+
+
 def main(argv):
   parser = argparse.ArgumentParser()
+  # TODO(phajdan.jr): Remove after cleaning up build repo side.
   parser.add_argument(
-      '--path-build', required=True, help='Path to the build repo')
+      '--path-build', help='Path to the build repo')
   parser.add_argument('args', nargs='*', help='Arguments to pass to runtest.py')
   args = parser.parse_args(argv)
+
+  env = copy.copy(os.environ)
+  pythonpath = env.get('PYTHONPATH', '').split(':')
+  pythonpath.append(os.path.join(
+      SRC_DIR, 'infra', 'scripts', 'legacy', 'scripts'))
+  pythonpath.append(os.path.join(
+      SRC_DIR, 'infra', 'scripts', 'legacy', 'site_config'))
+  env['PYTHONPATH'] = ':'.join(pythonpath)
+
   return subprocess.call([
       sys.executable,
-      os.path.join(args.path_build, 'scripts', 'tools', 'runit.py'),
-      '--show-path',
-      sys.executable,
-      os.path.join(args.path_build, 'scripts', 'slave', 'runtest.py')
-  ] + args.args)
+      os.path.join(SRC_DIR, 'infra', 'scripts', 'legacy',
+                   'scripts', 'slave', 'runtest.py')
+  ] + args.args, env=env)
 
 
 if __name__ == '__main__':
