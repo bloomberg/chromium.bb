@@ -18,9 +18,21 @@ DOMException* PresentationError::take(WebPresentationError* errorRaw)
     ASSERT(errorRaw);
     OwnPtr<WebPresentationError> error = adoptPtr(errorRaw);
 
-    // TODO(avayvod): figure out the mapping between WebPresentationError and
-    // DOMException error codes.
-    return DOMException::create(InvalidAccessError, error->message);
+    ExceptionCode code = UnknownError;
+    switch (error->errorType) {
+    case WebPresentationError::ErrorTypeNoAvailableScreens:
+    case WebPresentationError::ErrorTypeNoPresentationFound:
+        code = NotFoundError;
+        break;
+    case WebPresentationError::ErrorTypeSessionRequestCancelled:
+        code = AbortError;
+        break;
+    case WebPresentationError::ErrorTypeUnknown:
+        code = UnknownError;
+        break;
+    }
+
+    return DOMException::create(code, error->message);
 }
 
 // static
