@@ -90,6 +90,7 @@ weston_SOURCES =					\
 	shared/helpers.h				\
 	shared/matrix.c					\
 	shared/matrix.h					\
+	shared/timespec-util.h				\
 	shared/zalloc.h					\
 	shared/platform.h				\
 	src/weston-egl-ext.h

@@ -58,30 +58,11 @@
 #include "presentation_timing-server-protocol.h"
 #include "shared/helpers.h"
 #include "shared/os-compatibility.h"
+#include "shared/timespec-util.h"
 #include "git-version.h"
 #include "version.h"
 
 #define DEFAULT_REPAINT_WINDOW 7 /* milliseconds */
-
-#define NSEC_PER_SEC 1000000000
-
-static void
-timespec_sub(struct timespec *r,
-	     const struct timespec *a, const struct timespec *b)
-{
-	r->tv_sec = a->tv_sec - b->tv_sec;
-	r->tv_nsec = a->tv_nsec - b->tv_nsec;
-	if (r->tv_nsec < 0) {
-		r->tv_sec--;
-		r->tv_nsec += NSEC_PER_SEC;
-	}
-}
-
-static int64_t
-timespec_to_nsec(const struct timespec *a)
-{
-	return (int64_t)a->tv_sec * NSEC_PER_SEC + a->tv_nsec;
-}
 
 static void
 weston_output_transform_scale_init(struct weston_output *output,
