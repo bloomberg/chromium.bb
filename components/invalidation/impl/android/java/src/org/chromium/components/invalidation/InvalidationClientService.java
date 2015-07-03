@@ -338,13 +338,11 @@ public class InvalidationClientService extends AndroidListener {
     }
 
     /**
-     * Sets the types for which notifications are required to {@code syncTypes}. {@code syncTypes}
-     * is either a list of specific types or the special wildcard type
-     * {@link ModelType#ALL_TYPES_TYPE}. Also registers for additional objects specified by
-     * {@code objectIds}. Either parameter may be null if the corresponding registrations are not
-     * changing.
-     * <p>
-     * @param syncTypes
+     * Sets the types for which notifications are required.
+     * @param syncTypes the sync types for which notifications are required. Null if the required
+     *    registrations are not changing.
+     * @param objectIds non-sync object ids for which notifications are required. Null if the
+     *    required registrations are not changing.
      */
     private void setRegisteredTypes(Set<String> syncTypes, Set<ObjectId> objectIds) {
         // If we have a ready client and will be making registration change calls on it, then
@@ -356,9 +354,7 @@ public class InvalidationClientService extends AndroidListener {
         Set<ObjectId> existingNonSyncRegistrations = (sClientId == null)
                 ? null : readNonSyncRegistrationsFromPrefs();
 
-        // Write the new sync types/object ids to preferences. We do not expand the syncTypes to
-        // take into account the ALL_TYPES_TYPE at this point; we want to persist the wildcard
-        // unexpanded.
+        // Write the new sync types/object ids to preferences.
         InvalidationPreferences prefs = new InvalidationPreferences(this);
         EditContext editContext = prefs.edit();
         if (syncTypes != null) {
@@ -376,10 +372,7 @@ public class InvalidationClientService extends AndroidListener {
         }
 
         // We do have a ready client. Unregister any existing registrations not present in the
-        // new set and register any elements in the new set not already present. This call does
-        // expansion of the ALL_TYPES_TYPE wildcard.
-        // NOTE: syncTypes MUST NOT be used below this line, since it contains an unexpanded
-        // wildcard.
+        // new set and register any elements in the new set not already present.
         // When computing the desired set of object ids, if only sync types were provided, then
         // keep the existing non-sync types, and vice-versa.
         Set<ObjectId> desiredSyncRegistrations = syncTypes != null

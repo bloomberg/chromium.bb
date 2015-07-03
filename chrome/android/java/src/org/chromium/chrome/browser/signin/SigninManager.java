@@ -408,14 +408,12 @@ public class SigninManager {
         // sync tries to start without being signed in natively and crashes.
         ChromeSigninController.get(mContext).setSignedInAccountName(mSignInAccount.name);
 
-        ProfileSyncService profileSyncService = ProfileSyncService.get(mContext);
-
         // Register for invalidations.
         InvalidationController invalidationController = InvalidationController.get(mContext);
-        invalidationController.setRegisteredTypes(mSignInAccount, false,
-                                                  profileSyncService.getPreferredDataTypes());
+        invalidationController.refreshRegisteredTypes();
 
         // Sign-in to sync.
+        ProfileSyncService profileSyncService = ProfileSyncService.get(mContext);
         if (AndroidSyncSettings.isSyncEnabled(mContext)
                 && !profileSyncService.hasSyncSetupCompleted()) {
             profileSyncService.setSetupInProgress(true);

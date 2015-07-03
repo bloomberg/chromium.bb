@@ -266,7 +266,7 @@ public class SigninHelper {
                 if (isSyncWanted) {
                     mSyncController.start();
                     InvalidationController controller = InvalidationController.get(mContext);
-                    controller.refreshRegisteredTypes(dataTypes);
+                    controller.refreshRegisteredTypes();
                 } else {
                     mSyncController.stop();
                 }

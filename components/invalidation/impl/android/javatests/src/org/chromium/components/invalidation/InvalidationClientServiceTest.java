@@ -27,7 +27,6 @@ import org.chromium.sync.signin.AccountManagerHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -528,7 +527,7 @@ public class InvalidationClientServiceTest extends
         Set<ModelType> desiredRegistrations = CollectionUtil.newHashSet(
                 ModelType.BOOKMARK, ModelType.SESSION);
         Account account = AccountManagerHelper.createAccountFromName("test@example.com");
-        Intent registrationIntent = createRegisterIntent(account, false, desiredRegistrations);
+        Intent registrationIntent = createRegisterIntent(account, desiredRegistrations);
         getService().onHandleIntent(registrationIntent);
 
         // Verify client started and state written.
@@ -541,19 +540,19 @@ public class InvalidationClientServiceTest extends
         assertEquals(1, mStartServiceIntents.size());
         assertTrue(isAndroidListenerStartIntent(mStartServiceIntents.get(0)));
 
-        // Send another registration-change intent, this type with all-types set to true, and
-        // verify that the on-disk state is updated and that no addition Intents are issued.
-        getService().onHandleIntent(createRegisterIntent(account, true, null));
+        // Send a registration-change intent with different types to register for.
+        desiredRegistrations = CollectionUtil.newHashSet(ModelType.PASSWORD);
+        getService().onHandleIntent(createRegisterIntent(account, desiredRegistrations));
         assertEquals(account, invPrefs.getSavedSyncedAccount());
-        assertEquals(CollectionUtil.newHashSet(ModelType.ALL_TYPES_TYPE),
+        assertEquals(ModelType.modelTypesToSyncTypesForTest(desiredRegistrations),
                 invPrefs.getSavedSyncedTypes());
         assertEquals(1, mStartServiceIntents.size());
 
         // Finally, send one more registration-change intent, this time with a different account,
-        // and verify that it both updates the account, stops thye existing client, and
+        // and verify that it both updates the account, stops the existing client, and
         // starts a new client.
         Account account2 = AccountManagerHelper.createAccountFromName("test2@example.com");
-        getService().onHandleIntent(createRegisterIntent(account2, true, null));
+        getService().onHandleIntent(createRegisterIntent(account2, desiredRegistrations));
         assertEquals(account2, invPrefs.getSavedSyncedAccount());
         assertEquals(3, mStartServiceIntents.size());
         assertTrue(isAndroidListenerStartIntent(mStartServiceIntents.get(0)));
@@ -623,7 +622,7 @@ public class InvalidationClientServiceTest extends
         // Register for some types.
         types.add(ModelType.BOOKMARK);
         types.add(ModelType.SESSION);
-        registrationIntent = createRegisterIntent(account, false, types);
+        registrationIntent = createRegisterIntent(account, types);
         getService().onHandleIntent(registrationIntent);
         assertTrue(expectedObjectIdsRegistered(types, objectIds, false /* isReady */));
 
@@ -640,13 +639,13 @@ public class InvalidationClientServiceTest extends
 
         // Change type registration with object ids registered.
         types.remove(ModelType.BOOKMARK);
-        registrationIntent = createRegisterIntent(account, false, types);
+        registrationIntent = createRegisterIntent(account, types);
         getService().onHandleIntent(registrationIntent);
         assertTrue(expectedObjectIdsRegistered(types, objectIds, true /* isReady */));
 
         // Unregister all types.
         types.clear();
-        registrationIntent = createRegisterIntent(account, false, types);
+        registrationIntent = createRegisterIntent(account, types);
         getService().onHandleIntent(registrationIntent);
         assertTrue(expectedObjectIdsRegistered(types, objectIds, true /* isReady */));
 
@@ -666,7 +665,7 @@ public class InvalidationClientServiceTest extends
         // Change type registration with no object ids registered.
         types.add(ModelType.BOOKMARK);
         types.add(ModelType.PASSWORD);
-        registrationIntent = createRegisterIntent(account, false, types);
+        registrationIntent = createRegisterIntent(account, types);
         getService().onHandleIntent(registrationIntent);
         assertTrue(expectedObjectIdsRegistered(types, objectIds, true /* isReady */));
     }
@@ -679,15 +678,16 @@ public class InvalidationClientServiceTest extends
 
         // Send register Intent.
         Account account = AccountManagerHelper.createAccountFromName("test@example.com");
-        Intent registrationIntent = createRegisterIntent(account, true, null);
+        Intent registrationIntent = createRegisterIntent(
+                account, CollectionUtil.newHashSet(ModelType.PROXY_TABS, ModelType.SESSION));
         getService().onHandleIntent(registrationIntent);
 
         // Verify client started and state written.
         assertTrue(InvalidationClientService.getIsClientStartedForTest());
         InvalidationPreferences invPrefs = new InvalidationPreferences(getContext());
         assertEquals(account, invPrefs.getSavedSyncedAccount());
-        assertEquals(CollectionUtil.newHashSet(ModelType.ALL_TYPES_TYPE),
-                invPrefs.getSavedSyncedTypes());
+        assertEquals(
+                CollectionUtil.newHashSet("PROXY_TABS", "SESSION"), invPrefs.getSavedSyncedTypes());
         assertEquals(1, mStartServiceIntents.size());
         assertTrue(isAndroidListenerStartIntent(mStartServiceIntents.get(0)));
 
@@ -696,9 +696,10 @@ public class InvalidationClientServiceTest extends
         assertTrue(Arrays.equals(CLIENT_ID, InvalidationClientService.getClientIdForTest()));
 
         // Ensure registrations are correct.
-        Set<ObjectId> expectedTypes =
-                ModelType.modelTypesToObjectIds(EnumSet.allOf(ModelType.class));
-        assertEquals(expectedTypes, new HashSet<ObjectId>(getService().mRegistrations.get(0)));
+        Set<ObjectId> expectedRegistrations =
+                ModelType.modelTypesToObjectIds(CollectionUtil.newHashSet(ModelType.SESSION));
+        assertEquals(expectedRegistrations,
+                     new HashSet<ObjectId>(getService().mRegistrations.get(0)));
     }
 
     @SmallTest
@@ -709,7 +710,7 @@ public class InvalidationClientServiceTest extends
 
         // Send register Intent with no desired types.
         Account account = AccountManagerHelper.createAccountFromName("test@example.com");
-        Intent registrationIntent = createRegisterIntent(account, false, new HashSet<ModelType>());
+        Intent registrationIntent = createRegisterIntent(account, new HashSet<ModelType>());
         getService().onHandleIntent(registrationIntent);
 
         // Verify client started and state written.
@@ -724,14 +725,15 @@ public class InvalidationClientServiceTest extends
         getService().ready(CLIENT_ID);
         assertTrue(Arrays.equals(CLIENT_ID, InvalidationClientService.getClientIdForTest()));
 
-        // Choose to register for all types in an already ready client.
-        registrationIntent = createRegisterIntent(account, true, null);
+        // Send register Intent for SESSIONS and PROXY_TABS in an already ready client.
+        registrationIntent = createRegisterIntent(account,
+                CollectionUtil.newHashSet(ModelType.PROXY_TABS, ModelType.SESSION));
         getService().onHandleIntent(registrationIntent);
 
-        // Ensure registrations are correct.
+        // Ensure that PROXY_TABS registration request is ignored.
         assertEquals(1, getService().mRegistrations.size());
         Set<ObjectId> expectedTypes =
-                ModelType.modelTypesToObjectIds(EnumSet.allOf(ModelType.class));
+                ModelType.modelTypesToObjectIds(CollectionUtil.newHashSet(ModelType.SESSION));
         assertEquals(expectedTypes, new HashSet<ObjectId>(getService().mRegistrations.get(0)));
     }
 
@@ -748,7 +750,7 @@ public class InvalidationClientServiceTest extends
         Account account = AccountManagerHelper.createAccountFromName("test@example.com");
         Set<ModelType> desiredRegistrations = CollectionUtil.newHashSet(
                 ModelType.BOOKMARK, ModelType.SESSION);
-        Intent registrationIntent = createRegisterIntent(account, false, desiredRegistrations);
+        Intent registrationIntent = createRegisterIntent(account, desiredRegistrations);
         getService().onHandleIntent(registrationIntent);
 
         // Verify state written but client not started.
@@ -777,7 +779,7 @@ public class InvalidationClientServiceTest extends
                 ModelType.BOOKMARK, ModelType.SESSION);
         Set<ObjectId> desiredObjectIds = ModelType.modelTypesToObjectIds(desiredRegistrations);
 
-        Intent registrationIntent = createRegisterIntent(account, false, desiredRegistrations);
+        Intent registrationIntent = createRegisterIntent(account, desiredRegistrations);
         getService().onHandleIntent(registrationIntent);
         assertTrue(InvalidationClientService.getIsClientStartedForTest());
         assertEquals(1, mStartServiceIntents.size());
@@ -830,8 +832,8 @@ public class InvalidationClientServiceTest extends
     }
 
     /** Creates an intent to register some types with the InvalidationClientService. */
-    private Intent createRegisterIntent(Account account, boolean allTypes, Set<ModelType> types) {
-        Intent intent = InvalidationIntentProtocol.createRegisterIntent(account, allTypes, types);
+    private Intent createRegisterIntent(Account account, Set<ModelType> types) {
+        Intent intent = InvalidationIntentProtocol.createRegisterIntent(account, types);
         return intent;
     }
 

@@ -262,7 +262,7 @@ public class SyncController implements ApplicationStateListener,
     private void onFirstStart() {
         if (AndroidSyncSettings.isSyncEnabled(mContext)) {
             InvalidationController controller = InvalidationController.get(mContext);
-            controller.refreshRegisteredTypes(mProfileSyncService.getPreferredDataTypes());
+            controller.refreshRegisteredTypes();
         }
         mFirstActivityStarted = true;
     }

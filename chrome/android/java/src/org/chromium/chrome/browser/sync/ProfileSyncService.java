@@ -76,14 +76,18 @@ public class ProfileSyncService {
     private static ProfileSyncService sProfileSyncService;
 
     @VisibleForTesting
-    protected final Context mContext;
+    // Cannot be final because it is initialized in {@link init()}.
+    protected Context mContext;
 
     // Sync state changes more often than listeners are added/removed, so using CopyOnWrite.
     private final List<SyncStateChangedListener> mListeners =
             new CopyOnWriteArrayList<SyncStateChangedListener>();
 
-    // Native ProfileSyncServiceAndroid object. Can not be final since we set it to 0 in destroy().
-    private final long mNativeProfileSyncServiceAndroid;
+    /**
+     * Native ProfileSyncServiceAndroid object. Cannot be final because it is initialized in
+     * {@link init()}.
+     */
+    private long mNativeProfileSyncServiceAndroid;
 
     /**
      * A helper method for retrieving the application-wide SyncSetupManager.
@@ -107,10 +111,16 @@ public class ProfileSyncService {
         sProfileSyncService = profileSyncService;
     }
 
-    /**
-     * This is called pretty early in our application. Avoid any blocking operations here.
-     */
     protected ProfileSyncService(Context context) {
+        init(context);
+    }
+
+    /**
+     * This is called pretty early in our application. Avoid any blocking operations here. init()
+     * is a separate function to enable a test subclass of ProfileSyncService to completely stub out
+     * ProfileSyncService.
+     */
+    protected void init(Context context) {
         ThreadUtils.assertOnUiThread();
         // We should store the application context, as we outlive any activity which may create us.
         mContext = context.getApplicationContext();

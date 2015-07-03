@@ -316,8 +316,7 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
         // Update the invalidation listener with the set of types we are enabling.
         InvalidationController invController =
                 InvalidationController.get(getActivity());
-        invController.setRegisteredTypes(getAccountArgument(), syncEverything,
-                mProfileSyncService.getPreferredDataTypes());
+        invController.refreshRegisteredTypes();
     }
 
     private Set<ModelType> getSelectedModelTypes() {
@@ -509,11 +508,6 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
         intent.setPackage(getActivity().getPackageName());
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
-    }
-
-    private Account getAccountArgument() {
-        return AccountManagerHelper
-                .createAccountFromName(getArguments().getString(ARGUMENT_ACCOUNT));
     }
 
     /**

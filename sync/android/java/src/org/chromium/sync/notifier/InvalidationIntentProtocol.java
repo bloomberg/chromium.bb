@@ -59,18 +59,12 @@ public class InvalidationIntentProtocol {
      * Create an Intent that will start the invalidation listener service and
      * register for the specified types.
      */
-    public static Intent createRegisterIntent(Account account,
-                                              boolean allTypes, Set<ModelType> types) {
+    public static Intent createRegisterIntent(Account account, Set<ModelType> types) {
         Intent registerIntent = new Intent(ACTION_REGISTER);
-        String[] selectedTypesArray;
-        if (allTypes) {
-            selectedTypesArray = new String[]{ModelType.ALL_TYPES_TYPE};
-        } else {
-            selectedTypesArray = new String[types.size()];
-            int pos = 0;
-            for (ModelType type : types) {
-                selectedTypesArray[pos++] = type.name();
-            }
+        String[] selectedTypesArray = new String[types.size()];
+        int pos = 0;
+        for (ModelType type : types) {
+            selectedTypesArray[pos++] = type.name();
         }
         registerIntent.putStringArrayListExtra(EXTRA_REGISTERED_TYPES,
                 CollectionUtil.newArrayList(selectedTypesArray));

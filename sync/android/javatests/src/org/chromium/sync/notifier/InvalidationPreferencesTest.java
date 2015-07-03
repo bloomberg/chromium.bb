@@ -17,7 +17,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -51,19 +50,6 @@ public class InvalidationPreferencesTest extends InstrumentationTestCase {
 
     @SmallTest
     @Feature({"Sync"})
-    public void testTranslateAllSyncTypes() {
-        /*
-         * Test plan: convert the special all-types type to model types. Verify that it is
-         * properly expanded.
-         */
-        Set<ModelType> expectedTypes = EnumSet.allOf(ModelType.class);
-        Set<ModelType> actualTypes = ModelType.syncTypesToModelTypes(
-                CollectionUtil.newHashSet(ModelType.ALL_TYPES_TYPE));
-        assertEquals(expectedTypes, actualTypes);
-    }
-
-    @SmallTest
-    @Feature({"Sync"})
     public void testReadMissingData() {
         /*
          * Test plan: read saved state from empty preferences. Verify that null is returned.
@@ -85,9 +71,9 @@ public class InvalidationPreferencesTest extends InstrumentationTestCase {
         InvalidationPreferences invPreferences = new InvalidationPreferences(mContext);
         InvalidationPreferences.EditContext editContext = invPreferences.edit();
 
-        // We should never write both a real type and the all-types type in practice, but we test
-        // with them here to ensure that preferences are not interpreting the written data.
-        Set<String> syncTypes = CollectionUtil.newHashSet("BOOKMARK", ModelType.ALL_TYPES_TYPE);
+        // Write mix of valid and invalid types to disk to test that preferences are not
+        // interpreting the data. Invalid types should never be written to disk in practice.
+        Set<String> syncTypes = CollectionUtil.newHashSet("BOOKMARK", "INVALID");
         Set<ObjectId> objectIds = CollectionUtil.newHashSet(
                 ObjectId.newInstance(1, "obj1".getBytes()),
                 ObjectId.newInstance(2, "obj2".getBytes()));
