@@ -124,48 +124,61 @@ static bool isInterestingStatusCode(int statusCode)
     return statusCode >= 400;
 }
 
+static String buildAccessControlFailureMessage(const String& detail, SecurityOrigin* securityOrigin)
+{
+    return detail + " Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";
+}
+
 bool passesAccessControlCheck(const ResourceResponse& response, StoredCredentials includeCredentials, SecurityOrigin* securityOrigin, String& errorDescription)
 {
-    AtomicallyInitializedStaticReference(AtomicString, accessControlAllowOrigin, (new AtomicString("access-control-allow-origin", AtomicString::ConstructFromLiteral)));
-    AtomicallyInitializedStaticReference(AtomicString, accessControlAllowCredentials, (new AtomicString("access-control-allow-credentials", AtomicString::ConstructFromLiteral)));
+    AtomicallyInitializedStaticReference(AtomicString, allowOriginHeaderName, (new AtomicString("access-control-allow-origin", AtomicString::ConstructFromLiteral)));
+    AtomicallyInitializedStaticReference(AtomicString, allowCredentialsHeaderName, (new AtomicString("access-control-allow-credentials", AtomicString::ConstructFromLiteral)));
 
-    if (!response.httpStatusCode()) {
-        errorDescription = "Received an invalid response. Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";
+    int statusCode = response.httpStatusCode();
+
+    if (!statusCode) {
+        errorDescription = buildAccessControlFailureMessage("Invalid response.", securityOrigin);
         return false;
     }
 
-    const AtomicString& accessControlOriginString = response.httpHeaderField(accessControlAllowOrigin);
-    if (accessControlOriginString == starAtom) {
+    const AtomicString& allowOriginHeaderValue = response.httpHeaderField(allowOriginHeaderName);
+    if (allowOriginHeaderValue == starAtom) {
         // A wildcard Access-Control-Allow-Origin can not be used if credentials are to be sent,
         // even with Access-Control-Allow-Credentials set to true.
         if (includeCredentials == DoNotAllowStoredCredentials)
             return true;
         if (response.isHTTP()) {
-            errorDescription = "A wildcard '*' cannot be used in the 'Access-Control-Allow-Origin' header when the credentials flag is true. Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";
+            errorDescription = buildAccessControlFailureMessage("A wildcard '*' cannot be used in the 'Access-Control-Allow-Origin' header when the credentials flag is true.", securityOrigin);
             return false;
         }
-    } else if (accessControlOriginString != securityOrigin->toAtomicString()) {
-        if (accessControlOriginString.isNull()) {
-            errorDescription = "No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";
+    } else if (allowOriginHeaderValue != securityOrigin->toAtomicString()) {
+        if (allowOriginHeaderValue.isNull()) {
+            errorDescription = buildAccessControlFailureMessage("No 'Access-Control-Allow-Origin' header is present on the requested resource.", securityOrigin);
 
-            if (isInterestingStatusCode(response.httpStatusCode()))
-                errorDescription.append(" The response had HTTP status code " + String::number(response.httpStatusCode()) + ".");
-        } else if (accessControlOriginString.string().find(isOriginSeparator, 0) != kNotFound) {
-            errorDescription = "The 'Access-Control-Allow-Origin' header contains multiple values '" + accessControlOriginString + "', but only one is allowed. Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";
-        } else {
-            KURL headerOrigin(KURL(), accessControlOriginString);
-            if (!headerOrigin.isValid())
-                errorDescription = "The 'Access-Control-Allow-Origin' header contains the invalid value '" + accessControlOriginString + "'. Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";
-            else
-                errorDescription = "The 'Access-Control-Allow-Origin' header has a value '" + accessControlOriginString + "' that is not equal to the supplied origin. Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";
+            if (isInterestingStatusCode(statusCode))
+                errorDescription.append(" The response had HTTP status code " + String::number(statusCode) + ".");
+
+            return false;
         }
+
+        String detail;
+        if (allowOriginHeaderValue.string().find(isOriginSeparator, 0) != kNotFound) {
+            detail = "The 'Access-Control-Allow-Origin' header contains multiple values '" + allowOriginHeaderValue + "', but only one is allowed.";
+        } else {
+            KURL headerOrigin(KURL(), allowOriginHeaderValue);
+            if (!headerOrigin.isValid())
+                detail = "The 'Access-Control-Allow-Origin' header contains the invalid value '" + allowOriginHeaderValue + "'.";
+            else
+                detail = "The 'Access-Control-Allow-Origin' header has a value '" + allowOriginHeaderValue + "' that is not equal to the supplied origin.";
+        }
+        errorDescription = buildAccessControlFailureMessage(detail, securityOrigin);
         return false;
     }
 
     if (includeCredentials == AllowStoredCredentials) {
-        const AtomicString& accessControlCredentialsString = response.httpHeaderField(accessControlAllowCredentials);
-        if (accessControlCredentialsString != "true") {
-            errorDescription = "Credentials flag is 'true', but the 'Access-Control-Allow-Credentials' header is '" + accessControlCredentialsString + "'. It must be 'true' to allow credentials.";
+        const AtomicString& allowCredentialsHeaderValue = response.httpHeaderField(allowCredentialsHeaderName);
+        if (allowCredentialsHeaderValue != "true") {
+            errorDescription = buildAccessControlFailureMessage("Credentials flag is 'true', but the 'Access-Control-Allow-Credentials' header is '" + allowCredentialsHeaderValue + "'. It must be 'true' to allow credentials.", securityOrigin);
             return false;
         }
     }
