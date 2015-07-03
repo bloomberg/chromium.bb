@@ -7,8 +7,6 @@ include_rules = [
   "+sync/util",
   "+sync/test",
 
-  "+jingle/notifier/base",
-
   # TODO(zea): SessionModelAssociator shouldn't need this.
   # TODO(sync): Also need to fix crbug.com/123674.
   "+sync/syncable",

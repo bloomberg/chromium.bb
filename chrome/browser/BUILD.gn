@@ -159,7 +159,6 @@ source_set("browser") {
     "//crypto",
     "//google_apis",
     "//gpu/config",
-    "//jingle:notifier",
     "//skia",
     "//sql",
     "//sync",

@@ -3190,7 +3190,6 @@
         '../courgette/courgette.gyp:courgette_lib',
         '../crypto/crypto.gyp:crypto',
         '../google_apis/google_apis.gyp:google_apis',
-        '../jingle/jingle.gyp:notifier',
         '../skia/skia.gyp:skia',
         '../sql/sql.gyp:sql',
         '../sync/sync.gyp:sync',
