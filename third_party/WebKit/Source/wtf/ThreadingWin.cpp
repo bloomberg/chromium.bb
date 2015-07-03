@@ -106,9 +106,7 @@
 
 namespace WTF {
 
-// MS_VC_EXCEPTION, THREADNAME_INFO, and setThreadNameInternal all come from <http://msdn.microsoft.com/en-us/library/xcb2z8hs.aspx>.
-static const DWORD MS_VC_EXCEPTION = 0x406D1388;
-
+// THREADNAME_INFO comes from <http://msdn.microsoft.com/en-us/library/xcb2z8hs.aspx>.
 #pragma pack(push, 8)
 typedef struct tagTHREADNAME_INFO {
     DWORD dwType; // must be 0x1000
