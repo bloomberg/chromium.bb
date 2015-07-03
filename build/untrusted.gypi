@@ -719,8 +719,8 @@
               },
             ],
           }],
-          # arm glibc library action
-          ['nlib_target!="" and build_glibc!=0', {
+          # arm glibc static library action
+          ['nlib_target!="" and build_glibc!=0 and disable_glibc==0', {
             'variables': {
               'tool_name': 'glibc',
               'out_glibc_arm%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libarm/>(nlib_target)',
@@ -759,6 +759,46 @@
               },
             ],
           }],
+          # arm glibc shared library action
+          ['nso_target!="" and build_glibc!=0 and disable_glibc==0', {
+             'variables': {
+                'tool_name': 'glibc',
+                'out_glibc_arm%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libarm/>(nso_target)',
+                'objdir_glibc_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)-arm-so/>(_target_name)',
+             },
+             'actions': [
+               {
+                 'action_name': 'build glibc arm nso',
+                 'variables': {
+                   'source_list_glibc_arm%': '^|(<(tool_name)-arm-so.>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                 },
+                 'msvs_cygwin_shell': 0,
+                 'description': 'building >(out_glibc_arm)',
+                 'inputs': [
+                    '<@(common_inputs)',
+                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
+                    '>@(extra_deps)',
+                    '^(source_list_glibc_arm)',
+                    '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_arm_glibc/nacl_arm_glibc.json',
+                 ],
+                 'outputs': ['>(out_glibc_arm)'],
+                 'action': [
+                   '<@(common_args)',
+                   '>@(extra_args)',
+                   '--arch', 'arm',
+                   '--build', 'glibc_nso',
+                   '--name', '>(out_glibc_arm)',
+                   '--objdir', '>(objdir_glibc_arm)',
+                   '--include-dirs=>(tc_include_dir_glibc) ^(include_dirs) >(_include_dirs)',
+                   '--compile_flags=-fPIC <(arm_compile_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                   '--gomadir', '<(gomadir)',
+                   '--defines=^(defines) >(_defines)',
+                   '--link_flags=-B>(tc_lib_dir_glibc_arm) ^(link_flags) >(_link_flags)',
+                   '--source-list=^(source_list_glibc_arm)',
+                 ],
+               },
+             ],
+           }],
           # arm newlib nexe action
           ['nexe_target!="" and build_newlib!=0', {
             'variables': {
