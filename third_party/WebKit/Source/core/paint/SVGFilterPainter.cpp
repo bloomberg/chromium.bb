@@ -20,16 +20,18 @@
 
 namespace blink {
 
-static GraphicsContext* beginRecordingContent(GraphicsContext* context, FilterData* filterData)
+GraphicsContext* SVGFilterRecordingContext::beginContent(FilterData* filterData)
 {
     ASSERT(filterData->m_state == FilterData::Initial);
+
+    GraphicsContext* context = paintingContext();
 
     // For slimming paint we need to create a new context so the contents of the
     // filter can be drawn and cached.
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        filterData->m_displayItemList = DisplayItemList::create();
-        filterData->m_context = adoptPtr(new GraphicsContext(filterData->m_displayItemList.get()));
-        context = filterData->m_context.get();
+        m_displayItemList = DisplayItemList::create();
+        m_context = adoptPtr(new GraphicsContext(m_displayItemList.get()));
+        context = m_context.get();
     } else {
         context->beginRecording(filterData->filter->filterRegion());
     }
@@ -38,7 +40,7 @@ static GraphicsContext* beginRecordingContent(GraphicsContext* context, FilterDa
     return context;
 }
 
-static void endRecordingContent(GraphicsContext* context, FilterData* filterData)
+void SVGFilterRecordingContext::endContent(FilterData* filterData)
 {
     ASSERT(filterData->m_state == FilterData::RecordingContent);
 
@@ -46,28 +48,30 @@ static void endRecordingContent(GraphicsContext* context, FilterData* filterData
     SourceGraphic* sourceGraphic = static_cast<SourceGraphic*>(filterData->builder->getEffectById(SourceGraphic::effectName()));
     ASSERT(sourceGraphic);
 
+    GraphicsContext* context = paintingContext();
+
     // For slimming paint we need to use the context that contains the filtered
     // content.
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        ASSERT(filterData->m_displayItemList);
-        ASSERT(filterData->m_context);
-        context = filterData->m_context.get();
+        ASSERT(m_displayItemList);
+        ASSERT(m_context);
+        context = m_context.get();
         context->beginRecording(filterData->filter->filterRegion());
-        filterData->m_displayItemList->commitNewDisplayItemsAndReplay(*context);
+        m_displayItemList->commitNewDisplayItemsAndReplay(*context);
     }
 
     sourceGraphic->setPicture(context->endRecording());
 
     // Content is cached by the source graphic so temporaries can be freed.
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        filterData->m_displayItemList = nullptr;
-        filterData->m_context = nullptr;
+        m_displayItemList = nullptr;
+        m_context = nullptr;
     }
 
     filterData->m_state = FilterData::ReadyToPaint;
 }
 
-static void paintFilteredContent(LayoutObject& object, GraphicsContext* context, FilterData* filterData, SVGFilterElement* filterElement)
+static void paintFilteredContent(LayoutObject& object, GraphicsContext* context, FilterData* filterData)
 {
     ASSERT(filterData->m_state == FilterData::ReadyToPaint);
     ASSERT(filterData->builder->getEffectById(SourceGraphic::effectName()));
@@ -109,9 +113,9 @@ static void paintFilteredContent(LayoutObject& object, GraphicsContext* context,
     filterData->m_state = FilterData::ReadyToPaint;
 }
 
-GraphicsContext* SVGFilterPainter::prepareEffect(LayoutObject& object, GraphicsContext* context)
+GraphicsContext* SVGFilterPainter::prepareEffect(LayoutObject& object, SVGFilterRecordingContext& recordingContext)
 {
-    ASSERT(context);
+    ASSERT(recordingContext.paintingContext());
 
     m_filter.clearInvalidationMask();
 
@@ -155,13 +159,11 @@ GraphicsContext* SVGFilterPainter::prepareEffect(LayoutObject& object, GraphicsC
 
     FilterData* data = filterData.get();
     m_filter.setFilterDataForLayoutObject(&object, filterData.release());
-    return beginRecordingContent(context, data);
+    return recordingContext.beginContent(data);
 }
 
-void SVGFilterPainter::finishEffect(LayoutObject& object, GraphicsContext* context)
+void SVGFilterPainter::finishEffect(LayoutObject& object, SVGFilterRecordingContext& recordingContext)
 {
-    ASSERT(context);
-
     FilterData* filterData = m_filter.getFilterDataForLayoutObject(&object);
     if (filterData) {
         // A painting cycle can occur when an FeImage references a source that
@@ -173,18 +175,21 @@ void SVGFilterPainter::finishEffect(LayoutObject& object, GraphicsContext* conte
         // Check for RecordingContent here because we may can be re-painting
         // without re-recording the contents to be filtered.
         if (filterData->m_state == FilterData::RecordingContent)
-            endRecordingContent(context, filterData);
+            recordingContext.endContent(filterData);
 
         if (filterData->m_state == FilterData::RecordingContentCycleDetected)
             filterData->m_state = FilterData::RecordingContent;
     }
+
+    GraphicsContext* context = recordingContext.paintingContext();
+    ASSERT(context);
 
     LayoutObjectDrawingRecorder recorder(*context, object, DisplayItem::SVGFilter, LayoutRect::infiniteIntRect());
     if (recorder.canUseCachedDrawing())
         return;
 
     if (filterData && filterData->m_state == FilterData::ReadyToPaint)
-        paintFilteredContent(object, context, filterData, toSVGFilterElement(m_filter.element()));
+        paintFilteredContent(object, context, filterData);
 }
 
 }

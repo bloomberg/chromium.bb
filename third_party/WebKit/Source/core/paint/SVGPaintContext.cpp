@@ -31,7 +31,6 @@
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
-#include "core/paint/SVGFilterPainter.h"
 #include "core/paint/SVGMaskPainter.h"
 #include "platform/FloatConversion.h"
 
@@ -42,7 +41,8 @@ SVGPaintContext::~SVGPaintContext()
     if (m_filter) {
         ASSERT(SVGResourcesCache::cachedResourcesForLayoutObject(m_object));
         ASSERT(SVGResourcesCache::cachedResourcesForLayoutObject(m_object)->filter() == m_filter);
-        SVGFilterPainter(*m_filter).finishEffect(*m_object, m_originalPaintInfo->context);
+        ASSERT(m_filterRecordingContext);
+        SVGFilterPainter(*m_filter).finishEffect(*m_object, *m_filterRecordingContext);
 
         // Reset the paint info after the filter effect has been completed.
         // This isn't strictly required (e.g., m_paintInfo.rect is not used
@@ -154,8 +154,9 @@ bool SVGPaintContext::applyFilterIfNecessary(SVGResources* resources)
         if (m_object->style()->svgStyle().hasFilter())
             return false;
     } else if (LayoutSVGResourceFilter* filter = resources->filter()) {
+        m_filterRecordingContext = adoptPtr(new SVGFilterRecordingContext(m_paintInfo.context));
         m_filter = filter;
-        GraphicsContext* filterContext = SVGFilterPainter(*filter).prepareEffect(*m_object, m_paintInfo.context);
+        GraphicsContext* filterContext = SVGFilterPainter(*filter).prepareEffect(*m_object, *m_filterRecordingContext);
         if (!filterContext)
             return false;
 

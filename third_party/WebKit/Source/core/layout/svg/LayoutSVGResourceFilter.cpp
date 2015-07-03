@@ -42,8 +42,6 @@ DEFINE_TRACE(FilterData)
 
 void FilterData::dispose()
 {
-    m_context.clear();
-    m_displayItemList.clear();
     builder = nullptr;
     filter = nullptr;
 }

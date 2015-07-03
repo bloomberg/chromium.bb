@@ -41,6 +41,7 @@
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/svg/SVGElement.h"
 #include "platform/geometry/TransformState.h"
+#include "platform/graphics/StrokeData.h"
 
 namespace blink {
 

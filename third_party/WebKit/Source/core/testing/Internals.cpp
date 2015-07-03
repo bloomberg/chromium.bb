@@ -117,6 +117,7 @@
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "core/plugins/testing/DictionaryPluginPlaceholder.h"
 #include "core/plugins/testing/DocumentFragmentPluginPlaceholder.h"
+#include "core/svg/SVGImageElement.h"
 #include "core/testing/DictionaryTest.h"
 #include "core/testing/GCObservation.h"
 #include "core/testing/InternalRuntimeFlags.h"
@@ -485,12 +486,16 @@ void Internals::advanceTimeForImage(Element* image, double deltaTimeInSeconds, E
         return;
     }
 
-    if (!isHTMLImageElement(*image)) {
+    ImageResource* resource = nullptr;
+    if (isHTMLImageElement(*image)) {
+        resource = toHTMLImageElement(*image).cachedImage();
+    } else if (isSVGImageElement(*image)) {
+        resource = toSVGImageElement(*image).cachedImage();
+    } else {
         exceptionState.throwDOMException(InvalidAccessError, "The element provided is not a image element.");
         return;
     }
 
-    ImageResource* resource = toHTMLImageElement(*image).cachedImage();
     if (!resource || !resource->hasImage()) {
         exceptionState.throwDOMException(InvalidAccessError, "The image resource is not available.");
         return;

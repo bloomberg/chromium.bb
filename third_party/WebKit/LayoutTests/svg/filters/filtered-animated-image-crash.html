@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<script src=../../resources/run-after-layout-and-paint.js></script>
+<svg>
+  <filter id='filt'><feMerge><feMergeNode/></feMerge></filter>
+  <image height='400' width='400' filter='url(#filt)'
+         xlink:href='../../fast/images/resources/animated-10color-fast.gif'
+         onload="runTest()"/>
+</svg>
+<p>PASS if no crash.</p>
+<script>
+if (window.testRunner)
+  testRunner.dumpAsText();
+
+function runTest() {
+  // Nudge the frame time for the image to force the animation to catch up.
+  if (window.internals)
+    internals.advanceTimeForImage(document.querySelector('image'), 0.5);
+  runAfterLayoutAndPaint(function(){}, true);
+}
+</script>

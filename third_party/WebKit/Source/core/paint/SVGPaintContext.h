@@ -31,6 +31,7 @@
 #include "core/paint/FloatClipRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/SVGClipPainter.h"
+#include "core/paint/SVGFilterPainter.h"
 #include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/transforms/AffineTransform.h"
 
@@ -94,6 +95,7 @@ private:
     OwnPtr<FloatClipRecorder> m_clipRecorder;
     OwnPtr<CompositingRecorder> m_compositingRecorder;
     OwnPtr<ClipPathRecorder> m_clipPathRecorder;
+    OwnPtr<SVGFilterRecordingContext> m_filterRecordingContext;
 #if ENABLE(ASSERT)
     bool m_applyClipMaskAndFilterIfNecessaryCalled;
 #endif

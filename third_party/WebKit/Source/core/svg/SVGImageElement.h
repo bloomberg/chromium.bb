@@ -48,6 +48,9 @@ public:
     SVGAnimatedLength* height() const { return m_height.get(); }
     SVGAnimatedPreserveAspectRatio* preserveAspectRatio() { return m_preserveAspectRatio.get(); }
 
+    // Exposed for testing.
+    ImageResource* cachedImage() const { return imageLoader().image(); }
+
 private:
     explicit SVGImageElement(Document&);
 
@@ -70,7 +73,7 @@ private:
 
     virtual bool selfHasRelativeLengths() const override;
     virtual void didMoveToNewDocument(Document& oldDocument) override;
-    SVGImageLoader& imageLoader() { return *m_imageLoader; }
+    SVGImageLoader& imageLoader() const { return *m_imageLoader; }
 
     RefPtrWillBeMember<SVGAnimatedLength> m_x;
     RefPtrWillBeMember<SVGAnimatedLength> m_y;
