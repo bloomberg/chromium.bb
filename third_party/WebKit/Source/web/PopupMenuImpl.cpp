@@ -256,6 +256,13 @@ void PopupMenuImpl::addElementStyle(ItemIterationContext& context, HTMLElement& 
 {
     const ComputedStyle* style = m_client->computedStyleForItem(element);
     ASSERT(style);
+    if (style->visibility() != HIDDEN
+        && style->display() != NONE
+        && context.m_direction == style->direction()
+        && !isOverride(style->unicodeBidi())
+        && !context.m_enableExtraStyling)
+        return;
+
     SharedBuffer* data = context.m_buffer;
     PagePopupClient::addString("style: {\n", data);
     if (style->visibility() == HIDDEN)
@@ -289,8 +296,7 @@ void PopupMenuImpl::addElementStyle(ItemIterationContext& context, HTMLElement& 
 void PopupMenuImpl::addOption(ItemIterationContext& context, HTMLOptionElement& element)
 {
     SharedBuffer* data = context.m_buffer;
-    PagePopupClient::addString("{\n", data);
-    PagePopupClient::addString("type: \"option\",\n", data);
+    PagePopupClient::addString("{", data);
     addProperty("label", element.text(), data);
     ASSERT(context.m_listIndex == element.listIndex());
     addProperty("value", context.m_listIndex++, data);
@@ -302,7 +308,7 @@ void PopupMenuImpl::addOption(ItemIterationContext& context, HTMLOptionElement& 
     if (element.isDisabledFormControl())
         addProperty("disabled", true, data);
     addElementStyle(context, element);
-    PagePopupClient::addString("},\n", data);
+    PagePopupClient::addString("},", data);
 }
 
 void PopupMenuImpl::addOptGroup(ItemIterationContext& context, HTMLOptGroupElement& element)

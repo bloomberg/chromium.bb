@@ -337,7 +337,7 @@ ListPicker.prototype._findReusableItem = function(parent, config, startIndex) {
 
 ListPicker.prototype._createItemElement = function(config) {
     var element;
-    if (config.type === "option")
+    if (!config.type || config.type === "option")
         element = createElement("option");
     else if (config.type === "optgroup")
         element = createElement("optgroup");
@@ -367,7 +367,7 @@ ListPicker.prototype._applyItemStyle = function(element, styleConfig) {
 };
 
 ListPicker.prototype._configureItem = function(element, config, inGroup) {
-    if (config.type === "option") {
+    if (!config.type || config.type === "option") {
         element.label = config.label;
         element.value = config.value;
         if (config.title)
