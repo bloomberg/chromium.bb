@@ -421,8 +421,9 @@ void TextFieldInputType::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent* 
     if (element().focused()) {
         Position startPosition;
         Position endPosition;
-        element().document().frame()->selection().selection().toNormalizedPositions(startPosition, endPosition);
-        selectionLength = plainText(startPosition, endPosition).length();
+        const VisibleSelection& selection = element().document().frame()->selection().selection();
+        if (selection.toNormalizedPositions(startPosition, endPosition))
+            selectionLength = plainText(startPosition, endPosition).length();
     }
     ASSERT(oldLength >= selectionLength);
 
