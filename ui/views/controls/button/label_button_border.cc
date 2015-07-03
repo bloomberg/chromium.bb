@@ -50,15 +50,14 @@ void PaintHelper(LabelButtonBorder* border,
 
 }  // namespace
 
-LabelButtonBorder::LabelButtonBorder(Button::ButtonStyle style)
-    : style_(style) {
+LabelButtonBorder::LabelButtonBorder(Button::ButtonStyle style) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   const gfx::Insets insets(kButtonInsets,
                            kButtonInsets,
                            kButtonInsets,
                            kButtonInsets);
 
-  set_insets(GetDefaultInsetsForStyle(style_));
+  set_insets(GetDefaultInsetsForStyle(style));
   if (style == Button::STYLE_BUTTON) {
     SetPainter(false, Button::STATE_NORMAL,
                Painter::CreateImagePainter(

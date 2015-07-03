@@ -24,8 +24,6 @@ class VIEWS_EXPORT LabelButtonBorder : public Border {
   // Returns the default insets for a given |style|.
   static gfx::Insets GetDefaultInsetsForStyle(Button::ButtonStyle style);
 
-  Button::ButtonStyle style() const { return style_; }
-
   // Overridden from Border:
   void Paint(const View& view, gfx::Canvas* canvas) override;
   gfx::Insets GetInsets() const override;
@@ -41,9 +39,6 @@ class VIEWS_EXPORT LabelButtonBorder : public Border {
  private:
   // The painters used for each unfocused or focused button state.
   scoped_ptr<Painter> painters_[2][Button::STATE_COUNT];
-
-  // The button style supplied in part by this border.
-  Button::ButtonStyle style_;
 
   gfx::Insets insets_;
 
