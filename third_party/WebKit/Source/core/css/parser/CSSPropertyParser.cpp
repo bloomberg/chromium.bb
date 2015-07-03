@@ -832,10 +832,12 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         break;
 
     case CSSPropertyZIndex: // auto | <integer> | inherit
-        if (id == CSSValueAuto)
+        if (id == CSSValueAuto) {
             validPrimitive = true;
-        else
-            validPrimitive = validUnit(value, FInteger);
+        } else if (validUnit(value, FInteger)) {
+            addProperty(propId, cssValuePool().createValue(value->fValue, CSSPrimitiveValue::CSS_INTEGER), important);
+            return true;
+        }
         break;
 
     case CSSPropertyLineHeight:

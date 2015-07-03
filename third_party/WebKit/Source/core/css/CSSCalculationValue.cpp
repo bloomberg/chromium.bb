@@ -51,6 +51,7 @@ static CalculationCategory unitCategory(CSSPrimitiveValue::UnitType type)
 {
     switch (type) {
     case CSSPrimitiveValue::CSS_NUMBER:
+    case CSSPrimitiveValue::CSS_INTEGER:
         return CalcNumber;
     case CSSPrimitiveValue::CSS_PERCENTAGE:
         return CalcPercent;
@@ -116,6 +117,7 @@ static bool hasDoubleValue(CSSPrimitiveValue::UnitType type)
     case CSSPrimitiveValue::CSS_DPI:
     case CSSPrimitiveValue::CSS_DPCM:
     case CSSPrimitiveValue::CSS_FR:
+    case CSSPrimitiveValue::CSS_INTEGER:
         return true;
     case CSSPrimitiveValue::CSS_UNKNOWN:
     case CSSPrimitiveValue::CSS_CUSTOM_IDENT:

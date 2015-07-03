@@ -2094,7 +2094,7 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyZIndex:
         if (style.hasAutoZIndex())
             return cssValuePool().createIdentifierValue(CSSValueAuto);
-        return cssValuePool().createValue(style.zIndex(), CSSPrimitiveValue::CSS_NUMBER);
+        return cssValuePool().createValue(style.zIndex(), CSSPrimitiveValue::CSS_INTEGER);
     case CSSPropertyZoom:
         return cssValuePool().createValue(style.zoom(), CSSPrimitiveValue::CSS_NUMBER);
     case CSSPropertyBoxSizing:

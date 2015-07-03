@@ -438,6 +438,7 @@ void CSSPrimitiveValue::cleanup()
 #endif
         break;
     case CSS_NUMBER:
+    case CSS_INTEGER:
     case CSS_PERCENTAGE:
     case CSS_EMS:
     case CSS_QEM:
@@ -854,6 +855,7 @@ const char* CSSPrimitiveValue::unitTypeToString(UnitType type)
 {
     switch (type) {
     case CSS_NUMBER:
+    case CSS_INTEGER:
         return "";
     case CSS_PERCENTAGE:
         return "%";
@@ -944,6 +946,9 @@ String CSSPrimitiveValue::customCSSText() const
     switch (m_primitiveUnitType) {
         case CSS_UNKNOWN:
             // FIXME
+            break;
+        case CSS_INTEGER:
+            text = String::format("%d", getIntValue());
             break;
         case CSS_NUMBER:
         case CSS_PERCENTAGE:

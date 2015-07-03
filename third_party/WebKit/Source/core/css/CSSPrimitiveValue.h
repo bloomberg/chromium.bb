@@ -106,6 +106,7 @@ public:
         CSS_DPI = 31,
         CSS_DPCM = 32,
         CSS_FR = 33,
+        CSS_INTEGER = 34,
         CSS_PAIR = 100,
         CSS_TURN = 107,
         CSS_REMS = 108,
@@ -184,7 +185,7 @@ public:
         return (type >= CSS_EMS && type <= CSS_PC) || type == CSS_REMS || type == CSS_CHS || isViewportPercentageLength(type);
     }
     bool isLength() const { return isLength(primitiveType()); }
-    bool isNumber() const { return primitiveType() == CSS_NUMBER; }
+    bool isNumber() const { return primitiveType() == CSS_NUMBER || primitiveType() == CSS_INTEGER; }
     bool isPercentage() const { return primitiveType() == CSS_PERCENTAGE; }
     bool isPx() const { return primitiveType() == CSS_PX; }
     bool isRect() const { return m_primitiveUnitType == CSS_RECT; }
