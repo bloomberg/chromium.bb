@@ -10,9 +10,9 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMArrayBuffer.h"
-#include "core/fileapi/FileReaderLoader.h"
-#include "core/fileapi/FileReaderLoaderClient.h"
 #include "modules/ModulesExport.h"
+#include "modules/fetch/FetchDataConsumerHandle.h"
+#include "modules/fetch/FetchDataLoader.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
@@ -29,9 +29,9 @@ class MODULES_EXPORT Body
     : public GarbageCollectedFinalized<Body>
     , public ScriptWrappable
     , public ActiveDOMObject
-    , public FileReaderLoaderClient {
+    , public FetchDataLoader::Client {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Body);
+    USING_GARBAGE_COLLECTED_MIXIN(Body);
 public:
     class ReadableStreamSource;
     enum ResponseType {
@@ -95,13 +95,14 @@ private:
     void readAllFromStream();
     ScriptPromise readAsync(ScriptState*, ResponseType);
     void readAsyncFromBlob(PassRefPtr<BlobDataHandle>);
+    void readAsyncFromFetchDataConsumerHandle(FetchDataConsumerHandle*, const String& mimeType);
     void resolveJSON(const String&);
 
-    // FileReaderLoaderClient functions.
-    virtual void didStartLoading() override;
-    virtual void didReceiveData() override;
-    virtual void didFinishLoading() override;
-    virtual void didFail(FileError::ErrorCode) override;
+    // FetchDataLoader::Client functions.
+    void didFetchDataLoadFailed() override;
+    void didFetchDataLoadedBlobHandle(PassRefPtr<BlobDataHandle>) override;
+    void didFetchDataLoadedArrayBuffer(PassRefPtr<DOMArrayBuffer>) override;
+    void didFetchDataLoadedString(const String&) override;
 
     void didBlobHandleReceiveError(DOMException*);
 
@@ -115,7 +116,7 @@ private:
 
     void didFinishLoadingViaStream(PassRefPtr<DOMArrayBuffer>);
 
-    OwnPtr<FileReaderLoader> m_loader;
+    Member<FetchDataLoader> m_fetchDataLoader;
     bool m_bodyUsed;
     ResponseType m_responseType;
     RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;

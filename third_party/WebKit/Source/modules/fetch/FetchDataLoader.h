@@ -28,7 +28,7 @@ namespace blink {
 // - FetchDataLoader takes the ownership of |handle|'s reader but not |handle|.
 class MODULES_EXPORT FetchDataLoader : public GarbageCollectedFinalized<FetchDataLoader> {
 public:
-    class Client : public GarbageCollectedMixin {
+    class MODULES_EXPORT Client : public GarbageCollectedMixin {
     public:
         virtual ~Client() { }
 

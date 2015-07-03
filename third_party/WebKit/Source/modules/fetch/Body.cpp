@@ -20,6 +20,8 @@
 #include "core/streams/ReadableByteStreamReader.h"
 #include "core/streams/UnderlyingSource.h"
 #include "modules/fetch/BodyStreamBuffer.h"
+#include "modules/fetch/DataConsumerHandleUtil.h"
+#include "modules/fetch/FetchBlobDataConsumerHandle.h"
 
 namespace blink {
 
@@ -349,52 +351,40 @@ ScriptPromise Body::readAsync(ScriptState* scriptState, ResponseType type)
     return promise;
 }
 
-void Body::readAsyncFromBlob(PassRefPtr<BlobDataHandle> handle)
+void Body::readAsyncFromFetchDataConsumerHandle(FetchDataConsumerHandle* handle, const String& mimeType)
 {
-    FileReaderLoader::ReadType readType = FileReaderLoader::ReadAsText;
-    RefPtr<BlobDataHandle> blobHandle = handle;
-    if (!blobHandle)
-        blobHandle = BlobDataHandle::create(BlobData::create(), 0);
+    ASSERT(!m_fetchDataLoader);
+
     switch (m_responseType) {
     case ResponseAsArrayBuffer:
-        readType = FileReaderLoader::ReadAsArrayBuffer;
+        m_fetchDataLoader = FetchDataLoader::createLoaderAsArrayBuffer();
         break;
+
+    case ResponseAsJSON:
+    case ResponseAsText:
+        m_fetchDataLoader = FetchDataLoader::createLoaderAsString();
+        break;
+
     case ResponseAsBlob:
-        if (blobHandle->size() != kuint64max) {
-            // If the size of |blobHandle| is set correctly, creates Blob from
-            // it.
-            if (blobHandle->type() != mimeType()) {
-                // A new BlobDataHandle is created to override the Blob's type.
-                m_resolver->resolve(Blob::create(BlobDataHandle::create(blobHandle->uuid(), mimeType(), blobHandle->size())));
-            } else {
-                m_resolver->resolve(Blob::create(blobHandle));
-            }
-            m_stream->close();
-            m_resolver.clear();
-            return;
-        }
-        // If the size is not set, read as ArrayBuffer and create a new blob to
-        // get the size.
-        // FIXME: This workaround is not good for performance.
-        // When we will stop using Blob as a base system of Body to support
-        // stream, this problem should be solved.
-        readType = FileReaderLoader::ReadAsArrayBuffer;
+        m_fetchDataLoader = FetchDataLoader::createLoaderAsBlobHandle(mimeType);
         break;
+
     case ResponseAsFormData:
         // FIXME: Implement this.
         ASSERT_NOT_REACHED();
-        break;
-    case ResponseAsJSON:
-    case ResponseAsText:
-        break;
+        return;
+
     default:
         ASSERT_NOT_REACHED();
+        return;
     }
 
-    m_loader = FileReaderLoader::create(readType, this);
-    m_loader->start(m_resolver->scriptState()->executionContext(), blobHandle);
+    m_fetchDataLoader->start(handle, this);
+}
 
-    return;
+void Body::readAsyncFromBlob(PassRefPtr<BlobDataHandle> handle)
+{
+    readAsyncFromFetchDataConsumerHandle(FetchBlobDataConsumerHandle::create(executionContext(), handle).get(), mimeType());
 }
 
 ScriptPromise Body::arrayBuffer(ScriptState* scriptState)
@@ -476,9 +466,10 @@ BodyStreamBuffer* Body::createDrainingStream()
 
 void Body::stop()
 {
-    // Canceling the load will call didFail which will remove the resolver.
-    if (m_loader)
-        m_loader->cancel();
+    if (m_fetchDataLoader) {
+        m_fetchDataLoader->cancel();
+        m_fetchDataLoader.clear();
+    }
 }
 
 bool Body::hasPendingActivity() const
@@ -504,10 +495,12 @@ Body::ReadableStreamSource* Body::createBodySource(BodyStreamBuffer* buffer)
 
 DEFINE_TRACE(Body)
 {
+    visitor->trace(m_fetchDataLoader);
     visitor->trace(m_resolver);
     visitor->trace(m_stream);
     visitor->trace(m_streamSource);
     ActiveDOMObject::trace(visitor);
+    FetchDataLoader::Client::trace(visitor);
 }
 
 Body::Body(ExecutionContext* context)
@@ -534,55 +527,77 @@ void Body::resolveJSON(const String& string)
         m_resolver->reject(trycatch.Exception());
 }
 
-// FileReaderLoaderClient functions.
-void Body::didStartLoading() { }
-void Body::didReceiveData() { }
-void Body::didFinishLoading()
+// FetchDataLoader::Client functions.
+void Body::didFetchDataLoadFailed()
 {
-    if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
-        return;
+    ASSERT(m_fetchDataLoader);
+    m_fetchDataLoader.clear();
 
-    switch (m_responseType) {
-    case ResponseAsArrayBuffer:
-        m_resolver->resolve(m_loader->arrayBufferResult());
-        break;
-    case ResponseAsBlob: {
-        ASSERT(blobDataHandle()->size() == kuint64max);
-        OwnPtr<BlobData> blobData = BlobData::create();
-        RefPtr<DOMArrayBuffer> buffer = m_loader->arrayBufferResult();
-        blobData->appendBytes(buffer->data(), buffer->byteLength());
-        blobData->setContentType(mimeType());
-        const size_t length = blobData->length();
-        m_resolver->resolve(Blob::create(BlobDataHandle::create(blobData.release(), length)));
-        break;
-    }
-    case ResponseAsFormData:
-        ASSERT_NOT_REACHED();
-        break;
-    case ResponseAsJSON:
-        resolveJSON(m_loader->stringResult());
-        break;
-    case ResponseAsText:
-        m_resolver->resolve(m_loader->stringResult());
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-    }
-    m_streamSource->close();
-    m_resolver.clear();
-}
-
-void Body::didFail(FileError::ErrorCode code)
-{
     if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
         return;
 
     m_streamSource->error();
     if (m_resolver) {
-        // FIXME: We should reject the promise.
-        m_resolver->resolve("");
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+            m_resolver.clear();
+            return;
+        }
+        ScriptState* state = m_resolver->scriptState();
+        ScriptState::Scope scope(state);
+        m_resolver->reject(V8ThrowException::createTypeError(state->isolate(), "Failed to fetch"));
         m_resolver.clear();
     }
+}
+
+void Body::didFetchDataLoadedBlobHandle(PassRefPtr<BlobDataHandle> blobDataHandle)
+{
+    ASSERT(m_fetchDataLoader);
+    m_fetchDataLoader.clear();
+
+    if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
+        return;
+
+    ASSERT(m_responseType == ResponseAsBlob);
+    m_resolver->resolve(Blob::create(blobDataHandle));
+    m_streamSource->close();
+    m_resolver.clear();
+}
+
+void Body::didFetchDataLoadedArrayBuffer(PassRefPtr<DOMArrayBuffer> arrayBuffer)
+{
+    ASSERT(m_fetchDataLoader);
+    m_fetchDataLoader.clear();
+
+    if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
+        return;
+
+    ASSERT(m_responseType == ResponseAsArrayBuffer);
+    m_resolver->resolve(arrayBuffer);
+    m_streamSource->close();
+    m_resolver.clear();
+}
+
+void Body::didFetchDataLoadedString(const String& str)
+{
+    ASSERT(m_fetchDataLoader);
+    m_fetchDataLoader.clear();
+
+    if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
+        return;
+
+    switch (m_responseType) {
+    case ResponseAsJSON:
+        resolveJSON(str);
+        break;
+    case ResponseAsText:
+        m_resolver->resolve(str);
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+
+    m_streamSource->close();
+    m_resolver.clear();
 }
 
 void Body::didBlobHandleReceiveError(DOMException* exception)
