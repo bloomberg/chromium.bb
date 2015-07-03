@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://mediasession.spec.whatwg.org/#the-mediasession-interface
+// https://mediasession.spec.whatwg.org/#extensions-to-the-htmlmediaelement-interface
 
 [
-    Constructor(),
-    GarbageCollected,
+    TypeChecking=Interface,
     RuntimeEnabled=MediaSession,
-] interface MediaSession {
-    void activate();
-    void deactivate();
+] partial interface HTMLMediaElement {
+    attribute MediaSession? session;
 };
