@@ -677,6 +677,14 @@ void DumpDeprecatedHistograms(const WebPerformance& performance,
                                      came_from_websearch,
                                      websearch_chrome_joint_experiment_id,
                                      is_preview);
+    } else {
+      // Track the frequency and magnitude of cases where first_paint precedes
+      // begin. The current hypothesis is that this is due to using the
+      // non-monotonic timer. If that's the case, we expect first_paint
+      // preceding begin to be rare, and the delta between values to be close to
+      // zero. This is a temporary addition that we will remove once we better
+      // understand the frequency and magnitude of first_paint preceding begin.
+      PLT_HISTOGRAM("PLT.BeginToFirstPaint_Negative", begin - first_paint);
     }
 
     // Conditional was previously a DCHECK. Changed due to multiple bot

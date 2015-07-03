@@ -30098,6 +30098,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PLT.BeginToFirstPaint_Negative" units="milliseconds">
+  <owner>bmcquade@chromium.org</owner>
+  <summary>
+    Magnitude and difference between begin and first paint, when first_paint
+    precedes begin. This is a temporary metric used to better understand the
+    root cause of http://crbug.com/125273.
+  </summary>
+</histogram>
+
 <histogram name="PLT.BeginToFirstPaintAfterLoad" units="milliseconds">
   <owner>pmeenan@chromium.org</owner>
   <summary>
