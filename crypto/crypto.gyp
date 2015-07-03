@@ -104,6 +104,8 @@
             # TODO(joth): Use a glob to match exclude patterns once the
             #             OpenSSL file set is complete.
             'sources!': [
+              'aes_128_gcm_helpers_nss.cc',
+              'aes_128_gcm_helpers_nss.h',
               'ec_private_key_nss.cc',
               'ec_signature_creator_nss.cc',
               'encryptor_nss.cc',
@@ -163,6 +165,7 @@
       'type': 'executable',
       'sources': [
         'aead_openssl_unittest.cc',
+        'aes_128_gcm_helpers_nss_unittest.cc',
         'curve25519_unittest.cc',
         'ec_private_key_unittest.cc',
         'ec_signature_creator_unittest.cc',
@@ -226,6 +229,9 @@
         [ 'use_openssl==1', {
           'dependencies': [
             '../third_party/boringssl/boringssl.gyp:boringssl',
+          ],
+          'sources!': [
+            'aes_128_gcm_helpers_nss_unittest.cc',
           ],
         }, {
           'sources!': [
