@@ -94,10 +94,107 @@ read_flags(yaml_parser_t *parser) {
 }
 
 void
+read_options (yaml_parser_t *parser, int *xfail, translationModes *mode, char *typeform) {
+  yaml_event_t event;
+  char *option_name;
+  int parse_error = 1;
+
+  *mode = 0;
+  *xfail = 0;
+  typeform = NULL;
+
+  while ((parse_error = yaml_parser_parse(parser, &event)) &&
+	 (event.type == YAML_SCALAR_EVENT)) {
+    option_name = strndup(event.data.scalar.value, event.data.scalar.length);
+
+    if (!strcmp(option_name, "xfail")) {
+      yaml_event_delete(&event);
+      if (!yaml_parser_parse(parser, &event) ||
+	  (event.type != YAML_SCALAR_EVENT))
+	yaml_error(YAML_SCALAR_EVENT, &event);
+      if (!strcmp(event.data.scalar.value, "Y") ||
+	  !strcmp(event.data.scalar.value, "true") ||
+	  !strcmp(event.data.scalar.value, "Yes") ||
+	  !strcmp(event.data.scalar.value, "ON")) {
+	*xfail = 1;
+      } else {
+	*xfail = 0;
+      }
+      yaml_event_delete(&event);
+    } else if (!strcmp(option_name, "mode")) {
+      yaml_event_delete(&event);
+      if (!yaml_parser_parse(parser, &event) ||
+	  (event.type != YAML_SEQUENCE_START_EVENT))
+	yaml_error(YAML_SEQUENCE_START_EVENT, &event);
+      yaml_event_delete(&event);
+
+      while ((parse_error = yaml_parser_parse(parser, &event)) &&
+	     (event.type == YAML_SCALAR_EVENT)) {
+	if (!strcmp(event.data.scalar.value, "noContractions")) {
+	  *mode |= noContractions;
+	} else if (!strcmp(event.data.scalar.value, "compbrlAtCursor")) {
+	  *mode |= compbrlAtCursor;
+	} else if (!strcmp(event.data.scalar.value, "dotsIO")) {
+	  *mode |= dotsIO;
+	} else if (!strcmp(event.data.scalar.value, "comp8Dots")) {
+	  *mode |= comp8Dots;
+	} else if (!strcmp(event.data.scalar.value, "pass1Only")) {
+	  *mode |= pass1Only;
+	} else if (!strcmp(event.data.scalar.value, "compbrlLeftCursor")) {
+	  *mode |= compbrlLeftCursor;
+	} else if (!strcmp(event.data.scalar.value, "otherTrans")) {
+	  *mode |= otherTrans;
+	} else if (!strcmp(event.data.scalar.value, "ucBrl")) {
+	  *mode |= ucBrl;
+	} else {
+	  break;
+	}
+	yaml_event_delete(&event);
+      }
+      if (!parse_error)
+	error("Error in YAML", &event);
+      if (event.type != YAML_SEQUENCE_END_EVENT)
+	yaml_error(YAML_SEQUENCE_END_EVENT, &event);
+    } else if (!strcmp(option_name, "typeform")) {
+      yaml_event_delete(&event);
+      if (!yaml_parser_parse(parser, &event) ||
+	  (event.type != YAML_SCALAR_EVENT))
+	yaml_error(YAML_SCALAR_EVENT, &event);
+      typeform = convert_typeform(event.data.scalar.value);
+      yaml_event_delete(&event);
+    } else if (!strcmp(option_name, "cursorPos")) {
+      yaml_event_delete(&event);
+      if (!yaml_parser_parse(parser, &event) ||
+	  (event.type != YAML_SCALAR_EVENT))
+	yaml_error(YAML_SCALAR_EVENT, &event);
+      yaml_event_delete(&event);
+    } else if (!strcmp(option_name, "brlCursorPos")) {
+      yaml_event_delete(&event);
+      if (!yaml_parser_parse(parser, &event) ||
+	  (event.type != YAML_SCALAR_EVENT))
+	yaml_error(YAML_SCALAR_EVENT, &event);
+      yaml_event_delete(&event);
+    } else {
+      char *message;
+      asprintf(&message, "Unsupported option %s", option_name);
+      error(message, &event);
+    }
+  }
+  if (!parse_error)
+    error("Error in YAML", &event);
+  if (event.type != YAML_MAPPING_END_EVENT)
+    yaml_error(YAML_MAPPING_END_EVENT, &event);
+  yaml_event_delete(&event);
+}
+
+void
 read_test(yaml_parser_t *parser, char *tables_list) {
   yaml_event_t event;
   char *word;
   char *translation;
+  int xfail = 0;
+  translationModes mode = 0;
+  char *typeform = NULL;
 
   if (!yaml_parser_parse(parser, &event) ||
       (event.type != YAML_SCALAR_EVENT))
@@ -113,18 +210,32 @@ read_test(yaml_parser_t *parser, char *tables_list) {
   translation = strndup(event.data.scalar.value, event.data.scalar.length);
   yaml_event_delete(&event);
 
-  if (check_translation_with_mode(tables_list, word, NULL, translation, translation_mode))
+  if (!yaml_parser_parse(parser, &event))
+    error("Error in YAML", &event);
+
+  if (event.type == YAML_MAPPING_START_EVENT) {
+    yaml_event_delete(&event);
+    read_options(parser, &xfail, &mode, typeform);
+
+    if (!yaml_parser_parse(parser, &event) ||
+	(event.type != YAML_SEQUENCE_END_EVENT))
+      yaml_error(YAML_SEQUENCE_END_EVENT, &event);
+    yaml_event_delete(&event);
+  } else if (event.type == YAML_SEQUENCE_END_EVENT) {
+    yaml_event_delete(&event);
+    /* do translation */
+  } else {
+    error("Unexpected event", &event);
+  }
+
+  if (xfail != check_translation_with_mode(tables_list, word, typeform, translation, translation_mode))
     errors++;
 
   count++;
   free(word);
   free(translation);
-
-  if (!yaml_parser_parse(parser, &event) ||
-      (event.type != YAML_SEQUENCE_END_EVENT))
-    yaml_error(YAML_SEQUENCE_END_EVENT, &event);
-
-  yaml_event_delete(&event);
+  if (typeform)
+    free(typeform);
 }
 
 void
