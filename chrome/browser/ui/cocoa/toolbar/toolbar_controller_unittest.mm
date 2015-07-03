@@ -298,7 +298,8 @@ class BrowserRemovedObserver : public chrome::BrowserListObserver {
 // This can happen because the ToolbarController is retained by both the
 // BrowserWindowController and -[ToolbarController view], the latter of which is
 // autoreleased.
-TEST_F(ToolbarControllerTest, ToolbarDestroyedAfterBrowser) {
+// TODO(nhiroki): This is disabled due to http://crbug.com/506745.
+TEST_F(ToolbarControllerTest, DISABLED_ToolbarDestroyedAfterBrowser) {
   BrowserRemovedObserver observer;
   CloseBrowserWindow();
   observer.WaitUntilBrowserRemoved();
