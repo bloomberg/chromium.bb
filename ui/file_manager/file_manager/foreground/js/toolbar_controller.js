@@ -170,6 +170,7 @@ ToolbarController.prototype.onCancelSelectionButtonClicked_ = function() {
  */
 ToolbarController.prototype.onDeleteButtonClicked_ = function() {
   this.deleteButton_.blur();
+  this.deleteCommand_.canExecuteChange(this.listContainer_.currentList);
   this.deleteCommand_.execute(this.listContainer_.currentList);
 }
 

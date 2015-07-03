@@ -161,7 +161,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE,
-                      "deleteMenuItemIsDisabledWhenNoItemIsSelected")));
+                      "deleteMenuItemIsDisabledWhenNoItemIsSelected"),
+        TestParameter(NOT_IN_GUEST_MODE, "deleteOneItemFromToolbar")));
 
 // Fails on official build. http://crbug.com/429294
 #if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)

@@ -24,3 +24,51 @@ testcase.deleteMenuItemIsDisabledWhenNoItemIsSelected = function() {
         });
       }));
 };
+
+// Delete one entry from toolbar.
+testcase.deleteOneItemFromToolbar = function() {
+  var beforeDeletion = TestEntryInfo.getExpectedRows([
+      ENTRIES.photos,
+      ENTRIES.hello,
+      ENTRIES.world,
+      ENTRIES.desktop,
+      ENTRIES.beautiful
+  ]);
+
+  var afterDeletion = TestEntryInfo.getExpectedRows([
+      ENTRIES.photos,
+      ENTRIES.hello,
+      ENTRIES.world,
+      ENTRIES.beautiful
+  ]);
+
+  testPromise(setupAndWaitUntilReady(null, RootPath.DOWNALOD).then(
+      function(windowId) {
+        // Confirm entries in the directory before the deletion.
+        return remoteCall.waitForFiles(windowId, beforeDeletion
+            ).then(function() {
+          // Select My Desktop Background.png
+          return remoteCall.callRemoteTestUtil(
+              'selectFile', windowId, ['My Desktop Background.png']);
+        }).then(function(result) {
+          chrome.test.assertTrue(result);
+
+          // Click delete button in the toolbar.
+          return remoteCall.callRemoteTestUtil(
+              'fakeMouseClick', windowId, ['button#delete-button']);
+        }).then(function(result) {
+          chrome.test.assertTrue(result);
+
+          // Confirm that the confirmation dialog is shown.
+          return remoteCall.waitForElement(
+              windowId, '.cr-dialog-container.shown');
+        }).then(function() {
+          // Press delete button.
+          return remoteCall.callRemoteTestUtil(
+              'fakeMouseClick', windowId, ['button.cr-dialog-ok']);
+        }).then(function() {
+          // Confirm the file is removed.
+          return remoteCall.waitForFiles(windowId, afterDeletion);
+        });
+      }));
+};
