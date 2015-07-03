@@ -24,19 +24,19 @@ int errors = 0;
 int count = 0;
 
 int
-simple_error(const char *msg, yaml_event_t *event) {
+simple_error (const char *msg, yaml_event_t *event) {
   error_at_line(EXIT_FAILURE, 0, file_name, event->start_mark.line, msg);
 }
 
 int
-yaml_error(yaml_event_type_t expected, yaml_event_t *event) {
+yaml_error (yaml_event_type_t expected, yaml_event_t *event) {
   error_at_line(EXIT_FAILURE, 0, file_name, event->start_mark.line,
 		"Expected %s (actual %s)",
 		event_names[expected], event_names[event->type]);
 }
 
 void
-read_tables(yaml_parser_t *parser, char *tables_list) {
+read_tables (yaml_parser_t *parser, char *tables_list) {
   yaml_event_t event;
   if (!yaml_parser_parse(parser, &event) ||
       (event.type != YAML_SCALAR_EVENT) ||
@@ -70,7 +70,7 @@ read_tables(yaml_parser_t *parser, char *tables_list) {
 }
 
 void
-read_flags(yaml_parser_t *parser) {
+read_flags (yaml_parser_t *parser) {
   yaml_event_t event;
   if (!yaml_parser_parse(parser, &event) ||
       (event.type != YAML_MAPPING_START_EVENT))
