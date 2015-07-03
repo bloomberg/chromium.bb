@@ -2343,12 +2343,6 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseTapHighlightCo
     // Disallow -webkit-text regardless of quirks.
     if (id == CSSValueWebkitText)
         return nullptr;
-    // Allow currentcolor in quirks-mode only.
-    if (id == CSSValueCurrentcolor) {
-        if (!inQuirksMode())
-            return nullptr;
-        return cssValuePool().createIdentifierValue(id);
-    }
     return parseColor(value);
 }
 
