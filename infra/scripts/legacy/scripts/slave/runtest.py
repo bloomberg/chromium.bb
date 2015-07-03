@@ -553,141 +553,6 @@ def _WriteLogProcessorResultsToOutput(log_processor, log_output_file):
     json.dump(results, f)
 
 
-def _UploadGtestJsonSummary(json_path, build_properties, test_exe, step_name):
-  """Archives GTest results to Google Storage.
-
-  Args:
-    json_path: path to the json-format output of the gtest.
-    build_properties: the build properties of a build in buildbot.
-    test_exe: the name of the gtest executable.
-    step_name: the name of the buildbot step running the gtest.
-  """
-  if not os.path.exists(json_path):
-    return
-
-  orig_json_data = 'invalid'
-  try:
-    with open(json_path) as orig_json:
-      orig_json_data = json.load(orig_json)
-  except ValueError:
-    pass
-
-  target_json = {
-    # Increment the version number when making incompatible changes
-    # to the layout of this dict. This way clients can recognize different
-    # formats instead of guessing.
-    'version': 1,
-    'timestamp': str(datetime.datetime.now()),
-    'test_exe': test_exe,
-    'build_properties': build_properties,
-    'gtest_results': orig_json_data,
-  }
-  target_json_serialized = json.dumps(target_json, indent=2)
-
-  now = datetime.datetime.utcnow()
-  today = now.date()
-  weekly_timestamp = today - datetime.timedelta(days=today.weekday())
-
-  # Pick a non-colliding file name by hashing the JSON contents
-  # (build metadata should be different from build to build).
-  target_name = hashlib.sha1(target_json_serialized).hexdigest()
-
-  # Use a directory structure that makes it easy to filter by year,
-  # month, week and day based just on the file path.
-  date_json_gs_path = 'gs://chrome-gtest-results/raw/%d/%d/%d/%d/%s.json.gz' % (
-      weekly_timestamp.year,
-      weekly_timestamp.month,
-      weekly_timestamp.day,
-      today.day,
-      target_name)
-
-  # Use a directory structure so that the json results could be indexed by
-  # master_name/builder_name/build_number/step_name.
-  master_name = build_properties.get('mastername')
-  builder_name = build_properties.get('buildername')
-  build_number = build_properties.get('buildnumber')
-  buildbot_json_gs_path = ''
-  if (master_name and builder_name and
-      (build_number is not None and build_number != '') and step_name):
-    # build_number could be zero.
-    buildbot_json_gs_path = (
-        'gs://chrome-gtest-results/buildbot/%s/%s/%d/%s.json.gz' % (
-            master_name,
-            builder_name,
-            build_number,
-            step_name))
-
-  fd, target_json_path = tempfile.mkstemp()
-  try:
-    with os.fdopen(fd, 'w') as f:
-      with gzip.GzipFile(fileobj=f, compresslevel=9) as gzipf:
-        gzipf.write(target_json_serialized)
-
-    slave_utils.GSUtilCopy(target_json_path, date_json_gs_path)
-    if buildbot_json_gs_path:
-      slave_utils.GSUtilCopy(target_json_path, buildbot_json_gs_path)
-  finally:
-    os.remove(target_json_path)
-
-  if target_json['gtest_results'] == 'invalid':
-    return
-
-  # Use a directory structure that makes it easy to filter by year,
-  # month, week and day based just on the file path.
-  bigquery_json_gs_path = (
-      'gs://chrome-gtest-results/bigquery/%d/%d/%d/%d/%s.json.gz' % (
-          weekly_timestamp.year,
-          weekly_timestamp.month,
-          weekly_timestamp.day,
-          today.day,
-          target_name))
-
-  fd, bigquery_json_path = tempfile.mkstemp()
-  try:
-    with os.fdopen(fd, 'w') as f:
-      with gzip.GzipFile(fileobj=f, compresslevel=9) as gzipf:
-        for iteration_data in (
-            target_json['gtest_results']['per_iteration_data']):
-          for test_name, test_runs in iteration_data.iteritems():
-            # Compute the number of flaky failures. A failure is only considered
-            # flaky, when the test succeeds at least once on the same code.
-            # However, we do not consider a test flaky if it only changes
-            # between various failure states, e.g. FAIL and TIMEOUT.
-            num_successes = len([r['status'] for r in test_runs
-                                             if r['status'] == 'SUCCESS'])
-            num_failures = len(test_runs) - num_successes
-            if num_failures > 0 and num_successes > 0:
-              flaky_failures = num_failures
-            else:
-              flaky_failures = 0
-
-            for run_index, run_data in enumerate(test_runs):
-              row = {
-                'test_name': test_name,
-                'run_index': run_index,
-                'elapsed_time_ms': run_data['elapsed_time_ms'],
-                'status': run_data['status'],
-                'test_exe': target_json['test_exe'],
-                'global_tags': target_json['gtest_results']['global_tags'],
-                'slavename':
-                    target_json['build_properties'].get('slavename', ''),
-                'buildername':
-                    target_json['build_properties'].get('buildername', ''),
-                'mastername':
-                    target_json['build_properties'].get('mastername', ''),
-                'raw_json_gs_path': date_json_gs_path,
-                'timestamp': now.strftime('%Y-%m-%d %H:%M:%S.%f'),
-                'flaky_failures': flaky_failures,
-                'num_successes': num_successes,
-                'num_failures': num_failures
-              }
-              gzipf.write(json.dumps(row) + '\n')
-
-    slave_utils.GSUtilCopy(bigquery_json_path, bigquery_json_gs_path)
-  finally:
-    os.remove(bigquery_json_path)
-
-
 def _GenerateRunIsolatedCommand(build_dir, test_exe_path, options, command):
   """Converts the command to run through the run isolate script.
 
@@ -836,10 +701,6 @@ def _MainMac(options, args, extra_env):
                               log_processor=log_processor)
   finally:
     if _UsingGtestJson(options):
-      _UploadGtestJsonSummary(json_file_name,
-                              options.build_properties,
-                              test_exe,
-                              options.step_name)
       log_processor.ProcessJSONFile(options.build_dir)
 
   if options.generate_json_file:
@@ -976,11 +837,6 @@ def _MainLinux(options, args, extra_env):
     if _UsingGtestJson(options):
       if options.use_symbolization_script:
         _SymbolizeSnippetsInJSON(options, json_file_name)
-      if json_file_name:
-        _UploadGtestJsonSummary(json_file_name,
-                                options.build_properties,
-                                test_exe,
-                                options.step_name)
       log_processor.ProcessJSONFile(options.build_dir)
 
   if options.generate_json_file:
@@ -1060,10 +916,6 @@ def _MainWin(options, args, extra_env):
     result = _RunGTestCommand(options, command, extra_env, log_processor)
   finally:
     if _UsingGtestJson(options):
-      _UploadGtestJsonSummary(json_file_name,
-                              options.build_properties,
-                              test_exe,
-                              options.step_name)
       log_processor.ProcessJSONFile(options.build_dir)
 
   if options.generate_json_file:
