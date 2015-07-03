@@ -41,5 +41,5 @@ main (int argc, char **argv)
         const char *str2 = "greetings  ";
         const int expected_pos2[]={0,1,2,3,4,5,6,7,8,7,8};
 
-        return check_cursor_pos(str2, expected_pos2);      
+        return check_cursor_pos(TRANSLATION_TABLE, str2, expected_pos2);
 }

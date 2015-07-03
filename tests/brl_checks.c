@@ -250,7 +250,7 @@ check_outpos(const char *tableList, const char *str, const int *expected_poslist
 }
 
 int
-check_cursor_pos(const char *str, const int *expected_pos)
+check_cursor_pos(const char *tableList, const char *str, const int *expected_pos)
 {
   widechar *inbuf;
   widechar *outbuf;
@@ -275,7 +275,7 @@ check_cursor_pos(const char *str, const int *expected_pos)
     {
       int inlen = orig_inlen;
       cursor_pos = i;
-      lou_translate(TRANSLATION_TABLE, inbuf, &inlen, outbuf, &outlen,
+      lou_translate(tableList, inbuf, &inlen, outbuf, &outlen,
 		    NULL, NULL, NULL, NULL, &cursor_pos, compbrlAtCursor);
       if (expected_pos[i] != cursor_pos)
 	{
