@@ -307,7 +307,6 @@ main(int argc, char *argv[]) {
 
   char *tables_list = malloc(sizeof(char) * 512);
   read_tables(&parser, tables_list);
-  printf("Tables: %s\n", tables_list);
 
   if (!yaml_parser_parse(&parser, &event) ||
       (event.type != YAML_SCALAR_EVENT)) {
