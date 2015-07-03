@@ -22,6 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/rappor/rappor_service.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/search_host_to_urls_map.h"
@@ -239,6 +240,47 @@ TemplateURLService::~TemplateURLService() {
   // |web_data_service_| should be deleted during Shutdown().
   DCHECK(!web_data_service_.get());
   STLDeleteElements(&template_urls_);
+}
+
+// static
+void TemplateURLService::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterStringPref(prefs::kSyncedDefaultSearchProviderGUID,
+                               std::string(),
+                               user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kDefaultSearchProviderEnabled, true);
+  registry->RegisterStringPref(prefs::kDefaultSearchProviderName,
+                               std::string());
+  registry->RegisterStringPref(prefs::kDefaultSearchProviderID, std::string());
+  registry->RegisterStringPref(prefs::kDefaultSearchProviderPrepopulateID,
+                               std::string());
+  registry->RegisterStringPref(prefs::kDefaultSearchProviderSuggestURL,
+                               std::string());
+  registry->RegisterStringPref(prefs::kDefaultSearchProviderSearchURL,
+                               std::string());
+  registry->RegisterStringPref(prefs::kDefaultSearchProviderInstantURL,
+                               std::string());
+  registry->RegisterStringPref(prefs::kDefaultSearchProviderImageURL,
+                               std::string());
+  registry->RegisterStringPref(prefs::kDefaultSearchProviderNewTabURL,
+                               std::string());
+  registry->RegisterStringPref(prefs::kDefaultSearchProviderSearchURLPostParams,
+                               std::string());
+  registry->RegisterStringPref(
+      prefs::kDefaultSearchProviderSuggestURLPostParams, std::string());
+  registry->RegisterStringPref(
+      prefs::kDefaultSearchProviderInstantURLPostParams, std::string());
+  registry->RegisterStringPref(prefs::kDefaultSearchProviderImageURLPostParams,
+                               std::string());
+  registry->RegisterStringPref(prefs::kDefaultSearchProviderKeyword,
+                               std::string());
+  registry->RegisterStringPref(prefs::kDefaultSearchProviderIconURL,
+                               std::string());
+  registry->RegisterStringPref(prefs::kDefaultSearchProviderEncodings,
+                               std::string());
+  registry->RegisterListPref(prefs::kDefaultSearchProviderAlternateURLs);
+  registry->RegisterStringPref(
+      prefs::kDefaultSearchProviderSearchTermsReplacementKey, std::string());
 }
 
 // static

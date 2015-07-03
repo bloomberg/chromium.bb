@@ -45,6 +45,10 @@ class SyncData;
 class SyncErrorFactory;
 }
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 // TemplateURLService is the backend for keywords. It's used by
 // KeywordAutocomplete.
 //
@@ -97,6 +101,9 @@ class TemplateURLService : public WebDataServiceConsumer,
   // The following is for testing.
   TemplateURLService(const Initializer* initializers, const int count);
   ~TemplateURLService() override;
+
+  // Register Profile preferences in |registry|.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Removes any unnecessary characters from a user input keyword.
   // This removes the leading scheme, "www." and any trailing slash.
