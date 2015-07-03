@@ -481,7 +481,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   if (goog_experimental_ns)
     config.Set<webrtc::ExperimentalNs>(new webrtc::ExperimentalNs(true));
   if (IsDelayAgnosticAecEnabled())
-    config.Set<webrtc::ReportedDelay>(new webrtc::ReportedDelay(false));
+    config.Set<webrtc::DelayAgnostic>(new webrtc::DelayAgnostic(true));
   if (goog_beamforming) {
     ConfigureBeamforming(&config, audio_constraints.GetPropertyAsString(
         MediaAudioConstraints::kGoogArrayGeometry));
