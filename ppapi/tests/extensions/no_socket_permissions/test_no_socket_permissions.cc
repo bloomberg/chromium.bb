@@ -17,14 +17,13 @@ class MyInstance : public pp::Instance {
       : pp::Instance(instance),
         tcp_socket_(this),
         udp_socket_(this),
-        udp_multicast_socket_(this),
         factory_(this) {}
-  virtual ~MyInstance() { }
+  virtual ~MyInstance() {}
 
   void DidBindTCPSocket(int32_t result) {
-    // We should be able to bind the TCP socket with permission.
-    if (result != PP_OK) {
-      PostMessage(result);
+    // We should not be able to bind the TCP socket without permission.
+    if (result == PP_OK) {
+      PostMessage("FAIL");
       return;
     }
     PP_NetAddress_IPv4 ipv4_address = {80, {127, 0, 0, 1}};
@@ -34,32 +33,7 @@ class MyInstance : public pp::Instance {
   }
 
   void DidBindUDPSocket(int32_t result) {
-    // We should be able to bind the UDP socket with permission.
-    if (result != PP_OK) {
-      PostMessage(result);
-      return;
-    }
-    // Close the socket by releasing it.
-    udp_socket_ = pp::UDPSocket();
-    udp_multicast_socket_.SetOption(
-        PP_UDPSOCKET_OPTION_MULTICAST_LOOP, pp::Var(true),
-        factory_.NewCallback(&MyInstance::DidSetOptionMulticastUDPSocket));
-  }
-
-  void DidSetOptionMulticastUDPSocket(int32_t result) {
-    // We should be able to set the multicast option, even without permission.
-    if (result != PP_OK) {
-      PostMessage(result);
-      return;
-    }
-    PP_NetAddress_IPv4 ipv4_address = {80, {127, 0, 0, 1}};
-    pp::NetAddress address(this, ipv4_address);
-    udp_multicast_socket_.Bind(
-        address, factory_.NewCallback(&MyInstance::DidBindMulticastUDPSocket));
-  }
-
-  void DidBindMulticastUDPSocket(int32_t result) {
-    // We should NOT be able to do UDP multicast without permission.
+    // We should not be able to bind the UDP socket without permission.
     if (result == PP_OK)
       PostMessage("FAIL");
     else
@@ -67,7 +41,7 @@ class MyInstance : public pp::Instance {
   }
 
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]) {
-    PP_NetAddress_IPv4 ipv4_address = {80, {127, 0, 0, 1} };
+    PP_NetAddress_IPv4 ipv4_address = {80, {127, 0, 0, 1}};
     pp::NetAddress address(this, ipv4_address);
     tcp_socket_.Bind(address,
                      factory_.NewCallback(&MyInstance::DidBindTCPSocket));
@@ -77,14 +51,13 @@ class MyInstance : public pp::Instance {
  private:
   pp::TCPSocket tcp_socket_;
   pp::UDPSocket udp_socket_;
-  pp::UDPSocket udp_multicast_socket_;
   pp::CompletionCallbackFactory<MyInstance> factory_;
 };
 
 class MyModule : public pp::Module {
  public:
-  MyModule() : pp::Module() { }
-  virtual ~MyModule() { }
+  MyModule() : pp::Module() {}
+  virtual ~MyModule() {}
 
   virtual pp::Instance* CreateInstance(PP_Instance instance) {
     return new MyInstance(instance);

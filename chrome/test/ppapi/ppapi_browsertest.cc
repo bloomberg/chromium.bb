@@ -1380,6 +1380,14 @@ IN_PROC_BROWSER_TEST_F(TransitionalNonSfiPackagedAppTest,
   RunTests("packaged_app");
 }
 
+IN_PROC_BROWSER_TEST_F(NewlibPackagedAppTest, MulticastPermissions) {
+  RunTests("multicast_permissions");
+}
+
+IN_PROC_BROWSER_TEST_F(NewlibPackagedAppTest, NoSocketPermissions) {
+  RunTests("no_socket_permissions");
+}
+
 IN_PROC_BROWSER_TEST_F(NewlibPackagedAppTest, SocketPermissions) {
   RunTests("socket_permissions");
 }

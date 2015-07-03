@@ -8,13 +8,11 @@
       "scripts": [ "main.js" ]
     }
   },
-  "permissions": [{"socket": ["tcp-connect", "udp-bind"]}],
+  "permissions": [{"socket": ["udp-bind", "udp-multicast-membership"]}],
   "sockets": {
-    "tcp": {
-      "connect": "127.0.0.1:80"
-    },
     "udp": {
-      "bind": "127.0.0.1:80"
+      "bind": "127.0.0.1:80",
+      "multicastMembership": ""
     }
   }
 }
