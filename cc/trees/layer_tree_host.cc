@@ -20,6 +20,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "cc/animation/animation_host.h"
 #include "cc/animation/animation_registrar.h"
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/base/math_util.h"
@@ -124,6 +125,11 @@ LayerTreeHost::LayerTreeHost(InitParams* params)
     animation_registrar_ = AnimationRegistrar::Create();
   rendering_stats_instrumentation_->set_record_rendering_stats(
       debug_state_.RecordRenderingStats());
+
+  if (settings_.use_compositor_animation_timelines) {
+    animation_host_ = AnimationHost::Create(ThreadInstance::MAIN);
+    animation_host_->SetMutatorHostClient(this);
+  }
 }
 
 void LayerTreeHost::InitializeThreaded(
@@ -164,6 +170,9 @@ void LayerTreeHost::InitializeProxy(scoped_ptr<Proxy> proxy) {
 
 LayerTreeHost::~LayerTreeHost() {
   TRACE_EVENT0("cc", "LayerTreeHost::~LayerTreeHost");
+
+  if (animation_host_)
+    animation_host_->SetMutatorHostClient(nullptr);
 
   if (root_layer_.get())
     root_layer_->SetLayerTreeHost(NULL);
@@ -323,6 +332,11 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   {
     TRACE_EVENT0("cc", "LayerTreeHost::PushProperties");
     TreeSynchronizer::PushProperties(root_layer(), sync_tree->root_layer());
+
+    if (animation_host_) {
+      DCHECK(host_impl->animation_host());
+      animation_host_->PushPropertiesTo(host_impl->animation_host());
+    }
   }
 
   // This must happen after synchronizing property trees and after push
@@ -1058,6 +1072,66 @@ void LayerTreeHost::RecordFrameTimingEvents(
     scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
   client_->RecordFrameTimingEvents(composite_events.Pass(),
                                    main_frame_events.Pass());
+}
+
+Layer* LayerTreeHost::LayerById(int id) const {
+  LayerIdMap::const_iterator iter = layer_id_map_.find(id);
+  return iter != layer_id_map_.end() ? iter->second : NULL;
+}
+
+void LayerTreeHost::RegisterLayer(Layer* layer) {
+  DCHECK(!LayerById(layer->id()));
+  layer_id_map_[layer->id()] = layer;
+  if (animation_host_)
+    animation_host_->RegisterLayer(layer->id(), LayerTreeType::ACTIVE);
+}
+
+void LayerTreeHost::UnregisterLayer(Layer* layer) {
+  DCHECK(LayerById(layer->id()));
+  if (animation_host_)
+    animation_host_->UnregisterLayer(layer->id(), LayerTreeType::ACTIVE);
+  layer_id_map_.erase(layer->id());
+}
+
+bool LayerTreeHost::IsLayerInTree(int layer_id, LayerTreeType tree_type) const {
+  return tree_type == LayerTreeType::ACTIVE;
+}
+
+void LayerTreeHost::SetMutatorsNeedCommit() {
+  SetNeedsCommit();
+}
+
+void LayerTreeHost::SetLayerFilterMutated(int layer_id,
+                                          LayerTreeType tree_type,
+                                          const FilterOperations& filters) {
+  LayerAnimationValueObserver* layer = LayerById(layer_id);
+  DCHECK(layer);
+  layer->OnFilterAnimated(filters);
+}
+
+void LayerTreeHost::SetLayerOpacityMutated(int layer_id,
+                                           LayerTreeType tree_type,
+                                           float opacity) {
+  LayerAnimationValueObserver* layer = LayerById(layer_id);
+  DCHECK(layer);
+  layer->OnOpacityAnimated(opacity);
+}
+
+void LayerTreeHost::SetLayerTransformMutated(int layer_id,
+                                             LayerTreeType tree_type,
+                                             const gfx::Transform& transform) {
+  LayerAnimationValueObserver* layer = LayerById(layer_id);
+  DCHECK(layer);
+  layer->OnTransformAnimated(transform);
+}
+
+void LayerTreeHost::SetLayerScrollOffsetMutated(
+    int layer_id,
+    LayerTreeType tree_type,
+    const gfx::ScrollOffset& scroll_offset) {
+  LayerAnimationValueObserver* layer = LayerById(layer_id);
+  DCHECK(layer);
+  layer->OnScrollOffsetAnimated(scroll_offset);
 }
 
 }  // namespace cc

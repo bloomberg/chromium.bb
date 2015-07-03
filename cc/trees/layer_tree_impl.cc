@@ -10,6 +10,7 @@
 
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "cc/animation/animation_host.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/animation/scrollbar_animation_controller_linear_fade.h"
@@ -778,18 +779,26 @@ gfx::Size LayerTreeImpl::ScrollableSize() const {
   return root_scroll_layer->children()[0]->bounds();
 }
 
-LayerImpl* LayerTreeImpl::LayerById(int id) {
-  LayerIdMap::iterator iter = layer_id_map_.find(id);
+LayerImpl* LayerTreeImpl::LayerById(int id) const {
+  LayerIdMap::const_iterator iter = layer_id_map_.find(id);
   return iter != layer_id_map_.end() ? iter->second : NULL;
 }
 
 void LayerTreeImpl::RegisterLayer(LayerImpl* layer) {
   DCHECK(!LayerById(layer->id()));
   layer_id_map_[layer->id()] = layer;
+  if (layer_tree_host_impl_->animation_host())
+    layer_tree_host_impl_->animation_host()->RegisterLayer(
+        layer->id(),
+        IsActiveTree() ? LayerTreeType::ACTIVE : LayerTreeType::PENDING);
 }
 
 void LayerTreeImpl::UnregisterLayer(LayerImpl* layer) {
   DCHECK(LayerById(layer->id()));
+  if (layer_tree_host_impl_->animation_host())
+    layer_tree_host_impl_->animation_host()->UnregisterLayer(
+        layer->id(),
+        IsActiveTree() ? LayerTreeType::ACTIVE : LayerTreeType::PENDING);
   layer_id_map_.erase(layer->id());
 }
 

@@ -18,6 +18,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/scrollbar_animation_controller.h"
@@ -239,6 +240,11 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       requires_high_res_to_draw_(false),
       is_likely_to_require_a_draw_(false),
       frame_timing_tracker_(FrameTimingTracker::Create(this)) {
+  if (settings.use_compositor_animation_timelines) {
+    animation_host_ = AnimationHost::Create(ThreadInstance::IMPL);
+    animation_host_->SetMutatorHostClient(this);
+  }
+
   DCHECK(proxy_->IsImplThread());
   DCHECK_IMPLIES(settings.use_one_copy, !settings.use_zero_copy);
   DCHECK_IMPLIES(settings.use_zero_copy, !settings.use_one_copy);
@@ -3441,4 +3447,117 @@ bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(
 
   return true;
 }
+
+bool LayerTreeHostImpl::IsLayerInTree(int layer_id,
+                                      LayerTreeType tree_type) const {
+  if (tree_type == LayerTreeType::ACTIVE) {
+    return active_tree() ? active_tree()->LayerById(layer_id) != nullptr
+                         : false;
+  } else {
+    if (pending_tree() && pending_tree()->LayerById(layer_id))
+      return true;
+    if (recycle_tree() && recycle_tree()->LayerById(layer_id))
+      return true;
+
+    return false;
+  }
+}
+
+void LayerTreeHostImpl::SetMutatorsNeedCommit() {
+  SetNeedsCommit();
+}
+
+void LayerTreeHostImpl::SetTreeLayerFilterMutated(
+    int layer_id,
+    LayerTreeImpl* tree,
+    const FilterOperations& filters) {
+  if (!tree)
+    return;
+
+  LayerAnimationValueObserver* layer = tree->LayerById(layer_id);
+  if (layer)
+    layer->OnFilterAnimated(filters);
+}
+
+void LayerTreeHostImpl::SetTreeLayerOpacityMutated(int layer_id,
+                                                   LayerTreeImpl* tree,
+                                                   float opacity) {
+  if (!tree)
+    return;
+
+  LayerAnimationValueObserver* layer = tree->LayerById(layer_id);
+  if (layer)
+    layer->OnOpacityAnimated(opacity);
+}
+
+void LayerTreeHostImpl::SetTreeLayerTransformMutated(
+    int layer_id,
+    LayerTreeImpl* tree,
+    const gfx::Transform& transform) {
+  if (!tree)
+    return;
+
+  LayerAnimationValueObserver* layer = tree->LayerById(layer_id);
+  if (layer)
+    layer->OnTransformAnimated(transform);
+}
+
+void LayerTreeHostImpl::SetTreeLayerScrollOffsetMutated(
+    int layer_id,
+    LayerTreeImpl* tree,
+    const gfx::ScrollOffset& scroll_offset) {
+  if (!tree)
+    return;
+
+  LayerAnimationValueObserver* layer = tree->LayerById(layer_id);
+  if (layer)
+    layer->OnScrollOffsetAnimated(scroll_offset);
+}
+
+void LayerTreeHostImpl::SetLayerFilterMutated(int layer_id,
+                                              LayerTreeType tree_type,
+                                              const FilterOperations& filters) {
+  if (tree_type == LayerTreeType::ACTIVE) {
+    SetTreeLayerFilterMutated(layer_id, active_tree(), filters);
+  } else {
+    SetTreeLayerFilterMutated(layer_id, pending_tree(), filters);
+    SetTreeLayerFilterMutated(layer_id, recycle_tree(), filters);
+  }
+}
+
+void LayerTreeHostImpl::SetLayerOpacityMutated(int layer_id,
+                                               LayerTreeType tree_type,
+                                               float opacity) {
+  if (tree_type == LayerTreeType::ACTIVE) {
+    SetTreeLayerOpacityMutated(layer_id, active_tree(), opacity);
+  } else {
+    SetTreeLayerOpacityMutated(layer_id, pending_tree(), opacity);
+    SetTreeLayerOpacityMutated(layer_id, recycle_tree(), opacity);
+  }
+}
+
+void LayerTreeHostImpl::SetLayerTransformMutated(
+    int layer_id,
+    LayerTreeType tree_type,
+    const gfx::Transform& transform) {
+  if (tree_type == LayerTreeType::ACTIVE) {
+    SetTreeLayerTransformMutated(layer_id, active_tree(), transform);
+  } else {
+    SetTreeLayerTransformMutated(layer_id, pending_tree(), transform);
+    SetTreeLayerTransformMutated(layer_id, recycle_tree(), transform);
+  }
+}
+
+void LayerTreeHostImpl::SetLayerScrollOffsetMutated(
+    int layer_id,
+    LayerTreeType tree_type,
+    const gfx::ScrollOffset& scroll_offset) {
+  if (tree_type == LayerTreeType::ACTIVE) {
+    SetTreeLayerScrollOffsetMutated(layer_id, active_tree(), scroll_offset);
+  } else {
+    SetTreeLayerScrollOffsetMutated(layer_id, pending_tree(), scroll_offset);
+    SetTreeLayerScrollOffsetMutated(layer_id, recycle_tree(), scroll_offset);
+  }
+}
+
 }  // namespace cc

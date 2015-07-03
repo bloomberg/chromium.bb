@@ -38,6 +38,7 @@
 #include "cc/scheduler/video_frame_controller.h"
 #include "cc/tiles/tile_manager.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "cc/trees/mutator_host_client.h"
 #include "cc/trees/proxy.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -49,6 +50,7 @@ class ScrollOffset;
 
 namespace cc {
 
+class AnimationHost;
 class CompletionEvent;
 class CompositorFrameMetadata;
 class DebugRectHistory;
@@ -141,6 +143,7 @@ class CC_EXPORT LayerTreeHostImpl
       public TopControlsManagerClient,
       public ScrollbarAnimationControllerClient,
       public VideoFrameControllerClient,
+      public MutatorHostClient,
       public base::SupportsWeakPtr<LayerTreeHostImpl> {
  public:
   static scoped_ptr<LayerTreeHostImpl> Create(
@@ -228,6 +231,36 @@ class CC_EXPORT LayerTreeHostImpl
   void MainThreadHasStoppedFlinging();
   void DidAnimateScrollOffset();
   void SetViewportDamage(const gfx::Rect& damage_rect);
+
+  void SetTreeLayerFilterMutated(int layer_id,
+                                 LayerTreeImpl* tree,
+                                 const FilterOperations& filters);
+  void SetTreeLayerOpacityMutated(int layer_id,
+                                  LayerTreeImpl* tree,
+                                  float opacity);
+  void SetTreeLayerTransformMutated(int layer_id,
+                                    LayerTreeImpl* tree,
+                                    const gfx::Transform& transform);
+  void SetTreeLayerScrollOffsetMutated(int layer_id,
+                                       LayerTreeImpl* tree,
+                                       const gfx::ScrollOffset& scroll_offset);
+
+  // LayerTreeMutatorsClient implementation.
+  bool IsLayerInTree(int layer_id, LayerTreeType tree_type) const override;
+  void SetMutatorsNeedCommit() override;
+  void SetLayerFilterMutated(int layer_id,
+                             LayerTreeType tree_type,
+                             const FilterOperations& filters) override;
+  void SetLayerOpacityMutated(int layer_id,
+                              LayerTreeType tree_type,
+                              float opacity) override;
+  void SetLayerTransformMutated(int layer_id,
+                                LayerTreeType tree_type,
+                                const gfx::Transform& transform) override;
+  void SetLayerScrollOffsetMutated(
+      int layer_id,
+      LayerTreeType tree_type,
+      const gfx::ScrollOffset& scroll_offset) override;
 
   virtual void PrepareTiles();
 
@@ -443,6 +476,7 @@ class CC_EXPORT LayerTreeHostImpl
   AnimationRegistrar* animation_registrar() const {
     return animation_registrar_.get();
   }
+  AnimationHost* animation_host() const { return animation_host_.get(); }
 
   void SetDebugState(const LayerTreeDebugState& new_debug_state);
   const LayerTreeDebugState& debug_state() const { return debug_state_; }
@@ -757,6 +791,7 @@ class CC_EXPORT LayerTreeHostImpl
   gfx::Rect viewport_damage_rect_;
 
   scoped_ptr<AnimationRegistrar> animation_registrar_;
+  scoped_ptr<AnimationHost> animation_host_;
   std::set<ScrollbarAnimationController*> scrollbar_animation_controllers_;
   std::set<VideoFrameController*> video_frame_controllers_;
 

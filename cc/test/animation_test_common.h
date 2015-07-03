@@ -14,6 +14,7 @@
 #include "cc/test/geometry_test_utils.h"
 
 namespace cc {
+class AnimationPlayer;
 class LayerImpl;
 class Layer;
 }
@@ -178,6 +179,22 @@ int AddAnimatedFilterToLayer(LayerImpl* layer,
                              double duration,
                              float start_brightness,
                              float end_brightness);
+
+int AddAnimatedTransformToPlayer(AnimationPlayer* player,
+                                 double duration,
+                                 int delta_x,
+                                 int delta_y);
+
+int AddOpacityTransitionToPlayer(AnimationPlayer* player,
+                                 double duration,
+                                 float start_opacity,
+                                 float end_opacity,
+                                 bool use_timing_function);
+
+int AddAnimatedFilterToPlayer(AnimationPlayer* player,
+                              double duration,
+                              float start_brightness,
+                              float end_brightness);
 
 }  // namespace cc
 

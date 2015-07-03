@@ -38,6 +38,7 @@
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "cc/trees/mutator_host_client.h"
 #include "cc/trees/proxy.h"
 #include "cc/trees/swap_promise_monitor.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -49,6 +50,7 @@ class GpuMemoryBufferManager;
 
 namespace cc {
 class AnimationRegistrar;
+class AnimationHost;
 class BeginFrameSource;
 class HeadsUpDisplayLayer;
 class Layer;
@@ -68,7 +70,7 @@ struct PendingPageScaleAnimation;
 struct RenderingStats;
 struct ScrollAndScaleSet;
 
-class CC_EXPORT LayerTreeHost {
+class CC_EXPORT LayerTreeHost : public MutatorHostClient {
  public:
   // TODO(sad): InitParams should be a movable type so that it can be
   // std::move()d to the Create* functions.
@@ -258,6 +260,7 @@ class CC_EXPORT LayerTreeHost {
   AnimationRegistrar* animation_registrar() const {
     return animation_registrar_.get();
   }
+  AnimationHost* animation_host() const { return animation_host_.get(); }
 
   bool in_paint_layer_contents() const { return in_paint_layer_contents_; }
 
@@ -317,6 +320,26 @@ class CC_EXPORT LayerTreeHost {
   void RecordFrameTimingEvents(
       scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
       scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events);
+
+  Layer* LayerById(int id) const;
+  void RegisterLayer(Layer* layer);
+  void UnregisterLayer(Layer* layer);
+  // LayerTreeMutatorsClient implementation.
+  bool IsLayerInTree(int layer_id, LayerTreeType tree_type) const override;
+  void SetMutatorsNeedCommit() override;
+  void SetLayerFilterMutated(int layer_id,
+                             LayerTreeType tree_type,
+                             const FilterOperations& filters) override;
+  void SetLayerOpacityMutated(int layer_id,
+                              LayerTreeType tree_type,
+                              float opacity) override;
+  void SetLayerTransformMutated(int layer_id,
+                                LayerTreeType tree_type,
+                                const gfx::Transform& transform) override;
+  void SetLayerScrollOffsetMutated(
+      int layer_id,
+      LayerTreeType tree_type,
+      const gfx::ScrollOffset& scroll_offset) override;
 
  protected:
   explicit LayerTreeHost(InitParams* params);
@@ -420,6 +443,7 @@ class CC_EXPORT LayerTreeHost {
   bool has_transparent_background_;
 
   scoped_ptr<AnimationRegistrar> animation_registrar_;
+  scoped_ptr<AnimationHost> animation_host_;
 
   scoped_ptr<PendingPageScaleAnimation> pending_page_scale_animation_;
 
@@ -447,6 +471,9 @@ class CC_EXPORT LayerTreeHost {
   std::set<SwapPromiseMonitor*> swap_promise_monitor_;
 
   PropertyTrees property_trees_;
+
+  typedef base::hash_map<int, Layer*> LayerIdMap;
+  LayerIdMap layer_id_map_;
 
   uint32_t surface_id_namespace_;
   uint32_t next_surface_sequence_;

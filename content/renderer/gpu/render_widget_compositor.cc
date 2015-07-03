@@ -19,7 +19,10 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "cc/animation/animation_host.h"
+#include "cc/animation/animation_timeline.h"
 #include "cc/base/switches.h"
+#include "cc/blink/web_compositor_animation_timeline_impl.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/debug/layer_tree_debug_state.h"
 #include "cc/debug/micro_benchmark.h"
@@ -595,6 +598,24 @@ void RenderWidgetCompositor::setRootLayer(const blink::WebLayer& layer) {
 
 void RenderWidgetCompositor::clearRootLayer() {
   layer_tree_host_->SetRootLayer(scoped_refptr<cc::Layer>());
+}
+
+void RenderWidgetCompositor::attachCompositorAnimationTimeline(
+    blink::WebCompositorAnimationTimeline* compositor_timeline) {
+  DCHECK(compositor_timeline);
+  DCHECK(layer_tree_host_->animation_host());
+  layer_tree_host_->animation_host()->AddAnimationTimeline(
+      static_cast<const cc_blink::WebCompositorAnimationTimelineImpl*>(
+          compositor_timeline)->animation_timeline());
+}
+
+void RenderWidgetCompositor::detachCompositorAnimationTimeline(
+    blink::WebCompositorAnimationTimeline* compositor_timeline) {
+  DCHECK(compositor_timeline);
+  DCHECK(layer_tree_host_->animation_host());
+  layer_tree_host_->animation_host()->RemoveAnimationTimeline(
+      static_cast<const cc_blink::WebCompositorAnimationTimelineImpl*>(
+          compositor_timeline)->animation_timeline());
 }
 
 void RenderWidgetCompositor::setViewportSize(

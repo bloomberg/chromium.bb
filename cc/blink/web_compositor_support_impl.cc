@@ -7,6 +7,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/blink/web_animation_impl.h"
+#include "cc/blink/web_compositor_animation_player_impl.h"
+#include "cc/blink/web_compositor_animation_timeline_impl.h"
 #include "cc/blink/web_content_layer_impl.h"
 #include "cc/blink/web_display_item_list_impl.h"
 #include "cc/blink/web_external_texture_layer_impl.h"
@@ -25,6 +27,8 @@
 
 using blink::WebCompositorAnimation;
 using blink::WebCompositorAnimationCurve;
+using blink::WebCompositorAnimationPlayer;
+using blink::WebCompositorAnimationTimeline;
 using blink::WebContentLayer;
 using blink::WebContentLayerClient;
 using blink::WebDisplayItemList;
@@ -131,6 +135,16 @@ WebFilterOperations* WebCompositorSupportImpl::createFilterOperations() {
 
 WebDisplayItemList* WebCompositorSupportImpl::createDisplayItemList() {
   return new WebDisplayItemListImpl();
+}
+
+WebCompositorAnimationPlayer*
+WebCompositorSupportImpl::createAnimationPlayer() {
+  return new WebCompositorAnimationPlayerImpl();
+}
+
+WebCompositorAnimationTimeline*
+WebCompositorSupportImpl::createAnimationTimeline() {
+  return new WebCompositorAnimationTimelineImpl();
 }
 
 }  // namespace cc_blink

@@ -247,7 +247,7 @@ class CC_EXPORT LayerTreeImpl {
 
   gfx::Rect RootScrollLayerDeviceViewportBounds() const;
 
-  LayerImpl* LayerById(int id);
+  LayerImpl* LayerById(int id) const;
 
   // These should be called by LayerImpl's ctor/dtor.
   void RegisterLayer(LayerImpl* layer);

@@ -5,6 +5,7 @@
 #include "cc/test/animation_test_common.h"
 
 #include "cc/animation/animation_id_provider.h"
+#include "cc/animation/animation_player.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/animation/transform_operations.h"
@@ -86,7 +87,7 @@ int AddAnimatedTransform(Target* target,
                          int delta_y) {
   TransformOperations start_operations;
   if (duration > 0.0) {
-    start_operations.AppendTranslate(delta_x, delta_y, 0.0);
+    start_operations.AppendTranslate(0, 0, 0.0);
   }
 
   TransformOperations operations;
@@ -356,6 +357,29 @@ int AddAnimatedFilterToLayer(LayerImpl* layer,
                            duration,
                            start_brightness,
                            end_brightness);
+}
+
+int AddAnimatedTransformToPlayer(AnimationPlayer* player,
+                                 double duration,
+                                 int delta_x,
+                                 int delta_y) {
+  return AddAnimatedTransform(player, duration, delta_x, delta_y);
+}
+
+int AddOpacityTransitionToPlayer(AnimationPlayer* player,
+                                 double duration,
+                                 float start_opacity,
+                                 float end_opacity,
+                                 bool use_timing_function) {
+  return AddOpacityTransition(player, duration, start_opacity, end_opacity,
+                              use_timing_function);
+}
+
+int AddAnimatedFilterToPlayer(AnimationPlayer* player,
+                              double duration,
+                              float start_brightness,
+                              float end_brightness) {
+  return AddAnimatedFilter(player, duration, start_brightness, end_brightness);
 }
 
 }  // namespace cc

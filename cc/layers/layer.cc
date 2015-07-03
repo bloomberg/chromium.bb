@@ -128,11 +128,14 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
   if (layer_tree_host_ == host)
     return;
 
-  if (layer_tree_host_)
+  if (layer_tree_host_) {
     layer_tree_host_->property_trees()->needs_rebuild = true;
-
-  if (host)
+    layer_tree_host_->UnregisterLayer(this);
+  }
+  if (host) {
     host->property_trees()->needs_rebuild = true;
+    host->RegisterLayer(this);
+  }
 
   InvalidatePropertyTreesIndices();
 

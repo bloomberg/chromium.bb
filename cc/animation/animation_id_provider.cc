@@ -9,6 +9,8 @@ namespace cc {
 
 base::StaticAtomicSequenceNumber g_next_animation_id;
 base::StaticAtomicSequenceNumber g_next_group_id;
+base::StaticAtomicSequenceNumber g_next_timeline_id;
+base::StaticAtomicSequenceNumber g_next_player_id;
 
 int AnimationIdProvider::NextAnimationId() {
   // Animation IDs start from 1.
@@ -18,6 +20,14 @@ int AnimationIdProvider::NextAnimationId() {
 int AnimationIdProvider::NextGroupId() {
   // Animation group IDs start from 1.
   return g_next_group_id.GetNext() + 1;
+}
+
+int AnimationIdProvider::NextTimelineId() {
+  return g_next_timeline_id.GetNext() + 1;
+}
+
+int AnimationIdProvider::NextPlayerId() {
+  return g_next_player_id.GetNext() + 1;
 }
 
 }  // namespace cc

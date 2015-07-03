@@ -82,6 +82,10 @@ class CONTENT_EXPORT RenderWidgetCompositor
   // WebLayerTreeView implementation.
   virtual void setRootLayer(const blink::WebLayer& layer);
   virtual void clearRootLayer();
+  virtual void attachCompositorAnimationTimeline(
+      blink::WebCompositorAnimationTimeline* compositor_timeline);
+  virtual void detachCompositorAnimationTimeline(
+      blink::WebCompositorAnimationTimeline* compositor_timeline);
   virtual void setViewportSize(
       const blink::WebSize& unused_deprecated,
       const blink::WebSize& device_viewport_size);

@@ -6,7 +6,11 @@
   'variables': {
     'chromium_code': 1,
     'cc_unit_tests_source_files': [
+      'animation/animation_host_unittest.cc',
+      'animation/animation_player_unittest.cc',
+      'animation/animation_timeline_unittest.cc',
       'animation/animation_unittest.cc',
+      'animation/element_animations_unittest.cc',
       'animation/keyframed_animation_curve_unittest.cc',
       'animation/layer_animation_controller_unittest.cc',
       'animation/scroll_offset_animation_curve_unittest.cc',
@@ -145,6 +149,8 @@
     'cc_tests_support_files': [
       'test/animation_test_common.cc',
       'test/animation_test_common.h',
+      'test/animation_timelines_test_common.cc',
+      'test/animation_timelines_test_common.h',
       'test/begin_frame_args_test.cc',
       'test/begin_frame_args_test.h',
       'test/failure_output_surface.cc',
