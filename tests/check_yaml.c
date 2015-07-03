@@ -242,7 +242,7 @@ main(int argc, char *argv[]) {
 
   assert(!fclose(file));
 
-  printf("%s (%d tests)\n", (errors ? "FAILURE" : "SUCCESS"), count);
+  printf("%s (%d tests %d, failures)\n", (errors ? "FAILURE" : "SUCCESS"), count, errors);
 
   return errors ? 1 : 0;
 }
