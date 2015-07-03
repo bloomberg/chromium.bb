@@ -41,7 +41,7 @@ void EventHandlerTest::SetUp()
 void EventHandlerTest::setHtmlInnerHTML(const char* htmlContent)
 {
     document().documentElement()->setInnerHTML(String::fromUTF8(htmlContent), ASSERT_NO_EXCEPTION);
-    document().view()->updateLayoutAndStyleForPainting();
+    document().view()->updateAllLifecyclePhases();
 }
 
 TEST_F(EventHandlerTest, dragSelectionAfterScroll)

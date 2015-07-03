@@ -469,7 +469,7 @@ void Internals::pauseAnimations(double pauseTime, ExceptionState& exceptionState
         return;
     }
 
-    frame()->view()->updateLayoutAndStyleForPainting();
+    frame()->view()->updateAllLifecyclePhases();
     frame()->document()->timeline().pauseAnimationsForTesting(pauseTime);
 }
 
@@ -1613,7 +1613,7 @@ String Internals::elementLayerTreeAsText(Element* element, ExceptionState& excep
 {
     ASSERT(element);
     FrameView* frameView = element->document().view();
-    frameView->updateLayoutAndStyleForPainting();
+    frameView->updateAllLifecyclePhases();
 
     return elementLayerTreeAsText(element, 0, exceptionState);
 }
@@ -1621,7 +1621,7 @@ String Internals::elementLayerTreeAsText(Element* element, ExceptionState& excep
 bool Internals::scrollsWithRespectTo(Element* element1, Element* element2, ExceptionState& exceptionState)
 {
     ASSERT(element1 && element2);
-    element1->document().view()->updateLayoutAndStyleForPainting();
+    element1->document().view()->updateAllLifecyclePhases();
 
     LayoutObject* layoutObject1 = element1->layoutObject();
     LayoutObject* layoutObject2 = element2->layoutObject();
@@ -1652,7 +1652,7 @@ String Internals::layerTreeAsText(Document* document, unsigned flags, ExceptionS
         return String();
     }
 
-    document->view()->updateLayoutAndStyleForPainting();
+    document->view()->updateAllLifecyclePhases();
 
     return document->frame()->layerTreeAsText(flags);
 }
@@ -1692,7 +1692,7 @@ String Internals::mainThreadScrollingReasons(Document* document, ExceptionState&
         return String();
     }
 
-    document->frame()->view()->updateLayoutAndStyleForPainting();
+    document->frame()->view()->updateAllLifecyclePhases();
 
     Page* page = document->page();
     if (!page)
@@ -1917,7 +1917,7 @@ void Internals::startTrackingRepaints(Document* document, ExceptionState& except
     }
 
     FrameView* frameView = document->view();
-    frameView->updateLayoutAndStyleForPainting();
+    frameView->updateAllLifecyclePhases();
     frameView->setTracksPaintInvalidations(true);
 }
 
@@ -1930,7 +1930,7 @@ void Internals::stopTrackingRepaints(Document* document, ExceptionState& excepti
     }
 
     FrameView* frameView = document->view();
-    frameView->updateLayoutAndStyleForPainting();
+    frameView->updateAllLifecyclePhases();
     frameView->setTracksPaintInvalidations(false);
 }
 
@@ -2200,7 +2200,7 @@ void Internals::forceCompositingUpdate(Document* document, ExceptionState& excep
         return;
     }
 
-    document->frame()->view()->updateLayoutAndStyleForPainting();
+    document->frame()->view()->updateAllLifecyclePhases();
 }
 
 void Internals::setZoomFactor(float factor)

@@ -2486,12 +2486,24 @@ void FrameView::updateWidgetPositionsIfNeeded()
     updateWidgetPositions();
 }
 
-void FrameView::updateLayoutAndStyleForPainting()
+void FrameView::updateAllLifecyclePhases()
 {
-    frame().localFrameRoot()->view()->updateLayoutAndStyleForPaintingInternal();
+    frame().localFrameRoot()->view()->updateAllLifecyclePhasesInternal();
 }
 
-void FrameView::updateLayoutAndStyleForPaintingInternal()
+// TODO(chrishtr): add a scrolling update lifecycle phase, after compositing and before invalidation.
+void FrameView::updateLifecycleToCompositingCleanPlusScrolling()
+{
+    frame().localFrameRoot()->view()->updateStyleAndLayoutIfNeededRecursive();
+    LayoutView* view = layoutView();
+    if (view)
+        view->compositor()->updateIfNeededRecursive();
+    scrollContentsIfNeededRecursive();
+
+    ASSERT(lifecycle().state() >= DocumentLifecycle::CompositingClean);
+}
+
+void FrameView::updateAllLifecyclePhasesInternal()
 {
     // This must be called from the root frame, since it recurses down, not up. Otherwise the lifecycles of the frames might be out of sync.
     ASSERT(frame() == page()->mainFrame() || (!frame().tree().parent()->isLocalFrame()));
@@ -2499,30 +2511,34 @@ void FrameView::updateLayoutAndStyleForPaintingInternal()
     // Updating layout can run script, which can tear down the FrameView.
     RefPtrWillBeRawPtr<FrameView> protector(this);
 
-    updateLayoutAndStyleIfNeededRecursive();
+    updateStyleAndLayoutIfNeededRecursive();
 
     LayoutView* view = layoutView();
     if (view) {
         TRACE_EVENT1("devtools.timeline", "UpdateLayerTree", "data", InspectorUpdateLayerTreeEvent::data(m_frame.get()));
 
         view->compositor()->updateIfNeededRecursive();
-
-        if (view->compositor()->inCompositingMode() && m_frame->isLocalRoot())
-            scrollingCoordinator()->updateAfterCompositingChangeIfNeeded();
-
-        updateCompositedSelectionIfNeeded();
-
-        if (RuntimeEnabledFeatures::frameTimingSupportEnabled())
-            updateFrameTimingRequestsIfNeeded();
-
         scrollContentsIfNeededRecursive();
-
         invalidateTreeIfNeededRecursive();
+        updatePostLifecycleData();
 
         ASSERT(!view->hasPendingSelection());
     }
 
     ASSERT(lifecycle().state() == DocumentLifecycle::PaintInvalidationClean);
+}
+
+void FrameView::updatePostLifecycleData()
+{
+    LayoutView* view = layoutView();
+    ASSERT(view);
+
+    if (view->compositor()->inCompositingMode() && m_frame->isLocalRoot())
+        scrollingCoordinator()->updateAfterCompositingChangeIfNeeded();
+
+    updateCompositedSelectionIfNeeded();
+    if (RuntimeEnabledFeatures::frameTimingSupportEnabled())
+        updateFrameTimingRequestsIfNeeded();
 }
 
 void FrameView::updateFrameTimingRequestsIfNeeded()
@@ -2537,7 +2553,7 @@ void FrameView::updateFrameTimingRequestsIfNeeded()
     }
 }
 
-void FrameView::updateLayoutAndStyleIfNeededRecursive()
+void FrameView::updateStyleAndLayoutIfNeededRecursive()
 {
     // We have to crawl our entire subtree looking for any FrameViews that need
     // layout and make sure they are up to date.
@@ -2564,7 +2580,7 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
     }
 
     for (const auto& frameView : frameViews)
-        frameView->updateLayoutAndStyleIfNeededRecursive();
+        frameView->updateStyleAndLayoutIfNeededRecursive();
 
     // When an <iframe> gets composited, it triggers an extra style recalc in its containing FrameView.
     // To avoid pushing an invalid tree for display, we have to check for this case and do another

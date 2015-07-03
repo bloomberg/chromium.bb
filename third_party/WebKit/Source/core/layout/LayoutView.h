@@ -52,9 +52,9 @@ public:
     virtual ~LayoutView();
     void willBeDestroyed() override;
 
-    // hitTest() will update layout and style first while hitTestNoLayoutAndStyleUpdate() does not.
+    // hitTest() will update layout, style and compositing first while hitTestNoLifecycleUpdate() does not.
     bool hitTest(HitTestResult&);
-    bool hitTestNoLayoutAndStyleUpdate(HitTestResult&);
+    bool hitTestNoLifecycleUpdate(HitTestResult&);
 
     // Returns the total count of calls to HitTest, for testing.
     unsigned hitTestCount() const { return m_hitTestCount; }

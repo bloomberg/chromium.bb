@@ -39,7 +39,7 @@ void LayoutThemeTest::SetUp()
 void LayoutThemeTest::setHtmlInnerHTML(const char* htmlContent)
 {
     document().documentElement()->setInnerHTML(String::fromUTF8(htmlContent), ASSERT_NO_EXCEPTION);
-    document().view()->updateLayoutAndStyleForPainting();
+    document().view()->updateAllLifecyclePhases();
 }
 
 inline Color outlineColor(Element* element)
@@ -70,7 +70,7 @@ TEST_F(LayoutThemeTest, ChangeFocusRingColor)
     document().page()->focusController().setActive(true);
     document().page()->focusController().setFocused(true);
     span->focus();
-    document().view()->updateLayoutAndStyleForPainting();
+    document().view()->updateAllLifecyclePhases();
 
     // Checking focused style.
     EXPECT_NE(BNONE, outlineStyle(span));
@@ -79,7 +79,7 @@ TEST_F(LayoutThemeTest, ChangeFocusRingColor)
     // Change focus ring color.
     LayoutTheme::theme().setCustomFocusRingColor(customColor);
     Page::platformColorsChanged();
-    document().view()->updateLayoutAndStyleForPainting();
+    document().view()->updateAllLifecyclePhases();
 
     // Check that the focus ring color is updated.
     EXPECT_NE(BNONE, outlineStyle(span));

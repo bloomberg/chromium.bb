@@ -41,7 +41,7 @@ private:
 TEST_F(TextPainterTest, TextPaintingStyle_Simple)
 {
     document().body()->setInlineStyleProperty(CSSPropertyColor, CSSValueBlue);
-    document().view()->updateLayoutAndStyleForPainting();
+    document().view()->updateAllLifecyclePhases();
 
     TextPainter::Style textStyle = TextPainter::textPaintingStyle(
         *layoutText(), layoutText()->styleRef(), false /* usesTextAsClip */, false /* isPrinting */);
@@ -59,7 +59,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_AllProperties)
     document().body()->setInlineStyleProperty(CSSPropertyWebkitTextEmphasisColor, CSSValueBlue);
     document().body()->setInlineStyleProperty(CSSPropertyWebkitTextStrokeWidth, 4, CSSPrimitiveValue::CSS_PX);
     document().body()->setInlineStyleProperty(CSSPropertyTextShadow, "1px 2px 3px yellow");
-    document().view()->updateLayoutAndStyleForPainting();
+    document().view()->updateAllLifecyclePhases();
 
     TextPainter::Style textStyle = TextPainter::textPaintingStyle(
         *layoutText(), layoutText()->styleRef(), false /* usesTextAsClip */, false /* isPrinting */);
@@ -82,7 +82,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_UsesTextAsClip)
     document().body()->setInlineStyleProperty(CSSPropertyWebkitTextEmphasisColor, CSSValueBlue);
     document().body()->setInlineStyleProperty(CSSPropertyWebkitTextStrokeWidth, 4, CSSPrimitiveValue::CSS_PX);
     document().body()->setInlineStyleProperty(CSSPropertyTextShadow, "1px 2px 3px yellow");
-    document().view()->updateLayoutAndStyleForPainting();
+    document().view()->updateAllLifecyclePhases();
 
     TextPainter::Style textStyle = TextPainter::textPaintingStyle(
         *layoutText(), layoutText()->styleRef(), true /* usesTextAsClip */, false /* isPrinting */);
@@ -101,7 +101,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_ForceBackgroundToWhite_NoAdjustmentNee
     document().body()->setInlineStyleProperty(CSSPropertyWebkitPrintColorAdjust, CSSValueEconomy);
     document().settings()->setShouldPrintBackgrounds(false);
     document().setPrinting(true);
-    document().view()->updateLayoutAndStyleForPainting();
+    document().view()->updateAllLifecyclePhases();
 
     TextPainter::Style textStyle = TextPainter::textPaintingStyle(
         *layoutText(), layoutText()->styleRef(), false /* usesTextAsClip */, true /* isPrinting */);
@@ -118,7 +118,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_ForceBackgroundToWhite_Darkened)
     document().body()->setInlineStyleProperty(CSSPropertyWebkitPrintColorAdjust, CSSValueEconomy);
     document().settings()->setShouldPrintBackgrounds(false);
     document().setPrinting(true);
-    document().view()->updateLayoutAndStyleForPainting();
+    document().view()->updateAllLifecyclePhases();
 
     TextPainter::Style textStyle = TextPainter::textPaintingStyle(
         *layoutText(), layoutText()->styleRef(), false /* usesTextAsClip */, true /* isPrinting */);

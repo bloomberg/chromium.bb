@@ -24,13 +24,13 @@ protected:
     void setBodyInnerHTML(const String& htmlContent)
     {
         document().body()->setInnerHTML(htmlContent, ASSERT_NO_EXCEPTION);
-        document().view()->updateLayoutAndStyleForPainting();
+        document().view()->updateAllLifecyclePhases();
     }
 
     void enableCompositing()
     {
         m_pageHolder->page().settings().setAcceleratedCompositingEnabled(true);
-        document().view()->updateLayoutAndStyleForPainting();
+        document().view()->updateAllLifecyclePhases();
     }
 
 private:

@@ -29,7 +29,7 @@ protected:
     void setBodyInnerHTML(const String& htmlContent)
     {
         document().body()->setInnerHTML(htmlContent, ASSERT_NO_EXCEPTION);
-        document().view()->updateLayoutAndStyleForPainting();
+        document().view()->updateAllLifecyclePhases();
     }
 
 private:
