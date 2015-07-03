@@ -548,6 +548,7 @@
             '../ui/accessibility/accessibility.gyp:accessibility_unittests_run',
             '../ui/app_list/app_list.gyp:app_list_unittests_run',
             '../ui/events/events.gyp:events_unittests_run',
+            '../ui/gl/gl_tests.gyp:gl_unittests_run',
             '../ui/message_center/message_center.gyp:message_center_unittests_run',
             '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests_run',
             '../url/url.gyp:url_unittests_run',
