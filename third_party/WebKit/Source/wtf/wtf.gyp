@@ -57,7 +57,6 @@
               '__STD_C',
               '_CRT_SECURE_NO_DEPRECATE',
               '_SCL_SECURE_NO_DEPRECATE',
-              'CRASH=__debugbreak',
             ],
           }],
         ],

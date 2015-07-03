@@ -143,10 +143,18 @@ using WTF::FrameToNameScope;
    Signals are ignored by the crash reporter on OS X so we must do better.
 */
 #ifndef CRASH
+#if COMPILER(MSVC)
+#if COMPILER(CLANG)
+#define CRASH() (__debugbreak(), __builtin_unreachable())
+#else
+#define CRASH() __debugbreak()
+#endif
+#else
 #define CRASH() \
     (WTFReportBacktrace(), \
      (*(int*)0xfbadbeef = 0), \
      IMMEDIATE_CRASH())
+#endif
 #endif
 
 #if COMPILER(CLANG)
