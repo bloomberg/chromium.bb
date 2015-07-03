@@ -1200,7 +1200,6 @@ interface WebSocket
     setter onopen
 interface WindowClient
     getter focused
-    getter frameType
     getter visibilityState
     method constructor
     method focus

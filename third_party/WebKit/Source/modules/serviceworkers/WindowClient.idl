@@ -20,6 +20,5 @@ enum ContextFrameType {
 ] interface WindowClient : Client {
     readonly attribute VisibilityState visibilityState;
     readonly attribute boolean focused;
-    readonly attribute ContextFrameType frameType;
-    [CallWith=ScriptState] Promise<boolean> focus();
+    [CallWith=ScriptState] Promise<WindowClient> focus();
 };
