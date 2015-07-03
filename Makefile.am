@@ -932,7 +932,8 @@ endif
 # Shared utilities
 #
 
-noinst_LTLIBRARIES += libshared.la libshared-cairo.la
+noinst_LTLIBRARIES += libshared.la libshared-cairo.la \
+	libzunitc.la libzunitcmain.la
 
 libshared_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 
@@ -971,6 +972,37 @@ libshared_cairo_la_SOURCES =			\
 	shared/frame.c				\
 	shared/cairo-util.h
 
+libzunitc_la_SOURCES = \
+	tools/zunitc/inc/zunitc/zunitc.h	\
+	tools/zunitc/inc/zunitc/zunitc_impl.h	\
+	tools/zunitc/src/zuc_base_logger.c	\
+	tools/zunitc/src/zuc_base_logger.h	\
+	tools/zunitc/src/zuc_collector.c	\
+	tools/zunitc/src/zuc_collector.h	\
+	tools/zunitc/src/zuc_context.h		\
+	tools/zunitc/src/zuc_event.h		\
+	tools/zunitc/src/zuc_event_listener.h	\
+	tools/zunitc/src/zuc_types.h		\
+	tools/zunitc/src/zunitc_impl.c		\
+	shared/helpers.h
+
+libzunitc_la_CFLAGS = \
+	$(AM_CFLAGS)				\
+	-I$(top_srcdir)/tools/zunitc/inc
+
+libzunitc_la_LIBADD = \
+	libshared.la
+
+libzunitcmain_la_SOURCES = \
+	tools/zunitc/src/main.c
+
+libzunitcmain_la_CFLAGS = \
+	$(AM_CFLAGS)				\
+	-I$(top_srcdir)/tools/zunitc/inc
+
+libzunitcmain_la_LIBADD =	\
+	libzunitc.la		\
+	libshared.la
 
 #
 # tests subdirectory
@@ -983,7 +1015,8 @@ internal_tests = 				\
 
 shared_tests =					\
 	config-parser.test			\
-	vertex-clip.test
+	vertex-clip.test			\
+	zuctest
 
 module_tests =					\
 	surface-test.la				\
@@ -1216,6 +1249,22 @@ setbacklight_CFLAGS = $(AM_CFLAGS) $(SETBACKLIGHT_CFLAGS)
 setbacklight_LDADD = $(SETBACKLIGHT_LIBS)
 endif
 
+all-local: zuctest$(EXEEXT)
+
+noinst_PROGRAMS += zuctest$(EXEEXT)
+
+zuctest_LDADD =			\
+	libzunitc.la		\
+	libzunitcmain.la
+
+zuctest_CFLAGS =				\
+	$(AM_CFLAGS)				\
+	-I$(top_srcdir)/tools/zunitc/inc
+
+zuctest_SOURCES =				\
+	tools/zunitc/test/fixtures_test.c	\
+	tools/zunitc/test/zunitc_test.c
+
 EXTRA_DIST +=							\
 	tests/weston-tests-env					\
 	tests/internal-screenshot.ini				\
@@ -1284,7 +1333,6 @@ EXTRA_DIST +=					\
 	man/weston.ini.man
 
 CLEANFILES += $(man_MANS)
-
 
 protocol/%-protocol.c : $(top_srcdir)/protocol/%.xml
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) code < $< > $@
