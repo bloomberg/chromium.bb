@@ -6,9 +6,9 @@
 // network connections (Cellular, Ethernet, VPN, WiFi or WiMAX). This private
 // API is only valid if called from a browser or app associated with the
 // primary user. See the Open Network Configuration (ONC) documentation for
-// descriptions of properties: 
+// descriptions of properties:
 // <a href="https://code.google.com/p/chromium/codesearch#chromium/src/components/onc/docs/onc_spec.html">
-// src/components/onc/docs/onc_spec.html</a>, or the 
+// src/components/onc/docs/onc_spec.html</a>, or the
 // <a href="http://www.chromium.org/chromium-os/chromiumos-design-docs/open-network-configuration">
 // Open Network Configuration</a> page at chromium.org.
 // <br><br>
@@ -19,9 +19,9 @@
 // $(ref:networkingPrivate.getState) and $(ref:networkingPrivate.getNetworks).
 // <br><br>
 // "Config" properties describe just the ONC properties that can be configured
-// through this API. NOTE: Not all configuration properties are exposed at this 
+// through this API. NOTE: Not all configuration properties are exposed at this
 // time, only those currently required by the Chrome Settings UI.
-// TODO(stevenjb): Provide all configuration properties and types, 
+// TODO(stevenjb): Provide all configuration properties and types,
 // crbug.com/380937.
 // <br><br>
 // TODO(stevenjb/pneubeck): Merge the ONC documentation with this document and
@@ -42,9 +42,9 @@ namespace networkingPrivate {
 
   enum DeviceStateType {
     // Device is available but not initialized.
-    Uninitialized, 
+    Uninitialized,
     // Device is intialized but not enabled.
-    Disabled, 
+    Disabled,
     // Enabled state has been requested but has not completed.
     Enabling,
     // Device is enabled.
@@ -138,13 +138,21 @@ namespace networkingPrivate {
     DOMString? PAC;
   };
 
+  dictionary OpenVPNProperties {
+    DOMString? OTP;
+    DOMString? Password;
+    DOMString? UserAuthenticationType;
+    DOMString? Username;
+  };
+
   dictionary ThirdPartyVPNProperties {
     DOMString ExtensionID;
   };
-    
+
   dictionary VPNConfigProperties {
     boolean? AutoConnect;
     DOMString? Host;
+    OpenVPNProperties? OpenVPN;
     ThirdPartyVPNProperties? ThirdPartyVPN;
     DOMString? Type;
   };
@@ -255,7 +263,7 @@ namespace networkingPrivate {
     // If true, only include configured (saved) networks. Defaults to 'false'.
     boolean? configured;
 
-    // Maximum number of networks to return. Defaults to 1000 if unspecified. 
+    // Maximum number of networks to return. Defaults to 1000 if unspecified.
     // Use 0 for no limit.
     long? limit;
   };
@@ -338,7 +346,7 @@ namespace networkingPrivate {
     // are ordered by the system based on their priority, with connected or
     // connecting networks listed first.
     // |filter|: Describes which networks to return.
-    // |callback|: Called with a dictionary of networks and their state 
+    // |callback|: Called with a dictionary of networks and their state
     //     properties when received.
     static void getNetworks(NetworkFilter filter,
                             GetNetworksCallback callback);
@@ -380,7 +388,7 @@ namespace networkingPrivate {
     //     to be notified when a network state changes.
     static void startConnect(DOMString networkGuid,
                              optional VoidCallback callback);
-    
+
     // Starts a disconnect from the network with networkGuid.
     // |networkGuid|: The GUID of the network to disconnect from.
     // |callback|: Called when the disconnect request has been sent. See note
@@ -424,7 +432,7 @@ namespace networkingPrivate {
     // |callback|: A callback function that receives base64-encoded encrypted
     //     data to send to a trusted device.
     static void verifyAndEncryptData(VerificationProperties properties,
-                                     DOMString data, 
+                                     DOMString data,
                                      StringCallback callback);
 
     // Enables TDLS for WiFi traffic with a specified peer if available.
