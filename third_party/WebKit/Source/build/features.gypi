@@ -93,7 +93,6 @@
       ['enable_oilpan==0', {
         'feature_defines': [
           'ENABLE_LAZY_SWEEPING=1',
-          'ENABLE_IDLE_GC=1',
         ],
       }],
       ['blink_gc_profiling==1', {
