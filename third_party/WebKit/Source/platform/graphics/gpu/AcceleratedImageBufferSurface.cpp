@@ -62,11 +62,6 @@ AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(const IntSize& size
     clear();
 }
 
-void AcceleratedImageBufferSurface::didModifyBackingTexture()
-{
-    m_surface->getCanvas()->getTopDevice()->accessBitmap(false).notifyPixelsChanged();
-}
-
 PassRefPtr<SkImage> AcceleratedImageBufferSurface::newImageSnapshot() const
 {
     return adoptRef(m_surface->newImageSnapshot());

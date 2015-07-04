@@ -47,7 +47,6 @@ public:
     SkCanvas* canvas() const override { return m_surface ? m_surface->getCanvas() : 0; }
     bool isValid() const override { return m_surface; }
     bool isAccelerated() const override { return true; }
-    void didModifyBackingTexture() override;
     PassRefPtr<SkImage> newImageSnapshot() const override;
     Platform3DObject getBackingTextureHandleForOverwrite() override;
 

@@ -238,14 +238,8 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBu
 
     context3D->flush();
 
-    bool result = drawingBuffer->copyToPlatformTexture(context3D, textureId, GL_RGBA,
+    return drawingBuffer->copyToPlatformTexture(context3D, textureId, GL_RGBA,
         GL_UNSIGNED_BYTE, 0, true, false, sourceBuffer);
-
-    if (result) {
-        m_surface->didModifyBackingTexture();
-    }
-
-    return result;
 }
 
 void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect* srcPtr, SkXfermode::Mode op)

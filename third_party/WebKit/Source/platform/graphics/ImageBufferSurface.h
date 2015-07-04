@@ -66,7 +66,6 @@ public:
     virtual WebLayer* layer() const { return 0; }
     virtual bool isAccelerated() const { return false; }
     virtual bool isRecording() const { return false; }
-    virtual void didModifyBackingTexture() { }
     virtual bool isExpensiveToPaint() { return false; }
     virtual void setFilterQuality(SkFilterQuality) { }
     virtual void setIsHidden(bool) { }
