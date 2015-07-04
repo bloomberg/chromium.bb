@@ -6,6 +6,9 @@
 
 namespace content {
 
+// TODO(thakis): Remove this once http://crbug.com/488634 is fixed.
+BackgroundSyncRegistration::BackgroundSyncRegistration() = default;
+
 const BackgroundSyncRegistration::RegistrationId
     BackgroundSyncRegistration::kInvalidRegistrationId = -1;
 

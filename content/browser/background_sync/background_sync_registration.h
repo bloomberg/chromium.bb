@@ -16,6 +16,7 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
   using RegistrationId = int64_t;
   static const RegistrationId kInitialId;
 
+  BackgroundSyncRegistration();
   bool Equals(const BackgroundSyncRegistration& other) const;
   bool IsValid() const;
 
