@@ -195,4 +195,19 @@
       ],
     },
   ],
+  'conditions': [
+    ['test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'compositor_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'compositor_unittests',
+          ],
+          'includes': [ '../../build/isolate.gypi' ],
+          'sources': [ 'compositor_unittests.isolate' ],
+        },
+      ],
+    }],
+  ],
 }
