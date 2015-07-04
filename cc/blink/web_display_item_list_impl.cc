@@ -126,7 +126,6 @@ void WebDisplayItemListImpl::appendEndFloatClipItem() {
 }
 
 void WebDisplayItemListImpl::appendTransformItem(const SkMatrix44& matrix) {
-  cc::TransformDisplayItem item;
   gfx::Transform transform;
   transform.matrix() = matrix;
 
@@ -135,6 +134,7 @@ void WebDisplayItemListImpl::appendTransformItem(const SkMatrix44& matrix) {
         display_item_list_->CreateAndAppendItem<cc::TransformDisplayItem>();
     item->SetNew(transform);
   } else {
+    cc::TransformDisplayItem item;
     item.SetNew(transform);
     display_item_list_->RasterIntoCanvas(item);
   }
@@ -182,7 +182,6 @@ void WebDisplayItemListImpl::appendEndCompositingItem() {
 void WebDisplayItemListImpl::appendFilterItem(
     const blink::WebFilterOperations& filters,
     const blink::WebFloatRect& bounds) {
-  cc::FilterDisplayItem item;
   const WebFilterOperationsImpl& filters_impl =
       static_cast<const WebFilterOperationsImpl&>(filters);
 
@@ -191,6 +190,7 @@ void WebDisplayItemListImpl::appendFilterItem(
         display_item_list_->CreateAndAppendItem<cc::FilterDisplayItem>();
     item->SetNew(filters_impl.AsFilterOperations(), bounds);
   } else {
+    cc::FilterDisplayItem item;
     item.SetNew(filters_impl.AsFilterOperations(), bounds);
     display_item_list_->RasterIntoCanvas(item);
   }
