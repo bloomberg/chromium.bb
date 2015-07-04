@@ -1335,8 +1335,11 @@ void TraceLog::InitializeThreadLocalEventBufferIfSupported() {
 bool TraceLog::OnMemoryDump(ProcessMemoryDump* pmd) {
   TraceEventMemoryOverhead overhead;
   overhead.Add("TraceLog", sizeof(*this));
-  if (logged_events_)
-    logged_events_->EstimateTraceMemoryOverhead(&overhead);
+  {
+    AutoLock lock(lock_);
+    if (logged_events_)
+      logged_events_->EstimateTraceMemoryOverhead(&overhead);
+  }
   overhead.AddSelf();
   overhead.DumpInto("tracing/main_trace_log", pmd);
   return true;
