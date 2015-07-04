@@ -7,11 +7,8 @@
 namespace content {
 
 // TODO(thakis): Remove this once http://crbug.com/488634 is fixed.
-BackgroundSyncRegistrationOptions::BackgroundSyncRegistrationOptions()
-    : min_period(0),
-      network_state(NETWORK_STATE_ONLINE),
-      power_state(POWER_STATE_AVOID_DRAINING),
-      periodicity(SYNC_ONE_SHOT) {}
+BackgroundSyncRegistrationOptions::BackgroundSyncRegistrationOptions() =
+    default;
 
 bool BackgroundSyncRegistrationOptions::Equals(
     const BackgroundSyncRegistrationOptions& other) const {
