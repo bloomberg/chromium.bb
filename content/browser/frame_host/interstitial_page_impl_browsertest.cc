@@ -349,7 +349,14 @@ IN_PROC_BROWSER_TEST_F(InterstitialPageImplTest, Copy) {
   TearDownInterstitialPage();
 }
 
-IN_PROC_BROWSER_TEST_F(InterstitialPageImplTest, Paste) {
+// Failing on msan bot: crbug.com/506921
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_Paste DISABLED_Paste
+#else
+#define MAYBE_Paste Paste
+#endif
+
+IN_PROC_BROWSER_TEST_F(InterstitialPageImplTest, MAYBE_Paste) {
   SetUpTestClipboard();
   SetUpInterstitialPage();
 

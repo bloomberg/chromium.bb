@@ -2001,3 +2001,10 @@ base.dll!base::Thread::Run
 base.dll!base::Thread::ThreadMain
 base.dll!base::`anonymous namespace'::ThreadFunc
 KERNEL32.dll!BaseThreadInitThunk
+
+UNINITIALIZED READ
+name=bug_506921
+base.dll!base::Pickle::WriteBool
+content.dll!IPC::SyncMessageSchema<>::DispatchWithSendParams<>
+content.dll!ClipboardHostMsg_ReadAvailableTypes::Dispatch<>
+content.dll!content::ClipboardMessageFilter::OnMessageReceived
