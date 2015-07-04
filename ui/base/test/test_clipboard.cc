@@ -42,6 +42,7 @@ void TestClipboard::Clear(ClipboardType type) {
 void TestClipboard::ReadAvailableTypes(ClipboardType type,
                                        std::vector<base::string16>* types,
                                        bool* contains_filenames) const {
+  *contains_filenames = false;
 }
 
 void TestClipboard::ReadText(ClipboardType type, base::string16* result) const {
