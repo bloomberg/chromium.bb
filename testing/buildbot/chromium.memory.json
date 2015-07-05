@@ -149,9 +149,6 @@
         "test": "net_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "ppapi_unittests"
       },
       {
@@ -414,9 +411,6 @@
         "test": "net_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "ppapi_unittests"
       },
       {
@@ -593,9 +587,6 @@
         "test": "net_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "ppapi_unittests"
       },
       {

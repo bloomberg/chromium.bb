@@ -537,7 +537,6 @@
             '../media/media.gyp:media_unittests_run',
             '../media/midi/midi.gyp:midi_unittests_run',
             '../net/net.gyp:net_unittests_run',
-            '../ppapi/ppapi_internal.gyp:ppapi_unittests_run',
             '../printing/printing.gyp:printing_unittests_run',
             '../remoting/remoting.gyp:remoting_unittests_run',
             '../skia/skia_tests.gyp:skia_unittests_run',
