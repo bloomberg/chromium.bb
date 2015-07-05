@@ -58,7 +58,7 @@ TEST_F(MaterialDesignControllerTest,
        EnabledCommandLineValueMapsToMaterialModeWhenCompileTimeFlagEnabled) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kTopChromeMD, "material");
-  EXPECT_EQ(MaterialDesignController::Mode::MATERIAL,
+  EXPECT_EQ(MaterialDesignController::Mode::MATERIAL_NORMAL,
             MaterialDesignController::GetMode());
 }
 
@@ -94,19 +94,22 @@ TEST_F(MaterialDesignControllerTest,
             MaterialDesignController::GetMode());
 }
 
-#if defined(GTEST_HAS_DEATH_TEST) && !defined(OFFICIAL_BUILD) && \
-    !defined(NDEBUG)
-
-// Verify an invalid command line value fails.
-TEST_F(MaterialDesignControllerTest, InvalidCommandLineValueFailsDeathTest) {
+// Verify an invalid command line value uses the default NON_MATERIAL mode.
+TEST_F(MaterialDesignControllerTest, InvalidCommandLineValue) {
   const std::string kInvalidValue = "1nvalid-valu3";
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kTopChromeMD, kInvalidValue);
-  EXPECT_DEATH(MaterialDesignController::GetMode(), kInvalidValue);
+  EXPECT_EQ(MaterialDesignController::Mode::NON_MATERIAL,
+            MaterialDesignController::GetMode());
 }
 
-#endif  // defined(GTEST_HAS_DEATH_TEST) && !defined(OFFICIAL_BUILD) &&
-// !defined(NDEBUG)
+// Verify that MaterialDesignController::IsModeMaterial() will initialize the
+// mode if it hasn't been initialized yet.
+TEST_F(MaterialDesignControllerTest, IsModeMaterialInitializesMode) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kTopChromeMD, "material");
+  EXPECT_TRUE(MaterialDesignController::IsModeMaterial());
+}
 
 #endif  // !defined(ENABLE_TOPCHROME_MD)
 

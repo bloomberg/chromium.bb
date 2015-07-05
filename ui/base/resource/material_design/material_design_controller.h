@@ -20,7 +20,7 @@ class UI_BASE_EXPORT MaterialDesignController {
   // The different material design modes.
   enum class Mode {
     // Basic material design.
-    MATERIAL,
+    MATERIAL_NORMAL,
     // Material design targeted at mouse/touch hybrid devices.
     MATERIAL_HYBRID,
     // Classic, non-material design.
@@ -29,6 +29,9 @@ class UI_BASE_EXPORT MaterialDesignController {
 
   // Get the current Mode that should be used by the system.
   static Mode GetMode();
+
+  // Returns true if the current mode is a material design variant.
+  static bool IsModeMaterial();
 
  private:
   friend class test::MaterialDesignControllerTestAPI;
