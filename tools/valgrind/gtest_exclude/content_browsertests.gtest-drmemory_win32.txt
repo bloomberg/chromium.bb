@@ -63,3 +63,6 @@ WebRtcBrowserTest.CanMakeAudioCallAndThenRenegotiateToVideo
 
 # https://crbug.com/505714
 NaClBrowserTestGLibc.PPAPICore
+
+# https://crbug.com/507012
+ServiceWorkerVersionBrowserTest.ReadResourceFailure_WaitingWorker
