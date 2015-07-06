@@ -2321,6 +2321,10 @@ cr.define('login', function() {
 
       // First check whether focused pod is already fully visible.
       var visibleArea = $('scroll-container');
+      // Visible area may not defined at user manager screen on all platforms.
+      // Windows, Mac and Linux do not have visible area.
+      if (!visibleArea)
+        return;
       var scrollTop = visibleArea.scrollTop;
       var clientHeight = visibleArea.clientHeight;
       var podTop = $('oobe').offsetTop + pod.offsetTop;
