@@ -500,7 +500,6 @@ component("icuuc") {
   ]
   configs += [ ":icu_code" ]
 
-  configs += [ ":icu_code" ]
   public_configs = [ ":icu_config" ]
 
   if (is_win || icu_use_data_file) {
