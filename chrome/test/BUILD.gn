@@ -1274,6 +1274,7 @@ if (!is_android) {
         "//components/autofill/content/renderer:test_support",
         "//components/metrics/proto",
         "//components/data_reduction_proxy/core/browser:test_support",
+        "//components/safe_json:test_support",
         "//components/webdata_services:test_support",
         "//components/strings",
         "//device/bluetooth:mocks",

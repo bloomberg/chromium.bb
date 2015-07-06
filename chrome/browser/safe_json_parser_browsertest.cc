@@ -54,9 +54,7 @@ class SafeJsonParserTest : public InProcessBrowserTest {
       error_callback = base::Bind(&SafeJsonParserTest::ExpectError,
                                   base::Unretained(this), error);
     }
-    scoped_refptr<SafeJsonParser> parser =
-        new SafeJsonParser(json, success_callback, error_callback);
-    parser->Start();
+    SafeJsonParser::Parse(json, success_callback, error_callback);
 
     message_loop_runner_->Run();
     message_loop_runner_ = nullptr;

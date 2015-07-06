@@ -184,18 +184,16 @@ void ChromeManagementAPIDelegate::
     GetPermissionWarningsByManifestFunctionDelegate(
         extensions::ManagementGetPermissionWarningsByManifestFunction* function,
         const std::string& manifest_str) const {
-  scoped_refptr<safe_json::SafeJsonParser> parser(
-      new safe_json::SafeJsonParser(
-          manifest_str,
-          base::Bind(
-              &extensions::ManagementGetPermissionWarningsByManifestFunction::
-                  OnParseSuccess,
-              function),
-          base::Bind(
-              &extensions::ManagementGetPermissionWarningsByManifestFunction::
-                  OnParseFailure,
-              function)));
-  parser->Start();
+  safe_json::SafeJsonParser::Parse(
+      manifest_str,
+      base::Bind(
+          &extensions::ManagementGetPermissionWarningsByManifestFunction::
+              OnParseSuccess,
+          function),
+      base::Bind(
+          &extensions::ManagementGetPermissionWarningsByManifestFunction::
+              OnParseFailure,
+          function));
 }
 
 scoped_ptr<extensions::InstallPromptDelegate>

@@ -72,14 +72,12 @@ void JSONResponseFetcher::OnURLFetchComplete(
   std::string json_data;
   fetcher->GetResponseAsString(&json_data);
 
-  scoped_refptr<safe_json::SafeJsonParser> parser =
-      new safe_json::SafeJsonParser(
-          json_data, base::Bind(&JSONResponseFetcher::OnJsonParseSuccess,
-                                weak_factory_.GetWeakPtr()),
-          base::Bind(&JSONResponseFetcher::OnJsonParseError,
-                     weak_factory_.GetWeakPtr()));
   // The parser will call us back via one of the callbacks.
-  parser->Start();
+  safe_json::SafeJsonParser::Parse(
+      json_data, base::Bind(&JSONResponseFetcher::OnJsonParseSuccess,
+                            weak_factory_.GetWeakPtr()),
+      base::Bind(&JSONResponseFetcher::OnJsonParseError,
+                 weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace app_list

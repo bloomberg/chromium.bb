@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/safe_json/testing_json_parser.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
@@ -90,11 +91,6 @@ class SupervisedUserWhitelistServiceTest : public testing::Test {
     service_->AddSiteListsChangedCallback(
         base::Bind(&SupervisedUserWhitelistServiceTest::OnSiteListsChanged,
                    base::Unretained(this)));
-    SupervisedUserSiteList::SetLoadInProcessForTesting(true);
-  }
-
-  ~SupervisedUserWhitelistServiceTest() override {
-    SupervisedUserSiteList::SetLoadInProcessForTesting(false);
   }
 
  protected:
@@ -155,6 +151,8 @@ class SupervisedUserWhitelistServiceTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
+
+  safe_json::TestingJsonParser::ScopedFactoryOverride factory_override_;
 
   scoped_ptr<MockSupervisedUserWhitelistInstaller> installer_;
   scoped_ptr<SupervisedUserWhitelistService> service_;

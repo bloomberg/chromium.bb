@@ -10,57 +10,40 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/public/browser/utility_process_host_client.h"
 
 namespace base {
-class ListValue;
-class SingleThreadTaskRunner;
 class Value;
-}
-
-namespace IPC {
-class Message;
 }
 
 namespace safe_json {
 
-// SafeJsonParser parses a given JSON safely via a utility process. The object
-// is ref-counted and kept alive after Start() is called until one of the two
-// callbacks is called.
-class SafeJsonParser : public content::UtilityProcessHostClient {
+// SafeJsonParser parses a given JSON safely via a platform-dependent mechanism
+// (like parsing it in a utility process or in a memory-safe environment).
+// Internally, an instance of this class is created when Parse() is called and
+// is kept alive until one of the two callbacks is called, after which it
+// deletes itself.
+class SafeJsonParser {
  public:
-  typedef base::Callback<void(scoped_ptr<base::Value>)> SuccessCallback;
-  typedef base::Callback<void(const std::string&)> ErrorCallback;
+  using SuccessCallback = base::Callback<void(scoped_ptr<base::Value>)>;
+  using ErrorCallback = base::Callback<void(const std::string&)>;
 
-  SafeJsonParser(const std::string& unsafe_json,
-                 const SuccessCallback& success_callback,
-                 const ErrorCallback& error_callback);
+  using Factory = SafeJsonParser* (*)(const std::string& unsafe_json,
+                                      const SuccessCallback& success_callback,
+                                      const ErrorCallback& error_callback);
 
-  void Start();
+  // Starts parsing the passed in |unsafe_json| and calls either
+  // |success_callback| or |error_callback| when finished.
+  static void Parse(const std::string& unsafe_json,
+                    const SuccessCallback& success_callback,
+                    const ErrorCallback& error_callback);
+
+  static void SetFactoryForTesting(Factory factory);
+
+ protected:
+  virtual ~SafeJsonParser() {}
 
  private:
-  ~SafeJsonParser() override;
-
-  void StartWorkOnIOThread();
-
-  void OnJSONParseSucceeded(const base::ListValue& wrapper);
-  void OnJSONParseFailed(const std::string& error_message);
-
-  void ReportResults();
-  void ReportResultsOnOriginThread();
-
-  // Implementing pieces of the UtilityProcessHostClient interface.
-  bool OnMessageReceived(const IPC::Message& message) override;
-
-  const std::string unsafe_json_;
-  SuccessCallback success_callback_;
-  ErrorCallback error_callback_;
-  scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
-
-  scoped_ptr<base::Value> parsed_json_;
-  std::string error_;
-
-  DISALLOW_COPY_AND_ASSIGN(SafeJsonParser);
+  virtual void Start() = 0;
 };
 
 }  // namespace safe_json

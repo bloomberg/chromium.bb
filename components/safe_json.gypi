@@ -25,6 +25,23 @@
       'sources': [
         'safe_json/safe_json_parser.cc',
         'safe_json/safe_json_parser.h',
+        'safe_json/safe_json_parser_impl.cc',
+        'safe_json/safe_json_parser_impl.h',
+      ],
+    },
+    {
+      'target_name': 'safe_json_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        ':safe_json',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'safe_json/testing_json_parser.cc',
+        'safe_json/testing_json_parser.h',
       ],
     },
     {

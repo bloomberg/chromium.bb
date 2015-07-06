@@ -7,6 +7,8 @@ static_library("safe_json") {
   sources = [
     "safe_json_parser.cc",
     "safe_json_parser.h",
+    "safe_json_parser_impl.cc",
+    "safe_json_parser_impl.h",
   ]
 
   defines = [ "SAFE_JSON_IMPLEMENTATION" ]
@@ -20,6 +22,21 @@ static_library("safe_json") {
   ]
 }
 
+# GYP version: components/safe_json.gypi:safe_json_test_support
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "testing_json_parser.cc",
+    "testing_json_parser.h",
+  ]
+
+  deps = [
+    ":safe_json",
+    "//base",
+  ]
+}
+
+# GYP version: components/safe_json.gypi:safe_json_parser_message_filter
 static_library("safe_json_parser_message_filter") {
   sources = [
     "safe_json_parser_message_filter.cc",

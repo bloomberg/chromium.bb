@@ -43,19 +43,9 @@ WebstoreInstallHelper::~WebstoreInstallHelper() {}
 void WebstoreInstallHelper::Start() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // No existing |json_parser_| to avoid unbalanced AddRef().
-  CHECK(!json_parser_.get());
-  AddRef();  // Balanced in OnJSONParseSucceeded()/OnJSONParseFailed().
-  // Use base::Unretained so that base::Bind won't AddRef() on us. Otherwise,
-  // we'll have two callbacks holding references to us, only one of which will
-  // ever be called.
-  json_parser_ = new safe_json::SafeJsonParser(
-      manifest_,
-      base::Bind(&WebstoreInstallHelper::OnJSONParseSucceeded,
-                 base::Unretained(this)),
-      base::Bind(&WebstoreInstallHelper::OnJSONParseFailed,
-                 base::Unretained(this)));
-  json_parser_->Start();
+  safe_json::SafeJsonParser::Parse(
+      manifest_, base::Bind(&WebstoreInstallHelper::OnJSONParseSucceeded, this),
+      base::Bind(&WebstoreInstallHelper::OnJSONParseFailed, this));
 
   if (icon_url_.is_empty()) {
     icon_decode_complete_ = true;
@@ -103,7 +93,6 @@ void WebstoreInstallHelper::OnJSONParseSucceeded(
     parse_error_ = Delegate::MANIFEST_ERROR;
 
   ReportResultsIfComplete();
-  Release();  // Balanced in Start().
 }
 
 void WebstoreInstallHelper::OnJSONParseFailed(
@@ -113,7 +102,6 @@ void WebstoreInstallHelper::OnJSONParseFailed(
   error_ = error_message;
   parse_error_ = Delegate::MANIFEST_ERROR;
   ReportResultsIfComplete();
-  Release();  // Balanced in Start().
 }
 
 void WebstoreInstallHelper::ReportResultsIfComplete() {

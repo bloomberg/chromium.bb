@@ -38,9 +38,5 @@ void ChromeWebResourceService::ParseJSON(
     const std::string& data,
     const SuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
-  // SafeJsonParser releases itself on completion.
-  scoped_refptr<safe_json::SafeJsonParser> json_parser(
-      new safe_json::SafeJsonParser(data, success_callback,
-                                           error_callback));
-  json_parser->Start();
+  safe_json::SafeJsonParser::Parse(data, success_callback, error_callback);
 }

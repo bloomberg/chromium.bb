@@ -82,13 +82,11 @@ void WebstoreDataFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   std::string webstore_json_data;
   fetcher->GetResponseAsString(&webstore_json_data);
 
-  scoped_refptr<safe_json::SafeJsonParser> parser =
-      new safe_json::SafeJsonParser(
-          webstore_json_data,
-          base::Bind(&WebstoreDataFetcher::OnJsonParseSuccess, AsWeakPtr()),
-          base::Bind(&WebstoreDataFetcher::OnJsonParseFailure, AsWeakPtr()));
   // The parser will call us back via one of the callbacks.
-  parser->Start();
+  safe_json::SafeJsonParser::Parse(
+      webstore_json_data,
+      base::Bind(&WebstoreDataFetcher::OnJsonParseSuccess, AsWeakPtr()),
+      base::Bind(&WebstoreDataFetcher::OnJsonParseFailure, AsWeakPtr()));
 }
 
 }  // namespace extensions
