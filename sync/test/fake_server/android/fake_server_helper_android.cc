@@ -180,7 +180,7 @@ void FakeServerHelperAndroid::DeleteEntity(
       reinterpret_cast<fake_server::FakeServer*>(fake_server);
   std::string native_id = base::android::ConvertJavaStringToUTF8(env, id);
   fake_server_ptr->InjectEntity(
-      make_scoped_ptr(fake_server::TombstoneEntity::Create(native_id)));
+      fake_server::TombstoneEntity::Create(native_id));
 }
 
 // static

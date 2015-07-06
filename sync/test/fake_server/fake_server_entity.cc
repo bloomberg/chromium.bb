@@ -102,7 +102,7 @@ FakeServerEntity::FakeServerEntity(const string& id,
         name_(name) {}
 
 void FakeServerEntity::SerializeBaseProtoFields(
-    sync_pb::SyncEntity* sync_entity) {
+    sync_pb::SyncEntity* sync_entity) const {
   sync_pb::EntitySpecifics* specifics = sync_entity->mutable_specifics();
   specifics->CopyFrom(specifics_);
 

@@ -53,21 +53,17 @@ UniqueClientEntity::UniqueClientEntity(
 UniqueClientEntity::~UniqueClientEntity() { }
 
 // static
-FakeServerEntity* UniqueClientEntity::Create(
+scoped_ptr<FakeServerEntity> UniqueClientEntity::Create(
     const sync_pb::SyncEntity& client_entity) {
   CHECK(client_entity.has_client_defined_unique_tag())
       << "A UniqueClientEntity must have a client-defined unique tag.";
   ModelType model_type =
       syncer::GetModelTypeFromSpecifics(client_entity.specifics());
   string id = EffectiveIdForClientTaggedEntity(client_entity);
-  return new UniqueClientEntity(id,
-                                model_type,
-                                client_entity.version(),
-                                client_entity.name(),
-                                client_entity.client_defined_unique_tag(),
-                                client_entity.specifics(),
-                                client_entity.ctime(),
-                                client_entity.mtime());
+  return scoped_ptr<FakeServerEntity>(new UniqueClientEntity(
+      id, model_type, client_entity.version(), client_entity.name(),
+      client_entity.client_defined_unique_tag(), client_entity.specifics(),
+      client_entity.ctime(), client_entity.mtime()));
 }
 
 // static
@@ -102,7 +98,7 @@ string UniqueClientEntity::GetParentId() const {
   return FakeServerEntity::GetTopLevelId(GetModelType());
 }
 
-void UniqueClientEntity::SerializeAsProto(sync_pb::SyncEntity* proto) {
+void UniqueClientEntity::SerializeAsProto(sync_pb::SyncEntity* proto) const {
   FakeServerEntity::SerializeBaseProtoFields(proto);
 
   proto->set_parent_id_string(GetParentId());

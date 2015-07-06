@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -63,9 +64,9 @@ class FakeServer {
   std::vector<sync_pb::SyncEntity> GetSyncEntitiesByModelType(
       syncer::ModelType model_type);
 
-  // Adds the FakeServerEntity* owned by |entity| to the server's collection
-  // of entities. This method makes no guarantees that the added entity will
-  // result in successful server operations.
+  // Adds |entity| to the server's collection of entities. This method makes no
+  // guarantees that the added entity will result in successful server
+  // operations.
   void InjectEntity(scoped_ptr<FakeServerEntity> entity);
 
   // Modifies the entity on the server with the given |id|. The entity's
@@ -140,7 +141,8 @@ class FakeServer {
   base::WeakPtr<FakeServer> AsWeakPtr();
 
  private:
-  typedef std::map<std::string, FakeServerEntity*> EntityMap;
+  typedef base::ScopedPtrMap<std::string, scoped_ptr<FakeServerEntity>>
+      EntityMap;
 
   // Processes a GetUpdates call.
   bool HandleGetUpdatesRequest(const sync_pb::GetUpdatesMessage& get_updates,
@@ -159,7 +161,7 @@ class FakeServer {
   bool CreateDefaultPermanentItems();
 
   // Saves a |entity| to |entities_|.
-  void SaveEntity(FakeServerEntity* entity);
+  void SaveEntity(scoped_ptr<FakeServerEntity> entity);
 
   // Commits a client-side SyncEntity to the server as a FakeServerEntity.
   // The client that sent the commit is identified via |client_guid|. The
@@ -169,14 +171,15 @@ class FakeServer {
   std::string CommitEntity(
       const sync_pb::SyncEntity& client_entity,
       sync_pb::CommitResponse_EntryResponse* entry_response,
-      std::string client_guid,
-      std::string parent_id);
+      const std::string& client_guid,
+      const std::string& parent_id);
 
-  // Populates |entry_response| based on |entity|. It is assumed that
-  // SaveEntity has already been called on |entity|.
+  // Populates |entry_response| based on the stored entity identified by
+  // |entity_id|. It is assumed that the entity identified by |entity_id| has
+  // already been stored using SaveEntity.
   void BuildEntryResponseForSuccessfulCommit(
-      sync_pb::CommitResponse_EntryResponse* entry_response,
-      FakeServerEntity* entity);
+      const std::string& entity_id,
+      sync_pb::CommitResponse_EntryResponse* entry_response);
 
   // Determines whether the SyncEntity with id_string |id| is a child of an
   // entity with id_string |potential_parent_id|.
@@ -184,7 +187,7 @@ class FakeServer {
 
   // Creates and saves tombstones for all children of the entity with the given
   // |id|. A tombstone is not created for the entity itself.
-  bool DeleteChildren(const std::string& id);
+  void DeleteChildren(const std::string& id);
 
   // Returns whether a triggered error should be sent for the request.
   bool ShouldSendTriggeredError() const;

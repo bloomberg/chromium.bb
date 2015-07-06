@@ -91,16 +91,16 @@ class UpdateSieve {
 
   // Determines whether the server should send an |entity| to the client as
   // part of a GetUpdatesResponse.
-  bool ClientWantsItem(FakeServerEntity* entity) const {
-    int64 version = entity->GetVersion();
+  bool ClientWantsItem(const FakeServerEntity& entity) const {
+    int64 version = entity.GetVersion();
     if (version <= min_version_) {
       return false;
-    } else if (entity->IsDeleted()) {
+    } else if (entity.IsDeleted()) {
       return true;
     }
 
     ModelTypeToVersionMap::const_iterator it =
-        request_from_version_.find(entity->GetModelType());
+        request_from_version_.find(entity.GetModelType());
 
     return it == request_from_version_.end() ? false : it->second < version;
   }
@@ -158,9 +158,8 @@ scoped_ptr<UpdateSieve> UpdateSieve::Create(
 }
 
 // Returns whether |entity| is deleted or a folder.
-bool IsDeletedOrFolder(const FakeServerEntity* entity) {
-  DCHECK(entity);
-  return entity->IsDeleted() || entity->IsFolder();
+bool IsDeletedOrFolder(const FakeServerEntity& entity) {
+  return entity.IsDeleted() || entity.IsFolder();
 }
 
 }  // namespace
@@ -179,21 +178,18 @@ FakeServer::FakeServer() : version_(0),
   DCHECK(create_result) << "Permanent items were not created successfully.";
 }
 
-FakeServer::~FakeServer() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  STLDeleteContainerPairSecondPointers(entities_.begin(), entities_.end());
-}
+FakeServer::~FakeServer() {}
 
 bool FakeServer::CreatePermanentBookmarkFolder(const std::string& server_tag,
                                                const std::string& name) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FakeServerEntity* entity =
+  scoped_ptr<FakeServerEntity> entity =
       PermanentEntity::Create(syncer::BOOKMARKS, server_tag, name,
                               ModelTypeToRootTag(syncer::BOOKMARKS));
-  if (entity == NULL)
+  if (!entity)
     return false;
 
-  SaveEntity(entity);
+  SaveEntity(entity.Pass());
   return true;
 }
 
@@ -201,12 +197,12 @@ bool FakeServer::CreateDefaultPermanentItems() {
   ModelTypeSet all_types = syncer::ProtocolTypes();
   for (ModelTypeSet::Iterator it = all_types.First(); it.Good(); it.Inc()) {
     ModelType model_type = it.Get();
-    FakeServerEntity* top_level_entity =
+    scoped_ptr<FakeServerEntity> top_level_entity =
         PermanentEntity::CreateTopLevel(model_type);
-    if (top_level_entity == NULL) {
+    if (!top_level_entity) {
       return false;
     }
-    SaveEntity(top_level_entity);
+    SaveEntity(top_level_entity.Pass());
 
     if (model_type == syncer::BOOKMARKS) {
       if (!CreatePermanentBookmarkFolder(kBookmarkBarFolderServerTag,
@@ -225,10 +221,10 @@ void FakeServer::UpdateEntityVersion(FakeServerEntity* entity) {
   entity->SetVersion(++version_);
 }
 
-void FakeServer::SaveEntity(FakeServerEntity* entity) {
-  delete entities_[entity->GetId()];
-  UpdateEntityVersion(entity);
-  entities_[entity->GetId()] = entity;
+void FakeServer::SaveEntity(scoped_ptr<FakeServerEntity> entity) {
+  UpdateEntityVersion(entity.get());
+  const string id = entity->GetId();
+  entities_.set(id, entity.Pass());
 }
 
 void FakeServer::HandleCommand(const string& request,
@@ -330,16 +326,16 @@ bool FakeServer::HandleGetUpdatesRequest(
 
   bool send_encryption_keys_based_on_nigori = false;
   int64 max_response_version = 0;
-  for (EntityMap::iterator it = entities_.begin(); it != entities_.end();
+  for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
        ++it) {
-    FakeServerEntity* entity = it->second;
+    const FakeServerEntity& entity = *it->second;
     if (sieve->ClientWantsItem(entity)) {
       sync_pb::SyncEntity* response_entity = response->add_entries();
-      entity->SerializeAsProto(response_entity);
+      entity.SerializeAsProto(response_entity);
       max_response_version = std::max(max_response_version,
                                       response_entity->version());
 
-      if (entity->GetModelType() == syncer::NIGORI) {
+      if (entity.GetModelType() == syncer::NIGORI) {
         send_encryption_keys_based_on_nigori =
             response_entity->specifics().nigori().passphrase_type() ==
                 sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE;
@@ -362,104 +358,98 @@ bool FakeServer::HandleGetUpdatesRequest(
 string FakeServer::CommitEntity(
     const sync_pb::SyncEntity& client_entity,
     sync_pb::CommitResponse_EntryResponse* entry_response,
-    string client_guid,
-    string parent_id) {
+    const string& client_guid,
+    const string& parent_id) {
   if (client_entity.version() == 0 && client_entity.deleted()) {
     return string();
   }
 
-  FakeServerEntity* entity;
+  scoped_ptr<FakeServerEntity> entity;
   if (client_entity.deleted()) {
     entity = TombstoneEntity::Create(client_entity.id_string());
-    if (!DeleteChildren(client_entity.id_string())) {
-      return string();
-    }
+    DeleteChildren(client_entity.id_string());
   } else if (GetModelType(client_entity) == syncer::NIGORI) {
     // NIGORI is the only permanent item type that should be updated by the
     // client.
-    entity = PermanentEntity::CreateUpdatedNigoriEntity(
-        client_entity,
-        entities_[client_entity.id_string()]);
+    EntityMap::const_iterator iter = entities_.find(client_entity.id_string());
+    CHECK(iter != entities_.end());
+    entity = PermanentEntity::CreateUpdatedNigoriEntity(client_entity,
+                                                        *iter->second);
   } else if (client_entity.has_client_defined_unique_tag()) {
     entity = UniqueClientEntity::Create(client_entity);
   } else {
     // TODO(pvalenzuela): Validate entity's parent ID.
-    if (entities_.find(client_entity.id_string()) != entities_.end()) {
-      entity = BookmarkEntity::CreateUpdatedVersion(
-        client_entity,
-        entities_[client_entity.id_string()],
-        parent_id);
+    EntityMap::const_iterator iter = entities_.find(client_entity.id_string());
+    if (iter != entities_.end()) {
+      entity = BookmarkEntity::CreateUpdatedVersion(client_entity,
+                                                    *iter->second, parent_id);
     } else {
       entity = BookmarkEntity::CreateNew(client_entity, parent_id, client_guid);
     }
   }
 
-  if (entity == NULL) {
+  if (!entity) {
     // TODO(pvalenzuela): Add logging so that it is easier to determine why
     // creation failed.
     return string();
   }
 
-  SaveEntity(entity);
-  BuildEntryResponseForSuccessfulCommit(entry_response, entity);
-  return entity->GetId();
+  const std::string id = entity->GetId();
+  SaveEntity(entity.Pass());
+  BuildEntryResponseForSuccessfulCommit(id, entry_response);
+  return id;
 }
 
 void FakeServer::BuildEntryResponseForSuccessfulCommit(
-  sync_pb::CommitResponse_EntryResponse* entry_response,
-  FakeServerEntity* entity) {
-    entry_response->set_response_type(sync_pb::CommitResponse::SUCCESS);
-    entry_response->set_id_string(entity->GetId());
+    const std::string& entity_id,
+    sync_pb::CommitResponse_EntryResponse* entry_response) {
+  EntityMap::const_iterator iter = entities_.find(entity_id);
+  CHECK(iter != entities_.end());
+  const FakeServerEntity& entity = *iter->second;
+  entry_response->set_response_type(sync_pb::CommitResponse::SUCCESS);
+  entry_response->set_id_string(entity.GetId());
 
-    if (entity->IsDeleted()) {
-      entry_response->set_version(entity->GetVersion() + 1);
-    } else {
-      entry_response->set_version(entity->GetVersion());
-      entry_response->set_name(entity->GetName());
-    }
+  if (entity.IsDeleted()) {
+    entry_response->set_version(entity.GetVersion() + 1);
+  } else {
+    entry_response->set_version(entity.GetVersion());
+    entry_response->set_name(entity.GetName());
+  }
 }
 
 bool FakeServer::IsChild(const string& id, const string& potential_parent_id) {
-  if (entities_.find(id) == entities_.end()) {
+  EntityMap::const_iterator iter = entities_.find(id);
+  if (iter == entities_.end()) {
     // We've hit an ID (probably the imaginary root entity) that isn't stored
     // by the server, so it can't be a child.
     return false;
-  } else if (entities_[id]->GetParentId() == potential_parent_id) {
-    return true;
-  } else {
-    // Recursively look up the tree.
-    return IsChild(entities_[id]->GetParentId(), potential_parent_id);
   }
+
+  const FakeServerEntity& entity = *iter->second;
+  if (entity.GetParentId() == potential_parent_id)
+    return true;
+
+  // Recursively look up the tree.
+  return IsChild(entity.GetParentId(), potential_parent_id);
 }
 
-bool FakeServer::DeleteChildren(const string& id) {
-  vector<FakeServerEntity*> tombstones;
+void FakeServer::DeleteChildren(const string& id) {
+  std::set<string> tombstones_ids;
+  // Find all the children of id.
   for (auto& entity : entities_) {
     if (IsChild(entity.first, id)) {
-      FakeServerEntity* tombstone = TombstoneEntity::Create(entity.first);
-      tombstones.push_back(tombstone);
-      if (tombstone == NULL) {
-        LOG(WARNING) << "Tombstone creation failed for entity with ID "
-                     << entity.first;
-        for (auto* tombstone : tombstones) {
-          delete tombstone;
-        }
-        return false;
-      }
+      tombstones_ids.insert(entity.first);
     }
   }
 
-  for (auto* tombstone : tombstones) {
-    SaveEntity(tombstone);
+  for (auto& tombstone_id : tombstones_ids) {
+    SaveEntity(TombstoneEntity::Create(tombstone_id));
   }
-
-  return true;
 }
 
-bool FakeServer::HandleCommitRequest(
-    const sync_pb::CommitMessage& commit,
-    const std::string& invalidator_client_id,
-    sync_pb::CommitResponse* response) {
+bool FakeServer::HandleCommitRequest(const sync_pb::CommitMessage& commit,
+                                     const std::string& invalidator_client_id,
+                                     sync_pb::CommitResponse* response) {
   std::map<string, string> client_to_server_ids;
   string guid = commit.cache_guid();
   ModelTypeSet committed_model_types;
@@ -477,10 +467,8 @@ bool FakeServer::HandleCommitRequest(
       parent_id = client_to_server_ids[parent_id];
     }
 
-    string entity_id = CommitEntity(client_entity,
-                                    entry_response,
-                                    guid,
-                                    parent_id);
+    const string entity_id =
+        CommitEntity(client_entity, entry_response, guid, parent_id);
     if (entity_id.empty()) {
       return false;
     }
@@ -489,8 +477,10 @@ bool FakeServer::HandleCommitRequest(
     if (entity_id != client_entity.id_string()) {
       client_to_server_ids[client_entity.id_string()] = entity_id;
     }
-    FakeServerEntity* entity = entities_[entity_id];
-    committed_model_types.Put(entity->GetModelType());
+
+    EntityMap::const_iterator iter = entities_.find(entity_id);
+    CHECK(iter != entities_.end());
+    committed_model_types.Put(iter->second->GetModelType());
   }
 
   FOR_EACH_OBSERVER(Observer, observers_,
@@ -510,7 +500,7 @@ scoped_ptr<base::DictionaryValue> FakeServer::GetEntitiesAsDictionaryValue() {
 
   for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
        ++it) {
-    FakeServerEntity* entity = it->second;
+    const FakeServerEntity& entity = *it->second;
     if (IsDeletedOrFolder(entity)) {
       // Tombstones are ignored as they don't represent current data. Folders
       // are also ignored as current verification infrastructure does not
@@ -518,14 +508,14 @@ scoped_ptr<base::DictionaryValue> FakeServer::GetEntitiesAsDictionaryValue() {
       continue;
     }
     base::ListValue* list_value;
-    if (!dictionary->GetList(ModelTypeToString(entity->GetModelType()),
-                                               &list_value)) {
+    if (!dictionary->GetList(ModelTypeToString(entity.GetModelType()),
+                             &list_value)) {
       return scoped_ptr<base::DictionaryValue>();
     }
     // TODO(pvalenzuela): Store more data for each entity so additional
     // verification can be performed. One example of additional verification
     // is checking the correctness of the bookmark hierarchy.
-    list_value->Append(new base::StringValue(entity->GetName()));
+    list_value->Append(new base::StringValue(entity.GetName()));
   }
 
   return dictionary.Pass();
@@ -537,10 +527,10 @@ std::vector<sync_pb::SyncEntity> FakeServer::GetSyncEntitiesByModelType(
   DCHECK(thread_checker_.CalledOnValidThread());
   for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
        ++it) {
-    FakeServerEntity* entity = it->second;
-    if (!IsDeletedOrFolder(entity) && entity->GetModelType() == model_type) {
+    const FakeServerEntity& entity = *it->second;
+    if (!IsDeletedOrFolder(entity) && entity.GetModelType() == model_type) {
       sync_pb::SyncEntity sync_entity;
-      entity->SerializeAsProto(&sync_entity);
+      entity.SerializeAsProto(&sync_entity);
       sync_entities.push_back(sync_entity);
     }
   }
@@ -549,23 +539,23 @@ std::vector<sync_pb::SyncEntity> FakeServer::GetSyncEntitiesByModelType(
 
 void FakeServer::InjectEntity(scoped_ptr<FakeServerEntity> entity) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  SaveEntity(entity.release());
+  SaveEntity(entity.Pass());
 }
 
 bool FakeServer::ModifyEntitySpecifics(
     const std::string& id,
     const sync_pb::EntitySpecifics& updated_specifics) {
-  if (entities_.find(id) == entities_.end()) {
+  EntityMap::const_iterator iter = entities_.find(id);
+  if (iter == entities_.end() ||
+      iter->second->GetModelType() !=
+          GetModelTypeFromSpecifics(updated_specifics)) {
     return false;
   }
 
-  FakeServerEntity* entity = entities_[id];
-  if (entity->GetModelType() != GetModelTypeFromSpecifics(updated_specifics)) {
-    return false;
-  }
-
+  scoped_ptr<FakeServerEntity> entity = entities_.take_and_erase(iter);
   entity->SetSpecifics(updated_specifics);
-  UpdateEntityVersion(entity);
+  UpdateEntityVersion(entity.get());
+  entities_.insert(id, entity.Pass());
   return true;
 }
 

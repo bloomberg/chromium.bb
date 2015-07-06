@@ -28,58 +28,47 @@ bool IsBookmark(const sync_pb::SyncEntity& client_entity) {
 BookmarkEntity::~BookmarkEntity() { }
 
 // static
-FakeServerEntity* BookmarkEntity::CreateNew(
+scoped_ptr<FakeServerEntity> BookmarkEntity::CreateNew(
     const sync_pb::SyncEntity& client_entity,
     const string& parent_id,
     const string& client_guid) {
   CHECK(client_entity.version() == 0) << "New entities must have version = 0.";
   CHECK(IsBookmark(client_entity)) << "The given entity must be a bookmark.";
 
-  string id = FakeServerEntity::CreateId(syncer::BOOKMARKS,
-                                         base::GenerateGUID());
-  string originator_cache_guid = client_guid;
-  string originator_client_item_id = client_entity.id_string();
+  const string id =
+      FakeServerEntity::CreateId(syncer::BOOKMARKS, base::GenerateGUID());
+  const string originator_cache_guid = client_guid;
+  const string originator_client_item_id = client_entity.id_string();
 
-  return new BookmarkEntity(id,
-                            client_entity.version(),
-                            client_entity.name(),
-                            originator_cache_guid,
-                            originator_client_item_id,
-                            client_entity.unique_position(),
-                            client_entity.specifics(),
-                            client_entity.folder(),
-                            parent_id,
-                            client_entity.ctime(),
-                            client_entity.mtime());
+  return scoped_ptr<FakeServerEntity>(new BookmarkEntity(
+      id, client_entity.version(), client_entity.name(), originator_cache_guid,
+      originator_client_item_id, client_entity.unique_position(),
+      client_entity.specifics(), client_entity.folder(), parent_id,
+      client_entity.ctime(), client_entity.mtime()));
 }
 
 // static
-FakeServerEntity* BookmarkEntity::CreateUpdatedVersion(
+scoped_ptr<FakeServerEntity> BookmarkEntity::CreateUpdatedVersion(
     const sync_pb::SyncEntity& client_entity,
-    FakeServerEntity* current_server_entity,
+    const FakeServerEntity& current_server_entity,
     const string& parent_id) {
   CHECK(client_entity.version() != 0) << "Existing entities must not have a "
                                       << "version = 0.";
   CHECK(IsBookmark(client_entity)) << "The given entity must be a bookmark.";
 
-  BookmarkEntity* current_bookmark_entity =
-      static_cast<BookmarkEntity*>(current_server_entity);
-  string originator_cache_guid =
-      current_bookmark_entity->originator_cache_guid_;
-  string originator_client_item_id =
-      current_bookmark_entity->originator_client_item_id_;
+  const BookmarkEntity& current_bookmark_entity =
+      static_cast<const BookmarkEntity&>(current_server_entity);
+  const string originator_cache_guid =
+      current_bookmark_entity.originator_cache_guid_;
+  const string originator_client_item_id =
+      current_bookmark_entity.originator_client_item_id_;
 
-  return new BookmarkEntity(client_entity.id_string(),
-                            client_entity.version(),
-                            client_entity.name(),
-                            originator_cache_guid,
-                            originator_client_item_id,
-                            client_entity.unique_position(),
-                            client_entity.specifics(),
-                            client_entity.folder(),
-                            parent_id,
-                            client_entity.ctime(),
-                            client_entity.mtime());
+  return scoped_ptr<FakeServerEntity>(new BookmarkEntity(
+      client_entity.id_string(), client_entity.version(), client_entity.name(),
+      originator_cache_guid, originator_client_item_id,
+      client_entity.unique_position(), client_entity.specifics(),
+      client_entity.folder(), parent_id, client_entity.ctime(),
+      client_entity.mtime()));
 }
 
 BookmarkEntity::BookmarkEntity(
@@ -109,7 +98,7 @@ string BookmarkEntity::GetParentId() const {
   return parent_id_;
 }
 
-void BookmarkEntity::SerializeAsProto(sync_pb::SyncEntity* proto) {
+void BookmarkEntity::SerializeAsProto(sync_pb::SyncEntity* proto) const {
   FakeServerEntity::SerializeBaseProtoFields(proto);
 
   proto->set_originator_cache_guid(originator_cache_guid_);

@@ -20,8 +20,9 @@ namespace fake_server {
 TombstoneEntity::~TombstoneEntity() { }
 
 // static
-FakeServerEntity* TombstoneEntity::Create(const string& id) {
-  return new TombstoneEntity(id, GetModelTypeFromId(id));
+scoped_ptr<FakeServerEntity> TombstoneEntity::Create(const string& id) {
+  return scoped_ptr<FakeServerEntity>(
+      new TombstoneEntity(id, GetModelTypeFromId(id)));
 }
 
 TombstoneEntity::TombstoneEntity(const string& id,
@@ -36,7 +37,7 @@ string TombstoneEntity::GetParentId() const {
   return string();
 }
 
-void TombstoneEntity::SerializeAsProto(sync_pb::SyncEntity* proto) {
+void TombstoneEntity::SerializeAsProto(sync_pb::SyncEntity* proto) const {
   FakeServerEntity::SerializeBaseProtoFields(proto);
 }
 
