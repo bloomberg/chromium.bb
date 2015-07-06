@@ -82,7 +82,7 @@ void GetAdapterState(HANDLE adapter_handle,
   std::string name;
   std::string address;
   bool powered = false;
-  BLUETOOTH_RADIO_INFO adapter_info = { sizeof(BLUETOOTH_RADIO_INFO), 0 };
+  BLUETOOTH_RADIO_INFO adapter_info = {sizeof(BLUETOOTH_RADIO_INFO)};
   if (adapter_handle &&
       ERROR_SUCCESS == BluetoothGetRadioInfo(adapter_handle,
                                              &adapter_info)) {
