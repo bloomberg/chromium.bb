@@ -28,8 +28,8 @@ class CONTENT_EXPORT FrameNavigationEntry
   // TODO(creis): We should not use FTN IDs here, since they will change if you
   // leave a page and come back later.  We should evaluate whether Blink's
   // unique names would work instead, similar to HistoryNode.
-  explicit FrameNavigationEntry(int64 frame_tree_node_id);
-  FrameNavigationEntry(int64 frame_tree_node_id,
+  explicit FrameNavigationEntry(int frame_tree_node_id);
+  FrameNavigationEntry(int frame_tree_node_id,
                        int64 item_sequence_number,
                        int64 document_sequence_number,
                        SiteInstanceImpl* site_instance,
@@ -52,7 +52,7 @@ class CONTENT_EXPORT FrameNavigationEntry
   // since we don't always know the FrameTreeNode ID when creating the overall
   // NavigationEntry.
   // TODO(creis): Replace with frame sequence number or unique name.
-  int64 frame_tree_node_id() const { return frame_tree_node_id_; }
+  int frame_tree_node_id() const { return frame_tree_node_id_; }
 
   // Keeps track of where this entry belongs in the frame's session history.
   // The item sequence number identifies each stop in the back/forward history
@@ -100,7 +100,7 @@ class CONTENT_EXPORT FrameNavigationEntry
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
 
   // See the accessors above for descriptions.
-  int64 frame_tree_node_id_;
+  int frame_tree_node_id_;
   int64 item_sequence_number_;
   int64 document_sequence_number_;
   scoped_refptr<SiteInstanceImpl> site_instance_;

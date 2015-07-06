@@ -191,7 +191,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   int process_type_;
   int child_id_;
   int route_id_;
-  const int64 frame_tree_node_id_;
+  const int frame_tree_node_id_;
   int origin_pid_;
   int request_id_;
   int render_frame_id_;

@@ -6,13 +6,13 @@
 
 namespace content {
 
-FrameNavigationEntry::FrameNavigationEntry(int64 frame_tree_node_id)
+FrameNavigationEntry::FrameNavigationEntry(int frame_tree_node_id)
     : frame_tree_node_id_(frame_tree_node_id),
       item_sequence_number_(-1),
       document_sequence_number_(-1) {
 }
 
-FrameNavigationEntry::FrameNavigationEntry(int64 frame_tree_node_id,
+FrameNavigationEntry::FrameNavigationEntry(int frame_tree_node_id,
                                            int64 item_sequence_number,
                                            int64 document_sequence_number,
                                            SiteInstanceImpl* site_instance,
