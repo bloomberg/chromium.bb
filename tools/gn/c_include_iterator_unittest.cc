@@ -29,6 +29,8 @@ TEST(CIncludeIterator, Basic) {
   buffer.append("\n");
   buffer.append(" #include \"foo/baz.h\"\n");  // Leading whitespace
   buffer.append("#include \"la/deda.h\"\n");
+  // Line annotated with "// nogncheck"
+  buffer.append("#include \"should_be_skipped.h\"  // nogncheck\n");
   buffer.append("#import \"weird_mac_import.h\"\n");
   buffer.append("\n");
   buffer.append("void SomeCode() {\n");
@@ -52,9 +54,11 @@ TEST(CIncludeIterator, Basic) {
   EXPECT_EQ("la/deda.h", contents);
   EXPECT_TRUE(RangeIs(range, 8, 11, 20)) << range.begin().Describe(true);
 
+  // The line annotated with "nogncheck" should be skipped.
+
   EXPECT_TRUE(iter.GetNextIncludeString(&contents, &range));
   EXPECT_EQ("weird_mac_import.h", contents);
-  EXPECT_TRUE(RangeIs(range, 9, 10, 28)) << range.begin().Describe(true);
+  EXPECT_TRUE(RangeIs(range, 10, 10, 28)) << range.begin().Describe(true);
 
   EXPECT_FALSE(iter.GetNextIncludeString(&contents, &range));
 }

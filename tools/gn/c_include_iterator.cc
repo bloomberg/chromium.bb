@@ -105,6 +105,11 @@ IncludeType ExtractInclude(const base::StringPiece& line,
   return type;
 }
 
+// Returns true if this line has a "nogncheck" comment associated with it.
+bool HasNoCheckAnnotation(const base::StringPiece& line) {
+  return line.find("nogncheck") != base::StringPiece::npos;
+}
+
 }  // namespace
 
 const int CIncludeIterator::kMaxNonIncludeLines = 10;
@@ -129,7 +134,7 @@ bool CIncludeIterator::GetNextIncludeString(base::StringPiece* out,
     base::StringPiece include_contents;
     int begin_char;
     IncludeType type = ExtractInclude(line, &include_contents, &begin_char);
-    if (type == INCLUDE_USER) {
+    if (type == INCLUDE_USER && !HasNoCheckAnnotation(line)) {
       // Only count user includes for now.
       *out = include_contents;
       *location = LocationRange(
