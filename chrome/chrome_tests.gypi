@@ -3130,6 +3130,26 @@
           ],
         },
         {
+          'target_name': 'chromedriver_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'chromedriver_unittests',
+          ],
+          'conditions': [
+            ['use_x11 == 1', {
+              'dependencies': [
+                '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+              ],
+            }],
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+          ],
+          'sources': [
+            'chromedriver_unittests.isolate',
+          ],
+        },
+        {
           'target_name': 'interactive_ui_tests_run',
           'type': 'none',
           'dependencies': [

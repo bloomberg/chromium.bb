@@ -2937,6 +2937,9 @@
         "test": "cc_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chromedriver_unittests"
       },
       {
@@ -3387,6 +3390,9 @@
         "test": "cc_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chromedriver_unittests"
       },
       {
