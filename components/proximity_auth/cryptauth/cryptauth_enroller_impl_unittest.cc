@@ -101,7 +101,8 @@ class ProximityAuthCryptAuthEnrollerTest
       public MockCryptAuthClientFactory::Observer {
  public:
   ProximityAuthCryptAuthEnrollerTest()
-      : client_factory_(new MockCryptAuthClientFactory(false)),
+      : client_factory_(new MockCryptAuthClientFactory(
+            MockCryptAuthClientFactory::MockType::MAKE_NICE_MOCKS)),
         secure_message_delegate_(new FakeSecureMessageDelegate()),
         enroller_(make_scoped_ptr(client_factory_),
                   make_scoped_ptr(secure_message_delegate_)) {

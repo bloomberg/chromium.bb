@@ -8,9 +8,13 @@
 namespace proximity_auth {
 namespace prefs {
 
+extern const char kCryptAuthDeviceSyncLastSyncTimeSeconds[];
+extern const char kCryptAuthDeviceSyncIsRecoveringFromFailure[];
+extern const char kCryptAuthDeviceSyncReason[];
+extern const char kCryptAuthDeviceSyncUnlockKeys[];
+extern const char kCryptAuthEnrollmentIsRecoveringFromFailure[];
 extern const char kCryptAuthEnrollmentLastEnrollmentTimeSeconds[];
 extern const char kCryptAuthEnrollmentReason[];
-extern const char kCryptAuthEnrollmentIsRecoveringFromFailure[];
 
 }  // namespace prefs
 }  // proximity_auth

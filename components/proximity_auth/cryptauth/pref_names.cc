@@ -7,6 +7,31 @@
 namespace proximity_auth {
 namespace prefs {
 
+// Whether the system is scheduling device_syncs more aggressively to recover
+// from the previous device_sync failure.
+const char kCryptAuthDeviceSyncIsRecoveringFromFailure[] =
+    "cryptauth.device_sync.is_recovering_from_failure";
+
+// The timestamp of the last successfull CryptAuth device_sync in seconds.
+const char kCryptAuthDeviceSyncLastSyncTimeSeconds[] =
+    "cryptauth.device_sync.last_device_sync_time_seconds";
+
+// The reason that the next device_sync is performed. This should be one of the
+// enum values of InvocationReason in
+// components/proximity_auth/cryptauth/proto/cryptauth_api.proto.
+const char kCryptAuthDeviceSyncReason[] = "cryptauth.device_sync.reason";
+
+// A list of unlock keys (stored as dictionaries) synced from CryptAuth. Unlock
+// Keys are phones belonging to the user that can unlock other devices, such as
+// desktop PCs.
+const char kCryptAuthDeviceSyncUnlockKeys[] =
+    "cryptauth.device_sync.unlock_keys";
+
+// Whether the system is scheduling enrollments more aggressively to recover
+// from the previous enrollment failure.
+const char kCryptAuthEnrollmentIsRecoveringFromFailure[] =
+    "cryptauth.enrollment.is_recovering_from_failure";
+
 // The timestamp of the last successfull CryptAuth enrollment in seconds.
 const char kCryptAuthEnrollmentLastEnrollmentTimeSeconds[] =
     "cryptauth.enrollment.last_enrollment_time_seconds";
@@ -15,11 +40,6 @@ const char kCryptAuthEnrollmentLastEnrollmentTimeSeconds[] =
 // enum values of InvocationReason in
 // components/proximity_auth/cryptauth/proto/cryptauth_api.proto.
 extern const char kCryptAuthEnrollmentReason[] = "cryptauth.enrollment.reason";
-
-// Whether the system is scheduling enrollments more aggressively to recover
-// from the previous enrollment failure.
-const char kCryptAuthEnrollmentIsRecoveringFromFailure[] =
-    "cryptauth.enrollment.is_recovering_from_failure";
 
 }  // namespace prefs
 }  // proximity_auth

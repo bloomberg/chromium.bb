@@ -128,6 +128,8 @@
         "proximity_auth/cryptauth/cryptauth_client.h",
         "proximity_auth/cryptauth/cryptauth_client_impl.cc",
         "proximity_auth/cryptauth/cryptauth_client_impl.h",
+        "proximity_auth/cryptauth/cryptauth_device_manager.cc",
+        "proximity_auth/cryptauth/cryptauth_device_manager.h",
         "proximity_auth/cryptauth/cryptauth_enroller.h",
         "proximity_auth/cryptauth/cryptauth_enroller_impl.cc",
         "proximity_auth/cryptauth/cryptauth_enroller_impl.h",
