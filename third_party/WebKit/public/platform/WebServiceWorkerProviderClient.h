@@ -47,12 +47,7 @@ public:
 
     virtual void setController(WebServiceWorker*, bool shouldNotifyControllerChange) = 0;
 
-    // FIXME: Remove this when Chrome side CL landed.
-    virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) = 0;
-    virtual void dispatchMessageEvent(WebServiceWorker*, const WebString& message, const WebMessagePortChannelArray& channels)
-    {
-        return dispatchMessageEvent(message, channels);
-    }
+    virtual void dispatchMessageEvent(WebServiceWorker*, const WebString& message, const WebMessagePortChannelArray& channels) = 0;
 };
 
 } // namespace blink

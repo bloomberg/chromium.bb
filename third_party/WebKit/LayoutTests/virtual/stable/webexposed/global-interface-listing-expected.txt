@@ -4580,12 +4580,21 @@ interface ServiceWorker
     setter onstatechange
 interface ServiceWorkerContainer
     getter oncontrollerchange
+    getter onmessage
     getter ready
     method constructor
     method getRegistration
     method getRegistrations
     method register
     setter oncontrollerchange
+    setter onmessage
+interface ServiceWorkerMessageEvent
+    getter data
+    getter lastEventId
+    getter origin
+    getter ports
+    getter source
+    method constructor
 interface ServiceWorkerRegistration
     getter onupdatefound
     getter pushManager

@@ -50,6 +50,7 @@ PASS window.cached_navigator_presentation.ondefaultsessionstart is null
 PASS window.cached_navigator_presentation.session is null
 PASS window.cached_navigator_serviceWorker.controller is null
 PASS window.cached_navigator_serviceWorker.oncontrollerchange is null
+PASS window.cached_navigator_serviceWorker.onmessage is null
 PASS window.cached_navigator_services.onclose is null
 PASS window.cached_navigator_services.onmessage is null
 PASS window.cached_performance.onframetimingbufferfull is null

@@ -42,4 +42,5 @@
     [CallWith=ScriptState] Promise<sequence<ServiceWorkerRegistration>> getRegistrations();
 
     attribute EventHandler oncontrollerchange;
+    attribute EventHandler onmessage;
 };

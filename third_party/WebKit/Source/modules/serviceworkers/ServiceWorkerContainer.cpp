@@ -40,12 +40,12 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/MessagePort.h"
-#include "core/events/MessageEvent.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "modules/EventTargetModules.h"
 #include "modules/serviceworkers/ServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
+#include "modules/serviceworkers/ServiceWorkerMessageEvent.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SchemeRegistry.h"
@@ -365,14 +365,15 @@ void ServiceWorkerContainer::setController(WebServiceWorker* serviceWorker, bool
         dispatchEvent(Event::create(EventTypeNames::controllerchange));
 }
 
-void ServiceWorkerContainer::dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray& webChannels)
+void ServiceWorkerContainer::dispatchMessageEvent(WebServiceWorker* serviceWorker, const WebString& message, const WebMessagePortChannelArray& webChannels)
 {
     if (!executionContext() || !executionContext()->executingWindow())
         return;
 
     OwnPtrWillBeRawPtr<MessagePortArray> ports = MessagePort::toMessagePortArray(executionContext(), webChannels);
     RefPtr<SerializedScriptValue> value = SerializedScriptValueFactory::instance().createFromWire(message);
-    executionContext()->executingWindow()->dispatchEvent(MessageEvent::create(ports.release(), value));
+    RefPtrWillBeRawPtr<ServiceWorker> source = ServiceWorker::from(executionContext(), serviceWorker);
+    dispatchEvent(ServiceWorkerMessageEvent::create(ports.release(), value, source));
 }
 
 const AtomicString& ServiceWorkerContainer::interfaceName() const
