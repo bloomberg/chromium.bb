@@ -31,15 +31,25 @@
 
 namespace blink {
 
+class DocumentLoader;
+class LocalFrame;
+
 class CORE_EXPORT IdentifiersFactory {
 public:
-    static void setProcessId(long processId) { s_processId = processId; }
+    static void setProcessId(long);
     static String createIdentifier();
-    static String requestId(unsigned long identifier);
-private:
-    static String addProcessIdPrefixTo(const String& id);
 
-    static long s_processId;
+    static String requestId(unsigned long identifier);
+
+    static String frameId(LocalFrame*);
+    static LocalFrame* frameById(const String&);
+
+    static String loaderId(DocumentLoader*);
+    static DocumentLoader* loaderById(const String&);
+
+private:
+    static String addProcessIdPrefixTo(int id);
+    static int removeProcessIdPrefixFrom(const String&, bool* ok);
 };
 
 } // namespace blink

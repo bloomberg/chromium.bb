@@ -51,9 +51,9 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/DOMPatchSupport.h"
+#include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
-#include "core/inspector/InspectorIdentifiers.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
@@ -93,7 +93,7 @@ KURL urlWithoutFragment(const KURL& url)
 
 String frameId(LocalFrame* frame)
 {
-    return frame ? InspectorIdentifiers<LocalFrame>::identifier(frame) : "";
+    return frame ? IdentifiersFactory::frameId(frame) : "";
 }
 
 TypeBuilder::Page::DialogType::Enum dialogTypeToProtocol(ChromeClient::DialogType dialogType)
@@ -686,7 +686,7 @@ FrameHost* InspectorPageAgent::frameHost()
 
 LocalFrame* InspectorPageAgent::frameForId(const String& frameId)
 {
-    LocalFrame* frame = InspectorIdentifiers<LocalFrame>::lookup(frameId);
+    LocalFrame* frame = IdentifiersFactory::frameById(frameId);
     return frame && frame->instrumentingAgents() == m_inspectedFrame->instrumentingAgents() ? frame : nullptr;
 }
 
@@ -782,7 +782,7 @@ PassRefPtr<TypeBuilder::Page::Frame> InspectorPageAgent::buildObjectForFrame(Loc
 {
     RefPtr<TypeBuilder::Page::Frame> frameObject = TypeBuilder::Page::Frame::create()
         .setId(frameId(frame))
-        .setLoaderId(InspectorIdentifiers<DocumentLoader>::identifier(frame->loader().documentLoader()))
+        .setLoaderId(IdentifiersFactory::loaderId(frame->loader().documentLoader()))
         .setUrl(urlWithoutFragment(frame->document()->url()).string())
         .setMimeType(frame->loader().documentLoader()->responseMIMEType())
         .setSecurityOrigin(frame->document()->securityOrigin()->toRawString());

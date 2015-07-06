@@ -37,105 +37,45 @@ public:
     using IdentifierType = typename Generator::IdentifierType;
     using ReferenceType = RawPtr<WeakIdentifierMap<T, Generator, Traits, false>>;
 
-    WeakIdentifierMap() { requireExplicitInstantiation(); }
-
-    ~WeakIdentifierMap()
+    static IdentifierType identifier(T* object)
     {
-        ObjectToWeakIdentifierMaps& allMaps = ObjectToWeakIdentifierMaps::instance();
-        for (auto& map : m_objectToIdentifier) {
-            T* object = map.key;
-            if (allMaps.removedFromMap(object, this))
-                Traits::removedFromIdentifierMap(object);
-        }
-    }
-
-    IdentifierType identifier(T* object)
-    {
-        IdentifierType result = m_objectToIdentifier.get(object);
+        IdentifierType result = instance().m_objectToIdentifier.get(object);
 
         if (WTF::isHashTraitsEmptyValue<HashTraits<IdentifierType>>(result)) {
             result = Generator::next();
-            put(object, result);
+            instance().put(object, result);
         }
         return result;
     }
 
-    T* lookup(IdentifierType identifier)
+    static T* lookup(IdentifierType identifier)
     {
-        return m_identifierToObject.get(identifier);
+        return instance().m_identifierToObject.get(identifier);
     }
 
     static void notifyObjectDestroyed(T* object)
     {
-        ObjectToWeakIdentifierMaps::instance().objectDestroyed(object);
+        instance().objectDestroyed(object);
     }
 
 private:
-    static void requireExplicitInstantiation(); // Prevent usage without DECLARE/DEFINE macros below.
+    static WeakIdentifierMap<T, Generator, Traits>& instance();
+    WeakIdentifierMap() { }
+    ~WeakIdentifierMap();
 
     void put(T* object, IdentifierType identifier)
     {
         ASSERT(object && !m_objectToIdentifier.contains(object));
         m_objectToIdentifier.set(object, identifier);
         m_identifierToObject.set(identifier, object);
-
-        ObjectToWeakIdentifierMaps& maps = ObjectToWeakIdentifierMaps::instance();
-        if (maps.addedToMap(object, this))
-            Traits::addedToIdentifierMap(object);
+        Traits::addedToIdentifierMap(object);
     }
-
-    class ObjectToWeakIdentifierMaps {
-        using IdentifierMap = WeakIdentifierMap<T, Generator, Traits>;
-    public:
-        bool addedToMap(T* object, IdentifierMap* map)
-        {
-            typename ObjectToMapList::AddResult result = m_objectToMapList.add(object, nullptr);
-            if (result.isNewEntry)
-                result.storedValue->value = adoptPtr(new MapList());
-            result.storedValue->value->append(map);
-            return result.isNewEntry;
-        }
-
-        bool removedFromMap(T* object, IdentifierMap* map)
-        {
-            typename ObjectToMapList::iterator it = m_objectToMapList.find(object);
-            ASSERT(it != m_objectToMapList.end());
-            MapList* mapList = it->value.get();
-            size_t position = mapList->find(map);
-            ASSERT(position != kNotFound);
-            mapList->remove(position);
-            if (mapList->isEmpty()) {
-                m_objectToMapList.remove(it);
-                return true;
-            }
-            return false;
-        }
-
-        void objectDestroyed(T* object)
-        {
-            if (OwnPtr<MapList> maps = m_objectToMapList.take(object)) {
-                for (auto& map : *maps)
-                    map->objectDestroyed(object);
-            }
-        }
-
-        static ObjectToWeakIdentifierMaps& instance()
-        {
-            DEFINE_STATIC_LOCAL(ObjectToWeakIdentifierMaps, self, ());
-            return self;
-        }
-
-    private:
-        using MapList = Vector<IdentifierMap*, 1>;
-        using ObjectToMapList = HashMap<T*, OwnPtr<MapList>>;
-        ObjectToMapList m_objectToMapList;
-    };
 
     void objectDestroyed(T* object)
     {
         IdentifierType identifier = m_objectToIdentifier.take(object);
-        ASSERT(!WTF::isHashTraitsEmptyValue<HashTraits<IdentifierType>>(identifier));
-        m_identifierToObject.remove(identifier);
+        if (!WTF::isHashTraitsEmptyValue<HashTraits<IdentifierType>>(identifier))
+            m_identifierToObject.remove(identifier);
     }
 
     using ObjectToIdentifier = HashMap<T*, IdentifierType>;
@@ -151,27 +91,20 @@ public:
     using IdentifierType = typename Generator::IdentifierType;
     using ReferenceType = Persistent<WeakIdentifierMap<T, Generator, Traits, true>>;
 
-    WeakIdentifierMap()
-        : m_objectToIdentifier(new ObjectToIdentifier())
-        , m_identifierToObject(new IdentifierToObject())
+    static IdentifierType identifier(T* object)
     {
-        requireExplicitInstantiation();
-    }
-
-    IdentifierType identifier(T* object)
-    {
-        IdentifierType result = m_objectToIdentifier->get(object);
+        IdentifierType result = instance().m_objectToIdentifier->get(object);
 
         if (WTF::isHashTraitsEmptyValue<HashTraits<IdentifierType>>(result)) {
             result = Generator::next();
-            put(object, result);
+            instance().put(object, result);
         }
         return result;
     }
 
-    T* lookup(IdentifierType identifier)
+    static T* lookup(IdentifierType identifier)
     {
-        return m_identifierToObject->get(identifier);
+        return instance().m_identifierToObject->get(identifier);
     }
 
     static void notifyObjectDestroyed(T* object) { }
@@ -183,7 +116,13 @@ public:
     }
 
 private:
-    static void requireExplicitInstantiation(); // Prevent usage without DECLARE/DEFINE macros below.
+    static WeakIdentifierMap<T, Generator, Traits>& instance();
+
+    WeakIdentifierMap()
+        : m_objectToIdentifier(new ObjectToIdentifier())
+        , m_identifierToObject(new IdentifierToObject())
+    {
+    }
 
     void put(T* object, IdentifierType identifier)
     {
@@ -200,13 +139,17 @@ private:
 };
 
 #define DECLARE_WEAK_IDENTIFIER_MAP(T, ...) \
-    template<> void WeakIdentifierMap<T, ##__VA_ARGS__>::requireExplicitInstantiation(); \
+    template<> WeakIdentifierMap<T, ##__VA_ARGS__>& WeakIdentifierMap<T, ##__VA_ARGS__>::instance(); \
     extern template class WeakIdentifierMap<T, ##__VA_ARGS__>;
 
 #define DEFINE_WEAK_IDENTIFIER_MAP(T, ...) \
     template class WeakIdentifierMap<T, ##__VA_ARGS__>; \
-    template<> void WeakIdentifierMap<T, ##__VA_ARGS__>::requireExplicitInstantiation() { }
-
+    template<> WeakIdentifierMap<T, ##__VA_ARGS__>& WeakIdentifierMap<T, ##__VA_ARGS__>::instance() \
+    { \
+        using RefType = WeakIdentifierMap<T, ##__VA_ARGS__>::ReferenceType; \
+        DEFINE_STATIC_LOCAL(RefType, mapInstance, (new WeakIdentifierMap<T, ##__VA_ARGS__>())); \
+        return *mapInstance; \
+    }
 }
 
 #endif // WeakIdentifierMap_h

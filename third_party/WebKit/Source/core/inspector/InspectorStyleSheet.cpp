@@ -47,8 +47,8 @@
 #include "core/html/HTMLStyleElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/ContentSearchUtils.h"
+#include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorCSSAgent.h"
-#include "core/inspector/InspectorIdentifiers.h"
 #include "core/inspector/InspectorResourceAgent.h"
 #include "core/svg/SVGStyleElement.h"
 #include "wtf/OwnPtr.h"
@@ -1266,7 +1266,7 @@ PassRefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> InspectorStyleSheet::buildObje
         .setDisabled(styleSheet->disabled())
         .setSourceURL(url())
         .setTitle(styleSheet->title())
-        .setFrameId(frame ? InspectorIdentifiers<LocalFrame>::identifier(frame) : "")
+        .setFrameId(frame ? IdentifiersFactory::frameId(frame) : "")
         .setIsInline(styleSheet->isInline() && !startsAtZero())
         .setStartLine(styleSheet->startPositionInSource().m_line.zeroBasedInt())
         .setStartColumn(styleSheet->startPositionInSource().m_column.zeroBasedInt());

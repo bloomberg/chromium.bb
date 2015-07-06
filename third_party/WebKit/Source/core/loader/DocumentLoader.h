@@ -31,13 +31,13 @@
 #define DocumentLoader_h
 
 #include "core/CoreExport.h"
+#include "core/dom/WeakIdentifierMap.h"
 #include "core/fetch/ClientHintsPreferences.h"
 #include "core/fetch/RawResource.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/fetch/SubstituteData.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/inspector/InspectorIdentifiers.h"
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentWriter.h"
 #include "core/loader/FrameLoaderTypes.h"
@@ -228,7 +228,7 @@ namespace blink {
         InitialScrollState m_initialScrollState;
     };
 
-    DECLARE_INSPECTOR_IDENTIFIERS(DocumentLoader);
+    DECLARE_WEAK_IDENTIFIER_MAP(DocumentLoader);
 
 } // namespace blink
 

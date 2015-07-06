@@ -604,7 +604,7 @@ void DocumentLoader::detachFromFrame()
     m_fetcher->clearContext();
     m_applicationCacheHost->detachFromDocumentLoader();
     m_applicationCacheHost.clear();
-    InspectorIdentifiers<DocumentLoader>::notifyObjectDestroyed(this);
+    WeakIdentifierMap<DocumentLoader>::notifyObjectDestroyed(this);
     clearMainResourceHandle();
     m_frame = nullptr;
 }
@@ -825,6 +825,6 @@ void DocumentLoader::replaceDocumentWhileExecutingJavaScriptURL(const DocumentIn
     endWriting(m_writer.get());
 }
 
-DEFINE_INSPECTOR_IDENTIFIERS(DocumentLoader);
+DEFINE_WEAK_IDENTIFIER_MAP(DocumentLoader);
 
 } // namespace blink

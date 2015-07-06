@@ -305,7 +305,7 @@ void LocalFrame::detach(FrameDetachType type)
     // Main motivation is to avoid being dependent on its exact timing (Oilpan.)
     LocalFrameLifecycleNotifier::notifyContextDestroyed();
     m_supplements.clear();
-    InspectorIdentifiers<LocalFrame>::notifyObjectDestroyed(this);
+    WeakIdentifierMap<LocalFrame>::notifyObjectDestroyed(this);
 }
 
 bool LocalFrame::prepareForCommit()
@@ -848,6 +848,6 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameO
         m_instrumentingAgents = localFrameRoot()->m_instrumentingAgents;
 }
 
-DEFINE_INSPECTOR_IDENTIFIERS(LocalFrame);
+DEFINE_WEAK_IDENTIFIER_MAP(LocalFrame);
 
 } // namespace blink

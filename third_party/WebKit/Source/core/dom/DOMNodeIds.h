@@ -18,13 +18,12 @@ template<> struct WeakIdentifierMapTraits<Node> {
 };
 #endif
 
-DECLARE_WEAK_IDENTIFIER_MAP(Node, IdentifierGenerator<int>);
-using WeakNodeMap = WeakIdentifierMap<Node>;
+DECLARE_WEAK_IDENTIFIER_MAP(Node);
 
 class CORE_EXPORT DOMNodeIds {
 public:
     static int idForNode(Node*);
-    static Node* nodeForId(int);
+    static Node* nodeForId(int id);
 };
 
 } // namespace blink
