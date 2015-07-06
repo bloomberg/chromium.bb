@@ -126,7 +126,6 @@ class MEDIA_EXPORT AudioClock {
   base::TimeDelta ComputeBufferedMediaTime(int64_t frames) const;
 
   const base::TimeDelta start_timestamp_;
-  const int sample_rate_;
   const double microseconds_per_frame_;
 
   std::deque<AudioData> buffered_;

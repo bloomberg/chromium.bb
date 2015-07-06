@@ -131,7 +131,10 @@ class MEDIA_EXPORT ProxyDecryptor {
   // The real MediaKeys that manages key operations for the ProxyDecryptor.
   scoped_ptr<MediaKeys> media_keys_;
 
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   MediaPermission* media_permission_;
+#endif
+
   bool use_hw_secure_codecs_;
 
   // Callbacks for firing key events.

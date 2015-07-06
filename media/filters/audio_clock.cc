@@ -13,7 +13,6 @@ namespace media {
 
 AudioClock::AudioClock(base::TimeDelta start_timestamp, int sample_rate)
     : start_timestamp_(start_timestamp),
-      sample_rate_(sample_rate),
       microseconds_per_frame_(
           static_cast<double>(base::Time::kMicrosecondsPerSecond) /
           sample_rate),

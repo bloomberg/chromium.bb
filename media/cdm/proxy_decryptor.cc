@@ -43,7 +43,9 @@ ProxyDecryptor::ProxyDecryptor(MediaPermission* media_permission,
                                const KeyErrorCB& key_error_cb,
                                const KeyMessageCB& key_message_cb)
     : is_creating_cdm_(false),
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
       media_permission_(media_permission),
+#endif
       use_hw_secure_codecs_(use_hw_secure_codecs),
       key_added_cb_(key_added_cb),
       key_error_cb_(key_error_cb),
