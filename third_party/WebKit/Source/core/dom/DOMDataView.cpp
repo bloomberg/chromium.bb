@@ -48,9 +48,9 @@ private:
 
 } // anonymous namespace
 
-PassRefPtr<DOMDataView> DOMDataView::create(PassRefPtr<DOMArrayBuffer> prpBuffer, unsigned byteOffset, unsigned byteLength)
+PassRefPtr<DOMDataView> DOMDataView::create(PassRefPtr<DOMArrayBufferBase> prpBuffer, unsigned byteOffset, unsigned byteLength)
 {
-    RefPtr<DOMArrayBuffer> buffer = prpBuffer;
+    RefPtr<DOMArrayBufferBase> buffer = prpBuffer;
     RefPtr<DataView> dataView = DataView::create(buffer->buffer(), byteOffset, byteLength);
     return adoptRef(new DOMDataView(dataView.release(), buffer.release()));
 }

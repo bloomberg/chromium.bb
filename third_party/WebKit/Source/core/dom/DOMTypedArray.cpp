@@ -31,13 +31,19 @@ v8::Local<v8::Object> DOMTypedArray<WTFTypedArray, V8TypedArray>::wrap(v8::Isola
     ASSERT(!DOMDataStore::containsWrapper(this, isolate));
 
     const WrapperTypeInfo* wrapperTypeInfo = this->wrapperTypeInfo();
-    RefPtr<DOMArrayBuffer> buffer = this->buffer();
+    RefPtr<DOMArrayBufferBase> buffer = this->bufferBase();
     v8::Local<v8::Value> v8Buffer = toV8(buffer.get(), creationContext, isolate);
     if (v8Buffer.IsEmpty())
-        return v8::Handle<v8::Object>();
-    ASSERT(v8Buffer->IsArrayBuffer());
+        return v8::Local<v8::Object>();
+    ASSERT(isShared() == v8Buffer->IsSharedArrayBuffer());
 
-    v8::Local<v8::Object> wrapper = V8TypedArray::New(v8Buffer.As<v8::ArrayBuffer>(), byteOffset(), length());
+    v8::Local<v8::Object> wrapper;
+    if (isShared()) {
+        wrapper = V8TypedArray::New(v8Buffer.As<v8::SharedArrayBuffer>(), byteOffset(), length());
+    } else {
+        wrapper = V8TypedArray::New(v8Buffer.As<v8::ArrayBuffer>(), byteOffset(), length());
+    }
+
     // V8TypedArray::New may run an arbitrary script and it may result in
     // creating a new wrapper and associating it with |this|.  If so, the
     // wrapper already created and associated must be used.

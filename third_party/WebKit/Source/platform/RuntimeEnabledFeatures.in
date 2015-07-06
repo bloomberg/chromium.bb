@@ -139,6 +139,7 @@ ServiceWorkerClientAttributes status=stable
 ServiceWorkerNotifications status=stable
 ServiceWorkerPerformanceTimeline status=stable
 ShadowRootDelegatesFocus status=experimental
+SharedArrayBuffer status=experimental
 SharedWorker status=stable
 SlimmingPaint status=stable
 SlimmingPaintCompositorLayerization depends_on=SlimmingPaint

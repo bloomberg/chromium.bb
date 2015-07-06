@@ -5,14 +5,13 @@
 #ifndef DOMArrayBuffer_h
 #define DOMArrayBuffer_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
+#include "core/dom/DOMArrayBufferBase.h"
 #include "wtf/ArrayBuffer.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
-class CORE_EXPORT DOMArrayBuffer final : public RefCounted<DOMArrayBuffer>, public ScriptWrappable {
+class CORE_EXPORT DOMArrayBuffer final : public DOMArrayBufferBase {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtr<DOMArrayBuffer> create(PassRefPtr<WTF::ArrayBuffer> buffer)
@@ -39,12 +38,6 @@ public:
         return create(WTF::ArrayBuffer::createUninitialized(numElements, elementByteSize));
     }
 
-    const WTF::ArrayBuffer* buffer() const { return m_buffer.get(); }
-    WTF::ArrayBuffer* buffer() { return m_buffer.get(); }
-
-    const void* data() const { return buffer()->data(); }
-    void* data() { return buffer()->data(); }
-    unsigned byteLength() const { return buffer()->byteLength(); }
     PassRefPtr<DOMArrayBuffer> slice(int begin, int end) const
     {
         return create(buffer()->slice(begin, end));
@@ -61,12 +54,9 @@ public:
 
 private:
     explicit DOMArrayBuffer(PassRefPtr<WTF::ArrayBuffer> buffer)
-        : m_buffer(buffer)
+        : DOMArrayBufferBase(buffer)
     {
-        ASSERT(m_buffer);
     }
-
-    RefPtr<WTF::ArrayBuffer> m_buffer;
 };
 
 } // namespace blink

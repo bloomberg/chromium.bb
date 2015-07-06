@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMArrayBufferView.h"
+#include "core/dom/DOMSharedArrayBuffer.h"
 #include "wtf/Float32Array.h"
 #include "wtf/Float64Array.h"
 #include "wtf/Int16Array.h"
@@ -44,9 +45,9 @@ public:
     {
         return create(WTFTypedArray::create(buffer, byteOffset, length));
     }
-    static PassRefPtr<ThisType> create(PassRefPtr<DOMArrayBuffer> prpBuffer, unsigned byteOffset, unsigned length)
+    static PassRefPtr<ThisType> create(PassRefPtr<DOMArrayBufferBase> prpBuffer, unsigned byteOffset, unsigned length)
     {
-        RefPtr<DOMArrayBuffer> buffer = prpBuffer;
+        RefPtr<DOMArrayBufferBase> buffer = prpBuffer;
         RefPtr<WTFTypedArray> bufferView = WTFTypedArray::create(buffer->buffer(), byteOffset, length);
         return adoptRef(new ThisType(bufferView.release(), buffer.release()));
     }
@@ -66,7 +67,7 @@ public:
 private:
     explicit DOMTypedArray(PassRefPtr<WTFTypedArray> bufferView)
         : DOMArrayBufferView(bufferView) { }
-    DOMTypedArray(PassRefPtr<WTFTypedArray> bufferView, PassRefPtr<DOMArrayBuffer> domArrayBuffer)
+    DOMTypedArray(PassRefPtr<WTFTypedArray> bufferView, PassRefPtr<DOMArrayBufferBase> domArrayBuffer)
         : DOMArrayBufferView(bufferView, domArrayBuffer) { }
 };
 

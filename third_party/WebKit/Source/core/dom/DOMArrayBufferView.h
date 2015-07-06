@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMArrayBuffer.h"
+#include "core/dom/DOMSharedArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"
 #include "wtf/RefCounted.h"
 
@@ -32,9 +33,28 @@ public:
 
     PassRefPtr<DOMArrayBuffer> buffer() const
     {
-        if (!m_domArrayBuffer)
+        ASSERT(!isShared());
+        if (!m_domArrayBuffer) {
             m_domArrayBuffer = DOMArrayBuffer::create(view()->buffer());
-        return m_domArrayBuffer;
+        }
+        return static_pointer_cast<DOMArrayBuffer>(m_domArrayBuffer);
+    }
+
+    PassRefPtr<DOMSharedArrayBuffer> bufferShared() const
+    {
+        ASSERT(isShared());
+        if (!m_domArrayBuffer) {
+            m_domArrayBuffer = DOMSharedArrayBuffer::create(view()->buffer());
+        }
+        return static_pointer_cast<DOMSharedArrayBuffer>(m_domArrayBuffer);
+    }
+
+    PassRefPtr<DOMArrayBufferBase> bufferBase() const
+    {
+        if (isShared()) {
+            return bufferShared();
+        }
+        return buffer();
     }
 
     const WTF::ArrayBufferView* view() const { return m_bufferView.get(); }
@@ -46,6 +66,7 @@ public:
     unsigned byteOffset() const { return view()->byteOffset(); }
     unsigned byteLength() const { return view()->byteLength(); }
     void setNeuterable(bool flag) { return view()->setNeuterable(flag); }
+    bool isShared() const { return view()->isShared(); }
 
     virtual v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::Object> creationContext) override
     {
@@ -64,7 +85,7 @@ protected:
     {
         ASSERT(m_bufferView);
     }
-    DOMArrayBufferView(PassRefPtr<WTF::ArrayBufferView> bufferView, PassRefPtr<DOMArrayBuffer> domArrayBuffer)
+    DOMArrayBufferView(PassRefPtr<WTF::ArrayBufferView> bufferView, PassRefPtr<DOMArrayBufferBase> domArrayBuffer)
         : m_bufferView(bufferView), m_domArrayBuffer(domArrayBuffer)
     {
         ASSERT(m_bufferView);
@@ -74,7 +95,7 @@ protected:
 
 private:
     RefPtr<WTF::ArrayBufferView> m_bufferView;
-    mutable RefPtr<DOMArrayBuffer> m_domArrayBuffer;
+    mutable RefPtr<DOMArrayBufferBase> m_domArrayBuffer;
 };
 
 } // namespace blink
