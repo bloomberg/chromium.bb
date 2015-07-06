@@ -944,6 +944,7 @@
       # New Task Manager Tests Sources:
       'browser/task_management/providers/browser_process_task_unittest.cc',
       'browser/task_management/providers/child_process_task_unittest.cc',
+      'browser/task_management/task_manager_observer_unittest.cc',
       # Old Task Manager Tests Sources:
       'browser/task_manager/task_manager_unittest.cc',
       'browser/task_manager/task_manager_util_unittest.cc',

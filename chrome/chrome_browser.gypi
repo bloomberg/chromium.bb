@@ -3020,6 +3020,10 @@
       'browser/task_management/providers/web_contents/web_contents_tags_manager.h',
       'browser/task_management/providers/web_contents/web_contents_task_provider.cc',
       'browser/task_management/providers/web_contents/web_contents_task_provider.h',
+      'browser/task_management/task_manager_interface.cc',
+      'browser/task_management/task_manager_interface.h',
+      'browser/task_management/task_manager_observer.cc',
+      'browser/task_management/task_manager_observer.h',
 
       # Old Task Manager Sources:
       'browser/task_manager/background_information.cc',
