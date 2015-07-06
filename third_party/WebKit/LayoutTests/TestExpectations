@@ -485,11 +485,6 @@ crbug.com/503175 [ Linux Win ] http/tests/fetch/serviceworker/request-base-https
 crbug.com/503175 [ Linux Win ] http/tests/fetch/serviceworker/request.html [ Pass Failure ]
 crbug.com/503175 [ Linux Win ] http/tests/fetch/window/request-base-https-other-https.html [ Pass Failure ]
 
-crbug.com/498321 [ Mac ] fast/reflections/reflection-masks-outset.html [ NeedsRebaseline ]
-crbug.com/498321 [ Mac ] fast/reflections/reflection-direction.html [ NeedsRebaseline ]
-crbug.com/498321 [ Mac ] fast/reflections/reflection-masks.html [ NeedsRebaseline ]
-crbug.com/498321 [ Mac ] fast/reflections/reflection-with-zoom.html [ NeedsRebaseline ]
-
 # Untriaged Linux-specific Aura failures
 
 crbug.com/381684 [ Win Android Mac ] fonts/family-fallback-gardiner.html [ Skip ]
