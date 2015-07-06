@@ -250,8 +250,6 @@ crbug.com/321607 [ Win Debug ] fast/forms/submit-to-blank-multiple-times.html [ 
 # Timeout on Linux ASAN
 crbug.com/504596 [ Linux ] fast/dom/shadow/event-path-after-iframe-removed.html [ Pass Timeout ]
 
-crbug.com/440700 fast/css/focus-ring-continuations.html [ NeedsRebaseline ]
-
 crbug.com/501543 fast/images/size-failure.html [ Crash Timeout Pass ]
 
 # Linux Aura doesn't support NPAPI plugins (yet?)
