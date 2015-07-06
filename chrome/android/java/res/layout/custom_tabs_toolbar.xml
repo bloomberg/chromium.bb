@@ -7,7 +7,8 @@
     <org.chromium.chrome.browser.widget.TintedImageButton
         android:id="@+id/close_button"
         style="@style/ToolbarButton"
-        android:layout_gravity="center_vertical" />
+        android:layout_gravity="center_vertical"
+        android:contentDescription="@string/close_tab" />
     <ImageButton android:id="@+id/security_button"
         style="@style/LocationBarButton"
         android:layout_width="@dimen/location_bar_icon_width"

@@ -38,7 +38,6 @@ import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.SysUtils;
@@ -400,28 +399,13 @@ public class ToolbarPhone extends ToolbarLayout
 
     @Override
     public boolean onLongClick(View v) {
-        int stringResourceId = -1;
+        int stringResourceId = 0;
         if (v == mToggleTabStackButton) {
             stringResourceId = R.string.open_tabs;
+        } else {
+            return false;
         }
-        if (stringResourceId != -1) {
-            Context ctx = getContext();
-            // Display the tooltip for the view being long clicked.
-            final int screenWidth = getResources().getDisplayMetrics().widthPixels;
-            final int[] screenPos = new int[2];
-            v.getLocationOnScreen(screenPos);
-            final int width = v.getWidth();
-
-            Toast toast = Toast.makeText(
-                    ctx, getResources().getString(stringResourceId), Toast.LENGTH_SHORT);
-            toast.setGravity(
-                    Gravity.TOP | Gravity.END,
-                    screenWidth - screenPos[0] - width / 2,
-                    getHeight());
-            toast.show();
-            return true;
-        }
-        return false;
+        return showAccessibilityToast(v, stringResourceId);
     }
 
     @Override

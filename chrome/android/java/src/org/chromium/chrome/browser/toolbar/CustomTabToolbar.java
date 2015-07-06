@@ -58,7 +58,8 @@ import org.chromium.ui.interpolators.BakedBezierInterpolator;
 /**
  * The Toolbar layout to be used for a custom tab. This is used for both phone and tablet UIs.
  */
-public class CustomTabToolbar extends ToolbarLayout implements LocationBar {
+public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
+        View.OnLongClickListener {
     private static final int CUSTOM_TAB_TOOLBAR_SLIDE_DURATION_MS = 200;
     private static final int CUSTOM_TAB_TOOLBAR_FADE_DURATION_MS = 150;
     private View mUrlInfoContainer;
@@ -95,6 +96,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar {
         mSecurityIconType = ConnectionSecurityLevel.NONE;
         mCustomActionButton = (ImageButton) findViewById(R.id.action_button);
         mCloseButton = (TintedImageButton) findViewById(R.id.close_button);
+        mCloseButton.setOnLongClickListener(this);
+        mCustomActionButton.setOnLongClickListener(this);
         populateToolbarAnimations();
     }
 
@@ -491,6 +494,19 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar {
             if (!ellipsizedText.equals(currentText)) mTitleBar.setText(ellipsizedText);
         }
         super.onLayout(changed, left, top, right, bottom);
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+        int stringResourceId = 0;
+        if (v == mCloseButton) {
+            stringResourceId = R.string.close_tab;
+        } else if (v == mCustomActionButton) {
+            stringResourceId = R.string.accessibility_toolbar_btn_custom;
+        } else {
+            return false;
+        }
+        return showAccessibilityToast(v, stringResourceId);
     }
 
     // Toolbar and LocationBar calls that are not relevant here.

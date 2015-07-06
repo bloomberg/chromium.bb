@@ -12,11 +12,13 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.Tab;
@@ -219,6 +221,30 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
                     controlContainer, mProgressBar, (View) getParent());
             assert progressBarPosition >= 0;
         }
+    }
+
+    /**
+     * Shows the content description toast for items on the toolbar.
+     * @param view The view to anchor the toast.
+     * @param stringResId The resource id for the string in the toast.
+     * @return Whether a toast has been shown successfully.
+     */
+    protected boolean showAccessibilityToast(View view, int stringResId) {
+        if (stringResId == 0) return false;
+
+        final int screenWidth = getResources().getDisplayMetrics().widthPixels;
+        final int[] screenPos = new int[2];
+        view.getLocationOnScreen(screenPos);
+        final int width = view.getWidth();
+
+        Toast toast = Toast.makeText(
+                getContext(), getResources().getString(stringResId), Toast.LENGTH_SHORT);
+        toast.setGravity(
+                Gravity.TOP | Gravity.END,
+                screenWidth - screenPos[0] - width / 2,
+                getHeight());
+        toast.show();
+        return true;
     }
 
     /**
