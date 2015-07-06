@@ -22,6 +22,7 @@ const wchar_t kCmdInstallArchive[] = L"install-archive";
 #endif
 const wchar_t kCmdUpdateSetupExe[] = L"update-setup-exe";
 const wchar_t kCmdNewSetupExe[] = L"new-setup-exe";
+const wchar_t kCmdPreviousVersion[] = L"previous-version";
 
 // Temp directory prefix that this process creates.
 const wchar_t kTempPrefix[] = L"CR_";
@@ -59,6 +60,7 @@ const wchar_t kCleanupRegistryKey[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Google Chrome";
 #else
 // The path to the key containing each app's Client State registry key.
+// No trailing slash on this one because the app's GUID is not appended.
 const wchar_t kClientStateKeyBase[] = L"Software\\Chromium";
 // The path to the key in which kCleanupRegistryValue is found.
 const wchar_t kCleanupRegistryKey[] = L"Software\\Chromium";

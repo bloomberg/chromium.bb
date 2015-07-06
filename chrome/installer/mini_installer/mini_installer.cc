@@ -142,7 +142,9 @@ bool ReadValueFromRegistry(HKEY root_key, const wchar_t *sub_key,
   return false;
 }
 
-// Opens the Google Update ClientState key for a product.
+// Opens the Google Update ClientState key for a product.  This finds only
+// registry entries for Chrome; it does not support the Chromium registry
+// layout.
 bool OpenClientStateKey(HKEY root_key, const wchar_t* app_guid, REGSAM access,
                         RegKey* key) {
   PathString client_state_key;
@@ -226,73 +228,85 @@ void SetInstallerFlags(const Configuration& configuration) {
   }
 }
 
-// Gets the setup.exe path from Registry by looking the value of Uninstall
+// Gets the setup.exe path from Registry by looking at the value of Uninstall
 // string.  |size| is measured in wchar_t units.
-bool GetSetupExePathForGuidFromRegistry(bool system_level,
-                                        const wchar_t* app_guid,
-                                        wchar_t* path,
-                                        size_t size) {
+ProcessExitCode GetSetupExePathForAppGuid(bool system_level,
+                                          const wchar_t* app_guid,
+                                          const wchar_t* previous_version,
+                                          wchar_t* path,
+                                          size_t size) {
   const HKEY root_key = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   RegKey key;
-  return OpenClientStateKey(root_key, app_guid, KEY_QUERY_VALUE, &key) &&
-      (key.ReadValue(kUninstallRegistryValue, path, size) == ERROR_SUCCESS);
+  if (!OpenClientStateKey(root_key, app_guid, KEY_QUERY_VALUE, &key) ||
+      (key.ReadValue(kUninstallRegistryValue, path, size) != ERROR_SUCCESS)) {
+    return UNABLE_TO_FIND_REGISTRY_KEY;
+  }
+
+  // Check that the path to the existing installer includes the expected
+  // version number.  It's not necessary for accuracy to verify before/after
+  // delimiters.
+  if (!SearchStringI(path, previous_version))
+    return PATCH_NOT_FOR_INSTALLED_VERSION;
+
+  return SUCCESS_EXIT_CODE;
 }
 
-// Gets the setup.exe path from Registry by looking the value of Uninstall
-// string.  |size| is measured in wchar_t units.
-bool GetSetupExePathFromRegistry(const Configuration& configuration,
-                                 wchar_t* path,
-                                 size_t size) {
+// Gets the path to setup.exe of the previous version. The overall path is found
+// in the Uninstall string in the registry. A previous version number specified
+// in |configuration| is used if available. |size| is measured in wchar_t units.
+ProcessExitCode GetPreviousSetupExePath(const Configuration& configuration,
+                                        wchar_t* path,
+                                        size_t size) {
   bool system_level = configuration.is_system_level();
+  const wchar_t* previous_version = configuration.previous_version();
+  ProcessExitCode exit_code = GENERIC_ERROR;
 
   // If this is a multi install, first try looking in the binaries for the path.
-  if (configuration.is_multi_install() && GetSetupExePathForGuidFromRegistry(
-          system_level, google_update::kMultiInstallAppGuid, path, size)) {
-    return true;
+  if (configuration.is_multi_install()) {
+    exit_code = GetSetupExePathForAppGuid(
+        system_level, google_update::kMultiInstallAppGuid, previous_version,
+        path, size);
   }
 
   // Failing that, look in Chrome Frame's client state key if --chrome-frame was
   // specified.
-  if (configuration.has_chrome_frame() && GetSetupExePathForGuidFromRegistry(
-          system_level, google_update::kChromeFrameAppGuid, path, size)) {
-    return true;
+  if (exit_code != SUCCESS_EXIT_CODE && configuration.has_chrome_frame()) {
+    exit_code = GetSetupExePathForAppGuid(
+        system_level, google_update::kChromeFrameAppGuid, previous_version,
+        path, size);
   }
 
   // Make a last-ditch effort to look in the Chrome client state key.
-  if (GetSetupExePathForGuidFromRegistry(
-          system_level, configuration.chrome_app_guid(), path, size)) {
-    return true;
+  if (exit_code != SUCCESS_EXIT_CODE) {
+    exit_code = GetSetupExePathForAppGuid(
+        system_level, configuration.chrome_app_guid(), previous_version,
+        path, size);
   }
 
-  return false;
+  return exit_code;
 }
 
 // Calls CreateProcess with good default parameters and waits for the process to
 // terminate returning the process exit code. |exit_code|, if non-NULL, is
 // populated with the process exit code.
-bool RunProcessAndWait(const wchar_t* exe_path, wchar_t* cmdline,
-                       ProcessExitCode* exit_code) {
+ProcessExitCode RunProcessAndWait(const wchar_t* exe_path, wchar_t* cmdline) {
   STARTUPINFOW si = {sizeof(si)};
   PROCESS_INFORMATION pi = {0};
   if (!::CreateProcess(exe_path, cmdline, NULL, NULL, FALSE, CREATE_NO_WINDOW,
                        NULL, NULL, &si, &pi)) {
-    return false;
+    return COULD_NOT_CREATE_PROCESS;
   }
 
   ::CloseHandle(pi.hThread);
 
-  bool ret = true;
+  ProcessExitCode exit_code = SUCCESS_EXIT_CODE;
   DWORD wr = ::WaitForSingleObject(pi.hProcess, INFINITE);
-  if (WAIT_OBJECT_0 != wr) {
-    ret = false;
-  } else if (exit_code) {
-    if (!::GetExitCodeProcess(pi.hProcess, exit_code))
-      ret = false;
-  }
+  if (WAIT_OBJECT_0 != wr || !::GetExitCodeProcess(pi.hProcess, &exit_code))
+    exit_code = WAIT_FOR_PROCESS_FAILED;
 
   ::CloseHandle(pi.hProcess);
 
-  return ret;
+  return exit_code;
 }
 
 // Append any command line params passed to mini_installer to the given buffer
@@ -394,14 +408,15 @@ BOOL CALLBACK WriteResourceToDirectory(HMODULE module,
 // For component builds (where setup.ex_ is always used), all files stored as
 // uncompressed 'BN' resources are also extracted. This is generally the set of
 // DLLs/resources needed by setup.exe to run.
-bool UnpackBinaryResources(const Configuration& configuration, HMODULE module,
-                           const wchar_t* base_path, PathString* archive_path,
-                           PathString* setup_path) {
+ProcessExitCode UnpackBinaryResources(const Configuration& configuration,
+                                      HMODULE module, const wchar_t* base_path,
+                                      PathString* archive_path,
+                                      PathString* setup_path) {
   // Generate the setup.exe path where we patch/uncompress setup resource.
   PathString setup_dest_path;
   if (!setup_dest_path.assign(base_path) ||
       !setup_dest_path.append(kSetupExe))
-    return false;
+    return PATH_STRING_OVERFLOW;
 
   // Prepare the input to OnResourceFound method that needs a location where
   // it will write all the resources.
@@ -417,27 +432,32 @@ bool UnpackBinaryResources(const Configuration& configuration, HMODULE module,
   if (!::EnumResourceNames(module, kLZMAResourceType, OnResourceFound,
                            reinterpret_cast<LONG_PTR>(&context)) ||
       archive_path->length() == 0)
-    return false;
+    return UNABLE_TO_EXTRACT_CHROME_ARCHIVE;
 
-  // If we found setup 'B7' resource, handle it.
+  ProcessExitCode exit_code = SUCCESS_EXIT_CODE;
+
+  // If we found setup 'B7' resource (used for differential updates), handle
+  // it.  Note that this is only for Chrome; Chromium installs are always
+  // "full" installs.
   if (setup_path->length() > 0) {
     CommandString cmd_line;
     PathString exe_path;
     // Get the path to setup.exe first.
-    bool success = true;
-    if (!GetSetupExePathFromRegistry(configuration, exe_path.get(),
-                                     exe_path.capacity()) ||
-        !cmd_line.append(exe_path.get()) ||
-        !cmd_line.append(L" --") ||
-        !cmd_line.append(kCmdUpdateSetupExe) ||
-        !cmd_line.append(L"=\"") ||
-        !cmd_line.append(setup_path->get()) ||
-        !cmd_line.append(L"\" --") ||
-        !cmd_line.append(kCmdNewSetupExe) ||
-        !cmd_line.append(L"=\"") ||
-        !cmd_line.append(setup_dest_path.get()) ||
-        !cmd_line.append(L"\"")) {
-      success = false;
+    exit_code = GetPreviousSetupExePath(configuration, exe_path.get(),
+                                        exe_path.capacity());
+    if (exit_code == SUCCESS_EXIT_CODE) {
+      if (!cmd_line.append(exe_path.get()) ||
+          !cmd_line.append(L" --") ||
+          !cmd_line.append(kCmdUpdateSetupExe) ||
+          !cmd_line.append(L"=\"") ||
+          !cmd_line.append(setup_path->get()) ||
+          !cmd_line.append(L"\" --") ||
+          !cmd_line.append(kCmdNewSetupExe) ||
+          !cmd_line.append(L"=\"") ||
+          !cmd_line.append(setup_dest_path.get()) ||
+          !cmd_line.append(L"\"")) {
+        exit_code = COMMAND_STRING_OVERFLOW;
+      }
     }
 
     // Get any command line option specified for mini_installer and pass them
@@ -446,17 +466,15 @@ bool UnpackBinaryResources(const Configuration& configuration, HMODULE module,
     // installer results for consumption by Google Update.
     AppendCommandLineFlags(configuration, &cmd_line);
 
-    ProcessExitCode exit_code = SUCCESS_EXIT_CODE;
-    if (success &&
-        (!RunProcessAndWait(exe_path.get(), cmd_line.get(), &exit_code) ||
-         exit_code != SUCCESS_EXIT_CODE)) {
-      success = false;
-    }
+    if (exit_code == SUCCESS_EXIT_CODE)
+      exit_code = RunProcessAndWait(exe_path.get(), cmd_line.get());
 
-    if (!success)
+    if (exit_code != SUCCESS_EXIT_CODE)
       DeleteFile(setup_path->get());
+    else if (!setup_path->assign(setup_dest_path.get()))
+      exit_code = PATH_STRING_OVERFLOW;
 
-    return success && setup_path->assign(setup_dest_path.get());
+    return exit_code;
   }
 
   // setup.exe wasn't sent as 'B7', lets see if it was sent as 'BL'
@@ -464,7 +482,7 @@ bool UnpackBinaryResources(const Configuration& configuration, HMODULE module,
   if (!::EnumResourceNames(module, kLZCResourceType, OnResourceFound,
                            reinterpret_cast<LONG_PTR>(&context)) &&
       ::GetLastError() != ERROR_RESOURCE_TYPE_NOT_FOUND)
-    return false;
+    return UNABLE_TO_EXTRACT_SETUP_B7;
 
   if (setup_path->length() > 0) {
     // Uncompress LZ compressed resource. Setup is packed with 'MSCF'
@@ -475,18 +493,20 @@ bool UnpackBinaryResources(const Configuration& configuration, HMODULE module,
     if (success) {
       if (!setup_path->assign(setup_dest_path.get())) {
         ::DeleteFile(setup_dest_path.get());
-        success = false;
+        exit_code = PATH_STRING_OVERFLOW;
       }
+    } else {
+      exit_code = UNABLE_TO_EXTRACT_SETUP_EXE;
     }
 
 #if defined(COMPONENT_BUILD)
     // Extract the (uncompressed) modules required by setup.exe.
     if (!::EnumResourceNames(module, kBinResourceType, WriteResourceToDirectory,
                              reinterpret_cast<LONG_PTR>(base_path)))
-      return false;
+      return UNABLE_TO_EXTRACT_SETUP;
 #endif
 
-    return success;
+    return exit_code;
   }
 
   // setup.exe still not found. So finally check if it was sent as 'BN'
@@ -496,7 +516,7 @@ bool UnpackBinaryResources(const Configuration& configuration, HMODULE module,
   if (!::EnumResourceNames(module, kBinResourceType, OnResourceFound,
                            reinterpret_cast<LONG_PTR>(&context)) &&
       ::GetLastError() != ERROR_RESOURCE_TYPE_NOT_FOUND)
-    return false;
+    return UNABLE_TO_EXTRACT_SETUP_BN;
 
   if (setup_path->length() > 0) {
     if (setup_path->comparei(setup_dest_path.get()) != 0) {
@@ -510,12 +530,16 @@ bool UnpackBinaryResources(const Configuration& configuration, HMODULE module,
     }
   }
 
-  return setup_path->length() > 0;
+  if (setup_path->length() == 0)
+    exit_code = UNABLE_TO_EXTRACT_SETUP;
+
+  return exit_code;
 }
 
 // Executes setup.exe, waits for it to finish and returns the exit code.
-bool RunSetup(const Configuration& configuration, const wchar_t* archive_path,
-              const wchar_t* setup_path, ProcessExitCode* exit_code) {
+ProcessExitCode RunSetup(const Configuration& configuration,
+                         const wchar_t* archive_path,
+                         const wchar_t* setup_path) {
   // There could be three full paths in the command line for setup.exe (path
   // to exe itself, path to archive and path to log file), so we declare
   // total size as three + one additional to hold command line options.
@@ -526,13 +550,15 @@ bool RunSetup(const Configuration& configuration, const wchar_t* archive_path,
     if (!cmd_line.assign(L"\"") ||
         !cmd_line.append(setup_path) ||
         !cmd_line.append(L"\""))
-      return false;
-  } else if (!GetSetupExePathFromRegistry(configuration, cmd_line.get(),
-                                          cmd_line.capacity())) {
-    return false;
+      return COMMAND_STRING_OVERFLOW;
+  } else {
+    ProcessExitCode exit_code = GetPreviousSetupExePath(
+        configuration, cmd_line.get(), cmd_line.capacity());
+    if (exit_code != SUCCESS_EXIT_CODE)
+      return exit_code;
   }
 
-  // Append the command line param for chrome archive file
+  // Append the command line param for chrome archive file.
   if (!cmd_line.append(L" --") ||
 #if defined(COMPONENT_BUILD)
       // For faster developer turnaround, the component build generates
@@ -544,13 +570,23 @@ bool RunSetup(const Configuration& configuration, const wchar_t* archive_path,
       !cmd_line.append(L"=\"") ||
       !cmd_line.append(archive_path) ||
       !cmd_line.append(L"\""))
-    return false;
+    return COMMAND_STRING_OVERFLOW;
+
+  // Append the command line param for chrome previous version.
+  if (configuration.previous_version() &&
+      (!cmd_line.append(L" --") ||
+       !cmd_line.append(kCmdPreviousVersion) ||
+       !cmd_line.append(L"=\"") ||
+       !cmd_line.append(configuration.previous_version()) ||
+       !cmd_line.append(L"\""))) {
+    return COMMAND_STRING_OVERFLOW;
+  }
 
   // Get any command line option specified for mini_installer and pass them
   // on to setup.exe
   AppendCommandLineFlags(configuration, &cmd_line);
 
-  return RunProcessAndWait(NULL, cmd_line.get(), exit_code);
+  return RunProcessAndWait(NULL, cmd_line.get());
 }
 
 // Deletes given files and working dir.
@@ -750,20 +786,16 @@ void DeleteOldChromeTempDirectories() {
 // |exit_code|.
 bool ProcessNonInstallOperations(const Configuration& configuration,
                                  ProcessExitCode* exit_code) {
-  bool ret = false;
-
   switch (configuration.operation()) {
     case Configuration::CLEANUP:
       // Cleanup has already taken place in DeleteOldChromeTempDirectories at
       // this point, so just tell our caller to exit early.
       *exit_code = SUCCESS_EXIT_CODE;
-      ret = true;
-      break;
+      return true;
 
-    default: break;
+    default:
+      return false;
   }
-
-  return ret;
 }
 
 // Returns true if we should delete the temp files we create (default).
@@ -793,14 +825,12 @@ ProcessExitCode WMain(HMODULE module) {
   // so this could buy us some space.
   DeleteOldChromeTempDirectories();
 
-  // TODO(grt): Make the exit codes more granular so we know where the popular
-  // errors truly are.
-  ProcessExitCode exit_code = GENERIC_INITIALIZATION_FAILURE;
+  ProcessExitCode exit_code = SUCCESS_EXIT_CODE;
 
-  // Parse the command line.
+  // Parse configuration from the command line and resources.
   Configuration configuration;
-  if (!configuration.Initialize())
-    return exit_code;
+  if (!configuration.Initialize(module))
+    return GENERIC_INITIALIZATION_FAILURE;
 
   // If the --cleanup switch was specified on the command line, then that means
   // we should only do the cleanup and then exit.
@@ -810,7 +840,7 @@ ProcessExitCode WMain(HMODULE module) {
   // First get a path where we can extract payload
   PathString base_path;
   if (!GetWorkDir(module, &base_path))
-    return GENERIC_INITIALIZATION_FAILURE;
+    return UNABLE_TO_GET_WORK_DIRECTORY;
 
 #if defined(GOOGLE_CHROME_BUILD)
   // Set the magic suffix in registry to try full installer next time. We ignore
@@ -822,19 +852,16 @@ ProcessExitCode WMain(HMODULE module) {
 
   PathString archive_path;
   PathString setup_path;
-  if (!UnpackBinaryResources(configuration, module, base_path.get(),
-                             &archive_path, &setup_path)) {
-    exit_code = GENERIC_UNPACKING_FAILURE;
-  } else {
-    // While unpacking the binaries, we paged in a whole bunch of memory that
-    // we don't need anymore.  Let's give it back to the pool before running
-    // setup.
-    ::SetProcessWorkingSetSize(::GetCurrentProcess(), -1, -1);
-    if (!RunSetup(configuration, archive_path.get(), setup_path.get(),
-                  &exit_code)) {
-      exit_code = GENERIC_SETUP_FAILURE;
-    }
-  }
+  exit_code = UnpackBinaryResources(configuration, module, base_path.get(),
+                                    &archive_path, &setup_path);
+
+  // While unpacking the binaries, we paged in a whole bunch of memory that
+  // we don't need anymore.  Let's give it back to the pool before running
+  // setup.
+  ::SetProcessWorkingSetSize(::GetCurrentProcess(), -1, -1);
+
+  if (exit_code == SUCCESS_EXIT_CODE)
+    exit_code = RunSetup(configuration, archive_path.get(), setup_path.get());
 
   if (ShouldDeleteExtractedFiles())
     DeleteExtractedFiles(base_path.get(), archive_path.get(), setup_path.get());

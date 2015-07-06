@@ -9,6 +9,11 @@
 #define IDI_MINI_INSTALLER              107
 #define IDC_STATIC                      -1
 
+// The identifier of the RCDATA resource holding the version of Chrome on which
+// a differential update is based. The resource is not present for full
+// installers.
+#define ID_PREVIOUS_VERSION             1
+
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED

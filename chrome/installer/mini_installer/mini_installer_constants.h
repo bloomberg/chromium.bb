@@ -20,6 +20,7 @@ extern const wchar_t kCmdInstallArchive[];
 #endif
 extern const wchar_t kCmdUpdateSetupExe[];
 extern const wchar_t kCmdNewSetupExe[];
+extern const wchar_t kCmdPreviousVersion[];
 
 extern const wchar_t kTempPrefix[];
 extern const wchar_t kFullInstallerSuffix[];

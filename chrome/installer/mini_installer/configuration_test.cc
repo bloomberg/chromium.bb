@@ -19,7 +19,8 @@ class TestConfiguration : public Configuration {
   }
  private:
   void Initialize(const wchar_t* command_line) {
-    ASSERT_TRUE(InitializeFromCommandLine(command_line));
+    Clear();
+    ASSERT_TRUE(ParseCommandLine(command_line));
   }
 };
 

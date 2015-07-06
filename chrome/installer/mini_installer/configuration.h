@@ -5,6 +5,8 @@
 #ifndef CHROME_INSTALLER_MINI_INSTALLER_CONFIGURATION_H_
 #define CHROME_INSTALLER_MINI_INSTALLER_CONFIGURATION_H_
 
+#include <windows.h>
+
 namespace mini_installer {
 
 // A simple container of the mini_installer's configuration, as dictated by the
@@ -20,7 +22,7 @@ class Configuration {
   ~Configuration();
 
   // Initializes this instance on the basis of the process's command line.
-  bool Initialize();
+  bool Initialize(HMODULE module);
 
   // Returns the desired operation dictated by the command line options.
   Operation operation() const { return operation_; }
@@ -52,9 +54,13 @@ class Configuration {
   // Returns true if --system-level is on the command line.
   bool is_system_level() const { return is_system_level_; }
 
+  // Returns the previous version contained in the image's resource.
+  const wchar_t* previous_version() const { return previous_version_; }
+
  protected:
   void Clear();
-  bool InitializeFromCommandLine(const wchar_t* command_line);
+  bool ParseCommandLine(const wchar_t* command_line);
+  void ReadResources(HMODULE module);
 
   wchar_t** args_;
   const wchar_t* chrome_app_guid_;
@@ -65,7 +71,7 @@ class Configuration {
   bool has_chrome_frame_;
   bool is_multi_install_;
   bool is_system_level_;
-  bool query_component_build_;
+  const wchar_t* previous_version_;
 
  private:
   Configuration(const Configuration&);

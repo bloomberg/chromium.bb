@@ -4,10 +4,10 @@
 
 #include "chrome/installer/mini_installer/configuration.h"
 
-#include <windows.h>
 #include <shellapi.h>  // NOLINT
 
 #include "chrome/installer/mini_installer/appid.h"
+#include "chrome/installer/mini_installer/mini_installer_resource.h"
 
 namespace mini_installer {
 
@@ -36,20 +36,19 @@ void Configuration::Clear() {
   has_chrome_frame_ = false;
   is_multi_install_ = false;
   is_system_level_ = false;
-  query_component_build_ = false;
+  previous_version_ = NULL;
 }
 
-bool Configuration::Initialize() {
-  return InitializeFromCommandLine(::GetCommandLine());
+bool Configuration::Initialize(HMODULE module) {
+  Clear();
+  ReadResources(module);
+  return ParseCommandLine(::GetCommandLine());
 }
 
-// This is its own function so that unit tests can provide their own command
-// lines.  |command_line| is shared with this instance in the sense that this
+// |command_line| is shared with this instance in the sense that this
 // instance may refer to it at will throughout its lifetime, yet it will
 // not release it.
-bool Configuration::InitializeFromCommandLine(const wchar_t* command_line) {
-  Clear();
-
+bool Configuration::ParseCommandLine(const wchar_t* command_line) {
   command_line_ = command_line;
   args_ = ::CommandLineToArgvW(command_line_, &argument_count_);
   if (args_ != NULL) {
@@ -66,8 +65,6 @@ bool Configuration::InitializeFromCommandLine(const wchar_t* command_line) {
         is_system_level_ = true;
       else if (0 == ::lstrcmpi(args_[i], L"--cleanup"))
         operation_ = CLEANUP;
-      else if (0 == ::lstrcmpi(args_[i], L"--query-component-build"))
-        query_component_build_ = true;
     }
 
     // Single-install defaults to Chrome.
@@ -76,6 +73,35 @@ bool Configuration::InitializeFromCommandLine(const wchar_t* command_line) {
   }
 
   return args_ != NULL;
+}
+
+void Configuration::ReadResources(HMODULE module) {
+  HRSRC resource_info_block =
+      FindResource(module, MAKEINTRESOURCE(ID_PREVIOUS_VERSION), RT_RCDATA);
+  if (!resource_info_block)
+    return;
+
+  HGLOBAL data_handle = LoadResource(module, resource_info_block);
+  if (!data_handle)
+    return;
+
+  // The data is a Unicode string, so it must be a multiple of two bytes.
+  DWORD version_size = SizeofResource(module, resource_info_block);
+  if (!version_size || (version_size & 0x01) != 0)
+    return;
+
+  void* version_data = LockResource(data_handle);
+  if (!version_data)
+    return;
+
+  const wchar_t* version_string = reinterpret_cast<wchar_t*>(version_data);
+  size_t version_len = version_size / sizeof(wchar_t);
+
+  // The string must be terminated.
+  if (version_string[version_len - 1])
+    return;
+
+  previous_version_ = version_string;
 }
 
 }  // namespace mini_installer
