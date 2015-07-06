@@ -38,27 +38,36 @@ namespace {
 class IconUpdater : public ExtensionActionIconFactory::Observer {
  public:
   IconUpdater(views::MenuItemView* menu_item_view,
-              ExtensionActionViewController* view_controller)
+              ToolbarActionView* represented_view)
       : menu_item_view_(menu_item_view),
-        view_controller_(view_controller) {
+        represented_view_(represented_view) {
     DCHECK(menu_item_view);
-    DCHECK(view_controller);
-    view_controller->set_icon_observer(this);
+    DCHECK(represented_view);
+    view_controller()->set_icon_observer(this);
   }
-  ~IconUpdater() override { view_controller_->set_icon_observer(nullptr); }
+  ~IconUpdater() override { view_controller()->set_icon_observer(nullptr); }
 
   // ExtensionActionIconFactory::Observer:
   void OnIconUpdated() override {
-    menu_item_view_->SetIcon(view_controller_->GetIconWithBadge());
+    menu_item_view_->SetIcon(
+        represented_view_->GetImage(views::Button::STATE_NORMAL));
   }
 
  private:
+  ExtensionActionViewController* view_controller() {
+    // Since the chevron overflow menu is only used in a world where toolbar
+    // actions are only extensions, this cast is safe.
+    return static_cast<ExtensionActionViewController*>(
+        represented_view_->view_controller());
+  }
+
   // The menu item view whose icon might be updated.
   views::MenuItemView* menu_item_view_;
 
-  // The view controller to be observed. When its icon changes, update the
-  // corresponding menu item view's icon.
-  ExtensionActionViewController* view_controller_;
+  // The view this icon updater is helping represent in the chevron overflow
+  // menu. When its icon changes, this updates the corresponding menu item
+  // view's icon.
+  ToolbarActionView* represented_view_;
 
   DISALLOW_COPY_AND_ASSIGN(IconUpdater);
 };
@@ -163,16 +172,14 @@ ChevronMenuButton::MenuController::MenuController(
     views::MenuItemView* menu_item = menu_->AppendMenuItemWithIcon(
         command_id,
         view->view_controller()->GetActionName(),
-        view->view_controller()->GetIconWithBadge());
+        view->GetImage(views::Button::STATE_NORMAL));
 
     // Set the tooltip for this item.
     menu_->SetTooltip(
         view->view_controller()->GetTooltip(view->GetCurrentWebContents()),
         command_id);
 
-    icon_updaters_.push_back(new IconUpdater(
-        menu_item,
-        static_cast<ExtensionActionViewController*>(view->view_controller())));
+    icon_updaters_.push_back(new IconUpdater(menu_item, view));
 
     ++command_id;
   }

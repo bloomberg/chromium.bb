@@ -32,8 +32,7 @@ void PaintBadge(gfx::Canvas* canvas,
                 const std::string& text,
                 const SkColor& text_color_in,
                 const SkColor& background_color_in,
-                int icon_width,
-                extensions::ActionInfo::Type action_type);
+                int icon_width);
 
 }  // namespace badge_util
 

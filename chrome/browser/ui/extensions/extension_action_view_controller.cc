@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "chrome/common/icon_with_badge_image_source.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -79,24 +80,26 @@ void ExtensionActionViewController::SetDelegate(
 }
 
 gfx::Image ExtensionActionViewController::GetIcon(
-    content::WebContents* web_contents) {
+    content::WebContents* web_contents,
+    const gfx::Size& size) {
   if (!ExtensionIsValid())
     return gfx::Image();
 
-  return icon_factory_.GetIcon(SessionTabHelper::IdForTab(web_contents));
-}
+  int tab_id = SessionTabHelper::IdForTab(web_contents);
+  scoped_ptr<IconWithBadgeImageSource> image_source(
+      new IconWithBadgeImageSource(size));
+  image_source->SetIcon(icon_factory_.GetIcon(tab_id));
+  scoped_ptr<IconWithBadgeImageSource::Badge> badge;
+  std::string badge_text = extension_action_->GetBadgeText(tab_id);
+  if (!badge_text.empty()) {
+    badge.reset(new IconWithBadgeImageSource::Badge(
+            badge_text,
+            extension_action_->GetBadgeTextColor(tab_id),
+            extension_action_->GetBadgeBackgroundColor(tab_id)));
+  }
+  image_source->SetBadge(badge.Pass());
 
-gfx::ImageSkia ExtensionActionViewController::GetIconWithBadge() {
-  if (!ExtensionIsValid())
-    return gfx::ImageSkia();
-
-  content::WebContents* web_contents = view_delegate_->GetCurrentWebContents();
-  gfx::Size spacing(0, 3);
-  gfx::ImageSkia icon = *GetIcon(web_contents).ToImageSkia();
-  if (!IsEnabled(web_contents))
-    icon = gfx::ImageSkiaOperations::CreateTransparentImage(icon, .25);
-  return extension_action_->GetIconWithBadge(
-      icon, SessionTabHelper::IdForTab(web_contents), spacing);
+  return gfx::Image(gfx::ImageSkia(image_source.release(), size));
 }
 
 base::string16 ExtensionActionViewController::GetActionName() const {
@@ -219,18 +222,6 @@ bool ExtensionActionViewController::ExecuteAction(PopupShowAction show_action,
         ->TriggerPopupWithUrl(show_action, popup_url, grant_tab_permissions);
   }
   return false;
-}
-
-void ExtensionActionViewController::PaintExtra(
-    gfx::Canvas* canvas,
-    const gfx::Rect& bounds,
-    content::WebContents* web_contents) const {
-  if (!ExtensionIsValid())
-    return;
-
-  int tab_id = SessionTabHelper::IdForTab(web_contents);
-  if (tab_id >= 0)
-    extension_action_->PaintBadge(canvas, bounds, tab_id);
 }
 
 void ExtensionActionViewController::RegisterCommand() {

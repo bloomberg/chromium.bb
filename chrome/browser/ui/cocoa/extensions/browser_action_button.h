@@ -96,14 +96,10 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
  @private
   // The controller for the browser actions bar that owns the button. Weak.
   BrowserActionsController* browserActionsController_;
-
-  // The view controller for the parent button. Weak.
-  ToolbarActionViewController* viewController_;
 }
 
 @property(assign, nonatomic)
     BrowserActionsController* browserActionsController;
-@property(readwrite, nonatomic) ToolbarActionViewController* viewController;
 
 @end
 

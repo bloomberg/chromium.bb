@@ -82,10 +82,6 @@ class WrenchIconPainterDelegateMac : public WrenchIconPainter::Delegate {
     return WrenchIconPainter::BEZEL_PRESSED;
   if ([self isMouseInside])
     return WrenchIconPainter::BEZEL_HOVER;
-  // If an overflowed toolbar action wants to run, we give the wrench menu a
-  // "popped out" appearance.
-  if (overflowedToolbarActionWantsToRun_)
-    return WrenchIconPainter::BEZEL_RAISED;
   return WrenchIconPainter::BEZEL_NONE;
 }
 

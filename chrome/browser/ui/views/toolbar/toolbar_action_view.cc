@@ -34,9 +34,10 @@ using views::LabelButtonBorder;
 
 namespace {
 
-// We have smaller insets than normal STYLE_TEXTBUTTON buttons so that we can
-// fit user supplied icons in without clipping them.
-const int kBorderInset = 4;
+// Toolbar action buttons have no insets because the badges are drawn right at
+// the edge of the view's area. Other badding (such as centering the icon) is
+// handled directly by the Image.
+const int kBorderInset = 0;
 
 // The ToolbarActionView which is currently showing its context menu, if any.
 // Since only one context menu can be shown (even across browser windows), it's
@@ -122,13 +123,6 @@ void ToolbarActionView::ViewHierarchyChanged(
   MenuButton::ViewHierarchyChanged(details);
 }
 
-void ToolbarActionView::PaintChildren(const ui::PaintContext& context) {
-  View::PaintChildren(context);
-  ui::PaintRecorder recorder(context);
-  view_controller_->PaintExtra(recorder.canvas(), GetLocalBounds(),
-                               GetCurrentWebContents());
-}
-
 void ToolbarActionView::OnPaintBorder(gfx::Canvas* canvas) {
   if (!wants_to_run_)
     views::MenuButton::OnPaintBorder(canvas);
@@ -158,7 +152,9 @@ void ToolbarActionView::UpdateState() {
 
   wants_to_run_ = view_controller_->WantsToRun(web_contents);
 
-  gfx::ImageSkia icon(view_controller_->GetIcon(web_contents).AsImageSkia());
+  gfx::ImageSkia icon(
+      view_controller_->GetIcon(web_contents,
+                                GetPreferredSize()).AsImageSkia());
 
   if (!icon.isNull()) {
     ThemeService* theme = ThemeServiceFactory::GetForProfile(profile_);

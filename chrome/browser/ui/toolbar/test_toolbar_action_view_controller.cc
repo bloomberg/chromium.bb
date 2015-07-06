@@ -31,12 +31,9 @@ void TestToolbarActionViewController::SetDelegate(
 }
 
 gfx::Image TestToolbarActionViewController::GetIcon(
-    content::WebContents* web_contents) {
+    content::WebContents* web_contents,
+    const gfx::Size& size) {
   return gfx::Image();
-}
-
-gfx::ImageSkia TestToolbarActionViewController::GetIconWithBadge() {
-  return gfx::ImageSkia();
 }
 
 base::string16 TestToolbarActionViewController::GetActionName() const {

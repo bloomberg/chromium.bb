@@ -93,14 +93,14 @@ void PageActionDecoration::UpdateVisibility(WebContents* contents) {
     SetToolTip(viewController_->GetTooltip(contents));
 
     // Set the image.
-    gfx::Image icon = viewController_->GetIcon(contents);
+    gfx::Size size(ExtensionAction::kPageActionIconMaxSize,
+                   ExtensionAction::kPageActionIconMaxSize);
+    gfx::Image icon = viewController_->GetIcon(contents, size);
     if (!icon.IsEmpty()) {
       SetImage(icon.ToNSImage());
     } else if (!GetImage()) {
-      const NSSize default_size = NSMakeSize(
-          ExtensionAction::kPageActionIconMaxSize,
-          ExtensionAction::kPageActionIconMaxSize);
-      SetImage([[[NSImage alloc] initWithSize:default_size] autorelease]);
+      NSSize ns_size = NSSizeFromCGSize(size.ToCGSize());
+      SetImage([[[NSImage alloc] initWithSize:ns_size] autorelease]);
     }
   }
 

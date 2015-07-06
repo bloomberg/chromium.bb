@@ -8,8 +8,6 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
-#include "chrome/common/badge_util.h"
-#include "chrome/common/icon_with_badge_image_source.h"
 #include "extensions/browser/extension_icon_image.h"
 #include "extensions/browser/extension_icon_placeholder.h"
 #include "extensions/common/constants.h"
@@ -235,37 +233,6 @@ void ExtensionAction::ClearAllValuesForTab(int tab_id) {
   // when the tab's closed.  There's a race between the
   // LocationBarController and the ContentRulesRegistry on navigation,
   // which prevents me from cleaning everything up now.
-}
-
-void ExtensionAction::PaintBadge(gfx::Canvas* canvas,
-                                 const gfx::Rect& bounds,
-                                 int tab_id) {
-  badge_util::PaintBadge(
-      canvas,
-      bounds,
-      GetBadgeText(tab_id),
-      GetBadgeTextColor(tab_id),
-      GetBadgeBackgroundColor(tab_id),
-      GetIconWidth(tab_id),
-      action_type());
-}
-
-gfx::ImageSkia ExtensionAction::GetIconWithBadge(
-    const gfx::ImageSkia& icon,
-    int tab_id,
-    const gfx::Size& spacing) const {
-  if (tab_id < 0)
-    return icon;
-
-  return gfx::ImageSkia(
-      new IconWithBadgeImageSource(icon,
-                                   icon.size(),
-                                   spacing,
-                                   GetBadgeText(tab_id),
-                                   GetBadgeTextColor(tab_id),
-                                   GetBadgeBackgroundColor(tab_id),
-                                   action_type()),
-     icon.size());
 }
 
 extensions::IconImage* ExtensionAction::LoadDefaultIconImage(

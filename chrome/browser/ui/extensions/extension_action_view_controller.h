@@ -49,8 +49,8 @@ class ExtensionActionViewController
   // ToolbarActionViewController:
   const std::string& GetId() const override;
   void SetDelegate(ToolbarActionViewDelegate* delegate) override;
-  gfx::Image GetIcon(content::WebContents* web_contents) override;
-  gfx::ImageSkia GetIconWithBadge() override;
+  gfx::Image GetIcon(content::WebContents* web_contents,
+                     const gfx::Size& size) override;
   base::string16 GetActionName() const override;
   base::string16 GetAccessibleName(content::WebContents* web_contents) const
       override;
@@ -65,9 +65,6 @@ class ExtensionActionViewController
   bool CanDrag() const override;
   bool ExecuteAction(bool by_user) override;
   void UpdateState() override;
-  void PaintExtra(gfx::Canvas* canvas,
-                  const gfx::Rect& bounds,
-                  content::WebContents* web_contents) const override;
   void RegisterCommand() override;
 
   // ExtensionContextMenuModel::PopupDelegate:

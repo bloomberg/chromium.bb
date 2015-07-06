@@ -104,21 +104,11 @@ void PageActionImageView::UpdateVisibility(content::WebContents* contents) {
   SetTooltipText(base::UTF8ToUTF16(tooltip_));
 
   // Set the image.
-  gfx::Image icon = view_controller_->GetIcon(contents);
+  gfx::Image icon = view_controller_->GetIcon(contents, GetPreferredSize());
   if (!icon.IsEmpty())
     SetImage(*icon.ToImageSkia());
 
   SetVisible(true);
-}
-
-void PageActionImageView::PaintChildren(const ui::PaintContext& context) {
-  View::PaintChildren(context);
-  int tab_id = SessionTabHelper::IdForTab(GetCurrentWebContents());
-  if (tab_id >= 0) {
-    ui::PaintRecorder recorder(context);
-    view_controller_->extension_action()->PaintBadge(recorder.canvas(),
-                                                     GetLocalBounds(), tab_id);
-  }
 }
 
 void PageActionImageView::UpdateState() {

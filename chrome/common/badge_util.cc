@@ -20,33 +20,24 @@
 namespace {
 
 // Different platforms need slightly different constants to look good.
+// TODO(devlin): Comb through these and see if they are all still needed/
+// appropriate.
 #if defined(OS_WIN)
 const float kTextSize = 10;
-const int kBottomMarginBrowserAction = 0;
-const int kBottomMarginPageAction = 2;
-const int kPadding = 2;
 // The padding between the top of the badge and the top of the text.
 const int kTopTextPadding = -1;
 #elif defined(OS_MACOSX)
 const float kTextSize = 9.0;
-const int kBottomMarginBrowserAction = 5;
-const int kBottomMarginPageAction = 2;
-const int kPadding = 2;
 const int kTopTextPadding = 0;
 #elif defined(OS_CHROMEOS)
 const float kTextSize = 8.0;
-const int kBottomMarginBrowserAction = 0;
-const int kBottomMarginPageAction = 2;
-const int kPadding = 2;
 const int kTopTextPadding = 1;
 #elif defined(OS_POSIX)
 const float kTextSize = 9.0;
-const int kBottomMarginBrowserAction = 0;
-const int kBottomMarginPageAction = 2;
-const int kPadding = 2;
 const int kTopTextPadding = 0;
 #endif
 
+const int kPadding = 2;
 const int kBadgeHeight = 11;
 const int kMaxTextWidth = 23;
 
@@ -99,8 +90,7 @@ void PaintBadge(gfx::Canvas* canvas,
                 const std::string& text,
                 const SkColor& text_color_in,
                 const SkColor& background_color_in,
-                int icon_width,
-                extensions::ActionInfo::Type action_type) {
+                int icon_width) {
   if (text.empty())
     return;
 
@@ -146,10 +136,7 @@ void PaintBadge(gfx::Canvas* canvas,
   // Paint the badge background color in the right location. It is usually
   // right-aligned, but it can also be center-aligned if it is large.
   int rect_height = kBadgeHeight;
-  int bottom_margin =
-      action_type == extensions::ActionInfo::TYPE_BROWSER ?
-      kBottomMarginBrowserAction : kBottomMarginPageAction;
-  int rect_y = bounds.bottom() - bottom_margin - kBadgeHeight;
+  int rect_y = bounds.bottom() - kBadgeHeight;
   int rect_width = badge_width;
   int rect_x = (badge_width >= kCenterAlignThreshold) ?
       bounds.x() + (bounds.width() - badge_width) / 2 :

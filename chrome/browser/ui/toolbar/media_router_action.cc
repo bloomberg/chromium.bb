@@ -34,15 +34,10 @@ void MediaRouterAction::SetDelegate(ToolbarActionViewDelegate* delegate) {
   delegate_ = delegate;
 }
 
-gfx::Image MediaRouterAction::GetIcon(
-    content::WebContents* web_contents) {
+gfx::Image MediaRouterAction::GetIcon(content::WebContents* web_contents,
+                                      const gfx::Size& size) {
   // TODO(apacible): Return icon based on casting state.
   return media_router_idle_icon_;
-}
-
-gfx::ImageSkia MediaRouterAction::GetIconWithBadge() {
-  DCHECK(delegate_);
-  return *GetIcon(delegate_->GetCurrentWebContents()).ToImageSkia();
 }
 
 base::string16 MediaRouterAction::GetActionName() const {

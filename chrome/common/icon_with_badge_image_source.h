@@ -7,48 +7,47 @@
 
 #include <string>
 
-#include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/canvas_image_source.h"
-#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image.h"
 
 namespace gfx {
 class Size;
 }
 
 // CanvasImageSource for creating extension icon with a badge.
-class IconWithBadgeImageSource
-    : public gfx::CanvasImageSource {
+// TODO(devlin): This class and its buddy badge_util don't really belong in
+// chrome/common/.
+class IconWithBadgeImageSource : public gfx::CanvasImageSource {
  public:
-  IconWithBadgeImageSource(
-      const gfx::ImageSkia& icon,
-      const gfx::Size& icon_size,
-      const gfx::Size& spacing,
-      const std::string& text,
-      const SkColor& text_color,
-      const SkColor& background_color,
-      extensions::ActionInfo::Type action_type);
+  // The data representing a badge to be painted over the base image.
+  struct Badge {
+    Badge(std::string text, SkColor text_color, SkColor background_color);
+    ~Badge();
+
+    std::string text;
+    SkColor text_color;
+    SkColor background_color;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Badge);
+  };
+
+  explicit IconWithBadgeImageSource(const gfx::Size& size);
   ~IconWithBadgeImageSource() override;
 
+  void SetIcon(const gfx::Image& icon);
+  void SetBadge(scoped_ptr<Badge> badge);
+
  private:
+  // gfx::CanvasImageSource:
   void Draw(gfx::Canvas* canvas) override;
 
-  // Browser action icon image.
-  gfx::ImageSkia icon_;
+  // The base icon to draw.
+  gfx::Image icon_;
 
-  // Extra spacing for badge compared to icon bounds.
-  gfx::Size spacing_;
-
-  // Text to be displayed on the badge.
-  std::string text_;
-
-  // Color of badge text.
-  SkColor text_color_;
-
-  // Color of the badge.
-  SkColor background_color_;
-
-  // Type of extension action this is for.
-  extensions::ActionInfo::Type action_type_;
+  // An optional badge to draw over the base icon.
+  scoped_ptr<Badge> badge_;
 
   DISALLOW_COPY_AND_ASSIGN(IconWithBadgeImageSource);
 };

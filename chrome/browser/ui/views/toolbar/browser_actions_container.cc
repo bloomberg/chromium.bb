@@ -615,8 +615,10 @@ void BrowserActionsContainer::WriteDragDataForView(View* sender,
                                                 sender);
   DCHECK(iter != toolbar_action_views_.end());
   ToolbarActionViewController* view_controller = (*iter)->view_controller();
+  gfx::Size size(ToolbarActionsBar::IconWidth(false),
+                 ToolbarActionsBar::IconHeight());
   drag_utils::SetDragImageOnDataObject(
-      view_controller->GetIconWithBadge(),
+      view_controller->GetIcon(GetCurrentWebContents(), size).AsImageSkia(),
       press_pt.OffsetFromOrigin(),
       data);
   // Fill in the remaining info.

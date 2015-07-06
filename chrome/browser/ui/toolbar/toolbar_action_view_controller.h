@@ -13,8 +13,7 @@ class WebContents;
 }
 
 namespace gfx {
-class Canvas;
-class Rect;
+class Size;
 }
 
 namespace ui {
@@ -37,11 +36,9 @@ class ToolbarActionViewController {
   // Sets the view delegate, which can handle most of the front-end logic.
   virtual void SetDelegate(ToolbarActionViewDelegate* delegate) = 0;
 
-  // Returns the icon to use for the given |web_contents|.
-  virtual gfx::Image GetIcon(content::WebContents* web_contents) = 0;
-
-  // Returns the icon and the badge, if any, for the current tab.
-  virtual gfx::ImageSkia GetIconWithBadge() = 0;
+  // Returns the icon to use for the given |web_contents| and |size|.
+  virtual gfx::Image GetIcon(content::WebContents* web_contents,
+                             const gfx::Size& size) = 0;
 
   // Returns the name of the action, which can be separate from the accessible
   // name or name for the tooltip.
@@ -92,12 +89,6 @@ class ToolbarActionViewController {
 
   // Updates the current state of the action.
   virtual void UpdateState() = 0;
-
-  // Paints any extra parts of the image (e.g., a badge).
-  virtual void PaintExtra(gfx::Canvas* canvas,
-                          const gfx::Rect& bounds,
-                          content::WebContents* web_contents) const {
-  }
 
   // Registers an accelerator. Called when the view is added to the hierarchy.
   // Unregistering any commands is the responsibility of the controller.

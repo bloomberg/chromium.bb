@@ -179,14 +179,6 @@ class ExtensionAction {
   // Remove all tab-specific state.
   void ClearAllValuesForTab(int tab_id);
 
-  // If the specified tab has a badge, paint it into the provided bounds.
-  void PaintBadge(gfx::Canvas* canvas, const gfx::Rect& bounds, int tab_id);
-
-  // Returns icon image with badge for specified tab.
-  gfx::ImageSkia GetIconWithBadge(const gfx::ImageSkia& icon,
-                                  int tab_id,
-                                  const gfx::Size& spacing) const;
-
   // Lazily loads and returns the default icon image, if one exists for the
   // action.
   extensions::IconImage* LoadDefaultIconImage(

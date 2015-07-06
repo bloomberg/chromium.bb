@@ -35,7 +35,6 @@ NSString* const kBrowserActionButtonDraggingNotification =
 NSString* const kBrowserActionButtonDragEndNotification =
     @"BrowserActionButtonDragEndNotification";
 
-static const CGFloat kBrowserActionBadgeOriginYOffset = 5;
 static const CGFloat kAnimationDuration = 0.2;
 static const CGFloat kMinimumDragDistance = 5;
 
@@ -171,11 +170,6 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
   DCHECK(![controller_ toolbarActionsBar]->popped_out_action());
 }
 
-@interface BrowserActionCell (Internals)
-- (void)drawBadgeWithinFrame:(NSRect)frame
-              forWebContents:(content::WebContents*)webContents;
-@end
-
 @implementation BrowserActionButton
 
 @synthesize isBeingDragged = isBeingDragged_;
@@ -202,7 +196,6 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
         new ToolbarActionViewDelegateBridge(self, controller, viewController));
 
     [cell setBrowserActionsController:controller];
-    [cell setViewController:viewController_];
     [cell
         accessibilitySetOverrideValue:base::SysUTF16ToNSString(
             viewController_->GetAccessibleName([controller currentWebContents]))
@@ -407,7 +400,8 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
   base::string16 tooltip = viewController_->GetTooltip(webContents);
   [self setToolTip:(tooltip.empty() ? nil : base::SysUTF16ToNSString(tooltip))];
 
-  gfx::Image image = viewController_->GetIcon(webContents);
+  gfx::Image image =
+      viewController_->GetIcon(webContents, gfx::Size([self frame].size));
 
   if (!image.IsEmpty())
     [self setImage:image.ToNSImage()];
@@ -467,11 +461,6 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
            respectFlipped:YES
                     hints:nil];
 
-  bounds.origin.y += kBrowserActionBadgeOriginYOffset;
-  [[self cell] drawBadgeWithinFrame:bounds
-                     forWebContents:
-                            [browserActionsController_ currentWebContents]];
-
   [image unlockFocus];
   return image;
 }
@@ -528,37 +517,23 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
 @implementation BrowserActionCell
 
 @synthesize browserActionsController = browserActionsController_;
-@synthesize viewController = viewController_;
-
-- (void)drawBadgeWithinFrame:(NSRect)frame
-              forWebContents:(content::WebContents*)webContents {
-  gfx::CanvasSkiaPaint canvas(frame, false);
-  canvas.set_composite_alpha(true);
-  gfx::Rect boundingRect(NSRectToCGRect(frame));
-  viewController_->PaintExtra(&canvas, boundingRect, webContents);
-}
 
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   gfx::ScopedNSGraphicsContextSaveGState scopedGState;
   [super drawWithFrame:cellFrame inView:controlView];
-  DCHECK(viewController_);
-  content::WebContents* webContents =
-      [browserActionsController_ currentWebContents];
+
   const NSSize imageSize = self.image.size;
   const NSRect imageRect =
       NSMakeRect(std::floor((NSWidth(cellFrame) - imageSize.width) / 2.0),
                  std::floor((NSHeight(cellFrame) - imageSize.height) / 2.0),
                  imageSize.width, imageSize.height);
+
   [self.image drawInRect:imageRect
                 fromRect:NSZeroRect
                operation:NSCompositeSourceOver
                 fraction:1.0
           respectFlipped:YES
                    hints:nil];
-
-  cellFrame.origin.y += kBrowserActionBadgeOriginYOffset;
-  [self drawBadgeWithinFrame:cellFrame
-              forWebContents:webContents];
 }
 
 - (ui::ThemeProvider*)themeProviderForWindow:(NSWindow*)window {
