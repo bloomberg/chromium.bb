@@ -267,9 +267,11 @@ body.check-select .dialog-header {
 
 .dialog-header paper-button,
 .dialog-header button {
+  border-radius: 2px;
   height: 32px;
   margin: 0 8px;
   min-width: 32px;
+  padding: 0;
 }
 
 .dialog-header button {
@@ -346,14 +348,6 @@ body.check-select .dialog-header
   position: absolute;
   width: 32px;
   top: 0;
-}
-
-.dialog-header button.icon-button > files-toggle-ripple {
-  height: 28px;
-  left: 2px;
-  position: absolute;
-  top: 2px;
-  width: 28px;
 }
 
 #search-button > .icon {
@@ -433,40 +427,25 @@ body.check-select #gear-button {
 }
 
 .cloud-import-combo-button {
-  -webkit-margin-end: 4px;
-  -webkit-margin-start: 12px;
   height: 32px;
+  margin: 8px;
   position: relative;
-  width: 49px;
 }
 
 .cloud-import-combo-button > .buttons {
   display: flex;
-  position: absolute;
 }
 
 .cloud-import-combo-button > .buttons > #cloud-import-button {
-  -webkit-margin-start: -4px;
+  margin: 0;
 }
 
 .cloud-import-combo-button > .buttons > #cloud-import-details-button {
   -webkit-margin-end: 0;
 }
 
-.cloud-import-combo-button > .ripples {
-  height: 100%;
-  position: absolute;
-  width: 100%;
-}
-
-.cloud-import-combo-button > .ripples > files-toggle-ripple {
-  height: 28px;
-  margin: 2px auto;
-  width: 48px;
-}
-
 #cloud-import-details-button {
-  -webkit-margin-start: -28px;
+  -webkit-margin-start: -10px;
   width: 24px;
 }
 
@@ -2254,4 +2233,12 @@ list.autocomplete-suggestions > [lead] {
   top: 0;
   visibility: hidden;
   z-index: -1;
+}
+
+files-toggle-ripple {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
