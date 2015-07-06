@@ -34,6 +34,8 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/proximity_auth/ble/proximity_auth_ble_system.h"
 #include "components/proximity_auth/cryptauth/cryptauth_client_impl.h"
+#include "components/proximity_auth/cryptauth/cryptauth_enrollment_manager.h"
+#include "components/proximity_auth/cryptauth/secure_message_delegate.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/proximity_auth/switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -46,6 +48,7 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
+#include "chrome/browser/chromeos/login/easy_unlock/secure_message_delegate_chromeos.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -281,6 +284,8 @@ void EasyUnlockService::RegisterProfilePrefs(
       prefs::kEasyUnlockProximityRequired,
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+
+  proximity_auth::CryptAuthEnrollmentManager::RegisterPrefs(registry);
 }
 
 // static
@@ -627,6 +632,19 @@ void EasyUnlockService::AddObserver(EasyUnlockServiceObserver* observer) {
 
 void EasyUnlockService::RemoveObserver(EasyUnlockServiceObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+PrefService* EasyUnlockService::GetPrefService() {
+  return profile()->GetPrefs();
+}
+
+scoped_ptr<proximity_auth::SecureMessageDelegate>
+EasyUnlockService::CreateSecureMessageDelegate() {
+#if defined(OS_CHROMEOS)
+  return make_scoped_ptr(new chromeos::SecureMessageDelegateChromeOS());
+#else
+  return nullptr;
+#endif
 }
 
 scoped_ptr<proximity_auth::CryptAuthClientFactory>

@@ -8,15 +8,24 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/proximity_auth/cryptauth/proto/cryptauth_api.pb.h"
 
+class PrefService;
+
 namespace proximity_auth {
 
 class CryptAuthClientFactory;
+class SecureMessageDelegate;
 
 // A delegate used by the chrome://proximity-auth WebUI, used to get
 // implmentations with dependencies on chrome.
 class ProximityAuthUIDelegate {
  public:
   virtual ~ProximityAuthUIDelegate() {}
+
+  // Returns the PrefService used by the profile.
+  virtual PrefService* GetPrefService() = 0;
+
+  // Returns the SecureMessageDelegate used by the system.
+  virtual scoped_ptr<SecureMessageDelegate> CreateSecureMessageDelegate() = 0;
 
   // Constructs the CryptAuthClientFactory that can be used for API requests.
   virtual scoped_ptr<CryptAuthClientFactory> CreateCryptAuthClientFactory() = 0;

@@ -222,6 +222,9 @@ class EasyUnlockService : public KeyedService,
   void RemoveObserver(EasyUnlockServiceObserver* observer);
 
   // ProximityAuthUIDelegate:
+  PrefService* GetPrefService() override;
+  scoped_ptr<proximity_auth::SecureMessageDelegate>
+  CreateSecureMessageDelegate() override;
   scoped_ptr<proximity_auth::CryptAuthClientFactory>
   CreateCryptAuthClientFactory() override;
   cryptauth::DeviceClassifier GetDeviceClassifier() override;

@@ -472,6 +472,8 @@
         'browser/chromeos/login/easy_unlock/easy_unlock_types.h',
         'browser/chromeos/login/easy_unlock/easy_unlock_user_login_flow.cc',
         'browser/chromeos/login/easy_unlock/easy_unlock_user_login_flow.h',
+        'browser/chromeos/login/easy_unlock/secure_message_delegate_chromeos.cc',
+        'browser/chromeos/login/easy_unlock/secure_message_delegate_chromeos.h',
         'browser/chromeos/login/easy_unlock/short_lived_user_context.cc',
         'browser/chromeos/login/easy_unlock/short_lived_user_context.h',
         'browser/chromeos/login/enrollment/auto_enrollment_check_screen.cc',

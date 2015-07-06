@@ -11,6 +11,8 @@
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/easy_unlock_service_regular.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_system.h"
@@ -66,6 +68,8 @@ EasyUnlockServiceFactory::EasyUnlockServiceFactory()
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
+  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
+  DependsOn(SigninManagerFactory::GetInstance());
 #if defined(OS_CHROMEOS)
   DependsOn(EasyUnlockTpmKeyManagerFactory::GetInstance());
 #endif

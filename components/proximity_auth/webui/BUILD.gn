@@ -5,6 +5,8 @@
 # GYP version: components/proximity_auth.gypi:proximity_auth_webui
 static_library("webui") {
   sources = [
+    "cryptauth_enroller_factory_impl.cc",
+    "cryptauth_enroller_factory_impl.h",
     "proximity_auth_ui.cc",
     "proximity_auth_ui.h",
     "proximity_auth_ui_delegate.h",
