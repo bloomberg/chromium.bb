@@ -33,6 +33,8 @@
 #include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
 #include "ui/events/ozone/evdev/touch_evdev_types.h"
 #include "ui/events/ozone/evdev/touch_noise/touch_noise_finder.h"
+#include "ui/ozone/public/input_controller.h"
+#include "ui/ozone/public/ozone_platform.h"
 
 namespace {
 
@@ -101,6 +103,7 @@ TouchEventConverterEvdev::TouchEventConverterEvdev(
           switches::kExtraTouchNoiseFiltering)) {
     touch_noise_finder_.reset(new TouchNoiseFinder);
   }
+  touch_evdev_debug_buffer_.Initialize(devinfo);
 }
 
 TouchEventConverterEvdev::~TouchEventConverterEvdev() {
@@ -250,8 +253,19 @@ void TouchEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
   }
 }
 
+void TouchEventConverterEvdev::DumpTouchEventLog(const char* filename) {
+  touch_evdev_debug_buffer_.DumpLog(filename);
+}
+
+void TouchEventConverterEvdev::SetTouchEventLoggingEnabled(bool enabled) {
+  touch_logging_enabled_ = enabled;
+}
+
 void TouchEventConverterEvdev::ProcessMultitouchEvent(
     const input_event& input) {
+  if (touch_logging_enabled_)
+    touch_evdev_debug_buffer_.ProcessEvent(current_slot_, &input);
+
   if (input.type == EV_SYN) {
     ProcessSyn(input);
   } else if (dropped_events_) {

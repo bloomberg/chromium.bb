@@ -114,6 +114,8 @@
       'evdev/tablet_event_converter_evdev.h',
       'evdev/touch_evdev_types.cc',
       'evdev/touch_evdev_types.h',
+      'evdev/touch_evdev_debug_buffer.h',
+      'evdev/touch_evdev_debug_buffer.cc',
       'evdev/touch_event_converter_evdev.cc',
       'evdev/touch_event_converter_evdev.h',
       'evdev/touch_noise/far_apart_taps_touch_noise_filter.cc',

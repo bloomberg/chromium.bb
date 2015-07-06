@@ -75,6 +75,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
   int32_t GetAbsMinimum(unsigned int code) const;
   int32_t GetAbsMaximum(unsigned int code) const;
   int32_t GetAbsValue(unsigned int code) const;
+  input_absinfo GetAbsInfoByCode(unsigned int code) const;
   uint32_t GetAbsMtSlotCount() const;
   int32_t GetAbsMtSlotValue(unsigned int code, unsigned int slot) const;
   int32_t GetAbsMtSlotValueWithDefault(unsigned int code,

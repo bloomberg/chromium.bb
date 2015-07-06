@@ -106,6 +106,13 @@ std::string GetCanonicalDeviceName(const std::string& name) {
 }
 
 // Name event logs in a way that is compatible with existing toolchain.
+std::string GenerateEventLogName(const base::FilePath& out_dir,
+                                 const std::string& prefix,
+                                 const std::string& now,
+                                 int id) {
+  return out_dir.value() + "/" + prefix + now + "." + base::IntToString(id);
+}
+// Name event logs in a way that is compatible with existing toolchain.
 std::string GenerateEventLogName(GesturePropertyProvider* provider,
                                  const base::FilePath& out_dir,
                                  const std::string& prefix,
@@ -160,10 +167,12 @@ void DumpTouchDeviceStatus(GesturePropertyProvider* provider,
 }
 
 // Dump touch event logs.
-void DumpTouchEventLog(GesturePropertyProvider* provider,
-                       const base::FilePath& out_dir,
-                       scoped_ptr<std::vector<base::FilePath>> log_paths,
-                       const GetTouchEventLogReply& reply) {
+void DumpTouchEventLog(
+    std::map<base::FilePath, EventConverterEvdev*>& converters,
+    GesturePropertyProvider* provider,
+    const base::FilePath& out_dir,
+    scoped_ptr<std::vector<base::FilePath>> log_paths,
+    const GetTouchEventLogReply& reply) {
   // Get device ids.
   std::vector<int> ids;
   provider->GetDeviceIdsByType(DT_ALL, &ids);
@@ -207,6 +216,18 @@ void DumpTouchEventLog(GesturePropertyProvider* provider,
     log_paths->push_back(base::FilePath(gesture_log_filename));
     log_paths_to_be_compressed->push_back(evdev_log_filename);
     log_paths->push_back(base::FilePath(evdev_log_filename));
+  }
+
+  for (auto it = converters.begin(); it != converters.end(); ++it) {
+    EventConverterEvdev* converter = it->second;
+    if (converter->HasTouchscreen()) {
+      converter->DumpTouchEventLog(kInputEventsLogFile);
+      std::string touch_evdev_log_filename = GenerateEventLogName(
+          out_dir, "evdev_input_events_", now, converter->id());
+      base::Move(base::FilePath(kInputEventsLogFile),
+                 base::FilePath(touch_evdev_log_filename));
+      log_paths->push_back(base::FilePath(touch_evdev_log_filename));
+    }
   }
 
   // Compress touchpad/mouse logs on another thread and return.

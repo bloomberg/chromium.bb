@@ -31,12 +31,14 @@ const char kHUDLogDataKey[] = "hud_log";
 // log processing toolchain.
 const char kDeviceStatusLogDataKey[] = "hack-33025-touchpad";
 const char kTouchpadEventLogDataKey[] = "hack-33025-touchpad_activity";
+const char kTouchscreenEventLogDataKey[] = "hack-33025-touchscreen_activity";
 
 // Directory for temp touch event logs.
 const char kTouchEventLogDir[] = "/home/chronos/user/log";
 
 // Prefixes of touch event logs.
 const char kTouchpadGestureLogPrefix[] = "touchpad_activity_";
+const char kTouchscreenLogPrefix[] = "evdev_input_events_";
 const char kTouchpadEvdevLogPrefix[] = "cmt_input_events_";
 
 // Binary paths.
@@ -99,7 +101,21 @@ void PackEventLog(system_logs::SystemLogsResponse* response,
   command.AppendArg(std::string(kTarCommand) + touchpad_log_list +
                     " 2>/dev/null | " + kUuencodeCommand +
                     " -m touchpad_activity_log.tar");
+
   commands.push_back(std::make_pair(kTouchpadEventLogDataKey, command));
+
+  base::CommandLine ts_command =
+      base::CommandLine(base::FilePath(kShellCommand));
+  ts_command.AppendArg("-c");
+
+  // Make a list that contains touchscreen event logs only.
+  const std::string touchscreen_log_list = GetEventLogListOfOnePrefix(
+      *log_paths, kTouchscreenLogPrefix, kMaxDeviceTouchEventLogs);
+  ts_command.AppendArg(std::string(kTarCommand) + touchscreen_log_list +
+                       " 2>/dev/null | " + kUuencodeCommand +
+                       " -m touchscreen_activity_log.tar");
+
+  commands.push_back(std::make_pair(kTouchscreenEventLogDataKey, ts_command));
 
   // For now only touchpad (and mouse) logs are actually collected.
   for (size_t i = 0; i < commands.size(); ++i) {

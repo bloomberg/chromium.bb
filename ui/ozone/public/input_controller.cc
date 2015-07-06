@@ -28,6 +28,7 @@ class StubInputController : public InputController {
                          const base::TimeDelta& interval) override;
   void GetAutoRepeatRate(base::TimeDelta* delay,
                          base::TimeDelta* interval) override;
+  void SetTouchEventLoggingEnabled(bool enabled) override;
   void SetTouchpadSensitivity(int value) override;
   void SetTapToClick(bool enabled) override;
   void SetThreeFingerClick(bool enabled) override;
@@ -87,6 +88,10 @@ void StubInputController::GetAutoRepeatRate(base::TimeDelta* delay,
 }
 
 void StubInputController::SetTouchpadSensitivity(int value) {
+}
+
+void StubInputController::SetTouchEventLoggingEnabled(bool enabled) {
+  NOTIMPLEMENTED();
 }
 
 void StubInputController::SetTapToClick(bool enabled) {

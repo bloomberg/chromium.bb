@@ -59,6 +59,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
   // Start or restart (e.g. should reapply keys/buttons/touches).
   virtual void OnEnabled();
 
+  // Dump recent events into a file.
+  virtual void DumpTouchEventLog(const char* filename);
+
   // Returns true if the converter is used for a keyboard device.
   virtual bool HasKeyboard() const;
 
@@ -89,6 +92,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
 
   // Update caps lock LED state.
   virtual void SetCapsLockLed(bool enabled);
+
+  // Update touch event logging state.
+  virtual void SetTouchEventLoggingEnabled(bool enabled);
 
   // Helper to generate a base::TimeDelta from an input_event's time
   static base::TimeDelta TimeDeltaFromInputEvent(const input_event& event);

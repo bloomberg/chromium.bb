@@ -42,6 +42,7 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdevProxy {
   void RemoveInputDevice(const base::FilePath& path);
   void OnStartupScanComplete();
   void SetCapsLockLed(bool enabled);
+  void SetTouchEventLoggingEnabled(bool enabled);
   void UpdateInputDeviceSettings(const InputDeviceSettingsEvdev& settings);
   void GetTouchDeviceStatus(const GetTouchDeviceStatusReply& reply);
   void GetTouchEventLog(const base::FilePath& out_dir,

@@ -15,6 +15,7 @@
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
+#include "ui/events/ozone/evdev/touch_evdev_debug_buffer.h"
 
 namespace ui {
 
@@ -40,6 +41,11 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   int GetTouchPoints() const override;
   void OnEnabled() override;
   void OnDisabled() override;
+
+  void DumpTouchEventLog(const char* filename) override;
+
+  // Update touch event logging state
+  void SetTouchEventLoggingEnabled(bool enabled) override;
 
   // Unsafe part of initialization.
   virtual void Initialize(const EventDeviceInfo& info);
@@ -108,11 +114,17 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   // Touch point currently being updated from the /dev/input/event* stream.
   size_t current_slot_ = 0;
 
+  // Flag that indicates if the touch logging enabled or not.
+  bool touch_logging_enabled_ = true;
+
   // In-progress touch points.
   std::vector<InProgressTouchEvdev> events_;
 
   // Finds touch noise.
   scoped_ptr<TouchNoiseFinder> touch_noise_finder_;
+
+  // Records the recent touch events. It is used to fill the feedback reports
+  TouchEventLogEvdev touch_evdev_debug_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchEventConverterEvdev);
 };

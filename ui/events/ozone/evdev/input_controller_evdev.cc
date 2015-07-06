@@ -87,6 +87,11 @@ void InputControllerEvdev::SetInternalTouchpadEnabled(bool enabled) {
   ScheduleUpdateDeviceSettings();
 }
 
+void InputControllerEvdev::SetTouchEventLoggingEnabled(bool enabled) {
+  input_device_settings_.touch_event_logging_enabled = enabled;
+  ScheduleUpdateDeviceSettings();
+}
+
 void InputControllerEvdev::SetInternalKeyboardFilter(
     bool enable_filter,
     std::vector<DomCode> allowed_keys) {

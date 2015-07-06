@@ -25,6 +25,7 @@ struct InputDeviceSettingsEvdev {
   bool tap_dragging_enabled = false;
   bool natural_scroll_enabled = false;
   bool tap_to_click_paused = false;
+  bool touch_event_logging_enabled = true;
 
   int touchpad_sensitivity = kDefaultSensitivity;
   int mouse_sensitivity = kDefaultSensitivity;

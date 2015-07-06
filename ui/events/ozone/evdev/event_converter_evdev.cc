@@ -68,6 +68,9 @@ void EventConverterEvdev::OnEnabled() {
 void EventConverterEvdev::OnDisabled() {
 }
 
+void EventConverterEvdev::DumpTouchEventLog(const char* filename) {
+}
+
 void EventConverterEvdev::OnFileCanWriteWithoutBlocking(int fd) {
   NOTREACHED();
 }
@@ -132,6 +135,9 @@ void EventConverterEvdev::SetCapsLockLed(bool enabled) {
     LOG(ERROR) << "short write setting leds for " << path_.value();
     Stop();
   }
+}
+
+void EventConverterEvdev::SetTouchEventLoggingEnabled(bool enabled) {
 }
 
 base::TimeDelta EventConverterEvdev::TimeDeltaFromInputEvent(

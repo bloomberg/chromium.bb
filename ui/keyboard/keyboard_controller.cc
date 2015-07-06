@@ -32,7 +32,11 @@
 #if defined(OS_CHROMEOS)
 #include "base/process/launch.h"
 #include "base/sys_info.h"
+#if defined(USE_OZONE)
+#include "ui/ozone/public/input_controller.h"
+#include "ui/ozone/public/ozone_platform.h"
 #endif
+#endif  // if defined(OS_CHROMEOS)
 
 namespace {
 
@@ -89,6 +93,11 @@ class KeyboardWindowDelegate : public aura::WindowDelegate {
 
 void ToggleTouchEventLogging(bool enable) {
 #if defined(OS_CHROMEOS)
+#if defined(USE_OZONE)
+  ui::OzonePlatform::GetInstance()
+      ->GetInputController()
+      ->SetTouchEventLoggingEnabled(enable);
+#elif defined(USE_X11)
   if (!base::SysInfo::IsRunningOnChromeOS())
     return;
   base::CommandLine command(
@@ -102,6 +111,7 @@ void ToggleTouchEventLogging(bool enable) {
   options.wait = true;
   base::LaunchProcess(command, options);
 #endif
+#endif  // defined(OS_CHROMEOS)
 }
 
 }  // namespace

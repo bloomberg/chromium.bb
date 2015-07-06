@@ -288,6 +288,10 @@ int32_t EventDeviceInfo::GetAbsValue(unsigned int code) const {
   return abs_info_[code].value;
 }
 
+input_absinfo EventDeviceInfo::GetAbsInfoByCode(unsigned int code) const {
+  return abs_info_[code];
+}
+
 uint32_t EventDeviceInfo::GetAbsMtSlotCount() const {
   if (!HasAbsEvent(ABS_MT_SLOT))
     return 0;

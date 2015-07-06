@@ -305,8 +305,8 @@ void InputDeviceFactoryEvdev::GetTouchEventLog(
   scoped_ptr<std::vector<base::FilePath>> log_paths(
       new std::vector<base::FilePath>);
 #if defined(USE_EVDEV_GESTURES)
-  DumpTouchEventLog(gesture_property_provider_.get(), out_dir, log_paths.Pass(),
-                    reply);
+  DumpTouchEventLog(converters_, gesture_property_provider_.get(), out_dir,
+                    log_paths.Pass(), reply);
 #else
   reply.Run(log_paths.Pass());
 #endif
@@ -352,6 +352,9 @@ void InputDeviceFactoryEvdev::ApplyInputDeviceSettings() {
           input_device_settings_.enable_internal_keyboard_filter,
           input_device_settings_.internal_keyboard_allowed_keys);
     }
+
+    converter->SetTouchEventLoggingEnabled(
+        input_device_settings_.touch_event_logging_enabled);
   }
 }
 
