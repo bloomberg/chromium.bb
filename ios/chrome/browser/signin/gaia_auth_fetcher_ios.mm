@@ -23,6 +23,9 @@
 
 namespace {
 
+// Whether the iOS specialization of the GaiaAuthFetcher should be used.
+bool g_should_use_gaia_auth_fetcher_ios = true;
+
 // Creates an NSURLRequest to |url| that can be loaded by a WebView from |body|
 // and |headers|.
 // The request is a GET if |body| is empty and a POST otherwise.
@@ -185,7 +188,7 @@ void GaiaAuthFetcherIOS::CreateAndStartGaiaFetcher(const std::string& body,
 
   bool cookies_required = !(load_flags & (net::LOAD_DO_NOT_SEND_COOKIES |
                                           net::LOAD_DO_NOT_SAVE_COOKIES));
-  if (!experimental_flags::IsWKWebViewEnabled() || !cookies_required) {
+  if (!ShouldUseGaiaAuthFetcherIOS() || !cookies_required) {
     GaiaAuthFetcher::CreateAndStartGaiaFetcher(body, headers, gaia_gurl,
                                                load_flags);
     return;
@@ -224,4 +227,14 @@ void GaiaAuthFetcherIOS::FetchComplete(const GURL& url,
   DVLOG(2) << "data: " << data << "\n";
   SetPendingFetch(false);
   DispatchFetchedRequest(url, data, cookies, status, response_code);
+}
+
+void GaiaAuthFetcherIOS::SetShouldUseGaiaAuthFetcherIOSForTesting(
+    bool use_gaia_fetcher_ios) {
+  g_should_use_gaia_auth_fetcher_ios = use_gaia_fetcher_ios;
+}
+
+bool GaiaAuthFetcherIOS::ShouldUseGaiaAuthFetcherIOS() {
+  return experimental_flags::IsWKWebViewEnabled() &&
+         g_should_use_gaia_auth_fetcher_ios;
 }

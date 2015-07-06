@@ -23,6 +23,17 @@ class BrowserState;
 // be fetched via a WKWebView instead of a net::URLFetcher.
 class GaiaAuthFetcherIOS : public GaiaAuthFetcher {
  public:
+  // Sets whether the iOS specialization of the GaiaAuthFetcher should be used.
+  // Mainly used for testing.
+  // Note that if |should_use| is true, it might still not be used if it is
+  // unecessary or WKWebView isn't enabled.
+  static void SetShouldUseGaiaAuthFetcherIOSForTesting(
+      bool use_gaia_fetcher_ios);
+
+  // Returns whether the iOS specialization of the GaiaAuthFetcher should be
+  // used.
+  static bool ShouldUseGaiaAuthFetcherIOS();
+
   GaiaAuthFetcherIOS(GaiaAuthConsumer* consumer,
                      const std::string& source,
                      net::URLRequestContextGetter* getter,
