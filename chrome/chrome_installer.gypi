@@ -306,6 +306,7 @@
           ],
         },
         {
+          # GN version: //chrome/installer/setup:setup_unittests
           'target_name': 'setup_unittests',
           'type': 'executable',
           'dependencies': [
@@ -325,6 +326,7 @@
           # below into a separate lib and then link both setup.exe and
           # setup_unittests.exe against that.
           'sources': [
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/installer/util/installer_util_strings.rc',
             'installer/mini_installer/chrome.release',  # Move to lib
             'installer/mini_installer/appid.h',
             'installer/mini_installer/chrome_appid.cc',
@@ -351,8 +353,6 @@
             'installer/setup/run_all_unittests.cc',
             'installer/setup/setup_constants.cc',       # Move to lib
             'installer/setup/setup_constants.h',        # Move to lib
-            'installer/setup/setup_unittests.rc',
-            'installer/setup/setup_unittests_resource.h',
             'installer/setup/setup_util.cc',
             'installer/setup/setup_util_unittest.cc',
             'installer/setup/setup_util_unittest.h',

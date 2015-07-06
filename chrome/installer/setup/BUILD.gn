@@ -1,0 +1,57 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+if (is_win) {
+  test("setup_unittests") {
+    # TODO(robertshield): Move the items marked with "Move to lib"
+    # below into a separate lib and then link both setup.exe and
+    # setup_unittests.exe against that.
+    sources = [
+      "../mini_installer/appid.h",
+      "../mini_installer/chrome.release",  # Move to lib
+      "../mini_installer/chrome_appid.cc",
+      "../mini_installer/configuration.cc",
+      "../mini_installer/configuration.h",
+      "../mini_installer/configuration_test.cc",
+      "../mini_installer/decompress.cc",
+      "../mini_installer/decompress.h",
+      "../mini_installer/decompress_test.cc",
+      "../mini_installer/mini_string.cc",
+      "../mini_installer/mini_string.h",
+      "../mini_installer/mini_string_test.cc",
+      "app_launcher_installer.cc",  # Move to lib
+      "app_launcher_installer.h",  # Move to lib
+      "archive_patch_helper.cc",  # Move to lib
+      "archive_patch_helper.h",  # Move to lib
+      "archive_patch_helper_unittest.cc",
+      "install.cc",  # Move to lib
+      "install.h",  # Move to lib
+      "install_unittest.cc",
+      "install_worker.cc",  # Move to lib
+      "install_worker.h",  # Move to lib
+      "install_worker_unittest.cc",
+      "run_all_unittests.cc",
+      "setup_constants.cc",  # Move to lib
+      "setup_constants.h",  # Move to lib
+      "setup_util.cc",
+      "setup_util_unittest.cc",
+      "setup_util_unittest.h",
+    ]
+
+    deps = [
+      "//base",
+      "//base:i18n",
+      "//base/test:test_support",
+      "//chrome/installer/util:strings",
+      "//chrome/installer/util:util",
+      "//testing/gmock",
+      "//testing/gtest",
+    ]
+
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+  }
+}

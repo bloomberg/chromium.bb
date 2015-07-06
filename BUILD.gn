@@ -555,6 +555,7 @@ group("both_gn_and_gyp") {
   if (is_win) {
     deps += [
       "//base:pe_image_test",
+      "//chrome/installer/setup:setup_unittests",
       "//chrome_elf:chrome_elf_unittests",
       "//chrome_elf:dll_hash_main",
       "//components/crash/tools:crash_service",
@@ -852,6 +853,7 @@ if (is_linux) {
       "//cc:cc_unittests",  # PASSES 4/17/2015
       "//chrome_elf:chrome_elf_unittests",  # FAILS 4/20/2015
       "//chrome/installer/util:installer_util_unittests",
+      "//chrome/installer/setup:setup_unittests",
       "//chrome/test:browser_tests",
       "//chrome/test:interactive_ui_tests",
       "//chrome/test:sync_integration_tests",  # Note: need to turn off incremental linking for debug.
