@@ -11,31 +11,49 @@ Polymer({
   properties: {
     checkboxChecked: {
       type: Boolean,
-      value: true,
+      value: false,
       observer: 'checkboxCheckedChanged_'
     },
 
     collapseOpened: {
       type: Boolean,
-      value: true,
+      value: false,
       observer: 'collapseOpenedChanged_'
     },
 
-    inputValue: {
-      type: String,
-      value: '',
-      observer: 'inputValueChanged_'
+    inputValues: {
+      type: Array,
+      value: function() { return ["", "input1", "input2", "", "input4"]; },
+      observer: 'inputValuesChanged_'
     },
 
-    label: {
+    checkboxLabel: {
       type: String,
-      value: 'label!',
+      value: 'CheckboxLabel',
     },
 
     subLabel: {
       type: String,
-      value: 'sub-label!',
+      value: 'sub-label',
     },
+
+    /**
+     * @type {!Array<!CrOnc.NetworkStateProperties>}
+     */
+    networkStates: {
+      type: Array,
+      value: function() {
+        return [
+          { Type: 'Ethernet' },
+          { ConnectionState: 'Connected', Type: 'Cellular', Name: 'cellular1',
+            Cellular: { NetworkTechnology: 'LTE', SignalStrength: 80 }, },
+          { ConnectionState: 'Connected', Type: 'WiFi', Name: 'wifi1',
+            WiFi: { SignalStrength: 60 }, },
+          { ConnectionState: 'NotConnected', Type: 'WiFi', Name: 'wifi2',
+            WiFi: { Security: 'WEP', SignalStrength: 20 }, },
+        ];
+      }
+    }
   },
 
   checkboxCheckedChanged_: function() {
@@ -46,7 +64,7 @@ Polymer({
     console.log('collapseOpened=' + this.collapseOpened);
   },
 
-  inputValueChanged_: function() {
-    console.log('inputValue=' + this.inputValue);
+  inputValuesChanged_: function() {
+    console.log('inputValues=' + this.inputValues);
   }
 });

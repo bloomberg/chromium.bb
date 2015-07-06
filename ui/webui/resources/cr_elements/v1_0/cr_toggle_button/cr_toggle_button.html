@@ -1,3 +1,5 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_events/cr_events.html">
 
@@ -15,9 +17,12 @@
   <link rel="import" type="css" href="cr_toggle_button.css">
   <template>
     <cr-events id="events"></cr-events>
-    <paper-toggle-button id="button"
-        checked="{{checked}}" disabled="[[disabled]]">
-    </paper-toggle-button>
+    <div id="wrapper" class="layout horizontal center">
+      <paper-toggle-button id="button"
+          checked="{{checked}}" disabled="[[disabled]]">
+      </paper-toggle-button>
+      <div id="content"><content></content></div>
+    </div>
   </template>
   <script src="cr_toggle_button.js"></script>
 </dom-module>

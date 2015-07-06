@@ -69,7 +69,8 @@ Polymer({
      */
     isListItem: {
       type: Boolean,
-      value: false
+      value: false,
+      observer: 'networkStateChanged_'
     },
   },
 
@@ -85,7 +86,8 @@ Polymer({
     var isDisconnected =
         network.ConnectionState == CrOnc.ConnectionState.NOT_CONNECTED;
     if (this.isListItem) {
-      this.$.networkName.textContent = getText(network.Name);
+      var name = getText(network.Name) || getText(network.Type);
+      this.$.networkName.textContent = name;
       this.$.networkName.classList.toggle('connected', !isDisconnected);
     } else if (network.Name && network.ConnectionState) {
       this.$.networkName.textContent = getText(network.Type);

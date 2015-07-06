@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
   <!-- Polymer 1.0 Elements -->
+  <structure name="IDR_CR_ELEMENTS_1_0_CR_DEMO_ELEMENT_CSS"
+             file="../../webui/resources/cr_elements/v1_0/demo_element.css"
+             type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_1_0_CR_DEMO_ELEMENT_HTML"
              file="../../webui/resources/cr_elements/v1_0/demo_element.html"
              type="chrome_html" />
@@ -45,6 +48,9 @@
              type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_1_0_CR_EVENTS_JS"
              file="../../webui/resources/cr_elements/v1_0/cr_events/cr_events.js"
+             type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_1_0_CR_EXPAND_BUTTON_CSS"
+             file="../../webui/resources/cr_elements/v1_0/cr_expand_button/cr_expand_button.css"
              type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_1_0_CR_EXPAND_BUTTON_HTML"
              file="../../webui/resources/cr_elements/v1_0/cr_expand_button/cr_expand_button.html"

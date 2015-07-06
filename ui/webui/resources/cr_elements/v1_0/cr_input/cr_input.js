@@ -28,6 +28,14 @@ Polymer({
     },
 
     /**
+     * Propagate the no-label-float property.
+     */
+    noLabelFloat: {
+      type: Boolean,
+      value: false
+    },
+
+    /**
      * Set to true to mark the input as required.
      */
     required: {

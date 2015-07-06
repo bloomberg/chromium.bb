@@ -8,5 +8,5 @@
 }
 
 paper-button[toggles][active] {
-    background-color: lightgrey;
+  background-color: lightgrey;
 }

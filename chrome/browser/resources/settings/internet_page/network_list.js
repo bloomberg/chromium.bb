@@ -38,12 +38,11 @@ Polymer({
 
     /**
      * True if the list is opened.
-     *
-     * @attribute opened
-     * @type {boolean}
-     * @default false
      */
-    opened: false,
+    opened: {
+      type: Boolean,
+      value: true
+    }
   },
 
   /**
