@@ -18,6 +18,7 @@ def main_run(args):
 
   with common.temporary_file() as tempfile_path:
     rc = common.run_runtest(args, [
+        '--annotate', 'gtest',
         '--test-type', 'telemetry_unittests',
         '--run-python-script',
         os.path.join(common.SRC_DIR, 'tools', 'telemetry', 'run_tests'),

@@ -37,8 +37,10 @@ from slave import annotation_utils
 from slave import build_directory
 from slave import crash_utils
 from slave import gtest_slave_utils
+from slave import performance_log_processor
 from slave import results_dashboard
 from slave import slave_utils
+from slave import telemetry_utils
 from slave import xvfb
 
 USAGE = '%s [options] test.exe [test args]' % os.path.basename(sys.argv[0])
@@ -48,8 +50,26 @@ CHROME_SANDBOX_PATH = '/opt/chromium/chrome_sandbox'
 # Directory to write JSON for test results into.
 DEST_DIR = 'gtest_results'
 
+# Names of httpd configuration file under different platforms.
+HTTPD_CONF = {
+    'linux': 'httpd2_linux.conf',
+    'mac': 'httpd2_mac.conf',
+    'win': 'httpd.conf'
+}
+# Regex matching git comment lines containing svn revision info.
+GIT_SVN_ID_RE = re.compile(r'^git-svn-id: .*@([0-9]+) .*$')
+# Regex for the master branch commit position.
+GIT_CR_POS_RE = re.compile(r'^Cr-Commit-Position: refs/heads/master@{#(\d+)}$')
+
 # The directory that this script is in.
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+LOG_PROCESSOR_CLASSES = {
+    'gtest': gtest_utils.GTestLogParser,
+    'graphing': performance_log_processor.GraphingLogProcessor,
+    'pagecycler': performance_log_processor.GraphingPageCyclerLogProcessor,
+}
+
 
 def _LaunchDBus():
   """Launches DBus to work around a bug in GLib.
@@ -111,13 +131,14 @@ def _ShutdownDBus():
 
 
 def _RunGTestCommand(
-    options, command, extra_env, pipes=None):
+    options, command, extra_env, log_processor=None, pipes=None):
   """Runs a test, printing and possibly processing the output.
 
   Args:
     options: Options passed for this invocation of runtest.py.
     command: A list of strings in a command (the command and its arguments).
     extra_env: A dictionary of extra environment variables to set.
+    log_processor: A log processor instance which has the ProcessLine method.
     pipes: A list of command string lists which the output will be piped to.
 
   Returns:
@@ -137,7 +158,26 @@ def _RunGTestCommand(
   # TODO(phajdan.jr): Clean this up when internal waterfalls are fixed.
   env.update({'CHROMIUM_TEST_LAUNCHER_BOT_MODE': '1'})
 
-  return chromium_utils.RunCommand(command, pipes=pipes, env=env)
+  log_processors = {}
+  if log_processor:
+    log_processors[log_processor.__class__.__name__] = log_processor
+
+  if (not 'GTestLogParser' in log_processors and
+      options.log_processor_output_file):
+    log_processors['GTestLogParser'] = gtest_utils.GTestLogParser()
+
+  def _ProcessLine(line):
+    for current_log_processor in log_processors.values():
+      current_log_processor.ProcessLine(line)
+
+  result = chromium_utils.RunCommand(
+      command, pipes=pipes, parser_func=_ProcessLine, env=env)
+
+  if options.log_processor_output_file:
+    _WriteLogProcessorResultsToOutput(
+        log_processors['GTestLogParser'], options.log_processor_output_file)
+
+  return result
 
 
 def _GetMaster():
@@ -148,6 +188,97 @@ def _GetMaster():
 def _GetMasterString(master):
   """Returns a message describing what the master is."""
   return '[Running for master: "%s"]' % master
+
+
+def _GetGitCommitPositionFromLog(log):
+  """Returns either the commit position or svn rev from a git log."""
+  # Parse from the bottom up, in case the commit message embeds the message
+  # from a different commit (e.g., for a revert).
+  for r in [GIT_CR_POS_RE, GIT_SVN_ID_RE]:
+    for line in reversed(log.splitlines()):
+      m = r.match(line.strip())
+      if m:
+        return m.group(1)
+  return None
+
+
+def _GetGitCommitPosition(dir_path):
+  """Extracts the commit position or svn revision number of the HEAD commit."""
+  git_exe = 'git.bat' if sys.platform.startswith('win') else 'git'
+  p = subprocess.Popen(
+      [git_exe, 'log', '-n', '1', '--pretty=format:%B', 'HEAD'],
+      cwd=dir_path, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  (log, _) = p.communicate()
+  if p.returncode != 0:
+    return None
+  return _GetGitCommitPositionFromLog(log)
+
+
+def _IsGitDirectory(dir_path):
+  """Checks whether the given directory is in a git repository.
+
+  Args:
+    dir_path: The directory path to be tested.
+
+  Returns:
+    True if given directory is in a git repository, False otherwise.
+  """
+  git_exe = 'git.bat' if sys.platform.startswith('win') else 'git'
+  with open(os.devnull, 'w') as devnull:
+    p = subprocess.Popen([git_exe, 'rev-parse', '--git-dir'],
+                         cwd=dir_path, stdout=devnull, stderr=devnull)
+    return p.wait() == 0
+
+
+def _GetRevision(in_directory):
+  """Returns the SVN revision, git commit position, or git hash.
+
+  Args:
+    in_directory: A directory in the repository to be checked.
+
+  Returns:
+    An SVN revision as a string if the given directory is in a SVN repository,
+    or a git commit position number, or if that's not available, a git hash.
+    If all of that fails, an empty string is returned.
+  """
+  import xml.dom.minidom
+  if not os.path.exists(os.path.join(in_directory, '.svn')):
+    if _IsGitDirectory(in_directory):
+      svn_rev = _GetGitCommitPosition(in_directory)
+      if svn_rev:
+        return svn_rev
+      return _GetGitRevision(in_directory)
+    else:
+      return ''
+
+  # Note: Not thread safe: http://bugs.python.org/issue2320
+  output = subprocess.Popen(['svn', 'info', '--xml'],
+                            cwd=in_directory,
+                            shell=(sys.platform == 'win32'),
+                            stdout=subprocess.PIPE).communicate()[0]
+  try:
+    dom = xml.dom.minidom.parseString(output)
+    return dom.getElementsByTagName('entry')[0].getAttribute('revision')
+  except xml.parsers.expat.ExpatError:
+    return ''
+  return ''
+
+
+def _GetGitRevision(in_directory):
+  """Returns the git hash tag for the given directory.
+
+  Args:
+    in_directory: The directory where git is to be run.
+
+  Returns:
+    The git SHA1 hash string.
+  """
+  git_exe = 'git.bat' if sys.platform.startswith('win') else 'git'
+  p = subprocess.Popen(
+      [git_exe, 'rev-parse', 'HEAD'],
+      cwd=in_directory, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  (stdout, _) = p.communicate()
+  return stdout.strip()
 
 
 def _GenerateJSONForTestResults(options, log_processor):
@@ -210,12 +341,15 @@ def _GenerateJSONForTestResults(options, log_processor):
     if options.revision:
       generate_json_options.chrome_revision = options.revision
     else:
-      generate_json_options.chrome_revision = ''
+      chrome_dir = chromium_utils.FindUpwardParent(build_dir, 'third_party')
+      generate_json_options.chrome_revision = _GetRevision(chrome_dir)
 
     if options.webkit_revision:
       generate_json_options.webkit_revision = options.webkit_revision
     else:
-      generate_json_options.webkit_revision = ''
+      webkit_dir = chromium_utils.FindUpward(
+        build_dir, 'third_party', 'WebKit', 'Source')
+      generate_json_options.webkit_revision = _GetRevision(webkit_dir)
 
     # Generate results JSON file and upload it to the appspot server.
     generator = gtest_slave_utils.GenerateJSONResults(
@@ -275,11 +409,31 @@ def _UsingGtestJson(options):
           not options.run_shell_script)
 
 
-def _SelectLogProcessor(options):
+def _ListLogProcessors(selection):
+  """Prints a list of available log processor classes iff the input is 'list'.
+
+  Args:
+    selection: A log processor name, or the string "list".
+
+  Returns:
+    True if a list was printed, False otherwise.
+  """
+  shouldlist = selection and selection == 'list'
+  if shouldlist:
+    print
+    print 'Available log processors:'
+    for p in LOG_PROCESSOR_CLASSES:
+      print ' ', p, LOG_PROCESSOR_CLASSES[p].__name__
+
+  return shouldlist
+
+
+def _SelectLogProcessor(options, is_telemetry):
   """Returns a log processor class based on the command line options.
 
   Args:
     options: Command-line options (from OptionParser).
+    is_telemetry: bool for whether to create a telemetry log processor.
 
   Returns:
     A log processor class, or None.
@@ -287,7 +441,65 @@ def _SelectLogProcessor(options):
   if _UsingGtestJson(options):
     return gtest_utils.GTestJSONParser
 
+  if is_telemetry:
+    return telemetry_utils.TelemetryResultsProcessor
+
+  if options.annotate:
+    if options.annotate in LOG_PROCESSOR_CLASSES:
+      if options.generate_json_file and options.annotate != 'gtest':
+        raise NotImplementedError('"%s" doesn\'t make sense with '
+                                  'options.generate_json_file.')
+      else:
+        return LOG_PROCESSOR_CLASSES[options.annotate]
+    else:
+      raise KeyError('"%s" is not a valid GTest parser!' % options.annotate)
+  elif options.generate_json_file:
+    return LOG_PROCESSOR_CLASSES['gtest']
+
   return None
+
+
+def _GetCommitPos(build_properties):
+  """Extracts the commit position from the build properties, if its there."""
+  if 'got_revision_cp' not in build_properties:
+    return None
+  commit_pos = build_properties['got_revision_cp']
+  return int(re.search(r'{#(\d+)}', commit_pos).group(1))
+
+
+def _GetMainRevision(options):
+  """Return revision to use as the numerical x-value in the perf dashboard.
+
+  This will be used as the value of "rev" in the data passed to
+  results_dashboard.SendResults.
+
+  In order or priority, this function could return:
+    1. The value of the --revision flag (IF it can be parsed as an int).
+    2. The value of "got_revision_cp" in build properties.
+    3. An SVN number, git commit position, or git commit hash.
+  """
+  if options.revision and options.revision.isdigit():
+    return options.revision
+  commit_pos_num = _GetCommitPos(options.build_properties)
+  if commit_pos_num is not None:
+    return commit_pos_num
+  # TODO(sullivan,qyearsley): Don't fall back to _GetRevision if it returns
+  # a git commit, since this should be a numerical revision. Instead, abort
+  # and fail.
+  return _GetRevision(os.path.dirname(os.path.abspath(options.build_dir)))
+
+
+def _GetBlinkRevision(options):
+  if options.webkit_revision:
+    webkit_revision = options.webkit_revision
+  else:
+    try:
+      webkit_dir = chromium_utils.FindUpward(
+          os.path.abspath(options.build_dir), 'third_party', 'WebKit', 'Source')
+      webkit_revision = _GetRevision(webkit_dir)
+    except Exception:
+      webkit_revision = None
+  return webkit_revision
 
 
 def _CreateLogProcessor(log_processor_class, options):
@@ -303,10 +515,25 @@ def _CreateLogProcessor(log_processor_class, options):
   if not log_processor_class:
     return None
 
-  if log_processor_class.__name__ == 'GTestJSONParser':
-    return log_processor_class(options.build_properties.get('mastername'))
+  if log_processor_class.__name__ == 'GTestLogParser':
+    tracker_obj = log_processor_class()
+  elif log_processor_class.__name__ == 'GTestJSONParser':
+    tracker_obj = log_processor_class(
+        options.build_properties.get('mastername'))
+  else:
+    webkit_revision = _GetBlinkRevision(options) or 'undefined'
+    revision = _GetMainRevision(options) or 'undefined'
 
-  return None
+    tracker_obj = log_processor_class(
+        revision=revision,
+        build_properties=options.build_properties,
+        factory_properties=options.factory_properties,
+        webkit_revision=webkit_revision)
+
+  if options.annotate and options.generate_json_file:
+    tracker_obj.ProcessLine(_GetMasterString(_GetMaster()))
+
+  return tracker_obj
 
 
 def _WriteLogProcessorResultsToOutput(log_processor, log_output_file):
@@ -374,6 +601,54 @@ def _SymbolizeSnippetsInJSON(options, json_file_name):
     print stderr
 
 
+def _MainParse(options, _args):
+  """Run input through annotated test parser.
+
+  This doesn't execute a test, but reads test input from a file and runs it
+  through the specified annotation parser (aka log processor).
+  """
+  if not options.annotate:
+    raise chromium_utils.MissingArgument('--parse-input doesn\'t make sense '
+                                         'without --annotate.')
+
+  # If --annotate=list was passed, list the log processor classes and exit.
+  if _ListLogProcessors(options.annotate):
+    return 0
+
+  log_processor_class = _SelectLogProcessor(options, False)
+  log_processor = _CreateLogProcessor(log_processor_class, options)
+
+  if options.generate_json_file:
+    if os.path.exists(options.test_output_xml):
+      # remove the old XML output file.
+      os.remove(options.test_output_xml)
+
+  if options.parse_input == '-':
+    f = sys.stdin
+  else:
+    try:
+      f = open(options.parse_input, 'rb')
+    except IOError as e:
+      print 'Error %d opening \'%s\': %s' % (e.errno, options.parse_input,
+                                             e.strerror)
+      return 1
+
+  with f:
+    for line in f:
+      log_processor.ProcessLine(line)
+
+  if options.generate_json_file:
+    if not _GenerateJSONForTestResults(options, log_processor):
+      return 1
+
+  if options.annotate:
+    annotation_utils.annotate(
+        options.test_type, options.parse_result, log_processor,
+        perf_dashboard_id=options.perf_dashboard_id)
+
+  return options.parse_result
+
+
 def _MainMac(options, args, extra_env):
   """Runs the test on mac."""
   if len(args) < 1:
@@ -399,7 +674,10 @@ def _MainMac(options, args, extra_env):
     command = _BuildTestBinaryCommand(build_dir, test_exe_path, options)
   command.extend(args[1:])
 
-  log_processor_class = _SelectLogProcessor(options)
+  # If --annotate=list was passed, list the log processor classes and exit.
+  if _ListLogProcessors(options.annotate):
+    return 0
+  log_processor_class = _SelectLogProcessor(options, False)
   log_processor = _CreateLogProcessor(log_processor_class, options)
 
   if options.generate_json_file:
@@ -419,7 +697,8 @@ def _MainMac(options, args, extra_env):
 
     command = _GenerateRunIsolatedCommand(build_dir, test_exe_path, options,
                                           command)
-    result = _RunGTestCommand(options, command, extra_env, pipes=pipes)
+    result = _RunGTestCommand(options, command, extra_env, pipes=pipes,
+                              log_processor=log_processor)
   finally:
     if _UsingGtestJson(options):
       log_processor.ProcessJSONFile(options.build_dir)
@@ -507,7 +786,10 @@ def _MainLinux(options, args, extra_env):
     command = _BuildTestBinaryCommand(build_dir, test_exe_path, options)
   command.extend(args[1:])
 
-  log_processor_class = _SelectLogProcessor(options)
+  # If --annotate=list was passed, list the log processor classes and exit.
+  if _ListLogProcessors(options.annotate):
+    return 0
+  log_processor_class = _SelectLogProcessor(options, False)
   log_processor = _CreateLogProcessor(log_processor_class, options)
 
   if options.generate_json_file:
@@ -547,7 +829,8 @@ def _MainLinux(options, args, extra_env):
 
     command = _GenerateRunIsolatedCommand(build_dir, test_exe_path, options,
                                           command)
-    result = _RunGTestCommand(options, command, extra_env, pipes=pipes)
+    result = _RunGTestCommand(options, command, extra_env, pipes=pipes,
+                              log_processor=log_processor)
   finally:
     if start_xvfb:
       xvfb.StopVirtualX(slave_name)
@@ -611,7 +894,10 @@ def _MainWin(options, args, extra_env):
   # directory from previous test runs (i.e.- from crashes or unittest leaks).
   slave_utils.RemoveChromeTemporaryFiles()
 
-  log_processor_class = _SelectLogProcessor(options)
+  # If --annotate=list was passed, list the log processor classes and exit.
+  if _ListLogProcessors(options.annotate):
+    return 0
+  log_processor_class = _SelectLogProcessor(options, False)
   log_processor = _CreateLogProcessor(log_processor_class, options)
 
   if options.generate_json_file:
@@ -627,10 +913,68 @@ def _MainWin(options, args, extra_env):
 
     command = _GenerateRunIsolatedCommand(build_dir, test_exe_path, options,
                                           command)
-    result = _RunGTestCommand(options, command, extra_env)
+    result = _RunGTestCommand(options, command, extra_env, log_processor)
   finally:
     if _UsingGtestJson(options):
       log_processor.ProcessJSONFile(options.build_dir)
+
+  if options.generate_json_file:
+    if not _GenerateJSONForTestResults(options, log_processor):
+      return 1
+
+  if options.annotate:
+    annotation_utils.annotate(
+        options.test_type, result, log_processor,
+        perf_dashboard_id=options.perf_dashboard_id)
+
+  return result
+
+
+def _MainAndroid(options, args, extra_env):
+  """Runs tests on android.
+
+  Running GTest-based tests on android is different than on Linux as it requires
+  src/build/android/test_runner.py to deploy and communicate with the device.
+  Python scripts are the same as with Linux.
+
+  Args:
+    options: Command-line options for this invocation of runtest.py.
+    args: Command and arguments for the test.
+    extra_env: A dictionary of extra environment variables to set.
+
+  Returns:
+    Exit status code.
+  """
+  if options.run_python_script:
+    return _MainLinux(options, args, extra_env)
+
+  if len(args) < 1:
+    raise chromium_utils.MissingArgument('Usage: %s' % USAGE)
+
+  if _ListLogProcessors(options.annotate):
+    return 0
+  log_processor_class = _SelectLogProcessor(options, False)
+  log_processor = _CreateLogProcessor(log_processor_class, options)
+
+  if options.generate_json_file:
+    if os.path.exists(options.test_output_xml):
+      # remove the old XML output file.
+      os.remove(options.test_output_xml)
+
+  # Assume it's a gtest apk, so use the android harness.
+  test_suite = args[0]
+  run_test_target_option = '--release'
+  if options.target == 'Debug':
+    run_test_target_option = '--debug'
+  command = ['src/build/android/test_runner.py', 'gtest',
+             run_test_target_option, '-s', test_suite]
+
+  if options.flakiness_dashboard_server:
+    command += ['--flakiness-dashboard-server=%s' %
+        options.flakiness_dashboard_server]
+
+  result = _RunGTestCommand(
+      options, command, extra_env, log_processor=log_processor)
 
   if options.generate_json_file:
     if not _GenerateJSONForTestResults(options, log_processor):
@@ -943,12 +1287,18 @@ def main():
           '--results-directory is required with --generate-json-file=True')
       return 1
 
-    if sys.platform.startswith('darwin'):
+    if options.parse_input:
+      result = _MainParse(options, args)
+    elif sys.platform.startswith('darwin'):
       result = _MainMac(options, args, extra_env)
     elif sys.platform == 'win32':
       result = _MainWin(options, args, extra_env)
     elif sys.platform == 'linux2':
-      result = _MainLinux(options, args, extra_env)
+      if options.factory_properties.get('test_platform',
+            options.test_platform) == 'android':
+        result = _MainAndroid(options, args, extra_env)
+      else:
+        result = _MainLinux(options, args, extra_env)
     else:
       sys.stderr.write('Unknown sys.platform value %s\n' % repr(sys.platform))
       return 1

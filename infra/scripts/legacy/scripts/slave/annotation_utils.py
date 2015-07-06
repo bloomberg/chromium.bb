@@ -11,13 +11,8 @@ TODO(stip): Move the perf dashboard code from runtest.py to here.
 
 import re
 
+from slave import performance_log_processor
 from slave import slave_utils
-
-
-# Status codes that can be returned by the evaluateCommand method.
-# From buildbot.status.builder.
-# See: http://docs.buildbot.net/current/developer/results.html
-SUCCESS, WARNINGS, FAILURE, SKIPPED, EXCEPTION, RETRY = range(6)
 
 
 def getText(result, observer, name):
@@ -51,9 +46,9 @@ def getText(result, observer, name):
 
   failed_test_count = len(observer.FailedTests())
   if failed_test_count == 0:
-    if result == SUCCESS:
+    if result == performance_log_processor.SUCCESS:
       return basic_info
-    elif result == WARNINGS:
+    elif result == performance_log_processor.WARNINGS:
       return basic_info + ['warnings']
 
   if observer.RunningTests():
@@ -85,7 +80,7 @@ def annotate(test_name, result, log_processor, perf_dashboard_id=None):
   # with no output (exit code can have some clues, especially on Windows).
   print 'exit code (as seen by runtest.py): %d' % result
 
-  get_text_result = SUCCESS
+  get_text_result = performance_log_processor.SUCCESS
 
   for failure in sorted(log_processor.FailedTests()):
     clean_test_name = re.sub(r'[^\w\.\-]', '_', failure)
@@ -107,18 +102,18 @@ def annotate(test_name, result, log_processor, perf_dashboard_id=None):
     if parser_result > result:
       result = parser_result
 
-  if result == SUCCESS:
+  if result == performance_log_processor.SUCCESS:
     if (len(log_processor.ParsingErrors()) or
         len(log_processor.FailedTests()) or
         len(log_processor.MemoryToolReportHashes())):
       print '@@@STEP_WARNINGS@@@'
-      get_text_result = WARNINGS
+      get_text_result = performance_log_processor.WARNINGS
   elif result == slave_utils.WARNING_EXIT_CODE:
     print '@@@STEP_WARNINGS@@@'
-    get_text_result = WARNINGS
+    get_text_result = performance_log_processor.WARNINGS
   else:
     print '@@@STEP_FAILURE@@@'
-    get_text_result = FAILURE
+    get_text_result = performance_log_processor.FAILURE
 
   for desc in getText(get_text_result, log_processor, test_name):
     print '@@@STEP_TEXT@%s@@@' % desc

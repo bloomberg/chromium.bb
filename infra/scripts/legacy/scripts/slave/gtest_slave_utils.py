@@ -25,6 +25,71 @@ FULL_RESULTS_FILENAME = 'full_results.json'
 TIMES_MS_FILENAME = 'times_ms.json'
 
 
+# Note: GTestUnexpectedDeathTracker is being deprecated in favor of
+# common.gtest_utils.GTestLogParser. See scripts/slave/runtest.py for details.
+class GTestUnexpectedDeathTracker(object):
+  """A lightweight version of log parser that keeps track of running tests
+  for unexpected timeout or crash."""
+
+  def __init__(self):
+    self._current_test = None
+    self._completed = False
+    self._test_start = re.compile(r'\[\s+RUN\s+\] (\w+\.\w+)')
+    self._test_ok = re.compile(r'\[\s+OK\s+\] (\w+\.\w+)')
+    self._test_fail = re.compile(r'\[\s+FAILED\s+\] (\w+\.\w+)')
+    self._test_passed = re.compile(r'\[\s+PASSED\s+\] \d+ tests?.')
+
+    self._failed_tests = set()
+
+  def OnReceiveLine(self, line):
+    results = self._test_start.search(line)
+    if results:
+      self._current_test = results.group(1)
+      return
+
+    results = self._test_ok.search(line)
+    if results:
+      self._current_test = ''
+      return
+
+    results = self._test_fail.search(line)
+    if results:
+      self._failed_tests.add(results.group(1))
+      self._current_test = ''
+      return
+
+    results = self._test_passed.search(line)
+    if results:
+      self._completed = True
+      self._current_test = ''
+      return
+
+  def GetResultsMap(self):
+    """Returns a map of TestResults."""
+
+    if self._current_test:
+      self._failed_tests.add(self._current_test)
+
+    test_results_map = dict()
+    for test in self._failed_tests:
+      test_results_map[canonical_name(test)] = [TestResult(test, failed=True)]
+
+    return test_results_map
+
+  def CompletedWithoutFailure(self):
+    """Returns True if all tests completed and no tests failed unexpectedly."""
+
+    if not self._completed:
+      return False
+
+    for test in self._failed_tests:
+      test_modifier = TestResult(test, failed=True).modifier
+      if test_modifier not in (TestResult.FAILS, TestResult.FLAKY):
+        return False
+
+    return True
+
+
 def GetResultsMap(observer):
   """Returns a map of TestResults."""
 
