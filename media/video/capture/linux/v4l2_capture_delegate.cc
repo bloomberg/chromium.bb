@@ -81,7 +81,7 @@ V4L2CaptureDelegate::CreateV4L2CaptureDelegate(
   }
 }
 
-//static
+// static
 size_t V4L2CaptureDelegate::GetNumPlanesForFourCc(uint32_t fourcc) {
   for (const auto& fourcc_and_pixel_format : kSupportedFormatsAndPlanarity) {
     if (fourcc_and_pixel_format.fourcc == fourcc)
@@ -118,7 +118,7 @@ std::list<uint32_t> V4L2CaptureDelegate::GetListOfUsableFourCcs(
   return supported_formats;
 }
 
-//static
+// static
 std::string V4L2CaptureDelegate::FourccToString(uint32_t fourcc) {
   return base::StringPrintf("%c%c%c%c", fourcc & 0xFF, (fourcc >> 8) & 0xFF,
                             (fourcc >> 16) & 0xFF, (fourcc >> 24) & 0xFF);

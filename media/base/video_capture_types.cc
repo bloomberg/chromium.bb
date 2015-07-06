@@ -85,7 +85,7 @@ std::string VideoCaptureFormat::ToString(const VideoCaptureFormat& format) {
                             PixelStorageToString(format.pixel_storage).c_str());
 }
 
-//static
+// static
 std::string VideoCaptureFormat::PixelFormatToString(VideoPixelFormat format) {
   switch (format) {
     case PIXEL_FORMAT_UNKNOWN:
@@ -115,7 +115,7 @@ std::string VideoCaptureFormat::PixelFormatToString(VideoPixelFormat format) {
   return std::string();
 }
 
-//static
+// static
 std::string VideoCaptureFormat::PixelStorageToString(
     VideoPixelStorage storage) {
   switch (storage) {

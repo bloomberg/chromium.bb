@@ -21,7 +21,7 @@ bool VideoCaptureDeviceFactoryAndroid::RegisterVideoCaptureDeviceFactory(
   return RegisterNativesImpl(env);
 }
 
-//static
+// static
 ScopedJavaLocalRef<jobject>
 VideoCaptureDeviceFactoryAndroid::createVideoCaptureAndroid(
     int id,

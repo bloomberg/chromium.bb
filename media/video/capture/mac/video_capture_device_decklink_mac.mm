@@ -317,7 +317,7 @@ static std::string JoinDeviceNameAndFormat(CFStringRef name,
       base::SysCFStringRefToUTF8(format);
 }
 
-//static
+// static
 void VideoCaptureDeviceDeckLinkMac::EnumerateDevices(
     VideoCaptureDevice::Names* device_names) {
   scoped_refptr<IDeckLinkIterator> decklink_iter(

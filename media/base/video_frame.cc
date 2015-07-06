@@ -39,7 +39,7 @@ static bool IsValidPlane(size_t plane, VideoFrame::Format format) {
 }
 
 // Returns true if |frame| is accesible mapped in the VideoFrame memory space.
-//static
+// static
 static bool IsStorageTypeMappable(VideoFrame::StorageType storage_type) {
   return
 #if defined(OS_LINUX)
@@ -152,7 +152,7 @@ std::string VideoFrame::FormatToString(Format format) {
   return "";
 }
 
-//static
+// static
 bool VideoFrame::IsYuvPlanar(Format format) {
   switch (format) {
     case YV12:
@@ -606,7 +606,7 @@ size_t VideoFrame::Columns(size_t plane, Format format, int width) {
   return RoundUp(width, sample_width) / sample_width;
 }
 
-//static
+// static
 void VideoFrame::HashFrameForTesting(base::MD5Context* context,
                                      const scoped_refptr<VideoFrame>& frame) {
   DCHECK(context);
