@@ -452,7 +452,7 @@ bool DeprecatedPaintLayerCompositor::allocateOrClearCompositedDeprecatedPaintLay
         // Need to create a test where a squashed layer pops into compositing. And also to cover all other
         // sorts of compositingState transitions.
         layer->setLostGroupedMapping(false);
-        layer->setGroupedMapping(nullptr);
+        layer->setGroupedMapping(nullptr, DeprecatedPaintLayer::InvalidateLayerAndRemoveFromMapping);
 
         layer->ensureCompositedDeprecatedPaintLayerMapping();
         compositedDeprecatedPaintLayerMappingChanged = true;

@@ -210,7 +210,7 @@ void CompositingLayerAssigner::updateSquashingAssignment(DeprecatedPaintLayer* l
             // Before removing |layer| from an already-existing squashing layer that may have other content, issue a paint invalidation.
             m_compositor->paintInvalidationOnCompositingChange(layer);
             layer->groupedMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
-            layer->setGroupedMapping(nullptr);
+            layer->setGroupedMapping(nullptr, DeprecatedPaintLayer::InvalidateLayerAndRemoveFromMapping);
         }
 
         // If we need to issue paint invalidations, do so now that we've removed it from a squashed layer.

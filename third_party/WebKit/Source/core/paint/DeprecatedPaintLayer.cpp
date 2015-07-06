@@ -161,7 +161,7 @@ DeprecatedPaintLayer::~DeprecatedPaintLayer()
     if (groupedMapping()) {
         DisableCompositingQueryAsserts disabler;
         groupedMapping()->removeLayerFromSquashingGraphicsLayer(this);
-        setGroupedMapping(0);
+        setGroupedMapping(0, InvalidateLayerAndRemoveFromMapping);
     }
 
     // Child layers will be deleted by their corresponding layout objects, so
@@ -2352,17 +2352,17 @@ void DeprecatedPaintLayer::clearCompositedDeprecatedPaintLayerMapping(bool layer
         updateOrRemoveFilterEffectBuilder();
 }
 
-void DeprecatedPaintLayer::setGroupedMapping(CompositedDeprecatedPaintLayerMapping* groupedMapping, bool layerBeingDestroyed)
+void DeprecatedPaintLayer::setGroupedMapping(CompositedDeprecatedPaintLayerMapping* groupedMapping, SetGroupMappingOptions options)
 {
     if (groupedMapping == m_groupedMapping)
         return;
 
-    if (!layerBeingDestroyed && m_groupedMapping) {
+    if (options == InvalidateLayerAndRemoveFromMapping && m_groupedMapping) {
         m_groupedMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
         m_groupedMapping->removeLayerFromSquashingGraphicsLayer(this);
     }
     m_groupedMapping = groupedMapping;
-    if (!layerBeingDestroyed && m_groupedMapping)
+    if (options == InvalidateLayerAndRemoveFromMapping && m_groupedMapping)
         m_groupedMapping->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
 }
 

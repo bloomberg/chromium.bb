@@ -316,7 +316,11 @@ public:
     void ensureCompositedDeprecatedPaintLayerMapping();
     void clearCompositedDeprecatedPaintLayerMapping(bool layerBeingDestroyed = false);
     CompositedDeprecatedPaintLayerMapping* groupedMapping() const { return m_groupedMapping; }
-    void setGroupedMapping(CompositedDeprecatedPaintLayerMapping* groupedMapping, bool layerBeingDestroyed = false);
+    enum SetGroupMappingOptions {
+        InvalidateLayerAndRemoveFromMapping,
+        DoNotInvalidateLayerAndRemoveFromMapping
+    };
+    void setGroupedMapping(CompositedDeprecatedPaintLayerMapping*, SetGroupMappingOptions);
 
     bool hasCompositedMask() const;
     bool hasCompositedClippingMask() const;
