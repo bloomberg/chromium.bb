@@ -72,10 +72,6 @@ inline J_COLOR_SPACE rgbOutputColorSpace() { return JCS_RGB; }
 inline bool colorSpaceHasAlpha(J_COLOR_SPACE) { return false; }
 #endif
 
-inline J_DCT_METHOD dctMethod() { return JDCT_ISLOW; }
-inline J_DITHER_MODE ditherMode() { return JDITHER_FS; }
-inline bool doFancyUpsampling() { return true; }
-
 namespace {
 
 const int exifMarker = JPEG_APP0 + 1;
@@ -492,9 +488,9 @@ public:
             // Set parameters for decompression.
             // FIXME -- Should reset dct_method and dither mode for final pass
             // of progressive JPEG.
-            m_info.dct_method = dctMethod();
-            m_info.dither_mode = ditherMode();
-            m_info.do_fancy_upsampling = doFancyUpsampling();
+            m_info.dct_method = JDCT_ISLOW;
+            m_info.dither_mode = JDITHER_FS;
+            m_info.do_fancy_upsampling = true;
             m_info.do_block_smoothing = true;
             m_info.enable_2pass_quant = false;
             // FIXME: should we just assert these?
