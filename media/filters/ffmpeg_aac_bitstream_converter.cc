@@ -56,6 +56,7 @@ bool GenerateAdtsHeader(
   switch (audio_profile) {
     case FF_PROFILE_AAC_MAIN:
       break;
+    case FF_PROFILE_AAC_HE:
     case FF_PROFILE_AAC_LOW:
       hdr[2] |= (1 << 6);
       break;
@@ -65,6 +66,11 @@ bool GenerateAdtsHeader(
     case FF_PROFILE_AAC_LTP:
       hdr[2] |= (3 << 6);
       break;
+    default:
+      DLOG(ERROR) << "[" << __FUNCTION__ << "] "
+                  << "unsupported audio profile:"
+                  << audio_profile;
+      return false;
   }
 
   hdr[2] |= ((sample_rate_index & 0xf) << 2);

@@ -9,6 +9,11 @@
 
 namespace media {
 
+namespace {
+const int kAacMainProfile = 0;
+const int kAacLowComplexityProfile = 1;
+} // namespace
+
 // Class for testing the FFmpegAACBitstreamConverter.
 class FFmpegAACBitstreamConverterTest : public testing::Test {
  protected:
@@ -87,6 +92,45 @@ TEST_F(FFmpegAACBitstreamConverterTest, Conversion_FailureNullParams) {
 
   // Try out the actual conversion. This should fail due to missing extradata.
   EXPECT_FALSE(converter.ConvertPacket(test_packet.get()));
+}
+
+TEST_F(FFmpegAACBitstreamConverterTest, Conversion_AudioProfileType) {
+  FFmpegAACBitstreamConverter converter(&test_context_);
+
+  uint8 dummy_packet[1000] = {0};
+
+  ScopedAVPacket test_packet(new AVPacket());
+  CreatePacket(test_packet.get(), dummy_packet,
+               sizeof(dummy_packet));
+
+  EXPECT_TRUE(converter.ConvertPacket(test_packet.get()));
+
+  // Check that the ADTS header profile matches the context
+  int profile = ((test_packet->data[2] & 0xC0) >> 6);
+
+  EXPECT_EQ(profile, kAacMainProfile);
+
+  test_context_.profile = FF_PROFILE_AAC_HE;
+  FFmpegAACBitstreamConverter converter_he(&test_context_);
+
+  test_packet.reset(new AVPacket());
+  CreatePacket(test_packet.get(), dummy_packet,
+               sizeof(dummy_packet));
+
+  EXPECT_TRUE(converter_he.ConvertPacket(test_packet.get()));
+
+  profile = ((test_packet->data[2] & 0xC0) >> 6);
+
+  EXPECT_EQ(profile, kAacLowComplexityProfile);
+
+  test_context_.profile = FF_PROFILE_AAC_ELD;
+  FFmpegAACBitstreamConverter converter_eld(&test_context_);
+
+  test_packet.reset(new AVPacket());
+  CreatePacket(test_packet.get(), dummy_packet,
+               sizeof(dummy_packet));
+
+  EXPECT_FALSE(converter_eld.ConvertPacket(test_packet.get()));
 }
 
 }  // namespace media
