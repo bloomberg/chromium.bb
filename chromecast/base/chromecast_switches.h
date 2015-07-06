@@ -27,6 +27,9 @@ extern const char kNoWifi[];
 extern const char kLastLaunchedApp[];
 extern const char kPreviousApp[];
 
+// Graphics switches
+extern const char kEnableTransparentBackground[];
+
 }  // namespace switches
 
 #endif  // CHROMECAST_BASE_CHROMECAST_SWITCHES_H_

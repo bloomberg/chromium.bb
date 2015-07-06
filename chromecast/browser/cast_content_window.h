@@ -46,6 +46,7 @@ class CastContentWindow : public content::WebContentsObserver {
   void DidFirstVisuallyNonEmptyPaint() override;
   void MediaPaused() override;
   void MediaStartedPlaying() override;
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 
  private:
 #if defined(USE_AURA)
