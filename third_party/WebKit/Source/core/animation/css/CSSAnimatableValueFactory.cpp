@@ -59,6 +59,7 @@
 #include "core/style/ComputedStyle.h"
 #include "platform/Length.h"
 #include "platform/LengthBox.h"
+#include "wtf/StdLibExtras.h"
 
 namespace blink {
 
@@ -530,12 +531,18 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
         return createFromColor(property, style);
     case CSSPropertyTransform:
         return AnimatableTransform::create(style.transform());
-    case CSSPropertyTranslate:
-        return createFromTransformProperties(style.translate(), style.initialTranslate());
-    case CSSPropertyRotate:
-        return createFromTransformProperties(style.rotate(), style.initialRotate());
-    case CSSPropertyScale:
-        return createFromTransformProperties(style.scale(), style.initialScale());
+    case CSSPropertyTranslate: {
+        DEFINE_STATIC_REF(TranslateTransformOperation, initialTranslate, TranslateTransformOperation::create(Length(0, Fixed), Length(0, Fixed), 0, TransformOperation::Translate3D));
+        return createFromTransformProperties(style.translate(), initialTranslate);
+    }
+    case CSSPropertyRotate: {
+        DEFINE_STATIC_REF(RotateTransformOperation, initialRotate, RotateTransformOperation::create(0, 0, 1, 0, TransformOperation::Rotate3D));
+        return createFromTransformProperties(style.rotate(), initialRotate);
+    }
+    case CSSPropertyScale: {
+        DEFINE_STATIC_REF(ScaleTransformOperation, initialScale, ScaleTransformOperation::create(1, 1, 1, TransformOperation::Scale3D));
+        return createFromTransformProperties(style.scale(), initialScale);
+    }
     case CSSPropertyTransformOrigin:
         return createFromTransformOrigin(style.transformOrigin(), style);
     case CSSPropertyMotionOffset:
