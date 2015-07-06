@@ -9,6 +9,7 @@ import argparse
 import netifaces
 from tornado import ioloop
 
+import composite_echo_gadget
 import echo_gadget
 import hid_echo_gadget
 import keyboard_gadget
@@ -50,6 +51,7 @@ def main():
   server.chip = linux_gadgetfs.LinuxGadgetfs(server.hardware)
   server.SwitchGadget(server.default)
 
+  composite_echo_gadget.RegisterHandlers()
   echo_gadget.RegisterHandlers()
   hid_echo_gadget.RegisterHandlers()
   keyboard_gadget.RegisterHandlers()

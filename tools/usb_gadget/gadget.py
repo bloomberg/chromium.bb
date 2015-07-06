@@ -34,6 +34,8 @@ class Gadget(object):
     self._strings = {}
     # dict mapping interface numbers to a set of endpoint addresses
     self._active_endpoints = {}
+    # dict mapping endpoint addresses to interfaces
+    self._endpoint_interface_map = {}
 
   def GetDeviceDescriptor(self):
     return self._device_desc
@@ -89,6 +91,7 @@ class Gadget(object):
     self._speed = usb_constants.Speed.UNKNOWN
     self._chip = None
     self._active_endpoints.clear()
+    self._endpoint_interface_map.clear()
 
   def IsConnected(self):
     return self._chip is not None
@@ -197,16 +200,17 @@ class Gadget(object):
       A buffer to return to the USB host with len <= length on success or
       None to stall the pipe.
     """
-    if request == usb_constants.Request.GET_DESCRIPTOR:
-      desc_type = value >> 8
-      desc_index = value & 0xff
-      desc_lang = index
+    if recipient == usb_constants.Recipient.DEVICE:
+      if request == usb_constants.Request.GET_DESCRIPTOR:
+        desc_type = value >> 8
+        desc_index = value & 0xff
+        desc_lang = index
 
-      print 'GetDescriptor(recipient={}, type={}, index={}, lang={})'.format(
-          recipient, desc_type, desc_index, desc_lang)
+        print 'GetDescriptor(recipient={}, type={}, index={}, lang={})'.format(
+            recipient, desc_type, desc_index, desc_lang)
 
-      return self.GetDescriptor(recipient, desc_type, desc_index, desc_lang,
-                                length)
+        return self.GetDescriptor(recipient, desc_type, desc_index, desc_lang,
+                                  length)
 
   def GetDescriptor(self, recipient, typ, index, lang, length):
     """Handle a standard GET_DESCRIPTOR request.
@@ -223,9 +227,8 @@ class Gadget(object):
     Returns:
       The value of the descriptor or None to stall the pipe.
     """
-    if recipient == usb_constants.Recipient.DEVICE:
-      if typ == usb_constants.DescriptorType.STRING:
-        return self.GetStringDescriptor(index, lang, length)
+    if typ == usb_constants.DescriptorType.STRING:
+      return self.GetStringDescriptor(index, lang, length)
 
   def ClassControlRead(self, recipient, request, value, index, length):
     """Handle class-specific control transfers.
@@ -381,6 +384,7 @@ class Gadget(object):
       for endpoint_addr in endpoint_addrs:
         self._chip.StopEndpoint(endpoint_addr)
       endpoint_addrs.clear()
+    self._endpoint_interface_map.clear();
 
     if index == 0:
       # SET_CONFIGRATION(0) puts the device into the Address state which
@@ -398,6 +402,8 @@ class Gadget(object):
       for endpoint_desc in interface_desc.GetEndpoints():
         self._chip.StartEndpoint(endpoint_desc)
         endpoint_addrs.add(endpoint_desc.bEndpointAddress)
+        self._endpoint_interface_map[endpoint_desc.bEndpointAddress] = \
+            interface_desc.bInterfaceNumber
     return True
 
   def SetInterface(self, interface, alt_setting):
@@ -426,7 +432,13 @@ class Gadget(object):
     endpoint_addrs = self._active_endpoints.setdefault(interface, set())
     for endpoint_addr in endpoint_addrs:
       self._chip.StopEndpoint(endpoint_addr)
+      del self._endpoint_interface_map[endpoint_addr]
     for endpoint_desc in interface_desc.GetEndpoints():
       self._chip.StartEndpoint(endpoint_desc)
       endpoint_addrs.add(endpoint_desc.bEndpointAddress)
+      self._endpoint_interface_map[endpoint_desc.bEndpointAddress] = \
+          interface_desc.bInterfaceNumber
     return True
+
+  def GetInterfaceForEndpoint(self, endpoint_addr):
+    return self._endpoint_interface_map.get(endpoint_addr)

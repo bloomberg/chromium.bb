@@ -52,6 +52,7 @@ class KeyboardGadgetTest(unittest.TestCase):
     g = keyboard_gadget.KeyboardGadget()
     chip = mock.Mock()
     g.Connected(chip, usb_constants.Speed.FULL)
+    g.SetConfiguration(1)
     self.assertEqual(g.ControlRead(0xA1, 1, 0x0200, 0, 8), '\x00')
     self.assertTrue(g.ControlWrite(0x21, 9, 0x0200, 0, '\x01'))
     self.assertEqual(g.ControlRead(0xA1, 1, 0x0200, 0, 8), '\x01')

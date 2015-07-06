@@ -58,6 +58,8 @@ class HidGadgetTest(unittest.TestCase):
   def test_get_string_descriptor(self):
     g = hid_gadget.HidGadget(report_desc=report_desc, features={},
                              vendor_id=0, product_id=0)
+    chip = mock.Mock()
+    g.Connected(chip, usb_constants.Speed.HIGH)
     g.AddStringDescriptor(2, 'HID Gadget')
     desc = g.ControlRead(0x80, 6, 0x0302, 0x0409, 255)
     self.assertEquals(desc, '\x16\x03H\0I\0D\0 \0G\0a\0d\0g\0e\0t\0')
@@ -65,17 +67,23 @@ class HidGadgetTest(unittest.TestCase):
   def test_get_report_descriptor(self):
     g = hid_gadget.HidGadget(report_desc=report_desc, features={},
                              vendor_id=0, product_id=0)
+    chip = mock.Mock()
+    g.Connected(chip, usb_constants.Speed.HIGH)
     desc = g.ControlRead(0x81, 6, 0x2200, 0, 63)
     self.assertEquals(desc, report_desc)
 
   def test_set_idle(self):
     g = hid_gadget.HidGadget(report_desc=report_desc, features={},
                              vendor_id=0, product_id=0)
+    chip = mock.Mock()
+    g.Connected(chip, usb_constants.Speed.HIGH)
     self.assertTrue(g.ControlWrite(0x21, 0x0A, 0, 0, ''))
 
   def test_class_wrong_target(self):
     g = hid_gadget.HidGadget(report_desc=report_desc, features={},
                              vendor_id=0, product_id=0)
+    chip = mock.Mock()
+    g.Connected(chip, usb_constants.Speed.HIGH)
     self.assertIsNone(g.ControlRead(0xA0, 0, 0, 0, 0))  # Device
     self.assertIsNone(g.ControlRead(0xA1, 0, 0, 1, 0))  # Interface 1
     self.assertIsNone(g.ControlWrite(0x20, 0, 0, 0, ''))  # Device
@@ -147,18 +155,24 @@ class HidFeatureTest(unittest.TestCase):
     feature = TestFeature()
     g = hid_gadget.HidGadget(report_desc, features={1: feature},
                              vendor_id=0, product_id=0)
+    chip = mock.Mock()
+    g.Connected(chip, usb_constants.Speed.HIGH)
     self.assertIsNone(g.ControlRead(0xA1, 1, 0x0102, 0, 8))
 
   def test_set_bad_report(self):
     feature = TestFeature()
     g = hid_gadget.HidGadget(report_desc, features={1: feature},
                              vendor_id=0, product_id=0)
+    chip = mock.Mock()
+    g.Connected(chip, usb_constants.Speed.HIGH)
     self.assertIsNone(g.ControlWrite(0x21, 0x09, 0x0102, 0, 'Hello!'))
 
   def test_get_input_report(self):
     feature = TestFeature()
     g = hid_gadget.HidGadget(report_desc, features={1: feature},
                              vendor_id=0, product_id=0)
+    chip = mock.Mock()
+    g.Connected(chip, usb_constants.Speed.HIGH)
     report = g.ControlRead(0xA1, 1, 0x0101, 0, 8)
     self.assertEquals(report, 'Input re')
 
@@ -166,6 +180,8 @@ class HidFeatureTest(unittest.TestCase):
     feature = TestFeature()
     g = hid_gadget.HidGadget(report_desc, features={1: feature},
                              vendor_id=0, product_id=0)
+    chip = mock.Mock()
+    g.Connected(chip, usb_constants.Speed.HIGH)
     self.assertTrue(g.ControlWrite(0x21, 0x09, 0x0101, 0, 'Hello!'))
     self.assertEquals(feature.input_report, 'Hello!')
 
@@ -173,6 +189,8 @@ class HidFeatureTest(unittest.TestCase):
     feature = TestFeature()
     g = hid_gadget.HidGadget(report_desc, features={1: feature},
                              vendor_id=0, product_id=0)
+    chip = mock.Mock()
+    g.Connected(chip, usb_constants.Speed.HIGH)
     report = g.ControlRead(0xA1, 1, 0x0201, 0, 8)
     self.assertEquals(report, 'Output r')
 
@@ -180,6 +198,8 @@ class HidFeatureTest(unittest.TestCase):
     feature = TestFeature()
     g = hid_gadget.HidGadget(report_desc, features={1: feature},
                              vendor_id=0, product_id=0)
+    chip = mock.Mock()
+    g.Connected(chip, usb_constants.Speed.HIGH)
     self.assertTrue(g.ControlWrite(0x21, 0x09, 0x0201, 0, 'Hello!'))
     self.assertEquals(feature.output_report, 'Hello!')
 
@@ -189,6 +209,7 @@ class HidFeatureTest(unittest.TestCase):
                              vendor_id=0, product_id=0)
     chip = mock.Mock()
     g.Connected(chip, usb_constants.Speed.HIGH)
+    g.SetConfiguration(1)
     g.ReceivePacket(0x01, '\x01Hello!')
     self.assertFalse(chip.HaltEndpoint.called)
     self.assertEquals(feature.output_report, 'Hello!')
@@ -199,6 +220,7 @@ class HidFeatureTest(unittest.TestCase):
                              vendor_id=0, product_id=0)
     chip = mock.Mock()
     g.Connected(chip, usb_constants.Speed.HIGH)
+    g.SetConfiguration(1)
     g.ReceivePacket(0x01, 'Hello!')
     self.assertFalse(chip.HaltEndpoint.called)
     self.assertEquals(feature.output_report, 'Hello!')
@@ -209,6 +231,7 @@ class HidFeatureTest(unittest.TestCase):
                              vendor_id=0, product_id=0)
     chip = mock.Mock()
     g.Connected(chip, usb_constants.Speed.HIGH)
+    g.SetConfiguration(1)
     g.ReceivePacket(0x01, '\x00Hello!')
     chip.HaltEndpoint.assert_called_once_with(0x01)
 
@@ -216,6 +239,8 @@ class HidFeatureTest(unittest.TestCase):
     feature = TestFeature()
     g = hid_gadget.HidGadget(report_desc, features={1: feature},
                              vendor_id=0, product_id=0)
+    chip = mock.Mock()
+    g.Connected(chip, usb_constants.Speed.HIGH)
     report = g.ControlRead(0xA1, 1, 0x0301, 0, 8)
     self.assertEquals(report, 'Feature ')
 
@@ -223,6 +248,8 @@ class HidFeatureTest(unittest.TestCase):
     feature = TestFeature()
     g = hid_gadget.HidGadget(report_desc, features={1: feature},
                              vendor_id=0, product_id=0)
+    chip = mock.Mock()
+    g.Connected(chip, usb_constants.Speed.HIGH)
     self.assertTrue(g.ControlWrite(0x21, 0x09, 0x0301, 0, 'Hello!'))
     self.assertEquals(feature.feature_report, 'Hello!')
 

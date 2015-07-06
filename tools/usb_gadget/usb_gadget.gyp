@@ -11,6 +11,8 @@
         'usb_gadget_files': [
           '__init__.py',
           '__main__.py',
+          'composite_echo_gadget.py',
+          'composite_gadget.py',
           'default_gadget.py',
           'echo_gadget.py',
           'gadget.py',

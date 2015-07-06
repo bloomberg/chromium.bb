@@ -141,7 +141,7 @@ class KeyboardGadget(hid_gadget.HidGadget):
         features={0: self._feature},
         packet_size=8,
         interval_ms=1,
-        out_endpoint=False,
+        out_endpoint=True,
         vendor_id=usb_constants.VendorID.GOOGLE,
         product_id=usb_constants.ProductID.GOOGLE_KEYBOARD_GADGET,
         device_version=0x0100)
