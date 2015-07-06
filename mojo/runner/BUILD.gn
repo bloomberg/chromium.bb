@@ -109,6 +109,8 @@ source_set("lib") {
     "init.h",
     "out_of_process_native_runner.cc",
     "out_of_process_native_runner.h",
+    "scoped_user_data_dir.cc",
+    "scoped_user_data_dir.h",
     "task_runners.cc",
     "task_runners.h",
     "url_resolver.cc",

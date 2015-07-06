@@ -125,7 +125,7 @@ void CoreServicesApplicationDelegate::StartApplication(
     delegate.reset(new mandoline::BrowserManager);
   else if (url == "mojo://clipboard/")
     delegate.reset(new clipboard::ClipboardApplicationDelegate);
-  else if (url == "mojo://filesystem_service/")
+  else if (url == "mojo://filesystem/")
     delegate.reset(new filesystem::FileSystemApp);
   else if (url == "mojo://network_service/")
     delegate.reset(new NetworkServiceDelegate);

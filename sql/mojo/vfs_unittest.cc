@@ -115,6 +115,19 @@ TEST_F(VFSTest, NonexclusiveOpen) {
   file->pMethods->xClose(file2.get());
 }
 
+TEST_F(VFSTest, NullFilenameOpen) {
+  // Opening a file with a null filename should return a valid file object.
+  scoped_ptr<sqlite3_file> file(MakeFile());
+  int out_flags;
+  int rc = vfs()->xOpen(
+      vfs(), nullptr, file.get(),
+      SQLITE_OPEN_DELETEONCLOSE | SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE,
+      &out_flags);
+  EXPECT_EQ(SQLITE_OK, rc);
+
+  file->pMethods->xClose(file.get());
+}
+
 TEST_F(VFSTest, DeleteOnClose) {
   {
     scoped_ptr<sqlite3_file> file(MakeFile());

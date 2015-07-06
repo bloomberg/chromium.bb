@@ -13,9 +13,12 @@
 #include "base/path_service.h"
 #include "mojo/common/user_agent.h"
 #include "mojo/services/network/url_loader_impl.h"
+#include "net/cookies/cookie_monster.h"
+#include "net/extras/sqlite/sqlite_persistent_cookie_store.h"
 #include "net/log/net_log_util.h"
 #include "net/log/write_to_file_net_log_observer.h"
 #include "net/proxy/proxy_service.h"
+#include "net/ssl/channel_id_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 
@@ -24,7 +27,7 @@ namespace mojo {
 namespace {
 // Logs network information to the specified file.
 const char kLogNetLog[] = "log-net-log";
-}
+}  // namespace
 
 class NetworkContext::MojoNetLog : public net::NetLog {
  public:
@@ -72,8 +75,10 @@ NetworkContext::NetworkContext(
   url_request_context_->set_net_log(net_log_.get());
 }
 
-NetworkContext::NetworkContext(const base::FilePath& base_path)
-    : NetworkContext(MakeURLRequestContext(base_path)) {
+NetworkContext::NetworkContext(
+    const base::FilePath& base_path,
+    const scoped_refptr<base::SequencedTaskRunner>& background_task_runner)
+    : NetworkContext(MakeURLRequestContext(base_path, background_task_runner)) {
 }
 
 NetworkContext::~NetworkContext() {
@@ -107,7 +112,8 @@ size_t NetworkContext::GetURLLoaderCountForTesting() {
 
 // static
 scoped_ptr<net::URLRequestContext> NetworkContext::MakeURLRequestContext(
-    const base::FilePath& base_path) {
+    const base::FilePath& base_path,
+    const scoped_refptr<base::SequencedTaskRunner>& background_task_runner) {
   net::URLRequestContextBuilder builder;
   builder.set_accept_language("en-us,en");
   builder.set_user_agent(mojo::common::GetUserAgent());
@@ -129,6 +135,22 @@ scoped_ptr<net::URLRequestContext> NetworkContext::MakeURLRequestContext(
 
   builder.EnableHttpCache(cache_params);
   builder.set_file_enabled(true);
+
+  if (background_task_runner) {
+    // TODO(erg): This only gets run on non-android system. Currently, any
+    // attempts from the network_service trying to access the filesystem break
+    // the apptests on android. (And only the apptests on android. Mandoline
+    // shell works fine on android, as does apptests on desktop.)
+    net::SQLitePersistentCookieStore* sqlite_store =
+        new net::SQLitePersistentCookieStore(
+            base::FilePath(FILE_PATH_LITERAL("Cookies")),
+            base::MessageLoop::current()->task_runner(),
+            background_task_runner,
+            false,  // TODO(erg): Make RESTORED_SESSION_COOKIES configurable.
+            nullptr);
+    builder.SetCookieAndChannelIdStores(
+        new net::CookieMonster(sqlite_store, nullptr) , nullptr);
+  }
 
   return make_scoped_ptr(builder.Build());
 }

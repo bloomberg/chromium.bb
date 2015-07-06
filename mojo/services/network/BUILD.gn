@@ -90,6 +90,7 @@ source_set("lib") {
     "//mojo/services/network/public/cpp",
     "//mojo/services/network/public/interfaces",
     "//net",
+    "//net:extras",
     "//net:http_server",
     "//url",
     "//sql/mojo",

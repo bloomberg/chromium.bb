@@ -98,6 +98,7 @@ void ChildProcessHost::DidStart(bool success) {
 
 bool ChildProcessHost::DoLaunch() {
   static const char* kForwardSwitches[] = {
+      switches::kUserDataDir,
       switches::kOverrideUseGLWithOSMesaForTests,
       switches::kTraceToConsole,
       switches::kV,

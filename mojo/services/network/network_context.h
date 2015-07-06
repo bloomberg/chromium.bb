@@ -8,7 +8,9 @@
 #include <set>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/sequenced_task_runner.h"
 
 namespace base {
 class FilePath;
@@ -26,7 +28,9 @@ class NetworkContext {
  public:
   explicit NetworkContext(
       scoped_ptr<net::URLRequestContext> url_request_context);
-  explicit NetworkContext(const base::FilePath& base_path);
+  NetworkContext(
+      const base::FilePath& base_path,
+      const scoped_refptr<base::SequencedTaskRunner>& background_task_runner);
   ~NetworkContext();
 
   net::URLRequestContext* url_request_context() {
@@ -43,7 +47,8 @@ class NetworkContext {
   size_t GetURLLoaderCountForTesting();
 
   static scoped_ptr<net::URLRequestContext> MakeURLRequestContext(
-      const base::FilePath& base_path);
+      const base::FilePath& base_path,
+      const scoped_refptr<base::SequencedTaskRunner>& background_task_runner);
 
   class MojoNetLog;
   scoped_ptr<class MojoNetLog> net_log_;

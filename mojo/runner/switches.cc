@@ -50,4 +50,12 @@ const char kTraceStartup[] = "trace-startup";
 // the first maps 'a' to 'b' and the second 'c' to 'd'.
 const char kURLMappings[] = "url-mappings";
 
+// When this is set, we create a temporary user data dir for the process, and
+// add a flag so kUserDataDir points to it.
+const char kUseTemporaryUserDataDir[] = "use-temporary-user-data-dir";
+
+// Specifies the user data directory. This is the one directory which stores
+// all persistent data.
+const char kUserDataDir[] = "user-data-dir";
+
 }  // namespace switches
