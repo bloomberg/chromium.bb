@@ -28,6 +28,7 @@ Gtk2StatusIcon::Gtk2StatusIcon(const gfx::ImageSkia& image,
 }
 
 Gtk2StatusIcon::~Gtk2StatusIcon() {
+  gtk_status_icon_set_visible(gtk_status_icon_, FALSE);
   g_object_unref(gtk_status_icon_);
 }
 
