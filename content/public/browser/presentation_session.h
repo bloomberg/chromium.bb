@@ -23,7 +23,7 @@ struct CONTENT_EXPORT PresentationSessionInfo {
 };
 
 // Possible reasons why an attempt to create a presentation session failed.
-enum CONTENT_EXPORT PresentationErrorType {
+enum PresentationErrorType {
   PRESENTATION_ERROR_NO_AVAILABLE_SCREENS,
   PRESENTATION_ERROR_SESSION_REQUEST_CANCELLED,
   PRESENTATION_ERROR_NO_PRESENTATION_FOUND,

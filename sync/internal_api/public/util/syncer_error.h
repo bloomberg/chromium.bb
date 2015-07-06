@@ -10,7 +10,7 @@
 namespace syncer {
 
 // This enum describes all the possible results of a sync cycle.
-enum SYNC_EXPORT_PRIVATE SyncerError {
+enum SyncerError {
   UNSET = 0,       // Default value.
   CANNOT_DO_WORK,  // A model worker could not process a work item.
 

@@ -9,7 +9,7 @@
 
 namespace gfx {
 
-enum GFX_EXPORT ScreenType {
+enum ScreenType {
   SCREEN_TYPE_NATIVE = 0,
 #if defined(OS_CHROMEOS)
   SCREEN_TYPE_ALTERNATE = SCREEN_TYPE_NATIVE,

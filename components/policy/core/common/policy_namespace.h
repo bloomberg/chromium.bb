@@ -18,7 +18,7 @@ namespace policy {
 // Policies are namespaced by a (PolicyDomain, ID) pair. The meaning of the ID
 // string depends on the domain; for example, if the PolicyDomain is
 // "extensions" then the ID identifies the extension that the policies control.
-enum POLICY_EXPORT PolicyDomain {
+enum PolicyDomain {
   // The component ID for chrome policies is always the empty string.
   POLICY_DOMAIN_CHROME,
 

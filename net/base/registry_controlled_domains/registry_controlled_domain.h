@@ -135,7 +135,7 @@ namespace registry_controlled_domains {
 // private additions in your lookup.
 // See this for example use cases:
 // https://wiki.mozilla.org/Public_Suffix_List/Use_Cases
-enum NET_EXPORT PrivateRegistryFilter {
+enum PrivateRegistryFilter {
   EXCLUDE_PRIVATE_REGISTRIES = 0,
   INCLUDE_PRIVATE_REGISTRIES
 };
@@ -148,7 +148,7 @@ enum NET_EXPORT PrivateRegistryFilter {
 // will be 0. If INCLUDE_UNKNOWN_REGISTRIES was passed in, the resulting
 // registry length will be the length of the last subcomponent (eg. 3 for
 // foobar.baz).
-enum NET_EXPORT UnknownRegistryFilter {
+enum UnknownRegistryFilter {
   EXCLUDE_UNKNOWN_REGISTRIES = 0,
   INCLUDE_UNKNOWN_REGISTRIES
 };

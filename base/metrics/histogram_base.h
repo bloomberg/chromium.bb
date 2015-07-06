@@ -31,7 +31,7 @@ class PickleIterator;
 // processes into the browser. If you create another class that inherits from
 // HistogramBase, add new histogram types and names below.
 
-enum BASE_EXPORT HistogramType {
+enum HistogramType {
   HISTOGRAM,
   LINEAR_HISTOGRAM,
   BOOLEAN_HISTOGRAM,

@@ -132,7 +132,7 @@
 namespace gpu {
 
 // Provides all types of GPU driver bug workarounds.
-enum GPU_EXPORT GpuDriverBugWorkaroundType {
+enum GpuDriverBugWorkaroundType {
 #define GPU_OP(type, name) type,
   GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
 #undef GPU_OP

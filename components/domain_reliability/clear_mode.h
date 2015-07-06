@@ -10,7 +10,7 @@
 namespace domain_reliability {
 
 // Argument to DomainReliabilityMonitor::ClearBrowsingData.
-enum DOMAIN_RELIABILITY_EXPORT DomainReliabilityClearMode {
+enum DomainReliabilityClearMode {
   // Clear accumulated beacons (which betray browsing history) but leave
   // registered contexts intact.
   CLEAR_BEACONS,

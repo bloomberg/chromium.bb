@@ -53,7 +53,7 @@ class PPAPI_SHARED_EXPORT TCPSocketState {
 };
 
 // TCP socket API versions.
-enum PPAPI_SHARED_EXPORT TCPSocketVersion {
+enum TCPSocketVersion {
   // PPB_TCPSocket_Private.
   TCP_SOCKET_VERSION_PRIVATE,
   // PPB_TCPSocket v1.0.

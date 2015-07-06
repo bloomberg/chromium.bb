@@ -26,7 +26,7 @@ struct LOGIN_EXPORT UnwrapConstRef {
 };
 
 template <typename T>
-struct LOGIN_EXPORT UnwrapConstRef<const T&> {
+struct UnwrapConstRef<const T&> {
   typedef T Type;
 };
 

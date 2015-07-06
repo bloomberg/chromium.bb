@@ -13,7 +13,7 @@
 
 namespace content {
 
-enum CONTENT_EXPORT PresentationMessageType {
+enum PresentationMessageType {
   TEXT,
   ARRAY_BUFFER,
   BLOB,
