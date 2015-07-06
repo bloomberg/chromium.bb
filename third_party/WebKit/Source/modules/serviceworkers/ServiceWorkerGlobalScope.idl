@@ -33,7 +33,6 @@
 [
     Exposed=ServiceWorker,
     Global=(Worker,ServiceWorker),
-    RuntimeEnabled=ServiceWorker,
     TypeChecking=Interface,
 ] interface ServiceWorkerGlobalScope : WorkerGlobalScope {
 
@@ -51,7 +50,7 @@
   [CallWith=ScriptState] Promise<void> skipWaiting();
 
   attribute EventHandler onactivate;
-  [RuntimeEnabled=ServiceWorkerOnFetch] attribute EventHandler onfetch;
+  attribute EventHandler onfetch;
   attribute EventHandler oninstall;
   attribute EventHandler onmessage;
 };

@@ -19,7 +19,8 @@ enum RequestCredentials { "omit", "same-origin", "include" };
 [
     Constructor(RequestInfo input, optional Dictionary requestInitDict),
     ConstructorCallWith=ScriptState,
-    Exposed(Window GlobalFetch, DedicatedWorker GlobalFetch, SharedWorker GlobalFetch, ServiceWorker ServiceWorker),
+    // TODO(jeremyarcher): remove GlobalFetch qualifier once fetch(...) is exposed.
+    Exposed(Window GlobalFetch, DedicatedWorker GlobalFetch, SharedWorker GlobalFetch, ServiceWorker GlobalFetch),
     RaisesException=Constructor,
     ActiveDOMObject,
     GarbageCollected,

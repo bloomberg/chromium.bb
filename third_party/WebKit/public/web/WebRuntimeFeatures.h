@@ -110,8 +110,6 @@ public:
 
     BLINK_EXPORT static void enableScriptedSpeech(bool);
 
-    BLINK_EXPORT static void enableServiceWorker(bool);
-
     BLINK_EXPORT static void enableSlimmingPaint(bool);
 
     BLINK_EXPORT static void enableTouch(bool);

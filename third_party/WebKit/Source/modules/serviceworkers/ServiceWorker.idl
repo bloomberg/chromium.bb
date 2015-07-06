@@ -40,7 +40,6 @@ enum ServiceWorkerState {
 
 [
     ActiveDOMObject,
-    RuntimeEnabled=ServiceWorker,
     TypeChecking=Interface,
 ] interface ServiceWorker : EventTarget {
 

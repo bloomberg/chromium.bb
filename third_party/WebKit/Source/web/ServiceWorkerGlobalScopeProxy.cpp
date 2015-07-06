@@ -97,11 +97,6 @@ void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int eventID, const WebSer
     ASSERT(m_workerGlobalScope);
     RespondWithObserver* observer = RespondWithObserver::create(m_workerGlobalScope, eventID, webRequest.mode(), webRequest.frameType());
     bool defaultPrevented = false;
-    if (!RuntimeEnabledFeatures::serviceWorkerOnFetchEnabled()) {
-        observer->didDispatchEvent(defaultPrevented);
-        return;
-    }
-
     Request* request = Request::create(m_workerGlobalScope, webRequest);
     request->headers()->setGuard(Headers::ImmutableGuard);
     FetchEventInit eventInit;

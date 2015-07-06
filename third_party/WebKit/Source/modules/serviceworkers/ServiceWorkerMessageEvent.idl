@@ -7,7 +7,6 @@
 [
     Constructor(DOMString type, optional ServiceWorkerMessageEventInit eventInitDict),
     Exposed=(Window, Worker),
-    RuntimeEnabled=ServiceWorker,
 ] interface ServiceWorkerMessageEvent : Event {
     [Custom=Getter] readonly attribute any data;
     readonly attribute DOMString origin;

@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#navigator-service-worker
-[
-    RuntimeEnabled=ServiceWorker,
-] partial interface Navigator {
+partial interface Navigator {
     [RaisesException] readonly attribute ServiceWorkerContainer serviceWorker;
 };

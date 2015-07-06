@@ -12,7 +12,8 @@ typedef (Blob or ArrayBuffer or ArrayBufferView or FormData or USVString) BodyIn
 [
     Constructor(optional BodyInit body, optional Dictionary responseInitDict),
     ConstructorCallWith=ExecutionContext,
-    Exposed(Window GlobalFetch, DedicatedWorker GlobalFetch, SharedWorker GlobalFetch, ServiceWorker ServiceWorker),
+    // TODO(jeremyarcher): remove GlobalFetch qualifier once fetch(...) is exposed.
+    Exposed(Window GlobalFetch, DedicatedWorker GlobalFetch, SharedWorker GlobalFetch, ServiceWorker GlobalFetch),
     RaisesException=Constructor,
     ActiveDOMObject,
     GarbageCollected,

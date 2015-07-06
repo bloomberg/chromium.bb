@@ -129,8 +129,7 @@ void FrameLoaderClientImpl::dispatchDidClearWindowObjectInMainWorld()
             if (RuntimeEnabledFeatures::deviceLightEnabled())
                 DeviceLightController::from(*document);
             NavigatorGamepad::from(*document);
-            if (RuntimeEnabledFeatures::serviceWorkerEnabled())
-                NavigatorServiceWorker::from(*document);
+            NavigatorServiceWorker::from(*document);
             DOMWindowStorageController::from(*document);
             if (RuntimeEnabledFeatures::webVREnabled())
                 NavigatorVRDevice::from(*document);

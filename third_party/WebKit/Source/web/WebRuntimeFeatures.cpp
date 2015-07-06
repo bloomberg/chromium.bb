@@ -213,11 +213,6 @@ void WebRuntimeFeatures::enableScriptedSpeech(bool enable)
     RuntimeEnabledFeatures::setScriptedSpeechEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableServiceWorker(bool enable)
-{
-    RuntimeEnabledFeatures::setServiceWorkerEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableSlimmingPaint(bool enable)
 {
     RuntimeEnabledFeatures::setSlimmingPaintEnabled(enable);

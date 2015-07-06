@@ -5,7 +5,6 @@
 // http://fetch.spec.whatwg.org/#body
 typedef object JSON;
 [
-    RuntimeEnabled=ServiceWorker,
     Exposed=ServiceWorker,
     NoInterfaceObject,
     ActiveDOMObject,
