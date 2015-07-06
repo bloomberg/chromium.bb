@@ -379,6 +379,7 @@
           'dependencies': [
             '../chrome/chrome.gyp:crash_service',
             '../chrome/chrome.gyp:installer_util_unittests',
+            '../chrome/chrome.gyp:setup_unittests',
             # ../chrome/test/mini_installer requires mini_installer.
             '../chrome/installer/mini_installer.gyp:mini_installer',
             '../chrome_elf/chrome_elf.gyp:chrome_elf_unittests',
@@ -1070,6 +1071,7 @@
             '../chrome/chrome.gyp:installer_util_unittests',
             '../chrome/chrome.gyp:interactive_ui_tests',
             '../chrome/chrome.gyp:performance_browser_tests',
+            '../chrome/chrome.gyp:setup_unittests',
             '../chrome/chrome.gyp:sync_integration_tests',
             '../chrome/chrome.gyp:unit_tests',
             '../cloud_print/cloud_print.gyp:cloud_print_unittests',
@@ -1162,6 +1164,7 @@
             '../chrome/chrome.gyp:chrome_app_unittests',
             '../chrome/chrome.gyp:chromedriver_unittests',
             '../chrome/chrome.gyp:installer_util_unittests',
+            '../chrome/chrome.gyp:setup_unittests',
             '../chrome/chrome.gyp:unit_tests',
             '../chrome_elf/chrome_elf.gyp:chrome_elf_unittests',
             '../cloud_print/cloud_print.gyp:cloud_print_unittests',
