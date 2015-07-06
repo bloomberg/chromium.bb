@@ -249,6 +249,10 @@
         "script": "telemetry_unittests.py"
       },
       {
+        "name": "telemetry_gpu_unittests",
+        "script": "telemetry_gpu_unittests.py"
+      },
+      {
         "name": "telemetry_perf_unittests",
         "script": "telemetry_perf_unittests.py"
       },
@@ -505,6 +509,10 @@
         "script": "telemetry_unittests.py"
       },
       {
+        "name": "telemetry_gpu_unittests",
+        "script": "telemetry_gpu_unittests.py"
+      },
+      {
         "name": "telemetry_perf_unittests",
         "script": "telemetry_perf_unittests.py"
       },
@@ -753,6 +761,10 @@
       {
         "name": "telemetry_unittests",
         "script": "telemetry_unittests.py"
+      },
+      {
+        "name": "telemetry_gpu_unittests",
+        "script": "telemetry_gpu_unittests.py"
       },
       {
         "name": "telemetry_perf_unittests",
@@ -1005,6 +1017,10 @@
         "script": "telemetry_unittests.py"
       },
       {
+        "name": "telemetry_gpu_unittests",
+        "script": "telemetry_gpu_unittests.py"
+      },
+      {
         "name": "telemetry_perf_unittests",
         "script": "telemetry_perf_unittests.py"
       },
@@ -1254,6 +1270,10 @@
       {
         "name": "telemetry_unittests",
         "script": "telemetry_unittests.py"
+      },
+      {
+        "name": "telemetry_gpu_unittests",
+        "script": "telemetry_gpu_unittests.py"
       },
       {
         "name": "telemetry_perf_unittests",
