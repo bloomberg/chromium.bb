@@ -126,9 +126,11 @@ void Display::InitializeRenderer() {
 }
 
 void Display::DidLoseOutputSurface() {
-  client_->OutputSurfaceLost();
   if (scheduler_)
     scheduler_->OutputSurfaceLost();
+  // WARNING: The client may delete the Display in this method call. Do not
+  // make any additional references to members after this call.
+  client_->OutputSurfaceLost();
 }
 
 void Display::UpdateRootSurfaceResourcesLocked() {
