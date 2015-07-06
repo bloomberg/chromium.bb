@@ -29,6 +29,12 @@ int check_backtranslation(const char *tableList, const char *str,
 int check_backtranslation_with_mode(const char *tableList, const char *str,
 				const char *typeform, const char *expected, int mode);
 
+/* Check if a string is translated as expected for the given direction
+   (0 = forward, backward otherwise). Return 0 if the translation is
+   as expected and 1 otherwise. */
+int check_with_mode(const char *tableList, const char *str, const char *typeform,
+		    const char *expected, int mode, int direction);
+
 /* Check if a string is hyphenated as expected. Return 0 if the
    hyphenation is as expected and 1 otherwise. */
 int check_hyphenation(const char *tableList, const char *str, const char *expected);
