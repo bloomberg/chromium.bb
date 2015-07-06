@@ -399,7 +399,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribePersisted) {
   EXPECT_EQ(sw1_identifier.app_id(), gcm_service()->last_registered_app_id());
 }
 
-IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, DISABLED_PushEventSuccess) {
   std::string script_result;
 
   TryToSubscribeSuccessfully("1-0" /* expected_push_subscription_id */);
@@ -468,7 +468,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoServiceWorker) {
 
 #if defined(ENABLE_NOTIFICATIONS)
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
-                       PushEventEnforcesUserVisibleNotification) {
+                       DISABLED_PushEventEnforcesUserVisibleNotification) {
   std::string script_result;
 
   TryToSubscribeSuccessfully("1-0" /* expected_push_subscription_id */);
@@ -626,7 +626,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
-                       PushEventNotificationWithoutEventWaitUntil) {
+                       DISABLED_PushEventNotificationWithoutEventWaitUntil) {
   std::string script_result;
   content::WebContents* web_contents =
       GetBrowser()->tab_strip_model()->GetActiveWebContents();
