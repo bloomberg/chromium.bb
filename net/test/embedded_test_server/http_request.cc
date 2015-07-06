@@ -88,8 +88,8 @@ HttpRequestParser::ParseResult HttpRequestParser::ParseHeaders() {
   {
     const std::string header_line = ShiftLine();
     http_request_->all_headers += header_line + "\r\n";
-    std::vector<std::string> header_line_tokens;
-    base::SplitString(header_line, ' ', &header_line_tokens);
+    std::vector<std::string> header_line_tokens = base::SplitString(
+        header_line, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     DCHECK_EQ(3u, header_line_tokens.size());
     // Method.
     http_request_->method_string = header_line_tokens[0];

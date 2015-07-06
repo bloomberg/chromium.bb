@@ -36,9 +36,9 @@ bool DataURL::Parse(const GURL& url, std::string* mime_type,
   if (comma == end)
     return false;
 
-  std::vector<std::string> meta_data;
-  std::string unparsed_meta_data(after_colon, comma);
-  base::SplitString(unparsed_meta_data, ';', &meta_data);
+  std::vector<std::string> meta_data =
+      base::SplitString(base::StringPiece(after_colon, comma), ";",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   std::vector<std::string>::iterator iter = meta_data.begin();
   if (iter != meta_data.end()) {

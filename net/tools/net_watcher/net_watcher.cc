@@ -170,9 +170,9 @@ int main(int argc, char* argv[]) {
       command_line->GetSwitchValueASCII(kIgnoreNetifFlag);
   base::hash_set<std::string> ignored_interfaces;
   if (!ignored_netifs_str.empty()) {
-    std::vector<std::string> ignored_netifs;
-    base::SplitString(ignored_netifs_str, ',', &ignored_netifs);
-    for (const std::string& ignored_netif : ignored_netifs) {
+    for (const std::string& ignored_netif :
+         base::SplitString(ignored_netifs_str, ",", base::TRIM_WHITESPACE,
+                           base::SPLIT_WANT_ALL)) {
       LOG(INFO) << "Ignoring: " << ignored_netif;
       ignored_interfaces.insert(ignored_netif);
     }

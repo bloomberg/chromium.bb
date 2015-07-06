@@ -280,13 +280,15 @@ bool MimeUtil::MatchesMimeType(const std::string& mime_type_pattern,
   if (base_type.length() < base_pattern.length() - 1)
     return false;
 
-  const std::string left(base_pattern.substr(0, star));
-  const std::string right(base_pattern.substr(star + 1));
+  base::StringPiece base_pattern_piece(base_pattern);
+  base::StringPiece left(base_pattern_piece.substr(0, star));
+  base::StringPiece right(base_pattern_piece.substr(star + 1));
 
-  if (!base::StartsWithASCII(base_type, left, false))
+  if (!base::StartsWith(base_type, left, base::CompareCase::INSENSITIVE_ASCII))
     return false;
 
-  if (!right.empty() && !base::EndsWith(base_type, right, false))
+  if (!right.empty() &&
+      !base::EndsWith(base_type, right, base::CompareCase::INSENSITIVE_ASCII))
     return false;
 
   return MatchesMimeTypeParameters(mime_type_pattern, mime_type);
@@ -309,8 +311,8 @@ bool MimeUtil::ParseMimeTypeWithoutParameter(
     const std::string& type_string,
     std::string* top_level_type,
     std::string* subtype) const {
-  std::vector<std::string> components;
-  base::SplitString(type_string, '/', &components);
+  std::vector<std::string> components = base::SplitString(
+      type_string, "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (components.size() != 2 ||
       !HttpUtil::IsToken(components[0]) ||
       !HttpUtil::IsToken(components[1]))
@@ -331,7 +333,8 @@ bool MimeUtil::IsValidTopLevelMimeType(const std::string& type_string) const {
   }
 
   return type_string.size() > 2 &&
-         base::StartsWithASCII(type_string, "x-", false);
+         base::StartsWith(type_string, "x-",
+                          base::CompareCase::INSENSITIVE_ASCII);
 }
 
 //----------------------------------------------------------------------------
@@ -458,18 +461,16 @@ void GetExtensionsFromHardCodedMappings(
     const std::string& leading_mime_type,
     base::hash_set<base::FilePath::StringType>* extensions) {
   for (size_t i = 0; i < mappings_len; ++i) {
-    if (base::StartsWithASCII(mappings[i].mime_type, leading_mime_type,
-                              false)) {
-      std::vector<string> this_extensions;
-      base::SplitString(mappings[i].extensions, ',', &this_extensions);
-      for (size_t j = 0; j < this_extensions.size(); ++j) {
+    if (base::StartsWith(mappings[i].mime_type, leading_mime_type,
+                         base::CompareCase::INSENSITIVE_ASCII)) {
+      for (const base::StringPiece& this_extension : base::SplitStringPiece(
+               mappings[i].extensions, ",", base::TRIM_WHITESPACE,
+               base::SPLIT_WANT_ALL)) {
 #if defined(OS_WIN)
-        base::FilePath::StringType extension(
-            base::UTF8ToWide(this_extensions[j]));
+        extensions->insert(base::UTF8ToUTF16(this_extension));
 #else
-        base::FilePath::StringType extension(this_extensions[j]);
+        extensions->insert(this_extension.as_string());
 #endif
-        extensions->insert(extension);
       }
     }
   }

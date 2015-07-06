@@ -242,8 +242,8 @@ int main(int argc, char *argv[]) {
     if (sp.empty()) {
       continue;
     }
-    vector<string> kv;
-    base::SplitString(sp, ':', &kv);
+    vector<string> kv =
+        base::SplitString(sp, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     CHECK_EQ(2u, kv.size());
     string key;
     base::TrimWhitespaceASCII(kv[0], base::TRIM_ALL, &key);

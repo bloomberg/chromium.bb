@@ -206,19 +206,23 @@ BASE_EXPORT void TruncateUTF8ToByteSize(const std::string& input,
                                         const size_t byte_size,
                                         std::string* output);
 
-// Trims any whitespace from either end of the input string.  Returns where
-// whitespace was found.
-// The non-wide version has two functions:
-// * TrimWhitespaceASCII()
-//   This function is for ASCII strings and only looks for ASCII whitespace;
-// Please choose the best one according to your usage.
+// Trims any whitespace from either end of the input string.
+//
+// The StringPiece versions return a substring referencing the input buffer.
+// The ASCII versions look only for ASCII whitespace.
+//
+// The std::string versions return where whitespace was found.
 // NOTE: Safe to use the same variable for both input and output.
 BASE_EXPORT TrimPositions TrimWhitespace(const string16& input,
                                          TrimPositions positions,
                                          base::string16* output);
+BASE_EXPORT StringPiece16 TrimWhitespace(StringPiece16 input,
+                                         TrimPositions positions);
 BASE_EXPORT TrimPositions TrimWhitespaceASCII(const std::string& input,
                                               TrimPositions positions,
                                               std::string* output);
+BASE_EXPORT StringPiece TrimWhitespaceASCII(StringPiece input,
+                                            TrimPositions positions);
 
 // Deprecated. This function is only for backward compatibility and calls
 // TrimWhitespaceASCII().

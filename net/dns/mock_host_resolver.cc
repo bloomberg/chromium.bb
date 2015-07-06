@@ -41,13 +41,12 @@ int ParseAddressList(const std::string& host_list,
                      const std::string& canonical_name,
                      AddressList* addrlist) {
   *addrlist = AddressList();
-  std::vector<std::string> addresses;
-  base::SplitString(host_list, ',', &addresses);
   addrlist->set_canonical_name(canonical_name);
-  for (size_t index = 0; index < addresses.size(); ++index) {
+  for (const base::StringPiece& address : base::SplitStringPiece(
+           host_list, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
     IPAddressNumber ip_number;
-    if (!ParseIPLiteralToNumber(addresses[index], &ip_number)) {
-      LOG(WARNING) << "Not a supported IP literal: " << addresses[index];
+    if (!ParseIPLiteralToNumber(address, &ip_number)) {
+      LOG(WARNING) << "Not a supported IP literal: " << address.as_string();
       return ERR_UNEXPECTED;
     }
     addrlist->push_back(IPEndPoint(ip_number, 0));

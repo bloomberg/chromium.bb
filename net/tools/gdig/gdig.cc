@@ -133,15 +133,15 @@ bool LoadReplayLog(const base::FilePath& file_path, ReplayLog* replay_log) {
   std::string replay_log_contents;
   base::RemoveChars(original_replay_log_contents, "\r", &replay_log_contents);
 
-  std::vector<std::string> lines;
-  base::SplitString(replay_log_contents, '\n', &lines);
+  std::vector<std::string> lines = base::SplitString(
+      replay_log_contents, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   base::TimeDelta previous_delta;
   bool bad_parse = false;
   for (unsigned i = 0; i < lines.size(); ++i) {
     if (lines[i].empty())
       continue;
-    std::vector<std::string> time_and_name;
-    base::SplitString(lines[i], ' ', &time_and_name);
+    std::vector<std::string> time_and_name = base::SplitString(
+        lines[i], " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     if (time_and_name.size() != 2) {
       fprintf(
           stderr,

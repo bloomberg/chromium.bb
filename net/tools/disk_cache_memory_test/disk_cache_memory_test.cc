@@ -45,8 +45,8 @@ const char kKb[] = "kB";
 struct CacheSpec {
  public:
   static scoped_ptr<CacheSpec> Parse(const std::string& spec_string) {
-    std::vector<std::string> tokens;
-    base::SplitString(spec_string, ':', &tokens);
+    std::vector<std::string> tokens = base::SplitString(
+        spec_string, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     if (tokens.size() != 3)
       return scoped_ptr<CacheSpec>();
     if (tokens[0] != kBlockFileBackendType && tokens[0] != kSimpleBackendType)

@@ -176,8 +176,8 @@ bool RemoteTestServer::Init(const base::FilePath& document_root) {
     return false;
   }
 
-  std::vector<std::string> ports;
-  base::SplitString(port_info, ':', &ports);
+  std::vector<std::string> ports = base::SplitString(
+      port_info, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (ports.size() != 2u)
     return false;
 

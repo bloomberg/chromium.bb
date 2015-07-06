@@ -37,18 +37,15 @@ class NameServerClassifierTest : public testing::Test {
  protected:
   NameServerClassifier::NameServersType Classify(
       const std::string& servers_string) {
-    std::vector<std::string> server_strings;
-    base::SplitString(servers_string, ' ', &server_strings);
-
     std::vector<IPEndPoint> servers;
-    for (std::vector<std::string>::const_iterator it = server_strings.begin();
-         it != server_strings.end();
-         ++it) {
-      if (it->empty())
+    for (const base::StringPiece& server_str :
+         base::SplitStringPiece(servers_string, " ", base::TRIM_WHITESPACE,
+                                base::SPLIT_WANT_ALL)) {
+      if (server_str.empty())
         continue;
 
       IPAddressNumber address;
-      bool parsed = ParseIPLiteralToNumber(*it, &address);
+      bool parsed = ParseIPLiteralToNumber(server_str, &address);
       EXPECT_TRUE(parsed);
       servers.push_back(IPEndPoint(address, dns_protocol::kDefaultPort));
     }

@@ -134,14 +134,14 @@ scoped_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> ReadIpHelper(ULONG flags) {
 // Converts a base::string16 domain name to ASCII, possibly using punycode.
 // Returns true if the conversion succeeds and output is not empty. In case of
 // failure, |domain| might become dirty.
-bool ParseDomainASCII(const base::string16& widestr, std::string* domain) {
+bool ParseDomainASCII(base::StringPiece16 widestr, std::string* domain) {
   DCHECK(domain);
   if (widestr.empty())
     return false;
 
   // Check if already ASCII.
   if (base::IsStringASCII(widestr)) {
-    *domain = base::UTF16ToASCII(widestr);
+    domain->assign(widestr.begin(), widestr.end());
     return true;
   }
 
@@ -476,12 +476,10 @@ bool ParseSearchList(const base::string16& value,
   // Although nslookup and network connection property tab ignore such
   // fragments ("a,b,,c" becomes ["a", "b", "c"]), our reference is getaddrinfo
   // (which sees ["a", "b"]). WMI queries also return a matching search list.
-  std::vector<base::string16> woutput;
-  base::SplitString(value, ',', &woutput);
-  for (size_t i = 0; i < woutput.size(); ++i) {
+  for (const base::StringPiece16& t : base::SplitStringPiece(
+           value, L",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
     // Convert non-ASCII to punycode, although getaddrinfo does not properly
     // handle such suffixes.
-    const base::string16& t = woutput[i];
     std::string parsed;
     if (!ParseDomainASCII(t, &parsed))
       break;

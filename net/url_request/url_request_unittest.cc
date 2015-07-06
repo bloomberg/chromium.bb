@@ -7776,15 +7776,15 @@ TEST_F(HTTPSRequestTest, ResumeTest) {
     // four lines.
 
     EXPECT_EQ(1, d.response_started_count());
-    std::vector<std::string> lines;
-    base::SplitString(d.data_received(), '\n', &lines);
+    std::vector<std::string> lines = base::SplitString(
+        d.data_received(), "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     ASSERT_EQ(4u, lines.size()) << d.data_received();
 
     std::string session_id;
 
     for (size_t i = 0; i < 2; i++) {
-      std::vector<std::string> parts;
-      base::SplitString(lines[i], '\t', &parts);
+      std::vector<std::string> parts = base::SplitString(
+          lines[i], "\t", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       ASSERT_EQ(2u, parts.size());
       if (i == 0) {
         EXPECT_EQ("insert", parts[0]);
@@ -7801,14 +7801,14 @@ TEST_F(HTTPSRequestTest, ResumeTest) {
 // the result of fetching "ssl-session-cache" from the test server, indicates
 // that exactly two different sessions were inserted, with no lookups etc.
 static void AssertTwoDistinctSessionsInserted(const string& session_info) {
-  std::vector<std::string> lines;
-  base::SplitString(session_info, '\n', &lines);
+  std::vector<std::string> lines = base::SplitString(
+      session_info, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   ASSERT_EQ(3u, lines.size()) << session_info;
 
   std::string session_id;
   for (size_t i = 0; i < 2; i++) {
-    std::vector<std::string> parts;
-    base::SplitString(lines[i], '\t', &parts);
+    std::vector<std::string> parts = base::SplitString(
+        lines[i], "\t", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     ASSERT_EQ(2u, parts.size());
     EXPECT_EQ("insert", parts[0]);
     if (i == 0) {
@@ -7924,8 +7924,8 @@ TEST_F(HTTPSRequestTest, DisableECDSAOnXP) {
   base::RunLoop().Run();
 
   EXPECT_EQ(1, d.response_started_count());
-  std::vector<std::string> lines;
-  base::SplitString(d.data_received(), '\n', &lines);
+  std::vector<std::string> lines = base::SplitString(
+      d.data_received(), "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   for (size_t i = 0; i < lines.size(); i++) {
     int cipher_suite;

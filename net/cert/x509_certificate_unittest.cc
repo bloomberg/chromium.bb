@@ -1109,14 +1109,15 @@ TEST_P(X509CertificateNameVerifyTest, VerifyHostname) {
     // Build up the certificate DNS names list.
     std::string dns_name_line(test_data.dns_names);
     std::replace(dns_name_line.begin(), dns_name_line.end(), '#', '\0');
-    base::SplitString(dns_name_line, ',', &dns_names);
+    dns_names = base::SplitString(dns_name_line, ",", base::TRIM_WHITESPACE,
+                                  base::SPLIT_WANT_ALL);
   }
 
   if (test_data.ip_addrs) {
     // Build up the certificate IP address list.
     std::string ip_addrs_line(test_data.ip_addrs);
-    std::vector<std::string> ip_addressses_ascii;
-    base::SplitString(ip_addrs_line, ',', &ip_addressses_ascii);
+    std::vector<std::string> ip_addressses_ascii = base::SplitString(
+        ip_addrs_line, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     for (size_t i = 0; i < ip_addressses_ascii.size(); ++i) {
       std::string& addr_ascii = ip_addressses_ascii[i];
       ASSERT_NE(0U, addr_ascii.length());
@@ -1129,8 +1130,8 @@ TEST_P(X509CertificateNameVerifyTest, VerifyHostname) {
                                             bytes.size()));
         ASSERT_EQ(16U, ip_addressses.back().size()) << i;
       } else {  // Decimal groups
-        std::vector<std::string> decimals_ascii;
-        base::SplitString(addr_ascii, '.', &decimals_ascii);
+        std::vector<std::string> decimals_ascii = base::SplitString(
+            addr_ascii, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
         EXPECT_EQ(4U, decimals_ascii.size()) << i;
         std::string addr_bytes;
         for (size_t j = 0; j < decimals_ascii.size(); ++j) {

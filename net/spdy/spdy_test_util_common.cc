@@ -869,11 +869,10 @@ std::string SpdyTestUtil::ConstructSpdyReplyString(
     // above).
     if (spdy_version() >= SPDY3 && key[0] == ':')
       key = key.substr(1);
-    std::vector<std::string> values;
-    base::SplitString(it->second, '\0', &values);
-    for (std::vector<std::string>::const_iterator it2 = values.begin();
-         it2 != values.end(); ++it2) {
-      reply_string += key + ": " + *it2 + "\n";
+    for (const std::string& value :
+         base::SplitString(it->second, base::StringPiece("\0", 1),
+                           base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+      reply_string += key + ": " + value + "\n";
     }
   }
   return reply_string;

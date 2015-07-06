@@ -307,10 +307,19 @@ TrimPositions TrimWhitespace(const string16& input,
   return TrimStringT(input, StringPiece16(kWhitespaceUTF16), positions, output);
 }
 
+StringPiece16 TrimWhitespaceASCII(StringPiece16 input,
+                                  TrimPositions positions) {
+  return TrimStringPieceT(input, StringPiece16(kWhitespaceUTF16), positions);
+}
+
 TrimPositions TrimWhitespaceASCII(const std::string& input,
                                   TrimPositions positions,
                                   std::string* output) {
   return TrimStringT(input, StringPiece(kWhitespaceASCII), positions, output);
+}
+
+StringPiece TrimWhitespaceASCII(StringPiece input, TrimPositions positions) {
+  return TrimStringPieceT(input, StringPiece(kWhitespaceASCII), positions);
 }
 
 // This function is only for backward-compatibility.

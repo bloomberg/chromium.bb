@@ -128,9 +128,11 @@ void QuicInMemoryCache::InitializeFromDirectory(const string& cache_directory) {
     if (response_headers->GetNormalizedHeader("X-Original-Url", &base)) {
       response_headers->RemoveHeader("X-Original-Url");
       // Remove the protocol so we can add it below.
-      if (base::StartsWithASCII(base, "https://", false)) {
+      if (base::StartsWith(base, "https://",
+                           base::CompareCase::INSENSITIVE_ASCII)) {
         base = base.substr(8);
-      } else if (base::StartsWithASCII(base, "http://", false)) {
+      } else if (base::StartsWith(base, "http://",
+                                  base::CompareCase::INSENSITIVE_ASCII)) {
         base = base.substr(7);
       }
     } else {

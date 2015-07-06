@@ -263,7 +263,7 @@ void EmbeddedTestServer::HandleRequest(HttpConnection* connection,
 
 GURL EmbeddedTestServer::GetURL(const std::string& relative_url) const {
   DCHECK(Started()) << "You must start the server first.";
-  DCHECK(base::StartsWithASCII(relative_url, "/", true /* case_sensitive */))
+  DCHECK(base::StartsWith(relative_url, "/", base::CompareCase::SENSITIVE))
       << relative_url;
   return base_url_.Resolve(relative_url);
 }

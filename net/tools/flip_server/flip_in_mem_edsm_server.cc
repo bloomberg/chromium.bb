@@ -286,8 +286,8 @@ int main(int argc, char** argv) {
       break;
     }
     std::string value = cl.GetSwitchValueASCII(name.str());
-    std::vector<std::string> valueArgs;
-    base::SplitString(value, ',', &valueArgs);
+    std::vector<std::string> valueArgs = base::SplitString(
+        value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     CHECK_EQ((unsigned int)9, valueArgs.size());
     int spdy_only = atoi(valueArgs[8].c_str());
     // If wait_for_iface is enabled, then this call will block
@@ -315,8 +315,8 @@ int main(int argc, char** argv) {
   if (cl.HasSwitch("spdy-server")) {
     spdy_memory_cache.AddFiles();
     std::string value = cl.GetSwitchValueASCII("spdy-server");
-    std::vector<std::string> valueArgs;
-    base::SplitString(value, ',', &valueArgs);
+    std::vector<std::string> valueArgs = base::SplitString(
+        value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     while (valueArgs.size() < 4)
       valueArgs.push_back(std::string());
     g_proxy_config.AddAcceptor(net::FLIP_HANDLER_SPDY_SERVER,
@@ -342,8 +342,8 @@ int main(int argc, char** argv) {
   if (cl.HasSwitch("http-server")) {
     http_memory_cache.AddFiles();
     std::string value = cl.GetSwitchValueASCII("http-server");
-    std::vector<std::string> valueArgs;
-    base::SplitString(value, ',', &valueArgs);
+    std::vector<std::string> valueArgs = base::SplitString(
+        value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     while (valueArgs.size() < 4)
       valueArgs.push_back(std::string());
     g_proxy_config.AddAcceptor(net::FLIP_HANDLER_HTTP_SERVER,

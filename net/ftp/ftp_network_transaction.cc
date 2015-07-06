@@ -182,8 +182,8 @@ bool ExtractPortFromPASVResponse(const FtpCtrlResponse& response, int* port) {
 
   // Split the line into comma-separated pieces and extract
   // the last two.
-  std::vector<std::string> pieces;
-  base::SplitString(line, ',', &pieces);
+  std::vector<base::StringPiece> pieces = base::SplitStringPiece(
+      line, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (pieces.size() != 6)
     return false;
 

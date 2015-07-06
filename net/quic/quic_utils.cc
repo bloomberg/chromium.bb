@@ -292,11 +292,11 @@ string QuicUtils::TagToString(QuicTag tag) {
 QuicTagVector QuicUtils::ParseQuicConnectionOptions(
     const std::string& connection_options) {
   QuicTagVector options;
-  std::vector<std::string> tokens;
-  base::SplitString(connection_options, ',', &tokens);
   // Tokens are expected to be no more than 4 characters long, but we
   // handle overflow gracefully.
-  for (const std::string& token : tokens) {
+  for (const base::StringPiece& token :
+       base::SplitStringPiece(connection_options, ",", base::TRIM_WHITESPACE,
+                              base::SPLIT_WANT_ALL)) {
     uint32 option = 0;
     for (char token_char : base::Reversed(token)) {
       option <<= 8;

@@ -49,8 +49,9 @@ bool ParseFtpDirectoryListingNetware(
     if (lines[i].empty())
       continue;
 
-    std::vector<base::string16> columns;
-    base::SplitString(base::CollapseWhitespace(lines[i], false), ' ', &columns);
+    std::vector<base::string16> columns = base::SplitString(
+        base::CollapseWhitespace(lines[i], false), base::ASCIIToUTF16(" "),
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
     if (columns.size() < 8)
       return false;

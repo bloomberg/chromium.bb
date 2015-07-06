@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "net/ftp/ftp_directory_listing_parser.h"
 #include "net/ftp/ftp_util.h"
@@ -22,8 +23,9 @@ bool ParseFtpDirectoryListingOS2(
     if (lines[i].empty())
       continue;
 
-    std::vector<base::string16> columns;
-    base::SplitString(base::CollapseWhitespace(lines[i], false), ' ', &columns);
+    std::vector<base::string16> columns = base::SplitString(
+        base::CollapseWhitespace(lines[i], false), base::ASCIIToUTF16(" "),
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
     // Every line of the listing consists of the following:
     //

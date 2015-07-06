@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "net/tools/balsa/balsa_headers_token_utils.h"
-#include "net/tools/balsa/string_piece_utils.h"
 
 namespace net {
 
@@ -86,7 +85,8 @@ bool BalsaHeadersTokenUtils::CheckHeaderForLastToken(
                  &tokens);
 
   return !tokens.empty() &&
-      StringPieceUtils::StartsWithIgnoreCase(tokens.back(), token);
+         base::StartsWith(tokens.back(), token,
+                          base::CompareCase::INSENSITIVE_ASCII);
 }
 
 void BalsaHeadersTokenUtils::TokenizeHeaderValue(

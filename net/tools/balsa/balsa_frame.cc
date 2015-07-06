@@ -22,6 +22,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "net/tools/balsa/balsa_enums.h"
 #include "net/tools/balsa/balsa_headers.h"
 #include "net/tools/balsa/balsa_visitor_interface.h"
@@ -724,8 +725,8 @@ bool SplitStringPiece(base::StringPiece original, char delim,
         *after = base::StringPiece(p + 1, end - (p + 1));
       else
         *after = base::StringPiece("");
-      StringPieceUtils::RemoveWhitespaceContext(before);
-      StringPieceUtils::RemoveWhitespaceContext(after);
+      *before = base::TrimWhitespaceASCII(*before, base::TRIM_ALL);
+      *after = base::TrimWhitespaceASCII(*after, base::TRIM_ALL);
       return true;
     }
   }
@@ -742,7 +743,7 @@ void ProcessChunkExtensionsManual(base::StringPiece all_extensions,
                                   BalsaHeaders* extensions) {
   base::StringPiece extension;
   base::StringPiece remaining;
-  StringPieceUtils::RemoveWhitespaceContext(&all_extensions);
+  all_extensions = base::TrimWhitespaceASCII(all_extensions, base::TRIM_ALL);
   SplitStringPiece(all_extensions, ';', &extension, &remaining);
   while (!extension.empty()) {
     base::StringPiece key;
@@ -758,7 +759,7 @@ void ProcessChunkExtensionsManual(base::StringPiece all_extensions,
 
     extensions->AppendHeader(key, value);
 
-    StringPieceUtils::RemoveWhitespaceContext(&remaining);
+    remaining = base::TrimWhitespaceASCII(remaining, base::TRIM_ALL);
     SplitStringPiece(remaining, ';', &extension, &remaining);
   }
 }

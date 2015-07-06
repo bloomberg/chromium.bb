@@ -66,10 +66,9 @@ bool HostMappingRules::RewriteHost(HostPortPair* host_port) const {
 }
 
 bool HostMappingRules::AddRuleFromString(const std::string& rule_string) {
-  std::string trimmed;
-  base::TrimWhitespaceASCII(rule_string, base::TRIM_ALL, &trimmed);
-  std::vector<std::string> parts;
-  base::SplitString(trimmed, ' ', &parts);
+  std::vector<std::string> parts =
+      base::SplitString(base::TrimWhitespaceASCII(rule_string, base::TRIM_ALL),
+                        " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   // Test for EXCLUSION rule.
   if (parts.size() == 2 && base::LowerCaseEqualsASCII(parts[0], "exclude")) {

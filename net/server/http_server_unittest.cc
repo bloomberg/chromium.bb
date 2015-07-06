@@ -270,8 +270,8 @@ TEST_F(HttpServerTest, Request) {
   ASSERT_EQ("/test", GetRequest(0).path);
   ASSERT_EQ("", GetRequest(0).data);
   ASSERT_EQ(0u, GetRequest(0).headers.size());
-  ASSERT_TRUE(
-      base::StartsWithASCII(GetRequest(0).peer.ToString(), "127.0.0.1", true));
+  ASSERT_TRUE(base::StartsWith(GetRequest(0).peer.ToString(), "127.0.0.1",
+                               base::CompareCase::SENSITIVE));
 }
 
 TEST_F(HttpServerTest, RequestWithHeaders) {
@@ -442,8 +442,10 @@ TEST_F(HttpServerTest, Send200) {
 
   std::string response;
   ASSERT_TRUE(client.ReadResponse(&response));
-  ASSERT_TRUE(base::StartsWithASCII(response, "HTTP/1.1 200 OK", true));
-  ASSERT_TRUE(base::EndsWith(response, "Response!", true));
+  ASSERT_TRUE(base::StartsWith(response, "HTTP/1.1 200 OK",
+                               base::CompareCase::SENSITIVE));
+  ASSERT_TRUE(
+      base::EndsWith(response, "Response!", base::CompareCase::SENSITIVE));
 }
 
 TEST_F(HttpServerTest, SendRaw) {
@@ -591,8 +593,10 @@ TEST_F(HttpServerTest, MultipleRequestsOnSameConnection) {
   server_->Send200(client_connection_id, "Content for /test", "text/plain");
   std::string response1;
   ASSERT_TRUE(client.ReadResponse(&response1));
-  ASSERT_TRUE(base::StartsWithASCII(response1, "HTTP/1.1 200 OK", true));
-  ASSERT_TRUE(base::EndsWith(response1, "Content for /test", true));
+  ASSERT_TRUE(base::StartsWith(response1, "HTTP/1.1 200 OK",
+                               base::CompareCase::SENSITIVE));
+  ASSERT_TRUE(base::EndsWith(response1, "Content for /test",
+                             base::CompareCase::SENSITIVE));
 
   client.Send("GET /test2 HTTP/1.1\r\n\r\n");
   ASSERT_TRUE(RunUntilRequestsReceived(2));
@@ -602,7 +606,8 @@ TEST_F(HttpServerTest, MultipleRequestsOnSameConnection) {
   server_->Send404(client_connection_id);
   std::string response2;
   ASSERT_TRUE(client.ReadResponse(&response2));
-  ASSERT_TRUE(base::StartsWithASCII(response2, "HTTP/1.1 404 Not Found", true));
+  ASSERT_TRUE(base::StartsWith(response2, "HTTP/1.1 404 Not Found",
+                               base::CompareCase::SENSITIVE));
 
   client.Send("GET /test3 HTTP/1.1\r\n\r\n");
   ASSERT_TRUE(RunUntilRequestsReceived(3));
@@ -612,8 +617,10 @@ TEST_F(HttpServerTest, MultipleRequestsOnSameConnection) {
   server_->Send200(client_connection_id, "Content for /test3", "text/plain");
   std::string response3;
   ASSERT_TRUE(client.ReadResponse(&response3));
-  ASSERT_TRUE(base::StartsWithASCII(response3, "HTTP/1.1 200 OK", true));
-  ASSERT_TRUE(base::EndsWith(response3, "Content for /test3", true));
+  ASSERT_TRUE(base::StartsWith(response3, "HTTP/1.1 200 OK",
+                               base::CompareCase::SENSITIVE));
+  ASSERT_TRUE(base::EndsWith(response3, "Content for /test3",
+                             base::CompareCase::SENSITIVE));
 }
 
 class CloseOnConnectHttpServerTest : public HttpServerTest {

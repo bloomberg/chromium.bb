@@ -24,8 +24,9 @@ bool TwoColumnDateListingToTime(const base::string16& date,
   base::Time::Exploded time_exploded = { 0 };
 
   // Date should be in format YYYY-MM-DD.
-  std::vector<base::string16> date_parts;
-  base::SplitString(date, '-', &date_parts);
+  std::vector<base::string16> date_parts =
+      base::SplitString(date, base::ASCIIToUTF16("-"), base::TRIM_WHITESPACE,
+                        base::SPLIT_WANT_ALL);
   if (date_parts.size() != 3)
     return false;
   if (!base::StringToInt(date_parts[0], &time_exploded.year))
@@ -39,8 +40,9 @@ bool TwoColumnDateListingToTime(const base::string16& date,
   if (time.length() != 5)
     return false;
 
-  std::vector<base::string16> time_parts;
-  base::SplitString(time, ':', &time_parts);
+  std::vector<base::string16> time_parts =
+      base::SplitString(time, base::ASCIIToUTF16(":"), base::TRIM_WHITESPACE,
+                        base::SPLIT_WANT_ALL);
   if (time_parts.size() != 2)
     return false;
   if (!base::StringToInt(time_parts[0], &time_exploded.hour))
@@ -128,8 +130,9 @@ bool ParseFtpDirectoryListingLs(
     if (lines[i].empty())
       continue;
 
-    std::vector<base::string16> columns;
-    base::SplitString(base::CollapseWhitespace(lines[i], false), ' ', &columns);
+    std::vector<base::string16> columns = base::SplitString(
+        base::CollapseWhitespace(lines[i], false), base::ASCIIToUTF16(" "),
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
     // Some FTP servers put a "total n" line at the beginning of the listing
     // (n is an integer). Allow such a line, but only once, and only if it's

@@ -38,9 +38,10 @@ void HttpStreamFactory::ProcessAlternateProtocol(
   double probability = 1;
   bool is_valid = true;
   for (size_t i = 0; i < alternate_protocol_values.size(); ++i) {
-    const std::string& alternate_protocol_str = alternate_protocol_values[i];
-    if (base::StartsWithASCII(alternate_protocol_str, "p=", true)) {
-      if (!base::StringToDouble(alternate_protocol_str.substr(2),
+    base::StringPiece alternate_protocol_str = alternate_protocol_values[i];
+    if (base::StartsWith(alternate_protocol_str, "p=",
+                         base::CompareCase::SENSITIVE)) {
+      if (!base::StringToDouble(alternate_protocol_str.substr(2).as_string(),
                                 &probability) ||
           probability < 0 || probability > 1) {
         DVLOG(1) << kAlternateProtocolHeader
@@ -52,8 +53,9 @@ void HttpStreamFactory::ProcessAlternateProtocol(
       continue;
     }
 
-    std::vector<std::string> port_protocol_vector;
-    base::SplitString(alternate_protocol_str, ':', &port_protocol_vector);
+    std::vector<base::StringPiece> port_protocol_vector =
+        base::SplitStringPiece(alternate_protocol_str, ":",
+                               base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     if (port_protocol_vector.size() != 2) {
       DVLOG(1) << kAlternateProtocolHeader
                << " header has too many tokens: "
@@ -71,7 +73,7 @@ void HttpStreamFactory::ProcessAlternateProtocol(
       break;
     }
 
-    protocol = AlternateProtocolFromString(port_protocol_vector[1]);
+    protocol = AlternateProtocolFromString(port_protocol_vector[1].as_string());
 
     if (IsAlternateProtocolValid(protocol) &&
         !session.IsProtocolEnabled(protocol)) {

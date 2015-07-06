@@ -25,8 +25,9 @@ bool ParseVmsFilename(const base::string16& raw_filename,
                       FtpDirectoryListingEntry::Type* type) {
   // On VMS, the files and directories are versioned. The version number is
   // separated from the file name by a semicolon. Example: ANNOUNCE.TXT;2.
-  std::vector<base::string16> listing_parts;
-  base::SplitString(raw_filename, ';', &listing_parts);
+  std::vector<base::string16> listing_parts =
+      base::SplitString(raw_filename, base::ASCIIToUTF16(";"),
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (listing_parts.size() != 2)
     return false;
   int version_number;
@@ -39,8 +40,9 @@ bool ParseVmsFilename(const base::string16& raw_filename,
   // for directories; it's awkward for non-VMS users. Also, VMS is
   // case-insensitive, but generally uses uppercase characters. This may look
   // awkward, so we convert them to lower case.
-  std::vector<base::string16> filename_parts;
-  base::SplitString(listing_parts[0], '.', &filename_parts);
+  std::vector<base::string16> filename_parts =
+      base::SplitString(listing_parts[0], base::ASCIIToUTF16("."),
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (filename_parts.size() != 2)
     return false;
   if (base::EqualsASCII(filename_parts[1], "DIR")) {
@@ -72,8 +74,9 @@ bool ParseVmsFilesize(const base::string16& input, int64* size) {
     return true;
   }
 
-  std::vector<base::string16> parts;
-  base::SplitString(input, '/', &parts);
+  std::vector<base::StringPiece16> parts =
+      base::SplitStringPiece(input, base::ASCIIToUTF16("/"),
+                             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (parts.size() != 2)
     return false;
 
@@ -115,8 +118,9 @@ bool LooksLikeVmsFileProtectionListing(const base::string16& input) {
 
   // We expect four parts of the file protection listing: for System, Owner,
   // Group, and World.
-  std::vector<base::string16> parts;
-  base::SplitString(input.substr(1, input.length() - 2), ',', &parts);
+  std::vector<base::string16> parts = base::SplitString(
+      base::StringPiece16(input).substr(1, input.length() - 2),
+      base::ASCIIToUTF16(","), base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (parts.size() != 4)
     return false;
 
@@ -156,13 +160,14 @@ bool VmsDateListingToTime(const std::vector<base::string16>& columns,
   base::Time::Exploded time_exploded = { 0 };
 
   // Date should be in format DD-MMM-YYYY.
-  std::vector<base::string16> date_parts;
-  base::SplitString(columns[2], '-', &date_parts);
+  std::vector<base::StringPiece16> date_parts =
+      base::SplitStringPiece(columns[2], base::ASCIIToUTF16("-"),
+                             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (date_parts.size() != 3)
     return false;
   if (!base::StringToInt(date_parts[0], &time_exploded.day_of_month))
     return false;
-  if (!FtpUtil::AbbreviatedMonthToNumber(date_parts[1],
+  if (!FtpUtil::AbbreviatedMonthToNumber(date_parts[1].as_string(),
                                          &time_exploded.month))
     return false;
   if (!base::StringToInt(date_parts[2], &time_exploded.year))
@@ -177,8 +182,9 @@ bool VmsDateListingToTime(const std::vector<base::string16>& columns,
     time_column = time_column.substr(0, 5);
   if (time_column.length() != 5)
     return false;
-  std::vector<base::string16> time_parts;
-  base::SplitString(time_column, ':', &time_parts);
+  std::vector<base::StringPiece16> time_parts =
+      base::SplitStringPiece(time_column, base::ASCIIToUTF16(":"),
+                             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (time_parts.size() != 2)
     return false;
   if (!base::StringToInt(time_parts[0], &time_exploded.hour))

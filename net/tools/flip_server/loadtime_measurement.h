@@ -30,7 +30,8 @@ class LoadtimeMeasurement {
       : num_urls_(0), pageload_html_file_(pageload_html_file) {
     std::string urls_string;
     base::ReadFileToString(urls_file, &urls_string);
-    base::SplitString(urls_string, '\n', &urls_);
+    urls_ = base::SplitString(urls_string, "\n", base::TRIM_WHITESPACE,
+                              base::SPLIT_WANT_ALL);
     num_urls_ = urls_.size();
   }
 
@@ -72,14 +73,14 @@ class LoadtimeMeasurement {
       return;
     }
     if (action.find("record_page_load") == 0) {
-      std::vector<std::string> query;
-      base::SplitString(action, '?', &query);
-      std::vector<std::string> params;
-      base::SplitString(query[1], '&', &params);
-      std::vector<std::string> url;
-      std::vector<std::string> loadtime;
-      base::SplitString(params[1], '=', &url);
-      base::SplitString(params[2], '=', &loadtime);
+      std::vector<std::string> query = base::SplitString(
+          action, "?", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      std::vector<std::string> params = base::SplitString(
+          query[1], "&", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      std::vector<std::string> url = base::SplitString(
+          params[1], "=", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      std::vector<std::string> loadtime = base::SplitString(
+          params[2], "=", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       loadtimes_[url[1]] = atoi(loadtime[1].c_str());
       output.append("OK");
       return;
