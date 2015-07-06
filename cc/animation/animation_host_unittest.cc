@@ -17,9 +17,8 @@ namespace {
 // animation_player_unittest.cc.
 
 TEST(AnimationHostTest, SyncTimelinesAddRemove) {
-  scoped_ptr<AnimationHost> host(AnimationHost::Create(ThreadInstance::MAIN));
-  scoped_ptr<AnimationHost> host_impl(
-      AnimationHost::Create(ThreadInstance::IMPL));
+  scoped_ptr<AnimationHost> host(AnimationHost::Create());
+  scoped_ptr<AnimationHost> host_impl(AnimationHost::Create());
 
   const int timeline_id = AnimationIdProvider::NextTimelineId();
   scoped_refptr<AnimationTimeline> timeline(
@@ -49,9 +48,8 @@ TEST(AnimationHostTest, SyncTimelinesAddRemove) {
 }
 
 TEST(AnimationHostTest, ImplOnlyTimeline) {
-  scoped_ptr<AnimationHost> host(AnimationHost::Create(ThreadInstance::MAIN));
-  scoped_ptr<AnimationHost> host_impl(
-      AnimationHost::Create(ThreadInstance::IMPL));
+  scoped_ptr<AnimationHost> host(AnimationHost::Create());
+  scoped_ptr<AnimationHost> host_impl(AnimationHost::Create());
 
   const int timeline_id1 = AnimationIdProvider::NextTimelineId();
   const int timeline_id2 = AnimationIdProvider::NextTimelineId();

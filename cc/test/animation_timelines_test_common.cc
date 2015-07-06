@@ -35,9 +35,8 @@ void TestLayer::ClearMutatedProperties() {
     mutated_properties_[i] = false;
 }
 
-TestHostClient::TestHostClient(ThreadInstance thread_instance)
-    : host_(AnimationHost::Create(thread_instance)),
-      mutators_need_commit_(false) {
+TestHostClient::TestHostClient()
+    : host_(AnimationHost::Create()), mutators_need_commit_(false) {
   host_->SetMutatorHostClient(this);
 }
 
@@ -193,9 +192,7 @@ void TestAnimationDelegate::NotifyAnimationFinished(
 }
 
 AnimationTimelinesTest::AnimationTimelinesTest()
-    : client_(ThreadInstance::MAIN),
-      client_impl_(ThreadInstance::IMPL),
-      timeline_id_(AnimationIdProvider::NextTimelineId()),
+    : timeline_id_(AnimationIdProvider::NextTimelineId()),
       player_id_(AnimationIdProvider::NextPlayerId()),
       layer_id_(1) {
   host_ = client_.host();

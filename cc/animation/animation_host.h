@@ -40,7 +40,7 @@ typedef std::vector<scoped_refptr<AnimationTimeline>> AnimationTimelineList;
 // we want to merge AnimationRegistrar into AnimationHost.
 class CC_EXPORT AnimationHost {
  public:
-  static scoped_ptr<AnimationHost> Create(ThreadInstance thread_instance);
+  static scoped_ptr<AnimationHost> Create();
   virtual ~AnimationHost();
 
   void AddAnimationTimeline(scoped_refptr<AnimationTimeline> timeline);
@@ -121,7 +121,7 @@ class CC_EXPORT AnimationHost {
   bool HasActiveAnimation(int layer_id) const;
 
  private:
-  explicit AnimationHost(ThreadInstance thread_instance);
+  AnimationHost();
 
   void PushTimelinesToImplThread(AnimationHost* host_impl) const;
   void RemoveTimelinesFromImplThread(AnimationHost* host_impl) const;
@@ -140,8 +140,6 @@ class CC_EXPORT AnimationHost {
   AnimationTimelineList timelines_;
   scoped_ptr<AnimationRegistrar> animation_registrar_;
   MutatorHostClient* mutator_host_client_;
-
-  const ThreadInstance thread_instance_;
 
   DISALLOW_COPY_AND_ASSIGN(AnimationHost);
 };

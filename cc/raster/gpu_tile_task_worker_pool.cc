@@ -29,7 +29,6 @@ class RasterBufferImpl : public RasterBuffer {
                    uint64_t previous_content_id)
       : rasterizer_(rasterizer),
         lock_(rasterizer->resource_provider(), resource->id()),
-        resource_(resource),
         resource_has_previous_content_(
             resource_content_id && resource_content_id == previous_content_id) {
   }
@@ -74,7 +73,6 @@ class RasterBufferImpl : public RasterBuffer {
  private:
   GpuRasterizer* rasterizer_;
   ResourceProvider::ScopedWriteLockGr lock_;
-  const Resource* resource_;
   bool resource_has_previous_content_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterBufferImpl);

@@ -14,15 +14,13 @@
 
 namespace cc {
 
-scoped_ptr<AnimationHost> AnimationHost::Create(
-    ThreadInstance thread_instance) {
-  return make_scoped_ptr(new AnimationHost(thread_instance));
+scoped_ptr<AnimationHost> AnimationHost::Create() {
+  return make_scoped_ptr(new AnimationHost);
 }
 
-AnimationHost::AnimationHost(ThreadInstance thread_instance)
+AnimationHost::AnimationHost()
     : animation_registrar_(AnimationRegistrar::Create()),
-      mutator_host_client_(),
-      thread_instance_(thread_instance) {
+      mutator_host_client_(nullptr) {
 }
 
 AnimationHost::~AnimationHost() {

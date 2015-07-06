@@ -140,10 +140,6 @@ class CC_EXPORT RenderSurface {
   // surface, and that ignores outside occlusion. This can point to itself.
   RenderSurface* nearest_occlusion_immune_ancestor_;
 
-  // For LayerIteratorActions
-  int target_render_surface_layer_index_history_;
-  size_t current_layer_index_history_;
-
   DISALLOW_COPY_AND_ASSIGN(RenderSurface);
 };
 

@@ -242,7 +242,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       frame_timing_tracker_(FrameTimingTracker::Create(this)) {
   if (settings.use_compositor_animation_timelines) {
     if (settings.accelerated_animation_enabled) {
-      animation_host_ = AnimationHost::Create(ThreadInstance::IMPL);
+      animation_host_ = AnimationHost::Create();
       animation_host_->SetMutatorHostClient(this);
       animation_host_->SetSupportsScrollAnimations(
           proxy_->SupportsImplScrolling());

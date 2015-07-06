@@ -68,7 +68,7 @@ class TestLayer {
 
 class TestHostClient : public MutatorHostClient {
  public:
-  explicit TestHostClient(ThreadInstance thread_instance);
+  TestHostClient();
   ~TestHostClient();
 
   void ClearMutatedProperties();
