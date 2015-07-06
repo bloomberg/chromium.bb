@@ -187,9 +187,6 @@ class ASH_EXPORT SystemTrayDelegate {
   // show the settings for the corresponding network.
   virtual void ShowNetworkSettingsForGuid(const std::string& guid);
 
-  // Shows the settings related to bluetooth.
-  virtual void ShowBluetoothSettings();
-
   // Shows settings related to multiple displays.
   virtual void ShowDisplaySettings();
 

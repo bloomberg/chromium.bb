@@ -161,17 +161,12 @@ gfx::NativeWindow GetNativeWindowByStatus(ash::user::LoginStatus login_status,
                                   container_id);
 }
 
-void BluetoothPowerFailure() {
-  // TODO(sad): Show an error bubble?
-}
-
 void BluetoothSetDiscoveringError() {
   LOG(ERROR) << "BluetoothSetDiscovering failed.";
 }
 
 void BluetoothDeviceConnectError(
     device::BluetoothDevice::ConnectErrorCode error_code) {
-  // TODO(sad): Do something?
 }
 
 void ShowSettingsSubPageForActiveUser(const std::string& sub_page) {
@@ -481,10 +476,6 @@ void SystemTrayDelegateChromeOS::ShowNetworkSettingsForGuid(
   ShowSettingsSubPageForActiveUser(page);
 }
 
-void SystemTrayDelegateChromeOS::ShowBluetoothSettings() {
-  // TODO(sad): Make this work.
-}
-
 void SystemTrayDelegateChromeOS::ShowDisplaySettings() {
   // TODO(michaelpg): Allow display settings to be shown when they are updated
   // to work for 3+ displays. See issue 467195.
@@ -773,7 +764,7 @@ void SystemTrayDelegateChromeOS::ManageBluetoothDevices() {
 void SystemTrayDelegateChromeOS::ToggleBluetooth() {
   bluetooth_adapter_->SetPowered(!bluetooth_adapter_->IsPowered(),
                                  base::Bind(&base::DoNothing),
-                                 base::Bind(&BluetoothPowerFailure));
+                                 base::Bind(&base::DoNothing));
 }
 
 void SystemTrayDelegateChromeOS::ShowOtherNetworkDialog(

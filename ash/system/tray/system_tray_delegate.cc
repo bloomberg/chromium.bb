@@ -121,9 +121,6 @@ void SystemTrayDelegate::ShowSetTimeDialog() {
 void SystemTrayDelegate::ShowNetworkSettingsForGuid(const std::string& guid) {
 }
 
-void SystemTrayDelegate::ShowBluetoothSettings() {
-}
-
 void SystemTrayDelegate::ShowDisplaySettings() {
 }
 
