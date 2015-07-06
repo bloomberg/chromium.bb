@@ -534,7 +534,6 @@
             '../google_apis/gcm/gcm.gyp:gcm_unit_tests_run',
             '../gpu/gpu.gyp:gpu_unittests_run',
             '../ipc/ipc.gyp:ipc_tests_run',
-            '../ipc/mojo/ipc_mojo.gyp:ipc_mojo_unittests_run',
             '../media/cast/cast.gyp:cast_unittests_run',
             '../media/media.gyp:media_unittests_run',
             '../media/midi/midi.gyp:midi_unittests_run',
