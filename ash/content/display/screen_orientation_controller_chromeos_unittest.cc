@@ -641,11 +641,8 @@ TEST_F(ScreenOrientationControllerTest, RotateInactiveDisplay) {
   delegate()->SetDisplayRotation(kNewRotation,
                                  gfx::Display::ROTATION_SOURCE_ACTIVE);
 
-  // TODO(bruthig): Uncomment when www.crbug.com/480703 is fixed. This test
-  // still adds value by ensuring a crash does not occur. See
-  // www.crbug.com/479503.
-  // ASSERT_EQ(kNewRotation, display_manager->GetDisplayInfo(kInternalDisplayId)
-  //     .GetActiveRotation());
+  EXPECT_EQ(kNewRotation, display_manager->GetDisplayInfo(kInternalDisplayId)
+                              .GetActiveRotation());
 }
 
 }  // namespace ash
