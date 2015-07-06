@@ -20,6 +20,9 @@ shared_library("IAccessible2Proxy") {
     "IAccessible2Proxy.def",
   ]
 
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
   defines = [ "REGISTER_PROXY_DLL" ]
 
   libs = [ "rpcrt4.lib" ]
