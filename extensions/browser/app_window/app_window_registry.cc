@@ -64,6 +64,9 @@ void AppWindowRegistry::Observer::OnAppWindowShown(AppWindow* app_window,
                                                    bool was_shown) {
 }
 
+void AppWindowRegistry::Observer::OnAppWindowActivated(AppWindow* app_window) {
+}
+
 AppWindowRegistry::Observer::~Observer() {
 }
 
@@ -95,6 +98,7 @@ void AppWindowRegistry::AppWindowIconChanged(AppWindow* app_window) {
 
 void AppWindowRegistry::AppWindowActivated(AppWindow* app_window) {
   BringToFront(app_window);
+  FOR_EACH_OBSERVER(Observer, observers_, OnAppWindowActivated(app_window));
 }
 
 void AppWindowRegistry::AppWindowHidden(AppWindow* app_window) {
