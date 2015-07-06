@@ -25,8 +25,7 @@ interface HTMLTableRowElement : HTMLElement {
     readonly attribute long sectionRowIndex;
     readonly attribute HTMLCollection cells;
     [RaisesException] HTMLElement insertCell(optional long index = -1);
-    // TODO(philipj): The index argument should not be optional.
-    [RaisesException] void deleteCell([Default=Undefined] optional long index);
+    [RaisesException] void deleteCell(long index);
 
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLTableRowElement-partial
