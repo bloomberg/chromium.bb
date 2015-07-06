@@ -4,12 +4,15 @@
 
 #include "chrome/installer/setup/install_worker.h"
 
+#include <vector>
+
 #include "base/win/registry.h"
 #include "base/version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/setup/setup_util.h"
-#include "chrome/installer/util/delete_reg_key_work_item.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
+#include "chrome/installer/util/delete_reg_key_work_item.h"
+#include "chrome/installer/util/delete_tree_work_item.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/installation_state.h"
@@ -28,12 +31,14 @@ using installer::Product;
 using installer::ProductState;
 
 using ::testing::_;
+using ::testing::AnyNumber;
 using ::testing::AtLeast;
 using ::testing::AtMost;
 using ::testing::Bool;
 using ::testing::Combine;
-using ::testing::HasSubstr;
 using ::testing::Eq;
+using ::testing::HasSubstr;
+using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::StrCaseEq;
 using ::testing::StrEq;
@@ -47,51 +52,65 @@ class MockWorkItemList : public WorkItemList {
  public:
   MockWorkItemList() {}
 
-  MOCK_METHOD4(AddCopyRegKeyWorkItem, WorkItem* (HKEY,
-                                                 const std::wstring&,
-                                                 const std::wstring&,
-                                                 CopyOverWriteOption));
-  MOCK_METHOD5(AddCopyTreeWorkItem, WorkItem*(const std::wstring&,
-                                              const std::wstring&,
-                                              const std::wstring&,
-                                              CopyOverWriteOption,
-                                              const std::wstring&));
+  MOCK_METHOD5(AddCopyTreeWorkItem,
+               WorkItem*(const std::wstring&,
+                         const std::wstring&,
+                         const std::wstring&,
+                         CopyOverWriteOption,
+                         const std::wstring&));
   MOCK_METHOD1(AddCreateDirWorkItem, WorkItem* (const base::FilePath&));
-  MOCK_METHOD2(AddCreateRegKeyWorkItem, WorkItem* (HKEY, const std::wstring&));
-  MOCK_METHOD2(AddDeleteRegKeyWorkItem, WorkItem* (HKEY, const std::wstring&));
-  MOCK_METHOD3(AddDeleteRegValueWorkItem, WorkItem* (HKEY,
-                                                     const std::wstring&,
-                                                     const std::wstring&));
-  MOCK_METHOD2(AddDeleteTreeWorkItem, WorkItem* (
-      const base::FilePath&,
-      const std::vector<base::FilePath>&));
-  MOCK_METHOD1(AddDeleteTreeWorkItem, WorkItem* (const base::FilePath&));
-  MOCK_METHOD3(AddMoveTreeWorkItem, WorkItem* (const std::wstring&,
-                                               const std::wstring&,
-                                               const std::wstring&));
+  MOCK_METHOD3(AddCreateRegKeyWorkItem,
+               WorkItem*(HKEY, const std::wstring&, REGSAM));
+  MOCK_METHOD3(AddDeleteRegKeyWorkItem,
+               WorkItem*(HKEY, const std::wstring&, REGSAM));
+  MOCK_METHOD4(
+      AddDeleteRegValueWorkItem,
+      WorkItem*(HKEY, const std::wstring&, REGSAM, const std::wstring&));
+  MOCK_METHOD3(AddDeleteTreeWorkItem,
+               WorkItem*(const base::FilePath&,
+                         const base::FilePath&,
+                         const std::vector<base::FilePath>&));
+  MOCK_METHOD2(AddDeleteTreeWorkItem,
+               WorkItem*(const base::FilePath&, const base::FilePath&));
+  MOCK_METHOD4(AddMoveTreeWorkItem,
+               WorkItem*(const std::wstring&,
+                         const std::wstring&,
+                         const std::wstring&,
+                         MoveTreeOption));
   // Workaround for gmock problems with disambiguating between string pointers
   // and DWORD.
-  virtual WorkItem* AddSetRegValueWorkItem(HKEY a1, const std::wstring& a2,
-      const std::wstring& a3, const std::wstring& a4, bool a5) {
-    return AddSetRegStringValueWorkItem(a1, a2, a3, a4, a5);
+  virtual WorkItem* AddSetRegValueWorkItem(HKEY a1,
+                                           const std::wstring& a2,
+                                           REGSAM a3,
+                                           const std::wstring& a4,
+                                           const std::wstring& a5,
+                                           bool a6) {
+    return AddSetRegStringValueWorkItem(a1, a2, a3, a4, a5, a6);
   }
 
-  virtual WorkItem* AddSetRegValueWorkItem(HKEY a1, const std::wstring& a2,
-                                           const std::wstring& a3,
-                                           DWORD a4, bool a5) {
-    return AddSetRegDwordValueWorkItem(a1, a2, a3, a4, a5);
+  virtual WorkItem* AddSetRegValueWorkItem(HKEY a1,
+                                           const std::wstring& a2,
+                                           REGSAM a3,
+                                           const std::wstring& a4,
+                                           DWORD a5,
+                                           bool a6) {
+    return AddSetRegDwordValueWorkItem(a1, a2, a3, a4, a5, a6);
   }
 
-  MOCK_METHOD5(AddSetRegStringValueWorkItem, WorkItem*(HKEY,
-                                                 const std::wstring&,
-                                                 const std::wstring&,
-                                                 const std::wstring&,
-                                                 bool));
-  MOCK_METHOD5(AddSetRegDwordValueWorkItem, WorkItem* (HKEY,
-                                                  const std::wstring&,
-                                                  const std::wstring&,
-                                                  DWORD,
-                                                  bool));
+  MOCK_METHOD6(AddSetRegStringValueWorkItem,
+               WorkItem*(HKEY,
+                         const std::wstring&,
+                         REGSAM,
+                         const std::wstring&,
+                         const std::wstring&,
+                         bool));
+  MOCK_METHOD6(AddSetRegDwordValueWorkItem,
+               WorkItem*(HKEY,
+                         const std::wstring&,
+                         REGSAM,
+                         const std::wstring&,
+                         DWORD,
+                         bool));
   MOCK_METHOD3(AddSelfRegWorkItem, WorkItem* (const std::wstring&,
                                               bool,
                                               bool));
@@ -432,7 +451,7 @@ class InstallWorkerTest : public testing::Test {
 TEST_F(InstallWorkerTest, TestInstallChromeSingleSystem) {
   const bool system_level = true;
   const bool multi_install = false;
-  MockWorkItemList work_item_list;
+  NiceMock<MockWorkItemList> work_item_list;
 
   const HKEY kRegRoot = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   static const wchar_t kRegKeyPath[] = L"Software\\Chromium\\test";
@@ -442,6 +461,12 @@ TEST_F(InstallWorkerTest, TestInstallChromeSingleSystem) {
   scoped_ptr<SetRegValueWorkItem> set_reg_value_work_item(
       WorkItem::CreateSetRegValueWorkItem(
           kRegRoot, kRegKeyPath, WorkItem::kWow64Default, L"", L"", false));
+  scoped_ptr<DeleteTreeWorkItem> delete_tree_work_item(
+      WorkItem::CreateDeleteTreeWorkItem(base::FilePath(), base::FilePath(),
+                                         std::vector<base::FilePath>()));
+  scoped_ptr<DeleteRegKeyWorkItem> delete_reg_key_work_item(
+      WorkItem::CreateDeleteRegKeyWorkItem(kRegRoot, kRegKeyPath,
+                                           WorkItem::kWow64Default));
 
   scoped_ptr<InstallationState> installation_state(
       BuildChromeInstallationState(system_level, multi_install));
@@ -455,10 +480,14 @@ TEST_F(InstallWorkerTest, TestInstallChromeSingleSystem) {
   // TODO(robertshield): Set up some real expectations.
   EXPECT_CALL(work_item_list, AddCopyTreeWorkItem(_, _, _, _, _))
       .Times(AtLeast(1));
-  EXPECT_CALL(work_item_list, AddCreateRegKeyWorkItem(_, _))
+  EXPECT_CALL(work_item_list, AddCreateRegKeyWorkItem(_, _, _))
       .WillRepeatedly(Return(create_reg_key_work_item.get()));
-  EXPECT_CALL(work_item_list, AddSetRegStringValueWorkItem(_, _, _, _, _))
+  EXPECT_CALL(work_item_list, AddSetRegStringValueWorkItem(_, _, _, _, _, _))
       .WillRepeatedly(Return(set_reg_value_work_item.get()));
+  EXPECT_CALL(work_item_list, AddDeleteTreeWorkItem(_, _))
+      .WillRepeatedly(Return(delete_tree_work_item.get()));
+  EXPECT_CALL(work_item_list, AddDeleteRegKeyWorkItem(_, _, _))
+      .WillRepeatedly(Return(delete_reg_key_work_item.get()));
 
   AddInstallWorkItems(*installation_state.get(),
                       *installer_state.get(),
@@ -523,7 +552,7 @@ TEST_P(OldIELowRightsTests, AddDeleteOldIELowRightsPolicyWorkItems) {
   StrictMock<MockWorkItemList> work_item_list;
 
   EXPECT_CALL(work_item_list,
-              AddDeleteRegKeyWorkItem(root_key_, StrEq(old_elevation_key)))
+              AddDeleteRegKeyWorkItem(root_key_, StrEq(old_elevation_key), _))
       .Times(1);
 
   AddDeleteOldIELowRightsPolicyWorkItems(*installer_state_.get(),
@@ -538,6 +567,7 @@ TEST_F(InstallWorkerTest, GoogleUpdateWorkItemsTest) {
   const bool multi_install = true;
   MockWorkItemList work_item_list;
 
+  // Per-machine single-install Chrome is installed.
   scoped_ptr<MockInstallationState> installation_state(
       BuildChromeInstallationState(system_level, false));
 
@@ -545,60 +575,55 @@ TEST_F(InstallWorkerTest, GoogleUpdateWorkItemsTest) {
   cf_state.set_version(new Version(*current_version_));
   cf_state.set_multi_install(false);
 
+  // Per-machine single-install Chrome Frame is installed.
   installation_state->SetProductState(system_level,
       BrowserDistribution::CHROME_FRAME, cf_state);
 
+  // Prepare per-machine multi-install Chrome for installation.
   scoped_ptr<MockInstallerState> installer_state(
       BuildChromeInstallerState(system_level, multi_install,
                                 *installation_state,
                                 InstallerState::MULTI_INSTALL));
 
-  // Expect the multi Client State key to be created.
+  // Expect the multi Client State key to be created for the binaries.
   BrowserDistribution* multi_dist =
       BrowserDistribution::GetSpecificDistribution(
           BrowserDistribution::CHROME_BINARIES);
   std::wstring multi_app_guid(multi_dist->GetAppGuid());
   std::wstring multi_client_state_suffix(L"ClientState\\" + multi_app_guid);
-  EXPECT_CALL(work_item_list,
-              AddCreateRegKeyWorkItem(_, HasSubstr(multi_client_state_suffix)))
-      .Times(testing::AnyNumber());
+  EXPECT_CALL(work_item_list, AddCreateRegKeyWorkItem(
+                                  _, HasSubstr(multi_client_state_suffix), _))
+      .Times(AnyNumber());
 
   // Expect ClientStateMedium to be created for system-level installs.
   EXPECT_CALL(work_item_list,
-              AddCreateRegKeyWorkItem(_, HasSubstr(L"ClientStateMedium\\" +
-                                                   multi_app_guid)))
+              AddCreateRegKeyWorkItem(
+                  _, HasSubstr(L"ClientStateMedium\\" + multi_app_guid), _))
       .Times(system_level ? 1 : 0);
 
   // Expect to see a set value for the "TEST" brand code in the multi Client
   // State key.
-  EXPECT_CALL(work_item_list,
-              AddSetRegStringValueWorkItem(_,
-                                           HasSubstr(multi_client_state_suffix),
-                                           StrEq(google_update::kRegBrandField),
-                                           StrEq(L"TEST"),
-                                           _)).Times(1);
+  EXPECT_CALL(work_item_list, AddSetRegStringValueWorkItem(
+                                  _, HasSubstr(multi_client_state_suffix), _,
+                                  StrEq(google_update::kRegBrandField),
+                                  StrEq(L"TEST"), _)).Times(1);
 
   // There may also be some calls to set 'ap' values.
-  EXPECT_CALL(work_item_list,
-              AddSetRegStringValueWorkItem(_, _,
-                                           StrEq(google_update::kRegApField),
-                                           _, _)).Times(testing::AnyNumber());
+  EXPECT_CALL(work_item_list, AddSetRegStringValueWorkItem(
+                                  _, _, _, StrEq(google_update::kRegApField), _,
+                                  _)).Times(AnyNumber());
 
   // Expect "oeminstall" to be cleared.
-  EXPECT_CALL(work_item_list,
-              AddDeleteRegValueWorkItem(
-                  _,
-                  HasSubstr(multi_client_state_suffix),
-                  StrEq(google_update::kRegOemInstallField))).Times(1);
+  EXPECT_CALL(work_item_list, AddDeleteRegValueWorkItem(
+                                  _, HasSubstr(multi_client_state_suffix), _,
+                                  StrEq(google_update::kRegOemInstallField)))
+      .Times(1);
 
   // Expect "eulaaccepted" to set.
-  EXPECT_CALL(work_item_list,
-              AddSetRegDwordValueWorkItem(
-                  _,
-                  HasSubstr(multi_client_state_suffix),
-                  StrEq(google_update::kRegEULAAceptedField),
-                  Eq(static_cast<DWORD>(1)),
-                  _)).Times(1);
+  EXPECT_CALL(work_item_list, AddSetRegDwordValueWorkItem(
+                                  _, HasSubstr(multi_client_state_suffix), _,
+                                  StrEq(google_update::kRegEULAAceptedField),
+                                  Eq(static_cast<DWORD>(1)), _)).Times(1);
 
   AddGoogleUpdateWorkItems(*installation_state.get(),
                            *installer_state.get(),
@@ -632,17 +657,15 @@ TEST_F(InstallWorkerTest, AddUsageStatsWorkItems) {
       BrowserDistribution::GetSpecificDistribution(
           BrowserDistribution::CHROME_BINARIES);
   std::wstring multi_app_guid(multi_dist->GetAppGuid());
-  EXPECT_CALL(work_item_list,
-              AddCreateRegKeyWorkItem(_, HasSubstr(multi_app_guid))).Times(1);
+  EXPECT_CALL(work_item_list, AddCreateRegKeyWorkItem(
+                                  _, HasSubstr(multi_app_guid), _)).Times(1);
 
   // Expect to see a set value for the usagestats in the multi Client State key.
-  EXPECT_CALL(work_item_list,
-              AddSetRegDwordValueWorkItem(
-                  _,
-                  HasSubstr(multi_app_guid),
-                  StrEq(google_update::kRegUsageStatsField),
-                  Eq(static_cast<DWORD>(1)),
-                  Eq(true))).Times(1);
+  EXPECT_CALL(work_item_list, AddSetRegDwordValueWorkItem(
+                                  _, HasSubstr(multi_app_guid), _,
+                                  StrEq(google_update::kRegUsageStatsField),
+                                  Eq(static_cast<DWORD>(1)), Eq(true)))
+      .Times(1);
 
   // Expect to see some values cleaned up from Chrome's keys.
   BrowserDistribution* chrome_dist =
@@ -651,20 +674,18 @@ TEST_F(InstallWorkerTest, AddUsageStatsWorkItems) {
   if (system_level) {
     EXPECT_CALL(work_item_list,
                 AddDeleteRegValueWorkItem(
-                    _,
-                    StrEq(chrome_dist->GetStateMediumKey()),
+                    _, StrEq(chrome_dist->GetStateMediumKey()), _,
                     StrEq(google_update::kRegUsageStatsField))).Times(1);
     EXPECT_CALL(work_item_list,
                 AddDeleteRegValueWorkItem(
-                    Eq(HKEY_CURRENT_USER),
-                    StrEq(chrome_dist->GetStateKey()),
+                    Eq(HKEY_CURRENT_USER), StrEq(chrome_dist->GetStateKey()), _,
                     StrEq(google_update::kRegUsageStatsField))).Times(1);
   }
-  EXPECT_CALL(work_item_list,
-              AddDeleteRegValueWorkItem(
-                  Eq(installer_state->root_key()),
-                  StrEq(chrome_dist->GetStateKey()),
-                  StrEq(google_update::kRegUsageStatsField))).Times(1);
+  EXPECT_CALL(
+      work_item_list,
+      AddDeleteRegValueWorkItem(
+          Eq(installer_state->root_key()), StrEq(chrome_dist->GetStateKey()), _,
+          StrEq(google_update::kRegUsageStatsField))).Times(1);
 
   AddUsageStatsWorkItems(*installation_state.get(),
                          *installer_state.get(),
@@ -686,8 +707,8 @@ class QuickEnableAbsentTest : public InstallWorkerTest {
     delete_reg_key_item_.reset(WorkItem::CreateDeleteRegKeyWorkItem(
         root_key_, kRegKeyPath, WorkItem::kWow64Default));
     machine_state_.reset(new MockInstallationState());
-    EXPECT_CALL(work_item_list_,
-                AddDeleteRegKeyWorkItem(Eq(root_key_), StrCaseEq(kRegKeyPath)))
+    EXPECT_CALL(work_item_list_, AddDeleteRegKeyWorkItem(
+                                     Eq(root_key_), StrCaseEq(kRegKeyPath), _))
         .Times(AtMost(1))
         .WillRepeatedly(Return(delete_reg_key_item_.get()));
   }
