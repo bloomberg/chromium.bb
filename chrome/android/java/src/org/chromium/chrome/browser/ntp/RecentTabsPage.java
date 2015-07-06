@@ -119,7 +119,7 @@ public class RecentTabsPage
         if (mInForeground) {
             mForegroundTimeMs = SystemClock.elapsedRealtime();
         } else {
-            RecordHistogram.recordTimesHistogram("NewTabPage.RecentTabsPage.TimeVisibleAndroid",
+            RecordHistogram.recordLongTimesHistogram("NewTabPage.RecentTabsPage.TimeVisibleAndroid",
                     SystemClock.elapsedRealtime() - mForegroundTimeMs, TimeUnit.MILLISECONDS);
         }
     }
