@@ -1288,9 +1288,6 @@ LayoutUnit LayoutBlockFlow::collapseMargins(LayoutBox& child, MarginInfo& margin
 
 void LayoutBlockFlow::adjustPositionedBlock(LayoutBox& child, const MarginInfo& marginInfo)
 {
-    bool isHorizontal = isHorizontalWritingMode();
-    bool hasStaticBlockPosition = child.style()->hasStaticBlockPosition(isHorizontal);
-
     LayoutUnit logicalTop = logicalHeight();
     updateStaticInlinePositionForChild(child, logicalTop);
 
@@ -1303,11 +1300,8 @@ void LayoutBlockFlow::adjustPositionedBlock(LayoutBox& child, const MarginInfo& 
     }
 
     DeprecatedPaintLayer* childLayer = child.layer();
-    if (childLayer->staticBlockPosition() != logicalTop) {
+    if (childLayer->staticBlockPosition() != logicalTop)
         childLayer->setStaticBlockPosition(logicalTop);
-        if (hasStaticBlockPosition)
-            child.setChildNeedsLayout(MarkOnlyThis);
-    }
 }
 
 LayoutUnit LayoutBlockFlow::clearFloatsIfNeeded(LayoutBox& child, MarginInfo& marginInfo, LayoutUnit oldTopPosMargin, LayoutUnit oldTopNegMargin, LayoutUnit yPos, bool childIsSelfCollapsing)
