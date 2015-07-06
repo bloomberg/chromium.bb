@@ -10,7 +10,7 @@
 
 namespace blink {
 
-PresentationAvailabilityCallback::PresentationAvailabilityCallback(PassRefPtr<ScriptPromiseResolver> resolver)
+PresentationAvailabilityCallback::PresentationAvailabilityCallback(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
     : m_resolver(resolver)
 {
     ASSERT(m_resolver);
