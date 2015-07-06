@@ -21,6 +21,7 @@
 
 namespace {
 const size_t kFramesToKeepCAContextAfterDiscard = 2;
+const size_t kFramesToKeepNSCGLSurfaceAfterDiscard = 2;
 const size_t kCanDrawFalsesBeforeSwitchFromAsync = 4;
 const base::TimeDelta kMinDeltaToSwitchToAsync =
     base::TimeDelta::FromSecondsD(1. / 15.);
@@ -722,6 +723,8 @@ void CALayerStorageProvider::SwapBuffersAckedByBrowser(
   throttling_disabled_ = disable_throttling;
   if (!previously_discarded_contexts_.empty())
     previously_discarded_contexts_.pop_front();
+  if (!previous_layers_.empty())
+    previous_layers_.pop_front();
 }
 
 CGLContextObj CALayerStorageProvider::LayerShareGroupContext() {
@@ -847,6 +850,13 @@ void CALayerStorageProvider::ResetLayer() {
   }
   if (ns_cgl_surface_layer_) {
     [ns_cgl_surface_layer_ resetStorageProvider];
+
+    // Keep a reference to the NSCGLSurface alive for another few frames, to
+    // avoid black and yellow flashes.
+    while (previous_layers_.size() < kFramesToKeepNSCGLSurfaceAfterDiscard)
+      previous_layers_.push_back(base::scoped_nsobject<CALayer>());
+    previous_layers_.push_back(ns_cgl_surface_layer_);
+
     ns_cgl_surface_layer_.reset();
   }
 }

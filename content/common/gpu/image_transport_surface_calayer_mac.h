@@ -105,7 +105,14 @@ class CALayerStorageProvider
   // CALayer in the browser process. Put retains on these contexts in this queue
   // when they are discarded, and remove one item from the queue as each frame
   // is acked.
-  std::list<base::scoped_nsobject<CAContext> > previously_discarded_contexts_;
+  std::list<base::scoped_nsobject<CAContext>> previously_discarded_contexts_;
+
+  // When a NSCGLSurface is discarded, it is placed into this queue. When the
+  // browser acks a new frame, one element is removed from this queue. This is
+  // because releasing NSCGLSurfaces too early will result in the screen
+  // flashing black or yellow.
+  // http://crbug.com/505271
+  std::list<base::scoped_nsobject<CALayer>> previous_layers_;
 
   // Indicates that the CALayer should be recreated at the next swap. This is
   // to ensure that the CGLContext created for the CALayer be on the right GPU.
