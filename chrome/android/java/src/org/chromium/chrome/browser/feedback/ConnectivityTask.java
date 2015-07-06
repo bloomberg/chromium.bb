@@ -28,14 +28,6 @@ public class ConnectivityTask {
     private static final String TAG = "cr.feedback";
 
     /**
-     * The key for the data describing the timeout that was set as a maximum for collecting
-     * the connection data. This is to better understand the connection data.
-     * This string is user visible.
-     */
-    @VisibleForTesting
-    static final String CONNECTION_CHECK_TIMEOUT_KEY = "Connection check timeout (ms)";
-
-    /**
      * The key for the data describing how long time from the connection check was started,
      * until the data was collected. This is to better understand the connection data.
      * This string is user visible.
@@ -208,7 +200,6 @@ public class ConnectivityTask {
                 map.put(getHumanReadableType(entry.getKey()),
                         getHumanReadableResult(entry.getValue()));
             }
-            map.put(CONNECTION_CHECK_TIMEOUT_KEY, String.valueOf(mTimeoutMs));
             map.put(CONNECTION_CHECK_ELAPSED_KEY, String.valueOf(mElapsedTimeMs));
             map.put(CONNECTION_TYPE_KEY, getHumanReadableConnectionType(mConnectionType));
             map.put(CONNECTION_BANDWIDTH_KEY, String.valueOf(mBandwidthInMbps));

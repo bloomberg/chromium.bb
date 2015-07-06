@@ -188,7 +188,7 @@ public class ConnectivityTaskTest extends ConnectivityCheckerTestBase {
                 new FeedbackData(connectionMap, 42, 21, ConnectionType.CONNECTION_WIFI, 4.2);
         Map<String, String> map = feedback.toMap();
 
-        assertEquals("Should have 8 entries.", 8, map.size());
+        assertEquals("Should have 7 entries.", 7, map.size());
         assertTrue(map.containsKey(ConnectivityTask.CHROME_HTTP_KEY));
         assertEquals("NOT_CONNECTED", map.get(ConnectivityTask.CHROME_HTTP_KEY));
         assertTrue(map.containsKey(ConnectivityTask.CHROME_HTTPS_KEY));
@@ -197,8 +197,6 @@ public class ConnectivityTaskTest extends ConnectivityCheckerTestBase {
         assertEquals("UNKNOWN", map.get(ConnectivityTask.SYSTEM_HTTP_KEY));
         assertTrue(map.containsKey(ConnectivityTask.SYSTEM_HTTPS_KEY));
         assertEquals("CONNECTED", map.get(ConnectivityTask.SYSTEM_HTTPS_KEY));
-        assertTrue(map.containsKey(ConnectivityTask.CONNECTION_CHECK_TIMEOUT_KEY));
-        assertEquals("42", map.get(ConnectivityTask.CONNECTION_CHECK_TIMEOUT_KEY));
         assertTrue(map.containsKey(ConnectivityTask.CONNECTION_CHECK_ELAPSED_KEY));
         assertEquals("21", map.get(ConnectivityTask.CONNECTION_CHECK_ELAPSED_KEY));
         assertTrue(map.containsKey(ConnectivityTask.CONNECTION_TYPE_KEY));
