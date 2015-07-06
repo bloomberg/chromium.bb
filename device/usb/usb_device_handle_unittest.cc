@@ -154,7 +154,8 @@ TEST_F(UsbDeviceHandleTest, InterruptTransfer) {
   EXPECT_EQ(static_cast<size_t>(in_buffer->size()),
             in_completion.transferred());
   for (size_t i = 0; i < in_completion.transferred(); ++i) {
-    EXPECT_EQ(out_buffer->data()[i], in_buffer->data()[i]);
+    EXPECT_EQ(out_buffer->data()[i], in_buffer->data()[i])
+        << "Mismatch at index " << i << ".";
   }
 
   handle->Close();
@@ -208,8 +209,35 @@ TEST_F(UsbDeviceHandleTest, BulkTransfer) {
   EXPECT_EQ(static_cast<size_t>(in_buffer->size()),
             in_completion.transferred());
   for (size_t i = 0; i < in_completion.transferred(); ++i) {
-    EXPECT_EQ(out_buffer->data()[i], in_buffer->data()[i]);
+    EXPECT_EQ(out_buffer->data()[i], in_buffer->data()[i])
+        << "Mismatch at index " << i << ".";
   }
+
+  handle->Close();
+}
+
+TEST_F(UsbDeviceHandleTest, SetInterfaceAlternateSetting) {
+  if (!UsbTestGadget::IsTestEnabled()) {
+    return;
+  }
+
+  scoped_ptr<UsbTestGadget> gadget =
+      UsbTestGadget::Claim(io_thread_->task_runner());
+  ASSERT_TRUE(gadget.get());
+  ASSERT_TRUE(gadget->SetType(UsbTestGadget::ECHO));
+
+  TestOpenCallback open_device;
+  gadget->GetDevice()->Open(open_device.callback());
+  scoped_refptr<UsbDeviceHandle> handle = open_device.WaitForResult();
+  ASSERT_TRUE(handle.get());
+
+  TestResultCallback claim_interface;
+  handle->ClaimInterface(2, claim_interface.callback());
+  ASSERT_TRUE(claim_interface.WaitForResult());
+
+  TestResultCallback set_interface;
+  handle->SetInterfaceAlternateSetting(2, 1, set_interface.callback());
+  ASSERT_TRUE(set_interface.WaitForResult());
 
   handle->Close();
 }
