@@ -246,6 +246,8 @@
           'ios/device_util.mm',
           'ios/ios_util.h',
           'ios/ios_util.mm',
+          'ios/ns_error_util.h',
+          'ios/ns_error_util.mm',
           'ios/scoped_critical_action.h',
           'ios/scoped_critical_action.mm',
           'ios/weak_nsobject.h',

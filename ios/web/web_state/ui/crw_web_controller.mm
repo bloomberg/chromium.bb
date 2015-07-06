@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include "base/ios/block_types.h"
+#import "base/ios/ns_error_util.h"
 #include "base/ios/weak_nsobject.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -1431,6 +1432,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   const GURL currentUrl = [self currentNavigationURL];
   BOOL isPost = [self currentPOSTData] != nil;
 
+  error = web::NetErrorFromError(error);
   [self setNativeController:[_nativeProvider controllerForURL:currentUrl
                                                     withError:error
                                                        isPost:isPost]];
@@ -2837,9 +2839,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)handleLoadError:(NSError*)error inMainFrame:(BOOL)inMainFrame {
-  // Attempt to translate iOS errors into their corresponding net errors.
-  error = web::NetErrorFromError(error);
-
   if ([error code] == NSURLErrorUnsupportedURL)
     return;
   // In cases where a Plug-in handles the load do not take any further action.
@@ -2901,7 +2900,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       }
     }
 
-    // Otherwise, handle the error normally.
+    // Ignore errors that originate from URLs that are opened in external apps.
     if ([_openedApplicationURL containsObject:errorURL])
       return;
     // Certain frame errors don't have URL information for some reason; for
@@ -2926,17 +2925,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     return;
   }
 
-  // TODO(ios): Audit comments and behavior below regarding error origin. The
-  // error has been translated and may appear to have originated in the Chrome
-  // network stack when that is not true (crbug.com/496972)
-  // Ignore cancelled errors.
   if ([error code] == NSURLErrorCancelled) {
-    NSError* underlyingError = [userInfo objectForKey:NSUnderlyingErrorKey];
-    if (underlyingError && [self shouldAbortLoadForCancelledURL:errorGURL]) {
-      DCHECK([underlyingError isKindOfClass:[NSError class]]);
+    if ([self shouldAbortLoadForCancelledError:error]) {
+      NSError* underlyingError =
+          base::ios::GetFinalUnderlyingErrorFromError(error);
+      DCHECK([underlyingError.domain
+          isEqualToString:base::SysUTF8ToNSString(net::kErrorDomain)]);
 
-      // The Error contains an NSUnderlyingErrorKey so it's being generated
-      // in the Chrome network stack. Aborting the load in this case.
+      // NSURLCancelled errors with underlying errors are generated from the
+      // Chrome network stack.  Abort the load in this case.
       [self abortLoad];
 
       switch ([underlyingError code]) {
@@ -2957,6 +2954,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
           NOTREACHED();
       }
     }
+    // NSURLErrorCancelled errors that aren't handled by aborting the load will
+    // automatically be retried by the web view, so early return in this case.
     return;
   }
 
@@ -2964,7 +2963,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self loadErrorInNativeView:error];
 }
 
-- (BOOL)shouldAbortLoadForCancelledURL:(const GURL &)cancelledURL {
+- (BOOL)shouldAbortLoadForCancelledError:(NSError*)cancelledError {
   // Subclasses must implement this method.
   NOTREACHED();
   return YES;

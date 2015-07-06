@@ -6,6 +6,7 @@
 
 #include <CFNetwork/CFNetwork.h>
 
+#import "base/ios/ns_error_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "net/base/net_errors.h"
 
@@ -123,32 +124,26 @@ bool GetNetErrorFromIOSErrorCode(NSInteger ios_error_code,
 }  // namespace
 
 NSError* NetErrorFromError(NSError* error) {
-  NSError* underlying_error = error.userInfo[NSUnderlyingErrorKey];
-  NSString* net_error_domain =
-      [NSString stringWithUTF8String:net::kErrorDomain];
+  DCHECK(error);
+  NSError* underlying_error =
+      base::ios::GetFinalUnderlyingErrorFromError(error);
   NSError* translated_error = error;
-  if (underlying_error) {
-    // If |error| already has an underlying error, it should be from the net
-    // stack and should already have the correct domain.
-    DCHECK([underlying_error.domain isEqualToString:net_error_domain]);
-  } else if ([error.domain isEqualToString:NSURLErrorDomain] ||
-             [error.domain isEqualToString:static_cast<NSString*>(
-                                               kCFErrorDomainCFNetwork)]) {
+  if ([underlying_error.domain isEqualToString:NSURLErrorDomain] ||
+      [underlying_error.domain
+          isEqualToString:static_cast<NSString*>(kCFErrorDomainCFNetwork)]) {
     // Attempt to translate NSURL and CFNetwork error codes into their
     // corresponding net error codes.
     NSInteger net_error_code = net::OK;
-    if (GetNetErrorFromIOSErrorCode(error.code, &net_error_code)) {
-      base::scoped_nsobject<NSMutableDictionary> user_info(
-          [error.userInfo mutableCopy]);
-      [user_info setObject:[NSError errorWithDomain:net_error_domain
+    if (GetNetErrorFromIOSErrorCode(underlying_error.code, &net_error_code)) {
+      NSString* net_error_domain =
+          [NSString stringWithUTF8String:net::kErrorDomain];
+      NSError* net_error = [NSError errorWithDomain:net_error_domain
                                                code:net_error_code
-                                           userInfo:nil]
-                    forKey:NSUnderlyingErrorKey];
-      translated_error = [NSError errorWithDomain:error.domain
-                                             code:error.code
-                                         userInfo:user_info];
+                                           userInfo:nil];
+      translated_error =
+          base::ios::ErrorWithAppendedUnderlyingError(error, net_error);
     }
   }
   return translated_error;
 }
-}
+}  // namespace web

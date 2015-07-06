@@ -51,6 +51,30 @@ NSString* GetRefererFromNavigationAction(WKNavigationAction* action) {
 NSString* const kScriptMessageName = @"crwebinvoke";
 NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 
+// Utility functions for storing the source of NSErrors received by WKWebViews:
+// - Errors received by |-webView:didFailProvisionalNavigation:withError:| are
+//   recorded using WKWebViewErrorSource::PROVISIONAL_LOAD.  These should be
+//   aborted.
+// - Errors received by |-webView:didFailNavigation:withError:| are recorded
+//   using WKWebViewsource::NAVIGATION.  These errors should not be aborted, as
+//   the WKWebView will automatically retry the load.
+NSString* const kWKWebViewErrorSourceKey = @"ErrorSource";
+typedef enum { NONE = 0, PROVISIONAL_LOAD, NAVIGATION } WKWebViewErrorSource;
+NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
+  DCHECK(error);
+  base::scoped_nsobject<NSMutableDictionary> userInfo(
+      [error.userInfo mutableCopy]);
+  [userInfo setObject:@(source) forKey:kWKWebViewErrorSourceKey];
+  return [NSError errorWithDomain:error.domain
+                             code:error.code
+                         userInfo:userInfo];
+}
+WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
+  DCHECK(error);
+  return static_cast<WKWebViewErrorSource>(
+      [error.userInfo[kWKWebViewErrorSourceKey] integerValue]);
+}
+
 }  // namespace
 
 @interface CRWWKWebViewWebController () <WKNavigationDelegate,
@@ -412,10 +436,18 @@ NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
   self.webScrollView.zoomScale = zoomScale;
 }
 
-- (BOOL)shouldAbortLoadForCancelledURL:(const GURL&)cancelledURL {
+- (BOOL)shouldAbortLoadForCancelledError:(NSError*)cancelledError {
+  DCHECK_EQ(cancelledError.code, NSURLErrorCancelled);
   // Do not abort the load if it is for an app specific URL, as such errors
   // are produced during the app specific URL load process.
-  return !web::GetWebClient()->IsAppSpecificURL(cancelledURL);
+  const GURL errorURL =
+      net::GURLWithNSURL(cancelledError.userInfo[NSURLErrorFailingURLErrorKey]);
+  if (web::GetWebClient()->IsAppSpecificURL(errorURL))
+    return NO;
+  // Don't abort NSURLErrorCancelled errors originating from navigation, as the
+  // WKWebView will automatically retry these loads.
+  WKWebViewErrorSource source = WKWebViewErrorSourceFromError(cancelledError);
+  return source != NAVIGATION;
 }
 
 #pragma mark Private methods
@@ -1013,6 +1045,7 @@ NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
                        withError:(NSError *)error {
   [self discardPendingReferrerString];
 
+  error = WKWebViewErrorWithSource(error, PROVISIONAL_LOAD);
 #if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
   if (web::IsWKWebViewSSLError(error))
     [self handleSSLError:error];
@@ -1056,7 +1089,8 @@ NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 - (void)webView:(WKWebView *)webView
     didFailNavigation:(WKNavigation *)navigation
             withError:(NSError *)error {
-  [self handleLoadError:error inMainFrame:YES];
+  [self handleLoadError:WKWebViewErrorWithSource(error, NAVIGATION)
+            inMainFrame:YES];
 }
 
 - (void)webView:(WKWebView *)webView
