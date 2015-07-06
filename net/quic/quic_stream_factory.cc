@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <set>
 
-#include "base/cpu.h"
 #include "base/location.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
@@ -44,6 +43,12 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
+#endif
+
+#if defined(USE_OPENSSL)
+#include <openssl/aead.h>
+#else
+#include "base/cpu.h"
 #endif
 
 namespace net {
@@ -609,8 +614,12 @@ QuicStreamFactory::QuicStreamFactory(
     crypto_config_.SetChannelIDSource(
         new ChannelIDSourceChromium(channel_id_service));
   }
+#if defined(USE_OPENSSL)
+  bool has_aes_hardware_support = !!EVP_has_aes_hardware();
+#else
   base::CPU cpu;
   bool has_aes_hardware_support = cpu.has_aesni() && cpu.has_avx();
+#endif
   UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.PreferAesGcm",
                         has_aes_hardware_support);
   if (has_aes_hardware_support || prefer_aes_)
