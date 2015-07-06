@@ -22,6 +22,12 @@ class RefCountedMemory;
 
 namespace content {
 
+// PlzNavigate
+// Helper function to determine if the navigation to |url| should make a request
+// to the network stack. A request should not be sent for data URLs, JavaScript
+// URLs or about:blank. In these cases, no request needs to be sent.
+bool ShouldMakeNetworkRequestForURL(const GURL& url);
+
 // The following structures hold parameters used during a navigation. In
 // particular they are used by FrameMsg_Navigate, FrameMsg_CommitNavigation and
 // FrameHostMsg_BeginNavigation.

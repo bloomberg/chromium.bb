@@ -51,14 +51,6 @@ int LoadFlagFromNavigationType(FrameMsg_Navigate_Type::Value navigation_type) {
 }  // namespace
 
 // static
-bool NavigationRequest::ShouldMakeNetworkRequest(const GURL& url) {
-  // Data and Javascript urls should not make network requests.
-  // TODO(clamy): same document navigations should not make network requests.
-  return !url.SchemeIs(url::kDataScheme) && url != GURL(url::kAboutBlankURL) &&
-         !url.SchemeIs(url::kJavaScriptScheme);
-}
-
-// static
 scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     FrameTreeNode* frame_tree_node,
     const FrameNavigationEntry& frame_entry,
@@ -182,7 +174,7 @@ bool NavigationRequest::BeginNavigation() {
   DCHECK(state_ == NOT_STARTED || state_ == WAITING_FOR_RENDERER_RESPONSE);
   state_ = STARTED;
 
-  if (ShouldMakeNetworkRequest(common_params_.url)) {
+  if (ShouldMakeNetworkRequestForURL(common_params_.url)) {
     loader_ = NavigationURLLoader::Create(
         frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
         frame_tree_node_->frame_tree_node_id(), info_.Pass(), this);

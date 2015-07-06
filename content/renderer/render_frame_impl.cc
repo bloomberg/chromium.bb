@@ -4328,10 +4328,12 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
     return blink::WebNavigationPolicyIgnore;
   }
 
-  // PlzNavigate: send the request to the browser if needed.
+  // PlzNavigate: if the navigation is not synchronous, send it to the browser.
+  // This includes navigations with no request being sent to the network stack.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBrowserSideNavigation) &&
-      info.urlRequest.checkForBrowserSideNavigation()) {
+      info.urlRequest.checkForBrowserSideNavigation() &&
+      ShouldMakeNetworkRequestForURL(url)) {
     BeginNavigation(&info.urlRequest);
     return blink::WebNavigationPolicyIgnore;
   }

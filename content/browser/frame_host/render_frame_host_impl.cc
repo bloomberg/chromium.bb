@@ -1791,7 +1791,7 @@ void RenderFrameHostImpl::CommitNavigation(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params) {
   DCHECK((response && body.get()) ||
-          !NavigationRequest::ShouldMakeNetworkRequest(common_params.url));
+          !ShouldMakeNetworkRequestForURL(common_params.url));
   UpdatePermissionsForNavigation(common_params, request_params);
 
   // Get back to a clean state, in case we start a new navigation without

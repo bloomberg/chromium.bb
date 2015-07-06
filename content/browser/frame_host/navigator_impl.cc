@@ -673,7 +673,7 @@ void NavigatorImpl::CommitNavigation(FrameTreeNode* frame_tree_node,
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
   DCHECK(navigation_request);
   DCHECK(response ||
-         !NavigationRequest::ShouldMakeNetworkRequest(
+         !ShouldMakeNetworkRequestForURL(
              navigation_request->common_params().url));
 
   // HTTP 204 (No Content) and HTTP 205 (Reset Content) responses should not
@@ -814,7 +814,7 @@ void NavigatorImpl::RequestNavigation(
   // is synchronous and same-site) then NavigationRequest::BeginNavigation
   // should be directly called instead.
   if (should_dispatch_beforeunload &&
-      NavigationRequest::ShouldMakeNetworkRequest(
+      ShouldMakeNetworkRequestForURL(
           navigation_request->common_params().url)) {
     navigation_request->SetWaitingForRendererResponse();
     frame_tree_node->current_frame_host()->DispatchBeforeUnload(true);
