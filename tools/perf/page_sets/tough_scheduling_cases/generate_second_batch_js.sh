@@ -29,7 +29,7 @@ readonly HEAVY_OPTS="\
     --loop-count=5"
 
 function generate {
-  local generator="./second_batch_js_generator.py"
+  local generator="./_second_batch_js_generator.py"
   cat << EOF
 // Generated with $generator $@
 //
