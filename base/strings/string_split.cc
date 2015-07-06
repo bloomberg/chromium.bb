@@ -230,7 +230,6 @@ void SplitString(const std::string& str,
   // Backward-compat hack, see above.
   if (result->size() == 1 && (*result)[0].empty())
     result->clear();
-
 }
 
 bool SplitStringIntoKeyValuePairs(const std::string& line,
