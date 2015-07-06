@@ -137,12 +137,6 @@ void DocumentMarkerController::removeMarkers(TextIterator& markedText, DocumentM
     }
 }
 
-void DocumentMarkerController::removeMarkers(Range* range, DocumentMarker::MarkerTypes markerTypes, RemovePartiallyOverlappingMarkerOrNot shouldRemovePartiallyOverlappingMarker)
-{
-    TextIterator markedText(range->startPosition(), range->endPosition());
-    DocumentMarkerController::removeMarkers(markedText, markerTypes, shouldRemovePartiallyOverlappingMarker);
-}
-
 void DocumentMarkerController::removeMarkers(const Position& start, const Position& end, DocumentMarker::MarkerTypes markerTypes, RemovePartiallyOverlappingMarkerOrNot shouldRemovePartiallyOverlappingMarker)
 {
     TextIterator markedText(start, end);

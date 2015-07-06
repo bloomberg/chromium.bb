@@ -158,8 +158,11 @@ void SpellChecker::didBeginEditing(Element* element)
 
 void SpellChecker::ignoreSpelling()
 {
-    if (RefPtrWillBeRawPtr<Range> selectedRange = frame().selection().toNormalizedRange())
-        frame().document()->markers().removeMarkers(selectedRange.get(), DocumentMarker::Spelling);
+    Position startPosition;
+    Position endPosition;
+    if (!frame().selection().selection().toNormalizedPositions(startPosition, endPosition))
+        return;
+    frame().document()->markers().removeMarkers(startPosition, endPosition, DocumentMarker::Spelling);
 }
 
 void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
@@ -340,9 +343,11 @@ void SpellChecker::showSpellingGuessPanel()
 
 void SpellChecker::clearMisspellingsAndBadGrammar(const VisibleSelection &movingSelection)
 {
-    RefPtrWillBeRawPtr<Range> selectedRange = movingSelection.toNormalizedRange();
-    if (selectedRange)
-        frame().document()->markers().removeMarkers(selectedRange.get(), DocumentMarker::MisspellingMarkers());
+    Position startPosition;
+    Position endPosition;
+    if (!movingSelection.toNormalizedPositions(startPosition, endPosition))
+        return;
+    frame().document()->markers().removeMarkers(startPosition, endPosition, DocumentMarker::MisspellingMarkers());
 }
 
 void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection &movingSelection)

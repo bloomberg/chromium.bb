@@ -265,7 +265,8 @@ void SpellCheckRequester::didCheckSucceed(int sequence, const Vector<TextCheckin
             markers.remove(DocumentMarker::Spelling);
         if (!requestData.maskContains(TextCheckingTypeGrammar))
             markers.remove(DocumentMarker::Grammar);
-        frame().document()->markers().removeMarkers(m_processingRequest->checkingRange().get(), markers);
+        RefPtrWillBeRawPtr<Range> checkingRange = m_processingRequest->checkingRange();
+        frame().document()->markers().removeMarkers(checkingRange->startPosition(), checkingRange->endPosition(), markers);
     }
     didCheck(sequence, results);
 }
