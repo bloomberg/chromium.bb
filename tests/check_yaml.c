@@ -187,15 +187,15 @@ read_cursorPos (yaml_parser_t *parser, int len) {
   while ((parse_error = yaml_parser_parse(parser, &event)) &&
 	 (event.type == YAML_SCALAR_EVENT)) {
     pos[i++] = strtol(event.data.scalar.value, &tail, 0);
-    if (i > len)
-      error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
-		    "Too many cursor positions (%i) for word of length %i\n", i, len);
     if (!pos && !strcmp(event.data.scalar.value, tail))
       error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
 		    "Not a valid cursor position '%s'. Must be a number\n",
 		    event.data.scalar.value);
     yaml_event_delete(&event);
   }
+  if (i != len)
+    error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+		  "Too many or too few cursor positions (%i) for word of length %i\n", i, len);
   if (!parse_error)
     simple_error("Error in YAML", &event);
   if (event.type != YAML_SEQUENCE_END_EVENT)
@@ -249,6 +249,17 @@ read_options (yaml_parser_t *parser, int len,
   yaml_event_delete(&event);
 }
 
+/* see http://stackoverflow.com/questions/5117393/utf-8-strings-length-in-linux-c */
+int
+my_strlen_utf8_c(char *s) {
+   int i = 0, j = 0;
+   while (s[i]) {
+     if ((s[i] & 0xc0) != 0x80) j++;
+     i++;
+   }
+   return j;
+}
+
 void
 read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenation) {
   yaml_event_t event;
@@ -278,7 +289,7 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
 
   if (event.type == YAML_MAPPING_START_EVENT) {
     yaml_event_delete(&event);
-    read_options(parser, strlen(word), &xfail, &mode, typeform, &cursorPos);
+    read_options(parser, my_strlen_utf8_c(word), &xfail, &mode, typeform, &cursorPos);
 
     if (!yaml_parser_parse(parser, &event) ||
 	(event.type != YAML_SEQUENCE_END_EVENT))
