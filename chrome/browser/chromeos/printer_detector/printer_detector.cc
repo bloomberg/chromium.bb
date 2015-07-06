@@ -171,7 +171,7 @@ class SearchPrinterAppNotificationDelegate : public NotificationDelegate {
     extensions::EventRouter* event_router =
         extensions::EventRouter::Get(browser_context_);
     scoped_ptr<extensions::Event> event(new extensions::Event(
-        extensions::events::UNKNOWN,
+        extensions::events::WEBSTORE_WIDGET_PRIVATE_ON_SHOW_WIDGET,
         webstore_widget_private_api::OnShowWidget::kEventName,
         webstore_widget_private_api::OnShowWidget::Create(options)));
     event_router->DispatchEventToExtension(extension_misc::kWebstoreWidgetAppId,

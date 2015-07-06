@@ -16,6 +16,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/api/bluetooth.h"
 #include "extensions/common/api/bluetooth_private.h"
@@ -135,7 +136,8 @@ class BluetoothEventRouter : public device::BluetoothAdapter::Observer,
                             scoped_refptr<device::BluetoothAdapter> adapter);
   void MaybeReleaseAdapter();
   void DispatchAdapterStateEvent();
-  void DispatchDeviceEvent(const std::string& event_name,
+  void DispatchDeviceEvent(events::HistogramValue histogram_value,
+                           const std::string& event_name,
                            device::BluetoothDevice* device);
   void CleanUpForExtension(const std::string& extension_id);
   void CleanUpAllExtensions();

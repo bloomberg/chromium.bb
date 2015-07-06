@@ -148,6 +148,8 @@ bool EasyUnlockAppManagerImpl::SendUserUpdatedEvent(const std::string& user_id,
   if (!event_router)
     return false;
 
+  extensions::events::HistogramValue histogram_value =
+      extensions::events::EASY_UNLOCK_PRIVATE_ON_USER_INFO_UPDATED;
   std::string event_name =
       extensions::api::easy_unlock_private::OnUserInfoUpdated::kEventName;
 
@@ -162,8 +164,8 @@ bool EasyUnlockAppManagerImpl::SendUserUpdatedEvent(const std::string& user_id,
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(info.ToValue().release());
 
-  scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::events::UNKNOWN, event_name, args.Pass()));
+  scoped_ptr<extensions::Event> event(
+      new extensions::Event(histogram_value, event_name, args.Pass()));
 
   event_router->DispatchEventToExtension(app_id_, event.Pass());
   return true;

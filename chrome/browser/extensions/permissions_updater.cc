@@ -330,6 +330,7 @@ void PermissionsUpdater::SetPermissions(
 
 void PermissionsUpdater::DispatchEvent(
     const std::string& extension_id,
+    events::HistogramValue histogram_value,
     const char* event_name,
     const PermissionSet* changed_permissions) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
@@ -340,7 +341,7 @@ void PermissionsUpdater::DispatchEvent(
   scoped_ptr<api::permissions::Permissions> permissions =
       PackPermissionSet(changed_permissions);
   value->Append(permissions->ToValue().release());
-  scoped_ptr<Event> event(new Event(events::UNKNOWN, event_name, value.Pass()));
+  scoped_ptr<Event> event(new Event(histogram_value, event_name, value.Pass()));
   event->restrict_to_browser_context = browser_context_;
   event_router->DispatchEventToExtension(extension_id, event.Pass());
 }
@@ -354,14 +355,17 @@ void PermissionsUpdater::NotifyPermissionsUpdated(
     return;
 
   UpdatedExtensionPermissionsInfo::Reason reason;
+  events::HistogramValue histogram_value;
   const char* event_name = NULL;
 
   if (event_type == REMOVED) {
     reason = UpdatedExtensionPermissionsInfo::REMOVED;
+    histogram_value = events::PERMISSIONS_ON_REMOVED;
     event_name = permissions::OnRemoved::kEventName;
   } else {
     CHECK_EQ(ADDED, event_type);
     reason = UpdatedExtensionPermissionsInfo::ADDED;
+    histogram_value = events::PERMISSIONS_ON_ADDED;
     event_name = permissions::OnAdded::kEventName;
   }
 
@@ -392,7 +396,7 @@ void PermissionsUpdater::NotifyPermissionsUpdated(
   }
 
   // Trigger the onAdded and onRemoved events in the extension.
-  DispatchEvent(extension->id(), event_name, changed);
+  DispatchEvent(extension->id(), histogram_value, event_name, changed);
 }
 
 }  // namespace extensions

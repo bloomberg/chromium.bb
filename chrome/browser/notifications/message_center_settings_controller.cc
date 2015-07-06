@@ -402,7 +402,7 @@ void MessageCenterSettingsController::OnNotifierAdvancedSettingsRequested(
   scoped_ptr<base::ListValue> args(new base::ListValue());
 
   scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::events::UNKNOWN,
+      extensions::events::NOTIFICATIONS_ON_SHOW_SETTINGS,
       extensions::api::notifications::OnShowSettings::kEventName, args.Pass()));
   event_router->DispatchEventToExtension(extension_id, event.Pass());
 }

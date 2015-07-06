@@ -94,7 +94,7 @@ class AshKeyboardControllerObserver
     event_args->Append(new_bounds.release());
 
     scoped_ptr<extensions::Event> event(new extensions::Event(
-        extensions::events::UNKNOWN,
+        extensions::events::VIRTUAL_KEYBOARD_PRIVATE_ON_BOUNDS_CHANGED,
         virtual_keyboard_private::OnBoundsChanged::kEventName,
         event_args.Pass()));
     event->restrict_to_browser_context = context_;
@@ -202,7 +202,7 @@ void AshKeyboardControllerProxy::SetUpdateInputType(ui::TextInputType type) {
   event_args->Append(input_context.release());
 
   scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::events::UNKNOWN,
+      extensions::events::VIRTUAL_KEYBOARD_PRIVATE_ON_TEXT_INPUT_BOX_FOCUSED,
       virtual_keyboard_private::OnTextInputBoxFocused::kEventName,
       event_args.Pass()));
   event->restrict_to_browser_context = browser_context();

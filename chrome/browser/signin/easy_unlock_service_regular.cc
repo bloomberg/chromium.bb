@@ -256,7 +256,7 @@ void EasyUnlockServiceRegular::StartAutoPairing(
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
   scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::events::UNKNOWN,
+      extensions::events::EASY_UNLOCK_PRIVATE_ON_START_AUTO_PAIRING,
       extensions::api::easy_unlock_private::OnStartAutoPairing::kEventName,
       args.Pass()));
   extensions::EventRouter::Get(profile())->DispatchEventWithLazyListener(

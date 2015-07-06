@@ -68,8 +68,8 @@ class MessageSender : public content::NotificationObserver {
   static scoped_ptr<Event> BuildEvent(scoped_ptr<base::ListValue> event_args,
                                       Profile* profile,
                                       GURL event_url) {
-    scoped_ptr<Event> event(
-        new Event(events::UNKNOWN, "test.onMessage", event_args.Pass()));
+    scoped_ptr<Event> event(new Event(events::TEST_ON_MESSAGE, "test.onMessage",
+                                      event_args.Pass()));
     event->restrict_to_browser_context = profile;
     event->event_url = event_url;
     return event.Pass();

@@ -84,8 +84,8 @@ void AutofillPrivateEventRouter::OnPersonalDataChanged() {
       api::autofill_private::OnAddressListChanged::Create(*addressList)
       .release());
   scoped_ptr<Event> extension_event(new Event(
-      events::UNKNOWN, api::autofill_private::OnAddressListChanged::kEventName,
-      args.Pass()));
+      events::AUTOFILL_PRIVATE_ON_ADDRESS_LIST_CHANGED,
+      api::autofill_private::OnAddressListChanged::kEventName, args.Pass()));
   event_router_->BroadcastEvent(extension_event.Pass());
 
   scoped_ptr<CreditCardEntryList> creditCardList =
@@ -94,7 +94,7 @@ void AutofillPrivateEventRouter::OnPersonalDataChanged() {
       api::autofill_private::OnCreditCardListChanged::Create(*creditCardList)
       .release());
   extension_event.reset(new Event(
-      events::UNKNOWN,
+      events::AUTOFILL_PRIVATE_ON_CREDIT_CARD_LIST_CHANGED,
       api::autofill_private::OnCreditCardListChanged::kEventName, args.Pass()));
   event_router_->BroadcastEvent(extension_event.Pass());
 }

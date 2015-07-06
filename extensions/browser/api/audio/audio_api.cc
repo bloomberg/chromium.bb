@@ -38,9 +38,9 @@ AudioService* AudioAPI::GetService() const {
 
 void AudioAPI::OnDeviceChanged() {
   if (EventRouter::Get(browser_context_)) {
-    scoped_ptr<Event> event(
-        new Event(events::UNKNOWN, audio::OnDeviceChanged::kEventName,
-                  scoped_ptr<base::ListValue>(new base::ListValue())));
+    scoped_ptr<Event> event(new Event(
+        events::AUDIO_ON_DEVICE_CHANGED, audio::OnDeviceChanged::kEventName,
+        scoped_ptr<base::ListValue>(new base::ListValue())));
     EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
   }
 }
@@ -48,8 +48,9 @@ void AudioAPI::OnDeviceChanged() {
 void AudioAPI::OnLevelChanged(const std::string& id, int level) {
   if (EventRouter::Get(browser_context_)) {
     scoped_ptr<base::ListValue> args = audio::OnLevelChanged::Create(id, level);
-    scoped_ptr<Event> event(new Event(
-        events::UNKNOWN, audio::OnLevelChanged::kEventName, args.Pass()));
+    scoped_ptr<Event> event(new Event(events::AUDIO_ON_LEVEL_CHANGED,
+                                      audio::OnLevelChanged::kEventName,
+                                      args.Pass()));
     EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
   }
 }
@@ -58,8 +59,9 @@ void AudioAPI::OnMuteChanged(bool is_input, bool is_muted) {
   if (EventRouter::Get(browser_context_)) {
     scoped_ptr<base::ListValue> args =
         audio::OnMuteChanged::Create(is_input, is_muted);
-    scoped_ptr<Event> event(new Event(
-        events::UNKNOWN, audio::OnMuteChanged::kEventName, args.Pass()));
+    scoped_ptr<Event> event(new Event(events::AUDIO_ON_MUTE_CHANGED,
+                                      audio::OnMuteChanged::kEventName,
+                                      args.Pass()));
     EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
   }
 }
@@ -67,8 +69,9 @@ void AudioAPI::OnMuteChanged(bool is_input, bool is_muted) {
 void AudioAPI::OnDevicesChanged(const DeviceInfoList& devices) {
   if (EventRouter::Get(browser_context_)) {
     scoped_ptr<base::ListValue> args = audio::OnDevicesChanged::Create(devices);
-    scoped_ptr<Event> event(new Event(
-        events::UNKNOWN, audio::OnDevicesChanged::kEventName, args.Pass()));
+    scoped_ptr<Event> event(new Event(events::AUDIO_ON_DEVICES_CHANGED,
+                                      audio::OnDevicesChanged::kEventName,
+                                      args.Pass()));
     EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
   }
 }

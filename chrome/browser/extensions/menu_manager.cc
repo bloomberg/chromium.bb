@@ -37,9 +37,6 @@ using content::WebContents;
 
 namespace extensions {
 
-namespace context_menus = api::context_menus;
-namespace chrome_web_view = api::chrome_web_view_internal;
-
 namespace {
 
 // Keys for serialization to and from Value to store in the preferences.
@@ -690,15 +687,18 @@ void MenuManager::ExecuteCommand(content::BrowserContext* context,
   }
 
   // Note: web_contents are NULL in unit tests :(
-  if (web_contents && extensions::TabHelper::FromWebContents(web_contents)) {
-    extensions::TabHelper::FromWebContents(web_contents)->
-        active_tab_permission_granter()->GrantIfRequested(extension);
+  if (web_contents && TabHelper::FromWebContents(web_contents)) {
+    TabHelper::FromWebContents(web_contents)
+        ->active_tab_permission_granter()
+        ->GrantIfRequested(extension);
   }
 
   {
-    // Dispatch to menu item's .onclick handler.
+    // Dispatch to menu item's .onclick handler (this is the legacy API, from
+    // before chrome.contextMenus.onClicked existed).
     scoped_ptr<Event> event(
-        new Event(events::UNKNOWN,
+        new Event(webview_guest ? events::WEB_VIEW_INTERNAL_CONTEXT_MENUS
+                                : events::CONTEXT_MENUS,
                   webview_guest ? kOnWebviewContextMenus : kOnContextMenus,
                   scoped_ptr<base::ListValue>(args->DeepCopy())));
     event->restrict_to_browser_context = context;
@@ -708,8 +708,10 @@ void MenuManager::ExecuteCommand(content::BrowserContext* context,
   {
     // Dispatch to .contextMenus.onClicked handler.
     scoped_ptr<Event> event(new Event(
-        events::UNKNOWN, webview_guest ? chrome_web_view::OnClicked::kEventName
-                                       : context_menus::OnClicked::kEventName,
+        webview_guest ? events::CHROME_WEB_VIEW_INTERNAL_ON_CLICKED
+                      : events::CONTEXT_MENUS_ON_CLICKED,
+        webview_guest ? api::chrome_web_view_internal::OnClicked::kEventName
+                      : api::context_menus::OnClicked::kEventName,
         args.Pass()));
     event->restrict_to_browser_context = context;
     event->user_gesture = EventRouter::USER_GESTURE_ENABLED;

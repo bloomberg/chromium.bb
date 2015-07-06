@@ -25,19 +25,19 @@ LauncherPageEventDispatcher::~LauncherPageEventDispatcher() {
 }
 
 void LauncherPageEventDispatcher::ProgressChanged(double progress) {
-  SendEventToLauncherPage(OnTransitionChanged::kEventName,
-                          OnTransitionChanged::Create(progress));
+  DispatchEvent(make_scoped_ptr(new extensions::Event(
+      extensions::events::LAUNCHER_PAGE_ON_TRANSITION_CHANGED,
+      OnTransitionChanged::kEventName, OnTransitionChanged::Create(progress))));
 }
 
 void LauncherPageEventDispatcher::PopSubpage() {
-  SendEventToLauncherPage(OnPopSubpage::kEventName, OnPopSubpage::Create());
+  DispatchEvent(make_scoped_ptr(
+      new extensions::Event(extensions::events::LAUNCHER_PAGE_ON_POP_SUBPAGE,
+                            OnPopSubpage::kEventName, OnPopSubpage::Create())));
 }
 
-void LauncherPageEventDispatcher::SendEventToLauncherPage(
-    const std::string& event_name,
-    scoped_ptr<base::ListValue> args) {
-  scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::events::UNKNOWN, event_name, args.Pass()));
+void LauncherPageEventDispatcher::DispatchEvent(
+    scoped_ptr<extensions::Event> event) {
   extensions::EventRouter::Get(profile_)
       ->DispatchEventToExtension(extension_id_, event.Pass());
 }

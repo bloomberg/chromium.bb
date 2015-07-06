@@ -54546,6 +54546,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="323" label="WINDOWS_ON_REMOVED"/>
   <int value="324" label="FILE_SYSTEM_PROVIDER_ON_EXECUTE_ACTION_REQUESTED"/>
   <int value="325" label="FILE_SYSTEM_PROVIDER_ON_GET_ACTIONS_REQUESTED"/>
+  <int value="326" label="LAUNCHER_SEARCH_PROVIDER_ON_QUERY_STARTED"/>
+  <int value="327" label="LAUNCHER_SEARCH_PROVIDER_ON_QUERY_ENDED"/>
+  <int value="328" label="LAUNCHER_SEARCH_PROVIDER_ON_OPEN_RESULT"/>
+  <int value="329" label="CHROME_WEB_VIEW_INTERNAL_ON_CLICKED"/>
+  <int value="330" label="WEB_VIEW_INTERNAL_CONTEXT_MENUS"/>
+  <int value="331" label="CONTEXT_MENUS"/>
+  <int value="332" label="TTS_ON_EVENT"/>
+  <int value="333" label="LAUNCHER_PAGE_ON_TRANSITION_CHANGED"/>
+  <int value="334" label="LAUNCHER_PAGE_ON_POP_SUBPAGE"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult" type="int">

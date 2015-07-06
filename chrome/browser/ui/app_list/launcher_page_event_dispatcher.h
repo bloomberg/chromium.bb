@@ -9,6 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_event_histogram_value.h"
 
 class Profile;
 
@@ -29,8 +31,8 @@ class LauncherPageEventDispatcher {
   void PopSubpage();
 
  private:
-  void SendEventToLauncherPage(const std::string& event_name,
-                               scoped_ptr<base::ListValue> args);
+  // Dispatches |event| to |extension_id_|.
+  void DispatchEvent(scoped_ptr<extensions::Event> event);
 
   Profile* profile_;
   std::string extension_id_;

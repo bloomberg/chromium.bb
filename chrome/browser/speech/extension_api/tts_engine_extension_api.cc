@@ -192,8 +192,9 @@ void TtsExtensionEngine::Speak(Utterance* utterance,
   std::string json;
   base::JSONWriter::Write(*args, &json);
 
-  scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::events::UNKNOWN, tts_engine_events::kOnSpeak, args.Pass()));
+  scoped_ptr<extensions::Event> event(
+      new extensions::Event(extensions::events::TTS_ENGINE_ON_SPEAK,
+                            tts_engine_events::kOnSpeak, args.Pass()));
   Profile* profile = Profile::FromBrowserContext(utterance->browser_context());
   event->restrict_to_browser_context = profile;
   EventRouter::Get(profile)
@@ -202,8 +203,9 @@ void TtsExtensionEngine::Speak(Utterance* utterance,
 
 void TtsExtensionEngine::Stop(Utterance* utterance) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::events::UNKNOWN, tts_engine_events::kOnStop, args.Pass()));
+  scoped_ptr<extensions::Event> event(
+      new extensions::Event(extensions::events::TTS_ENGINE_ON_STOP,
+                            tts_engine_events::kOnStop, args.Pass()));
   Profile* profile = Profile::FromBrowserContext(utterance->browser_context());
   event->restrict_to_browser_context = profile;
   EventRouter::Get(profile)
@@ -212,8 +214,9 @@ void TtsExtensionEngine::Stop(Utterance* utterance) {
 
 void TtsExtensionEngine::Pause(Utterance* utterance) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::events::UNKNOWN, tts_engine_events::kOnPause, args.Pass()));
+  scoped_ptr<extensions::Event> event(
+      new extensions::Event(extensions::events::TTS_ENGINE_ON_PAUSE,
+                            tts_engine_events::kOnPause, args.Pass()));
   Profile* profile = Profile::FromBrowserContext(utterance->browser_context());
   event->restrict_to_browser_context = profile;
   EventRouter* event_router = EventRouter::Get(profile);
@@ -224,8 +227,9 @@ void TtsExtensionEngine::Pause(Utterance* utterance) {
 
 void TtsExtensionEngine::Resume(Utterance* utterance) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::events::UNKNOWN, tts_engine_events::kOnResume, args.Pass()));
+  scoped_ptr<extensions::Event> event(
+      new extensions::Event(extensions::events::TTS_ENGINE_ON_RESUME,
+                            tts_engine_events::kOnResume, args.Pass()));
   Profile* profile = Profile::FromBrowserContext(utterance->browser_context());
   event->restrict_to_browser_context = profile;
   EventRouter* event_router = EventRouter::Get(profile);

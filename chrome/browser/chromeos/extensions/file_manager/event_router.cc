@@ -104,14 +104,15 @@ void BroadcastEvent(Profile* profile,
 
 // Sends an event named |event_name| with arguments |event_args| to an extension
 // of |extention_id|.
-void DispatchEventToExtension(Profile* profile,
-                              const std::string& extension_id,
-                              const std::string& event_name,
-                              scoped_ptr<base::ListValue> event_args) {
+void DispatchEventToExtension(
+    Profile* profile,
+    const std::string& extension_id,
+    extensions::events::HistogramValue histogram_value,
+    const std::string& event_name,
+    scoped_ptr<base::ListValue> event_args) {
   extensions::EventRouter::Get(profile)->DispatchEventToExtension(
-      extension_id,
-      make_scoped_ptr(new extensions::Event(extensions::events::UNKNOWN,
-                                            event_name, event_args.Pass())));
+      extension_id, make_scoped_ptr(new extensions::Event(
+                        histogram_value, event_name, event_args.Pass())));
 }
 
 file_manager_private::MountCompletedStatus
@@ -851,8 +852,8 @@ void EventRouter::DispatchDirectoryChangeEventWithEntryDefinition(
                                                entry_definition.is_directory);
 
   DispatchEventToExtension(
-      profile_,
-      *extension_id,
+      profile_, *extension_id,
+      extensions::events::FILE_MANAGER_PRIVATE_ON_DIRECTORY_CHANGED,
       file_manager_private::OnDirectoryChanged::kEventName,
       file_manager_private::OnDirectoryChanged::Create(event));
 }

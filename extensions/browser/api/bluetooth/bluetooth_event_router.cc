@@ -281,7 +281,8 @@ void BluetoothEventRouter::DeviceAdded(device::BluetoothAdapter* adapter,
     return;
   }
 
-  DispatchDeviceEvent(bluetooth::OnDeviceAdded::kEventName, device);
+  DispatchDeviceEvent(events::BLUETOOTH_ON_DEVICE_ADDED,
+                      bluetooth::OnDeviceAdded::kEventName, device);
 }
 
 void BluetoothEventRouter::DeviceChanged(device::BluetoothAdapter* adapter,
@@ -292,7 +293,8 @@ void BluetoothEventRouter::DeviceChanged(device::BluetoothAdapter* adapter,
     return;
   }
 
-  DispatchDeviceEvent(bluetooth::OnDeviceChanged::kEventName, device);
+  DispatchDeviceEvent(events::BLUETOOTH_ON_DEVICE_CHANGED,
+                      bluetooth::OnDeviceChanged::kEventName, device);
 }
 
 void BluetoothEventRouter::DeviceRemoved(device::BluetoothAdapter* adapter,
@@ -303,7 +305,8 @@ void BluetoothEventRouter::DeviceRemoved(device::BluetoothAdapter* adapter,
     return;
   }
 
-  DispatchDeviceEvent(bluetooth::OnDeviceRemoved::kEventName, device);
+  DispatchDeviceEvent(events::BLUETOOTH_ON_DEVICE_REMOVED,
+                      bluetooth::OnDeviceRemoved::kEventName, device);
 }
 
 void BluetoothEventRouter::OnListenerAdded() {
@@ -330,12 +333,13 @@ void BluetoothEventRouter::DispatchAdapterStateEvent() {
   scoped_ptr<base::ListValue> args =
       bluetooth::OnAdapterStateChanged::Create(state);
   scoped_ptr<Event> event(
-      new Event(events::UNKNOWN, bluetooth::OnAdapterStateChanged::kEventName,
-                args.Pass()));
+      new Event(events::BLUETOOTH_ON_ADAPTER_STATE_CHANGED,
+                bluetooth::OnAdapterStateChanged::kEventName, args.Pass()));
   EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 
 void BluetoothEventRouter::DispatchDeviceEvent(
+    events::HistogramValue histogram_value,
     const std::string& event_name,
     device::BluetoothDevice* device) {
   bluetooth::Device extension_device;
@@ -343,7 +347,7 @@ void BluetoothEventRouter::DispatchDeviceEvent(
 
   scoped_ptr<base::ListValue> args =
       bluetooth::OnDeviceAdded::Create(extension_device);
-  scoped_ptr<Event> event(new Event(events::UNKNOWN, event_name, args.Pass()));
+  scoped_ptr<Event> event(new Event(histogram_value, event_name, args.Pass()));
   EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 

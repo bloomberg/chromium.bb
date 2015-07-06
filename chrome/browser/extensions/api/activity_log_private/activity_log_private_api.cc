@@ -88,8 +88,8 @@ void ActivityLogAPI::OnExtensionActivity(scoped_refptr<Action> activity) {
       activity->ConvertToExtensionActivity();
   value->Append(activity_arg->ToValue().release());
   scoped_ptr<Event> event(new Event(
-      events::UNKNOWN, activity_log_private::OnExtensionActivity::kEventName,
-      value.Pass()));
+      events::ACTIVITY_LOG_PRIVATE_ON_EXTENSION_ACTIVITY,
+      activity_log_private::OnExtensionActivity::kEventName, value.Pass()));
   event->restrict_to_browser_context = browser_context_;
   EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }

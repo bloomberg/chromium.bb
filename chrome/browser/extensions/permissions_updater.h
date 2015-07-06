@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "extensions/browser/extension_event_histogram_value.h"
 
 namespace base {
 class DictionaryValue;
@@ -79,6 +80,7 @@ class PermissionsUpdater {
 
   // Dispatches specified event to the extension.
   void DispatchEvent(const std::string& extension_id,
+                     events::HistogramValue histogram_value,
                      const char* event_name,
                      const PermissionSet* changed_permissions);
 

@@ -192,7 +192,7 @@ void DesktopNotificationService::FirePermissionLevelChangedEvent(
   args->Append(new base::StringValue(
       extensions::api::notifications::ToString(permission)));
   scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::events::UNKNOWN,
+      extensions::events::NOTIFICATIONS_ON_PERMISSION_LEVEL_CHANGED,
       extensions::api::notifications::OnPermissionLevelChanged::kEventName,
       args.Pass()));
   extensions::EventRouter::Get(profile_)
