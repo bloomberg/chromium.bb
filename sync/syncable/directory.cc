@@ -1467,7 +1467,9 @@ void Directory::PutPredecessor(EntryKernel* e, EntryKernel* predecessor) {
   // Another mixed valid and invalid position case.  This one could be supported
   // in theory, but we're trying to deprecate support for siblings with and
   // without valid positions.  See TODO above.
-  DCHECK(successor->ref(UNIQUE_POSITION).IsValid());
+  // Using a release CHECK here because the following UniquePosition::Between
+  // call crashes anyway when the position string is empty (see crbug/332371).
+  CHECK(successor->ref(UNIQUE_POSITION).IsValid());
 
   // Finally, the normal case: inserting between two elements.
   UniquePosition pos = UniquePosition::Between(
