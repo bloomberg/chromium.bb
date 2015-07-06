@@ -113,23 +113,6 @@ class SmoothnessKeyMobileSites(perf_benchmark.PerfBenchmark):
     return 'smoothness.key_mobile_sites_smooth'
 
 
-@benchmark.Disabled('mac', 'win', 'android')
-class SmoothnessKeyMobileSitesWithSlimmingPaint(perf_benchmark.PerfBenchmark):
-  """Measures smoothness on key mobile sites with --enable-slimming-paint.
-
-  http://www.chromium.org/developers/design-documents/rendering-benchmarks
-  """
-  test = smoothness.Smoothness
-  page_set = page_sets.KeyMobileSitesSmoothPageSet
-
-  def SetExtraBrowserOptions(self, options):
-    options.AppendExtraBrowserArgs(['--enable-slimming-paint'])
-
-  @classmethod
-  def Name(cls):
-    return 'smoothness.key_mobile_sites_with_slimming_paint_smooth'
-
-
 class SmoothnessToughAnimationCases(perf_benchmark.PerfBenchmark):
   test = smoothness.SmoothnessWithRestart
   page_set = page_sets.ToughAnimationCasesPageSet
