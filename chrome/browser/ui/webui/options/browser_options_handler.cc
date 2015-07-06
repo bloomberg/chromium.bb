@@ -107,9 +107,9 @@
 #include "ash/ash_switches.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/shell.h"
+#include "ash/system/chromeos/devicetype_utils.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
-#include "chrome/browser/chromeos/chromeos_utils.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/net/wake_on_wifi_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -205,9 +205,8 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   DCHECK(values);
 
 #if defined(OS_CHROMEOS)
-  const int device_type_resource_id = chromeos::GetChromeDeviceTypeResourceId();
+  const int device_type_resource_id = ash::GetChromeOSDeviceTypeResourceId();
 #else
-  // TODO(isherman): Set an appropriate device name for non-ChromeOS devices.
   const int device_type_resource_id = IDS_EASY_UNLOCK_GENERIC_DEVICE_TYPE;
 #endif  // defined(OS_CHROMEOS)
 

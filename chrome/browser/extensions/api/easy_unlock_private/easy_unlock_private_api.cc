@@ -33,7 +33,7 @@
 #include "ui/gfx/range/range.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/chromeos_utils.h"
+#include "ash/system/chromeos/devicetype_utils.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
 #include "components/user_manager/user.h"
@@ -115,7 +115,7 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
   scoped_ptr<base::DictionaryValue> strings(new base::DictionaryValue);
 
 #if defined(OS_CHROMEOS)
-  const base::string16 device_type = chromeos::GetChromeDeviceType();
+  const base::string16 device_type = ash::GetChromeOSDeviceName();
 #else
   // TODO(isherman): Set an appropriate device name for non-ChromeOS devices.
   const base::string16 device_type = base::ASCIIToUTF16("Chromeschnozzle");
