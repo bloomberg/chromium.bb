@@ -316,7 +316,7 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
         // Update the invalidation listener with the set of types we are enabling.
         InvalidationController invController =
                 InvalidationController.get(getActivity());
-        invController.refreshRegisteredTypes();
+        invController.ensureStartedAndUpdateRegisteredTypes();
     }
 
     private Set<ModelType> getSelectedModelTypes() {

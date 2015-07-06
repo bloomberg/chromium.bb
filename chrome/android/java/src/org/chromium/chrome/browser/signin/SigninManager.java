@@ -25,7 +25,6 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.childaccounts.ChildAccountService;
-import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.notifications.GoogleServicesNotificationController;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
@@ -407,10 +406,6 @@ public class SigninManager {
         // Cache the signed-in account name. This must be done after the native call, otherwise
         // sync tries to start without being signed in natively and crashes.
         ChromeSigninController.get(mContext).setSignedInAccountName(mSignInAccount.name);
-
-        // Register for invalidations.
-        InvalidationController invalidationController = InvalidationController.get(mContext);
-        invalidationController.refreshRegisteredTypes();
 
         // Sign-in to sync.
         ProfileSyncService profileSyncService = ProfileSyncService.get(mContext);

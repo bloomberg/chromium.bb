@@ -16,7 +16,6 @@ import com.google.android.gms.auth.GoogleAuthUtil;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.invalidation.InvalidationServiceFactory;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -265,8 +264,6 @@ public class SigninHelper {
 
                 if (isSyncWanted) {
                     mSyncController.start();
-                    InvalidationController controller = InvalidationController.get(mContext);
-                    controller.refreshRegisteredTypes();
                 } else {
                     mSyncController.stop();
                 }

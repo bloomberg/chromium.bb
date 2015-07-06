@@ -29,9 +29,9 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
 
     /**
      * Updates the sync invalidation types that the client is registered for based on the preferred
-     * sync types.
+     * sync types.  Starts the client if needed.
      */
-    public void refreshRegisteredTypes() {
+    public void ensureStartedAndUpdateRegisteredTypes() {
         Intent registerIntent = InvalidationIntentProtocol.createRegisterIntent(
                 ChromeSigninController.get(mContext).getSignedInUser(),
                 ProfileSyncService.get(mContext).getPreferredDataTypes());
@@ -40,9 +40,9 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
     }
 
     /**
-     * Starts the invalidation client.
+     * Starts the invalidation client without updating the registered invalidation types.
      */
-    public void start() {
+    private void start() {
         Intent intent = new Intent(mContext, InvalidationClientService.class);
         mContext.startService(intent);
     }

@@ -80,15 +80,6 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
 
     @SmallTest
     @Feature({"Sync"})
-    public void testStart() throws Exception {
-        mController.start();
-        assertEquals(1, mContext.getNumStartedIntents());
-        Intent intent = mContext.getStartedIntent(0);
-        validateIntentComponent(intent);
-    }
-
-    @SmallTest
-    @Feature({"Sync"})
     public void testStop() throws Exception {
         mController.stop();
         assertEquals(1, mContext.getNumStartedIntents());
@@ -108,6 +99,7 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         assertEquals(1, mContext.getNumStartedIntents());
         Intent intent = mContext.getStartedIntent(0);
         validateIntentComponent(intent);
+        assertFalse(intent.hasExtra(InvalidationIntentProtocol.EXTRA_STOP));
     }
 
     @SmallTest
@@ -177,14 +169,14 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
     @UiThreadTest
     @SmallTest
     @Feature({"Sync"})
-    public void testRefreshRegisteredTypes() {
+    public void testEnsureStartedAndUpdateRegisteredTypes() {
         Account account = AccountManagerHelper.createAccountFromName("test@example.com");
         ChromeSigninController.get(mContext).setSignedInAccountName(account.name);
         mProfileSyncServiceStub.setPreferredDataTypes(
                 CollectionUtil.newHashSet(ModelType.BOOKMARK, ModelType.SESSION));
 
         InvalidationController controller = new InvalidationController(mContext);
-        controller.refreshRegisteredTypes();
+        controller.ensureStartedAndUpdateRegisteredTypes();
         assertEquals(1, mContext.getNumStartedIntents());
 
         // Validate destination.
