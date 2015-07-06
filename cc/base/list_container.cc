@@ -128,13 +128,13 @@ class ListContainerBase::ListContainerCharAllocator {
   }
 
   void Clear() {
-    size_t initial_allocation_size = storage_.front()->capacity;
-    storage_.clear();
-    last_list_ = NULL;
+    // Remove all except for the first InnerList.
+    DCHECK(!storage_.empty());
+    storage_.erase(storage_.begin() + 1, storage_.end());
     last_list_index_ = 0;
+    last_list_ = storage_[0];
+    last_list_->size = 0;
     size_ = 0;
-    AllocateNewList(initial_allocation_size);
-    last_list_ = storage_[last_list_index_];
   }
 
   void RemoveLast() {

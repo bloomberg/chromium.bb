@@ -181,6 +181,39 @@ TEST(ListContainerTest, DestructorCalledOnceWhenClear) {
   separator.Call();
 }
 
+TEST(ListContainerTest, ClearDoesNotMalloc) {
+  const size_t reserve = 10;
+  ListContainer<DerivedElement> list(kCurrentLargestDerivedElementSize,
+                                     reserve);
+
+  // Memory from the initial inner list that should be re-used after clear().
+  std::vector<DerivedElement*> reserved_element_pointers;
+  for (size_t i = 0; i < reserve; i++) {
+    DerivedElement* element = list.AllocateAndConstruct<DerivedElement>();
+    reserved_element_pointers.push_back(element);
+  }
+  EXPECT_EQ(0u, list.AvailableSizeWithoutAnotherAllocationForTesting());
+
+  // Allocate more than the reserve count, forcing new capacity to be added.
+  list.AllocateAndConstruct<DerivedElement>();
+  EXPECT_NE(0u, list.AvailableSizeWithoutAnotherAllocationForTesting());
+
+  // Clear should free all memory except the first |reserve| elements.
+  list.clear();
+  EXPECT_EQ(reserve, list.AvailableSizeWithoutAnotherAllocationForTesting());
+
+  // Verify the first |reserve| elements are re-used after clear().
+  for (size_t i = 0; i < reserve; i++) {
+    DerivedElement* element = list.AllocateAndConstruct<DerivedElement>();
+    EXPECT_EQ(element, reserved_element_pointers[i]);
+  }
+  EXPECT_EQ(0u, list.AvailableSizeWithoutAnotherAllocationForTesting());
+
+  // Verify that capacity can still grow properly.
+  list.AllocateAndConstruct<DerivedElement>();
+  EXPECT_NE(0u, list.AvailableSizeWithoutAnotherAllocationForTesting());
+}
+
 TEST(ListContainerTest, ReplaceExistingElement) {
   ListContainer<DerivedElement> list(kCurrentLargestDerivedElementSize);
   size_t size = 1;
