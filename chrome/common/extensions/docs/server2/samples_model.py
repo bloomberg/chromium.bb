@@ -7,6 +7,7 @@ import logging
 import posixpath
 import re
 
+from compiled_file_system import Cache
 from extensions_paths import EXAMPLES
 from samples_data_source import SamplesDataSource
 import third_party.json_schema_compiler.json_comment_eater as json_comment_eater
@@ -107,6 +108,7 @@ class SamplesModel(object):
           l10n_data['locales'][path[len(locales_path):].split('/')[0]] = json_
     return l10n_data
 
+  @Cache
   def _MakeSamplesList(self, base_path, files):
     samples_list = []
     for filename in sorted(files):
