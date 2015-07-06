@@ -508,12 +508,10 @@ bool SystemTrayDelegateChromeOS::ShouldShowDisplayNotification() {
     return true;
 
   GURL visible_url = active_contents->GetLastCommittedURL();
-  GURL display_settings_url =
-      chrome::GetSettingsUrl(kDisplaySettingsSubPageName);
-  GURL display_overscan_url =
-      chrome::GetSettingsUrl(kDisplayOverscanSettingsSubPageName);
-  return (visible_url != display_settings_url &&
-          visible_url != display_overscan_url);
+  return !(chrome::IsSettingsSubPage(visible_url,
+                                     kDisplaySettingsSubPageName) ||
+           chrome::IsSettingsSubPage(visible_url,
+                                     kDisplayOverscanSettingsSubPageName));
 }
 
 void SystemTrayDelegateChromeOS::ShowIMESettings() {

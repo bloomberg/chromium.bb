@@ -234,6 +234,13 @@ GURL GetSettingsUrl(const std::string& sub_page) {
   return GURL(url);
 }
 
+bool IsSettingsSubPage(const GURL& url, const std::string& sub_page) {
+  return (url.SchemeIs(content::kChromeUIScheme) &&
+          (url.host() == chrome::kChromeUISettingsHost ||
+           url.host() == chrome::kChromeUISettingsFrameHost) &&
+          url.path() == "/" + sub_page);
+}
+
 bool IsTrustedPopupWindowWithScheme(const Browser* browser,
                                     const std::string& scheme) {
   if (!browser->is_type_popup() || !browser->is_trusted_source())
@@ -247,6 +254,7 @@ bool IsTrustedPopupWindowWithScheme(const Browser* browser,
   GURL url(web_contents->GetURL());
   return url.SchemeIs(scheme.c_str());
 }
+
 
 void ShowSettings(Browser* browser) {
   ShowSettingsSubPage(browser, std::string());
