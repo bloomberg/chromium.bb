@@ -5,11 +5,11 @@
 #include "remoting/protocol/pseudotcp_channel_factory.h"
 
 #include "base/bind.h"
-#include "jingle/glue/pseudotcp_adapter.h"
 #include "net/base/net_errors.h"
 #include "net/socket/stream_socket.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/datagram_channel_factory.h"
+#include "remoting/protocol/pseudotcp_adapter.h"
 
 namespace remoting {
 namespace protocol {
@@ -60,8 +60,7 @@ void PseudoTcpChannelFactory::OnDatagramChannelCreated(
     const std::string& name,
     const ChannelCreatedCallback& callback,
     scoped_ptr<net::Socket> datagram_socket) {
-  jingle_glue::PseudoTcpAdapter* adapter =
-      new jingle_glue::PseudoTcpAdapter(datagram_socket.release());
+  PseudoTcpAdapter* adapter = new PseudoTcpAdapter(datagram_socket.Pass());
   pending_sockets_[name] = adapter;
 
   adapter->SetSendBufferSize(kTcpSendBufferSize);

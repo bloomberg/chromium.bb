@@ -1,11 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#include "remoting/protocol/channel_socket_adapter.h"
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "jingle/glue/channel_socket_adapter.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
@@ -18,7 +19,8 @@ using net::IOBuffer;
 using testing::_;
 using testing::Return;
 
-namespace jingle_glue {
+namespace remoting {
+namespace protocol {
 
 namespace {
 const int kBufferSize = 4096;
@@ -135,4 +137,5 @@ TEST_F(TransportChannelSocketAdapterTest, WritePending) {
   ASSERT_EQ(net::OK, result);
 }
 
-}  // namespace jingle_glue
+}  // namespace protocol
+}  // namespace remoting

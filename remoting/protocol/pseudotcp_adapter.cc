@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "jingle/glue/pseudotcp_adapter.h"
+#include "remoting/protocol/pseudotcp_adapter.h"
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -21,12 +21,13 @@ const int kReadBufferSize = 65536;  // Maximum size of a packet.
 const uint16 kDefaultMtu = 1280;
 }  // namespace
 
-namespace jingle_glue {
+namespace remoting {
+namespace protocol {
 
 class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
                                public base::RefCounted<Core> {
  public:
-  explicit Core(net::Socket* socket);
+  explicit Core(scoped_ptr<net::Socket> socket);
 
   // Functions used to implement net::StreamSocket.
   int Read(net::IOBuffer* buffer, int buffer_size,
@@ -112,9 +113,9 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
 };
 
 
-PseudoTcpAdapter::Core::Core(net::Socket* socket)
+PseudoTcpAdapter::Core::Core(scoped_ptr<net::Socket> socket)
     : pseudo_tcp_(this, 0),
-      socket_(socket),
+      socket_(socket.Pass()),
       write_waits_for_send_(false),
       waiting_write_position_(false),
       socket_write_pending_(false) {
@@ -363,8 +364,7 @@ cricket::IPseudoTcpNotify::WriteResult PseudoTcpAdapter::Core::TcpWritePacket(
   int result;
   if (socket_.get()) {
     result = socket_->Write(
-        write_buffer.get(),
-        len,
+        write_buffer.get(), len,
         base::Bind(&PseudoTcpAdapter::Core::OnWritten, base::Unretained(this)));
   } else {
     result = net::ERR_CONNECTION_CLOSED;
@@ -463,8 +463,8 @@ void PseudoTcpAdapter::Core::CheckWriteComplete() {
 
 // Public interface implemention.
 
-PseudoTcpAdapter::PseudoTcpAdapter(net::Socket* socket)
-    : core_(new Core(socket)) {
+PseudoTcpAdapter::PseudoTcpAdapter(scoped_ptr<net::Socket> socket)
+    : core_(new Core(socket.Pass())) {
 }
 
 PseudoTcpAdapter::~PseudoTcpAdapter() {
@@ -603,4 +603,5 @@ void PseudoTcpAdapter::SetWriteWaitsForSend(bool write_waits_for_send) {
   core_->SetWriteWaitsForSend(write_waits_for_send);
 }
 
-}  // namespace jingle_glue
+}  // namespace protocol
+}  // namespace remoting

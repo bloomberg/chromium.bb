@@ -1,34 +1,33 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef JINGLE_GLUE_CHANNEL_SOCKET_ADAPTER_H_
-#define JINGLE_GLUE_CHANNEL_SOCKET_ADAPTER_H_
+#ifndef REMOTING_PROTOCOL_CHANNEL_SOCKET_ADAPTER_H_
+#define REMOTING_PROTOCOL_CHANNEL_SOCKET_ADAPTER_H_
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/threading/thread_checker.h"
 #include "net/socket/socket.h"
 #include "third_party/webrtc/base/asyncpacketsocket.h"
 #include "third_party/webrtc/base/sigslot.h"
 #include "third_party/webrtc/base/socketaddress.h"
 
-namespace base {
-class MessageLoop;
-}
-
 namespace cricket {
 class TransportChannel;
 }  // namespace cricket
 
-namespace jingle_glue {
+namespace remoting {
+namespace protocol {
 
 // TransportChannelSocketAdapter implements net::Socket interface on
-// top of libjingle's TransportChannel. It is used by
-// JingleChromotocolConnection to provide net::Socket interface for channels.
+// top of libjingle's TransportChannel. It is used by LibjingleTransportFactory
+// to provide net::Socket interface for channels.
 class TransportChannelSocketAdapter : public net::Socket,
                                       public sigslot::has_slots<> {
  public:
-  // TransportChannel object is always owned by the corresponding session.
+  // Doesn't take ownership of the |channel|. The |channel| must outlive
+  // this adapter.
   explicit TransportChannelSocketAdapter(cricket::TransportChannel* channel);
   ~TransportChannelSocketAdapter() override;
 
@@ -42,7 +41,7 @@ class TransportChannelSocketAdapter : public net::Socket,
   // Must be called before the session and the channel are destroyed.
   void Close(int error_code);
 
-  // Socket implementation.
+  // net::Socket interface.
   int Read(net::IOBuffer* buf,
            int buf_len,
            const net::CompletionCallback& callback) override;
@@ -62,7 +61,7 @@ class TransportChannelSocketAdapter : public net::Socket,
   void OnWritableState(cricket::TransportChannel* channel);
   void OnChannelDestroyed(cricket::TransportChannel* channel);
 
-  base::MessageLoop* message_loop_;
+  base::ThreadChecker thread_checker_;
 
   cricket::TransportChannel* channel_;
 
@@ -81,6 +80,7 @@ class TransportChannelSocketAdapter : public net::Socket,
   DISALLOW_COPY_AND_ASSIGN(TransportChannelSocketAdapter);
 };
 
-}  // namespace jingle_glue
+}  // namespace protocol
+}  // namespace remoting
 
-#endif  // JINGLE_GLUE_CHANNEL_SOCKET_ADAPTER_H_
+#endif  // REMOTING_PROTOCOL_CHANNEL_SOCKET_ADAPTER_H_

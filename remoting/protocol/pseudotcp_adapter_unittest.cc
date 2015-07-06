@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "jingle/glue/pseudotcp_adapter.h"
+#include "remoting/protocol/pseudotcp_adapter.h"
 
 #include <vector>
 
@@ -13,18 +13,11 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
-#include "net/udp/udp_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-
-namespace jingle_glue {
-namespace {
-class FakeSocket;
-}  // namespace
-}  // namespace jingle_glue
-
-namespace jingle_glue {
+namespace remoting {
+namespace protocol {
 
 namespace {
 
@@ -301,7 +294,7 @@ class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
 class PseudoTcpAdapterTest : public testing::Test {
  protected:
   void SetUp() override {
-    JingleThreadWrapper::EnsureForCurrentMessageLoop();
+    jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 
     host_socket_ = new FakeSocket();
     client_socket_ = new FakeSocket();
@@ -309,8 +302,9 @@ class PseudoTcpAdapterTest : public testing::Test {
     host_socket_->Connect(client_socket_);
     client_socket_->Connect(host_socket_);
 
-    host_pseudotcp_.reset(new PseudoTcpAdapter(host_socket_));
-    client_pseudotcp_.reset(new PseudoTcpAdapter(client_socket_));
+    host_pseudotcp_.reset(new PseudoTcpAdapter(make_scoped_ptr(host_socket_)));
+    client_pseudotcp_.reset(
+        new PseudoTcpAdapter(make_scoped_ptr(client_socket_)));
   }
 
   FakeSocket* host_socket_;
@@ -441,4 +435,5 @@ TEST_F(PseudoTcpAdapterTest, WriteWaitsForSendLetsDataThrough) {
 
 }  // namespace
 
-}  // namespace jingle_glue
+}  // namespace protocol
+}  // namespace remoting

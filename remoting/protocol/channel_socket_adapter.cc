@@ -1,24 +1,23 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "jingle/glue/channel_socket_adapter.h"
+#include "remoting/protocol/channel_socket_adapter.h"
 
 #include <limits>
 
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "third_party/webrtc/p2p/base/transportchannel.h"
 
-namespace jingle_glue {
+namespace remoting {
+namespace protocol {
 
 TransportChannelSocketAdapter::TransportChannelSocketAdapter(
     cricket::TransportChannel* channel)
-    : message_loop_(base::MessageLoop::current()),
-      channel_(channel),
+    : channel_(channel),
       closed_error_code_(net::OK) {
   DCHECK(channel_);
 
@@ -44,7 +43,7 @@ int TransportChannelSocketAdapter::Read(
     net::IOBuffer* buf,
     int buffer_size,
     const net::CompletionCallback& callback) {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(buf);
   DCHECK(!callback.is_null());
   CHECK(read_callback_.is_null());
@@ -65,7 +64,7 @@ int TransportChannelSocketAdapter::Write(
     net::IOBuffer* buffer,
     int buffer_size,
     const net::CompletionCallback& callback) {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(buffer);
   DCHECK(!callback.is_null());
   CHECK(write_callback_.is_null());
@@ -100,19 +99,19 @@ int TransportChannelSocketAdapter::Write(
 }
 
 int TransportChannelSocketAdapter::SetReceiveBufferSize(int32 size) {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   return (channel_->SetOption(rtc::Socket::OPT_RCVBUF, size) == 0) ?
       net::OK : net::ERR_SOCKET_SET_RECEIVE_BUFFER_SIZE_ERROR;
 }
 
 int TransportChannelSocketAdapter::SetSendBufferSize(int32 size) {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   return (channel_->SetOption(rtc::Socket::OPT_SNDBUF, size) == 0) ?
       net::OK : net::ERR_SOCKET_SET_SEND_BUFFER_SIZE_ERROR;
 }
 
 void TransportChannelSocketAdapter::Close(int error_code) {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!channel_)  // Already closed.
     return;
@@ -144,7 +143,7 @@ void TransportChannelSocketAdapter::OnNewPacket(
     size_t data_size,
     const rtc::PacketTime& packet_time,
     int flags) {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(channel, channel_);
   if (!read_callback_.is_null()) {
     DCHECK(read_buffer_.get());
@@ -171,7 +170,7 @@ void TransportChannelSocketAdapter::OnNewPacket(
 
 void TransportChannelSocketAdapter::OnWritableState(
     cricket::TransportChannel* channel) {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Try to send the packet if there is a pending write.
   if (!write_callback_.is_null()) {
     rtc::PacketOptions options;
@@ -192,9 +191,10 @@ void TransportChannelSocketAdapter::OnWritableState(
 
 void TransportChannelSocketAdapter::OnChannelDestroyed(
     cricket::TransportChannel* channel) {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(channel, channel_);
   Close(net::ERR_CONNECTION_ABORTED);
 }
 
-}  // namespace jingle_glue
+}  // namespace protocol
+}  // namespace remoting

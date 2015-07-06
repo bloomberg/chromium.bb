@@ -11,9 +11,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
-#include "jingle/glue/channel_socket_adapter.h"
 #include "jingle/glue/utils.h"
 #include "net/base/net_errors.h"
+#include "remoting/protocol/channel_socket_adapter.h"
 #include "remoting/protocol/network_settings.h"
 #include "remoting/signaling/jingle_info_request.h"
 #include "third_party/webrtc/base/network.h"
@@ -87,8 +87,8 @@ class LibjingleTransport
                      const cricket::Candidate& candidate);
   void OnWritableState(cricket::TransportChannel* channel);
 
-  // Callback for jingle_glue::TransportChannelSocketAdapter to notify when the
-  // socket is destroyed.
+  // Callback for TransportChannelSocketAdapter to notify when the socket is
+  // destroyed.
   void OnChannelDestroyed();
 
   void NotifyRouteChanged();
@@ -237,8 +237,8 @@ void LibjingleTransport::DoStart() {
 
 void LibjingleTransport::NotifyConnected() {
   // Create net::Socket adapter for the P2PTransportChannel.
-  scoped_ptr<jingle_glue::TransportChannelSocketAdapter> socket(
-      new jingle_glue::TransportChannelSocketAdapter(channel_.get()));
+  scoped_ptr<TransportChannelSocketAdapter> socket(
+      new TransportChannelSocketAdapter(channel_.get()));
   socket->SetOnDestroyedCallback(base::Bind(
       &LibjingleTransport::OnChannelDestroyed, base::Unretained(this)));
   base::ResetAndReturn(&callback_).Run(socket.Pass());

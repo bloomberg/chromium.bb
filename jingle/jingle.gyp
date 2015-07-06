@@ -126,7 +126,6 @@
           'target_name': 'jingle_unittests',
           'type': 'executable',
           'sources': [
-            'glue/channel_socket_adapter_unittest.cc',
             'glue/chrome_async_socket_unittest.cc',
             'glue/fake_ssl_client_socket_unittest.cc',
             'glue/jingle_glue_mock_objects.cc',
@@ -135,7 +134,6 @@
             'glue/mock_task.cc',
             'glue/mock_task.h',
             'glue/proxy_resolving_client_socket_unittest.cc',
-            'glue/pseudotcp_adapter_unittest.cc',
             'glue/task_pump_unittest.cc',
             'glue/thread_wrapper_unittest.cc',
             'notifier/base/weak_xmpp_client_unittest.cc',

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef JINGLE_GLUE_PSEUDOTCP_ADAPTER_H_
-#define JINGLE_GLUE_PSEUDOTCP_ADAPTER_H_
+#ifndef REMOTING_PROTOCOL_PSEUDOTCP_ADAPTER_H_
+#define REMOTING_PROTOCOL_PSEUDOTCP_ADAPTER_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -14,7 +14,8 @@
 #include "net/socket/stream_socket.h"
 #include "third_party/webrtc/p2p/base/pseudotcp.h"
 
-namespace jingle_glue {
+namespace remoting {
+namespace protocol {
 
 // PseudoTcpAdapter adapts a connectionless net::Socket to a connection-
 // oriented net::StreamSocket using PseudoTcp.  Because net::StreamSockets
@@ -23,9 +24,7 @@ namespace jingle_glue {
 // adapter, and an additional reference held on the stack during callbacks.
 class PseudoTcpAdapter : public net::StreamSocket, base::NonThreadSafe {
  public:
-  // Creates an adapter for the supplied Socket.  |socket| should already
-  // be ready for use, and ownership of it will be assumed by the adapter.
-  explicit PseudoTcpAdapter(net::Socket* socket);
+  explicit PseudoTcpAdapter(scoped_ptr<net::Socket> socket);
   ~PseudoTcpAdapter() override;
 
   // net::Socket implementation.
@@ -92,6 +91,7 @@ class PseudoTcpAdapter : public net::StreamSocket, base::NonThreadSafe {
   DISALLOW_COPY_AND_ASSIGN(PseudoTcpAdapter);
 };
 
-}  // namespace jingle_glue
+}  // namespace protocol
+}  // namespace remoting
 
-#endif  // JINGLE_GLUE_PSEUDOTCP_ADAPTER_H_
+#endif  // REMOTING_PROTOCOL_PSEUDOTCP_ADAPTER_H_
