@@ -3397,18 +3397,17 @@ class MediaStreamDevicesControllerBrowserTest
       public testing::WithParamInterface<bool> {
  public:
   MediaStreamDevicesControllerBrowserTest()
-      : request_url_allowed_via_whitelist_(false) {
+      : request_url_allowed_via_whitelist_(false),
+        request_url_("http://www.example.com/foo") {
     policy_value_ = GetParam();
   }
   virtual ~MediaStreamDevicesControllerBrowserTest() {}
 
-  // Configure a given policy map.
-  // The |policy_name| is the name of either the audio or video capture allow
-  // policy and must never be NULL.
+  // Configure a given policy map. The |policy_name| is the name of either the
+  // audio or video capture allow policy and must never be NULL.
   // |whitelist_policy| and |allow_rule| are optional.  If NULL, no whitelist
-  // policy is set.  If non-NULL, the request_url_ will be set to be non empty
-  // and the whitelist policy is set to contain either the |allow_rule| (if
-  // non-NULL) or an "allow all" wildcard.
+  // policy is set.  If non-NULL, the whitelist policy is set to contain either
+  // the |allow_rule| (if non-NULL) or an "allow all" wildcard.
   void ConfigurePolicyMap(PolicyMap* policies, const char* policy_name,
                           const char* whitelist_policy,
                           const char* allow_rule) {
@@ -3427,7 +3426,6 @@ class MediaStreamDevicesControllerBrowserTest
 
       // Add an entry to the whitelist that allows the specified URL regardless
       // of the setting of kAudioCapturedAllowed.
-      request_url_ = GURL("http://www.example.com/foo");
       base::ListValue* list = new base::ListValue();
       if (allow_rule) {
         list->AppendString(allow_rule);
@@ -3467,14 +3465,13 @@ class MediaStreamDevicesControllerBrowserTest
     MediaStreamDevicesController controller(
         browser()->tab_strip_model()->GetActiveWebContents(), request,
         base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept, this));
-    controller.Accept(false);
+    if (controller.IsAskingForAudio())
+      controller.PermissionGranted();
 
     base::MessageLoop::current()->QuitWhenIdle();
   }
 
   void FinishVideoTest() {
-    // TODO(raymes): Test MEDIA_DEVICE_OPEN (Pepper) which grants both webcam
-    // and microphone permissions at the same time.
     content::MediaStreamRequest request(0, 0, 0,
                                         request_url_.GetOrigin(), false,
                                         content::MEDIA_DEVICE_ACCESS,
@@ -3482,10 +3479,13 @@ class MediaStreamDevicesControllerBrowserTest
                                         std::string(),
                                         content::MEDIA_NO_SERVICE,
                                         content::MEDIA_DEVICE_VIDEO_CAPTURE);
+    // TODO(raymes): Test MEDIA_DEVICE_OPEN (Pepper) which grants both webcam
+    // and microphone permissions at the same time.
     MediaStreamDevicesController controller(
         browser()->tab_strip_model()->GetActiveWebContents(), request,
         base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept, this));
-    controller.Accept(false);
+    if (controller.IsAskingForVideo())
+      controller.PermissionGranted();
 
     base::MessageLoop::current()->QuitWhenIdle();
   }

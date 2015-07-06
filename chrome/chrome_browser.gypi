@@ -593,6 +593,8 @@
       'browser/media/media_capture_devices_dispatcher.h',
       'browser/media/media_device_id_salt.cc',
       'browser/media/media_device_id_salt.h',
+      'browser/media/media_permission.cc',
+      'browser/media/media_permission.h',
       'browser/media/media_stream_capture_indicator.cc',
       'browser/media/media_stream_capture_indicator.h',
       'browser/media/media_stream_device_permissions.cc',

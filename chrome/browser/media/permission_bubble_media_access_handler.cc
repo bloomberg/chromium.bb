@@ -127,7 +127,7 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
             base::Bind(
                 &PermissionBubbleMediaAccessHandler::OnAccessRequestResponse,
                 base::Unretained(this), web_contents)));
-    if (controller->DismissInfoBarAndTakeActionOnSettings())
+    if (!controller->IsAskingForAudio() && !controller->IsAskingForVideo())
       return;
     PermissionBubbleManager* bubble_manager =
         PermissionBubbleManager::FromWebContents(web_contents);

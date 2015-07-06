@@ -57,23 +57,6 @@ class MediaStreamPermissionTest : public WebRtcTestBase {
     return test_server()->GetURL(kMainWebrtcTestHtmlPage);
   }
 
-  // Denies getUserMedia requests (audio, video) for the test page.
-  // The deny setting is sticky.
-  void DenyRequest(content::WebContents* tab_contents,
-                   content::MediaStreamRequestResult result) const {
-    const std::string no_id;
-    content::MediaStreamRequest request(
-        0, 0, 0, test_page_url().GetOrigin(), false,
-        content::MEDIA_DEVICE_ACCESS, no_id, no_id,
-        content::MEDIA_DEVICE_AUDIO_CAPTURE,
-        content::MEDIA_DEVICE_VIDEO_CAPTURE);
-
-    scoped_ptr<MediaStreamDevicesController> controller(
-        new MediaStreamDevicesController(tab_contents, request,
-            base::Bind(&OnMediaStreamResponse)));
-    controller->Deny(true, result);
-  }
-
   // Executes stopLocalStream() in the test page, which frees up an already
   // acquired mediastream.
   bool StopLocalStream(content::WebContents* tab_contents) {

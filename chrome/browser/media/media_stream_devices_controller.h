@@ -9,6 +9,7 @@
 #include <string>
 
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/web_contents_delegate.h"
 
 class Profile;
@@ -24,53 +25,19 @@ class PrefRegistrySyncable;
 
 class MediaStreamDevicesController : public PermissionBubbleRequest {
  public:
-  // Permissions for media stream types.
-  enum Permission {
-    MEDIA_NONE,
-    MEDIA_ALLOWED,
-    MEDIA_BLOCKED_BY_POLICY,
-    MEDIA_BLOCKED_BY_USER_SETTING,
-    MEDIA_BLOCKED_BY_USER,
-  };
-
-  struct MediaStreamTypeSettings {
-    MediaStreamTypeSettings(Permission permission,
-                            const std::string& requested_device_id);
-    MediaStreamTypeSettings();
-    ~MediaStreamTypeSettings();
-
-    Permission permission;
-    std::string requested_device_id;
-  };
-
-  typedef std::map<content::MediaStreamType, MediaStreamTypeSettings>
-      MediaStreamTypeSettingsMap;
-
   MediaStreamDevicesController(content::WebContents* web_contents,
                                const content::MediaStreamRequest& request,
                                const content::MediaResponseCallback& callback);
 
   ~MediaStreamDevicesController() override;
 
-  // TODO(tommi): Clean up all the policy code and integrate with
-  // HostContentSettingsMap instead.  This will make creating the UI simpler
-  // and the code cleaner.  crbug.com/244389.
-
   // Registers the prefs backing the audio and video policies.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // Public method to be called before creating the MediaStreamInfoBarDelegate.
-  // This function will check the content settings exceptions and take the
-  // corresponding action on exception which matches the request.
-  bool DismissInfoBarAndTakeActionOnSettings();
-
   // Public methods to be called by MediaStreamInfoBarDelegate;
-  bool HasAudio() const;
-  bool HasVideo() const;
+  bool IsAskingForAudio() const;
+  bool IsAskingForVideo() const;
   const std::string& GetSecurityOriginSpec() const;
-  void Accept(bool update_content_setting);
-  void Deny(bool update_content_setting,
-            content::MediaStreamRequestResult result);
 
   // PermissionBubbleRequest:
   int GetIconID() const override;
@@ -84,49 +51,48 @@ class MediaStreamDevicesController : public PermissionBubbleRequest {
   void RequestFinished() override;
 
  private:
-  // Returns true if the origin of the request has been granted the media
-  // access before, otherwise returns false.
-  bool IsRequestAllowedByDefault() const;
+  // Returns a list of devices available for the request for the given
+  // audio/video permission settings.
+  content::MediaStreamDevices GetDevices(ContentSetting audio_setting,
+                                         ContentSetting video_setting);
 
-  // Check if any device of the request has been blocked for the origin of the
-  // request and clears |microphone_requested_| or |webcam_requested_| flags if
-  // they are not allowed anymore. Returns the number of devices that are
-  // allowed after this step. If the count reaches zero the request can be
-  // denied completely, else it still has to be partially fullfilled.
-  int FilterBlockedByDefaultDevices();
-
-  // Returns true if the media section in content settings is set to
-  // |CONTENT_SETTING_BLOCK|, otherwise returns false.
-  bool IsDefaultMediaAccessBlocked() const;
-
-  // Returns true if the origin is a secure scheme, otherwise returns false.
-  bool IsSchemeSecure() const;
+  // Runs |callback_| with the given audio/video permission settings. If neither
+  // |audio_setting| or |video_setting| is set to allow, |denial_reason| should
+  // be set to the error to be reported when running |callback_|.
+  void RunCallback(ContentSetting audio_setting,
+                   ContentSetting video_setting,
+                   content::MediaStreamRequestResult denial_reason);
 
   // Store the permission to use media devices for the origin of the request.
-  // This is triggered when the users deny the request or allow the request
-  // for https sites.
-  void StorePermission(bool allowed) const;
+  // This is triggered when the user makes a decision.
+  void StorePermission(ContentSetting new_audio_setting,
+                       ContentSetting new_video_setting) const;
 
-  // Notifies the content setting UI that the media stream access request or
-  // part of the request is accepted.
-  void NotifyUIRequestAccepted() const;
+  // Called when the permission has been set to update the
+  // TabSpecificContentSettings.
+  void UpdateTabSpecificContentSettings(ContentSetting audio_setting,
+                                        ContentSetting video_setting) const;
 
-  // Notifies the content setting UI that the media stream access request or
-  // part of the request is denied.
-  void NotifyUIRequestDenied();
+  // Returns the content settings for the given content type and request.
+  ContentSetting GetContentSetting(
+      ContentSettingsType content_type,
+      const content::MediaStreamRequest& request,
+      content::MediaStreamRequestResult* denial_reason) const;
 
-  // Return true if the type has been requested and permission is currently set
-  // to allowed. Note that it does not reflect the final permission decision.
-  // This function is called during the filtering steps to check if the type has
-  // been blocked yet or not and the permission may be changed to blocked during
-  // these filterings. See also the initialization in the constructor and
-  // comments on that.
-  bool IsDeviceAudioCaptureRequestedAndAllowed() const;
-  bool IsDeviceVideoCaptureRequestedAndAllowed() const;
+  // Returns the content setting that should apply given an old content setting
+  // and a user decision that has been made. If a user isn't being asked for one
+  // of audio/video then we shouldn't change that setting, even if they accept
+  // the dialog.
+  ContentSetting GetNewSetting(ContentSetting old_setting,
+                               ContentSetting user_decision) const;
 
-  // Returns true if media capture device is allowed to be used. This could
-  // return false when tab goes to background.
-  bool IsCaptureDeviceRequestAllowed() const;
+  // Returns true if clicking allow on the dialog should give access to the
+  // requested devices.
+  bool IsUserAcceptAllowed() const;
+
+  // The audio/video content settings BEFORE the user clicks accept/deny.
+  ContentSetting old_audio_setting_;
+  ContentSetting old_video_setting_;
 
   content::WebContents* web_contents_;
 
@@ -147,12 +113,6 @@ class MediaStreamDevicesController : public PermissionBubbleRequest {
   // audio/video devices was granted or not.
   content::MediaResponseCallback callback_;
 
-  // Holds the requested media types and the permission for each type. It is
-  // passed to the tab specific content settings when the permissions have been
-  // resolved. Currently only used by MEDIA_DEVICE_AUDIO_CAPTURE and
-  // MEDIA_DEVICE_VIDEO_CAPTURE since those are the only types that require
-  // updates in the settings.
-  MediaStreamTypeSettingsMap request_permissions_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDevicesController);
 };
