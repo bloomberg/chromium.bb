@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
@@ -151,14 +152,16 @@ class ChromeContentRulesRegistry
   void EvaluateConditionsForAllTabs();
 
   using ExtensionRuleIdPair = std::pair<const Extension*, std::string>;
-  using URLMatcherIdToRule = std::map<url_matcher::URLMatcherConditionSet::ID,
-                                      const DeclarativeContentRule*>;
+  using RuleAndConditionForURLMatcherId =
+      std::map<url_matcher::URLMatcherConditionSet::ID,
+               std::pair<const DeclarativeContentRule*,
+                         const ContentCondition*>>;
   using RulesMap = std::map<ExtensionRuleIdPair,
                             linked_ptr<const DeclarativeContentRule>>;
 
-  // Map that tells us which ContentRules may match under the condition that
-  // the URLMatcherConditionSet::ID was returned by the |url_matcher_|.
-  URLMatcherIdToRule match_id_to_rule_;
+  // Map that tells us which DeclarativeContentRules and ContentConditions may
+  // match for a URLMatcherConditionSet::ID returned by the |url_matcher_|.
+  RuleAndConditionForURLMatcherId rule_and_conditions_for_match_id_;
 
   RulesMap content_rules_;
 

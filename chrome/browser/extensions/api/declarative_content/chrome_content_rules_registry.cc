@@ -29,65 +29,47 @@ namespace extensions {
 
 namespace {
 
-// Factory method that creates a DeclarativeContentConditionSet for |extension|
-// according to the JSON array |conditions| passed by the extension API. Sets
-// |error| and returns NULL in case of an error.
-scoped_ptr<DeclarativeContentConditionSet> CreateConditionSet(
+// Factory method that creates DeclarativeContentConditions for |extension|
+// according to the JSON array |condition_values| passed by the extension
+// API. Sets |error| in case of an error.
+void CreateConditions(
     const Extension* extension,
     url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
     const std::vector<linked_ptr<base::Value>>& condition_values,
+    DeclarativeContentConditions* conditions,
     std::string* error) {
-  DeclarativeContentConditionSet::Conditions result;
+  DeclarativeContentConditions created_conditions;
 
   for (const linked_ptr<base::Value>& value : condition_values) {
-    CHECK(value.get());
     scoped_ptr<ContentCondition> condition = ContentCondition::Create(
         extension, url_matcher_condition_factory, *value, error);
     if (!error->empty())
-      return scoped_ptr<DeclarativeContentConditionSet>();
-    result.push_back(make_linked_ptr(condition.release()));
+      return;
+    created_conditions.push_back(make_linked_ptr(condition.release()));
   }
 
-  DeclarativeContentConditionSet::URLMatcherIdToCondition match_id_to_condition;
-  std::vector<const ContentCondition*> conditions_without_urls;
-  url_matcher::URLMatcherConditionSet::Vector condition_sets;
-
-  for (const linked_ptr<const ContentCondition>& condition : result) {
-    condition_sets.clear();
-    condition->GetURLMatcherConditionSets(&condition_sets);
-    if (condition_sets.empty()) {
-      conditions_without_urls.push_back(condition.get());
-    } else {
-      for (const scoped_refptr<url_matcher::URLMatcherConditionSet>& match_set :
-           condition_sets)
-        match_id_to_condition[match_set->id()] = condition.get();
-    }
-  }
-
-  return make_scoped_ptr(new DeclarativeContentConditionSet(
-      result, match_id_to_condition, conditions_without_urls));
+  created_conditions.swap(*conditions);
 }
 
-// Factory method that instantiates a DeclarativeContentActionSet for
-// |extension| according to |actions| which represents the array of actions
-// received from the extension API.
-scoped_ptr<DeclarativeContentActionSet> CreateActionSet(
-    content::BrowserContext* browser_context,
-    const Extension* extension,
-    const std::vector<linked_ptr<base::Value>>& action_values,
-    std::string* error) {
-  DeclarativeContentActionSet result;
+// Factory method that creates DeclarativeContentActions for |extension|
+// according to |actions| which represents the array of actions received from
+// the extension API.
+void CreateActions(content::BrowserContext* browser_context,
+                   const Extension* extension,
+                   const std::vector<linked_ptr<base::Value>>& action_values,
+                   DeclarativeContentActions* actions,
+                   std::string* error) {
+  DeclarativeContentActions created_actions;
 
   for (const linked_ptr<base::Value>& value : action_values) {
-    CHECK(value.get());
     scoped_refptr<const ContentAction> action =
         ContentAction::Create(browser_context, extension, *value, error);
     if (!error->empty())
-      return scoped_ptr<DeclarativeContentActionSet>();
-    result.push_back(action);
+      return;
+    created_actions.push_back(action);
   }
 
-  return make_scoped_ptr(new DeclarativeContentActionSet(result));
+  created_actions.swap(*actions);
 }
 
 // Creates a DeclarativeContentRule for |extension| given a json definition.
@@ -100,25 +82,27 @@ scoped_ptr<DeclarativeContentRule> CreateRule(
     url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
     content::BrowserContext* browser_context,
     const Extension* extension,
-    const core_api::events::Rule& rule,
+    const core_api::events::Rule& api_rule,
     std::string* error) {
-  scoped_ptr<DeclarativeContentConditionSet> conditions =
-      CreateConditionSet(extension, url_matcher_condition_factory,
-                         rule.conditions, error);
-  if (!error->empty())
-    return scoped_ptr<DeclarativeContentRule>();
-  CHECK(conditions.get());
+  scoped_ptr<DeclarativeContentRule> rule(new DeclarativeContentRule);
 
-  scoped_ptr<DeclarativeContentActionSet> actions =
-      CreateActionSet(browser_context, extension, rule.actions, error);
+  rule->extension = extension;
+
+  CreateConditions(extension, url_matcher_condition_factory,
+                   api_rule.conditions, &rule->conditions, error);
   if (!error->empty())
     return scoped_ptr<DeclarativeContentRule>();
 
-  // Note: the rule may contain tags, but these are ignored.
+  CreateActions(browser_context, extension, api_rule.actions, &rule->actions,
+                error);
+  if (!error->empty())
+    return scoped_ptr<DeclarativeContentRule>();
 
-  return scoped_ptr<DeclarativeContentRule>(
-      new DeclarativeContentRule(extension, conditions.Pass(), actions.Pass(),
-                                 *rule.priority));
+  rule->priority = *api_rule.priority;
+
+  // Note: |api_rule| may contain tags, but these are ignored.
+
+  return rule;
 }
 
 }  // namespace
@@ -261,16 +245,20 @@ bool ChromeContentRulesRegistry::ManagingRulesForBrowserContext(
 std::set<const DeclarativeContentRule*> ChromeContentRulesRegistry::GetMatches(
     const RendererContentMatchData& renderer_data,
     bool is_incognito_renderer) const {
-  std::set<const DeclarativeContentRule*> result;
+  std::set<const DeclarativeContentRule*> matching_rules;
 
-  // Then we need to check for each of these, whether the other
-  // attributes are also fulfilled.
+  // First get the (rule, condition) pairs that have URL matches. Then for
+  // those, evaluate whether all the sub-conditions are fulfilled. Since a rule
+  // matches if *any* of its conditions match, immediately record the rule
+  // as matching if all the sub-conditions are fulfilled.
   for (URLMatcherConditionSet::ID url_match : renderer_data.page_url_matches) {
-    URLMatcherIdToRule::const_iterator rule_iter =
-        match_id_to_rule_.find(url_match);
-    CHECK(rule_iter != match_id_to_rule_.end());
+    RuleAndConditionForURLMatcherId::const_iterator rule_condition_iter =
+        rule_and_conditions_for_match_id_.find(url_match);
+    CHECK(rule_condition_iter != rule_and_conditions_for_match_id_.end());
 
-    const DeclarativeContentRule* rule = rule_iter->second;
+    const std::pair<const DeclarativeContentRule*, const ContentCondition*>&
+        rule_condition_pair = rule_condition_iter->second;
+    const DeclarativeContentRule* rule = rule_condition_pair.first;
     if (is_incognito_renderer) {
       if (!util::IsIncognitoEnabled(rule->extension->id(), browser_context()))
         continue;
@@ -293,10 +281,11 @@ std::set<const DeclarativeContentRule*> ChromeContentRulesRegistry::GetMatches(
       }
     }
 
-    if (rule->conditions->IsFulfilled(url_match, renderer_data))
-      result.insert(rule);
+    const ContentCondition* condition = rule_condition_pair.second;
+    if (condition->IsFulfilled(renderer_data))
+      matching_rules.insert(rule);
   }
-  return result;
+  return matching_rules;
 }
 
 std::string ChromeContentRulesRegistry::AddRulesImpl(
@@ -337,11 +326,15 @@ std::string ChromeContentRulesRegistry::AddRulesImpl(
   for (const RulesMap::value_type& rule_id_rule_pair : new_content_rules) {
     const linked_ptr<const DeclarativeContentRule>& rule =
         rule_id_rule_pair.second;
-    URLMatcherConditionSet::Vector url_condition_sets;
-    rule->conditions->GetURLMatcherConditionSets(&url_condition_sets);
-    for (const scoped_refptr<URLMatcherConditionSet>& condition_set :
-         url_condition_sets) {
-      match_id_to_rule_[condition_set->id()] = rule.get();
+    for (const linked_ptr<const ContentCondition>& condition :
+             rule->conditions) {
+      URLMatcherConditionSet::Vector url_condition_sets;
+      condition->GetURLMatcherConditionSets(&url_condition_sets);
+      for (const scoped_refptr<URLMatcherConditionSet>& condition_set :
+               url_condition_sets) {
+        rule_and_conditions_for_match_id_[condition_set->id()] =
+            std::make_pair(rule.get(), condition.get());
+      }
     }
   }
 
@@ -350,7 +343,10 @@ std::string ChromeContentRulesRegistry::AddRulesImpl(
   for (const RulesMap::value_type& rule_id_rule_pair : new_content_rules) {
     const linked_ptr<const DeclarativeContentRule>& rule =
         rule_id_rule_pair.second;
-    rule->conditions->GetURLMatcherConditionSets(&all_new_condition_sets);
+    for (const linked_ptr<const ContentCondition>& condition :
+             rule->conditions) {
+      condition->GetURLMatcherConditionSets(&all_new_condition_sets);
+    }
   }
   page_url_condition_tracker_.AddConditionSets(
       all_new_condition_sets);
@@ -382,11 +378,14 @@ std::string ChromeContentRulesRegistry::RemoveRulesImpl(
     // Remove all triggers but collect their IDs.
     URLMatcherConditionSet::Vector condition_sets;
     const DeclarativeContentRule* rule = content_rules_entry->second.get();
-    rule->conditions->GetURLMatcherConditionSets(&condition_sets);
+    for (const linked_ptr<const ContentCondition>& condition :
+             rule->conditions) {
+      condition->GetURLMatcherConditionSets(&condition_sets);
+    }
     for (const scoped_refptr<URLMatcherConditionSet>& condition_set :
          condition_sets) {
       condition_set_ids_to_remove.push_back(condition_set->id());
-      match_id_to_rule_.erase(condition_set->id());
+      rule_and_conditions_for_match_id_.erase(condition_set->id());
     }
 
     // Remove the DeclarativeContentRule from active_rules_.
@@ -395,7 +394,7 @@ std::string ChromeContentRulesRegistry::RemoveRulesImpl(
         ContentAction::ApplyInfo apply_info =
             {rule->extension, browser_context(), tab_rules_pair.first,
              rule->priority};
-        for (const scoped_refptr<const ContentAction>& action : *rule->actions)
+        for (const scoped_refptr<const ContentAction>& action : rule->actions)
           action->Revert(apply_info);
         tab_rules_pair.second.erase(rule);
       }
@@ -430,9 +429,9 @@ std::string ChromeContentRulesRegistry::RemoveAllRulesImpl(
 void ChromeContentRulesRegistry::UpdateCssSelectorsFromRules() {
   std::set<std::string> css_selectors;  // We rely on this being sorted.
   for (const RulesMap::value_type& id_rule_pair : content_rules_) {
-    const DeclarativeContentRule& rule = *id_rule_pair.second;
+    const DeclarativeContentRule* rule = id_rule_pair.second.get();
     for (const linked_ptr<const ContentCondition>& condition :
-         *rule.conditions) {
+             rule->conditions) {
       const std::vector<std::string>& condition_css_selectors =
           condition->css_selectors();
       css_selectors.insert(condition_css_selectors.begin(),
@@ -462,10 +461,10 @@ void ChromeContentRulesRegistry::EvaluateConditionsForTab(
     ContentAction::ApplyInfo apply_info =
         {rule->extension, browser_context(), tab, rule->priority};
     if (!ContainsKey(prev_matching_rules, rule)) {
-      for (const scoped_refptr<const ContentAction>& action : *rule->actions)
+      for (const scoped_refptr<const ContentAction>& action : rule->actions)
         action->Apply(apply_info);
     } else {
-      for (const scoped_refptr<const ContentAction>& action : *rule->actions)
+      for (const scoped_refptr<const ContentAction>& action : rule->actions)
         action->Reapply(apply_info);
     }
   }
@@ -473,7 +472,7 @@ void ChromeContentRulesRegistry::EvaluateConditionsForTab(
     if (!ContainsKey(matching_rules, rule)) {
       ContentAction::ApplyInfo apply_info =
           {rule->extension, browser_context(), tab, rule->priority};
-      for (const scoped_refptr<const ContentAction>& action : *rule->actions)
+      for (const scoped_refptr<const ContentAction>& action : rule->actions)
         action->Revert(apply_info);
     }
   }
@@ -485,7 +484,7 @@ void ChromeContentRulesRegistry::EvaluateConditionsForTab(
 }
 
 bool ChromeContentRulesRegistry::IsEmpty() const {
-  return match_id_to_rule_.empty() && content_rules_.empty() &&
+  return rule_and_conditions_for_match_id_.empty() && content_rules_.empty() &&
          page_url_condition_tracker_.IsEmpty();
 }
 

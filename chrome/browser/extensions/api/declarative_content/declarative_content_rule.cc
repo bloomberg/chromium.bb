@@ -6,15 +6,9 @@
 
 namespace extensions {
 
-DeclarativeContentRule::DeclarativeContentRule(
-    const Extension* extension,
-    scoped_ptr<DeclarativeContentConditionSet> conditions,
-    scoped_ptr<DeclarativeContentActionSet> actions,
-    int priority)
-    : extension(extension),
-      conditions(conditions.Pass()),
-      actions(actions.Pass()),
-      priority(priority) {
+DeclarativeContentRule::DeclarativeContentRule()
+    : extension(nullptr),
+      priority(0) {
 }
 
 DeclarativeContentRule::~DeclarativeContentRule() {}
