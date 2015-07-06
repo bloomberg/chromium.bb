@@ -928,7 +928,6 @@ body.check-select .breadcrumbs {
   font-weight: bold;
   min-width: 0;
   padding: 0 9px;
-  text-overflow: ellipsis;
   text-transform: none;
   white-space: nowrap;
 }
@@ -942,7 +941,10 @@ body.check-select .breadcrumbs {
 }
 
 .breadcrumbs .breadcrumb-path > .name {
+  overflow: hidden;
   position: relative;
+  text-align: initial;
+  text-overflow: ellipsis;
   z-index: 1;
 }
 
