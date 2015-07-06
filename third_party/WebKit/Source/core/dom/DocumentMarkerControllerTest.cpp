@@ -79,7 +79,7 @@ void DocumentMarkerControllerTest::markNodeContents(PassRefPtrWillBeRawPtr<Node>
     // DocumentMarkerControllerTest::addMarker(), needs them.
     document().updateLayout();
     RefPtrWillBeRawPtr<Range> range = rangeOfContents(node.get());
-    markerController().addMarker(range.get(), DocumentMarker::Spelling);
+    markerController().addMarker(range->startPosition(), range->endPosition(), DocumentMarker::Spelling);
 }
 
 void DocumentMarkerControllerTest::setBodyInnerHTML(const char* bodyContent)

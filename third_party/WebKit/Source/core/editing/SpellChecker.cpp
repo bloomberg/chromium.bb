@@ -622,22 +622,28 @@ void SpellChecker::markAndReplaceFor(PassRefPtrWillBeRawPtr<SpellCheckRequest> r
         //    "wouldn'" as misspelled right after apostrophe is typed.
         if (shouldMarkSpelling && result->decoration == TextDecorationTypeSpelling && resultLocation >= paragraph.checkingStart() && resultLocation + resultLength <= spellingRangeEndOffset && !resultEndsAtAmbiguousBoundary) {
             ASSERT(resultLength > 0 && resultLocation >= 0);
-            RefPtrWillBeRawPtr<Range> misspellingRange = paragraph.subrange(resultLocation, resultLength);
-            misspellingRange->startContainer()->document().markers().addMarker(misspellingRange.get(), DocumentMarker::Spelling, result->replacement, result->hash);
+            Position misspellingStart = paragraph.paragraphRange()->startPosition();
+            Position misspellingEnd = paragraph.paragraphRange()->endPosition();
+            TextIterator::subrange(misspellingStart, misspellingEnd, resultLocation, resultLength);
+            frame().document()->markers().addMarker(misspellingStart, misspellingEnd, DocumentMarker::Spelling, result->replacement, result->hash);
         } else if (shouldMarkGrammar && result->decoration == TextDecorationTypeGrammar && paragraph.checkingRangeCovers(resultLocation, resultLength)) {
             ASSERT(resultLength > 0 && resultLocation >= 0);
             for (unsigned j = 0; j < result->details.size(); j++) {
                 const GrammarDetail* detail = &result->details[j];
                 ASSERT(detail->length > 0 && detail->location >= 0);
                 if (paragraph.checkingRangeCovers(resultLocation + detail->location, detail->length)) {
-                    RefPtrWillBeRawPtr<Range> badGrammarRange = paragraph.subrange(resultLocation + detail->location, detail->length);
-                    badGrammarRange->startContainer()->document().markers().addMarker(badGrammarRange.get(), DocumentMarker::Grammar, detail->userDescription, result->hash);
+                    Position badGrammarStart = paragraph.paragraphRange()->startPosition();
+                    Position badGrammarEnd = paragraph.paragraphRange()->endPosition();
+                    TextIterator::subrange(badGrammarStart, badGrammarEnd, resultLocation + detail->location, detail->length);
+                    frame().document()->markers().addMarker(badGrammarStart, badGrammarEnd, DocumentMarker::Grammar, detail->userDescription, result->hash);
                 }
             }
         } else if (result->decoration == TextDecorationTypeInvisibleSpellcheck && resultLocation >= paragraph.checkingStart() && resultLocation + resultLength <= spellingRangeEndOffset) {
             ASSERT(resultLength > 0 && resultLocation >= 0);
-            RefPtrWillBeRawPtr<Range> invisibleSpellcheckRange = paragraph.subrange(resultLocation, resultLength);
-            invisibleSpellcheckRange->startContainer()->document().markers().addMarker(invisibleSpellcheckRange.get(), DocumentMarker::InvisibleSpellcheck, result->replacement, result->hash);
+            Position invisibleSpellcheckStart = paragraph.paragraphRange()->startPosition();
+            Position invisibleSpellcheckEnd = paragraph.paragraphRange()->endPosition();
+            TextIterator::subrange(invisibleSpellcheckStart, invisibleSpellcheckEnd, resultLocation, resultLength);
+            frame().document()->markers().addMarker(invisibleSpellcheckStart, invisibleSpellcheckEnd, DocumentMarker::InvisibleSpellcheck, result->replacement, result->hash);
         }
     }
 

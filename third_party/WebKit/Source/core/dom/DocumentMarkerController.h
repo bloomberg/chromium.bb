@@ -61,7 +61,6 @@ public:
     DocumentMarkerController();
 
     void clear();
-    void addMarker(Range*, DocumentMarker::MarkerType, const String& description = emptyString(), uint32_t hash = 0);
     void addMarker(const Position& start, const Position& end, DocumentMarker::MarkerType, const String& description = emptyString(), uint32_t hash = 0);
     void addTextMatchMarker(const Range*, bool activeMatch);
 

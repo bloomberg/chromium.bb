@@ -5290,9 +5290,10 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultErasesMarkers)
     NonThrowableExceptionState exceptionState;
     document->execCommand("InsertText", false, "welcome ", exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
-    document->markers().addMarker(rangeOfContents(element->toNode()).get(), DocumentMarker::Spelling);
-    document->markers().addMarker(rangeOfContents(element->toNode()).get(), DocumentMarker::Grammar);
-    document->markers().addMarker(rangeOfContents(element->toNode()).get(), DocumentMarker::InvisibleSpellcheck);
+    RefPtrWillBeRawPtr<Range> range = rangeOfContents(element->toNode());
+    document->markers().addMarker(range->startPosition(), range->endPosition(), DocumentMarker::Spelling);
+    document->markers().addMarker(range->startPosition(), range->endPosition(), DocumentMarker::Grammar);
+    document->markers().addMarker(range->startPosition(), range->endPosition(), DocumentMarker::InvisibleSpellcheck);
     EXPECT_EQ(3U, document->markers().markers().size());
 
     spellcheck.kickNoResults();

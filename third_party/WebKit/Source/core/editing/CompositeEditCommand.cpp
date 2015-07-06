@@ -526,10 +526,11 @@ void CompositeEditCommand::replaceTextInNodePreservingMarkers(PassRefPtrWillBeRa
     Vector<String> descriptions;
     copyMarkerTypesAndDescriptions(markerController.markersInRange(Range::create(document(), node.get(), offset, node.get(), offset + count).get(), DocumentMarker::AllMarkers()), types, descriptions);
     replaceTextInNode(node, offset, count, replacementText);
-    RefPtrWillBeRawPtr<Range> newRange = Range::create(document(), node.get(), offset, node.get(), offset + replacementText.length());
+    Position startPosition(node.get(), offset);
+    Position endPosition(node.get(), offset + replacementText.length());
     ASSERT(types.size() == descriptions.size());
     for (size_t i = 0; i < types.size(); ++i)
-        markerController.addMarker(newRange.get(), types[i], descriptions[i]);
+        markerController.addMarker(startPosition, endPosition, types[i], descriptions[i]);
 }
 
 Position CompositeEditCommand::positionOutsideTabSpan(const Position& pos)
