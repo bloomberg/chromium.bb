@@ -310,14 +310,9 @@ void BluetoothLowEnergyConnectionFinder::CreateGattConnection(
 void BluetoothLowEnergyConnectionFinder::CloseGattConnection(
     scoped_ptr<device::BluetoothGattConnection> gatt_connection) {
   DCHECK(gatt_connection);
-  std::string device_address = gatt_connection->GetDeviceAddress();
+
+  // Destroying the BluetoothGattConnection also disconnects it.
   gatt_connection.reset();
-  BluetoothDevice* device = adapter_->GetDevice(device_address);
-  if (device) {
-    PA_LOG(INFO) << "Disconnect from device " << device->GetAddress();
-    device->Disconnect(base::Bind(&base::DoNothing),
-                       base::Bind(&base::DoNothing));
-  }
 }
 
 scoped_ptr<Connection> BluetoothLowEnergyConnectionFinder::CreateConnection(
@@ -358,9 +353,8 @@ void BluetoothLowEnergyConnectionFinder::RestartDiscoverySessionWhenReady() {
   // |device::BluetoothDiscoverySession::Stop()|.
   // The second condition is satisfied when |OnDiscoveryStopped| is called and
   // |discovery_session_| is reset.
-  BluetoothDevice* device = GetDevice(remote_device_.bluetooth_address);
-  if ((!device || !device->IsConnected()) && !discovery_session_) {
-    DCHECK(!gatt_connection_);
+  if ((!gatt_connection_ || !gatt_connection_->IsConnected()) &&
+      !discovery_session_) {
     connection_.reset();
     connected_ = false;
     StartDiscoverySession();

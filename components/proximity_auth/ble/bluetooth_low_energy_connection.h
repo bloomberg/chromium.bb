@@ -244,7 +244,7 @@ class BluetoothLowEnergyConnection : public Connection,
   // The Bluetooth adapter over which the Bluetooth connection will be made.
   scoped_refptr<device::BluetoothAdapter> adapter_;
 
-  // Remote service the |connection_| was established with.
+  // Remote service the |gatt_connection_| was established with.
   RemoteAttribute remote_service_;
 
   // Characteristic used to send data to the remote device.
@@ -254,7 +254,7 @@ class BluetoothLowEnergyConnection : public Connection,
   RemoteAttribute from_peripheral_char_;
 
   // The GATT connection with the remote device.
-  scoped_ptr<device::BluetoothGattConnection> connection_;
+  scoped_ptr<device::BluetoothGattConnection> gatt_connection_;
 
   // The characteristics finder for remote device.
   scoped_ptr<BluetoothLowEnergyCharacteristicsFinder> characteristic_finder_;

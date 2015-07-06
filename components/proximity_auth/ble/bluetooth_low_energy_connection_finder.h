@@ -41,10 +41,6 @@ class BluetoothLowEnergyConnectionFinder
   // Finds a connection to the remote device. Only the first one is functional.
   void Find(const ConnectionCallback& connection_callback) override;
 
-  // Closes the connection and forgets the device.
-  void CloseGattConnection(
-      scoped_ptr<device::BluetoothGattConnection> gatt_connection);
-
   // proximity_auth::ConnectionObserver:
   void OnConnectionStatusChanged(Connection* connection,
                                  Connection::Status old_status,
@@ -61,6 +57,10 @@ class BluetoothLowEnergyConnectionFinder
                      device::BluetoothDevice* device) override;
 
  protected:
+  // Closes the GATT connection. Virtual for testing.
+  virtual void CloseGattConnection(
+      scoped_ptr<device::BluetoothGattConnection> gatt_connection);
+
   // Creates a proximity_auth::Connection based on |gatt_connection|. Exposed
   // for testing.
   virtual scoped_ptr<Connection> CreateConnection(

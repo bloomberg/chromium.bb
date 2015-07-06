@@ -92,10 +92,19 @@ class MockBluetoothLowEnergyConnectionFinder
     return connection_alias;
   }
 
+  MOCK_METHOD0(CloseGattConnectionProxy, void(void));
+
  protected:
   scoped_ptr<Connection> CreateConnection(
       scoped_ptr<device::BluetoothGattConnection> gatt_connection) override {
     return make_scoped_ptr(CreateConnectionProxy());
+  }
+
+  void CloseGattConnection(
+      scoped_ptr<device::BluetoothGattConnection> gatt_connection) override {
+    BluetoothLowEnergyConnectionFinder::CloseGattConnection(
+        gatt_connection.Pass());
+    CloseGattConnectionProxy();
   }
 
  private:
@@ -324,9 +333,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   run_loop.RunUntilIdle();
 
   // The second device should be forgetten.
-  EXPECT_CALL(*adapter_, GetDevice(std::string(kOtherBluetoothAddress)))
-      .WillOnce(Return(&other_device));
-  EXPECT_CALL(other_device, Disconnect(_, _));
+  EXPECT_CALL(connection_finder, CloseGattConnectionProxy());
   other_gatt_connection_callback.Run(
       make_scoped_ptr(new NiceMock<device::MockBluetoothGattConnection>(
           kOtherBluetoothAddress)));

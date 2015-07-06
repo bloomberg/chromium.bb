@@ -53,7 +53,7 @@ BluetoothLowEnergyConnection::BluetoothLowEnergyConnection(
       remote_service_({remote_service_uuid, ""}),
       to_peripheral_char_({to_peripheral_char_uuid, ""}),
       from_peripheral_char_({from_peripheral_char_uuid, ""}),
-      connection_(gatt_connection.Pass()),
+      gatt_connection_(gatt_connection.Pass()),
       sub_status_(SubStatus::DISCONNECTED),
       receiving_bytes_(false),
       write_remote_characteristic_pending_(false),
@@ -76,8 +76,8 @@ BluetoothLowEnergyConnection::~BluetoothLowEnergyConnection() {
 }
 
 void BluetoothLowEnergyConnection::Connect() {
-  if (connection_ && connection_->IsConnected()) {
-    OnGattConnectionCreated(connection_.Pass());
+  if (gatt_connection_ && gatt_connection_->IsConnected()) {
+    OnGattConnectionCreated(gatt_connection_.Pass());
     return;
   }
 
@@ -97,17 +97,12 @@ void BluetoothLowEnergyConnection::Disconnect() {
     ClearWriteRequestsQueue();
     StopNotifySession();
     SetSubStatus(SubStatus::DISCONNECTED);
-    if (connection_) {
-      connection_.reset();
-      BluetoothDevice* device = GetRemoteDevice();
-      if (device) {
-        PA_LOG(INFO) << "Disconnect from device " << device->GetAddress();
-        device->Disconnect(
-            base::Bind(&BluetoothLowEnergyConnection::OnDisconnected,
-                       weak_ptr_factory_.GetWeakPtr()),
-            base::Bind(&BluetoothLowEnergyConnection::OnDisconnectError,
-                       weak_ptr_factory_.GetWeakPtr()));
-      }
+    if (gatt_connection_) {
+      PA_LOG(INFO) << "Disconnect from device "
+                   << gatt_connection_->GetDeviceAddress();
+
+      // Destroying BluetoothGattConnection also disconnects it.
+      gatt_connection_.reset();
     }
   }
 }
@@ -273,7 +268,7 @@ void BluetoothLowEnergyConnection::OnCreateGattConnectionError(
 
 void BluetoothLowEnergyConnection::OnGattConnectionCreated(
     scoped_ptr<device::BluetoothGattConnection> gatt_connection) {
-  connection_ = gatt_connection.Pass();
+  gatt_connection_ = gatt_connection.Pass();
   SetSubStatus(SubStatus::WAITING_CHARACTERISTICS);
   characteristic_finder_.reset(CreateCharacteristicsFinder(
       base::Bind(&BluetoothLowEnergyConnection::OnCharacteristicsFound,
