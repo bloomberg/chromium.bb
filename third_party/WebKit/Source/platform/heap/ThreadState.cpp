@@ -255,7 +255,6 @@ void ThreadState::cleanup()
         // if we have it is probably a bug so adding a debug ASSERT to catch this.
         ASSERT(!currentCount);
         // All of pre-finalizers should be consumed.
-        ASSERT(m_preFinalizers.isEmpty());
         ASSERT(m_orderedPreFinalizers.isEmpty());
         RELEASE_ASSERT(gcState() == NoGCScheduled);
 
@@ -1304,23 +1303,17 @@ void ThreadState::invokePreFinalizers()
     if (isMainThread())
         ScriptForbiddenScope::enter();
 
-    ASSERT(m_preFinalizers.size() == m_orderedPreFinalizers.size());
     SweepForbiddenScope forbiddenScope(this);
-    Vector<PreFinalizer*> deadPreFinalizers;
+    Vector<PreFinalizer> deadPreFinalizers;
     // Call the pre-finalizers in the reverse order in which they
     // are registered.
     for (auto it = m_orderedPreFinalizers.rbegin(); it != m_orderedPreFinalizers.rend(); ++it) {
-        PreFinalizer* preFinalizer = it->get();
-        if (!(preFinalizer->callback())(preFinalizer->object()))
+        if (!(it->second)(it->first))
             continue;
-        deadPreFinalizers.append(preFinalizer);
-        auto removeIt = m_preFinalizers.find(std::pair<void*, PreFinalizerCallback>(preFinalizer->object(), preFinalizer->callback()));
-        ASSERT(removeIt != m_preFinalizers.end());
-        m_preFinalizers.remove(removeIt);
+        deadPreFinalizers.append(*it);
     }
     // FIXME: removeAll is inefficient.  It can shrink repeatedly.
     m_orderedPreFinalizers.removeAll(deadPreFinalizers);
-    ASSERT(m_preFinalizers.size() == m_orderedPreFinalizers.size());
 
     if (isMainThread())
         ScriptForbiddenScope::exit();

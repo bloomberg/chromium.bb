@@ -186,6 +186,8 @@ typedef HashMap<String, AgeCounts> ClassAgeCountsMap;
 class PLATFORM_EXPORT ThreadState {
     WTF_MAKE_NONCOPYABLE(ThreadState);
 public:
+    typedef std::pair<void*, PreFinalizerCallback> PreFinalizer;
+
     // When garbage collecting we need to know whether or not there
     // can be pointers to Blink GC managed objects on the stack for
     // each thread. When threads reach a safe point they record
@@ -255,20 +257,6 @@ public:
         }
     private:
         ThreadState* m_state;
-    };
-
-    class PreFinalizer final {
-    public:
-        PreFinalizer(void* object, PreFinalizerCallback callback)
-            : m_object(object)
-            , m_callback(callback)
-        {
-        }
-        void* object() const { return m_object; }
-        PreFinalizerCallback callback() const { return m_callback; }
-    private:
-        void* m_object;
-        PreFinalizerCallback m_callback;
     };
 
     // The set of ThreadStates for all threads attached to the Blink
@@ -561,11 +549,8 @@ public:
         static_assert(sizeof(&T::invokePreFinalizer) > 0, "USING_PRE_FINALIZER(T) must be defined.");
         ASSERT(checkThread());
         ASSERT(!sweepForbidden());
-        ASSERT(m_preFinalizers.size() == m_orderedPreFinalizers.size());
-        OwnPtr<PreFinalizer> preFinalizer = adoptPtr(new PreFinalizer(self, T::invokePreFinalizer));
-        m_preFinalizers.add(std::pair<void*, PreFinalizerCallback>(self, &T::invokePreFinalizer), preFinalizer.get());
-        m_orderedPreFinalizers.add(preFinalizer.release());
-        ASSERT(m_preFinalizers.size() == m_orderedPreFinalizers.size());
+        ASSERT(!m_orderedPreFinalizers.contains(PreFinalizer(self, T::invokePreFinalizer)));
+        m_orderedPreFinalizers.add(PreFinalizer(self, T::invokePreFinalizer));
     }
 
     // Unregister the pre-finalizer for the |self| object.
@@ -577,14 +562,8 @@ public:
         // Ignore pre-finalizers called during pre-finalizers or destructors.
         if (sweepForbidden())
             return;
-        ASSERT(m_preFinalizers.size() == m_orderedPreFinalizers.size());
-        auto it = m_preFinalizers.find(std::pair<void*, PreFinalizerCallback>(self, &T::invokePreFinalizer));
-        ASSERT(it != m_preFinalizers.end());
-        PreFinalizer* preFinalizer = it->value;
-        m_preFinalizers.remove(it);
-        ASSERT(m_orderedPreFinalizers.contains(preFinalizer));
-        m_orderedPreFinalizers.remove(preFinalizer);
-        ASSERT(m_preFinalizers.size() == m_orderedPreFinalizers.size());
+        ASSERT(m_orderedPreFinalizers.contains(PreFinalizer(self, T::invokePreFinalizer)));
+        m_orderedPreFinalizers.remove(PreFinalizer(self, &T::invokePreFinalizer));
     }
 
     Vector<PageMemoryRegion*>& allocatedRegionsSinceLastGC() { return m_allocatedRegionsSinceLastGC; }
@@ -776,10 +755,7 @@ private:
     // Pre-finalizers are called in the reverse order in which they are
     // registered by the constructors (including constructors of Mixin objects)
     // for an object, by processing the m_orderedPreFinalizers back-to-front.
-    ListHashSet<OwnPtr<PreFinalizer>> m_orderedPreFinalizers;
-    // m_preFinalizers is a mapping from pre-finalizers to PreFinalizers.
-    // This mapping is necessary to unregister a given pre-finalizer with O(1).
-    HashMap<std::pair<void*, PreFinalizerCallback>, PreFinalizer*> m_preFinalizers;
+    ListHashSet<PreFinalizer> m_orderedPreFinalizers;
 
     v8::Isolate* m_isolate;
     void (*m_traceDOMWrappers)(v8::Isolate*, Visitor*);
