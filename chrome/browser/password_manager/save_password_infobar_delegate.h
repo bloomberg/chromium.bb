@@ -64,6 +64,7 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
  protected:
   // Makes a ctor available in tests.
   SavePasswordInfoBarDelegate(
+      content::WebContents* web_contents,
       scoped_ptr<password_manager::PasswordFormManager> form_to_save,
       const std::string& uma_histogram_suffix,
       password_manager::CredentialSourceType source_type,

@@ -526,6 +526,8 @@
       'browser/ui/android/infobars/generated_password_saved_infobar.h',
       'browser/ui/auto_login_infobar_delegate.cc',
       'browser/ui/auto_login_infobar_delegate.h',
+      'browser/ui/elide_url.cc',
+      'browser/ui/elide_url.h',
       'browser/ui/screen_capture_notification_ui_stub.cc',
     ],
     # Cross-platform ash sources.

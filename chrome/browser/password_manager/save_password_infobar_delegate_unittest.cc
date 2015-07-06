@@ -9,6 +9,7 @@
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "content/public/browser/web_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,9 +36,11 @@ class MockPasswordFormManager : public password_manager::PasswordFormManager {
 class TestSavePasswordInfobarDelegate : public SavePasswordInfoBarDelegate {
  public:
   TestSavePasswordInfobarDelegate(
+      content::WebContents* web_contents,
       scoped_ptr<password_manager::PasswordFormManager> form_to_save,
       password_manager::CredentialSourceType source_type)
-      : SavePasswordInfoBarDelegate(form_to_save.Pass(),
+      : SavePasswordInfoBarDelegate(web_contents,
+                                    form_to_save.Pass(),
                                     std::string(),
                                     source_type,
                                     true /* is_smartlock_branding_enabled */) {}
@@ -86,7 +89,8 @@ SavePasswordInfoBarDelegateTest::CreateDelegate(
     scoped_ptr<password_manager::PasswordFormManager> password_form_manager,
     password_manager::CredentialSourceType type) {
   scoped_ptr<ConfirmInfoBarDelegate> delegate(
-      new TestSavePasswordInfobarDelegate(password_form_manager.Pass(), type));
+      new TestSavePasswordInfobarDelegate(web_contents(),
+                                          password_form_manager.Pass(), type));
   return delegate.Pass();
 }
 

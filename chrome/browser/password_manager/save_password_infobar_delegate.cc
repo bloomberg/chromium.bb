@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
@@ -37,12 +38,13 @@ void SavePasswordInfoBarDelegate::Create(
     password_manager::CredentialSourceType source_type) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  InfoBarService::FromWebContents(web_contents)->AddInfoBar(
-      CreateSavePasswordInfoBar(make_scoped_ptr(
-      new SavePasswordInfoBarDelegate(
-          form_to_save.Pass(), uma_histogram_suffix, source_type,
-          password_bubble_experiment::IsSmartLockBrandingEnabled(
-              ProfileSyncServiceFactory::GetForProfile(profile))))));
+  InfoBarService::FromWebContents(web_contents)
+      ->AddInfoBar(CreateSavePasswordInfoBar(
+          make_scoped_ptr(new SavePasswordInfoBarDelegate(
+              web_contents, form_to_save.Pass(), uma_histogram_suffix,
+              source_type,
+              password_bubble_experiment::IsSmartLockBrandingEnabled(
+                  ProfileSyncServiceFactory::GetForProfile(profile))))));
 }
 
 SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
@@ -71,6 +73,7 @@ SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
 }
 
 SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
+    content::WebContents* web_contents,
     scoped_ptr<password_manager::PasswordFormManager> form_to_save,
     const std::string& uma_histogram_suffix,
     password_manager::CredentialSourceType source_type,
@@ -86,17 +89,9 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
         true);
   }
   title_link_range_ = gfx::Range();
-  if (is_smartlock_branding_enabled) {
-    size_t offset = 0;
-    base::string16 title_link =
-        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK);
-    title_ = l10n_util::GetStringFUTF16(IDS_SAVE_PASSWORD, title_link, &offset);
-    title_link_range_ = gfx::Range(offset, offset + title_link.length());
-  } else {
-    title_ = l10n_util::GetStringFUTF16(
-        IDS_SAVE_PASSWORD,
-        l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_TITLE_BRAND));
-  }
+  GetSavePasswordDialogTitleTextAndLinkRange(
+      web_contents->GetVisibleURL(), form_to_save_->observed_form().origin,
+      is_smartlock_branding_enabled, &title_, &title_link_range_);
 }
 
 bool SavePasswordInfoBarDelegate::ShouldShowMoreButton() {

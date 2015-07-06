@@ -15775,6 +15775,9 @@ After you create a new supervised user, you can manage their settings at any tim
       <message name="IDS_CERTIFICATE_CHAIN_ERROR_DESCRIPTION_FORMAT" desc="Description of a security problem with the site's certificate.">
         There are issues with the site's certificate chain (<ph name="CERT_ERROR_DESCRIPTION">$1<ex>net::ERR_CERT_AUTHORITY_INVALID</ex></ph>).
       </message>
+      <message name="IDS_SAVE_PASSWORD_TITLE" desc="The title of the save passwo rd bubble when a password can be saved.">
+        Do you want <ph name="PASSWORD_MANAGER_BRAND">$1<ex>Google Chrome</ex></ph> to save your password for <ph name="ORIGIN">$2<ex>example.com</ex></ph>?
+      </message>
 
     </messages>
   </release>

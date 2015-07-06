@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
+#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -338,16 +339,10 @@ void ManagePasswordsBubbleModel::UpdatePendingStateTitle() {
   if (never_save_passwords_) {
     title_ = l10n_util::GetStringUTF16(
         IDS_MANAGE_PASSWORDS_BLACKLIST_CONFIRMATION_TITLE);
-  } else if (IsSmartLockBrandingEnabled(GetProfile())) {
-    // "Google Smart Lock" should be a hyperlink.
-    base::string16 brand_link =
-        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK);
-    size_t offset = 0;
-    title_ = l10n_util::GetStringFUTF16(IDS_SAVE_PASSWORD, brand_link, &offset);
-    title_brand_link_range_ = gfx::Range(offset, offset + brand_link.length());
   } else {
-    base::string16 brand_link =
-        l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_TITLE_BRAND);
-    title_ = l10n_util::GetStringFUTF16(IDS_SAVE_PASSWORD, brand_link);
+    GetSavePasswordDialogTitleTextAndLinkRange(
+        web_contents()->GetVisibleURL(), origin(),
+        IsSmartLockBrandingEnabled(GetProfile()), &title_,
+        &title_brand_link_range_);
   }
 }
