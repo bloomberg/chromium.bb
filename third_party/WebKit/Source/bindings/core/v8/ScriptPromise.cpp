@@ -40,18 +40,6 @@
 
 namespace blink {
 
-namespace {
-
-struct WithScriptState {
-    // Used by ToV8Value<WithScriptState, ScriptState*>.
-    static v8::Local<v8::Object> getCreationContext(ScriptState* scriptState)
-    {
-        return scriptState->context()->Global();
-    }
-};
-
-} // namespace
-
 unsigned ScriptPromise::s_instanceCount = 0;
 
 ScriptPromise::InternalResolver::InternalResolver(ScriptState* scriptState)
