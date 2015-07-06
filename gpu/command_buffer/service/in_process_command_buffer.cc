@@ -391,7 +391,7 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   DCHECK(params.size.width() >= 0 && params.size.height() >= 0);
 
   TransferBufferManager* manager = new TransferBufferManager();
-  transfer_buffer_manager_.reset(manager);
+  transfer_buffer_manager_ = manager;
   manager->Initialize();
 
   scoped_ptr<CommandBufferService> command_buffer(

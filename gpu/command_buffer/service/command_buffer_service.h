@@ -102,7 +102,7 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
   base::Closure put_offset_change_callback_;
   GetBufferChangedCallback get_buffer_change_callback_;
   base::Closure parse_error_callback_;
-  TransferBufferManagerInterface* transfer_buffer_manager_;
+  scoped_refptr<TransferBufferManagerInterface> transfer_buffer_manager_;
   int32 token_;
   uint32 generation_;
   error::Error error_;

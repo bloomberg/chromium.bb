@@ -45,7 +45,7 @@ class BaseFencedAllocatorTest : public testing::Test {
 
     {
       TransferBufferManager* manager = new TransferBufferManager();
-      transfer_buffer_manager_.reset(manager);
+      transfer_buffer_manager_ = manager;
       EXPECT_TRUE(manager->Initialize());
     }
     command_buffer_.reset(
@@ -70,7 +70,7 @@ class BaseFencedAllocatorTest : public testing::Test {
   }
 
   scoped_ptr<AsyncAPIMock> api_mock_;
-  scoped_ptr<TransferBufferManagerInterface> transfer_buffer_manager_;
+  scoped_refptr<TransferBufferManagerInterface> transfer_buffer_manager_;
   scoped_ptr<CommandBufferService> command_buffer_;
   scoped_ptr<GpuScheduler> gpu_scheduler_;
   scoped_ptr<CommandBufferHelper> helper_;

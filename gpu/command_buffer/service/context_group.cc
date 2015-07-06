@@ -66,7 +66,7 @@ ContextGroup::ContextGroup(
     if (!feature_info.get())
       feature_info_ = new FeatureInfo;
     TransferBufferManager* manager = new TransferBufferManager();
-    transfer_buffer_manager_.reset(manager);
+    transfer_buffer_manager_ = manager;
     manager->Initialize();
   }
 }

@@ -108,7 +108,7 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
 
   {
     gpu::TransferBufferManager* manager = new gpu::TransferBufferManager();
-    transfer_buffer_manager_.reset(manager);
+    transfer_buffer_manager_ = manager;
     manager->Initialize();
   }
   scoped_ptr<gpu::CommandBufferService> command_buffer(

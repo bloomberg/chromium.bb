@@ -11,19 +11,24 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 
 namespace gpu {
 
-class GPU_EXPORT TransferBufferManagerInterface {
+class GPU_EXPORT TransferBufferManagerInterface :
+    public base::RefCounted<TransferBufferManagerInterface> {
  public:
-  virtual ~TransferBufferManagerInterface();
-
   virtual bool RegisterTransferBuffer(int32 id,
                                       scoped_ptr<BufferBacking> buffer) = 0;
   virtual void DestroyTransferBuffer(int32 id) = 0;
   virtual scoped_refptr<Buffer> GetTransferBuffer(int32 id) = 0;
+
+ protected:
+  friend class base::RefCounted<TransferBufferManagerInterface>;
+
+  virtual ~TransferBufferManagerInterface();
 };
 
 class GPU_EXPORT TransferBufferManager

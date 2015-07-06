@@ -18,11 +18,11 @@ class TransferBufferManagerTest : public testing::Test {
  protected:
   void SetUp() override {
     TransferBufferManager* manager = new TransferBufferManager();
-    transfer_buffer_manager_.reset(manager);
+    transfer_buffer_manager_ = manager;
     ASSERT_TRUE(manager->Initialize());
   }
 
-  scoped_ptr<TransferBufferManagerInterface> transfer_buffer_manager_;
+  scoped_refptr<TransferBufferManagerInterface> transfer_buffer_manager_;
 };
 
 TEST_F(TransferBufferManagerTest, ZeroHandleMapsToNull) {
