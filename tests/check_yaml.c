@@ -328,10 +328,8 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
   count++;
   free(word);
   free(translation);
-  if (typeform)
-    free(typeform);
-  if (cursorPos)
-    free(cursorPos);
+  free(typeform);
+  free(cursorPos);
 }
 
 void
