@@ -321,7 +321,9 @@ void PerformanceBase::clearMeasures(const String& measureName)
 
 double PerformanceBase::now() const
 {
-    return 1000.0 * (monotonicallyIncreasingTime() - m_timeOrigin);
+    double nowSeconds = monotonicallyIncreasingTime() - m_timeOrigin;
+    const double resolutionSeconds = 0.000005;
+    return 1000.0 * floor(nowSeconds / resolutionSeconds) * resolutionSeconds;
 }
 
 DEFINE_TRACE(PerformanceBase)
