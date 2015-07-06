@@ -211,7 +211,7 @@ HRESULT GetJobByteCount(IBackgroundCopyJob* job,
   if (!job)
     return E_FAIL;
 
-  BG_JOB_PROGRESS job_progress = {0};
+  BG_JOB_PROGRESS job_progress = {};
   HRESULT hr = job->GetProgress(&job_progress);
   if (FAILED(hr))
     return hr;
@@ -295,7 +295,7 @@ struct JobCreationOlderThanDays
 
 bool JobCreationOlderThanDays::operator()(IBackgroundCopyJob* job,
                                           int num_days) const {
-  BG_JOB_TIMES times = {0};
+  BG_JOB_TIMES times = {};
   HRESULT hr = job->GetTimes(&times);
   if (FAILED(hr))
     return false;
