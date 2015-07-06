@@ -858,6 +858,8 @@ crbug.com/237245 [ Debug Win7 ] editing/selection/programmatic-selection-on-mac-
 
 crbug.com/453092 editing/inserting/edited-whitespace-1.html [ ImageOnlyFailure Pass ]
 
+crbug.com/502437 inspector/sources/debugger/properties-special.html [ NeedsManualRebaseline ]
+
 crbug.com/474125 [ Release SnowLeopard ] fast/css/font-face-multiple-faces.html [ ImageOnlyFailure Pass ]
 crbug.com/474125 [ Release Mavericks ] fast/css/font-face-multiple-faces.html [ ImageOnlyFailure Pass ]
 crbug.com/474125 [ Release SnowLeopard ] fast/css/font-face-remote.html [ ImageOnlyFailure Pass ]
@@ -1682,4 +1684,3 @@ crbug.com/506876 inspector/sources/debugger/live-edit-no-reveal.html [ NeedsManu
 crbug.com/506876 virtual/pointerevent/fast/events/window-onerror-06.html [ NeedsManualRebaseline ]
 crbug.com/506876 virtual/pointerevent/fast/events/window-onerror-10.html [ NeedsManualRebaseline ]
 crbug.com/506876 http/tests/websocket/multiple-connections-throttled.html [ NeedsManualRebaseline ]
-
