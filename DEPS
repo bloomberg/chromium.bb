@@ -126,7 +126,7 @@ deps = {
    Var('chromium_git') + '/chromium/blink.git' + '@' +  Var('webkit_revision'),
 
   'src/third_party/icu':
-   Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '7fe225d77f307fdbe24695179a84336ef95c1253',
+   Var('chromium_git') + '/chromium/deps/icu.git' + '@' + 'c81a1a3989c3b66fa323e9a6ee7418d7c08297af',
 
   'src/third_party/libexif/sources':
    Var('chromium_git') + '/chromium/deps/libexif/sources.git' + '@' + 'ed98343daabd7b4497f97fda972e132e6877c48a',
