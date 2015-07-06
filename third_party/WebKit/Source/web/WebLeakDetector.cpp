@@ -136,6 +136,7 @@ void WebLeakDetectorImpl::delayedReport(Timer<WebLeakDetectorImpl>*)
     result.numberOfLiveResources = Resource::instanceCount();
     result.numberOfLiveActiveDOMObjects = ActiveDOMObject::instanceCount();
     result.numberOfLiveScriptPromises = ScriptPromise::instanceCount();
+    result.numberOfLiveFrames = Frame::instanceCount();
 
     m_client->onLeakDetectionComplete(result);
 

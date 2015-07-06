@@ -65,8 +65,11 @@ int64_t generateFrameID()
 
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, frameCounter, ("Frame"));
 
+unsigned Frame::s_instanceCount = 0;
+
 Frame::~Frame()
 {
+    --s_instanceCount;
     ASSERT(!m_owner);
 #ifndef NDEBUG
     frameCounter.decrement();
@@ -295,6 +298,8 @@ Frame::Frame(FrameClient* client, FrameHost* host, FrameOwner* owner)
     , m_frameID(generateFrameID())
     , m_isLoading(false)
 {
+    ++s_instanceCount;
+
     ASSERT(page());
 
 #ifndef NDEBUG
