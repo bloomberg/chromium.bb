@@ -207,14 +207,14 @@ read_cursorPos (yaml_parser_t *parser, int len) {
 void
 read_options (yaml_parser_t *parser, int len,
 	      int *xfail, translationModes *mode,
-	      char *typeform, int **cursorPos) {
+	      char **typeform, int **cursorPos) {
   yaml_event_t event;
   char *option_name;
   int parse_error = 1;
 
   *mode = 0;
   *xfail = 0;
-  typeform = NULL;
+  *typeform = NULL;
   *cursorPos = NULL;
 
   while ((parse_error = yaml_parser_parse(parser, &event)) &&
@@ -232,7 +232,7 @@ read_options (yaml_parser_t *parser, int len,
       if (!yaml_parser_parse(parser, &event) ||
 	  (event.type != YAML_SCALAR_EVENT))
 	yaml_error(YAML_SCALAR_EVENT, &event);
-      typeform = convert_typeform(event.data.scalar.value);
+      *typeform = convert_typeform(event.data.scalar.value);
       yaml_event_delete(&event);
     } else if (!strcmp(option_name, "cursorPos")) {
       yaml_event_delete(&event);
@@ -289,7 +289,7 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
 
   if (event.type == YAML_MAPPING_START_EVENT) {
     yaml_event_delete(&event);
-    read_options(parser, my_strlen_utf8_c(word), &xfail, &mode, typeform, &cursorPos);
+    read_options(parser, my_strlen_utf8_c(word), &xfail, &mode, &typeform, &cursorPos);
 
     if (!yaml_parser_parse(parser, &event) ||
 	(event.type != YAML_SEQUENCE_END_EVENT))
