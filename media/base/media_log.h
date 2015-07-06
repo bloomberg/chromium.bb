@@ -87,7 +87,7 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
 typedef base::Callback<void(MediaLog::MediaLogLevel, const std::string&)> LogCB;
 
 // Helper class to make it easier to use LogCB or MediaLog like DVLOG().
-class LogHelper {
+class MEDIA_EXPORT LogHelper {
  public:
   LogHelper(MediaLog::MediaLogLevel level, const LogCB& log_cb);
   LogHelper(MediaLog::MediaLogLevel level,
