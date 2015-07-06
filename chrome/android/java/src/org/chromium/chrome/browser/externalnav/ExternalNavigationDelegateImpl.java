@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.util.List;
 
@@ -214,20 +215,48 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             .setNegativeButton(R.string.cancel, new OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        loadIntent(intent, referrerUrl, fallbackUrl, tab, needsToCloseTab);
+                        loadIntent(intent, referrerUrl, fallbackUrl, tab, needsToCloseTab, true);
                     }
                 })
             .setOnCancelListener(new OnCancelListener() {
                     @Override
                     public void onCancel(DialogInterface dialog) {
-                        loadIntent(intent, referrerUrl, fallbackUrl, tab, needsToCloseTab);
+                        loadIntent(intent, referrerUrl, fallbackUrl, tab, needsToCloseTab, true);
                     }
                 })
             .show();
     }
 
+    @Override
+    public boolean shouldRequestFileAccess(Tab tab) {
+        // If the tab is null, then do not attempt to prompt for access.
+        if (tab == null) return false;
+
+        return !tab.getWindowAndroid().hasFileAccess();
+    }
+
+    @Override
+    public void startFileIntent(final Intent intent, final String referrerUrl, final Tab tab,
+            final boolean needsToCloseTab) {
+        tab.getWindowAndroid().requestFileAccess(new WindowAndroid.FileAccessCallback() {
+            @Override
+            public void onFileAccessResult(boolean granted) {
+                if (granted) {
+                    loadIntent(intent, referrerUrl, null, tab, needsToCloseTab, tab.isIncognito());
+                } else {
+                    // TODO(tedchoc): Show an indication to the user that the navigation failed
+                    //                instead of silently dropping it on the floor.
+                    if (needsToCloseTab) {
+                        // If the access was not granted, then close the tab if necessary.
+                        tab.getChromeWebContentsDelegateAndroid().closeContents();
+                    }
+                }
+            }
+        });
+    }
+
     private void loadIntent(Intent intent, String referrerUrl, String fallbackUrl, Tab tab,
-            boolean needsToCloseTab) {
+            boolean needsToCloseTab, boolean launchIncogntio) {
         boolean needsToStartIntent = false;
         if (tab == null || tab.isClosing() || !tab.isInitialized()) {
             needsToStartIntent = true;
@@ -245,7 +274,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         if (needsToStartIntent) {
             intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             intent.putExtra(Browser.EXTRA_APPLICATION_ID, getPackageName());
-            intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
+            if (launchIncogntio) intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
             intent.addCategory(Intent.CATEGORY_BROWSABLE);
             intent.setPackage(getPackageName());
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

@@ -66,6 +66,23 @@ interface ExternalNavigationDelegate {
             boolean needsToCloseTab);
 
     /**
+     * @param tab The current tab.
+     * @return Whether we should block the navigation and request file access before proceeding.
+     */
+    boolean shouldRequestFileAccess(Tab tab);
+
+    /**
+     * Trigger a UI affordance that will ask the user to grant file access.  After the access
+     * has been granted or denied, continue loading the specified file URL.
+     *
+     * @param intent The intent to continue loading the file URL.
+     * @param referrerUrl The HTTP referrer URL.
+     * @param tab The current tab.
+     * @param needsToCloseTab Whether this action should close the current tab.
+     */
+    void startFileIntent(Intent intent, String referrerUrl, Tab tab, boolean needsToCloseTab);
+
+    /**
      * Clobber the current tab and try not to pass an intent when it should be handled by Chrome
      * so that we can deliver HTTP referrer information safely.
      *

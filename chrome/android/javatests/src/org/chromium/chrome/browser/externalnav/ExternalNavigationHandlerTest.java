@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.externalnav;
 
+import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -39,7 +40,8 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
     private static final int IGNORE = 0x0;
     private static final int START_INCOGNITO = 0x1;
     private static final int START_ACTIVITY = 0x2;
-    private static final int INTENT_SANITIZATION_EXCEPTION = 0x4;
+    private static final int START_FILE = 0x4;
+    private static final int INTENT_SANITIZATION_EXCEPTION = 0x8;
 
     private static final int NO_REDIRECT = 0x0;
     private static final int REDIRECT = 0x1;
@@ -95,7 +97,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                 true,
                 false,
                 null,
-                OverrideUrlLoadingResult.OVERRIDE_WITH_INCOGNITO_MODE,
+                OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION,
                 START_INCOGNITO);
     }
 
@@ -1008,6 +1010,58 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                 IGNORE);
     }
 
+    @SuppressLint("SdCardPath")
+    @SmallTest
+    public void testFileAccess() {
+        String fileUrl = "file:///sdcard/Downloads/test.html";
+
+        mDelegate.shouldRequestFileAccess = false;
+        // Verify no overrides if file access is allowed (under different load conditions).
+        check(fileUrl,
+                null, /* referrer */
+                false, /* incognito */
+                PageTransition.LINK,
+                NO_REDIRECT,
+                true,
+                false,
+                null,
+                OverrideUrlLoadingResult.NO_OVERRIDE,
+                IGNORE);
+        check(fileUrl,
+                null, /* referrer */
+                false, /* incognito */
+                PageTransition.RELOAD,
+                NO_REDIRECT,
+                true,
+                false,
+                null,
+                OverrideUrlLoadingResult.NO_OVERRIDE,
+                IGNORE);
+        check(fileUrl,
+                null, /* referrer */
+                false, /* incognito */
+                PageTransition.AUTO_TOPLEVEL,
+                NO_REDIRECT,
+                true,
+                false,
+                null,
+                OverrideUrlLoadingResult.NO_OVERRIDE,
+                IGNORE);
+
+        mDelegate.shouldRequestFileAccess = true;
+        // Verify that the file intent action is triggered if file access is not allowed.
+        check(fileUrl,
+                null, /* referrer */
+                false, /* incognito */
+                PageTransition.AUTO_TOPLEVEL,
+                NO_REDIRECT,
+                true,
+                false,
+                null,
+                OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION,
+                START_FILE);
+    }
+
     private static class TestExternalNavigationDelegate implements ExternalNavigationDelegate {
         private Context mContext;
 
@@ -1076,6 +1130,17 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         }
 
         @Override
+        public boolean shouldRequestFileAccess(Tab tab) {
+            return shouldRequestFileAccess;
+        }
+
+        @Override
+        public void startFileIntent(Intent intent, String referrerUrl, Tab tab,
+                boolean needsToCloseTab) {
+            startFileIntentCalled = true;
+        }
+
+        @Override
         public OverrideUrlLoadingResult clobberCurrentTab(
                 String url, String referrerUrl, Tab tab) {
             mNewUrlAfterClobbering = url;
@@ -1096,6 +1161,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         public void reset() {
             startActivityIntent = null;
             startIncognitoIntentCalled = false;
+            startFileIntentCalled = false;
         }
 
         public void setCanResolveActivity(boolean value) {
@@ -1122,6 +1188,9 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         private String mNewUrlAfterClobbering;
         private String mReferrerUrlForClobbering;
         public boolean mIsChromeAppInForeground = true;
+
+        public boolean shouldRequestFileAccess;
+        public boolean startFileIntentCalled;
     }
 
     private void checkIntentSanity(Intent intent, String name) {
@@ -1143,6 +1212,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                       int otherExpectation) {
         boolean expectStartIncognito = (otherExpectation & START_INCOGNITO) != 0;
         boolean expectStartActivity = (otherExpectation & START_ACTIVITY) != 0;
+        boolean expectStartFile = (otherExpectation & START_FILE) != 0;
         boolean expectSaneIntent = (otherExpectation & INTENT_SANITIZATION_EXCEPTION) == 0;
 
         mDelegate.reset();
@@ -1160,6 +1230,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         assertEquals(expectedOverrideResult, result);
         assertEquals(expectStartIncognito, mDelegate.startIncognitoIntentCalled);
         assertEquals(expectStartActivity, startActivityCalled);
+        assertEquals(expectStartFile, mDelegate.startFileIntentCalled);
 
         if (startActivityCalled && expectSaneIntent) {
             checkIntentSanity(mDelegate.startActivityIntent, "Intent");

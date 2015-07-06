@@ -48,8 +48,9 @@ public class ExternalNavigationHandler {
         OVERRIDE_WITH_EXTERNAL_INTENT,
         /* We should override the URL loading and clobber the current tab. */
         OVERRIDE_WITH_CLOBBERING_TAB,
-        /* We should override the URL loading and handle an intent in incognito mode. */
-        OVERRIDE_WITH_INCOGNITO_MODE,
+        /* We should override the URL loading.  The desired action will be determined
+         * asynchronously (e.g. by requiring user confirmation). */
+        OVERRIDE_WITH_ASYNC_ACTION,
         /* We shouldn't override the URL loading. */
         NO_OVERRIDE,
     }
@@ -150,6 +151,17 @@ public class ExternalNavigationHandler {
         // the intent picker.
         if (isForwardBackNavigation) {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+
+        // If accessing a file URL, ensure that the user has granted the necessary file access
+        // to Chrome.  This check should happen for reloads, navigations, etc..., which is why
+        // it occurs before the subsequent blocks.
+        if (params.getUrl().startsWith("file:")
+                && mDelegate.shouldRequestFileAccess(params.getTab())) {
+            mDelegate.startFileIntent(
+                    intent, params.getReferrerUrl(), params.getTab(),
+                    params.shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent());
+            return OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION;
         }
 
         // http://crbug/331571 : Do not override a navigation started from user typing.
@@ -340,8 +352,8 @@ public class ExternalNavigationHandler {
                 // to apps out side of Chrome.
                 mDelegate.startIncognitoIntent(intent, params.getReferrerUrl(),
                         hasBrowserFallbackUrl ? browserFallbackUrl : null, params.getTab(),
-                        params.needsToCloseTabAfterIncognitoDialog());
-                return OverrideUrlLoadingResult.OVERRIDE_WITH_INCOGNITO_MODE;
+                        params.shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent());
+                return OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION;
             } else {
                 if (params.getRedirectHandler() != null && incomingIntentRedirect) {
                     if (!params.getRedirectHandler().hasNewResolver(intent)) {

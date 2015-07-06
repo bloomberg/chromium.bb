@@ -43,14 +43,17 @@ public class ExternalNavigationParams {
     /** Whether this navigation happens in main frame. */
     private final boolean mIsMainFrame;
 
-    /** Whether closing tab is needed or not after incognito dialog is closed. */
-    private final boolean mNeedsToCloseTabAfterIncognitoDialog;
+    /**
+     * Whether the current tab should be closed when an URL load was overridden and an
+     * intent launched.
+     */
+    private final boolean mShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent;
 
     private ExternalNavigationParams(String url, boolean isIncognito, String referrerUrl,
             int pageTransition, boolean isRedirect, boolean appMustBeInForeground,
             TabRedirectHandler redirectHandler, Tab tab,
             boolean openInNewTab, boolean isBackgroundTabNavigation, boolean isMainFrame,
-            boolean needsToCloseTabAfterIncognitoDialog) {
+            boolean shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent) {
         mUrl = url;
         mIsIncognito = isIncognito;
         mPageTransition = pageTransition;
@@ -62,7 +65,8 @@ public class ExternalNavigationParams {
         mOpenInNewTab = openInNewTab;
         mIsBackgroundTabNavigation = isBackgroundTabNavigation;
         mIsMainFrame = isMainFrame;
-        mNeedsToCloseTabAfterIncognitoDialog = needsToCloseTabAfterIncognitoDialog;
+        mShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent =
+                shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent;
     }
 
     /** @return The URL to potentially open externally. */
@@ -123,9 +127,12 @@ public class ExternalNavigationParams {
         return mIsMainFrame;
     }
 
-    /** @return Whether closing tab is needed or not after incognito dialog is closed. */
-    public boolean needsToCloseTabAfterIncognitoDialog() {
-        return mNeedsToCloseTabAfterIncognitoDialog;
+    /**
+     * @return Whether the current tab should be closed when an URL load was overridden and an
+     *         intent launched.
+     */
+    public boolean shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent() {
+        return mShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent;
     }
 
     /** The builder for {@link ExternalNavigationParams} objects. */
@@ -162,8 +169,11 @@ public class ExternalNavigationParams {
         /** Whether this navigation happens in main frame. */
         private boolean mIsMainFrame;
 
-        /** Whether closing tab is needed or not after incognito dialog is closed. */
-        private boolean mNeedsToCloseTabAfterIncognitoDialog;
+        /**
+         * Whether the current tab should be closed when an URL load was overridden and an
+         * intent launched.
+         */
+        private boolean mShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent;
 
         public Builder(String url, boolean isIncognito) {
             mUrl = url;
@@ -215,9 +225,11 @@ public class ExternalNavigationParams {
             return this;
         }
 
-        /** Sets whether closing tab is needed or not after incognito dialog is closed. */
-        public Builder setNeedsToCloseTabAfterIncognitoDialog(boolean v) {
-            mNeedsToCloseTabAfterIncognitoDialog = v;
+        /** Sets whether the current tab should be closed when an URL load was overridden and an
+         * intent launched.
+         */
+        public Builder setShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent(boolean v) {
+            mShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent = v;
             return this;
         }
 
@@ -226,7 +238,7 @@ public class ExternalNavigationParams {
             return new ExternalNavigationParams(mUrl, mIsIncognito, mReferrerUrl, mPageTransition,
                     mIsRedirect, mApplicationMustBeInForeground, mRedirectHandler,
                     mTab, mOpenInNewTab, mIsBackgroundTabNavigation,
-                    mIsMainFrame, mNeedsToCloseTabAfterIncognitoDialog);
+                    mIsMainFrame, mShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent);
         }
     }
 }

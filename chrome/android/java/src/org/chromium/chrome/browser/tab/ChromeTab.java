@@ -1258,7 +1258,7 @@ public class ChromeTab extends Tab {
                     .setOpenInNewTab(shouldCloseTab)
                     .setIsBackgroundTabNavigation(isHidden() && !isInitialTabLaunchInBackground)
                     .setIsMainFrame(navigationParams.isMainFrame)
-                    .setNeedsToCloseTabAfterIncognitoDialog(shouldCloseTab
+                    .setShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent(shouldCloseTab
                             && navigationParams.isMainFrame)
                     .build();
             ExternalNavigationHandler.OverrideUrlLoadingResult result =
@@ -1274,7 +1274,7 @@ public class ChromeTab extends Tab {
                 case OVERRIDE_WITH_CLOBBERING_TAB:
                     mShouldClearRedirectHistoryForTabClobbering = true;
                     return true;
-                case OVERRIDE_WITH_INCOGNITO_MODE:
+                case OVERRIDE_WITH_ASYNC_ACTION:
                     if (!shouldCloseTab && navigationParams.isMainFrame) {
                         onOverrideUrlLoadingAndLaunchIntent();
                     }
