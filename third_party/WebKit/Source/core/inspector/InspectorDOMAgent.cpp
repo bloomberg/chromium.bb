@@ -1182,7 +1182,7 @@ bool InspectorDOMAgent::handleMouseMove(LocalFrame* frame, const PlatformMouseEv
         return true;
     Node* node = hoveredNodeForEvent(frame, event, event.shiftKey());
 
-    // Do not highlight within closed shadow root unless requested.
+    // Do not highlight within user agent shadow root unless requested.
     if (m_searchingForNode != SearchingForUAShadow) {
         ShadowRoot* shadowRoot = userAgentShadowRoot(node);
         if (shadowRoot)
