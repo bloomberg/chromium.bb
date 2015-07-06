@@ -58,6 +58,7 @@ class WindowsEventRouter : public WindowControllerListObserver,
   void DispatchEvent(const std::string& event_name,
                      Profile* profile,
                      scoped_ptr<base::ListValue> args);
+  bool HasEventListener(const std::string& event_name);
 
   content::NotificationRegistrar registrar_;
 

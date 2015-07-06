@@ -16,7 +16,9 @@
 namespace extensions {
 
 TabsWindowsAPI::TabsWindowsAPI(content::BrowserContext* context)
-    : browser_context_(context) {
+    : browser_context_(context),
+      windows_event_router_(
+          new WindowsEventRouter(Profile::FromBrowserContext(context))) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
 
   // Tabs API Events.
@@ -59,9 +61,6 @@ TabsEventRouter* TabsWindowsAPI::tabs_event_router() {
 }
 
 WindowsEventRouter* TabsWindowsAPI::windows_event_router() {
-  if (!windows_event_router_)
-    windows_event_router_.reset(
-        new WindowsEventRouter(Profile::FromBrowserContext(browser_context_)));
   return windows_event_router_.get();
 }
 
@@ -80,7 +79,6 @@ TabsWindowsAPI::GetFactoryInstance() {
 void TabsWindowsAPI::OnListenerAdded(const EventListenerInfo& details) {
   // Initialize the event routers.
   tabs_event_router();
-  windows_event_router();
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
