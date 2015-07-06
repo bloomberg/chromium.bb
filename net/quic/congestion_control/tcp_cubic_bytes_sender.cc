@@ -34,8 +34,7 @@ TcpCubicBytesSender::TcpCubicBytesSender(
     QuicPacketCount initial_tcp_congestion_window,
     QuicPacketCount max_congestion_window,
     QuicConnectionStats* stats)
-    : hybrid_slow_start_(clock),
-      cubic_(clock),
+    : cubic_(clock),
       rtt_stats_(rtt_stats),
       stats_(stats),
       reno_(reno),

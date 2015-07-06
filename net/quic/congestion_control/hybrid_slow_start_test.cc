@@ -5,7 +5,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/quic/congestion_control/hybrid_slow_start.h"
-#include "net/quic/test_tools/mock_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -17,10 +16,9 @@ class HybridSlowStartTest : public ::testing::Test {
      : one_ms_(QuicTime::Delta::FromMilliseconds(1)),
        rtt_(QuicTime::Delta::FromMilliseconds(60)) {
   }
-  void SetUp() override { slow_start_.reset(new HybridSlowStart(&clock_)); }
+  void SetUp() override { slow_start_.reset(new HybridSlowStart); }
   const QuicTime::Delta one_ms_;
   const QuicTime::Delta rtt_;
-  MockClock clock_;
   scoped_ptr<HybridSlowStart> slow_start_;
 };
 

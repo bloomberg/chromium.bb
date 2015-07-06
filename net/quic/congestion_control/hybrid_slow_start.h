@@ -18,7 +18,6 @@
 
 #include "base/basictypes.h"
 #include "net/base/net_export.h"
-#include "net/quic/quic_clock.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_time.h"
 
@@ -26,7 +25,7 @@ namespace net {
 
 class NET_EXPORT_PRIVATE HybridSlowStart {
  public:
-  explicit HybridSlowStart(const QuicClock* clock);
+  HybridSlowStart();
 
   void OnPacketAcked(QuicPacketSequenceNumber acked_sequence_number,
                      bool in_slow_start);
@@ -67,7 +66,6 @@ class NET_EXPORT_PRIVATE HybridSlowStart {
     DELAY,  // Too much increase in the round's min_rtt was observed.
   };
 
-  const QuicClock* clock_;
   // Whether the hybrid slow start has been started.
   bool started_;
   HystartState hystart_found_;

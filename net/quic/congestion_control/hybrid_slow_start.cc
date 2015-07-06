@@ -22,9 +22,8 @@ const int kHybridStartDelayFactorExp = 3;  // 2^3 = 8
 const int64 kHybridStartDelayMinThresholdUs = 4000;
 const int64 kHybridStartDelayMaxThresholdUs = 16000;
 
-HybridSlowStart::HybridSlowStart(const QuicClock* clock)
-    : clock_(clock),
-      started_(false),
+HybridSlowStart::HybridSlowStart()
+    : started_(false),
       hystart_found_(NOT_FOUND),
       last_sent_sequence_number_(0),
       end_sequence_number_(0),

@@ -25,8 +25,7 @@ class QuicHeadersStream::SpdyFramerVisitor
     : public SpdyFramerVisitorInterface,
       public SpdyFramerDebugVisitorInterface {
  public:
-  SpdyFramerVisitor(SpdyMajorVersion spdy_version, QuicHeadersStream* stream)
-      : spdy_version_(spdy_version), stream_(stream) {}
+  SpdyFramerVisitor(QuicHeadersStream* stream) : stream_(stream) {}
 
   // SpdyFramerVisitorInterface implementation
   void OnSynStream(SpdyStreamId stream_id,
@@ -165,7 +164,6 @@ class QuicHeadersStream::SpdyFramerVisitor
   }
 
  private:
-  SpdyMajorVersion spdy_version_;
   QuicHeadersStream* stream_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyFramerVisitor);
@@ -178,7 +176,7 @@ QuicHeadersStream::QuicHeadersStream(QuicSpdySession* session)
       fin_(false),
       frame_len_(0),
       spdy_framer_(HTTP2),
-      spdy_framer_visitor_(new SpdyFramerVisitor(HTTP2, this)) {
+      spdy_framer_visitor_(new SpdyFramerVisitor(this)) {
   spdy_framer_.set_visitor(spdy_framer_visitor_.get());
   spdy_framer_.set_debug_visitor(spdy_framer_visitor_.get());
   // The headers stream is exempt from connection level flow control.
