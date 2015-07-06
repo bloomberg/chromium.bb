@@ -26,12 +26,17 @@ def main(argv):
   args = parser.parse_args(argv)
 
   env = copy.copy(os.environ)
-  pythonpath = env.get('PYTHONPATH', '').split(':')
+  # Reset PYTHONPATH to make sure we're not accidentally using
+  # the buildbot-provided value and build-side modules. That would make
+  # changes inside this directory not take effect on buildbot.
+  pythonpath = []
   pythonpath.append(os.path.join(
       SRC_DIR, 'infra', 'scripts', 'legacy', 'scripts'))
   pythonpath.append(os.path.join(
       SRC_DIR, 'infra', 'scripts', 'legacy', 'site_config'))
-  env['PYTHONPATH'] = ':'.join(pythonpath)
+  pythonpath.append(os.path.join(
+      SRC_DIR, 'third_party'))
+  env['PYTHONPATH'] = os.pathsep.join(pythonpath)
 
   return subprocess.call([
       sys.executable,
