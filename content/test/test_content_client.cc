@@ -21,14 +21,13 @@ TestContentClient::TestContentClient()
   // content_shell.pak is not built on iOS as it is not required.
 #if !defined(OS_IOS)
   base::FilePath content_shell_pack_path;
+  base::File pak_file;
+  base::MemoryMappedFile::Region pak_region;
+
 #if defined(OS_ANDROID)
-  base::MemoryMappedFile::Region region;
   // Tests that don't yet use .isolate files require loading from within .apk.
-  int fd = base::android::OpenApkAsset("assets/content_shell.pak", &region);
-  if (fd >= 0) {
-    data_pack_.LoadFromFileRegion(base::File(fd), region);
-    return;
-  }
+  pak_file = base::File(
+      base::android::OpenApkAsset("assets/content_shell.pak", &pak_region));
 
   // on Android all pak files are inside the paks folder.
   PathService::Get(base::DIR_ANDROID_APP_DATA, &content_shell_pack_path);
@@ -36,11 +35,16 @@ TestContentClient::TestContentClient()
       FILE_PATH_LITERAL("paks"));
 #else
   PathService::Get(base::DIR_MODULE, &content_shell_pack_path);
-#endif
-  content_shell_pack_path = content_shell_pack_path.Append(
-      FILE_PATH_LITERAL("content_shell.pak"));
-  data_pack_.LoadFromPath(content_shell_pack_path);
-#endif
+#endif  // defined(OS_ANDROID)
+
+  if (pak_file.IsValid()) {
+    data_pack_.LoadFromFileRegion(pak_file.Pass(), pak_region);
+  } else {
+    content_shell_pack_path = content_shell_pack_path.Append(
+        FILE_PATH_LITERAL("content_shell.pak"));
+    data_pack_.LoadFromPath(content_shell_pack_path);
+  }
+#endif  // !defined(OS_IOS)
 }
 
 TestContentClient::~TestContentClient() {
