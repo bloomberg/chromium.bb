@@ -33,9 +33,9 @@ class StartupPagesPageSet(story.StorySet):
         cloud_storage_bucket=story.PARTNER_BUCKET)
 
     # Typical page.
-    self.AddUserStory(StartedPage('about:blank', 'about:blank', self))
+    self.AddStory(StartedPage('about:blank', 'about:blank', self))
     # Typical page.
-    self.AddUserStory(StartedPage('http://bbc.co.uk', 'http://bbc.co.uk', self))
+    self.AddStory(StartedPage('http://bbc.co.uk', 'http://bbc.co.uk', self))
     # Horribly complex page - stress test!
-    self.AddUserStory(StartedPage(
+    self.AddStory(StartedPage(
         'http://kapook.com', 'http://kapook.com', self))

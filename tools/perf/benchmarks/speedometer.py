@@ -95,7 +95,7 @@ class Speedometer(perf_benchmark.PerfBenchmark):
         base_dir=os.path.dirname(os.path.abspath(__file__)),
         archive_data_file='../page_sets/data/speedometer.json',
         cloud_storage_bucket=story.PUBLIC_BUCKET)
-    ps.AddUserStory(page_module.Page(
+    ps.AddStory(page_module.Page(
         'http://browserbench.org/Speedometer/', ps, ps.base_dir,
         make_javascript_deterministic=False))
     return ps

@@ -315,10 +315,10 @@ class Top7StressPageSet(story.StorySet):
       archive_data_file='data/top_7_stress.json',
       cloud_storage_bucket=story.PARTNER_BUCKET)
 
-    self.AddUserStory(GoogleWebSearchPage(self))
-    self.AddUserStory(GmailPage(self))
-    self.AddUserStory(GoogleCalendarPage(self))
-    self.AddUserStory(GooglePlusPage(self))
-    self.AddUserStory(BlogspotPage(self))
-    self.AddUserStory(WordpressPage(self))
-    self.AddUserStory(FacebookPage(self))
+    self.AddStory(GoogleWebSearchPage(self))
+    self.AddStory(GmailPage(self))
+    self.AddStory(GoogleCalendarPage(self))
+    self.AddStory(GooglePlusPage(self))
+    self.AddStory(BlogspotPage(self))
+    self.AddStory(WordpressPage(self))
+    self.AddStory(FacebookPage(self))

@@ -222,8 +222,8 @@ class PolymerPageSet(story.StorySet):
       archive_data_file='data/polymer.json',
       cloud_storage_bucket=story.PUBLIC_BUCKET)
 
-    self.AddUserStory(PolymerCalculatorPage(self, run_no_page_interactions))
-    self.AddUserStory(PolymerShadowPage(self, run_no_page_interactions))
+    self.AddStory(PolymerCalculatorPage(self, run_no_page_interactions))
+    self.AddStory(PolymerShadowPage(self, run_no_page_interactions))
 
     # Polymer Sampler subpages that are interesting to tap / swipe elements on
     TAPPABLE_PAGES = [
@@ -240,7 +240,7 @@ class PolymerPageSet(story.StorySet):
         'paper-toggle-button',
         ]
     for p in TAPPABLE_PAGES:
-      self.AddUserStory(PolymerSampler(
+      self.AddStory(PolymerSampler(
           self, p, run_no_page_interactions=run_no_page_interactions))
 
     # Polymer Sampler subpages that are interesting to scroll
@@ -248,7 +248,7 @@ class PolymerPageSet(story.StorySet):
         'core-scroll-header-panel',
         ]
     for p in SCROLLABLE_PAGES:
-      self.AddUserStory(PolymerSampler(
+      self.AddStory(PolymerSampler(
           self, p, run_no_page_interactions=run_no_page_interactions,
           scrolling_page=True))
 

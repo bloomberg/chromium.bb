@@ -232,7 +232,7 @@ class ToughAnimationCasesPageSet(story.StorySet):
     ]
 
     for url in urls_list_one:
-      self.AddUserStory(ToughAnimationCasesPage(url, self,
+      self.AddStory(ToughAnimationCasesPage(url, self,
                                            need_measurement_ready=True))
 
     urls_list_two = [
@@ -260,5 +260,5 @@ class ToughAnimationCasesPageSet(story.StorySet):
     ]
 
     for url in urls_list_two:
-      self.AddUserStory(ToughAnimationCasesPage(url, self,
+      self.AddStory(ToughAnimationCasesPage(url, self,
                                            need_measurement_ready=False))

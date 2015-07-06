@@ -42,4 +42,4 @@ class KeyHitTestCasesPageSet(story.StorySet):
   def __init__(self):
     super(KeyHitTestCasesPageSet, self).__init__()
 
-    self.AddUserStory(PaperCalculatorHitTest(self))
+    self.AddStory(PaperCalculatorHitTest(self))

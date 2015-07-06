@@ -68,4 +68,4 @@ class GmailComposeDiscardPageSet(story.StorySet):
   def __init__(self):
     super(GmailComposeDiscardPageSet, self).__init__()
 
-    self.AddUserStory(GmailComposeDiscardPage(self))
+    self.AddStory(GmailComposeDiscardPage(self))

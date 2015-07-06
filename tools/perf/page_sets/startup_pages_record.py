@@ -33,4 +33,4 @@ class StartupPagesRecordPageSet(story.StorySet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(StartupPagesRecordPage(url, self))
+      self.AddStory(StartupPagesRecordPage(url, self))

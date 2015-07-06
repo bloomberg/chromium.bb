@@ -118,5 +118,5 @@ class KeyDesktopMoveCasesPageSet(story.StorySet):
       archive_data_file='data/key_desktop_move_cases.json',
       cloud_storage_bucket=story.PARTNER_BUCKET)
 
-    self.AddUserStory(GmailMouseScrollPage(self))
-    self.AddUserStory(GoogleMapsPage(self))
+    self.AddStory(GmailMouseScrollPage(self))
+    self.AddStory(GoogleMapsPage(self))

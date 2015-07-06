@@ -36,4 +36,4 @@ class IntlArFaHePageSet(story.StorySet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(IntlArFaHePage(url, self))
+      self.AddStory(IntlArFaHePage(url, self))

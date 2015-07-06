@@ -65,7 +65,7 @@ class RobohornetPro(perf_benchmark.PerfBenchmark):
         archive_data_file='../page_sets/data/robohornet_pro.json',
         base_dir=os.path.dirname(os.path.abspath(__file__)),
         cloud_storage_bucket=story.PARTNER_BUCKET)
-    ps.AddUserStory(page_module.Page(
+    ps.AddStory(page_module.Page(
         'http://ie.microsoft.com/testdrive/performance/robohornetpro/',
         ps, ps.base_dir,
         # Measurement require use of real Date.now() for measurement.

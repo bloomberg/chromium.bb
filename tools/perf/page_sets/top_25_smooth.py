@@ -88,35 +88,35 @@ class Top25SmoothPageSet(story.StorySet):
 
     desktop_state_class = shared_page_state.SharedDesktopPageState
 
-    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
+    self.AddStory(_CreatePageClassWithSmoothInteractions(
         top_pages.GoogleWebSearchPage)(self, desktop_state_class))
-    self.AddUserStory(GmailSmoothPage(self, desktop_state_class))
-    self.AddUserStory(GoogleCalendarSmoothPage(self, desktop_state_class))
-    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
+    self.AddStory(GmailSmoothPage(self, desktop_state_class))
+    self.AddStory(GoogleCalendarSmoothPage(self, desktop_state_class))
+    self.AddStory(_CreatePageClassWithSmoothInteractions(
         top_pages.GoogleImageSearchPage)(self, desktop_state_class))
-    self.AddUserStory(GoogleDocSmoothPage(self, desktop_state_class))
-    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
+    self.AddStory(GoogleDocSmoothPage(self, desktop_state_class))
+    self.AddStory(_CreatePageClassWithSmoothInteractions(
         top_pages.GooglePlusPage)(self, desktop_state_class))
-    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
+    self.AddStory(_CreatePageClassWithSmoothInteractions(
         top_pages.YoutubePage)(self, desktop_state_class))
-    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
+    self.AddStory(_CreatePageClassWithSmoothInteractions(
         top_pages.BlogspotPage)(self, desktop_state_class))
-    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
+    self.AddStory(_CreatePageClassWithSmoothInteractions(
         top_pages.WordpressPage)(self, desktop_state_class))
-    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
+    self.AddStory(_CreatePageClassWithSmoothInteractions(
         top_pages.FacebookPage)(self, desktop_state_class))
-    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
+    self.AddStory(_CreatePageClassWithSmoothInteractions(
         top_pages.LinkedinPage)(self, desktop_state_class))
-    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
+    self.AddStory(_CreatePageClassWithSmoothInteractions(
         top_pages.WikipediaPage)(self, desktop_state_class))
-    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
+    self.AddStory(_CreatePageClassWithSmoothInteractions(
         top_pages.TwitterPage)(self, desktop_state_class))
-    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
+    self.AddStory(_CreatePageClassWithSmoothInteractions(
         top_pages.PinterestPage)(self, desktop_state_class))
-    self.AddUserStory(ESPNSmoothPage(self, desktop_state_class))
-    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
+    self.AddStory(ESPNSmoothPage(self, desktop_state_class))
+    self.AddStory(_CreatePageClassWithSmoothInteractions(
         top_pages.WeatherPage)(self, desktop_state_class))
-    self.AddUserStory(_CreatePageClassWithSmoothInteractions(
+    self.AddStory(_CreatePageClassWithSmoothInteractions(
         top_pages.YahooGamesPage)(self, desktop_state_class))
 
     other_urls = [
@@ -140,4 +140,4 @@ class Top25SmoothPageSet(story.StorySet):
     ]
 
     for url in other_urls:
-      self.AddUserStory(TopSmoothPage(url, self))
+      self.AddStory(TopSmoothPage(url, self))

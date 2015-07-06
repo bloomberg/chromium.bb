@@ -11,7 +11,7 @@ class PluginPowerSaverPageSet(story.StorySet):
     super(PluginPowerSaverPageSet, self).__init__(
         archive_data_file='data/plugin_power_saver.json',
         cloud_storage_bucket=story.PUBLIC_BUCKET)
-    self.AddUserStory(page.Page(
+    self.AddStory(page.Page(
         'http://a.tommycli.com/small_only.html',
         page_set=self,
         shared_page_state_class=shared_page_state.SharedDesktopPageState))

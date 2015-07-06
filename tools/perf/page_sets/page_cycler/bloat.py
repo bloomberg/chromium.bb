@@ -21,6 +21,6 @@ class BloatPageSet(story.StorySet):
       serving_dirs=set(['../../../../data/page_cycler/bloat']),
       cloud_storage_bucket=story.PUBLIC_BUCKET)
 
-    self.AddUserStory(BloatPage(
+    self.AddStory(BloatPage(
       'file://../../../../data/page_cycler/bloat/gmail_load_cleardot/',
       self))

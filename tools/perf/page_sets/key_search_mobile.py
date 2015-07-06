@@ -63,4 +63,4 @@ class KeySearchMobilePageSet(story.StorySet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(KeySearchMobilePage(url, self))
+      self.AddStory(KeySearchMobilePage(url, self))

@@ -45,4 +45,4 @@ class MseCasesPageSet(story.StorySet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(MseCasesPage(url, self))
+      self.AddStory(MseCasesPage(url, self))

@@ -95,33 +95,33 @@ class Top10PageSet(story.StorySet):
       cloud_storage_bucket=story.PARTNER_BUCKET)
 
     # top google property; a google tab is often open
-    self.AddUserStory(Google(self))
+    self.AddStory(Google(self))
 
     # productivity, top google properties
     # TODO(dominikg): fix crbug.com/386152
-    #self.AddUserStory(Gmail(self))
+    #self.AddStory(Gmail(self))
 
     # productivity, top google properties
-    self.AddUserStory(GoogleCalendar(self))
+    self.AddStory(GoogleCalendar(self))
 
     # #3 (Alexa global)
-    self.AddUserStory(Youtube(self))
+    self.AddStory(Youtube(self))
 
     # top social, Public profile
-    self.AddUserStory(Facebook(self))
+    self.AddStory(Facebook(self))
 
     # #6 (Alexa) most visited worldwide,Picked an interesting page
-    self.AddUserStory(SimplePage('http://en.wikipedia.org/wiki/Wikipedia',
+    self.AddStory(SimplePage('http://en.wikipedia.org/wiki/Wikipedia',
                                   self, name='Wikipedia'))
 
     # #1 world commerce website by visits; #3 commerce in the US by time spent
-    self.AddUserStory(SimplePage('http://www.amazon.com', self))
+    self.AddStory(SimplePage('http://www.amazon.com', self))
 
     # #4 Alexa
-    self.AddUserStory(SimplePage('http://www.yahoo.com/', self))
+    self.AddStory(SimplePage('http://www.yahoo.com/', self))
 
     # #16 Alexa
-    self.AddUserStory(SimplePage('http://www.bing.com/', self))
+    self.AddStory(SimplePage('http://www.bing.com/', self))
 
     # #20 Alexa
-    self.AddUserStory(SimplePage('http://www.ask.com/', self))
+    self.AddStory(SimplePage('http://www.ask.com/', self))

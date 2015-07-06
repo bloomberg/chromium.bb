@@ -46,4 +46,4 @@ class NewTabPagePageSet(story.StorySet):
     super(NewTabPagePageSet, self).__init__(
         archive_data_file='data/new_tab_page_page.json',
         cloud_storage_bucket=story.PUBLIC_BUCKET)
-    self.AddUserStory(NewTabPagePage(page_set=self))
+    self.AddStory(NewTabPagePage(page_set=self))

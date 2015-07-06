@@ -42,4 +42,4 @@ class PathologicalMobileSitesPageSet(story.StorySet):
              'https://www.linkedin.com/in/linustorvalds']
 
     for site in sites:
-      self.AddUserStory(PathologicalMobileSitesPage(site, self))
+      self.AddStory(PathologicalMobileSitesPage(site, self))

@@ -114,11 +114,11 @@ class KeyDesktopSitesPageSet(story.StorySet):
       archive_data_file='data/key_desktop_sites.json',
       cloud_storage_bucket=story.PARTNER_BUCKET)
 
-    self.AddUserStory(FacebookPage(self))
-    self.AddUserStory(GmailPage(self))
-    self.AddUserStory(GoogleCalendarPage(self))
-    self.AddUserStory(GoogleDrivePage(self))
-    self.AddUserStory(GoogleDocPage(self))
+    self.AddStory(FacebookPage(self))
+    self.AddStory(GmailPage(self))
+    self.AddStory(GoogleCalendarPage(self))
+    self.AddStory(GoogleDrivePage(self))
+    self.AddStory(GoogleDocPage(self))
 
     urls_list = [
       'http://www.google.com/nexus/5/#/',
@@ -842,4 +842,4 @@ class KeyDesktopSitesPageSet(story.StorySet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(KeyDesktopSitesPage(url, self))
+      self.AddStory(KeyDesktopSitesPage(url, self))

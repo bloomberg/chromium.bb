@@ -58,4 +58,4 @@ class ToughAdCasesPageSet(story.StorySet):
     ]
     for page_name in swiffy_pages:
       url = base_url + '/' + page_name
-      self.AddUserStory(SwiffyPage(url, self))
+      self.AddStory(SwiffyPage(url, self))

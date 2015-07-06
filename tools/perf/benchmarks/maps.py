@@ -61,7 +61,7 @@ class MapsBenchmark(perf_benchmark.PerfBenchmark):
     ps = story.StorySet(
         archive_data_file='data/maps.json', base_dir=page_set_path,
         cloud_storage_bucket=story.PUBLIC_BUCKET)
-    ps.AddUserStory(MapsPage(ps, ps.base_dir))
+    ps.AddStory(MapsPage(ps, ps.base_dir))
     return ps
 
 class MapsNoVsync(MapsBenchmark):

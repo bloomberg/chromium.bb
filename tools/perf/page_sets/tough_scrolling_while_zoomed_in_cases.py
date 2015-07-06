@@ -57,4 +57,4 @@ class ToughScrollingWhileZoomedInCasesPageSet(story.StorySet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(ToughScrollingWhileZoomedInCasesPage(url, self))
+      self.AddStory(ToughScrollingWhileZoomedInCasesPage(url, self))

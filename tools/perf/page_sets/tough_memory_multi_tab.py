@@ -30,4 +30,4 @@ class ToughMemoryMultiTabPageSet(story.StorySet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(ToughMemoryMultiTabPage(url, self))
+      self.AddStory(ToughMemoryMultiTabPage(url, self))

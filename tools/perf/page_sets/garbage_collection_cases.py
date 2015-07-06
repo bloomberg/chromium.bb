@@ -38,4 +38,4 @@ class GarbageCollectionCasesPageSet(story.StorySet):
       archive_data_file='data/garbage_collection_cases.json',
       cloud_storage_bucket=story.PARTNER_BUCKET)
 
-    self.AddUserStory(SpinningBallsPage(self))
+    self.AddStory(SpinningBallsPage(self))

@@ -18,24 +18,24 @@ class Top25PageSet(story.StorySet):
         cloud_storage_bucket=story.PARTNER_BUCKET)
 
     shared_desktop_state = shared_page_state.SharedDesktopPageState
-    self.AddUserStory(top_pages.GoogleWebSearchPage(self, shared_desktop_state))
-    self.AddUserStory(top_pages.GmailPage(self, shared_desktop_state))
-    self.AddUserStory(top_pages.GoogleCalendarPage(self, shared_desktop_state))
-    self.AddUserStory(
+    self.AddStory(top_pages.GoogleWebSearchPage(self, shared_desktop_state))
+    self.AddStory(top_pages.GmailPage(self, shared_desktop_state))
+    self.AddStory(top_pages.GoogleCalendarPage(self, shared_desktop_state))
+    self.AddStory(
         top_pages.GoogleImageSearchPage(self, shared_desktop_state))
-    self.AddUserStory(top_pages.GoogleDocPage(self, shared_desktop_state))
-    self.AddUserStory(top_pages.GooglePlusPage(self, shared_desktop_state))
-    self.AddUserStory(top_pages.YoutubePage(self, shared_desktop_state))
-    self.AddUserStory(top_pages.BlogspotPage(self, shared_desktop_state))
-    self.AddUserStory(top_pages.WordpressPage(self, shared_desktop_state))
-    self.AddUserStory(top_pages.FacebookPage(self, shared_desktop_state))
-    self.AddUserStory(top_pages.LinkedinPage(self, shared_desktop_state))
-    self.AddUserStory(top_pages.WikipediaPage(self, shared_desktop_state))
-    self.AddUserStory(top_pages.TwitterPage(self, shared_desktop_state))
-    self.AddUserStory(top_pages.PinterestPage(self, shared_desktop_state))
-    self.AddUserStory(top_pages.ESPNPage(self, shared_desktop_state))
-    self.AddUserStory(top_pages.WeatherPage(self, shared_desktop_state))
-    self.AddUserStory(top_pages.YahooGamesPage(self, shared_desktop_state))
+    self.AddStory(top_pages.GoogleDocPage(self, shared_desktop_state))
+    self.AddStory(top_pages.GooglePlusPage(self, shared_desktop_state))
+    self.AddStory(top_pages.YoutubePage(self, shared_desktop_state))
+    self.AddStory(top_pages.BlogspotPage(self, shared_desktop_state))
+    self.AddStory(top_pages.WordpressPage(self, shared_desktop_state))
+    self.AddStory(top_pages.FacebookPage(self, shared_desktop_state))
+    self.AddStory(top_pages.LinkedinPage(self, shared_desktop_state))
+    self.AddStory(top_pages.WikipediaPage(self, shared_desktop_state))
+    self.AddStory(top_pages.TwitterPage(self, shared_desktop_state))
+    self.AddStory(top_pages.PinterestPage(self, shared_desktop_state))
+    self.AddStory(top_pages.ESPNPage(self, shared_desktop_state))
+    self.AddStory(top_pages.WeatherPage(self, shared_desktop_state))
+    self.AddStory(top_pages.YahooGamesPage(self, shared_desktop_state))
 
     other_urls = [
         # Why: #1 news worldwide (Alexa global)
@@ -58,5 +58,5 @@ class Top25PageSet(story.StorySet):
     ]
 
     for url in other_urls:
-      self.AddUserStory(
+      self.AddStory(
           page.Page(url, self, shared_page_state_class=shared_desktop_state))

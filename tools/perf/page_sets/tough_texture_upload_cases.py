@@ -42,5 +42,5 @@ class ToughTextureUploadCasesPageSet(story.StorySet):
       'file://tough_texture_upload_cases/extra_large_texture_uploads.html',
     ]
     for url in urls_list:
-      self.AddUserStory(ToughTextureUploadCasesPage(url, self))
+      self.AddStory(ToughTextureUploadCasesPage(url, self))
 

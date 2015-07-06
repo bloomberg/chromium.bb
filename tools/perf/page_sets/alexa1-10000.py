@@ -41,4 +41,4 @@ class Alexa1To10000PageSet(story.StorySet):
     with open(_TOP_10000_ALEXA_FILE) as f:
       urls_list = json.load(f)
     for url in urls_list:
-      self.AddUserStory(Alexa1To10000Page(url, self))
+      self.AddStory(Alexa1To10000Page(url, self))

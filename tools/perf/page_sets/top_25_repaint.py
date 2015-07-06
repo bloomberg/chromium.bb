@@ -68,7 +68,7 @@ class Top25RepaintPageSet(story.StorySet):
     ]
 
     for cl in top_page_classes:
-      self.AddUserStory(_CreatePageClassWithRepaintInteractions(
+      self.AddStory(_CreatePageClassWithRepaintInteractions(
           cl, mode=mode, width=width, height=height)
                         (self, shared_page_state.SharedDesktopPageState))
 
@@ -93,5 +93,5 @@ class Top25RepaintPageSet(story.StorySet):
     ]
 
     for url in other_urls:
-      self.AddUserStory(
+      self.AddStory(
           TopRepaintPage(url, self, mode=mode, height=height, width=width))

@@ -48,7 +48,7 @@ class ToughScrollingCasesPageSet(story.StorySet):
         synthetic_gesture_source = page_action.GESTURE_SOURCE_DEFAULT
         if "hover" in name:
           synthetic_gesture_source = page_action.GESTURE_SOURCE_MOUSE
-        self.AddUserStory(ToughFastScrollingCasesPage(
+        self.AddStory(ToughFastScrollingCasesPage(
           'file://tough_scrolling_cases/' + name + '.html',
           name + '_' + str(speed).zfill(5) + '_pixels_per_second',
           speed,

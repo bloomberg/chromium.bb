@@ -18,7 +18,7 @@ class ThrottledPluginsPageSet(story.StorySet):
         'http://youtube.com'
     ]
     for url in urls_with_throttled_plugins:
-      self.AddUserStory(
+      self.AddStory(
           page.Page(
               url, page_set=self,
               shared_page_state_class=shared_page_state.SharedDesktopPageState))

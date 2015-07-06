@@ -58,9 +58,9 @@ class IdleMultiTabCasesPageSet(story.StorySet):
     with open(os.path.join(os.path.dirname(__file__),
               'idle_multi_tab_cases.js')) as f:
       base_js = f.read()
-    self.AddUserStory(
+    self.AddStory(
         _CreateIdleMultiTabPageClass(top_pages.GoogleDocPage, base_js)
         (self, shared_page_state.SharedDesktopPageState))
-    self.AddUserStory(
+    self.AddStory(
         _CreateIdleMultiTabPageClass(top_7_stress.GooglePlusPage, base_js)
         (self))

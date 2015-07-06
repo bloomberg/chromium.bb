@@ -45,4 +45,4 @@ class AlexaUsPageSet(story.StorySet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(AlexaUsPage(url, self))
+      self.AddStory(AlexaUsPage(url, self))

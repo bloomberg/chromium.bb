@@ -36,7 +36,7 @@ class RepaintUnitTest(page_test_test_case.PageTestTestCase):
   @decorators.Disabled('chromeos')  # crbug.com/483212
   def testRepaint(self):
     ps = self.CreateEmptyPageSet()
-    ps.AddUserStory(TestRepaintPage(ps, ps.base_dir))
+    ps.AddStory(TestRepaintPage(ps, ps.base_dir))
     measurement = smoothness.Repaint()
     results = self.RunMeasurement(measurement, ps, options=self._options)
     self.assertEquals(0, len(results.failures))

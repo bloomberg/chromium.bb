@@ -73,5 +73,5 @@ class Typical25PageSet(story.StorySet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(
+      self.AddStory(
         Typical25Page(url, self, run_no_page_interactions))

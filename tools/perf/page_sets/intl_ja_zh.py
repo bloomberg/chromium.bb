@@ -56,4 +56,4 @@ class IntlJaZhPageSet(story.StorySet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(IntlJaZhPage(url, self))
+      self.AddStory(IntlJaZhPage(url, self))

@@ -19,5 +19,5 @@ class BlankPageSetWithLargeProfile(story.StorySet):
 
   def __init__(self):
     super(BlankPageSetWithLargeProfile, self).__init__()
-    self.AddUserStory(BlankPageWithLargeProfile(
+    self.AddStory(BlankPageWithLargeProfile(
         'file://blank_page/blank_page.html', self))

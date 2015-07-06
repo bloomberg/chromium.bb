@@ -32,4 +32,4 @@ class ChromeSigninPageSet(story.StorySet):
     super(ChromeSigninPageSet, self).__init__(
         archive_data_file='data/chrome_signin_archive.json',
         cloud_storage_bucket=story.INTERNAL_BUCKET)
-    self.AddUserStory(ChromeSigninPage(self))
+    self.AddStory(ChromeSigninPage(self))

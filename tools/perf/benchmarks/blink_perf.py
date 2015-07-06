@@ -64,7 +64,7 @@ def CreateStorySetFromPath(path, skipped_file,
   ps = story.StorySet(base_dir=os.getcwd()+os.sep,
                         serving_dirs=serving_dirs)
   for url in page_urls:
-    ps.AddUserStory(page_module.Page(
+    ps.AddStory(page_module.Page(
       url, ps, ps.base_dir,
       shared_page_state_class=shared_page_state_class))
   return ps

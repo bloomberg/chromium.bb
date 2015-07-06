@@ -40,4 +40,4 @@ class ToughLayoutCasesPageSet(story.StorySet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(ToughLayoutCasesPage(url, self))
+      self.AddStory(ToughLayoutCasesPage(url, self))

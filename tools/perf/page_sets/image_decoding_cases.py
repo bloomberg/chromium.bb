@@ -25,4 +25,4 @@ class ImageDecodingCasesPageSet(story.StorySet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(ImageDecodingCasesPage(url, self))
+      self.AddStory(ImageDecodingCasesPage(url, self))

@@ -116,5 +116,5 @@ class Spaceport(perf_benchmark.PerfBenchmark):
     spaceport_dir = os.path.join(util.GetChromiumSrcDir(), 'chrome', 'test',
         'data', 'third_party', 'spaceport')
     ps = story.StorySet(base_dir=spaceport_dir)
-    ps.AddUserStory(page_module.Page('file://index.html', ps, ps.base_dir))
+    ps.AddStory(page_module.Page('file://index.html', ps, ps.base_dir))
     return ps

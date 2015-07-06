@@ -83,4 +83,4 @@ class InboxPageSet(story.StorySet):
         cloud_storage_bucket=story.INTERNAL_BUCKET
         )
 
-    self.AddUserStory(InboxPage(self))
+    self.AddStory(InboxPage(self))

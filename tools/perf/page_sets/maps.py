@@ -37,4 +37,4 @@ class MapsPageSet(story.StorySet):
         archive_data_file='data/maps.json',
         cloud_storage_bucket=story.PUBLIC_BUCKET)
 
-    self.AddUserStory(MapsPage(self))
+    self.AddStory(MapsPage(self))

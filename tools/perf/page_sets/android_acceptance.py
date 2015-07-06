@@ -36,4 +36,4 @@ class AndroidAcceptancePageSet(story.StorySet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(AndroidAcceptancePage(url, self))
+      self.AddStory(AndroidAcceptancePage(url, self))

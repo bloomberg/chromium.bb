@@ -68,74 +68,74 @@ class KeyMobileSitesRepaintPageSet(story.StorySet):
       # key_mobile_sites_pages.GroupClonedListImagesPage,
     ]
     for page_class in predefined_page_classes:
-      self.AddUserStory(
+      self.AddStory(
         _CreatePageClassWithRepaintInteractions(
             page_class, mode=mode, height=height, width=width)(self))
 
     # Add pages with custom labels.
 
     # Why: Top news site.
-    self.AddUserStory(KeyMobileSitesRepaintPage(
+    self.AddStory(KeyMobileSitesRepaintPage(
       url='http://nytimes.com/', page_set=self, labels=['fastpath'],
       mode=mode, height=height, width=width))
 
     # Why: Image-heavy site.
-    self.AddUserStory(KeyMobileSitesRepaintPage(
+    self.AddStory(KeyMobileSitesRepaintPage(
       url='http://cuteoverload.com', page_set=self, labels=['fastpath'],
       mode=mode, height=height, width=width))
 
     # Why: #11 (Alexa global), google property; some blogger layouts
     # have infinite scroll but more interesting.
-    self.AddUserStory(KeyMobileSitesRepaintPage(
+    self.AddStory(KeyMobileSitesRepaintPage(
       url='http://googlewebmastercentral.blogspot.com/',
       page_set=self, name='Blogger', mode=mode, height=height, width=width))
 
     # Why: #18 (Alexa global), Picked an interesting post """
-    self.AddUserStory(KeyMobileSitesRepaintPage(
+    self.AddStory(KeyMobileSitesRepaintPage(
       # pylint: disable=line-too-long
       url='http://en.blog.wordpress.com/2012/09/04/freshly-pressed-editors-picks-for-august-2012/',
       page_set=self,
       name='Wordpress', mode=mode, height=height, width=width))
 
    # Why: #6 (Alexa) most visited worldwide, picked an interesting page
-    self.AddUserStory(KeyMobileSitesRepaintPage(
+    self.AddStory(KeyMobileSitesRepaintPage(
       url='http://en.wikipedia.org/wiki/Wikipedia',
       page_set=self,
       name='Wikipedia (1 tab)', mode=mode, height=height, width=width))
 
     # Why: #8 (Alexa global), picked an interesting page
     # Forbidden (Rate Limit Exceeded)
-    # self.AddUserStory(KeyMobileSitesRepaintPage(
+    # self.AddStory(KeyMobileSitesRepaintPage(
     #  url='http://twitter.com/katyperry', page_set=self, name='Twitter'))
 
     # Why: #37 (Alexa global) """
-    self.AddUserStory(KeyMobileSitesRepaintPage(
+    self.AddStory(KeyMobileSitesRepaintPage(
         url='http://pinterest.com',
         page_set=self,
         name='Pinterest', mode=mode, height=height, width=width))
 
     # Why: #1 sports.
     # Fails often; crbug.com/249722'
-    # self.AddUserStory(KeyMobileSitesRepaintPage(
+    # self.AddStory(KeyMobileSitesRepaintPage(
     # url='http://espn.go.com', page_set=self, name='ESPN'))
     # Why: crbug.com/231413
     # Doesn't scroll; crbug.com/249736
-    # self.AddUserStory(KeyMobileSitesRepaintPage(
+    # self.AddStory(KeyMobileSitesRepaintPage(
     #                 url='http://forecast.io', page_set=self))
     # Why: crbug.com/169827
-    self.AddUserStory(KeyMobileSitesRepaintPage(
+    self.AddStory(KeyMobileSitesRepaintPage(
       url='http://slashdot.org/', page_set=self, labels=['fastpath'],
       mode=mode, width=width, height=height))
 
     # Why: #5 Alexa news """
 
-    self.AddUserStory(KeyMobileSitesRepaintPage(
+    self.AddStory(KeyMobileSitesRepaintPage(
       url='http://www.reddit.com/r/programming/comments/1g96ve',
       page_set=self, labels=['fastpath'],
       mode=mode, width=width, height=height))
 
     # Why: Problematic use of fixed position elements """
-    self.AddUserStory(KeyMobileSitesRepaintPage(
+    self.AddStory(KeyMobileSitesRepaintPage(
       url='http://www.boingboing.net', page_set=self, labels=['fastpath'],
       mode=mode, width=width, height=height))
 
@@ -191,5 +191,5 @@ class KeyMobileSitesRepaintPageSet(story.StorySet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(KeyMobileSitesRepaintPage(
+      self.AddStory(KeyMobileSitesRepaintPage(
           url, self, mode=mode, height=height, width=width))

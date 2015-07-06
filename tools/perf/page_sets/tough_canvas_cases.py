@@ -42,7 +42,7 @@ class ToughCanvasCasesPageSet(story.StorySet):
       cloud_storage_bucket=story.PARTNER_BUCKET)
 
     # Crashes on Galaxy Nexus. crbug.com/314131
-    # self.AddUserStory(MicrosofFirefliesPage(self))
+    # self.AddStory(MicrosofFirefliesPage(self))
 
     # Failing on Nexus 5 (http://crbug.com/364248):
     # 'http://geoapis.appspot.com/agdnZW9hcGlzchMLEgtFeGFtcGxlQ29kZRjh1wIM',
@@ -87,4 +87,4 @@ class ToughCanvasCasesPageSet(story.StorySet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(ToughCanvasCasesPage(url, self))
+      self.AddStory(ToughCanvasCasesPage(url, self))

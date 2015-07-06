@@ -82,8 +82,8 @@ class MobileMemoryPageSet(story.StorySet):
         archive_data_file='data/mobile_memory.json',
         cloud_storage_bucket=story.PARTNER_BUCKET)
 
-    self.AddUserStory(GmailPage(self))
-    self.AddUserStory(GoogleSearchPage(self))
+    self.AddStory(GmailPage(self))
+    self.AddStory(GoogleSearchPage(self))
 
     urls_list = [
       # Why: Renderer process memory bloat
@@ -95,4 +95,4 @@ class MobileMemoryPageSet(story.StorySet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(ScrollPage(url, self))
+      self.AddStory(ScrollPage(url, self))

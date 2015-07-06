@@ -179,10 +179,10 @@ class WebrtcCasesPageSet(story.StorySet):
       archive_data_file='data/webrtc_cases.json',
       cloud_storage_bucket=story.PUBLIC_BUCKET)
 
-    self.AddUserStory(Page1(self))
-    self.AddUserStory(Page2(self))
-    self.AddUserStory(Page3(self))
+    self.AddStory(Page1(self))
+    self.AddStory(Page2(self))
+    self.AddStory(Page3(self))
     # Disable page 4-7 until we can implement http://crbug.com/468732. We can
     # get data out from the tests, but it's not very useful yet.
-    self.AddUserStory(Page8(self))
-    self.AddUserStory(Page9(self))
+    self.AddStory(Page8(self))
+    self.AddStory(Page9(self))

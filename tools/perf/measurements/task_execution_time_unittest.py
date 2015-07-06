@@ -225,7 +225,7 @@ class TaskExecutionTimeUnitTest(page_test_test_case.PageTestTestCase):
     self._measurement = task_execution_time.TaskExecutionTime()
     self._page_set = self.CreateEmptyPageSet()
     page = TestTaskExecutionTimePage(self._page_set, self._page_set.base_dir)
-    self._page_set.AddUserStory(page)
+    self._page_set.AddStory(page)
 
     # Get the name of a thread used by task_execution_time metric and set up
     # some dummy execution data pretending to be from that thread & process.

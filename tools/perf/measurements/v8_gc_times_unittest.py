@@ -41,7 +41,7 @@ class V8GCTimesTestPageHelper(object):
     # Create a fake page and add it to the page set.
     results = page_test_results.PageTestResults()
     page = V8GCTimesTestPageHelper.MockV8GCTimesPage(self._page_set)
-    self._page_set.AddUserStory(page)
+    self._page_set.AddStory(page)
 
     # Pretend we're about to run the tests to silence lower level asserts.
     results.WillRunPage(page)

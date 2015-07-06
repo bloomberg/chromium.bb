@@ -70,25 +70,25 @@ class BlobWorkshopPageSet(story.StorySet):
 
   def __init__(self):
     super(BlobWorkshopPageSet, self).__init__()
-    self.AddUserStory(
+    self.AddStory(
         BlobMassCreate('2Bx200', [2] * 200, self))
-    self.AddUserStory(
+    self.AddStory(
         BlobMassCreate('1KBx200', [1024] * 200, self))
-    self.AddUserStory(
+    self.AddStory(
         BlobMassCreate('150KBx200', [150 * 1024] * 200, self))
-    self.AddUserStory(
+    self.AddStory(
         BlobMassCreate('1MBx200', [1024 * 1024] * 200, self))
-    self.AddUserStory(
+    self.AddStory(
         BlobMassCreate('10MBx30', [10 * 1024 * 1024] * 30, self))
-    self.AddUserStory(
+    self.AddStory(
         BlobMassCreate('100MBx5', [100 * 1024 * 1024] * 5, self))
 
-    self.AddUserStory(BlobCreateThenRead('2Bx200', [2] * 200, self))
-    self.AddUserStory(BlobCreateThenRead('1KBx200', [1024] * 200, self))
-    self.AddUserStory(
+    self.AddStory(BlobCreateThenRead('2Bx200', [2] * 200, self))
+    self.AddStory(BlobCreateThenRead('1KBx200', [1024] * 200, self))
+    self.AddStory(
         BlobCreateThenRead('150KBx200', [150 * 1024 - 1] * 200, self))
-    self.AddUserStory(BlobCreateThenRead('1MBx200', [1024 * 1024] * 200, self))
-    self.AddUserStory(
+    self.AddStory(BlobCreateThenRead('1MBx200', [1024 * 1024] * 200, self))
+    self.AddStory(
         BlobCreateThenRead('10MBx30', [10 * 1024 * 1024] * 30, self))
-    self.AddUserStory(
+    self.AddStory(
         BlobCreateThenRead('100MBx5', [100 * 1024 * 1024] * 5, self))

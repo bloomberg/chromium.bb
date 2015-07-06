@@ -66,7 +66,7 @@ class Typical10MobilePageSet(story.StorySet):
         cloud_storage_bucket=story.PARTNER_BUCKET)
 
     for url in urls_list:
-      self.AddUserStory(Typical10MobilePage(url, self))
+      self.AddStory(Typical10MobilePage(url, self))
 
 class Typical10MobileReloadPageSet(story.StorySet):
   """10 typical mobile pages, used for reloading power testing."""
@@ -77,4 +77,4 @@ class Typical10MobileReloadPageSet(story.StorySet):
         cloud_storage_bucket=story.PARTNER_BUCKET)
 
     for url in urls_list:
-      self.AddUserStory(Typical10MobileReloadPage(url, self))
+      self.AddStory(Typical10MobileReloadPage(url, self))

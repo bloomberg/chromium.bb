@@ -51,7 +51,7 @@ class KeyIdlePowerCasesPageSet(story.StorySet):
     ]
 
     for url in foreground_urls_list:
-      self.AddUserStory(KeyIdlePowerPage(url, self, False))
+      self.AddStory(KeyIdlePowerPage(url, self, False))
 
     background_urls_list = [
       # Why: Ensure animated GIFs aren't processed when Chrome is backgrounded.
@@ -65,4 +65,4 @@ class KeyIdlePowerCasesPageSet(story.StorySet):
     ]
 
     for url in background_urls_list:
-      self.AddUserStory(KeyIdlePowerPage(url, self, True))
+      self.AddStory(KeyIdlePowerPage(url, self, True))

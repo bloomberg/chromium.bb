@@ -33,4 +33,4 @@ class DomPageSet(story.StorySet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(DomPage(url, self))
+      self.AddStory(DomPage(url, self))

@@ -186,7 +186,7 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
   def _GenerateDataForEmptyPageSet(self):
     page_set = self.CreateEmptyPageSet()
     page = TestOilpanGCTimesPage(page_set)
-    page_set.AddUserStory(page)
+    page_set.AddStory(page)
 
     data = OilpanGCTimesTestData('CrRendererMain')
     # Pretend we are about to run the tests to silence lower level asserts.

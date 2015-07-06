@@ -49,4 +49,4 @@ class IntlKoThViPageSet(story.StorySet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(IntlKoThViPage(url, self))
+      self.AddStory(IntlKoThViPage(url, self))

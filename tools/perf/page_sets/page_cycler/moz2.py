@@ -65,4 +65,4 @@ class Moz2PageSet(story.StorySet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(Moz2Page(url, self))
+      self.AddStory(Moz2Page(url, self))

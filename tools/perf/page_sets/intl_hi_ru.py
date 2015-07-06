@@ -45,4 +45,4 @@ class IntlHiRuPageSet(story.StorySet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(IntlHiRuPage(url, self))
+      self.AddStory(IntlHiRuPage(url, self))

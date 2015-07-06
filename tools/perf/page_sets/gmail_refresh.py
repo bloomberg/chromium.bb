@@ -33,4 +33,4 @@ class GmailRefreshPageSet(story.StorySet):
       archive_data_file='data/gmail_refresh.json',
       cloud_storage_bucket=story.PUBLIC_BUCKET)
 
-    self.AddUserStory(GmailRefreshPage(self))
+    self.AddStory(GmailRefreshPage(self))

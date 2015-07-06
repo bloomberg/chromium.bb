@@ -50,5 +50,5 @@ class SimpleMobileSitesFlingPageSet(story.StorySet):
     ]
 
     for url in fling_page_list:
-      self.AddUserStory(SimpleFlingPage(url, self))
+      self.AddStory(SimpleFlingPage(url, self))
 

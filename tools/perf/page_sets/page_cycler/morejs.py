@@ -33,4 +33,4 @@ class MorejsPageSet(story.StorySet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(MorejsPage(url, self))
+      self.AddStory(MorejsPage(url, self))

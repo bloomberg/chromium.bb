@@ -29,4 +29,4 @@ class ProfileSafeUrlsPageSet(story.StorySet):
     # big.
     safe_urls = profile_safe_url_list.GetShuffledSafeUrls()[0:500]
     for safe_url in safe_urls:
-      self.AddUserStory(ProfileSafeUrlPage(safe_url, self))
+      self.AddStory(ProfileSafeUrlPage(safe_url, self))

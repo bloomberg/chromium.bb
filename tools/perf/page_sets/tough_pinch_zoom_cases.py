@@ -243,40 +243,40 @@ class ToughPinchZoomCasesPageSet(story.StorySet):
       archive_data_file='data/tough_pinch_zoom_cases.json',
       cloud_storage_bucket=story.PARTNER_BUCKET)
 
-    self.AddUserStory(GoogleSearchPage(self))
-    self.AddUserStory(GmailPage(self))
-    self.AddUserStory(GoogleCalendarPage(self))
-    self.AddUserStory(GoogleImageSearchPage(self))
-    self.AddUserStory(GooglePlusPage(self))
-    self.AddUserStory(YoutubePage(self))
-    self.AddUserStory(BlogSpotPage(self))
-    self.AddUserStory(FacebookPage(self))
-    self.AddUserStory(LinkedinPage(self))
-    self.AddUserStory(WikipediaPage(self))
-    self.AddUserStory(TwitterPage(self))
-    self.AddUserStory(ESPNPage(self))
+    self.AddStory(GoogleSearchPage(self))
+    self.AddStory(GmailPage(self))
+    self.AddStory(GoogleCalendarPage(self))
+    self.AddStory(GoogleImageSearchPage(self))
+    self.AddStory(GooglePlusPage(self))
+    self.AddStory(YoutubePage(self))
+    self.AddStory(BlogSpotPage(self))
+    self.AddStory(FacebookPage(self))
+    self.AddStory(LinkedinPage(self))
+    self.AddStory(WikipediaPage(self))
+    self.AddStory(TwitterPage(self))
+    self.AddStory(ESPNPage(self))
 
     # Why: #1 news worldwide (Alexa global)
-    self.AddUserStory(ToughPinchZoomCasesPage('http://news.yahoo.com', self))
+    self.AddStory(ToughPinchZoomCasesPage('http://news.yahoo.com', self))
 
     # Why: #2 news worldwide
-    self.AddUserStory(ToughPinchZoomCasesPage('http://www.cnn.com', self))
+    self.AddStory(ToughPinchZoomCasesPage('http://www.cnn.com', self))
 
-    self.AddUserStory(WeatherDotComPage(self))
+    self.AddStory(WeatherDotComPage(self))
 
     # Why: #1 world commerce website by visits; #3 commerce in the US by time
     # spent
-    self.AddUserStory(ToughPinchZoomCasesPage('http://www.amazon.com', self))
+    self.AddStory(ToughPinchZoomCasesPage('http://www.amazon.com', self))
 
     # Why: #1 commerce website by time spent by users in US
-    self.AddUserStory(ToughPinchZoomCasesPage('http://www.ebay.com', self))
+    self.AddStory(ToughPinchZoomCasesPage('http://www.ebay.com', self))
 
-    self.AddUserStory(YahooGamePage(self))
+    self.AddStory(YahooGamePage(self))
 
     # Why: #1 Alexa recreation
-    self.AddUserStory(ToughPinchZoomCasesPage('http://booking.com', self))
+    self.AddStory(ToughPinchZoomCasesPage('http://booking.com', self))
 
-    self.AddUserStory(YahooAnswersPage(self))
+    self.AddStory(YahooAnswersPage(self))
 
     # Why: #1 Alexa sports
-    self.AddUserStory(ToughPinchZoomCasesPage('http://sports.yahoo.com/', self))
+    self.AddStory(ToughPinchZoomCasesPage('http://sports.yahoo.com/', self))

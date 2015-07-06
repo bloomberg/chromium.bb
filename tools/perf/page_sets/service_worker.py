@@ -19,24 +19,24 @@ class ServiceWorkerPageSet(story.StorySet):
 
     # Why: the first application using ServiceWorker
     # 1st time: registration
-    self.AddUserStory(page.Page(
+    self.AddStory(page.Page(
         'https://jakearchibald.github.io/trained-to-thrill/', self,
         name='first_load', make_javascript_deterministic=False))
     # 2st time: 1st onfetch with caching
-    self.AddUserStory(page.Page(
+    self.AddStory(page.Page(
         'https://jakearchibald.github.io/trained-to-thrill/', self,
         name='second_load', make_javascript_deterministic=False))
     # 3rd time: 2nd onfetch from cache
-    self.AddUserStory(page.Page(
+    self.AddStory(page.Page(
         'https://jakearchibald.github.io/trained-to-thrill/', self,
         name='third_load', make_javascript_deterministic=False))
 
     # Why: another caching strategy: cache.addAll in oninstall handler
     # 1st time: registration and caching
-    self.AddUserStory(page.Page(
+    self.AddStory(page.Page(
         'https://jakearchibald.github.io/svgomg/', self,
         name='svgomg_first_load', make_javascript_deterministic=False))
     # 2st time: onfetch from cache
-    self.AddUserStory(page.Page(
+    self.AddStory(page.Page(
         'https://jakearchibald.github.io/svgomg/', self,
         name='svgomg_second_load', make_javascript_deterministic=False))

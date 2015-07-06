@@ -44,48 +44,48 @@ class KeyMobileSitesPageSet(story.StorySet):
       key_mobile_sites_pages.AmazonNicolasCagePage,
     ]
     for page_class in predefined_page_classes:
-      self.AddUserStory(page_class(self))
+      self.AddStory(page_class(self))
 
     # Add pages with custom page interaction logic.
 
     # Page behaves non-deterministically, replaced with test version for now.
-    # self.AddUserStory(GroupClonedPage(self))
+    # self.AddStory(GroupClonedPage(self))
     # mean_input_event_latency cannot be tracked correctly for
     # GroupClonedListImagesPage.
     # See crbug.com/409086.
-    # self.AddUserStory(GroupClonedListImagesPage(self))
+    # self.AddStory(GroupClonedListImagesPage(self))
 
     # Add pages with custom labels.
 
     # Why: Top news site.
-    self.AddUserStory(KeyMobileSitesPage(
+    self.AddStory(KeyMobileSitesPage(
       url='http://nytimes.com/', page_set=self, labels=['fastpath']))
 
     # Why: Image-heavy site.
-    self.AddUserStory(KeyMobileSitesPage(
+    self.AddStory(KeyMobileSitesPage(
       url='http://cuteoverload.com', page_set=self, labels=['fastpath']))
 
     # Why: #11 (Alexa global), google property; some blogger layouts
     # have infinite scroll but more interesting.
-    self.AddUserStory(KeyMobileSitesPage(
+    self.AddStory(KeyMobileSitesPage(
       url='http://googlewebmastercentral.blogspot.com/',
       page_set=self, name='Blogger'))
 
     # Why: #18 (Alexa global), Picked an interesting post """
-    self.AddUserStory(KeyMobileSitesPage(
+    self.AddStory(KeyMobileSitesPage(
       # pylint: disable=line-too-long
       url='http://en.blog.wordpress.com/2012/09/04/freshly-pressed-editors-picks-for-august-2012/',
       page_set=self,
       name='Wordpress'))
 
     # Why: #6 (Alexa) most visited worldwide, picked an interesting page
-    self.AddUserStory(KeyMobileSitesPage(
+    self.AddStory(KeyMobileSitesPage(
       url='http://en.wikipedia.org/wiki/Wikipedia',
       page_set=self,
       name='Wikipedia (1 tab)'))
 
     # Why: Wikipedia page with a delayed scroll start
-    self.AddUserStory(KeyMobileSitesPage(
+    self.AddStory(KeyMobileSitesPage(
       url='http://en.wikipedia.org/wiki/Wikipedia',
       page_set=self,
       name='Wikipedia (1 tab) - delayed scroll start',
@@ -93,35 +93,35 @@ class KeyMobileSitesPageSet(story.StorySet):
 
     # Why: #8 (Alexa global), picked an interesting page
     # Forbidden (Rate Limit Exceeded)
-    # self.AddUserStory(KeyMobileSitesPage(
+    # self.AddStory(KeyMobileSitesPage(
     #  url='http://twitter.com/katyperry', page_set=self, name='Twitter'))
 
     # Why: #37 (Alexa global) """
-    self.AddUserStory(KeyMobileSitesPage(
+    self.AddStory(KeyMobileSitesPage(
         url='http://pinterest.com',
         page_set=self,
         name='Pinterest'))
 
     # Why: #1 sports.
     # Fails often; crbug.com/249722'
-    # self.AddUserStory(KeyMobileSitesPage(
+    # self.AddStory(KeyMobileSitesPage(
     # url='http://espn.go.com', page_set=self, name='ESPN'))
     # Why: crbug.com/231413
     # Doesn't scroll; crbug.com/249736
-    # self.AddUserStory(KeyMobileSitesPage(
+    # self.AddStory(KeyMobileSitesPage(
     #                 url='http://forecast.io', page_set=self))
     # Why: crbug.com/169827
-    self.AddUserStory(KeyMobileSitesPage(
+    self.AddStory(KeyMobileSitesPage(
       url='http://slashdot.org/', page_set=self, labels=['fastpath']))
 
     # Why: #5 Alexa news """
 
-    self.AddUserStory(KeyMobileSitesPage(
+    self.AddStory(KeyMobileSitesPage(
       url='http://www.reddit.com/r/programming/comments/1g96ve',
       page_set=self, labels=['fastpath']))
 
     # Why: Problematic use of fixed position elements """
-    self.AddUserStory(KeyMobileSitesPage(
+    self.AddStory(KeyMobileSitesPage(
       url='http://www.boingboing.net', page_set=self, labels=['fastpath']))
 
     # Add simple pages with no custom navigation logic or labels.
@@ -176,4 +176,4 @@ class KeyMobileSitesPageSet(story.StorySet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(KeyMobileSitesPage(url, self))
+      self.AddStory(KeyMobileSitesPage(url, self))

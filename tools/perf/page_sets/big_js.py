@@ -25,6 +25,6 @@ class BigJsPageSet(story.StorySet):
        'http://www.foo.com',
     ]
     for url in urls_list:
-      self.AddUserStory(page_module.Page(
+      self.AddStory(page_module.Page(
           url, self,
           shared_page_state_class=shared_page_state.SharedDesktopPageState))

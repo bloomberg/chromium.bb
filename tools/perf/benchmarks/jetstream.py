@@ -91,7 +91,7 @@ class Jetstream(perf_benchmark.PerfBenchmark):
         archive_data_file='../page_sets/data/jetstream.json',
         base_dir=os.path.dirname(os.path.abspath(__file__)),
         cloud_storage_bucket=story.INTERNAL_BUCKET)
-    ps.AddUserStory(page_module.Page(
+    ps.AddStory(page_module.Page(
         'http://browserbench.org/JetStream/', ps, ps.base_dir,
         make_javascript_deterministic=False))
     return ps

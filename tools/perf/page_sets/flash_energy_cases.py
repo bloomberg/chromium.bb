@@ -37,4 +37,4 @@ class FlashEnergyCasesPageSet(story.StorySet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(FlashEnergyCasesPage(url, self))
+      self.AddStory(FlashEnergyCasesPage(url, self))

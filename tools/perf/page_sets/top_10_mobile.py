@@ -63,4 +63,4 @@ class Top10MobilePageSet(story.StorySet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(Top10MobilePage(url, self, run_no_page_interactions))
+      self.AddStory(Top10MobilePage(url, self, run_no_page_interactions))

@@ -88,7 +88,7 @@ class V8DetachedContextAgeInGCTests(page_test_test_case.PageTestTestCase):
   def testWithSimplePage(self):
     page_set = self.CreateEmptyPageSet()
     page = SimplePage(page_set)
-    page_set.AddUserStory(page)
+    page_set.AddStory(page)
     metric = v8_detached_context_age_in_gc.V8DetachedContextAgeInGC()
     results = self.RunMeasurement(metric, page_set, options=self._options)
     self.assertEquals(0, len(results.failures))

@@ -34,4 +34,4 @@ class ImageDecodingMeasurementPageSet(story.StorySet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(ImageDecodingMeasurementPage(url, self))
+      self.AddStory(ImageDecodingMeasurementPage(url, self))
