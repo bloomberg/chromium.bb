@@ -6,6 +6,7 @@ package org.chromium.content.browser;
 
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Rect;
 import android.view.ActionMode;
 import android.view.Menu;
@@ -142,7 +143,15 @@ public class SelectActionModeCallback implements ActionMode.Callback {
     }
 
     private void createActionMenu(ActionMode mode, Menu menu) {
-        new MenuInflater(getContext()).inflate(R.menu.select_action_menu, menu);
+        try {
+            mode.getMenuInflater().inflate(R.menu.select_action_menu, menu);
+        } catch (Resources.NotFoundException e) {
+            // TODO(tobiasjs) by the time we get here we have already
+            // caused a resource loading failure to be logged. WebView
+            // resource access needs to be improved so that this
+            // logspam can be avoided.
+            new MenuInflater(getContext()).inflate(R.menu.select_action_menu, menu);
+        }
 
         if (mIsInsertion) {
             menu.removeItem(R.id.select_action_menu_select_all);
