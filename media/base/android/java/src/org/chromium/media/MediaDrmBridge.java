@@ -388,7 +388,9 @@ public class MediaDrmBridge {
     @CalledByNative
     private void destroy() {
         mNativeMediaDrmBridge = INVALID_NATIVE_MEDIA_DRM_BRIDGE;
-        release();
+        if (mMediaDrm != null) {
+            release();
+        }
     }
 
     /**
