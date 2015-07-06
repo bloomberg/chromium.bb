@@ -255,25 +255,22 @@ check_cursor_pos(const char *tableList, const char *str, const int *expected_pos
   widechar *inbuf;
   widechar *outbuf;
   int *inpos, *outpos;
-  int orig_inlen;
+  int inlen;
   int outlen;
   int cursor_pos;
   int i, rv = 0;
 
-  orig_inlen = strlen(str);
-  outlen = orig_inlen;
-  inbuf = malloc(sizeof(widechar) * orig_inlen);
-  outbuf = malloc(sizeof(widechar) * orig_inlen);
-  inpos = malloc(sizeof(int) * orig_inlen);
-  outpos = malloc(sizeof(int) * orig_inlen);
-  for (i = 0; i < orig_inlen; i++)
-    {
-      inbuf[i] = str[i];
-    }
+  inlen = strlen(str);
+  outlen = inlen;
+  inbuf = malloc(sizeof(widechar) * inlen);
+  outbuf = malloc(sizeof(widechar) * inlen);
+  inpos = malloc(sizeof(int) * inlen);
+  outpos = malloc(sizeof(int) * inlen);
 
-  for (i = 0; i < orig_inlen; i++)
+  inlen = extParseChars(str, inbuf);
+
+  for (i = 0; i < inlen; i++)
     {
-      int inlen = orig_inlen;
       cursor_pos = i;
       lou_translate(tableList, inbuf, &inlen, outbuf, &outlen,
 		    NULL, NULL, NULL, NULL, &cursor_pos, compbrlAtCursor);
