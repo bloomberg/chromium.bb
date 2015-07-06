@@ -214,6 +214,7 @@ EventHandler::EventHandler(LocalFrame* frame)
     , m_mouseDownTimestamp(0)
     , m_widgetIsLatched(false)
     , m_touchPressed(false)
+    , m_inPointerCanceledState(false)
     , m_scrollGestureHandlingNode(nullptr)
     , m_lastGestureScrollOverWidget(false)
     , m_longTapShouldInvokeContextMenu(false)
@@ -295,6 +296,7 @@ void EventHandler::clear()
     m_scrollbarHandlingScrollGesture = nullptr;
     m_touchPressed = false;
     m_pointerIdManager.clear();
+    m_inPointerCanceledState = false;
     m_mouseDownMayStartDrag = false;
     m_lastShowPressTimestamp = 0;
     m_lastDeferredTapElement = nullptr;
@@ -3427,7 +3429,8 @@ HitTestResult EventHandler::hitTestResultInFrame(LocalFrame* frame, const Layout
     return result;
 }
 
-void EventHandler::dispatchPointerEventsForTouchEvent(const PlatformTouchEvent& event, WillBeHeapVector<TouchInfo>& touchInfos)
+void EventHandler::dispatchPointerEventsForTouchEvent(const PlatformTouchEvent& event,
+    WillBeHeapVector<TouchInfo>& touchInfos)
 {
     const String& PointerTypeStrForTouch("touch");
 
@@ -3441,12 +3444,13 @@ void EventHandler::dispatchPointerEventsForTouchEvent(const PlatformTouchEvent& 
         if (pointState == PlatformTouchPoint::TouchStationary || !touchInfo.knownTarget)
             continue;
 
-        bool pointerReleasedOrCancelled =
-            pointState == PlatformTouchPoint::TouchReleased || pointState == PlatformTouchPoint::TouchCancelled;
-        const AtomicString& eventName(pointerEventNameForTouchPointState(pointState));
+        bool pointerReleasedOrCancelled = pointState == PlatformTouchPoint::TouchReleased
+            || pointState == PlatformTouchPoint::TouchCancelled;
 
         if (pointState == PlatformTouchPoint::TouchPressed)
             m_pointerIdManager.add(PointerIdManager::PointerTypeTouch, pointerId);
+
+        const AtomicString& eventName = pointerEventNameForTouchPointState(pointState);
 
         bool isEnterOrLeave = false;
 
@@ -3482,11 +3486,34 @@ void EventHandler::dispatchPointerEventsForTouchEvent(const PlatformTouchEvent& 
     }
 }
 
+void EventHandler::sendPointerCancels(WillBeHeapVector<TouchInfo>& touchInfos)
+{
+    for (unsigned i = 0; i < touchInfos.size(); ++i) {
+        TouchInfo& touchInfo = touchInfos[i];
+        const PlatformTouchPoint& point = touchInfo.point;
+        const unsigned& pointerId = point.id();
+        const PlatformTouchPoint::State pointState = point.state();
+
+        if (pointState == PlatformTouchPoint::TouchReleased
+            || pointState == PlatformTouchPoint::TouchCancelled)
+            continue;
+
+        PointerEventInit pointerEventInit;
+        pointerEventInit.setPointerId(pointerId);
+        pointerEventInit.setBubbles(true);
+        pointerEventInit.setCancelable(false);
+
+        RefPtrWillBeRawPtr<PointerEvent> pointerEvent = PointerEvent::create(
+            EventTypeNames::pointercancel, pointerEventInit);
+        touchInfo.touchTarget->toNode()->dispatchPointerEvent(pointerEvent.get());
+
+        m_pointerIdManager.remove(PointerIdManager::PointerTypeTouch, pointerId);
+    }
+}
+
 bool EventHandler::dispatchTouchEvents(const PlatformTouchEvent& event,
     WillBeHeapVector<TouchInfo>& touchInfos, bool freshTouchEvents, bool allTouchReleased)
 {
-    bool swallowedEvent = false;
-
     // Build up the lists to use for the 'touches', 'targetTouches' and
     // 'changedTouches' attributes in the JS event. See
     // http://www.w3.org/TR/touch-events/#touchevent-interface for how these
@@ -3563,6 +3590,8 @@ bool EventHandler::dispatchTouchEvents(const PlatformTouchEvent& event,
         m_touchSequenceUserGestureToken.clear();
     }
 
+    bool swallowedEvent = false;
+
     // Now iterate through the changedTouches list and m_targets within it, sending
     // TouchEvents to the targets as required.
     for (unsigned state = 0; state != PlatformTouchPoint::TouchStateEnd; ++state) {
@@ -3576,7 +3605,9 @@ bool EventHandler::dispatchTouchEvents(const PlatformTouchEvent& event,
             RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(
                 touches.get(), touchesByTarget.get(touchEventTarget), changedTouches[state].m_touches.get(),
                 eventName, touchEventTarget->toNode()->document().domWindow(),
-                event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(), event.cancelable(), event.causesScrollingIfUncanceled(), event.timestamp());
+                event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(),
+                event.cancelable(), event.causesScrollingIfUncanceled(), event.timestamp());
+
             touchEventTarget->toNode()->dispatchTouchEvent(touchEvent.get());
             swallowedEvent = swallowedEvent || touchEvent->defaultPrevented() || touchEvent->defaultHandled();
         }
@@ -3755,14 +3786,36 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
     }
 
     if (RuntimeEnabledFeatures::pointerEventEnabled()) {
-        dispatchPointerEventsForTouchEvent(event, touchInfos);
-        // Note that the disposition of any pointer events affects only the generation of touch
-        // events. If all pointer events were handled (and hence no touch events were fired), that
-        // is still equivalent to the touch events going unhandled because pointer event handler
-        // don't block scroll gesture generation.
+        if (!m_inPointerCanceledState) {
+            dispatchPointerEventsForTouchEvent(event, touchInfos);
+            // Note that the disposition of any pointer events affects only the generation of touch
+            // events. If all pointer events were handled (and hence no touch events were fired), that
+            // is still equivalent to the touch events going unhandled because pointer event handler
+            // don't block scroll gesture generation.
+        }
     }
 
-    return dispatchTouchEvents(event, touchInfos, freshTouchEvents, allTouchReleased);
+    // TODO(crbug.com/507408): If PE handlers always call preventDefault, we won't see TEs until after
+    // scrolling starts because the scrolling would suppress upcoming PEs. This sudden "break" in TE
+    // suppression can make the visible TEs inconsistent (e.g. touchmove without a touchstart).
+
+    bool swallowedTouchEvent = dispatchTouchEvents(event, touchInfos, freshTouchEvents,
+        allTouchReleased);
+
+    if (RuntimeEnabledFeatures::pointerEventEnabled()) {
+        if (!m_inPointerCanceledState) {
+            // Check if we need to stop firing pointer events because of a touch action.
+            // See: www.w3.org/TR/pointerevents/#declaring-candidate-regions-for-default-touch-behaviors
+            if (event.causesScrollingIfUncanceled() && !swallowedTouchEvent) {
+                m_inPointerCanceledState = true;
+                sendPointerCancels(touchInfos);
+            }
+        } else if (allTouchReleased) {
+            m_inPointerCanceledState = false;
+        }
+    }
+
+    return swallowedTouchEvent;
 }
 
 TouchAction EventHandler::intersectTouchAction(TouchAction action1, TouchAction action2)

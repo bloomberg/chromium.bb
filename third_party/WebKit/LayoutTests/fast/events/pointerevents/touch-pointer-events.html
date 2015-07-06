@@ -47,7 +47,7 @@ function init() {
       });
     });
 
-    ["pointerdown", "pointerup", "pointermove"].forEach(function(eventName) {
+    ["pointerdown", "pointerup", "pointermove", "pointercancel"].forEach(function(eventName) {
       targetDiv.addEventListener(eventName, function(event) {
         if (event.eventPhase == Event.AT_TARGET)
           receivedPEsAtTarget.push(event);
