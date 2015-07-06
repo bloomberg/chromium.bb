@@ -959,33 +959,63 @@ void OmniboxEditModel::AcceptTemporaryTextAsUserText() {
 
 void OmniboxEditModel::ClearKeyword() {
   autocomplete_controller()->Stop(false);
+
+  // While we're always in keyword mode upon reaching here, sometimes we've just
+  // toggled in via space or tab, and sometimes we're on a non-toggled line
+  // (usually because the user has typed a search string).  Keep track of the
+  // difference, as we'll need it below.
+  bool was_toggled_into_keyword_mode =
+    popup_model()->selected_line_state() == OmniboxPopupModel::KEYWORD;
+
   omnibox_controller_->ClearPopupKeywordMode();
 
+  // There are several possible states we could have been in before the user hit
+  // backspace or shift-tab to enter this function:
+  // (1) was_toggled_into_keyword_mode == false, has_temporary_text_ == false
+  //     The user typed a further key after being in keyword mode already, e.g.
+  //     "google.com f".
+  // (2) was_toggled_into_keyword_mode == false, has_temporary_text_ == true
+  //     The user tabbed away from a dropdown entry in keyword mode, then tabbed
+  //     back to it, e.g. "google.com f<tab><shift-tab>".
+  // (3) was_toggled_into_keyword_mode == true, has_temporary_text_ == false
+  //     The user had just typed space to enter keyword mode, e.g.
+  //     "google.com ".
+  // (4) was_toggled_into_keyword_mode == true, has_temporary_text_ == true
+  //     The user had just typed tab to enter keyword mode, e.g.
+  //     "google.com<tab>".
+  //
+  // For states 1-3, we can safely handle the exit from keyword mode by using
+  // OnBefore/AfterPossibleChange() to do a complete state update of all
+  // objects.  However, with state 4, if we do this, and if the user had tabbed
+  // into keyword mode on a line in the middle of the dropdown instead of the
+  // first line, then the state update will rerun autocompletion and reset the
+  // whole dropdown, and end up with the first line selected instead, instead of
+  // just "undoing" the keyword mode entry on the non-first line.  So in this
+  // case we simply reset |is_keyword_hint_| to true and update the window text.
+  //
+  // You might wonder why we don't simply do this in all cases.  In states 1-2,
+  // getting out of keyword mode likely shouldn't put us in keyword hint mode;
+  // if the user typed "google.com f" and then put the cursor before 'f' and hit
+  // backspace, the resulting text would be "google.comf", which is unlikely to
+  // be a keyword.  Unconditionally putting things back in keyword hint mode is
+  // going to lead to internally inconsistent state, and possible future
+  // crashes.  State 3 is more subtle; here we need to do the full state update
+  // because before entering keyword mode to begin with, we will have re-run
+  // autocomplete in ways that can produce surprising results if we just switch
+  // back out of keyword mode.  For example, if a user has a keyword named "x",
+  // an inline-autocompletable history site "xyz.com", and a lower-ranked
+  // inline-autocompletable search "x y", then typing "x" will inline-
+  // autocomplete to "xyz.com", hitting space will toggle into keyword mode, but
+  // then hitting backspace could wind up with the default match as the "x y"
+  // search, which feels bizarre.
   const base::string16 window_text(keyword_ + view_->GetText());
-
-  // If we've tabbed into keyword mode and haven't done anything else,
-  // |has_temporary_text_| will be true, and we should just revert into keyword
-  // hint mode; otherwise we do a more complete state update/revert via
-  // OnBefore/AfterPossibleChange().
-  //
-  // If we were to do the "complete state revert" all the time, then in cases
-  // where our associated keyword match is in the middle of the popup instead of
-  // on the first line, tabbing into it and then hitting shift-tab would reset
-  // the entire popup contents, and we'd wind up with the first line selected.
-  //
-  // If we were instead to "just switch back to keyword hint mode" all the time,
-  // we could wind up with strange state in some cases.  For example, if a user
-  // has a keyword named "x", an inline-autocompletable history site "xyz.com",
-  // and a lower-ranked inline-autocompletable search "x y", then typing "x"
-  // will inline autocomplete to "xyz.com", hitting space will toggle into
-  // keyword mode, but then hitting backspace might wind up with the default
-  // match as the "x y" search, due to the particulars of how we re-run
-  // autocomplete for "x " before toggling into keyword mode to begin with.
-  if (has_temporary_text_) {
+  if (was_toggled_into_keyword_mode && has_temporary_text_) {
+    // State 4 above.
     is_keyword_hint_ = true;
     view_->SetWindowTextAndCaretPos(window_text.c_str(), keyword_.length(),
         false, true);
   } else {
+    // States 1-3 above.
     view_->OnBeforePossibleChange();
     view_->SetWindowTextAndCaretPos(window_text.c_str(), keyword_.length(),
         false, false);
