@@ -1873,6 +1873,9 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
 #endif
 
   service_registry_.reset();
+
+  // Disconnect with ImageDownloader Mojo service in RenderFrame.
+  mojo_image_downloader_.reset();
 }
 
 bool RenderFrameHostImpl::IsFocused() {
@@ -1883,6 +1886,15 @@ bool RenderFrameHostImpl::IsFocused() {
          frame_tree_->GetFocusedFrame() &&
          (frame_tree_->GetFocusedFrame() == frame_tree_node() ||
           frame_tree_->GetFocusedFrame()->IsDescendantOf(frame_tree_node()));
+}
+
+const image_downloader::ImageDownloaderPtr&
+RenderFrameHostImpl::GetMojoImageDownloader() {
+  if (!mojo_image_downloader_.get()) {
+    GetServiceRegistry()->ConnectToRemoteService(
+        mojo::GetProxy(&mojo_image_downloader_));
+  }
+  return mojo_image_downloader_;
 }
 
 void RenderFrameHostImpl::UpdateCrossProcessIframeAccessibility(

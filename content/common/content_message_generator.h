@@ -28,7 +28,6 @@
 #include "content/common/gamepad_messages.h"
 #include "content/common/geofencing_messages.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/common/image_messages.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/manifest_manager_messages.h"

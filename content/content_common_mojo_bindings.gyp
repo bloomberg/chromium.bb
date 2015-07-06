@@ -14,6 +14,7 @@
           'common/application_setup.mojom',
           'common/background_sync_service.mojom',
           'common/geolocation_service.mojom',
+          'common/image_downloader/image_downloader.mojom',
           'common/permission_service.mojom',
           'common/presentation/presentation_service.mojom',
           'common/process_control.mojom',
@@ -38,7 +39,9 @@
         'content_common_mojo_bindings_mojom',
         '../mojo/mojo_base.gyp:mojo_application_bindings',
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
+        '../skia/skia.gyp:skia_mojo',
         '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
+        '../ui/mojo/geometry/mojo_bindings.gyp:mojo_geometry_bindings',
       ]
     },
   ]

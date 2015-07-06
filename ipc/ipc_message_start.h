@@ -53,7 +53,6 @@ enum IPCMessageStart {
   ExtensionMsgStart,
   VideoCaptureMsgStart,
   QuotaMsgStart,
-  ImageMsgStart,
   TextInputClientMsgStart,
   ChromeUtilityMsgStart,
   MediaStreamMsgStart,

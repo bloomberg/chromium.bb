@@ -62,7 +62,6 @@
 #include "content/common/browser_plugin/browser_plugin_constants.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/frame_messages.h"
-#include "content/common/image_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
@@ -97,11 +96,15 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
+#include "mojo/common/url_type_converters.h"
+#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "net/base/net_util.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "skia/public/type_converters.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
@@ -135,19 +138,19 @@ const char kWebContentsAndroidKey[] = "web_contents_android";
 base::LazyInstance<std::vector<WebContentsImpl::CreatedCallback> >
 g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
 
-static int StartDownload(RenderFrameHost* rfh,
-                         const GURL& url,
-                         bool is_favicon,
-                         uint32_t max_bitmap_size,
-                         bool bypass_cache) {
-  static int g_next_image_download_id = 0;
-  rfh->Send(new ImageMsg_DownloadImage(rfh->GetRoutingID(),
-                                       ++g_next_image_download_id,
-                                       url,
-                                       is_favicon,
-                                       max_bitmap_size,
-                                       bypass_cache));
-  return g_next_image_download_id;
+static void DidDownloadImage(const WebContents::ImageDownloadCallback& callback,
+                             int id,
+                             const GURL& image_url,
+                             image_downloader::DownloadResultPtr result) {
+  DCHECK(result);
+
+  const std::vector<SkBitmap> images =
+      result->images.To<std::vector<SkBitmap>>();
+  const std::vector<gfx::Size> original_image_sizes =
+      result->original_image_sizes.To<std::vector<gfx::Size>>();
+
+  callback.Run(id, result->http_status_code, image_url, images,
+               original_image_sizes);
 }
 
 void NotifyCacheOnIO(
@@ -611,7 +614,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                                 OnBrowserPluginMessage(render_frame_host,
                                                        message))
 #endif
-    IPC_MESSAGE_HANDLER(ImageHostMsg_DidDownloadImage, OnDidDownloadImage)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowValidationMessage,
                         OnShowValidationMessage)
@@ -2593,15 +2595,27 @@ void WebContentsImpl::DidEndColorChooser() {
   color_chooser_info_.reset();
 }
 
-int WebContentsImpl::DownloadImage(const GURL& url,
-                                   bool is_favicon,
-                                   uint32_t max_bitmap_size,
-                                   bool bypass_cache,
-                                   const ImageDownloadCallback& callback) {
-  int id = StartDownload(GetMainFrame(), url, is_favicon, max_bitmap_size,
-                         bypass_cache);
-  image_download_map_[id] = callback;
-  return id;
+int WebContentsImpl::DownloadImage(
+    const GURL& url,
+    bool is_favicon,
+    uint32_t max_bitmap_size,
+    bool bypass_cache,
+    const WebContents::ImageDownloadCallback& callback) {
+  static int next_image_download_id = 0;
+  const image_downloader::ImageDownloaderPtr& mojo_image_downloader =
+      GetMainFrame()->GetMojoImageDownloader();
+  image_downloader::DownloadRequestPtr req =
+      image_downloader::DownloadRequest::New();
+
+  req->url = mojo::String::From(url);
+  req->is_favicon = is_favicon;
+  req->max_bitmap_size = max_bitmap_size;
+  req->bypass_cache = bypass_cache;
+
+  mojo_image_downloader->DownloadImage(
+      req.Pass(),
+      base::Bind(&DidDownloadImage, callback, ++next_image_download_id, url));
+  return next_image_download_id;
 }
 
 bool WebContentsImpl::IsSubframe() const {
@@ -3175,28 +3189,6 @@ void WebContentsImpl::OnBrowserPluginMessage(RenderFrameHost* render_frame_host,
   browser_plugin_embedder_->OnMessageReceived(message, render_frame_host);
 }
 #endif  // defined(ENABLE_PLUGINS)
-
-void WebContentsImpl::OnDidDownloadImage(
-    int id,
-    int http_status_code,
-    const GURL& image_url,
-    const std::vector<SkBitmap>& bitmaps,
-    const std::vector<gfx::Size>& original_bitmap_sizes) {
-  if (bitmaps.size() != original_bitmap_sizes.size())
-    return;
-
-  ImageDownloadMap::iterator iter = image_download_map_.find(id);
-  if (iter == image_download_map_.end()) {
-    // Currently WebContents notifies us of ANY downloads so that it is
-    // possible to get here.
-    return;
-  }
-  if (!iter->second.is_null()) {
-    iter->second.Run(
-        id, http_status_code, image_url, bitmaps, original_bitmap_sizes);
-  }
-  image_download_map_.erase(id);
-}
 
 void WebContentsImpl::OnUpdateFaviconURL(
     const std::vector<FaviconURL>& candidates) {

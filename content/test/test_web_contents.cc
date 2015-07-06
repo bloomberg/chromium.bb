@@ -64,6 +64,15 @@ TestRenderFrameHost* TestWebContents::GetPendingMainFrame() const {
       GetRenderManager()->pending_frame_host());
 }
 
+int TestWebContents::DownloadImage(const GURL& url,
+                                   bool is_favicon,
+                                   uint32_t max_bitmap_size,
+                                   bool bypass_cache,
+                                   const ImageDownloadCallback& callback) {
+  static int g_next_image_download_id = 0;
+  return ++g_next_image_download_id;
+}
+
 void TestWebContents::TestDidNavigate(RenderFrameHost* render_frame_host,
                                       int page_id,
                                       int nav_entry_id,

@@ -20,6 +20,7 @@
 #include "content/common/content_export.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/frame_replication_state.h"
+#include "content/common/image_downloader/image_downloader.mojom.h"
 #include "content/common/mojo/service_registry_impl.h"
 #include "content/common/navigation_params.h"
 #include "content/public/browser/render_frame_host.h"
@@ -445,6 +446,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // addition, its associated RenderWidgetHost has to be focused.
   bool IsFocused();
 
+  // Returns the Mojo ImageDownloader service pointer.
+  const image_downloader::ImageDownloaderPtr& GetMojoImageDownloader();
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -734,6 +738,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // The frame's Mojo Shell service.
   scoped_ptr<FrameMojoShell> frame_mojo_shell_;
+
+  // Holder of Mojo connection with ImageDownloader service in RenderFrame.
+  image_downloader::ImageDownloaderPtr mojo_image_downloader_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;

@@ -359,7 +359,6 @@
       'common/host_discardable_shared_memory_manager.h',
       'common/host_shared_bitmap_manager.cc',
       'common/host_shared_bitmap_manager.h',
-      'common/image_messages.h',
       'common/indexed_db/indexed_db_constants.h',
       'common/indexed_db/indexed_db_key.cc',
       'common/indexed_db/indexed_db_key.h',

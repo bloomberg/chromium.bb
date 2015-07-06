@@ -823,6 +823,8 @@ class CONTENT_EXPORT RenderFrameImpl
 
   media::CdmFactory* GetCdmFactory();
 
+  void RegisterMojoServices();
+
   // Stores the WebLocalFrame we are associated with.  This is null from the
   // constructor until SetWebFrame is called, and it is null after
   // frameDetached is called until destruction (which is asynchronous in the

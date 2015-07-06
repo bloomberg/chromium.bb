@@ -489,6 +489,7 @@ mojom("mojo_bindings") {
     "application_setup.mojom",
     "background_sync_service.mojom",
     "geolocation_service.mojom",
+    "image_downloader/image_downloader.mojom",
     "permission_service.mojom",
     "presentation/presentation_service.mojom",
     "process_control.mojom",
@@ -502,5 +503,7 @@ mojom("mojo_bindings") {
   deps = [
     "//content/public/common:mojo_bindings",
     "//mojo/application/public/interfaces",
+    "//skia/public/interfaces",
+    "//ui/mojo/geometry:interfaces",
   ]
 }

@@ -856,11 +856,6 @@ class CONTENT_EXPORT WebContentsImpl
   void OnBrowserPluginMessage(RenderFrameHost* render_frame_host,
                               const IPC::Message& message);
 #endif  // defined(ENABLE_PLUGINS)
-  void OnDidDownloadImage(int id,
-                          int http_status_code,
-                          const GURL& image_url,
-                          const std::vector<SkBitmap>& bitmaps,
-                          const std::vector<gfx::Size>& original_bitmap_sizes);
   void OnUpdateFaviconURL(const std::vector<FaviconURL>& candidates);
   void OnFirstVisuallyNonEmptyPaint();
   void OnMediaPlayingNotification(int64 player_cookie,
@@ -1241,10 +1236,6 @@ class CONTENT_EXPORT WebContentsImpl
   // fullscreen widget is destroyed, and 2) the WebContentsDelegate has
   // completed making layout changes to effect an exit from fullscreen mode.
   bool fullscreen_widget_had_focus_at_shutdown_;
-
-  // Maps the ids of pending image downloads to their callbacks
-  typedef std::map<int, ImageDownloadCallback> ImageDownloadMap;
-  ImageDownloadMap image_download_map_;
 
   // Whether this WebContents is responsible for displaying a subframe in a
   // different process from its parent page.

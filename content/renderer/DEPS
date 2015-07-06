@@ -12,7 +12,7 @@ include_rules = [
   "+gin",
   "+jingle/glue",
   "+media",  # For audio input/output and audio/video decoding.
-  "+mojo/application/public/interfaces",
+  "+mojo",
   "-storage/browser",
   "+third_party/hyphen/hyphen.h",
   "+third_party/libjingle",

@@ -72,7 +72,7 @@
 #include "content/renderer/gpu/gpu_benchmarking_extension.h"
 #include "content/renderer/history_controller.h"
 #include "content/renderer/history_serialization.h"
-#include "content/renderer/image_loading_helper.h"
+#include "content/renderer/image_downloader/image_downloader_impl.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/manifest/manifest_manager.h"
@@ -741,14 +741,13 @@ void RenderFrameImpl::Initialize() {
 #endif
   new SharedWorkerRepository(this);
 
-  if (!frame_->parent())
-    new ImageLoadingHelper(this);
-
   if (is_local_root_ && !render_frame_proxy_) {
     // DevToolsAgent is a RenderFrameObserver, and will destruct itself
     // when |this| is deleted.
     devtools_agent_ = new DevToolsAgent(this);
   }
+
+  RegisterMojoServices();
 
   // We delay calling this until we have the WebFrame so that any observer or
   // embedder can call GetWebFrame on any RenderFrame.
@@ -5006,6 +5005,15 @@ media::CdmFactory* RenderFrameImpl::GetCdmFactory() {
   }
 
   return cdm_factory_.get();
+}
+
+void RenderFrameImpl::RegisterMojoServices() {
+  // Only main frame have ImageDownloader service.
+  if (!frame_->parent()) {
+    GetServiceRegistry()->AddService<image_downloader::ImageDownloader>(
+        base::Bind(&ImageDownloaderImpl::CreateMojoService,
+                   base::Unretained(this)));
+  }
 }
 
 }  // namespace content
