@@ -28,13 +28,13 @@ void VideoPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
         return;
     rect.moveBy(paintOffset);
 
+    GraphicsContext* context = paintInfo.context;
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, m_layoutVideo, paintInfo.phase))
+        return;
+
     LayoutRect contentRect = m_layoutVideo.contentBoxRect();
     contentRect.moveBy(paintOffset);
-    GraphicsContext* context = paintInfo.context;
-
     LayoutObjectDrawingRecorder drawingRecorder(*context, m_layoutVideo, paintInfo.phase, contentRect);
-    if (drawingRecorder.canUseCachedDrawing())
-        return;
 
     bool clip = !contentRect.contains(rect);
     if (clip) {

@@ -62,12 +62,20 @@ void BlockFlowPainter::paintSelection(const PaintInfo& paintInfo, const LayoutPo
         bounds = m_layoutBlockFlow.visualOverflowRect();
         bounds.moveBy(paintOffset);
     }
-    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlockFlow, DisplayItem::SelectionGap, bounds);
-    ClipScope clipScope(paintInfo.context);
+
+    // Only create a DrawingRecorder and ClipScope if skipRecording is false. This logic is needed
+    // because selectionGaps(...) needs to be called even when we do not record.
+    bool skipRecording = LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutBlockFlow, DisplayItem::SelectionGap);
+    Optional<DrawingRecorder> drawingRecorder;
+    Optional<ClipScope> clipScope;
+    if (!skipRecording) {
+        drawingRecorder.emplace(*paintInfo.context, m_layoutBlockFlow, DisplayItem::SelectionGap, bounds);
+        clipScope.emplace(paintInfo.context);
+    }
 
     LayoutRect gapRectsBounds = m_layoutBlockFlow.selectionGaps(&m_layoutBlockFlow, paintOffset, LayoutSize(), lastTop, lastLeft, lastRight,
-        recorder.canUseCachedDrawing() ? nullptr : &paintInfo,
-        recorder.canUseCachedDrawing() ? nullptr : &clipScope);
+        skipRecording ? nullptr : &paintInfo,
+        skipRecording ? nullptr : &(*clipScope));
     // TODO(wkorman): Rework below to process paint invalidation rects during layout rather than paint.
     if (!gapRectsBounds.isEmpty()) {
         DeprecatedPaintLayer* layer = m_layoutBlockFlow.enclosingLayer();

@@ -176,8 +176,8 @@ void TableSectionPainter::paintCell(LayoutTableCell* cell, const PaintInfo& pain
 
         if (columnHasBackground || columnGroupHasBackground || sectionHasBackground || rowHasBackground) {
             TableCellPainter tableCellPainter(*cell);
-            LayoutObjectDrawingRecorder recorder(*paintInfo.context, *cell, paintPhase, tableCellPainter.paintBounds(cellPoint, TableCellPainter::AddOffsetFromParent));
-            if (!recorder.canUseCachedDrawing()) {
+            if (!LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, *cell, paintPhase)) {
+                LayoutObjectDrawingRecorder recorder(*paintInfo.context, *cell, paintPhase, tableCellPainter.paintBounds(cellPoint, TableCellPainter::AddOffsetFromParent));
                 // Column groups and columns first.
                 // FIXME: Columns and column groups do not currently support opacity, and they are being painted "too late" in
                 // the stack, since we have already opened a transparency layer (potentially) for the table row group.

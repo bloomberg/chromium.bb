@@ -86,9 +86,10 @@ ScrollbarPainter ScrollbarThemeMacOverlayAPI::painterForScrollbar(ScrollbarTheme
 }
 
 void ScrollbarThemeMacOverlayAPI::paintTrackBackground(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect) {
-    DrawingRecorder recorder(*context, *scrollbar, DisplayItem::ScrollbarTrackBackground, rect);
-    if (recorder.canUseCachedDrawing())
+    if (DrawingRecorder::useCachedDrawingIfPossible(*context, *scrollbar, DisplayItem::ScrollbarTrackBackground))
         return;
+
+    DrawingRecorder recorder(*context, *scrollbar, DisplayItem::ScrollbarTrackBackground, rect);
 
     ASSERT(isOverlayAPIAvailable());
 
@@ -106,12 +107,13 @@ void ScrollbarThemeMacOverlayAPI::paintTrackBackground(GraphicsContext* context,
 }
 
 void ScrollbarThemeMacOverlayAPI::paintThumb(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect) {
+    if (DrawingRecorder::useCachedDrawingIfPossible(*context, *scrollbar, DisplayItem::ScrollbarThumb))
+        return;
+
     // Expand dirty rect to allow for scroll thumb anti-aliasing in minimum thumb size case.
     IntRect dirtyRect = IntRect(rect);
     dirtyRect.inflate(1);
     DrawingRecorder recorder(*context, *scrollbar, DisplayItem::ScrollbarThumb, dirtyRect);
-    if (recorder.canUseCachedDrawing())
-        return;
 
     ASSERT(isOverlayAPIAvailable());
 

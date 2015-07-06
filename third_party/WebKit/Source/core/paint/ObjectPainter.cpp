@@ -39,9 +39,10 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& o
     if (!styleToUse.hasOutline())
         return;
 
-    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutObject, paintInfo.phase, visualOverflowBounds);
-    if (recorder.canUseCachedDrawing())
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutObject, paintInfo.phase))
         return;
+
+    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutObject, paintInfo.phase, visualOverflowBounds);
 
     if (styleToUse.outlineStyleIsAuto()) {
         if (LayoutTheme::theme().shouldDrawDefaultFocusRing(&m_layoutObject)) {
@@ -84,10 +85,10 @@ void ObjectPainter::addPDFURLRectIfNeeded(const PaintInfo& paintInfo, const Layo
     if (rect.isEmpty())
         return;
 
-    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutObject, DisplayItem::PrintedContentPDFURLRect, rect);
-    if (recorder.canUseCachedDrawing())
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutObject, DisplayItem::PrintedContentPDFURLRect))
         return;
 
+    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutObject, DisplayItem::PrintedContentPDFURLRect, rect);
     if (url.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(url, m_layoutObject.document().baseURL())) {
         String fragmentName = url.fragmentIdentifier();
         if (m_layoutObject.document().findAnchor(fragmentName))

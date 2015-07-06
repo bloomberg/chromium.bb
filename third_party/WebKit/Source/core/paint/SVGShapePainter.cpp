@@ -57,57 +57,55 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo)
     TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_layoutSVGShape, m_layoutSVGShape.localTransform());
     {
         SVGPaintContext paintContext(m_layoutSVGShape, paintInfoBeforeFiltering);
-        if (paintContext.applyClipMaskAndFilterIfNecessary()) {
+        if (paintContext.applyClipMaskAndFilterIfNecessary() && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintContext.paintInfo().context, m_layoutSVGShape, paintContext.paintInfo().phase)) {
             LayoutObjectDrawingRecorder recorder(*paintContext.paintInfo().context, m_layoutSVGShape, paintContext.paintInfo().phase, boundingBox);
-            if (!recorder.canUseCachedDrawing()) {
-                const SVGComputedStyle& svgStyle = m_layoutSVGShape.style()->svgStyle();
+            const SVGComputedStyle& svgStyle = m_layoutSVGShape.style()->svgStyle();
 
-                bool shouldAntiAlias = svgStyle.shapeRendering() != SR_CRISPEDGES;
+            bool shouldAntiAlias = svgStyle.shapeRendering() != SR_CRISPEDGES;
 
-                for (int i = 0; i < 3; i++) {
-                    switch (svgStyle.paintOrderType(i)) {
-                    case PT_FILL: {
-                        SkPaint fillPaint;
-                        if (!SVGPaintContext::paintForLayoutObject(paintContext.paintInfo(), m_layoutSVGShape.styleRef(), m_layoutSVGShape, ApplyToFillMode, fillPaint))
-                            break;
-                        fillPaint.setAntiAlias(shouldAntiAlias);
-                        fillShape(paintContext.paintInfo().context, fillPaint, fillRuleFromStyle(paintContext.paintInfo(), svgStyle));
+            for (int i = 0; i < 3; i++) {
+                switch (svgStyle.paintOrderType(i)) {
+                case PT_FILL: {
+                    SkPaint fillPaint;
+                    if (!SVGPaintContext::paintForLayoutObject(paintContext.paintInfo(), m_layoutSVGShape.styleRef(), m_layoutSVGShape, ApplyToFillMode, fillPaint))
                         break;
-                    }
-                    case PT_STROKE:
-                        if (svgStyle.hasVisibleStroke()) {
-                            GraphicsContextStateSaver stateSaver(*paintContext.paintInfo().context, false);
-                            AffineTransform nonScalingTransform;
-                            const AffineTransform* additionalPaintServerTransform = 0;
+                    fillPaint.setAntiAlias(shouldAntiAlias);
+                    fillShape(paintContext.paintInfo().context, fillPaint, fillRuleFromStyle(paintContext.paintInfo(), svgStyle));
+                    break;
+                }
+                case PT_STROKE:
+                    if (svgStyle.hasVisibleStroke()) {
+                        GraphicsContextStateSaver stateSaver(*paintContext.paintInfo().context, false);
+                        AffineTransform nonScalingTransform;
+                        const AffineTransform* additionalPaintServerTransform = 0;
 
-                            if (m_layoutSVGShape.hasNonScalingStroke()) {
-                                nonScalingTransform = m_layoutSVGShape.nonScalingStrokeTransform();
-                                if (!setupNonScalingStrokeContext(nonScalingTransform, stateSaver))
-                                    return;
+                        if (m_layoutSVGShape.hasNonScalingStroke()) {
+                            nonScalingTransform = m_layoutSVGShape.nonScalingStrokeTransform();
+                            if (!setupNonScalingStrokeContext(nonScalingTransform, stateSaver))
+                                return;
 
-                                // Non-scaling stroke needs to reset the transform back to the host transform.
-                                additionalPaintServerTransform = &nonScalingTransform;
-                            }
-
-                            SkPaint strokePaint;
-                            if (!SVGPaintContext::paintForLayoutObject(paintContext.paintInfo(), m_layoutSVGShape.styleRef(), m_layoutSVGShape, ApplyToStrokeMode, strokePaint, additionalPaintServerTransform))
-                                break;
-                            strokePaint.setAntiAlias(shouldAntiAlias);
-
-                            StrokeData strokeData;
-                            SVGLayoutSupport::applyStrokeStyleToStrokeData(strokeData, m_layoutSVGShape.styleRef(), m_layoutSVGShape);
-                            strokeData.setupPaint(&strokePaint);
-
-                            strokeShape(paintContext.paintInfo().context, strokePaint);
+                            // Non-scaling stroke needs to reset the transform back to the host transform.
+                            additionalPaintServerTransform = &nonScalingTransform;
                         }
-                        break;
-                    case PT_MARKERS:
-                        paintMarkers(paintContext.paintInfo(), boundingBox);
-                        break;
-                    default:
-                        ASSERT_NOT_REACHED();
-                        break;
+
+                        SkPaint strokePaint;
+                        if (!SVGPaintContext::paintForLayoutObject(paintContext.paintInfo(), m_layoutSVGShape.styleRef(), m_layoutSVGShape, ApplyToStrokeMode, strokePaint, additionalPaintServerTransform))
+                            break;
+                        strokePaint.setAntiAlias(shouldAntiAlias);
+
+                        StrokeData strokeData;
+                        SVGLayoutSupport::applyStrokeStyleToStrokeData(strokeData, m_layoutSVGShape.styleRef(), m_layoutSVGShape);
+                        strokeData.setupPaint(&strokePaint);
+
+                        strokeShape(paintContext.paintInfo().context, strokePaint);
                     }
+                    break;
+                case PT_MARKERS:
+                    paintMarkers(paintContext.paintInfo(), boundingBox);
+                    break;
+                default:
+                    ASSERT_NOT_REACHED();
+                    break;
                 }
             }
         }

@@ -52,20 +52,23 @@ bool ScrollbarThemeMock::usesOverlayScrollbars() const
 
 void ScrollbarThemeMock::paintTrackBackground(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& trackRect)
 {
-    DrawingRecorder recorder(*context, *scrollbar, DisplayItem::ScrollbarTrackBackground, trackRect);
-    if (recorder.canUseCachedDrawing())
+    if (DrawingRecorder::useCachedDrawingIfPossible(*context, *scrollbar, DisplayItem::ScrollbarTrackBackground))
         return;
+
+    DrawingRecorder recorder(*context, *scrollbar, DisplayItem::ScrollbarTrackBackground, trackRect);
     context->fillRect(trackRect, scrollbar->enabled() ? Color::lightGray : Color(0xFFE0E0E0));
 }
 
 void ScrollbarThemeMock::paintThumb(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& thumbRect)
 {
-    if (scrollbar->enabled()) {
-        DrawingRecorder recorder(*context, *scrollbar, DisplayItem::ScrollbarThumb, thumbRect);
-        if (recorder.canUseCachedDrawing())
-            return;
-        context->fillRect(thumbRect, Color::darkGray);
-    }
+    if (!scrollbar->enabled())
+        return;
+
+    if (DrawingRecorder::useCachedDrawingIfPossible(*context, *scrollbar, DisplayItem::ScrollbarThumb))
+        return;
+
+    DrawingRecorder recorder(*context, *scrollbar, DisplayItem::ScrollbarThumb, thumbRect);
+    context->fillRect(thumbRect, Color::darkGray);
 }
 
 }

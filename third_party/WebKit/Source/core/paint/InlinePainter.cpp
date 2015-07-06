@@ -51,21 +51,25 @@ void InlinePainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
         return;
 
     if (styleToUse.outlineStyleIsAuto()) {
-        if (LayoutTheme::theme().shouldDrawDefaultFocusRing(&m_layoutInline)) {
-            Vector<LayoutRect> focusRingRects;
-            m_layoutInline.addFocusRingRects(focusRingRects, paintOffset);
+        if (!LayoutTheme::theme().shouldDrawDefaultFocusRing(&m_layoutInline))
+            return;
+        if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutInline, paintInfo.phase))
+            return;
 
-            LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutInline, paintInfo.phase, outlinePaintRect(focusRingRects, LayoutPoint()));
-            if (recorder.canUseCachedDrawing())
-                return;
+        Vector<LayoutRect> focusRingRects;
+        m_layoutInline.addFocusRingRects(focusRingRects, paintOffset);
 
-            // Only paint the focus ring by hand if the theme isn't able to draw the focus ring.
-            ObjectPainter(m_layoutInline).paintFocusRing(paintInfo, styleToUse, focusRingRects);
-        }
+        LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutInline, paintInfo.phase, outlinePaintRect(focusRingRects, LayoutPoint()));
+        // Only paint the focus ring by hand if the theme isn't able to draw the focus ring.
+        ObjectPainter(m_layoutInline).paintFocusRing(paintInfo, styleToUse, focusRingRects);
         return;
     }
 
     if (styleToUse.outlineStyle() == BNONE)
+        return;
+
+    GraphicsContext* graphicsContext = paintInfo.context;
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*graphicsContext, m_layoutInline, paintInfo.phase))
         return;
 
     Vector<LayoutRect> rects;
@@ -82,11 +86,7 @@ void InlinePainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
     Color outlineColor = m_layoutInline.resolveColor(styleToUse, CSSPropertyOutlineColor);
     bool useTransparencyLayer = outlineColor.hasAlpha();
 
-    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutInline, paintInfo.phase, outlinePaintRect(rects, paintOffset));
-    if (recorder.canUseCachedDrawing())
-        return;
-
-    GraphicsContext* graphicsContext = paintInfo.context;
+    LayoutObjectDrawingRecorder recorder(*graphicsContext, m_layoutInline, paintInfo.phase, outlinePaintRect(rects, paintOffset));
     if (useTransparencyLayer) {
         graphicsContext->beginLayer(static_cast<float>(outlineColor.alpha()) / 255);
         outlineColor = Color(outlineColor.red(), outlineColor.green(), outlineColor.blue());

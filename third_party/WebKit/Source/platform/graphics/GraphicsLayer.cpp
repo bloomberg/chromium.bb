@@ -288,9 +288,10 @@ void GraphicsLayer::paintGraphicsLayerContents(GraphicsContext& context, const I
     if (m_displayItemList && contentsOpaque()) {
         ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
         FloatRect rect(FloatPoint(), size());
-        DrawingRecorder recorder(context, *this, DisplayItem::DebugRedFill, rect);
-        if (!recorder.canUseCachedDrawing())
+        if (!DrawingRecorder::useCachedDrawingIfPossible(context, *this, DisplayItem::DebugRedFill)) {
+            DrawingRecorder recorder(context, *this, DisplayItem::DebugRedFill, rect);
             context.fillRect(rect, SK_ColorRED);
+        }
     }
 #endif
     m_client->paintContents(this, context, m_paintingPhase, clip);

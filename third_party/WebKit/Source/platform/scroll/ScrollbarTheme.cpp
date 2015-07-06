@@ -215,10 +215,10 @@ void ScrollbarTheme::paintScrollCorner(GraphicsContext* context, const DisplayIt
     if (cornerRect.isEmpty())
         return;
 
-    DrawingRecorder recorder(*context, displayItemClient, DisplayItem::ScrollbarCorner, cornerRect);
-    if (recorder.canUseCachedDrawing())
+    if (DrawingRecorder::useCachedDrawingIfPossible(*context, displayItemClient, DisplayItem::ScrollbarCorner))
         return;
 
+    DrawingRecorder recorder(*context, displayItemClient, DisplayItem::ScrollbarCorner, cornerRect);
 #if OS(MACOSX)
     context->fillRect(cornerRect, Color::white);
 #else

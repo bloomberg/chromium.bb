@@ -23,6 +23,9 @@ void FieldsetPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, c
     if (!legend)
         return BoxPainter(m_layoutFieldset).paintBoxDecorationBackground(paintInfo, paintOffset);
 
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutFieldset, paintInfo.phase))
+        return;
+
     // FIXME: We need to work with "rl" and "bt" block flow directions.  In those
     // cases the legend is embedded in the right and bottom borders respectively.
     // https://bugs.webkit.org/show_bug.cgi?id=47236
@@ -37,9 +40,6 @@ void FieldsetPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, c
     }
 
     LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutFieldset, paintInfo.phase, pixelSnappedIntRect(paintRect));
-    if (recorder.canUseCachedDrawing())
-        return;
-
     BoxDecorationData boxDecorationData(m_layoutFieldset);
 
     if (boxDecorationData.bleedAvoidance == BackgroundBleedNone)
@@ -80,6 +80,9 @@ void FieldsetPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& p
     if (!legend)
         return BoxPainter(m_layoutFieldset).paintMask(paintInfo, paintOffset);
 
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutFieldset, paintInfo.phase))
+        return;
+
     // FIXME: We need to work with "rl" and "bt" block flow directions.  In those
     // cases the legend is embedded in the right and bottom borders respectively.
     // https://bugs.webkit.org/show_bug.cgi?id=47236
@@ -94,9 +97,6 @@ void FieldsetPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& p
     }
 
     LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutFieldset, paintInfo.phase, paintRect);
-    if (recorder.canUseCachedDrawing())
-        return;
-
     BoxPainter(m_layoutFieldset).paintMaskImages(paintInfo, paintRect);
 }
 

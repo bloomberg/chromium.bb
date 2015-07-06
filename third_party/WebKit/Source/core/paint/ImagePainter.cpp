@@ -58,11 +58,11 @@ void ImagePainter::paintAreaElementFocusRing(const PaintInfo& paintInfo)
     if (!outlineWidth)
         return;
 
-    IntRect focusRect = m_layoutImage.absoluteContentBox();
-
-    LayoutObjectDrawingRecorder drawingRecorder(*paintInfo.context, m_layoutImage, paintInfo.phase, focusRect);
-    if (drawingRecorder.canUseCachedDrawing())
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutImage, paintInfo.phase))
         return;
+
+    IntRect focusRect = m_layoutImage.absoluteContentBox();
+    LayoutObjectDrawingRecorder drawingRecorder(*paintInfo.context, m_layoutImage, paintInfo.phase, focusRect);
 
     // FIXME: Clip path instead of context when Skia pathops is ready.
     // https://crbug.com/251206
@@ -85,28 +85,26 @@ void ImagePainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
     if (!m_layoutImage.imageResource()->hasImage()) {
         if (paintInfo.phase == PaintPhaseSelection)
             return;
-
         if (cWidth > 2 && cHeight > 2) {
+            if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, m_layoutImage, paintInfo.phase))
+                return;
             // Draw an outline rect where the image should be.
             IntRect paintRect = pixelSnappedIntRect(LayoutRect(paintOffset.x() + m_layoutImage.borderLeft() + m_layoutImage.paddingLeft(), paintOffset.y() + m_layoutImage.borderTop() + m_layoutImage.paddingTop(), cWidth, cHeight));
-
             LayoutObjectDrawingRecorder drawingRecorder(*context, m_layoutImage, paintInfo.phase, paintRect);
-            if (drawingRecorder.canUseCachedDrawing())
-                return;
             context->setStrokeStyle(SolidStroke);
             context->setStrokeColor(Color::lightGray);
             context->setFillColor(Color::transparent);
             context->drawRect(paintRect);
         }
     } else if (cWidth > 0 && cHeight > 0) {
+        if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, m_layoutImage, paintInfo.phase))
+            return;
         LayoutRect contentRect = m_layoutImage.contentBoxRect();
         contentRect.moveBy(paintOffset);
         LayoutRect paintRect = m_layoutImage.replacedContentRect();
         paintRect.moveBy(paintOffset);
 
         LayoutObjectDrawingRecorder drawingRecorder(*context, m_layoutImage, paintInfo.phase, contentRect);
-        if (drawingRecorder.canUseCachedDrawing())
-            return;
         bool clip = !contentRect.contains(paintRect);
         if (clip) {
             context->save();

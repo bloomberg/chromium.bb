@@ -99,9 +99,9 @@ void WebFontImpl::drawText(WebCanvas* canvas, const WebTextRun& run, const WebFl
     SkPictureBuilder pictureBuilder(intRect);
     GraphicsContext* context = &pictureBuilder.context();
 
+    ASSERT(!DrawingRecorder::useCachedDrawingIfPossible(*context, *this, DisplayItem::WebFont));
     {
         DrawingRecorder drawingRecorder(*context, *this, DisplayItem::WebFont, intRect);
-        ASSERT(!drawingRecorder.canUseCachedDrawing());
         context->save();
         context->setFillColor(color);
         context->clip(textClipRect);

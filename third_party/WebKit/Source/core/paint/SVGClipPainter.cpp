@@ -131,10 +131,10 @@ void SVGClipPainter::drawClipMaskContent(GraphicsContext* context, const LayoutO
     AffineTransform contentTransformation;
     RefPtr<const SkPicture> clipContentPicture = m_clip.createContentPicture(contentTransformation, targetBoundingBox, context);
 
-    LayoutObjectDrawingRecorder drawingRecorder(*context, layoutObject, DisplayItem::SVGClip, targetPaintInvalidationRect);
-    if (drawingRecorder.canUseCachedDrawing())
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, layoutObject, DisplayItem::SVGClip))
         return;
 
+    LayoutObjectDrawingRecorder drawingRecorder(*context, layoutObject, DisplayItem::SVGClip, targetPaintInvalidationRect);
     context->save();
     context->concatCTM(contentTransformation);
     context->drawPicture(clipContentPicture.get());

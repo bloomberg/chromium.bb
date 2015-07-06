@@ -107,10 +107,10 @@ void ScrollbarThemeNonMacCommon::paintTickmarks(GraphicsContext* context, Scroll
     if (!tickmarks.size())
         return;
 
-    DrawingRecorder recorder(*context, *scrollbar, DisplayItem::ScrollbarTickmarks, rect);
-    if (recorder.canUseCachedDrawing())
+    if (DrawingRecorder::useCachedDrawingIfPossible(*context, *scrollbar, DisplayItem::ScrollbarTickmarks))
         return;
 
+    DrawingRecorder recorder(*context, *scrollbar, DisplayItem::ScrollbarTickmarks, rect);
     GraphicsContextStateSaver stateSaver(*context);
     context->setShouldAntialias(false);
 

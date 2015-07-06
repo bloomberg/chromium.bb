@@ -59,16 +59,15 @@ void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
     LayoutObject& parentLayoutObject = m_svgInlineTextBox.parent()->layoutObject();
     const ComputedStyle& style = parentLayoutObject.styleRef();
 
-    {
-        DrawingRecorder recorder(*paintInfo.context, m_svgInlineTextBox, DisplayItem::paintPhaseToDrawingType(paintInfo.phase), paintInfo.rect);
-        if (!recorder.canUseCachedDrawing()) {
-            InlineTextBoxPainter(m_svgInlineTextBox).paintDocumentMarkers(
-                paintInfo.context, paintOffset, style,
-                textLayoutObject.scaledFont(), true);
+    DisplayItem::Type displayItemType = DisplayItem::paintPhaseToDrawingType(paintInfo.phase);
+    if (!DrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_svgInlineTextBox, displayItemType)) {
+        DrawingRecorder recorder(*paintInfo.context, m_svgInlineTextBox, displayItemType, paintInfo.rect);
+        InlineTextBoxPainter(m_svgInlineTextBox).paintDocumentMarkers(
+            paintInfo.context, paintOffset, style,
+            textLayoutObject.scaledFont(), true);
 
-            if (!m_svgInlineTextBox.textFragments().isEmpty())
-                paintTextFragments(paintInfo, parentLayoutObject);
-        }
+        if (!m_svgInlineTextBox.textFragments().isEmpty())
+            paintTextFragments(paintInfo, parentLayoutObject);
     }
 
     if (style.hasOutline() && parentLayoutObject.isLayoutInline())

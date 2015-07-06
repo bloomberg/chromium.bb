@@ -33,7 +33,7 @@ void FileUploadControlPainter::paintObject(const PaintInfo& paintInfo, const Lay
         clipRecorder.emplace(*paintInfo.context, m_layoutFileUploadControl, DisplayItem::ClipFileUploadControlRect, LayoutRect(clipRect));
     }
 
-    if (paintInfo.phase == PaintPhaseForeground) {
+    if (paintInfo.phase == PaintPhaseForeground && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutFileUploadControl, paintInfo.phase)) {
         const String& displayedFilename = m_layoutFileUploadControl.fileTextValue();
         const Font& font = m_layoutFileUploadControl.style()->font();
         TextRun textRun = constructTextRun(&m_layoutFileUploadControl, font, displayedFilename, m_layoutFileUploadControl.styleRef(), RespectDirection | RespectDirectionOverride);
@@ -68,10 +68,8 @@ void FileUploadControlPainter::paintObject(const PaintInfo& paintInfo, const Lay
 
         // Draw the filename.
         LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutFileUploadControl, paintInfo.phase, textRunPaintInfo.bounds);
-        if (!recorder.canUseCachedDrawing()) {
-            paintInfo.context->setFillColor(m_layoutFileUploadControl.resolveColor(CSSPropertyColor));
-            paintInfo.context->drawBidiText(font, textRunPaintInfo, FloatPoint(roundToInt(textX), roundToInt(textY)));
-        }
+        paintInfo.context->setFillColor(m_layoutFileUploadControl.resolveColor(CSSPropertyColor));
+        paintInfo.context->drawBidiText(font, textRunPaintInfo, FloatPoint(roundToInt(textX), roundToInt(textY)));
     }
 
     // Paint the children.

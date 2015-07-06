@@ -25,6 +25,9 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
     if (m_layoutListMarker.style()->visibility() != VISIBLE)
         return;
 
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_layoutListMarker, paintInfo.phase))
+        return;
+
     LayoutPoint boxOrigin(paintOffset + m_layoutListMarker.location());
     LayoutRect overflowRect(m_layoutListMarker.visualOverflowRect());
     if (m_layoutListMarker.selectionState() != LayoutObject::SelectionNone)
@@ -36,8 +39,6 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
         return;
 
     LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutListMarker, paintInfo.phase, pixelSnappedOverflowRect);
-    if (recorder.canUseCachedDrawing())
-        return;
 
     LayoutRect box(boxOrigin, m_layoutListMarker.size());
 

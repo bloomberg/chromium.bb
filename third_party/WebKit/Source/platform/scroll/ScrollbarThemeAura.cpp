@@ -72,14 +72,16 @@ int ScrollbarThemeAura::scrollbarThickness(ScrollbarControlSize controlSize)
 
 void ScrollbarThemeAura::paintTrackPiece(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart partType)
 {
+    DisplayItem::Type displayItemType = trackPiecePartToDisplayItemType(partType);
+    if (DrawingRecorder::useCachedDrawingIfPossible(*gc, *scrollbar, displayItemType))
+        return;
+
+    DrawingRecorder recorder(*gc, *scrollbar, displayItemType, rect);
+
     WebThemeEngine::State state = scrollbar->hoveredPart() == partType ? WebThemeEngine::StateHover : WebThemeEngine::StateNormal;
 
     if (useMockTheme() && !scrollbar->enabled())
         state = WebThemeEngine::StateDisabled;
-
-    DrawingRecorder recorder(*gc, *scrollbar, trackPiecePartToDisplayItemType(partType), rect);
-    if (recorder.canUseCachedDrawing())
-        return;
 
     IntRect alignRect = trackRect(scrollbar, false);
     WebThemeEngine::ExtraParams extraParams;
@@ -120,9 +122,11 @@ void ScrollbarThemeAura::paintButton(GraphicsContext* gc, ScrollbarThemeClient* 
         }
     }
 
-    DrawingRecorder recorder(*gc, *scrollbar, buttonPartToDisplayItemType(part), rect);
-    if (recorder.canUseCachedDrawing())
+    DisplayItem::Type displayItemType = buttonPartToDisplayItemType(part);
+    if (DrawingRecorder::useCachedDrawingIfPossible(*gc, *scrollbar, displayItemType))
         return;
+
+    DrawingRecorder recorder(*gc, *scrollbar, displayItemType, rect);
 
     if (useMockTheme() && !scrollbar->enabled()) {
         state = WebThemeEngine::StateDisabled;
@@ -140,9 +144,10 @@ void ScrollbarThemeAura::paintButton(GraphicsContext* gc, ScrollbarThemeClient* 
 
 void ScrollbarThemeAura::paintThumb(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
-    DrawingRecorder recorder(*gc, *scrollbar, DisplayItem::ScrollbarThumb, rect);
-    if (recorder.canUseCachedDrawing())
+    if (DrawingRecorder::useCachedDrawingIfPossible(*gc, *scrollbar, DisplayItem::ScrollbarThumb))
         return;
+
+    DrawingRecorder recorder(*gc, *scrollbar, DisplayItem::ScrollbarThumb, rect);
 
     WebThemeEngine::State state;
     WebCanvas* canvas = gc->canvas();

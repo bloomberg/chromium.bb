@@ -33,9 +33,11 @@ void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutP
     paintRect.moveBy(paintOffset);
 
     GraphicsContext* context = paintInfo.context;
-    DrawingRecorder recorder(*context, m_ellipsisBox, DisplayItem::paintPhaseToDrawingType(paintInfo.phase), paintRect);
-    if (recorder.canUseCachedDrawing())
+    DisplayItem::Type displayItemType = DisplayItem::paintPhaseToDrawingType(paintInfo.phase);
+    if (DrawingRecorder::useCachedDrawingIfPossible(*context, m_ellipsisBox, displayItemType))
         return;
+
+    DrawingRecorder recorder(*context, m_ellipsisBox, displayItemType, paintRect);
 
     LayoutPoint boxOrigin = m_ellipsisBox.locationIncludingFlipping();
     boxOrigin.moveBy(paintOffset);

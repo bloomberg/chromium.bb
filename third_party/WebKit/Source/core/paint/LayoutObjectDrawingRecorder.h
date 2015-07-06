@@ -19,6 +19,18 @@ class GraphicsContext;
 // Convenience wrapper of DrawingRecorder for LayoutObject painters.
 class LayoutObjectDrawingRecorder final {
 public:
+    static bool useCachedDrawingIfPossible(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType)
+    {
+        if (layoutObject.fullPaintInvalidationReason() == PaintInvalidationDelayedFull)
+            return false;
+        return DrawingRecorder::useCachedDrawingIfPossible(context, layoutObject, displayItemType);
+    }
+
+    static bool useCachedDrawingIfPossible(GraphicsContext& context, const LayoutObject& layoutObject, PaintPhase phase)
+    {
+        return useCachedDrawingIfPossible(context, layoutObject, DisplayItem::paintPhaseToDrawingType(phase));
+    }
+
     LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType, const FloatRect& clip)
     {
         // We may paint a delayed-invalidation object before it's actually invalidated.
@@ -32,8 +44,6 @@ public:
 
     LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type type, const LayoutRect& clip)
         : LayoutObjectDrawingRecorder(context, layoutObject, type, pixelSnappedIntRect(clip)) { }
-
-    bool canUseCachedDrawing() const { return m_drawingRecorder->canUseCachedDrawing(); }
 
 #if ENABLE(ASSERT)
     void setUnderInvalidationCheckingMode(DrawingDisplayItem::UnderInvalidationCheckingMode mode) { m_drawingRecorder->setUnderInvalidationCheckingMode(mode); }

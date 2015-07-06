@@ -49,6 +49,9 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
     //    culling and pre-blending optimization when possible.
 
     GraphicsContext& context = *paintInfo.context;
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, m_layoutView, DisplayItem::BoxDecorationBackground))
+        return;
+
     IntRect documentRect = m_layoutView.unscaledDocumentRect();
     const Document& document = m_layoutView.document();
     const FrameView& frameView = *m_layoutView.frameView();
@@ -60,8 +63,6 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
     const LayoutObject* rootObject = document.documentElement() ? document.documentElement()->layoutObject() : nullptr;
 
     LayoutObjectDrawingRecorder recorder(context, m_layoutView, DisplayItem::BoxDecorationBackground, documentRect);
-    if (recorder.canUseCachedDrawing())
-        return;
 
     // Special handling for print economy mode.
     bool forceBackgroundToWhite = BoxPainter::shouldForceWhiteBackgroundForPrintEconomy(m_layoutView.styleRef(), document);

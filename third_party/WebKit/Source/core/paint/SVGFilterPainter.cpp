@@ -183,11 +183,10 @@ void SVGFilterPainter::finishEffect(LayoutObject& object, SVGFilterRecordingCont
 
     GraphicsContext* context = recordingContext.paintingContext();
     ASSERT(context);
-
-    LayoutObjectDrawingRecorder recorder(*context, object, DisplayItem::SVGFilter, LayoutRect::infiniteIntRect());
-    if (recorder.canUseCachedDrawing())
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*context, object, DisplayItem::SVGFilter))
         return;
 
+    LayoutObjectDrawingRecorder recorder(*context, object, DisplayItem::SVGFilter, LayoutRect::infiniteIntRect());
     if (filterData && filterData->m_state == FilterData::ReadyToPaint)
         paintFilteredContent(object, context, filterData);
 }

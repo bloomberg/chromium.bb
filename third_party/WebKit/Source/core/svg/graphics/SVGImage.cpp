@@ -245,15 +245,13 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
     spacedTile.expand(repeatSpacing);
 
     SkPictureBuilder patternPicture(spacedTile, nullptr, context);
-    {
+    if (!DrawingRecorder::useCachedDrawingIfPossible(patternPicture.context(), *this, DisplayItem::Type::SVGImage)) {
         DrawingRecorder patternPictureRecorder(patternPicture.context(), *this, DisplayItem::Type::SVGImage, spacedTile);
-        if (!patternPictureRecorder.canUseCachedDrawing()) {
-            // When generating an expanded tile, make sure we don't draw into the spacing area.
-            if (tile != spacedTile)
-                patternPicture.context().clip(tile);
-            SkPaint paint;
-            drawForContainer(patternPicture.context().canvas(), paint, containerSize, zoom, tile, srcRect);
-        }
+        // When generating an expanded tile, make sure we don't draw into the spacing area.
+        if (tile != spacedTile)
+            patternPicture.context().clip(tile);
+        SkPaint paint;
+        drawForContainer(patternPicture.context().canvas(), paint, containerSize, zoom, tile, srcRect);
     }
     RefPtr<const SkPicture> tilePicture = patternPicture.endRecording();
 

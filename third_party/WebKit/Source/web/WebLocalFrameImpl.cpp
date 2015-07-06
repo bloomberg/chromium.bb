@@ -395,25 +395,22 @@ public:
         GraphicsContext& context = pictureBuilder.context();
 
         // Fill the whole background by white.
-        {
+        if (!DrawingRecorder::useCachedDrawingIfPossible(context, *this, DisplayItem::PrintedContentBackground)) {
             DrawingRecorder backgroundRecorder(context, *this, DisplayItem::PrintedContentBackground, allPagesRect);
-            if (!backgroundRecorder.canUseCachedDrawing())
-                context.fillRect(FloatRect(0, 0, pageWidth, totalHeight), Color::white);
+            context.fillRect(FloatRect(0, 0, pageWidth, totalHeight), Color::white);
         }
 
         int currentHeight = 0;
         for (size_t pageIndex = 0; pageIndex < numPages; pageIndex++) {
             ScopeRecorder scopeRecorder(context, *this);
             // Draw a line for a page boundary if this isn't the first page.
-            if (pageIndex > 0) {
+            if (pageIndex > 0 && !DrawingRecorder::useCachedDrawingIfPossible(context, *this, DisplayItem::PrintedContentLineBoundary)) {
                 DrawingRecorder lineBoundaryRecorder(context, *this, DisplayItem::PrintedContentLineBoundary, allPagesRect);
-                if (!lineBoundaryRecorder.canUseCachedDrawing()) {
-                    context.save();
-                    context.setStrokeColor(Color(0, 0, 255));
-                    context.setFillColor(Color(0, 0, 255));
-                    context.drawLine(IntPoint(0, currentHeight), IntPoint(pageWidth, currentHeight));
-                    context.restore();
-                }
+                context.save();
+                context.setStrokeColor(Color(0, 0, 255));
+                context.setFillColor(Color(0, 0, 255));
+                context.drawLine(IntPoint(0, currentHeight), IntPoint(pageWidth, currentHeight));
+                context.restore();
             }
 
             AffineTransform transform;

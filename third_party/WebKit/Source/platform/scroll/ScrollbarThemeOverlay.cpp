@@ -128,9 +128,10 @@ int ScrollbarThemeOverlay::thumbThickness(ScrollbarThemeClient*)
 
 void ScrollbarThemeOverlay::paintThumb(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
-    DrawingRecorder recorder(*context, *scrollbar, DisplayItem::ScrollbarThumb, rect);
-    if (recorder.canUseCachedDrawing())
+    if (DrawingRecorder::useCachedDrawingIfPossible(*context, *scrollbar, DisplayItem::ScrollbarThumb))
         return;
+
+    DrawingRecorder recorder(*context, *scrollbar, DisplayItem::ScrollbarThumb, rect);
 
     IntRect thumbRect = rect;
     if (scrollbar->orientation() == HorizontalScrollbar) {

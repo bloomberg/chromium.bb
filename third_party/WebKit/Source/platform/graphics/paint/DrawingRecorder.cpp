@@ -14,13 +14,29 @@
 
 namespace blink {
 
+bool DrawingRecorder::useCachedDrawingIfPossible(GraphicsContext& context, const DisplayItemClientWrapper& client, DisplayItem::Type type)
+{
+    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
+        return false;
+
+    ASSERT(context.displayItemList());
+    ASSERT(DisplayItem::isDrawingType(type));
+
+    if (context.displayItemList()->displayItemConstructionIsDisabled() || RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
+        return false;
+
+    if (!context.displayItemList()->clientCacheIsValid(client.displayItemClient()))
+        return false;
+
+    context.displayItemList()->createAndAppend<CachedDisplayItem>(client, DisplayItem::drawingTypeToCachedType(type));
+    return true;
+}
+
 DrawingRecorder::DrawingRecorder(GraphicsContext& context, const DisplayItemClientWrapper& displayItemClient, DisplayItem::Type displayItemType, const FloatRect& cullRect)
     : m_context(context)
     , m_displayItemClient(displayItemClient)
     , m_displayItemType(displayItemType)
-    , m_canUseCachedDrawing(false)
 #if ENABLE(ASSERT)
-    , m_checkedCachedDrawing(false)
     , m_displayItemPosition(RuntimeEnabledFeatures::slimmingPaintEnabled() ? m_context.displayItemList()->newDisplayItemsSize() : 0)
     , m_underInvalidationCheckingMode(DrawingDisplayItem::CheckPicture)
 #endif
@@ -32,24 +48,19 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context, const DisplayItemClie
     if (context.displayItemList()->displayItemConstructionIsDisabled())
         return;
 
+    // Must check DrawingRecorder::useCachedDrawingIfPossible before creating the DrawingRecorder.
+    ASSERT(!useCachedDrawingIfPossible(m_context, m_displayItemClient, m_displayItemType));
+
     ASSERT(DisplayItem::isDrawingType(displayItemType));
-    m_canUseCachedDrawing = context.displayItemList()->clientCacheIsValid(displayItemClient.displayItemClient());
 
 #if ENABLE(ASSERT)
     context.setInDrawingRecorder(true);
-    m_canUseCachedDrawing &= !RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled();
 #endif
 
-#ifndef NDEBUG
-    // Enable recording to check if any painter is still doing unnecessary painting when we can use cache.
     context.beginRecording(cullRect);
-#else
-    if (!m_canUseCachedDrawing)
-        context.beginRecording(cullRect);
-#endif
 
 #if ENABLE(ASSERT)
-    if (RuntimeEnabledFeatures::slimmingPaintStrictCullRectClippingEnabled() && !m_canUseCachedDrawing) {
+    if (RuntimeEnabledFeatures::slimmingPaintStrictCullRectClippingEnabled()) {
         // Skia depends on the cull rect containing all of the display item commands. When strict
         // cull rect clipping is enabled, make this explicit. This allows us to identify potential
         // incorrect cull rects that might otherwise be masked due to Skia internal optimizations.
@@ -75,32 +86,20 @@ DrawingRecorder::~DrawingRecorder()
         return;
 
 #if ENABLE(ASSERT)
-    if (RuntimeEnabledFeatures::slimmingPaintStrictCullRectClippingEnabled() && !m_canUseCachedDrawing) {
+    if (RuntimeEnabledFeatures::slimmingPaintStrictCullRectClippingEnabled())
         m_context.restore();
-    }
-    ASSERT(m_checkedCachedDrawing);
+
     m_context.setInDrawingRecorder(false);
     ASSERT(m_displayItemPosition == m_context.displayItemList()->newDisplayItemsSize());
 #endif
 
-    if (m_canUseCachedDrawing) {
-#ifndef NDEBUG
-        RefPtr<const SkPicture> picture = m_context.endRecording();
-        if (picture && picture->approximateOpCount()) {
-            WTF_LOG_ERROR("Unnecessary painting for %s\n. Should check recorder.canUseCachedDrawing() before painting",
-                m_displayItemClient.debugName().utf8().data());
-        }
-#endif
-        m_context.displayItemList()->createAndAppend<CachedDisplayItem>(m_displayItemClient, DisplayItem::drawingTypeToCachedType(m_displayItemType));
-    } else {
-        m_context.displayItemList()->createAndAppend<DrawingDisplayItem>(m_displayItemClient
-            , m_displayItemType
-            , m_context.endRecording()
+    m_context.displayItemList()->createAndAppend<DrawingDisplayItem>(m_displayItemClient
+        , m_displayItemType
+        , m_context.endRecording()
 #if ENABLE(ASSERT)
-            , m_underInvalidationCheckingMode
+        , m_underInvalidationCheckingMode
 #endif
-            );
-    }
+        );
 }
 
 } // namespace blink

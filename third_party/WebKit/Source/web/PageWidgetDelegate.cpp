@@ -94,10 +94,9 @@ void PageWidgetDelegate::paint(Page& page, PageOverlayList* overlays, WebCanvas*
             view->paint(&paintContext, dirtyRect);
             if (overlays)
                 overlays->paintWebFrame(paintContext);
-        } else {
+        } else if (!DrawingRecorder::useCachedDrawingIfPossible(paintContext, root, DisplayItem::PageWidgetDelegateBackgroundFallback)) {
             DrawingRecorder drawingRecorder(paintContext, root, DisplayItem::PageWidgetDelegateBackgroundFallback, dirtyRect);
-            if (!drawingRecorder.canUseCachedDrawing())
-                paintContext.fillRect(dirtyRect, Color::white);
+            paintContext.fillRect(dirtyRect, Color::white);
         }
     }
     pictureBuilder.endRecording()->playback(canvas);

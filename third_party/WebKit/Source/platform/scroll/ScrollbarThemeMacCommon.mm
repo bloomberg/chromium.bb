@@ -151,9 +151,10 @@ void ScrollbarThemeMacCommon::paintTickmarks(GraphicsContext* context, Scrollbar
     if (!tickmarks.size())
         return;
 
-    DrawingRecorder recorder(*context, *scrollbar, DisplayItem::ScrollbarTickmarks, rect);
-    if (recorder.canUseCachedDrawing())
+    if (DrawingRecorder::useCachedDrawingIfPossible(*context, *scrollbar, DisplayItem::ScrollbarTickmarks))
         return;
+
+    DrawingRecorder recorder(*context, *scrollbar, DisplayItem::ScrollbarTickmarks, rect);
 
     // Inset a bit.
     IntRect tickmarkTrackRect = rect;

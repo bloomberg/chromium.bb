@@ -105,10 +105,11 @@ public:
     void paintPageOverlay(WebGraphicsContext* context, const WebSize& size) override
     {
         GraphicsContext& graphicsContext = toWebGraphicsContextImpl(context)->graphicsContext();
+        if (DrawingRecorder::useCachedDrawingIfPossible(graphicsContext, *this, DisplayItem::PageOverlay))
+            return;
         FloatRect rect(0, 0, size.width, size.height);
         DrawingRecorder drawingRecorder(graphicsContext, *this, DisplayItem::PageOverlay, rect);
-        if (!drawingRecorder.canUseCachedDrawing())
-            graphicsContext.fillRect(rect, m_color);
+        graphicsContext.fillRect(rect, m_color);
     }
 
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }

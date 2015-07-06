@@ -36,23 +36,21 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo)
     TransformRecorder transformRecorder(*paintInfoBeforeFiltering.context, m_layoutSVGImage, m_layoutSVGImage.localToParentTransform());
     {
         SVGPaintContext paintContext(m_layoutSVGImage, paintInfoBeforeFiltering);
-        if (paintContext.applyClipMaskAndFilterIfNecessary()) {
+        if (paintContext.applyClipMaskAndFilterIfNecessary() && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintContext.paintInfo().context, m_layoutSVGImage, paintContext.paintInfo().phase)) {
             LayoutObjectDrawingRecorder recorder(*paintContext.paintInfo().context, m_layoutSVGImage, paintContext.paintInfo().phase, boundingBox);
-            if (!recorder.canUseCachedDrawing()) {
-                // There's no need to cache a buffered SkPicture with slimming
-                // paint because it's automatically done in the display list.
-                if (m_layoutSVGImage.style()->svgStyle().bufferedRendering() != BR_STATIC || RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+            // There's no need to cache a buffered SkPicture with slimming
+            // paint because it's automatically done in the display list.
+            if (m_layoutSVGImage.style()->svgStyle().bufferedRendering() != BR_STATIC || RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+                paintForeground(paintContext.paintInfo());
+            } else {
+                RefPtr<const SkPicture>& bufferedForeground = m_layoutSVGImage.bufferedForeground();
+                if (!bufferedForeground) {
+                    paintContext.paintInfo().context->beginRecording(m_layoutSVGImage.objectBoundingBox());
                     paintForeground(paintContext.paintInfo());
-                } else {
-                    RefPtr<const SkPicture>& bufferedForeground = m_layoutSVGImage.bufferedForeground();
-                    if (!bufferedForeground) {
-                        paintContext.paintInfo().context->beginRecording(m_layoutSVGImage.objectBoundingBox());
-                        paintForeground(paintContext.paintInfo());
-                        bufferedForeground = paintContext.paintInfo().context->endRecording();
-                    }
-
-                    paintContext.paintInfo().context->drawPicture(bufferedForeground.get());
+                    bufferedForeground = paintContext.paintInfo().context->endRecording();
                 }
+
+                paintContext.paintInfo().context->drawPicture(bufferedForeground.get());
             }
         }
     }

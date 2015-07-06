@@ -24,15 +24,13 @@ void SVGRootInlineBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
     bool hasSelection = !isPrinting && m_svgRootInlineBox.selectionState() != LayoutObject::SelectionNone;
 
     PaintInfo paintInfoBeforeFiltering(paintInfo);
-    if (hasSelection) {
+    if (hasSelection && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfoBeforeFiltering.context, m_svgRootInlineBox.layoutObject(), paintInfoBeforeFiltering.phase)) {
         LayoutObjectDrawingRecorder recorder(*paintInfoBeforeFiltering.context, m_svgRootInlineBox.layoutObject(), paintInfoBeforeFiltering.phase, paintInfoBeforeFiltering.rect);
-        if (!recorder.canUseCachedDrawing()) {
-            for (InlineBox* child = m_svgRootInlineBox.firstChild(); child; child = child->nextOnLine()) {
-                if (child->isSVGInlineTextBox())
-                    SVGInlineTextBoxPainter(*toSVGInlineTextBox(child)).paintSelectionBackground(paintInfoBeforeFiltering);
-                else if (child->isSVGInlineFlowBox())
-                    SVGInlineFlowBoxPainter(*toSVGInlineFlowBox(child)).paintSelectionBackground(paintInfoBeforeFiltering);
-            }
+        for (InlineBox* child = m_svgRootInlineBox.firstChild(); child; child = child->nextOnLine()) {
+            if (child->isSVGInlineTextBox())
+                SVGInlineTextBoxPainter(*toSVGInlineTextBox(child)).paintSelectionBackground(paintInfoBeforeFiltering);
+            else if (child->isSVGInlineFlowBox())
+                SVGInlineFlowBoxPainter(*toSVGInlineFlowBox(child)).paintSelectionBackground(paintInfoBeforeFiltering);
         }
     }
 

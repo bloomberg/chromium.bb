@@ -52,18 +52,17 @@ namespace {
 
 void drawNothing(GraphicsContext& context, const LayoutView& layoutView, PaintPhase phase, const FloatRect& bound)
 {
-    LayoutObjectDrawingRecorder drawingRecorder(context, layoutView, phase, bound);
-
-    // Redundant when there's nothing to draw but we must always do this check.
-    if (drawingRecorder.canUseCachedDrawing())
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutView, phase))
         return;
+
+    LayoutObjectDrawingRecorder drawingRecorder(context, layoutView, phase, bound);
 }
 
 void drawRect(GraphicsContext& context, LayoutView& layoutView, PaintPhase phase, const FloatRect& bound)
 {
-    LayoutObjectDrawingRecorder drawingRecorder(context, layoutView, phase, bound);
-    if (drawingRecorder.canUseCachedDrawing())
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutView, phase))
         return;
+    LayoutObjectDrawingRecorder drawingRecorder(context, layoutView, phase, bound);
     IntRect rect(0, 0, 10, 10);
     context.drawRect(rect);
 }

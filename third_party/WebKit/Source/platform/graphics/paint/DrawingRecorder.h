@@ -20,16 +20,10 @@ class GraphicsContext;
 
 class PLATFORM_EXPORT DrawingRecorder {
 public:
+    static bool useCachedDrawingIfPossible(GraphicsContext&, const DisplayItemClientWrapper&, DisplayItem::Type);
+
     DrawingRecorder(GraphicsContext&, const DisplayItemClientWrapper&, DisplayItem::Type, const FloatRect& cullRect);
     ~DrawingRecorder();
-
-    bool canUseCachedDrawing() const
-    {
-#if ENABLE(ASSERT)
-        m_checkedCachedDrawing = true;
-#endif
-        return m_canUseCachedDrawing;
-    }
 
 #if ENABLE(ASSERT)
     void setUnderInvalidationCheckingMode(DrawingDisplayItem::UnderInvalidationCheckingMode mode) { m_underInvalidationCheckingMode = mode; }
@@ -39,9 +33,7 @@ private:
     GraphicsContext& m_context;
     DisplayItemClientWrapper m_displayItemClient;
     const DisplayItem::Type m_displayItemType;
-    bool m_canUseCachedDrawing;
 #if ENABLE(ASSERT)
-    mutable bool m_checkedCachedDrawing;
     size_t m_displayItemPosition;
     DrawingDisplayItem::UnderInvalidationCheckingMode m_underInvalidationCheckingMode;
 #endif
