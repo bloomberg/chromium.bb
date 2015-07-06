@@ -385,7 +385,7 @@ Bug(gardener) [ Release SnowLeopard ] fast/text/decorations-transformed.html [ F
 Bug(gardener) [ Release Mavericks ] fast/text/decorations-transformed.html [ ImageOnlyFailure Pass ]
 crbug.com/378610 [ Release Win7 ] fast/text/decorations-transformed.html [ Failure Pass ]
 Bug(gardener) [ Debug Win7 ] fast/text/decorations-transformed.html [ Failure Pass ]
-Bug(gardener) [ Release SnowLeopard ] fast/text/ellipsis-stroked.html [ ImageOnlyFailure Pass ]
+Bug(gardener) [ Release Mac ] fast/text/ellipsis-stroked.html [ ImageOnlyFailure Pass ]
 Bug(gardener) [ Release Win7 ] fast/text/ellipsis-stroked.html [ ImageOnlyFailure Pass ]
 Bug(gardener) [ Debug Win7 ] fast/text/ellipsis-stroked.html [ ImageOnlyFailure Pass ]
 crbug.com/394221 [ Release SnowLeopard ] fast/text/emphasis-avoid-ruby.html [ Failure ImageOnlyFailure Pass ]
