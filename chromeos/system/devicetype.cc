@@ -11,7 +11,7 @@
 namespace chromeos {
 
 namespace {
-const char kDeviceType[] = "CHROMEOS_DEVICE_TYPE";
+const char kDeviceType[] = "DEVICETYPE";
 }
 
 DeviceType GetDeviceType() {
