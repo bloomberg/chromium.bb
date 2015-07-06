@@ -1304,23 +1304,12 @@ qcms_transform* qcms_transform_create(
                 	return NULL;
             	}
 		if (precache) {
-#if defined(SSE2_ENABLE) && defined(X86)
+#if defined(SSE2_ENABLE)
 		    if (sse_version_available() >= 2) {
 			    if (in_type == QCMS_DATA_RGB_8)
 				    transform->transform_fn = qcms_transform_data_rgb_out_lut_sse2;
 			    else
 				    transform->transform_fn = qcms_transform_data_rgba_out_lut_sse2;
-
-#if defined(SSE2_ENABLE) && !(defined(_MSC_VER) && defined(_M_AMD64))
-                    /* Microsoft Compiler for x64 doesn't support MMX.
-                     * SSE code uses MMX so that we disable on x64 */
-		    } else
-		    if (sse_version_available() >= 1) {
-			    if (in_type == QCMS_DATA_RGB_8)
-				    transform->transform_fn = qcms_transform_data_rgb_out_lut_sse1;
-			    else
-				    transform->transform_fn = qcms_transform_data_rgba_out_lut_sse1;
-#endif
 		    } else
 #endif
 			{
