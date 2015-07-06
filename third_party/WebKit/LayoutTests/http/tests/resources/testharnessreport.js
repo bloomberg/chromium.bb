@@ -16,6 +16,8 @@
 if (self.testRunner) {
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
+    testRunner.setCanOpenWindows();
+    testRunner.setCloseRemainingWindowsWhenComplete(true);
 }
 
 // Function used to convert the test status code into

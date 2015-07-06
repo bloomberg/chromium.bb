@@ -118,6 +118,7 @@ imported/web-platform-tests/media-source [ Skip ]
 ## Owners: phoglund@chromium.org
 # imported/web-platform-tests/mediacapture-streams [ Pass ]
 imported/web-platform-tests/microdata [ Skip ]
+imported/web-platform-tests/mixed-content [ Skip ]
 imported/web-platform-tests/navigation-timing [ Skip ]
 imported/web-platform-tests/notifications [ Skip ]
 imported/web-platform-tests/old-tests [ Skip ]
@@ -160,7 +161,8 @@ imported/web-platform-tests/webmessaging [ Skip ]
 ## Owners: hta@chromium.org
 # imported/web-platform-tests/webrtc [ Pass ]
 imported/web-platform-tests/websockets [ Skip ]
-imported/web-platform-tests/webstorage [ Skip ]
+## Owners: michaeln@chromium.org,jsbell@chromium.org
+# imported/web-platform-tests/webstorage [ Pass ]
 imported/web-platform-tests/webvtt [ Skip ]
 imported/web-platform-tests/workers [ Skip ]
 
