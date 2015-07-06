@@ -228,12 +228,7 @@ public:
 
     Color documentBackgroundColor() const;
 
-    // Run all needed lifecycle stages. After calling this method, all frames will be in the lifecycle state PaintInvalidationClean.
-    void updateAllLifecyclePhases();
-
-    // Computes the style, layout and compositing lifecycle stages if needed. After calling this method, all frames wil lbe in a lifecycle
-    // state >= CompositingClean, and scrolling has been updated.
-    void updateLifecycleToCompositingCleanPlusScrolling();
+    void updateLayoutAndStyleForPainting();
 
     bool invalidateViewportConstrainedObjects();
 
@@ -612,11 +607,10 @@ private:
     virtual void setScrollOffset(const IntPoint&, ScrollType) override;
     virtual void setScrollOffset(const DoublePoint&, ScrollType) override;
 
-    void updateAllLifecyclePhasesInternal();
+    void updateLayoutAndStyleForPaintingInternal();
     void invalidateTreeIfNeededRecursive();
     void scrollContentsIfNeededRecursive();
-    void updateStyleAndLayoutIfNeededRecursive();
-    void updatePostLifecycleData();
+    void updateLayoutAndStyleIfNeededRecursive();
 
     void reset();
     void init();

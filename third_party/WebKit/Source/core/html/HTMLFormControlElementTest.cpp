@@ -40,7 +40,7 @@ void HTMLFormControlElementTest::SetUp()
 TEST_F(HTMLFormControlElementTest, customValidationMessageTextDirection)
 {
     document().documentElement()->setInnerHTML("<body><input required id=input></body>", ASSERT_NO_EXCEPTION);
-    document().view()->updateAllLifecyclePhases();
+    document().view()->updateLayoutAndStyleForPainting();
 
     HTMLInputElement* input = toHTMLInputElement(document().getElementById("input"));
     input->setCustomValidity(String::fromUTF8("\xD8\xB9\xD8\xB1\xD8\xA8\xD9\x89"));

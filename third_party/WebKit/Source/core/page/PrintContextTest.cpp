@@ -94,7 +94,7 @@ protected:
     void printSinglePage(SkCanvas& canvas)
     {
         IntRect pageRect(0, 0, kPageWidth, kPageHeight);
-        document().view()->updateAllLifecyclePhases();
+        document().view()->updateLayoutAndStyleForPainting();
         document().setPrinting(true);
         SkPictureBuilder pictureBuilder(pageRect);
         GraphicsContext& context = pictureBuilder.context();

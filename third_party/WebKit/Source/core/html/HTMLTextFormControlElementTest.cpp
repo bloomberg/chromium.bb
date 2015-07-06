@@ -77,7 +77,7 @@ void HTMLTextFormControlElementTest::SetUp()
 
     m_document = toHTMLDocument(&m_dummyPageHolder->document());
     m_document->documentElement()->setInnerHTML("<body><textarea id=textarea></textarea><input id=input /></body>", ASSERT_NO_EXCEPTION);
-    m_document->view()->updateAllLifecyclePhases();
+    m_document->view()->updateLayoutAndStyleForPainting();
     m_textControl = toHTMLTextFormControlElement(m_document->getElementById("textarea"));
     m_textControl->focus();
     m_input = toHTMLInputElement(m_document->getElementById("input"));

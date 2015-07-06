@@ -70,7 +70,7 @@ void DocumentTest::SetUp()
 void DocumentTest::setHtmlInnerHTML(const char* htmlContent)
 {
     document().documentElement()->setInnerHTML(String::fromUTF8(htmlContent), ASSERT_NO_EXCEPTION);
-    document().view()->updateAllLifecyclePhases();
+    document().view()->updateLayoutAndStyleForPainting();
 }
 
 class MockDocumentVisibilityObserver

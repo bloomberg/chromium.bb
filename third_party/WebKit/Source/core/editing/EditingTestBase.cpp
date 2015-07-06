@@ -53,7 +53,7 @@ PassRefPtrWillBeRawPtr<ShadowRoot> EditingTestBase::setShadowContent(const char*
 
 void EditingTestBase::updateLayoutAndStyleForPainting()
 {
-    document().view()->updateAllLifecyclePhases();
+    document().view()->updateLayoutAndStyleForPainting();
 }
 
 Position EditingTestBase::positionInDOMTree(Node& anchor, int offset)

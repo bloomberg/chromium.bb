@@ -357,7 +357,7 @@ public:
         if (!frame()->document() || !frame()->document()->layoutView())
             return 0;
 
-        frame()->view()->updateAllLifecyclePhases();
+        frame()->view()->updateLayoutAndStyleForPainting();
         if (!frame()->document() || !frame()->document()->layoutView())
             return 0;
 
@@ -377,7 +377,7 @@ public:
         if (!frame()->document() || !frame()->document()->layoutView())
             return;
 
-        frame()->view()->updateAllLifecyclePhases();
+        frame()->view()->updateLayoutAndStyleForPainting();
         if (!frame()->document() || !frame()->document()->layoutView())
             return;
 

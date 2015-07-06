@@ -37,7 +37,7 @@ void RenderingTest::SetUp()
 
     // This ensures that the minimal DOM tree gets attached
     // correctly for tests that don't call setBodyInnerHTML.
-    document().view()->updateAllLifecyclePhases();
+    document().view()->updateLayoutAndStyleForPainting();
 }
 
 

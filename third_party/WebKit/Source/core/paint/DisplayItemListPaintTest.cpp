@@ -105,7 +105,7 @@ TEST_F(DisplayItemListPaintTest, FullDocumentPaintingWithCaret)
         TestDisplayItem(textInlineBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
     div.focus();
-    document().view()->updateAllLifecyclePhases();
+    document().view()->updateLayoutAndStyleForPainting();
     EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(layoutView.displayItemClient()));
     EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(divLayoutObject.displayItemClient()));
     EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(textInlineBox.displayItemClient()));
@@ -139,7 +139,7 @@ TEST_F(DisplayItemListPaintTest, InlineRelayout)
         TestDisplayItem(firstTextBox, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
     div.setAttribute(HTMLNames::styleAttr, "width: 10px; height: 200px");
-    document().view()->updateAllLifecyclePhases();
+    document().view()->updateLayoutAndStyleForPainting();
     EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(layoutView.displayItemClient()));
     EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(divBlock.displayItemClient()));
     EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(firstTextBoxDisplayItemClient));

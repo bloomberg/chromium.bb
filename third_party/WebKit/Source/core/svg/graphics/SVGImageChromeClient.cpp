@@ -101,7 +101,7 @@ void SVGImageChromeClient::animationTimerFired(Timer<SVGImageChromeClient>*)
     // to render this protection redundant.
     RefPtr<SVGImage> protect(m_image);
     m_image->frameView()->page()->animator().serviceScriptedAnimations(monotonicallyIncreasingTime());
-    m_image->frameView()->updateAllLifecyclePhases();
+    m_image->frameView()->updateLayoutAndStyleForPainting();
 }
 
 } // namespace blink

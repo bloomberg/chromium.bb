@@ -1415,7 +1415,7 @@ TEST_P(ParameterizedPinchViewportTest, TestChangingContentSizeAffectsScrollBound
         "var content = document.getElementById(\"content\");"
         "content.style.width = \"1500px\";"
         "content.style.height = \"2400px\";"));
-    frameView.updateAllLifecyclePhases();
+    frameView.updateLayoutAndStyleForPainting();
 
     EXPECT_SIZE_EQ(IntSize(1500, 2400), IntSize(scrollLayer->bounds()));
 }

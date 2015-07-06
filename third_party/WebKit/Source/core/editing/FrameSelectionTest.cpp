@@ -99,7 +99,7 @@ TEST_F(FrameSelectionTest, SetInvalidSelection)
 TEST_F(FrameSelectionTest, InvalidateCaretRect)
 {
     RefPtrWillBeRawPtr<Text> text = appendTextNode("Hello, World!");
-    document().view()->updateAllLifecyclePhases();
+    document().view()->updateLayoutAndStyleForPainting();
 
     VisibleSelection validSelection(Position(text, 0), Position(text, 0));
     setSelection(validSelection);
@@ -119,7 +119,7 @@ TEST_F(FrameSelectionTest, InvalidateCaretRect)
 TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout)
 {
     RefPtrWillBeRawPtr<Text> text = appendTextNode("Hello, World!");
-    document().view()->updateAllLifecyclePhases();
+    document().view()->updateLayoutAndStyleForPainting();
 
     document().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
     document().body()->focus();

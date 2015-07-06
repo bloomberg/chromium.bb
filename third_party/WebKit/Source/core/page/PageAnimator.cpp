@@ -94,7 +94,7 @@ void PageAnimator::updateLayoutAndStyleForPainting(LocalFrame* rootFrame)
 
     // setFrameRect may have the side-effect of causing existing page layout to
     // be invalidated, so layout needs to be called last.
-    view->updateAllLifecyclePhases();
+    view->updateLayoutAndStyleForPainting();
 }
 
 }

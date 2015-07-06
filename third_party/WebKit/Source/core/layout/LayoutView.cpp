@@ -87,11 +87,11 @@ bool LayoutView::hitTest(HitTestResult& result)
     // into a child document, it could trigger a layout on the parent document, which can destroy DeprecatedPaintLayer
     // that are higher up in the call stack, leading to crashes.
     // Note that Document::updateLayout calls its parent's updateLayout.
-    frameView()->updateLifecycleToCompositingCleanPlusScrolling();
-    return hitTestNoLifecycleUpdate(result);
+    frameView()->updateLayoutAndStyleForPainting();
+    return hitTestNoLayoutAndStyleUpdate(result);
 }
 
-bool LayoutView::hitTestNoLifecycleUpdate(HitTestResult& result)
+bool LayoutView::hitTestNoLayoutAndStyleUpdate(HitTestResult& result)
 {
     TRACE_EVENT_BEGIN0("blink,devtools.timeline", "HitTest");
     m_hitTestCount++;
