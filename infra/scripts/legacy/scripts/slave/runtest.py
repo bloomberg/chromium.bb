@@ -644,61 +644,6 @@ def _MainWin(options, args, extra_env):
   return result
 
 
-def _MainAndroid(options, args, extra_env):
-  """Runs tests on android.
-
-  Running GTest-based tests on android is different than on Linux as it requires
-  src/build/android/test_runner.py to deploy and communicate with the device.
-  Python scripts are the same as with Linux.
-
-  Args:
-    options: Command-line options for this invocation of runtest.py.
-    args: Command and arguments for the test.
-    extra_env: A dictionary of extra environment variables to set.
-
-  Returns:
-    Exit status code.
-  """
-  if options.run_python_script:
-    return _MainLinux(options, args, extra_env)
-
-  if len(args) < 1:
-    raise chromium_utils.MissingArgument('Usage: %s' % USAGE)
-
-  log_processor_class = _SelectLogProcessor(options)
-  log_processor = _CreateLogProcessor(log_processor_class, options)
-
-  if options.generate_json_file:
-    if os.path.exists(options.test_output_xml):
-      # remove the old XML output file.
-      os.remove(options.test_output_xml)
-
-  # Assume it's a gtest apk, so use the android harness.
-  test_suite = args[0]
-  run_test_target_option = '--release'
-  if options.target == 'Debug':
-    run_test_target_option = '--debug'
-  command = ['src/build/android/test_runner.py', 'gtest',
-             run_test_target_option, '-s', test_suite]
-
-  if options.flakiness_dashboard_server:
-    command += ['--flakiness-dashboard-server=%s' %
-        options.flakiness_dashboard_server]
-
-  result = _RunGTestCommand(options, command, extra_env)
-
-  if options.generate_json_file:
-    if not _GenerateJSONForTestResults(options, log_processor):
-      return 1
-
-  if options.annotate:
-    annotation_utils.annotate(
-        options.test_type, result, log_processor,
-        perf_dashboard_id=options.perf_dashboard_id)
-
-  return result
-
-
 def _ConfigureSanitizerTools(options, args, extra_env):
   if (options.enable_asan or options.enable_tsan or
       options.enable_msan or options.enable_lsan):
@@ -1003,11 +948,7 @@ def main():
     elif sys.platform == 'win32':
       result = _MainWin(options, args, extra_env)
     elif sys.platform == 'linux2':
-      if options.factory_properties.get('test_platform',
-            options.test_platform) == 'android':
-        result = _MainAndroid(options, args, extra_env)
-      else:
-        result = _MainLinux(options, args, extra_env)
+      result = _MainLinux(options, args, extra_env)
     else:
       sys.stderr.write('Unknown sys.platform value %s\n' % repr(sys.platform))
       return 1
