@@ -82,10 +82,9 @@ class FakeServer {
   bool ModifyEntitySpecifics(const std::string& id,
                              const sync_pb::EntitySpecifics& updated_specifics);
 
-  // Sets a new store birthday so that tests may trigger a NOT_MY_BIRTHDAY
-  // error. If |store_birthday| is the same as |store_birthday_|, false is
-  // returned and this method has no effect.
-  bool SetNewStoreBirthday(const std::string& store_birthday);
+  // Clears server data simulating a "dashboard stop and clear" and sets a new
+  // store birthday.
+  void ClearServerData();
 
   // Puts the server in a state where it acts as if authentication has
   // succeeded.
@@ -196,12 +195,15 @@ class FakeServer {
   // that the server uses to assign versions.
   void UpdateEntityVersion(FakeServerEntity* entity);
 
+  // Returns the store birthday.
+  std::string GetStoreBirthday() const;
+
   // This is the last version number assigned to an entity. The next entity will
   // have a version number of version_ + 1.
   int64 version_;
 
   // The current store birthday value.
-  std::string store_birthday_;
+  int64 store_birthday_;
 
   // Whether the server should act as if incoming connections are properly
   // authenticated.

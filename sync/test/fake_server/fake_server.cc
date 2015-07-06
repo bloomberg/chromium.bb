@@ -41,9 +41,6 @@ class FakeServerEntity;
 
 namespace {
 
-// The default store birthday value.
-static const char kDefaultStoreBirthday[] = "1234567890";
-
 // The default keystore key.
 static const char kDefaultKeystoreKey[] = "1111111111111111";
 
@@ -165,7 +162,7 @@ bool IsDeletedOrFolder(const FakeServerEntity& entity) {
 }  // namespace
 
 FakeServer::FakeServer() : version_(0),
-                           store_birthday_(kDefaultStoreBirthday),
+                           store_birthday_(0),
                            authenticated_(true),
                            error_type_(sync_pb::SyncEnums::SUCCESS),
                            alternate_triggered_errors_(false),
@@ -257,7 +254,7 @@ void FakeServer::HandleCommand(const string& request,
   sync_pb::ClientToServerResponse response_proto;
 
   if (message.has_store_birthday() &&
-      message.store_birthday() != store_birthday_) {
+      message.store_birthday() != GetStoreBirthday()) {
     response_proto.set_error_code(sync_pb::SyncEnums::NOT_MY_BIRTHDAY);
   } else if (error_type_ != sync_pb::SyncEnums::SUCCESS &&
              ShouldSendTriggeredError()) {
@@ -299,7 +296,7 @@ void FakeServer::HandleCommand(const string& request,
     response_proto.set_error_code(sync_pb::SyncEnums::SUCCESS);
   }
 
-  response_proto.set_store_birthday(store_birthday_);
+  response_proto.set_store_birthday(GetStoreBirthday());
 
   *error_code = 0;
   *response_code = net::HTTP_OK;
@@ -559,13 +556,11 @@ bool FakeServer::ModifyEntitySpecifics(
   return true;
 }
 
-bool FakeServer::SetNewStoreBirthday(const string& store_birthday) {
+void FakeServer::ClearServerData() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (store_birthday_ == store_birthday)
-    return false;
-
-  store_birthday_ = store_birthday;
-  return true;
+  entities_.clear();
+  keystore_keys_.clear();
+  ++store_birthday_;
 }
 
 void FakeServer::SetAuthenticated() {
@@ -671,6 +666,11 @@ std::string FakeServer::GetBookmarkBarFolderId() const {
 base::WeakPtr<FakeServer> FakeServer::AsWeakPtr() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+std::string FakeServer::GetStoreBirthday() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return base::Int64ToString(store_birthday_);
 }
 
 }  // namespace fake_server
