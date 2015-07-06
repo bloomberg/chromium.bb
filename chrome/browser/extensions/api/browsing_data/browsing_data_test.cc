@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -243,7 +244,7 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
       EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(
         function.get(), args, browser())) << " for " << args;
     } else {
-      EXPECT_TRUE(MatchPattern(
+      EXPECT_TRUE(base::MatchPattern(
           RunFunctionAndReturnError(function.get(), args, browser()),
           extension_browsing_data_api_constants::kDeleteProhibitedError))
           << " for " << args;
@@ -263,10 +264,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, OneAtATime) {
   BrowsingDataRemover::set_removing(true);
   scoped_refptr<BrowsingDataRemoveFunction> function =
       new BrowsingDataRemoveFunction();
-  EXPECT_TRUE(
-      MatchPattern(RunFunctionAndReturnError(
-                       function.get(), kRemoveEverythingArguments, browser()),
-                   extension_browsing_data_api_constants::kOneAtATimeError));
+  EXPECT_TRUE(base::MatchPattern(
+      RunFunctionAndReturnError(function.get(), kRemoveEverythingArguments,
+                                browser()),
+      extension_browsing_data_api_constants::kOneAtATimeError));
   BrowsingDataRemover::set_removing(false);
 
   EXPECT_EQ(base::Time(), GetBeginTime());

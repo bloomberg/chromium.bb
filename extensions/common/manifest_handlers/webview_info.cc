@@ -5,6 +5,7 @@
 #include "extensions/common/manifest_handlers/webview_info.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -30,7 +31,7 @@ class PartitionItem {
   }
 
   bool Matches(const std::string& partition_id) const {
-    return MatchPattern(partition_id, partition_pattern_);
+    return base::MatchPattern(partition_id, partition_pattern_);
   }
 
   // Adds a pattern to the set. Returns true if a new pattern was inserted,

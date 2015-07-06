@@ -22,6 +22,7 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -1379,22 +1380,22 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectoryFail) {
   ASSERT_EQ(4u, GetErrors().size());
   ASSERT_EQ(0u, loaded_.size());
 
-  EXPECT_TRUE(MatchPattern(base::UTF16ToUTF8(GetErrors()[0]),
+  EXPECT_TRUE(base::MatchPattern(base::UTF16ToUTF8(GetErrors()[0]),
       l10n_util::GetStringUTF8(IDS_EXTENSIONS_LOAD_ERROR_MESSAGE) + " *. " +
       extensions::manifest_errors::kManifestUnreadable)) <<
       base::UTF16ToUTF8(GetErrors()[0]);
 
-  EXPECT_TRUE(MatchPattern(base::UTF16ToUTF8(GetErrors()[1]),
+  EXPECT_TRUE(base::MatchPattern(base::UTF16ToUTF8(GetErrors()[1]),
       l10n_util::GetStringUTF8(IDS_EXTENSIONS_LOAD_ERROR_MESSAGE) + " *. " +
       extensions::manifest_errors::kManifestUnreadable)) <<
       base::UTF16ToUTF8(GetErrors()[1]);
 
-  EXPECT_TRUE(MatchPattern(base::UTF16ToUTF8(GetErrors()[2]),
+  EXPECT_TRUE(base::MatchPattern(base::UTF16ToUTF8(GetErrors()[2]),
       l10n_util::GetStringUTF8(IDS_EXTENSIONS_LOAD_ERROR_MESSAGE) + " *. " +
       extensions::manifest_errors::kMissingFile)) <<
       base::UTF16ToUTF8(GetErrors()[2]);
 
-  EXPECT_TRUE(MatchPattern(base::UTF16ToUTF8(GetErrors()[3]),
+  EXPECT_TRUE(base::MatchPattern(base::UTF16ToUTF8(GetErrors()[3]),
       l10n_util::GetStringUTF8(IDS_EXTENSIONS_LOAD_ERROR_MESSAGE) + " *. " +
       extensions::manifest_errors::kManifestUnreadable)) <<
       base::UTF16ToUTF8(GetErrors()[3]);

@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 
 namespace device {
@@ -46,7 +47,7 @@ mojo::Array<serial::DeviceInfoPtr> SerialDeviceEnumeratorMac::GetDevices() {
 
     std::set<std::string>::const_iterator i = valid_patterns.begin();
     for (; i != valid_patterns.end(); ++i) {
-      if (MatchPattern(next_device, *i)) {
+      if (base::MatchPattern(next_device, *i)) {
         serial::DeviceInfoPtr info(serial::DeviceInfo::New());
         info->path = next_device;
         devices.push_back(info.Pass());

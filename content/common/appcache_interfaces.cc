@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/url_constants.h"
 #include "net/url_request/url_request.h"
@@ -105,7 +106,7 @@ bool AppCacheNamespace::IsMatch(const GURL& url) const {
     std::string pattern = namespace_url.spec();
     if (namespace_url.has_query())
       base::ReplaceSubstringsAfterOffset(&pattern, 0, "?", "\\?");
-    return MatchPattern(url.spec(), pattern);
+    return base::MatchPattern(url.spec(), pattern);
   }
   return base::StartsWithASCII(url.spec(), namespace_url.spec(), true);
 }

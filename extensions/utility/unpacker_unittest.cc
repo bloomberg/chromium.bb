@@ -5,6 +5,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -80,11 +81,11 @@ TEST_F(UnpackerTest, InvalidDefaultLocale) {
 TEST_F(UnpackerTest, InvalidMessagesFile) {
   SetupUnpacker("invalid_messages_file.crx");
   EXPECT_FALSE(unpacker_->Run());
-  EXPECT_TRUE(
-      MatchPattern(unpacker_->error_message(),
-                   ASCIIToUTF16(
-                       "*_locales?en_US?messages.json: Line: 2, column: 11,"
-                       " Syntax error.")))
+  EXPECT_TRUE(base::MatchPattern(
+      unpacker_->error_message(),
+      ASCIIToUTF16(
+          "*_locales?en_US?messages.json: Line: 2, column: 11,"
+          " Syntax error.")))
       << unpacker_->error_message();
 }
 
@@ -105,9 +106,10 @@ TEST_F(UnpackerTest, MissingDefaultLocaleHasLocalesFolder) {
 TEST_F(UnpackerTest, MissingMessagesFile) {
   SetupUnpacker("missing_messages_file.crx");
   EXPECT_FALSE(unpacker_->Run());
-  EXPECT_TRUE(MatchPattern(unpacker_->error_message(),
-                           ASCIIToUTF16(errors::kLocalesMessagesFileMissing) +
-                               ASCIIToUTF16("*_locales?en_US?messages.json")));
+  EXPECT_TRUE(
+      base::MatchPattern(unpacker_->error_message(),
+                         ASCIIToUTF16(errors::kLocalesMessagesFileMissing) +
+                             ASCIIToUTF16("*_locales?en_US?messages.json")));
 }
 
 TEST_F(UnpackerTest, NoLocaleData) {

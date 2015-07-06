@@ -8,6 +8,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/pattern.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -63,11 +65,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetWindow) {
   scoped_refptr<WindowsGetFunction> function = new WindowsGetFunction();
   scoped_refptr<Extension> extension(test_util::CreateEmptyExtension());
   function->set_extension(extension.get());
-  EXPECT_TRUE(MatchPattern(
+  EXPECT_TRUE(base::MatchPattern(
       utils::RunFunctionAndReturnError(
-          function.get(),
-          base::StringPrintf("[%u]", window_id + 1),
-          browser()),
+          function.get(), base::StringPrintf("[%u]", window_id + 1), browser()),
       keys::kWindowNotFoundError));
 
   // Basic window details.
@@ -137,10 +137,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetWindow) {
   // Without "include_incognito".
   function = new WindowsGetFunction();
   function->set_extension(extension.get());
-  EXPECT_TRUE(MatchPattern(
+  EXPECT_TRUE(base::MatchPattern(
       utils::RunFunctionAndReturnError(
-          function.get(),
-          base::StringPrintf("[%u]", incognito_window_id),
+          function.get(), base::StringPrintf("[%u]", incognito_window_id),
           browser()),
       keys::kWindowNotFoundError));
 
@@ -367,10 +366,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
   scoped_refptr<WindowsCreateFunction> function = new WindowsCreateFunction();
   scoped_refptr<Extension> extension(test_util::CreateEmptyExtension());
   function->set_extension(extension.get());
-  EXPECT_TRUE(MatchPattern(
-      utils::RunFunctionAndReturnError(function.get(),
-                                       kArgsWithExplicitIncognitoParam,
-                                       browser()),
+  EXPECT_TRUE(base::MatchPattern(
+      utils::RunFunctionAndReturnError(
+          function.get(), kArgsWithExplicitIncognitoParam, browser()),
       keys::kIncognitoModeIsForced));
 
   // Now try opening a normal window from incognito window.
@@ -378,10 +376,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
   // Run with an explicit "incognito" param.
   function = new WindowsCreateFunction();
   function->set_extension(extension.get());
-  EXPECT_TRUE(MatchPattern(
-      utils::RunFunctionAndReturnError(function.get(),
-                                       kArgsWithExplicitIncognitoParam,
-                                       incognito_browser),
+  EXPECT_TRUE(base::MatchPattern(
+      utils::RunFunctionAndReturnError(
+          function.get(), kArgsWithExplicitIncognitoParam, incognito_browser),
       keys::kIncognitoModeIsForced));
 }
 
@@ -398,20 +395,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
   scoped_refptr<WindowsCreateFunction> function = new WindowsCreateFunction();
   scoped_refptr<Extension> extension(test_util::CreateEmptyExtension());
   function->set_extension(extension.get());
-  EXPECT_TRUE(MatchPattern(
-      utils::RunFunctionAndReturnError(function.get(),
-                                       kArgs,
-                                       browser()),
+  EXPECT_TRUE(base::MatchPattern(
+      utils::RunFunctionAndReturnError(function.get(), kArgs, browser()),
       keys::kIncognitoModeIsDisabled));
 
   // Run in incognito window.
   function = new WindowsCreateFunction();
   function->set_extension(extension.get());
-  EXPECT_TRUE(MatchPattern(
-      utils::RunFunctionAndReturnError(function.get(),
-                                       kArgs,
-                                       incognito_browser),
-      keys::kIncognitoModeIsDisabled));
+  EXPECT_TRUE(base::MatchPattern(utils::RunFunctionAndReturnError(
+                                     function.get(), kArgs, incognito_browser),
+                                 keys::kIncognitoModeIsDisabled));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryCurrentWindowTabs) {
@@ -532,44 +525,40 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, InvalidUpdateWindowState) {
   scoped_refptr<WindowsUpdateFunction> function = new WindowsUpdateFunction();
   scoped_refptr<Extension> extension(test_util::CreateEmptyExtension());
   function->set_extension(extension.get());
-  EXPECT_TRUE(MatchPattern(
+  EXPECT_TRUE(base::MatchPattern(
       utils::RunFunctionAndReturnError(
           function.get(),
-          base::StringPrintf(kArgsMinimizedWithFocus, window_id),
-          browser()),
+          base::StringPrintf(kArgsMinimizedWithFocus, window_id), browser()),
       keys::kInvalidWindowStateError));
 
   static const char kArgsMaximizedWithoutFocus[] =
       "[%u, {\"state\": \"maximized\", \"focused\": false}]";
   function = new WindowsUpdateFunction();
   function->set_extension(extension.get());
-  EXPECT_TRUE(MatchPattern(
+  EXPECT_TRUE(base::MatchPattern(
       utils::RunFunctionAndReturnError(
           function.get(),
-          base::StringPrintf(kArgsMaximizedWithoutFocus, window_id),
-          browser()),
+          base::StringPrintf(kArgsMaximizedWithoutFocus, window_id), browser()),
       keys::kInvalidWindowStateError));
 
   static const char kArgsMinimizedWithBounds[] =
       "[%u, {\"state\": \"minimized\", \"width\": 500}]";
   function = new WindowsUpdateFunction();
   function->set_extension(extension.get());
-  EXPECT_TRUE(MatchPattern(
+  EXPECT_TRUE(base::MatchPattern(
       utils::RunFunctionAndReturnError(
           function.get(),
-          base::StringPrintf(kArgsMinimizedWithBounds, window_id),
-          browser()),
+          base::StringPrintf(kArgsMinimizedWithBounds, window_id), browser()),
       keys::kInvalidWindowStateError));
 
   static const char kArgsMaximizedWithBounds[] =
       "[%u, {\"state\": \"maximized\", \"width\": 500}]";
   function = new WindowsUpdateFunction();
   function->set_extension(extension.get());
-  EXPECT_TRUE(MatchPattern(
+  EXPECT_TRUE(base::MatchPattern(
       utils::RunFunctionAndReturnError(
           function.get(),
-          base::StringPrintf(kArgsMaximizedWithBounds, window_id),
-          browser()),
+          base::StringPrintf(kArgsMaximizedWithBounds, window_id), browser()),
       keys::kInvalidWindowStateError));
 }
 
@@ -609,39 +598,42 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, AcceptState) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, ValidateCreateWindowState) {
+  EXPECT_TRUE(base::MatchPattern(
+      RunCreateWindowExpectError(
+          "[{\"state\": \"fullscreen\", \"type\": \"panel\"}]"),
+      keys::kInvalidWindowStateError));
+  EXPECT_TRUE(base::MatchPattern(
+      RunCreateWindowExpectError(
+          "[{\"state\": \"maximized\", \"type\": \"panel\"}]"),
+      keys::kInvalidWindowStateError));
+  EXPECT_TRUE(base::MatchPattern(
+      RunCreateWindowExpectError(
+          "[{\"state\": \"minimized\", \"type\": \"panel\"}]"),
+      keys::kInvalidWindowStateError));
   EXPECT_TRUE(
-      MatchPattern(RunCreateWindowExpectError(
-                       "[{\"state\": \"fullscreen\", \"type\": \"panel\"}]"),
-                   keys::kInvalidWindowStateError));
+      base::MatchPattern(RunCreateWindowExpectError(
+                             "[{\"state\": \"minimized\", \"focused\": true}]"),
+                         keys::kInvalidWindowStateError));
+  EXPECT_TRUE(base::MatchPattern(
+      RunCreateWindowExpectError(
+          "[{\"state\": \"maximized\", \"focused\": false}]"),
+      keys::kInvalidWindowStateError));
+  EXPECT_TRUE(base::MatchPattern(
+      RunCreateWindowExpectError(
+          "[{\"state\": \"fullscreen\", \"focused\": false}]"),
+      keys::kInvalidWindowStateError));
   EXPECT_TRUE(
-      MatchPattern(RunCreateWindowExpectError(
-                       "[{\"state\": \"maximized\", \"type\": \"panel\"}]"),
-                   keys::kInvalidWindowStateError));
+      base::MatchPattern(RunCreateWindowExpectError(
+                             "[{\"state\": \"minimized\", \"width\": 500}]"),
+                         keys::kInvalidWindowStateError));
   EXPECT_TRUE(
-      MatchPattern(RunCreateWindowExpectError(
-                       "[{\"state\": \"minimized\", \"type\": \"panel\"}]"),
-                   keys::kInvalidWindowStateError));
+      base::MatchPattern(RunCreateWindowExpectError(
+                             "[{\"state\": \"maximized\", \"width\": 500}]"),
+                         keys::kInvalidWindowStateError));
   EXPECT_TRUE(
-      MatchPattern(RunCreateWindowExpectError(
-                       "[{\"state\": \"minimized\", \"focused\": true}]"),
-                   keys::kInvalidWindowStateError));
-  EXPECT_TRUE(
-      MatchPattern(RunCreateWindowExpectError(
-                       "[{\"state\": \"maximized\", \"focused\": false}]"),
-                   keys::kInvalidWindowStateError));
-  EXPECT_TRUE(
-      MatchPattern(RunCreateWindowExpectError(
-                       "[{\"state\": \"fullscreen\", \"focused\": false}]"),
-                   keys::kInvalidWindowStateError));
-  EXPECT_TRUE(MatchPattern(RunCreateWindowExpectError(
-                               "[{\"state\": \"minimized\", \"width\": 500}]"),
-                           keys::kInvalidWindowStateError));
-  EXPECT_TRUE(MatchPattern(RunCreateWindowExpectError(
-                               "[{\"state\": \"maximized\", \"width\": 500}]"),
-                           keys::kInvalidWindowStateError));
-  EXPECT_TRUE(MatchPattern(RunCreateWindowExpectError(
-                               "[{\"state\": \"fullscreen\", \"width\": 500}]"),
-                           keys::kInvalidWindowStateError));
+      base::MatchPattern(RunCreateWindowExpectError(
+                             "[{\"state\": \"fullscreen\", \"width\": 500}]"),
+                         keys::kInvalidWindowStateError));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTab) {
@@ -1080,7 +1072,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, ZoomSettings) {
   // Test 'disabled' mode, which will reset A1's zoom to 1.f.
   EXPECT_TRUE(RunSetZoomSettings(tab_id_A1, "disabled", NULL));
   std::string error = RunSetZoomExpectError(tab_id_A1, 1.4f);
-  EXPECT_TRUE(MatchPattern(error, keys::kCannotZoomDisabledTabError));
+  EXPECT_TRUE(base::MatchPattern(error, keys::kCannotZoomDisabledTabError));
   EXPECT_FLOAT_EQ(
       1.f, content::ZoomLevelToZoomFactor(GetZoomLevel(web_contents_A1)));
   // We should still be able to zoom A2 though.
@@ -1137,12 +1129,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, GetZoomSettings) {
 
   std::string error =
       RunSetZoomSettingsExpectError(tab_id, "manual", "per-origin");
-  EXPECT_TRUE(MatchPattern(error,
-                           keys::kPerOriginOnlyInAutomaticError));
+  EXPECT_TRUE(base::MatchPattern(error, keys::kPerOriginOnlyInAutomaticError));
   error =
       RunSetZoomSettingsExpectError(tab_id, "disabled", "per-origin");
-  EXPECT_TRUE(MatchPattern(error,
-                           keys::kPerOriginOnlyInAutomaticError));
+  EXPECT_TRUE(base::MatchPattern(error, keys::kPerOriginOnlyInAutomaticError));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, CannotZoomInvalidTab) {
@@ -1152,10 +1142,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, CannotZoomInvalidTab) {
 
   int bogus_id = tab_id + 100;
   std::string error = RunSetZoomExpectError(bogus_id, 3.14159);
-  EXPECT_TRUE(MatchPattern(error, keys::kTabNotFoundError));
+  EXPECT_TRUE(base::MatchPattern(error, keys::kTabNotFoundError));
 
   error = RunSetZoomSettingsExpectError(bogus_id, "manual", "per-tab");
-  EXPECT_TRUE(MatchPattern(error, keys::kTabNotFoundError));
+  EXPECT_TRUE(base::MatchPattern(error, keys::kTabNotFoundError));
 
   const char kNewTestTabArgs[] = "chrome://version";
   params = GetOpenParams(kNewTestTabArgs);
@@ -1164,11 +1154,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, CannotZoomInvalidTab) {
 
   // Test chrome.tabs.setZoom().
   error = RunSetZoomExpectError(tab_id, 3.14159);
-  EXPECT_TRUE(MatchPattern(error, manifest_errors::kCannotAccessChromeUrl));
+  EXPECT_TRUE(
+      base::MatchPattern(error, manifest_errors::kCannotAccessChromeUrl));
 
   // chrome.tabs.setZoomSettings().
   error = RunSetZoomSettingsExpectError(tab_id, "manual", "per-tab");
-  EXPECT_TRUE(MatchPattern(error, manifest_errors::kCannotAccessChromeUrl));
+  EXPECT_TRUE(
+      base::MatchPattern(error, manifest_errors::kCannotAccessChromeUrl));
 }
 
 }  // namespace extensions

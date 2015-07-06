@@ -20,6 +20,7 @@
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1349,8 +1350,8 @@ bool ChromeLauncherController::ContentCanBeHandledByGmailApp(
     // We need to extend the application matching for the gMail app beyond the
     // manifest file's specification. This is required because of the namespace
     // overlap with the offline app ("/mail/mu/").
-    if (!MatchPattern(url.path(), "/mail/mu/*") &&
-        MatchPattern(url.path(), "/mail/*") &&
+    if (!base::MatchPattern(url.path(), "/mail/mu/*") &&
+        base::MatchPattern(url.path(), "/mail/*") &&
         GetExtensionForAppID(kGmailAppId) &&
         GetExtensionForAppID(kGmailAppId)->OverlapsWithOrigin(url))
       return true;

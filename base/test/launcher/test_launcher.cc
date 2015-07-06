@@ -25,6 +25,7 @@
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"

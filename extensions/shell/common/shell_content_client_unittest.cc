@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,7 +24,7 @@ TEST_F(ShellContentClientTest, UserAgentFormat) {
       << user_agent;
 
   // Must contain a substring like "Chrome/1.2.3.4".
-  EXPECT_TRUE(MatchPattern(user_agent, "*Chrome/*.*.*.*")) << user_agent;
+  EXPECT_TRUE(base::MatchPattern(user_agent, "*Chrome/*.*.*.*")) << user_agent;
 }
 
 }  // namespace extensions

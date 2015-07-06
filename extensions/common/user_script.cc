@@ -7,6 +7,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/command_line.h"
 #include "base/pickle.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "extensions/common/switches.h"
 
@@ -20,7 +21,7 @@ bool UrlMatchesGlobs(const std::vector<std::string>* globs,
                      const GURL& url) {
   for (std::vector<std::string>::const_iterator glob = globs->begin();
        glob != globs->end(); ++glob) {
-    if (MatchPattern(url.spec(), *glob))
+    if (base::MatchPattern(url.spec(), *glob))
       return true;
   }
 

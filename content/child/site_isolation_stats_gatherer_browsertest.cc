@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
@@ -45,23 +46,23 @@ class SiteIsolationStatsGathererBrowserTest : public ContentBrowserTest {
                          const std::string& resource_name) {
     std::string bucket;
     int mime_type = 0;  // Hardcoded because histogram enums mustn't change.
-    if (MatchPattern(resource_name, "*.html")) {
+    if (base::MatchPattern(resource_name, "*.html")) {
       bucket = "HTML";
       mime_type = 0;
-    } else if (MatchPattern(resource_name, "*.xml")) {
+    } else if (base::MatchPattern(resource_name, "*.xml")) {
       bucket = "XML";
       mime_type = 1;
-    } else if (MatchPattern(resource_name, "*.json")) {
+    } else if (base::MatchPattern(resource_name, "*.json")) {
       bucket = "JSON";
       mime_type = 2;
-    } else if (MatchPattern(resource_name, "*.txt")) {
+    } else if (base::MatchPattern(resource_name, "*.txt")) {
       bucket = "Plain";
       mime_type = 3;
-      if (MatchPattern(resource_name, "json*")) {
+      if (base::MatchPattern(resource_name, "json*")) {
         bucket += ".JSON";
-      } else if (MatchPattern(resource_name, "html*")) {
+      } else if (base::MatchPattern(resource_name, "html*")) {
         bucket += ".HTML";
-      } else if (MatchPattern(resource_name, "xml*")) {
+      } else if (base::MatchPattern(resource_name, "xml*")) {
         bucket += ".XML";
       }
     } else {
@@ -81,12 +82,12 @@ class SiteIsolationStatsGathererBrowserTest : public ContentBrowserTest {
     expected_metrics.insert(base_metric);
     if (should_be_blocked) {
       expected_metrics.insert(base_metric + ".RenderableStatusCode");
-    } else if (MatchPattern(resource_name, "*js.*")) {
+    } else if (base::MatchPattern(resource_name, "*js.*")) {
       expected_metrics.insert(base_metric + ".MaybeJS");
     }
 
     for (std::string metric : expected_metrics) {
-      if (MatchPattern(metric, "*.RenderableStatusCode")) {
+      if (base::MatchPattern(metric, "*.RenderableStatusCode")) {
         histograms.ExpectUniqueSample(metric, RESOURCE_TYPE_XHR, 1);
       } else {
         histograms.ExpectUniqueSample(metric, 1, 1);

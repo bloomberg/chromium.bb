@@ -15,6 +15,7 @@
 #include "base/json/json_value_converter.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 
 namespace {
@@ -41,7 +42,7 @@ bool DomainReliabilityConfig::Resource::MatchesUrl(const GURL& url) const {
   const std::string& spec = url.spec();
 
   for (const auto& url_pattern : url_patterns) {
-    if (MatchPattern(spec, *url_pattern))
+    if (base::MatchPattern(spec, *url_pattern))
       return true;
   }
 

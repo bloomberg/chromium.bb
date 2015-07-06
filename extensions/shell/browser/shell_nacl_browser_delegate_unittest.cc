@@ -4,6 +4,7 @@
 
 #include "extensions/shell/browser/shell_nacl_browser_delegate.h"
 
+#include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,8 +20,8 @@ TEST_F(ShellNaClBrowserDelegateTest, VersionString) {
 
   // Version should look like "1.2.3.4 (5)".
   std::string version = delegate.GetVersionString();
-  EXPECT_TRUE(MatchPattern(version, "*.*.*.* (*)")) << "bad version "
-                                                    << version;
+  EXPECT_TRUE(base::MatchPattern(version, "*.*.*.* (*)")) << "bad version "
+                                                          << version;
 }
 
 }  // namespace extensions

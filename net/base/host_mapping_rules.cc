@@ -5,6 +5,7 @@
 #include "net/base/host_mapping_rules.h"
 
 #include "base/logging.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
@@ -34,7 +35,7 @@ bool HostMappingRules::RewriteHost(HostPortPair* host_port) const {
   for (ExclusionRuleList::const_iterator it = exclusion_rules_.begin();
        it != exclusion_rules_.end(); ++it) {
     const ExclusionRule& rule = *it;
-    if (MatchPattern(host_port->host(), rule.hostname_pattern))
+    if (base::MatchPattern(host_port->host(), rule.hostname_pattern))
       return false;
   }
 
@@ -50,9 +51,9 @@ bool HostMappingRules::RewriteHost(HostPortPair* host_port) const {
     //     *.foo.com:1234
     // First, we'll check for a match just on hostname.
     // If that fails, we'll check for a match with both hostname and port.
-    if (!MatchPattern(host_port->host(), rule.hostname_pattern)) {
+    if (!base::MatchPattern(host_port->host(), rule.hostname_pattern)) {
       std::string host_port_string = host_port->ToString();
-      if (!MatchPattern(host_port_string, rule.hostname_pattern))
+      if (!base::MatchPattern(host_port_string, rule.hostname_pattern))
         continue;  // This rule doesn't apply.
     }
 

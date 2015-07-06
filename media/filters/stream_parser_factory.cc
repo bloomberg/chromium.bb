@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "media/base/media_switches.h"
@@ -172,9 +173,9 @@ static StreamParser* BuildMP4Parser(
   bool has_sbr = false;
   for (size_t i = 0; i < codecs.size(); ++i) {
     std::string codec_id = codecs[i];
-    if (MatchPattern(codec_id, kMPEG2AACLCCodecInfo.pattern)) {
+    if (base::MatchPattern(codec_id, kMPEG2AACLCCodecInfo.pattern)) {
       audio_object_types.insert(mp4::kISO_13818_7_AAC_LC);
-    } else if (MatchPattern(codec_id, kMPEG4AACCodecInfo.pattern)) {
+    } else if (base::MatchPattern(codec_id, kMPEG4AACCodecInfo.pattern)) {
       int audio_object_type = GetMP4AudioObjectType(codec_id, log_cb);
       DCHECK_GT(audio_object_type, 0);
 
@@ -230,7 +231,7 @@ static StreamParser* BuildMP2TParser(
   bool has_sbr = false;
   for (size_t i = 0; i < codecs.size(); ++i) {
     std::string codec_id = codecs[i];
-    if (MatchPattern(codec_id, kMPEG4AACCodecInfo.pattern)) {
+    if (base::MatchPattern(codec_id, kMPEG4AACCodecInfo.pattern)) {
       int audio_object_type = GetMP4AudioObjectType(codec_id, log_cb);
       if (audio_object_type == kAACSBRObjectType ||
           audio_object_type == kAACPSObjectType) {
@@ -349,7 +350,7 @@ static bool CheckTypeAndCodecs(
         bool found_codec = false;
         std::string codec_id = codecs[j];
         for (int k = 0; type_info.codecs[k]; ++k) {
-          if (MatchPattern(codec_id, type_info.codecs[k]->pattern) &&
+          if (base::MatchPattern(codec_id, type_info.codecs[k]->pattern) &&
               (!type_info.codecs[k]->validator ||
                type_info.codecs[k]->validator(codec_id, log_cb))) {
             found_codec =

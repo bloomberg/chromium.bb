@@ -16,6 +16,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -951,8 +952,8 @@ bool TabsQueryFunction::RunSync() {
         continue;
       }
 
-      if (!title.empty() && !MatchPattern(web_contents->GetTitle(),
-                                          base::UTF8ToUTF16(title)))
+      if (!title.empty() && !base::MatchPattern(web_contents->GetTitle(),
+                                                base::UTF8ToUTF16(title)))
         continue;
 
       if (!url_patterns.is_empty() &&

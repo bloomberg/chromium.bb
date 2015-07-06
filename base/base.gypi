@@ -544,6 +544,8 @@
           'strings/latin1_string_conversions.h',
           'strings/nullable_string16.cc',
           'strings/nullable_string16.h',
+          'strings/pattern.cc',
+          'strings/pattern.h',
           'strings/safe_sprintf.cc',
           'strings/safe_sprintf.h',
           'strings/string16.cc',

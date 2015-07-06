@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "base/command_line.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -203,7 +204,8 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, DISABLED_AddBookmark) {
 
   SendKeyPress(ui::VKEY_RETURN);
 
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "*oolbar*"));
+  EXPECT_TRUE(
+      base::MatchPattern(speech_monitor_.GetNextUtterance(), "*oolbar*"));
   // Wait for active window change to be announced to avoid interference from
   // that below.
   while (speech_monitor_.GetNextUtterance() != "window about blank tab") {
@@ -263,7 +265,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, EnableSpokenFeedback) {
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusToolbar) {
   EnableChromeVox();
   chrome::ExecuteCommand(browser(), IDC_FOCUS_TOOLBAR);
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "about:blank*"));
+  EXPECT_TRUE(
+      base::MatchPattern(speech_monitor_.GetNextUtterance(), "about:blank*"));
   EXPECT_EQ("main", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Tool bar", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Reload", speech_monitor_.GetNextUtterance());
@@ -275,7 +278,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TypeInOmnibox) {
 
   chrome::ExecuteCommand(browser(), IDC_FOCUS_LOCATION);
   EXPECT_TRUE(
-      MatchPattern(speech_monitor_.GetNextUtterance(), "*about:blank*"));
+      base::MatchPattern(speech_monitor_.GetNextUtterance(), "*about:blank*"));
   EXPECT_EQ("main", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Tool bar", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Address and search bar", speech_monitor_.GetNextUtterance());
@@ -308,8 +311,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusShelf) {
   EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
 
   SendKeyPress(ui::VKEY_TAB);
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateAppLauncher) {
@@ -318,7 +321,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateAppLauncher) {
   EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
   while (true) {
     std::string utterance = speech_monitor_.GetNextUtterance();
-    if (MatchPattern(utterance, "Button"))
+    if (base::MatchPattern(utterance, "Button"))
       break;
   }
 
@@ -329,7 +332,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateAppLauncher) {
 
   SendKeyPress(ui::VKEY_DOWN);
   EXPECT_EQ("Dialog", speech_monitor_.GetNextUtterance());
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
   EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
 }
 
@@ -337,12 +340,13 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OpenStatusTray) {
   EnableChromeVox();
 
   EXPECT_TRUE(PerformAcceleratorAction(ash::SHOW_SYSTEM_TRAY_BUBBLE));
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "Status tray*"));
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "time *"));
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(),
-                           "Battery is*full."));
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
+  EXPECT_TRUE(
+      base::MatchPattern(speech_monitor_.GetNextUtterance(), "Status tray*"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "time *"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
+                                 "Battery is*full."));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateSystemTray) {
@@ -351,31 +355,32 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateSystemTray) {
   EXPECT_TRUE(PerformAcceleratorAction(ash::SHOW_SYSTEM_TRAY_BUBBLE));
   while (true) {
     std::string utterance = speech_monitor_.GetNextUtterance();
-    if (MatchPattern(utterance, "Button"))
+    if (base::MatchPattern(utterance, "Button"))
       break;
   }
 
   SendKeyPress(ui::VKEY_TAB);
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
 
   // Compat next element.
   SendKeyPressWithSearchAndShift(ui::VKEY_RIGHT);
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
 
   // Compat next button.
   SendKeyPressWithSearchAndShift(ui::VKEY_N);
   SendKeyPressWithSearchAndShift(ui::VKEY_B);
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "Button"));
 
   // Navigate to Bluetooth sub-menu and open it.
   while (true) {
     SendKeyPress(ui::VKEY_TAB);
     std::string content = speech_monitor_.GetNextUtterance();
     std::string role = speech_monitor_.GetNextUtterance();
-    if (MatchPattern(content, "*Bluetooth*") && MatchPattern(role, "Button"))
+    if (base::MatchPattern(content, "*Bluetooth*") &&
+        base::MatchPattern(role, "Button"))
       break;
   }
   SendKeyPress(ui::VKEY_RETURN);
@@ -384,14 +389,14 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateSystemTray) {
   while (true) {
     SendKeyPress(ui::VKEY_TAB);
     std::string utterance = speech_monitor_.GetNextUtterance();
-    if (MatchPattern(utterance, "Previous menu"))
+    if (base::MatchPattern(utterance, "Previous menu"))
       break;
   }
   SendKeyPress(ui::VKEY_RETURN);
 
   while (true) {
     std::string utterance = speech_monitor_.GetNextUtterance();
-    if (MatchPattern(speech_monitor_.GetNextUtterance(), "*Bluetooth"))
+    if (base::MatchPattern(speech_monitor_.GetNextUtterance(), "*Bluetooth"))
       break;
   }
 }
@@ -401,19 +406,20 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_ScreenBrightness) {
   EnableChromeVox();
 
   EXPECT_TRUE(PerformAcceleratorAction(ash::BRIGHTNESS_UP));
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(),
-                           "Brightness * percent"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
+                                 "Brightness * percent"));
 
   EXPECT_TRUE(PerformAcceleratorAction(ash::BRIGHTNESS_DOWN));
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(),
-                           "Brightness * percent"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
+                                 "Brightness * percent"));
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, VolumeSlider) {
   EnableChromeVox();
 
   EXPECT_TRUE(PerformAcceleratorAction(ash::VOLUME_UP));
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "* percent*"));
+  EXPECT_TRUE(
+      base::MatchPattern(speech_monitor_.GetNextUtterance(), "* percent*"));
   EXPECT_EQ("Volume,", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("slider", speech_monitor_.GetNextUtterance());
 }
@@ -565,8 +571,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TouchExploreStatusTray) {
   tray->NotifyAccessibilityEvent(ui::AX_EVENT_HOVER, true);
 
   EXPECT_EQ("Status tray,", speech_monitor_.GetNextUtterance());
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "time*,"));
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "Battery*"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "time*,"));
+  EXPECT_TRUE(
+      base::MatchPattern(speech_monitor_.GetNextUtterance(), "Battery*"));
   EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
 }
 
@@ -596,7 +603,8 @@ IN_PROC_BROWSER_TEST_F(GuestSpokenFeedbackTest, FocusToolbar) {
 
   chrome::ExecuteCommand(browser(), IDC_FOCUS_TOOLBAR);
 
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "about:blank*"));
+  EXPECT_TRUE(
+      base::MatchPattern(speech_monitor_.GetNextUtterance(), "about:blank*"));
   EXPECT_EQ("main", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Tool bar", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Reload", speech_monitor_.GetNextUtterance());
@@ -651,15 +659,15 @@ IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, DISABLED_SpokenFeedbackInOobe) {
   while (speech_monitor_.GetNextUtterance() != "Select your keyboard:") {
   }
   EXPECT_EQ("U S", speech_monitor_.GetNextUtterance());
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(),
-                           "Combo box * of *"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
+                                 "Combo box * of *"));
   ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
       window, ui::VKEY_TAB, false, true /*shift*/, false, false));
   while (speech_monitor_.GetNextUtterance() != "Select your language:") {
   }
   EXPECT_EQ("English ( United States)", speech_monitor_.GetNextUtterance());
-  EXPECT_TRUE(
-      MatchPattern(speech_monitor_.GetNextUtterance(), "Combo box * of *"));
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
+                                 "Combo box * of *"));
 }
 
 }  // namespace chromeos

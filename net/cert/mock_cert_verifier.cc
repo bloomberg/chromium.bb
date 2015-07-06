@@ -5,6 +5,7 @@
 #include "net/cert/mock_cert_verifier.h"
 
 #include "base/memory/ref_counted.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
@@ -50,7 +51,7 @@ int MockCertVerifier::Verify(X509Certificate* cert,
     // Check just the server cert. Intermediates will be ignored.
     if (!it->cert->Equals(cert))
       continue;
-    if (!MatchPattern(hostname, it->hostname))
+    if (!base::MatchPattern(hostname, it->hostname))
       continue;
     *verify_result = it->result;
     return it->rv;

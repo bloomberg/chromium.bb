@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
@@ -247,7 +248,7 @@ bool ConsoleObserverDelegate::AddMessageToConsole(
   DCHECK(source == web_contents_);
 
   std::string ascii_message = base::UTF16ToASCII(message);
-  if (MatchPattern(ascii_message, filter_)) {
+  if (base::MatchPattern(ascii_message, filter_)) {
     message_ = ascii_message;
     message_loop_runner_->Quit();
   }
@@ -2308,7 +2309,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginUpdatesReachProxies) {
       root->child_at(1)->current_replication_state().origin.string();
   EXPECT_EQ(frame_origin + "/", frame_url.GetOrigin().spec());
   EXPECT_TRUE(
-      MatchPattern(console_delegate->message(), "*" + frame_origin + "*"))
+      base::MatchPattern(console_delegate->message(), "*" + frame_origin + "*"))
       << "Error message does not contain the frame's latest origin ("
       << frame_origin << ")";
 }

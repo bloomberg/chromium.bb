@@ -10,6 +10,7 @@
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/WebKit/public/platform/WebData.h"
@@ -132,7 +133,7 @@ std::vector<base::FilePath> ImageDecoderTest::GetImageFiles() const {
 #else
     std::string base_name_ascii = base_name.value();
 #endif
-    if (MatchPattern(base_name_ascii, pattern))
+    if (base::MatchPattern(base_name_ascii, pattern))
       image_files.push_back(next_file_name);
   }
 

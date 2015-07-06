@@ -15,6 +15,7 @@
 #include "base/memory/singleton.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
@@ -2238,8 +2239,8 @@ namespace {
 
 bool IsTraceEventArgsWhitelisted(const char* category_group_name,
                                  const char* event_name) {
-  if (MatchPattern(category_group_name, "toplevel") &&
-      MatchPattern(event_name, "*")) {
+  if (base::MatchPattern(category_group_name, "toplevel") &&
+      base::MatchPattern(event_name, "*")) {
     return true;
   }
 

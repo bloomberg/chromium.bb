@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/strings/pattern.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/background_tracing_manager.h"
 #include "content/public/browser/background_tracing_preemptive_config.h"
@@ -203,8 +204,8 @@ namespace {
 
 bool IsTraceEventArgsWhitelisted(const char* category_group_name,
                                  const char* event_name) {
-  if (MatchPattern(category_group_name, "benchmark") &&
-      MatchPattern(event_name, "whitelisted")) {
+  if (base::MatchPattern(category_group_name, "benchmark") &&
+      base::MatchPattern(event_name, "whitelisted")) {
     return true;
   }
 

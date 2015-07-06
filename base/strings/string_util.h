@@ -542,14 +542,4 @@ BASE_EXPORT base::string16 ReplaceStringPlaceholders(
     const base::string16& a,
     size_t* offset);
 
-// Returns true if the string passed in matches the pattern. The pattern
-// string can contain wildcards like * and ?
-// The backslash character (\) is an escape character for * and ?
-// We limit the patterns to having a max of 16 * or ? characters.
-// ? matches 0 or 1 character, while * matches 0 or more characters.
-BASE_EXPORT bool MatchPattern(const base::StringPiece& string,
-                              const base::StringPiece& pattern);
-BASE_EXPORT bool MatchPattern(const base::string16& string,
-                              const base::string16& pattern);
-
 #endif  // BASE_STRINGS_STRING_UTIL_H_

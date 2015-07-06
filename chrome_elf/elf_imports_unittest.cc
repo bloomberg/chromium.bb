@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/path_service.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/win/pe_image.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -76,7 +77,7 @@ TEST_F(ELFImportsTest, ChromeElfSanityCheck) {
   for (; it != elf_imports.end(); it++) {
     bool match = false;
     for (int i = 0; i < arraysize(kValidFilePatterns); ++i) {
-      if (MatchPattern(*it, kValidFilePatterns[i]))
+      if (base::MatchPattern(*it, kValidFilePatterns[i]))
         match = true;
     }
     ASSERT_TRUE(match) << "Illegal import in chrome_elf.dll: " << *it;

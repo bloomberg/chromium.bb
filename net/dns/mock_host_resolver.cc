@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -364,7 +365,7 @@ int RuleBasedHostResolverProc::Resolve(const std::string& host,
     // match.
     bool matches_flags = (r->host_resolver_flags & flags) == flags;
     if (matches_flags && matches_address_family &&
-        MatchPattern(host, r->host_pattern)) {
+        base::MatchPattern(host, r->host_pattern)) {
       if (r->latency_ms != 0) {
         base::PlatformThread::Sleep(
             base::TimeDelta::FromMilliseconds(r->latency_ms));

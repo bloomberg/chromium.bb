@@ -4,6 +4,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -129,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
   create_shortcut_function = new ManagementCreateAppShortcutFunction();
   create_shortcut_function->set_user_gesture(true);
   ManagementCreateAppShortcutFunction::SetAutoConfirmForTest(false);
-  EXPECT_TRUE(MatchPattern(
+  EXPECT_TRUE(base::MatchPattern(
       util::RunFunctionAndReturnError(
           create_shortcut_function.get(),
           base::StringPrintf("[\"%s\"]", app_id.c_str()),

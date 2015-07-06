@@ -7,6 +7,7 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -89,7 +90,7 @@ class ResourceChangeObserver : public TaskManagerModelObserver {
   int CountMatches() {
     int match_count = 0;
     for (int i = 0; i < model_->ResourceCount(); i++) {
-      if (!MatchPattern(model_->GetResourceTitle(i), title_pattern_))
+      if (!base::MatchPattern(model_->GetResourceTitle(i), title_pattern_))
         continue;
 
       if (GetColumnValue(i) < min_column_value_)

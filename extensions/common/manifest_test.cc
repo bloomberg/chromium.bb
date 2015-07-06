@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "extensions/common/extension_l10n_util.h"
@@ -167,8 +168,9 @@ void ManifestTest::VerifyExpectedError(
   EXPECT_FALSE(extension) <<
       "Expected failure loading extension '" << name <<
       "', but didn't get one.";
-  EXPECT_TRUE(MatchPattern(error, expected_error)) << name <<
-      " expected '" << expected_error << "' but got '" << error << "'";
+  EXPECT_TRUE(base::MatchPattern(error, expected_error))
+      << name << " expected '" << expected_error << "' but got '" << error
+      << "'";
 }
 
 void ManifestTest::LoadAndExpectError(

@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
@@ -288,7 +289,7 @@ bool PluginPrefs::IsStringMatchedInSet(
     const std::set<base::string16>& pattern_set) {
   std::set<base::string16>::const_iterator pattern(pattern_set.begin());
   while (pattern != pattern_set.end()) {
-    if (MatchPattern(name, *pattern))
+    if (base::MatchPattern(name, *pattern))
       return true;
     ++pattern;
   }

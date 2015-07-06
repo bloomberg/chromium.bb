@@ -5,6 +5,7 @@
 #include "net/proxy/proxy_bypass_rules.h"
 
 #include "base/stl_util.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_tokenizer.h"
@@ -37,8 +38,8 @@ class HostnamePatternRule : public ProxyBypassRules::Rule {
 
     // Note it is necessary to lower-case the host, since GURL uses capital
     // letters for percent-escaped characters.
-    return MatchPattern(base::StringToLowerASCII(url.host()),
-                        hostname_pattern_);
+    return base::MatchPattern(base::StringToLowerASCII(url.host()),
+                              hostname_pattern_);
   }
 
   std::string ToString() const override {

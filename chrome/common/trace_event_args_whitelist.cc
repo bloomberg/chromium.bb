@@ -4,6 +4,7 @@
 
 #include "chrome/common/trace_event_args_whitelist.h"
 
+#include "base/strings/pattern.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 
@@ -25,9 +26,9 @@ bool IsTraceEventArgsWhitelisted(const char* category_group_name,
     for (int i = 0; kEventArgsWhitelist[i][0] != NULL; ++i) {
       DCHECK(kEventArgsWhitelist[i][1]);
 
-      if (MatchPattern(category_group_token.c_str(),
-                       kEventArgsWhitelist[i][0]) &&
-          MatchPattern(event_name, kEventArgsWhitelist[i][1])) {
+      if (base::MatchPattern(category_group_token.c_str(),
+                             kEventArgsWhitelist[i][0]) &&
+          base::MatchPattern(event_name, kEventArgsWhitelist[i][1])) {
         return true;
       }
     }

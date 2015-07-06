@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/webplugininfo.h"
 
@@ -73,7 +74,7 @@ bool PluginMetadata::MatchesPlugin(const content::WebPluginInfo& plugin) {
       return false;
   }
 
-  return MatchPattern(plugin.name, group_name_matcher_);
+  return base::MatchPattern(plugin.name, group_name_matcher_);
 }
 
 // static

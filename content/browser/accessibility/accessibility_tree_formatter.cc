@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -153,11 +154,11 @@ bool AccessibilityTreeFormatter::MatchesFilters(
   std::vector<Filter>::const_iterator iter = filters.begin();
   bool allow = default_result;
   for (iter = filters.begin(); iter != filters.end(); ++iter) {
-    if (MatchPattern(text, iter->match_str)) {
+    if (base::MatchPattern(text, iter->match_str)) {
       if (iter->type == Filter::ALLOW_EMPTY)
         allow = true;
       else if (iter->type == Filter::ALLOW)
-        allow = (!MatchPattern(text, base::UTF8ToUTF16("*=''")));
+        allow = (!base::MatchPattern(text, base::UTF8ToUTF16("*=''")));
       else
         allow = false;
     }

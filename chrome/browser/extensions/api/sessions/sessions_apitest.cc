@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/path_service.h"
+#include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -347,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest,
 IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, RestoreForeignSessionInvalidId) {
   CreateSessionModels();
 
-  EXPECT_TRUE(MatchPattern(utils::RunFunctionAndReturnError(
+  EXPECT_TRUE(base::MatchPattern(utils::RunFunctionAndReturnError(
       CreateFunction<SessionsRestoreFunction>(true).get(),
       "[\"tag3.0\"]",
       browser_), "Invalid session id: \"tag3.0\"."));
@@ -356,7 +357,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, RestoreForeignSessionInvalidId) {
 IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, RestoreInIncognito) {
   CreateSessionModels();
 
-  EXPECT_TRUE(MatchPattern(utils::RunFunctionAndReturnError(
+  EXPECT_TRUE(base::MatchPattern(utils::RunFunctionAndReturnError(
       CreateFunction<SessionsRestoreFunction>(true).get(),
       "[\"1\"]",
       CreateIncognitoBrowser()),

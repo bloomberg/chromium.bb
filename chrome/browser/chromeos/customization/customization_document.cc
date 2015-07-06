@@ -18,6 +18,7 @@
 #include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/pattern.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -297,7 +298,7 @@ void StartupCustomizationDocument::Init(
           std::string hwid_mask;
           if (hwid_list->GetDictionary(i, &hwid_dictionary) &&
               hwid_dictionary->GetString(kHwidMaskAttr, &hwid_mask)) {
-            if (MatchPattern(hwid, hwid_mask)) {
+            if (base::MatchPattern(hwid, hwid_mask)) {
               // If HWID for this machine matches some mask, use HWID specific
               // settings.
               std::string result;
