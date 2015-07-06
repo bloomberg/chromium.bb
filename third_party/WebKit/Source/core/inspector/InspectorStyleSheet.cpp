@@ -606,18 +606,10 @@ String canonicalCSSText(RefPtrWillBeRawPtr<CSSRule> rule)
     RefPtrWillBeRawPtr<CSSStyleRule> styleRule = toCSSStyleRule(rule.get());
 
     Vector<String> propertyNames;
-    HashSet<String> propertyNameSet;
     CSSStyleDeclaration* style = styleRule->style();
-    for (unsigned i = 0; i < style->length(); ++i) {
-        String name = style->item(i);
-        String shorthand = style->getPropertyShorthand(name);
-        if (!shorthand.isEmpty())
-            name = shorthand;
-        if (propertyNameSet.contains(name))
-            continue;
-        propertyNames.append(name);
-        propertyNameSet.add(name);
-    }
+    for (unsigned i = 0; i < style->length(); ++i)
+        propertyNames.append(style->item(i));
+
     std::sort(propertyNames.begin(), propertyNames.end(), WTF::codePointCompareLessThan);
 
     StringBuilder builder;
