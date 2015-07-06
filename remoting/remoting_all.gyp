@@ -13,6 +13,7 @@
       'type': 'none',
       'dependencies': [
         '../remoting/app_remoting_webapp.gyp:ar_sample_app',
+        '../remoting/app_remoting_shared_module.gyp:ar_shared_module',
         '../remoting/remoting.gyp:ar_sample_test_driver',
         '../remoting/remoting.gyp:chromoting_test_driver',
         '../remoting/remoting.gyp:remoting_base',

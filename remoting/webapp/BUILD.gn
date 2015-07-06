@@ -12,11 +12,40 @@ group("webapp") {
     ":webapp_v1",
     ":ar_sample_app",
     ":credits",
+    ":ar_shared_module",
   ]
+
+  if (enable_internal_app_remoting_targets) {
+    deps += [ "//remoting/internal:ar_internal_apps" ]
+  }
 
   if (enable_nacl) {
     deps += [ ":webapp_v2" ]
   }
+}
+
+# GYP version: remoting/remoting_client:remoting_credits
+action("credits") {
+  about_credits_file = "$target_gen_dir/credits.html"
+  script = "//tools/licenses.py"
+
+  inputs = [
+    "base/html/credits.tmpl",
+    "base/html/credits_entry.tmpl",
+  ]
+
+  outputs = [
+    about_credits_file,
+  ]
+
+  args = [
+    "credits",
+    rebase_path(about_credits_file, root_build_dir),
+    "--file-template",
+    rebase_path("base/html/credits.tmpl", root_build_dir),
+    "--entry-template",
+    rebase_path("base/html/credits_entry.tmpl", root_build_dir),
+  ]
 }
 
 desktop_remoting_webapp("webapp_v1") {
@@ -41,32 +70,15 @@ app_remoting_webapp("ar_sample_app") {
   app_key = "Sample_App"
   app_id = "ljacajndfccfgnfohlgkdphmbnpkjflk"
   app_client_id = "sample_client_id"
-  app_name = "App Remoting Client"
+  app_vendor = ""
+  app_name = "sample_app"
+  app_fullname = "App Remoting Client"
   app_description = "App Remoting client"
   app_capabilities = [ "GOOGLE_DRIVE" ]
   manifest_key = "remotingdevbuild"
 }
 
-# GYP version: remoting/remoting_client:remoting_client_credits
-action("credits") {
-  about_credits_file = "$target_gen_dir/credits.html"
-  script = "//tools/licenses.py"
-
-  inputs = [
-    "base/html/credits.tmpl",
-    "base/html/credits_entry.tmpl",
-  ]
-
-  outputs = [
-    about_credits_file,
-  ]
-
-  args = [
-    "credits",
-    rebase_path(about_credits_file, root_build_dir),
-    "--file-template",
-    rebase_path("base/html/credits.tmpl", root_build_dir),
-    "--entry-template",
-    rebase_path("base/html/credits_entry.tmpl", root_build_dir),
-  ]
+app_remoting_shared_module("ar_shared_module") {
+  #app_client_id = "sample_client_id"
+  app_name = "shared_module"
 }

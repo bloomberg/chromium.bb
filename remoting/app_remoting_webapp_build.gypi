@@ -40,19 +40,10 @@
         '>(ar_app_path)/icon128.png',
         '>(ar_app_path)/loading_splash.png',
       ],
-      'ar_generated_html_files': [
-        '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/loading_window.html',
-        '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/main.html',
-        '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/message_window.html',
-        '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/wcs_sandbox.html',
-        '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/feedback_consent.html',
-        '<(SHARED_INTERMEDIATE_DIR)/remoting/credits.html',
-      ],
       'ar_webapp_files': [
         '<@(ar_app_specific_files)',
-        '<@(ar_shared_resource_files)',
-        '<@(ar_all_js_files)',
-        '<@(ar_generated_html_files)',
+        '<@(ar_vendor_js_files)',
+        '<@(ar_vendor_html_files)',
       ],
       'output_dir': '<(PRODUCT_DIR)/app_streaming/<@(ar_service_environment)/>(_target_name)',
       'zip_path': '<(PRODUCT_DIR)/app_streaming/<@(ar_service_environment)/>(_target_name).zip',
@@ -103,7 +94,6 @@
           '<(remoting_version_path)',
           '<@(ar_webapp_files)',
           '<@(remoting_webapp_locale_files)',
-          '<@(ar_generated_html_files)',
           '<(ar_app_manifest_app)',
           '<(DEPTH)/remoting/<(ar_app_manifest_common)',
           '<(ar_webapp_locales_listfile)',
@@ -138,98 +128,6 @@
           '>@(_manifest_key)',
           '--app_client_id',
           '>@(_app_client_id)',
-        ],
-      },
-      {
-        'action_name': 'Build ">(ar_app_name)" main.html',
-        'inputs': [
-          '<(DEPTH)/remoting/webapp/build-html.py',
-          '<(ar_main_template)',
-          '<@(ar_main_template_files)',
-        ],
-        'outputs': [
-          '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/main.html',
-        ],
-        'action': [
-          'python', '<(DEPTH)/remoting/webapp/build-html.py',
-          '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/main.html',
-          '<(ar_main_template)',
-          '--template-dir',
-          '<(DEPTH)/remoting',
-          '--templates',
-          '<@(ar_main_template_files)',
-          '--js',
-          '<@(ar_main_js_files)',
-        ],
-      },
-      {
-        'action_name': 'Build ">(ar_app_name)" wcs_sandbox.html',
-        'inputs': [
-          '<(DEPTH)/remoting/webapp/build-html.py',
-          '<(remoting_webapp_template_wcs_sandbox)',
-        ],
-        'outputs': [
-          '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/wcs_sandbox.html',
-        ],
-        'action': [
-          'python', '<(DEPTH)/remoting/webapp/build-html.py',
-          '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/wcs_sandbox.html',
-          '<(remoting_webapp_template_wcs_sandbox)',
-          '--js',
-          '<@(remoting_webapp_wcs_sandbox_html_all_js_files)',
-        ],
-      },
-      {
-        'action_name': 'Build ">(ar_app_name)" loading_window.html',
-        'inputs': [
-          '<(DEPTH)/remoting/webapp/build-html.py',
-          '<(ar_loading_window_template)',
-        ],
-        'outputs': [
-          '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/loading_window.html',
-        ],
-        'action': [
-          'python', '<(DEPTH)/remoting/webapp/build-html.py',
-          '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/loading_window.html',
-          '<(ar_loading_window_template)',
-          # The loading window is just a reskin of the message window--all
-          # JS code is shared.
-          '--js', '<@(remoting_webapp_message_window_html_all_js_files)',
-        ],
-      },
-      {
-        'action_name': 'Build ">(ar_app_name)" message_window.html',
-        'inputs': [
-          '<(DEPTH)/remoting/webapp/build-html.py',
-          '<(remoting_webapp_template_message_window)',
-        ],
-        'outputs': [
-          '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/message_window.html',
-        ],
-        'action': [
-          'python', '<(DEPTH)/remoting/webapp/build-html.py',
-          '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/message_window.html',
-          '<(remoting_webapp_template_message_window)',
-          '--js', '<@(remoting_webapp_message_window_html_all_js_files)',
-        ],
-      },
-      {
-        'action_name': 'Build ">(ar_app_name)" feedback_consent.html',
-        'inputs': [
-          '<(DEPTH)/remoting/webapp/build-html.py',
-          '<(ar_feedback_consent_template)',
-        ],
-        'outputs': [
-          '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/feedback_consent.html',
-        ],
-        'action': [
-          'python', '<(DEPTH)/remoting/webapp/build-html.py',
-          '<(SHARED_INTERMEDIATE_DIR)/>(_target_name)/feedback_consent.html',
-          '<(ar_feedback_consent_template)',
-          '--template-dir',
-          '<(DEPTH)/remoting',
-          '--js',
-          '<@(ar_feedback_consent_html_all_js_files)',
         ],
       },
     ],  # actions
