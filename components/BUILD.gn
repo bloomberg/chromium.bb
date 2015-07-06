@@ -31,7 +31,6 @@ group("all_components") {
     "//components/component_updater",
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
-    "//components/copresence",
     "//components/crash/app",
     "//components/crash/browser",
     "//components/crx_file",
