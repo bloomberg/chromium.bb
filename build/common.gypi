@@ -53,6 +53,14 @@
       }, {
         'arm_float_abi%': 'hard',
       }],
+      ['nacl_standalone==1 and host_clang==1', {
+        'host_cc': '<(make_clang_dir)/bin/clang',
+        'host_cxx': '<(make_clang_dir)/bin/clang++',
+      }],
+      ['nacl_standalone==1 and host_clang==0', {
+        'host_cc': '<!(which gcc)',
+        'host_cxx': '<!(which g++)',
+      }],
     ],
 
     # Set to 1 to enable code coverage.  In addition to build changes
@@ -104,9 +112,6 @@
         # non-Official builds).
         'buildtype%': 'Dev',
 
-        # If this is set clang is used as host compiler, but not as target
-        # compiler. Always do this by default.
-        'host_clang%': 1,
 
         'make_clang_dir%': 'third_party/llvm-build/Release+Asserts',
 
@@ -142,30 +147,23 @@
       'host_arch%': '<(host_arch)',
       'branding%': '<(branding)',
       'buildtype%': '<(buildtype)',
-      'host_clang%': '<(host_clang)',
       'make_clang_dir%': '<(make_clang_dir)',
 
-
       'conditions': [
-        # The system root for cross-compiles. Default: none.
-        # If we are building in chrome we want to rely on chrome's default, which
-        # means we can't set a default here.
-        ['nacl_standalone!=0', {
+        ['nacl_standalone==1', {
+          # The system root for cross-compiles. Default: none.
+          # If we are building in chrome we want to rely on chrome's default,
+          # which means we can't set a default here.
           'sysroot%': '',
+          # If this is set clang is used as host compiler, but not as target
+          # compiler. Always do this by default.
+          'host_clang%': 1,
         }],
-        #
         # A flag for POSIX platforms
         ['OS=="win"', {
           'os_posix%': 0,
          }, {
           'os_posix%': 1,
-        }],
-        ['host_clang==1', {
-          'host_cc': '<(make_clang_dir)/bin/clang',
-          'host_cxx': '<(make_clang_dir)/bin/clang++',
-        }, {
-          'host_cc': '<!(which gcc)',
-          'host_cxx': '<!(which g++)',
         }],
         ['OS=="android"', { # Android target_arch defaults to ARM.
           'target_arch%': 'arm',
@@ -187,8 +185,6 @@
     'branding%': '<(branding)',
     'buildtype%': '<(buildtype)',
     'component%': '<(component)',
-    'host_cc%': '<(host_cc)',
-    'host_cxx%': '<(host_cxx)',
     'make_clang_dir%': '<(make_clang_dir)',
 
     'nacl_strict_warnings%': 1,
@@ -790,7 +786,7 @@
         ['CXX', '<(make_clang_dir)/bin/clang++'],
       ],
     }],
-    ['OS=="linux" and target_arch=="mipsel" and clang==0', {
+    ['OS=="linux" and target_arch=="mipsel" and clang==0 and nacl_standalone==1', {
       'make_global_settings': [
         ['CC', '<!(which mipsel-linux-gnu-gcc)'],
         ['CXX', '<!(which mipsel-linux-gnu-g++)'],
@@ -798,7 +794,7 @@
         ['CXX.host', '<(host_cxx)'],
       ],
     }],
-    ['OS=="linux" and target_arch=="arm" and host_arch!="arm" and clang==0', {
+    ['OS=="linux" and target_arch=="arm" and host_arch!="arm" and clang==0 and nacl_standalone==1', {
       # Set default ARM cross compiling on linux.  These can be overridden
       # using CC/CXX/etc environment variables.
       'make_global_settings': [
