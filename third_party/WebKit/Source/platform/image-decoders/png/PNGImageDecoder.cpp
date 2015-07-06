@@ -134,7 +134,7 @@ public:
             m_readOffset += segmentLength;
             m_currentBufferSize = m_readOffset;
             png_process_data(m_png, m_info, reinterpret_cast<png_bytep>(const_cast<char*>(segment)), segmentLength);
-            if (sizeOnly ? m_decoder->isDecodedSizeAvailable() : m_decoder->isComplete())
+            if (sizeOnly ? m_decoder->isDecodedSizeAvailable() : m_decoder->frameIsCompleteAtIndex(0))
                 return true;
         }
 
@@ -484,14 +484,9 @@ void PNGImageDecoder::complete()
     m_frameBufferCache[0].setStatus(ImageFrame::FrameComplete);
 }
 
-bool PNGImageDecoder::isComplete() const
+inline bool isComplete(const PNGImageDecoder* decoder)
 {
-    ASSERT(m_reader);
-
-    if (m_frameBufferCache.isEmpty())
-        return false;
-
-    return m_frameBufferCache[0].status() == ImageFrame::FrameComplete;
+    return decoder->frameIsCompleteAtIndex(0);
 }
 
 void PNGImageDecoder::decode(bool onlySize)
@@ -508,7 +503,7 @@ void PNGImageDecoder::decode(bool onlySize)
         setFailed();
 
     // If decoding is done or failed, we don't need the PNGImageReader anymore.
-    if (isComplete() || failed())
+    if (isComplete(this) || failed())
         m_reader.clear();
 }
 

@@ -49,8 +49,6 @@ public:
     void rowAvailable(unsigned char* row, unsigned rowIndex, int);
     void complete();
 
-    bool isComplete() const;
-
 private:
     // ImageDecoder:
     virtual void decodeSize() override { decode(true); }
