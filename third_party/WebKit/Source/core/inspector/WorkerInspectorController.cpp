@@ -32,7 +32,6 @@
 
 #include "core/inspector/WorkerInspectorController.h"
 
-#include "bindings/core/v8/WorkerThreadDebugger.h"
 #include "core/InspectorBackendDispatcher.h"
 #include "core/InspectorFrontend.h"
 #include "core/inspector/AsyncCallTracker.h"
@@ -51,6 +50,7 @@
 #include "core/inspector/WorkerConsoleAgent.h"
 #include "core/inspector/WorkerDebuggerAgent.h"
 #include "core/inspector/WorkerRuntimeAgent.h"
+#include "core/inspector/WorkerThreadDebugger.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"

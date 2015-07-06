@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "bindings/core/v8/V8Debugger.h"
+#include "core/inspector/V8Debugger.h"
 
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"

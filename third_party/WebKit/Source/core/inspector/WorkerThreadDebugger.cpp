@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "bindings/core/v8/WorkerThreadDebugger.h"
+#include "core/inspector/WorkerThreadDebugger.h"
 
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/inspector/ScriptDebugListener.h"

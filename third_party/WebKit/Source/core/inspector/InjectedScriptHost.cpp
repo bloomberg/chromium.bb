@@ -31,10 +31,10 @@
 #include "config.h"
 #include "core/inspector/InjectedScriptHost.h"
 
-#include "bindings/core/v8/V8Debugger.h"
 #include "core/inspector/EventListenerInfo.h"
 #include "core/inspector/InspectorConsoleAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
+#include "core/inspector/V8Debugger.h"
 #include "platform/JSONValues.h"
 
 #include "wtf/RefPtr.h"

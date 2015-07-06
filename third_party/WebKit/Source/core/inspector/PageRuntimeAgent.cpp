@@ -32,7 +32,6 @@
 #include "core/inspector/PageRuntimeAgent.h"
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
-#include "bindings/core/v8/MainThreadDebugger.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/frame/FrameConsole.h"
@@ -42,6 +41,7 @@
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/inspector/MainThreadDebugger.h"
 #include "core/page/Page.h"
 #include "platform/weborigin/SecurityOrigin.h"
 

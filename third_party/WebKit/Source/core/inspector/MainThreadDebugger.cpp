@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "bindings/core/v8/MainThreadDebugger.h"
+#include "core/inspector/MainThreadDebugger.h"
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptController.h"

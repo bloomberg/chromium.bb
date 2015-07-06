@@ -5,8 +5,8 @@
 #ifndef ScriptDebuggerBase_h
 #define ScriptDebuggerBase_h
 
-#include "bindings/core/v8/V8Debugger.h"
 #include "core/CoreExport.h"
+#include "core/inspector/V8Debugger.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
