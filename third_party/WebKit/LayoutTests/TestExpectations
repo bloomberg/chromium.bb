@@ -1657,8 +1657,6 @@ crbug.com/450493 [ Win ] virtual/threaded/fast/scroll-behavior/subframe-interrup
 # Very flaky on Win Debug since it was last updated in r191233
 crbug.com/461903 [ Win Debug ] media/encrypted-media/encrypted-media-waiting-for-a-key.html [ Pass Failure ]
 
-crbug.com/504688 compositing/squashing/add-remove-squashed-layers.html [ NeedsRebaseline ]
-
 # Slow expected on debug builds
 crbug.com/445194 [ Debug ] fast/dom/shadow/focus-controller-recursion-crash.html [ Skip ]
 crbug.com/505387 [ Win ] virtual/prefer_compositing_to_lcd_text/scrollbars/rtl/overflow-scroll-rtl.html [ ImageOnlyFailure ]
