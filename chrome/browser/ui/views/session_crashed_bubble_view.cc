@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/session_crashed_bubble_view.h"
 
+#include <string>
 #include <vector>
 
 #include "base/bind.h"
@@ -12,6 +13,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
@@ -62,7 +64,7 @@ const SkColor kTextColor = SkColorSetRGB(102, 102, 102);
 #if !defined(OS_CHROMEOS)
 // The Finch study name and group name that enables session crashed bubble UI.
 const char kEnableBubbleUIFinchName[] = "EnableSessionCrashedBubbleUI";
-const char kEnableBubbleUIGroupDisabled[] = "Disabled";
+const char kDisableBubbleUIGroupPrefix[] = "Disabled";
 #endif
 
 enum SessionCrashedBubbleHistogramValue {
@@ -98,7 +100,13 @@ bool IsBubbleUIEnabled() {
     return true;
   const std::string group_name = base::FieldTrialList::FindFullName(
       kEnableBubbleUIFinchName);
-  return group_name != kEnableBubbleUIGroupDisabled;
+
+  // When |group_name| starts with |kDisableBubbleUIGroupPrefix|, disable the
+  // bubble UI. I.e. the default behavior is bubble enabled unless overridden.
+  // This is to accommodate potential new group names without needing to change
+  // the code here.
+  return !base::StartsWith(group_name, kDisableBubbleUIGroupPrefix,
+                           base::CompareCase::SENSITIVE);
 #endif
 }
 
