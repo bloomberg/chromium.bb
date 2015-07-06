@@ -103,8 +103,11 @@ int UnixDomainServerSocket::ListenWithAddressAndPort(
 }
 
 int UnixDomainServerSocket::GetLocalAddress(IPEndPoint* address) const {
-  NOTIMPLEMENTED();
-  return ERR_NOT_IMPLEMENTED;
+  DCHECK(address);
+
+  // Unix domain sockets have no valid associated addr/port;
+  // return address invalid.
+  return ERR_ADDRESS_INVALID;
 }
 
 int UnixDomainServerSocket::Accept(scoped_ptr<StreamSocket>* socket,
