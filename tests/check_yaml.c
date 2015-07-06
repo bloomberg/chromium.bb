@@ -70,26 +70,46 @@ read_tables (yaml_parser_t *parser, char *tables_list) {
 }
 
 void
-read_flags (yaml_parser_t *parser) {
+read_flags (yaml_parser_t *parser, int *direction, int *hyphenation) {
   yaml_event_t event;
+  int parse_error = 1;
+
+  *direction = 0;
+  *hyphenation = 0;
+
   if (!yaml_parser_parse(parser, &event) ||
       (event.type != YAML_MAPPING_START_EVENT))
     yaml_error(YAML_MAPPING_START_EVENT, &event);
 
   yaml_event_delete(&event);
 
-  int done = 0;
-  while (!done) {
-    if (!yaml_parser_parse(parser, &event)) {
-      simple_error("Error in YAML", &event);
+  while ((parse_error = yaml_parser_parse(parser, &event)) &&
+	 (event.type == YAML_SCALAR_EVENT)) {
+    if (!strcmp(event.data.scalar.value, "testmode")) {
+      yaml_event_delete(&event);
+      if (!yaml_parser_parse(parser, &event) ||
+	  (event.type != YAML_SCALAR_EVENT))
+	yaml_error(YAML_SCALAR_EVENT, &event);
+      if (!strcmp(event.data.scalar.value, "forward")) {
+	*direction = 0;
+      } else if (!strcmp(event.data.scalar.value, "backward")) {
+	*direction = 1;
+      } else if (!strcmp(event.data.scalar.value, "hyphenate")) {
+	*hyphenation = 1;
+      } else {
+	error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+		      "Testmode '%s' not supported\n", event.data.scalar.value);
+      }
+    } else {
+      error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+		    "Flag '%s' not supported\n", event.data.scalar.value);
     }
-    if (event.type == YAML_MAPPING_END_EVENT) {
-      done = 1;
-    } else if (event.type == YAML_SCALAR_EVENT ) {
-      printf("Flag %s\n", event.data.scalar.value);
-    }
-    yaml_event_delete(&event);
   }
+  if (!parse_error)
+    simple_error("Error in YAML", &event);
+  if (event.type != YAML_MAPPING_END_EVENT)
+    yaml_error(YAML_MAPPING_END_EVENT, &event);
+  yaml_event_delete(&event);
 }
 
 int
@@ -138,7 +158,8 @@ read_mode (yaml_parser_t *parser) {
     } else if (!strcmp(event.data.scalar.value, "ucBrl")) {
       mode |= ucBrl;
     } else {
-      break;
+      error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+		    "Mode '%s' not supported\n", event.data.scalar.value);
     }
     yaml_event_delete(&event);
   }
@@ -229,7 +250,7 @@ read_options (yaml_parser_t *parser, int len,
 }
 
 void
-read_test(yaml_parser_t *parser, char *tables_list) {
+read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenation) {
   yaml_event_t event;
   char *word;
   char *translation;
@@ -266,15 +287,29 @@ read_test(yaml_parser_t *parser, char *tables_list) {
     simple_error("Unexpected event", &event);
   }
 
-  if (!cursorPos) {
-    if (xfail != check_translation_with_mode(tables_list, word, typeform,
-					     translation, translation_mode)) {
-      fprintf(stderr, "%s:%zu Test Failure\n", file_name, event.start_mark.line);
+  if (cursorPos) {
+    if (xfail != check_cursor_pos(tables_list, word, cursorPos)) {
+      char *error_msg = "Failure";
+      if (!xfail)
+	error_msg = "Unexpected Pass";
+      fprintf(stderr, "%s:%zu %s\n", file_name, event.start_mark.line, error_msg);
+      errors++;
+    }
+  } else if (hyphenation) {
+    if (xfail != check_hyphenation(tables_list, word, translation)) {
+      char *error_msg = "Failure";
+      if (!xfail)
+	error_msg = "Unexpected Pass";
+      fprintf(stderr, "%s:%zu %s\n", file_name, event.start_mark.line, error_msg);
       errors++;
     }
   } else {
-    if (xfail != check_cursor_pos(tables_list, word, cursorPos)) {
-      fprintf(stderr, "%s:%zu Test Failure\n", file_name, event.start_mark.line);
+    if (xfail != check_with_mode(tables_list, word, typeform,
+				 translation, translation_mode, direction)) {
+      char *error_msg = "Failure";
+      if (!xfail)
+	error_msg = "Unexpected Pass";
+      fprintf(stderr, "%s:%zu %s\n", file_name, event.start_mark.line, error_msg);
       errors++;
     }
   }
@@ -289,7 +324,7 @@ read_test(yaml_parser_t *parser, char *tables_list) {
 }
 
 void
-read_tests(yaml_parser_t *parser, char *tables_list) {
+read_tests(yaml_parser_t *parser, char *tables_list, int direction, int hyphenation) {
   yaml_event_t event;
   if (!yaml_parser_parse(parser, &event) ||
       (event.type != YAML_SEQUENCE_START_EVENT))
@@ -307,7 +342,7 @@ read_tests(yaml_parser_t *parser, char *tables_list) {
       yaml_event_delete(&event);
     } else if (event.type == YAML_SEQUENCE_START_EVENT ) {
       yaml_event_delete(&event);
-      read_test(parser, tables_list);
+      read_test(parser, tables_list, direction, hyphenation);
     } else {
       simple_error("Unexpected event", &event);
     }
@@ -324,6 +359,9 @@ main(int argc, char *argv[]) {
   FILE *file;
   yaml_parser_t parser;
   yaml_event_t event;
+
+  int direction = 0;
+  int hyphenation = 0;
 
   file = fopen(argv[1], "rb");
   assert(file);
@@ -367,7 +405,7 @@ main(int argc, char *argv[]) {
 
   if (!strcmp(event.data.scalar.value, "flags")) {
     yaml_event_delete(&event);
-    read_flags(&parser);
+    read_flags(&parser, &direction, &hyphenation);
 
     if (!yaml_parser_parse(&parser, &event) ||
 	(event.type != YAML_SCALAR_EVENT) ||
@@ -375,11 +413,11 @@ main(int argc, char *argv[]) {
       simple_error("tests expected", &event);
     }
     yaml_event_delete(&event);
-    read_tests(&parser, tables_list);
+    read_tests(&parser, tables_list, direction, hyphenation);
 
   } else if (!strcmp(event.data.scalar.value, "tests")) {
     yaml_event_delete(&event);
-    read_tests(&parser, tables_list);
+    read_tests(&parser, tables_list, direction, hyphenation);
   } else {
     simple_error("flags or tests expected", &event);
   }
