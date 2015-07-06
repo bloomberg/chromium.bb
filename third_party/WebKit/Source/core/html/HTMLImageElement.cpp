@@ -641,25 +641,10 @@ static bool sourceSizeValue(Element& element, Document& currentDocument, float& 
     return exists;
 }
 
-int HTMLImageElement::widthAttributeToInt(const String& value, bool& isValid)
-{
-    // '%' is excluded here since having a width percentage based value means
-    // that the actual width depends on layout, so we cannot use it for resourceWidth.
-    // '*' is exclueded since in Blink and WebKit it means that the entire attribtue is ignored.
-    // TODO(yoav): Count these occurences and try to deprecate/remove if feasible: crbug.com/501870
-    if (!value.isEmpty() && !value.contains('%') && !value.contains('*'))
-        return value.toInt(&isValid);
-
-    isValid = false;
-    return 0;
-}
-
 FetchRequest::ResourceWidth HTMLImageElement::resourceWidth()
 {
     FetchRequest::ResourceWidth resourceWidth;
     resourceWidth.isSet = sourceSizeValue(*this, document(), resourceWidth.width);
-    if (!resourceWidth.isSet)
-        resourceWidth.width = widthAttributeToInt(fastGetAttribute(widthAttr), resourceWidth.isSet);
     return resourceWidth;
 }
 

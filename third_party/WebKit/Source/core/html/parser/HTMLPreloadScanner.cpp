@@ -119,9 +119,6 @@ public:
         , m_sourceSize(0)
         , m_sourceSizeSet(false)
         , m_isCORSEnabled(false)
-        , m_widthValue(0)
-        , m_widthValueSet(false)
-        , m_widthPresent(false)
         , m_defer(FetchRequest::NoDefer)
         , m_allowCredentials(DoNotAllowStoredCredentials)
         , m_mediaValues(mediaValues)
@@ -195,9 +192,6 @@ public:
         if (sourceSizeSet) {
             resourceWidth.width = sourceSize;
             resourceWidth.isSet = true;
-        } else {
-            resourceWidth.isSet = m_widthValueSet;
-            resourceWidth.width = m_widthValue;
         }
 
         OwnPtr<PreloadRequest> request = PreloadRequest::create(initiatorFor(m_tagImpl), position, m_urlToLoad, predictedBaseURL, resourceType(), resourceWidth, clientHintsPreferences, requestType);
@@ -242,9 +236,6 @@ private:
                 m_srcsetImageCandidate = bestFitSourceForSrcsetAttribute(m_mediaValues->devicePixelRatio(), m_sourceSize, m_srcsetAttributeValue);
                 setUrlToLoad(bestFitSourceForImageAttributes(m_mediaValues->devicePixelRatio(), m_sourceSize, m_imgSrcUrl, m_srcsetImageCandidate), AllowURLReplacement);
             }
-        } else if (match(attributeName, widthAttr) && !m_widthPresent) {
-            m_widthPresent = true;
-            m_widthValue = HTMLImageElement::widthAttributeToInt(attributeValue, m_widthValueSet);
         }
     }
 
@@ -416,9 +407,6 @@ private:
     float m_sourceSize;
     bool m_sourceSizeSet;
     bool m_isCORSEnabled;
-    int m_widthValue;
-    bool m_widthValueSet;
-    bool m_widthPresent;
     FetchRequest::DeferOption m_defer;
     StoredCredentials m_allowCredentials;
     RefPtr<MediaValues> m_mediaValues;

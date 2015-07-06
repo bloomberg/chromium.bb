@@ -109,7 +109,6 @@ public:
     void setUseFallbackContent();
     void setIsFallbackImage() { m_isFallbackImage = true; }
 
-    static int widthAttributeToInt(const String& value, bool& isValid);
     FetchRequest::ResourceWidth resourceWidth();
     float sourceSize(Element&);
 
