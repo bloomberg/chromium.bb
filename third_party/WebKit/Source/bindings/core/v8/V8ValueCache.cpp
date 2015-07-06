@@ -50,7 +50,7 @@ void StringCacheMapTraits::DisposeWeak(const v8::WeakCallbackInfo<WeakCallbackDa
     data.GetParameter()->deref();
 }
 
-StringCache::~StringCache()
+void StringCache::dispose()
 {
     // The MapType::Dispose callback calls StringCache::InvalidateLastString,
     // which will only work while the destructor has not yet finished. Thus,

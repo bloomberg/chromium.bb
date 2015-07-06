@@ -104,10 +104,6 @@ V8PerIsolateData::V8PerIsolateData()
 
 V8PerIsolateData::~V8PerIsolateData()
 {
-    if (m_scriptRegexpScriptState)
-        m_scriptRegexpScriptState->disposePerContextData();
-    if (isMainThread())
-        mainThreadPerIsolateData = 0;
 }
 
 v8::Isolate* V8PerIsolateData::mainThreadIsolate()
@@ -151,9 +147,23 @@ void V8PerIsolateData::destroy(v8::Isolate* isolate)
         isolate->RemoveCallCompletedCallback(&assertV8RecursionScope);
 #endif
     V8PerIsolateData* data = from(isolate);
+
+    // Clear everything before exiting the Isolate.
+    if (data->m_scriptRegexpScriptState)
+        data->m_scriptRegexpScriptState->disposePerContextData();
+    data->m_scriptDebugger.clear();
+    data->m_liveRoot.clear();
+    data->m_hiddenValue.clear();
+    data->m_stringCache->dispose();
+    data->m_stringCache.clear();
+    data->m_toStringTemplate.clear();
+    data->m_domTemplateMapForNonMainWorld.clear();
+    data->m_domTemplateMapForMainWorld.clear();
+    if (isMainThread())
+        mainThreadPerIsolateData = 0;
+
     // FIXME: Remove once all v8::Isolate::GetCurrent() calls are gone.
     isolate->Exit();
-    data->m_scriptDebugger.clear();
     delete data;
 }
 

@@ -64,8 +64,7 @@ public:
 class CORE_EXPORT StringCache {
     WTF_MAKE_NONCOPYABLE(StringCache);
 public:
-    StringCache(v8::Isolate* isolate) : m_stringCache(isolate) { }
-    ~StringCache();
+    explicit StringCache(v8::Isolate* isolate) : m_stringCache(isolate) { }
 
     v8::Local<v8::String> v8ExternalString(v8::Isolate* isolate, StringImpl* stringImpl)
     {
@@ -83,6 +82,8 @@ public:
         else
             setReturnValueFromStringSlow(returnValue, stringImpl);
     }
+
+    void dispose();
 
     friend class StringCacheMapTraits;
 
