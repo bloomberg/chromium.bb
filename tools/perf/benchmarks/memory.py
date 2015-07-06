@@ -29,21 +29,6 @@ class MemoryTop7Stress(perf_benchmark.PerfBenchmark):
     return 'memory.top_7_stress'
 
 
-class MemoryTop7StressWithSlimmingPaint(perf_benchmark.PerfBenchmark):
-  """Use (recorded) real world web sites and measure memory consumption,
-  with --enable--slimming-paint."""
-
-  test = memory.Memory
-  page_set = page_sets.Top7StressPageSet
-
-  def SetExtraBrowserOptions(self, options):
-    options.AppendExtraBrowserArgs(['--enable-slimming-paint'])
-
-  @classmethod
-  def Name(cls):
-    return 'memory.top_7_stress_slimming_paint'
-
-
 @benchmark.Enabled('has tabs')
 @benchmark.Disabled('android', # Benchmark uses > 700MB of memory.
                     'linux') # https://crbug.com/490841
