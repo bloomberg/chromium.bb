@@ -48,6 +48,30 @@ def scoped_tempdir():
     shutil.rmtree(path)
 
 
+def run_build(tempdir, options):
+  if options.debug:
+    build_rel = os.path.join('out', 'Debug')
+  else:
+    build_rel = os.path.join('out', 'Release')
+  build_root = os.path.join(SRC_ROOT, build_rel)
+
+  print 'Building gn manually in a temporary directory for bootstrapping...'
+  build_gn_with_ninja_manually(tempdir, options)
+  temp_gn = os.path.join(tempdir, 'gn')
+  out_gn = os.path.join(build_root, 'gn')
+
+  if options.no_rebuild:
+    mkdir_p(build_root)
+    shutil.copy2(temp_gn, out_gn)
+  else:
+    print 'Building gn using itself to %s...' % build_rel
+    build_gn_with_gn(temp_gn, build_rel, options)
+
+  if options.output:
+    # Preserve the executable permission bit.
+    shutil.copy2(out_gn, options.output)
+
+
 def main(argv):
   parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
   parser.add_option('-d', '--debug', action='store_true',
@@ -56,6 +80,9 @@ def main(argv):
                     help='place output in PATH', metavar='PATH')
   parser.add_option('-s', '--no-rebuild', action='store_true',
                     help='Do not rebuild GN with GN.')
+  parser.add_option('--no-clean', action='store_true',
+                    help='Re-used build directory instead of using new '
+                         'temporary location each time')
   parser.add_option('-v', '--verbose', action='store_true',
                     help='Log more details')
   options, args = parser.parse_args(argv)
@@ -65,29 +92,15 @@ def main(argv):
 
   logging.basicConfig(level=logging.DEBUG if options.verbose else logging.ERROR)
 
-  if options.debug:
-    build_rel = os.path.join('out', 'Debug')
-  else:
-    build_rel = os.path.join('out', 'Release')
-  build_root = os.path.join(SRC_ROOT, build_rel)
-
   try:
-    with scoped_tempdir() as tempdir:
-      print 'Building gn manually in a temporary directory for bootstrapping...'
-      build_gn_with_ninja_manually(tempdir, options)
-      temp_gn = os.path.join(tempdir, 'gn')
-      out_gn = os.path.join(build_root, 'gn')
-
-      if options.no_rebuild:
-        mkdir_p(build_root)
-        shutil.copy2(temp_gn, out_gn)
-      else:
-        print 'Building gn using itself to %s...' % build_rel
-        build_gn_with_gn(temp_gn, build_rel, options)
-
-      if options.output:
-        # Preserve the executable permission bit.
-        shutil.copy2(out_gn, options.output)
+    if options.no_clean:
+      build_dir = os.path.join(SRC_ROOT, 'out_bootstrap')
+      if not os.path.exists(build_dir):
+        os.makedirs(build_dir)
+      return run_build(build_dir, options)
+    else:
+      with scoped_tempdir() as tempdir:
+        return run_build(tempdir, options)
   except subprocess.CalledProcessError as e:
     print >> sys.stderr, str(e)
     return 1
@@ -140,6 +153,7 @@ def write_ninja(path, options):
 
   static_libraries['dynamic_annotations']['sources'].extend([
       'base/third_party/dynamic_annotations/dynamic_annotations.c',
+      'base/third_party/superfasthash/superfasthash.c',
   ])
   static_libraries['base']['sources'].extend([
       'base/at_exit.cc',
@@ -158,6 +172,7 @@ def write_ninja(path, options):
       'base/files/file_tracing.cc',
       'base/files/file_util.cc',
       'base/files/scoped_file.cc',
+      'base/hash.cc',
       'base/json/json_parser.cc',
       'base/json/json_reader.cc',
       'base/json/json_string_value_serializer.cc',
@@ -172,8 +187,7 @@ def write_ninja(path, options):
       'base/memory/weak_ptr.cc',
       'base/message_loop/incoming_task_queue.cc',
       'base/message_loop/message_loop.cc',
-      'base/message_loop/message_loop_proxy.cc',
-      'base/message_loop/message_loop_proxy_impl.cc',
+      'base/message_loop/message_loop_task_runner.cc',
       'base/message_loop/message_pump.cc',
       'base/message_loop/message_pump_default.cc',
       'base/metrics/bucket_ranges.cc',
@@ -195,6 +209,7 @@ def write_ninja(path, options):
       'base/run_loop.cc',
       'base/sequence_checker_impl.cc',
       'base/sequenced_task_runner.cc',
+      'base/sha1_portable.cc',
       'base/strings/string16.cc',
       'base/strings/string_number_conversions.cc',
       'base/strings/string_piece.cc',
@@ -226,9 +241,23 @@ def write_ninja(path, options):
       'base/time/time.cc',
       'base/timer/elapsed_timer.cc',
       'base/timer/timer.cc',
+      'base/trace_event/malloc_dump_provider.cc',
+      'base/trace_event/memory_allocator_dump.cc',
+      'base/trace_event/memory_allocator_dump_guid.cc',
+      'base/trace_event/memory_dump_manager.cc',
+      'base/trace_event/memory_dump_request_args.cc',
+      'base/trace_event/memory_dump_session_state.cc',
+      'base/trace_event/process_memory_dump.cc',
+      'base/trace_event/process_memory_maps.cc',
+      'base/trace_event/process_memory_maps_dump_provider.cc',
+      'base/trace_event/process_memory_totals.cc',
+      'base/trace_event/process_memory_totals_dump_provider.cc',
+      'base/trace_event/trace_config.cc',
+      'base/trace_event/trace_event_argument.cc',
       'base/trace_event/trace_event_impl.cc',
       'base/trace_event/trace_event_impl_constants.cc',
       'base/trace_event/trace_event_memory.cc',
+      'base/trace_event/trace_event_memory_overhead.cc',
       'base/trace_event/trace_event_synthetic_delay.cc',
       'base/tracked_objects.cc',
       'base/tracking_info.cc',
