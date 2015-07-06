@@ -1914,16 +1914,14 @@ void Heap::init()
 
     GCInfoTable::init();
 
-    // Temporarily disable memory-infra dump provider. See crbug.com/507236.
-    // TODO(primiano): re-enable this once the the bug above gets fixed.
-    // if (Platform::current() && Platform::current()->currentThread())
-    //     Platform::current()->registerMemoryDumpProvider(BlinkGCMemoryDumpProvider::instance());
+    if (Platform::current() && Platform::current()->currentThread())
+        Platform::current()->registerMemoryDumpProvider(BlinkGCMemoryDumpProvider::instance());
 }
 
 void Heap::shutdown()
 {
-    // if (Platform::current() && Platform::current()->currentThread())
-    //     Platform::current()->unregisterMemoryDumpProvider(BlinkGCMemoryDumpProvider::instance());
+    if (Platform::current() && Platform::current()->currentThread())
+        Platform::current()->unregisterMemoryDumpProvider(BlinkGCMemoryDumpProvider::instance());
     s_shutdownCalled = true;
     ThreadState::shutdownHeapIfNecessary();
 }
