@@ -124,7 +124,7 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys,
 
   // Gets a DecryptionKey associated with |key_id|. The AesDecryptor still owns
   // the key. Returns NULL if no key is associated with |key_id|.
-  DecryptionKey* GetKey(const std::string& key_id) const;
+  DecryptionKey* GetKey_Locked(const std::string& key_id) const;
 
   // Determines if |key_id| is already specified for |session_id|.
   bool HasKey(const std::string& session_id, const std::string& key_id);

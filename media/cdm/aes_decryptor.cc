@@ -472,7 +472,8 @@ void AesDecryptor::Decrypt(StreamType stream_type,
                                         encrypted->data_size());
   } else {
     const std::string& key_id = encrypted->decrypt_config()->key_id();
-    DecryptionKey* key = GetKey(key_id);
+    base::AutoLock auto_lock(key_map_lock_);
+    DecryptionKey* key = GetKey_Locked(key_id);
     if (!key) {
       DVLOG(1) << "Could not find a matching key for the given key ID.";
       decrypt_cb.Run(kNoKey, NULL);
@@ -555,9 +556,9 @@ bool AesDecryptor::AddDecryptionKey(const std::string& session_id,
   return true;
 }
 
-AesDecryptor::DecryptionKey* AesDecryptor::GetKey(
+AesDecryptor::DecryptionKey* AesDecryptor::GetKey_Locked(
     const std::string& key_id) const {
-  base::AutoLock auto_lock(key_map_lock_);
+  key_map_lock_.AssertAcquired();
   KeyIdToSessionKeysMap::const_iterator key_id_found = key_map_.find(key_id);
   if (key_id_found == key_map_.end())
     return NULL;
@@ -580,7 +581,7 @@ void AesDecryptor::DeleteKeysForSession(const std::string& session_id) {
   base::AutoLock auto_lock(key_map_lock_);
 
   // Remove all keys associated with |session_id|. Since the data is
-  // optimized for access in GetKey(), we need to look at each entry in
+  // optimized for access in GetKey_Locked(), we need to look at each entry in
   // |key_map_|.
   KeyIdToSessionKeysMap::iterator it = key_map_.begin();
   while (it != key_map_.end()) {
