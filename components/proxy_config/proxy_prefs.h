@@ -15,7 +15,7 @@ namespace ProxyPrefs {
 // the constants, because numeric values are exposed to users.
 // If you add an enum constant, you should also add a string to
 // kProxyModeNames in the .cc file.
-enum PROXY_CONFIG_EXPORT ProxyMode {
+enum ProxyMode {
   // Direct connection to the network, other proxy preferences are ignored.
   MODE_DIRECT = 0,
 
@@ -38,7 +38,7 @@ enum PROXY_CONFIG_EXPORT ProxyMode {
 };
 
 // State of proxy configuration.
-enum PROXY_CONFIG_EXPORT ConfigState {
+enum ConfigState {
   // Configuration is from policy.
   CONFIG_POLICY,
   // Configuration is from extension.
