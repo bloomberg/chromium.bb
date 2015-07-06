@@ -79,6 +79,8 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
   _KEY_COMPLETE_SWEEP = 'ThreadState::completeSweep'
   _KEY_COALESCE = 'ThreadHeap::coalesce'
   _KEY_MEASURE = 'BlinkGCTimeMeasurement'
+  # Do not add 'forced' in reasons to measure.
+  _GC_REASONS = ['precise', 'conservative', 'idle']
 
   def setUp(self):
     self._options = options_for_unittests.GetCopy()
@@ -162,10 +164,11 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
     results = self.RunMeasurement(measurement, ps, options=self._options)
     self.assertEquals(0, len(results.failures))
 
-    precise = results.FindAllPageSpecificValuesNamed('oilpan_precise_mark')
-    conservative = results.FindAllPageSpecificValuesNamed(
-        'oilpan_conservative_mark')
-    self.assertLess(0, len(precise) + len(conservative))
+    gc_events = []
+    for gc_reason in self._GC_REASONS:
+      label = 'oilpan_%s_mark' % gc_reason
+      gc_events.extend(results.FindAllPageSpecificValuesNamed(label))
+    self.assertLess(0, len(gc_events))
 
   def testForBlinkPerf(self):
     ps = self.CreateStorySetFromFileInUnittestDataDir(
@@ -174,10 +177,11 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
     results = self.RunMeasurement(measurement, ps, options=self._options)
     self.assertEquals(0, len(results.failures))
 
-    precise = results.FindAllPageSpecificValuesNamed('oilpan_precise_mark')
-    conservative = results.FindAllPageSpecificValuesNamed(
-        'oilpan_conservative_mark')
-    self.assertLess(0, len(precise) + len(conservative))
+    gc_events = []
+    for gc_reason in self._GC_REASONS:
+      label = 'oilpan_%s_mark' % gc_reason
+      gc_events.extend(results.FindAllPageSpecificValuesNamed(label))
+    self.assertLess(0, len(gc_events))
 
   def _GenerateDataForEmptyPageSet(self):
     page_set = self.CreateEmptyPageSet()
