@@ -16,16 +16,6 @@
 
 namespace media_router {
 
-// For now, a simple transition graph: NEW -> CONNECTED -> CLOSED.
-enum MediaRouteState {
-  // The route is new and not yet connected to a sink.
-  MEDIA_ROUTE_STATE_NEW,
-  // The route is active and connected to a sink.
-  MEDIA_ROUTE_STATE_CONNECTED,
-  // The route has been disconnected.
-  MEDIA_ROUTE_STATE_CLOSED
-};
-
 // MediaRoute objects contain the status and metadata of a routing
 // operation. The fields are immutable and reflect the route status
 // only at the time of object creation. Updated route statuses must
@@ -50,9 +40,6 @@ class MediaRoute {
   // The media route identifier.
   const MediaRoute::Id& media_route_id() const { return media_route_id_; }
 
-  // The state of the media route.
-  MediaRouteState state() const { return state_; }
-
   // The media source being routed.
   const MediaSource& media_source() const { return media_source_; }
 
@@ -76,7 +63,6 @@ class MediaRoute {
   MediaSink media_sink_;
   std::string description_;
   bool is_local_;
-  MediaRouteState state_;
 };
 
 // Return a pair of Presentation ID and URL. If the input route ID is invalid,

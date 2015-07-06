@@ -58,7 +58,6 @@ TEST(MediaRouterTypeConvertersTest, ConvertMediaRoute) {
   EXPECT_EQ(expected_media_route.media_sink().id(),
             media_route.media_sink().id());
   EXPECT_EQ(expected_media_route.description(), media_route.description());
-  EXPECT_EQ(expected_media_route.state(), media_route.state());
   EXPECT_TRUE(
       expected_media_route.media_source().Equals(media_route.media_source()));
   EXPECT_EQ(expected_media_route.media_source().id(),

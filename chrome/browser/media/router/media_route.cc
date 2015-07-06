@@ -22,8 +22,7 @@ MediaRoute::MediaRoute(const MediaRoute::Id& media_route_id,
       media_source_(media_source),
       media_sink_(media_sink),
       description_(description),
-      is_local_(is_local),
-      state_(MEDIA_ROUTE_STATE_NEW) {
+      is_local_(is_local) {
 }
 
 MediaRoute::~MediaRoute() {
