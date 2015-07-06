@@ -9,12 +9,7 @@
 
 namespace memory {
 
-// Record a size in megabytes, over a potential interval up to 32 GB.
-#define UMA_HISTOGRAM_AVAILABLE_MEGABYTES(name, sample) \
-  UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, 1, 32768, 50)
-
-// Record a size in megabytes, a potential interval from 250MB up to
-// 32 GB.
+// Record a size in megabytes, a potential interval from 250MB up to 32 GB.
 #define UMA_HISTOGRAM_ALLOCATED_MEGABYTES(name, sample) \
   UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, 250, 32768, 50)
 
@@ -66,8 +61,8 @@ void RecordMemoryStats(RecordMemoryStatsType type) {
 #endif
       UMA_HISTOGRAM_ALLOCATED_MEGABYTES("Tabs.Discard.MemAllocatedMB",
                                         mem_allocated_mb);
-      UMA_HISTOGRAM_AVAILABLE_MEGABYTES("Tabs.Discard.MemAvailableMB",
-                                        mem_available_mb);
+      UMA_HISTOGRAM_LARGE_MEMORY_MB("Tabs.Discard.MemAvailableMB",
+                                    mem_available_mb);
       break;
     }
     case RECORD_MEMORY_STATS_CONTENTS_OOM_KILLED: {
@@ -79,8 +74,8 @@ void RecordMemoryStats(RecordMemoryStatsType type) {
 #endif
       UMA_HISTOGRAM_ALLOCATED_MEGABYTES(
           "Memory.OOMKill.Contents.MemAllocatedMB", mem_allocated_mb);
-      UMA_HISTOGRAM_AVAILABLE_MEGABYTES(
-          "Memory.OOMKill.Contents.MemAvailableMB", mem_available_mb);
+      UMA_HISTOGRAM_LARGE_MEMORY_MB("Memory.OOMKill.Contents.MemAvailableMB",
+                                    mem_available_mb);
       break;
     }
     case RECORD_MEMORY_STATS_EXTENSIONS_OOM_KILLED: {
@@ -92,8 +87,8 @@ void RecordMemoryStats(RecordMemoryStatsType type) {
 #endif
       UMA_HISTOGRAM_ALLOCATED_MEGABYTES(
           "Memory.OOMKill.Extensions.MemAllocatedMB", mem_allocated_mb);
-      UMA_HISTOGRAM_AVAILABLE_MEGABYTES(
-          "Memory.OOMKill.Extensions.MemAvailableMB", mem_available_mb);
+      UMA_HISTOGRAM_LARGE_MEMORY_MB("Memory.OOMKill.Extensions.MemAvailableMB",
+                                    mem_available_mb);
       break;
     }
   }

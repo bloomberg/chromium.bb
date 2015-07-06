@@ -624,6 +624,7 @@
       'browser/memory/oom_priority_manager_chromeos.cc',
       'browser/memory/system_memory_stats_recorder.h',
       'browser/memory/system_memory_stats_recorder_linux.cc',
+      'browser/memory/system_memory_stats_recorder_win.cc',
       'browser/memory_details.cc',
       'browser/memory_details.h',
       'browser/memory_details_android.cc',

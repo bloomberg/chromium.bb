@@ -7,6 +7,10 @@
 
 namespace memory {
 
+// Record a memory size in megabytes, over a potential interval up to 32 GB.
+#define UMA_HISTOGRAM_LARGE_MEMORY_MB(name, sample) \
+  UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, 1, 32768, 50)
+
 // The type of memory UMA stats to be recorded in RecordMemoryStats.
 enum RecordMemoryStatsType {
   // When a tab was discarded.
