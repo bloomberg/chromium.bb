@@ -11,15 +11,8 @@
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/common/sandbox_init.h"
 
-NaClMainPlatformDelegate::NaClMainPlatformDelegate(
-    const content::MainFunctionParams& parameters)
-    : parameters_(parameters) {
-}
-
-NaClMainPlatformDelegate::~NaClMainPlatformDelegate() {
-}
-
-void NaClMainPlatformDelegate::EnableSandbox() {
+void NaClMainPlatformDelegate::EnableSandbox(
+    const content::MainFunctionParams& parameters) {
   CHECK(content::InitializeSandbox(NACL_SANDBOX_TYPE_NACL_LOADER,
                                    base::FilePath()))
       << "Error initializing sandbox for " << switches::kNaClLoaderProcess;

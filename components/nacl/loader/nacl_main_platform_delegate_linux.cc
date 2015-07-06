@@ -4,15 +4,8 @@
 
 #include "components/nacl/loader/nacl_main_platform_delegate.h"
 
-NaClMainPlatformDelegate::NaClMainPlatformDelegate(
-    const content::MainFunctionParams& parameters)
-    : parameters_(parameters) {
-}
-
-NaClMainPlatformDelegate::~NaClMainPlatformDelegate() {
-}
-
-void NaClMainPlatformDelegate::EnableSandbox() {
+void NaClMainPlatformDelegate::EnableSandbox(
+    const content::MainFunctionParams& parameters) {
   // The setuid sandbox is started in the zygote process: zygote_main_linux.cc
   // http://code.google.com/p/chromium/wiki/LinuxSUIDSandbox
   //

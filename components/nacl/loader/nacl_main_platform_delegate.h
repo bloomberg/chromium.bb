@@ -6,20 +6,19 @@
 #define CHROME_NACL_NACL_MAIN_PLATFORM_DELEGATE_H_
 
 #include "base/basictypes.h"
-#include "content/public/common/main_function_params.h"
+
+namespace content {
+struct MainFunctionParams;
+}
 
 class NaClMainPlatformDelegate {
  public:
-  explicit NaClMainPlatformDelegate(
-      const content::MainFunctionParams& parameters);
-  ~NaClMainPlatformDelegate();
+  NaClMainPlatformDelegate() = default;
 
   // Initiate Lockdown.
-  void EnableSandbox();
+  void EnableSandbox(const content::MainFunctionParams& parameters);
 
  private:
-  const content::MainFunctionParams& parameters_;
-
   DISALLOW_COPY_AND_ASSIGN(NaClMainPlatformDelegate);
 };
 

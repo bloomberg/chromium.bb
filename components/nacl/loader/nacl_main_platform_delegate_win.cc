@@ -5,19 +5,13 @@
 #include "components/nacl/loader/nacl_main_platform_delegate.h"
 
 #include "base/logging.h"
+#include "content/public/common/main_function_params.h"
 #include "sandbox/win/src/sandbox.h"
 
-NaClMainPlatformDelegate::NaClMainPlatformDelegate(
-    const content::MainFunctionParams& parameters)
-    : parameters_(parameters) {
-}
-
-NaClMainPlatformDelegate::~NaClMainPlatformDelegate() {
-}
-
-void NaClMainPlatformDelegate::EnableSandbox() {
+void NaClMainPlatformDelegate::EnableSandbox(
+    const content::MainFunctionParams& parameters) {
   sandbox::TargetServices* target_services =
-      parameters_.sandbox_info->target_services;
+      parameters.sandbox_info->target_services;
 
   CHECK(target_services) << "NaCl-Win EnableSandbox: No Target Services!";
   // Cause advapi32 to load before the sandbox is turned on.
