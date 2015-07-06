@@ -71,7 +71,7 @@ public:
     {
         size_t gcInfoIndex = GCInfoTrait<HeapVectorBacking<T, VectorTraits<T>>>::index();
         ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-        return reinterpret_cast<T*>(Heap::allocateOnHeapIndex(state, size, InlineVectorHeapIndex, gcInfoIndex));
+        return reinterpret_cast<T*>(Heap::allocateOnHeapIndex(state, size, ThreadState::InlineVectorHeapIndex, gcInfoIndex));
     }
     PLATFORM_EXPORT static void freeInlineVectorBacking(void*);
     PLATFORM_EXPORT static bool expandInlineVectorBacking(void*, size_t);
@@ -86,7 +86,7 @@ public:
     {
         size_t gcInfoIndex = GCInfoTrait<HeapHashTableBacking<HashTable>>::index();
         ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-        return reinterpret_cast<T*>(Heap::allocateOnHeapIndex(state, size, HashTableHeapIndex, gcInfoIndex));
+        return reinterpret_cast<T*>(Heap::allocateOnHeapIndex(state, size, ThreadState::HashTableHeapIndex, gcInfoIndex));
     }
     template <typename T, typename HashTable>
     static T* allocateZeroedHashTableBacking(size_t size)

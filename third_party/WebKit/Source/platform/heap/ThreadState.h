@@ -140,38 +140,6 @@ using UsingPreFinazlizerMacroNeedsTrailingSemiColon = char
 
 #define TypedHeapEnumName(Type) Type##HeapIndex,
 
-enum HeapIndices {
-    EagerSweepHeapIndex = 0,
-    NormalPage1HeapIndex,
-    NormalPage2HeapIndex,
-    NormalPage3HeapIndex,
-    NormalPage4HeapIndex,
-    Vector1HeapIndex,
-    Vector2HeapIndex,
-    Vector3HeapIndex,
-    Vector4HeapIndex,
-    InlineVectorHeapIndex,
-    HashTableHeapIndex,
-    FOR_EACH_TYPED_HEAP(TypedHeapEnumName)
-    LargeObjectHeapIndex,
-    // Values used for iteration of heap segments.
-    NumberOfHeaps,
-};
-
-#if defined(ADDRESS_SANITIZER)
-// Heaps can have their object payloads be poisoned, or cleared
-// of their poisoning.
-enum Poisoning {
-    SetPoison,
-    ClearPoison,
-};
-
-enum ObjectsToPoison {
-    UnmarkedOnly,
-    MarkedAndUnmarked,
-};
-#endif
-
 #if ENABLE(GC_PROFILING)
 const size_t numberOfGenerationsToTrack = 8;
 const size_t maxHeapObjectAge = numberOfGenerationsToTrack - 1;
@@ -226,6 +194,38 @@ public:
         SweepingAndIdleGCScheduled,
         SweepingAndPreciseGCScheduled,
     };
+
+    enum HeapIndices {
+        EagerSweepHeapIndex = 0,
+        NormalPage1HeapIndex,
+        NormalPage2HeapIndex,
+        NormalPage3HeapIndex,
+        NormalPage4HeapIndex,
+        Vector1HeapIndex,
+        Vector2HeapIndex,
+        Vector3HeapIndex,
+        Vector4HeapIndex,
+        InlineVectorHeapIndex,
+        HashTableHeapIndex,
+        FOR_EACH_TYPED_HEAP(TypedHeapEnumName)
+        LargeObjectHeapIndex,
+        // Values used for iteration of heap segments.
+        NumberOfHeaps,
+    };
+
+#if defined(ADDRESS_SANITIZER)
+    // Heaps can have their object payloads be poisoned, or cleared
+    // of their poisoning.
+    enum Poisoning {
+        SetPoison,
+        ClearPoison,
+    };
+
+    enum ObjectsToPoison {
+        UnmarkedOnly,
+        MarkedAndUnmarked,
+    };
+#endif
 
     // The NoAllocationScope class is used in debug mode to catch unwanted
     // allocations. E.g. allocations during GC.

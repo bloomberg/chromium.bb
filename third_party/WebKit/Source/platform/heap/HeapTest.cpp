@@ -754,7 +754,7 @@ public:
     void* operator new(size_t size)
     {
         ThreadState* state = ThreadState::current();
-        return Heap::allocateOnHeapIndex(state, size, NodeHeapIndex, GCInfoTrait<IntNode>::index());
+        return Heap::allocateOnHeapIndex(state, size, ThreadState::NodeHeapIndex, GCInfoTrait<IntNode>::index());
     }
 
     static IntNode* create(int i)

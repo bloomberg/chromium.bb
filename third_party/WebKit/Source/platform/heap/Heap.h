@@ -366,7 +366,7 @@ public:
     virtual void makeConsistentForMutator() = 0;
 
 #if defined(ADDRESS_SANITIZER)
-    virtual void poisonObjects(ObjectsToPoison, Poisoning) = 0;
+    virtual void poisonObjects(ThreadState::ObjectsToPoison, ThreadState::Poisoning) = 0;
 #endif
     // Check if the given address points to an object in this
     // heap page. If so, find the start of that object and mark it
@@ -456,7 +456,7 @@ public:
     virtual void makeConsistentForGC() override;
     virtual void makeConsistentForMutator() override;
 #if defined(ADDRESS_SANITIZER)
-    virtual void poisonObjects(ObjectsToPoison, Poisoning) override;
+    virtual void poisonObjects(ThreadState::ObjectsToPoison, ThreadState::Poisoning) override;
 #endif
     virtual void checkAndMarkPointer(Visitor*, Address) override;
     virtual void markOrphaned() override;
@@ -521,7 +521,7 @@ public:
     virtual void makeConsistentForGC() override;
     virtual void makeConsistentForMutator() override;
 #if defined(ADDRESS_SANITIZER)
-    virtual void poisonObjects(ObjectsToPoison, Poisoning) override;
+    virtual void poisonObjects(ThreadState::ObjectsToPoison, ThreadState::Poisoning) override;
 #endif
     virtual void checkAndMarkPointer(Visitor*, Address) override;
     virtual void markOrphaned() override;
@@ -696,7 +696,7 @@ public:
     void prepareHeapForTermination();
     void prepareForSweep();
 #if defined(ADDRESS_SANITIZER)
-    void poisonHeap(ObjectsToPoison, Poisoning);
+    void poisonHeap(ThreadState::ObjectsToPoison, ThreadState::Poisoning);
 #endif
     Address lazySweep(size_t, size_t gcInfoIndex);
     void sweepUnsweptPage();
@@ -1161,17 +1161,17 @@ inline int Heap::heapIndexForObjectSize(size_t size)
 {
     if (size < 64) {
         if (size < 32)
-            return NormalPage1HeapIndex;
-        return NormalPage2HeapIndex;
+            return ThreadState::NormalPage1HeapIndex;
+        return ThreadState::NormalPage2HeapIndex;
     }
     if (size < 128)
-        return NormalPage3HeapIndex;
-    return NormalPage4HeapIndex;
+        return ThreadState::NormalPage3HeapIndex;
+    return ThreadState::NormalPage4HeapIndex;
 }
 
 inline bool Heap::isNormalHeapIndex(int index)
 {
-    return index >= NormalPage1HeapIndex && index <= NormalPage4HeapIndex;
+    return index >= ThreadState::NormalPage1HeapIndex && index <= ThreadState::NormalPage4HeapIndex;
 }
 
 #define DECLARE_EAGER_FINALIZATION_OPERATOR_NEW() \
@@ -1194,7 +1194,7 @@ public:
         // eagerly finalized. Declaring and defining an 'operator new'
         // for this class is what's required -- consider using
         // DECLARE_EAGER_FINALIZATION_OPERATOR_NEW().
-        ASSERT(pageFromObject(this)->heap()->heapIndex() == EagerSweepHeapIndex);
+        ASSERT(pageFromObject(this)->heap()->heapIndex() == ThreadState::EagerSweepHeapIndex);
     }
 };
 #define EAGERLY_FINALIZE()                             \
@@ -1340,7 +1340,7 @@ void VisitorHelper<Derived>::handleWeakCell(Visitor* self, void* object)
 inline Address Heap::allocateOnHeapIndex(ThreadState* state, size_t size, int heapIndex, size_t gcInfoIndex)
 {
     ASSERT(state->isAllocationAllowed());
-    ASSERT(heapIndex != LargeObjectHeapIndex);
+    ASSERT(heapIndex != ThreadState::LargeObjectHeapIndex);
     NormalPageHeap* heap = static_cast<NormalPageHeap*>(state->heap(heapIndex));
     return heap->allocateObject(allocationSizeFromSize(size), gcInfoIndex);
 }
@@ -1349,7 +1349,7 @@ template<typename T>
 Address Heap::allocate(size_t size, bool eagerlySweep)
 {
     ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-    return Heap::allocateOnHeapIndex(state, size, eagerlySweep ? EagerSweepHeapIndex : Heap::heapIndexForObjectSize(size), GCInfoTrait<T>::index());
+    return Heap::allocateOnHeapIndex(state, size, eagerlySweep ? ThreadState::EagerSweepHeapIndex : Heap::heapIndexForObjectSize(size), GCInfoTrait<T>::index());
 }
 
 template<typename T>
@@ -1371,7 +1371,7 @@ Address Heap::reallocate(void* previous, size_t size)
     int heapIndex = page->heap()->heapIndex();
     // Recompute the effective heap index if previous allocation
     // was on the normal heaps or a large object.
-    if (isNormalHeapIndex(heapIndex) || heapIndex == LargeObjectHeapIndex)
+    if (isNormalHeapIndex(heapIndex) || heapIndex == ThreadState::LargeObjectHeapIndex)
         heapIndex = heapIndexForObjectSize(size);
 
     // TODO(haraken): We don't support reallocate() for finalizable objects.
