@@ -323,7 +323,7 @@ static bool IsBoringSwitch(const std::string& flag) {
     switches::kUIPrioritizeInGpuProcess,
     switches::kUseGL,
     switches::kUserDataDir,
-    // Cros/CC flgas are specified as raw strings to avoid dependency.
+    // Cros/CC flags are specified as raw strings to avoid dependency.
     "child-wallpaper-large",
     "child-wallpaper-small",
     "default-wallpaper-large",
