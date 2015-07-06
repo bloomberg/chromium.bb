@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -24,15 +25,15 @@ bool ParseTimezone(const base::StringPiece& timezone,
                    int* out_offset_to_utc_in_minutes) {
   DCHECK(out_offset_to_utc_in_minutes);
 
-  std::vector<base::StringPiece> parts;
-  int num_of_token = Tokenize(timezone, ":", &parts);
+  std::vector<base::StringPiece> parts = base::SplitStringPiece(
+      timezone, ":", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
   int hour = 0;
-  if (!base::StringToInt(parts[0], &hour))
+  if (parts.empty() || !base::StringToInt(parts[0], &hour))
     return false;
 
   int minute = 0;
-  if (num_of_token > 1 && !base::StringToInt(parts[1], &minute))
+  if (parts.size() > 1 && !base::StringToInt(parts[1], &minute))
     return false;
 
   *out_offset_to_utc_in_minutes = (hour * 60 + minute) * (ahead ? +1 : -1);
@@ -52,8 +53,9 @@ bool GetTimeFromString(const base::StringPiece& raw_value,
 
   // Splits the string into "date" part and "time" part.
   {
-    std::vector<base::StringPiece> parts;
-    if (Tokenize(raw_value, "T", &parts) != 2)
+    std::vector<base::StringPiece> parts = base::SplitStringPiece(
+        raw_value, "T", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    if (parts.size() != 2)
       return false;
     date = parts[0];
     time_and_tz = parts[1];
@@ -68,28 +70,37 @@ bool GetTimeFromString(const base::StringPiece& raw_value,
       offset_to_utc_in_minutes = 0;
       time = time_and_tz;
       time.remove_suffix(1);
-    } else if (Tokenize(time_and_tz, "+", &parts) == 2) {
-      // Timezone is "+hh:mm" format
-      if (!ParseTimezone(parts[1], true, &offset_to_utc_in_minutes))
-        return false;
-      has_timezone = true;
-      time = parts[0];
-    } else if (Tokenize(time_and_tz, "-", &parts) == 2) {
-      // Timezone is "-hh:mm" format
-      if (!ParseTimezone(parts[1], false, &offset_to_utc_in_minutes))
-        return false;
-      has_timezone = true;
-      time = parts[0];
     } else {
-      // No timezone (uses local timezone)
-      time = time_and_tz;
+      parts = base::SplitStringPiece(
+          time_and_tz, "+", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+      if (parts.size() == 2) {
+        // Timezone is "+hh:mm" format
+        if (!ParseTimezone(parts[1], true, &offset_to_utc_in_minutes))
+          return false;
+        has_timezone = true;
+        time = parts[0];
+      } else {
+        parts = base::SplitStringPiece(
+            time_and_tz, "-", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+        if (parts.size() == 2) {
+          // Timezone is "-hh:mm" format
+          if (!ParseTimezone(parts[1], false, &offset_to_utc_in_minutes))
+            return false;
+          has_timezone = true;
+          time = parts[0];
+        } else {
+          // No timezone (uses local timezone)
+          time = time_and_tz;
+        }
+      }
     }
   }
 
   // Parses the date part.
   {
-    std::vector<base::StringPiece> parts;
-    if (Tokenize(date, "-", &parts) != 3)
+    std::vector<base::StringPiece> parts = base::SplitStringPiece(
+        date, "-", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    if (parts.size() != 3)
       return false;
 
     if (!base::StringToInt(parts[0], &exploded.year) ||
@@ -101,9 +112,9 @@ bool GetTimeFromString(const base::StringPiece& raw_value,
 
   // Parses the time part.
   {
-    std::vector<base::StringPiece> parts;
-    int num_of_token = Tokenize(time, ":", &parts);
-    if (num_of_token != 3)
+    std::vector<base::StringPiece> parts = base::SplitStringPiece(
+        time, ":", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    if (parts.size() != 3)
       return false;
 
     if (!base::StringToInt(parts[0], &exploded.hour) ||
@@ -111,16 +122,16 @@ bool GetTimeFromString(const base::StringPiece& raw_value,
       return false;
     }
 
-    std::vector<base::StringPiece> seconds_parts;
-    int num_of_seconds_token = Tokenize(parts[2], ".", &seconds_parts);
-    if (num_of_seconds_token >= 3)
+    std::vector<base::StringPiece> seconds_parts = base::SplitStringPiece(
+        parts[2], ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    if (seconds_parts.size() >= 3)
       return false;
 
     if (!base::StringToInt(seconds_parts[0], &exploded.second))
-        return false;
+      return false;
 
     // Only accept milli-seconds (3-digits).
-    if (num_of_seconds_token > 1 &&
+    if (seconds_parts.size() > 1 &&
         seconds_parts[1].length() == 3 &&
         !base::StringToInt(seconds_parts[1], &exploded.millisecond)) {
       return false;

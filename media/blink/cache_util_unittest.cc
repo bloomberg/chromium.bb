@@ -8,6 +8,7 @@
 
 #include "base/format_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,13 +34,13 @@ static WebURLResponse CreateResponse(const GRFUTestCase& test) {
   response.initialize();
   response.setHTTPVersion(test.version);
   response.setHTTPStatusCode(test.status_code);
-  std::vector<std::string> lines;
-  Tokenize(test.headers, "\n", &lines);
-  for (size_t i = 0; i < lines.size(); ++i) {
-    size_t colon = lines[i].find(": ");
+  for (const std::string& line :
+       base::SplitString(test.headers, "\n", base::KEEP_WHITESPACE,
+                         base::SPLIT_WANT_NONEMPTY)) {
+    size_t colon = line.find(": ");
     response.addHTTPHeaderField(
-        WebString::fromUTF8(lines[i].substr(0, colon)),
-        WebString::fromUTF8(lines[i].substr(colon + 2)));
+        WebString::fromUTF8(line.substr(0, colon)),
+        WebString::fromUTF8(line.substr(colon + 2)));
   }
   return response;
 }

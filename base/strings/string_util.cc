@@ -810,30 +810,6 @@ void ReplaceSubstringsAfterOffset(std::string* str,
 
 }  // namespace base
 
-size_t Tokenize(const base::string16& str,
-                const base::string16& delimiters,
-                std::vector<base::string16>* tokens) {
-  *tokens = base::SplitString(
-      str, delimiters, base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  return tokens->size();
-}
-
-size_t Tokenize(const std::string& str,
-                const std::string& delimiters,
-                std::vector<std::string>* tokens) {
-  *tokens = base::SplitString(
-      str, delimiters, base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  return tokens->size();
-}
-
-size_t Tokenize(const base::StringPiece& str,
-                const base::StringPiece& delimiters,
-                std::vector<base::StringPiece>* tokens) {
-  *tokens = base::SplitStringPiece(
-      str, delimiters, base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  return tokens->size();
-}
-
 template<typename STR>
 static STR JoinStringT(const std::vector<STR>& parts, const STR& sep) {
   if (parts.empty())

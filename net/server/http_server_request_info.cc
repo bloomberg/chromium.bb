@@ -4,6 +4,7 @@
 
 #include "net/server/http_server_request_info.h"
 
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 
 namespace net {
@@ -28,12 +29,11 @@ bool HttpServerRequestInfo::HasHeaderValue(
   DCHECK_EQ(base::StringToLowerASCII(header_value), header_value);
   std::string complete_value = GetHeaderValue(header_name);
   base::StringToLowerASCII(&complete_value);
-  std::vector<std::string> value_items;
-  Tokenize(complete_value, ",", &value_items);
-  for (std::vector<std::string>::iterator it = value_items.begin();
-      it != value_items.end(); ++it) {
-    base::TrimString(*it, " \t", &*it);
-    if (*it == header_value)
+
+  for (const base::StringPiece& cur :
+       base::SplitString(complete_value, ",", base::KEEP_WHITESPACE,
+                         base::SPLIT_WANT_NONEMPTY)) {
+    if (base::TrimString(cur, " \t", base::TRIM_ALL) == header_value)
       return true;
   }
   return false;

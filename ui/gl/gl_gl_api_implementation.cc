@@ -417,7 +417,9 @@ void RealGLApi::InitializeWithCommandLine(DriverGL* driver,
   const std::string disabled_extensions = command_line->GetSwitchValueASCII(
       switches::kDisableGLExtensions);
   if (!disabled_extensions.empty()) {
-    Tokenize(disabled_extensions, ", ;", &disabled_exts_);
+    disabled_exts_ = base::SplitString(
+        disabled_extensions, ", ;",
+        base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   }
 }
 
@@ -466,8 +468,10 @@ void RealGLApi::InitializeFilteredExtensions() {
         gfx::kGLImplementationDesktopGLCoreProfile) {
       const char* gl_extensions = reinterpret_cast<const char*>(
           GLApiBase::glGetStringFn(GL_EXTENSIONS));
-      if (gl_extensions)
-        base::SplitString(gl_extensions, ' ', &filtered_exts_);
+      if (gl_extensions) {
+        filtered_exts_ = base::SplitString(
+            gl_extensions, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      }
     } else {
       GLint num_extensions = 0;
       GLApiBase::glGetIntegervFn(GL_NUM_EXTENSIONS, &num_extensions);
@@ -515,8 +519,8 @@ void VirtualGLApi::Initialize(DriverGL* driver, GLContext* real_context) {
 
   DCHECK(real_context->IsCurrent(NULL));
   std::string ext_string = real_context->GetExtensions();
-  std::vector<std::string> ext;
-  Tokenize(ext_string, " ", &ext);
+  std::vector<std::string> ext = base::SplitString(
+      ext_string, " ", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
   std::vector<std::string>::iterator it;
   // We can't support GL_EXT_occlusion_query_boolean which is

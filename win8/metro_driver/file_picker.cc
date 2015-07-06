@@ -305,9 +305,8 @@ HRESULT OpenFilePickerSession::StartFilePicker() {
         break;
 
       // There can be a single extension, or a list of semicolon-separated ones.
-      std::vector<base::string16> extensions_win32_style;
-      size_t extension_count = Tokenize(walk, L";", &extensions_win32_style);
-      DCHECK_EQ(extension_count, extensions_win32_style.size());
+      std::vector<base::string16> extensions_win32_style = base::SplitString(
+          walk, L";", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
       // Metro wants suffixes only, not patterns.
       mswrw::HString extension;
@@ -476,9 +475,8 @@ HRESULT SaveFilePickerSession::StartFilePicker() {
         break;
 
       // There can be a single extension, or a list of semicolon-separated ones.
-      std::vector<base::string16> extensions_win32_style;
-      size_t extension_count = Tokenize(walk, L";", &extensions_win32_style);
-      DCHECK_EQ(extension_count, extensions_win32_style.size());
+      std::vector<base::string16> extensions_win32_style = base::SplitString(
+          walk, L";", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
       // Metro wants suffixes only, not patterns.  Also, metro does not support
       // the all files ("*") pattern in the save picker.

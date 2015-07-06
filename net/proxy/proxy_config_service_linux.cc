@@ -29,6 +29,7 @@
 #include "base/nix/xdg_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -836,10 +837,10 @@ bool SettingGetterImplGSettings::LoadAndCheckVersion(
     // need them now, and to figure out where to get them, we have to check
     // for this binary. See http://crbug.com/69057 for additional details.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    std::vector<std::string> paths;
-    Tokenize(path, ":", &paths);
-    for (size_t i = 0; i < paths.size(); ++i) {
-      base::FilePath file(paths[i]);
+
+    for (const base::StringPiece& path_str : base::SplitStringPiece(
+             path, ":", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+      base::FilePath file(path_str);
       if (base::PathExists(file.Append("gnome-network-properties"))) {
         VLOG(1) << "Found gnome-network-properties. Will fall back to gconf.";
         return false;

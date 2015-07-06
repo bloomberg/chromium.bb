@@ -6,6 +6,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "media/base/cdm_callback_promise.h"
@@ -566,7 +567,8 @@ class MockMediaSource {
       std::string codecs_param =
           mimetype_.substr(codecs_param_start,
                            codecs_param_end - codecs_param_start);
-      Tokenize(codecs_param, ",", &codecs);
+      codecs = base::SplitString(
+          codecs_param, ",", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
     }
 
     CHECK_EQ(chunk_demuxer_->AddId(kSourceId, type, codecs), ChunkDemuxer::kOk);

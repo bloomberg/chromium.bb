@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "remoting/base/capabilities.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,9 +62,9 @@ TEST(CapabilitiesTest, HasCapability) {
   // Verify that HasCapability(|capabilities|, |key|) returns |result|.
   // |result|.
   for (size_t i = 0; i < arraysize(data); ++i) {
-    std::vector<std::string> caps;
-    Tokenize(data[i].capabilities, " ", &caps);
-
+    std::vector<std::string> caps = base::SplitString(
+        data[i].capabilities, " ", base::KEEP_WHITESPACE,
+        base::SPLIT_WANT_NONEMPTY);
     do {
       EXPECT_EQ(data[i].result,
                 HasCapability(JoinString(caps, " "), data[i].key));
@@ -93,9 +94,8 @@ TEST(CapabilitiesTest, Intersect) {
   // Verify that intersection of |right| with all permutations of |left| yields
   // |result|.
   for (size_t i = 0; i < arraysize(data); ++i) {
-    std::vector<std::string> caps;
-    Tokenize(data[i].left, " ", &caps);
-
+    std::vector<std::string> caps = base::SplitString(
+        data[i].left, " ", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
     do {
       EXPECT_EQ(data[i].result,
                 IntersectCapabilities(JoinString(caps, " "), data[i].right));

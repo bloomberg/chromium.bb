@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
@@ -50,8 +51,8 @@ SharedModuleInfo::~SharedModuleInfo() {
 void SharedModuleInfo::ParseImportedPath(const std::string& path,
                                          std::string* import_id,
                                          std::string* import_relative_path) {
-  std::vector<std::string> tokens;
-  Tokenize(path, std::string("/"), &tokens);
+  std::vector<std::string> tokens = base::SplitString(
+      path, "/", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   if (tokens.size() > 2 && tokens[0] == kModulesDir &&
       crx_file::id_util::IdIsValid(tokens[1])) {
     *import_id = tokens[1];
@@ -63,8 +64,8 @@ void SharedModuleInfo::ParseImportedPath(const std::string& path,
 
 // static
 bool SharedModuleInfo::IsImportedPath(const std::string& path) {
-  std::vector<std::string> tokens;
-  Tokenize(path, std::string("/"), &tokens);
+  std::vector<std::string> tokens = base::SplitString(
+      path, "/", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   if (tokens.size() > 2 && tokens[0] == kModulesDir &&
       crx_file::id_util::IdIsValid(tokens[1])) {
     return true;

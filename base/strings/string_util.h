@@ -492,22 +492,6 @@ inline typename string_type::value_type* WriteInto(string_type* str,
 
 //-----------------------------------------------------------------------------
 
-// Splits a string into its fields delimited by any of the characters in
-// |delimiters|.  Each field is added to the |tokens| vector.  Returns the
-// number of tokens found.
-//
-// DEPRECATED. Use base::SplitString for new code (these just forward).
-// TODO(brettw) convert callers and delete these forwarders.
-BASE_EXPORT size_t Tokenize(const base::string16& str,
-                            const base::string16& delimiters,
-                            std::vector<base::string16>* tokens);
-BASE_EXPORT size_t Tokenize(const std::string& str,
-                            const std::string& delimiters,
-                            std::vector<std::string>* tokens);
-BASE_EXPORT size_t Tokenize(const base::StringPiece& str,
-                            const base::StringPiece& delimiters,
-                            std::vector<base::StringPiece>* tokens);
-
 // Does the opposite of SplitString().
 BASE_EXPORT base::string16 JoinString(const std::vector<base::string16>& parts,
                                       base::char16 s);

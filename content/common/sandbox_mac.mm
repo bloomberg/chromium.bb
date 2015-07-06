@@ -27,6 +27,7 @@ extern "C" {
 #include "base/rand_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -456,8 +457,10 @@ bool Sandbox::PostProcessSandboxProfile(
   }
 
   // Split string on "@" characters.
-  std::vector<std::string> raw_sandbox_pieces;
-  if (Tokenize([sandbox_data UTF8String], "@", &raw_sandbox_pieces) == 0) {
+  std::vector<std::string> raw_sandbox_pieces = base::SplitString(
+      [sandbox_data UTF8String], "@", base::KEEP_WHITESPACE,
+      base::SPLIT_WANT_NONEMPTY);
+  if (raw_sandbox_pieces.empty()) {
     DLOG(FATAL) << "Bad Sandbox profile, should contain at least one token ("
                 << [sandbox_data UTF8String]
                 << ")";

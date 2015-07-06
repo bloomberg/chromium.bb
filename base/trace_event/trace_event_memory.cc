@@ -347,8 +347,8 @@ void AppendHeapProfileTotalsAsTraceFormat(const std::string& line,
   //   55227 = Outstanding bytes (malloc bytes - free bytes)
   //   14653 = Total allocations (mallocs)
   // 2624014 = Total bytes (malloc bytes)
-  std::vector<std::string> tokens;
-  Tokenize(line, " :[]@", &tokens);
+  std::vector<std::string> tokens = base::SplitString(
+      line, " :[]@", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   if (tokens.size() < 4) {
     DLOG(WARNING) << "Invalid totals line " << line;
     return;
@@ -377,8 +377,8 @@ bool AppendHeapProfileLineAsTraceFormat(const std::string& line,
   // 0x7fa7fa9b9ba0 0x7fa7f4b3be13 = Stack trace represented as pointers to
   //                                 static strings from trace event categories
   //                                 and names.
-  std::vector<std::string> tokens;
-  Tokenize(line, " :[]@", &tokens);
+  std::vector<std::string> tokens = base::SplitString(
+      line, " :[]@", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   // It's valid to have no stack addresses, so only require 4 tokens.
   if (tokens.size() < 4) {
     DLOG(WARNING) << "Invalid line " << line;

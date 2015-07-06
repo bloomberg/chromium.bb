@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/accessibility/accessibility_tree_formatter.h"
@@ -94,9 +95,9 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
     base::string16 actual_contents_utf16;
     formatter.FormatAccessibilityTree(&actual_contents_utf16);
     std::string actual_contents = base::UTF16ToUTF8(actual_contents_utf16);
-    std::vector<std::string> actual_lines;
-    Tokenize(actual_contents, "\n", &actual_lines);
-    return actual_lines;
+    return base::SplitString(
+        actual_contents, "\n",
+        base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   }
 };
 

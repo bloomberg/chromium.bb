@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
@@ -41,17 +42,16 @@ void MockGoogleStreamingServer::OnRequestStart(int fetcher_id) {
 
   // Extract request argument from the the request URI.
   std::string query = GetURLFetcher(true)->GetOriginalURL().query();
-  std::vector<std::string> query_params;
-  Tokenize(query, "&", &query_params);
   const net::UnescapeRule::Type kUnescapeAll =
       net::UnescapeRule::NORMAL |
       net::UnescapeRule::SPACES |
       net::UnescapeRule::URL_SPECIAL_CHARS |
       net::UnescapeRule::REPLACE_PLUS_WITH_SPACE;
-  for (size_t i = 0; i < query_params.size(); ++i) {
-    const std::string query_param = query_params[i];
-    std::vector<std::string> param_parts;
-    Tokenize(query_param, "=", &param_parts);
+  for (const base::StringPiece& query_param :
+       base::SplitStringPiece(query, "&", base::KEEP_WHITESPACE,
+                              base::SPLIT_WANT_NONEMPTY)) {
+    std::vector<std::string> param_parts = base::SplitString(
+        query_param, "=", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
     if (param_parts.size() != 2)
       continue;
     std::string param_key = net::UnescapeURLComponent(param_parts[0],

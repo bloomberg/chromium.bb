@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/string_piece.h"
@@ -32,11 +33,11 @@ class UrlToFilenameEncoderTest : public ::testing::Test {
   }
 
   void CheckSegmentLength(const StringPiece& escaped_word) {
-    std::vector<StringPiece> components;
-    Tokenize(escaped_word, StringPiece("/"), &components);
-    for (size_t i = 0; i < components.size(); ++i) {
+    for (const base::StringPiece& component :
+         base::SplitStringPiece(escaped_word, "/", base::KEEP_WHITESPACE,
+                                base::SPLIT_WANT_NONEMPTY)) {
       EXPECT_GE(UrlToFilenameEncoder::kMaximumSubdirectoryLength,
-                components[i].size());
+                component.size());
     }
   }
 

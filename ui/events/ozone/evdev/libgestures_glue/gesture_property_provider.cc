@@ -721,7 +721,8 @@ struct ConfigurationSection {
 
 MatchCriteria::MatchCriteria(const std::string& arg) {
   // TODO(sheckylin): Should we trim all tokens here?
-  Tokenize(arg, "|", &args_);
+  args_ = base::SplitString(
+      arg, "|", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   if (args_.empty()) {
     LOG(ERROR) << "Empty match pattern found, will evaluate to the default "
                   "value (true): \"" << arg << "\"";

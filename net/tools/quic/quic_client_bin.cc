@@ -234,11 +234,11 @@ int main(int argc, char *argv[]) {
       FLAGS_body.empty() ? "GET" : "POST", url.spec(), "HTTP/1.1");
 
   // Append any additional headers supplied on the command line.
-  vector<string> headers_tokenized;
-  Tokenize(FLAGS_headers, ";", &headers_tokenized);
-  for (size_t i = 0; i < headers_tokenized.size(); ++i) {
+  for (const std::string& header :
+       base::SplitString(FLAGS_headers, ";", base::KEEP_WHITESPACE,
+                         base::SPLIT_WANT_NONEMPTY)) {
     string sp;
-    base::TrimWhitespaceASCII(headers_tokenized[i], base::TRIM_ALL, &sp);
+    base::TrimWhitespaceASCII(header, base::TRIM_ALL, &sp);
     if (sp.empty()) {
       continue;
     }

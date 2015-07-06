@@ -21,6 +21,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
@@ -48,10 +49,11 @@ struct TouchCalibration {
 };
 
 void GetTouchCalibration(TouchCalibration* cal) {
-  std::vector<std::string> parts;
-  if (Tokenize(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                   switches::kTouchCalibration),
-               ",", &parts) >= 4) {
+  std::vector<std::string> parts = base::SplitString(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kTouchCalibration),
+      ",", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  if (parts.size() >= 4) {
     if (!base::StringToInt(parts[0], &cal->bezel_left))
       LOG(ERROR) << "Incorrect left border calibration value passed.";
     if (!base::StringToInt(parts[1], &cal->bezel_right))

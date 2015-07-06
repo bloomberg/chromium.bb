@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "base/strings/string_split.h"
 #include "net/base/auth.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_transaction_factory.h"
@@ -73,10 +74,10 @@ class URLRequestHttpJobTest : public ::testing::Test {
 
     // This check isn't wrapped with EXPECT* macros because different
     // results from this function may be expected in different tests.
-    std::vector<std::string> tokens;
-    size_t num_tokens = Tokenize(encoding_headers, ", ", &tokens);
-    for (size_t i = 0; i < num_tokens; i++) {
-      if (!base::strncasecmp(tokens[i].data(), "sdch", tokens[i].length()))
+    for (const std::string& token :
+         base::SplitString(encoding_headers, ", ", base::KEEP_WHITESPACE,
+                           base::SPLIT_WANT_NONEMPTY)) {
+      if (!base::strncasecmp(token.data(), "sdch", token.length()))
         return true;
     }
     return false;

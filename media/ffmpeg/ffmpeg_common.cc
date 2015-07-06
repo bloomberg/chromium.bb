@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_util.h"
@@ -563,23 +564,30 @@ PixelFormat VideoFormatToPixelFormat(VideoFrame::Format video_format) {
   return PIX_FMT_NONE;
 }
 
-bool FFmpegUTCDateToTime(const char* date_utc,
-                         base::Time* out) {
+bool FFmpegUTCDateToTime(const char* date_utc, base::Time* out) {
   DCHECK(date_utc);
   DCHECK(out);
 
-  std::vector<std::string> fields;
-  std::vector<std::string> date_fields;
-  std::vector<std::string> time_fields;
-  base::Time::Exploded exploded;
-  exploded.millisecond = 0;
+  std::vector<base::StringPiece> fields = base::SplitStringPiece(
+      date_utc, " ", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  if (fields.size() != 2)
+    return false;
+
+  std::vector<base::StringPiece> date_fields = base::SplitStringPiece(
+      fields[0], "-", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  if (date_fields.size() != 3)
+    return false;
 
   // TODO(acolwell): Update this parsing code when FFmpeg returns sub-second
   // information.
-  if ((Tokenize(date_utc, " ", &fields) == 2) &&
-      (Tokenize(fields[0], "-", &date_fields) == 3) &&
-      (Tokenize(fields[1], ":", &time_fields) == 3) &&
-      base::StringToInt(date_fields[0], &exploded.year) &&
+  std::vector<base::StringPiece> time_fields = base::SplitStringPiece(
+      fields[1], ":", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  if (time_fields.size() != 3)
+    return false;
+
+  base::Time::Exploded exploded;
+  exploded.millisecond = 0;
+  if (base::StringToInt(date_fields[0], &exploded.year) &&
       base::StringToInt(date_fields[1], &exploded.month) &&
       base::StringToInt(date_fields[2], &exploded.day_of_month) &&
       base::StringToInt(time_fields[0], &exploded.hour) &&

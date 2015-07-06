@@ -8,6 +8,7 @@
 
 #include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -79,10 +80,8 @@ std::vector<std::string> ParseURIList(const SelectionData& data) {
   // uri-lists are newline separated file lists in URL encoding.
   std::string unparsed;
   data.AssignTo(&unparsed);
-
-  std::vector<std::string> tokens;
-  Tokenize(unparsed, "\n", &tokens);
-  return tokens;
+  return base::SplitString(
+      unparsed, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 }
 
 std::string RefCountedMemoryToString(

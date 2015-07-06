@@ -20,6 +20,7 @@
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
@@ -115,10 +116,11 @@ class TouchEventCalibrate : public ui::PlatformEventObserver {
   TouchEventCalibrate() : left_(0), right_(0), top_(0), bottom_(0) {
     if (ui::PlatformEventSource::GetInstance())
       ui::PlatformEventSource::GetInstance()->AddPlatformEventObserver(this);
-    std::vector<std::string> parts;
-    if (Tokenize(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+    std::vector<std::string> parts = base::SplitString(
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
                      switches::kTouchCalibration),
-                 ",", &parts) >= 4) {
+        ",", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    if (parts.size() >= 4) {
       if (!base::StringToInt(parts[0], &left_))
         DLOG(ERROR) << "Incorrect left border calibration value passed.";
       if (!base::StringToInt(parts[1], &right_))

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/host/fake_host_extension.h"
@@ -79,8 +80,9 @@ TEST_F(HostExtensionSessionManagerTest, ExtensionCapabilities_AreReported) {
   HostExtensionSessionManager extension_manager(extensions_,
                                                 &client_session_control_);
 
-  std::vector<std::string> reported_caps;
-  Tokenize(extension_manager.GetCapabilities(), " ", &reported_caps);
+  std::vector<std::string> reported_caps = base::SplitString(
+      extension_manager.GetCapabilities(), " ", base::KEEP_WHITESPACE,
+      base::SPLIT_WANT_NONEMPTY);
   std::sort(reported_caps.begin(), reported_caps.end());
 
   ASSERT_EQ(2U, reported_caps.size());

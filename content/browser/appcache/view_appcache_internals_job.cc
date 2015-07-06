@@ -276,7 +276,7 @@ void EmitHexDump(const char *buf, size_t buf_len, size_t total_len,
   out->append("</pre>");
 }
 
-GURL DecodeBase64URL(const std::string& base64) {
+GURL DecodeBase64URL(base::StringPiece base64) {
   std::string url;
   base::Base64Decode(base64, &url);
   return GURL(url);
@@ -647,16 +647,19 @@ net::URLRequestJob* ViewAppCacheInternalsJobFactory::CreateJobForRequest(
     return new ViewAppCacheJob(request, network_delegate, service,
                                DecodeBase64URL(param));
 
-  std::vector<std::string> tokens;
-  int64 response_id = 0;
-  int64 group_id = 0;
-  if (command == kViewEntryCommand && Tokenize(param, "|", &tokens) == 4u &&
-      base::StringToInt64(tokens[2], &response_id) &&
-      base::StringToInt64(tokens[3], &group_id)) {
-    return new ViewEntryJob(request, network_delegate, service,
-                            DecodeBase64URL(tokens[0]),  // manifest url
-                            DecodeBase64URL(tokens[1]),  // entry url
-                            response_id, group_id);
+  if (command == kViewEntryCommand) {
+    std::vector<base::StringPiece> tokens = base::SplitStringPiece(
+        param, "|", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    int64 response_id = 0;
+    int64 group_id = 0;
+    if (tokens.size() == 4u &&
+        base::StringToInt64(tokens[2], &response_id) &&
+        base::StringToInt64(tokens[3], &group_id)) {
+      return new ViewEntryJob(request, network_delegate, service,
+                              DecodeBase64URL(tokens[0]),  // manifest url
+                              DecodeBase64URL(tokens[1]),  // entry url
+                              response_id, group_id);
+    }
   }
 
   return new RedirectToMainPageJob(request, network_delegate, service);

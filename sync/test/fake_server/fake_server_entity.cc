@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/net_errors.h"
@@ -81,11 +82,11 @@ std::string FakeServerEntity::GetTopLevelId(const ModelType& model_type) {
 
 // static
 ModelType FakeServerEntity::GetModelTypeFromId(const string& id) {
-  vector<string> tokens;
-  size_t token_count = Tokenize(id, kIdSeparator, &tokens);
+  vector<base::StringPiece> tokens = base::SplitStringPiece(
+      id, kIdSeparator, base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
   int field_number;
-  if (token_count != 2 || !base::StringToInt(tokens[0], &field_number)) {
+  if (tokens.size() != 2 || !base::StringToInt(tokens[0], &field_number)) {
     return syncer::UNSPECIFIED;
   }
 

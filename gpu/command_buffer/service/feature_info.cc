@@ -56,8 +56,8 @@ class StringSet {
   }
 
   void Init(const std::string& str) {
-    std::vector<std::string> tokens;
-    Tokenize(str, " ", &tokens);
+    std::vector<std::string> tokens = base::SplitString(
+        str, " ", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
     string_set_.insert(tokens.begin(), tokens.end());
   }
 

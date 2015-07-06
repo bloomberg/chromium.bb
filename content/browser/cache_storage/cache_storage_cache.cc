@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/guid.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "content/browser/cache_storage/cache_storage.pb.h"
 #include "content/browser/cache_storage/cache_storage_blob_to_disk_cache.h"
@@ -114,12 +115,9 @@ bool VaryMatches(const ServiceWorkerHeaderMap& request,
   if (vary_iter == response.end())
     return true;
 
-  std::vector<std::string> vary_keys;
-  Tokenize(vary_iter->second, ",", &vary_keys);
-  for (std::vector<std::string>::const_iterator it = vary_keys.begin();
-       it != vary_keys.end(); ++it) {
-    std::string trimmed;
-    base::TrimWhitespaceASCII(*it, base::TRIM_ALL, &trimmed);
+  for (const std::string& trimmed :
+       base::SplitString(vary_iter->second, ",",
+                         base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
     if (trimmed == "*")
       return false;
 

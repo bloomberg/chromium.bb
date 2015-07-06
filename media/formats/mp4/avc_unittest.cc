@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "base/basictypes.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/stream_parser_buffer.h"
@@ -134,16 +135,19 @@ void StringToAnnexB(const std::string& str, std::vector<uint8>* buffer,
                     std::vector<SubsampleEntry>* subsamples) {
   DCHECK(!str.empty());
 
-  std::vector<std::string> subsample_specs;
-  EXPECT_GT(Tokenize(str, " ", &subsample_specs), 0u);
+  std::vector<std::string> subsample_specs = base::SplitString(
+      str, " ", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  EXPECT_GT(subsample_specs.size(), 0u);
 
   buffer->clear();
   for (size_t i = 0; i < subsample_specs.size(); ++i) {
     SubsampleEntry entry;
     size_t start = buffer->size();
 
-    std::vector<std::string> subsample_nalus;
-    EXPECT_GT(Tokenize(subsample_specs[i], ",", &subsample_nalus), 0u);
+    std::vector<std::string> subsample_nalus = base::SplitString(
+      subsample_specs[i], ",", base::KEEP_WHITESPACE,
+      base::SPLIT_WANT_NONEMPTY);
+    EXPECT_GT(subsample_nalus.size(), 0u);
     for (size_t j = 0; j < subsample_nalus.size(); ++j) {
       WriteStartCodeAndNALUType(buffer, subsample_nalus[j]);
 

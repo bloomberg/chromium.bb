@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chromeos/ime/input_methods.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
@@ -38,8 +39,9 @@ InputMethodWhitelist::GetSupportedInputMethods() const {
     std::vector<std::string> layouts;
     layouts.push_back(kInputMethods[i].xkb_layout_id);
 
-    std::vector<std::string> languages;
-    Tokenize(kInputMethods[i].language_code, kLanguageDelimiter, &languages);
+    std::vector<std::string> languages = base::SplitString(
+        kInputMethods[i].language_code, kLanguageDelimiter,
+        base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
     DCHECK(!languages.empty());
 
     input_methods->push_back(InputMethodDescriptor(

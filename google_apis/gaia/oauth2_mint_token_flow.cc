@@ -13,6 +13,7 @@
 #include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -262,11 +263,9 @@ bool OAuth2MintTokenFlow::ParseIssueAdviceResponse(
     }
 
     base::TrimWhitespace(entry.description, base::TRIM_ALL, &entry.description);
-    static const base::string16 detail_separators =
-        base::ASCIIToUTF16(kDetailSeparators);
-    Tokenize(detail, detail_separators, &entry.details);
-    for (size_t i = 0; i < entry.details.size(); i++)
-      base::TrimWhitespace(entry.details[i], base::TRIM_ALL, &entry.details[i]);
+    entry.details = base::SplitString(
+        detail, base::ASCIIToUTF16(kDetailSeparators),
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
     issue_advice->push_back(entry);
   }
 

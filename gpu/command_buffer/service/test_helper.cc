@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/error_state_mock.h"
@@ -364,7 +365,8 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
   // Persistent storage is needed for the split extension string.
   split_extensions_.clear();
   if (extensions) {
-    Tokenize(extensions, " ", &split_extensions_);
+    split_extensions_ = base::SplitString(
+        extensions, " ", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   }
 
   gfx::GLVersionInfo gl_info(gl_version, gl_renderer, extensions);

@@ -11,13 +11,14 @@
 #include "ui/gl/gl_implementation.h"
 
 namespace {
+
 std::string FilterExtensionList(
     const char* extensions,
     const std::vector<std::string>& disabled_extensions) {
   if (extensions == NULL)
     return "";
-  std::vector<std::string> extension_vec;
-  base::SplitString(extensions, ' ', &extension_vec);
+  std::vector<std::string> extension_vec = base::SplitString(
+      extensions, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   extension_vec.erase(std::remove_if(
       extension_vec.begin(), extension_vec.end(),
       [&disabled_extensions](const std::string& ext) {
@@ -26,7 +27,8 @@ std::string FilterExtensionList(
       }), extension_vec.end());
   return JoinString(extension_vec, " ");
 }
-}
+
+}  // namespace
 
 namespace gfx {
 
@@ -92,7 +94,9 @@ void RealEGLApi::InitializeWithCommandLine(DriverEGL* driver,
   disabled_exts_.clear();
   filtered_exts_.clear();
   if (!disabled_extensions.empty()) {
-    Tokenize(disabled_extensions, ", ;", &disabled_exts_);
+    disabled_exts_ = base::SplitString(
+        disabled_extensions, ", ;",
+        base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   }
 }
 

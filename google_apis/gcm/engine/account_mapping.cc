@@ -5,6 +5,7 @@
 #include "google_apis/gcm/engine/account_mapping.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 
 namespace gcm {
@@ -80,8 +81,8 @@ std::string AccountMapping::SerializeAsString() const {
 }
 
 bool AccountMapping::ParseFromString(const std::string& value) {
-  std::vector<std::string> values;
-  Tokenize(value, kSeparator, &values);
+  std::vector<std::string> values = base::SplitString(
+      value, kSeparator, base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   if (values.size() != kSizeWithNoMessage &&
       values.size() != kSizeWithMessage) {
     return false;
