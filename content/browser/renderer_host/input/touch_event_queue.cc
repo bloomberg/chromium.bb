@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/input/touch_event_queue.h"
 
 #include "base/auto_reset.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
@@ -74,15 +75,20 @@ class TouchEventQueue::TouchTimeoutHandler {
       : touch_queue_(touch_queue),
         desktop_timeout_delay_(desktop_timeout_delay),
         mobile_timeout_delay_(mobile_timeout_delay),
+        use_mobile_timeout_(false),
         pending_ack_state_(PENDING_ACK_NONE),
         timeout_monitor_(base::Bind(&TouchTimeoutHandler::OnTimeOut,
                                     base::Unretained(this))),
         enabled_(true),
-        enabled_for_current_sequence_(false) {
+        enabled_for_current_sequence_(false),
+        sequence_awaiting_uma_update_(false),
+        sequence_using_mobile_timeout_(false) {
     SetUseMobileTimeout(false);
   }
 
-  ~TouchTimeoutHandler() {}
+  ~TouchTimeoutHandler() {
+    LogSequenceEndForUMAIfNecessary(false);
+  }
 
   void StartIfNecessary(const TouchEventWithLatencyInfo& event) {
     if (pending_ack_state_ != PENDING_ACK_NONE)
@@ -91,20 +97,23 @@ class TouchEventQueue::TouchTimeoutHandler {
     if (!enabled_)
       return;
 
-    if (current_timeout_delay_.is_zero())
+    const base::TimeDelta timeout_delay = GetTimeoutDelay();
+    if (timeout_delay.is_zero())
       return;
 
     if (!ShouldTouchTriggerTimeout(event.event))
       return;
 
-    if (WebTouchEventTraits::IsTouchSequenceStart(event.event))
+    if (WebTouchEventTraits::IsTouchSequenceStart(event.event)) {
+      LogSequenceStartForUMA();
       enabled_for_current_sequence_ = true;
+    }
 
     if (!enabled_for_current_sequence_)
       return;
 
     timeout_event_ = event;
-    timeout_monitor_.Restart(current_timeout_delay_);
+    timeout_monitor_.Restart(timeout_delay);
   }
 
   bool ConfirmTouchEvent(InputEventAckState ack_result) {
@@ -134,7 +143,17 @@ class TouchEventQueue::TouchTimeoutHandler {
   }
 
   bool FilterEvent(const WebTouchEvent& event) {
-    return HasTimeoutEvent();
+    if (!HasTimeoutEvent())
+      return false;
+
+    if (WebTouchEventTraits::IsTouchSequenceStart(event)) {
+      // If a new sequence is observed while we're still waiting on the
+      // timed-out sequence response, also count the new sequence as timed-out.
+      LogSequenceStartForUMA();
+      LogSequenceEndForUMAIfNecessary(true);
+    }
+
+    return true;
   }
 
   void SetEnabled(bool enabled) {
@@ -157,14 +176,13 @@ class TouchEventQueue::TouchTimeoutHandler {
   }
 
   void SetUseMobileTimeout(bool use_mobile_timeout) {
-    current_timeout_delay_ =
-        use_mobile_timeout ? mobile_timeout_delay_ : desktop_timeout_delay_;
+    use_mobile_timeout_ = use_mobile_timeout;
   }
 
   bool IsTimeoutTimerRunning() const { return timeout_monitor_.IsRunning(); }
 
   bool IsEnabled() const {
-    return enabled_ && !current_timeout_delay_.is_zero();
+    return enabled_ && !GetTimeoutDelay().is_zero();
   }
 
  private:
@@ -175,6 +193,7 @@ class TouchEventQueue::TouchTimeoutHandler {
   };
 
   void OnTimeOut() {
+    LogSequenceEndForUMAIfNecessary(true);
     SetPendingAckState(PENDING_ACK_ORIGINAL_EVENT);
     touch_queue_->FlushQueue();
   }
@@ -211,6 +230,30 @@ class TouchEventQueue::TouchTimeoutHandler {
     pending_ack_state_ = new_pending_ack_state;
   }
 
+  void LogSequenceStartForUMA() {
+    // Always flush any unlogged entries before starting a new one.
+    LogSequenceEndForUMAIfNecessary(false);
+    sequence_awaiting_uma_update_ = true;
+    sequence_using_mobile_timeout_ = use_mobile_timeout_;
+  }
+
+  void LogSequenceEndForUMAIfNecessary(bool timed_out) {
+    if (!sequence_awaiting_uma_update_)
+      return;
+
+    sequence_awaiting_uma_update_ = false;
+
+    if (sequence_using_mobile_timeout_) {
+      UMA_HISTOGRAM_BOOLEAN("Event.Touch.TimedOutOnMobileSite", timed_out);
+    } else {
+      UMA_HISTOGRAM_BOOLEAN("Event.Touch.TimedOutOnDesktopSite", timed_out);
+    }
+  }
+
+  base::TimeDelta GetTimeoutDelay() const {
+    return use_mobile_timeout_ ? mobile_timeout_delay_ : desktop_timeout_delay_;
+  }
+
   bool HasTimeoutEvent() const {
     return pending_ack_state_ != PENDING_ACK_NONE;
   }
@@ -221,7 +264,7 @@ class TouchEventQueue::TouchTimeoutHandler {
   // How long to wait on a touch ack before cancelling the touch sequence.
   const base::TimeDelta desktop_timeout_delay_;
   const base::TimeDelta mobile_timeout_delay_;
-  base::TimeDelta current_timeout_delay_;
+  bool use_mobile_timeout_;
 
   // The touch event source for which we expect the next ack.
   PendingAckState pending_ack_state_;
@@ -234,6 +277,10 @@ class TouchEventQueue::TouchTimeoutHandler {
 
   bool enabled_;
   bool enabled_for_current_sequence_;
+
+  // Bookkeeping to classify and log whether a touch sequence times out.
+  bool sequence_awaiting_uma_update_;
+  bool sequence_using_mobile_timeout_;
 };
 
 // Provides touchmove slop suppression for a touch sequence until a

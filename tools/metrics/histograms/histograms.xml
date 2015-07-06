@@ -8983,6 +8983,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Event.Touch.TimedOutOnDesktopSite" units="BooleanTimedOut">
+  <owner>jdduke@chromium.org</owner>
+  <summary>
+    On non-mobile-optimized (desktop) sites, whether the ack response from the
+    renderer for any event in a contiguous touch sequence exceeds the
+    desktop-specific timeout threshold.
+  </summary>
+</histogram>
+
+<histogram name="Event.Touch.TimedOutOnMobileSite" units="BooleanTimedOut">
+  <owner>jdduke@chromium.org</owner>
+  <summary>
+    On mobile-optimized sites, whether the ack response from the renderer for
+    any event in a contiguous touch sequence exceeds the mobile-specific timeout
+    threshold.
+  </summary>
+</histogram>
+
 <histogram name="Event.TouchDuration" units="milliseconds">
   <owner>kuscher@google.com</owner>
   <owner>rbyers@chromium.org</owner>
