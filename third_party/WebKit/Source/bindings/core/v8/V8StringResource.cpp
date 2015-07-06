@@ -27,7 +27,6 @@
 #include "bindings/core/v8/V8StringResource.h"
 
 #include "bindings/core/v8/V8Binding.h"
-#include "core/inspector/BindingVisitors.h"
 #include "wtf/MainThread.h"
 
 namespace blink {

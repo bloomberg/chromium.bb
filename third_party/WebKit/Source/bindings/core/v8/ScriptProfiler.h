@@ -38,7 +38,6 @@
 
 namespace blink {
 
-class WrappedNodeVisitor;
 class ScriptValue;
 
 class ScriptProfiler {
@@ -71,7 +70,6 @@ public:
     static void stopTrackingHeapObjects();
     static unsigned requestHeapStatsUpdate(OutputStream*);
     static void initialize();
-    static void visitNodeWrappers(WrappedNodeVisitor*);
     static HashMap<String, double>* currentProfileNameIdleTimeMap();
     static void setIdle(bool isIdle);
 };

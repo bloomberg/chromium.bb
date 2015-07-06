@@ -1605,7 +1605,6 @@
             'inspector/AsyncCallTracker.cpp',
             'inspector/AsyncCallTracker.h',
             'inspector/AsyncOperationMap.h',
-            'inspector/BindingVisitors.h',
             'inspector/ConsoleAPITypes.h',
             'inspector/ConsoleMessage.cpp',
             'inspector/ConsoleMessage.h',
