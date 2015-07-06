@@ -40,11 +40,6 @@ namespace chrome {
 namespace mac {
 
 bool SupportsSystemFullscreen() {
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableSystemFullscreenForTesting))
-    return false;
-
   return base::mac::IsOSLionOrLater();
 }
 

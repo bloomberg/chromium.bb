@@ -350,7 +350,6 @@ extern const char kDisableAppInfoDialogMac[];
 extern const char kDisableAppWindowCycling[];
 extern const char kDisableHostedAppShimCreation[];
 extern const char kDisableMacViewsNativeAppWindows[];
-extern const char kDisableSystemFullscreenForTesting[];
 extern const char kEnableAppInfoDialogMac[];
 extern const char kEnableAppWindowCycling[];
 extern const char kEnableMacViewsNativeAppWindows[];

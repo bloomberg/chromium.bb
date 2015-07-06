@@ -1232,11 +1232,6 @@ const char kDisableHostedAppShimCreation[] = "disable-hosted-app-shim-creation";
 const char kDisableMacViewsNativeAppWindows[] =
     "disable-mac-views-native-app-windows";
 
-// Forcibly disables Lion-style on newer OSes, to allow developers to test the
-// older, SnowLeopard-style fullscreen.
-const char kDisableSystemFullscreenForTesting[] =
-    "disable-system-fullscreen-for-testing";
-
 // Enable the toolkit-views App Info dialog for Mac. This is accessible from
 // chrome://apps and chrome://extensions and is already enabled on non-mac.
 const char kEnableAppInfoDialogMac[] = "enable-app-info-dialog-mac";
