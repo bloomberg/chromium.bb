@@ -20,8 +20,7 @@ import org.chromium.ui.base.WindowAndroid;
 public final class ChildAccountFeedbackReporter {
     private static FeedbackReporter sFeedbackReporter;
 
-    public static void reportFeedback(
-            final Activity activity, final String description, String url) {
+    public static void reportFeedback(Activity activity, final String description, String url) {
         ThreadUtils.assertOnUiThread();
         if (sFeedbackReporter == null) {
             ChromeApplication application = (ChromeApplication) activity.getApplication();
@@ -32,7 +31,7 @@ public final class ChildAccountFeedbackReporter {
                     @Override
                     public void onResult(FeedbackCollector collector) {
                         collector.setDescription(description);
-                        sFeedbackReporter.reportFeedback(activity, collector);
+                        sFeedbackReporter.reportFeedback(collector);
                     }
                 });
     }

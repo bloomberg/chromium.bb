@@ -36,7 +36,7 @@ public final class DomDistillerFeedbackReporter {
     public static void reportFeedbackWithWindow(
             WindowAndroid window, String url, final boolean good) {
         ThreadUtils.assertOnUiThread();
-        final Activity activity = window.getActivity().get();
+        Activity activity = window.getActivity().get();
         if (sFeedbackReporter == null) {
             ChromeApplication application = (ChromeApplication) activity.getApplication();
             sFeedbackReporter = application.createFeedbackReporter();
@@ -48,7 +48,7 @@ public final class DomDistillerFeedbackReporter {
                         String quality =
                                 good ? DISTILLATION_QUALITY_GOOD : DISTILLATION_QUALITY_BAD;
                         collector.add(DISTILLATION_QUALITY_KEY, quality);
-                        sFeedbackReporter.reportFeedback(activity, collector);
+                        sFeedbackReporter.reportFeedback(collector);
                     }
                 });
     }

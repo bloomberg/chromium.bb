@@ -4,12 +4,10 @@
 
 package org.chromium.chrome.browser.feedback;
 
-import android.app.Activity;
-
 /**
  * No-op implementation of {@link FeedbackReporter}.
  */
 public class EmptyFeedbackReporter implements FeedbackReporter {
     @Override
-    public void reportFeedback(Activity activity, FeedbackCollector collector) {}
+    public void reportFeedback(FeedbackCollector collector) {}
 }
