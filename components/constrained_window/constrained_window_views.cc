@@ -8,8 +8,9 @@
 
 #include "components/constrained_window/constrained_window_views_client.h"
 #include "components/guest_view/browser/guest_view_base.h"
-#include "components/web_modal/popup_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "ui/views/border.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -138,22 +139,22 @@ views::Widget* ShowWebModalDialogViews(
   content::WebContents* web_contents =
       guest_view::GuestViewBase::GetTopLevelWebContents(initiator_web_contents);
   views::Widget* widget = CreateWebModalDialogViews(dialog, web_contents);
-  web_modal::PopupManager* popup_manager =
-      web_modal::PopupManager::FromWebContents(web_contents);
-  popup_manager->ShowModalDialog(widget->GetNativeWindow(), web_contents);
+  web_modal::WebContentsModalDialogManager::FromWebContents(web_contents)
+      ->ShowModalDialog(widget->GetNativeWindow());
   return widget;
 }
 
 views::Widget* CreateWebModalDialogViews(views::WidgetDelegate* dialog,
                                          content::WebContents* web_contents) {
   DCHECK_EQ(ui::MODAL_TYPE_CHILD, dialog->GetModalType());
-  web_modal::PopupManager* popup_manager =
-      web_modal::PopupManager::FromWebContents(web_contents);
-  const gfx::NativeView parent = popup_manager->GetHostView();
-  return views::DialogDelegate::CreateDialogWidget(dialog, NULL, parent);
+  return views::DialogDelegate::CreateDialogWidget(
+      dialog, nullptr,
+      web_modal::WebContentsModalDialogManager::FromWebContents(web_contents)
+          ->delegate()
+          ->GetWebContentsModalDialogHost()
+          ->GetHostView());
 }
 
-// TODO(gbillock): Replace this with PopupManager calls.
 views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
                                              gfx::NativeWindow parent) {
   DCHECK_NE(ui::MODAL_TYPE_CHILD, dialog->GetModalType());

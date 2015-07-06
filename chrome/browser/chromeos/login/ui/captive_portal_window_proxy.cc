@@ -8,7 +8,9 @@
 #include "chrome/browser/chromeos/login/ui/captive_portal_view.h"
 #include "chrome/browser/chromeos/login/ui/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "components/web_modal/popup_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_host.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -72,15 +74,14 @@ void CaptivePortalWindowProxy::Show() {
   InitCaptivePortalView();
 
   CaptivePortalView* portal = captive_portal_view_.release();
-  web_modal::PopupManager* popup_manager =
-      web_modal::PopupManager::FromWebContents(web_contents_);
-  if (popup_manager) {
-    widget_ =
-        CreateWindowAsFramelessChild(portal, popup_manager->GetHostView());
-    portal->Init();
-    widget_->AddObserver(this);
-    popup_manager->ShowModalDialog(widget_->GetNativeView(), web_contents_);
-  }
+  auto manager =
+      web_modal::WebContentsModalDialogManager::FromWebContents(web_contents_);
+  widget_ = CreateWindowAsFramelessChild(
+      portal,
+      manager->delegate()->GetWebContentsModalDialogHost()->GetHostView());
+  portal->Init();
+  widget_->AddObserver(this);
+  manager->ShowModalDialog(widget_->GetNativeView());
 }
 
 void CaptivePortalWindowProxy::Close() {

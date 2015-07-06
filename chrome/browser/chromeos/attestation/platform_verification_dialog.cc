@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/web_modal/popup_manager.h"
+#include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -57,15 +57,7 @@ views::Widget* PlatformVerificationDialog::ShowDialog(
       base::UTF8ToUTF16(origin),
       callback);
 
-  // Sets up the dialog widget to be shown.
-  web_modal::PopupManager* popup_manager =
-      web_modal::PopupManager::FromWebContents(web_contents);
-  DCHECK(popup_manager);
-  views::Widget* widget = views::DialogDelegate::CreateDialogWidget(
-      dialog, NULL, popup_manager->GetHostView());
-  popup_manager->ShowModalDialog(widget->GetNativeView(), web_contents);
-
-  return widget;
+  return constrained_window::ShowWebModalDialogViews(dialog, web_contents);
 }
 
 PlatformVerificationDialog::~PlatformVerificationDialog() {

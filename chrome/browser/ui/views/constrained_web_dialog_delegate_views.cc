@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "components/constrained_window/constrained_window_views.h"
-#include "components/web_modal/popup_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_view_host.h"
@@ -239,11 +238,9 @@ class ConstrainedWebDialogDelegateViewViews
     if (!max_size_.IsEmpty()) {
       EnableAutoResize();
       if (initiator_observer_.web_contents()) {
-        web_modal::PopupManager* popup_manager =
-            web_modal::PopupManager::FromWebContents(
-                initiator_observer_.web_contents());
-        popup_manager->ShowModalDialog(GetWidget()->GetNativeWindow(),
-                                       initiator_observer_.web_contents());
+        web_modal::WebContentsModalDialogManager::FromWebContents(
+            initiator_observer_.web_contents())
+            ->ShowModalDialog(GetWidget()->GetNativeWindow());
       }
     }
   }
