@@ -446,7 +446,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // addition, its associated RenderWidgetHost has to be focused.
   bool IsFocused();
 
-  // Returns the Mojo ImageDownloader service pointer.
+  // Returns the Mojo ImageDownloader service.
   const image_downloader::ImageDownloaderPtr& GetMojoImageDownloader();
 
  protected:
