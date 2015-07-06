@@ -33,19 +33,19 @@ const char kOverviewModeHistogramName[] =
 const char* GetHistogramName(
     TaskSwitchMetricsRecorder::TaskSwitchSource task_switch_source) {
   switch (task_switch_source) {
-    case TaskSwitchMetricsRecorder::kAny:
+    case TaskSwitchMetricsRecorder::ANY:
       return kAshTaskSwitchHistogramName;
-    case TaskSwitchMetricsRecorder::kAppList:
+    case TaskSwitchMetricsRecorder::APP_LIST:
       return kAppListHistogramName;
-    case TaskSwitchMetricsRecorder::kDesktop:
+    case TaskSwitchMetricsRecorder::DESKTOP:
       return kDesktopHistogramName;
-    case TaskSwitchMetricsRecorder::kOverviewMode:
+    case TaskSwitchMetricsRecorder::OVERVIEW_MODE:
       return kOverviewModeHistogramName;
-    case TaskSwitchMetricsRecorder::kShelf:
+    case TaskSwitchMetricsRecorder::SHELF:
       return kShelfHistogramName;
-    case TaskSwitchMetricsRecorder::kTabStrip:
+    case TaskSwitchMetricsRecorder::TAB_STRIP:
       return kTabStripHistogramName;
-    case TaskSwitchMetricsRecorder::kWindowCycleController:
+    case TaskSwitchMetricsRecorder::WINDOW_CYCLE_CONTROLLER:
       return kAcceleratorWindowCycleHistogramName;
   }
   NOTREACHED();
@@ -62,10 +62,10 @@ TaskSwitchMetricsRecorder::~TaskSwitchMetricsRecorder() {
 
 void TaskSwitchMetricsRecorder::OnTaskSwitch(
     TaskSwitchSource task_switch_source) {
-  DCHECK_NE(task_switch_source, kAny);
-  if (task_switch_source != kAny) {
+  DCHECK_NE(task_switch_source, ANY);
+  if (task_switch_source != ANY) {
     OnTaskSwitchInternal(task_switch_source);
-    OnTaskSwitchInternal(kAny);
+    OnTaskSwitchInternal(ANY);
   }
 }
 

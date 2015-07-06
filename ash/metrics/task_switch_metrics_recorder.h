@@ -25,25 +25,24 @@ class ASH_EXPORT TaskSwitchMetricsRecorder {
  public:
   // Enumeration of the different user interfaces that could be the source of
   // a task switch. Note this is not necessarily comprehensive of all sources.
-  // TODO(bruthig): Convert enum format from kValue to VALUE.
   enum TaskSwitchSource {
     // Task switches caused by any two sources in this enum. NOTE: This value
     // should NOT be used outside of this class.
-    kAny,
+    ANY,
     // Task switches from selecting items in the app list.
-    kAppList,
+    APP_LIST,
     // Task switches caused by the user activating a task window by clicking or
     // tapping on it.
-    kDesktop,
+    DESKTOP,
     // Task switches caused by selecting a window from overview mode which is
     // different from the previously-active window.
-    kOverviewMode,
+    OVERVIEW_MODE,
     // All task switches caused by shelf buttons, not including sub-menus.
-    kShelf,
+    SHELF,
     // All task switches caused by the tab strip.
-    kTabStrip,
+    TAB_STRIP,
     // Task switches caused by the WindowCycleController (ie Alt+Tab).
-    kWindowCycleController
+    WINDOW_CYCLE_CONTROLLER
   };
 
   TaskSwitchMetricsRecorder();
@@ -51,9 +50,9 @@ class ASH_EXPORT TaskSwitchMetricsRecorder {
 
   // Notifies |this| that a "navigate to" task switch has occurred from the
   // specified |task_switch_source|. The metrics associated with
-  // TaskSwitchSource::kAny source will be updated as well.
+  // TaskSwitchSource::ANY source will be updated as well.
   //
-  // NOTE: A |task_switch_source| value of TaskSwitchSource::kAny should not be
+  // NOTE: A |task_switch_source| value of TaskSwitchSource::ANY should not be
   // used and behavior is undefined if it is.
   //
   // A "navigate to" operation is defined by a task switch where the specific
@@ -70,7 +69,7 @@ class ASH_EXPORT TaskSwitchMetricsRecorder {
 
  private:
   // Internal implementation of OnTaskSwitch(TaskSwitchSource) that will accept
-  // the TaskSwitchSource::kAny value.
+  // the TaskSwitchSource::ANY value.
   void OnTaskSwitchInternal(TaskSwitchSource task_switch_source);
 
   // Returns the TaskSwitchTimeTracker associated with the specified

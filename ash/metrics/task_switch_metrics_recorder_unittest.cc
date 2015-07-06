@@ -62,102 +62,102 @@ void TaskSwitchMetricsRecorderTest::TearDown() {
 
 }  // namespace
 
-// Verifies that task switches from a non kAny source also add data to the
+// Verifies that task switches from a non ANY source also add data to the
 // Ash.TimeBetweenTaskSwitches histogram.
 TEST_F(TaskSwitchMetricsRecorderTest,
        VerifyTaskSwitchesRecordInAllTaskSwitchHistogram) {
   const std::string kHistogramName = "Ash.TimeBetweenTaskSwitches";
 
-  OnTaskSwitch(TaskSwitchMetricsRecorder::kShelf);
-  OnTaskSwitch(TaskSwitchMetricsRecorder::kShelf);
+  OnTaskSwitch(TaskSwitchMetricsRecorder::SHELF);
+  OnTaskSwitch(TaskSwitchMetricsRecorder::SHELF);
   histogram_tester_->ExpectTotalCount(kHistogramName, 1);
 }
 
-// Verifies that the TaskSwitchMetricsRecorder::kDesktop source adds data to the
+// Verifies that the TaskSwitchMetricsRecorder::DESKTOP source adds data to the
 // Ash.Desktop.TimeBetweenNavigateToTaskSwitches histogram.
 TEST_F(TaskSwitchMetricsRecorderTest, VerifyTaskSwitchesForDesktopAreRecorded) {
   const std::string kHistogramName =
       "Ash.Desktop.TimeBetweenNavigateToTaskSwitches";
 
-  OnTaskSwitch(TaskSwitchMetricsRecorder::kDesktop);
-  OnTaskSwitch(TaskSwitchMetricsRecorder::kDesktop);
+  OnTaskSwitch(TaskSwitchMetricsRecorder::DESKTOP);
+  OnTaskSwitch(TaskSwitchMetricsRecorder::DESKTOP);
   histogram_tester_->ExpectTotalCount(kHistogramName, 1);
 
-  OnTaskSwitch(TaskSwitchMetricsRecorder::kDesktop);
+  OnTaskSwitch(TaskSwitchMetricsRecorder::DESKTOP);
   histogram_tester_->ExpectTotalCount(kHistogramName, 2);
 }
 
-// Verifies that the TaskSwitchMetricsRecorder::kWindowCycleController source
+// Verifies that the TaskSwitchMetricsRecorder::WINDOW_CYCLE_CONTROLLER source
 // adds data to the Ash.WindowCycleController.TimeBetweenTaskSwitches histogram.
 TEST_F(TaskSwitchMetricsRecorderTest,
        VerifyTaskSwitchesForWindowCycleControllerAreRecorded) {
   const std::string kHistogramName =
       "Ash.WindowCycleController.TimeBetweenTaskSwitches";
 
-  OnTaskSwitch(TaskSwitchMetricsRecorder::kWindowCycleController);
-  OnTaskSwitch(TaskSwitchMetricsRecorder::kWindowCycleController);
+  OnTaskSwitch(TaskSwitchMetricsRecorder::WINDOW_CYCLE_CONTROLLER);
+  OnTaskSwitch(TaskSwitchMetricsRecorder::WINDOW_CYCLE_CONTROLLER);
   histogram_tester_->ExpectTotalCount(kHistogramName, 1);
 
-  OnTaskSwitch(TaskSwitchMetricsRecorder::kWindowCycleController);
+  OnTaskSwitch(TaskSwitchMetricsRecorder::WINDOW_CYCLE_CONTROLLER);
   histogram_tester_->ExpectTotalCount(kHistogramName, 2);
 }
 
-// Verifies that the TaskSwitchMetricsRecorder::kShelf source adds data to the
+// Verifies that the TaskSwitchMetricsRecorder::SHELF source adds data to the
 // Ash.Shelf.TimeBetweenNavigateToTaskSwitches histogram.
 TEST_F(TaskSwitchMetricsRecorderTest,
        VerifyTaskSwitchesFromTheShelfAreRecorded) {
   const std::string kHistogramName =
       "Ash.Shelf.TimeBetweenNavigateToTaskSwitches";
 
-  OnTaskSwitch(TaskSwitchMetricsRecorder::kShelf);
-  OnTaskSwitch(TaskSwitchMetricsRecorder::kShelf);
+  OnTaskSwitch(TaskSwitchMetricsRecorder::SHELF);
+  OnTaskSwitch(TaskSwitchMetricsRecorder::SHELF);
   histogram_tester_->ExpectTotalCount(kHistogramName, 1);
 
-  OnTaskSwitch(TaskSwitchMetricsRecorder::kShelf);
+  OnTaskSwitch(TaskSwitchMetricsRecorder::SHELF);
   histogram_tester_->ExpectTotalCount(kHistogramName, 2);
 }
 
-// Verifies that the TaskSwitchMetricsRecorder::kTabStrip source adds data to
+// Verifies that the TaskSwitchMetricsRecorder::TAB_STRIP source adds data to
 // the Ash.Tab.TimeBetweenSwitchToExistingTabUserActions histogram.
 TEST_F(TaskSwitchMetricsRecorderTest,
        VerifyTaskSwitchesFromTheTabStripAreRecorded) {
   const std::string kHistogramName =
       "Ash.Tab.TimeBetweenSwitchToExistingTabUserActions";
 
-  OnTaskSwitch(TaskSwitchMetricsRecorder::kTabStrip);
-  OnTaskSwitch(TaskSwitchMetricsRecorder::kTabStrip);
+  OnTaskSwitch(TaskSwitchMetricsRecorder::TAB_STRIP);
+  OnTaskSwitch(TaskSwitchMetricsRecorder::TAB_STRIP);
   histogram_tester_->ExpectTotalCount(kHistogramName, 1);
 
-  OnTaskSwitch(TaskSwitchMetricsRecorder::kTabStrip);
+  OnTaskSwitch(TaskSwitchMetricsRecorder::TAB_STRIP);
   histogram_tester_->ExpectTotalCount(kHistogramName, 2);
 }
 
-// Verifies that the TaskSwitchMetricsRecorder::kOverviewMode source adds data
+// Verifies that the TaskSwitchMetricsRecorder::OVERVIEW_MODE source adds data
 // to the Ash.WindowSelector.TimeBetweenActiveWindowChanges histogram.
 TEST_F(TaskSwitchMetricsRecorderTest,
        VerifyTaskSwitchesFromOverviewModeAreRecorded) {
   const std::string kHistogramName =
       "Ash.WindowSelector.TimeBetweenActiveWindowChanges";
 
-  OnTaskSwitch(TaskSwitchMetricsRecorder::kOverviewMode);
-  OnTaskSwitch(TaskSwitchMetricsRecorder::kOverviewMode);
+  OnTaskSwitch(TaskSwitchMetricsRecorder::OVERVIEW_MODE);
+  OnTaskSwitch(TaskSwitchMetricsRecorder::OVERVIEW_MODE);
   histogram_tester_->ExpectTotalCount(kHistogramName, 1);
 
-  OnTaskSwitch(TaskSwitchMetricsRecorder::kOverviewMode);
+  OnTaskSwitch(TaskSwitchMetricsRecorder::OVERVIEW_MODE);
   histogram_tester_->ExpectTotalCount(kHistogramName, 2);
 }
 
-// Verifies that the TaskSwitchMetricsRecorder::kAppList source adds data to the
+// Verifies that the TaskSwitchMetricsRecorder::APP_LIST source adds data to the
 // Ash.AppList.TimeBetweenTaskSwitches histogram.
 TEST_F(TaskSwitchMetricsRecorderTest,
        VerifyTaskSwitchesFromApplistAreRecorded) {
   const std::string kHistogramName = "Ash.AppList.TimeBetweenTaskSwitches";
 
-  OnTaskSwitch(TaskSwitchMetricsRecorder::kAppList);
-  OnTaskSwitch(TaskSwitchMetricsRecorder::kAppList);
+  OnTaskSwitch(TaskSwitchMetricsRecorder::APP_LIST);
+  OnTaskSwitch(TaskSwitchMetricsRecorder::APP_LIST);
   histogram_tester_->ExpectTotalCount(kHistogramName, 1);
 
-  OnTaskSwitch(TaskSwitchMetricsRecorder::kAppList);
+  OnTaskSwitch(TaskSwitchMetricsRecorder::APP_LIST);
   histogram_tester_->ExpectTotalCount(kHistogramName, 2);
 }
 

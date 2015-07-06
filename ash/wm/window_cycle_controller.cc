@@ -120,7 +120,7 @@ void WindowCycleController::StopCycling() {
     Shell::GetInstance()
         ->metrics()
         ->task_switch_metrics_recorder()
-        .OnTaskSwitch(TaskSwitchMetricsRecorder::kWindowCycleController);
+        .OnTaskSwitch(TaskSwitchMetricsRecorder::WINDOW_CYCLE_CONTROLLER);
   }
   active_window_before_window_cycle_ = nullptr;
 }

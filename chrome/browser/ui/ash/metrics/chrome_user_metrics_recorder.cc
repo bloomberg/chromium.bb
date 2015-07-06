@@ -43,5 +43,5 @@ void ChromeUserMetricsRecorder::OnTabSwitchedByUserGesture() {
   ash::Shell::GetInstance()
       ->metrics()
       ->task_switch_metrics_recorder()
-      .OnTaskSwitch(ash::TaskSwitchMetricsRecorder::kTabStrip);
+      .OnTaskSwitch(ash::TaskSwitchMetricsRecorder::TAB_STRIP);
 }
