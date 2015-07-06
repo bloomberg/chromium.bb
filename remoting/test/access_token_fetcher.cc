@@ -44,7 +44,7 @@ void AccessTokenFetcher::GetAccessTokenFromAuthCode(
   DCHECK(!callback.is_null());
   DCHECK(access_token_callback_.is_null());
 
-  DVLOG(2) << "Calling GetTokensFromAuthCode to exchange auth_code for token";
+  VLOG(2) << "Calling GetTokensFromAuthCode to exchange auth_code for token";
 
   access_token_.clear();
   refresh_token_.clear();
@@ -64,7 +64,7 @@ void AccessTokenFetcher::GetAccessTokenFromRefreshToken(
   DCHECK(!callback.is_null());
   DCHECK(access_token_callback_.is_null());
 
-  DVLOG(2) << "Calling RefreshToken to generate a new access token";
+  VLOG(2) << "Calling RefreshToken to generate a new access token";
 
   access_token_.clear();
   refresh_token_ = refresh_token;
@@ -90,10 +90,10 @@ void AccessTokenFetcher::CreateNewGaiaOAuthClientInstance() {
 void AccessTokenFetcher::OnGetTokensResponse(const std::string& refresh_token,
                                              const std::string& access_token,
                                              int expires_in_seconds) {
-  DVLOG(1) << "AccessTokenFetcher::OnGetTokensResponse() Called";
-  DVLOG(1) << "--refresh_token: " << refresh_token;
-  DVLOG(1) << "--access_token: " << access_token;
-  DVLOG(1) << "--expires_in_seconds: " << expires_in_seconds;
+  VLOG(1) << "AccessTokenFetcher::OnGetTokensResponse() Called";
+  VLOG(1) << "--refresh_token: " << refresh_token;
+  VLOG(1) << "--access_token: " << access_token;
+  VLOG(1) << "--expires_in_seconds: " << expires_in_seconds;
 
   refresh_token_ = refresh_token;
   access_token_ = access_token;
@@ -103,9 +103,9 @@ void AccessTokenFetcher::OnGetTokensResponse(const std::string& refresh_token,
 
 void AccessTokenFetcher::OnRefreshTokenResponse(const std::string& access_token,
                                                 int expires_in_seconds) {
-  DVLOG(1) << "AccessTokenFetcher::OnRefreshTokenResponse() Called";
-  DVLOG(1) << "--access_token: " << access_token;
-  DVLOG(1) << "--expires_in_seconds: " << expires_in_seconds;
+  VLOG(1) << "AccessTokenFetcher::OnRefreshTokenResponse() Called";
+  VLOG(1) << "--access_token: " << access_token;
+  VLOG(1) << "--expires_in_seconds: " << expires_in_seconds;
 
   access_token_ = access_token;
 
@@ -130,7 +130,7 @@ void AccessTokenFetcher::OnGetUserInfoResponse(
 
 void AccessTokenFetcher::OnGetTokenInfoResponse(
     scoped_ptr<base::DictionaryValue> token_info) {
-  DVLOG(1) << "AccessTokenFetcher::OnGetTokenInfoResponse() Called";
+  VLOG(1) << "AccessTokenFetcher::OnGetTokenInfoResponse() Called";
 
   std::string error_string;
   std::string error_description;
@@ -147,7 +147,7 @@ void AccessTokenFetcher::OnGetTokenInfoResponse(
     access_token_.clear();
     refresh_token_.clear();
   } else {
-    DVLOG(1) << "Access Token has been validated";
+    VLOG(1) << "Access Token has been validated";
   }
 
   base::ResetAndReturn(&access_token_callback_)
@@ -176,7 +176,7 @@ void AccessTokenFetcher::OnNetworkError(int response_code) {
 }
 
 void AccessTokenFetcher::ValidateAccessToken() {
-  DVLOG(2) << "Calling GetTokenInfo to validate access token";
+  VLOG(2) << "Calling GetTokenInfo to validate access token";
 
   // Create a new GaiaOAuthClient for each request to GAIA.
   CreateNewGaiaOAuthClientInstance();

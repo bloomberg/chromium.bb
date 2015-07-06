@@ -40,7 +40,7 @@ bool RemoteHostInfoFetcher::RetrieveRemoteHostInfo(
   DCHECK(!callback.is_null());
   DCHECK(remote_host_info_callback_.is_null());
 
-  DVLOG(2) << "RemoteHostInfoFetcher::RetrieveRemoteHostInfo() called";
+  VLOG(2) << "RemoteHostInfoFetcher::RetrieveRemoteHostInfo() called";
 
   std::string service_url(
       GetRunApplicationUrl(application_id, service_environment));
@@ -48,7 +48,7 @@ bool RemoteHostInfoFetcher::RetrieveRemoteHostInfo(
     LOG(ERROR) << "Unrecognized service type: " << service_environment;
     return false;
   }
-  DVLOG(1) << "Using remote host service request url: " << service_url;
+  VLOG(1) << "Using remote host service request url: " << service_url;
 
   remote_host_info_callback_ = callback;
 
@@ -69,7 +69,7 @@ bool RemoteHostInfoFetcher::RetrieveRemoteHostInfo(
 
 void RemoteHostInfoFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(source);
-  DVLOG(2) << "URL Fetch Completed for: " << source->GetOriginalURL();
+  VLOG(2) << "URL Fetch Completed for: " << source->GetOriginalURL();
 
   RemoteHostInfo remote_host_info;
   int response_code = request_->GetResponseCode();

@@ -213,7 +213,7 @@ int main(int argc, char** argv) {
     PrintUsage();
     return -1;
   }
-  DVLOG(1) << "Running tests as: " << options.user_name;
+  VLOG(1) << "Running tests as: " << options.user_name;
 
   // Check to see if the user passed in a one time use auth_code for
   // refreshing their credentials.

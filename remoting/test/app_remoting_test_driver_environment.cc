@@ -77,7 +77,7 @@ bool AppRemotingTestDriverEnvironment::Initialize(
   refresh_token_ = refresh_token_store->FetchRefreshToken();
   if (refresh_token_.empty()) {
     // This isn't necessarily an error as this might be a first run scenario.
-    DVLOG(1) << "No refresh token stored for " << user_name_;
+    VLOG(2) << "No refresh token stored for " << user_name_;
 
     if (auth_code.empty()) {
       // No token and no Auth code means no service connectivity, bail!
@@ -244,12 +244,12 @@ void AppRemotingTestDriverEnvironment::TearDown() {
 
   for (const auto& kvp : host_ids_to_release_) {
     std::string application_id = kvp.first;
-    DVLOG(1) << "Releasing hosts for application: " << application_id;
+    VLOG(1) << "Releasing hosts for application: " << application_id;
 
     for (const auto& host_id : kvp.second) {
       base::RunLoop run_loop;
 
-      DVLOG(1) << "    Releasing host: " << host_id;
+      VLOG(1) << "    Releasing host: " << host_id;
       bool request_started = report_issue_request->Start(
           application_id, host_id, access_token_, service_environment_, true,
           run_loop.QuitClosure());

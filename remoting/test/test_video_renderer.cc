@@ -86,17 +86,17 @@ void TestVideoRenderer::Core::SetCodecForDecoding(
 
   switch (codec) {
     case protocol::ChannelConfig::CODEC_VP8: {
-      DVLOG(2) << "Test Video Renderer will use VP8 decoder";
+      VLOG(1) << "Test Video Renderer will use VP8 decoder";
       decoder_ = VideoDecoderVpx::CreateForVP8();
       break;
     }
     case protocol::ChannelConfig::CODEC_VP9: {
-      DVLOG(2) << "Test Video Renderer will use VP9 decoder";
+      VLOG(1) << "Test Video Renderer will use VP9 decoder";
       decoder_ = VideoDecoderVpx::CreateForVP9();
       break;
     }
     case protocol::ChannelConfig::CODEC_VERBATIM: {
-      DVLOG(2) << "Test Video Renderer will use VERBATIM decoder";
+      VLOG(1) << "Test Video Renderer will use VERBATIM decoder";
       decoder_.reset(new VideoDecoderVerbatim());
       break;
     }
@@ -119,7 +119,7 @@ void TestVideoRenderer::Core::ProcessVideoPacket(
   DCHECK(decoder_);
   DCHECK(packet);
 
-  DVLOG(2) << "TestVideoRenderer::Core::ProcessVideoPacket() Called";
+  VLOG(2) << "TestVideoRenderer::Core::ProcessVideoPacket() Called";
 
   // Screen size is attached on the first packet as well as when the
   // host screen is resized.
@@ -184,7 +184,7 @@ TestVideoRenderer::~TestVideoRenderer() {
 void TestVideoRenderer::OnSessionConfig(const protocol::SessionConfig& config) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  DVLOG(2) << "TestVideoRenderer::OnSessionConfig() Called";
+  VLOG(2) << "TestVideoRenderer::OnSessionConfig() Called";
   protocol::ChannelConfig::Codec codec = config.video_config().codec;
   SetCodecForDecoding(codec);
 }
@@ -192,14 +192,14 @@ void TestVideoRenderer::OnSessionConfig(const protocol::SessionConfig& config) {
 ChromotingStats* TestVideoRenderer::GetStats() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  DVLOG(2) << "TestVideoRenderer::GetStats() Called";
+  VLOG(2) << "TestVideoRenderer::GetStats() Called";
   return nullptr;
 }
 
 protocol::VideoStub* TestVideoRenderer::GetVideoStub() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  DVLOG(2) << "TestVideoRenderer::GetVideoStub() Called";
+  VLOG(2) << "TestVideoRenderer::GetVideoStub() Called";
   return this;
 }
 
@@ -209,7 +209,7 @@ void TestVideoRenderer::ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
   DCHECK(video_decode_task_runner_) << "Failed to start video decode thread";
 
   if (video_packet->has_data() && video_packet->data().size() != 0) {
-    DVLOG(2) << "process video packet is called!";
+    VLOG(2) << "process video packet is called!";
 
     // Post video process task to the video decode thread.
     base::Closure process_video_task = base::Bind(
@@ -219,7 +219,7 @@ void TestVideoRenderer::ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
   } else {
     // Log at a high verbosity level as we receive empty packets frequently and
     // they can clutter up the debug output if the level is set too low.
-    DVLOG(3) << "Empty Video Packet received.";
+    VLOG(3) << "Empty Video Packet received.";
     done.Run();
   }
 }
@@ -228,7 +228,7 @@ void TestVideoRenderer::SetCodecForDecoding(
     const protocol::ChannelConfig::Codec codec) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  DVLOG(2) << "TestVideoRenderer::SetDecoder() Called";
+  VLOG(2) << "TestVideoRenderer::SetDecoder() Called";
   video_decode_task_runner_->PostTask(
       FROM_HERE, base::Bind(&Core::SetCodecForDecoding,
                             base::Unretained(core_.get()),

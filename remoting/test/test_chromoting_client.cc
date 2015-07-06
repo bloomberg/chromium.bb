@@ -45,7 +45,7 @@ void FetchThirdPartyToken(
     const std::string& host_public_key,
     const std::string& scope,
     base::WeakPtr<remoting::TokenFetcherProxy> token_fetcher_proxy) {
-  DVLOG(1) << "FetchThirdPartyToken("
+  VLOG(2)  << "FetchThirdPartyToken("
            << "token_url: " << token_url << ", "
            << "host_public_key: " << host_public_key << ", "
            << "scope: " << scope << ") Called";
@@ -257,10 +257,10 @@ void TestChromotingClient::SetConnectionToHostForTests(
 void TestChromotingClient::OnConnectionState(
     protocol::ConnectionToHost::State state,
     protocol::ErrorCode error_code) {
-  DVLOG(1) << "TestChromotingClient::OnConnectionState("
-           << "state: " << ConnectionStateToFriendlyString(state) << ", "
-           << "error_code: " << ProtocolErrorToFriendlyString(error_code)
-           << ") Called";
+  VLOG(1) << "TestChromotingClient::OnConnectionState("
+          << "state: " << ConnectionStateToFriendlyString(state) << ", "
+          << "error_code: " << ProtocolErrorToFriendlyString(error_code)
+          << ") Called";
 
   connection_error_code_ = error_code;
   connection_to_host_state_ = state;
@@ -270,8 +270,8 @@ void TestChromotingClient::OnConnectionState(
 }
 
 void TestChromotingClient::OnConnectionReady(bool ready) {
-  DVLOG(1) << "TestChromotingClient::OnConnectionReady("
-           << "ready:" << ready << ") Called";
+  VLOG(1) << "TestChromotingClient::OnConnectionReady("
+          << "ready:" << ready << ") Called";
 
   FOR_EACH_OBSERVER(RemoteConnectionObserver, connection_observers_,
                     ConnectionReady(ready));
@@ -280,18 +280,18 @@ void TestChromotingClient::OnConnectionReady(bool ready) {
 void TestChromotingClient::OnRouteChanged(
     const std::string& channel_name,
     const protocol::TransportRoute& route) {
-  DVLOG(1) << "TestChromotingClient::OnRouteChanged("
-           << "channel_name:" << channel_name << ", "
-           << "route:" << protocol::TransportRoute::GetTypeString(route.type)
-           << ") Called";
+  VLOG(1) << "TestChromotingClient::OnRouteChanged("
+          << "channel_name:" << channel_name << ", "
+          << "route:" << protocol::TransportRoute::GetTypeString(route.type)
+          << ") Called";
 
   FOR_EACH_OBSERVER(RemoteConnectionObserver, connection_observers_,
                     RouteChanged(channel_name, route));
 }
 
 void TestChromotingClient::SetCapabilities(const std::string& capabilities) {
-  DVLOG(1) << "TestChromotingClient::SetCapabilities("
-           << "capabilities: " << capabilities << ") Called";
+  VLOG(1) << "TestChromotingClient::SetCapabilities("
+          << "capabilities: " << capabilities << ") Called";
 
   FOR_EACH_OBSERVER(RemoteConnectionObserver, connection_observers_,
                     CapabilitiesSet(capabilities));
@@ -299,10 +299,10 @@ void TestChromotingClient::SetCapabilities(const std::string& capabilities) {
 
 void TestChromotingClient::SetPairingResponse(
     const protocol::PairingResponse& pairing_response) {
-  DVLOG(1) << "TestChromotingClient::SetPairingResponse("
-           << "client_id: " << pairing_response.client_id() << ", "
-           << "shared_secret: " << pairing_response.shared_secret()
-           << ") Called";
+  VLOG(1) << "TestChromotingClient::SetPairingResponse("
+          << "client_id: " << pairing_response.client_id() << ", "
+          << "shared_secret: " << pairing_response.shared_secret()
+          << ") Called";
 
   FOR_EACH_OBSERVER(RemoteConnectionObserver, connection_observers_,
                     PairingResponseSet(pairing_response));
@@ -310,32 +310,32 @@ void TestChromotingClient::SetPairingResponse(
 
 void TestChromotingClient::DeliverHostMessage(
     const protocol::ExtensionMessage& message) {
-  DVLOG(1) << "TestChromotingClient::DeliverHostMessage("
-           << "type: " << message.type() << ", "
-           << "data: " << message.data() << ") Called";
+  VLOG(1) << "TestChromotingClient::DeliverHostMessage("
+          << "type: " << message.type() << ", "
+          << "data: " << message.data() << ") Called";
 
   FOR_EACH_OBSERVER(RemoteConnectionObserver, connection_observers_,
                     HostMessageReceived(message));
 }
 
 protocol::ClipboardStub* TestChromotingClient::GetClipboardStub() {
-  DVLOG(1) << "TestChromotingClient::GetClipboardStub() Called";
+  VLOG(1) << "TestChromotingClient::GetClipboardStub() Called";
   return this;
 }
 
 protocol::CursorShapeStub* TestChromotingClient::GetCursorShapeStub() {
-  DVLOG(1) << "TestChromotingClient::GetCursorShapeStub() Called";
+  VLOG(1) << "TestChromotingClient::GetCursorShapeStub() Called";
   return this;
 }
 
 void TestChromotingClient::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
-  DVLOG(1) << "TestChromotingClient::InjectClipboardEvent() Called";
+  VLOG(1) << "TestChromotingClient::InjectClipboardEvent() Called";
 }
 
 void TestChromotingClient::SetCursorShape(
     const protocol::CursorShapeInfo& cursor_shape) {
-  DVLOG(1) << "TestChromotingClient::SetCursorShape() Called";
+  VLOG(1) << "TestChromotingClient::SetCursorShape() Called";
 }
 
 }  // namespace test

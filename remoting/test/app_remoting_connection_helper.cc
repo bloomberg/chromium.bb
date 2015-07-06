@@ -150,9 +150,9 @@ void AppRemotingConnectionHelper::HostMessageReceived(
   } else if (message.type() == "onWindowAdded") {
     HandleOnWindowAddedMessage(message);
   } else {
-    DVLOG(2) << "HostMessage not handled by HostMessageReceived().";
-    DVLOG(2) << "type: " << message.type();
-    DVLOG(2) << "data: " << message.data();
+    VLOG(2) << "HostMessage not handled by HostMessageReceived().";
+    VLOG(2) << "type: " << message.type();
+    VLOG(2) << "data: " << message.data();
   }
 }
 
@@ -162,7 +162,7 @@ void AppRemotingConnectionHelper::SendClientConnectionDetailsToHost() {
   message.set_type("accessToken");
   message.set_data(AppRemotingSharedData->access_token());
 
-  DVLOG(1) << "Sending access token to host";
+  VLOG(1) << "Sending access token to host";
   client_->host_stub()->DeliverClientMessage(message);
 
   // Next send the host a description of the client screen size.
@@ -174,14 +174,14 @@ void AppRemotingConnectionHelper::SendClientConnectionDetailsToHost() {
   client_resolution.set_dips_width(kDefaultWidth);
   client_resolution.set_dips_height(kDefaultHeight);
 
-  DVLOG(1) << "Sending ClientResolution details to host";
+  VLOG(1) << "Sending ClientResolution details to host";
   client_->host_stub()->NotifyClientResolution(client_resolution);
 
   // Finally send a message to start sending us video packets.
   protocol::VideoControl video_control;
   video_control.set_enable(true);
 
-  DVLOG(1) << "Sending enable VideoControl message to host";
+  VLOG(1) << "Sending enable VideoControl message to host";
   client_->host_stub()->ControlVideo(video_control);
 }
 

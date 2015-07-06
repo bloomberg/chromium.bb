@@ -62,11 +62,11 @@ RefreshTokenStoreOnDisk::~RefreshTokenStoreOnDisk() {
 std::string RefreshTokenStoreOnDisk::FetchRefreshToken() {
   base::FilePath refresh_token_file_path(GetPathForRefreshTokenFile());
   DCHECK(!refresh_token_file_path.empty());
-  DVLOG(2) << "Reading token from: " << refresh_token_file_path.value();
+  VLOG(1) << "Reading token from: " << refresh_token_file_path.value();
 
   std::string file_contents;
   if (!base::ReadFileToString(refresh_token_file_path, &file_contents)) {
-    DVLOG(1) << "Couldn't read token file: " << refresh_token_file_path.value();
+    VLOG(1) << "Couldn't read token file: " << refresh_token_file_path.value();
     return std::string();
   }
 
@@ -82,7 +82,7 @@ std::string RefreshTokenStoreOnDisk::FetchRefreshToken() {
   if (!tokens->GetStringWithoutPathExpansion(user_name_, &refresh_token)) {
     // This may not be an error as the file could exist but contain refresh
     // tokens for other users.
-    DVLOG(1) << "Could not find token for: " << user_name_;
+    VLOG(1) << "Could not find token for: " << user_name_;
     return std::string();
   }
 
@@ -95,7 +95,7 @@ bool RefreshTokenStoreOnDisk::StoreRefreshToken(
 
   base::FilePath file_path(GetPathForRefreshTokenFile());
   DCHECK(!file_path.empty());
-  DVLOG(2) << "Storing token to: " << file_path.value();
+  VLOG(2) << "Storing token to: " << file_path.value();
 
   base::FilePath refresh_token_file_dir(file_path.DirName());
   if (!base::DirectoryExists(refresh_token_file_dir) &&

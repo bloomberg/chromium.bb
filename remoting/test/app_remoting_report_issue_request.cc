@@ -36,7 +36,7 @@ bool AppRemotingReportIssueRequest::Start(
     base::Closure done_callback) {
   DCHECK(request_complete_callback_.is_null()) << "Request pending";
 
-  DVLOG(2) << "AppRemotingReportIssueRequest::Start() called";
+  VLOG(2) << "AppRemotingReportIssueRequest::Start() called";
 
   std::string service_url(
       GetReportIssueUrl(application_id, host_id, service_environment));
@@ -44,7 +44,7 @@ bool AppRemotingReportIssueRequest::Start(
     LOG(ERROR) << "Unrecognized service type: " << service_environment;
     return false;
   }
-  DVLOG(1) << "Using Report Issue service request url: " << service_url;
+  VLOG(1) << "Sending Report Issue service request to: " << service_url;
 
   request_complete_callback_ = done_callback;
 
@@ -67,7 +67,7 @@ bool AppRemotingReportIssueRequest::Start(
 
 void AppRemotingReportIssueRequest::OnURLFetchComplete(
     const net::URLFetcher* source) {
-  DVLOG(2) << "URL Fetch Completed for: " << source->GetOriginalURL();
+  VLOG(2) << "URL Fetch Completed for: " << source->GetOriginalURL();
 
   int response_code = request_->GetResponseCode();
   if (response_code != net::HTTP_OK && response_code != net::HTTP_NO_CONTENT) {
