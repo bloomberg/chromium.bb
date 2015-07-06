@@ -144,11 +144,7 @@ using WTF::FrameToNameScope;
 */
 #ifndef CRASH
 #if COMPILER(MSVC)
-#if COMPILER(CLANG)
-#define CRASH() (__debugbreak(), __builtin_unreachable())
-#else
-#define CRASH() __debugbreak()
-#endif
+#define CRASH() (__debugbreak(), IMMEDIATE_CRASH())
 #else
 #define CRASH() \
     (WTFReportBacktrace(), \
