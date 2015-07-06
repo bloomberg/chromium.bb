@@ -819,30 +819,28 @@ void PictureLayerImpl::AddTilingsForRasterScale() {
   // We always need a high res tiling, so create one if it doesn't exist.
   if (!high_res)
     high_res = AddTiling(raster_contents_scale_);
-
-  // Try and find a low res tiling.
-  PictureLayerTiling* low_res = nullptr;
-  if (raster_contents_scale_ == low_res_raster_contents_scale_)
-    low_res = high_res;
-  else
-    low_res = tilings_->FindTilingWithScale(low_res_raster_contents_scale_);
-
-  // Only create new low res tilings when the transform is static.  This
-  // prevents wastefully creating a paired low res tiling for every new high res
-  // tiling during a pinch or a CSS animation.
-  bool can_have_low_res = layer_tree_impl()->create_low_res_tiling();
-  bool needs_low_res = !low_res;
-  bool is_pinching = layer_tree_impl()->PinchGestureActive();
-  bool is_animating = draw_properties().screen_space_transform_is_animating;
-  if (can_have_low_res && needs_low_res && !is_pinching && !is_animating)
-    low_res = AddTiling(low_res_raster_contents_scale_);
-
-  // Set low-res if we have one.
-  if (low_res && low_res != high_res)
-    low_res->set_resolution(LOW_RESOLUTION);
-
-  // Make sure we always have one high-res (even if high == low).
   high_res->set_resolution(HIGH_RESOLUTION);
+
+  // If the low res scale is the same as the high res scale, that tiling
+  // will be treated as high res.
+  if (layer_tree_impl()->create_low_res_tiling() &&
+      raster_contents_scale_ != low_res_raster_contents_scale_) {
+    PictureLayerTiling* low_res =
+        tilings_->FindTilingWithScale(low_res_raster_contents_scale_);
+
+    // Only create new low res tilings when the transform is static.  This
+    // prevents wastefully creating a paired low res tiling for every new high
+    // res tiling during a pinch or a CSS animation.
+    bool is_pinching = layer_tree_impl()->PinchGestureActive();
+    bool is_animating = draw_properties().screen_space_transform_is_animating;
+    if (!low_res && !is_pinching && !is_animating)
+      low_res = AddTiling(low_res_raster_contents_scale_);
+
+    if (low_res) {
+      DCHECK_NE(low_res, high_res);
+      low_res->set_resolution(LOW_RESOLUTION);
+    }
+  }
 
   if (layer_tree_impl()->IsPendingTree()) {
     // On the pending tree, drop any tilings that are non-ideal since we don't

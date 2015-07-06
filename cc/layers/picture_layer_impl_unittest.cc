@@ -4956,5 +4956,35 @@ TEST_F(TileSizeTest, TileSizes) {
   EXPECT_EQ(result.height(), 500 + 2);
 }
 
+TEST_F(NoLowResPictureLayerImplTest, HighResLowResCollision) {
+  gfx::Size tile_size(400, 400);
+  gfx::Size layer_bounds(1300, 1900);
+
+  float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
+
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+
+  // Set up the high and low res tilings before pinch zoom.
+  SetupTrees(pending_pile, active_pile);
+  ResetTilingsAndRasterScales();
+
+  float page_scale = 2.f;
+  SetContentsScaleOnBothLayers(page_scale, 1.0f, page_scale, 1.0f, 0.f, false);
+  EXPECT_BOTH_EQ(num_tilings(), 1u);
+  EXPECT_BOTH_EQ(tilings()->tiling_at(0)->contents_scale(), page_scale);
+
+  host_impl_.PinchGestureBegin();
+
+  // Zoom out to exactly the low res factor so that the previous high res
+  // would be equal to the current low res (if it were possible to have one).
+  float zoomed = page_scale / low_res_factor;
+  SetContentsScaleOnBothLayers(zoomed, 1.0f, zoomed, 1.0f, 0.f, false);
+  EXPECT_EQ(1u, pending_layer_->num_tilings());
+  EXPECT_EQ(zoomed, pending_layer_->tilings()->tiling_at(0)->contents_scale());
+}
+
 }  // namespace
 }  // namespace cc
