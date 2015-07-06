@@ -5,26 +5,35 @@
 package org.chromium.chrome.browser.invalidation;
 
 import android.accounts.Account;
+import android.app.Activity;
 import android.app.Application;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SyncResult;
 import android.os.Bundle;
 import android.test.suitebuilder.annotation.MediumTest;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.base.test.util.ScalableTimeout;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.components.invalidation.PendingInvalidation;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.signin.AccountManagerHelper;
 
 /**
  * Tests for ChromiumSyncAdapter.
  */
-public class ChromiumSyncAdapterTest extends ChromeShellTestBase {
+public class ChromiumSyncAdapterTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final Account TEST_ACCOUNT =
             AccountManagerHelper.createAccountFromName("test@gmail.com");
+    private static final long WAIT_FOR_LAUNCHER_MS = ScalableTimeout.scaleTimeout(10 * 1000);
+    private static final long POLL_INTERVAL_MS = 100;
 
     private TestChromiumSyncAdapter mSyncAdapter;
 
@@ -60,17 +69,43 @@ public class ChromiumSyncAdapterTest extends ChromeShellTestBase {
         }
     }
 
+    public ChromiumSyncAdapterTest() {
+        super(ChromeActivity.class);
+    }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        launchChromeShellWithBlankPage();
         mSyncAdapter = new TestChromiumSyncAdapter(
                 getInstrumentation().getTargetContext(), getActivity().getApplication());
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
     }
 
     private void performSyncWithBundle(Bundle bundle) {
         mSyncAdapter.onPerformSync(TEST_ACCOUNT, bundle,
                 AndroidSyncSettings.getContractAuthority(getActivity()), null, new SyncResult());
+    }
+
+    private void sendChromeToBackground(Activity activity) throws InterruptedException {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        activity.startActivity(intent);
+
+        assertTrue(
+                "Activity should have been resumed", CriteriaHelper.pollForCriteria(new Criteria() {
+                    @Override
+                    public boolean isSatisfied() {
+                        return !isActivityResumed();
+                    }
+                }, WAIT_FOR_LAUNCHER_MS, POLL_INTERVAL_MS));
+    }
+
+    private boolean isActivityResumed() {
+        return ApplicationStatus.hasVisibleActivities();
     }
 
     @MediumTest
@@ -105,7 +140,7 @@ public class ChromiumSyncAdapterTest extends ChromeShellTestBase {
     @MediumTest
     @Feature({"Sync"})
     public void testRequestSyncWhenChromeInBackground() throws InterruptedException {
-        DelayedInvalidationsControllerTest.sendChromeToBackground(getActivity());
+        sendChromeToBackground(getActivity());
         performSyncWithBundle(new Bundle());
         assertFalse(mSyncAdapter.mInvalidatedAllTypes);
         assertFalse(mSyncAdapter.mInvalidated);

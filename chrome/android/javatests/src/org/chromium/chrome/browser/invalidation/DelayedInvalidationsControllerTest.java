@@ -4,33 +4,26 @@
 
 package org.chromium.chrome.browser.invalidation;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.accounts.Account;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
+import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.components.invalidation.PendingInvalidation;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.List;
 
 /**
  * Tests for DelayedInvalidationsController.
  */
-public class DelayedInvalidationsControllerTest extends ChromeShellTestBase {
+public class DelayedInvalidationsControllerTest extends InstrumentationTestCase {
     private static final String TEST_ACCOUNT = "something@gmail.com";
-    private static final long WAIT_FOR_LAUNCHER_MS = scaleTimeout(10 * 1000);
-    private static final long POLL_INTERVAL_MS = 100;
 
     private static final String OBJECT_ID = "object_id";
     private static final int OBJECT_SRC = 4;
@@ -43,6 +36,8 @@ public class DelayedInvalidationsControllerTest extends ChromeShellTestBase {
     private static final String PAYLOAD_2 = "payload_2";
 
     private MockDelayedInvalidationsController mController;
+    private Context mContext;
+    private Activity mPlaceholderActivity;
 
     /**
      * Mocks {@link DelayedInvalidationsController} for testing.
@@ -66,20 +61,27 @@ public class DelayedInvalidationsControllerTest extends ChromeShellTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         mController = new MockDelayedInvalidationsController();
-        launchChromeShellWithBlankPage();
+        mContext = getInstrumentation().getTargetContext();
+
+        mPlaceholderActivity = new Activity();
+        setApplicationState(ActivityState.CREATED);
+        setApplicationState(ActivityState.RESUMED);
+    }
+
+    private void setApplicationState(int newState) {
+        ApplicationStatus.onStateChangeForTesting(mPlaceholderActivity, newState);
     }
 
     @SmallTest
     @Feature({"Sync"})
     public void testManualSyncRequestsShouldAlwaysTriggerSync() throws InterruptedException {
         // Sync should trigger for manual requests when Chrome is in the foreground.
-        assertTrue(isActivityResumed());
         Bundle extras = new Bundle();
         extras.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
         assertTrue(mController.shouldNotifyInvalidation(extras));
 
         // Sync should trigger for manual requests when Chrome is in the background.
-        sendChromeToBackground(getActivity());
+        setApplicationState(ActivityState.STOPPED);
         extras.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
         assertTrue(mController.shouldNotifyInvalidation(extras));
     }
@@ -87,7 +89,6 @@ public class DelayedInvalidationsControllerTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"Sync", "Invalidation"})
     public void testInvalidationsTriggeredWhenChromeIsInForeground() {
-        assertTrue(isActivityResumed());
         assertTrue(mController.shouldNotifyInvalidation(new Bundle()));
     }
 
@@ -95,7 +96,7 @@ public class DelayedInvalidationsControllerTest extends ChromeShellTestBase {
     @Feature({"Sync", "Invalidation"})
     public void testInvalidationsReceivedWhenChromeIsInBackgroundIsDelayed()
             throws InterruptedException {
-        sendChromeToBackground(getActivity());
+        setApplicationState(ActivityState.STOPPED);
         assertFalse(mController.shouldNotifyInvalidation(new Bundle()));
     }
 
@@ -103,8 +104,8 @@ public class DelayedInvalidationsControllerTest extends ChromeShellTestBase {
     @Feature({"Sync", "Invalidation"})
     public void testOnlySpecificInvalidationsTriggeredOnResume() throws InterruptedException {
         // First make sure there are no pending invalidations.
-        mController.clearPendingInvalidations(getActivity());
-        assertFalse(mController.notifyPendingInvalidations(getActivity()));
+        mController.clearPendingInvalidations(mContext);
+        assertFalse(mController.notifyPendingInvalidations(mContext));
         assertFalse(mController.mInvalidated);
 
         // Create some invalidations.
@@ -114,15 +115,15 @@ public class DelayedInvalidationsControllerTest extends ChromeShellTestBase {
                 new PendingInvalidation(OBJECT_ID_2, OBJECT_SRC_2, VERSION_2, PAYLOAD_2);
 
         // Can't invalidate while Chrome is in the background.
-        sendChromeToBackground(getActivity());
+        setApplicationState(ActivityState.STOPPED);
         assertFalse(mController.shouldNotifyInvalidation(new Bundle()));
 
         // Add multiple pending invalidations.
-        mController.addPendingInvalidation(getActivity(), TEST_ACCOUNT, firstInv);
-        mController.addPendingInvalidation(getActivity(), TEST_ACCOUNT, secondInv);
+        mController.addPendingInvalidation(mContext, TEST_ACCOUNT, firstInv);
+        mController.addPendingInvalidation(mContext, TEST_ACCOUNT, secondInv);
 
         // Make sure there are pending invalidations.
-        assertTrue(mController.notifyPendingInvalidations(getActivity()));
+        assertTrue(mController.notifyPendingInvalidations(mContext));
         assertTrue(mController.mInvalidated);
 
         // Ensure only specific invalidations are being notified.
@@ -137,8 +138,8 @@ public class DelayedInvalidationsControllerTest extends ChromeShellTestBase {
     @Feature({"Sync", "Invalidation"})
     public void testAllInvalidationsTriggeredOnResume() throws InterruptedException {
         // First make sure there are no pending invalidations.
-        mController.clearPendingInvalidations(getActivity());
-        assertFalse(mController.notifyPendingInvalidations(getActivity()));
+        mController.clearPendingInvalidations(mContext);
+        assertFalse(mController.notifyPendingInvalidations(mContext));
         assertFalse(mController.mInvalidated);
 
         // Create some invalidations.
@@ -150,39 +151,20 @@ public class DelayedInvalidationsControllerTest extends ChromeShellTestBase {
         assertEquals(allInvalidations.mObjectSource, 0);
 
         // Can't invalidate while Chrome is in the background.
-        sendChromeToBackground(getActivity());
+        setApplicationState(ActivityState.STOPPED);
         assertFalse(mController.shouldNotifyInvalidation(new Bundle()));
 
         // Add multiple pending invalidations.
-        mController.addPendingInvalidation(getActivity(), TEST_ACCOUNT, firstInv);
-        mController.addPendingInvalidation(getActivity(), TEST_ACCOUNT, allInvalidations);
-        mController.addPendingInvalidation(getActivity(), TEST_ACCOUNT, secondInv);
+        mController.addPendingInvalidation(mContext, TEST_ACCOUNT, firstInv);
+        mController.addPendingInvalidation(mContext, TEST_ACCOUNT, allInvalidations);
+        mController.addPendingInvalidation(mContext, TEST_ACCOUNT, secondInv);
 
         // Make sure there are pending invalidations.
-        assertTrue(mController.notifyPendingInvalidations(getActivity()));
+        assertTrue(mController.notifyPendingInvalidations(mContext));
         assertTrue(mController.mInvalidated);
 
         // As Invalidation for all ids has been received, it will supersede all other invalidations.
         assertEquals(1, mController.mBundles.size());
         assertEquals(allInvalidations, new PendingInvalidation(mController.mBundles.get(0)));
-    }
-
-    @VisibleForTesting
-    static void sendChromeToBackground(Activity activity) throws InterruptedException {
-        Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_HOME);
-        activity.startActivity(intent);
-
-        assertTrue(
-                "Activity should have been resumed", CriteriaHelper.pollForCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return !isActivityResumed();
-                    }
-                }, WAIT_FOR_LAUNCHER_MS, POLL_INTERVAL_MS));
-    }
-
-    private static boolean isActivityResumed() {
-        return ApplicationStatus.hasVisibleActivities();
     }
 }
