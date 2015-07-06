@@ -32,8 +32,8 @@
     [Custom=Getter] readonly attribute any detail;
 
     // FIXME: initCustomEvent()'s arguments should not be optional.
-    [Custom] void initCustomEvent([Default=Undefined] optional DOMString typeArg,
-                                  [Default=Undefined] optional boolean canBubbleArg,
-                                  [Default=Undefined] optional boolean cancelableArg,
-                                  [Default=Undefined] optional any detailArg);
+    [Custom, Measure] void initCustomEvent([Default=Undefined] optional DOMString type,
+                                           [Default=Undefined] optional boolean bubbles,
+                                           [Default=Undefined] optional boolean cancelable,
+                                           [Default=Undefined] optional any detail);
 };

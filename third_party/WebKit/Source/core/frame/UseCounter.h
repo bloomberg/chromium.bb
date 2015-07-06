@@ -760,6 +760,17 @@ public:
         InnerTextWithShadowTree = 860,
         SelectionToStringWithShadowTree = 861,
         WindowFindWithShadowTree = 862,
+        V8CompositionEvent_InitCompositionEvent_Method = 863,
+        V8CustomEvent_InitCustomEvent_Method = 864,
+        V8DeviceMotionEvent_InitDeviceMotionEvent_Method = 865,
+        V8DeviceOrientationEvent_InitDeviceOrientationEvent_Method = 866,
+        V8Event_InitEvent_Method = 867,
+        V8KeyboardEvent_InitKeyboardEvent_Method = 868,
+        V8MouseEvent_InitMouseEvent_Method = 869,
+        V8MutationEvent_InitMutationEvent_Method = 870,
+        V8StorageEvent_InitStorageEvent_Method = 871,
+        V8TouchEvent_InitTouchEvent_Method = 872,
+        V8UIEvent_InitUIEvent_Method = 873,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

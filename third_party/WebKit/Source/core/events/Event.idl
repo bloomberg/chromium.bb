@@ -48,9 +48,9 @@
     readonly attribute DOMTimeStamp timeStamp;
 
     // FIXME: initEvent()'s arguments should not be optional.
-    void initEvent([Default=Undefined] optional DOMString eventTypeArg,
-                   [Default=Undefined] optional boolean canBubbleArg,
-                   [Default=Undefined] optional boolean cancelableArg);
+    [Measure] void initEvent([Default=Undefined] optional DOMString type,
+                             [Default=Undefined] optional boolean bubbles,
+                             [Default=Undefined] optional boolean cancelable);
 
     // Shadow DOM
     // https://w3c.github.io/webcomponents/spec/shadow/#extensions-to-event-interface
