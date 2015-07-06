@@ -14,6 +14,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/presentation/presentation_session_client.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/modules/presentation/WebPresentationAvailabilityObserver.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationController.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationError.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -80,7 +81,9 @@ namespace content {
 PresentationDispatcher::PresentationDispatcher(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
       controller_(nullptr),
-      binding_(this) {
+      binding_(this),
+      listening_state_(ListeningState::Inactive),
+      last_known_availability_(false) {
 }
 
 PresentationDispatcher::~PresentationDispatcher() {
@@ -290,6 +293,31 @@ void PresentationDispatcher::closeSession(
       presentationId.utf8());
 }
 
+void PresentationDispatcher::getAvailability(
+    const blink::WebString& presentationUrl,
+    blink::WebPresentationAvailabilityCallbacks* callbacks) {
+  if (listening_state_ == ListeningState::Active) {
+    callbacks->onSuccess(new bool(last_known_availability_));
+    delete callbacks;
+    return;
+  }
+
+  availability_callbacks_.Add(callbacks);
+  UpdateListeningState();
+}
+
+void PresentationDispatcher::startListening(
+    blink::WebPresentationAvailabilityObserver* observer) {
+    availability_observers_.insert(observer);
+    UpdateListeningState();
+}
+
+void PresentationDispatcher::stopListening(
+    blink::WebPresentationAvailabilityObserver* observer) {
+    availability_observers_.erase(observer);
+    UpdateListeningState();
+}
+
 void PresentationDispatcher::DidChangeDefaultPresentation() {
   GURL presentation_url(GetPresentationURLFromFrame(render_frame()));
 
@@ -312,8 +340,21 @@ void PresentationDispatcher::DidCommitProvisionalLoad(
 }
 
 void PresentationDispatcher::OnScreenAvailabilityUpdated(bool available) {
-  if (controller_)
-    controller_->didChangeAvailability(available);
+  last_known_availability_ = available;
+
+  if (listening_state_ == ListeningState::Waiting)
+    listening_state_ = ListeningState::Active;
+
+  for (auto observer : availability_observers_)
+    observer->availabilityChanged(available);
+
+  for (AvailabilityCallbacksMap::iterator iter(&availability_callbacks_);
+       !iter.IsAtEnd(); iter.Advance()) {
+    iter.GetCurrentValue()->onSuccess(new bool(available));
+  }
+  availability_callbacks_.Clear();
+
+  UpdateListeningState();
 }
 
 void PresentationDispatcher::OnDefaultSessionStarted(
@@ -410,6 +451,24 @@ void PresentationDispatcher::ConnectToPresentationServiceIfNeeded() {
   // presentation_service_->ListenForSessionStateChange(base::Bind(
   //     &PresentationDispatcher::OnSessionStateChange,
   //     base::Unretained(this)));
+}
+
+void PresentationDispatcher::UpdateListeningState() {
+  bool should_listen = !availability_callbacks_.IsEmpty() ||
+                       !availability_observers_.empty();
+  bool is_listening = listening_state_ != ListeningState::Inactive;
+
+  if (should_listen == is_listening)
+    return;
+
+  ConnectToPresentationServiceIfNeeded();
+  if (should_listen) {
+    listening_state_ = ListeningState::Waiting;
+    presentation_service_->ListenForScreenAvailability();
+  } else {
+    listening_state_ = ListeningState::Inactive;
+    presentation_service_->StopListeningForScreenAvailability();
+  }
 }
 
 }  // namespace content
