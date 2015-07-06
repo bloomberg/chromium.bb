@@ -11,18 +11,6 @@
         android:key="os_version"
         android:title="@string/os_version_title" />
     <Preference
-        android:key="webkit_version"
-        android:title="@string/blink_version_title" />
-    <Preference
-        android:key="javascript_version"
-        android:title="@string/javascript_version_title" />
-    <Preference
-        android:key="executable_path"
-        android:title="@string/executable_path_title" />
-    <Preference
-        android:key="profile_path"
-        android:title="@string/profile_path_title" />
-    <Preference
         android:fragment="org.chromium.chrome.browser.preferences.LegalInformationPreferences"
         android:key="legal_information"
         android:title="@string/legal_information_title" />

@@ -750,18 +750,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_OS_VERSION_TITLE" desc="Title for operating system version">
         Operating system
       </message>
-      <message name="IDS_BLINK_VERSION_TITLE" desc="Title for the version of the Blink rendering engine">
-        Blink version
-      </message>
-      <message name="IDS_JAVASCRIPT_VERSION_TITLE" desc="Title for JavaScript version">
-        JavaScript version
-      </message>
-      <message name="IDS_EXECUTABLE_PATH_TITLE" desc="Title for the path to the Chrome executable">
-        Executable path
-      </message>
-      <message name="IDS_PROFILE_PATH_TITLE" desc="Title for the path where Chrome stores profile data">
-        Profile path
-      </message>
       <message name="IDS_DEPRECATION_WARNING" desc="Warning about Chrome updates no longer being supported">
         Chrome updates are no longer supported for this version of Android.
       </message>

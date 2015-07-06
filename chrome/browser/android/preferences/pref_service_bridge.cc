@@ -36,7 +36,6 @@
 #include "components/translate/core/common/translate_pref_names.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/user_agent.h"
 #include "jni/PrefServiceBridge_jni.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -124,23 +123,6 @@ bool IsContentSettingUserModifiable(ContentSettingsType content_settings_type) {
   HostContentSettingsMap::ProviderType provider =
       content_settings->GetProviderTypeFromSource(source);
   return provider >= HostContentSettingsMap::PREF_PROVIDER;
-}
-
-void OnGotProfilePath(ScopedJavaGlobalRef<jobject>* callback,
-                      std::string path) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> j_path = ConvertUTF8ToJavaString(env, path);
-  Java_PrefServiceBridge_onGotProfilePath(env, j_path.obj(), callback->obj());
-}
-
-std::string GetProfilePathOnFileThread(Profile* profile) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  if (!profile)
-    return std::string();
-
-  base::FilePath profile_path = profile->GetPath();
-  return base::MakeAbsoluteFilePath(profile_path).value();
 }
 
 PrefService* GetPrefService() {
@@ -803,19 +785,7 @@ static jobject GetAboutVersionStrings(JNIEnv* env, jobject obj) {
   return Java_PrefServiceBridge_createAboutVersionStrings(
       env,
       ConvertUTF8ToJavaString(env, application).obj(),
-      ConvertUTF8ToJavaString(env, content::GetWebKitVersion()).obj(),
-      ConvertUTF8ToJavaString(
-          env, AndroidAboutAppInfo::GetJavaScriptVersion()).obj(),
       ConvertUTF8ToJavaString(env, os_version).obj()).Release();
-}
-
-static void GetProfilePath(JNIEnv* env, jobject obj, jobject j_callback) {
-  ScopedJavaGlobalRef<jobject>* callback = new ScopedJavaGlobalRef<jobject>();
-  callback->Reset(env, j_callback);
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&GetProfilePathOnFileThread, GetOriginalProfile()),
-      base::Bind(&OnGotProfilePath, base::Owned(callback)));
 }
 
 static jstring GetSupervisedUserCustodianName(JNIEnv* env, jobject obj) {

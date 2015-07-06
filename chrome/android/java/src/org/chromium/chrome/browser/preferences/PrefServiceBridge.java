@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.preference.PreferenceManager;
-import android.text.TextUtils;
 import android.util.Log;
 
 import org.chromium.base.CalledByNative;
@@ -45,8 +44,6 @@ public final class PrefServiceBridge {
     private static final String MIGRATION_PREF_KEY = "PrefMigrationVersion";
     private static final int MIGRATION_CURRENT_VERSION = 3;
 
-    private static String sProfilePath;
-
     private static final String HTTPS_SCHEME = "https";
 
     // Object to notify when "clear browsing data" completes.
@@ -66,15 +63,10 @@ public final class PrefServiceBridge {
      */
     public static class AboutVersionStrings {
         private final String mApplicationVersion;
-        private final String mWebkitVersion;
-        private final String mJavascriptVersion;
         private final String mOSVersion;
 
-        private AboutVersionStrings(String applicationVersion, String webkitVersion,
-                String javascriptVersion, String osVersion) {
+        private AboutVersionStrings(String applicationVersion, String osVersion) {
             mApplicationVersion = applicationVersion;
-            mWebkitVersion = webkitVersion;
-            mJavascriptVersion = javascriptVersion;
             mOSVersion = osVersion;
         }
 
@@ -82,35 +74,15 @@ public final class PrefServiceBridge {
             return mApplicationVersion;
         }
 
-        public String getWebkitVersion() {
-            return mWebkitVersion;
-        }
-
-        public String getJavascriptVersion() {
-            return mJavascriptVersion;
-        }
-
         public String getOSVersion() {
             return mOSVersion;
         }
     }
 
-    /**
-     * Callback to receive the profile path.
-     */
-    public interface ProfilePathCallback {
-        /**
-         * Called with the profile path, once it's available.
-         */
-        void onGotProfilePath(String profilePath);
-    }
-
     @CalledByNative
-    private static AboutVersionStrings createAboutVersionStrings(
-            String applicationVersion, String webkitVersion, String javascriptVersion,
+    private static AboutVersionStrings createAboutVersionStrings(String applicationVersion,
             String osVersion) {
-        return new AboutVersionStrings(
-                applicationVersion, webkitVersion, javascriptVersion, osVersion);
+        return new AboutVersionStrings(applicationVersion, osVersion);
     }
 
     private PrefServiceBridge() {
@@ -229,24 +201,6 @@ public final class PrefServiceBridge {
         }
 
         return locationPermission == ContentSetting.BLOCK;
-    }
-
-    /**
-     * Returns the path to the user's profile directory via a callback. The callback may be
-     * called synchronously or asynchronously.
-     */
-    public void getProfilePath(ProfilePathCallback callback) {
-        if (!TextUtils.isEmpty(sProfilePath)) {
-            callback.onGotProfilePath(sProfilePath);
-        } else {
-            nativeGetProfilePath(callback);
-        }
-    }
-
-    @CalledByNative
-    private static void onGotProfilePath(String profilePath, ProfilePathCallback callback) {
-        sProfilePath = profilePath;
-        callback.onGotProfilePath(profilePath);
     }
 
     /**
@@ -1009,7 +963,6 @@ public final class PrefServiceBridge {
     private native void nativeSetCrashReporting(boolean reporting);
     private native boolean nativeCanPredictNetworkActions();
     private native AboutVersionStrings nativeGetAboutVersionStrings();
-    private native void nativeGetProfilePath(ProfilePathCallback callback);
     private native void nativeSetContextualSearchPreference(String preference);
     private native String nativeGetContextualSearchPreference();
     private native boolean nativeGetContextualSearchPreferenceIsManaged();
