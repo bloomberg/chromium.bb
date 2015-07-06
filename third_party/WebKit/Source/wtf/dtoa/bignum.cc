@@ -759,7 +759,6 @@ namespace double_conversion {
             Chunk difference = bigits_[i] - borrow;
             bigits_[i] = difference & kBigitMask;
             borrow = difference >> (kChunkSize - 1);
-            ++i;
         }
         Clamp();
     }
