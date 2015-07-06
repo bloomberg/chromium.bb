@@ -49,6 +49,11 @@ void PresentationController::provideTo(LocalFrame& frame, WebPresentationClient*
     WillBeHeapSupplement<LocalFrame>::provideTo(frame, PresentationController::supplementName(), PresentationController::create(frame, client));
 }
 
+WebPresentationClient* PresentationController::client()
+{
+    return m_client;
+}
+
 DEFINE_TRACE(PresentationController)
 {
     visitor->trace(m_presentation);
@@ -58,21 +63,11 @@ DEFINE_TRACE(PresentationController)
 
 void PresentationController::didChangeAvailability(bool available)
 {
-    if (m_presentation)
-        m_presentation->didChangeAvailability(available);
 }
 
 bool PresentationController::isAvailableChangeWatched() const
 {
-    if (!m_presentation)
-        return false;
-    return m_presentation->isAvailableChangeWatched();
-}
-
-void PresentationController::updateAvailableChangeWatched(bool watched)
-{
-    if (m_client)
-        m_client->updateAvailableChangeWatched(watched);
+    return false;
 }
 
 void PresentationController::didStartDefaultSession(WebPresentationSessionClient* sessionClient)
@@ -146,6 +141,13 @@ void PresentationController::closeSession(const String& url, const String& prese
     if (!m_client)
         return;
     m_client->closeSession(url, presentationId);
+}
+
+void PresentationController::getAvailability(const String& presentationUrl, WebPresentationAvailabilityCallbacks* callbacks)
+{
+    if (!m_client)
+        return;
+    m_client->getAvailability(presentationUrl, callbacks);
 }
 
 void PresentationController::setPresentation(Presentation* presentation)

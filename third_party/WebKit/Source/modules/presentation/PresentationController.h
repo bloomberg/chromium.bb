@@ -16,6 +16,7 @@
 namespace blink {
 
 class LocalFrame;
+class WebPresentationAvailabilityCallback;
 class WebPresentationSessionClient;
 enum class WebPresentationSessionState;
 
@@ -38,6 +39,8 @@ public:
 
     static void provideTo(LocalFrame&, WebPresentationClient*);
 
+    WebPresentationClient* client();
+
     // Implementation of HeapSupplement.
     DECLARE_VIRTUAL_TRACE();
 
@@ -47,10 +50,6 @@ public:
     virtual void didStartDefaultSession(WebPresentationSessionClient*) override;
     virtual void didChangeSessionState(WebPresentationSessionClient*, WebPresentationSessionState) override;
     virtual void didReceiveSessionTextMessage(WebPresentationSessionClient*, const WebString&) override;
-
-    // Called when the first listener was added to or the last listener was removed from the
-    // |availablechange| event.
-    void updateAvailableChangeWatched(bool watched);
 
     // Called when the frame wants to start a new presentation.
     void startSession(const String& presentationUrl, const String& presentationId, WebPresentationSessionClientCallbacks*);
@@ -69,6 +68,9 @@ public:
 
     // Called when the frame wants to close an existing presentation.
     void closeSession(const String& url, const String& presentationId);
+
+    // Called when the frame wants to know the availability of a device to present.
+    void getAvailability(const String& presentationUrl, WebPresentationAvailabilityCallbacks*);
 
     // Connects the |Presentation| object with this controller.
     void setPresentation(Presentation*);

@@ -5,6 +5,7 @@
 #include "config.h"
 #include "modules/presentation/Presentation.h"
 
+#include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -13,8 +14,8 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalFrame.h"
 #include "modules/EventTargetModules.h"
-#include "modules/presentation/AvailableChangeEvent.h"
 #include "modules/presentation/DefaultSessionStartEvent.h"
+#include "modules/presentation/PresentationAvailabilityCallback.h"
 #include "modules/presentation/PresentationController.h"
 #include "modules/presentation/PresentationSessionClientCallbacks.h"
 #include "public/platform/modules/presentation/WebPresentationSessionClient.h"
@@ -95,56 +96,19 @@ ScriptPromise Presentation::joinSession(ScriptState* state, const String& presen
     return promise;
 }
 
-bool Presentation::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
+ScriptPromise Presentation::getAvailability(ScriptState* state, const String& presentationUrl)
 {
-    bool hadEventListeners = hasEventListeners(EventTypeNames::availablechange);
-    if (!RefCountedGarbageCollectedEventTargetWithInlineData<Presentation>::addEventListener(eventType, listener, useCapture))
-        return false;
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(state);
+    ScriptPromise promise = resolver->promise();
 
-    if (hasEventListeners(EventTypeNames::availablechange) && !hadEventListeners) {
-        PresentationController* controller = presentationController();
-        if (controller)
-            controller->updateAvailableChangeWatched(true);
+    PresentationController* controller = presentationController();
+    if (!controller) {
+        resolver->reject(DOMException::create(InvalidStateError, "The object is no longer attached to the frame."));
+        return promise;
     }
+    controller->getAvailability(presentationUrl, new PresentationAvailabilityCallback(resolver));
 
-    return true;
-}
-
-bool Presentation::removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
-{
-    bool hadEventListeners = hasEventListeners(EventTypeNames::availablechange);
-    if (!RefCountedGarbageCollectedEventTargetWithInlineData<Presentation>::removeEventListener(eventType, listener, useCapture))
-        return false;
-
-    if (hadEventListeners && !hasEventListeners(EventTypeNames::availablechange)) {
-        PresentationController* controller = presentationController();
-        if (controller)
-            controller->updateAvailableChangeWatched(false);
-    }
-
-    return true;
-}
-
-void Presentation::removeAllEventListeners()
-{
-    bool hadEventListeners = hasEventListeners(EventTypeNames::availablechange);
-    RefCountedGarbageCollectedEventTargetWithInlineData<Presentation>::removeAllEventListeners();
-
-    if (hadEventListeners) {
-        PresentationController* controller = presentationController();
-        if (controller)
-            controller->updateAvailableChangeWatched(false);
-    }
-}
-
-void Presentation::didChangeAvailability(bool available)
-{
-    dispatchEvent(AvailableChangeEvent::create(EventTypeNames::availablechange, available));
-}
-
-bool Presentation::isAvailableChangeWatched() const
-{
-    return hasEventListeners(EventTypeNames::availablechange);
+    return promise;
 }
 
 void Presentation::didStartDefaultSession(PresentationSession* session)

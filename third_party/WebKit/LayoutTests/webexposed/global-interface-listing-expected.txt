@@ -245,9 +245,6 @@ interface AudioTrackList
 interface AutocompleteErrorEvent
     getter reason
     method constructor
-interface AvailableChangeEvent
-    getter available
-    method constructor
 interface BarProp
     getter visible
     method constructor
@@ -3602,14 +3599,18 @@ interface PopStateEvent
     getter state
     method constructor
 interface Presentation
-    getter onavailablechange
     getter ondefaultsessionstart
     getter session
     method constructor
+    method getAvailability
     method joinSession
     method startSession
-    setter onavailablechange
     setter ondefaultsessionstart
+interface PresentationAvailability
+    getter onchange
+    getter value
+    method constructor
+    setter onchange
 interface PresentationSession
     getter id
     getter onmessage

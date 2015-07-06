@@ -23,6 +23,7 @@ modules/netinfo/NetworkInformation
 modules/notifications/Notification
 modules/permissions/PermissionStatus
 modules/presentation/Presentation
+modules/presentation/PresentationAvailability
 modules/presentation/PresentationSession
 modules/screen_orientation/ScreenOrientation
 modules/serviceworkers/ServiceWorker

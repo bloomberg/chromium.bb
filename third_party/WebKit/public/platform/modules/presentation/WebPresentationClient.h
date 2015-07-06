@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class WebPresentationAvailabilityObserver;
 class WebPresentationController;
 class WebPresentationSessionClient;
 class WebString;
@@ -19,6 +20,9 @@ struct WebPresentationError;
 // presentation session created by the embedder. Otherwise, onError() is invoked with the error code
 // and message.
 using WebPresentationSessionClientCallbacks = WebCallbacks<WebPresentationSessionClient, WebPresentationError>;
+
+// Callback for .getAvailability().
+using WebPresentationAvailabilityCallbacks = WebCallbacks<bool, void>;
 
 // The implementation the embedder has to provide for the Presentation API to work.
 class WebPresentationClient {
@@ -53,6 +57,26 @@ public:
 
     // Called when the frame requests to close an existing session.
     virtual void closeSession(const WebString& url, const WebString& presentationId) = 0;
+
+    // Called when the frame wants to know the availability of a presentation
+    // display.
+    // The ownership of the |callbacks| argument is transferred to the embedder.
+    virtual void getAvailability(const WebString& url, WebPresentationAvailabilityCallbacks* callbacks)
+    {
+        // TODO(mlamouri): remove when implemented in Chromium.
+        bool* result = new bool(false);
+        callbacks->onSuccess(result);
+        delete callbacks;
+    }
+
+    // Start listening to changes in presentation displays availability. The
+    // observer will be notified in case of a change. The observer is
+    // respensible to call stopListening() before being destroyed.
+    virtual void startListening(WebPresentationAvailabilityObserver*) {}
+
+    // Stop listening to changes in presentation displays availability. The
+    // observer will no longer be notified in case of a change.
+    virtual void stopListening(WebPresentationAvailabilityObserver*) {}
 };
 
 } // namespace blink

@@ -13,6 +13,7 @@
     [CallWith=ScriptState] Promise<PresentationSession> startSession(DOMString presentationUrl, [Default=Undefined] optional DOMString presentationId);
     [CallWith=ScriptState] Promise<PresentationSession> joinSession(DOMString presentationUrl, [Default=Undefined] optional DOMString presentationId);
 
-    attribute EventHandler onavailablechange;
     attribute EventHandler ondefaultsessionstart;
+
+    [CallWith=ScriptState] Promise<PresentationAvailability> getAvailability(DOMString presentationUrl);
 };
