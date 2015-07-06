@@ -132,8 +132,7 @@ public:
                     rootRelativeBounds = paintLayer.physicalBoundingBoxIncludingReflectionAndStackingChildren(paintingInfo.rootLayer, offsetFromRoot);
                     rootRelativeBoundsComputed = true;
                 }
-                m_clipPathRecorder = adoptPtr(new ClipPathRecorder(*context, *paintLayer.layoutObject(),
-                    clipPath->path(rootRelativeBounds)));
+                m_clipPathRecorder.emplace(*context, *paintLayer.layoutObject(), clipPath->path(rootRelativeBounds));
             }
         } else if (style.clipPath()->type() == ClipPathOperation::REFERENCE) {
             ReferenceClipPathOperation* referenceClipPathOperation = toReferenceClipPathOperation(style.clipPath());
@@ -163,7 +162,7 @@ public:
     }
 private:
     LayoutSVGResourceClipper* m_resourceClipper;
-    OwnPtr<ClipPathRecorder> m_clipPathRecorder;
+    Optional<ClipPathRecorder> m_clipPathRecorder;
     SVGClipPainter::ClipperState m_clipperState;
     const DeprecatedPaintLayer& m_paintLayer;
     GraphicsContext* m_context;
@@ -500,7 +499,7 @@ void DeprecatedPaintLayerPainter::paintFragmentWithPhase(PaintPhase phase, const
     }
 
     PaintInfo paintInfo(context, pixelSnappedIntRect(clipRect.rect()), phase, paintBehavior, paintingRootForLayoutObject, 0, paintingInfo.rootLayer->layoutObject());
-    OwnPtr<ScrollRecorder> scrollRecorder;
+    Optional<ScrollRecorder> scrollRecorder;
     LayoutPoint paintOffset = toPoint(fragment.layerBounds.location() - m_paintLayer.layoutBoxLocation());
     if (!paintingInfo.scrollOffsetAccumulation.isZero()) {
         // As a descendant of the root layer, m_paintLayer's painting is not controlled by the ScrollRecorders
@@ -509,7 +508,7 @@ void DeprecatedPaintLayerPainter::paintFragmentWithPhase(PaintPhase phase, const
         // layer, to get the same result as ScrollRecorder in BlockPainter.
         paintOffset += paintingInfo.scrollOffsetAccumulation;
         paintInfo.rect.move(paintingInfo.scrollOffsetAccumulation);
-        scrollRecorder = adoptPtr(new ScrollRecorder(*paintInfo.context, *m_paintLayer.layoutObject(), paintInfo.phase, paintingInfo.scrollOffsetAccumulation));
+        scrollRecorder.emplace(*paintInfo.context, *m_paintLayer.layoutObject(), paintInfo.phase, paintingInfo.scrollOffsetAccumulation);
     }
     m_paintLayer.layoutObject()->paint(paintInfo, paintOffset);
 }
