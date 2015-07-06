@@ -16,7 +16,6 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:background="#4FC3F7"
-        android:src="@drawable/tabs_moved_nexus"
         android:contentDescription="@null" />
 
     <TextView
