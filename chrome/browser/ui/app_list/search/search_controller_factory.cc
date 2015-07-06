@@ -48,9 +48,10 @@ const char kSuggestionsProviderFieldTrialEnabledPrefix[] = "Enabled";
 // Returns whether the user is part of a group where the Suggestions provider is
 // enabled.
 bool IsSuggestionsSearchProviderEnabled() {
-  return base::StartsWithASCII(
+  return base::StartsWith(
       base::FieldTrialList::FindFullName(kSuggestionsProviderFieldTrialName),
-      kSuggestionsProviderFieldTrialEnabledPrefix, true);
+      kSuggestionsProviderFieldTrialEnabledPrefix,
+      base::CompareCase::SENSITIVE);
 }
 
 }  // namespace

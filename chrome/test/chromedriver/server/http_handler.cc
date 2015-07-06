@@ -580,7 +580,7 @@ void HttpHandler::Handle(const net::HttpServerRequestInfo& request,
     return;
 
   std::string path = request.path;
-  if (!base::StartsWithASCII(path, url_base_, true)) {
+  if (!base::StartsWith(path, url_base_, base::CompareCase::SENSITIVE)) {
     scoped_ptr<net::HttpServerResponseInfo> response(
         new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));
     response->SetBody("unhandled request", "text/plain");

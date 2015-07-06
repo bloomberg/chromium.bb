@@ -246,11 +246,11 @@ class AutofillTest : public InProcessBrowserTest {
     base::SplitString(data, '\n', &lines);
     int parsed_profiles = 0;
     for (size_t i = 0; i < lines.size(); ++i) {
-      if (base::StartsWithASCII(lines[i], "#", false))
+      if (base::StartsWith(lines[i], "#", base::CompareCase::SENSITIVE))
         continue;
 
-      std::vector<std::string> fields;
-      base::SplitString(lines[i], '|', &fields);
+      std::vector<std::string> fields = base::SplitString(
+          lines[i], "|", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       if (fields.empty())
         continue;  // Blank line.
 

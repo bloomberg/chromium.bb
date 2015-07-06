@@ -367,10 +367,10 @@ bool ChromeExtensionsClient::IsBlacklistUpdateURL(const GURL& url) const {
   // ExtensionUpdater ensures that we notice a change. This is the full URL
   // of a blacklist:
   // http://www.gstatic.com/chrome/extensions/blacklist/l_0_0_0_7.txt
-  return base::StartsWithASCII(url.spec(), kExtensionBlocklistUrlPrefix,
-                               true) ||
-         base::StartsWithASCII(url.spec(), kExtensionBlocklistHttpsUrlPrefix,
-                               true);
+  return base::StartsWith(url.spec(), kExtensionBlocklistUrlPrefix,
+                          base::CompareCase::SENSITIVE) ||
+         base::StartsWith(url.spec(), kExtensionBlocklistHttpsUrlPrefix,
+                          base::CompareCase::SENSITIVE);
 }
 
 std::set<base::FilePath> ChromeExtensionsClient::GetBrowserImagePaths(

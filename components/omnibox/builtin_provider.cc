@@ -42,9 +42,11 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
   const int kUrl = ACMatchClassification::URL;
   const int kMatch = kUrl | ACMatchClassification::MATCH;
 
-  base::string16 text = input.text();
-  bool starting_about = base::StartsWith(embedderAbout, text, false);
-  if (starting_about || base::StartsWith(kAbout, text, false)) {
+  const base::string16 text = input.text();
+  bool starting_about = base::StartsWith(embedderAbout, text,
+                                         base::CompareCase::INSENSITIVE_ASCII);
+  if (starting_about ||
+      base::StartsWith(kAbout, text, base::CompareCase::INSENSITIVE_ASCII)) {
     ACMatchClassifications styles;
     // Highlight the input portion matching |embedderAbout|; or if the user has
     // input "about:" (with optional slashes), highlight the whole
@@ -70,10 +72,12 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
       const base::string16 blank_host = base::ASCIIToUTF16("blank");
       const base::string16 host = base::UTF8ToUTF16(url.host());
       if (base::StartsWith(text, base::ASCIIToUTF16(url::kAboutScheme),
-                           false) &&
-          base::StartsWith(blank_host, host, false) &&
+                           base::CompareCase::INSENSITIVE_ASCII) &&
+          base::StartsWith(blank_host, host,
+                           base::CompareCase::INSENSITIVE_ASCII) &&
           (url.path().length() <= 1) &&
-          !base::EndsWith(text, base::ASCIIToUTF16("/"), false)) {
+          !base::EndsWith(text, base::ASCIIToUTF16("/"),
+                          base::CompareCase::SENSITIVE)) {
         ACMatchClassifications styles;
         styles.push_back(ACMatchClassification(0, kMatch));
         base::string16 match = base::ASCIIToUTF16(url::kAboutBlankURL);
@@ -90,7 +94,8 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
       size_t match_length = embedderAbout.length() + host_and_path.length();
       for (Builtins::const_iterator i(builtins_.begin());
           (i != builtins_.end()) && (matches_.size() < kMaxMatches); ++i) {
-        if (base::StartsWith(*i, host_and_path, false)) {
+        if (base::StartsWith(*i, host_and_path,
+                             base::CompareCase::INSENSITIVE_ASCII)) {
           ACMatchClassifications styles;
           // Highlight |embedderAbout|, even for input "about:foo".
           styles.push_back(ACMatchClassification(0, kMatch));

@@ -103,9 +103,9 @@ bool IsOrganic(const std::string& brand) {
   if (found != end)
     return true;
 
-  return base::StartsWithASCII(brand, "EUB", true) ||
-         base::StartsWithASCII(brand, "EUC", true) ||
-         base::StartsWithASCII(brand, "GGR", true);
+  return base::StartsWith(brand, "EUB", base::CompareCase::SENSITIVE) ||
+         base::StartsWith(brand, "EUC", base::CompareCase::SENSITIVE) ||
+         base::StartsWith(brand, "GGR", base::CompareCase::SENSITIVE);
 }
 
 bool IsOrganicFirstRun(const std::string& brand) {
@@ -117,8 +117,8 @@ bool IsOrganicFirstRun(const std::string& brand) {
   }
 #endif
 
-  return base::StartsWithASCII(brand, "GG", true) ||
-         base::StartsWithASCII(brand, "EU", true);
+  return base::StartsWith(brand, "GG", base::CompareCase::SENSITIVE) ||
+         base::StartsWith(brand, "EU", base::CompareCase::SENSITIVE);
 }
 
 bool IsInternetCafeBrandCode(const std::string& brand) {

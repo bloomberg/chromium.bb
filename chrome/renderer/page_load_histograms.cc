@@ -179,16 +179,21 @@ bool ViaHeaderContains(WebFrame* frame, const std::string& via_value) {
 // purposes.
 // TODO(pmeenan): Remove the fuzzy logic when the referrer is reliable
 bool IsFromGoogleSearchResult(const GURL& url, const GURL& referrer) {
-  if (!base::StartsWithASCII(referrer.host(), "www.google.", true))
+  if (!base::StartsWith(referrer.host(), "www.google.",
+                        base::CompareCase::SENSITIVE))
     return false;
-  if (base::StartsWithASCII(referrer.path(), "/url", true))
+  if (base::StartsWith(referrer.path(), "/url",
+                       base::CompareCase::SENSITIVE))
     return true;
   bool is_possible_search_referrer =
       referrer.path().empty() || referrer.path() == "/" ||
-      base::StartsWithASCII(referrer.path(), "/search", true) ||
-      base::StartsWithASCII(referrer.path(), "/webhp", true);
+      base::StartsWith(referrer.path(), "/search",
+                       base::CompareCase::SENSITIVE) ||
+      base::StartsWith(referrer.path(), "/webhp",
+                       base::CompareCase::SENSITIVE);
   if (is_possible_search_referrer &&
-      !base::StartsWithASCII(url.host(), "www.google", true))
+      !base::StartsWith(url.host(), "www.google",
+                        base::CompareCase::SENSITIVE))
     return true;
   return false;
 }

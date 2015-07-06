@@ -67,7 +67,8 @@ bool GetEmbeddedPacScript(const std::string& pac_url, std::string* pac_script) {
   DCHECK(pac_script);
   const std::string kPacURLPrefix =
       "data:application/x-ns-proxy-autoconfig;base64,";
-  return base::StartsWithASCII(pac_url, kPacURLPrefix, true) &&
+  return base::StartsWith(pac_url, kPacURLPrefix,
+                          base::CompareCase::SENSITIVE) &&
          base::Base64Decode(pac_url.substr(kPacURLPrefix.size()), pac_script);
 }
 

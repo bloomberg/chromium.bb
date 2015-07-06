@@ -563,10 +563,13 @@ HistoryIDSet URLIndexPrivateData::HistoryIDsForTerm(
   WordIDSet word_id_set;
   if (term_length > 1) {
     // See if this term or a prefix thereof is present in the cache.
+    base::string16 term_lower = base::i18n::ToLower(term);
     SearchTermCacheMap::iterator best_prefix(search_term_cache_.end());
     for (SearchTermCacheMap::iterator cache_iter = search_term_cache_.begin();
          cache_iter != search_term_cache_.end(); ++cache_iter) {
-      if (base::StartsWith(term, cache_iter->first, false) &&
+      if (base::StartsWith(term_lower,
+                           base::i18n::ToLower(cache_iter->first),
+                           base::CompareCase::SENSITIVE) &&
           (best_prefix == search_term_cache_.end() ||
            cache_iter->first.length() > best_prefix->first.length()))
         best_prefix = cache_iter;

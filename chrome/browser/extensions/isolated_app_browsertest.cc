@@ -42,8 +42,8 @@ std::string WrapForJavascriptAndExtract(const char* javascript_expression) {
 scoped_ptr<net::test_server::HttpResponse> HandleExpectAndSetCookieRequest(
     const net::test_server::EmbeddedTestServer* test_server,
     const net::test_server::HttpRequest& request) {
-  if (!base::StartsWithASCII(request.relative_url, "/expect-and-set-cookie?",
-                             true))
+  if (!base::StartsWith(request.relative_url, "/expect-and-set-cookie?",
+                        base::CompareCase::SENSITIVE))
     return scoped_ptr<net::test_server::HttpResponse>();
 
   scoped_ptr<net::test_server::BasicHttpResponse> http_response(

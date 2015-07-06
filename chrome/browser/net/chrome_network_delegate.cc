@@ -174,7 +174,6 @@ bool CanRequestBeDeltaEncoded(const net::URLRequest* request) {
     // XML (application/xml and application/*+xml) is eligible.
     { "application/", "xml" },
   };
-  const bool kCaseSensitive = true;
 
   std::string mime_type;
   request->GetMimeType(&mime_type);
@@ -182,9 +181,11 @@ bool CanRequestBeDeltaEncoded(const net::URLRequest* request) {
   for (size_t i = 0; i < arraysize(kEligibleMasks); i++) {
     const char *prefix = kEligibleMasks[i].prefix;
     const char *suffix = kEligibleMasks[i].suffix;
-    if (prefix && !base::StartsWithASCII(mime_type, prefix, kCaseSensitive))
+    if (prefix &&
+        !base::StartsWith(mime_type, prefix, base::CompareCase::SENSITIVE))
       continue;
-    if (suffix && !base::EndsWith(mime_type, suffix, kCaseSensitive))
+    if (suffix &&
+        !base::EndsWith(mime_type, suffix, base::CompareCase::SENSITIVE))
       continue;
     return true;
   }

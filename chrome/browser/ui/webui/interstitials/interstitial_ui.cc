@@ -182,9 +182,10 @@ void InterstitialHTMLSource::StartDataRequest(
     int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
   scoped_ptr<content::InterstitialPageDelegate> interstitial_delegate;
-  if (base::StartsWithASCII(path, "ssl", true)) {
+  if (base::StartsWith(path, "ssl", base::CompareCase::SENSITIVE)) {
     interstitial_delegate.reset(CreateSSLBlockingPage(web_contents_));
-  } else if (base::StartsWithASCII(path, "safebrowsing", true)) {
+  } else if (base::StartsWith(path, "safebrowsing",
+                              base::CompareCase::SENSITIVE)) {
     interstitial_delegate.reset(CreateSafeBrowsingBlockingPage(web_contents_));
   }
 

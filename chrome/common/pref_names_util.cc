@@ -13,7 +13,8 @@ const char kWebKitFontPrefPrefix[] = "webkit.webprefs.fonts.";
 bool ParseFontNamePrefPath(const std::string& pref_path,
                            std::string* generic_family,
                            std::string* script) {
-  if (!base::StartsWithASCII(pref_path, kWebKitFontPrefPrefix, true))
+  if (!base::StartsWith(pref_path, kWebKitFontPrefPrefix,
+                        base::CompareCase::SENSITIVE))
     return false;
 
   size_t start = strlen(kWebKitFontPrefPrefix);

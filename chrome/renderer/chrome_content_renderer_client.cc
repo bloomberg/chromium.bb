@@ -1481,10 +1481,14 @@ bool ChromeContentRendererClient::AllowPepperMediaStreamAPI(
   // these APIs are public and stable.
   std::string url_host = url.host();
   if (url.SchemeIs("https") &&
-      (base::EndsWith(url_host, "talkgadget.google.com", false) ||
-       base::EndsWith(url_host, "plus.google.com", false) ||
-       base::EndsWith(url_host, "plus.sandbox.google.com", false)) &&
-      base::StartsWithASCII(url.path(), "/hangouts/", false)) {
+      (base::EndsWith(url_host, "talkgadget.google.com",
+                      base::CompareCase::INSENSITIVE_ASCII) ||
+       base::EndsWith(url_host, "plus.google.com",
+                      base::CompareCase::INSENSITIVE_ASCII) ||
+       base::EndsWith(url_host, "plus.sandbox.google.com",
+                      base::CompareCase::INSENSITIVE_ASCII)) &&
+      base::StartsWith(url.path(), "/hangouts/",
+                       base::CompareCase::INSENSITIVE_ASCII)) {
     return true;
   }
   // Allow access for tests.

@@ -53,15 +53,18 @@ base::string16 GetChromeDeviceType() {
 int GetChromeDeviceTypeResourceId() {
   const std::string board = base::SysInfo::GetLsbReleaseBoard();
   for (size_t i = 0; i < arraysize(kChromeboxBoards); ++i) {
-    if (base::StartsWithASCII(board, kChromeboxBoards[i], true))
+    if (base::StartsWith(board, kChromeboxBoards[i],
+                         base::CompareCase::SENSITIVE))
       return IDS_CHROMEBOX;
   }
   for (size_t i = 0; i < arraysize(kChromebaseBoards); ++i) {
-    if (base::StartsWithASCII(board, kChromebaseBoards[i], true))
+    if (base::StartsWith(board, kChromebaseBoards[i],
+                         base::CompareCase::SENSITIVE))
       return IDS_CHROMEBASE;
   }
   for (size_t i = 0; i < arraysize(kChromebitBoards); ++i) {
-    if (base::StartsWithASCII(board, kChromebitBoards[i], true))
+    if (base::StartsWith(board, kChromebitBoards[i],
+                         base::CompareCase::SENSITIVE))
       return IDS_CHROMEBIT;
   }
   return IDS_CHROMEBOOK;

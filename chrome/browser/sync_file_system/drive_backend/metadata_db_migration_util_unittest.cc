@@ -40,7 +40,8 @@ void VerifyNotExist(const std::string& key, leveldb::DB* db) {
 
   itr->Seek(key);
   EXPECT_TRUE(!itr->Valid() ||
-              !base::StartsWithASCII(itr->key().ToString(), key, true));
+              !base::StartsWith(itr->key().ToString(), key,
+                                base::CompareCase::SENSITIVE));
 }
 
 }  // namespace

@@ -55,7 +55,8 @@ ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
   // Return NULL if content is not text/css or it doesn't belong to extension
   // scheme.
   return (request_url.SchemeIs(extensions::kExtensionScheme) &&
-          base::StartsWithASCII(mime_type, "text/css", false))
+          base::StartsWith(mime_type, "text/css",
+                           base::CompareCase::INSENSITIVE_ASCII))
              ? new ExtensionLocalizationPeer(peer, message_sender, request_url)
              : NULL;
 }

@@ -1045,8 +1045,9 @@ TEST_F(SessionsSyncManagerTest, MergeWithLocalAndForeignTabs) {
   for (int i = 1; i < 3; i++) {
     EXPECT_TRUE(output[i].IsValid());
     const SyncData data(output[i].sync_data());
-    EXPECT_TRUE(base::StartsWithASCII(syncer::SyncDataLocal(data).GetTag(),
-                                      manager()->current_machine_tag(), true));
+    EXPECT_TRUE(base::StartsWith(syncer::SyncDataLocal(data).GetTag(),
+                                 manager()->current_machine_tag(),
+                                 base::CompareCase::SENSITIVE));
     const sync_pb::SessionSpecifics& specifics(data.GetSpecifics().session());
     EXPECT_EQ(manager()->current_machine_tag(), specifics.session_tag());
   }
@@ -1479,15 +1480,17 @@ TEST_F(SessionsSyncManagerTest, AssociateWindowsDontReloadTabs) {
   EXPECT_EQ(3U, out.size());  // Tab add, update, and header update.
 
   EXPECT_TRUE(
-      base::StartsWithASCII(syncer::SyncDataLocal(out[0].sync_data()).GetTag(),
-                            manager()->current_machine_tag(), true));
+      base::StartsWith(syncer::SyncDataLocal(out[0].sync_data()).GetTag(),
+                       manager()->current_machine_tag(),
+                       base::CompareCase::SENSITIVE));
   EXPECT_EQ(manager()->current_machine_tag(),
             out[0].sync_data().GetSpecifics().session().session_tag());
   EXPECT_EQ(SyncChange::ACTION_ADD, out[0].change_type());
 
   EXPECT_TRUE(
-      base::StartsWithASCII(syncer::SyncDataLocal(out[1].sync_data()).GetTag(),
-                            manager()->current_machine_tag(), true));
+      base::StartsWith(syncer::SyncDataLocal(out[1].sync_data()).GetTag(),
+                       manager()->current_machine_tag(),
+                       base::CompareCase::SENSITIVE));
   EXPECT_EQ(manager()->current_machine_tag(),
             out[1].sync_data().GetSpecifics().session().session_tag());
   EXPECT_TRUE(out[1].sync_data().GetSpecifics().session().has_tab());
@@ -1541,8 +1544,9 @@ TEST_F(SessionsSyncManagerTest, OnLocalTabModified) {
     SCOPED_TRACE(i);
     EXPECT_TRUE(out[i].IsValid());
     const SyncData data(out[i].sync_data());
-    EXPECT_TRUE(base::StartsWithASCII(syncer::SyncDataLocal(data).GetTag(),
-                                      manager()->current_machine_tag(), true));
+    EXPECT_TRUE(base::StartsWith(syncer::SyncDataLocal(data).GetTag(),
+                                 manager()->current_machine_tag(),
+                                 base::CompareCase::SENSITIVE));
     const sync_pb::SessionSpecifics& specifics(data.GetSpecifics().session());
     EXPECT_EQ(manager()->current_machine_tag(), specifics.session_tag());
     if (i % 6 == 0) {
@@ -1649,8 +1653,9 @@ TEST_F(SessionsSyncManagerTest, MergeLocalSessionExistingTabs) {
   for (int i = 1; i < 5; i++) {
     EXPECT_TRUE(out[i].IsValid());
     const SyncData data(out[i].sync_data());
-    EXPECT_TRUE(base::StartsWithASCII(syncer::SyncDataLocal(data).GetTag(),
-                                      manager()->current_machine_tag(), true));
+    EXPECT_TRUE(base::StartsWith(syncer::SyncDataLocal(data).GetTag(),
+                                 manager()->current_machine_tag(),
+                                 base::CompareCase::SENSITIVE));
     const sync_pb::SessionSpecifics& specifics(data.GetSpecifics().session());
     EXPECT_EQ(manager()->current_machine_tag(), specifics.session_tag());
     if (i % 2 == 1) {

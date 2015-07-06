@@ -49,8 +49,10 @@ const char kHIDBatteryPathPrefix[] = "/sys/class/power_supply/hid-";
 const char kHIDBatteryPathSuffix[] = "-battery";
 
 bool IsBluetoothHIDBattery(const std::string& path) {
-  return base::StartsWithASCII(path, kHIDBatteryPathPrefix, false) &&
-         base::EndsWith(path, kHIDBatteryPathSuffix, false);
+  return base::StartsWith(path, kHIDBatteryPathPrefix,
+                          base::CompareCase::INSENSITIVE_ASCII) &&
+         base::EndsWith(path, kHIDBatteryPathSuffix,
+                        base::CompareCase::INSENSITIVE_ASCII);
 }
 
 std::string ExtractBluetoothAddress(const std::string& path) {

@@ -39,7 +39,7 @@ std::string GetHostFromURL(const GURL& gurl) {
   if (gurl.is_empty())
     return std::string();
   std::string host = gurl.host();
-  if (base::StartsWithASCII(host, "www.", false))
+  if (base::StartsWith(host, "www.", base::CompareCase::INSENSITIVE_ASCII))
     host = host.substr(4);
   return host;
 }

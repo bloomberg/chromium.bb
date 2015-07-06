@@ -250,7 +250,7 @@ bool SupervisedUserURLFilter::HostMatchesPattern(const std::string& host,
     trimmed_host.erase(trimmed_host.length() - (registry_length + 1));
   }
 
-  if (base::StartsWithASCII(trimmed_pattern, "*.", true)) {
+  if (base::StartsWith(trimmed_pattern, "*.", base::CompareCase::SENSITIVE)) {
     trimmed_pattern.erase(0, 2);
 
     // The remaining pattern should be non-empty, and it should not contain

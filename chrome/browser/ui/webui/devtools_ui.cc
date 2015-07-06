@@ -143,7 +143,8 @@ void DevToolsDataSource::StartDataRequest(
   // Serve request from local bundle.
   std::string bundled_path_prefix(chrome::kChromeUIDevToolsBundledPath);
   bundled_path_prefix += "/";
-  if (base::StartsWithASCII(path, bundled_path_prefix, false)) {
+  if (base::StartsWith(path, bundled_path_prefix,
+                       base::CompareCase::INSENSITIVE_ASCII)) {
     StartBundledDataRequest(path.substr(bundled_path_prefix.length()),
                             render_process_id, render_frame_id, callback);
     return;
@@ -152,7 +153,8 @@ void DevToolsDataSource::StartDataRequest(
   // Serve request from remote location.
   std::string remote_path_prefix(chrome::kChromeUIDevToolsRemotePath);
   remote_path_prefix += "/";
-  if (base::StartsWithASCII(path, remote_path_prefix, false)) {
+  if (base::StartsWith(path, remote_path_prefix,
+                       base::CompareCase::INSENSITIVE_ASCII)) {
     StartRemoteDataRequest(path.substr(remote_path_prefix.length()),
                            render_process_id, render_frame_id, callback);
     return;

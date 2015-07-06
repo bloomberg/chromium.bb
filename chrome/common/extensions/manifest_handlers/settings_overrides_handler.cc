@@ -103,7 +103,7 @@ scoped_ptr<ChromeSettingsOverrides::Search_provider> ParseSearchEngine(
 // A www. prefix is not informative and thus not worth the limited real estate
 // in the permissions UI.
 std::string RemoveWwwPrefix(const std::string& url) {
-  if (base::StartsWithASCII(url, kWwwPrefix, false))
+  if (base::StartsWith(url, kWwwPrefix, base::CompareCase::INSENSITIVE_ASCII))
     return url.substr(strlen(kWwwPrefix));
   return url;
 }

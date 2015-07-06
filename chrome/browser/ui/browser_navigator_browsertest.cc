@@ -1291,9 +1291,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  EXPECT_TRUE(base::StartsWithASCII(
+  EXPECT_TRUE(base::StartsWith(
       browser()->tab_strip_model()->GetActiveWebContents()->GetURL().spec(),
-      chrome::kChromeUIBookmarksURL, true));
+      chrome::kChromeUIBookmarksURL, base::CompareCase::SENSITIVE));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,

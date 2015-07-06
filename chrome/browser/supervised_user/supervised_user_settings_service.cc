@@ -44,7 +44,8 @@ const char kSplitSettings[] = "split_settings";
 namespace {
 
 bool SettingShouldApplyToPrefs(const std::string& name) {
-  return !base::StartsWithASCII(name, kSupervisedUserInternalItemPrefix, false);
+  return !base::StartsWith(name, kSupervisedUserInternalItemPrefix,
+                           base::CompareCase::INSENSITIVE_ASCII);
 }
 
 }  // namespace

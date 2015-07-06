@@ -155,7 +155,8 @@ Status WebViewImpl::HandleReceivedEvents() {
 Status WebViewImpl::Load(const std::string& url) {
   // Javascript URLs will cause a hang while waiting for the page to stop
   // loading, so just disallow.
-  if (base::StartsWithASCII(url, "javascript:", false))
+  if (base::StartsWith(url, "javascript:",
+                       base::CompareCase::INSENSITIVE_ASCII))
     return Status(kUnknownError, "unsupported protocol");
   base::DictionaryValue params;
   params.SetString("url", url);

@@ -124,7 +124,8 @@ std::string CreateFakeExtensionName(int index) {
 }
 
 bool ExtensionNameToIndex(const std::string& name, int* index) {
-  if (!base::StartsWithASCII(name, extension_name_prefix, true) ||
+  if (!base::StartsWith(name, extension_name_prefix,
+                        base::CompareCase::SENSITIVE) ||
       !base::StringToInt(name.substr(strlen(extension_name_prefix)), index)) {
     LOG(WARNING) << "Unable to convert extension name \"" << name
                  << "\" to index";

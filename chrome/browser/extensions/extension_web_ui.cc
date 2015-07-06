@@ -285,7 +285,8 @@ bool ExtensionWebUI::HandleChromeURLOverrideReverse(
       std::string override;
       if (!(*it2)->GetAsString(&override))
         continue;
-      if (base::StartsWithASCII(url->spec(), override, true)) {
+      if (base::StartsWith(url->spec(), override,
+                           base::CompareCase::SENSITIVE)) {
         GURL original_url(content::kChromeUIScheme + std::string("://") +
                           it.key() + url->spec().substr(override.length()));
         *url = original_url;

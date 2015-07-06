@@ -243,18 +243,21 @@ TEST_F(VariationsServiceTest, GetVariationsServerURL) {
 
   std::string value;
   GURL url = VariationsService::GetVariationsServerURL(prefs, std::string());
-  EXPECT_TRUE(base::StartsWithASCII(url.spec(), default_variations_url, true));
+  EXPECT_TRUE(base::StartsWith(url.spec(), default_variations_url,
+                               base::CompareCase::SENSITIVE));
   EXPECT_FALSE(net::GetValueForKeyInQuery(url, "restrict", &value));
 
   prefs_store.SetVariationsRestrictParameterPolicyValue("restricted");
   url = VariationsService::GetVariationsServerURL(prefs, std::string());
-  EXPECT_TRUE(base::StartsWithASCII(url.spec(), default_variations_url, true));
+  EXPECT_TRUE(base::StartsWith(url.spec(), default_variations_url,
+                               base::CompareCase::SENSITIVE));
   EXPECT_TRUE(net::GetValueForKeyInQuery(url, "restrict", &value));
   EXPECT_EQ("restricted", value);
 
   // The override value should take precedence over what's in prefs.
   url = VariationsService::GetVariationsServerURL(prefs, "override");
-  EXPECT_TRUE(base::StartsWithASCII(url.spec(), default_variations_url, true));
+  EXPECT_TRUE(base::StartsWith(url.spec(), default_variations_url,
+                               base::CompareCase::SENSITIVE));
   EXPECT_TRUE(net::GetValueForKeyInQuery(url, "restrict", &value));
   EXPECT_EQ("override", value);
 }

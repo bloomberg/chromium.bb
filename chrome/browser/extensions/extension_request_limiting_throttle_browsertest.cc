@@ -27,7 +27,8 @@ scoped_ptr<net::test_server::HttpResponse> HandleRequest(
     bool set_cache_header_redirect_page,
     bool set_cache_header_test_throttle_page,
     const net::test_server::HttpRequest& request) {
-  if (base::StartsWithASCII(request.relative_url, "/redirect", true)) {
+  if (base::StartsWith(request.relative_url, "/redirect",
+                       base::CompareCase::SENSITIVE)) {
     scoped_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse());
     http_response->set_code(net::HTTP_FOUND);
@@ -39,7 +40,8 @@ scoped_ptr<net::test_server::HttpResponse> HandleRequest(
     return http_response.Pass();
   }
 
-  if (base::StartsWithASCII(request.relative_url, "/test_throttle", true)) {
+  if (base::StartsWith(request.relative_url, "/test_throttle",
+                       base::CompareCase::SENSITIVE)) {
     scoped_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse());
     http_response->set_code(net::HTTP_SERVICE_UNAVAILABLE);

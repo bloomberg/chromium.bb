@@ -72,13 +72,13 @@ size_t GetUtf8StringLength(const char* s) {
 
 std::string GetKeyFromEvent(const ui::KeyEvent& event) {
   const std::string code = event.GetCodeString();
-  if (base::StartsWithASCII(code, "Control", true))
+  if (base::StartsWith(code, "Control", base::CompareCase::SENSITIVE))
     return "Ctrl";
-  if (base::StartsWithASCII(code, "Shift", true))
+  if (base::StartsWith(code, "Shift", base::CompareCase::SENSITIVE))
     return "Shift";
-  if (base::StartsWithASCII(code, "Alt", true))
+  if (base::StartsWith(code, "Alt", base::CompareCase::SENSITIVE))
     return "Alt";
-  if (base::StartsWithASCII(code, "Arrow", true))
+  if (base::StartsWith(code, "Arrow", base::CompareCase::SENSITIVE))
     return code.substr(5);
   if (code == "Escape")
     return "Esc";

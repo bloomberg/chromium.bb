@@ -129,8 +129,9 @@ void ReportMetrics(const std::string& mime_type,
   if (!rappor_service)
     return;
 
-  if (base::StartsWithASCII(mime_type,
-                            content::kSilverlightPluginMimeTypePrefix, false)) {
+  if (base::StartsWith(mime_type,
+                       content::kSilverlightPluginMimeTypePrefix,
+                       base::CompareCase::INSENSITIVE_ASCII)) {
     rappor_service->RecordSample(
         "Plugins.SilverlightOriginUrl", rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
         net::registry_controlled_domains::GetDomainAndRegistry(

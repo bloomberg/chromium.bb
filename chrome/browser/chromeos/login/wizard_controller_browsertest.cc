@@ -383,16 +383,17 @@ class WizardControllerTestURLFetcherFactory
       const GURL& url,
       net::URLFetcher::RequestType request_type,
       net::URLFetcherDelegate* d) override {
-    if (base::StartsWithASCII(
+    if (base::StartsWith(
             url.spec(),
             SimpleGeolocationProvider::DefaultGeolocationProviderURL().spec(),
-            true)) {
+            base::CompareCase::SENSITIVE)) {
       return scoped_ptr<net::URLFetcher>(new net::FakeURLFetcher(
           url, d, std::string(kGeolocationResponseBody), net::HTTP_OK,
           net::URLRequestStatus::SUCCESS));
     }
-    if (base::StartsWithASCII(
-            url.spec(), chromeos::DefaultTimezoneProviderURL().spec(), true)) {
+    if (base::StartsWith(url.spec(),
+                         chromeos::DefaultTimezoneProviderURL().spec(),
+                         base::CompareCase::SENSITIVE)) {
       return scoped_ptr<net::URLFetcher>(new net::FakeURLFetcher(
           url, d, std::string(kTimezoneResponseBody), net::HTTP_OK,
           net::URLRequestStatus::SUCCESS));

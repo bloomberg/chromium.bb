@@ -144,7 +144,7 @@ SyncStatusCode DriveApiErrorCodeToSyncStatusCode(
 
 bool RemovePrefix(const std::string& str, const std::string& prefix,
                   std::string* out) {
-  if (!base::StartsWithASCII(str, prefix, true)) {
+  if (!base::StartsWith(str, prefix, base::CompareCase::SENSITIVE)) {
     if (out)
       *out = str;
     return false;

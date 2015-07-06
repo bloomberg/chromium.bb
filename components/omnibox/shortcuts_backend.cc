@@ -119,7 +119,8 @@ void ShortcutsBackend::AddOrUpdateShortcut(const base::string16& text,
   for (ShortcutMap::const_iterator it(
            shortcuts_map_.lower_bound(text_lowercase));
        it != shortcuts_map_.end() &&
-           base::StartsWith(it->first, text_lowercase, true);
+           base::StartsWith(it->first, text_lowercase,
+                            base::CompareCase::SENSITIVE);
        ++it) {
     if (match.destination_url == it->second.match_core.destination_url) {
       UpdateShortcut(ShortcutsDatabase::Shortcut(
@@ -286,9 +287,9 @@ bool ShortcutsBackend::DeleteShortcutsWithURL(const GURL& url,
   ShortcutsDatabase::ShortcutIDs shortcut_ids;
   for (GuidMap::iterator it(guid_map_.begin()); it != guid_map_.end(); ) {
     if (exact_match ? (it->second->second.match_core.destination_url == url)
-                    : base::StartsWithASCII(
+                    : base::StartsWith(
                           it->second->second.match_core.destination_url.spec(),
-                          url_spec, true)) {
+                          url_spec, base::CompareCase::SENSITIVE)) {
       shortcut_ids.push_back(it->first);
       shortcuts_map_.erase(it->second);
       guid_map_.erase(it++);

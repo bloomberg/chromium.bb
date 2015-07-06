@@ -34,13 +34,16 @@ MediaSource MediaSourceForPresentationUrl(const std::string& presentation_url) {
 }
 
 bool IsMirroringMediaSource(const MediaSource& source) {
-  return base::StartsWithASCII(source.id(), kDesktopMediaUrn, true) ||
-         base::StartsWithASCII(source.id(), kTabMediaUrnPrefix, true);
+  return base::StartsWith(source.id(), kDesktopMediaUrn,
+                          base::CompareCase::SENSITIVE) ||
+         base::StartsWith(source.id(), kTabMediaUrnPrefix,
+                          base::CompareCase::SENSITIVE);
 }
 
 bool IsValidMediaSource(const MediaSource& source) {
   if (IsMirroringMediaSource(source) ||
-      base::StartsWithASCII(source.id(), kCastUrnPrefix, true)) {
+      base::StartsWith(source.id(), kCastUrnPrefix,
+                       base::CompareCase::SENSITIVE)) {
     return true;
   }
   GURL url(source.id());

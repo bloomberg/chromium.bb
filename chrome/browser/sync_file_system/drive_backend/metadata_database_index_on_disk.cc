@@ -522,8 +522,8 @@ bool MetadataDatabaseIndexOnDisk::HasDemotedDirtyTracker() const {
   itr->Seek(kDemotedDirtyIDKeyPrefix);
   if (!itr->Valid())
     return false;
-  return base::StartsWithASCII(itr->key().ToString(), kDemotedDirtyIDKeyPrefix,
-                               true);
+  return base::StartsWith(itr->key().ToString(), kDemotedDirtyIDKeyPrefix,
+                          base::CompareCase::SENSITIVE);
 }
 
 bool MetadataDatabaseIndexOnDisk::IsDemotedDirtyTracker(
@@ -571,8 +571,8 @@ size_t MetadataDatabaseIndexOnDisk::CountFileMetadata() const {
   size_t count = 0;
   scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   for (itr->Seek(kFileMetadataKeyPrefix); itr->Valid(); itr->Next()) {
-    if (!base::StartsWithASCII(itr->key().ToString(), kFileMetadataKeyPrefix,
-                               true))
+    if (!base::StartsWith(itr->key().ToString(), kFileMetadataKeyPrefix,
+                          base::CompareCase::SENSITIVE))
       break;
     ++count;
   }
@@ -584,8 +584,8 @@ size_t MetadataDatabaseIndexOnDisk::CountFileTracker() const {
   size_t count = 0;
   scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   for (itr->Seek(kFileTrackerKeyPrefix); itr->Valid(); itr->Next()) {
-    if (!base::StartsWithASCII(itr->key().ToString(), kFileTrackerKeyPrefix,
-                               true))
+    if (!base::StartsWith(itr->key().ToString(), kFileTrackerKeyPrefix,
+                          base::CompareCase::SENSITIVE))
       break;
     ++count;
   }
@@ -1146,7 +1146,8 @@ size_t MetadataDatabaseIndexOnDisk::CountDirtyTrackerInternal() const {
 
   scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   for (itr->Seek(kDirtyIDKeyPrefix); itr->Valid(); itr->Next()) {
-    if (!base::StartsWithASCII(itr->key().ToString(), kDirtyIDKeyPrefix, true))
+    if (!base::StartsWith(itr->key().ToString(), kDirtyIDKeyPrefix,
+                          base::CompareCase::SENSITIVE))
       break;
     ++num_dirty_trackers;
   }
@@ -1181,7 +1182,7 @@ void MetadataDatabaseIndexOnDisk::DeleteKeyStartsWith(
   scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
   for (itr->Seek(prefix); itr->Valid();) {
     const std::string key = itr->key().ToString();
-    if (!base::StartsWithASCII(key, prefix, true))
+    if (!base::StartsWith(key, prefix, base::CompareCase::SENSITIVE))
       break;
     itr->Delete();
   }

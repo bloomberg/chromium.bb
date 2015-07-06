@@ -94,7 +94,8 @@ void AttemptAutoMountOnUIThread(
             profile->GetPath(), storage_domain, kInvalidMediaGalleryPrefId);
     MediaGalleryPrefId pref_id = kInvalidMediaGalleryPrefId;
     if (extension && extension->id() == storage_domain &&
-        base::StartsWithASCII(mount_point, expected_mount_prefix, true) &&
+        base::StartsWith(mount_point, expected_mount_prefix,
+                         base::CompareCase::SENSITIVE) &&
         base::StringToUint64(mount_point.substr(expected_mount_prefix.size()),
                              &pref_id) &&
         pref_id != kInvalidMediaGalleryPrefId) {
@@ -198,7 +199,8 @@ bool MediaFileSystemBackend::AttemptAutoMountForURLRequest(
   if (components.empty())
     return false;
   std::string mount_point = base::FilePath(components[0]).AsUTF8Unsafe();
-  if (!base::StartsWithASCII(mount_point, kMediaGalleryMountPrefix, true))
+  if (!base::StartsWith(mount_point, kMediaGalleryMountPrefix,
+                        base::CompareCase::SENSITIVE))
     return false;
 
   const content::ResourceRequestInfo* request_info =

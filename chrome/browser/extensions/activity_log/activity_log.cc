@@ -521,7 +521,8 @@ void ActivityLog::LogAction(scoped_refptr<Action> action) {
 
   // Mark DOM XHR requests as such, for easier processing later.
   if (action->action_type() == Action::ACTION_DOM_ACCESS &&
-      base::StartsWithASCII(action->api_name(), kDomXhrPrefix, true) &&
+      base::StartsWith(action->api_name(), kDomXhrPrefix,
+                       base::CompareCase::SENSITIVE) &&
       action->other()) {
     base::DictionaryValue* other = action->mutable_other();
     int dom_verb = -1;

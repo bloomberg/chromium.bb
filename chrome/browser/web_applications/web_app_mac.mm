@@ -212,10 +212,10 @@ bool HasSameUserDataDir(const base::FilePath& bundle_path) {
   base::FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   DCHECK(!user_data_dir.empty());
-  return base::StartsWithASCII(
+  return base::StartsWith(
       base::SysNSStringToUTF8(
           [plist valueForKey:app_mode::kCrAppModeUserDataDirKey]),
-      user_data_dir.value(), true /* case_sensitive */);
+      user_data_dir.value(), base::CompareCase::SENSITIVE);
 }
 
 void LaunchShimOnFileThread(scoped_ptr<web_app::ShortcutInfo> shortcut_info,
@@ -453,7 +453,8 @@ void DeletePathAndParentIfEmpty(const base::FilePath& app_path) {
 
 bool IsShimForProfile(const base::FilePath& base_name,
                       const std::string& profile_base_name) {
-  if (!base::StartsWithASCII(base_name.value(), profile_base_name, true))
+  if (!base::StartsWith(base_name.value(), profile_base_name,
+                        base::CompareCase::SENSITIVE))
     return false;
 
   if (base_name.Extension() != ".app")

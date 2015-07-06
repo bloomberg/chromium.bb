@@ -377,7 +377,8 @@ ExtensionActionFunction::~ExtensionActionFunction() {
 
 bool ExtensionActionFunction::RunSync() {
   ExtensionActionManager* manager = ExtensionActionManager::Get(GetProfile());
-  if (base::StartsWithASCII(name(), "systemIndicator.", false)) {
+  if (base::StartsWith(name(), "systemIndicator.",
+                       base::CompareCase::INSENSITIVE_ASCII)) {
     extension_action_ = manager->GetSystemIndicator(*extension());
   } else {
     extension_action_ = manager->GetBrowserAction(*extension());

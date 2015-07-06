@@ -70,22 +70,26 @@ InputMethodCategory GetInputMethodCategory(const std::string& input_method_id,
       extension_ime_util::GetComponentIDByInputMethodID(input_method_id);
   InputMethodCategory category = INPUT_METHOD_CATEGORY_UNKNOWN;
   char ch = 0;
-  if (base::StartsWithASCII(component_id, "xkb:", true)) {
+  if (base::StartsWith(component_id, "xkb:", base::CompareCase::SENSITIVE)) {
     ch = component_id[4];
     category = INPUT_METHOD_CATEGORY_XKB;
-  } else if (base::StartsWithASCII(component_id, "zh-", true)) {
+  } else if (base::StartsWith(component_id, "zh-",
+                              base::CompareCase::SENSITIVE)) {
     size_t pos = component_id.find("-t-i0-");
     if (pos > 0)
       pos += 6;
     ch = component_id[pos];
     category = INPUT_METHOD_CATEGORY_ZH;
-  } else if (base::StartsWithASCII(component_id, "nacl_mozc_", true)) {
+  } else if (base::StartsWith(component_id, "nacl_mozc_",
+                              base::CompareCase::SENSITIVE)) {
     ch = component_id[10];
     category = INPUT_METHOD_CATEGORY_JA;
-  } else if (base::StartsWithASCII(component_id, "hangul_", true)) {
+  } else if (base::StartsWith(component_id, "hangul_",
+                              base::CompareCase::SENSITIVE)) {
     ch = component_id[7];
     category = INPUT_METHOD_CATEGORY_KO;
-  } else if (base::StartsWithASCII(component_id, "vkd_", true)) {
+  } else if (base::StartsWith(component_id, "vkd_",
+                              base::CompareCase::SENSITIVE)) {
     ch = component_id[4];
     category = INPUT_METHOD_CATEGORY_M17N;
   } else if (component_id.find("-t-i0-") > 0) {

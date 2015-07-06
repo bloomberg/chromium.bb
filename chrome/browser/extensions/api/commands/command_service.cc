@@ -69,7 +69,8 @@ std::string GetPlatformKeybindingKeyForAccelerator(
 }
 
 bool IsForCurrentPlatform(const std::string& key) {
-  return base::StartsWithASCII(key, Command::CommandPlatform() + ":", true);
+  return base::StartsWith(key, Command::CommandPlatform() + ":",
+                          base::CompareCase::SENSITIVE);
 }
 
 std::string StripCurrentPlatform(const std::string& key) {

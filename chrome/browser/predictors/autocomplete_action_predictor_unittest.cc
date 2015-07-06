@@ -322,7 +322,8 @@ TEST_F(AutocompleteActionPredictorTest, DeleteOldIdsFromCaches) {
     all_ids.push_back(row_id);
 
     bool exclude_url =
-        base::StartsWithASCII(test_url_db[i].url.path(), "/d", true) ||
+        base::StartsWith(test_url_db[i].url.path(), "/d",
+                         base::CompareCase::SENSITIVE) ||
         (test_url_db[i].days_from_now > maximum_days_to_keep_entry());
 
     if (exclude_url)

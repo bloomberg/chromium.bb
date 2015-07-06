@@ -292,7 +292,7 @@ std::string WebRtcTestBase::GetStreamSize(
   std::string javascript =
       base::StringPrintf("getStreamSize('%s')", video_element.c_str());
   std::string result = ExecuteJavascript(javascript, tab_contents);
-  EXPECT_TRUE(base::StartsWithASCII(result, "ok-", true));
+  EXPECT_TRUE(base::StartsWith(result, "ok-", base::CompareCase::SENSITIVE));
   return result.substr(3);
 }
 

@@ -136,7 +136,8 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
   for (ShortcutsBackend::ShortcutMap::const_iterator it =
            FindFirstMatch(term_string, backend.get());
        it != backend->shortcuts_map().end() &&
-           base::StartsWith(it->first, term_string, true);
+           base::StartsWith(it->first, term_string,
+                            base::CompareCase::SENSITIVE);
        ++it) {
     // Don't return shortcuts with zero relevance.
     int relevance = CalculateScore(term_string, it->second, max_relevance);
@@ -217,7 +218,9 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
   // input of "foo.c" to autocomplete to "foo.com" for a fill_into_edit of
   // "http://foo.com".
   if (AutocompleteMatch::IsSearchType(match.type)) {
-    if (base::StartsWith(match.fill_into_edit, input.text(), false)) {
+    if (base::StartsWith(base::i18n::ToLower(match.fill_into_edit),
+                         base::i18n::ToLower(input.text()),
+                         base::CompareCase::SENSITIVE)) {
       match.inline_autocompletion =
           match.fill_into_edit.substr(input.text().length());
       match.allowed_to_be_default_match =
@@ -305,7 +308,8 @@ ACMatchClassifications ShortcutsProvider::ClassifyAllMatchesInString(
   base::string16 text_lowercase(base::i18n::ToLower(text));
   ACMatchClassifications match_class;
   size_t last_position = 0;
-  if (base::StartsWith(text_lowercase, find_text, true)) {
+  if (base::StartsWith(text_lowercase, find_text,
+                       base::CompareCase::SENSITIVE)) {
     match_class.push_back(
         ACMatchClassification(0, ACMatchClassification::MATCH));
     last_position = find_text.length();
@@ -369,7 +373,7 @@ ShortcutsBackend::ShortcutMap::const_iterator ShortcutsProvider::FindFirstMatch(
   // Lower bound not necessarily matches the keyword, check for item pointed by
   // the lower bound iterator to at least start with keyword.
   return ((it == backend->shortcuts_map().end()) ||
-          base::StartsWith(it->first, keyword, true))
+          base::StartsWith(it->first, keyword, base::CompareCase::SENSITIVE))
              ? it
              : backend->shortcuts_map().end();
 }

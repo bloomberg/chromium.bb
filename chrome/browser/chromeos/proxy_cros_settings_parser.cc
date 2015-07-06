@@ -112,7 +112,8 @@ net::ProxyServer CreateProxyServerFromPort(
 namespace proxy_cros_settings_parser {
 
 bool IsProxyPref(const std::string& path) {
-  return base::StartsWithASCII(path, kProxyPrefsPrefix, true);
+  return base::StartsWith(path, kProxyPrefsPrefix,
+                          base::CompareCase::SENSITIVE);
 }
 
 void SetProxyPrefValue(const std::string& path,
@@ -248,7 +249,8 @@ void SetProxyPrefValue(const std::string& path,
       config.SetProxyForScheme(
           "socks", CreateProxyServerFromHost(
                        val, config.socks_proxy,
-                       base::StartsWithASCII(val, "socks5://", false)
+                       base::StartsWith(val, "socks5://",
+                                        base::CompareCase::INSENSITIVE_ASCII)
                            ? net::ProxyServer::SCHEME_SOCKS5
                            : net::ProxyServer::SCHEME_SOCKS4));
     }
@@ -259,7 +261,8 @@ void SetProxyPrefValue(const std::string& path,
       config.SetProxyForScheme(
           "socks", CreateProxyServerFromPort(
                        val, config.socks_proxy,
-                       base::StartsWithASCII(host, "socks5://", false)
+                       base::StartsWith(host, "socks5://",
+                                        base::CompareCase::INSENSITIVE_ASCII)
                            ? net::ProxyServer::SCHEME_SOCKS5
                            : net::ProxyServer::SCHEME_SOCKS4));
     }

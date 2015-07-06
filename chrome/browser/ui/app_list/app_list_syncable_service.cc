@@ -142,7 +142,8 @@ bool GetAppListItemType(AppListItem* item,
 }
 
 bool IsDriveAppSyncId(const std::string& sync_id) {
-  return base::StartsWithASCII(sync_id, kDriveAppSyncIdPrefix, true);
+  return base::StartsWith(sync_id, kDriveAppSyncIdPrefix,
+                          base::CompareCase::SENSITIVE);
 }
 
 std::string GetDriveAppSyncId(const std::string& drive_app_id) {
