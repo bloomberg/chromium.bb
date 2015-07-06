@@ -457,17 +457,19 @@ static void CreateSanitizerCoverageSocketPair(int fds[2]) {
   PCHECK(0 == shutdown(fds[0], SHUT_WR));
   PCHECK(0 == shutdown(fds[1], SHUT_RD));
 
-  // Find the right buffer size.
+  // Find the right buffer size for sending coverage data.
+  // The kernel will silently set the buffer size to the allowed maximum when
+  // the specified size is too large, so we set our desired size and read it
+  // back.
   int* buf_size = &g_sanitizer_message_length;
-  while (*buf_size) {
-    if (0 == setsockopt(fds[0], SOL_SOCKET, SO_RCVBUF,
-                        buf_size, sizeof(*buf_size)) &&
-        0 == setsockopt(fds[1], SOL_SOCKET, SO_SNDBUF,
-                        buf_size, sizeof(*buf_size))) {
-      break;
-    }
-    *buf_size /= 2;
-  }
+  socklen_t option_length = sizeof(*buf_size);
+  PCHECK(0 == setsockopt(fds[1], SOL_SOCKET, SO_SNDBUF,
+                         buf_size, option_length));
+  PCHECK(0 == getsockopt(fds[1], SOL_SOCKET, SO_SNDBUF,
+                         buf_size, &option_length));
+  DCHECK_EQ(sizeof(*buf_size), option_length);
+  // The kernel returns the doubled buffer size.
+  *buf_size /= 2;
   PCHECK(*buf_size > 0);
 }
 
