@@ -131,13 +131,12 @@ public:
 
     void clear()
     {
-        size_t initialAllocationSize = m_storage.first()->capacity;
-        m_storage.clear();
-        m_lastList = nullptr;
+        // Remove all except for the first InnerList.
+        m_storage.shrink(1);
         m_lastListIndex = 0;
-        m_size = 0;
-        allocateNewList(initialAllocationSize);
         m_lastList = m_storage[m_lastListIndex].get();
+        m_lastList->size = 0;
+        m_size = 0;
     }
 
     void removeLast()
