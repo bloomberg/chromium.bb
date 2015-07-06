@@ -20,9 +20,8 @@
 
 typedef DOMString UUID;
 
-// TODO(ortuno): Uncomment
-// typedef (DOMString or unsigned long) BluetoothServiceUUID;
+typedef (DOMString or unsigned long) BluetoothServiceUUID;
 
-// typedef (DOMString or unsigned long) BluetoothCharacteristicUUID;
+typedef (DOMString or unsigned long) BluetoothCharacteristicUUID;
 
-// typedef (DOMString or unsigned long) BluetoothDescriptorUUID;
+typedef (DOMString or unsigned long) BluetoothDescriptorUUID;

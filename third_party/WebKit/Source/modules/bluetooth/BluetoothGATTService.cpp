@@ -12,6 +12,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothGATTCharacteristic.h"
+#include "modules/bluetooth/BluetoothUUID.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/bluetooth/WebBluetooth.h"
 
@@ -31,9 +32,13 @@ BluetoothGATTService* BluetoothGATTService::take(ScriptPromiseResolver*, PassOwn
 }
 
 ScriptPromise BluetoothGATTService::getCharacteristic(ScriptState* scriptState,
-    String characteristicUUID)
+    const StringOrUnsignedLong& characteristic, ExceptionState& exceptionState)
 {
     WebBluetooth* webbluetooth = Platform::current()->bluetooth();
+
+    String characteristicUUID = BluetoothUUID::getCharacteristic(characteristic, exceptionState);
+    if (exceptionState.hadException())
+        return exceptionState.reject(scriptState);
 
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();

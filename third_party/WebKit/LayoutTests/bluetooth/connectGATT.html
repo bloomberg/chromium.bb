@@ -10,7 +10,7 @@ test(function(t) { assert_true(window.testRunner instanceof Object); t.done(); }
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
   return navigator.bluetooth.requestDevice({
-    filters: [{services: [genericAccessServiceUuid]}]
+    filters: [{services: ['generic_access']}]
   }).then(function(device) {
     testRunner.setBluetoothMockDataSet('EmptyAdapter');
     return device.connectGATT().then(function() {
@@ -25,7 +25,7 @@ sequential_promise_test(function() {
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('UnconnectableDeviceAdapter');
   return navigator.bluetooth.requestDevice({
-    filters: [{services: [genericAccessServiceUuid]}]
+    filters: [{services: ['generic_access']}]
   }).then(function(device) {
     return device.connectGATT().then(function() {
       assert_unreached('Should return error since device failed to connect.');
@@ -39,7 +39,7 @@ sequential_promise_test(function() {
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
   return navigator.bluetooth.requestDevice({
-    filters: [{services: [genericAccessServiceUuid]}]
+    filters: [{services: ['generic_access']}]
   }).then(function(device) {
     return device.connectGATT();
   }).then(function(gattConnection) {

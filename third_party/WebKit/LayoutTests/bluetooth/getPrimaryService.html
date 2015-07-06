@@ -7,18 +7,15 @@
 test(function(t) { assert_true(window.testRunner instanceof Object); t.done(); },
      "window.testRunner is required for the following tests.");
 
-var generic_access =    "00001800-0000-1000-8000-00805f9b34fb";
-var heart_rate =        "0000180D-0000-1000-8000-00805f9b34fb";
-
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
   return navigator.bluetooth.requestDevice({
-    filters: [{services: [generic_access]}]
+    filters: [{services: ['generic_access']}]
   }).then(function(device) {
     return device.connectGATT();
   }).then(function(gattServer) {
     testRunner.setBluetoothMockDataSet('EmptyAdapter');
-    return gattServer.getPrimaryService(generic_access).then(function() {
+    return gattServer.getPrimaryService('generic_access').then(function() {
       assert_unreached('Should return error if device not in adapter.');
     }, function(e) {
       assert_equals(e.name, "NetworkError");
@@ -30,49 +27,80 @@ sequential_promise_test(function() {
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
   return navigator.bluetooth.requestDevice({
-    filters: [{services: [generic_access]}]
+    filters: [{services: ['generic_access']}]
   }).then(function(device) {
     return device.connectGATT();
   }).then(function(gattServer) {
-    return gattServer.getPrimaryService(heart_rate);
-  }).then(function(service) {
-    assert_equals(service, null,
-                  "Non existent services should return null.");
+    return Promise.all(
+      [gattServer.getPrimaryService(heart_rate.alias),
+       gattServer.getPrimaryService(heart_rate.name),
+       gattServer.getPrimaryService(heart_rate.uuid)]);
+  }).then(function(services) {
+    services.forEach(function(service) {
+      assert_equals(service, null,
+                    "Non existent services should return null.");
+    });
   });
 }, 'Request for wrong service. Should return null.');
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
   return navigator.bluetooth.requestDevice({
-    filters: [{services: [generic_access]}]
+    filters: [{services: ['generic_access']}]
   }).then(function(device) {
     return device.connectGATT();
   }).then(function(gattServer) {
-    return gattServer.getPrimaryService(generic_access);
-  }).then(function(service) {
-    assert_equals(service.uuid, generic_access,
-                  "Service UUID should be the same as requested UUID.");
-    assert_true(service.isPrimary,
-                "getPrimaryService should return a primary service.");
+    return Promise.all([gattServer.getPrimaryService(generic_access.alias),
+                        gattServer.getPrimaryService(generic_access.name),
+                        gattServer.getPrimaryService(generic_access.uuid)]);
+  }).then(function(services) {
+    services.forEach(function(service) {
+      assert_equals(service.uuid, generic_access.uuid,
+                    "Service UUID should be the same as requested UUID.");
+      assert_true(service.isPrimary,
+                  "getPrimaryService should return a primary service.");
+    });
   });
 }, 'Request for service. Should return right service');
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
   return navigator.bluetooth.requestDevice({
-    filters: [{services: [generic_access]}]
+    filters: [{services: ['generic_access']}]
   }).then(function(device) {
     return device.connectGATT();
   }).then(function(gattServer) {
-    return Promise.all([gattServer.getPrimaryService(generic_access),
-                        gattServer.getPrimaryService(generic_access)]);
+    return Promise.all([gattServer.getPrimaryService(generic_access.alias),
+                        gattServer.getPrimaryService(generic_access.alias),
+                        gattServer.getPrimaryService(generic_access.name),
+                        gattServer.getPrimaryService(generic_access.name),
+                        gattServer.getPrimaryService(generic_access.uuid),
+                        gattServer.getPrimaryService(generic_access.uuid)]);
   }).then(function(services) {
     // getPrimaryService should return the same object if it was created
     // earlier. https://crbug.com/495270
     // TODO(ortuno): Change to assert_equals.
-    assert_not_equals(services[0], services[1],
-                  "Should return the same service as the first call.");
+    for (var i = 1; i < services.length; i++) {
+      assert_not_equals(services[0], services[i],
+                        "Should return the same service as the first call.");
+    }
   });
 }, 'Calls to get the same service should return the same object.');
+
+sequential_promise_test(function() {
+  testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
+  return navigator.bluetooth.requestDevice({
+    filters: [{services: ['generic_access']}]
+  }).then(function(device) {
+    return device.connectGATT();
+  }).then(function(gattServer) {
+    return gattServer.getPrimaryService("wrong_name").then(function() {
+      assert_unreached('Should reject for wrong service name.');
+    }, function(e) {
+      assert_equals(e.name, "SyntaxError");
+      assert_equals(e.message, "Failed to execute 'getPrimaryService' on 'BluetoothGATTRemoteServer': Invalid Service name: 'wrong_name'.");
+    });
+  });
+}, 'Wrong Service name. Reject with SyntaxError.');
 
 </script>

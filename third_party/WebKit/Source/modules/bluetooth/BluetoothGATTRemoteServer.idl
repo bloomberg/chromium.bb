@@ -6,9 +6,6 @@
 
 // Implement BluetoothGATTRemoteServer interface: https://crbug.com/476735
 
-// TODO(ortuno): Move this to BluetoothUUID. http://crbug.com/491441
-typedef DOMString BluetoothServiceUUID;
-
 [
     GarbageCollected,
     RuntimeEnabled=WebBluetooth,
@@ -19,6 +16,6 @@ typedef DOMString BluetoothServiceUUID;
   // readonly attribute BluetoothDevice      device;
     readonly attribute boolean                           connected;
   // void                                    disconnect ();
-    [CallWith=ScriptState] Promise<BluetoothGATTService> getPrimaryService (BluetoothServiceUUID service);
+    [CallWith=ScriptState, RaisesException] Promise<BluetoothGATTService> getPrimaryService (BluetoothServiceUUID service);
   // Promise<sequence<BluetoothGATTService>> getPrimaryServices (optional BluetoothServiceUUID service);
 };

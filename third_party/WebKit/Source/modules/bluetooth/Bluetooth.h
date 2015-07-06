@@ -27,7 +27,7 @@ public:
     }
 
     // BluetoothDiscovery interface
-    ScriptPromise requestDevice(ScriptState*, const RequestDeviceOptions&);
+    ScriptPromise requestDevice(ScriptState*, const RequestDeviceOptions&, ExceptionState&);
 
     DEFINE_INLINE_TRACE() { }
 

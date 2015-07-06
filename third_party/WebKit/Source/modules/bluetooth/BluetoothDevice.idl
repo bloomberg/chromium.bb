@@ -11,8 +11,6 @@ enum VendorIDSource {
     "usb"
 };
 
-typedef DOMString UUID;
-
 [
     GarbageCollected,
     RuntimeEnabled=WebBluetooth,

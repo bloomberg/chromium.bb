@@ -6,9 +6,6 @@
 
 // Implement BluetoothGATTService interface: https://crbug.com/483342
 
-typedef DOMString BluetoothCharacteristicUUID;
-typedef DOMString UUID;
-
 [
     GarbageCollected,
     RuntimeEnabled=WebBluetooth,
@@ -18,7 +15,7 @@ typedef DOMString UUID;
     // TODO(ortuno): Once device is implemented test that it matches
     // the original device.
     // readonly    attribute BluetoothDevice device;
-    [CallWith=ScriptState] Promise<BluetoothGATTCharacteristic>           getCharacteristic(BluetoothCharacteristicUUID characteristic);
+    [RaisesException, CallWith=ScriptState] Promise<BluetoothGATTCharacteristic>           getCharacteristic(BluetoothCharacteristicUUID characteristic);
     // Promise<sequence<BluetoothGATTCharacteristic>> getCharacteristics(optional BluetoothCharacteristicUUID characteristic);
     // Promise<BluetoothGATTService>                  getIncludedService(BluetoothServiceUUID service);
     // Promise<sequence<BluetoothGATTService>>        getIncludedServices(optional BluetoothServiceUUID service);

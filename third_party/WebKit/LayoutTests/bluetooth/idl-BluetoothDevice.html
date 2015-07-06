@@ -17,7 +17,7 @@ test(function(t) { assert_true(window.testRunner instanceof Object); t.done(); }
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('SingleEmptyDeviceAdapter');
   return navigator.bluetooth.requestDevice({
-    filters: [{services: [genericAccessServiceUuid]}]
+    filters: [{services: ['generic_access']}]
   }).then(function(device) {
     assert_equals(device.constructor.name, "BluetoothDevice");
 
@@ -40,8 +40,8 @@ sequential_promise_test(function() {
     assert_equals(device.productID, 1);
     assert_equals(device.productVersion, 2);
     assert_equals(device.paired, true);
-    assert_equals(device.uuids[0], genericAccessServiceUuid);
-    assert_equals(device.uuids[1], genericAttributeServiceUuid);
+    assert_equals(device.uuids[0], generic_access.uuid);
+    assert_equals(device.uuids[1], generic_attribute.uuid);
   });
 }, 'BluetoothDevice attributes.');
 </script>

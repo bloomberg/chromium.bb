@@ -6,6 +6,7 @@
 #define BluetoothGATTRemoteServer_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/modules/v8/UnionTypesModules.h"
 #include "platform/heap/Heap.h"
 #include "public/platform/modules/bluetooth/WebBluetoothGATTRemoteServer.h"
 #include "wtf/PassOwnPtr.h"
@@ -39,7 +40,7 @@ public:
 
     // IDL exposed interface:
     bool connected() { return m_webGATT->connected; }
-    ScriptPromise getPrimaryService(ScriptState*, String serviceUUID);
+    ScriptPromise getPrimaryService(ScriptState*, const StringOrUnsignedLong& service, ExceptionState&);
 
 private:
     OwnPtr<WebBluetoothGATTRemoteServer> m_webGATT;

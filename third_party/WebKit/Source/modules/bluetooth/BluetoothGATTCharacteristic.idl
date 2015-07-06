@@ -5,7 +5,6 @@
 // https://webbluetoothchrome.github.io/web-bluetooth/#idl-def-bluetoothgattcharacteristic
 
 // Implement BluetoothGATTCharacteristic interface: https://crbug.com/483344
-typedef DOMString UUID;
 
 [
     GarbageCollected,

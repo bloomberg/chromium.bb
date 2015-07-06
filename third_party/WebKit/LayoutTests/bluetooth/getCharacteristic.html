@@ -7,24 +7,17 @@
 test(function(t) { assert_true(window.testRunner instanceof Object); t.done(); },
      "window.testRunner is required for the following tests.");
 
-// Generic Access Service.
-var serviceUUID = "00001800-0000-1000-8000-00805f9b34fb";
-// Device Name Characteristic. Belongs to Generic Access.
-var includedCharacteristicUUID = "00002a00-0000-1000-8000-00805f9b34fb";
-// Battery Level. Belongs to Battery Service.
-var nonIncludedCharacteristicUUID = "00002a19-0000-1000-8000-00805f9b34fb";
-
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
   return navigator.bluetooth.requestDevice({
-    filters: [{services: [serviceUUID]}]
+    filters: [{services: ['generic_access']}]
   }).then(function(device) {
     return device.connectGATT();
   }).then(function(gattServer) {
-      return gattServer.getPrimaryService(serviceUUID);
+      return gattServer.getPrimaryService('generic_access');
   }).then(function(service) {
     testRunner.setBluetoothMockDataSet('EmptyAdapter');
-    return service.getCharacteristic(includedCharacteristicUUID).then(function() {
+    return service.getCharacteristic(generic_access.device_name.uuid).then(function() {
       assert_unreached("Device went out of range, should fail.");
     }, function(e) {
       assert_equals(e.name, "NetworkError");
@@ -36,53 +29,85 @@ sequential_promise_test(function() {
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
   return navigator.bluetooth.requestDevice({
-    filters: [{services: [serviceUUID]}]
+    filters: [{services: ['generic_access']}]
   }).then(function(device) {
     return device.connectGATT();
   }).then(function(gattServer) {
-    return gattServer.getPrimaryService(serviceUUID);
+    return gattServer.getPrimaryService('generic_access');
   }).then(function(service) {
-    return service.getCharacteristic(nonIncludedCharacteristicUUID);
-  }).then(function(characteristic) {
-    assert_equals(characteristic, null,
-                  "Non existent characteristic should return null.");
+    return Promise.all(
+      [service.getCharacteristic(battery_service.battery_level.alias),
+       service.getCharacteristic(battery_service.battery_level.name),
+       service.getCharacteristic(battery_service.battery_level.uuid)]);
+  }).then(function(characteristics) {
+    characteristics.forEach(function(characteristic) {
+      assert_equals(characteristic, null,
+                    "Non existent characteristic should return null.");
+    });
   });
 }, 'Request for wrong characteristic. Should return null.');
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
   return navigator.bluetooth.requestDevice({
-    filters: [{services: [serviceUUID]}]
+    filters: [{services: ['generic_access']}]
   }).then(function(device) {
     return device.connectGATT();
   }).then(function(gattServer) {
-    return gattServer.getPrimaryService(serviceUUID);
+    return gattServer.getPrimaryService('generic_access');
   }).then(function(service) {
-    return service.getCharacteristic(includedCharacteristicUUID);
-  }).then(function(characteristic) {
-    assert_equals(characteristic.uuid, includedCharacteristicUUID,
-                  "Characteristic UUID should be the same as requested UUID.");
+    return Promise.all([service.getCharacteristic(generic_access.device_name.alias),
+                        service.getCharacteristic(generic_access.device_name.name),
+                        service.getCharacteristic(generic_access.device_name.uuid)]);
+  }).then(function(characteristics){
+    characteristics.forEach(function(characteristic) {
+      assert_equals(characteristic.uuid, generic_access.device_name.uuid,
+                    "Characteristic UUID should be the same as requested UUID.");
+    });
   });
 }, 'Request for characteristic. Should return right characteristic');
 
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
   return navigator.bluetooth.requestDevice({
-    filters: [{services: [serviceUUID]}]
+    filters: [{services: ['generic_access']}]
   }).then(function(device) {
     return device.connectGATT();
   }).then(function(gattServer) {
-    return gattServer.getPrimaryService(serviceUUID);
+    return gattServer.getPrimaryService('generic_access');
   }).then(function(services) {
-    return Promise.all([services.getCharacteristic(includedCharacteristicUUID),
-                        services.getCharacteristic(includedCharacteristicUUID)]);
+    return Promise.all([services.getCharacteristic(generic_access.device_name.alias),
+                        services.getCharacteristic(generic_access.device_name.alias),
+                        services.getCharacteristic(generic_access.device_name.name),
+                        services.getCharacteristic(generic_access.device_name.name),
+                        services.getCharacteristic(generic_access.device_name.uuid),
+                        services.getCharacteristic(generic_access.device_name.uuid)]);
   }).then(function(characteristics) {
     // TODO(ortuno): getCharacteristic should return the same object
     // if it was created earlier.
     // https://crbug.com/495270
-    assert_not_equals(characteristics[0], characteristics[1],
-                      "Should return the same service as the first call.");
+    for (var i = 1; i < characteristics.length; i++) {
+      assert_not_equals(characteristics[0], characteristics[i],
+                        "Should return the same characteristic as the first call.");
+    }
   });
 }, 'Calls to get the same characteristic should return the same object.');
 
+sequential_promise_test(function() {
+  testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
+  return navigator.bluetooth.requestDevice({
+    filters: [{services: ['generic_access']}]
+  }).then(function(device) {
+    return device.connectGATT();
+  }).then(function(gattServer) {
+      return gattServer.getPrimaryService('generic_access');
+  }).then(function(service) {
+    return service.getCharacteristic("wrong_name").then(function() {
+      assert_unreached("Wrong Characteristic name, should fail.");
+    }, function(e) {
+      assert_equals(e.name, "SyntaxError");
+      assert_equals(e.message, "Failed to execute 'getCharacteristic' on 'BluetoothGATTService': Invalid Characteristic name: 'wrong_name'.");
+    });
+  });
+}, 'Wrong Characteristic name. Reject with SyntaxError.');
 </script>

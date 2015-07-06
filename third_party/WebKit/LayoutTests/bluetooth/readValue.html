@@ -7,23 +7,16 @@
 test(function(t) { assert_true(window.testRunner instanceof Object); t.done(); },
      'window.testRunner is required for the following tests.');
 
-// Generic Access Service.
-var serviceUUID = '00001800-0000-1000-8000-00805f9b34fb';
-// Device Name Characteristic. Belongs to Generic Access.
-var includedCharacteristicUUID = '00002a00-0000-1000-8000-00805f9b34fb';
-// Reconnection Address. Belongs to Generic Access.
-var unreadableCharacteristicUUID = '00002a03-0000-1000-8000-00805f9b34fb';
-
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
   return navigator.bluetooth.requestDevice({
-    filters: [{services: [serviceUUID]}]
+    filters: [{services: ['generic_access']}]
   }).then(function(device) {
     return device.connectGATT();
   }).then(function(gattServer) {
-    return gattServer.getPrimaryService(serviceUUID);
+    return gattServer.getPrimaryService('generic_access');
   }).then(function(service) {
-    return service.getCharacteristic(includedCharacteristicUUID);
+    return service.getCharacteristic(generic_access.device_name.name);
   }).then(function(characteristic) {
     testRunner.setBluetoothMockDataSet('EmptyAdapter');
     return characteristic.readValue().then(function() {
@@ -38,13 +31,14 @@ sequential_promise_test(function() {
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
   return navigator.bluetooth.requestDevice({
-    filters: [{services: [serviceUUID]}]
+    filters: [{services: ['generic_access']}]
   }).then(function(device) {
     return device.connectGATT();
   }).then(function(gattServer) {
-    return gattServer.getPrimaryService(serviceUUID);
+    return gattServer.getPrimaryService('generic_access');
   }).then(function(service) {
-    return service.getCharacteristic(unreadableCharacteristicUUID);
+    return service.getCharacteristic(
+      generic_access.reconnection_address.name); // Unreadable characteristic
   }).then(function(characteristic) {
     return characteristic.readValue().then(function() {
       assert_unreached('Characteristic is unreadable. Should fail.');
@@ -60,13 +54,13 @@ sequential_promise_test(function() {
 sequential_promise_test(function() {
   testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
   return navigator.bluetooth.requestDevice({
-    filters: [{services: [serviceUUID]}]
+    filters: [{services: ['generic_access']}]
   }).then(function(device) {
     return device.connectGATT();
   }).then(function(gattServer) {
-    return gattServer.getPrimaryService(serviceUUID);
+    return gattServer.getPrimaryService('generic_access');
   }).then(function(service) {
-    return service.getCharacteristic(includedCharacteristicUUID);
+    return service.getCharacteristic(generic_access.device_name.name);
   }).then(function(characteristic) {
     return characteristic.readValue();
   }).then(function(value) {
