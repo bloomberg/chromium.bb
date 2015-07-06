@@ -332,8 +332,7 @@ public class FeedbackCollectorTest extends ChromeActivityTestCaseBase<ChromeActi
     private static ConnectivityTask.FeedbackData createFeedbackData() {
         Map<ConnectivityTask.Type, Integer> connections = new HashMap<>();
         connections.put(ConnectivityTask.Type.CHROME_HTTPS, ConnectivityCheckResult.CONNECTED);
-        return new ConnectivityTask.FeedbackData(
-                connections, 10, 10, ConnectionType.CONNECTION_3G, 4.2);
+        return new ConnectivityTask.FeedbackData(connections, 10, 10, ConnectionType.CONNECTION_3G);
     }
 
     private static Bitmap createBitmap() {

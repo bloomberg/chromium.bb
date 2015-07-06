@@ -185,10 +185,10 @@ public class ConnectivityTaskTest extends ConnectivityCheckerTestBase {
         connectionMap.put(Type.SYSTEM_HTTPS, ConnectivityCheckResult.CONNECTED);
 
         FeedbackData feedback =
-                new FeedbackData(connectionMap, 42, 21, ConnectionType.CONNECTION_WIFI, 4.2);
+                new FeedbackData(connectionMap, 42, 21, ConnectionType.CONNECTION_WIFI);
         Map<String, String> map = feedback.toMap();
 
-        assertEquals("Should have 7 entries.", 7, map.size());
+        assertEquals("Should have 6 entries.", 6, map.size());
         assertTrue(map.containsKey(ConnectivityTask.CHROME_HTTP_KEY));
         assertEquals("NOT_CONNECTED", map.get(ConnectivityTask.CHROME_HTTP_KEY));
         assertTrue(map.containsKey(ConnectivityTask.CHROME_HTTPS_KEY));
@@ -201,8 +201,6 @@ public class ConnectivityTaskTest extends ConnectivityCheckerTestBase {
         assertEquals("21", map.get(ConnectivityTask.CONNECTION_CHECK_ELAPSED_KEY));
         assertTrue(map.containsKey(ConnectivityTask.CONNECTION_TYPE_KEY));
         assertEquals("WiFi", map.get(ConnectivityTask.CONNECTION_TYPE_KEY));
-        assertTrue(map.containsKey(ConnectivityTask.CONNECTION_BANDWIDTH_KEY));
-        assertEquals("4.2", map.get(ConnectivityTask.CONNECTION_BANDWIDTH_KEY));
     }
 
     private static FeedbackData getResult(final AtomicReference<ConnectivityTask> task) {

@@ -43,14 +43,6 @@ public class ConnectivityTask {
     static final String CONNECTION_TYPE_KEY = "Connection type";
 
     /**
-     * The key for the data describing the bandwidth of the current connection. The data is
-     * represented as Mbps.
-     * This string is user visible.
-     */
-    @VisibleForTesting
-    static final String CONNECTION_BANDWIDTH_KEY = "Connection bandwidth (Mbps)";
-
-    /**
      * The key for the data describing whether Chrome was able to successfully connect to the
      * HTTP connection check URL using the Chrome network stack.
      * This string is user visible.
@@ -155,15 +147,13 @@ public class ConnectivityTask {
         private final int mTimeoutMs;
         private final long mElapsedTimeMs;
         private final int mConnectionType;
-        private final double mBandwidthInMbps;
 
         FeedbackData(Map<Type, Integer> connections, int timeoutMs, long elapsedTimeMs,
-                int connectionType, double bandwidthInMbps) {
+                int connectionType) {
             mConnections = connections;
             mTimeoutMs = timeoutMs;
             mElapsedTimeMs = elapsedTimeMs;
             mConnectionType = connectionType;
-            mBandwidthInMbps = bandwidthInMbps;
         }
 
         /**
@@ -202,7 +192,6 @@ public class ConnectivityTask {
             }
             map.put(CONNECTION_CHECK_ELAPSED_KEY, String.valueOf(mElapsedTimeMs));
             map.put(CONNECTION_TYPE_KEY, getHumanReadableConnectionType(mConnectionType));
-            map.put(CONNECTION_BANDWIDTH_KEY, String.valueOf(mBandwidthInMbps));
             return map;
         }
     }
@@ -313,10 +302,8 @@ public class ConnectivityTask {
             }
         }
         long elapsedTimeMs = SystemClock.elapsedRealtime() - mStartCheckTimeMs;
-        NetworkChangeNotifier ncn = NetworkChangeNotifier.getInstance();
-        int connectionType = ncn.getCurrentConnectionType();
-        double bandwidthInMbps = ncn.getCurrentMaxBandwidthInMbps();
-        return new FeedbackData(result, mTimeoutMs, elapsedTimeMs, connectionType, bandwidthInMbps);
+        int connectionType = NetworkChangeNotifier.getInstance().getCurrentConnectionType();
+        return new FeedbackData(result, mTimeoutMs, elapsedTimeMs, connectionType);
     }
 
     /**
