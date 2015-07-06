@@ -460,6 +460,8 @@
             'autofill/ios/browser/autofill_driver_ios_bridge.h',
             'autofill/ios/browser/credit_card_util.h',
             'autofill/ios/browser/credit_card_util.mm',
+            'autofill/ios/browser/autofill_field_trial_ios.cc',
+            'autofill/ios/browser/autofill_field_trial_ios.h',
             'autofill/ios/browser/form_suggestion.h',
             'autofill/ios/browser/form_suggestion.mm',
             'autofill/ios/browser/js_autofill_manager.h',

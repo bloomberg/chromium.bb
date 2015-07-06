@@ -153,6 +153,13 @@ __gCrWeb.autofill.lastAutoFilledElement = null;
 __gCrWeb.autofill.lastActiveElement = null;
 
 /**
+ * Whether CSS for autofilled elements has been injected into the page.
+ *
+ * @type {boolean}
+ */
+__gCrWeb.autofill.styleInjected = false;
+
+/**
  * Extracts fields from |controlElements| with |requirements| and |extractMask|
  * to |formFields|. The extracted fields are also placed in |elementArray|.
  *
@@ -494,8 +501,21 @@ __gCrWeb.autofill['fillActiveFormField'] = function(data) {
  * Fills a number of fields in the same named form.
  *
  * @param {Object<AutofillFormData>} data The data to fill in.
+ * @param {boolean} styleElements Apply Autofill CSS style to filled elements.
  */
-__gCrWeb.autofill['fillForm'] = function(data) {
+__gCrWeb.autofill['fillForm'] = function(data, styleElements) {
+  // Inject CSS to style the autofilled elements with a yellow background.
+  if (styleElements && !__gCrWeb.autofill.styleInjected) {
+    var style = document.createElement('style');
+    style.textContent = '[chrome-autofilled] {' +
+      'background-color:#FAFFBD !important;' +
+      'background-image:none !important;' +
+      'color:#000000 !important;' +
+      '}';
+    document.head.appendChild(style);
+    __gCrWeb.autofill.styleInjected = true;
+  }
+
   var form = __gCrWeb.common.getFormElementFromIdentifier(data.formName);
   var controlElements = __gCrWeb.common.getFormControlElements(form);
   for (var i = 0; i < controlElements.length; ++i) {
@@ -506,6 +526,8 @@ __gCrWeb.autofill['fillForm'] = function(data) {
     var value = data.fields[__gCrWeb['common'].nameForAutofill(element)];
     if (value) {
       element.value = value;
+      if (styleElements)
+        element.setAttribute('chrome-autofilled');
     }
   }
 };

@@ -38,9 +38,12 @@
           completionHandler:(ProceduralBlock)completionHandler;
 
 // Fills a number of fields in the same named form.
+// Applies Autofill CSS (i.e. yellow background) to filled elements if
+// |styleElements| is true.
 // |completionHandler| is called after the forms are filled. |completionHandler|
 // cannot be nil.
 - (void)fillForm:(NSString*)dataString
+        styleElements:(BOOL)styleElements
     completionHandler:(ProceduralBlock)completionHandler;
 
 // Dispatches the autocomplete event to the form element with the given

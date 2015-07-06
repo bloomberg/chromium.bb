@@ -12,6 +12,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_popup_delegate.h"
+#include "components/autofill/ios/browser/autofill_field_trial_ios.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
 #import "ios/chrome/browser/autofill/form_suggestion_provider.h"
@@ -295,7 +296,9 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
                  forField:base::SysUTF8ToNSString(_suggestionState->field_name)
                      form:base::SysUTF8ToNSString(_suggestionState->form_name)
         completionHandler:^{
-          [[weakSelf accessoryViewDelegate] selectNextElement];
+          // Don't need to select next element if full form was filled at once.
+          if (!autofill::AutofillFieldTrialIOS::IsFullFormAutofillEnabled())
+            [[weakSelf accessoryViewDelegate] selectNextElement];
         }];
   _provider = nil;
 }

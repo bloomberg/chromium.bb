@@ -15,6 +15,9 @@ const char kDisableCreditCardScan[]         = "disable-credit-card-scan";
 // selection, rather than autofilling on page load.
 const char kDisableFillOnAccountSelect[]    = "disable-fill-on-account-select";
 
+// Disables the experimental Full Form Autofill on iOS feature.
+const char kDisableFullFormAutofillIOS[]    = "disable-full-form-autofill-ios";
+
 // Force hiding the local save checkbox in the autofill dialog box for getting
 // the full credit card number for a wallet card. The card will never be stored
 // locally.
@@ -44,6 +47,9 @@ const char kEnableFillOnAccountSelect[]     = "enable-fill-on-account-select";
 // fields.
 const char kEnableFillOnAccountSelectNoHighlighting[] =
     "enable-fill-on-account-select-no-highlighting";
+
+// Enables the experimental Full Form Autofill on iOS feature.
+const char kEnableFullFormAutofillIOS[]     = "enable-full-form-autofill-ios";
 
 // Force showing the local save checkbox in the autofill dialog box for getting
 // the full credit card number for a wallet card.

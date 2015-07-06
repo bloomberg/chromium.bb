@@ -70,10 +70,12 @@
 }
 
 - (void)fillForm:(NSString*)dataString
+        styleElements:(BOOL)styleElements
     completionHandler:(ProceduralBlock)completionHandler {
   DCHECK(completionHandler);
-  NSString* fillFormJS = [NSString
-      stringWithFormat:@"__gCrWeb.autofill.fillForm(%@);", dataString];
+  NSString* fillFormJS =
+      [NSString stringWithFormat:@"__gCrWeb.autofill.fillForm(%@, %s);",
+                                 dataString, styleElements ? "true" : "false"];
   id stringResultHandler = ^(NSString*, NSError*) {
     completionHandler();
   };
