@@ -172,7 +172,6 @@
 <translation id="7600965453749440009">Ніколи не перекладати з такої мови: <ph name="LANGUAGE"/></translation>
 <translation id="3208703785962634733">Не підтверджено</translation>
 <translation id="620329680124578183">Не завантажувати (рекомендовано)</translation>
-<translation id="6300924177400055566">У вас недостатньо місця на Диску Google для збереження файлу &quot;<ph name="FILE_NAME"/>&quot;. Видаліть файли або <ph name="BEGIN_LINK"/>придбайте додаткову пам’ять<ph name="END_LINK"/>.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2653266418988778031">Якщо видалити сертифікат Центру сертифікації (ЦС), ваш веб-переглядач більше не буде довіряти жодному сертифікату, виданому цим ЦС.</translation>
 <translation id="4237357878101553356">Нам не вдалося підтвердити дані вашого облікового запису. |Вирішити цю проблему|</translation>
@@ -383,7 +382,6 @@
 <translation id="5245965967288377800">Мережа WiMAX</translation>
 <translation id="40027638859996362">Перенести слово</translation>
 <translation id="3522708245912499433">Португальська</translation>
-<translation id="6956130766342550311">4x6</translation>
 <translation id="6699065916437121401">Потоки аудіовиходу перевірятимуть, чи є доступні макети каналу, окрім стандартних макетів апаратного забезпечення.</translation>
 <translation id="6928441285542626375">Увімкнути TCP Fast Open</translation>
 <translation id="7792388396321542707">Більше не ділитися</translation>
@@ -876,11 +874,9 @@
 <translation id="1013707859758800957">На цій сторінці дозволено запуск плагіна з неізольованим програмним середовищем.</translation>
 <translation id="5618333180342767515">(може тривати декілька хвилин)</translation>
 <translation id="3392020134425442298">Відновити шкідливий файл</translation>
-<translation id="1697820107502723922">Архіви</translation>
 <translation id="938470336146445890">Установіть сертифікат користувача.</translation>
 <translation id="3396331542604645348">Вибраний принтер недоступний або його неправильно встановлено. Перевірте принтер або спробуйте вибрати інший.</translation>
 <translation id="8480417584335382321">Масштаб сторінки:</translation>
-<translation id="3872166400289564527">Зовнішня пам’ять</translation>
 <translation id="1442912890475371290">Заблоковано спробу <ph name="BEGIN_LINK"/>перейти на сторінку в домені <ph name="DOMAIN"/><ph name="END_LINK"/>.</translation>
 <translation id="5912378097832178659">&amp;Змінити пошукові системи...</translation>
 <translation id="8013526960933383914">Увімкнення режиму уніфікованого комп’ютера</translation>
@@ -981,7 +977,6 @@
 <translation id="8064671687106936412">Ключ:</translation>
 <translation id="2218515861914035131">Вставити як звичайний текст</translation>
 <translation id="1725149567830788547">Показати &amp;засоби керування</translation>
-<translation id="8216351761227087153">Дивитися</translation>
 <translation id="3888118750782905860">Керування користувачами</translation>
 <translation id="3528033729920178817">Ця сторінка відстежує ваше місцезнаходження.</translation>
 <translation id="7545288882499673859">Стратегія очищення пам’яті для її ефективного вивільнення</translation>
@@ -1612,7 +1607,6 @@
 <translation id="8209439005376447114"><ph name="ISSUER"/> підтверджує ідентифікатор цього веб-сайту. Сервер надав дійсну інформацію про прозорість сертифіката.</translation>
 <translation id="5412637665001827670">Болгарська розкладка</translation>
 <translation id="3574210789297084292">увійти</translation>
-<translation id="5254480569305195883">Увімкнути підтримку події фонової синхронізації ServiceWorker.</translation>
 <translation id="2134149231879627725">Дозволити Google віддалено блокувати та знаходити пристрій, а також стирати дані на ньому.</translation>
 <translation id="5151034238407558331">На жаль, цей продавець приймає оплату через Google Payments лише від покупців зі США. Якщо ви проживаєте в США, |змініть свою домашню адресу в Google Payments| або виберіть інший спосіб оплати.</translation>
 <translation id="1146204723345436916">Імпортувати закладки з файлу HTML...</translation>
@@ -1677,7 +1671,6 @@
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">Увімкнути залипання клавіш</translation>
 <translation id="2150139952286079145">Пошук місць призначення</translation>
-<translation id="5637940320504994319">У вас недостатньо місця на Диску Google</translation>
 <translation id="2907619724991574506">URL-адреси автозавантаження</translation>
 <translation id="6780476430578694241">Панель запуску програм</translation>
 <translation id="5328285148748012771">Отримуйте доступ до всіх своїх програм із цієї зручної панелі запуску. Грайте в ігри, спілкуйтеся у відеочатах, слухайте музику, редагуйте документи та завантажуйте інші програми з Веб-магазину Chrome.</translation>
@@ -2487,7 +2480,6 @@
 <translation id="669052614725703943">&lt;p&gt;Не вдається встановити конфіденційне з’єднання з <ph name="BEGIN_BOLD"/><ph name="DOMAIN"/><ph name="END_BOLD"/>, оскільки на пристрої встановлено неправильні дату й час (<ph name="DATE_AND_TIME"/>).&lt;/p&gt;
 
           &lt;p&gt;Налаштуйте дату й час у розділі &lt;strong&gt;Загальні&lt;/strong&gt; додатка &lt;strong&gt;Налаштування&lt;/strong&gt;.&lt;/p&gt;</translation>
-<translation id="8614236384372926204">Це відео не доступне в режимі офлайн.</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> не може визначити чи встановити веб-переглядач за умовчанням.</translation>
 <translation id="7290594223351252791">Підтвердження реєстрації</translation>
 <translation id="8249681497942374579">Вилучити ярлик із робочого столу</translation>
@@ -3731,7 +3723,6 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="2371076942591664043">Відкрити коли &amp;виконано</translation>
 <translation id="3920504717067627103">Політика сертифікатів</translation>
-<translation id="1463543813647160932">5x7</translation>
 <translation id="7418949474175272990">Ця опція вимикає підтримку кодування потокового відео у WebRTC за допомогою апаратного забезпечення платформи.</translation>
 <translation id="2344028582131185878">Автоматичні завантаження</translation>
 <translation id="155865706765934889">Сенсорна панель</translation>
@@ -3927,7 +3918,6 @@
 <translation id="1105117579475534983">Веб-сторінку заблоковано</translation>
 <translation id="1673103856845176271">Доступ до файлу неможливо отримати з міркувань безпеки.</translation>
 <translation id="1199232041627643649">Утримуйте <ph name="KEY_EQUIVALENT"/>, щоб вийти.</translation>
-<translation id="63277795993398074">Увімкнути API пошукової системи на панелі запуску</translation>
 <translation id="3777806571986431400">Розширення ввімкнено</translation>
 <translation id="8957423540740801332">праворуч</translation>
 <translation id="2568774940984945469">Контейнер інформаційної панелі</translation>
@@ -4461,7 +4451,6 @@
 <translation id="4260442535208228602">Додати на панель запуску додатків</translation>
 <translation id="6965978654500191972">Пристрій</translation>
 <translation id="7684559058815332124">Перейти на сторінку входу приєднаного порталу</translation>
-<translation id="544897970364792192">Цей API дає змогу розширенням отримувати запити Панелі запуску Chrome і надавати результати пошуку.</translation>
 <translation id="225163402930830576">Оновити мережі</translation>
 <translation id="8623004009673949077">У режимі термінала в ОС Chrome потрібно встановити програму з атрибутом маніфесту &quot;kiosk_only&quot;.</translation>
 <translation id="358796204584394954">Введіть цей код на пристрої <ph name="DEVICE_NAME"/>, щоб підключити:</translation>
@@ -5140,7 +5129,6 @@
 <translation id="6630452975878488444">Сполучення клавіш для вибору</translation>
 <translation id="2934522647674136521">Використовуйте графічний процесор для растеризації веб-вмісту. Потрібне багатопотокове фарбування.</translation>
 <translation id="3004391367407090544">Поверніться пізніше</translation>
-<translation id="6262654738522632143">Завдяки фоновій синхронізації ServiceWorker може надсилати повідомлення й оновлювати ресурси, навіть якщо сторінка відкрита у фоновому режимі.</translation>
 <translation id="2440443888409942524">Метод введення для мови піньїнь (клавіатура США – Дворак)</translation>
 <translation id="830868413617744215">Бета-версія</translation>
 <translation id="2501797496290880632">Введіть комбінацію</translation>
@@ -5364,7 +5352,6 @@
 <translation id="6251889282623539337">Загальні положення та умови <ph name="DOMAIN"/></translation>
 <translation id="2470702053775288986">Непідтримувані розширення вимкнено</translation>
 <translation id="4047112090469382184">Наскільки це безпечно</translation>
-<translation id="5461512418490148136">Залишайтеся на зв’язку – ми отримуємо ваші файли.</translation>
 <translation id="4268574628540273656">URL-адреса:</translation>
 <translation id="6690455781383741953">Увімкнути функцію Plugin Power Saver</translation>
 <translation id="7481312909269577407">Переслати</translation>
@@ -5443,7 +5430,6 @@
 <translation id="8379970328220427967">Залишилося <ph name="SPACE_AVAILABLE"/></translation>
 <translation id="7773726648746946405">Пам’ять сеансу</translation>
 <translation id="5839277899276241121">Така ж, як платіжна адреса</translation>
-<translation id="2246155759345948098">Цей файл завеликий, щоб його відкрити.</translation>
 <translation id="4235813040357936597">Додати обліковий запис у профіль <ph name="PROFILE_NAME"/></translation>
 <translation id="9147392381910171771">&amp;Параметри</translation>
 <translation id="8803496343472038847">Російська клавіатура (фонетична)</translation>
@@ -5471,7 +5457,6 @@
 <translation id="2574102660421949343">Файли cookie з домену <ph name="DOMAIN"/> дозволено.</translation>
 <translation id="2773948261276885771">Установити сторінки</translation>
 <translation id="3688526734140524629">Змінити версію</translation>
-<translation id="4959447747655704388">Якщо ви розумієте ризики, пов’язані з безпекою, <ph name="BEGIN_LINK"/>перейдіть на заражений сайт<ph name="END_LINK"/>.</translation>
 <translation id="7030084719913890980">Можливо, зловмисники зламали захист цього сайту та намагатимуться встановити на ваш комп’ютер небезпечні програми, які викрадають або видаляють інформацію (як-от фотографії, паролі, повідомлення й дані кредитних карток).</translation>
 <translation id="6263625581655667292">Примусово вмикати режим Lo-Fi для заощадження трафіку, вмикати його лише під час з’єднання з мобільною мережею або вимкнути. Щоб користуватися режимом Lo-Fi, потрібно ввімкнути Заощадження трафіку.</translation>
 <translation id="5941153596444580863">Додати користувача…</translation>
@@ -5866,6 +5851,5 @@
 <translation id="1635033183663317347">Установив опікун.</translation>
 <translation id="5457858494714903578">Не вдалося встановити ненадійне розширення з ідентифікатором &quot;<ph name="IMPORT_ID"/>&quot;.</translation>
 <translation id="7025325401470358758">Наступна панель</translation>
-<translation id="3397561538744706497">9x16</translation>
 <translation id="259421303766146093">Зменшити</translation>
 </translationbundle>

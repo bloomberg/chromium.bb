@@ -172,7 +172,6 @@
 <translation id="7600965453749440009">Nikad ne prevodi <ph name="LANGUAGE"/></translation>
 <translation id="3208703785962634733">Nepotvrđeno</translation>
 <translation id="620329680124578183">Ne učitavajte (preporučeno)</translation>
-<translation id="6300924177400055566">Nemate dovoljno prostora na Google disku da biste spremili datoteku &quot;<ph name="FILE_NAME"/>&quot;. Uklonite datoteke ili <ph name="BEGIN_LINK"/>kupite više prostora za pohranu<ph name="END_LINK"/>.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2653266418988778031">Ako izbrišete certifikat tijela za izdavanje certifikata, vaš preglednik više neće vjerovati nijednom certifikatu koji to tijelo izda.</translation>
 <translation id="4237357878101553356">Nismo uspjeli potvrditi vaše podatke o računu. |Riješite taj problem|</translation>
@@ -383,7 +382,6 @@
 <translation id="5245965967288377800">Mreža WiMAX</translation>
 <translation id="40027638859996362">Pomicanje riječi</translation>
 <translation id="3522708245912499433">Portugalski</translation>
-<translation id="6956130766342550311">4 x 6</translation>
 <translation id="6699065916437121401">Navodi streamove audioizlaza da provjere jesu li dostupni neki drugi izgledi kanala osim zadanog hardverskog izgleda.</translation>
 <translation id="6928441285542626375">Omogući TCP Fast Open</translation>
 <translation id="7792388396321542707">Zaustavi dijeljenje</translation>
@@ -759,7 +757,7 @@ Svi se korisnici moraju prijaviti za nastavak.</translation>
 <translation id="5379140238605961210">Nastavi blokirati pristup mikrofonu</translation>
 <translation id="488785315393301722">Pokaži pojedinosti</translation>
 <translation id="820854170120587500">Google sigurno pregledavanje nedavno je otkrilo krađu identiteta na <ph name="SITE"/>. <ph name="BEGIN_LINK"/>Web-lokacije za krađu identiteta<ph name="END_LINK"/> predstavljaju se kao druge web-lokacije kako bi vas prevarile.</translation>
-<translation id="4377039040362059580">Teme i pozadinske slike</translation>
+<translation id="4377039040362059580">Teme i pozadine</translation>
 <translation id="5794414402486823030">Uvijek otvori u pregledniku sustava</translation>
 <translation id="711902386174337313">pročitati popis uređaja na koje ste prijavljeni</translation>
 <translation id="4381849418013903196">Dvotočka</translation>
@@ -877,11 +875,9 @@ Svi se korisnici moraju prijaviti za nastavak.</translation>
 <translation id="1013707859758800957">Na toj je stranici dopušteno pokretanje dodatka izvan testnog okruženja.</translation>
 <translation id="5618333180342767515">(može potrajati nekoliko minuta)</translation>
 <translation id="3392020134425442298">Oporavi zlonamjernu datoteku</translation>
-<translation id="1697820107502723922">Arhive</translation>
 <translation id="938470336146445890">Instalirajte korisnički certifikat.</translation>
 <translation id="3396331542604645348">Odabrani pisač nije dostupan ili nije ispravno instaliran. Provjerite pisač ili pokušajte odabrati neki drugi.</translation>
 <translation id="8480417584335382321">Zumiranje stranice:</translation>
-<translation id="3872166400289564527">Vanjski prostor za pohranu</translation>
 <translation id="1442912890475371290">Blokiran je pokušaj <ph name="BEGIN_LINK"/>posjeta stranici na domeni <ph name="DOMAIN"/><ph name="END_LINK"/>.</translation>
 <translation id="5912378097832178659">&amp;Uredi tražilicu...</translation>
 <translation id="8013526960933383914">Omogući jedinstvenu radnu površinu</translation>
@@ -982,7 +978,6 @@ Svi se korisnici moraju prijaviti za nastavak.</translation>
 <translation id="8064671687106936412">Ključ:</translation>
 <translation id="2218515861914035131">Zalijepi kao običan tekst</translation>
 <translation id="1725149567830788547">Prikaži &amp;kontrole</translation>
-<translation id="8216351761227087153">Pogledajte</translation>
 <translation id="3888118750782905860">Upravljanje potrošačima</translation>
 <translation id="3528033729920178817">Ova stranica prati vašu lokaciju.</translation>
 <translation id="7545288882499673859">Strategija odbacivanja memorije za napredno rukovanje pod pritiskom</translation>
@@ -1614,7 +1609,6 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="8209439005376447114">Izdavatelj certifikata <ph name="ISSUER"/> potvrdio je identitet ove web-lokacije. Informacije o transparentnosti certifikata pružio je poslužitelj.</translation>
 <translation id="5412637665001827670">Bugarska tipkovnica</translation>
 <translation id="3574210789297084292">prijava</translation>
-<translation id="5254480569305195883">Omogući podršku za događaj sinkronizacije ServiceWorkera u pozadini.</translation>
 <translation id="2134149231879627725">Dopustite Googleu da vam pomogne daljinski zaključati, izbrisati i locirati vaš uređaj.</translation>
 <translation id="5151034238407558331">Nažalost, kod ovog trgovca Google Paymentsom mogu plaćati samo kupci koji imaju adresu u SAD-u. Ako ste rezident SAD-a, |promijenite svoju adresu na Google Paymentsu| ili platite na neki drugi način.</translation>
 <translation id="1146204723345436916">Uvoz oznaka iz HTML datoteke...</translation>
@@ -1679,7 +1673,6 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">Omogući ljepljive tipke</translation>
 <translation id="2150139952286079145">Pretražite odredišta</translation>
-<translation id="5637940320504994319">Ponestalo vam je prostora na Google disku</translation>
 <translation id="2907619724991574506">URL-ovi za pokretanje</translation>
 <translation id="6780476430578694241">Pokretač aplikacija</translation>
 <translation id="5328285148748012771">Pristupajte svim svojim aplikacijama s ovog praktičnog pokretača. Igrajte igre, sudjelujte u videochatovima, slušajte glazbu, uređujte dokumente ili preuzmite još aplikacija s Chrome web-trgovine.</translation>
@@ -1841,7 +1834,7 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="3755411799582650620">Vaš <ph name="PHONE_NAME"/> sada može otključati i taj <ph name="DEVICE_TYPE"/>.</translation>
 <translation id="8787865569533773240">Vrati izmijenjene postavke usluge <ph name="IDS_SHORT_PRODUCT_NAME"/> na zadano</translation>
 <translation id="1901377140875308934">Prijava na uslugu <ph name="SHORT_PRODUCT_NAME"/>...</translation>
-<translation id="5529098031581368697">Trenutačnu pozadinsku sliku postavila je aplikacija &quot;<ph name="APP_NAME"/>&quot;</translation>
+<translation id="5529098031581368697">Trenutačnu pozadinu postavila je aplikacija &quot;<ph name="APP_NAME"/>&quot;</translation>
 <translation id="5074318175948309511">Ovu stranicu možda će biti potrebno ponovo učitati kako bi nove postavke stupile na snagu.</translation>
 <translation id="7664333939334980398">64</translation>
 <translation id="3947376313153737208">Bez odabira</translation>
@@ -2488,7 +2481,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="669052614725703943">&lt;p&gt;Sigurnu vezu s domenom <ph name="BEGIN_BOLD"/><ph name="DOMAIN"/><ph name="END_BOLD"/> nije moguće uspostaviti jer datum i vrijeme (<ph name="DATE_AND_TIME"/>) na vašem uređaju nisu točni.&lt;/p&gt;
 
           &lt;p&gt;Prilagodite datum i vrijeme putem odjeljka &lt;strong&gt;Općenito&lt;/strong&gt; u aplikaciji &lt;strong&gt;Postavke&lt;/strong&gt;.&lt;/p&gt;</translation>
-<translation id="8614236384372926204">Ovaj videozapis nije dostupan izvan mreže.</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> ne može utvrditi niti postaviti zadani preglednik.</translation>
 <translation id="7290594223351252791">Potvrda registracije</translation>
 <translation id="8249681497942374579">Ukloni prečac na radnoj površini</translation>
@@ -3751,7 +3743,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="6820686453637990663">CVC</translation>
 <translation id="2371076942591664043">Otvori nakon &amp;dovršetka</translation>
 <translation id="3920504717067627103">Pravila certifikata</translation>
-<translation id="1463543813647160932">5 x 7</translation>
 <translation id="7418949474175272990">Ta opcija onemogućuje podršku u WebRTC-u za kodiranje strujećih videozapisa pomoću hardvera platforme.</translation>
 <translation id="2344028582131185878">Automatska preuzimanja</translation>
 <translation id="155865706765934889">Dodirna površina</translation>
@@ -3916,7 +3907,7 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="7505167922889582512">Prikaži skrivene datoteke</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Pristup datoteci spremljenoj na računalu}one{Pristup do # datoteke spremljene na računalu}few{Pristup do # datoteke spremljene na računalu}other{Pristup do # datoteka spremljenih na računalu}}</translation>
 <translation id="2680208403056680091">Internetskom vezom upravlja proširenje</translation>
-<translation id="8662978096466608964">Chrome ne može postaviti pozadinsku sliku.</translation>
+<translation id="8662978096466608964">Chrome ne može postaviti pozadinu.</translation>
 <translation id="5334844597069022743">Pogledaj izvor</translation>
 <translation id="5534520101572674276">Veličina izračuna</translation>
 <translation id="9024127637873500333">&amp;Otvaranje u novoj kartici</translation>
@@ -3947,7 +3938,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="1105117579475534983">Web-stranica je blokirana</translation>
 <translation id="1673103856845176271">Nije bilo moguće pristupiti datoteci zbog sigurnosnih razloga.</translation>
 <translation id="1199232041627643649">Pritisnite <ph name="KEY_EQUIVALENT"/> za prekid.</translation>
-<translation id="63277795993398074">Omogućivanje API-ja davatelja usluge pretraživanja za pokretač.</translation>
 <translation id="3777806571986431400">Proširenje omogućeno</translation>
 <translation id="8957423540740801332">desno</translation>
 <translation id="2568774940984945469">Spremnik infotrake</translation>
@@ -4482,7 +4472,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="4260442535208228602">Dodavanje u Pokretač aplikacija</translation>
 <translation id="6965978654500191972">Uređaj</translation>
 <translation id="7684559058815332124">Posjeti stranicu za prijavu na obaveznom portalu za autentifikaciju</translation>
-<translation id="544897970364792192">Taj API omogućuje proširenjima slušanje upita Pokretača Chromea i vraćanje njihovih rezultata pretraživanja pokretaču.</translation>
 <translation id="225163402930830576">Osvježi mreže</translation>
 <translation id="8623004009673949077">Aplikaciju s atributom manifesta &quot;kiosk_only&quot; potrebno je instalirati u načinu kioska OS-a Chrome.</translation>
 <translation id="358796204584394954">Upišite ovaj kôd na uređaju <ph name="DEVICE_NAME"/> da biste ga uparili:</translation>
@@ -5161,7 +5150,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="6630452975878488444">Prečac odabira</translation>
 <translation id="2934522647674136521">Upotrebljava GPU za rasterizaciju web-sadržaja. Zahtijeva oslikavanje impl-side.</translation>
 <translation id="3004391367407090544">Vratite se kasnije</translation>
-<translation id="6262654738522632143">Sinkronizacija ServiceWorkera u pozadini omogućuje ServiceWorkerima slanje poruka i ažuriranje resursa čak i kada je stranica u pozadini.</translation>
 <translation id="2440443888409942524">Način unosa kineskim latiničnim pismom (za američku tipkovnicu Dvorak)</translation>
 <translation id="830868413617744215">Beta</translation>
 <translation id="2501797496290880632">Upišite prečac</translation>
@@ -5384,7 +5372,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="6251889282623539337">Uvjeti pružanja usluge domene <ph name="DOMAIN"/></translation>
 <translation id="2470702053775288986">Onemogućena su nepodržana proširenja</translation>
 <translation id="4047112090469382184">Koliko je to sigurno</translation>
-<translation id="5461512418490148136">Još samo malo. Dohvaćamo vaše datoteke.</translation>
 <translation id="4268574628540273656">URL:</translation>
 <translation id="6690455781383741953">Omogućivanje štednje energije za dodatke.</translation>
 <translation id="7481312909269577407">Naprijed</translation>
@@ -5463,7 +5450,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="8379970328220427967">Preostalo <ph name="SPACE_AVAILABLE"/></translation>
 <translation id="7773726648746946405">Pohrana sesije</translation>
 <translation id="5839277899276241121">Isto kao i adresa za naplatu</translation>
-<translation id="2246155759345948098">Ta je datoteka prevelika da bi se otvorila.</translation>
 <translation id="4235813040357936597">Dodaj račun za profil <ph name="PROFILE_NAME"/></translation>
 <translation id="9147392381910171771">&amp;Opcije</translation>
 <translation id="8803496343472038847">ruska fonetska tipkovnica</translation>
@@ -5491,7 +5477,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="2574102660421949343">Dopušteni su kolačići s web-mjesta <ph name="DOMAIN"/>.</translation>
 <translation id="2773948261276885771">Postavi stranice</translation>
 <translation id="3688526734140524629">Promijeni kanal</translation>
-<translation id="4959447747655704388">Ako ste svjesni sigurnosnih rizika, možete <ph name="BEGIN_LINK"/>posjetiti tu zaraženu web-lokaciju<ph name="END_LINK"/>.</translation>
 <translation id="7030084719913890980">Napadači su možda ugrozili tu web-lokaciju i možda će na vaše računalo pokušati instalirati opasne programe za krađu ili brisanje vaših podataka (primjeri: fotografije, zaporke, poruke i brojevi kreditnih kartica).</translation>
 <translation id="6263625581655667292">Nameće Lo-Fi način rada Uštede podataka kao uvijek omogućen, omogućen samo na mobilnim vezama ili onemogućen. Ušteda podataka mora biti omogućena da bi se Lo-Fi način rada mogao upotrebljavati.</translation>
 <translation id="5941153596444580863">Dodavanje osobe...</translation>
@@ -5594,7 +5579,7 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="5075306601479391924">Onemogućavanje zahtjeva korisničkih pokreta za reprodukciju medijskih elemenata. Aktiviranjem će se omogućiti automatska reprodukcija.</translation>
 <translation id="4872789845503416415">Da bi vam Chromebook lakše odgovorio i da biste pristupali glasovnom pretraživanju na siguran i jednostavan način, morate upoznati Google sa svojim glasom.</translation>
 <translation id="4377363674125277448">Pojavio se problem s certifikatom poslužitelja.</translation>
-<translation id="9112748030372401671">promijeniti pozadinsku sliku</translation>
+<translation id="9112748030372401671">promijeniti pozadinu</translation>
 <translation id="8938356204940892126">Odustajem</translation>
 <translation id="2670965183549957348">Chewing način unosa</translation>
 <translation id="7839804798877833423">Dohvaćanje tih datoteka potrošit će približno <ph name="FILE_SIZE"/> mobilnih podataka.</translation>
@@ -5799,7 +5784,7 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="5511823366942919280">Jeste li sigurni da želite postaviti ovaj uređaj kao &quot;Shark&quot;?</translation>
 <translation id="5286673433070377078">Putanje prototipnog ispunjivača – VJEROJATNO ĆE SRUŠITI PREGLEDNIK</translation>
 <translation id="6843725295806269523">isključi ton</translation>
-<translation id="4682551433947286597">Pozadinske slike prikazuju se na zaslonu za prijavu.</translation>
+<translation id="4682551433947286597">Pozadine se prikazuju na zaslonu za prijavu.</translation>
 <translation id="4394049700291259645">Onemogući</translation>
 <translation id="5284518706373932381">Vratite se na tu web-lokaciju za nekoliko sati. Google sigurno pregledavanje nedavno je <ph name="BEGIN_LINK"/>otkrilo zlonamjerni softver<ph name="END_LINK"/> na <ph name="SITE"/>. Web-lokacije koje su inače sigurne ponekad mogu biti zaražene zlonamjernim softverom.</translation>
 <translation id="969892804517981540">Službeni sastavak</translation>
@@ -5886,6 +5871,5 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="1635033183663317347">Instalirao tvoj skrbnik.</translation>
 <translation id="5457858494714903578">Nije moguće instalirati nepouzdano proširenje čiji je ID &quot;<ph name="IMPORT_ID"/>&quot;.</translation>
 <translation id="7025325401470358758">Sljedeće okno</translation>
-<translation id="3397561538744706497">9 x 16</translation>
 <translation id="259421303766146093">Isključi povećanje</translation>
 </translationbundle>

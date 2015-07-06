@@ -171,7 +171,6 @@
 <translation id="7600965453749440009">No traducir nunca del <ph name="LANGUAGE"/></translation>
 <translation id="3208703785962634733">Sin confirmar</translation>
 <translation id="620329680124578183">No cargar (recomendado)</translation>
-<translation id="6300924177400055566">No tienes suficiente espacio en Google Drive para guardar &quot;<ph name="FILE_NAME"/>&quot;. Elimina archivos o <ph name="BEGIN_LINK"/>compra más espacio de almacenamiento<ph name="END_LINK"/>.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2653266418988778031">Si eliminas el certificado de CA, el navegador ya no podrá confiar en ningún certificado emitido por esa entidad emisora de certificados.</translation>
 <translation id="4237357878101553356">No hemos podido verificar la información de tu cuenta. |Solucionar este problema|</translation>
@@ -393,7 +392,6 @@
 <translation id="5245965967288377800">Red WiMAX</translation>
 <translation id="40027638859996362">Movimiento de palabras</translation>
 <translation id="3522708245912499433">Portugués</translation>
-<translation id="6956130766342550311">4x6</translation>
 <translation id="6699065916437121401">Hace que los flujos de salida de audio comprueben si hay disponibles superposiciones del canal distintas a la superposición de hardware predeterminada.</translation>
 <translation id="6928441285542626375">Habilitar TCP Fast Open</translation>
 <translation id="7792388396321542707">Dejar de compartir</translation>
@@ -888,11 +886,9 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="1013707859758800957">Se ha permitido la ejecución de un complemento no incluido en la zona de pruebas en esta página.</translation>
 <translation id="5618333180342767515">(este proceso puede tardar algunos minutos)</translation>
 <translation id="3392020134425442298">Recuperar archivo malicioso</translation>
-<translation id="1697820107502723922">Archivos</translation>
 <translation id="938470336146445890">Instala un certificado de usuario.</translation>
 <translation id="3396331542604645348">La impresora seleccionada no se encuentra disponible o no está instalada correctamente. Comprueba tu impresora o prueba a seleccionar otra.</translation>
 <translation id="8480417584335382321">Zoom de página:</translation>
-<translation id="3872166400289564527">Almacenamiento externo</translation>
 <translation id="1442912890475371290">Se ha bloqueado un intento de <ph name="BEGIN_LINK"/>acceso a una página de <ph name="DOMAIN"/><ph name="END_LINK"/>.</translation>
 <translation id="5912378097832178659">&amp;Editar motores de búsqueda...</translation>
 <translation id="8013526960933383914">Habilitar escritorio unificado</translation>
@@ -993,7 +989,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="8064671687106936412">Clave:</translation>
 <translation id="2218515861914035131">Pegar como texto sin formato</translation>
 <translation id="1725149567830788547">Mostrar &amp;controles</translation>
-<translation id="8216351761227087153">Ver</translation>
 <translation id="3888118750782905860">Administración de consumidores</translation>
 <translation id="3528033729920178817">Esta página está realizando un seguimiento de tu ubicación.</translation>
 <translation id="7545288882499673859">Estrategia de prescindencia de memoria para la gestión de presión avanzada</translation>
@@ -1625,7 +1620,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME"/> p
 <translation id="8209439005376447114"><ph name="ISSUER"/> ha verificado la identidad de este sitio web. El servidor ha proporcionado información de Transparencia de certificados válida.</translation>
 <translation id="5412637665001827670">Teclado búlgaro</translation>
 <translation id="3574210789297084292">iniciar sesión</translation>
-<translation id="5254480569305195883">Habilitar compatibilidad con evento de sincronización en segundo plano de ServiceWorker.</translation>
 <translation id="2134149231879627725">Permite a Google ayudarte a bloquear, borrar y localizar tu dispositivo de forma remota.</translation>
 <translation id="5151034238407558331">Lamentablemente, solo pueden utilizar Google Payments con este comerciante los compradores que tengan una dirección de Estados Unidos. Si resides en Estados Unidos, |cambia tu dirección particular con Google Payments| o realiza el pago sin utilizar este servicio.</translation>
 <translation id="1146204723345436916">Importar marcadores desde archivo HTML...</translation>
@@ -1690,7 +1684,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME"/> p
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">Habilitar teclas de acción prolongada</translation>
 <translation id="2150139952286079145">Buscar destinos</translation>
-<translation id="5637940320504994319">Te has quedado sin espacio en Google Drive.</translation>
 <translation id="2907619724991574506">URLs de inicio</translation>
 <translation id="6780476430578694241">Menú de aplicaciones</translation>
 <translation id="5328285148748012771">Accede a todas tus aplicaciones desde este práctico menú. Juega, participa en chats de vídeo, escucha música, edita documentos o consigue más aplicaciones a través de Chrome Web Store.</translation>
@@ -2494,7 +2487,6 @@ Después de crear un nuevo usuario supervisado, podrás administrar su configura
 <translation id="669052614725703943">&lt;p&gt;No se puede establecer una conexión privada con <ph name="BEGIN_BOLD"/><ph name="DOMAIN"/><ph name="END_BOLD"/> porque la fecha y la hora de tu dispositivo (<ph name="DATE_AND_TIME"/>) no son correctas.&lt;/p&gt;
 
           &lt;p&gt;Ajusta la fecha y la hora en la sección &lt;strong&gt;General&lt;/strong&gt; de la aplicación &lt;strong&gt;Ajustes&lt;/strong&gt;.&lt;/p&gt;</translation>
-<translation id="8614236384372926204">Este video no está disponible sin conexión.</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> no puede determinar ni establecer el navegador predeterminado.</translation>
 <translation id="7290594223351252791">Confirmar registro</translation>
 <translation id="8249681497942374579">Eliminar acceso directo de escritorio</translation>
@@ -3760,7 +3752,6 @@ Después de crear un nuevo usuario supervisado, podrás administrar su configura
 <translation id="6820686453637990663">CVC</translation>
 <translation id="2371076942591664043">Abrir al &amp;finalizar</translation>
 <translation id="3920504717067627103">Políticas de certificados</translation>
-<translation id="1463543813647160932">5x7</translation>
 <translation id="7418949474175272990">Esta opción inhabilita la compatibilidad en WebRTC para codificar emisiones de vídeo a través del hardware de la plataforma.</translation>
 <translation id="2344028582131185878">Descargas automáticas</translation>
 <translation id="155865706765934889">Panel táctil</translation>
@@ -3957,7 +3948,6 @@ Después de crear un nuevo usuario supervisado, podrás administrar su configura
 <translation id="1105117579475534983">Página web bloqueada</translation>
 <translation id="1673103856845176271">No se ha podido acceder al archivo por razones de seguridad.</translation>
 <translation id="1199232041627643649">Mantén pulsada la tecla <ph name="KEY_EQUIVALENT"/> para salir.</translation>
-<translation id="63277795993398074">Habilitar la API del proveedor de búsqueda del menú de aplicaciones.</translation>
 <translation id="3777806571986431400">Extensión activada</translation>
 <translation id="8957423540740801332">derecha</translation>
 <translation id="2568774940984945469">Contenedor de barra de información</translation>
@@ -4492,7 +4482,6 @@ Después de crear un nuevo usuario supervisado, podrás administrar su configura
 <translation id="4260442535208228602">Añadir al menú de aplicaciones</translation>
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="7684559058815332124">Visitar la página de inicio de sesión del portal cautivo</translation>
-<translation id="544897970364792192">Esta API permite que las extensiones detecten consultas del menú de aplicaciones de Chrome y le devuelvan los resultados de búsqueda.</translation>
 <translation id="225163402930830576">Actualizar redes</translation>
 <translation id="8623004009673949077">La aplicación con el atributo del archivo de manifiesto &quot;kiosk_only&quot; se debe instalar en el modo de kiosco de Chrome OS.</translation>
 <translation id="358796204584394954">Escribe este código en el dispositivo <ph name="DEVICE_NAME"/> para vincularlo:</translation>
@@ -5172,7 +5161,6 @@ sistema operativo desde una unidad USB
 <translation id="6630452975878488444">Acceso directo de selección</translation>
 <translation id="2934522647674136521">Utiliza GPU para rasterizar contenido web. Requiere la marca &quot;impl-side painting&quot;.</translation>
 <translation id="3004391367407090544">Vuelve a intentarlo más tarde</translation>
-<translation id="6262654738522632143">La sincronización en segundo plano de ServiceWorker permite a los web workers enviar mensajes y actualizar recursos, aunque la página esté en segundo plano.</translation>
 <translation id="2440443888409942524">Método de entrada de pinyin (para teclado dvorak estadounidense)</translation>
 <translation id="830868413617744215">Beta</translation>
 <translation id="2501797496290880632">Escribe una combinación.</translation>
@@ -5396,7 +5384,6 @@ Calculando el tiempo de carga completa</translation>
 <translation id="6251889282623539337">Condiciones de servicio de <ph name="DOMAIN"/></translation>
 <translation id="2470702053775288986">Extensiones no admitidas inhabilitadas</translation>
 <translation id="4047112090469382184">Seguridad</translation>
-<translation id="5461512418490148136">Ten paciencia. Estamos recuperando los archivos.</translation>
 <translation id="4268574628540273656">URL:</translation>
 <translation id="6690455781383741953">Habilitar ahorro de energía de complemento</translation>
 <translation id="7481312909269577407">Adelante</translation>
@@ -5477,7 +5464,6 @@ Es posible que algunas funciones no estén disponibles. Comprueba si el perfil e
 <translation id="8379970328220427967">Quedan <ph name="SPACE_AVAILABLE"/>.</translation>
 <translation id="7773726648746946405">Almacenamiento de sesión</translation>
 <translation id="5839277899276241121">Igual que la dirección de facturación</translation>
-<translation id="2246155759345948098">No se puede abrir el archivo porque es demasiado grande.</translation>
 <translation id="4235813040357936597">Añadir cuenta de <ph name="PROFILE_NAME"/></translation>
 <translation id="9147392381910171771">&amp;Opciones</translation>
 <translation id="8803496343472038847">Teclado ruso fonético</translation>
@@ -5505,7 +5491,6 @@ Pulsa cualquier tecla para seguir con la exploración.</translation>
 <translation id="2574102660421949343">Se han permitido las cookies de <ph name="DOMAIN"/>.</translation>
 <translation id="2773948261276885771">Establecer páginas</translation>
 <translation id="3688526734140524629">Cambiar canal</translation>
-<translation id="4959447747655704388">Si entiendes los riesgos para tu seguridad, puedes <ph name="BEGIN_LINK"/>acceder a este sitio con contenido malicioso<ph name="END_LINK"/>.</translation>
 <translation id="7030084719913890980">Los atacantes pueden haber vulnerado la seguridad de este sitio y podrían intentar instalar programas peligrosos en tu ordenador que roban o eliminan tu información (por ejemplo, fotos, contraseñas, mensajes y tarjetas de crédito).</translation>
 <translation id="6263625581655667292">Hace que el modo de baja fidelidad del Economizador de datos esté inhabilitado, habilitado siempre o habilitado únicamente en las conexiones móviles. El Economizador de datos debe estar habilitado para que se pueda utilizar el modo de baja fidelidad.</translation>
 <translation id="5941153596444580863">Añadir persona...</translation>
@@ -5900,6 +5885,5 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="1635033183663317347">Instalada por tu tutor legal.</translation>
 <translation id="5457858494714903578">No se puede instalar la extensión no fiable con ID &quot;<ph name="IMPORT_ID"/>&quot;.</translation>
 <translation id="7025325401470358758">Siguiente panel</translation>
-<translation id="3397561538744706497">9x16</translation>
 <translation id="259421303766146093">Reducir</translation>
 </translationbundle>

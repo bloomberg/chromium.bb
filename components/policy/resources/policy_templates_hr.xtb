@@ -1148,7 +1148,7 @@
 <translation id="8099880303030573137">Odgoda neaktivnosti za vrijeme baterijskog napajanja</translation>
 <translation id="1709037111685927635">Konfigurira se pozadinska slika.
 
-      Tim pravilom možete konfigurirati pozadinsku sliku koja se prikazuje na radnoj površini te kao pozadina zaslona za prijavu korisnika. Pravilo se postavlja navođenjem URL-a s kojeg <ph name="PRODUCT_OS_NAME"/> može preuzeti pozadinsku sliku i kriptografski sažetak koji služi za provjeru integriteta preuzimanja. Slika mora biti u JPEG formatu i ne smije biti veća od 16 MB. URL-u se mora moći pristupiti bez autentifikacije.
+      Tim pravilom možete konfigurirati pozadinu koja se prikazuje na radnoj površini te kao pozadina zaslona za prijavu korisnika. Pravilo se postavlja navođenjem URL-a s kojeg <ph name="PRODUCT_OS_NAME"/> može preuzeti pozadinu i kriptografski sažetak koji služi za provjeru integriteta preuzimanja. Slika mora biti u JPEG formatu i ne smije biti veća od 16 MB. URL-u se mora moći pristupiti bez autentifikacije.
 
       Pozadinska slika preuzima se i sprema u predmemoriju. Ponovo će se preuzeti svaki put kada se URL ili sažetak promijene.
 
@@ -1161,13 +1161,13 @@
             &quot;type&quot;: &quot;string&quot;
           },
           &quot;hash&quot;: {
-            &quot;description&quot;: &quot;SHA-256 sažetak za pozadinsku sliku.&quot;,
+            &quot;description&quot;: &quot;SHA-256 sažetak za pozadinu.&quot;,
             &quot;type&quot;: &quot;string&quot;
           }
         }
       }
 
-      Ako se pravilo postavi, <ph name="PRODUCT_OS_NAME"/> preuzet će i upotrijebiti pozadinsku sliku.
+      Ako se pravilo postavi, <ph name="PRODUCT_OS_NAME"/> preuzet će i upotrijebiti pozadinu.
 
       Ako postavite to pravilo, korisnici ga neće moći promijeniti ni nadjačati.
 

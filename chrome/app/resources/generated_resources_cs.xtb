@@ -172,7 +172,6 @@
 <translation id="7600965453749440009">Jazyk <ph name="LANGUAGE"/> nikdy nepřekládat</translation>
 <translation id="3208703785962634733">Nepotvrzeno</translation>
 <translation id="620329680124578183">Nenačítat (doporučeno)</translation>
-<translation id="6300924177400055566">Na Disku Google není dostatek místa k uložení souboru <ph name="FILE_NAME"/>. Odstraňte prosím soubory nebo si <ph name="BEGIN_LINK"/>zakupte další úložný prostor<ph name="END_LINK"/>.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2653266418988778031">Smažete-li certifikát certifikační autority (CA), prohlížeč již nebude důvěřovat žádným certifikátům vydaným touto CA.</translation>
 <translation id="4237357878101553356">Informace o účtu se nepodařilo ověřit. |Vyřešit problém|</translation>
@@ -387,7 +386,6 @@
 <translation id="5245965967288377800">Síť WiMAX</translation>
 <translation id="40027638859996362">Přesunutí slova</translation>
 <translation id="3522708245912499433">portugalština</translation>
-<translation id="6956130766342550311">4:6</translation>
 <translation id="6699065916437121401">Způsobí, že streamy zvukového výstupu budou zjišťovat, zda jsou k dispozici jiná rozvržení kanálů, než je výchozí rozvržení hardwaru.</translation>
 <translation id="6928441285542626375">Aktivovat funkci rychlého otevření protokolu TCP</translation>
 <translation id="7792388396321542707">Ukončit sdílení</translation>
@@ -879,11 +877,9 @@ Všichni uživatelé se před pokračováním musejí odhlásit.</translation>
 <translation id="1013707859758800957">Na této stránce bylo povoleno spuštění pluginu mimo izolovaný prostor.</translation>
 <translation id="5618333180342767515">(Může to trvat i několik minut.)</translation>
 <translation id="3392020134425442298">Obnovit škodlivý soubor</translation>
-<translation id="1697820107502723922">Archivy</translation>
 <translation id="938470336146445890">Nainstalujte prosím uživatelský certifikát.</translation>
 <translation id="3396331542604645348">Zvolená tiskárna není k dispozici nebo není správně nainstalovaná. Zkontrolujte tiskárnu nebo vyberte jinou.</translation>
 <translation id="8480417584335382321">Přiblížit/oddálit stránku:</translation>
-<translation id="3872166400289564527">Externí úložiště</translation>
 <translation id="1442912890475371290">Byl zablokován pokus <ph name="BEGIN_LINK"/> navštívit stránku v doméně <ph name="DOMAIN"/><ph name="END_LINK"/>.</translation>
 <translation id="5912378097832178659">Upravit vyhledávače...</translation>
 <translation id="8013526960933383914">Aktivovat jednotnou plochu</translation>
@@ -984,7 +980,6 @@ Všichni uživatelé se před pokračováním musejí odhlásit.</translation>
 <translation id="8064671687106936412">Klíč:</translation>
 <translation id="2218515861914035131">Vložit jako prostý text</translation>
 <translation id="1725149567830788547">Zobrazit &amp;ovládací prvky</translation>
-<translation id="8216351761227087153">Sledovat</translation>
 <translation id="3888118750782905860">Správa spotřebitelů</translation>
 <translation id="3528033729920178817">Tato stránka sleduje vaši polohu.</translation>
 <translation id="7545288882499673859">Strategie mazání paměti pro účely pokročilé správy zatížení</translation>
@@ -1615,7 +1610,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME"/>
 <translation id="8209439005376447114">Identita těchto webových stránek byla ověřena organizací <ph name="ISSUER"/>. Server poskytl platné údaje o transparentnosti certifikátu.</translation>
 <translation id="5412637665001827670">Bulharská klávesnice</translation>
 <translation id="3574210789297084292">Přihlaste se</translation>
-<translation id="5254480569305195883">Aktivovat podporu události synchronizace rozhraní ServiceWorker na pozadí</translation>
 <translation id="2134149231879627725">Umožní Googlu pomoci vám se vzdáleným uzamčením, vymazáním nebo vyhledáním zařízení.</translation>
 <translation id="5151034238407558331">Litujeme, službu Google Payments mohou u tohoto obchodníka použít pouze kupující s adresou v USA. Pokud sídlíte v USA, |změňte adresu bydliště uvedenou ve službě Google Payments,| nebo zaplaťte jinak než pomocí služby Google Payments.</translation>
 <translation id="1146204723345436916">Importovat záložky ze souboru HTML...</translation>
@@ -1680,7 +1674,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME"/>
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">Aktivovat funkci StickyKeys</translation>
 <translation id="2150139952286079145">Vyhledat cíle</translation>
-<translation id="5637940320504994319">Na Disku Google již nemáte volné místo.</translation>
 <translation id="2907619724991574506">Adresy URL po spuštění</translation>
 <translation id="6780476430578694241">App Launcher</translation>
 <translation id="5328285148748012771">Ke všem svým aplikacím můžete snadno přistupovat pomocí tohoto šikovného spouštěče. Hrajte hry, videochatujte, poslouchejte hudbu, upravujte dokumenty nebo si stáhněte další aplikace z Internetového obchodu Chrome.</translation>
@@ -2485,7 +2478,6 @@ Po vytvoření nového dozorovaného uživatele můžete jeho nastavení spravov
 <translation id="669052614725703943">&lt;p&gt;Soukromé připojení k doméně <ph name="BEGIN_BOLD"/><ph name="DOMAIN"/><ph name="END_BOLD"/> nelze navázat, protože máte v zařízení nastaveno chybné datum a čas (<ph name="DATE_AND_TIME"/>).&lt;/p&gt;
 
           &lt;p&gt;Datum a čas upravte v aplikaci &lt;strong&gt;Nastavení&lt;/strong&gt; v sekci &lt;strong&gt;Obecné&lt;/strong&gt;.&lt;/p&gt;</translation>
-<translation id="8614236384372926204">Toto video není k dispozici v režimu offline.</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> nemůže určit nebo nastavit výchozí prohlížeč.</translation>
 <translation id="7290594223351252791">Potvrzení registrace</translation>
 <translation id="8249681497942374579">Odebrat zástupce na ploše</translation>
@@ -3754,7 +3746,6 @@ Zde poskytnutý diagnostický nástroj na řešení problémů s připojením v�
 <translation id="6820686453637990663">Bezpečnostní kód platební karty (CVC)</translation>
 <translation id="2371076942591664043">Po dokončení otevřít</translation>
 <translation id="3920504717067627103">Zásady certifikátů</translation>
-<translation id="1463543813647160932">5:7</translation>
 <translation id="7418949474175272990">Tato možnost deaktivuje podporu rozhraní WebRTC ke kódování datových proudů videa pomocí hardwaru platformy.</translation>
 <translation id="2344028582131185878">Automatická stahování</translation>
 <translation id="155865706765934889">Touchpad</translation>
@@ -3951,7 +3942,6 @@ Zde poskytnutý diagnostický nástroj na řešení problémů s připojením v�
 <translation id="1105117579475534983">Webová stránka blokována</translation>
 <translation id="1673103856845176271">Soubor je z bezpečnostních důvodů nedostupný.</translation>
 <translation id="1199232041627643649">Ukončení proveďte podržením kláves <ph name="KEY_EQUIVALENT"/>.</translation>
-<translation id="63277795993398074">Aktivovat Launcher Search Provider API</translation>
 <translation id="3777806571986431400">Rozšíření povoleno</translation>
 <translation id="8957423540740801332">vpravo</translation>
 <translation id="2568774940984945469">Kontejner informačního panelu</translation>
@@ -4484,7 +4474,6 @@ Zde poskytnutý diagnostický nástroj na řešení problémů s připojením v�
 <translation id="4260442535208228602">Přidat do Spouštěče aplikací</translation>
 <translation id="6965978654500191972">Zařízení</translation>
 <translation id="7684559058815332124">Navštívit přihlašovací stránku captive portálu</translation>
-<translation id="544897970364792192">Toto rozhraní API rozšířením umožňuje naslouchat dotazům Spouštěče Chrome a vracet mu výsledky vyhledávání.</translation>
 <translation id="225163402930830576">Aktualizovat sítě</translation>
 <translation id="8623004009673949077">Aplikace s atributem manifestu kiosk_only je třeba nainstalovat v režimu veřejného terminálu systému Chrome OS.</translation>
 <translation id="358796204584394954">V zařízení „<ph name="DEVICE_NAME"/>“ zadejte tento kód:</translation>
@@ -5163,7 +5152,6 @@ Když je tato možnost aktivována, element document.scrollingElement odpovídá
 <translation id="6630452975878488444">Zástupce výběru</translation>
 <translation id="2934522647674136521">Rastruje webový obsah pomocí GPU. Vyžaduje vykreslování v samostatném vlákně.</translation>
 <translation id="3004391367407090544">Zkuste to prosím později</translation>
-<translation id="6262654738522632143">Synchronizace rozhraní ServiceWorker na pozadí umožňuje skriptům ServiceWorker zasílat zprávy a aktualizovat zdroje i v případě, že je stránka na pozadí.</translation>
 <translation id="2440443888409942524">Metoda zadávání pinyin (pro americkou klávesnici typu Dvorak)</translation>
 <translation id="830868413617744215">Beta</translation>
 <translation id="2501797496290880632">Zadejte zkratku</translation>
@@ -5387,7 +5375,6 @@ Výpočet času zbývajícího do úplného nabití</translation>
 <translation id="6251889282623539337">Smluvní podmínky služby <ph name="DOMAIN"/></translation>
 <translation id="2470702053775288986">Nepodporovaná rozšíření byla zakázána</translation>
 <translation id="4047112090469382184">Proč je to bezpečné</translation>
-<translation id="5461512418490148136">Chvilku vydržte. Vaše soubory právě načítáme.</translation>
 <translation id="4268574628540273656">Adresa URL:</translation>
 <translation id="6690455781383741953">Aktivovat úsporný režim pro pluginy</translation>
 <translation id="7481312909269577407">Vpřed</translation>
@@ -5467,7 +5454,6 @@ Některé funkce nemusí být dostupné. Zkontrolujte, zda profil existuje a zda
 <translation id="8379970328220427967">volné místo: <ph name="SPACE_AVAILABLE"/></translation>
 <translation id="7773726648746946405">Úložiště relace</translation>
 <translation id="5839277899276241121">Stejná jako fakturační adresa</translation>
-<translation id="2246155759345948098">Soubor je příliš velký a nelze jej otevřít.</translation>
 <translation id="4235813040357936597">Přidat účet pro profil <ph name="PROFILE_NAME"/></translation>
 <translation id="9147392381910171771">&amp;Možnosti</translation>
 <translation id="8803496343472038847">Ruská fonetická klávesnice</translation>
@@ -5495,7 +5481,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="2574102660421949343">Soubory cookie z webu <ph name="DOMAIN"/> byly povoleny.</translation>
 <translation id="2773948261276885771">Skupina stránek</translation>
 <translation id="3688526734140524629">Změnit kanál</translation>
-<translation id="4959447747655704388">Pokud bezpečnostní rizika chápete, můžete <ph name="BEGIN_LINK"/>napadený web navštívit<ph name="END_LINK"/>.</translation>
 <translation id="7030084719913890980">Je možné, že tento web napadli útočníci, kteří by se mohli pokusit nainstalovat vám do počítače nebezpečné programy, které mohou ukrást nebo smazat vaše informace (například fotky, hesla, zprávy nebo platební karty).</translation>
 <translation id="6263625581655667292">Vynutí, aby režim nízké kvality Spořiče dat byl vždy aktivován, vždy deaktivován, nebo aktivován pouze v případě připojení k mobilní síti. Aby bylo možné použít režim nízké kvality, musí být aktivován Spořič dat.</translation>
 <translation id="5941153596444580863">Přidat uživatele...</translation>
@@ -5890,6 +5875,5 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="1635033183663317347">Nainstaloval váš opatrovník</translation>
 <translation id="5457858494714903578">Nedůvěryhodné rozšíření s ID <ph name="IMPORT_ID"/> nelze nainstalovat.</translation>
 <translation id="7025325401470358758">Další podokno</translation>
-<translation id="3397561538744706497">9:16</translation>
 <translation id="259421303766146093">Zmenšit</translation>
 </translationbundle>

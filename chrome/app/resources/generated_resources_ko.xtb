@@ -173,7 +173,6 @@
 <translation id="7600965453749440009"><ph name="LANGUAGE"/> 번역 안함</translation>
 <translation id="3208703785962634733">미확인</translation>
 <translation id="620329680124578183">로드하지 않음(권장)</translation>
-<translation id="6300924177400055566">Google 드라이브에 '<ph name="FILE_NAME"/>'을(를) 저장할 수 있는 공간이 충분하지 않습니다. 파일을 삭제하거나 <ph name="BEGIN_LINK"/>추가 저장 공간을 구매하세요<ph name="END_LINK"/>.</translation>
 <translation id="9074739597929991885">블루투스</translation>
 <translation id="2653266418988778031">인증 기관(CA) 인증서를 삭제하면 브라우저가 해당 CA에서 발급된 인증서를 더 이상 신뢰하지 않습니다.</translation>
 <translation id="4237357878101553356">계정 정보를 확인하지 못햇습니다. |문제 해결|</translation>
@@ -390,7 +389,6 @@
 <translation id="5245965967288377800">WiMAX 네트워크</translation>
 <translation id="40027638859996362">단어 이동</translation>
 <translation id="3522708245912499433">포르투갈어</translation>
-<translation id="6956130766342550311">4x6</translation>
 <translation id="6699065916437121401">기본 하드웨어 레이아웃이 아닌 다른 채널 레이아웃의 사용 가능 여부를 확인하기 위한 오디오 출력 스트림 시작</translation>
 <translation id="6928441285542626375">TCP 빠른 열기 사용</translation>
 <translation id="7792388396321542707">공유 중지</translation>
@@ -892,11 +890,9 @@
 <translation id="1013707859758800957">이 페이지에서 샌드박스 처리되지 않은 플러그인 실행을 허용했습니다.</translation>
 <translation id="5618333180342767515">(몇 분이 걸릴 수 있음)</translation>
 <translation id="3392020134425442298">악성 파일 복구</translation>
-<translation id="1697820107502723922">아카이브</translation>
 <translation id="938470336146445890">사용자 인증서를 설치하세요.</translation>
 <translation id="3396331542604645348">선택한 프린터가 사용할 수 없거나 올바르게 설치되어 있지 않습니다. 프린터를 확인하거나 다른 프린터를 선택해 보세요.</translation>
 <translation id="8480417584335382321">페이지 확대/축소:</translation>
-<translation id="3872166400289564527">외부 저장소</translation>
 <translation id="1442912890475371290"><ph name="BEGIN_LINK"/><ph name="DOMAIN"/> 페이지를 방문<ph name="END_LINK"/>하려는 시도가 차단되었습니다.</translation>
 <translation id="5912378097832178659">검색 엔진 변경(&amp;E)...</translation>
 <translation id="8013526960933383914">통합 바탕화면 사용 설정</translation>
@@ -997,7 +993,6 @@
 <translation id="8064671687106936412">키:</translation>
 <translation id="2218515861914035131">일반 텍스트로 붙여넣기</translation>
 <translation id="1725149567830788547">컨트롤 표시(&amp;C)</translation>
-<translation id="8216351761227087153">보기</translation>
 <translation id="3888118750782905860">소비자 관리</translation>
 <translation id="3528033729920178817">이 페이지에서는 사용자 위치를 추적합니다.</translation>
 <translation id="7545288882499673859">고급 압축 처리를 위한 메모리 삭제 전략</translation>
@@ -1632,7 +1627,6 @@
 <translation id="8209439005376447114"><ph name="ISSUER"/>에서 이 웹사이트의 ID를 인증했습니다. 서버가 유효한 인증서 확인 정보를 제공했습니다.</translation>
 <translation id="5412637665001827670">불가리아어 키보드</translation>
 <translation id="3574210789297084292">로그인</translation>
-<translation id="5254480569305195883">ServiceWorker 백그라운드 동기화 이벤트 지원을 사용하도록 설정합니다.</translation>
 <translation id="2134149231879627725">Google에서 원격으로 기기를 잠그고 초기화하고 찾도록 지원하는 것을 허용합니다.</translation>
 <translation id="5151034238407558331">죄송하지만 미국 주소가 있는 구매자만 Google Payments를 사용하여 판매자로부터 구매할 수 있습니다. 미국 거주자인 경우 |Google Payments와 연결된 집 주소를 변경|하거나 Google Payments 이외의 방법으로 결제하세요.</translation>
 <translation id="1146204723345436916">HTML 파일에서 북마크 가져오기...</translation>
@@ -1697,7 +1691,6 @@
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">고정키 사용</translation>
 <translation id="2150139952286079145">대상 검색</translation>
-<translation id="5637940320504994319">Google 드라이브의 저장 공간이 부족합니다.</translation>
 <translation id="2907619724991574506">시작 URL</translation>
 <translation id="6780476430578694241">앱 실행기</translation>
 <translation id="5328285148748012771">이 간편한 실행기를 사용하여 모든 앱에 액세스할 수 있습니다. 게임을 하고 화상 채팅을 하고 음악을 들으며 문서를 편집하거나 Chrome 웹 스토어에서 다른 앱을 다운로드해 보세요.</translation>
@@ -2514,7 +2507,6 @@
 <translation id="669052614725703943">&lt;p&gt;기기의 날짜와 시간(<ph name="DATE_AND_TIME"/>)이 잘못되어 <ph name="BEGIN_BOLD"/><ph name="DOMAIN"/><ph name="END_BOLD"/>에 대한 비공개 연결을 설정할 수 없습니다.&lt;/p&gt;
 
           &lt;p&gt;&lt;strong&gt;설정&lt;/strong&gt; 앱의 &lt;strong&gt;일반&lt;/strong&gt; 섹션에서 날짜와 시간을 조정하세요.&lt;/p&gt;</translation>
-<translation id="8614236384372926204">이 동영상은 오프라인에서 사용할 수 없습니다.</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/>에서 기본 브라우저를 결정하거나 설정할 수 없습니다.</translation>
 <translation id="7290594223351252791">등록 확인</translation>
 <translation id="8249681497942374579">바탕화면 바로가기 삭제</translation>
@@ -3778,7 +3770,6 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="2371076942591664043">완료되면 열기(&amp;D)</translation>
 <translation id="3920504717067627103">인증서 정책</translation>
-<translation id="1463543813647160932">5x7</translation>
 <translation id="7418949474175272990">이 옵션은 WebRTC에서 플랫폼 하드웨어를 사용하는 동영상 스트림 인코딩의 지원을 사용 중지합니다.</translation>
 <translation id="2344028582131185878">자동 다운로드</translation>
 <translation id="155865706765934889">터치패드</translation>
@@ -3975,7 +3966,6 @@
 <translation id="1105117579475534983">웹페이지 차단됨</translation>
 <translation id="1673103856845176271">보안 상의 이유로 파일에 액세스하지 못했습니다.</translation>
 <translation id="1199232041627643649">종료하려면 <ph name="KEY_EQUIVALENT"/>을(를) 길게 누릅니다.</translation>
-<translation id="63277795993398074">Launcher Search Provider API 사용</translation>
 <translation id="3777806571986431400">확장 프로그램을 사용하도록 설정됨</translation>
 <translation id="8957423540740801332">오른쪽</translation>
 <translation id="2568774940984945469">정보 표시줄 컨테이너</translation>
@@ -4511,7 +4501,6 @@
 <translation id="4260442535208228602">앱 런처에 추가</translation>
 <translation id="6965978654500191972">기기</translation>
 <translation id="7684559058815332124">캡티브 포털 로그인 페이지로 이동</translation>
-<translation id="544897970364792192">이 API를 사용하면 확장 프로그램에서 Chrome 런처의 쿼리를 듣고 검색결과를 반환하도록 허용할 수 있습니다.</translation>
 <translation id="225163402930830576">네트워크 새로고침</translation>
 <translation id="8623004009673949077">'kiosk_only' 매니페스트 속성을 사용하는 앱은 Chrome OS 키오스크 모드에 설치되어야 합니다.</translation>
 <translation id="358796204584394954">'<ph name="DEVICE_NAME"/>'에서 이 코드를 입력하여 다음을 페어링:</translation>
@@ -5192,7 +5181,6 @@
 <translation id="6630452975878488444">선택 단축키</translation>
 <translation id="2934522647674136521">GPU를 사용하여 웹 콘텐츠를 래스터화합니다. impl-side 그리기가 필요합니다.</translation>
 <translation id="3004391367407090544">잠시 후에 다시 시도해 주세요.</translation>
-<translation id="6262654738522632143">ServiceWorker 백그라운드 동기화를 사용하면 페이지가 백그라운드에 있을 때에도 ServiceWorker에서 메시지를 전송하고 리소스를 업데이트할 수 있습니다.</translation>
 <translation id="2440443888409942524">병음 입력 방법(미국 드보락 키보드용)</translation>
 <translation id="830868413617744215">베타</translation>
 <translation id="2501797496290880632">단축키 입력</translation>
@@ -5417,7 +5405,6 @@
 <translation id="6251889282623539337"><ph name="DOMAIN"/> 서비스 약관</translation>
 <translation id="2470702053775288986">지원되지 않는 확장 프로그램이 사용 중지됨</translation>
 <translation id="4047112090469382184">이 기능이 안전한 이유</translation>
-<translation id="5461512418490148136">종료하지 마세요. 파일을 가져오고 있습니다.</translation>
 <translation id="4268574628540273656">URL:</translation>
 <translation id="6690455781383741953">플러그인 절전 사용</translation>
 <translation id="7481312909269577407">앞으로</translation>
@@ -5498,7 +5485,6 @@
 <translation id="8379970328220427967">남은 공간: <ph name="SPACE_AVAILABLE"/></translation>
 <translation id="7773726648746946405">세션 저장소</translation>
 <translation id="5839277899276241121">청구지 주소와 동일</translation>
-<translation id="2246155759345948098">파일이 너무 커서 열 수 없습니다.</translation>
 <translation id="4235813040357936597"><ph name="PROFILE_NAME"/>에 계정 추가</translation>
 <translation id="9147392381910171771">옵션(&amp;O)</translation>
 <translation id="8803496343472038847">러시아어 표음식 키보드</translation>
@@ -5526,7 +5512,6 @@
 <translation id="2574102660421949343"><ph name="DOMAIN"/>의 쿠키를 허용했습니다.</translation>
 <translation id="2773948261276885771">페이지 설정</translation>
 <translation id="3688526734140524629">채널 변경</translation>
-<translation id="4959447747655704388">보안 관련 위험을 이해한다면 <ph name="BEGIN_LINK"/>감염된 사이트에 방문<ph name="END_LINK"/>해도 됩니다.</translation>
 <translation id="7030084719913890980">공격자가 이 사이트를 해킹하여 사용자 정보(예: 사진, 비밀번호, 신용카드)를 도용하거나 삭제하는 위험한 프로그램을 컴퓨터에 설치하려고 시도할 수 있습니다.</translation>
 <translation id="6263625581655667292">데이터 세이버 Lo-Fi 모드를 항상 사용하거나, 이동통신 네트워크에서만 사용하거나, 사용하지 않도록 강제로 설정합니다. Lo-Fi 모드를 사용하려면 데이터 세이버를 사용하도록 설정해야 합니다.</translation>
 <translation id="5941153596444580863">사용자 추가...</translation>
@@ -5921,6 +5906,5 @@
 <translation id="1635033183663317347">관리자가 설치함</translation>
 <translation id="5457858494714903578">ID가 '<ph name="IMPORT_ID"/>'인 신뢰할 수 없는 확장 프로그램을 설치할 수 없습니다.</translation>
 <translation id="7025325401470358758">다음 창</translation>
-<translation id="3397561538744706497">9x16</translation>
 <translation id="259421303766146093">축소</translation>
 </translationbundle>

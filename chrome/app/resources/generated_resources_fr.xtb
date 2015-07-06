@@ -173,7 +173,6 @@
 <translation id="7600965453749440009">Ne jamais traduire les pages rédigées en <ph name="LANGUAGE"/> </translation>
 <translation id="3208703785962634733">Non confirmé</translation>
 <translation id="620329680124578183">Ne pas charger (recommandé)</translation>
-<translation id="6300924177400055566">L'espace disponible dans Google Drive est insuffisant pour enregistrer le fichier <ph name="FILE_NAME"/>. Veuillez supprimer des fichiers ou <ph name="BEGIN_LINK"/>acheter de l'espace de stockage supplémentaire<ph name="END_LINK"/>.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2653266418988778031">Si vous supprimez le certificat d'une autorité de certification, votre navigateur ne fera plus confiance aux certificats émis par cette autorité de certification.</translation>
 <translation id="4237357878101553356">Impossible de valider les informations de votre compte. |Résoudre ce problème|</translation>
@@ -387,7 +386,6 @@ puis cliquez sur <ph name="BEGIN_BOLD"/>OK<ph name="END_BOLD"/>.</translation>
 <translation id="5245965967288377800">Réseau WiMAX</translation>
 <translation id="40027638859996362">Déplacer un mot</translation>
 <translation id="3522708245912499433">Portugais</translation>
-<translation id="6956130766342550311">4 x 6</translation>
 <translation id="6699065916437121401">Déclenche des flux de sortie audio pour vérifier si des dispositions de chaîne autres que la disposition matérielle par défaut sont disponibles.</translation>
 <translation id="6928441285542626375">Activer TCP Fast Open</translation>
 <translation id="7792388396321542707">Arrêter le partage</translation>
@@ -888,11 +886,9 @@ Tous les utilisateurs doivent se déconnecter pour continuer.</translation>
 <translation id="1013707859758800957">L'exécution hors bac à sable d'un plug-in a été autorisée sur cette page</translation>
 <translation id="5618333180342767515">Cela peut prendre quelques minutes.</translation>
 <translation id="3392020134425442298">Récupérer le fichier malveillant</translation>
-<translation id="1697820107502723922">Archives</translation>
 <translation id="938470336146445890">Veuillez installer un certificat utilisateur.</translation>
 <translation id="3396331542604645348">L'imprimante sélectionnée n'est pas disponible ou n'est pas installée correctement. Veuillez vérifier votre imprimante ou en sélectionner une autre.</translation>
 <translation id="8480417584335382321">Niveau de zoom par défaut :</translation>
-<translation id="3872166400289564527">Stockage externe</translation>
 <translation id="1442912890475371290">Une tentative de <ph name="BEGIN_LINK"/>consultation d'une page sur <ph name="DOMAIN"/><ph name="END_LINK"/> a été bloquée.</translation>
 <translation id="5912378097832178659">Modifi&amp;er les moteurs de recherche...</translation>
 <translation id="8013526960933383914">Activer le bureau unifié</translation>
@@ -993,7 +989,6 @@ Tous les utilisateurs doivent se déconnecter pour continuer.</translation>
 <translation id="8064671687106936412">Clé :</translation>
 <translation id="2218515861914035131">Coller en texte brut</translation>
 <translation id="1725149567830788547">Afficher les &amp;commandes</translation>
-<translation id="8216351761227087153">Regarder</translation>
 <translation id="3888118750782905860">Gestion des utilisateurs (grand public)</translation>
 <translation id="3528033729920178817">Cette page suit votre position géographique.</translation>
 <translation id="7545288882499673859">Stratégie de suppression de la mémoire pour le traitement avancé de la pression</translation>
@@ -1628,7 +1623,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="8209439005376447114">L'identité de ce site Web a été validée par <ph name="ISSUER"/>. Des informations valides relatives à la transparence des certificats ont été fournies par le serveur.</translation>
 <translation id="5412637665001827670">Clavier bulgare</translation>
 <translation id="3574210789297084292">connexion</translation>
-<translation id="5254480569305195883">Active la compatibilité pour la synchronisation de ServiceWorker en arrière-plan.</translation>
 <translation id="2134149231879627725">Laisser Google vous aider à verrouiller, effacer ou localiser votre appareil à distance</translation>
 <translation id="5151034238407558331">Malheureusement, vous ne pouvez utiliser Google Payments chez ce marchand que si vous disposez d'une adresse aux États-Unis. Si vous résidez bien aux États-Unis, veuillez |modifier votre adresse personnelle dans Google Payments| ou payer sans utiliser Google Payments.</translation>
 <translation id="1146204723345436916">Importer les favoris depuis un fichier HTML...</translation>
@@ -1693,7 +1687,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">Activer les touches persistantes</translation>
 <translation id="2150139952286079145">Rechercher des emplacements de destination</translation>
-<translation id="5637940320504994319">Vous avez utilisé tout l'espace de stockage dans Google Drive.</translation>
 <translation id="2907619724991574506">URL de démarrage</translation>
 <translation id="6780476430578694241">Lanceur d'applications</translation>
 <translation id="5328285148748012771">Accédez à toutes vos applications depuis ce lanceur bien pratique. Jouez, participez à des chats vidéo, écoutez de la musique, modifiez des documents ou téléchargez d'autres applications sur le Chrome Web Store.</translation>
@@ -2512,7 +2505,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="669052614725703943">&lt;p&gt;Impossible d'établir une connexion privée à <ph name="BEGIN_BOLD"/><ph name="DOMAIN"/><ph name="END_BOLD"/> : la date et l'heure de votre appareil (<ph name="DATE_AND_TIME"/>) sont incorrectes.&lt;/p&gt;
 
           &lt;p&gt;Veuillez ajuster la date et l'heure dans la section &lt;strong&gt;Général&lt;/strong&gt; de l'application &lt;strong&gt;Paramètres&lt;/strong&gt;.&lt;/p&gt;</translation>
-<translation id="8614236384372926204">Cette vidéo n'est pas disponible hors connexion.</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> ne parvient pas à déterminer ou à définir le navigateur par défaut.</translation>
 <translation id="7290594223351252791">Confirmer l'enregistrement</translation>
 <translation id="8249681497942374579">Supprimer le raccourci sur le bureau</translation>
@@ -3785,7 +3777,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="6820686453637990663">Cryptogramme</translation>
 <translation id="2371076942591664043">Ouvrir une fois le téléchargement &amp;terminé</translation>
 <translation id="3920504717067627103">Stratégies de certificat</translation>
-<translation id="1463543813647160932">5 x 7</translation>
 <translation id="7418949474175272990">Cette option permet de désactiver la compatibilité avec la technologie WebRTC pour l'encodage de flux vidéo au niveau du matériel de la plate-forme.</translation>
 <translation id="2344028582131185878">Téléchargements automatiques</translation>
 <translation id="155865706765934889">Pavé tactile</translation>
@@ -3981,7 +3972,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="1105117579475534983">Page Web bloquée</translation>
 <translation id="1673103856845176271">Impossible d'accéder au fichier pour des raisons de sécurité.</translation>
 <translation id="1199232041627643649">Maintenez la touche <ph name="KEY_EQUIVALENT"/> enfoncée pour quitter.</translation>
-<translation id="63277795993398074">Activer l'API Launcher Search Provider</translation>
 <translation id="3777806571986431400">Extension activée</translation>
 <translation id="8957423540740801332">droite</translation>
 <translation id="2568774940984945469">Conteneur de barres d'infos</translation>
@@ -4517,7 +4507,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="4260442535208228602">Ajouter au lanceur d'applications</translation>
 <translation id="6965978654500191972">Périphérique</translation>
 <translation id="7684559058815332124">Accéder à la page de connexion du portail captif</translation>
-<translation id="544897970364792192">Cette API permet aux extensions d'écouter les requêtes du lanceur d'applications Chrome et de lui renvoyer les résultats de la recherche.</translation>
 <translation id="225163402930830576">Actualiser les réseaux</translation>
 <translation id="8623004009673949077">L'application dont le fichier manifeste comporte un attribut &quot;kiosk_only&quot; doit être installée en mode Kiosque pour Chrome OS.</translation>
 <translation id="358796204584394954">Saisissez ce code sur &quot;<ph name="DEVICE_NAME"/>&quot; pour l'associer :</translation>
@@ -5195,7 +5184,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME"/> ?</translation>
 <translation id="6630452975878488444">Raccourci de sélection</translation>
 <translation id="2934522647674136521">Utiliser le GPU pour pixeliser le contenu Web. Affichage côté implémentation requis.</translation>
 <translation id="3004391367407090544">Revenez plus tard</translation>
-<translation id="6262654738522632143">La synchronisation en arrière-plan de ServiceWorker permet à ServiceWorker d'envoyer des messages et de mettre à jour des ressources même lorsque la page est en arrière-plan.</translation>
 <translation id="2440443888409942524">Mode de saisie pinyin (pour clavier Dvorak américain)</translation>
 <translation id="830868413617744215">Bêta</translation>
 <translation id="2501797496290880632">Tapez un raccourci</translation>
@@ -5419,7 +5407,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME"/> ?</translation>
 <translation id="6251889282623539337">Conditions d'utilisation du domaine &quot;<ph name="DOMAIN"/>&quot;</translation>
 <translation id="2470702053775288986">Désactivation des extensions non compatibles</translation>
 <translation id="4047112090469382184">Niveau de sécurité</translation>
-<translation id="5461512418490148136">Veuillez patienter, récupération des fichiers en cours…</translation>
 <translation id="4268574628540273656">URL :</translation>
 <translation id="6690455781383741953">Activer l'économiseur d'énergie pour les plug-ins</translation>
 <translation id="7481312909269577407">Avancer</translation>
@@ -5499,7 +5486,6 @@ Il est possible que certaines fonctionnalités ne soient pas disponibles. Veuill
 <translation id="8379970328220427967"><ph name="SPACE_AVAILABLE"/> disponible(s)</translation>
 <translation id="7773726648746946405">Stockage de session</translation>
 <translation id="5839277899276241121">Identique à l'adresse de facturation</translation>
-<translation id="2246155759345948098">Ce fichier est trop volumineux pour être ouvert.</translation>
 <translation id="4235813040357936597">Ajouter un compte pour <ph name="PROFILE_NAME"/></translation>
 <translation id="9147392381910171771">&amp;Options</translation>
 <translation id="8803496343472038847">Clavier russe (phonétique)</translation>
@@ -5527,7 +5513,6 @@ Pour poursuivre l'exploration, veuillez appuyer sur n'importe quelle touche.</tr
 <translation id="2574102660421949343">Les cookies de <ph name="DOMAIN"/> sont autorisés.</translation>
 <translation id="2773948261276885771">Ensemble de pages</translation>
 <translation id="3688526734140524629">Changer de version</translation>
-<translation id="4959447747655704388">Si vous avez compris les risques auxquels vous vous exposez, vous pouvez <ph name="BEGIN_LINK"/>consulter ce site infecté<ph name="END_LINK"/>.</translation>
 <translation id="7030084719913890980">Des individus malveillants peuvent avoir piraté ce site pour tenter d'installer des programmes dangereux sur votre ordinateur en vue de subtiliser vos informations (photos, mots de passe, messages et numéros de carte de paiement) ou de les supprimer.</translation>
 <translation id="6263625581655667292">Force le mode Basse fidélité de l'économiseur de données à être toujours activé, à ne l'être que sur les connexions mobiles ou à être désactivé. Vous devez activer l'économiseur de données pour utiliser le mode Basse fidélité.</translation>
 <translation id="5941153596444580863">Ajouter un profil utilisateur…</translation>
@@ -5675,7 +5660,7 @@ Pour poursuivre l'exploration, veuillez appuyer sur n'importe quelle touche.</tr
 <translation id="691754965143187988">Caster <ph name="HOST_NAME"/> sur…</translation>
 <translation id="8366396658833131068">Votre connexion réseau est rétablie. Veuillez sélectionner un autre réseau ou appuyer sur &quot;Continuer&quot; ci-dessous pour lancer votre application de kiosque.</translation>
 <translation id="4664482161435122549">Erreur d'exportation de fichier PKCS #12</translation>
-<translation id="3811328435734979057">Activer le nouveau système d'applications de création de favoris</translation>
+<translation id="3811328435734979057">Activer le nouveau système d'applications de favoris</translation>
 <translation id="2445081178310039857">Le répertoire racine de l'extension doit être indiqué.</translation>
 <translation id="8251578425305135684">Miniature supprimée</translation>
 <translation id="6163522313638838258">Tout développer...</translation>
@@ -5922,6 +5907,5 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="1635033183663317347">Installée par votre tuteur</translation>
 <translation id="5457858494714903578">Impossible d'installer l'extension non sécurisée avec l'identifiant &quot;<ph name="IMPORT_ID"/>&quot;.</translation>
 <translation id="7025325401470358758">Volet suivant</translation>
-<translation id="3397561538744706497">9 x 16</translation>
 <translation id="259421303766146093">Réduire</translation>
 </translationbundle>

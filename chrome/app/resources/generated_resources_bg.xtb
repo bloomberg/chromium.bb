@@ -172,7 +172,6 @@
 <translation id="7600965453749440009">Никога да не се превежда от <ph name="LANGUAGE"/></translation>
 <translation id="3208703785962634733">Непотвърдено</translation>
 <translation id="620329680124578183">Да не се зарежда (препоръчително)</translation>
-<translation id="6300924177400055566">Нямате достатъчно място в Google Диск, за да запазите „<ph name="FILE_NAME"/>“. Моля, премахнете файлове или <ph name="BEGIN_LINK"/>купете още място за съхранение<ph name="END_LINK"/>.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2653266418988778031">Ако изтриете сертификат на сертифициращ орган (CA), браузърът ви повече няма да има доверие на нито един сертификат, издаден от този орган.</translation>
 <translation id="4237357878101553356">Не успяхме да потвърдим информацията за профила ви. |Поправяне на проблема|</translation>
@@ -383,7 +382,6 @@
 <translation id="5245965967288377800">WiMAX мрежа</translation>
 <translation id="40027638859996362">Преместване на дума</translation>
 <translation id="3522708245912499433">португалски</translation>
-<translation id="6956130766342550311">4 x 6</translation>
 <translation id="6699065916437121401">Кара потоците за извеждане на звук да проверяват дали са налични конфигурации на каналите, различни от стандартната хардуерна.</translation>
 <translation id="6928441285542626375">Активиране на TCP Fast Open</translation>
 <translation id="7792388396321542707">Спиране на споделянето</translation>
@@ -883,11 +881,9 @@
 <translation id="1013707859758800957">На тази страница бе разрешено изпълняването на приставка извън тестова среда.</translation>
 <translation id="5618333180342767515">(това може да отнеме няколко минути)</translation>
 <translation id="3392020134425442298">Възстановяване на злонамерения файл</translation>
-<translation id="1697820107502723922">Архиви</translation>
 <translation id="938470336146445890">Моля, инсталирайте потребителски сертификат.</translation>
 <translation id="3396331542604645348">Избраният принтер не е налице или не е инсталиран правилно. Проверете принтера си или опитайте да изберете друг.</translation>
 <translation id="8480417584335382321">Мащаб на страницата:</translation>
-<translation id="3872166400289564527">Външно хранилище</translation>
 <translation id="1442912890475371290">Блокиран бе опит за <ph name="BEGIN_LINK"/>посещение на страница от <ph name="DOMAIN"/><ph name="END_LINK"/>.</translation>
 <translation id="5912378097832178659">&amp;Редактиране на търсещите машини...</translation>
 <translation id="8013526960933383914">Активиране на обединения работен плот</translation>
@@ -988,7 +984,6 @@
 <translation id="8064671687106936412">Ключ:</translation>
 <translation id="2218515861914035131">Поставяне като неформатиран текст</translation>
 <translation id="1725149567830788547">Показване на &amp;контролите</translation>
-<translation id="8216351761227087153">Гледане</translation>
 <translation id="3888118750782905860">Управление на потребителите</translation>
 <translation id="3528033729920178817">Тази страница проследява местоположението ви.</translation>
 <translation id="7545288882499673859">Стратегия за отхвърляне на елементи с цел подобрено управление на паметта</translation>
@@ -1621,7 +1616,6 @@
 <translation id="8209439005376447114">Самоличността на този уебсайт е потвърдена от <ph name="ISSUER"/>. Сървърът предостави валидна информация за прозрачност на сертификата.</translation>
 <translation id="5412637665001827670">Българска клавиатура</translation>
 <translation id="3574210789297084292">вход</translation>
-<translation id="5254480569305195883">Активиране на поддръжката за събитието за синхронизиране на заден план чрез ServiceWorkers.</translation>
 <translation id="2134149231879627725">Позволете с помощта на Google отдалечено да заключвате и намирате устройството си, както и да изтривате данните от него.</translation>
 <translation id="5151034238407558331">За съжаление при този търговец Google Payments може да се ползва само от купувачи с адрес в Съединените щати. Ако сте жител на Съединените щати, моля, |променете домашния си адрес в Payments| или платете, без да използвате услугата.</translation>
 <translation id="1146204723345436916">Импортиране на отметки от HTML файл...</translation>
@@ -1686,7 +1680,6 @@
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">Активиране на оставащите клавиши</translation>
 <translation id="2150139952286079145">Търсене на местоназначения</translation>
-<translation id="5637940320504994319">Мястото ви в Google Диск е изчерпано</translation>
 <translation id="2907619724991574506">URL адреси при стартиране</translation>
 <translation id="6780476430578694241">App Launcher</translation>
 <translation id="5328285148748012771">Осъществявайте достъп до всичките си приложения от този удобен стартов панел. Играйте игри, водете видеоразговори, слушайте музика, редактирайте документи или изтегляйте още приложения от уеб магазина на Chrome.</translation>
@@ -2492,7 +2485,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="669052614725703943">&lt;p&gt;Не може да се установи частна връзка с/ъс <ph name="BEGIN_BOLD"/><ph name="DOMAIN"/><ph name="END_BOLD"/>, тъй като датата и часът на устройството ви (<ph name="DATE_AND_TIME"/>) са неправилни.&lt;/p&gt;
 
 &lt;p&gt;Моля, коригирайте датата и часа от секцията &lt;strong&gt;General&lt;/strong&gt; на приложението &lt;strong&gt;Settings&lt;/strong&gt;.&lt;/p&gt;</translation>
-<translation id="8614236384372926204">Този видеоклип не е налице офлайн.</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> не може да определи или зададе браузъра по подразбиране.</translation>
 <translation id="7290594223351252791">Потвърждаване на регистрацията</translation>
 <translation id="8249681497942374579">Премахване на прекия път на работния плот</translation>
@@ -3752,7 +3744,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="6820686453637990663">Код за сигурност</translation>
 <translation id="2371076942591664043">Отваряне &amp;след изтегляне</translation>
 <translation id="3920504717067627103">Правила за сертификата</translation>
-<translation id="1463543813647160932">5 x 7</translation>
 <translation id="7418949474175272990">Тази опция деактивира поддръжката в WebRTC за кодиране на видеопотоци посредством хардуера на платформата.</translation>
 <translation id="2344028582131185878">Автоматични изтегляния</translation>
 <translation id="155865706765934889">Сензорен панел</translation>
@@ -3945,7 +3936,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="1105117579475534983">Уеб страницата е блокирана</translation>
 <translation id="1673103856845176271">От съображения за сигурност не можа да бъде осъществен достъп до файла.</translation>
 <translation id="1199232041627643649">Натиснете <ph name="KEY_EQUIVALENT"/> за изход.</translation>
-<translation id="63277795993398074">Активиране на приложния програмен интерфейс (API) за търсеща машина в стартовия панел.</translation>
 <translation id="3777806571986431400">Разширението е активирано</translation>
 <translation id="8957423540740801332">надясно</translation>
 <translation id="2568774940984945469">Контейнер на инфолента</translation>
@@ -4480,7 +4470,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="4260442535208228602">Добавяне към стартовия панел за приложения</translation>
 <translation id="6965978654500191972">Устройство</translation>
 <translation id="7684559058815332124">Посещаване на страницата за вход в портала за удостоверяване</translation>
-<translation id="544897970364792192">Този приложен програмен интерфейс (API) позволява на разширенията да получават заявки от стартовия панел на Chrome и да връщат към него съответните резултати от търсенето.</translation>
 <translation id="225163402930830576">Опресняване на мрежите</translation>
 <translation id="8623004009673949077">Приложенията с атрибут „kiosk_only“ в манифеста трябва да се инсталират в павилионния режим на Chrome OS.</translation>
 <translation id="358796204584394954">За сдвояване въведете този код на <ph name="DEVICE_NAME"/>:</translation>
@@ -5157,7 +5146,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6630452975878488444">Пряк път за избиране</translation>
 <translation id="2934522647674136521">Използвайте графичния процесор за растеризиране на уеб съдържание. Изисква изобразяване с множество нишки.</translation>
 <translation id="3004391367407090544">Моля, върнете се по-късно</translation>
-<translation id="6262654738522632143">Функцията за синхронизиране на заден план чрез ServiceWorkers позволява изпращането на съобщения и актуализирането на ресурси дори когато страницата е на заден план.</translation>
 <translation id="2440443888409942524">Метод за въвеждане на пинин (за американска клавиатура на Дворак)</translation>
 <translation id="830868413617744215">Бета</translation>
 <translation id="2501797496290880632">Въведете комбинация</translation>
@@ -5382,7 +5370,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6251889282623539337">Общи условия на <ph name="DOMAIN"/></translation>
 <translation id="2470702053775288986">Неподдържаните разширения са деактивирани</translation>
 <translation id="4047112090469382184">Защо това е сигурно</translation>
-<translation id="5461512418490148136">Останете с нас. Извличаме файловете ви.</translation>
 <translation id="4268574628540273656">URL адрес:</translation>
 <translation id="6690455781383741953">Активиране на енергоспестяващия режим за приставките</translation>
 <translation id="7481312909269577407">Препращане</translation>
@@ -5461,7 +5448,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8379970328220427967">Остава/т <ph name="SPACE_AVAILABLE"/></translation>
 <translation id="7773726648746946405">Хранилище за сесията</translation>
 <translation id="5839277899276241121">Същият като адреса за фактуриране</translation>
-<translation id="2246155759345948098">Този файл е твърде голям, за да се отвори.</translation>
 <translation id="4235813040357936597">Добавяне на профил за <ph name="PROFILE_NAME"/></translation>
 <translation id="9147392381910171771">&amp;Опции</translation>
 <translation id="8803496343472038847">Руска фонетична клавиатура</translation>
@@ -5489,7 +5475,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="2574102660421949343">„Бисквитките“·от <ph name="DOMAIN"/> са разрешени.</translation>
 <translation id="2773948261276885771">Задаване на страници</translation>
 <translation id="3688526734140524629">Промяна на канала</translation>
-<translation id="4959447747655704388">Ако разбирате рисковете за сигурността си, може <ph name="BEGIN_LINK"/>да посетите този заразен сайт<ph name="END_LINK"/>.</translation>
 <translation id="7030084719913890980">Извършители на атаки може да са компрометирали този сайт и да опитат да инсталират опасни програми на компютъра ви, които да откраднат или изтрият информацията ви (например снимки, пароли, съобщения и номера на кредитни карти).</translation>
 <translation id="6263625581655667292">Принудително задава Lo-Fi режимът на Икономия на данни да е винаги включен, да се активира само при клетъчни връзки или да е деактивиран. За да го използвате, трябва да активирате Икономия на данни.</translation>
 <translation id="5941153596444580863">Добавяне на човек...</translation>
@@ -5884,6 +5869,5 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="1635033183663317347">Инсталирано от контролиращия потребител.</translation>
 <translation id="5457858494714903578">Ненадеждното разширение с идентификационен номер <ph name="IMPORT_ID"/> не може да се инсталира.</translation>
 <translation id="7025325401470358758">Следващият панел</translation>
-<translation id="3397561538744706497">9 x 16</translation>
 <translation id="259421303766146093">Намаляване</translation>
 </translationbundle>

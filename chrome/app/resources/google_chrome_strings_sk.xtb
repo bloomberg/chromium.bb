@@ -131,7 +131,7 @@ Niektoré funkcie môžu byť nedostupné. Zadajte iný adresár profilu alebo p
 <translation id="7908968924842975895">Tento počítač už nebude dostávať aktualizácie prehliadača Google Chrome, pretože jeho hardvér už nie je podporovaný.</translation>
 <translation id="2748463065602559597">Práve si prezeráte zabezpečenú stránku prehliadača Google Chrome.</translation>
 <translation id="7185038942300673794">Rozšírenie <ph name="EXTENSION_NAME"/> bolo pridané do prehliadača Chrome.</translation>
-<translation id="7494905215383356681">Licencie otvoreného zdroja prehliadača Chrome</translation>
+<translation id="7494905215383356681">Licencie open source prehliadača Chrome</translation>
 <translation id="2346876346033403680">Do prehliadača Chrome sa už na tomto počítači niekto prihlásil pomocou účtu <ph name="ACCOUNT_EMAIL_LAST"/>. Ak tento účet nepatrí vám, vytvorte nového používateľa prehliadača Chrome, aby ste zachovali oddelenie informácií.
 
 Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako sú záložky, história a iné nastavenia, sa priradia k účtu <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
@@ -139,7 +139,7 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="7808348361785373670">Odstrániť z prehliadača Chrome...</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="5563479599352954471">Vyhľadávanie jediným klepnutím</translation>
-<translation id="2664962310688259219">Licencie otvoreného zdroja systému OS Chrome</translation>
+<translation id="2664962310688259219">Licencie open source systému OS Chrome</translation>
 <translation id="6341737370356890233">Prejdite do
         ponuky Chrome &gt;
         <ph name="SETTINGS_TITLE"/>

@@ -87,7 +87,7 @@
 <translation id="2916758462095071032">ডিফল্ট নেটওয়ার্ক: <ph name="NETWORK"/> রাজ্য: <ph name="STATE"/></translation>
 <translation id="7821009361098626711"><ph name="DOMAIN"/> সার্ভারের একটি ব্যবহারকারী নাম ও পাসওয়ার্ড দরকার৷ সাভারটি বলে: <ph name="REALM"/>৷</translation>
 <translation id="8546541260734613940">[*.]example.com</translation>
-<translation id="524759338601046922">নতুন  PIN পুনরায় টাইপ করুন:</translation>
+<translation id="524759338601046922">নতুন  পিন পুনরায় টাইপ করুন:</translation>
 <translation id="2580889980133367162">একাধিক ফাইল ডাউনলোড করতে <ph name="HOST"/> কে সর্বদা মঞ্জুরি দিন</translation>
 <translation id="8972513834460200407">Google সার্ভারগুলি থেকে ডাউনলোডগুলিকে ফায়ারওয়াল অবরুদ্ধ করছে না তা নিশ্চিত করতে দয়া করে আপনার নেটওয়ার্ক প্রশাসকের মাধ্যমে পরীক্ষা করুন৷</translation>
 <translation id="1444628761356461360">এই সেটিংটি ডিভাইসের মালিকের দ্বারা <ph name="OWNER_EMAIL"/> পরিচালিত হয়৷</translation>
@@ -171,7 +171,6 @@
 <translation id="7600965453749440009"><ph name="LANGUAGE"/> কখনও অনুবাদ করবেন না</translation>
 <translation id="3208703785962634733">অনিশ্চিত</translation>
 <translation id="620329680124578183">লোড করবেন না (প্রস্তাবিত)</translation>
-<translation id="6300924177400055566">আপনার কাছে Google ড্রাইভের মধ্যে &quot;<ph name="FILE_NAME"/>&quot; সংরক্ষণ করার মত যথেষ্ট স্থান নেই৷ দয়া করে ফাইলগুলি সরান অথবা <ph name="BEGIN_LINK"/>আরো সঞ্চয়স্থান কিনুন<ph name="END_LINK"/>৷</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2653266418988778031">যদি আপনি কোনও সার্টিফিকেশন অথোরিটি (CA) শংসাপত্র মুছে থাকেন তবে আপনার ব্রাউজার সেই CA দ্বারা ইস্যু করা কোনও শংসাপত্রকে আর বিশ্বাস করবে না৷</translation>
 <translation id="4237357878101553356">আমরা আপনার অ্যাকাউন্টের তথ্য যাচাই করতে পারিনি৷ এই সমস্যাটি ঠিক করুন৷</translation>
@@ -331,7 +330,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="8106242143503688092">লোড করবেন না (প্রস্তাবিত)</translation>
 <translation id="2647434099613338025">ভাষা যুক্ত করুন</translation>
 <translation id="5733490203338352042">আপনার পরিচিতি কার্ড থেকে ঠিকানাগুলিকে অন্তর্ভুক্ত করুন</translation>
-<translation id="5078796286268621944">ভুল PIN</translation>
+<translation id="5078796286268621944">ভুল পিন</translation>
 <translation id="3480411814272635771">কোনো ট্যাব অপ্রতিক্রিয়াশীল হওয়ার সময় সংঘটন</translation>
 <translation id="8487678622945914333">জুম বাড়ান</translation>
 <translation id="5160857336552977725">আপনার <ph name="DEVICE_TYPE"/>-এ সাইন ইন করুন</translation>
@@ -388,7 +387,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="5245965967288377800">WiMAX নেটওয়ার্ক</translation>
 <translation id="40027638859996362">শব্দ সরানো</translation>
 <translation id="3522708245912499433">পর্তুগিজ</translation>
-<translation id="6956130766342550311">৪x৬</translation>
 <translation id="6699065916437121401">ডিফল্ট হার্ডওয়্যার লেআউট ছাড়া অন্য চ্যানেল লেআউট উপলব্ধ আছে কিনা তা অডিও আউটপুট স্ট্রীমগুলি দ্বারা পরীক্ষা করায়।</translation>
 <translation id="6928441285542626375">TCP Fast Open সক্ষম করুন</translation>
 <translation id="7792388396321542707">ভাগ করা বন্ধ করুন</translation>
@@ -892,11 +890,9 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="1013707859758800957">এই পৃষ্ঠায় একটি আনস্যান্ডবক্সড প্লাগ ইন চালানোর জন্য অনুমতি প্রদান করা হয়েছে৷</translation>
 <translation id="5618333180342767515">(এটি কয়েক মিনিট সময় নিতে পারে)</translation>
 <translation id="3392020134425442298">ক্ষতিকারক ফাইল উদ্ধার করুন</translation>
-<translation id="1697820107502723922">সংগ্রহসমূহ</translation>
 <translation id="938470336146445890">দয়া করে একটি ব্যবহারকারী শংসাপত্র ইনস্টল করুন৷</translation>
 <translation id="3396331542604645348">নির্বাচিত মুদ্রকটি উপলব্ধ নেই বা সঠিকভাবে ইনস্টল হওয়া নেই৷ আপনার মুদ্রকটি পরীক্ষা করুন বা অন্য একটি মুদ্রক নির্বাচনের চেষ্টা করুন৷</translation>
 <translation id="8480417584335382321">পৃষ্ঠা  জুম:</translation>
-<translation id="3872166400289564527">বাহ্যিক সঞ্চয়স্থান</translation>
 <translation id="1442912890475371290"><ph name="BEGIN_LINK"/><ph name="DOMAIN"/> এ পৃষ্ঠা পরিদর্শন করার<ph name="END_LINK"/> প্রচেষ্টা অবরুদ্ধ করা হয়েছে৷</translation>
 <translation id="5912378097832178659">&amp;সার্চ ইঞ্জিন সম্পাদনা...</translation>
 <translation id="8013526960933383914">ইউনিফায়েড ডেস্কটপ সক্ষম করুন</translation>
@@ -998,7 +994,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="8064671687106936412">কী:</translation>
 <translation id="2218515861914035131">সাধারণ পাঠ্য হিসাবে আটকে দিন  </translation>
 <translation id="1725149567830788547">&amp;নিয়ন্ত্রণগুলি দেখান</translation>
-<translation id="8216351761227087153">দেখুন</translation>
 <translation id="3888118750782905860">উপভোক্তা ব্যবস্থাপনা</translation>
 <translation id="3528033729920178817">এই পৃষ্ঠাটি আপনার অবস্থান নির্ণয় করছে৷</translation>
 <translation id="7545288882499673859">উন্নত চাপ পরিচালনার জন্য মেমরি বাতিল কৌশল</translation>
@@ -1052,7 +1047,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="1779766957982586368">উইন্ডো বন্ধ করুন</translation>
 <translation id="4850886885716139402">দেখুন</translation>
 <translation id="3075066926036244931">Google Payments এ ডেটা সংরক্ষণ করা যায়নি।</translation>
-<translation id="89217462949994770">আপনি অনেকবার ভুল PIN লিখেছেন৷ একটি নতুন 8-ডিজিটের PIN আনলকিং কী সংগ্রহ করতে দয়া করে <ph name="CARRIER_ID"/>-এ যোগাযোগ করুন৷</translation>
+<translation id="89217462949994770">আপনি অনেকবার ভুল পিন লিখেছেন৷ একটি নতুন 8-ডিজিটের পিন আনলকিং কী সংগ্রহ করতে দয়া করে <ph name="CARRIER_ID"/>-এ যোগাযোগ করুন৷</translation>
 <translation id="2776441542064982094">দেখে মনে হচ্ছে নেটওয়ার্কে নিবন্ধিত করার জন্য সেখানে কোনো ডিভাইস নেই৷ যদি আপানার ডিভাইস চালু থাকে এবং ইন্টারনেটে সংযুক্ত থাকে, তবে এটির নির্দেশনার ম্যানুয়ালের নির্দেশাবলী ব্যবহার করে এটিকে নিবন্ধিত করার চেষ্টা করুন৷</translation>
 <translation id="2796740370559399562">কুকিজকে অনুমতি দেয়া চালিয়ে যান</translation>
 <translation id="8659716501582523573">IP ঠিকানা:</translation>
@@ -1283,7 +1278,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="8548973727659841685">চরিত্র</translation>
 <translation id="2359345697448000899">সরঞ্জাম মেনুতে এক্সটেনশান ক্লিক করে আপনার এক্সটেনশানগুলি পরিচালনা করুন৷</translation>
 <translation id="6725970970008349185">পৃষ্ঠা প্রতি প্রদর্শিত প্রার্থীর সংখ্যা</translation>
-<translation id="6198252989419008588">PIN পরিবর্তন করুন</translation>
+<translation id="6198252989419008588">পিন পরিবর্তন করুন</translation>
 <translation id="3658742229777143148">পুনর্বিবেচনা</translation>
 <translation id="5749483996735055937">পুনরুদ্ধারের চিত্রটি ডিভাইসে অনুলিপি করার সময় একটি ত্রুটি ঘটেছিল৷</translation>
 <translation id="5756163054456765343">সহায়তা কেন্দ্র</translation>
@@ -1631,7 +1626,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="8209439005376447114"><ph name="ISSUER"/> এই ওয়েবসাইটটির পরিচয় যাচাই করেছে। সার্ভার বৈধ শংসাপত্রের স্বচ্ছতার তথ্য সরবরাহ করেছে।</translation>
 <translation id="5412637665001827670">বুলগেরিয় কীবোর্ড</translation>
 <translation id="3574210789297084292">সাইন ইন করুন</translation>
-<translation id="5254480569305195883">ServiceWorker পটভূমি সিঙ্ক ইভেন্টের জন্য সহায়তা সক্ষম করুন৷</translation>
 <translation id="2134149231879627725">Google আপনার ডিভাইসটিকে দূর থেকে লক করতে, মুছতে এবং অবস্থান নির্নয় করতে আপনাকে সহায়তা করে৷</translation>
 <translation id="5151034238407558331">দুর্ভাগ্যক্রমে, শুধুমাত্র মার্কিন ঠিকানা রয়েছে এমন ক্রেতাই এই বণিকের সাথে Google Payments ব্যবহার করতে পারবেন। আপনি মার্কিন নাগরিক হলে দয়া করে |Google Payments এর সাথে আপনার বাড়ির ঠিকানা পরিবর্তন করুন| অথবা Google Payments ব্যবহার না করে অর্থপ্রদান করুন।</translation>
 <translation id="1146204723345436916">HTML ফাইল থেকে বুকমার্কগুলি আমদানি করুন...</translation>
@@ -1696,7 +1690,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="81686154743329117">জেডআরএম</translation>
 <translation id="8331479227794770304">স্টিকি কীগুলি সক্ষম করুন৷</translation>
 <translation id="2150139952286079145">গন্তব্যস্থল অনুসন্ধান করুন</translation>
-<translation id="5637940320504994319">Google ড্রাইভে আপনার স্থান ফুরিয়েছে</translation>
 <translation id="2907619724991574506">প্রারম্ভিক URLগুলি</translation>
 <translation id="6780476430578694241">অ্যাপ্লিকেশন লঞ্চার</translation>
 <translation id="5328285148748012771">এই সহজে ব্যবহারযোগ্য লঞ্চারটির মাধ্যমে আপনার সমস্ত অ্যাপ্লিকেশান অ্যাক্সেস করুন৷ গেম খেলুন, ভিডিও চ্যাট করুন, সঙ্গীত শুনুন, দস্তাবেজের সম্পাদনা করুন, অথবা Chrome ওয়েব দোকান থেকে আরো অ্যাপ্লিকেশান পান৷</translation>
@@ -1818,7 +1811,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 তত্ত্বাবধানে থাকা কোনো ব্যবহারকারী তৈরি করলে কিন্তু তার সঙ্গে একটি Google অ্যাকাউন্ট তৈরি হয় না এবং তাদের বুকমার্ক, ব্রাউজিং ইতিহাস, এবং অন্যান্য পছন্দগুলি Chrome সিঙ্কের সাহায্যে ব্যবহারকারীর অন্যান্য ডিভাইসগুলিতে ব্যবহৃত হতে পারবে না৷
 
 আপনি তত্ত্বাবধানে থাকা কোনো ব্যবহারকারী তৈরি করার পরে, আপনি যেকোনো সময়ে, যেকোনো ডিভাইস থেকে www.chrome.com/manage এ ব্যবহারকারীর সেটিংস পরিচালনা করতে পারেন৷ <ph name="BEGIN_LINK"/>তত্ত্বাবধানে থাকা ব্যবহারকারীর সম্পর্কে আরো জানুন<ph name="END_LINK"/></translation>
-<translation id="6562758426028728553">দয়া করে পুরানো এবং নতুন  PIN প্রবেশ করুন৷</translation>
+<translation id="6562758426028728553">দয়া করে পুরানো এবং নতুন  পিন প্রবেশ করুন৷</translation>
 <translation id="7460898608667578234">ইউক্রেনীয়</translation>
 <translation id="614161640521680948">ভাষা:</translation>
 <translation id="6404511346730675251">বুকমার্ক সম্পাদনা করুন</translation>
@@ -2321,7 +2314,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="5975501027219721441">সঞ্চিত পৃষ্ঠাটি দেখান</translation>
 <translation id="8335587457941836791">শেল্ফ থেকে আনপিন করুন</translation>
 <translation id="2222641695352322289">এটি পূর্বাবস্থায় ফিরিয়ে আনার একমাত্র উপায় হল <ph name="IDS_SHORT_PRODUCT_OS_NAME"/> পুনরায় ইনস্টল করা৷</translation>
-<translation id="5605716740717446121">আপনি সঠিক PIN আনলকিং কী না লিখলে আপনার SIM কার্ড স্থায়ীভাবে অক্ষম হবে৷ প্রচেষ্টা বাকি আছে: <ph name="TRIES_COUNT"/>টি</translation>
+<translation id="5605716740717446121">আপনি সঠিক পিন আনলকিং কী না লিখলে আপনার SIM কার্ড স্থায়ীভাবে অক্ষম হবে৷ প্রচেষ্টা বাকি আছে: <ph name="TRIES_COUNT"/>টি</translation>
 <translation id="4544744325790288581">ডেটা হ্রাস প্রক্সির একটি পরীক্ষামূলক সংস্করণ ব্যবহার করুন৷ এই পতাকাটি কার্যকর করার জন্য সেটিংসের মধ্যে প্রক্সিটিকে অবশ্যই সক্ষম করতে হবে৷</translation>
 <translation id="6093795393556121384">আপনার কার্ডটি যাচাই করা হয়েছে</translation>
 <translation id="5502500733115278303">Firefox থেকে আমদানি করা</translation>
@@ -2428,7 +2421,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="5880867612172997051">নেটওয়ার্ক অ্যাক্সেস সাসপেন্ড আছে</translation>
 <translation id="5495466433285976480">আপনি যখন পরবর্তীতে পুনরারম্ভ করবেন তখন এটি সমস্ত স্থানীয় ব্যবহারকারী, ফাইল, ডেটা, এবং অন্যান্য সেটিংস সরিয়ে ফেলবে৷ সকল ব্যবহারকারীকে আবার সাইন ইন করতে হবে৷</translation>
 <translation id="7842346819602959665">এক্সটেনশন &quot;<ph name="EXTENSION_NAME"/>&quot;-এর সবচেয়ে নতুন সংস্করণটির আরো অনুমতির প্রয়োজন, সেই কারণে এটি অক্ষম করা হয়েছে৷</translation>
-<translation id="2412835451908901523">দয়া করে <ph name="CARRIER_ID"/>-এর সরবরাহ করা 8-ডিজিটের PIN আনলকিং কীটি লিখুন৷</translation>
+<translation id="2412835451908901523">দয়া করে <ph name="CARRIER_ID"/>-এর সরবরাহ করা 8-ডিজিটের পিন আনলকিং কীটি লিখুন৷</translation>
 <translation id="25770266525034120">এক্সটেনশান URL</translation>
 <translation id="5856721540245522153">ডিবাগিং বৈশিষ্ট্যাবলী সক্ষম করুন</translation>
 <translation id="2725200716980197196">নেটওয়ার্ক সংযোগ পুনঃস্থাপিত হয়েছে</translation>
@@ -2511,7 +2504,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="669052614725703943">&lt;p&gt;<ph name="BEGIN_BOLD"/><ph name="DOMAIN"/><ph name="END_BOLD"/> এ একটি ব্যক্তিগত সংযোগ স্থাপন করা যায়নি কারণ আপনার ডিভাইসের তারিখ এবং সময় (<ph name="DATE_AND_TIME"/>) সঠিক নয়৷&lt;/p&gt;
 
 &lt;p&gt;দয়া করে &lt;strong&gt;সেটিংস&lt;/strong&gt; অ্যাপ্লিকেশানের &lt;strong&gt;সাধারণ&lt;/strong&gt; বিভাগ থেকে তারিখ এবং সময় সংশোধণ করুন৷&lt;/p&gt;</translation>
-<translation id="8614236384372926204">এই ভিডিওটি অফলাইনে উপলব্ধ নয়৷</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> ডিফল্ট ব্রাউজারকে নির্ধারণ বা সেট করতে পারে না৷</translation>
 <translation id="7290594223351252791">নিবন্ধিকরণ নিশ্চিত করুন</translation>
 <translation id="8249681497942374579">ডেস্কটপ শর্টকাট সরান</translation>
@@ -2556,7 +2548,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="2120316813730635488">কোনো এক্সটেনশান ইনস্টল করার সময়ের সংঘটন</translation>
 <translation id="8398877366907290961">যাইহোক এগিয়ে যান</translation>
 <translation id="2797019681257472009">অস্বাভাবিক আচরণ সনাক্ত হয়েছে</translation>
-<translation id="5063180925553000800">নতুন  PIN:</translation>
+<translation id="5063180925553000800">নতুন  পিন:</translation>
 <translation id="4883178195103750615">বুকমার্কগুলিকে HTML ফাইলে রপ্তানি করুন...</translation>
 <translation id="2496540304887968742">ডিভাইসটিতে অবশ্যই 4GB বা তদ্বুর্ধ্ব ধারণক্ষমতা থাকতে হবে৷</translation>
 <translation id="6974053822202609517">ডান থেকে বামে</translation>
@@ -3025,7 +3017,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="4146175323503586871">আপনার Chrome OS ডিভাইস অফারের জন্য  যোগ্য কিনা <ph name="SERVICE_NAME"/> তা চেক করতে চাইছে। <ph name="MORE_INFO_LINK"/></translation>
 <translation id="8059417245945632445">এবং ডিভাইসগুলি পরিদর্শন</translation>
 <translation id="1058325955712687476">সাইট নিযুক্তি পরিষেবা সক্ষম করে, যা সাইটগুলির সাথে ইন্টারঅ্যাকশন রেকর্ড করে এবং সেই অনুযায়ী সম্পদ বরাদ্দ করে৷</translation>
-<translation id="3391392691301057522">পুরানো PIN:</translation>
+<translation id="3391392691301057522">পুরানো পিন:</translation>
 <translation id="96421021576709873">Wi-Fi নেটওয়ার্ক</translation>
 <translation id="1344519653668879001">হাইপারলিঙ্ক নিরীক্ষণ অক্ষম করুন</translation>
 <translation id="6463795194797719782">&amp;সম্পাদনা</translation>
@@ -3654,7 +3646,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="1594233345027811150">{NUM_DOWNLOAD,plural, =1{ডাউনলোড চলছে}one{ডাউনলোডগুলি চলছে}other{ডাউনলোডগুলি চলছে}}</translation>
 <translation id="9011178328451474963">সর্বশেষ ট্যাব</translation>
 <translation id="8319414634934645341">প্রসারিত কী ব্যবহার</translation>
-<translation id="6080100832288487452">ভার্চুয়াল কীবোর্ডের জন্য অঙ্গভঙ্গি টাইপিং।</translation>
+<translation id="6080100832288487452">ভার্চুয়াল কীবোর্ডের জন্য অঙ্গভঙ্গির মাধ্যমে টাইপিং।</translation>
 <translation id="6056710589053485679">সাধারণ পুনঃলোড</translation>
 <translation id="161821681072026592">অ্যাকাউন্ট নির্বাচনের সময় পাসওয়ার্ড পূরণ করুন</translation>
 <translation id="4563210852471260509">প্রাথমিক ইনপুট  ভাষা  চীনা</translation>
@@ -3783,7 +3775,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="6820686453637990663">CVC</translation>
 <translation id="2371076942591664043">&amp;সম্পন্ন হলে খুলুন</translation>
 <translation id="3920504717067627103">শংসাপত্রের নীতিসমূহ</translation>
-<translation id="1463543813647160932">৫x৭</translation>
 <translation id="7418949474175272990">এই বিকল্পটি প্ল্যাটফর্ম হার্ডওয়্যার ব্যবহার করে ভিডিও স্ট্রীম এনকোডিং করার জন্য WebRTC এ সমর্থন অক্ষম করবে৷</translation>
 <translation id="2344028582131185878">স্বয়ংক্রিয় ডাউনলোডগুলি</translation>
 <translation id="155865706765934889">টাচপ্যাড</translation>
@@ -3797,7 +3788,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="3091247532584160609"><ph name="DATA_SOURCE"/> (<ph name="ALLOWED_COUNT"/>টি মঞ্জুরিপ্রাপ্ত / <ph name="BLOCKED_COUNT"/>টি অবরুদ্ধ)</translation>
 <translation id="7072025625456903686">সবগুলির অনুমোদন বা কাস্টমাইজ করুন</translation>
 <translation id="7156235233373189579">Windows সফ্টওয়্যার ব্যবহার করে এমন একটি পিসির জন্য এই ফাইলটি ডিজাইন করা হয়েছে৷ Chrome OS দ্বারা চালিত আপনার ডিভাইসটির সাথে এটি সামঞ্জস্যপূর্ণ নয়৷ একটি উপযুক্ত প্রতিস্থাপনযোগ্য অ্যাপ্লিকেশানের জন্য দয়া করে <ph name="BEGIN_LINK"/>Chrome ওয়েব স্টোর<ph name="END_LINK"/> এ অনুসন্ধান করুন৷<ph name="BEGIN_LINK_HELP"/>আরো জানুন<ph name="END_LINK_HELP"/></translation>
-<translation id="3269101346657272573">দয়া করে PIN লিখুন৷</translation>
+<translation id="3269101346657272573">দয়া করে পিন লিখুন৷</translation>
 <translation id="2822854841007275488">আরবি</translation>
 <translation id="5432527389653992351">পরীক্ষামূলক স্ক্রীন আবর্তন অ্যানিমেশান৷</translation>
 <translation id="5857090052475505287">নতুন ফোল্ডার</translation>
@@ -3887,7 +3878,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="2478176599153288112">&quot;<ph name="EXTENSION"/>&quot; এর জন্য মিডিয়া-ফাইলের অনুমতি</translation>
 <translation id="3473479545200714844">স্ক্রীন ম্যাগনিফায়ার</translation>
 <translation id="6759193508432371551">ফ্যাক্টরি রিসেট</translation>
-<translation id="5557991081552967863">নিদ্রা মোডে থাকার সময় Wi-Fi চালু রাখুন</translation>
+<translation id="5557991081552967863">নিষ্ক্রিয় থাকাকালীন Wi‑Fi চালু রাখুন</translation>
 <translation id="6439776357918534023">সর্বদা চালান</translation>
 <translation id="3627588569887975815">লিঙ্কটি ছ&amp;দ্মবেশী উইন্ডোতে খুলুন</translation>
 <translation id="5851868085455377790">ইস্যুকারী</translation>
@@ -3979,7 +3970,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="1105117579475534983">ওয়েব পৃষ্ঠা অবরুদ্ধ করা হয়েছে</translation>
 <translation id="1673103856845176271">নিরাপত্তাজড়িন কারণে ফাইলটিতে অ্যাক্সেস করা যায়নি৷</translation>
 <translation id="1199232041627643649">প্রস্থান করতে <ph name="KEY_EQUIVALENT"/> ধরে থাকুন৷</translation>
-<translation id="63277795993398074">লঞ্চার অনুসন্ধান সরবরাহকারী API সক্ষম করুন৷</translation>
 <translation id="3777806571986431400">এক্সটেনশান সক্ষম হয়েছে</translation>
 <translation id="8957423540740801332">ডান</translation>
 <translation id="2568774940984945469">তথ্যবার ধারক</translation>
@@ -4393,7 +4383,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="8714838604780058252">পটভূমির গ্রাফিক্স</translation>
 <translation id="7158238151765743968">&quot;<ph name="DEVICE_NAME"/>&quot; এর সাথে সংযোগ এখনো অব্যাহত রয়েছে৷</translation>
 <translation id="8782565991310229362">Kiosk অ্যাপ্লিকেশান লঞ্চ বাতিল হয়েছে৷</translation>
-<translation id="4647697156028544508">দয়া করে &quot;<ph name="DEVICE_NAME"/>&quot;-এর PIN লিখুন:</translation>
+<translation id="4647697156028544508">দয়া করে &quot;<ph name="DEVICE_NAME"/>&quot;-এর পিন লিখুন:</translation>
 <translation id="2291643155573394834">পরবর্তী ট্যাব</translation>
 <translation id="1062866675591297858"><ph name="BEGIN_LINK"/>তত্ত্বাবধানে থাকা ব্যবহারকারীদের ড্যাশবোর্ড<ph name="END_LINK"/> এর মাধ্যমে আপনার তত্ত্বাবধানে থাকা ব্যবহারকারীদের পরিচালনা করুন৷</translation>
 <translation id="7671130400130574146">সিস্টেম শিরোনাম দণ্ড ও সীমানাগুলি ব্যবহার করুন</translation>
@@ -4517,7 +4507,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="4260442535208228602">অ্যাপ্লিকেশান লঞ্চারে যোগ করুন</translation>
 <translation id="6965978654500191972">ডিভাইস</translation>
 <translation id="7684559058815332124">ক্যাপটিভ পোর্টাল লগ ইন পৃষ্ঠা দেখুন</translation>
-<translation id="544897970364792192">এই API Chrome লঞ্চারের প্রশ্ন শুনতে এক্সটেনশানগুলিকে অনুমতি প্রদান করে এবং এটা তাদের অনুসন্ধানের ফলাফলে ফিরে আসে৷</translation>
 <translation id="225163402930830576">নেটওয়ার্কগুলি রিফ্রেশ করুন</translation>
 <translation id="8623004009673949077">'Kiosk_only' ম্যানিফেস্ট অ্যাট্রিবিউটের সাথে অ্যাপ্লিকেশনকে অবশ্যই ChromeOS কিয়স্ক মোডে ইনস্টল করতে হবে।</translation>
 <translation id="358796204584394954">যুক্ত করতে &quot;<ph name="DEVICE_NAME"/>&quot; এ এই কোডটি লিখুন:</translation>
@@ -4685,7 +4674,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="129553762522093515">সম্প্রতি বন্ধ হয়েছে</translation>
 <translation id="1588870296199743671">এর সাথে লিঙ্ক খুলুন...</translation>
 <translation id="4761104368405085019">আপনার মাইক্রোফোন ব্যবহার করুন</translation>
-<translation id="4287167099933143704">PIN আনলকিং কী লিখুন </translation>
+<translation id="4287167099933143704">পিন আনলকিং কী লিখুন </translation>
 <translation id="8736288397686080465">পটভূমিতে এই সাইটটি আপডেট করা হয়েছে৷</translation>
 <translation id="3936418843437416078">ইনস্টলগুলি</translation>
 <translation id="1558988940633416251">UI পাঠ্যের জন্য ক্রস-প্ল্যাটফর্ম HarfBuzz লেআউট ইঞ্জিন সক্ষম করুন। ওয়েব সামগ্রীকে প্রভাবিত করে না।</translation>
@@ -4984,7 +4973,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="1227507814927581609">&quot;<ph name="DEVICE_NAME"/>&quot; এর সাথে সংযুক্ত হওয়ার সময় প্রমাণীকরণ ব্যার্থ হয়েছে৷</translation>
 <translation id="7136694880210472378">ডিফল্ট করুন</translation>
 <translation id="3274763671541996799">আপনি পূর্ণ পর্দায় দেথতে শুরু করেছেন৷</translation>
-<translation id="7681202901521675750">SIM কার্ড লক আছে, দয়া করে PIN প্রবেশ করুন৷ অবশিষ্ট প্রয়াস: <ph name="TRIES_COUNT"/></translation>
+<translation id="7681202901521675750">SIM কার্ড লক আছে, দয়া করে পিন প্রবেশ করুন৷ অবশিষ্ট প্রয়াস: <ph name="TRIES_COUNT"/></translation>
 <translation id="2710492340506088372"><ph name="PERCENT"/>% সম্পূর্ণ হয়েছে, <ph name="TIME_LEFT"/>,</translation>
 <translation id="2489918096470125693">ফোল্ডার যুক্ত &amp;করুন...</translation>
 <translation id="7353651168734309780"><ph name="EXTENSION_NAME"/>-এর নতুন অনুমতি প্রয়োজন</translation>
@@ -5003,7 +4992,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="4562982562425894419">আপনার Chromebook এখন যা করতে পারে:</translation>
 <translation id="3581912141526548234">বলবত্ করে (হ্যাশ পেতে চেষ্টা করে, এবং সফল হলে তাদের বলবত্ করে)</translation>
 <translation id="1974371662733320303">ব্যবহার করার জন্য মেমরি খারিজের কৌশল</translation>
-<translation id="3991936620356087075">আপনি অনেকবার ভুল PIN আনলকিং কী লিখেছেন৷ আপনার SIM কার্ড স্থায়ীভাবে অক্ষম হয়েছে৷</translation>
+<translation id="3991936620356087075">আপনি অনেকবার ভুল পিন আনলকিং কী লিখেছেন৷ আপনার SIM কার্ড স্থায়ীভাবে অক্ষম হয়েছে৷</translation>
 <translation id="9217413363143870800">Smart Lock Bluetooth কম শক্তি আবিষ্কার সক্ষম করুন৷</translation>
 <translation id="5367091008316207019">ফাইল পড়া হচ্ছে..</translation>
 <translation id="936801553271523408">সিস্টেম ডায়াগনোস্টিক ডেটা</translation>
@@ -5193,7 +5182,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="6630452975878488444">নির্বাচন শর্টকাট</translation>
 <translation id="2934522647674136521">ওয়েব সামগ্রী রাস্টারাইজ করতে GPU ব্যবহার করুন৷ impl-সাইড পেইন্টিংয়ের প্রয়োজন৷</translation>
 <translation id="3004391367407090544">অনুগ্রহ করে পরে আবার আসবেন</translation>
-<translation id="6262654738522632143">ServiceWorker পটভূমি সিংক্রোনাইজেশন ServiceWorkers কে বার্তাগুলি পাঠাতে এবং সম্পদগুলি আপডেট করতে দেয় এমনকি যখন পৃষ্ঠা পটভূমিতে থাকে তখনও৷</translation>
 <translation id="2440443888409942524">Pinyin ইনপুট পদ্ধতি(ইউএস ডিভোরাক কীবোর্ডের জন্য)</translation>
 <translation id="830868413617744215">বিটা</translation>
 <translation id="2501797496290880632">একটি শর্টকাট লিখুন</translation>
@@ -5292,7 +5280,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="6485131920355264772">স্থান তথ্য পুনরুদ্ধার করতে ব্যর্থ হয়েছে</translation>
 <translation id="6547316139431024316">এই এক্সটেনশানটি জন্য আবার সতর্ক করবেন না</translation>
 <translation id="8007030362289124303">ব্যাটারি নিম্ন</translation>
-<translation id="3790909017043401679">SIM কার্ড PIN লিখুন</translation>
+<translation id="3790909017043401679">SIM কার্ড পিন লিখুন</translation>
 <translation id="2339120501444485379">নতুন নাম লিখুন</translation>
 <translation id="1753682364559456262">চিত্র ব্লক করা পরিচালনা করুন...</translation>
 <translation id="6550675742724504774">বিকল্পসমূহ</translation>
@@ -5397,7 +5385,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="988159990683914416">বিকাশকারী বিল্ড</translation>
 <translation id="1097658378307015415">সাইন ইন করার আগে, <ph name="NETWORK_ID"/> নেটওয়ার্ক সক্রিয় করতে দয়া করে অতিথি রূপে প্রবেশ করুন</translation>
 <translation id="5170477580121653719">Google ড্রাইভ অবশিষ্ট স্থান: <ph name="SPACE_AVAILABLE"/>.</translation>
-<translation id="4114470632216071239">SIM কার্ড লক করুন (মোবাইল ডেটা ব্যবহারের জন্য PIN প্রয়োজন)</translation>
+<translation id="4114470632216071239">SIM কার্ড লক করুন (মোবাইল ডেটা ব্যবহারের জন্য পিন প্রয়োজন)</translation>
 <translation id="6581162200855843583">Google ড্রাইভ লিঙ্ক</translation>
 <translation id="5783221160790377646">একটি ত্রুটির কারণে, তত্ত্বাবধানে থাকা ব্যবহারকারী তৈরি করা হয়নি৷ দয়া করে পরে আবার চেষ্টা করুন৷</translation>
 <translation id="340771324714262530">অনুকরণ করা থামান</translation>
@@ -5417,7 +5405,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="6251889282623539337"><ph name="DOMAIN"/> পরিষেবার শর্তাবলী</translation>
 <translation id="2470702053775288986">অসমর্থিত এক্সটেনশানগুলি নিষ্ক্রিয় করা আছে</translation>
 <translation id="4047112090469382184">কিভাবে এটি নিরাপদ</translation>
-<translation id="5461512418490148136">আমাদের উপর নির্ভর করুন৷ আমরা আপনার ফাইল আনছি৷</translation>
 <translation id="4268574628540273656">URL:</translation>
 <translation id="6690455781383741953">শক্তি সাশ্রয়কারী প্লাগ ইন সক্ষম করুন</translation>
 <translation id="7481312909269577407">ফরওয়ার্ড</translation>
@@ -5489,13 +5476,12 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="5062930723426326933">সাইন ইন ব্যর্থ হয়েছে, দয়া করে ইন্টারনেটের সাথে সংযোগ স্থাপন করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="3444783709767514481">প্রথম প্রেরণ করার সময়</translation>
 <translation id="5316716239522500219">আয়না মনিটর</translation>
-<translation id="9112614144067920641">দয়া করে একটি নতুন PIN চয়ন করুন৷</translation>
+<translation id="9112614144067920641">দয়া করে একটি নতুন পিন চয়ন করুন৷</translation>
 <translation id="1338950911836659113">মোছা হচ্ছে...</translation>
 <translation id="2061855250933714566"><ph name="ENCODING_CATEGORY"/> (<ph name="ENCODING_NAME"/>)</translation>
 <translation id="8379970328220427967"><ph name="SPACE_AVAILABLE"/> অবশিষ্ট</translation>
 <translation id="7773726648746946405">সেশন সঞ্চয়স্থান</translation>
 <translation id="5839277899276241121">বিলিং ঠিকানার মতো</translation>
-<translation id="2246155759345948098">এই ফাইলটি খোলার জন্য খুব বেশি বড়৷</translation>
 <translation id="4235813040357936597"><ph name="PROFILE_NAME"/> এর জন্য অ্যাকাউন্ট যোগ করুন</translation>
 <translation id="9147392381910171771">&amp;বিকল্পসমূহ</translation>
 <translation id="8803496343472038847">রুশ ফোনেটিক কীবোর্ড</translation>
@@ -5503,7 +5489,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="426015154560005552">আরবি কীবোর্ড</translation>
 <translation id="6793649375377511437">Google Copresence-এব্র তথ্য</translation>
 <translation id="4335713051520279344">এই কম্পিউটার 1 সেকেন্ডে পুনঃসেট হবে৷ অনুসন্ধান চালাতে যে কোনো একটি কী টিপুন৷</translation>
-<translation id="7233715388668391168">ভার্চুয়াল কীবোর্ডের জন্য অঙ্গভঙ্গি টাইপিং সক্ষম/অক্ষম করে।</translation>
+<translation id="7233715388668391168">ভার্চুয়াল কীবোর্ডের জন্য অঙ্গভঙ্গির মাধ্যমে টাইপিং সক্ষম/অক্ষম করে।</translation>
 <translation id="6264485186158353794">সুরক্ষাতে ফিরুন</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="5130080518784460891">ইটেন</translation>
@@ -5522,7 +5508,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="2574102660421949343"><ph name="DOMAIN"/>-এর থেকে কুকিজ মঞ্জুরিপ্রাপ্ত৷</translation>
 <translation id="2773948261276885771">পৃষ্ঠা সেট করুন</translation>
 <translation id="3688526734140524629">চ্যানেল পরিবর্তন করুন</translation>
-<translation id="4959447747655704388">আপনি যদি আপনার নিরাপত্তার ঝুঁকিগুলি বুঝতে পারেন, তাহলে আপনি <ph name="BEGIN_LINK"/>অসুরক্ষিত সাইটে যেতে পারেন<ph name="END_LINK"/>।</translation>
 <translation id="7030084719913890980">আক্রমণকারীরা এই সাইটটিকে সংকটাপন্ন করতে পারে, এবং আপনার কম্পিউটারে বিপজ্জনক প্রোগ্রাম ইনস্টল করতে পারে যা আপনার তথ্য (উদাহরণস্বরুপ, ফটো, পাসওয়ার্ড, বার্তা এবং ক্রেডিট কার্ডসমূহ) চুরি করতে বা মুছে দিতে পারে।</translation>
 <translation id="6263625581655667292">ডেটা সেভার Lo-Fi মোডকে সর্বদা সক্ষম, শুধুমাত্র সেলুলার সংযোগে সক্ষম, অথবা অক্ষম রাখতে বাধ্য করে। Lo-Fi মোড ব্যবহার করতে চাইলে ডেটা সেভার অবশ্যই সক্ষম রাখতে হবে।</translation>
 <translation id="5941153596444580863">ব্যক্তিকে যোগ করুন...</translation>
@@ -5662,7 +5647,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="5327248766486351172">নাম</translation>
 <translation id="2413749388954403953">বুকমার্ক ইউজার ইন্টারফেস পরিবর্তন করুন</translation>
 <translation id="2150661552845026580">&quot;<ph name="EXTENSION_NAME"/>&quot; জুড়বেন?</translation>
-<translation id="5553784454066145694">নতুন  PIN চয়ন করুন</translation>
+<translation id="5553784454066145694">নতুন  পিন চয়ন করুন</translation>
 <translation id="6101226222197207147">নতুন অ্যাপ্লিকেশন জোড়া হয়েছে (<ph name="EXTENSION_NAME"/>)</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION"/> [<ph name="COUNTRY"/>]</translation>
 <translation id="6845038076637626672">সর্বাধিক খুলুন</translation>
@@ -5819,7 +5804,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="5770385044111747894">NPAPI</translation>
 <translation id="9111742992492686570">জটিল নিরাপত্তা আপডেট ডাউনলোড করুন</translation>
 <translation id="1979280758666859181"><ph name="PRODUCT_NAME"/> এর পুরানো সংস্করণ দিয়ে একটি চ্যানেলে পরিবর্তন করছেন৷ যখন আপনার ডিভাইসে বর্তমানে ইনস্টল করা সংস্করণের সঙ্গে চ্যানেলের সংস্করণটি মিলে যাবে তখনই চ্যানেল পরিবর্তন প্রযুক্ত হবে৷</translation>
-<translation id="304009983491258911">SIM কার্ড PIN পরিবর্তন করুন</translation>
+<translation id="304009983491258911">SIM কার্ড পিন পরিবর্তন করুন</translation>
 <translation id="7556033326131260574">Smart Lock আপনার অ্যাকাউন্ট যাচাইকরণ করতে পারেনি৷ প্রবেশ করতে আপনার পাসওয়ার্ড লিখুন৷</translation>
 <translation id="8600929685092827187">প্যাকেটগুলি এলে জেগে ওঠা</translation>
 <translation id="2045969484888636535">কুকিজ অবরুদ্ধ করা অবিরত করুন</translation>
@@ -5894,7 +5879,7 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="7339785458027436441">টাইপ করার সময় বানান পরীক্ষা করুন</translation>
 <translation id="5233736638227740678">&amp;প্রতিলেপন</translation>
 <translation id="1828901632669367785">সিস্টেম কথোপকথন ব্যবহার করে মুদ্রণ করুন...</translation>
-<translation id="1801298019027379214">ভুল PIN, দয়া করে আবার চেষ্টা করুন৷ চেষ্টা বাকি আছে: <ph name="TRIES_COUNT"/>টি</translation>
+<translation id="1801298019027379214">ভুল পিন, দয়া করে আবার চেষ্টা করুন৷ চেষ্টা বাকি আছে: <ph name="TRIES_COUNT"/>টি</translation>
 <translation id="7352651011704765696">কিছু সমস্যা হয়েছে</translation>
 <translation id="992543612453727859">সামনে শব্দবন্ধগুলি যুক্ত করুন </translation>
 <translation id="4728558894243024398">প্ল্যাটফর্ম</translation>
@@ -5918,6 +5903,5 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="1635033183663317347">আপনার কাস্টডিয়ান দ্বারা এটি ইনস্টল করা হয়েছে।</translation>
 <translation id="5457858494714903578">&quot;<ph name="IMPORT_ID"/>&quot; ID সহ অবিশ্বস্ত এক্সটেনশান ইনস্টল করতে পারবেন না৷</translation>
 <translation id="7025325401470358758">পরবর্তী ফলক</translation>
-<translation id="3397561538744706497">৯x১৬</translation>
 <translation id="259421303766146093">পরিবর্ধিত করুন</translation>
 </translationbundle>

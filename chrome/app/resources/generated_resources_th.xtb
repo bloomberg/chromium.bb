@@ -172,7 +172,6 @@
 <translation id="7600965453749440009">ไม่ต้องแปลภาษา<ph name="LANGUAGE"/></translation>
 <translation id="3208703785962634733">ยังไม่ยืนยัน</translation>
 <translation id="620329680124578183">ไม่โหลด (แนะนำ)</translation>
-<translation id="6300924177400055566">คุณมีพื้นที่ใน Google ไดรฟ์ไม่เพียงพอสำหรับบันทึก &quot;<ph name="FILE_NAME"/>&quot; โปรดนำไฟล์ออกหรือ<ph name="BEGIN_LINK"/>ซื้อพื้นที่จัดเก็บข้อมูลเพิ่มเติม<ph name="END_LINK"/></translation>
 <translation id="9074739597929991885">บลูทูธ</translation>
 <translation id="2653266418988778031">หากคุณลบใบรับรองของผู้ออกใบรับรอง (CA) เบราว์เซอร์ของคุณจะไม่เชื่อถือใบรับรองใดที่ออกโดย CA นั้นอีกต่อไป</translation>
 <translation id="4237357878101553356">เราไม่สามารถยืนยันข้อมูลบัญชีของคุณ |แก้ไขปัญหานี้|</translation>
@@ -381,7 +380,6 @@
 <translation id="5245965967288377800">เครือข่าย Wimax</translation>
 <translation id="40027638859996362">ย้ายคำ</translation>
 <translation id="3522708245912499433">โปรตุเกส</translation>
-<translation id="6956130766342550311">4x6</translation>
 <translation id="6699065916437121401">ทำให้เอาต์พุตเสียงสตรีมเพื่อตรวจสอบว่าสามารถใช้การจัดวางช่องเสียงอื่นที่ไม่ใช่การจัดวางเริ่มต้นของฮาร์ดแวร์ได้ไหม</translation>
 <translation id="6928441285542626375">เปิดใช้งาน TCP Fast Open</translation>
 <translation id="7792388396321542707">หยุดการแชร์</translation>
@@ -876,11 +874,9 @@
 <translation id="1013707859758800957">ปลั๊กอินที่ไม่ได้อยู่ในแซนด์บ็อกซ์ได้รับอนุญาตให้ทำงานในหน้าเว็บนี้</translation>
 <translation id="5618333180342767515">(การดำเนินการนี้อาจใช้เวลาสองถึงสามนาที)</translation>
 <translation id="3392020134425442298">กู้คืนไฟล์ที่เป็นอันตราย</translation>
-<translation id="1697820107502723922">ที่เก็บถาวร</translation>
 <translation id="938470336146445890">โปรดติดตั้งใบรับรองของผู้ใช้</translation>
 <translation id="3396331542604645348">เครื่องพิมพ์ที่เลือกไว้ไม่สามารถใช้ได้หรือไม่ได้รับการติดตั้งอย่างถูกต้อง โปรดตรวจสอบเครื่องพิมพ์ของคุณหรือลองเลือกเครื่องพิมพ์อื่น</translation>
 <translation id="8480417584335382321">การซูมหน้าเว็บ:</translation>
-<translation id="3872166400289564527">พื้นที่จัดเก็บข้อมูลภายนอก</translation>
 <translation id="1442912890475371290">บล็อกความพยายาม<ph name="BEGIN_LINK"/>ที่จะเข้าชมหน้าเว็บใน <ph name="DOMAIN"/><ph name="END_LINK"/></translation>
 <translation id="5912378097832178659">แ&amp;ก้ไขเครื่องมือค้นหา...</translation>
 <translation id="8013526960933383914">เปิดใช้เดสก์ท็อปแบบรวม</translation>
@@ -981,7 +977,6 @@
 <translation id="8064671687106936412">คีย์:</translation>
 <translation id="2218515861914035131">วางเป็นข้อความธรรมดา</translation>
 <translation id="1725149567830788547">แสดง&amp;การควบคุม</translation>
-<translation id="8216351761227087153">ดู</translation>
 <translation id="3888118750782905860">การจัดการผู้บริโภค</translation>
 <translation id="3528033729920178817">หน้าเว็บนี้กำลังติดตามตำแหน่งของคุณอยู่</translation>
 <translation id="7545288882499673859">กลยุทธ์การยกเลิกหน่วยความจำสำหรับการจัดการการใช้หน่วยความจำขั้นสูง</translation>
@@ -1613,7 +1608,6 @@
 <translation id="8209439005376447114">ข้อมูลประจำตัวของเว็บไซต์นี้ได้รับการยืนยันโดย <ph name="ISSUER"/> เซิร์ฟเวอร์นำส่งข้อมูลประกาศนีบัตรความโปร่งใสที่ถูกต้องแล้ว</translation>
 <translation id="5412637665001827670">แป้นพิมพ์ภาษาบัลแกเรีย</translation>
 <translation id="3574210789297084292">ลงชื่อเข้าใช้</translation>
-<translation id="5254480569305195883">เปิดใช้การสนับสนุนกิจกรรมการซิงค์พื้นหลังของ ServiceWorker</translation>
 <translation id="2134149231879627725">ให้ Google ช่วยคุณในการล็อก ลบ และค้นหาอุปกรณ์จากระยะไกล</translation>
 <translation id="5151034238407558331">ขออภัย เฉพาะผู้ซื้อที่มีที่อยู่ในสหรัฐอเมริกาจะสามารถใช้งาน Google Payments กับผู้ขายนี้ได้ หากคุณเป็นผู้พำนักในสหรัฐฯ โปรด|เปลี่ยนที่อยู่บ้านของคุณที่ให้ไว้กับ Google Payments| หรือชำระเงินโดยไม่ใช้ Google Payments</translation>
 <translation id="1146204723345436916">นำเข้าบุ๊กมาร์กจากไฟล์ HTML...</translation>
@@ -1678,7 +1672,6 @@
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">เปิดใช้คีย์ติดหนึบ</translation>
 <translation id="2150139952286079145">ค้นหาปลายทาง</translation>
-<translation id="5637940320504994319">คุณไม่มีพื้นที่ใน Google ไดรฟ์เหลือแล้ว</translation>
 <translation id="2907619724991574506">URL เริ่มต้นทำงาน</translation>
 <translation id="6780476430578694241">App Launcher</translation>
 <translation id="5328285148748012771">เข้าถึงทุกแอปของคุณจากตัวเรียกใช้งานที่ใช้ง่ายนี้ เล่นเกม วิดีโอแชท ฟังเพลง แก้ไขเอกสาร หรือโหลดแอปเพิ่มเติมจาก Chrome เว็บสโตร์</translation>
@@ -2488,7 +2481,6 @@
 <translation id="669052614725703943">&lt;p&gt;ไม่สามารถเริ่มการเชื่อมต่อส่วนตัวกับ <ph name="BEGIN_BOLD"/><ph name="DOMAIN"/><ph name="END_BOLD"/> ได้เนื่องจากวันที่และเวลาของอุปกรณ์ (<ph name="DATE_AND_TIME"/>) ไม่ถูกต้อง&lt;/p&gt;
 
           &lt;p&gt;โปรดปรับวันที่และเวลาจากส่วน&lt;strong&gt;ทั่วไป&lt;/strong&gt;ของแอป &lt;strong&gt;การตั้งค่า&lt;/strong&gt;&lt;/p&gt;</translation>
-<translation id="8614236384372926204">วิดีโอนี้ไม่สามารถใช้งานแบบออฟไลน์ได้</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> ไม่สามารถกำหนดหรือตั้งค่าเบราว์เซอร์ที่เป็นค่าเริ่มต้นได้</translation>
 <translation id="7290594223351252791">ยืนยันการลงทะเบียน</translation>
 <translation id="8249681497942374579">นำทางลัดบนเดสก์ท็อปออก</translation>
@@ -3744,7 +3736,6 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="2371076942591664043">เปิดเมื่อเ&amp;สร็จ</translation>
 <translation id="3920504717067627103">นโยบายใบรับรอง</translation>
-<translation id="1463543813647160932">5x7</translation>
 <translation id="7418949474175272990">ตัวเลือกนี้จะปิดใช้การสนับสนุนใน WebRTC สำหรับการเข้ารหัสสตรีมวิดีโอโดยใช้ฮาร์ดแวร์แพลตฟอร์ม</translation>
 <translation id="2344028582131185878">การดาวน์โหลดโดยอัตโนมัติ</translation>
 <translation id="155865706765934889">ทัชแพด</translation>
@@ -3940,7 +3931,6 @@
 <translation id="1105117579475534983">หน้าเว็บถูกบล็อก</translation>
 <translation id="1673103856845176271">ไม่สามารถเข้าถึงไฟล์เนื่องจากเหตุผลด้านความปลอดภัย</translation>
 <translation id="1199232041627643649">กด <ph name="KEY_EQUIVALENT"/> ค้างไว้เพื่อออก</translation>
-<translation id="63277795993398074">เปิดใช้ API ผู้ให้บริการการค้นหา Launcher</translation>
 <translation id="3777806571986431400">ส่วนขยายที่เปิดใช้งาน</translation>
 <translation id="8957423540740801332">ด้านขวา</translation>
 <translation id="2568774940984945469">ที่เก็บแถบข้อมูล</translation>
@@ -4475,7 +4465,6 @@
 <translation id="4260442535208228602">เพิ่มลงในเครื่องเรียกใช้งานแอป</translation>
 <translation id="6965978654500191972">อุปกรณ์</translation>
 <translation id="7684559058815332124">ดูหน้าการเข้าสู่ระบบแคปทีฟพอร์ทัล</translation>
-<translation id="544897970364792192">API นี้อนุญาตให้ส่วนขยายรับฟังคำค้นหาของ Chrome Launcher และแสดงผลการค้นหาไปที่ Chrome Launcher</translation>
 <translation id="225163402930830576">รีเฟรชเครือข่าย</translation>
 <translation id="8623004009673949077">ต้องติดตั้งแอปที่มีแอตทริบิวต์มานิเฟสต์ &quot;kiosk_only&quot; ในโหมดคีออสก์ของ Chrome OS</translation>
 <translation id="358796204584394954">พิมพ์รหัสนี้บน &quot;<ph name="DEVICE_NAME"/>&quot; เพื่อจับคู่:</translation>
@@ -5153,7 +5142,6 @@
 <translation id="6630452975878488444">ทางลัดการเลือก</translation>
 <translation id="2934522647674136521">ใช้ GPU ในการแรสเตอร์เนื้อหาเว็บ ต้องใช้ impl-side painting</translation>
 <translation id="3004391367407090544">โปรดกลับมาอีกในภายหลัง</translation>
-<translation id="6262654738522632143">การซิงค์พื้นหลังของ ServiceWorker ทำให้ ServiceWorker สามารถส่งข้อความและอัปเดตทรัพยากรแม้ขณะที่หน้านี้อยู่ในพื้นหลัง</translation>
 <translation id="2440443888409942524">วิธีการป้อนข้อมูลภาษาพินอิน (สำหรับแป้นพิมพ์ Dvorak ของสหรัฐฯ)</translation>
 <translation id="830868413617744215">เบต้า</translation>
 <translation id="2501797496290880632">พิมพ์แป้นพิมพ์ลัด</translation>
@@ -5377,7 +5365,6 @@
 <translation id="6251889282623539337">ข้อกำหนดในการให้บริการของ <ph name="DOMAIN"/></translation>
 <translation id="2470702053775288986">ปิดใช้ส่วนขยายที่ไม่สนับสนุนแล้ว</translation>
 <translation id="4047112090469382184">คุณลักษณะนี้มีความปลอดภัยอย่างไร</translation>
-<translation id="5461512418490148136">อยู่กับเราก่อน เรากำลังดึงไฟล์ของคุณ</translation>
 <translation id="4268574628540273656">URL:</translation>
 <translation id="6690455781383741953">เปิดใช้โหมดประหยัดพลังงานของปลั๊กอิน</translation>
 <translation id="7481312909269577407">ส่งต่อ</translation>
@@ -5456,7 +5443,6 @@
 <translation id="8379970328220427967">เหลืออยู่ <ph name="SPACE_AVAILABLE"/></translation>
 <translation id="7773726648746946405">พื้นที่จัดเก็บเซสชัน</translation>
 <translation id="5839277899276241121">เช่นเดียวกับที่อยู่สำหรับการเรียกเก็บเงิน</translation>
-<translation id="2246155759345948098">ไฟล์มีขนาดใหญ่เกินไปสำหรับการเปิด</translation>
 <translation id="4235813040357936597">เพิ่มบัญชีสำหรับ <ph name="PROFILE_NAME"/></translation>
 <translation id="9147392381910171771">&amp;ตัวเลือก</translation>
 <translation id="8803496343472038847">แป้นพิมพ์แบบออกเสียงภาษารัสเซีย</translation>
@@ -5484,7 +5470,6 @@
 <translation id="2574102660421949343">อนุญาตให้จัดเก็บคุกกี้จาก <ph name="DOMAIN"/></translation>
 <translation id="2773948261276885771">ตั้งค่าหน้าเว็บ</translation>
 <translation id="3688526734140524629">เปลี่ยนช่อง</translation>
-<translation id="4959447747655704388">หากคุณเข้าใจความเสี่ยงต่อความปลอดภัย คุณสามารถ<ph name="BEGIN_LINK"/>ไปยังไซต์ที่ติดมัลแวร์นี้<ph name="END_LINK"/></translation>
 <translation id="7030084719913890980">ผู้บุกรุกอาจโจมตีไซต์นี้แล้วและพยายามติดตั้งโปรแกรมที่อันตราย ซึ่งขโมยหรือลบข้อมูล (ตัวอย่างเช่น รูปภาพ รหัสผ่าน ข้อความ และบัตรเครดิต) บนคอมพิวเตอร์ของคุณ</translation>
 <translation id="6263625581655667292">บังคับให้เปิดใช้โหมด Lo-Fi สำหรับโปรแกรมประหยัดอินเทอร์เน็ตเสมอ โดยจะเปิดใช้เฉพาะเมื่อเชื่อมต่อเครือข่ายมือถือเท่านั้น มิเช่นนั้นจะปิดใช้ไป ต้องเปิดใช้โปรแกรมประหยัดอินเทอร์เน็ตเพื่อที่จะใช้โหมด Lo-Fi</translation>
 <translation id="5941153596444580863">เพิ่มบุคคล...</translation>
@@ -5879,6 +5864,5 @@
 <translation id="1635033183663317347">ติดตั้งโดยผู้ดูแล</translation>
 <translation id="5457858494714903578">ไม่สามารถติดตั้งส่วนขยายที่ไม่น่าเชื่อถือด้วย ID &quot;<ph name="IMPORT_ID"/>&quot;</translation>
 <translation id="7025325401470358758">แผงถัดไป</translation>
-<translation id="3397561538744706497">9x16</translation>
 <translation id="259421303766146093">ย่อ</translation>
 </translationbundle>

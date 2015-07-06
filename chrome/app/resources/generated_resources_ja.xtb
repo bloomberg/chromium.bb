@@ -173,7 +173,6 @@
 <translation id="7600965453749440009"><ph name="LANGUAGE"/>を翻訳しない</translation>
 <translation id="3208703785962634733">未確認</translation>
 <translation id="620329680124578183">読み込まない（推奨）</translation>
-<translation id="6300924177400055566">「<ph name="FILE_NAME"/>」を保存するには Google ドライブの空き容量が不足しています。ファイルを削除するか、<ph name="BEGIN_LINK"/>ストレージ容量を追加購入<ph name="END_LINK"/>してください。</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2653266418988778031">認証局（CA）の証明書を削除すると、ブラウザはその CA が発行するどの証明書も信頼しなくなります。</translation>
 <translation id="4237357878101553356">アカウント情報を確認できませんでした。 |この問題を修正|</translation>
@@ -385,7 +384,6 @@
 <translation id="5245965967288377800">WiMAX ネットワーク</translation>
 <translation id="40027638859996362">1 語移動する</translation>
 <translation id="3522708245912499433">ポルトガル語</translation>
-<translation id="6956130766342550311">4×6</translation>
 <translation id="6699065916437121401">既定のハードウェア レイアウト以外のチャンネル レイアウトを利用できるかどうかを音声出力ストリームで確認する。</translation>
 <translation id="6928441285542626375">TCP Fast Open を有効にする</translation>
 <translation id="7792388396321542707">共有を停止</translation>
@@ -884,11 +882,9 @@
 <translation id="1013707859758800957">このページでのサンドボックスの無効化プラグインの実行が許可されました。</translation>
 <translation id="5618333180342767515">（数分かかることがあります）</translation>
 <translation id="3392020134425442298">不正なファイルを復元</translation>
-<translation id="1697820107502723922">アーカイブ</translation>
 <translation id="938470336146445890">ユーザー証明書をインストールしてください。</translation>
 <translation id="3396331542604645348">選択したプリンタは利用できないか、正しくインストールされていません。プリンタを確認するか、別のプリンタを選択してみてください。</translation>
 <translation id="8480417584335382321">ページのズーム:</translation>
-<translation id="3872166400289564527">外部ストレージ</translation>
 <translation id="1442912890475371290"><ph name="BEGIN_LINK"/><ph name="DOMAIN"/> のページへのアクセス<ph name="END_LINK"/>がブロックされました。</translation>
 <translation id="5912378097832178659">検索エンジンの編集(&amp;E)...</translation>
 <translation id="8013526960933383914">デスクトップ統合を有効にする</translation>
@@ -989,7 +985,6 @@
 <translation id="8064671687106936412">キー:</translation>
 <translation id="2218515861914035131">プレーン テキストとして貼り付ける</translation>
 <translation id="1725149567830788547">コントロールを表示(&amp;C)</translation>
-<translation id="8216351761227087153">見る</translation>
 <translation id="3888118750782905860">ユーザー管理</translation>
 <translation id="3528033729920178817">このページはあなたの現在地を追跡しています。</translation>
 <translation id="7545288882499673859">メモリ破棄の方法（メモリひっ迫時の高度な処理）</translation>
@@ -1622,7 +1617,6 @@
 <translation id="8209439005376447114">このウェブサイトの識別情報が <ph name="ISSUER"/> によって確認されました。証明書の透明性に関する有効な情報がサーバーから提供されました。</translation>
 <translation id="5412637665001827670">ブルガリア語のキーボード</translation>
 <translation id="3574210789297084292">ログイン</translation>
-<translation id="5254480569305195883">サービスワーカーのバックグラウンド同期イベントのサポートを有効にする</translation>
 <translation id="2134149231879627725">リモートからのデバイスのロック、消去、位置特定を Google がお手伝いします。</translation>
 <translation id="5151034238407558331">この販売者に対しては、お客様の住所が米国である場合にのみ Google ペイメントをご利用いただけます。米国にお住まいの場合は、|Google ペイメントに登録している自宅住所を変更|してください。または、Google ペイメントを使用せずに支払いを行ってください。</translation>
 <translation id="1146204723345436916">HTML ファイルからブックマークをインポート...</translation>
@@ -1687,7 +1681,6 @@
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">スティッキー キーを有効にする</translation>
 <translation id="2150139952286079145">送信先の検索</translation>
-<translation id="5637940320504994319">Google ドライブの空き容量が不足しています</translation>
 <translation id="2907619724991574506">起動 URL</translation>
 <translation id="6780476430578694241">アプリ ランチャー</translation>
 <translation id="5328285148748012771">このランチャーは、すべてのアプリにアクセスできる便利な場所です。ゲーム、ビデオチャット、音楽鑑賞、ドキュメント編集などをすぐに始めることができます。Chrome ウェブストアには豊富なアプリが揃っています。</translation>
@@ -2505,7 +2498,6 @@
 <translation id="669052614725703943">&lt;p&gt;デバイスの日時（<ph name="DATE_AND_TIME"/>）が正しくないため、<ph name="BEGIN_BOLD"/><ph name="DOMAIN"/><ph name="END_BOLD"/> へのプライベート接続を確立できません。&lt;/p&gt;
 
           &lt;p&gt;&lt;strong&gt;設定&lt;/strong&gt;アプリの [&lt;strong&gt;全般&lt;/strong&gt;] セクションで日時を調整してください。&lt;/p&gt;</translation>
-<translation id="8614236384372926204">この動画はオフラインでは表示できません。</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> では既定のブラウザを判断または設定できません。</translation>
 <translation id="7290594223351252791">登録の確認</translation>
 <translation id="8249681497942374579">デスクトップ ショートカットを削除</translation>
@@ -3777,7 +3769,6 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="2371076942591664043">ダウンロードしたら開く(&amp;D)</translation>
 <translation id="3920504717067627103">証明書ポリシー</translation>
-<translation id="1463543813647160932">5×7</translation>
 <translation id="7418949474175272990">このオプションは、WebRTC でプラットフォーム ハードウェアを使用して動画ストリームをエンコードする操作を無効にします。</translation>
 <translation id="2344028582131185878">自動ダウンロード</translation>
 <translation id="155865706765934889">トラックパッド</translation>
@@ -3973,7 +3964,6 @@
 <translation id="1105117579475534983">ウェブページがブロックされました</translation>
 <translation id="1673103856845176271">セキュリティ上の理由で、ファイルにアクセスできませんでした。</translation>
 <translation id="1199232041627643649"><ph name="KEY_EQUIVALENT"/> キーを押すと終了します。</translation>
-<translation id="63277795993398074">Launcher Search Provider API を有効にする。</translation>
 <translation id="3777806571986431400">有効化された拡張機能</translation>
 <translation id="8957423540740801332">右</translation>
 <translation id="2568774940984945469">情報バー コンテナ</translation>
@@ -4509,7 +4499,6 @@
 <translation id="4260442535208228602">アプリ ランチャーに追加</translation>
 <translation id="6965978654500191972">デバイス</translation>
 <translation id="7684559058815332124">キャプティブ ポータルのログインページにアクセス</translation>
-<translation id="544897970364792192">この API は Chrome ランチャーの検索クエリをリッスンして検索結果を返すことを拡張機能に許可します。</translation>
 <translation id="225163402930830576">ネットワークを更新</translation>
 <translation id="8623004009673949077">「kiosk_only」のマニフェスト属性が指定されているアプリは、ChromeOS キオスク モードでインストールする必要があります。</translation>
 <translation id="358796204584394954">ペア設定するには「<ph name="DEVICE_NAME"/>」で次のコードを入力してください:</translation>
@@ -5188,7 +5177,6 @@
 <translation id="6630452975878488444">選択ショートカット</translation>
 <translation id="2934522647674136521">GPU を使用してウェブ コンテンツをラスター化します。実装側での描画が必要です。</translation>
 <translation id="3004391367407090544">後でもう一度お試しください</translation>
-<translation id="6262654738522632143">サービスワーカーのバックグラウンド同期を有効にすると、ページがバックグラウンドで動作中でも、サービスワーカーからメッセージを送信してリソースを更新できます。</translation>
 <translation id="2440443888409942524">ピンイン入力方法（US Dvorak キーボード用）</translation>
 <translation id="830868413617744215">Beta</translation>
 <translation id="2501797496290880632">ショートカットを入力する</translation>
@@ -5412,7 +5400,6 @@
 <translation id="6251889282623539337"><ph name="DOMAIN"/> 利用規約</translation>
 <translation id="2470702053775288986">サポートされていない拡張機能が無効</translation>
 <translation id="4047112090469382184">デバイスが保護される仕組み</translation>
-<translation id="5461512418490148136">しばらくお待ちください。ファイルを取得しています。</translation>
 <translation id="4268574628540273656">URL:</translation>
 <translation id="6690455781383741953">プラグイン省電力機能を有効にする</translation>
 <translation id="7481312909269577407">進む</translation>
@@ -5491,7 +5478,6 @@
 <translation id="8379970328220427967">残り <ph name="SPACE_AVAILABLE"/></translation>
 <translation id="7773726648746946405">セッション ストレージ</translation>
 <translation id="5839277899276241121">請求先住所と同じ</translation>
-<translation id="2246155759345948098">このファイルは、サイズが大きすぎて開けません。</translation>
 <translation id="4235813040357936597"><ph name="PROFILE_NAME"/> のアカウントを追加</translation>
 <translation id="9147392381910171771">オプション(&amp;O)</translation>
 <translation id="8803496343472038847">ロシア語（表音）キーボード</translation>
@@ -5519,7 +5505,6 @@
 <translation id="2574102660421949343"><ph name="DOMAIN"/> からの Cookie が許可されました。</translation>
 <translation id="2773948261276885771">ページを設定</translation>
 <translation id="3688526734140524629">チャンネルを変更</translation>
-<translation id="4959447747655704388"><ph name="BEGIN_LINK"/>この感染しているサイトにアクセスする<ph name="END_LINK"/>場合は、セキュリティ上のリスクについてご承知おきください。</translation>
 <translation id="7030084719913890980">悪意のあるユーザーがこのサイトを不正使用し、ご利用のパソコンに危険なプログラム（写真、パスワード、メッセージ、クレジット カード情報などを盗み取るか削除するプログラム）をインストールしようとする可能性があります。</translation>
 <translation id="6263625581655667292">データセーバー Lo-Fi モードを常に有効にするか、モバイル接続時にのみ有効にするか、無効にするかを指定します。Lo-Fi モードを使用するにはデータセーバーを有効にする必要があります。</translation>
 <translation id="5941153596444580863">ユーザーを追加...</translation>
@@ -5914,6 +5899,5 @@
 <translation id="1635033183663317347">管理責任者によってインストールされています。</translation>
 <translation id="5457858494714903578">信頼されていない拡張機能（ID「<ph name="IMPORT_ID"/>」）はインストールできません。</translation>
 <translation id="7025325401470358758">次のウィンドウ</translation>
-<translation id="3397561538744706497">9×16</translation>
 <translation id="259421303766146093">縮小表示</translation>
 </translationbundle>

@@ -172,7 +172,6 @@
 <translation id="7600965453749440009">Никогда не переводить <ph name="LANGUAGE"/></translation>
 <translation id="3208703785962634733">Не подтвержден</translation>
 <translation id="620329680124578183">Не загружать (рекомендуется)</translation>
-<translation id="6300924177400055566">На Диске Google не хватает свободного места, чтобы сохранить &quot;<ph name="FILE_NAME"/>&quot;. Удалите файлы или <ph name="BEGIN_LINK"/>оплатите больше места<ph name="END_LINK"/>.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2653266418988778031">Если удалить сертификат Центра сертификации, ваш браузер не сможет доверять сертификатам, выпущенным этим Центром сертификации.</translation>
 <translation id="4237357878101553356">Не удалось проверить информацию об аккаунте. |Решить проблему|</translation>
@@ -383,7 +382,6 @@
 <translation id="5245965967288377800">Сеть Wimax</translation>
 <translation id="40027638859996362">Сдвинуть на одно слово</translation>
 <translation id="3522708245912499433">Португальский</translation>
-<translation id="6956130766342550311">4x6</translation>
 <translation id="6699065916437121401">Передает звук через аудиовыход, чтобы проверить доступность дополнительных каналов, не настроенных по умолчанию.</translation>
 <translation id="6928441285542626375">Включение TCP Fast Open</translation>
 <translation id="7792388396321542707">Закрыть доступ</translation>
@@ -884,11 +882,9 @@
 <translation id="1013707859758800957">На этой странице был запущен плагин, работающий вне тестовой среды.</translation>
 <translation id="5618333180342767515">(это может занять несколько минут)</translation>
 <translation id="3392020134425442298">Скачать вредоносный файл</translation>
-<translation id="1697820107502723922">Архивы</translation>
 <translation id="938470336146445890">Установите сертификат пользователя.</translation>
 <translation id="3396331542604645348">Принтер недоступен или установлен неправильно. Проверьте его или выберите другой.</translation>
 <translation id="8480417584335382321">Масштаб страницы:</translation>
-<translation id="3872166400289564527">Внешний диск</translation>
 <translation id="1442912890475371290">Заблокирована попытка <ph name="BEGIN_LINK"/>перехода на страницу<ph name="DOMAIN"/><ph name="END_LINK"/>.</translation>
 <translation id="5912378097832178659">&amp;Изменить поисковые системы...</translation>
 <translation id="8013526960933383914">Включить унифицированный режим рабочего стола</translation>
@@ -989,7 +985,6 @@
 <translation id="8064671687106936412">Ключ:</translation>
 <translation id="2218515861914035131">Вставить как обычный текст</translation>
 <translation id="1725149567830788547">Показать &amp;управление</translation>
-<translation id="8216351761227087153">Просмотреть</translation>
 <translation id="3888118750782905860">Управление настройками клиентов</translation>
 <translation id="3528033729920178817">Эта страница отслеживает ваше местоположение.</translation>
 <translation id="7545288882499673859">Стратегия сброса памяти для расширенного управления вытеснением памяти</translation>
@@ -1621,7 +1616,6 @@
 <translation id="8209439005376447114">Подлинность этого веб-сайта подтверждена <ph name="ISSUER"/>. Сведения о временных метках сертификатов предоставлены сервером и являются действительными.</translation>
 <translation id="5412637665001827670">Болгарская раскладка</translation>
 <translation id="3574210789297084292">войти</translation>
-<translation id="5254480569305195883">Включить поддержку для фоновой синхронизации ServiceWorker</translation>
 <translation id="2134149231879627725">Разрешить удаленно осуществлять блокировку устройства, удаление с него данных и определение его местоположения</translation>
 <translation id="5151034238407558331">К сожалению, расчеты с этим продавцом в Google Payments доступны только для покупателей, указавших свой адрес в США. Если вы резидент США, |измените свой домашний адрес в Google Payments| или оплатите покупку другим способом.</translation>
 <translation id="1146204723345436916">Импортировать закладки из файла HTML...</translation>
@@ -1686,7 +1680,6 @@
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">Включить залипание клавиш</translation>
 <translation id="2150139952286079145">Поиск мест назначения</translation>
-<translation id="5637940320504994319">Недостаточно свободного места на Диске Google</translation>
 <translation id="2907619724991574506">URL-адреса запуска</translation>
 <translation id="6780476430578694241">Панель запуска приложений</translation>
 <translation id="5328285148748012771">На этой панели запуска доступны все ваши приложения. Воспользуйтесь ей, когда захотите поиграть, пообщаться в видеочате, послушать музыку, открыть документ или скачать другие приложения из Интернет-магазина Chrome.</translation>
@@ -2497,7 +2490,6 @@
 <translation id="669052614725703943">&lt;p&gt;Не удалось установить защищенное соединение с доменом <ph name="BEGIN_BOLD"/><ph name="DOMAIN"/><ph name="END_BOLD"/> из-за неверных настроек системных часов и календаря (<ph name="DATE_AND_TIME"/>).&lt;/p&gt;
 
  &lt;p&gt;Установите точную дату и время. Для этого откройте раздел &lt;strong&gt;Общие&lt;/strong&gt; в приложении &lt;strong&gt;Настройки&lt;/strong&gt;.&lt;/p&gt;</translation>
-<translation id="8614236384372926204">Это видео недоступно в автономном режиме.</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> не удается определить или установить как браузер по умолчанию.</translation>
 <translation id="7290594223351252791">Подтверждение регистрации</translation>
 <translation id="8249681497942374579">Удалить ярлык с рабочего стола</translation>
@@ -3762,7 +3754,6 @@
 <translation id="6820686453637990663">Код CVC</translation>
 <translation id="2371076942591664043">Открыть по &amp;завершении</translation>
 <translation id="3920504717067627103">Политики сертификатов</translation>
-<translation id="1463543813647160932">5x7</translation>
 <translation id="7418949474175272990">Этот параметр отключает поддержку WebRTC для кодирования потоков видео с помощью аппаратной части платформы.</translation>
 <translation id="2344028582131185878">Автоматическая загрузка</translation>
 <translation id="155865706765934889">Сенсорная панель</translation>
@@ -3957,7 +3948,6 @@
 <translation id="1105117579475534983">Веб-страница заблокирована</translation>
 <translation id="1673103856845176271">Доступ к файлу ограничен по соображениям безопасности.</translation>
 <translation id="1199232041627643649">Удерживайте <ph name="KEY_EQUIVALENT"/>, чтобы выйти.</translation>
-<translation id="63277795993398074">Включить Launcher Search Provider API</translation>
 <translation id="3777806571986431400">Расширение включено</translation>
 <translation id="8957423540740801332">вправо</translation>
 <translation id="2568774940984945469">Контейнер панели информации</translation>
@@ -4492,7 +4482,6 @@
 <translation id="4260442535208228602">Добавить на панель запуска приложений</translation>
 <translation id="6965978654500191972">Устройство</translation>
 <translation id="7684559058815332124">Перейти на страницу входа через адаптивный портал</translation>
-<translation id="544897970364792192">С помощью этого API расширения могут принимать запросы от панели запуска Chrome и возвращать результаты поиска.</translation>
 <translation id="225163402930830576">Обновить сети</translation>
 <translation id="8623004009673949077">Приложения, у которых в манифесте есть атрибут kiosk_only, можно устанавливать только в режиме информационного киоска Chrome OS</translation>
 <translation id="358796204584394954">Для подключения введите следующий код на устройстве <ph name="DEVICE_NAME"/>:</translation>
@@ -5170,7 +5159,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6630452975878488444">Ярлык выбора</translation>
 <translation id="2934522647674136521">Использовать графический процессор для растеризации веб-контента. Для этого необходима функция отрисовки в отдельном потоке.</translation>
 <translation id="3004391367407090544">Повторите попытку позже</translation>
-<translation id="6262654738522632143">Включить фоновую синхронизацию ServiceWorker, чтобы отправлять сообщения и обновлять ресурсы, когда страница открыта в фоновом режиме</translation>
 <translation id="2440443888409942524">Пиньинь (для клавиатуры Дворака, США)</translation>
 <translation id="830868413617744215">Бета</translation>
 <translation id="2501797496290880632">Укажите быстрые клавиши</translation>
@@ -5394,7 +5382,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6251889282623539337"><ph name="DOMAIN"/> – Условия использования</translation>
 <translation id="2470702053775288986">Неподдерживаемые расширения отключены</translation>
 <translation id="4047112090469382184">Почему это безопасно?</translation>
-<translation id="5461512418490148136">Подождите, пока загружаются файлы.</translation>
 <translation id="4268574628540273656">URL:</translation>
 <translation id="6690455781383741953">Включить энергосберегающий режим для плагинов</translation>
 <translation id="7481312909269577407">Вперед</translation>
@@ -5473,7 +5460,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8379970328220427967">Свободно <ph name="SPACE_AVAILABLE"/></translation>
 <translation id="7773726648746946405">Хранение сеансов</translation>
 <translation id="5839277899276241121">Совпадает с платежным адресом</translation>
-<translation id="2246155759345948098">Не удается открыть файл: он слишком большой.</translation>
 <translation id="4235813040357936597">Добавить аккаунт в профиль <ph name="PROFILE_NAME"/></translation>
 <translation id="9147392381910171771">&amp;Параметры</translation>
 <translation id="8803496343472038847">Русская раскладка (фонетическая)</translation>
@@ -5501,7 +5487,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="2574102660421949343">Файлы cookie с сайта <ph name="DOMAIN"/> разрешены.</translation>
 <translation id="2773948261276885771">Добавить</translation>
 <translation id="3688526734140524629">Выбрать другую версию</translation>
-<translation id="4959447747655704388">Если вы готовы подвергнуть риску ваши личные данные, вы можете <ph name="BEGIN_LINK"/>перейти на зараженный сайт<ph name="END_LINK"/>.</translation>
 <translation id="7030084719913890980">Этот сайт пострадал от злоумышленников и может установить на ваш компьютер вредоносное ПО, которое крадет или удаляет личную информацию (например, фотографии, пароли, сообщения и реквизиты банковских карт).</translation>
 <translation id="6263625581655667292">Определяет, как будет работать режим экономии трафика Lo-Fi: всегда включен, только в сотовых сетях, отключен. Если вы хотите использовать этот режим, вы должны предварительно включить его.</translation>
 <translation id="5941153596444580863">Добавить пользователя</translation>
@@ -5896,6 +5881,5 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="1635033183663317347">Установлено службой поддержки</translation>
 <translation id="5457858494714903578">Не удалось установить ненадежное расширение с идентификатором <ph name="IMPORT_ID"/></translation>
 <translation id="7025325401470358758">Следующая панель</translation>
-<translation id="3397561538744706497">9x16</translation>
 <translation id="259421303766146093">Уменьшение</translation>
 </translationbundle>

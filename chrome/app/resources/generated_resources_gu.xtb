@@ -173,7 +173,6 @@
 <translation id="7600965453749440009"><ph name="LANGUAGE"/> નું ક્યારેય અનુવાદ કરશો નહીં</translation>
 <translation id="3208703785962634733">પુષ્ટિ થયેલ નથી</translation>
 <translation id="620329680124578183">લોડ કરશો નહીં (ભલામણ કરેલ)</translation>
-<translation id="6300924177400055566">તમારી પાસે Google ડ્રાઇવમાં &quot;<ph name="FILE_NAME"/>&quot; સાચવવા માટે પર્યાપ્ત સ્થાન નથી. કૃપા કરીને દૂર કરો અથવા <ph name="BEGIN_LINK"/>વધુ સ્ટોરેજ સ્થાન ખરીદો<ph name="END_LINK"/>.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2653266418988778031">જો તમે સર્ટિફિકેશન ઑથોરિટી (CA) ને કાઢો છો, તો તમારું બ્રાઉઝર તે CA દ્વારા રજૂ કરાયેલા કોઈપણ પ્રમાણપત્રો પર વિશ્વાસ કરશે નહીં.</translation>
 <translation id="4237357878101553356">અમે તમારી એકાઉન્ટ માહિતી ચકાસવામાં અસમર્થ હતા. |આ સમસ્યા ઠીક કરો|</translation>
@@ -393,7 +392,6 @@
 <translation id="5245965967288377800">WiMAX નેટવર્ક</translation>
 <translation id="40027638859996362">શબ્દ ખસેડો</translation>
 <translation id="3522708245912499433">પોર્ટુગીઝ</translation>
-<translation id="6956130766342550311">4x6</translation>
 <translation id="6699065916437121401">જો ડિફોલ્ટ હાર્ડવેર લેઆઉટ સિવાયના ચેનલ લેઆઉટ્સ ઉપલબ્ધ હોય, તો ઑડિઓ આઉટપુટ સ્ટ્રીમ્સ તપાસવામાં આવે છે.</translation>
 <translation id="6928441285542626375">TCP ફાસ્ટ ઓપન સક્ષમ કરો</translation>
 <translation id="7792388396321542707">શેર કરવાનું રોકો</translation>
@@ -897,11 +895,9 @@
 <translation id="1013707859758800957">એક અનસેન્ડબૉક્સ્ડ પ્લગિનને આ પૃષ્ઠ પર ચાલવાની મંજૂરી આપવામાં આવી હતી.</translation>
 <translation id="5618333180342767515">(આમાં થોડો સમય લાગી શકે છે)</translation>
 <translation id="3392020134425442298">દૂષિત ફાઇલ પુનઃપ્રાપ્ત કરો</translation>
-<translation id="1697820107502723922">આર્કાઇવ્સ</translation>
 <translation id="938470336146445890">કૃપા કરીને એક વપરાશકર્તા  પ્રમાણપત્ર ઇન્સ્ટોલ કરો.</translation>
 <translation id="3396331542604645348">પસંદ કરેલું પ્રિંટર ઉપલબ્ધ નથી અથવા ઠીકથી ઇન્સ્ટોલ કરેલું નથી. તમારા પ્રિંટરને તપાસો અથવા બીજા પ્રિંટરને પસંદ કરી જુઓ.</translation>
 <translation id="8480417584335382321">પૃષ્ઠ ઝૂમ કરો:</translation>
-<translation id="3872166400289564527">બાહ્ય સ્ટોરેજ</translation>
 <translation id="1442912890475371290"><ph name="BEGIN_LINK"/><ph name="DOMAIN"/> પર પૃષ્ઠની મુલાકાત લેવા<ph name="END_LINK"/> માટેનો પ્રયત્ન અવરોધિત કર્યો.</translation>
 <translation id="5912378097832178659">&amp;શોધ એન્જિન્સ સંપાદિત કરો...</translation>
 <translation id="8013526960933383914">એકીકૃત ડેસ્કટૉપ સક્ષમ કરો</translation>
@@ -1002,7 +998,6 @@
 <translation id="8064671687106936412">કી:</translation>
 <translation id="2218515861914035131">સાદા ટેક્સ્ટ તરીકે પેસ્ટ કરો</translation>
 <translation id="1725149567830788547">&amp;નિયંત્રણો બતાવો</translation>
-<translation id="8216351761227087153">જુઓ</translation>
 <translation id="3888118750782905860">ગ્રાહક સંચાલન</translation>
 <translation id="3528033729920178817">આ પૃષ્ઠ તમારા સ્થાનને ટ્રૅક કરી રહ્યું છે.</translation>
 <translation id="7545288882499673859">પ્રગત દબાણને હેન્ડલ કરવા માટે મેમરી કાઢી નાખવાની વ્યૂહરચના</translation>
@@ -1637,7 +1632,6 @@
 <translation id="8209439005376447114"><ph name="ISSUER"/> દ્વારા અા વેબસાઇટની ઓળખ ચકાસવામાં આવી છે. સર્વર દ્વારા માન્ય પ્રમાણપત્ર પારદર્શિતા માહિતી પૂરી પાડવામાં અાવી હતી.</translation>
 <translation id="5412637665001827670">બલ્ગેરિયન કીબોર્ડ</translation>
 <translation id="3574210789297084292">સાઇન ઇન કરો</translation>
-<translation id="5254480569305195883">ServiceWorker પૃષ્ઠભૂમિ સમન્વયન ઇવેન્ટ માટે સમર્થનને સક્ષમ કરો.</translation>
 <translation id="2134149231879627725">Google ને તમને રિમોટલી લૉક, મિટાવવા અને તમારા ઉપકરણને સ્થિત કરવામાં સહાય કરવા દો.</translation>
 <translation id="5151034238407558331">કમનસીબે, Google Payments નો ઉપયોગ માત્ર યુએસ સરનામાં સાથેના ખરીદનારા દ્વારા આ વેપારી પર થઈ શકે છે. જો તમે યુએસ નિવાસી છો, તો કૃપા કરીને |Google Payments સાથે તમારા ઘરનું સરનામું બદલો| અથવા Google Payments નો ઉપયોગ કર્યા વિના ચૂકવણી કરો.</translation>
 <translation id="1146204723345436916">HTML ફાઇલમાંથી બુકમાર્કસ આયાત કરો...</translation>
@@ -1702,7 +1696,6 @@
 <translation id="81686154743329117">ઝેડઆરએમ</translation>
 <translation id="8331479227794770304">સ્ટિટીકી કીઝ સક્ષમ કરો</translation>
 <translation id="2150139952286079145">ગંતવ્યો શોધો</translation>
-<translation id="5637940320504994319">તમારી પાસે Google ડ્રાઇવમાં સ્થાન સમાપ્ત થઈ ગયું છે</translation>
 <translation id="2907619724991574506">સ્ટાર્ટઅપ URL</translation>
 <translation id="6780476430578694241">એપ્લિકેશન લૉન્ચર</translation>
 <translation id="5328285148748012771">આ હાથવગા લૉન્ચરથી તમારી બધી એપ્લિકેશન્સને ઍક્સેસ કરો. રમતો રમો, વિડિઓ ચેટ કરો, સંગીત સાંભળો, દસ્તાવેજોને સંપાદિત કરો અથવા Chrome વેબ દુકાનથી વધુ એપ્લિકેશન્સ મેળવો.</translation>
@@ -2516,7 +2509,6 @@
 <translation id="669052614725703943">&lt;p&gt;<ph name="BEGIN_BOLD"/><ph name="DOMAIN"/><ph name="END_BOLD"/> પર ખાનગી કનેક્શન સ્થાપિત કરી શકાતું નથી કારણ કે તમારા ઉપકરણની તારીખ અને સમય (<ph name="DATE_AND_TIME"/>) અયોગ્ય છે.&lt;/p&gt;
 
           &lt;p&gt;કૃપા કરીને &lt;strong&gt;સેટિંગ્સ&lt;/strong&gt; એપ્લિકેશનના &lt;strong&gt;જનરલ&lt;/strong&gt; વિભાગમાં તારીખ અને સમય સમાયોજિત કરો.&lt;/p&gt;</translation>
-<translation id="8614236384372926204">આ વિડિઓ ઑફલાઇન ઉપલબ્ધ નથી.</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/>  ડિફૉલ્ટ બ્રાઉઝરને નિર્ધારિત અથવા સેટ કરી શક્તું નથી.</translation>
 <translation id="7290594223351252791">નોંધણીની પુષ્ટિ કરો</translation>
 <translation id="8249681497942374579">ડેસ્કટૉપ શોર્ટકટ દૂર કરો</translation>
@@ -3786,7 +3778,6 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="2371076942591664043">&amp;પૂર્ણ થાય ત્યારે ખોલો</translation>
 <translation id="3920504717067627103">પ્રમાણપત્ર નીતિઓ</translation>
-<translation id="1463543813647160932">5x7</translation>
 <translation id="7418949474175272990">આ વિકલ્પ પ્લેટફોર્મ હાર્ડવેરનો ઉપયોગ કરીને વિડિઓ સ્ટ્રીમ્સ એન્કોડ કરવા માટે WebRTC સમર્થનને અક્ષમ કરે છે.</translation>
 <translation id="2344028582131185878">આપમેળે ડાઉનલોડ્સ</translation>
 <translation id="155865706765934889">Touchpad</translation>
@@ -3980,7 +3971,6 @@
 <translation id="1105117579475534983">વેબપૃષ્ઠ અવરોધિત છે</translation>
 <translation id="1673103856845176271">સુરક્ષા કારણોસર ફાઇલ ઍક્સેસ કરી શકાઈ નથી.</translation>
 <translation id="1199232041627643649">છોડવા માટે <ph name="KEY_EQUIVALENT"/> પકડો.</translation>
-<translation id="63277795993398074">લોંચર શોધ પ્રદાતા API સક્ષમ કરો.</translation>
 <translation id="3777806571986431400">એક્સ્ટેન્શન સક્ષમ કર્યું</translation>
 <translation id="8957423540740801332">જમણી</translation>
 <translation id="2568774940984945469">માહિતી બાર સંગ્રહક</translation>
@@ -4517,7 +4507,6 @@
 <translation id="4260442535208228602">એપ લૉન્ચરમાં ઉમેરો</translation>
 <translation id="6965978654500191972">ઉપકરણ</translation>
 <translation id="7684559058815332124">કેપ્ટિવ પોર્ટલ પ્રવેશ પૃષ્ઠની મુલાકાત લો</translation>
-<translation id="544897970364792192">આ API, Chrome લોંચરની સમસ્યાઓ સાંભળે છે અને તેમના પરિણામોને તેના પર પરત કરવાની મંજૂરી આપે છે.</translation>
 <translation id="225163402930830576">નેટવર્ક્સ તાજા કરો</translation>
 <translation id="8623004009673949077">Chrome OS કિઓસ્ક મોડમાં 'kiosk_only' મેનિફેસ્ટ એટ્રિબ્યુટ સાથેની એપ્લિકેશન ઇન્સ્ટોલ કરેલી હોવી આવશ્યક છે.</translation>
 <translation id="358796204584394954">જોડી બનાવવા માટે &quot;<ph name="DEVICE_NAME"/>&quot; પર આ કોડ લખો:</translation>
@@ -5194,7 +5183,6 @@
 <translation id="6630452975878488444">પસંદગી શૉર્ટકટ</translation>
 <translation id="2934522647674136521">વેબ સામગ્રીને રાસ્ટાઇઝ કરવા માટે GPU નો ઉપયોગ કરો. impl-side પેઇંટિંગની જરૂર છે.</translation>
 <translation id="3004391367407090544">કૃપા કરીને પછી પાછા આવશો</translation>
-<translation id="6262654738522632143">ServiceWorker પૃષ્ઠભૂમિ સમન્વયનથી ServiceWorkers સંદેશા મોકલી અને સાધનોને અપડેટ કરી શકે છે પછી ભલેને પૃષ્ઠ, પૃષ્ઠભૂમિમાં હોય.</translation>
 <translation id="2440443888409942524">પિનયિન ઇનપુટ મેથડ (US Dvorak કીબોર્ડ માટે)</translation>
 <translation id="830868413617744215">બીટા</translation>
 <translation id="2501797496290880632">એક શૉર્ટકટ લખો</translation>
@@ -5419,7 +5407,6 @@
 <translation id="6251889282623539337"><ph name="DOMAIN"/> સેવાની શરતો</translation>
 <translation id="2470702053775288986">અસમર્થિત એક્સ્ટેન્શન્સ અક્ષમ કર્યાં</translation>
 <translation id="4047112090469382184">આ કેવી રીતે સુરક્ષિત છે</translation>
-<translation id="5461512418490148136">અમારી સાથે રહો. અમે તમારી ફાઇલોને આનયન કરી રહ્યાં છીએ.</translation>
 <translation id="4268574628540273656">URL:</translation>
 <translation id="6690455781383741953">પ્લગિન પાવર સેવર સક્ષમ કરો</translation>
 <translation id="7481312909269577407">ફોર્વર્ડ કરો</translation>
@@ -5498,7 +5485,6 @@
 <translation id="8379970328220427967"><ph name="SPACE_AVAILABLE"/> બાકી</translation>
 <translation id="7773726648746946405">સત્ર સ્ટોરેજ</translation>
 <translation id="5839277899276241121">બિલિંગ સરનામા તરીકે જ</translation>
-<translation id="2246155759345948098">આ ફાઇલ ખોલી શકવા માટે ખૂબ મોટી છે.</translation>
 <translation id="4235813040357936597"><ph name="PROFILE_NAME"/> માટે એકાઉન્ટ ઉમેરો</translation>
 <translation id="9147392381910171771">&amp;વિકલ્પો</translation>
 <translation id="8803496343472038847">રશિયન ધ્વન્યાત્મક કીબોર્ડ</translation>
@@ -5526,7 +5512,6 @@
 <translation id="2574102660421949343"><ph name="DOMAIN"/> તરફથી કૂકીઝને મંજૂરી છે.</translation>
 <translation id="2773948261276885771">પૃષ્ઠોને સેટ કરો</translation>
 <translation id="3688526734140524629">ચેનલ બદલો</translation>
-<translation id="4959447747655704388">જો તમે તમારી સુરક્ષાના જોખમોને સમજો છો, તો તમે <ph name="BEGIN_LINK"/>આ દૂષિત સાઇટની મુલાકાત<ph name="END_LINK"/> લઈ શકો છો.</translation>
 <translation id="7030084719913890980">હુમલાખોરોએ આ સાઈટ કોમ્પ્રોમાઈઝ કરી હોઈ શકે અને તે તમારા કોમ્પ્યુટર પર તમારી માહિતી (ઉદાહરણો: ફોટા, પાસવર્ડ્સ, સંદેશા અને ક્રેડિટ કાર્ડ્સ) ને ચોરી શકે કે કાઢી નાખે તેવા જોખમી પ્રોગ્રામ્સને ઇન્સ્ટોલ કરવાનો પ્રયાસ કરી શકે છે.</translation>
 <translation id="6263625581655667292">ડેટા સેવર Lo-Fi મોડને હંમેશા સક્ષમ કરવાની, માત્ર સેલ્યુલર કનેક્શન્સ પર જ સક્ષમ, અથવા અક્ષમ કરવાની ફરજ પાડે છે. Lo-Fi મોડનો ઉપયોગ કરવા માટે ડેટા સેવર સક્ષમ કરેલ હોવું આવશ્યક છે.</translation>
 <translation id="5941153596444580863">વ્યક્તિ ઉમેરો...</translation>
@@ -5917,6 +5902,5 @@
 <translation id="1635033183663317347">તમારા સંરક્ષક દ્વારા ઇન્સ્ટોલ કરાયું</translation>
 <translation id="5457858494714903578">ID &quot;<ph name="IMPORT_ID"/>&quot; સાથે અવિશ્વસનીય એક્સ્ટેન્શન ઇન્સ્ટોલ કરી શકતાં નથી.</translation>
 <translation id="7025325401470358758">આગલી પૅન</translation>
-<translation id="3397561538744706497">9x16</translation>
 <translation id="259421303766146093">ડીમૅગ્નિફાઇ</translation>
 </translationbundle>

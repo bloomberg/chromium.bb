@@ -173,7 +173,6 @@
 <translation id="7600965453749440009">هرگز <ph name="LANGUAGE"/> ترجمه نشود</translation>
 <translation id="3208703785962634733">تأیید نشده</translation>
 <translation id="620329680124578183">بارگیری نکنید (توصیه می‌شود)</translation>
-<translation id="6300924177400055566">‏برای ذخیره «<ph name="FILE_NAME"/>» فضای کافی در Google Drive ندارید. لطفاً فایل را پاک کنید یا <ph name="BEGIN_LINK"/>فضای بیشتری بخرید<ph name="END_LINK"/>.</translation>
 <translation id="9074739597929991885">بلوتوث</translation>
 <translation id="2653266418988778031">‏در صورتی که مجوز یک ارائه دهنده مجوز (CA) را حذف کنید، مرورگر شما دیگر به مجوزهای ارائه شده توسط آن CA اطمینان نخواهد کرد.</translation>
 <translation id="4237357878101553356">قادر به تأیید اطلاعات حسابتان نیستیم. |رفع این مشکل|</translation>
@@ -384,7 +383,6 @@
 <translation id="5245965967288377800">‏شبکه WiMAX</translation>
 <translation id="40027638859996362">انتقال کلمه</translation>
 <translation id="3522708245912499433">پرتغالی</translation>
-<translation id="6956130766342550311">۴x۶</translation>
 <translation id="6699065916437121401">باعث می‌شود تا خروجی صوتی جریانی، بررسی کند آیا طرح‌بندی‌های کانالی به غیر از طرح‌بندی سخت‌افزار پیش‌فرض در دسترس هستند یا خیر.</translation>
 <translation id="6928441285542626375">‏به کار انداختن TCP Fast Open</translation>
 <translation id="7792388396321542707">توقف اشتراک‌گذاری</translation>
@@ -881,11 +879,9 @@
 <translation id="1013707859758800957">‏plugin فاقد جعبه ایمنی مجاز بود در این صفحه اجرا شود.</translation>
 <translation id="5618333180342767515">(این مرحله ممکن است چند دقیقه طول بکشد)</translation>
 <translation id="3392020134425442298">بازیابی فایل مخرب</translation>
-<translation id="1697820107502723922">آرشیوها</translation>
 <translation id="938470336146445890">لطفاً یک مجوز کاربر نصب کنید.</translation>
 <translation id="3396331542604645348">چاپگر انتخابی موجود نیست یا به درستی نصب نشده است. چاپگر خود را بررسی کرده یا چاپگر دیگری را انتخاب کنید.</translation>
 <translation id="8480417584335382321">بزرگ‌نمایی صفحه:</translation>
-<translation id="3872166400289564527">ذخیره بیرونی</translation>
 <translation id="1442912890475371290">تلاش <ph name="BEGIN_LINK"/> برای بازدید از صفحه‌ای در <ph name="DOMAIN"/><ph name="END_LINK"/> مسدود شد.</translation>
 <translation id="5912378097832178659">&amp;ویرایش موتورهای جستجو...</translation>
 <translation id="8013526960933383914">فعال کردن حالت میز کار یکپارچه</translation>
@@ -986,7 +982,6 @@
 <translation id="8064671687106936412">کلید:</translation>
 <translation id="2218515861914035131">جای گذاری به‌عنوان متن ساده</translation>
 <translation id="1725149567830788547">نمایش &amp;کنترلها</translation>
-<translation id="8216351761227087153">تماشا</translation>
 <translation id="3888118750782905860">مدیریت مصرف‌کننده</translation>
 <translation id="3528033729920178817">این صفحه مکان شما را ردیابی کرده است.</translation>
 <translation id="7545288882499673859">راهبرد آزادسازی حافظه برای مدیریت پیشرفته فشار</translation>
@@ -1617,7 +1612,6 @@
 <translation id="8209439005376447114">هویت این وب‌سایت توسط <ph name="ISSUER"/> تأیید شده است. اطلاعات شفافیت گواهینامه معتبر توسط سرور ارائه شد.</translation>
 <translation id="5412637665001827670">صفحه‌کلید بلغاری</translation>
 <translation id="3574210789297084292">ورود به سیستم</translation>
-<translation id="5254480569305195883">‏فعال کردن پشتیبانی برای رویداد همگام‌سازی پس‌زمینه ServiceWorker.</translation>
 <translation id="2134149231879627725">‏به Google اجازه دهید به شما کمک کند از راه دور دستگاهتان را قفل، پاک و تعیین مکان کنید.</translation>
 <translation id="5151034238407558331">‏متأسفانه، تنها خریداران با آدرس ایالات متحده می‌توانند از Google Payments برای این تاجر استفاده کنند. اگر ساکن ایالات متحده هستید، لطفاً |آدرس خانه‌تان را در Google Payments تغییر دهید| یا بدون استفاده از Google Payments پرداخت کنید.</translation>
 <translation id="1146204723345436916">‏وارد کردن نشانک‌ها از فایل HTML...</translation>
@@ -1682,7 +1676,6 @@
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">فعال کردن کلیدهای چسبناک</translation>
 <translation id="2150139952286079145">جستجوی مقصدها</translation>
-<translation id="5637940320504994319">‏فضای ذخیره شما در Google Drive پایان یافته است</translation>
 <translation id="2907619724991574506">نشانی‌های اینترنتی راه‌اندازی</translation>
 <translation id="6780476430578694241">راه‌انداز برنامه</translation>
 <translation id="5328285148748012771">‏از این راه‌انداز راحت به تمام برنامه‌هایتان دسترسی داشته باشید. بازی کنید، گپ ویدیویی بزنید، به موسیقی گوش دهید، اسناد را ویرایش کنید یا برنامه‌های بیشتری از فروشگاه وب Chrome دریافت کنید.</translation>
@@ -1922,7 +1915,7 @@
 <translation id="8071942001314758122">‏فقط سه بار بگویید «Ok Google»</translation>
 <translation id="4929925845384605079">فعال کردن نمایش افزودن به برنماهای قفسه که از کاربر می‌خواهد یک برنامه وب به قفسه‌اش یا معادل دیگر ویژه پلتفورم اضافه کند.</translation>
 <translation id="4089521618207933045">دارای منوی فرعی است</translation>
-<translation id="4793866834012505469">آموزش مجدد مدل صدا</translation>
+<translation id="4793866834012505469">آموزش مجدد مدل صوتی</translation>
 <translation id="3470442499439619530">حذف این کاربر</translation>
 <translation id="1936157145127842922">نمایش در پوشه</translation>
 <translation id="2209593327042758816">مورد ۲ قفسه</translation>
@@ -2497,7 +2490,6 @@
 <translation id="669052614725703943">‏&lt;p&gt;A اتصال خصوصی به <ph name="BEGIN_BOLD"/><ph name="DOMAIN"/><ph name="END_BOLD"/> برقرار نمی‌شود زیرا تاریخ و زمان دستگاه شما (<ph name="DATE_AND_TIME"/>) نادرست است.&lt;/p&gt;
 
           &lt;p&gt;لطفاً تاریخ و زمان را از بخش &lt;strong&gt;عمومی&lt;/strong&gt; برنامه &lt;strong&gt;تنظیمات&lt;/strong&gt; تنظیم کنید.&lt;/p&gt;</translation>
-<translation id="8614236384372926204">این ویدئو به‌صورت آفلاین در دسترس نیست.</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> نمی‌تواند مرورگر پیش‌فرض را تعیین یا تنظیم کند.</translation>
 <translation id="7290594223351252791">تأیید ثبت</translation>
 <translation id="8249681497942374579">حذف میان‌بر دسک‌تاپ</translation>
@@ -3762,7 +3754,6 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="2371076942591664043">پس از &amp;تکمیل باز شود</translation>
 <translation id="3920504717067627103">سیاست مربوط به گواهی</translation>
-<translation id="1463543813647160932">۵x۷</translation>
 <translation id="7418949474175272990">‏این گزینه پشتیبانی در WebRTC برای کدبندی جریان‌های ویدیویی با استفاده از سخت‌افزار پلتفرم را غیرفعال می‌کند.</translation>
 <translation id="2344028582131185878">دانلودهای خودکار</translation>
 <translation id="155865706765934889">صفحه لمسی</translation>
@@ -3955,7 +3946,6 @@
 <translation id="1105117579475534983">صفحه وب مسدود شد</translation>
 <translation id="1673103856845176271">دسترسی به این فایل به دلایل امنیتی ممکن نبود.</translation>
 <translation id="1199232041627643649"><ph name="KEY_EQUIVALENT"/> را برای خارج شدن نگهدارید.</translation>
-<translation id="63277795993398074">‏فعال کردن Launcher Search Provider API.</translation>
 <translation id="3777806571986431400">برنامه افزودنی فعال شد</translation>
 <translation id="8957423540740801332">راست</translation>
 <translation id="2568774940984945469">قسمت نوار اطلاعات</translation>
@@ -4490,7 +4480,6 @@
 <translation id="4260442535208228602">افزودن به راه‌انداز برنامه</translation>
 <translation id="6965978654500191972">دستگاه</translation>
 <translation id="7684559058815332124">بازدید از صفحه ورود به سیستم در پورتال محدود</translation>
-<translation id="544897970364792192">‏این API به افزونه‌ها امکانی می‌دهد تا بتوانند به عبارت‌های جستجوی ارسال شده توسط را‌ه‌انداز Chrome گوش کنند و نتایج جستجویشان را برای آن ارسال کنند.</translation>
 <translation id="225163402930830576">بازخوانی شبکه‌ها</translation>
 <translation id="8623004009673949077">‏برنامه با ویژگی مانیفست «kiosk_only» باید در حالت کیوسک سیستم عامل Chrome نصب شود.</translation>
 <translation id="358796204584394954">برای مرتبط کردن، این کد را در «<ph name="DEVICE_NAME"/>» تایپ کنید:</translation>
@@ -5169,7 +5158,6 @@
 <translation id="6630452975878488444">میانبر انتخاب</translation>
 <translation id="2934522647674136521">‏از GPU استفاده کنید تا تصویر نقطه‌ای محتوای وب ایجاد شود. رنگ‌آمیزی impl-side لازم است.</translation>
 <translation id="3004391367407090544">لطفاً بعداً دوباره برگردید</translation>
-<translation id="6262654738522632143">‏همگام‌سازی پس‌زمینه ServiceWorker به ServiceWorkers امکان می‌دهد پیام‌هایی ارسال کنند و منابع را به‌روزسانی نمایند، حتی زمانی که صفحه در پس‌زمینه است.</translation>
 <translation id="2440443888409942524">‏روش ورودی پین یین (برای صفحه‌کلید Dvorak آمریکایی)</translation>
 <translation id="830868413617744215">بتا</translation>
 <translation id="2501797496290880632">تایپ کردن میانبر</translation>
@@ -5393,7 +5381,6 @@
 <translation id="6251889282623539337">شرایط خدمات <ph name="DOMAIN"/></translation>
 <translation id="2470702053775288986">برنامه‌های افزودنی پشتیبانی نشده غیرفعال شدند.</translation>
 <translation id="4047112090469382184">ایمنی آن به چه صورت است</translation>
-<translation id="5461512418490148136">با ما باشید. برای شما فایل‌ها را دریافت می‌کنیم.</translation>
 <translation id="4268574628540273656">URL:</translation>
 <translation id="6690455781383741953">‏فعال کردن صرفه‌جویی در توان برای Plugin</translation>
 <translation id="7481312909269577407">ارسال کردن</translation>
@@ -5470,7 +5457,6 @@
 <translation id="8379970328220427967"><ph name="SPACE_AVAILABLE"/> باقی‌مانده</translation>
 <translation id="7773726648746946405">ذخیره جلسه</translation>
 <translation id="5839277899276241121">مانند آدرس صورت‌حساب</translation>
-<translation id="2246155759345948098">این فایل بیش از حد بزرگ است که بتواند باز شود.</translation>
 <translation id="4235813040357936597">افزودن حساب برای <ph name="PROFILE_NAME"/></translation>
 <translation id="9147392381910171771">&amp;گزینه‌ها</translation>
 <translation id="8803496343472038847">صفحه‌کلید آوایی روسی</translation>
@@ -5498,7 +5484,6 @@
 <translation id="2574102660421949343">کوکی‌های <ph name="DOMAIN"/> مجاز است.</translation>
 <translation id="2773948261276885771">تنظیم صفحات</translation>
 <translation id="3688526734140524629">تغییر کانال</translation>
-<translation id="4959447747655704388">اگر خطرات امنیتی که متوجه شما هستند را درک می‌کنید، می‌توانید از <ph name="BEGIN_LINK"/>این سایت آلوده بازدید کنید<ph name="END_LINK"/>.</translation>
 <translation id="7030084719913890980">ممکن است مهاجم‌ها در سایت نفوذ کرده باشند و تلاش کنند تا برنامه‌های خطرناکی در رایانه شما نصب کنند که اطلاعات شما (مانند عکس‌ها، گذرواژه‌ها، پیام‌ها و کارت‌های اعتباری) را سرقت یا حذف می‌کند.</translation>
 <translation id="6263625581655667292">‏حالت صرفه‌جویی در مصرف داده Lo-Fi را مجبور می‌کند که همواره روشن باشد، فقط در اتصالات سلولی فعال باشد یا غیرفعال باشد. «صرفه‌جویی در مصرف داده» باید فعال باشد تا حالت Lo-Fi استفاده شود.</translation>
 <translation id="5941153596444580863">افزودن شخص...</translation>
@@ -5893,6 +5878,5 @@
 <translation id="1635033183663317347">قیم شما نصب کرده است.</translation>
 <translation id="5457858494714903578">برنامه افزودنی غیرمطمئن با شناسه &quot;<ph name="IMPORT_ID"/>&quot; نصب نمی‌شود.</translation>
 <translation id="7025325401470358758">چارچوب بعدی</translation>
-<translation id="3397561538744706497">۹x۱۶</translation>
 <translation id="259421303766146093">لغو بزرگ‌نمایی</translation>
 </translationbundle>

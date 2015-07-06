@@ -89,7 +89,7 @@
 <translation id="2381756643783702095">Спрашивать разрешение перед отправкой (рекомендуется)</translation>
 <translation id="6075798973483050474">Изменение главной страницы</translation>
 <translation id="9019902583201351841">Управляется вашими родителями</translation>
-<translation id="4333969446981951071">Работая с приложением, вы принимаете <ph name="BEGIN_LINK1"/>Условия использования<ph name="END_LINK1"/> и <ph name="BEGIN_LINK2"/>Примечание о конфиденциальности<ph name="END_LINK2"/> Chrome.</translation>
+<translation id="4333969446981951071">Нажимая &quot;Продолжить&quot;, вы принимаете <ph name="BEGIN_LINK1"/>Условия использования<ph name="END_LINK1"/> и <ph name="BEGIN_LINK2"/>Примечание о конфиденциальности Chrome<ph name="END_LINK2"/>.</translation>
 <translation id="3738139272394829648">Нажмите для поиска</translation>
 <translation id="257931822824936280">Развернуто. Нажмите, чтобы свернуть.</translation>
 <translation id="4773299976671772492">Остановлено</translation>
@@ -295,7 +295,7 @@
 <translation id="1853692000353488670">Новая вкладка инкогнито</translation>
 <translation id="6208263165776660488">Где искать вкладки</translation>
 <translation id="4526792582053123229">Нам недоступны страницы, открытые через HTTPS или в режиме инкогнито, поэтому их нельзя оптимизировать.</translation>
-<translation id="7626032353295482388">Вас приветствует Chrome</translation>
+<translation id="7626032353295482388">Добро пожаловать в Chrome!</translation>
 <translation id="7817177303494746697">Версия Blink</translation>
 <translation id="2532336938189706096">Веб-версия</translation>
 <translation id="6571070086367343653">Изменить данные карты</translation>

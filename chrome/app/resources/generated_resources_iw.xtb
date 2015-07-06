@@ -173,7 +173,6 @@
 <translation id="7600965453749440009">אל תתרגם לעולם <ph name="LANGUAGE"/></translation>
 <translation id="3208703785962634733">לא מאושר</translation>
 <translation id="620329680124578183">אל תטען (מומלץ)</translation>
-<translation id="6300924177400055566">‏אין מספיק שטח ב-Google Drive כדי לשמור את &quot;<ph name="FILE_NAME"/>&quot;. מחק קבצים או <ph name="BEGIN_LINK"/>קנה עוד שטח אחסון<ph name="END_LINK"/>.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2653266418988778031">‏אם תמחק אישור של רשות אישורים (CA), הדפדפן שלך לא יוכל לתת אמון באף אישור שהונפק על ידי רשות אישורים זו.</translation>
 <translation id="4237357878101553356">לא הצלחנו לאמת את פרטי החשבון שלך. |תקן את הבעיה|</translation>
@@ -386,7 +385,6 @@
 <translation id="5245965967288377800">‏רשת WiMAX</translation>
 <translation id="40027638859996362">העברת מילה</translation>
 <translation id="3522708245912499433">פורטוגזית</translation>
-<translation id="6956130766342550311">4x6</translation>
 <translation id="6699065916437121401">גורם לזרמים של פלט אודיו לבדוק אם קיימות פריסות ערוצים אחרות מלבד פריסת ברירת המחדל של החומרה.</translation>
 <translation id="6928441285542626375">‏הפעל פתיחה מהירה של TCP</translation>
 <translation id="7792388396321542707">הפסק שיתוף</translation>
@@ -885,11 +883,9 @@
 <translation id="1013707859758800957">בדף הזה הותרה הפעלה של פלאגין ללא ארגז חול.</translation>
 <translation id="5618333180342767515">(פעולה זו עשויה להימשך מספר דקות)</translation>
 <translation id="3392020134425442298">שחזר קובץ זדוני</translation>
-<translation id="1697820107502723922">ארכיונים</translation>
 <translation id="938470336146445890">התקן אישור משתמש.</translation>
 <translation id="3396331542604645348">המדפסת שנבחרה אינה זמינה או שאינה מותקנת כראוי. בדוק את המדפסת או נסה לבחור מדפסת אחרת.</translation>
 <translation id="8480417584335382321">גודל טקסט בדף:</translation>
-<translation id="3872166400289564527">אחסון חיצוני</translation>
 <translation id="1442912890475371290">נחסם ניסיון <ph name="BEGIN_LINK"/> לביקור בדף ב-<ph name="DOMAIN"/><ph name="END_LINK"/>.</translation>
 <translation id="5912378097832178659">&amp;ערוך מנועי חיפוש...</translation>
 <translation id="8013526960933383914">הפעל שולחן מחשב מאוחד</translation>
@@ -990,7 +986,6 @@
 <translation id="8064671687106936412">מפתח:</translation>
 <translation id="2218515861914035131">הדבק כטקסט רגיל</translation>
 <translation id="1725149567830788547">הצג &amp;בקרים</translation>
-<translation id="8216351761227087153">צפה</translation>
 <translation id="3888118750782905860">ניהול צרכנים</translation>
 <translation id="3528033729920178817">דף זה עוקב אחר המיקום שלך.</translation>
 <translation id="7545288882499673859">אסטרטגיה של מחיקת זיכרון לטיפול מתקדם בלחץ</translation>
@@ -1622,7 +1617,6 @@
 <translation id="8209439005376447114">הזהות של אתר זה אומתה על ידי <ph name="ISSUER"/>. השרת סיפק מידע שקיפות חוקי על האישור.</translation>
 <translation id="5412637665001827670">מקלדת בולגרית</translation>
 <translation id="3574210789297084292">היכנס</translation>
-<translation id="5254480569305195883">‏הפעל תמיכה עבור אירוע סנכרון ברקע של ServiceWorker.</translation>
 <translation id="2134149231879627725">‏תן ל-Google לעזור לך לנעול, למחוק ולאתר את המכשיר מרחוק.</translation>
 <translation id="5151034238407558331">‏לצערנו, רק משתמשים עם כתובת בארה&quot;ב יכולים להשתמש ב-Google Payments אצל הסוחר הזה. אם אתה תושב ארה&quot;ב, |שנה את כתובת המגורים שלך ב-Google Payments‏| או שלם ללא שימוש ב-Google Payments.</translation>
 <translation id="1146204723345436916">‏יבוא סימניות מקובץ HTML...</translation>
@@ -1687,7 +1681,6 @@
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">הפעל 'מקשים דביקים'</translation>
 <translation id="2150139952286079145">יעדי חיפוש</translation>
-<translation id="5637940320504994319">‏לא נשאר לך מקום פנוי ב-Google Drive</translation>
 <translation id="2907619724991574506">כתובות אתרים בהפעלה</translation>
 <translation id="6780476430578694241">מפעיל היישום</translation>
 <translation id="5328285148748012771">‏גש אל כל היישומים שלך ממפעיל האפליקציות השימושי הזה. שחק במשחקים, נהל צ'אטים בווידאו, האזן למוסיקה, ערוך מסמכים או קבל יישומים נוספים מחנות האינטרנט של Chrome.</translation>
@@ -1917,7 +1910,7 @@
 <translation id="8071942001314758122">‏רק אמור &quot;Ok Google&quot; שלוש פעמים</translation>
 <translation id="4929925845384605079">הפעלת התצוגה של מודעות באנר להוספה למדף, המנחות את המשתמש להוסיף אפליקציית אינטרנט למדף או אפליקצייה שוות ערך אחרת של פלטפורמה ספציפית.</translation>
 <translation id="4089521618207933045">יש תפריט משנה</translation>
-<translation id="4793866834012505469">אימון מחדש של מודל קולי</translation>
+<translation id="4793866834012505469">אימון מחדש של תבנית הקול</translation>
 <translation id="3470442499439619530">הסר משתמש זה</translation>
 <translation id="1936157145127842922">הצג בתיקייה</translation>
 <translation id="2209593327042758816">פריט מדף 2</translation>
@@ -2486,7 +2479,6 @@
 <translation id="669052614725703943">‏&lt;p&gt;לא ניתן ליצור חיבור פרטי אל <ph name="BEGIN_BOLD"/><ph name="DOMAIN"/><ph name="END_BOLD"/> מפני שהתאריך והשעה (<ph name="DATE_AND_TIME"/>) במכשיר שלך שגויים.&lt;/p&gt;
 
           &lt;p&gt;שנה את התאריך והשעה בקטע &lt;strong&gt;כללי&lt;/strong&gt; מתוך האפליקציה &lt;strong&gt;הגדרות‎‏&lt;/strong&gt;‏‎‎‏.‎&lt;/p&gt;‎‎</translation>
-<translation id="8614236384372926204">סרטון זה אינו זמין במצב לא מקוון.</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> אינו יכול לקבוע או להגדיר את דפדפן ברירת המחדל.</translation>
 <translation id="7290594223351252791">אישור רישום</translation>
 <translation id="8249681497942374579">הסר קיצור דרך בשולחן העבודה</translation>
@@ -3746,7 +3738,6 @@
 <translation id="6820686453637990663">CVC</translation>
 <translation id="2371076942591664043">פתח &amp;בסיום</translation>
 <translation id="3920504717067627103">מדיניות אישורים </translation>
-<translation id="1463543813647160932">5x7</translation>
 <translation id="7418949474175272990">‏אפשרות זו משביתה את התמיכה ב-WebRTC לקידוד זרמי וידאו באמצעות חומרת פלטפורמה.</translation>
 <translation id="2344028582131185878">הורדות אוטומטיות</translation>
 <translation id="155865706765934889">לוח מגע</translation>
@@ -3939,7 +3930,6 @@
 <translation id="1105117579475534983">דף האינטרנט חסום</translation>
 <translation id="1673103856845176271">לא היתה אפשרות לגשת לקובץ מסיבות אבטחה.</translation>
 <translation id="1199232041627643649">לחץ לחיצה ממושכת על <ph name="KEY_EQUIVALENT"/> כדי לצאת.</translation>
-<translation id="63277795993398074">‏הפעל את ממשק ה-API של ספק החיפוש במפעיל היישומים.</translation>
 <translation id="3777806571986431400">התוסף הופעל</translation>
 <translation id="8957423540740801332">ימין</translation>
 <translation id="2568774940984945469">גורם מכיל של סרגל המידע</translation>
@@ -4474,7 +4464,6 @@
 <translation id="4260442535208228602">הוסף למפעיל היישומים</translation>
 <translation id="6965978654500191972">התקן</translation>
 <translation id="7684559058815332124">עבור אל דף ההתחברות אל פורטל החובה</translation>
-<translation id="544897970364792192">‏ממשק ה-API הזה מאפשר לתוספים לקלוט שאילתות של מפעיל יישומי Chrome ולהחזיר את התוצאות שלהם לשאילתות.</translation>
 <translation id="225163402930830576">רענן רשתות</translation>
 <translation id="8623004009673949077">‏יש להתקין יישומים עם מאפיין המניפסט 'kiosk_only' במצב קיוסק של מערכת ההפעלה של Chrome.</translation>
 <translation id="358796204584394954">הקלד את הקוד הזה ב-&quot;<ph name="DEVICE_NAME"/>&quot; כדי לבצע התאמה:</translation>
@@ -5154,7 +5143,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6630452975878488444">קיצור דרך של בחירה</translation>
 <translation id="2934522647674136521">‏השתמש ב-GPU כדי ליצור רשת נקודות של תוכן אינטרנט. יש צורך ב-impl-side painting.</translation>
 <translation id="3004391367407090544">חזור במועד מאוחר יותר</translation>
-<translation id="6262654738522632143">‏סנכרון ברקע של ServiceWorker מאפשר ל-ServiceWorkers לשלוח הודעות ולעדכן משאבים גם כאשר הדף ברקע.</translation>
 <translation id="2440443888409942524">‏שיטת הקלט Pinyin (למקלדת אמריקאית מסוג Dvorak)</translation>
 <translation id="830868413617744215">ביטא</translation>
 <translation id="2501797496290880632">הקלד קיצור</translation>
@@ -5381,7 +5369,6 @@ Del</translation>
 <translation id="6251889282623539337">תנאים והגבלות של <ph name="DOMAIN"/></translation>
 <translation id="2470702053775288986">תוספים שלא נתמכים הושבתו</translation>
 <translation id="4047112090469382184">כיצד נשמרת האבטחה</translation>
-<translation id="5461512418490148136">רק שניה. קפצנו להביא את הקבצים שלך.</translation>
 <translation id="4268574628540273656">כתובת אתר:</translation>
 <translation id="6690455781383741953">הפעל פלאגין לחיסכון בחשמל</translation>
 <translation id="7481312909269577407">קדימה</translation>
@@ -5460,7 +5447,6 @@ Del</translation>
 <translation id="8379970328220427967"><ph name="SPACE_AVAILABLE"/> נותרו</translation>
 <translation id="7773726648746946405">אחסון הפעלה</translation>
 <translation id="5839277899276241121">זהה לכתובת לחיוב</translation>
-<translation id="2246155759345948098">קובץ זה גדול מדי לפתיחה.</translation>
 <translation id="4235813040357936597">הוסף חשבון עבור <ph name="PROFILE_NAME"/></translation>
 <translation id="9147392381910171771">&amp;אפשרויות</translation>
 <translation id="8803496343472038847">מקלדת רוסית פונטית</translation>
@@ -5488,7 +5474,6 @@ Del</translation>
 <translation id="2574102660421949343">‏קובצי Cookie מ-<ph name="DOMAIN"/> מותרים.</translation>
 <translation id="2773948261276885771">הגדר דפים</translation>
 <translation id="3688526734140524629">שנה ערוץ</translation>
-<translation id="4959447747655704388">אם אתה מבין את הסיכונים בנוגע לאבטחה שלך, תוכל <ph name="BEGIN_LINK"/>לבקר באתר נגוע זה<ph name="END_LINK"/>.</translation>
 <translation id="7030084719913890980">ייתכן שתוקפים פרצו לאתר הזה והם עשויים לנסות להתקין במחשב שלך תכניות מסוכנות שגונבות או מוחקות את המידע שלך (לדוגמה: תמונות, סיסמאות, הודעות וכרטיסי אשראי).</translation>
 <translation id="6263625581655667292">‏מאלץ הפעלה תמידית של מצב Lo-Fi של חוסך הנתונים (Data Saver), הפעלה רק בחיבורים סלולריים או השבתה. חוסך הנתונים (Data Saver) חייב לפעול על מנת שתוכל להשתמש במצב Lo-Fi.</translation>
 <translation id="5941153596444580863">הוסף משתמש...</translation>
@@ -5883,6 +5868,5 @@ Del</translation>
 <translation id="1635033183663317347">הותקן על ידי האפוטרופוס שלך.</translation>
 <translation id="5457858494714903578">לא ניתן להתקין את התוסף הבלתי מהימן בעל המזהה &quot;<ph name="IMPORT_ID"/>&quot;.</translation>
 <translation id="7025325401470358758">החלונית הבאה</translation>
-<translation id="3397561538744706497">9x16</translation>
 <translation id="259421303766146093">בטל הגדלה</translation>
 </translationbundle>

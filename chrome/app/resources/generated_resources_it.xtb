@@ -173,7 +173,6 @@
 <translation id="7600965453749440009">Non tradurre mai <ph name="LANGUAGE"/></translation>
 <translation id="3208703785962634733">Non confermato</translation>
 <translation id="620329680124578183">Non caricare (scelta consigliata)</translation>
-<translation id="6300924177400055566">Spazio disponibile in Google Drive non sufficiente per salvare &quot;<ph name="FILE_NAME"/>&quot;. Rimuovi dei file o <ph name="BEGIN_LINK"/>acquista altro spazio di archiviazione<ph name="END_LINK"/>.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2653266418988778031">Se elimini il certificato di un'autorità di certificazione (CA), il browser non considererà più attendibili i certificati emessi da tale autorità.</translation>
 <translation id="4237357878101553356">Non è stato possibile verificare i dati del tuo account. |Risolvi il problema|</translation>
@@ -383,7 +382,6 @@
 <translation id="5245965967288377800">Rete WiMAX</translation>
 <translation id="40027638859996362">Spostamento parola</translation>
 <translation id="3522708245912499433">Portoghese</translation>
-<translation id="6956130766342550311">4 x 6</translation>
 <translation id="6699065916437121401">Gli stream di uscita audio controllano se sono disponibili layout dei canali diversi dal layout hardware predefinito.</translation>
 <translation id="6928441285542626375">Attiva apertura veloce TCP</translation>
 <translation id="7792388396321542707">Interrompi condivisione</translation>
@@ -873,11 +871,9 @@ Per continuare, devono disconnettersi tutti gli utenti.</translation>
 <translation id="1013707859758800957">È stata consentita l'esecuzione di un plug-in senza sandbox in questa pagina.</translation>
 <translation id="5618333180342767515">(l'operazione potrebbe richiedere alcuni minuti)</translation>
 <translation id="3392020134425442298">Recupera file dannoso</translation>
-<translation id="1697820107502723922">Archivi</translation>
 <translation id="938470336146445890">Installa un certificato utente.</translation>
 <translation id="3396331542604645348">La stampante selezionata non è disponibile o non è installata correttamente. Controlla la stampante o prova a selezionarne un'altra.</translation>
 <translation id="8480417584335382321">Zoom delle pagine:</translation>
-<translation id="3872166400289564527">Archiviazione esterna</translation>
 <translation id="1442912890475371290">Tentativo <ph name="BEGIN_LINK"/>di visitare una pagina su <ph name="DOMAIN"/><ph name="END_LINK"/> bloccato.</translation>
 <translation id="5912378097832178659">&amp;Cambia motori di ricerca...</translation>
 <translation id="8013526960933383914">Attiva desktop unificato</translation>
@@ -978,7 +974,6 @@ Per continuare, devono disconnettersi tutti gli utenti.</translation>
 <translation id="8064671687106936412">Chiave:</translation>
 <translation id="2218515861914035131">Incolla come solo testo</translation>
 <translation id="1725149567830788547">Mostra &amp;controlli</translation>
-<translation id="8216351761227087153">Guarda</translation>
 <translation id="3888118750782905860">Gestione consumatori</translation>
 <translation id="3528033729920178817">Questa pagina sta monitorando la tua posizione.</translation>
 <translation id="7545288882499673859">Strategia di memory discard per la gestione avanzata dell'utilizzo</translation>
@@ -1608,7 +1603,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME"/> pu�
 <translation id="8209439005376447114">L'identità di questo sito web è stata verificata da <ph name="ISSUER"/>. Sono state fornite informazioni su Certificate Transparency valide dal server.</translation>
 <translation id="5412637665001827670">Tastiera bulgara</translation>
 <translation id="3574210789297084292">accedi</translation>
-<translation id="5254480569305195883">Attiva il supporto per l'evento di sincronizzazione in background di ServiceWorker.</translation>
 <translation id="2134149231879627725">Consenti a Google di aiutarti a localizzare e bloccare il dispositivo da remoto, nonché di cancellare i dati in esso contenuti.</translation>
 <translation id="5151034238407558331">Purtroppo Google Payments può essere utilizzato con questo commerciante soltanto da acquirenti residenti negli Stati Uniti. Se risiedi negli Stati Uniti, |cambia il tuo indirizzo di casa con Google Payments| o paga senza utilizzare Google Payments.</translation>
 <translation id="1146204723345436916">Importa i preferiti da file HTML...</translation>
@@ -1673,7 +1667,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME"/> pu�
 <translation id="81686154743329117">ZRM</translation>
 <translation id="8331479227794770304">Attiva tasti permanenti</translation>
 <translation id="2150139952286079145">Cerca destinazioni</translation>
-<translation id="5637940320504994319">Spazio disponibile in Google Drive esaurito</translation>
 <translation id="2907619724991574506">URL di avvio</translation>
 <translation id="6780476430578694241">Avvio applicazioni</translation>
 <translation id="5328285148748012771">Accedi a tutte le tue app da Avvio applicazioni. Gioca, videochatta, ascolta musica, modifica documenti o recupera altre app dal Chrome Web Store.</translation>
@@ -2476,7 +2469,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="669052614725703943">&lt;p&gt;Impossibile stabilire una connessione privata con il sito <ph name="BEGIN_BOLD"/><ph name="DOMAIN"/><ph name="END_BOLD"/> perché data e ora del dispositivo (<ph name="DATE_AND_TIME"/>) sono sbagliate.&lt;/p&gt;
 
           &lt;p&gt;Regola data e ora dalla sezione &lt;strong&gt;Generali&lt;/strong&gt; dell'app &lt;strong&gt;Impostazioni&lt;/strong&gt;.&lt;/p&gt;</translation>
-<translation id="8614236384372926204">Questo video non è disponibile offline.</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> non è in grado di determinare o impostare il browser predefinito.</translation>
 <translation id="7290594223351252791">Conferma registrazione</translation>
 <translation id="8249681497942374579">Rimuovi collegamento sul desktop</translation>
@@ -3733,7 +3725,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="2371076942591664043">Apri al &amp;termine</translation>
 <translation id="3920504717067627103">Criteri dei certificati</translation>
-<translation id="1463543813647160932">5 x 7</translation>
 <translation id="7418949474175272990">Questa opzione consente di disattivare il supporto in WebRTC della codifica di video stream utilizzando l'hardware della piattaforma.</translation>
 <translation id="2344028582131185878">Download automatici</translation>
 <translation id="155865706765934889">Touchpad</translation>
@@ -3929,7 +3920,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="1105117579475534983">Pagina web bloccata</translation>
 <translation id="1673103856845176271">Impossibile accedere al file per motivi di sicurezza.</translation>
 <translation id="1199232041627643649">Tieni premuto <ph name="KEY_EQUIVALENT"/> per uscire.</translation>
-<translation id="63277795993398074">Attiva l'API Launcher Search Provider.</translation>
 <translation id="3777806571986431400">Estensione attivata</translation>
 <translation id="8957423540740801332">destra</translation>
 <translation id="2568774940984945469">Infobar Container</translation>
@@ -4462,7 +4452,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="4260442535208228602">Aggiungi ad Avvio applicazioni</translation>
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="7684559058815332124">Visita la pagina di accesso del captive portal</translation>
-<translation id="544897970364792192">Questa API consente alle estensioni di ascoltare le query di Avvio applicazioni di Chrome e di restituirvi i relativi risultati di ricerca.</translation>
 <translation id="225163402930830576">Aggiorna reti</translation>
 <translation id="8623004009673949077">L'app con l'attributo del file manifest &quot;kiosk_only&quot; deve essere installata in modalità kiosk Chrome OS.</translation>
 <translation id="358796204584394954">Digita questo codice in &quot;<ph name="DEVICE_NAME"/>&quot; per accoppiare:</translation>
@@ -5140,7 +5129,6 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="6630452975878488444">Scorciatoia di selezione</translation>
 <translation id="2934522647674136521">Utilizza GPU per rasterizzare i contenuti web. Richiede disegno impl-side.</translation>
 <translation id="3004391367407090544">Torna più tardi</translation>
-<translation id="6262654738522632143">La sincronizzazione in background di ServiceWorker consente agli utenti di ServiceWorker di inviare messaggi e aggiornare risorse anche quando la pagina è in background.</translation>
 <translation id="2440443888409942524">Metodo di immissione pinyin (per tastiera Dvorak USA)</translation>
 <translation id="830868413617744215">Beta</translation>
 <translation id="2501797496290880632">Digita una scorciatoia</translation>
@@ -5364,7 +5352,6 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="6251889282623539337">Termini di servizio di <ph name="DOMAIN"/></translation>
 <translation id="2470702053775288986">Estensioni non supportate disattivate</translation>
 <translation id="4047112090469382184">Livello di sicurezza della funzione</translation>
-<translation id="5461512418490148136">Aspetta insieme a noi. Stiamo recuperando i tuoi file.</translation>
 <translation id="4268574628540273656">URL:</translation>
 <translation id="6690455781383741953">Attiva risparmio energetico dei plug-in</translation>
 <translation id="7481312909269577407">Avanti</translation>
@@ -5440,7 +5427,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="8379970328220427967"><ph name="SPACE_AVAILABLE"/> rimanenti</translation>
 <translation id="7773726648746946405">Session storage</translation>
 <translation id="5839277899276241121">Uguale all'indirizzo di fatturazione</translation>
-<translation id="2246155759345948098">Questo file è troppo grande per essere aperto.</translation>
 <translation id="4235813040357936597">Aggiungi account per <ph name="PROFILE_NAME"/></translation>
 <translation id="9147392381910171771">&amp;Opzioni</translation>
 <translation id="8803496343472038847">Tastiera fonetica Russo</translation>
@@ -5468,7 +5454,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="2574102660421949343">I cookie provenienti da <ph name="DOMAIN"/> sono consentiti.</translation>
 <translation id="2773948261276885771">Imposta pagine</translation>
 <translation id="3688526734140524629">Cambia canale</translation>
-<translation id="4959447747655704388">Se sei consapevole dei rischi per la tua sicurezza, potresti <ph name="BEGIN_LINK"/>visitare questo sito infetto<ph name="END_LINK"/>.</translation>
 <translation id="7030084719913890980">I malintenzionati potrebbero avere compromesso il sito e potrebbero tentare di installare sul tuo computer programmi pericolosi che scoprono o eliminano i tuoi dati (ad esempio foto, password, messaggi e carte di credito).</translation>
 <translation id="6263625581655667292">Consente di lasciare sempre attiva la modalità Lo-Fi Risparmio dati, di attivarla soltanto su reti dati o disattivarla. Per poter utilizzare la modalità Lo-Fi, è necessario attivare la funzione Risparmio dati.</translation>
 <translation id="5941153596444580863">Aggiungi persona...</translation>
@@ -5863,6 +5848,5 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="1635033183663317347">Installata dal supervisore.</translation>
 <translation id="5457858494714903578">Impossibile installare l'estensione non attendibile con ID &quot;<ph name="IMPORT_ID"/>&quot;.</translation>
 <translation id="7025325401470358758">Riquadro successivo</translation>
-<translation id="3397561538744706497">9 x 16</translation>
 <translation id="259421303766146093">Annulla ingrandimento</translation>
 </translationbundle>
