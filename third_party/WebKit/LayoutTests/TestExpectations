@@ -1676,3 +1676,14 @@ crbug.com/505795 [ Win Mac ] virtual/antialiasedtext/fast/text/emphasis-ellipsis
 
 crbug.com/506312 imported/csswg-test/css-pseudo-4/first-letter-001.html [ ImageOnlyFailure ]
 crbug.com/506312 imported/csswg-test/css-writing-modes-3/text-combine-upright-inherit-all-001.html [ ImageOnlyFailure ]
+
+crbug.com/506876 fast/events/window-onerror-06.html [ NeedsManualRebaseline ]
+crbug.com/506876 fast/events/window-onerror-10.html [ NeedsManualRebaseline ]
+crbug.com/506876 fast/workers/worker-onerror-09.html [ NeedsManualRebaseline ]
+crbug.com/506876 inspector/console/console-log-linkify-stack-in-errors.html [ NeedsManualRebaseline ]
+crbug.com/506876 inspector/sources/debugger-step/debugger-step-into-async1.html [ NeedsManualRebaseline ]
+crbug.com/506876 inspector/sources/debugger-step/debugger-step-into-async2.html [ NeedsManualRebaseline ]
+crbug.com/506876 inspector/sources/debugger/live-edit-no-reveal.html [ NeedsManualRebaseline ]
+crbug.com/506876 virtual/pointerevent/fast/events/window-onerror-06.html [ NeedsManualRebaseline ]
+crbug.com/506876 virtual/pointerevent/fast/events/window-onerror-10.html [ NeedsManualRebaseline ]
+
