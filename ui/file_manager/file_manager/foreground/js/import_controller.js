@@ -764,7 +764,7 @@ importer.RuntimeCommandWidget.prototype.update =
       console.assert(!!opt_scan, 'Scan not defined, but is required.');
       this.setDetailsVisible(false);
 
-      this.mainButton_.setAttribute('title', strf(
+      this.mainButton_.setAttribute('aria-label', strf(
           'CLOUD_IMPORT_TOOLTIP_IMPORTING',
           opt_scan.getFileEntries().length));
       this.statusContent_.innerHTML = strf(
@@ -784,7 +784,7 @@ importer.RuntimeCommandWidget.prototype.update =
     case importer.ActivityState.INSUFFICIENT_SPACE:
       console.assert(!!opt_scan, 'Scan not defined, but is required.');
 
-      this.mainButton_.setAttribute('title', strf(
+      this.mainButton_.setAttribute('aria-label', strf(
           'CLOUD_IMPORT_TOOLTIP_INSUFFICIENT_SPACE'));
       this.statusContent_.innerHTML = strf(
           'CLOUD_IMPORT_STATUS_INSUFFICIENT_SPACE',
@@ -800,7 +800,7 @@ importer.RuntimeCommandWidget.prototype.update =
       break;
 
     case importer.ActivityState.NO_MEDIA:
-      this.mainButton_.setAttribute('title', str(
+      this.mainButton_.setAttribute('aria-label', str(
           'CLOUD_IMPORT_TOOLTIP_NO_MEDIA'));
       this.statusContent_.innerHTML = str(
           'CLOUD_IMPORT_STATUS_NO_MEDIA');
@@ -817,7 +817,7 @@ importer.RuntimeCommandWidget.prototype.update =
     case importer.ActivityState.READY:
       console.assert(!!opt_scan, 'Scan not defined, but is required.');
 
-      this.mainButton_.setAttribute('title', strf(
+      this.mainButton_.setAttribute('aria-label', strf(
           'CLOUD_IMPORT_TOOLTIP_READY',
           opt_scan.getFileEntries().length));
       this.statusContent_.innerHTML = strf(
@@ -836,7 +836,7 @@ importer.RuntimeCommandWidget.prototype.update =
     case importer.ActivityState.SCANNING:
       console.assert(!!opt_scan, 'Scan not defined, but is required.');
 
-      this.mainButton_.setAttribute('title', str(
+      this.mainButton_.setAttribute('aria-label', str(
           'CLOUD_IMPORT_TOOLTIP_SCANNING'));
       this.statusContent_.innerHTML = strf(
           'CLOUD_IMPORT_STATUS_SCANNING',
