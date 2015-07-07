@@ -4548,25 +4548,25 @@ void RenderFrameImpl::NavigateInternal(
   }
 
   if (should_load_request) {
+    // Record this before starting the load. We need a lower bound of this
+    // time to sanitize the navigationStart override set below.
+    base::TimeTicks renderer_navigation_start = base::TimeTicks::Now();
+
     // Perform a navigation to a data url if needed.
     if (!common_params.base_url_for_data_url.is_empty() ||
         (browser_side_navigation &&
          common_params.url.SchemeIs(url::kDataScheme))) {
       LoadDataURL(common_params, frame_);
     } else {
-      // Record this before starting the load. We need a lower bound of this
-      // time to sanitize the navigationStart override set below.
-      base::TimeTicks renderer_navigation_start = base::TimeTicks::Now();
-
       // Load the request.
       frame_->toWebLocalFrame()->load(request, load_type,
                                       item_for_history_navigation);
+    }
 
-      if (load_type == blink::WebFrameLoadType::Standard) {
-        UpdateFrameNavigationTiming(frame_,
-                                    request_params.browser_navigation_start,
-                                    renderer_navigation_start);
-      }
+    if (load_type == blink::WebFrameLoadType::Standard) {
+      UpdateFrameNavigationTiming(frame_,
+                                  request_params.browser_navigation_start,
+                                  renderer_navigation_start);
     }
   }
 
