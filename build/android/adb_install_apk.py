@@ -7,6 +7,7 @@
 """Utility script to install APKs from the command line quickly."""
 
 import argparse
+import glob
 import logging
 import os
 import sys
@@ -15,6 +16,7 @@ from pylib import constants
 from pylib.device import device_blacklist
 from pylib.device import device_errors
 from pylib.device import device_utils
+from pylib.utils import apk_helper
 from pylib.utils import run_tests_helper
 
 
@@ -30,6 +32,11 @@ def main():
 
   # TODO(jbudorick): Remove once no clients pass --apk_package
   parser.add_argument('--apk_package', help='DEPRECATED unused')
+  parser.add_argument('--split',
+                      action='append',
+                      dest='splits',
+                      help='A glob matching the apk splits. '
+                           'Can be specified multiple times.')
   parser.add_argument('--keep_data',
                       action='store_true',
                       default=False,
@@ -62,6 +69,19 @@ def main():
     if not os.path.exists(apk):
       parser.error('%s not found.' % apk)
 
+  if args.splits:
+    splits = []
+    base_apk_package = apk_helper.ApkHelper(apk).GetPackageName()
+    for split_glob in args.splits:
+      apks = [f for f in glob.glob(split_glob) if f.endswith('.apk')]
+      if not apks:
+        logging.warning('No apks matched for %s.' % split_glob)
+      for f in apks:
+        helper = apk_helper.ApkHelper(f)
+        if (helper.GetPackageName() == base_apk_package
+            and helper.GetSplitName()):
+          splits.append(f)
+
   devices = device_utils.DeviceUtils.HealthyDevices()
 
   if args.device:
@@ -73,7 +93,10 @@ def main():
 
   def blacklisting_install(device):
     try:
-      device.Install(apk, reinstall=args.keep_data)
+      if args.splits:
+        device.InstallSplitApk(apk, splits, reinstall=args.keep_data)
+      else:
+        device.Install(apk, reinstall=args.keep_data)
     except device_errors.CommandFailedError:
       logging.exception('Failed to install %s', args.apk_name)
       device_blacklist.ExtendBlacklist([str(device)])
