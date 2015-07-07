@@ -20,6 +20,7 @@ StartupTaskRunnerServiceFactory::GetForBrowserState(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 
+// static
 StartupTaskRunnerServiceFactory*
 StartupTaskRunnerServiceFactory::GetInstance() {
   return Singleton<StartupTaskRunnerServiceFactory>::get();

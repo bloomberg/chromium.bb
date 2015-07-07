@@ -79,6 +79,7 @@ WebDataServiceFactory::GetTokenWebDataForBrowserState(
   return wrapper ? wrapper->GetTokenWebData() : nullptr;
 }
 
+// static
 WebDataServiceFactory* WebDataServiceFactory::GetInstance() {
   return Singleton<WebDataServiceFactory>::get();
 }

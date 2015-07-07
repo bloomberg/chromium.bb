@@ -19,6 +19,7 @@ SigninErrorController* SigninErrorControllerFactory::GetForBrowserState(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 
+// static
 SigninErrorControllerFactory* SigninErrorControllerFactory::GetInstance() {
   return Singleton<SigninErrorControllerFactory>::get();
 }

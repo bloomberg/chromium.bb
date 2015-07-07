@@ -17,7 +17,7 @@ namespace ios {
 
 class ChromeBrowserState;
 
-// Singleton that owns all GoogleURLTracker and associates them with
+// Singleton that owns all GoogleURLTrackers and associates them with
 // ios::ChromeBrowserState.
 class GoogleURLTrackerFactory : public BrowserStateKeyedServiceFactory {
  public:

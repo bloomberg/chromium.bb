@@ -21,7 +21,7 @@ namespace ios {
 
 class ChromeBrowserState;
 
-// Singleton that owns all HistoryService and associates them with
+// Singleton that owns all HistoryServices and associates them with
 // ios::ChromeBrowserState.
 class HistoryServiceFactory : public BrowserStateKeyedServiceFactory {
  public:

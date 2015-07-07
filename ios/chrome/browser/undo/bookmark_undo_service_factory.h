@@ -17,7 +17,7 @@ namespace ios {
 
 class ChromeBrowserState;
 
-// Singleton that owns all FaviconService and associates them with
+// Singleton that owns all FaviconServices and associates them with
 // ios::ChromeBrowserState.
 class BookmarkUndoServiceFactory : public BrowserStateKeyedServiceFactory {
  public:

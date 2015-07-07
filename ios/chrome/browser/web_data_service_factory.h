@@ -25,7 +25,7 @@ namespace ios {
 
 class ChromeBrowserState;
 
-// Singleton that owns all WebDataServiceWrapper and associates them with
+// Singleton that owns all WebDataServiceWrappers and associates them with
 // ios::ChromeBrowserState.
 class WebDataServiceFactory : public BrowserStateKeyedServiceFactory {
  public:

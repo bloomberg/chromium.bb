@@ -201,6 +201,8 @@
         'browser/history/history_utils.h',
         'browser/history/top_sites_factory.cc',
         'browser/history/top_sites_factory.h',
+        'browser/history/web_history_service_factory.cc',
+        'browser/history/web_history_service_factory.h',
         'browser/infobars/confirm_infobar_controller.h',
         'browser/infobars/confirm_infobar_controller.mm',
         'browser/infobars/infobar.h',

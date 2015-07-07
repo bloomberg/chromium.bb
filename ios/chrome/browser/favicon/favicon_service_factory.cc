@@ -32,6 +32,7 @@ favicon::FaviconService* FaviconServiceFactory::GetForBrowserState(
   return nullptr;
 }
 
+// static
 FaviconServiceFactory* FaviconServiceFactory::GetInstance() {
   return Singleton<FaviconServiceFactory>::get();
 }

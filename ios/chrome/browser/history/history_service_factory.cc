@@ -50,6 +50,7 @@ history::HistoryService* HistoryServiceFactory::GetForBrowserStateIfExists(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 
+// static
 HistoryServiceFactory* HistoryServiceFactory::GetInstance() {
   return Singleton<HistoryServiceFactory>::get();
 }

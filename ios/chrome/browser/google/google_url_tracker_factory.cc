@@ -22,6 +22,7 @@ GoogleURLTracker* GoogleURLTrackerFactory::GetForBrowserState(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 
+// static
 GoogleURLTrackerFactory* GoogleURLTrackerFactory::GetInstance() {
   return Singleton<GoogleURLTrackerFactory>::get();
 }

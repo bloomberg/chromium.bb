@@ -17,7 +17,7 @@ namespace ios {
 
 class ChromeBrowserState;
 
-// Singleton that owns all SigninErrorController and associates them with
+// Singleton that owns all SigninErrorControllers and associates them with
 // ios::ChromeBrowserState.
 class SigninErrorControllerFactory : public BrowserStateKeyedServiceFactory {
  public:

@@ -20,7 +20,7 @@ namespace ios {
 
 class ChromeBrowserState;
 
-// Singleton that owns all StartupTaskRunnerService and associates them with
+// Singleton that owns all StartupTaskRunnerServices and associates them with
 // ios::ChromeBrowserState.
 class StartupTaskRunnerServiceFactory : public BrowserStateKeyedServiceFactory {
  public:

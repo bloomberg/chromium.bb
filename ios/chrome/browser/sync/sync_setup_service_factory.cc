@@ -17,12 +17,14 @@ SyncSetupService* SyncSetupServiceFactory::GetForBrowserState(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 
+// static
 SyncSetupService* SyncSetupServiceFactory::GetForBrowserStateIfExists(
     ios::ChromeBrowserState* browser_state) {
   return static_cast<SyncSetupService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, false));
 }
 
+// static
 SyncSetupServiceFactory* SyncSetupServiceFactory::GetInstance() {
   return Singleton<SyncSetupServiceFactory>::get();
 }
