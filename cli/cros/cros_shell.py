@@ -81,18 +81,16 @@ Quoting can be tricky; the rules are the same as with ssh:
         help='SSH identify file (private key).')
     parser.add_argument(
         '--no-known-hosts', action='store_false', dest='known_hosts',
-        default=True, help='Do not use a known_hosts file; always set'
-        ' for USB connections.')
+        default=True, help='Do not use a known_hosts file.')
     parser.add_argument(
         'command', nargs=argparse.REMAINDER,
         help='(optional) Command to execute on the device.')
 
   def _ReadOptions(self):
     """Processes options and set variables."""
-    if self.options.device:
-      self.ssh_hostname = self.options.device.hostname
-      self.ssh_username = self.options.device.username
-      self.ssh_port = self.options.device.port
+    self.ssh_hostname = self.options.device.hostname
+    self.ssh_username = self.options.device.username
+    self.ssh_port = self.options.device.port
     self.ssh_private_key = self.options.private_key
     self.known_hosts = self.options.known_hosts
     # By default ask the user if a new key is found. SSH will still reject
@@ -106,10 +104,7 @@ Quoting can be tricky; the rules are the same as with ssh:
   def _ConnectSettings(self):
     """Generates the correct SSH connect settings based on our state."""
     kwargs = {'NumberOfPasswordPrompts': 2}
-    # USB has no risk of a man-in-the-middle attack so we can turn off
-    # known_hosts for any USB connection.
-    if (self.known_hosts and
-        self.device.connection_type != remote_access.CONNECTION_TYPE_USB):
+    if self.known_hosts:
       # Use the default known_hosts and our current key check setting.
       kwargs['UserKnownHostsFile'] = None
       kwargs['StrictHostKeyChecking'] = self.host_key_checking

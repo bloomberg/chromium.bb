@@ -11,14 +11,12 @@ import os
 import shutil
 import socket
 import stat
-import string
 import tempfile
 import time
 
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import debug_link
 from chromite.lib import osutils
 from chromite.lib import timeout_util
 
@@ -45,16 +43,6 @@ KNOWN_HOSTS_PATH = os.path.expanduser('~/.ssh/known_hosts')
 
 # Dev/test packages are installed in these paths.
 DEV_BIN_PATHS = '/usr/local/bin:/usr/local/sbin'
-
-# Brillo device.
-BRILLO_DEBUG_LINK_SERVICE_NAME = '_brdebug._tcp.local'
-BRILLO_DEVICE_PROPERTY_DIR = '/var/lib/brillo-device'
-BRILLO_DEVICE_PROPERTY_MAX_LEN = 128
-BRILLO_DEVICE_PROPERTY_ALIAS = 'alias'
-
-# Remote device connection types.
-CONNECTION_TYPE_ETHERNET = 'ethernet'
-CONNECTION_TYPE_USB = 'usb'
 
 
 class RemoteAccessException(Exception):
@@ -92,10 +80,6 @@ class CatFileError(RemoteAccessException):
 
 class RunningPidsError(RemoteAccessException):
   """Raised when unable to get running pids on the device."""
-
-
-class InvalidDevicePropertyError(RemoteAccessException):
-  """Raised when Brillo device property is invalid."""
 
 
 def NormalizePort(port, str_ok=True):
@@ -906,28 +890,13 @@ class ChromiumOSDevice(RemoteDevice):
   MOUNT_ROOTFS_RW_CMD = ['mount', '-o', 'remount,rw', '/']
   LIST_MOUNTS_CMD = ['cat', '/proc/mounts']
 
-  def __init__(self, hostname, alias=None, connection_type=None, **kwargs):
+  def __init__(self, hostname, **kwargs):
     """Initializes this object.
 
     Args:
-      hostname: A network hostname or a user-friendly USB device name (alias);
-        None to find the default ChromiumOSDevice.
-      alias: A user-friendly USB device name.
-      connection_type: A CONNECTION_TYPE_xxx value, or None if unknown.
-        Overwritten with the discovered value if |hostname| is None.
+      hostname: A network hostname.
+      kwargs: Args to pass to the parent constructor.
     """
-    if hostname:
-      self._alias = alias
-      self.connection_type = connection_type
-      # _ResolveHostname() may update |self.connection_type| and/or
-      # |self._alias| so they need to be initialized beforehand.
-      hostname = self._ResolveHostname(hostname)
-    else:
-      service, self.connection_type = _GetDefaultService()
-      self._alias = service.text[BRILLO_DEVICE_PROPERTY_ALIAS]
-      hostname = service.ip
-      # We know this exists because it responded to the mDNS, no need to ping.
-      kwargs['ping'] = False
     super(ChromiumOSDevice, self).__init__(hostname, **kwargs)
     self._orig_path = None
     self._path = None
@@ -992,81 +961,6 @@ class ChromiumOSDevice(RemoteDevice):
   def board(self):
     """The board name of the device."""
     return self.lsb_release.get('CHROMEOS_RELEASE_BOARD', '')
-
-  @property
-  def alias(self):
-    """The user-friendly alias name assigned to the device."""
-    if not self._alias:
-      alias_file_path = os.path.join(BRILLO_DEVICE_PROPERTY_DIR,
-                                     BRILLO_DEVICE_PROPERTY_ALIAS)
-      try:
-        self._alias = self.CatFile(alias_file_path,
-                                   BRILLO_DEVICE_PROPERTY_MAX_LEN+1)
-      except CatFileError as e:
-        logging.debug('Unable to read alias of the device: %s', e)
-      else:
-        self._alias = self._alias.strip()
-
-    return self._alias
-
-  def SetAlias(self, alias_name):
-    """Assign to the device a user-friendly alias name.
-
-    Args:
-      alias_name: The alias name to set. It must be no more than 128 in length
-        containing only alphanumeric characters and/or underscores.
-
-    Raises:
-      InvalidDevicePropertyError if |alias_name| is invalid.
-    """
-    if len(alias_name) > BRILLO_DEVICE_PROPERTY_MAX_LEN:
-      raise InvalidDevicePropertyError(
-          'The alias name cannot be more than %d characters.' %
-          BRILLO_DEVICE_PROPERTY_MAX_LEN)
-    valid_alias_chars = string.ascii_letters + string.digits + '_'
-    if not all(c in valid_alias_chars for c in alias_name):
-      raise InvalidDevicePropertyError(
-          'The alias name can only contain alphanumeric characters and/or '
-          'underscores.')
-
-    self.RunCommand(['mkdir', '-p', BRILLO_DEVICE_PROPERTY_DIR],
-                    remote_sudo=True)
-    alias_file_path = os.path.join(BRILLO_DEVICE_PROPERTY_DIR,
-                                   BRILLO_DEVICE_PROPERTY_ALIAS)
-    self.RunCommand(['echo', alias_name, '>', alias_file_path],
-                    remote_sudo=True)
-    self._alias = alias_name
-
-    logging.info('Successfully set alias to "%s".', alias_name)
-
-  def _ResolveHostname(self, hostname):
-    """Resolve |hostname| into a network hostname.
-
-    If |hostname| is an alias, |self._alias| is updated to be |hostname|.
-    If the connection type can be determined during hostname resolution,
-    |self.connection_type| is updated to the proper value.
-
-    Args:
-      hostname: Can either be a network hostname or user-friendly USB device
-        name (aka alias).
-
-    Returns:
-      Network hostname as as string.
-    """
-    # If |hostname| is resolvable via DNS, then it's a valid hostname.
-    # If |hostname| is resolvable via Debug Link mDNS, then it's an alias.
-    try:
-      socket.getaddrinfo(hostname, 0)
-      return hostname
-    except socket.gaierror:
-      ip = GetUSBDeviceIP(hostname)
-      if ip:
-        self._alias = hostname
-        self.connection_type = CONNECTION_TYPE_USB
-        return ip
-      # |hostname| is not resolvable but may still be valid (eg. ssh hostname).
-      # Leave the hostname be.
-      return hostname
 
   def _RemountRootfsAsWritable(self):
     """Attempts to Remount the root partition."""
@@ -1143,95 +1037,3 @@ class ChromiumOSDevice(RemoteDevice):
       extra_env['PATH'] = path_env
     kwargs['extra_env'] = extra_env
     return super(ChromiumOSDevice, self).RunCommand(cmd, **kwargs)
-
-
-def _DiscoverUSBServices():
-  """Performs service discovery over the USB link.
-
-  Initializes the USB link and sends the mDNS query to find all
-  available Brillo services.
-
-  GetUSBConnectedDevices() can be used instead to get a list of full
-  ChromiumOSDevice objects.
-
-  Returns:
-    A list of mdns.Service objects.
-  """
-  # Lazy import mdns so that we don't break the chromite requirement that
-  # bootstrapping should not depend on third_party packages. mdns pulls in
-  # dpkt which is a third_party package.
-  from chromite.lib import mdns
-  try:
-    source_ip = debug_link.InitializeDebugLink()
-    return mdns.FindServices(source_ip, BRILLO_DEBUG_LINK_SERVICE_NAME)
-  except debug_link.DebugLinkException as e:
-    logging.debug('Failed to initialize debug link: %s', e)
-    return []
-
-
-def _GetDefaultService():
-  """Returns the default service if one exists.
-
-  If there is exactly one device connected over USB it will be
-  returned. Otherwise DefaultDeviceError will be raised.
-
-  Returns:
-    A (mdns.Service, CONNECTION_TYPE_xxx value) tuple.
-
-  Raises:
-    DefaultDeviceError: no default device was found.
-  """
-  services = _DiscoverUSBServices()
-  if not services:
-    raise DefaultDeviceError('No default device could be found.')
-  elif len(services) > 1:
-    raise DefaultDeviceError(
-        'More than one device was found, please specify a device from: %s.' %
-        ', '.join(service.text[BRILLO_DEVICE_PROPERTY_ALIAS]
-                  for service in services))
-  return (services[0], CONNECTION_TYPE_USB)
-
-
-def GetUSBConnectedDevices():
-  """Returns a list of all USB-connected devices."""
-  # Use connect=False so that we don't try to set up the device connections
-  # until the device is used.
-  return [ChromiumOSDevice(service.ip, connection_type=CONNECTION_TYPE_USB,
-                           alias=service.text[BRILLO_DEVICE_PROPERTY_ALIAS],
-                           ping=False, connect=False)
-          for service in _DiscoverUSBServices()]
-
-
-def GetUSBDeviceIP(alias):
-  """Gets the USB-connected device IP address using its |alias|.
-
-  Args:
-    alias: User-friendly name of USB-connected device.
-
-  Returns:
-    USB-connected device IP address or None if |alias| is not found.  If there
-    are duplicate aliases on the network, the first IP address is returned.
-  """
-  if not alias:
-    return None
-
-  # Lazy import mdns so that we don't break the chromite requirement that
-  # bootstrapping should not depend on third_party packages. mdns pulls in
-  # dpkt which is a third_party package.
-  from chromite.lib import mdns
-
-  # For now, swallow missing debug link error until we have a better way of
-  # differentiating between ChromeOS and Brillo.
-  try:
-    source_ip = debug_link.InitializeDebugLink()
-  except debug_link.DebugLinkMissingError:
-    return None
-
-  should_add = lambda x: x.text.get(BRILLO_DEVICE_PROPERTY_ALIAS) == alias
-  should_continue = lambda x: x.text.get(BRILLO_DEVICE_PROPERTY_ALIAS) != alias
-  services = mdns.FindServices(source_ip, BRILLO_DEBUG_LINK_SERVICE_NAME,
-                               should_add_func=should_add,
-                               should_continue_func=should_continue)
-  if not services:
-    return None
-  return services[0].ip
