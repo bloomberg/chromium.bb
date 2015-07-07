@@ -231,17 +231,9 @@
       'type': 'none',
       'dependencies': [
         'nacl_lib_newlib',
-      ],
-      'conditions': [
-        # NOTE: We do not support glibc on arm and mips yet.
-        ['target_arch!="arm" and target_arch!="mipsel"', {
-           'dependencies': [
-             'nacl_lib_glibc'
-           ]
-         }],
+        'nacl_lib_glibc'
       ],
     },
-
     {
       'target_name': 'nacl_lib_glibc',
       'type': 'none',
