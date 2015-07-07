@@ -1,21 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
   <!-- Polymer 1.0 Elements -->
-  <structure name="IDR_CR_ELEMENTS_1_0_CR_DEMO_ELEMENT_CSS"
-             file="../../webui/resources/cr_elements/v1_0/demo_element.css"
-             type="chrome_html" />
-  <structure name="IDR_CR_ELEMENTS_1_0_CR_DEMO_ELEMENT_HTML"
-             file="../../webui/resources/cr_elements/v1_0/demo_element.html"
-             type="chrome_html" />
-  <structure name="IDR_CR_ELEMENTS_1_0_CR_DEMO_ELEMENT_JS"
-             file="../../webui/resources/cr_elements/v1_0/demo_element.js"
-             type="chrome_html" />
-  <structure name="IDR_CR_ELEMENTS_1_0_CR_DEMO_CONFIG_JS"
-             file="../../webui/resources/cr_elements/v1_0/demo_config.js"
-             type="chrome_html" />
-  <structure name="IDR_CR_ELEMENTS_1_0_CR_DEMO_PAGE_HTML"
-             file="../../webui/resources/cr_elements/v1_0/demo_page.html"
-             type="chrome_html" />
+  <if expr="not _google_chrome">
+    <structure name="IDR_CR_ELEMENTS_1_0_CR_DEMO_ELEMENT_CSS"
+               file="../../webui/resources/cr_elements/v1_0/demo_element.css"
+               type="chrome_html" />
+    <structure name="IDR_CR_ELEMENTS_1_0_CR_DEMO_ELEMENT_HTML"
+               file="../../webui/resources/cr_elements/v1_0/demo_element.html"
+               type="chrome_html" />
+    <structure name="IDR_CR_ELEMENTS_1_0_CR_DEMO_ELEMENT_JS"
+               file="../../webui/resources/cr_elements/v1_0/demo_element.js"
+               type="chrome_html" />
+    <structure name="IDR_CR_ELEMENTS_1_0_CR_DEMO_CONFIG_JS"
+               file="../../webui/resources/cr_elements/v1_0/demo_config.js"
+               type="chrome_html" />
+    <structure name="IDR_CR_ELEMENTS_1_0_CR_DEMO_PAGE_HTML"
+               file="../../webui/resources/cr_elements/v1_0/demo_page.html"
+               type="chrome_html" />
+  </if>
   <structure name="IDR_CR_ELEMENTS_1_0_CR_BUTTON_CSS"
              file="../../webui/resources/cr_elements/v1_0/cr_button/cr_button.css"
              type="chrome_html" />
