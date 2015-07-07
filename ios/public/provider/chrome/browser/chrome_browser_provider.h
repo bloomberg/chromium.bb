@@ -17,6 +17,10 @@ class CardUnmaskPromptController;
 class CardUnmaskPromptView;
 }
 
+namespace metrics {
+class MetricsService;
+}
+
 namespace net {
 class URLRequestContextGetter;
 }
@@ -38,6 +42,7 @@ namespace ios {
 class ChromeBrowserProvider;
 class ChromeBrowserStateManager;
 class GeolocationUpdaterProvider;
+class ProfileOAuth2TokenServiceIOSProvider;
 class StringProvider;
 class UpdatableResourceProvider;
 
@@ -57,6 +62,9 @@ class ChromeBrowserProvider {
   virtual net::URLRequestContextGetter* GetSystemURLRequestContext();
   // Gets the local state.
   virtual PrefService* GetLocalState();
+  // Returns an instance of profile OAuth2 token service provider.
+  virtual ProfileOAuth2TokenServiceIOSProvider*
+  GetProfileOAuth2TokenServiceIOSProvider();
   // Returns an UpdatableResourceProvider instance.
   virtual UpdatableResourceProvider* GetUpdatableResourceProvider();
   // Returns a ChromeBrowserStateManager instance.
@@ -79,6 +87,8 @@ class ChromeBrowserProvider {
   virtual const char* GetChromeUIScheme();
   // Sets the alpha property of an UIView with an animation.
   virtual void SetUIViewAlphaWithAnimation(UIView* view, float alpha);
+  // Returns the metrics service.
+  virtual metrics::MetricsService* GetMetricsService();
   // Returns an instance of a CardUnmaskPromptView used to unmask Wallet cards.
   // The view is responsible for its own lifetime.
   virtual autofill::CardUnmaskPromptView* CreateCardUnmaskPromptView(
@@ -87,6 +97,8 @@ class ChromeBrowserProvider {
   virtual std::string GetRiskData();
   // Returns product version with prefix.
   virtual std::string GetProductVersionWithPrefix(const std::string& prefix);
+  // Returns a version string to be displayed in "About Chromium" dialog.
+  virtual std::string GetVersionString();
 };
 
 }  // namespace ios

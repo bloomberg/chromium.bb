@@ -56,3 +56,7 @@ ios::ChromeBrowserStateManager*
 TestingApplicationContext::GetChromeBrowserStateManager() {
   return chrome_browser_state_manager_;
 }
+
+metrics::MetricsService* TestingApplicationContext::GetMetricsService() {
+  return nullptr;
+}

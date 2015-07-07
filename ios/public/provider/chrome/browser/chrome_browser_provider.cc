@@ -37,6 +37,11 @@ PrefService* ChromeBrowserProvider::GetLocalState() {
   return nullptr;
 }
 
+ProfileOAuth2TokenServiceIOSProvider*
+ChromeBrowserProvider::GetProfileOAuth2TokenServiceIOSProvider() {
+  return nullptr;
+}
+
 UpdatableResourceProvider*
 ChromeBrowserProvider::GetUpdatableResourceProvider() {
   return nullptr;
@@ -77,6 +82,10 @@ void ChromeBrowserProvider::SetUIViewAlphaWithAnimation(UIView* view,
                                                         float alpha) {
 }
 
+metrics::MetricsService* ChromeBrowserProvider::GetMetricsService() {
+  return nullptr;
+}
+
 autofill::CardUnmaskPromptView*
 ChromeBrowserProvider::CreateCardUnmaskPromptView(
     autofill::CardUnmaskPromptController* controller) {
@@ -90,6 +99,10 @@ std::string ChromeBrowserProvider::GetRiskData() {
 std::string ChromeBrowserProvider::GetProductVersionWithPrefix(
     const std::string& prefix) {
   NOTREACHED();
+  return std::string();
+}
+
+std::string ChromeBrowserProvider::GetVersionString() {
   return std::string();
 }
 

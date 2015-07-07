@@ -29,6 +29,7 @@ class TestingApplicationContext : public ApplicationContext {
   net::URLRequestContextGetter* GetSystemURLRequestContext() override;
   const std::string& GetApplicationLocale() override;
   ios::ChromeBrowserStateManager* GetChromeBrowserStateManager() override;
+  metrics::MetricsService* GetMetricsService() override;
 
  private:
   base::ThreadChecker thread_checker_;

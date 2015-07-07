@@ -46,3 +46,7 @@ ios::ChromeBrowserStateManager*
 ApplicationContextImpl::GetChromeBrowserStateManager() {
   return ios::GetChromeBrowserProvider()->GetChromeBrowserStateManager();
 }
+
+metrics::MetricsService* ApplicationContextImpl::GetMetricsService() {
+  return ios::GetChromeBrowserProvider()->GetMetricsService();
+}
