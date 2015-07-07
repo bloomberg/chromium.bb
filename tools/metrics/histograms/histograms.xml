@@ -60264,6 +60264,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="689489984" label="disable-zero-suggest"/>
   <int value="709850261" label="disable-touch-editing"/>
   <int value="711424932" label="enable-cloud-print-xps"/>
+  <int value="716080990" label="restrict-iframe-permissions"/>
   <int value="730024226" label="enable-out-of-process-pdf"/>
   <int value="732703958" label="enable-gesture-tap-highlight"/>
   <int value="752194066" label="enable-app-window-cycling"/>

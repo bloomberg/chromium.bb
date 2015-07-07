@@ -250,6 +250,7 @@ extern const char kQuicMaxPacketLength[];
 extern const char kQuicVersion[];
 extern const char kRemoteDebuggingTargets[];
 extern const char kRestoreLastSession[];
+extern const char kRestrictIFramePermissions[];
 extern const char kSavePageAsMHTML[];
 extern const char kSbDisableAutoUpdate[];
 extern const char kSbDisableDownloadProtection[];
