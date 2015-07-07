@@ -27,6 +27,9 @@ enum BadMessageReason {
   EVG_BAD_ORIGIN = 1,
   BH_BLOB_NOT_OWNED = 2,
   EH_BAD_EVENT_ID = 3,
+  AVG_BAD_INST_ID = 4,
+  AVG_BAD_EXT_ID = 5,
+  AVG_NULL_AVG = 6,
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. ExtensionHost becomes EH) plus a unique description of the
   // reason.

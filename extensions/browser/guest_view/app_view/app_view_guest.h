@@ -22,14 +22,24 @@ class AppViewGuest : public guest_view::GuestView<AppViewGuest> {
   static const char Type[];
 
   // Completes the creation of a WebContents associated with the provided
-  // |guest_extensions_id|.
+  // |guest_extension_id| and |guest_instance_id| for the given
+  // |browser_context|.
+  // |guest_render_process_host| is the RenderProcessHost and |url| is the
+  // resource GURL of the extension instance making this request. If there is
+  // any mismatch between the expected |guest_instance_id| and
+  // |guest_extension_id| provided and the recorded copies from when the the
+  // <appview> was created, the RenderProcessHost of the extension instance
+  // behind this request will be killed.
   static bool CompletePendingRequest(
       content::BrowserContext* browser_context,
       const GURL& url,
       int guest_instance_id,
-      const std::string& guest_extension_id);
+      const std::string& guest_extension_id,
+      content::RenderProcessHost* guest_render_process_host);
 
   static GuestViewBase* Create(content::WebContents* owner_web_contents);
+
+  static std::vector<int> GetAllRegisteredInstanceIdsForTesting();
 
   // content::WebContentsDelegate implementation.
   bool HandleContextMenu(const content::ContextMenuParams& params) override;

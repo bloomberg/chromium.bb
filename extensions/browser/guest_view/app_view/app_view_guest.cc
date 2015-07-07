@@ -6,11 +6,12 @@
 
 #include "base/command_line.h"
 #include "components/guest_view/browser/guest_view_manager.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/renderer_preferences.h"
 #include "extensions/browser/api/app_runtime/app_runtime_api.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/app_window/app_delegate.h"
+#include "extensions/browser/bad_message.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
@@ -63,20 +64,27 @@ bool AppViewGuest::CompletePendingRequest(
     content::BrowserContext* browser_context,
     const GURL& url,
     int guest_instance_id,
-    const std::string& guest_extension_id) {
+    const std::string& guest_extension_id,
+    content::RenderProcessHost* guest_render_process_host) {
   PendingResponseMap* response_map = pending_response_map.Pointer();
   PendingResponseMap::iterator it = response_map->find(guest_instance_id);
+  // Kill the requesting process if it is not the real guest.
   if (it == response_map->end()) {
-    // TODO(fsamuel): An app is sending invalid responses. We should probably
-    // kill it.
+    // The requester used an invalid |guest_instance_id|.
+    bad_message::ReceivedBadMessage(guest_render_process_host,
+                                    bad_message::AVG_BAD_INST_ID);
     return false;
   }
 
   linked_ptr<ResponseInfo> response_info = it->second;
   if (!response_info->app_view_guest ||
       (response_info->guest_extension->id() != guest_extension_id)) {
-    // TODO(fsamuel): An app is trying to respond to an <appview> that didn't
-    // initiate communication with it. We should kill the app here.
+    // The app is trying to communicate with an <appview> not assigned to it, or
+    // the <appview> is already dead "nullptr".
+    bad_message::BadMessageReason reason = !response_info->app_view_guest
+                                               ? bad_message::AVG_NULL_AVG
+                                               : bad_message::AVG_BAD_EXT_ID;
+    bad_message::ReceivedBadMessage(guest_render_process_host, reason);
     return false;
   }
 
@@ -268,6 +276,14 @@ void AppViewGuest::LaunchAppAndFireEvent(
 
 void AppViewGuest::SetAppDelegateForTest(AppDelegate* delegate) {
   app_delegate_.reset(delegate);
+}
+
+std::vector<int> AppViewGuest::GetAllRegisteredInstanceIdsForTesting() {
+  std::vector<int> instances;
+  for (const auto& key_value : pending_response_map.Get()) {
+    instances.push_back(key_value.first);
+  }
+  return instances;
 }
 
 }  // namespace extensions

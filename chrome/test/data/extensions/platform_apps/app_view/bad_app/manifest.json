@@ -1,0 +1,9 @@
+{
+  "name": "Platform API Test: Bad Application",
+  "version": "1.0",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  }
+}
