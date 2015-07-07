@@ -31,7 +31,10 @@ import org.chromium.content.browser.DownloadController;
 import org.chromium.content.browser.DownloadInfo;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -48,6 +51,17 @@ public class DownloadManagerService extends BroadcastReceiver implements
     private static final String DOWNLOAD_DIRECTORY = "Download";
     protected static final String PENDING_OMA_DOWNLOADS = "PendingOMADownloads";
     private static final long UPDATE_DELAY_MILLIS = 1000;
+    // Set will be more expensive to initialize, so use an ArrayList here.
+    private static final List<String> MIME_TYPES_TO_OPEN = new ArrayList<String>(Arrays.asList(
+            OMADownloadHandler.OMA_DOWNLOAD_DESCRIPTOR_MIME,
+            "application/pdf",
+            "application/x-x509-ca-cert",
+            "application/x-x509-user-cert",
+            "application/x-x509-server-cert",
+            "application/x-pkcs12",
+            "application/application/x-pem-file",
+            "application/pkix-cert",
+            "application/x-wifi-config"));
 
     private static DownloadManagerService sDownloadManagerService;
 
@@ -711,10 +725,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
     @VisibleForTesting
     static boolean shouldOpenAfterDownload(DownloadInfo downloadInfo) {
         String type = downloadInfo.getMimeType();
-        return downloadInfo.hasUserGesture()
-                && !isAttachment(downloadInfo.getContentDisposition())
-                && (type.equalsIgnoreCase("application/pdf")
-                        || type.equalsIgnoreCase(OMADownloadHandler.OMA_DOWNLOAD_DESCRIPTOR_MIME));
+        return downloadInfo.hasUserGesture() && !isAttachment(downloadInfo.getContentDisposition())
+                && MIME_TYPES_TO_OPEN.contains(type);
     }
 
     /**
