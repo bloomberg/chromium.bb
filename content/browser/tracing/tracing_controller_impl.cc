@@ -866,6 +866,10 @@ void TracingControllerImpl::OnBrowserProcessMemoryDumpDone(uint64 dump_guid,
                                                            bool success) {
   DCHECK_GT(pending_memory_dump_ack_count_, 0);
   --pending_memory_dump_ack_count_;
+  if (!success) {
+    ++failed_memory_dump_count_;
+    DLOG(WARNING) << "Global memory dump aborted on the current process";
+  }
   FinalizeGlobalMemoryDumpIfAllProcessesReplied();
 }
 
