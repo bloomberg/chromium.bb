@@ -32,10 +32,6 @@ public:
     // Passes the Blink-side delegate to the embedder.
     virtual void setController(WebPresentationController*) = 0;
 
-    // Called when the frame attaches the first event listener to or removes the
-    // last event listener from the |availablechange| event.
-    virtual void updateAvailableChangeWatched(bool watched) = 0;
-
     // Called when the frame requests to start a new session.
     // The ownership of the |callbacks| argument is transferred to the embedder.
     virtual void startSession(const WebString& presentationUrl, const WebString& presentationId, WebPresentationSessionClientCallbacks*) = 0;
@@ -61,22 +57,16 @@ public:
     // Called when the frame wants to know the availability of a presentation
     // display.
     // The ownership of the |callbacks| argument is transferred to the embedder.
-    virtual void getAvailability(const WebString& url, WebPresentationAvailabilityCallbacks* callbacks)
-    {
-        // TODO(mlamouri): remove when implemented in Chromium.
-        bool* result = new bool(false);
-        callbacks->onSuccess(result);
-        delete callbacks;
-    }
+    virtual void getAvailability(const WebString& url, WebPresentationAvailabilityCallbacks*) = 0;
 
     // Start listening to changes in presentation displays availability. The
     // observer will be notified in case of a change. The observer is
     // respensible to call stopListening() before being destroyed.
-    virtual void startListening(WebPresentationAvailabilityObserver*) {}
+    virtual void startListening(WebPresentationAvailabilityObserver*) = 0;
 
     // Stop listening to changes in presentation displays availability. The
     // observer will no longer be notified in case of a change.
-    virtual void stopListening(WebPresentationAvailabilityObserver*) {}
+    virtual void stopListening(WebPresentationAvailabilityObserver*) = 0;
 };
 
 } // namespace blink

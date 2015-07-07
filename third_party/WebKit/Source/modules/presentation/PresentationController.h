@@ -45,8 +45,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     // Implementation of WebPresentationController.
-    virtual void didChangeAvailability(bool available) override;
-    virtual bool isAvailableChangeWatched() const override;
     virtual void didStartDefaultSession(WebPresentationSessionClient*) override;
     virtual void didChangeSessionState(WebPresentationSessionClient*, WebPresentationSessionState) override;
     virtual void didReceiveSessionTextMessage(WebPresentationSessionClient*, const WebString&) override;

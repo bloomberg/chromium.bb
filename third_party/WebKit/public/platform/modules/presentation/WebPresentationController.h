@@ -18,13 +18,6 @@ class BLINK_PLATFORM_EXPORT WebPresentationController {
 public:
     virtual ~WebPresentationController() { }
 
-    // Called when the presentation screen availability changes.
-    // May not be called if there's no registered listener for the event.
-    virtual void didChangeAvailability(bool available) = 0;
-
-    // Indicates if the frame has listeners to the |availablechange| event.
-    virtual bool isAvailableChangeWatched() const = 0;
-
     // Called when the presentation session is started by the embedder using
     // the default presentation URL and id.
     virtual void didStartDefaultSession(WebPresentationSessionClient*) = 0;

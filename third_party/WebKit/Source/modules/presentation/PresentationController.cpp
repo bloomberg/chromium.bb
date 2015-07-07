@@ -61,15 +61,6 @@ DEFINE_TRACE(PresentationController)
     LocalFrameLifecycleObserver::trace(visitor);
 }
 
-void PresentationController::didChangeAvailability(bool available)
-{
-}
-
-bool PresentationController::isAvailableChangeWatched() const
-{
-    return false;
-}
-
 void PresentationController::didStartDefaultSession(WebPresentationSessionClient* sessionClient)
 {
     if (!m_presentation) {
