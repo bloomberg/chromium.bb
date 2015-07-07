@@ -718,7 +718,7 @@ bool SyncEncryptionHandlerImpl::SetKeystoreKeys(
       old_keystore_keys_,
       keystore_key_,
       cryptographer->encryptor());
-  DCHECK_EQ(keystore_bootstrap.empty(), keystore_key_.empty());
+
   FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
                     OnBootstrapTokenUpdated(keystore_bootstrap,
                                             KEYSTORE_BOOTSTRAP_TOKEN));

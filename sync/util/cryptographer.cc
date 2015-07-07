@@ -277,7 +277,6 @@ bool Cryptographer::GetBootstrapToken(std::string* token) const {
 
   std::string encrypted_token;
   if (!encryptor_->EncryptString(unencrypted_token, &encrypted_token)) {
-    NOTREACHED();
     return false;
   }
 

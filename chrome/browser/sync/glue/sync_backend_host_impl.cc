@@ -704,7 +704,6 @@ void SyncBackendHostImpl::PersistEncryptionBootstrapToken(
     const std::string& token,
     syncer::BootstrapTokenType token_type) {
   CHECK(sync_prefs_.get());
-  DCHECK(!token.empty());
   if (token_type == syncer::PASSPHRASE_BOOTSTRAP_TOKEN)
     sync_prefs_->SetEncryptionBootstrapToken(token);
   else
