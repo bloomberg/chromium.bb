@@ -343,6 +343,7 @@ void MediaStreamAudioProcessor::Stop() {
   if (!audio_processing_.get())
     return;
 
+  audio_processing_.get()->UpdateHistogramsOnCallEnd();
   StopEchoCancellationDump(audio_processing_.get());
 
   if (playout_data_source_) {

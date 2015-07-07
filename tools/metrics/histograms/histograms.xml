@@ -48567,6 +48567,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Audio.NumOfAecSystemDelayJumps" units="jumps">
+  <owner>bjornv@chromium.org</owner>
+  <summary>
+    Number of triggered WebRTC.Audio.AecSystemDelayJump during a call. This is
+    recorded when a WebRTC based call has ended. AecSystemDelayJump can be
+    triggered when, for example, the capture thread is stalled, which can harm
+    the AEC. NumOfAecSystemDelayJumps shows how often this occurs in general as
+    well as during a call.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Audio.NumOfPlatformReportedStreamDelayJumps"
+    units="jumps">
+  <owner>bjornv@chromium.org</owner>
+  <summary>
+    Number of triggered WebRTC.Audio.PlatformReportedStreamDelayJump during a
+    call. This is recorded when a WebRTC based call has ended.
+    PlatformReportedStreamDelayJump can be triggered when, for example, the
+    capture thread is stalled, which can harm the AEC.
+    NumOfPlatformReportedStreamDelayJumps shows how often this occurs in general
+    as well as during a call.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Audio.PlatformReportedStreamDelayJump"
     units="milliseconds">
   <owner>bjornv@chromium.org</owner>
