@@ -91,18 +91,6 @@ class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
     with mock.patch('os.path.exists', return_value=False):
       self.assertRaises(flash.FlashError, flash.Flash, self.DEVICE, self.IMAGE)
 
-  def testProjectSdk(self):
-    """Tests that Project SDK flashing invoked as expected."""
-    with mock.patch('os.path.exists', return_value=True):
-      with mock.patch('chromite.lib.project_sdk.FindVersion',
-                      return_value='1.2.3'):
-        flash.Flash(self.DEVICE, self.IMAGE, project_sdk_image=True)
-        dev_server_wrapper.GetImagePathWithXbuddy.assert_called_with(
-            'project_sdk', mock.ANY, version='1.2.3', static_dir=mock.ANY,
-            lookup_only=True)
-        self.assertTrue(self.updater_mock.patched['UpdateStateful'].called)
-        self.assertTrue(self.updater_mock.patched['UpdateRootfs'].called)
-
 
 class USBImagerMock(partial_mock.PartialCmdMock):
   """Mock out USBImager."""

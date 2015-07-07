@@ -24,7 +24,6 @@ from chromite.lib import dev_server_wrapper as ds_wrapper
 from chromite.lib import operation
 from chromite.lib import osutils
 from chromite.lib import path_util
-from chromite.lib import project_sdk
 from chromite.lib import remote_access
 from chromite.lib import workspace_lib
 
@@ -125,14 +124,13 @@ class FlashError(Exception):
 class USBImager(object):
   """Copy image to the target removable device."""
 
-  def __init__(self, device, board, image, workspace_path=None,
-               sdk_version=None, debug=False, install=False, yes=False):
+  def __init__(self, device, board, image, workspace_path=None, debug=False,
+               install=False, yes=False):
     """Initalizes USBImager."""
     self.device = device
     self.board = board if board else cros_build_lib.GetDefaultBoard()
     self.image = image
     self.workspace_path = workspace_path
-    self.sdk_version = sdk_version
     self.debug = debug
     self.debug_level = logging.DEBUG if debug else logging.INFO
     self.install = install
@@ -244,8 +242,7 @@ class USBImager(object):
     else:
       # Translate the xbuddy path to get the exact image to use.
       translated_path, _ = ds_wrapper.GetImagePathWithXbuddy(
-          self.image, self.board, version=self.sdk_version,
-          static_dir=_DEVSERVER_STATIC_DIR)
+          self.image, self.board, static_dir=_DEVSERVER_STATIC_DIR)
       image_path = ds_wrapper.TranslatedPathToLocalPath(
           translated_path, _DEVSERVER_STATIC_DIR,
           workspace_path=self.workspace_path)
@@ -326,7 +323,7 @@ class RemoteDeviceUpdater(object):
                rootfs_update=True, clobber_stateful=False, reboot=True,
                board=None, workspace_path=None, src_image_to_delta=None,
                wipe=True, debug=False, yes=False, force=False, ping=True,
-               disable_verification=False, sdk_version=None):
+               disable_verification=False):
     """Initializes RemoteDeviceUpdater"""
     if not stateful_update and not rootfs_update:
       raise ValueError('No update operation to perform; either stateful or'
@@ -349,7 +346,6 @@ class RemoteDeviceUpdater(object):
     self.wipe = wipe and not debug
     self.yes = yes
     self.force = force
-    self.sdk_version = sdk_version
 
   # pylint: disable=unbalanced-tuple-unpacking
   @classmethod
@@ -612,62 +608,48 @@ class RemoteDeviceUpdater(object):
 
         payload_dir = self.tempdir
         if os.path.isdir(self.image):
-          # If the given path is a directory, we use the provided
-          # update payload(s) in the directory.
+          # If the given path is a directory, we use the provided update
+          # payload(s) in the directory.
           payload_dir = self.image
           logging.info('Using provided payloads in %s', payload_dir)
+        elif os.path.isfile(self.image):
+          # If the given path is an image, make sure devserver can access it
+          # and generate payloads.
+          logging.info('Using image %s', self.image)
+          ds_wrapper.GetUpdatePayloadsFromLocalPath(
+              self.image, payload_dir,
+              src_image_to_delta=self.src_image_to_delta,
+              static_dir=_DEVSERVER_STATIC_DIR,
+              workspace_path=self.workspace_path)
         else:
-          if os.path.isfile(self.image):
-            # If the given path is an image, make sure devserver can
-            # access it and generate payloads.
-            logging.info('Using image %s', self.image)
-            ds_wrapper.GetUpdatePayloadsFromLocalPath(
-                self.image, payload_dir,
-                src_image_to_delta=self.src_image_to_delta,
-                static_dir=_DEVSERVER_STATIC_DIR,
-                workspace_path=self.workspace_path)
-          else:
-              # We should ignore the given/inferred board value and stick to the
-              # device's basic designation. We do emit a warning for good
-              # measure.
-              # TODO(garnold) In fact we should find the board/overlay that the
-              # device inherits from and which defines the SDK "baseline" image
-              # (brillo:339).
-            if self.sdk_version and self.board and not self.force:
-              logging.warning(
-                  'Ignoring board value (%s) and deferring to device; use '
-                  '--force to override',
-                  self.board)
-              self.board = None
+          self.board = cros_build_lib.GetBoard(device_board=device.board,
+                                               override_board=self.board,
+                                               force=self.yes)
+          if not self.board:
+            raise FlashError('No board identified')
 
-            self.board = cros_build_lib.GetBoard(device_board=device.board,
-                                                 override_board=self.board,
-                                                 force=self.yes)
-            if not self.board:
-              raise FlashError('No board identified')
+          if not self.force and self.board != device.board:
+            # If a board was specified, it must be compatible with the device.
+            raise FlashError('Device (%s) is incompatible with board %s',
+                             device.board, self.board)
 
-            if not self.force and self.board != device.board:
-              # If a board was specified, it must be compatible with the device.
-              raise FlashError('Device (%s) is incompatible with board %s',
-                               device.board, self.board)
+          logging.info('Board is %s', self.board)
 
-            logging.info('Board is %s', self.board)
+          # Translate the xbuddy path to get the exact image to use.
+          translated_path, resolved_path = ds_wrapper.GetImagePathWithXbuddy(
+              self.image, self.board, static_dir=_DEVSERVER_STATIC_DIR,
+              lookup_only=True)
+          logging.info('Using image %s', translated_path)
+          # Convert the translated path to be used in the update request.
+          image_path = ds_wrapper.ConvertTranslatedPath(resolved_path,
+                                                        translated_path)
 
-            # Translate the xbuddy path to get the exact image to use.
-            translated_path, resolved_path = ds_wrapper.GetImagePathWithXbuddy(
-                self.image, self.board, version=self.sdk_version,
-                static_dir=_DEVSERVER_STATIC_DIR, lookup_only=True)
-            logging.info('Using image %s', translated_path)
-            # Convert the translated path to be used in the update request.
-            image_path = ds_wrapper.ConvertTranslatedPath(resolved_path,
-                                                          translated_path)
-
-            # Launch a local devserver to generate/serve update payloads.
-            ds_wrapper.GetUpdatePayloads(
-                image_path, payload_dir, board=self.board,
-                src_image_to_delta=self.src_image_to_delta,
-                workspace_path=self.workspace_path,
-                static_dir=_DEVSERVER_STATIC_DIR)
+          # Launch a local devserver to generate/serve update payloads.
+          ds_wrapper.GetUpdatePayloads(
+              image_path, payload_dir, board=self.board,
+              src_image_to_delta=self.src_image_to_delta,
+              workspace_path=self.workspace_path,
+              static_dir=_DEVSERVER_STATIC_DIR)
 
         # Verify that all required payloads are in the payload directory.
         self._CheckPayloads(payload_dir)
@@ -742,12 +724,11 @@ class RemoteDeviceUpdater(object):
 
 
 # TODO(dpursell): replace |brick| argument with blueprints when they're ready.
-def Flash(device, image, project_sdk_image=False, sdk_version=None, board=None,
-          brick_name=None, blueprint_name=None, install=False,
-          src_image_to_delta=None, rootfs_update=True, stateful_update=True,
-          clobber_stateful=False, reboot=True, wipe=True, ping=True,
-          disable_rootfs_verification=False, clear_cache=False, yes=False,
-          force=False, debug=False):
+def Flash(device, image, board=None, brick_name=None, blueprint_name=None,
+          install=False, src_image_to_delta=None, rootfs_update=True,
+          stateful_update=True, clobber_stateful=False, reboot=True, wipe=True,
+          ping=True, disable_rootfs_verification=False, clear_cache=False,
+          yes=False, force=False, debug=False):
   """Flashes a device, USB drive, or file with an image.
 
   This provides functionality common to `cros flash` and `brillo flash`
@@ -758,8 +739,6 @@ def Flash(device, image, project_sdk_image=False, sdk_version=None, board=None,
     device: commandline.Device object; None to use the default device.
     image: Path (string) to the update image. Can be a local or xbuddy path;
         non-existant local paths are converted to xbuddy.
-    project_sdk_image: Use a clean project SDK image. Overrides |image| if True.
-    sdk_version: Which version of SDK image to flash; autodetected if None.
     board: Board to use; None to automatically detect.
     brick_name: Brick locator to use. Overrides |board| if not None.
     blueprint_name: Blueprint locator to use. Overrides |board| and
@@ -803,14 +782,6 @@ def Flash(device, image, project_sdk_image=False, sdk_version=None, board=None,
     if not cros_build_lib.IsInsideChroot():
       raise ValueError('--install can only be used inside the chroot')
 
-  # If installing an SDK image, find the version and override image path.
-  if project_sdk_image:
-    image = 'project_sdk'
-    if sdk_version is None:
-      sdk_version = project_sdk.FindVersion()
-      if not sdk_version:
-        raise FlashError('Could not find SDK version')
-
   # We don't have enough information on the device to make a good guess on
   # whether this device is compatible with the blueprint.
   # TODO(bsimonnet): Add proper compatibility checks. (brbug.com/969)
@@ -852,8 +823,7 @@ def Flash(device, image, project_sdk_image=False, sdk_version=None, board=None,
         yes=yes,
         force=force,
         ping=ping,
-        disable_verification=disable_rootfs_verification,
-        sdk_version=sdk_version)
+        disable_verification=disable_rootfs_verification)
     updater.Run()
   elif device.scheme == commandline.DEVICE_SCHEME_USB:
     path = osutils.ExpandPath(device.path) if device.path else ''
@@ -862,7 +832,6 @@ def Flash(device, image, project_sdk_image=False, sdk_version=None, board=None,
                        board,
                        image,
                        workspace_path=workspace_path,
-                       sdk_version=sdk_version,
                        debug=debug,
                        install=install,
                        yes=yes)
@@ -872,7 +841,6 @@ def Flash(device, image, project_sdk_image=False, sdk_version=None, board=None,
     imager = FileImager(device.path,
                         board,
                         image,
-                        sdk_version=sdk_version,
                         debug=debug,
                         yes=yes)
     imager.Run()

@@ -69,8 +69,6 @@ class CrosFlashTest(cros_test_lib.MockTempDirTestCase,
     self.assertEqual(image, flash_args[1])
     # `cros flash` default options. Must match the configuration in AddParser().
     expected_kwargs = {
-        'project_sdk_image': False,
-        'sdk_version': None,
         'board': None,
         'brick_name': None,
         'blueprint_name': None,
