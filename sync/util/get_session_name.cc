@@ -12,7 +12,9 @@
 #include "base/sys_info.h"
 #include "base/task_runner.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
+#include "chromeos/system/devicetype.h"
+#elif defined(OS_LINUX)
 #include "sync/util/get_session_name_linux.h"
 #elif defined(OS_IOS)
 #include "sync/util/get_session_name_ios.h"
@@ -31,12 +33,23 @@ namespace {
 std::string GetSessionNameSynchronously() {
   std::string session_name;
 #if defined(OS_CHROMEOS)
-  std::string board = base::SysInfo::GetLsbReleaseBoard();
-  // Currently, only "stumpy" type of board is considered Chromebox, and
-  // anything else is Chromebook.  On these devices, session_name should look
-  // like "stumpy-signed-mp-v2keys" etc. The information can be checked on
-  // "CHROMEOS_RELEASE_BOARD" line in chrome://system.
-  session_name = board.substr(0, 6) == "stumpy" ? "Chromebox" : "Chromebook";
+  switch (chromeos::GetDeviceType()) {
+    case chromeos::DeviceType::kChromebase:
+      session_name = "Chromebase";
+      break;
+    case chromeos::DeviceType::kChromebit:
+      session_name = "Chromebit";
+      break;
+    case chromeos::DeviceType::kChromebook:
+      session_name = "Chromebook";
+      break;
+    case chromeos::DeviceType::kChromebox:
+      session_name = "Chromebox";
+      break;
+    case chromeos::DeviceType::kUnknown:
+      session_name = "Chromebook";
+      break;
+  }
 #elif defined(OS_LINUX)
   session_name = internal::GetHostname();
 #elif defined(OS_IOS)
