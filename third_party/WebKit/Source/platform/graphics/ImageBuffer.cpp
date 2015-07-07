@@ -33,7 +33,6 @@
 #include "config.h"
 #include "platform/graphics/ImageBuffer.h"
 
-#include "GrContext.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/BitmapImage.h"
@@ -202,22 +201,14 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
     sharedContext->produceTextureDirectCHROMIUM(textureId, GL_TEXTURE_2D, mailbox->name);
     sharedContext->flush();
 
-    mailbox->syncPoint = sharedContext->insertSyncPoint();
-
-    context->waitSyncPoint(mailbox->syncPoint);
     Platform3DObject sourceTexture = context->createAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox->name);
 
     // The canvas is stored in a premultiplied format, so unpremultiply if necessary.
     // The canvas is stored in an inverted position, so the flip semantics are reversed.
     context->copyTextureCHROMIUM(GL_TEXTURE_2D, sourceTexture, texture, internalFormat, destType, flipY ? GL_FALSE : GL_TRUE, GL_FALSE, premultiplyAlpha ? GL_FALSE : GL_TRUE);
+    context->flush();
 
     context->deleteTexture(sourceTexture);
-
-    context->flush();
-    sharedContext->waitSyncPoint(context->insertSyncPoint());
-
-    // Undo grContext texture binding changes introduced in this function
-    provider->grContext()->resetContext(kTextureBinding_GrGLBackendState);
 
     return true;
 }
