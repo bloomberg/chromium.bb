@@ -413,8 +413,6 @@ Browser::Browser(const CreateParams& params)
       base::Bind(&Browser::UpdateBookmarkBarState, base::Unretained(this),
                  BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE));
 
-  BrowserList::AddBrowser(this);
-
   // NOTE: These prefs all need to be explicitly destroyed in the destructor
   // or you'll get a nasty surprise when you run the incognito tests.
   encoding_auto_detect_.Init(prefs::kWebKitUsesUniversalDetector,
@@ -446,13 +444,6 @@ Browser::Browser(const CreateParams& params)
   if (session_service)
     session_service->WindowOpened(this);
 
-  // TODO(beng): Move BrowserList::AddBrowser() to the end of this function and
-  //             replace uses of this with BL's notifications.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-      content::Source<Browser>(this),
-      content::NotificationService::NoDetails());
-
   // TODO(beng): move to ChromeBrowserMain:
   if (first_run::ShouldDoPersonalDataManagerFirstRun()) {
 #if defined(OS_WIN)
@@ -470,6 +461,13 @@ Browser::Browser(const CreateParams& params)
   // without a modal dialog host, so that value may be null.
   popup_manager_.reset(new web_modal::PopupManager(
       GetWebContentsModalDialogHost()));
+
+  // TODO(beng): Move BrowserList::AddBrowser() to the end of this function and
+  //             replace uses of this with BL's notifications.
+  BrowserList::AddBrowser(this);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_BROWSER_WINDOW_READY, content::Source<Browser>(this),
+      content::NotificationService::NoDetails());
 }
 
 Browser::~Browser() {
