@@ -613,6 +613,9 @@ _waterfall_config_map = {
     ]),
 
     constants.WATERFALL_INTERNAL: frozenset([
+        # Experimental Paladins
+        'lakitu-paladin',
+
         # Experimental Canaries (Group)
         'glados-release-group',
         'pineview-freon-release-group',
