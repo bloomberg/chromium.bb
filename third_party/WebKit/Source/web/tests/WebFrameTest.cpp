@@ -4491,7 +4491,6 @@ public:
     virtual void setPageScaleFactorAndLimits(float pageScaleFactor, float minimum, float maximum)  override { }
     virtual void startPageScaleAnimation(const WebPoint& destination, bool useAnchor, float newPageScale, double durationSec)  override { }
     virtual void setNeedsAnimate()  override { }
-    virtual bool commitRequested() const  override { return false; }
     virtual void finishAllRendering()  override { }
     virtual void registerSelection(const WebSelection& selection) override
     {

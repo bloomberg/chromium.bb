@@ -111,9 +111,6 @@ public:
     // Indicates that blink needs a BeginFrame and to update compositor state.
     virtual void setNeedsCompositorUpdate() { }
 
-    // Indicates whether a commit is pending.
-    virtual bool commitRequested() const { return false; }
-
     // Relays the end of a fling animation.
     virtual void didStopFlinging() { }
 
