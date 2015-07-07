@@ -146,10 +146,15 @@ views::View* MediaIndicatorButton::GetTooltipHandlerForPoint(
 }
 
 bool MediaIndicatorButton::OnMousePressed(const ui::MouseEvent& event) {
-  const bool handled = ImageButton::OnMousePressed(event);
-  // Explicitly mark midle-mouse clicks as non-handled to ensure the tab sees
-  // them.
-  return !event.IsMiddleMouseButton() && handled;
+  // Do not handle this mouse event when anything but the left mouse button is
+  // pressed or when any modifier keys are being held down.  Instead, the Tab
+  // should react (e.g., middle-click for close, right-click for context menu).
+  if (event.flags() != ui::EF_LEFT_MOUSE_BUTTON) {
+    if (state_ != views::CustomButton::STATE_DISABLED)
+      SetState(views::CustomButton::STATE_NORMAL);  // Turn off hover.
+    return false;  // Event to be handled by Tab.
+  }
+  return ImageButton::OnMousePressed(event);
 }
 
 bool MediaIndicatorButton::OnMouseDragged(const ui::MouseEvent& event) {
@@ -159,6 +164,26 @@ bool MediaIndicatorButton::OnMouseDragged(const ui::MouseEvent& event) {
       state() == views::CustomButton::STATE_NORMAL)
     content::RecordAction(UserMetricsAction("MediaIndicatorButton_Dragged"));
   return ret;
+}
+
+void MediaIndicatorButton::OnMouseEntered(const ui::MouseEvent& event) {
+  // If any modifier keys are being held down, do not turn on hover.
+  if (state_ != views::CustomButton::STATE_DISABLED &&
+      event.flags() != ui::EF_NONE) {
+    SetState(views::CustomButton::STATE_NORMAL);
+    return;
+  }
+  ImageButton::OnMouseEntered(event);
+}
+
+void MediaIndicatorButton::OnMouseMoved(const ui::MouseEvent& event) {
+  // If any modifier keys are being held down, turn off hover.
+  if (state_ != views::CustomButton::STATE_DISABLED &&
+      event.flags() != ui::EF_NONE) {
+    SetState(views::CustomButton::STATE_NORMAL);
+    return;
+  }
+  ImageButton::OnMouseMoved(event);
 }
 
 void MediaIndicatorButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
@@ -197,6 +222,11 @@ void MediaIndicatorButton::NotifyClick(const ui::Event& event) {
 }
 
 bool MediaIndicatorButton::IsTriggerableEvent(const ui::Event& event) {
+  // For mouse events, only trigger on the left mouse button and when no
+  // modifier keys are being held down.
+  if (event.IsMouseEvent() && event.flags() != ui::EF_LEFT_MOUSE_BUTTON)
+    return false;
+
   // For gesture events on an inactive tab, require an even wider tab before
   // click-to-mute can be triggered.  See comments in
   // UpdateEnabledForMuteToggle().

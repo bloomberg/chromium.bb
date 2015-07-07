@@ -138,6 +138,41 @@ class FadeAnimationDelegate : public gfx::AnimationDelegate {
   clickAction_ = action;
 }
 
+- (void)mouseDown:(NSEvent*)theEvent {
+  // Do not handle this left-button mouse event if any modifier keys are being
+  // held down.  Instead, the Tab should react (e.g., selection or drag start).
+  if ([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask) {
+    [self setHoverState:kHoverStateNone];  // Turn off hover.
+    [[self nextResponder] mouseDown:theEvent];
+    return;
+  }
+  [super mouseDown:theEvent];
+}
+
+- (void)mouseEntered:(NSEvent*)theEvent {
+  // If any modifier keys are being held down, do not turn on hover.
+  if ([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask) {
+    [self setHoverState:kHoverStateNone];
+    return;
+  }
+  [super mouseEntered:theEvent];
+}
+
+- (void)mouseMoved:(NSEvent*)theEvent {
+  // If any modifier keys are being held down, turn off hover.
+  if ([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask) {
+    [self setHoverState:kHoverStateNone];
+    return;
+  }
+  [super mouseMoved:theEvent];
+}
+
+- (void)rightMouseDown:(NSEvent*)theEvent {
+  // All right-button mouse events should be handled by the Tab.
+  [self setHoverState:kHoverStateNone];  // Turn off hover.
+  [[self nextResponder] rightMouseDown:theEvent];
+}
+
 - (void)drawRect:(NSRect)dirtyRect {
   NSImage* image = ([self hoverState] == kHoverStateNone || ![self isEnabled]) ?
       [self image] : affordanceImage_.get();
