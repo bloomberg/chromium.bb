@@ -1828,10 +1828,17 @@ PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(const ScriptState* 
     UseCounter::count(document(), UseCounter::ElementCreateShadowRootWithParameter);
 
     OriginsUsingFeatures::count(scriptState, document(), OriginsUsingFeatures::Feature::ElementCreateShadowRoot);
-    // TODO(kochi): Add support for closed shadow root. crbug.com/459136
-    if (shadowRootInitDict.hasMode() && shadowRootInitDict.mode() == "closed") {
-        exceptionState.throwDOMException(NotSupportedError, "Closed shadow root is not implemented yet.");
-        return nullptr;
+
+    if (shadowRootInitDict.hasMode()) {
+        if (shadowRoot()) {
+            exceptionState.throwDOMException(InvalidStateError, "Shadow root cannot be created on a host which already hosts a shadow tree.");
+            return nullptr;
+        }
+        // TODO(kochi): Add support for closed shadow root. crbug.com/459136
+        if (shadowRootInitDict.mode() == "closed") {
+            exceptionState.throwDOMException(NotSupportedError, "Closed shadow root is not implemented yet.");
+            return nullptr;
+        }
     }
 
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = createShadowRoot(exceptionState);

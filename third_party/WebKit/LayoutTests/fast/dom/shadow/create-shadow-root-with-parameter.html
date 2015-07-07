@@ -37,5 +37,8 @@ document.body.appendChild(
 var host5 = document.querySelector('#host5');
 var root5 = host5.shadowRoot;
 shouldBeNonNull(root5);
+
+debug('Create shadow root on already shadowed host will raise InvalidStateError exception.');
+shouldThrow("host1.createShadowRoot({mode: 'open'})");
 </script>
 </html>
