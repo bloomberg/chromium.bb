@@ -32,8 +32,8 @@
 #include "core/html/track/vtt/BufferedLineReader.h"
 
 #include "wtf/text/CString.h"
+#include "wtf/text/CharacterNames.h"
 #include "wtf/text/WTFString.h"
-#include "wtf/unicode/CharacterNames.h"
 #include <gtest/gtest.h>
 
 namespace blink {

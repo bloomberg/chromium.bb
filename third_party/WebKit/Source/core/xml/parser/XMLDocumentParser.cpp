@@ -71,7 +71,7 @@
 #include "wtf/TemporaryChange.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
-#include "wtf/unicode/UTF8.h"
+#include "wtf/text/UTF8.h"
 #include <libxml/catalog.h>
 #include <libxml/parser.h>
 #include <libxml/parserInternals.h>

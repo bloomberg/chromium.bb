@@ -30,7 +30,7 @@
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/UTF16TextIterator.h"
 #include "wtf/MathExtras.h"
-#include "wtf/unicode/CharacterNames.h"
+#include "wtf/text/CharacterNames.h"
 
 using namespace WTF;
 using namespace Unicode;

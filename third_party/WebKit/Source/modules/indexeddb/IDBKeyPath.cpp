@@ -28,8 +28,8 @@
 
 #include "wtf/ASCIICType.h"
 #include "wtf/dtoa.h"
-#include "wtf/unicode/CharacterNames.h"
-#include "wtf/unicode/Unicode.h"
+#include "wtf/text/CharacterNames.h"
+#include "wtf/text/Unicode.h"
 
 using namespace WTF::Unicode;
 

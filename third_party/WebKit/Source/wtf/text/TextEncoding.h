@@ -29,7 +29,7 @@
 #include "wtf/Forward.h"
 #include "wtf/WTFExport.h"
 #include "wtf/text/TextCodec.h"
-#include "wtf/unicode/Unicode.h"
+#include "wtf/text/Unicode.h"
 
 namespace WTF {
 

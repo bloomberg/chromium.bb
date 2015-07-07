@@ -36,8 +36,8 @@
 #include "platform/geometry/LayoutPoint.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/CString.h"
+#include "wtf/text/CharacterNames.h"
 #include "wtf/text/StringBuilder.h"
-#include "wtf/unicode/CharacterNames.h"
 
 namespace blink {
 

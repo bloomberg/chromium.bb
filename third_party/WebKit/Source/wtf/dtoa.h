@@ -22,9 +22,9 @@
 #define WTF_dtoa_h
 
 #include "wtf/ASCIICType.h"
-#include "wtf/dtoa/double-conversion.h"
-#include "wtf/unicode/Unicode.h"
 #include "wtf/WTFExport.h"
+#include "wtf/dtoa/double-conversion.h"
+#include "wtf/text/Unicode.h"
 
 namespace WTF {
 

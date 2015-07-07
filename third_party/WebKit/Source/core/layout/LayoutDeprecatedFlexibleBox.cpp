@@ -32,7 +32,7 @@
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/fonts/Font.h"
 #include "wtf/StdLibExtras.h"
-#include "wtf/unicode/CharacterNames.h"
+#include "wtf/text/CharacterNames.h"
 
 namespace blink {
 

@@ -18,7 +18,7 @@
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/text/TextRun.h"
 #include "wtf/Assertions.h"
-#include "wtf/unicode/CharacterNames.h"
+#include "wtf/text/CharacterNames.h"
 
 namespace blink {
 

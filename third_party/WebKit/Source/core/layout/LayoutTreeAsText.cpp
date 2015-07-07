@@ -59,7 +59,7 @@
 #include "platform/LayoutUnit.h"
 #include "wtf/HexNumber.h"
 #include "wtf/Vector.h"
-#include "wtf/unicode/CharacterNames.h"
+#include "wtf/text/CharacterNames.h"
 
 namespace blink {
 

@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "wtf/unicode/Collator.h"
+#include "wtf/text/Collator.h"
 
 #include "wtf/Assertions.h"
 #include "wtf/StringExtras.h"

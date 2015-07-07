@@ -47,7 +47,7 @@
 #include "platform/NotImplemented.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/MainThread.h"
-#include "wtf/unicode/CharacterNames.h"
+#include "wtf/text/CharacterNames.h"
 
 namespace blink {
 

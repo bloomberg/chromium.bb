@@ -23,14 +23,14 @@
 #ifndef StringImpl_h
 #define StringImpl_h
 
-#include <limits.h>
 #include "wtf/ASCIICType.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/StringHasher.h"
 #include "wtf/Vector.h"
 #include "wtf/WTFExport.h"
-#include "wtf/unicode/Unicode.h"
+#include "wtf/text/Unicode.h"
+#include <limits.h>
 
 #if USE(CF)
 typedef const struct __CFString * CFStringRef;

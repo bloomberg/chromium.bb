@@ -13,7 +13,7 @@ namespace blink {
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSTokenizerInputStream.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "wtf/unicode/CharacterNames.h"
+#include "wtf/text/CharacterNames.h"
 
 namespace blink {
 

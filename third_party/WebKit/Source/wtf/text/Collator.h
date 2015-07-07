@@ -33,7 +33,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/WTFExport.h"
-#include "wtf/unicode/Unicode.h"
+#include "wtf/text/Unicode.h"
 
 struct UCollator;
 

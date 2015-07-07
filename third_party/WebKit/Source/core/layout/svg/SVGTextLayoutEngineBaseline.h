@@ -22,7 +22,7 @@
 
 #include "core/style/SVGComputedStyleDefs.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/unicode/Unicode.h"
+#include "wtf/text/Unicode.h"
 
 namespace blink {
 

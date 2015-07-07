@@ -46,7 +46,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuffer.h"
-#include "wtf/unicode/UTF8.h"
+#include "wtf/text/UTF8.h"
 #include <libxslt/imports.h>
 #include <libxslt/security.h>
 #include <libxslt/variables.h>

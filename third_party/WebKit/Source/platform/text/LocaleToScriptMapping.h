@@ -33,7 +33,7 @@
 
 #include "platform/PlatformExport.h"
 #include "wtf/Forward.h"
-#include "wtf/unicode/Unicode.h"
+#include "wtf/text/Unicode.h"
 
 #include <unicode/uscript.h>
 

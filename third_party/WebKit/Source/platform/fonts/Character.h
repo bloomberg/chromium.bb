@@ -36,8 +36,8 @@
 #include "platform/text/TextPath.h"
 #include "platform/text/TextRun.h"
 #include "wtf/HashSet.h"
+#include "wtf/text/CharacterNames.h"
 #include "wtf/text/WTFString.h"
-#include "wtf/unicode/CharacterNames.h"
 
 namespace blink {
 

@@ -27,8 +27,8 @@
 #include "config.h"
 #include "platform/SharedBuffer.h"
 
-#include "wtf/unicode/Unicode.h"
-#include "wtf/unicode/UTF8.h"
+#include "wtf/text/UTF8.h"
+#include "wtf/text/Unicode.h"
 
 #undef SHARED_BUFFER_STATS
 

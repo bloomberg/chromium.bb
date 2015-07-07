@@ -32,7 +32,7 @@
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextRun.h"
 #include "wtf/text/StringBuilder.h"
-#include "wtf/unicode/Unicode.h"
+#include "wtf/text/Unicode.h"
 
 namespace blink {
 

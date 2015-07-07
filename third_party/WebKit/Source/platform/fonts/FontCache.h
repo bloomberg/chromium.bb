@@ -30,7 +30,6 @@
 #ifndef FontCache_h
 #define FontCache_h
 
-#include <limits.h>
 #include "platform/PlatformExport.h"
 #include "platform/fonts/FontFaceCreationParams.h"
 #include "wtf/Forward.h"
@@ -38,8 +37,9 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/CString.h"
+#include "wtf/text/Unicode.h"
 #include "wtf/text/WTFString.h"
-#include "wtf/unicode/Unicode.h"
+#include <limits.h>
 
 #if OS(WIN)
 #include "SkFontMgr.h"

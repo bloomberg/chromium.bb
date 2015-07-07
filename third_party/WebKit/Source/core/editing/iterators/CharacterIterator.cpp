@@ -33,7 +33,7 @@
 #include "platform/text/TextBoundaries.h"
 #include "platform/text/TextBreakIteratorInternalICU.h"
 #include "platform/text/UnicodeUtilities.h"
-#include "wtf/unicode/CharacterNames.h"
+#include "wtf/text/CharacterNames.h"
 #include <unicode/usearch.h>
 
 namespace blink {

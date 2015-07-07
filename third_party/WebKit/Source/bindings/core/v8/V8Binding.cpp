@@ -65,11 +65,11 @@
 #include "wtf/Threading.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/CString.h"
+#include "wtf/text/CharacterNames.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/StringHash.h"
+#include "wtf/text/Unicode.h"
 #include "wtf/text/WTFString.h"
-#include "wtf/unicode/CharacterNames.h"
-#include "wtf/unicode/Unicode.h"
 
 namespace blink {
 

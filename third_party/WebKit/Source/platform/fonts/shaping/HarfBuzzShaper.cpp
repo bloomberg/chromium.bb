@@ -43,7 +43,7 @@
 #include "platform/text/TextBreakIterator.h"
 #include "wtf/Compiler.h"
 #include "wtf/MathExtras.h"
-#include "wtf/unicode/Unicode.h"
+#include "wtf/text/Unicode.h"
 
 #include <list>
 #include <map>

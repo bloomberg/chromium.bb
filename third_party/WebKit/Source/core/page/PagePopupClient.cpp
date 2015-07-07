@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/page/PagePopupClient.h"
 
+#include "wtf/text/CharacterNames.h"
 #include "wtf/text/StringBuilder.h"
-#include "wtf/unicode/CharacterNames.h"
 
 namespace blink {
 

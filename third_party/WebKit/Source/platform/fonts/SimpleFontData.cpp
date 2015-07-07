@@ -40,8 +40,8 @@
 #include "platform/fonts/VDMXParser.h"
 #include "platform/geometry/FloatRect.h"
 #include "wtf/MathExtras.h"
-#include "wtf/unicode/CharacterNames.h"
-#include "wtf/unicode/Unicode.h"
+#include "wtf/text/CharacterNames.h"
+#include "wtf/text/Unicode.h"
 #include <unicode/normlzr.h>
 
 namespace blink {

@@ -27,7 +27,7 @@
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/TextRunConstructor.h"
 #include "platform/scroll/ScrollbarTheme.h"
-#include "wtf/unicode/CharacterNames.h"
+#include "wtf/text/CharacterNames.h"
 
 namespace blink {
 

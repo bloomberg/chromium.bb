@@ -27,15 +27,15 @@
 #include "config.h"
 #include "wtf/text/TextCodecICU.h"
 
-#include <unicode/ucnv.h>
-#include <unicode/ucnv_cb.h>
 #include "wtf/Assertions.h"
 #include "wtf/StringExtras.h"
 #include "wtf/Threading.h"
 #include "wtf/WTFThreadData.h"
 #include "wtf/text/CString.h"
+#include "wtf/text/CharacterNames.h"
 #include "wtf/text/StringBuilder.h"
-#include "wtf/unicode/CharacterNames.h"
+#include <unicode/ucnv.h>
+#include <unicode/ucnv_cb.h>
 
 using std::min;
 

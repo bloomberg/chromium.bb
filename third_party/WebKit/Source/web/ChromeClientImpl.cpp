@@ -100,9 +100,9 @@
 #include "web/WebSettingsImpl.h"
 #include "web/WebViewImpl.h"
 #include "wtf/text/CString.h"
+#include "wtf/text/CharacterNames.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringConcatenate.h"
-#include "wtf/unicode/CharacterNames.h"
 
 namespace blink {
 

@@ -29,13 +29,13 @@
 #include "config.h"
 #include "platform/fonts/GlyphPageTreeNode.h"
 
-#include <stdio.h>
 #include "platform/fonts/SegmentedFontData.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/opentype/OpenTypeVerticalData.h"
 #include "wtf/text/CString.h"
+#include "wtf/text/CharacterNames.h"
 #include "wtf/text/WTFString.h"
-#include "wtf/unicode/CharacterNames.h"
+#include <stdio.h>
 
 namespace blink {
 

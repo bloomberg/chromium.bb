@@ -7,7 +7,7 @@
 
 #include "platform/Crypto.h"
 #include "platform/PlatformExport.h"
-#include "wtf/unicode/Unicode.h"
+#include "wtf/text/Unicode.h"
 
 namespace WTF {
 

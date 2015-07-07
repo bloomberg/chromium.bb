@@ -30,12 +30,12 @@
 #define GlyphPageTreeNode_h
 
 #include "platform/fonts/GlyphPage.h"
-#include <string.h>
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
-#include "wtf/unicode/Unicode.h"
+#include "wtf/text/Unicode.h"
+#include <string.h>
 
 #include <unicode/uscript.h>
 

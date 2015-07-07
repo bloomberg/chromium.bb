@@ -29,7 +29,7 @@
 #include "platform/animation/AnimationUtilities.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
-#include "wtf/unicode/Unicode.h"
+#include "wtf/text/Unicode.h"
 
 namespace blink {
 

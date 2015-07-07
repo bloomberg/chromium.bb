@@ -30,8 +30,8 @@
 #include "core/editing/htmlediting.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
+#include "wtf/text/CharacterNames.h"
 #include "wtf/text/StringBuilder.h"
-#include "wtf/unicode/CharacterNames.h"
 
 namespace blink {
 

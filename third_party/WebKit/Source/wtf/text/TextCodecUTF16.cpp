@@ -28,9 +28,9 @@
 
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/CString.h"
+#include "wtf/text/CharacterNames.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/WTFString.h"
-#include "wtf/unicode/CharacterNames.h"
 
 using namespace std;
 

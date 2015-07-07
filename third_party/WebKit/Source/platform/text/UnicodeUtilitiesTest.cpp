@@ -32,8 +32,8 @@
 #include "platform/text/UnicodeUtilities.h"
 
 #include "wtf/Vector.h"
+#include "wtf/text/CharacterNames.h"
 #include "wtf/text/WTFString.h"
-#include "wtf/unicode/CharacterNames.h"
 #include <gtest/gtest.h>
 #include <unicode/uchar.h>
 

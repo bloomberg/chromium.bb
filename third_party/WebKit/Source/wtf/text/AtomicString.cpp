@@ -28,7 +28,7 @@
 #include "wtf/WTFThreadData.h"
 #include "wtf/dtoa.h"
 #include "wtf/text/IntegerToStringConversion.h"
-#include "wtf/unicode/UTF8.h"
+#include "wtf/text/UTF8.h"
 
 namespace WTF {
 

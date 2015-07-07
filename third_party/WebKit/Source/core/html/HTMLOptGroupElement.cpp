@@ -34,7 +34,7 @@
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "wtf/StdLibExtras.h"
-#include "wtf/unicode/CharacterNames.h"
+#include "wtf/text/CharacterNames.h"
 
 namespace blink {
 

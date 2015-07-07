@@ -32,7 +32,7 @@
 #include "core/editing/PositionWithAffinity.h"
 #include "platform/text/TextDirection.h"
 #include "wtf/Forward.h"
-#include "wtf/unicode/CharacterNames.h"
+#include "wtf/text/CharacterNames.h"
 
 namespace blink {
 

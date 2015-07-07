@@ -25,7 +25,7 @@
 #include "wtf/Alignment.h"
 #include "wtf/CPU.h"
 #include "wtf/StdLibExtras.h"
-#include "wtf/unicode/Unicode.h"
+#include "wtf/text/Unicode.h"
 #include <stdint.h>
 
 #if OS(MACOSX) && (CPU(X86) || CPU(X86_64))

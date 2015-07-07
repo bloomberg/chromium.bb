@@ -6,8 +6,8 @@
 #include "wtf/text/TextCodecReplacement.h"
 
 #include "wtf/PassOwnPtr.h"
+#include "wtf/text/CharacterNames.h"
 #include "wtf/text/WTFString.h"
-#include "wtf/unicode/CharacterNames.h"
 
 namespace WTF {
 

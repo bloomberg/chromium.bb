@@ -41,7 +41,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLTemplateElement.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/unicode/CharacterNames.h"
+#include "wtf/text/CharacterNames.h"
 
 namespace blink {
 

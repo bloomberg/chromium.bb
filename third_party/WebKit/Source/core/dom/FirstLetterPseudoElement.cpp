@@ -32,7 +32,7 @@
 #include "core/layout/LayoutTextFragment.h"
 #include "wtf/TemporaryChange.h"
 #include "wtf/text/WTFString.h"
-#include "wtf/unicode/icu/UnicodeIcu.h"
+#include "wtf/text/icu/UnicodeIcu.h"
 
 namespace blink {
 

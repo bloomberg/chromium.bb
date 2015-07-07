@@ -33,7 +33,7 @@
 #include "core/paint/PaintInfo.h"
 #include "core/paint/RootInlineBoxPainter.h"
 #include "platform/text/BidiResolver.h"
-#include "wtf/unicode/Unicode.h"
+#include "wtf/text/Unicode.h"
 
 namespace blink {
 

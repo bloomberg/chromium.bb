@@ -46,8 +46,8 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
-#include "wtf/unicode/CharacterNames.h"
-#include "wtf/unicode/Unicode.h"
+#include "wtf/text/CharacterNames.h"
+#include "wtf/text/Unicode.h"
 
 using namespace WTF;
 using namespace Unicode;

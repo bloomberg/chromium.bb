@@ -34,9 +34,9 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/AtomicString.h"
+#include "wtf/text/CharacterNames.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/StringHash.h"
-#include "wtf/unicode/CharacterNames.h"
 #include <unicode/translit.h>
 #include <unicode/unistr.h>
 

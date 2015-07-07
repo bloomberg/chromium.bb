@@ -30,8 +30,8 @@
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/text/Unicode.h"
 #include "wtf/text/WTFString.h"
-#include "wtf/unicode/Unicode.h"
 
 namespace WTF {
 

@@ -22,8 +22,8 @@
 #define UTF16TextIterator_h
 
 #include "platform/PlatformExport.h"
+#include "wtf/text/CharacterNames.h"
 #include "wtf/text/WTFString.h"
-#include "wtf/unicode/CharacterNames.h"
 
 namespace blink {
 

@@ -24,7 +24,7 @@
 
 #include "platform/PlatformExport.h"
 #include "wtf/text/AtomicString.h"
-#include "wtf/unicode/Unicode.h"
+#include "wtf/text/Unicode.h"
 
 #include <unicode/brkiter.h>
 

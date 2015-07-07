@@ -45,7 +45,7 @@
 #include "core/layout/line/InlineTextBox.h"
 #include "platform/Logging.h"
 #include "wtf/text/CString.h"
-#include "wtf/unicode/CharacterNames.h"
+#include "wtf/text/CharacterNames.h"
 #include <stdio.h>
 
 namespace blink {

@@ -5,7 +5,7 @@
 #ifndef Encoding_h
 #define Encoding_h
 
-#include "wtf/unicode/Unicode.h"
+#include "wtf/text/Unicode.h"
 
 namespace blink {
 

@@ -35,7 +35,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/MathExtras.h"
-#include "wtf/unicode/CharacterNames.h"
+#include "wtf/text/CharacterNames.h"
 
 // "X11/X.h" defines Complex to 0 and conflicts
 // with Complex value in CodePath enum.

@@ -33,11 +33,11 @@
 #include "platform/PlatformExport.h"
 #include "platform/fonts/CustomFontData.h"
 #include "platform/fonts/Glyph.h"
-#include <string.h>
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
-#include "wtf/unicode/Unicode.h"
+#include "wtf/text/Unicode.h"
+#include <string.h>
 
 namespace blink {
 
