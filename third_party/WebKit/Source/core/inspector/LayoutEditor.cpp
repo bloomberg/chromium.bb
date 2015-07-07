@@ -172,8 +172,10 @@ void LayoutEditor::overlayStartedPropertyChange(const String& anchorName)
 
 void LayoutEditor::overlayPropertyChanged(float cssDelta)
 {
-    if (m_changingProperty)
-        m_cssAgent->setCSSPropertyValue(m_node.get(), m_changingProperty, cssDelta + m_propertyInitialValue);
+    if (m_changingProperty && m_node->isElementNode()) {
+        String errorString;
+        m_cssAgent->setCSSPropertyValue(&errorString, toElement(m_node.get()), m_changingProperty, String::number(cssDelta + m_propertyInitialValue) + "px");
+    }
 }
 
 void LayoutEditor::overlayEndedPropertyChange()

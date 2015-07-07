@@ -46,6 +46,7 @@
 #include "core/css/StyleSheet.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/StyleSheetList.h"
+#include "core/css/parser/CSSParser.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Node.h"
 #include "core/dom/StyleEngine.h"
@@ -73,6 +74,26 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringConcatenate.h"
+
+namespace {
+
+using namespace blink;
+
+String createShorthandValue(Document* document, const String& shorthand, const String& oldText, const String& longhand, const String& newValue)
+{
+    RefPtrWillBeRawPtr<StyleSheetContents> styleSheetContents = StyleSheetContents::create(strictCSSParserContext());
+    String text = " div { " + shorthand  + ": " + oldText + "; }";
+    CSSParser::parseSheet(CSSParserContext(*document, 0), styleSheetContents.get(), text);
+
+    RefPtr<CSSStyleSheet> styleSheet = CSSStyleSheet::create(styleSheetContents);
+    CSSStyleRule* rule = toCSSStyleRule(styleSheet->item(0));
+    CSSStyleDeclaration* style = rule->style();
+    TrackExceptionState exceptionState;
+    style->setProperty(longhand, newValue, style->getPropertyPriority(longhand), exceptionState);
+    return style->getPropertyValue(shorthand);
+}
+
+} // namespace
 
 namespace CSSAgentState {
 static const char cssAgentEnabled[] = "cssAgentEnabled";
@@ -1510,14 +1531,124 @@ void InspectorCSSAgent::resetPseudoStates()
         document->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Inspector));
 }
 
-void InspectorCSSAgent::setCSSPropertyValue(Node* node, CSSPropertyID propertyId, float newValue)
+void InspectorCSSAgent::setCSSPropertyValue(ErrorString* errorString, Element* element, CSSPropertyID propertyId, const String& value)
 {
-    Element* element = toElement(node);
-    if (element) {
-        TrackExceptionState exceptionState;
-        String newText = getPropertyNameString(propertyId) +  " : " + String::number(newValue) + "px";
-        element->style()->setCSSText(newText, exceptionState);
+    PseudoId elementPseudoId = element->pseudoId();
+    if (elementPseudoId) {
+        element = element->parentOrShadowHostElement();
+        if (!element) {
+            *errorString = "Pseudo element has no parent";
+            return;
+        }
     }
+
+    Document* ownerDocument = element->ownerDocument();
+    // A non-active document has no styles.
+    if (!ownerDocument->isActive()) {
+        *errorString = "Can't edit a node from a non-active document";
+        return;
+    }
+
+    // Matched rules.
+    StyleResolver& styleResolver = ownerDocument->ensureStyleResolver();
+    element->updateDistribution();
+    RefPtrWillBeRawPtr<CSSRuleList> ruleList = styleResolver.pseudoCSSRulesForElement(element, elementPseudoId, StyleResolver::AllCSSRules);
+
+    if (!ruleList)
+        return;
+
+    Vector<StylePropertyShorthand, 4> shorthands;
+    getMatchingShorthandsForLonghand(propertyId, &shorthands);
+
+    String shorthand =  shorthands.size() > 0 ? getPropertyNameString(shorthands[0].id()) : String();
+    String longhand = getPropertyNameString(propertyId);
+
+    CSSStyleRule* foundRule = nullptr;
+    for (unsigned i = 0, size = ruleList->length(); i < size; ++i) {
+        if (ruleList->item(size - i - 1)->type() != CSSRule::STYLE_RULE)
+            continue;
+
+        CSSStyleRule* rule = toCSSStyleRule(ruleList->item(size - i - 1));
+        if (!rule)
+            continue;
+
+        CSSStyleDeclaration* style = rule->style();
+        if (!style)
+            continue;
+
+        if (style->getPropertyValue(longhand).isEmpty())
+            continue;
+
+        bool isImportant = style->getPropertyPriority(longhand) == "important";
+        if (isImportant || !foundRule)
+            foundRule = rule;
+
+        if (isImportant)
+            break;
+    }
+
+    if (!foundRule || !foundRule->parentStyleSheet())
+        return;
+
+    InspectorStyleSheet* inspectorStyleSheet =  bindStyleSheet(foundRule->parentStyleSheet());
+    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = inspectorStyleSheet->sourceDataForRule(foundRule);
+    if (!sourceData)
+        return;
+
+    int foundIndex = -1;
+    WillBeHeapVector<CSSPropertySourceData> properties = sourceData->styleSourceData->propertyData;
+    for (unsigned i = 0; i < properties.size(); ++i) {
+        CSSPropertySourceData property = properties[properties.size() - i - 1];
+        String name = property.name;
+        if (property.disabled)
+            continue;
+
+        if (name != shorthand && name != longhand)
+            continue;
+
+        if (property.important || foundIndex == -1)
+            foundIndex = properties.size() - i - 1;
+
+        if (property.important)
+            break;
+    }
+
+    if (foundIndex == -1)
+        return;
+
+    CSSPropertySourceData declaration = properties[foundIndex];
+    String newValueText;
+    if (declaration.name == shorthand)
+        newValueText = createShorthandValue(ownerDocument, shorthand, declaration.value, longhand, value);
+    else
+        newValueText = value;
+
+    String newPropertyText = declaration.name + ": " + newValueText + (declaration.important ? " !important" : "") + ";";
+    String styleSheetText;
+    inspectorStyleSheet->getText(&styleSheetText);
+
+    SourceRange bodyRange = sourceData->ruleBodyRange;
+    String styleText = styleSheetText.substring(bodyRange.start, bodyRange.length());
+    styleText.replace(declaration.range.start - bodyRange.start, declaration.range.length(), newPropertyText);
+
+    RefPtrWillBeRawPtr<ModifyRuleAction> action = adoptRefWillBeNoop(new ModifyRuleAction(ModifyRuleAction::SetStyleText, inspectorStyleSheet, bodyRange, styleText));
+    TrackExceptionState exceptionState;
+    m_domAgent->history()->perform(action, exceptionState);
+    *errorString = InspectorDOMAgent::toErrorString(exceptionState);
+}
+
+void InspectorCSSAgent::setEffectivePropertyValueForNode(ErrorString* errorString, int nodeId, const String& propertyName, const String& value)
+{
+    Element* element = elementForId(errorString, nodeId);
+    if (!element)
+        return;
+
+    CSSPropertyID property = cssPropertyID(propertyName);
+    if (!property) {
+        *errorString = "Invalid property name";
+        return;
+    }
+    setCSSPropertyValue(errorString, element, cssPropertyID(propertyName), value);
 }
 
 DEFINE_TRACE(InspectorCSSAgent)

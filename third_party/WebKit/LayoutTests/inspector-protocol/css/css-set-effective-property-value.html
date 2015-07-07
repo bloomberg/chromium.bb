@@ -1,0 +1,69 @@
+<html>
+<head>
+<link rel="stylesheet" href="resources/set-active-property-value.css"/>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/css-protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/dom-protocol-test.js"></script>
+<script type="text/javascript">
+
+function test()
+{
+    InspectorTest.sendCommandOrDie("DOM.enable", {});
+    InspectorTest.sendCommandOrDie("CSS.enable", {}, onCSSEnabled);
+
+    var documentNodeId;
+
+    function onCSSEnabled()
+    {
+        InspectorTest.requestDocumentNodeId(onDocumentNodeId);
+    }
+
+    function onDocumentNodeId(nodeId)
+    {
+        documentNodeId = nodeId;
+        InspectorTest.requestNodeId(documentNodeId, "#inspected", onInspectedNodeId);
+    }
+
+    var updateProperty;
+
+    function onInspectedNodeId(nodeId)
+    {
+        updateProperty = updateActiveProperty.bind(null, nodeId);
+        InspectorTest.loadAndDumpMatchingRules(documentNodeId, "#inspected", InspectorTest.runTestSuite.bind(InspectorTest, testSuite));
+    }
+
+    function updateActiveProperty(nodeId, property, value, onSuccess)
+    {
+        InspectorTest.sendCommandOrDie("CSS.setEffectivePropertyValueForNode", {"nodeId" : nodeId, "propertyName" : property, "value" : value}, onSuccess);
+    }
+
+    function dumpUndoAndNext(next)
+    {
+        return InspectorTest.loadAndDumpMatchingRules.bind(InspectorTest, documentNodeId, "#inspected", InspectorTest.undoAndNext(next));
+    }
+
+    var testSuite = [
+        function testBasicPropertyChange(next)
+        {
+            updateProperty("padding-left", "101px", dumpUndoAndNext(next));
+        },
+
+        function testChangePropertyInShortHand(next)
+        {
+            updateProperty("padding-bottom", "101px", dumpUndoAndNext(next));
+        },
+
+        function testChangeImportantProperty(next)
+        {
+            updateProperty("margin-left", "101px", dumpUndoAndNext(next));
+        },
+    ]
+}
+
+</script>
+</head>
+<body onload="runTest();">
+<p>The test verifies functionality of protocol method CSS.setStyleText.</p>
+<div id="inspected"></div>
+</body>
+</html>
