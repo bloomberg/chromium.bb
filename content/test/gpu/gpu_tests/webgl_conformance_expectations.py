@@ -66,28 +66,11 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/rendering/gl-viewport-test.html',
         ['win7', 'intel'], bug=372511)
 
-    # Win / AMD flakiness seen on new tryservers
-    self.Flaky('conformance/canvas/drawingbuffer-hd-dpi-test.html',
-        ['win', ('amd', 0x6779)], bug=491419)
-    self.Flaky('conformance/context/' +
-        'context-attributes-alpha-depth-stencil-antialias.html',
-        ['win', ('amd', 0x6779)], bug=491419)
-    self.Flaky('conformance/extensions/oes-standard-derivatives.html',
-        ['win', ('amd', 0x6779)], bug=491419)
-    self.Flaky('conformance/extensions/oes-vertex-array-object.html',
-        ['win', ('amd', 0x6779)], bug=491419)
-    self.Flaky('conformance/glsl/functions/*',
-        ['win', ('amd', 0x6779)], bug=491419)
-    self.Flaky('conformance/glsl/misc/glsl-long-variable-names.html',
-        ['win', ('amd', 0x6779)], bug=491419)
-    self.Flaky('conformance/ogles/GL/swizzlers/swizzlers_017_to_024.html',
-        ['win', ('amd', 0x6779)], bug=491419)
-    self.Flaky('conformance/ogles/GL/vec3/vec3_001_to_008.html',
-        ['win', ('amd', 0x6779)], bug=491419)
-    self.Flaky('conformance/rendering/gl-scissor-test.html',
-        ['win', ('amd', 0x6779)], bug=491419)
-    self.Flaky('conformance/textures/texture-size.html',
-        ['win', ('amd', 0x6779)], bug=491419)
+    # Win / AMD flakiness seen on new tryservers.
+    # It's unfortunate that this suppression needs to be so broad, but
+    # basically any test that uses readPixels is potentially flaky, and
+    # it's infeasible to suppress individual failures one by one.
+    self.Flaky('conformance/*', ['win', ('amd', 0x6779)], bug=491419)
 
     # Win / AMD D3D9 failures
     self.Fail('conformance/textures/texparameter-test.html',
