@@ -50,7 +50,6 @@ class WebLayerTreeViewImplForTesting
                                        float new_page_scale,
                                        double duration_sec);
   virtual void setNeedsAnimate();
-  virtual bool commitRequested() const;
   virtual void didStopFlinging();
   virtual void finishAllRendering();
   virtual void setDeferCommits(bool defer_commits);

@@ -121,10 +121,6 @@ void WebLayerTreeViewImplForTesting::setNeedsAnimate() {
   layer_tree_host_->SetNeedsAnimate();
 }
 
-bool WebLayerTreeViewImplForTesting::commitRequested() const {
-  return layer_tree_host_->CommitRequested();
-}
-
 void WebLayerTreeViewImplForTesting::didStopFlinging() {}
 
 void WebLayerTreeViewImplForTesting::finishAllRendering() {

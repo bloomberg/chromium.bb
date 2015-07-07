@@ -98,7 +98,6 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
                                        double duration_sec);
   virtual void heuristicsForGpuRasterizationUpdated(bool matches_heuristic) {}
   virtual void setNeedsAnimate();
-  virtual bool commitRequested() const;
   virtual void didStopFlinging() {}
   virtual void compositeAndReadbackAsync(
       blink::WebCompositeAndReadbackAsyncCallback* callback) {}

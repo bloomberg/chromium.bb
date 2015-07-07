@@ -233,10 +233,6 @@ void WebLayerTreeViewImpl::setNeedsAnimate() {
   layer_tree_host_->SetNeedsAnimate();
 }
 
-bool WebLayerTreeViewImpl::commitRequested() const {
-  return layer_tree_host_->CommitRequested();
-}
-
 void WebLayerTreeViewImpl::finishAllRendering() {
   layer_tree_host_->FinishAllRendering();
 }

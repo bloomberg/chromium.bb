@@ -691,10 +691,6 @@ void RenderWidgetCompositor::setNeedsAnimate() {
   layer_tree_host_->SetNeedsAnimate();
 }
 
-bool RenderWidgetCompositor::commitRequested() const {
-  return layer_tree_host_->CommitRequested();
-}
-
 void RenderWidgetCompositor::didStopFlinging() {
   layer_tree_host_->DidStopFlinging();
 }

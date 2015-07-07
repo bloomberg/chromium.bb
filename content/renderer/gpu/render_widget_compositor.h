@@ -108,7 +108,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
                                        double duration_sec);
   virtual void heuristicsForGpuRasterizationUpdated(bool matches_heuristics);
   virtual void setNeedsAnimate();
-  virtual bool commitRequested() const;
   virtual void didStopFlinging();
   virtual void layoutAndPaintAsync(
       blink::WebLayoutAndPaintAsyncCallback* callback);
