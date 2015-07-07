@@ -140,6 +140,7 @@ class ChildThreadImplGpuMemoryBufferBrowserTest
         command_line->AppendSwitch(switches::kEnableNativeGpuMemoryBuffers);
         break;
       case kDisableNativeBuffers:
+        command_line->AppendSwitch(switches::kDisableNativeGpuMemoryBuffers);
         break;
     }
   }
