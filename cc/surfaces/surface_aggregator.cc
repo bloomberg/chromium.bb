@@ -131,52 +131,6 @@ int SurfaceAggregator::ChildIdForSurface(Surface* surface) {
   }
 }
 
-bool SurfaceAggregator::ValidateResources(
-    Surface* surface,
-    const DelegatedFrameData* frame_data) {
-  if (!provider_)  // TODO(jamesr): hack for unit tests that don't set up rp
-    return false;
-
-  int child_id = ChildIdForSurface(surface);
-  if (surface->factory())
-    surface->factory()->RefResources(frame_data->resource_list);
-  provider_->ReceiveFromChild(child_id, frame_data->resource_list);
-
-  ResourceProvider::ResourceIdSet referenced_resources;
-  size_t reserve_size = frame_data->resource_list.size();
-#if defined(COMPILER_MSVC)
-  referenced_resources.reserve(reserve_size);
-#elif defined(COMPILER_GCC)
-  // Pre-standard hash-tables only implement resize, which behaves similarly
-  // to reserve for these keys. Resizing to 0 may also be broken (particularly
-  // on stlport).
-  // TODO(jbauman): Replace with reserve when C++11 is supported everywhere.
-  if (reserve_size)
-    referenced_resources.resize(reserve_size);
-#endif
-
-  bool invalid_frame = false;
-  const ResourceProvider::ResourceIdMap& child_to_parent_map =
-      provider_->GetChildToParentMap(child_id);
-  for (const auto& render_pass : frame_data->render_pass_list) {
-    for (const auto& quad : render_pass->quad_list) {
-      for (ResourceId resource_id : quad->resources) {
-        ResourceProvider::ResourceIdMap::const_iterator it =
-            child_to_parent_map.find(resource_id);
-        if (it == child_to_parent_map.end()) {
-          invalid_frame = true;
-          break;
-        }
-        referenced_resources.insert(resource_id);
-      }
-    }
-  }
-
-  if (!invalid_frame)
-    provider_->DeclareUsedResourcesFromChild(child_id, referenced_resources);
-
-  return invalid_frame;
-}
 
 gfx::Rect SurfaceAggregator::DamageRectForSurface(const Surface* surface,
                                                   const RenderPass& source,
@@ -216,8 +170,7 @@ void SurfaceAggregator::HandleSurfaceQuad(
   surface->TakeCopyOutputRequests(&copy_requests);
 
   const RenderPassList& render_pass_list = frame_data->render_pass_list;
-  bool invalid_frame = ValidateResources(surface, frame_data);
-  if (invalid_frame) {
+  if (!valid_surfaces_.count(surface->surface_id())) {
     for (auto& request : copy_requests) {
       request.second->SendEmptyResult();
       delete request.second;
@@ -235,8 +188,6 @@ void SurfaceAggregator::HandleSurfaceQuad(
   bool merge_pass =
       surface_quad->shared_quad_state->opacity == 1.f && copy_requests.empty();
 
-  gfx::Rect surface_damage = DamageRectForSurface(
-      surface, *render_pass_list.back(), surface_quad->visible_rect);
   const RenderPassList& referenced_passes = render_pass_list;
   size_t passes_to_copy =
       merge_pass ? referenced_passes.size() - 1 : referenced_passes.size();
@@ -267,9 +218,6 @@ void SurfaceAggregator::HandleSurfaceQuad(
     CopyQuadsToPass(source.quad_list, source.shared_quad_state_list,
                     child_to_parent_map, gfx::Transform(), ClipData(),
                     copy_pass.get(), surface_id);
-
-    if (j == referenced_passes.size() - 1)
-      surface_damage = gfx::UnionRects(surface_damage, copy_pass->damage_rect);
 
     dest_pass_list_->push_back(copy_pass.Pass());
   }
@@ -322,9 +270,6 @@ void SurfaceAggregator::HandleSurfaceQuad(
                  FilterOperations());
   }
 
-  dest_pass->damage_rect = gfx::UnionRects(
-      dest_pass->damage_rect,
-      MathUtil::MapEnclosingClippedRect(surface_transform, surface_damage));
 
   referenced_surfaces_.erase(it);
 }
@@ -389,22 +334,9 @@ void SurfaceAggregator::CopyQuadsToPass(
         RenderPassId remapped_pass_id =
             RemapPassId(original_pass_id, surface_id);
 
-        gfx::Rect pass_damage;
-        for (const auto* pass : *dest_pass_list_) {
-          if (pass->id == remapped_pass_id) {
-            pass_damage = pass->damage_rect;
-            break;
-          }
-        }
-
         dest_quad = dest_pass->CopyFromAndAppendRenderPassDrawQuad(
             pass_quad, dest_pass->shared_quad_state_list.back(),
             remapped_pass_id);
-        dest_pass->damage_rect = gfx::UnionRects(
-            dest_pass->damage_rect,
-            MathUtil::MapEnclosingClippedRect(
-                dest_quad->shared_quad_state->quad_to_target_transform,
-                pass_damage));
       } else {
         dest_quad = dest_pass->CopyFromAndAppendDrawQuad(
             quad, dest_pass->shared_quad_state_list.back());
@@ -432,9 +364,8 @@ void SurfaceAggregator::CopyPasses(const DelegatedFrameData* frame_data,
   surface->TakeCopyOutputRequests(&copy_requests);
 
   const RenderPassList& source_pass_list = frame_data->render_pass_list;
-  bool invalid_frame = ValidateResources(surface, frame_data);
-  DCHECK(!invalid_frame);
-  if (invalid_frame)
+  DCHECK(valid_surfaces_.count(surface->surface_id()));
+  if (!valid_surfaces_.count(surface->surface_id()))
     return;
 
   // TODO(vmpstr): provider check is a hack for unittests that don't set up a
@@ -455,11 +386,7 @@ void SurfaceAggregator::CopyPasses(const DelegatedFrameData* frame_data,
     RenderPassId remapped_pass_id =
         RemapPassId(source.id, surface->surface_id());
 
-    gfx::Rect damage_rect =
-        (i < source_pass_list.size() - 1)
-            ? gfx::Rect()
-            : DamageRectForSurface(surface, source, source.output_rect);
-    copy_pass->SetAll(remapped_pass_id, source.output_rect, damage_rect,
+    copy_pass->SetAll(remapped_pass_id, source.output_rect, gfx::Rect(),
                       source.transform_to_root_target,
                       source.has_transparent_background);
 
@@ -488,6 +415,104 @@ void SurfaceAggregator::RemoveUnreferencedChildren() {
   }
 }
 
+// Validate the resources of the current surface and its descendants, and
+// calculate their combined damage rect.
+gfx::Rect SurfaceAggregator::ValidateAndCalculateDamageRect(
+    SurfaceId surface_id) {
+  if (referenced_surfaces_.count(surface_id))
+    return gfx::Rect();
+  Surface* surface = manager_->GetSurfaceForId(surface_id);
+  if (!surface)
+    return gfx::Rect();
+  const CompositorFrame* surface_frame = surface->GetEligibleFrame();
+  if (!surface_frame)
+    return gfx::Rect();
+  const DelegatedFrameData* frame_data =
+      surface_frame->delegated_frame_data.get();
+  if (!frame_data)
+    return gfx::Rect();
+  int child_id = 0;
+  // TODO(jbauman): hack for unit tests that don't set up rp
+  if (provider_) {
+    child_id = ChildIdForSurface(surface);
+    if (surface->factory())
+      surface->factory()->RefResources(frame_data->resource_list);
+    provider_->ReceiveFromChild(child_id, frame_data->resource_list);
+  }
+
+  ResourceProvider::ResourceIdSet referenced_resources;
+  size_t reserve_size = frame_data->resource_list.size();
+#if defined(COMPILER_MSVC)
+  referenced_resources.reserve(reserve_size);
+#elif defined(COMPILER_GCC)
+  // Pre-standard hash-tables only implement resize, which behaves similarly
+  // to reserve for these keys. Resizing to 0 may also be broken (particularly
+  // on stlport).
+  // TODO(jbauman): Replace with reserve when C++11 is supported everywhere.
+  if (reserve_size)
+    referenced_resources.resize(reserve_size);
+#endif
+
+  bool invalid_frame = false;
+  ResourceProvider::ResourceIdMap empty_map;
+  const ResourceProvider::ResourceIdMap& child_to_parent_map =
+      provider_ ? provider_->GetChildToParentMap(child_id) : empty_map;
+
+  // Each pair in the vector is a child surface and the transform from its
+  // target to the root target of this surface.
+  std::vector<std::pair<SurfaceId, gfx::Transform>> child_surfaces;
+  for (const auto& render_pass : frame_data->render_pass_list) {
+    for (const auto& quad : render_pass->quad_list) {
+      if (quad->material == DrawQuad::SURFACE_CONTENT) {
+        const SurfaceDrawQuad* surface_quad =
+            SurfaceDrawQuad::MaterialCast(quad);
+        gfx::Transform target_to_surface_transform(
+            surface_quad->shared_quad_state->quad_to_target_transform,
+            render_pass->transform_to_root_target);
+        child_surfaces.push_back(std::make_pair(surface_quad->surface_id,
+                                                target_to_surface_transform));
+      }
+
+      if (!provider_)
+        continue;
+      for (ResourceId resource_id : quad->resources) {
+        if (!child_to_parent_map.count(resource_id)) {
+          invalid_frame = true;
+          break;
+        }
+        referenced_resources.insert(resource_id);
+      }
+    }
+  }
+
+  if (invalid_frame)
+    return gfx::Rect();
+  valid_surfaces_.insert(surface->surface_id());
+
+  if (provider_)
+    provider_->DeclareUsedResourcesFromChild(child_id, referenced_resources);
+
+  gfx::Rect damage_rect;
+  if (!frame_data->render_pass_list.empty()) {
+    damage_rect =
+        DamageRectForSurface(surface, *frame_data->render_pass_list.back(),
+                             frame_data->render_pass_list.back()->output_rect);
+  }
+
+  // Avoid infinite recursion by adding current surface to
+  // referenced_surfaces_.
+  SurfaceSet::iterator it =
+      referenced_surfaces_.insert(surface->surface_id()).first;
+  for (const auto& surface_info : child_surfaces) {
+    gfx::Rect surface_damage =
+        ValidateAndCalculateDamageRect(surface_info.first);
+    damage_rect.Union(
+        MathUtil::MapEnclosingClippedRect(surface_info.second, surface_damage));
+  }
+  referenced_surfaces_.erase(it);
+  return damage_rect;
+}
+
 scoped_ptr<CompositorFrame> SurfaceAggregator::Aggregate(SurfaceId surface_id) {
   Surface* surface = manager_->GetSurfaceForId(surface_id);
   DCHECK(surface);
@@ -502,18 +527,21 @@ scoped_ptr<CompositorFrame> SurfaceAggregator::Aggregate(SurfaceId surface_id) {
 
   DCHECK(root_surface_frame->delegated_frame_data);
 
-  SurfaceSet::iterator it = referenced_surfaces_.insert(surface_id).first;
-
   dest_resource_list_ = &frame->delegated_frame_data->resource_list;
   dest_pass_list_ = &frame->delegated_frame_data->render_pass_list;
 
-  CopyPasses(root_surface_frame->delegated_frame_data.get(), surface);
+  valid_surfaces_.clear();
+  gfx::Rect damage_rect = ValidateAndCalculateDamageRect(surface_id);
 
+  SurfaceSet::iterator it = referenced_surfaces_.insert(surface_id).first;
+  CopyPasses(root_surface_frame->delegated_frame_data.get(), surface);
   referenced_surfaces_.erase(it);
+
   DCHECK(referenced_surfaces_.empty());
 
   if (dest_pass_list_->empty())
     return nullptr;
+  dest_pass_list_->back()->damage_rect = damage_rect;
 
   dest_pass_list_ = NULL;
   RemoveUnreferencedChildren();

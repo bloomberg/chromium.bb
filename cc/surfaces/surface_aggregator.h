@@ -72,14 +72,13 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
       const ClipData& clip_rect,
       RenderPass* dest_pass,
       SurfaceId surface_id);
+  gfx::Rect ValidateAndCalculateDamageRect(SurfaceId surface_id);
   void CopyPasses(const DelegatedFrameData* frame_data, Surface* surface);
 
   // Remove Surfaces that were referenced before but aren't currently
   // referenced from the ResourceProvider.
   void RemoveUnreferencedChildren();
 
-  bool ValidateResources(Surface* surface,
-                         const DelegatedFrameData* frame_data);
   int ChildIdForSurface(Surface* surface);
   gfx::Rect DamageRectForSurface(const Surface* surface,
                                  const RenderPass& source,
@@ -110,6 +109,9 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   // that time.
   SurfaceIndexMap previous_contained_surfaces_;
   SurfaceIndexMap contained_surfaces_;
+
+  // After surface validation, every Surface in this set is valid.
+  base::hash_set<SurfaceId> valid_surfaces_;
 
   // This is the pass list for the aggregated frame.
   RenderPassList* dest_pass_list_;
