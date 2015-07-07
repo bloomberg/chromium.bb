@@ -772,3 +772,12 @@ system call NtCreateEvent
 ntdll.dll!RtlDosPathNameToNtPathName_U_WithStatus
 ntdll.dll!RtlDosPathNameToNtPathName_U_WithStatus
 ntdll.dll!RtlIntegerToUnicodeString
+
+UNADDRESSABLE ACCESS
+name=http://crbug.com/
+webcore_shared.dll!blink::LocalFrame::view
+blink_web.dll!blink::PageWidgetDelegate::animate
+blink_web.dll!blink::WebFrameWidgetImpl::beginFrame
+content.dll!content::RenderWidgetCompositor::BeginMainFrame
+cc.dll!cc::LayerTreeHost::BeginMainFrame
+cc.dll!cc::ThreadProxy::BeginMainFrame
