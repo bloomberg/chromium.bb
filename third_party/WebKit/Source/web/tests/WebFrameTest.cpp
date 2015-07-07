@@ -103,6 +103,7 @@
 #include "public/web/WebPrintParams.h"
 #include "public/web/WebRange.h"
 #include "public/web/WebRemoteFrame.h"
+#include "public/web/WebScriptExecutionCallback.h"
 #include "public/web/WebScriptSource.h"
 #include "public/web/WebSearchableFormData.h"
 #include "public/web/WebSecurityPolicy.h"
@@ -328,6 +329,84 @@ TEST_P(ParameterizedWebFrameTest, FrameForEnteredContext)
     v8::HandleScope scope(v8::Isolate::GetCurrent());
     EXPECT_EQ(webViewHelper.webView()->mainFrame(), WebLocalFrame::frameForContext(webViewHelper.webView()->mainFrame()->mainWorldScriptContext()));
     EXPECT_EQ(webViewHelper.webView()->mainFrame()->firstChild(), WebLocalFrame::frameForContext(webViewHelper.webView()->mainFrame()->firstChild()->mainWorldScriptContext()));
+}
+
+class ScriptExecutionCallbackHelper : public WebScriptExecutionCallback {
+public:
+    explicit ScriptExecutionCallbackHelper(v8::Local<v8::Context> context)
+        : m_didComplete(false)
+        , m_context(context) { }
+    ~ScriptExecutionCallbackHelper() { }
+
+    bool didComplete() const { return m_didComplete; }
+    const String& stringValue() const { return m_stringValue; }
+
+private:
+    void completed(const WebVector<v8::Local<v8::Value>>& values) override
+    {
+        m_didComplete = true;
+        if (!values.isEmpty() && values[0]->IsString()) {
+            m_stringValue = toCoreString(values[0]->ToString(m_context).ToLocalChecked());
+        }
+    }
+
+    bool m_didComplete;
+    String m_stringValue;
+    v8::Local<v8::Context> m_context;
+};
+
+TEST_P(ParameterizedWebFrameTest, RequestExecuteScript)
+{
+    registerMockedHttpURLLoad("foo.html");
+
+    FrameTestHelpers::WebViewHelper webViewHelper(this);
+    webViewHelper.initializeAndLoad(m_baseURL + "foo.html", true);
+
+    v8::HandleScope scope(v8::Isolate::GetCurrent());
+    ScriptExecutionCallbackHelper callbackHelper(webViewHelper.webView()->mainFrame()->mainWorldScriptContext());
+    webViewHelper.webView()->mainFrame()->toWebLocalFrame()->requestExecuteScriptAndReturnValue(WebScriptSource(WebString("'hello';")), false, &callbackHelper);
+    runPendingTasks();
+    EXPECT_TRUE(callbackHelper.didComplete());
+    EXPECT_EQ("hello", callbackHelper.stringValue());
+}
+
+TEST_P(ParameterizedWebFrameTest, SuspendedRequestExecuteScript)
+{
+    registerMockedHttpURLLoad("foo.html");
+    registerMockedHttpURLLoad("bar.html");
+
+    FrameTestHelpers::WebViewHelper webViewHelper(this);
+    webViewHelper.initializeAndLoad(m_baseURL + "foo.html", true);
+
+    v8::HandleScope scope(v8::Isolate::GetCurrent());
+    ScriptExecutionCallbackHelper callbackHelper(webViewHelper.webView()->mainFrame()->mainWorldScriptContext());
+
+    // Suspend scheduled tasks so the script doesn't run.
+    toWebLocalFrameImpl(webViewHelper.webView()->mainFrame())->frame()->document()->suspendScheduledTasks();
+    webViewHelper.webView()->mainFrame()->toWebLocalFrame()->requestExecuteScriptAndReturnValue(WebScriptSource(WebString("'hello';")), false, &callbackHelper);
+    runPendingTasks();
+    EXPECT_FALSE(callbackHelper.didComplete());
+
+    // If the frame navigates, pending scripts should be removed, but the callback should always be ran.
+    FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), m_baseURL + "bar.html");
+    EXPECT_TRUE(callbackHelper.didComplete());
+    EXPECT_EQ(String(), callbackHelper.stringValue());
+}
+
+TEST_P(ParameterizedWebFrameTest, IframeScriptRemovesSelf)
+{
+    registerMockedHttpURLLoad("single_iframe.html");
+    registerMockedHttpURLLoad("visible_iframe.html");
+
+    FrameTestHelpers::WebViewHelper webViewHelper(this);
+    webViewHelper.initializeAndLoad(m_baseURL + "single_iframe.html", true);
+
+    v8::HandleScope scope(v8::Isolate::GetCurrent());
+    ScriptExecutionCallbackHelper callbackHelper(webViewHelper.webView()->mainFrame()->mainWorldScriptContext());
+    webViewHelper.webView()->mainFrame()->firstChild()->toWebLocalFrame()->requestExecuteScriptAndReturnValue(WebScriptSource(WebString("var iframe = window.top.document.getElementsByTagName('iframe')[0]; window.top.document.body.removeChild(iframe); 'hello';")), false, &callbackHelper);
+    runPendingTasks();
+    EXPECT_TRUE(callbackHelper.didComplete());
+    EXPECT_EQ(String(), callbackHelper.stringValue());
 }
 
 TEST_P(ParameterizedWebFrameTest, FormWithNullFrame)

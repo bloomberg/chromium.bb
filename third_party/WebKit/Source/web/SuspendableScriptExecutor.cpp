@@ -24,8 +24,6 @@ void SuspendableScriptExecutor::createAndRun(LocalFrame* frame, int worldID, con
 
 void SuspendableScriptExecutor::contextDestroyed()
 {
-    // this method can only be called if the script was not called in run()
-    // and context remained suspend (method resume has never called)
     SuspendableTimer::contextDestroyed();
     m_callback->completed(Vector<v8::Local<v8::Value>>());
     dispose();
@@ -39,11 +37,17 @@ SuspendableScriptExecutor::SuspendableScriptExecutor(LocalFrame* frame, int worl
     , m_extensionGroup(extensionGroup)
     , m_userGesture(userGesture)
     , m_callback(callback)
+#if ENABLE(ASSERT)
+    , m_disposed(false)
+#endif
 {
 }
 
 SuspendableScriptExecutor::~SuspendableScriptExecutor()
 {
+#if ENABLE(ASSERT)
+    ASSERT(m_disposed);
+#endif
 }
 
 void SuspendableScriptExecutor::fired()
@@ -66,6 +70,9 @@ void SuspendableScriptExecutor::run()
 
 void SuspendableScriptExecutor::executeAndDestroySelf()
 {
+    // Ensure that this object is not deleted even if the context is destroyed.
+    RefPtrWillBeRawPtr<SuspendableScriptExecutor> protect(this);
+
     // after calling the destructor of object - object will be unsubscribed from
     // resumed and contextDestroyed LifecycleObserver methods
     OwnPtr<UserGestureIndicator> indicator;
@@ -80,12 +87,22 @@ void SuspendableScriptExecutor::executeAndDestroySelf()
         v8::Local<v8::Value> scriptValue = m_frame->script().executeScriptInMainWorldAndReturnValue(m_sources.first());
         results.append(scriptValue);
     }
+
+    // The script may have removed the frame, in which case contextDestroyed()
+    // will have handled the disposal/callback.
+    if (!m_frame->client())
+        return;
+
     m_callback->completed(results);
     dispose();
 }
 
 void SuspendableScriptExecutor::dispose()
 {
+#if ENABLE(ASSERT)
+    m_disposed = true;
+#endif
+
 #if ENABLE(OILPAN)
     // Remove object as a ContextLifecycleObserver.
     ActiveDOMObject::clearContext();

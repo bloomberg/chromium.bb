@@ -38,12 +38,15 @@ private:
     void executeAndDestroySelf();
     void dispose();
 
-    RawPtrWillBeMember<LocalFrame> m_frame;
+    RefPtrWillBeMember<LocalFrame> m_frame;
     int m_worldID;
     WillBeHeapVector<ScriptSourceCode> m_sources;
     int m_extensionGroup;
     bool m_userGesture;
     WebScriptExecutionCallback* m_callback;
+#if ENABLE(ASSERT)
+    bool m_disposed;
+#endif
 };
 
 } // namespace blink
