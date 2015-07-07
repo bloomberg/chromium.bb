@@ -333,11 +333,8 @@ _arm_internal_release_boards = frozenset([
     'beaglebone_servo',
     'cosmos',
     'daisy',
-    'daisy_freon',
     'daisy_skate',
-    'daisy_skate-freon',
     'daisy_spring',
-    'daisy_spring-freon',
     'daisy_winter',
     'kayle',
     'nyan',
@@ -347,9 +344,7 @@ _arm_internal_release_boards = frozenset([
     'nyan_kitty',
     'oak',
     'peach_pi',
-    'peach_pi-freon',
     'peach_pit',
-    'peach_pit-freon',
     'purin',
     'smaug',
     'storm',
@@ -619,8 +614,6 @@ _waterfall_config_map = {
 
     constants.WATERFALL_INTERNAL: frozenset([
         # Experimental Canaries (Group)
-        'daisy-freon-release-group',
-        'peach-freon-release-group',
         'glados-release-group',
         'pineview-freon-release-group',
         'rambi-d-release-group',
@@ -1078,7 +1071,6 @@ def GetConfig():
   )
 
   _chrome_pfq_important_boards = frozenset([
-      'daisy_freon',
       'peppy',
       'rush_ryu',
       'veyron_pinky',
@@ -1502,7 +1494,6 @@ def GetConfig():
       'daisy',
       'daisy_skate',
       'daisy_spring',
-      'daisy_freon',
       'nyan_freon',
       'falco',
       'gizmo',
@@ -2420,30 +2411,12 @@ def GetConfig():
       ),
   )
 
-  # daisy-based boards (Freon)
-  _AddGroupConfig(
-      'daisy-freon', 'daisy_freon', (
-          'daisy_spring-freon',
-          'daisy_skate-freon',
-      ),
-      important=False
-  )
-
   # peach-based boards
   _AddGroupConfig(
       'peach', 'peach_pit', (
           'peach_pi',
       )
   )
-
-  # peach-based boards (Freon)
-  _AddGroupConfig(
-      'peach-freon', 'peach_pit-freon', (
-          'peach_pi-freon',
-      ),
-      important=False
-  )
-
 
   # nyan-based boards
   _AddGroupConfig(
