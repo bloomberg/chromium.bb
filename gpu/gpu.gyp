@@ -772,5 +772,28 @@
         },
       ],
     }],
+    ['OS == "win" and archive_gpu_tests==1', {
+      'targets': [
+        {
+          # Only build dEQP on test configs. Note that dEQP is test-only code,
+          # and is only a part of the Chromium build to allow easy integration
+          # with the GPU bot waterfall. (Note that dEQP uses exceptions, and
+          # currently can't build with Clang on Windows)
+          'target_name': 'angle_deqp_tests',
+          'type': '<(gtest_target_type)',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../base/base.gyp:test_support_base',
+            '../third_party/angle/src/tests/tests.gyp:angle_deqp_gtest_support',
+          ],
+          'includes': [
+            '../third_party/angle/build/common_defines.gypi',
+          ],
+          'sources': [
+            'angle_deqp_tests_main.cc',
+          ],
+        },
+      ],
+    }]
   ],
 }
