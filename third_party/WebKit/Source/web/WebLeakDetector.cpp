@@ -41,11 +41,11 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/inspector/InspectorCounters.h"
 #include "core/layout/LayoutObject.h"
+#include "core/workers/WorkerThread.h"
 #include "modules/webaudio/AudioNode.h"
 #include "platform/Timer.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebLocalFrame.h"
-#include "web/WebEmbeddedWorkerImpl.h"
 
 namespace blink {
 
@@ -83,7 +83,7 @@ private:
 
 void WebLeakDetectorImpl::collectGarbageAndGetDOMCounts(WebLocalFrame* frame)
 {
-    WebEmbeddedWorkerImpl::terminateAll();
+    WorkerThread::terminateAndWaitForAllWorkers();
     memoryCache()->evictResources();
 
     {
