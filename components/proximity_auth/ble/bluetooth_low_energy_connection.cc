@@ -321,6 +321,17 @@ void BluetoothLowEnergyConnection::StartNotifySession() {
         GetGattCharacteristic(from_peripheral_char_.id);
     DCHECK(characteristic);
 
+    // This is a workaround for crbug.com/507325. If |characteristic| is already
+    // notifying |characteristic->StartNotifySession()| will fail with
+    // GATT_ERROR_FAILED.
+    if (characteristic->IsNotifying()) {
+      PA_LOG(INFO) << characteristic->GetUUID().canonical_value()
+                   << " already notifying.";
+      SetSubStatus(SubStatus::NOTIFY_SESSION_READY);
+      SendInviteToConnectSignal();
+      return;
+    }
+
     SetSubStatus(SubStatus::WAITING_NOTIFY_SESSION);
     characteristic->StartNotifySession(
         base::Bind(&BluetoothLowEnergyConnection::OnNotifySessionStarted,
