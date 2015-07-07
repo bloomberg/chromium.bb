@@ -35,11 +35,18 @@ static base::TimeDelta DurationFromDelta(const gfx::Vector2dF& delta) {
 
 static scoped_ptr<TimingFunction> EaseOutWithInitialVelocity(double velocity) {
   // Based on EaseInOutTimingFunction::Create with first control point rotated.
-  const double r2 = 0.42 * 0.42;
-  const double v2 = velocity * velocity;
-  const double x1 = std::sqrt(r2 / (v2 + 1));
-  const double y1 = std::sqrt(r2 * v2 / (v2 + 1));
-  return CubicBezierTimingFunction::Create(x1, y1, 0.58, 1);
+  if (std::abs(velocity) < 1000.0) {
+    const double r2 = 0.42 * 0.42;
+    const double v2 = velocity * velocity;
+    const double x1 = std::sqrt(r2 / (v2 + 1));
+    const double y1 = std::sqrt(r2 * v2 / (v2 + 1));
+    return CubicBezierTimingFunction::Create(x1, y1, 0.58, 1);
+  }
+
+  // For large |velocity|, x1 approaches 0 and y1 approaches 0.42. To avoid the
+  // risk of floating point arithmetic involving infinity and NaN, use those
+  // values directly rather than computing them above.
+  return CubicBezierTimingFunction::Create(0, 0.42, 0.58, 1);
 }
 
 }  // namespace

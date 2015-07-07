@@ -154,5 +154,28 @@ TEST(ScrollOffsetAnimationCurveTest, UpdateTarget) {
   EXPECT_EQ(7200.0, curve->GetValue(base::TimeDelta::FromSecondsD(1.674)).y());
 }
 
+TEST(ScrollOffsetAnimationCurveTest, UpdateTargetWithLargeVelocity) {
+  gfx::ScrollOffset initial_value(0.f, 0.f);
+  gfx::ScrollOffset target_value(0.f, 900.f);
+  scoped_ptr<ScrollOffsetAnimationCurve> curve(
+      ScrollOffsetAnimationCurve::Create(
+          target_value, EaseInOutTimingFunction::Create().Pass()));
+  curve->SetInitialValue(initial_value);
+  EXPECT_EQ(0.5, curve->Duration().InSecondsF());
+
+  EXPECT_EQ(450.0, curve->GetValue(base::TimeDelta::FromSecondsD(0.25)).y());
+
+  // This leads to a new computed velocity larger than 5000.
+  curve->UpdateTarget(0.25, gfx::ScrollOffset(0.0, 450.0001));
+
+  EXPECT_NEAR(0.25015, curve->Duration().InSecondsF(), 0.0001);
+  EXPECT_NEAR(450.0,
+              curve->GetValue(base::TimeDelta::FromSecondsD(0.22501)).y(),
+              0.001);
+  EXPECT_NEAR(450.0,
+              curve->GetValue(base::TimeDelta::FromSecondsD(0.225015)).y(),
+              0.001);
+}
+
 }  // namespace
 }  // namespace cc
