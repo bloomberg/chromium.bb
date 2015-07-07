@@ -32,7 +32,7 @@ bool DoublesConsideredDifferent(double value1, double value2, double delta) {
   return abs_difference > delta;
 }
 
-scoped_ptr<base::DictionaryValue> GetOriginDict(
+scoped_ptr<base::DictionaryValue> GetScoreDictForOrigin(
     HostContentSettingsMap* settings,
     const GURL& origin_url) {
   if (!settings)
@@ -62,13 +62,14 @@ const double SiteEngagementScore::kNavigationPoints = 1;
 const int SiteEngagementScore::kDecayPeriodInDays = 7;
 const double SiteEngagementScore::kDecayPoints = 5;
 
-SiteEngagementScore::SiteEngagementScore(base::Clock* clock,
-                                         const base::DictionaryValue& settings)
+SiteEngagementScore::SiteEngagementScore(
+    base::Clock* clock,
+    const base::DictionaryValue& score_dict)
     : SiteEngagementScore(clock) {
-  settings.GetDouble(kRawScoreKey, &raw_score_);
-  settings.GetDouble(kPointsAddedTodayKey, &points_added_today_);
+  score_dict.GetDouble(kRawScoreKey, &raw_score_);
+  score_dict.GetDouble(kPointsAddedTodayKey, &points_added_today_);
   double internal_time;
-  if (settings.GetDouble(kLastEngagementTimeKey, &internal_time))
+  if (score_dict.GetDouble(kLastEngagementTimeKey, &internal_time))
     last_engagement_time_ = base::Time::FromInternalValue(internal_time);
 }
 
@@ -100,14 +101,14 @@ void SiteEngagementScore::AddPoints(double points) {
   last_engagement_time_ = now;
 }
 
-bool SiteEngagementScore::UpdateSettings(base::DictionaryValue* settings) {
+bool SiteEngagementScore::UpdateScoreDict(base::DictionaryValue* score_dict) {
   double raw_score_orig = 0;
   double points_added_today_orig = 0;
   double last_engagement_time_internal_orig = 0;
 
-  settings->GetDouble(kRawScoreKey, &raw_score_orig);
-  settings->GetDouble(kPointsAddedTodayKey, &points_added_today_orig);
-  settings->GetDouble(kLastEngagementTimeKey,
+  score_dict->GetDouble(kRawScoreKey, &raw_score_orig);
+  score_dict->GetDouble(kPointsAddedTodayKey, &points_added_today_orig);
+  score_dict->GetDouble(kLastEngagementTimeKey,
                       &last_engagement_time_internal_orig);
   bool changed =
       DoublesConsideredDifferent(raw_score_orig, raw_score_, kScoreDelta) ||
@@ -120,9 +121,9 @@ bool SiteEngagementScore::UpdateSettings(base::DictionaryValue* settings) {
   if (!changed)
     return false;
 
-  settings->SetDouble(kRawScoreKey, raw_score_);
-  settings->SetDouble(kPointsAddedTodayKey, points_added_today_);
-  settings->SetDouble(kLastEngagementTimeKey,
+  score_dict->SetDouble(kRawScoreKey, raw_score_);
+  score_dict->SetDouble(kPointsAddedTodayKey, points_added_today_);
+  score_dict->SetDouble(kLastEngagementTimeKey,
                       last_engagement_time_.ToInternalValue());
 
   return true;
@@ -168,11 +169,12 @@ SiteEngagementService::~SiteEngagementService() {
 
 void SiteEngagementService::HandleNavigation(const GURL& url) {
   HostContentSettingsMap* settings_map = profile_->GetHostContentSettingsMap();
-  scoped_ptr<base::DictionaryValue> settings = GetOriginDict(settings_map, url);
-  SiteEngagementScore score(&clock_, *settings);
+  scoped_ptr<base::DictionaryValue> score_dict =
+      GetScoreDictForOrigin(settings_map, url);
+  SiteEngagementScore score(&clock_, *score_dict);
 
   score.AddPoints(SiteEngagementScore::kNavigationPoints);
-  if (score.UpdateSettings(settings.get())) {
+  if (score.UpdateScoreDict(score_dict.get())) {
     ContentSettingsPattern pattern(
         ContentSettingsPattern::FromURLNoWildcard(url));
     if (!pattern.IsValid())
@@ -180,15 +182,34 @@ void SiteEngagementService::HandleNavigation(const GURL& url) {
 
     settings_map->SetWebsiteSetting(pattern, ContentSettingsPattern::Wildcard(),
                                     CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
-                                    std::string(), settings.release());
+                                    std::string(), score_dict.release());
   }
 }
 
 int SiteEngagementService::GetScore(const GURL& url) {
   HostContentSettingsMap* settings_map = profile_->GetHostContentSettingsMap();
-  scoped_ptr<base::DictionaryValue> settings = GetOriginDict(settings_map, url);
-  SiteEngagementScore score(&clock_, *settings);
+  scoped_ptr<base::DictionaryValue> score_dict =
+      GetScoreDictForOrigin(settings_map, url);
+  SiteEngagementScore score(&clock_, *score_dict);
 
   return score.Score();
 }
 
+int SiteEngagementService::GetTotalEngagementPoints() {
+  HostContentSettingsMap* settings_map = profile_->GetHostContentSettingsMap();
+  ContentSettingsForOneType engagement_settings;
+  settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
+                                      std::string(), &engagement_settings);
+  int total_score = 0;
+  for (const auto& site : engagement_settings) {
+    GURL origin(site.primary_pattern.ToString());
+    if (!origin.is_valid())
+      continue;
+
+    scoped_ptr<base::DictionaryValue> score_dict =
+        GetScoreDictForOrigin(settings_map, origin);
+    SiteEngagementScore score(&clock_, *score_dict);
+    total_score += score.Score();
+  }
+  return total_score;
+}

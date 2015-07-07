@@ -62,25 +62,25 @@ class SiteEngagementScoreTest : public testing::Test {
   }
 
   void TestScoreInitializesAndUpdates(
-      base::DictionaryValue* settings_dict,
+      base::DictionaryValue* score_dict,
       double expected_raw_score,
       double expected_points_added_today,
       base::Time expected_last_engagement_time) {
-    SiteEngagementScore initial_score(&test_clock_, *settings_dict);
+    SiteEngagementScore initial_score(&test_clock_, *score_dict);
     VerifyScore(initial_score, expected_raw_score, expected_points_added_today,
                 expected_last_engagement_time);
 
-    // Updating the settings dict should return false, as the score shouldn't
+    // Updating the score dict should return false, as the score shouldn't
     // have changed at this point.
-    EXPECT_FALSE(initial_score.UpdateSettings(settings_dict));
+    EXPECT_FALSE(initial_score.UpdateScoreDict(score_dict));
 
-    // Update the score to new values and verify it updates the settings dict
+    // Update the score to new values and verify it updates the score dict
     // correctly.
     base::Time different_day =
         GetReferenceTime() + base::TimeDelta::FromDays(1);
     UpdateScore(&initial_score, 5, 10, different_day);
-    EXPECT_TRUE(initial_score.UpdateSettings(settings_dict));
-    SiteEngagementScore updated_score(&test_clock_, *settings_dict);
+    EXPECT_TRUE(initial_score.UpdateScoreDict(score_dict));
+    SiteEngagementScore updated_score(&test_clock_, *score_dict);
     VerifyScore(updated_score, 5, 10, different_day);
   }
 
@@ -280,7 +280,7 @@ TEST_F(SiteEngagementScoreTest, GoBackInTime) {
   EXPECT_EQ(2 * SiteEngagementScore::kMaxPointsPerDay, score_.Score());
 }
 
-// Test that scores are read / written correctly from / to empty settings
+// Test that scores are read / written correctly from / to empty score
 // dictionaries.
 TEST_F(SiteEngagementScoreTest, EmptyDictionary) {
   base::DictionaryValue dict;
@@ -288,7 +288,7 @@ TEST_F(SiteEngagementScoreTest, EmptyDictionary) {
 }
 
 // Test that scores are read / written correctly from / to partially empty
-// settings dictionaries.
+// score dictionaries.
 TEST_F(SiteEngagementScoreTest, PartiallyEmptyDictionary) {
   base::DictionaryValue dict;
   dict.SetDouble(SiteEngagementScore::kPointsAddedTodayKey, 2);
@@ -296,7 +296,7 @@ TEST_F(SiteEngagementScoreTest, PartiallyEmptyDictionary) {
   TestScoreInitializesAndUpdates(&dict, 0, 2, base::Time());
 }
 
-// Test that scores are read / written correctly from / to populated settings
+// Test that scores are read / written correctly from / to populated score
 // dictionaries.
 TEST_F(SiteEngagementScoreTest, PopulatedDictionary) {
   base::DictionaryValue dict;
@@ -308,15 +308,23 @@ TEST_F(SiteEngagementScoreTest, PopulatedDictionary) {
   TestScoreInitializesAndUpdates(&dict, 1, 2, GetReferenceTime());
 }
 
-using SiteEngagementServiceTest = BrowserWithTestWindowTest;
+
+class SiteEngagementServiceTest : public BrowserWithTestWindowTest {
+ public:
+  SiteEngagementServiceTest() {}
+
+  void SetUp() override {
+    BrowserWithTestWindowTest::SetUp();
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableSiteEngagementService);
+  }
+};
+
 
 // Tests that the Site Engagement service is hooked up properly to navigations
 // by performing two navigations and checking the engagement score increases
 // both times.
 TEST_F(SiteEngagementServiceTest, ScoreIncrementsOnPageRequest) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableSiteEngagementService);
-
   SiteEngagementService* service =
       SiteEngagementServiceFactory::GetForProfile(profile());
   DCHECK(service);
@@ -333,4 +341,39 @@ TEST_F(SiteEngagementServiceTest, ScoreIncrementsOnPageRequest) {
 
   NavigateAndCommitActiveTab(url);
   EXPECT_LT(prev_score, service->GetScore(url));
+}
+
+// Expect that site engagement scores for several sites are correctly aggregated
+// by GetTotalEngagementPoints().
+TEST_F(SiteEngagementServiceTest, GetTotalEngagementPoints) {
+  SiteEngagementService* service =
+      SiteEngagementServiceFactory::GetForProfile(profile());
+  DCHECK(service);
+
+  // The https and http versions of www.google.com should be separate.
+  GURL url1("https://www.google.com/");
+  GURL url2("http://www.google.com/");
+  GURL url3("http://drive.google.com/");
+
+  EXPECT_EQ(0, service->GetScore(url1));
+  EXPECT_EQ(0, service->GetScore(url2));
+  EXPECT_EQ(0, service->GetScore(url3));
+
+  service->HandleNavigation(url1);
+  EXPECT_EQ(1, service->GetScore(url1));
+  EXPECT_EQ(1, service->GetTotalEngagementPoints());
+
+  service->HandleNavigation(url2);
+  service->HandleNavigation(url2);
+  EXPECT_EQ(2, service->GetScore(url2));
+  EXPECT_EQ(3, service->GetTotalEngagementPoints());
+
+  service->HandleNavigation(url3);
+  EXPECT_EQ(1, service->GetScore(url3));
+  EXPECT_EQ(4, service->GetTotalEngagementPoints());
+
+  service->HandleNavigation(url1);
+  service->HandleNavigation(url1);
+  EXPECT_EQ(3, service->GetScore(url1));
+  EXPECT_EQ(6, service->GetTotalEngagementPoints());
 }

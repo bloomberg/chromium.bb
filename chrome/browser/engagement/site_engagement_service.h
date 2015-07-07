@@ -46,15 +46,15 @@ class SiteEngagementScore {
   // responsibility of the caller to make sure |clock| outlives this
   // SiteEngagementScore.
   SiteEngagementScore(base::Clock* clock,
-                      const base::DictionaryValue& settings);
+                      const base::DictionaryValue& score_dict);
   ~SiteEngagementScore();
 
   double Score() const;
   void AddPoints(double points);
 
-  // Updates the content settings dictionary |settings| with the current score
-  // fields. Returns true if |settings| changed, otherwise return false.
-  bool UpdateSettings(base::DictionaryValue* settings);
+  // Updates the content settings dictionary |score_dict| with the current score
+  // fields. Returns true if |score_dict| changed, otherwise return false.
+  bool UpdateScoreDict(base::DictionaryValue* score_dict);
 
  private:
   friend class SiteEngagementScoreTest;
@@ -110,6 +110,9 @@ class SiteEngagementService : public KeyedService {
   // Returns a non-negative integer representing the engagement score of the
   // origin for this URL.
   int GetScore(const GURL& url);
+
+  // Returns the sum of engagement points awarded to all sites.
+  int GetTotalEngagementPoints();
 
  private:
   Profile* profile_;
