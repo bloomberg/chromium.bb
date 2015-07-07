@@ -4,16 +4,22 @@
 
 // https://w3c.github.io/presentation-api/#navigatorpresentation
 
+// TODO(avayvod): This interface is named NavigatorPresentation in the spec:
+// https://github.com/w3c/presentation-api/issues/137
 [
     GarbageCollected,
     RuntimeEnabled=Presentation
 ] interface Presentation : EventTarget {
-    readonly attribute PresentationSession? session;
-
-    [CallWith=ScriptState] Promise<PresentationSession> startSession(DOMString presentationUrl, [Default=Undefined] optional DOMString presentationId);
-    [CallWith=ScriptState] Promise<PresentationSession> joinSession(DOMString presentationUrl, [Default=Undefined] optional DOMString presentationId);
-
+    // This API used by controlling browsing context.
+    // TODO(avayvod): The |presentationId| argument is not in the spec.
+    [CallWith=ScriptState] Promise<PresentationSession> startSession(DOMString url, [Default=Undefined] optional DOMString presentationId);
+    // TODO(avayvod): The |presentationId| argument should not be optional.
+    [CallWith=ScriptState] Promise<PresentationSession> joinSession(DOMString url, [Default=Undefined] optional DOMString presentationId);
+    [CallWith=ScriptState] Promise<PresentationAvailability> getAvailability(DOMString url);
     attribute EventHandler ondefaultsessionstart;
 
-    [CallWith=ScriptState] Promise<PresentationAvailability> getAvailability(DOMString presentationUrl);
+    // This API used by presenting browsing context.
+    // TODO(avayvod): The spec has |getSession()| and |getSessions()| instead.
+    readonly attribute PresentationSession? session;
+    // TODO(avayvod): attribute EventHandler onsessionavailable;
 };

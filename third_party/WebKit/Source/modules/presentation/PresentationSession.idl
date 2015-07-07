@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/presentation-api/#presentationsession
+// https://w3c.github.io/presentation-api/#interface-presentationsession
 
 enum PresentationSessionState {
     "connected",
@@ -15,13 +15,14 @@ enum PresentationSessionState {
 ] interface PresentationSession : EventTarget {
     readonly attribute DOMString? id;
     readonly attribute PresentationSessionState state;
+    void close();
+    attribute EventHandler onstatechange;
 
+    // Communication
+    // TODO(avayvod): attribute BinaryType binaryType;
+    attribute EventHandler onmessage;
     [RaisesException] void send(DOMString message);
+    [RaisesException] void send(Blob data);
     [RaisesException] void send(ArrayBuffer data);
     [RaisesException] void send(ArrayBufferView data);
-    [RaisesException] void send(Blob data);
-    void close();
-
-    attribute EventHandler onmessage;
-    attribute EventHandler onstatechange;
 };
