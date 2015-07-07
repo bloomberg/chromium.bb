@@ -4,7 +4,9 @@
 
 #include <vector>
 
+#include "cc/base/region.h"
 #include "cc/playback/display_list_raster_source.h"
+#include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_display_list_recording_source.h"
 #include "cc/test/skia_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -168,47 +170,135 @@ TEST_F(DisplayListRecordingSourceTest, DiscardablePixelRefsWithTransform) {
 }
 
 TEST_F(DisplayListRecordingSourceTest, ExposesEnoughNewAreaEmpty) {
+  gfx::Size layer_size(1000, 1000);
+
   // Both empty means there is nothing to do.
-  EXPECT_FALSE(DisplayListRecordingSource::ExposesEnoughNewArea(gfx::Rect(),
-                                                                gfx::Rect()));
+  EXPECT_FALSE(DisplayListRecordingSource::ExposesEnoughNewArea(
+      gfx::Rect(), gfx::Rect(), layer_size));
   // Going from empty to non-empty means we must re-record because it could be
   // the first frame after construction or Clear.
   EXPECT_TRUE(DisplayListRecordingSource::ExposesEnoughNewArea(
-      gfx::Rect(), gfx::Rect(1, 1)));
+      gfx::Rect(), gfx::Rect(1, 1), layer_size));
 
   // Going from non-empty to empty is not special-cased.
-  EXPECT_FALSE(DisplayListRecordingSource::ExposesEnoughNewArea(gfx::Rect(1, 1),
-                                                                gfx::Rect()));
+  EXPECT_FALSE(DisplayListRecordingSource::ExposesEnoughNewArea(
+      gfx::Rect(1, 1), gfx::Rect(), layer_size));
 }
 
 TEST_F(DisplayListRecordingSourceTest, ExposesEnoughNewAreaNotBigEnough) {
+  gfx::Size layer_size(1000, 1000);
   gfx::Rect current_recorded_viewport(100, 100, 100, 100);
   EXPECT_FALSE(DisplayListRecordingSource::ExposesEnoughNewArea(
-      current_recorded_viewport, gfx::Rect(100, 100, 90, 90)));
+      current_recorded_viewport, gfx::Rect(100, 100, 90, 90), layer_size));
   EXPECT_FALSE(DisplayListRecordingSource::ExposesEnoughNewArea(
-      current_recorded_viewport, gfx::Rect(100, 100, 100, 100)));
+      current_recorded_viewport, gfx::Rect(100, 100, 100, 100), layer_size));
   EXPECT_FALSE(DisplayListRecordingSource::ExposesEnoughNewArea(
-      current_recorded_viewport, gfx::Rect(0, 0, 200, 200)));
+      current_recorded_viewport, gfx::Rect(1, 1, 200, 200), layer_size));
+}
+
+TEST_F(DisplayListRecordingSourceTest,
+       ExposesEnoughNewAreaNotBigEnoughButNewAreaTouchesEdge) {
+  gfx::Size layer_size(500, 500);
+  gfx::Rect current_recorded_viewport(100, 100, 100, 100);
+
+  // Top edge.
+  EXPECT_TRUE(DisplayListRecordingSource::ExposesEnoughNewArea(
+      current_recorded_viewport, gfx::Rect(100, 0, 100, 200), layer_size));
+
+  // Left edge.
+  EXPECT_TRUE(DisplayListRecordingSource::ExposesEnoughNewArea(
+      current_recorded_viewport, gfx::Rect(0, 100, 200, 100), layer_size));
+
+  // Bottom edge.
+  EXPECT_TRUE(DisplayListRecordingSource::ExposesEnoughNewArea(
+      current_recorded_viewport, gfx::Rect(100, 100, 100, 400), layer_size));
+
+  // Right edge.
+  EXPECT_TRUE(DisplayListRecordingSource::ExposesEnoughNewArea(
+      current_recorded_viewport, gfx::Rect(100, 100, 400, 100), layer_size));
+}
+
+// Verifies that having a current viewport that touches a layer edge does not
+// force re-recording.
+TEST_F(DisplayListRecordingSourceTest,
+       ExposesEnoughNewAreaCurrentViewportTouchesEdge) {
+  gfx::Size layer_size(500, 500);
+  gfx::Rect potential_new_viewport(100, 100, 300, 300);
+
+  // Top edge.
+  EXPECT_FALSE(DisplayListRecordingSource::ExposesEnoughNewArea(
+      gfx::Rect(100, 0, 100, 100), potential_new_viewport, layer_size));
+
+  // Left edge.
+  EXPECT_FALSE(DisplayListRecordingSource::ExposesEnoughNewArea(
+      gfx::Rect(0, 100, 100, 100), potential_new_viewport, layer_size));
+
+  // Bottom edge.
+  EXPECT_FALSE(DisplayListRecordingSource::ExposesEnoughNewArea(
+      gfx::Rect(300, 400, 100, 100), potential_new_viewport, layer_size));
+
+  // Right edge.
+  EXPECT_FALSE(DisplayListRecordingSource::ExposesEnoughNewArea(
+      gfx::Rect(400, 300, 100, 100), potential_new_viewport, layer_size));
 }
 
 TEST_F(DisplayListRecordingSourceTest, ExposesEnoughNewAreaScrollScenarios) {
+  gfx::Size layer_size(1000, 1000);
   gfx::Rect current_recorded_viewport(100, 100, 100, 100);
 
   gfx::Rect new_recorded_viewport(current_recorded_viewport);
   new_recorded_viewport.Offset(512, 0);
   EXPECT_FALSE(DisplayListRecordingSource::ExposesEnoughNewArea(
-      current_recorded_viewport, new_recorded_viewport));
+      current_recorded_viewport, new_recorded_viewport, layer_size));
   new_recorded_viewport.Offset(0, 512);
   EXPECT_FALSE(DisplayListRecordingSource::ExposesEnoughNewArea(
-      current_recorded_viewport, new_recorded_viewport));
+      current_recorded_viewport, new_recorded_viewport, layer_size));
 
   new_recorded_viewport.Offset(1, 0);
   EXPECT_TRUE(DisplayListRecordingSource::ExposesEnoughNewArea(
-      current_recorded_viewport, new_recorded_viewport));
+      current_recorded_viewport, new_recorded_viewport, layer_size));
 
   new_recorded_viewport.Offset(-1, 1);
   EXPECT_TRUE(DisplayListRecordingSource::ExposesEnoughNewArea(
-      current_recorded_viewport, new_recorded_viewport));
+      current_recorded_viewport, new_recorded_viewport, layer_size));
+}
+
+// Verifies that UpdateAndExpandInvalidation calls ExposesEnoughNewArea with the
+// right arguments.
+TEST_F(DisplayListRecordingSourceTest,
+       ExposesEnoughNewAreaCalledWithCorrectArguments) {
+  gfx::Size grid_cell_size(128, 128);
+  DisplayListRecordingSource recording_source(grid_cell_size);
+  FakeContentLayerClient client;
+  Region invalidation;
+  gfx::Size layer_size(9000, 9000);
+  gfx::Rect visible_rect(0, 0, 256, 256);
+
+  recording_source.UpdateAndExpandInvalidation(
+      &client, &invalidation, layer_size, visible_rect, 0,
+      RecordingSource::RECORD_NORMALLY);
+  EXPECT_EQ(gfx::Rect(0, 0, 8256, 8256), recording_source.recorded_viewport());
+
+  visible_rect.Offset(0, 512);
+  recording_source.UpdateAndExpandInvalidation(
+      &client, &invalidation, layer_size, visible_rect, 0,
+      RecordingSource::RECORD_NORMALLY);
+  EXPECT_EQ(gfx::Rect(0, 0, 8256, 8256), recording_source.recorded_viewport());
+
+  // Move past the threshold for enough exposed new area.
+  visible_rect.Offset(0, 1);
+  recording_source.UpdateAndExpandInvalidation(
+      &client, &invalidation, layer_size, visible_rect, 0,
+      RecordingSource::RECORD_NORMALLY);
+  EXPECT_EQ(gfx::Rect(0, 0, 8256, 8769), recording_source.recorded_viewport());
+
+  // Make the bottom of the potential new recorded viewport coincide with the
+  // layer's bottom edge.
+  visible_rect.Offset(0, 231);
+  recording_source.UpdateAndExpandInvalidation(
+      &client, &invalidation, layer_size, visible_rect, 0,
+      RecordingSource::RECORD_NORMALLY);
+  EXPECT_EQ(gfx::Rect(0, 0, 8256, 9000), recording_source.recorded_viewport());
 }
 
 }  // namespace

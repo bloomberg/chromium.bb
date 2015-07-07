@@ -65,7 +65,8 @@ DisplayListRecordingSource::~DisplayListRecordingSource() {
 // change.
 bool DisplayListRecordingSource::ExposesEnoughNewArea(
     const gfx::Rect& current_recorded_viewport,
-    const gfx::Rect& potential_new_recorded_viewport) {
+    const gfx::Rect& potential_new_recorded_viewport,
+    const gfx::Size& layer_size) {
   // If both are empty, nothing to do.
   if (current_recorded_viewport.IsEmpty() &&
       potential_new_recorded_viewport.IsEmpty())
@@ -76,12 +77,36 @@ bool DisplayListRecordingSource::ExposesEnoughNewArea(
   if (current_recorded_viewport.IsEmpty())
     return true;
 
-  // Only return true if the new viewport includes area outside of a skirt
-  // around the existng viewport.
+  // Re-record if the new viewport includes area outside of a skirt around the
+  // existing viewport.
   gfx::Rect expanded_viewport(current_recorded_viewport);
   expanded_viewport.Inset(-kMinimumDistanceBeforeUpdatingRecordedViewport,
                           -kMinimumDistanceBeforeUpdatingRecordedViewport);
-  return !expanded_viewport.Contains(potential_new_recorded_viewport);
+  if (!expanded_viewport.Contains(potential_new_recorded_viewport))
+    return true;
+
+  // Even if the new viewport doesn't include enough new area to satisfy the
+  // condition above, re-record anyway if touches a layer edge not touched by
+  // the existing viewport. Viewports are clipped to layer boundaries, so if the
+  // new viewport touches a layer edge not touched by the existing viewport,
+  // the new viewport must expose new area that touches this layer edge. Since
+  // this new area touches a layer edge, it's impossible to expose more area in
+  // that direction, so recording cannot be deferred until the exposed new area
+  // satisfies the condition above.
+  if (potential_new_recorded_viewport.x() == 0 &&
+      current_recorded_viewport.x() != 0)
+    return true;
+  if (potential_new_recorded_viewport.y() == 0 &&
+      current_recorded_viewport.y() != 0)
+    return true;
+  if (potential_new_recorded_viewport.right() == layer_size.width() &&
+      current_recorded_viewport.right() != layer_size.width())
+    return true;
+  if (potential_new_recorded_viewport.bottom() == layer_size.height() &&
+      current_recorded_viewport.bottom() != layer_size.height())
+    return true;
+
+  return false;
 }
 
 bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
@@ -107,8 +132,9 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
                                         -pixel_record_distance_);
   potential_new_recorded_viewport.Intersect(gfx::Rect(GetSize()));
 
-  if (updated || ExposesEnoughNewArea(potential_new_recorded_viewport,
-                                      recorded_viewport_)) {
+  if (updated ||
+      ExposesEnoughNewArea(recorded_viewport_, potential_new_recorded_viewport,
+                           GetSize())) {
     gfx::Rect old_recorded_viewport = recorded_viewport_;
     recorded_viewport_ = potential_new_recorded_viewport;
 

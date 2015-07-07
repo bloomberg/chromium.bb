@@ -39,7 +39,10 @@ class CC_EXPORT DisplayListRecordingSource : public RecordingSource {
   // worth re-recording.
   static bool ExposesEnoughNewArea(
       const gfx::Rect& current_recorded_viewport,
-      const gfx::Rect& potential_new_recorded_viewport);
+      const gfx::Rect& potential_new_recorded_viewport,
+      const gfx::Size& layer_size);
+
+  gfx::Rect recorded_viewport() const { return recorded_viewport_; }
 
  protected:
   void Clear();
