@@ -112,7 +112,7 @@ public:
     virtual void setNeedsCompositorUpdate() { }
 
     // Indicates whether a commit is pending.
-    virtual bool commitRequested() const = 0;
+    virtual bool commitRequested() const { return false; }
 
     // Relays the end of a fling animation.
     virtual void didStopFlinging() { }
