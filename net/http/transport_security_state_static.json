@@ -3122,7 +3122,8 @@
     { "name": "asm-x.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "ccblog.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "smiatek.name", "include_subdomains": true, "mode": "force-https" },
-    { "name": "korni22.org", "include_subdomains": true, "mode": "force-https" }
+    { "name": "korni22.org", "include_subdomains": true, "mode": "force-https" },
+    { "name": "student.andover.edu", "include_subdomains": true, "mode": "force-https" }
   ],
 
   // |ReportUMAOnPinFailure| uses these to report which domain was associated
