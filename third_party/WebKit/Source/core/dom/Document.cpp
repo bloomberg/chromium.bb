@@ -152,6 +152,7 @@
 #include "core/html/PluginDocument.h"
 #include "core/html/WindowNameCollection.h"
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
+#include "core/html/canvas/CanvasFontCache.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/forms/FormController.h"
 #include "core/html/imports/HTMLImportLoader.h"
@@ -634,6 +635,8 @@ void Document::dispose()
 
     m_lifecycle.advanceTo(DocumentLifecycle::Disposed);
     DocumentLifecycleNotifier::notifyDocumentWasDisposed();
+
+    m_canvasFontCache.clear();
 }
 #endif
 
@@ -1410,6 +1413,9 @@ void Document::didChangeVisibilityState()
     PageVisibilityState state = pageVisibilityState();
     for (DocumentVisibilityObserver* observer : m_visibilityObservers)
         observer->didChangeVisibilityState(state);
+
+    if (hidden() && m_canvasFontCache)
+        m_canvasFontCache->pruneAll();
 }
 
 void Document::registerVisibilityObserver(DocumentVisibilityObserver* observer)
@@ -2293,6 +2299,14 @@ AXObjectCache* Document::axObjectCache() const
     if (!cacheOwner.m_axObjectCache)
         cacheOwner.m_axObjectCache = AXObjectCache::create(cacheOwner);
     return cacheOwner.m_axObjectCache.get();
+}
+
+CanvasFontCache* Document::canvasFontCache()
+{
+    if (!m_canvasFontCache)
+        m_canvasFontCache = CanvasFontCache::create(*this);
+
+    return m_canvasFontCache.get();
 }
 
 PassRefPtrWillBeRawPtr<DocumentParser> Document::createParser()

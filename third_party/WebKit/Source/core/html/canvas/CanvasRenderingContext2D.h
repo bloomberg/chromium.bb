@@ -36,8 +36,6 @@
 #include "core/html/canvas/CanvasRenderingContext2DState.h"
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
 #include "platform/graphics/GraphicsTypes.h"
-#include "wtf/HashMap.h"
-#include "wtf/ListHashSet.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
@@ -61,8 +59,6 @@ class SVGMatrixTearOff;
 class TextMetrics;
 
 typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmap CanvasImageSourceUnion;
-
-typedef WillBeHeapHashMap<String, RefPtrWillBeMember<MutableStylePropertySet>> MutableStylePropertyMap;
 
 class CORE_EXPORT CanvasRenderingContext2D final : public CanvasRenderingContext, public CanvasPathMethods {
     DEFINE_WRAPPERTYPEINFO();
@@ -311,8 +307,6 @@ private:
     bool m_hasAlpha;
     LostContextMode m_contextLostMode;
     bool m_contextRestorable;
-    MutableStylePropertyMap m_fetchedFonts;
-    ListHashSet<String> m_fetchedFontsLRUList;
     unsigned m_tryRestoreContextAttemptCount;
     Timer<CanvasRenderingContext2D> m_dispatchContextLostEventTimer;
     Timer<CanvasRenderingContext2D> m_dispatchContextRestoredEventTimer;

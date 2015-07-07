@@ -88,6 +88,7 @@
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/HTMLTextAreaElement.h"
+#include "core/html/canvas/CanvasFontCache.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContext2D.h"
 #include "core/html/forms/FormController.h"
@@ -2370,6 +2371,16 @@ void Internals::setNetworkConnectionInfo(const String& type, ExceptionState& exc
 unsigned Internals::countHitRegions(CanvasRenderingContext* context)
 {
     return toCanvasRenderingContext2D(context)->hitRegionsCount();
+}
+
+bool Internals::isInCanvasFontCache(Document* document, const String& fontString)
+{
+    return document->canvasFontCache()->isInCache(fontString);
+}
+
+unsigned Internals::canvasFontCacheMaxFonts()
+{
+    return CanvasFontCache::maxFonts();
 }
 
 ClientRect* Internals::boundsInViewportSpace(Element* element)

@@ -1,0 +1,7 @@
+PASS successfullyParsed is true
+
+TEST COMPLETE
+PASS internals.isInCanvasFontCache(document, "1px sans-serif") is true
+PASS internals.isInCanvasFontCache(document, "1px sans-serif") is false
+PASS internals.isInCanvasFontCache(document, "2px sans-serif") is true
+

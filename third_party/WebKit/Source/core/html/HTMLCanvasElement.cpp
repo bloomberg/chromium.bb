@@ -38,6 +38,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/ImageData.h"
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
+#include "core/html/canvas/CanvasFontCache.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContext2D.h"
 #include "core/html/canvas/CanvasRenderingContextFactory.h"

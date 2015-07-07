@@ -49,6 +49,7 @@
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
 #include "core/html/TextMetrics.h"
+#include "core/html/canvas/CanvasFontCache.h"
 #include "core/html/canvas/CanvasGradient.h"
 #include "core/html/canvas/CanvasPattern.h"
 #include "core/html/canvas/CanvasRenderingContext2DState.h"
@@ -83,7 +84,6 @@ static const char rtl[] = "rtl";
 static const char ltr[] = "ltr";
 static const double TryRestoreContextInterval = 0.5;
 static const unsigned MaxTryRestoreContextAttempts = 4;
-static const unsigned FetchedFontsCacheLimit = 50;
 static const float cDeviceScaleFactor = 1.0f; // Canvas is device independent
 
 static bool contextLostRestoredEventsEnabled()
@@ -219,7 +219,6 @@ DEFINE_TRACE(CanvasRenderingContext2D)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_stateStack);
-    visitor->trace(m_fetchedFonts);
     visitor->trace(m_hitRegionManager);
 #endif
     CanvasRenderingContext::trace(visitor);
@@ -1715,28 +1714,10 @@ void CanvasRenderingContext2D::setFont(const String& newFont)
     if (!canvas()->document().frame())
         return;
 
-    RefPtrWillBeRawPtr<MutableStylePropertySet> parsedStyle;
-    MutableStylePropertyMap::iterator i = m_fetchedFonts.find(newFont);
-    if (i != m_fetchedFonts.end()) {
-        parsedStyle = i->value;
-        m_fetchedFontsLRUList.remove(newFont);
-    } else {
-        parsedStyle = MutableStylePropertySet::create();
-        CSSParser::parseValue(parsedStyle.get(), CSSPropertyFont, newFont, true, HTMLStandardMode, 0);
-        if (m_fetchedFonts.size() >= FetchedFontsCacheLimit) {
-            m_fetchedFonts.remove(m_fetchedFontsLRUList.first());
-            m_fetchedFontsLRUList.removeFirst();
-        }
-        if (parsedStyle->isEmpty())
-            return;
-        // According to http://lists.w3.org/Archives/Public/public-html/2009Jul/0947.html,
-        // the "inherit" and "initial" values must be ignored.
-        RefPtrWillBeRawPtr<CSSValue> fontValue = parsedStyle->getPropertyCSSValue(CSSPropertyFontSize);
-        if (fontValue && (fontValue->isInitialValue() || fontValue->isInheritedValue()))
-            return;
-        m_fetchedFonts.add(newFont, parsedStyle);
-    }
-    m_fetchedFontsLRUList.add(newFont);
+    MutableStylePropertySet* parsedStyle = canvas()->document().canvasFontCache()->parseFont(newFont);
+
+    if (!parsedStyle)
+        return;
 
     // The parse succeeded.
     String newFontSafeCopy(newFont); // Create a string copy since newFont can be deleted inside realizeSaves.

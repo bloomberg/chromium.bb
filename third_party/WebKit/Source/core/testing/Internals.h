@@ -343,6 +343,9 @@ public:
 
     unsigned countHitRegions(CanvasRenderingContext*);
 
+    bool isInCanvasFontCache(Document*, const String&);
+    unsigned canvasFontCacheMaxFonts();
+
     void forcePluginPlaceholder(HTMLElement* plugin, PassRefPtrWillBeRawPtr<DocumentFragment>, ExceptionState&);
     void forcePluginPlaceholder(HTMLElement* plugin, const PluginPlaceholderOptions&, ExceptionState&);
 

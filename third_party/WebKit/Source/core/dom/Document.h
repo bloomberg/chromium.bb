@@ -74,6 +74,7 @@ class Attr;
 class CDATASection;
 class CSSStyleDeclaration;
 class CSSStyleSheet;
+class CanvasFontCache;
 class CanvasRenderingContext2D;
 class CanvasRenderingContext2DOrWebGLRenderingContext;
 class ChromeClient;
@@ -1054,6 +1055,8 @@ public:
     void setClientHintsPreferences(const ClientHintsPreferences& preferences) { m_clientHintsPreferences.set(preferences); }
     const ClientHintsPreferences& clientHintsPreferences() const { return m_clientHintsPreferences; }
 
+    CanvasFontCache* canvasFontCache();
+
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 
@@ -1398,6 +1401,8 @@ private:
     OriginsUsingFeatures::Value m_originsUsingFeaturesValue;
 
     ClientHintsPreferences m_clientHintsPreferences;
+
+    OwnPtrWillBeMember<CanvasFontCache> m_canvasFontCache;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT WillBeHeapSupplement<Document>;

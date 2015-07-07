@@ -301,6 +301,9 @@
     // This function is for testing HitRegions on Canvas2D.
     unsigned long countHitRegions(CanvasRenderingContext2D context);
 
+    [TypeChecking=Interface] boolean isInCanvasFontCache(Document document, DOMString fontString);
+    [TypeChecking=Interface] unsigned long canvasFontCacheMaxFonts();
+
     [TypeChecking=Interface] ClientRect boundsInViewportSpace(Element element);
 
     [RaisesException, TypeChecking=Interface] void forcePluginPlaceholder(HTMLElement plugin, DocumentFragment fragment);
