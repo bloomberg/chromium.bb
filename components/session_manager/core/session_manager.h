@@ -14,7 +14,7 @@ class SessionManagerDelegate;
 
 // TODO(nkostylev): Get rid/consolidate with:
 // ash::SessionStateDelegate::SessionState and chromeos::LoggedInState.
-enum SESSION_EXPORT SessionState {
+enum SessionState {
   // Default value, when session state hasn't been initialized yet.
   SESSION_STATE_UNKNOWN = 0,
 
