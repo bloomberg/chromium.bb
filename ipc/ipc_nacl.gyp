@@ -26,6 +26,7 @@
           },
           'dependencies': [
             '../base/base_nacl.gyp:base_nacl',
+            '../crypto/crypto_nacl.gyp:crypto_nacl',
           ],
         },
         {
@@ -55,6 +56,7 @@
           ],
           'dependencies': [
             '../base/base_nacl.gyp:base_nacl_nonsfi',
+            '../crypto/crypto_nacl.gyp:crypto_nacl',
           ],
         },
       ],

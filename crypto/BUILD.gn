@@ -5,191 +5,204 @@
 import("//build/config/crypto.gni")
 import("//testing/test.gni")
 
-component("crypto") {
-  output_name = "crcrypto"  # Avoid colliding with OpenSSL's libcrypto.
-  sources = [
-    "aead_openssl.cc",
-    "aead_openssl.h",
-    "aes_128_gcm_helpers_nss.cc",
-    "aes_128_gcm_helpers_nss.h",
-    "apple_keychain.h",
-    "apple_keychain_ios.mm",
-    "apple_keychain_mac.mm",
-    "capi_util.cc",
-    "capi_util.h",
-    "crypto_export.h",
-    "cssm_init.cc",
-    "cssm_init.h",
-    "curve25519-donna.c",
-    "curve25519.cc",
-    "curve25519.h",
-    "ec_private_key.h",
-    "ec_private_key_nss.cc",
-    "ec_private_key_openssl.cc",
-    "ec_signature_creator.cc",
-    "ec_signature_creator.h",
-    "ec_signature_creator_impl.h",
-    "ec_signature_creator_nss.cc",
-    "ec_signature_creator_openssl.cc",
-    "encryptor.cc",
-    "encryptor.h",
-    "encryptor_nss.cc",
-    "encryptor_openssl.cc",
-    "ghash.cc",
-    "ghash.h",
-    "hkdf.cc",
-    "hkdf.h",
-    "hmac.cc",
-    "hmac.h",
-    "hmac_nss.cc",
-    "hmac_openssl.cc",
-    "mac_security_services_lock.cc",
-    "mac_security_services_lock.h",
-
-    # TODO(brettw) these mocks should be moved to a test_support_crypto target
-    # if possible.
-    "mock_apple_keychain.cc",
-    "mock_apple_keychain.h",
-    "mock_apple_keychain_ios.cc",
-    "mock_apple_keychain_mac.cc",
-    "nss_key_util.cc",
-    "nss_key_util.h",
-    "nss_util.cc",
-    "nss_util.h",
-    "nss_util_internal.h",
-    "openssl_bio_string.cc",
-    "openssl_bio_string.h",
-    "openssl_util.cc",
-    "openssl_util.h",
-    "p224.cc",
-    "p224.h",
-    "p224_spake.cc",
-    "p224_spake.h",
-    "random.cc",
-    "random.h",
-    "rsa_private_key.cc",
-    "rsa_private_key.h",
-    "rsa_private_key_nss.cc",
-    "rsa_private_key_openssl.cc",
-    "scoped_capi_types.h",
-    "scoped_nss_types.h",
-    "secure_hash.h",
-    "secure_hash_default.cc",
-    "secure_hash_openssl.cc",
-    "secure_util.cc",
-    "secure_util.h",
-    "sha2.cc",
-    "sha2.h",
-    "signature_creator.h",
-    "signature_creator_nss.cc",
-    "signature_creator_openssl.cc",
-    "signature_verifier.h",
-    "signature_verifier_nss.cc",
-    "signature_verifier_openssl.cc",
-    "symmetric_key.h",
-    "symmetric_key_nss.cc",
-    "symmetric_key_openssl.cc",
-    "third_party/nss/chromium-blapi.h",
-    "third_party/nss/chromium-blapit.h",
-    "third_party/nss/chromium-nss.h",
-    "third_party/nss/chromium-sha256.h",
-    "third_party/nss/pk11akey.cc",
-    "third_party/nss/rsawrapr.c",
-    "third_party/nss/secsign.cc",
-    "third_party/nss/sha512.cc",
-  ]
-
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
-  deps = [
-    ":platform",
-    "//base",
-    "//base/third_party/dynamic_annotations",
-  ]
-
-  if (!is_mac && !is_ios) {
-    sources -= [
-      "apple_keychain.h",
-      "mock_apple_keychain.cc",
-      "mock_apple_keychain.h",
+if (is_nacl) {
+  component("crypto") {
+    output_name = "crcrypto"  # Avoid colliding with OpenSSL's libcrypto.
+    sources = [
+      "random.cc",
+      "random.h",
+    ]
+    deps = [
+      "//base",
     ]
   }
-
-  if (!is_mac) {
-    sources -= [
-      "cssm_init.cc",
-      "cssm_init.h",
-      "mac_security_services_lock.cc",
-      "mac_security_services_lock.h",
-    ]
-  }
-  if (!is_win) {
-    sources -= [
-      "capi_util.cc",
-      "capi_util.h",
-    ]
-  }
-
-  if (is_android) {
-    deps += [ "//third_party/android_tools:cpu_features" ]
-  }
-
-  if (use_openssl) {
-    # Remove NSS files when using OpenSSL
-    sources -= [
-      "aes_128_gcm_helpers_nss.cc",
-      "aes_128_gcm_helpers_nss.h",
-      "ec_private_key_nss.cc",
-      "ec_signature_creator_nss.cc",
-      "encryptor_nss.cc",
-      "hmac_nss.cc",
-      "rsa_private_key_nss.cc",
-      "secure_hash_default.cc",
-      "signature_creator_nss.cc",
-      "signature_verifier_nss.cc",
-      "symmetric_key_nss.cc",
-      "third_party/nss/chromium-blapi.h",
-      "third_party/nss/chromium-blapit.h",
-      "third_party/nss/chromium-nss.h",
-      "third_party/nss/pk11akey.cc",
-      "third_party/nss/rsawrapr.c",
-      "third_party/nss/secsign.cc",
-    ]
-  } else {
-    # Remove OpenSSL when using NSS.
-    sources -= [
+} else {
+  component("crypto") {
+    output_name = "crcrypto"  # Avoid colliding with OpenSSL's libcrypto.
+    sources = [
       "aead_openssl.cc",
       "aead_openssl.h",
+      "aes_128_gcm_helpers_nss.cc",
+      "aes_128_gcm_helpers_nss.h",
+      "apple_keychain.h",
+      "apple_keychain_ios.mm",
+      "apple_keychain_mac.mm",
+      "capi_util.cc",
+      "capi_util.h",
+      "crypto_export.h",
+      "cssm_init.cc",
+      "cssm_init.h",
+      "curve25519-donna.c",
+      "curve25519.cc",
+      "curve25519.h",
+      "ec_private_key.h",
+      "ec_private_key_nss.cc",
       "ec_private_key_openssl.cc",
+      "ec_signature_creator.cc",
+      "ec_signature_creator.h",
+      "ec_signature_creator_impl.h",
+      "ec_signature_creator_nss.cc",
       "ec_signature_creator_openssl.cc",
+      "encryptor.cc",
+      "encryptor.h",
+      "encryptor_nss.cc",
       "encryptor_openssl.cc",
+      "ghash.cc",
+      "ghash.h",
+      "hkdf.cc",
+      "hkdf.h",
+      "hmac.cc",
+      "hmac.h",
+      "hmac_nss.cc",
       "hmac_openssl.cc",
-      "openssl_bio_string.cc",
-      "openssl_bio_string.h",
-      "openssl_util.cc",
-      "openssl_util.h",
-      "rsa_private_key_openssl.cc",
-      "secure_hash_openssl.cc",
-      "signature_creator_openssl.cc",
-      "signature_verifier_openssl.cc",
-      "symmetric_key_openssl.cc",
-    ]
-  }
+      "mac_security_services_lock.cc",
+      "mac_security_services_lock.h",
 
-  # Some files are built when NSS is used at all, either for the internal crypto
-  # library or the platform certificate library.
-  if (use_openssl && !use_nss_certs) {
-    sources -= [
+      # TODO(brettw) these mocks should be moved to a test_support_crypto target
+      # if possible.
+      "mock_apple_keychain.cc",
+      "mock_apple_keychain.h",
+      "mock_apple_keychain_ios.cc",
+      "mock_apple_keychain_mac.cc",
       "nss_key_util.cc",
       "nss_key_util.h",
       "nss_util.cc",
       "nss_util.h",
       "nss_util_internal.h",
+      "openssl_bio_string.cc",
+      "openssl_bio_string.h",
+      "openssl_util.cc",
+      "openssl_util.h",
+      "p224.cc",
+      "p224.h",
+      "p224_spake.cc",
+      "p224_spake.h",
+      "random.cc",
+      "random.h",
+      "rsa_private_key.cc",
+      "rsa_private_key.h",
+      "rsa_private_key_nss.cc",
+      "rsa_private_key_openssl.cc",
+      "scoped_capi_types.h",
+      "scoped_nss_types.h",
+      "secure_hash.h",
+      "secure_hash_default.cc",
+      "secure_hash_openssl.cc",
+      "secure_util.cc",
+      "secure_util.h",
+      "sha2.cc",
+      "sha2.h",
+      "signature_creator.h",
+      "signature_creator_nss.cc",
+      "signature_creator_openssl.cc",
+      "signature_verifier.h",
+      "signature_verifier_nss.cc",
+      "signature_verifier_openssl.cc",
+      "symmetric_key.h",
+      "symmetric_key_nss.cc",
+      "symmetric_key_openssl.cc",
+      "third_party/nss/chromium-blapi.h",
+      "third_party/nss/chromium-blapit.h",
+      "third_party/nss/chromium-nss.h",
+      "third_party/nss/chromium-sha256.h",
+      "third_party/nss/pk11akey.cc",
+      "third_party/nss/rsawrapr.c",
+      "third_party/nss/secsign.cc",
+      "third_party/nss/sha512.cc",
     ]
-  }
 
-  defines = [ "CRYPTO_IMPLEMENTATION" ]
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
+    deps = [
+      ":platform",
+      "//base",
+      "//base/third_party/dynamic_annotations",
+    ]
+
+    if (!is_mac && !is_ios) {
+      sources -= [
+        "apple_keychain.h",
+        "mock_apple_keychain.cc",
+        "mock_apple_keychain.h",
+      ]
+    }
+
+    if (!is_mac) {
+      sources -= [
+        "cssm_init.cc",
+        "cssm_init.h",
+        "mac_security_services_lock.cc",
+        "mac_security_services_lock.h",
+      ]
+    }
+    if (!is_win) {
+      sources -= [
+        "capi_util.cc",
+        "capi_util.h",
+      ]
+    }
+
+    if (is_android) {
+      deps += [ "//third_party/android_tools:cpu_features" ]
+    }
+
+    if (use_openssl) {
+      # Remove NSS files when using OpenSSL
+      sources -= [
+        "aes_128_gcm_helpers_nss.cc",
+        "aes_128_gcm_helpers_nss.h",
+        "ec_private_key_nss.cc",
+        "ec_signature_creator_nss.cc",
+        "encryptor_nss.cc",
+        "hmac_nss.cc",
+        "rsa_private_key_nss.cc",
+        "secure_hash_default.cc",
+        "signature_creator_nss.cc",
+        "signature_verifier_nss.cc",
+        "symmetric_key_nss.cc",
+        "third_party/nss/chromium-blapi.h",
+        "third_party/nss/chromium-blapit.h",
+        "third_party/nss/chromium-nss.h",
+        "third_party/nss/pk11akey.cc",
+        "third_party/nss/rsawrapr.c",
+        "third_party/nss/secsign.cc",
+      ]
+    } else {
+      # Remove OpenSSL when using NSS.
+      sources -= [
+        "aead_openssl.cc",
+        "aead_openssl.h",
+        "ec_private_key_openssl.cc",
+        "ec_signature_creator_openssl.cc",
+        "encryptor_openssl.cc",
+        "hmac_openssl.cc",
+        "openssl_bio_string.cc",
+        "openssl_bio_string.h",
+        "openssl_util.cc",
+        "openssl_util.h",
+        "rsa_private_key_openssl.cc",
+        "secure_hash_openssl.cc",
+        "signature_creator_openssl.cc",
+        "signature_verifier_openssl.cc",
+        "symmetric_key_openssl.cc",
+      ]
+    }
+
+    # Some files are built when NSS is used at all, either for the internal crypto
+    # library or the platform certificate library.
+    if (use_openssl && !use_nss_certs) {
+      sources -= [
+        "nss_key_util.cc",
+        "nss_key_util.h",
+        "nss_util.cc",
+        "nss_util.h",
+        "nss_util_internal.h",
+      ]
+    }
+
+    defines = [ "CRYPTO_IMPLEMENTATION" ]
+  }
 }
 
 # TODO(GYP): TODO(dpranke), fix the compile errors for this stuff

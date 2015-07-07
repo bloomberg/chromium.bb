@@ -530,7 +530,9 @@ MojoResult ChannelMojo::ReadFromMessageAttachmentSet(
                   attachment.get())->TakeHandle();
           handles->push_back(handle.release().value());
         } break;
-        case MessageAttachment::TYPE_WIN_HANDLE:
+        case MessageAttachment::TYPE_BROKERABLE_ATTACHMENT:
+          // Brokerable attachments are handled by the AttachmentBroker so
+          // there's no need to do anything here.
           NOTREACHED();
           break;
       }

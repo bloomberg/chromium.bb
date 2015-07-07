@@ -17,13 +17,23 @@ namespace IPC {
 // attached to a Chrome IPC message.
 class IPC_EXPORT BrokerableAttachment : public MessageAttachment {
  public:
+  static const size_t kNonceSize = 16;
   // An id uniquely identifies an attachment sent via a broker.
   struct IPC_EXPORT AttachmentId {
-    uint32_t nonce[4];
+    uint8_t nonce[kNonceSize];
+  };
+
+  enum BrokerableType {
+    WIN_HANDLE,
   };
 
   // The identifier is unique across all Chrome processes.
   AttachmentId GetIdentifier() const;
+
+  // Returns TYPE_BROKERABLE_ATTACHMENT
+  Type GetType() const override;
+
+  virtual BrokerableType GetBrokerableType() const = 0;
 
  protected:
   BrokerableAttachment();
@@ -32,7 +42,7 @@ class IPC_EXPORT BrokerableAttachment : public MessageAttachment {
  private:
   // This member uniquely identifies a BrokerableAttachment across all Chrome
   // processes.
-  AttachmentId id_;
+  const AttachmentId id_;
   DISALLOW_COPY_AND_ASSIGN(BrokerableAttachment);
 };
 

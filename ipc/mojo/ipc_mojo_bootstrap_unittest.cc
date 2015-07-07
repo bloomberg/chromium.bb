@@ -75,9 +75,7 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(IPCMojoBootstrapTestClient) {
   TestingDelegate delegate;
   scoped_ptr<IPC::MojoBootstrap> bootstrap = IPC::MojoBootstrap::Create(
       IPCTestBase::GetChannelName("IPCMojoBootstrapTestClient"),
-      IPC::Channel::MODE_CLIENT,
-      &delegate,
-      nullptr);
+      IPC::Channel::MODE_CLIENT, &delegate, nullptr);
 
   bootstrap->Connect();
 

@@ -19,6 +19,7 @@
 #include "base/win/scoped_handle.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_logging.h"
+#include "ipc/ipc_message_attachment_set.h"
 #include "ipc/ipc_message_utils.h"
 
 namespace IPC {
@@ -81,11 +82,25 @@ void ChannelWin::Close() {
 }
 
 bool ChannelWin::Send(Message* message) {
+  // TODO(erikchen): Remove this DCHECK once ChannelWin fully supports
+  // brokerable attachments. http://crbug.com/493414.
   DCHECK(!message->HasAttachments());
   DCHECK(thread_check_->CalledOnValidThread());
   DVLOG(2) << "sending message @" << message << " on channel @" << this
            << " with type " << message->type()
            << " (" << output_queue_.size() << " in queue)";
+
+  // Sending a brokerable attachment requires a call to Channel::Send(), so
+  // Send() may be re-entrant. Brokered attachments must be sent before the
+  // Message itself.
+  if (message->HasBrokerableAttachments()) {
+    DCHECK(broker_);
+    for (const BrokerableAttachment* attachment :
+         message->attachment_set()->PeekBrokerableAttachments()) {
+      if (!broker_->SendAttachmentToProcess(attachment, peer_pid_))
+        return false;
+    }
+  }
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
   Logging::GetInstance()->OnSendMessage(message, "");

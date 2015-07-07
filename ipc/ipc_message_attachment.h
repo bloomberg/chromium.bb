@@ -18,9 +18,9 @@ class IPC_EXPORT MessageAttachment
     : public base::RefCounted<MessageAttachment> {
  public:
   enum Type {
-    TYPE_PLATFORM_FILE,  // The instance is |PlatformFileAttachment|.
-    TYPE_MOJO_HANDLE,    // The instance is |MojoHandleAttachment|.
-    TYPE_WIN_HANDLE,     // The instance is |HandleAttachmentWin|.
+    TYPE_PLATFORM_FILE,          // The instance is |PlatformFileAttachment|.
+    TYPE_MOJO_HANDLE,            // The instance is |MojoHandleAttachment|.
+    TYPE_BROKERABLE_ATTACHMENT,  // The instance is |BrokerableAttachment|.
   };
 
   virtual Type GetType() const = 0;

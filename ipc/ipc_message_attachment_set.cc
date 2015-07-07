@@ -7,6 +7,7 @@
 #include <algorithm>
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
+#include "ipc/brokerable_attachment.h"
 #include "ipc/ipc_message_attachment.h"
 
 #if defined(OS_POSIX)
@@ -17,6 +18,21 @@
 #endif // OS_POSIX
 
 namespace IPC {
+
+namespace {
+
+unsigned count_attachments_of_type(
+    const std::vector<scoped_refptr<MessageAttachment>>& attachments,
+    MessageAttachment::Type type) {
+  unsigned count = 0;
+  for (const scoped_refptr<MessageAttachment>& attachment : attachments) {
+    if (attachment->GetType() == type)
+      ++count;
+  }
+  return count;
+}
+
+}  // namespace
 
 MessageAttachmentSet::MessageAttachmentSet()
     : consumed_descriptor_highwater_(0) {
@@ -39,17 +55,18 @@ MessageAttachmentSet::~MessageAttachmentSet() {
 }
 
 unsigned MessageAttachmentSet::num_descriptors() const {
-  return std::count_if(attachments_.begin(), attachments_.end(),
-                       [](scoped_refptr<MessageAttachment> i) {
-    return i->GetType() == MessageAttachment::TYPE_PLATFORM_FILE;
-  });
+  return count_attachments_of_type(attachments_,
+                                   MessageAttachment::TYPE_PLATFORM_FILE);
 }
 
 unsigned MessageAttachmentSet::num_mojo_handles() const {
-  return std::count_if(attachments_.begin(), attachments_.end(),
-                       [](scoped_refptr<MessageAttachment> i) {
-    return i->GetType() == MessageAttachment::TYPE_MOJO_HANDLE;
-  });
+  return count_attachments_of_type(attachments_,
+                                   MessageAttachment::TYPE_MOJO_HANDLE);
+}
+
+unsigned MessageAttachmentSet::num_brokerable_attachments() const {
+  return count_attachments_of_type(
+      attachments_, MessageAttachment::TYPE_BROKERABLE_ATTACHMENT);
 }
 
 unsigned MessageAttachmentSet::size() const {
@@ -112,6 +129,18 @@ scoped_refptr<MessageAttachment> MessageAttachmentSet::GetAttachmentAt(
 void MessageAttachmentSet::CommitAll() {
   attachments_.clear();
   consumed_descriptor_highwater_ = 0;
+}
+
+std::vector<const BrokerableAttachment*>
+MessageAttachmentSet::PeekBrokerableAttachments() const {
+  std::vector<const BrokerableAttachment*> output;
+  for (const scoped_refptr<MessageAttachment>& attachment : attachments_) {
+    if (attachment->GetType() ==
+        MessageAttachment::TYPE_BROKERABLE_ATTACHMENT) {
+      output.push_back(static_cast<BrokerableAttachment*>(attachment.get()));
+    }
+  }
+  return output;
 }
 
 #if defined(OS_POSIX)

@@ -34,7 +34,8 @@ class IPC_EXPORT AttachmentBroker {
   // Sends |attachment| to |destination_process|. The implementation uses an
   // IPC::Channel to communicate with the broker process. This may be the same
   // IPC::Channel that is requesting the brokering of an attachment.
-  virtual void SendAttachmentToProcess(BrokerableAttachment* attachment,
+  // Returns true on success and false otherwise.
+  virtual bool SendAttachmentToProcess(const BrokerableAttachment* attachment,
                                        base::ProcessId destination_process) = 0;
 
   // Returns whether the attachment was available. If the attachment was

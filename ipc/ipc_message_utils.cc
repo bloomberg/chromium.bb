@@ -449,6 +449,28 @@ void ParamTraits<std::vector<bool> >::Log(const param_type& p, std::string* l) {
   }
 }
 
+void ParamTraits<BrokerableAttachment::AttachmentId>::Write(
+    Message* m,
+    const param_type& p) {
+  m->WriteBytes(p.nonce, BrokerableAttachment::kNonceSize);
+}
+
+bool ParamTraits<BrokerableAttachment::AttachmentId>::Read(
+    const Message* m,
+    base::PickleIterator* iter,
+    param_type* r) {
+  const char* data;
+  if (!iter->ReadBytes(&data, BrokerableAttachment::kNonceSize))
+    return false;
+  memcpy(r->nonce, data, BrokerableAttachment::kNonceSize);
+  return true;
+}
+
+void ParamTraits<BrokerableAttachment::AttachmentId>::Log(const param_type& p,
+                                                          std::string* l) {
+  l->append(base::HexEncode(p.nonce, BrokerableAttachment::kNonceSize));
+}
+
 void ParamTraits<base::DictionaryValue>::Write(Message* m,
                                                const param_type& p) {
   WriteValue(m, &p, 0);

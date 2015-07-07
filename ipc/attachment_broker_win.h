@@ -7,9 +7,10 @@
 
 #include "ipc/attachment_broker.h"
 #include "ipc/ipc_export.h"
-#include "ipc/ipc_sender.h"
 
 namespace IPC {
+
+class Sender;
 
 // This class is an implementation of AttachmentBroker for the Windows platform.
 class IPC_EXPORT AttachmentBrokerWin : public IPC::AttachmentBroker {
@@ -23,10 +24,20 @@ class IPC_EXPORT AttachmentBrokerWin : public IPC::AttachmentBroker {
   void OnReceiveDuplicatedHandle(HANDLE, BrokerableAttachment::AttachmentId id);
 
   // IPC::AttachmentBroker overrides.
-  void SendAttachmentToProcess(BrokerableAttachment* attachment,
+  bool SendAttachmentToProcess(const BrokerableAttachment* attachment,
                                base::ProcessId destination_process) override;
   bool GetAttachmentWithId(BrokerableAttachment::AttachmentId id,
                            BrokerableAttachment* attachment) override;
+
+  // |sender_| is used to send Messages to the broker. |sender_| must live at
+  // least as long as this instance.
+  void set_sender(IPC::Sender* sender) { sender_ = sender; }
+
+ private:
+  // |sender_| is used to send Messages to the broker. |sender_| must live at
+  // least as long as this instance.
+  IPC::Sender* sender_;
+  DISALLOW_COPY_AND_ASSIGN(AttachmentBrokerWin);
 };
 
 }  // namespace IPC

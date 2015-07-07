@@ -4,6 +4,11 @@
 
 #include "ipc/attachment_broker_win.h"
 
+#include "ipc/attachment_broker_messages.h"
+#include "ipc/brokerable_attachment.h"
+#include "ipc/handle_attachment_win.h"
+#include "ipc/ipc_sender.h"
+
 namespace IPC {
 
 AttachmentBrokerWin::AttachmentBrokerWin() {
@@ -18,10 +23,19 @@ void AttachmentBrokerWin::OnReceiveDuplicatedHandle(
   // TODO(erikchen): Implement me. http://crbug.com/493414
 }
 
-void AttachmentBrokerWin::SendAttachmentToProcess(
-    BrokerableAttachment* attachment,
+bool AttachmentBrokerWin::SendAttachmentToProcess(
+    const BrokerableAttachment* attachment,
     base::ProcessId destination_process) {
-  // TODO(erikchen): Implement me. http://crbug.com/493414
+  switch (attachment->GetBrokerableType()) {
+    case BrokerableAttachment::WIN_HANDLE:
+      const internal::HandleAttachmentWin* handle_attachment =
+          static_cast<const internal::HandleAttachmentWin*>(attachment);
+      internal::HandleAttachmentWin::WireFormat format =
+          handle_attachment->GetWireFormat(destination_process);
+      return sender_->Send(
+          new AttachmentBrokerMsg_DuplicateWinHandle(format));
+  }
+  return false;
 }
 
 bool AttachmentBrokerWin::GetAttachmentWithId(

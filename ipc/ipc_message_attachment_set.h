@@ -18,6 +18,7 @@
 
 namespace IPC {
 
+class BrokerableAttachment;
 class MessageAttachment;
 
 // -----------------------------------------------------------------------------
@@ -37,6 +38,8 @@ class IPC_EXPORT MessageAttachmentSet
   unsigned num_descriptors() const;
   // Return the number of mojo handles in the attachment set
   unsigned num_mojo_handles() const;
+  // Return the number of brokerable attachments in the attachment set.
+  unsigned num_brokerable_attachments() const;
 
   // Return true if no unconsumed descriptors remain
   bool empty() const { return 0 == size(); }
@@ -55,6 +58,9 @@ class IPC_EXPORT MessageAttachmentSet
   // PeekDescriptors. It marks all the descriptors as consumed and closes those
   // which are auto-close.
   void CommitAll();
+
+  // Returns a vector of all brokerable attachments.
+  std::vector<const BrokerableAttachment*> PeekBrokerableAttachments() const;
 
 #if defined(OS_POSIX)
   // This is the maximum number of descriptors per message. We need to know this

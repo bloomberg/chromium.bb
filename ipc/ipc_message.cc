@@ -157,7 +157,12 @@ bool Message::HasAttachments() const {
 }
 
 bool Message::HasMojoHandles() const {
-  return attachment_set_.get() && 0 < attachment_set_->num_mojo_handles();
+  return attachment_set_.get() && attachment_set_->num_mojo_handles() > 0;
+}
+
+bool Message::HasBrokerableAttachments() const {
+  return attachment_set_.get() &&
+         attachment_set_->num_brokerable_attachments() > 0;
 }
 
 }  // namespace IPC

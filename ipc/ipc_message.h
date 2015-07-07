@@ -177,6 +177,8 @@ class IPC_EXPORT Message : public base::Pickle {
   bool HasAttachments() const;
   // Returns true if there are any MojoHandleAttachments in this message.
   bool HasMojoHandles() const;
+  // Whether the message has any brokerable attachments.
+  bool HasBrokerableAttachments() const;
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
   // Adds the outgoing time from Time::Now() at the end of the message and sets
