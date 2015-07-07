@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "mojo/edk/embedder/process_delegate.h"
-#include "mojo/runner/scoped_user_data_dir.h"
 #include "mojo/runner/task_runners.h"
 #include "mojo/runner/url_resolver.h"
 #include "mojo/shell/application_manager.h"
@@ -80,7 +79,6 @@ class Context : public shell::ApplicationManager::Delegate,
 
   void OnApplicationEnd(const GURL& url);
 
-  ScopedUserDataDir scoped_user_data_dir;
   std::set<GURL> app_urls_;
   scoped_ptr<TaskRunners> task_runners_;
   shell::ApplicationManager application_manager_;

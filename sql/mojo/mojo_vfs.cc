@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "base/strings/stringprintf.h"
 #include "components/filesystem/public/interfaces/file.mojom.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
 #include "components/filesystem/public/interfaces/types.mojom.h"
@@ -246,25 +245,10 @@ int MojoVFSOpen(sqlite3_vfs* mojo_vfs,
   if (flags & SQLITE_OPEN_DELETEONCLOSE)
     open_flags |= filesystem::kDeleteOnClose;
 
-  mojo::String mojo_name;
-  if (name) {
-    // Don't let callers open the pattern of our temporary databases. When we
-    // open with a null name and SQLITE_OPEN_DELETEONCLOSE, we unlink the
-    // database after we open it. If we create a database here, close it
-    // normally, and then open the same file through the other path, we could
-    // delete the database.
-    CHECK(strncmp("Temp_", name, 5) != 0);
-    mojo_name = name;
-  } else {
-    DCHECK(flags & SQLITE_OPEN_DELETEONCLOSE);
-    static int temp_number = 0;
-    mojo_name = base::StringPrintf("Temp_%d.db", temp_number++);
-  }
-
   // Grab the incoming file
   filesystem::FilePtr file_ptr;
   filesystem::FileError error = filesystem::FILE_ERROR_FAILED;
-  GetRootDirectory(mojo_vfs)->OpenFile(mojo_name, GetProxy(&file_ptr),
+  GetRootDirectory(mojo_vfs)->OpenFile(mojo::String(name), GetProxy(&file_ptr),
                                        open_flags, Capture(&error));
   GetRootDirectory(mojo_vfs).WaitForIncomingResponse();
   if (error != filesystem::FILE_ERROR_OK) {

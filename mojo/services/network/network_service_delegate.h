@@ -5,8 +5,6 @@
 #ifndef MOJO_SERVICES_NETWORK_NETWORK_SERVICE_DELEGATE_H_
 #define MOJO_SERVICES_NETWORK_NETWORK_SERVICE_DELEGATE_H_
 
-#include "base/threading/thread.h"
-#include "components/filesystem/public/interfaces/file_system.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/interface_factory.h"
@@ -14,10 +12,6 @@
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_ptr.h"
-
-namespace sql {
-class ScopedMojoFilesystemVFS;
-}
 
 class NetworkServiceDelegate
     : public mojo::ApplicationDelegate,
@@ -44,14 +38,6 @@ class NetworkServiceDelegate
 
  private:
   mojo::ApplicationImpl* app_;
-
-  // A worker thread that blocks for file IO.
-  scoped_ptr<base::Thread> io_worker_thread_;
-
-  // Our connection to the filesystem service, which stores our cookies and
-  // other data.
-  filesystem::FileSystemPtr files_;
-
   scoped_ptr<mojo::NetworkContext> context_;
 };
 

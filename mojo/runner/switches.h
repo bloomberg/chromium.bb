@@ -22,8 +22,6 @@ extern const char kMapOrigin[];
 extern const char kOrigin[];
 extern const char kTraceStartup[];
 extern const char kURLMappings[];
-extern const char kUseTemporaryUserDataDir[];
-extern const char kUserDataDir[];
 
 }  // namespace switches
 
