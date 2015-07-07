@@ -92,7 +92,10 @@ class ApplicationImpl : public Application,
   template <typename Interface>
   void ConnectToService(mojo::URLRequestPtr request,
                         InterfacePtr<Interface>* ptr) {
-    ConnectToApplication(request.Pass())->ConnectToService(ptr);
+    ApplicationConnection* connection = ConnectToApplication(request.Pass());
+    if (!connection)
+      return;
+    connection->ConnectToService(ptr);
   }
 
   // Application implementation.

@@ -119,6 +119,10 @@ void DefaultDisplayManager::Init(DisplayManagerDelegate* delegate) {
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From("mojo:surfaces_service");
   app_impl_->ConnectToService(request.Pass(), &display_factory);
+  // TODO(fsamuel): We should indicate to the delegate that this object failed
+  // to initialize.
+  if (!display_factory)
+    return;
   display_factory->Create(context_provider.Pass(),
                           nullptr,  // returner - we never submit resources.
                           GetProxy(&display_));
@@ -167,9 +171,11 @@ void DefaultDisplayManager::Draw() {
   frame->passes.push_back(pass.Pass());
   frame->resources.resize(0u);
   frame_pending_ = true;
-  display_->SubmitFrame(
-      frame.Pass(),
-      base::Bind(&DefaultDisplayManager::DidDraw, base::Unretained(this)));
+  if (display_) {
+    display_->SubmitFrame(
+        frame.Pass(),
+        base::Bind(&DefaultDisplayManager::DidDraw, base::Unretained(this)));
+  }
   dirty_rect_ = gfx::Rect();
 }
 

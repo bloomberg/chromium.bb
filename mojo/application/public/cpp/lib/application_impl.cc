@@ -65,7 +65,8 @@ ApplicationImpl::~ApplicationImpl() {
 
 ApplicationConnection* ApplicationImpl::ConnectToApplication(
     mojo::URLRequestPtr request) {
-  MOJO_CHECK(shell_);
+  if (!shell_)
+    return nullptr;
   ServiceProviderPtr local_services;
   InterfaceRequest<ServiceProvider> local_request = GetProxy(&local_services);
   ServiceProviderPtr remote_services;
