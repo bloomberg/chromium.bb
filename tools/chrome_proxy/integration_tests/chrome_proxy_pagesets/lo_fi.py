@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class LoFiPage(page_module.Page):
@@ -16,15 +16,15 @@ class LoFiPage(page_module.Page):
     super(LoFiPage, self).__init__(url=url, page_set=page_set)
 
 
-class LoFiPageSet(page_set_module.PageSet):
+class LoFiStorySet(story.StorySet):
   """ Chrome proxy test sites """
 
   def __init__(self):
-    super(LoFiPageSet, self).__init__()
+    super(LoFiStorySet, self).__init__()
 
     urls_list = [
       'http://check.googlezip.net/image.png',
     ]
 
     for url in urls_list:
-      self.AddUserStory(LoFiPage(url, self))
+      self.AddStory(LoFiPage(url, self))

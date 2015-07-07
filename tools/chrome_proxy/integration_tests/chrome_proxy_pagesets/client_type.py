@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class ClientTypePage(page_module.Page):
@@ -22,53 +22,53 @@ class ClientTypePage(page_module.Page):
     self.bypass_for_client_type = bypass_for_client_type
 
 
-class ClientTypePageSet(page_set_module.PageSet):
+class ClientTypeStorySet(story.StorySet):
   """Chrome proxy test sites"""
 
   def __init__(self):
-    super(ClientTypePageSet, self).__init__()
+    super(ClientTypeStorySet, self).__init__()
 
     # Page that should not bypass for any client types. This page is here in
     # order to determine the Chrome-Proxy client type value before running any
     # of the following pages, since there's no way to get the client type value
     # from a request that was bypassed.
-    self.AddUserStory(ClientTypePage(
+    self.AddStory(ClientTypePage(
         url='http://check.googlezip.net/test.html',
         page_set=self,
         bypass_for_client_type='none'))
 
     # Page that should cause a bypass for android chrome clients.
-    self.AddUserStory(ClientTypePage(
+    self.AddStory(ClientTypePage(
         url='http://check.googlezip.net/chrome-proxy-header/c_android/',
         page_set=self,
         bypass_for_client_type='android'))
 
     # Page that should cause a bypass for android webview clients.
-    self.AddUserStory(ClientTypePage(
+    self.AddStory(ClientTypePage(
         url='http://check.googlezip.net/chrome-proxy-header/c_webview/',
         page_set=self,
         bypass_for_client_type='webview'))
 
     # Page that should cause a bypass for iOS clients.
-    self.AddUserStory(ClientTypePage(
+    self.AddStory(ClientTypePage(
         url='http://check.googlezip.net/chrome-proxy-header/c_ios/',
         page_set=self,
         bypass_for_client_type='ios'))
 
     # Page that should cause a bypass for Linux clients.
-    self.AddUserStory(ClientTypePage(
+    self.AddStory(ClientTypePage(
         url='http://check.googlezip.net/chrome-proxy-header/c_linux/',
         page_set=self,
         bypass_for_client_type='linux'))
 
     # Page that should cause a bypass for Windows clients.
-    self.AddUserStory(ClientTypePage(
+    self.AddStory(ClientTypePage(
         url='http://check.googlezip.net/chrome-proxy-header/c_win/',
         page_set=self,
         bypass_for_client_type='win'))
 
     # Page that should cause a bypass for ChromeOS clients.
-    self.AddUserStory(ClientTypePage(
+    self.AddStory(ClientTypePage(
         url='http://check.googlezip.net/chrome-proxy-header/c_chromeos/',
         page_set=self,
         bypass_for_client_type='chromeos'))

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class HTTPToDirectFallbackPage(page_module.Page):
@@ -12,10 +12,10 @@ class HTTPToDirectFallbackPage(page_module.Page):
     super(HTTPToDirectFallbackPage, self).__init__(url=url, page_set=page_set)
 
 
-class HTTPToDirectFallbackPageSet(page_set_module.PageSet):
+class HTTPToDirectFallbackStorySet(story.StorySet):
   """Chrome proxy test sites"""
   def __init__(self):
-    super(HTTPToDirectFallbackPageSet, self).__init__()
+    super(HTTPToDirectFallbackStorySet, self).__init__()
 
     urls_list = [
       'http://check.googlezip.net/fallback/',
@@ -23,4 +23,4 @@ class HTTPToDirectFallbackPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(HTTPToDirectFallbackPage(url, self))
+      self.AddStory(HTTPToDirectFallbackPage(url, self))

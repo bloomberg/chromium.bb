@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class BlockOncePage(page_module.Page):
@@ -31,12 +31,12 @@ class BlockOncePage(page_module.Page):
     ''')
     action_runner.Wait(1)
 
-class BlockOncePageSet(page_set_module.PageSet):
+class BlockOnceStorySet(story.StorySet):
 
   """ Chrome proxy test sites """
 
   def __init__(self):
-    super(BlockOncePageSet, self).__init__()
+    super(BlockOnceStorySet, self).__init__()
 
     # Test block-once for a GET request.
     urls_list = [
@@ -44,4 +44,4 @@ class BlockOncePageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(BlockOncePage(url, self))
+      self.AddStory(BlockOncePage(url, self))

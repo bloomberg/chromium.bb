@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class ExpDirectivePage(page_module.Page):
@@ -13,15 +13,15 @@ class ExpDirectivePage(page_module.Page):
     super(ExpDirectivePage, self).__init__(url=url, page_set=page_set)
 
 
-class ExpDirectivePageSet(page_set_module.PageSet):
+class ExpDirectiveStorySet(story.StorySet):
   """ Chrome proxy test sites """
 
   def __init__(self):
-    super(ExpDirectivePageSet, self).__init__()
+    super(ExpDirectiveStorySet, self).__init__()
 
     urls_list = [
       'http://check.googlezip.net/exp/',
     ]
 
     for url in urls_list:
-      self.AddUserStory(ExpDirectivePage(url, self))
+      self.AddStory(ExpDirectivePage(url, self))

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 class PassThroughPage(page_module.Page):
   """
@@ -25,15 +25,15 @@ class PassThroughPage(page_module.Page):
     action_runner.Wait(1)
 
 
-class PassThroughPageSet(page_set_module.PageSet):
+class PassThroughStorySet(story.StorySet):
   """ Chrome proxy test sites """
 
   def __init__(self):
-    super(PassThroughPageSet, self).__init__()
+    super(PassThroughStorySet, self).__init__()
 
     urls_list = [
       'http://check.googlezip.net/image.png',
     ]
 
     for url in urls_list:
-      self.AddUserStory(PassThroughPage(url, self))
+      self.AddStory(PassThroughPage(url, self))

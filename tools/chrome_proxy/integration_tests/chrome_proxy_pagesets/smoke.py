@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class SmokePage(page_module.Page):
@@ -78,15 +78,15 @@ class Page5(SmokePage):
 
 
 
-class SmokePageSet(page_set_module.PageSet):
+class SmokeStorySet(story.StorySet):
 
   """ Chrome proxy test sites """
 
   def __init__(self):
-    super(SmokePageSet, self).__init__()
+    super(SmokeStorySet, self).__init__()
 
-    self.AddUserStory(Page1(self))
-    self.AddUserStory(Page2(self))
-    self.AddUserStory(Page3(self))
-    self.AddUserStory(Page4(self))
-    self.AddUserStory(Page5(self))
+    self.AddStory(Page1(self))
+    self.AddStory(Page2(self))
+    self.AddStory(Page3(self))
+    self.AddStory(Page4(self))
+    self.AddStory(Page5(self))

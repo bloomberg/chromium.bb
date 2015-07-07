@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class VideoPage(page_module.Page):
@@ -19,44 +19,44 @@ class VideoPage(page_module.Page):
     self.use_chrome_proxy = use_chrome_proxy
 
 
-class VideoPageSet(page_set_module.PageSet):
+class VideoStorySet(story.StorySet):
   """Base class for Chrome proxy video tests."""
 
   def __init__(self, mode):
-    super(VideoPageSet, self).__init__()
+    super(VideoStorySet, self).__init__()
     urls_list = [
         'http://check.googlezip.net/cacheable/video/buck_bunny_tiny.html',
     ]
     for url in urls_list:
-      self._AddUserStoryForURL(url)
+      self._AddStoryForURL(url)
 
-  def _AddUserStoryForURL(self, url):
+  def _AddStoryForURL(self, url):
     raise NotImplementedError
 
 
-class VideoDirectPageSet(VideoPageSet):
+class VideoDirectStorySet(VideoStorySet):
   """Chrome proxy video tests: direct fetch."""
   def __init__(self):
-    super(VideoDirectPageSet, self).__init__('direct')
+    super(VideoDirectStorySet, self).__init__('direct')
 
-  def _AddUserStoryForURL(self, url):
-      self.AddUserStory(VideoPage(url, self, False))
+  def _AddStoryForURL(self, url):
+      self.AddStory(VideoPage(url, self, False))
 
 
-class VideoProxiedPageSet(VideoPageSet):
+class VideoProxiedStorySet(VideoStorySet):
   """Chrome proxy video tests: proxied fetch."""
   def __init__(self):
-    super(VideoProxiedPageSet, self).__init__('proxied')
+    super(VideoProxiedStorySet, self).__init__('proxied')
 
-  def _AddUserStoryForURL(self, url):
-      self.AddUserStory(VideoPage(url, self, True))
+  def _AddStoryForURL(self, url):
+      self.AddStory(VideoPage(url, self, True))
 
 
-class VideoComparePageSet(VideoPageSet):
+class VideoCompareStorySet(VideoStorySet):
   """Chrome proxy video tests: compare direct and proxied fetches."""
   def __init__(self):
-    super(VideoComparePageSet, self).__init__('compare')
+    super(VideoCompareStorySet, self).__init__('compare')
 
-  def _AddUserStoryForURL(self, url):
-      self.AddUserStory(VideoPage(url, self, False))
-      self.AddUserStory(VideoPage(url, self, True))
+  def _AddStoryForURL(self, url):
+      self.AddStory(VideoPage(url, self, False))
+      self.AddStory(VideoPage(url, self, True))

@@ -13,7 +13,7 @@ NON_SAFE_BROWSING_BROWSERS = ['mac', 'linux', 'win', 'chromeos',
 class ChromeProxyClientVersion(ChromeProxyBenchmark):
   tag = 'client_version'
   test = measurements.ChromeProxyClientVersion
-  page_set = pagesets.SyntheticPageSet
+  page_set = pagesets.SyntheticStorySet
 
   @classmethod
   def Name(cls):
@@ -23,7 +23,7 @@ class ChromeProxyClientVersion(ChromeProxyBenchmark):
 class ChromeProxyClientType(ChromeProxyBenchmark):
   tag = 'client_type'
   test = measurements.ChromeProxyClientType
-  page_set = pagesets.ClientTypePageSet
+  page_set = pagesets.ClientTypeStorySet
 
   @classmethod
   def Name(cls):
@@ -33,7 +33,7 @@ class ChromeProxyClientType(ChromeProxyBenchmark):
 class ChromeProxyLoFi(ChromeProxyBenchmark):
   tag = 'lo_fi'
   test = measurements.ChromeProxyLoFi
-  page_set = pagesets.LoFiPageSet
+  page_set = pagesets.LoFiStorySet
 
   @classmethod
   def Name(cls):
@@ -43,7 +43,7 @@ class ChromeProxyLoFi(ChromeProxyBenchmark):
 class ChromeProxyExpDirective(ChromeProxyBenchmark):
   tag = 'exp_directive'
   test = measurements.ChromeProxyExpDirective
-  page_set = pagesets.ExpDirectivePageSet
+  page_set = pagesets.ExpDirectiveStorySet
 
   @classmethod
   def Name(cls):
@@ -53,7 +53,7 @@ class ChromeProxyExpDirective(ChromeProxyBenchmark):
 class ChromeProxyPassThrough(ChromeProxyBenchmark):
   tag = 'pass_through'
   test = measurements.ChromeProxyPassThrough
-  page_set = pagesets.PassThroughPageSet
+  page_set = pagesets.PassThroughStorySet
 
   @classmethod
   def Name(cls):
@@ -63,7 +63,7 @@ class ChromeProxyPassThrough(ChromeProxyBenchmark):
 class ChromeProxyBypass(ChromeProxyBenchmark):
   tag = 'bypass'
   test = measurements.ChromeProxyBypass
-  page_set = pagesets.BypassPageSet
+  page_set = pagesets.BypassStorySet
 
   @classmethod
   def Name(cls):
@@ -73,7 +73,7 @@ class ChromeProxyBypass(ChromeProxyBenchmark):
 class ChromeProxyCorsBypass(ChromeProxyBenchmark):
   tag = 'bypass'
   test = measurements.ChromeProxyCorsBypass
-  page_set = pagesets.CorsBypassPageSet
+  page_set = pagesets.CorsBypassStorySet
 
   @classmethod
   def Name(cls):
@@ -83,7 +83,7 @@ class ChromeProxyCorsBypass(ChromeProxyBenchmark):
 class ChromeProxyBlockOnce(ChromeProxyBenchmark):
   tag = 'block_once'
   test = measurements.ChromeProxyBlockOnce
-  page_set = pagesets.BlockOncePageSet
+  page_set = pagesets.BlockOnceStorySet
 
   @classmethod
   def Name(cls):
@@ -96,11 +96,11 @@ class ChromeProxySafeBrowsingOn(ChromeProxyBenchmark):
   tag = 'safebrowsing_on'
   test = measurements.ChromeProxySafebrowsingOn
 
-  # Override CreateStorySet so that we can instantiate SafebrowsingPageSet
+  # Override CreateStorySet so that we can instantiate SafebrowsingStorySet
   # with a non default param.
   def CreateStorySet(self, options):
     del options  # unused
-    return pagesets.SafebrowsingPageSet(expect_timeout=True)
+    return pagesets.SafebrowsingStorySet(expect_timeout=True)
 
   @classmethod
   def Name(cls):
@@ -112,7 +112,7 @@ class ChromeProxySafeBrowsingOn(ChromeProxyBenchmark):
 class ChromeProxySafeBrowsingOff(ChromeProxyBenchmark):
   tag = 'safebrowsing_off'
   test = measurements.ChromeProxySafebrowsingOff
-  page_set = pagesets.SafebrowsingPageSet
+  page_set = pagesets.SafebrowsingStorySet
 
   @classmethod
   def Name(cls):
@@ -122,7 +122,7 @@ class ChromeProxySafeBrowsingOff(ChromeProxyBenchmark):
 class ChromeProxyHTTPFallbackProbeURL(ChromeProxyBenchmark):
   tag = 'fallback_probe'
   test = measurements.ChromeProxyHTTPFallbackProbeURL
-  page_set = pagesets.SyntheticPageSet
+  page_set = pagesets.SyntheticStorySet
 
   @classmethod
   def Name(cls):
@@ -132,7 +132,7 @@ class ChromeProxyHTTPFallbackProbeURL(ChromeProxyBenchmark):
 class ChromeProxyHTTPFallbackViaHeader(ChromeProxyBenchmark):
   tag = 'fallback_viaheader'
   test = measurements.ChromeProxyHTTPFallbackViaHeader
-  page_set = pagesets.FallbackViaHeaderPageSet
+  page_set = pagesets.FallbackViaHeaderStorySet
 
   @classmethod
   def Name(cls):
@@ -142,7 +142,7 @@ class ChromeProxyHTTPFallbackViaHeader(ChromeProxyBenchmark):
 class ChromeProxyHTTPToDirectFallback(ChromeProxyBenchmark):
   tag = 'http_to_direct_fallback'
   test = measurements.ChromeProxyHTTPToDirectFallback
-  page_set = pagesets.HTTPToDirectFallbackPageSet
+  page_set = pagesets.HTTPToDirectFallbackStorySet
 
   @classmethod
   def Name(cls):
@@ -153,7 +153,7 @@ class ChromeProxyHTTPToDirectFallback(ChromeProxyBenchmark):
 class ChromeProxyReenableAfterBypass(ChromeProxyBenchmark):
   tag = 'reenable_after_bypass'
   test = measurements.ChromeProxyReenableAfterBypass
-  page_set = pagesets.ReenableAfterBypassPageSet
+  page_set = pagesets.ReenableAfterBypassStorySet
 
   @classmethod
   def Name(cls):
@@ -163,7 +163,7 @@ class ChromeProxyReenableAfterBypass(ChromeProxyBenchmark):
 class ChromeProxySmoke(ChromeProxyBenchmark):
   tag = 'smoke'
   test = measurements.ChromeProxySmoke
-  page_set = pagesets.SmokePageSet
+  page_set = pagesets.SmokeStorySet
 
   @classmethod
   def Name(cls):
@@ -173,7 +173,7 @@ class ChromeProxySmoke(ChromeProxyBenchmark):
 class ChromeProxyClientConfig(ChromeProxyBenchmark):
   tag = 'client_config'
   test = measurements.ChromeProxyClientConfig
-  page_set = pagesets.SyntheticPageSet
+  page_set = pagesets.SyntheticStorySet
 
   @classmethod
   def Name(cls):
@@ -184,7 +184,7 @@ class ChromeProxyClientConfig(ChromeProxyBenchmark):
 class ChromeProxyVideoDirect(benchmark.Benchmark):
   tag = 'video'
   test = measurements.ChromeProxyVideoValidation
-  page_set = pagesets.VideoDirectPageSet
+  page_set = pagesets.VideoDirectStorySet
 
   @classmethod
   def Name(cls):
@@ -195,7 +195,7 @@ class ChromeProxyVideoDirect(benchmark.Benchmark):
 class ChromeProxyVideoProxied(benchmark.Benchmark):
   tag = 'video'
   test = measurements.ChromeProxyVideoValidation
-  page_set = pagesets.VideoProxiedPageSet
+  page_set = pagesets.VideoProxiedStorySet
 
   @classmethod
   def Name(cls):
@@ -212,7 +212,7 @@ class ChromeProxyVideoCompare(benchmark.Benchmark):
 
   tag = 'video'
   test = measurements.ChromeProxyVideoValidation
-  page_set = pagesets.VideoComparePageSet
+  page_set = pagesets.VideoCompareStorySet
 
   @classmethod
   def Name(cls):
@@ -224,7 +224,7 @@ class ChromeProxyVideoFrames(benchmark.Benchmark):
 
   tag = 'video'
   test = measurements.ChromeProxyInstrumentedVideoValidation
-  page_set = pagesets.VideoFramePageSet
+  page_set = pagesets.VideoFrameStorySet
 
   @classmethod
   def Name(cls):
@@ -236,7 +236,7 @@ class ChromeProxyVideoAudio(benchmark.Benchmark):
 
   tag = 'video'
   test = measurements.ChromeProxyInstrumentedVideoValidation
-  page_set = pagesets.VideoAudioPageSet
+  page_set = pagesets.VideoAudioStorySet
 
   @classmethod
   def Name(cls):

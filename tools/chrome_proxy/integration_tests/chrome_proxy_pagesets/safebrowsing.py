@@ -5,7 +5,7 @@ import logging
 
 from telemetry.core import exceptions
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class SafebrowsingPage(page_module.Page):
@@ -29,12 +29,12 @@ class SafebrowsingPage(page_module.Page):
         raise e
 
 
-class SafebrowsingPageSet(page_set_module.PageSet):
+class SafebrowsingStorySet(story.StorySet):
 
   """ Chrome proxy test sites """
 
   def __init__(self, expect_timeout=False):
-    super(SafebrowsingPageSet, self).__init__()
+    super(SafebrowsingStorySet, self).__init__()
 
-    self.AddUserStory(
+    self.AddStory(
         SafebrowsingPage('http://www.ianfette.org/', self, expect_timeout))

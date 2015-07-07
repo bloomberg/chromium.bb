@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class ReenableAfterBypassPage(page_module.Page):
@@ -26,15 +26,15 @@ class ReenableAfterBypassPage(page_module.Page):
     self.bypass_seconds_max = bypass_seconds_max
 
 
-class ReenableAfterBypassPageSet(page_set_module.PageSet):
+class ReenableAfterBypassStorySet(story.StorySet):
   """ Chrome proxy test sites """
 
   def __init__(self):
-    super(ReenableAfterBypassPageSet, self).__init__()
+    super(ReenableAfterBypassStorySet, self).__init__()
 
     # Test page for "Chrome-Proxy: block=0". Loading this page should cause all
     # data reduction proxies to be bypassed for one to five minutes.
-    self.AddUserStory(ReenableAfterBypassPage(
+    self.AddStory(ReenableAfterBypassPage(
         url="http://check.googlezip.net/block",
         page_set=self,
         bypass_seconds_min=60,

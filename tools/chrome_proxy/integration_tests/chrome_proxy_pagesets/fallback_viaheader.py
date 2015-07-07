@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from telemetry.page import page as page_module
-from telemetry.page import page_set as page_set_module
+from telemetry import story
 
 
 class FallbackViaHeaderPage(page_module.Page):
@@ -12,11 +12,11 @@ class FallbackViaHeaderPage(page_module.Page):
     super(FallbackViaHeaderPage, self).__init__(url=url, page_set=page_set)
 
 
-class FallbackViaHeaderPageSet(page_set_module.PageSet):
+class FallbackViaHeaderStorySet(story.StorySet):
   """ Chrome proxy test sites """
 
   def __init__(self):
-    super(FallbackViaHeaderPageSet, self).__init__()
+    super(FallbackViaHeaderStorySet, self).__init__()
 
     urls_list = [
         'http://chromeproxy-test.appspot.com/default?respStatus=200',
@@ -24,4 +24,4 @@ class FallbackViaHeaderPageSet(page_set_module.PageSet):
     ]
 
     for url in urls_list:
-      self.AddUserStory(FallbackViaHeaderPage(url, self))
+      self.AddStory(FallbackViaHeaderPage(url, self))
