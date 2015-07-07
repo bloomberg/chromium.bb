@@ -475,10 +475,6 @@ bool WebViewGuest::IsAutoSizeSupported() const {
   return true;
 }
 
-bool WebViewGuest::IsDragAndDropEnabled() const {
-  return true;
-}
-
 void WebViewGuest::GuestZoomChanged(double old_zoom_level,
                                     double new_zoom_level) {
   // Dispatch the zoomchange event.
