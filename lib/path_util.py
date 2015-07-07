@@ -15,7 +15,6 @@ from chromite.lib import bootstrap_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
-from chromite.lib import workspace_lib
 
 
 GENERAL_CACHE_DIR = '.cache'
@@ -34,7 +33,6 @@ class ChrootPathResolver(object):
   """Perform path resolution to/from the chroot.
 
   Args:
-    workspace_path: Host path to the workspace, if any.
     source_path: Value to override default source root inference.
     source_from_path_repo: Whether to infer the source root from the converted
       path's repo parent during inbound translation; overrides |source_path|.
@@ -53,9 +51,7 @@ class ChrootPathResolver(object):
   # code's source root in the normal case. When that happens, we'll be
   # switching source_from_path_repo to False by default. See chromium:485746.
 
-  def __init__(self, workspace_path=None, source_path=None,
-               source_from_path_repo=True):
-    self._workspace_path = workspace_path
+  def __init__(self, source_path=None, source_from_path_repo=True):
     self._inside_chroot = cros_build_lib.IsInsideChroot()
     self._source_path = (constants.SOURCE_ROOT if source_path is None
                          else source_path)
@@ -66,16 +62,11 @@ class ChrootPathResolver(object):
       self._chroot_path = None
       self._chroot_to_host_roots = None
     else:
-      if self._workspace_path is None:
-        self._chroot_path = self._GetSourcePathChroot(self._source_path)
-      else:
-        self._chroot_path = os.path.realpath(
-            workspace_lib.ChrootPath(self._workspace_path))
+      self._chroot_path = self._GetSourcePathChroot(self._source_path)
 
       # Initialize mapping of known root bind mounts.
       self._chroot_to_host_roots = (
           (constants.CHROOT_SOURCE_ROOT, self._source_path),
-          (constants.CHROOT_WORKSPACE_ROOT, self._workspace_path),
           (constants.CHROOT_CACHE_ROOT, self._GetCachePath),
       )
 
@@ -118,8 +109,8 @@ class ChrootPathResolver(object):
     """Translates a fully-expanded host |path| into a chroot equivalent.
 
     This checks path prefixes in order from the most to least "contained": the
-    chroot itself, then the workspace, the cache directory, and finally the
-    source tree. The idea is to return the shortest possible chroot equivalent.
+    chroot itself, then the cache directory, and finally the source tree. The
+    idea is to return the shortest possible chroot equivalent.
 
     Args:
       path: A host path to translate.
@@ -134,27 +125,20 @@ class ChrootPathResolver(object):
 
     # Preliminary: compute the actual source and chroot paths to use. These are
     # generally the precomputed values, unless we're inferring the source root
-    # from the path itself and not using a workspace (chroot location).
+    # from the path itself.
     source_path = self._source_path
     chroot_path = self._chroot_path
     if self._source_from_path_repo:
       path_repo_dir = git.FindRepoDir(path)
       if path_repo_dir is not None:
         source_path = os.path.abspath(os.path.join(path_repo_dir, '..'))
-      if self._workspace_path is None:
-        chroot_path = self._GetSourcePathChroot(source_path)
+      chroot_path = self._GetSourcePathChroot(source_path)
 
     # First, check if the path happens to be in the chroot already.
     if chroot_path is not None:
       new_path = self._TranslatePath(path, chroot_path, '/')
 
-    # Second, check the workspace, if given.
-    if new_path is None and self._workspace_path is not None:
-      new_path = self._TranslatePath(
-          path, os.path.realpath(self._workspace_path),
-          constants.CHROOT_WORKSPACE_ROOT)
-
-    # Third, check the cache directory.
+    # Second, check the cache directory.
     if new_path is None:
       new_path = self._TranslatePath(path, self._GetCachePath(),
                                      constants.CHROOT_CACHE_ROOT)
@@ -172,10 +156,10 @@ class ChrootPathResolver(object):
   def _GetHostPath(self, path):
     """Translates a fully-expanded chroot |path| into a host equivalent.
 
-    We first attempt translation of known roots (source, workspace). If any is
-    successful, we check whether the result happens to point back to the
-    chroot, in which case we trim the chroot path prefix and recurse. If
-    neither was successful, just prepend the chroot path.
+    We first attempt translation of known roots (source). If any is successful,
+    we check whether the result happens to point back to the chroot, in which
+    case we trim the chroot path prefix and recurse. If neither was successful,
+    just prepend the chroot path.
 
     Args:
       path: A chroot path to translate.
@@ -337,14 +321,7 @@ def FindCacheDir():
   elif checkout.type == CHECKOUT_TYPE_GCLIENT:
     path = os.path.join(checkout.root, CHROME_CACHE_DIR)
   elif checkout.type == CHECKOUT_TYPE_UNKNOWN:
-    # We could be in a workspace.
-    if workspace_lib.WorkspacePath(cwd):
-      bootstrap_root = bootstrap_lib.FindBootstrapPath()
-      if bootstrap_root:
-        path = os.path.join(bootstrap_root, bootstrap_lib.SDK_CHECKOUTS,
-                            GENERAL_CACHE_DIR)
-    if not path:
-      path = os.path.join(tempfile.gettempdir(), 'chromeos-cache')
+    path = os.path.join(tempfile.gettempdir(), 'chromeos-cache')
   else:
     raise AssertionError('Unexpected type %s' % checkout.type)
 
@@ -356,11 +333,11 @@ def GetCacheDir():
   return os.environ.get(constants.SHARED_CACHE_ENVVAR, FindCacheDir())
 
 
-def ToChrootPath(path, workspace_path=None):
+def ToChrootPath(path):
   """Resolves current environment |path| for use in the chroot."""
-  return ChrootPathResolver(workspace_path=workspace_path).ToChroot(path)
+  return ChrootPathResolver().ToChroot(path)
 
 
-def FromChrootPath(path, workspace_path=None):
+def FromChrootPath(path):
   """Resolves chroot |path| for use in the current environment."""
-  return ChrootPathResolver(workspace_path=workspace_path).FromChroot(path)
+  return ChrootPathResolver().FromChroot(path)
