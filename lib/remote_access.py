@@ -994,12 +994,6 @@ class ChromiumOSDevice(RemoteDevice):
     return self.lsb_release.get('CHROMEOS_RELEASE_BOARD', '')
 
   @property
-  def sdk_version(self):
-    """The SDK version of the device."""
-    # TODO(garnold) Use the actual SDK version field, once known (brillo:280).
-    return self.lsb_release.get('CHROMEOS_RELEASE_VERSION', '')
-
-  @property
   def alias(self):
     """The user-friendly alias name assigned to the device."""
     if not self._alias:
