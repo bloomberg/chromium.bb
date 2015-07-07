@@ -82,7 +82,7 @@ NSString* const kWebUIJSURL = @"chrome://resources/js/ios/web_ui.js";
 
 // Flattens HTML with provided map of URLs to resource strings.
 - (void)flattenHTML:(NSMutableString*)HTML
-    withSubresources:(std::map<GURL, std::string>)subresources;
+    withSubresources:(const std::map<GURL, std::string>&)subresources;
 
 // Returns JavaScript needed for bridging WebUI chrome.send() messages to
 // the core.js defined message delivery system.
@@ -144,13 +144,13 @@ NSString* const kWebUIJSURL = @"chrome://resources/js/ios/web_ui.js";
         [weakSelf addCSSTagToHTML:webUIHTML
                            forURL:URL
                         sourceURL:subresourceURL];
-        pendingSubresourceCount++;
+        ++pendingSubresourceCount;
         [weakSelf fetchResourceWithURL:URL
                      completionHandler:subresourceHandler];
       }
     }
     subresources[subresourceURL] = base::SysNSStringToUTF8(subresource);
-    pendingSubresourceCount--;
+    --pendingSubresourceCount;
     // When subresource loading is complete, flatten the default resource
     // and invoke the completion handler.
     if (!pendingSubresourceCount) {
@@ -163,7 +163,7 @@ NSString* const kWebUIJSURL = @"chrome://resources/js/ios/web_ui.js";
     // chrome://resources/js/ios/web_ui.js is skipped because it is
     // retrieved via webUIJavaScript rather than the net stack.
     if ([URLString isEqualToString:kWebUIJSURL]) {
-      pendingSubresourceCount--;
+      --pendingSubresourceCount;
       if (!pendingSubresourceCount) {
         [weakSelf flattenHTML:webUIHTML withSubresources:subresources];
         completionHandler(webUIHTML);
@@ -217,6 +217,7 @@ NSString* const kWebUIJSURL = @"chrome://resources/js/ios/web_ui.js";
                              error:&error];
   if (error) {
     DLOG(WARNING) << "Error: " << error.description.UTF8String;
+    return URLStrings;
   }
   NSArray* matches =
       [tagExpression matchesInString:resource
@@ -277,22 +278,25 @@ NSString* const kWebUIJSURL = @"chrome://resources/js/ios/web_ui.js";
 }
 
 - (void)flattenHTML:(NSMutableString*)HTML
-    withSubresources:(std::map<GURL, std::string>)subresources {
+    withSubresources:(const std::map<GURL, std::string>&)subresources {
   // Add core.js script to resources.
-  // TODO(ios): Move inclusion of this resource into WebUI implementation
+  // TODO(jyquinn): Move inclusion of this resource into WebUI implementation
   // rather than forking each HTML file (crbug.com/487000).
   GURL webUIJSURL("chrome://resources/js/ios/web_ui.js");
-  subresources[webUIJSURL] = base::SysNSStringToUTF8([self webUIJavaScript]);
-  for (auto it = subresources.begin(); it != subresources.end(); it++) {
+  std::map<GURL, std::string> resources(subresources);
+  resources[webUIJSURL] = base::SysNSStringToUTF8([self webUIJavaScript]);
+  NSString* linkTemplateCSS =
+      [NSString stringWithFormat:@"%@%%@%@", kCSSTagPrefix, kCSSTagSuffix];
+  NSString* linkTemplateJS =
+      [NSString stringWithFormat:@"%@%%@%@", kJSTagPrefix, kJSTagSuffix];
+  for (auto it = resources.begin(); it != resources.end(); it++) {
     NSString* linkTemplate = @"";
     NSString* textTemplate = @"";
     if ([self isCSSSubresourceURL:it->first]) {
-      linkTemplate =
-          [NSString stringWithFormat:@"%@%%@%@", kCSSTagPrefix, kCSSTagSuffix];
+      linkTemplate = linkTemplateCSS;
       textTemplate = kWebUIStyleTextTemplate;
     } else {  // JavaScript.
-      linkTemplate =
-          [NSString stringWithFormat:@"%@%%@%@", kJSTagPrefix, kJSTagSuffix];
+      linkTemplate = linkTemplateJS;
       textTemplate = kWebUIScriptTextTemplate;
     }
     NSString* resourceURLString = base::SysUTF8ToNSString(it->first.spec());
