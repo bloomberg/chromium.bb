@@ -353,35 +353,12 @@ bool SecurityOrigin::taintsCanvas(const KURL& url) const
     return true;
 }
 
-// This is a hack to allow keep navigation to http/https feeds working. To remove this
-// we need to introduce new API akin to registerURLSchemeAsLocal, that registers a
-// protocols navigation policy.
-// feed(|s|search): is considered a 'nesting' scheme by embedders that support it, so it can be
-// local or remote depending on what is nested. Currently we just check if we are nesting
-// http or https, otherwise we ignore the nesting for the purpose of a security check. We need
-// a facility for registering nesting schemes, and some generalized logic for them.
-// This function should be removed as an outcome of https://bugs.webkit.org/show_bug.cgi?id=69196
-static bool isFeedWithNestedProtocolInHTTPFamily(const KURL& url)
-{
-    const String& urlString = url.string();
-    if (!urlString.startsWith("feed", TextCaseInsensitive))
-        return false;
-
-    return urlString.startsWith("feed://", TextCaseInsensitive)
-        || urlString.startsWith("feed:http:", TextCaseInsensitive) || urlString.startsWith("feed:https:", TextCaseInsensitive)
-        || urlString.startsWith("feeds:http:", TextCaseInsensitive) || urlString.startsWith("feeds:https:", TextCaseInsensitive)
-        || urlString.startsWith("feedsearch:http:", TextCaseInsensitive) || urlString.startsWith("feedsearch:https:", TextCaseInsensitive);
-}
-
 bool SecurityOrigin::canDisplay(const KURL& url) const
 {
     if (m_universalAccess)
         return true;
 
     String protocol = url.protocol().lower();
-
-    if (isFeedWithNestedProtocolInHTTPFamily(url))
-        return true;
 
     if (SchemeRegistry::canDisplayOnlyIfCanRequest(protocol))
         return canRequest(url);
