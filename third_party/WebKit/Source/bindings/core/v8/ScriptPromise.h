@@ -131,7 +131,7 @@ public:
 
     static v8::Local<v8::Promise> rejectRaw(ScriptState*, v8::Local<v8::Value>);
 
-    static unsigned instanceCount() { return s_instanceCount; }
+    static unsigned instanceCount();
 
     // This is a utility class intended to be used internally.
     // ScriptPromiseResolver is for general purpose.
@@ -149,6 +149,9 @@ public:
     };
 
 private:
+    static void increaseInstanceCount();
+    static void decreaseInstanceCount();
+
     RefPtr<ScriptState> m_scriptState;
     ScriptValue m_promise;
 

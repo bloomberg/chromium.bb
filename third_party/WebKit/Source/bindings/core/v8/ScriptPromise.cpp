@@ -77,13 +77,13 @@ void ScriptPromise::InternalResolver::reject(v8::Local<v8::Value> value)
 
 ScriptPromise::ScriptPromise()
 {
-    ++s_instanceCount;
+    increaseInstanceCount();
 }
 
 ScriptPromise::ScriptPromise(ScriptState* scriptState, v8::Local<v8::Value> value)
     : m_scriptState(scriptState)
 {
-    ++s_instanceCount;
+    increaseInstanceCount();
 
     if (value.IsEmpty())
         return;
@@ -98,7 +98,7 @@ ScriptPromise::ScriptPromise(ScriptState* scriptState, v8::Local<v8::Value> valu
 
 ScriptPromise::ScriptPromise(const ScriptPromise& other)
 {
-    ++s_instanceCount;
+    increaseInstanceCount();
 
     this->m_scriptState = other.m_scriptState;
     this->m_promise = other.m_promise;
@@ -106,7 +106,7 @@ ScriptPromise::ScriptPromise(const ScriptPromise& other)
 
 ScriptPromise::~ScriptPromise()
 {
-    --s_instanceCount;
+    decreaseInstanceCount();
 }
 
 ScriptPromise ScriptPromise::then(v8::Local<v8::Function> onFulfilled, v8::Local<v8::Function> onRejected)
@@ -182,6 +182,27 @@ v8::Local<v8::Promise> ScriptPromise::rejectRaw(ScriptState* scriptState, v8::Lo
     v8::Local<v8::Promise> promise = resolver->GetPromise();
     resolver->Reject(scriptState->context(), value);
     return promise;
+}
+
+unsigned ScriptPromise::instanceCount()
+{
+    ASSERT(isMainThread());
+    return s_instanceCount;
+}
+
+void ScriptPromise::increaseInstanceCount()
+{
+    // An instance is only counted only on the main thread. This is because the
+    // leak detector can detect leaks on the main thread so far. We plan to fix
+    // the leak detector to work on worker threads (crbug.com/507224).
+    if (isMainThread())
+        ++s_instanceCount;
+}
+
+void ScriptPromise::decreaseInstanceCount()
+{
+    if (isMainThread())
+        --s_instanceCount;
 }
 
 } // namespace blink
