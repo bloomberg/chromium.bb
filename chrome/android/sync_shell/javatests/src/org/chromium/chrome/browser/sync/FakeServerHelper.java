@@ -208,6 +208,28 @@ public class FakeServerHelper {
     }
 
     /**
+     * Modifies an existing bookmark on the fake Sync server.
+     *
+     * @param bookmarkId the ID of the bookmark to modify
+     * @param title the new title of the bookmark
+     * @param url the new URL of the bookmark. This String will be passed to the native GURL
+     *            class, so it must be a valid URL under its definition.
+     * @param parentId the ID of the new desired parent bookmark folder
+     */
+    public void modifyBookmarkEntity(
+            final String bookmarkId, final String title, final String url, final String parentId) {
+        checkFakeServerInitialized("useFakeServer must be called before data injection.");
+        ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
+            @Override
+            public Void call() {
+                nativeModifyBookmarkEntity(mNativeFakeServerHelperAndroid, sNativeFakeServer,
+                        bookmarkId, title, url, parentId);
+                return null;
+            }
+        });
+    }
+
+    /**
      * Deletes an entity on the fake Sync server.
      *
      * In other words, this method injects a tombstone into the fake Sync server.
@@ -266,6 +288,8 @@ public class FakeServerHelper {
     private native void nativeInjectBookmarkEntity(
             long nativeFakeServerHelperAndroid, long nativeFakeServer, String title, String url,
             String parentId);
+    private native void nativeModifyBookmarkEntity(long nativeFakeServerHelperAndroid,
+            long nativeFakeServer, String bookmarkId, String title, String url, String parentId);
     private native String nativeGetBookmarkBarFolderId(
             long nativeFakeServerHelperAndroid, long nativeFakeServer);
     private native void nativeDeleteEntity(

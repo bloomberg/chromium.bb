@@ -32,6 +32,7 @@ public class BookmarksTest extends SyncTestBase {
     private static final String BOOKMARKS_TYPE_STRING = "Bookmarks";
 
     private static final String URL = "http://chromium.org/";
+    private static final String MODIFIED_URL = "http://www.chromium.org/Home";
     private static final String TITLE = "Chromium";
     private static final String MODIFIED_TITLE = "Chromium2";
 
@@ -73,7 +74,8 @@ public class BookmarksTest extends SyncTestBase {
     @LargeTest
     @Feature({"Sync"})
     public void testDownloadBookmark() throws Exception {
-        addServerBookmarkAndSync(TITLE, URL);
+        addServerBookmark(TITLE, URL);
+        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
         List<Bookmark> bookmarks = getClientBookmarks();
         assertEquals("Only the injected bookmark should exist on the client.",
                 1, bookmarks.size());
@@ -82,12 +84,31 @@ public class BookmarksTest extends SyncTestBase {
         assertEquals("The wrong URL was found for the bookmark.", URL, bookmark.url);
     }
 
+    // Test syncing a bookmark modification from server to client.
+    @LargeTest
+    @Feature({"Sync"})
+    public void testDownloadBookmarkModification() throws Exception {
+        // Add the entity to test modifying.
+        addServerBookmark(TITLE, URL);
+        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        waitForServerBookmarkCountWithName(1, TITLE);
+        waitForClientBookmarkCount(1);
+
+        // Modify on server, sync, and verify the modification locally.
+        Bookmark bookmark = getClientBookmarks().get(0);
+        modifyServerBookmark(bookmark.id, TITLE, MODIFIED_URL);
+        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        bookmark = getClientBookmarks().get(0);
+        assertEquals("The bookmark title was not modified.", MODIFIED_URL, bookmark.url);
+    }
+
     // Test syncing a bookmark tombstone from server to client.
     @LargeTest
     @Feature({"Sync"})
     public void testDownloadBookmarkTombstone() throws Exception {
         // Add the entity to test deleting.
-        addServerBookmarkAndSync(TITLE, URL);
+        addServerBookmark(TITLE, URL);
+        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
         waitForServerBookmarkCountWithName(1, TITLE);
         waitForClientBookmarkCount(1);
 
@@ -142,7 +163,8 @@ public class BookmarksTest extends SyncTestBase {
     @Feature({"Sync"})
     public void testDisabledNoDownloadBookmark() throws Exception {
         disableDataType(ModelType.BOOKMARK);
-        addServerBookmarkAndSync(TITLE, URL);
+        addServerBookmark(TITLE, URL);
+        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
         waitForServerBookmarkCountWithName(1, TITLE);
         SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
         assertClientBookmarkCount(0);
@@ -171,10 +193,14 @@ public class BookmarksTest extends SyncTestBase {
         return id.get();
     }
 
-    private void addServerBookmarkAndSync(String title, String url) throws InterruptedException {
+    private void addServerBookmark(String title, String url) throws InterruptedException {
         mFakeServerHelper.injectBookmarkEntity(
                 title, url, mFakeServerHelper.getBookmarkBarFolderId());
-        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+    }
+
+    private void modifyServerBookmark(String bookmarkId, String title, String url) {
+        mFakeServerHelper.modifyBookmarkEntity(
+                bookmarkId, title, url, mFakeServerHelper.getBookmarkBarFolderId());
     }
 
     private void deleteClientBookmark(final BookmarkId id) {

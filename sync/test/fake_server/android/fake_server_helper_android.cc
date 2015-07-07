@@ -143,7 +143,33 @@ void FakeServerHelperAndroid::InjectBookmarkEntity(
     jstring parent_id) {
   fake_server::FakeServer* fake_server_ptr =
       reinterpret_cast<fake_server::FakeServer*>(fake_server);
+  fake_server_ptr->InjectEntity(
+      CreateBookmarkEntity(env, title, url, parent_id));
+}
 
+void FakeServerHelperAndroid::ModifyBookmarkEntity(JNIEnv* env,
+                                                   jobject obj,
+                                                   jlong fake_server,
+                                                   jstring entity_id,
+                                                   jstring title,
+                                                   jstring url,
+                                                   jstring parent_id) {
+  fake_server::FakeServer* fake_server_ptr =
+      reinterpret_cast<fake_server::FakeServer*>(fake_server);
+  scoped_ptr<fake_server::FakeServerEntity> bookmark =
+      CreateBookmarkEntity(env, title, url, parent_id);
+  sync_pb::SyncEntity proto;
+  bookmark->SerializeAsProto(&proto);
+  fake_server_ptr->ModifyEntitySpecifics(
+      base::android::ConvertJavaStringToUTF8(env, entity_id),
+      proto.specifics());
+}
+
+scoped_ptr<fake_server::FakeServerEntity>
+FakeServerHelperAndroid::CreateBookmarkEntity(JNIEnv* env,
+                                              jstring title,
+                                              jstring url,
+                                              jstring parent_id) {
   std::string url_as_string = base::android::ConvertJavaStringToUTF8(env, url);
   GURL gurl = GURL(url_as_string);
   if (!gurl.is_valid()) {
@@ -157,7 +183,7 @@ void FakeServerHelperAndroid::InjectBookmarkEntity(
           base::android::ConvertJavaStringToUTF8(env, title));
   bookmark_builder.SetParentId(
           base::android::ConvertJavaStringToUTF8(env, parent_id));
-  fake_server_ptr->InjectEntity(bookmark_builder.BuildBookmark(gurl));
+  return bookmark_builder.BuildBookmark(gurl);
 }
 
 base::android::ScopedJavaLocalRef<jstring>
