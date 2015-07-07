@@ -58,42 +58,6 @@ static int maxOffsetIncludingCollapsedSpaces(Node* node)
     return offset;
 }
 
-SimplifiedBackwardsTextIterator::SimplifiedBackwardsTextIterator(const Range* r, TextIteratorBehaviorFlags behavior)
-    : m_node(nullptr)
-    , m_offset(0)
-    , m_handledNode(false)
-    , m_handledChildren(false)
-    , m_startNode(nullptr)
-    , m_startOffset(0)
-    , m_endNode(nullptr)
-    , m_endOffset(0)
-    , m_positionNode(nullptr)
-    , m_positionStartOffset(0)
-    , m_positionEndOffset(0)
-    , m_textOffset(0)
-    , m_textLength(0)
-    , m_singleCharacterBuffer(0)
-    , m_havePassedStartNode(false)
-    , m_shouldHandleFirstLetter(false)
-    , m_stopsOnFormControls(behavior & TextIteratorStopsOnFormControls)
-    , m_shouldStop(false)
-    , m_emitsOriginalText(false)
-{
-    ASSERT(behavior == TextIteratorDefaultBehavior || behavior == TextIteratorStopsOnFormControls);
-
-    if (!r)
-        return;
-
-    Node* startNode = r->startContainer();
-    if (!startNode)
-        return;
-    Node* endNode = r->endContainer();
-    int startOffset = r->startOffset();
-    int endOffset = r->endOffset();
-
-    init(startNode, endNode, startOffset, endOffset);
-}
-
 SimplifiedBackwardsTextIterator::SimplifiedBackwardsTextIterator(const Position& start, const Position& end, TextIteratorBehaviorFlags behavior)
     : m_node(nullptr)
     , m_offset(0)

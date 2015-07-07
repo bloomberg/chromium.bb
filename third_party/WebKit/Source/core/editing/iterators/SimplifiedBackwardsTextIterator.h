@@ -42,7 +42,6 @@ class LayoutTextFragment;
 class SimplifiedBackwardsTextIterator {
     STACK_ALLOCATED();
 public:
-    explicit SimplifiedBackwardsTextIterator(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
     SimplifiedBackwardsTextIterator(const Position& start, const Position& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 
     bool atEnd() const { return !m_positionNode || m_shouldStop; }

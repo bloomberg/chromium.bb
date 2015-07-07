@@ -566,9 +566,7 @@ static size_t findPlainTextInternal(CharacterIterator& it, const String& target,
     SearchBuffer buffer(target, options);
 
     if (buffer.needsMoreContext()) {
-        RefPtrWillBeRawPtr<Range> beforeStartRange = it.ownerDocument()->createRange();
-        beforeStartRange->setEnd(it.currentContainer(), it.startOffset(), IGNORE_EXCEPTION);
-        for (SimplifiedBackwardsTextIterator backwardsIterator(beforeStartRange.get()); !backwardsIterator.atEnd(); backwardsIterator.advance()) {
+        for (SimplifiedBackwardsTextIterator backwardsIterator(Position::firstPositionInNode(it.ownerDocument()), Position(it.currentContainer(), it.startOffset())); !backwardsIterator.atEnd(); backwardsIterator.advance()) {
             Vector<UChar, 1024> characters;
             backwardsIterator.prependTextTo(characters);
             buffer.prependContext(characters.data(), characters.size());

@@ -547,9 +547,7 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
     unsigned prefixLength = 0;
 
     if (requiresContextForWordBoundary(c.characterAfter())) {
-        RefPtrWillBeRawPtr<Range> backwardsScanRange(d.createRange());
-        backwardsScanRange->setEnd(start.deprecatedNode(), start.deprecatedEditingOffset(), IGNORE_EXCEPTION);
-        SimplifiedBackwardsTextIterator backwardsIterator(backwardsScanRange.get());
+        SimplifiedBackwardsTextIterator backwardsIterator(Position::firstPositionInNode(&d), start);
         while (!backwardsIterator.atEnd()) {
             Vector<UChar, 1024> characters;
             backwardsIterator.prependTextTo(characters);
