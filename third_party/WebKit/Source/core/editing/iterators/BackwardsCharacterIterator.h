@@ -34,7 +34,6 @@ namespace blink {
 class BackwardsCharacterIterator {
     STACK_ALLOCATED();
 public:
-    explicit BackwardsCharacterIterator(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
     BackwardsCharacterIterator(const Position&, const Position&, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 
     void advance(int);

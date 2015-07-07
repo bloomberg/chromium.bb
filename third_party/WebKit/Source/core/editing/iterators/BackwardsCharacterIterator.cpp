@@ -29,16 +29,6 @@
 
 namespace blink {
 
-BackwardsCharacterIterator::BackwardsCharacterIterator(const Range* range, TextIteratorBehaviorFlags behavior)
-    : m_offset(0)
-    , m_runOffset(0)
-    , m_atBreak(true)
-    , m_textIterator(range, behavior)
-{
-    while (!atEnd() && !m_textIterator.length())
-        m_textIterator.advance();
-}
-
 BackwardsCharacterIterator::BackwardsCharacterIterator(const Position& start, const Position& end, TextIteratorBehaviorFlags behavior)
     : m_offset(0)
     , m_runOffset(0)
