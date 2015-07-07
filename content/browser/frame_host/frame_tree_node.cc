@@ -235,6 +235,11 @@ bool FrameTreeNode::IsLoading() const {
           switches::kEnableBrowserSideNavigation)) {
     if (navigation_request_)
       return true;
+
+    RenderFrameHostImpl* speculative_frame_host =
+        render_manager_.speculative_frame_host();
+    if (speculative_frame_host && speculative_frame_host->is_loading())
+      return true;
   } else {
     if (pending_frame_host && pending_frame_host->is_loading())
       return true;

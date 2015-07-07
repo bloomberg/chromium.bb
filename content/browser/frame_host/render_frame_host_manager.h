@@ -266,7 +266,7 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
 
   // Returns the speculative RenderFrameHost, or null if there is no speculative
   // one.
-  RenderFrameHostImpl* speculative_frame_host_for_testing() const {
+  RenderFrameHostImpl* speculative_frame_host() const {
     return speculative_render_frame_host_.get();
   }
 

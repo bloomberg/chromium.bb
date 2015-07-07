@@ -1548,7 +1548,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
     if (browser_side_navigation) {
       site = child->render_manager()
-                 ->speculative_frame_host_for_testing()
+                 ->speculative_frame_host()
                  ->GetSiteInstance();
     } else {
       site = child->render_manager()->pending_frame_host()->GetSiteInstance();
@@ -1602,7 +1602,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     SiteInstance* site2;
     if (browser_side_navigation) {
       site2 = child->render_manager()
-                  ->speculative_frame_host_for_testing()
+                  ->speculative_frame_host()
                   ->GetSiteInstance();
     } else {
       site2 = child->render_manager()->pending_frame_host()->GetSiteInstance();
