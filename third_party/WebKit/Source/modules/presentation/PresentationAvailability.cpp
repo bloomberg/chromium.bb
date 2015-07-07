@@ -34,6 +34,7 @@ WebPresentationClient* presentationClient(ExecutionContext* executionContext)
 PresentationAvailability* PresentationAvailability::take(ScriptPromiseResolver* resolver, bool value)
 {
     PresentationAvailability* presentationAvailability = new PresentationAvailability(resolver->executionContext(), value);
+    presentationAvailability->suspendIfNeeded();
     presentationAvailability->startListening();
     return presentationAvailability;
 }
