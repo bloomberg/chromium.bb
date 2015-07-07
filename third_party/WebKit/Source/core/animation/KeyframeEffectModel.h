@@ -119,6 +119,8 @@ public:
         return m_keyframeGroups->contains(property);
     }
 
+    virtual bool isTransformRelatedEffect() const override;
+
 protected:
     KeyframeEffectModelBase(PassRefPtrWillBeRawPtr<TimingFunction> neutralKeyframeEasing)
         : m_neutralKeyframeEasing(neutralKeyframeEasing)

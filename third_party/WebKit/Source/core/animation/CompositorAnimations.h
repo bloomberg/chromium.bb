@@ -47,8 +47,8 @@ class CORE_EXPORT CompositorAnimations {
 public:
     static CompositorAnimations* instance() { return instance(0); }
     static void setInstanceForTesting(CompositorAnimations* newInstance) { instance(newInstance); }
-    static bool isCompositableProperty(CSSPropertyID property) { return property == CSSPropertyOpacity || property == CSSPropertyTransform || property == CSSPropertyWebkitFilter; }
-    static CSSPropertyID CompositableProperties[3];
+    static bool isCompositableProperty(CSSPropertyID);
+    static const CSSPropertyID compositableProperties[6];
 
     virtual bool isCandidateForAnimationOnCompositor(const Timing&, const Element&, const Animation*, const EffectModel&, double animationPlaybackRate);
     virtual void cancelIncompatibleAnimationsOnCompositor(const Element&, const Animation&, const EffectModel&);

@@ -83,7 +83,7 @@ void KeyframeEffectModelBase::forceConversionsToAnimatableValues(Element& elemen
 void KeyframeEffectModelBase::snapshotCompositableProperties(Element& element, const ComputedStyle* baseStyle)
 {
     ensureKeyframeGroups();
-    for (CSSPropertyID id : CompositorAnimations::CompositableProperties) {
+    for (CSSPropertyID id : CompositorAnimations::compositableProperties) {
         PropertyHandle property = PropertyHandle(id);
         if (!affects(property))
             continue;
@@ -154,6 +154,13 @@ KeyframeEffectModelBase::KeyframeVector KeyframeEffectModelBase::normalizedKeyfr
     return result;
 }
 
+bool KeyframeEffectModelBase::isTransformRelatedEffect() const
+{
+    return affects(PropertyHandle(CSSPropertyTransform))
+        || affects(PropertyHandle(CSSPropertyRotate))
+        || affects(PropertyHandle(CSSPropertyScale))
+        || affects(PropertyHandle(CSSPropertyTranslate));
+}
 
 void KeyframeEffectModelBase::ensureKeyframeGroups() const
 {

@@ -101,6 +101,8 @@ protected:
     virtual void detach() override;
     virtual void specifiedTimingChanged() override;
     virtual double calculateTimeToEffectChange(bool forwards, double inheritedTime, double timeToNextIteration) const override;
+    virtual bool hasIncompatibleStyle();
+    bool hasMultipleTransformProperties() const;
 
 private:
     KeyframeEffect(Element*, PassRefPtrWillBeRawPtr<EffectModel>, const Timing&, Priority, PassOwnPtrWillBeRawPtr<EventDelegate>);

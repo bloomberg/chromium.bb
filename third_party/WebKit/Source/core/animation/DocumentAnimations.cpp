@@ -70,8 +70,12 @@ void DocumentAnimations::updateAnimationTimingForGetComputedStyle(Node& node, CS
         return;
     const Element& element = toElement(node);
     if (const ComputedStyle* style = element.computedStyle()) {
+        bool isTransformProperty = property == CSSPropertyRotate
+            || property == CSSPropertyScale
+            || property == CSSPropertyTransform
+            || property == CSSPropertyTranslate;
         if ((property == CSSPropertyOpacity && style->isRunningOpacityAnimationOnCompositor())
-            || (property == CSSPropertyTransform && style->isRunningTransformAnimationOnCompositor())
+            || (isTransformProperty && style->isRunningTransformAnimationOnCompositor())
             || (property == CSSPropertyWebkitFilter && style->isRunningFilterAnimationOnCompositor())) {
             updateAnimationTiming(element.document(), TimingUpdateOnDemand);
         }

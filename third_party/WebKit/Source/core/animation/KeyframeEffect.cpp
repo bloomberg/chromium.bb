@@ -129,6 +129,45 @@ static AnimationStack& ensureAnimationStack(Element* element)
     return element->ensureElementAnimations().defaultStack();
 }
 
+bool KeyframeEffect::hasMultipleTransformProperties() const
+{
+    if (!m_target->computedStyle())
+        return false;
+
+    unsigned transformPropertyCount = 0;
+    if (m_target->computedStyle()->hasTransformOperations())
+        transformPropertyCount++;
+    if (m_target->computedStyle()->rotate())
+        transformPropertyCount++;
+    if (m_target->computedStyle()->scale())
+        transformPropertyCount++;
+    if (m_target->computedStyle()->translate())
+        transformPropertyCount++;
+    return transformPropertyCount > 1;
+}
+
+// Returns true if transform, translate, rotate or scale is composited
+// and a motion path or other transform properties
+// has been introduced on the element
+bool KeyframeEffect::hasIncompatibleStyle()
+{
+    if (!m_target->computedStyle())
+        return false;
+
+    bool affectsTransform = animation()->affects(*m_target, CSSPropertyTransform)
+        || animation()->affects(*m_target, CSSPropertyScale)
+        || animation()->affects(*m_target, CSSPropertyRotate)
+        || animation()->affects(*m_target, CSSPropertyTranslate);
+
+    if (animation()->hasActiveAnimationsOnCompositor()) {
+        if (m_target->computedStyle()->hasMotionPath() && affectsTransform)
+            return true;
+        return hasMultipleTransformProperties();
+    }
+
+    return false;
+}
+
 void KeyframeEffect::applyEffects()
 {
     ASSERT(isInEffect());
@@ -136,17 +175,8 @@ void KeyframeEffect::applyEffects()
     if (!m_target || !m_model)
         return;
 
-    // Cancel composited animation of transform if a motion path, translate,
-    // rotate or scale operation has been introduced on the element.
-    if (m_target->computedStyle()
-        && (m_target->computedStyle()->hasMotionPath()
-            || m_target->computedStyle()->translate()
-            || m_target->computedStyle()->rotate()
-            || m_target->computedStyle()->scale())
-        && animation()->hasActiveAnimationsOnCompositor()
-        && animation()->affects(*m_target, CSSPropertyTransform)) {
+    if (hasIncompatibleStyle())
         animation()->cancelAnimationOnCompositor();
-    }
 
     double iteration = currentIteration();
     ASSERT(iteration >= 0);
@@ -244,9 +274,12 @@ void KeyframeEffect::notifyElementDestroyed()
 
 bool KeyframeEffect::isCandidateForAnimationOnCompositor(double animationPlaybackRate) const
 {
+    // Do not put transforms on compositor if more than one of them are defined
+    // in computed style because they need to be explicitly ordered
     if (!model()
         || !m_target
-        || (m_target->computedStyle() && (m_target->computedStyle()->hasMotionPath() || m_target->computedStyle()->translate() || m_target->computedStyle()->rotate() || m_target->computedStyle()->scale())))
+        || (m_target->computedStyle() && m_target->computedStyle()->hasMotionPath())
+        || hasMultipleTransformProperties())
         return false;
 
     return CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(specifiedTiming(), *m_target, animation(), *model(), animationPlaybackRate);

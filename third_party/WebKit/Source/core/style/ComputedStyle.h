@@ -852,6 +852,7 @@ public:
     float transformOriginZ() const { return transformOrigin().z(); }
     bool has3DTransform() const { return rareNonInheritedData->m_transform->has3DTransform(); }
     bool hasTransform() const { return hasTransformOperations() || hasMotionPath() || hasCurrentTransformAnimation() || translate() || rotate() || scale(); }
+    bool hasTransformOperations() const { return !rareNonInheritedData->m_transform->m_operations.operations().isEmpty(); }
     bool transformDataEquivalent(const ComputedStyle& otherStyle) const { return rareNonInheritedData->m_transform == otherStyle.rareNonInheritedData->m_transform; }
 
     StyleMotionPath* motionPath() const { return rareNonInheritedData->m_transform->m_motion.m_path.get(); }
@@ -1658,9 +1659,9 @@ public:
     static ColumnFill initialColumnFill() { return ColumnFillBalance; }
     static ColumnSpan initialColumnSpan() { return ColumnSpanNone; }
     static const TransformOperations& initialTransform() { DEFINE_STATIC_LOCAL(TransformOperations, ops, ()); return ops; }
-    static PassRefPtr<TranslateTransformOperation> initialTranslate() { return nullptr; }
-    static PassRefPtr<RotateTransformOperation> initialRotate() { return nullptr; }
-    static PassRefPtr<ScaleTransformOperation> initialScale() { return nullptr; }
+    static PassRefPtr<TranslateTransformOperation> initialTranslate() { return TranslateTransformOperation::create(Length(0, Fixed), Length(0, Fixed), 0, TransformOperation::Translate3D); }
+    static PassRefPtr<RotateTransformOperation> initialRotate() { return RotateTransformOperation::create(0, 0, 1, 0, TransformOperation::Rotate3D); }
+    static PassRefPtr<ScaleTransformOperation> initialScale() { return ScaleTransformOperation::create(1, 1, 1, TransformOperation::Scale3D); }
     static Length initialTransformOriginX() { return Length(50.0, Percent); }
     static Length initialTransformOriginY() { return Length(50.0, Percent); }
     static float initialTransformOriginZ() { return 0; }
@@ -1817,7 +1818,6 @@ private:
 
     void appendContent(PassOwnPtr<ContentData>);
     void addAppliedTextDecoration(const AppliedTextDecoration&);
-    bool hasTransformOperations() const { return !rareNonInheritedData->m_transform->m_operations.operations().isEmpty(); }
     void applyMotionPathTransform(TransformationMatrix&) const;
 
     bool diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle& other) const;

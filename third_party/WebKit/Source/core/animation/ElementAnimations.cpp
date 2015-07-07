@@ -60,7 +60,10 @@ void ElementAnimations::updateAnimationFlags(ComputedStyle& style)
         if (effect.isCurrent()) {
             if (effect.affects(PropertyHandle(CSSPropertyOpacity)))
                 style.setHasCurrentOpacityAnimation(true);
-            if (effect.affects(PropertyHandle(CSSPropertyTransform)))
+            if (effect.affects(PropertyHandle(CSSPropertyTransform))
+                || effect.affects(PropertyHandle(CSSPropertyRotate))
+                || effect.affects(PropertyHandle(CSSPropertyScale))
+                || effect.affects(PropertyHandle(CSSPropertyTranslate)))
                 style.setHasCurrentTransformAnimation(true);
             if (effect.affects(PropertyHandle(CSSPropertyWebkitFilter)))
                 style.setHasCurrentFilterAnimation(true);
