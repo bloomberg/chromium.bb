@@ -40,12 +40,6 @@ class SecurityOriginCache;
 
 class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
 public:
-    enum Policy {
-        AlwaysDeny = 0,
-        AlwaysAllow,
-        Ask
-    };
-
     static PassRefPtr<SecurityOrigin> create(const KURL&);
     static PassRefPtr<SecurityOrigin> createUnique();
 
@@ -160,7 +154,6 @@ public:
     bool canAccessPasswordManager() const { return !isUnique(); }
     bool canAccessFileSystem() const { return !isUnique(); }
     bool canAccessCacheStorage() const { return !isUnique(); };
-    Policy canShowNotifications() const;
 
     // Technically, we should always allow access to sessionStorage, but we
     // currently don't handle creating a sessionStorage area for unique

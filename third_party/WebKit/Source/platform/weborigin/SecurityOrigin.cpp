@@ -385,15 +385,6 @@ bool SecurityOrigin::isPotentiallyTrustworthy(String& errorMessage) const
     return false;
 }
 
-SecurityOrigin::Policy SecurityOrigin::canShowNotifications() const
-{
-    if (m_universalAccess)
-        return AlwaysAllow;
-    if (isUnique())
-        return AlwaysDeny;
-    return Ask;
-}
-
 void SecurityOrigin::grantLoadLocalResources()
 {
     // Granting privileges to some, but not all, documents in a SecurityOrigin
