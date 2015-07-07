@@ -4,10 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, user-scalable=no">
 <script>
-function debug(msg) {
-  document.getElementById('debug').textContent = msg;
-}
-
 function insertLink() {
   // Replace the chrome://plugins text with a working link (i18n_template
   // doesn't allow raw HTML in template data).
@@ -33,13 +29,16 @@ body {
 
 <body id="t" onLoad="insertLink()">
 <div i18n-values="title:name" id="outer">
-<div id="inner">
-<div><img id="plugin_icon" src="plugin_blocked.png" /></div>
-<h1 id="message" i18n-content="message">PLUGIN DISABLED (chrome://plugins)</h1>
-<div id="enable_link"><a href="#" onclick="plugin.openAboutPlugins();">chrome://plugins</a></div>
-<p id="debug"> </p>
-</div>
-<div id="close" i18n-values="title:hide" onclick="plugin.hide();" />
+  <div id="inner">
+    <div><img id="plugin_icon" src="plugin_blocked.png" /></div>
+    <h1 id="message" i18n-content="message"></h1>
+    <div id="enable_link">
+      <a href="#" onclick="plugin.openAboutPlugins();">chrome://plugins</a>
+    </div>
+  </div>
+  <div id="close" i18n-values="title:hide;data-plugin-type:pluginType"
+      onclick="plugin.hide();">
+  </div>
 </div>
 </body>
 </html>

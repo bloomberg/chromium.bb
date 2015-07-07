@@ -24,6 +24,7 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
+#include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
@@ -31,15 +32,6 @@
 #include "url/url_util.h"
 
 using base::UserMetricsAction;
-using blink::WebDocument;
-using blink::WebElement;
-using blink::WebFrame;
-using blink::WebLocalFrame;
-using blink::WebMouseEvent;
-using blink::WebNode;
-using blink::WebPlugin;
-using blink::WebPluginContainer;
-using blink::WebPluginParams;
 using content::RenderThread;
 using content::RenderView;
 
@@ -89,8 +81,8 @@ ChromePluginPlaceholder::~ChromePluginPlaceholder() {
 // static
 ChromePluginPlaceholder* ChromePluginPlaceholder::CreateLoadableMissingPlugin(
     content::RenderFrame* render_frame,
-    WebLocalFrame* frame,
-    const WebPluginParams& params) {
+    blink::WebLocalFrame* frame,
+    const blink::WebPluginParams& params) {
   const base::StringPiece template_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_BLOCKED_PLUGIN_HTML));
@@ -109,8 +101,8 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateLoadableMissingPlugin(
 // static
 ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
     content::RenderFrame* render_frame,
-    WebLocalFrame* frame,
-    const WebPluginParams& params,
+    blink::WebLocalFrame* frame,
+    const blink::WebPluginParams& params,
     const content::WebPluginInfo& info,
     const std::string& identifier,
     const base::string16& name,
@@ -121,6 +113,10 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
   values.SetString("message", message);
   values.SetString("name", name);
   values.SetString("hide", l10n_util::GetStringUTF8(IDS_PLUGIN_HIDE));
+  values.SetString("pluginType",
+                   frame->view()->mainFrame()->document().isPluginDocument()
+                       ? "document"
+                       : "embedded");
 
   if (!poster_info.poster_attribute.empty()) {
     values.SetString("poster", poster_info.poster_attribute);
@@ -244,7 +240,7 @@ void ChromePluginPlaceholder::OnCancelledDownloadingPlugin() {
 void ChromePluginPlaceholder::PluginListChanged() {
   if (!GetFrame() || !plugin())
     return;
-  WebDocument document = GetFrame()->top()->document();
+  blink::WebDocument document = GetFrame()->top()->document();
   if (document.isNull())
     return;
 
@@ -258,8 +254,8 @@ void ChromePluginPlaceholder::PluginListChanged() {
                                           &output));
   if (output.status == status_)
     return;
-  WebPlugin* new_plugin = ChromeContentRendererClient::CreatePlugin(
-      render_frame(),  GetFrame(), GetPluginParams(), output);
+  blink::WebPlugin* new_plugin = ChromeContentRendererClient::CreatePlugin(
+      render_frame(), GetFrame(), GetPluginParams(), output);
   ReplacePlugin(new_plugin);
   if (!new_plugin) {
     PluginUMAReporter::GetInstance()->ReportPluginMissing(
@@ -299,7 +295,8 @@ v8::Local<v8::Value> ChromePluginPlaceholder::GetV8Handle(
   return gin::CreateHandle(isolate, this).ToV8();
 }
 
-void ChromePluginPlaceholder::ShowContextMenu(const WebMouseEvent& event) {
+void ChromePluginPlaceholder::ShowContextMenu(
+    const blink::WebMouseEvent& event) {
   if (context_menu_request_id_)
     return;  // Don't allow nested context menu requests.
 
@@ -326,7 +323,8 @@ void ChromePluginPlaceholder::ShowContextMenu(const WebMouseEvent& event) {
 
   content::MenuItem hide_item;
   hide_item.action = chrome::MENU_COMMAND_PLUGIN_HIDE;
-  hide_item.enabled = true;
+  hide_item.enabled =
+      !GetFrame()->view()->mainFrame()->document().isPluginDocument();
   hide_item.label = l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PLUGIN_HIDE);
   params.custom_items.push_back(hide_item);
 

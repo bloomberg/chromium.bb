@@ -68,6 +68,10 @@ p {
   width: 14px;
 }
 
+#close[data-plugin-type='document'] {
+  display: none;
+}
+
 #close:hover {
   background-image: -webkit-image-set(
       url(../../../ui/resources/default_100_percent/close_2_hover.png) 1x,
