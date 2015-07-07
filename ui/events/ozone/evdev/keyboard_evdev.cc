@@ -221,12 +221,6 @@ void KeyboardEvdev::DispatchKey(unsigned int key,
   if (!repeat) {
     int flag = ModifierDomKeyToEventFlag(dom_key);
     UpdateModifier(flag, down);
-    // X11 XKB, using the configuration as modified for ChromeOS, always sets
-    // EF_MOD3_DOWN for the physical CapsLock key, even if the layout maps
-    // it to something else, so we imitate this to make certain layouts (e.g.
-    // German Neo2) work. crbug.com/495277
-    if (dom_code == DomCode::DOM_CODE_CAPS_LOCK)
-      UpdateModifier(EF_MOD3_DOWN, down);
   }
 
   KeyEvent event(down ? ET_KEY_PRESSED : ET_KEY_RELEASED, key_code, dom_code,

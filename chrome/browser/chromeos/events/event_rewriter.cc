@@ -86,6 +86,15 @@ const struct ModifierRemapping {
       ui::DomKey::CONTROL,
       0,
       ui::VKEY_CONTROL}},
+    {// kModifierRemappingNeoMod3 references this entry by index.
+     ui::EF_MOD3_DOWN | ui::EF_ALTGR_DOWN,
+     input_method::kNumModifierKeys,
+     nullptr,
+     {ui::EF_MOD3_DOWN | ui::EF_ALTGR_DOWN,
+      ui::DomCode::CAPS_LOCK,
+      ui::DomKey::ALT_GRAPH,
+      0,
+      ui::VKEY_ALTGR}},
     {ui::EF_COMMAND_DOWN,
      input_method::kSearchKey,
      prefs::kLanguageRemapSearchKeyTo,
@@ -123,11 +132,12 @@ const struct ModifierRemapping {
       0,
       ui::VKEY_ESCAPE}},
     {ui::EF_NONE,
-     0,
+     input_method::kNumModifierKeys,
      prefs::kLanguageRemapDiamondKeyTo,
      {ui::EF_NONE, ui::DomCode::F15, ui::DomKey::F15, 0, ui::VKEY_F15}}};
 
 const ModifierRemapping* kModifierRemappingCtrl = &kModifierRemappings[0];
+const ModifierRemapping* kModifierRemappingNeoMod3 = &kModifierRemappings[1];
 
 // Gets a remapped key for |pref_name| key. For example, to find out which
 // key Search is currently remapped to, call the function with
@@ -467,6 +477,12 @@ int EventRewriter::GetRemappedModifierMasks(const PrefService& pref_service,
         // kModifierRemappings[] table uses EF_MOD3_DOWN for the Caps
         // Lock remapping.
         break;
+      case ui::EF_MOD3_DOWN | ui::EF_ALTGR_DOWN:
+        if ((original_flags & ui::EF_ALTGR_DOWN) &&
+            IsISOLevel5ShiftUsedByCurrentInputMethod()) {
+          remapped_key = kModifierRemappingNeoMod3;
+        }
+        break;
       default:
         break;
     }
@@ -735,6 +751,26 @@ void EventRewriter::RewriteModifierKeys(const ui::KeyEvent& key_event,
       characteristic_flag = ui::EF_ALT_DOWN;
       remapped_key =
           GetRemappedKey(prefs::kLanguageRemapAltKeyTo, *pref_service);
+      break;
+    case ui::VKEY_ALTGR:
+      // The Neo2 codes modifiers such that CapsLock appears as VKEY_ALTGR,
+      // but AltGraph (right Alt) also appears as VKEY_ALTGR in Neo2,
+      // as it does in other layouts. Neo2's "Mod3" is represented in
+      // EventFlags by a combination of AltGr+Mod3, while its "Mod4" is
+      // AltGr alone.
+      if (IsISOLevel5ShiftUsedByCurrentInputMethod()) {
+        if (incoming.code == ui::DomCode::CAPS_LOCK) {
+          characteristic_flag = ui::EF_ALTGR_DOWN | ui::EF_MOD3_DOWN;
+          remapped_key =
+              GetRemappedKey(prefs::kLanguageRemapCapsLockKeyTo, *pref_service);
+        } else {
+          characteristic_flag = ui::EF_ALTGR_DOWN;
+          remapped_key =
+              GetRemappedKey(prefs::kLanguageRemapSearchKeyTo, *pref_service);
+        }
+      }
+      if (remapped_key && remapped_key->result.key_code == ui::VKEY_CAPITAL)
+        remapped_key = kModifierRemappingNeoMod3;
       break;
     default:
       break;
