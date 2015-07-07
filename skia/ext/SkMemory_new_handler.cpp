@@ -2,21 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <new>
 
 #include "base/process/memory.h"
 
 #include "third_party/skia/include/core/SkTypes.h"
-#include "third_party/skia/include/core/SkThread.h"
 
-// This implementation of sk_malloc_flags() and friends is identical to
-// SkMemory_malloc.cpp, except that it disables the CRT's new_handler during
-// malloc() and calloc() when SK_MALLOC_THROW is not set (because our normal
-// new_handler itself will crash on failure when using tcmalloc).
-
-SK_DECLARE_STATIC_MUTEX(gSkNewHandlerMutex);
+// This implementation of sk_malloc_flags() and friends is similar to
+// SkMemory_malloc.cpp, except it uses base::UncheckedMalloc and friends
+// for non-SK_MALLOC_THROW calls.
+//
+// The name of this file is historic: a previous implementation tried to
+// use std::set_new_handler() for the same effect, but it didn't actually work.
 
 static inline void* throw_on_failure(size_t size, void* p) {
     if (size > 0 && p == NULL) {
