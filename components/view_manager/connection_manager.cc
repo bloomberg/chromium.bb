@@ -12,7 +12,9 @@
 #include "components/view_manager/focus_controller.h"
 #include "components/view_manager/server_view.h"
 #include "components/view_manager/view_coordinate_conversions.h"
+#include "components/view_manager/view_manager_root_connection.h"
 #include "components/view_manager/view_manager_service_impl.h"
+#include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
@@ -110,13 +112,8 @@ ConnectionManager::ScopedChange::~ScopedChange() {
   connection_manager_->FinishChange();
 }
 
-ConnectionManager::ConnectionManager(
-    ConnectionManagerDelegate* delegate,
-    bool is_headless,
-    mojo::ApplicationImpl* app_impl,
-    const scoped_refptr<gles2::GpuState>& gpu_state)
+ConnectionManager::ConnectionManager(ConnectionManagerDelegate* delegate)
     : delegate_(delegate),
-      window_manager_client_connection_(nullptr),
       next_connection_id_(1),
       next_root_id_(0),
       event_dispatcher_(this),
@@ -124,9 +121,6 @@ ConnectionManager::ConnectionManager(
       in_destructor_(false),
       animation_runner_(base::TimeTicks::Now()),
       focus_controller_(new FocusController(this)) {
-  view_manager_root_.reset(new ViewManagerRootImpl(
-      RootViewId(next_root_id_++), this, is_headless, app_impl, gpu_state));
-  view_manager_root_->Init();
 }
 
 ConnectionManager::~ConnectionManager() {
@@ -137,10 +131,23 @@ ConnectionManager::~ConnectionManager() {
   // destroyed before |root_|.
   focus_controller_.reset();
 
-  view_manager_root_.reset();
+  // Copy the RootConnectionMap because it will be mutated as the connections
+  // are closed.
+  RootConnectionMap root_connection_map(root_connection_map_);
+  for (auto& pair : root_connection_map)
+    pair.second->CloseConnection();
+
   STLDeleteValues(&connection_map_);
   // All the connections should have been destroyed.
+  DCHECK(root_connection_map_.empty());
   DCHECK(connection_map_.empty());
+}
+
+void ConnectionManager::AddRoot(
+    ViewManagerRootConnection* root_connection) {
+  DCHECK_EQ(0u, root_connection_map_.count(
+      root_connection->view_manager_root()));
+  root_connection_map_[root_connection->view_manager_root()] = root_connection;
 }
 
 ServerView* ConnectionManager::CreateServerView(const ViewId& id) {
@@ -155,13 +162,21 @@ ConnectionSpecificId ConnectionManager::GetAndAdvanceNextConnectionId() {
   return id;
 }
 
+uint16_t ConnectionManager::GetAndAdvanceNextRootId() {
+  const uint16_t id = next_root_id_++;
+  DCHECK_LT(id, next_root_id_);
+  return id;
+}
+
 void ConnectionManager::OnConnectionError(ClientConnection* connection) {
-  if (connection == window_manager_client_connection_) {
-    window_manager_client_connection_ = nullptr;
-    delegate_->OnLostConnectionToWindowManager();
-    // Assume we've been destroyed.
+  // This will be null if the root has been destroyed.
+  const ViewId* view_id = connection->service()->root();
+  ServerView* view =
+      view_id ? GetView(*connection->service()->root()) : nullptr;
+  // If the ViewManagerService root is a viewport root, then we'll wait until
+  // the root connection goes away to cleanup.
+  if (view && (GetRootView(view) == view))
     return;
-  }
 
   scoped_ptr<ClientConnection> connection_owner(connection);
 
@@ -177,6 +192,33 @@ void ConnectionManager::OnConnectionError(ClientConnection* connection) {
   }
 }
 
+void ConnectionManager::OnRootConnectionClosed(
+    ViewManagerRootConnection* connection) {
+  auto it = root_connection_map_.find(connection->view_manager_root());
+  DCHECK(it != root_connection_map_.end());
+
+  // Clear focus if the focused view is in this viewport.
+  if (GetRootView(GetFocusedView()) == it->first->root_view())
+    SetFocusedView(nullptr);
+
+  // Get the ClientConnection by ViewManagerServiceImpl ID.
+  ConnectionMap::iterator service_connection_it =
+      connection_map_.find(it->first->GetViewManagerService()->id());
+  DCHECK(service_connection_it != connection_map_.end());
+
+  //  Tear down the associated ViewManagerService connection.
+  // TODO(fsamuel): I don't think this is quite right, we should tear down all
+  // connections within the root's viewport. We should probably employ an
+  // observer pattern to do this. Each ViewManagerServiceImpl should track its
+  // parent's lifetime.
+  root_connection_map_.erase(it);
+  OnConnectionError(service_connection_it->second);
+
+  // If we have no more roots left, let the app know so it can terminate.
+  if (!root_connection_map_.size())
+    delegate_->OnNoMoreRootConnections();
+}
+
 void ConnectionManager::EmbedAtView(mojo::ConnectionSpecificId creator_id,
                                     const ViewId& view_id,
                                     mojo::URLRequestPtr request) {
@@ -190,9 +232,10 @@ void ConnectionManager::EmbedAtView(mojo::ConnectionSpecificId creator_id,
   OnConnectionMessagedClient(client_connection->service()->id());
 }
 
-void ConnectionManager::EmbedAtView(mojo::ConnectionSpecificId creator_id,
-                                    const ViewId& view_id,
-                                    mojo::ViewManagerClientPtr client) {
+ViewManagerServiceImpl* ConnectionManager::EmbedAtView(
+    mojo::ConnectionSpecificId creator_id,
+    const ViewId& view_id,
+    mojo::ViewManagerClientPtr client) {
   mojo::ViewManagerServicePtr service_ptr;
   ClientConnection* client_connection =
       delegate_->CreateClientConnectionForEmbedAtView(
@@ -201,12 +244,19 @@ void ConnectionManager::EmbedAtView(mojo::ConnectionSpecificId creator_id,
   client_connection->service()->Init(client_connection->client(),
                                      service_ptr.Pass());
   OnConnectionMessagedClient(client_connection->service()->id());
+
+  return client_connection->service();
 }
 
 void ConnectionManager::OnAccelerator(ServerView* root, mojo::EventPtr event) {
-  // TODO(fsamuel): Support multiple roots.
-  view_manager_root_->client()->OnAccelerator(event.Pass());
+  for (auto& pair : root_connection_map_) {
+    if (root == pair.first->root_view()) {
+      pair.first->client()->OnAccelerator(event.Pass());
+      return;
+    }
+  }
 }
+
 
 ViewManagerServiceImpl* ConnectionManager::GetConnection(
     ConnectionSpecificId connection_id) {
@@ -215,14 +265,17 @@ ViewManagerServiceImpl* ConnectionManager::GetConnection(
 }
 
 ServerView* ConnectionManager::GetView(const ViewId& id) {
-  // TODO(fsamuel): Support multiple roots.
-  if (view_manager_root_->root_view()->id() == id)
-    return view_manager_root_->root_view();
+  for (auto& pair : root_connection_map_) {
+    if (pair.first->root_view()->id() == id)
+      return pair.first->root_view();
+  }
   ViewManagerServiceImpl* service = GetConnection(id.connection_id);
   return service ? service->GetView(id) : nullptr;
 }
 
 void ConnectionManager::SetFocusedView(ServerView* view) {
+  if (!focus_controller_)
+    return;
   ServerView* old_focused = GetFocusedView();
   if (old_focused == view)
     return;
@@ -231,24 +284,25 @@ void ConnectionManager::SetFocusedView(ServerView* view) {
 }
 
 ServerView* ConnectionManager::GetFocusedView() {
+  if (!focus_controller_)
+    return nullptr;
   return focus_controller_->GetFocusedView();
 }
 
 bool ConnectionManager::IsViewAttachedToRoot(const ServerView* view) const {
-  // TODO(fsamuel): Support multiple roots.
-  return view_manager_root_->IsViewAttachedToRoot(view);
+  for (auto& pair : root_connection_map_) {
+    if (pair.first->IsViewAttachedToRoot(view))
+      return true;
+  }
+  return false;
 }
 
 void ConnectionManager::SchedulePaint(const ServerView* view,
                                       const gfx::Rect& bounds) {
-  // TODO(fsamuel): Support multiple roots.
-  view_manager_root_->SchedulePaintIfInViewport(view, bounds);
-}
-
-void ConnectionManager::OnDisplayClosed() {
-  // TODO(fsamuel): Only report we lost the connection to the window manager
-  // if there are no more roots.
-  delegate_->OnLostConnectionToWindowManager();
+  for (auto& pair : root_connection_map_) {
+    if (pair.first->SchedulePaintIfInViewport(view, bounds))
+      return;
+  }
 }
 
 void ConnectionManager::OnConnectionMessagedClient(ConnectionSpecificId id) {
@@ -263,9 +317,18 @@ bool ConnectionManager::DidConnectionMessageClient(
 
 mojo::ViewportMetricsPtr ConnectionManager::GetViewportMetricsForView(
     const ServerView* view) {
-  // TODO(fsamuel): Support multiple roots. We should pull the metrics from
-  // the viewport where this |view| belong.
-  return view_manager_root_->GetViewportMetrics().Clone();
+  for (auto& pair : root_connection_map_) {
+    if (view == pair.first->root_view() ||
+        pair.first->root_view()->Contains(view)) {
+      return pair.first->GetViewportMetrics().Clone();
+    }
+  }
+  if (!root_connection_map_.empty())
+    return root_connection_map_.begin()->first->GetViewportMetrics().Clone();
+
+  mojo::ViewportMetricsPtr metrics = mojo::ViewportMetrics::New();
+  metrics->size_in_pixels = mojo::Size::New();
+  return metrics.Pass();
 }
 
 const ViewManagerServiceImpl* ConnectionManager::GetConnectionWithRoot(
@@ -293,21 +356,6 @@ ViewManagerServiceImpl* ConnectionManager::GetEmbedRoot(
   return nullptr;
 }
 
-void ConnectionManager::SetWindowManagerClientConnection(
-    scoped_ptr<ClientConnection> connection) {
-  CHECK(!window_manager_client_connection_);
-  window_manager_client_connection_ = connection.release();
-  AddConnection(window_manager_client_connection_);
-  window_manager_client_connection_->service()->Init(
-      window_manager_client_connection_->client(), nullptr);
-}
-
-mojo::ViewManagerClient*
-ConnectionManager::GetWindowManagerViewManagerClient() {
-  CHECK(window_manager_client_connection_);
-  return window_manager_client_connection_->client();
-}
-
 bool ConnectionManager::CloneAndAnimate(const ViewId& view_id) {
   ServerView* view = GetView(view_id);
   if (!view || !view->IsDrawn() || (view->GetRoot() == view))
@@ -325,11 +373,6 @@ bool ConnectionManager::CloneAndAnimate(const ViewId& view_id) {
 
 void ConnectionManager::DispatchInputEventToView(const ServerView* view,
                                                  mojo::EventPtr event) {
-  // It's possible for events to flow through here from the platform_window
-  // before any connections are established with the view_manager.
-  if (!has_window_manager_client_connection())
-    return;
-
   // If the view is an embed root, forward to the embedded view, not the owner.
   ViewManagerServiceImpl* connection = GetConnectionWithRoot(view->id());
   if (!connection)
@@ -425,8 +468,12 @@ void ConnectionManager::FinishChange() {
 }
 
 void ConnectionManager::DoAnimation() {
-  // TODO(fsamuel): Support multiple roots.
-  if (!DecrementAnimatingViewsOpacity(view_manager_root_->root_view()))
+  // TODO(fsamuel): This is probably not right. We probably want a per-root
+  // animation.
+  bool animating = false;
+  for (auto& pair : root_connection_map_)
+    animating |= DecrementAnimatingViewsOpacity(pair.first->root_view());
+  if (!animating)
     animation_timer_.Stop();
 }
 
@@ -491,8 +538,10 @@ void ConnectionManager::OnScheduleViewPaint(const ServerView* view) {
 const ServerView* ConnectionManager::GetRootView(const ServerView* view) const {
   while (view && view->parent())
     view = view->parent();
-  if (view_manager_root_->root_view() == view)
-    return view;
+  for (auto& pair : root_connection_map_) {
+    if (pair.first->root_view() == view)
+      return view;
+  }
   return nullptr;
 }
 
@@ -623,15 +672,13 @@ void ConnectionManager::OnFocusChanged(ServerView* old_focused_view,
     }
   }
 
-  if (has_window_manager_client_connection()) {
-    // Window manager should always be notified of focus change.
-    ViewManagerServiceImpl* wm_connection =
-        window_manager_client_connection_->service();
-    if (wm_connection != owning_connection_old &&
-        wm_connection != embedded_connection_old &&
-        wm_connection != owning_connection_new &&
-        wm_connection != embedded_connection_new) {
-      wm_connection->ProcessFocusChanged(old_focused_view, new_focused_view);
+  for (auto& pair : root_connection_map_) {
+    ViewManagerServiceImpl* service = pair.first->GetViewManagerService();
+    if (service != owning_connection_old &&
+        service != embedded_connection_old &&
+        service != owning_connection_new &&
+        service != embedded_connection_new) {
+      service->ProcessFocusChanged(old_focused_view, new_focused_view);
     }
   }
 }

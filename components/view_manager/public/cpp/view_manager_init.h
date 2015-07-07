@@ -10,7 +10,6 @@
 #include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 
 namespace mojo {
 
@@ -21,13 +20,13 @@ class ViewManagerDelegate;
 // ViewManagerInit is used to establish the initial connection to the
 // ViewManager. Use it when you know the ViewManager is not running and you're
 // app is going to be the first one to contact it.
-class ViewManagerInit : public mojo::ErrorHandler {
+class ViewManagerInit {
  public:
   // |root_client| is optional.
   ViewManagerInit(ApplicationImpl* app,
                   ViewManagerDelegate* delegate,
                   ViewManagerRootClient* root_client);
-  ~ViewManagerInit() override;
+  ~ViewManagerInit();
 
   // Returns the ViewManagerRoot. This is only valid if |root_client| was
   // supplied to the constructor.
@@ -41,14 +40,10 @@ class ViewManagerInit : public mojo::ErrorHandler {
 
   void OnCreate(InterfaceRequest<ViewManagerClient> request);
 
-  // ErrorHandler:
-  void OnConnectionError() override;
-
   ApplicationImpl* app_;
   ApplicationConnection* connection_;
   ViewManagerDelegate* delegate_;
   scoped_ptr<ClientFactory> client_factory_;
-  ViewManagerServicePtr service_;
   ViewManagerRootPtr view_manager_root_;
   scoped_ptr<Binding<ViewManagerRootClient>> root_client_binding_;
 

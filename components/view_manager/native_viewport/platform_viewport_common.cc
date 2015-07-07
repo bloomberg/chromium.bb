@@ -46,6 +46,9 @@ class PlatformViewportCommon : public PlatformViewport,
       : delegate_(delegate), headless_(headless) {}
 
   ~PlatformViewportCommon() override {
+    // Close the PlatformWindow so that PlatformEventSource does not hold an
+    // invalid pointer to |this|.
+    platform_window_->Close();
     // Destroy the platform-window while |this| is still alive.
     platform_window_.reset();
   }

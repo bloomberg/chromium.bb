@@ -30,6 +30,7 @@ class ClientConnection;
 class ConnectionManagerDelegate;
 class FocusController;
 class ServerView;
+class ViewManagerRootConnection;
 class ViewManagerServiceImpl;
 
 // ConnectionManager manages the set of connections to the ViewManager (all the
@@ -71,11 +72,11 @@ class ConnectionManager : public ServerViewDelegate,
     DISALLOW_COPY_AND_ASSIGN(ScopedChange);
   };
 
-  ConnectionManager(ConnectionManagerDelegate* delegate,
-                    bool is_headless,
-                    mojo::ApplicationImpl* app_impl,
-                    const scoped_refptr<gles2::GpuState>& gpu_state);
+  explicit ConnectionManager(ConnectionManagerDelegate* delegate);
   ~ConnectionManager() override;
+
+  // Adds a ViewManagerRoot.
+  void AddRoot(ViewManagerRootConnection* root_connection);
 
   // Creates a new ServerView. The return value is owned by the caller, but must
   // be destroyed before ConnectionManager.
@@ -84,17 +85,25 @@ class ConnectionManager : public ServerViewDelegate,
   // Returns the id for the next ViewManagerServiceImpl.
   mojo::ConnectionSpecificId GetAndAdvanceNextConnectionId();
 
+  // Returns the id for the next ViewManagerRootImpl.
+  uint16_t GetAndAdvanceNextRootId();
+
   // Invoked when a ViewManagerServiceImpl's connection encounters an error.
   void OnConnectionError(ClientConnection* connection);
+
+  // Invoked when a ViewManagerRootBindingOwnerBase's connection encounters an
+  // error or the associated Display window is closed.
+  void OnRootConnectionClosed(ViewManagerRootConnection* connection);
 
   // See description of ViewManagerService::Embed() for details. This assumes
   // |transport_view_id| is valid.
   void EmbedAtView(mojo::ConnectionSpecificId creator_id,
                    const ViewId& view_id,
                    mojo::URLRequestPtr request);
-  void EmbedAtView(mojo::ConnectionSpecificId creator_id,
-                   const ViewId& view_id,
-                   mojo::ViewManagerClientPtr client);
+  ViewManagerServiceImpl* EmbedAtView(
+      mojo::ConnectionSpecificId creator_id,
+      const ViewId& view_id,
+      mojo::ViewManagerClientPtr client);
 
   // Invoked when an accelerator has been triggered on a view tree with the
   // provided |root|.
@@ -148,14 +157,6 @@ class ConnectionManager : public ServerViewDelegate,
   // Returns the first ancestor of |service| that is marked as an embed root.
   ViewManagerServiceImpl* GetEmbedRoot(ViewManagerServiceImpl* service);
 
-  void SetWindowManagerClientConnection(
-      scoped_ptr<ClientConnection> connection);
-  bool has_window_manager_client_connection() const {
-    return window_manager_client_connection_ != nullptr;
-  }
-
-  mojo::ViewManagerClient* GetWindowManagerViewManagerClient();
-
   // ViewManagerRoot implementation helper; see mojom for details.
   bool CloneAndAnimate(const ViewId& view_id);
 
@@ -193,6 +194,8 @@ class ConnectionManager : public ServerViewDelegate,
 
  private:
   using ConnectionMap = std::map<mojo::ConnectionSpecificId, ClientConnection*>;
+  using RootConnectionMap =
+      std::map<ViewManagerRootImpl*, ViewManagerRootConnection*>;
 
   // Invoked when a connection is about to make a change.  Subsequently followed
   // by FinishChange() once the change is done.
@@ -254,21 +257,19 @@ class ConnectionManager : public ServerViewDelegate,
 
   ConnectionManagerDelegate* delegate_;
 
-  // The ClientConnection containing the ViewManagerService implementation
-  // provided to the initial connection (the WindowManager).
-  // NOTE: |window_manager_client_connection_| is also in |connection_map_|.
-  ClientConnection* window_manager_client_connection_;
-
   // ID to use for next ViewManagerServiceImpl.
   mojo::ConnectionSpecificId next_connection_id_;
-
-  // Set of ViewManagerServiceImpls.
-  ConnectionMap connection_map_;
 
   // ID to use for next ViewManagerRootImpl.
   uint16_t next_root_id_;
 
   EventDispatcher event_dispatcher_;
+
+  // Set of ViewManagerServiceImpls.
+  ConnectionMap connection_map_;
+
+  // Set of ViewManagerRootImpls.
+  RootConnectionMap root_connection_map_;
 
   // If non-null we're processing a change. The ScopedChange is not owned by us
   // (it's created on the stack by ViewManagerServiceImpl).
