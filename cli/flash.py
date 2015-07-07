@@ -15,8 +15,6 @@ import time
 
 from chromite.cbuildbot import constants
 from chromite.cli import command
-from chromite.lib import blueprint_lib
-from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -723,12 +721,10 @@ class RemoteDeviceUpdater(object):
       self.Cleanup()
 
 
-# TODO(dpursell): replace |brick| argument with blueprints when they're ready.
-def Flash(device, image, board=None, brick_name=None, blueprint_name=None,
-          install=False, src_image_to_delta=None, rootfs_update=True,
-          stateful_update=True, clobber_stateful=False, reboot=True, wipe=True,
-          ping=True, disable_rootfs_verification=False, clear_cache=False,
-          yes=False, force=False, debug=False):
+def Flash(device, image, board=None, install=False, src_image_to_delta=None,
+          rootfs_update=True, stateful_update=True, clobber_stateful=False,
+          reboot=True, wipe=True, ping=True, disable_rootfs_verification=False,
+          clear_cache=False, yes=False, force=False, debug=False):
   """Flashes a device, USB drive, or file with an image.
 
   This provides functionality common to `cros flash` and `brillo flash`
@@ -740,9 +736,6 @@ def Flash(device, image, board=None, brick_name=None, blueprint_name=None,
     image: Path (string) to the update image. Can be a local or xbuddy path;
         non-existant local paths are converted to xbuddy.
     board: Board to use; None to automatically detect.
-    brick_name: Brick locator to use. Overrides |board| if not None.
-    blueprint_name: Blueprint locator to use. Overrides |board| and
-        |brick_name|.
     install: Install to USB using base disk layout; USB |device| scheme only.
     src_image_to_delta: Local path to an image to be used as the base to
         generate delta payloads; SSH |device| scheme only.
@@ -781,23 +774,6 @@ def Flash(device, image, board=None, brick_name=None, blueprint_name=None,
           '--install can only be used when writing to a USB device')
     if not cros_build_lib.IsInsideChroot():
       raise ValueError('--install can only be used inside the chroot')
-
-  # We don't have enough information on the device to make a good guess on
-  # whether this device is compatible with the blueprint.
-  # TODO(bsimonnet): Add proper compatibility checks. (brbug.com/969)
-  if blueprint_name:
-    board = None
-    if image == 'latest':
-      blueprint = blueprint_lib.Blueprint(blueprint_name)
-      image_dir = os.path.join(
-          workspace_lib.WorkspacePath(), workspace_lib.WORKSPACE_IMAGES_DIR,
-          blueprint.FriendlyName(), 'latest')
-      image = _ChooseImageFromDirectory(image_dir)
-    elif not os.path.exists(image):
-      raise ValueError('Cannot find blueprint image "%s". Only "latest" and '
-                       'full image path are supported.' % image)
-  elif brick_name:
-    board = brick_lib.Brick(brick_name).FriendlyName()
 
   workspace_path = workspace_lib.WorkspacePath()
 

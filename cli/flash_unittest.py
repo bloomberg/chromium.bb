@@ -10,7 +10,6 @@ import mock
 import os
 
 from chromite.cli import flash
-from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
@@ -140,7 +139,6 @@ class USBImagerTest(cros_test_lib.MockTempDirTestCase):
                      return_value=('taco-paladin/R36/chromiumos_test_image.bin',
                                    'remote/taco-paladin/R36/test'))
     self.PatchObject(os.path, 'exists', return_value=True)
-    self.PatchObject(brick_lib, 'FindBrickInPath', return_value=None)
     self.isgpt_mock = self.PatchObject(flash, '_IsFilePathGPTDiskImage',
                                        return_value=True)
     self.PatchObject(workspace_lib, 'WorkspacePath', return_value=None)
