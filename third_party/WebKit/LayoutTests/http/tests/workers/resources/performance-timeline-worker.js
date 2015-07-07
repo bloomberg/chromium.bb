@@ -34,6 +34,15 @@ promise_test(function(test) {
           return resp.text();
         })
       .then(function(t) {
+          // TODO(hiroshige): The resource timing entry for dummy.txt is added
+          // about at the same time as, but not necessarily before,
+          // |resp.text()| is resolved. https://crbug.com/507169
+          // We add setTimeout() here as temporary fix.
+          return new Promise(function(resolve, reject) {
+              setTimeout(function() { resolve(t); }, 100);
+            });
+        })
+      .then(function(t) {
           var expectedResources = ['/resources/testharness.js', '/resources/dummy.txt'];
           assert_equals(performance.getEntriesByType('resource').length, expectedResources.length);
           for (var i = 0; i < expectedResources.length; i++) {
