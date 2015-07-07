@@ -49,6 +49,7 @@ class LayerTestCommon {
   class LayerImplTest {
    public:
     LayerImplTest();
+    explicit LayerImplTest(const LayerTreeSettings& settings);
     ~LayerImplTest();
 
     template <typename T>

@@ -674,6 +674,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   void UpdatePropertyTreeForScrollingAndAnimationIfNeeded();
 
+  float GetIdealContentsScale() const;
+
  protected:
   LayerImpl(LayerTreeImpl* layer_impl,
             int id,

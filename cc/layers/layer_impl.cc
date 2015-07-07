@@ -1794,4 +1794,24 @@ gfx::Rect LayerImpl::GetScaledEnclosingRectInTargetSpace(float scale) const {
                                            gfx::Rect(scaled_bounds));
 }
 
+float LayerImpl::GetIdealContentsScale() const {
+  float page_scale = IsAffectedByPageScale()
+                         ? layer_tree_impl()->current_page_scale_factor()
+                         : 1.f;
+  float device_scale = layer_tree_impl()->device_scale_factor();
+
+  float default_scale = page_scale * device_scale;
+  if (!layer_tree_impl()
+           ->settings()
+           .layer_transforms_should_scale_layer_contents) {
+    return default_scale;
+  }
+
+  // TODO(enne): the transform needs to come from property trees instead of
+  // draw properties.
+  gfx::Vector2dF transform_scales = MathUtil::ComputeTransform2dScaleComponents(
+      draw_properties().target_space_transform, default_scale);
+  return std::max(transform_scales.x(), transform_scales.y());
+}
+
 }  // namespace cc

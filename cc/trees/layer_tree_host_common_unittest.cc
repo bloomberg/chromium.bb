@@ -85,10 +85,23 @@ scoped_refptr<FakePictureLayer> CreateDrawablePictureLayer(
     EXPECT_FLOAT_EQ(expected, layer->contents_scale_y()); \
   } while (false)
 
-#define EXPECT_IDEAL_SCALE_EQ(expected, layer)                                \
-  do {                                                                        \
-    EXPECT_FLOAT_EQ(expected, layer->draw_properties().ideal_contents_scale); \
+#define EXPECT_IDEAL_SCALE_EQ(expected, layer)                 \
+  do {                                                         \
+    EXPECT_FLOAT_EQ(expected, layer->GetIdealContentsScale()); \
   } while (false)
+
+class LayerTreeSettingsScaleContent : public LayerTreeSettings {
+ public:
+  LayerTreeSettingsScaleContent() {
+    layer_transforms_should_scale_layer_contents = true;
+  }
+};
+
+class LayerTreeHostCommonScalingTest : public LayerTreeHostCommonTest {
+ public:
+  LayerTreeHostCommonScalingTest()
+      : LayerTreeHostCommonTest(LayerTreeSettingsScaleContent()) {}
+};
 
 TEST_F(LayerTreeHostCommonTest, TransformsForNoOpLayer) {
   // Sanity check: For layers positioned at zero, with zero size,
@@ -4175,67 +4188,38 @@ TEST_F(LayerTreeHostCommonTest,
                 ->render_surface()->layer_list().at(1)->id());
 }
 
-TEST_F(LayerTreeHostCommonTest, LayerTransformsInHighDPI) {
+TEST_F(LayerTreeHostCommonScalingTest, LayerTransformsInHighDPI) {
   // Verify draw and screen space transforms of layers not in a surface.
-  MockContentLayerClient delegate;
   gfx::Transform identity_matrix;
 
-  scoped_refptr<FakePictureLayer> parent =
-      CreateDrawablePictureLayer(layer_settings(), &delegate);
-  SetLayerPropertiesForTesting(parent.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               false,
+  LayerImpl* parent = root_layer();
+  SetLayerPropertiesForTesting(parent, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), false, true,
                                true);
 
-  scoped_refptr<FakePictureLayer> child =
-      CreateDrawablePictureLayer(layer_settings(), &delegate);
-  SetLayerPropertiesForTesting(child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(2.f, 2.f),
-                               gfx::Size(10, 10),
-                               false,
-                               true);
+  LayerImpl* child = AddChildToRoot<LayerImpl>();
+  SetLayerPropertiesForTesting(child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(2.f, 2.f), gfx::Size(10, 10), false,
+                               true, false);
 
-  scoped_refptr<FakePictureLayer> child_empty =
-      CreateDrawablePictureLayer(layer_settings(), &delegate);
-  SetLayerPropertiesForTesting(child_empty.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(2.f, 2.f),
-                               gfx::Size(),
-                               false,
-                               true);
-
-  parent->AddChild(child);
-  parent->AddChild(child_empty);
-
-  host()->SetRootLayer(parent);
+  LayerImpl* child_empty = AddChildToRoot<LayerImpl>();
+  SetLayerPropertiesForTesting(child_empty, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(2.f, 2.f), gfx::Size(), false, true,
+                               false);
 
   float device_scale_factor = 2.5f;
-  float page_scale_factor = 1.f;
+  gfx::Size viewport_size(100, 100);
+  ExecuteCalculateDrawProperties(parent, device_scale_factor);
 
-  RenderSurfaceLayerList render_surface_layer_list;
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      parent.get(), parent->bounds(), &render_surface_layer_list);
-  inputs.device_scale_factor = device_scale_factor;
-  inputs.page_scale_factor = page_scale_factor;
-  inputs.can_adjust_raster_scales = true;
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  EXPECT_IDEAL_SCALE_EQ(device_scale_factor, parent);
+  EXPECT_IDEAL_SCALE_EQ(device_scale_factor, child);
+  EXPECT_IDEAL_SCALE_EQ(device_scale_factor, child_empty);
 
-  EXPECT_IDEAL_SCALE_EQ(device_scale_factor * page_scale_factor, parent);
-  EXPECT_IDEAL_SCALE_EQ(device_scale_factor * page_scale_factor, child);
-  EXPECT_IDEAL_SCALE_EQ(device_scale_factor * page_scale_factor, child_empty);
-
-  EXPECT_EQ(1u, render_surface_layer_list.size());
+  EXPECT_EQ(1u, render_surface_layer_list_impl()->size());
 
   // Verify parent transforms
   gfx::Transform expected_parent_transform;
-  expected_parent_transform.Scale(device_scale_factor * page_scale_factor,
-                                  device_scale_factor * page_scale_factor);
+  expected_parent_transform.Scale(device_scale_factor, device_scale_factor);
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_parent_transform,
                                   parent->screen_space_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_parent_transform,
@@ -4290,69 +4274,41 @@ TEST_F(LayerTreeHostCommonTest, LayerTransformsInHighDPI) {
   EXPECT_FLOAT_RECT_EQ(expected_child_draw_rect, child_empty_screen_space_rect);
 }
 
-TEST_F(LayerTreeHostCommonTest, SurfaceLayerTransformsInHighDPI) {
+TEST_F(LayerTreeHostCommonScalingTest, SurfaceLayerTransformsInHighDPI) {
   // Verify draw and screen space transforms of layers in a surface.
-  MockContentLayerClient delegate;
   gfx::Transform identity_matrix;
-
   gfx::Transform perspective_matrix;
   perspective_matrix.ApplyPerspectiveDepth(2.0);
 
   gfx::Transform scale_small_matrix;
   scale_small_matrix.Scale(SK_MScalar1 / 10.f, SK_MScalar1 / 12.f);
 
-  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  LayerImpl* root = root_layer();
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), false, true,
+                               false);
+  LayerImpl* parent = AddChildToRoot<LayerImpl>();
+  SetLayerPropertiesForTesting(parent, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), false, true,
+                               false);
 
-  scoped_refptr<FakePictureLayer> parent =
-      CreateDrawablePictureLayer(layer_settings(), &delegate);
-  SetLayerPropertiesForTesting(parent.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               false,
-                               true);
-
-  scoped_refptr<FakePictureLayer> perspective_surface =
-      CreateDrawablePictureLayer(layer_settings(), &delegate);
-  SetLayerPropertiesForTesting(perspective_surface.get(),
+  LayerImpl* perspective_surface = AddChild<LayerImpl>(parent);
+  SetLayerPropertiesForTesting(perspective_surface,
                                perspective_matrix * scale_small_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(2.f, 2.f),
-                               gfx::Size(10, 10),
-                               false,
-                               true);
+                               gfx::Point3F(), gfx::PointF(2.f, 2.f),
+                               gfx::Size(10, 10), false, true, true);
+  perspective_surface->SetDrawsContent(true);
 
-  scoped_refptr<FakePictureLayer> scale_surface =
-      CreateDrawablePictureLayer(layer_settings(), &delegate);
-  SetLayerPropertiesForTesting(scale_surface.get(),
-                               scale_small_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(2.f, 2.f),
-                               gfx::Size(10, 10),
-                               false,
-                               true);
-
-  perspective_surface->SetForceRenderSurface(true);
-  scale_surface->SetForceRenderSurface(true);
-
-  parent->AddChild(perspective_surface);
-  parent->AddChild(scale_surface);
-  root->AddChild(parent);
-
-  host()->SetRootLayer(root);
+  LayerImpl* scale_surface = AddChild<LayerImpl>(parent);
+  SetLayerPropertiesForTesting(scale_surface, scale_small_matrix,
+                               gfx::Point3F(), gfx::PointF(2.f, 2.f),
+                               gfx::Size(10, 10), false, true, true);
+  scale_surface->SetDrawsContent(true);
 
   float device_scale_factor = 2.5f;
   float page_scale_factor = 3.f;
-
-  RenderSurfaceLayerList render_surface_layer_list;
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      root.get(), parent->bounds(), &render_surface_layer_list);
-  inputs.device_scale_factor = device_scale_factor;
-  inputs.page_scale_factor = page_scale_factor;
-  inputs.page_scale_layer = root.get();
-  inputs.can_adjust_raster_scales = true;
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  ExecuteCalculateDrawProperties(root, device_scale_factor, page_scale_factor,
+                                 root);
 
   EXPECT_IDEAL_SCALE_EQ(device_scale_factor * page_scale_factor, parent);
   EXPECT_IDEAL_SCALE_EQ(device_scale_factor * page_scale_factor,
@@ -4377,7 +4333,7 @@ TEST_F(LayerTreeHostCommonTest, SurfaceLayerTransformsInHighDPI) {
                   std::max(target_space_transform_scales.x(),
                            target_space_transform_scales.y()));
 
-  EXPECT_EQ(3u, render_surface_layer_list.size());
+  EXPECT_EQ(3u, render_surface_layer_list_impl()->size());
 
   gfx::Transform expected_parent_draw_transform;
   expected_parent_draw_transform.Scale(device_scale_factor * page_scale_factor,
@@ -4409,10 +4365,7 @@ TEST_F(LayerTreeHostCommonTest, SurfaceLayerTransformsInHighDPI) {
       perspective_surface->draw_transform());
 }
 
-TEST_F(LayerTreeHostCommonTest, SmallIdealScale) {
-  MockContentLayerClient delegate;
-  gfx::Transform identity_matrix;
-
+TEST_F(LayerTreeHostCommonScalingTest, SmallIdealScale) {
   gfx::Transform parent_scale_matrix;
   SkMScalar initial_parent_scale = 1.75;
   parent_scale_matrix.Scale(initial_parent_scale, initial_parent_scale);
@@ -4421,47 +4374,25 @@ TEST_F(LayerTreeHostCommonTest, SmallIdealScale) {
   SkMScalar initial_child_scale = 0.25;
   child_scale_matrix.Scale(initial_child_scale, initial_child_scale);
 
-  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  LayerImpl* root = root_layer();
   root->SetBounds(gfx::Size(100, 100));
 
-  scoped_refptr<FakePictureLayer> parent =
-      CreateDrawablePictureLayer(layer_settings(), &delegate);
-  SetLayerPropertiesForTesting(parent.get(),
-                               parent_scale_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               false,
-                               true);
+  LayerImpl* parent = AddChildToRoot<LayerImpl>();
+  SetLayerPropertiesForTesting(parent, parent_scale_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), false, true,
+                               false);
 
-  scoped_refptr<FakePictureLayer> child_scale =
-      CreateDrawablePictureLayer(layer_settings(), &delegate);
-  SetLayerPropertiesForTesting(child_scale.get(),
-                               child_scale_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(2.f, 2.f),
-                               gfx::Size(10, 10),
-                               false,
-                               true);
-
-  root->AddChild(parent);
-
-  parent->AddChild(child_scale);
-
-  host()->SetRootLayer(root);
+  LayerImpl* child_scale = AddChild<LayerImpl>(parent);
+  SetLayerPropertiesForTesting(child_scale, child_scale_matrix, gfx::Point3F(),
+                               gfx::PointF(2.f, 2.f), gfx::Size(10, 10), false,
+                               true, false);
 
   float device_scale_factor = 2.5f;
   float page_scale_factor = 0.01f;
 
   {
-    RenderSurfaceLayerList render_surface_layer_list;
-    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(), root->bounds(), &render_surface_layer_list);
-    inputs.device_scale_factor = device_scale_factor;
-    inputs.page_scale_factor = page_scale_factor;
-    inputs.page_scale_layer = root.get();
-    inputs.can_adjust_raster_scales = true;
-    LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+    ExecuteCalculateDrawProperties(root, device_scale_factor, page_scale_factor,
+                                   root);
 
     // The ideal scale is able to go below 1.
     float expected_ideal_scale =
@@ -4476,10 +4407,7 @@ TEST_F(LayerTreeHostCommonTest, SmallIdealScale) {
   }
 }
 
-TEST_F(LayerTreeHostCommonTest, IdealScaleForAnimatingLayer) {
-  MockContentLayerClient delegate;
-  gfx::Transform identity_matrix;
-
+TEST_F(LayerTreeHostCommonScalingTest, IdealScaleForAnimatingLayer) {
   gfx::Transform parent_scale_matrix;
   SkMScalar initial_parent_scale = 1.75;
   parent_scale_matrix.Scale(initial_parent_scale, initial_parent_scale);
@@ -4488,41 +4416,21 @@ TEST_F(LayerTreeHostCommonTest, IdealScaleForAnimatingLayer) {
   SkMScalar initial_child_scale = 1.25;
   child_scale_matrix.Scale(initial_child_scale, initial_child_scale);
 
-  scoped_refptr<Layer> root = Layer::Create(layer_settings());
+  LayerImpl* root = root_layer();
   root->SetBounds(gfx::Size(100, 100));
 
-  scoped_refptr<FakePictureLayer> parent =
-      CreateDrawablePictureLayer(layer_settings(), &delegate);
-  SetLayerPropertiesForTesting(parent.get(),
-                               parent_scale_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               false,
-                               true);
+  LayerImpl* parent = AddChildToRoot<LayerImpl>();
+  SetLayerPropertiesForTesting(parent, parent_scale_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), false, true,
+                               false);
 
-  scoped_refptr<FakePictureLayer> child_scale =
-      CreateDrawablePictureLayer(layer_settings(), &delegate);
-  SetLayerPropertiesForTesting(child_scale.get(),
-                               child_scale_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(2.f, 2.f),
-                               gfx::Size(10, 10),
-                               false,
-                               true);
-
-  root->AddChild(parent);
-
-  parent->AddChild(child_scale);
-
-  host()->SetRootLayer(root);
+  LayerImpl* child_scale = AddChild<LayerImpl>(parent);
+  SetLayerPropertiesForTesting(child_scale, child_scale_matrix, gfx::Point3F(),
+                               gfx::PointF(2.f, 2.f), gfx::Size(10, 10), false,
+                               true, false);
 
   {
-    RenderSurfaceLayerList render_surface_layer_list;
-    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(), root->bounds(), &render_surface_layer_list);
-    inputs.can_adjust_raster_scales = true;
-    LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+    ExecuteCalculateDrawProperties(root);
 
     EXPECT_IDEAL_SCALE_EQ(initial_parent_scale, parent);
     // Animating layers compute ideal scale in the same way as when
@@ -4860,12 +4768,12 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
 }
 
 using LCDTextTestParam = std::tr1::tuple<bool, bool, bool>;
-class LCDTextTest
-    : public LayerTreeHostCommonTestBase,
-      public testing::TestWithParam<LCDTextTestParam> {
+class LCDTextTest : public LayerTreeHostCommonTestBase,
+                    public testing::TestWithParam<LCDTextTestParam> {
  public:
   LCDTextTest()
-      : host_impl_(&proxy_, &shared_bitmap_manager_, &task_graph_runner_),
+      : LayerTreeHostCommonTestBase(LayerTreeSettings()),
+        host_impl_(&proxy_, &shared_bitmap_manager_, &task_graph_runner_),
         root_(nullptr),
         child_(nullptr),
         grand_child_(nullptr) {}
@@ -7441,7 +7349,9 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
   FakeImplProxy proxy;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
-  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager,
+  LayerTreeSettings settings;
+  settings.layer_transforms_should_scale_layer_contents = true;
+  FakeLayerTreeHostImpl host_impl(settings, &proxy, &shared_bitmap_manager,
                                   &task_graph_runner);
 
   scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.active_tree(), 1);
@@ -7489,16 +7399,10 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
 
   ExecuteCalculateDrawProperties(root_layer);
 
-  EXPECT_FLOAT_EQ(1.f, root_layer->draw_properties().ideal_contents_scale);
-  EXPECT_FLOAT_EQ(3.f, child1_layer->draw_properties().ideal_contents_scale);
-  EXPECT_FLOAT_EQ(
-      3.f, child1_layer->mask_layer()->draw_properties().ideal_contents_scale);
-  EXPECT_FLOAT_EQ(3.f,
-                  child1_layer->replica_layer()
-                      ->mask_layer()
-                      ->draw_properties()
-                      .ideal_contents_scale);
-  EXPECT_FLOAT_EQ(5.f, child2_layer->draw_properties().ideal_contents_scale);
+  EXPECT_FLOAT_EQ(1.f, root_layer->GetIdealContentsScale());
+  EXPECT_FLOAT_EQ(3.f, child1_layer->GetIdealContentsScale());
+  EXPECT_FLOAT_EQ(3.f, child1_layer->mask_layer()->GetIdealContentsScale());
+  EXPECT_FLOAT_EQ(5.f, child2_layer->GetIdealContentsScale());
 
   EXPECT_FLOAT_EQ(
       0.f, root_layer->draw_properties().maximum_animation_contents_scale);
@@ -7533,16 +7437,13 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
   inputs.page_scale_layer = root_layer;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
-  EXPECT_FLOAT_EQ(1.f, root_layer->draw_properties().ideal_contents_scale);
-  EXPECT_FLOAT_EQ(9.f, child1_layer->draw_properties().ideal_contents_scale);
+  EXPECT_FLOAT_EQ(3.f, root_layer->GetIdealContentsScale());
+  EXPECT_FLOAT_EQ(9.f, child1_layer->GetIdealContentsScale());
+  EXPECT_FLOAT_EQ(9.f, child1_layer->mask_layer()->GetIdealContentsScale());
   EXPECT_FLOAT_EQ(
-      9.f, child1_layer->mask_layer()->draw_properties().ideal_contents_scale);
-  EXPECT_FLOAT_EQ(9.f,
-                  child1_layer->replica_layer()
-                      ->mask_layer()
-                      ->draw_properties()
-                      .ideal_contents_scale);
-  EXPECT_FLOAT_EQ(15.f, child2_layer->draw_properties().ideal_contents_scale);
+      9.f,
+      child1_layer->replica_layer()->mask_layer()->GetIdealContentsScale());
+  EXPECT_FLOAT_EQ(15.f, child2_layer->GetIdealContentsScale());
 
   EXPECT_FLOAT_EQ(
       0.f, root_layer->draw_properties().maximum_animation_contents_scale);
@@ -7568,16 +7469,13 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
-  EXPECT_FLOAT_EQ(4.f, root_layer->draw_properties().ideal_contents_scale);
-  EXPECT_FLOAT_EQ(36.f, child1_layer->draw_properties().ideal_contents_scale);
+  EXPECT_FLOAT_EQ(12.f, root_layer->GetIdealContentsScale());
+  EXPECT_FLOAT_EQ(36.f, child1_layer->GetIdealContentsScale());
+  EXPECT_FLOAT_EQ(36.f, child1_layer->mask_layer()->GetIdealContentsScale());
   EXPECT_FLOAT_EQ(
-      36.f, child1_layer->mask_layer()->draw_properties().ideal_contents_scale);
-  EXPECT_FLOAT_EQ(36.f,
-                  child1_layer->replica_layer()
-                      ->mask_layer()
-                      ->draw_properties()
-                      .ideal_contents_scale);
-  EXPECT_FLOAT_EQ(60.f, child2_layer->draw_properties().ideal_contents_scale);
+      36.f,
+      child1_layer->replica_layer()->mask_layer()->GetIdealContentsScale());
+  EXPECT_FLOAT_EQ(60.f, child2_layer->GetIdealContentsScale());
 
   EXPECT_FLOAT_EQ(
       0.f, root_layer->draw_properties().maximum_animation_contents_scale);

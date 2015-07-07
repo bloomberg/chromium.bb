@@ -32,7 +32,7 @@ class RenderSurfaceLayerList;
 
 class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
  protected:
-  LayerTreeHostCommonTestBase();
+  explicit LayerTreeHostCommonTestBase(const LayerTreeSettings& settings);
   virtual ~LayerTreeHostCommonTestBase();
 
   template <typename LayerType>
@@ -134,7 +134,11 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
 };
 
 class LayerTreeHostCommonTest : public LayerTreeHostCommonTestBase,
-                                public testing::Test {};
+                                public testing::Test {
+ public:
+  LayerTreeHostCommonTest();
+  explicit LayerTreeHostCommonTest(const LayerTreeSettings& settings);
+};
 
 }  // namespace cc
 

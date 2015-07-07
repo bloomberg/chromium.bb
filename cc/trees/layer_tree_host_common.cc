@@ -906,12 +906,8 @@ gfx::Transform ComputeScrollCompensationMatrixForChildren(
 template <typename LayerType>
 static inline void UpdateLayerScaleDrawProperties(
     LayerType* layer,
-    float ideal_contents_scale,
     float maximum_animation_contents_scale,
-    float starting_animation_contents_scale,
-    float page_scale_factor,
-    float device_scale_factor) {
-  layer->draw_properties().ideal_contents_scale = ideal_contents_scale;
+    float starting_animation_contents_scale) {
   layer->draw_properties().maximum_animation_contents_scale =
       maximum_animation_contents_scale;
   layer->draw_properties().starting_animation_contents_scale =
@@ -1738,42 +1734,23 @@ static void CalculateDrawPropertiesInternal(
           combined_transform,
           layer_scale_factors);
 
-  float ideal_contents_scale =
-      globals.can_adjust_raster_scales
-      ? std::max(combined_transform_scales.x(),
-                 combined_transform_scales.y())
-      : layer_scale_factors;
-  UpdateLayerScaleDrawProperties(
-      layer, ideal_contents_scale, combined_maximum_animation_contents_scale,
-      combined_starting_animation_contents_scale,
-      data_from_ancestor.in_subtree_of_page_scale_layer
-          ? globals.page_scale_factor
-          : 1.f,
-      globals.device_scale_factor);
+  UpdateLayerScaleDrawProperties(layer,
+                                 combined_maximum_animation_contents_scale,
+                                 combined_starting_animation_contents_scale);
 
   LayerType* mask_layer = layer->mask_layer();
   if (mask_layer) {
-    UpdateLayerScaleDrawProperties(
-        mask_layer, ideal_contents_scale,
-        combined_maximum_animation_contents_scale,
-        combined_starting_animation_contents_scale,
-        data_from_ancestor.in_subtree_of_page_scale_layer
-            ? globals.page_scale_factor
-            : 1.f,
-        globals.device_scale_factor);
+    UpdateLayerScaleDrawProperties(mask_layer,
+                                   combined_maximum_animation_contents_scale,
+                                   combined_starting_animation_contents_scale);
   }
 
   LayerType* replica_mask_layer =
       layer->replica_layer() ? layer->replica_layer()->mask_layer() : NULL;
   if (replica_mask_layer) {
-    UpdateLayerScaleDrawProperties(
-        replica_mask_layer, ideal_contents_scale,
-        combined_maximum_animation_contents_scale,
-        combined_starting_animation_contents_scale,
-        data_from_ancestor.in_subtree_of_page_scale_layer
-            ? globals.page_scale_factor
-            : 1.f,
-        globals.device_scale_factor);
+    UpdateLayerScaleDrawProperties(replica_mask_layer,
+                                   combined_maximum_animation_contents_scale,
+                                   combined_starting_animation_contents_scale);
   }
 
   if (layer == globals.page_scale_layer) {
@@ -1914,6 +1891,13 @@ static void CalculateDrawPropertiesInternal(
       mask_layer_draw_properties.render_target = layer;
       mask_layer_draw_properties.visible_layer_rect =
           gfx::Rect(layer->bounds());
+      // Temporarily copy the draw transform of the mask's owning layer into the
+      // mask layer draw properties.  This won't actually get used for drawing
+      // (the render surface uses the mask texture directly), but will get used
+      // to get the correct contents scale.
+      // TODO(enne): do something similar for property trees.
+      mask_layer_draw_properties.target_space_transform =
+          layer_draw_properties.target_space_transform;
     }
 
     if (layer->replica_layer() && layer->replica_layer()->mask_layer()) {
@@ -1922,6 +1906,8 @@ static void CalculateDrawPropertiesInternal(
       replica_mask_draw_properties.render_target = layer;
       replica_mask_draw_properties.visible_layer_rect =
           gfx::Rect(layer->bounds());
+      replica_mask_draw_properties.target_space_transform =
+          layer_draw_properties.target_space_transform;
     }
 
     // Ignore occlusion from outside the surface when surface contents need to

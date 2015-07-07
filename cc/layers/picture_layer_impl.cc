@@ -1154,8 +1154,7 @@ void PictureLayerImpl::UpdateIdealScales() {
                           ? layer_tree_impl()->current_page_scale_factor()
                           : 1.f;
   ideal_device_scale_ = layer_tree_impl()->device_scale_factor();
-  ideal_contents_scale_ =
-      std::max(draw_properties().ideal_contents_scale, min_contents_scale);
+  ideal_contents_scale_ = std::max(GetIdealContentsScale(), min_contents_scale);
   ideal_source_scale_ =
       ideal_contents_scale_ / ideal_page_scale_ / ideal_device_scale_;
 }

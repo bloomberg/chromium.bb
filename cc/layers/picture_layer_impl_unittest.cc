@@ -63,9 +63,16 @@ class MockCanvas : public SkCanvas {
   std::vector<SkRect> rects_;
 };
 
-class NoLowResTilingsSettings : public GpuRasterizationEnabledSettings {};
+class PictureLayerImplTestSettings : public GpuRasterizationEnabledSettings {
+ public:
+  PictureLayerImplTestSettings() {
+    layer_transforms_should_scale_layer_contents = true;
+  }
+};
 
-class LowResTilingsSettings : public GpuRasterizationEnabledSettings {
+class NoLowResTilingsSettings : public PictureLayerImplTestSettings {};
+
+class LowResTilingsSettings : public PictureLayerImplTestSettings {
  public:
   LowResTilingsSettings() { create_low_res_tiling = true; }
 };
@@ -248,7 +255,10 @@ class PictureLayerImplTest : public testing::Test {
     host_impl_.SetDeviceScaleFactor(device_scale_factor);
     host_impl_.SetPageScaleOnActiveTree(page_scale_factor);
 
-    layer->draw_properties().ideal_contents_scale = ideal_contents_scale;
+    gfx::Transform scale_transform;
+    scale_transform.Scale(ideal_contents_scale, ideal_contents_scale);
+    layer->draw_properties().target_space_transform = scale_transform;
+    DCHECK_EQ(layer->GetIdealContentsScale(), ideal_contents_scale);
     layer->draw_properties().maximum_animation_contents_scale =
         maximum_animation_contents_scale;
     layer->draw_properties().starting_animation_contents_scale =
@@ -4884,7 +4894,7 @@ TEST_F(PictureLayerImplTest, TilingAllTilesDone) {
   }
 }
 
-class TileSizeSettings : public GpuRasterizationEnabledSettings {
+class TileSizeSettings : public PictureLayerImplTestSettings {
  public:
   TileSizeSettings() {
     default_tile_size = gfx::Size(100, 100);

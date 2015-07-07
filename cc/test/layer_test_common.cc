@@ -110,8 +110,12 @@ void LayerTestCommon::VerifyQuadsAreOccluded(const QuadList& quads,
 }
 
 LayerTestCommon::LayerImplTest::LayerImplTest()
+    : LayerImplTest(LayerTreeSettings()) {
+}
+
+LayerTestCommon::LayerImplTest::LayerImplTest(const LayerTreeSettings& settings)
     : client_(FakeLayerTreeHostClient::DIRECT_3D),
-      host_(FakeLayerTreeHost::Create(&client_, &task_graph_runner_)),
+      host_(FakeLayerTreeHost::Create(&client_, &task_graph_runner_, settings)),
       root_layer_impl_(LayerImpl::Create(host_->host_impl()->active_tree(), 1)),
       render_pass_(RenderPass::Create()),
       layer_impl_id_(2) {

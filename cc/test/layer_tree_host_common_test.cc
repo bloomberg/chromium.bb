@@ -12,8 +12,10 @@
 
 namespace cc {
 
-LayerTreeHostCommonTestBase::LayerTreeHostCommonTestBase()
-    : render_surface_layer_list_count_(0) {
+LayerTreeHostCommonTestBase::LayerTreeHostCommonTestBase(
+    const LayerTreeSettings& settings)
+    : LayerTestCommon::LayerImplTest(settings),
+      render_surface_layer_list_count_(0) {
 }
 
 LayerTreeHostCommonTestBase::~LayerTreeHostCommonTestBase() {
@@ -139,6 +141,9 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
     LayerImpl* page_scale_layer,
     bool can_use_lcd_text,
     bool layers_always_allowed_lcd_text) {
+  host_impl()->SetDeviceScaleFactor(device_scale_factor);
+  host_impl()->SetPageScaleOnActiveTree(page_scale_factor);
+
   gfx::Transform identity_matrix;
   gfx::Size device_viewport_size =
       gfx::Size(root_layer->bounds().width() * device_scale_factor,
@@ -163,6 +168,15 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
       render_surface_layer_list_count_;
 
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+}
+
+LayerTreeHostCommonTest::LayerTreeHostCommonTest()
+    : LayerTreeHostCommonTestBase(LayerTreeSettings()) {
+}
+
+LayerTreeHostCommonTest::LayerTreeHostCommonTest(
+    const LayerTreeSettings& settings)
+    : LayerTreeHostCommonTestBase(settings) {
 }
 
 }  // namespace cc

@@ -130,7 +130,7 @@ bool HeadsUpDisplayLayerImpl::WillDraw(DrawMode draw_mode,
   if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE)
     return false;
 
-  internal_contents_scale_ = draw_properties().ideal_contents_scale;
+  internal_contents_scale_ = GetIdealContentsScale();
   internal_content_bounds_ =
       gfx::ToCeiledSize(gfx::ScaleSize(bounds(), internal_contents_scale_));
 
