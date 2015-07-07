@@ -410,7 +410,7 @@ void LayoutObject::handleSubtreeModifications()
 
     m_bitfields.setNotifiedOfSubtreeChange(false);
 
-    for (LayoutObject* object = nextInPreOrder(); object; object = object->nextInPreOrder(this)) {
+    for (LayoutObject* object = slowFirstChild(); object; object = object->nextSibling()) {
         if (!object->wasNotifiedOfSubtreeChange())
             continue;
         object->handleSubtreeModifications();
