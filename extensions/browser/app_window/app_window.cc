@@ -524,8 +524,9 @@ base::string16 AppWindow::GetTitle() const {
   // specified. However, we'd prefer to show the name of the extension in that
   // case, so we directly inspect the NavigationEntry's title.
   base::string16 title;
-  if (!web_contents() || !web_contents()->GetController().GetActiveEntry() ||
-      web_contents()->GetController().GetActiveEntry()->GetTitle().empty()) {
+  content::NavigationEntry* entry = web_contents() ?
+      web_contents()->GetController().GetLastCommittedEntry() : nullptr;
+  if (!entry || entry->GetTitle().empty()) {
     title = base::UTF8ToUTF16(extension->name());
   } else {
     title = web_contents()->GetTitle();
