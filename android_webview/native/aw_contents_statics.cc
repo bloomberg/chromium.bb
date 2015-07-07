@@ -6,6 +6,7 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
+#include "android_webview/common/aw_version_info_values.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
@@ -89,6 +90,11 @@ void SetRecordFullDocument(JNIEnv* env, jclass, jboolean record_full_document) {
 // static
 void SetLegacyCacheRemovalDelayForTest(JNIEnv*, jclass, jlong delay_ms) {
   AwBrowserContext::SetLegacyCacheRemovalDelayForTest(delay_ms);
+}
+
+// static
+jstring GetProductVersion(JNIEnv* env, jclass) {
+  return base::android::ConvertUTF8ToJavaString(env, PRODUCT_VERSION).Release();
 }
 
 bool RegisterAwContentsStatics(JNIEnv* env) {
