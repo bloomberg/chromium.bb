@@ -139,7 +139,6 @@ FrameView::FrameView(LocalFrame* frame)
     , m_scrollbarsAvoidingResizer(0)
     , m_scrollbarsSuppressed(false)
     , m_inUpdateScrollbars(false)
-    , m_shouldDrawPanScrollIcon(false)
     , m_clipsRepaints(true)
 {
     ASSERT(m_frame);
@@ -3467,8 +3466,6 @@ void FrameView::setScrollOffsetFromUpdateScrollbars(const DoubleSize& offset)
     }
 }
 
-const int panIconSizeLength = 16;
-
 IntRect FrameView::rectToCopyOnScroll() const
 {
     IntRect scrollViewRect = convertToContainingWindow(IntRect((shouldPlaceVerticalScrollbarOnLeft() && verticalScrollbar()) ? verticalScrollbar()->width() : 0, 0, visibleWidth(), visibleHeight()));
@@ -3503,16 +3500,6 @@ void FrameView::scrollContents(const IntSize& scrollDelta)
     IntRect clipRect = windowClipRect();
     IntRect updateRect = clipRect;
     updateRect.intersect(rectToCopyOnScroll());
-
-    if (m_shouldDrawPanScrollIcon) {
-        // FIXME: the pan icon is broken when accelerated compositing is on, since it will draw under the compositing layers.
-        // https://bugs.webkit.org/show_bug.cgi?id=47837
-        int panIconDirtySquareSizeLength = 2 * (panIconSizeLength + std::max(abs(scrollDelta.width()), abs(scrollDelta.height()))); // We only want to repaint what's necessary
-        IntPoint panIconDirtySquareLocation = IntPoint(m_panScrollIconPoint.x() - (panIconDirtySquareSizeLength / 2), m_panScrollIconPoint.y() - (panIconDirtySquareSizeLength / 2));
-        IntRect panScrollIconDirtyRect = IntRect(panIconDirtySquareLocation, IntSize(panIconDirtySquareSizeLength, panIconDirtySquareSizeLength));
-        panScrollIconDirtyRect.intersect(clipRect);
-        window->invalidateRect(panScrollIconDirtyRect);
-    }
 
     if (!scrollContentsFastPath(-scrollDelta))
         scrollContentsSlowPath(updateRect);

@@ -450,8 +450,6 @@ public:
     void setScrollbarsSuppressed(bool suppressed, bool repaintOnUnsuppress = false);
     bool scrollbarsSuppressed() const { return m_scrollbarsSuppressed; }
 
-    bool drawPanScrollIcon() { return m_shouldDrawPanScrollIcon; }
-
     // Methods for converting between this frame and other coordinate spaces.
     // For definitions and an explanation of the varous spaces, please see:
     // http://www.chromium.org/developers/design-documents/blink-coordinate-spaces
@@ -840,9 +838,6 @@ private:
     FloatSize m_elasticOverscroll;
 
     bool m_inUpdateScrollbars;
-
-    IntPoint m_panScrollIconPoint;
-    bool m_shouldDrawPanScrollIcon;
 
     bool m_clipsRepaints;
 
