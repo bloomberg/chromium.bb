@@ -30,7 +30,7 @@
 #include "components/autofill/core/browser/wallet/real_pan_wallet_client.h"
 #include "components/autofill/core/common/form_data.h"
 
-class ChromeWebTest;
+class ChromeUIWebViewWebTest;
 class ChromeWKWebViewWebTest;
 
 namespace gfx {
@@ -451,7 +451,7 @@ class AutofillManager : public AutofillDownloadManager::Observer,
 
   friend class AutofillManagerTest;
   friend class FormStructureBrowserTest;
-  friend class FormStructureBrowserTestIos<ChromeWebTest>;
+  friend class FormStructureBrowserTestIos<ChromeUIWebViewWebTest>;
   friend class FormStructureBrowserTestIos<ChromeWKWebViewWebTest>;
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            DeterminePossibleFieldTypesForUpload);
