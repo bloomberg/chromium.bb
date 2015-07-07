@@ -67,7 +67,6 @@ char * EXPORT_CALL lou_getProgramPath (void);
 char * EXPORT_CALL lou_version (void);
 
 int EXPORT_CALL lou_charSize (void);
-
 /* Return the size of widechar */
 
   int EXPORT_CALL lou_translateString
@@ -83,14 +82,28 @@ int EXPORT_CALL lou_charSize (void);
 		     formtype *typeform, char *spacing, int *outputPos, 
 		     int 
 *inputPos, int *cursorPos, int mode);
+
+int EXPORT_CALL lou_translatePrehyphenated (const char *tableList,
+					      const widechar * inbuf,
+					      int *inlen, widechar * outbuf,
+					      int *outlen, formtype 
+					      *typeform,
+					      char *spacing, int *outputPos,
+					      int *inputPos, int *cursorPos,
+					      char *inputHyphens,
+					      char *outputHyphens, int mode);
+
 int EXPORT_CALL lou_hyphenate (const char *tableList, const widechar
 	       *inbuf,
       int inlen, char *hyphens, int mode);
+
 int EXPORT_CALL lou_dotsToChar (const char *tableList, widechar *inbuf, 
       widechar *outbuf, int length, int mode);
+
 int EXPORT_CALL lou_charToDots (const char *tableList, const widechar 
 *inbuf, 
       widechar *outbuf, int length, int mode);
+
    int EXPORT_CALL lou_backTranslateString (const char *tableList,
 			       const widechar *inbuf,
 			       int *inlen,
@@ -104,8 +117,11 @@ int EXPORT_CALL lou_charToDots (const char *tableList, const widechar
 formtype *typeform, char *spacing, int
 			 *outputPos, int *inputPos, int *cursorPos, int
 			 mode);
+
   void EXPORT_CALL lou_logPrint (const char *format, ...);
-/* prints error messages to a file */
+/* prints error messages to a file
+   @deprecated As of 2.6.0, applications using liblouis should implement
+               their own logging system. */
 
   void EXPORT_CALL lou_logFile (const char *filename);
 /* Specifies the name of the file to be used by lou_logPrint. If it is 
@@ -126,10 +142,18 @@ formtype *typeform, char *spacing, int
 * lou_backTranslateString and also by functions in liblouisxml
 */
 
+void EXPORT_CALL lou_registerTableResolver (char ** (* resolver) (const char *table, const char *base));
+/* Register a new table resolver. Overrides the default resolver. */
+
 int EXPORT_CALL lou_compileString (const char *tableList, const char 
     *inString);
+
   char * EXPORT_CALL lou_setDataPath (char *path);
-  char * EXPORT_CALL lou_getDataPath (void);  
+/* Set the path used for searching for tables and liblouisutdml files. 
+   * Overrides the installation path. */
+
+char * EXPORT_CALL lou_getDataPath (void);  
+  /* Get the path set in the previous function. */
 
 typedef void (*logcallback)(int level, const char *message);
   void EXPORT_CALL lou_registerLogCallback(logcallback callback);
@@ -151,6 +175,24 @@ typedef void (*logcallback)(int level, const char *message);
 
   void EXPORT_CALL lou_log(logLevels level, const char *format, ...);
 /* General log function for callback logging */
+
+  /* =========================  BETA API ========================= */
+
+// Use the following two function with care, API is subject to change!
+
+void EXPORT_CALL lou_indexTables(const char ** tables);
+/* Parses, analyzes and indexes tables. This function must be called prior to
+ * lou_findTable(). An error message is given when a table contains invalid or
+ * duplicate metadata fields.
+ */
+
+char * EXPORT_CALL lou_findTable(const char * query);
+/* Finds the best match for a query. Returns a string with the table
+ * name. Returns NULL when no match can be found. An error message is given
+ * when the query is invalid.
+ */
+
+/* ====================== END OF BETA API ====================== */
 
   void EXPORT_CALL lou_free (void);
 /* This function should be called at the end of 
