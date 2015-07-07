@@ -70,7 +70,7 @@ public class EnhancedBookmarkItem extends FrameLayout implements EnhancedBookmar
         mDisplayedIconSize = getResources().getDimensionPixelSize(
                 R.dimen.enhanced_bookmark_item_icon_size);
         int textSize = getResources().getDimensionPixelSize(
-                R.dimen.enhnaced_bookmark_item_icon_text_size);
+                R.dimen.enhanced_bookmark_item_icon_text_size);
         int iconColor = getResources().getColor(R.color.enhanced_bookmark_icon_background_color);
         mIconGenerator = new RoundedIconGenerator(mDisplayedIconSize , mDisplayedIconSize,
                 mCornerRadius, iconColor, textSize);
