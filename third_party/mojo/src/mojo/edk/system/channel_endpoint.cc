@@ -8,7 +8,6 @@
 #include "base/threading/platform_thread.h"
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/channel_endpoint_client.h"
-#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {
@@ -18,8 +17,8 @@ ChannelEndpoint::ChannelEndpoint(ChannelEndpointClient* client,
                                  MessageInTransitQueue* message_queue)
     : client_(client),
       client_port_(client_port),
-      channel_state_(ChannelState::NOT_YET_ATTACHED),
-      channel_(nullptr) {
+      channel_(nullptr),
+      is_detached_from_channel_(false) {
   DCHECK(client_ || message_queue);
 
   if (message_queue)
@@ -31,22 +30,17 @@ bool ChannelEndpoint::EnqueueMessage(scoped_ptr<MessageInTransit> message) {
 
   base::AutoLock locker(lock_);
 
-  switch (channel_state_) {
-    case ChannelState::NOT_YET_ATTACHED:
-    case ChannelState::DETACHED:
-      // We may reach here if we haven't been attached/run yet.
-      // TODO(vtl): We may also reach here if the channel is shut down early for
-      // some reason (with live message pipes on it). Ideally, we'd return false
-      // (and not enqueue the message), but we currently don't have a way to
-      // check this.
-      channel_message_queue_.AddMessage(message.Pass());
-      return true;
-    case ChannelState::ATTACHED:
-      return WriteMessageNoLock(message.Pass());
+  if (!channel_) {
+    // We may reach here if we haven't been attached/run yet.
+    // TODO(vtl): We may also reach here if the channel is shut down early for
+    // some reason (with live message pipes on it). Ideally, we'd return false
+    // (and not enqueue the message), but we currently don't have a way to check
+    // this.
+    channel_message_queue_.AddMessage(message.Pass());
+    return true;
   }
 
-  NOTREACHED();
-  return false;
+  return WriteMessageNoLock(message.Pass());
 }
 
 bool ChannelEndpoint::ReplaceClient(ChannelEndpointClient* client,
@@ -58,7 +52,7 @@ bool ChannelEndpoint::ReplaceClient(ChannelEndpointClient* client,
   DCHECK(client != client_.get() || client_port != client_port_);
   client_ = client;
   client_port_ = client_port;
-  return channel_state_ != ChannelState::DETACHED;
+  return !is_detached_from_channel_;
 }
 
 void ChannelEndpoint::DetachFromClient() {
@@ -80,11 +74,9 @@ void ChannelEndpoint::AttachAndRun(Channel* channel,
   DCHECK(remote_id.is_valid());
 
   base::AutoLock locker(lock_);
-  DCHECK(channel_state_ == ChannelState::NOT_YET_ATTACHED);
   DCHECK(!channel_);
   DCHECK(!local_id_.is_valid());
   DCHECK(!remote_id_.is_valid());
-  channel_state_ = ChannelState::ATTACHED;
   channel_ = channel;
   local_id_ = local_id;
   remote_id_ = remote_id;
@@ -133,12 +125,12 @@ void ChannelEndpoint::DetachFromChannel() {
     if (channel_)
       ResetChannelNoLock();
     else
-      DCHECK(channel_state_ == ChannelState::DETACHED);
+      DCHECK(is_detached_from_channel_);
   }
 
   // If |ReplaceClient()| is called (from another thread) after the above locked
   // section but before we call |OnDetachFromChannel()|, |ReplaceClient()|
-  // returns false to notify the caller that the channel was already detached.
+  // return false to notify the caller that the channel was already detached.
   // (The old client has to accept the arguably-spurious call to
   // |OnDetachFromChannel()|.)
   if (client)
@@ -213,15 +205,15 @@ void ChannelEndpoint::OnReadMessageForClient(
 }
 
 void ChannelEndpoint::ResetChannelNoLock() {
-  DCHECK(channel_state_ == ChannelState::ATTACHED);
   DCHECK(channel_);
   DCHECK(local_id_.is_valid());
   DCHECK(remote_id_.is_valid());
+  DCHECK(!is_detached_from_channel_);
 
-  channel_state_ = ChannelState::DETACHED;
   channel_ = nullptr;
   local_id_ = ChannelEndpointId();
   remote_id_ = ChannelEndpointId();
+  is_detached_from_channel_ = true;
 }
 
 }  // namespace system

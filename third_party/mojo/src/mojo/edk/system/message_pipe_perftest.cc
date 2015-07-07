@@ -12,8 +12,11 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
+#include "base/pickle.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/perf_time_logger.h"
+#include "base/time/time.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/local_message_pipe_endpoint.h"
@@ -37,7 +40,8 @@ class MultiprocessMessagePipePerfTest
   void SetUpMeasurement(int message_count, size_t message_size) {
     message_count_ = message_count;
     message_size_ = message_size;
-    payload_ = std::string(message_size, '*');
+    payload_ = base::Pickle();
+    payload_.WriteString(std::string(message_size, '*'));
     read_buffer_.resize(message_size * 2);
   }
 
@@ -82,7 +86,7 @@ class MultiprocessMessagePipePerfTest
  private:
   int message_count_;
   size_t message_size_;
-  std::string payload_;
+  base::Pickle payload_;
   std::string read_buffer_;
   scoped_ptr<base::PerfTimeLogger> perf_logger_;
 };
@@ -119,8 +123,8 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(PingPongClient) {
                              MOJO_READ_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
 
-    // Empty message indicates quit.
-    if (read_size == 0)
+    // Empty message indicates quitting
+    if (0 == read_size)
       break;
 
     CHECK_EQ(mp->WriteMessage(0, UserPointer<const void>(&buffer[0]),

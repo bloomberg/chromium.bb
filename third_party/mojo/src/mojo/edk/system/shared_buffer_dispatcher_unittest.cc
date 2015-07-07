@@ -6,11 +6,11 @@
 
 #include <limits>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
 #include "mojo/edk/embedder/simple_platform_support.h"
 #include "mojo/edk/system/dispatcher.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -50,7 +50,7 @@ class SharedBufferDispatcherTest : public testing::Test {
  private:
   embedder::SimplePlatformSupport platform_support_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(SharedBufferDispatcherTest);
+  DISALLOW_COPY_AND_ASSIGN(SharedBufferDispatcherTest);
 };
 
 // Tests valid inputs to |ValidateCreateOptions()|.
@@ -66,7 +66,7 @@ TEST_F(SharedBufferDispatcherTest, ValidateCreateOptionsValid) {
   // Different flags.
   MojoCreateSharedBufferOptionsFlags flags_values[] = {
       MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE};
-  for (size_t i = 0; i < MOJO_ARRAYSIZE(flags_values); i++) {
+  for (size_t i = 0; i < arraysize(flags_values); i++) {
     const MojoCreateSharedBufferOptionsFlags flags = flags_values[i];
 
     // Different capacities (size 1).
@@ -189,7 +189,7 @@ TEST_F(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsValid) {
       {sizeof(MojoDuplicateBufferHandleOptions),
        MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE},
       {sizeof(MojoDuplicateBufferHandleOptionsFlags), ~0u}};
-  for (size_t i = 0; i < MOJO_ARRAYSIZE(options); i++) {
+  for (size_t i = 0; i < arraysize(options); i++) {
     scoped_refptr<Dispatcher> dispatcher2;
     EXPECT_EQ(MOJO_RESULT_OK, dispatcher1->DuplicateBufferHandle(
                                   MakeUserPointer(&options[i]), &dispatcher2));

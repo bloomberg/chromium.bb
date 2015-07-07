@@ -12,8 +12,8 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "mojo/edk/system/system_impl_export.h"
-#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {
@@ -104,7 +104,7 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalChannelEndpointIdGenerator {
 
   ChannelEndpointId next_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(LocalChannelEndpointIdGenerator);
+  DISALLOW_COPY_AND_ASSIGN(LocalChannelEndpointIdGenerator);
 };
 
 // RemoteChannelEndpointIdGenerator --------------------------------------------
@@ -124,7 +124,7 @@ class MOJO_SYSTEM_IMPL_EXPORT RemoteChannelEndpointIdGenerator {
 
   ChannelEndpointId next_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(RemoteChannelEndpointIdGenerator);
+  DISALLOW_COPY_AND_ASSIGN(RemoteChannelEndpointIdGenerator);
 };
 
 }  // namespace system

@@ -12,9 +12,11 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/test_io_thread.h"
+#include "base/threading/platform_thread.h"  // For |Sleep()|.
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/simple_platform_support.h"
 #include "mojo/edk/system/channel.h"
@@ -27,7 +29,6 @@
 #include "mojo/edk/system/raw_channel.h"
 #include "mojo/edk/system/test_utils.h"
 #include "mojo/edk/system/waiter.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -79,7 +80,7 @@ class DataPipeImplTestHelper {
   DataPipeImplTestHelper() {}
 
  private:
-  MOJO_DISALLOW_COPY_AND_ASSIGN(DataPipeImplTestHelper);
+  DISALLOW_COPY_AND_ASSIGN(DataPipeImplTestHelper);
 };
 
 // DataPipeImplTest ------------------------------------------------------------
@@ -182,7 +183,7 @@ class DataPipeImplTest : public testing::Test {
 
   scoped_ptr<Helper> helper_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(DataPipeImplTest);
+  DISALLOW_COPY_AND_ASSIGN(DataPipeImplTest);
 };
 
 // LocalDataPipeImplTestHelper -------------------------------------------------
@@ -214,7 +215,7 @@ class LocalDataPipeImplTestHelper : public DataPipeImplTestHelper {
  private:
   scoped_refptr<DataPipe> dp_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(LocalDataPipeImplTestHelper);
+  DISALLOW_COPY_AND_ASSIGN(LocalDataPipeImplTestHelper);
 };
 
 // RemoteDataPipeImplTestHelper ------------------------------------------------
@@ -349,7 +350,7 @@ class RemoteDataPipeImplTestHelper : public DataPipeImplTestHelper {
 
   scoped_refptr<DataPipe> dp_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(RemoteDataPipeImplTestHelper);
+  DISALLOW_COPY_AND_ASSIGN(RemoteDataPipeImplTestHelper);
 };
 
 // RemoteProducerDataPipeImplTestHelper ----------------------------------------
@@ -366,7 +367,7 @@ class RemoteProducerDataPipeImplTestHelper
   void DoTransfer() override {
     // This is the producer dispatcher we'll send.
     scoped_refptr<DataPipeProducerDispatcher> to_send =
-        DataPipeProducerDispatcher::Create();
+        new DataPipeProducerDispatcher();
     to_send->Init(dp());
     scoped_refptr<Dispatcher> to_receive;
     SendDispatcher(0, to_send, &to_receive);
@@ -399,7 +400,7 @@ class RemoteProducerDataPipeImplTestHelper
   scoped_refptr<DataPipeProducerDispatcher> producer_dispatcher_;
 
  private:
-  MOJO_DISALLOW_COPY_AND_ASSIGN(RemoteProducerDataPipeImplTestHelper);
+  DISALLOW_COPY_AND_ASSIGN(RemoteProducerDataPipeImplTestHelper);
 };
 
 // RemoteConsumerDataPipeImplTestHelper ----------------------------------------
@@ -416,7 +417,7 @@ class RemoteConsumerDataPipeImplTestHelper
   void DoTransfer() override {
     // This is the consumer dispatcher we'll send.
     scoped_refptr<DataPipeConsumerDispatcher> to_send =
-        DataPipeConsumerDispatcher::Create();
+        new DataPipeConsumerDispatcher();
     to_send->Init(dp());
     scoped_refptr<Dispatcher> to_receive;
     SendDispatcher(0, to_send, &to_receive);
@@ -449,7 +450,7 @@ class RemoteConsumerDataPipeImplTestHelper
   scoped_refptr<DataPipeConsumerDispatcher> consumer_dispatcher_;
 
  private:
-  MOJO_DISALLOW_COPY_AND_ASSIGN(RemoteConsumerDataPipeImplTestHelper);
+  DISALLOW_COPY_AND_ASSIGN(RemoteConsumerDataPipeImplTestHelper);
 };
 
 // RemoteProducerDataPipeImplTestHelper2 ---------------------------------------
@@ -471,7 +472,7 @@ class RemoteProducerDataPipeImplTestHelper2
   void DoTransfer() override {
     // This is the producer dispatcher we'll send.
     scoped_refptr<DataPipeProducerDispatcher> to_send =
-        DataPipeProducerDispatcher::Create();
+        new DataPipeProducerDispatcher();
     to_send->Init(dp());
     scoped_refptr<Dispatcher> to_receive;
     SendDispatcher(0, to_send, &to_receive);
@@ -496,7 +497,7 @@ class RemoteProducerDataPipeImplTestHelper2
   }
 
  private:
-  MOJO_DISALLOW_COPY_AND_ASSIGN(RemoteProducerDataPipeImplTestHelper2);
+  DISALLOW_COPY_AND_ASSIGN(RemoteProducerDataPipeImplTestHelper2);
 };
 
 // RemoteConsumerDataPipeImplTestHelper2 ---------------------------------------
@@ -518,7 +519,7 @@ class RemoteConsumerDataPipeImplTestHelper2
   void DoTransfer() override {
     // This is the consumer dispatcher we'll send.
     scoped_refptr<DataPipeConsumerDispatcher> to_send =
-        DataPipeConsumerDispatcher::Create();
+        new DataPipeConsumerDispatcher();
     to_send->Init(dp());
     scoped_refptr<Dispatcher> to_receive;
     SendDispatcher(0, to_send, &to_receive);
@@ -543,7 +544,7 @@ class RemoteConsumerDataPipeImplTestHelper2
   }
 
  private:
-  MOJO_DISALLOW_COPY_AND_ASSIGN(RemoteConsumerDataPipeImplTestHelper2);
+  DISALLOW_COPY_AND_ASSIGN(RemoteConsumerDataPipeImplTestHelper2);
 };
 
 // Test case instantiation -----------------------------------------------------
@@ -585,7 +586,7 @@ TYPED_TEST(DataPipeImplTest, CreateAndMaybeTransfer) {
   EXPECT_EQ(MOJO_RESULT_OK, DataPipe::ValidateCreateOptions(NullUserPointer(),
                                                             &test_options[0]));
 
-  for (size_t i = 0; i < MOJO_ARRAYSIZE(test_options); i++) {
+  for (size_t i = 0; i < arraysize(test_options); i++) {
     this->Create(test_options[i]);
     this->DoTransfer();
     this->ProducerClose();
@@ -612,8 +613,7 @@ TYPED_TEST(DataPipeImplTest, SimpleReadWrite) {
   uint32_t num_bytes = 0;
 
   // Try reading; nothing there yet.
-  num_bytes =
-      static_cast<uint32_t>(MOJO_ARRAYSIZE(elements) * sizeof(elements[0]));
+  num_bytes = static_cast<uint32_t>(arraysize(elements) * sizeof(elements[0]));
   EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
             this->ConsumerReadData(UserPointer<void>(elements),
                                    MakeUserPointer(&num_bytes), false, false));
@@ -1458,7 +1458,7 @@ TYPED_TEST(DataPipeImplTest, AllOrNone) {
   // Try writing way too much.
   uint32_t num_bytes = 20u * sizeof(int32_t);
   int32_t buffer[100];
-  Seq(0, MOJO_ARRAYSIZE(buffer), buffer);
+  Seq(0, arraysize(buffer), buffer);
   EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
             this->ProducerWriteData(UserPointer<const void>(buffer),
                                     MakeUserPointer(&num_bytes), true));
@@ -1477,7 +1477,7 @@ TYPED_TEST(DataPipeImplTest, AllOrNone) {
 
   // Write some data.
   num_bytes = 5u * sizeof(int32_t);
-  Seq(100, MOJO_ARRAYSIZE(buffer), buffer);
+  Seq(100, arraysize(buffer), buffer);
   EXPECT_EQ(MOJO_RESULT_OK,
             this->ProducerWriteData(UserPointer<const void>(buffer),
                                     MakeUserPointer(&num_bytes), true));
@@ -1503,7 +1503,7 @@ TYPED_TEST(DataPipeImplTest, AllOrNone) {
 
   // Too much.
   num_bytes = 6u * sizeof(int32_t);
-  Seq(200, MOJO_ARRAYSIZE(buffer), buffer);
+  Seq(200, arraysize(buffer), buffer);
   EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
             this->ProducerWriteData(UserPointer<const void>(buffer),
                                     MakeUserPointer(&num_bytes), true));
@@ -1525,7 +1525,7 @@ TYPED_TEST(DataPipeImplTest, AllOrNone) {
 
   // Just a little.
   num_bytes = 2u * sizeof(int32_t);
-  Seq(300, MOJO_ARRAYSIZE(buffer), buffer);
+  Seq(300, arraysize(buffer), buffer);
   EXPECT_EQ(MOJO_RESULT_OK,
             this->ProducerWriteData(UserPointer<const void>(buffer),
                                     MakeUserPointer(&num_bytes), true));
@@ -1533,7 +1533,7 @@ TYPED_TEST(DataPipeImplTest, AllOrNone) {
 
   // Just right.
   num_bytes = 3u * sizeof(int32_t);
-  Seq(400, MOJO_ARRAYSIZE(buffer), buffer);
+  Seq(400, arraysize(buffer), buffer);
   EXPECT_EQ(MOJO_RESULT_OK,
             this->ProducerWriteData(UserPointer<const void>(buffer),
                                     MakeUserPointer(&num_bytes), true));
@@ -1548,7 +1548,7 @@ TYPED_TEST(DataPipeImplTest, AllOrNone) {
     if (num_bytes >= 10u * sizeof(int32_t))
       break;
 
-    test::Sleep(test::EpsilonDeadline());
+    base::PlatformThread::Sleep(test::EpsilonTimeout());
   }
   EXPECT_EQ(10u * sizeof(int32_t), num_bytes);
 
@@ -1755,7 +1755,7 @@ TYPED_TEST(DataPipeImplTest, TwoPhaseAllOrNone) {
       break;
     EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE, result);
 
-    test::Sleep(test::EpsilonDeadline());
+    base::PlatformThread::Sleep(test::EpsilonTimeout());
   }
   EXPECT_EQ(6u * sizeof(int32_t), num_bytes);
 
@@ -1768,7 +1768,7 @@ TYPED_TEST(DataPipeImplTest, TwoPhaseAllOrNone) {
     if (num_bytes >= 10u * sizeof(int32_t))
       break;
 
-    test::Sleep(test::EpsilonDeadline());
+    base::PlatformThread::Sleep(test::EpsilonTimeout());
   }
   EXPECT_EQ(10u * sizeof(int32_t), num_bytes);
 
@@ -1827,7 +1827,7 @@ TYPED_TEST(DataPipeImplTest, TwoPhaseAllOrNone) {
 // this.)
 TYPED_TEST(DataPipeImplTest, WrapAround) {
   unsigned char test_data[1000];
-  for (size_t i = 0; i < MOJO_ARRAYSIZE(test_data); i++)
+  for (size_t i = 0; i < arraysize(test_data); i++)
     test_data[i] = static_cast<unsigned char>(i);
 
   const MojoCreateDataPipeOptions options = {
@@ -1909,7 +1909,7 @@ TYPED_TEST(DataPipeImplTest, WrapAround) {
       EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE, result);
     }
 
-    test::Sleep(test::EpsilonDeadline());
+    base::PlatformThread::Sleep(test::EpsilonTimeout());
   }
   EXPECT_EQ(90u, total_num_bytes);
 
@@ -1922,7 +1922,7 @@ TYPED_TEST(DataPipeImplTest, WrapAround) {
     if (num_bytes >= 100u)
       break;
 
-    test::Sleep(test::EpsilonDeadline());
+    base::PlatformThread::Sleep(test::EpsilonTimeout());
   }
   EXPECT_EQ(100u, num_bytes);
 
@@ -1941,8 +1941,8 @@ TYPED_TEST(DataPipeImplTest, WrapAround) {
 
   // Read as much as possible (using |ConsumerReadData()|). We should read 100
   // bytes.
-  num_bytes = static_cast<uint32_t>(MOJO_ARRAYSIZE(read_buffer) *
-                                    sizeof(read_buffer[0]));
+  num_bytes =
+      static_cast<uint32_t>(arraysize(read_buffer) * sizeof(read_buffer[0]));
   memset(read_buffer, 0, num_bytes);
   EXPECT_EQ(MOJO_RESULT_OK,
             this->ConsumerReadData(UserPointer<void>(read_buffer),
@@ -2000,7 +2000,7 @@ TYPED_TEST(DataPipeImplTest, WriteCloseProducerRead) {
     if (num_bytes >= 2u * kTestDataSize)
       break;
 
-    test::Sleep(test::EpsilonDeadline());
+    base::PlatformThread::Sleep(test::EpsilonTimeout());
   }
   EXPECT_EQ(2u * kTestDataSize, num_bytes);
 
@@ -2267,7 +2267,7 @@ TYPED_TEST(DataPipeImplTest, TwoPhaseMoreInvalidArguments) {
 
   // Wait a bit, to make sure that if a signal were (incorrectly) sent, it'd
   // have time to propagate.
-  test::Sleep(test::EpsilonDeadline());
+  base::PlatformThread::Sleep(test::EpsilonTimeout());
 
   // Still no data.
   num_bytes = 1000u;
@@ -2289,7 +2289,7 @@ TYPED_TEST(DataPipeImplTest, TwoPhaseMoreInvalidArguments) {
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, this->ProducerEndWriteData(0u));
 
   // Wait a bit (as above).
-  test::Sleep(test::EpsilonDeadline());
+  base::PlatformThread::Sleep(test::EpsilonTimeout());
 
   // Still no data.
   num_bytes = 1000u;
@@ -2311,7 +2311,7 @@ TYPED_TEST(DataPipeImplTest, TwoPhaseMoreInvalidArguments) {
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, this->ProducerEndWriteData(0u));
 
   // Wait a bit (as above).
-  test::Sleep(test::EpsilonDeadline());
+  base::PlatformThread::Sleep(test::EpsilonTimeout());
 
   // Still no data.
   num_bytes = 1000u;

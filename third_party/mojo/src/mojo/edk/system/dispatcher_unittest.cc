@@ -4,6 +4,7 @@
 
 #include "mojo/edk/system/dispatcher.h"
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/synchronization/waitable_event.h"
@@ -11,7 +12,6 @@
 #include "mojo/edk/embedder/platform_shared_buffer.h"
 #include "mojo/edk/system/memory.h"
 #include "mojo/edk/system/waiter.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -19,7 +19,7 @@ namespace system {
 namespace {
 
 // Trivial subclass that makes the constructor public.
-class TrivialDispatcher final : public Dispatcher {
+class TrivialDispatcher : public Dispatcher {
  public:
   TrivialDispatcher() {}
 
@@ -35,7 +35,7 @@ class TrivialDispatcher final : public Dispatcher {
     return scoped_refptr<Dispatcher>(new TrivialDispatcher());
   }
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(TrivialDispatcher);
+  DISALLOW_COPY_AND_ASSIGN(TrivialDispatcher);
 };
 
 TEST(DispatcherTest, Basic) {
@@ -245,7 +245,7 @@ class ThreadSafetyStressThread : public base::SimpleThread {
 
   Waiter waiter_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ThreadSafetyStressThread);
+  DISALLOW_COPY_AND_ASSIGN(ThreadSafetyStressThread);
 };
 
 TEST(DispatcherTest, ThreadSafetyStress) {

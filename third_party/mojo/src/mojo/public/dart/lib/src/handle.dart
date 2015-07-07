@@ -7,8 +7,7 @@ part of core;
 class _HandleCreationRecord {
   final MojoHandle handle;
   final StackTrace stack;
-  String description;
-  _HandleCreationRecord(this.handle, this.stack, {this.description});
+  _HandleCreationRecord(this.handle, this.stack);
 }
 
 class MojoHandle {
@@ -18,8 +17,8 @@ class MojoHandle {
   int _h;
   int get h => _h;
 
-  MojoHandle(this._h, {String description}) {
-    assert(_addUnclosedHandle(this, description: description));
+  MojoHandle(this._h) {
+    assert(_addUnclosedHandle(this));
   }
 
   MojoHandle._internal(this._h);
@@ -100,7 +99,7 @@ class MojoHandle {
 
   // _addUnclosedHandle(), _removeUnclosedHandle(), and dumpLeakedHandles()
   // should only be used inside of assert() statements.
-  static bool _addUnclosedHandle(MojoHandle handle, {String description}) {
+  static bool _addUnclosedHandle(MojoHandle handle) {
     var stack;
     try {
       assert(false);
@@ -108,16 +107,8 @@ class MojoHandle {
       stack = s;
     }
 
-    var handleCreate = new _HandleCreationRecord(
-        handle, stack, description: description);
+    var handleCreate = new _HandleCreationRecord(handle, stack);
     _unclosedHandles[handle.h] = handleCreate;
-    return true;
-  }
-
-  static bool _setHandleLeakDescription(MojoHandle handle, String description) {
-    if (_unclosedHandles.containsKey(handle.h)) {
-      _unclosedHandles[handle.h].description = description;
-    }
     return true;
   }
 
@@ -131,11 +122,8 @@ class MojoHandle {
     for (var handle in MojoHandle._unclosedHandles.keys) {
       var handleCreation = MojoHandle._unclosedHandles[handle];
       if (handleCreation != null) {
-        print("HANDLE LEAK: handle: $handle");
-        if (handleCreation.description != null) {
-          print("HANDLE LEAK: message: ${handleCreation.description}");
-        }
-        print("HANDLE LEAK: stack at creation:\n${handleCreation.stack}");
+        print("HANDLE LEAK: handle: $handle, created at:");
+        print("${handleCreation.stack}");
         noleaks = false;
       }
     }

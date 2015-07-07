@@ -10,9 +10,9 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "mojo/edk/system/system_impl_export.h"
-#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {
@@ -81,7 +81,7 @@ class MOJO_SYSTEM_IMPL_EXPORT UniqueIdentifier {
 static_assert(sizeof(UniqueIdentifier) == 16,
               "UniqueIdentifier has wrong size.");
 // We want to be able to take any buffer and cast it to a |UniqueIdentifier|.
-static_assert(MOJO_ALIGNOF(UniqueIdentifier) == 1,
+static_assert(ALIGNOF(UniqueIdentifier) == 1,
               "UniqueIdentifier requires nontrivial alignment.");
 
 }  // namespace system

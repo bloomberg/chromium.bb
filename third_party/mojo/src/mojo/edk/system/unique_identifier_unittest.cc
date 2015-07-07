@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "mojo/edk/embedder/simple_platform_support.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -26,7 +26,7 @@ class UniqueIdentifierTest : public testing::Test {
  private:
   embedder::SimplePlatformSupport platform_support_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(UniqueIdentifierTest);
+  DISALLOW_COPY_AND_ASSIGN(UniqueIdentifierTest);
 };
 
 TEST_F(UniqueIdentifierTest, Basic) {

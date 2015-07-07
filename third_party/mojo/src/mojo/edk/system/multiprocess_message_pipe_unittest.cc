@@ -16,6 +16,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "build/build_config.h"  // TODO(vtl): Remove this.
 #include "mojo/edk/embedder/platform_shared_buffer.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
@@ -470,9 +471,9 @@ TEST_P(MultiprocessMessagePipeTestWithPipeCount, PlatformHandlePassing) {
     fflush(fp.get());
     rewind(fp.get());
 
-    scoped_refptr<PlatformHandleDispatcher> dispatcher =
-        PlatformHandleDispatcher::Create(embedder::ScopedPlatformHandle(
-            mojo::test::PlatformHandleFromFILE(fp.Pass())));
+    scoped_refptr<PlatformHandleDispatcher> dispatcher(
+        new PlatformHandleDispatcher(embedder::ScopedPlatformHandle(
+            mojo::test::PlatformHandleFromFILE(fp.Pass()))));
     dispatchers.push_back(dispatcher);
     DispatcherTransport transport(
         test::DispatcherTryStartTransport(dispatcher.get()));

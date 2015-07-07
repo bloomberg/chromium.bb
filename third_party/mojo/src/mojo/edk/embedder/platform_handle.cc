@@ -13,6 +13,7 @@
 #error "Platform not yet supported."
 #endif
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 
 namespace mojo {

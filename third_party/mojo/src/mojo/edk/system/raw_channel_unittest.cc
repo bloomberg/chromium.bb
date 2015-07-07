@@ -16,13 +16,16 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/rand_util.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_io_thread.h"
+#include "base/threading/platform_thread.h"  // For |Sleep()|.
 #include "base/threading/simple_thread.h"
+#include "base/time/time.h"
 #include "build/build_config.h"  // TODO(vtl): Remove this.
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/platform_handle.h"
@@ -31,7 +34,6 @@
 #include "mojo/edk/system/test_utils.h"
 #include "mojo/edk/system/transport_data.h"
 #include "mojo/edk/test/test_utils.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -99,7 +101,7 @@ class RawChannelTest : public testing::Test {
  private:
   base::TestIOThread io_thread_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(RawChannelTest);
+  DISALLOW_COPY_AND_ASSIGN(RawChannelTest);
 };
 
 // RawChannelTest.WriteMessage -------------------------------------------------
@@ -121,10 +123,10 @@ class WriteOnlyRawChannelDelegate : public RawChannel::Delegate {
   }
 
  private:
-  MOJO_DISALLOW_COPY_AND_ASSIGN(WriteOnlyRawChannelDelegate);
+  DISALLOW_COPY_AND_ASSIGN(WriteOnlyRawChannelDelegate);
 };
 
-static const unsigned kMessageReaderSleepMs = 1;
+static const int64_t kMessageReaderSleepMs = 1;
 static const size_t kMessageReaderMaxPollIterations = 3000;
 
 class TestMessageReaderAndChecker {
@@ -174,7 +176,8 @@ class TestMessageReaderAndChecker {
 
       if (static_cast<size_t>(read_size) < sizeof(buffer)) {
         i++;
-        test::Sleep(test::DeadlineFromMilliseconds(kMessageReaderSleepMs));
+        base::PlatformThread::Sleep(
+            base::TimeDelta::FromMilliseconds(kMessageReaderSleepMs));
       }
     }
 
@@ -188,7 +191,7 @@ class TestMessageReaderAndChecker {
   // The start of the received data should always be on a message boundary.
   std::vector<unsigned char> bytes_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(TestMessageReaderAndChecker);
+  DISALLOW_COPY_AND_ASSIGN(TestMessageReaderAndChecker);
 };
 
 // Tests writing (and verifies reading using our own custom reader).
@@ -274,7 +277,7 @@ class ReadCheckerRawChannelDelegate : public RawChannel::Delegate {
   std::vector<uint32_t> expected_sizes_;
   size_t position_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ReadCheckerRawChannelDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ReadCheckerRawChannelDelegate);
 };
 
 // Tests reading (writing using our own custom writer).
@@ -332,7 +335,7 @@ class RawChannelWriterThread : public base::SimpleThread {
   RawChannel* const raw_channel_;
   size_t left_to_write_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(RawChannelWriterThread);
+  DISALLOW_COPY_AND_ASSIGN(RawChannelWriterThread);
 };
 
 class ReadCountdownRawChannelDelegate : public RawChannel::Delegate {
@@ -369,7 +372,7 @@ class ReadCountdownRawChannelDelegate : public RawChannel::Delegate {
   size_t expected_count_;
   size_t count_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ReadCountdownRawChannelDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ReadCountdownRawChannelDelegate);
 };
 
 TEST_F(RawChannelTest, WriteMessageAndOnReadMessage) {
@@ -401,7 +404,7 @@ TEST_F(RawChannelTest, WriteMessageAndOnReadMessage) {
 
   // Sleep a bit, to let any extraneous reads be processed. (There shouldn't be
   // any, but we want to know about them.)
-  test::Sleep(test::DeadlineFromMilliseconds(100));
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
 
   // Wait for reading to finish.
   reader_delegate.Wait();
@@ -468,7 +471,7 @@ class ErrorRecordingRawChannelDelegate
   bool expecting_read_error_;
   bool expecting_write_error_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ErrorRecordingRawChannelDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ErrorRecordingRawChannelDelegate);
 };
 
 // Tests (fatal) errors.
@@ -494,7 +497,7 @@ TEST_F(RawChannelTest, OnError) {
 
   // Sleep a bit, to make sure we don't get another |OnError()|
   // notification. (If we actually get another one, |OnError()| crashes.)
-  test::Sleep(test::DeadlineFromMilliseconds(20));
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(20));
 
   io_thread()->PostTaskAndWait(
       FROM_HERE, base::Bind(&RawChannel::Shutdown, base::Unretained(rc.get())));
@@ -595,7 +598,7 @@ class ShutdownOnReadMessageRawChannelDelegate : public RawChannel::Delegate {
   base::WaitableEvent done_event_;
   bool did_shutdown_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ShutdownOnReadMessageRawChannelDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ShutdownOnReadMessageRawChannelDelegate);
 };
 
 TEST_F(RawChannelTest, ShutdownOnReadMessage) {
@@ -671,7 +674,7 @@ class ShutdownOnErrorRawChannelDelegate : public RawChannel::Delegate {
   base::WaitableEvent done_event_;
   bool did_shutdown_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ShutdownOnErrorRawChannelDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ShutdownOnErrorRawChannelDelegate);
 };
 
 TEST_F(RawChannelTest, ShutdownOnErrorRead) {
@@ -792,7 +795,7 @@ class ReadPlatformHandlesCheckerRawChannelDelegate
  private:
   base::WaitableEvent done_event_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ReadPlatformHandlesCheckerRawChannelDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ReadPlatformHandlesCheckerRawChannelDelegate);
 };
 
 #if defined(OS_POSIX)

@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "mojo/edk/system/message_in_transit.h"
 #include "mojo/edk/system/transport_data.h"
 
@@ -43,15 +44,15 @@ RawChannel::WriteBuffer::WriteBuffer(size_t serialized_platform_handle_size)
 }
 
 RawChannel::WriteBuffer::~WriteBuffer() {
-  message_queue_.Clear();
+  STLDeleteElements(&message_queue_);
 }
 
 bool RawChannel::WriteBuffer::HavePlatformHandlesToSend() const {
-  if (message_queue_.IsEmpty())
+  if (message_queue_.empty())
     return false;
 
   const TransportData* transport_data =
-      message_queue_.PeekMessage()->transport_data();
+      message_queue_.front()->transport_data();
   if (!transport_data)
     return false;
 
@@ -75,7 +76,7 @@ void RawChannel::WriteBuffer::GetPlatformHandlesToSend(
     void** serialization_data) {
   DCHECK(HavePlatformHandlesToSend());
 
-  MessageInTransit* message = message_queue_.PeekMessage();
+  MessageInTransit* message = message_queue_.front();
   TransportData* transport_data = message->transport_data();
   embedder::PlatformHandleVector* all_platform_handles =
       transport_data->platform_handles();
@@ -98,10 +99,10 @@ void RawChannel::WriteBuffer::GetPlatformHandlesToSend(
 void RawChannel::WriteBuffer::GetBuffers(std::vector<Buffer>* buffers) const {
   buffers->clear();
 
-  if (message_queue_.IsEmpty())
+  if (message_queue_.empty())
     return;
 
-  const MessageInTransit* message = message_queue_.PeekMessage();
+  MessageInTransit* message = message_queue_.front();
   DCHECK_LT(data_offset_, message->total_size());
   size_t bytes_to_write = message->total_size() - data_offset_;
 
@@ -205,7 +206,7 @@ void RawChannel::Shutdown() {
 
   base::AutoLock locker(write_lock_);
 
-  LOG_IF(WARNING, !write_buffer_->message_queue_.IsEmpty())
+  LOG_IF(WARNING, !write_buffer_->message_queue_.empty())
       << "Shutting down RawChannel with write buffer nonempty";
 
   // Reset the delegate so that it won't receive further calls.
@@ -228,7 +229,7 @@ bool RawChannel::WriteMessage(scoped_ptr<MessageInTransit> message) {
   if (write_stopped_)
     return false;
 
-  if (!write_buffer_->message_queue_.IsEmpty()) {
+  if (!write_buffer_->message_queue_.empty()) {
     EnqueueMessageNoLock(message.Pass());
     return true;
   }
@@ -259,7 +260,7 @@ bool RawChannel::WriteMessage(scoped_ptr<MessageInTransit> message) {
 // Reminder: This must be thread-safe.
 bool RawChannel::IsWriteBufferEmpty() {
   base::AutoLock locker(write_lock_);
-  return write_buffer_->message_queue_.IsEmpty();
+  return write_buffer_->message_queue_.empty();
 }
 
 void RawChannel::OnReadCompleted(IOResult io_result, size_t bytes_read) {
@@ -413,7 +414,7 @@ void RawChannel::OnWriteCompleted(IOResult io_result,
   bool did_fail = false;
   {
     base::AutoLock locker(write_lock_);
-    DCHECK_EQ(write_stopped_, write_buffer_->message_queue_.IsEmpty());
+    DCHECK_EQ(write_stopped_, write_buffer_->message_queue_.empty());
 
     if (write_stopped_) {
       NOTREACHED();
@@ -432,7 +433,7 @@ void RawChannel::OnWriteCompleted(IOResult io_result,
 
 void RawChannel::EnqueueMessageNoLock(scoped_ptr<MessageInTransit> message) {
   write_lock_.AssertAcquired();
-  write_buffer_->message_queue_.AddMessage(message.Pass());
+  write_buffer_->message_queue_.push_back(message.release());
 }
 
 bool RawChannel::OnReadMessageForRawChannel(
@@ -476,21 +477,22 @@ bool RawChannel::OnWriteCompletedNoLock(IOResult io_result,
   write_lock_.AssertAcquired();
 
   DCHECK(!write_stopped_);
-  DCHECK(!write_buffer_->message_queue_.IsEmpty());
+  DCHECK(!write_buffer_->message_queue_.empty());
 
   if (io_result == IO_SUCCEEDED) {
     write_buffer_->platform_handles_offset_ += platform_handles_written;
     write_buffer_->data_offset_ += bytes_written;
 
-    MessageInTransit* message = write_buffer_->message_queue_.PeekMessage();
+    MessageInTransit* message = write_buffer_->message_queue_.front();
     if (write_buffer_->data_offset_ >= message->total_size()) {
       // Complete write.
       CHECK_EQ(write_buffer_->data_offset_, message->total_size());
-      write_buffer_->message_queue_.DiscardMessage();
+      write_buffer_->message_queue_.pop_front();
+      delete message;
       write_buffer_->platform_handles_offset_ = 0;
       write_buffer_->data_offset_ = 0;
 
-      if (write_buffer_->message_queue_.IsEmpty())
+      if (write_buffer_->message_queue_.empty())
         return true;
     }
 
@@ -502,7 +504,7 @@ bool RawChannel::OnWriteCompletedNoLock(IOResult io_result,
   }
 
   write_stopped_ = true;
-  write_buffer_->message_queue_.Clear();
+  STLDeleteElements(&write_buffer_->message_queue_);
   write_buffer_->platform_handles_offset_ = 0;
   write_buffer_->data_offset_ = 0;
   return false;

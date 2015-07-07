@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -22,15 +23,14 @@
 #include "mojo/edk/embedder/platform_handle.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/system/transport_data.h"
-#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {
 
 namespace {
 
-class RawChannelPosix final : public RawChannel,
-                              public base::MessageLoopForIO::Watcher {
+class RawChannelPosix : public RawChannel,
+                        public base::MessageLoopForIO::Watcher {
  public:
   explicit RawChannelPosix(embedder::ScopedPlatformHandle handle);
   ~RawChannelPosix() override;
@@ -87,7 +87,7 @@ class RawChannelPosix final : public RawChannel,
   // are only used/invalidated on the I/O thread.
   base::WeakPtrFactory<RawChannelPosix> weak_ptr_factory_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(RawChannelPosix);
+  DISALLOW_COPY_AND_ASSIGN(RawChannelPosix);
 };
 
 RawChannelPosix::RawChannelPosix(embedder::ScopedPlatformHandle handle)

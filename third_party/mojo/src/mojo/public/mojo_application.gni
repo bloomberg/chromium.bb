@@ -25,7 +25,7 @@ template("mojo_native_application") {
       library_name = "lib${library_target_name}.so"
     } else if (is_win) {
       library_name = "${library_target_name}.dll"
-    } else if (is_mac || is_ios) {
+    } else if (is_mac) {
       library_name = "lib${library_target_name}.dylib"
     } else {
       assert(false, "Platform not supported.")

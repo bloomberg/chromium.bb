@@ -7,11 +7,11 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/process/process.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "testing/multiprocess_func_list.h"
 
 namespace mojo {
@@ -66,7 +66,7 @@ class MultiprocessTestHelper {
   // Valid after |StartChild()| and before |WaitForChildShutdown()|.
   base::Process test_child_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(MultiprocessTestHelper);
+  DISALLOW_COPY_AND_ASSIGN(MultiprocessTestHelper);
 };
 
 // Use this to declare the child process's "main()" function for tests using

@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "mojo/edk/embedder/platform_handle.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
@@ -46,6 +47,9 @@ embedder::ScopedPlatformHandle PlatformHandleFromFILE(base::ScopedFILE fp);
 // Gets a (scoped) |FILE| from a (scoped) |PlatformHandle|.
 base::ScopedFILE FILEFromPlatformHandle(embedder::ScopedPlatformHandle h,
                                         const char* mode);
+
+// Returns the path to the mojom js bindings file.
+base::FilePath GetFilePathForJSResource(const std::string& path);
 
 }  // namespace test
 }  // namespace mojo

@@ -7,13 +7,14 @@
 
 #include <stdint.h>
 
+#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/system/data_pipe.h"
 #include "mojo/edk/system/handle_signals_state.h"
 #include "mojo/edk/system/memory.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/data_pipe.h"
-#include "mojo/public/c/system/macros.h"
 #include "mojo/public/c/system/types.h"
 
 namespace mojo {
@@ -129,7 +130,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeImpl {
  private:
   DataPipe* owner_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(DataPipeImpl);
+  DISALLOW_COPY_AND_ASSIGN(DataPipeImpl);
 };
 
 // TODO(vtl): This is not the ideal place for the following structs; find
@@ -137,7 +138,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeImpl {
 
 // Serialized form of a producer dispatcher. This will actually be followed by a
 // serialized |ChannelEndpoint|; we want to preserve alignment guarantees.
-struct MOJO_ALIGNAS(8) SerializedDataPipeProducerDispatcher {
+struct ALIGNAS(8) SerializedDataPipeProducerDispatcher {
   // Only validated (and thus canonicalized) options should be serialized.
   // However, the deserializer must revalidate (as with everything received).
   MojoCreateDataPipeOptions validated_options;
@@ -149,7 +150,7 @@ struct MOJO_ALIGNAS(8) SerializedDataPipeProducerDispatcher {
 
 // Serialized form of a consumer dispatcher. This will actually be followed by a
 // serialized |ChannelEndpoint|; we want to preserve alignment guarantees.
-struct MOJO_ALIGNAS(8) SerializedDataPipeConsumerDispatcher {
+struct ALIGNAS(8) SerializedDataPipeConsumerDispatcher {
   // Only validated (and thus canonicalized) options should be serialized.
   // However, the deserializer must revalidate (as with everything received).
   MojoCreateDataPipeOptions validated_options;

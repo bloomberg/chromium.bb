@@ -11,6 +11,7 @@
 #include <ostream>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
@@ -22,7 +23,6 @@
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/message_pipe.h"
 #include "mojo/public/c/system/types.h"
-#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 
@@ -362,7 +362,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   mutable base::Lock lock_;
   bool is_closed_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(Dispatcher);
+  DISALLOW_COPY_AND_ASSIGN(Dispatcher);
 };
 
 // Wrapper around a |Dispatcher| pointer, while it's being processed to be

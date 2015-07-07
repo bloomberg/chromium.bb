@@ -10,7 +10,6 @@
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/test_utils.h"
 #include "mojo/edk/test/multiprocess_test_helper.h"
-#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {
@@ -43,7 +42,7 @@ class ChannelThread {
   base::TestIOThread test_io_thread_;
   scoped_refptr<Channel> channel_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ChannelThread);
+  DISALLOW_COPY_AND_ASSIGN(ChannelThread);
 };
 
 #if !defined(OS_IOS)
@@ -63,7 +62,7 @@ class MultiprocessMessagePipeTestBase : public testing::Test {
   ChannelThread channel_thread_;
   mojo::test::MultiprocessTestHelper helper_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(MultiprocessMessagePipeTestBase);
+  DISALLOW_COPY_AND_ASSIGN(MultiprocessMessagePipeTestBase);
 };
 #endif
 

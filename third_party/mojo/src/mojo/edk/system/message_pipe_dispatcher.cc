@@ -25,6 +25,11 @@ const MojoCreateMessagePipeOptions
         static_cast<uint32_t>(sizeof(MojoCreateMessagePipeOptions)),
         MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE};
 
+MessagePipeDispatcher::MessagePipeDispatcher(
+    const MojoCreateMessagePipeOptions& /*validated_options*/)
+    : port_(kInvalidPort) {
+}
+
 // static
 MojoResult MessagePipeDispatcher::ValidateCreateOptions(
     UserPointer<const MojoCreateMessagePipeOptions> in_options,
@@ -72,8 +77,8 @@ MessagePipeDispatcher::CreateRemoteMessagePipe(
     scoped_refptr<ChannelEndpoint>* channel_endpoint) {
   scoped_refptr<MessagePipe> message_pipe(
       MessagePipe::CreateLocalProxy(channel_endpoint));
-  scoped_refptr<MessagePipeDispatcher> dispatcher =
-      Create(kDefaultCreateOptions);
+  scoped_refptr<MessagePipeDispatcher> dispatcher(
+      new MessagePipeDispatcher(MessagePipeDispatcher::kDefaultCreateOptions));
   dispatcher->Init(message_pipe, 0);
   return dispatcher;
 }
@@ -90,13 +95,10 @@ scoped_refptr<MessagePipeDispatcher> MessagePipeDispatcher::Deserialize(
   DCHECK(message_pipe);
   DCHECK(port == 0 || port == 1);
 
-  scoped_refptr<MessagePipeDispatcher> dispatcher =
-      Create(kDefaultCreateOptions);
+  scoped_refptr<MessagePipeDispatcher> dispatcher(
+      new MessagePipeDispatcher(MessagePipeDispatcher::kDefaultCreateOptions));
   dispatcher->Init(message_pipe, port);
   return dispatcher;
-}
-
-MessagePipeDispatcher::MessagePipeDispatcher() : port_(kInvalidPort) {
 }
 
 MessagePipeDispatcher::~MessagePipeDispatcher() {
@@ -133,7 +135,8 @@ MessagePipeDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
   // TODO(vtl): Currently, there are no options, so we just use
   // |kDefaultCreateOptions|. Eventually, we'll have to duplicate the options
   // too.
-  scoped_refptr<MessagePipeDispatcher> rv = Create(kDefaultCreateOptions);
+  scoped_refptr<MessagePipeDispatcher> rv =
+      new MessagePipeDispatcher(kDefaultCreateOptions);
   rv->Init(message_pipe_, port_);
   message_pipe_ = nullptr;
   port_ = kInvalidPort;

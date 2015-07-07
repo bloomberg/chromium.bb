@@ -8,6 +8,7 @@
 
 #include <ostream>
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/transport_data.h"
@@ -15,8 +16,7 @@
 namespace mojo {
 namespace system {
 
-MOJO_STATIC_CONST_MEMBER_DEFINITION const size_t
-    MessageInTransit::kMessageAlignment;
+STATIC_CONST_MEMBER_DEFINITION const size_t MessageInTransit::kMessageAlignment;
 
 struct MessageInTransit::PrivateStructForCompileAsserts {
   // The size of |Header| must be a multiple of the alignment.

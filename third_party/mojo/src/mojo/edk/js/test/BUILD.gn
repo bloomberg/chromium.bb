@@ -14,7 +14,6 @@ test("js_unittests") {
     "../../../public/cpp/system",
     "../../../public/cpp/utility",
     "../../../public/interfaces/bindings/tests:test_interfaces",
-    "../../../public/interfaces/bindings/tests:test_interfaces_experimental",
     "//base",
     "//gin:gin_test",
     "//mojo/environment:chromium",

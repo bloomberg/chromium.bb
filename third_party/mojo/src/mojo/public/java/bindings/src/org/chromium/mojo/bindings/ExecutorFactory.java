@@ -140,7 +140,7 @@ class ExecutorFactory {
          */
         private void runNextAction() {
             Runnable toRun = null;
-            synchronized (mLock) {
+            synchronized (mWriteHandle) {
                 toRun = mPendingActions.remove(0);
             }
             toRun.run();

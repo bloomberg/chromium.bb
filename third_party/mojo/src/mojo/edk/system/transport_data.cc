@@ -6,6 +6,7 @@
 
 #include <string.h>
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/configuration.h"
@@ -25,9 +26,9 @@ static_assert(kMaxSizePerPlatformHandle % MessageInTransit::kMessageAlignment ==
                   0,
               "kMaxSizePerPlatformHandle not a multiple of alignment");
 
-MOJO_STATIC_CONST_MEMBER_DEFINITION const size_t
+STATIC_CONST_MEMBER_DEFINITION const size_t
     TransportData::kMaxSerializedDispatcherSize;
-MOJO_STATIC_CONST_MEMBER_DEFINITION const size_t
+STATIC_CONST_MEMBER_DEFINITION const size_t
     TransportData::kMaxSerializedDispatcherPlatformHandles;
 
 // static

@@ -9,10 +9,10 @@
 #include <stdint.h>
 #include <string.h>  // For |memcpy()|.
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/macros.h"
-#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {
@@ -307,7 +307,7 @@ class UserPointerReader {
 
   scoped_ptr<TypeNoConst[]> buffer_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(UserPointerReader);
+  DISALLOW_COPY_AND_ASSIGN(UserPointerReader);
 };
 
 // Implementation of |UserPointer<Type>::Writer|.
@@ -336,7 +336,7 @@ class UserPointerWriter {
   size_t count_;
   scoped_ptr<Type[]> buffer_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(UserPointerWriter);
+  DISALLOW_COPY_AND_ASSIGN(UserPointerWriter);
 };
 
 // Implementation of |UserPointer<Type>::ReaderWriter|.
@@ -368,7 +368,7 @@ class UserPointerReaderWriter {
   size_t count_;
   scoped_ptr<Type[]> buffer_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(UserPointerReaderWriter);
+  DISALLOW_COPY_AND_ASSIGN(UserPointerReaderWriter);
 };
 
 }  // namespace system

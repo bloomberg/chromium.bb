@@ -10,8 +10,10 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/test_io_thread.h"
+#include "base/test/test_timeouts.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/simple_platform_support.h"
 #include "mojo/edk/system/channel.h"
@@ -24,7 +26,6 @@
 #include "mojo/edk/system/raw_channel.h"
 #include "mojo/edk/system/test_utils.h"
 #include "mojo/edk/system/waiter.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -115,7 +116,7 @@ class RemoteDataPipeImplTest : public testing::Test {
   scoped_refptr<Channel> channels_[2];
   scoped_refptr<MessagePipe> message_pipes_[2];
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(RemoteDataPipeImplTest);
+  DISALLOW_COPY_AND_ASSIGN(RemoteDataPipeImplTest);
 };
 
 // These tests are heavier-weight than ideal. They test remote data pipes by
@@ -171,7 +172,7 @@ TEST_F(RemoteDataPipeImplTest, SendConsumerWithClosedProducer) {
   scoped_refptr<DataPipe> dp(CreateLocal(sizeof(int32_t), 1000));
   // This is the consumer dispatcher we'll send.
   scoped_refptr<DataPipeConsumerDispatcher> consumer =
-      DataPipeConsumerDispatcher::Create();
+      new DataPipeConsumerDispatcher();
   consumer->Init(dp);
 
   // Write to the producer and close it, before sending the consumer.

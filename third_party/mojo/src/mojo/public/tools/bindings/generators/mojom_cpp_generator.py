@@ -54,7 +54,7 @@ def DefaultValue(field):
   return ""
 
 def NamespaceToArray(namespace):
-  return namespace.split(".") if namespace else []
+  return namespace.split('.') if namespace else []
 
 def GetNameForKind(kind, internal = False):
   parts = []
@@ -286,11 +286,11 @@ def TranslateConstants(token, kind):
   # so the integral constant -2147483648 causes it grief: it decides to
   # represent 2147483648 as an unsigned integer, and then warns that the unary
   # minus operator doesn't make sense on unsigned types. Doh!
-  if kind == mojom.INT32 and token == "-2147483648":
-    return "(-%d - 1) /* %s */" % (
-        2**31 - 1, "Workaround for MSVC bug; see https://crbug.com/445618")
+  if kind == mojom.INT32 and token == '-2147483648':
+    return '(-%d - 1) /* %s */' % (
+        2**31 - 1, 'Workaround for MSVC bug; see https://crbug.com/445618')
 
-  return "%s%s" % (token, _kind_to_cpp_literal_suffix.get(kind, ""))
+  return '%s%s' % (token, _kind_to_cpp_literal_suffix.get(kind, ''))
 
 def ExpressionToText(value, kind=None):
   return TranslateConstants(value, kind)
@@ -307,7 +307,11 @@ def ShouldInlineStruct(struct):
 def ShouldInlineUnion(union):
   return not any(mojom.IsMoveOnlyKind(field.kind) for field in union.fields)
 
-def GetArrayValidateParamsCtorArgs(kind):
+def GetArrayValidateParams(kind, new=False):
+  if (not mojom.IsArrayKind(kind) and not mojom.IsMapKind(kind) and
+      not mojom.IsStringKind(kind)):
+    return "nullptr"
+
   if mojom.IsStringKind(kind):
     expected_num_elements = 0
     element_is_nullable = False
@@ -315,30 +319,25 @@ def GetArrayValidateParamsCtorArgs(kind):
   elif mojom.IsMapKind(kind):
     expected_num_elements = 0
     element_is_nullable = mojom.IsNullableKind(kind.value_kind)
-    element_validate_params = GetNewArrayValidateParams(kind.value_kind)
+    element_validate_params = GetArrayValidateParams(kind.value_kind, new=True)
   else:
     expected_num_elements = generator.ExpectedArraySize(kind) or 0
     element_is_nullable = mojom.IsNullableKind(kind.kind)
-    element_validate_params = GetNewArrayValidateParams(kind.kind)
+    element_validate_params = GetArrayValidateParams(kind.kind, new=True)
 
-  return "%d, %s, %s" % (expected_num_elements,
-                         "true" if element_is_nullable else "false",
-                         element_validate_params)
+  return "%smojo::internal::ArrayValidateParams(%d, %s,\n%s) " % (
+      'new ' if new else '',
+      expected_num_elements,
+      'true' if element_is_nullable else 'false',
+      element_validate_params)
 
-def GetNewArrayValidateParams(kind):
-  if (not mojom.IsArrayKind(kind) and not mojom.IsMapKind(kind) and
-      not mojom.IsStringKind(kind)):
-    return "nullptr"
-
-  return "new mojo::internal::ArrayValidateParams(%s)" % (
-      GetArrayValidateParamsCtorArgs(kind))
-
-def GetMapValidateParamsCtorArgs(value_kind):
+def GetMapValidateParams(value_kind):
   # Unlike GetArrayValidateParams, we are given the wrapped kind, instead of
   # the raw array kind. So we wrap the return value of GetArrayValidateParams.
   element_is_nullable = mojom.IsNullableKind(value_kind)
-  return "0, %s, %s" % ("true" if element_is_nullable else "false",
-                        GetNewArrayValidateParams(value_kind))
+  return "mojo::internal::ArrayValidateParams(0, %s,\n%s) " % (
+      'true' if element_is_nullable else 'false',
+      GetArrayValidateParams(value_kind, new=True))
 
 class Generator(generator.Generator):
 
@@ -354,8 +353,8 @@ class Generator(generator.Generator):
     "cpp_wrapper_type": GetCppWrapperType,
     "default_value": DefaultValue,
     "expression_to_text": ExpressionToText,
-    "get_array_validate_params_ctor_args": GetArrayValidateParamsCtorArgs,
-    "get_map_validate_params_ctor_args": GetMapValidateParamsCtorArgs,
+    "get_array_validate_params": GetArrayValidateParams,
+    "get_map_validate_params": GetMapValidateParams,
     "get_name_for_kind": GetNameForKind,
     "get_pad": pack.GetPad,
     "has_callbacks": mojom.HasCallbacks,

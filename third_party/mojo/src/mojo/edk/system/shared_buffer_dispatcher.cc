@@ -77,7 +77,7 @@ MojoResult SharedBufferDispatcher::Create(
   if (!shared_buffer)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
-  *result = CreateInternal(shared_buffer.Pass());
+  *result = new SharedBufferDispatcher(shared_buffer);
   return MOJO_RESULT_OK;
 }
 
@@ -132,7 +132,8 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
     return nullptr;
   }
 
-  return CreateInternal(shared_buffer.Pass());
+  return scoped_refptr<SharedBufferDispatcher>(
+      new SharedBufferDispatcher(shared_buffer));
 }
 
 SharedBufferDispatcher::SharedBufferDispatcher(
@@ -186,7 +187,9 @@ scoped_refptr<Dispatcher>
 SharedBufferDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
   lock().AssertAcquired();
   DCHECK(shared_buffer_);
-  return CreateInternal(shared_buffer_.Pass());
+  scoped_refptr<embedder::PlatformSharedBuffer> shared_buffer;
+  shared_buffer.swap(shared_buffer_);
+  return scoped_refptr<Dispatcher>(new SharedBufferDispatcher(shared_buffer));
 }
 
 MojoResult SharedBufferDispatcher::DuplicateBufferHandleImplNoLock(
@@ -199,8 +202,7 @@ MojoResult SharedBufferDispatcher::DuplicateBufferHandleImplNoLock(
   if (result != MOJO_RESULT_OK)
     return result;
 
-  // Note: Since this is "duplicate", we keep our ref to |shared_buffer_|.
-  *new_dispatcher = CreateInternal(shared_buffer_);
+  *new_dispatcher = new SharedBufferDispatcher(shared_buffer_);
   return MOJO_RESULT_OK;
 }
 

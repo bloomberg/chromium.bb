@@ -109,11 +109,6 @@ class MojoMessagePipeEndpoint {
 
   MojoMessagePipeReadResult query() => read(null);
 
-  bool setDescription(String description) {
-    assert(MojoHandle._setHandleLeakDescription(handle, description));
-    return true;
-  }
-
   void close() {
     handle.close();
     handle = null;

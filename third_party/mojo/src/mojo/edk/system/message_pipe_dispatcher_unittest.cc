@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // NOTE(vtl): Some of these tests are inherently flaky (e.g., if run on a
-// heavily-loaded system). Sorry. |test::EpsilonDeadline()| may be increased to
+// heavily-loaded system). Sorry. |test::EpsilonTimeout()| may be increased to
 // increase tolerance and reduce observed flakiness (though doing so reduces the
 // meaningfulness of the test).
 
@@ -16,12 +16,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/rand_util.h"
+#include "base/threading/platform_thread.h"  // For |Sleep()|.
 #include "base/threading/simple_thread.h"
+#include "base/time/time.h"
 #include "mojo/edk/system/message_pipe.h"
 #include "mojo/edk/system/test_utils.h"
 #include "mojo/edk/system/waiter.h"
 #include "mojo/edk/system/waiter_test_utils.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -40,11 +41,11 @@ TEST(MessagePipeDispatcherTest, Basic) {
 
   // Run this test both with |d0| as port 0, |d1| as port 1 and vice versa.
   for (unsigned i = 0; i < 2; i++) {
-    scoped_refptr<MessagePipeDispatcher> d0 = MessagePipeDispatcher::Create(
-        MessagePipeDispatcher::kDefaultCreateOptions);
+    scoped_refptr<MessagePipeDispatcher> d0(new MessagePipeDispatcher(
+        MessagePipeDispatcher::kDefaultCreateOptions));
     EXPECT_EQ(Dispatcher::Type::MESSAGE_PIPE, d0->GetType());
-    scoped_refptr<MessagePipeDispatcher> d1 = MessagePipeDispatcher::Create(
-        MessagePipeDispatcher::kDefaultCreateOptions);
+    scoped_refptr<MessagePipeDispatcher> d1(new MessagePipeDispatcher(
+        MessagePipeDispatcher::kDefaultCreateOptions));
     {
       scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalLocal());
       d0->Init(mp, i);      // 0, 1.
@@ -75,7 +76,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
     stopwatch.Start();
     EXPECT_EQ(MOJO_RESULT_OK, w.Wait(MOJO_DEADLINE_INDEFINITE, &context));
     EXPECT_EQ(1u, context);
-    EXPECT_LT(stopwatch.Elapsed(), test::EpsilonDeadline());
+    EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
     hss = HandleSignalsState();
     d0->RemoveAwakable(&w, &hss);
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
@@ -108,7 +109,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
               d0->AddAwakable(&w, MOJO_HANDLE_SIGNAL_READABLE, 3, nullptr));
     stopwatch.Start();
     EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, w.Wait(0, nullptr));
-    EXPECT_LT(stopwatch.Elapsed(), test::EpsilonDeadline());
+    EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
     hss = HandleSignalsState();
     d0->RemoveAwakable(&w, &hss);
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
@@ -120,10 +121,10 @@ TEST(MessagePipeDispatcherTest, Basic) {
               d0->AddAwakable(&w, MOJO_HANDLE_SIGNAL_READABLE, 3, nullptr));
     stopwatch.Start();
     EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-              w.Wait(2 * test::EpsilonDeadline(), nullptr));
-    MojoDeadline elapsed = stopwatch.Elapsed();
-    EXPECT_GT(elapsed, (2 - 1) * test::EpsilonDeadline());
-    EXPECT_LT(elapsed, (2 + 1) * test::EpsilonDeadline());
+              w.Wait(2 * test::EpsilonTimeout().InMicroseconds(), nullptr));
+    base::TimeDelta elapsed = stopwatch.Elapsed();
+    EXPECT_GT(elapsed, (2 - 1) * test::EpsilonTimeout());
+    EXPECT_LT(elapsed, (2 + 1) * test::EpsilonTimeout());
     hss = HandleSignalsState();
     d0->RemoveAwakable(&w, &hss);
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
@@ -152,10 +153,10 @@ TEST(MessagePipeDispatcherTest, Basic) {
 TEST(MessagePipeDispatcherTest, InvalidParams) {
   char buffer[1];
 
-  scoped_refptr<MessagePipeDispatcher> d0 = MessagePipeDispatcher::Create(
-      MessagePipeDispatcher::kDefaultCreateOptions);
-  scoped_refptr<MessagePipeDispatcher> d1 = MessagePipeDispatcher::Create(
-      MessagePipeDispatcher::kDefaultCreateOptions);
+  scoped_refptr<MessagePipeDispatcher> d0(
+      new MessagePipeDispatcher(MessagePipeDispatcher::kDefaultCreateOptions));
+  scoped_refptr<MessagePipeDispatcher> d1(
+      new MessagePipeDispatcher(MessagePipeDispatcher::kDefaultCreateOptions));
   {
     scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalLocal());
     d0->Init(mp, 0);
@@ -182,10 +183,10 @@ TEST(MessagePipeDispatcherTest, InvalidParams) {
 TEST(MessagePipeDispatcherTest, InvalidParamsDeath) {
   const char kMemoryCheckFailedRegex[] = "Check failed";
 
-  scoped_refptr<MessagePipeDispatcher> d0 = MessagePipeDispatcher::Create(
-      MessagePipeDispatcher::kDefaultCreateOptions);
-  scoped_refptr<MessagePipeDispatcher> d1 = MessagePipeDispatcher::Create(
-      MessagePipeDispatcher::kDefaultCreateOptions);
+  scoped_refptr<MessagePipeDispatcher> d0(
+      new MessagePipeDispatcher(MessagePipeDispatcher::kDefaultCreateOptions));
+  scoped_refptr<MessagePipeDispatcher> d1(
+      new MessagePipeDispatcher(MessagePipeDispatcher::kDefaultCreateOptions));
   {
     scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalLocal());
     d0->Init(mp, 0);
@@ -222,10 +223,10 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
 
   // Run this test both with |d0| as port 0, |d1| as port 1 and vice versa.
   for (unsigned i = 0; i < 2; i++) {
-    scoped_refptr<MessagePipeDispatcher> d0 = MessagePipeDispatcher::Create(
-        MessagePipeDispatcher::kDefaultCreateOptions);
-    scoped_refptr<MessagePipeDispatcher> d1 = MessagePipeDispatcher::Create(
-        MessagePipeDispatcher::kDefaultCreateOptions);
+    scoped_refptr<MessagePipeDispatcher> d0(new MessagePipeDispatcher(
+        MessagePipeDispatcher::kDefaultCreateOptions));
+    scoped_refptr<MessagePipeDispatcher> d1(new MessagePipeDispatcher(
+        MessagePipeDispatcher::kDefaultCreateOptions));
     {
       scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalLocal());
       d0->Init(mp, i);      // 0, 1.
@@ -350,7 +351,7 @@ TEST(MessagePipeDispatcherTest, MAYBE_BasicThreaded) {
   int32_t buffer[1];
   const uint32_t kBufferSize = static_cast<uint32_t>(sizeof(buffer));
   uint32_t buffer_size;
-  MojoDeadline elapsed;
+  base::TimeDelta elapsed;
   bool did_wait;
   MojoResult result;
   uint32_t context;
@@ -358,10 +359,10 @@ TEST(MessagePipeDispatcherTest, MAYBE_BasicThreaded) {
 
   // Run this test both with |d0| as port 0, |d1| as port 1 and vice versa.
   for (unsigned i = 0; i < 2; i++) {
-    scoped_refptr<MessagePipeDispatcher> d0 = MessagePipeDispatcher::Create(
-        MessagePipeDispatcher::kDefaultCreateOptions);
-    scoped_refptr<MessagePipeDispatcher> d1 = MessagePipeDispatcher::Create(
-        MessagePipeDispatcher::kDefaultCreateOptions);
+    scoped_refptr<MessagePipeDispatcher> d0(new MessagePipeDispatcher(
+        MessagePipeDispatcher::kDefaultCreateOptions));
+    scoped_refptr<MessagePipeDispatcher> d1(new MessagePipeDispatcher(
+        MessagePipeDispatcher::kDefaultCreateOptions));
     {
       scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalLocal());
       d0->Init(mp, i);      // 0, 1.
@@ -375,7 +376,7 @@ TEST(MessagePipeDispatcherTest, MAYBE_BasicThreaded) {
                                 &context, &hss);
       stopwatch.Start();
       thread.Start();
-      test::Sleep(2 * test::EpsilonDeadline());
+      base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
       // Wake it up by writing to |d0|.
       buffer[0] = 123456789;
       EXPECT_EQ(MOJO_RESULT_OK,
@@ -383,8 +384,8 @@ TEST(MessagePipeDispatcherTest, MAYBE_BasicThreaded) {
                                  nullptr, MOJO_WRITE_MESSAGE_FLAG_NONE));
     }  // Joins the thread.
     elapsed = stopwatch.Elapsed();
-    EXPECT_GT(elapsed, (2 - 1) * test::EpsilonDeadline());
-    EXPECT_LT(elapsed, (2 + 1) * test::EpsilonDeadline());
+    EXPECT_GT(elapsed, (2 - 1) * test::EpsilonTimeout());
+    EXPECT_LT(elapsed, (2 + 1) * test::EpsilonTimeout());
     EXPECT_TRUE(did_wait);
     EXPECT_EQ(MOJO_RESULT_OK, result);
     EXPECT_EQ(1u, context);
@@ -400,7 +401,7 @@ TEST(MessagePipeDispatcherTest, MAYBE_BasicThreaded) {
       stopwatch.Start();
       thread.Start();
     }  // Joins the thread.
-    EXPECT_LT(stopwatch.Elapsed(), test::EpsilonDeadline());
+    EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
     EXPECT_FALSE(did_wait);
     EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS, result);
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
@@ -425,12 +426,12 @@ TEST(MessagePipeDispatcherTest, MAYBE_BasicThreaded) {
                                 &context, &hss);
       stopwatch.Start();
       thread.Start();
-      test::Sleep(2 * test::EpsilonDeadline());
+      base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
       EXPECT_EQ(MOJO_RESULT_OK, d0->Close());
     }  // Joins the thread.
     elapsed = stopwatch.Elapsed();
-    EXPECT_GT(elapsed, (2 - 1) * test::EpsilonDeadline());
-    EXPECT_LT(elapsed, (2 + 1) * test::EpsilonDeadline());
+    EXPECT_GT(elapsed, (2 - 1) * test::EpsilonTimeout());
+    EXPECT_LT(elapsed, (2 + 1) * test::EpsilonTimeout());
     EXPECT_TRUE(did_wait);
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
     EXPECT_EQ(3u, context);
@@ -441,10 +442,10 @@ TEST(MessagePipeDispatcherTest, MAYBE_BasicThreaded) {
   }
 
   for (unsigned i = 0; i < 2; i++) {
-    scoped_refptr<MessagePipeDispatcher> d0 = MessagePipeDispatcher::Create(
-        MessagePipeDispatcher::kDefaultCreateOptions);
-    scoped_refptr<MessagePipeDispatcher> d1 = MessagePipeDispatcher::Create(
-        MessagePipeDispatcher::kDefaultCreateOptions);
+    scoped_refptr<MessagePipeDispatcher> d0(new MessagePipeDispatcher(
+        MessagePipeDispatcher::kDefaultCreateOptions));
+    scoped_refptr<MessagePipeDispatcher> d1(new MessagePipeDispatcher(
+        MessagePipeDispatcher::kDefaultCreateOptions));
     {
       scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalLocal());
       d0->Init(mp, i);      // 0, 1.
@@ -459,12 +460,12 @@ TEST(MessagePipeDispatcherTest, MAYBE_BasicThreaded) {
                                 &context, &hss);
       stopwatch.Start();
       thread.Start();
-      test::Sleep(2 * test::EpsilonDeadline());
+      base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
       EXPECT_EQ(MOJO_RESULT_OK, d1->Close());
     }  // Joins the thread.
     elapsed = stopwatch.Elapsed();
-    EXPECT_GT(elapsed, (2 - 1) * test::EpsilonDeadline());
-    EXPECT_LT(elapsed, (2 + 1) * test::EpsilonDeadline());
+    EXPECT_GT(elapsed, (2 - 1) * test::EpsilonTimeout());
+    EXPECT_LT(elapsed, (2 + 1) * test::EpsilonTimeout());
     EXPECT_TRUE(did_wait);
     EXPECT_EQ(MOJO_RESULT_CANCELLED, result);
     EXPECT_EQ(4u, context);
@@ -527,7 +528,7 @@ class WriterThread : public base::SimpleThread {
   size_t* const messages_written_;
   size_t* const bytes_written_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(WriterThread);
+  DISALLOW_COPY_AND_ASSIGN(WriterThread);
 };
 
 class ReaderThread : public base::SimpleThread {
@@ -614,17 +615,17 @@ class ReaderThread : public base::SimpleThread {
   size_t* const messages_read_;
   size_t* const bytes_read_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ReaderThread);
+  DISALLOW_COPY_AND_ASSIGN(ReaderThread);
 };
 
 TEST(MessagePipeDispatcherTest, Stress) {
   static const size_t kNumWriters = 30;
   static const size_t kNumReaders = kNumWriters;
 
-  scoped_refptr<MessagePipeDispatcher> d_write = MessagePipeDispatcher::Create(
-      MessagePipeDispatcher::kDefaultCreateOptions);
-  scoped_refptr<MessagePipeDispatcher> d_read = MessagePipeDispatcher::Create(
-      MessagePipeDispatcher::kDefaultCreateOptions);
+  scoped_refptr<MessagePipeDispatcher> d_write(
+      new MessagePipeDispatcher(MessagePipeDispatcher::kDefaultCreateOptions));
+  scoped_refptr<MessagePipeDispatcher> d_read(
+      new MessagePipeDispatcher(MessagePipeDispatcher::kDefaultCreateOptions));
   {
     scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalLocal());
     d_write->Init(mp, 0);

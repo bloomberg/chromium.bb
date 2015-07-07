@@ -21,7 +21,7 @@ scoped_ptr<MessageInTransit> MakeTestMessage(unsigned id);
 
 // Verifies a test message: ASSERTs that |message| is non-null, and EXPECTs that
 // it looks like a message created using |MakeTestMessage(id)| (see above).
-void VerifyTestMessage(const MessageInTransit* message, unsigned id);
+void VerifyTestMessage(MessageInTransit* message, unsigned id);
 
 // Checks if |message| looks like a test message created using
 // |MakeTestMessage()|, in which case it returns true and sets |*id|. (Otherwise

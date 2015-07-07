@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_io_thread.h"
@@ -21,7 +22,6 @@
 #include "mojo/edk/test/scoped_ipc_support.h"
 #include "mojo/public/c/system/core.h"
 #include "mojo/public/cpp/system/handle.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -106,7 +106,7 @@ class ScopedTestChannel {
   // Valid after channel creation completion until destruction.
   ChannelInfo* channel_info_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ScopedTestChannel);
+  DISALLOW_COPY_AND_ASSIGN(ScopedTestChannel);
 };
 
 class EmbedderTest : public testing::Test {
@@ -127,7 +127,7 @@ class EmbedderTest : public testing::Test {
 
   base::TestIOThread test_io_thread_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(EmbedderTest);
+  DISALLOW_COPY_AND_ASSIGN(EmbedderTest);
 };
 
 TEST_F(EmbedderTest, ChannelsBasic) {
@@ -198,7 +198,7 @@ class TestAsyncWaiter {
   mutable base::Lock wait_result_lock_;
   MojoResult wait_result_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(TestAsyncWaiter);
+  DISALLOW_COPY_AND_ASSIGN(TestAsyncWaiter);
 };
 
 void WriteHello(MessagePipeHandle pipe) {
@@ -301,7 +301,7 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
   char buffer[1000] = {};
   uint32_t num_bytes = static_cast<uint32_t>(sizeof(buffer));
   MojoHandle handles[10] = {};
-  uint32_t num_handles = MOJO_ARRAYSIZE(handles);
+  uint32_t num_handles = arraysize(handles);
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoReadMessage(client_mp, buffer, &num_bytes, handles,
                             &num_handles, MOJO_READ_MESSAGE_FLAG_NONE));
@@ -321,7 +321,7 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
   memset(buffer, 0, sizeof(buffer));
   num_bytes = static_cast<uint32_t>(sizeof(buffer));
   memset(handles, 0, sizeof(handles));
-  num_handles = MOJO_ARRAYSIZE(handles);
+  num_handles = arraysize(handles);
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoReadMessage(h1, buffer, &num_bytes, handles, &num_handles,
                             MOJO_READ_MESSAGE_FLAG_NONE));

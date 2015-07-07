@@ -17,7 +17,7 @@ scoped_ptr<MessageInTransit> MakeTestMessage(unsigned id) {
                            static_cast<uint32_t>(sizeof(id)), &id));
 }
 
-void VerifyTestMessage(const MessageInTransit* message, unsigned id) {
+void VerifyTestMessage(MessageInTransit* message, unsigned id) {
   ASSERT_TRUE(message);
   EXPECT_EQ(MessageInTransit::Type::ENDPOINT_CLIENT, message->type());
   EXPECT_EQ(MessageInTransit::Subtype::ENDPOINT_CLIENT_DATA,

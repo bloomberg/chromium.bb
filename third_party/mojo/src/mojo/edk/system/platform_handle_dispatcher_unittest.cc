@@ -36,8 +36,8 @@ TEST(PlatformHandleDispatcherTest, Basic) {
   EXPECT_FALSE(fp);
   ASSERT_TRUE(h.is_valid());
 
-  scoped_refptr<PlatformHandleDispatcher> dispatcher =
-      PlatformHandleDispatcher::Create(h.Pass());
+  scoped_refptr<PlatformHandleDispatcher> dispatcher(
+      new PlatformHandleDispatcher(h.Pass()));
   EXPECT_FALSE(h.is_valid());
   EXPECT_EQ(Dispatcher::Type::PLATFORM_HANDLE, dispatcher->GetType());
 
@@ -72,9 +72,9 @@ TEST(PlatformHandleDispatcherTest, CreateEquivalentDispatcherAndClose) {
       CreateAndOpenTemporaryFileInDir(temp_dir.path(), &unused));
   EXPECT_EQ(sizeof(kFooBar), fwrite(kFooBar, 1, sizeof(kFooBar), fp.get()));
 
-  scoped_refptr<PlatformHandleDispatcher> dispatcher =
-      PlatformHandleDispatcher::Create(
-          mojo::test::PlatformHandleFromFILE(fp.Pass()));
+  scoped_refptr<PlatformHandleDispatcher> dispatcher(
+      new PlatformHandleDispatcher(
+          mojo::test::PlatformHandleFromFILE(fp.Pass())));
 
   DispatcherTransport transport(
       test::DispatcherTryStartTransport(dispatcher.get()));

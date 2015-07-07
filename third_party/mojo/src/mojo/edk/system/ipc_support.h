@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task_runner.h"
@@ -17,7 +18,6 @@
 #include "mojo/edk/system/connection_identifier.h"
 #include "mojo/edk/system/process_identifier.h"
 #include "mojo/edk/system/system_impl_export.h"
-#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 
@@ -172,7 +172,7 @@ class MOJO_SYSTEM_IMPL_EXPORT IPCSupport {
   scoped_ptr<ConnectionManager> connection_manager_;
   scoped_ptr<ChannelManager> channel_manager_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(IPCSupport);
+  DISALLOW_COPY_AND_ASSIGN(IPCSupport);
 };
 
 }  // namespace system

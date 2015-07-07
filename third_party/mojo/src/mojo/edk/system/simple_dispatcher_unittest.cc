@@ -3,27 +3,29 @@
 // found in the LICENSE file.
 
 // NOTE(vtl): Some of these tests are inherently flaky (e.g., if run on a
-// heavily-loaded system). Sorry. |test::EpsilonDeadline()| may be increased to
+// heavily-loaded system). Sorry. |test::EpsilonTimeout()| may be increased to
 // increase tolerance and reduce observed flakiness (though doing so reduces the
 // meaningfulness of the test).
 
 #include "mojo/edk/system/simple_dispatcher.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/platform_thread.h"  // For |Sleep()|.
+#include "base/time/time.h"
 #include "mojo/edk/system/test_utils.h"
 #include "mojo/edk/system/waiter.h"
 #include "mojo/edk/system/waiter_test_utils.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
 namespace system {
 namespace {
 
-class MockSimpleDispatcher final : public SimpleDispatcher {
+class MockSimpleDispatcher : public SimpleDispatcher {
  public:
   MockSimpleDispatcher()
       : state_(MOJO_HANDLE_SIGNAL_NONE,
@@ -80,7 +82,7 @@ class MockSimpleDispatcher final : public SimpleDispatcher {
   // Protected by |lock()|:
   HandleSignalsState state_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(MockSimpleDispatcher);
+  DISALLOW_COPY_AND_ASSIGN(MockSimpleDispatcher);
 };
 
 #if defined(OS_WIN)
@@ -116,7 +118,7 @@ TEST(SimpleDispatcherTest, MAYBE_Basic) {
   d->SetSatisfiedSignals(MOJO_HANDLE_SIGNAL_WRITABLE);
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_OK, w.Wait(MOJO_DEADLINE_INDEFINITE, &context));
-  EXPECT_LT(stopwatch.Elapsed(), test::EpsilonDeadline());
+  EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
   EXPECT_EQ(1u, context);
   hss = HandleSignalsState();
   d->RemoveAwakable(&w, &hss);
@@ -132,7 +134,7 @@ TEST(SimpleDispatcherTest, MAYBE_Basic) {
   d->SetSatisfiedSignals(MOJO_HANDLE_SIGNAL_WRITABLE);
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_OK, w.Wait(0, &context));
-  EXPECT_LT(stopwatch.Elapsed(), test::EpsilonDeadline());
+  EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
   EXPECT_EQ(2u, context);
   hss = HandleSignalsState();
   d->RemoveAwakable(&w, &hss);
@@ -147,8 +149,9 @@ TEST(SimpleDispatcherTest, MAYBE_Basic) {
             d->AddAwakable(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 3, nullptr));
   d->SetSatisfiedSignals(MOJO_HANDLE_SIGNAL_WRITABLE);
   stopwatch.Start();
-  EXPECT_EQ(MOJO_RESULT_OK, w.Wait(2 * test::EpsilonDeadline(), &context));
-  EXPECT_LT(stopwatch.Elapsed(), test::EpsilonDeadline());
+  EXPECT_EQ(MOJO_RESULT_OK,
+            w.Wait(2 * test::EpsilonTimeout().InMicroseconds(), &context));
+  EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
   EXPECT_EQ(3u, context);
   hss = HandleSignalsState();
   d->RemoveAwakable(&w, &hss);
@@ -163,7 +166,7 @@ TEST(SimpleDispatcherTest, MAYBE_Basic) {
             d->AddAwakable(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 4, nullptr));
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, w.Wait(0, nullptr));
-  EXPECT_LT(stopwatch.Elapsed(), test::EpsilonDeadline());
+  EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
   hss = HandleSignalsState();
   d->RemoveAwakable(&w, &hss);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
@@ -178,10 +181,10 @@ TEST(SimpleDispatcherTest, MAYBE_Basic) {
             d->AddAwakable(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 5, nullptr));
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-            w.Wait(2 * test::EpsilonDeadline(), nullptr));
-  MojoDeadline elapsed = stopwatch.Elapsed();
-  EXPECT_GT(elapsed, (2 - 1) * test::EpsilonDeadline());
-  EXPECT_LT(elapsed, (2 + 1) * test::EpsilonDeadline());
+            w.Wait(2 * test::EpsilonTimeout().InMicroseconds(), nullptr));
+  base::TimeDelta elapsed = stopwatch.Elapsed();
+  EXPECT_GT(elapsed, (2 - 1) * test::EpsilonTimeout());
+  EXPECT_LT(elapsed, (2 + 1) * test::EpsilonTimeout());
   hss = HandleSignalsState();
   d->RemoveAwakable(&w, &hss);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
@@ -220,7 +223,7 @@ TEST(SimpleDispatcherTest, BasicUnsatisfiable) {
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             w.Wait(MOJO_DEADLINE_INDEFINITE, &context));
-  EXPECT_LT(stopwatch.Elapsed(), test::EpsilonDeadline());
+  EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
   EXPECT_EQ(2u, context);
   hss = HandleSignalsState();
   d->RemoveAwakable(&w, &hss);
@@ -236,7 +239,7 @@ TEST(SimpleDispatcherTest, BasicUnsatisfiable) {
   d->SetSatisfiableSignals(MOJO_HANDLE_SIGNAL_READABLE);
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, w.Wait(0, &context));
-  EXPECT_LT(stopwatch.Elapsed(), test::EpsilonDeadline());
+  EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
   EXPECT_EQ(3u, context);
   hss = HandleSignalsState();
   d->RemoveAwakable(&w, &hss);
@@ -253,8 +256,8 @@ TEST(SimpleDispatcherTest, BasicUnsatisfiable) {
   d->SetSatisfiableSignals(MOJO_HANDLE_SIGNAL_READABLE);
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            w.Wait(2 * test::EpsilonDeadline(), &context));
-  EXPECT_LT(stopwatch.Elapsed(), test::EpsilonDeadline());
+            w.Wait(2 * test::EpsilonTimeout().InMicroseconds(), &context));
+  EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
   EXPECT_EQ(4u, context);
   hss = HandleSignalsState();
   d->RemoveAwakable(&w, &hss);
@@ -291,7 +294,7 @@ TEST(SimpleDispatcherTest, BasicClosed) {
   EXPECT_EQ(MOJO_RESULT_OK, d->Close());
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_CANCELLED, w.Wait(MOJO_DEADLINE_INDEFINITE, &context));
-  EXPECT_LT(stopwatch.Elapsed(), test::EpsilonDeadline());
+  EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
   EXPECT_EQ(2u, context);
   // Don't need to remove waiters from closed dispatchers.
 
@@ -303,7 +306,7 @@ TEST(SimpleDispatcherTest, BasicClosed) {
   EXPECT_EQ(MOJO_RESULT_OK, d->Close());
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_CANCELLED, w.Wait(0, &context));
-  EXPECT_LT(stopwatch.Elapsed(), test::EpsilonDeadline());
+  EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
   EXPECT_EQ(3u, context);
   // Don't need to remove waiters from closed dispatchers.
 
@@ -316,8 +319,8 @@ TEST(SimpleDispatcherTest, BasicClosed) {
   EXPECT_EQ(MOJO_RESULT_OK, d->Close());
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_CANCELLED,
-            w.Wait(2 * test::EpsilonDeadline(), &context));
-  EXPECT_LT(stopwatch.Elapsed(), test::EpsilonDeadline());
+            w.Wait(2 * test::EpsilonTimeout().InMicroseconds(), &context));
+  EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
   EXPECT_EQ(4u, context);
   // Don't need to remove waiters from closed dispatchers.
 }
@@ -349,7 +352,7 @@ TEST(SimpleDispatcherTest, MAYBE_BasicThreaded) {
     // If we closed earlier, then probably we'd get a |MOJO_RESULT_CANCELLED|.
     EXPECT_EQ(MOJO_RESULT_OK, d->Close());
   }
-  EXPECT_LT(stopwatch.Elapsed(), test::EpsilonDeadline());
+  EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
   EXPECT_FALSE(did_wait);
   EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS, result);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
@@ -365,14 +368,14 @@ TEST(SimpleDispatcherTest, MAYBE_BasicThreaded) {
                                 &context, &hss);
       stopwatch.Start();
       thread.Start();
-      test::Sleep(2 * test::EpsilonDeadline());
+      base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
       d->SetSatisfiedSignals(MOJO_HANDLE_SIGNAL_READABLE);
     }  // Joins the thread.
     EXPECT_EQ(MOJO_RESULT_OK, d->Close());
   }
-  MojoDeadline elapsed = stopwatch.Elapsed();
-  EXPECT_GT(elapsed, (2 - 1) * test::EpsilonDeadline());
-  EXPECT_LT(elapsed, (2 + 1) * test::EpsilonDeadline());
+  base::TimeDelta elapsed = stopwatch.Elapsed();
+  EXPECT_GT(elapsed, (2 - 1) * test::EpsilonTimeout());
+  EXPECT_LT(elapsed, (2 + 1) * test::EpsilonTimeout());
   EXPECT_TRUE(did_wait);
   EXPECT_EQ(MOJO_RESULT_OK, result);
   EXPECT_EQ(2u, context);
@@ -389,14 +392,14 @@ TEST(SimpleDispatcherTest, MAYBE_BasicThreaded) {
                                 &context, &hss);
       stopwatch.Start();
       thread.Start();
-      test::Sleep(2 * test::EpsilonDeadline());
+      base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
       d->SetSatisfiableSignals(MOJO_HANDLE_SIGNAL_NONE);
     }  // Joins the thread.
     EXPECT_EQ(MOJO_RESULT_OK, d->Close());
   }
   elapsed = stopwatch.Elapsed();
-  EXPECT_GT(elapsed, (2 - 1) * test::EpsilonDeadline());
-  EXPECT_LT(elapsed, (2 + 1) * test::EpsilonDeadline());
+  EXPECT_GT(elapsed, (2 - 1) * test::EpsilonTimeout());
+  EXPECT_LT(elapsed, (2 + 1) * test::EpsilonTimeout());
   EXPECT_TRUE(did_wait);
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
   EXPECT_EQ(3u, context);
@@ -411,12 +414,12 @@ TEST(SimpleDispatcherTest, MAYBE_BasicThreaded) {
                               &context, &hss);
     stopwatch.Start();
     thread.Start();
-    test::Sleep(2 * test::EpsilonDeadline());
+    base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     EXPECT_EQ(MOJO_RESULT_OK, d->Close());
   }  // Joins the thread.
   elapsed = stopwatch.Elapsed();
-  EXPECT_GT(elapsed, (2 - 1) * test::EpsilonDeadline());
-  EXPECT_LT(elapsed, (2 + 1) * test::EpsilonDeadline());
+  EXPECT_GT(elapsed, (2 - 1) * test::EpsilonTimeout());
+  EXPECT_LT(elapsed, (2 + 1) * test::EpsilonTimeout());
   EXPECT_TRUE(did_wait);
   EXPECT_EQ(MOJO_RESULT_CANCELLED, result);
   EXPECT_EQ(4u, context);
@@ -428,11 +431,11 @@ TEST(SimpleDispatcherTest, MAYBE_BasicThreaded) {
     scoped_refptr<MockSimpleDispatcher> d(new MockSimpleDispatcher());
     {
       test::WaiterThread thread(d, MOJO_HANDLE_SIGNAL_READABLE,
-                                2 * test::EpsilonDeadline(), 5, &did_wait,
-                                &result, &context, &hss);
+                                2 * test::EpsilonTimeout().InMicroseconds(), 5,
+                                &did_wait, &result, &context, &hss);
       stopwatch.Start();
       thread.Start();
-      test::Sleep(1 * test::EpsilonDeadline());
+      base::PlatformThread::Sleep(1 * test::EpsilonTimeout());
       // Not what we're waiting for.
       d->SetSatisfiedSignals(MOJO_HANDLE_SIGNAL_WRITABLE);
     }  // Joins the thread (after its wait times out).
@@ -440,8 +443,8 @@ TEST(SimpleDispatcherTest, MAYBE_BasicThreaded) {
     EXPECT_EQ(MOJO_RESULT_OK, d->Close());
   }
   elapsed = stopwatch.Elapsed();
-  EXPECT_GT(elapsed, (2 - 1) * test::EpsilonDeadline());
-  EXPECT_LT(elapsed, (2 + 1) * test::EpsilonDeadline());
+  EXPECT_GT(elapsed, (2 - 1) * test::EpsilonTimeout());
+  EXPECT_LT(elapsed, (2 + 1) * test::EpsilonTimeout());
   EXPECT_TRUE(did_wait);
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, result);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
@@ -473,7 +476,7 @@ TEST(SimpleDispatcherTest, MAYBE_MultipleWaiters) {
           &did_wait[i], &result[i], &context[i], &hss[i]));
       threads.back()->Start();
     }
-    test::Sleep(2 * test::EpsilonDeadline());
+    base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     d->SetSatisfiedSignals(MOJO_HANDLE_SIGNAL_READABLE);
     EXPECT_EQ(MOJO_RESULT_OK, d->Close());
   }  // Joins the threads.
@@ -502,7 +505,7 @@ TEST(SimpleDispatcherTest, MAYBE_MultipleWaiters) {
           &did_wait[i], &result[i], &context[i], &hss[i]));
       threads.back()->Start();
     }
-    test::Sleep(2 * test::EpsilonDeadline());
+    base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     d->SetSatisfiedSignals(MOJO_HANDLE_SIGNAL_READABLE);
     // This will wake up the ones waiting to write.
     EXPECT_EQ(MOJO_RESULT_OK, d->Close());
@@ -539,9 +542,9 @@ TEST(SimpleDispatcherTest, MAYBE_MultipleWaiters) {
           &did_wait[i], &result[i], &context[i], &hss[i]));
       threads.back()->Start();
     }
-    test::Sleep(1 * test::EpsilonDeadline());
+    base::PlatformThread::Sleep(1 * test::EpsilonTimeout());
     d->SetSatisfiableSignals(MOJO_HANDLE_SIGNAL_READABLE);
-    test::Sleep(1 * test::EpsilonDeadline());
+    base::PlatformThread::Sleep(1 * test::EpsilonTimeout());
     d->SetSatisfiedSignals(MOJO_HANDLE_SIGNAL_READABLE);
     EXPECT_EQ(MOJO_RESULT_OK, d->Close());
   }  // Joins the threads.
@@ -567,17 +570,19 @@ TEST(SimpleDispatcherTest, MAYBE_MultipleWaiters) {
     ScopedVector<test::WaiterThread> threads;
     for (uint32_t i = 0; i < kNumWaiters / 2; i++) {
       threads.push_back(new test::WaiterThread(
-          d, MOJO_HANDLE_SIGNAL_READABLE, 3 * test::EpsilonDeadline(), i,
-          &did_wait[i], &result[i], &context[i], &hss[i]));
+          d, MOJO_HANDLE_SIGNAL_READABLE,
+          3 * test::EpsilonTimeout().InMicroseconds(), i, &did_wait[i],
+          &result[i], &context[i], &hss[i]));
       threads.back()->Start();
     }
     for (uint32_t i = kNumWaiters / 2; i < kNumWaiters; i++) {
       threads.push_back(new test::WaiterThread(
-          d, MOJO_HANDLE_SIGNAL_WRITABLE, 1 * test::EpsilonDeadline(), i,
-          &did_wait[i], &result[i], &context[i], &hss[i]));
+          d, MOJO_HANDLE_SIGNAL_WRITABLE,
+          1 * test::EpsilonTimeout().InMicroseconds(), i, &did_wait[i],
+          &result[i], &context[i], &hss[i]));
       threads.back()->Start();
     }
-    test::Sleep(2 * test::EpsilonDeadline());
+    base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     d->SetSatisfiedSignals(MOJO_HANDLE_SIGNAL_READABLE);
     // All those waiting for writable should have timed out.
     EXPECT_EQ(MOJO_RESULT_OK, d->Close());

@@ -5,6 +5,7 @@
 #include "mojo/edk/system/message_in_transit_queue.h"
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 
 namespace mojo {
 namespace system {
@@ -20,9 +21,7 @@ MessageInTransitQueue::~MessageInTransitQueue() {
 }
 
 void MessageInTransitQueue::Clear() {
-  for (auto* message : queue_)
-    delete message;
-  queue_.clear();
+  STLDeleteElements(&queue_);
 }
 
 void MessageInTransitQueue::Swap(MessageInTransitQueue* other) {

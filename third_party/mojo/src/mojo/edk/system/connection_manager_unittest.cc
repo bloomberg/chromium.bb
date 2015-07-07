@@ -11,6 +11,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_checker.h"
@@ -21,7 +22,6 @@
 #include "mojo/edk/system/master_connection_manager.h"
 #include "mojo/edk/system/slave_connection_manager.h"
 #include "mojo/edk/test/test_utils.h"
-#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -75,7 +75,7 @@ class TestSlaveInfo {
   base::ThreadChecker thread_checker_;
   std::string name_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(TestSlaveInfo);
+  DISALLOW_COPY_AND_ASSIGN(TestSlaveInfo);
 };
 
 // Connects the given |slave| (with the given |slave_process_delegate|) to the
@@ -138,7 +138,7 @@ class MockMasterProcessDelegate : public embedder::MasterProcessDelegate {
   unsigned on_slave_disconnect_calls_;
   std::string last_slave_disconnect_name_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(MockMasterProcessDelegate);
+  DISALLOW_COPY_AND_ASSIGN(MockMasterProcessDelegate);
 };
 
 class MockSlaveProcessDelegate : public embedder::SlaveProcessDelegate {
@@ -177,7 +177,7 @@ class MockSlaveProcessDelegate : public embedder::SlaveProcessDelegate {
 
   unsigned on_master_disconnect_calls_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(MockSlaveProcessDelegate);
+  DISALLOW_COPY_AND_ASSIGN(MockSlaveProcessDelegate);
 };
 
 class ConnectionManagerTest : public testing::Test {
@@ -197,7 +197,7 @@ class ConnectionManagerTest : public testing::Test {
   base::MessageLoop message_loop_;
   MockMasterProcessDelegate master_process_delegate_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(ConnectionManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(ConnectionManagerTest);
 };
 
 TEST_F(ConnectionManagerTest, BasicConnectSlaves) {

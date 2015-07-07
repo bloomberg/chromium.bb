@@ -5,9 +5,9 @@
 #ifndef MOJO_EDK_EMBEDDER_SIMPLE_PLATFORM_SUPPORT_H_
 #define MOJO_EDK_EMBEDDER_SIMPLE_PLATFORM_SUPPORT_H_
 
+#include "base/macros.h"
 #include "mojo/edk/embedder/platform_support.h"
 #include "mojo/edk/system/system_impl_export.h"
-#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace embedder {
@@ -17,8 +17,7 @@ namespace embedder {
 // has no state, and different instances of |SimplePlatformSupport| are mutually
 // compatible (i.e., you don't need to use a single instance of it everywhere --
 // you may simply create one whenever/wherever you need it).
-class MOJO_SYSTEM_IMPL_EXPORT SimplePlatformSupport final
-    : public PlatformSupport {
+class MOJO_SYSTEM_IMPL_EXPORT SimplePlatformSupport : public PlatformSupport {
  public:
   SimplePlatformSupport() {}
   ~SimplePlatformSupport() override {}
@@ -30,7 +29,7 @@ class MOJO_SYSTEM_IMPL_EXPORT SimplePlatformSupport final
       ScopedPlatformHandle platform_handle) override;
 
  private:
-  MOJO_DISALLOW_COPY_AND_ASSIGN(SimplePlatformSupport);
+  DISALLOW_COPY_AND_ASSIGN(SimplePlatformSupport);
 };
 
 }  // namespace embedder

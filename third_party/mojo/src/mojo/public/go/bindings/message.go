@@ -85,7 +85,7 @@ func (h *MessageHeader) Encode(encoder *Encoder) error {
 	if err := encoder.WriteUint32(h.Flags); err != nil {
 		return err
 	}
-	if h.Flags != MessageNoFlag {
+	if h.RequestId != 0 {
 		if err := encoder.WriteUint64(h.RequestId); err != nil {
 			return err
 		}
@@ -140,14 +140,14 @@ func (h *MessageHeader) Decode(decoder *Decoder) error {
 func (h *MessageHeader) dataSize() uint32 {
 	var size uint32
 	size = 2 * 4
-	if h.Flags != MessageNoFlag {
+	if h.RequestId != 0 {
 		size += 8
 	}
 	return size
 }
 
 func (h *MessageHeader) version() uint32 {
-	if h.Flags != MessageNoFlag {
+	if h.RequestId != 0 {
 		return 1
 	} else {
 		return 0

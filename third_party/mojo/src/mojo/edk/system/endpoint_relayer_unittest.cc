@@ -5,6 +5,7 @@
 #include "mojo/edk/system/endpoint_relayer.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "mojo/edk/system/channel_endpoint_id.h"
@@ -12,7 +13,6 @@
 #include "mojo/edk/system/message_in_transit_queue.h"
 #include "mojo/edk/system/message_in_transit_test_utils.h"
 #include "mojo/edk/system/test_channel_endpoint_client.h"
-#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {
@@ -84,7 +84,7 @@ class EndpointRelayerTest : public test::ChannelTestBase {
   scoped_refptr<ChannelEndpoint> endpoint1a_;
   scoped_refptr<ChannelEndpoint> endpoint1b_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(EndpointRelayerTest);
+  DISALLOW_COPY_AND_ASSIGN(EndpointRelayerTest);
 };
 
 TEST_F(EndpointRelayerTest, Basic) {
@@ -179,7 +179,7 @@ class TestFilter : public EndpointRelayer::Filter {
  private:
   MessageInTransitQueue* const filtered_messages_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(TestFilter);
+  DISALLOW_COPY_AND_ASSIGN(TestFilter);
 };
 
 TEST_F(EndpointRelayerTest, Filter) {

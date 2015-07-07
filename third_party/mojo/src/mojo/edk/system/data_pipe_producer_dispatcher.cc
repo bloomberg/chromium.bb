@@ -11,6 +11,9 @@
 namespace mojo {
 namespace system {
 
+DataPipeProducerDispatcher::DataPipeProducerDispatcher() {
+}
+
 void DataPipeProducerDispatcher::Init(scoped_refptr<DataPipe> data_pipe) {
   DCHECK(data_pipe);
   data_pipe_ = data_pipe;
@@ -30,12 +33,10 @@ DataPipeProducerDispatcher::Deserialize(Channel* channel,
     return nullptr;
   DCHECK(data_pipe);
 
-  scoped_refptr<DataPipeProducerDispatcher> dispatcher = Create();
+  scoped_refptr<DataPipeProducerDispatcher> dispatcher(
+      new DataPipeProducerDispatcher());
   dispatcher->Init(data_pipe);
   return dispatcher;
-}
-
-DataPipeProducerDispatcher::DataPipeProducerDispatcher() {
 }
 
 DataPipeProducerDispatcher::~DataPipeProducerDispatcher() {
@@ -58,7 +59,8 @@ scoped_refptr<Dispatcher>
 DataPipeProducerDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
   lock().AssertAcquired();
 
-  scoped_refptr<DataPipeProducerDispatcher> rv = Create();
+  scoped_refptr<DataPipeProducerDispatcher> rv =
+      new DataPipeProducerDispatcher();
   rv->Init(data_pipe_);
   data_pipe_ = nullptr;
   return scoped_refptr<Dispatcher>(rv.get());

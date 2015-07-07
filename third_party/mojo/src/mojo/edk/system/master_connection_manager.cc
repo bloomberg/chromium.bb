@@ -16,7 +16,6 @@
 #include "mojo/edk/system/message_in_transit.h"
 #include "mojo/edk/system/raw_channel.h"
 #include "mojo/edk/system/transport_data.h"
-#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {
@@ -34,7 +33,7 @@ static_assert(kMasterProcessIdentifier != kFirstSlaveProcessIdentifier,
 
 // |MasterConnectionManager::Helper| is not thread-safe, and must only be used
 // on its |owner_|'s private thread.
-class MasterConnectionManager::Helper final : public RawChannel::Delegate {
+class MasterConnectionManager::Helper : public RawChannel::Delegate {
  public:
   Helper(MasterConnectionManager* owner,
          ProcessIdentifier process_identifier,
@@ -62,7 +61,7 @@ class MasterConnectionManager::Helper final : public RawChannel::Delegate {
   embedder::SlaveInfo const slave_info_;
   scoped_ptr<RawChannel> raw_channel_;
 
-  MOJO_DISALLOW_COPY_AND_ASSIGN(Helper);
+  DISALLOW_COPY_AND_ASSIGN(Helper);
 };
 
 MasterConnectionManager::Helper::Helper(

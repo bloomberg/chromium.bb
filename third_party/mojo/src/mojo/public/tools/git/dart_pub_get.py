@@ -14,14 +14,11 @@ import os
 import subprocess
 import sys
 
-def pub_get(dart_sdk_path, target_directory, upgrade):
+def pub_get(dart_sdk_path, target_directory):
   cmd = [
     os.path.join(dart_sdk_path, "bin/pub")
   ]
-  if upgrade:
-    cmd.extend(["upgrade"])
-  else:
-    cmd.extend(["get"])
+  cmd.extend(["get"])
 
   # Cache the downloaded pubs inside the repo to avoid the chance of multiple
   # simultaneous builds in different repos stomping on each other.
@@ -39,7 +36,7 @@ def pub_get(dart_sdk_path, target_directory, upgrade):
 
 
 
-def main(repository_root, dart_sdk_path, dirs_to_ignore, upgrade):
+def main(repository_root, dart_sdk_path, dirs_to_ignore):
   os.chdir(repository_root)
 
   # Relativize dart_sdk_path to repository_root.
@@ -55,7 +52,7 @@ def main(repository_root, dart_sdk_path, dirs_to_ignore, upgrade):
     ignore = reduce(lambda x, y: x or f.startswith(y), dirs_to_ignore, False)
     if ignore:
       continue
-    pub_get(dart_sdk_path_from_root, os.path.dirname(f), upgrade)
+    pub_get(dart_sdk_path_from_root, os.path.dirname(f))
 
 
 if __name__ == '__main__':
@@ -83,13 +80,8 @@ if __name__ == '__main__':
                            "relative to the root of the repo. 'pub get' will "
                            "not be run for any subdirectories of these "
                            "directories.")
-  parser.add_argument("--upgrade",
-                      action="store_true",
-                      default=False,
-                      help="Upgrade pub package dependencies")
   args = parser.parse_args()
   _current_path = os.path.dirname(os.path.realpath(__file__))
   _repository_root = os.path.join(_current_path, args.repository_root)
   _dart_sdk_path = os.path.join(_current_path, args.dart_sdk_directory)
-  sys.exit(
-      main(_repository_root, _dart_sdk_path, args.dirs_to_ignore, args.upgrade))
+  sys.exit(main(_repository_root, _dart_sdk_path, args.dirs_to_ignore))

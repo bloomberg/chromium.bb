@@ -290,7 +290,6 @@ if (!is_mac) {
       "//media:shared_memory_support",
       "//mojo/application/public/cpp:cpp_for_chromium",
       "//mojo/environment:chromium",
-      "//mojo/test:test_support",
       "//net:test_support",
       "//ppapi/host",
       "//ppapi/proxy",

@@ -83,8 +83,6 @@ mojo_edk_source_set("platform") {
 
   mojo_edk_configs = [ "mojo/edk/system:system_config" ]
 
-  mojo_sdk_public_deps = [ "mojo/public/cpp/system" ]
-
   deps = [
     "//base",
     "//crypto",
@@ -114,7 +112,9 @@ mojo_edk_source_set("delegates") {
 
   mojo_edk_configs = [ "mojo/edk/system:system_config" ]
 
-  mojo_sdk_public_deps = [ "mojo/public/cpp/system" ]
+  deps = [
+    "//base",
+  ]
 }
 
 mojo_edk_source_set("embedder_unittests") {
