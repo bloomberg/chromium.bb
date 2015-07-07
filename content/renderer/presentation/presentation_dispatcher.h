@@ -74,6 +74,9 @@ class CONTENT_EXPORT PresentationDispatcher
 
   // presentation::PresentationServiceClient
   void OnScreenAvailabilityUpdated(bool available) override;
+  void OnSessionStateChanged(
+      presentation::PresentationSessionInfoPtr session_info,
+      presentation::PresentationSessionState new_state) override;
 
   void OnSessionCreated(
       blink::WebPresentationSessionClientCallbacks* callback,
@@ -81,9 +84,6 @@ class CONTENT_EXPORT PresentationDispatcher
       presentation::PresentationErrorPtr error);
   void OnDefaultSessionStarted(
       presentation::PresentationSessionInfoPtr session_info);
-  void OnSessionStateChange(
-      presentation::PresentationSessionInfoPtr session_info,
-      presentation::PresentationSessionState session_state);
   void OnSessionMessagesReceived(
       mojo::Array<presentation::SessionMessagePtr> messages);
   void DoSendMessage(const presentation::SessionMessage& session_message);

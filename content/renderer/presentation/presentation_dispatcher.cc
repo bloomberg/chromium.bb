@@ -393,15 +393,11 @@ void PresentationDispatcher::OnSessionCreated(
                  base::Unretained(this)));
 }
 
-void PresentationDispatcher::OnSessionStateChange(
+void PresentationDispatcher::OnSessionStateChanged(
     presentation::PresentationSessionInfoPtr session_info,
     presentation::PresentationSessionState session_state) {
   if (!controller_)
     return;
-
-  presentation_service_->ListenForSessionStateChange(base::Bind(
-      &PresentationDispatcher::OnSessionStateChange,
-      base::Unretained(this)));
 
   DCHECK(!session_info.is_null());
   controller_->didChangeSessionState(
@@ -445,12 +441,7 @@ void PresentationDispatcher::ConnectToPresentationServiceIfNeeded() {
   presentation_service_->ListenForDefaultSessionStart(base::Bind(
       &PresentationDispatcher::OnDefaultSessionStarted,
       base::Unretained(this)));
-
-  // TODO(imcheng): Uncomment this once it is implemented on the browser
-  // side. (crbug.com/459006)
-  // presentation_service_->ListenForSessionStateChange(base::Bind(
-  //     &PresentationDispatcher::OnSessionStateChange,
-  //     base::Unretained(this)));
+  presentation_service_->ListenForSessionStateChange();
 }
 
 void PresentationDispatcher::UpdateListeningState() {

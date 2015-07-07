@@ -190,8 +190,7 @@ class CONTENT_EXPORT PresentationServiceImpl
   void CloseSession(
       const mojo::String& presentation_url,
       const mojo::String& presentation_id) override;
-  void ListenForSessionStateChange(
-      const SessionStateCallback& callback) override;
+  void ListenForSessionStateChange() override;
   void ListenForSessionMessages(
       const SessionMessagesCallback& callback) override;
 

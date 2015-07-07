@@ -121,7 +121,7 @@ class MockPresentationServiceDelegate : public PresentationServiceDelegate {
       int render_process_id,
       int render_frame_id,
       scoped_ptr<PresentationSessionMessage> message_request,
-      const SendMessageCallback& send_message_cb) {
+      const SendMessageCallback& send_message_cb) override {
     SendMessageRawPtr(
         render_process_id,
         render_frame_id,
@@ -134,6 +134,11 @@ class MockPresentationServiceClient :
     public presentation::PresentationServiceClient {
  public:
   MOCK_METHOD1(OnScreenAvailabilityUpdated, void(bool available));
+  void OnSessionStateChanged(
+      presentation::PresentationSessionInfoPtr session_info,
+      presentation::PresentationSessionState new_state) override {
+    NOTIMPLEMENTED();
+  }
 };
 
 class PresentationServiceImplTest : public RenderViewHostImplTestHarness {

@@ -99,12 +99,10 @@ interface PresentationService {
   // Called when closeSession() is called by the frame.
   CloseSession(string presentation_url, string presentation_id);
 
-  // Called when the frame is ready to process the next state change. Returns
-  // the last session state if it’s changed since the last time the callback
-  // was called. Might cause the event fired with the initial state change.
-  ListenForSessionStateChange()
-      => (PresentationSessionInfo sessionInfo,
-          PresentationSessionState newState);
+  // Starts listening for state changes for sessions created on this frame.
+  // When state change occurs, PresentationServiceClient::OnSessionStateChanged
+  // will be invoked with the session and its new state.
+  ListenForSessionStateChange();
 
   // Called when the frame is ready to process the next batch of messages.
   // When the callback carries null messages, there is an error
@@ -114,5 +112,10 @@ interface PresentationService {
 };
 
 interface PresentationServiceClient {
+  // See PresentationSerivce::ListenForScreenAvailability.
   OnScreenAvailabilityUpdated(bool available);
+
+  // See PresentationService::ListenForSessionStateChange.
+  OnSessionStateChanged(PresentationSessionInfo sessionInfo,
+                        PresentationSessionState newState);
 };

@@ -423,8 +423,7 @@ void PresentationServiceImpl::CloseSession(
                             presentation_id);
 }
 
-void PresentationServiceImpl::ListenForSessionStateChange(
-    const SessionStateCallback& callback) {
+void PresentationServiceImpl::ListenForSessionStateChange() {
   NOTIMPLEMENTED();
 }
 
