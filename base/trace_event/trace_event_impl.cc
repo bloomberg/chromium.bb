@@ -371,11 +371,16 @@ class TraceBufferVector : public TraceBuffer {
 
   void EstimateTraceMemoryOverhead(
       TraceEventMemoryOverhead* overhead) override {
-    // Skip the in-flight chunks owned by the threads. They will be accounted
-    // by the per-thread-local dumper, see ThreadLocalEventBuffer::OnMemoryDump.
-    overhead->Add("TraceBufferVector", sizeof(*this));
+    const size_t chunks_ptr_vector_allocated_size =
+        sizeof(*this) + max_chunks_ * sizeof(decltype(chunks_)::value_type);
+    const size_t chunks_ptr_vector_resident_size =
+        sizeof(*this) + chunks_.size() * sizeof(decltype(chunks_)::value_type);
+    overhead->Add("TraceBufferVector", chunks_ptr_vector_allocated_size,
+                  chunks_ptr_vector_resident_size);
     for (size_t i = 0; i < chunks_.size(); ++i) {
       TraceBufferChunk* chunk = chunks_[i];
+      // Skip the in-flight (nullptr) chunks. They will be accounted by the
+      // per-thread-local dumpers, see ThreadLocalEventBuffer::OnMemoryDump.
       if (chunk)
         chunk->EstimateTraceMemoryOverhead(overhead);
     }
