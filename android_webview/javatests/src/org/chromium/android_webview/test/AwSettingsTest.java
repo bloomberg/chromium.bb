@@ -35,6 +35,7 @@ import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.HistoryUtils;
+import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
@@ -2833,6 +2834,44 @@ public class AwSettingsTest extends AwTestBase {
         }
     }
 
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testUpdatingUserAgentWhileLoadingCausesReload() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+                createAwTestContainerViewOnMainSync(contentClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        final AwSettings awSettings = getAwSettingsOnUiThread(awContents);
+
+        TestWebServer httpServer = null;
+        try {
+            httpServer = TestWebServer.start();
+
+            String url = httpServer.setResponseWithRunnableAction(
+                    "/about.html", "Hello, World!", null,
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            // This will update the UA string on the UI thread synchronously.
+                            awSettings.setUserAgentString("UA Override");
+                        }
+                    }
+            );
+
+            TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
+                    contentClient.getOnPageFinishedHelper();
+            int initialCallCount = onPageFinishedHelper.getCallCount();
+            loadUrlSync(awContents, onPageFinishedHelper, url);
+            // loadUrlSync only waits for a single onPageFinished, now wait for another one.
+            onPageFinishedHelper.waitForCallback(initialCallCount + 1, 1, WAIT_TIMEOUT_MS,
+                    TimeUnit.MILLISECONDS);
+            assertEquals(url, onPageFinishedHelper.getUrl());
+        } finally {
+            if (httpServer != null) {
+                httpServer.shutdown();
+            }
+        }
+    }
 
     static class ViewPair {
         private final AwTestContainerView mContainer0;
