@@ -40,12 +40,17 @@ ActiveDOMObject::ActiveDOMObject(ExecutionContext* executionContext)
 #endif
 {
     ASSERT(!executionContext || executionContext->isContextThread());
-    ++s_instanceCount;
+    // TODO(hajimehoshi): Now the leak detector can't treat vaious threads other
+    // than the main thread and worker threads. After fixing the leak detector,
+    // let's count objects on other threads as many as possible.
+    if (isMainThread())
+        ++s_instanceCount;
 }
 
 ActiveDOMObject::~ActiveDOMObject()
 {
-    --s_instanceCount;
+    if (isMainThread())
+        --s_instanceCount;
 
     // ActiveDOMObject may be inherited by a sub-class whose life-cycle
     // exceeds that of the associated ExecutionContext. In those cases,
@@ -104,6 +109,12 @@ void ActiveDOMObject::didMoveToNewExecutionContext(ExecutionContext* context)
     }
 
     resume();
+}
+
+unsigned ActiveDOMObject::instanceCount()
+{
+    ASSERT(isMainThread());
+    return s_instanceCount;
 }
 
 } // namespace blink

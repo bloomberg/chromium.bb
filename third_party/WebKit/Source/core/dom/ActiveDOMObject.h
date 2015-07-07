@@ -35,7 +35,7 @@ namespace blink {
 
 class CORE_EXPORT ActiveDOMObject : public ContextLifecycleObserver {
 public:
-    static unsigned instanceCount() { return s_instanceCount; }
+    static unsigned instanceCount();
 
     ActiveDOMObject(ExecutionContext*);
 
