@@ -30,12 +30,17 @@ namespace {
 
 base::TimeDelta gTimeDeltaForTesting;
 int gCurrentRequestID = -1;
+const char kPngExtension[] = ".png";
 
 // The requirement for now is an image/png that is at least 144x144.
 const int kIconMinimumSize = 144;
 bool DoesManifestContainRequiredIcon(const content::Manifest& manifest) {
   for (const auto& icon : manifest.icons) {
-    if (!base::EqualsASCII(icon.type.string(), "image/png"))
+    // The type field is optional. If it isn't present, fall back on checking
+    // the src extension, and allow the icon if the extension ends with png.
+    if (!base::EqualsASCII(icon.type.string(), "image/png") &&
+        !(icon.type.is_null() &&
+          base::EndsWith(icon.src.ExtractFileName(), kPngExtension, false)))
       continue;
 
     for (const auto& size : icon.sizes) {

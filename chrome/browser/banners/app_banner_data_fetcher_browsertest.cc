@@ -113,6 +113,21 @@ class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
     EXPECT_EQ("sw_activated", observer.last_navigation_url().ref());
   }
 
+  void RunBannerTest(const std::string& manifest_page, bool expectation) {
+    std::string valid_page(manifest_page);
+    GURL test_url = embedded_test_server()->GetURL(valid_page);
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+
+    LoadURLAndWaitForServiceWorker(test_url);
+    RunFetcher(web_contents->GetURL(), std::string(), false);
+
+    // Advance by a day, then visit the page again to trigger the banner.
+    AppBannerDataFetcher::SetTimeDeltaForTesting(1);
+    LoadURLAndWaitForServiceWorker(test_url);
+    RunFetcher(web_contents->GetURL(), std::string(), expectation);
+  }
+
  private:
   std::string non_web_platform_;
   base::Closure quit_closure_;
@@ -120,18 +135,17 @@ class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
 };
 
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, WebAppBannerCreated) {
-  std::string valid_page("/banners/manifest_test_page.html");
-  GURL test_url = embedded_test_server()->GetURL(valid_page);
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  RunBannerTest("/banners/manifest_test_page.html", true);
+}
 
-  LoadURLAndWaitForServiceWorker(test_url);
-  RunFetcher(web_contents->GetURL(), std::string(), false);
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
+                       WebAppBannerNoTypeInManifest) {
+  RunBannerTest("/banners/manifest_no_type_test_page.html", true);
+}
 
-  // Advance by a day, then visit the page again to trigger the banner.
-  AppBannerDataFetcher::SetTimeDeltaForTesting(1);
-  LoadURLAndWaitForServiceWorker(test_url);
-  RunFetcher(web_contents->GetURL(), std::string(), true);
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest,
+                       WebAppBannerNoTypeInManifestCapsExtension) {
+  RunBannerTest("/banners/manifest_no_type_caps_test_page.html", true);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, PlayAppManifest) {
@@ -150,78 +164,23 @@ IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, PlayAppManifest) {
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, NoManifest) {
-  std::string valid_page("/banners/no_manifest_test_page.html");
-  GURL test_url = embedded_test_server()->GetURL(valid_page);
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  LoadURLAndWaitForServiceWorker(test_url);
-  RunFetcher(web_contents->GetURL(), std::string(), false);
-
-  // Advance by a day, then visit the page again.  Still shouldn't see a banner.
-  AppBannerDataFetcher::SetTimeDeltaForTesting(1);
-  LoadURLAndWaitForServiceWorker(test_url);
-  RunFetcher(web_contents->GetURL(), std::string(), false);
+  RunBannerTest("/banners/no_manifest_test_page.html", false);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, CancelBanner) {
-  std::string valid_page("/banners/cancel_test_page.html");
-  GURL test_url = embedded_test_server()->GetURL(valid_page);
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  LoadURLAndWaitForServiceWorker(test_url);
-  RunFetcher(web_contents->GetURL(), std::string(), false);
-
-  // Advance by a day, then visit the page again.  Still shouldn't see a banner.
-  AppBannerDataFetcher::SetTimeDeltaForTesting(1);
-  LoadURLAndWaitForServiceWorker(test_url);
-  RunFetcher(web_contents->GetURL(), std::string(), false);
+  RunBannerTest("/banners/cancel_test_page.html", false);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, PromptBanner) {
-  std::string valid_page("/banners/prompt_test_page.html");
-  GURL test_url = embedded_test_server()->GetURL(valid_page);
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  LoadURLAndWaitForServiceWorker(test_url);
-  RunFetcher(web_contents->GetURL(), std::string(), false);
-
-  // Advance by a day, then visit the page again to prompt a banner.
-  AppBannerDataFetcher::SetTimeDeltaForTesting(1);
-  LoadURLAndWaitForServiceWorker(test_url);
-  RunFetcher(web_contents->GetURL(), std::string(), true);
+  RunBannerTest("/banners/prompt_test_page.html", true);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, PromptBannerInHandler) {
-  std::string valid_page("/banners/prompt_in_handler_test_page.html");
-  GURL test_url = embedded_test_server()->GetURL(valid_page);
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  LoadURLAndWaitForServiceWorker(test_url);
-  RunFetcher(web_contents->GetURL(), std::string(), false);
-
-  // Advance by a day, then visit the page again to prompt a banner.
-  AppBannerDataFetcher::SetTimeDeltaForTesting(1);
-  LoadURLAndWaitForServiceWorker(test_url);
-  RunFetcher(web_contents->GetURL(), std::string(), true);
+  RunBannerTest("/banners/prompt_in_handler_test_page.html", true);
 }
 
 IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, WebAppBannerInIFrame) {
-  std::string valid_page("/banners/iframe_test_page.html");
-  GURL test_url = embedded_test_server()->GetURL(valid_page);
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  LoadURLAndWaitForServiceWorker(test_url);
-  RunFetcher(web_contents->GetURL(), std::string(), false);
-
-  // Advance by a day, then visit the page again to trigger the banner.
-  AppBannerDataFetcher::SetTimeDeltaForTesting(1);
-  LoadURLAndWaitForServiceWorker(test_url);
-  RunFetcher(web_contents->GetURL(), std::string(), false);
+  RunBannerTest("/banners/iframe_test_page.html", false);
 }
 
 }  // namespace banners
