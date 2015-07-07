@@ -13,6 +13,7 @@ import cPickle
 from chromite.cbuildbot import builders
 from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import config_lib
+from chromite.cbuildbot import config_lib_unittest
 from chromite.cbuildbot import constants
 from chromite.cbuildbot.builders import generic_builders
 from chromite.lib import cros_test_lib
@@ -794,3 +795,23 @@ class TemplateTest(GenerateChromeosConfigTestBase):
           else:
             msg = '%s should have %s as template' % (name, other)
             self.assertFalse(name, msg)
+
+
+class SiteInterfaceTest(GenerateChromeosConfigTestBase):
+  """Test enforcing site parameters for a chromeos SiteConfig."""
+
+  def testAssertSiteParameters(self):
+    """Test that a chromeos SiteConfig contains the necessary parameters."""
+    # Check that our config contains site-independent parameters.
+    self.assertTrue(
+        config_lib_unittest.AssertSiteIndependentParameters(self.all_configs))
+
+    # Enumerate the necessary chromeos site parameter keys.
+    # All keys must be documented.
+    # TODO (msartori): Fill this list in.
+    chromeos_params = [
+    ]
+
+    # Check that our config contains all chromeos specific site parameters.
+    site_params = self.all_configs.params
+    self.assertTrue(all([x in site_params for x in chromeos_params]))

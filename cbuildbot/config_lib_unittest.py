@@ -55,6 +55,26 @@ def MockSiteConfig():
   return result
 
 
+def AssertSiteIndependentParameters(site_config):
+  """Helper function to test that SiteConfigs contain site-independent values.
+
+  Args:
+    site_config: A SiteConfig object.
+
+  Returns:
+    A boolean. True if the config contained all site-independent values.
+    False otherwise.
+  """
+  # Enumerate the necessary site independent parameter keys.
+  # All keys must be documented.
+  # TODO (msartori): Fill in this list.
+  site_independent_params = [
+  ]
+
+  site_params = site_config.params
+  return all([x in site_params for x in site_independent_params])
+
+
 class _CustomObject(object):
   """Simple object. For testing deepcopy."""
 
