@@ -9,8 +9,10 @@ from __future__ import print_function
 import copy
 import itertools
 import json
+import os
 
 from chromite.cbuildbot import constants
+from chromite.lib import factory
 from chromite.lib import osutils
 
 
@@ -1163,3 +1165,18 @@ def _CreateBuildConfig(default, build_dict, templates):
                                for child in child_configs]
 
   return result
+
+
+@factory.CachedFunctionCall
+def GetConfig():
+  """Load the current SiteConfig.
+
+  Returns:
+    SiteConfig instance to use for this build.
+  """
+  # If there is no site specific config, and default is allowed...
+  if not os.path.exists(constants.SITE_CONFIG_FILE):
+    # Fall back to default Chrome OS configuration.
+    return LoadConfigFromFile(constants.CHROMEOS_CONFIG_FILE)
+
+  return LoadConfigFromFile(constants.SITE_CONFIG_FILE)

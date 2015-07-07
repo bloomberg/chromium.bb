@@ -1024,27 +1024,6 @@ def _SetupConnections(options, build_config):
     graphite.StatsFactory.SetupMock()
 
 
-def _SetupSiteConfig(options):
-  """Setup our SiteConfig is specified or preset already.
-
-  Args:
-    options: Parsed command line options.
-
-  Returns:
-    SiteConfig instance to use for this build.
-  """
-  if options.config_repo:
-    raise NotImplementedError('Can\'t yet fetch a site configuration.')
-
-  # Use the site specific config, if we specified a site config, or if it
-  # is already present because we are in a repo checkout that specifies one.
-  if options.config_repo or os.path.exists(constants.SITE_CONFIG_FILE):
-    return config_lib.LoadConfigFromFile(constants.SITE_CONFIG_FILE)
-
-  # Fall back to default Chrome OS configuration.
-  return config_lib.LoadConfigFromFile(constants.CHROMEOS_CONFIG_FILE)
-
-
 # TODO(build): This function is too damn long.
 def main(argv):
   # Turn on strict sudo checks.
@@ -1056,8 +1035,14 @@ def main(argv):
   parser = _CreateParser()
   options, args = _ParseCommandLine(parser, argv)
 
+
+  if options.config_repo:
+    raise NotImplementedError('Can\'t yet fetch a site configuration.')
+    # Reminder that we need to test this when things are implemented.
+    # assert os.path.exists(constants.SITE_CONFIG_FILE)
+
   # Fetch our site_config now, because we need it to do anything else.
-  site_config = _SetupSiteConfig(options)
+  site_config = config_lib.GetConfig()
 
   if options.list:
     _PrintValidConfigs(site_config, options.print_all)

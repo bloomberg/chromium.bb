@@ -6,53 +6,12 @@
 
 from __future__ import print_function
 
-import mock
-import os
-
-from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.lib import cros_test_lib
 from chromite.scripts import cbuildbot
 
 
 # pylint: disable=protected-access
-
-
-class SiteConfigTests(cros_test_lib.MockTestCase):
-  """Test cbuildbot._SetupSiteConfig."""
-  def setUp(self):
-    self.options = mock.Mock()
-    self.options.config_repo = None
-
-    self.expected_result = mock.Mock()
-
-    self.exists_mock = self.PatchObject(os.path, 'exists')
-    self.load_mock = self.PatchObject(config_lib, 'LoadConfigFromFile',
-                                      return_value=self.expected_result)
-
-  def testDefaultChromeOsBehavior(self):
-    # Setup Fakes and Mocks.
-    self.exists_mock.return_value = False
-
-    # Run Tests
-    result = cbuildbot._SetupSiteConfig(self.options)
-
-    # Evaluate Results
-    self.assertIs(result, self.expected_result)
-    self.load_mock.assert_called_once_with(constants.CHROMEOS_CONFIG_FILE)
-
-  def testDefaultSiteBehavior(self):
-    # Setup Fakes and Mocks.
-    self.exists_mock.return_value = True
-
-    # Run Tests
-    result = cbuildbot._SetupSiteConfig(self.options)
-
-    # Evaluate Results
-    self.assertIs(result, self.expected_result)
-    self.load_mock.assert_called_once_with(constants.SITE_CONFIG_FILE)
-
-  # TODO(dgarrett): Test a specified site URL, when it's implemented.
 
 
 class IsDistributedBuilderTest(cros_test_lib.TestCase):
