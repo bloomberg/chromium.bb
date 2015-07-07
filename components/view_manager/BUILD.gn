@@ -123,10 +123,13 @@ source_set("lib") {
     "//mojo/converters/input_events",
     "//mojo/converters/surfaces",
     "//third_party/mojo/src/mojo/public/cpp/bindings:callback",
-    "//ui/mojo/geometry:interfaces",
-    "//ui/mojo/events:interfaces",
+    "//ui/events",
+    "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/mojo/events:interfaces",
+    "//ui/mojo/geometry:interfaces",
+    "//ui/platform_window:platform_impls",
   ]
 }
 

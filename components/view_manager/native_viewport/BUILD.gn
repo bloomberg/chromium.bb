@@ -8,8 +8,6 @@ source_set("native_viewport") {
   sources = [
     "onscreen_context_provider.cc",
     "onscreen_context_provider.h",
-    "platform_viewport.h",
-    "platform_viewport_common.cc",
   ]
 
   deps = [
@@ -19,14 +17,8 @@ source_set("native_viewport") {
     "//gpu/command_buffer/service",
     "//mojo/application/public/cpp",
     "//mojo/common:tracing_impl",
-    "//mojo/converters/geometry",
-    "//mojo/converters/input_events",
-    "//ui/events",
-    "//ui/events/platform",
     "//ui/gfx",
-    "//ui/gfx/geometry",
     "//ui/gl",
     "//ui/mojo/geometry:interfaces",
-    "//ui/platform_window:platform_impls",
   ]
 }

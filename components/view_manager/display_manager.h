@@ -12,11 +12,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "components/view_manager/display_manager_delegate.h"
-#include "components/view_manager/native_viewport/platform_viewport.h"
 #include "components/view_manager/public/interfaces/display.mojom.h"
 #include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/callback.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/platform_window/platform_window_delegate.h"
 
 namespace cc {
 class SurfaceIdAllocator;
@@ -33,6 +33,10 @@ class OnscreenContextProvider;
 namespace mojo {
 class ApplicationImpl;
 }  // namespace mojo
+
+namespace ui {
+class PlatformWindow;
+}
 
 namespace view_manager {
 
@@ -75,7 +79,7 @@ class DisplayManager {
 // actually display.
 class DefaultDisplayManager :
     public DisplayManager,
-    public native_viewport::PlatformViewport::Delegate {
+    public ui::PlatformWindowDelegate {
  public:
   DefaultDisplayManager(bool is_headless,
                         mojo::ApplicationImpl* app_impl,
@@ -92,15 +96,19 @@ class DefaultDisplayManager :
   void WantToDraw();
   void Draw();
   void DidDraw();
+  void UpdateMetrics(const gfx::Size& size, float device_pixel_ratio);
 
-  // PlatformViewport::Delegate implementation:
+  // ui::PlatformWindowDelegate:
+  void OnBoundsChanged(const gfx::Rect& new_bounds) override;
+  void OnDamageRect(const gfx::Rect& damaged_region) override;
+  void DispatchEvent(ui::Event* event) override;
+  void OnCloseRequest() override;
+  void OnClosed() override;
+  void OnWindowStateChanged(ui::PlatformWindowState new_state) override;
+  void OnLostCapture() override;
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget,
                                     float device_pixel_ratio) override;
-  void OnAcceleratedWidgetDestroyed() override;
-  void OnEvent(mojo::EventPtr event) override;
-  void OnMetricsChanged(const gfx::Size& size,
-                        float device_scale_factor) override;
-  void OnDestroyed() override;
+  void OnActivationChanged(bool active) override;
 
   bool is_headless_;
   mojo::ApplicationImpl* app_impl_;
@@ -114,7 +122,7 @@ class DefaultDisplayManager :
 
   mojo::DisplayPtr display_;
   scoped_ptr<native_viewport::OnscreenContextProvider> context_provider_;
-  scoped_ptr<native_viewport::PlatformViewport> platform_viewport_;
+  scoped_ptr<ui::PlatformWindow> platform_window_;
 
   base::WeakPtrFactory<DefaultDisplayManager> weak_factory_;
 
