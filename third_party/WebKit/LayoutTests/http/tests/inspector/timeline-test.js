@@ -90,6 +90,7 @@ InspectorTest.startTimeline = function(callback)
         callback();
     }
     panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, onRecordingStarted, this)
+    panel._enableJSSamplingSettingSetting.set(false);
     panel.toggleTimelineButton.element.click();
 };
 
