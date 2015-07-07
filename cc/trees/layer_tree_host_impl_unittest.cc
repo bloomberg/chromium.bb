@@ -7209,7 +7209,7 @@ TEST_F(LayerTreeHostImplWithTopControlsTest,
 
 TEST_F(LayerTreeHostImplWithTopControlsTest,
        TopControlsScrollDeltaInOverScroll) {
-  // test varifies that the overscroll delta should not have accumulated in
+  // Verifies that the overscroll delta should not have accumulated in
   // the top controls if we do a hide and show without releasing finger.
 
   LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 200));

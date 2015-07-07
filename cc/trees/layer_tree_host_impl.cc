@@ -2630,22 +2630,18 @@ static gfx::Vector2dF ScrollLayerWithLocalDelta(
 gfx::Vector2dF LayerTreeHostImpl::ScrollLayer(LayerImpl* layer_impl,
                                               const gfx::Vector2dF& delta,
                                               const gfx::Point& viewport_point,
-                                              bool is_wheel_scroll) {
-  // Gesture events need to be transformed from viewport coordinates to
-  // local layer coordinates so that the scrolling contents exactly follow
-  // the user's finger. In contrast, wheel events represent a fixed amount
-  // of scrolling so we can just apply them directly, but the page scale
-  // factor is applied to the scroll delta.
-  if (is_wheel_scroll) {
-    float scale_factor = active_tree()->current_page_scale_factor();
-    return ScrollLayerWithLocalDelta(layer_impl,
-                                     delta,
-                                     scale_factor);
-  }
-
-  return ScrollLayerWithViewportSpaceDelta(layer_impl,
-                                           viewport_point,
-                                           delta);
+                                              bool is_direct_manipulation) {
+  // Events representing direct manipulation of the screen (such as gesture
+  // events) need to be transformed from viewport coordinates to local layer
+  // coordinates so that the scrolling contents exactly follow the user's
+  // finger. In contrast, events not representing direct manipulation of the
+  // screen (such as wheel events) represent a fixed amount of scrolling so we
+  // can just apply them directly, but the page scale factor is applied to the
+  // scroll delta.
+  if (is_direct_manipulation)
+    return ScrollLayerWithViewportSpaceDelta(layer_impl, viewport_point, delta);
+  float scale_factor = active_tree()->current_page_scale_factor();
+  return ScrollLayerWithLocalDelta(layer_impl, delta, scale_factor);
 }
 
 static LayerImpl* nextLayerInScrollOrder(LayerImpl* layer) {
@@ -2666,7 +2662,6 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
   gfx::Vector2dF unused_root_delta;
   bool did_scroll_x = false;
   bool did_scroll_y = false;
-  bool did_scroll_top_controls = false;
 
   if (pinch_gesture_active_ && settings().invert_viewport_scroll_order) {
     // Scrolls during a pinch gesture should pan the visual viewport, rather
@@ -2687,28 +2682,24 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
     gfx::Vector2dF applied_delta;
     if (layer_impl == InnerViewportScrollLayer()) {
       bool affect_top_controls = true;
-      Viewport::ScrollResult result = viewport()->ScrollBy(pending_delta,
-                                                           viewport_point,
-                                                           wheel_scrolling_,
-                                                           affect_top_controls);
-      applied_delta = result.applied_delta;
-      unused_root_delta = result.unused_scroll_delta;
-      did_scroll_top_controls = result.top_controls_applied_delta.y() != 0;
+      applied_delta =
+          viewport()->ScrollBy(pending_delta, viewport_point, !wheel_scrolling_,
+                               affect_top_controls);
+      unused_root_delta = pending_delta - applied_delta;
     } else {
-      applied_delta = ScrollLayer(layer_impl,
-                                  pending_delta,
-                                  viewport_point,
-                                  wheel_scrolling_);
+      applied_delta = ScrollLayer(layer_impl, pending_delta, viewport_point,
+                                  !wheel_scrolling_);
     }
 
     // If the layer wasn't able to move, try the next one in the hierarchy.
     const float kEpsilon = 0.1f;
-    bool did_move_layer_x = std::abs(applied_delta.x()) > kEpsilon;
-    bool did_move_layer_y = std::abs(applied_delta.y()) > kEpsilon;
-    did_scroll_x |= did_move_layer_x;
-    did_scroll_y |= did_move_layer_y;
+    bool did_layer_consume_delta_x = std::abs(applied_delta.x()) > kEpsilon;
+    bool did_layer_consume_delta_y = std::abs(applied_delta.y()) > kEpsilon;
 
-    if (did_move_layer_x || did_move_layer_y) {
+    did_scroll_x |= did_layer_consume_delta_x;
+    did_scroll_y |= did_layer_consume_delta_y;
+
+    if (did_layer_consume_delta_x || did_layer_consume_delta_y) {
       did_lock_scrolling_layer_ = true;
 
       // When scrolls are allowed to bubble, it's important that the original
@@ -2762,7 +2753,7 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
   accumulated_root_overscroll_ += unused_root_delta;
 
   InputHandlerScrollResult scroll_result;
-  scroll_result.did_scroll = did_scroll_content || did_scroll_top_controls;
+  scroll_result.did_scroll = did_scroll_content;
   scroll_result.did_overscroll_root = !unused_root_delta.IsZero();
   scroll_result.accumulated_root_overscroll = accumulated_root_overscroll_;
   scroll_result.unused_scroll_delta = unused_root_delta;

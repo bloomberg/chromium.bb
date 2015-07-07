@@ -25,12 +25,6 @@ class CC_EXPORT Viewport {
   // determined.
   static const int kPinchZoomSnapMarginDips = 100;
 
-  struct ScrollResult {
-    gfx::Vector2dF applied_delta;
-    gfx::Vector2dF unused_scroll_delta;
-    gfx::Vector2dF top_controls_applied_delta;
-  };
-
   static scoped_ptr<Viewport> Create(LayerTreeHostImpl* host_impl);
 
   // Differs from scrolling in that only the visual viewport is moved, without
@@ -39,10 +33,10 @@ class CC_EXPORT Viewport {
 
   // Scrolls the viewport, applying the unique bubbling between the inner and
   // outer viewport. Scrolls can be consumed by top controls.
-  ScrollResult ScrollBy(const gfx::Vector2dF& delta,
-                        const gfx::Point& viewport_point,
-                        bool is_wheel_scroll,
-                        bool affect_top_controls);
+  gfx::Vector2dF ScrollBy(const gfx::Vector2dF& delta,
+                          const gfx::Point& viewport_point,
+                          bool is_direct_manipulation,
+                          bool affect_top_controls);
 
   void PinchUpdate(float magnify_delta, const gfx::Point& anchor);
   void PinchEnd();
