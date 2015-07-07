@@ -1050,7 +1050,7 @@
     'notifications': ['peter+watch@chromium.org',
                       'mlamouri+watch-notifications@chromium.org'],
     'npapi_headers': ['stuartmorgan@chromium.org'],
-    'ntp': ['estade+watch@chromium.org', 'dbeam+watch-ntp@chromium.org',
+    'ntp': ['dbeam+watch-ntp@chromium.org',
             'pedrosimonetti+watch@chromium.org'],
     'omnibox': ['suzhe@chromium.org'],
     'options': ['dbeam+watch-options@chromium.org',
