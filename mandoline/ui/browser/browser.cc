@@ -33,27 +33,18 @@ gfx::Size GetInitialViewportSize() {
 
 }  // namespace
 
-Browser::Browser(mojo::ApplicationImpl* app, BrowserDelegate* delegate)
+Browser::Browser(mojo::ApplicationImpl* app,
+                 BrowserDelegate* delegate,
+                 const GURL& default_url)
     : view_manager_init_(app, this, this),
       root_(nullptr),
       content_(nullptr),
       omnibox_(nullptr),
+      default_url_(default_url),
       navigator_host_(this),
       app_(app),
       delegate_(delegate) {
   ui_.reset(BrowserUI::Create(this, app));
-
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  base::CommandLine::StringVector args = command_line->GetArgs();
-  if (args.empty()) {
-    default_url_ = "http://www.google.com/";
-  } else {
-#if defined(OS_WIN)
-    default_url_ = base::WideToUTF8(args[0]);
-#else
-    default_url_ = args[0];
-#endif
-  }
 }
 
 Browser::~Browser() {
@@ -83,9 +74,9 @@ void Browser::OnDevicePixelRatioAvailable() {
   // Now that we're ready, either load a pending url or the default url.
   if (pending_request_) {
     Embed(pending_request_.Pass());
-  } else if (!default_url_.empty()) {
+  } else if (default_url_.is_valid()) {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From(default_url_);
+    request->url = mojo::String::From(default_url_.spec());
     Embed(request.Pass());
   }
 }
