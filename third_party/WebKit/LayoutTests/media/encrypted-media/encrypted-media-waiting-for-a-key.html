@@ -14,7 +14,7 @@
             {
                 var video = document.getElementById('testVideo');
                 var mediaKeySession = null;
-                var sessionReadyReceived = false;
+                var hasSessionUpdateSucceeded = false;
                 var encryptedEventCount = 0;
                 var waitingForKeyEvent = true;
 
@@ -67,7 +67,7 @@
                 {
                     var jwkSet = stringToUint8Array(createJWKSet(createJWK(keyId, rawKey)));
                     mediaKeySession.update(jwkSet).then(function(result) {
-                        sessionReadyReceived = true;
+                        hasSessionUpdateSucceeded = true;
                     }).catch(function(error) {
                         forceTestFailureFromPromise(test, error);
                     });
@@ -82,7 +82,7 @@
 
                 function onTimeUpdate(event)
                 {
-                    if (event.target.currentTime < 0.5 || !sessionReadyReceived)
+                    if (event.target.currentTime < 0.5 || !hasSessionUpdateSucceeded)
                         return;
 
                     test.done();

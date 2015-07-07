@@ -14,7 +14,7 @@
             {
                 var video = document.getElementById('testVideo');
                 var mediaKeySession = null;
-                var sessionReadyReceived = false;
+                var hasSessionUpdateSucceeded = false;
                 var encryptedEventCount = 0;
 
                 var rawKey = new Uint8Array([0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14, 0xd2, 0x7b,
@@ -52,7 +52,7 @@
                     var keyId = extractSingleKeyIdFromMessage(event.message);
                     var jwkSet = stringToUint8Array(createJWKSet(createJWK(keyId, rawKey)));
                     mediaKeySession.update(jwkSet).then(function(result) {
-                        sessionReadyReceived = true;
+                        hasSessionUpdateSucceeded = true;
                     }).catch(function(error) {
                         forceTestFailureFromPromise(test, error);
                     });
@@ -67,7 +67,7 @@
 
                 function onTimeUpdate(event)
                 {
-                    if (event.target.currentTime < 0.2 || !sessionReadyReceived)
+                    if (event.target.currentTime < 0.2 || !hasSessionUpdateSucceeded)
                         return;
 
                     // Reload the page to catch any possible teardown issues.
