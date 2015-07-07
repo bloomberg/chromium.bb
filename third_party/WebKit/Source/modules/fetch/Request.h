@@ -53,14 +53,13 @@ public:
     String credentials() const;
 
     // From Request.idl:
-    Request* clone(ExceptionState&) const;
+    Request* clone(ExceptionState&);
 
     FetchRequestData* passRequestData();
 
     void populateWebServiceWorkerRequest(WebServiceWorkerRequest&) const;
 
-    void setBodyBlobHandle(PassRefPtr<BlobDataHandle>);
-    bool hasBody() const { return m_request->blobDataHandle(); }
+    bool hasBody() const { return m_request->buffer(); }
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -69,11 +68,12 @@ private:
     Request(ExecutionContext*, const WebServiceWorkerRequest&);
     Request(ExecutionContext*, FetchRequestData*, Headers*);
 
+    void setBuffer(BodyStreamBuffer*);
+    void refreshBody();
+
     static Request* createRequestWithRequestOrString(ScriptState*, Request*, const String&, const RequestInit&, ExceptionState&);
     void clearHeaderList();
 
-    PassRefPtr<BlobDataHandle> blobDataHandle() const override;
-    BodyStreamBuffer* buffer() const override;
     String mimeType() const override;
 
     const Member<FetchRequestData> m_request;

@@ -363,7 +363,7 @@ public:
                 return Done;
             m_readerContext->ensureStartLoader();
             Result r = m_reader->read(data, size, flags, readSize);
-            if (r != ShouldWait) {
+            if (r != ShouldWait && !(r == Ok && *readSize == 0)) {
                 // We read non-empty data, so we cannot use the blob data
                 // handle which represents the whole data.
                 m_readerContext->clearBlobDataHandleForDrain();
@@ -377,7 +377,7 @@ public:
                 return Done;
             m_readerContext->ensureStartLoader();
             Result r = m_reader->beginRead(buffer, flags, available);
-            if (r != ShouldWait) {
+            if (r != ShouldWait && !(r == Ok && *available == 0)) {
                 // We read non-empty data, so we cannot use the blob data
                 // handle which represents the whole data.
                 m_readerContext->clearBlobDataHandleForDrain();

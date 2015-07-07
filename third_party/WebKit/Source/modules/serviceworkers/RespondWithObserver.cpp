@@ -23,67 +23,6 @@
 #include <v8.h>
 
 namespace blink {
-namespace {
-
-class StreamUploader : public BodyStreamBuffer::Observer {
-public:
-    StreamUploader(BodyStreamBuffer* buffer, Stream* outStream)
-        : m_buffer(buffer), m_outStream(outStream)
-    {
-    }
-    ~StreamUploader() override { }
-    void onWrite() override
-    {
-        bool needToFlush = false;
-        while (RefPtr<DOMArrayBuffer> buf = m_buffer->read()) {
-            needToFlush = true;
-            m_outStream->addData(static_cast<const char*>(buf->data()), buf->byteLength());
-        }
-        if (needToFlush)
-            m_outStream->flush();
-    }
-    void onClose() override
-    {
-        m_outStream->finalize();
-        cleanup();
-    }
-    void onError() override
-    {
-        // If the stream is aborted soon after the stream is registered to the
-        // StreamRegistry, ServiceWorkerURLRequestJob may not notice the error
-        // and continue waiting forever.
-        // FIXME: Add new message to report the error to the browser process.
-        m_outStream->abort();
-        cleanup();
-    }
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_buffer);
-        visitor->trace(m_outStream);
-        BodyStreamBuffer::Observer::trace(visitor);
-    }
-    void start()
-    {
-        m_buffer->registerObserver(this);
-        onWrite();
-        if (m_buffer->hasError())
-            return onError();
-        if (m_buffer->isClosed())
-            return onClose();
-    }
-
-private:
-    void cleanup()
-    {
-        m_buffer->unregisterObserver();
-        m_buffer.clear();
-        m_outStream.clear();
-    }
-    Member<BodyStreamBuffer> m_buffer;
-    Member<Stream> m_outStream;
-};
-
-} // namespace
 
 class RespondWithObserver::ThenFunction final : public ScriptFunction {
 public:
@@ -212,16 +151,20 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
     }
 
     response->lockBody(Body::PassBody);
-    if (BodyStreamBuffer* buffer = response->internalBuffer()) {
-        if (buffer == response->buffer() && response->isBodyConsumed())
-            buffer = response->createDrainingStream();
+    if (OwnPtr<DrainingBodyStreamBuffer> buffer = response->createInternalDrainingStream()) {
         WebServiceWorkerResponse webResponse;
         response->populateWebServiceWorkerResponse(webResponse);
+        if (RefPtr<BlobDataHandle> blobDataHandle = buffer->drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::AllowBlobWithInvalidSize)) {
+            webResponse.setBlobDataHandle(blobDataHandle);
+            ServiceWorkerGlobalScopeClient::from(executionContext())->didHandleFetchEvent(m_eventID, webResponse);
+            m_state = Done;
+            return;
+        }
         Stream* outStream = Stream::create(executionContext(), "");
         webResponse.setStreamURL(outStream->url());
         ServiceWorkerGlobalScopeClient::from(executionContext())->didHandleFetchEvent(m_eventID, webResponse);
-        StreamUploader* uploader = new StreamUploader(buffer, outStream);
-        uploader->start();
+        FetchDataLoader* loader = FetchDataLoader::createLoaderAsStream(outStream);
+        buffer->startLoading(loader, nullptr);
         m_state = Done;
         return;
     }

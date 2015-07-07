@@ -19,6 +19,7 @@ namespace blink {
 
 class Blob;
 class BodyStreamBuffer;
+class DrainingBodyStreamBuffer;
 class DOMArrayBuffer;
 class ExceptionState;
 class ResponseInit;
@@ -57,17 +58,19 @@ public:
     // From Response.idl:
     Response* clone(ExceptionState&);
 
-    void populateWebServiceWorkerResponse(WebServiceWorkerResponse&);
+    // Does not call response.setBlobDataHandle().
+    void populateWebServiceWorkerResponse(WebServiceWorkerResponse& /* response */);
 
     bool hasBody() const;
 
-    PassRefPtr<BlobDataHandle> blobDataHandle() const override;
-    BodyStreamBuffer* buffer() const override;
     String mimeType() const override;
-
-    PassRefPtr<BlobDataHandle> internalBlobDataHandle() const;
-    BodyStreamBuffer* internalBuffer() const;
     String internalMIMEType() const;
+
+    PassOwnPtr<DrainingBodyStreamBuffer> createInternalDrainingStream();
+
+    // Only for tests (null checks and identity checks).
+    void* bufferForTest() const;
+    void* internalBufferForTest() const;
 
     DECLARE_VIRTUAL_TRACE();
 

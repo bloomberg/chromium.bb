@@ -8,6 +8,9 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/loader/ThreadableLoader.h"
+#include "modules/fetch/BodyStreamBuffer.h"
+#include "modules/fetch/DataConsumerTee.h"
+#include "modules/fetch/FetchBlobDataConsumerHandle.h"
 #include "modules/fetch/FetchHeaderList.h"
 #include "platform/network/ResourceRequest.h"
 #include "public/platform/WebServiceWorkerRequest.h"
@@ -20,14 +23,15 @@ FetchRequestData* FetchRequestData::create()
     return new FetchRequestData();
 }
 
-FetchRequestData* FetchRequestData::create(const WebServiceWorkerRequest& webRequest)
+FetchRequestData* FetchRequestData::create(ExecutionContext* executionContext, const WebServiceWorkerRequest& webRequest)
 {
     FetchRequestData* request = FetchRequestData::create();
     request->m_url = webRequest.url();
     request->m_method = webRequest.method();
     for (HTTPHeaderMap::const_iterator it = webRequest.headers().begin(); it != webRequest.headers().end(); ++it)
         request->m_headerList->append(it->key, it->value);
-    request->m_blobDataHandle = webRequest.blobDataHandle();
+    if (webRequest.blobDataHandle())
+        request->setBuffer(BodyStreamBuffer::create(FetchBlobDataConsumerHandle::create(executionContext, webRequest.blobDataHandle())));
     request->setContext(webRequest.requestContext());
     request->m_referrer.setURL(webRequest.referrer());
     request->setMode(webRequest.mode());
@@ -36,15 +40,19 @@ FetchRequestData* FetchRequestData::create(const WebServiceWorkerRequest& webReq
     return request;
 }
 
-FetchRequestData* FetchRequestData::clone() const
+FetchRequestData* FetchRequestData::clone(ExecutionContext* executionContext)
 {
-    // TODO(yhirano): This method will be destructive.
     FetchRequestData* request = FetchRequestData::create();
     request->m_url = m_url;
     request->m_method = m_method;
     request->m_headerList = m_headerList->clone();
     request->m_unsafeRequestFlag = m_unsafeRequestFlag;
-    request->m_blobDataHandle = m_blobDataHandle;
+    if (m_buffer) {
+        OwnPtr<FetchDataConsumerHandle> dest1, dest2;
+        DataConsumerTee::create(executionContext, m_buffer->releaseHandle(), &dest1, &dest2);
+        m_buffer = BodyStreamBuffer::create(dest1.release());
+        request->m_buffer = BodyStreamBuffer::create(dest2.release());
+    }
     request->m_origin = m_origin;
     request->m_sameOriginDataURLFlag = m_sameOriginDataURLFlag;
     request->m_context = m_context;
@@ -56,10 +64,9 @@ FetchRequestData* FetchRequestData::clone() const
     return request;
 }
 
-FetchRequestData* FetchRequestData::pass() const
+FetchRequestData* FetchRequestData::pass(ExecutionContext* executionContext)
 {
-    // TODO(yhirano): This method will be destructive.
-    return clone();
+    return clone(executionContext);
 }
 
 FetchRequestData::~FetchRequestData()
@@ -80,6 +87,7 @@ FetchRequestData::FetchRequestData()
 
 DEFINE_TRACE(FetchRequestData)
 {
+    visitor->trace(m_buffer);
     visitor->trace(m_headerList);
 }
 

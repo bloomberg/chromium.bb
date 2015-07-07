@@ -7,6 +7,9 @@
 
 #include "core/dom/DOMException.h"
 #include "modules/ModulesExport.h"
+#include "modules/fetch/DataConsumerHandleUtil.h"
+#include "modules/fetch/FetchDataConsumerHandle.h"
+#include "modules/fetch/FetchDataLoader.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Heap.h"
 #include "public/platform/WebDataConsumerHandle.h"
@@ -16,73 +19,76 @@
 
 namespace blink {
 
-class DOMArrayBuffer;
+class DrainingBodyStreamBuffer;
 
 class MODULES_EXPORT BodyStreamBuffer final : public GarbageCollectedFinalized<BodyStreamBuffer> {
 public:
-    class Observer : public GarbageCollectedFinalized<Observer> {
+    static BodyStreamBuffer* create(PassOwnPtr<FetchDataConsumerHandle> handle) { return new BodyStreamBuffer(handle); }
+    static BodyStreamBuffer* createEmpty();
+
+    FetchDataConsumerHandle* handle() const;
+    PassOwnPtr<FetchDataConsumerHandle> releaseHandle();
+
+    class DrainingStreamNotificationClient : public GarbageCollectedMixin {
     public:
-        virtual ~Observer() { }
-        virtual void onWrite() = 0;
-        virtual void onClose() = 0;
-        virtual void onError() = 0;
-        DEFINE_INLINE_VIRTUAL_TRACE() { }
+        virtual ~DrainingStreamNotificationClient() { }
+        // Called after FetchDataLoader::Client methods.
+        virtual void didFetchDataLoadFinishedFromDrainingStream() = 0;
     };
 
-    class Canceller : public GarbageCollected<Canceller> {
-    public:
-        virtual void cancel() = 0;
-        DEFINE_INLINE_VIRTUAL_TRACE() { }
-    };
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_fetchDataLoader);
+        visitor->trace(m_drainingStreamNotificationClient);
+    }
 
-    class BlobHandleCreatorClient : public GarbageCollectedFinalized<BlobHandleCreatorClient> {
-    public:
-        virtual ~BlobHandleCreatorClient() { }
-        virtual void didCreateBlobHandle(PassRefPtr<BlobDataHandle>) = 0;
-        virtual void didFail(DOMException*) = 0;
-        DEFINE_INLINE_VIRTUAL_TRACE() { }
-    };
-    explicit BodyStreamBuffer(Canceller*);
-    ~BodyStreamBuffer() { }
-
-    PassRefPtr<DOMArrayBuffer> read();
-    bool isClosed() const { return m_isClosed; }
-    bool hasError() const { return m_exception; }
-    DOMException* exception() const { return m_exception; }
-
-    // Can't call after close() or error() was called.
-    void write(PassRefPtr<DOMArrayBuffer>);
-    // Can't call after close() or error() was called.
-    void close();
-    // Can't call after close() or error() was called.
-    void error(DOMException*);
-    void cancel() { m_canceller->cancel(); }
-
-    // This function registers an observer so it fails and returns false when an
-    // observer was already registered.
-    bool readAllAndCreateBlobHandle(const String& contentType, BlobHandleCreatorClient*);
-
-    // This function registers an observer so it fails and returns false when an
-    // observer was already registered.
-    bool startTee(BodyStreamBuffer* out1, BodyStreamBuffer* out2);
-
-    // When an observer was registered this function fails and returns false.
-    bool registerObserver(Observer*);
-    void unregisterObserver();
-    bool isObserverRegistered() const { return m_observer.get(); }
-    DECLARE_TRACE();
-
-    // Creates a BodyStreamBuffer from |handle| as the source.
-    // On failure, BodyStreamBuffer::error() is called with a NetworkError
-    // with |failureMessage|.
-    static BodyStreamBuffer* create(PassOwnPtr<WebDataConsumerHandle> /* handle */, const String& failureMessage);
+    void didFetchDataLoadFinished();
 
 private:
-    Deque<RefPtr<DOMArrayBuffer>> m_queue;
-    bool m_isClosed;
-    Member<DOMException> m_exception;
-    Member<Observer> m_observer;
-    Member<Canceller> m_canceller;
+    explicit BodyStreamBuffer(PassOwnPtr<FetchDataConsumerHandle> handle) : m_handle(handle) { }
+
+    void setDrainingStreamNotificationClient(DrainingStreamNotificationClient*);
+
+    void startLoading(FetchDataLoader*, FetchDataLoader::Client*);
+    // Call DrainingStreamNotificationClient.
+    void doDrainingStreamNotification();
+    // Clear DrainingStreamNotificationClient without calling.
+    void clearDrainingStreamNotification();
+
+    friend class DrainingBodyStreamBuffer;
+
+    OwnPtr<FetchDataConsumerHandle> m_handle;
+    Member<FetchDataLoader> m_fetchDataLoader;
+    Member<DrainingStreamNotificationClient> m_drainingStreamNotificationClient;
+};
+
+// DrainingBodyStreamBuffer wraps BodyStreamBuffer returned from
+// Body::createDrainingStream() and calls DrainingStreamNotificationClient
+// callbacks unless leakBuffer() is called:
+// - If startLoading() is called, the callback is called after loading finished.
+// - If drainAsBlobDataHandle() is called, the callback is called immediately.
+// - If leakBuffer() is called, the callback is no longer called.
+// Any calls to DrainingBodyStreamBuffer methods after a call to either of
+// methods above is no-op.
+// After calling one of the methods above, we don't have to keep
+// DrainingBodyStreamBuffer alive.
+// If DrainingBodyStreamBuffer is destructed before any of above is called,
+// the callback is called at destruction.
+class MODULES_EXPORT DrainingBodyStreamBuffer final {
+public:
+    static PassOwnPtr<DrainingBodyStreamBuffer> create(BodyStreamBuffer* buffer, BodyStreamBuffer::DrainingStreamNotificationClient* client)
+    {
+        return adoptPtr(new DrainingBodyStreamBuffer(buffer, client));
+    }
+    ~DrainingBodyStreamBuffer();
+    void startLoading(FetchDataLoader*, FetchDataLoader::Client*);
+    BodyStreamBuffer* leakBuffer();
+    PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::BlobSizePolicy);
+
+private:
+    DrainingBodyStreamBuffer(BodyStreamBuffer*, BodyStreamBuffer::DrainingStreamNotificationClient*);
+
+    Persistent<BodyStreamBuffer> m_buffer;
 };
 
 } // namespace blink

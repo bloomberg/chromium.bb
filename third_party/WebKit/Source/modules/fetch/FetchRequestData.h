@@ -17,7 +17,8 @@
 
 namespace blink {
 
-class BlobDataHandle;
+class BodyStreamBuffer;
+class ExecutionContext;
 class FetchHeaderList;
 class SecurityOrigin;
 class WebServiceWorkerRequest;
@@ -56,9 +57,10 @@ public:
     };
 
     static FetchRequestData* create();
-    static FetchRequestData* create(const WebServiceWorkerRequest&);
-    FetchRequestData* clone() const;
-    FetchRequestData* pass() const;
+    static FetchRequestData* create(ExecutionContext*, const WebServiceWorkerRequest&);
+    // Call Request::refreshBody() after calling clone() or pass().
+    FetchRequestData* clone(ExecutionContext*);
+    FetchRequestData* pass(ExecutionContext*);
     ~FetchRequestData();
 
     void setMethod(AtomicString method) { m_method = method; }
@@ -83,8 +85,9 @@ public:
     Tainting tainting() const { return m_responseTainting; }
     FetchHeaderList* headerList() const { return m_headerList.get(); }
     void setHeaderList(FetchHeaderList* headerList) { m_headerList = headerList; }
-    PassRefPtr<BlobDataHandle> blobDataHandle() const { return m_blobDataHandle; }
-    void setBlobDataHandle(PassRefPtr<BlobDataHandle> blobHandle) { m_blobDataHandle = blobHandle; }
+    BodyStreamBuffer* buffer() const { return m_buffer; }
+    // Call Request::refreshBody() after calling setBuffer().
+    void setBuffer(BodyStreamBuffer* buffer) { m_buffer = buffer; }
     String mimeType() const { return m_mimeType; }
     void setMIMEType(const String& type) { m_mimeType = type; }
 
@@ -96,7 +99,6 @@ private:
     AtomicString m_method;
     KURL m_url;
     Member<FetchHeaderList> m_headerList;
-    RefPtr<BlobDataHandle> m_blobDataHandle;
     bool m_unsafeRequestFlag;
     // FIXME: Support m_skipServiceWorkerFlag;
     WebURLRequest::RequestContext m_context;
@@ -112,6 +114,7 @@ private:
     // FIXME: Support m_manualRedirectFlag;
     // FIXME: Support m_redirectCount;
     Tainting m_responseTainting;
+    Member<BodyStreamBuffer> m_buffer;
     String m_mimeType;
 };
 

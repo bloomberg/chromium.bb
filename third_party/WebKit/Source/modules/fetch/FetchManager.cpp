@@ -19,6 +19,7 @@
 #include "core/loader/ThreadableLoaderClient.h"
 #include "modules/fetch/Body.h"
 #include "modules/fetch/BodyStreamBuffer.h"
+#include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/FetchRequestData.h"
 #include "modules/fetch/Response.h"
 #include "modules/fetch/ResponseInit.h"
@@ -111,7 +112,7 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
             break;
         }
     }
-    FetchResponseData* responseData = FetchResponseData::createWithBuffer(BodyStreamBuffer::create(handle, "Failed to fetch"));
+    FetchResponseData* responseData = FetchResponseData::createWithBuffer(BodyStreamBuffer::create(createFetchDataConsumerHandleFromWebHandle(handle)));
     responseData->setStatus(response.httpStatusCode());
     responseData->setStatusMessage(response.httpStatusText());
     for (auto& it : response.httpHeaderFields())
@@ -321,10 +322,11 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
     }
 
     if (m_request->method() != "GET" && m_request->method() != "HEAD") {
-        RefPtr<BlobDataHandle> blobDataHandle = m_request->blobDataHandle();
-        if (blobDataHandle.get()) {
+        if (BodyStreamBuffer* buffer = m_request->buffer()) {
+            RefPtr<BlobDataHandle> blobDataHandle = buffer->handle()->obtainReader(nullptr)->drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::AllowBlobWithInvalidSize);
             RefPtr<FormData> httpBody(FormData::create());
-            httpBody->appendBlob(blobDataHandle->uuid(), blobDataHandle);
+            if (blobDataHandle)
+                httpBody->appendBlob(blobDataHandle->uuid(), blobDataHandle);
             request.setHTTPBody(httpBody);
         }
     }

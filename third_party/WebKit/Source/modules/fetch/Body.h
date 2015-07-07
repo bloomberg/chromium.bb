@@ -20,6 +20,7 @@
 namespace blink {
 
 class BodyStreamBuffer;
+class DrainingBodyStreamBuffer;
 class BodyStreamSource;
 class DOMException;
 class ReadableByteStream;
@@ -60,43 +61,34 @@ public:
     bool bodyUsed() const;
     void lockBody(LockBodyOption = LockBodyOptionNone);
 
-    // Returns true if the body stream is (possibly partially) consumed.
-    bool isBodyConsumed() const;
-    // Sets |m_stream| to a newly created stream from |source|.
-    void setBody(ReadableStreamSource* /* source */);
-
-    void setBody(PassRefPtr<BlobDataHandle> handle)
-    {
-        setBody(createBodySource(handle));
-    }
-    void setBody(BodyStreamBuffer* buffer)
-    {
-        setBody(createBodySource(buffer));
-    }
-
-    // Creates a new BodyStreamBuffer to drain the data from the ReadableStream.
-    BodyStreamBuffer* createDrainingStream();
+    // Creates a DrainingBodyStreamBuffer to access body data.
+    // Returns nullptr if underlying BodyStreamBuffer is null.
+    PassOwnPtr<DrainingBodyStreamBuffer> createDrainingStream();
 
     // ActiveDOMObject override.
-    virtual void stop() override;
     virtual bool hasPendingActivity() const override;
-
-    ReadableStreamSource* createBodySource(PassRefPtr<BlobDataHandle>);
-    ReadableStreamSource* createBodySource(BodyStreamBuffer*);
 
     DECLARE_VIRTUAL_TRACE();
 
-    BodyStreamBuffer* bufferForTest() const { return buffer(); }
+protected:
+    // Sets |m_stream| to a newly created stream from |buffer|.
+    // |buffer| can be null.
+    // This is called when the underlying buffer is set/modified.
+    // TODO(hiroshige): Merge FetchRequest/ResponseData::buffer() and
+    // integrate Body::setBody(), Request/Response::refreshBody(),
+    // FetchRequestData::setBuffer() and
+    // FetchResponseData::replaceBodyStreamBuffer().
+    void setBody(BodyStreamBuffer* /* buffer */);
 
 private:
-    class BlobHandleReceiver;
-
     void pullSource();
     void readAllFromStream();
     ScriptPromise readAsync(ScriptState*, ResponseType);
-    void readAsyncFromBlob(PassRefPtr<BlobDataHandle>);
-    void readAsyncFromFetchDataConsumerHandle(FetchDataConsumerHandle*, const String& mimeType);
+    void resolveWithEmptyDataSynchronously();
+    void readAsyncFromDrainingBodyStreamBuffer(PassOwnPtr<DrainingBodyStreamBuffer>, const String& mimeType);
     void resolveJSON(const String&);
+
+    void didFetchDataLoadFinishedFromDrainingStream();
 
     // FetchDataLoader::Client functions.
     void didFetchDataLoadFailed() override;
@@ -104,19 +96,8 @@ private:
     void didFetchDataLoadedArrayBuffer(PassRefPtr<DOMArrayBuffer>) override;
     void didFetchDataLoadedString(const String&) override;
 
-    void didBlobHandleReceiveError(DOMException*);
-
-    // We use BlobDataHandle or BodyStreamBuffer as data container of the Body.
-    // BodyStreamBuffer is used only when the Response object is created by
-    // fetch() API.
-    // FIXME: We should seek a cleaner way to handle the data.
-    virtual PassRefPtr<BlobDataHandle> blobDataHandle() const = 0;
-    virtual BodyStreamBuffer* buffer() const = 0;
     virtual String mimeType() const = 0;
 
-    void didFinishLoadingViaStream(PassRefPtr<DOMArrayBuffer>);
-
-    Member<FetchDataLoader> m_fetchDataLoader;
     bool m_bodyUsed;
     ResponseType m_responseType;
     RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;

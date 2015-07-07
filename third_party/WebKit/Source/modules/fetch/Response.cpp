@@ -11,6 +11,8 @@
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/fileapi/Blob.h"
 #include "core/html/DOMFormData.h"
+#include "modules/fetch/BodyStreamBuffer.h"
+#include "modules/fetch/FetchBlobDataConsumerHandle.h"
 #include "modules/fetch/ResponseInit.h"
 #include "platform/network/FormData.h"
 #include "platform/network/HTTPHeaderMap.h"
@@ -21,7 +23,7 @@ namespace blink {
 
 namespace {
 
-FetchResponseData* createFetchResponseDataFromWebResponse(const WebServiceWorkerResponse& webResponse)
+FetchResponseData* createFetchResponseDataFromWebResponse(ExecutionContext* executionContext, const WebServiceWorkerResponse& webResponse)
 {
     FetchResponseData* response = 0;
     if (200 <= webResponse.status() && webResponse.status() < 300)
@@ -37,7 +39,7 @@ FetchResponseData* createFetchResponseDataFromWebResponse(const WebServiceWorker
         response->headerList()->append(i->key, i->value);
     }
 
-    response->setBlobDataHandle(webResponse.blobDataHandle());
+    response->replaceBodyStreamBuffer(BodyStreamBuffer::create(FetchBlobDataConsumerHandle::create(executionContext, webResponse.blobDataHandle())));
 
     // Filter the response according to |webResponse|'s ResponseType.
     switch (webResponse.responseType()) {
@@ -205,8 +207,8 @@ Response* Response::create(ExecutionContext* context, Blob* body, const Response
         // Step 3, Blob:
         // "If object's type attribute is not the empty byte sequence, set
         // Content-Type to its value."
-        r->m_response->setBlobDataHandle(body->blobDataHandle());
-        r->setBody(body->blobDataHandle());
+        r->m_response->replaceBodyStreamBuffer(BodyStreamBuffer::create(FetchBlobDataConsumerHandle::create(context, body->blobDataHandle())));
+        r->refreshBody();
         if (!body->type().isEmpty() && !r->m_response->headerList()->has("Content-Type"))
             r->m_response->headerList()->append("Content-Type", body->type());
     }
@@ -228,7 +230,7 @@ Response* Response::create(ExecutionContext* context, FetchResponseData* respons
 
 Response* Response::create(ExecutionContext* context, const WebServiceWorkerResponse& webResponse)
 {
-    FetchResponseData* responseData = createFetchResponseDataFromWebResponse(webResponse);
+    FetchResponseData* responseData = createFetchResponseDataFromWebResponse(context, webResponse);
     Response* r = new Response(context, responseData);
     r->suspendIfNeeded();
     return r;
@@ -327,12 +329,11 @@ Response* Response::clone(ExceptionState& exceptionState)
         exceptionState.throwTypeError("Response body is already used");
         return nullptr;
     }
-    if (isBodyConsumed()) {
-        BodyStreamBuffer* drainingStream = createDrainingStream();
-        m_response->replaceBodyStreamBuffer(drainingStream);
-    }
 
-    FetchResponseData* response = m_response->clone();
+    if (OwnPtr<DrainingBodyStreamBuffer> buffer = createDrainingStream())
+        m_response->replaceBodyStreamBuffer(buffer->leakBuffer());
+
+    FetchResponseData* response = m_response->clone(executionContext());
     Headers* headers = Headers::create(response->headerList());
     headers->setGuard(m_headers->guard());
     Response* r = new Response(executionContext(), response, headers);
@@ -376,15 +377,10 @@ Response::Response(ExecutionContext* context, FetchResponseData* response, Heade
 
 bool Response::hasBody() const
 {
-    return internalBlobDataHandle() || internalBuffer();
+    return m_response->internalBuffer();
 }
 
-PassRefPtr<BlobDataHandle> Response::blobDataHandle() const
-{
-    return m_response->blobDataHandle();
-}
-
-BodyStreamBuffer* Response::buffer() const
+void* Response::bufferForTest() const
 {
     return m_response->buffer();
 }
@@ -394,12 +390,7 @@ String Response::mimeType() const
     return m_response->mimeType();
 }
 
-PassRefPtr<BlobDataHandle> Response::internalBlobDataHandle() const
-{
-    return m_response->internalBlobDataHandle();
-}
-
-BodyStreamBuffer* Response::internalBuffer() const
+void* Response::internalBufferForTest() const
 {
     return m_response->internalBuffer();
 }
@@ -409,12 +400,19 @@ String Response::internalMIMEType() const
     return m_response->internalMIMEType();
 }
 
+PassOwnPtr<DrainingBodyStreamBuffer> Response::createInternalDrainingStream()
+{
+    if (BodyStreamBuffer* buffer = m_response->internalBuffer()) {
+        if (buffer == m_response->buffer())
+            return createDrainingStream();
+        return DrainingBodyStreamBuffer::create(buffer, nullptr);
+    }
+    return nullptr;
+}
+
 void Response::refreshBody()
 {
-    if (m_response->buffer())
-        setBody(m_response->buffer());
-    else
-        setBody(m_response->blobDataHandle());
+    setBody(m_response->buffer());
 }
 
 DEFINE_TRACE(Response)

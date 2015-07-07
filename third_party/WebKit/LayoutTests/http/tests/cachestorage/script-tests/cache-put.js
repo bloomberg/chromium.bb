@@ -291,4 +291,12 @@ cache_test(function(cache) {
     });
   }, 'Cache.put with a used response body');
 
+cache_test(function(cache) {
+    var response = new Response(test_body);
+    return cache.put(new Request(test_url), response)
+      .then(function() {
+          return response.body.getReader().closed;
+      });
+  }, 'getReader() after Cache.put');
+
 done();
