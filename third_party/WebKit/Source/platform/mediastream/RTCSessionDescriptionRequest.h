@@ -53,6 +53,8 @@ public:
     ExtraData* extraData() const { return m_extraData.get(); }
     void setExtraData(PassOwnPtr<ExtraData> extraData) { m_extraData = extraData; }
 
+    // Need to eagerly finalize ExtraData.
+    EAGERLY_FINALIZE();
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
