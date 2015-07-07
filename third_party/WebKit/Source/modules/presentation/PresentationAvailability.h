@@ -27,8 +27,6 @@ class PresentationAvailability final
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PresentationAvailability* take(ScriptPromiseResolver*, bool);
-
-    static PresentationAvailability* create(ExecutionContext*, bool);
     ~PresentationAvailability() override;
 
     // EventTarget implementation.
