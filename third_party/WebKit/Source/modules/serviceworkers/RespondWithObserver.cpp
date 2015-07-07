@@ -117,7 +117,7 @@ private:
         ASSERT(m_observer);
         ASSERT(m_resolveType == Fulfilled || m_resolveType == Rejected);
         if (m_resolveType == Rejected) {
-            m_observer->responseWasRejected();
+            m_observer->responseWasRejected(WebServiceWorkerResponseErrorPromiseRejected);
             value = ScriptPromise::reject(value.scriptState(), value).scriptValue();
         } else {
             m_observer->responseWasFulfilled(value);
@@ -148,7 +148,7 @@ void RespondWithObserver::didDispatchEvent(bool defaultPrevented)
         return;
 
     if (defaultPrevented) {
-        responseWasRejected();
+        responseWasRejected(WebServiceWorkerResponseErrorDefaultPrevented);
         return;
     }
 
@@ -169,12 +169,13 @@ void RespondWithObserver::respondWith(ScriptState* scriptState, const ScriptValu
         ThenFunction::createFunction(scriptState, this, ThenFunction::Rejected));
 }
 
-void RespondWithObserver::responseWasRejected()
+void RespondWithObserver::responseWasRejected(WebServiceWorkerResponseError error)
 {
     ASSERT(executionContext());
     // The default value of WebServiceWorkerResponse's status is 0, which maps
     // to a network error.
     WebServiceWorkerResponse webResponse;
+    webResponse.setError(error);
     ServiceWorkerGlobalScopeClient::from(executionContext())->didHandleFetchEvent(m_eventID, webResponse);
     m_state = Done;
 }
@@ -183,7 +184,7 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
 {
     ASSERT(executionContext());
     if (!V8Response::hasInstance(value.v8Value(), toIsolate(executionContext()))) {
-        responseWasRejected();
+        responseWasRejected(WebServiceWorkerResponseErrorNoV8Instance);
         return;
     }
     Response* response = V8Response::toImplWithTypeCheck(toIsolate(executionContext()), value.v8Value());
@@ -193,16 +194,23 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
     //   - |request| is a client request and |response|'s type is neither
     //     |basic| nor |default|."
     const FetchResponseData::Type responseType = response->response()->type();
-    if (responseType == FetchResponseData::ErrorType
-        || (m_requestMode != WebURLRequest::FetchRequestModeNoCORS && responseType == FetchResponseData::OpaqueType)
-        || (m_frameType != WebURLRequest::FrameTypeNone && responseType != FetchResponseData::BasicType && responseType != FetchResponseData::DefaultType)) {
-        responseWasRejected();
+    if (responseType == FetchResponseData::ErrorType) {
+        responseWasRejected(WebServiceWorkerResponseErrorResponseTypeError);
+        return;
+    }
+    if (m_requestMode != WebURLRequest::FetchRequestModeNoCORS && responseType == FetchResponseData::OpaqueType) {
+        responseWasRejected(WebServiceWorkerResponseErrorResponseTypeOpaque);
+        return;
+    }
+    if (m_frameType != WebURLRequest::FrameTypeNone && responseType != FetchResponseData::BasicType && responseType != FetchResponseData::DefaultType) {
+        responseWasRejected(WebServiceWorkerResponseErrorResponseTypeNotBasicOrDefault);
         return;
     }
     if (response->bodyUsed()) {
-        responseWasRejected();
+        responseWasRejected(WebServiceWorkerResponseErrorBodyUsed);
         return;
     }
+
     response->lockBody(Body::PassBody);
     if (BodyStreamBuffer* buffer = response->internalBuffer()) {
         if (buffer == response->buffer() && response->isBodyConsumed())

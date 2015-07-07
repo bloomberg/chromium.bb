@@ -17,6 +17,7 @@ public:
     WebServiceWorkerResponsePrivate()
         : status(0)
         , responseType(WebServiceWorkerResponseTypeDefault)
+        , error(WebServiceWorkerResponseErrorUnknown)
     {
     }
     WebURL url;
@@ -26,6 +27,7 @@ public:
     HTTPHeaderMap headers;
     RefPtr<BlobDataHandle> blobDataHandle;
     WebURL streamURL;
+    WebServiceWorkerResponseError error;
 };
 
 WebServiceWorkerResponse::WebServiceWorkerResponse()
@@ -157,6 +159,16 @@ void WebServiceWorkerResponse::setStreamURL(const WebURL& url)
 WebURL WebServiceWorkerResponse::streamURL() const
 {
     return m_private->streamURL;
+}
+
+void WebServiceWorkerResponse::setError(WebServiceWorkerResponseError error)
+{
+    m_private->error = error;
+}
+
+WebServiceWorkerResponseError WebServiceWorkerResponse::error() const
+{
+    return m_private->error;
 }
 
 } // namespace blink
