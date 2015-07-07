@@ -21,7 +21,7 @@
 namespace chromecast {
 namespace media {
 
-MockFrameProvider::MockFrameProvider() {
+MockFrameProvider::MockFrameProvider() : delay_flush_(false) {
 }
 
 MockFrameProvider::~MockFrameProvider() {
@@ -34,6 +34,10 @@ void MockFrameProvider::Configure(
   pattern_idx_ = 0;
 
   frame_generator_.reset(frame_generator.release());
+}
+
+void MockFrameProvider::SetDelayFlush(bool delay_flush) {
+  delay_flush_ = delay_flush;
 }
 
 void MockFrameProvider::Read(const ReadCB& read_cb) {
@@ -53,7 +57,12 @@ void MockFrameProvider::Read(const ReadCB& read_cb) {
 }
 
 void MockFrameProvider::Flush(const base::Closure& flush_cb) {
-  flush_cb.Run();
+  if (delay_flush_) {
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, flush_cb, base::TimeDelta::FromMilliseconds(10));
+  } else {
+    flush_cb.Run();
+  }
 }
 
 void MockFrameProvider::DoRead(const ReadCB& read_cb) {

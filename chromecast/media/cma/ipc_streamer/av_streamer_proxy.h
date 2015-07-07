@@ -5,6 +5,8 @@
 #ifndef CHROMECAST_MEDIA_CMA_IPC_STREAMER_AV_STREAMER_PROXY_H_
 #define CHROMECAST_MEDIA_CMA_IPC_STREAMER_AV_STREAMER_PROXY_H_
 
+#include <list>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -55,6 +57,8 @@ class AvStreamerProxy {
   bool SendVideoDecoderConfig(const ::media::VideoDecoderConfig& config);
   bool SendBuffer(const scoped_refptr<DecoderBufferBase>& buffer);
 
+  void OnStopAndFlushDone();
+
   base::ThreadChecker thread_checker_;
 
   scoped_ptr<CodedFrameProvider> frame_provider_;
@@ -75,6 +79,9 @@ class AvStreamerProxy {
   ::media::AudioDecoderConfig pending_audio_config_;
   ::media::VideoDecoderConfig pending_video_config_;
   scoped_refptr<DecoderBufferBase> pending_buffer_;
+
+  // List of pending callbacks in StopAndFlush
+  std::list<base::Closure> pending_stop_flush_cb_list_;
 
   base::WeakPtr<AvStreamerProxy> weak_this_;
   base::WeakPtrFactory<AvStreamerProxy> weak_factory_;

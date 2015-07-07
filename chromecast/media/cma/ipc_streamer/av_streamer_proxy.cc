@@ -56,6 +56,7 @@ void AvStreamerProxy::Start() {
 }
 
 void AvStreamerProxy::StopAndFlush(const base::Closure& done_cb) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!done_cb.is_null());
 
   pending_av_data_ = false;
@@ -64,24 +65,27 @@ void AvStreamerProxy::StopAndFlush(const base::Closure& done_cb) {
   pending_buffer_ = scoped_refptr<DecoderBufferBase>();
 
   pending_read_ = false;
-
-  // StopAndFlush may happen twice in a row when Stop happens while a previous
-  // pending Seek (which requires Flush). We only need to perform Flush once
-  // when entering stopped state. Chromium pipeline will call Start eventually
-  // to set is_running_, after Seek (next state of Seek is Play), which
-  // guarantees Flush be called when there is no pending tasks.
-  if (is_running_) {
-    frame_provider_->Flush(done_cb);
-  } else {
-    // TODO(yucliu): This is a temporary fix where seek never finish because EOS
-    // reset is_running_ to false. Potential solution is to keep a list of
-    // callbacks. Do not call Flush if the list isn't empty and fire them when
-    // DemuxerStreamAdapter::Flush is done, so that we won't change the order of
-    // the callbacks.
-    done_cb.Run();
-  }
-
   is_running_ = false;
+
+  // If there's another pending Flush, for example, the pipeline is stopped
+  // while another seek is pending, then we don't need to call Flush again. Save
+  // the callback and fire it later when Flush is done.
+  pending_stop_flush_cb_list_.push_back(done_cb);
+  if (pending_stop_flush_cb_list_.size() == 1) {
+    frame_provider_->Flush(
+        base::Bind(&AvStreamerProxy::OnStopAndFlushDone, weak_this_));
+  }
+}
+
+void AvStreamerProxy::OnStopAndFlushDone() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Flush is done. Fire all the "flush done" callbacks in order. This is
+  // necessary to guarantee proper state transition in pipeline.
+  for (const auto& cb : pending_stop_flush_cb_list_) {
+    cb.Run();
+  }
+  pending_stop_flush_cb_list_.clear();
 }
 
 void AvStreamerProxy::OnFifoReadEvent() {

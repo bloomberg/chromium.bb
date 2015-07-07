@@ -55,13 +55,19 @@ class AvStreamerTest : public testing::Test {
   ~AvStreamerTest() override;
 
   // Setups the test.
-  void Configure(
-      size_t frame_count,
-      const std::vector<bool>& provider_delayed_pattern,
-      const std::vector<bool>& consumer_delayed_pattern);
+  void Configure(size_t frame_count,
+                 const std::vector<bool>& provider_delayed_pattern,
+                 const std::vector<bool>& consumer_delayed_pattern,
+                 bool delay_flush);
 
   // Starts the test.
   void Start();
+
+  // Back to back flush
+  void FlushThenStop();
+
+  // Timeout indicates test failure
+  void OnTestTimeout();
 
  protected:
   scoped_ptr<uint64[]> fifo_mem_;
@@ -70,12 +76,16 @@ class AvStreamerTest : public testing::Test {
   scoped_ptr<CodedFrameProviderHost> coded_frame_provider_host_;
   scoped_ptr<MockFrameConsumer> frame_consumer_;
 
+  // number of pending cb in StopAndFlush
+  int stop_and_flush_cb_count_;
+
  private:
-  void OnTestTimeout();
   void OnTestCompleted();
 
   void OnFifoRead();
   void OnFifoWrite();
+
+  void OnStopAndFlush();
 
   DISALLOW_COPY_AND_ASSIGN(AvStreamerTest);
 };
@@ -89,7 +99,8 @@ AvStreamerTest::~AvStreamerTest() {
 void AvStreamerTest::Configure(
     size_t frame_count,
     const std::vector<bool>& provider_delayed_pattern,
-    const std::vector<bool>& consumer_delayed_pattern) {
+    const std::vector<bool>& consumer_delayed_pattern,
+    bool delay_flush) {
   // Frame generation on the producer and consumer side.
   std::vector<FrameGeneratorForTest::FrameSpec> frame_specs;
   frame_specs.resize(frame_count);
@@ -109,6 +120,7 @@ void AvStreamerTest::Configure(
   scoped_ptr<MockFrameProvider> frame_provider(new MockFrameProvider());
   frame_provider->Configure(provider_delayed_pattern,
                             frame_generator_provider.Pass());
+  frame_provider->SetDelayFlush(delay_flush);
 
   size_t fifo_size_div_8 = 512;
   fifo_mem_.reset(new uint64[fifo_size_div_8]);
@@ -142,6 +154,8 @@ void AvStreamerTest::Configure(
       consumer_delayed_pattern,
       false,
       frame_generator_consumer.Pass());
+
+  stop_and_flush_cb_count_ = 0;
 }
 
 void AvStreamerTest::Start() {
@@ -152,6 +166,19 @@ void AvStreamerTest::Start() {
   frame_consumer_->Start(
       base::Bind(&AvStreamerTest::OnTestCompleted,
                  base::Unretained(this)));
+}
+
+void AvStreamerTest::FlushThenStop() {
+  base::Closure cb =
+      base::Bind(&AvStreamerTest::OnStopAndFlush, base::Unretained(this));
+
+  stop_and_flush_cb_count_++;
+  av_buffer_proxy_->StopAndFlush(cb);
+
+  ASSERT_EQ(stop_and_flush_cb_count_, 1);
+
+  stop_and_flush_cb_count_++;
+  av_buffer_proxy_->StopAndFlush(cb);
 }
 
 void AvStreamerTest::OnTestTimeout() {
@@ -177,19 +204,26 @@ void AvStreamerTest::OnFifoRead() {
                             base::Unretained(av_buffer_proxy_.get())));
 }
 
+void AvStreamerTest::OnStopAndFlush() {
+  stop_and_flush_cb_count_--;
+  if (stop_and_flush_cb_count_ == 0) {
+    OnTestCompleted();
+  }
+}
+
 TEST_F(AvStreamerTest, FastProviderSlowConsumer) {
   bool provider_delayed_pattern[] = { false };
   bool consumer_delayed_pattern[] = { true };
 
   const size_t frame_count = 100u;
-  Configure(
-      frame_count,
-      std::vector<bool>(
-          provider_delayed_pattern,
-          provider_delayed_pattern + arraysize(provider_delayed_pattern)),
-      std::vector<bool>(
-          consumer_delayed_pattern,
-          consumer_delayed_pattern + arraysize(consumer_delayed_pattern)));
+  Configure(frame_count,
+            std::vector<bool>(
+                provider_delayed_pattern,
+                provider_delayed_pattern + arraysize(provider_delayed_pattern)),
+            std::vector<bool>(
+                consumer_delayed_pattern,
+                consumer_delayed_pattern + arraysize(consumer_delayed_pattern)),
+            false);
 
   scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   message_loop->PostTask(
@@ -203,14 +237,14 @@ TEST_F(AvStreamerTest, SlowProviderFastConsumer) {
   bool consumer_delayed_pattern[] = { false };
 
   const size_t frame_count = 100u;
-  Configure(
-      frame_count,
-      std::vector<bool>(
-          provider_delayed_pattern,
-          provider_delayed_pattern + arraysize(provider_delayed_pattern)),
-      std::vector<bool>(
-          consumer_delayed_pattern,
-          consumer_delayed_pattern + arraysize(consumer_delayed_pattern)));
+  Configure(frame_count,
+            std::vector<bool>(
+                provider_delayed_pattern,
+                provider_delayed_pattern + arraysize(provider_delayed_pattern)),
+            std::vector<bool>(
+                consumer_delayed_pattern,
+                consumer_delayed_pattern + arraysize(consumer_delayed_pattern)),
+            false);
 
   scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   message_loop->PostTask(
@@ -232,14 +266,14 @@ TEST_F(AvStreamerTest, SlowFastProducerConsumer) {
   };
 
   const size_t frame_count = 100u;
-  Configure(
-      frame_count,
-      std::vector<bool>(
-          provider_delayed_pattern,
-          provider_delayed_pattern + arraysize(provider_delayed_pattern)),
-      std::vector<bool>(
-          consumer_delayed_pattern,
-          consumer_delayed_pattern + arraysize(consumer_delayed_pattern)));
+  Configure(frame_count,
+            std::vector<bool>(
+                provider_delayed_pattern,
+                provider_delayed_pattern + arraysize(provider_delayed_pattern)),
+            std::vector<bool>(
+                consumer_delayed_pattern,
+                consumer_delayed_pattern + arraysize(consumer_delayed_pattern)),
+            false);
 
   scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   message_loop->PostTask(
@@ -247,6 +281,42 @@ TEST_F(AvStreamerTest, SlowFastProducerConsumer) {
       base::Bind(&AvStreamerTest::Start, base::Unretained(this)));
   message_loop->Run();
 };
+
+// Test case for when AvStreamerProxy::StopAndFlush is invoked while a previous
+// flush is pending. This can happen when pipeline is stopped while a seek/flush
+// is pending.
+TEST_F(AvStreamerTest, StopInFlush) {
+  // We don't care about the delayed pattern. Setting to true to make sure the
+  // test won't exit before flush is called.
+  bool dummy_delayed_pattern[] = {true};
+  std::vector<bool> dummy_delayed_pattern_vector(
+      dummy_delayed_pattern,
+      dummy_delayed_pattern + arraysize(dummy_delayed_pattern));
+  const size_t frame_count = 100u;
+
+  // Delay flush callback in frame provider
+  Configure(frame_count, dummy_delayed_pattern_vector,
+            dummy_delayed_pattern_vector, true);
+
+  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
+
+  // Flush takes 10ms to finish. 1s timeout is enough for this test.
+  message_loop->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&AvStreamerTest::OnTestTimeout, base::Unretained(this)),
+      base::TimeDelta::FromSeconds(1));
+
+  message_loop->PostTask(
+      FROM_HERE, base::Bind(&AvStreamerTest::Start, base::Unretained(this)));
+
+  // Let AvStreamerProxy run for a while. Fire flush and stop later
+  message_loop->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&AvStreamerTest::FlushThenStop, base::Unretained(this)),
+      base::TimeDelta::FromMilliseconds(10));
+
+  message_loop->Run();
+}
 
 }  // namespace media
 }  // namespace chromecast
