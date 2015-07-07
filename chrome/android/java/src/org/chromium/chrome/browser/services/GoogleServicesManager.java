@@ -123,7 +123,7 @@ public class GoogleServicesManager implements ApplicationStateListener {
     public void onMainActivityStart() {
         try {
             TraceEvent.begin("GoogleServicesManager.onMainActivityStart");
-            boolean accountsChanged = mSigninHelper.checkAndClearAccountsChangedPref(mContext);
+            boolean accountsChanged = SigninHelper.checkAndClearAccountsChangedPref(mContext);
             mSigninHelper.validateAccountSettings(accountsChanged);
         } finally {
             TraceEvent.end("GoogleServicesManager.onMainActivityStart");

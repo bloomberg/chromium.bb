@@ -26,6 +26,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.ChromeWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.FrozenNativePage;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
@@ -555,21 +556,24 @@ public class ChromeTab extends Tab {
          * @return Whether audio is being captured.
          */
         private boolean isCapturingAudio() {
-            return !isClosing() && super.nativeIsCapturingAudio(getWebContents());
+            return !isClosing()
+                    && ChromeWebContentsDelegateAndroid.nativeIsCapturingAudio(getWebContents());
         }
 
         /**
          * @return Whether video is being captured.
          */
         private boolean isCapturingVideo() {
-            return !isClosing() && super.nativeIsCapturingVideo(getWebContents());
+            return !isClosing()
+                    && ChromeWebContentsDelegateAndroid.nativeIsCapturingVideo(getWebContents());
         }
 
         /**
          * @return Whether audio is being played.
          */
         private boolean hasAudibleAudio() {
-            return !isClosing() && super.nativeHasAudibleAudio(getWebContents());
+            return !isClosing()
+                    && ChromeWebContentsDelegateAndroid.nativeHasAudibleAudio(getWebContents());
         }
     }
 

@@ -457,7 +457,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             if (mWebViewDatabase == null) {
                 ensureChromiumStartedLocked(true);
                 AwBrowserContext browserContext = getBrowserContextLocked();
-                mWebViewDatabase = new WebViewDatabaseAdapter(browserContext.getFormDatabase(),
+                mWebViewDatabase = new WebViewDatabaseAdapter(
                         browserContext.getHttpAuthDatabase(context));
             }
         }

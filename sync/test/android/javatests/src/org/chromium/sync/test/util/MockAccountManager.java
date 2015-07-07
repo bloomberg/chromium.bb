@@ -622,6 +622,7 @@ public class MockAccountManager implements AccountManagerDelegate {
      * @param context the context to start the intent in
      * @param intent the intent to use to start MockGrantCredentialsPermissionActivity
      */
+    @SuppressWarnings("WaitNotInLoop")
     private void waitForActivity(Context context, Intent intent) {
         final Object mutex = new Object();
         BroadcastReceiver receiver = new BroadcastReceiver() {

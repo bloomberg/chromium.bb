@@ -108,7 +108,7 @@ public class CronetUrlTest extends CronetTestBase {
         listener.blockForComplete();
         assertTrue(request.isCanceled());
         assertNotNull(request.getException());
-        assertEquals(listener.THROW_TAG,
+        assertEquals(BadHttpUrlRequestListener.THROW_TAG,
                      request.getException().getCause().getMessage());
     }
 

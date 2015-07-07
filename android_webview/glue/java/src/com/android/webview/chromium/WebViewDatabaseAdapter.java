@@ -15,11 +15,9 @@ import org.chromium.android_webview.HttpAuthDatabase;
  */
 @SuppressWarnings("deprecation")
 final class WebViewDatabaseAdapter extends WebViewDatabase {
-    private AwFormDatabase mFormDatabase;
     private HttpAuthDatabase mHttpAuthDatabase;
 
-    public WebViewDatabaseAdapter(AwFormDatabase formDatabase, HttpAuthDatabase httpAuthDatabase) {
-        mFormDatabase = formDatabase;
+    public WebViewDatabaseAdapter(HttpAuthDatabase httpAuthDatabase) {
         mHttpAuthDatabase = httpAuthDatabase;
     }
 
@@ -46,11 +44,11 @@ final class WebViewDatabaseAdapter extends WebViewDatabase {
 
     @Override
     public boolean hasFormData() {
-        return mFormDatabase.hasFormData();
+        return AwFormDatabase.hasFormData();
     }
 
     @Override
     public void clearFormData() {
-        mFormDatabase.clearFormData();
+        AwFormDatabase.clearFormData();
     }
 }

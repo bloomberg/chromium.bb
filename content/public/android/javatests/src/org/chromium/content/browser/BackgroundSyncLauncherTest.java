@@ -25,16 +25,16 @@ public class BackgroundSyncLauncherTest extends InstrumentationTestCase {
     private SharedPreferences mPrefs;
 
     static class MockReceiver extends BackgroundSyncLauncherService.Receiver {
-        private static boolean sIsOnline = true;
-        private static boolean sDidStartService;
+        private boolean mIsOnline = true;
+        private boolean mDidStartService;
 
-        public static void setOnline(boolean online) {
-            sIsOnline = online;
+        public void setOnline(boolean online) {
+            mIsOnline = online;
         }
 
         @Override
         protected boolean isOnline(Context context) {
-            return sIsOnline;
+            return mIsOnline;
         }
 
         @Override
@@ -42,12 +42,12 @@ public class BackgroundSyncLauncherTest extends InstrumentationTestCase {
             startServiceImpl();
         }
 
-        private static void startServiceImpl() {
-            sDidStartService = true;
+        private void startServiceImpl() {
+            mDidStartService = true;
         }
 
-        protected static void checkExpectations(boolean expectedStartService) {
-            assertEquals("StartedService", expectedStartService, sDidStartService);
+        protected void checkExpectations(boolean expectedStartService) {
+            assertEquals("StartedService", expectedStartService, mDidStartService);
         }
     }
 
@@ -75,37 +75,37 @@ public class BackgroundSyncLauncherTest extends InstrumentationTestCase {
     @SmallTest
     @Feature({"BackgroundSync"})
     public void testHasInstance() {
-        assertTrue(mLauncher.hasInstance());
+        assertTrue(BackgroundSyncLauncher.hasInstance());
         mLauncher.destroy();
-        assertFalse(mLauncher.hasInstance());
+        assertFalse(BackgroundSyncLauncher.hasInstance());
     }
 
     @SmallTest
     @Feature({"BackgroundSync"})
     public void testDefaultNoLaunch() {
-        assertFalse(mLauncher.shouldLaunchWhenNextOnline(mPrefs));
+        assertFalse(BackgroundSyncLauncher.shouldLaunchWhenNextOnline(mPrefs));
     }
 
     @SmallTest
     @Feature({"BackgroundSync"})
     public void testSetLaunchWhenNextOnline() {
-        assertFalse(mLauncher.shouldLaunchWhenNextOnline(mPrefs));
+        assertFalse(BackgroundSyncLauncher.shouldLaunchWhenNextOnline(mPrefs));
         mLauncher.setLaunchWhenNextOnline(true);
-        assertTrue(mLauncher.shouldLaunchWhenNextOnline(mPrefs));
+        assertTrue(BackgroundSyncLauncher.shouldLaunchWhenNextOnline(mPrefs));
         mLauncher.setLaunchWhenNextOnline(false);
-        assertFalse(mLauncher.shouldLaunchWhenNextOnline(mPrefs));
+        assertFalse(BackgroundSyncLauncher.shouldLaunchWhenNextOnline(mPrefs));
     }
 
     @SmallTest
     @Feature({"BackgroundSync"})
     public void testNewLauncherDisablesNextOnline() {
         mLauncher.setLaunchWhenNextOnline(true);
-        assertTrue(mLauncher.shouldLaunchWhenNextOnline(mPrefs));
+        assertTrue(BackgroundSyncLauncher.shouldLaunchWhenNextOnline(mPrefs));
 
         // Simulate restarting the browser by deleting the launcher and creating a new one.
         deleteLauncherInstance();
         mLauncher = BackgroundSyncLauncher.create(mContext);
-        assertFalse(mLauncher.shouldLaunchWhenNextOnline(mPrefs));
+        assertFalse(BackgroundSyncLauncher.shouldLaunchWhenNextOnline(mPrefs));
     }
 
     @SmallTest
@@ -161,6 +161,6 @@ public class BackgroundSyncLauncherTest extends InstrumentationTestCase {
     @Feature({"BackgroundSync"})
     public void testStartingService() {
         Intent serviceIntent = new Intent(mContext, BackgroundSyncLauncherService.class);
-        mLauncherServiceReceiver.startWakefulService(mContext, serviceIntent);
+        MockReceiver.startWakefulService(mContext, serviceIntent);
     }
 }

@@ -44,6 +44,7 @@ public class CleanupReference extends WeakReference<Object> {
 
     private static final Thread sReaperThread = new Thread(TAG) {
         @Override
+        @SuppressWarnings("WaitNotInLoop")
         public void run() {
             while (true) {
                 try {

@@ -60,7 +60,10 @@ public class PostMessageTest extends AwTestBase {
 
         public void waitForMessage() throws InterruptedException {
             synchronized (mLock) {
-                if (!mReady) mLock.wait(TIMEOUT);
+                long deadline = System.currentTimeMillis() + TIMEOUT;
+                while (!mReady && System.currentTimeMillis() < deadline) {
+                    mLock.wait(deadline - System.currentTimeMillis());
+                }
             }
         }
 
@@ -562,7 +565,10 @@ public class PostMessageTest extends AwTestBase {
 
         public void waitForMessage() throws InterruptedException {
             synchronized (mLock) {
-                if (!mReady) mLock.wait(TIMEOUT);
+                long deadline = System.currentTimeMillis() + TIMEOUT;
+                while (!mReady && System.currentTimeMillis() < deadline) {
+                    mLock.wait(deadline - System.currentTimeMillis());
+                }
             }
         }
     }

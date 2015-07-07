@@ -28,7 +28,6 @@ import org.chromium.base.Log;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -342,8 +341,13 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES);
         // Per-format frame rate via getOutputMinFrameDuration() is only available if the
         // property REQUEST_AVAILABLE_CAPABILITIES_MANUAL_SENSOR is set.
-        final boolean minFrameDurationAvailable = Arrays.asList(capabilities).contains(
-                CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_MANUAL_SENSOR);
+        boolean minFrameDurationAvailable = false;
+        for (int cap : capabilities) {
+            if (cap == CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_MANUAL_SENSOR) {
+                minFrameDurationAvailable = true;
+                break;
+            }
+        }
 
         ArrayList<VideoCaptureFormat> formatList =
                 new ArrayList<VideoCaptureFormat>();

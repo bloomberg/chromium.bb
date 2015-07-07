@@ -34,7 +34,8 @@ public class VideoSurfaceViewUtils {
      */
     public static void assertContainsOneContentVideoView(AwTestBase test, View view)
                 throws Exception {
-        test.assertEquals(1, containsNumChildrenOfType(test, view, ContentVideoView.class));
+        AwTestBase.assertEquals(
+                1, containsNumChildrenOfType(test, view, ContentVideoView.class));
     }
 
     /**
@@ -44,7 +45,8 @@ public class VideoSurfaceViewUtils {
      */
     public static void assertContainsZeroVideoHoleSurfaceViews(AwTestBase test, View view)
                 throws Exception {
-        test.assertEquals(0, containsNumChildrenOfType(test, view, NoPunchingSurfaceView.class));
+        AwTestBase.assertEquals(
+                0, containsNumChildrenOfType(test, view, NoPunchingSurfaceView.class));
     }
 
     /**
@@ -54,7 +56,8 @@ public class VideoSurfaceViewUtils {
      */
     public static void assertContainsOneVideoHoleSurfaceView(AwTestBase test, View view)
             throws Exception {
-        test.assertEquals(1, containsNumChildrenOfType(test, view, NoPunchingSurfaceView.class));
+        AwTestBase.assertEquals(
+                1, containsNumChildrenOfType(test, view, NoPunchingSurfaceView.class));
     }
 
     /**
@@ -88,13 +91,13 @@ public class VideoSurfaceViewUtils {
      */
     public static void pollAndAssertContainsOneVideoHoleSurfaceView(final AwTestBase test,
             final View view) throws InterruptedException {
-        test.assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+        AwTestBase.assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
                     return containsNumChildrenOfType(test, view, NoPunchingSurfaceView.class) == 1;
                 } catch (Exception e) {
-                    test.fail(e.getMessage());
+                    AwTestBase.fail(e.getMessage());
                     return false;
                 }
             }

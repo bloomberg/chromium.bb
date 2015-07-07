@@ -83,7 +83,7 @@ public class EnhancedBookmarkItem extends FrameLayout implements EnhancedBookmar
         mIconImageView = (ImageView) findViewById(R.id.bookmark_image);
         mMoreIcon = (TintedImageButton) findViewById(R.id.more);
         mMoreIcon.setOnClickListener(this);
-        mMoreIcon.setColorFilterMode(PorterDuff.Mode.SRC.MULTIPLY);
+        mMoreIcon.setColorFilterMode(PorterDuff.Mode.MULTIPLY);
         mTitleView = (TextView) findViewById(R.id.title);
         mHighlightView = (EnhancedBookmarkItemHighlightView) findViewById(R.id.highlight);
     }

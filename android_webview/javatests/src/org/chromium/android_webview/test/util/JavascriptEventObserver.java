@@ -35,7 +35,10 @@ public class JavascriptEventObserver {
     public boolean waitForEvent(long time) throws InterruptedException {
         synchronized (mEvent) {
             if (mHappened) return mHappened;
-            mEvent.wait(time);
+            long deadline = System.currentTimeMillis() + time;
+            while (!mHappened && System.currentTimeMillis() < deadline) {
+                mEvent.wait(deadline - System.currentTimeMillis());
+            }
             boolean happened = mHappened;
             mHappened = false;
             return happened;

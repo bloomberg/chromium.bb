@@ -95,7 +95,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     public void maybePreconnect() {
         TraceEvent.begin("maybePreconnect");
         Intent intent = getIntent();
-        if (intent != null && intent.ACTION_VIEW.equals(intent.getAction())) {
+        if (intent != null && Intent.ACTION_VIEW.equals(intent.getAction())) {
             final String url = intent.getDataString();
             WarmupManager.getInstance()
                 .maybePreconnectUrlAndSubResources(Profile.getLastUsedProfile(), url);

@@ -78,7 +78,10 @@ public class WebViewLayoutTestActivity extends Activity {
     public void waitForFinish(long timeout, TimeUnit unit) throws InterruptedException,
             TimeoutException {
         synchronized (mLock) {
-            mLock.wait(unit.toMillis(timeout));
+            long deadline = System.currentTimeMillis() + unit.toMillis(timeout);
+            while (!mFinished && System.currentTimeMillis() < deadline) {
+                mLock.wait(deadline - System.currentTimeMillis());
+            }
             if (!mFinished) {
                 throw new TimeoutException("timeout");
             }

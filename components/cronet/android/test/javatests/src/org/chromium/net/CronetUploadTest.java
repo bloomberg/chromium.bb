@@ -24,6 +24,7 @@ public class CronetUploadTest extends CronetTestBase {
     private TestUploadDataStreamHandler mHandler;
 
     @Override
+    @SuppressWarnings("PrimitiveArrayPassedToVarargsMethod")
     protected void setUp() throws Exception {
         super.setUp();
         launchCronetTestApp();

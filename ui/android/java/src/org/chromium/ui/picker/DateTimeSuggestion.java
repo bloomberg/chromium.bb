@@ -4,6 +4,8 @@
 
 package org.chromium.ui.picker;
 
+import android.text.TextUtils;
+
 /**
  * Date/time suggestion container used to store information for each suggestion that will be shown
  * in the suggestion list dialog. Keep in sync with date_time_suggestion.h.
@@ -43,8 +45,9 @@ public class DateTimeSuggestion {
             return false;
         }
         final DateTimeSuggestion other = (DateTimeSuggestion) object;
-        return mValue == other.mValue && mLocalizedValue == other.mLocalizedValue
-                && mLabel == other.mLabel;
+        return mValue == other.mValue
+                && TextUtils.equals(mLocalizedValue, other.mLocalizedValue)
+                && TextUtils.equals(mLabel, other.mLabel);
     }
 
     @Override

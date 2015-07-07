@@ -290,6 +290,7 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
+    @SuppressWarnings("Finally")
     public void testLoadDataWithBaseUrlAccessingFile() throws Throwable {
         // Create a temporary file on the filesystem we can try to read.
         File cacheDir = getActivity().getCacheDir();

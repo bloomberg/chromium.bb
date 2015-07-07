@@ -250,7 +250,7 @@ public class AwTestContainerView extends FrameLayout {
         mAwContents = awContents;
         if (isBackedByHardwareView()) {
             mHardwareView.initialize(
-                    mAwContents.getAwDrawGLFunction(), mAwContents.getAwDrawGLViewContext());
+                    AwContents.getAwDrawGLFunction(), mAwContents.getAwDrawGLViewContext());
         }
     }
 

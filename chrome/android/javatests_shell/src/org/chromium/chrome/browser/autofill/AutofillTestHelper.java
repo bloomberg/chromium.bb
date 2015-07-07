@@ -131,6 +131,7 @@ public class AutofillTestHelper {
         });
     }
 
+    @SuppressWarnings("WaitNotInLoop")
     public void waitForDataChanged() throws InterruptedException {
         synchronized (mObserverNotified) {
             mObserverNotified.wait(3000);

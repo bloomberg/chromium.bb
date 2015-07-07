@@ -62,6 +62,7 @@ public class VisualStateTest extends AwTestBase {
         }
 
         @Override
+        @SuppressWarnings("Finally")
         public int read() throws IOException {
             try {
                 mLatch.await();
@@ -71,6 +72,7 @@ public class VisualStateTest extends AwTestBase {
         }
 
         @Override
+        @SuppressWarnings("Finally")
         public int read(byte[] buffer, int byteOffset, int byteCount) throws IOException {
             try {
                 mLatch.await();

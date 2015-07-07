@@ -354,7 +354,7 @@ public class DeviceSensorsTest extends AndroidTestCase {
         float[] r = new float[9];
         double[] values = new double[3];
         SensorManager.getRotationMatrix(r, null, gravity, magnetic);
-        mDeviceSensors.computeDeviceOrientationFromRotationMatrix(r, values);
+        DeviceSensors.computeDeviceOrientationFromRotationMatrix(r, values);
 
         assertEquals(expectedAngles.length, values.length);
         final double epsilon = 0.001;

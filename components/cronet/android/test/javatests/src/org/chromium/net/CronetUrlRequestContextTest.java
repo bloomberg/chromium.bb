@@ -130,9 +130,8 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
                 serverHostPort, "unused.net:9999",
                 NativeTestServer.getFileURL("/secureproxychecksuccess.txt"));
         config.setLibraryName("cronet_tests");
-        mActivity.mUrlRequestContext =
-                mActivity.mUrlRequestContext.createContext(
-                        getInstrumentation().getTargetContext(), config);
+        mActivity.mUrlRequestContext = UrlRequestContext.createContext(
+                getInstrumentation().getTargetContext(), config);
         TestUrlRequestListener listener = new TestUrlRequestListener();
 
         // Construct and start a request that can only be returned by the test
