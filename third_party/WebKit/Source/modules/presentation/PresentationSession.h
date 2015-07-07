@@ -91,11 +91,6 @@ private:
 
     PresentationSession(LocalFrame*, const String& id, const String& url);
 
-    // Returns the |PresentationController| object associated with the frame
-    // |Presentation| corresponds to. Can return |nullptr| if the frame is
-    // detached from the document.
-    PresentationController* presentationController();
-
     bool canSendMessage(ExceptionState&);
     void handleMessageQueue();
 

@@ -65,10 +65,6 @@ public:
 private:
     explicit Presentation(LocalFrame*);
 
-    // Returns the |PresentationController| object associated with the frame |Presentation| corresponds to.
-    // Can return |nullptr| if the frame is detached from the document.
-    PresentationController* presentationController();
-
     // Returns the session that matches the WebPresentationSessionClient or null.
     PresentationSession* findSession(WebPresentationSessionClient*);
 

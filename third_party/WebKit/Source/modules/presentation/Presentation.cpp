@@ -22,6 +22,22 @@
 
 namespace blink {
 
+namespace {
+
+// TODO(mlamouri): refactor in one common place.
+WebPresentationClient* presentationClient(ExecutionContext* executionContext)
+{
+    ASSERT(executionContext && executionContext->isDocument());
+
+    Document* document = toDocument(executionContext);
+    if (!document->frame())
+        return nullptr;
+    PresentationController* controller = PresentationController::from(*document->frame());
+    return controller ? controller->client() : nullptr;
+}
+
+} // anonymous namespace
+
 Presentation::Presentation(LocalFrame* frame)
     : DOMWindowProperty(frame)
 {
@@ -34,8 +50,10 @@ Presentation::~Presentation()
 // static
 Presentation* Presentation::create(LocalFrame* frame)
 {
+    ASSERT(frame);
+
     Presentation* presentation = new Presentation(frame);
-    PresentationController* controller = presentation->presentationController();
+    PresentationController* controller = PresentationController::from(*frame);
     if (controller)
         controller->setPresentation(presentation);
     return presentation;
@@ -71,12 +89,12 @@ ScriptPromise Presentation::startSession(ScriptState* state, const String& prese
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(state);
     ScriptPromise promise = resolver->promise();
 
-    PresentationController* controller = presentationController();
-    if (!controller) {
+    WebPresentationClient* client = presentationClient(executionContext());
+    if (!client) {
         resolver->reject(DOMException::create(InvalidStateError, "The object is no longer attached to the frame."));
         return promise;
     }
-    controller->startSession(presentationUrl, presentationId, new PresentationSessionClientCallbacks(resolver, this));
+    client->startSession(presentationUrl, presentationId, new PresentationSessionClientCallbacks(resolver, this));
 
     return promise;
 }
@@ -86,12 +104,12 @@ ScriptPromise Presentation::joinSession(ScriptState* state, const String& presen
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(state);
     ScriptPromise promise = resolver->promise();
 
-    PresentationController* controller = presentationController();
-    if (!controller) {
+    WebPresentationClient* client = presentationClient(executionContext());
+    if (!client) {
         resolver->reject(DOMException::create(InvalidStateError, "The object is no longer attached to the frame."));
         return promise;
     }
-    controller->joinSession(presentationUrl, presentationId, new PresentationSessionClientCallbacks(resolver, this));
+    client->joinSession(presentationUrl, presentationId, new PresentationSessionClientCallbacks(resolver, this));
 
     return promise;
 }
@@ -101,12 +119,12 @@ ScriptPromise Presentation::getAvailability(ScriptState* state, const String& pr
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(state);
     ScriptPromise promise = resolver->promise();
 
-    PresentationController* controller = presentationController();
-    if (!controller) {
+    WebPresentationClient* client = presentationClient(executionContext());
+    if (!client) {
         resolver->reject(DOMException::create(InvalidStateError, "The object is no longer attached to the frame."));
         return promise;
     }
-    controller->getAvailability(presentationUrl, new PresentationAvailabilityCallback(resolver));
+    client->getAvailability(presentationUrl, new PresentationAvailabilityCallback(resolver));
 
     return promise;
 }
@@ -137,13 +155,6 @@ void Presentation::didReceiveSessionTextMessage(WebPresentationSessionClient* se
 void Presentation::registerSession(PresentationSession* session)
 {
     m_openSessions.add(session);
-}
-
-PresentationController* Presentation::presentationController()
-{
-    if (!frame())
-        return nullptr;
-    return PresentationController::from(*frame());
 }
 
 PresentationSession* Presentation::findSession(WebPresentationSessionClient* sessionClient)

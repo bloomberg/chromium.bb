@@ -26,6 +26,18 @@ namespace blink {
 
 namespace {
 
+// TODO(mlamouri): refactor in one common place.
+WebPresentationClient* presentationClient(ExecutionContext* executionContext)
+{
+    ASSERT(executionContext && executionContext->isDocument());
+
+    Document* document = toDocument(executionContext);
+    if (!document->frame())
+        return nullptr;
+    PresentationController* controller = PresentationController::from(*document->frame());
+    return controller ? controller->client() : nullptr;
+}
+
 const AtomicString& SessionStateToString(WebPresentationSessionState state)
 {
     DEFINE_STATIC_LOCAL(const AtomicString, connectedValue, ("connected", AtomicString::ConstructFromLiteral));
@@ -179,29 +191,25 @@ bool PresentationSession::canSendMessage(ExceptionState& exceptionState)
         return false;
     }
 
-    PresentationController* controller = presentationController();
-    if (!controller)
-        return false;
-
-    return true;
+    // The session can send a message if there is a client available.
+    return !!presentationClient(executionContext());
 }
 
 void PresentationSession::handleMessageQueue()
 {
-    PresentationController* controller = presentationController();
-    // Extra check just in case.
-    if (!controller)
+    WebPresentationClient* client = presentationClient(executionContext());
+    if (!client)
         return;
 
     while (!m_messages.isEmpty() && !m_blobLoader) {
         Message* message = m_messages.first().get();
         switch (message->type) {
         case MessageTypeText:
-            controller->send(m_url, m_id, message->text);
+            client->sendString(m_url, m_id, message->text);
             m_messages.removeFirst();
             break;
         case MessageTypeArrayBuffer:
-            controller->send(m_url, m_id, static_cast<const uint8_t*>(message->arrayBuffer->data()), message->arrayBuffer->byteLength());
+            client->sendArrayBuffer(m_url, m_id, static_cast<const uint8_t*>(message->arrayBuffer->data()), message->arrayBuffer->byteLength());
             m_messages.removeFirst();
             break;
         case MessageTypeBlob:
@@ -221,9 +229,9 @@ void PresentationSession::close()
 {
     if (m_state != WebPresentationSessionState::Connected)
         return;
-    PresentationController* controller = presentationController();
-    if (controller)
-        controller->closeSession(m_url, m_id);
+    WebPresentationClient* client = presentationClient(executionContext());
+    if (client)
+        client->closeSession(m_url, m_id);
 
     // Cancel current Blob loading if any.
     if (m_blobLoader) {
@@ -250,21 +258,14 @@ void PresentationSession::didChangeState(WebPresentationSessionState state)
     dispatchEvent(Event::create(EventTypeNames::statechange));
 }
 
-PresentationController* PresentationSession::presentationController()
-{
-    if (!frame())
-        return nullptr;
-    return PresentationController::from(*frame());
-}
-
 void PresentationSession::didFinishLoadingBlob(PassRefPtr<DOMArrayBuffer> buffer)
 {
     ASSERT(!m_messages.isEmpty() && m_messages.first()->type == MessageTypeBlob);
     ASSERT(buffer && buffer->buffer());
     // Send the loaded blob immediately here and continue processing the queue.
-    PresentationController* controller = presentationController();
-    if (controller)
-        controller->sendBlobData(m_url, m_id, static_cast<const uint8_t*>(buffer->data()), buffer->byteLength());
+    WebPresentationClient* client = presentationClient(executionContext());
+    if (client)
+        client->sendBlobData(m_url, m_id, static_cast<const uint8_t*>(buffer->data()), buffer->byteLength());
 
     m_messages.removeFirst();
     m_blobLoader.clear();

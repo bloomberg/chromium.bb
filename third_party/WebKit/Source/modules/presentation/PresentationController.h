@@ -49,27 +49,6 @@ public:
     virtual void didChangeSessionState(WebPresentationSessionClient*, WebPresentationSessionState) override;
     virtual void didReceiveSessionTextMessage(WebPresentationSessionClient*, const WebString&) override;
 
-    // Called when the frame wants to start a new presentation.
-    void startSession(const String& presentationUrl, const String& presentationId, WebPresentationSessionClientCallbacks*);
-
-    // Called when the frame wants to join an existing presentation.
-    void joinSession(const String& presentationUrl, const String& presentationId, WebPresentationSessionClientCallbacks*);
-
-    // Called when the frame wants to send String message to an existing presentation session.
-    void send(const String& presentationUrl, const String& presentationId, const String& message);
-
-    // Called when the frame wants to send ArrayBuffer/View data to an existing presentation session.
-    void send(const String& presentationUrl, const String& presentationId, const uint8_t* data, size_t length);
-
-    // Called when the frame want to send Blob data to an existing presentation session.
-    void sendBlobData(const String& presentationUrl, const String& presentationId, const uint8_t* data, size_t length);
-
-    // Called when the frame wants to close an existing presentation.
-    void closeSession(const String& url, const String& presentationId);
-
-    // Called when the frame wants to know the availability of a device to present.
-    void getAvailability(const String& presentationUrl, WebPresentationAvailabilityCallbacks*);
-
     // Connects the |Presentation| object with this controller.
     void setPresentation(Presentation*);
 

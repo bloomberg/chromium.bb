@@ -92,59 +92,6 @@ void PresentationController::didReceiveSessionTextMessage(WebPresentationSession
     m_presentation->didReceiveSessionTextMessage(sessionClient, message);
 }
 
-void PresentationController::startSession(const String& presentationUrl, const String& presentationId, WebPresentationSessionClientCallbacks* callbacks)
-{
-    if (!m_client) {
-        delete callbacks;
-        return;
-    }
-    m_client->startSession(presentationUrl, presentationId, callbacks);
-}
-
-void PresentationController::joinSession(const String& presentationUrl, const String& presentationId, WebPresentationSessionClientCallbacks* callbacks)
-{
-    if (!m_client) {
-        delete callbacks;
-        return;
-    }
-    m_client->joinSession(presentationUrl, presentationId, callbacks);
-}
-
-void PresentationController::send(const String& presentationUrl, const String& presentationId, const String& message)
-{
-    if (!m_client)
-        return;
-    m_client->sendString(presentationUrl, presentationId, message);
-}
-
-void PresentationController::send(const String& presentationUrl, const String& presentationId, const uint8_t* data, size_t length)
-{
-    if (!m_client)
-        return;
-    m_client->sendArrayBuffer(presentationUrl, presentationId, data, length);
-}
-
-void PresentationController::sendBlobData(const String& presentationUrl, const String& presentationId, const uint8_t* data, size_t length)
-{
-    if (!m_client)
-        return;
-    m_client->sendBlobData(presentationUrl, presentationId, data, length);
-}
-
-void PresentationController::closeSession(const String& url, const String& presentationId)
-{
-    if (!m_client)
-        return;
-    m_client->closeSession(url, presentationId);
-}
-
-void PresentationController::getAvailability(const String& presentationUrl, WebPresentationAvailabilityCallbacks* callbacks)
-{
-    if (!m_client)
-        return;
-    m_client->getAvailability(presentationUrl, callbacks);
-}
-
 void PresentationController::setPresentation(Presentation* presentation)
 {
     m_presentation = presentation;
