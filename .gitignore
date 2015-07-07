@@ -12,4 +12,6 @@ buildbot/.completed_stages
 tags
 .ctags
 cscope.out
-sdk_checkouts/
+
+# Directory that might hold site config checkout.
+config/
