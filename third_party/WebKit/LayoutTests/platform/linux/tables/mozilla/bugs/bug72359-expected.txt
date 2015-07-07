@@ -24,6 +24,8 @@ layer at (0,0) size 800x68
                       LayoutTableCell {cell} at (102,0) size 46x20 [color=#FFFFFF] [bgcolor=#008000] [r=0 c=2 rs=1 cs=1]
                         LayoutText {#text} at (0,0) size 46x19
                           text run at (0,0) width 46: "O RED"
+                LayoutBlockFlow (anonymous) at (0,20) size 148x0
+                  LayoutText {#text} at (0,0) size 0x0
             LayoutTableRow (anonymous) at (0,40) size 148x20
               LayoutTableCell {cell} at (0,40) size 148x20 [color=#FFFFFF] [bgcolor=#008000] [r=2 c=0 rs=1 cs=1]
                 LayoutText {#text} at (30,0) size 88x19

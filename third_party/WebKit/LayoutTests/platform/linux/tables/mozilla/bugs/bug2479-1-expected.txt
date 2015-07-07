@@ -237,13 +237,19 @@ layer at (0,0) size 785x989 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutBlockFlow {SPAN} at (0,0) size 139x20
                 LayoutText {#text} at (0,0) size 139x19
                   text run at (0,0) width 139: "Table 2, Row 2, Cell 1"
+              LayoutBlockFlow (anonymous) at (0,20) size 139x0
+                LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {SPAN} at (139,20) size 139x20 [r=1 c=1 rs=1 cs=1]
               LayoutText {#text} at (0,0) size 139x19
                 text run at (0,0) width 139: "Table 2, Row 2, Cell 2"
             LayoutTableCell (anonymous) at (278,20) size 236x60 [r=1 c=2 rs=1 cs=1]
+              LayoutBlockFlow (anonymous) at (0,0) size 236x0
+                LayoutText {#text} at (0,0) size 0x0
               LayoutBlockFlow {SPAN} at (0,0) size 236x20
                 LayoutText {#text} at (0,0) size 139x19
                   text run at (0,0) width 139: "Table 2, Row 2, Cell 3"
+              LayoutBlockFlow (anonymous) at (0,20) size 236x0
+                LayoutText {#text} at (0,0) size 0x0
               LayoutBlockFlow {SPAN} at (0,20) size 236x20
                 LayoutText {#text} at (0,0) size 167x19
                   text run at (0,0) width 167: "also Table 2, Row 2, Cell 3"
@@ -253,24 +259,33 @@ layer at (0,0) size 785x989 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             LayoutTableCell {SPAN} at (514,20) size 139x20 [r=1 c=3 rs=1 cs=1]
               LayoutText {#text} at (0,0) size 139x19
                 text run at (0,0) width 139: "Table 2, Row 2, Cell 4"
+            LayoutTableCell (anonymous) at (653,20) size 0x0 [r=1 c=4 rs=1 cs=1]
+              LayoutText {#text} at (0,0) size 0x0
           LayoutTableRow {SPAN} at (0,80) size 653x20 [bgcolor=#00FFFF]
             LayoutTableCell (anonymous) at (0,80) size 139x20 [r=2 c=0 rs=1 cs=1]
               LayoutInline {SPAN} at (0,0) size 139x19
                 LayoutText {#text} at (0,0) size 139x19
                   text run at (0,0) width 139: "Table 2, Row 3, Cell 1"
+              LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {SPAN} at (139,80) size 139x20 [r=2 c=1 rs=1 cs=1]
               LayoutText {#text} at (0,0) size 139x19
                 text run at (0,0) width 139: "Table 2, Row 3, Cell 2"
             LayoutTableCell (anonymous) at (278,80) size 236x20 [r=2 c=2 rs=1 cs=1]
+              LayoutBlockFlow (anonymous) at (0,0) size 236x0
+                LayoutText {#text} at (0,0) size 0x0
               LayoutTable {SPAN} at (0,0) size 236x20 [bgcolor=#00FFFF]
                 LayoutTableSection (anonymous) at (0,0) size 236x20
                   LayoutTableRow (anonymous) at (0,0) size 236x20
                     LayoutTableCell (anonymous) at (0,0) size 236x20 [r=0 c=0 rs=1 cs=1]
                       LayoutText {#text} at (0,0) size 236x19
                         text run at (0,0) width 236: "Table 2, Row 3, Cell 3 (a nested table)"
+              LayoutBlockFlow (anonymous) at (0,20) size 236x0
+                LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {SPAN} at (514,80) size 139x20 [r=2 c=3 rs=1 cs=1]
               LayoutText {#text} at (0,0) size 139x19
                 text run at (0,0) width 139: "Table 2, Row 3, Cell 4"
+            LayoutTableCell (anonymous) at (653,80) size 0x0 [r=2 c=4 rs=1 cs=1]
+              LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {HR} at (0,825.69) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,843.69) size 769x36
         LayoutInline {A} at (0,0) size 88x19 [color=#0000EE]

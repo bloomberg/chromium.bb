@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<style>
+.ib {
+    display: inline-block;
+    width: 300px;
+    background:red;
+}
+</style>
+<p> crbug.com/473832: Allow whitespace between the children of anonymous table cells. </p>
+<div style="display:table; width:700px;">
+    <div class="ib">There should be whitespace</div>
+    <div class="ib">between the two red rectangles.</div>
+</div>
+<div style="display:table; width:700px;">
+    <div style="display:table-row;">
+            <div class="ib">There should be whitespace</div>
+            <div class="ib">between the two red rectangles.</div>
+    </div>
+</div>

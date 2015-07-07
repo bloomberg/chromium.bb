@@ -10,6 +10,8 @@ layer at (0,0) size 800x36
               LayoutBlockFlow {DIV} at (0,0) size 10x10
                 LayoutText {#text} at (0,0) size 10x10
                   text run at (0,0) width 10: "A"
+              LayoutBlockFlow (anonymous) at (0,10) size 10x0
+                LayoutText {#text} at (0,0) size 0x0
             LayoutTableCell {TD} at (10,0) size 10x10 [r=0 c=1 rs=1 cs=1]
               LayoutText {#text} at (0,0) size 10x10
                 text run at (0,0) width 10: "B"
@@ -17,6 +19,10 @@ layer at (0,0) size 800x36
               LayoutBlockFlow {DIV} at (0,0) size 10x10
                 LayoutText {#text} at (0,0) size 10x10
                   text run at (0,0) width 10: "C"
+              LayoutBlockFlow (anonymous) at (0,10) size 10x0
+                LayoutText {#text} at (0,0) size 0x0
               LayoutBlockFlow {DIV} at (0,10) size 10x10
                 LayoutText {#text} at (0,0) size 10x10
                   text run at (0,0) width 10: "D"
+              LayoutBlockFlow (anonymous) at (0,20) size 10x0
+                LayoutText {#text} at (0,0) size 0x0
