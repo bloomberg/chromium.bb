@@ -50,6 +50,7 @@ import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.content_public.common.ConsoleMessageLevel;
 import org.chromium.content_public.common.TopControlsState;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -1111,6 +1112,19 @@ public class ContextualSearchManager extends ContextualSearchObservable
                 mSearchPanelDelegate.maximizePanelThenPromoteToTab(
                         StateChangeReason.TAB_PROMOTION,
                         INTERCEPT_NAVIGATION_PROMOTION_ANIMATION_DURATION_MS);
+                return true;
+            }
+            if (navigationParams.isExternalProtocol) {
+                ContentViewCore baseContentView = getBaseContentView();
+                if (baseContentView != null) {
+                    int resId = mExternalNavHandler.canExternalAppHandleUrl(navigationParams.url)
+                            ? R.string.blocked_navigation_warning
+                            : R.string.unreachable_navigation_warning;
+                    String message = mActivity.getApplicationContext().getString(
+                            resId, navigationParams.url);
+                    baseContentView.getWebContents().addMessageToDevToolsConsole(
+                            ConsoleMessageLevel.WARNING, message);
+                }
                 return true;
             }
             return false;
