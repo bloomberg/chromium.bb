@@ -23,7 +23,6 @@ from chromite.lib import operation
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import remote_access
-from chromite.lib import workspace_lib
 
 
 _DEVSERVER_STATIC_DIR = path_util.FromChrootPath(
@@ -122,13 +121,12 @@ class FlashError(Exception):
 class USBImager(object):
   """Copy image to the target removable device."""
 
-  def __init__(self, device, board, image, workspace_path=None, debug=False,
-               install=False, yes=False):
+  def __init__(self, device, board, image, debug=False, install=False,
+               yes=False):
     """Initalizes USBImager."""
     self.device = device
     self.board = board if board else cros_build_lib.GetDefaultBoard()
     self.image = image
-    self.workspace_path = workspace_path
     self.debug = debug
     self.debug_level = logging.DEBUG if debug else logging.INFO
     self.install = install
@@ -242,8 +240,7 @@ class USBImager(object):
       translated_path, _ = ds_wrapper.GetImagePathWithXbuddy(
           self.image, self.board, static_dir=_DEVSERVER_STATIC_DIR)
       image_path = ds_wrapper.TranslatedPathToLocalPath(
-          translated_path, _DEVSERVER_STATIC_DIR,
-          workspace_path=self.workspace_path)
+          translated_path, _DEVSERVER_STATIC_DIR)
 
     logging.info('Using image %s', translated_path or image_path)
     return image_path
@@ -319,8 +316,8 @@ class RemoteDeviceUpdater(object):
 
   def __init__(self, ssh_hostname, ssh_port, image, stateful_update=True,
                rootfs_update=True, clobber_stateful=False, reboot=True,
-               board=None, workspace_path=None, src_image_to_delta=None,
-               wipe=True, debug=False, yes=False, force=False, ping=True,
+               board=None, src_image_to_delta=None, wipe=True, debug=False,
+               yes=False, force=False, ping=True,
                disable_verification=False):
     """Initializes RemoteDeviceUpdater"""
     if not stateful_update and not rootfs_update:
@@ -331,7 +328,6 @@ class RemoteDeviceUpdater(object):
     self.ssh_port = ssh_port
     self.image = image
     self.board = board
-    self.workspace_path = workspace_path
     self.src_image_to_delta = src_image_to_delta
     self.do_stateful_update = stateful_update
     self.do_rootfs_update = rootfs_update
@@ -391,8 +387,7 @@ class RemoteDeviceUpdater(object):
       clobber: Clobber stateful partition (defaults to False).
     """
     # Copy latest stateful_update to device.
-    stateful_update_bin = path_util.FromChrootPath(
-        self.STATEFUL_UPDATE_BIN, workspace_path=self.workspace_path)
+    stateful_update_bin = path_util.FromChrootPath(self.STATEFUL_UPDATE_BIN)
     device.CopyToWorkDir(stateful_update_bin)
     msg = 'Updating stateful partition'
     logging.info('Copying stateful payload to device...')
@@ -457,8 +452,7 @@ class RemoteDeviceUpdater(object):
     device.CopyToDevice(payload, payload_dir)
     devserver_bin = os.path.join(src_dir, self.DEVSERVER_FILENAME)
     ds = ds_wrapper.RemoteDevServerWrapper(
-        device, devserver_bin, workspace_path=self.workspace_path,
-        static_dir=static_dir, log_dir=device.work_dir)
+        device, devserver_bin, static_dir=static_dir, log_dir=device.work_dir)
 
     logging.info('Updating rootfs partition')
     try:
@@ -617,8 +611,7 @@ class RemoteDeviceUpdater(object):
           ds_wrapper.GetUpdatePayloadsFromLocalPath(
               self.image, payload_dir,
               src_image_to_delta=self.src_image_to_delta,
-              static_dir=_DEVSERVER_STATIC_DIR,
-              workspace_path=self.workspace_path)
+              static_dir=_DEVSERVER_STATIC_DIR)
         else:
           self.board = cros_build_lib.GetBoard(device_board=device.board,
                                                override_board=self.board,
@@ -646,7 +639,6 @@ class RemoteDeviceUpdater(object):
           ds_wrapper.GetUpdatePayloads(
               image_path, payload_dir, board=self.board,
               src_image_to_delta=self.src_image_to_delta,
-              workspace_path=self.workspace_path,
               static_dir=_DEVSERVER_STATIC_DIR)
 
         # Verify that all required payloads are in the payload directory.
@@ -775,8 +767,6 @@ def Flash(device, image, board=None, install=False, src_image_to_delta=None,
     if not cros_build_lib.IsInsideChroot():
       raise ValueError('--install can only be used inside the chroot')
 
-  workspace_path = workspace_lib.WorkspacePath()
-
   if not device or device.scheme == commandline.DEVICE_SCHEME_SSH:
     if device:
       hostname, port = device.hostname, device.port
@@ -788,7 +778,6 @@ def Flash(device, image, board=None, install=False, src_image_to_delta=None,
         port,
         image,
         board=board,
-        workspace_path=workspace_path,
         src_image_to_delta=src_image_to_delta,
         rootfs_update=rootfs_update,
         stateful_update=stateful_update,
@@ -807,7 +796,6 @@ def Flash(device, image, board=None, install=False, src_image_to_delta=None,
     imager = USBImager(path,
                        board,
                        image,
-                       workspace_path=workspace_path,
                        debug=debug,
                        install=install,
                        yes=yes)
