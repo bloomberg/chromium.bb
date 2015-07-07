@@ -18,6 +18,7 @@ set -o nounset
 set -o errexit
 
 readonly SCRIPT_DIR=$(dirname $0)
+readonly NACL_ROOT=$(cd ${SCRIPT_DIR}/../.. && pwd)
 
 readonly MAKE_OPTS="-j8"
 readonly ARCH="mips32"
@@ -48,15 +49,23 @@ readonly GLIBC_SHA1SUM="382f4438a7321dc29ea1a3da8e7852d2c2b3208c"
 
 readonly DOWNLOAD_QEMU_URL="http://wiki.qemu-project.org/download/qemu-2.0.0.tar.bz2"
 
-readonly INSTALL_ROOT=$(pwd)/toolchain/linux_x86/mips_trusted
-
-readonly TMP=$(pwd)/toolchain/tmp/crosstool-trusted
-
-readonly BUILD_DIR=${TMP}/build
-
+readonly OUT_DIR=$(dirname ${NACL_ROOT})/out
+readonly INSTALL_ROOT=${NACL_ROOT}/toolchain/linux_x86/mips_trusted
 readonly JAIL_MIPS32=${INSTALL_ROOT}/sysroot
-
+readonly TMP=${OUT_DIR}/sysroot_mips_trusted
+readonly BUILD_DIR=${TMP}/build
 readonly CROSS_TARBALL="chromesdk_linux_mipsel"
+readonly TAR_ARCHIVE=${OUT_DIR}/sysroot_mipsel_trusted_jessie.tar.gz
+readonly PACKAGES="
+libgcc1
+libc6
+libc6-dev
+libstdc++6
+libssl1.0.0
+libssl-dev
+zlib1g
+zlib1g-dev
+"
 
 ######################################################################
 # Helper
@@ -74,13 +83,9 @@ SubBanner() {
   echo "......................................................................"
 }
 
+
 Usage() {
-  echo
-  echo "$0 <nacl_sdk|chrome_sdk>"
-  echo
-  echo "nacl_sdk - Build nacl toolchain and package it"
-  echo "chrome_sdk - Build chrome toolchain and package it"
-  echo
+  egrep "^#@" $0 | cut --bytes=3-
 }
 
 DownloadOrCopy() {
@@ -97,6 +102,8 @@ DownloadOrCopy() {
     if [ ! -f "${filename}" ]; then
       SubBanner "downloading from ${url} -> ${filename}"
       wget ${url} -O ${filename}
+    else
+      SubBanner "using existing file: ${filename}"
     fi
   else
     SubBanner "copying from ${url}"
@@ -119,6 +126,8 @@ DownloadOrCopyAndVerify() {
     if [ ! -f "${filename}" ]; then
       SubBanner "downloading from ${url} -> ${filename}"
       wget ${url} -O ${filename}
+    else
+      SubBanner "using existing file: ${filename}"
     fi
     if [ "${checksum}" != "nochecksum" ]; then
       if [ "$(sha1sum ${filename} | cut -d ' ' -f 1)" != "${checksum}" ]; then
@@ -163,19 +172,20 @@ SanityCheck() {
 
 ClearInstallDir() {
   Banner "clearing dirs in ${INSTALL_ROOT}"
-  rm -rf ${INSTALL_ROOT}/*
-  mkdir -p ${JAIL_MIPS32}
+  rm -rf ${INSTALL_ROOT}
+  mkdir -p ${INSTALL_ROOT}
 }
+
 
 ClearBuildDir() {
   Banner "clearing dirs in ${BUILD_DIR}"
   rm -rf ${BUILD_DIR}/*
 }
 
+
 CreateTarBall() {
-  local tarball=$1
-  Banner "creating tar ball ${tarball}"
-  tar cfz ${tarball}.tgz -C ${INSTALL_ROOT} .
+  Banner "creating tar ball ${TAR_ARCHIVE}"
+  tar cfz ${TAR_ARCHIVE} -C ${INSTALL_ROOT} .
 }
 
 
@@ -185,10 +195,12 @@ DownloadOrCopyAndInstallToolchain() {
 
   tarball="${TMP}/${GCC_URL##*/}"
   DownloadOrCopyAndVerify ${GCC_URL} ${GCC_SHA1SUM}
-  SubBanner "extracting from ${tarball}"
-  tar jxf ${tarball} -C ${TMP}
+  if [ ! -d ${TMP}/gcc-4.9.0 ]; then
+    SubBanner "extracting from ${tarball}"
+    tar jxf ${tarball} -C ${TMP}
+  fi
 
-  pushd ${TMP}/gcc-*
+  pushd ${TMP}/gcc-4.9.0
 
   local tarball="${TMP}/${GMP_URL##*/}"
   DownloadOrCopyAndVerify ${GMP_URL} ${GMP_SHA1SUM}
@@ -220,13 +232,17 @@ DownloadOrCopyAndInstallToolchain() {
 
   local tarball="${TMP}/${BINUTILS_URL##*/}"
   DownloadOrCopyAndVerify ${BINUTILS_URL} ${BINUTILS_SHA1SUM}
-  SubBanner "extracting from ${tarball}"
-  tar jxf ${tarball} -C ${TMP}
+  if [ ! -d ${TMP}/binutils-2.24 ]; then
+    SubBanner "extracting from ${tarball}"
+    tar jxf ${tarball} -C ${TMP}
+  fi
 
   tarball="${TMP}/${GDB_URL##*/}"
   DownloadOrCopyAndVerify ${GDB_URL} ${GDB_SHA1SUM}
-  SubBanner "extracting from ${tarball}"
-  tar jxf ${tarball} -C ${TMP}
+  if [ ! -d ${TMP}/gdb-7.7.1 ]; then
+    SubBanner "extracting from ${tarball}"
+    tar jxf ${tarball} -C ${TMP}
+  fi
 
   tarball="${TMP}/${KERNEL_URL##*/}"
   DownloadOrCopyAndVerify ${KERNEL_URL} ${KERNEL_SHA1SUM}
@@ -235,8 +251,10 @@ DownloadOrCopyAndInstallToolchain() {
 
   tarball="${TMP}/${GLIBC_URL##*/}"
   DownloadOrCopyAndVerify ${GLIBC_URL} ${GLIBC_SHA1SUM}
-  SubBanner "extracting from ${tarball}"
-  tar jxf ${tarball} -C ${TMP}
+  if [ ! -d ${TMP}/glibc-2.19 ]; then
+    SubBanner "extracting from ${tarball}"
+    tar jxf ${tarball} -C ${TMP}
+  fi
 
 
   Banner "Preparing the code"
@@ -248,17 +266,18 @@ DownloadOrCopyAndInstallToolchain() {
   sed -i "s/${OLD_TEXT}/${NEW_TEXT}/g" "${FILE_NAME}"
 
   export PATH=${INSTALL_ROOT}/bin:$PATH
+  local PREFIX_MIPSEL=/usr
+  local PREFIX=/
 
 
   Banner "Building binutils"
 
-  rm -rf ${BUILD_DIR}/binutils/
   mkdir -p ${BUILD_DIR}/binutils/
   pushd ${BUILD_DIR}/binutils/
 
   SubBanner "Configuring"
   ${TMP}/binutils-2.24/configure \
-    --prefix=${INSTALL_ROOT}     \
+    --prefix=${PREFIX}           \
     --target=mipsel-linux-gnu    \
     --with-sysroot=${JAIL_MIPS32}
 
@@ -266,20 +285,20 @@ DownloadOrCopyAndInstallToolchain() {
   make ${MAKE_OPTS} all-binutils all-gas all-ld
 
   SubBanner "Install"
-  make ${MAKE_OPTS} install-binutils install-gas install-ld
+  make ${MAKE_OPTS} DESTDIR=${INSTALL_ROOT} install-binutils install-gas \
+    install-ld
 
   popd
 
 
   Banner "Building GCC (initial)"
 
-  rm -rf ${BUILD_DIR}/gcc/initial
   mkdir -p ${BUILD_DIR}/gcc/initial
   pushd ${BUILD_DIR}/gcc/initial
 
   SubBanner "Configuring"
   ${TMP}/gcc-4.9.0/configure \
-    --prefix=${INSTALL_ROOT} \
+    --prefix=${PREFIX}       \
     --disable-libssp         \
     --disable-libgomp        \
     --disable-libmudflap     \
@@ -301,21 +320,21 @@ DownloadOrCopyAndInstallToolchain() {
   make ${MAKE_OPTS} all
 
   SubBanner "Install"
-  make ${MAKE_OPTS} install
+  make ${MAKE_OPTS} DESTDIR=${INSTALL_ROOT} install
 
   popd
 
 
   Banner "Installing Linux kernel headers"
   pushd ${TMP}/linux-3.14.2
-  make headers_install ARCH=mips INSTALL_HDR_PATH=${JAIL_MIPS32}/usr
+  make headers_install ARCH=mips INSTALL_HDR_PATH=${JAIL_MIPS32}${PREFIX_MIPSEL}
   popd
+
 
   Banner "Building GLIBC"
 
-  rm -rf ${BUILD_DIR}/glibc/final
-  mkdir -p ${BUILD_DIR}/glibc/final
-  pushd ${BUILD_DIR}/glibc/final
+  mkdir -p ${BUILD_DIR}/glibc
+  pushd ${BUILD_DIR}/glibc
 
   BUILD_CC=gcc                      \
   AR=mipsel-linux-gnu-ar            \
@@ -323,32 +342,34 @@ DownloadOrCopyAndInstallToolchain() {
   CC=mipsel-linux-gnu-gcc           \
   CXX=mipsel-linux-gnu-g++          \
   ${TMP}/glibc-2.19/configure       \
-    --prefix=/usr                   \
+    --prefix=${PREFIX_MIPSEL}       \
     --enable-add-ons                \
     --host=mipsel-linux-gnu         \
     --disable-profile               \
     --without-gd                    \
     --without-cvs                   \
     --build=i686-pc-linux-gnu       \
-    --with-headers=${JAIL_MIPS32}/usr/include
+    --with-sysroot=${JAIL_MIPS32}   \
+    --with-headers=${JAIL_MIPS32}${PREFIX_MIPSEL}/include
+
 
   SubBanner "Make"
   make ${MAKE_OPTS} all
 
   SubBanner "Install"
-  make ${MAKE_OPTS} install install_root=${JAIL_MIPS32}
+  make ${MAKE_OPTS} DESTDIR=${JAIL_MIPS32} install
 
   popd
 
-
   Banner "Building GCC (final)"
 
-  rm -rf ${BUILD_DIR}/gcc/final
   mkdir -p ${BUILD_DIR}/gcc/final
   pushd ${BUILD_DIR}/gcc/final
 
+  export MULTIARCH_DIRNAME=mipsel-linux-gnu
+
   ${TMP}/gcc-4.9.0/configure  \
-    --prefix=${INSTALL_ROOT}  \
+    --prefix=${PREFIX}        \
     --disable-libssp          \
     --disable-libgomp         \
     --disable-libmudflap      \
@@ -360,32 +381,34 @@ DownloadOrCopyAndInstallToolchain() {
     --target=mipsel-linux-gnu \
     --enable-__cxa_atexit     \
     --enable-languages=c,c++  \
-    --with-sysroot=${JAIL_MIPS32}
+    --enable-multiarch        \
+    --with-sysroot=${PREFIX}/sysroot \
+    --with-build-sysroot=${JAIL_MIPS32}
+
 
   SubBanner "Make"
   make ${MAKE_OPTS} all
 
   SubBanner "Install"
-  make ${MAKE_OPTS} install
+  make ${MAKE_OPTS} DESTDIR=${INSTALL_ROOT} install
 
   popd
 
 
   Banner "Building GDB"
 
-  rm -rf ${BUILD_DIR}/gdb/
   mkdir -p ${BUILD_DIR}/gdb/
   pushd ${BUILD_DIR}/gdb/
 
   ${TMP}/gdb-7.7.1/configure   \
-    --prefix=${INSTALL_ROOT} \
+    --prefix=${PREFIX}         \
     --target=mipsel-linux-gnu
 
   SubBanner "Make"
   make ${MAKE_OPTS} all-gdb
 
   SubBanner "Install"
-  make ${MAKE_OPTS} install-gdb
+  make ${MAKE_OPTS} DESTDIR=${INSTALL_ROOT} install-gdb
 
   popd
 }
@@ -395,136 +418,44 @@ DownloadOrCopyAndInstallToolchain() {
 # mips32 deb files to complete our code sourcery jail
 # ----------------------------------------------------------------------
 
-readonly REPO_DEBIAN=http://ftp.debian.org/debian
-readonly MIPS32_PACKAGES=${REPO_DEBIAN}/dists/wheezy/main/binary-mipsel/Packages.bz2
+readonly REPO=http://ftp.debian.org/debian
+readonly MIPS32_PACKAGES=${REPO}/dists/jessie/main/binary-mipsel/Packages.gz
+readonly PACKAGE_LIST=${SCRIPT_DIR}/packagelist.jessie.mipsel.base
 
-readonly BASE_PACKAGELIST_MIPS32=${SCRIPT_DIR}/packagelist.wheezy.mipsel.base
-readonly EXTRA_PACKAGELIST_MIPS32=${SCRIPT_DIR}/packagelist.wheezy.mipsel.extra
-readonly TMP_BASE_PKG_MIPS32=${TMP}/packagelist.generated.wheezy.mipsel.base
-readonly TMP_EXTRA_PKG_MIPS32=${TMP}/packagelist.generated.wheezy.mipsel.extra
-
-GeneratePackageLists() {
-  local sdk_target=$1
-  local packages=
-  local TMP_PACKAGELIST=
-  Banner "generating ${sdk_target} package lists for mips32"
-  rm -f ${TMP}/Packages.bz2
+#@
+#@ GeneratePackageList
+#@
+GeneratePackageList() {
+  Banner "generating package lists for mips32"
+  rm -f ${TMP}/Packages.gz
   DownloadOrCopy ${MIPS32_PACKAGES}
-  bzcat ${TMP}/Packages.bz2\
+  zcat ${TMP}/Packages.gz\
     | egrep '^(Package:|Filename:)' > ${TMP}/Packages_mipsel
 
-  if [ ${sdk_target} == "nacl_sdk" ] ; then
-    echo -n > ${TMP_BASE_PKG_MIPS32}
-    TMP_PACKAGELIST=${TMP_BASE_PKG_MIPS32}
-    packages=$(cat ${BASE_PACKAGELIST_MIPS32})
-  elif [ ${sdk_target} == "chrome_sdk" ] ; then
-    echo -n > ${TMP_EXTRA_PKG_MIPS32}
-    TMP_PACKAGELIST=${TMP_EXTRA_PKG_MIPS32}
-    packages=$(cat ${EXTRA_PACKAGELIST_MIPS32})
-  else
-    Banner "ERROR: Packages for \"${sdk_taget}\" not defined."
-    exit -1
-  fi
+  echo -n > ${PACKAGE_LIST}
 
-  for pkg in ${packages} ; do
+  for pkg in ${PACKAGES} ; do
     grep  -A 1 "${pkg}\$" ${TMP}/Packages_mipsel\
-      | egrep -o "pool/.*" >> ${TMP_PACKAGELIST}
+      | egrep -o "pool/.*" >> ${PACKAGE_LIST}
   done
 }
 
-InstallMissingLibraries() {
-  local sdk_target=$1
+#@
+#@ InstallPackages
+#@
+InstallPackages() {
+  mkdir -p ${JAIL_MIPS32}
   local DEP_FILES_NEEDED_MIPS32=
-
-  if [ ${sdk_target} == "nacl_sdk" ] ; then
-    DEP_FILES_NEEDED_MIPS32=$(cat ${TMP_BASE_PKG_MIPS32})
-  elif [ ${sdk_target} == "chrome_sdk" ] ; then
-    DEP_FILES_NEEDED_MIPS32=$(cat ${TMP_EXTRA_PKG_MIPS32})
-  else
-    Banner "ERROR: Target \"${sdk_taget}\" not defined."
-    exit -1
-  fi
+  DEP_FILES_NEEDED_MIPS32=$(cat ${PACKAGE_LIST})
 
   for file in ${DEP_FILES_NEEDED_MIPS32} ; do
     local package="${TMP}/${file##*/}"
     Banner "installing ${file}"
-    DownloadOrCopy ${REPO_DEBIAN}/${file}
+    DownloadOrCopy ${REPO}/${file}
     SubBanner "extracting to ${JAIL_MIPS32}"
     dpkg --fsys-tarfile ${package}\
       | tar -xvf - --exclude=./usr/share -C ${JAIL_MIPS32}
   done
-}
-
-# Workaround for missing headers since pkg-config is not working correctly.
-FixIncludes() {
-  Banner "Fixing includes"
-  pushd ${JAIL_MIPS32}/usr/include/glib-2.0
-    ln -s ../../lib/glib-2.0/include/glibconfig.h .
-  popd
-
-  pushd ${JAIL_MIPS32}/usr/include/gtk-2.0
-    ln -s ../../lib/gtk-2.0/include/gdkconfig.h .
-  popd
-
-  pushd ${JAIL_MIPS32}/usr/include/dbus-1.0/dbus
-    ln -s ../../../lib/dbus-1.0/include/dbus/dbus-arch-deps.h .
-  popd
-}
-
-FixLinks() {
-  Banner "Fixing links"
-  pushd ${JAIL_MIPS32}/lib/
-    mv mipsel-linux-gnu/* .
-    rm -rf mipsel-linux-gnu
-    ln -s . mipsel-linux-gnu
-  popd
-
-  pushd ${JAIL_MIPS32}/usr/lib/
-    mkdir -p pkgconfig
-    mv mipsel-linux-gnu/pkgconfig/* pkgconfig/
-    rm -rf mipsel-linux-gnu/pkgconfig
-    mv mipsel-linux-gnu/* .
-    rm -rf mipsel-linux-gnu
-    ln -s . mipsel-linux-gnu
-  popd
-
-  pushd ${JAIL_MIPS32}/usr/lib/
-    rm -f libstdc++.so*
-    ln -s ../../../mipsel-linux-gnu/lib/libstdc++.so.6.0.20 .
-    ln -s libstdc++.so.6.0.20 libstdc++.so.6
-    ln -s libstdc++.so.6.0.20 libstdc++.so
-
-    rm -f libgcc_s.so*
-    ln -s ../../../mipsel-linux-gnu/lib/libgcc_s.so.1 .
-    ln -s libgcc_s.so.1 libgcc_s.so
-  popd
-}
-
-FixLibs() {
-  Banner "Fixing libraries"
-
-  readonly liblist="libbz2.so       \
-                    libcom_err.so   \
-                    libdbus-1.so    \
-                    libexpat.so     \
-                    libglib-2.0.so  \
-                    libgpg-error.so \
-                    libkeyutils.so  \
-                    libpamc.so      \
-                    libpam_misc.so  \
-                    libpam.so       \
-                    libpci.so       \
-                    libpcre.so      \
-                    libpng12.so     \
-                    libudev.so      \
-                    libz.so"
-
-  pushd ${JAIL_MIPS32}/usr/lib/
-    for library in ${liblist}; do
-      rm -f ${library}
-      ln -s ../../lib/${library}.[0123] ${library}
-    done
-  popd
 }
 
 BuildAndInstallQemu() {
@@ -556,8 +487,7 @@ BuildAndInstallQemu() {
     --disable-linux-aio
 
   SubBanner "Make"
-  env -i PATH=/usr/bin/:/bin \
-      make MAKE_OPTS=${MAKE_OPTS}
+  env -i PATH=/usr/bin/:/bin make ${MAKE_OPTS}
 
   SubBanner "Install"
   cp mipsel-linux-user/qemu-mipsel ${INSTALL_ROOT}/qemu-mips32
@@ -566,37 +496,90 @@ BuildAndInstallQemu() {
   ln -sf qemu_tool_mips32.sh ${INSTALL_ROOT}/run_under_qemu_mips32
 }
 
+CleanupSysrootSymlinks() {
+  Banner "jail symlink cleanup"
+
+  pushd ${JAIL_MIPS32}
+  find usr/lib -type l -printf '%p %l\n' | while read link target; do
+    # skip links with non-absolute paths
+    if [[ ${target} != /* ]] ; then
+      continue
+    fi
+    echo "${link}: ${target}"
+    case "${link}" in
+      usr/lib/mipsel-linux-gnu/*)
+        # Relativize the symlink.
+        ln -snfv "../../..${target}" "${link}"
+        ;;
+      usr/lib/*)
+        # Relativize the symlink.
+        ln -snfv "../..${target}" "${link}"
+        ;;
+    esac
+  done
+
+  find usr/lib -type l -printf '%p %l\n' | while read link target; do
+    # Make sure we catch new bad links.
+    if [ ! -r "${link}" ]; then
+      echo "ERROR: FOUND BAD LINK ${link}"
+      exit -1
+    fi
+  done
+  popd
+}
+
+#@
+#@ UploadArchive <revision>
+#@
+#@    Upload archive to Cloud Storage along with json manifest and
+#@    update toolchain_revisions to point to new version.
+#@    This requires write access the Cloud Storage bucket for Native Client.
+UploadArchive() {
+  local REV=$1
+  local TAR_NAME=$(basename ${TAR_ARCHIVE})
+  local GS_FILE=nativeclient-archive2/toolchain/${REV}/${TAR_NAME}
+  local URL=https://storage.googleapis.com/${GS_FILE}
+  set -x
+  gsutil cp -a public-read ${TAR_ARCHIVE} gs://${GS_FILE}
+  local package_version=build/package_version/package_version.py
+  ${package_version} archive --archive-package linux_x86/mips_trusted \
+      ${TAR_ARCHIVE}@${URL}
+  ${package_version} upload --upload-package linux_x86/mips_trusted \
+      --revision ${REV}
+  ${package_version} setrevision --revision-package linux_x86/mips_trusted \
+      --revision ${REV}
+  set +x
+}
+
+help() {
+  Usage
+}
+
 ######################################################################
 # Main
 ######################################################################
 
-if [[ $# -eq 0 ]] ; then
-  echo "you must specify a mode on the commandline:"
-  echo
-  Usage
-  exit -1
+mkdir -p ${TMP}
 
-elif [[ $1 == "nacl_sdk" || $1 == "chrome_sdk" ]] ; then
-  mkdir -p ${TMP}
+BuildSysroot() {
   SanityCheck
   ClearInstallDir
   ClearBuildDir
   DownloadOrCopyAndInstallToolchain
-  GeneratePackageLists $1
-  InstallMissingLibraries $1
-  FixLinks
-  if [[ $1 == "nacl_sdk" ]] ; then
-    BuildAndInstallQemu
-    CreateTarBall $1
-  else
-    FixLibs
-    FixIncludes
-    CreateTarBall ${CROSS_TARBALL}
-  fi
+  GeneratePackageList
+  InstallPackages
+  CleanupSysrootSymlinks
+  BuildAndInstallQemu
+  CreateTarBall
+}
 
+if [[ $# -eq 0 ]] ; then
+  BuildSysroot
+elif [[ "$(type -t $1)" != "function" ]]; then
+  echo "ERROR: unknown function '$1'." >&2
+  echo "For help, try:"
+  echo "    $0 help"
+  exit 1
 else
-  Usage
-  exit -1
-
+  "$@"
 fi
-

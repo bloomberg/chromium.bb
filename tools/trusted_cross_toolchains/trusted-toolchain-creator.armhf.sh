@@ -397,6 +397,10 @@ UpdatePackageLists() {
   GeneratePackageList ${BASE_DEP_LIST} "${BASE_PACKAGES}"
 }
 
+help() {
+  Usage
+}
+
 if [[ $# -eq 0 ]] ; then
   echo "ERROR: you must specify a mode on the commandline"
   echo
