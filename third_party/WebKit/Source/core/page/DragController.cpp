@@ -333,7 +333,7 @@ bool DragController::tryDocumentDrag(DragData* dragData, DragDestinationAction a
     if (!m_documentUnderMouse)
         return false;
 
-    if (m_dragInitiator && !m_documentUnderMouse->securityOrigin()->canReceiveDragData(m_dragInitiator->securityOrigin()))
+    if (m_dragInitiator && !m_documentUnderMouse->securityOrigin()->canAccess(m_dragInitiator->securityOrigin()))
         return false;
 
     bool isHandlingDrag = false;

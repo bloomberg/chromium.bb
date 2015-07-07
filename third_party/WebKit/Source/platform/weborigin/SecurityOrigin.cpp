@@ -353,14 +353,6 @@ bool SecurityOrigin::taintsCanvas(const KURL& url) const
     return true;
 }
 
-bool SecurityOrigin::canReceiveDragData(const SecurityOrigin* dragInitiator) const
-{
-    if (this == dragInitiator)
-        return true;
-
-    return canAccess(dragInitiator);
-}
-
 // This is a hack to allow keep navigation to http/https feeds working. To remove this
 // we need to introduce new API akin to registerURLSchemeAsLocal, that registers a
 // protocols navigation policy.
