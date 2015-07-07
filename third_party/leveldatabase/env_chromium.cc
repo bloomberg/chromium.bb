@@ -1059,6 +1059,22 @@ void ChromiumEnv::StartThread(void (*function)(void* arg), void* arg) {
   new Thread(function, arg);  // Will self-delete.
 }
 
+LevelDBStatusValue GetLevelDBStatusUMAValue(const leveldb::Status& s) {
+  if (s.ok())
+    return LEVELDB_STATUS_OK;
+  if (s.IsNotFound())
+    return LEVELDB_STATUS_NOT_FOUND;
+  if (s.IsCorruption())
+    return LEVELDB_STATUS_CORRUPTION;
+  if (s.IsNotSupportedError())
+    return LEVELDB_STATUS_NOT_SUPPORTED;
+  if (s.IsIOError())
+    return LEVELDB_STATUS_IO_ERROR;
+  // TODO(cmumford): IsInvalidArgument() was just added to leveldb. Use this
+  // function once that change goes to the public repository.
+  return LEVELDB_STATUS_INVALID_ARGUMENT;
+}
+
 }  // namespace leveldb_env
 
 namespace leveldb {

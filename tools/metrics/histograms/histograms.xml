@@ -38081,6 +38081,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SessionStorageDatabase.Commit" enum="LevelDBStatus">
+  <owner>cmumford@chromium.org</owner>
+  <summary>The result of a commit to the sessionStorage database.</summary>
+</histogram>
+
 <histogram name="SessionStorageDatabase.Open" enum="SessionStorageDatabaseOpen">
   <owner>michaeln@chromium.org</owner>
   <summary>
@@ -59638,6 +59643,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="211"
       label="REPAIR_FAILED | DESTROYED | OPENED | DATA_LOST | ITER_NOT_OK"/>
   <int value="256" label="FILE_NOT_SPECIFIED"/>
+</enum>
+
+<enum name="LevelDBStatus" type="int">
+  <int value="0" label="OK"/>
+  <int value="1" label="Not Found"/>
+  <int value="2" label="Corruption"/>
+  <int value="3" label="Not Supported"/>
+  <int value="4" label="Invalid Argument"/>
+  <int value="5" label="IO Error"/>
 </enum>
 
 <enum name="LibraryLoadFromApkStatus" type="int">

@@ -134,7 +134,7 @@ bool SessionStorageDatabase::CommitAreaChanges(
     bool clear_all_first,
     const DOMStorageValuesMap& changes) {
   // Even if |changes| is empty, we need to write the appropriate placeholders
-  // in the database, so that it can be later shallow-copied succssfully.
+  // in the database, so that it can be later shallow-copied successfully.
   if (!LazyOpen(true))
     return false;
   DBOperation operation(this);
@@ -175,6 +175,9 @@ bool SessionStorageDatabase::CommitAreaChanges(
   WriteValuesToMap(map_id, changes, &batch);
 
   leveldb::Status s = db_->Write(leveldb::WriteOptions(), &batch);
+  UMA_HISTOGRAM_ENUMERATION("SessionStorageDatabase.Commit",
+                            leveldb_env::GetLevelDBStatusUMAValue(s),
+                            leveldb_env::LEVELDB_STATUS_MAX);
   return DatabaseErrorCheck(s.ok());
 }
 
