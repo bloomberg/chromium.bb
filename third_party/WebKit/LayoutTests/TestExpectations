@@ -1680,7 +1680,3 @@ crbug.com/506876 inspector/sources/debugger/live-edit-no-reveal.html [ NeedsManu
 crbug.com/506876 virtual/pointerevent/fast/events/window-onerror-06.html [ NeedsManualRebaseline ]
 crbug.com/506876 virtual/pointerevent/fast/events/window-onerror-10.html [ NeedsManualRebaseline ]
 crbug.com/506876 http/tests/websocket/multiple-connections-throttled.html [ NeedsManualRebaseline ]
-
-# These time out:
-crbug.com/505666 imported/web-platform-tests/webstorage/storage_session_setitem_quotaexceedederr.html [ Skip ]
-crbug.com/505666 imported/web-platform-tests/webstorage/storage_local_setitem_quotaexceedederr.html [ Skip ]
