@@ -6,7 +6,9 @@
 #include "modules/presentation/PresentationAvailabilityCallback.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/dom/DOMException.h"
 #include "modules/presentation/PresentationAvailability.h"
+#include "modules/presentation/PresentationError.h"
 
 namespace blink {
 
@@ -24,11 +26,12 @@ void PresentationAvailabilityCallback::onSuccess(bool* result)
     m_resolver->resolve(PresentationAvailability::take(m_resolver.get(), *availability));
 }
 
-void PresentationAvailabilityCallback::onError()
+void PresentationAvailabilityCallback::onError(WebPresentationError* result)
 {
+    OwnPtr<WebPresentationError> error = adoptPtr(result);
     if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
         return;
-    m_resolver->reject();
+    m_resolver->reject(PresentationError::take(*error));
 }
 
 } // namespace blink

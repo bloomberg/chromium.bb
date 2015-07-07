@@ -12,8 +12,9 @@
 namespace blink {
 
 class ScriptPromiseResolver;
+struct WebPresentationError;
 
-using WebPresentationAvailabilityCallbacks = WebCallbacks<bool, void>;
+using WebPresentationAvailabilityCallbacks = WebCallbacks<bool, WebPresentationError>;
 
 // PresentationAvailabilityCallback is an implementation of
 // WebPresentationAvailabilityCallbacks that will resolve the underlying promise
@@ -26,7 +27,7 @@ public:
     virtual ~PresentationAvailabilityCallback() = default;
 
     void onSuccess(bool*) override;
-    void onError() override;
+    void onError(WebPresentationError*) override;
 
 private:
     RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;

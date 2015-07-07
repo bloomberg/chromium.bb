@@ -64,7 +64,7 @@ DEFINE_TRACE(PresentationController)
 void PresentationController::didStartDefaultSession(WebPresentationSessionClient* sessionClient)
 {
     if (!m_presentation) {
-        PresentationSession::dispose(sessionClient);
+        delete sessionClient;
         return;
     }
 
@@ -74,18 +74,22 @@ void PresentationController::didStartDefaultSession(WebPresentationSessionClient
 
 void PresentationController::didChangeSessionState(WebPresentationSessionClient* sessionClient, WebPresentationSessionState state)
 {
-    if (m_presentation)
-        m_presentation->didChangeSessionState(sessionClient, state);
-    else
-        PresentationSession::dispose(sessionClient);
+    if (!m_presentation) {
+        delete sessionClient;
+        return;
+    }
+
+    m_presentation->didChangeSessionState(sessionClient, state);
 }
 
 void PresentationController::didReceiveSessionTextMessage(WebPresentationSessionClient* sessionClient, const WebString& message)
 {
-    if (m_presentation)
-        m_presentation->didReceiveSessionTextMessage(sessionClient, message);
-    else
-        PresentationSession::dispose(sessionClient);
+    if (!m_presentation) {
+        delete sessionClient;
+        return;
+    }
+
+    m_presentation->didReceiveSessionTextMessage(sessionClient, message);
 }
 
 void PresentationController::startSession(const String& presentationUrl, const String& presentationId, WebPresentationSessionClientCallbacks* callbacks)

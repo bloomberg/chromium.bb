@@ -16,10 +16,10 @@ class DOMException;
 class PresentationError final {
     WTF_MAKE_NONCOPYABLE(PresentationError);
 public:
-    static DOMException* take(WebPresentationError*);
-    static void dispose(WebPresentationError*);
+    static DOMException* take(const WebPresentationError&);
 
 private:
+    PresentationError() = delete;
     ~PresentationError() = delete;
 };
 

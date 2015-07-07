@@ -31,26 +31,22 @@ PresentationSessionClientCallbacks::~PresentationSessionClientCallbacks()
 {
 }
 
-void PresentationSessionClientCallbacks::onSuccess(WebPresentationSessionClient* client)
+void PresentationSessionClientCallbacks::onSuccess(WebPresentationSessionClient* result)
 {
-    ASSERT(client);
-    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
-        PresentationSession::dispose(client);
+    OwnPtr<WebPresentationSessionClient> client = adoptPtr(result);
+    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
         return;
-    }
 
-    m_resolver->resolve(PresentationSession::take(client, m_presentation));
+    m_resolver->resolve(PresentationSession::take(client.get(), m_presentation));
 }
 
-void PresentationSessionClientCallbacks::onError(WebPresentationError* error)
+void PresentationSessionClientCallbacks::onError(WebPresentationError* result)
 {
-    ASSERT(error);
-    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
-        PresentationError::dispose(error);
+    OwnPtr<WebPresentationError> error = adoptPtr(result);
+    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
         return;
-    }
 
-    m_resolver->reject(PresentationError::take(error));
+    m_resolver->reject(PresentationError::take(*error));
 }
 
 } // namespace blink

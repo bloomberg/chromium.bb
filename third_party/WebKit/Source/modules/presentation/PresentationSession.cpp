@@ -100,21 +100,14 @@ PresentationSession::~PresentationSession()
 }
 
 // static
-PresentationSession* PresentationSession::take(WebPresentationSessionClient* clientRaw, Presentation* presentation)
+PresentationSession* PresentationSession::take(WebPresentationSessionClient* client, Presentation* presentation)
 {
-    ASSERT(clientRaw);
+    ASSERT(client);
     ASSERT(presentation);
-    OwnPtr<WebPresentationSessionClient> client = adoptPtr(clientRaw);
 
     PresentationSession* session = new PresentationSession(presentation->frame(), client->getId(), client->getUrl());
     presentation->registerSession(session);
     return session;
-}
-
-// static
-void PresentationSession::dispose(WebPresentationSessionClient* client)
-{
-    delete client;
 }
 
 const AtomicString& PresentationSession::interfaceName() const

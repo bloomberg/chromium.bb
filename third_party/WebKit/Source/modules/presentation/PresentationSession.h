@@ -32,7 +32,6 @@ class PresentationSession final
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PresentationSession* take(WebPresentationSessionClient*, Presentation*);
-    static void dispose(WebPresentationSessionClient*);
     virtual ~PresentationSession();
 
     // EventTarget implementation.

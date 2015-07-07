@@ -22,7 +22,7 @@ struct WebPresentationError;
 using WebPresentationSessionClientCallbacks = WebCallbacks<WebPresentationSessionClient, WebPresentationError>;
 
 // Callback for .getAvailability().
-using WebPresentationAvailabilityCallbacks = WebCallbacks<bool, void>;
+using WebPresentationAvailabilityCallbacks = WebCallbacks<bool, WebPresentationError>;
 
 // The implementation the embedder has to provide for the Presentation API to work.
 class WebPresentationClient {

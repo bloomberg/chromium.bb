@@ -122,7 +122,7 @@ void Presentation::didChangeSessionState(WebPresentationSessionClient* sessionCl
     if (session)
         session->didChangeState(sessionState);
 
-    PresentationSession::dispose(sessionClient);
+    delete sessionClient;
 }
 
 void Presentation::didReceiveSessionTextMessage(WebPresentationSessionClient* sessionClient, const String& message)
@@ -131,7 +131,7 @@ void Presentation::didReceiveSessionTextMessage(WebPresentationSessionClient* se
     if (session)
         session->didReceiveTextMessage(message);
 
-    PresentationSession::dispose(sessionClient);
+    delete sessionClient;
 }
 
 void Presentation::registerSession(PresentationSession* session)

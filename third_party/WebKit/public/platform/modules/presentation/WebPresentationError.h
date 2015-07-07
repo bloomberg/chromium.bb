@@ -14,6 +14,7 @@ struct WebPresentationError {
         ErrorTypeNoAvailableScreens = 0,
         ErrorTypeSessionRequestCancelled,
         ErrorTypeNoPresentationFound,
+        ErrorTypeAvailabilityNotSupported,
         ErrorTypeUnknown,
         ErrorTypeLast = ErrorTypeUnknown
     };
