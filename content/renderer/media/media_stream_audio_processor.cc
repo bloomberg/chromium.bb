@@ -533,17 +533,20 @@ void MediaStreamAudioProcessor::ConfigureBeamforming(
     const std::string& geometry_str) const {
   std::vector<webrtc::Point> geometry = ParseArrayGeometry(geometry_str);
 #if defined(OS_CHROMEOS)
-  if(geometry.size() == 0) {
+  if (geometry.size() == 0) {
     const std::string board = base::SysInfo::GetLsbReleaseBoard();
-    if (board.find("peach_pi") != std::string::npos) {
+    if (board.find("nyan_kitty") != std::string::npos) {
+      geometry.push_back(webrtc::Point(-0.03f, 0.f, 0.f));
+      geometry.push_back(webrtc::Point(0.03f, 0.f, 0.f));
+    } else if (board.find("peach_pi") != std::string::npos) {
       geometry.push_back(webrtc::Point(-0.025f, 0.f, 0.f));
       geometry.push_back(webrtc::Point(0.025f, 0.f, 0.f));
-    } else if (board.find("swanky") != std::string::npos) {
-      geometry.push_back(webrtc::Point(-0.026f, 0.f, 0.f));
-      geometry.push_back(webrtc::Point(0.026f, 0.f, 0.f));
     } else if (board.find("samus") != std::string::npos) {
       geometry.push_back(webrtc::Point(-0.032f, 0.f, 0.f));
       geometry.push_back(webrtc::Point(0.032f, 0.f, 0.f));
+    } else if (board.find("swanky") != std::string::npos) {
+      geometry.push_back(webrtc::Point(-0.026f, 0.f, 0.f));
+      geometry.push_back(webrtc::Point(0.026f, 0.f, 0.f));
     }
   }
 #endif
