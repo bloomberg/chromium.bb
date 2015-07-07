@@ -96,7 +96,6 @@ void BluetoothLowEnergyConnection::Disconnect() {
   if (sub_status_ != SubStatus::DISCONNECTED) {
     ClearWriteRequestsQueue();
     StopNotifySession();
-    SetSubStatus(SubStatus::DISCONNECTED);
     if (gatt_connection_) {
       PA_LOG(INFO) << "Disconnect from device "
                    << gatt_connection_->GetDeviceAddress();
@@ -104,6 +103,10 @@ void BluetoothLowEnergyConnection::Disconnect() {
       // Destroying BluetoothGattConnection also disconnects it.
       gatt_connection_.reset();
     }
+    // Only transition to the DISCONNECTED state after perfoming all necessary
+    // operations. Otherwise, it'll trigger observers that can pontentially
+    // destroy the current instance (causing a crash).
+    SetSubStatus(SubStatus::DISCONNECTED);
   }
 }
 
