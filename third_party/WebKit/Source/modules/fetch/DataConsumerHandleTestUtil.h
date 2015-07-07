@@ -219,6 +219,30 @@ public:
         OwnPtr<WebDataConsumerHandle> m_handle;
     };
 
+    class MockFetchDataConsumerHandle : public FetchDataConsumerHandle {
+    public:
+        static PassOwnPtr<::testing::StrictMock<MockFetchDataConsumerHandle>> create() { return adoptPtr(new ::testing::StrictMock<MockFetchDataConsumerHandle>); }
+        MOCK_METHOD1(obtainReaderInternal, Reader*(Client*));
+    };
+
+    class MockFetchDataConsumerReader : public FetchDataConsumerHandle::Reader {
+    public:
+        static PassOwnPtr<::testing::StrictMock<MockFetchDataConsumerReader>> create() { return adoptPtr(new ::testing::StrictMock<MockFetchDataConsumerReader>); }
+
+        using Result = WebDataConsumerHandle::Result;
+        using Flags = WebDataConsumerHandle::Flags;
+        MOCK_METHOD4(read, Result(void*, size_t, Flags, size_t*));
+        MOCK_METHOD3(beginRead, Result(const void**, Flags, size_t*));
+        MOCK_METHOD1(endRead, Result(size_t));
+        MOCK_METHOD1(drainAsBlobDataHandle, PassRefPtr<BlobDataHandle>(BlobSizePolicy));
+
+        ~MockFetchDataConsumerReader() override
+        {
+            destruct();
+        }
+        MOCK_METHOD0(destruct, void());
+    };
+
     class MockFetchDataLoaderClient : public GarbageCollectedFinalized<MockFetchDataLoaderClient>, public FetchDataLoader::Client {
         USING_GARBAGE_COLLECTED_MIXIN(MockFetchDataLoaderClient);
     public:

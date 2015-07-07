@@ -43,6 +43,8 @@ using Handle = DataConsumerHandleTestUtil::ReplayingHandle;
 using HandleReader = DataConsumerHandleTestUtil::HandleReader;
 using HandleTwoPhaseReader = DataConsumerHandleTestUtil::HandleTwoPhaseReader;
 using HandleReadResult = DataConsumerHandleTestUtil::HandleReadResult;
+using MockFetchDataConsumerHandle = DataConsumerHandleTestUtil::MockFetchDataConsumerHandle;
+using MockFetchDataConsumerReader = DataConsumerHandleTestUtil::MockFetchDataConsumerReader;
 template <typename T>
 using HandleReaderRunner = DataConsumerHandleTestUtil::HandleReaderRunner<T>;
 
@@ -73,31 +75,6 @@ private:
 
     OwnPtr<Thread> m_thread;
     OwnPtr<WebWaitableEvent> m_waitableEvent;
-};
-
-// TODO(hiroshige): Merge similar classes into DataConsumerHandleTestUtil.h/cpp.
-class MockFetchDataConsumerHandle : public FetchDataConsumerHandle {
-public:
-    static PassOwnPtr<StrictMock<MockFetchDataConsumerHandle>> create() { return adoptPtr(new StrictMock<MockFetchDataConsumerHandle>); }
-    MOCK_METHOD1(obtainReaderInternal, Reader*(Client*));
-};
-
-class MockFetchDataConsumerReader : public FetchDataConsumerHandle::Reader {
-public:
-    static PassOwnPtr<StrictMock<MockFetchDataConsumerReader>> create() { return adoptPtr(new StrictMock<MockFetchDataConsumerReader>); }
-
-    using Result = WebDataConsumerHandle::Result;
-    using Flags = WebDataConsumerHandle::Flags;
-    MOCK_METHOD4(read, Result(void*, size_t, Flags, size_t*));
-    MOCK_METHOD3(beginRead, Result(const void**, Flags, size_t*));
-    MOCK_METHOD1(endRead, Result(size_t));
-    MOCK_METHOD1(drainAsBlobDataHandle, PassRefPtr<BlobDataHandle>(BlobSizePolicy));
-
-    ~MockFetchDataConsumerReader() override
-    {
-        destruct();
-    }
-    MOCK_METHOD0(destruct, void());
 };
 
 TEST(DataConsumerTeeTest, CreateDone)

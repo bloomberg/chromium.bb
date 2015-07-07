@@ -23,37 +23,14 @@ using ::testing::SaveArg;
 using ::testing::SetArgPointee;
 using Checkpoint = StrictMock<::testing::MockFunction<void(int)>>;
 using MockFetchDataLoaderClient = DataConsumerHandleTestUtil::MockFetchDataLoaderClient;
+using MockHandle = DataConsumerHandleTestUtil::MockFetchDataConsumerHandle;
+using MockReader = DataConsumerHandleTestUtil::MockFetchDataConsumerReader;
 
 const WebDataConsumerHandle::Result kOk = WebDataConsumerHandle::Ok;
 const WebDataConsumerHandle::Result kUnexpectedError = WebDataConsumerHandle::UnexpectedError;
 const WebDataConsumerHandle::Result kDone = WebDataConsumerHandle::Done;
 const WebDataConsumerHandle::Flags kNone = WebDataConsumerHandle::FlagNone;
 const FetchDataConsumerHandle::Reader::BlobSizePolicy kDisallowBlobWithInvalidSize = FetchDataConsumerHandle::Reader::DisallowBlobWithInvalidSize;
-
-class MockReader : public FetchDataConsumerHandle::Reader {
-public:
-    static PassOwnPtr<StrictMock<MockReader>> create() { return adoptPtr(new StrictMock<MockReader>); }
-
-    using Result = WebDataConsumerHandle::Result;
-    using Flags = WebDataConsumerHandle::Flags;
-    MOCK_METHOD4(read, Result(void*, size_t, Flags, size_t*));
-    MOCK_METHOD3(beginRead, Result(const void**, Flags, size_t*));
-    MOCK_METHOD1(endRead, Result(size_t));
-    MOCK_METHOD1(drainAsBlobDataHandle, PassRefPtr<BlobDataHandle>(BlobSizePolicy));
-
-    ~MockReader() override
-    {
-        destruct();
-    }
-    MOCK_METHOD0(destruct, void());
-};
-
-class MockHandle : public FetchDataConsumerHandle {
-public:
-    static PassOwnPtr<StrictMock<MockHandle>> create() { return adoptPtr(new StrictMock<MockHandle>); }
-
-    MOCK_METHOD1(obtainReaderInternal, Reader*(Client*));
-};
 
 const char kQuickBrownFox[] = "Quick brown fox";
 const size_t kQuickBrownFoxLength = 15;
