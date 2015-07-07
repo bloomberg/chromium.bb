@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.whatwg.org/specs/web-apps/current-work/#imagebitmapfactories
+// https://html.spec.whatwg.org/#imagebitmapfactories
 
 // FIXME: should use typedef instead, but
 // requires better union type support: http://crbug.com/240176
@@ -45,6 +45,7 @@ typedef (// HTMLImageElement or
 [
     LegacyTreatAsPartialInterface,
     NoInterfaceObject, // Always used on target of 'implements'
+    Exposed=(Window,Worker),
     RuntimeEnabled=ExperimentalCanvasFeatures,
     TypeChecking=Interface,
 ] interface ImageBitmapFactories {
@@ -58,4 +59,3 @@ typedef (// HTMLImageElement or
 
 Window implements ImageBitmapFactories;
 WorkerGlobalScope implements ImageBitmapFactories;
-

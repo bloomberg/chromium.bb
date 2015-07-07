@@ -28,6 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/#imagebitmapfactories
+
+// TODO(philipj): This should be part of the ImageBitmapFactories interface.
 [
     ImplementedAs=ImageBitmapFactories,
     RuntimeEnabled=ExperimentalCanvasFeatures,
