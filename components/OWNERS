@@ -55,6 +55,8 @@ per-file crash.gypi=thestig@chromium.org
 
 per-file cronet*=mef@chromium.org
 per-file cronet*=mmenke@chromium.org
+per-file cronet*=pauljensen@chromium.org
+per-file cronet*=xunjieli@chromium.org
 
 per-file data_reduction_proxy*=bengr@chromium.org
 per-file data_reduction_proxy*=marq@chromium.org
