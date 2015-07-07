@@ -100,7 +100,15 @@ bool CSSParserImpl::parseDeclarationList(MutableStylePropertySet* declaration, c
     parser.consumeDeclarationList(scope.tokenRange(), ruleType);
     if (parser.m_parsedProperties.isEmpty())
         return false;
-    return declaration->addParsedProperties(parser.m_parsedProperties);
+
+    BitArray<numCSSProperties> seenProperties;
+    size_t unusedEntries = parser.m_parsedProperties.size();
+    WillBeHeapVector<CSSProperty, 256> results(unusedEntries);
+    filterProperties(true, parser.m_parsedProperties, results, unusedEntries, seenProperties);
+    filterProperties(false, parser.m_parsedProperties, results, unusedEntries, seenProperties);
+    if (unusedEntries)
+        results.remove(0, unusedEntries);
+    return declaration->addParsedProperties(results);
 }
 
 PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::parseRule(const String& string, const CSSParserContext& context, AllowedRulesType allowedRules)
