@@ -1,5 +1,6 @@
 Test that each agent could be enabled/disabled separately.
 
+Animation.disable finished successfully
 CSS.disable finished successfully
 Console.disable finished successfully
 DOM.disable finished successfully
@@ -17,6 +18,9 @@ Profiler.disable finished successfully
 Runtime.disable finished successfully
 Timeline.disable finished with error Timeline is deprecated. Please use Tracing instead
 Worker.disable finished successfully
+
+Animation.enable finished successfully
+Animation.disable finished successfully
 
 CSS.enable finished with error DOM agent needs to be enabled first.
 CSS.disable finished successfully

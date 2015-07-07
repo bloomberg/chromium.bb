@@ -56,6 +56,8 @@ void InspectorAnimationAgent::enable(ErrorString*)
 
 void InspectorAnimationAgent::disable(ErrorString*)
 {
+    ASSERT(m_pageAgent);
+    setPlaybackRate(nullptr, 1);
     m_state->setBoolean(AnimationAgentState::animationAgentEnabled, false);
     m_instrumentingAgents->setInspectorAnimationAgent(nullptr);
     m_idToAnimation.clear();
