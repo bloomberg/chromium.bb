@@ -19,8 +19,9 @@ SkiaBitmapDesktopFrame* SkiaBitmapDesktopFrame::Create(
   uint8_t* bitmap_data = reinterpret_cast<uint8_t*>(bitmap->getPixels());
   bitmap->unlockPixels();
 
+  const size_t row_bytes = bitmap->rowBytes();
   SkiaBitmapDesktopFrame* result = new SkiaBitmapDesktopFrame(
-      size, bitmap->rowBytes(), bitmap_data, bitmap.Pass());
+      size, row_bytes, bitmap_data, bitmap.Pass());
 
   return result;
 }
