@@ -43,7 +43,7 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement, public FormA
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLFormControlElement);
 
 public:
-    virtual ~HTMLFormControlElement();
+    ~HTMLFormControlElement() override;
     DECLARE_VIRTUAL_TRACE();
 
     String formEnctype() const;
@@ -63,11 +63,11 @@ public:
     void dispatchChangeEvent();
     void dispatchFormControlInputEvent();
 
-    virtual HTMLFormElement* formOwner() const override final;
+    HTMLFormElement* formOwner() const final;
 
-    virtual bool isDisabledFormControl() const override;
+    bool isDisabledFormControl() const override;
 
-    virtual bool isEnumeratable() const override { return false; }
+    bool isEnumeratable() const override { return false; }
 
     bool isRequired() const;
 
@@ -81,7 +81,7 @@ public:
 
     // Override in derived classes to get the encoded name=value pair for submitting.
     // Return true for a successful control (see HTML4-17.13.2).
-    virtual bool appendFormData(FormDataList&, bool) override { return false; }
+    bool appendFormData(FormDataList&, bool) override { return false; }
     virtual String resultForDialogSubmit();
 
     virtual bool canBeSuccessfulSubmitButton() const { return false; }
@@ -89,7 +89,7 @@ public:
     virtual bool isActivatedSubmit() const { return false; }
     virtual void setActivatedSubmit(bool) { }
 
-    virtual bool willValidate() const override;
+    bool willValidate() const override;
 
     void updateVisibleValidationMessage();
     void hideVisibleValidationMessage();
@@ -99,7 +99,7 @@ public:
     void showValidationMessage();
     // This must be called when a validation constraint or control value is changed.
     void setNeedsValidityCheck();
-    virtual void setCustomValidity(const String&) override final;
+    void setCustomValidity(const String&) final;
     void findCustomValidationMessageTextDirection(const String& message, TextDirection &messageDir, String& subMessage, TextDirection& subMessageDir);
 
     bool isReadOnly() const { return m_isReadOnly; }
@@ -114,8 +114,8 @@ public:
 
     String nameForAutofill() const;
 
-    virtual void setFocus(bool flag) override;
-    virtual void copyNonAttributePropertiesFromElement(const Element&) override;
+    void setFocus(bool flag) override;
+    void copyNonAttributePropertiesFromElement(const Element&) override;
 
 #if !ENABLE(OILPAN)
     using Node::ref;
@@ -125,25 +125,25 @@ public:
 protected:
     HTMLFormControlElement(const QualifiedName& tagName, Document&, HTMLFormElement*);
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual void requiredAttributeChanged();
     virtual void disabledAttributeChanged();
-    virtual void attach(const AttachContext& = AttachContext()) override;
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void removedFrom(ContainerNode*) override;
-    virtual void willChangeForm() override;
-    virtual void didChangeForm() override;
-    virtual void didMoveToNewDocument(Document& oldDocument) override;
+    void attach(const AttachContext& = AttachContext()) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void removedFrom(ContainerNode*) override;
+    void willChangeForm() override;
+    void didChangeForm() override;
+    void didMoveToNewDocument(Document& oldDocument) override;
 
-    virtual bool supportsFocus() const override;
-    virtual bool isKeyboardFocusable() const override;
+    bool supportsFocus() const override;
+    bool isKeyboardFocusable() const override;
     virtual bool shouldShowFocusRingOnMouseFocus() const;
-    virtual bool shouldHaveFocusAppearance() const override final;
-    virtual void dispatchBlurEvent(Element* newFocusedElement, WebFocusType) override;
-    virtual void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType) override;
-    virtual void willCallDefaultEventHandler(const Event&) override final;
+    bool shouldHaveFocusAppearance() const final;
+    void dispatchBlurEvent(Element* newFocusedElement, WebFocusType) override;
+    void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType) override;
+    void willCallDefaultEventHandler(const Event&) final;
 
-    virtual void didRecalcStyle(StyleRecalcChange) override final;
+    void didRecalcStyle(StyleRecalcChange) final;
 
     // This must be called any time the result of willValidate() has changed.
     void setNeedsWillValidateCheck();
@@ -154,18 +154,18 @@ protected:
 
 private:
 #if !ENABLE(OILPAN)
-    virtual void refFormAssociatedElement() override final { ref(); }
-    virtual void derefFormAssociatedElement() override final { deref(); }
+    void refFormAssociatedElement() final { ref(); }
+    void derefFormAssociatedElement() final { deref(); }
 #endif
 
-    virtual bool isFormControlElement() const override final { return true; }
-    virtual bool alwaysCreateUserAgentShadowRoot() const override { return true; }
+    bool isFormControlElement() const final { return true; }
+    bool alwaysCreateUserAgentShadowRoot() const override { return true; }
 
-    virtual short tabIndex() const override final;
+    short tabIndex() const final;
 
-    virtual bool isDefaultButtonForForm() const override final;
-    virtual bool isValidElement() override;
-    virtual bool matchesValidityPseudoClasses() const override;
+    bool isDefaultButtonForForm() const final;
+    bool isValidElement() override;
+    bool matchesValidityPseudoClasses() const override;
     void updateAncestorDisabledState() const;
 
     bool isValidationMessageVisible() const;

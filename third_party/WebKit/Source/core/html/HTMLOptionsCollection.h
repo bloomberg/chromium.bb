@@ -56,7 +56,7 @@ public:
 private:
     explicit HTMLOptionsCollection(ContainerNode&);
 
-    virtual void supportedPropertyNames(Vector<String>& names) override;
+    void supportedPropertyNames(Vector<String>& names) override;
 };
 
 DEFINE_TYPE_CASTS(HTMLOptionsCollection, LiveNodeListBase, collection, collection->type() == SelectOptions, collection.type() == SelectOptions);

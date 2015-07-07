@@ -20,13 +20,13 @@ public:
 
     static PassOwnPtrWillBeRawPtr<LinkManifest> create(HTMLLinkElement* owner);
 
-    virtual ~LinkManifest();
+    ~LinkManifest() override;
 
     // LinkResource
-    virtual void process() override;
-    virtual Type type() const override { return Manifest; }
-    virtual bool hasLoaded() const override;
-    virtual void ownerRemoved() override;
+    void process() override;
+    Type type() const override { return Manifest; }
+    bool hasLoaded() const override;
+    void ownerRemoved() override;
 
 private:
     explicit LinkManifest(HTMLLinkElement* owner);

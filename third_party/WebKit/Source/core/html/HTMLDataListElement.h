@@ -49,8 +49,8 @@ public:
 
 private:
     HTMLDataListElement(Document&);
-    virtual void childrenChanged(const ChildrenChange&) override;
-    virtual void finishParsingChildren() override;
+    void childrenChanged(const ChildrenChange&) override;
+    void finishParsingChildren() override;
 };
 
 } // namespace blink

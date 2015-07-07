@@ -84,7 +84,7 @@ class ListAttributeTargetObserver : public IdTargetObserver {
 public:
     static PassOwnPtrWillBeRawPtr<ListAttributeTargetObserver> create(const AtomicString& id, HTMLInputElement*);
     DECLARE_VIRTUAL_TRACE();
-    virtual void idTargetChanged() override;
+    void idTargetChanged() override;
 
 private:
     ListAttributeTargetObserver(const AtomicString& id, HTMLInputElement*);

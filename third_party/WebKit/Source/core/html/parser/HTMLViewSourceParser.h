@@ -41,15 +41,15 @@ public:
     {
         return adoptRefWillBeNoop(new HTMLViewSourceParser(document, mimeType));
     }
-    virtual ~HTMLViewSourceParser() { }
+    ~HTMLViewSourceParser() override { }
 
 private:
     HTMLViewSourceParser(HTMLViewSourceDocument&, const String& mimeType);
 
     // DocumentParser
-    virtual void insert(const SegmentedString&) override { ASSERT_NOT_REACHED(); }
-    virtual void append(const String&) override;
-    virtual void finish() override;
+    void insert(const SegmentedString&) override { ASSERT_NOT_REACHED(); }
+    void append(const String&) override;
+    void finish() override;
 
     HTMLViewSourceDocument* document() const { return static_cast<HTMLViewSourceDocument*>(DecodedDataDocumentParser::document()); }
 

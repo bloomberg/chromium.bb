@@ -47,7 +47,7 @@ class CORE_EXPORT CanvasRenderingContext : public NoBaseWillBeGarbageCollectedFi
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(CanvasRenderingContext);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(CanvasRenderingContext);
 public:
-    virtual ~CanvasRenderingContext() { }
+    ~CanvasRenderingContext() override { }
 
     // A Canvas can either be "2D" or "webgl" but never both. If you request a 2D canvas and the existing
     // context is already 2D, just return that. If the existing context is WebGL, then destroy it
@@ -102,7 +102,7 @@ protected:
     DECLARE_VIRTUAL_TRACE();
 
     // ActiveDOMObject notifications
-    bool hasPendingActivity() const override final;
+    bool hasPendingActivity() const final;
     void stop() override = 0;
 
 private:

@@ -59,19 +59,19 @@ public:
 
 private:
     explicit HTMLTrackElement(Document&);
-    virtual ~HTMLTrackElement();
+    ~HTMLTrackElement() override;
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
 
-    virtual void removedFrom(ContainerNode*) override;
-    virtual bool isURLAttribute(const Attribute&) const override;
+    void removedFrom(ContainerNode*) override;
+    bool isURLAttribute(const Attribute&) const override;
 
     // TextTrackLoaderClient
-    virtual void newCuesAvailable(TextTrackLoader*) override;
-    virtual void cueLoadingCompleted(TextTrackLoader*, bool loadingFailed) override;
-    virtual void newRegionsAvailable(TextTrackLoader*) override;
+    void newCuesAvailable(TextTrackLoader*) override;
+    void cueLoadingCompleted(TextTrackLoader*, bool loadingFailed) override;
+    void newRegionsAvailable(TextTrackLoader*) override;
 
     void setReadyState(ReadyState);
 

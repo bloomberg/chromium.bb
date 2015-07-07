@@ -18,14 +18,14 @@ class HTMLImportTreeRoot : public HTMLImport {
 public:
     static PassOwnPtrWillBeRawPtr<HTMLImportTreeRoot> create(Document*);
 
-    virtual ~HTMLImportTreeRoot();
+    ~HTMLImportTreeRoot() override;
     void dispose();
 
     // HTMLImport
-    virtual Document* document() const override;
-    virtual bool hasFinishedLoading() const override;
-    virtual void stateWillChange() override;
-    virtual void stateDidChange() override;
+    Document* document() const override;
+    bool hasFinishedLoading() const override;
+    void stateWillChange() override;
+    void stateDidChange() override;
 
     void scheduleRecalcState();
 

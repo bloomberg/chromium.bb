@@ -52,7 +52,7 @@ public:
     void revoke(const String& uuid);
 
     // ActiveDOMObject interface.
-    virtual void stop() override;
+    void stop() override;
 
     DECLARE_VIRTUAL_TRACE();
 

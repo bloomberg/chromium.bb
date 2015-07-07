@@ -81,13 +81,13 @@ public:
 
     static PassRefPtrWillBeRawPtr<DateTimeEditElement> create(Document&, EditControlOwner&);
 
-    virtual ~DateTimeEditElement();
+    ~DateTimeEditElement() override;
     DECLARE_VIRTUAL_TRACE();
 
     void addField(PassRefPtrWillBeRawPtr<DateTimeFieldElement>);
     bool anyEditableFieldsHaveValues() const;
     void blurByOwner();
-    virtual void defaultEventHandler(Event*) override;
+    void defaultEventHandler(Event*) override;
     void disabledStateChanged();
     Element* fieldsWrapperElement() const;
     void focusIfNoFocus();
@@ -134,19 +134,19 @@ private:
     void updateUIState();
 
     // Element function.
-    virtual PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;
-    virtual bool isDateTimeEditElement() const override;
+    PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;
+    bool isDateTimeEditElement() const override;
 
     // DateTimeFieldElement::FieldOwner functions.
-    virtual void didBlurFromField() override;
-    virtual void didFocusOnField() override;
-    virtual void fieldValueChanged() override;
-    virtual bool focusOnNextField(const DateTimeFieldElement&) override;
-    virtual bool focusOnPreviousField(const DateTimeFieldElement&) override;
-    virtual bool isFieldOwnerDisabled() const override;
-    virtual bool isFieldOwnerReadOnly() const override;
-    virtual AtomicString localeIdentifier() const override;
-    virtual void fieldDidChangeValueByKeyboard() override;
+    void didBlurFromField() override;
+    void didFocusOnField() override;
+    void fieldValueChanged() override;
+    bool focusOnNextField(const DateTimeFieldElement&) override;
+    bool focusOnPreviousField(const DateTimeFieldElement&) override;
+    bool isFieldOwnerDisabled() const override;
+    bool isFieldOwnerReadOnly() const override;
+    AtomicString localeIdentifier() const override;
+    void fieldDidChangeValueByKeyboard() override;
 
     WillBeHeapVector<RawPtrWillBeMember<DateTimeFieldElement>, maximumNumberOfFields> m_fields;
     RawPtrWillBeMember<EditControlOwner> m_editControlOwner;

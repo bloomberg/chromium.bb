@@ -36,63 +36,63 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement, public For
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLObjectElement);
 public:
     static PassRefPtrWillBeRawPtr<HTMLObjectElement> create(Document&, HTMLFormElement*, bool createdByParser);
-    virtual ~HTMLObjectElement();
+    ~HTMLObjectElement() override;
     DECLARE_VIRTUAL_TRACE();
 
     const String& classId() const { return m_classId; }
 
-    virtual HTMLFormElement* formOwner() const override;
+    HTMLFormElement* formOwner() const override;
 
     bool containsJavaApplet() const;
 
-    virtual bool hasFallbackContent() const override;
-    virtual bool useFallbackContent() const override;
-    virtual void renderFallbackContent() override;
+    bool hasFallbackContent() const override;
+    bool useFallbackContent() const override;
+    void renderFallbackContent() override;
 
-    virtual bool isFormControlElement() const override { return false; }
+    bool isFormControlElement() const override { return false; }
 
-    virtual bool isEnumeratable() const override { return true; }
-    virtual bool isInteractiveContent() const override;
-    virtual bool appendFormData(FormDataList&, bool) override;
+    bool isEnumeratable() const override { return true; }
+    bool isInteractiveContent() const override;
+    bool appendFormData(FormDataList&, bool) override;
 
     // Implementations of constraint validation API.
     // Note that the object elements are always barred from constraint validation.
-    virtual String validationMessage() const override { return String(); }
+    String validationMessage() const override { return String(); }
     bool checkValidity() { return true; }
     bool reportValidity() { return true; }
-    virtual void setCustomValidity(const String&) override { }
+    void setCustomValidity(const String&) override { }
 
 #if !ENABLE(OILPAN)
     using Node::ref;
     using Node::deref;
 #endif
 
-    virtual bool canContainRangeEndPoint() const override { return useFallbackContent(); }
+    bool canContainRangeEndPoint() const override { return useFallbackContent(); }
 
     bool isExposed() const;
 
 private:
     HTMLObjectElement(Document&, HTMLFormElement*, bool createdByParser);
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual bool isPresentationAttribute(const QualifiedName&) const override;
-    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    bool isPresentationAttribute(const QualifiedName&) const override;
+    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
 
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void removedFrom(ContainerNode*) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void removedFrom(ContainerNode*) override;
 
-    virtual void didMoveToNewDocument(Document& oldDocument) override;
+    void didMoveToNewDocument(Document& oldDocument) override;
 
-    virtual void childrenChanged(const ChildrenChange&) override;
+    void childrenChanged(const ChildrenChange&) override;
 
-    virtual bool isURLAttribute(const Attribute&) const override;
-    virtual bool hasLegalLinkAttribute(const QualifiedName&) const override;
-    virtual const QualifiedName& subResourceAttributeName() const override;
-    virtual const AtomicString imageSourceURL() const override;
+    bool isURLAttribute(const Attribute&) const override;
+    bool hasLegalLinkAttribute(const QualifiedName&) const override;
+    const QualifiedName& subResourceAttributeName() const override;
+    const AtomicString imageSourceURL() const override;
 
-    virtual LayoutPart* existingLayoutPart() const override;
+    LayoutPart* existingLayoutPart() const override;
 
-    virtual void updateWidgetInternal() override;
+    void updateWidgetInternal() override;
     void updateDocNamedItem();
 
     void reattachFallbackContent();
@@ -106,12 +106,12 @@ private:
     void reloadPluginOnAttributeChange(const QualifiedName&);
 
 #if !ENABLE(OILPAN)
-    virtual void refFormAssociatedElement() override { ref(); }
-    virtual void derefFormAssociatedElement() override { deref(); }
+    void refFormAssociatedElement() override { ref(); }
+    void derefFormAssociatedElement() override { deref(); }
 #endif
 
-    virtual bool shouldRegisterAsNamedItem() const override { return true; }
-    virtual bool shouldRegisterAsExtraNamedItem() const override { return true; }
+    bool shouldRegisterAsNamedItem() const override { return true; }
+    bool shouldRegisterAsExtraNamedItem() const override { return true; }
 
     String m_classId;
     bool m_useFallbackContent : 1;

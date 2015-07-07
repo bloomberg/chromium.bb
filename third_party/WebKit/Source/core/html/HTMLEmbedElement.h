@@ -37,23 +37,23 @@ public:
 private:
     HTMLEmbedElement(Document&, bool createdByParser);
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual bool isPresentationAttribute(const QualifiedName&) const override;
-    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    bool isPresentationAttribute(const QualifiedName&) const override;
+    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
 
-    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override;
+    bool layoutObjectIsNeeded(const ComputedStyle&) override;
 
-    virtual bool isURLAttribute(const Attribute&) const override;
-    virtual const QualifiedName& subResourceAttributeName() const override;
+    bool isURLAttribute(const Attribute&) const override;
+    const QualifiedName& subResourceAttributeName() const override;
 
-    virtual LayoutPart* existingLayoutPart() const override;
+    LayoutPart* existingLayoutPart() const override;
 
-    virtual void updateWidgetInternal() override;
+    void updateWidgetInternal() override;
 
     void parametersForPlugin(Vector<String>& paramNames, Vector<String>& paramValues);
 
-    virtual bool shouldRegisterAsNamedItem() const override { return true; }
-    virtual bool isInteractiveContent() const override;
+    bool shouldRegisterAsNamedItem() const override { return true; }
+    bool isInteractiveContent() const override;
 };
 
 } // namespace blink

@@ -60,7 +60,7 @@ public:
     static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&, const AtomicString&);
     static PassRefPtrWillBeRawPtr<InputType> createText(HTMLInputElement&);
     static const AtomicString& normalizeTypeName(const AtomicString&);
-    virtual ~InputType();
+    ~InputType() override;
 
     virtual const AtomicString& formControlType() const = 0;
 

@@ -15,12 +15,12 @@ class VideoTrackList final : public TrackListBase<VideoTrack> {
 public:
     static PassRefPtrWillBeRawPtr<VideoTrackList> create(HTMLMediaElement&);
 
-    virtual ~VideoTrackList();
+    ~VideoTrackList() override;
 
     int selectedIndex() const;
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     void trackSelected(WebMediaPlayer::TrackId selectedTrackId);
 

@@ -44,7 +44,7 @@ class MediaController final : public EventTargetWithInlineData, public RefCounte
     REFCOUNTED_EVENT_TARGET(MediaController);
 public:
     static PassRefPtrWillBeRawPtr<MediaController> create(ExecutionContext*);
-    virtual ~MediaController();
+    ~MediaController() override;
 
     void addMediaElement(HTMLMediaElement*);
     void removeMediaElement(HTMLMediaElement*);
@@ -104,8 +104,8 @@ private:
     void startTimeupdateTimer();
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const override;
-    virtual ExecutionContext* executionContext() const override { return m_executionContext; }
+    const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const override { return m_executionContext; }
 
     friend class HTMLMediaElement;
     friend class MediaControllerEventListener;

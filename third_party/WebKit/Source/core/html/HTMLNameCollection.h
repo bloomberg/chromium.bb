@@ -30,7 +30,7 @@ namespace blink {
 
 class HTMLNameCollection : public HTMLCollection {
 public:
-    virtual ~HTMLNameCollection();
+    ~HTMLNameCollection() override;
 
 protected:
     HTMLNameCollection(ContainerNode&, CollectionType, const AtomicString& name);

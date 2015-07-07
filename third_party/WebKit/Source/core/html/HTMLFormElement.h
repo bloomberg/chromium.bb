@@ -46,7 +46,7 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLFormElement> create(Document&);
-    virtual ~HTMLFormElement();
+    ~HTMLFormElement() override;
     DECLARE_VIRTUAL_TRACE();
 
     PassRefPtrWillBeRawPtr<HTMLFormControlsCollection> elements();
@@ -95,8 +95,8 @@ public:
 
     bool checkValidity();
     bool reportValidity();
-    virtual bool matchesValidityPseudoClasses() const override final;
-    virtual bool isValidElement() override final;
+    bool matchesValidityPseudoClasses() const final;
+    bool isValidElement() final;
 
     enum AutocompleteResult {
         AutocompleteResultSuccess,
@@ -121,21 +121,21 @@ public:
 private:
     explicit HTMLFormElement(Document&);
 
-    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override;
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void removedFrom(ContainerNode*) override;
-    virtual void finishParsingChildren() override;
+    bool layoutObjectIsNeeded(const ComputedStyle&) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void removedFrom(ContainerNode*) override;
+    void finishParsingChildren() override;
 
-    virtual void handleLocalEvents(Event&) override;
+    void handleLocalEvents(Event&) override;
 
-    virtual void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) override;
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual bool isURLAttribute(const Attribute&) const override;
-    virtual bool hasLegalLinkAttribute(const QualifiedName&) const override;
+    void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    bool isURLAttribute(const Attribute&) const override;
+    bool hasLegalLinkAttribute(const QualifiedName&) const override;
 
-    virtual bool shouldRegisterAsNamedItem() const override { return true; }
+    bool shouldRegisterAsNamedItem() const override { return true; }
 
-    virtual void copyNonAttributePropertiesFromElement(const Element&) override;
+    void copyNonAttributePropertiesFromElement(const Element&) override;
 
     void submitDialog(PassRefPtrWillBeRawPtr<FormSubmission>);
     void submit(Event*, bool activateSubmitButton, bool processingUserGesture);

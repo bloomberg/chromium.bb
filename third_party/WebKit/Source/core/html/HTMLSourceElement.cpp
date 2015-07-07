@@ -50,7 +50,7 @@ static SourceEventSender& sourceErrorEventSender()
 class HTMLSourceElement::Listener final : public MediaQueryListListener {
 public:
     explicit Listener(HTMLSourceElement* element) : m_element(element) { }
-    virtual void notifyMediaQueryChanged() override
+    void notifyMediaQueryChanged() override
     {
         if (m_element)
             m_element->notifyMediaQueryChanged();

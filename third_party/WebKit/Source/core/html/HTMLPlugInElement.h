@@ -45,10 +45,10 @@ enum PreferPlugInsForImagesOption {
 
 class CORE_EXPORT HTMLPlugInElement : public HTMLFrameOwnerElement {
 public:
-    virtual ~HTMLPlugInElement();
+    ~HTMLPlugInElement() override;
     DECLARE_VIRTUAL_TRACE();
 #if ENABLE(OILPAN)
-    virtual void disconnectContentFrame() override;
+    void disconnectContentFrame() override;
     void shouldDisposePlugin();
 #endif
 
@@ -86,11 +86,11 @@ protected:
     HTMLPlugInElement(const QualifiedName& tagName, Document&, bool createdByParser, PreferPlugInsForImagesOption);
 
     // Node functions:
-    virtual void didMoveToNewDocument(Document& oldDocument) override;
+    void didMoveToNewDocument(Document& oldDocument) override;
 
     // Element functions:
-    virtual bool isPresentationAttribute(const QualifiedName&) const override;
-    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+    bool isPresentationAttribute(const QualifiedName&) const override;
+    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
 
     virtual bool hasFallbackContent() const;
     virtual bool useFallbackContent() const;
@@ -116,27 +116,27 @@ protected:
 
 private:
     // EventTarget functions:
-    virtual void removeAllEventListeners() override final;
+    void removeAllEventListeners() final;
 
     // Node functions:
-    virtual bool canContainRangeEndPoint() const override { return false; }
-    virtual bool willRespondToMouseClickEvents() override final;
-    virtual void defaultEventHandler(Event*) override final;
-    virtual void attach(const AttachContext& = AttachContext()) override final;
-    virtual void detach(const AttachContext& = AttachContext()) override final;
-    virtual void finishParsingChildren() override final;
+    bool canContainRangeEndPoint() const override { return false; }
+    bool willRespondToMouseClickEvents() final;
+    void defaultEventHandler(Event*) final;
+    void attach(const AttachContext& = AttachContext()) final;
+    void detach(const AttachContext& = AttachContext()) final;
+    void finishParsingChildren() final;
 
     // Element functions:
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    virtual bool supportsFocus() const override final { return true; }
-    virtual bool layoutObjectIsFocusable() const override final;
-    virtual bool isKeyboardFocusable() const override final;
-    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override final;
-    virtual void willAddFirstOpenShadowRoot() override final;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    bool supportsFocus() const final { return true; }
+    bool layoutObjectIsFocusable() const final;
+    bool isKeyboardFocusable() const final;
+    void didAddUserAgentShadowRoot(ShadowRoot&) final;
+    void willAddFirstOpenShadowRoot() final;
 
     // HTMLElement function:
-    virtual bool hasCustomFocusLogic() const override;
-    virtual bool isPluginElement() const override final;
+    bool hasCustomFocusLogic() const override;
+    bool isPluginElement() const final;
 
     // Return any existing LayoutPart without triggering relayout, or 0 if it
     // doesn't yet exist.

@@ -32,13 +32,13 @@ class HTMLHRElement final : public HTMLElement {
 public:
     DECLARE_NODE_FACTORY(HTMLHRElement);
 
-    virtual bool canContainRangeEndPoint() const override { return hasChildren(); }
+    bool canContainRangeEndPoint() const override { return hasChildren(); }
 
 private:
     explicit HTMLHRElement(Document&);
 
-    virtual bool isPresentationAttribute(const QualifiedName&) const override;
-    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+    bool isPresentationAttribute(const QualifiedName&) const override;
+    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
 };
 
 } // namespace blink

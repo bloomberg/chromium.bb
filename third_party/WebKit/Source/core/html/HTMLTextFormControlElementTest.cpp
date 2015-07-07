@@ -51,17 +51,17 @@ class DummyTextCheckerClient : public EmptyTextCheckerClient {
 public:
     ~DummyTextCheckerClient() { }
 
-    virtual bool shouldEraseMarkersAfterChangeSelection(TextCheckingType) const override { return false; }
+    bool shouldEraseMarkersAfterChangeSelection(TextCheckingType) const override { return false; }
 };
 
 class DummySpellCheckerClient : public EmptySpellCheckerClient {
 public:
     virtual ~DummySpellCheckerClient() { }
 
-    virtual bool isContinuousSpellCheckingEnabled() override { return true; }
-    virtual bool isGrammarCheckingEnabled() override { return true; }
+    bool isContinuousSpellCheckingEnabled() override { return true; }
+    bool isGrammarCheckingEnabled() override { return true; }
 
-    virtual TextCheckerClient& textChecker() override { return m_dummyTextCheckerClient; }
+    TextCheckerClient& textChecker() override { return m_dummyTextCheckerClient; }
 
 private:
     DummyTextCheckerClient m_dummyTextCheckerClient;

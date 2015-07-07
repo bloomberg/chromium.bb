@@ -193,10 +193,10 @@ public:
     WebMediaPlayer::TrackId addVideoTrack(const String& id, WebMediaPlayerClient::VideoTrackKind, const AtomicString& label, const AtomicString& language, bool selected);
     void removeVideoTrack(WebMediaPlayer::TrackId);
 
-    virtual void mediaPlayerDidAddTextTrack(WebInbandTextTrack*) override final;
-    virtual void mediaPlayerDidRemoveTextTrack(WebInbandTextTrack*) override final;
+    void mediaPlayerDidAddTextTrack(WebInbandTextTrack*) final;
+    void mediaPlayerDidRemoveTextTrack(WebInbandTextTrack*) final;
     // FIXME: Remove this when WebMediaPlayerClientImpl::loadInternal does not depend on it.
-    virtual KURL mediaPlayerPosterURL() override { return KURL(); }
+    KURL mediaPlayerPosterURL() override { return KURL(); }
 
     void honorUserPreferencesForAutomaticTextTrackSelection();
 
@@ -245,8 +245,8 @@ public:
     void sourceWasAdded(HTMLSourceElement*);
 
     // ActiveDOMObject functions.
-    virtual bool hasPendingActivity() const override final;
-    virtual void contextDestroyed() override final;
+    bool hasPendingActivity() const final;
+    void contextDestroyed() final;
 
 #if ENABLE(WEB_AUDIO)
     AudioSourceProviderClient* audioSourceNode() { return m_audioSourceNode; }
@@ -277,17 +277,17 @@ public:
 
 protected:
     HTMLMediaElement(const QualifiedName&, Document&);
-    virtual ~HTMLMediaElement();
+    ~HTMLMediaElement() override;
 #if ENABLE(OILPAN)
     void dispose();
 #endif
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual void finishParsingChildren() override final;
-    virtual bool isURLAttribute(const Attribute&) const override;
-    virtual void attach(const AttachContext& = AttachContext()) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void finishParsingChildren() final;
+    bool isURLAttribute(const Attribute&) const override;
+    void attach(const AttachContext& = AttachContext()) override;
 
-    virtual void didMoveToNewDocument(Document& oldDocument) override;
+    void didMoveToNewDocument(Document& oldDocument) override;
 
     enum DisplayMode { Unknown, Poster, Video };
     DisplayMode displayMode() const { return m_displayMode; }
@@ -298,43 +298,43 @@ protected:
 private:
     void createMediaPlayer();
 
-    virtual bool alwaysCreateUserAgentShadowRoot() const override final { return true; }
-    virtual bool areAuthorShadowsAllowed() const override final { return false; }
+    bool alwaysCreateUserAgentShadowRoot() const final { return true; }
+    bool areAuthorShadowsAllowed() const final { return false; }
 
-    virtual bool supportsFocus() const override final;
-    virtual bool isMouseFocusable() const override final;
-    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override;
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override final;
-    virtual void didNotifySubtreeInsertionsToDocument() override;
-    virtual void removedFrom(ContainerNode*) override final;
-    virtual void didRecalcStyle(StyleRecalcChange) override final;
+    bool supportsFocus() const final;
+    bool isMouseFocusable() const final;
+    bool layoutObjectIsNeeded(const ComputedStyle&) override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) final;
+    void didNotifySubtreeInsertionsToDocument() override;
+    void removedFrom(ContainerNode*) final;
+    void didRecalcStyle(StyleRecalcChange) final;
 
-    virtual bool canStartSelection() const override { return false; }
+    bool canStartSelection() const override { return false; }
 
-    virtual void didBecomeFullscreenElement() override final;
-    virtual void willStopBeingFullscreenElement() override final;
-    virtual bool isInteractiveContent() const override final;
-    virtual void defaultEventHandler(Event*) override final;
+    void didBecomeFullscreenElement() final;
+    void willStopBeingFullscreenElement() final;
+    bool isInteractiveContent() const final;
+    void defaultEventHandler(Event*) final;
 
     // ActiveDOMObject functions.
-    virtual void stop() override final;
+    void stop() final;
 
     virtual void updateDisplayState() { }
 
     void setReadyState(ReadyState);
     void setNetworkState(WebMediaPlayer::NetworkState);
 
-    virtual void mediaPlayerNetworkStateChanged() override final;
-    virtual void mediaPlayerReadyStateChanged() override final;
-    virtual void mediaPlayerTimeChanged() override final;
-    virtual void mediaPlayerDurationChanged() override final;
-    virtual void mediaPlayerPlaybackStateChanged() override final;
-    virtual void mediaPlayerRequestSeek(double) override final;
-    virtual void mediaPlayerRepaint() override final;
-    virtual void mediaPlayerSizeChanged() override final;
-    virtual void mediaPlayerSetWebLayer(WebLayer*) override final;
-    virtual void mediaPlayerMediaSourceOpened(WebMediaSource*) override final;
+    void mediaPlayerNetworkStateChanged() final;
+    void mediaPlayerReadyStateChanged() final;
+    void mediaPlayerTimeChanged() final;
+    void mediaPlayerDurationChanged() final;
+    void mediaPlayerPlaybackStateChanged() final;
+    void mediaPlayerRequestSeek(double) final;
+    void mediaPlayerRepaint() final;
+    void mediaPlayerSizeChanged() final;
+    void mediaPlayerSetWebLayer(WebLayer*) final;
+    void mediaPlayerMediaSourceOpened(WebMediaSource*) final;
 
     void loadTimerFired(Timer<HTMLMediaElement>*);
     void progressEventTimerFired(Timer<HTMLMediaElement>*);
@@ -414,7 +414,7 @@ private:
 
     TextTrackContainer& ensureTextTrackContainer();
 
-    virtual void* preDispatchEventHandler(Event*) override final;
+    void* preDispatchEventHandler(Event*) final;
 
     void changeNetworkStateFromLoadingToIdle();
 

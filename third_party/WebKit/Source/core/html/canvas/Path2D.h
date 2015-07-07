@@ -63,7 +63,7 @@ public:
         m_path.addPath(src, transform ? transform->value() : AffineTransform(1, 0, 0, 1, 0, 0));
     }
 
-    virtual ~Path2D() { }
+    ~Path2D() override { }
     DEFINE_INLINE_TRACE() { }
 
 private:

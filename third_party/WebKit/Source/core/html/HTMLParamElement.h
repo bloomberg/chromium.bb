@@ -40,7 +40,7 @@ public:
 private:
     explicit HTMLParamElement(Document&);
 
-    virtual bool isURLAttribute(const Attribute&) const override;
+    bool isURLAttribute(const Attribute&) const override;
 };
 
 } // namespace blink

@@ -54,12 +54,12 @@ public:
     {
         return adoptRefWillBeNoop(new TextTrack(kind, label, language, emptyAtom, AddTrack));
     }
-    virtual ~TextTrack();
+    ~TextTrack() override;
 
     virtual void setTrackList(TextTrackList*);
     TextTrackList* trackList() { return m_trackList; }
 
-    virtual void setKind(const AtomicString&) override;
+    void setKind(const AtomicString&) override;
 
     static const AtomicString& subtitlesKeyword();
     static const AtomicString& captionsKeyword();
@@ -114,16 +114,16 @@ public:
     void removeAllCues();
 
     // EventTarget methods
-    virtual const AtomicString& interfaceName() const override;
-    virtual ExecutionContext* executionContext() const override;
+    const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const override;
 
     DECLARE_VIRTUAL_TRACE();
 
 protected:
     TextTrack(const AtomicString& kind, const AtomicString& label, const AtomicString& language, const AtomicString& id, TextTrackType);
 
-    virtual bool isValidKind(const AtomicString& kind) const override { return isValidKindKeyword(kind); }
-    virtual AtomicString defaultKind() const override { return subtitlesKeyword(); }
+    bool isValidKind(const AtomicString& kind) const override { return isValidKindKeyword(kind); }
+    AtomicString defaultKind() const override { return subtitlesKeyword(); }
 
     void addListOfCues(WillBeHeapVector<RefPtrWillBeMember<TextTrackCue>>&);
 

@@ -54,7 +54,7 @@ private:
     bool matchesByIdOrName(const Element&) const;
     bool shouldOnlyMatchImgElements() const { return type() == RadioImgNodeListType; }
 
-    virtual bool elementMatches(const Element&) const override;
+    bool elementMatches(const Element&) const override;
 
     AtomicString m_name;
 };

@@ -63,7 +63,7 @@ public:
     bool isExecutingScript() const { return !!m_scriptNestingLevel; }
 
     // ResourceClient
-    virtual void notifyFinished(Resource*) override;
+    void notifyFinished(Resource*) override;
 
     DECLARE_TRACE();
 

@@ -18,7 +18,7 @@ public:
 private:
     explicit HTMLRubyElement(Document&);
 
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
 };
 
 } // namespace

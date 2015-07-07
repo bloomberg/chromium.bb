@@ -25,7 +25,7 @@ public:
         return adoptPtrWillBeNoop(new CanvasRenderingContext2DState);
     }
 
-    virtual ~CanvasRenderingContext2DState();
+    ~CanvasRenderingContext2DState() override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -47,7 +47,7 @@ public:
     CanvasRenderingContext2DState& operator=(const CanvasRenderingContext2DState&);
 
     // CSSFontSelectorClient implementation
-    virtual void fontsNeedUpdate(CSSFontSelector*) override;
+    void fontsNeedUpdate(CSSFontSelector*) override;
 
     bool hasUnrealizedSaves() const { return m_unrealizedSaveCount; }
     void save() { ++m_unrealizedSaveCount; }

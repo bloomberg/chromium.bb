@@ -61,8 +61,8 @@ private:
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     // BaseMultipleFieldsDateAndTimeInputType functions
-    String formatDateTimeFieldsState(const DateTimeFieldsState&) const override final;
-    void setupLayoutParameters(DateTimeEditElement::LayoutParameters&, const DateComponents&) const override final;
+    String formatDateTimeFieldsState(const DateTimeFieldsState&) const final;
+    void setupLayoutParameters(DateTimeEditElement::LayoutParameters&, const DateComponents&) const final;
     bool isValidFormat(bool hasYear, bool hasMonth, bool hasWeek, bool hasDay, bool hasAMPM, bool hasHour, bool hasMinute, bool hasSecond) const override;
 #endif
 };

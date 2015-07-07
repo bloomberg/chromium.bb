@@ -39,7 +39,7 @@ public:
     static PassRefPtrWillBeRawPtr<HTMLAudioElement> create(Document&);
     static PassRefPtrWillBeRawPtr<HTMLAudioElement> createForJSConstructor(Document&, const AtomicString& src);
 
-    virtual bool isHTMLAudioElement() const override { return true; }
+    bool isHTMLAudioElement() const override { return true; }
 
 private:
     HTMLAudioElement(Document&);

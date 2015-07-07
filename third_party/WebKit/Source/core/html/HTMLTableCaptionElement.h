@@ -38,7 +38,7 @@ public:
 private:
     HTMLTableCaptionElement(Document&);
 
-    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
 };
 
 } // namespace blink

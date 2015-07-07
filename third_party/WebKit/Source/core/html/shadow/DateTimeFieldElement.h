@@ -62,7 +62,7 @@ public:
         virtual void fieldDidChangeValueByKeyboard() = 0;
     };
 
-    virtual void defaultEventHandler(Event*) override;
+    void defaultEventHandler(Event*) override;
     virtual bool hasValue() const = 0;
     bool isDisabled() const;
     virtual float maximumWidth(const Font&);
@@ -91,14 +91,14 @@ protected:
     virtual int valueForARIAValueNow() const;
 
     // Node functions.
-    virtual void setFocus(bool) override;
+    void setFocus(bool) override;
 
 private:
     void defaultKeyboardEventHandler(KeyboardEvent*);
-    virtual bool isDateTimeFieldElement() const override final;
+    bool isDateTimeFieldElement() const final;
     bool isFieldOwnerDisabled() const;
     bool isFieldOwnerReadOnly() const;
-    virtual bool supportsFocus() const override final;
+    bool supportsFocus() const final;
 
     RawPtrWillBeMember<FieldOwner> m_fieldOwner;
 };

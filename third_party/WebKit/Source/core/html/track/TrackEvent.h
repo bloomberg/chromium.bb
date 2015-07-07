@@ -37,7 +37,7 @@ class VideoTrackOrAudioTrackOrTextTrack;
 class TrackEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~TrackEvent();
+    ~TrackEvent() override;
 
     static PassRefPtrWillBeRawPtr<TrackEvent> create()
     {
@@ -55,7 +55,7 @@ public:
         return adoptRefWillBeNoop(new TrackEvent(type, track));
     }
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     void track(VideoTrackOrAudioTrackOrTextTrack&);
 

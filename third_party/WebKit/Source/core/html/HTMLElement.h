@@ -46,8 +46,8 @@ public:
 
     bool hasTagName(const HTMLQualifiedName& name) const { return hasLocalName(name.localName()); }
 
-    virtual String title() const override final;
-    virtual short tabIndex() const override;
+    String title() const final;
+    short tabIndex() const override;
 
     void setInnerText(const String&, ExceptionState&);
     void setOuterText(const String&, ExceptionState&);
@@ -71,7 +71,7 @@ public:
 
     void click();
 
-    virtual void accessKeyAction(bool sendMouseEvents) override;
+    void accessKeyAction(bool sendMouseEvents) override;
 
     bool ieForbidsInsertHTML() const;
 
@@ -88,12 +88,12 @@ public:
     virtual bool isLabelable() const { return false; }
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/elements.html#interactive-content
     virtual bool isInteractiveContent() const;
-    virtual void defaultEventHandler(Event*) override;
+    void defaultEventHandler(Event*) override;
 
     static const AtomicString& eventNameForAttributeName(const QualifiedName& attrName);
 
-    virtual bool matchesReadOnlyPseudoClass() const override;
-    virtual bool matchesReadWritePseudoClass() const override;
+    bool matchesReadOnlyPseudoClass() const override;
+    bool matchesReadWritePseudoClass() const override;
 
     static const AtomicString& eventParameterName();
 
@@ -112,16 +112,16 @@ protected:
     void applyAlignmentAttributeToStyle(const AtomicString&, MutableStylePropertySet*);
     void applyBorderAttributeToStyle(const AtomicString&, MutableStylePropertySet*);
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual bool isPresentationAttribute(const QualifiedName&) const override;
-    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    bool isPresentationAttribute(const QualifiedName&) const override;
+    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
     unsigned parseBorderWidthAttribute(const AtomicString&) const;
 
-    virtual void childrenChanged(const ChildrenChange&) override;
+    void childrenChanged(const ChildrenChange&) override;
     void calculateAndAdjustDirectionality();
 
 private:
-    virtual String nodeName() const override final;
+    String nodeName() const final;
 
     bool isHTMLElement() const = delete; // This will catch anyone doing an unnecessary check.
     bool isStyledElement() const = delete; // This will catch anyone doing an unnecessary check.

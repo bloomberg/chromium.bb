@@ -36,12 +36,12 @@ public:
     {
         return adoptRefWillBeNoop(new TextDocumentParser(document, syncPolicy));
     }
-    virtual ~TextDocumentParser();
+    ~TextDocumentParser() override;
 
 private:
     explicit TextDocumentParser(HTMLDocument&, ParserSynchronizationPolicy);
 
-    virtual void appendBytes(const char*, size_t) override;
+    void appendBytes(const char*, size_t) override;
     void insertFakePreElement();
 
     bool m_haveInsertedFakePreElement;

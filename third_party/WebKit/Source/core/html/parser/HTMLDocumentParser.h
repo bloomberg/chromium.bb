@@ -74,7 +74,7 @@ public:
     {
         return adoptRefWillBeNoop(new HTMLDocumentParser(document, reportErrors, backgroundParsingPolicy));
     }
-    virtual ~HTMLDocumentParser();
+    ~HTMLDocumentParser() override;
     DECLARE_VIRTUAL_TRACE();
 
     // Exposed for HTMLParserScheduler
@@ -84,12 +84,12 @@ public:
 
     HTMLTokenizer* tokenizer() const { return m_tokenizer.get(); }
 
-    virtual TextPosition textPosition() const override final;
-    virtual bool isParsingAtLineNumber() const override final;
-    virtual OrdinalNumber lineNumber() const override final;
+    TextPosition textPosition() const final;
+    bool isParsingAtLineNumber() const final;
+    OrdinalNumber lineNumber() const final;
 
-    virtual void suspendScheduledTasks() override final;
-    virtual void resumeScheduledTasks() override final;
+    void suspendScheduledTasks() final;
+    void resumeScheduledTasks() final;
 
     struct ParsedChunk {
         OwnPtr<CompactHTMLTokenStream> tokens;
@@ -104,16 +104,16 @@ public:
     void didReceiveParsedChunkFromBackgroundParser(PassOwnPtr<ParsedChunk>);
     void didReceiveEncodingDataFromBackgroundParser(const DocumentEncodingData&);
 
-    virtual void appendBytes(const char* bytes, size_t length) override;
-    virtual void flush() override final;
-    virtual void setDecoder(PassOwnPtr<TextResourceDecoder>) override final;
+    void appendBytes(const char* bytes, size_t length) override;
+    void flush() final;
+    void setDecoder(PassOwnPtr<TextResourceDecoder>) final;
 
     UseCounter* useCounter() { return UseCounter::getFrom(contextForParsingSession()); }
 
 protected:
-    virtual void insert(const SegmentedString&) override final;
-    virtual void append(const String&) override;
-    virtual void finish() override final;
+    void insert(const SegmentedString&) final;
+    void append(const String&) override;
+    void finish() final;
 
     HTMLDocumentParser(HTMLDocument&, bool reportErrors, ParserSynchronizationPolicy);
     HTMLDocumentParser(DocumentFragment*, Element* contextElement, ParserContentPolicy);
@@ -129,20 +129,20 @@ private:
     }
 
     // DocumentParser
-    virtual void detach() override final;
-    virtual bool hasInsertionPoint() override final;
-    virtual bool processingData() const override final;
-    virtual void prepareToStopParsing() override final;
-    virtual void stopParsing() override final;
-    virtual bool isWaitingForScripts() const override final;
-    virtual bool isExecutingScript() const override final;
-    virtual void executeScriptsWaitingForResources() override final;
+    void detach() final;
+    bool hasInsertionPoint() final;
+    bool processingData() const final;
+    void prepareToStopParsing() final;
+    void stopParsing() final;
+    bool isWaitingForScripts() const final;
+    bool isExecutingScript() const final;
+    void executeScriptsWaitingForResources() final;
 
     // HTMLScriptRunnerHost
-    virtual void notifyScriptLoaded(Resource*) override final;
-    virtual HTMLInputStream& inputStream() override final { return m_input; }
-    virtual bool hasPreloadScanner() const override final { return m_preloadScanner.get() && !shouldUseThreading(); }
-    virtual void appendCurrentInputStreamToPreloadScannerAndScan() override final;
+    void notifyScriptLoaded(Resource*) final;
+    HTMLInputStream& inputStream() final { return m_input; }
+    bool hasPreloadScanner() const final { return m_preloadScanner.get() && !shouldUseThreading(); }
+    void appendCurrentInputStreamToPreloadScannerAndScan() final;
 
     void startBackgroundParser();
     void stopBackgroundParser();

@@ -40,13 +40,13 @@ class HTMLShadowElement final : public InsertionPoint {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLShadowElement);
-    virtual ~HTMLShadowElement();
+    ~HTMLShadowElement() override;
 
     ShadowRoot* olderShadowRoot();
 
 private:
     explicit HTMLShadowElement(Document&);
-    virtual InsertionNotificationRequest insertedInto(ContainerNode* insertionPoint) override;
+    InsertionNotificationRequest insertedInto(ContainerNode* insertionPoint) override;
 };
 
 } // namespace blink

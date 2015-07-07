@@ -60,18 +60,18 @@ public:
 private:
     explicit HTMLFrameSetElement(Document&);
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual bool isPresentationAttribute(const QualifiedName&) const override;
-    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    bool isPresentationAttribute(const QualifiedName&) const override;
+    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
 
-    virtual void attach(const AttachContext& = AttachContext()) override;
-    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override;
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    void attach(const AttachContext& = AttachContext()) override;
+    bool layoutObjectIsNeeded(const ComputedStyle&) override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
-    virtual void defaultEventHandler(Event*) override;
+    void defaultEventHandler(Event*) override;
 
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void willRecalcStyle(StyleRecalcChange) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void willRecalcStyle(StyleRecalcChange) override;
 
     Vector<HTMLDimension> m_rowLengths;
     Vector<HTMLDimension> m_colLengths;

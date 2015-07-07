@@ -38,7 +38,7 @@ public:
 
 protected:
     explicit TextControlInnerContainer(Document&);
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
 };
 
 class EditingViewPortElement final : public HTMLDivElement {
@@ -47,49 +47,49 @@ public:
 
 protected:
     explicit EditingViewPortElement(Document&);
-    virtual PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;
+    PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;
 
 private:
-    virtual bool supportsFocus() const override { return false; }
+    bool supportsFocus() const override { return false; }
 };
 
 class TextControlInnerEditorElement final : public HTMLDivElement {
 public:
     static PassRefPtrWillBeRawPtr<TextControlInnerEditorElement> create(Document&);
 
-    virtual void defaultEventHandler(Event*) override;
+    void defaultEventHandler(Event*) override;
 
 private:
     explicit TextControlInnerEditorElement(Document&);
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    virtual PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;
-    virtual bool supportsFocus() const override { return false; }
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;
+    bool supportsFocus() const override { return false; }
 };
 
 class SearchFieldDecorationElement final : public HTMLDivElement {
 public:
     static PassRefPtrWillBeRawPtr<SearchFieldDecorationElement> create(Document&);
 
-    virtual void defaultEventHandler(Event*) override;
-    virtual bool willRespondToMouseClickEvents() override;
+    void defaultEventHandler(Event*) override;
+    bool willRespondToMouseClickEvents() override;
 
 private:
     explicit SearchFieldDecorationElement(Document&);
-    virtual const AtomicString& shadowPseudoId() const override;
-    virtual bool supportsFocus() const override { return false; }
+    const AtomicString& shadowPseudoId() const override;
+    bool supportsFocus() const override { return false; }
 };
 
 class SearchFieldCancelButtonElement final : public HTMLDivElement {
 public:
     static PassRefPtrWillBeRawPtr<SearchFieldCancelButtonElement> create(Document&);
 
-    virtual void defaultEventHandler(Event*) override;
-    virtual bool willRespondToMouseClickEvents() override;
+    void defaultEventHandler(Event*) override;
+    bool willRespondToMouseClickEvents() override;
 
 private:
     explicit SearchFieldCancelButtonElement(Document&);
-    virtual void detach(const AttachContext& = AttachContext()) override;
-    virtual bool supportsFocus() const override { return false; }
+    void detach(const AttachContext& = AttachContext()) override;
+    bool supportsFocus() const override { return false; }
 
     bool m_capturing;
 };

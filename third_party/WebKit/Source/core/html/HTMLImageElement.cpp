@@ -62,7 +62,7 @@ public:
         return adoptRefWillBeNoop(new ViewportChangeListener(element));
     }
 
-    virtual void notifyMediaQueryChanged() override
+    void notifyMediaQueryChanged() override
     {
         if (m_element)
             m_element->notifyViewportChanged();

@@ -42,7 +42,7 @@ public:
     DECLARE_TRACE();
 
 protected:
-    virtual void preload(PassOwnPtr<PreloadRequest>) override;
+    void preload(PassOwnPtr<PreloadRequest>) override;
 
 private:
     explicit HTMLResourcePreloader(Document&);

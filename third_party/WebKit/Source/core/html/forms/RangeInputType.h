@@ -75,7 +75,7 @@ private:
     void updateTickMarkValues();
 
     // InputTypeView function:
-    virtual void updateView() override;
+    void updateView() override;
 
     bool m_tickMarkValuesDirty;
     Vector<Decimal> m_tickMarkValues;

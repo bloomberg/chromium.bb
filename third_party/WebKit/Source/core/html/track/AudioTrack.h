@@ -20,7 +20,7 @@ public:
         return adoptRefWillBeNoop(new AudioTrack(id, kind, label, language, enabled));
     }
 
-    virtual ~AudioTrack();
+    ~AudioTrack() override;
     DECLARE_VIRTUAL_TRACE();
 
     bool enabled() const { return m_enabled; }
@@ -40,8 +40,8 @@ private:
     AudioTrack(const String& id, const AtomicString& kind, const AtomicString& label, const AtomicString& language, bool enabled);
 
     // TrackBase
-    virtual bool isValidKind(const AtomicString& kind) const override { return isValidKindKeyword(kind); }
-    virtual AtomicString defaultKind() const override;
+    bool isValidKind(const AtomicString& kind) const override { return isValidKindKeyword(kind); }
+    AtomicString defaultKind() const override;
 
     bool m_enabled;
 };

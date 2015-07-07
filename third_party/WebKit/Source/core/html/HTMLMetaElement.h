@@ -54,9 +54,9 @@ private:
     static void processViewportKeyValuePair(Document*, const String& key, const String& value, bool viewportMetaZeroValuesQuirk, void* data);
     static void parseContentAttribute(const String& content, void* data, Document*, bool viewportMetaZeroValuesQuirk);
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void didNotifySubtreeInsertionsToDocument() override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void didNotifySubtreeInsertionsToDocument() override;
 
     static float parsePositiveNumber(Document*, const String& key, const String& value, bool* ok = 0);
 

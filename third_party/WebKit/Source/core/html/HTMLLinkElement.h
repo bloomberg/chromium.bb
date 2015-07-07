@@ -61,12 +61,12 @@ public:
     static PassOwnPtrWillBeRawPtr<LinkStyle> create(HTMLLinkElement* owner);
 
     explicit LinkStyle(HTMLLinkElement* owner);
-    virtual ~LinkStyle();
+    ~LinkStyle() override;
 
-    virtual Type type() const override { return Style; }
-    virtual void process() override;
-    virtual void ownerRemoved() override;
-    virtual bool hasLoaded() const override { return m_loadedSheet; }
+    Type type() const override { return Style; }
+    void process() override;
+    void ownerRemoved() override;
+    bool hasLoaded() const override { return m_loadedSheet; }
     DECLARE_VIRTUAL_TRACE();
 
     void startLoadingDynamicSheet();
@@ -86,7 +86,7 @@ public:
 
 private:
     // From StyleSheetResourceClient
-    virtual void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource*) override;
+    void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource*) override;
 
     enum DisabledState {
         Unset,
@@ -126,7 +126,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement, public LinkLoaderC
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLLinkElement> create(Document&, bool createdByParser);
-    virtual ~HTMLLinkElement();
+    ~HTMLLinkElement() override;
 
     KURL href() const;
     const AtomicString& rel() const;
@@ -161,7 +161,7 @@ public:
     static void dispatchPendingLoadEvents();
 
     // From LinkLoaderClient
-    virtual bool shouldLoadLink() override;
+    bool shouldLoadLink() override;
 
     // For LinkStyle
     bool loadLink(const String& type, const String& as, const KURL&);
@@ -176,8 +176,8 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    virtual void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) override;
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
     LinkStyle* linkStyle() const;
     LinkImport* linkImport() const;
@@ -187,23 +187,23 @@ private:
     static void processCallback(Node*);
 
     // From Node and subclassses
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void removedFrom(ContainerNode*) override;
-    virtual bool isURLAttribute(const Attribute&) const override;
-    virtual bool hasLegalLinkAttribute(const QualifiedName&) const override;
-    virtual const QualifiedName& subResourceAttributeName() const override;
-    virtual bool sheetLoaded() override;
-    virtual void notifyLoadedSheetAndAllCriticalSubresources(LoadedSheetErrorStatus) override;
-    virtual void startLoadingDynamicSheet() override;
-    virtual void finishParsingChildren() override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void removedFrom(ContainerNode*) override;
+    bool isURLAttribute(const Attribute&) const override;
+    bool hasLegalLinkAttribute(const QualifiedName&) const override;
+    const QualifiedName& subResourceAttributeName() const override;
+    bool sheetLoaded() override;
+    void notifyLoadedSheetAndAllCriticalSubresources(LoadedSheetErrorStatus) override;
+    void startLoadingDynamicSheet() override;
+    void finishParsingChildren() override;
 
     // From LinkLoaderClient
-    virtual void linkLoaded() override;
-    virtual void linkLoadingErrored() override;
-    virtual void didStartLinkPrerender() override;
-    virtual void didStopLinkPrerender() override;
-    virtual void didSendLoadForLinkPrerender() override;
-    virtual void didSendDOMContentLoadedForLinkPrerender() override;
+    void linkLoaded() override;
+    void linkLoadingErrored() override;
+    void didStartLinkPrerender() override;
+    void didStopLinkPrerender() override;
+    void didSendLoadForLinkPrerender() override;
+    void didSendDOMContentLoadedForLinkPrerender() override;
 
 private:
     HTMLLinkElement(Document&, bool createdByParser);

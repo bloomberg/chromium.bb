@@ -52,7 +52,7 @@ class HTMLLinkElement;
 class HTMLImportChild final : public HTMLImport {
 public:
     HTMLImportChild(const KURL&, HTMLImportLoader*, SyncMode);
-    virtual ~HTMLImportChild();
+    ~HTMLImportChild() override;
     void dispose();
 
     HTMLLinkElement* link() const;
@@ -66,15 +66,15 @@ public:
 #endif
 
     // HTMLImport
-    virtual Document* document() const override;
-    virtual bool hasFinishedLoading() const override;
-    virtual HTMLImportLoader* loader() const override;
-    virtual void stateWillChange() override;
-    virtual void stateDidChange() override;
+    Document* document() const override;
+    bool hasFinishedLoading() const override;
+    HTMLImportLoader* loader() const override;
+    void stateWillChange() override;
+    void stateDidChange() override;
     DECLARE_VIRTUAL_TRACE();
 
 #if !defined(NDEBUG)
-    virtual void showThis() override;
+    void showThis() override;
 #endif
 
     void setClient(HTMLImportChildClient*);

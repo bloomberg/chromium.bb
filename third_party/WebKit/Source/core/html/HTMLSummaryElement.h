@@ -31,19 +31,19 @@ class HTMLSummaryElement final : public HTMLElement {
 public:
     static PassRefPtrWillBeRawPtr<HTMLSummaryElement> create(Document&);
     bool isMainSummary() const;
-    virtual bool willRespondToMouseClickEvents() override;
+    bool willRespondToMouseClickEvents() override;
 
     Element* markerControl();
 
 private:
     explicit HTMLSummaryElement(Document&);
 
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    virtual void defaultEventHandler(Event*) override;
-    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    void defaultEventHandler(Event*) override;
+    void didAddUserAgentShadowRoot(ShadowRoot&) override;
     HTMLDetailsElement* detailsElement() const;
 
-    virtual bool supportsFocus() const override;
+    bool supportsFocus() const override;
 };
 
 }

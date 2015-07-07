@@ -73,7 +73,7 @@ class CORE_EXPORT HTMLCanvasElement final : public HTMLElement, public DocumentV
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLCanvasElement);
 public:
     DECLARE_NODE_FACTORY(HTMLCanvasElement);
-    virtual ~HTMLCanvasElement();
+    ~HTMLCanvasElement() override;
 
     void addObserver(CanvasObserver*);
     void removeObserver(CanvasObserver*);
@@ -141,25 +141,25 @@ public:
 
     bool shouldBeDirectComposited() const;
 
-    virtual const AtomicString imageSourceURL() const override;
+    const AtomicString imageSourceURL() const override;
 
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
 
     // DocumentVisibilityObserver implementation
-    virtual void didChangeVisibilityState(PageVisibilityState) override;
+    void didChangeVisibilityState(PageVisibilityState) override;
 
     // CanvasImageSource implementation
-    virtual PassRefPtr<Image> getSourceImageForCanvas(SourceImageMode, SourceImageStatus*) const override;
-    virtual bool wouldTaintOrigin(SecurityOrigin*) const override;
-    virtual FloatSize elementSize() const override;
-    virtual bool isCanvasElement() const override { return true; }
-    virtual bool isOpaque() const override;
+    PassRefPtr<Image> getSourceImageForCanvas(SourceImageMode, SourceImageStatus*) const override;
+    bool wouldTaintOrigin(SecurityOrigin*) const override;
+    FloatSize elementSize() const override;
+    bool isCanvasElement() const override { return true; }
+    bool isOpaque() const override;
 
     // ImageBufferClient implementation
-    virtual void notifySurfaceInvalid() override;
-    virtual bool isDirty() override { return !m_dirtyRect.isEmpty(); }
-    virtual void didFinalizeFrame() override;
-    virtual void restoreCanvasMatrixClipStack() override;
+    void notifySurfaceInvalid() override;
+    bool isDirty() override { return !m_dirtyRect.isEmpty(); }
+    void didFinalizeFrame() override;
+    void restoreCanvasMatrixClipStack() override;
 
     void doDeferredPaintInvalidation();
 
@@ -170,7 +170,7 @@ public:
     static void registerRenderingContextFactory(PassOwnPtr<CanvasRenderingContextFactory>);
 
 protected:
-    virtual void didMoveToNewDocument(Document& oldDocument) override;
+    void didMoveToNewDocument(Document& oldDocument) override;
 
 private:
     explicit HTMLCanvasElement(Document&);
@@ -179,10 +179,10 @@ private:
     static ContextFactoryVector& renderingContextFactories();
     static CanvasRenderingContextFactory* getRenderingContextFactory(int);
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    virtual void didRecalcStyle(StyleRecalcChange) override;
-    virtual bool areAuthorShadowsAllowed() const override { return false; }
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    void didRecalcStyle(StyleRecalcChange) override;
+    bool areAuthorShadowsAllowed() const override { return false; }
 
     void reset();
 

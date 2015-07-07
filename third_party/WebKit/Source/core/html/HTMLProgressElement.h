@@ -45,28 +45,28 @@ public:
 
     double position() const;
 
-    virtual bool canContainRangeEndPoint() const override { return false; }
+    bool canContainRangeEndPoint() const override { return false; }
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit HTMLProgressElement(Document&);
-    virtual ~HTMLProgressElement();
+    ~HTMLProgressElement() override;
 
-    virtual bool areAuthorShadowsAllowed() const override { return false; }
-    virtual void willAddFirstOpenShadowRoot() override;
-    virtual bool shouldAppearIndeterminate() const override;
-    virtual bool supportLabels() const override { return true; }
+    bool areAuthorShadowsAllowed() const override { return false; }
+    void willAddFirstOpenShadowRoot() override;
+    bool shouldAppearIndeterminate() const override;
+    bool supportLabels() const override { return true; }
 
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
     LayoutProgress* layoutProgress() const;
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
-    virtual void attach(const AttachContext& = AttachContext()) override;
+    void attach(const AttachContext& = AttachContext()) override;
 
     void didElementStateChange();
-    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
+    void didAddUserAgentShadowRoot(ShadowRoot&) override;
     bool isDeterminate() const;
 
     RawPtrWillBeMember<ProgressValueElement> m_value;

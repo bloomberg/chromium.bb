@@ -70,7 +70,7 @@ public:
         return adoptPtrWillBeNoop(new HTMLImportLoader(controller));
     }
 
-    virtual ~HTMLImportLoader();
+    ~HTMLImportLoader() override;
     void dispose();
 
     Document* document() const { return m_document.get(); }
@@ -100,14 +100,14 @@ private:
     HTMLImportLoader(HTMLImportsController*);
 
     // RawResourceClient
-    virtual void responseReceived(Resource*, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
-    virtual void dataReceived(Resource*, const char* data, unsigned length) override;
-    virtual void notifyFinished(Resource*) override;
+    void responseReceived(Resource*, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
+    void dataReceived(Resource*, const char* data, unsigned length) override;
+    void notifyFinished(Resource*) override;
 
     // DocumentParserClient
 
     // Called after document parse is complete after DOMContentLoaded was dispatched.
-    virtual void notifyParserStopped() override;
+    void notifyParserStopped() override;
 
     State startWritingAndParsing(const ResourceResponse&);
     State finishWriting();

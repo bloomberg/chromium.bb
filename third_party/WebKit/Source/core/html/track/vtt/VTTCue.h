@@ -65,7 +65,7 @@ public:
 private:
     VTTCueBox(Document&, VTTCue*);
 
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
     RawPtrWillBeMember<VTTCue> m_cue;
 };
@@ -78,7 +78,7 @@ public:
         return adoptRefWillBeNoop(new VTTCue(document, startTime, endTime, text));
     }
 
-    virtual ~VTTCue();
+    ~VTTCue() override;
 
     const String& vertical() const;
     void setVertical(const String&);
@@ -111,11 +111,11 @@ public:
     const String& regionId() const { return m_regionId; }
     void setRegionId(const String&);
 
-    virtual void updateDisplay(HTMLDivElement& container) override;
+    void updateDisplay(HTMLDivElement& container) override;
 
-    virtual void updatePastAndFutureNodes(double movieTime) override;
+    void updatePastAndFutureNodes(double movieTime) override;
 
-    virtual void removeDisplayTree(RemovalNotification) override;
+    void removeDisplayTree(RemovalNotification) override;
 
     float calculateComputedLinePosition() const;
 
@@ -137,10 +137,10 @@ public:
     };
     CueAlignment cueAlignment() const { return m_cueAlignment; }
 
-    virtual ExecutionContext* executionContext() const override;
+    ExecutionContext* executionContext() const override;
 
 #ifndef NDEBUG
-    virtual String toString() const override;
+    String toString() const override;
 #endif
 
     DECLARE_VIRTUAL_TRACE();
@@ -152,7 +152,7 @@ private:
 
     PassRefPtrWillBeRawPtr<VTTCueBox> getDisplayTree();
 
-    virtual void cueDidChange() override;
+    void cueDidChange() override;
 
     void createVTTNodeTree();
     void copyVTTNodeToDOMTree(ContainerNode* vttNode, ContainerNode* root);

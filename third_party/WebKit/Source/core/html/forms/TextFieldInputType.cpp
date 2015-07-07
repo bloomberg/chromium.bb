@@ -64,12 +64,12 @@ private:
     inline DataListIndicatorElement(Document& document) : HTMLDivElement(document) { }
     inline HTMLInputElement* hostInput() const { return toHTMLInputElement(shadowHost()); }
 
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override
+    LayoutObject* createLayoutObject(const ComputedStyle&) override
     {
         return new LayoutDetailsMarker(this);
     }
 
-    virtual void* preDispatchEventHandler(Event* event) override
+    void* preDispatchEventHandler(Event* event) override
     {
         // Chromium opens autofill popup in a mousedown event listener
         // associated to the document. We don't want to open it in this case
@@ -80,7 +80,7 @@ private:
         return nullptr;
     }
 
-    virtual void defaultEventHandler(Event* event) override
+    void defaultEventHandler(Event* event) override
     {
         ASSERT(document().isActive());
         if (event->type() != EventTypeNames::click)
@@ -92,7 +92,7 @@ private:
         }
     }
 
-    virtual bool willRespondToMouseClickEvents() override
+    bool willRespondToMouseClickEvents() override
     {
         return hostInput() && !hostInput()->isDisabledOrReadOnly() && document().isActive();
     }

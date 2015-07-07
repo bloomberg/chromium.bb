@@ -65,8 +65,8 @@ public:
         , m_hasMinute(false)
         , m_hasSecond(false) { }
 
-    virtual void visitField(DateTimeFormat::FieldType, int) override final;
-    virtual void visitLiteral(const String&) override final { }
+    void visitField(DateTimeFormat::FieldType, int) final;
+    void visitLiteral(const String&) final { }
 
     bool validateFormat(const String& format, const BaseMultipleFieldsDateAndTimeInputType&);
 

@@ -42,11 +42,11 @@ class HTMLFormControlsCollection final : public HTMLCollection {
 public:
     static PassRefPtrWillBeRawPtr<HTMLFormControlsCollection> create(ContainerNode&, CollectionType);
 
-    virtual ~HTMLFormControlsCollection();
+    ~HTMLFormControlsCollection() override;
 
     HTMLElement* item(unsigned offset) const { return toHTMLElement(HTMLCollection::item(offset)); }
 
-    virtual HTMLElement* namedItem(const AtomicString& name) const override;
+    HTMLElement* namedItem(const AtomicString& name) const override;
     void namedGetter(const AtomicString& name, RadioNodeListOrElement&);
 
     DECLARE_VIRTUAL_TRACE();
@@ -54,13 +54,13 @@ public:
 private:
     explicit HTMLFormControlsCollection(ContainerNode&);
 
-    virtual void updateIdNameCache() const override;
-    virtual void supportedPropertyNames(Vector<String>& names) override;
+    void updateIdNameCache() const override;
+    void supportedPropertyNames(Vector<String>& names) override;
 
     const FormAssociatedElement::List& formControlElements() const;
     const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement>>& formImageElements() const;
-    virtual HTMLElement* virtualItemAfter(Element*) const override;
-    virtual void invalidateCache(Document* oldDocument = 0) const override;
+    HTMLElement* virtualItemAfter(Element*) const override;
+    void invalidateCache(Document* oldDocument = 0) const override;
 
     mutable RawPtrWillBeMember<HTMLElement> m_cachedElement;
     mutable unsigned m_cachedElementOffsetInArray;

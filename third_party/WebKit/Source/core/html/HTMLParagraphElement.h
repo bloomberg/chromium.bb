@@ -35,7 +35,7 @@ public:
 private:
     explicit HTMLParagraphElement(Document&);
 
-    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
 };
 
 } // namespace blink

@@ -108,7 +108,7 @@ protected:
     MediaControlDivElement(MediaControls&, MediaControlElementType);
 
 private:
-    virtual bool isMediaControlElement() const override final { return true; }
+    bool isMediaControlElement() const final { return true; }
 };
 
 // ----------------------------
@@ -123,8 +123,8 @@ protected:
 
 private:
     virtual void updateDisplayType() { }
-    virtual bool isMediaControlElement() const override final { return true; }
-    virtual bool isMouseFocusable() const override;
+    bool isMediaControlElement() const final { return true; }
+    bool isMouseFocusable() const override;
 };
 
 // ----------------------------

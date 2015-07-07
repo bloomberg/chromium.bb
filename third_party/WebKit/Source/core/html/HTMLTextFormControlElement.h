@@ -52,12 +52,12 @@ public:
         NotChangeSelection
     };
 
-    virtual ~HTMLTextFormControlElement();
+    ~HTMLTextFormControlElement() override;
 
     void forwardEvent(Event*);
 
 
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
 
     // The derived class should return true if placeholder processing is needed.
     virtual bool supportsPlaceholder() const = 0;
@@ -86,7 +86,7 @@ public:
     const AtomicString& autocapitalize() const;
     void setAutocapitalize(const AtomicString&);
 
-    virtual void dispatchFormControlChangeEvent() override final;
+    void dispatchFormControlChangeEvent() final;
 
     virtual String value() const = 0;
 
@@ -114,7 +114,7 @@ protected:
     bool isPlaceholderEmpty() const;
     virtual void updatePlaceholderText() = 0;
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
     void cacheSelection(int start, int end, TextFieldSelectionDirection direction)
     {
@@ -126,7 +126,7 @@ protected:
 
     void restoreCachedSelection();
 
-    virtual void defaultEventHandler(Event*) override;
+    void defaultEventHandler(Event*) override;
     virtual void subtreeHasChanged() = 0;
 
     void setLastChangeWasNotUserEdit() { m_lastChangeWasUserEdit = false; }
@@ -134,15 +134,15 @@ protected:
     String valueWithHardLineBreaks() const;
 
     virtual bool shouldDispatchFormControlChangeEvent(String&, String&);
-    virtual void copyNonAttributePropertiesFromElement(const Element&) override;
+    void copyNonAttributePropertiesFromElement(const Element&) override;
 
 private:
     int computeSelectionStart() const;
     int computeSelectionEnd() const;
     TextFieldSelectionDirection computeSelectionDirection() const;
 
-    virtual void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType) override final;
-    virtual void dispatchBlurEvent(Element* newFocusedElement, WebFocusType) override final;
+    void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType) final;
+    void dispatchBlurEvent(Element* newFocusedElement, WebFocusType) final;
     void scheduleSelectEvent();
 
     // Returns true if user-editable value is empty. Used to check placeholder visibility.

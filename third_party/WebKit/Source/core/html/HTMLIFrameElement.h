@@ -35,28 +35,28 @@ class HTMLIFrameElement final : public HTMLFrameElementBase, public DOMSettableT
 public:
     DECLARE_NODE_FACTORY(HTMLIFrameElement);
     DECLARE_VIRTUAL_TRACE();
-    virtual ~HTMLIFrameElement();
+    ~HTMLIFrameElement() override;
     DOMSettableTokenList* sandbox() const;
 
 private:
     explicit HTMLIFrameElement(Document&);
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) override;
-    virtual bool isPresentationAttribute(const QualifiedName&) const override;
-    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) override;
+    bool isPresentationAttribute(const QualifiedName&) const override;
+    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
 
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void removedFrom(ContainerNode*) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void removedFrom(ContainerNode*) override;
 
-    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override;
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    bool layoutObjectIsNeeded(const ComputedStyle&) override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
-    virtual bool loadedNonEmptyDocument() const override { return m_didLoadNonEmptyDocument; }
-    virtual void didLoadNonEmptyDocument() override { m_didLoadNonEmptyDocument = true; }
-    virtual bool isInteractiveContent() const override;
+    bool loadedNonEmptyDocument() const override { return m_didLoadNonEmptyDocument; }
+    void didLoadNonEmptyDocument() override { m_didLoadNonEmptyDocument = true; }
+    bool isInteractiveContent() const override;
 
-    virtual void valueChanged() override;
+    void valueChanged() override;
 
     AtomicString m_name;
     bool m_didLoadNonEmptyDocument;

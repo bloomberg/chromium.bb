@@ -48,7 +48,7 @@ public:
     {
         return adoptRefWillBeNoop(new TextTrackList(owner));
     }
-    virtual ~TextTrackList();
+    ~TextTrackList() override;
 
     unsigned length() const;
     int getTrackIndex(TextTrack*);
@@ -61,8 +61,8 @@ public:
     void remove(TextTrack*);
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const override;
-    virtual ExecutionContext* executionContext() const override;
+    const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const override;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(addtrack);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(change);

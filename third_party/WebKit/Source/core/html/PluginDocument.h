@@ -45,14 +45,14 @@ public:
     Widget* pluginWidget();
     Node* pluginNode();
 
-    virtual void detach(const AttachContext& = AttachContext()) override;
+    void detach(const AttachContext& = AttachContext()) override;
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit PluginDocument(const DocumentInit&);
 
-    virtual PassRefPtrWillBeRawPtr<DocumentParser> createParser() override;
+    PassRefPtrWillBeRawPtr<DocumentParser> createParser() override;
 
     RefPtrWillBeMember<Node> m_pluginNode;
 };

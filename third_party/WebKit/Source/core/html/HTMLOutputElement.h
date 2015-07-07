@@ -41,7 +41,7 @@ class HTMLOutputElement final : public HTMLFormControlElement {
 public:
     static PassRefPtrWillBeRawPtr<HTMLOutputElement> create(Document&, HTMLFormElement*);
 
-    virtual bool willValidate() const override { return false; }
+    bool willValidate() const override { return false; }
 
     String value() const;
     void setValue(const String&);
@@ -50,20 +50,20 @@ public:
     void setFor(const AtomicString&);
     DOMSettableTokenList* htmlFor() const;
 
-    virtual bool canContainRangeEndPoint() const override { return false; }
+    bool canContainRangeEndPoint() const override { return false; }
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
     HTMLOutputElement(Document&, HTMLFormElement*);
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual const AtomicString& formControlType() const override;
-    virtual bool isEnumeratable() const override { return true; }
-    virtual bool supportLabels() const override { return true; }
-    virtual bool supportsFocus() const override;
-    virtual void childrenChanged(const ChildrenChange&) override;
-    virtual void resetImpl() override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    const AtomicString& formControlType() const override;
+    bool isEnumeratable() const override { return true; }
+    bool supportLabels() const override { return true; }
+    bool supportsFocus() const override;
+    void childrenChanged(const ChildrenChange&) override;
+    void resetImpl() override;
 
     bool m_isDefaultValueMode;
     String m_defaultValue;

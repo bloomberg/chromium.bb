@@ -38,7 +38,7 @@ public:
     {
         return adoptRefWillBeNoop(new HTMLDocument(initializer));
     }
-    virtual ~HTMLDocument();
+    ~HTMLDocument() override;
 
     const AtomicString& bgColor() const;
     void setBgColor(const AtomicString&);
@@ -71,7 +71,7 @@ public:
 
     static bool isCaseSensitiveAttribute(const QualifiedName&);
 
-    virtual PassRefPtrWillBeRawPtr<Document> cloneDocumentWithoutChildren() override final;
+    PassRefPtrWillBeRawPtr<Document> cloneDocumentWithoutChildren() final;
 
 protected:
     HTMLDocument(const DocumentInit&, DocumentClassFlags extendedDocumentClasses = DefaultDocumentClass);

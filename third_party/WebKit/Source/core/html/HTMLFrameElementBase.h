@@ -31,36 +31,36 @@ namespace blink {
 
 class HTMLFrameElementBase : public HTMLFrameOwnerElement {
 public:
-    virtual ScrollbarMode scrollingMode() const override final { return m_scrolling; }
+    ScrollbarMode scrollingMode() const final { return m_scrolling; }
 
     int marginWidth() const { return m_marginWidth; }
     int marginHeight() const { return m_marginHeight; }
 
-    virtual bool canContainRangeEndPoint() const override final { return false; }
+    bool canContainRangeEndPoint() const final { return false; }
 
 protected:
     HTMLFrameElementBase(const QualifiedName&, Document&);
 
     bool isURLAllowed() const;
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void didNotifySubtreeInsertionsToDocument() override final;
-    virtual void attach(const AttachContext& = AttachContext()) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void didNotifySubtreeInsertionsToDocument() final;
+    void attach(const AttachContext& = AttachContext()) override;
 
     // FIXME: Remove this method once we have input routing in the browser
     // process. See http://crbug.com/339659.
-    virtual void defaultEventHandler(Event*) override;
+    void defaultEventHandler(Event*) override;
 
 private:
-    virtual bool supportsFocus() const override final;
-    virtual void setFocus(bool) override final;
+    bool supportsFocus() const final;
+    void setFocus(bool) final;
 
-    virtual bool isURLAttribute(const Attribute&) const override final;
-    virtual bool hasLegalLinkAttribute(const QualifiedName&) const override final;
-    virtual bool isHTMLContentAttribute(const Attribute&) const override final;
+    bool isURLAttribute(const Attribute&) const final;
+    bool hasLegalLinkAttribute(const QualifiedName&) const final;
+    bool isHTMLContentAttribute(const Attribute&) const final;
 
-    virtual bool areAuthorShadowsAllowed() const override final { return false; }
+    bool areAuthorShadowsAllowed() const final { return false; }
 
     void setLocation(const String&);
     void setNameAndOpenURL();

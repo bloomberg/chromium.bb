@@ -56,29 +56,29 @@ public:
     };
 
     static PassRefPtrWillBeRawPtr<PickerIndicatorElement> create(Document&, PickerIndicatorOwner&);
-    virtual ~PickerIndicatorElement();
+    ~PickerIndicatorElement() override;
     DECLARE_VIRTUAL_TRACE();
 
     void openPopup();
     void closePopup();
-    virtual bool willRespondToMouseClickEvents() override;
+    bool willRespondToMouseClickEvents() override;
     void removePickerIndicatorOwner() { m_pickerIndicatorOwner = nullptr; }
     AXObject* popupRootAXObject() const;
 
     // DateTimeChooserClient implementation.
-    virtual Element& ownerElement() const override;
-    virtual void didChooseValue(const String&) override;
-    virtual void didChooseValue(double) override;
-    virtual void didEndChooser() override;
+    Element& ownerElement() const override;
+    void didChooseValue(const String&) override;
+    void didChooseValue(double) override;
+    void didEndChooser() override;
 
 private:
     PickerIndicatorElement(Document&, PickerIndicatorOwner&);
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    virtual void defaultEventHandler(Event*) override;
-    virtual void detach(const AttachContext& = AttachContext()) override;
-    virtual bool isPickerIndicatorElement() const override;
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void didNotifySubtreeInsertionsToDocument() override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    void defaultEventHandler(Event*) override;
+    void detach(const AttachContext& = AttachContext()) override;
+    bool isPickerIndicatorElement() const override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void didNotifySubtreeInsertionsToDocument() override;
 
     HTMLInputElement* hostInput();
 

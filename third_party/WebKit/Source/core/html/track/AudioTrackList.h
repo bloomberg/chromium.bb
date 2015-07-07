@@ -15,12 +15,12 @@ class AudioTrackList final : public TrackListBase<AudioTrack> {
 public:
     static PassRefPtrWillBeRawPtr<AudioTrackList> create(HTMLMediaElement&);
 
-    virtual ~AudioTrackList();
+    ~AudioTrackList() override;
 
     bool hasEnabledTrack() const;
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
 private:
     explicit AudioTrackList(HTMLMediaElement&);

@@ -52,7 +52,7 @@ public:
 private:
     HTMLViewSourceDocument(const DocumentInit&, const String& mimeType);
 
-    virtual PassRefPtrWillBeRawPtr<DocumentParser> createParser() override;
+    PassRefPtrWillBeRawPtr<DocumentParser> createParser() override;
 
     void processDoctypeToken(const String& source, HTMLToken&);
     void processEndOfFileToken(const String& source, HTMLToken&);

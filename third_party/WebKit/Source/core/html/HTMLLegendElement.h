@@ -43,8 +43,8 @@ private:
     // Control in the legend's fieldset that gets focus and access key.
     HTMLFormControlElement* associatedControl();
 
-    virtual void accessKeyAction(bool sendMouseEvents) override;
-    virtual void focus(bool restorePreviousSelection, WebFocusType) override;
+    void accessKeyAction(bool sendMouseEvents) override;
+    void focus(bool restorePreviousSelection, WebFocusType) override;
 };
 
 } // namespace blink

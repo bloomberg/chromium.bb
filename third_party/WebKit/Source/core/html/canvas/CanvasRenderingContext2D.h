@@ -81,7 +81,7 @@ public:
         void onError(HTMLCanvasElement*, const String& error) override { };
     };
 
-    virtual ~CanvasRenderingContext2D();
+    ~CanvasRenderingContext2D() override;
 
     void strokeStyle(StringOrCanvasGradientOrCanvasPattern&) const;
     void setStrokeStyle(const StringOrCanvasGradientOrCanvasPattern&);
@@ -294,16 +294,16 @@ private:
     void checkOverdraw(const SkRect&, const SkPaint*, CanvasRenderingContext2DState::ImageType, DrawType);
 
     CanvasRenderingContext::ContextType contextType() const override { return CanvasRenderingContext::Context2d; }
-    virtual bool is2d() const override { return true; }
-    virtual bool isAccelerated() const override;
-    virtual bool hasAlpha() const override { return m_hasAlpha; }
-    virtual void setIsHidden(bool) override;
-    void stop() override final;
+    bool is2d() const override { return true; }
+    bool isAccelerated() const override;
+    bool hasAlpha() const override { return m_hasAlpha; }
+    void setIsHidden(bool) override;
+    void stop() final;
     DECLARE_VIRTUAL_TRACE();
 
     virtual bool isTransformInvertible() const;
 
-    virtual WebLayer* platformLayer() const override;
+    WebLayer* platformLayer() const override;
 
     WillBeHeapVector<OwnPtrWillBeMember<CanvasRenderingContext2DState>> m_stateStack;
     OwnPtrWillBeMember<HitRegionManager> m_hitRegionManager;

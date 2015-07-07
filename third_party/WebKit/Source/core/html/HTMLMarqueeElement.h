@@ -32,9 +32,9 @@ class HTMLMarqueeElement final : public HTMLElement {
 public:
     static PassRefPtrWillBeRawPtr<HTMLMarqueeElement> create(Document&);
 
-    virtual void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) final;
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) final;
-    virtual void removedFrom(ContainerNode*) final;
+    void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) final;
+    InsertionNotificationRequest insertedInto(ContainerNode*) final;
+    void removedFrom(ContainerNode*) final;
 
     bool isHorizontal() const;
 

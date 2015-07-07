@@ -51,7 +51,7 @@ public:
         return cue;
     }
 
-    virtual ~TextTrackCue() { }
+    ~TextTrackCue() override { }
 
     TextTrack* track() const;
     void setTrack(TextTrack*);
@@ -75,7 +75,7 @@ public:
     void invalidateCueIndex();
 
     using EventTarget::dispatchEvent;
-    virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) override;
+    bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) override;
 
     bool isActive() const { return m_isActive; }
     void setIsActive(bool active) { m_isActive = active; }
@@ -96,7 +96,7 @@ public:
     };
     virtual void removeDisplayTree(RemovalNotification = NotifyRegion) = 0;
 
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
 #ifndef NDEBUG
     virtual String toString() const = 0;

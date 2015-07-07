@@ -49,23 +49,23 @@ public:
     void setPositionFromValue();
 
     void dragFrom(const LayoutPoint&);
-    virtual void defaultEventHandler(Event*) override;
-    virtual bool willRespondToMouseMoveEvents() override;
-    virtual bool willRespondToMouseClickEvents() override;
-    virtual void detach(const AttachContext& = AttachContext()) override;
-    virtual const AtomicString& shadowPseudoId() const override;
+    void defaultEventHandler(Event*) override;
+    bool willRespondToMouseMoveEvents() override;
+    bool willRespondToMouseClickEvents() override;
+    void detach(const AttachContext& = AttachContext()) override;
+    const AtomicString& shadowPseudoId() const override;
     HTMLInputElement* hostInput() const;
     void setPositionFromPoint(const LayoutPoint&);
     void stopDragging();
 
 private:
     SliderThumbElement(Document&);
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    virtual PassRefPtrWillBeRawPtr<Element> cloneElementWithoutAttributesAndChildren() override;
-    virtual bool isDisabledFormControl() const override;
-    virtual bool matchesReadOnlyPseudoClass() const override;
-    virtual bool matchesReadWritePseudoClass() const override;
-    virtual Node* focusDelegate() override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    PassRefPtrWillBeRawPtr<Element> cloneElementWithoutAttributesAndChildren() override;
+    bool isDisabledFormControl() const override;
+    bool matchesReadOnlyPseudoClass() const override;
+    bool matchesReadWritePseudoClass() const override;
+    Node* focusDelegate() override;
     void startDragging();
 
     bool m_inDragMode;
@@ -85,8 +85,8 @@ public:
 
 private:
     explicit SliderContainerElement(Document&);
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    virtual const AtomicString& shadowPseudoId() const override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    const AtomicString& shadowPseudoId() const override;
 };
 
 }

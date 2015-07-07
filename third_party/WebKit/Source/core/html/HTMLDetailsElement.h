@@ -33,7 +33,7 @@ class HTMLDetailsElement final : public HTMLElement {
 public:
     static PassRefPtrWillBeRawPtr<HTMLDetailsElement> create(Document&);
     void toggleOpen();
-    virtual ~HTMLDetailsElement();
+    ~HTMLDetailsElement() override;
 
     void dispatchPendingEvent(DetailsEventSender*);
 
@@ -42,10 +42,10 @@ public:
 private:
     explicit HTMLDetailsElement(Document&);
 
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
-    virtual bool isInteractiveContent() const override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void didAddUserAgentShadowRoot(ShadowRoot&) override;
+    bool isInteractiveContent() const override;
 
     bool m_isOpen;
 };

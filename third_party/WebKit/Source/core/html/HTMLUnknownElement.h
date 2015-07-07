@@ -46,7 +46,7 @@ private:
     HTMLUnknownElement(const QualifiedName& tagName, Document& document)
         : HTMLElement(tagName, document) { }
 
-    virtual bool isHTMLUnknownElement() const override { return true; }
+    bool isHTMLUnknownElement() const override { return true; }
 };
 
 inline bool isHTMLUnknownElement(const HTMLElement& element)

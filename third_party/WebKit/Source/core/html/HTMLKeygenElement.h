@@ -35,32 +35,32 @@ class HTMLKeygenElement final : public HTMLFormControlElementWithState {
 public:
     static PassRefPtrWillBeRawPtr<HTMLKeygenElement> create(Document&, HTMLFormElement*);
 
-    virtual bool willValidate() const override { return false; }
+    bool willValidate() const override { return false; }
 
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
 private:
     HTMLKeygenElement(Document&, HTMLFormElement*);
 
-    virtual bool areAuthorShadowsAllowed() const override { return false; }
+    bool areAuthorShadowsAllowed() const override { return false; }
 
-    virtual bool canStartSelection() const override { return false; }
+    bool canStartSelection() const override { return false; }
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
-    virtual bool appendFormData(FormDataList&, bool) override;
-    virtual const AtomicString& formControlType() const override;
-    virtual bool isOptionalFormControl() const override { return false; }
+    bool appendFormData(FormDataList&, bool) override;
+    const AtomicString& formControlType() const override;
+    bool isOptionalFormControl() const override { return false; }
 
-    virtual bool isEnumeratable() const override { return true; }
-    virtual bool isInteractiveContent() const override;
-    virtual bool supportsAutofocus() const override;
-    virtual bool supportLabels() const override { return true; }
+    bool isEnumeratable() const override { return true; }
+    bool isInteractiveContent() const override;
+    bool supportsAutofocus() const override;
+    bool supportLabels() const override { return true; }
 
-    virtual void resetImpl() override;
-    virtual bool shouldSaveAndRestoreFormControlState() const override { return false; }
+    void resetImpl() override;
+    bool shouldSaveAndRestoreFormControlState() const override { return false; }
 
-    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
+    void didAddUserAgentShadowRoot(ShadowRoot&) override;
 
     HTMLSelectElement* shadowSelect() const;
 };

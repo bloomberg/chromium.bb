@@ -51,30 +51,30 @@ public:
 private:
     HTMLScriptElement(Document&, bool wasInsertedByParser, bool alreadyStarted);
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) override;
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void didNotifySubtreeInsertionsToDocument() override;
-    virtual void childrenChanged(const ChildrenChange&) override;
-    virtual void didMoveToNewDocument(Document& oldDocument) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void didNotifySubtreeInsertionsToDocument() override;
+    void childrenChanged(const ChildrenChange&) override;
+    void didMoveToNewDocument(Document& oldDocument) override;
 
-    virtual bool isURLAttribute(const Attribute&) const override;
-    virtual bool hasLegalLinkAttribute(const QualifiedName&) const override;
-    virtual const QualifiedName& subResourceAttributeName() const override;
+    bool isURLAttribute(const Attribute&) const override;
+    bool hasLegalLinkAttribute(const QualifiedName&) const override;
+    const QualifiedName& subResourceAttributeName() const override;
 
-    virtual String sourceAttributeValue() const override;
-    virtual String charsetAttributeValue() const override;
-    virtual String typeAttributeValue() const override;
-    virtual String languageAttributeValue() const override;
-    virtual String forAttributeValue() const override;
-    virtual String eventAttributeValue() const override;
-    virtual bool asyncAttributeValue() const override;
-    virtual bool deferAttributeValue() const override;
-    virtual bool hasSourceAttribute() const override;
+    String sourceAttributeValue() const override;
+    String charsetAttributeValue() const override;
+    String typeAttributeValue() const override;
+    String languageAttributeValue() const override;
+    String forAttributeValue() const override;
+    String eventAttributeValue() const override;
+    bool asyncAttributeValue() const override;
+    bool deferAttributeValue() const override;
+    bool hasSourceAttribute() const override;
 
-    virtual void dispatchLoadEvent() override;
+    void dispatchLoadEvent() override;
 
-    virtual PassRefPtrWillBeRawPtr<Element> cloneElementWithoutAttributesAndChildren() override;
+    PassRefPtrWillBeRawPtr<Element> cloneElementWithoutAttributesAndChildren() override;
 
     OwnPtrWillBeMember<ScriptLoader> m_loader;
 };

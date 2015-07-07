@@ -42,7 +42,7 @@ public:
 
     bool shouldWrapText() const { return m_wrap != NoWrap; }
 
-    virtual String value() const override;
+    String value() const override;
     void setValue(const String&, TextFieldEventBehavior = DispatchNoEvent);
     String defaultValue() const;
     void setDefaultValue(const String&);
@@ -56,10 +56,10 @@ public:
     void setSuggestedValue(const String&);
 
     // For ValidityState
-    virtual String validationMessage() const override;
-    virtual bool valueMissing() const override;
-    virtual bool tooLong() const override;
-    virtual bool tooShort() const override;
+    String validationMessage() const override;
+    bool valueMissing() const override;
+    bool tooLong() const override;
+    bool tooShort() const override;
     bool isValidValue(const String&) const;
 
     void setCols(unsigned);
@@ -74,62 +74,62 @@ private:
         SetSeletion
     };
 
-    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
+    void didAddUserAgentShadowRoot(ShadowRoot&) override;
     // FIXME: Author shadows should be allowed
     // https://bugs.webkit.org/show_bug.cgi?id=92608
-    virtual bool areAuthorShadowsAllowed() const override { return false; }
+    bool areAuthorShadowsAllowed() const override { return false; }
 
     void handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*) const;
     static String sanitizeUserInputValue(const String&, unsigned maxLength);
     void updateValue() const;
-    virtual void setInnerEditorValue(const String&) override;
+    void setInnerEditorValue(const String&) override;
     void setNonDirtyValue(const String&);
     void setValueCommon(const String&, TextFieldEventBehavior, SetValueCommonOption = NotSetSelection);
 
-    virtual bool supportsPlaceholder() const override { return true; }
-    virtual void updatePlaceholderText() override;
-    virtual bool isEmptyValue() const override { return value().isEmpty(); }
-    virtual bool isEmptySuggestedValue() const override final { return suggestedValue().isEmpty(); }
-    virtual bool supportsAutocapitalize() const override { return true; }
-    virtual const AtomicString& defaultAutocapitalize() const override;
+    bool supportsPlaceholder() const override { return true; }
+    void updatePlaceholderText() override;
+    bool isEmptyValue() const override { return value().isEmpty(); }
+    bool isEmptySuggestedValue() const final { return suggestedValue().isEmpty(); }
+    bool supportsAutocapitalize() const override { return true; }
+    const AtomicString& defaultAutocapitalize() const override;
 
-    virtual bool isOptionalFormControl() const override { return !isRequiredFormControl(); }
-    virtual bool isRequiredFormControl() const override { return isRequired(); }
+    bool isOptionalFormControl() const override { return !isRequiredFormControl(); }
+    bool isRequiredFormControl() const override { return isRequired(); }
 
-    virtual void defaultEventHandler(Event*) override;
-    virtual void handleFocusEvent(Element* oldFocusedNode, WebFocusType) override;
+    void defaultEventHandler(Event*) override;
+    void handleFocusEvent(Element* oldFocusedNode, WebFocusType) override;
 
-    virtual void subtreeHasChanged() override;
+    void subtreeHasChanged() override;
 
-    virtual bool isEnumeratable() const override { return true; }
-    virtual bool isInteractiveContent() const override;
-    virtual bool supportsAutofocus() const override;
-    virtual bool supportLabels() const override { return true; }
+    bool isEnumeratable() const override { return true; }
+    bool isInteractiveContent() const override;
+    bool supportsAutofocus() const override;
+    bool supportLabels() const override { return true; }
 
-    virtual const AtomicString& formControlType() const override;
+    const AtomicString& formControlType() const override;
 
-    virtual FormControlState saveFormControlState() const override;
-    virtual void restoreFormControlState(const FormControlState&) override;
+    FormControlState saveFormControlState() const override;
+    void restoreFormControlState(const FormControlState&) override;
 
-    virtual bool isTextFormControl() const override { return true; }
+    bool isTextFormControl() const override { return true; }
 
-    virtual void childrenChanged(const ChildrenChange&) override;
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual bool isPresentationAttribute(const QualifiedName&) const override;
-    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    virtual bool appendFormData(FormDataList&, bool) override;
-    virtual void resetImpl() override;
-    virtual bool hasCustomFocusLogic() const override;
-    virtual bool shouldShowFocusRingOnMouseFocus() const override;
-    virtual bool isKeyboardFocusable() const override;
-    virtual void updateFocusAppearance(bool restorePreviousSelection) override;
+    void childrenChanged(const ChildrenChange&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    bool isPresentationAttribute(const QualifiedName&) const override;
+    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    bool appendFormData(FormDataList&, bool) override;
+    void resetImpl() override;
+    bool hasCustomFocusLogic() const override;
+    bool shouldShowFocusRingOnMouseFocus() const override;
+    bool isKeyboardFocusable() const override;
+    void updateFocusAppearance(bool restorePreviousSelection) override;
 
-    virtual void accessKeyAction(bool sendMouseEvents) override;
+    void accessKeyAction(bool sendMouseEvents) override;
 
-    virtual bool matchesReadOnlyPseudoClass() const override;
-    virtual bool matchesReadWritePseudoClass() const override;
-    virtual void copyNonAttributePropertiesFromElement(const Element&) override final;
+    bool matchesReadOnlyPseudoClass() const override;
+    bool matchesReadWritePseudoClass() const override;
+    void copyNonAttributePropertiesFromElement(const Element&) final;
 
     // If the String* argument is 0, apply this->value().
     bool valueMissing(const String*) const;

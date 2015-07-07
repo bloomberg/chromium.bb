@@ -34,17 +34,17 @@ public:
     {
         return adoptPtrWillBeNoop(new HTMLImageLoader(element));
     }
-    virtual ~HTMLImageLoader();
+    ~HTMLImageLoader() override;
 
-    virtual void dispatchLoadEvent() override;
+    void dispatchLoadEvent() override;
 
-    virtual void notifyFinished(Resource*) override;
+    void notifyFinished(Resource*) override;
 
 private:
     Timer<HTMLImageLoader> m_loadFallbackContentTimer;
     void timerFired(Timer<HTMLImageLoader>*);
     explicit HTMLImageLoader(Element*);
-    virtual void noImageResourceToLoad() override;
+    void noImageResourceToLoad() override;
     void ensureFallbackContent();
 };
 

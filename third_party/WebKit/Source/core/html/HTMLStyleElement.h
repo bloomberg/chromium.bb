@@ -38,7 +38,7 @@ class HTMLStyleElement final : public HTMLElement, private StyleElement {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLStyleElement);
 public:
     static PassRefPtrWillBeRawPtr<HTMLStyleElement> create(Document&, bool createdByParser);
-    virtual ~HTMLStyleElement();
+    ~HTMLStyleElement() override;
 
     ContainerNode* scopingNode();
 
@@ -56,20 +56,20 @@ private:
     HTMLStyleElement(Document&, bool createdByParser);
 
     // overload from HTMLElement
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void didNotifySubtreeInsertionsToDocument() override;
-    virtual void removedFrom(ContainerNode*) override;
-    virtual void childrenChanged(const ChildrenChange&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void didNotifySubtreeInsertionsToDocument() override;
+    void removedFrom(ContainerNode*) override;
+    void childrenChanged(const ChildrenChange&) override;
 
-    virtual void finishParsingChildren() override;
+    void finishParsingChildren() override;
 
-    virtual bool sheetLoaded() override { return StyleElement::sheetLoaded(document()); }
-    virtual void notifyLoadedSheetAndAllCriticalSubresources(LoadedSheetErrorStatus) override;
-    virtual void startLoadingDynamicSheet() override { StyleElement::startLoadingDynamicSheet(document()); }
+    bool sheetLoaded() override { return StyleElement::sheetLoaded(document()); }
+    void notifyLoadedSheetAndAllCriticalSubresources(LoadedSheetErrorStatus) override;
+    void startLoadingDynamicSheet() override { StyleElement::startLoadingDynamicSheet(document()); }
 
-    virtual const AtomicString& media() const override;
-    virtual const AtomicString& type() const override;
+    const AtomicString& media() const override;
+    const AtomicString& type() const override;
 
     bool m_firedLoad;
     bool m_loadedSheet;

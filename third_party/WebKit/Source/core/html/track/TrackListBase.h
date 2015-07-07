@@ -22,7 +22,7 @@ public:
     {
     }
 
-    virtual ~TrackListBase()
+    ~TrackListBase() override
     {
 #if !ENABLE(OILPAN)
         ASSERT(m_tracks.isEmpty());
@@ -53,7 +53,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(removetrack);
 
     // EventTarget interface
-    virtual ExecutionContext* executionContext() const override
+    ExecutionContext* executionContext() const override
     {
         if (m_mediaElement)
             return m_mediaElement->executionContext();

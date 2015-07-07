@@ -61,22 +61,22 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
 public:
     static PassRefPtrWillBeRawPtr<HTMLAnchorElement> create(Document&);
 
-    virtual ~HTMLAnchorElement();
+    ~HTMLAnchorElement() override;
 
     KURL href() const;
     void setHref(const AtomicString&);
 
     const AtomicString& name() const;
 
-    virtual KURL url() const override final;
-    virtual void setURL(const KURL&) override final;
+    KURL url() const final;
+    void setURL(const KURL&) final;
 
-    virtual String input() const override final;
-    virtual void setInput(const String&) override final;
+    String input() const final;
+    void setInput(const String&) final;
 
-    virtual bool isLiveLink() const override final;
+    bool isLiveLink() const final;
 
-    virtual bool willRespondToMouseClickEvents() override final;
+    bool willRespondToMouseClickEvents() final;
 
     bool hasRel(uint32_t relation) const;
     void setRel(const AtomicString&);
@@ -89,26 +89,26 @@ public:
 protected:
     HTMLAnchorElement(const QualifiedName&, Document&);
 
-    virtual void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) override;
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual bool supportsFocus() const override;
+    void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    bool supportsFocus() const override;
 
 private:
-    virtual bool shouldHaveFocusAppearance() const override final;
-    virtual void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType) override;
-    virtual void dispatchBlurEvent(Element* newFocusedElement, WebFocusType) override;
-    virtual bool isMouseFocusable() const override;
-    virtual bool isKeyboardFocusable() const override;
-    virtual void defaultEventHandler(Event*) override final;
-    virtual void setActive(bool = true) override final;
-    virtual void accessKeyAction(bool sendMouseEvents) override final;
-    virtual bool isURLAttribute(const Attribute&) const override final;
-    virtual bool hasLegalLinkAttribute(const QualifiedName&) const override final;
-    virtual bool canStartSelection() const override final;
-    virtual short tabIndex() const override final;
-    virtual bool draggable() const override final;
-    virtual bool isInteractiveContent() const override final;
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    bool shouldHaveFocusAppearance() const final;
+    void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType) override;
+    void dispatchBlurEvent(Element* newFocusedElement, WebFocusType) override;
+    bool isMouseFocusable() const override;
+    bool isKeyboardFocusable() const override;
+    void defaultEventHandler(Event*) final;
+    void setActive(bool = true) final;
+    void accessKeyAction(bool sendMouseEvents) final;
+    bool isURLAttribute(const Attribute&) const final;
+    bool hasLegalLinkAttribute(const QualifiedName&) const final;
+    bool canStartSelection() const final;
+    short tabIndex() const final;
+    bool draggable() const final;
+    bool isInteractiveContent() const final;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
     void handleClick(Event*);
 
     uint32_t m_linkRelations;

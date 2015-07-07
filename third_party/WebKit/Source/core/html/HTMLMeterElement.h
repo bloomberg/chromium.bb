@@ -61,25 +61,25 @@ public:
     double valueRatio() const;
     GaugeRegion gaugeRegion() const;
 
-    virtual bool canContainRangeEndPoint() const override { return false; }
+    bool canContainRangeEndPoint() const override { return false; }
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit HTMLMeterElement(Document&);
-    virtual ~HTMLMeterElement();
+    ~HTMLMeterElement() override;
 
-    virtual bool areAuthorShadowsAllowed() const override { return false; }
-    virtual void willAddFirstOpenShadowRoot() override;
+    bool areAuthorShadowsAllowed() const override { return false; }
+    void willAddFirstOpenShadowRoot() override;
     LayoutMeter* layoutMeter() const;
 
-    virtual bool supportLabels() const override { return true; }
+    bool supportLabels() const override { return true; }
 
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
     void didElementStateChange();
-    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
+    void didAddUserAgentShadowRoot(ShadowRoot&) override;
 
     RefPtrWillBeMember<MeterValueElement> m_value;
 };

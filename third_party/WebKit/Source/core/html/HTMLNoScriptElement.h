@@ -44,7 +44,7 @@ public:
 private:
     explicit HTMLNoScriptElement(Document&);
 
-    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override;
+    bool layoutObjectIsNeeded(const ComputedStyle&) override;
 };
 
 } // namespace

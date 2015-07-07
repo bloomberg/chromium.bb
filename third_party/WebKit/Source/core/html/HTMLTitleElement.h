@@ -37,9 +37,9 @@ public:
 private:
     explicit HTMLTitleElement(Document&);
 
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void removedFrom(ContainerNode*) override;
-    virtual void childrenChanged(const ChildrenChange&) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void removedFrom(ContainerNode*) override;
+    void childrenChanged(const ChildrenChange&) override;
 
     bool m_ignoreTitleUpdatesWhenChildrenChange;
 };

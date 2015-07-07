@@ -46,14 +46,14 @@ public:
     }
 
 #if !ENABLE(OILPAN)
-    virtual void ref() override;
-    virtual void deref() override;
+    void ref() override;
+    void deref() override;
 #endif
 
-    virtual unsigned length() const override;
-    virtual const AtomicString item(unsigned index) const override;
+    unsigned length() const override;
+    const AtomicString item(unsigned index) const override;
 
-    virtual Element* element() override { return m_element; }
+    Element* element() override { return m_element; }
 
     void clearValueForQuirksMode() { m_classNamesForQuirksMode = nullptr; }
 
@@ -62,12 +62,12 @@ public:
 private:
     explicit ClassList(Element*);
 
-    virtual bool containsInternal(const AtomicString&) const override;
+    bool containsInternal(const AtomicString&) const override;
 
     const SpaceSplitString& classNames() const;
 
-    virtual const AtomicString& value() const override { return m_element->getAttribute(HTMLNames::classAttr); }
-    virtual void setValue(const AtomicString& value) override { m_element->setAttribute(HTMLNames::classAttr, value); }
+    const AtomicString& value() const override { return m_element->getAttribute(HTMLNames::classAttr); }
+    void setValue(const AtomicString& value) override { m_element->setAttribute(HTMLNames::classAttr, value); }
 
     RawPtrWillBeMember<Element> m_element;
     mutable OwnPtr<SpaceSplitString> m_classNamesForQuirksMode;

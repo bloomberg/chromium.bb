@@ -38,7 +38,7 @@ class CORE_EXPORT HTMLOptGroupElement final : public HTMLElement {
 public:
     static PassRefPtrWillBeRawPtr<HTMLOptGroupElement> create(Document&);
 
-    virtual bool isDisabledFormControl() const override;
+    bool isDisabledFormControl() const override;
     HTMLSelectElement* ownerSelectElement() const;
 
     String groupLabelText() const;
@@ -47,18 +47,18 @@ public:
 private:
     explicit HTMLOptGroupElement(Document&);
 
-    virtual bool supportsFocus() const override;
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual void childrenChanged(const ChildrenChange&) override;
-    virtual void accessKeyAction(bool sendMouseEvents) override;
-    virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
-    virtual void attach(const AttachContext& = AttachContext()) override;
-    virtual void detach(const AttachContext& = AttachContext()) override;
+    bool supportsFocus() const override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void childrenChanged(const ChildrenChange&) override;
+    void accessKeyAction(bool sendMouseEvents) override;
+    void didAddUserAgentShadowRoot(ShadowRoot&) override;
+    void attach(const AttachContext& = AttachContext()) override;
+    void detach(const AttachContext& = AttachContext()) override;
 
     // <optgroup> might not have a layoutObject so we manually manage a cached style.
     void updateNonComputedStyle();
-    virtual ComputedStyle* nonLayoutObjectComputedStyle() const override;
-    virtual PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;
+    ComputedStyle* nonLayoutObjectComputedStyle() const override;
+    PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;
 
     void updateGroupLabel();
     void recalcSelectOptions();

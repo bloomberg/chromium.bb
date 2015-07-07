@@ -53,20 +53,20 @@ public:
     static PassOwnPtrWillBeRawPtr<LinkImport> create(HTMLLinkElement* owner);
 
     explicit LinkImport(HTMLLinkElement* owner);
-    virtual ~LinkImport();
+    ~LinkImport() override;
 
     // LinkResource
-    virtual void process() override;
-    virtual Type type() const override { return Import; }
-    virtual bool hasLoaded() const override;
+    void process() override;
+    Type type() const override { return Import; }
+    bool hasLoaded() const override;
     DECLARE_VIRTUAL_TRACE();
-    virtual void ownerInserted() override;
+    void ownerInserted() override;
 
     // HTMLImportChildClient
-    virtual void didFinish() override;
-    virtual void importChildWasDisposed(HTMLImportChild*) override;
-    virtual bool isSync() const override;
-    virtual HTMLLinkElement* link() override;
+    void didFinish() override;
+    void importChildWasDisposed(HTMLImportChild*) override;
+    bool isSync() const override;
+    HTMLLinkElement* link() override;
 
     Document* importedDocument() const;
 

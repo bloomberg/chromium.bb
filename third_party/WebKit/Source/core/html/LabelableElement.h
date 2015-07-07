@@ -42,7 +42,7 @@ class LabelsNodeList;
 // specification, and provides the implementation of the "labels" attribute.
 class CORE_EXPORT LabelableElement : public HTMLElement {
 public:
-    virtual ~LabelableElement();
+    ~LabelableElement() override;
     PassRefPtrWillBeRawPtr<LabelsNodeList> labels();
     virtual bool supportLabels() const { return false; }
 
@@ -52,7 +52,7 @@ protected:
     LabelableElement(const QualifiedName& tagName, Document&);
 
 private:
-    virtual bool isLabelable() const override final { return true; }
+    bool isLabelable() const final { return true; }
 };
 
 inline bool isLabelableElement(const HTMLElement& element)

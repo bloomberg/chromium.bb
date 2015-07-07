@@ -43,22 +43,22 @@ public:
     const FormAssociatedElement::List& associatedElements() const;
 
 protected:
-    virtual void disabledAttributeChanged() override;
+    void disabledAttributeChanged() override;
 
 private:
     HTMLFieldSetElement(Document&, HTMLFormElement*);
 
-    virtual bool isEnumeratable() const override { return true; }
-    virtual bool supportsFocus() const override;
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    virtual const AtomicString& formControlType() const override;
-    virtual bool recalcWillValidate() const override { return false; }
-    virtual bool matchesValidityPseudoClasses() const override final;
-    virtual bool isValidElement() override final;
-    virtual void childrenChanged(const ChildrenChange&) override;
-    virtual bool areAuthorShadowsAllowed() const override { return false; }
-    virtual bool isSubmittableElement() override;
-    virtual bool alwaysCreateUserAgentShadowRoot() const override { return false; }
+    bool isEnumeratable() const override { return true; }
+    bool supportsFocus() const override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    const AtomicString& formControlType() const override;
+    bool recalcWillValidate() const override { return false; }
+    bool matchesValidityPseudoClasses() const final;
+    bool isValidElement() final;
+    void childrenChanged(const ChildrenChange&) override;
+    bool areAuthorShadowsAllowed() const override { return false; }
+    bool isSubmittableElement() override;
+    bool alwaysCreateUserAgentShadowRoot() const override { return false; }
 
     static void invalidateDisabledStateUnder(Element&);
     void refreshElementsIfNeeded() const;

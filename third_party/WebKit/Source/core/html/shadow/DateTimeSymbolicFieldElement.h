@@ -40,11 +40,11 @@ class DateTimeSymbolicFieldElement : public DateTimeFieldElement, public TypeAhe
 protected:
     DateTimeSymbolicFieldElement(Document&, FieldOwner&, const Vector<String>&, int minimum, int maximum);
     size_t symbolsSize() const { return m_symbols.size(); }
-    virtual bool hasValue() const override final;
+    bool hasValue() const final;
     void initialize(const AtomicString& pseudo, const String& axHelpText);
-    virtual void setEmptyValue(EventBehavior = DispatchNoEvent) override final;
-    virtual void setValueAsInteger(int, EventBehavior = DispatchNoEvent) override final;
-    virtual int valueAsInteger() const override final;
+    void setEmptyValue(EventBehavior = DispatchNoEvent) final;
+    void setValueAsInteger(int, EventBehavior = DispatchNoEvent) final;
+    int valueAsInteger() const final;
 
 private:
     static const int invalidIndex = -1;
@@ -53,18 +53,18 @@ private:
     bool indexIsInRange(int index) const { return index >= m_minimumIndex && index <= m_maximumIndex; }
 
     // DateTimeFieldElement functions.
-    virtual void handleKeyboardEvent(KeyboardEvent*) override final;
-    virtual float maximumWidth(const Font&) override;
-    virtual void stepDown() override final;
-    virtual void stepUp() override final;
-    virtual String value() const override final;
-    virtual int valueForARIAValueNow() const override final;
-    virtual String visibleValue() const override final;
+    void handleKeyboardEvent(KeyboardEvent*) final;
+    float maximumWidth(const Font&) override;
+    void stepDown() final;
+    void stepUp() final;
+    String value() const final;
+    int valueForARIAValueNow() const final;
+    String visibleValue() const final;
 
     // TypeAheadDataSource functions.
-    virtual int indexOfSelectedOption() const override;
-    virtual int optionCount() const override;
-    virtual String optionAtIndex(int index) const override;
+    int indexOfSelectedOption() const override;
+    int optionCount() const override;
+    String optionAtIndex(int index) const override;
 
     const Vector<String> m_symbols;
 

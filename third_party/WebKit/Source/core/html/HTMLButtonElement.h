@@ -37,44 +37,44 @@ public:
 
     const AtomicString& value() const;
 
-    virtual bool willRespondToMouseClickEvents() override;
+    bool willRespondToMouseClickEvents() override;
 
 private:
     HTMLButtonElement(Document&, HTMLFormElement*);
 
     enum Type { SUBMIT, RESET, BUTTON };
 
-    virtual const AtomicString& formControlType() const override;
+    const AtomicString& formControlType() const override;
 
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
     // HTMLFormControlElement always creates one, but buttons don't need it.
-    virtual bool alwaysCreateUserAgentShadowRoot() const override { return false; }
+    bool alwaysCreateUserAgentShadowRoot() const override { return false; }
 
-    virtual Node::InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) override;
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual bool isPresentationAttribute(const QualifiedName&) const override;
-    virtual void defaultEventHandler(Event*) override;
+    Node::InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    bool isPresentationAttribute(const QualifiedName&) const override;
+    void defaultEventHandler(Event*) override;
 
-    virtual bool appendFormData(FormDataList&, bool) override;
+    bool appendFormData(FormDataList&, bool) override;
 
-    virtual bool isEnumeratable() const override { return true; }
-    virtual bool supportLabels() const override { return true; }
-    virtual bool isInteractiveContent() const override;
-    virtual bool supportsAutofocus() const override;
+    bool isEnumeratable() const override { return true; }
+    bool supportLabels() const override { return true; }
+    bool isInteractiveContent() const override;
+    bool supportsAutofocus() const override;
 
-    virtual bool canBeSuccessfulSubmitButton() const override;
-    virtual bool isActivatedSubmit() const override;
-    virtual void setActivatedSubmit(bool flag) override;
+    bool canBeSuccessfulSubmitButton() const override;
+    bool isActivatedSubmit() const override;
+    void setActivatedSubmit(bool flag) override;
 
-    virtual void accessKeyAction(bool sendMouseEvents) override;
-    virtual bool isURLAttribute(const Attribute&) const override;
+    void accessKeyAction(bool sendMouseEvents) override;
+    bool isURLAttribute(const Attribute&) const override;
 
-    virtual bool canStartSelection() const override { return false; }
+    bool canStartSelection() const override { return false; }
 
-    virtual bool isOptionalFormControl() const override { return true; }
-    virtual bool recalcWillValidate() const override;
+    bool isOptionalFormControl() const override { return true; }
+    bool recalcWillValidate() const override;
 
     Type m_type;
     bool m_isActivatedSubmit;

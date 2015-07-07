@@ -49,7 +49,7 @@ public:
 private:
     explicit HTMLTableRowsCollection(ContainerNode&);
 
-    virtual Element* virtualItemAfter(Element*) const override;
+    Element* virtualItemAfter(Element*) const override;
 };
 
 DEFINE_TYPE_CASTS(HTMLTableRowsCollection, LiveNodeListBase, collection, collection->type() == TableRows, collection.type() == TableRows);

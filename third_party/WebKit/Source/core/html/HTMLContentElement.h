@@ -50,9 +50,9 @@ class CORE_EXPORT HTMLContentElement final : public InsertionPoint {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLContentElement> create(Document&, PassOwnPtrWillBeRawPtr<HTMLContentSelectFilter> = nullptr);
-    virtual ~HTMLContentElement();
+    ~HTMLContentElement() override;
 
-    virtual bool canAffectSelector() const override { return true; }
+    bool canAffectSelector() const override { return true; }
 
     bool canSelectNode(const WillBeHeapVector<RawPtrWillBeMember<Node>, 32>& siblings, int nth) const;
 
@@ -64,7 +64,7 @@ public:
 private:
     HTMLContentElement(Document&, PassOwnPtrWillBeRawPtr<HTMLContentSelectFilter>);
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
     bool validateSelect() const;
     void parseSelect();

@@ -52,12 +52,12 @@ private:
     explicit HTMLAreaElement(Document&);
     ~HTMLAreaElement();
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual bool isKeyboardFocusable() const override;
-    virtual bool isMouseFocusable() const override;
-    virtual bool layoutObjectIsFocusable() const override;
-    virtual void updateFocusAppearance(bool /*restorePreviousSelection*/) override;
-    virtual void setFocus(bool) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    bool isKeyboardFocusable() const override;
+    bool isMouseFocusable() const override;
+    bool layoutObjectIsFocusable() const override;
+    void updateFocusAppearance(bool /*restorePreviousSelection*/) override;
+    void setFocus(bool) override;
 
     enum Shape { Default, Poly, Rect, Circle, Unknown };
     Path getRegion(const LayoutSize&) const;

@@ -77,34 +77,34 @@ public:
     bool hasAvailableVideoFrame() const;
 
     // FIXME: Remove this when WebMediaPlayerClientImpl::loadInternal does not depend on it.
-    virtual KURL mediaPlayerPosterURL() override;
+    KURL mediaPlayerPosterURL() override;
 
     // CanvasImageSource implementation
-    virtual PassRefPtr<Image> getSourceImageForCanvas(SourceImageMode, SourceImageStatus*) const override;
-    virtual bool isVideoElement() const override { return true; }
-    virtual bool wouldTaintOrigin(SecurityOrigin*) const override;
-    virtual FloatSize elementSize() const override;
-    virtual const KURL& sourceURL() const override { return currentSrc(); }
+    PassRefPtr<Image> getSourceImageForCanvas(SourceImageMode, SourceImageStatus*) const override;
+    bool isVideoElement() const override { return true; }
+    bool wouldTaintOrigin(SecurityOrigin*) const override;
+    FloatSize elementSize() const override;
+    const KURL& sourceURL() const override { return currentSrc(); }
 
-    virtual bool isHTMLVideoElement() const override { return true; }
+    bool isHTMLVideoElement() const override { return true; }
 
 private:
     HTMLVideoElement(Document&);
 
-    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override;
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    virtual void attach(const AttachContext& = AttachContext()) override;
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual bool isPresentationAttribute(const QualifiedName&) const override;
-    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
-    virtual bool hasVideo() const override { return webMediaPlayer() && webMediaPlayer()->hasVideo(); }
+    bool layoutObjectIsNeeded(const ComputedStyle&) override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    void attach(const AttachContext& = AttachContext()) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    bool isPresentationAttribute(const QualifiedName&) const override;
+    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+    bool hasVideo() const override { return webMediaPlayer() && webMediaPlayer()->hasVideo(); }
     bool supportsFullscreen() const;
-    virtual bool isURLAttribute(const Attribute&) const override;
-    virtual const AtomicString imageSourceURL() const override;
+    bool isURLAttribute(const Attribute&) const override;
+    const AtomicString imageSourceURL() const override;
 
-    virtual void updateDisplayState() override;
-    virtual void didMoveToNewDocument(Document& oldDocument) override;
-    virtual void setDisplayMode(DisplayMode) override;
+    void updateDisplayState() override;
+    void didMoveToNewDocument(Document& oldDocument) override;
+    void setDisplayMode(DisplayMode) override;
 
     OwnPtrWillBeMember<HTMLImageLoader> m_imageLoader;
 

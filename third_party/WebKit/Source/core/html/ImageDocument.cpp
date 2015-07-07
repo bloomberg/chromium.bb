@@ -96,7 +96,7 @@ private:
     {
     }
 
-    virtual void appendBytes(const char*, size_t) override;
+    void appendBytes(const char*, size_t) override;
     virtual void finish();
 };
 

@@ -36,7 +36,7 @@ class HTMLAllCollection final : public HTMLCollection {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLAllCollection> create(ContainerNode&, CollectionType);
-    virtual ~HTMLAllCollection();
+    ~HTMLAllCollection() override;
 
     Element* namedItemWithIndex(const AtomicString& name, unsigned index) const;
     void namedGetter(const AtomicString& name, NodeListOrElement&);

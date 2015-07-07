@@ -104,9 +104,9 @@ private:
     void tryShowOverlayCastButton();
 
     // Node
-    virtual bool isMediaControls() const override { return true; }
-    virtual bool willRespondToMouseMoveEvents() override { return true; }
-    virtual void defaultEventHandler(Event*) override;
+    bool isMediaControls() const override { return true; }
+    bool willRespondToMouseMoveEvents() override { return true; }
+    void defaultEventHandler(Event*) override;
     bool containsRelatedTarget(Event*);
 
     RawPtrWillBeMember<HTMLMediaElement> m_mediaElement;

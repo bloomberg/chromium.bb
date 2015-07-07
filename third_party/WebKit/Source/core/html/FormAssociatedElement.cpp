@@ -43,7 +43,7 @@ class FormAttributeTargetObserver : public IdTargetObserver {
 public:
     static PassOwnPtrWillBeRawPtr<FormAttributeTargetObserver> create(const AtomicString& id, FormAssociatedElement*);
     DECLARE_VIRTUAL_TRACE();
-    virtual void idTargetChanged() override;
+    void idTargetChanged() override;
 
 private:
     FormAttributeTargetObserver(const AtomicString& id, FormAssociatedElement*);

@@ -43,7 +43,7 @@ public:
 
     static PassRefPtrWillBeRawPtr<HTMLCollection> create(ContainerNode& base, CollectionType);
     virtual ~HTMLCollection();
-    virtual void invalidateCache(Document* oldDocument = 0) const override;
+    void invalidateCache(Document* oldDocument = 0) const override;
     void invalidateCacheForAttribute(const QualifiedName*) const;
 
     // DOM API

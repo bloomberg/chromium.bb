@@ -42,14 +42,14 @@ class HTMLTemplateElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLTemplateElement);
-    virtual ~HTMLTemplateElement();
+    ~HTMLTemplateElement() override;
     DECLARE_VIRTUAL_TRACE();
 
     DocumentFragment* content() const;
 
 private:
-    virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) override;
-    virtual void didMoveToNewDocument(Document& oldDocument) override;
+    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) override;
+    void didMoveToNewDocument(Document& oldDocument) override;
 
     explicit HTMLTemplateElement(Document&);
 

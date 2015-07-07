@@ -40,10 +40,10 @@ public:
     {
         return adoptRefWillBeNoop(new LoadableTextTrack(track));
     }
-    virtual ~LoadableTextTrack();
+    ~LoadableTextTrack() override;
 
     // TextTrack method.
-    virtual void setMode(const AtomicString&) override;
+    void setMode(const AtomicString&) override;
 
     void addRegions(const WillBeHeapVector<RefPtrWillBeMember<VTTRegion>>&);
     using TextTrack::addListOfCues;
@@ -54,7 +54,7 @@ public:
     void clearTrackElement();
 #endif
 
-    virtual bool isDefault() const override;
+    bool isDefault() const override;
 
     DECLARE_VIRTUAL_TRACE();
 

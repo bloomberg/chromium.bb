@@ -92,8 +92,8 @@ public:
     }
 
 #if !ENABLE(OILPAN)
-    virtual void ref() override { RefCounted<ParserDataReceiver>::ref(); }
-    virtual void deref() override { RefCounted<ParserDataReceiver>::deref(); }
+    void ref() override { RefCounted<ParserDataReceiver>::ref(); }
+    void deref() override { RefCounted<ParserDataReceiver>::deref(); }
 #endif
 
     // ThreadedDataReceiver

@@ -43,7 +43,7 @@ public:
 protected:
     explicit LabelsNodeList(ContainerNode&);
 
-    virtual bool elementMatches(const Element&) const override;
+    bool elementMatches(const Element&) const override;
 };
 
 } // namespace blink
