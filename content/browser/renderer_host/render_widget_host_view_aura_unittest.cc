@@ -310,23 +310,13 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
         : ResizeLock(new_size, defer_compositor_lock) {}
   };
 
-  void OnTouchEvent(ui::TouchEvent* event) override {
-    RenderWidgetHostViewAura::OnTouchEvent(event);
-    if (pointer_state().GetPointerCount() > 0) {
-      touch_event_.reset(
-          new blink::WebTouchEvent(ui::CreateWebTouchEventFromMotionEvent(
-              pointer_state(), event->may_cause_scrolling())));
-    } else {
-      // Never create a WebTouchEvent with 0 touch points.
-      touch_event_.reset();
-    }
+  const ui::MotionEventAura& pointer_state_for_test() {
+    return pointer_state();
   }
 
   bool has_resize_lock_;
   gfx::Size last_frame_size_;
   scoped_ptr<cc::CopyOutputRequest> last_copy_request_;
-  // null if there are 0 active touch points.
-  scoped_ptr<blink::WebTouchEvent> touch_event_;
   FakeWindowEventDispatcher* dispatcher_;
 };
 
@@ -496,6 +486,10 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     const blink::WebInputEvent* event = base::get<0>(params);
     SendTouchEventACK(event->type, ack_result,
         WebInputEventTraits::GetUniqueTouchEventId(*event));
+  }
+
+  const ui::MotionEventAura& pointer_state() {
+    return view_->pointer_state_for_test();
   }
 
  protected:
@@ -1128,30 +1122,23 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
                          0,
                          ui::EventTimeForNow());
 
-  // The touch events should get forwared from the view, but they should not
+  // The touch events should get forwarded from the view, but they should not
   // reach the renderer.
   view_->OnTouchEvent(&press);
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
   EXPECT_TRUE(press.synchronous_handling_disabled());
-  EXPECT_EQ(blink::WebInputEvent::TouchStart, view_->touch_event_->type);
-  EXPECT_TRUE(view_->touch_event_->cancelable);
-  EXPECT_EQ(1U, view_->touch_event_->touchesLength);
-  EXPECT_EQ(blink::WebTouchPoint::StatePressed,
-            view_->touch_event_->touches[0].state);
+  EXPECT_EQ(ui::MotionEvent::ACTION_DOWN, pointer_state().GetAction());
 
   view_->OnTouchEvent(&move);
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
   EXPECT_TRUE(press.synchronous_handling_disabled());
-  EXPECT_EQ(blink::WebInputEvent::TouchMove, view_->touch_event_->type);
-  EXPECT_TRUE(view_->touch_event_->cancelable);
-  EXPECT_EQ(1U, view_->touch_event_->touchesLength);
-  EXPECT_EQ(blink::WebTouchPoint::StateMoved,
-            view_->touch_event_->touches[0].state);
+  EXPECT_EQ(ui::MotionEvent::ACTION_MOVE, pointer_state().GetAction());
+  EXPECT_EQ(1U, pointer_state().GetPointerCount());
 
   view_->OnTouchEvent(&release);
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
   EXPECT_TRUE(press.synchronous_handling_disabled());
-  EXPECT_EQ(nullptr, view_->touch_event_);
+  EXPECT_EQ(0U, pointer_state().GetPointerCount());
 
   // Now install some touch-event handlers and do the same steps. The touch
   // events should now be consumed. However, the touch-event state should be
@@ -1161,30 +1148,22 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   view_->OnTouchEvent(&press);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   EXPECT_TRUE(press.synchronous_handling_disabled());
-  EXPECT_EQ(blink::WebInputEvent::TouchStart, view_->touch_event_->type);
-  EXPECT_TRUE(view_->touch_event_->cancelable);
-  EXPECT_EQ(1U, view_->touch_event_->touchesLength);
-  EXPECT_EQ(blink::WebTouchPoint::StatePressed,
-            view_->touch_event_->touches[0].state);
+  EXPECT_EQ(ui::MotionEvent::ACTION_DOWN, pointer_state().GetAction());
+  EXPECT_EQ(1U, pointer_state().GetPointerCount());
 
   view_->OnTouchEvent(&move);
   EXPECT_TRUE(move.synchronous_handling_disabled());
-  EXPECT_EQ(blink::WebInputEvent::TouchMove, view_->touch_event_->type);
-  EXPECT_TRUE(view_->touch_event_->cancelable);
-  EXPECT_EQ(1U, view_->touch_event_->touchesLength);
-  EXPECT_EQ(blink::WebTouchPoint::StateMoved,
-            view_->touch_event_->touches[0].state);
+  EXPECT_EQ(ui::MotionEvent::ACTION_MOVE, pointer_state().GetAction());
+  EXPECT_EQ(1U, pointer_state().GetPointerCount());
   view_->OnTouchEvent(&release);
   EXPECT_TRUE(release.synchronous_handling_disabled());
-  EXPECT_EQ(nullptr, view_->touch_event_);
+  EXPECT_EQ(0U, pointer_state().GetPointerCount());
 
   // Now start a touch event, and remove the event-handlers before the release.
   view_->OnTouchEvent(&press);
   EXPECT_TRUE(press.synchronous_handling_disabled());
-  EXPECT_EQ(blink::WebInputEvent::TouchStart, view_->touch_event_->type);
-  EXPECT_EQ(1U, view_->touch_event_->touchesLength);
-  EXPECT_EQ(blink::WebTouchPoint::StatePressed,
-            view_->touch_event_->touches[0].state);
+  EXPECT_EQ(ui::MotionEvent::ACTION_DOWN, pointer_state().GetAction());
+  EXPECT_EQ(1U, pointer_state().GetPointerCount());
 
   widget_host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, false));
 
@@ -1199,16 +1178,14 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
       base::Time::NowFromSystemTime() - base::Time());
   view_->OnTouchEvent(&move2);
   EXPECT_TRUE(press.synchronous_handling_disabled());
-  EXPECT_EQ(blink::WebInputEvent::TouchMove, view_->touch_event_->type);
-  EXPECT_EQ(1U, view_->touch_event_->touchesLength);
-  EXPECT_EQ(blink::WebTouchPoint::StateMoved,
-            view_->touch_event_->touches[0].state);
+  EXPECT_EQ(ui::MotionEvent::ACTION_MOVE, pointer_state().GetAction());
+  EXPECT_EQ(1U, pointer_state().GetPointerCount());
 
   ui::TouchEvent release2(ui::ET_TOUCH_RELEASED, gfx::Point(20, 20), 0,
       base::Time::NowFromSystemTime() - base::Time());
   view_->OnTouchEvent(&release2);
   EXPECT_TRUE(press.synchronous_handling_disabled());
-  EXPECT_EQ(nullptr, view_->touch_event_);
+  EXPECT_EQ(0U, pointer_state().GetPointerCount());
 }
 
 // Checks that touch-event state is maintained correctly for multiple touch
@@ -1226,8 +1203,8 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
   SendTouchEventACK(blink::WebInputEvent::TouchStart,
                     INPUT_EVENT_ACK_STATE_CONSUMED,
                     press0.unique_event_id());
-  EXPECT_EQ(blink::WebInputEvent::TouchStart, view_->touch_event_->type);
-  EXPECT_EQ(1U, view_->touch_event_->touchesLength);
+  EXPECT_EQ(ui::MotionEvent::ACTION_DOWN, pointer_state().GetAction());
+  EXPECT_EQ(1U, pointer_state().GetPointerCount());
   EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
 
   ui::TouchEvent move0(ui::ET_TOUCH_MOVED, gfx::Point(20, 20), 0,
@@ -1237,8 +1214,8 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
   SendTouchEventACK(blink::WebInputEvent::TouchMove,
                     INPUT_EVENT_ACK_STATE_CONSUMED,
                     move0.unique_event_id());
-  EXPECT_EQ(blink::WebInputEvent::TouchMove, view_->touch_event_->type);
-  EXPECT_EQ(1U, view_->touch_event_->touchesLength);
+  EXPECT_EQ(ui::MotionEvent::ACTION_MOVE, pointer_state().GetAction());
+  EXPECT_EQ(1U, pointer_state().GetPointerCount());
   EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
 
   // For the second touchstart, only the state of the second touch point is
@@ -1250,8 +1227,9 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
   SendTouchEventACK(blink::WebInputEvent::TouchStart,
                     INPUT_EVENT_ACK_STATE_CONSUMED,
                     press1.unique_event_id());
-  EXPECT_EQ(blink::WebInputEvent::TouchStart, view_->touch_event_->type);
-  EXPECT_EQ(2U, view_->touch_event_->touchesLength);
+  EXPECT_EQ(ui::MotionEvent::ACTION_POINTER_DOWN, pointer_state().GetAction());
+  EXPECT_EQ(1, pointer_state().GetActionIndex());
+  EXPECT_EQ(2U, pointer_state().GetPointerCount());
   EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
 
   // For the touchmove of second point, the state of the second touch point is
@@ -1263,8 +1241,8 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
   SendTouchEventACK(blink::WebInputEvent::TouchMove,
                     INPUT_EVENT_ACK_STATE_CONSUMED,
                     move1.unique_event_id());
-  EXPECT_EQ(blink::WebInputEvent::TouchMove, view_->touch_event_->type);
-  EXPECT_EQ(2U, view_->touch_event_->touchesLength);
+  EXPECT_EQ(ui::MotionEvent::ACTION_MOVE, pointer_state().GetAction());
+  EXPECT_EQ(2U, pointer_state().GetPointerCount());
   EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
 
   // For the touchmove of first point, the state of the first touch point is
@@ -1276,8 +1254,8 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
   SendTouchEventACK(blink::WebInputEvent::TouchMove,
                     INPUT_EVENT_ACK_STATE_CONSUMED,
                     move2.unique_event_id());
-  EXPECT_EQ(blink::WebInputEvent::TouchMove, view_->touch_event_->type);
-  EXPECT_EQ(2U, view_->touch_event_->touchesLength);
+  EXPECT_EQ(ui::MotionEvent::ACTION_MOVE, pointer_state().GetAction());
+  EXPECT_EQ(2U, pointer_state().GetPointerCount());
   EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
 
   ui::TouchEvent cancel0(ui::ET_TOUCH_CANCELLED, gfx::Point(10, 10), 0,
@@ -1286,8 +1264,7 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
   // For the touchcancel, only the state of the current touch point is
   // StateCancelled, the state of the other touch point is StateStationary.
   view_->OnTouchEvent(&cancel0);
-  EXPECT_EQ(blink::WebInputEvent::TouchCancel, view_-> touch_event_->type);
-  EXPECT_EQ(1U, view_->touch_event_->touchesLength);
+  EXPECT_EQ(1U, pointer_state().GetPointerCount());
   EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
 
   ui::TouchEvent cancel1(ui::ET_TOUCH_CANCELLED, gfx::Point(30, 30), 1,
@@ -1295,7 +1272,7 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
 
   view_->OnTouchEvent(&cancel1);
   EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
-  EXPECT_EQ(nullptr, view_->touch_event_);
+  EXPECT_EQ(0U, pointer_state().GetPointerCount());
 }
 
 // Checks that touch-events are queued properly when there is a touch-event
@@ -1321,30 +1298,24 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventSyncAsync) {
 
   view_->OnTouchEvent(&press);
   EXPECT_TRUE(press.synchronous_handling_disabled());
-  EXPECT_EQ(blink::WebInputEvent::TouchStart, view_->touch_event_->type);
-  EXPECT_EQ(1U, view_->touch_event_->touchesLength);
-  EXPECT_EQ(blink::WebTouchPoint::StatePressed,
-            view_->touch_event_->touches[0].state);
+  EXPECT_EQ(ui::MotionEvent::ACTION_DOWN, pointer_state().GetAction());
+  EXPECT_EQ(1U, pointer_state().GetPointerCount());
 
   view_->OnTouchEvent(&move);
   EXPECT_TRUE(move.synchronous_handling_disabled());
-  EXPECT_EQ(blink::WebInputEvent::TouchMove, view_->touch_event_->type);
-  EXPECT_EQ(1U, view_->touch_event_->touchesLength);
-  EXPECT_EQ(blink::WebTouchPoint::StateMoved,
-            view_->touch_event_->touches[0].state);
+  EXPECT_EQ(ui::MotionEvent::ACTION_MOVE, pointer_state().GetAction());
+  EXPECT_EQ(1U, pointer_state().GetPointerCount());
 
   // Send the same move event. Since the point hasn't moved, it won't affect the
   // queue. However, the view should consume the event.
   view_->OnTouchEvent(&move);
   EXPECT_TRUE(move.synchronous_handling_disabled());
-  EXPECT_EQ(blink::WebInputEvent::TouchMove, view_->touch_event_->type);
-  EXPECT_EQ(1U, view_->touch_event_->touchesLength);
-  EXPECT_EQ(blink::WebTouchPoint::StateMoved,
-            view_->touch_event_->touches[0].state);
+  EXPECT_EQ(ui::MotionEvent::ACTION_MOVE, pointer_state().GetAction());
+  EXPECT_EQ(1U, pointer_state().GetPointerCount());
 
   view_->OnTouchEvent(&release);
   EXPECT_TRUE(release.synchronous_handling_disabled());
-  EXPECT_EQ(nullptr, view_->touch_event_);
+  EXPECT_EQ(0U, pointer_state().GetPointerCount());
 }
 
 TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
@@ -2528,15 +2499,10 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventPositionsArentRounded) {
                        ui::EventTimeForNow());
 
   view_->OnTouchEvent(&press);
-  EXPECT_EQ(blink::WebInputEvent::TouchStart, view_->touch_event_->type);
-  EXPECT_TRUE(view_->touch_event_->cancelable);
-  EXPECT_EQ(1U, view_->touch_event_->touchesLength);
-  EXPECT_EQ(blink::WebTouchPoint::StatePressed,
-            view_->touch_event_->touches[0].state);
-  EXPECT_EQ(kX, view_->touch_event_->touches[0].screenPosition.x);
-  EXPECT_EQ(kX, view_->touch_event_->touches[0].position.x);
-  EXPECT_EQ(kY, view_->touch_event_->touches[0].screenPosition.y);
-  EXPECT_EQ(kY, view_->touch_event_->touches[0].position.y);
+  EXPECT_EQ(ui::MotionEvent::ACTION_DOWN, pointer_state().GetAction());
+  EXPECT_EQ(1U, pointer_state().GetPointerCount());
+  EXPECT_EQ(kX, pointer_state().GetX(0));
+  EXPECT_EQ(kY, pointer_state().GetY(0));
 }
 
 // Tests that scroll ACKs are correctly handled by the overscroll-navigation
