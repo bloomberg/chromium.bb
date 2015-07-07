@@ -116,14 +116,6 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
 
   blink::initialize(this);
   blink::setLayoutTestMode(true);
-  blink::WebSecurityPolicy::registerURLSchemeAsLocal(
-      blink::WebString::fromUTF8("test-shell-resource"));
-  blink::WebSecurityPolicy::registerURLSchemeAsNoAccess(
-      blink::WebString::fromUTF8("test-shell-resource"));
-  blink::WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(
-      blink::WebString::fromUTF8("test-shell-resource"));
-  blink::WebSecurityPolicy::registerURLSchemeAsEmptyDocument(
-      blink::WebString::fromUTF8("test-shell-resource"));
   blink::WebRuntimeFeatures::enableApplicationCache(true);
   blink::WebRuntimeFeatures::enableDatabase(true);
   blink::WebRuntimeFeatures::enableNotifications(true);
