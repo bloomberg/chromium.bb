@@ -5,6 +5,7 @@
 #include "chrome/browser/devtools/device/devtools_android_bridge.h"
 
 #include <map>
+#include <set>
 #include <vector>
 
 #include "base/base64.h"
@@ -25,7 +26,7 @@
 #include "base/values.h"
 #include "chrome/browser/devtools/device/adb/adb_device_provider.h"
 #include "chrome/browser/devtools/device/port_forwarding_controller.h"
-#include "chrome/browser/devtools/device/self_device_provider.h"
+#include "chrome/browser/devtools/device/tcp_device_provider.h"
 #include "chrome/browser/devtools/device/usb/usb_device_provider.h"
 #include "chrome/browser/devtools/device/webrtc/webrtc_device_provider.h"
 #include "chrome/browser/devtools/devtools_protocol.h"
@@ -45,6 +46,7 @@
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/browser/user_metrics.h"
 #include "net/base/escape.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 
 using content::BrowserThread;
@@ -907,15 +909,42 @@ void DevToolsAndroidBridge::ScheduleTaskDefault(const base::Closure& task) {
       base::TimeDelta::FromMilliseconds(kAdbPollingIntervalMs));
 }
 
+static scoped_refptr<TCPDeviceProvider> CreateTCPDeviceProvider() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kRemoteDebuggingTargets)) {
+    std::string value =
+        command_line->GetSwitchValueASCII(switches::kRemoteDebuggingTargets);
+    std::vector<std::string> addresses = base::SplitString(
+        value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    std::set<net::HostPortPair> targets;
+    for (const std::string& address : addresses) {
+      net::HostPortPair target = net::HostPortPair::FromString(address);
+      if (target.IsEmpty()) {
+        LOG(WARNING) << "Invalid target: " << address;
+        continue;
+      }
+      targets.insert(target);
+    }
+    if (targets.empty())
+      return nullptr;
+    return new TCPDeviceProvider(targets);
+#if defined(DEBUG_DEVTOOLS)
+  } else {
+    RemoteDebuggingServer::EnableTetheringForDebug();
+    // We cannot rely on command line switch here as we might want to connect
+    // to another instance of Chrome. Using hard-coded port number instead.
+    const int kDefaultDebuggingPort = 9222;
+    return TCPDeviceProvider::CreateForLocalhost(kDefaultDebuggingPort);
+#endif
+  }
+  return nullptr;
+}
+
 void DevToolsAndroidBridge::CreateDeviceProviders() {
   AndroidDeviceManager::DeviceProviders device_providers;
-#if defined(DEBUG_DEVTOOLS)
-  RemoteDebuggingServer::EnableTetheringForDebug();
-  // We cannot rely on command line switch here as we might want to connect
-  // to another instance of Chrome. Using hard-coded port number instead.
-  const int kDefaultDebuggingPort = 9222;
-  device_providers.push_back(new SelfAsDeviceProvider(kDefaultDebuggingPort));
-#endif
+
+  if (scoped_refptr<TCPDeviceProvider> provider = CreateTCPDeviceProvider())
+    device_providers.push_back(provider);
   device_providers.push_back(new AdbDeviceProvider());
 
   PrefService* service = profile_->GetPrefs();

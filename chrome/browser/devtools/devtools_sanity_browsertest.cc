@@ -17,7 +17,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/devtools/device/self_device_provider.h"
+#include "chrome/browser/devtools/device/tcp_device_provider.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"

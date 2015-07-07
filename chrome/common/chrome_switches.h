@@ -248,6 +248,7 @@ extern const char kProxyServer[];
 extern const char kQuicConnectionOptions[];
 extern const char kQuicMaxPacketLength[];
 extern const char kQuicVersion[];
+extern const char kRemoteDebuggingTargets[];
 extern const char kRestoreLastSession[];
 extern const char kSavePageAsMHTML[];
 extern const char kSbDisableAutoUpdate[];

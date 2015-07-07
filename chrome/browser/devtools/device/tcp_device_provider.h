@@ -2,15 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DEVTOOLS_DEVICE_SELF_DEVICE_PROVIDER_H_
-#define CHROME_BROWSER_DEVTOOLS_DEVICE_SELF_DEVICE_PROVIDER_H_
+#ifndef CHROME_BROWSER_DEVTOOLS_DEVICE_TCP_DEVICE_PROVIDER_H_
+#define CHROME_BROWSER_DEVTOOLS_DEVICE_TCP_DEVICE_PROVIDER_H_
+
+#include <set>
 
 #include "chrome/browser/devtools/device/android_device_manager.h"
+#include "net/base/host_port_pair.h"
 
 // Instantiate this class only in a test and/or when DEBUG_DEVTOOLS is defined.
-class SelfAsDeviceProvider : public AndroidDeviceManager::DeviceProvider {
+class TCPDeviceProvider : public AndroidDeviceManager::DeviceProvider {
  public:
-  explicit SelfAsDeviceProvider(int port);
+  static scoped_refptr<TCPDeviceProvider> CreateForLocalhost(uint16_t port);
+
+  using HostPortSet = std::set<net::HostPortPair>;
+  explicit TCPDeviceProvider(const HostPortSet& targets);
 
   void QueryDevices(const SerialsCallback& callback) override;
 
@@ -26,10 +32,10 @@ class SelfAsDeviceProvider : public AndroidDeviceManager::DeviceProvider {
   void set_release_callback_for_test(const base::Closure& callback);
 
  private:
-  ~SelfAsDeviceProvider() override;
+  ~TCPDeviceProvider() override;
 
-  int port_;
+  HostPortSet targets_;
   base::Closure release_callback_;
 };
 
-#endif  // CHROME_BROWSER_DEVTOOLS_DEVICE_SELF_DEVICE_PROVIDER_H_
+#endif  // CHROME_BROWSER_DEVTOOLS_DEVICE_TCP_DEVICE_PROVIDER_H_

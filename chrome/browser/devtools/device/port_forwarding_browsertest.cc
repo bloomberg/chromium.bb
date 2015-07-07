@@ -10,7 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/devtools/device/devtools_android_bridge.h"
-#include "chrome/browser/devtools/device/self_device_provider.h"
+#include "chrome/browser/devtools/device/tcp_device_provider.h"
 #include "chrome/browser/devtools/remote_debugging_server.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -81,7 +81,9 @@ IN_PROC_BROWSER_TEST_F(PortForwardingTest,
   Profile* profile = browser()->profile();
 
   AndroidDeviceManager::DeviceProviders device_providers;
-  device_providers.push_back(new SelfAsDeviceProvider(kDefaultDebuggingPort));
+
+  device_providers.push_back(
+      TCPDeviceProvider::CreateForLocalhost(kDefaultDebuggingPort));
   DevToolsAndroidBridge::Factory::GetForProfile(profile)->
       set_device_providers_for_test(device_providers);
 
@@ -149,8 +151,8 @@ IN_PROC_BROWSER_TEST_F(PortForwardingDisconnectTest, DisconnectOnRelease) {
 
   AndroidDeviceManager::DeviceProviders device_providers;
 
-  scoped_refptr<SelfAsDeviceProvider> self_provider(
-      new SelfAsDeviceProvider(kAlternativeDebuggingPort));
+  scoped_refptr<TCPDeviceProvider> self_provider(
+      TCPDeviceProvider::CreateForLocalhost(kAlternativeDebuggingPort));
   device_providers.push_back(self_provider);
 
   DevToolsAndroidBridge::Factory::GetForProfile(profile)->

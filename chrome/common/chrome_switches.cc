@@ -904,6 +904,10 @@ const char kQuicMaxPacketLength[]           = "quic-max-packet-length";
 // Specifies the version of QUIC to use.
 const char kQuicVersion[]                   = "quic-version";
 
+// Porvides a list of addresses to discover DevTools remote debugging targets.
+// The format is <host>:<port>,...,<host>:port.
+const char kRemoteDebuggingTargets[] = "remote-debugging-targets";
+
 // Indicates the last session should be restored on startup. This overrides the
 // preferences value and is primarily intended for testing. The value of this
 // switch is the number of tabs to wait until loaded before 'load completed' is
