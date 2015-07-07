@@ -865,30 +865,43 @@ LayoutBlock* LayoutObject::containerForFixedPosition(const LayoutBoxModelObject*
     return toLayoutBlock(ancestor);
 }
 
+LayoutBlock* LayoutObject::containingBlockForAbsolutePosition() const
+{
+    LayoutObject* o = parent();
+    while (o) {
+        if (o->style()->position() != StaticPosition && (!o->isInline() || o->isReplaced()))
+            break;
+
+        if (o->canContainFixedPositionObjects())
+            break;
+
+        o = o->parent();
+    }
+
+    if (o && !o->isLayoutBlock())
+        o = o->containingBlock();
+
+    while (o && o->isAnonymousBlock())
+        o = o->containingBlock();
+
+    if (!o || !o->isLayoutBlock())
+        return nullptr; // This can still happen in case of an orphaned tree
+
+    return toLayoutBlock(o);
+}
+
 LayoutBlock* LayoutObject::containingBlock() const
 {
     LayoutObject* o = parent();
     if (!o && isLayoutScrollbarPart())
         o = toLayoutScrollbarPart(this)->layoutObjectOwningScrollbar();
-    if (!isTextOrSVGChild() && m_style->position() == FixedPosition)
-        return containerForFixedPosition();
-    if (!isTextOrSVGChild() && m_style->position() == AbsolutePosition) {
-        while (o) {
-            if (o->style()->position() != StaticPosition && (!o->isInline() || o->isReplaced()))
-                break;
-
-            if (o->canContainFixedPositionObjects())
-                break;
-
-            o = o->parent();
-        }
-
-        if (o && !o->isLayoutBlock())
-            o = o->containingBlock();
-
-        while (o && o->isAnonymousBlock())
-            o = o->containingBlock();
-    } else if (isColumnSpanAll()) {
+    if (!isTextOrSVGChild()) {
+        if (m_style->position() == FixedPosition)
+            return containerForFixedPosition();
+        if (m_style->position() == AbsolutePosition)
+            return containingBlockForAbsolutePosition();
+    }
+    if (isColumnSpanAll()) {
         o = spannerPlaceholder()->containingBlock();
     } else {
         while (o && ((o->isInline() && !o->isReplaced()) || !o->isLayoutBlock()))

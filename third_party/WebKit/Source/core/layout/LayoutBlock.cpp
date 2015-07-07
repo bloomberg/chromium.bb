@@ -287,7 +287,7 @@ void LayoutBlock::styleWillChange(StyleDifference diff, const ComputedStyle& new
         } else if (!oldStyleIsContainer && (newStyle.position() != StaticPosition || newHasTransformRelatedProperty)) {
             // Remove our absolutely positioned descendants from their current containing block.
             // They will be inserted into our positioned objects list during layout.
-            if (LayoutBlock* cb = containingBlock())
+            if (LayoutBlock* cb = containingBlockForAbsolutePosition())
                 cb->removePositionedObjects(this, NewContainingBlock);
         }
     }
