@@ -97,7 +97,7 @@ class PageCyclerIntlJaZh(_PageCycler):
     return 'page_cycler.intl_ja_zh'
 
 
-@benchmark.Disabled('xp')  # crbug.com/434366
+@benchmark.Disabled('xp', 'android')  # crbug.com/434366, crbug.com/506903
 class PageCyclerIntlKoThVi(_PageCycler):
   """Page load time for a variety of pages in Korean, Thai and Vietnamese.
 
