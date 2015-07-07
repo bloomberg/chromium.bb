@@ -1248,11 +1248,6 @@ void FrameSelection::setExtent(const VisiblePosition &pos, EUserTriggered userTr
     setSelection(VisibleSelection(m_selection.base(), pos.deepEquivalent(), pos.affinity(), selectionHasDirection), CloseTyping | ClearTypingStyle | userTriggered);
 }
 
-LayoutBlock* FrameSelection::caretLayoutObject() const
-{
-    return CaretBase::caretLayoutObject(m_selection.start().deprecatedNode());
-}
-
 static bool isNonOrphanedCaret(const VisibleSelection& selection)
 {
     return selection.isCaret() && !selection.start().isOrphan() && !selection.end().isOrphan();

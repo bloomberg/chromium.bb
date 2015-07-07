@@ -147,7 +147,7 @@ public:
     Position end() const { return m_selection.end(); }
 
     // Return the layoutObject that is responsible for painting the caret (in the selection start node)
-    LayoutBlock* caretLayoutObject() const;
+    LayoutBlock* caretLayoutObject() const { return CaretBase::caretPainter(); }
 
     // Bounds of (possibly transformed) caret in absolute coords
     IntRect absoluteCaretBounds();

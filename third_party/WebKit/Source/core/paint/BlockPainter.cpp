@@ -233,35 +233,33 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
     }
 }
 
-static inline bool caretBrowsingEnabled(const Frame* frame)
+static inline bool caretBrowsingEnabled(const LocalFrame* frame)
 {
     Settings* settings = frame->settings();
     return settings && settings->caretBrowsingEnabled();
 }
 
-static inline bool hasCursorCaret(const FrameSelection& selection, const LayoutBlock* block, bool caretBrowsing)
+static inline bool hasCursorCaret(const FrameSelection& selection, const LayoutBlock* block, const LocalFrame* frame)
 {
-    return selection.caretLayoutObject() == block && (selection.hasEditableStyle() || caretBrowsing);
+    return selection.caretLayoutObject() == block && (selection.hasEditableStyle() || caretBrowsingEnabled(frame));
 }
 
-static inline bool hasDragCaret(const DragCaretController& dragCaretController, const LayoutBlock* block, bool caretBrowsing)
+static inline bool hasDragCaret(const DragCaretController& dragCaretController, const LayoutBlock* block, const LocalFrame* frame)
 {
-    return dragCaretController.caretLayoutObject() == block && (dragCaretController.isContentEditable() || caretBrowsing);
+    return dragCaretController.caretLayoutObject() == block && (dragCaretController.isContentEditable() || caretBrowsingEnabled(frame));
 }
 
 void BlockPainter::paintCarets(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    bool caretBrowsing = caretBrowsingEnabled(m_layoutBlock.frame());
+    LocalFrame* frame = m_layoutBlock.frame();
 
-    FrameSelection& selection = m_layoutBlock.frame()->selection();
-    if (hasCursorCaret(selection, &m_layoutBlock, caretBrowsing)) {
+    FrameSelection& selection = frame->selection();
+    if (hasCursorCaret(selection, &m_layoutBlock, frame))
         selection.paintCaret(paintInfo.context, paintOffset, LayoutRect(paintInfo.rect));
-    }
 
-    DragCaretController& dragCaretController = m_layoutBlock.frame()->page()->dragCaretController();
-    if (hasDragCaret(dragCaretController, &m_layoutBlock, caretBrowsing)) {
-        dragCaretController.paintDragCaret(m_layoutBlock.frame(), paintInfo.context, paintOffset, LayoutRect(paintInfo.rect));
-    }
+    DragCaretController& dragCaretController = frame->page()->dragCaretController();
+    if (hasDragCaret(dragCaretController, &m_layoutBlock, frame))
+        dragCaretController.paintDragCaret(frame, paintInfo.context, paintOffset, LayoutRect(paintInfo.rect));
 }
 
 LayoutRect BlockPainter::overflowRectForPaintRejection() const
@@ -277,9 +275,9 @@ LayoutRect BlockPainter::overflowRectForPaintRejection() const
 
 bool BlockPainter::hasCaret() const
 {
-    bool caretBrowsing = caretBrowsingEnabled(m_layoutBlock.frame());
-    return hasCursorCaret(m_layoutBlock.frame()->selection(), &m_layoutBlock, caretBrowsing)
-        || hasDragCaret(m_layoutBlock.frame()->page()->dragCaretController(), &m_layoutBlock, caretBrowsing);
+    LocalFrame* frame = m_layoutBlock.frame();
+    return hasCursorCaret(frame->selection(), &m_layoutBlock, frame)
+        || hasDragCaret(frame->page()->dragCaretController(), &m_layoutBlock, frame);
 }
 
 void BlockPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
