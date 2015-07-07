@@ -12,7 +12,6 @@ import os
 from cbuildbot import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import dev_server_wrapper
-from chromite.lib import workspace_lib
 
 
 # pylint: disable=W0212
@@ -94,19 +93,4 @@ class TestXbuddyHelpers(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(
         dev_server_wrapper.TranslatedPathToLocalPath(
             translated_path, chroot_static_dir),
-        local_path)
-
-  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
-  def testTranslatedPathToLocalPathWithWorkspace(self, _mock1):
-    """Tests that we convert a translated path given a workspace."""
-    translated_path = 'peppy-release/R33-5116.87.0/chromiumos_image.bin'
-    workspace_path = '/path/to/workspace'
-    chroot_dir = workspace_lib.ChrootPath(workspace_path)
-    static_dir = os.path.join('devserver', 'static')
-    chroot_static_dir = os.path.join('/', static_dir)
-
-    local_path = os.path.join(chroot_dir, static_dir, translated_path)
-    self.assertEqual(
-        dev_server_wrapper.TranslatedPathToLocalPath(
-            translated_path, chroot_static_dir, workspace_path=workspace_path),
         local_path)
