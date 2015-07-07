@@ -1863,7 +1863,6 @@ TEST_F(WebContentsImplTest, ShowInterstitialThenGoBack) {
   GURL url1("http://www.google.com");
   main_test_rfh()->NavigateAndCommitRendererInitiated(1, true, url1);
   EXPECT_EQ(1, controller().GetEntryCount());
-  NavigationEntry* entry = controller().GetLastCommittedEntry();
 
   // Show interstitial.
   TestInterstitialPage::InterstitialState state =
@@ -1878,19 +1877,20 @@ TEST_F(WebContentsImplTest, ShowInterstitialThenGoBack) {
   int interstitial_entry_id = controller().GetTransientEntry()->GetUniqueID();
   interstitial->TestDidNavigate(2, interstitial_entry_id, true,
                                 interstitial_url);
+  EXPECT_EQ(2, controller().GetEntryCount());
 
-  // While the interstitial is showing, go back.
+  // While the interstitial is showing, go back. This will dismiss the
+  // interstitial and not initiate a navigation, but just show the existing
+  // RenderFrameHost.
   controller().GoBack();
-  main_test_rfh()->PrepareForCommit();
-  contents()->GetMainFrame()->SendNavigate(1, entry->GetUniqueID(), false,
-                                           url1);
 
   // Make sure we are back to the original page and that the interstitial is
   // gone.
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
-  entry = controller().GetVisibleEntry();
+  NavigationEntry* entry = controller().GetVisibleEntry();
   ASSERT_TRUE(entry);
   EXPECT_EQ(url1.spec(), entry->GetURL().spec());
+  EXPECT_EQ(1, controller().GetEntryCount());
 
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(deleted);
