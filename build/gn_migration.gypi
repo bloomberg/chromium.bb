@@ -547,6 +547,7 @@
             '../tools/gn/gn.gyp:gn_unittests_run',
             '../ui/accessibility/accessibility.gyp:accessibility_unittests_run',
             '../ui/app_list/app_list.gyp:app_list_unittests_run',
+            '../ui/compositor/compositor.gyp:compositor_unittests_run',
             '../ui/events/events.gyp:events_unittests_run',
             '../ui/gl/gl_tests.gyp:gl_unittests_run',
             '../ui/message_center/message_center.gyp:message_center_unittests_run',

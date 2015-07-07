@@ -447,6 +447,9 @@
         "test": "components_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "compositor_unittests"
       },
       {
@@ -713,6 +716,9 @@
         "test": "components_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "compositor_unittests"
       },
       {
