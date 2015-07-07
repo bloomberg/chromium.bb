@@ -6,6 +6,8 @@
 // disabled in regular bots.
 #define E2E_ONLY(x) DISABLED_E2ETest##x
 
+#include "base/guid.h"
+#include "base/hash.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
@@ -138,6 +140,34 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Delete) {
   // Wait for deletion from client 1 to propagate.
   ASSERT_TRUE(AwaitProfileContainsSamePasswordFormsAsVerifier(0));
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, E2E_ONLY(Delete)) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllProfilesContainSamePasswordForms());
+
+  PasswordForm form0 = CreateTestPasswordForm(base::Hash(base::GenerateGUID()));
+  PasswordForm form1 = CreateTestPasswordForm(base::Hash(base::GenerateGUID()));
+  AddLogin(GetPasswordStore(0), form0);
+  AddLogin(GetPasswordStore(0), form1);
+
+  const int init_password_count = GetPasswordCount(0);
+
+  // Wait for client 0 to commit and client 1 to receive the update.
+  ASSERT_TRUE(AwaitAllProfilesContainSamePasswordForms());
+  ASSERT_EQ(init_password_count, GetPasswordCount(1));
+
+  RemoveLogin(GetPasswordStore(1), form0);
+
+  // Wait for deletion from client 1 to propagate.
+  ASSERT_TRUE(AwaitAllProfilesContainSamePasswordForms());
+  ASSERT_EQ(init_password_count - 1, GetPasswordCount(0));
+
+  RemoveLogin(GetPasswordStore(1), form1);
+
+  // Wait for deletion from client 1 to propagate.
+  ASSERT_TRUE(AwaitAllProfilesContainSamePasswordForms());
+  ASSERT_EQ(init_password_count - 2, GetPasswordCount(0));
 }
 
 // TCM ID - 7573511
