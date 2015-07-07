@@ -10,20 +10,20 @@ information.
 
 import re
 
-# Minimum is Mac OS X 10.9.5 (13F34).
-HUMAN_DARWIN_VERSION = '10.9.x, x >= 1'
-ALLOWED_DARWIN_VERSION = 13  # Darwin 12 = 10.9.
-MINIMUM_DARWIN_RELEASE = 'F'  # Release F = 10.9.5.
+# Minimum is Mac OS X 10.8.1 (12B19).
+HUMAN_DARWIN_VERSION = '10.8.x, x >= 1'
+ALLOWED_DARWIN_VERSION = 12  # Darwin 12 = 10.8.
+MINIMUM_DARWIN_RELEASE = 'B'  # Release B = 10.8.1.
 
-MINIMUM_IB_VERSION = 5053  # Xcode 5.1.
-MAXIMUM_IB_VERSION = 5056  # Xcode 5.1.1.
-HUMAN_IB_VERSION = '>= 5.1, <= 5.1.1'
+MINIMUM_IB_VERSION = 2549  # Xcode 4.4.1.
+MAXIMUM_IB_VERSION = 3084  # Xcode 4.6.x.
+HUMAN_IB_VERSION = '>= 4.4.1, <= 4.6.x'
 
-SYSTEM_VERSION_RE = r'<document .* systemVersion="([0-9]{,2})([A-Z])([0-9]+)"'
+SYSTEM_VERSION_RE = r'<string key="IBDocument\.SystemVersion">' + \
+    '([0-9]{,2})([A-Z])([0-9]+)</string>'
 
 IB_VERSION_RE = \
-    r'<plugIn identifier="com\.apple\.InterfaceBuilder\.CocoaPlugin" ' + \
-    'version="([0-9]+)"/>'
+    r'<string key="IBDocument\.InterfaceBuilderVersion">([0-9]+)</string>'
 
 def _CheckXIBSystemAndXcodeVersions(input_api, output_api, error_type):
   affected_xibs = [x for x in input_api.AffectedFiles()

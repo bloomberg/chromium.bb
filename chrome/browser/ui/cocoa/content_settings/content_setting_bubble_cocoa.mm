@@ -329,19 +329,6 @@ class ContentSettingBubbleWebContentsObserverBridge
   const ContentSettingBubbleModel::RadioGroup& radio_group =
       contentSettingBubbleModel_->bubble_content().radio_group;
 
-  // Xcode 5.1 Interface Builder doesn't allow a font property to be set for
-  // NSMatrix. The implementation of GTMUILocalizerAndLayoutTweaker assumes that
-  // the font for each of the cells in a NSMatrix is identical, and is the font
-  // of the NSMatrix. This logic sets the font of NSMatrix to be that of its
-  // cells.
-  NSFont* font = nil;
-  for (NSCell* cell in [allowBlockRadioGroup_ cells]) {
-    if (!font)
-      font = [cell font];
-    DCHECK([font isEqual:[cell font]]);
-  }
-  [allowBlockRadioGroup_ setFont:font];
-
   // Select appropriate radio button.
   [allowBlockRadioGroup_ selectCellWithTag: radio_group.default_item + 1];
 
