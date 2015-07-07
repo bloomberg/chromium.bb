@@ -54,6 +54,7 @@ namespace extensions {
 
 using v8_helpers::ToV8String;
 using v8_helpers::ToV8StringUnsafe;
+using v8_helpers::IsEmptyOrUndefied;
 
 namespace {
 
@@ -429,7 +430,7 @@ void DispatchOnConnectToScriptContext(
       script_context->module_system()->CallModuleMethod(
           "messaging", "dispatchOnConnect", arraysize(arguments), arguments);
 
-  if (!retval.IsEmpty()) {
+  if (!IsEmptyOrUndefied(retval)) {
     CHECK(retval->IsBoolean());
     *port_created |= retval.As<v8::Boolean>()->Value();
   } else {

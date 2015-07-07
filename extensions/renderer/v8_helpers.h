@@ -51,6 +51,11 @@ inline bool IsTrue(v8::Maybe<bool> maybe) {
   return maybe.IsJust() && maybe.FromJust();
 }
 
+// Returns true if |value| is empty or undefined.
+inline bool IsEmptyOrUndefied(v8::Local<v8::Value> value) {
+  return value.IsEmpty() || value->IsUndefined();
+}
+
 // SetProperty() family wraps V8::Object::Set(). Returns true on success.
 inline bool SetProperty(v8::Local<v8::Context> context,
                         v8::Local<v8::Object> object,
