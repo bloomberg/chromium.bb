@@ -461,7 +461,8 @@ main(int argc, char *argv[]) {
 
   assert(!fclose(file));
 
-  printf("%s (%d tests, %d failures)\n", (errors ? "FAILURE" : "SUCCESS"), count, errors);
+  printf("%s (%d tests, %d failure%s)\n", (errors ? "FAILURE" : "SUCCESS"),
+	 count, errors, ((errors != 1) ? "s" : ""));
 
   return errors ? 1 : 0;
 }
