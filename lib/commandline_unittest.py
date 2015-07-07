@@ -12,7 +12,6 @@ import signal
 import os
 import sys
 
-from chromite.cbuildbot import constants
 from chromite.cli import command
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -20,7 +19,7 @@ from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import path_util
-from chromite.lib import workspace_lib
+
 
 # pylint: disable=protected-access
 
@@ -514,7 +513,6 @@ class TestRunInsideChroot(cros_test_lib.MockTestCase):
 
     # Return values for these two should be set by each test.
     self.mock_inside_chroot = self.PatchObject(cros_build_lib, 'IsInsideChroot')
-    self.mock_workspace_path = self.PatchObject(workspace_lib, 'WorkspacePath')
 
     # Mocked CliCommand object to pass to RunInsideChroot.
     self.cmd = command.CliCommand(argparse.Namespace())
@@ -549,33 +547,13 @@ class TestRunInsideChroot(cros_test_lib.MockTestCase):
 
     self.assertEqual(expected_cmd, cm.exception.cmd)
     self.assertEqual(expected_chroot_args, cm.exception.chroot_args)
-    self.assertEqual(expected_extra_env or {}, cm.exception.extra_env)
+    self.assertEqual(expected_extra_env, cm.exception.extra_env)
 
   def testRunInsideChrootLogLevel(self):
     self.cmd.options.log_level = 'notice'
     self.mock_inside_chroot.return_value = False
-    self.mock_workspace_path.return_value = None
     self._VerifyRunInsideChroot(['/inside/cmd', 'arg1', 'arg2'],
                                 log_level_args=['--log-level', 'notice'])
-
-  def testRunInsideChrootNoWorkspace(self):
-    """Test we can restart inside the chroot, with no workspace."""
-    self.mock_inside_chroot.return_value = False
-    self.mock_workspace_path.return_value = None
-
-    self._VerifyRunInsideChroot(['/inside/cmd', 'arg1', 'arg2'])
-
-  def testRunInsideChrootWithWorkspace(self):
-    """Test we can restart inside the chroot, with a workspace."""
-    self.mock_inside_chroot.return_value = False
-    self.mock_workspace_path.return_value = '/work'
-    self.PatchObject(path_util.ChrootPathResolver, 'ToChroot',
-                     return_value=constants.CHROOT_WORKSPACE_ROOT)
-
-    self._VerifyRunInsideChroot(
-        ['/inside/cmd', 'arg1', 'arg2'],
-        ['--chroot', '/work/.chroot', '--workspace', '/work'],
-        {commandline.CHROOT_CWD_ENV_VAR: constants.CHROOT_WORKSPACE_ROOT})
 
   def testRunInsideChrootAlreadyInside(self):
     """Test we don't restart inside the chroot if we are already there."""

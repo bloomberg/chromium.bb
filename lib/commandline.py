@@ -37,12 +37,6 @@ DEVICE_SCHEME_SSH = 'ssh'
 DEVICE_SCHEME_USB = 'usb'
 
 
-# Setting this environment variable when entering the chroot selects
-# what the initial CWD will be. Needed for RunInsideChroot().
-# TODO(dpursell) unify with make_chroot.sh once it's converted to python.
-CHROOT_CWD_ENV_VAR = 'CHROOT_CWD'
-
-
 class ChrootRequiredError(Exception):
   """Raised when a command must be run in the chroot
 
@@ -832,7 +826,7 @@ def _RestartInChroot(cmd, chroot_args, extra_env):
                                    mute_output=False).returncode
 
 
-def RunInsideChroot(command, auto_detect_workspace=True, chroot_args=None):
+def RunInsideChroot(command, chroot_args=None):
   """Restart the current command inside the chroot.
 
   This method is only valid for any code that is run via ScriptWrapperMain.
@@ -841,7 +835,6 @@ def RunInsideChroot(command, auto_detect_workspace=True, chroot_args=None):
 
   Args:
     command: An instance of CliCommand to be restarted inside the chroot.
-    auto_detect_workspace: If true, sets up workspace automatically.
     chroot_args: List of command-line arguments to pass to cros_sdk, if invoked.
   """
   if cros_build_lib.IsInsideChroot():
@@ -851,22 +844,13 @@ def RunInsideChroot(command, auto_detect_workspace=True, chroot_args=None):
   argv = sys.argv[:]
   argv[0] = path_util.ToChrootPath(argv[0])
 
-  # Enter the chroot for the workspace, if we are in a workspace.
   # Set log-level of cros_sdk to be same as log-level of command entering the
   # chroot.
   if chroot_args is None:
     chroot_args = []
   chroot_args += ['--log-level', command.options.log_level]
-  extra_env = {}
-  if auto_detect_workspace:
-    workspace_path = workspace_lib.WorkspacePath()
-    if workspace_path:
-      chroot_args.extend(['--chroot', workspace_lib.ChrootPath(workspace_path),
-                          '--workspace', workspace_path])
-      resolver = path_util.ChrootPathResolver(workspace_path=workspace_path)
-      extra_env[CHROOT_CWD_ENV_VAR] = resolver.ToChroot(os.getcwd())
 
-  raise ChrootRequiredError(argv, chroot_args, extra_env)
+  raise ChrootRequiredError(argv, chroot_args)
 
 
 def ReExec():
