@@ -16,14 +16,19 @@
 namespace extensions {
 
 FileSystemProviderCapabilities::FileSystemProviderCapabilities()
-    : configurable_(false), multiple_mounts_(false), source_(SOURCE_FILE) {
+    : configurable_(false),
+      watchable_(false),
+      multiple_mounts_(false),
+      source_(SOURCE_FILE) {
 }
 
 FileSystemProviderCapabilities::FileSystemProviderCapabilities(
     bool configurable,
+    bool watchable,
     bool multiple_mounts,
     FileSystemProviderSource source)
     : configurable_(configurable),
+      watchable_(watchable),
       multiple_mounts_(multiple_mounts),
       source_(source) {
 }
@@ -99,6 +104,8 @@ bool FileSystemProviderCapabilitiesHandler::Parse(Extension* extension,
           idl_capabilities.configurable.get()
               ? *idl_capabilities.configurable.get()
               : false /* false by default */,
+          idl_capabilities.watchable.get() ? *idl_capabilities.watchable.get()
+                                           : false /* false by default */,
           idl_capabilities.multiple_mounts.get()
               ? *idl_capabilities.multiple_mounts.get()
               : false /* false by default */,

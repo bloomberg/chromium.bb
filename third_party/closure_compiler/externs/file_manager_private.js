@@ -71,6 +71,7 @@ var ProfileInfo;
  *   isReadOnly: boolean,
  *   hasMedia: boolean,
  *   configurable: boolean,
+ *   watchable: boolean,
  *   mountCondition: (string|undefined),
  *   mountContext: (string|undefined)
  * }}
@@ -209,6 +210,7 @@ var DeviceEvent;
  *   extensionId: string,
  *   name: string,
  *   configurable: boolean,
+ *   watchable: boolean,
  *   multipleMounts: boolean,
  *   source: string
  * }}

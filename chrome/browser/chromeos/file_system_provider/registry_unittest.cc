@@ -159,7 +159,7 @@ TEST_F(FileSystemProviderRegistryTest, RememberFileSystem) {
 
   ProvidedFileSystemInfo file_system_info(
       kExtensionId, options, base::FilePath(FILE_PATH_LITERAL("/a/b/c")),
-      false /* configurable */, extensions::SOURCE_FILE);
+      false /* configurable */, true /* watchable */, extensions::SOURCE_FILE);
 
   Watchers watchers;
   watchers[WatcherKey(fake_watcher_.entry_path, fake_watcher_.recursive)] =
@@ -275,7 +275,7 @@ TEST_F(FileSystemProviderRegistryTest, UpdateWatcherTag) {
 
   ProvidedFileSystemInfo file_system_info(
       kExtensionId, options, base::FilePath(FILE_PATH_LITERAL("/a/b/c")),
-      false /* configurable */, extensions::SOURCE_FILE);
+      false /* configurable */, true /* watchable */, extensions::SOURCE_FILE);
 
   Watchers watchers;
   watchers[WatcherKey(fake_watcher_.entry_path, fake_watcher_.recursive)] =

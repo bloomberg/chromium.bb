@@ -166,7 +166,7 @@ TEST_F(FileSystemProviderMountPathUtilTest, Parser_WrongUrl) {
   const ProvidedFileSystemInfo file_system_info(
       kExtensionId, MountOptions(kFileSystemId, kDisplayName),
       GetMountPath(profile_, kExtensionId, kFileSystemId),
-      false /* configurable */, extensions::SOURCE_FILE);
+      false /* configurable */, true /* watchable */, extensions::SOURCE_FILE);
 
   const base::FilePath kFilePath = base::FilePath(FILE_PATH_LITERAL("/hello"));
   const storage::FileSystemURL url =

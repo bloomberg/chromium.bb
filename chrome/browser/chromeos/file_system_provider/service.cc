@@ -172,10 +172,12 @@ base::File::Error Service::MountFileSystemInternal(
   //   supports_notify_tag = false
   //   mount_path = /provided/b33f1337-hello_world-5aa5
   //   configurable = true
+  //   watchable = true
   //   source = SOURCE_FILE
   ProvidedFileSystemInfo file_system_info(
       extension_id, options, mount_path,
       provider_info.capabilities.configurable(),
+      provider_info.capabilities.watchable(),
       provider_info.capabilities.source());
 
   ProvidedFileSystemInterface* file_system =

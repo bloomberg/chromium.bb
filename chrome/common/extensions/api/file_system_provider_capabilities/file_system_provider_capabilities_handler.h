@@ -22,6 +22,7 @@ class FileSystemProviderCapabilities : public Extension::ManifestData {
  public:
   FileSystemProviderCapabilities();
   FileSystemProviderCapabilities(bool configurable,
+                                 bool watchable,
                                  bool multiple_mounts,
                                  FileSystemProviderSource source);
   ~FileSystemProviderCapabilities() override;
@@ -31,11 +32,13 @@ class FileSystemProviderCapabilities : public Extension::ManifestData {
   static const FileSystemProviderCapabilities* Get(const Extension* extension);
 
   bool configurable() const { return configurable_; }
+  bool watchable() const { return watchable_; }
   bool multiple_mounts() const { return multiple_mounts_; }
   FileSystemProviderSource source() const { return source_; }
 
  private:
   bool configurable_;
+  bool watchable_;
   bool multiple_mounts_;
   FileSystemProviderSource source_;
 };

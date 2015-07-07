@@ -28,6 +28,7 @@ ProvidedFileSystemInfo::ProvidedFileSystemInfo()
     : writable_(false),
       supports_notify_tag_(false),
       configurable_(false),
+      watchable_(false),
       source_(extensions::SOURCE_FILE) {
 }
 
@@ -36,6 +37,7 @@ ProvidedFileSystemInfo::ProvidedFileSystemInfo(
     const MountOptions& mount_options,
     const base::FilePath& mount_path,
     bool configurable,
+    bool watchable,
     extensions::FileSystemProviderSource source)
     : extension_id_(extension_id),
       file_system_id_(mount_options.file_system_id),
@@ -45,6 +47,7 @@ ProvidedFileSystemInfo::ProvidedFileSystemInfo(
       opened_files_limit_(mount_options.opened_files_limit),
       mount_path_(mount_path),
       configurable_(configurable),
+      watchable_(watchable),
       source_(source) {
   DCHECK_LE(0, mount_options.opened_files_limit);
 }

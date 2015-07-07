@@ -41,7 +41,8 @@ class FileSystemProviderOperationsRemoveWatcherTest : public testing::Test {
   void SetUp() override {
     file_system_info_ = ProvidedFileSystemInfo(
         kExtensionId, MountOptions(kFileSystemId, "" /* display_name */),
-        base::FilePath(), false /* configurable */, extensions::SOURCE_FILE);
+        base::FilePath(), false /* configurable */, true /* watchable */,
+        extensions::SOURCE_FILE);
   }
 
   ProvidedFileSystemInfo file_system_info_;

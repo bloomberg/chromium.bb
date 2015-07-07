@@ -75,7 +75,8 @@ class FileSystemProviderOperationsOpenFileTest : public testing::Test {
   void SetUp() override {
     file_system_info_ = ProvidedFileSystemInfo(
         kExtensionId, MountOptions(kFileSystemId, "" /* display_name */),
-        base::FilePath(), false /* configurable */, extensions::SOURCE_FILE);
+        base::FilePath(), false /* configurable */, true /* watchable */,
+        extensions::SOURCE_FILE);
   }
 
   ProvidedFileSystemInfo file_system_info_;
@@ -139,7 +140,7 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, Execute_ReadOnly) {
   const ProvidedFileSystemInfo read_only_file_system_info(
       kExtensionId, MountOptions(kFileSystemId, "" /* display_name */),
       base::FilePath() /* mount_path */, false /* configurable */,
-      extensions::SOURCE_FILE);
+      true /* watchable */, extensions::SOURCE_FILE);
 
   // Opening for read on a read-only file system is allowed.
   {

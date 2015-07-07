@@ -317,7 +317,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Mount) {
   // |source| flags properly down to Files app.
   chromeos::file_system_provider::ProvidedFileSystemInfo info(
       "testing-extension-id", chromeos::file_system_provider::MountOptions(),
-      base::FilePath(), true /* configurable */, extensions::SOURCE_NETWORK);
+      base::FilePath(), true /* configurable */, false /* watchable */,
+      extensions::SOURCE_NETWORK);
 
   file_manager::VolumeManager::Get(browser()->profile())
       ->AddVolumeForTesting(

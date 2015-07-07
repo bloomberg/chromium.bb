@@ -417,7 +417,7 @@ TEST_F(FileSystemProviderServiceTest, RestoreFileSystem_OnExtensionLoad) {
   options.supports_notify_tag = true;
   ProvidedFileSystemInfo file_system_info(
       kExtensionId, options, base::FilePath(FILE_PATH_LITERAL("/a/b/c")),
-      false /* configurable */, extensions::SOURCE_FILE);
+      false /* configurable */, false /* watchable */, extensions::SOURCE_FILE);
   Watchers fake_watchers;
   fake_watchers[WatcherKey(fake_watcher_.entry_path, fake_watcher_.recursive)] =
       fake_watcher_;
@@ -437,7 +437,7 @@ TEST_F(FileSystemProviderServiceTest, RestoreFileSystem_OnExtensionLoad) {
   EXPECT_EQ(file_system_info.file_system_id(),
             observer.mounts[0].file_system_info().file_system_id());
   EXPECT_EQ(file_system_info.writable(),
-            observer.mounts[0].file_system_info().writable());
+            observer.mounts[0].file_system_info().watchable());
   EXPECT_EQ(file_system_info.supports_notify_tag(),
             observer.mounts[0].file_system_info().supports_notify_tag());
 
@@ -481,6 +481,8 @@ TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnMount) {
   EXPECT_EQ(kFileSystemId, registry_->file_system_info()->file_system_id());
   EXPECT_EQ(kDisplayName, registry_->file_system_info()->display_name());
   EXPECT_FALSE(registry_->file_system_info()->writable());
+  EXPECT_FALSE(registry_->file_system_info()->configurable());
+  EXPECT_FALSE(registry_->file_system_info()->watchable());
   EXPECT_FALSE(registry_->file_system_info()->supports_notify_tag());
   ASSERT_TRUE(registry_->watchers());
 

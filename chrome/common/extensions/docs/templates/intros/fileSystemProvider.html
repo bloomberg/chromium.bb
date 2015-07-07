@@ -13,6 +13,7 @@ For example:</p>
   ...
   "file_system_provider_capabilities": {
     "configurable": true,
+    "watchable": false,
     "multiple_mounts": true,
     <span id="manifest-source">"source": "network"</span>
   },
@@ -30,7 +31,10 @@ Files app uses above information in order to render related UI elements
 approprietly. For example, if <code>configurable</code> is set to
 </code>true</code>, then a menu item for configuring volumes will be rendered.
 Similarly, if <code>multiple_mounts</code> is set to <code>true</code>, then
-Files app will allow to add more than one mount points from the UI.
+Files app will allow to add more than one mount points from the UI. If
+<code>watchable</code> is <code>false</code>, then a refresh button will be
+rendered. Note, that if possible you should add support for watchers, so
+changes on the file system can be reflected immediately and automatically.
 </p>
 
 <h2 id="overview">Overview</h2>

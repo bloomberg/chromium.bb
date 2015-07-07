@@ -55,7 +55,8 @@ class FileSystemProviderThrottledFileSystemTest : public testing::Test {
 
     ProvidedFileSystemInfo file_system_info(
         kExtensionId, options, base::FilePath() /* mount_path */,
-        false /* configurable */, extensions::SOURCE_FILE);
+        false /* configurable */, true /* watchable */,
+        extensions::SOURCE_FILE);
 
     file_system_.reset(new ThrottledFileSystem(
         make_scoped_ptr(new FakeProvidedFileSystem(file_system_info))));

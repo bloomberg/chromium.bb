@@ -79,7 +79,8 @@ class FileSystemProviderOperationsReadFileTest : public testing::Test {
   void SetUp() override {
     file_system_info_ = ProvidedFileSystemInfo(
         kExtensionId, MountOptions(kFileSystemId, "" /* display_name */),
-        base::FilePath(), false /* configurable */, extensions::SOURCE_FILE);
+        base::FilePath(), false /* configurable */, true /* watchable */,
+        extensions::SOURCE_FILE);
     io_buffer_ = make_scoped_refptr(new net::IOBuffer(kOffset + kLength));
   }
 

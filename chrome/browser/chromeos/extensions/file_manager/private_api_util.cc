@@ -200,6 +200,7 @@ void VolumeToVolumeMetadata(
   }
 
   volume_metadata->configurable = volume.configurable();
+  volume_metadata->watchable = volume.watchable();
 
   if (volume.type() == VOLUME_TYPE_PROVIDED) {
     volume_metadata->extension_id.reset(new std::string(volume.extension_id()));

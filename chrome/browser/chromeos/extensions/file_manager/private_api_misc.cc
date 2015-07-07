@@ -436,6 +436,7 @@ FileManagerPrivateGetProvidingExtensionsFunction::Run() {
     providing_extension->extension_id = info.extension_id;
     providing_extension->name = info.name;
     providing_extension->configurable = info.capabilities.configurable();
+    providing_extension->watchable = info.capabilities.watchable();
     providing_extension->multiple_mounts = info.capabilities.multiple_mounts();
     switch (info.capabilities.source()) {
       case SOURCE_FILE:

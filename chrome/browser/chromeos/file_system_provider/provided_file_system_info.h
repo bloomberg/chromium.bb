@@ -37,6 +37,7 @@ class ProvidedFileSystemInfo {
                          const MountOptions& mount_options,
                          const base::FilePath& mount_path,
                          bool configurable,
+                         bool watchable,
                          extensions::FileSystemProviderSource source);
 
   ~ProvidedFileSystemInfo();
@@ -49,6 +50,7 @@ class ProvidedFileSystemInfo {
   int opened_files_limit() const { return opened_files_limit_; }
   const base::FilePath& mount_path() const { return mount_path_; }
   const bool configurable() const { return configurable_; }
+  const bool watchable() const { return watchable_; }
   extensions::FileSystemProviderSource source() const { return source_; }
 
  private:
@@ -75,6 +77,9 @@ class ProvidedFileSystemInfo {
 
   // Whether the file system is configurable.
   bool configurable_;
+
+  // Whether the file system is watchable.
+  bool watchable_;
 
   // Source of the file system's data.
   extensions::FileSystemProviderSource source_;

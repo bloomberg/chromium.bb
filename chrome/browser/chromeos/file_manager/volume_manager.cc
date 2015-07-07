@@ -144,7 +144,8 @@ Volume::Volume()
       is_parent_(false),
       is_read_only_(false),
       has_media_(false),
-      configurable_(false) {
+      configurable_(false),
+      watchable_(false) {
 }
 
 Volume::~Volume() {
@@ -162,6 +163,7 @@ Volume* Volume::CreateForDrive(Profile* profile) {
   volume->mount_path_ = drive_path;
   volume->mount_condition_ = chromeos::disks::MOUNT_CONDITION_NONE;
   volume->volume_id_ = GenerateVolumeId(*volume);
+  volume->watchable_ = true;
   return volume;
 }
 
@@ -175,6 +177,7 @@ Volume* Volume::CreateForDownloads(const base::FilePath& downloads_path) {
   volume->mount_path_ = downloads_path;
   volume->mount_condition_ = chromeos::disks::MOUNT_CONDITION_NONE;
   volume->volume_id_ = GenerateVolumeId(*volume);
+  volume->watchable_ = true;
   return volume;
 }
 
@@ -203,6 +206,7 @@ Volume* Volume::CreateForRemovable(
         (mount_point.mount_type == chromeos::MOUNT_TYPE_ARCHIVE);
   }
   volume->volume_id_ = GenerateVolumeId(*volume);
+  volume->watchable_ = true;
   return volume;
 }
 
@@ -233,6 +237,7 @@ Volume* Volume::CreateForProvidedFileSystem(
   volume->is_parent_ = true;
   volume->is_read_only_ = !file_system_info.writable();
   volume->configurable_ = file_system_info.configurable();
+  volume->watchable_ = file_system_info.watchable();
   volume->volume_id_ = GenerateVolumeId(*volume);
   return volume;
 }

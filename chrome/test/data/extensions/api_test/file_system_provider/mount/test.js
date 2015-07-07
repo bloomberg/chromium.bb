@@ -154,7 +154,8 @@ chrome.test.runTests([
           chrome.test.assertEq(
               chrome.runtime.getManifest().name, extensions[0].name);
           chrome.test.assertFalse(extensions[0].configurable);
-          chrome.test.assertTrue(extensions[0].multipleMounts);
+          chrome.test.assertFalse(extensions[0].watchable);
+          chrome.test.assertFalse(extensions[0].multipleMounts);
           chrome.test.assertEq('network', extensions[0].source);
         }));
 

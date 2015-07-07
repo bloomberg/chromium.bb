@@ -234,7 +234,7 @@ class FileSystemProviderProvidedFileSystemTest : public testing::Test {
     mount_options.writable = true;
     file_system_info_.reset(new ProvidedFileSystemInfo(
         kExtensionId, mount_options, mount_path, false /* configurable */,
-        extensions::SOURCE_FILE));
+        true /* watchable */, extensions::SOURCE_FILE));
     provided_file_system_.reset(
         new ProvidedFileSystem(profile_.get(), *file_system_info_.get()));
     event_router_.reset(
@@ -414,7 +414,7 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, AddWatcher_PersistentIllegal) {
     mount_options.supports_notify_tag = false;
     ProvidedFileSystemInfo file_system_info(
         kExtensionId, mount_options, mount_path, false /* configurable */,
-        extensions::SOURCE_FILE);
+        true /* watchable */, extensions::SOURCE_FILE);
     ProvidedFileSystem simple_provided_file_system(profile_.get(),
                                                    file_system_info);
     simple_provided_file_system.SetEventRouterForTesting(event_router_.get());

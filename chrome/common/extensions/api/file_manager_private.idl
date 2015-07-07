@@ -334,6 +334,9 @@ dictionary VolumeMetadata {
   // Flag that specifies whether the volume is configurable.
   boolean configurable;
 
+  // Flag that specifies whether the volume is watchable.
+  boolean watchable;
+
   // Additional data about mount, for example, that the filesystem is not
   // supported.
   MountCondition? mountCondition;
@@ -530,6 +533,9 @@ dictionary ProvidingExtension {
 
   // Whether supports configuration dialog.
   boolean configurable;
+
+  // Whether supports watching entries.
+  boolean watchable;
 
   // Whether supports mounting multiple instances.
   boolean multipleMounts;

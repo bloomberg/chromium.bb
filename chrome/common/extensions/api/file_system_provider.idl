@@ -544,6 +544,9 @@ namespace fileSystemProvider {
     // notification always reported, even if the system was shutdown. The last
     // tag can be obtained with $(ref:getAll).
     //
+    // To use, the <code>file_system_provider.notify</code> manifest option
+    // must be set to true.
+    //
     // Value of <code>tag</code> can be any string which is unique per call,
     // so it's possible to identify the last registered notification. Eg. if
     // the providing extension starts after a reboot, and the last registered

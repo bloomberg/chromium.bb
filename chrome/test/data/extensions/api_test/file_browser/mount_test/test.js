@@ -14,6 +14,7 @@ var expectedVolume1 = {
   isReadOnly: false,
   hasMedia: false,
   configurable: false,
+  watchable: true,
   source: 'device',
   profile: {profileId: '', displayName: '', isCurrentProfile: true},
 };
@@ -29,6 +30,9 @@ var expectedVolume2 = {
   isReadOnly: true,
   hasMedia: true,
   configurable: false,
+  // This is not an MTP device, so it's watchable.
+  // TODO(mtomasz): Add a test for a real MTP device.
+  watchable: true,
   source: 'device',
   profile: {profileId: '', displayName: '', isCurrentProfile: true}
 };
@@ -44,6 +48,7 @@ var expectedVolume3 = {
   isReadOnly: false,
   hasMedia: false,
   configurable: false,
+  watchable: true,
   source: 'device',
   profile: {profileId: '', displayName: '', isCurrentProfile: true}
 };
@@ -55,6 +60,7 @@ var expectedDownloadsVolume = {
   isReadOnly: false,
   hasMedia: false,
   configurable: false,
+  watchable: true,
   source: 'system',
   profile: {profileId: '', displayName: '', isCurrentProfile: true}
 };
@@ -67,6 +73,7 @@ var expectedDriveVolume = {
   isReadOnly: false,
   hasMedia: false,
   configurable: false,
+  watchable: true,
   source: 'network',
   profile: {profileId: '', displayName: '', isCurrentProfile: true}
 };
@@ -79,6 +86,7 @@ var expectedArchiveVolume = {
   isReadOnly: true,
   hasMedia: false,
   configurable: false,
+  watchable: true,
   source: 'file',
   profile: {profileId: '', displayName: '', isCurrentProfile: true}
 };
@@ -90,6 +98,7 @@ var expectedProvidedVolume = {
   isReadOnly: true,
   hasMedia: false,
   configurable: true,
+  watchable: false,
   extensionId: 'testing-extension-id',
   source: 'network',
   mountContext: 'auto',

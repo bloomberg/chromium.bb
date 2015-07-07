@@ -119,6 +119,7 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   bool is_read_only() const { return is_read_only_; }
   bool has_media() const { return has_media_; }
   bool configurable() const { return configurable_; }
+  bool watchable() const { return watchable_; }
 
  private:
   Volume();
@@ -182,6 +183,9 @@ class Volume : public base::SupportsWeakPtr<Volume> {
 
   // True if the volume is configurable.
   bool configurable_;
+
+  // True if the volume notifies about changes via file/directory watchers.
+  bool watchable_;
 
   DISALLOW_COPY_AND_ASSIGN(Volume);
 };

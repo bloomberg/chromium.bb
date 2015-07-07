@@ -191,6 +191,11 @@
             "optional": true,
             "description": "Whether multiple (more than one) mounted file systems are supported. By default: <code>false</code>."
           },
+          "watchable": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Whether setting watchers and notifying about changes is supported. By default: <code>false</code>."
+          },
           "source": {
             "$ref": "FileSystemProviderSource",
             "description": "Source of data for mounted file systems."
