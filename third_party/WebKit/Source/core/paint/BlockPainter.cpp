@@ -188,13 +188,14 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         ObjectPainter(m_layoutBlock).addPDFURLRectIfNeeded(paintInfo, paintOffset);
 
     {
-        PaintInfo scrolledPaintInfo(paintInfo);
         Optional<ScrollRecorder> scrollRecorder;
+        Optional<PaintInfo> scrolledPaintInfo;
         if (m_layoutBlock.hasOverflowClip()) {
             IntSize scrollOffset = m_layoutBlock.scrolledContentOffset();
             if (m_layoutBlock.layer()->scrollsOverflow() || !scrollOffset.isZero()) {
                 scrollRecorder.emplace(*paintInfo.context, m_layoutBlock, paintPhase, scrollOffset);
-                scrolledPaintInfo.rect.move(scrollOffset);
+                scrolledPaintInfo.emplace(paintInfo);
+                scrolledPaintInfo->rect.move(scrollOffset);
             }
         }
 
@@ -202,14 +203,16 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         if (paintPhase == PaintPhaseBlockBackground || paintInfo.paintRootBackgroundOnly())
             return;
 
+        const PaintInfo& contentsPaintInfo = scrolledPaintInfo ? *scrolledPaintInfo : paintInfo;
+
         if (paintPhase != PaintPhaseSelfOutline)
-            paintContents(scrolledPaintInfo, paintOffset);
+            paintContents(contentsPaintInfo, paintOffset);
 
         if (paintPhase == PaintPhaseForeground && !m_layoutBlock.document().printing())
-            m_layoutBlock.paintSelection(scrolledPaintInfo, paintOffset); // Fill in gaps in selection on lines and between blocks.
+            m_layoutBlock.paintSelection(contentsPaintInfo, paintOffset); // Fill in gaps in selection on lines and between blocks.
 
         if (paintPhase == PaintPhaseFloat || paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip)
-            m_layoutBlock.paintFloats(scrolledPaintInfo, paintOffset, paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip);
+            m_layoutBlock.paintFloats(contentsPaintInfo, paintOffset, paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip);
     }
 
     if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseSelfOutline) && m_layoutBlock.style()->hasOutline() && m_layoutBlock.style()->visibility() == VISIBLE) {
