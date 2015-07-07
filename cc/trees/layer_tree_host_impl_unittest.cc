@@ -148,7 +148,6 @@ class LayerTreeHostImplTest : public testing::Test,
     requested_animation_delay_ = delay;
   }
   void DidActivateSyncTree() override {}
-  void WillPrepareTiles() override {}
   void DidPrepareTiles() override {}
   void DidCompletePageScaleAnimationOnImplThread() override {
     did_complete_page_scale_animation_ = true;

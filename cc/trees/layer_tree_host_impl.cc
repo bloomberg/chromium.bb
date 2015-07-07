@@ -432,9 +432,9 @@ void LayerTreeHostImpl::PrepareTiles() {
   if (!tile_priorities_dirty_)
     return;
 
-  client_->WillPrepareTiles();
   tile_priorities_dirty_ = false;
   tile_manager_->PrepareTiles(global_tile_state_);
+
   client_->DidPrepareTiles();
 }
 

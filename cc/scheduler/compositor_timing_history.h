@@ -25,43 +25,26 @@ class CC_EXPORT CompositorTimingHistory {
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
-  virtual base::TimeDelta BeginMainFrameToCommitDurationEstimate() const;
-  virtual base::TimeDelta CommitToReadyToActivateDurationEstimate() const;
-  virtual base::TimeDelta PrepareTilesDurationEstimate() const;
-  virtual base::TimeDelta ActivateDurationEstimate() const;
   virtual base::TimeDelta DrawDurationEstimate() const;
-
-  void SetRecordingEnabled(bool enabled);
+  virtual base::TimeDelta BeginMainFrameToCommitDurationEstimate() const;
+  virtual base::TimeDelta CommitToActivateDurationEstimate() const;
 
   void WillBeginMainFrame();
-  void BeginMainFrameAborted();
   void DidCommit();
-  void WillPrepareTiles();
-  void DidPrepareTiles();
-  void ReadyToActivate();
-  void WillActivate();
-  void DidActivate();
-  void WillDraw();
-  void DidDraw();
+  void DidActivateSyncTree();
+  void DidStartDrawing();
+  void DidFinishDrawing();
 
  protected:
-  virtual base::TimeTicks Now() const;
-
   void AddDrawDurationUMA(base::TimeDelta draw_duration,
                           base::TimeDelta draw_duration_estimate);
 
-  bool enabled_;
-
-  RollingTimeDeltaHistory begin_main_frame_to_commit_duration_history_;
-  RollingTimeDeltaHistory commit_to_ready_to_activate_duration_history_;
-  RollingTimeDeltaHistory prepare_tiles_duration_history_;
-  RollingTimeDeltaHistory activate_duration_history_;
   RollingTimeDeltaHistory draw_duration_history_;
+  RollingTimeDeltaHistory begin_main_frame_to_commit_duration_history_;
+  RollingTimeDeltaHistory commit_to_activate_duration_history_;
 
   base::TimeTicks begin_main_frame_sent_time_;
-  base::TimeTicks commit_time_;
-  base::TimeTicks start_prepare_tiles_time_;
-  base::TimeTicks start_activate_time_;
+  base::TimeTicks commit_complete_time_;
   base::TimeTicks start_draw_time_;
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;

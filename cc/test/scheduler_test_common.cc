@@ -83,29 +83,23 @@ FakeCompositorTimingHistory::FakeCompositorTimingHistory(
 FakeCompositorTimingHistory::~FakeCompositorTimingHistory() {
 }
 
+void FakeCompositorTimingHistory::SetDrawDurationEstimate(
+    base::TimeDelta duration) {
+  draw_duration_ = duration;
+}
+
 void FakeCompositorTimingHistory::SetBeginMainFrameToCommitDurationEstimate(
     base::TimeDelta duration) {
   begin_main_frame_to_commit_duration_ = duration;
 }
 
-void FakeCompositorTimingHistory::SetCommitToReadyToActivateDurationEstimate(
+void FakeCompositorTimingHistory::SetCommitToActivateDurationEstimate(
     base::TimeDelta duration) {
-  commit_to_ready_to_activate_duration_ = duration;
+  commit_to_activate_duration_ = duration;
 }
 
-void FakeCompositorTimingHistory::SetPrepareTilesDurationEstimate(
-    base::TimeDelta duration) {
-  prepare_tiles_duration_ = duration;
-}
-
-void FakeCompositorTimingHistory::SetActivateDurationEstimate(
-    base::TimeDelta duration) {
-  activate_duration_ = duration;
-}
-
-void FakeCompositorTimingHistory::SetDrawDurationEstimate(
-    base::TimeDelta duration) {
-  draw_duration_ = duration;
+base::TimeDelta FakeCompositorTimingHistory::DrawDurationEstimate() const {
+  return draw_duration_;
 }
 
 base::TimeDelta
@@ -113,22 +107,9 @@ FakeCompositorTimingHistory::BeginMainFrameToCommitDurationEstimate() const {
   return begin_main_frame_to_commit_duration_;
 }
 
-base::TimeDelta
-FakeCompositorTimingHistory::CommitToReadyToActivateDurationEstimate() const {
-  return commit_to_ready_to_activate_duration_;
-}
-
-base::TimeDelta FakeCompositorTimingHistory::PrepareTilesDurationEstimate()
+base::TimeDelta FakeCompositorTimingHistory::CommitToActivateDurationEstimate()
     const {
-  return prepare_tiles_duration_;
-}
-
-base::TimeDelta FakeCompositorTimingHistory::ActivateDurationEstimate() const {
-  return activate_duration_;
-}
-
-base::TimeDelta FakeCompositorTimingHistory::DrawDurationEstimate() const {
-  return draw_duration_;
+  return commit_to_activate_duration_;
 }
 
 scoped_ptr<TestScheduler> TestScheduler::Create(

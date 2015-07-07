@@ -166,17 +166,13 @@ class FakeCompositorTimingHistory : public CompositorTimingHistory {
   static scoped_ptr<FakeCompositorTimingHistory> Create();
   ~FakeCompositorTimingHistory() override;
 
-  void SetBeginMainFrameToCommitDurationEstimate(base::TimeDelta duration);
-  void SetCommitToReadyToActivateDurationEstimate(base::TimeDelta duration);
-  void SetPrepareTilesDurationEstimate(base::TimeDelta duration);
-  void SetActivateDurationEstimate(base::TimeDelta duration);
   void SetDrawDurationEstimate(base::TimeDelta duration);
+  void SetBeginMainFrameToCommitDurationEstimate(base::TimeDelta duration);
+  void SetCommitToActivateDurationEstimate(base::TimeDelta duration);
 
-  base::TimeDelta BeginMainFrameToCommitDurationEstimate() const override;
-  base::TimeDelta CommitToReadyToActivateDurationEstimate() const override;
-  base::TimeDelta PrepareTilesDurationEstimate() const override;
-  base::TimeDelta ActivateDurationEstimate() const override;
   base::TimeDelta DrawDurationEstimate() const override;
+  base::TimeDelta BeginMainFrameToCommitDurationEstimate() const override;
+  base::TimeDelta CommitToActivateDurationEstimate() const override;
 
  protected:
   FakeCompositorTimingHistory(scoped_ptr<RenderingStatsInstrumentation>
@@ -185,11 +181,9 @@ class FakeCompositorTimingHistory : public CompositorTimingHistory {
   scoped_ptr<RenderingStatsInstrumentation>
       rendering_stats_instrumentation_owned_;
 
-  base::TimeDelta begin_main_frame_to_commit_duration_;
-  base::TimeDelta commit_to_ready_to_activate_duration_;
-  base::TimeDelta prepare_tiles_duration_;
-  base::TimeDelta activate_duration_;
   base::TimeDelta draw_duration_;
+  base::TimeDelta begin_main_frame_to_commit_duration_;
+  base::TimeDelta commit_to_activate_duration_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeCompositorTimingHistory);
