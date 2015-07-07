@@ -49,7 +49,7 @@ class MediaSourceTest : public content::MediaBrowserTest {
     query_params.push_back(std::make_pair("mediaType", media_type));
     query_params.push_back(std::make_pair("usePrefixedEME", "1"));
     RunMediaTestPage("media_source_player.html", query_params, expectation,
-                     true);
+                     false);
   }
 
 #if defined(OS_ANDROID)
