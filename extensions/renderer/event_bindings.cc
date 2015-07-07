@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/child/v8_value_converter.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/event_filter.h"
@@ -301,7 +302,7 @@ void EventBindings::MatchAgainstEventFilter(
   // Only match events routed to this context's RenderView or ones that don't
   // have a routingId in their filter.
   MatcherIDs matched_event_filters = event_filter.MatchEvent(
-      event_name, info, context()->GetRenderView()->GetRoutingID());
+      event_name, info, context()->GetRenderFrame()->GetRoutingID());
   v8::Local<v8::Array> array(
       v8::Array::New(isolate, matched_event_filters.size()));
   int i = 0;
@@ -317,7 +318,7 @@ scoped_ptr<EventMatcher> EventBindings::ParseEventMatcher(
     base::DictionaryValue* filter_dict) {
   return scoped_ptr<EventMatcher>(new EventMatcher(
       scoped_ptr<base::DictionaryValue>(filter_dict->DeepCopy()),
-      context()->GetRenderView()->GetRoutingID()));
+      context()->GetRenderFrame()->GetRoutingID()));
 }
 
 void EventBindings::OnInvalidated() {

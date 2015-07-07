@@ -13,7 +13,6 @@
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_api.h"
@@ -153,12 +152,6 @@ void ScriptContext::AddInvalidationObserver(const base::Closure& observer) {
 
 const std::string& ScriptContext::GetExtensionID() const {
   return extension_.get() ? extension_->id() : base::EmptyString();
-}
-
-content::RenderView* ScriptContext::GetRenderView() const {
-  if (web_frame_ && web_frame_->view())
-    return content::RenderView::FromWebView(web_frame_->view());
-  return NULL;
 }
 
 content::RenderFrame* ScriptContext::GetRenderFrame() const {

@@ -9,7 +9,6 @@
 #include "base/values.h"
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/features/feature.h"
@@ -89,10 +88,8 @@ void RuntimeCustomBindings::OpenChannelToNativeApp(
   if (!availability.is_available())
     return;
 
-  // Get the current RenderView so that we can send a routed IPC message from
-  // the correct source.
-  content::RenderView* renderview = context()->GetRenderView();
-  if (!renderview)
+  content::RenderFrame* render_frame = context()->GetRenderFrame();
+  if (!render_frame)
     return;
 
   // The Javascript code should validate/fill the arguments.
@@ -102,8 +99,8 @@ void RuntimeCustomBindings::OpenChannelToNativeApp(
   std::string native_app_name = *v8::String::Utf8Value(args[1]);
 
   int port_id = -1;
-  renderview->Send(new ExtensionHostMsg_OpenChannelToNativeApp(
-      renderview->GetRoutingID(), extension_id, native_app_name, &port_id));
+  render_frame->Send(new ExtensionHostMsg_OpenChannelToNativeApp(
+      render_frame->GetRoutingID(), extension_id, native_app_name, &port_id));
   args.GetReturnValue().Set(static_cast<int32_t>(port_id));
 }
 

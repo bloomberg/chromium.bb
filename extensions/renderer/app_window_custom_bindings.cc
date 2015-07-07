@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "content/public/child/v8_value_converter.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_observer.h"
@@ -93,7 +94,9 @@ void AppWindowCustomBindings::GetView(
   // need to make sure the security origin is set up before returning the DOM
   // reference. A better way to do this would be to have the browser pass the
   // opener through so opener_id is set in RenderViewImpl's constructor.
-  content::RenderView* render_view = context()->GetRenderView();
+  content::RenderFrame* render_frame = context()->GetRenderFrame();
+  content::RenderView* render_view =
+      render_frame ? render_frame->GetRenderView() : nullptr;
   if (!render_view)
     return;
   blink::WebFrame* opener = render_view->GetWebView()->mainFrame();

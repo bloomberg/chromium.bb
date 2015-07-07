@@ -71,14 +71,16 @@ class ChromeExtensionMessageFilter : public content::BrowserMessageFilter,
                                         int receiver_port_id,
                                         const std::string& source_extension_id,
                                         const std::string& native_app_name);
-  void OnOpenChannelToTab(int routing_id,
-                          const ExtensionMsg_TabTargetConnectionInfo& info,
+  void OnOpenChannelToTab(const ExtensionMsg_TabTargetConnectionInfo& info,
                           const std::string& extension_id,
-                          const std::string& channel_name, int* port_id);
+                          const std::string& channel_name,
+                          int* port_id);
   void OpenChannelToTabOnUIThread(
-      int source_process_id, int source_routing_id, int receiver_port_id,
+      int source_process_id,
+      int receiver_port_id,
       const ExtensionMsg_TabTargetConnectionInfo& info,
-      const std::string& extension_id, const std::string& channel_name);
+      const std::string& extension_id,
+      const std::string& channel_name);
   void OnPostMessage(int port_id, const extensions::Message& message);
   void OnGetExtMessageBundle(const std::string& extension_id,
                              IPC::Message* reply_msg);

@@ -142,10 +142,12 @@ class MessageService : public BrowserContextKeyedAPI,
   // Same as above, but opens a channel to the tab with the given ID.  Messages
   // are restricted to that tab, so if there are multiple tabs in that process,
   // only the targeted tab will receive messages.
-  void OpenChannelToTab(
-      int source_process_id, int source_routing_id, int receiver_port_id,
-      int tab_id, int frame_id, const std::string& extension_id,
-      const std::string& channel_name);
+  void OpenChannelToTab(int source_process_id,
+                        int receiver_port_id,
+                        int tab_id,
+                        int frame_id,
+                        const std::string& extension_id,
+                        const std::string& channel_name);
 
   void OpenChannelToNativeApp(
       int source_process_id,

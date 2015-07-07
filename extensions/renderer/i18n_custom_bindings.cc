@@ -5,8 +5,8 @@
 #include "extensions/renderer/i18n_custom_bindings.h"
 
 #include "base/bind.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/public/renderer/render_view.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/message_bundle.h"
 #include "extensions/renderer/script_context.h"
@@ -41,15 +41,13 @@ void I18NCustomBindings::GetL10nMessage(
 
   L10nMessagesMap* l10n_messages = GetL10nMessagesMap(extension_id);
   if (!l10n_messages) {
-    // Get the current RenderView so that we can send a routed IPC message
-    // from the correct source.
-    content::RenderView* renderview = context()->GetRenderView();
-    if (!renderview)
+    content::RenderFrame* render_frame = context()->GetRenderFrame();
+    if (!render_frame)
       return;
 
     L10nMessagesMap messages;
     // A sync call to load message catalogs for current extension.
-    renderview->Send(
+    render_frame->Send(
         new ExtensionHostMsg_GetMessageBundle(extension_id, &messages));
 
     // Save messages we got.

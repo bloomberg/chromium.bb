@@ -268,10 +268,6 @@ bool TabHelper::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(TabHelper, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DidGetWebApplicationInfo,
                         OnDidGetWebApplicationInfo)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_InlineWebstoreInstall,
-                        OnInlineWebstoreInstall)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_GetAppInstallState,
-                        OnGetAppInstallState);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -281,6 +277,10 @@ bool TabHelper::OnMessageReceived(const IPC::Message& message,
                                   content::RenderFrameHost* render_frame_host) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TabHelper, message)
+  IPC_MESSAGE_HANDLER(ExtensionHostMsg_InlineWebstoreInstall,
+                      OnInlineWebstoreInstall)
+  IPC_MESSAGE_HANDLER(ExtensionHostMsg_GetAppInstallState,
+                      OnGetAppInstallState);
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_ContentScriptsExecuting,
                         OnContentScriptsExecuting)
     IPC_MESSAGE_UNHANDLED(handled = false)

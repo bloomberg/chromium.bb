@@ -8,7 +8,7 @@
 #include "chrome/common/extensions/api/webstore/webstore_api_constants.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "components/crx_file/id_util.h"
-#include "content/public/renderer/render_view.h"
+#include "content/public/renderer/render_frame.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/renderer/script_context.h"
@@ -57,8 +57,8 @@ WebstoreBindings::WebstoreBindings(ScriptContext* context)
 
 void WebstoreBindings::Install(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = context()->GetRenderView();
-  if (!render_view)
+  content::RenderFrame* render_frame = context()->GetRenderFrame();
+  if (!render_frame)
     return;
 
   // The first two arguments indicate whether or not there are install stage
@@ -90,12 +90,9 @@ void WebstoreBindings::Install(
 
   int install_id = g_next_install_id++;
 
-  Send(new ExtensionHostMsg_InlineWebstoreInstall(render_view->GetRoutingID(),
-                                                  install_id,
-                                                  GetRoutingID(),
-                                                  webstore_item_id,
-                                                  frame->document().url(),
-                                                  listener_mask));
+  Send(new ExtensionHostMsg_InlineWebstoreInstall(
+      render_frame->GetRoutingID(), install_id, GetRoutingID(),
+      webstore_item_id, frame->document().url(), listener_mask));
 
   args.GetReturnValue().Set(static_cast<int32_t>(install_id));
 }

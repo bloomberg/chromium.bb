@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
-#include "content/public/renderer/render_view.h"
+#include "content/public/renderer/render_frame.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/script_context.h"
 #include "v8/include/v8.h"
@@ -23,10 +23,8 @@ TabsCustomBindings::TabsCustomBindings(ScriptContext* context)
 
 void TabsCustomBindings::OpenChannelToTab(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  // Get the current RenderView so that we can send a routed IPC message from
-  // the correct source.
-  content::RenderView* renderview = context()->GetRenderView();
-  if (!renderview)
+  content::RenderFrame* render_frame = context()->GetRenderFrame();
+  if (!render_frame)
     return;
 
   // tabs_custom_bindings.js unwraps arguments to tabs.connect/sendMessage and
@@ -48,8 +46,8 @@ void TabsCustomBindings::OpenChannelToTab(
   std::string extension_id = *v8::String::Utf8Value(args[2]);
   std::string channel_name = *v8::String::Utf8Value(args[3]);
   int port_id = -1;
-  renderview->Send(new ExtensionHostMsg_OpenChannelToTab(
-    renderview->GetRoutingID(), info, extension_id, channel_name, &port_id));
+  render_frame->Send(new ExtensionHostMsg_OpenChannelToTab(
+      info, extension_id, channel_name, &port_id));
   args.GetReturnValue().Set(static_cast<int32_t>(port_id));
 }
 

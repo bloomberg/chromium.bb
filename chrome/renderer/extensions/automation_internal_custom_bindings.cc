@@ -10,6 +10,7 @@
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "chrome/common/extensions/manifest_handlers/automation.h"
 #include "content/public/child/v8_value_converter.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
@@ -131,7 +132,7 @@ void AutomationInternalCustomBindings::IsInteractPermitted(
 
 void AutomationInternalCustomBindings::GetRoutingID(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  int routing_id = context()->GetRenderView()->GetRoutingID();
+  int routing_id = context()->GetRenderFrame()->GetRenderView()->GetRoutingID();
   args.GetReturnValue().Set(v8::Integer::New(GetIsolate(), routing_id));
 }
 

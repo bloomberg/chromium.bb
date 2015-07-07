@@ -12,7 +12,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/child/v8_value_converter.h"
-#include "content/public/renderer/render_view.h"
+#include "content/public/renderer/render_frame.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest.h"
@@ -157,11 +157,11 @@ void AppBindings::GetInstallState(
     callback_id = args[0]->Int32Value();
   }
 
-  content::RenderView* render_view = context()->GetRenderView();
-  CHECK(render_view);
+  content::RenderFrame* render_frame = context()->GetRenderFrame();
+  CHECK(render_frame);
 
   Send(new ExtensionHostMsg_GetAppInstallState(
-      render_view->GetRoutingID(), context()->web_frame()->document().url(),
+      render_frame->GetRoutingID(), context()->web_frame()->document().url(),
       GetRoutingID(), callback_id));
 }
 

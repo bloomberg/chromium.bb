@@ -445,12 +445,10 @@ void MessageService::OpenChannelToNativeApp(
                                                  source_extension_id));
 
   // Get handle of the native view and pass it to the native messaging host.
-  content::RenderWidgetHost* render_widget_host =
-      content::RenderWidgetHost::FromID(source_process_id, source_routing_id);
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(source_process_id, source_routing_id);
   gfx::NativeView native_view =
-      (render_widget_host && render_widget_host->GetView())
-          ? render_widget_host->GetView()->GetNativeView()
-          : nullptr;
+      render_frame_host ? render_frame_host->GetNativeView() : nullptr;
 
   std::string error = kReceivingEndDoesntExistError;
   scoped_ptr<NativeMessageHost> native_host = NativeMessageHost::Create(
@@ -481,10 +479,12 @@ void MessageService::OpenChannelToNativeApp(
 #endif  // !(defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX))
 }
 
-void MessageService::OpenChannelToTab(
-    int source_process_id, int source_routing_id, int receiver_port_id,
-    int tab_id, int frame_id, const std::string& extension_id,
-    const std::string& channel_name) {
+void MessageService::OpenChannelToTab(int source_process_id,
+                                      int receiver_port_id,
+                                      int tab_id,
+                                      int frame_id,
+                                      const std::string& extension_id,
+                                      const std::string& channel_name) {
   content::RenderProcessHost* source =
       content::RenderProcessHost::FromID(source_process_id);
   if (!source)

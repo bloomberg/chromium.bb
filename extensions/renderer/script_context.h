@@ -27,7 +27,6 @@ class WebLocalFrame;
 
 namespace content {
 class RenderFrame;
-class RenderView;
 }
 
 namespace extensions {
@@ -95,10 +94,6 @@ class ScriptContext : public RequestSender::Source {
   // Returns the ID of the extension associated with this context, or empty
   // string if there is no such extension.
   const std::string& GetExtensionID() const;
-
-  // Returns the RenderView associated with this context. Can return NULL if the
-  // context is in the process of being destroyed.
-  content::RenderView* GetRenderView() const;
 
   // Returns the RenderFrame associated with this context. Can return NULL if
   // the context is in the process of being destroyed.
