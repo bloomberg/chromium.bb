@@ -18,28 +18,28 @@ changes are more focused.
     more important targets will be first, and unit tests will follow the
     corresponding target. If there's no clear ordering, consider
     alphabetical order.
-  * Targets and configs should be named using lowercase with underscores
-    separating words, unless there is a strong reason to do otherwise.
   * Test support libraries should be source sets named "test\_support".
     So "//ui/compositor:test\_support". Test support libraries should
     include as public deps the non-test-support version of the library
     so tests need only depend on the test\_support target (rather than
     both).
 
-Output names (the part after the colon in a label) of executables and
-shared libraries must be globally unique since they all go in the root
-directory. Prefer to do this by giving a target a short (possibly
-non-unique) name that makes writing dependencies clearer, and setting
-the `output_name` variable to something unique.
+Naming advice
 
-For example, it looks much better to write a dependency as
-`"//mojo/public/bindings"` rather than
-`"//mojo/public/bindings:mojo_bindings"`. So in the file
-`//mojo/public/bindings/BUILD.gn`: ``` shared_library("bindings") {  #
-Very non-unique name "bindings" makes the most sense in this context.
-output_name = "mojo_bindings"  # Give target a unique output name to
-avoid collisions.  ...  } ``` This will produce a file
-`mojo_bindings.so` in the root build directory.
+  * Targets and configs should be named using lowercase with underscores
+    separating words, unless there is a strong reason to do otherwise.
+  * Source sets, groups, and static libraries do not need globally unique names.
+    Prefer to give such targets short, non-redundant names without worrying
+    about global uniqueness. For example, it looks much better to write a
+    dependency as `"//mojo/public/bindings"` rather than
+    `"//mojo/public/bindings:mojo_bindings"
+  * Shared libraries (and by extension, components) must have globally unique
+    output names. Give such targets short non-unique names above, and then
+    provide a globally unique `output_name` for that target.
+  * Executables and tests should be given a globally unique name. Technically
+    only the output names must be unique, but since only the output names
+    appear in the shell and on bots, it's much less confusing if the name
+    matches the other places the executable appears.
 
 ### Configs
 
