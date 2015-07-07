@@ -18,8 +18,9 @@ cr.define('downloads', function() {
     /**
      * Sets the search text, updates related UIs, and tells the browser.
      * @param {string} searchText Text we're searching for.
+     * @private
      */
-    setSearchText: function(searchText) {
+    setSearchText_: function(searchText) {
       this.searchText_ = searchText;
 
       $('downloads-summary-text').textContent = this.searchText_ ?
@@ -33,8 +34,9 @@ cr.define('downloads', function() {
     /**
      * Called when all items need to be updated.
      * @param {!Array<!downloads.Data>} list A list of new download data.
+     * @private
      */
-    updateAll: function(list) {
+    updateAll_: function(list) {
       /** @private {!Array} */
       this.items_ = list;
 
@@ -42,7 +44,7 @@ cr.define('downloads', function() {
       noDownloadsOrResults.textContent = loadTimeData.getString(
           this.searchText_ ? 'no_search_results' : 'no_downloads');
 
-      var hasDownloads = this.size() > 0;
+      var hasDownloads = this.size_() > 0;
       this.node_.hidden = !hasDownloads;
       noDownloadsOrResults.hidden = hasDownloads;
 
@@ -50,23 +52,28 @@ cr.define('downloads', function() {
         $('clear-all').hidden = !hasDownloads || this.searchText_.length > 0;
     },
 
-    /** @return {number} The number of downloads shown on the page. */
-    size: function() {
+    /**
+     * @return {number} The number of downloads shown on the page.
+     * @private
+     */
+    size_: function() {
       return this.items_.length;
     },
 
-    clearAll: function() {
+    /** @private */
+    clearAll_: function() {
       if (loadTimeData.getBoolean('allow_deleting_history')) {
         chrome.send('clearAll');
-        this.setSearchText('');
+        this.setSearchText_('');
       }
     },
 
-    onLoad: function() {
+    /** @private */
+    onLoad_: function() {
       this.node_ = $('downloads-display');
 
       $('clear-all').onclick = function() {
-        this.clearAll();
+        this.clearAll_();
       }.bind(this);
 
       $('open-downloads-folder').onclick = function() {
@@ -84,20 +91,20 @@ cr.define('downloads', function() {
         $('clear-search').hidden = true;
         $('search-term').hidden = true;
         $('search-term').value = '';
-        this.setSearchText('');
+        this.setSearchText_('');
       }.bind(this);
 
       // TODO(dbeam): this previously used onsearch, which batches keystrokes
       // together. This should probably be re-instated eventually.
       $('search-term').oninput = function(e) {
-        this.setSearchText($('search-term').value);
+        this.setSearchText_($('search-term').value);
       }.bind(this);
 
       cr.ui.decorate('command', cr.ui.Command);
       document.addEventListener('canExecute', this.onCanExecute_.bind(this));
       document.addEventListener('command', this.onCommand_.bind(this));
 
-      this.setSearchText('');
+      this.setSearchText_('');
     },
 
     /**
@@ -106,8 +113,14 @@ cr.define('downloads', function() {
      */
     onCanExecute_: function(e) {
       e = /** @type {cr.ui.CanExecuteEvent} */(e);
-      e.canExecute = e.command.id != 'undo-command' ||
-                     $('search-term').contains(document.activeElement);
+      switch (e.command.id) {
+        case 'undo-command':
+          e.canExecute = !$('search-term').contains(document.activeElement);
+          break;
+        case 'clear-all-command':
+          e.canExecute = true;
+          break;
+      }
     },
 
     /**
@@ -118,26 +131,26 @@ cr.define('downloads', function() {
       if (e.command.id == 'undo-command')
         chrome.send('undo');
       else if (e.command.id == 'clear-all-command')
-        this.clearAll();
+        this.clearAll_();
     },
   };
 
   Manager.updateAll = function(list) {
-    Manager.getInstance().updateAll(list);
+    Manager.getInstance().updateAll_(list);
   };
 
   Manager.updateItem = function(item) {};
 
   Manager.setSearchText = function(searchText) {
-    Manager.getInstance().setSearchText(searchText);
+    Manager.getInstance().setSearchText_(searchText);
   };
 
   Manager.onLoad = function() {
-    Manager.getInstance().onLoad();
+    Manager.getInstance().onLoad_();
   };
 
   Manager.size = function() {
-    return Manager.getInstance().size();
+    return Manager.getInstance().size_();
   };
 
   return {Manager: Manager};

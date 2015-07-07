@@ -43,14 +43,14 @@ TEST_F('BaseDownloadsWebUITest', 'NoDownloadsAfterClearAll', function() {
 });
 
 TEST_F('BaseDownloadsWebUITest', 'PauseResumeFocus', function() {
-  var manager = downloads.Manager.getInstance();
-  assertGE(manager.size(), 0);
+  assertGE(downloads.Manager.size(), 0);
 
   var freshestDownload = this.createdDownloads[0];
-  freshestDownload.state = downloads.ItemView.States.IN_PROGRESS;
+  freshestDownload.state = downloads.States.IN_PROGRESS;
   freshestDownload.resume = false;
   downloads.Manager.updateItem(freshestDownload);
 
+  var manager = downloads.Manager.getInstance();
   var node = manager.idMap_[freshestDownload.id].view.node;
   var pause = node.querySelector('.pause');
   var resume = node.querySelector('.resume');
@@ -62,7 +62,7 @@ TEST_F('BaseDownloadsWebUITest', 'PauseResumeFocus', function() {
   pause.focus();
   assertEquals(document.activeElement, pause);
 
-  freshestDownload.state = downloads.ItemView.States.PAUSED;
+  freshestDownload.state = downloads.States.PAUSED;
   freshestDownload.resume = true;
   downloads.Manager.updateItem(freshestDownload);
 
@@ -77,17 +77,16 @@ TEST_F('BaseDownloadsWebUITest', 'DatesCollapse', function() {
     return displayDiv.querySelectorAll('.date-container:not([hidden])').length;
   }
 
-  var manager = downloads.Manager.getInstance();
-  var numDownloads = manager.size();
+  var numDownloads = downloads.Manager.size();
   assertGE(numDownloads, 2);
 
   expectEquals(1, datesShowing());
 
   var freshestId = this.createdDownloads[0].id;
   this.createDangerousDownload(freshestId + 1, Date.now());
-  manager.updateAll(this.createdDownloads);
+  downloads.Manager.updateAll(this.createdDownloads);
 
-  expectEquals(numDownloads + 1, manager.size());
+  expectEquals(numDownloads + 1, downloads.Manager.size());
   expectEquals(1, datesShowing());
 
   var firstContainer = document.querySelector('.date-container');
@@ -97,13 +96,13 @@ TEST_F('BaseDownloadsWebUITest', 'DatesCollapse', function() {
 });
 
 TEST_F('BaseDownloadsWebUITest', 'EmptyProgressStatusText', function() {
-  this.createdDownloads[0].state = downloads.ItemView.States.PAUSED;
+  this.createdDownloads[0].state = downloads.States.PAUSED;
   this.createdDownloads[0].progress_status_text = '';
   downloads.Manager.updateItem(this.createdDownloads[0]);  // Might assert().
 });
 
 TEST_F('BaseDownloadsWebUITest', 'EmptyLastStatusText', function() {
-  this.createdDownloads[0].state = downloads.ItemView.States.INTERRUPTED;
+  this.createdDownloads[0].state = downloads.States.INTERRUPTED;
   this.createdDownloads[0].last_reason_text = '';
   downloads.Manager.updateItem(this.createdDownloads[0]);  // Might assert().
 });

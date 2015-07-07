@@ -17,6 +17,7 @@
           '../../../../ui/webui/resources/js/cr/ui/focus_row.js',
           '../../../../ui/webui/resources/js/event_tracker.js',
           '../../../../ui/webui/resources/js/util.js',
+          'constants.js',
           'item.js',
           'item_view.js',
           'focus_row.js',

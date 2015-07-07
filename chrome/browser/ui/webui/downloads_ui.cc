@@ -90,6 +90,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
                      !profile->IsSupervised());
 
   source->SetJsonPath("strings.js");
+  source->AddResourcePath("constants.js", IDR_DOWNLOAD_CONSTANTS_JS);
 
   if (switches::MdDownloadsEnabled()) {
     source->AddResourcePath("manager.js", IDR_MD_DOWNLOAD_MANAGER_JS);

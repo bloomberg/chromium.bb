@@ -8,6 +8,11 @@
       'includes': ['../../../../third_party/closure_compiler/externs_js.gypi'],
     },
     {
+      'target_name': 'constants',
+      'dependencies': ['<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr'],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'item',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
@@ -22,6 +27,7 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
+        'constants',
         'externs',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -48,6 +54,7 @@
         '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:ui',
         '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:command',
         '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:focus_grid',
+        'constants',
         'item_view',
         'item',
         'focus_row',
