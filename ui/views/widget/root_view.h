@@ -152,10 +152,11 @@ class VIEWS_EXPORT RootView : public View,
   // |view| is the view receiving |event|. This function sends the event to all
   // the Views up the hierarchy that has |notify_enter_exit_on_child_| flag
   // turned on, but does not contain |sibling|.
-  void NotifyEnterExitOfDescendant(const ui::MouseEvent& event,
-                                   ui::EventType type,
-                                   View* view,
-                                   View* sibling);
+  ui::EventDispatchDetails NotifyEnterExitOfDescendant(
+      const ui::MouseEvent& event,
+      ui::EventType type,
+      View* view,
+      View* sibling) WARN_UNUSED_RESULT;
 
   // Overridden from ui::EventDispatcherDelegate:
   bool CanDispatchToTarget(ui::EventTarget* target) override;
