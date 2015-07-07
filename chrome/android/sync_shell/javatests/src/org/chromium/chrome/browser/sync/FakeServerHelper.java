@@ -188,6 +188,26 @@ public class FakeServerHelper {
     }
 
     /**
+     * Modify the specifics of an entity on the fake Sync server.
+     *
+     * @param id the ID of the entity whose specifics to modify
+     * @param entitySpecifics the new specifics proto for the entity
+     */
+    public void modifyEntitySpecifics(final String id, final EntitySpecifics entitySpecifics) {
+        checkFakeServerInitialized("useFakeServer must be called before data modification.");
+        ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
+            @Override
+            public Void call() {
+                // The protocol buffer is serialized as a byte array because it can be easily
+                // deserialized from this format in native code.
+                nativeModifyEntitySpecifics(mNativeFakeServerHelperAndroid, sNativeFakeServer, id,
+                        MessageNano.toByteArray(entitySpecifics));
+                return null;
+            }
+        });
+    }
+
+    /**
      * Injects a bookmark into the fake Sync server.
      *
      * @param title the title of the bookmark to inject
@@ -285,6 +305,8 @@ public class FakeServerHelper {
     private native void nativeInjectUniqueClientEntity(
             long nativeFakeServerHelperAndroid, long nativeFakeServer, String name,
             byte[] serializedEntitySpecifics);
+    private native void nativeModifyEntitySpecifics(long nativeFakeServerHelperAndroid,
+            long nativeFakeServer, String id, byte[] serializedEntitySpecifics);
     private native void nativeInjectBookmarkEntity(
             long nativeFakeServerHelperAndroid, long nativeFakeServer, String title, String url,
             String parentId);

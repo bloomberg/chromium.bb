@@ -55,6 +55,13 @@ class FakeServerHelperAndroid {
                                 jstring name,
                                 jbyteArray serialized_entity_specifics);
 
+  // Modifies the entity with |id| on |fake_server|.
+  void ModifyEntitySpecifics(JNIEnv* env,
+                             jobject obj,
+                             jlong fake_server,
+                             jstring name,
+                             jbyteArray serialized_entity_specifics);
+
   // Injects a BookmarkEntity into |fake_server|.
   void InjectBookmarkEntity(JNIEnv* env,
                             jobject obj,
@@ -87,6 +94,11 @@ class FakeServerHelperAndroid {
 
  private:
   virtual ~FakeServerHelperAndroid();
+
+  // Deserializes |serialized_entity_specifics| into |entity_specifics|.
+  void DeserializeEntitySpecifics(JNIEnv* env,
+                                  jbyteArray serialized_entity_specifics,
+                                  sync_pb::EntitySpecifics& entity_specifics);
 
   // Creates a bookmark entity.
   scoped_ptr<fake_server::FakeServerEntity> CreateBookmarkEntity(

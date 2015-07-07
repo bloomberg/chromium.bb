@@ -33,6 +33,7 @@ public class AutofillTest extends SyncTestBase {
 
     private static final String STREET = "1600 Amphitheatre Pkwy";
     private static final String CITY = "Mountain View";
+    private static final String MODIFIED_CITY = "Sunnyvale";
     private static final String STATE = "CA";
     private static final String ZIP = "94043";
 
@@ -81,6 +82,25 @@ public class AutofillTest extends SyncTestBase {
         assertEquals("The wrong zip was found for the autofill.", ZIP, autofill.zip);
     }
 
+    // Test syncing an autofill profile modification from server to client.
+    @LargeTest
+    @Feature({"Sync"})
+    public void testDownloadAutofillModification() throws Exception {
+        // Add the entity to test modifying.
+        EntitySpecifics specifics = addServerAutofillProfile(STREET, CITY, STATE, ZIP);
+        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        assertServerAutofillProfileCountWithName(1, STREET);
+        assertClientAutofillProfileCount(1);
+
+        // Modify on server, sync, and verify modification locally.
+        Autofill autofill = getClientAutofillProfiles().get(0);
+        specifics.autofillProfile.addressHomeCity = MODIFIED_CITY;
+        mFakeServerHelper.modifyEntitySpecifics(autofill.id, specifics);
+        SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
+        Autofill modifiedAutofill = getClientAutofillProfiles().get(0);
+        assertEquals("The city was not modified.", MODIFIED_CITY, modifiedAutofill.city);
+    }
+
     // Test syncing an autofill profile deletion from server to client.
     @LargeTest
     @Feature({"Sync"})
@@ -111,7 +131,8 @@ public class AutofillTest extends SyncTestBase {
         assertClientAutofillProfileCount(0);
     }
 
-    private void addServerAutofillProfile(String street, String city, String state, String zip) {
+    private EntitySpecifics addServerAutofillProfile(
+            String street, String city, String state, String zip) {
         EntitySpecifics specifics = new EntitySpecifics();
         AutofillProfileSpecifics profile = new AutofillProfileSpecifics();
         profile.guid = GUID;
@@ -122,6 +143,7 @@ public class AutofillTest extends SyncTestBase {
         profile.addressHomeZip = zip;
         specifics.autofillProfile = profile;
         mFakeServerHelper.injectUniqueClientEntity(street /* name */, specifics);
+        return specifics;
     }
 
     private List<Autofill> getClientAutofillProfiles() throws JSONException {
