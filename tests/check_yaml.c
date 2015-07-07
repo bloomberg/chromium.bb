@@ -396,7 +396,7 @@ main(int argc, char *argv[]) {
 
   if (event.data.stream_start.encoding != YAML_UTF8_ENCODING)
     error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
-		  "UTF-8 encoding expected (%s instead)",
+		  "UTF-8 encoding expected (actual %s)",
 		  encoding_names[event.data.stream_start.encoding]);
   yaml_event_delete(&event);
 
