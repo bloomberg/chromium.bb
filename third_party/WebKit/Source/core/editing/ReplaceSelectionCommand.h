@@ -57,8 +57,8 @@ public:
 private:
     ReplaceSelectionCommand(Document&, PassRefPtrWillBeRawPtr<DocumentFragment>, CommandOptions, EditAction);
 
-    virtual void doApply() override;
-    virtual EditAction editingAction() const override;
+    void doApply() override;
+    EditAction editingAction() const override;
 
     class InsertedNodes {
         STACK_ALLOCATED();

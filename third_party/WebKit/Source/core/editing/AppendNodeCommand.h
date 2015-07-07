@@ -42,8 +42,8 @@ public:
 private:
     AppendNodeCommand(PassRefPtrWillBeRawPtr<ContainerNode> parent, PassRefPtrWillBeRawPtr<Node>);
 
-    virtual void doApply() override;
-    virtual void doUnapply() override;
+    void doApply() override;
+    void doUnapply() override;
 
     RefPtrWillBeMember<ContainerNode> m_parent;
     RefPtrWillBeMember<Node> m_node;

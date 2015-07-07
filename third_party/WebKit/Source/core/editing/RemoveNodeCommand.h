@@ -42,8 +42,8 @@ public:
 private:
     explicit RemoveNodeCommand(PassRefPtrWillBeRawPtr<Node>, ShouldAssumeContentIsAlwaysEditable);
 
-    virtual void doApply() override;
-    virtual void doUnapply() override;
+    void doApply() override;
+    void doUnapply() override;
 
     RefPtrWillBeMember<Node> m_node;
     RefPtrWillBeMember<ContainerNode> m_parent;

@@ -44,9 +44,9 @@ public:
 private:
     explicit WrapContentsInDummySpanCommand(PassRefPtrWillBeRawPtr<Element>);
 
-    virtual void doApply() override;
-    virtual void doUnapply() override;
-    virtual void doReapply() override;
+    void doApply() override;
+    void doUnapply() override;
+    void doReapply() override;
     void executeApply();
 
     RefPtrWillBeMember<Element> m_element;

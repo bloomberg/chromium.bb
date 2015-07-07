@@ -219,8 +219,8 @@ public:
     {
         return adoptPtrWillBeNoop(new HTMLTextDecorationEquivalent(primitiveValue, tagName));
     }
-    virtual bool propertyExistsInStyle(const StylePropertySet*) const override;
-    virtual bool valueIsPresentInStyle(HTMLElement*, StylePropertySet*) const override;
+    bool propertyExistsInStyle(const StylePropertySet*) const override;
+    bool valueIsPresentInStyle(HTMLElement*, StylePropertySet*) const override;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { HTMLElementEquivalent::trace(visitor); }
 
@@ -259,10 +259,10 @@ public:
         return adoptPtrWillBeNoop(new HTMLAttributeEquivalent(propertyID, attrName));
     }
 
-    virtual bool matches(const Element* element) const override { return HTMLElementEquivalent::matches(element) && element->hasAttribute(m_attrName); }
-    virtual bool hasAttribute() const override { return true; }
-    virtual bool valueIsPresentInStyle(HTMLElement*, StylePropertySet*) const override;
-    virtual void addToStyle(Element*, EditingStyle*) const override;
+    bool matches(const Element* element) const override { return HTMLElementEquivalent::matches(element) && element->hasAttribute(m_attrName); }
+    bool hasAttribute() const override { return true; }
+    bool valueIsPresentInStyle(HTMLElement*, StylePropertySet*) const override;
+    void addToStyle(Element*, EditingStyle*) const override;
     virtual PassRefPtrWillBeRawPtr<CSSValue> attributeValueAsCSSValue(Element*) const;
     inline const QualifiedName& attributeName() const { return m_attrName; }
 
@@ -319,7 +319,7 @@ public:
     {
         return adoptPtrWillBeNoop(new HTMLFontSizeEquivalent());
     }
-    virtual PassRefPtrWillBeRawPtr<CSSValue> attributeValueAsCSSValue(Element*) const override;
+    PassRefPtrWillBeRawPtr<CSSValue> attributeValueAsCSSValue(Element*) const override;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { HTMLAttributeEquivalent::trace(visitor); }
 

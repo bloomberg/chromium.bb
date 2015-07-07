@@ -36,7 +36,7 @@ class VisibleSelection;
 
 class TextInsertionBaseCommand : public CompositeEditCommand {
 public:
-    virtual ~TextInsertionBaseCommand() { };
+    ~TextInsertionBaseCommand() override { };
 
 protected:
     explicit TextInsertionBaseCommand(Document&);

@@ -42,15 +42,15 @@ public:
         return adoptRefWillBeNoop(new InsertListCommand(document, listType));
     }
 
-    virtual bool preservesTypingStyle() const override { return true; }
+    bool preservesTypingStyle() const override { return true; }
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
     InsertListCommand(Document&, Type);
 
-    virtual void doApply() override;
-    virtual EditAction editingAction() const override { return EditActionInsertList; }
+    void doApply() override;
+    EditAction editingAction() const override { return EditActionInsertList; }
 
     HTMLUListElement* fixOrphanedListChild(Node*);
     bool selectionHasListOfType(const VisibleSelection&, const HTMLQualifiedName&);

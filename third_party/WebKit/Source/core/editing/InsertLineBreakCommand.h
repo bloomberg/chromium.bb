@@ -40,9 +40,9 @@ public:
 private:
     explicit InsertLineBreakCommand(Document&);
 
-    virtual void doApply() override;
+    void doApply() override;
 
-    virtual bool preservesTypingStyle() const override;
+    bool preservesTypingStyle() const override;
 
     bool shouldUseBreakElement(const Position&);
 };

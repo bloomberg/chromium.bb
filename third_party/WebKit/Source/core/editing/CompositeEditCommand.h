@@ -44,10 +44,10 @@ class EditCommandComposition final : public UndoStep {
 public:
     static PassRefPtrWillBeRawPtr<EditCommandComposition> create(Document*, const VisibleSelection&, const VisibleSelection&, EditAction);
 
-    virtual bool belongsTo(const LocalFrame&) const override;
-    virtual void unapply() override;
-    virtual void reapply() override;
-    virtual EditAction editingAction() const override { return m_editAction; }
+    bool belongsTo(const LocalFrame&) const override;
+    void unapply() override;
+    void reapply() override;
+    EditAction editingAction() const override { return m_editAction; }
     void append(SimpleEditCommand*);
 
     const VisibleSelection& startingSelection() const { return m_startingSelection; }
@@ -73,7 +73,7 @@ private:
 
 class CompositeEditCommand : public EditCommand {
 public:
-    virtual ~CompositeEditCommand();
+    ~CompositeEditCommand() override;
 
     void apply();
     bool isFirstCommand(EditCommand* command) { return !m_commands.isEmpty() && m_commands.first() == command; }
@@ -170,7 +170,7 @@ protected:
     WillBeHeapVector<RefPtrWillBeMember<EditCommand>> m_commands;
 
 private:
-    virtual bool isCompositeEditCommand() const override final { return true; }
+    bool isCompositeEditCommand() const final { return true; }
 
     RefPtrWillBeMember<EditCommandComposition> m_composition;
 };

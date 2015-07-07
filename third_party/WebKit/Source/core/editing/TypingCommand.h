@@ -96,12 +96,12 @@ private:
 
     static PassRefPtrWillBeRawPtr<TypingCommand> lastTypingCommandIfStillOpenForTyping(LocalFrame*);
 
-    virtual void doApply() override;
-    virtual EditAction editingAction() const override;
-    virtual bool isTypingCommand() const override;
-    virtual bool preservesTypingStyle() const override { return m_preservesTypingStyle; }
-    virtual void setShouldRetainAutocorrectionIndicator(bool retain) override { m_shouldRetainAutocorrectionIndicator = retain; }
-    virtual bool shouldStopCaretBlinking() const override { return true; }
+    void doApply() override;
+    EditAction editingAction() const override;
+    bool isTypingCommand() const override;
+    bool preservesTypingStyle() const override { return m_preservesTypingStyle; }
+    void setShouldRetainAutocorrectionIndicator(bool retain) override { m_shouldRetainAutocorrectionIndicator = retain; }
+    bool shouldStopCaretBlinking() const override { return true; }
     void setShouldPreventSpellChecking(bool prevent) { m_shouldPreventSpellChecking = prevent; }
 
     static void updateSelectionIfDifferentFromCurrentSelection(TypingCommand*, LocalFrame*);

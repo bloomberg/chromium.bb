@@ -40,8 +40,8 @@ public:
 private:
     explicit RemoveFormatCommand(Document&);
 
-    virtual void doApply() override;
-    virtual EditAction editingAction() const override { return EditActionUnspecified; }
+    void doApply() override;
+    EditAction editingAction() const override { return EditActionUnspecified; }
 };
 
 } // namespace blink

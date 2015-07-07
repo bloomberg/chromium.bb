@@ -45,7 +45,7 @@ public:
         return adoptRefWillBeNoop(new FormatBlockCommand(document, tagName));
     }
 
-    virtual bool preservesTypingStyle() const override { return true; }
+    bool preservesTypingStyle() const override { return true; }
 
     static Element* elementForFormatBlockCommand(Range*);
     bool didApply() const { return m_didApply; }
@@ -53,9 +53,9 @@ public:
 private:
     FormatBlockCommand(Document&, const QualifiedName& tagName);
 
-    virtual void formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection) override;
-    virtual void formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtrWillBeRawPtr<HTMLElement>&) override;
-    virtual EditAction editingAction() const override { return EditActionFormatBlock; }
+    void formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection) override;
+    void formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtrWillBeRawPtr<HTMLElement>&) override;
+    EditAction editingAction() const override { return EditActionFormatBlock; }
 
     bool m_didApply;
 };

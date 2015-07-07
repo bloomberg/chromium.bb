@@ -228,7 +228,7 @@ public:
     void setShouldShowBlockCursor(bool);
 
     // VisibleSelection::ChangeObserver interface.
-    virtual void didChangeVisibleSelection() override;
+    void didChangeVisibleSelection() override;
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -39,20 +39,20 @@ public:
         return adoptRefWillBeNoop(new IndentOutdentCommand(document, type));
     }
 
-    virtual bool preservesTypingStyle() const override { return true; }
+    bool preservesTypingStyle() const override { return true; }
 
 private:
     IndentOutdentCommand(Document&, EIndentType);
 
-    virtual EditAction editingAction() const override { return m_typeOfAction == Indent ? EditActionIndent : EditActionOutdent; }
+    EditAction editingAction() const override { return m_typeOfAction == Indent ? EditActionIndent : EditActionOutdent; }
 
     void outdentRegion(const VisiblePosition&, const VisiblePosition&);
     void outdentParagraph();
     bool tryIndentingAsListItem(const Position&, const Position&);
     void indentIntoBlockquote(const Position&, const Position&, RefPtrWillBeRawPtr<HTMLElement>&);
 
-    virtual void formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection) override;
-    virtual void formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtrWillBeRawPtr<HTMLElement>& blockquoteForNextIndent) override;
+    void formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection) override;
+    void formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtrWillBeRawPtr<HTMLElement>& blockquoteForNextIndent) override;
 
     EIndentType m_typeOfAction;
 };

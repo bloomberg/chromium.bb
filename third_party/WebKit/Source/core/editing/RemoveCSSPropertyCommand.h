@@ -44,10 +44,10 @@ public:
 
 private:
     RemoveCSSPropertyCommand(Document&, PassRefPtrWillBeRawPtr<Element>, CSSPropertyID);
-    virtual ~RemoveCSSPropertyCommand();
+    ~RemoveCSSPropertyCommand() override;
 
-    virtual void doApply() override;
-    virtual void doUnapply() override;
+    void doApply() override;
+    void doUnapply() override;
 
     RefPtrWillBeMember<Element> m_element;
     CSSPropertyID m_property;

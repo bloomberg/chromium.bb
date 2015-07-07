@@ -45,7 +45,7 @@ class TextCheckerClient;
 class SpellCheckRequest final : public TextCheckingRequest {
 public:
     static PassRefPtrWillBeRawPtr<SpellCheckRequest> create(TextCheckingTypeMask, TextCheckingProcessType, PassRefPtrWillBeRawPtr<Range> checkingRange, PassRefPtrWillBeRawPtr<Range> paragraphRange, int requestNumber = 0);
-    virtual ~SpellCheckRequest();
+    ~SpellCheckRequest() override;
 
     PassRefPtrWillBeRawPtr<Range> checkingRange() const { return m_checkingRange; }
     PassRefPtrWillBeRawPtr<Range> paragraphRange() const { return m_paragraphRange; }
@@ -56,9 +56,9 @@ public:
     void requesterDestroyed();
 #endif
 
-    virtual const TextCheckingRequestData& data() const override;
-    virtual void didSucceed(const Vector<TextCheckingResult>&) override;
-    virtual void didCancel() override;
+    const TextCheckingRequestData& data() const override;
+    void didSucceed(const Vector<TextCheckingResult>&) override;
+    void didCancel() override;
 
     int requestNumber() const { return m_requestNumber; }
 

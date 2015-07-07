@@ -42,7 +42,7 @@ public:
 private:
     RemoveNodePreservingChildrenCommand(PassRefPtrWillBeRawPtr<Node>, ShouldAssumeContentIsAlwaysEditable);
 
-    virtual void doApply() override;
+    void doApply() override;
 
     RefPtrWillBeMember<Node> m_node;
     ShouldAssumeContentIsAlwaysEditable m_shouldAssumeContentIsAlwaysEditable;

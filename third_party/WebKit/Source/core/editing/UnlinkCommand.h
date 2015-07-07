@@ -40,8 +40,8 @@ public:
 private:
     explicit UnlinkCommand(Document&);
 
-    virtual void doApply() override;
-    virtual EditAction editingAction() const override { return EditActionUnlink; }
+    void doApply() override;
+    EditAction editingAction() const override { return EditActionUnlink; }
 };
 
 } // namespace blink
