@@ -35,6 +35,10 @@
 #include <X11/X.h>
 #include <X11/keysym.h>
 
+#ifndef XK_dead_greek
+#define XK_dead_greek 0xfe8c
+#endif
+
 #include <unordered_map>
 
 #include "base/lazy_instance.h"
@@ -799,6 +803,43 @@ const struct {
   // Braille KeySyms map 1:1 to Unicode
 
   // Sinhala KeySyms map 1:1 to Unicode
+
+  // Dead keys mapped to Unicode combining characters (mostly) for composition,
+  // used in combination with the UI Events 'Dead' key. For the X KeySyms that
+  // have no combining accent, we use a character whose name has mnemonic value.
+  {XK_dead_grave,              0x0300},  // COMBINING GRAVE ACCENT
+  {XK_dead_acute,              0x0301},  // COMBINING ACUTE ACCENT
+  {XK_dead_circumflex,         0x0302},  // COMBINING CIRCUMFLEX ACCENT
+  {XK_dead_tilde,              0x0303},  // COMBINING TILDE
+  {XK_dead_macron,             0x0304},  // COMBINING MACRON
+  {XK_dead_breve,              0x0306},  // COMBINING BREVE
+  {XK_dead_abovedot,           0x0307},  // COMBINING DOT ABOVE
+  {XK_dead_diaeresis,          0x0308},  // COMBINING DIAERESIS
+  {XK_dead_abovering,          0x030A},  // COMBINING RING ABOVE
+  {XK_dead_doubleacute,        0x030B},  // COMBINING DOUBLE ACUTE ACCENT
+  {XK_dead_caron,              0x030C},  // COMBINING CARON
+  {XK_dead_cedilla,            0x0327},  // COMBINING CEDILLA
+  {XK_dead_ogonek,             0x0328},  // COMBINING OGONEK
+  {XK_dead_iota,               0x0345},  // COMBINING GREEK YPOGEGRAMMENI
+  {XK_dead_voiced_sound,       0x3099},  // COMB. KATAKANA-HIRAGANA VOICED
+  {XK_dead_semivoiced_sound,   0x309A},  // COMB. KATAKANA-HIRAGANA SEMI-VOICED
+  {XK_dead_belowdot,           0x0323},  // COMBINING DOT BELOW
+  {XK_dead_hook,               0x0309},  // COMBINING HOOK ABOVE
+  {XK_dead_horn,               0x031B},  // COMBINING HORN
+  {XK_dead_stroke,             0x0338},  // COMBINING LONG SOLIDUS OVERLAY
+  {XK_dead_abovecomma,         0x0313},  // COMBINING COMMA ABOVE
+  {XK_dead_abovereversedcomma, 0x0314},  // COMBINING REVERSED COMMA ABOVE
+  {XK_dead_doublegrave,        0x030F},  // COMBINING DOUBLE GRAVE ACCENT
+  {XK_dead_belowring,          0x0325},  // COMBINING RING BELOW
+  {XK_dead_belowmacron,        0x0331},  // COMBINING MACRON BELOW
+  {XK_dead_belowcircumflex,    0x032D},  // COMBINING CIRCUMFLEX ACCENT BELOW
+  {XK_dead_belowtilde,         0x0330},  // COMBINING TILDE BELOW
+  {XK_dead_belowbreve,         0x032E},  // COMBINING BREVE BELOW
+  {XK_dead_belowdiaeresis,     0x0324},  // COMBINING DIAERESIS BELOW
+  {XK_dead_invertedbreve,      0x0311},  // COMBINING INVERTED BREVE
+  {XK_dead_belowcomma,         0x0326},  // COMBINING COMMA BELOW
+  {XK_dead_currency,           0x00A4},  // CURRENCY SIGN
+  {XK_dead_greek,              0x037E},  // GREEK QUESTION MARK
 };
 
 class KeySymToUnicode {
