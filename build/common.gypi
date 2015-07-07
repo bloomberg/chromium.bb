@@ -3086,6 +3086,13 @@
         # TODO: Enable on Windows too, http://crbug.com/404525
         'variables': { 'clang_warning_flags': ['-Wexit-time-destructors']},
       }],
+      ['"<!(python <(DEPTH)/tools/clang/scripts/update.py --print-revision)"!="239674-1" and '
+       '"<!(python <(DEPTH)/tools/clang/scripts/update.py --print-revision)"!="239765-1"', {
+        # TODO(thakis): Move this to the global clang_warning_flags block once
+        # clang is rolled far enough that the pinned clang understands this flag
+        # TODO(thakis): Enable this, crbug.com/507717
+        'variables': { 'clang_warning_flags': ['-Wno-shift-negative-value']},
+      }],
       ['chromium_code==0', {
         'conditions': [
           [ 'os_posix==1 and OS!="mac" and OS!="ios"', {
