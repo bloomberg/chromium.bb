@@ -299,6 +299,11 @@ public class ContextualSearchManager extends ContextualSearchObservable
     }
 
     @Override
+    public boolean isShowingSearchPanel() {
+        return mSearchPanelDelegate.isShowing();
+    }
+
+    @Override
     public void setPreferenceState(boolean enabled) {
         PrefServiceBridge.getInstance().setContextualSearchState(enabled);
     }

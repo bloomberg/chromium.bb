@@ -373,7 +373,9 @@ public class LayoutManagerDocument extends LayoutManager
 
         @Override
         public boolean isSwipeEnabled(ScrollDirection direction) {
-            return direction == ScrollDirection.UP && mContextualSearchDelegate != null;
+            return direction == ScrollDirection.UP
+                    && mContextualSearchDelegate != null
+                    && mContextualSearchDelegate.isShowingSearchPanel();
         }
 
         private boolean isCompatabilityMode() {
