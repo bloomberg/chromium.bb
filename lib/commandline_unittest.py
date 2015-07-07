@@ -522,14 +522,12 @@ class TestRunInsideChroot(cros_test_lib.MockTestCase):
     sys.argv = self.orig_argv
 
   def _VerifyRunInsideChroot(self, expected_cmd, expected_chroot_args=None,
-                             expected_extra_env=None, log_level_args=None,
-                             **kwargs):
+                             log_level_args=None, **kwargs):
     """Run RunInsideChroot, and verify it raises with expected values.
 
     Args:
       expected_cmd: Command that should be executed inside the chroot.
       expected_chroot_args: Args that should be passed as chroot args.
-      expected_extra_env: Environmental variables to set in the chroot.
       log_level_args: Args that set the log level of cros_sdk.
       kwargs: Additional args to pass to RunInsideChroot().
     """
@@ -547,9 +545,14 @@ class TestRunInsideChroot(cros_test_lib.MockTestCase):
 
     self.assertEqual(expected_cmd, cm.exception.cmd)
     self.assertEqual(expected_chroot_args, cm.exception.chroot_args)
-    self.assertEqual(expected_extra_env, cm.exception.extra_env)
+
+  def testRunInsideChroot(self):
+    """Test we can restart inside the chroot."""
+    self.mock_inside_chroot.return_value = False
+    self._VerifyRunInsideChroot(['/inside/cmd', 'arg1', 'arg2'])
 
   def testRunInsideChrootLogLevel(self):
+    """Test chroot restart with properly inherited log-level."""
     self.cmd.options.log_level = 'notice'
     self.mock_inside_chroot.return_value = False
     self._VerifyRunInsideChroot(['/inside/cmd', 'arg1', 'arg2'],
