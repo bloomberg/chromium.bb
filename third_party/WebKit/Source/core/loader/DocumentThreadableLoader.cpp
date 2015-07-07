@@ -86,7 +86,7 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     , m_resourceLoaderOptions(resourceLoaderOptions)
     , m_forceDoNotAllowStoredCredentials(false)
     , m_securityOrigin(m_resourceLoaderOptions.securityOrigin)
-    , m_sameOriginRequest(securityOrigin()->canRequest(request.url()))
+    , m_sameOriginRequest(securityOrigin()->canRequestNoSuborigin(request.url()))
     , m_crossOriginNonSimpleRequest(false)
     , m_isUsingDataConsumerHandle(false)
     , m_async(blockingBehavior == LoadAsynchronously)

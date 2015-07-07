@@ -1007,7 +1007,7 @@ void XMLHttpRequest::createRequest(PassRefPtr<FormData> httpBody, ExceptionState
         }
     }
 
-    m_sameOriginRequest = securityOrigin()->canRequest(m_url);
+    m_sameOriginRequest = securityOrigin()->canRequestNoSuborigin(m_url);
 
     // We also remember whether upload events should be allowed for this request in case the upload listeners are
     // added after the request is started.
