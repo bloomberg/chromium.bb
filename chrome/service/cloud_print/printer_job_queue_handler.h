@@ -31,6 +31,7 @@ struct JobDetails {
 
   std::string job_id_;
   std::string job_title_;
+  std::string job_owner_;
 
   std::string print_ticket_url_;
   std::string print_data_url_;

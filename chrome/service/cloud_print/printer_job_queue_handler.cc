@@ -28,6 +28,7 @@ JobDetails::~JobDetails() {}
 void JobDetails::Clear() {
   job_id_.clear();
   job_title_.clear();
+  job_owner_.clear();
   print_ticket_.clear();
   print_ticket_mime_type_.clear();
   print_data_mime_type_.clear();
@@ -58,6 +59,7 @@ void PrinterJobQueueHandler::ConstructJobDetailsFromJson(
 
   job_data->GetString(kIdValue, &job_details->job_id_);
   job_data->GetString(kTitleValue, &job_details->job_title_);
+  job_data->GetString(kOwnerValue, &job_details->job_owner_);
 
   job_data->GetString(kTicketUrlValue, &job_details->print_ticket_url_);
   job_data->GetString(kFileUrlValue, &job_details->print_data_url_);

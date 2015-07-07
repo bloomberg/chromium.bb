@@ -51,6 +51,7 @@ extern const char kFileUrlValue[];
 extern const char kPrinterListValue[];
 extern const char kJobListValue[];
 extern const char kTitleValue[];
+extern const char kOwnerValue[];
 extern const char kPrinterCapsHashValue[];
 extern const char kTagsValue[];
 extern const char kXMPPJidValue[];

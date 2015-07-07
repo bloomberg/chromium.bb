@@ -792,12 +792,15 @@ void PrinterJobHandler::DoPrint(const JobDetails& job_details,
   DCHECK(job_spooler_.get());
   if (!job_spooler_.get())
     return;
-  base::string16 document_name = printing::SimplifyDocumentTitle(
-      base::UTF8ToUTF16(job_details.job_title_));
-  if (document_name.empty()) {
-    document_name = printing::SimplifyDocumentTitle(
-        l10n_util::GetStringUTF16(IDS_DEFAULT_PRINT_DOCUMENT_TITLE));
-  }
+
+  base::string16 document_name =
+      job_details.job_title_.empty()
+          ? l10n_util::GetStringUTF16(IDS_DEFAULT_PRINT_DOCUMENT_TITLE)
+          : base::UTF8ToUTF16(job_details.job_title_);
+
+  document_name = printing::FormatDocumentTitleWithOwner(
+      base::UTF8ToUTF16(job_details.job_owner_), document_name);
+
   UMA_HISTOGRAM_ENUMERATION("CloudPrint.JobHandlerEvent",
                             JOB_HANDLER_START_SPOOLING, JOB_HANDLER_MAX);
   spooling_start_time_ = base::Time::Now();

@@ -6,23 +6,57 @@
 
 #include <algorithm>
 
+#include "base/logging.h"
+
+#include "base/strings/utf_string_conversions.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "ui/gfx/text_elider.h"
 
-namespace {
-const int kMaxDocumentTitleLength = 50;
-}
-
 namespace printing {
 
-base::string16 SimplifyDocumentTitle(const base::string16& title) {
+namespace {
+
+const size_t kMaxDocumentTitleLength = 80;
+
+}  // namespace
+
+base::string16 SimplifyDocumentTitleWithLength(const base::string16& title,
+                                               size_t length) {
   base::string16 no_controls(title);
   no_controls.erase(
       std::remove_if(no_controls.begin(), no_controls.end(), &u_iscntrl),
       no_controls.end());
   base::string16 result;
-  gfx::ElideString(no_controls, kMaxDocumentTitleLength, &result);
+  gfx::ElideString(no_controls, static_cast<int>(length), &result);
   return result;
+}
+
+base::string16 FormatDocumentTitleWithOwnerAndLength(
+    const base::string16& owner,
+    const base::string16& title,
+    size_t length) {
+  const base::string16 separator = base::ASCIIToUTF16(": ");
+  DCHECK(separator.size() < length);
+
+  base::string16 short_title =
+      SimplifyDocumentTitleWithLength(owner, length - separator.size());
+  short_title += separator;
+  if (short_title.size() < length) {
+    short_title +=
+        SimplifyDocumentTitleWithLength(title, length - short_title.size());
+  }
+
+  return short_title;
+}
+
+base::string16 SimplifyDocumentTitle(const base::string16& title) {
+  return SimplifyDocumentTitleWithLength(title, kMaxDocumentTitleLength);
+}
+
+base::string16 FormatDocumentTitleWithOwner(const base::string16& owner,
+                                            const base::string16& title) {
+  return FormatDocumentTitleWithOwnerAndLength(owner, title,
+                                               kMaxDocumentTitleLength);
 }
 
 }  // namespace printing

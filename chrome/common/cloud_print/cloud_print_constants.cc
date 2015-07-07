@@ -42,6 +42,7 @@ const char kFileUrlValue[] = "fileUrl";
 const char kPrinterListValue[] = "printers";
 const char kJobListValue[] = "jobs";
 const char kTitleValue[] = "title";
+const char kOwnerValue[] = "ownerId";
 const char kPrinterCapsHashValue[] = "capsHash";
 const char kTagsValue[] = "tags";
 const char kXMPPJidValue[] = "xmpp_jid";

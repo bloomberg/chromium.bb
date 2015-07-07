@@ -14,6 +14,19 @@ namespace printing {
 PRINTING_EXPORT base::string16 SimplifyDocumentTitle(
     const base::string16& title);
 
+PRINTING_EXPORT base::string16 SimplifyDocumentTitleWithLength(
+    const base::string16& title,
+    size_t length);
+
+PRINTING_EXPORT base::string16 FormatDocumentTitleWithOwner(
+    const base::string16& owner,
+    const base::string16& title);
+
+PRINTING_EXPORT base::string16 FormatDocumentTitleWithOwnerAndLength(
+    const base::string16& owner,
+    const base::string16& title,
+    size_t length);
+
 }  // namespace printing
 
 #endif  // PRINTING_PRINTING_UTILS_H_
