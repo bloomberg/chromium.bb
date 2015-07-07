@@ -196,6 +196,20 @@ void DisplayChangeObserver::OnDisplayModeChanged(
       if (Shell::GetInstance()->display_manager()->GetSelectedModeForDisplayId(
               state->display_id(), &mode)) {
         device_scale_factor = mode.device_scale_factor;
+      } else {
+        // For monitors that are 40 inches and 4K or above, set
+        // |device_scale_factor| to 2x. For margin purposes, 100 is subtracted
+        // from the value of |k2xThreshouldSizeSquaredFor4KInMm|
+        const int k2xThreshouldSizeSquaredFor4KInMm =
+            (40 * 40 * kInchInMm * kInchInMm) - 100;
+        gfx::Vector2d size_in_vec(state->physical_size().width(),
+                                  state->physical_size().height());
+        if (size_in_vec.LengthSquared() > k2xThreshouldSizeSquaredFor4KInMm &&
+            mode_info->size().width() >= kMinimumWidthFor4K) {
+          // Make sure that additional device scale factors table has 2x.
+          DCHECK_EQ(2.0f, kAdditionalDeviceScaleFactorsFor4k[1]);
+          device_scale_factor = 2.0f;
+        }
       }
     }
     gfx::Rect display_bounds(state->origin(), mode_info->size());
