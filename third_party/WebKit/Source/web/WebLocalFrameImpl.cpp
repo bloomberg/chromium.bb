@@ -1595,8 +1595,13 @@ void WebLocalFrameImpl::registerTestInterface(const WebString& name, WebTestInte
 
 v8::Local<v8::Value> WebLocalFrameImpl::createTestInterface(const AtomicString& name)
 {
-    if (WebTestInterfaceFactory* factory = m_testInterfaces.get(name))
-        return factory->createInstance(mainWorldScriptContext());
+    if (WebTestInterfaceFactory* factory = m_testInterfaces.get(name)) {
+        ScriptState* scriptState = ScriptState::forMainWorld(frame());
+        ASSERT(scriptState->contextIsValid());
+        v8::EscapableHandleScope handleScope(scriptState->isolate());
+        ScriptState::Scope scope(scriptState);
+        return handleScope.Escape(factory->createInstance(scriptState->context()));
+    }
     return v8::Local<v8::Value>();
 }
 
