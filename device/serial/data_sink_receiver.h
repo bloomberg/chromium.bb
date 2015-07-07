@@ -18,8 +18,7 @@
 namespace device {
 
 class DataSinkReceiver : public base::RefCounted<DataSinkReceiver>,
-                         public serial::DataSink,
-                         public mojo::ErrorHandler {
+                         public serial::DataSink {
  public:
   typedef base::Callback<void(scoped_ptr<ReadOnlyBuffer>)> ReadyCallback;
   typedef base::Callback<void(int32_t error)> CancelCallback;
@@ -54,7 +53,7 @@ class DataSinkReceiver : public base::RefCounted<DataSinkReceiver>,
               const mojo::Callback<void(uint32_t, int32_t)>& callback) override;
   void ClearError() override;
 
-  void OnConnectionError() override;
+  void OnConnectionError();
 
   // Dispatches data to |ready_callback_|.
   void RunReadyCallback();

@@ -79,7 +79,8 @@ DataSinkReceiver::DataSinkReceiver(
       buffer_in_use_(NULL),
       shut_down_(false),
       weak_factory_(this) {
-  binding_.set_error_handler(this);
+  binding_.set_connection_error_handler(
+      base::Bind(&DataSinkReceiver::OnConnectionError, base::Unretained(this)));
 }
 
 void DataSinkReceiver::ShutDown() {

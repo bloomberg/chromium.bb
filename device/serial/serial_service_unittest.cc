@@ -39,7 +39,7 @@ class FailToOpenIoHandler : public TestSerialIoHandler {
 
 }  // namespace
 
-class SerialServiceTest : public testing::Test, public mojo::ErrorHandler {
+class SerialServiceTest : public testing::Test {
  public:
   SerialServiceTest() : connected_(false), expecting_error_(false) {}
 
@@ -48,7 +48,7 @@ class SerialServiceTest : public testing::Test, public mojo::ErrorHandler {
     StopMessageLoop();
   }
 
-  void OnConnectionError() override {
+  void OnConnectionError() {
     StopMessageLoop();
     EXPECT_TRUE(expecting_error_);
   }
@@ -89,7 +89,8 @@ class SerialServiceTest : public testing::Test, public mojo::ErrorHandler {
     service->Connect(path, serial::ConnectionOptions::New(),
                      mojo::GetProxy(&connection), mojo::GetProxy(&sink),
                      mojo::GetProxy(&source), source_client.Pass());
-    connection.set_error_handler(this);
+    connection.set_connection_error_handler(base::Bind(
+        &SerialServiceTest::OnConnectionError, base::Unretained(this)));
     expecting_error_ = !expecting_success;
     connection->GetInfo(
         base::Bind(&SerialServiceTest::OnGotInfo, base::Unretained(this)));
@@ -114,7 +115,8 @@ class SerialServiceTest : public testing::Test, public mojo::ErrorHandler {
 TEST_F(SerialServiceTest, GetDevices) {
   mojo::InterfacePtr<serial::SerialService> service;
   SerialServiceImpl::Create(NULL, NULL, mojo::GetProxy(&service));
-  service.set_error_handler(this);
+  service.set_connection_error_handler(base::Bind(
+      &SerialServiceTest::OnConnectionError, base::Unretained(this)));
   mojo::Array<serial::DeviceInfoPtr> result;
   service->GetDevices(
       base::Bind(&SerialServiceTest::StoreDevices, base::Unretained(this)));

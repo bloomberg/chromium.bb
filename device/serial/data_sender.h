@@ -17,7 +17,7 @@
 namespace device {
 
 // A DataSender sends data to a DataSink.
-class DataSender : public mojo::ErrorHandler {
+class DataSender {
  public:
   typedef base::Callback<void(uint32_t bytes_sent)> DataSentCallback;
   typedef base::Callback<void(uint32_t bytes_sent, int32_t error)>
@@ -30,7 +30,7 @@ class DataSender : public mojo::ErrorHandler {
              uint32_t buffer_size,
              int32_t fatal_error_value);
 
-  ~DataSender() override;
+  ~DataSender();
 
   // Starts an asynchronous send of |data|. If the send completes successfully,
   // |callback| will be called. Otherwise, |error_callback| will be called with
@@ -55,8 +55,8 @@ class DataSender : public mojo::ErrorHandler {
   // Invoked when a PendingSend fails with |error|.
   void SendFailed(int32_t error);
 
-  // mojo::ErrorHandler override.
-  void OnConnectionError() override;
+  // mojo error handler
+  void OnConnectionError();
 
   // Dispatches a cancel callback if one is pending.
   void RunCancelCallback();

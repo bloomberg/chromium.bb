@@ -52,7 +52,8 @@ DataSender::DataSender(mojo::InterfacePtr<serial::DataSink> sink,
     : sink_(sink.Pass()),
       fatal_error_value_(fatal_error_value),
       shut_down_(false) {
-  sink_.set_error_handler(this);
+  sink_.set_connection_error_handler(
+      base::Bind(&DataSender::OnConnectionError, base::Unretained(this)));
 }
 
 DataSender::~DataSender() {

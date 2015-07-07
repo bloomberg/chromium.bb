@@ -19,8 +19,7 @@ namespace device {
 
 // A DataReceiver receives data from a DataSource.
 class DataReceiver : public base::RefCounted<DataReceiver>,
-                     public serial::DataSourceClient,
-                     public mojo::ErrorHandler {
+                     public serial::DataSourceClient {
  public:
   typedef base::Callback<void(scoped_ptr<ReadOnlyBuffer>)> ReceiveDataCallback;
   typedef base::Callback<void(int32_t error)> ReceiveErrorCallback;
@@ -53,8 +52,8 @@ class DataReceiver : public base::RefCounted<DataReceiver>,
   // Invoked by the DataSource transmit data.
   void OnData(mojo::Array<uint8_t> data) override;
 
-  // mojo::ErrorHandler override. Calls ShutDown().
-  void OnConnectionError() override;
+  // mojo error handler
+  void OnConnectionError();
 
   // Invoked by the PendingReceive to report that the user is done with the
   // receive buffer, having read |bytes_read| bytes from it.

@@ -16,7 +16,6 @@
 #include "device/serial/serial_service_impl.h"
 #include "device/serial/test_serial_io_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_ptr.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 
@@ -34,7 +33,7 @@ class FakeSerialDeviceEnumerator : public SerialDeviceEnumerator {
 
 }  // namespace
 
-class SerialConnectionTest : public testing::Test, public mojo::ErrorHandler {
+class SerialConnectionTest : public testing::Test {
  public:
   enum Event {
     EVENT_NONE,
@@ -72,7 +71,8 @@ class SerialConnectionTest : public testing::Test, public mojo::ErrorHandler {
             base::ThreadTaskRunnerHandle::Get()),
         scoped_ptr<SerialDeviceEnumerator>(new FakeSerialDeviceEnumerator),
         mojo::GetProxy(&service));
-    service.set_error_handler(this);
+    service.set_connection_error_handler(base::Bind(
+        &SerialConnectionTest::OnConnectionError, base::Unretained(this)));
     mojo::InterfacePtr<serial::DataSink> sink;
     mojo::InterfacePtr<serial::DataSource> source;
     mojo::InterfacePtr<serial::DataSourceClient> source_client;
@@ -86,7 +86,8 @@ class SerialConnectionTest : public testing::Test, public mojo::ErrorHandler {
     receiver_ =
         new DataReceiver(source.Pass(), source_client_request.Pass(),
                          kBufferSize, serial::RECEIVE_ERROR_DISCONNECTED);
-    connection_.set_error_handler(this);
+    connection_.set_connection_error_handler(base::Bind(
+        &SerialConnectionTest::OnConnectionError, base::Unretained(this)));
     connection_->GetInfo(
         base::Bind(&SerialConnectionTest::StoreInfo, base::Unretained(this)));
     WaitForEvent(EVENT_GOT_INFO);
@@ -169,7 +170,7 @@ class SerialConnectionTest : public testing::Test, public mojo::ErrorHandler {
     EventReceived(EVENT_RECEIVE_ERROR);
   }
 
-  void OnConnectionError() override {
+  void OnConnectionError() {
     EventReceived(EVENT_ERROR);
     FAIL() << "Connection error";
   }

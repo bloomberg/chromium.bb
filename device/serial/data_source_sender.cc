@@ -85,8 +85,10 @@ DataSourceSender::DataSourceSender(
       shut_down_(false),
       weak_factory_(this) {
   DCHECK(!ready_callback.is_null() && !error_callback.is_null());
-  binding_.set_error_handler(this);
-  client_.set_error_handler(this);
+  binding_.set_connection_error_handler(
+      base::Bind(&DataSourceSender::OnConnectionError, base::Unretained(this)));
+  client_.set_connection_error_handler(
+      base::Bind(&DataSourceSender::OnConnectionError, base::Unretained(this)));
 }
 
 void DataSourceSender::ShutDown() {

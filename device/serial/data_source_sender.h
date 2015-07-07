@@ -19,8 +19,7 @@ namespace device {
 // A DataSourceSender is an interface between a source of data and a
 // DataSourceClient.
 class DataSourceSender : public base::RefCounted<DataSourceSender>,
-                         public serial::DataSource,
-                         public mojo::ErrorHandler {
+                         public serial::DataSource {
  public:
   typedef base::Callback<void(scoped_ptr<WritableBuffer>)> ReadyCallback;
   typedef base::Callback<void()> ErrorCallback;
@@ -49,8 +48,8 @@ class DataSourceSender : public base::RefCounted<DataSourceSender>,
   void Init(uint32_t buffer_size) override;
   void Resume() override;
   void ReportBytesReceived(uint32_t bytes_sent) override;
-  // Invoked in the event of a connection error. Calls DispatchFatalError().
-  void OnConnectionError() override;
+  // mojo error handler. Calls DispatchFatalError().
+  void OnConnectionError();
 
   // Gets more data to send to the DataSourceClient.
   void GetMoreData();

@@ -117,9 +117,11 @@ DataReceiver::DataReceiver(
       fatal_error_value_(fatal_error_value),
       shut_down_(false),
       weak_factory_(this) {
-  source_.set_error_handler(this);
+  source_.set_connection_error_handler(
+      base::Bind(&DataReceiver::OnConnectionError, base::Unretained(this)));
   source_->Init(buffer_size);
-  client_.set_error_handler(this);
+  client_.set_connection_error_handler(
+      base::Bind(&DataReceiver::OnConnectionError, base::Unretained(this)));
 }
 
 bool DataReceiver::Receive(const ReceiveDataCallback& callback,
