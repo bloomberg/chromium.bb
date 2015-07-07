@@ -96,7 +96,7 @@ class CrosDeployTest(cros_test_lib.MockTempDirTestCase,
     self.assertTrue(self.run_inside_chroot_mock.called)
     self.VerifyDeployParameters(self.DEVICE, self.PACKAGES)
 
-  def testDeployErrorDebug(self):
+  def testDeployError(self):
     """Tests that DeployErrors are passed through."""
     with self.OutputCapturer():
       self.SetupCommandMock([self.DEVICE] + self.PACKAGES)

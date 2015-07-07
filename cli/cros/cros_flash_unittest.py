@@ -140,7 +140,7 @@ class CrosFlashTest(cros_test_lib.MockTempDirTestCase,
     self.VerifyFlashParameters(self.DEVICE, self.IMAGE,
                                brick_name='//bricks/foo')
 
-  def testFlashErrorDebug(self):
+  def testFlashError(self):
     """Tests that FlashErrors are passed through."""
     with self.OutputCapturer():
       self.SetupCommandMock([self.DEVICE, self.IMAGE])
