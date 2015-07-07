@@ -5,11 +5,10 @@
 /**
  * Controller for spinner.
  * @param {!HTMLElement} element
- * @param {!DirectoryModel} directoryModel
  * @constructor
  * @extends {cr.EventTarget}
  */
-function SpinnerController(element, directoryModel) {
+function SpinnerController(element) {
   /**
    * The container element of the file list.
    * @type {!HTMLElement}
@@ -19,29 +18,39 @@ function SpinnerController(element, directoryModel) {
   this.element_ = element;
 
   /**
-   * Directory model.
-   * @type {!DirectoryModel}
-   * @const
+   * @type {number}
    * @private
    */
-  this.directoryModel_ = directoryModel;
+  this.timeoutId_ = 0;
 
   /**
    * @type {number}
    * @private
    */
-  this.timeoutId_ = 0;
+  this.blinkHideTimeoutId_ = 0;
 }
 
 SpinnerController.prototype.__proto__ = cr.EventTarget.prototype;
 
 /**
- * Shows the spinner.
+ * Blinks the spinner for a short period of time.
+ */
+SpinnerController.prototype.blink = function() {
+  this.element_.hidden = false;
+  clearTimeout(this.blinkHideTimeoutId_);
+  this.blinkHideTimeoutId_ = setTimeout(function() {
+    this.element_.hidden = true;
+    this.blinkHideTimeoutId_ = 0;
+  }.bind(this), 1000);
+};
+
+/**
+ * Shows the spinner until hide is called.
  */
 SpinnerController.prototype.show = function() {
-  if (!this.directoryModel_.isScanning())
-    return;
   this.element_.hidden = false;
+  clearTimeout(this.blinkHideTimeoutId_);
+  this.blinkHideTimeoutId_ = 0;
   clearTimeout(this.timeoutId_);
   this.timeoutId_ = 0;
   var spinnerShownEvent = new Event('spinner-shown');
@@ -52,21 +61,27 @@ SpinnerController.prototype.show = function() {
  * Hides the spinner.
  */
 SpinnerController.prototype.hide = function() {
-  if (this.directoryModel_.isScanning() &&
-      this.directoryModel_.getFileList().length == 0) {
+  // If the current spinner is a blink, then it will hide by itself shortly.
+  if (this.blinkHideTimeoutId_)
     return;
-  }
+
   this.element_.hidden = true;
   clearTimeout(this.timeoutId_);
   this.timeoutId_ = 0;
 };
 
 /**
- * Shows the spinner after 500ms.
+ * Shows the spinner after 500ms (unless it's already visible).
  */
 SpinnerController.prototype.showLater = function() {
-  if (!this.element_.hidden)
+  if (!this.element_.hidden) {
+    // If there is an ongoing blink, then keep it visible until hide() is
+    // called.
+    clearTimeout(this.blinkHideTimeoutId_);
+    this.blinkHideTimeoutId_ = 0;
     return;
+  }
+
   clearTimeout(this.timeoutId_);
   this.timeoutId_ = setTimeout(this.show.bind(this), 500);
 };

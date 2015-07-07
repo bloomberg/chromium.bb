@@ -1433,7 +1433,8 @@ CommandHandler.COMMANDS_['refresh'] = /** @type {Command} */ ({
    * @param {!FileManager} fileManager FileManager to use.
    */
   execute: function(event, fileManager) {
-    // TODO(mtomasz): Implement refreshing.
+    fileManager.directoryModel.rescan(true /* refresh */);
+    fileManager.spinnerController.blink();
   },
   canExecute: function(event, fileManager) {
     var currentDirEntry = fileManager.directoryModel.getCurrentDirEntry();

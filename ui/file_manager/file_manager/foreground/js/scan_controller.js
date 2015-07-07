@@ -133,7 +133,8 @@ ScanController.prototype.onScanStarted_ = function() {
     this.scanUpdatedTimer_ = 0;
   }
 
-  this.spinnerController_.showLater();
+  if (this.directoryModel_.isScanning())
+    this.spinnerController_.showLater();
 };
 
 /**
@@ -147,7 +148,7 @@ ScanController.prototype.onScanCompleted_ = function() {
 
   if (this.commandHandler_)
     this.commandHandler_.updateAvailability();
-  this.spinnerController_.hide();
+  this.hideSpinner_();
 
   if (this.scanUpdatedTimer_) {
     clearTimeout(this.scanUpdatedTimer_);
@@ -186,7 +187,7 @@ ScanController.prototype.onScanUpdated_ = function() {
     // We need to hide the spinner only once.
     if (!this.scanUpdatedAtLeastOnceOrCompleted_) {
       this.scanUpdatedAtLeastOnceOrCompleted_ = true;
-      this.spinnerController_.hide();
+      this.hideSpinner_();
     }
 
     // Update the UI.
@@ -209,7 +210,7 @@ ScanController.prototype.onScanCancelled_ = function() {
 
   if (this.commandHandler_)
     this.commandHandler_.updateAvailability();
-  this.spinnerController_.hide();
+  this.hideSpinner_();
   if (this.scanCompletedTimer_) {
     clearTimeout(this.scanCompletedTimer_);
     this.scanCompletedTimer_ = 0;
@@ -261,4 +262,15 @@ ScanController.prototype.onSpinnerShown_ = function() {
     this.listContainer_.endBatchUpdates();
     this.listContainer_.startBatchUpdates();
   }
+};
+
+/**
+ * @private
+ */
+ScanController.prototype.hideSpinner_ = function() {
+  if (this.directoryModel_.isScanning() &&
+      this.directoryModel_.getFileList().length == 0) {
+    return;
+  }
+  this.spinnerController_.hide();
 };

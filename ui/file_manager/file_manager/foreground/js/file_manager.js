@@ -341,6 +341,12 @@ FileManager.prototype = /** @struct */ {
     return this.taskController_;
   },
   /**
+   * @return {SpinnerController}
+   */
+  get spinnerController() {
+    return this.spinnerController_;
+  },
+  /**
    * @return {FileOperationManager}
    */
   get fileOperationManager() {
@@ -976,7 +982,7 @@ FileManager.prototype = /** @struct */ {
 
     // Create spinner controller.
     this.spinnerController_ = new SpinnerController(
-        this.ui_.listContainer.spinner, this.directoryModel_);
+        this.ui_.listContainer.spinner);
     this.spinnerController_.show();
 
     // Create dialog action controller.
