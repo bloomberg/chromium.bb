@@ -37592,6 +37592,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.EventHandledRatioType.Fetch"
+    enum="ServiceWorkerEventHandleRatioType">
+  <owner>kinuko@chromium.org</owner>
+  <summary>
+    Records how many of fetch events are handled compared with the number of
+    events that are fired for a ServiceWorker.  Recorded each time the
+    ServiceWorker is stopped.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.FetchEvent.MainResource.Status"
     enum="ServiceWorkerStatusCode">
   <owner>falken@chromium.org</owner>
@@ -37827,6 +37837,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ServiceWorker.UnhandledEventRatio" units="percent">
   <owner>kinuko@chromium.org</owner>
+  <obsolete>
+    Deprecated 2015-06 in favor of ServiceWorker.EventHandledStatus*.
+  </obsolete>
   <summary>
     Records the ratio of unhandled events to all events that are dispatched to
     each ServiceWorker.  Recorded when each ServiceWorkerVersion is destructed.
@@ -66441,6 +66454,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="MIGRATION_OK"/>
   <int value="1" label="MIGRATION_NOT_NECESSARY"/>
   <int value="2" label="MIGRATION_ERROR_FAILED"/>
+</enum>
+
+<enum name="ServiceWorkerEventHandleRatioType" type="int">
+  <int value="0" label="None"/>
+  <int value="1" label="Some"/>
+  <int value="2" label="All"/>
 </enum>
 
 <enum name="ServiceWorkerReadResponseResult" type="int">

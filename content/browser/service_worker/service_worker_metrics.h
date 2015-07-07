@@ -73,6 +73,13 @@ class ServiceWorkerMetrics {
     NUM_STOP_STATUS_TYPES
   };
 
+  enum EventType {
+    EVENT_TYPE_FETCH,
+    // Add new events to record here.
+
+    NUM_EVENT_TYPES
+  };
+
   // Used for ServiceWorkerDiskCache.
   static void CountInitDiskCacheResult(bool result);
   static void CountReadResponseResult(ReadResponseResult result);
@@ -110,9 +117,12 @@ class ServiceWorkerMetrics {
   static void RecordActivateEventStatus(ServiceWorkerStatusCode status);
   static void RecordInstallEventStatus(ServiceWorkerStatusCode status);
 
-  // Records the ratio of unhandled events to the all events fired during
-  // the lifetime of ServiceWorker.
-  static void RecordEventStatus(size_t fired_events, size_t handled_events);
+  // Records how much of dispatched events are handled while a Service
+  // Worker is awake (i.e. after it is woken up until it gets stopped).
+  static void RecordEventHandledRatio(const GURL& scope,
+                                      EventType event,
+                                      size_t handled_events,
+                                      size_t fired_events);
 
   // Records the result of dispatching a fetch event to a service worker.
   static void RecordFetchEventStatus(bool is_main_resource,

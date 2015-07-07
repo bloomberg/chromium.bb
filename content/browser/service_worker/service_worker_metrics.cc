@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/strings/string_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/user_metrics.h"
@@ -20,6 +21,25 @@ void RecordURLMetricOnUI(const GURL& url) {
   GetContentClient()->browser()->RecordURLMetric(
       "ServiceWorker.ControlledPageUrl", url);
 }
+
+bool ShouldExcludeForHistogram(const GURL& scope) {
+  // Exclude NTP scope from UMA for now as it tends to dominate the stats
+  // and makes the results largely skewed.
+  // TOOD(kinuko): This should be temporary, revisit this once we have
+  // better idea about what should be excluded in the UMA.
+  // (UIThreadSearchTermsData::GoogleBaseURLValue() returns the google base
+  // URL, but not available in content layer)
+  const char google_like_scope_prefix[] = "https://www.google.";
+  return base::StartsWith(scope.spec(), google_like_scope_prefix,
+                          base::CompareCase::INSENSITIVE_ASCII);
+}
+
+enum EventHandledRatioType {
+  EVENT_HANDLED_NONE,
+  EVENT_HANDLED_SOME,
+  EVENT_HANDLED_ALL,
+  NUM_EVENT_HANDLED_RATIO_TYPE,
+};
 
 }  // namespace
 
@@ -122,13 +142,21 @@ void ServiceWorkerMetrics::RecordInstallEventStatus(
                             SERVICE_WORKER_ERROR_MAX_VALUE);
 }
 
-void ServiceWorkerMetrics::RecordEventStatus(size_t fired_events,
-                                             size_t handled_events) {
-  if (!fired_events)
+void ServiceWorkerMetrics::RecordEventHandledRatio(const GURL& scope,
+                                                   EventType event,
+                                                   size_t handled_events,
+                                                   size_t fired_events) {
+  if (!fired_events || ShouldExcludeForHistogram(scope))
     return;
-  int unhandled_ratio = (fired_events - handled_events) * 100 / fired_events;
-  UMA_HISTOGRAM_PERCENTAGE("ServiceWorker.UnhandledEventRatio",
-                           unhandled_ratio);
+  EventHandledRatioType type = EVENT_HANDLED_SOME;
+  if (fired_events == handled_events)
+    type = EVENT_HANDLED_ALL;
+  else if (handled_events == 0)
+    type = EVENT_HANDLED_NONE;
+  // For now Fetch is the only type that is recorded.
+  DCHECK_EQ(EVENT_TYPE_FETCH, event);
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.EventHandledRatioType.Fetch", type,
+                            NUM_EVENT_HANDLED_RATIO_TYPE);
 }
 
 void ServiceWorkerMetrics::RecordFetchEventStatus(

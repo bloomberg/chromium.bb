@@ -4,6 +4,9 @@
 
 #include "content/browser/service_worker/service_worker_version.h"
 
+#include <map>
+#include <string>
+
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
@@ -395,15 +398,20 @@ const int ServiceWorkerVersion::kRequestTimeoutMinutes = 5;
 
 class ServiceWorkerVersion::Metrics {
  public:
+  using EventType = ServiceWorkerMetrics::EventType;
   explicit Metrics(ServiceWorkerVersion* owner) : owner_(owner) {}
   ~Metrics() {
-    ServiceWorkerMetrics::RecordEventStatus(fired_events_, handled_events_);
+    for (const auto& ev : event_stats_) {
+      ServiceWorkerMetrics::RecordEventHandledRatio(owner_->scope(), ev.first,
+                                                    ev.second.handled_events,
+                                                    ev.second.fired_events);
+    }
   }
 
-  void RecordEventStatus(bool handled) {
-    ++fired_events_;
+  void RecordEventHandledStatus(EventType event, bool handled) {
+    event_stats_[event].fired_events++;
     if (handled)
-      ++handled_events_;
+      event_stats_[event].handled_events++;
   }
 
   void NotifyStopping() {
@@ -438,9 +446,13 @@ class ServiceWorkerVersion::Metrics {
   }
 
  private:
+  struct EventStat {
+    size_t fired_events = 0;
+    size_t handled_events = 0;
+  };
+
   ServiceWorkerVersion* owner_;
-  size_t fired_events_ = 0;
-  size_t handled_events_ = 0;
+  std::map<EventType, EventStat> event_stats_;
   ServiceWorkerMetrics::StopWorkerStatus stop_status_ =
       ServiceWorkerMetrics::STOP_STATUS_STOPPING;
 
@@ -516,7 +528,6 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       context_(context),
       script_cache_map_(this, context),
       ping_controller_(new PingController(this)),
-      metrics_(new Metrics(this)),
       weak_factory_(this) {
   DCHECK(context_);
   DCHECK(registration);
@@ -1344,7 +1355,8 @@ void ServiceWorkerVersion::OnFetchEventFinished(
 
   // TODO(kinuko): Record other event statuses too.
   const bool handled = (result == SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE);
-  metrics_->RecordEventStatus(handled);
+  metrics_->RecordEventHandledStatus(ServiceWorkerMetrics::EVENT_TYPE_FETCH,
+                                     handled);
 
   scoped_refptr<ServiceWorkerVersion> protect(this);
   callback->Run(SERVICE_WORKER_OK, result, response);
@@ -1747,6 +1759,8 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
 }
 
 void ServiceWorkerVersion::StartWorkerInternal(bool pause_after_download) {
+  if (!metrics_)
+    metrics_.reset(new Metrics(this));
   if (!timeout_timer_.IsRunning())
     StartTimeoutTimer();
   if (running_status() == STOPPED) {
@@ -2118,6 +2132,9 @@ void ServiceWorkerVersion::OnStoppedInternal(
     EmbeddedWorkerInstance::Status old_status) {
   DCHECK_EQ(STOPPED, running_status());
   scoped_refptr<ServiceWorkerVersion> protect(this);
+
+  DCHECK(metrics_);
+  metrics_.reset();
 
   bool should_restart = !is_redundant() && !start_callbacks_.empty() &&
                         (old_status != EmbeddedWorkerInstance::STARTING);
