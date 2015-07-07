@@ -16,7 +16,7 @@ from telemetry.story import story_set as story_set_module
 data_path = os.path.join(
     util.GetChromiumSrcDir(), 'content', 'test', 'data', 'gpu')
 
-wait_timeout = 20  # seconds
+wait_timeout = 60  # seconds
 
 harness_script = r"""
   var domAutomationController = {};
