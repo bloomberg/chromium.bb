@@ -89,6 +89,14 @@
             "group_name": "ShowPromoUntilDismissed"
         }
     ],
+    "SyncBackingDatabase32K": [
+        {
+            "group_name": "Enabled"
+        },
+        {
+            "group_name": "Disabled"
+        }
+    ],
     "UwSInterstitialStatus": [
         {
             "group_name": "On"
