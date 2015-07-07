@@ -61,7 +61,7 @@ public class EmptyChromeContextMenuItemDelegate implements ChromeContextMenuItem
     }
 
     @Override
-    public void onSaveToClipboard(String text, boolean isUrl) {
+    public void onSaveToClipboard(String text, int clipboardType) {
     }
 
     @Override

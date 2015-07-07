@@ -623,13 +623,21 @@ public class ChromeTab extends Tab {
         }
 
         @Override
-        public void onSaveToClipboard(String text, boolean isUrl) {
-            if (isUrl) {
-                RecordUserAction.record("MobileContextMenuCopyLinkAddress");
-            } else {
-                RecordUserAction.record("MobileContextMenuCopyLinkText");
+        public void onSaveToClipboard(String text, int clipboardType) {
+            switch (clipboardType) {
+                case CLIPBOARD_TYPE_LINK_URL:
+                    RecordUserAction.record("MobileContextMenuCopyLinkAddress");
+                    break;
+                case CLIPBOARD_TYPE_LINK_TEXT:
+                    RecordUserAction.record("MobileContextMenuCopyLinkText");
+                    break;
+                case CLIPBOARD_TYPE_IMAGE_URL:
+                    RecordUserAction.record("MobileContextMenuCopyImageLinkAddress");
+                    break;
+                default:
+                    assert false;
             }
-            super.onSaveToClipboard(text, isUrl);
+            super.onSaveToClipboard(text, clipboardType);
         }
 
         @Override

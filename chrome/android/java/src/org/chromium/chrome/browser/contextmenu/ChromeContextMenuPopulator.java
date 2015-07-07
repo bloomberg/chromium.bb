@@ -158,11 +158,14 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             }
             mDelegate.onLoadOriginalImage();
         } else if (itemId == R.id.contextmenu_copy_link_address_text) {
-            mDelegate.onSaveToClipboard(params.getUnfilteredLinkUrl(), true);
+            mDelegate.onSaveToClipboard(params.getUnfilteredLinkUrl(),
+                    ChromeContextMenuItemDelegate.CLIPBOARD_TYPE_LINK_URL);
         } else if (itemId == R.id.contextmenu_copy_email_address) {
-            mDelegate.onSaveToClipboard(MailTo.parse(params.getLinkUrl()).getTo(), false);
+            mDelegate.onSaveToClipboard(MailTo.parse(params.getLinkUrl()).getTo(),
+                    ChromeContextMenuItemDelegate.CLIPBOARD_TYPE_LINK_URL);
         } else if (itemId == R.id.contextmenu_copy_link_text) {
-            mDelegate.onSaveToClipboard(params.getLinkText(), false);
+            mDelegate.onSaveToClipboard(
+                    params.getLinkText(), ChromeContextMenuItemDelegate.CLIPBOARD_TYPE_LINK_TEXT);
         } else if (itemId == R.id.contextmenu_save_image) {
             if (mDelegate.startDownload(params.getSrcUrl(), false)) {
                 helper.startContextMenuDownload(
@@ -181,7 +184,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         } else if (itemId == R.id.contextmenu_copy_image) {
             mDelegate.onSaveImageToClipboard(params.getSrcUrl());
         } else if (itemId == R.id.contextmenu_copy_image_url) {
-            mDelegate.onSaveToClipboard(params.getSrcUrl(), true);
+            mDelegate.onSaveToClipboard(
+                    params.getSrcUrl(), ChromeContextMenuItemDelegate.CLIPBOARD_TYPE_IMAGE_URL);
         } else {
             assert false;
         }

@@ -325,7 +325,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         }
 
         @Override
-        public void onSaveToClipboard(String text, boolean isUrl) {
+        public void onSaveToClipboard(String text, int clipboardType) {
             mClipboard.setText(text, text);
         }
 
