@@ -48,21 +48,12 @@ For more information of cros build usage:
     parser.add_argument(
         'packages', help='Packages to install. You can specify '
         '[category/]package[:slot] or the path to the binary package. '
-        'Use @installed to update all installed packages (requires --update). '
-        'If no packages listed, uses the current brick main package.',
-        nargs='*')
-    target = parser.add_mutually_exclusive_group()
-    target.add_argument(
+        'Use @installed to update all installed packages (requires --update).',
+        nargs='+')
+    parser.add_argument(
         '--board',
         help='The board to use. By default it is automatically detected. You '
         'can override the detected board with this option.')
-    target.add_argument(
-        '--brick', type='brick_path',
-        help='The brick to use. Will be detected from CWD if possible and take '
-        'precedence over the detected board.')
-    target.add_argument(
-        '--blueprint',
-        help='The blueprint to use. Takes precedence over board and brick.')
     parser.add_argument(
         '--no-strip', dest='strip', action='store_false', default=True,
         help='Do not run strip_package to filter out preset paths in the '
@@ -115,8 +106,6 @@ For more information of cros build usage:
         self.options.device,
         self.options.packages,
         board=self.options.board,
-        brick_name=self.options.brick or self.curr_brick_locator,
-        blueprint=self.options.blueprint,
         emerge=self.options.emerge,
         update=self.options.update,
         deep=self.options.deep,

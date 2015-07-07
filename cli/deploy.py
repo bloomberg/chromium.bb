@@ -12,8 +12,6 @@ import json
 import os
 
 from chromite.cli import command
-from chromite.lib import blueprint_lib
-from chromite.lib import brick_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import operation
@@ -898,18 +896,16 @@ def _UnmergePackages(pkgs, device, root):
     _Unmerge(device, pkg, root)
 
 
-def Deploy(device, packages, board=None, brick_name=None, blueprint=None,
-           emerge=True, update=False, deep=False, deep_rev=False,
-           clean_binpkg=True, root='/', strip=True, emerge_args=None,
-           ssh_private_key=None, ping=True, force=False, dry_run=False):
+def Deploy(device, packages, board=None, emerge=True, update=False, deep=False,
+           deep_rev=False, clean_binpkg=True, root='/', strip=True,
+           emerge_args=None, ssh_private_key=None, ping=True, force=False,
+           dry_run=False):
   """Deploys packages to a device.
 
   Args:
     device: commandline.Device object; None to use the default device.
     packages: List of packages (strings) to deploy to device.
     board: Board to use; None to automatically detect.
-    brick_name: Brick locator to use. Overrides |board| if not None.
-    blueprint: Blueprint to use. Overrides |board| and |brick| if not None.
     emerge: True to emerge package, False to unmerge.
     update: Check installed version on device.
     deep: Install dependencies also. Implies |update|.
@@ -932,6 +928,9 @@ def Deploy(device, packages, board=None, brick_name=None, blueprint=None,
   if deep:
     update = True
 
+  if not packages:
+    raise DeployError('No packages provided, nothing to deploy.')
+
   if update and not emerge:
     raise ValueError('Cannot update and unmerge.')
 
@@ -948,32 +947,13 @@ def Deploy(device, packages, board=None, brick_name=None, blueprint=None,
         base_dir=_DEVICE_BASE_DIR, ping=ping) as device:
       lsb_release = device.lsb_release
 
-      # We don't check for compatibility correctly in the brick/blueprint case
-      # as we don't have enough information to determine whether it is safe or
-      # not to deploy.
-      # TODO(bsimonnet): Check for compatibility correctly (brbug.com/969).
-      if blueprint:
-        blueprint = blueprint_lib.Blueprint(blueprint)
-        sysroot = cros_build_lib.GetSysroot(blueprint.FriendlyName())
+      board = cros_build_lib.GetBoard(device_board=device.board,
+                                      override_board=board)
+      if not force and board != device.board:
+        raise DeployError('Device (%s) is incompatible with board %s. Use '
+                          '--force to deploy anyway.' % (device, board))
 
-      elif brick_name:
-        brick = brick_lib.Brick(brick_name)
-        sysroot = cros_build_lib.GetSysroot(board=brick.FriendlyName())
-
-        # If no packages were listed, find the brick's main packages.
-        packages = packages or brick.MainPackages()
-
-      else:
-        board = cros_build_lib.GetBoard(device_board=device.board,
-                                        override_board=board)
-        if not force and board != device.board:
-          raise DeployError('Device (%s) is incompatible with board %s. Use '
-                            '--force to deploy anyway.' % (device, board))
-
-        sysroot = cros_build_lib.GetSysroot(board=board)
-
-      if not packages:
-        raise DeployError('No packages found, nothing to deploy.')
+      sysroot = cros_build_lib.GetSysroot(board=board)
 
       if clean_binpkg:
         logging.notice('Cleaning outdated binary packages from %s', sysroot)

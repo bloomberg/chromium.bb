@@ -73,8 +73,6 @@ class CrosDeployTest(cros_test_lib.MockTempDirTestCase,
     # `cros deploy` default options. Must match AddParser().
     expected_kwargs = {
         'board': None,
-        'brick_name': None,
-        'blueprint': None,
         'strip': True,
         'emerge': True,
         'root': '/',
@@ -98,36 +96,10 @@ class CrosDeployTest(cros_test_lib.MockTempDirTestCase,
     self.assertTrue(self.run_inside_chroot_mock.called)
     self.VerifyDeployParameters(self.DEVICE, self.PACKAGES)
 
-  def testBrick(self):
-    """Tests command line --brick."""
-    self.SetupCommandMock([self.DEVICE, '--brick', '//foo'])
-    self.cmd_mock.inst.Run()
-    self.VerifyDeployParameters(self.DEVICE, [], brick_name='//foo')
-
-  def testImplicitBrick(self):
-    """Tests an implicit brick based on |curr_brick_locator|."""
-    self.SetupCommandMock([self.DEVICE])
-    self.cmd_mock.inst.curr_brick_locator = '//bar'
-    self.cmd_mock.inst.Run()
-    self.VerifyDeployParameters(self.DEVICE, [], brick_name='//bar')
-
-  def testBrickPriority(self):
-    """Tests that command line --brick takes precedence."""
-    self.SetupCommandMock([self.DEVICE, '--brick', '//foo'])
-    self.cmd_mock.inst.curr_brick_locator = '//bar'
-    self.cmd_mock.inst.Run()
-    self.VerifyDeployParameters(self.DEVICE, [], brick_name='//foo')
-
-  def testBrickPathNormalization(self):
-    """Tests --brick path normalization."""
-    self.SetupCommandMock([self.DEVICE, '--brick', 'foo'])
-    self.cmd_mock.inst.Run()
-    self.VerifyDeployParameters(self.DEVICE, [], brick_name='//bricks/foo')
-
   def testDeployErrorDebug(self):
     """Tests that DeployErrors are passed through."""
     with self.OutputCapturer():
-      self.SetupCommandMock([self.DEVICE])
+      self.SetupCommandMock([self.DEVICE] + self.PACKAGES)
       self.deploy_mock.side_effect = deploy.DeployError
       with self.assertRaises(deploy.DeployError):
         self.cmd_mock.inst.Run()
