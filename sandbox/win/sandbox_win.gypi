@@ -41,8 +41,6 @@
             'src/handle_interception.h',
             'src/handle_policy.cc',
             'src/handle_policy.h',
-            'src/handle_table.cc',
-            'src/handle_table.h',
             'src/interception.cc',
             'src/interception.h',
             'src/interception_agent.cc',
