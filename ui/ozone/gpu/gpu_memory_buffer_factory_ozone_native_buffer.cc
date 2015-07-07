@@ -36,7 +36,8 @@ class GLImageOzoneNativePixmap : public gfx::GLImageEGL {
                             gfx::OverlayTransform transform,
                             const gfx::Rect& bounds_rect,
                             const gfx::RectF& crop_rect) override {
-    return pixmap_->ScheduleOverlayPlane(widget, z_order, transform,
+    return pixmap_ &&
+           pixmap_->ScheduleOverlayPlane(widget, z_order, transform,
                                          bounds_rect, crop_rect);
   }
 
@@ -73,7 +74,8 @@ class GLImageOzoneNativePixmapDmaBuf : public gfx::GLImageLinuxDMABuffer {
                             gfx::OverlayTransform transform,
                             const gfx::Rect& bounds_rect,
                             const gfx::RectF& crop_rect) override {
-    return pixmap_->ScheduleOverlayPlane(widget, z_order, transform,
+    return pixmap_ &&
+           pixmap_->ScheduleOverlayPlane(widget, z_order, transform,
                                          bounds_rect, crop_rect);
   }
 
