@@ -417,23 +417,18 @@ llvm-sb-install() {
       # We do not yet have an x86-64 backend for pnacl-sz.
       arches="i686 x86_64"
     fi
-    local have_segment_gap="false"
-    if [ "${toolname}" == "pnacl-sz" ]; then
-      have_segment_gap="true"
-    fi
-    translate-sb-tool ${toolname} "${arches}" "${have_segment_gap}"
+    translate-sb-tool ${toolname} "${arches}"
     install-sb-tool ${toolname} "${arches}"
   done
   spopd
 }
 
-# translate-sb-tool <toolname> <arches> <have_segment_gap>
+# translate-sb-tool <toolname> <arches>
 #
 # Translate <toolname>.pexe to <toolname>.<arch>.nexe in the current directory.
 translate-sb-tool() {
   local toolname=$1
   local arches=$2
-  local have_segment_gap=$3
   local pexe="${toolname}.pexe"
 
   local tarch
@@ -450,9 +445,6 @@ translate-sb-tool() {
     # you will need to do a build without these flags.
     local translate_flags="-ffunction-sections -fdata-sections --gc-sections \
       --allow-llvm-bitcode-input -arch ${tarch} "
-    if ! ${have_segment_gap}; then
-      translate_flags+="--noirt "
-    fi
     "${PNACL_TRANSLATE}" ${translate_flags} "${pexe}" -o "${nexe}" &
     QueueLastProcess
   done
@@ -702,8 +694,7 @@ binutils-gold-sb-install() {
   if [[ "${arch}" == "universal" ]]; then
     arches="${SBTC_ARCHES_ALL}"
   fi
-  local have_segment_gap=true
-  translate-sb-tool ld "${arches}" ${have_segment_gap}
+  translate-sb-tool ld "${arches}"
   install-sb-tool ld "${arches}"
   spopd
 }
