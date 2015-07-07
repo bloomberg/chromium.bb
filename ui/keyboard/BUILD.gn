@@ -49,6 +49,10 @@ component("keyboard") {
     "//ui/wm",
     "//url",
   ]
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
 }
 
 grit("resources_grit") {

@@ -85,7 +85,14 @@
         'keyboard_switches.h',
         'keyboard_util.cc',
         'keyboard_util.h',
-      ]
+      ],
+      'conditions': [
+        ['use_ozone==1', {
+          'dependencies': [
+            '../ozone/ozone.gyp:ozone',
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'keyboard_unittests',
