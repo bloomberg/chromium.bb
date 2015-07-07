@@ -150,8 +150,8 @@ class ComponentLoader {
 
   void AddWithNameAndDescription(int manifest_resource_id,
                                  const base::FilePath& root_directory,
-                                 int name_string_id,
-                                 int description_string_id);
+                                 const std::string& name_string,
+                                 const std::string& description_string);
   void AddChromeApp();
   void AddHotwordAudioVerificationApp();
   void AddKeyboardApp();

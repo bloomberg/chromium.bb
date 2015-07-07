@@ -43,6 +43,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/system/chromeos/devicetype_utils.h"
 #include "components/chrome_apps/grit/chrome_apps_resources.h"
 #include "components/user_manager/user_manager.h"
 #include "grit/keyboard_resources.h"
@@ -310,10 +311,11 @@ bool ComponentLoader::Exists(const std::string& id) const {
 
 void ComponentLoader::AddFileManagerExtension() {
 #if defined(OS_CHROMEOS)
-  AddWithNameAndDescription(IDR_FILEMANAGER_MANIFEST,
-                            base::FilePath(FILE_PATH_LITERAL("file_manager")),
-                            IDS_FILEMANAGER_APP_NAME,
-                            IDS_FILEMANAGER_APP_DESCRIPTION);
+  AddWithNameAndDescription(
+      IDR_FILEMANAGER_MANIFEST,
+      base::FilePath(FILE_PATH_LITERAL("file_manager")),
+      l10n_util::GetStringUTF8(IDS_FILEMANAGER_APP_NAME),
+      l10n_util::GetStringUTF8(IDS_FILEMANAGER_APP_DESCRIPTION));
 #endif  // defined(OS_CHROMEOS)
 }
 
@@ -342,8 +344,8 @@ void ComponentLoader::AddWebstoreWidgetExtension() {
   AddWithNameAndDescription(
       IDR_CHROME_APPS_WEBSTORE_WIDGET_MANIFEST,
       base::FilePath(FILE_PATH_LITERAL("webstore_widget")),
-      IDS_WEBSTORE_WIDGET_APP_NAME,
-      IDS_WEBSTORE_WIDGET_APP_DESC);
+      l10n_util::GetStringUTF8(IDS_WEBSTORE_WIDGET_APP_NAME),
+      l10n_util::GetStringUTF8(IDS_WEBSTORE_WIDGET_APP_DESC));
 #endif
 }
 
@@ -456,8 +458,8 @@ void ComponentLoader::AddChromeOsSpeechSynthesisExtension() {
 void ComponentLoader::AddWithNameAndDescription(
     int manifest_resource_id,
     const base::FilePath& root_directory,
-    int name_string_id,
-    int description_string_id) {
+    const std::string& name_string,
+    const std::string& description_string) {
   if (!ignore_whitelist_for_testing_ &&
       !IsComponentExtensionWhitelisted(manifest_resource_id))
     return;
@@ -471,20 +473,18 @@ void ComponentLoader::AddWithNameAndDescription(
   base::DictionaryValue* manifest = ParseManifest(manifest_contents);
 
   if (manifest) {
-    manifest->SetString(manifest_keys::kName,
-                        l10n_util::GetStringUTF8(name_string_id));
-    manifest->SetString(manifest_keys::kDescription,
-                        l10n_util::GetStringUTF8(description_string_id));
+    manifest->SetString(manifest_keys::kName, name_string);
+    manifest->SetString(manifest_keys::kDescription, description_string);
     Add(manifest, root_directory, true);
   }
 }
 
 void ComponentLoader::AddChromeApp() {
 #if defined(ENABLE_APP_LIST)
-  AddWithNameAndDescription(IDR_CHROME_APP_MANIFEST,
-                            base::FilePath(FILE_PATH_LITERAL("chrome_app")),
-                            IDS_SHORT_PRODUCT_NAME,
-                            IDS_CHROME_SHORTCUT_DESCRIPTION);
+  AddWithNameAndDescription(
+      IDR_CHROME_APP_MANIFEST, base::FilePath(FILE_PATH_LITERAL("chrome_app")),
+      l10n_util::GetStringUTF8(IDS_SHORT_PRODUCT_NAME),
+      l10n_util::GetStringUTF8(IDS_CHROME_SHORTCUT_DESCRIPTION));
 #endif
 }
 
@@ -500,10 +500,10 @@ void ComponentLoader::AddWebStoreApp() {
     return;
 #endif
 
-  AddWithNameAndDescription(IDR_WEBSTORE_MANIFEST,
-                            base::FilePath(FILE_PATH_LITERAL("web_store")),
-                            IDS_WEBSTORE_NAME_STORE,
-                            IDS_WEBSTORE_APP_DESCRIPTION);
+  AddWithNameAndDescription(
+      IDR_WEBSTORE_MANIFEST, base::FilePath(FILE_PATH_LITERAL("web_store")),
+      l10n_util::GetStringUTF8(IDS_WEBSTORE_NAME_STORE),
+      l10n_util::GetStringUTF8(IDS_WEBSTORE_APP_DESCRIPTION));
 }
 
 scoped_refptr<const Extension> ComponentLoader::CreateExtension(
@@ -608,11 +608,12 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 
 #if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
   // Since this is a v2 app it has a background page.
-  AddWithNameAndDescription(IDR_GENIUS_APP_MANIFEST,
-                            base::FilePath(FILE_PATH_LITERAL(
-                                "/usr/share/chromeos-assets/genius_app")),
-                            IDS_GENIUS_APP_NAME,
-                            IDS_GENIUS_APP_DESCRIPTION);
+  AddWithNameAndDescription(
+      IDR_GENIUS_APP_MANIFEST, base::FilePath(FILE_PATH_LITERAL(
+                                   "/usr/share/chromeos-assets/genius_app")),
+      l10n_util::GetStringUTF8(IDS_GENIUS_APP_NAME),
+      l10n_util::GetStringFUTF8(IDS_GENIUS_APP_DESCRIPTION,
+                                ash::GetChromeOSDeviceName()));
 #endif
 
   if (!skip_session_components) {
