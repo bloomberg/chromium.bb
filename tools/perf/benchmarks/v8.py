@@ -10,19 +10,8 @@ import page_sets
 from telemetry import benchmark
 
 
-@benchmark.Disabled('win', 'android')  # crbug.com/416502, crbug.com/505854
-class V8GarbageCollectionCases(perf_benchmark.PerfBenchmark):
-  """Measure V8 GC metrics on the garbage collection cases."""
-  test = v8_gc_times.V8GCTimes
-  page_set = page_sets.GarbageCollectionCasesPageSet
-
-  @classmethod
-  def Name(cls):
-    return 'v8.garbage_collection_cases'
-
 # Disabled on Win due to crbug.com/416502.
-# TODO(rmcilroy): reenable on reference when crbug.com/456845 is fixed.
-@benchmark.Disabled('win', 'reference')
+@benchmark.Disabled('win')
 class V8Top25(perf_benchmark.PerfBenchmark):
   """Measures V8 GC metrics on the while scrolling down the top 25 web pages.
 
