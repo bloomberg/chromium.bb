@@ -642,6 +642,7 @@ public class ChromeBrowserProvider extends ContentProvider {
         return buildContentUri(getApiAuthority(context), BOOKMARKS_PATH);
     }
 
+    @VisibleForTesting
     public static Uri getSearchesApiUri(Context context) {
         return buildContentUri(getApiAuthority(context), SEARCHES_PATH);
     }

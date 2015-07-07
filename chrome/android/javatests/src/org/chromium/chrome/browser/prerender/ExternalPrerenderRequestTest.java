@@ -10,8 +10,9 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content_public.browser.WebContents;
 
@@ -20,7 +21,7 @@ import java.util.concurrent.Callable;
 /**
  * Tests for adding and removing prerenders using the {@link ExternalPrerenderHandler}
  */
-public class ExternalPrerenderRequestTest extends ChromeShellTestBase {
+public class ExternalPrerenderRequestTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String GOOGLE_URL =
             TestHttpServerClient.getUrl("chrome/test/data/android/prerender/google.html");
     private static final String YOUTUBE_URL =
@@ -30,12 +31,18 @@ public class ExternalPrerenderRequestTest extends ChromeShellTestBase {
     private ExternalPrerenderHandler mHandler;
     private Profile mProfile;
 
+    public ExternalPrerenderRequestTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
+    }
+
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        clearAppData();
-        launchChromeShellWithBlankPage();
-        assertTrue(waitForActiveShellToBeDoneLoading());
         mHandler = new ExternalPrerenderHandler();
         final Callable<Profile> profileCallable = new Callable<Profile>() {
             @Override
@@ -65,7 +72,6 @@ public class ExternalPrerenderRequestTest extends ChromeShellTestBase {
         webContents = mHandler.addPrerender(mProfile, YOUTUBE_URL, "", 0, 0);
         assertTrue(ExternalPrerenderHandler.hasPrerenderedUrl(
                 mProfile, YOUTUBE_URL, webContents));
-
     }
 
     @SmallTest

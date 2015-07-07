@@ -18,8 +18,9 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.shell.ChromeShellTab;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.printing.PrintDocumentAdapterWrapper;
 import org.chromium.printing.PrintManagerDelegate;
 import org.chromium.printing.PrintingControllerImpl;
@@ -37,7 +38,7 @@ import java.util.concurrent.TimeUnit;
  * TODO(cimamoglu): Add a test with multiple, stacked onLayout/onWrite calls.
  * TODO(cimamoglu): Add a test which emulates Chromium failing to generate a PDF.
  */
-public class PrintingControllerTest extends ChromeShellTestBase {
+public class PrintingControllerTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private static final String TEMP_FILE_NAME = "temp_print";
     private static final String TEMP_FILE_EXTENSION = ".pdf";
@@ -46,6 +47,15 @@ public class PrintingControllerTest extends ChromeShellTestBase {
             "<html><head></head><body>foo</body></html>");
     private static final String PDF_PREAMBLE = "%PDF-1";
     private static final long TEST_TIMEOUT = 20000L;
+
+    public PrintingControllerTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        // Do nothing.
+    }
 
     private static class LayoutResultCallbackWrapperMock implements
             PrintDocumentAdapterWrapper.LayoutResultCallbackWrapper {
@@ -82,8 +92,8 @@ public class PrintingControllerTest extends ChromeShellTestBase {
     public void testNormalPrintingFlow() throws Throwable {
         if (!ApiCompatibilityUtils.isPrintingSupported()) return;
 
-        final ChromeShellTab currentTab = launchChromeShellWithUrl(URL).getActiveTab();
-        assertTrue(waitForActiveShellToBeDoneLoading());
+        startMainActivityWithURL(URL);
+        final Tab currentTab = getActivity().getActivityTab();
 
         final PrintingControllerImpl printingController = createControllerOnUiThread();
 
@@ -162,7 +172,7 @@ public class PrintingControllerTest extends ChromeShellTestBase {
     }
 
     private void startControllerOnUiThread(final PrintingControllerImpl controller,
-            final ChromeShellTab tab) {
+            final Tab tab) {
         try {
             final PrintManagerDelegate mockPrintManagerDelegate = new PrintManagerDelegate() {
                 @Override

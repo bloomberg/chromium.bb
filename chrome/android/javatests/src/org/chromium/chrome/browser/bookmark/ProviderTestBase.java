@@ -9,23 +9,32 @@ import android.content.ContentResolver;
 import android.test.IsolatedContext;
 import android.test.mock.MockContentResolver;
 
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeBrowserProvider;
-import org.chromium.chrome.shell.ChromeShellActivity;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 
 /**
  * Base class for Chrome's ContentProvider tests.
  * Sets up a local ChromeBrowserProvider associated to a mock resolver in an isolated context.
  */
-public class ProviderTestBase extends ChromeShellTestBase {
+public class ProviderTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private IsolatedContext mContext;
+
+    public ProviderTestBase() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
+    }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
 
-        ChromeShellActivity activity = launchChromeShellWithUrl(null);
+        ChromeActivity activity = getActivity();
         assertNotNull(activity);
 
         ContentProvider provider = new ChromeBrowserProvider();

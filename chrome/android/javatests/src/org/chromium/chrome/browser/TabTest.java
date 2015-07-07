@@ -10,13 +10,13 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.CallbackHelper;
 
 /**
  * Tests for Tab class.
  */
-public class TabTest extends ChromeShellTestBase {
+public class TabTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private Tab mTab;
     private CallbackHelper mOnTitleUpdatedHelper;
 
@@ -27,12 +27,19 @@ public class TabTest extends ChromeShellTestBase {
         }
     };
 
+    public TabTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
+    }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        launchChromeShellWithBlankPage();
-        waitForActiveShellToBeDoneLoading();
-        mTab = getActivity().getActiveTab();
+        mTab = getActivity().getActivityTab();
         mTab.addObserver(mTabObserver);
         mOnTitleUpdatedHelper = new CallbackHelper();
     }
@@ -47,7 +54,7 @@ public class TabTest extends ChromeShellTestBase {
                 + oldTitle + "</title></head><body/></html>");
         assertEquals("title does not match initial title", oldTitle, mTab.getTitle());
         int currentCallCount = mOnTitleUpdatedHelper.getCallCount();
-        loadUrl("javascript:document.title='" + newTitle + "';");
+        runJavaScriptCodeInCurrentTab("document.title='" + newTitle + "';");
         mOnTitleUpdatedHelper.waitForCallback(currentCallCount);
         assertEquals("title does not update", newTitle, mTab.getTitle());
     }
@@ -55,20 +62,17 @@ public class TabTest extends ChromeShellTestBase {
     @SmallTest
     @Feature({"Tab"})
     public void testTabRestoredIfKilledWhileActivityStopped() {
-        launchChromeShellWithBlankPage();
-        final Tab tab = getActivity().getActiveTab();
-
         // Ensure the tab is showing before stopping the activity.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                tab.show(TabSelectionType.FROM_NEW);
+                mTab.show(TabSelectionType.FROM_NEW);
             }
         });
 
-        assertFalse(tab.needsReload());
-        assertFalse(tab.isHidden());
-        assertFalse(tab.isShowingSadTab());
+        assertFalse(mTab.needsReload());
+        assertFalse(mTab.isHidden());
+        assertFalse(mTab.isShowingSadTab());
 
         // Stop the activity and simulate a killed renderer.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -76,13 +80,13 @@ public class TabTest extends ChromeShellTestBase {
             public void run() {
                 getInstrumentation().callActivityOnPause(getActivity());
                 getInstrumentation().callActivityOnStop(getActivity());
-                tab.simulateRendererKilledForTesting(false);
+                mTab.simulateRendererKilledForTesting(false);
             }
         });
 
-        assertTrue(tab.needsReload());
-        assertFalse(tab.isHidden());
-        assertFalse(tab.isShowingSadTab());
+        assertTrue(mTab.needsReload());
+        assertFalse(mTab.isHidden());
+        assertFalse(mTab.isShowingSadTab());
 
         // Resume the activity.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -94,9 +98,9 @@ public class TabTest extends ChromeShellTestBase {
         });
 
         // The tab should be restored and visible.
-        assertFalse(tab.isHidden());
-        assertFalse(tab.needsReload());
-        assertFalse(tab.isShowingSadTab());
+        assertFalse(mTab.isHidden());
+        assertFalse(mTab.needsReload());
+        assertFalse(mTab.isShowingSadTab());
     }
 
     @SmallTest

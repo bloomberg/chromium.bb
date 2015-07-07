@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.test;
+package org.chromium.chrome.browser;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -17,8 +17,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.browser.JavascriptAppModalDialog;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
@@ -31,7 +30,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Test suite for displaying and functioning of modal dialogs.
  */
-public class ModalDialogTest extends ChromeShellTestBase {
+public class ModalDialogTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String TAG = "ModalDialogTest";
     private static final String EMPTY_PAGE = UrlUtils.encodeHtmlDataUri(
             "<html><title>Modal Dialog Test</title><p>Testcase.</p></title></html>");
@@ -40,11 +39,13 @@ public class ModalDialogTest extends ChromeShellTestBase {
                     + "return 'Are you sure?';"
                     + "};</script></head></html>");
 
+    public ModalDialogTest() {
+        super(ChromeActivity.class);
+    }
+
     @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        launchChromeShellWithUrl(EMPTY_PAGE);
-        assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityWithURL(EMPTY_PAGE);
     }
 
     /**
@@ -173,7 +174,7 @@ public class ModalDialogTest extends ChromeShellTestBase {
     @DisabledTest //crbug/270593
     public void testBeforeUnloadDialog()
             throws InterruptedException, TimeoutException, ExecutionException {
-        loadUrlWithSanitization(BEFORE_UNLOAD_URL);
+        loadUrl(BEFORE_UNLOAD_URL);
         executeJavaScriptAndWaitForDialog("history.back();");
 
         JavascriptAppModalDialog jsDialog = getCurrentDialog();
@@ -183,7 +184,7 @@ public class ModalDialogTest extends ChromeShellTestBase {
                 "Stay on this page");
         clickCancel(jsDialog);
 
-        assertEquals(BEFORE_UNLOAD_URL, getActivity().getActiveContentViewCore()
+        assertEquals(BEFORE_UNLOAD_URL, getActivity().getCurrentContentViewCore()
                 .getWebContents().getUrl());
         executeJavaScriptAndWaitForDialog("history.back();");
 
@@ -198,7 +199,7 @@ public class ModalDialogTest extends ChromeShellTestBase {
         int callCount = onPageLoaded.getCallCount();
         clickOk(jsDialog);
         onPageLoaded.waitForCallback(callCount);
-        assertEquals(EMPTY_PAGE, getActivity().getActiveContentViewCore()
+        assertEquals(EMPTY_PAGE, getActivity().getCurrentContentViewCore()
                 .getWebContents().getUrl());
     }
 
@@ -209,7 +210,7 @@ public class ModalDialogTest extends ChromeShellTestBase {
     @MediumTest
     @Feature({"Browser", "Main"})
     public void testBeforeUnloadOnReloadDialog() throws InterruptedException, ExecutionException {
-        loadUrlWithSanitization(BEFORE_UNLOAD_URL);
+        loadUrl(BEFORE_UNLOAD_URL);
         executeJavaScriptAndWaitForDialog("window.location.reload();");
 
         JavascriptAppModalDialog jsDialog = getCurrentDialog();
@@ -263,7 +264,7 @@ public class ModalDialogTest extends ChromeShellTestBase {
         clickCancel(jsDialog);
         scriptEvent.waitUntilHasValue();
 
-        scriptEvent.evaluateJavaScript(getActivity().getActiveContentViewCore().getWebContents(),
+        scriptEvent.evaluateJavaScript(getActivity().getCurrentContentViewCore().getWebContents(),
                 "alert('Android');");
         assertTrue("No further dialog boxes should be shown.", scriptEvent.waitUntilHasValue());
     }
@@ -281,7 +282,8 @@ public class ModalDialogTest extends ChromeShellTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                getActivity().closeTab();
+                ChromeActivity activity = getActivity();
+                activity.getCurrentTabModel().closeTab(activity.getActivityTab());
             }
         });
 
@@ -308,7 +310,7 @@ public class ModalDialogTest extends ChromeShellTestBase {
     private OnEvaluateJavaScriptResultHelper executeJavaScriptAndWaitForDialog(
             final OnEvaluateJavaScriptResultHelper helper, String script)
             throws InterruptedException {
-        helper.evaluateJavaScript(getActivity().getActiveContentViewCore().getWebContents(),
+        helper.evaluateJavaScript(getActivity().getCurrentContentViewCore().getWebContents(),
                 script);
         boolean criteriaSatisfied = CriteriaHelper.pollForCriteria(
                 new JavascriptAppModalDialogShownCriteria(true));
@@ -410,6 +412,6 @@ public class ModalDialogTest extends ChromeShellTestBase {
     }
 
     private TestCallbackHelperContainer getActiveTabTestCallbackHelperContainer() {
-        return new TestCallbackHelperContainer(getActivity().getActiveTab().getContentViewCore());
+        return new TestCallbackHelperContainer(getActivity().getCurrentContentViewCore());
     }
 }

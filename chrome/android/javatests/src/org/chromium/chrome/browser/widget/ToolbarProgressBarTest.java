@@ -11,8 +11,9 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.shell.ChromeShellTestBase;
-import org.chromium.chrome.shell.R;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -21,7 +22,17 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Tests related to the ToolbarProgressBar.
  */
-public class ToolbarProgressBarTest extends ChromeShellTestBase {
+public class ToolbarProgressBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+
+    public ToolbarProgressBarTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
+    }
+
     /**
      * Test that calling progressBar.setProgress(# > 0) followed by progressBar.setProgress(0)
      * results in a hidden progress bar (the secondary progress needs to be 0).
@@ -31,9 +42,6 @@ public class ToolbarProgressBarTest extends ChromeShellTestBase {
     @MediumTest
     @Restriction(RESTRICTION_TYPE_PHONE)
     public void testProgressBarDisappearsAfterFastShowHide() throws InterruptedException {
-        launchChromeShellWithUrl("about:blank");
-        waitForActiveShellToBeDoneLoading();
-
         final AtomicReference<ToolbarProgressBar> progressBar =
                 new AtomicReference<ToolbarProgressBar>();
         ThreadUtils.runOnUiThread(new Runnable() {
