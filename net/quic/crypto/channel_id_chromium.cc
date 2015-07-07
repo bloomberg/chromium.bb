@@ -44,7 +44,7 @@ bool ChannelIDKeyChromium::Sign(base::StringPiece signed_data,
   if (!sig_creator->DecodeSignature(der_signature, &raw_signature)) {
     return false;
   }
-  memcpy(WriteInto(out_signature, raw_signature.size() + 1),
+  memcpy(base::WriteInto(out_signature, raw_signature.size() + 1),
          &raw_signature[0], raw_signature.size());
   return true;
 }

@@ -1142,7 +1142,7 @@ DWORD WiFiServiceImpl::FindAdapterIndexMapByGUID(
   base::string16 guid_string;
   const int kGUIDSize = 39;
   ::StringFromGUID2(
-      interface_guid, WriteInto(&guid_string, kGUIDSize), kGUIDSize);
+      interface_guid, base::WriteInto(&guid_string, kGUIDSize), kGUIDSize);
 
   ULONG buffer_length = 0;
   DWORD error = ::GetInterfaceInfo(NULL, &buffer_length);

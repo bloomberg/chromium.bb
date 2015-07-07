@@ -53,7 +53,7 @@ INT_PTR CALLBACK ShellJavaScriptDialog::DialogProc(HWND dialog,
             int length =
                 GetWindowTextLength(GetDlgItem(dialog, IDC_PROMPTEDIT)) + 1;
             GetDlgItemText(dialog, IDC_PROMPTEDIT,
-                           WriteInto(&user_input, length), length);
+                           base::WriteInto(&user_input, length), length);
           }
           break;
         case IDCANCEL:

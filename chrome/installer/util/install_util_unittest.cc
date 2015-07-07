@@ -447,7 +447,7 @@ TEST_F(InstallUtilTest, ProgramCompare) {
   // Test where strings don't match, but the same file is indicated.
   std::wstring short_expect;
   DWORD short_len = GetShortPathName(expect.value().c_str(),
-                                     WriteInto(&short_expect, MAX_PATH),
+                                     base::WriteInto(&short_expect, MAX_PATH),
                                      MAX_PATH);
   ASSERT_NE(static_cast<DWORD>(0), short_len);
   ASSERT_GT(static_cast<DWORD>(MAX_PATH), short_len);

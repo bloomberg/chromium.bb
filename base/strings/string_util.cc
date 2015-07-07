@@ -808,6 +808,23 @@ void ReplaceSubstringsAfterOffset(std::string* str,
       str, start_offset, find_this, replace_with, true);  // Replace all.
 }
 
+template <class string_type>
+inline typename string_type::value_type* WriteIntoT(string_type* str,
+                                                    size_t length_with_null) {
+  DCHECK_GT(length_with_null, 1u);
+  str->reserve(length_with_null);
+  str->resize(length_with_null - 1);
+  return &((*str)[0]);
+}
+
+char* WriteInto(std::string* str, size_t length_with_null) {
+  return WriteIntoT(str, length_with_null);
+}
+
+char16* WriteInto(base::string16* str, size_t length_with_null) {
+  return WriteIntoT(str, length_with_null);
+}
+
 }  // namespace base
 
 template<typename STR>

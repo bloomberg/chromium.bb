@@ -451,16 +451,6 @@ BASE_EXPORT void ReplaceSubstringsAfterOffset(
     StringPiece find_this,
     StringPiece replace_with);
 
-}  // namespace base
-
-#if defined(OS_WIN)
-#include "base/strings/string_util_win.h"
-#elif defined(OS_POSIX)
-#include "base/strings/string_util_posix.h"
-#else
-#error Define string operations appropriately for your platform
-#endif
-
 // Reserves enough memory in |str| to accommodate |length_with_null| characters,
 // sets the size of |str| to |length_with_null - 1| characters, and returns a
 // pointer to the underlying contiguous array of characters.  This is typically
@@ -481,14 +471,21 @@ BASE_EXPORT void ReplaceSubstringsAfterOffset(
 // of the string, and not doing that will mean people who access |str| rather
 // than str.c_str() will get back a string of whatever size |str| had on entry
 // to this function (probably 0).
-template <class string_type>
-inline typename string_type::value_type* WriteInto(string_type* str,
-                                                   size_t length_with_null) {
-  DCHECK_GT(length_with_null, 1u);
-  str->reserve(length_with_null);
-  str->resize(length_with_null - 1);
-  return &((*str)[0]);
-}
+BASE_EXPORT char* WriteInto(std::string* str, size_t length_with_null);
+BASE_EXPORT char16* WriteInto(base::string16* str, size_t length_with_null);
+#ifndef OS_WIN
+BASE_EXPORT wchar_t* WriteInto(std::wstring* str, size_t length_with_null);
+#endif
+
+}  // namespace base
+
+#if defined(OS_WIN)
+#include "base/strings/string_util_win.h"
+#elif defined(OS_POSIX)
+#include "base/strings/string_util_posix.h"
+#else
+#error Define string operations appropriately for your platform
+#endif
 
 //-----------------------------------------------------------------------------
 

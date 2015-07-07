@@ -161,7 +161,7 @@ void CreatePassport(const std::string& domain,
 
   std::string hmac;
   unsigned char* hmac_data = reinterpret_cast<unsigned char*>(
-      WriteInto(&hmac, kHMACSizeInBytes + 1));
+      base::WriteInto(&hmac, kHMACSizeInBytes + 1));
   if (!engine->Sign(blob, hmac_data, kHMACSizeInBytes)) {
     NOTREACHED();
     return;

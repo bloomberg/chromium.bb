@@ -49,7 +49,7 @@ std::string GetLocaleComponent(const std::string& locale,
   std::string result;
   UErrorCode error = U_ZERO_ERROR;
   int32_t actual_length = uloc_func(locale.c_str(),
-                                    WriteInto(&result, max_capacity),
+                                    base::WriteInto(&result, max_capacity),
                                     max_capacity,
                                     &error);
   DCHECK(U_SUCCESS(error));

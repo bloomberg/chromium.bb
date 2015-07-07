@@ -53,7 +53,7 @@ bool Aead::Seal(const base::StringPiece& plaintext,
       EVP_AEAD_max_overhead(aead_) + plaintext.size();
   size_t output_length;
   uint8* out_ptr =
-      reinterpret_cast<uint8*>(WriteInto(&result, max_output_length + 1));
+      reinterpret_cast<uint8*>(base::WriteInto(&result, max_output_length + 1));
 
   if (!EVP_AEAD_CTX_seal(
           &ctx, out_ptr, &output_length, max_output_length,
@@ -91,7 +91,7 @@ bool Aead::Open(const base::StringPiece& ciphertext,
   const size_t max_output_length = ciphertext.size();
   size_t output_length;
   uint8* out_ptr =
-      reinterpret_cast<uint8*>(WriteInto(&result, max_output_length + 1));
+      reinterpret_cast<uint8*>(base::WriteInto(&result, max_output_length + 1));
 
   if (!EVP_AEAD_CTX_open(
           &ctx, out_ptr, &output_length, max_output_length,

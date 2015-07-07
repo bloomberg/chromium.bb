@@ -378,7 +378,7 @@ DWORD CopyDataChunkToLocalFile(IStream* stream,
     return 0U;
   DWORD bytes_read = 0;
   std::string buffer;
-  HRESULT hr = stream->Read(WriteInto(&buffer, optimal_transfer_size + 1),
+  HRESULT hr = stream->Read(base::WriteInto(&buffer, optimal_transfer_size + 1),
                             optimal_transfer_size, &bytes_read);
   // IStream::Read() returns S_FALSE when the actual number of bytes read from
   // the stream object is less than the number of bytes requested (aka

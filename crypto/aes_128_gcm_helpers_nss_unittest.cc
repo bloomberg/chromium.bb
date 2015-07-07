@@ -425,7 +425,7 @@ class Aes128GcmHelpersTest : public ::testing::Test {
     unsigned char* raw_input = const_cast<unsigned char*>(
         reinterpret_cast<const unsigned char*>(input.data()));
     unsigned char* raw_output = reinterpret_cast<unsigned char*>(
-        WriteInto(output, maximum_output_length + 1 /* null */));
+        base::WriteInto(output, maximum_output_length + 1 /* null */));
 
     PK11Helper_TransformFunction* transform_function =
         mode == DECRYPT ? PK11DecryptHelper : PK11EncryptHelper;
@@ -468,8 +468,8 @@ TEST_F(Aes128GcmHelpersTest, RoundTrip) {
   const size_t kNonceSize = 16;
 
   std::string key, nonce;
-  RandBytes(WriteInto(&key, kKeySize + 1), kKeySize);
-  RandBytes(WriteInto(&nonce, kNonceSize + 1), kNonceSize);
+  RandBytes(base::WriteInto(&key, kKeySize + 1), kKeySize);
+  RandBytes(base::WriteInto(&nonce, kNonceSize + 1), kNonceSize);
 
   // AEAD_AES_128_GCM is defined with a default authentication tag size of 16,
   // but RFC 5282 extends this to authentication tag sizes of 8 and 12 as well.

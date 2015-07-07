@@ -123,7 +123,7 @@ void BootstrapUserContextInitializer::OnEasyUnlockAuthenticated(
 
 void BootstrapUserContextInitializer::CreateRandomKey() {
   std::string random_initial_key;
-  crypto::RandBytes(WriteInto(&random_initial_key, kUserKeyByteSize + 1),
+  crypto::RandBytes(base::WriteInto(&random_initial_key, kUserKeyByteSize + 1),
                     kUserKeyByteSize);
   user_context_.SetKey(Key(random_initial_key));
   random_key_used_ = true;

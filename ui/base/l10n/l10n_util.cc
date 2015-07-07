@@ -549,7 +549,7 @@ base::string16 GetDisplayNameForLocale(const std::string& locale,
 
     int actual_size = uloc_getDisplayName(
         locale_code.c_str(), display_locale.c_str(),
-        WriteInto(&display_name, kBufferSize), kBufferSize - 1, &error);
+        base::WriteInto(&display_name, kBufferSize), kBufferSize - 1, &error);
     DCHECK(U_SUCCESS(error));
     display_name.resize(actual_size);
   }
@@ -834,7 +834,7 @@ base::string16 GetPluralStringFUTF16(int message_id, int number) {
   DCHECK_GT(capacity, 1);
   base::string16 result;
   result_unistring.extract(
-      static_cast<UChar*>(WriteInto(&result, capacity)), capacity, err);
+      static_cast<UChar*>(base::WriteInto(&result, capacity)), capacity, err);
   DCHECK(U_SUCCESS(err));
   return result;
 }

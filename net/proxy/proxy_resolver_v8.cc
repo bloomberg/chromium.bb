@@ -140,7 +140,7 @@ std::string V8StringToUTF8(v8::Local<v8::String> s) {
   int len = s->Length();
   std::string result;
   if (len > 0)
-    s->WriteUtf8(WriteInto(&result, len + 1));
+    s->WriteUtf8(base::WriteInto(&result, len + 1));
   return result;
 }
 
@@ -150,8 +150,10 @@ base::string16 V8StringToUTF16(v8::Local<v8::String> s) {
   base::string16 result;
   // Note that the reinterpret cast is because on Windows string16 is an alias
   // to wstring, and hence has character type wchar_t not uint16_t.
-  if (len > 0)
-    s->Write(reinterpret_cast<uint16_t*>(WriteInto(&result, len + 1)), 0, len);
+  if (len > 0) {
+    s->Write(reinterpret_cast<uint16_t*>(base::WriteInto(&result, len + 1)), 0,
+             len);
+  }
   return result;
 }
 

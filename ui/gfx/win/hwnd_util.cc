@@ -79,8 +79,8 @@ base::string16 GetClassName(HWND window) {
   DWORD buffer_size = MAX_PATH;
   while (true) {
     std::wstring output;
-    DWORD size_ret =
-        GetClassNameW(window, WriteInto(&output, buffer_size), buffer_size);
+    DWORD size_ret = GetClassNameW(
+        window, base::WriteInto(&output, buffer_size), buffer_size);
     if (size_ret == 0)
       break;
     if (size_ret < (buffer_size - 1)) {

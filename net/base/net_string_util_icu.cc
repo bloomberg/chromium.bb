@@ -27,7 +27,7 @@ bool ConvertToUtf8(const std::string& text, const char* charset,
   // in UTF-8. Therefore, the expansion ratio is 3 at most. Add one for a
   // trailing '\0'.
   size_t output_length = text.length() * 3 + 1;
-  char* buf = WriteInto(output, output_length);
+  char* buf = base::WriteInto(output, output_length);
   output_length = ucnv_toAlgorithmic(UCNV_UTF8, converter, buf, output_length,
                                      text.data(), text.length(), &err);
   ucnv_close(converter);

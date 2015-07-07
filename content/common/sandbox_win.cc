@@ -366,7 +366,8 @@ bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
     LOG(WARNING) << "SANITIZER_COVERAGE_DIR was not set, coverage won't work.";
   } else {
     std::wstring coverage_dir;
-    wchar_t* coverage_dir_str = WriteInto(&coverage_dir, coverage_dir_size);
+    wchar_t* coverage_dir_str =
+        base::WriteInto(&coverage_dir, coverage_dir_size);
     coverage_dir_size = ::GetEnvironmentVariable(
         L"SANITIZER_COVERAGE_DIR", coverage_dir_str, coverage_dir_size);
     CHECK(coverage_dir.size() == coverage_dir_size);

@@ -187,8 +187,8 @@ void LocalAuth::SetLocalAuthCredentialsWithEncoding(size_t info_index,
   // Salt should be random data, as long as the hash length, and different with
   // every save.
   std::string salt_str;
-  crypto::RandBytes(WriteInto(&salt_str, encoding.hash_bytes + 1),
-                              encoding.hash_bytes);
+  crypto::RandBytes(base::WriteInto(&salt_str, encoding.hash_bytes + 1),
+                    encoding.hash_bytes);
 
   // Perform secure hash of password for storage.
   std::string password_hash = CreateSecurePasswordHash(

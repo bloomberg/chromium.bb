@@ -77,7 +77,7 @@ bool GetFriendlyName(const base::string16& pnp_device_id,
     return false;
 
   hr = device_manager->GetDeviceFriendlyName(
-      pnp_device_id.c_str(), WriteInto(name, name_len), &name_len);
+      pnp_device_id.c_str(), base::WriteInto(name, name_len), &name_len);
   return (SUCCEEDED(hr) && !name->empty());
 }
 
@@ -95,7 +95,7 @@ bool GetManufacturerName(const base::string16& pnp_device_id,
     return false;
 
   hr = device_manager->GetDeviceManufacturer(pnp_device_id.c_str(),
-                                             WriteInto(name, name_len),
+                                             base::WriteInto(name, name_len),
                                              &name_len);
   return (SUCCEEDED(hr) && !name->empty());
 }
@@ -113,9 +113,8 @@ bool GetDeviceDescription(const base::string16& pnp_device_id,
   if (FAILED(hr))
     return false;
 
-  hr = device_manager->GetDeviceDescription(pnp_device_id.c_str(),
-                                            WriteInto(description, desc_len),
-                                            &desc_len);
+  hr = device_manager->GetDeviceDescription(
+      pnp_device_id.c_str(), base::WriteInto(description, desc_len), &desc_len);
   return (SUCCEEDED(hr) && !description->empty());
 }
 

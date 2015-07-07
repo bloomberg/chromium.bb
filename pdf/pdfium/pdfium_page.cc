@@ -157,7 +157,7 @@ base::Value* PDFiumPage::GetTextBoxAsValue(double page_height,
     FPDFText_GetBoundedText(GetTextPage(), left, top, right, bottom, NULL, 0);
   if (char_count > 0) {
     unsigned short* data = reinterpret_cast<unsigned short*>(
-        WriteInto(&text_utf16, char_count + 1));
+        base::WriteInto(&text_utf16, char_count + 1));
     FPDFText_GetBoundedText(GetTextPage(),
                             left, top, right, bottom,
                             data, char_count);

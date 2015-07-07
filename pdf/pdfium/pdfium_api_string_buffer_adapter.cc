@@ -19,7 +19,7 @@ PDFiumAPIStringBufferAdapter<StringType>::PDFiumAPIStringBufferAdapter(
     size_t expected_size,
     bool check_expected_size)
     : str_(str),
-      data_(WriteInto(str, expected_size + 1)),
+      data_(base::WriteInto(str, expected_size + 1)),
       expected_size_(expected_size),
       check_expected_size_(check_expected_size),
       is_closed_(false) {

@@ -71,7 +71,8 @@ class CertVerificationContextOpenSSL : public CertVerificationContext {
     std::string common_name;
     common_name_length = X509_NAME_get_text_by_NID(
         x509_->cert_info->subject, NID_commonName,
-        WriteInto(&common_name, static_cast<size_t>(common_name_length) + 1),
+        base::WriteInto(&common_name,
+                        static_cast<size_t>(common_name_length) + 1),
         common_name_length + 1);
     if (common_name_length < 0)
       return std::string();

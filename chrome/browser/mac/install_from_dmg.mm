@@ -148,7 +148,7 @@ bool MediaResidesOnDiskImage(io_service_t media, std::string* image_path) {
       LOG(ERROR) << "image_path_data is unexpectedly empty";
       return true;
     }
-    char* image_path_c = WriteInto(image_path, length + 1);
+    char* image_path_c = base::WriteInto(image_path, length + 1);
     CFDataGetBytes(image_path_data,
                    CFRangeMake(0, length),
                    reinterpret_cast<UInt8*>(image_path_c));

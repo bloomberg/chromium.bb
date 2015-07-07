@@ -76,7 +76,7 @@ void WebAuthFlow::Start() {
   // Attach a random ID string to the window so we can recoginize it
   // in OnAppWindowAdded.
   std::string random_bytes;
-  crypto::RandBytes(WriteInto(&random_bytes, 33), 32);
+  crypto::RandBytes(base::WriteInto(&random_bytes, 33), 32);
   base::Base64Encode(random_bytes, &app_window_key_);
 
   // identityPrivate.onWebFlowRequest(app_window_key, provider_url_, mode_)

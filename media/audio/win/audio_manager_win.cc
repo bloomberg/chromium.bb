@@ -197,7 +197,7 @@ base::string16 AudioManagerWin::GetAudioInputDeviceModel() {
     return base::string16();  // No audio capture device.
 
   base::string16 device_interface_name;
-  base::string16::value_type* name_ptr = WriteInto(&device_interface_name,
+  base::string16::value_type* name_ptr = base::WriteInto(&device_interface_name,
       device_interface_name_size / bytes_in_char16);
   waveInMessage(reinterpret_cast<HWAVEIN>(device_id),
                 DRV_QUERYDEVICEINTERFACE,

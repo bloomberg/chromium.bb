@@ -75,11 +75,12 @@ DeviceType GetDeviceType(const base::string16& mount_point) {
   base::string16 device_path;
   base::string16 device_path_slash;
   DWORD dos_device = QueryDosDevice(
-      device.c_str(), WriteInto(&device_path, kMaxPathBufLen), kMaxPathBufLen);
+      device.c_str(), base::WriteInto(&device_path, kMaxPathBufLen),
+      kMaxPathBufLen);
   base::string16 device_slash = base::string16(L"\\\\.\\");
   device_slash += device;
   DWORD dos_device_slash = QueryDosDevice(
-      device_slash.c_str(), WriteInto(&device_path_slash, kMaxPathBufLen),
+      device_slash.c_str(), base::WriteInto(&device_path_slash, kMaxPathBufLen),
       kMaxPathBufLen);
   if (dos_device == 0 && dos_device_slash == 0)
     return FLOPPY;
@@ -126,7 +127,7 @@ bool GetDeviceDetails(const base::FilePath& device_path, StorageInfo* info) {
 
   base::string16 mount_point;
   if (!GetVolumePathName(device_path.value().c_str(),
-                         WriteInto(&mount_point, kMaxPathBufLen),
+                         base::WriteInto(&mount_point, kMaxPathBufLen),
                          kMaxPathBufLen)) {
     return false;
   }
@@ -136,13 +137,13 @@ bool GetDeviceDetails(const base::FilePath& device_path, StorageInfo* info) {
   // returns a GUID associated with the device, not the volume.
   base::string16 guid;
   if (!GetVolumeNameForVolumeMountPoint(mount_point.c_str(),
-                                        WriteInto(&guid, kMaxPathBufLen),
+                                        base::WriteInto(&guid, kMaxPathBufLen),
                                         kMaxPathBufLen)) {
     return false;
   }
   // In case it has two GUID's (see above mentioned blog), do it again.
   if (!GetVolumeNameForVolumeMountPoint(guid.c_str(),
-                                        WriteInto(&guid, kMaxPathBufLen),
+                                        base::WriteInto(&guid, kMaxPathBufLen),
                                         kMaxPathBufLen)) {
     return false;
   }
@@ -168,7 +169,7 @@ bool GetDeviceDetails(const base::FilePath& device_path, StorageInfo* info) {
   // name set.
   base::string16 volume_label;
   GetVolumeInformationW(device_path.value().c_str(),
-                        WriteInto(&volume_label, kMaxPathBufLen),
+                        base::WriteInto(&volume_label, kMaxPathBufLen),
                         kMaxPathBufLen, NULL, NULL, NULL, NULL, 0);
 
   uint64 total_size_in_bytes = GetVolumeSize(mount_point);
@@ -187,20 +188,21 @@ bool GetDeviceDetails(const base::FilePath& device_path, StorageInfo* info) {
 std::vector<base::FilePath> GetAttachedDevices() {
   std::vector<base::FilePath> result;
   base::string16 volume_name;
-  HANDLE find_handle = FindFirstVolume(WriteInto(&volume_name, kMaxPathBufLen),
-                                       kMaxPathBufLen);
+  HANDLE find_handle = FindFirstVolume(
+      base::WriteInto(&volume_name, kMaxPathBufLen), kMaxPathBufLen);
   if (find_handle == INVALID_HANDLE_VALUE)
     return result;
 
   while (true) {
     base::string16 volume_path;
     DWORD return_count;
-    if (GetVolumePathNamesForVolumeName(volume_name.c_str(),
-                                        WriteInto(&volume_path, kMaxPathBufLen),
-                                        kMaxPathBufLen, &return_count)) {
+    if (GetVolumePathNamesForVolumeName(
+            volume_name.c_str(), base::WriteInto(&volume_path, kMaxPathBufLen),
+            kMaxPathBufLen, &return_count)) {
       result.push_back(base::FilePath(volume_path));
     }
-    if (!FindNextVolume(find_handle, WriteInto(&volume_name, kMaxPathBufLen),
+    if (!FindNextVolume(find_handle,
+                        base::WriteInto(&volume_name, kMaxPathBufLen),
                         kMaxPathBufLen)) {
       if (GetLastError() != ERROR_NO_MORE_FILES)
         DPLOG(ERROR);

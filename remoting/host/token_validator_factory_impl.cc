@@ -99,7 +99,8 @@ std::string TokenValidatorImpl::CreateScope(
     const std::string& local_jid,
     const std::string& remote_jid) {
   std::string nonce_bytes;
-  crypto::RandBytes(WriteInto(&nonce_bytes, kNonceLength + 1), kNonceLength);
+  crypto::RandBytes(base::WriteInto(&nonce_bytes, kNonceLength + 1),
+                    kNonceLength);
   std::string nonce;
   base::Base64Encode(nonce_bytes, &nonce);
   return "client:" + remote_jid + " host:" + local_jid + " nonce:" + nonce;

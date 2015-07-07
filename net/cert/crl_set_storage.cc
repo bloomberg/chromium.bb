@@ -520,7 +520,7 @@ std::string CRLSetStorage::Serialize(const CRLSet* crl_set) {
 
   std::string ret;
   uint8_t* out = reinterpret_cast<uint8_t*>(
-      WriteInto(&ret, len + 1 /* to include final NUL */));
+      base::WriteInto(&ret, len + 1 /* to include final NUL */));
   size_t off = 0;
   CHECK(base::IsValueInRangeForNumericType<uint16_t>(header.size()));
   out[off++] = static_cast<uint8_t>(header.size());

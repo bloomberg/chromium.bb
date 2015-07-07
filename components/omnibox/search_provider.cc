@@ -1467,7 +1467,7 @@ std::string SearchProvider::GetSessionToken() {
   if (current_time > token_expiration_time_) {
     const size_t kTokenBytes = 12;
     std::string raw_data;
-    base::RandBytes(WriteInto(&raw_data, kTokenBytes + 1), kTokenBytes);
+    base::RandBytes(base::WriteInto(&raw_data, kTokenBytes + 1), kTokenBytes);
     base::Base64Encode(raw_data, &current_token_);
 
     // Make the base64 encoded value URL and filename safe(see RFC 3548).

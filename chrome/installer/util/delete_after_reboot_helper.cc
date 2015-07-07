@@ -248,7 +248,7 @@ void StringArrayToMultiSZBytes(const std::vector<PendingMove>& strings,
 base::FilePath GetShortPathName(const base::FilePath& path) {
   std::wstring short_path;
   DWORD length = GetShortPathName(path.value().c_str(),
-                                  WriteInto(&short_path, MAX_PATH),
+                                  base::WriteInto(&short_path, MAX_PATH),
                                   MAX_PATH);
   DWORD last_error = ::GetLastError();
   DLOG_IF(WARNING, length == 0 && last_error != ERROR_PATH_NOT_FOUND)

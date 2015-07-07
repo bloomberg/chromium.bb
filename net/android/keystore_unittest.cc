@@ -97,7 +97,7 @@ std::string GetOpenSSLErrorString(void) {
 // Return the string's new buffer in memory, as an 'unsigned char*'
 // pointer.
 unsigned char* OpenSSLWriteInto(std::string* str, size_t size) {
-  return reinterpret_cast<unsigned char*>(WriteInto(str, size + 1));
+  return reinterpret_cast<unsigned char*>(base::WriteInto(str, size + 1));
 }
 
 // Load a given private key file into an EVP_PKEY.

@@ -498,7 +498,7 @@ std::string EntryImplV3::GetKey() const {
   if (!offset && key_file->GetLength() != static_cast<size_t>(key_len))
     return std::string();
 
-  if (!key_file->Read(WriteInto(&key_, key_len), key_len, offset))
+  if (!key_file->Read(base::WriteInto(&key_, key_len), key_len, offset))
     key_.clear();
   return key_;
 }

@@ -263,7 +263,7 @@ void EasyUnlockCreateKeysOperation::CreateKeyForDeviceAtIndex(size_t index) {
   }
 
   std::string user_key;
-  crypto::RandBytes(WriteInto(&user_key, kUserKeyByteSize + 1),
+  crypto::RandBytes(base::WriteInto(&user_key, kUserKeyByteSize + 1),
                     kUserKeyByteSize);
 
   scoped_ptr<crypto::SymmetricKey> session_key(

@@ -50,7 +50,7 @@ bool GetAttributeValue(PCERT_RDN_ATTR attribute,
   std::wstring wide_name;
   DWORD chars_written = CertRDNValueToStrW(
       attribute->dwValueType, &attribute->Value,
-      WriteInto(&wide_name, chars_needed), chars_needed);
+      base::WriteInto(&wide_name, chars_needed), chars_needed);
   if (chars_written <= 1)
     return false;
   wide_name.resize(chars_written - 1);

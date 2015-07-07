@@ -41,7 +41,7 @@ std::wstring ExpandEnvironmentVariables(const std::wstring& path) {
   DWORD path_len = MAX_PATH;
   do {
     DWORD result = ExpandEnvironmentStrings(
-        path.c_str(), WriteInto(&path_expanded, path_len), path_len);
+        path.c_str(), base::WriteInto(&path_expanded, path_len), path_len);
     if (!result) {
       // Failed to expand variables. Return the original string.
       DPLOG(ERROR) << path;

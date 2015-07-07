@@ -160,7 +160,7 @@ bool Nigori::Encrypt(const std::string& value, std::string* encrypted) const {
     return false;
 
   std::string iv;
-  crypto::RandBytes(WriteInto(&iv, kIvSize + 1), kIvSize);
+  crypto::RandBytes(base::WriteInto(&iv, kIvSize + 1), kIvSize);
 
   Encryptor encryptor;
   if (!encryptor.Init(encryption_key_.get(), Encryptor::CBC, iv))

@@ -224,7 +224,8 @@ bool GetPrecertLogEntry(X509Certificate::OSCertHandle leaf,
   int len = i2d_X509_CINF(leaf_copy->cert_info, NULL);
   if (len < 0)
     return false;
-  uint8_t* ptr = reinterpret_cast<uint8_t*>(WriteInto(&to_be_signed, len + 1));
+  uint8_t* ptr =
+      reinterpret_cast<uint8_t*>(base::WriteInto(&to_be_signed, len + 1));
   if (i2d_X509_CINF(leaf_copy->cert_info, &ptr) < 0)
     return false;
 

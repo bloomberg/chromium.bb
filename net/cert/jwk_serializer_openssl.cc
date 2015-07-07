@@ -62,9 +62,11 @@ bool ConvertEcKeyToJwk(EVP_PKEY* pkey,
   std::string x_bytes;
   std::string y_bytes;
   if (!BN_bn2bin_padded(reinterpret_cast<uint8_t*>(
-          WriteInto(&x_bytes, degree_bytes + 1)), degree_bytes, x.get()) ||
+                            base::WriteInto(&x_bytes, degree_bytes + 1)),
+                        degree_bytes, x.get()) ||
       !BN_bn2bin_padded(reinterpret_cast<uint8_t*>(
-          WriteInto(&y_bytes, degree_bytes + 1)), degree_bytes, y.get())) {
+                            base::WriteInto(&y_bytes, degree_bytes + 1)),
+                        degree_bytes, y.get())) {
     return false;
   }
 

@@ -378,7 +378,8 @@ bool IMM32Manager::GetString(HIMC imm_context,
     return false;
   DCHECK_EQ(0u, string_size % sizeof(wchar_t));
   ::ImmGetCompositionString(imm_context, type,
-      WriteInto(result, (string_size / sizeof(wchar_t)) + 1), string_size);
+      base::WriteInto(result, (string_size / sizeof(wchar_t)) + 1),
+      string_size);
   return true;
 }
 

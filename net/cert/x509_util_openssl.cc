@@ -136,7 +136,7 @@ bool DerEncodeCert(X509* x509, std::string* out_der) {
   if (len < 0)
     return false;
 
-  uint8_t* ptr = reinterpret_cast<uint8_t*>(WriteInto(out_der, len + 1));
+  uint8_t* ptr = reinterpret_cast<uint8_t*>(base::WriteInto(out_der, len + 1));
   if (i2d_X509(x509, &ptr) < 0) {
     NOTREACHED();
     out_der->clear();

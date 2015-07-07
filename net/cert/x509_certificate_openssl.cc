@@ -203,7 +203,7 @@ void X509Certificate::Initialize() {
     // value.
     int bytes_required = i2c_ASN1_INTEGER(serial_num, NULL);
     unsigned char* buffer = reinterpret_cast<unsigned char*>(
-        WriteInto(&serial_number_, bytes_required + 1));
+        base::WriteInto(&serial_number_, bytes_required + 1));
     int bytes_written = i2c_ASN1_INTEGER(serial_num, &buffer);
     DCHECK_EQ(static_cast<size_t>(bytes_written), serial_number_.size());
   }

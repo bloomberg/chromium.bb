@@ -113,8 +113,8 @@ bool Encryptor::Crypt(bool do_encrypt,
   const size_t output_size = input.size() + (do_encrypt ? iv_.size() : 0);
   CHECK_GT(output_size, 0u);
   CHECK_GT(output_size + 1, input.size());
-  uint8* out_ptr = reinterpret_cast<uint8*>(WriteInto(&result,
-                                                      output_size + 1));
+  uint8* out_ptr =
+      reinterpret_cast<uint8*>(base::WriteInto(&result, output_size + 1));
   int out_len;
   if (!EVP_CipherUpdate(ctx.get(), out_ptr, &out_len,
                         reinterpret_cast<const uint8*>(input.data()),
@@ -154,7 +154,8 @@ bool Encryptor::CryptCTR(bool do_encrypt,
   CHECK_GT(out_size + 1, input.size());
 
   std::string result;
-  uint8* out_ptr = reinterpret_cast<uint8*>(WriteInto(&result, out_size + 1));
+  uint8* out_ptr =
+      reinterpret_cast<uint8*>(base::WriteInto(&result, out_size + 1));
 
   uint8_t ivec[AES_BLOCK_SIZE] = { 0 };
   uint8_t ecount_buf[AES_BLOCK_SIZE] = { 0 };

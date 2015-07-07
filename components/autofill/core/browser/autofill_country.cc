@@ -1088,7 +1088,7 @@ const std::string AutofillCountry::CountryCodeForLocale(
   std::string likely_locale;
   UErrorCode error_ignored = U_ZERO_ERROR;
   uloc_addLikelySubtags(locale.c_str(),
-                        WriteInto(&likely_locale, kLocaleCapacity),
+                        base::WriteInto(&likely_locale, kLocaleCapacity),
                         kLocaleCapacity,
                         &error_ignored);
 
