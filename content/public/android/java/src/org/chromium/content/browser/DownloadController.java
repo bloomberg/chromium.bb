@@ -8,6 +8,7 @@ import android.content.Context;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.ui.base.WindowAndroid.FileAccessCallback;
 
 /**
  * Java counterpart of android DownloadController.
@@ -162,6 +163,35 @@ public class DownloadController {
         }
     }
 
+    /**
+     * Returns whether file access is allowed.
+     *
+     * @param view The ContentViewCore to access file system.
+     * @return true if allowed, or false otherwise.
+     */
+    @CalledByNative
+    private boolean hasFileAccess(ContentViewCore view) {
+        return view.getWindowAndroid().hasFileAccess();
+    }
+
+    /**
+     * Called to prompt user with the file access permission.
+     *
+     * @param view The ContentViewCore to access file system.
+     * @param callbackId The native callback function pointer.
+     */
+    @CalledByNative
+    private void requestFileAccess(ContentViewCore view, final long callbackId) {
+        FileAccessCallback callback = new FileAccessCallback() {
+            @Override
+            public void onFileAccessResult(boolean granted) {
+                nativeOnRequestFileAccessResult(callbackId, granted);
+            }
+        };
+        view.getWindowAndroid().requestFileAccess(callback);
+    }
+
     // native methods
     private native void nativeInit();
+    private native void nativeOnRequestFileAccessResult(long callbackId, boolean granted);
 }

@@ -118,6 +118,8 @@
       'browser/android/download/chrome_download_manager_overwrite_infobar_delegate.h',
       'browser/android/download/download_overwrite_infobar_delegate.cc',
       'browser/android/download/download_overwrite_infobar_delegate.h',
+      'browser/android/download/mock_download_controller_android.cc',
+      'browser/android/download/mock_download_controller_android.h',
       'browser/android/favicon_helper.cc',
       'browser/android/favicon_helper.h',
       'browser/android/feature_utilities.cc',

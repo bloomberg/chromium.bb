@@ -39,6 +39,10 @@
 #include "content/public/common/webplugininfo.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "content/public/browser/android/download_controller_android.h"
+#endif
+
 #if defined(OS_WIN)
 #include "chrome/browser/ui/pdf/adobe_reader_info_win.h"
 #endif
@@ -86,7 +90,7 @@ DownloadTargetDeterminer::DownloadTargetDeterminer(
     DownloadPrefs* download_prefs,
     DownloadTargetDeterminerDelegate* delegate,
     const CompletionCallback& callback)
-    : next_state_(STATE_GENERATE_TARGET_PATH),
+    : next_state_(STATE_PROMPT_USER_FOR_PERMISSION),
       should_prompt_(false),
       should_notify_extensions_(false),
       create_target_directory_(false),
@@ -125,6 +129,9 @@ void DownloadTargetDeterminer::DoLoop() {
     next_state_ = STATE_NONE;
 
     switch (current_state) {
+      case STATE_PROMPT_USER_FOR_PERMISSION:
+        result = DoPromptUserForPermission();
+        break;
       case STATE_GENERATE_TARGET_PATH:
         result = DoGenerateTargetPath();
         break;
@@ -170,6 +177,35 @@ void DownloadTargetDeterminer::DoLoop() {
   if (result == COMPLETE)
     ScheduleCallbackAndDeleteSelf();
 }
+
+DownloadTargetDeterminer::Result
+    DownloadTargetDeterminer::DoPromptUserForPermission() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  next_state_ = STATE_GENERATE_TARGET_PATH;
+#if defined(OS_ANDROID)
+  content::WebContents* web_contents = download_->GetWebContents();
+  content::DownloadControllerAndroid::Get()->AcquireFileAccessPermission(
+      web_contents,
+      base::Bind(&DownloadTargetDeterminer::PromptUserForPermissionDone,
+                 weak_ptr_factory_.GetWeakPtr()));
+  return QUIT_DOLOOP;
+#else
+  return CONTINUE;
+#endif
+}
+
+#if defined(OS_ANDROID)
+void DownloadTargetDeterminer::PromptUserForPermissionDone(bool granted) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_EQ(STATE_GENERATE_TARGET_PATH, next_state_);
+  if (!granted) {
+    CancelOnFailureAndDeleteSelf();
+    return;
+  }
+
+  DoLoop();
+}
+#endif
 
 DownloadTargetDeterminer::Result
     DownloadTargetDeterminer::DoGenerateTargetPath() {

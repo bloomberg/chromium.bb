@@ -7,8 +7,10 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/deferred_download_observer.h"
@@ -38,11 +40,29 @@
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
 
+namespace {
+// Guards download_controller_
+base::LazyInstance<base::Lock> g_download_controller_lock_;
+}
+
 namespace content {
 
 // JNI methods
 static void Init(JNIEnv* env, jobject obj) {
   DownloadControllerAndroidImpl::GetInstance()->Init(env, obj);
+}
+
+static void OnRequestFileAccessResult(
+    JNIEnv* env, jobject obj, jlong callback_id, jboolean granted) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(callback_id);
+
+  // Convert java long long int to c++ pointer, take ownership.
+  scoped_ptr<DownloadControllerAndroid::AcquireFileAccessPermissionCallback> cb(
+      reinterpret_cast<
+          DownloadControllerAndroid::AcquireFileAccessPermissionCallback*>(
+              callback_id));
+  cb->Run(granted);
 }
 
 struct DownloadControllerAndroidImpl::JavaObject {
@@ -59,7 +79,17 @@ bool DownloadControllerAndroidImpl::RegisterDownloadController(JNIEnv* env) {
 
 // static
 DownloadControllerAndroid* DownloadControllerAndroid::Get() {
-  return DownloadControllerAndroidImpl::GetInstance();
+  base::AutoLock lock(g_download_controller_lock_.Get());
+  if (!DownloadControllerAndroid::download_controller_)
+    download_controller_ = DownloadControllerAndroidImpl::GetInstance();
+  return DownloadControllerAndroid::download_controller_;
+}
+
+//static
+void DownloadControllerAndroid::SetDownloadControllerAndroid(
+    DownloadControllerAndroid* download_controller) {
+  base::AutoLock lock(g_download_controller_lock_.Get());
+  DownloadControllerAndroid::download_controller_ = download_controller;
 }
 
 // static
@@ -95,6 +125,48 @@ void DownloadControllerAndroidImpl::CancelDeferredDownload(
       return;
     }
   }
+}
+
+void DownloadControllerAndroidImpl::AcquireFileAccessPermission(
+    WebContents* web_contents,
+    const DownloadControllerAndroid::AcquireFileAccessPermissionCallback& cb) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!web_contents) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE, base::Bind(cb, false));
+    return;
+  }
+
+  ScopedJavaLocalRef<jobject> view =
+      GetContentViewCoreFromWebContents(web_contents);
+  if (view.is_null()) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE, base::Bind(cb, false));
+    return;
+  }
+
+  if (HasFileAccessPermission(view)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE, base::Bind(cb, true));
+    return;
+  }
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  // Make copy on the heap so we can pass the pointer through JNI.
+  intptr_t callback_id = reinterpret_cast<intptr_t>(
+      new DownloadControllerAndroid::AcquireFileAccessPermissionCallback(cb));
+  Java_DownloadController_requestFileAccess(
+      env, GetJavaObject()->Controller(env).obj(), view.obj(), callback_id);
+}
+
+bool DownloadControllerAndroidImpl::HasFileAccessPermission(
+    ScopedJavaLocalRef<jobject> j_content_view_core) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!j_content_view_core.is_null());
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_DownloadController_hasFileAccess(
+      env, GetJavaObject()->Controller(env).obj(), j_content_view_core.obj());
 }
 
 void DownloadControllerAndroidImpl::CreateGETDownload(
@@ -211,9 +283,7 @@ void DownloadControllerAndroidImpl::StartAndroidDownload(
     int render_process_id, int render_view_id,
     const DownloadInfoAndroid& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  JNIEnv* env = base::android::AttachCurrentThread();
 
-  // Call newHttpGetDownload
   WebContents* web_contents = GetWebContents(render_process_id, render_view_id);
   if (!web_contents) {
     // The view went away. Can't proceed.
@@ -233,6 +303,32 @@ void DownloadControllerAndroidImpl::StartAndroidDownload(
                    info)));
     return;
   }
+
+  AcquireFileAccessPermission(
+      web_contents,
+      base::Bind(&DownloadControllerAndroidImpl::StartAndroidDownloadInternal,
+                 base::Unretained(this), render_process_id, render_view_id,
+                 info));
+}
+
+void DownloadControllerAndroidImpl::StartAndroidDownloadInternal(
+    int render_process_id, int render_view_id,
+    const DownloadInfoAndroid& info, bool allowed) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!allowed)
+    return;
+
+  // Call newHttpGetDownload
+  WebContents* web_contents = GetWebContents(render_process_id, render_view_id);
+  // The view went away. Can't proceed.
+  if (!web_contents)
+    return;
+  ScopedJavaLocalRef<jobject> view =
+      GetContentViewCoreFromWebContents(web_contents);
+  if (view.is_null())
+    return;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jurl =
       ConvertUTF8ToJavaString(env, info.url.spec());
   ScopedJavaLocalRef<jstring> juser_agent =

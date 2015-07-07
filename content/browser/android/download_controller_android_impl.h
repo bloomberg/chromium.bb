@@ -54,6 +54,11 @@ class DownloadControllerAndroidImpl : public DownloadControllerAndroid,
   // Removes a deferred download from |deferred_downloads_|.
   void CancelDeferredDownload(DeferredDownloadObserver* observer);
 
+  // DownloadControllerAndroid implementation.
+  void AcquireFileAccessPermission(
+      WebContents* web_contents,
+      const AcquireFileAccessPermissionCallback& callback) override;
+
  private:
   // Used to store all the information about an Android download.
   struct DownloadInfoAndroid {
@@ -80,6 +85,10 @@ class DownloadControllerAndroidImpl : public DownloadControllerAndroid,
   friend struct DefaultSingletonTraits<DownloadControllerAndroidImpl>;
   DownloadControllerAndroidImpl();
   ~DownloadControllerAndroidImpl() override;
+
+  // Helper method for implementing AcquireFileAccessPermission().
+  bool HasFileAccessPermission(
+      base::android::ScopedJavaLocalRef<jobject> j_content_view_core);
 
   // DownloadControllerAndroid implementation.
   void CreateGETDownload(int render_process_id,
@@ -116,6 +125,10 @@ class DownloadControllerAndroidImpl : public DownloadControllerAndroid,
   void StartAndroidDownload(int render_process_id,
                             int render_view_id,
                             const DownloadInfoAndroid& info);
+  void StartAndroidDownloadInternal(int render_process_id,
+                                    int render_view_id,
+                                    const DownloadInfoAndroid& info,
+                                    bool allowed);
 
   // The download item contains dangerous file types.
   void OnDangerousDownload(DownloadItem *item);

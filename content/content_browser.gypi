@@ -71,6 +71,7 @@
       'public/browser/android/content_view_core.h',
       'public/browser/android/content_view_layer_renderer.h',
       'public/browser/android/devtools_auth.h',
+      'public/browser/android/download_controller_android.cc',
       'public/browser/android/download_controller_android.h',
       'public/browser/android/external_video_surface_container.h',
       'public/browser/android/synchronous_compositor.h',
