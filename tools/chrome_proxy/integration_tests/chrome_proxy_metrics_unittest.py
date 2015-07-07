@@ -8,7 +8,7 @@ import unittest
 from common import chrome_proxy_metrics as common_metrics
 from common import network_metrics_unittest as network_unittest
 from integration_tests import chrome_proxy_metrics as metrics
-from telemetry.unittest_util import test_page_test_results
+from telemetry.testing import test_page_test_results
 
 TEST_EXTRA_VIA_HEADER = '1.1 EXTRA_VIA_HEADER'
 

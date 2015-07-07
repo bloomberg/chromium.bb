@@ -5,8 +5,8 @@
 from measurements import blink_style
 
 from telemetry import decorators
-from telemetry.unittest_util import options_for_unittests
-from telemetry.unittest_util import page_test_test_case
+from telemetry.testing import options_for_unittests
+from telemetry.testing import page_test_test_case
 
 
 class BlinkStyleTest(page_test_test_case.PageTestTestCase):

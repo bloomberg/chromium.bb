@@ -4,8 +4,8 @@
 
 import unittest
 
+from telemetry.testing import test_page_test_results
 from telemetry.timeline import model as model_module
-from telemetry.unittest_util import test_page_test_results
 from telemetry.web_perf import timeline_interaction_record as tir_module
 
 from metrics import timeline

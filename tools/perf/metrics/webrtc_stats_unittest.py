@@ -4,7 +4,7 @@
 
 import unittest
 
-from telemetry.unittest_util import simple_mock
+from telemetry.testing import simple_mock
 
 from metrics import webrtc_stats
 

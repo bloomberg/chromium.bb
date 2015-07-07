@@ -6,8 +6,8 @@ import base64
 import unittest
 
 from common import network_metrics
+from telemetry.testing import test_page_test_results
 from telemetry.timeline import event
-from telemetry.unittest_util import test_page_test_results
 
 
 HTML_BODY = """<!DOCTYPE HTML>

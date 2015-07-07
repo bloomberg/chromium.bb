@@ -9,7 +9,7 @@ import unittest
 from profile_creators.history_profile_extender import HistoryProfileExtender
 from telemetry.core import util
 from telemetry import decorators
-from telemetry.unittest_util import options_for_unittests
+from telemetry.testing import options_for_unittests
 
 util.AddDirToPythonPath(util.GetTelemetryDir(), 'third_party', 'mock')
 import mock  # pylint: disable=import-error

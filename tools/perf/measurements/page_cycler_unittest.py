@@ -8,7 +8,7 @@ import unittest
 from telemetry.internal.browser import browser_options
 from telemetry.internal.results import page_test_results
 from telemetry.internal import story_runner
-from telemetry.unittest_util import simple_mock
+from telemetry.testing import simple_mock
 
 from measurements import page_cycler
 from metrics import keychain_metric

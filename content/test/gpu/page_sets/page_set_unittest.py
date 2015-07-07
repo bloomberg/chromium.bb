@@ -4,7 +4,7 @@
 
 import os
 
-from telemetry.unittest_util import story_set_smoke_test
+from telemetry.testing import story_set_smoke_test
 
 
 class StorySetUnitTest(story_set_smoke_test.StorySetSmokeTest):
