@@ -1,7 +1,17 @@
-# Most of the flags in this file are duplicated to refer to both the pre- and
-# post-jarjar remapping versions of the class names. This enables the same
-# config file to be used whether jarjar is enabled or not.
+# Don't rename anything, it makes stack traces unintelligible. We only allow the
+# obfuscation pass to run so that we can discard attributes like local variable
+# tables.
+-keepnames class *** { *; }
 
+# Keep source file and line number information for stack traces.
+-keepattributes SourceFile,LineNumberTable
+
+# Keep all runtime visible annotations.
+-keepattributes RuntimeVisibleAnnotations
+
+# Disable optimization as this causes proguard to remove seemingly random stuff,
+# including things explicitly kept in this configuration.
+-dontoptimize
 
 # Keep the factory and its public members; it's the main entry point used by the
 # framework.
@@ -9,93 +19,68 @@
     public *;
 }
 
-# Keep the native methods bound to plat_support.
--keepclasseswithmembers class com.android.webview.chromium.** {
-  native <methods>;
-}
-
-# Keep everything related to the org.chromium JNI interface.
--keepclasseswithmembers class com.android.org.chromium.** {
+# Keep JNI interfaces.
+-keepclasseswithmembers class com.android.webview.chromium.**,org.chromium.** {
   @**.AccessedByNative <fields>;
 }
--keepclasseswithmembers class com.android.org.chromium.** {
+-keepclasseswithmembers class com.android.webview.chromium.**,org.chromium.** {
   @**.CalledByNative <methods>;
 }
--keepclasseswithmembers class com.android.org.chromium.** {
+-keepclasseswithmembers class com.android.webview.chromium.**,org.chromium.** {
   @**.CalledByNativeUnchecked <methods>;
 }
--keepclasseswithmembers class com.android.org.chromium.** {
+-keepclasseswithmembers class com.android.webview.chromium.**,org.chromium.** {
   native <methods>;
 }
 
-# Keep methods which get bound to JS interfaces via reflection.
--keepclasseswithmembers class com.android.org.chromium.** {
-  @**.JavascriptInterface <methods>;
+# Keep things explicitly marked as used by reflection
+-keepclasseswithmembers class com.android.webview.chromium.**,org.chromium.** {
+  @**.UsedByReflection *;
 }
 
-# Silence notes caused by use of @VisibleForTesting inside guava. This doesn't
-# happen when using jarjar because @VisibleForTesting gets renamed as well.
--dontnote com.google.common.annotations.VisibleForTesting
+# Linker dynamically casts to $TestRunner when running tests. We don't run these
+# tests in WebView.
+-dontnote org.chromium.base.library_loader.Linker$TestRunner
+
+# Don't note about the API 21 compatibility code which references various
+# hidden APIs via reflection.
+-dontnote com.android.webview.chromium.WebViewDelegateFactory$Api21CompatibilityDelegate
+
+# DefaultAndroidKeyStore uses reflection to access internal OpenSSL state.
+-dontnote org.chromium.net.DefaultAndroidKeyStore
 
 # MediaPlayerBridge uses reflection to access internal metadata.
--dontnote com.android.org.chromium.media.MediaPlayerBridge
-
-# AndroidKeyStore uses reflection to access internal OpenSSL state.
--dontnote com.android.org.chromium.net.AndroidKeyStore
-
-# TraceEvent uses reflection to access internal trace info.
--dontnote com.android.org.chromium.content.common.TraceEvent
+-dontnote org.chromium.media.MediaPlayerBridge
 
 # ProxyChangeListener$ProxyReceiver uses reflection to access internal
 # android.net.ProxyProperties.
--dontnote com.android.org.chromium.net.ProxyChangeListener$ProxyReceiver
+-dontnote org.chromium.net.ProxyChangeListener$ProxyReceiver
 
-# com.android.org.chromium.content.app.Linker dynamically casts to $TestRunner
-# when running tests. We don't run these tests in WebView.
--dontnote com.android.org.chromium.content.app.Linker$TestRunner
+# Silence warnings about reflection used to check for onShow/HideCustomView.
+# This class is not really kept since it's in a library jar.
+-keep class android.webkit.WebChromeClient {
+  void onShowCustomView(...);
+  void onHideCustomView();
+}
 
-# We need to keep these explicitly as they are parameters to methods which
-# are entry points via @calledByNative.
--keep class com.android.org.chromium.ui.autofill.AutofillSuggestion
--keep class com.android.org.chromium.content.browser.ContentVideoViewClient
--keep class com.android.org.chromium.ui.ColorSuggestion
--keep class com.android.org.chromium.content.browser.input.DateTimeSuggestion
--keep class com.android.org.chromium.content.browser.ContentViewCore$JavaScriptCallback
--keep class com.android.org.chromium.content_public.browser.NavigationController
-
-# Keep these classes as they are parameters to methods that are native entry points.
--keep class com.android.org.chromium.android_webview.AwBrowserContext
--keep class com.android.org.chromium.base.library_loader.Linker$LibInfo
-
-# Keep this class and members as accessed via reflection
+# Accessed via reflection
 -keep class com.android.webview.chromium.Drp {
-  public *;
+  public java.lang.String KEY;
 }
 
-# Keep finalizer stuff from google-common used via reflection
--keepclassmembers class com.android.org.chromium.com.google.common.** {
-  *** finalizeReferent();
-}
--keepclassmembers class com.android.org.chromium.com.google.common.** {
-  *** startFinalizer(java.lang.Class,java.lang.Object);
-}
-
-# Keep support framework support for SmartClip.
+# Keep framework support for SmartClip.
 -keep class com.android.webview.chromium.WebViewChromium {
   public void extractSmartClipData(int,int,int,int);
   public void setSmartClipResultHandler(android.os.Handler);
 }
 
-# We need to explicitly keep classes and constructors referenced only in
-# layout resources.
--keep class com.android.org.chromium.ui.ColorPickerAdvanced {
-  <init>(...);
-}
+# Ignore notes about the support library's use of reflection.
+-dontnote android.support.**
 
--keep class com.android.org.chromium.ui.ColorPickerSimple {
-  <init>(...);
-}
-
--keep class com.android.org.chromium.ui.ColorPickerMoreButton {
-  <init>(...);
+# Keep all enum values and valueOf methods. See
+# http://proguard.sourceforge.net/index.html#manual/examples.html
+# for the reason for this. Also, see http://crbug.com/248037.
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
 }
