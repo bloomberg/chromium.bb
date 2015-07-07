@@ -148,13 +148,15 @@ class NotForCommitChecker(object):
 # ======================================================================
 class GenericRegexChecker(object):
   """Base Class"""
-  def __init__(self, content_regex, line_regex=None, analyze_match=False):
+  def __init__(self, content_regex, line_regex=None,
+               analyze_match=False, message=''):
     self._content_regex = re.compile(content_regex, re.MULTILINE)
     if line_regex:
       self._line_regex = re.compile(line_regex)
     else:
       self._line_regex = re.compile(content_regex)
     self._analyze_match = analyze_match
+    self._message = message
 
   def FindProblems(self, unused_props, data):
     """Looks for presubmit issues in the data from a file."""
@@ -185,7 +187,7 @@ class GenericRegexChecker(object):
 
   def _RenderItem(self, no, line):
     """Returns a formatted message."""
-    return 'line %d: [%s]' % (no, repr(line))
+    return 'line %d: [%s] %s' % (no, repr(line), self._message)
 
   def FileFilter(self, unused_props):
     """Returns true if the file should be checked by the checker."""
@@ -331,7 +333,8 @@ class BuildConfigChecker(GenericRegexChecker):
         'include "native_client/src/include/build_config.h"|' +
         'NACL_ANDROID|NACL_LINUX|NACL_OSX|NACL_WINDOWS|' +
         'NACL_BUILD_ARCH|NACL_BUILD_SUBARCH',
-        analyze_match=True)
+        analyze_match=True,
+        message='must include "native_client/src/include/build_config.h"')
 
   def FindProblems(self, props, data):
     # Don't check build_config.h itself. The path is shortened here to make
