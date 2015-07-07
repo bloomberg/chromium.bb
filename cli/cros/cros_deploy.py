@@ -89,9 +89,6 @@ For more information of cros build usage:
         '--no-ping', dest='ping', action='store_false', default=True,
         help='Do not ping the device before attempting to connect to it.')
     parser.add_argument(
-        '--reflash', '-r', action='store_true',
-        help='Flash device with current Project SDK image as needed.')
-    parser.add_argument(
         '--dry-run', '-n', action='store_true',
         help='Output deployment plan but do not deploy anything.')
 
@@ -130,7 +127,6 @@ For more information of cros build usage:
         emerge_args=self.options.emerge_args,
         ssh_private_key=self.options.private_key,
         ping=self.options.ping,
-        reflash=self.options.reflash,
         force=self.options.force,
         dry_run=self.options.dry_run)
     logging.info('cros deploy completed successfully.')
