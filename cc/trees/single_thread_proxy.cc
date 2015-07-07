@@ -290,6 +290,9 @@ void SingleThreadProxy::CommitComplete() {
       << "Activation is expected to have synchronously occurred by now.";
   DCHECK(commit_blocking_task_runner_);
 
+  if (scheduler_on_impl_thread_)
+    scheduler_on_impl_thread_->DidCommit();
+
   // Notify commit complete on the impl side after activate to satisfy any
   // SetNextCommitWaitsForActivation calls.
   layer_tree_host_impl_->CommitComplete();
@@ -453,6 +456,12 @@ void SingleThreadProxy::DidActivateSyncTree() {
   // |commit_blocking_task_runner| would make sure all tasks posted during
   // commit/activation before CommitComplete.
   CommitComplete();
+}
+
+void SingleThreadProxy::WillPrepareTiles() {
+  DCHECK(Proxy::IsImplThread());
+  if (scheduler_on_impl_thread_)
+    scheduler_on_impl_thread_->WillPrepareTiles();
 }
 
 void SingleThreadProxy::DidPrepareTiles() {

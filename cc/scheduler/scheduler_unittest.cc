@@ -127,7 +127,10 @@ class FakeSchedulerClient : public SchedulerClient {
     PushAction("ScheduledActionDrawAndSwapForced");
     return DRAW_SUCCESS;
   }
-  void ScheduledActionCommit() override { PushAction("ScheduledActionCommit"); }
+  void ScheduledActionCommit() override {
+    PushAction("ScheduledActionCommit");
+    scheduler_->DidCommit();
+  }
   void ScheduledActionActivateSyncTree() override {
     PushAction("ScheduledActionActivateSyncTree");
   }
@@ -136,6 +139,8 @@ class FakeSchedulerClient : public SchedulerClient {
   }
   void ScheduledActionPrepareTiles() override {
     PushAction("ScheduledActionPrepareTiles");
+    scheduler_->WillPrepareTiles();
+    scheduler_->DidPrepareTiles();
   }
   void ScheduledActionInvalidateOutputSurface() override {
     actions_.push_back("ScheduledActionInvalidateOutputSurface");
@@ -450,12 +455,13 @@ TEST_F(SchedulerTest, SendBeginFramesToChildrenDeadlineNotAdjusted) {
   // Set up client with specified estimates.
   scheduler_settings_.use_external_begin_frame_source = true;
   SetUpScheduler(true);
-  fake_compositor_timing_history_->SetDrawDurationEstimate(
-      base::TimeDelta::FromMilliseconds(1));
+
   fake_compositor_timing_history_->SetBeginMainFrameToCommitDurationEstimate(
       base::TimeDelta::FromMilliseconds(2));
-  fake_compositor_timing_history_->SetCommitToActivateDurationEstimate(
+  fake_compositor_timing_history_->SetCommitToReadyToActivateDurationEstimate(
       base::TimeDelta::FromMilliseconds(4));
+  fake_compositor_timing_history_->SetDrawDurationEstimate(
+      base::TimeDelta::FromMilliseconds(1));
 
   EXPECT_FALSE(client_->needs_begin_frames());
   scheduler_->SetChildrenNeedBeginFrames(true);
@@ -710,8 +716,6 @@ class SchedulerClientThatsetNeedsDrawInsideDraw : public FakeSchedulerClient {
   SchedulerClientThatsetNeedsDrawInsideDraw()
       : FakeSchedulerClient(), request_redraws_(false) {}
 
-  void ScheduledActionSendBeginMainFrame() override {}
-
   void SetRequestRedrawsInsideDraw(bool enable) { request_redraws_ = enable; }
 
   DrawResult ScheduledActionDrawAndSwapIfPossible() override {
@@ -726,8 +730,6 @@ class SchedulerClientThatsetNeedsDrawInsideDraw : public FakeSchedulerClient {
     NOTREACHED();
     return DRAW_SUCCESS;
   }
-
-  void ScheduledActionCommit() override {}
 
  private:
   bool request_redraws_;
@@ -823,7 +825,6 @@ class SchedulerClientThatSetNeedsCommitInsideDraw : public FakeSchedulerClient {
   SchedulerClientThatSetNeedsCommitInsideDraw()
       : set_needs_commit_on_next_draw_(false) {}
 
-  void ScheduledActionSendBeginMainFrame() override {}
   DrawResult ScheduledActionDrawAndSwapIfPossible() override {
     // Only SetNeedsCommit the first time this is called
     if (set_needs_commit_on_next_draw_) {
@@ -837,8 +838,6 @@ class SchedulerClientThatSetNeedsCommitInsideDraw : public FakeSchedulerClient {
     NOTREACHED();
     return DRAW_SUCCESS;
   }
-
-  void ScheduledActionCommit() override {}
 
   void SetNeedsCommitOnNextDraw() { set_needs_commit_on_next_draw_ = true; }
 
@@ -1091,6 +1090,7 @@ TEST_F(SchedulerTest, PrepareTilesOncePerFrame) {
   EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
 
   EXPECT_TRUE(scheduler_->PrepareTilesPending());
+  scheduler_->WillPrepareTiles();
   scheduler_->DidPrepareTiles();  // An explicit PrepareTiles.
   EXPECT_FALSE(scheduler_->PrepareTilesPending());
 
@@ -1122,10 +1122,10 @@ TEST_F(SchedulerTest, PrepareTilesOncePerFrame) {
   EXPECT_FALSE(scheduler_->RedrawPending());
   EXPECT_FALSE(scheduler_->PrepareTilesPending());
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
-  scheduler_->DidPrepareTiles();  // Corresponds to ScheduledActionPrepareTiles
 
   // If we get another DidPrepareTiles within the same frame, we should
   // not PrepareTiles on the next frame.
+  scheduler_->WillPrepareTiles();
   scheduler_->DidPrepareTiles();  // An explicit PrepareTiles.
   scheduler_->SetNeedsPrepareTiles();
   scheduler_->SetNeedsRedraw();
@@ -1149,6 +1149,7 @@ TEST_F(SchedulerTest, PrepareTilesOncePerFrame) {
   // frame. This verifies we don't alternate calling PrepareTiles once and
   // twice.
   EXPECT_TRUE(scheduler_->PrepareTilesPending());
+  scheduler_->WillPrepareTiles();
   scheduler_->DidPrepareTiles();  // An explicit PrepareTiles.
   EXPECT_FALSE(scheduler_->PrepareTilesPending());
   scheduler_->SetNeedsPrepareTiles();
@@ -1188,7 +1189,6 @@ TEST_F(SchedulerTest, PrepareTilesOncePerFrame) {
   EXPECT_FALSE(scheduler_->RedrawPending());
   EXPECT_FALSE(scheduler_->PrepareTilesPending());
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
-  scheduler_->DidPrepareTiles();  // Corresponds to ScheduledActionPrepareTiles
 }
 
 TEST_F(SchedulerTest, TriggerBeginFrameDeadlineEarly) {
@@ -1297,13 +1297,13 @@ void SchedulerTest::MainFrameInHighLatencyMode(
   scheduler_settings_.use_external_begin_frame_source = true;
   SetUpScheduler(true);
 
-  fake_compositor_timing_history_->SetDrawDurationEstimate(
-      base::TimeDelta::FromMilliseconds(1));
   fake_compositor_timing_history_->SetBeginMainFrameToCommitDurationEstimate(
       base::TimeDelta::FromMilliseconds(
           begin_main_frame_to_commit_estimate_in_ms));
-  fake_compositor_timing_history_->SetCommitToActivateDurationEstimate(
+  fake_compositor_timing_history_->SetCommitToReadyToActivateDurationEstimate(
       base::TimeDelta::FromMilliseconds(commit_to_activate_estimate_in_ms));
+  fake_compositor_timing_history_->SetDrawDurationEstimate(
+      base::TimeDelta::FromMilliseconds(1));
 
   scheduler_->SetImplLatencyTakesPriority(impl_latency_takes_priority);
 
@@ -1370,12 +1370,12 @@ TEST_F(
   scheduler_settings_.main_frame_while_swap_throttled_enabled = true;
   SetUpScheduler(true);
 
-  fake_compositor_timing_history_->SetDrawDurationEstimate(
-      base::TimeDelta::FromMilliseconds(1));
   fake_compositor_timing_history_->SetBeginMainFrameToCommitDurationEstimate(
       base::TimeDelta::FromMilliseconds(32));
-  fake_compositor_timing_history_->SetCommitToActivateDurationEstimate(
+  fake_compositor_timing_history_->SetCommitToReadyToActivateDurationEstimate(
       base::TimeDelta::FromMilliseconds(32));
+  fake_compositor_timing_history_->SetDrawDurationEstimate(
+      base::TimeDelta::FromMilliseconds(1));
 
   // Disables automatic swap acks so this test can force swap ack throttling
   // to simulate a blocked Browser ui thread.
@@ -1450,12 +1450,12 @@ TEST_F(SchedulerTest,
   scheduler_settings_.main_frame_before_activation_enabled = true;
   SetUpScheduler(true);
 
-  fake_compositor_timing_history_->SetDrawDurationEstimate(
-      base::TimeDelta::FromMilliseconds(1));
   fake_compositor_timing_history_->SetBeginMainFrameToCommitDurationEstimate(
       base::TimeDelta::FromMilliseconds(32));
-  fake_compositor_timing_history_->SetCommitToActivateDurationEstimate(
+  fake_compositor_timing_history_->SetCommitToReadyToActivateDurationEstimate(
       base::TimeDelta::FromMilliseconds(32));
+  fake_compositor_timing_history_->SetDrawDurationEstimate(
+      base::TimeDelta::FromMilliseconds(1));
 
   // Disables automatic swap acks so this test can force swap ack throttling
   // to simulate a blocked Browser ui thread.
@@ -1538,12 +1538,12 @@ TEST_F(
   scheduler_settings_.main_frame_before_activation_enabled = true;
   SetUpScheduler(true);
 
-  fake_compositor_timing_history_->SetDrawDurationEstimate(
-      base::TimeDelta::FromMilliseconds(1));
   fake_compositor_timing_history_->SetBeginMainFrameToCommitDurationEstimate(
       base::TimeDelta::FromMilliseconds(32));
-  fake_compositor_timing_history_->SetCommitToActivateDurationEstimate(
+  fake_compositor_timing_history_->SetCommitToReadyToActivateDurationEstimate(
       base::TimeDelta::FromMilliseconds(32));
+  fake_compositor_timing_history_->SetDrawDurationEstimate(
+      base::TimeDelta::FromMilliseconds(1));
 
   // Disables automatic swap acks so this test can force swap ack throttling
   // to simulate a blocked Browser ui thread.
@@ -2851,11 +2851,6 @@ class SchedulerClientSetNeedsPrepareTilesOnDraw : public FakeSchedulerClient {
   DrawResult ScheduledActionDrawAndSwapIfPossible() override {
     scheduler_->SetNeedsPrepareTiles();
     return FakeSchedulerClient::ScheduledActionDrawAndSwapIfPossible();
-  }
-
-  void ScheduledActionPrepareTiles() override {
-    FakeSchedulerClient::ScheduledActionPrepareTiles();
-    scheduler_->DidPrepareTiles();
   }
 };
 
