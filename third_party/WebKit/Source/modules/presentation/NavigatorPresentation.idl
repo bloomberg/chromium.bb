@@ -7,5 +7,5 @@
 [
     RuntimeEnabled=Presentation
 ] partial interface Navigator {
-    readonly attribute Presentation presentation;
+    [SameObject] readonly attribute Presentation presentation;
 };

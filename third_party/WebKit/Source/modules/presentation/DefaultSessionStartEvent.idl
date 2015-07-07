@@ -8,5 +8,5 @@
     Constructor(DOMString type, optional DefaultSessionStartEventInit eventInitDict),
     RuntimeEnabled=Presentation
 ] interface DefaultSessionStartEvent : Event {
-    readonly attribute PresentationSession session;
+    [SameObject] readonly attribute PresentationSession session;
 };
