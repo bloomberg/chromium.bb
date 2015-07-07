@@ -360,7 +360,7 @@ class TestGitCl(TestCase):
       ((['git', 'reset', '--soft', 'fake_ancestor_sha'],), ''),
       ((['git', 'commit', '-m',
          'Issue: 12345\n\nR=john@chromium.org\n\n'
-         'Review URL: https://codereview.example.com/12345.'],),
+         'Review URL: https://codereview.example.com/12345 .'],),
        ''),
       ((['git', 'config', 'rietveld.force-https-commit-url'],), ''),
       ((['git',

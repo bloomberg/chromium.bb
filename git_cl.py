@@ -2545,8 +2545,10 @@ def SendUpstream(parser, args, cmd):
   commit_desc = ChangeDescription(change_desc.description)
   if cl.GetIssue():
     # Xcode won't linkify this URL unless there is a non-whitespace character
-    # after it. Add a period on a new line to circumvent this.
-    commit_desc.append_footer('Review URL: %s.' % cl.GetIssueURL())
+    # after it. Add a period on a new line to circumvent this. Also add a space
+    # before the period to make sure that Gitiles continues to correctly resolve
+    # the URL.
+    commit_desc.append_footer('Review URL: %s .' % cl.GetIssueURL())
   if options.contributor:
     commit_desc.append_footer('Patch from %s.' % options.contributor)
 
