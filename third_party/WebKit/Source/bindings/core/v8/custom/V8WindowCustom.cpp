@@ -279,21 +279,6 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::Pro
 
     AtomicString propName = toCoreAtomicString(nameString);
 
-    if (frame->isLocalFrame() && LayoutTestSupport::isRunningLayoutTest()) {
-        // We lazy create interfaces like testRunner and internals on first
-        // access inside layout tests since creating the bindings is expensive.
-        // Then we store them on the window so that later access will reuse the
-        // same value. This is does mean that window.hasOwnProperty("internals")
-        // will return false until the first usage of window.internals in tests,
-        // but should otherwise not be noticable.
-        v8::Local<v8::Value> interface = toLocalFrame(frame)->loader().client()->createTestInterface(propName);
-        if (!interface.IsEmpty()) {
-            v8CallOrCrash(info.Holder()->Set(info.GetIsolate()->GetCurrentContext(), name, interface));
-            v8SetReturnValue(info, interface);
-            return;
-        }
-    }
-
     // Note that the spec doesn't allow any cross-origin named access to the window object. However,
     // UAs have traditionally allowed named access to named child browsing contexts, even across
     // origins. So first, search child frames for a frame with a matching name.
@@ -306,6 +291,24 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::Pro
     // Search IDL functions defined in the prototype
     if (!info.Holder()->GetRealNamedProperty(info.GetIsolate()->GetCurrentContext(), nameString).IsEmpty())
         return;
+
+    if (frame->isLocalFrame() && LayoutTestSupport::isRunningLayoutTest()) {
+        // We lazy create interfaces like testRunner and internals on first
+        // access inside layout tests since creating the bindings is expensive.
+        // Then we store them on the window so that later access will reuse the
+        // same value by finding the property in the above GetRealNamedProperty
+        // call.
+        //
+        // This is does mean that window.hasOwnProperty("internals") will return
+        // false until the first usage of window.internals in tests, but should
+        // otherwise not be noticable.
+        v8::Local<v8::Value> interface = toLocalFrame(frame)->loader().client()->createTestInterface(propName);
+        if (!interface.IsEmpty()) {
+            v8CallOrCrash(info.Holder()->Set(info.GetIsolate()->GetCurrentContext(), name, interface));
+            v8SetReturnValue(info, interface);
+            return;
+        }
+    }
 
     // Frame could have been detached in call to GetRealNamedProperty.
     frame = window->frame();
