@@ -972,7 +972,7 @@
         # --help for more information. Meant to be overriden with GYP_DEFINES.
         # TODO(maruel): Remove the conditions as more configurations are
         # supported.
-        ['OS!="ios" and OS!="android"', {
+        ['OS!="ios" and OS!="android" and chromeos==0', {
           'test_isolation_mode%': 'check',
         }, {
           'test_isolation_mode%': 'noop',
