@@ -124,9 +124,7 @@ void TabLayer::SetProperties(int id,
   ui::ResourceManager::Resource* close_btn_resource =
       resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
                                      close_button_resource_id);
-  ui::ResourceManager::Resource* back_logo_resource =
-      resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
-                                     back_logo_resource_id);
+  ui::ResourceManager::Resource* back_logo_resource = nullptr;
 
   DecorationTitle* title_layer = nullptr;
 
@@ -217,8 +215,13 @@ void TabLayer::SetProperties(int id,
   gfx::Size title_size(width - close_btn_effective_width, border_padding.y());
   gfx::Size back_logo_size;
   // TODO(clholgat): Figure out why the back logo is null sometimes.
-  if (back_logo_resource)
-    back_logo_size = back_logo_resource->size;
+  if (back_visible) {
+    back_logo_resource =
+        resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
+                                       back_logo_resource_id);
+    if (back_logo_resource)
+      back_logo_size = back_logo_resource->size;
+  }
 
   // Store this size at a point as it might go negative during the inset
   // calculations.

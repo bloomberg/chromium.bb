@@ -382,7 +382,7 @@ public class CompositorView
             // Attempt to prefetch any necessary resources
             mResourceManager.preloadResources(AndroidResourceType.STATIC,
                     StaticResourcePreloads.getSynchronousResources(getContext()),
-                    StaticResourcePreloads.getAsynchronousResources());
+                    StaticResourcePreloads.getAsynchronousResources(getContext()));
             mPreloadedResources = true;
         }
 

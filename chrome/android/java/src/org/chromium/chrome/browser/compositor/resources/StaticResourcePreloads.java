@@ -25,8 +25,8 @@ public class StaticResourcePreloads {
     };
 
     /** A list of resources to load asynchronously once the compositor is initialized. */
-    private static int[] sAsynchronousResources = new int[] {R.drawable.logo_card_back,
-            R.drawable.btn_tabstrip_switch_normal, R.drawable.btn_tabstrip_switch_incognito};
+    private static int[] sAsynchronousResources = new int[] {
+        R.drawable.btn_tabstrip_switch_normal, R.drawable.btn_tabstrip_switch_incognito};
 
     private static int[] sEmptyList = new int[] {};
 
@@ -35,7 +35,7 @@ public class StaticResourcePreloads {
     }
 
     @SuppressFBWarnings("MS_EXPOSE_REP")
-    public static int[] getAsynchronousResources() {
-        return sAsynchronousResources;
+    public static int[] getAsynchronousResources(Context context) {
+        return DeviceFormFactor.isTablet(context) ? sAsynchronousResources : sEmptyList;
     }
 }
