@@ -50,6 +50,16 @@ TEST_F(WKWebViewSecurityUtilTest, CreationCertFromChain) {
   EXPECT_TRUE(cert->subject().GetDisplayName() == kTestSubject);
 }
 
+// Tests CreateCertFromChain with nil chain.
+TEST_F(WKWebViewSecurityUtilTest, CreationCertFromNilChain) {
+  EXPECT_FALSE(web::CreateCertFromChain(nil));
+}
+
+// Tests CreateCertFromChain with empty chain.
+TEST_F(WKWebViewSecurityUtilTest, CreationCertFromEmptyChain) {
+  EXPECT_FALSE(web::CreateCertFromChain(@[]));
+}
+
 // Tests that IsWKWebViewSSLError returns true for NSError with NSURLErrorDomain
 // domain and NSURLErrorSecureConnectionFailed error code.
 TEST_F(WKWebViewSecurityUtilTest, CheckSecureConnectionFailedError) {

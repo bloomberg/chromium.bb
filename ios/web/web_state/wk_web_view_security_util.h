@@ -20,6 +20,7 @@ namespace web {
 extern NSString* const kNSErrorPeerCertificateChainKey;
 
 // Creates a certificate from an array of SecCertificateRef objects.
+// Returns null if |certs| is nil or empty.
 scoped_refptr<net::X509Certificate> CreateCertFromChain(NSArray* certs);
 
 // Returns YES if geven error is a SSL error.
