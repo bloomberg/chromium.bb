@@ -142,8 +142,8 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.match(entries.a.request.url)
       .then(function(result) {
-          assert_object_equals(result, entries.a.response,
-                               'Cache.match should match by URL.');
+          assert_object_equals_fixed(result, entries.a.response,
+                                     'Cache.match should match by URL.');
         });
   }, 'Cache.match with URL');
 
@@ -159,8 +159,8 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.match(entries.a.request)
       .then(function(result) {
-          assert_object_equals(result, entries.a.response,
-                               'Cache.match should match by Request.');
+          assert_object_equals_fixed(result, entries.a.response,
+                                     'Cache.match should match by Request.');
         });
   }, 'Cache.match with Request');
 
@@ -176,8 +176,8 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.match(new Request(entries.a.request.url))
       .then(function(result) {
-          assert_object_equals(result, entries.a.response,
-                               'Cache.match should match by Request.');
+          assert_object_equals_fixed(result, entries.a.response,
+                                     'Cache.match should match by Request.');
         });
   }, 'Cache.match with new Request');
 
@@ -262,8 +262,8 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.match(entries.cat.request.url + '#mouse')
       .then(function(result) {
-          assert_object_equals(result, entries.cat.response,
-                               'Cache.match should ignore URL fragment.');
+          assert_object_equals_fixed(result, entries.cat.response,
+                                     'Cache.match should ignore URL fragment.');
         });
   }, 'Cache.match with URL containing fragment');
 
@@ -299,7 +299,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.match(entries.secret_cat.request.url)
       .then(function(result) {
-          assert_object_equals(
+          assert_object_equals_fixed(
             result, entries.secret_cat.response,
             'Cache.match should not ignore embedded credentials');
         });
@@ -395,7 +395,7 @@ cache_test(function(cache) {
           return cache.match(request.url);
         })
       .then(function(result) {
-          assert_object_equals(
+          assert_object_equals_fixed(
             result, response,
             'Cache.match should return a Response object that has the same ' +
             'properties as the stored response.');

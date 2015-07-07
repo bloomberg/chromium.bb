@@ -32,61 +32,42 @@ function assert_promise_rejects(promise, code, description) {
     });
 }
 
-// Asserts that two objects |actual| and |expected| are weakly equal under the
-// following definition:
-//
-// |a| and |b| are weakly equal if any of the following are true:
-//   1. If |a| is not an 'object', and |a| === |b|.
-//   2. If |a| is an 'object', and all of the following are true:
-//     2.1 |a.p| is weakly equal to |b.p| for all own properties |p| of |a|.
-//     2.2 Every own property of |b| is an own property of |a|.
-//
-// This is a replacement for the the version of assert_object_equals() in
-// testharness.js. The latter doesn't handle own properties correctly. I.e. if
-// |a.p| is not an own property, it still requires that |b.p| be an own
-// property.
-//
-// Note that |actual| must not contain cyclic references.
-self.assert_object_equals = function(actual, expected, description) {
-  var object_stack = [];
+// Equivalent to testharness.js's assert_object_equals(), but correctly
+// tests that property ownership is the same.
+// TODO(jsbell): Upstream this to assert_object_equals and remove.
+function assert_object_equals_fixed(actual, expected, description)
+{
+    function check_equal(actual, expected, stack)
+    {
+        stack.push(actual);
+        var p;
+        for (p in actual) {
+            assert_equals(expected.hasOwnProperty(p), actual.hasOwnProperty(p),
+                          "different property ownership: " + p + " - " + description);
 
-  function _is_equal(actual, expected, prefix) {
-    if (typeof actual !== 'object') {
-      assert_equals(actual, expected, prefix);
-      return;
+            if (typeof actual[p] === "object" && actual[p] !== null) {
+                if (stack.indexOf(actual[p]) === -1) {
+                    check_equal(actual[p], expected[p], stack);
+                }
+            } else {
+                assert_equals(actual[p], expected[p], description);
+            }
+        }
+        for (p in expected) {
+            assert_equals(expected.hasOwnProperty(p), actual.hasOwnProperty(p),
+                          "different property ownership: " + p + " - " + description);
+        }
+        stack.pop();
     }
-    assert_true(typeof expected === 'object', prefix);
-    assert_equals(object_stack.indexOf(actual), -1,
-                  prefix + ' must not contain cyclic references.');
+    check_equal(actual, expected, []);
+}
 
-    object_stack.push(actual);
-
-    Object.getOwnPropertyNames(expected).forEach(function(property) {
-        assert_own_property(actual, property, prefix);
-        _is_equal(actual[property], expected[property],
-                  prefix + '.' + property);
-      });
-    Object.getOwnPropertyNames(actual).forEach(function(property) {
-        assert_own_property(expected, property, prefix);
-      });
-
-    object_stack.pop();
-  }
-
-  function _brand(object) {
-    return Object.prototype.toString.call(object).match(/^\[object (.*)\]$/)[1];
-  }
-
-  _is_equal(actual, expected,
-            (description ? description + ': ' : '') + _brand(expected));
-};
-
-// Equivalent to assert_in_array, but uses a weaker equivalence relation
-// (assert_object_equals) than '==='.
+// Equivalent to assert_in_array, but uses the object-aware equivalence relation
+// provided by assert_object_equals_fixed().
 function assert_object_in_array(actual, expected_array, description) {
   assert_true(expected_array.some(function(element) {
       try {
-        assert_object_equals(actual, element);
+        assert_object_equals_fixed(actual, element);
         return true;
       } catch (e) {
         return false;
@@ -95,10 +76,10 @@ function assert_object_in_array(actual, expected_array, description) {
 }
 
 // Assert that the two arrays |actual| and |expected| contain the same set of
-// elements as determined by assert_object_equals. The order is not significant.
+// elements as determined by assert_object_equals_fixed. The order is not significant.
 //
 // |expected| is assumed to not contain any duplicates as determined by
-// assert_object_equals().
+// assert_object_equals_fixed().
 function assert_array_equivalent(actual, expected, description) {
   assert_true(Array.isArray(actual), description);
   assert_equals(actual.length, expected.length, description);
