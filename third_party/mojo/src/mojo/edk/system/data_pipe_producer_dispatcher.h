@@ -5,10 +5,10 @@
 #ifndef MOJO_EDK_SYSTEM_DATA_PIPE_PRODUCER_DISPATCHER_H_
 #define MOJO_EDK_SYSTEM_DATA_PIPE_PRODUCER_DISPATCHER_H_
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/system_impl_export.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {
@@ -18,9 +18,12 @@ class DataPipe;
 // This is the |Dispatcher| implementation for the producer handle for data
 // pipes (created by the Mojo primitive |MojoCreateDataPipe()|). This class is
 // thread-safe.
-class MOJO_SYSTEM_IMPL_EXPORT DataPipeProducerDispatcher : public Dispatcher {
+class MOJO_SYSTEM_IMPL_EXPORT DataPipeProducerDispatcher final
+    : public Dispatcher {
  public:
-  DataPipeProducerDispatcher();
+  static scoped_refptr<DataPipeProducerDispatcher> Create() {
+    return make_scoped_refptr(new DataPipeProducerDispatcher());
+  }
 
   // Must be called before any other methods.
   void Init(scoped_refptr<DataPipe> data_pipe);
@@ -37,6 +40,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeProducerDispatcher : public Dispatcher {
   DataPipe* GetDataPipeForTest() { return data_pipe_.get(); }
 
  private:
+  DataPipeProducerDispatcher();
   ~DataPipeProducerDispatcher() override;
 
   // |Dispatcher| protected methods:
@@ -71,7 +75,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeProducerDispatcher : public Dispatcher {
   // Protected by |lock()|:
   scoped_refptr<DataPipe> data_pipe_;  // This will be null if closed.
 
-  DISALLOW_COPY_AND_ASSIGN(DataPipeProducerDispatcher);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(DataPipeProducerDispatcher);
 };
 
 }  // namespace system

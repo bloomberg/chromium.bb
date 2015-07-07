@@ -41,6 +41,8 @@
       '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/js_templates/module_definition.tmpl',
       '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/js_templates/module.amd.tmpl',
       '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/js_templates/struct_definition.tmpl',
+      '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/js_templates/union_definition.tmpl',
+      '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/js_templates/validation_macros.tmpl',
       '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/python_templates/module_macros.tmpl',
       '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/python_templates/module.py.tmpl',
       '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/mojom_cpp_generator.py',

@@ -5,18 +5,17 @@
 #ifndef MOJO_EDK_SYSTEM_LOCAL_MESSAGE_PIPE_ENDPOINT_H_
 #define MOJO_EDK_SYSTEM_LOCAL_MESSAGE_PIPE_ENDPOINT_H_
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "mojo/edk/system/awakable_list.h"
 #include "mojo/edk/system/handle_signals_state.h"
 #include "mojo/edk/system/message_in_transit_queue.h"
 #include "mojo/edk/system/message_pipe_endpoint.h"
 #include "mojo/edk/system/system_impl_export.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {
 
-class MOJO_SYSTEM_IMPL_EXPORT LocalMessagePipeEndpoint
+class MOJO_SYSTEM_IMPL_EXPORT LocalMessagePipeEndpoint final
     : public MessagePipeEndpoint {
  public:
   // If |message_queue| is non-null, its contents will be taken as the queue of
@@ -58,7 +57,7 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalMessagePipeEndpoint
   MessageInTransitQueue message_queue_;
   AwakableList awakable_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(LocalMessagePipeEndpoint);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(LocalMessagePipeEndpoint);
 };
 
 }  // namespace system

@@ -18,7 +18,9 @@ import("../public/mojo_sdk.gni")
 # writing targets.
 template("mojo_edk_source_set") {
   mojo_sdk_source_set(target_name) {
-    restrict_external_deps = false
+    if (defined(invoker.public_deps) || defined(invoker.deps)) {
+      restrict_external_deps = false
+    }
 
     if (defined(invoker.visibility)) {
       visibility = invoker.visibility

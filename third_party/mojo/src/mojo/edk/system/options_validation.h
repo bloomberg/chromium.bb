@@ -17,10 +17,10 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "mojo/edk/system/memory.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/types.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {
@@ -81,7 +81,7 @@ class UserOptionsReader {
 
   UserPointer<const char>::Reader options_reader_;
 
-  DISALLOW_COPY_AND_ASSIGN(UserOptionsReader);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(UserOptionsReader);
 };
 
 // Macro to invoke |UserOptionsReader<Options>::HasMember()| parametrized by

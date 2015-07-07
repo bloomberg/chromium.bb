@@ -123,19 +123,19 @@ MOJO_SYSTEM_IMPL_EXPORT void ShutdownIPCSupport();
 // returns a handle), an ID string (returned in |*platform_connection_id|) that
 // must be passed to the slave (e.g., on the command line), and a
 // |ChannelInfo*| (in |*channel_info|) which should eventually be given to
-// |DestroyChannel()|/|DestroyChannelOnIOThread()|, but only after |callback|
-// has been run.
+// |DestroyChannel()|/|DestroyChannelOnIOThread()|, but only after
+// |did_connect_to_slave_callback| has been run.
 //
-// |callback| will be run either using |callback_thread_task_runner| (if
-// non-null) or on the I/O thread, once the |ChannelInfo*| is valid.
+// |did_connect_to_slave_callback| will be run either using
+// |did_connect_to_slave_runner| (if non-null) or on the I/O thread, once the
+// |ChannelInfo*| is valid.
 //
 // TODO(vtl): The API is a little crazy with respect to the |ChannelInfo*|.
-using DidConnectToSlaveCallback = base::Closure;
 MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
 ConnectToSlave(SlaveInfo slave_info,
                ScopedPlatformHandle platform_handle,
-               const DidConnectToSlaveCallback& callback,
-               scoped_refptr<base::TaskRunner> callback_thread_task_runner,
+               const base::Closure& did_connect_to_slave_callback,
+               scoped_refptr<base::TaskRunner> did_connect_to_slave_runner,
                std::string* platform_connection_id,
                ChannelInfo** channel_info);
 
@@ -146,15 +146,14 @@ ConnectToSlave(SlaveInfo slave_info,
 //
 // See |ConnectToSlave()| for details. (Note that if this fails in any way,
 // e.g., if |platform_connection_id| is invalid, this will CHECK-fail and
-// terminate the process.) |channel_info|, |callback|, and
-// |callback_thread_task_runner| are as in |ConnectToSlave()|.
+// terminate the process.) |channel_info|, |did_connect_to_master_callback|, and
+// |did_connect_to_master_runner| are analagous to in |ConnectToSlave()|.
 //
 // TODO(vtl): The API is a little crazy with respect to the |ChannelInfo*|.
-using DidConnectToMasterCallback = base::Closure;
 MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
 ConnectToMaster(const std::string& platform_connection_id,
-                const DidConnectToMasterCallback& callback,
-                scoped_refptr<base::TaskRunner> callback_thread_task_runner,
+                const base::Closure& did_connect_to_master_callback,
+                scoped_refptr<base::TaskRunner> did_connect_to_master_runner,
                 ChannelInfo** channel_info);
 
 // A "channel" is a connection on top of an OS "pipe", on top of which Mojo
@@ -201,21 +200,20 @@ MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
 CreateChannelOnIOThread(ScopedPlatformHandle platform_handle,
                         ChannelInfo** channel_info);
 
-using DidCreateChannelCallback = base::Callback<void(ChannelInfo*)>;
 // Creates a channel asynchronously; may be called from any thread.
 // |platform_handle| should be a handle to a connected OS "pipe".
-// |callback| should be the callback to call with the |ChannelInfo*|, which
-// should eventually be passed to |DestroyChannel()| to tear down the channel;
-// the callback will be called using |callback_thread_task_runner| if that is
-// non-null, or otherwise it will be posted to the I/O thread. Returns a handle
-// to the bootstrap message pipe.
+// |did_create_channel_callback| should be the callback to call with the
+// |ChannelInfo*|, which should eventually be passed to |DestroyChannel()| to
+// tear down the channel; the callback will be called using
+// |did_create_channel_runner| if that is non-null, or otherwise it will be
+// posted to the I/O thread. Returns a handle to the bootstrap message pipe.
 //
 // Note: This should only be used to establish a channel with a process of type
 // |ProcessType::NONE|. This function may be removed in the future.
-MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
-CreateChannel(ScopedPlatformHandle platform_handle,
-              const DidCreateChannelCallback& callback,
-              scoped_refptr<base::TaskRunner> callback_thread_task_runner);
+MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle CreateChannel(
+    ScopedPlatformHandle platform_handle,
+    const base::Callback<void(ChannelInfo*)>& did_create_channel_callback,
+    scoped_refptr<base::TaskRunner> did_create_channel_runner);
 
 // Destroys a channel that was created using |ConnectToMaster()|,
 // |ConnectToSlave()|, |CreateChannel()|, or |CreateChannelOnIOThread()|; must
@@ -224,16 +222,15 @@ CreateChannel(ScopedPlatformHandle platform_handle,
 MOJO_SYSTEM_IMPL_EXPORT void DestroyChannelOnIOThread(
     ChannelInfo* channel_info);
 
-using DidDestroyChannelCallback = base::Closure;
 // Like |DestroyChannelOnIOThread()|, but asynchronous and may be called from
-// any thread. The callback will be called using |callback_thread_task_runner|
+// any thread. The callback will be called using |did_destroy_channel_runner|
 // if that is non-null, or otherwise it will be called on the "channel thread".
 // The "channel thread" must remain alive and continue to process tasks until
 // the callback has been executed.
 MOJO_SYSTEM_IMPL_EXPORT void DestroyChannel(
     ChannelInfo* channel_info,
-    const DidDestroyChannelCallback& callback,
-    scoped_refptr<base::TaskRunner> callback_thread_task_runner);
+    const base::Closure& did_destroy_channel_callback,
+    scoped_refptr<base::TaskRunner> did_destroy_channel_runner);
 
 // Inform the channel that it will soon be destroyed (doing so is optional).
 // This may be called from any thread, but the caller must ensure that this is

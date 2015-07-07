@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace embedder {
@@ -70,7 +70,7 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformSharedBuffer
   virtual ~PlatformSharedBuffer() {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PlatformSharedBuffer);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(PlatformSharedBuffer);
 };
 
 // An interface for a mapping of a |PlatformSharedBuffer| (compararable to a
@@ -93,7 +93,7 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformSharedBufferMapping {
   PlatformSharedBufferMapping() {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PlatformSharedBufferMapping);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(PlatformSharedBufferMapping);
 };
 
 }  // namespace embedder

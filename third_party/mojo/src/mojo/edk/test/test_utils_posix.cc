@@ -7,8 +7,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include "base/base_paths.h"
-#include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 
 namespace mojo {
@@ -87,13 +85,6 @@ base::ScopedFILE FILEFromPlatformHandle(embedder::ScopedPlatformHandle h,
   base::ScopedFILE rv(fdopen(h.release().fd, mode));
   PCHECK(rv) << "fdopen";
   return rv.Pass();
-}
-
-base::FilePath GetFilePathForJSResource(const std::string& path) {
-  std::string binding_path = "gen/" + path + ".js";
-  base::FilePath exe_dir;
-  PathService::Get(base::DIR_EXE, &exe_dir);
-  return exe_dir.AppendASCII(binding_path);
 }
 
 }  // namespace test

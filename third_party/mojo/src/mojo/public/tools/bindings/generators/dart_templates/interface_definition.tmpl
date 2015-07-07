@@ -46,8 +46,10 @@ class {{interface|name}}ProxyImpl extends bindings.Proxy {
   {{interface|name}}ProxyImpl.unbound() : super.unbound();
 
   static {{interface|name}}ProxyImpl newFromEndpoint(
-      core.MojoMessagePipeEndpoint endpoint) =>
-      new {{interface|name}}ProxyImpl.fromEndpoint(endpoint);
+      core.MojoMessagePipeEndpoint endpoint) {
+    assert(endpoint.setDescription("For {{interface|name}}ProxyImpl"));
+    return new {{interface|name}}ProxyImpl.fromEndpoint(endpoint);
+  }
 
   String get name => {{interface|name}}Name;
 
@@ -155,8 +157,10 @@ class {{interface|name}}Proxy implements bindings.ProxyBase {
   }
 
   static {{interface|name}}Proxy newFromEndpoint(
-      core.MojoMessagePipeEndpoint endpoint) =>
-      new {{interface|name}}Proxy.fromEndpoint(endpoint);
+      core.MojoMessagePipeEndpoint endpoint) {
+    assert(endpoint.setDescription("For {{interface|name}}Proxy"));
+    return new {{interface|name}}Proxy.fromEndpoint(endpoint);
+  }
 
   Future close({bool immediate: false}) => impl.close(immediate: immediate);
 
@@ -187,8 +191,10 @@ class {{interface|name}}Stub extends bindings.Stub {
   {{interface|name}}Stub.unbound() : super.unbound();
 
   static {{interface|name}}Stub newFromEndpoint(
-      core.MojoMessagePipeEndpoint endpoint) =>
-      new {{interface|name}}Stub.fromEndpoint(endpoint);
+      core.MojoMessagePipeEndpoint endpoint) {
+    assert(endpoint.setDescription("For {{interface|name}}Stub"));
+    return new {{interface|name}}Stub.fromEndpoint(endpoint);
+  }
 
   static const String name = {{interface|name}}Name;
 

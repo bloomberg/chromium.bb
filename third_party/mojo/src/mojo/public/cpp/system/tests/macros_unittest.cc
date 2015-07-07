@@ -105,7 +105,7 @@ class MoveOnlyInt {
   int value_;
 };
 
-TEST(MacrosCppTest, MoveOnlyTypeForCpp03) {
+TEST(MacrosCppTest, MoveOnlyType) {
   MoveOnlyInt x(123);
   EXPECT_TRUE(x.is_set());
   EXPECT_EQ(123, x.value());
@@ -122,6 +122,33 @@ TEST(MacrosCppTest, MoveOnlyTypeForCpp03) {
   z = z.Pass();
   EXPECT_TRUE(z.is_set());
   EXPECT_EQ(123, z.value());
+}
+
+// The test for |MOJO_STATIC_CONST_MEMBER_DEFINITION| is really a compile/link
+// test. To test it fully would really require a header file and multiple .cc
+// files, but we'll just cursorily verify it.
+struct StructWithStaticConstMember {
+  static const int kStaticConstMember = 123;
+};
+MOJO_STATIC_CONST_MEMBER_DEFINITION
+const int StructWithStaticConstMember::kStaticConstMember;
+
+// Use it, to make sure things get linked in and to avoid any warnings about
+// unused things.
+TEST(MacrosCppTest, StaticConstMemberDefinition) {
+  EXPECT_EQ(123, StructWithStaticConstMember::kStaticConstMember);
+}
+
+// The test for |ignore_result()| is also just a compilation test. (Note that
+// |MOJO_WARN_UNUSED_RESULT| can only be used in the prototype.
+int ReturnsIntYouMustUse() MOJO_WARN_UNUSED_RESULT;
+
+int ReturnsIntYouMustUse() {
+  return 123;
+}
+
+TEST(MacrosCppTest, IgnoreResult) {
+  ignore_result(ReturnsIntYouMustUse());
 }
 
 }  // namespace

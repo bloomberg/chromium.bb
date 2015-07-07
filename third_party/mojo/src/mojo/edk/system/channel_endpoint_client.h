@@ -5,10 +5,10 @@
 #ifndef MOJO_EDK_SYSTEM_CHANNEL_ENDPOINT_CLIENT_H_
 #define MOJO_EDK_SYSTEM_CHANNEL_ENDPOINT_CLIENT_H_
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/edk/system/system_impl_export.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {
@@ -54,7 +54,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpointClient
   friend class base::RefCountedThreadSafe<ChannelEndpointClient>;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ChannelEndpointClient);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ChannelEndpointClient);
 };
 
 }  // namespace system

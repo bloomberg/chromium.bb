@@ -49,10 +49,6 @@ struct WrapperStruct {
   HandleUnion? handle_union;
 };
 
-struct HandleStruct {
-  SmallCache f_small_cache;
-};
-
 struct DummyStruct {
   int8 f_int8;
 };
@@ -81,5 +77,10 @@ interface SmallCache {
 };
 
 interface UnionInterface {
-  Echo(PodUnion in) => (PodUnion out);
+  Echo(PodUnion in_val) => (PodUnion out_val);
+};
+
+struct TryNonNullStruct {
+  DummyStruct? nullable;
+  DummyStruct non_nullable;
 };

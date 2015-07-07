@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
@@ -20,6 +19,7 @@
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/message_pipe.h"
 #include "mojo/public/c/system/types.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 
@@ -183,7 +183,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   base::Lock mapping_table_lock_;  // Protects |mapping_table_|.
   MappingTable mapping_table_;
 
-  DISALLOW_COPY_AND_ASSIGN(Core);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
 }  // namespace system

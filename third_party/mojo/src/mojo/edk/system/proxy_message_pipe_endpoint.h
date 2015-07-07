@@ -5,11 +5,11 @@
 #ifndef MOJO_EDK_SYSTEM_PROXY_MESSAGE_PIPE_ENDPOINT_H_
 #define MOJO_EDK_SYSTEM_PROXY_MESSAGE_PIPE_ENDPOINT_H_
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/edk/system/message_in_transit.h"
 #include "mojo/edk/system/message_pipe_endpoint.h"
 #include "mojo/edk/system/system_impl_export.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {
@@ -27,7 +27,7 @@ class MessagePipe;
 // remote consists of a |LocalMessagePipeEndpoint| and a
 // |ProxyMessagePipeEndpoint|, with only the local endpoint being accessible via
 // a |MessagePipeDispatcher|.
-class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
+class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint final
     : public MessagePipeEndpoint {
  public:
   explicit ProxyMessagePipeEndpoint(ChannelEndpoint* channel_endpoint);
@@ -52,7 +52,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
 
   scoped_refptr<ChannelEndpoint> channel_endpoint_;
 
-  DISALLOW_COPY_AND_ASSIGN(ProxyMessagePipeEndpoint);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ProxyMessagePipeEndpoint);
 };
 
 }  // namespace system

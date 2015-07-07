@@ -7,10 +7,10 @@
 
 #include <list>
 
-#include "base/macros.h"
 #include "mojo/edk/system/awakable_list.h"
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/system_impl_export.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {
@@ -42,7 +42,7 @@ class MOJO_SYSTEM_IMPL_EXPORT SimpleDispatcher : public Dispatcher {
   // Protected by |lock()|:
   AwakableList awakable_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(SimpleDispatcher);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(SimpleDispatcher);
 };
 
 }  // namespace system

@@ -19,6 +19,14 @@ public class MojoException extends RuntimeException {
     }
 
     /**
+     * Constructor.
+     */
+    public MojoException(Throwable cause) {
+        super(cause);
+        mCode = MojoResult.UNKNOWN;
+    }
+
+    /**
      * The mojo result code associated with this exception. See {@link MojoResult} for possible
      * values.
      */

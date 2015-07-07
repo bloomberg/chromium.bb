@@ -7,9 +7,9 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace embedder {
@@ -34,7 +34,7 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformSupport {
   PlatformSupport() {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PlatformSupport);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(PlatformSupport);
 };
 
 }  // namespace embedder

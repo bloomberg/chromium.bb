@@ -5,7 +5,9 @@
 #ifndef MOJO_EDK_TEST_TEST_SUPPORT_IMPL_H_
 #define MOJO_EDK_TEST_TEST_SUPPORT_IMPL_H_
 
-#include "base/macros.h"
+#include <stdio.h>
+
+#include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/tests/test_support_private.h"
 
 namespace mojo {
@@ -25,7 +27,7 @@ class TestSupportImpl : public TestSupport {
       const char* relative_path) override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestSupportImpl);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(TestSupportImpl);
 };
 
 }  // namespace test

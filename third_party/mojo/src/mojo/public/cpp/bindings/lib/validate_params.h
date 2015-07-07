@@ -25,6 +25,8 @@ class ArrayValidateParams {
       delete element_validate_params;
   }
 
+  // TODO(vtl): The members of this class shouldn't be public.
+
   // If |expected_num_elements| is not 0, the array is expected to have exactly
   // that number of elements.
   uint32_t expected_num_elements;
@@ -37,6 +39,7 @@ class ArrayValidateParams {
   // nullptr. In the case of maps, this is used to validate the value array.
   ArrayValidateParams* element_validate_params;
 
+ private:
   MOJO_DISALLOW_COPY_AND_ASSIGN(ArrayValidateParams);
 };
 

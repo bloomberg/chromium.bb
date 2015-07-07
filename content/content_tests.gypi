@@ -1397,6 +1397,7 @@
             '../media/media.gyp:shared_memory_support',
             '../mojo/mojo_base.gyp:mojo_application_base',
             '../mojo/mojo_base.gyp:mojo_environment_chromium',
+            '../mojo/mojo_base.gyp:mojo_test_support',
             '../net/net.gyp:net_test_support',
             '../ppapi/ppapi_internal.gyp:ppapi_host',
             '../ppapi/ppapi_internal.gyp:ppapi_ipc',

@@ -21,11 +21,6 @@ struct SerializedPlatformHandleDispatcher {
 
 }  // namespace
 
-PlatformHandleDispatcher::PlatformHandleDispatcher(
-    embedder::ScopedPlatformHandle platform_handle)
-    : platform_handle_(platform_handle.Pass()) {
-}
-
 embedder::ScopedPlatformHandle PlatformHandleDispatcher::PassPlatformHandle() {
   base::AutoLock locker(lock());
   return platform_handle_.Pass();
@@ -66,8 +61,12 @@ scoped_refptr<PlatformHandleDispatcher> PlatformHandleDispatcher::Deserialize(
     std::swap(platform_handle, (*platform_handles)[platform_handle_index]);
   }
 
-  return scoped_refptr<PlatformHandleDispatcher>(new PlatformHandleDispatcher(
-      embedder::ScopedPlatformHandle(platform_handle)));
+  return Create(embedder::ScopedPlatformHandle(platform_handle));
+}
+
+PlatformHandleDispatcher::PlatformHandleDispatcher(
+    embedder::ScopedPlatformHandle platform_handle)
+    : platform_handle_(platform_handle.Pass()) {
 }
 
 PlatformHandleDispatcher::~PlatformHandleDispatcher() {
@@ -81,8 +80,7 @@ void PlatformHandleDispatcher::CloseImplNoLock() {
 scoped_refptr<Dispatcher>
 PlatformHandleDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
   lock().AssertAcquired();
-  return scoped_refptr<Dispatcher>(
-      new PlatformHandleDispatcher(platform_handle_.Pass()));
+  return Create(platform_handle_.Pass());
 }
 
 void PlatformHandleDispatcher::StartSerializeImplNoLock(

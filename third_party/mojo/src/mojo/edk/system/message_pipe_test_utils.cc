@@ -5,10 +5,10 @@
 #include "mojo/edk/system/message_pipe_test_utils.h"
 
 #include "base/bind.h"
-#include "base/threading/platform_thread.h"  // For |Sleep()|.
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/channel_endpoint.h"
 #include "mojo/edk/system/message_pipe.h"
+#include "mojo/edk/system/test_utils.h"
 #include "mojo/edk/system/waiter.h"
 
 namespace mojo {
@@ -57,7 +57,7 @@ void ChannelThread::Stop() {
     // TODO(vtl): Remove this once |Channel| has a
     // |FlushWriteBufferAndShutdown()| (or whatever).
     while (!channel_->IsWriteBufferEmpty())
-      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(20));
+      test::Sleep(test::DeadlineFromMilliseconds(20));
 
     test_io_thread_.PostTaskAndWait(
         FROM_HERE, base::Bind(&ChannelThread::ShutdownChannelOnIOThread,

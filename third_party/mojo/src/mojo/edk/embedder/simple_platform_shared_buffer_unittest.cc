@@ -6,9 +6,9 @@
 
 #include <limits>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -151,7 +151,7 @@ TEST(SimplePlatformSharedBufferTest, MappingsDistinct) {
 
 TEST(SimplePlatformSharedBufferTest, BufferZeroInitialized) {
   static const size_t kSizes[] = {10, 100, 1000, 10000, 100000};
-  for (size_t i = 0; i < arraysize(kSizes); i++) {
+  for (size_t i = 0; i < MOJO_ARRAYSIZE(kSizes); i++) {
     scoped_refptr<SimplePlatformSharedBuffer> buffer(
         SimplePlatformSharedBuffer::Create(kSizes[i]));
     scoped_ptr<PlatformSharedBufferMapping> mapping(buffer->Map(0, kSizes[i]));

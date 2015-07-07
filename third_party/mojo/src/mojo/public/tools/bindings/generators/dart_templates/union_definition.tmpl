@@ -12,7 +12,7 @@ enum {{union|name}}Tag {
 {%- endmacro %}
 
 {%- macro wrapper_def(union) %}
-class {{union|name}}Wrapper extends bindings.Union {
+class {{union|name}} extends bindings.Union {
   static final _tag_to_int = const {
 {%-   for field in union.fields %}
     {{union|name}}Tag.{{field|tag_name}}: {{field.ordinal}},
@@ -44,12 +44,12 @@ class {{union|name}}Wrapper extends bindings.Union {
   }
 {%-   endfor %}
 
-  static {{union|name}}Wrapper decode(bindings.Decoder decoder0, int offset) {
+  static {{union|name}} decode(bindings.Decoder decoder0, int offset) {
     int size = decoder0.decodeUint32(offset);
     if (size == 0) {
       return null;
     }
-    {{union|name}}Wrapper result = new {{union|name}}Wrapper();
+    {{union|name}} result = new {{union|name}}();
 
     // TODO(azani): Handle unknown union member.
     {{union|name}}Tag tag = _int_to_tag[decoder0.decodeUint32(offset + 4)];
@@ -87,7 +87,7 @@ class {{union|name}}Wrapper extends bindings.Union {
   }
 
   String toString() {
-    String result = "{{union|name}}Wrapper(";
+    String result = "{{union|name}}(";
     switch (_tag) {
 {%-   for field in union.fields %}
       case {{union|name}}Tag.{{field|tag_name}}:
@@ -97,7 +97,8 @@ class {{union|name}}Wrapper extends bindings.Union {
       default:
         result += "unknown";
     }
-    result += ": $_data)"
+    result += ": $_data)";
+    return result;
   }
 }
 {%- endmacro %}

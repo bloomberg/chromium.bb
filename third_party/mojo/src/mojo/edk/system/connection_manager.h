@@ -5,10 +5,10 @@
 #ifndef MOJO_EDK_SYSTEM_CONNECTION_MANAGER_H_
 #define MOJO_EDK_SYSTEM_CONNECTION_MANAGER_H_
 
-#include "base/macros.h"
 #include "mojo/edk/system/connection_identifier.h"
 #include "mojo/edk/system/process_identifier.h"
 #include "mojo/edk/system/system_impl_export.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 
@@ -103,7 +103,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ConnectionManager {
  private:
   embedder::PlatformSupport* const platform_support_;
 
-  DISALLOW_COPY_AND_ASSIGN(ConnectionManager);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ConnectionManager);
 };
 
 }  // namespace system

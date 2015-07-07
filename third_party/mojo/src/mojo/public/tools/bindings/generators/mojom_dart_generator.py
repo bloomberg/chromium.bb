@@ -154,7 +154,7 @@ def DartDeclType(kind):
   if mojom.IsStructKind(kind):
     return GetDartType(kind)
   if mojom.IsUnionKind(kind):
-    return "%sWrapper" % GetDartType(kind)
+    return GetDartType(kind)
   if mojom.IsArrayKind(kind):
     array_type = DartDeclType(kind.kind)
     return "List<" + array_type + ">"
@@ -204,10 +204,8 @@ def GetNameForElement(element):
     return GetNameForElement(element.kind)
   if isinstance(element, (mojom.Method,
                           mojom.Parameter,
-                          mojom.StructField)):
+                          mojom.Field)):
     return CamelCase(element.name)
-  if isinstance(element, mojom.UnionField):
-    return "f%s" % UpperCamelCase(element.name)
   if isinstance(element, mojom.EnumValue):
     return (GetNameForElement(element.enum) + '.' +
             ConstantStyle(element.name))
@@ -221,7 +219,7 @@ def GetUnionFieldTagName(element):
   if not isinstance(element, mojom.UnionField):
     raise Exception('Unexpected element: %s is not a union field.' % element)
 
-  return 'tag%s' % UpperCamelCase(element.name)
+  return CamelCase(element.name)
 
 def GetInterfaceResponseName(method):
   return UpperCamelCase(method.name + 'Response')

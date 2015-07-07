@@ -5,13 +5,13 @@
 #ifndef MOJO_EDK_SYSTEM_TEST_CHANNEL_ENDPOINT_CLIENT_H_
 #define MOJO_EDK_SYSTEM_TEST_CHANNEL_ENDPOINT_CLIENT_H_
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "mojo/edk/system/channel_endpoint.h"
 #include "mojo/edk/system/channel_endpoint_client.h"
 #include "mojo/edk/system/message_in_transit_queue.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace base {
 class WaitableEvent;
@@ -21,7 +21,7 @@ namespace mojo {
 namespace system {
 namespace test {
 
-class TestChannelEndpointClient : public ChannelEndpointClient {
+class TestChannelEndpointClient final : public ChannelEndpointClient {
  public:
   TestChannelEndpointClient();
 
@@ -59,7 +59,7 @@ class TestChannelEndpointClient : public ChannelEndpointClient {
   // Event to trigger if we read a message (may be null).
   base::WaitableEvent* read_event_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestChannelEndpointClient);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(TestChannelEndpointClient);
 };
 
 }  // namespace test

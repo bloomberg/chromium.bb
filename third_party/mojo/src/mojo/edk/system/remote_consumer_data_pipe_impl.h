@@ -5,13 +5,13 @@
 #ifndef MOJO_EDK_SYSTEM_REMOTE_CONSUMER_DATA_PIPE_IMPL_H_
 #define MOJO_EDK_SYSTEM_REMOTE_CONSUMER_DATA_PIPE_IMPL_H_
 
-#include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/edk/system/channel_endpoint.h"
 #include "mojo/edk/system/data_pipe_impl.h"
 #include "mojo/edk/system/system_impl_export.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {
@@ -19,7 +19,8 @@ namespace system {
 // |RemoteConsumerDataPipeImpl| is a subclass that "implements" |DataPipe| for
 // data pipes whose producer is local and whose consumer is remote. See
 // |DataPipeImpl| for more details.
-class MOJO_SYSTEM_IMPL_EXPORT RemoteConsumerDataPipeImpl : public DataPipeImpl {
+class MOJO_SYSTEM_IMPL_EXPORT RemoteConsumerDataPipeImpl final
+    : public DataPipeImpl {
  public:
   RemoteConsumerDataPipeImpl(ChannelEndpoint* channel_endpoint,
                              size_t consumer_num_bytes);
@@ -98,7 +99,7 @@ class MOJO_SYSTEM_IMPL_EXPORT RemoteConsumerDataPipeImpl : public DataPipeImpl {
   // Used for two-phase writes.
   scoped_ptr<char, base::AlignedFreeDeleter> buffer_;
 
-  DISALLOW_COPY_AND_ASSIGN(RemoteConsumerDataPipeImpl);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(RemoteConsumerDataPipeImpl);
 };
 
 }  // namespace system
