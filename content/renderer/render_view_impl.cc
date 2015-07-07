@@ -762,7 +762,7 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   webview()->settings()->setRootLayerScrolls(
       command_line.HasSwitch(switches::kRootLayerScrolls));
 
-  ApplyWebPreferences(webkit_preferences_, webview());
+  ApplyWebPreferencesInternal(webkit_preferences_, webview(), compositor_deps_);
 
   if (switches::IsTouchDragDropEnabled())
     webview()->settings()->setTouchDragDropEnabled(true);
@@ -1505,6 +1505,19 @@ void RenderViewImpl::SendUpdateState(HistoryEntry* entry) {
 
   Send(new ViewHostMsg_UpdateState(
       routing_id_, page_id_, HistoryEntryToPageState(entry)));
+}
+
+void RenderViewImpl::ApplyWebPreferencesInternal(
+    const WebPreferences& prefs,
+    blink::WebView* web_view,
+    CompositorDependencies* compositor_deps) {
+  ApplyWebPreferences(prefs, web_view);
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  DCHECK(compositor_deps);
+  bool is_elastic_overscroll_enabled =
+      compositor_deps->IsElasticOverscrollEnabled();
+  web_view->settings()->setReportWheelOverscroll(is_elastic_overscroll_enabled);
+#endif
 }
 
 bool RenderViewImpl::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
@@ -2650,7 +2663,7 @@ void RenderViewImpl::OnDragSourceSystemDragEnded() {
 
 void RenderViewImpl::OnUpdateWebPreferences(const WebPreferences& prefs) {
   webkit_preferences_ = prefs;
-  ApplyWebPreferences(webkit_preferences_, webview());
+  ApplyWebPreferencesInternal(webkit_preferences_, webview(), compositor_deps_);
 }
 
 void RenderViewImpl::OnEnumerateDirectoryResponse(

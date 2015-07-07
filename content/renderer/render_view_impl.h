@@ -589,6 +589,10 @@ class CONTENT_EXPORT RenderViewImpl
   void UpdateSessionHistory(blink::WebFrame* frame);
   void SendUpdateState(HistoryEntry* entry);
 
+  void ApplyWebPreferencesInternal(const WebPreferences& prefs,
+                                   blink::WebView* web_view,
+                                   CompositorDependencies* compositor_deps);
+
   // Sends a message and runs a nested message loop.
   bool SendAndRunNestedMessageLoop(IPC::SyncMessage* message);
 

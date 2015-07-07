@@ -1208,7 +1208,10 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
   // that they can be used to produce the elastic overscroll effect on Mac.
   if (input_event->type == WebInputEvent::MouseWheel) {
     ObserveWheelEventAndResult(
-        static_cast<const WebMouseWheelEvent&>(*input_event), processed);
+        static_cast<const WebMouseWheelEvent&>(*input_event),
+        event_overscroll ? event_overscroll->latest_overscroll_delta
+                         : gfx::Vector2dF(),
+        processed);
   }
 
   bool frame_pending = compositor_ && compositor_->BeginMainFrameRequested();
@@ -2308,23 +2311,15 @@ bool RenderWidget::WillHandleGestureEvent(
 
 void RenderWidget::ObserveWheelEventAndResult(
     const blink::WebMouseWheelEvent& wheel_event,
+    const gfx::Vector2dF& wheel_unused_delta,
     bool event_processed) {
   if (!compositor_deps_->IsElasticOverscrollEnabled())
     return;
 
-  // Blink does not accurately compute scroll bubbling or overscroll. For now,
-  // assume that an unprocessed event was entirely an overscroll, and that a
-  // processed event was entirely scroll.
-  // TODO(ccameron): Retrieve an accurate scroll result from Blink.
-  // http://crbug.com/442859
   cc::InputHandlerScrollResult scroll_result;
-  if (event_processed) {
-    scroll_result.did_scroll = true;
-  } else {
-    scroll_result.did_overscroll_root = true;
-    scroll_result.unused_scroll_delta =
-        gfx::Vector2dF(-wheel_event.deltaX, -wheel_event.deltaY);
-  }
+  scroll_result.did_scroll = event_processed;
+  scroll_result.did_overscroll_root = !wheel_unused_delta.IsZero();
+  scroll_result.unused_scroll_delta = wheel_unused_delta;
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   InputHandlerManager* input_handler_manager =
