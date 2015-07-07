@@ -393,6 +393,8 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
         // If the anchor wants to suppress the referrer, update the referrerPolicy accordingly.
         if (anchor->hasRel(RelationNoReferrer))
             data.referrerPolicy = WebReferrerPolicyNever;
+
+        data.linkText = anchor->innerText();
     }
 
     // Find the input field type.

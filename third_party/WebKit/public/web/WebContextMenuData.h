@@ -116,6 +116,9 @@ struct WebContextMenuData {
     // Extra attributes describing media elements.
     int mediaFlags;
 
+    // The text of the link that is in the context.
+    WebString linkText;
+
     // The raw text of the selection in context.
     WebString selectedText;
 
