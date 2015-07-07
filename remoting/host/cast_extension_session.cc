@@ -389,7 +389,8 @@ bool CastExtensionSession::ParseAndAddICECandidate(
   }
 
   rtc::scoped_ptr<webrtc::IceCandidateInterface> candidate(
-      webrtc::CreateIceCandidate(sdp_mid, sdp_mlineindex, candidate_str));
+      webrtc::CreateIceCandidate(sdp_mid, sdp_mlineindex, candidate_str,
+                                 nullptr));
   if (!candidate.get()) {
     LOG(ERROR)
         << "Invalid Cast Extension Message (could not create candidate).";
