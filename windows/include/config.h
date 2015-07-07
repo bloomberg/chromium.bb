@@ -21,5 +21,5 @@
    Boston, MA 02110-1301, USA.
    */
 
-#define PACKAGE_VERSION "liblouis-2.6.3"
+#define PACKAGE_VERSION "liblouis-2.6.4"
 
