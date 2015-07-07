@@ -391,9 +391,6 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
     int rssi) {
 }
 
-// TODO(krstnmnlsn): This method assumes all BluetoothDevices in devices_ are
-// instances of BluetoothDeviceMac.  Add support for low energy devices.
-// crbug.com/498009
 void BluetoothAdapterMac::UpdateDevices() {
   // Notify observers if any previously seen devices are no longer available,
   // i.e. if they are no longer paired, connected, nor recently discovered via
@@ -404,10 +401,10 @@ void BluetoothAdapterMac::UpdateDevices() {
     if (device->IsPaired() || device->IsConnected())
       continue;
 
-    NSDate* last_inquiry_update =
-        static_cast<BluetoothClassicDeviceMac*>(device)->GetLastInquiryUpdate();
-    if (last_inquiry_update &&
-        -[last_inquiry_update timeIntervalSinceNow] < kDiscoveryTimeoutSec)
+    NSDate* last_update_time =
+        static_cast<BluetoothDeviceMac*>(device)->GetLastUpdateTime();
+    if (last_update_time &&
+        -[last_update_time timeIntervalSinceNow] < kDiscoveryTimeoutSec)
       continue;
 
     FOR_EACH_OBSERVER(

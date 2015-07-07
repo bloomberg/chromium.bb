@@ -75,6 +75,7 @@ BluetoothLowEnergyDeviceMac::~BluetoothLowEnergyDeviceMac() {
 void BluetoothLowEnergyDeviceMac::Update(CBPeripheral* peripheral,
                                          NSDictionary* advertisementData,
                                          int rssi) {
+  last_update_time_.reset([[NSDate date] retain]);
   peripheral_.reset([peripheral retain]);
   rssi_ = rssi;
   ClearServiceData();
@@ -224,6 +225,10 @@ void BluetoothLowEnergyDeviceMac::CreateGattConnection(
     const GattConnectionCallback& callback,
     const ConnectErrorCallback& error_callback) {
   NOTIMPLEMENTED();
+}
+
+NSDate* BluetoothLowEnergyDeviceMac::GetLastUpdateTime() const {
+  return last_update_time_.get();
 }
 
 std::string BluetoothLowEnergyDeviceMac::GetDeviceName() const {

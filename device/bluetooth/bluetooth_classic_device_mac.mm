@@ -232,7 +232,7 @@ void BluetoothClassicDeviceMac::CreateGattConnection(
   error_callback.Run(ERROR_UNSUPPORTED_DEVICE);
 }
 
-NSDate* BluetoothClassicDeviceMac::GetLastInquiryUpdate() {
+NSDate* BluetoothClassicDeviceMac::GetLastUpdateTime() const {
   return [device_ getLastInquiryUpdate];
 }
 

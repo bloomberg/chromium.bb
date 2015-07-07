@@ -57,6 +57,8 @@ component("bluetooth") {
     "bluetooth_device.h",
     "bluetooth_device_chromeos.cc",
     "bluetooth_device_chromeos.h",
+    "bluetooth_device_mac.h",
+    "bluetooth_device_mac.mm",
     "bluetooth_device_win.cc",
     "bluetooth_device_win.h",
     "bluetooth_discovery_filter.cc",

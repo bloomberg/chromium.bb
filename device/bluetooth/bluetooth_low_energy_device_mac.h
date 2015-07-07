@@ -13,13 +13,13 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
-#include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_device_mac.h"
 
 namespace device {
 
 class BluetoothLowEnergyDiscoverManagerMac;
 
-class BluetoothLowEnergyDeviceMac : public BluetoothDevice {
+class BluetoothLowEnergyDeviceMac : public BluetoothDeviceMac {
  public:
   BluetoothLowEnergyDeviceMac(CBPeripheral* peripheral,
                               NSDictionary* advertisementData,
@@ -70,6 +70,9 @@ class BluetoothLowEnergyDeviceMac : public BluetoothDevice {
       const GattConnectionCallback& callback,
       const ConnectErrorCallback& error_callback) override;
 
+  // BluetoothDeviceMac override.
+  NSDate* GetLastUpdateTime() const override;
+
  protected:
   // BluetoothDevice override.
   std::string GetDeviceName() const override;
@@ -92,6 +95,9 @@ class BluetoothLowEnergyDeviceMac : public BluetoothDevice {
 
   // Whether the device is connectable.
   bool connectable_;
+
+  // Stores the time of the most recent call to Update().
+  base::scoped_nsobject<NSDate> last_update_time_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothLowEnergyDeviceMac);
 };

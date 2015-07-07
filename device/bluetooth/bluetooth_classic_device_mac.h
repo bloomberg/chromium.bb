@@ -12,13 +12,13 @@
 #include "base/basictypes.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/observer_list.h"
-#include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_device_mac.h"
 
 @class IOBluetoothDevice;
 
 namespace device {
 
-class BluetoothClassicDeviceMac : public BluetoothDevice {
+class BluetoothClassicDeviceMac : public BluetoothDeviceMac {
  public:
   explicit BluetoothClassicDeviceMac(IOBluetoothDevice* device);
   ~BluetoothClassicDeviceMac() override;
@@ -64,9 +64,8 @@ class BluetoothClassicDeviceMac : public BluetoothDevice {
       const GattConnectionCallback& callback,
       const ConnectErrorCallback& error_callback) override;
 
-  // Returns the timestamp when the device was last seen during an inquiry.
-  // Returns nil if the device has never been seen during an inquiry.
-  NSDate* GetLastInquiryUpdate();
+  // BluetoothDeviceMac override.
+  NSDate* GetLastUpdateTime() const override;
 
   // Returns the Bluetooth address for the |device|. The returned address has a
   // normalized format (see below).
