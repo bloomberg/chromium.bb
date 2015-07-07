@@ -120,7 +120,9 @@ NSString* TransformAnimationTimingFunction() {
   [snapshotLayer_ setFrame:NSRectToCGRect([primaryWindow_ frame])];
   [snapshotLayer_ setContents:static_cast<id>(windowSnapshot.get())];
   [snapshotLayer_ setAnchorPoint:CGPointMake(0, 0)];
-  [snapshotLayer_ setBackgroundColor:CGColorCreateGenericRGB(0, 0, 0, 0)];
+  CGColorRef colorRef = CGColorCreateGenericRGB(0, 0, 0, 0);
+  [snapshotLayer_ setBackgroundColor:colorRef];
+  CGColorRelease(colorRef);
 }
 
 - (void)makeAndPrepareSnapshotWindow {
