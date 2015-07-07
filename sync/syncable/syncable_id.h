@@ -14,8 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "sync/base/sync_export.h"
 
-class MockConnectionManager;
-
 namespace base {
 class StringValue;
 }
@@ -113,7 +111,6 @@ class SYNC_EXPORT Id {
                          sql::Statement* statement);
   SYNC_EXPORT_PRIVATE friend std::ostream& operator<<(std::ostream& out,
                                                       const Id& id);
-  friend class MockConnectionManager;
   friend class SyncableIdTest;
 
   std::string s_;

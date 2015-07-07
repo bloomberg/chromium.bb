@@ -30,7 +30,6 @@
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/variations/active_field_trials.h"
 
-class MetricsServiceAccessor;
 class PrefService;
 class PrefRegistrySimple;
 
@@ -52,6 +51,7 @@ namespace metrics {
 
 class MetricsLogUploader;
 class MetricsReportingScheduler;
+class MetricsServiceAccessor;
 class MetricsServiceClient;
 class MetricsStateManager;
 
@@ -267,8 +267,6 @@ class MetricsService : public base::HistogramFlattener {
     CLEANLY_SHUTDOWN = 0xdeadbeef,
     NEED_TO_SHUTDOWN = ~CLEANLY_SHUTDOWN
   };
-
-  friend class ::MetricsServiceAccessor;
 
   typedef std::vector<SyntheticTrialGroup> SyntheticTrialGroups;
 

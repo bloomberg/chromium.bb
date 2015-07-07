@@ -52,7 +52,6 @@ class TestDiscardableShader : public SkShader {
   // leap yet.
  private:
   static SkFlattenable* CreateProc(SkReadBuffer&);
-  friend class SkPrivateEffectInitializer;
 
  public:
   Factory getFactory() const override { return CreateProc; }

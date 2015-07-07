@@ -72,7 +72,6 @@
 #pragma warning(disable: 4250)
 #endif
 
-class PepperDeviceTest;
 class SkBitmap;
 struct PP_NetAddress_Private;
 struct ViewMsg_New_Params;
@@ -508,7 +507,6 @@ class CONTENT_EXPORT RenderViewImpl
  private:
   // For unit tests.
   friend class DevToolsAgentTest;
-  friend class PepperDeviceTest;
   friend class RenderViewImplTest;
   friend class RenderViewTest;
   friend class RendererAccessibilityTest;

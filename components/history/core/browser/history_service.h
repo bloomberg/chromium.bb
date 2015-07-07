@@ -39,7 +39,6 @@ class HistoryQuickProviderTest;
 class HistoryURLProvider;
 class HistoryURLProviderTest;
 class InMemoryURLIndexTest;
-class PageUsageRequest;
 class SkBitmap;
 class SyncBookmarkDataTypeControllerTest;
 class TestingProfile;
@@ -536,16 +535,11 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   friend class favicon::FaviconService;
   friend class HistoryBackend;
   friend class HistoryQueryTest;
-  friend class HistoryOperation;
   friend class ::HistoryQuickProviderTest;
   friend class HistoryServiceTest;
   friend class ::HistoryURLProvider;
   friend class ::HistoryURLProviderTest;
   friend class ::InMemoryURLIndexTest;
-  template <typename Info, typename Callback>
-  friend class DownloadRequest;
-  friend class PageUsageRequest;
-  friend class RedirectRequest;
   friend class ::SyncBookmarkDataTypeControllerTest;
   friend class ::TestingProfile;
 
