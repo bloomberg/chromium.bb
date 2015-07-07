@@ -9803,7 +9803,6 @@
         "description": "Commit Queue (internal)",
         "disk_layout": "base",
         "image_test": false,
-        "important": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
