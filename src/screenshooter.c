@@ -417,14 +417,14 @@ weston_recorder_frame_notify(struct wl_listener *listener, void *data)
 				compositor->read_format, recorder->rect,
 				r[i].x1, y_orig, width, height);
 
-		s = recorder->rect;
 		p = outbuf;
 		run = prev = 0; /* quiet gcc */
 		for (j = 0; j < height; j++) {
 			if (do_yflip)
-				y_orig = r[i].y2 - j - 1;
+				s = recorder->rect + width * j;
 			else
-				y_orig = r[i].y1 + j;
+				s = recorder->rect + width * (height - j - 1);
+			y_orig = r[i].y2 - j - 1;
 			d = recorder->frame + stride * y_orig + r[i].x1;
 
 			for (k = 0; k < width; k++) {
