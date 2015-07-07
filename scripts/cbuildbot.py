@@ -1024,6 +1024,30 @@ def _SetupConnections(options, build_config):
     graphite.StatsFactory.SetupMock()
 
 
+def _FetchInitialBootstrapConfigRepo(repo_url, branch_name):
+  """Fetch the TOT site config repo, if necessary to start bootstrap."""
+
+  # If we are part of a repo checkout, the manifest stages control things.
+  if git.FindRepoDir(constants.SOURCE_ROOT):
+    return
+
+  # We must be part of a bootstrap chromite checkout, probably on a buildbot.
+
+  # If the config directory already exists, we have started the bootstrap
+  # process. Assume the boostrap stage did the right thing, and leave the config
+  # directory alone.
+  if os.path.exists(constants.SITE_CONFIG_DIR):
+    return
+
+  # We are part of a clean chromite checkout (buildbot always cleans chromite
+  # before launching us), so create the initial site config checkout.
+  logging.info('Fetching Config Repo: %s', repo_url)
+  git.Clone(constants.SITE_CONFIG_DIR, repo_url)
+
+  if branch_name:
+    git.RunGit(constants.SITE_CONFIG_DIR, ['checkout', branch_name])
+
+
 # TODO(build): This function is too damn long.
 def main(argv):
   # Turn on strict sudo checks.
@@ -1035,11 +1059,13 @@ def main(argv):
   parser = _CreateParser()
   options, args = _ParseCommandLine(parser, argv)
 
+  if options.buildbot and options.config_repo:
+    _FetchInitialBootstrapConfigRepo(options.config_repo, options.branch)
 
   if options.config_repo:
-    raise NotImplementedError('Can\'t yet fetch a site configuration.')
-    # Reminder that we need to test this when things are implemented.
-    # assert os.path.exists(constants.SITE_CONFIG_FILE)
+    # Ensure expected config file is present.
+    if not os.path.exists(constants.SITE_CONFIG_FILE):
+      cros_build_lib.Die('Unabled to find: %s', constants.SITE_CONFIG_FILE)
 
   # Fetch our site_config now, because we need it to do anything else.
   site_config = config_lib.GetConfig()

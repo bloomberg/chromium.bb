@@ -165,11 +165,12 @@ class BootstrapStage(PatchChangesStage):
   option_name = 'bootstrap'
 
   def __init__(self, builder_run, chromite_patch_pool,
-               manifest_patch_pool=None, **kwargs):
+               manifest_patch_pool, **kwargs):
     super(BootstrapStage, self).__init__(
         builder_run, trybot_patch_pool.TrybotPatchPool(), **kwargs)
     self.chromite_patch_pool = chromite_patch_pool
     self.manifest_patch_pool = manifest_patch_pool
+    self.config_repo = self._run.options.config_repo
     self.returncode = None
     self.tempdir = None
 
@@ -257,8 +258,9 @@ class BootstrapStage(PatchChangesStage):
     if self._run.options.test_bootstrap:
       filter_branch = 'master'
 
+    # Checkout the new version of chromite, and patch it.
     chromite_dir = os.path.join(self.tempdir, 'chromite')
-    reference_repo = os.path.join(constants.SOURCE_ROOT, 'chromite', '.git')
+    reference_repo = os.path.join(constants.CHROMITE_DIR, '.git')
     repository.CloneGitRepo(chromite_dir, constants.CHROMITE_URL,
                             reference=reference_repo)
     git.RunGit(chromite_dir, ['checkout', filter_branch])
@@ -275,13 +277,23 @@ class BootstrapStage(PatchChangesStage):
     if filtered_pool:
       self._ApplyPatchSeries(patch_series, filtered_pool)
 
+    # Checkout the new version of site config (no patching logic, yet).
+    if self.config_repo:
+      site_config_dir = os.path.join(chromite_dir, 'config')
+      site_config_reference_repo = os.path.join(constants.SITE_CONFIG_DIR,
+                                                '.git')
+      repository.CloneGitRepo(site_config_dir, self.config_repo,
+                              reference=site_config_reference_repo)
+      git.RunGit(site_config_dir, ['checkout', filter_branch])
+
+    # Re-exec into new instance of cbuildbot, with proper command line args.
     cbuildbot_path = constants.PATH_TO_CBUILDBOT
     if not os.path.exists(os.path.join(self.tempdir, cbuildbot_path)):
       cbuildbot_path = 'chromite/cbuildbot/cbuildbot'
     cmd = self.FilterArgsForTargetCbuildbot(self.tempdir, cbuildbot_path,
                                             self._run.options)
 
-    extra_params = ['--sourceroot=%s' % self._run.options.sourceroot]
+    extra_params = ['--sourceroot', self._run.options.sourceroot]
     extra_params.extend(self._run.options.bootstrap_args)
     if self._run.options.test_bootstrap:
       # We don't want re-executed instance to see this.

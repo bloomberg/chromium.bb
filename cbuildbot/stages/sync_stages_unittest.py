@@ -23,12 +23,14 @@ from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import triage_lib
+from chromite.cbuildbot import trybot_patch_pool
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import sync_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cidb
 from chromite.lib import clactions
+from chromite.lib import cros_build_lib
 from chromite.lib import fake_cidb
 from chromite.lib import gerrit
 from chromite.lib import git_unittest
@@ -39,6 +41,106 @@ from chromite.lib import timeout_util
 
 # It's normal for unittests to access protected members.
 # pylint: disable=protected-access
+
+
+class BootstrapStageTest(
+    generic_stages_unittest.AbstractStageTestCase,
+    cros_build_lib_unittest.RunCommandTestCase):
+  """Tests the Bootstrap stage."""
+
+  BOT_ID = 'sync-test-cbuildbot'
+  RELEASE_TAG = ''
+
+  def setUp(self):
+    # Pretend API version is always current.
+    self.PatchObject(cros_build_lib, 'GetTargetChromiteApiVersion',
+                     return_value=(constants.REEXEC_API_MAJOR,
+                                   constants.REEXEC_API_MINOR))
+
+    self._Prepare()
+
+  def ConstructStage(self):
+    chromite_pool = trybot_patch_pool.TrybotPatchPool()
+    manifest_pool = trybot_patch_pool.TrybotPatchPool()
+
+    return sync_stages.BootstrapStage(self._run,
+                                      chromite_pool,
+                                      manifest_pool)
+
+  def testSimpleBootstrap(self):
+    """Verify Bootstrap behavior in a simple case (with a branch)."""
+
+    self.RunStage()
+
+    # Clone next chromite checkout.
+    self.assertCommandContains([
+        'git', 'clone', constants.CHROMITE_URL,
+        mock.ANY,  # Can't predict new chromium checkout diretory.
+        '--reference', mock.ANY
+    ])
+
+    # Switch to the test branch.
+    self.assertCommandContains(['git', 'checkout', 'ooga_booga'])
+
+    # Re-exec cbuildbot. We mostly only want to test the CL options Bootstrap
+    # changes.
+    #   '--sourceroot=%s'
+    #   '--test-bootstrap'
+    #   '--nobootstrap'
+    #   '--manifest-repo-url'
+    self.assertCommandContains([
+        'chromite/cbuildbot/cbuildbot', 'sync-test-cbuildbot',
+        '-r', os.path.join(self.tempdir, 'buildroot'),
+        '--buildbot', '--noprebuilts', '--buildnumber', '1234321',
+        '--branch', 'ooga_booga',
+        '--sourceroot', mock.ANY,
+        '--nobootstrap',
+    ])
+
+
+  def testSiteConfigBootstrap(self):
+    """Verify Bootstrap behavior, if config_repo is passed in."""
+
+    # Set a new command line option to set the repo.
+    self._run.options.config_repo = 'http://happy/config/repo'
+
+    self.RunStage()
+
+    # Clone next chromite.
+    self.assertCommandContains([
+        'git', 'clone', 'https://chromium.googlesource.com/chromiumos/chromite',
+        mock.ANY, # Can't predict new chromium checkout diretory.
+        '--reference', mock.ANY
+    ])
+
+    # Switch to the test branch.
+    self.assertCommandContains(['git', 'checkout', 'ooga_booga'])
+
+    # Clone the site config.
+    self.assertCommandContains([
+        'git', 'clone', 'http://happy/config/repo',
+        mock.ANY, # Can't predict new chromium checkout diretory.
+        '--reference', mock.ANY
+    ])
+
+    # Switch to the test branch.
+    self.assertCommandContains(['git', 'checkout', 'ooga_booga'])
+
+    # Re-exec cbuildbot. We mostly only want to test the CL options Bootstrap
+    # changes.
+    #   '--sourceroot=%s'
+    #   '--test-bootstrap'
+    #   '--nobootstrap'
+    #   '--manifest-repo-url'
+    self.assertCommandContains([
+        'chromite/cbuildbot/cbuildbot', 'sync-test-cbuildbot',
+        '-r', os.path.join(self.tempdir, 'buildroot'),
+        '--buildbot', '--noprebuilts', '--buildnumber', '1234321',
+        '--branch', 'ooga_booga',
+        '--sourceroot', mock.ANY,
+        '--nobootstrap',
+    ])
+
 
 class ManifestVersionedSyncStageTest(
     generic_stages_unittest.AbstractStageTestCase):
