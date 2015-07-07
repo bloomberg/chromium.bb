@@ -98,6 +98,7 @@ crbug.com/420008 [ Release ] inspector/editor/text-editor-word-jumps.html [ Slow
 crbug.com/420008 [ Release ] http/tests/inspector/console-xhr-logging.html [ Slow ]
 webkit.org/b/60109 inspector/elements/edit/edit-dom-actions.html [ Slow ]
 webkit.org/b/84735 [ Win ] http/tests/inspector/change-iframe-src.html [ Slow ]
+crbug.com/504565 [ Mac ] http/tests/inspector/search/sources-search-scope.html [ Slow ]
 
 # This test is intentionally SLOW as we're waiting for a connection timeout.
 crbug.com/73609 http/tests/media/video-play-stall.html [ Slow ]
