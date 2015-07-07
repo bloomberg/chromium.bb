@@ -17,6 +17,7 @@ function test()
             {
                 if (!styles) {
                     InspectorTest.addResult("empty styles");
+                    InspectorTest.completeTest();
                     return;
                 }
 
@@ -109,6 +110,11 @@ function test()
         function testFormattedWithMeta(next)
         {
             formattedStyle.insertPropertyAt(0, "-webkit-animation", "linear", dumpFormattedAndCallNext.bind(null, next));
+        },
+
+        function testFormattedWithAtoms(next)
+        {
+            formattedStyle.insertPropertyAt(0, "border-left", "1px solid rgb(1,1,1)", dumpFormattedAndCallNext.bind(null, next));
         },
 
         function initUnformattedStyle(next)
