@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.metrics;
 
+import android.util.Pair;
+
 import org.chromium.base.JNINamespace;
 import org.chromium.content_public.browser.WebContents;
 
@@ -15,23 +17,31 @@ import java.util.List;
  */
 @JNINamespace("metrics")
 public class LaunchMetrics {
-    private static final List<String> sActivityUrls = new ArrayList<String>();
-    private static final List<String> sTabUrls = new ArrayList<String>();
+    // Each list item is a pair of the url and where it was added from e.g. from the add to
+    // homescreen menu item, an app banner, or unknown. The mapping of int source values to
+    // their string names is found in the C++ ShortcutInfo struct.
+    private static final List<Pair<String, Integer>> sActivityUrls =
+            new ArrayList<Pair<String, Integer>>();
+    private static final List<Pair<String, Integer>> sTabUrls =
+            new ArrayList<Pair<String, Integer>>();
 
     /**
-     * Records the launch of a standalone Activity for a URL (i.e. a WebappActivity).
+     * Records the launch of a standalone Activity for a URL (i.e. a WebappActivity)
+     * added from a specific source.
      * @param url URL that kicked off the Activity's creation.
+     * @param source integer id of the source from where the URL was added.
      */
-    public static void recordHomeScreenLaunchIntoStandaloneActivity(String url) {
-        sActivityUrls.add(url);
+    public static void recordHomeScreenLaunchIntoStandaloneActivity(String url, int source) {
+        sActivityUrls.add(new Pair<String, Integer>(url, source));
     }
 
     /**
      * Records the launch of a Tab for a URL (i.e. a Home screen shortcut).
      * @param url URL that kicked off the Tab's creation.
+     * @param source integer id of the source from where the URL was added.
      */
-    public static void recordHomeScreenLaunchIntoTab(String url) {
-        sTabUrls.add(url);
+    public static void recordHomeScreenLaunchIntoTab(String url, int source) {
+        sTabUrls.add(new Pair<String, Integer>(url, source));
     }
 
     /**
@@ -41,16 +51,16 @@ public class LaunchMetrics {
      * @param webContents WebContents for the current Tab.
      */
     public static void commitLaunchMetrics(WebContents webContents) {
-        for (String url : sActivityUrls) {
-            nativeRecordLaunch(true, url, webContents);
+        for (Pair<String, Integer> item : sActivityUrls) {
+            nativeRecordLaunch(true, item.first, item.second, webContents);
         }
-        for (String url : sTabUrls) {
-            nativeRecordLaunch(false, url, webContents);
+        for (Pair<String, Integer> item : sTabUrls) {
+            nativeRecordLaunch(false, item.first, item.second, webContents);
         }
         sActivityUrls.clear();
         sTabUrls.clear();
     }
 
     private static native void nativeRecordLaunch(
-            boolean standalone, String url, WebContents webContents);
+            boolean standalone, String url, int source, WebContents webContents);
 }

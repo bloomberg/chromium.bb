@@ -33,6 +33,10 @@ public class ShortcutHelper {
     public static final String EXTRA_TITLE = "org.chromium.chrome.browser.webapp_title";
     public static final String EXTRA_URL = "org.chromium.chrome.browser.webapp_url";
     public static final String EXTRA_ORIENTATION = ScreenOrientationConstants.EXTRA_ORIENTATION;
+    public static final String EXTRA_SOURCE = "org.chromium.chrome.browser.webapp_source";
+
+    // This value is equal to SOURCE_UNKNOWN in the C++ ShortcutInfo struct.
+    public static final int SOURCE_UNKNOWN = 0;
 
     /** Observes the data fetching pipeline. */
     public interface ShortcutHelperObserver {
@@ -137,7 +141,7 @@ public class ShortcutHelper {
     @SuppressWarnings("unused")
     @CalledByNative
     private static void addShortcut(Context context, String url, String title, Bitmap icon,
-            boolean isWebappCapable, int orientation) {
+            boolean isWebappCapable, int orientation, int source) {
         assert sFullScreenAction != null;
 
         Intent shortcutIntent;
@@ -165,6 +169,9 @@ public class ShortcutHelper {
             shortcutIntent = BookmarkUtils.createShortcutIntent(url);
         }
 
+        // Always attach a source (one of add to homescreen menu item, app banner, or unknown) to
+        // the intent. This allows us to distinguish where a shortcut was added from in metrics.
+        shortcutIntent.putExtra(EXTRA_SOURCE, source);
         shortcutIntent.setPackage(context.getPackageName());
         context.sendBroadcast(
                 BookmarkUtils.createAddToHomeIntent(shortcutIntent, title, icon, url));

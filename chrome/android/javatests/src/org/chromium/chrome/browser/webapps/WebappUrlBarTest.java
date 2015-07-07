@@ -8,6 +8,7 @@ import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.content_public.common.ScreenOrientationValues;
 
@@ -23,7 +24,7 @@ public class WebappUrlBarTest extends WebappActivityTestBase {
         super.setUp();
 
         WebappInfo mockInfo = WebappInfo.create(WEBAPP_ID, WEBAPP_URL, null, null,
-                ScreenOrientationValues.DEFAULT);
+                ScreenOrientationValues.DEFAULT, ShortcutHelper.SOURCE_UNKNOWN);
         getActivity().getWebappInfo().copy(mockInfo);
         mUrlBar = getActivity().getUrlBarForTests();
     }

@@ -6,13 +6,15 @@
 
 ShortcutInfo::ShortcutInfo()
     : display(content::Manifest::DISPLAY_MODE_BROWSER),
-      orientation(blink::WebScreenOrientationLockDefault) {
+      orientation(blink::WebScreenOrientationLockDefault),
+      source(SOURCE_ADD_TO_HOMESCREEN) {
 }
 
 ShortcutInfo::ShortcutInfo(const GURL& shortcut_url)
     : url(shortcut_url),
       display(content::Manifest::DISPLAY_MODE_BROWSER),
-      orientation(blink::WebScreenOrientationLockDefault) {
+      orientation(blink::WebScreenOrientationLockDefault),
+      source(SOURCE_ADD_TO_HOMESCREEN) {
 }
 
 void ShortcutInfo::UpdateFromManifest(const content::Manifest& manifest) {
@@ -44,4 +46,8 @@ void ShortcutInfo::UpdateFromManifest(const content::Manifest& manifest) {
     if (display == content::Manifest::DISPLAY_MODE_STANDALONE)
       orientation = manifest.orientation;
   }
+}
+
+void ShortcutInfo::UpdateSource(const Source new_source) {
+  source = new_source;
 }

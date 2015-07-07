@@ -158,7 +158,8 @@ void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
       java_title.obj(),
       java_bitmap.obj(),
       info.display == content::Manifest::DISPLAY_MODE_STANDALONE,
-      info.orientation);
+      info.orientation,
+      info.source);
 }
 
 void ShortcutHelper::RecordAddToHomescreen() {

@@ -328,7 +328,9 @@ public class ChromeLauncherActivity extends Activity
 
         // Try to relaunch an existing task.
         if (reuse && !append) {
-            LaunchMetrics.recordHomeScreenLaunchIntoTab(url);
+            int shortcutSource = getIntent().getIntExtra(
+                        ShortcutHelper.EXTRA_SOURCE, ShortcutHelper.SOURCE_UNKNOWN);
+            LaunchMetrics.recordHomeScreenLaunchIntoTab(url, shortcutSource);
             if (relaunchTask(incognito, url)) return;
         }
 
@@ -768,6 +770,8 @@ public class ChromeLauncherActivity extends Activity
         String webappIcon = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_ICON);
         int webappOrientation = IntentUtils.safeGetIntExtra(intent,
                 ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.DEFAULT);
+        int webappSource = IntentUtils.safeGetIntExtra(intent,
+                ShortcutHelper.EXTRA_SOURCE, ShortcutHelper.SOURCE_UNKNOWN);
 
         if (webappId != null && webappUrl != null) {
             String webappMacString = IntentUtils.safeGetStringExtra(
@@ -777,11 +781,12 @@ public class ChromeLauncherActivity extends Activity
 
             if (webappMac != null && WebappAuthenticator.isUrlValid(this, webappUrl, webappMac)) {
                 if (TextUtils.equals(ACTION_START_WEBAPP, intent.getAction())) {
-                    LaunchMetrics.recordHomeScreenLaunchIntoStandaloneActivity(webappUrl);
+                    LaunchMetrics.recordHomeScreenLaunchIntoStandaloneActivity(
+                            webappUrl, webappSource);
                 }
 
-                WebappActivity.launchInstance(
-                        this, webappId, webappUrl, webappIcon, webappTitle, webappOrientation);
+                WebappActivity.launchInstance(this, webappId,
+                        webappUrl, webappIcon, webappTitle, webappOrientation, webappSource);
             } else {
                 Log.e(TAG, "Shortcut (" + webappUrl + ") opened in Chrome.");
 
@@ -790,6 +795,7 @@ public class ChromeLauncherActivity extends Activity
                 fallbackIntent.setAction(Intent.ACTION_VIEW);
                 fallbackIntent.setData(Uri.parse(webappUrl));
                 fallbackIntent.putExtra(BookmarkUtils.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true);
+                fallbackIntent.putExtra(ShortcutHelper.EXTRA_SOURCE, webappSource);
                 return fallbackIntent;
             }
         }

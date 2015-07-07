@@ -7,6 +7,7 @@
 #include "base/android/jni_string.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "chrome/browser/android/shortcut_info.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "components/rappor/rappor_utils.h"
@@ -27,12 +28,12 @@ bool RegisterLaunchMetrics(JNIEnv* env) {
 }
 
 static void RecordLaunch(JNIEnv* env, jclass caller, jboolean standalone,
-                         jstring jurl, jobject jweb_contents) {
+                         jstring jurl, int source, jobject jweb_contents) {
   GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
 
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
-  if (web_contents) {
+  if (web_contents && source == ShortcutInfo::SOURCE_APP_BANNER) {
     // What a user has installed on the Home screen can become disconnected from
     // what Chrome believes is on the Home screen if the user clears their data.
     // Use the launch as a signal that the shortcut still exists.
@@ -49,6 +50,9 @@ static void RecordLaunch(JNIEnv* env, jclass caller, jboolean standalone,
 
   UMA_HISTOGRAM_ENUMERATION("Launch.HomeScreen", action,
                             HOME_SCREEN_LAUNCH_COUNT);
+
+  UMA_HISTOGRAM_ENUMERATION("Launch.HomeScreenSource", source,
+                            ShortcutInfo::SOURCE_COUNT);
 
   rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
                                           rappor_metric, url);

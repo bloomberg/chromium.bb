@@ -14730,6 +14730,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Launch.HomeScreenSource" enum="LaunchFromHomeScreenSource">
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    Records the source of an Android Home screen shortcut used to launch Chrome.
+  </summary>
+</histogram>
+
 <histogram name="Launch.InvalidIntent" enum="BooleanHit">
   <owner>dfalcantara@chromium.org</owner>
   <summary>
@@ -59587,6 +59594,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="LaunchFromHomeScreen" type="int">
   <int value="0" label="Launched as standalone web app"/>
   <int value="1" label="Launched as a tab"/>
+</enum>
+
+<enum name="LaunchFromHomeScreenSource" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Menu item"/>
+  <int value="2" label="App banner"/>
 </enum>
 
 <enum name="LevelDBCorruptionTypes" type="int">

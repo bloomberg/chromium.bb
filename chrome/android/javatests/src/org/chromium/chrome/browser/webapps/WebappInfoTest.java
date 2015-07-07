@@ -23,7 +23,8 @@ public class WebappInfoTest extends InstrumentationTestCase {
         String title = "webapp title";
         String url = "about:blank";
 
-        WebappInfo info = WebappInfo.create(id, url, null, title, ScreenOrientationValues.DEFAULT);
+        WebappInfo info = WebappInfo.create(id, url,
+                null, title, ScreenOrientationValues.DEFAULT, ShortcutHelper.SOURCE_UNKNOWN);
         assertNotNull(info);
     }
 
@@ -34,7 +35,8 @@ public class WebappInfoTest extends InstrumentationTestCase {
         String title = "webapp title";
         String url = "http://google.com";
 
-        WebappInfo info = WebappInfo.create(id, url, null, title, ScreenOrientationValues.DEFAULT);
+        WebappInfo info = WebappInfo.create(id, url,
+                null, title, ScreenOrientationValues.DEFAULT, ShortcutHelper.SOURCE_UNKNOWN);
         assertNotNull(info);
     }
 
@@ -52,5 +54,19 @@ public class WebappInfoTest extends InstrumentationTestCase {
 
         WebappInfo info = WebappInfo.create(intent);
         assertNotNull(info);
+    }
+
+    @SmallTest
+    @Feature({"Webapps"})
+    public void testOrientationAndSource() {
+        String id = "webapp id";
+        String title = "webapp title";
+        String url = "http://money.cnn.com";
+
+        WebappInfo info = WebappInfo.create(id, url,
+                null, title, ScreenOrientationValues.DEFAULT, ShortcutHelper.SOURCE_UNKNOWN);
+        assertNotNull(info);
+        assertEquals(info.orientation(), ScreenOrientationValues.DEFAULT);
+        assertEquals(info.source(), ShortcutHelper.SOURCE_UNKNOWN);
     }
 }

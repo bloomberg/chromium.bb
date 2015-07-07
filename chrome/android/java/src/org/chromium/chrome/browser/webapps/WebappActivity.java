@@ -330,7 +330,7 @@ public class WebappActivity extends FullScreenActivity {
      * @param orientation Default orientation for the activity.
      */
     public static void launchInstance(Context context, String id, String url, String icon,
-            String title, int orientation) {
+            String title, int orientation, int source) {
         String activityName = WebappActivity.class.getName();
         if (!FeatureUtilities.isDocumentModeEligible(context)) {
             // Specifically assign the app to a particular WebappActivity instance.
@@ -346,6 +346,7 @@ public class WebappActivity extends FullScreenActivity {
         webappIntent.putExtra(ShortcutHelper.EXTRA_URL, url);
         webappIntent.putExtra(ShortcutHelper.EXTRA_TITLE, title);
         webappIntent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, orientation);
+        webappIntent.putExtra(ShortcutHelper.EXTRA_SOURCE, source);
 
         // On L, firing intents with the exact same data should relaunch a particular Activity.
         webappIntent.setAction(Intent.ACTION_VIEW);

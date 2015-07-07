@@ -612,7 +612,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
                         launchIntent(url, referer, headers, externalAppId, true, intent);
                     }
                     RecordUserAction.record("MobileReceivedExternalIntent");
-                    LaunchMetrics.recordHomeScreenLaunchIntoTab(url);
+                    int shortcutSource = intent.getIntExtra(
+                            ShortcutHelper.EXTRA_SOURCE, ShortcutHelper.SOURCE_UNKNOWN);
+                    LaunchMetrics.recordHomeScreenLaunchIntoTab(url, shortcutSource);
                     break;
                 case REUSE_APP_ID_MATCHING_TAB_ELSE_NEW_TAB:
                     launchIntent(url, referer, headers, externalAppId, false, intent);

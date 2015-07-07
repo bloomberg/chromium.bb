@@ -28,6 +28,7 @@ public class WebappInfo {
     private Uri mUri;
     private String mTitle;
     private int mOrientation;
+    private int mSource;
 
     public static WebappInfo createEmpty() {
         return new WebappInfo();
@@ -44,7 +45,9 @@ public class WebappInfo {
         String url = intent.getStringExtra(ShortcutHelper.EXTRA_URL);
         int orientation = intent.getIntExtra(
                 ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.DEFAULT);
-        return create(id, url, icon, title, orientation);
+        int source = intent.getIntExtra(
+                ShortcutHelper.EXTRA_SOURCE, ShortcutHelper.SOURCE_UNKNOWN);
+        return create(id, url, icon, title, orientation, source);
     }
 
     /**
@@ -54,9 +57,10 @@ public class WebappInfo {
      * @param icon Icon to show for the webapp.
      * @param title Title of the webapp.
      * @param orientation Orientation of the webapp.
+     * @param source Source where the webapp was added from.
      */
     public static WebappInfo create(String id, String url, String icon, String title,
-            int orientation) {
+            int orientation, int source) {
         if (id == null || url == null) {
             Log.e("WebappInfo", "Data passed in was incomplete: " + id + ", " + url);
             return null;
@@ -69,15 +73,16 @@ public class WebappInfo {
         }
 
         Uri uri = Uri.parse(url);
-        return new WebappInfo(id, uri, favicon, title, orientation);
+        return new WebappInfo(id, uri, favicon, title, orientation, source);
     }
 
-    private WebappInfo(String id, Uri uri, Bitmap icon, String title, int orientation) {
+    private WebappInfo(String id, Uri uri, Bitmap icon, String title, int orientation, int source) {
         mIcon = icon;
         mId = id;
         mTitle = title;
         mUri = uri;
         mOrientation = orientation;
+        mSource = source;
         mIsInitialized = mUri != null;
     }
 
@@ -96,6 +101,7 @@ public class WebappInfo {
         outState.putParcelable(ShortcutHelper.EXTRA_ICON, mIcon);
         outState.putString(ShortcutHelper.EXTRA_TITLE, mTitle);
         outState.putInt(ShortcutHelper.EXTRA_ORIENTATION, mOrientation);
+        outState.putInt(ShortcutHelper.EXTRA_SOURCE, mSource);
     }
 
     /**
@@ -109,6 +115,7 @@ public class WebappInfo {
         mUri = newInfo.mUri;
         mTitle = newInfo.mTitle;
         mOrientation = newInfo.mOrientation;
+        mSource = newInfo.mSource;
     }
 
     public boolean isInitialized() {
@@ -133,6 +140,10 @@ public class WebappInfo {
 
     public int orientation() {
         return mOrientation;
+    }
+
+    public int source() {
+        return mSource;
     }
 
     // This is needed for clients that want to send the icon trough an intent.

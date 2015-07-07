@@ -215,6 +215,7 @@ bool AppBannerInfoBarDelegateAndroid::Accept() {
 
     ShortcutInfo info;
     info.UpdateFromManifest(web_app_data_);
+    info.UpdateSource(ShortcutInfo::SOURCE_APP_BANNER);
     content::BrowserThread::PostTask(
         content::BrowserThread::IO,
         FROM_HERE,
