@@ -93,8 +93,6 @@ public:
     virtual void setPageBreak(LayoutUnit /*offset*/, LayoutUnit /*spaceShortage*/) { }
     virtual void updateMinimumPageHeight(LayoutUnit /*offset*/, LayoutUnit /*minHeight*/) { }
 
-    bool columnSetsHaveUniformLogicalHeight() const { return m_columnSetsHaveUniformLogicalHeight; }
-
     virtual bool addForcedColumnBreak(LayoutUnit, LayoutObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = nullptr) { return false; }
 
     virtual bool isPageLogicalHeightKnown() const { return true; }
@@ -147,7 +145,6 @@ protected:
     MultiColumnSetIntervalTree m_multiColumnSetIntervalTree;
 
     bool m_columnSetsInvalidated : 1;
-    bool m_columnSetsHaveUniformLogicalHeight : 1;
     bool m_pageLogicalSizeChanged : 1;
 };
 

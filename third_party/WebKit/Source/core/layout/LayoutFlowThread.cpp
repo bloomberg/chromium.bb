@@ -39,7 +39,6 @@ namespace blink {
 LayoutFlowThread::LayoutFlowThread()
     : LayoutBlockFlow(nullptr)
     , m_columnSetsInvalidated(false)
-    , m_columnSetsHaveUniformLogicalHeight(true)
     , m_pageLogicalSizeChanged(false)
 {
 }
@@ -71,29 +70,7 @@ void LayoutFlowThread::invalidateColumnSets()
 
 void LayoutFlowThread::validateColumnSets()
 {
-    if (m_columnSetsInvalidated) {
-        m_columnSetsInvalidated = false;
-        m_columnSetsHaveUniformLogicalHeight = true;
-
-        if (hasColumnSets()) {
-            LayoutUnit previousLogicalHeight = 0;
-            bool firstVisited = false;
-
-            for (auto* columnSet : m_multiColumnSetList) {
-                LayoutUnit currentLogicalHeight = columnSet->pageLogicalHeight();
-
-                if (!firstVisited) {
-                    firstVisited = true;
-                } else {
-                    if (m_columnSetsHaveUniformLogicalHeight && previousLogicalHeight != currentLogicalHeight)
-                        m_columnSetsHaveUniformLogicalHeight = false;
-                }
-
-                previousLogicalHeight = currentLogicalHeight;
-            }
-        }
-    }
-
+    m_columnSetsInvalidated = false;
     updateLogicalWidth(); // Called to get the maximum logical width for the columnSet.
     generateColumnSetIntervalTree();
 }
