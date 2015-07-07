@@ -2143,98 +2143,49 @@ TEST_F(LayerTreeHostCommonTest, ClipRectIsPropagatedCorrectlyToSurfaces) {
 }
 
 TEST_F(LayerTreeHostCommonTest, AnimationsForRenderSurfaceHierarchy) {
-  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
-  scoped_refptr<Layer> render_surface1 = Layer::Create(layer_settings());
-  scoped_refptr<Layer> render_surface2 = Layer::Create(layer_settings());
-  scoped_refptr<Layer> child_of_root = Layer::Create(layer_settings());
-  scoped_refptr<Layer> child_of_rs1 = Layer::Create(layer_settings());
-  scoped_refptr<Layer> child_of_rs2 = Layer::Create(layer_settings());
-  scoped_refptr<Layer> grand_child_of_root = Layer::Create(layer_settings());
-  scoped_refptr<LayerWithForcedDrawsContent> grand_child_of_rs1 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-  scoped_refptr<LayerWithForcedDrawsContent> grand_child_of_rs2 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-  parent->AddChild(render_surface1);
-  parent->AddChild(child_of_root);
-  render_surface1->AddChild(child_of_rs1);
-  render_surface1->AddChild(render_surface2);
-  render_surface2->AddChild(child_of_rs2);
-  child_of_root->AddChild(grand_child_of_root);
-  child_of_rs1->AddChild(grand_child_of_rs1);
-  child_of_rs2->AddChild(grand_child_of_rs2);
+  LayerImpl* parent = root_layer();
+  LayerImpl* render_surface1 = AddChildToRoot<LayerImpl>();
+  LayerImpl* child_of_rs1 = AddChild<LayerImpl>(render_surface1);
+  LayerImpl* grand_child_of_rs1 = AddChild<LayerImpl>(child_of_rs1);
+  LayerImpl* render_surface2 = AddChild<LayerImpl>(render_surface1);
+  LayerImpl* child_of_rs2 = AddChild<LayerImpl>(render_surface2);
+  LayerImpl* grand_child_of_rs2 = AddChild<LayerImpl>(child_of_rs2);
+  LayerImpl* child_of_root = AddChildToRoot<LayerImpl>();
+  LayerImpl* grand_child_of_root = AddChild<LayerImpl>(child_of_root);
 
-  host()->SetRootLayer(parent);
-
-  // Make our render surfaces.
-  render_surface1->SetForceRenderSurface(true);
-  render_surface2->SetForceRenderSurface(true);
+  grand_child_of_rs1->SetDrawsContent(true);
+  grand_child_of_rs2->SetDrawsContent(true);
 
   gfx::Transform layer_transform;
   layer_transform.Translate(1.0, 1.0);
 
-  SetLayerPropertiesForTesting(parent.get(),
-                               layer_transform,
-                               gfx::Point3F(0.25f, 0.f, 0.f),
-                               gfx::PointF(2.5f, 0.f),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(render_surface1.get(),
-                               layer_transform,
-                               gfx::Point3F(0.25f, 0.f, 0.f),
-                               gfx::PointF(2.5f, 0.f),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(render_surface2.get(),
-                               layer_transform,
-                               gfx::Point3F(0.25f, 0.f, 0.f),
-                               gfx::PointF(2.5f, 0.f),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(child_of_root.get(),
-                               layer_transform,
-                               gfx::Point3F(0.25f, 0.f, 0.f),
-                               gfx::PointF(2.5f, 0.f),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(child_of_rs1.get(),
-                               layer_transform,
-                               gfx::Point3F(0.25f, 0.f, 0.f),
-                               gfx::PointF(2.5f, 0.f),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(child_of_rs2.get(),
-                               layer_transform,
-                               gfx::Point3F(0.25f, 0.f, 0.f),
-                               gfx::PointF(2.5f, 0.f),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(grand_child_of_root.get(),
-                               layer_transform,
-                               gfx::Point3F(0.25f, 0.f, 0.f),
-                               gfx::PointF(2.5f, 0.f),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(grand_child_of_rs1.get(),
-                               layer_transform,
-                               gfx::Point3F(0.25f, 0.f, 0.f),
-                               gfx::PointF(2.5f, 0.f),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(grand_child_of_rs2.get(),
-                               layer_transform,
-                               gfx::Point3F(0.25f, 0.f, 0.f),
-                               gfx::PointF(2.5f, 0.f),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
+  SetLayerPropertiesForTesting(
+      parent, layer_transform, gfx::Point3F(0.25f, 0.f, 0.f),
+      gfx::PointF(2.5f, 0.f), gfx::Size(10, 10), true, false, true);
+  SetLayerPropertiesForTesting(
+      render_surface1, layer_transform, gfx::Point3F(0.25f, 0.f, 0.f),
+      gfx::PointF(2.5f, 0.f), gfx::Size(10, 10), true, false, true);
+  SetLayerPropertiesForTesting(
+      render_surface2, layer_transform, gfx::Point3F(0.25f, 0.f, 0.f),
+      gfx::PointF(2.5f, 0.f), gfx::Size(10, 10), true, false, true);
+  SetLayerPropertiesForTesting(
+      child_of_root, layer_transform, gfx::Point3F(0.25f, 0.f, 0.f),
+      gfx::PointF(2.5f, 0.f), gfx::Size(10, 10), true, false, false);
+  SetLayerPropertiesForTesting(
+      child_of_rs1, layer_transform, gfx::Point3F(0.25f, 0.f, 0.f),
+      gfx::PointF(2.5f, 0.f), gfx::Size(10, 10), true, false, false);
+  SetLayerPropertiesForTesting(
+      child_of_rs2, layer_transform, gfx::Point3F(0.25f, 0.f, 0.f),
+      gfx::PointF(2.5f, 0.f), gfx::Size(10, 10), true, false, false);
+  SetLayerPropertiesForTesting(
+      grand_child_of_root, layer_transform, gfx::Point3F(0.25f, 0.f, 0.f),
+      gfx::PointF(2.5f, 0.f), gfx::Size(10, 10), true, false, false);
+  SetLayerPropertiesForTesting(
+      grand_child_of_rs1, layer_transform, gfx::Point3F(0.25f, 0.f, 0.f),
+      gfx::PointF(2.5f, 0.f), gfx::Size(10, 10), true, false, false);
+  SetLayerPropertiesForTesting(
+      grand_child_of_rs2, layer_transform, gfx::Point3F(0.25f, 0.f, 0.f),
+      gfx::PointF(2.5f, 0.f), gfx::Size(10, 10), true, false, false);
 
   // Put an animated opacity on the render surface.
   AddOpacityTransitionToController(
@@ -2255,7 +2206,7 @@ TEST_F(LayerTreeHostCommonTest, AnimationsForRenderSurfaceHierarchy) {
   AddAnimatedTransformToController(
       grand_child_of_rs2->layer_animation_controller(), 10.0, 30, 0);
 
-  ExecuteCalculateDrawProperties(parent.get());
+  ExecuteCalculateDrawProperties(parent);
 
   // Only layers that are associated with render surfaces should have an actual
   // RenderSurface() value.
@@ -2272,17 +2223,17 @@ TEST_F(LayerTreeHostCommonTest, AnimationsForRenderSurfaceHierarchy) {
   ASSERT_FALSE(grand_child_of_rs2->render_surface());
 
   // Verify all render target accessors
-  EXPECT_EQ(parent.get(), parent->render_target());
-  EXPECT_EQ(parent.get(), child_of_root->render_target());
-  EXPECT_EQ(parent.get(), grand_child_of_root->render_target());
+  EXPECT_EQ(parent, parent->render_target());
+  EXPECT_EQ(parent, child_of_root->render_target());
+  EXPECT_EQ(parent, grand_child_of_root->render_target());
 
-  EXPECT_EQ(render_surface1.get(), render_surface1->render_target());
-  EXPECT_EQ(render_surface1.get(), child_of_rs1->render_target());
-  EXPECT_EQ(render_surface1.get(), grand_child_of_rs1->render_target());
+  EXPECT_EQ(render_surface1, render_surface1->render_target());
+  EXPECT_EQ(render_surface1, child_of_rs1->render_target());
+  EXPECT_EQ(render_surface1, grand_child_of_rs1->render_target());
 
-  EXPECT_EQ(render_surface2.get(), render_surface2->render_target());
-  EXPECT_EQ(render_surface2.get(), child_of_rs2->render_target());
-  EXPECT_EQ(render_surface2.get(), grand_child_of_rs2->render_target());
+  EXPECT_EQ(render_surface2, render_surface2->render_target());
+  EXPECT_EQ(render_surface2, child_of_rs2->render_target());
+  EXPECT_EQ(render_surface2, grand_child_of_rs2->render_target());
 
   // Verify draw_opacity_is_animating values
   EXPECT_FALSE(parent->draw_opacity_is_animating());
