@@ -40,6 +40,7 @@ namespace blink {
 
 class CanvasImageSource;
 class HTMLCanvasElement;
+class ImageData;
 
 class CORE_EXPORT CanvasRenderingContext : public NoBaseWillBeGarbageCollectedFinalized<CanvasRenderingContext>, public ActiveDOMObject, public ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(CanvasRenderingContext);
@@ -72,16 +73,26 @@ public:
     HTMLCanvasElement* canvas() const { return m_canvas; }
 
     virtual ContextType contextType() const = 0;
-    virtual bool is2d() const { return false; }
-    virtual bool is3d() const { return false; }
     virtual bool isAccelerated() const { return false; }
     virtual bool hasAlpha() const { return true; }
     virtual void setIsHidden(bool) = 0;
+    virtual bool isContextLost() const { return true; }
 
     // Return true if the content is updated.
     virtual bool paintRenderingResultsToCanvas(SourceDrawingBuffer) { return false; }
 
     virtual WebLayer* platformLayer() const { return nullptr; }
+
+    // Canvas2D-specific interface
+    virtual bool is2d() const { return false; }
+
+    // WebGL-specific interface
+    virtual bool is3d() const { return false; }
+    virtual void setFilterQuality(SkFilterQuality) { ASSERT_NOT_REACHED(); }
+    virtual void reshape(int width, int height) { ASSERT_NOT_REACHED(); }
+    virtual void markLayerComposited() { ASSERT_NOT_REACHED(); }
+    virtual ImageData* paintRenderingResultsToImageData(SourceDrawingBuffer) { ASSERT_NOT_REACHED(); return nullptr; }
+    virtual int externallyAllocatedBytesPerPixel() { ASSERT_NOT_REACHED(); return 0; }
 
     bool wouldTaintOrigin(CanvasImageSource*);
     void didMoveToNewDocument(Document*);

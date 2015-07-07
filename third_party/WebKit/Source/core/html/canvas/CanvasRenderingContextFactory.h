@@ -23,6 +23,7 @@ public:
 
     virtual PassOwnPtrWillBeRawPtr<CanvasRenderingContext> create(HTMLCanvasElement*, const CanvasContextCreationAttributes&, Document&) = 0;
     virtual CanvasRenderingContext::ContextType contextType() const = 0;
+    virtual void onError(HTMLCanvasElement*, const String& error) = 0;
 };
 
 } // namespace blink

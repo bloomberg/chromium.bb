@@ -17,6 +17,8 @@ bindings_modules_v8_files = get_path_info(
     "ToV8ForModules.h",
     "V8BindingForModules.cpp",
     "V8BindingForModules.h",
+    "WebGLAny.cpp",
+    "WebGLAny.h",
   ],
   "abspath") + bindings_modules_v8_custom_files
 

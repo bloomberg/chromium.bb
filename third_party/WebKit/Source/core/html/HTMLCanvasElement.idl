@@ -26,8 +26,6 @@
 
 // https://html.spec.whatwg.org/#the-canvas-element
 
-typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
-
 interface HTMLCanvasElement : HTMLElement {
     // FIXME: width and height should be unsigned long.
     attribute long width;

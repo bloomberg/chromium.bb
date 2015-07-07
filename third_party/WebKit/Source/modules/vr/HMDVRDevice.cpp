@@ -5,7 +5,6 @@
 #include "config.h"
 #include "modules/vr/HMDVRDevice.h"
 
-#include "core/html/canvas/WebGLRenderingContextBase.h"
 #include "modules/vr/VRController.h"
 #include "modules/vr/VRFieldOfView.h"
 

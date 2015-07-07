@@ -8,6 +8,7 @@
 #include "bindings/modules/v8/ModuleBindingsInitializer.h"
 #include "core/EventTypeNames.h"
 #include "core/dom/Document.h"
+#include "core/html/HTMLCanvasElement.h"
 #include "modules/EventModulesFactory.h"
 #include "modules/EventModulesNames.h"
 #include "modules/EventTargetModulesNames.h"
@@ -16,6 +17,8 @@
 #include "modules/compositorworker/CompositorWorkerManager.h"
 #include "modules/filesystem/DraggedIsolatedFileSystemImpl.h"
 #include "modules/webdatabase/DatabaseManager.h"
+#include "modules/webgl/WebGL2RenderingContext.h"
+#include "modules/webgl/WebGLRenderingContext.h"
 
 namespace blink {
 
@@ -36,6 +39,10 @@ void ModulesInitializer::init()
 
     if (RuntimeEnabledFeatures::compositorWorkerEnabled())
         CompositorWorkerManager::initialize();
+
+    // Canvas context types must be registered with the HTMLCanvasElement.
+    HTMLCanvasElement::registerRenderingContextFactory(adoptPtr(new WebGLRenderingContext::Factory()));
+    HTMLCanvasElement::registerRenderingContextFactory(adoptPtr(new WebGL2RenderingContext::Factory()));
 
     ASSERT(isInitialized());
 }

@@ -78,6 +78,7 @@ public:
             return adoptPtrWillBeNoop(new CanvasRenderingContext2D(canvas, attrs, document));
         }
         CanvasRenderingContext::ContextType contextType() const override { return CanvasRenderingContext::Context2d; }
+        void onError(HTMLCanvasElement*, const String& error) override { };
     };
 
     virtual ~CanvasRenderingContext2D();

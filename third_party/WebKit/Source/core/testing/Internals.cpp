@@ -88,6 +88,7 @@
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/HTMLTextAreaElement.h"
+#include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContext2D.h"
 #include "core/html/forms/FormController.h"
 #include "core/html/shadow/PluginPlaceholderElement.h"
@@ -2366,9 +2367,9 @@ void Internals::setNetworkConnectionInfo(const String& type, ExceptionState& exc
     networkStateNotifier().setWebConnectionTypeForTest(webtype);
 }
 
-unsigned Internals::countHitRegions(CanvasRenderingContext2D* context)
+unsigned Internals::countHitRegions(CanvasRenderingContext* context)
 {
-    return context->hitRegionsCount();
+    return toCanvasRenderingContext2D(context)->hitRegionsCount();
 }
 
 ClientRect* Internals::boundsInViewportSpace(Element* element)

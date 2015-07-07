@@ -34,8 +34,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/frame/Settings.h"
-#include "core/html/HTMLImageLoader.h"
-#include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutVideo.h"

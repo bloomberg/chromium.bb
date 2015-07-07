@@ -26,6 +26,8 @@
 #ifndef HTMLVideoElement_h
 #define HTMLVideoElement_h
 
+#include "core/CoreExport.h"
+#include "core/html/HTMLImageLoader.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/canvas/CanvasImageSource.h"
 #include "platform/graphics/GraphicsTypes3D.h"
@@ -35,7 +37,6 @@ class SkPaint;
 namespace blink {
 class WebGraphicsContext3D;
 class ExceptionState;
-class HTMLImageLoader;
 class GraphicsContext;
 
 // GL types as defined in OpenGL ES 2.0 header file gl2.h from khronos.org.
@@ -44,7 +45,7 @@ class GraphicsContext;
 typedef unsigned GLenum;
 typedef int GC3Dint;
 
-class HTMLVideoElement final : public HTMLMediaElement, public CanvasImageSource {
+class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement, public CanvasImageSource {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLVideoElement> create(Document&);

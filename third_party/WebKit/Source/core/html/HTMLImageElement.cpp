@@ -40,7 +40,6 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLImageFallbackHelper.h"
 #include "core/html/HTMLSourceElement.h"
-#include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLSrcsetParser.h"
 #include "core/inspector/ConsoleMessage.h"

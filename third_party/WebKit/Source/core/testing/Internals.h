@@ -43,7 +43,7 @@
 
 namespace blink {
 
-class CanvasRenderingContext2D;
+class CanvasRenderingContext;
 class ClientRect;
 class ClientRectList;
 class DOMArrayBuffer;
@@ -341,7 +341,7 @@ public:
 
     ClientRect* boundsInViewportSpace(Element*);
 
-    unsigned countHitRegions(CanvasRenderingContext2D*);
+    unsigned countHitRegions(CanvasRenderingContext*);
 
     void forcePluginPlaceholder(HTMLElement* plugin, PassRefPtrWillBeRawPtr<DocumentFragment>, ExceptionState&);
     void forcePluginPlaceholder(HTMLElement* plugin, const PluginPlaceholderOptions&, ExceptionState&);

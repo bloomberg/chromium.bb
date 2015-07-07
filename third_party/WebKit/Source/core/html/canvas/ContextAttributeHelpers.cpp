@@ -5,52 +5,12 @@
 #include "config.h"
 #include "core/html/canvas/ContextAttributeHelpers.h"
 
-#include "core/frame/Settings.h"
-
 namespace blink {
 
 Canvas2DContextAttributes to2DContextAttributes(const CanvasContextCreationAttributes& attrs)
 {
     Canvas2DContextAttributes result;
     result.setAlpha(attrs.alpha());
-    return result;
-}
-
-WebGLContextAttributes toWebGLContextAttributes(const CanvasContextCreationAttributes& attrs)
-{
-    WebGLContextAttributes result;
-    result.setAlpha(attrs.alpha());
-    result.setDepth(attrs.depth());
-    result.setStencil(attrs.stencil());
-    result.setAntialias(attrs.antialias());
-    result.setPremultipliedAlpha(attrs.premultipliedAlpha());
-    result.setPreserveDrawingBuffer(attrs.preserveDrawingBuffer());
-    result.setFailIfMajorPerformanceCaveat(attrs.failIfMajorPerformanceCaveat());
-    return result;
-}
-
-WebGraphicsContext3D::Attributes toWebGraphicsContext3DAttributes(const WebGLContextAttributes& attrs, const WebString& topDocumentURL, Settings* settings, unsigned webGLVersion)
-{
-    WebGraphicsContext3D::Attributes result;
-    result.alpha = attrs.alpha();
-    result.depth = attrs.depth();
-    result.stencil = attrs.stencil();
-    result.antialias = attrs.antialias();
-    if (attrs.antialias()) {
-        if (settings && !settings->openGLMultisamplingEnabled())
-            result.antialias = false;
-    }
-    result.premultipliedAlpha = attrs.premultipliedAlpha();
-    result.failIfMajorPerformanceCaveat = attrs.failIfMajorPerformanceCaveat();
-
-    result.noExtensions = true;
-    result.shareResources = false;
-    result.preferDiscreteGPU = true;
-
-    result.topDocumentURL = topDocumentURL;
-
-    result.webGL = true;
-    result.webGLVersion = webGLVersion;
     return result;
 }
 

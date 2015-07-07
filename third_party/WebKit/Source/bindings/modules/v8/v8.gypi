@@ -20,6 +20,8 @@
             'ToV8ForModules.h',
             'V8BindingForModules.cpp',
             'V8BindingForModules.h',
+            'WebGLAny.cpp',
+            'WebGLAny.h',
         ],
         # Note: list duplicated in v8.gni.
         'bindings_modules_v8_unittest_files': [

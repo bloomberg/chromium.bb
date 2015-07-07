@@ -10,7 +10,6 @@
 #include "core/html/ImageData.h"
 #include "core/html/canvas/CanvasGradient.h"
 #include "core/html/canvas/CanvasPattern.h"
-#include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"

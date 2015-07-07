@@ -31,21 +31,16 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/WrapCanvasContext.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/ImageData.h"
-#include "core/html/canvas/Canvas2DContextAttributes.h"
+#include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContext2D.h"
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
-#include "core/html/canvas/WebGL2RenderingContext.h"
-#include "core/html/canvas/WebGLContextAttributes.h"
-#include "core/html/canvas/WebGLContextEvent.h"
-#include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/layout/LayoutHTMLCanvas.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/MIMETypeRegistry.h"
@@ -152,7 +147,7 @@ void HTMLCanvasElement::didRecalcStyle(StyleRecalcChange)
 {
     SkFilterQuality filterQuality = ensureComputedStyle()->imageRendering() == ImageRenderingPixelated ? kNone_SkFilterQuality : kLow_SkFilterQuality;
     if (is3D()) {
-        toWebGLRenderingContextBase(m_context.get())->setFilterQuality(filterQuality);
+        m_context->setFilterQuality(filterQuality);
         setNeedsCompositingUpdate();
     } else if (hasImageBuffer()) {
         m_imageBuffer->setFilterQuality(filterQuality);
@@ -212,7 +207,6 @@ ScriptValue HTMLCanvasElement::getContext(ScriptState* scriptState, const String
     if (!context) {
         return ScriptValue::createNull(scriptState);
     }
-
     return ScriptValue(scriptState, toV8(context, scriptState->context()->Global(), scriptState->isolate()));
 }
 
@@ -230,6 +224,10 @@ CanvasRenderingContext* HTMLCanvasElement::getCanvasRenderingContext(const Strin
 
     contextType = CanvasRenderingContext::resolveContextTypeAliases(contextType);
 
+    CanvasRenderingContextFactory* factory = getRenderingContextFactory(contextType);
+    if (!factory)
+        return nullptr;
+
     // FIXME - The code depends on the context not going away once created, to prevent JS from
     // seeing a dangling pointer. So for now we will disallow the context from being changed
     // once it is created.
@@ -237,15 +235,9 @@ CanvasRenderingContext* HTMLCanvasElement::getCanvasRenderingContext(const Strin
         if (m_context->contextType() == contextType)
             return m_context.get();
 
-        if (contextType != CanvasRenderingContext::Context2d)
-            dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Canvas has an existing, non-WebGL context"));
-
+        factory->onError(this, "Canvas has an existing context of a different type");
         return nullptr;
     }
-
-    CanvasRenderingContextFactory* factory = getRenderingContextFactory(contextType);
-    if (!factory)
-        return nullptr;
 
     m_context = factory->create(this, attributes, document());
     if (!m_context)
@@ -254,7 +246,7 @@ CanvasRenderingContext* HTMLCanvasElement::getCanvasRenderingContext(const Strin
     if (m_context->is3d()) {
         const ComputedStyle* style = ensureComputedStyle();
         if (style)
-            toWebGLRenderingContextBase(m_context.get())->setFilterQuality(style->imageRendering() == ImageRenderingPixelated ? kNone_SkFilterQuality : kLow_SkFilterQuality);
+            m_context->setFilterQuality(style->imageRendering() == ImageRenderingPixelated ? kNone_SkFilterQuality : kLow_SkFilterQuality);
         updateExternallyAllocatedMemory();
     }
     setNeedsCompositingUpdate();
@@ -385,7 +377,7 @@ void HTMLCanvasElement::reset()
     setSurfaceSize(newSize);
 
     if (m_context && m_context->is3d() && oldSize != size())
-        toWebGLRenderingContextBase(m_context.get())->reshape(width(), height());
+        m_context->reshape(width(), height());
 
     if (LayoutObject* layoutObject = this->layoutObject()) {
         if (layoutObject->isCanvas()) {
@@ -437,7 +429,7 @@ void HTMLCanvasElement::paint(GraphicsContext* context, const LayoutRect& r)
     }
 
     if (is3D() && paintsIntoCanvasBuffer())
-        toWebGLRenderingContextBase(m_context.get())->markLayerComposited();
+        m_context->markLayerComposited();
 }
 
 bool HTMLCanvasElement::is3D() const
@@ -451,11 +443,8 @@ void HTMLCanvasElement::setSurfaceSize(const IntSize& size)
     m_didFailToCreateImageBuffer = false;
     discardImageBuffer();
     clearCopiedImage();
-    if (m_context && m_context->is2d()) {
-        CanvasRenderingContext2D* context2d = toCanvasRenderingContext2D(m_context.get());
-        if (context2d->isContextLost()) {
-            context2d->didSetSurfaceSize();
-        }
+    if (m_context && m_context->is2d() && m_context->isContextLost()) {
+        toCanvasRenderingContext2D(m_context.get())->didSetSurfaceSize();
     }
 }
 
@@ -489,7 +478,7 @@ String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double
 
     if (m_context->is3d()) {
         // Get non-premultiplied data because of inaccurate premultiplied alpha conversion of buffer()->toDataURL().
-        ImageData* imageData = toWebGLRenderingContextBase(m_context.get())->paintRenderingResultsToImageData(sourceBuffer);
+        ImageData* imageData = m_context->paintRenderingResultsToImageData(sourceBuffer);
         ScopedDisposal<ImageData> disposer(imageData);
         if (imageData)
             return ImageDataBuffer(imageData->size(), imageData->data()->data()).toDataURL(encodingMimeType, quality);
@@ -684,10 +673,8 @@ void HTMLCanvasElement::createImageBufferInternal(PassOwnPtr<ImageBufferSurface>
 
 void HTMLCanvasElement::notifySurfaceInvalid()
 {
-    if (m_context && m_context->is2d()) {
-        CanvasRenderingContext2D* context2d = toCanvasRenderingContext2D(m_context.get());
-        context2d->loseContext(CanvasRenderingContext2D::RealLostContext);
-    }
+    if (m_context && m_context->is2d())
+        toCanvasRenderingContext2D(m_context.get())->loseContext(CanvasRenderingContext2D::RealLostContext);
 }
 
 DEFINE_TRACE(HTMLCanvasElement)
@@ -719,7 +706,7 @@ void HTMLCanvasElement::updateExternallyAllocatedMemory() const
     // Four bytes per pixel per buffer.
     Checked<intptr_t, RecordOverflow> checkedExternallyAllocatedMemory = 4 * bufferCount;
     if (is3D())
-        checkedExternallyAllocatedMemory += toWebGLRenderingContextBase(m_context.get())->externallyAllocatedBytesPerPixel();
+        checkedExternallyAllocatedMemory += m_context->externallyAllocatedBytesPerPixel();
 
     checkedExternallyAllocatedMemory *= width();
     checkedExternallyAllocatedMemory *= height();

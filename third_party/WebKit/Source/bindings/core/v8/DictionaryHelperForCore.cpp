@@ -36,7 +36,6 @@
 #include "bindings/core/v8/V8EventTarget.h"
 #include "bindings/core/v8/V8MediaKeyError.h"
 #include "bindings/core/v8/V8MessagePort.h"
-#include "bindings/core/v8/V8Path2D.h"
 #include "bindings/core/v8/V8TextTrack.h"
 #include "bindings/core/v8/V8Uint8Array.h"
 #include "bindings/core/v8/V8VoidCallback.h"

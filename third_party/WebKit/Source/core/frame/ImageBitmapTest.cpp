@@ -42,7 +42,6 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/canvas/CanvasRenderingContext2D.h"
-#include "core/html/canvas/WebGLRenderingContext.h"
 #include "platform/graphics/BitmapImage.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceRequest.h"
