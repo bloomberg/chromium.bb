@@ -47,12 +47,12 @@ public:
     }
 
 
-    virtual ~MarkingBooleanTask() { }
+    ~MarkingBooleanTask() override { }
 
 private:
     MarkingBooleanTask(bool* toBeMarked) : m_toBeMarked(toBeMarked) { }
 
-    virtual void performTask(ExecutionContext* context) override
+    void performTask(ExecutionContext* context) override
     {
         *m_toBeMarked = true;
     }

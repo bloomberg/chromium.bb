@@ -35,9 +35,9 @@ public:
 private:
     Comment(Document&, const String&);
 
-    virtual String nodeName() const override;
-    virtual NodeType nodeType() const override;
-    virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) override;
+    String nodeName() const override;
+    NodeType nodeType() const override;
+    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) override;
 };
 
 DEFINE_NODE_TYPE_CASTS(Comment, nodeType() == Node::COMMENT_NODE);

@@ -41,7 +41,7 @@ namespace blink {
 
 class CORE_EXPORT InsertionPoint : public HTMLElement {
 public:
-    virtual ~InsertionPoint();
+    ~InsertionPoint() override;
 
     bool hasDistribution() const { return !m_distributedNodes.isEmpty(); }
     void setDistributedNodes(DistributedNodes&);
@@ -56,8 +56,8 @@ public:
 
     virtual bool canAffectSelector() const { return false; }
 
-    virtual void attach(const AttachContext& = AttachContext()) override;
-    virtual void detach(const AttachContext& = AttachContext()) override;
+    void attach(const AttachContext& = AttachContext()) override;
+    void detach(const AttachContext& = AttachContext()) override;
 
     bool shouldUseFallbackElements() const;
 
@@ -72,11 +72,11 @@ public:
 
 protected:
     InsertionPoint(const QualifiedName&, Document&);
-    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override;
-    virtual void childrenChanged(const ChildrenChange&) override;
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void removedFrom(ContainerNode*) override;
-    virtual void willRecalcStyle(StyleRecalcChange) override;
+    bool layoutObjectIsNeeded(const ComputedStyle&) override;
+    void childrenChanged(const ChildrenChange&) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void removedFrom(ContainerNode*) override;
+    void willRecalcStyle(StyleRecalcChange) override;
 
 private:
     bool isInsertionPoint() const = delete; // This will catch anyone doing an unnecessary check.

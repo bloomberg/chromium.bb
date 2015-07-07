@@ -90,7 +90,7 @@ public:
         return adoptPtr(new CallClosureTask(closure, isSameThread));
     }
 
-    virtual void performTask(ExecutionContext*) override
+    void performTask(ExecutionContext*) override
     {
         checkThread();
         (*m_closure)();

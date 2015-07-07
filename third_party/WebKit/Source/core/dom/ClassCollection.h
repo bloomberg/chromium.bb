@@ -46,7 +46,7 @@ public:
         return adoptRefWillBeNoop(new ClassCollection(rootNode, classNames));
     }
 
-    virtual ~ClassCollection();
+    ~ClassCollection() override;
 
     bool elementMatches(const Element&) const;
 

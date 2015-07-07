@@ -42,7 +42,7 @@ public:
     static PassRefPtrWillBeRawPtr<DocumentMarkerDescription> create(const String&);
 
     const String& description() const { return m_description; }
-    virtual bool isDescription() const override { return true; }
+    bool isDescription() const override { return true; }
 
 private:
     explicit DocumentMarkerDescription(const String& description)
@@ -71,7 +71,7 @@ public:
     static PassRefPtrWillBeRawPtr<DocumentMarkerTextMatch> instanceFor(bool);
 
     bool activeMatch() const { return m_match; }
-    virtual bool isTextMatch() const override { return true; }
+    bool isTextMatch() const override { return true; }
 
 private:
     explicit DocumentMarkerTextMatch(bool match)

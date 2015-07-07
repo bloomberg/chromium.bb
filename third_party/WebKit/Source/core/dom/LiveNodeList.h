@@ -41,11 +41,11 @@ public:
     LiveNodeList(ContainerNode& ownerNode, CollectionType collectionType, NodeListInvalidationType invalidationType, NodeListRootType rootType = NodeListIsRootedAtNode)
         : LiveNodeListBase(ownerNode, rootType, invalidationType, collectionType) { }
 
-    virtual unsigned length() const override final;
-    virtual Element* item(unsigned offset) const override final;
+    unsigned length() const final;
+    Element* item(unsigned offset) const final;
     virtual bool elementMatches(const Element&) const = 0;
 
-    virtual void invalidateCache(Document* oldDocument = 0) const override final;
+    void invalidateCache(Document* oldDocument = 0) const final;
     void invalidateCacheForAttribute(const QualifiedName*) const;
 
     // Collection IndexCache API.
@@ -58,7 +58,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    virtual Node* virtualOwnerNode() const override final;
+    Node* virtualOwnerNode() const final;
 
     mutable CollectionItemsCache<LiveNodeList, Element> m_collectionItemsCache;
 };

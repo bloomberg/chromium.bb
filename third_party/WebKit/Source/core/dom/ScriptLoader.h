@@ -44,7 +44,7 @@ public:
         return adoptPtrWillBeNoop(new ScriptLoader(element, createdByParser, isEvaluated));
     }
 
-    virtual ~ScriptLoader();
+    ~ScriptLoader() override;
     DECLARE_VIRTUAL_TRACE();
 
     Element* element() const { return m_element; }
@@ -97,7 +97,7 @@ private:
     ScriptLoaderClient* client() const;
 
     // ResourceClient
-    virtual void notifyFinished(Resource*) override;
+    void notifyFinished(Resource*) override;
 
     RawPtrWillBeMember<Element> m_element;
     ResourcePtr<ScriptResource> m_resource;

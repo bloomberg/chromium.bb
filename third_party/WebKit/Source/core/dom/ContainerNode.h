@@ -70,7 +70,7 @@ using NodeVector = WillBeHeapVector<RefPtrWillBeMember<Node>, initialNodeVectorS
 
 class CORE_EXPORT ContainerNode : public Node {
 public:
-    virtual ~ContainerNode();
+    ~ContainerNode() override;
 
     Node* firstChild() const { return m_firstChild; }
     Node* lastChild() const { return m_lastChild; }
@@ -110,13 +110,13 @@ public:
 
     void cloneChildNodes(ContainerNode* clone);
 
-    virtual void attach(const AttachContext& = AttachContext()) override;
-    virtual void detach(const AttachContext& = AttachContext()) override;
-    virtual LayoutRect boundingBox() const override final;
-    virtual void setFocus(bool) override;
+    void attach(const AttachContext& = AttachContext()) override;
+    void detach(const AttachContext& = AttachContext()) override;
+    LayoutRect boundingBox() const final;
+    void setFocus(bool) override;
     void focusStateChanged();
-    virtual void setActive(bool = true) override;
-    virtual void setHovered(bool = true) override;
+    void setActive(bool = true) override;
+    void setHovered(bool = true) override;
 
     bool childrenOrSiblingsAffectedByFocus() const { return hasRestyleFlag(ChildrenOrSiblingsAffectedByFocus); }
     void setChildrenOrSiblingsAffectedByFocus() { setRestyleFlag(ChildrenOrSiblingsAffectedByFocus); }

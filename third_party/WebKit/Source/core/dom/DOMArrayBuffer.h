@@ -49,8 +49,8 @@ public:
     bool transfer(WTF::ArrayBufferContents& result) { return buffer()->transfer(result); }
     bool isNeutered() { return buffer()->isNeutered(); }
 
-    virtual v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::Object> creationContext) override;
-    virtual v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) override;
+    v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::Object> creationContext) override;
+    v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) override;
 
 private:
     explicit DOMArrayBuffer(PassRefPtr<WTF::ArrayBuffer> buffer)

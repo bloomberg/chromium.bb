@@ -43,7 +43,7 @@ public:
     {
         return adoptRefWillBeNoop(new EmptyNodeList(rootNode));
     }
-    virtual ~EmptyNodeList();
+    ~EmptyNodeList() override;
 
     Node& ownerNode() const { return *m_owner; }
 
@@ -52,11 +52,11 @@ public:
 private:
     explicit EmptyNodeList(Node& rootNode) : m_owner(rootNode) { }
 
-    virtual unsigned length() const override { return 0; }
-    virtual Node* item(unsigned) const override { return 0; }
+    unsigned length() const override { return 0; }
+    Node* item(unsigned) const override { return 0; }
 
-    virtual bool isEmptyNodeList() const override { return true; }
-    virtual Node* virtualOwnerNode() const override;
+    bool isEmptyNodeList() const override { return true; }
+    Node* virtualOwnerNode() const override;
 
     RefPtrWillBeMember<Node> m_owner;
 };

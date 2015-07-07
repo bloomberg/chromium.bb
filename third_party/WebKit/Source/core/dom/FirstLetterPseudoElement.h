@@ -42,7 +42,7 @@ public:
         return adoptRefWillBeNoop(new FirstLetterPseudoElement(parent));
     }
 
-    virtual ~FirstLetterPseudoElement();
+    ~FirstLetterPseudoElement() override;
 
     static LayoutObject* firstLetterTextLayoutObject(const Element&);
     static unsigned firstLetterLength(const String&);
@@ -52,13 +52,13 @@ public:
 
     void updateTextFragments();
 
-    virtual void attach(const AttachContext& = AttachContext()) override;
-    virtual void detach(const AttachContext& = AttachContext()) override;
+    void attach(const AttachContext& = AttachContext()) override;
+    void detach(const AttachContext& = AttachContext()) override;
 
 private:
     explicit FirstLetterPseudoElement(Element*);
 
-    virtual void didRecalcStyle(StyleRecalcChange) override;
+    void didRecalcStyle(StyleRecalcChange) override;
 
     void attachFirstLetterTextLayoutObjects();
     ComputedStyle* styleForFirstLetter(LayoutObject*);

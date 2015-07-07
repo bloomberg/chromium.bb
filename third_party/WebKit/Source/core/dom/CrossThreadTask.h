@@ -101,7 +101,7 @@ public:
         return adoptPtr(new CallClosureWithExecutionContextTask(closure, isSameThread));
     }
 
-    virtual void performTask(ExecutionContext* context) override
+    void performTask(ExecutionContext* context) override
     {
         checkThread();
         (*m_closure)(context);

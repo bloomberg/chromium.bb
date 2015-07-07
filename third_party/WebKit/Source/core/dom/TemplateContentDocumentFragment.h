@@ -56,7 +56,7 @@ private:
     {
     }
 
-    virtual bool isTemplateContent() const override { return true; }
+    bool isTemplateContent() const override { return true; }
 
     RawPtrWillBeMember<Element> m_host;
 };

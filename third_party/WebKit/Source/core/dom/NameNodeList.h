@@ -38,12 +38,12 @@ public:
         return adoptRefWillBeNoop(new NameNodeList(rootNode, name));
     }
 
-    virtual ~NameNodeList();
+    ~NameNodeList() override;
 
 private:
     NameNodeList(ContainerNode& rootNode, const AtomicString& name);
 
-    virtual bool elementMatches(const Element&) const override;
+    bool elementMatches(const Element&) const override;
 
     AtomicString m_name;
 };

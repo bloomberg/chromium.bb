@@ -74,10 +74,10 @@ protected:
     String m_data;
 
 private:
-    virtual String nodeValue() const override final;
-    virtual void setNodeValue(const String&) override final;
-    virtual bool isCharacterDataNode() const override final { return true; }
-    virtual int maxCharacterOffset() const override final;
+    String nodeValue() const final;
+    void setNodeValue(const String&) final;
+    bool isCharacterDataNode() const final { return true; }
+    int maxCharacterOffset() const final;
     void setDataAndUpdate(const String&, unsigned offsetOfReplacedData, unsigned oldLength, unsigned newLength, UpdateSource = UpdateFromNonParser, RecalcStyleBehavior = DoNotRecalcStyle);
 
     bool isContainerNode() const = delete; // This will catch anyone doing an unnecessary check.

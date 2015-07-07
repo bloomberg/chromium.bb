@@ -36,7 +36,7 @@ class CORE_EXPORT Attr final : public Node {
 public:
     static PassRefPtrWillBeRawPtr<Attr> create(Element&, const QualifiedName&);
     static PassRefPtrWillBeRawPtr<Attr> create(Document&, const QualifiedName&, const AtomicString& value);
-    virtual ~Attr();
+    ~Attr() override;
 
     String name() const { return m_name.toString(); }
     bool specified() const { return true; }
@@ -53,8 +53,8 @@ public:
     void attachToElement(Element*, const AtomicString&);
     void detachFromElementWithValue(const AtomicString&);
 
-    virtual const AtomicString& localName() const override { return m_name.localName(); }
-    virtual const AtomicString& namespaceURI() const override { return m_name.namespaceURI(); }
+    const AtomicString& localName() const override { return m_name.localName(); }
+    const AtomicString& namespaceURI() const override { return m_name.namespaceURI(); }
     const AtomicString& prefix() const { return m_name.prefix(); }
 
     DECLARE_VIRTUAL_TRACE();
@@ -65,14 +65,14 @@ private:
 
     bool isElementNode() const = delete; // This will catch anyone doing an unnecessary check.
 
-    virtual String nodeName() const override { return name(); }
-    virtual NodeType nodeType() const override { return ATTRIBUTE_NODE; }
+    String nodeName() const override { return name(); }
+    NodeType nodeType() const override { return ATTRIBUTE_NODE; }
 
-    virtual String nodeValue() const override { return value(); }
-    virtual void setNodeValue(const String&) override;
-    virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) override;
+    String nodeValue() const override { return value(); }
+    void setNodeValue(const String&) override;
+    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) override;
 
-    virtual bool isAttributeNode() const override { return true; }
+    bool isAttributeNode() const override { return true; }
 
     // Attr wraps either an element/name, or a name/value pair (when it's a standalone Node.)
     // Note that m_name is always set, but m_element/m_standaloneValue may be null.

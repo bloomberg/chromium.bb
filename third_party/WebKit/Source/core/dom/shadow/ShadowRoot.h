@@ -79,10 +79,10 @@ public:
     bool isYoungest() const { return !youngerShadowRoot(); }
     bool isOldest() const { return !olderShadowRoot(); }
 
-    virtual void attach(const AttachContext& = AttachContext()) override;
+    void attach(const AttachContext& = AttachContext()) override;
 
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void removedFrom(ContainerNode*) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void removedFrom(ContainerNode*) override;
 
     void registerScopedHTMLStyleChild();
     void unregisterScopedHTMLStyleChild();
@@ -131,13 +131,13 @@ public:
 
 private:
     ShadowRoot(Document&, ShadowRootType);
-    virtual ~ShadowRoot();
+    ~ShadowRoot() override;
 
 #if !ENABLE(OILPAN)
-    virtual void dispose() override;
+    void dispose() override;
 #endif
 
-    virtual void childrenChanged(const ChildrenChange&) override;
+    void childrenChanged(const ChildrenChange&) override;
 
     ShadowRootRareData* ensureShadowRootRareData();
 
@@ -146,7 +146,7 @@ private:
     void invalidateDescendantInsertionPoints();
 
     // ShadowRoots should never be cloned.
-    virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool) override { return nullptr; }
+    PassRefPtrWillBeRawPtr<Node> cloneNode(bool) override { return nullptr; }
 
     // FIXME: This shouldn't happen. https://bugs.webkit.org/show_bug.cgi?id=88834
     bool isOrphan() const { return !host(); }

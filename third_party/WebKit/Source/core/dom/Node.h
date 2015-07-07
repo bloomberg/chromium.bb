@@ -189,7 +189,7 @@ public:
 
     static void dumpStatistics();
 
-    virtual ~Node();
+    ~Node() override;
 
     // DOM methods & attributes for Node
 
@@ -623,14 +623,14 @@ public:
 
     unsigned short compareDocumentPosition(const Node*, ShadowTreesTreatment = TreatShadowTreesAsDisconnected) const;
 
-    virtual Node* toNode() override final;
+    Node* toNode() final;
 
-    virtual const AtomicString& interfaceName() const override;
-    virtual ExecutionContext* executionContext() const override final;
+    const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const final;
 
-    virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override;
-    virtual bool removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override;
-    virtual void removeAllEventListeners() override;
+    bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override;
+    bool removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override;
+    void removeAllEventListeners() override;
     void removeAllEventListenersRecursively();
 
     // Handlers to do/undo actions on the target node before an event is dispatched to it and after the event
@@ -639,7 +639,7 @@ public:
     virtual void postDispatchEventHandler(Event*, void* /*dataFromPreDispatch*/) { }
 
     using EventTarget::dispatchEvent;
-    virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) override;
+    bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) override;
 
     void dispatchScopedEvent(PassRefPtrWillBeRawPtr<Event>);
     void dispatchScopedEventDispatchMediator(PassRefPtrWillBeRawPtr<EventDispatchMediator>);
@@ -664,8 +664,8 @@ public:
     virtual void defaultEventHandler(Event*);
     virtual void willCallDefaultEventHandler(const Event&);
 
-    virtual EventTargetData* eventTargetData() override;
-    virtual EventTargetData& ensureEventTargetData() override;
+    EventTargetData* eventTargetData() override;
+    EventTargetData& ensureEventTargetData() override;
 
     void getRegisteredMutationObserversOfType(WillBeHeapHashMap<RawPtrWillBeMember<MutationObserver>, MutationRecordDeliveryOptions>&, MutationObserver::MutationType, const QualifiedName* attributeName);
     void registerMutationObserver(MutationObserver&, MutationObserverOptions, const HashSet<AtomicString>& attributeFilter);
@@ -690,8 +690,8 @@ public:
 
     unsigned lengthOfContents() const;
 
-    virtual v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::Object> creationContext) override;
-    virtual v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) override;
+    v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::Object> creationContext) override;
+    v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) override;
 
 private:
     enum NodeFlags {

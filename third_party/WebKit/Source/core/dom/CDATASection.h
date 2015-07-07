@@ -35,9 +35,9 @@ public:
 private:
     CDATASection(Document&, const String&);
 
-    virtual String nodeName() const override;
-    virtual NodeType nodeType() const override;
-    virtual PassRefPtrWillBeRawPtr<Text> cloneWithData(const String&) override;
+    String nodeName() const override;
+    NodeType nodeType() const override;
+    PassRefPtrWillBeRawPtr<Text> cloneWithData(const String&) override;
 };
 
 DEFINE_NODE_TYPE_CASTS(CDATASection, nodeType() == Node::CDATA_SECTION_NODE);

@@ -43,7 +43,7 @@ public:
 
 private:
     CustomElementAsyncImportMicrotaskQueue() { }
-    virtual void doDispatch() override;
+    void doDispatch() override;
 };
 
 } // namespace blink

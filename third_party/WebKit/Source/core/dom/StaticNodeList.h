@@ -50,10 +50,10 @@ public:
         return adoptRefWillBeNoop(new StaticNodeTypeList);
     }
 
-    virtual ~StaticNodeTypeList();
+    ~StaticNodeTypeList() override;
 
-    virtual unsigned length() const override;
-    virtual NodeType* item(unsigned index) const override;
+    unsigned length() const override;
+    NodeType* item(unsigned index) const override;
 
     DECLARE_VIRTUAL_TRACE();
 

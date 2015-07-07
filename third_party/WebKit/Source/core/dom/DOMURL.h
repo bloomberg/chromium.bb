@@ -64,11 +64,11 @@ public:
     CORE_EXPORT static String createPublicURL(ExecutionContext*, URLRegistrable*, const String& uuid = String());
     static void revokeObjectUUID(ExecutionContext*, const String&);
 
-    virtual KURL url() const override { return m_url; }
-    virtual void setURL(const KURL& url) override { m_url = url; }
+    KURL url() const override { return m_url; }
+    void setURL(const KURL& url) override { m_url = url; }
 
-    virtual String input() const override { return m_input; }
-    virtual void setInput(const String&) override;
+    String input() const override { return m_input; }
+    void setInput(const String&) override;
 
     DEFINE_INLINE_TRACE() { }
 

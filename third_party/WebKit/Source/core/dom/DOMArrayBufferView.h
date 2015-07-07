@@ -68,12 +68,12 @@ public:
     void setNeuterable(bool flag) { return view()->setNeuterable(flag); }
     bool isShared() const { return view()->isShared(); }
 
-    virtual v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::Object> creationContext) override
+    v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::Object> creationContext) override
     {
         ASSERT_NOT_REACHED();
         return v8::Local<v8::Object>();
     }
-    virtual v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) override
+    v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) override
     {
         ASSERT_NOT_REACHED();
         return v8::Local<v8::Object>();

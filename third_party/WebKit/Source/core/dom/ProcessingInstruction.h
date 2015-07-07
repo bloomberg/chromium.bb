@@ -37,7 +37,7 @@ class ProcessingInstruction final : public CharacterData, private ResourceOwner<
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<ProcessingInstruction> create(Document&, const String& target, const String& data);
-    virtual ~ProcessingInstruction();
+    ~ProcessingInstruction() override;
     DECLARE_VIRTUAL_TRACE();
 
     const String& target() const { return m_target; }
@@ -78,20 +78,20 @@ public:
 private:
     ProcessingInstruction(Document&, const String& target, const String& data);
 
-    virtual String nodeName() const override;
-    virtual NodeType nodeType() const override;
-    virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) override;
+    String nodeName() const override;
+    NodeType nodeType() const override;
+    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) override;
 
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void removedFrom(ContainerNode*) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void removedFrom(ContainerNode*) override;
 
     bool checkStyleSheet(String& href, String& charset);
     void process(const String& href, const String& charset);
 
-    virtual void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource*) override;
-    virtual void setXSLStyleSheet(const String& href, const KURL& baseURL, const String& sheet) override;
+    void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource*) override;
+    void setXSLStyleSheet(const String& href, const KURL& baseURL, const String& sheet) override;
 
-    virtual bool sheetLoaded() override;
+    bool sheetLoaded() override;
 
     void parseStyleSheet(const String& sheet);
     void clearSheet();

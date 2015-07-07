@@ -64,12 +64,12 @@ public:
     }
 
 private:
-    virtual const AtomicString& type() override;
-    virtual Node* target() override { return m_target.get(); }
-    virtual StaticNodeList* addedNodes() override { return m_addedNodes.get(); }
-    virtual StaticNodeList* removedNodes() override { return m_removedNodes.get(); }
-    virtual Node* previousSibling() override { return m_previousSibling.get(); }
-    virtual Node* nextSibling() override { return m_nextSibling.get(); }
+    const AtomicString& type() override;
+    Node* target() override { return m_target.get(); }
+    StaticNodeList* addedNodes() override { return m_addedNodes.get(); }
+    StaticNodeList* removedNodes() override { return m_removedNodes.get(); }
+    Node* previousSibling() override { return m_previousSibling.get(); }
+    Node* nextSibling() override { return m_nextSibling.get(); }
 
     RefPtrWillBeMember<Node> m_target;
     RefPtrWillBeMember<StaticNodeList> m_addedNodes;
@@ -95,10 +95,10 @@ public:
     }
 
 private:
-    virtual Node* target() override { return m_target.get(); }
-    virtual String oldValue() override { return m_oldValue; }
-    virtual StaticNodeList* addedNodes() override { return lazilyInitializeEmptyNodeList(m_addedNodes); }
-    virtual StaticNodeList* removedNodes() override { return lazilyInitializeEmptyNodeList(m_removedNodes); }
+    Node* target() override { return m_target.get(); }
+    String oldValue() override { return m_oldValue; }
+    StaticNodeList* addedNodes() override { return lazilyInitializeEmptyNodeList(m_addedNodes); }
+    StaticNodeList* removedNodes() override { return lazilyInitializeEmptyNodeList(m_removedNodes); }
 
     static StaticNodeList* lazilyInitializeEmptyNodeList(RefPtrWillBeMember<StaticNodeList>& nodeList)
     {
@@ -123,9 +123,9 @@ public:
     }
 
 private:
-    virtual const AtomicString& type() override;
-    virtual const AtomicString& attributeName() override { return m_attributeName; }
-    virtual const AtomicString& attributeNamespace() override { return m_attributeNamespace; }
+    const AtomicString& type() override;
+    const AtomicString& attributeName() override { return m_attributeName; }
+    const AtomicString& attributeNamespace() override { return m_attributeNamespace; }
 
     AtomicString m_attributeName;
     AtomicString m_attributeNamespace;
@@ -139,7 +139,7 @@ public:
     }
 
 private:
-    virtual const AtomicString& type() override;
+    const AtomicString& type() override;
 };
 
 class MutationRecordWithNullOldValue : public MutationRecord {
@@ -156,16 +156,16 @@ public:
     }
 
 private:
-    virtual const AtomicString& type() override { return m_record->type(); }
-    virtual Node* target() override { return m_record->target(); }
-    virtual StaticNodeList* addedNodes() override { return m_record->addedNodes(); }
-    virtual StaticNodeList* removedNodes() override { return m_record->removedNodes(); }
-    virtual Node* previousSibling() override { return m_record->previousSibling(); }
-    virtual Node* nextSibling() override { return m_record->nextSibling(); }
-    virtual const AtomicString& attributeName() override { return m_record->attributeName(); }
-    virtual const AtomicString& attributeNamespace() override { return m_record->attributeNamespace(); }
+    const AtomicString& type() override { return m_record->type(); }
+    Node* target() override { return m_record->target(); }
+    StaticNodeList* addedNodes() override { return m_record->addedNodes(); }
+    StaticNodeList* removedNodes() override { return m_record->removedNodes(); }
+    Node* previousSibling() override { return m_record->previousSibling(); }
+    Node* nextSibling() override { return m_record->nextSibling(); }
+    const AtomicString& attributeName() override { return m_record->attributeName(); }
+    const AtomicString& attributeNamespace() override { return m_record->attributeNamespace(); }
 
-    virtual String oldValue() override { return String(); }
+    String oldValue() override { return String(); }
 
     RefPtrWillBeMember<MutationRecord> m_record;
 };

@@ -47,12 +47,12 @@ public:
         return adoptPtr(new DispatchCallbackTask(callback, data, taskName));
     }
 
-    virtual void performTask(ExecutionContext*) override
+    void performTask(ExecutionContext*) override
     {
         m_callback->handleEvent(m_data);
     }
 
-    virtual String taskNameForInstrumentation() const override
+    String taskNameForInstrumentation() const override
     {
         return m_taskName;
     }

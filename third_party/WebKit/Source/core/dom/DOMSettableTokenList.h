@@ -55,21 +55,21 @@ public:
     {
         return adoptRefWillBeNoop(new DOMSettableTokenList(observer));
     }
-    virtual ~DOMSettableTokenList();
+    ~DOMSettableTokenList() override;
 
 #if !ENABLE(OILPAN)
-    virtual void ref() override { RefCounted<DOMSettableTokenList>::ref(); }
-    virtual void deref() override { RefCounted<DOMSettableTokenList>::deref(); }
+    void ref() override { RefCounted<DOMSettableTokenList>::ref(); }
+    void deref() override { RefCounted<DOMSettableTokenList>::deref(); }
 #endif
 
-    virtual unsigned length() const override { return m_tokens.size(); }
-    virtual const AtomicString item(unsigned index) const override;
+    unsigned length() const override { return m_tokens.size(); }
+    const AtomicString item(unsigned index) const override;
 
-    virtual void add(const Vector<String>&, ExceptionState&) override;
-    virtual void remove(const Vector<String>&, ExceptionState&) override;
+    void add(const Vector<String>&, ExceptionState&) override;
+    void remove(const Vector<String>&, ExceptionState&) override;
 
-    virtual const AtomicString& value() const override { return m_value; }
-    virtual void setValue(const AtomicString&) override;
+    const AtomicString& value() const override { return m_value; }
+    void setValue(const AtomicString&) override;
 
     const SpaceSplitString& tokens() const { return m_tokens; }
     void setObserver(DOMSettableTokenListObserver* observer) { m_observer = observer; };
@@ -80,9 +80,9 @@ protected:
     explicit DOMSettableTokenList(DOMSettableTokenListObserver*);
 
 private:
-    virtual void addInternal(const AtomicString&) override;
-    virtual bool containsInternal(const AtomicString&) const override;
-    virtual void removeInternal(const AtomicString&) override;
+    void addInternal(const AtomicString&) override;
+    bool containsInternal(const AtomicString&) const override;
+    void removeInternal(const AtomicString&) override;
 
     AtomicString m_value;
     SpaceSplitString m_tokens;

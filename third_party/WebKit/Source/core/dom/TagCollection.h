@@ -44,7 +44,7 @@ public:
         return adoptRefWillBeNoop(new TagCollection(rootNode, TagCollectionType, starAtom, localName));
     }
 
-    virtual ~TagCollection();
+    ~TagCollection() override;
 
     bool elementMatches(const Element&) const;
 

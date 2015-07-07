@@ -65,7 +65,7 @@ class CORE_EXPORT MessagePort
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MessagePort);
 public:
     static PassRefPtrWillBeRawPtr<MessagePort> create(ExecutionContext&);
-    virtual ~MessagePort();
+    ~MessagePort() override;
 
     void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
 
@@ -86,13 +86,13 @@ public:
 
     bool started() const { return m_started; }
 
-    virtual const AtomicString& interfaceName() const override;
-    virtual ExecutionContext* executionContext() const override { return ActiveDOMObject::executionContext(); }
-    virtual MessagePort* toMessagePort() override { return this; }
+    const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const override { return ActiveDOMObject::executionContext(); }
+    MessagePort* toMessagePort() override { return this; }
 
     // ActiveDOMObject implementation.
-    virtual bool hasPendingActivity() const override;
-    virtual void stop() override { close(); }
+    bool hasPendingActivity() const override;
+    void stop() override { close(); }
 
     void setOnmessage(PassRefPtr<EventListener> listener)
     {
@@ -115,9 +115,9 @@ protected:
 
 private:
     // WebMessagePortChannelClient implementation.
-    virtual void messageAvailable() override;
-    virtual v8::Isolate* scriptIsolate() override;
-    virtual v8::Local<v8::Context> scriptContextForMessageConversion() override;
+    void messageAvailable() override;
+    v8::Isolate* scriptIsolate() override;
+    v8::Local<v8::Context> scriptContextForMessageConversion() override;
     void dispatchMessages();
 
     OwnPtr<WebMessagePortChannel> m_entangledChannel;

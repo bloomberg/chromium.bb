@@ -182,7 +182,7 @@ public:
 
 private:
     // CSSFontSelectorClient implementation.
-    virtual void fontsNeedUpdate(CSSFontSelector*) override;
+    void fontsNeedUpdate(CSSFontSelector*) override;
 
 private:
     StyleEngine(Document&);

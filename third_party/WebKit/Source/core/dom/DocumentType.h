@@ -43,13 +43,13 @@ public:
 private:
     DocumentType(Document*, const String& name, const String& publicId, const String& systemId);
 
-    virtual KURL baseURI() const override;
-    virtual String nodeName() const override;
-    virtual NodeType nodeType() const override;
-    virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) override;
+    KURL baseURI() const override;
+    String nodeName() const override;
+    NodeType nodeType() const override;
+    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) override;
 
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void removedFrom(ContainerNode*) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void removedFrom(ContainerNode*) override;
 
     String m_name;
     String m_publicId;

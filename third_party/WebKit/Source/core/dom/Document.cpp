@@ -350,11 +350,11 @@ public:
     {
         return adoptPtr(new AutofocusTask());
     }
-    virtual ~AutofocusTask() { }
+    ~AutofocusTask() override { }
 
 private:
     AutofocusTask() { }
-    virtual void performTask(ExecutionContext* context) override
+    void performTask(ExecutionContext* context) override
     {
         Document* document = toDocument(context);
         if (RefPtrWillBeRawPtr<Element> element = document->autofocusElement()) {

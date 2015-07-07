@@ -232,7 +232,7 @@ public:
     {
         return adoptRefWillBeNoop(new Document(initializer));
     }
-    virtual ~Document();
+    ~Document() override;
 
     MediaQueryMatcher& mediaQueryMatcher();
 
@@ -246,7 +246,7 @@ public:
     using SecurityContext::contentSecurityPolicy;
     using TreeScope::getElementById;
 
-    virtual bool canContainRangeEndPoint() const override { return true; }
+    bool canContainRangeEndPoint() const override { return true; }
 
     SelectorQueryCache& selectorQueryCache();
 
@@ -348,7 +348,7 @@ public:
     void setXMLStandalone(bool, ExceptionState&);
     void setHasXMLDeclaration(bool hasXMLDeclaration) { m_hasXMLDeclaration = hasXMLDeclaration ? 1 : 0; }
 
-    virtual KURL baseURI() const override final;
+    KURL baseURI() const final;
 
     String origin() const { return securityOrigin()->toString(); }
 
@@ -536,8 +536,8 @@ public:
     KURL completeURL(const String&) const;
     KURL completeURLWithOverride(const String&, const KURL& baseURLOverride) const;
 
-    virtual String userAgent(const KURL&) const override final;
-    virtual void disableEval(const String& errorMessage) override final;
+    String userAgent(const KURL&) const final;
+    void disableEval(const String& errorMessage) final;
 
     CSSStyleSheet& elementSheet();
 
@@ -846,14 +846,14 @@ public:
     void parseDNSPrefetchControlHeader(const String&);
 
     // FIXME(crbug.com/305497): This should be removed once LocalDOMWindow is an ExecutionContext.
-    virtual void postTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>) override; // Executes the task on context's thread asynchronously.
+    void postTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>) override; // Executes the task on context's thread asynchronously.
     void postInspectorTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>);
 
-    virtual void tasksWereSuspended() override final;
-    virtual void tasksWereResumed() override final;
-    virtual void suspendScheduledTasks() override final;
-    virtual void resumeScheduledTasks() override final;
-    virtual bool tasksNeedSuspension() override final;
+    void tasksWereSuspended() final;
+    void tasksWereResumed() final;
+    void suspendScheduledTasks() final;
+    void resumeScheduledTasks() final;
+    bool tasksNeedSuspension() final;
 
     void finishedParsing();
 
@@ -870,7 +870,7 @@ public:
     const Vector<AnnotatedRegionValue>& annotatedRegions() const;
     void setAnnotatedRegions(const Vector<AnnotatedRegionValue>&);
 
-    virtual void removeAllEventListeners() override final;
+    void removeAllEventListeners() final;
 
     const SVGDocumentExtensions* svgExtensions();
     SVGDocumentExtensions& accessSVGExtensions();
@@ -904,8 +904,8 @@ public:
     void setContainsPlugins() { m_containsPlugins = true; }
     bool containsPlugins() const { return m_containsPlugins; }
 
-    virtual bool isContextThread() const override final;
-    virtual bool isJSExecutionForbidden() const override final { return false; }
+    bool isContextThread() const final;
+    bool isJSExecutionForbidden() const final { return false; }
 
     bool containsValidityStyleRules() const { return m_containsValidityStyleRules; }
     void setContainsValidityStyleRules() { m_containsValidityStyleRules = true; }
@@ -941,8 +941,8 @@ public:
     void cancelAnimationFrame(int id);
     void serviceScriptedAnimations(double monotonicAnimationStartTime);
 
-    virtual EventTarget* errorEventTarget() override final;
-    virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) override final;
+    EventTarget* errorEventTarget() final;
+    void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) final;
 
     void initDNSPrefetch();
 
@@ -1003,9 +1003,9 @@ public:
     void didAssociateFormControl(Element*);
     void removeFormAssociation(Element*);
 
-    virtual void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override final;
+    void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) final;
 
-    virtual LocalDOMWindow* executingWindow() override final;
+    LocalDOMWindow* executingWindow() final;
     LocalFrame* executingFrame();
 
     DocumentLifecycle& lifecycle() { return m_lifecycle; }
@@ -1040,10 +1040,10 @@ public:
 
     void platformColorsChanged();
 
-    virtual DOMTimerCoordinator* timers() override final;
+    DOMTimerCoordinator* timers() final;
 
-    virtual v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::Object> creationContext) override;
-    virtual v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) override;
+    v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::Object> creationContext) override;
+    v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) override;
 
     OriginsUsingFeatures::Value& originsUsingFeaturesValue() { return m_originsUsingFeaturesValue; }
 
@@ -1057,12 +1057,12 @@ public:
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 
-    virtual void didUpdateSecurityOrigin() override final;
+    void didUpdateSecurityOrigin() final;
 
     void clearXMLVersion() { m_xmlVersion = String(); }
 
 #if !ENABLE(OILPAN)
-    virtual void dispose() override;
+    void dispose() override;
 #endif
 
     virtual PassRefPtrWillBeRawPtr<Document> cloneDocumentWithoutChildren();
@@ -1080,8 +1080,8 @@ private:
     bool isElementNode() const = delete; // This will catch anyone doing an unnecessary check.
 
     ScriptedAnimationController& ensureScriptedAnimationController();
-    virtual SecurityContext& securityContext() override final { return *this; }
-    virtual EventQueue* eventQueue() const override final;
+    SecurityContext& securityContext() final { return *this; }
+    EventQueue* eventQueue() const final;
 
     // FIXME: Rename the StyleRecalc state to LayoutTreeUpdate.
     bool hasPendingStyleRecalc() const { return m_lifecycle.state() == DocumentLifecycle::VisualUpdatePending; }
@@ -1104,27 +1104,27 @@ private:
 
     void detachParser();
 
-    virtual bool isDocument() const override final { return true; }
+    bool isDocument() const final { return true; }
 
-    virtual void childrenChanged(const ChildrenChange&) override;
+    void childrenChanged(const ChildrenChange&) override;
 
-    virtual String nodeName() const override final;
-    virtual NodeType nodeType() const override final;
-    virtual bool childTypeAllowed(NodeType) const override final;
-    virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) override final;
+    String nodeName() const final;
+    NodeType nodeType() const final;
+    bool childTypeAllowed(NodeType) const final;
+    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) final;
     void cloneDataFromDocument(const Document&);
 
 #if !ENABLE(OILPAN)
-    virtual void refExecutionContext() override final { ref(); }
-    virtual void derefExecutionContext() override final { deref(); }
+    void refExecutionContext() final { ref(); }
+    void derefExecutionContext() final { deref(); }
 #endif
 
-    virtual const KURL& virtualURL() const override final; // Same as url(), but needed for ExecutionContext to implement it without a performance loss for direct calls.
-    virtual KURL virtualCompleteURL(const String&) const override final; // Same as completeURL() for the same reason as above.
+    const KURL& virtualURL() const final; // Same as url(), but needed for ExecutionContext to implement it without a performance loss for direct calls.
+    KURL virtualCompleteURL(const String&) const final; // Same as completeURL() for the same reason as above.
 
-    virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) override final;
+    void reportBlockedScriptExecutionToInspector(const String& directiveText) final;
 
-    virtual double timerAlignmentInterval() const override final;
+    double timerAlignmentInterval() const final;
 
     void updateTitle(const String&);
     void updateFocusAppearanceTimerFired(Timer<Document>*);

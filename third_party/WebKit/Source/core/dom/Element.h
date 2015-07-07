@@ -90,7 +90,7 @@ class CORE_EXPORT Element : public ContainerNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Element> create(const QualifiedName&, Document*);
-    virtual ~Element();
+    ~Element() override;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecopy);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecut);
@@ -206,7 +206,7 @@ public:
     // Returns the absolute bounding box translated into screen coordinates:
     IntRect screenRect() const;
 
-    virtual void didMoveToNewDocument(Document&) override;
+    void didMoveToNewDocument(Document&) override;
 
     void removeAttribute(const AtomicString& name);
     void removeAttributeNS(const AtomicString& namespaceURI, const AtomicString& localName);
@@ -239,14 +239,14 @@ public:
     // A fast function for checking the local name against another atomic string.
     bool hasLocalName(const AtomicString& other) const { return m_tagName.localName() == other; }
 
-    virtual const AtomicString& localName() const override final { return m_tagName.localName(); }
+    const AtomicString& localName() const final { return m_tagName.localName(); }
     AtomicString localNameForSelectorMatching() const;
     const AtomicString& prefix() const { return m_tagName.prefix(); }
-    virtual const AtomicString& namespaceURI() const override final { return m_tagName.namespaceURI(); }
+    const AtomicString& namespaceURI() const final { return m_tagName.namespaceURI(); }
 
     const AtomicString& locateNamespacePrefix(const AtomicString& namespaceURI) const;
 
-    virtual String nodeName() const override;
+    String nodeName() const override;
 
     PassRefPtrWillBeRawPtr<Element> cloneElementWithChildren();
     PassRefPtrWillBeRawPtr<Element> cloneElementWithoutChildren();
@@ -306,8 +306,8 @@ public:
 
     virtual void copyNonAttributePropertiesFromElement(const Element&) { }
 
-    virtual void attach(const AttachContext& = AttachContext()) override;
-    virtual void detach(const AttachContext& = AttachContext()) override;
+    void attach(const AttachContext& = AttachContext()) override;
+    void detach(const AttachContext& = AttachContext()) override;
 
     virtual LayoutObject* createLayoutObject(const ComputedStyle&);
     virtual bool layoutObjectIsNeeded(const ComputedStyle&);
@@ -451,7 +451,7 @@ public:
     virtual bool isOutOfRange() const { return false; }
     virtual bool isClearButtonElement() const { return false; }
 
-    virtual bool canContainRangeEndPoint() const override { return true; }
+    bool canContainRangeEndPoint() const override { return true; }
 
     // Used for disabled form elements; if true, prevents mouse events from being dispatched
     // to event listeners, and prevents DOMActivate events from being sent at all.
@@ -496,7 +496,7 @@ public:
     void clearMutableInlineStyleIfEmpty();
 
     void setTabIndex(int);
-    virtual short tabIndex() const override;
+    short tabIndex() const override;
 
     void incrementProxyCount();
     void decrementProxyCount();
@@ -515,9 +515,9 @@ protected:
     void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, double value, CSSPrimitiveValue::UnitType);
     void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, const String& value);
 
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void removedFrom(ContainerNode*) override;
-    virtual void childrenChanged(const ChildrenChange&) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void removedFrom(ContainerNode*) override;
+    void childrenChanged(const ChildrenChange&) override;
 
     virtual void willRecalcStyle(StyleRecalcChange);
     virtual void didRecalcStyle(StyleRecalcChange);
@@ -601,8 +601,8 @@ private:
     void updateId(TreeScope&, const AtomicString& oldId, const AtomicString& newId);
     void updateName(const AtomicString& oldName, const AtomicString& newName);
 
-    virtual NodeType nodeType() const override final;
-    virtual bool childTypeAllowed(NodeType) const override final;
+    NodeType nodeType() const final;
+    bool childTypeAllowed(NodeType) const final;
 
     void setAttributeInternal(size_t index, const QualifiedName&, const AtomicString& value, SynchronizationOfLazyAttribute);
     void appendAttributeInternal(const QualifiedName&, const AtomicString& value, SynchronizationOfLazyAttribute);
@@ -610,14 +610,14 @@ private:
     void attributeChangedFromParserOrByCloning(const QualifiedName&, const AtomicString&, AttributeModificationReason);
 
 #ifndef NDEBUG
-    virtual void formatForDebugger(char* buffer, unsigned length) const override;
+    void formatForDebugger(char* buffer, unsigned length) const override;
 #endif
 
     bool pseudoStyleCacheIsInvalid(const ComputedStyle* currentStyle, ComputedStyle* newStyle);
 
     void cancelFocusAppearanceUpdate();
 
-    virtual const ComputedStyle* virtualEnsureComputedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) override { return ensureComputedStyle(pseudoElementSpecifier); }
+    const ComputedStyle* virtualEnsureComputedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) override { return ensureComputedStyle(pseudoElementSpecifier); }
 
     inline void updateCallbackSelectors(const ComputedStyle* oldStyle, const ComputedStyle* newStyle);
     inline void removeCallbackSelectors();
@@ -625,7 +625,7 @@ private:
 
     // cloneNode is private so that non-virtual cloneElementWithChildren and cloneElementWithoutChildren
     // are used instead.
-    virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) override;
+    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) override;
     virtual PassRefPtrWillBeRawPtr<Element> cloneElementWithoutAttributesAndChildren();
 
     QualifiedName m_tagName;

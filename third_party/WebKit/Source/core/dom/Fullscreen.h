@@ -84,9 +84,9 @@ public:
     // Mozilla API
     Element* webkitCurrentFullScreenElement() const { return m_fullScreenElement.get(); }
 
-    virtual void documentWasDetached() override;
+    void documentWasDetached() override;
 #if !ENABLE(OILPAN)
-    virtual void documentWasDisposed() override;
+    void documentWasDisposed() override;
 #endif
 
     DECLARE_VIRTUAL_TRACE();

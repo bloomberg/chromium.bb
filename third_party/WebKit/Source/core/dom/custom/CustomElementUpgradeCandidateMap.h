@@ -44,7 +44,7 @@ class CustomElementUpgradeCandidateMap final : public CustomElementObserver {
     WTF_MAKE_NONCOPYABLE(CustomElementUpgradeCandidateMap);
 public:
     static PassOwnPtrWillBeRawPtr<CustomElementUpgradeCandidateMap> create();
-    virtual ~CustomElementUpgradeCandidateMap();
+    ~CustomElementUpgradeCandidateMap() override;
 
     // API for CustomElementRegistrationContext to save and take candidates
 
@@ -58,7 +58,7 @@ public:
 private:
     CustomElementUpgradeCandidateMap() { }
 
-    virtual void elementWasDestroyed(Element*) override;
+    void elementWasDestroyed(Element*) override;
 
     typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<Element>, CustomElementDescriptor> UpgradeCandidateMap;
     UpgradeCandidateMap m_upgradeCandidates;

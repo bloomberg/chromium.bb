@@ -56,11 +56,11 @@ public:
     LayoutText* createTextLayoutObject(const ComputedStyle&);
     void updateTextLayoutObject(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData, RecalcStyleBehavior = DoNotRecalcStyle);
 
-    virtual void attach(const AttachContext& = AttachContext()) override final;
+    void attach(const AttachContext& = AttachContext()) final;
     void reattachIfNeeded(const AttachContext& = AttachContext());
 
-    virtual bool canContainRangeEndPoint() const override final { return true; }
-    virtual NodeType nodeType() const override;
+    bool canContainRangeEndPoint() const final { return true; }
+    NodeType nodeType() const override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -69,8 +69,8 @@ protected:
         : CharacterData(treeScope, data, type) { }
 
 private:
-    virtual String nodeName() const override;
-    virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) override final;
+    String nodeName() const override;
+    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) final;
 
     bool isTextNode() const = delete; // This will catch anyone doing an unnecessary check.
 
@@ -79,7 +79,7 @@ private:
     virtual PassRefPtrWillBeRawPtr<Text> cloneWithData(const String&);
 
 #ifndef NDEBUG
-    virtual void formatForDebugger(char* buffer, unsigned length) const override;
+    void formatForDebugger(char* buffer, unsigned length) const override;
 #endif
 };
 

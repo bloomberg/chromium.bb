@@ -28,11 +28,11 @@ public:
         return adoptRef(new DataView(buffer, byteOffset, byteLength));
     }
 
-    virtual unsigned byteLength() const override { return m_byteLength; }
-    virtual ViewType type() const override { return TypeDataView; }
+    unsigned byteLength() const override { return m_byteLength; }
+    ViewType type() const override { return TypeDataView; }
 
 protected:
-    virtual void neuter() override
+    void neuter() override
     {
         ArrayBufferView::neuter();
         m_byteLength = 0;
