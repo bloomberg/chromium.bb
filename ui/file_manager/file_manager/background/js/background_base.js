@@ -24,22 +24,12 @@ function BackgroundBase() {
   this.dialogs = {};
 
   // Initializes the strings. This needs for the volume manager.
-  var loadTimeDataPromise = new Promise(function(fulfill, reject) {
+  this.initializationPromise_ = new Promise(function(fulfill, reject) {
     chrome.fileManagerPrivate.getStrings(function(stringData) {
       loadTimeData.data = stringData;
       fulfill(stringData);
     });
   });
-
-  // Volume Manager should be initialized after strings because volume name is
-  // localized.
-  this.volumeManager_ = null;
-  this.initializationPromise_ = loadTimeDataPromise.then(function(strings) {
-    return VolumeManager.getInstance().then(function(vm) {
-      this.volumeManager_ = vm;
-      return strings;
-    }.bind(this));
-  }.bind(this));
 
   /** @private {?LaunchHandler} */
   this.launchHandler_ = null;
@@ -75,6 +65,11 @@ BackgroundBase.prototype.onLaunched_ = function(launchData) {
     return;
 
   this.initializationPromise_.then(function() {
+    // Volume list needs to be initialized (more precisely,
+    // chrome.fileSystem.requestFileSystem needs to be called to grant access)
+    // before resolveIsolatedEntries().
+    return VolumeManager.getInstance();
+  }).then(function() {
     var isolatedEntries = launchData.items.map(function(item) {
       return item.entry;
     });

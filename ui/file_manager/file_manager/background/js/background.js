@@ -118,7 +118,7 @@ function FileBrowserBackground() {
     this.stringData = strings;
     this.initContextMenu_();
 
-    this.fileOperationManager = new FileOperationManager(this.volumeManager_);
+    this.fileOperationManager = new FileOperationManager();
     this.fileOperationHandler_ = new FileOperationHandler(
         this.fileOperationManager, this.progressCenter);
   }.bind(this));

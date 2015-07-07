@@ -126,7 +126,7 @@ BlockableFakeStartCopy.prototype.startCopyFunc = function(
   listener(this.startCopyId_, makeStatus('progress'));
 
   if (destination === this.blockedDestination_) {
-    this.resolveBlockedOperation =
+    this.resolveBlockedOperationCallback =
         completeCopyOperation.bind(this, this.startCopyId_);
   } else {
     completeCopyOperation(this.startCopyId_);
@@ -232,6 +232,23 @@ function waitForEvents(fileOperationManager) {
 }
 
 /**
+ * Placeholder for mocked volume manager.
+ * @type {(FakeVolumeManager|{getVolumeInfo: function()}?)}
+ */
+var volumeManager;
+
+var VolumeManager = {};
+
+/**
+ * Provide VolumeManager.getInstande() for FileOperationManager using mocked
+ * volume manager instance.
+ * @type {!Promise<(FakeVolumeManager|{getVolumeInfo: function()}?)>}
+ */
+VolumeManager.getInstance = function() {
+  return Promise.resolve(volumeManager);
+};
+
+/**
  * Test target.
  * @type {FileOperationManager}
  */
@@ -241,7 +258,6 @@ var fileOperationManager;
  * Initializes the test environment.
  */
 function setUp() {
-  fileOperationManager = new FileOperationManager();
 }
 
 /**
@@ -460,7 +476,8 @@ function testCopy(callback) {
         listener(1, makeStatus('success'));
       };
 
-  fileOperationManager = new FileOperationManager(new FakeVolumeManager());
+  volumeManager = new FakeVolumeManager();
+  fileOperationManager = new FileOperationManager();
 
   // Observing manager's events.
   var eventsPromise = waitForEvents(fileOperationManager);
@@ -517,7 +534,8 @@ function testCopyInSequential(callback) {
   chrome.fileManagerPrivate.startCopy =
       blockableFakeStartCopy.startCopyFunc.bind(blockableFakeStartCopy);
 
-  fileOperationManager = new FileOperationManager(new FakeVolumeManager());
+  volumeManager = new FakeVolumeManager();
+  fileOperationManager = new FileOperationManager();
 
   var eventLogger = new EventLogger(fileOperationManager);
 
@@ -529,7 +547,7 @@ function testCopyInSequential(callback) {
   var firstOperationTaskId;
   reportPromise(waitUntil(function() {
     // Wait until the first operation is blocked.
-    return blockableFakeStartCopy.resolveBlockedOperation !== null
+    return blockableFakeStartCopy.resolveBlockedOperationCallback !== null;
   }).then(function() {
     assertEquals(1, eventLogger.events.length);
     assertEquals('BEGIN', eventLogger.events[0].reason);
@@ -551,7 +569,7 @@ function testCopyInSequential(callback) {
     var pendingTask = fileOperationManager.getPendingCopyTasksForTesting()[0];
     assertEquals(fileSystem.entries['/'], pendingTask.targetDirEntry);
 
-    blockableFakeStartCopy.resolveBlockedOperation();
+    blockableFakeStartCopy.resolveBlockedOperationCallback();
 
     return waitUntil(function() {
       return eventLogger.numberOfSuccessEvents === 2;
@@ -601,7 +619,8 @@ function testCopyInParallel(callback) {
   chrome.fileManagerPrivate.startCopy =
       blockableFakeStartCopy.startCopyFunc.bind(blockableFakeStartCopy);
 
-  fileOperationManager = new FileOperationManager(new FakeVolumeManager());
+  volumeManager = new FakeVolumeManager();
+  fileOperationManager = new FileOperationManager();
 
   var eventLogger = new EventLogger(fileOperationManager);
 
@@ -612,7 +631,7 @@ function testCopyInParallel(callback) {
 
   var firstOperationTaskId;
   reportPromise(waitUntil(function() {
-    return blockableFakeStartCopy.resolveBlockedOperation !== null;
+    return blockableFakeStartCopy.resolveBlockedOperationCallback !== null;
   }).then(function() {
     assertEquals(1, eventLogger.events.length);
     assertEquals('BEGIN', eventLogger.events[0].reason);
@@ -630,7 +649,7 @@ function testCopyInParallel(callback) {
     });
   }).then(function() {
     // Resolve the blocked operation.
-    blockableFakeStartCopy.resolveBlockedOperation();
+    blockableFakeStartCopy.resolveBlockedOperationCallback();
 
     // Wait until the blocked operation is completed.
     return waitUntil(function() {
@@ -664,13 +683,14 @@ function testCopyFails(callback) {
     '/test.txt': 10
   });
 
-  fileOperationManager = new FileOperationManager({
+  volumeManager = {
     /* Mocking volume manager. */
     getVolumeInfo: function() {
       // Return null to simulate that the volume info is not available.
       return null;
     }
-  });
+  };
+  fileOperationManager = new FileOperationManager();
 
   var eventLogger = new EventLogger(fileOperationManager);
 
@@ -710,7 +730,8 @@ function testMove(callback) {
   window.webkitResolveLocalFileSystemURL =
       resolveTestFileSystemURL.bind(null, fileSystem);
 
-  fileOperationManager = new FileOperationManager(new FakeVolumeManager());
+  volumeManager = new FakeVolumeManager();
+  fileOperationManager = new FileOperationManager();
 
   // Observing manager's events.
   var eventsPromise = waitForEvents(fileOperationManager);
@@ -808,7 +829,8 @@ function testZip(callback) {
         success(newEntry);
       };
 
-  fileOperationManager = new FileOperationManager(new FakeVolumeManager());
+  volumeManager = new FakeVolumeManager();
+  fileOperationManager = new FileOperationManager();
 
   // Observing manager's events.
   reportPromise(waitForEvents(fileOperationManager).then(function(events) {

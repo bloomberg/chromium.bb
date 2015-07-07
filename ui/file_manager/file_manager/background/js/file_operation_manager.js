@@ -3,18 +3,16 @@
 // found in the LICENSE file.
 
 /**
- * @param {!VolumeManager} volumeManager
  * @constructor
  * @struct
  * @suppress {checkStructDictInheritance}
  * @extends {cr.EventTarget}
  */
-function FileOperationManager(volumeManager) {
+function FileOperationManager() {
   /**
-   * @private {!VolumeManager}
-   * @const
+   * @private {VolumeManager}
    */
-  this.volumeManager_ = volumeManager;
+  this.volumeManager_ = null;
 
   /**
    * List of pending copy tasks. The manager can execute tasks in arbitary
@@ -250,6 +248,14 @@ FileOperationManager.prototype.serviceAllTasks_ = function() {
       Object.keys(this.runningCopyTasks_).length === 0) {
     // All tasks have been serviced, clean up and exit.
     chrome.power.releaseKeepAwake();
+    return;
+  }
+
+  if (!this.volumeManager_) {
+    VolumeManager.getInstance().then(function(volumeManager) {
+      this.volumeManager_ = volumeManager;
+      this.serviceAllTasks_();
+    }.bind(this));
     return;
   }
 
