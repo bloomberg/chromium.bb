@@ -27,7 +27,7 @@ color: rgb(255,0,0)
   nickname: red
   hex: #FF0000
   shorthex: #F00
-  rgb: rgb(255, 0, 0)
+  rgb: rgb(255,0,0)
   hsl: hsl(0, 100%, 50%)
 
 color: rgb(300,0,0)
@@ -61,7 +61,7 @@ color: rgba(0,0,0,0.5)
   simple: false
   original: rgba(0,0,0,0.5)
   rgb: null
-  rgba: rgba(0, 0, 0, 0.5)
+  rgba: rgba(0,0,0,0.5)
   hsl: null
   hsla: hsla(0, 0%, 0%, 0.5)
 
@@ -72,7 +72,7 @@ color: hsl(-120, 100%, 50%)
   hex: #0000FF
   shorthex: #00F
   rgb: rgb(0, 0, 255)
-  hsl: hsl(240, 100%, 50%)
+  hsl: hsl(-120, 100%, 50%)
 
 color: hsl(-120, 200%, 200%)
   simple: true
@@ -81,7 +81,7 @@ color: hsl(-120, 200%, 200%)
   hex: #FFFFFF
   shorthex: #FFF
   rgb: rgb(255, 255, 255)
-  hsl: hsl(0, 100%, 100%)
+  hsl: hsl(-120, 200%, 200%)
 
 color: hsl(-120, -200%, -200%)
   simple: true
@@ -107,7 +107,7 @@ color: hsla(240,100%,50%,0.05)
   rgb: null
   rgba: rgba(0, 0, 255, 0.05)
   hsl: null
-  hsla: hsla(240, 100%, 50%, 0.05)
+  hsla: hsla(240,100%,50%,0.05)
 
 color: hsl(200.5,0%,50%)
   simple: true
@@ -115,7 +115,7 @@ color: hsl(200.5,0%,50%)
   nickname: grey
   hex: #808080
   rgb: rgb(128, 128, 128)
-  hsl: hsl(0, 0%, 50%)
+  hsl: hsl(200.5,0%,50%)
 
 color: hsla(200,1.5%,50%,1)
   simple: true
