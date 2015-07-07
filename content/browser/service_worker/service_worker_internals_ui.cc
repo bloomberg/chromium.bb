@@ -356,11 +356,6 @@ ServiceWorkerInternalsUI::ServiceWorkerInternalsUI(WebUI* web_ui)
                  base::Unretained(this),
                  &ServiceWorkerVersion::StopWorker));
   web_ui->RegisterMessageCallback(
-      "sync",
-      base::Bind(&ServiceWorkerInternalsUI::CallServiceWorkerVersionMethod,
-                 base::Unretained(this),
-                 &ServiceWorkerVersion::DispatchSyncEvent));
-  web_ui->RegisterMessageCallback(
       "push",
       base::Bind(&ServiceWorkerInternalsUI::DispatchPushEvent,
                  base::Unretained(this)));
