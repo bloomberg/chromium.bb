@@ -52,14 +52,17 @@ enum PasswordGenerationSubmissionEvent {
   // reason.
   PASSWORD_OVERRIDDEN,
 
+  // A generated password was used.
+  PASSWORD_USED,
+
   // Number of enum entries, used for UMA histogram reporting macros.
   SUBMISSION_EVENT_ENUM_COUNT
 };
 
 void LogPasswordGenerationSubmissionEvent(
     PasswordGenerationSubmissionEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordGeneration.SubmissionEvent",
-                            event, SUBMISSION_EVENT_ENUM_COUNT);
+  UMA_HISTOGRAM_ENUMERATION("PasswordGeneration.SubmissionEvent", event,
+                            SUBMISSION_EVENT_ENUM_COUNT);
 }
 
 PasswordForm CopyAndModifySSLValidity(const PasswordForm& orig,
@@ -274,6 +277,12 @@ void PasswordFormManager::ProvisionallySave(
 void PasswordFormManager::Save() {
   DCHECK_EQ(state_, POST_MATCHING_PHASE);
   DCHECK(!client_->IsOffTheRecord());
+
+  // This is not in UpdateLogin() to catch PSL matched credentials.
+  if (pending_credentials_.times_used != 0 &&
+      pending_credentials_.type == PasswordForm::TYPE_GENERATED) {
+    LogPasswordGenerationSubmissionEvent(PASSWORD_USED);
+  }
 
   if (IsNewLogin())
     SaveAsNewLogin(true);
@@ -882,6 +891,8 @@ void PasswordFormManager::CreatePendingCredentials() {
 
   if (has_generated_password_)
     pending_credentials_.type = PasswordForm::TYPE_GENERATED;
+  else
+    pending_credentials_.type = PasswordForm::TYPE_MANUAL;
 
   provisionally_saved_form_.reset();
 }

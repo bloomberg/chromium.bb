@@ -63134,10 +63134,11 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="PasswordGenerationSubmissionEvent" type="int">
-  <int value="0" label="Generated password submission succeeded"/>
-  <int value="1" label="Generated password submission failed"/>
+  <int value="0" label="Generated password original submission succeeded"/>
+  <int value="1" label="Generated password original submission failed"/>
   <int value="2" label="Generated password not submitted"/>
   <int value="3" label="Generated password overridden by a non-generated one"/>
+  <int value="4" label="Generated password used"/>
 </enum>
 
 <enum name="PasswordManagerActionsTaken" type="int">
