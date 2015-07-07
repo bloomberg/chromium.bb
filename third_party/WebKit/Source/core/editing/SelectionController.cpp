@@ -111,10 +111,10 @@ bool expandSelectionUsingGranularity(VisibleSelection& selection, TextGranularit
     return selection.expandUsingGranularity(granularity);
 }
 
-template <typename PositionType>
-int textDistance(const PositionType& start, const PositionType& end)
+template <typename Strategy>
+static int textDistance(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end)
 {
-    return TextIteratorAlgorithm<typename PositionType::StrategyType>::rangeLength(start, end, true);
+    return TextIteratorAlgorithm<Strategy>::rangeLength(start, end, true);
 }
 
 bool canMouseDownStartSelect(Node* node)

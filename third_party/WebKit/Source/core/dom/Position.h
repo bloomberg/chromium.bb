@@ -65,7 +65,6 @@ template <typename Strategy>
 class CORE_TEMPLATE_CLASS_EXPORT PositionAlgorithm {
     DISALLOW_ALLOCATION();
 public:
-    using StrategyType = Strategy;
 
     PositionAlgorithm()
         : m_offset(0)
