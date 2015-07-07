@@ -60,7 +60,7 @@ class Expression : public ParseNode {
     WTF_MAKE_NONCOPYABLE(Expression);
 public:
     Expression();
-    virtual ~Expression();
+    ~Expression() override;
     DECLARE_VIRTUAL_TRACE();
 
     virtual Value evaluate(EvaluationContext&) const = 0;

@@ -40,13 +40,13 @@ class Step;
 class Filter final : public Expression {
 public:
     Filter(Expression*, HeapVector<Member<Predicate>>&);
-    virtual ~Filter();
+    ~Filter() override;
     DECLARE_VIRTUAL_TRACE();
 
-    virtual Value evaluate(EvaluationContext&) const override;
+    Value evaluate(EvaluationContext&) const override;
 
 private:
-    virtual Value::Type resultType() const override { return Value::NodeSetValue; }
+    Value::Type resultType() const override { return Value::NodeSetValue; }
 
     Member<Expression> m_expr;
     HeapVector<Member<Predicate>> m_predicates;
@@ -55,17 +55,17 @@ private:
 class LocationPath final : public Expression {
 public:
     LocationPath();
-    virtual ~LocationPath();
+    ~LocationPath() override;
     DECLARE_VIRTUAL_TRACE();
 
-    virtual Value evaluate(EvaluationContext&) const override;
+    Value evaluate(EvaluationContext&) const override;
     void setAbsolute(bool value) { m_absolute = value; setIsContextNodeSensitive(!m_absolute); }
     void evaluate(EvaluationContext&, NodeSet&) const; // nodes is an input/output parameter
     void appendStep(Step*);
     void insertFirstStep(Step*);
 
 private:
-    virtual Value::Type resultType() const override { return Value::NodeSetValue; }
+    Value::Type resultType() const override { return Value::NodeSetValue; }
 
     HeapVector<Member<Step>> m_steps;
     bool m_absolute;
@@ -74,13 +74,13 @@ private:
 class Path final : public Expression {
 public:
     Path(Expression*, LocationPath*);
-    virtual ~Path();
+    ~Path() override;
     DECLARE_VIRTUAL_TRACE();
 
-    virtual Value evaluate(EvaluationContext&) const override;
+    Value evaluate(EvaluationContext&) const override;
 
 private:
-    virtual Value::Type resultType() const override { return Value::NodeSetValue; }
+    Value::Type resultType() const override { return Value::NodeSetValue; }
 
     Member<Expression> m_filter;
     Member<LocationPath> m_path;

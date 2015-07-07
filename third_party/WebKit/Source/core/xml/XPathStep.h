@@ -93,7 +93,7 @@ public:
 
     Step(Axis, const NodeTest&);
     Step(Axis, const NodeTest&, HeapVector<Member<Predicate>>&);
-    virtual ~Step();
+    ~Step() override;
     DECLARE_VIRTUAL_TRACE();
 
     void optimize();

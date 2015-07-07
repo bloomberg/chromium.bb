@@ -76,7 +76,7 @@ public:
     {
         return adoptRefWillBeNoop(new XMLDocumentParser(fragment, element, parserContentPolicy));
     }
-    virtual ~XMLDocumentParser();
+    ~XMLDocumentParser() override;
     DECLARE_VIRTUAL_TRACE();
 
     // Exposed for callbacks:
@@ -90,9 +90,9 @@ public:
     static bool parseDocumentFragment(const String&, DocumentFragment*, Element* parent = 0, ParserContentPolicy = AllowScriptingContent);
 
     // Used by the XMLHttpRequest to check if the responseXML was well formed.
-    virtual bool wellFormed() const override { return !m_sawError; }
+    bool wellFormed() const override { return !m_sawError; }
 
-    virtual TextPosition textPosition() const override;
+    TextPosition textPosition() const override;
 
     static bool supportsXMLVersion(const String&);
 
@@ -107,17 +107,17 @@ private:
     XMLDocumentParser(DocumentFragment*, Element*, ParserContentPolicy);
 
     // From DocumentParser
-    virtual void insert(const SegmentedString&) override;
-    virtual void append(const String&) override;
-    virtual void finish() override;
-    virtual bool isWaitingForScripts() const override;
-    virtual void stopParsing() override;
-    virtual void detach() override;
-    virtual OrdinalNumber lineNumber() const override;
+    void insert(const SegmentedString&) override;
+    void append(const String&) override;
+    void finish() override;
+    bool isWaitingForScripts() const override;
+    void stopParsing() override;
+    void detach() override;
+    OrdinalNumber lineNumber() const override;
     OrdinalNumber columnNumber() const;
 
     // from ResourceClient
-    virtual void notifyFinished(Resource*) override;
+    void notifyFinished(Resource*) override;
 
     void end();
 

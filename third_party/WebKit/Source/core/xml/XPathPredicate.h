@@ -40,8 +40,8 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    virtual Value evaluate(EvaluationContext&) const override;
-    virtual Value::Type resultType() const override { return Value::NumberValue; }
+    Value evaluate(EvaluationContext&) const override;
+    Value::Type resultType() const override { return Value::NumberValue; }
 
     Value m_value;
 };
@@ -52,16 +52,16 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    virtual Value evaluate(EvaluationContext&) const override;
-    virtual Value::Type resultType() const override { return Value::StringValue; }
+    Value evaluate(EvaluationContext&) const override;
+    Value::Type resultType() const override { return Value::StringValue; }
 
     Value m_value;
 };
 
 class Negative final : public Expression {
 private:
-    virtual Value evaluate(EvaluationContext&) const override;
-    virtual Value::Type resultType() const override { return Value::NumberValue; }
+    Value evaluate(EvaluationContext&) const override;
+    Value::Type resultType() const override { return Value::NumberValue; }
 };
 
 class NumericOp final : public Expression {
@@ -72,8 +72,8 @@ public:
     NumericOp(Opcode, Expression* lhs, Expression* rhs);
 
 private:
-    virtual Value evaluate(EvaluationContext&) const override;
-    virtual Value::Type resultType() const override { return Value::NumberValue; }
+    Value evaluate(EvaluationContext&) const override;
+    Value::Type resultType() const override { return Value::NumberValue; }
 
     Opcode m_opcode;
 };
@@ -82,10 +82,10 @@ class EqTestOp final : public Expression {
 public:
     enum Opcode { OpcodeEqual, OpcodeNotEqual, OpcodeGreaterThan, OpcodeLessThan, OpcodeGreaterOrEqual, OpcodeLessOrEqual };
     EqTestOp(Opcode, Expression* lhs, Expression* rhs);
-    virtual Value evaluate(EvaluationContext&) const override;
+    Value evaluate(EvaluationContext&) const override;
 
 private:
-    virtual Value::Type resultType() const override { return Value::BooleanValue; }
+    Value::Type resultType() const override { return Value::BooleanValue; }
     bool compare(EvaluationContext&, const Value&, const Value&) const;
 
     Opcode m_opcode;
@@ -97,17 +97,17 @@ public:
     LogicalOp(Opcode, Expression* lhs, Expression* rhs);
 
 private:
-    virtual Value::Type resultType() const override { return Value::BooleanValue; }
+    Value::Type resultType() const override { return Value::BooleanValue; }
     bool shortCircuitOn() const;
-    virtual Value evaluate(EvaluationContext&) const override;
+    Value evaluate(EvaluationContext&) const override;
 
     Opcode m_opcode;
 };
 
 class Union final : public Expression {
 private:
-    virtual Value evaluate(EvaluationContext&) const override;
-    virtual Value::Type resultType() const override { return Value::NodeSetValue; }
+    Value evaluate(EvaluationContext&) const override;
+    Value::Type resultType() const override { return Value::NodeSetValue; }
 };
 
 class Predicate final : public GarbageCollected<Predicate> {

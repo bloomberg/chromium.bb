@@ -40,7 +40,7 @@ public:
         return new NativeXPathNSResolver(node);
     }
 
-    virtual AtomicString lookupNamespaceURI(const String& prefix) override;
+    AtomicString lookupNamespaceURI(const String& prefix) override;
 
     DECLARE_VIRTUAL_TRACE();
 
