@@ -60,8 +60,8 @@ public:
 
     ~MainThreadDebugger() override;
 
-    static void setContextDebugData(v8::Local<v8::Context>, const String& type, int contextDebugId);
-    void addListener(ScriptDebugListener*, LocalFrame*, int contextDebugId);
+    static void initializeContext(v8::Local<v8::Context>, int worldId);
+    void addListener(ScriptDebugListener*, LocalFrame*);
     void removeListener(ScriptDebugListener*, LocalFrame*);
 
     static MainThreadDebugger* instance();

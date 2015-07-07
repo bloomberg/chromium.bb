@@ -53,17 +53,16 @@ using blink::TypeBuilder::Runtime::RemoteObject;
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<PageDebuggerAgent> PageDebuggerAgent::create(MainThreadDebugger* MainThreadDebugger, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay, int debuggerId)
+PassOwnPtrWillBeRawPtr<PageDebuggerAgent> PageDebuggerAgent::create(MainThreadDebugger* MainThreadDebugger, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
 {
-    return adoptPtrWillBeNoop(new PageDebuggerAgent(MainThreadDebugger, pageAgent, injectedScriptManager, overlay, debuggerId));
+    return adoptPtrWillBeNoop(new PageDebuggerAgent(MainThreadDebugger, pageAgent, injectedScriptManager, overlay));
 }
 
-PageDebuggerAgent::PageDebuggerAgent(MainThreadDebugger* MainThreadDebugger, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay, int debuggerId)
+PageDebuggerAgent::PageDebuggerAgent(MainThreadDebugger* MainThreadDebugger, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
     : InspectorDebuggerAgent(injectedScriptManager, MainThreadDebugger->debugger()->isolate())
     , m_mainThreadDebugger(MainThreadDebugger)
     , m_pageAgent(pageAgent)
     , m_overlay(overlay)
-    , m_debuggerId(debuggerId)
 {
     m_overlay->setListener(this);
 }
@@ -117,7 +116,7 @@ void PageDebuggerAgent::disable()
 
 void PageDebuggerAgent::startListeningV8Debugger()
 {
-    m_mainThreadDebugger->addListener(this, m_pageAgent->inspectedFrame(), m_debuggerId);
+    m_mainThreadDebugger->addListener(this, m_pageAgent->inspectedFrame());
 }
 
 void PageDebuggerAgent::stopListeningV8Debugger()

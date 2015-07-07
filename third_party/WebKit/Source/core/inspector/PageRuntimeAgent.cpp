@@ -41,19 +41,15 @@
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
-#include "core/inspector/MainThreadDebugger.h"
 #include "core/page/Page.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 namespace blink {
 
-static int s_nextDebuggerId = 1;
-
 PageRuntimeAgent::PageRuntimeAgent(InjectedScriptManager* injectedScriptManager, Client* client, V8Debugger* debugger, InspectorPageAgent* pageAgent)
     : InspectorRuntimeAgent(injectedScriptManager, debugger, client)
     , m_pageAgent(pageAgent)
     , m_mainWorldContextCreated(false)
-    , m_debuggerId(s_nextDebuggerId++)
 {
 }
 
@@ -102,15 +98,10 @@ void PageRuntimeAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
 
 void PageRuntimeAgent::didCreateScriptContext(LocalFrame* frame, ScriptState* scriptState, SecurityOrigin* origin, int worldId)
 {
-    bool isMainWorld = worldId == MainWorldId;
-
-    // Name the context for debugging.
-    String type = isMainWorld ? "page" : "injected";
-    MainThreadDebugger::setContextDebugData(scriptState->context(), type, m_debuggerId);
-
     if (!m_enabled)
         return;
     ASSERT(frontend());
+    bool isMainWorld = worldId == MainWorldId;
     String originString = origin ? origin->toRawString() : "";
     String frameId = IdentifiersFactory::frameId(frame);
     addExecutionContextToFrontend(scriptState, isMainWorld, originString, frameId);

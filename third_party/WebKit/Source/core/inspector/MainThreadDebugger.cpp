@@ -97,13 +97,18 @@ DEFINE_TRACE(MainThreadDebugger)
     ScriptDebuggerBase::trace(visitor);
 }
 
-void MainThreadDebugger::setContextDebugData(v8::Local<v8::Context> context, const String& type, int contextDebugId)
+void MainThreadDebugger::initializeContext(v8::Local<v8::Context> context, int worldId)
 {
-    String debugData = "[" + type + "," + String::number(contextDebugId) + "]";
+    LocalFrame* frame = retrieveFrameWithGlobalObjectCheck(context);
+    if (!frame)
+        return;
+    LocalFrame* localFrameRoot = frame->localFrameRoot();
+    String type = worldId == MainWorldId ? "page" : "injected";
+    String debugData = "[" + type + "," + String::number(WeakIdentifierMap<LocalFrame>::identifier(localFrameRoot)) + "]";
     V8Debugger::setContextDebugData(context, debugData);
 }
 
-void MainThreadDebugger::addListener(ScriptDebugListener* listener, LocalFrame* localFrameRoot, int contextDebugId)
+void MainThreadDebugger::addListener(ScriptDebugListener* listener, LocalFrame* localFrameRoot)
 {
     ASSERT(localFrameRoot == localFrameRoot->localFrameRoot());
 
@@ -114,7 +119,7 @@ void MainThreadDebugger::addListener(ScriptDebugListener* listener, LocalFrame* 
     if (m_listenersMap.isEmpty())
         debugger()->enable();
     m_listenersMap.set(localFrameRoot, listener);
-    String contextDataSubstring = "," + String::number(contextDebugId) + "]";
+    String contextDataSubstring = "," + String::number(WeakIdentifierMap<LocalFrame>::identifier(localFrameRoot)) + "]";
     Vector<ScriptDebugListener::ParsedScript> compiledScripts;
     debugger()->getCompiledScripts(contextDataSubstring, compiledScripts);
     for (size_t i = 0; i < compiledScripts.size(); i++)

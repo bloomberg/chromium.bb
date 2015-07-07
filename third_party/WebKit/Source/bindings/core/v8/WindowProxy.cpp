@@ -50,6 +50,7 @@
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/MainThreadDebugger.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -254,6 +255,7 @@ bool WindowProxy::initialize()
     }
     if (m_frame->isLocalFrame()) {
         LocalFrame* frame = toLocalFrame(m_frame);
+        MainThreadDebugger::initializeContext(context, m_world->worldId());
         InspectorInstrumentation::didCreateScriptContext(frame, m_scriptState.get(), origin, m_world->worldId());
         frame->loader().client()->didCreateScriptContext(context, m_world->extensionGroup(), m_world->worldId());
     }

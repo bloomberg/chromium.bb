@@ -458,7 +458,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
 
     m_agents.append(InspectorApplicationCacheAgent::create(m_pageAgent));
 
-    OwnPtrWillBeRawPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(MainThreadDebugger::instance(), m_pageAgent, injectedScriptManager, m_overlay, m_pageRuntimeAgent->debuggerId()));
+    OwnPtrWillBeRawPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(MainThreadDebugger::instance(), m_pageAgent, injectedScriptManager, m_overlay));
     InspectorDebuggerAgent* debuggerAgent = debuggerAgentPtr.get();
     m_agents.append(debuggerAgentPtr.release());
     m_asyncCallTracker = adoptPtrWillBeNoop(new AsyncCallTracker(debuggerAgent, m_instrumentingAgents.get()));
