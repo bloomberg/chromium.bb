@@ -229,7 +229,7 @@ private:
 
     void changeJavaScriptRecursionLevel(int step);
 
-    void didParseSource(const String& scriptId, const Script&, CompileResult) final;
+    void didParseSource(const ParsedScript&) final;
     bool v8AsyncTaskEventsEnabled() const final;
     void didReceiveV8AsyncTaskEvent(ScriptState*, const String& eventType, const String& eventName, int id) final;
     bool v8PromiseEventsEnabled() const final;

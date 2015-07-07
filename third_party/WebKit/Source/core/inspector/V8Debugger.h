@@ -78,7 +78,7 @@ public:
     // Each script inherits debug data from v8::Context where it has been compiled.
     // Only scripts whose debug data contains |contextDebugDataSubstring| substring will be reported.
     // Passing empty string will result in reporting all scripts.
-    void reportCompiledScripts(const String& contextDebugDataSubstring, ScriptDebugListener*);
+    void getCompiledScripts(const String& contextDebugDataSubstring, Vector<ScriptDebugListener::ParsedScript>&);
 
     String setBreakpoint(const String& sourceID, const ScriptBreakpoint&, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation);
     void removeBreakpoint(const String& breakpointId);
@@ -128,7 +128,7 @@ private:
     v8::Local<v8::Context> debuggerContext() const;
     void clearBreakpoints();
 
-    void dispatchDidParseSource(ScriptDebugListener*, v8::Local<v8::Object> sourceObject, CompileResult);
+    ScriptDebugListener::ParsedScript createParsedScript(v8::Local<v8::Object> sourceObject, CompileResult);
 
     static void breakProgramCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     void handleProgramBreak(ScriptState* pausedScriptState, v8::Local<v8::Object> executionState, v8::Local<v8::Value> exception, v8::Local<v8::Array> hitBreakpoints, bool isPromiseRejection = false);

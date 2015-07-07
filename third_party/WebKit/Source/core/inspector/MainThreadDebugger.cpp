@@ -115,7 +115,10 @@ void MainThreadDebugger::addListener(ScriptDebugListener* listener, LocalFrame* 
         debugger()->enable();
     m_listenersMap.set(localFrameRoot, listener);
     String contextDataSubstring = "," + String::number(contextDebugId) + "]";
-    debugger()->reportCompiledScripts(contextDataSubstring, listener);
+    Vector<ScriptDebugListener::ParsedScript> compiledScripts;
+    debugger()->getCompiledScripts(contextDataSubstring, compiledScripts);
+    for (size_t i = 0; i < compiledScripts.size(); i++)
+        listener->didParseSource(compiledScripts[i]);
 }
 
 void MainThreadDebugger::removeListener(ScriptDebugListener* listener, LocalFrame* localFrame)

@@ -1474,11 +1474,11 @@ String InspectorDebuggerAgent::sourceMapURLForScript(const Script& script, Compi
 
 // ScriptDebugListener functions
 
-void InspectorDebuggerAgent::didParseSource(const String& scriptId, const Script& parsedScript, CompileResult compileResult)
+void InspectorDebuggerAgent::didParseSource(const ParsedScript& parsedScript)
 {
-    Script script = parsedScript;
+    Script script = parsedScript.script;
 
-    bool hasSyntaxError = compileResult != CompileSuccess;
+    bool hasSyntaxError = parsedScript.compileResult != CompileSuccess;
     if (hasSyntaxError)
         script.setSourceURL(ContentSearchUtils::findSourceURL(script.source(), ContentSearchUtils::JavaScriptMagicComment));
 
@@ -1486,18 +1486,18 @@ void InspectorDebuggerAgent::didParseSource(const String& scriptId, const Script
     bool isInternalScript = script.isInternalScript();
     bool hasSourceURL = script.hasSourceURL();
     String scriptURL = script.sourceURL();
-    String sourceMapURL = sourceMapURLForScript(script, compileResult);
+    String sourceMapURL = sourceMapURLForScript(script, parsedScript.compileResult);
 
     const String* sourceMapURLParam = sourceMapURL.isNull() ? nullptr : &sourceMapURL;
     const bool* isContentScriptParam = isContentScript ? &isContentScript : nullptr;
     const bool* isInternalScriptParam = isInternalScript ? &isInternalScript : nullptr;
     const bool* hasSourceURLParam = hasSourceURL ? &hasSourceURL : nullptr;
     if (!hasSyntaxError)
-        frontend()->scriptParsed(scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), isContentScriptParam, isInternalScriptParam, sourceMapURLParam, hasSourceURLParam);
+        frontend()->scriptParsed(parsedScript.scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), isContentScriptParam, isInternalScriptParam, sourceMapURLParam, hasSourceURLParam);
     else
-        frontend()->scriptFailedToParse(scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), isContentScriptParam, isInternalScriptParam, sourceMapURLParam, hasSourceURLParam);
+        frontend()->scriptFailedToParse(parsedScript.scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), isContentScriptParam, isInternalScriptParam, sourceMapURLParam, hasSourceURLParam);
 
-    m_scripts.set(scriptId, script);
+    m_scripts.set(parsedScript.scriptId, script);
 
     if (scriptURL.isEmpty() || hasSyntaxError)
         return;
@@ -1515,7 +1515,7 @@ void InspectorDebuggerAgent::didParseSource(const String& scriptId, const Script
         breakpointObject->getNumber(DebuggerAgentState::lineNumber, &breakpoint.lineNumber);
         breakpointObject->getNumber(DebuggerAgentState::columnNumber, &breakpoint.columnNumber);
         breakpointObject->getString(DebuggerAgentState::condition, &breakpoint.condition);
-        RefPtr<TypeBuilder::Debugger::Location> location = resolveBreakpoint(cookie.key, scriptId, breakpoint, UserBreakpointSource);
+        RefPtr<TypeBuilder::Debugger::Location> location = resolveBreakpoint(cookie.key, parsedScript.scriptId, breakpoint, UserBreakpointSource);
         if (location)
             frontend()->breakpointResolved(cookie.key, location);
     }

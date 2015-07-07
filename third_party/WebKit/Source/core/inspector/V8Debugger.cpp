@@ -106,7 +106,7 @@ void V8Debugger::setContextDebugData(v8::Local<v8::Context> context, const Strin
     context->SetEmbedderData(static_cast<int>(gin::kDebugIdIndex), v8String(context->GetIsolate(), contextDebugData));
 }
 
-void V8Debugger::reportCompiledScripts(const String& contextDebugDataSubstring, ScriptDebugListener* listener)
+void V8Debugger::getCompiledScripts(const String& contextDebugDataSubstring, Vector<ScriptDebugListener::ParsedScript>& result)
 {
     v8::HandleScope scope(m_isolate);
     v8::Context::Scope contextScope(debuggerContext());
@@ -120,8 +120,9 @@ void V8Debugger::reportCompiledScripts(const String& contextDebugDataSubstring, 
         return;
     ASSERT(value->IsArray());
     v8::Local<v8::Array> scriptsArray = v8::Local<v8::Array>::Cast(value);
+    result.reserveCapacity(scriptsArray->Length());
     for (unsigned i = 0; i < scriptsArray->Length(); ++i)
-        dispatchDidParseSource(listener, v8::Local<v8::Object>::Cast(scriptsArray->Get(v8::Integer::New(m_isolate, i))), CompileSuccess);
+        result.append(createParsedScript(v8::Local<v8::Object>::Cast(scriptsArray->Get(v8::Integer::New(m_isolate, i))), CompileSuccess));
 }
 
 String V8Debugger::setBreakpoint(const String& sourceID, const ScriptBreakpoint& scriptBreakpoint, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation)
@@ -555,7 +556,7 @@ void V8Debugger::handleV8DebugEvent(const v8::Debug::EventDetails& eventDetails)
             v8::Local<v8::Value> value = callDebuggerMethod("getAfterCompileScript", 1, argv).ToLocalChecked();
             ASSERT(value->IsObject());
             v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
-            dispatchDidParseSource(listener, object, event != v8::AfterCompile ? CompileError : CompileSuccess);
+            listener->didParseSource(createParsedScript(object, event != v8::AfterCompile ? CompileError : CompileSuccess));
         } else if (event == v8::Exception) {
             v8::Local<v8::Object> eventData = eventDetails.GetEventData();
             v8::Local<v8::Value> exception = callInternalGetterFunction(eventData, "exception");
@@ -607,14 +608,14 @@ void V8Debugger::handleV8PromiseEvent(ScriptDebugListener* listener, ScriptState
     m_executionState.Clear();
 }
 
-void V8Debugger::dispatchDidParseSource(ScriptDebugListener* listener, v8::Local<v8::Object> object, CompileResult compileResult)
+ScriptDebugListener::ParsedScript V8Debugger::createParsedScript(v8::Local<v8::Object> object, CompileResult compileResult)
 {
     v8::Local<v8::Value> id = object->Get(v8InternalizedString("id"));
     ASSERT(!id.IsEmpty() && id->IsInt32());
-    String sourceID = String::number(id->Int32Value());
 
-    ScriptDebugListener::Script script;
-    script.setURL(toCoreStringWithUndefinedOrNullCheck(object->Get(v8InternalizedString("name"))))
+    ScriptDebugListener::ParsedScript parsedScript;
+    parsedScript.scriptId = String::number(id->Int32Value());
+    parsedScript.script.setURL(toCoreStringWithUndefinedOrNullCheck(object->Get(v8InternalizedString("name"))))
         .setSourceURL(toCoreStringWithUndefinedOrNullCheck(object->Get(v8InternalizedString("sourceURL"))))
         .setSourceMappingURL(toCoreStringWithUndefinedOrNullCheck(object->Get(v8InternalizedString("sourceMappingURL"))))
         .setSource(toCoreStringWithUndefinedOrNullCheck(object->Get(v8InternalizedString("source"))))
@@ -624,8 +625,8 @@ void V8Debugger::dispatchDidParseSource(ScriptDebugListener* listener, v8::Local
         .setEndColumn(object->Get(v8InternalizedString("endColumn"))->ToInteger(m_isolate)->Value())
         .setIsContentScript(object->Get(v8InternalizedString("isContentScript"))->ToBoolean(m_isolate)->Value())
         .setIsInternalScript(object->Get(v8InternalizedString("isInternalScript"))->ToBoolean(m_isolate)->Value());
-
-    listener->didParseSource(sourceID, script, compileResult);
+    parsedScript.compileResult = compileResult;
+    return parsedScript;
 }
 
 void V8Debugger::compileDebuggerScript()

@@ -70,7 +70,10 @@ void WorkerThreadDebugger::addListener(ScriptDebugListener* listener)
     ASSERT(!m_listener);
     debugger()->enable();
     m_listener = listener;
-    debugger()->reportCompiledScripts(workerContextDebugId, listener);
+    Vector<ScriptDebugListener::ParsedScript> compiledScripts;
+    debugger()->getCompiledScripts(workerContextDebugId, compiledScripts);
+    for (size_t i = 0; i < compiledScripts.size(); i++)
+        listener->didParseSource(compiledScripts[i]);
 }
 
 void WorkerThreadDebugger::removeListener(ScriptDebugListener* listener)
