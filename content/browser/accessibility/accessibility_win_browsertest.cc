@@ -60,18 +60,16 @@ class AccessibilityWinBrowserTest : public ContentBrowserTest {
   void SetUpTextareaField(
       base::win::ScopedComPtr<IAccessibleText>* textarea_text);
 
-
-  static base::win::ScopedComPtr<IAccessible>
-  AccessibilityWinBrowserTest::GetAccessibleFromVariant(
+  static base::win::ScopedComPtr<IAccessible> GetAccessibleFromVariant(
       IAccessible* parent,
       VARIANT* var);
   static HRESULT QueryIAccessible2(IAccessible* accessible,
-                                    IAccessible2** accessible2);
+                                   IAccessible2** accessible2);
   static void FindNodeInAccessibilityTree(IAccessible* node,
-                                           int32 expected_role,
-                                           const std::wstring& expected_name,
-                                           int32 depth,
-                                           bool* found);
+                                          int32 expected_role,
+                                          const std::wstring& expected_name,
+                                          int32 depth,
+                                          bool* found);
   static void CheckTextAtOffset(
       base::win::ScopedComPtr<IAccessibleText>& element,
       LONG offset,

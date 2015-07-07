@@ -145,7 +145,7 @@ class Me2MeNativeMessagingHost
   // Create and connect to an elevated host process if necessary.
   // |elevated_channel_| will contain the native messaging channel to the
   // elevated host if the function succeeds.
-  void Me2MeNativeMessagingHost::EnsureElevatedHostCreated();
+  void EnsureElevatedHostCreated();
 
   // Disconnect and shut down the elevated host.
   void DisconnectElevatedHost();

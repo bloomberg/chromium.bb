@@ -635,8 +635,7 @@ class PrintSystemWin : public PrintSystem {
  private:
   ~PrintSystemWin() override {}
 
-  std::string PrintSystemWin::GetPrinterDriverInfo(
-      const std::string& printer_name) const;
+  std::string GetPrinterDriverInfo(const std::string& printer_name) const;
 
   scoped_refptr<printing::PrintBackend> print_backend_;
   bool use_cdd_;

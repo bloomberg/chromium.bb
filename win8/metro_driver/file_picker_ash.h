@@ -123,13 +123,12 @@ class SaveFilePickerSession : public FilePickerSessionBase {
   SaveFilePickerSession(ChromeAppViewAsh* app_view,
                         const MetroViewerHostMsg_SaveAsDialogParams& params);
 
-  int SaveFilePickerSession::filter_index() const;
+  int filter_index() const;
 
  private:
   HRESULT StartFilePicker() override;
 
-  typedef winfoundtn::IAsyncOperation<winstorage::StorageFile*>
-      SaveFileAsyncOp;
+  typedef winfoundtn::IAsyncOperation<winstorage::StorageFile*> SaveFileAsyncOp;
 
   // Called asynchronously when the save file picker is done.
   HRESULT FilePickerDone(SaveFileAsyncOp* async, AsyncStatus status);

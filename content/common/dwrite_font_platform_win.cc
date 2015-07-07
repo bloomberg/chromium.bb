@@ -559,8 +559,7 @@ class FontFileStream
     return S_OK;
   }
 
-  FontFileStream::FontFileStream() : font_key_(0), cached_data_(false) {
-  }
+  FontFileStream() : font_key_(0), cached_data_(false) {}
 
   HRESULT RuntimeClassInitialize(UINT32 font_key) {
     if (g_font_loader->InCollectionBuildingMode() &&
