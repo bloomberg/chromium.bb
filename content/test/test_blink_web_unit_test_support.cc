@@ -55,13 +55,15 @@ class DummyTaskRunner : public base::SingleThreadTaskRunner {
   bool PostDelayedTask(const tracked_objects::Location& from_here,
                        const base::Closure& task,
                        base::TimeDelta delay) override {
-    return PostTask(from_here, task);
+    // Drop the delayed task.
+    return false;
   }
 
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
                                   const base::Closure& task,
                                   base::TimeDelta delay) override {
-    return PostNonNestableTask(from_here, task);
+    // Drop the delayed task.
+    return false;
   }
 
   bool RunsTasksOnCurrentThread() const override {
