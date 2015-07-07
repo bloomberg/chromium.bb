@@ -42,6 +42,7 @@ void SetupLightSpeedTrials() {
 }
 
 void SetupStunProbeTrial() {
+#if defined(ENABLE_WEBRTC)
   std::map<std::string, std::string> params;
   if (!variations::GetVariationParams("StunProbeTrial", &params))
     return;
@@ -56,6 +57,7 @@ void SetupStunProbeTrial() {
 
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kWebRtcStunProbeTrialParameter, cmd_param);
+#endif
 }
 
 }  // namespace
