@@ -5,8 +5,10 @@
 #include "config.h"
 #include "core/paint/SVGInlineFlowBoxPainter.h"
 
+#include "core/layout/LayoutInline.h"
 #include "core/layout/svg/line/SVGInlineFlowBox.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
+#include "core/paint/InlinePainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/SVGInlineTextBoxPainter.h"
 #include "core/paint/SVGPaintContext.h"
@@ -30,11 +32,16 @@ void SVGInlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
 {
     ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
 
-    SVGPaintContext paintContext(m_svgInlineFlowBox.layoutObject(), paintInfo);
-    if (paintContext.applyClipMaskAndFilterIfNecessary()) {
-        for (InlineBox* child = m_svgInlineFlowBox.firstChild(); child; child = child->nextOnLine())
-            child->paint(paintContext.paintInfo(), paintOffset, 0, 0);
+    {
+        SVGPaintContext paintContext(m_svgInlineFlowBox.layoutObject(), paintInfo);
+        if (paintContext.applyClipMaskAndFilterIfNecessary()) {
+            for (InlineBox* child = m_svgInlineFlowBox.firstChild(); child; child = child->nextOnLine())
+                child->paint(paintContext.paintInfo(), paintOffset, 0, 0);
+        }
     }
+
+    if (m_svgInlineFlowBox.layoutObject().isLayoutInline())
+        InlinePainter(toLayoutInline(m_svgInlineFlowBox.layoutObject())).paintOutline(paintInfo, paintOffset);
 }
 
 } // namespace blink
