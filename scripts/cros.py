@@ -24,20 +24,26 @@ from chromite.lib import stats
 
 
 def GetOptions(my_commands):
-  """Returns the argparse to use for commandline parsing."""
-  parser = commandline.ArgumentParser(caching=True, default_log_level='notice')
-  if not command:
-    return parser
+  """Returns the parser to use for commandline parsing.
 
-  subparsers = parser.add_subparsers(title='Subcommands')
-  for cmd_name, class_def in sorted(my_commands.iteritems(),
-                                    key=lambda x: x[0]):
-    epilog = getattr(class_def, 'EPILOG', None)
-    sub_parser = subparsers.add_parser(
-        cmd_name, description=class_def.__doc__, epilog=epilog,
-        caching=class_def.use_caching_options,
-        formatter_class=commandline.argparse.RawDescriptionHelpFormatter)
-    class_def.AddParser(sub_parser)
+  Args:
+    my_commands: A dictionary mapping subcommand names to classes.
+
+  Returns:
+    A commandline.ArgumentParser object.
+  """
+  parser = commandline.ArgumentParser(caching=True, default_log_level='notice')
+
+  if my_commands:
+    subparsers = parser.add_subparsers(title='Subcommands')
+    for cmd_name in sorted(my_commands.iterkeys()):
+      class_def = my_commands[cmd_name]
+      epilog = getattr(class_def, 'EPILOG', None)
+      sub_parser = subparsers.add_parser(
+          cmd_name, description=class_def.__doc__, epilog=epilog,
+          caching=class_def.use_caching_options,
+          formatter_class=commandline.argparse.RawDescriptionHelpFormatter)
+      class_def.AddParser(sub_parser)
 
   return parser
 
@@ -74,8 +80,7 @@ def main(argv):
         raise
       except Exception as e:
         code = 1
-        logging.error('%s %s failed before completing.',
-                      command.GetToolset(),
+        logging.error('cros %s failed before completing.',
                       subcommand.command_name)
         if namespace.debug:
           raise
