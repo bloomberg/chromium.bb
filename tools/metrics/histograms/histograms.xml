@@ -45208,6 +45208,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>pthammaiah@google.com</owner>
 </histogram>
 
+<histogram name="TPM.EarlyResetDuringCommand" units="count">
+  <owner>semenzato@google.com</owner>
+  <summary>
+    Reported at boot if the previous boot session was interrupted in the middle
+    of a TPM command during the first 30 seconds of uptime.
+  </summary>
+</histogram>
+
 <histogram name="Tracing.Background.FinalizingTraceSizeInKB" units="KB">
   <owner>oysteine@chromium.org</owner>
   <summary>
