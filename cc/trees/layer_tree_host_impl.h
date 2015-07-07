@@ -117,6 +117,7 @@ class LayerTreeHostImplClient {
   virtual void PostDelayedAnimationTaskOnImplThread(const base::Closure& task,
                                                     base::TimeDelta delay) = 0;
   virtual void DidActivateSyncTree() = 0;
+  virtual void WillPrepareTiles() = 0;
   virtual void DidPrepareTiles() = 0;
 
   // Called when page scale animation has completed on the impl thread.

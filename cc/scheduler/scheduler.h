@@ -101,7 +101,9 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
 
   void NotifyReadyToCommit();
   void BeginMainFrameAborted(CommitEarlyOutReason reason);
+  void DidCommit();
 
+  void WillPrepareTiles();
   void DidPrepareTiles();
   void DidLoseOutputSurface();
   void DidCreateAndInitializeOutputSurface();
@@ -198,6 +200,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   void DrawAndSwapIfPossible();
   void DrawAndSwapForced();
   void ProcessScheduledActions();
+  void UpdateCompositorTimingHistoryRecordingEnabled();
   bool CanCommitAndActivateBeforeDeadline() const;
   void AdvanceCommitStateIfPossible();
   bool IsBeginMainFrameSentOrStarted() const;

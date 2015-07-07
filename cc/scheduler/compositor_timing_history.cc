@@ -8,18 +8,28 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 
+// The estimates that affect the compositors deadline use the 100th percentile
+// to avoid missing the Browser's deadline.
+// The estimates related to main-thread responsiveness affect whether
+// we attempt to recovery latency or not and use the 50th percentile.
+// TODO(brianderson): Fine tune the percentiles below.
 const size_t kDurationHistorySize = 60;
-const double kCommitAndActivationDurationEstimationPercentile = 50.0;
-const double kDrawDurationEstimationPercentile = 100.0;
-const int kDrawDurationEstimatePaddingInMicroseconds = 0;
+const double kBeginMainFrameToCommitEstimationPercentile = 50.0;
+const double kCommitToReadyToActivateEstimationPercentile = 50.0;
+const double kPrepareTilesEstimationPercentile = 100.0;
+const double kActivateEstimationPercentile = 100.0;
+const double kDrawEstimationPercentile = 100.0;
 
 namespace cc {
 
 CompositorTimingHistory::CompositorTimingHistory(
     RenderingStatsInstrumentation* rendering_stats_instrumentation)
-    : draw_duration_history_(kDurationHistorySize),
+    : enabled_(false),
       begin_main_frame_to_commit_duration_history_(kDurationHistorySize),
-      commit_to_activate_duration_history_(kDurationHistorySize),
+      commit_to_ready_to_activate_duration_history_(kDurationHistorySize),
+      prepare_tiles_duration_history_(kDurationHistorySize),
+      activate_duration_history_(kDurationHistorySize),
+      draw_duration_history_(kDurationHistorySize),
       rendering_stats_instrumentation_(rendering_stats_instrumentation) {
 }
 
@@ -30,40 +40,65 @@ void CompositorTimingHistory::AsValueInto(
     base::trace_event::TracedValue* state) const {
   state->SetDouble("begin_main_frame_to_commit_duration_estimate_ms",
                    BeginMainFrameToCommitDurationEstimate().InMillisecondsF());
-  state->SetDouble("commit_to_activate_duration_estimate_ms",
-                   CommitToActivateDurationEstimate().InMillisecondsF());
+  state->SetDouble("commit_to_ready_to_activate_duration_estimate_ms",
+                   CommitToReadyToActivateDurationEstimate().InMillisecondsF());
+  state->SetDouble("prepare_tiles_duration_estimate_ms",
+                   PrepareTilesDurationEstimate().InMillisecondsF());
+  state->SetDouble("activate_duration_estimate_ms",
+                   ActivateDurationEstimate().InMillisecondsF());
   state->SetDouble("draw_duration_estimate_ms",
                    DrawDurationEstimate().InMillisecondsF());
 }
 
-base::TimeDelta CompositorTimingHistory::DrawDurationEstimate() const {
-  base::TimeDelta historical_estimate =
-      draw_duration_history_.Percentile(kDrawDurationEstimationPercentile);
-  base::TimeDelta padding = base::TimeDelta::FromMicroseconds(
-      kDrawDurationEstimatePaddingInMicroseconds);
-  return historical_estimate + padding;
+base::TimeTicks CompositorTimingHistory::Now() const {
+  return base::TimeTicks::Now();
+}
+
+void CompositorTimingHistory::SetRecordingEnabled(bool enabled) {
+  enabled_ = enabled;
 }
 
 base::TimeDelta
 CompositorTimingHistory::BeginMainFrameToCommitDurationEstimate() const {
   return begin_main_frame_to_commit_duration_history_.Percentile(
-      kCommitAndActivationDurationEstimationPercentile);
+      kBeginMainFrameToCommitEstimationPercentile);
 }
 
-base::TimeDelta CompositorTimingHistory::CommitToActivateDurationEstimate()
-    const {
-  return commit_to_activate_duration_history_.Percentile(
-      kCommitAndActivationDurationEstimationPercentile);
+base::TimeDelta
+CompositorTimingHistory::CommitToReadyToActivateDurationEstimate() const {
+  return commit_to_ready_to_activate_duration_history_.Percentile(
+      kCommitToReadyToActivateEstimationPercentile);
+}
+
+base::TimeDelta CompositorTimingHistory::PrepareTilesDurationEstimate() const {
+  return prepare_tiles_duration_history_.Percentile(
+      kPrepareTilesEstimationPercentile);
+}
+
+base::TimeDelta CompositorTimingHistory::ActivateDurationEstimate() const {
+  return activate_duration_history_.Percentile(kActivateEstimationPercentile);
+}
+
+base::TimeDelta CompositorTimingHistory::DrawDurationEstimate() const {
+  return draw_duration_history_.Percentile(kDrawEstimationPercentile);
 }
 
 void CompositorTimingHistory::WillBeginMainFrame() {
-  begin_main_frame_sent_time_ = base::TimeTicks::Now();
+  DCHECK_EQ(base::TimeTicks(), begin_main_frame_sent_time_);
+  begin_main_frame_sent_time_ = Now();
+}
+
+void CompositorTimingHistory::BeginMainFrameAborted() {
+  DidCommit();
 }
 
 void CompositorTimingHistory::DidCommit() {
-  commit_complete_time_ = base::TimeTicks::Now();
+  DCHECK_NE(base::TimeTicks(), begin_main_frame_sent_time_);
+
+  commit_time_ = Now();
+
   base::TimeDelta begin_main_frame_to_commit_duration =
-      commit_complete_time_ - begin_main_frame_sent_time_;
+      commit_time_ - begin_main_frame_sent_time_;
 
   // Before adding the new data point to the timing history, see what we would
   // have predicted for this frame. This allows us to keep track of the accuracy
@@ -72,30 +107,74 @@ void CompositorTimingHistory::DidCommit() {
       begin_main_frame_to_commit_duration,
       BeginMainFrameToCommitDurationEstimate());
 
-  begin_main_frame_to_commit_duration_history_.InsertSample(
-      begin_main_frame_to_commit_duration);
+  if (enabled_) {
+    begin_main_frame_to_commit_duration_history_.InsertSample(
+        begin_main_frame_to_commit_duration);
+  }
+
+  begin_main_frame_sent_time_ = base::TimeTicks();
 }
 
-void CompositorTimingHistory::DidActivateSyncTree() {
-  base::TimeDelta commit_to_activate_duration =
-      base::TimeTicks::Now() - commit_complete_time_;
+void CompositorTimingHistory::WillPrepareTiles() {
+  DCHECK_EQ(base::TimeTicks(), start_prepare_tiles_time_);
+  start_prepare_tiles_time_ = Now();
+}
+
+void CompositorTimingHistory::DidPrepareTiles() {
+  DCHECK_NE(base::TimeTicks(), start_prepare_tiles_time_);
+
+  if (enabled_) {
+    base::TimeDelta prepare_tiles_duration = Now() - start_prepare_tiles_time_;
+    prepare_tiles_duration_history_.InsertSample(prepare_tiles_duration);
+  }
+
+  start_prepare_tiles_time_ = base::TimeTicks();
+}
+
+void CompositorTimingHistory::ReadyToActivate() {
+  // We only care about the first ready to activate signal
+  // after a commit.
+  if (commit_time_ == base::TimeTicks())
+    return;
+
+  base::TimeDelta time_since_commit = Now() - commit_time_;
 
   // Before adding the new data point to the timing history, see what we would
   // have predicted for this frame. This allows us to keep track of the accuracy
   // of our predictions.
   rendering_stats_instrumentation_->AddCommitToActivateDuration(
-      commit_to_activate_duration, CommitToActivateDurationEstimate());
+      time_since_commit, CommitToReadyToActivateDurationEstimate());
 
-  commit_to_activate_duration_history_.InsertSample(
-      commit_to_activate_duration);
+  if (enabled_) {
+    commit_to_ready_to_activate_duration_history_.InsertSample(
+        time_since_commit);
+  }
+
+  commit_time_ = base::TimeTicks();
 }
 
-void CompositorTimingHistory::DidStartDrawing() {
-  start_draw_time_ = base::TimeTicks::Now();
+void CompositorTimingHistory::WillActivate() {
+  DCHECK_EQ(base::TimeTicks(), start_activate_time_);
+  start_activate_time_ = Now();
 }
 
-void CompositorTimingHistory::DidFinishDrawing() {
-  base::TimeDelta draw_duration = base::TimeTicks::Now() - start_draw_time_;
+void CompositorTimingHistory::DidActivate() {
+  DCHECK_NE(base::TimeTicks(), start_activate_time_);
+  if (enabled_) {
+    base::TimeDelta activate_duration = Now() - start_activate_time_;
+    activate_duration_history_.InsertSample(activate_duration);
+  }
+  start_activate_time_ = base::TimeTicks();
+}
+
+void CompositorTimingHistory::WillDraw() {
+  DCHECK_EQ(base::TimeTicks(), start_draw_time_);
+  start_draw_time_ = Now();
+}
+
+void CompositorTimingHistory::DidDraw() {
+  DCHECK_NE(base::TimeTicks(), start_draw_time_);
+  base::TimeDelta draw_duration = Now() - start_draw_time_;
 
   // Before adding the new data point to the timing history, see what we would
   // have predicted for this frame. This allows us to keep track of the accuracy
@@ -106,7 +185,11 @@ void CompositorTimingHistory::DidFinishDrawing() {
 
   AddDrawDurationUMA(draw_duration, draw_duration_estimate);
 
-  draw_duration_history_.InsertSample(draw_duration);
+  if (enabled_) {
+    draw_duration_history_.InsertSample(draw_duration);
+  }
+
+  start_draw_time_ = base::TimeTicks();
 }
 
 void CompositorTimingHistory::AddDrawDurationUMA(

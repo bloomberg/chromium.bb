@@ -38,6 +38,7 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   void PostDelayedAnimationTaskOnImplThread(const base::Closure& task,
                                             base::TimeDelta delay) override {}
   void DidActivateSyncTree() override {}
+  void WillPrepareTiles() override {}
   void DidPrepareTiles() override {}
   void DidCompletePageScaleAnimationOnImplThread() override {}
   void OnDrawForOutputSurface() override {}

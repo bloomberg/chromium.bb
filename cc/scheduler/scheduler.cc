@@ -131,6 +131,7 @@ void Scheduler::SetCanStart() {
 
 void Scheduler::SetVisible(bool visible) {
   state_machine_.SetVisible(visible);
+  UpdateCompositorTimingHistoryRecordingEnabled();
   ProcessScheduledActions();
 }
 
@@ -140,6 +141,7 @@ void Scheduler::SetCanDraw(bool can_draw) {
 }
 
 void Scheduler::NotifyReadyToActivate() {
+  compositor_timing_history_->ReadyToActivate();
   state_machine_.NotifyReadyToActivate();
   ProcessScheduledActions();
 }
@@ -217,14 +219,24 @@ void Scheduler::NotifyReadyToCommit() {
   ProcessScheduledActions();
 }
 
+void Scheduler::DidCommit() {
+  compositor_timing_history_->DidCommit();
+}
+
 void Scheduler::BeginMainFrameAborted(CommitEarlyOutReason reason) {
   TRACE_EVENT1("cc", "Scheduler::BeginMainFrameAborted", "reason",
                CommitEarlyOutReasonToString(reason));
+  compositor_timing_history_->BeginMainFrameAborted();
   state_machine_.BeginMainFrameAborted(reason);
   ProcessScheduledActions();
 }
 
+void Scheduler::WillPrepareTiles() {
+  compositor_timing_history_->WillPrepareTiles();
+}
+
 void Scheduler::DidPrepareTiles() {
+  compositor_timing_history_->DidPrepareTiles();
   state_machine_.DidPrepareTiles();
 }
 
@@ -233,6 +245,7 @@ void Scheduler::DidLoseOutputSurface() {
   begin_retro_frame_args_.clear();
   begin_retro_frame_task_.Cancel();
   state_machine_.DidLoseOutputSurface();
+  UpdateCompositorTimingHistoryRecordingEnabled();
   ProcessScheduledActions();
 }
 
@@ -241,6 +254,7 @@ void Scheduler::DidCreateAndInitializeOutputSurface() {
   DCHECK(!frame_source_->NeedsBeginFrames());
   DCHECK(begin_impl_frame_deadline_task_.IsCancelled());
   state_machine_.DidCreateAndInitializeOutputSurface();
+  UpdateCompositorTimingHistoryRecordingEnabled();
   ProcessScheduledActions();
 }
 
@@ -579,16 +593,16 @@ void Scheduler::OnBeginImplFrameDeadline() {
 }
 
 void Scheduler::DrawAndSwapIfPossible() {
-  compositor_timing_history_->DidStartDrawing();
+  compositor_timing_history_->WillDraw();
   DrawResult result = client_->ScheduledActionDrawAndSwapIfPossible();
   state_machine_.DidDrawIfPossibleCompleted(result);
-  compositor_timing_history_->DidFinishDrawing();
+  compositor_timing_history_->DidDraw();
 }
 
 void Scheduler::DrawAndSwapForced() {
-  compositor_timing_history_->DidStartDrawing();
+  compositor_timing_history_->WillDraw();
   client_->ScheduledActionDrawAndSwapForced();
-  compositor_timing_history_->DidFinishDrawing();
+  compositor_timing_history_->DidDraw();
 }
 
 void Scheduler::SetDeferCommits(bool defer_commits) {
@@ -634,12 +648,12 @@ void Scheduler::ProcessScheduledActions() {
             FROM_HERE_WITH_EXPLICIT_FUNCTION(
                 "461509 Scheduler::ProcessScheduledActions4"));
         client_->ScheduledActionCommit();
-        compositor_timing_history_->DidCommit();
         break;
       }
       case SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE:
+        compositor_timing_history_->WillActivate();
         client_->ScheduledActionActivateSyncTree();
-        compositor_timing_history_->DidActivateSyncTree();
+        compositor_timing_history_->DidActivate();
         break;
       case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE: {
         // TODO(robliao): Remove ScopedTracker below once crbug.com/461509 is
@@ -721,6 +735,11 @@ void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
   state->EndDictionary();
 }
 
+void Scheduler::UpdateCompositorTimingHistoryRecordingEnabled() {
+  compositor_timing_history_->SetRecordingEnabled(
+      state_machine_.HasInitializedOutputSurface() && state_machine_.visible());
+}
+
 bool Scheduler::CanCommitAndActivateBeforeDeadline() const {
   BeginFrameArgs args =
       begin_impl_frame_tracker_.DangerousMethodCurrentOrLast();
@@ -730,7 +749,8 @@ bool Scheduler::CanCommitAndActivateBeforeDeadline() const {
   base::TimeTicks estimated_draw_time =
       args.frame_time +
       compositor_timing_history_->BeginMainFrameToCommitDurationEstimate() +
-      compositor_timing_history_->CommitToActivateDurationEstimate();
+      compositor_timing_history_->CommitToReadyToActivateDurationEstimate() +
+      compositor_timing_history_->ActivateDurationEstimate();
 
   TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
                "CanCommitAndActivateBeforeDeadline",

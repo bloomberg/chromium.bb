@@ -912,6 +912,8 @@ void ThreadProxy::ScheduledActionCommit() {
     impl().commit_completion_event = NULL;
   }
 
+  impl().scheduler->DidCommit();
+
   // Delay this step until afer the main thread has been released as it's
   // often a good bit of work to update the tree and prepare the new frame.
   impl().layer_tree_host_impl->CommitComplete();
@@ -1236,6 +1238,11 @@ void ThreadProxy::DidActivateSyncTree() {
 
   impl().last_processed_begin_main_frame_args =
       impl().last_begin_main_frame_args;
+}
+
+void ThreadProxy::WillPrepareTiles() {
+  DCHECK(IsImplThread());
+  impl().scheduler->WillPrepareTiles();
 }
 
 void ThreadProxy::DidPrepareTiles() {
