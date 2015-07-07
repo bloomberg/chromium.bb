@@ -76,13 +76,24 @@ void BookmarkChangeProcessor::StartImpl() {
 void BookmarkChangeProcessor::UpdateSyncNodeProperties(
     const BookmarkNode* src,
     BookmarkModel* model,
-    syncer::WriteNode* dst) {
+    syncer::WriteNode* dst,
+    sync_driver::DataTypeErrorHandler* error_handler) {
   // Set the properties of the item.
   dst->SetIsFolder(src->is_folder());
   dst->SetTitle(base::UTF16ToUTF8(src->GetTitle()));
   sync_pb::BookmarkSpecifics bookmark_specifics(dst->GetBookmarkSpecifics());
-  if (!src->is_folder())
+  if (!src->is_folder()) {
+    if (!src->url().is_valid()) {
+      // Report the invalid URL and continue.
+      // TODO(stanisc): crbug/482155: Revisit this once the root cause for
+      // invalid URLs is understood.
+      error_handler->CreateAndUploadError(
+          FROM_HERE, "Creating sync bookmark with invalid url " +
+                         src->url().possibly_invalid_spec(),
+          syncer::BOOKMARKS);
+    }
     bookmark_specifics.set_url(src->url().spec());
+  }
   bookmark_specifics.set_creation_time_us(src->date_added().ToInternalValue());
   dst->SetBookmarkSpecifics(bookmark_specifics);
   SetSyncNodeFavicon(src, model, dst);
@@ -311,7 +322,7 @@ int64 BookmarkChangeProcessor::CreateSyncNode(const BookmarkNode* parent,
     return syncer::kInvalidId;
   }
 
-  UpdateSyncNodeProperties(child, model, &sync_child);
+  UpdateSyncNodeProperties(child, model, &sync_child, error_handler);
 
   // Associate the ID from the sync domain with the bookmark node, so that we
   // can refer back to this item later.
@@ -365,7 +376,7 @@ int64 BookmarkChangeProcessor::UpdateSyncNode(
     error_handler->OnSingleDataTypeUnrecoverableError(error);
     return syncer::kInvalidId;
   }
-  UpdateSyncNodeProperties(node, model, &sync_node);
+  UpdateSyncNodeProperties(node, model, &sync_node, error_handler);
   DCHECK_EQ(sync_node.GetIsFolder(), node->is_folder());
   DCHECK_EQ(associator->GetChromeNodeFromSyncId(sync_node.GetParentId()),
             node->parent());

@@ -197,9 +197,11 @@ class BookmarkChangeProcessor : public bookmarks::BookmarkModelObserver,
                             BookmarkModelAssociator* associator);
 
   // Copy properties (but not position) from |src| to |dst|.
-  static void UpdateSyncNodeProperties(const bookmarks::BookmarkNode* src,
-                                       bookmarks::BookmarkModel* model,
-                                       syncer::WriteNode* dst);
+  static void UpdateSyncNodeProperties(
+      const bookmarks::BookmarkNode* src,
+      bookmarks::BookmarkModel* model,
+      syncer::WriteNode* dst,
+      sync_driver::DataTypeErrorHandler* error_handler);
 
   // Helper function to encode a bookmark's favicon into raw PNG data.
   static void EncodeFavicon(const bookmarks::BookmarkNode* src,
