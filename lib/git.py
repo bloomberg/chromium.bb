@@ -831,6 +831,18 @@ def Init(git_repo):
   RunGit(git_repo, ['init'])
 
 
+def Clone(git_repo, git_url):
+  """Clone a git repository, into the given directory.
+
+  Args:
+    git_repo: Path for where to create a git repo. Directory will be created if
+              it doesnt exist.
+    git_url: Url to clone the git repository from.
+  """
+  osutils.SafeMakedirs(git_repo)
+  RunGit(git_repo, ['clone', git_url, git_repo])
+
+
 def GetProjectUserEmail(git_repo):
   """Get the email configured for the project."""
   output = RunGit(git_repo, ['var', 'GIT_COMMITTER_IDENT']).output
