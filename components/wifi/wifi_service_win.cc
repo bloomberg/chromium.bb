@@ -1797,7 +1797,7 @@ bool WiFiServiceImpl::AuthEncryptionFromSecurity(
     *authentication = kAuthenticationOpen;
     *encryption = kEncryptionNone;
   } else if (security == onc::wifi::kWEP_PSK) {
-    *authentication = kAuthenticationOpen;
+    *authentication = kAuthenticationWepPsk;
     *encryption = kEncryptionWEP;
     *key_type = kKeyTypeNetwork;
   } else if (security == onc::wifi::kWPA_PSK) {
