@@ -81,7 +81,6 @@ const DataResource kDataResources[] = {
      IDR_MEDIAPLAYER_OVERLAY_CAST_BUTTON_OFF_NEW},
     {"mediaplayerOverlayPlay", IDR_MEDIAPLAYER_OVERLAY_PLAY_BUTTON},
     {"mediaplayerOverlayPlayNew", IDR_MEDIAPLAYER_OVERLAY_PLAY_BUTTON_NEW},
-    {"panIcon", IDR_PAN_SCROLL_ICON},
     {"searchCancel", IDR_SEARCH_CANCEL},
     {"searchCancelPressed", IDR_SEARCH_CANCEL_PRESSED},
     {"searchMagnifier", IDR_SEARCH_MAGNIFIER},
