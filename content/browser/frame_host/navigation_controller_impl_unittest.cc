@@ -4943,7 +4943,7 @@ TEST_F(NavigationControllerTest, UnreachableURLGivesErrorPage) {
     controller_impl().RendererDidNavigate(main_test_rfh(), params, &details);
     EXPECT_EQ(PAGE_TYPE_ERROR,
               controller_impl().GetLastCommittedEntry()->GetPageType());
-    EXPECT_EQ(NAVIGATION_TYPE_IN_PAGE, details.type);
+    EXPECT_TRUE(details.is_in_page);
   }
 }
 

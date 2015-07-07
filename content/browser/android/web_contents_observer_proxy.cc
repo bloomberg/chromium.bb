@@ -133,8 +133,7 @@ void WebContentsObserverProxy::DidNavigateMainFrame(
   // is actually a fragment navigation, or a history API navigation to a URL
   // that would also be valid for a fragment navigation.
   bool is_fragment_navigation =
-      urls_same_ignoring_fragment &&
-      (details.type == NAVIGATION_TYPE_IN_PAGE || details.is_in_page);
+      urls_same_ignoring_fragment && details.is_in_page;
   Java_WebContentsObserverProxy_didNavigateMainFrame(
       env, obj.obj(), jstring_url.obj(), jstring_base_url.obj(),
       details.is_navigation_to_different_page(), is_fragment_navigation,

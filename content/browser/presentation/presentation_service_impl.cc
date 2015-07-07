@@ -490,14 +490,10 @@ void PresentationServiceImpl::DidNavigateAnyFrame(
 
   // If a frame navigation is in-page (e.g. navigating to a fragment in
   // same page) then we do not unregister listeners.
-  bool in_page_navigation = details.is_in_page ||
-      details.type == content::NAVIGATION_TYPE_IN_PAGE;
-
   DVLOG(2) << "DidNavigateAnyFrame: "
-          << "prev host: " << prev_url_host << ", curr host: " << curr_url_host
-          << ", in_page_navigation: " << in_page_navigation;
-
-  if (in_page_navigation)
+           << "prev host: " << prev_url_host << ", curr host: " << curr_url_host
+           << ", details.is_in_page: " << details.is_in_page;
+  if (details.is_in_page)
     return;
 
   // Reset if the frame actually navigated.

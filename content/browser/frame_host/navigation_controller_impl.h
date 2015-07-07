@@ -286,10 +286,6 @@ class CONTENT_EXPORT NavigationControllerImpl
   void RendererDidNavigateToSamePage(
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
-  void RendererDidNavigateInPage(
-      RenderFrameHostImpl* rfh,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-      bool* did_replace_entry);
   void RendererDidNavigateNewSubframe(
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params);

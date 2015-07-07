@@ -860,13 +860,11 @@ bool NavigationControllerImpl::RendererDidNavigate(
       RendererDidNavigateToNewPage(rfh, params, details->did_replace_entry);
       break;
     case NAVIGATION_TYPE_EXISTING_PAGE:
+      details->did_replace_entry = details->is_in_page;
       RendererDidNavigateToExistingPage(rfh, params);
       break;
     case NAVIGATION_TYPE_SAME_PAGE:
       RendererDidNavigateToSamePage(rfh, params);
-      break;
-    case NAVIGATION_TYPE_IN_PAGE:
-      RendererDidNavigateInPage(rfh, params, &details->did_replace_entry);
       break;
     case NAVIGATION_TYPE_NEW_SUBFRAME:
       RendererDidNavigateNewSubframe(rfh, params);
@@ -1000,14 +998,9 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
     if (!last_committed)
       return NAVIGATION_TYPE_NAV_IGNORE;
 
-    if (IsURLInPageNavigation(params.url, params.was_within_same_page, rfh)) {
-      // This is history.replaceState(), which is renderer-initiated yet within
-      // the same page.
-      return NAVIGATION_TYPE_IN_PAGE;
-    } else {
-      // This is history.reload() or a client-side redirect.
-      return NAVIGATION_TYPE_EXISTING_PAGE;
-    }
+    // This is history.replaceState(), history.reload(), or a client-side
+    // redirect.
+    return NAVIGATION_TYPE_EXISTING_PAGE;
   }
 
   if (pending_entry_ && pending_entry_index_ == -1 &&
@@ -1045,14 +1038,6 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
     // exists. Because the renderer is showing that page, resurrect that entry.
     return NAVIGATION_TYPE_NEW_PAGE;
   }
-
-  // Any top-level navigations with the same base (minus the reference fragment)
-  // are in-page navigations. (We weeded out subframe navigations above.) Most
-  // of the time this doesn't matter since Blink doesn't tell us about subframe
-  // navigations that don't actually navigate, but it can happen when there is
-  // an encoding override (it always sends a navigation request).
-  if (IsURLInPageNavigation(params.url, params.was_within_same_page, rfh))
-    return NAVIGATION_TYPE_IN_PAGE;
 
   // Since we weeded out "new" navigations above, we know this is an existing
   // (back/forward) navigation.
@@ -1229,49 +1214,6 @@ void NavigationControllerImpl::RendererDidNavigateToSamePage(
   existing_entry->SetPostID(params.post_id);
 
   DiscardNonCommittedEntries();
-}
-
-void NavigationControllerImpl::RendererDidNavigateInPage(
-    RenderFrameHostImpl* rfh,
-    const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-    bool* did_replace_entry) {
-  DCHECK(!rfh->GetParent()) <<
-      "Blink should only tell us about in-page navs for the main frame.";
-
-  NavigationEntryImpl* existing_entry;
-  if (params.nav_entry_id) {
-    // This is a browser-initiated history navigation across an existing
-    // fragment navigation or pushState-created entry.
-    existing_entry = GetEntryWithUniqueID(params.nav_entry_id);
-  } else {
-    // This is renderer-initiated. The only kinds of renderer-initated
-    // navigations that are IN_PAGE are history.replaceState, which lands us at
-    // the last committed entry.
-    existing_entry = GetLastCommittedEntry();
-  }
-  DCHECK(existing_entry);
-
-  // Reference fragment navigation. We're guaranteed to have the last_committed
-  // entry and it will be the same page as the new navigation (minus the
-  // reference fragments, of course).  We'll update the URL of the existing
-  // entry without pruning the forward history.
-  existing_entry->set_page_type(params.url_is_unreachable ? PAGE_TYPE_ERROR
-                                                          : PAGE_TYPE_NORMAL);
-  existing_entry->SetURL(params.url);
-  if (existing_entry->update_virtual_url_with_url())
-    UpdateVirtualURLToURL(existing_entry, params.url);
-
-  existing_entry->SetHasPostData(params.is_post);
-  existing_entry->SetPostID(params.post_id);
-
-  // This replaces the existing entry since the page ID didn't change.
-  *did_replace_entry = true;
-
-  DiscardNonCommittedEntriesInternal();
-
-  // If a transient entry was removed, the indices might have changed, so we
-  // have to query the entry index again.
-  last_committed_entry_index_ = GetIndexOfEntry(existing_entry);
 }
 
 void NavigationControllerImpl::RendererDidNavigateNewSubframe(

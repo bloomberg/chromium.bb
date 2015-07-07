@@ -30,12 +30,6 @@ enum NavigationType {
   // pending entry for the load, which is then meaningless.
   NAVIGATION_TYPE_SAME_PAGE,
 
-  // The navigation was in the main frame, to a different navigation entry, but
-  // appearing to the user to be a navigation within the same page. This is the
-  // case for history.replaceState(), as well as back and forward across
-  // fragment entries and history.pushState() entries.
-  NAVIGATION_TYPE_IN_PAGE,
-
   // A new subframe was manually navigated by the user. We will create a new
   // NavigationEntry so they can go back to the previous subframe content
   // using the back button.

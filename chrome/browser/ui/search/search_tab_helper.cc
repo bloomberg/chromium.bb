@@ -357,16 +357,7 @@ void SearchTabHelper::NavigationEntryCommitted(
 
   // Already determined the instant support state for this page, do not reset
   // the instant support state.
-  //
-  // When we get a navigation entry committed event, there seem to be two ways
-  // to tell whether the navigation was "in-page". Ideally, when
-  // LoadCommittedDetails::is_in_page is true, we should have
-  // LoadCommittedDetails::type to be NAVIGATION_TYPE_IN_PAGE. Unfortunately,
-  // they are different in some cases. To workaround this bug, we are checking
-  // (is_in_page || type == NAVIGATION_TYPE_IN_PAGE). Please refer to
-  // crbug.com/251330 for more details.
-  if (load_details.is_in_page ||
-      load_details.type == content::NAVIGATION_TYPE_IN_PAGE) {
+  if (load_details.is_in_page) {
     // When an "in-page" navigation happens, we will not receive a
     // DidFinishLoad() event. Therefore, we will not determine the Instant
     // support for the navigated page. So, copy over the Instant support from
