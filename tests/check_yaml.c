@@ -295,7 +295,11 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
 	(event.type != YAML_SEQUENCE_END_EVENT))
       yaml_error(YAML_SEQUENCE_END_EVENT, &event);
   } else if (event.type != YAML_SEQUENCE_END_EVENT) {
-    simple_error("Unexpected event", &event);
+    error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+		  "Expected %s or %s (actual %s)",
+		  event_names[YAML_MAPPING_START_EVENT],
+		  event_names[YAML_SEQUENCE_END_EVENT],
+		  event_names[event.type]);
   }
 
   if (cursorPos) {
@@ -349,11 +353,15 @@ read_tests(yaml_parser_t *parser, char *tables_list, int direction, int hyphenat
     if (event.type == YAML_SEQUENCE_END_EVENT) {
       done = 1;
       yaml_event_delete(&event);
-    } else if (event.type == YAML_SEQUENCE_START_EVENT ) {
+    } else if (event.type == YAML_SEQUENCE_START_EVENT) {
       yaml_event_delete(&event);
       read_test(parser, tables_list, direction, hyphenation);
     } else {
-      simple_error("Unexpected event", &event);
+      error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+		    "Expected %s or %s (actual %s)",
+		    event_names[YAML_SEQUENCE_END_EVENT],
+		    event_names[YAML_SEQUENCE_START_EVENT],
+		    event_names[event.type]);
     }
   }
 }
