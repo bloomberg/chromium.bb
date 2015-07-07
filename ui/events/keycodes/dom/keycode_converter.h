@@ -68,6 +68,9 @@ class KeycodeConverter {
   // Convert a DomKey into a UI Events |key| string value.
   static const char* DomKeyToKeyString(DomKey dom_key);
 
+  // Returns true if the DomKey is a modifier.
+  static bool IsDomKeyForModifier(DomKey dom_key);
+
   // The following methods relate to USB keycodes.
   // Note that USB keycodes are not part of any web standard.
   // Please don't use USB keycodes in new code.

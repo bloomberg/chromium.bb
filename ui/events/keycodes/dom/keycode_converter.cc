@@ -184,6 +184,32 @@ const char* KeycodeConverter::DomKeyToKeyString(DomKey dom_key) {
   return "";
 }
 
+// static
+bool KeycodeConverter::IsDomKeyForModifier(DomKey dom_key) {
+  switch (dom_key) {
+    case DomKey::ACCEL:
+    case DomKey::ALT:
+    case DomKey::ALT_GRAPH:
+    case DomKey::CAPS_LOCK:
+    case DomKey::CONTROL:
+    case DomKey::FN:
+    case DomKey::FN_LOCK:
+    case DomKey::HYPER:
+    case DomKey::META:
+    case DomKey::NUM_LOCK:
+    case DomKey::OS:
+    case DomKey::SCROLL_LOCK:
+    case DomKey::SHIFT:
+    case DomKey::SUPER:
+    case DomKey::SYMBOL:
+    case DomKey::SYMBOL_LOCK:
+    case DomKey::SHIFT_LEVEL5:
+      return true;
+    default:
+      return false;
+  }
+}
+
 // USB keycodes
 // Note that USB keycodes are not part of any web standard.
 // Please don't use USB keycodes in new code.
