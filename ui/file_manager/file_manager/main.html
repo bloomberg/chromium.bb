@@ -54,6 +54,8 @@
       <command id="rename" i18n-values="label:RENAME_BUTTON_LABEL"
                shortcut="Enter-Ctrl">
       <command id="delete" shortcut="U+007F">
+      <command id="refresh" i18n-values="label:REFRESH_BUTTON_LABEL"
+               shortcut="U+0042-Ctrl">
       <command id="create-folder-shortcut"
                i18n-values="label:CREATE_FOLDER_SHORTCUT_BUTTON_LABEL">
       <command id="remove-folder-shortcut"
@@ -253,13 +255,19 @@
           <span class="clear"></span>
         </paper-input-container>
       </div>
+      <button id="refresh-button" class="icon-button" tabindex="14"
+              i18n-values="aria-label:REFRESH_BUTTON_LABEL"
+              command="#refresh" has-tooltip>
+        <paper-ripple fit class="recenteringTouch"></paper-ripple>
+        <div class="icon"></div>
+      </button>
       <div id="cloud-import-combo-button"
            class="cloud-import-combo-button"
            hidden>
         <div class="buttons">
           <button id="cloud-import-button"
                   class="icon-button manual-display"
-                  tabindex="14"
+                  tabindex="15"
                   i18n-values="aria-label:CLOUD_IMPORT_COMMAND"
                   has-tooltip>
             <iron-icon icon="cloud-queue"></iron-icon>
@@ -277,13 +285,13 @@
           <files-toggle-ripple></files-toggle-ripple>
         </div>
       </div>
-      <button id="view-button" class="icon-button" tabindex="15"
+      <button id="view-button" class="icon-button" tabindex="16"
               i18n-values="aria-label:CHANGE_TO_THUMBNAILVIEW_BUTTON_LABEL"
               has-tooltip>
         <paper-ripple fit class="recenteringTouch"></paper-ripple>
         <div class="icon"></div>
       </button>
-      <button id="sort-button" class="icon-button" tabindex="16"
+      <button id="sort-button" class="icon-button" tabindex="17"
               menu="#sort-menu"
               i18n-values="aria-label:SORT_BUTTON_TOOLTIP"
               aria-activedescendant="sort-menu"
@@ -291,7 +299,7 @@
         <files-toggle-ripple></files-toggle-ripple>
         <div class="icon"></div>
       </button>
-      <button id="gear-button" class="icon-button" tabindex="17"
+      <button id="gear-button" class="icon-button" tabindex="18"
               menu="#gear-menu"
               i18n-values="aria-label:GEAR_BUTTON_TOOLTIP"
               aria-activedescendant="gear-menu"
@@ -324,7 +332,7 @@
     <div class="dialog-container">
       <div class="dialog-navigation-list">
         <div class="dialog-navigation-list-contents">
-          <tree id="directory-tree" tabindex="18"></tree>
+          <tree id="directory-tree" tabindex="19"></tree>
         </div>
         <div class="dialog-navigation-list-footer">
           <div id="progress-center" hidden>

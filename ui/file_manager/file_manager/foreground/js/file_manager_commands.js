@@ -1424,3 +1424,23 @@ CommandHandler.COMMANDS_['configure'] = (function() {
   return new ConfigureCommand();
 })();
 
+/**
+ * Refreshes the currently selected directory.
+ */
+CommandHandler.COMMANDS_['refresh'] = /** @type {Command} */ ({
+  /**
+   * @param {!Event} event Command event.
+   * @param {!FileManager} fileManager FileManager to use.
+   */
+  execute: function(event, fileManager) {
+    // TODO(mtomasz): Implement refreshing.
+  },
+  canExecute: function(event, fileManager) {
+    var currentDirEntry = fileManager.directoryModel.getCurrentDirEntry();
+    var volumeInfo = currentDirEntry &&
+        fileManager.volumeManager.getVolumeInfo(currentDirEntry);
+    event.canExecute = volumeInfo && !volumeInfo.watchable;
+    event.command.setHidden(!event.canExecute ||
+        fileManager.directoryModel.getFileListSelection().getCheckSelectMode());
+  }
+});

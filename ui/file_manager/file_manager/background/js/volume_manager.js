@@ -42,6 +42,7 @@ function VolumeInfo(
     extensionId,
     hasMedia,
     configurable,
+    watchable,
     source) {
   this.volumeType_ = volumeType;
   this.volumeId_ = volumeId;
@@ -85,6 +86,7 @@ function VolumeInfo(
   this.extensionId_ = extensionId;
   this.hasMedia_ = hasMedia;
   this.configurable_ = configurable;
+  this.watchable_ = watchable;
   this.source_ = source;
 }
 
@@ -173,6 +175,12 @@ VolumeInfo.prototype = /** @struct */ {
    */
   get configurable() {
     return this.configurable_;
+  },
+  /**
+   * @return {boolean} True if the volume is watchable.
+   */
+  get watchable() {
+    return this.watchable_;
   },
   /**
    * @return {VolumeManagerCommon.Source} Source of the volume's data.
@@ -333,6 +341,7 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
             volumeMetadata.extensionId,
             volumeMetadata.hasMedia,
             volumeMetadata.configurable,
+            volumeMetadata.watchable,
             /** @type {VolumeManagerCommon.Source} */
             (volumeMetadata.source));
   })
@@ -358,6 +367,7 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
             volumeMetadata.extensionId,
             volumeMetadata.hasMedia,
             volumeMetadata.configurable,
+            volumeMetadata.watchable,
             /** @type {VolumeManagerCommon.Source} */
             (volumeMetadata.source));
       });

@@ -14,6 +14,7 @@ var MOUNTED_SINGLE_PROVIDING_EXTENSION = {
   extensionId: 'mounted-single-extension-id',
   name: 'mounted-single-extension-name',
   configurable: false,
+  watchable: true,
   multipleMounts: false,
   source: 'network'
 };
@@ -24,6 +25,7 @@ var NOT_MOUNTED_SINGLE_PROVIDING_EXTENSION = {
   extensionId: 'not-mounted-single-extension-id',
   name: 'not-mounted-single-extension-name',
   configurable: false,
+  watchable: true,
   multipleMounts: false,
   source: 'network'
 };
@@ -33,6 +35,7 @@ var NOT_MOUNTED_SINGLE_PROVIDING_EXTENSION = {
   extensionId: 'not-mounted-single-extension-id',
   name: 'not-mounted-single-extension-name',
   configurable: false,
+  watchable: true,
   multipleMounts: false,
   source: 'network'
 };
@@ -43,6 +46,7 @@ var MOUNTED_MULTIPLE_PROVIDING_EXTENSION = {
   extensionId: 'mounted-multiple-extension-id',
   name: 'mounted-multiple-extension-name',
   configurable: true,
+  watchable: false,
   multipleMounts: true,
   source: 'network'
 };
@@ -53,6 +57,7 @@ var NOT_MOUNTED_FILE_PROVIDING_EXTENSION = {
   extensionId: 'file-extension-id',
   name: 'file-extension-name',
   configurable: false,
+  watchable: true,
   multipleMounts: true,
   source: 'file'
 };
@@ -64,6 +69,7 @@ var NOT_MOUNTED_DEVICE_PROVIDING_EXTENSION = {
   extensionId: 'device-extension-id',
   name: 'device-extension-name',
   configurable: false,
+  watchable: true,
   multipleMounts: true,
   source: 'device'
 };
@@ -122,6 +128,8 @@ function testGetInstalledProviders(callback) {
             extensions[0].extensionName);
         assertEquals(MOUNTED_SINGLE_PROVIDING_EXTENSION.configurable,
             extensions[0].configurable);
+        assertEquals(MOUNTED_SINGLE_PROVIDING_EXTENSION.watchable,
+            extensions[0].watchable);
         assertEquals(MOUNTED_SINGLE_PROVIDING_EXTENSION.multipleMounts,
             extensions[0].multipleMounts);
         assertEquals(MOUNTED_SINGLE_PROVIDING_EXTENSION.source,

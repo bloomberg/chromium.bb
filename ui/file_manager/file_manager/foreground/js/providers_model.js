@@ -9,13 +9,15 @@
  * @param {string} extensionId
  * @param {string} extensionName
  * @param {boolean} configurable
+ * @param {boolean} watchable
  * @param {boolean} multipleMounts
  * @param {string} source
  * @constructor
  * @struct
  */
 function ProvidersModelItem(
-    extensionId, extensionName, configurable, multipleMounts, source) {
+    extensionId, extensionName, configurable, watchable, multipleMounts,
+    source) {
   /**
    * @private {string}
    * @const
@@ -33,6 +35,12 @@ function ProvidersModelItem(
    * @const
    */
   this.configurable_ = configurable;
+
+  /**
+   * @private {boolean}
+   * @const
+   */
+  this.watchable_ = watchable;
 
   /**
    * @private {boolean}
@@ -62,6 +70,11 @@ ProvidersModelItem.prototype = {
    * @return {boolean}
    */
   get configurable() { return this.configurable_; },
+
+  /**
+   * @return {boolean}
+   */
+  get watchable() { return this.watchable_; },
 
   /**
    * @return {boolean}
@@ -108,6 +121,7 @@ ProvidersModel.prototype.getInstalledProviders = function() {
                 extension.extensionId,
                 extension.name,
                 extension.configurable,
+                extension.watchable,
                 extension.multipleMounts,
                 extension.source));
           });

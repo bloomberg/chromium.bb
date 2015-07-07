@@ -93,6 +93,7 @@ function setUp() {
       isReadOnly: false,
       profile: getMockProfile(),
       configurable: false,
+      watchable: true,
       source: VolumeManagerCommon.Source.SYSTEM
     },
     {
@@ -102,6 +103,7 @@ function setUp() {
       isReadOnly: false,
       profile: getMockProfile(),
       configurable: false,
+      watchable: true,
       source: VolumeManagerCommon.Source.NETWORK
     }
   ];
@@ -191,6 +193,7 @@ function testMountArchiveAndUnmount(callback) {
           sourcePath: mountSourcePath,
           profile: getMockProfile(),
           configurable: false,
+          watchable: true,
           source: VolumeManagerCommon.Source.FILE
         }
       });
@@ -262,6 +265,7 @@ function testVolumeInfoListWhenReady(callback) {
       /* extensionid */ null,
       /* hasMedia */ false,
       /* configurable */ false,
+      /* watchable */ true,
       /* source */ VolumeManagerCommon.Source.FILE);
   list.add(volumeInfo);
   var promiseAfterAdd = list.whenVolumeInfoReady('volumeId');

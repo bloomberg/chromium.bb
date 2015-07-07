@@ -392,6 +392,12 @@ body.check-select #delete-button > .icon {
       url(../images/files/ui/2x/view_list_white.png) 2x);
 }
 
+#refresh-button > .icon {
+  background-image: -webkit-image-set(
+      url(../images/files/ui/refresh_white.png) 1x,
+      url(../images/files/ui/2x/refresh_white.png) 2x);
+}
+
 body.check-select #view-button {
   display: none;
 }

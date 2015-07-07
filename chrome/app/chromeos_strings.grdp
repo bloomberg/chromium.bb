@@ -415,6 +415,9 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_PASTE_BUTTON_LABEL" desc="Button Label.">
     Paste
   </message>
+  <message name="IDS_FILE_BROWSER_REFRESH_BUTTON_LABEL" desc="Label for a button for refreshing the current directory.">
+    Refresh
+  </message>
   <message name="IDS_FILE_BROWSER_PASTE_INTO_FOLDER_BUTTON_LABEL" desc="Menu item label, pasting files into the selected folder.">
     Paste into folder
   </message>
