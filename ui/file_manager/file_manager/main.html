@@ -228,18 +228,21 @@
       <button id="share-button" class="icon-button" command="#share"
               tabindex="10"
               i18n-values="aria-label:SHARE_BUTTON_LABEL"
-              visibleif="full-page">
+              visibleif="full-page"
+              has-tooltip>
         <paper-ripple fit class="recenteringTouch"></paper-ripple>
         <div class="icon"></div>
       </button>
       <button id="delete-button" class="icon-button" tabindex="11"
               i18n-values="aria-label:DELETE_BUTTON_LABEL"
-              visibleif="full-page">
+              visibleif="full-page"
+              has-tooltip>
         <paper-ripple fit class="recenteringTouch"></paper-ripple>
         <div class="icon"></div>
       </button>
       <button id="search-button" class="icon-button" tabindex="12"
-              i18n-values="aria-label:SEARCH_TEXT_LABEL">
+              i18n-values="aria-label:SEARCH_TEXT_LABEL"
+              has-tooltip>
         <files-toggle-ripple></files-toggle-ripple>
         <div class="icon"></div>
       </button>
@@ -257,13 +260,15 @@
           <button id="cloud-import-button"
                   class="icon-button manual-display"
                   tabindex="14"
-                  i18n-values="aria-label:CLOUD_IMPORT_COMMAND">
+                  i18n-values="aria-label:CLOUD_IMPORT_COMMAND"
+                  has-tooltip>
             <iron-icon icon="cloud-queue"></iron-icon>
           </button>
           <button id="cloud-import-details-button"
                   class="icon-button manual-display"
                   tabindex="-1"
-                  i18n-values="aria-label:CLOUD_IMPORT_SHOW_DETAILS">
+                  i18n-values="aria-label:CLOUD_IMPORT_SHOW_DETAILS"
+                  has-tooltip>
             <iron-icon icon="arrow-drop-down"></iron-icon>
           </button>
         </div>
@@ -273,21 +278,24 @@
         </div>
       </div>
       <button id="view-button" class="icon-button" tabindex="15"
-              i18n-values="aria-label:CHANGE_TO_THUMBNAILVIEW_BUTTON_LABEL">
+              i18n-values="aria-label:CHANGE_TO_THUMBNAILVIEW_BUTTON_LABEL"
+              has-tooltip>
         <paper-ripple fit class="recenteringTouch"></paper-ripple>
         <div class="icon"></div>
       </button>
       <button id="sort-button" class="icon-button" tabindex="16"
               menu="#sort-menu"
               i18n-values="aria-label:SORT_BUTTON_TOOLTIP"
-              aria-activedescendant="sort-menu">
+              aria-activedescendant="sort-menu"
+              has-tooltip>
         <files-toggle-ripple></files-toggle-ripple>
         <div class="icon"></div>
       </button>
       <button id="gear-button" class="icon-button" tabindex="17"
               menu="#gear-menu"
               i18n-values="aria-label:GEAR_BUTTON_TOOLTIP"
-              aria-activedescendant="gear-menu">
+              aria-activedescendant="gear-menu"
+              has-tooltip>
         <files-toggle-ripple></files-toggle-ripple>
         <div class="icon"></div>
       </button>
@@ -404,6 +412,9 @@
       </div>
     </div>
     <div id="drag-container"></div>
+    <div id="tooltip">
+      <div id="tooltip-label"></div>
+    <div>
     <iframe id="command-dispatcher" hidden aria-hidden="true"></iframe>
 
     <script src="foreground/js/main_scripts.js"></script>

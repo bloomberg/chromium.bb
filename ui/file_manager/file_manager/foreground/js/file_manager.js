@@ -200,6 +200,13 @@ function FileManager() {
   this.toolbarController_ = null;
 
   /**
+   * Tooltip controller.
+   * @type {TooltipController}
+   * @private
+   */
+  this.tooltipController_ = null;
+
+  /**
    * Empty folder controller.
    * @private {EmptyFolderController}
    */
@@ -425,6 +432,7 @@ FileManager.prototype = /** @struct */ {
     assert(this.selectionHandler_);
     assert(this.launchParams_);
     assert(this.volumeManager_);
+    assert(this.dialogDom_);
 
     this.scanController_ = new ScanController(
         this.directoryModel_,
@@ -449,6 +457,10 @@ FileManager.prototype = /** @struct */ {
         assert(this.ui_.locationLine),
         this.selectionHandler_,
         this.directoryModel_);
+    this.tooltipController_ = new TooltipController(
+        queryRequiredElement(this.dialogDom_, '#tooltip'),
+        Array.prototype.slice.call(
+            this.dialogDom_.querySelectorAll('[has-tooltip]')));
     this.emptyFolderController_ = new EmptyFolderController(
         this.ui_.emptyFolder,
         this.directoryModel_);

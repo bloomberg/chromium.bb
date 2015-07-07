@@ -2242,3 +2242,26 @@ files-toggle-ripple {
   right: 0;
   top: 0;
 }
+
+#tooltip {
+  opacity: 0;
+  padding: 4px 6px 0;
+  pointer-events: none;
+  position: absolute;
+  transition: opacity 300ms;
+  z-index: 1000;
+}
+
+#tooltip[visible] {
+  opacity: .9;
+}
+
+#tooltip-label {
+  background-color: #323232;
+  border-radius: 2px;
+  color: white;
+  font-size: 12px;
+  line-height: 28px;
+  padding: 0 14px;
+  white-space: nowrap;
+}

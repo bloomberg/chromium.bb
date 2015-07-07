@@ -131,6 +131,7 @@
 //<include src="spinner_controller.js">
 //<include src="task_controller.js">
 //<include src="toolbar_controller.js">
+//<include src="tooltip_controller.js">
 //<include src="thumbnail_loader.js">
 //<include src="list_thumbnail_loader.js">
 //<include src="providers_model.js">

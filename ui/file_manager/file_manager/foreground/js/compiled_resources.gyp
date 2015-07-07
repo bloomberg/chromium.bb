@@ -110,6 +110,7 @@
           './share_client.js',
           './task_controller.js',
           './toolbar_controller.js',
+          './tooltip_controller.js',
           './thumbnail_loader.js',
           './list_thumbnail_loader.js',
           './providers_model.js',
