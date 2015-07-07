@@ -167,6 +167,14 @@ void PasswordManager::SetHasGeneratedPasswordForForm(
     bool password_is_generated) {
   DCHECK(client_->IsSavingEnabledForCurrentPage());
 
+  if (!password_is_generated) {
+    // Since this password was provisionally saved it was removed from
+    // |pending_login_managers_| and needs to be re-added.
+    provisional_save_manager_->set_has_generated_password(false);
+    pending_login_managers_.push_back(provisional_save_manager_.Pass());
+    return;
+  }
+
   ScopedVector<PasswordFormManager>::iterator matched_manager_it =
       pending_login_managers_.end();
   PasswordFormManager::MatchResultMask current_match_result =
@@ -201,15 +209,15 @@ void PasswordManager::SetHasGeneratedPasswordForForm(
   }
 
   if (matched_manager_it != pending_login_managers_.end()) {
-    (*matched_manager_it)->set_has_generated_password(password_is_generated);
+    (*matched_manager_it)->set_has_generated_password(true);
+
+    // Provisionally save generated passwords now, as they should always be
+    // saved.
+    ProvisionallySavePassword(form);
     return;
   }
 
-  UMA_HISTOGRAM_BOOLEAN("PasswordManager.GeneratedFormHasNoFormManager",
-                        password_is_generated);
-
-  if (!password_is_generated)
-    return;
+  UMA_HISTOGRAM_BOOLEAN("PasswordManager.GeneratedFormHasNoFormManager", true);
 
   // If there is no corresponding PasswordFormManager, we create one. This is
   // not the common case, and should only happen when there is a bug in our
@@ -219,6 +227,7 @@ void PasswordManager::SetHasGeneratedPasswordForForm(
       this, client_, driver->AsWeakPtr(), form, ssl_valid);
   pending_login_managers_.push_back(manager);
   manager->set_has_generated_password(true);
+  ProvisionallySavePassword(form);
 }
 
 void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
@@ -602,6 +611,10 @@ void PasswordManager::OnPasswordFormsRendered(
   if (did_stop_loading) {
     if (provisional_save_manager_->pending_credentials().scheme ==
         PasswordForm::SCHEME_HTML) {
+      // Generated passwords should always be saved.
+      if (provisional_save_manager_->has_generated_password())
+        all_visible_forms_.clear();
+
       for (size_t i = 0; i < all_visible_forms_.size(); ++i) {
         // TODO(vabr): The similarity check is just action equality up to
         // HTTP<->HTTPS substitution for now. If it becomes more complex, it may
