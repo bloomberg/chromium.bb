@@ -1065,7 +1065,7 @@ int TextIteratorAlgorithm<Strategy>::rangeLength(const typename Strategy::Positi
 template<typename Strategy>
 PassRefPtrWillBeRawPtr<Range> TextIteratorAlgorithm<Strategy>::subrange(Range* entireRange, int characterOffset, int characterCount)
 {
-    CharacterIterator entireRangeIterator(entireRange, TextIteratorEmitsObjectReplacementCharacter);
+    CharacterIterator entireRangeIterator(entireRange->startPosition(), entireRange->endPosition(), TextIteratorEmitsObjectReplacementCharacter);
     Position start;
     Position end;
     entireRangeIterator.calculateCharacterSubrange(characterOffset, characterCount, start, end);

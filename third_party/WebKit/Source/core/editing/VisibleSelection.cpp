@@ -389,7 +389,7 @@ void VisibleSelection::appendTrailingWhitespace()
     if (!searchRange)
         return;
 
-    CharacterIterator charIt(searchRange.get(), TextIteratorEmitsCharactersBetweenAllVisiblePositions);
+    CharacterIterator charIt(searchRange->startPosition(), searchRange->endPosition(), TextIteratorEmitsCharactersBetweenAllVisiblePositions);
     bool changed = false;
 
     for (; charIt.length(); charIt.advance(1)) {

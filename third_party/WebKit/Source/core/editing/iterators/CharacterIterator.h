@@ -39,7 +39,6 @@ namespace blink {
 class CORE_EXPORT CharacterIterator {
     STACK_ALLOCATED();
 public:
-    explicit CharacterIterator(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
     CharacterIterator(const Position& start, const Position& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 
     void advance(int numCharacters);

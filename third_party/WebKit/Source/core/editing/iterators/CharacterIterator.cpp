@@ -83,16 +83,6 @@ private:
     mutable Vector<UChar> m_normalizedMatch;
 };
 
-
-CharacterIterator::CharacterIterator(const Range* range, TextIteratorBehaviorFlags behavior)
-    : m_offset(0)
-    , m_runOffset(0)
-    , m_atBreak(true)
-    , m_textIterator(range->startPosition(), range->endPosition(), behavior)
-{
-    initialize();
-}
-
 CharacterIterator::CharacterIterator(const Position& start, const Position& end, TextIteratorBehaviorFlags behavior)
     : m_offset(0)
     , m_runOffset(0)
