@@ -107,7 +107,7 @@ PassRefPtrWillBeRawPtr<Text> GranularityStrategyTest::appendTextNode(const Strin
 void GranularityStrategyTest::setInnerHTML(const char* htmlContent)
 {
     document().documentElement()->setInnerHTML(String::fromUTF8(htmlContent), ASSERT_NO_EXCEPTION);
-    document().view()->updateLayoutAndStyleForPainting();
+    document().view()->updateAllLifecyclePhases();
 }
 
 void GranularityStrategyTest::parseText(Text* text)
@@ -165,7 +165,7 @@ PassRefPtrWillBeRawPtr<Text> GranularityStrategyTest::setupTranslateZ(WTF::Strin
     Element* div = document().getElementById("mytext");
     div->appendChild(text);
 
-    document().view()->updateLayoutAndStyleForPainting();
+    document().view()->updateAllLifecyclePhases();
 
     parseText(text.get());
     return text.release();
@@ -191,7 +191,7 @@ PassRefPtrWillBeRawPtr<Text> GranularityStrategyTest::setupTransform(WTF::String
     Element* div = document().getElementById("mytext");
     div->appendChild(text);
 
-    document().view()->updateLayoutAndStyleForPainting();
+    document().view()->updateAllLifecyclePhases();
 
     parseText(text.get());
     return text.release();
@@ -217,7 +217,7 @@ PassRefPtrWillBeRawPtr<Text> GranularityStrategyTest::setupRotate(WTF::String st
     Element* div = document().getElementById("mytext");
     div->appendChild(text);
 
-    document().view()->updateLayoutAndStyleForPainting();
+    document().view()->updateAllLifecyclePhases();
 
     parseText(text.get());
     return text.release();
@@ -235,7 +235,7 @@ void GranularityStrategyTest::setupTextSpan(WTF::String str1, WTF::String str2, 
     span->appendChild(text2);
     div->appendChild(text3);
 
-    document().view()->updateLayoutAndStyleForPainting();
+    document().view()->updateAllLifecyclePhases();
 
     std::vector<IntPoint> letterPos;
     std::vector<IntPoint> wordMiddlePos;

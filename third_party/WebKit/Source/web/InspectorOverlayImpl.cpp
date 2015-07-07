@@ -291,7 +291,7 @@ void InspectorOverlayImpl::update()
         drawPausedInDebuggerMessage();
     drawViewSize();
 
-    toLocalFrame(overlayPage()->mainFrame())->view()->updateLayoutAndStyleForPainting();
+    toLocalFrame(overlayPage()->mainFrame())->view()->updateAllLifecyclePhases();
 
     m_webViewImpl->addPageOverlay(this, OverlayZOrders::highlight);
 }

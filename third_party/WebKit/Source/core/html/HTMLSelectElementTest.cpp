@@ -41,7 +41,7 @@ TEST_F(HTMLSelectElementTest, SaveRestoreSelectSingleFormControlState)
         "<option value='222'>222</option>"
         "<option value='111' selected id='2'>!666</option>"
         "<option value='999'>999</option></select>"), ASSERT_NO_EXCEPTION);
-    document().view()->updateLayoutAndStyleForPainting();
+    document().view()->updateAllLifecyclePhases();
     Element* element = document().getElementById("sel");
     HTMLFormControlElementWithState* select = toHTMLSelectElement(element);
     HTMLOptionElement* opt0 = toHTMLOptionElement(document().getElementById("0"));
@@ -73,7 +73,7 @@ TEST_F(HTMLSelectElementTest, SaveRestoreSelectMultipleFormControlState)
         "<option value='222'>222</option>"
         "<option value='111' selected id='2'>!666</option>"
         "<option value='999' selected id='3'>999</option></select>"), ASSERT_NO_EXCEPTION);
-    document().view()->updateLayoutAndStyleForPainting();
+    document().view()->updateAllLifecyclePhases();
     HTMLFormControlElementWithState* select = toHTMLSelectElement(document().getElementById("sel"));
 
     HTMLOptionElement* opt0 = toHTMLOptionElement(document().getElementById("0"));

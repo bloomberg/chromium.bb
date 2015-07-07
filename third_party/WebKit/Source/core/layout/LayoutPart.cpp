@@ -171,7 +171,7 @@ bool LayoutPart::nodeAtPoint(HitTestResult& result, const HitTestLocation& locat
         HitTestResult childFrameResult(newHitTestRequest, newHitTestLocation);
 
         // The frame's layout and style must be up-to-date if we reach here.
-        bool isInsideChildFrame = childRoot->hitTestNoLayoutAndStyleUpdate(childFrameResult);
+        bool isInsideChildFrame = childRoot->hitTestNoLifecycleUpdate(childFrameResult);
 
         if (result.hitTestRequest().listBased()) {
             result.append(childFrameResult);

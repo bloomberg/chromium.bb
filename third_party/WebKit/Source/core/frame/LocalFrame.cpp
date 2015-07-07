@@ -626,7 +626,7 @@ PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
 
     const ScopedFramePaintingState state(this, &node);
 
-    m_view->updateLayoutAndStyleForPainting();
+    m_view->updateAllLifecyclePhases();
 
     m_view->setPaintBehavior(state.paintBehavior | PaintBehaviorFlattenCompositingLayers);
 
@@ -650,7 +650,7 @@ PassOwnPtr<DragImage> LocalFrame::dragImageForSelection()
 
     const ScopedFramePaintingState state(this, 0);
     m_view->setPaintBehavior(PaintBehaviorSelectionOnly | PaintBehaviorFlattenCompositingLayers);
-    m_view->updateLayoutAndStyleForPainting();
+    m_view->updateAllLifecyclePhases();
 
     return paintIntoDragImage(*this, DisplayItem::ClipSelectionImage, DoNotRespectImageOrientation, enclosingIntRect(selection().bounds()));
 }

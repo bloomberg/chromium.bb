@@ -178,6 +178,8 @@ bool DocumentLifecycle::canAdvanceTo(State state) const
     case CompositingClean:
         if (state == InStyleRecalc)
             return true;
+        if (state == InPreLayout)
+            return true;
         if (state == InCompositingUpdate)
             return true;
         if (state == InPaintInvalidation)

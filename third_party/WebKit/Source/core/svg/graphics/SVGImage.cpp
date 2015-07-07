@@ -307,7 +307,7 @@ void SVGImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& dst
         transform.scale(scale.width(), scale.height());
         TransformRecorder transformRecorder(imagePicture.context(), *this, transform);
 
-        view->updateLayoutAndStyleForPainting();
+        view->updateAllLifecyclePhases();
         view->paint(&imagePicture.context(), enclosingIntRect(srcRect));
         ASSERT(!view->needsLayout());
     }
