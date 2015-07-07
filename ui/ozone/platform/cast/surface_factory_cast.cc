@@ -86,6 +86,9 @@ void SurfaceFactoryCast::CreateDisplayTypeAndWindowIfNeeded() {
     chromecast::Size create_size = FromGfxSize(display_size_);
     display_type_ = egl_platform_->CreateDisplayType(create_size);
     have_display_type_ = true;
+  }
+  if (!window_) {
+    chromecast::Size create_size = FromGfxSize(display_size_);
     window_ = egl_platform_->CreateWindow(display_type_, create_size);
     if (!window_) {
       DestroyDisplayTypeAndWindow();
@@ -111,11 +114,15 @@ bool SurfaceFactoryCast::ResizeDisplay(gfx::Size size) {
   return true;
 }
 
-void SurfaceFactoryCast::DestroyDisplayTypeAndWindow() {
+void SurfaceFactoryCast::DestroyWindow() {
   if (window_) {
     egl_platform_->DestroyWindow(window_);
     window_ = 0;
   }
+}
+
+void SurfaceFactoryCast::DestroyDisplayTypeAndWindow() {
+  DestroyWindow();
   if (have_display_type_) {
     egl_platform_->DestroyDisplayType(display_type_);
     display_type_ = 0;
@@ -160,6 +167,9 @@ void SurfaceFactoryCast::ChildDestroyed() {
     SendRelinquishResponse();
     destroy_window_pending_state_ = kNoDestroyPending;
   } else {
+    if (egl_platform_->MultipleSurfaceUnsupported()) {
+      DestroyWindow();
+    }
     destroy_window_pending_state_ = kSurfaceDestroyedRecently;
   }
 }

@@ -29,6 +29,7 @@ class EglPlatformDefault : public CastEglPlatform {
     return nullptr;
   }
   void DestroyWindow(NativeWindowType window) override {}
+  bool MultipleSurfaceUnsupported() override { return false; }
 };
 
 }  // namespace

@@ -53,6 +53,11 @@ class CastEglPlatform {
   virtual NativeWindowType CreateWindow(NativeDisplayType display_type,
                                         const Size& size) = 0;
   virtual void DestroyWindow(NativeWindowType window) = 0;
+
+  // Specifies if creating multiple surfaces on a window is broken on this
+  // platform and a new window is required. This should return false on most
+  // implementations.
+  virtual bool MultipleSurfaceUnsupported() = 0;
 };
 
 }  // namespace chromecast

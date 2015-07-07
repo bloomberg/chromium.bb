@@ -58,6 +58,7 @@ class SurfaceFactoryCast : public SurfaceFactoryOzone {
 
   void CreateDisplayTypeAndWindowIfNeeded();
   void DestroyDisplayTypeAndWindow();
+  void DestroyWindow();
   void InitializeHardware();
   void ShutdownHardware();
 
