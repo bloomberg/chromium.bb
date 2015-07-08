@@ -43,13 +43,6 @@ public class RevenueStats {
     public void tabCreated(Tab chromeTab) {}
 
     /**
-     * Retrieves the client ID string.
-     */
-    public String retrieveClientId() {
-        return null;
-    }
-
-    /**
      * Returns whether the RLZ provider has been notified that the first search has occurred.
      */
     protected static boolean getRlzNotified(Context context) {
