@@ -589,7 +589,6 @@ public:
         SVGSVGElementUnsuspendRedraw = 687,
         SVGSVGElementUnsuspendRedrawAll = 688,
         AudioContextClose = 689,
-        ServiceWorkerClientPostMessage = 690,
         CSSZoomNotEqualToOne = 691,
         SVGGraphicsElementGetTransformToElement = 692,
         // The above items are available in M42 branch.
