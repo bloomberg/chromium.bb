@@ -211,6 +211,9 @@ class WebContentsCaptureMachine : public media::VideoCaptureMachine {
              const media::VideoCaptureParams& params,
              const base::Callback<void(bool)> callback) override;
   void Stop(const base::Closure& callback) override;
+  bool IsAutoThrottlingEnabled() const override {
+    return auto_throttling_enabled_;
+  }
 
   // Starts a copy from the backing store or the composited surface. Must be run
   // on the UI BrowserThread. |deliver_frame_cb| will be run when the operation
@@ -262,6 +265,11 @@ class WebContentsCaptureMachine : public media::VideoCaptureMachine {
   // Tracks events and calls back to RenewFrameSubscription() to maintain
   // capture on the correct RenderWidgetHost.
   const scoped_refptr<WebContentsTracker> tracker_;
+
+  // Set to false to prevent the capture size from automatically adjusting in
+  // response to end-to-end utilization.  This is enabled via the throttling
+  // option in the WebContentsVideoCaptureDevice device ID.
+  const bool auto_throttling_enabled_;
 
   // A dedicated worker thread on which SkBitmap->VideoFrame conversion will
   // occur. Only used when this activity cannot be done on the GPU.
@@ -484,13 +492,11 @@ WebContentsCaptureMachine::WebContentsCaptureMachine(
     : initial_render_process_id_(render_process_id),
       initial_main_render_frame_id_(main_render_frame_id),
       tracker_(new WebContentsTracker(true)),
+      auto_throttling_enabled_(enable_auto_throttling),
       weak_ptr_factory_(this) {
-  // TODO(miu): Use |enable_auto_throttling| to enable/disable the automatic
-  // video resolution changes based on resource utilization.
-  // http://crbug.com/156767.
   DVLOG(1) << "Created WebContentsCaptureMachine for "
            << render_process_id << ':' << main_render_frame_id
-           << (enable_auto_throttling ? " with auto-throttling enabled" : "");
+           << (auto_throttling_enabled_ ? " with auto-throttling enabled" : "");
 }
 
 WebContentsCaptureMachine::~WebContentsCaptureMachine() {}

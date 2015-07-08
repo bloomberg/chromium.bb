@@ -19,16 +19,28 @@
 
 namespace media {
 
+namespace {
+
+// The target maximum amount of the buffer pool to utilize.  Actual buffer pool
+// utilization is attenuated by this amount before being reported to the
+// VideoCaptureOracle.  This value takes into account the maximum number of
+// buffer pool buffers and a desired safety margin.
+const int kTargetMaxPoolUtilizationPercent = 60;
+
+}  // namespace
+
 ThreadSafeCaptureOracle::ThreadSafeCaptureOracle(
     scoped_ptr<VideoCaptureDevice::Client> client,
-    const VideoCaptureParams& params)
+    const VideoCaptureParams& params,
+    bool enable_auto_throttling)
     : client_(client.Pass()),
       oracle_(base::TimeDelta::FromMicroseconds(
           static_cast<int64>(1000000.0 / params.requested_format.frame_rate +
-                             0.5 /* to round to nearest int */))),
-      params_(params),
-      resolution_chooser_(params.requested_format.frame_size,
-                          params.resolution_change_policy) {}
+                             0.5 /* to round to nearest int */)),
+          params.requested_format.frame_size,
+          params.resolution_change_policy,
+          enable_auto_throttling),
+      params_(params) {}
 
 ThreadSafeCaptureOracle::~ThreadSafeCaptureOracle() {}
 
@@ -46,7 +58,9 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   if (!client_)
     return false;  // Capture is stopped.
 
-  const gfx::Size visible_size = resolution_chooser_.capture_size();
+  const bool should_capture =
+      oracle_.ObserveEventAndDecideCapture(event, damage_rect, event_time);
+  const gfx::Size visible_size = oracle_.capture_size();
   // Always round up the coded size to multiple of 16 pixels.
   // See http://crbug.com/402151.
   const gfx::Size coded_size((visible_size.width() + 15) & ~15,
@@ -59,13 +73,11 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
                                        ? media::PIXEL_FORMAT_I420
                                        : media::PIXEL_FORMAT_ARGB,
                                    params_.requested_format.pixel_storage));
-  // TODO(miu): Use current buffer pool utilization to drive automatic video
-  // resolution changes.  http://crbug.com/156767.
-  VLOG(2) << "Current buffer pool utilization is "
-          << (client_->GetBufferPoolUtilization() * 100.0) << '%';
-
-  const bool should_capture =
-      oracle_.ObserveEventAndDecideCapture(event, damage_rect, event_time);
+  // Get the current buffer pool utilization and attenuate it: The utilization
+  // reported to the oracle is in terms of a maximum sustainable amount (not the
+  // absolute maximum).
+  const double attenuated_utilization = client_->GetBufferPoolUtilization() *
+      (100.0 / kTargetMaxPoolUtilizationPercent);
 
   const char* event_name =
       (event == VideoCaptureOracle::kTimerPoll ? "poll" :
@@ -79,6 +91,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
                          TRACE_EVENT_SCOPE_THREAD,
                          "trigger",
                          event_name);
+    oracle_.RecordWillNotCapture(attenuated_utilization);
     return false;
   } else if (!should_capture && output_buffer.get()) {
     if (event == VideoCaptureOracle::kCompositorUpdate) {
@@ -98,7 +111,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
                          "trigger", event_name);
     return false;
   }
-  int frame_number = oracle_.RecordCapture();
+  const int frame_number = oracle_.RecordCapture(attenuated_utilization);
   TRACE_EVENT_ASYNC_BEGIN2("gpu.capture", "Capture", output_buffer.get(),
                            "frame_number", frame_number,
                            "trigger", event_name);
@@ -126,15 +139,13 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
 
 gfx::Size ThreadSafeCaptureOracle::GetCaptureSize() const {
   base::AutoLock guard(lock_);
-  return resolution_chooser_.capture_size();
+  return oracle_.capture_size();
 }
 
 void ThreadSafeCaptureOracle::UpdateCaptureSize(const gfx::Size& source_size) {
   base::AutoLock guard(lock_);
-  resolution_chooser_.SetSourceSize(source_size);
-  VLOG(1) << "Source size changed to " << source_size.ToString()
-          << " --> Capture size is now "
-          << resolution_chooser_.capture_size().ToString();
+  VLOG(1) << "Source size changed to " << source_size.ToString();
+  oracle_.SetSourceSize(source_size);
 }
 
 void ThreadSafeCaptureOracle::Stop() {
@@ -194,14 +205,10 @@ void ThreadSafeCaptureOracle::DidConsumeFrame(
   // destructor.  |metadata| is still valid for read-access at this point.
   double utilization = -1.0;
   if (metadata->GetDouble(media::VideoFrameMetadata::RESOURCE_UTILIZATION,
-                          &utilization) &&
-      utilization >= 0.0) {
-    VLOG(2) << "Consumer resource utilization for frame " << frame_number
-            << ": " << utilization;
+                          &utilization)) {
+    base::AutoLock guard(lock_);
+    oracle_.RecordConsumerFeedback(frame_number, utilization);
   }
-
-  // TODO(miu): Use |utilization| to drive automatic video resolution changes.
-  // http://crbug.com/156767.
 }
 
 }  // namespace media

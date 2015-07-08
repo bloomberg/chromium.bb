@@ -23,6 +23,14 @@ void DeleteCaptureMachine(
 
 }  // namespace
 
+VideoCaptureMachine::VideoCaptureMachine() {}
+
+VideoCaptureMachine::~VideoCaptureMachine() {}
+
+bool VideoCaptureMachine::IsAutoThrottlingEnabled() const {
+  return false;
+}
+
 void ScreenCaptureDeviceCore::AllocateAndStart(
     const VideoCaptureParams& params,
     scoped_ptr<VideoCaptureDevice::Client> client) {
@@ -45,7 +53,8 @@ void ScreenCaptureDeviceCore::AllocateAndStart(
     return;
   }
 
-  oracle_proxy_ = new ThreadSafeCaptureOracle(client.Pass(), params);
+  oracle_proxy_ = new ThreadSafeCaptureOracle(
+      client.Pass(), params, capture_machine_->IsAutoThrottlingEnabled());
 
   capture_machine_->Start(
       oracle_proxy_,

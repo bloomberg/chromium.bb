@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 #include "media/base/video_frame.h"
-#include "media/capture/capture_resolution_chooser.h"
 #include "media/capture/video_capture_oracle.h"
 #include "media/video/capture/video_capture_device.h"
 
@@ -28,7 +27,8 @@ class MEDIA_EXPORT ThreadSafeCaptureOracle
     : public base::RefCountedThreadSafe<ThreadSafeCaptureOracle> {
  public:
   ThreadSafeCaptureOracle(scoped_ptr<VideoCaptureDevice::Client> client,
-                          const VideoCaptureParams& params);
+                          const VideoCaptureParams& params,
+                          bool enable_auto_throttling);
 
   // Called when a captured frame is available or an error has occurred.
   // If |success| is true then |frame| is valid and |timestamp| indicates when
@@ -95,9 +95,6 @@ class MEDIA_EXPORT ThreadSafeCaptureOracle
 
   // The video capture parameters used to construct the oracle proxy.
   const VideoCaptureParams params_;
-
-  // Determines video capture frame sizes.
-  CaptureResolutionChooser resolution_chooser_;
 };
 
 }  // namespace media

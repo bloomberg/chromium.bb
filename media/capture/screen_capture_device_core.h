@@ -21,10 +21,10 @@ struct VideoCaptureParams;
 class ThreadSafeCaptureOracle;
 
 // Keeps track of the video capture source frames and executes copying.
-class VideoCaptureMachine {
+class MEDIA_EXPORT VideoCaptureMachine {
  public:
-  VideoCaptureMachine() {}
-  virtual ~VideoCaptureMachine() {}
+  VideoCaptureMachine();
+  virtual ~VideoCaptureMachine();
 
   // Starts capturing.
   // |callback| is invoked with true if succeeded. Otherwise, with false.
@@ -35,6 +35,11 @@ class VideoCaptureMachine {
   // Stops capturing.
   // |callback| is invoked after the capturing has stopped.
   virtual void Stop(const base::Closure& callback) = 0;
+
+  // Returns true if the video capture is configured to monitor end-to-end
+  // system utilization, and alter frame sizes and/or frame rates to mitigate
+  // overloading or under-utilization.
+  virtual bool IsAutoThrottlingEnabled() const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureMachine);
