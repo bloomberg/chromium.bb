@@ -68,7 +68,7 @@ Polymer({
    */
   activate: function() {
     SyncStateInterface = this;
-    chrome.send('getEnrollmentState');
+    chrome.send('getSyncStates');
   },
 
   /**
@@ -76,6 +76,13 @@ Polymer({
    */
   forceEnrollment_: function() {
     chrome.send('forceEnrollment');
+  },
+
+  /**
+   * Immediately forces an device sync attempt.
+   */
+  forceDeviceSync_: function() {
+    chrome.send('forceDeviceSync');
   },
 
   /**
@@ -90,21 +97,19 @@ Polymer({
    * Called when the device sync state changes.
    * @param {SyncState} deviceSyncState
    */
-  onDeviceSyncStateChanged: function(deviceSyncState) {},
-
-  /**
-   * Called for the chrome.send('getEnrollmentState') response.
-   * @param {SyncState} enrollmentState
-   */
-  onGotEnrollmentState: function(enrollmentState) {
-    this.enrollmentState_ = enrollmentState;
+  onDeviceSyncStateChanged: function(deviceSyncState) {
+    this.deviceSyncState_ = deviceSyncState;
   },
 
   /**
-   * Called for the chrome.send('getDeviceSyncState') response.
+   * Called for the chrome.send('getSyncStates') response.
    * @param {SyncState} enrollmentState
+   * @param {SyncState} deviceSyncState
    */
-  onGotDeviceSyncState: function(deviceSyncState) {},
+  onGotSyncStates: function(enrollmentState, deviceSyncState) {
+    this.enrollmentState_ = enrollmentState;
+    this.deviceSyncState_ = deviceSyncState;
+  },
 
   /**
    * @param {SyncState} syncState The enrollment or device sync state.
@@ -183,16 +188,9 @@ SyncStateInterface = {
   onDeviceSyncStateChanged: function(deviceSyncState) {},
 
   /**
-   * Called in response to chrome.send('getEnrollmentState') with the current
-   * enrollment status of the user and device.
-   * @type {function(SyncState)}
+   * Called in response to chrome.send('getSyncStates') with the current
+   * enrollment and device sync states of the user and device.
+   * @type {function(SyncState, SyncState)}
    */
-  onGotEnrollmentState: function(enrollmentState) {},
-
-  /**
-   * Called in response to chrome.send('getDeviceState') with the current
-   * enrollment status of the user and device.
-   * @type {function(DeviceSyncState)}
-   */
-  onGotDeviceSyncState: function(deviceSyncState) {},
+  onGotSyncStates: function(enrollmentState, deviceSyncState) {},
 };

@@ -9,6 +9,7 @@
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/simple_test_clock.h"
+#include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/cryptauth/mock_cryptauth_client.h"
 #include "components/proximity_auth/cryptauth/mock_sync_scheduler.h"
 #include "components/proximity_auth/cryptauth/pref_names.h"
@@ -76,11 +77,18 @@ void ExpectUnlockKeysAndPrefAreEqual(
                                     static_cast<int>(i)));
     const base::DictionaryValue* unlock_key_dictionary;
     EXPECT_TRUE(unlock_keys_pref->GetDictionary(i, &unlock_key_dictionary));
+    std::string public_key_b64, device_name_b64, bluetooth_address_b64;
+    ASSERT_TRUE(
+        unlock_key_dictionary->GetString("public_key", &public_key_b64));
+    ASSERT_TRUE(
+        unlock_key_dictionary->GetString("device_name", &device_name_b64));
+    ASSERT_TRUE(unlock_key_dictionary->GetString("bluetooth_address",
+                                                 &bluetooth_address_b64));
+
     std::string public_key, device_name, bluetooth_address;
-    EXPECT_TRUE(unlock_key_dictionary->GetString("public_key", &public_key));
-    EXPECT_TRUE(unlock_key_dictionary->GetString("device_name", &device_name));
-    EXPECT_TRUE(unlock_key_dictionary->GetString("bluetooth_address",
-                                                 &bluetooth_address));
+    ASSERT_TRUE(Base64UrlDecode(public_key_b64, &public_key));
+    ASSERT_TRUE(Base64UrlDecode(device_name_b64, &device_name));
+    ASSERT_TRUE(Base64UrlDecode(bluetooth_address_b64, &bluetooth_address));
 
     const auto& expected_unlock_key = expected_unlock_keys[i];
     EXPECT_EQ(expected_unlock_key.public_key(), public_key);
@@ -166,10 +174,16 @@ class ProximityAuthCryptAuthDeviceManagerTest
 
     scoped_ptr<base::DictionaryValue> unlock_key_dictionary(
         new base::DictionaryValue());
-    unlock_key_dictionary->SetString("public_key", kStoredPublicKey);
-    unlock_key_dictionary->SetString("device_name", kStoredDeviceName);
+
+    std::string public_key_b64, device_name_b64, bluetooth_address_b64;
+    Base64UrlEncode(kStoredPublicKey, &public_key_b64);
+    Base64UrlEncode(kStoredDeviceName, &device_name_b64);
+    Base64UrlEncode(kStoredBluetoothAddress, &bluetooth_address_b64);
+
+    unlock_key_dictionary->SetString("public_key", public_key_b64);
+    unlock_key_dictionary->SetString("device_name", device_name_b64);
     unlock_key_dictionary->SetString("bluetooth_address",
-                                     kStoredBluetoothAddress);
+                                     bluetooth_address_b64);
     {
       ListPrefUpdate update(&pref_service_,
                             prefs::kCryptAuthDeviceSyncUnlockKeys);
@@ -428,9 +442,14 @@ TEST_F(ProximityAuthCryptAuthDeviceManagerTest, SyncSameDevice) {
   {
     scoped_ptr<base::DictionaryValue> unlock_key_dictionary(
         new base::DictionaryValue());
-    unlock_key_dictionary->SetString("public_key", kPublicKey1);
-    unlock_key_dictionary->SetString("device_name", kDeviceName1);
-    unlock_key_dictionary->SetString("bluetooth_address", kBluetoothAddress1);
+    std::string public_key_b64, device_name_b64, bluetooth_address_b64;
+    Base64UrlEncode(kPublicKey1, &public_key_b64);
+    Base64UrlEncode(kDeviceName1, &device_name_b64);
+    Base64UrlEncode(kBluetoothAddress1, &bluetooth_address_b64);
+    unlock_key_dictionary->SetString("public_key", public_key_b64);
+    unlock_key_dictionary->SetString("device_name", device_name_b64);
+    unlock_key_dictionary->SetString("bluetooth_address",
+                                     bluetooth_address_b64);
 
     ListPrefUpdate update(&pref_service_,
                           prefs::kCryptAuthDeviceSyncUnlockKeys);

@@ -112,7 +112,9 @@
                      error-icon$="[[deviceSyncState_.recoveringFromFailure]]">
           </iron-icon>
         </div>
-        <paper-button class="self-start">Force Sync</paper-button>
+        <paper-button class="self-start" on-click="forceDeviceSync_">
+          Force Sync
+        </paper-button>
       </paper-material>
    </div>
 

@@ -34,6 +34,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/proximity_auth/ble/proximity_auth_ble_system.h"
 #include "components/proximity_auth/cryptauth/cryptauth_client_impl.h"
+#include "components/proximity_auth/cryptauth/cryptauth_device_manager.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/proximity_auth/cryptauth/secure_message_delegate.h"
 #include "components/proximity_auth/screenlock_bridge.h"
@@ -285,6 +286,7 @@ void EasyUnlockService::RegisterProfilePrefs(
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
+  proximity_auth::CryptAuthDeviceManager::RegisterPrefs(registry);
   proximity_auth::CryptAuthEnrollmentManager::RegisterPrefs(registry);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

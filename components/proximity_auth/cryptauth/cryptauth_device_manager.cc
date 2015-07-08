@@ -7,6 +7,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/cryptauth/cryptauth_client.h"
 #include "components/proximity_auth/cryptauth/pref_names.h"
 #include "components/proximity_auth/cryptauth/sync_scheduler_impl.h"
@@ -37,11 +38,18 @@ const char kExternalDeviceKeyBluetoothAddress[] = "bluetooth_address";
 scoped_ptr<base::DictionaryValue> UnlockKeyToDictionary(
     const cryptauth::ExternalDeviceInfo& device) {
   scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue());
-  dictionary->SetString(kExternalDeviceKeyPublicKey, device.public_key());
-  dictionary->SetString(kExternalDeviceKeyDeviceName,
-                        device.friendly_device_name());
+
+  // We store the device information in Base64Url form because dictionary values
+  // must be valid UTF8 strings.
+  std::string public_key_b64, device_name_b64, bluetooth_address_b64;
+  Base64UrlEncode(device.public_key(), &public_key_b64);
+  Base64UrlEncode(device.friendly_device_name(), &device_name_b64);
+  Base64UrlEncode(device.bluetooth_address(), &bluetooth_address_b64);
+
+  dictionary->SetString(kExternalDeviceKeyPublicKey, public_key_b64);
+  dictionary->SetString(kExternalDeviceKeyDeviceName, device_name_b64);
   dictionary->SetString(kExternalDeviceKeyBluetoothAddress,
-                        device.bluetooth_address());
+                        bluetooth_address_b64);
   return dictionary.Pass();
 }
 
@@ -50,11 +58,20 @@ scoped_ptr<base::DictionaryValue> UnlockKeyToDictionary(
 // parsed proto is written to |external_device|.
 bool DictionaryToUnlockKey(const base::DictionaryValue& dictionary,
                            cryptauth::ExternalDeviceInfo* external_device) {
-  std::string public_key, device_name, bluetooth_address;
-  if (!dictionary.GetString(kExternalDeviceKeyPublicKey, &public_key) ||
-      !dictionary.GetString(kExternalDeviceKeyDeviceName, &device_name) ||
+  std::string public_key_b64, device_name_b64, bluetooth_address_b64;
+  if (!dictionary.GetString(kExternalDeviceKeyPublicKey, &public_key_b64) ||
+      !dictionary.GetString(kExternalDeviceKeyDeviceName, &device_name_b64) ||
       !dictionary.GetString(kExternalDeviceKeyBluetoothAddress,
-                            &bluetooth_address)) {
+                            &bluetooth_address_b64)) {
+    return false;
+  }
+
+  // We store the device information in Base64Url form because dictionary values
+  // must be valid UTF8 strings.
+  std::string public_key, device_name, bluetooth_address;
+  if (!Base64UrlDecode(public_key_b64, &public_key) ||
+      !Base64UrlDecode(device_name_b64, &device_name) ||
+      !Base64UrlDecode(bluetooth_address_b64, &bluetooth_address)) {
     return false;
   }
 

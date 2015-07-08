@@ -94,6 +94,22 @@ scoped_ptr<base::DictionaryValue> IneligibleDeviceToDictionary(
   return device_dictionary;
 }
 
+// Creates a SyncState JSON object that can be passed to the WebUI.
+scoped_ptr<base::DictionaryValue> CreateSyncStateDictionary(
+    double last_success_time,
+    double next_refresh_time,
+    bool is_recovering_from_failure,
+    bool is_enrollment_in_progress) {
+  scoped_ptr<base::DictionaryValue> sync_state(new base::DictionaryValue());
+  sync_state->SetDouble(kSyncStateLastSuccessTime, last_success_time);
+  sync_state->SetDouble(kSyncStateNextRefreshTime, next_refresh_time);
+  sync_state->SetBoolean(kSyncStateRecoveringFromFailure,
+                         is_recovering_from_failure);
+  sync_state->SetBoolean(kSyncStateOperationInProgress,
+                         is_enrollment_in_progress);
+  return sync_state;
+}
+
 }  // namespace
 
 ProximityAuthWebUIHandler::ProximityAuthWebUIHandler(
@@ -123,16 +139,20 @@ void ProximityAuthWebUIHandler::RegisterMessages() {
                  base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
-      "getEnrollmentState",
-      base::Bind(&ProximityAuthWebUIHandler::GetEnrollmentState,
-                 base::Unretained(this)));
+      "getSyncStates", base::Bind(&ProximityAuthWebUIHandler::GetSyncStates,
+                                  base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "forceEnrollment", base::Bind(&ProximityAuthWebUIHandler::ForceEnrollment,
                                     base::Unretained(this)));
 
+  web_ui()->RegisterMessageCallback(
+      "forceDeviceSync", base::Bind(&ProximityAuthWebUIHandler::ForceDeviceSync,
+                                    base::Unretained(this)));
+
   LogBuffer::GetInstance()->AddObserver(this);
   InitEnrollmentManager();
+  InitDeviceManager();
 }
 
 void ProximityAuthWebUIHandler::OnLogMessageAdded(
@@ -160,6 +180,23 @@ void ProximityAuthWebUIHandler::OnEnrollmentFinished(bool success) {
                << ":\n" << *enrollment_state;
   web_ui()->CallJavascriptFunction(
       "SyncStateInterface.onEnrollmentStateChanged", *enrollment_state);
+}
+
+void ProximityAuthWebUIHandler::OnSyncStarted() {
+  web_ui()->CallJavascriptFunction(
+      "SyncStateInterface.onDeviceSyncStateChanged",
+      *GetDeviceSyncStateDictionary());
+}
+
+void ProximityAuthWebUIHandler::OnSyncFinished(
+    CryptAuthDeviceManager::SyncResult sync_result,
+    CryptAuthDeviceManager::DeviceChangeResult device_change_result) {
+  scoped_ptr<base::DictionaryValue> device_sync_state =
+      GetDeviceSyncStateDictionary();
+  PA_LOG(INFO) << "Device sync completed with result="
+               << static_cast<int>(sync_result) << ":\n" << *device_sync_state;
+  web_ui()->CallJavascriptFunction(
+      "SyncStateInterface.onDeviceSyncStateChanged", *device_sync_state);
 }
 
 void ProximityAuthWebUIHandler::GetLogMessages(const base::ListValue* args) {
@@ -196,6 +233,11 @@ void ProximityAuthWebUIHandler::ForceEnrollment(const base::ListValue* args) {
     enrollment_manager_->ForceEnrollmentNow(
         cryptauth::INVOCATION_REASON_MANUAL);
   }
+}
+
+void ProximityAuthWebUIHandler::ForceDeviceSync(const base::ListValue* args) {
+  if (device_manager_)
+    device_manager_->ForceSyncNow(cryptauth::INVOCATION_REASON_MANUAL);
 }
 
 void ProximityAuthWebUIHandler::InitEnrollmentManager() {
@@ -259,6 +301,16 @@ void ProximityAuthWebUIHandler::InitEnrollmentManager() {
 #endif
 }
 
+void ProximityAuthWebUIHandler::InitDeviceManager() {
+  // TODO(tengs): We initialize a CryptAuthDeviceManager here for
+  // development and testing purposes until it is ready to be moved into Chrome.
+  device_manager_.reset(new CryptAuthDeviceManager(
+      make_scoped_ptr(new base::DefaultClock()),
+      delegate_->CreateCryptAuthClientFactory(), delegate_->GetPrefService()));
+  device_manager_->AddObserver(this);
+  device_manager_->Start();
+}
+
 void ProximityAuthWebUIHandler::OnCryptAuthClientError(
     const std::string& error_message) {
   PA_LOG(WARNING) << "CryptAuth request failed: " << error_message;
@@ -285,34 +337,39 @@ void ProximityAuthWebUIHandler::OnFoundEligibleUnlockDevices(
                                    eligible_devices, ineligible_devices);
 }
 
-void ProximityAuthWebUIHandler::GetEnrollmentState(
-    const base::ListValue* args) {
+void ProximityAuthWebUIHandler::GetSyncStates(const base::ListValue* args) {
   scoped_ptr<base::DictionaryValue> enrollment_state =
       GetEnrollmentStateDictionary();
-  PA_LOG(INFO) << "Got Enrollment State: \n" << *enrollment_state;
-  web_ui()->CallJavascriptFunction("SyncStateInterface.onGotEnrollmentState",
-                                   *enrollment_state);
+  scoped_ptr<base::DictionaryValue> device_sync_state =
+      GetDeviceSyncStateDictionary();
+  PA_LOG(INFO) << "Enrollment State: \n" << *enrollment_state
+               << "Device Sync State: \n" << *device_sync_state;
+  web_ui()->CallJavascriptFunction("SyncStateInterface.onGotSyncStates",
+                                   *enrollment_state, *device_sync_state);
 }
 
 scoped_ptr<base::DictionaryValue>
 ProximityAuthWebUIHandler::GetEnrollmentStateDictionary() {
-  scoped_ptr<base::DictionaryValue> enrollment_state(
-      new base::DictionaryValue());
-
   if (!enrollment_manager_)
-    return enrollment_state;
+    return make_scoped_ptr(new base::DictionaryValue());
 
-  enrollment_state->SetDouble(
-      kSyncStateLastSuccessTime,
-      enrollment_manager_->GetLastEnrollmentTime().ToJsTime());
-  enrollment_state->SetDouble(
-      kSyncStateNextRefreshTime,
-      enrollment_manager_->GetTimeToNextAttempt().InMillisecondsF());
-  enrollment_state->SetBoolean(kSyncStateRecoveringFromFailure,
-                               enrollment_manager_->IsRecoveringFromFailure());
-  enrollment_state->SetBoolean(kSyncStateOperationInProgress,
-                               enrollment_manager_->IsEnrollmentInProgress());
-  return enrollment_state;
+  return CreateSyncStateDictionary(
+      enrollment_manager_->GetLastEnrollmentTime().ToJsTime(),
+      enrollment_manager_->GetTimeToNextAttempt().InMillisecondsF(),
+      enrollment_manager_->IsRecoveringFromFailure(),
+      enrollment_manager_->IsEnrollmentInProgress());
+}
+
+scoped_ptr<base::DictionaryValue>
+ProximityAuthWebUIHandler::GetDeviceSyncStateDictionary() {
+  if (!device_manager_)
+    return make_scoped_ptr(new base::DictionaryValue());
+
+  return CreateSyncStateDictionary(
+      device_manager_->GetLastSyncTime().ToJsTime(),
+      device_manager_->GetTimeToNextAttempt().InMillisecondsF(),
+      device_manager_->IsRecoveringFromFailure(),
+      device_manager_->IsSyncInProgress());
 }
 
 }  // namespace proximity_auth
