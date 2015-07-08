@@ -10,6 +10,7 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/renderer/console.h"
+#include "extensions/renderer/content_watcher.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/messaging_bindings.h"
 #include "extensions/renderer/script_context.h"
@@ -96,6 +97,19 @@ bool ExtensionFrameHelper::IsContextForEventPage(const ScriptContext* context) {
          BackgroundInfo::HasLazyBackgroundPage(context->extension()) &&
          ExtensionFrameHelper::Get(render_frame)->view_type() ==
               VIEW_TYPE_EXTENSION_BACKGROUND_PAGE;
+}
+
+void ExtensionFrameHelper::DidCreateDocumentElement() {
+  extension_dispatcher_->DidCreateDocumentElement(
+      render_frame()->GetWebFrame());
+}
+
+void ExtensionFrameHelper::DidMatchCSS(
+    const blink::WebVector<blink::WebString>& newly_matching_selectors,
+    const blink::WebVector<blink::WebString>& stopped_matching_selectors) {
+  extension_dispatcher_->content_watcher()->DidMatchCSS(
+      render_frame()->GetWebFrame(), newly_matching_selectors,
+      stopped_matching_selectors);
 }
 
 void ExtensionFrameHelper::DidCreateScriptContext(

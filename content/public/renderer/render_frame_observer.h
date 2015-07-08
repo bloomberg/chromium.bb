@@ -11,12 +11,14 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "third_party/WebKit/public/platform/WebVector.h"
 #include "v8/include/v8.h"
 
 namespace blink {
 class WebFormElement;
 class WebFrame;
 class WebNode;
+class WebString;
 struct WebURLError;
 }
 
@@ -68,6 +70,9 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void DidChangeScrollOffset() {}
   virtual void WillSendSubmitEvent(const blink::WebFormElement& form) {}
   virtual void WillSubmitForm(const blink::WebFormElement& form) {}
+  virtual void DidMatchCSS(
+      const blink::WebVector<blink::WebString>& newly_matching_selectors,
+      const blink::WebVector<blink::WebString>& stopped_matching_selectors) {}
 
   // Called before FrameWillClose, when this frame has been detached from the
   // view, but has not been closed yet. This *will* be called when parent frames

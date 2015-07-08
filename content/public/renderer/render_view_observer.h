@@ -10,34 +10,19 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
-#include "v8/include/v8.h"
 
 class GURL;
 
-namespace ppapi {
-namespace host {
-class PpapiHost;
-}
-}
-
 namespace blink {
-class WebDataSource;
 class WebFrame;
-class WebFormElement;
 class WebGestureEvent;
 class WebLocalFrame;
-class WebMouseEvent;
 class WebNode;
-class WebString;
-class WebTouchEvent;
-class WebURL;
 struct WebURLError;
 }
 
 namespace content {
 
-class RendererPpapiHost;
 class RenderView;
 class RenderViewImpl;
 
@@ -69,10 +54,6 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
                             blink::WebFrame* frame) {}
   virtual void FrameDetached(blink::WebFrame* frame) {}
   virtual void FrameWillClose(blink::WebFrame* frame) {}
-  virtual void DidMatchCSS(
-      blink::WebLocalFrame* frame,
-      const blink::WebVector<blink::WebString>& newly_matching_selectors,
-      const blink::WebVector<blink::WebString>& stopped_matching_selectors) {}
   virtual void PrintPage(blink::WebLocalFrame* frame, bool user_initiated) {}
   virtual void FocusedNodeChanged(const blink::WebNode& node) {}
   virtual void DraggableRegionsChanged(blink::WebFrame* frame) {}

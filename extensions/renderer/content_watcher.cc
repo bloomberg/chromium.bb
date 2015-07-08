@@ -9,7 +9,7 @@
 #include "extensions/common/extension_messages.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScriptBindings.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
@@ -60,12 +60,12 @@ void ContentWatcher::OnWatchPages(
   content::RenderView::ForEach(&visitor);
 }
 
-void ContentWatcher::DidCreateDocumentElement(blink::WebFrame* frame) {
+void ContentWatcher::DidCreateDocumentElement(blink::WebLocalFrame* frame) {
   frame->document().watchCSSSelectors(css_selectors_);
 }
 
 void ContentWatcher::DidMatchCSS(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     const WebVector<WebString>& newly_matching_selectors,
     const WebVector<WebString>& stopped_matching_selectors) {
   std::set<std::string>& frame_selectors = matching_selectors_[frame];
@@ -81,7 +81,7 @@ void ContentWatcher::DidMatchCSS(
 }
 
 void ContentWatcher::NotifyBrowserOfChange(
-    blink::WebFrame* changed_frame) const {
+    blink::WebLocalFrame* changed_frame) const {
   blink::WebFrame* const top_frame = changed_frame->top();
   const blink::WebSecurityOrigin top_origin = top_frame->securityOrigin();
   // Want to aggregate matched selectors from all frames where an

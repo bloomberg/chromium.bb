@@ -5,34 +5,21 @@
 #include "extensions/renderer/extension_helper.h"
 
 #include "content/public/renderer/render_view.h"
-#include "content/public/renderer/render_view_visitor.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern_set.h"
 #include "extensions/renderer/api/automation/automation_api_helper.h"
-#include "extensions/renderer/console.h"
 #include "extensions/renderer/dispatcher.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
-
-using content::ConsoleMessageLevel;
-using blink::WebConsoleMessage;
-using blink::WebDataSource;
-using blink::WebFrame;
-using blink::WebLocalFrame;
-using blink::WebURLRequest;
-using blink::WebView;
 
 namespace extensions {
 
 ExtensionHelper::ExtensionHelper(content::RenderView* render_view,
                                  Dispatcher* dispatcher)
     : content::RenderViewObserver(render_view),
-      content::RenderViewObserverTracker<ExtensionHelper>(render_view),
       dispatcher_(dispatcher) {
   // Lifecycle managed by RenderViewObserver.
   new AutomationApiHelper(render_view);
@@ -52,10 +39,6 @@ bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void ExtensionHelper::DidCreateDocumentElement(WebLocalFrame* frame) {
-  dispatcher_->DidCreateDocumentElement(frame);
-}
-
 void ExtensionHelper::DraggableRegionsChanged(blink::WebFrame* frame) {
   blink::WebVector<blink::WebDraggableRegion> webregions =
       frame->document().draggableRegions();
@@ -67,14 +50,6 @@ void ExtensionHelper::DraggableRegionsChanged(blink::WebFrame* frame) {
     regions.push_back(region);
   }
   Send(new ExtensionHostMsg_UpdateDraggableRegions(routing_id(), regions));
-}
-
-void ExtensionHelper::DidMatchCSS(
-    blink::WebLocalFrame* frame,
-    const blink::WebVector<blink::WebString>& newly_matching_selectors,
-    const blink::WebVector<blink::WebString>& stopped_matching_selectors) {
-  dispatcher_->DidMatchCSS(
-      frame, newly_matching_selectors, stopped_matching_selectors);
 }
 
 void ExtensionHelper::OnSetFrameName(const std::string& name) {

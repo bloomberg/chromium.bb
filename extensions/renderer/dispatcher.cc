@@ -322,7 +322,7 @@ void Dispatcher::WillReleaseScriptContext(
   VLOG(1) << "Num tracked contexts: " << script_context_set_->size();
 }
 
-void Dispatcher::DidCreateDocumentElement(blink::WebFrame* frame) {
+void Dispatcher::DidCreateDocumentElement(blink::WebLocalFrame* frame) {
   // Note: use GetEffectiveDocumentURL not just frame->document()->url()
   // so that this also injects the stylesheet on about:blank frames that
   // are hosted in the extension process.
@@ -362,14 +362,6 @@ void Dispatcher::DidCreateDocumentElement(blink::WebFrame* frame) {
   }
 
   content_watcher_->DidCreateDocumentElement(frame);
-}
-
-void Dispatcher::DidMatchCSS(
-    blink::WebFrame* frame,
-    const blink::WebVector<blink::WebString>& newly_matching_selectors,
-    const blink::WebVector<blink::WebString>& stopped_matching_selectors) {
-  content_watcher_->DidMatchCSS(
-      frame, newly_matching_selectors, stopped_matching_selectors);
 }
 
 void Dispatcher::OnExtensionResponse(int request_id,

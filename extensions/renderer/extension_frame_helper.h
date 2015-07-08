@@ -62,6 +62,11 @@ class ExtensionFrameHelper
 
  private:
   // RenderFrameObserver implementation.
+  void DidCreateDocumentElement() override;
+  void DidMatchCSS(
+      const blink::WebVector<blink::WebString>& newly_matching_selectors,
+      const blink::WebVector<blink::WebString>& stopped_matching_selectors)
+          override;
   void DidCreateScriptContext(v8::Local<v8::Context>,
                               int extension_group,
                               int world_id) override;

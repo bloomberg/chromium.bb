@@ -14,6 +14,7 @@
 
 namespace blink {
 class WebFrame;
+class WebLocalFrame;
 class WebString;
 }
 
@@ -29,6 +30,7 @@ class NativeHandler;
 //
 // There's one ContentWatcher per Dispatcher rather than per RenderView because
 // WebFrames can move between RenderViews through adoptNode.
+// TODO(devlin): This class isn't OOPI-safe.
 class ContentWatcher {
  public:
   ContentWatcher();
@@ -40,12 +42,12 @@ class ContentWatcher {
   // Uses WebDocument::watchCSSSelectors to watch the selectors in
   // css_selectors_ and get a callback into DidMatchCSS() whenever the set of
   // matching selectors in |frame| changes.
-  void DidCreateDocumentElement(blink::WebFrame* frame);
+  void DidCreateDocumentElement(blink::WebLocalFrame* frame);
 
   // Records that |newly_matching_selectors| have started matching on |*frame|,
   // and |stopped_matching_selectors| have stopped matching.
   void DidMatchCSS(
-      blink::WebFrame* frame,
+      blink::WebLocalFrame* frame,
       const blink::WebVector<blink::WebString>& newly_matching_selectors,
       const blink::WebVector<blink::WebString>& stopped_matching_selectors);
 
@@ -55,7 +57,7 @@ class ContentWatcher {
   // top-level page.  We filter this so that if an extension were to be granted
   // activeTab permission on that top-level page, we only send CSS selectors for
   // frames that it could run on.
-  void NotifyBrowserOfChange(blink::WebFrame* changed_frame) const;
+  void NotifyBrowserOfChange(blink::WebLocalFrame* changed_frame) const;
 
   // If any of these selectors match on a page, we need to send an
   // ExtensionHostMsg_OnWatchedPageChange back to the browser.

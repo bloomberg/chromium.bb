@@ -99,12 +99,7 @@ class Dispatcher : public content::RenderProcessObserver,
                                 const v8::Local<v8::Context>& context,
                                 int world_id);
 
-  void DidCreateDocumentElement(blink::WebFrame* frame);
-
-  void DidMatchCSS(
-      blink::WebFrame* frame,
-      const blink::WebVector<blink::WebString>& newly_matching_selectors,
-      const blink::WebVector<blink::WebString>& stopped_matching_selectors);
+  void DidCreateDocumentElement(blink::WebLocalFrame* frame);
 
   void OnExtensionResponse(int request_id,
                            bool success,

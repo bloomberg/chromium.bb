@@ -8,6 +8,10 @@
 #include "base/basictypes.h"
 #include "content/public/renderer/render_view_observer.h"
 
+namespace blink {
+class WebDataSource;
+}
+
 namespace content {
 class DocumentState;
 }

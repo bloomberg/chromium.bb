@@ -7,10 +7,6 @@
 
 #include "extensions/renderer/object_backed_native_handler.h"
 
-namespace content {
-class RenderView;
-}
-
 namespace extensions {
 
 class Extension;

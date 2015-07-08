@@ -299,7 +299,7 @@ void EventBindings::MatchAgainstEventFilter(
   std::string event_name = *v8::String::Utf8Value(args[0]);
   EventFilteringInfo info =
       ParseFromObject(args[1]->ToObject(isolate), isolate);
-  // Only match events routed to this context's RenderView or ones that don't
+  // Only match events routed to this context's RenderFrame or ones that don't
   // have a routingId in their filter.
   MatcherIDs matched_event_filters = event_filter.MatchEvent(
       event_name, info, context()->GetRenderFrame()->GetRoutingID());
