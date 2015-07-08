@@ -4,16 +4,11 @@
 
 #include "content/renderer/context_menu_params_builder.h"
 
-#include "base/logging.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/renderer/dom_utils.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/menu_item_builder.h"
-#include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebInputElement.h"
-#include "third_party/WebKit/public/web/WebNode.h"
 
 namespace content {
 
@@ -64,17 +59,7 @@ ContextMenuParams ContextMenuParamsBuilder::Build(
         SingleHistoryItemToPageState(data.frameHistoryItem);
   }
 
-  if (!params.link_url.is_empty()) {
-    blink::WebNode selectedNode = DomUtils::ExtractParentAnchorNode(data.node);
-    blink::WebElement selectedElement = selectedNode.to<blink::WebElement>();
-    if (!selectedElement.isNull() && selectedNode.isLink()) {
-      params.link_text = selectedElement.textContent();
-    } else {
-      LOG(ERROR) << "Creating a ContextMenuParams for a node that has a link"
-                 << "url but is not an ElementNode or does not have an"
-                 << "ancestor that is a link.";
-    }
-  }
+  params.link_text = data.linkText;
 
   // Deserialize the SSL info.
   if (!data.securityInfo.isEmpty()) {
