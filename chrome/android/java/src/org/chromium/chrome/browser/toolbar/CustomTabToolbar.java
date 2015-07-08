@@ -17,7 +17,6 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.text.TextUtils;
-import android.text.TextUtils.TruncateAt;
 import android.util.AttributeSet;
 import android.util.Pair;
 import android.util.TypedValue;
@@ -373,7 +372,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         if (securityLevel == ConnectionSecurityLevel.NONE) {
             // TODO(yusufo): Add an animator for hiding as well.
             mSecurityButton.setVisibility(GONE);
-        } else {
+        } else if (mSecurityButton.getVisibility() != View.VISIBLE) {
             if (mSecurityButtonShowAnimator.isRunning()) mSecurityButtonShowAnimator.cancel();
             mSecurityButtonShowAnimator.start();
             mUrlBar.deEmphasizeUrl();
@@ -473,27 +472,6 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     @Override
     public LocationBar getLocationBar() {
         return this;
-    }
-
-    @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        if (changed) {
-            final int availWidth = mUrlInfoContainer.getMeasuredWidth()
-                    - ApiCompatibilityUtils.getPaddingStart(mTitleBar)
-                    - ApiCompatibilityUtils.getPaddingEnd(mTitleBar);
-            String currentText = mTitleBar.getText().toString();
-            String currentTitle;
-            Tab currentTab = getToolbarDataProvider().getTab();
-            if (currentTab == null || TextUtils.isEmpty(currentTab.getTitle())) {
-                currentTitle = "";
-            } else {
-                currentTitle = currentTab.getTitle();
-            }
-            String ellipsizedText = TextUtils.ellipsize(currentTitle,
-                    mTitleBar.getPaint(), availWidth, TruncateAt.END).toString();
-            if (!ellipsizedText.equals(currentText)) mTitleBar.setText(ellipsizedText);
-        }
-        super.onLayout(changed, left, top, right, bottom);
     }
 
     @Override

@@ -33,6 +33,7 @@
             android:layout_marginBottom="16dp"
             android:layout_gravity="top"
             android:maxLines="1"
+            android:ellipsize="end"
             android:paddingEnd="@dimen/toolbar_edge_padding"
             android:textSize="@dimen/custom_tabs_title_text_size"
             android:inputType="none"
