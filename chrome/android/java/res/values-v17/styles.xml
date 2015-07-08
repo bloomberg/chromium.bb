@@ -275,7 +275,13 @@
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowNoTitle">true</item>
     </style>
-    <!-- Cast -->
+    <!-- Cast and media playback notifications -->
+    <style
+        name="MediaNotificationTitle"
+        parent="@android:style/TextAppearance.StatusBar.EventContent.Title"/>
+    <style
+        name="MediaNotificationText"
+        parent="@android:style/TextAppearance.StatusBar.EventContent"/>
     <style
         name="RemoteNotificationTitle"
         parent="@android:style/TextAppearance.StatusBar.EventContent.Title"/>

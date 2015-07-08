@@ -50,6 +50,9 @@
     <!-- Cast notification -->
     <item type="id" name="remote_notification" />
 
+    <!-- Media playback notification -->
+    <item type="id" name="media_playback_notification" />
+
     <!-- Sync UI constants -->
     <item type="id" name="passphrase_type_list" />
 

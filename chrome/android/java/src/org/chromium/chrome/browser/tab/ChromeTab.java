@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.Overrid
 import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.media.MediaNotificationService;
+import org.chromium.chrome.browser.media.ui.MediaSessionTabHelper;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.ntp.NativePageAssassin;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
@@ -99,7 +100,7 @@ import java.util.Locale;
 public class ChromeTab extends Tab {
     public static final int NTP_TAB_ID = -2;
 
-    private static final String TAG = "ChromeTab";
+    private static final String TAG = "cr.ChromeTab";
 
     // URL didFailLoad error code. Should match the value in net_error_list.h.
     public static final int BLOCKED_BY_ADMINISTRATOR = -22;
@@ -255,6 +256,7 @@ public class ChromeTab extends Tab {
 
         ContextualSearchTabHelper.createForTab(this);
         if (nativeWindow != null) ThumbnailTabHelper.createForTab(this);
+        MediaSessionTabHelper.createForTab(this);
     }
 
     /**

@@ -118,6 +118,7 @@
 #include "content/browser/android/content_video_view.h"
 #include "content/browser/android/date_time_chooser_android.h"
 #include "content/browser/android/media_players_observer.h"
+#include "content/browser/media/android/media_session.h"
 #include "content/browser/web_contents/web_contents_android.h"
 #endif
 
@@ -3275,6 +3276,25 @@ void WebContentsImpl::OnMediaPausedNotification(int64 player_cookie) {
 
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, MediaPaused());
 }
+
+#if defined(OS_ANDROID)
+
+void WebContentsImpl::OnMediaSessionStateChanged() {
+  MediaSession* session = MediaSession::Get(this);
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    MediaSessionStateChanged(session->IsControllable(),
+                                             session->IsSuspended()));
+}
+
+void WebContentsImpl::ResumeMediaSession() {
+  MediaSession::Get(this)->Resume();
+}
+
+void WebContentsImpl::SuspendMediaSession() {
+  MediaSession::Get(this)->Suspend();
+}
+
+#endif  // defined(OS_ANDROID)
 
 void WebContentsImpl::OnFirstVisuallyNonEmptyPaint() {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,

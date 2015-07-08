@@ -287,6 +287,16 @@ void WebContentsObserverProxy::DidStartNavigationToPendingEntry(
       env, obj.obj(), jstring_url.obj());
 }
 
+void WebContentsObserverProxy::MediaSessionStateChanged(bool is_controllable,
+                                                        bool is_suspended) {
+  JNIEnv* env = AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobject> obj(java_observer_);
+
+  Java_WebContentsObserverProxy_mediaSessionStateChanged(
+      env, obj.obj(), is_controllable, is_suspended);
+}
+
 bool RegisterWebContentsObserverProxy(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

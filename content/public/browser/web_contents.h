@@ -561,7 +561,7 @@ class WebContents : public PageNavigator,
   virtual void ViewSource() = 0;
 
   virtual void ViewFrameSource(const GURL& url,
-                               const PageState& page_state)= 0;
+                               const PageState& page_state) = 0;
 
   // Gets the minimum/maximum zoom percent.
   virtual int GetMinimumZoomPercent() const = 0;
@@ -661,6 +661,11 @@ class WebContents : public PageNavigator,
   virtual void ResumeLoadingCreatedWebContents() = 0;
 
 #if defined(OS_ANDROID)
+  // Requests to resume the current media session.
+  virtual void ResumeMediaSession() = 0;
+  // Requests to suspend the current media session.
+  virtual void SuspendMediaSession() = 0;
+
   CONTENT_EXPORT static WebContents* FromJavaWebContents(
       jobject jweb_contents_android);
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents() = 0;

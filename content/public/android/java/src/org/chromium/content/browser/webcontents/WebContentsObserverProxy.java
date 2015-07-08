@@ -213,6 +213,14 @@ class WebContentsObserverProxy extends WebContentsObserver {
 
     @Override
     @CalledByNative
+    public void mediaSessionStateChanged(boolean isControllable, boolean isSuspended) {
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
+            mObserversIterator.next().mediaSessionStateChanged(isControllable, isSuspended);
+        }
+    }
+
+    @Override
+    @CalledByNative
     public void destroy() {
         // Super destruction semantics (removing the observer from the
         // Java-based WebContents) are quite different, so we explicitly avoid

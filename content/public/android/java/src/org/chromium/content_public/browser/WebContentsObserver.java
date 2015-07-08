@@ -148,6 +148,13 @@ public abstract class WebContentsObserver {
     public void didStartNavigationToPendingEntry(String url) {}
 
     /**
+     * Called when the media session state changed.
+     * @param isControllable if the session can be resumed or suspended.
+     * @param isSuspended if the session currently suspended or not
+     */
+    public void mediaSessionStateChanged(boolean isControllable, boolean isSuspended) {}
+
+    /**
      * Stop observing the web contents and clean up associated references.
      */
     public void destroy() {

@@ -366,6 +366,10 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // Invoked when media is paused.
   virtual void MediaPaused() {}
 
+  // Invoked when media session has changed its state.
+  virtual void MediaSessionStateChanged(bool is_controllable,
+                                        bool is_suspended) {}
+
   // Invoked if an IPC message is coming from a specific RenderFrameHost.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  RenderFrameHost* render_frame_host);

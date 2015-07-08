@@ -6,6 +6,9 @@
 
 #include "base/android/jni_android.h"
 #include "content/browser/media/android/media_session_observer.h"
+#include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "jni/MediaSession_jni.h"
 
 namespace content {
@@ -79,6 +82,7 @@ bool MediaSession::AddPlayer(MediaSessionObserver* observer,
     players_.clear();
 
   players_.insert(PlayerIdentifier(observer, player_id));
+  UpdateWebContents();
 
   return true;
 }
@@ -104,11 +108,36 @@ void MediaSession::RemovePlayers(MediaSessionObserver* observer) {
 }
 
 void MediaSession::OnSuspend(JNIEnv* env, jobject obj, jboolean temporary) {
-  OnSuspend(temporary);
+  OnSuspendInternal(temporary);
+  UpdateWebContents();
 }
 
 void MediaSession::OnResume(JNIEnv* env, jobject obj) {
-  OnResume();
+  OnResumeInternal();
+  UpdateWebContents();
+}
+
+void MediaSession::Resume() {
+  DCHECK(IsSuspended());
+
+  OnResumeInternal();
+}
+
+void MediaSession::Suspend() {
+  DCHECK(!IsSuspended());
+
+  // Since the playback can be resumed, it's a transient suspension.
+  OnSuspendInternal(true);
+}
+
+bool MediaSession::IsSuspended() const {
+  return audio_focus_state_ != State::Active;
+}
+
+bool MediaSession::IsControllable() const {
+  // Only content type media session can be controllable unless it's stopped.
+  return audio_focus_state_ != State::Suspended &&
+         audio_focus_type_ == Type::Content;
 }
 
 void MediaSession::ResetJavaRefForTest() {
@@ -123,7 +152,12 @@ MediaSession::Type MediaSession::audio_focus_type_for_test() const {
   return audio_focus_type_;
 }
 
-void MediaSession::OnSuspend(bool temporary) {
+void MediaSession::RemoveAllPlayersForTest() {
+  players_.clear();
+  AbandonSystemAudioFocusIfNeeded();
+}
+
+void MediaSession::OnSuspendInternal(bool temporary) {
   if (temporary)
     audio_focus_state_ = State::TemporarilySuspended;
   else
@@ -133,7 +167,7 @@ void MediaSession::OnSuspend(bool temporary) {
     it.observer->OnSuspend(it.player_id);
 }
 
-void MediaSession::OnResume() {
+void MediaSession::OnResumeInternal() {
   audio_focus_state_ = State::Active;
 
   for (const auto& it : players_)
@@ -143,8 +177,7 @@ void MediaSession::OnResume() {
 MediaSession::MediaSession(WebContents* web_contents)
     : WebContentsObserver(web_contents),
       audio_focus_state_(State::Suspended),
-      audio_focus_type_(Type::Transient) {
-}
+      audio_focus_type_(Type::Transient) {}
 
 void MediaSession::Initialize() {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -178,6 +211,11 @@ void MediaSession::AbandonSystemAudioFocusIfNeeded() {
   }
 
   audio_focus_state_ = State::Suspended;
+  UpdateWebContents();
+}
+
+void MediaSession::UpdateWebContents() {
+  static_cast<WebContentsImpl*>(web_contents())->OnMediaSessionStateChanged();
 }
 
 }  // namespace content

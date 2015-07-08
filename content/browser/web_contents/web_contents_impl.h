@@ -363,6 +363,10 @@ class CONTENT_EXPORT WebContentsImpl
   void ExitFullscreen() override;
   void ResumeLoadingCreatedWebContents() override;
 #if defined(OS_ANDROID)
+  void OnMediaSessionStateChanged();
+  void ResumeMediaSession() override;
+  void SuspendMediaSession() override;
+
   base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents() override;
   virtual WebContentsAndroid* GetWebContentsAndroid();
 #elif defined(OS_MACOSX)

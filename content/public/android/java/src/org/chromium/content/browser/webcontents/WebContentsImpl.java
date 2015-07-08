@@ -321,6 +321,16 @@ import java.util.UUID;
         nativeRequestAccessibilitySnapshot(mNativeWebContentsAndroid, callback);
     }
 
+    @Override
+    public void resumeMediaSession() {
+        nativeResumeMediaSession(mNativeWebContentsAndroid);
+    }
+
+    @Override
+    public void suspendMediaSession() {
+        nativeSuspendMediaSession(mNativeWebContentsAndroid);
+    }
+
     // root node can be null if parsing fails.
     @CalledByNative
     private static void onAccessibilitySnapshot(AccessibilitySnapshotNode root,
@@ -408,4 +418,6 @@ import java.util.UUID;
     private native int nativeGetThemeColor(long nativeWebContentsAndroid);
     private native void nativeRequestAccessibilitySnapshot(long nativeWebContentsAndroid,
             AccessibilitySnapshotCallback callback);
+    private native void nativeResumeMediaSession(long nativeWebContentsAndroid);
+    private native void nativeSuspendMediaSession(long nativeWebContentsAndroid);
 }

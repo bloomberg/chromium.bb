@@ -53,7 +53,12 @@
     <style name="ButtonCompatBorderless" parent="ButtonCompat">
         <item name="android:background">@drawable/button_borderless_compat</item>
     </style>
-    <!-- Cast notification -->
+    <!-- Cast and media playback notifications -->
+    <style name="MediaNotificationTitle"
+        parent="@android:style/TextAppearance.Material.Notification.Title">
+    </style>
+    <style name="MediaNotificationText"
+        parent="@android:style/TextAppearance.Material.Notification.Line2"/>
     <style name="RemoteNotificationTitle"
         parent="@android:style/TextAppearance.Material.Notification.Title">
         <item name="android:layout_marginBottom">4dp</item>

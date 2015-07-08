@@ -13,9 +13,10 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
+class MediaSessionBrowserTest;
+
 namespace content {
 
-class MediaSessionBrowserTest;
 class MediaSessionObserver;
 
 // MediaSession manages the Android AudioFocus for a given WebContents. It is
@@ -29,8 +30,8 @@ class MediaSessionObserver;
 // case of Transient and Content audio focus are both requested.
 // Android system interaction occurs in the Java counterpart to this class.
 class CONTENT_EXPORT MediaSession
-    : public content::WebContentsObserver,
-      protected content::WebContentsUserData<MediaSession> {
+    : public WebContentsObserver,
+      protected WebContentsUserData<MediaSession> {
  public:
   enum class Type {
     Content,
@@ -66,21 +67,34 @@ class CONTENT_EXPORT MediaSession
   // Called by Java through JNI.
   void OnResume(JNIEnv* env, jobject obj);
 
- protected:
-  friend class content::MediaSessionBrowserTest;
+  // Called when the user requests resuming the session. No-op if the session is
+  // not controllable.
+  void Resume();
+
+  // Called when the user requests suspending the session. No-op if the session
+  // is not controllable.
+  void Suspend();
+
+  // Returns if the session can be controlled by Resume() and Suspend calls
+  // above.
+  bool IsControllable() const;
+
+  // Returns if the session is currently suspended.
+  bool IsSuspended() const;
+
+ private:
+  friend class content::WebContentsUserData<MediaSession>;
+  friend class ::MediaSessionBrowserTest;
 
   // Resets the |j_media_session_| ref to prevent calling the Java backend
   // during content_browsertests.
   void ResetJavaRefForTest();
-
   bool IsActiveForTest() const;
   Type audio_focus_type_for_test() const;
+  void RemoveAllPlayersForTest();
 
-  void OnSuspend(bool temporary);
-  void OnResume();
-
- private:
-  friend class content::WebContentsUserData<MediaSession>;
+  void OnSuspendInternal(bool temporary);
+  void OnResumeInternal();
 
   enum class State {
     Active,
@@ -120,6 +134,9 @@ class CONTENT_EXPORT MediaSession
   // MediaSession if the audio focus really need to be abandoned.
   void AbandonSystemAudioFocusIfNeeded();
 
+  // Notifies WebContents about the state change of the media session.
+  void UpdateWebContents();
+
   base::android::ScopedJavaGlobalRef<jobject> j_media_session_;
   PlayersMap players_;
 
@@ -131,4 +148,4 @@ class CONTENT_EXPORT MediaSession
 
 }  // namespace content
 
-#endif // CONTENT_BROWSER_MEDIA_ANDROID_MEDIA_SESSION_H_
+#endif  // CONTENT_BROWSER_MEDIA_ANDROID_MEDIA_SESSION_H_

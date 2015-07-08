@@ -468,4 +468,12 @@ void WebContentsAndroid::RequestAccessibilitySnapshot(JNIEnv* env,
       snapshot_callback);
 }
 
+void WebContentsAndroid::ResumeMediaSession(JNIEnv* env, jobject obj) {
+  web_contents_->ResumeMediaSession();
+}
+
+void WebContentsAndroid::SuspendMediaSession(JNIEnv* env, jobject obj) {
+  web_contents_->SuspendMediaSession();
+}
+
 }  // namespace content

@@ -96,6 +96,10 @@ class CONTENT_EXPORT WebContentsAndroid
   void RequestAccessibilitySnapshot(JNIEnv* env,
                                     jobject obj,
                                     jobject callback);
+
+  void ResumeMediaSession(JNIEnv* env, jobject obj);
+  void SuspendMediaSession(JNIEnv* env, jobject obj);
+
  private:
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
 

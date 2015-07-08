@@ -249,6 +249,16 @@ public interface WebContents extends Parcelable {
     void requestAccessibilitySnapshot(AccessibilitySnapshotCallback callback);
 
     /**
+     * Resumes the current media session.
+     */
+    void resumeMediaSession();
+
+    /**
+     * Suspends the current media session.
+     */
+    void suspendMediaSession();
+
+    /**
      * Add an observer to the WebContents
      *
      * @param observer The observer to add.

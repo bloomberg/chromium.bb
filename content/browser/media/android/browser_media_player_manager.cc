@@ -567,7 +567,8 @@ void BrowserMediaPlayerManager::OnPause(
   if (player)
     player->Pause(is_media_related_action);
 
-  MediaSession::Get(web_contents())->RemovePlayer(this, player_id);
+  if (is_media_related_action)
+    MediaSession::Get(web_contents())->RemovePlayer(this, player_id);
 }
 
 void BrowserMediaPlayerManager::OnSetVolume(int player_id, double volume) {

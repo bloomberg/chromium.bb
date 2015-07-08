@@ -216,6 +216,10 @@
             </intent-filter>
         </receiver>
 
+        <!-- Service for the media playback control notification -->
+        <service android:name="org.chromium.chrome.browser.media.ui.NotificationMediaPlaybackControl$ListenerService"
+            android:exported="false" />
+
         <!-- Activity, service, and meta-data to support casting to Chromecast -->
 
         <!-- Expanded controller activity is displayed when the Cast Notification is clicked -->
