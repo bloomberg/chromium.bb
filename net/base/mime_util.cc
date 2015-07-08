@@ -75,6 +75,7 @@ static const MimeInfo primary_mappings[] = {
   { "video/webm", "webm" },
   { "audio/webm", "webm" },
   { "audio/wav", "wav" },
+  { "audio/flac", "flac" },
   { "application/xhtml+xml", "xhtml,xht,xhtm" },
   { "application/x-chrome-extension", "crx" },
   { "multipart/related", "mhtml,mht" }
@@ -412,6 +413,7 @@ static const char* const kStandardAudioTypes[] = {
   "audio/aiff",
   "audio/amr",
   "audio/basic",
+  "audio/flac",
   "audio/midi",
   "audio/mp3",
   "audio/mp4",
