@@ -4,34 +4,38 @@
 
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"
 
-@implementation FindInPageModel
+#include "base/mac/scoped_nsobject.h"
 
-@synthesize enabled = enabled_;
-@synthesize matches = matches_;
-@synthesize currentIndex = currentIndex_;
-@synthesize currentPoint = currentPoint_;
+@implementation FindInPageModel {
+  base::scoped_nsobject<NSString> _text;
+}
+
+@synthesize enabled = _enabled;
+@synthesize matches = _matches;
+@synthesize currentIndex = _currentIndex;
+@synthesize currentPoint = _currentPoint;
 
 - (NSString*)text {
-  return text_;
+  return _text;
 }
 
 - (void)setEnabled:(BOOL)enabled {
-  enabled_ = enabled;
-  matches_ = 0;
-  currentIndex_ = 0;
-  currentPoint_ = CGPointZero;
+  _enabled = enabled;
+  _matches = 0;
+  _currentIndex = 0;
+  _currentPoint = CGPointZero;
 }
 
 - (void)updateQuery:(NSString*)query matches:(NSUInteger)matches {
   if (query)
-    text_.reset([query copy]);
-  matches_ = matches;
-  currentIndex_ = 0;
+    _text.reset([query copy]);
+  _matches = matches;
+  _currentIndex = 0;
 }
 
 - (void)updateIndex:(NSInteger)index atPoint:(CGPoint)point {
-  currentIndex_ = index;
-  currentPoint_ = point;
+  _currentIndex = index;
+  _currentPoint = point;
 }
 
 @end

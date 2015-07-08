@@ -5,28 +5,25 @@
 #ifndef IOS_CHROME_BROWSER_FIND_IN_PAGE_FIND_IN_PAGE_MODEL_H_
 #define IOS_CHROME_BROWSER_FIND_IN_PAGE_FIND_IN_PAGE_MODEL_H_
 
-#import <UIKit/UIKit.h>
-#include "base/mac/scoped_nsobject.h"
+#include <CoreGraphics/CoreGraphics.h>
+#import <Foundation/Foundation.h>
 
 // This is a simplified version of find_tab_helper.cc.
-@interface FindInPageModel : NSObject {
- @private
-  // Should find in page be displayed.
-  BOOL enabled_;
-  // The current search string.
-  base::scoped_nsobject<NSString> text_;
-  // The number of matches for |text_|
-  NSUInteger matches_;
-  // The currently higlighted index.
-  NSUInteger currentIndex_;
-  // The content offset needed to display the |currentIndex_| match.
-  CGPoint currentPoint_;
-}
+@interface FindInPageModel : NSObject
 
-@property(nonatomic, readwrite, assign) BOOL enabled;
+// Should find in page be displayed.
+@property(nonatomic, assign) BOOL enabled;
+
+// The current search string.
 @property(nonatomic, readonly) NSString* text;
+
+// The number of matches for |text|.
 @property(nonatomic, readonly) NSUInteger matches;
+
+// The currently higlighted index.
 @property(nonatomic, readonly) NSUInteger currentIndex;
+
+// The content offset needed to display the |currentIndex| match.
 @property(nonatomic, readonly) CGPoint currentPoint;
 
 // Update the query string and the number of matches.
