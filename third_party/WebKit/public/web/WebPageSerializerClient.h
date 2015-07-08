@@ -63,14 +63,13 @@ public:
     // parameter data contains the available data for saving. The parameter
     // status indicates the status of data serialization.
     virtual void didSerializeDataForFrame(const WebURL& frameURL,
-                                          const WebCString& data,
-                                          PageSerializationStatus status) = 0;
+        const WebCString& data, PageSerializationStatus) = 0;
     WebPageSerializerClient() { }
 
 protected:
     virtual ~WebPageSerializerClient() { }
 };
 
-}  // namespace blink
+} // namespace blink
 
 #endif
