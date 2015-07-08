@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_FAVICON_LARGE_ICON_URL_PARSER_H_
-#define CHROME_COMMON_FAVICON_LARGE_ICON_URL_PARSER_H_
+#ifndef COMPONENTS_FAVICON_BASE_LARGE_ICON_URL_PARSER_H_
+#define COMPONENTS_FAVICON_BASE_LARGE_ICON_URL_PARSER_H_
 
 #include <string>
 
@@ -43,4 +43,4 @@ class LargeIconUrlParser {
   DISALLOW_COPY_AND_ASSIGN(LargeIconUrlParser);
 };
 
-#endif  // CHROME_COMMON_FAVICON_LARGE_ICON_URL_PARSER_H_
+#endif  // COMPONENTS_FAVICON_BASE_LARGE_ICON_URL_PARSER_H_

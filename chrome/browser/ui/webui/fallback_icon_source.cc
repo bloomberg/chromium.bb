@@ -8,9 +8,9 @@
 
 #include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/search/instant_io_context.h"
-#include "chrome/common/favicon/fallback_icon_url_parser.h"
 #include "chrome/common/url_constants.h"
 #include "components/favicon/core/fallback_icon_service.h"
+#include "components/favicon_base/fallback_icon_url_parser.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "net/url_request/url_request.h"
 #include "ui/gfx/favicon_size.h"

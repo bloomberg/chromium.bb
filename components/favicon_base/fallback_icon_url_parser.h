@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_FAVICON_FALLBACK_ICON_URL_PARSER_H_
-#define CHROME_COMMON_FAVICON_FALLBACK_ICON_URL_PARSER_H_
+#ifndef COMPONENTS_FAVICON_BASE_FALLBACK_ICON_URL_PARSER_H_
+#define COMPONENTS_FAVICON_BASE_FALLBACK_ICON_URL_PARSER_H_
 
 #include <string>
 
@@ -69,4 +69,4 @@ class ParsedFallbackIconPath {
 
 }  // namespace chrome
 
-#endif  // CHROME_COMMON_FAVICON_FALLBACK_ICON_URL_PARSER_H_
+#endif  // COMPONENTS_FAVICON_BASE_FALLBACK_ICON_URL_PARSER_H_
