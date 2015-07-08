@@ -271,7 +271,7 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
           ? new crypto::MockAppleKeychain()
           : new crypto::AppleKeychain());
   ps = new PasswordStoreProxyMac(main_thread_runner, keychain.Pass(),
-                                 login_db.Pass(), profile->GetPrefs());
+                                 login_db.Pass());
 #elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
   // For now, we use PasswordStoreDefault. We might want to make a native
   // backend for PasswordStoreX (see below) in the future though.

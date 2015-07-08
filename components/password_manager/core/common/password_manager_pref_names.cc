@@ -22,10 +22,6 @@ const char kOsPasswordLastChanged[] =
     "password_manager.os_password_last_changed";
 #endif
 
-#if defined(OS_MACOSX)
-const char kKeychainMigrationStatus[] = "password_manager.keychain_migration";
-#endif
-
 const char kPasswordManagerAllowShowPasswords[] =
     "profile.password_manager_allow_show_passwords";
 const char kPasswordManagerAutoSignin[] =

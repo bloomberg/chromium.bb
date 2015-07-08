@@ -4,34 +4,23 @@
 
 #include "chrome/browser/password_manager/password_store_proxy_mac.h"
 
-#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/password_manager/password_store_mac.h"
 #include "chrome/browser/password_manager/simple_password_store_mac.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/apple_keychain.h"
 
-using password_manager::MigrationStatus;
 using password_manager::PasswordStoreChangeList;
 
 PasswordStoreProxyMac::PasswordStoreProxyMac(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
     scoped_ptr<crypto::AppleKeychain> keychain,
-    scoped_ptr<password_manager::LoginDatabase> login_db,
-    PrefService* prefs)
+    scoped_ptr<password_manager::LoginDatabase> login_db)
     : PasswordStore(main_thread_runner, nullptr),
       login_metadata_db_(login_db.Pass()) {
   DCHECK(login_metadata_db_);
-  migration_status_.Init(password_manager::prefs::kKeychainMigrationStatus,
-                         prefs);
-  if (migration_status_.GetValue() ==
-      static_cast<int>(MigrationStatus::MIGRATED)) {
-    // The login database will be set later after initialization.
-    password_store_simple_ =
-        new SimplePasswordStoreMac(main_thread_runner, nullptr, nullptr);
-  } else {
-    password_store_mac_ =
-        new PasswordStoreMac(main_thread_runner, nullptr, keychain.Pass());
-  }
+  // TODO(vasilii): for now the class is just a wrapper around PasswordStoreMac.
+  password_store_mac_ =
+      new PasswordStoreMac(main_thread_runner, nullptr, keychain.Pass());
 }
 
 PasswordStoreProxyMac::~PasswordStoreProxyMac() {
@@ -48,30 +37,17 @@ bool PasswordStoreProxyMac::Init(
     return false;
   }
 
-  if (!password_manager::PasswordStore::Init(flare))
-    return false;
-
-  return ScheduleTask(
-      base::Bind(&PasswordStoreProxyMac::InitOnBackgroundThread, this,
-                 static_cast<MigrationStatus>(migration_status_.GetValue())));
+  ScheduleTask(
+      base::Bind(&PasswordStoreProxyMac::InitOnBackgroundThread, this));
+  password_store_mac_->InitWithTaskRunner(GetBackgroundTaskRunner());
+  return password_manager::PasswordStore::Init(flare);
 }
 
 void PasswordStoreProxyMac::Shutdown() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   PasswordStore::Shutdown();
-  thread_->Stop();
-
-  // Execute the task which are still pending.
-  FlushPendingTasks();
-
-  // Unsubscribe the observer, otherwise it's too late in the destructor.
-  migration_status_.Destroy();
-
-  // After the thread has stopped it's impossible to switch from one backend to
-  // another. GetBackend() returns the correct result.
-  // The backend doesn't need the background thread as PasswordStore::Init() and
-  // other public methods were never called on it.
   GetBackend()->Shutdown();
+  thread_->Stop();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
@@ -85,63 +61,15 @@ password_manager::PasswordStore* PasswordStoreProxyMac::GetBackend() const {
   return password_store_simple_.get();
 }
 
-void PasswordStoreProxyMac::InitOnBackgroundThread(MigrationStatus status) {
+void PasswordStoreProxyMac::InitOnBackgroundThread() {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   if (!login_metadata_db_->Init()) {
     login_metadata_db_.reset();
     LOG(ERROR) << "Could not create/open login database.";
+    return;
   }
-
-  if (status == MigrationStatus::MIGRATED) {
-    password_store_simple_->InitWithTaskRunner(GetBackgroundTaskRunner(),
-                                               login_metadata_db_.Pass());
-  } else {
+  if (password_store_mac_)
     password_store_mac_->set_login_metadata_db(login_metadata_db_.get());
-    password_store_mac_->InitWithTaskRunner(GetBackgroundTaskRunner());
-    if (login_metadata_db_ && (status == MigrationStatus::NOT_STARTED ||
-                               status == MigrationStatus::FAILED_ONCE)) {
-      // Let's try to migrate the passwords.
-      if (password_store_mac_->ImportFromKeychain() ==
-          PasswordStoreMac::MIGRATION_OK) {
-        status = MigrationStatus::MIGRATED;
-        // Switch from |password_store_mac_| to |password_store_simple_|.
-        password_store_mac_->set_login_metadata_db(nullptr);
-        pending_ui_tasks_.push_back(
-            base::Bind(&PasswordStoreMac::Shutdown, password_store_mac_));
-        password_store_mac_ = nullptr;
-        DCHECK(!password_store_simple_);
-        password_store_simple_ = new SimplePasswordStoreMac(
-            main_thread_runner_, GetBackgroundTaskRunner(),
-            login_metadata_db_.Pass());
-      } else {
-        status = (status == MigrationStatus::FAILED_ONCE
-                      ? MigrationStatus::FAILED_TWICE
-                      : MigrationStatus::FAILED_ONCE);
-      }
-      pending_ui_tasks_.push_back(
-          base::Bind(&PasswordStoreProxyMac::UpdateStatusPref, this, status));
-    }
-  }
-  if (!pending_ui_tasks_.empty()) {
-    main_thread_runner_->PostTask(
-        FROM_HERE, base::Bind(&PasswordStoreProxyMac::FlushPendingTasks, this));
-  }
-  UMA_HISTOGRAM_ENUMERATION(
-      "PasswordManager.KeychainMigration.Status", static_cast<int>(status),
-      static_cast<int>(MigrationStatus::MIGRATION_STATUS_COUNT));
-  DCHECK(GetBackend());
-}
-
-void PasswordStoreProxyMac::UpdateStatusPref(MigrationStatus status) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  migration_status_.SetValue(static_cast<int>(status));
-}
-
-void PasswordStoreProxyMac::FlushPendingTasks() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  for (auto& task : pending_ui_tasks_)
-    task.Run();
-  pending_ui_tasks_.clear();
 }
 
 void PasswordStoreProxyMac::ReportMetricsImpl(

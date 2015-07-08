@@ -20,7 +20,6 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_utils.h"
 #include "crypto/mock_apple_keychain.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,9 +57,6 @@ ACTION(QuitUIMessageLoop) {
 ACTION_P(SaveACopyOfFirstForm, target_form_ptr) {
   ASSERT_FALSE(arg0.empty());
   *target_form_ptr = *arg0[0];
-}
-
-void Noop() {
 }
 
 class MockPasswordStoreConsumer : public PasswordStoreConsumer {
@@ -1219,13 +1215,10 @@ class PasswordStoreMacTest : public testing::Test {
     store_ = new PasswordStoreMac(
         base::ThreadTaskRunnerHandle::Get(), nullptr,
         make_scoped_ptr<AppleKeychain>(new MockAppleKeychain));
-    ASSERT_TRUE(thread_->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&PasswordStoreMac::InitWithTaskRunner, store_,
-                              thread_->task_runner())));
-
-    ASSERT_TRUE(thread_->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&PasswordStoreMac::set_login_metadata_db, store_,
-                              base::Unretained(login_db))));
+    store_->InitWithTaskRunner(thread_->task_runner());
+    ASSERT_TRUE(store_->ScheduleTask(
+        base::Bind(&PasswordStoreMac::set_login_metadata_db, store_,
+                   base::Unretained(login_db))));
   }
 
   void ClosePasswordStore() {
@@ -1299,11 +1292,13 @@ class PasswordStoreMacTest : public testing::Test {
   }
 
   void FinishAsyncProcessing() {
-    scoped_refptr<content::MessageLoopRunner> runner =
-        new content::MessageLoopRunner;
-    ASSERT_TRUE(thread_->task_runner()->PostTaskAndReply(
-        FROM_HERE, base::Bind(&Noop), runner->QuitClosure()));
-    runner->Run();
+    // Do a store-level query to wait for all the previously enqueued operations
+    // to finish.
+    MockPasswordStoreConsumer consumer;
+    store_->GetLogins(PasswordForm(), PasswordStore::ALLOW_PROMPT, &consumer);
+    EXPECT_CALL(consumer, OnGetPasswordStoreResultsConstRef(_))
+        .WillOnce(QuitUIMessageLoop());
+    base::MessageLoop::current()->Run();
   }
 
   PasswordStoreMac* store() { return store_.get(); }
@@ -1671,6 +1666,41 @@ TEST_F(PasswordStoreMacTest, TestRemoveLoginsMultiProfile) {
   matching_items = owned_keychain_adapter.PasswordsFillingForm(
       "http://some.domain.com/insecure.html", PasswordForm::SCHEME_HTML);
   ASSERT_EQ(1u, matching_items.size());
+}
+
+// Open the store and immediately write to it and try to read it back, without
+// first waiting for the initialization to finish. If tasks are processed in
+// order, read/write operations will correctly be performed only after the
+// initialization has finished.
+TEST_F(PasswordStoreMacTest, StoreIsUsableImmediatelyAfterConstruction) {
+  ClosePasswordStore();
+
+  base::WaitableEvent event(false, false);
+  login_db_.reset(
+      new SlowToInitLoginDatabase(test_login_db_file_path(), &event));
+  ASSERT_TRUE(thread_->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&PasswordStoreMacTest::InitLoginDatabase,
+                            base::Unretained(login_db_.get()))));
+  CreateAndInitPasswordStore(login_db_.get());
+
+  PasswordFormData www_form_data = {
+      PasswordForm::SCHEME_HTML, "http://www.facebook.com/",
+      "http://www.facebook.com/index.html", "login", L"username", L"password",
+      L"submit", L"not_joe_user", L"12345", true, false, 1};
+  scoped_ptr<PasswordForm> form =
+      CreatePasswordFormFromDataForTesting(www_form_data);
+  store()->AddLogin(*form);
+
+  MockPasswordStoreConsumer mock_consumer;
+  store()->GetLogins(*form, PasswordStore::ALLOW_PROMPT, &mock_consumer);
+
+  // Now the read/write tasks are scheduled, let the DB initialization proceed.
+  event.Signal();
+
+  EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(SizeIs(1u)))
+      .WillOnce(QuitUIMessageLoop());
+  base::MessageLoop::current()->Run();
+  EXPECT_TRUE(login_db());
 }
 
 // Add a facebook form to the store but not to the keychain. The form is to be
