@@ -215,7 +215,6 @@ private:
     HashMap<String, String> m_editedStyleSheets;
     HashMap<int, String> m_editedStyleElements;
 
-    int m_lastStyleSheetId;
     bool m_creatingViaInspectorStyleSheet;
     bool m_isSettingStyleSheetText;
 

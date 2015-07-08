@@ -839,8 +839,8 @@ DEFINE_TRACE(InspectorStyle)
     visitor->trace(m_parentStyleSheet);
 }
 
-InspectorStyleSheetBase::InspectorStyleSheetBase(const String& id, Listener* listener)
-    : m_id(id)
+InspectorStyleSheetBase::InspectorStyleSheetBase(Listener* listener)
+    : m_id(IdentifiersFactory::createIdentifier())
     , m_listener(listener)
     , m_lineEndings(adoptPtr(new LineEndings()))
 {
@@ -881,13 +881,13 @@ bool InspectorStyleSheetBase::lineNumberAndColumnToOffset(unsigned lineNumber, u
     return true;
 }
 
-PassRefPtrWillBeRawPtr<InspectorStyleSheet> InspectorStyleSheet::create(InspectorResourceAgent* resourceAgent, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, InspectorCSSAgent* cssAgent)
+PassRefPtrWillBeRawPtr<InspectorStyleSheet> InspectorStyleSheet::create(InspectorResourceAgent* resourceAgent, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, InspectorCSSAgent* cssAgent)
 {
-    return adoptRefWillBeNoop(new InspectorStyleSheet(resourceAgent, id, pageStyleSheet, origin, documentURL, cssAgent));
+    return adoptRefWillBeNoop(new InspectorStyleSheet(resourceAgent, pageStyleSheet, origin, documentURL, cssAgent));
 }
 
-InspectorStyleSheet::InspectorStyleSheet(InspectorResourceAgent* resourceAgent, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, InspectorCSSAgent* cssAgent)
-    : InspectorStyleSheetBase(id, cssAgent)
+InspectorStyleSheet::InspectorStyleSheet(InspectorResourceAgent* resourceAgent, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, InspectorCSSAgent* cssAgent)
+    : InspectorStyleSheetBase(cssAgent)
     , m_cssAgent(cssAgent)
     , m_resourceAgent(resourceAgent)
     , m_pageStyleSheet(pageStyleSheet)
@@ -1631,13 +1631,13 @@ bool InspectorStyleSheet::inlineStyleSheetText(String* result)
     return true;
 }
 
-PassRefPtrWillBeRawPtr<InspectorStyleSheetForInlineStyle> InspectorStyleSheetForInlineStyle::create(const String& id, PassRefPtrWillBeRawPtr<Element> element, Listener* listener)
+PassRefPtrWillBeRawPtr<InspectorStyleSheetForInlineStyle> InspectorStyleSheetForInlineStyle::create(PassRefPtrWillBeRawPtr<Element> element, Listener* listener)
 {
-    return adoptRefWillBeNoop(new InspectorStyleSheetForInlineStyle(id, element, listener));
+    return adoptRefWillBeNoop(new InspectorStyleSheetForInlineStyle(element, listener));
 }
 
-InspectorStyleSheetForInlineStyle::InspectorStyleSheetForInlineStyle(const String& id, PassRefPtrWillBeRawPtr<Element> element, Listener* listener)
-    : InspectorStyleSheetBase(id, listener)
+InspectorStyleSheetForInlineStyle::InspectorStyleSheetForInlineStyle(PassRefPtrWillBeRawPtr<Element> element, Listener* listener)
+    : InspectorStyleSheetBase(listener)
     , m_element(element)
 {
     ASSERT(m_element);

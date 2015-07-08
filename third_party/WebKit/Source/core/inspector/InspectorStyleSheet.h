@@ -100,7 +100,7 @@ public:
     virtual bool isInlineStyle() = 0;
 
 protected:
-    InspectorStyleSheetBase(const String& id, Listener*);
+    explicit InspectorStyleSheetBase(Listener*);
 
     Listener* listener() { return m_listener; }
     void onStyleSheetTextChanged();
@@ -118,7 +118,7 @@ private:
 
 class InspectorStyleSheet : public InspectorStyleSheetBase {
 public:
-    static PassRefPtrWillBeRawPtr<InspectorStyleSheet> create(InspectorResourceAgent*, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, InspectorCSSAgent*);
+    static PassRefPtrWillBeRawPtr<InspectorStyleSheet> create(InspectorResourceAgent*, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, InspectorCSSAgent*);
 
     virtual ~InspectorStyleSheet();
     DECLARE_VIRTUAL_TRACE();
@@ -148,7 +148,7 @@ protected:
     virtual PassRefPtrWillBeRawPtr<InspectorStyle> inspectorStyle(RefPtrWillBeRawPtr<CSSStyleDeclaration>) override;
 
 private:
-    InspectorStyleSheet(InspectorResourceAgent*, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, InspectorCSSAgent*);
+    InspectorStyleSheet(InspectorResourceAgent*, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, InspectorCSSAgent*);
     RefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceDataAfterSourceRange(const SourceRange&);
     RefPtrWillBeRawPtr<CSSRuleSourceData> findRuleByHeaderRange(const SourceRange&);
     RefPtrWillBeRawPtr<CSSRuleSourceData> findRuleByBodyRange(const SourceRange&);
@@ -189,7 +189,7 @@ private:
 
 class InspectorStyleSheetForInlineStyle final : public InspectorStyleSheetBase {
 public:
-    static PassRefPtrWillBeRawPtr<InspectorStyleSheetForInlineStyle> create(const String& id, PassRefPtrWillBeRawPtr<Element>, Listener*);
+    static PassRefPtrWillBeRawPtr<InspectorStyleSheetForInlineStyle> create(PassRefPtrWillBeRawPtr<Element>, Listener*);
 
     void didModifyElementAttribute();
     virtual bool setText(const String&, ExceptionState&) override;
@@ -205,7 +205,7 @@ protected:
     bool isInlineStyle() override { return true; }
 
 private:
-    InspectorStyleSheetForInlineStyle(const String& id, PassRefPtrWillBeRawPtr<Element>, Listener*);
+    InspectorStyleSheetForInlineStyle(PassRefPtrWillBeRawPtr<Element>, Listener*);
     const String& elementStyleText();
 
     RefPtrWillBeMember<Element> m_element;
