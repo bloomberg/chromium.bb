@@ -2915,18 +2915,11 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
     ResourceType resource_type) {
 
   // Send out a notification that we loaded a resource from our memory cache.
-  int cert_id = 0;
-  net::CertStatus cert_status = 0;
-  int security_bits = -1;
-  int connection_status = 0;
-  SignedCertificateTimestampIDStatusList signed_certificate_timestamp_ids;
-  DeserializeSecurityInfo(security_info, &cert_id, &cert_status,
-                          &security_bits, &connection_status,
-                          &signed_certificate_timestamp_ids);
-  // TODO(alcutter,eranm): Pass signed_certificate_timestamp_ids into details
+  SSLStatus status = DeserializeSecurityInfo(security_info);
+  // TODO(alcutter,eranm): Pass signed_certificate_timestamp_ids into details.
   LoadFromMemoryCacheDetails details(
-      url, GetRenderProcessHost()->GetID(), cert_id, cert_status, http_method,
-      mime_type, resource_type);
+      url, GetRenderProcessHost()->GetID(), status.cert_id, status.cert_status,
+      http_method, mime_type, resource_type);
 
   controller_.ssl_manager()->DidLoadFromMemoryCache(details);
 

@@ -2125,14 +2125,7 @@ SSLStatus RenderViewImpl::GetSSLStatusOfFrame(blink::WebFrame* frame) const {
   if (frame && frame->dataSource())
     security_info = frame->dataSource()->response().securityInfo();
 
-  SSLStatus ssl_status;
-  DeserializeSecurityInfo(security_info,
-                          &ssl_status.cert_id,
-                          &ssl_status.cert_status,
-                          &ssl_status.security_bits,
-                          &ssl_status.connection_status,
-                          &ssl_status.signed_certificate_timestamp_ids);
-  return ssl_status;
+  return DeserializeSecurityInfo(security_info);
 }
 
 const std::string& RenderViewImpl::GetAcceptLanguages() const {
