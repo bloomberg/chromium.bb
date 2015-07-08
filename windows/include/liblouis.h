@@ -29,6 +29,11 @@ extern "C"
 {
 #endif				/* __cplusplus */
 
+#ifndef WIDECHAR_TYPE
+#define WIDECHAR_TYPE unsigned short int
+#define UNICODEBITS 16
+#endif
+
 #define widechar WIDECHAR_TYPE
 #define formtype unsigned char
 
