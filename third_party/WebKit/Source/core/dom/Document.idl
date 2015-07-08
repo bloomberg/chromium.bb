@@ -105,7 +105,11 @@ interface Document : Node {
     readonly attribute HTMLScriptElement? currentScript;
 
     // dynamic markup insertion
-    // FIXME: open(), close(), write() and writeln() are on HTMLDocument.
+    // FIXME: There are two open() methods in the spec.
+    [Custom, CustomElementCallbacks, RaisesException] void open();
+    [RaisesException] void close();
+    [CallWith=ActiveWindow, CustomElementCallbacks, RaisesException] void write(DOMString... text);
+    [CallWith=ActiveWindow, CustomElementCallbacks, RaisesException] void writeln(DOMString... text);
 
     // user interaction
     [ImplementedAs=domWindow] readonly attribute Window? defaultView;

@@ -271,22 +271,4 @@ bool HTMLDocument::isCaseSensitiveAttribute(const QualifiedName& attributeName)
     return !isPossibleHTMLAttr || !htmlCaseInsensitiveAttributesSet->contains(attributeName.localName().impl());
 }
 
-void HTMLDocument::write(LocalDOMWindow* callingWindow, const Vector<String>& text, ExceptionState& exceptionState)
-{
-    ASSERT(callingWindow);
-    StringBuilder builder;
-    for (const String& string : text)
-        builder.append(string);
-    write(builder.toString(), callingWindow->document(), exceptionState);
-}
-
-void HTMLDocument::writeln(LocalDOMWindow* callingWindow, const Vector<String>& text, ExceptionState& exceptionState)
-{
-    ASSERT(callingWindow);
-    StringBuilder builder;
-    for (const String& string : text)
-        builder.append(string);
-    writeln(builder.toString(), callingWindow->document(), exceptionState);
-}
-
 }

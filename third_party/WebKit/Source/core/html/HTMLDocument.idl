@@ -24,16 +24,6 @@
 // https://html.spec.whatwg.org/#the-window-object
 
 interface HTMLDocument : Document {
-    // https://html.spec.whatwg.org/#the-document-object
-    // TODO(philipj): The below should be moved to Document. crbug.com/496376
-
-    // dynamic markup insertion
-    // FIXME: There are two open() methods in the spec.
-    [Custom, CustomElementCallbacks] void open();
-    [RaisesException] void close();
-    [CallWith=ActiveWindow, CustomElementCallbacks, RaisesException] void write(DOMString... text);
-    [CallWith=ActiveWindow, CustomElementCallbacks, RaisesException] void writeln(DOMString... text);
-
     // https://html.spec.whatwg.org/#Document-partial
 
     // FIXME: *Color should have [TreatNullAs=EmptyString].

@@ -2352,11 +2352,23 @@ void Document::open(Document* ownerDocument, ExceptionState& exceptionState)
         return;
     }
 
+    if (!isHTMLDocument()) {
+        exceptionState.throwDOMException(InvalidStateError, "Only HTML documents support open().");
+        return;
+    }
+
     if (ownerDocument) {
         setURL(ownerDocument->url());
         m_cookieURL = ownerDocument->cookieURL();
         setSecurityOrigin(ownerDocument->securityOrigin());
     }
+
+    open();
+}
+
+void Document::open()
+{
+    ASSERT(!importLoader());
 
     if (m_frame) {
         if (ScriptableDocumentParser* parser = scriptableDocumentParser()) {
@@ -2518,6 +2530,16 @@ void Document::close(ExceptionState& exceptionState)
         return;
     }
 
+    if (!isHTMLDocument()) {
+        exceptionState.throwDOMException(InvalidStateError, "Only HTML documents support close().");
+        return;
+    }
+
+    close();
+}
+
+void Document::close()
+{
     if (!scriptableDocumentParser() || !scriptableDocumentParser()->wasCreatedByScript() || !scriptableDocumentParser()->isParsing())
         return;
 
@@ -2764,6 +2786,11 @@ void Document::write(const SegmentedString& text, Document* ownerDocument, Excep
         return;
     }
 
+    if (!isHTMLDocument()) {
+        exceptionState.throwDOMException(InvalidStateError, "Only HTML documents support write().");
+        return;
+    }
+
     NestingLevelIncrementer nestingLevelIncrementer(m_writeRecursionDepth);
 
     m_writeRecursionIsTooDeep = (m_writeRecursionDepth > 1) && m_writeRecursionIsTooDeep;
@@ -2780,7 +2807,7 @@ void Document::write(const SegmentedString& text, Document* ownerDocument, Excep
     }
 
     if (!hasInsertionPoint)
-        open(ownerDocument);
+        open(ownerDocument, ASSERT_NO_EXCEPTION);
 
     ASSERT(m_parser);
     m_parser->insert(text);
@@ -2797,6 +2824,24 @@ void Document::writeln(const String& text, Document* ownerDocument, ExceptionSta
     if (exceptionState.hadException())
         return;
     write("\n", ownerDocument);
+}
+
+void Document::write(LocalDOMWindow* callingWindow, const Vector<String>& text, ExceptionState& exceptionState)
+{
+    ASSERT(callingWindow);
+    StringBuilder builder;
+    for (const String& string : text)
+        builder.append(string);
+    write(builder.toString(), callingWindow->document(), exceptionState);
+}
+
+void Document::writeln(LocalDOMWindow* callingWindow, const Vector<String>& text, ExceptionState& exceptionState)
+{
+    ASSERT(callingWindow);
+    StringBuilder builder;
+    for (const String& string : text)
+        builder.append(string);
+    writeln(builder.toString(), callingWindow->document(), exceptionState);
 }
 
 const KURL& Document::virtualURL() const

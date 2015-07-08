@@ -492,11 +492,16 @@ public:
 
     DocumentLoader* loader() const;
 
-    void open(Document* ownerDocument = nullptr, ExceptionState& = ASSERT_NO_EXCEPTION);
+    // This is the DOM API document.open()
+    void open(Document* ownerDocument, ExceptionState&);
+    // This is used internally and does not handle exceptions.
+    void open();
     PassRefPtrWillBeRawPtr<DocumentParser> implicitOpen(ParserSynchronizationPolicy);
 
-    // close() is the DOM API document.close()
-    void close(ExceptionState& = ASSERT_NO_EXCEPTION);
+    // This is the DOM API document.close()
+    void close(ExceptionState&);
+    // This is used internally and does not handle exceptions.
+    void close();
     // In some situations (see the code), we ignore document.close().
     // explicitClose() bypass these checks and actually tries to close the
     // input stream.
@@ -520,6 +525,8 @@ public:
     void write(const SegmentedString& text, Document* ownerDocument = nullptr, ExceptionState& = ASSERT_NO_EXCEPTION);
     void write(const String& text, Document* ownerDocument = nullptr, ExceptionState& = ASSERT_NO_EXCEPTION);
     void writeln(const String& text, Document* ownerDocument = nullptr, ExceptionState& = ASSERT_NO_EXCEPTION);
+    void write(LocalDOMWindow*, const Vector<String>& text, ExceptionState&);
+    void writeln(LocalDOMWindow*, const Vector<String>& text, ExceptionState&);
 
     bool wellFormed() const { return m_wellFormed; }
 

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "bindings/core/v8/V8HTMLDocument.h"
+#include "bindings/core/v8/V8Document.h"
 
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -38,11 +38,11 @@
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8Window.h"
 #include "core/HTMLNames.h"
+#include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLCollection.h"
-#include "core/html/HTMLDocument.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -52,15 +52,14 @@ namespace blink {
 
 // HTMLDocument ----------------------------------------------------------------
 
-void V8HTMLDocument::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+void V8Document::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    HTMLDocument* htmlDocument = V8HTMLDocument::toImpl(info.Holder());
+    Document* document = V8Document::toImpl(info.Holder());
 
     if (info.Length() > 2) {
-        RefPtrWillBeRawPtr<LocalFrame> frame = htmlDocument->frame();
+        RefPtrWillBeRawPtr<LocalFrame> frame = document->frame();
         if (!frame)
             return;
-
         // Fetch the global object for the frame.
         v8::Local<v8::Context> context = toV8Context(frame.get(), DOMWrapperWorld::current(info.GetIsolate()));
         // Bail out if we cannot get the context.
@@ -87,7 +86,7 @@ void V8HTMLDocument::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
     }
 
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "open", "Document", info.Holder(), info.GetIsolate());
-    htmlDocument->open(callingDOMWindow(info.GetIsolate())->document(), exceptionState);
+    document->open(callingDOMWindow(info.GetIsolate())->document(), exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
 

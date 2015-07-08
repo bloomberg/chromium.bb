@@ -762,6 +762,7 @@ interface Document
     getter xmlVersion
     method adoptNode
     method caretRangeFromPoint
+    method close
     method constructor
     method createAttribute
     method createAttributeNS
@@ -794,6 +795,7 @@ interface Document
     method getSelection
     method hasFocus
     method importNode
+    method open
     method queryCommandEnabled
     method queryCommandIndeterm
     method queryCommandState
@@ -804,6 +806,8 @@ interface Document
     method registerElement
     method webkitCancelFullScreen
     method webkitExitFullscreen
+    method write
+    method writeln
     setter body
     setter cookie
     setter designMode
@@ -1423,12 +1427,8 @@ interface HTMLDocument
     getter vlinkColor
     method captureEvents
     method clear
-    method close
     method constructor
-    method open
     method releaseEvents
-    method write
-    method writeln
     setter alinkColor
     setter all
     setter bgColor
