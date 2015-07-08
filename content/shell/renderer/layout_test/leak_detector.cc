@@ -26,6 +26,7 @@ const int kInitialNumberOfLiveDocuments = 1;
 const int kInitialNumberOfLiveNodes = 4;
 const int kInitialNumberOfLiveRenderObjects = 3;
 const int kInitialNumberOfLiveResources = 0;
+const int kInitialNumberOfScriptPromises = 0;
 const int kInitialNumberOfLiveFrames = 1;
 
 // In the initial state, there are two ActiveDOMObjects (FontFaceSet created by
@@ -43,6 +44,7 @@ LeakDetector::LeakDetector(BlinkTestRunner* test_runner)
   previous_result_.numberOfLiveResources = kInitialNumberOfLiveResources;
   previous_result_.numberOfLiveActiveDOMObjects =
     kInitialNumberOfLiveActiveDOMObject;
+  previous_result_.numberOfLiveScriptPromises = kInitialNumberOfScriptPromises;
   previous_result_.numberOfLiveFrames = kInitialNumberOfLiveFrames;
 }
 
@@ -96,6 +98,13 @@ void LeakDetector::onLeakDetectionComplete(
     list->AppendInteger(previous_result_.numberOfLiveActiveDOMObjects);
     list->AppendInteger(result.numberOfLiveActiveDOMObjects);
     detail.Set("numberOfLiveActiveDOMObjects", list);
+  }
+  if (previous_result_.numberOfLiveScriptPromises <
+      result.numberOfLiveScriptPromises) {
+    base::ListValue* list = new base::ListValue();
+    list->AppendInteger(previous_result_.numberOfLiveScriptPromises);
+    list->AppendInteger(result.numberOfLiveScriptPromises);
+    detail.Set("numberOfLiveScriptPromises", list);
   }
   if (previous_result_.numberOfLiveFrames < result.numberOfLiveFrames) {
     base::ListValue* list = new base::ListValue();
