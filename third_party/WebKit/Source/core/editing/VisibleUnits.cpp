@@ -62,11 +62,11 @@ using namespace WTF::Unicode;
 static Node* previousLeafWithSameEditability(Node* node, EditableType editableType)
 {
     bool editable = node->hasEditableStyle(editableType);
-    node = node->previousLeafNode();
+    node = previousAtomicLeafNode(*node);
     while (node) {
         if (editable == node->hasEditableStyle(editableType))
             return node;
-        node = node->previousLeafNode();
+        node = previousAtomicLeafNode(*node);
     }
     return 0;
 }
@@ -77,11 +77,11 @@ static Node* nextLeafWithSameEditability(Node* node, EditableType editableType =
         return 0;
 
     bool editable = node->hasEditableStyle(editableType);
-    node = node->nextLeafNode();
+    node = nextAtomicLeafNode(*node);
     while (node) {
         if (editable == node->hasEditableStyle(editableType))
             return node;
-        node = node->nextLeafNode();
+        node = nextAtomicLeafNode(*node);
     }
     return 0;
 }

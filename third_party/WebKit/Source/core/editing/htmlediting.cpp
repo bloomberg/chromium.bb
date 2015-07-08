@@ -675,6 +675,53 @@ Element* isLastPositionBeforeTable(const VisiblePosition& visiblePosition)
     return 0;
 }
 
+static Node* previousNodeConsideringAtomicNodes(const Node& start)
+{
+    if (start.previousSibling()) {
+        Node* node = start.previousSibling();
+        while (!isAtomicNode(node) && node->lastChild())
+            node = node->lastChild();
+        return node;
+    }
+    return start.parentNode();
+}
+
+static Node* nextNodeConsideringAtomicNodes(const Node& start)
+{
+    if (!isAtomicNode(&start) && start.hasChildren())
+        return start.firstChild();
+    if (start.nextSibling())
+        return start.nextSibling();
+    const Node* node = &start;
+    while (node && !node->nextSibling())
+        node = node->parentNode();
+    if (node)
+        return node->nextSibling();
+    return nullptr;
+}
+
+Node* previousAtomicLeafNode(const Node& start)
+{
+    Node* node = previousNodeConsideringAtomicNodes(start);
+    while (node) {
+        if (isAtomicNode(node))
+            return node;
+        node = previousNodeConsideringAtomicNodes(*node);
+    }
+    return nullptr;
+}
+
+Node* nextAtomicLeafNode(const Node& start)
+{
+    Node* node = nextNodeConsideringAtomicNodes(start);
+    while (node) {
+        if (isAtomicNode(node))
+            return node;
+        node = nextNodeConsideringAtomicNodes(*node);
+    }
+    return nullptr;
+}
+
 // Returns the visible position at the beginning of a node
 VisiblePosition visiblePositionBeforeNode(Node& node)
 {

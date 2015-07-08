@@ -958,54 +958,6 @@ void Node::reattachWhitespaceSiblingsIfNeeded(Text* start)
     }
 }
 
-// FIXME: This code is used by editing.  Seems like it could move over there and not pollute Node.
-Node* Node::previousNodeConsideringAtomicNodes() const
-{
-    if (previousSibling()) {
-        Node* n = previousSibling();
-        while (!isAtomicNode(n) && n->lastChild())
-            n = n->lastChild();
-        return n;
-    }
-    return parentNode();
-}
-
-Node* Node::nextNodeConsideringAtomicNodes() const
-{
-    if (!isAtomicNode(this) && hasChildren())
-        return firstChild();
-    if (nextSibling())
-        return nextSibling();
-    const Node* n = this;
-    while (n && !n->nextSibling())
-        n = n->parentNode();
-    if (n)
-        return n->nextSibling();
-    return nullptr;
-}
-
-Node* Node::previousLeafNode() const
-{
-    Node* node = previousNodeConsideringAtomicNodes();
-    while (node) {
-        if (isAtomicNode(node))
-            return node;
-        node = node->previousNodeConsideringAtomicNodes();
-    }
-    return nullptr;
-}
-
-Node* Node::nextLeafNode() const
-{
-    Node* node = nextNodeConsideringAtomicNodes();
-    while (node) {
-        if (isAtomicNode(node))
-            return node;
-        node = node->nextNodeConsideringAtomicNodes();
-    }
-    return nullptr;
-}
-
 const ComputedStyle* Node::virtualEnsureComputedStyle(PseudoId pseudoElementSpecifier)
 {
     return parentOrShadowHostNode() ? parentOrShadowHostNode()->ensureComputedStyle(pseudoElementSpecifier) : nullptr;

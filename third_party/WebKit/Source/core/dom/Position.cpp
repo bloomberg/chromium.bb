@@ -54,7 +54,7 @@ using namespace HTMLNames;
 
 static Node* nextRenderedEditable(Node* node)
 {
-    for (node = node->nextLeafNode(); node; node = node->nextLeafNode()) {
+    for (node = nextAtomicLeafNode(*node); node; node = nextAtomicLeafNode(*node)) {
         LayoutObject* layoutObject = node->layoutObject();
         if (!layoutObject)
             continue;
@@ -68,7 +68,7 @@ static Node* nextRenderedEditable(Node* node)
 
 static Node* previousRenderedEditable(Node* node)
 {
-    for (node = node->previousLeafNode(); node; node = node->previousLeafNode()) {
+    for (node = previousAtomicLeafNode(*node); node; node = previousAtomicLeafNode(*node)) {
         LayoutObject* layoutObject = node->layoutObject();
         if (!layoutObject)
             continue;

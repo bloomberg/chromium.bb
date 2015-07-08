@@ -78,6 +78,14 @@ HTMLSpanElement* tabSpanElement(const Node*);
 Element* isLastPositionBeforeTable(const VisiblePosition&);
 Element* isFirstPositionAfterTable(const VisiblePosition&);
 
+// Returns the next leaf node or nullptr if there are no more.
+// Delivers leaf nodes as if the whole DOM tree were a linear chain of its leaf nodes.
+Node* nextAtomicLeafNode(const Node& start);
+
+// Returns the previous leaf node or nullptr if there are no more.
+// Delivers leaf nodes as if the whole DOM tree were a linear chain of its leaf nodes.
+Node* previousAtomicLeafNode(const Node& start);
+
 // offset functions on Node
 
 int lastOffsetForEditing(const Node*);
