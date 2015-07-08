@@ -177,7 +177,6 @@ program_TESTS =					\
 
 check_PROGRAMS = $(program_TESTS) check_yaml
 
-
 dist_check_SCRIPTS =		\
 	check_all_tables.pl	\
 	check_endless_loop.pl	\
@@ -231,8 +230,7 @@ dist_yaml_TESTS =				\
 	letterDefTest_harness.yaml		\
 	nl-BE-g1_harness.yaml			\
 	nocross_harness.yaml			\
-	pl-pl-comp8_harness.yaml		\
-	ta-ta-g1_harness.yaml
+	pl-pl-comp8_harness.yaml
 
 TEST_EXTENSIONS = .yaml
 YAML_LOG_COMPILER = ./check_yaml
