@@ -186,7 +186,7 @@ public:
 private:
     PassRefPtr<ComputedStyle> initialStyleForElement();
 
-    void initWatchedSelectorRules(const WillBeHeapVector<RefPtrWillBeMember<StyleRule>>& watchedSelectors);
+    void initWatchedSelectorRules();
 
     // FIXME: This should probably go away, folded into FontBuilder.
     void updateFont(StyleResolverState&);

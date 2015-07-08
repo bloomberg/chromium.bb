@@ -53,12 +53,17 @@ CSSSelectorWatch::CSSSelectorWatch(Document& document)
 
 CSSSelectorWatch& CSSSelectorWatch::from(Document& document)
 {
-    CSSSelectorWatch* watch = static_cast<CSSSelectorWatch*>(WillBeHeapSupplement<Document>::from(document, kSupplementName));
+    CSSSelectorWatch* watch = fromIfExists(document);
     if (!watch) {
         watch = new CSSSelectorWatch(document);
         WillBeHeapSupplement<Document>::provideTo(document, kSupplementName, adoptPtrWillBeNoop(watch));
     }
     return *watch;
+}
+
+CSSSelectorWatch* CSSSelectorWatch::fromIfExists(Document& document)
+{
+    return static_cast<CSSSelectorWatch*>(WillBeHeapSupplement<Document>::from(document, kSupplementName));
 }
 
 void CSSSelectorWatch::callbackSelectorChangeTimerFired(Timer<CSSSelectorWatch>*)

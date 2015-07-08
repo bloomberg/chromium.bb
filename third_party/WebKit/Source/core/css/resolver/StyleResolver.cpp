@@ -155,11 +155,15 @@ StyleResolver::StyleResolver(Document& document)
         m_medium = adoptPtr(new MediaQueryEvaluator("all"));
     }
 
-    initWatchedSelectorRules(CSSSelectorWatch::from(document).watchedCallbackSelectors());
+    initWatchedSelectorRules();
 }
 
-void StyleResolver::initWatchedSelectorRules(const WillBeHeapVector<RefPtrWillBeMember<StyleRule>>& watchedSelectors)
+void StyleResolver::initWatchedSelectorRules()
 {
+    CSSSelectorWatch* watch = CSSSelectorWatch::fromIfExists(*m_document);
+    if (!watch)
+        return;
+    const WillBeHeapVector<RefPtrWillBeMember<StyleRule>>& watchedSelectors = watch->watchedCallbackSelectors();
     if (!watchedSelectors.size())
         return;
     m_watchedSelectorsRules = RuleSet::create();

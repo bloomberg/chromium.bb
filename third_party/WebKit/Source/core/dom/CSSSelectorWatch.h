@@ -49,6 +49,7 @@ public:
     virtual ~CSSSelectorWatch() { }
 
     static CSSSelectorWatch& from(Document&);
+    static CSSSelectorWatch* fromIfExists(Document&);
 
     void watchCSSSelectors(const Vector<String>& selectors);
     const WillBeHeapVector<RefPtrWillBeMember<StyleRule>>& watchedCallbackSelectors() const { return m_watchedCallbackSelectors; }

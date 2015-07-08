@@ -241,6 +241,9 @@ void WebDocument::insertStyleSheet(const WebString& sourceCode)
 void WebDocument::watchCSSSelectors(const WebVector<WebString>& webSelectors)
 {
     RefPtrWillBeRawPtr<Document> document = unwrap<Document>();
+    CSSSelectorWatch* watch = CSSSelectorWatch::fromIfExists(*document);
+    if (!watch && webSelectors.isEmpty())
+        return;
     Vector<String> selectors;
     selectors.append(webSelectors.data(), webSelectors.size());
     CSSSelectorWatch::from(*document).watchCSSSelectors(selectors);
