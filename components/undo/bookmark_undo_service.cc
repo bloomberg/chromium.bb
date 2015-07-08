@@ -176,7 +176,7 @@ void BookmarkRemoveOperation::UpdateBookmarkIds(
     undo_renumber_observer()->OnBookmarkRenumbered(element.id(), node->id());
   if (!element.is_url) {
     for (int i = 0; i < static_cast<int>(element.children.size()); ++i)
-      UpdateBookmarkIds(element.children[i], node, 0);
+      UpdateBookmarkIds(element.children[i], node, i);
   }
 }
 
