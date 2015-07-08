@@ -6,7 +6,9 @@
 #define DEVICE_BLUETOOTH_TEST_BLUETOOTH_TEST_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/message_loop/message_loop.h"
 #include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_discovery_session.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
@@ -35,7 +37,25 @@ class BluetoothTestBase : public testing::Test {
   // controlled by this test fixture.
   virtual void InitWithFakeAdapter(){};
 
+  // Callbacks that increment |callback_count_|, |error_callback_count_|:
+  void Callback();
+  void DiscoverySessionCallback(scoped_ptr<BluetoothDiscoverySession>);
+  void ErrorCallback();
+
+  // Accessors to get callbacks bound to this fixture:
+  base::Closure GetCallback();
+  BluetoothAdapter::DiscoverySessionCallback GetDiscoverySessionCallback();
+  BluetoothAdapter::ErrorCallback GetErrorCallback();
+
+  // A Message loop is required by some implementations that will PostTasks and
+  // by base::RunLoop().RunUntilIdle() use in this fixuture.
+  base::MessageLoop message_loop_;
+
   scoped_refptr<BluetoothAdapter> adapter_;
+  ScopedVector<BluetoothDiscoverySession> discovery_sessions_;
+  int callback_count_ = 0;
+  int error_callback_count_ = 0;
+  bool run_message_loop_to_wait_for_callbacks_ = true;
 };
 
 }  // namespace device

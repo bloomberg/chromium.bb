@@ -4,12 +4,19 @@
 
 package org.chromium.device.bluetooth;
 
+import android.annotation.TargetApi;
+import android.bluetooth.le.ScanFilter;
+import android.os.Build;
+
 import org.chromium.base.CalledByNative;
 import org.chromium.base.Log;
+
+import java.util.List;
 
 /**
  * Fake implementations of android.bluetooth.* classes for testing.
  */
+@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 class Fakes {
     private static final String TAG = "cr.Bluetooth";
 
@@ -17,6 +24,8 @@ class Fakes {
      * Fakes android.bluetooth.BluetoothAdapter.
      */
     static class FakeBluetoothAdapter extends Wrappers.BluetoothAdapterWrapper {
+        private final FakeBluetoothLeScanner mFakeScanner;
+
         /**
          * Creates a FakeBluetoothAdapter.
          */
@@ -27,7 +36,8 @@ class Fakes {
         }
 
         private FakeBluetoothAdapter() {
-            super(null);
+            super(null, new FakeBluetoothLeScanner());
+            mFakeScanner = (FakeBluetoothLeScanner) mScanner;
         }
 
         // -----------------------------------------------------------------------------------------
@@ -56,6 +66,74 @@ class Fakes {
         @Override
         public boolean isDiscovering() {
             return false;
+        }
+    }
+
+    /**
+     * Fakes android.bluetooth.le.BluetoothLeScanner.
+     */
+    static class FakeBluetoothLeScanner extends Wrappers.BluetoothLeScannerWrapper {
+        public Wrappers.ScanCallbackWrapper mCallback;
+
+        private FakeBluetoothLeScanner() {
+            super(null);
+        }
+
+        @Override
+        public void startScan(List<ScanFilter> filters, int scanSettingsScanMode,
+                Wrappers.ScanCallbackWrapper callback) {
+            if (mCallback != null) {
+                throw new IllegalArgumentException(
+                        "FakeBluetoothLeScanner does not support multiple scans.");
+            }
+            mCallback = callback;
+        }
+
+        @Override
+        public void stopScan(Wrappers.ScanCallbackWrapper callback) {
+            if (mCallback != callback) {
+                throw new IllegalArgumentException("No scan in progress.");
+            }
+            mCallback = null;
+        }
+    }
+
+    /**
+     * Fakes android.bluetooth.le.ScanResult
+     */
+    static class FakeScanResult extends Wrappers.ScanResultWrapper {
+        private final FakeBluetoothDevice mDevice;
+
+        FakeScanResult(FakeBluetoothDevice device) {
+            super(null);
+            mDevice = device;
+        }
+
+        @Override
+        public Wrappers.BluetoothDeviceWrapper getDevice() {
+            return mDevice;
+        }
+    }
+
+    /**
+     * Fakes android.bluetooth.BluetoothDevice.
+     */
+    static class FakeBluetoothDevice extends Wrappers.BluetoothDeviceWrapper {
+        private static final String ADDRESS = "A1:B2:C3:DD:DD:DD";
+        private static final String NAME = "FakeBluetoothDevice";
+
+        public FakeBluetoothDevice() {
+            super(null);
+        }
+
+        @Override
+        public String getAddress() {
+            return ADDRESS;
+        }
+
+        @Override
+        public String getName() {
+            return NAME;
         }
     }
 }

@@ -4,12 +4,45 @@
 
 #include "device/bluetooth/test/bluetooth_test.h"
 
+#include "base/bind.h"
+#include "base/logging.h"
+#include "base/run_loop.h"
+#include "device/bluetooth/bluetooth_adapter.h"
+
 namespace device {
 
 BluetoothTestBase::BluetoothTestBase() {
 }
 
 BluetoothTestBase::~BluetoothTestBase() {
+}
+
+void BluetoothTestBase::Callback() {
+  ++callback_count_;
+}
+
+void BluetoothTestBase::DiscoverySessionCallback(
+    scoped_ptr<BluetoothDiscoverySession> discovery_session) {
+  ++callback_count_;
+  discovery_sessions_.push_back(discovery_session.release());
+}
+
+void BluetoothTestBase::ErrorCallback() {
+  ++error_callback_count_;
+}
+
+base::Closure BluetoothTestBase::GetCallback() {
+  return base::Bind(&BluetoothTestBase::Callback, base::Unretained(this));
+}
+
+BluetoothAdapter::DiscoverySessionCallback
+BluetoothTestBase::GetDiscoverySessionCallback() {
+  return base::Bind(&BluetoothTestBase::DiscoverySessionCallback,
+                    base::Unretained(this));
+}
+
+BluetoothAdapter::ErrorCallback BluetoothTestBase::GetErrorCallback() {
+  return base::Bind(&BluetoothTestBase::ErrorCallback, base::Unretained(this));
 }
 
 }  // namespace device
