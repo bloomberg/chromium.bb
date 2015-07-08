@@ -41,8 +41,11 @@
     'bluetooth': {
       'filepath': '[Bb]luetooth'
     },
-    'canvas': {
-      'filepath': 'Source/core/html/canvas/'
+    'canvas2d': {
+      'filepath': 'Source/core/html/canvas' \
+                  '|Source/core/html/HTMLCanvasElement' \
+                  '|Source/modules/canvas2d' \
+                  '|Source/platform/graphics/Canvas2D',
     },
     'clipboard': {
       'filepath': 'Source/core/clipboard' \
@@ -363,9 +366,9 @@
                   'vivekg@chromium.org',
                   'vivek.vg@samsung.com' ],
     'bluetooth': [ 'scheib+watch@chromium.org' ],
-    'canvas': [ 'cabanier@adobe.com',
-                'dongseong.hwang@intel.com',
-                'junov@chromium.org' ],
+    'canvas2d': [ 'cabanier@adobe.com',
+                  'dongseong.hwang@intel.com',
+                  'junov@chromium.org' ],
     'clipboard': [ 'dcheng@chromium.org', ],
     'content_security_policy': [ 'mkwst+watchlist-csp@chromium.org' ],
     'css': [ 'alexis.menard@intel.com',
