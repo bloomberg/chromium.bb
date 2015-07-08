@@ -29,7 +29,6 @@ class TestInterstitialPageDelegate : public InterstitialPageDelegate {
   std::string GetHTMLContents() override {
     return "<html>"
            "<head>"
-           "<title>LOADED</title>"
            "<script>"
            "function focus_select_input() {"
            "  document.getElementById('input').select();"
@@ -241,10 +240,7 @@ class InterstitialPageImplTest : public ContentBrowserTest {
         new InterstitialTitleUpdateWatcher(interstitial_.get());
 
     // Wait until page loads completely.
-    if (web_contents->GetTitle() != base::ASCIIToUTF16("LOADED")) {
-      title_update_watcher_->InitWait("LOADED");
-      title_update_watcher_->Wait();
-    }
+    ASSERT_TRUE(WaitForRenderFrameReady(interstitial_->GetMainFrame()));
   }
 
   void TearDownInterstitialPage() {
