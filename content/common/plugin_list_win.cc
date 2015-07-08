@@ -28,7 +28,6 @@ namespace {
 
 const base::char16 kRegistryApps[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\App Paths";
-const base::char16 kRegistryFirefox[] = L"firefox.exe";
 const base::char16 kRegistryAcrobat[] = L"Acrobat.exe";
 const base::char16 kRegistryAcrobatReader[] = L"AcroRd32.exe";
 const base::char16 kRegistryWindowsMedia[] = L"wmplayer.exe";

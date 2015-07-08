@@ -43,7 +43,6 @@ namespace content {
 namespace {
 
 const wchar_t kWebPluginDelegateProperty[] = L"WebPluginDelegateProperty";
-const wchar_t kPluginFlashThrottle[] = L"FlashThrottle";
 
 // The fastest we are willing to process WM_USER+1 events for Flash.
 // Flash can easily exceed the limits of our CPU if we don't throttle it.

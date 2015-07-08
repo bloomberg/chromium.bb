@@ -25,11 +25,6 @@ using std::max;
 using std::min;
 
 namespace aura {
-namespace {
-
-bool use_popup_as_root_window_for_test = false;
-
-}  // namespace
 
 // static
 WindowTreeHost* WindowTreeHost::Create(const gfx::Rect& bounds) {

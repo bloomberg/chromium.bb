@@ -13,10 +13,7 @@
 
 namespace {
 
-int kDefaultDPIX = 96;
-int kDefaultDPIY = 96;
-
-bool force_highdpi_for_testing = false;
+int kDefaultDPI = 96;
 
 float g_device_scale_factor = 0.0f;
 
@@ -26,7 +23,7 @@ float GetUnforcedDeviceScaleFactor() {
   if (g_device_scale_factor)
     return g_device_scale_factor;
   return static_cast<float>(gfx::GetDPI().width()) /
-      static_cast<float>(kDefaultDPIX);
+      static_cast<float>(kDefaultDPI);
 }
 
 }  // namespace

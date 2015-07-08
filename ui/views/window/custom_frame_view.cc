@@ -48,12 +48,15 @@ const int kCaptionButtonHeightWithPadding = 19;
 const int kTitlebarTopAndBottomEdgeThickness = 2;
 // The icon is inset 2 px from the left frame border.
 const int kIconLeftSpacing = 2;
-// The icon never shrinks below 16 px on a side.
-const int kIconMinimumSize = 16;
 // The space between the window icon and the title text.
 const int kTitleIconOffsetX = 4;
 // The space between the title text and the caption buttons.
 const int kTitleCaptionSpacing = 5;
+
+#if !defined(OS_WIN)
+// The icon never shrinks below 16 px on a side.
+const int kIconMinimumSize = 16;
+#endif
 
 #if defined(OS_CHROMEOS)
 // Chrome OS uses a dark gray.

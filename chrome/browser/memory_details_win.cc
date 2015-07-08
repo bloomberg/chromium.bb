@@ -25,7 +25,7 @@
 using content::BrowserThread;
 
 // Known browsers which we collect details for.
-enum {
+enum BrowserProcess {
   CHROME_BROWSER = 0,
   CHROME_NACL_PROCESS,
   IE_BROWSER,
@@ -35,7 +35,7 @@ enum {
   IE_64BIT_BROWSER,
   KONQUEROR_BROWSER,
   MAX_BROWSERS
-} BrowserProcess;
+};
 
 MemoryDetails::MemoryDetails() {
   base::FilePath browser_process_path;

@@ -9,6 +9,8 @@
 #include <atlcom.h>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "base/macros.h"
 
 namespace ui {
 namespace win {
@@ -28,6 +30,7 @@ static void CreateATLModuleIfNeeded() {
   if (_pAtlModule == NULL) {
     // This creates the module and automatically updates _pAtlModule.
     CR_DEFINE_STATIC_LOCAL(CComModule, module, ());
+    ALLOW_UNUSED_LOCAL(module);
   }
 }
 

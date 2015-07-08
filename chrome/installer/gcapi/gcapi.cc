@@ -58,14 +58,9 @@ const wchar_t kChromeRegClientsKey[] =
 const wchar_t kChromeRegClientStateKey[] =
     L"Software\\Google\\Update\\ClientState\\"
     L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
-const wchar_t kChromeRegClientStateMediumKey[] =
-    L"Software\\Google\\Update\\ClientStateMedium\\"
-    L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
 
 const wchar_t kGCAPITempKey[] = L"Software\\Google\\GCAPITemp";
 
-const wchar_t kChromeRegLaunchCmd[] = L"InstallerSuccessLaunchCmdLine";
-const wchar_t kChromeRegLastLaunchCmd[] = L"LastInstallerSuccessLaunchCmdLine";
 const wchar_t kChromeRegVersion[] = L"pv";
 const wchar_t kNoChromeOfferUntil[] =
     L"SOFTWARE\\Google\\No Chrome Offer Until";

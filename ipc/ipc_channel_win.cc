@@ -69,7 +69,6 @@ void ChannelWin::Close() {
     pipe_.Close();
 
   // Make sure all IO has completed.
-  base::Time start = base::Time::Now();
   while (input_state_.is_pending || output_state_.is_pending) {
     base::MessageLoopForIO::current()->WaitForIOCompletion(INFINITE, this);
   }

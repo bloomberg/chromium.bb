@@ -33,7 +33,9 @@ bool g_enabled_for_tests = false;
 const char kEnableDevModeWarningExperimentName[] =
     "ExtensionDeveloperModeWarning";
 
+#if !defined(OS_WIN)
 const char kEnableProxyWarningExperimentName[] = "ExtensionProxyWarning";
+#endif
 
 bool IsExperimentEnabled(const char* experiment_name) {
   // Don't allow turning it off via command line.

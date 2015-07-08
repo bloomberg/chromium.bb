@@ -36,7 +36,6 @@ const wchar_t kGoogleUpdatePipeName[] = L"\\\\.\\pipe\\GoogleCrashServices\\";
 const wchar_t kSystemPrincipalSid[] = L"S-1-5-18";
 
 const wchar_t kNoErrorDialogs[] = L"noerrdialogs";
-const wchar_t kChromeHeadless[] = L"CHROME_HEADLESS";
 
 google_breakpad::CustomClientInfo* GetCustomInfo() {
   base::string16 process = IsNonBrowserProcess() ? L"renderer" : L"browser";

@@ -338,7 +338,6 @@ DownloadInterruptReason BaseFile::MoveFileAndAdjustPermissions(
   move_info.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI |
       FOF_NOCONFIRMMKDIR | FOF_NOCOPYSECURITYATTRIBS;
 
-  base::TimeTicks now = base::TimeTicks::Now();
   int result = SHFileOperation(&move_info);
   DownloadInterruptReason interrupt_reason = DOWNLOAD_INTERRUPT_REASON_NONE;
 

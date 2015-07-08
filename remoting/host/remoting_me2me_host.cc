@@ -116,8 +116,14 @@ using remoting::protocol::NetworkSettings;
 
 namespace {
 
+#if !defined(REMOTING_MULTI_PROCESS)
 // This is used for tagging system event logs.
 const char kApplicationName[] = "chromoting";
+
+// Value used for --host-config option to indicate that the path must be read
+// from stdin.
+const char kStdinConfigPath[] = "-";
+#endif  // !defined(REMOTING_MULTI_PROCESS)
 
 #if defined(OS_LINUX)
 // The command line switch used to pass name of the pipe to capture audio on
@@ -138,10 +144,6 @@ const char kEnableVp9SwitchName[] = "enable-vp9";
 
 // Command line switch used to enable and configure the frame-recorder.
 const char kFrameRecorderBufferKbName[] = "frame-recorder-buffer-kb";
-
-// Value used for --host-config option to indicate that the path must be read
-// from stdin.
-const char kStdinConfigPath[] = "-";
 
 const char kWindowIdSwitchName[] = "window-id";
 

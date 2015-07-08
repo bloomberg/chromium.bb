@@ -20,8 +20,6 @@
 
 namespace {
 
-const int kSdpBytesBufferSize = 1024;
-
 const char kApiUnavailable[] = "This API is not implemented on this platform.";
 
 }  // namespace

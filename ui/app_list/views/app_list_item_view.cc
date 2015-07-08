@@ -49,8 +49,10 @@ const int kFolderPreviewRadius = 40;
 
 const int kLeftRightPaddingChars = 1;
 
+#if !defined(OS_WIN)
 // Scale to transform the icon when a drag starts.
 const float kDraggingIconScale = 1.5f;
+#endif
 
 // Delay in milliseconds of when the dragging UI should be shown for mouse drag.
 const int kMouseDragUIDelayInMs = 200;

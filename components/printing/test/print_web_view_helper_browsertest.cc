@@ -404,7 +404,7 @@ struct TestPageData {
   const wchar_t* file;
 };
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_MACOSX) && defined(ENABLE_BASIC_PRINTING)
 const TestPageData kTestPages[] = {
     {
      "<html>"
@@ -417,23 +417,17 @@ const TestPageData kTestPages[] = {
      "<body style=\"background-color: white;\">"
      "<p style=\"font-family: arial;\">Hello World!</p>"
      "</body>",
-#if defined(OS_MACOSX)
-     // Mac printing code compensates for the WebKit scale factor while
-     // generating
-     // the metafile, so we expect smaller pages.
      1,
+     // Mac printing code compensates for the WebKit scale factor while
+     // generating the metafile, so we expect smaller pages. (On non-Mac
+     // platforms, this would be 675x900).
      600,
      780,
-#else
-     1,
-     675,
-     900,
-#endif
      NULL,
      NULL,
     },
 };
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#endif  // defined(OS_MACOSX) && defined(ENABLE_BASIC_PRINTING)
 }  // namespace
 
 // TODO(estade): need to port MockPrinter to get this on Linux. This involves

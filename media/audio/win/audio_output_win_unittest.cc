@@ -32,9 +32,6 @@ using ::testing::Return;
 
 namespace media {
 
-static const wchar_t kAudioFile1_16b_m_16K[]
-    = L"media\\test\\data\\sweep02_16b_mono_16KHz.raw";
-
 static int ClearData(AudioBus* audio_bus, uint32 total_bytes_delay) {
   audio_bus->Zero();
   return audio_bus->frames();

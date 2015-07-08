@@ -14,14 +14,12 @@ const char kTestNoRfcommSdpBytes[] =
     "35510900000a00010001090001350319110a09000435103506190100090019350619001909"
     "010209000535031910020900093508350619110d090102090100250c417564696f20536f75"
     "726365090311090001";
-const int kTestNoRfcommSdpBytesSize = sizeof(kTestNoRfcommSdpBytes) / 2;
 const device::BluetoothUUID kTestNoRfcommSdpUuid("110a");
 
 const char kTestRfcommSdpBytes[] =
     "354b0900000a000100030900013506191112191203090004350c3503190100350519000308"
     "0b090005350319100209000935083506191108090100090100250d566f6963652047617465"
     "776179";
-const int kTestRfcommSdpBytesSize = sizeof(kTestRfcommSdpBytes) / 2;
 const device::BluetoothUUID kTestRfcommSdpUuid("1112");
 const int kTestRfcommChannel = 11;
 

@@ -64,6 +64,12 @@ using base::FilePath;
 
 namespace {
 
+const char kSignalFileSlow[] = "SlowChildProcess.die";
+const char kSignalFileKill[] = "KilledChildProcess.die";
+
+#if defined(OS_POSIX)
+const char kSignalFileTerm[] = "TerminatedChildProcess.die";
+
 #if defined(OS_ANDROID)
 const char kShellPath[] = "/system/bin/sh";
 const char kPosixShell[] = "sh";
@@ -71,13 +77,7 @@ const char kPosixShell[] = "sh";
 const char kShellPath[] = "/bin/sh";
 const char kPosixShell[] = "bash";
 #endif
-
-const char kSignalFileSlow[] = "SlowChildProcess.die";
-const char kSignalFileKill[] = "KilledChildProcess.die";
-
-#if defined(OS_POSIX)
-const char kSignalFileTerm[] = "TerminatedChildProcess.die";
-#endif
+#endif  // defined(OS_POSIX)
 
 #if defined(OS_WIN)
 const int kExpectedStillRunningExitCode = 0x102;

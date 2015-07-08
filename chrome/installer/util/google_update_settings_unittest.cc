@@ -32,7 +32,10 @@ using installer::ChannelInfo;
 namespace {
 
 const wchar_t kTestProductGuid[] = L"{89F1B351-B15D-48D4-8F10-1298721CF13D}";
+
+#if defined(GOOGLE_CHROME_BUILD)
 const wchar_t kTestExperimentLabel[] = L"test_label_value";
+#endif
 
 // This test fixture redirects the HKLM and HKCU registry hives for
 // the duration of the test to make it independent of the machine

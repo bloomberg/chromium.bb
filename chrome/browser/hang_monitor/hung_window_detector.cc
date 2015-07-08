@@ -11,13 +11,6 @@
 #include "chrome/browser/hang_monitor/hang_crash_dump_win.h"
 #include "content/public/common/result_codes.h"
 
-namespace {
-
-// How long do we wait for the terminated thread or process to die (in ms)
-static const int kTerminateTimeout = 2000;
-
-}  // namespace
-
 const wchar_t HungWindowDetector::kHungChildWindowTimeout[] =
     L"Chrome_HungChildWindowTimeout";
 

@@ -24,9 +24,6 @@
 
 namespace {
 
-const char kMapViewOfSectionName[] = "NtMapViewOfSection";
-const char kUnmapViewOfSectionName[] = "NtUnmapViewOfSection";
-
 // Standard allocation granularity and page size for Windows.
 const size_t kAllocGranularity = 65536;
 const size_t kPageSize = 4096;

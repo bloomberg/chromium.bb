@@ -28,12 +28,12 @@ const wchar_t kUnitTestRegistrySubKey[] = L"SOFTWARE\\Chromium Unit Tests";
 const wchar_t kUnitTestUserOverrideSubKey[] =
     L"SOFTWARE\\Chromium Unit Tests\\HKCU Override";
 
-const wchar_t* const kProfileKey =
+const wchar_t kProfileKey[] =
     L"Software\\Google\\Google Toolbar\\4.0\\Autofill\\Profiles";
-const wchar_t* const kCreditCardKey =
+const wchar_t kCreditCardKey[] =
     L"Software\\Google\\Google Toolbar\\4.0\\Autofill\\Credit Cards";
-const wchar_t* const kPasswordHashValue = L"password_hash";
-const wchar_t* const kSaltValue = L"salt";
+const wchar_t kPasswordHashValue[] = L"password_hash";
+const wchar_t kSaltValue[] = L"salt";
 
 struct ValueDescription {
   wchar_t const* const value_name;
@@ -70,19 +70,20 @@ ValueDescription credit_card[] = {
 };
 
 ValueDescription empty_salt = {
-  L"salt", L"\x1\x2\x3\x4\x5\x6\x7\x8\x9\xA\xB\xC\xD\xE\xF\x10\x11\x12\x13\x14"
+  kSaltValue,
+  L"\x1\x2\x3\x4\x5\x6\x7\x8\x9\xA\xB\xC\xD\xE\xF\x10\x11\x12\x13\x14"
 };
 
 ValueDescription empty_password = {
-  L"password_hash", L""
+  kPasswordHashValue, L""
 };
 
 ValueDescription protected_salt = {
-  L"salt", L"\x4854\xB906\x9C7C\x50A6\x4376\xFD9D\x1E02"
+  kSaltValue, L"\x4854\xB906\x9C7C\x50A6\x4376\xFD9D\x1E02"
 };
 
 ValueDescription protected_password = {
-  L"password_hash", L"\x18B7\xE586\x459B\x7457\xA066\x3842\x71DA"
+  kPasswordHashValue, L"\x18B7\xE586\x459B\x7457\xA066\x3842\x71DA"
 };
 
 void EncryptAndWrite(RegKey* key, const ValueDescription* value) {

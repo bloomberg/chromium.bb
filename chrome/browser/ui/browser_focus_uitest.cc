@@ -55,9 +55,11 @@ using content::WebContents;
 
 namespace {
 
+#if defined(OS_POSIX)
 // The delay waited in some cases where we don't have a notifications for an
 // action we take.
 const int kActionDelayMs = 500;
+#endif
 
 const char kSimplePage[] = "/focus/page_with_focus.html";
 const char kStealFocusPage[] = "/focus/page_steals_focus.html";

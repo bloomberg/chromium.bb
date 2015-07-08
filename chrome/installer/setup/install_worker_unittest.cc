@@ -502,9 +502,6 @@ TEST_F(InstallWorkerTest, TestInstallChromeSingleSystem) {
 
 namespace {
 
-const wchar_t elevation_key[] =
-    L"SOFTWARE\\Microsoft\\Internet Explorer\\Low Rights\\ElevationPolicy\\"
-    L"{E0A900DF-9611-4446-86BD-4B1D47E7DB2A}";
 const wchar_t old_elevation_key[] =
     L"SOFTWARE\\Microsoft\\Internet Explorer\\Low Rights\\ElevationPolicy\\"
     L"{6C288DD7-76FB-4721-B628-56FAC252E199}";

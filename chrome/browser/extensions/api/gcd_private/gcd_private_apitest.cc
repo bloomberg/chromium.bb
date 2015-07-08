@@ -144,6 +144,7 @@ const uint8 kGoodbyePacket[] = {
     'o',  'c',  'a',  'l',  0x00,
 };
 
+#if !defined(OS_WIN) || defined(NDEBUG)
 const uint8 kQueryPacket[] = {
     // Header
     0x00, 0x00,  // ID is zeroed out
@@ -159,6 +160,7 @@ const uint8 kQueryPacket[] = {
     'p',  0x05, 'l', 'o', 'c', 'a', 'l', 0x00, 0x00, 0x0c,  // TYPE is PTR.
     0x00, 0x01,                                             // CLASS is IN.
 };
+#endif  // !defined(OS_WIN) || defined(NDEBUG)
 
 #endif  // ENABLE_MDNS
 

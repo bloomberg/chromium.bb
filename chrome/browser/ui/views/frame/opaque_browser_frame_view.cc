@@ -76,8 +76,10 @@ const int kResizeAreaCornerSize = 16;
 // The content left/right images have a shadow built into them.
 const int kContentEdgeShadowThickness = 2;
 
+#if !defined(OS_WIN)
 // The icon never shrinks below 16 px on a side.
 const int kIconMinimumSize = 16;
+#endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // The number of pixels to move the frame background image upwards when using

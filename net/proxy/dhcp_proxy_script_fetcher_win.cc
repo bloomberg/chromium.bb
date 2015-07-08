@@ -43,14 +43,6 @@ const int kMaxDhcpLookupThreads = 12;
 // adapter finishes first.
 const int kMaxWaitAfterFirstResultMs = 400;
 
-const int kGetAdaptersAddressesErrors[] = {
-  ERROR_ADDRESS_NOT_ASSOCIATED,
-  ERROR_BUFFER_OVERFLOW,
-  ERROR_INVALID_PARAMETER,
-  ERROR_NOT_ENOUGH_MEMORY,
-  ERROR_NO_DATA,
-};
-
 }  // namespace
 
 namespace net {

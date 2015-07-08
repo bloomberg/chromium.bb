@@ -55,10 +55,7 @@ const base::FilePath::CharType kInternalFlashPluginFileName[] =
 const base::FilePath::CharType kPepperFlashBaseDirectory[] =
     FILE_PATH_LITERAL("PepperFlash");
 
-#if defined(OS_WIN)
-const base::FilePath::CharType kPepperFlashSystemBaseDirectory[] =
-    FILE_PATH_LITERAL("Macromed\\Flash");
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
 const base::FilePath::CharType kPepperFlashSystemBaseDirectory[] =
     FILE_PATH_LITERAL("Internet Plug-Ins/PepperFlashPlayer");
 #endif

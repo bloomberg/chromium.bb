@@ -94,9 +94,11 @@ const wchar_t kSystemPrincipalSid[] =L"S-1-5-18";
 google_breakpad::ExceptionHandler* g_breakpad = NULL;
 google_breakpad::ExceptionHandler* g_dumphandler_no_crash = NULL;
 
+#if !defined(_WIN64)
 EXCEPTION_POINTERS g_surrogate_exception_pointers = {0};
 EXCEPTION_RECORD g_surrogate_exception_record = {0};
 CONTEXT g_surrogate_context = {0};
+#endif  // !defined(_WIN64)
 
 typedef NTSTATUS (WINAPI* NtTerminateProcessPtr)(HANDLE ProcessHandle,
                                                  NTSTATUS ExitStatus);

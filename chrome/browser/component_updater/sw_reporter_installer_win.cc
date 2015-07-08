@@ -50,9 +50,6 @@ enum SRTCompleted {
   SRT_COMPLETED_MAX,
 };
 
-// The maximum number of times to retry a download on startup.
-const int kMaxRetry = 20;
-
 // CRX hash. The extension id is: gkmgaooipdjhmangpemjhigmamcehddo. The hash was
 // generated in Python with something like this:
 // hashlib.sha256().update(open("<file>.crx").read()[16:16+294]).digest().

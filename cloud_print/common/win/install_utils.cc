@@ -22,7 +22,6 @@ namespace {
 // Google Update related constants.
 const wchar_t kClientsKey[] = L"SOFTWARE\\Google\\Update\\Clients\\";
 const wchar_t kClientStateKey[] = L"SOFTWARE\\Google\\Update\\ClientState\\";
-const wchar_t* kUsageKey = L"dr";
 const wchar_t kVersionKey[] = L"pv";
 const wchar_t kNameKey[] = L"name";
 

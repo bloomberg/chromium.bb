@@ -57,7 +57,6 @@ const wchar_t k7zaExe[] = L"7za.exe";
 const wchar_t k7zaPathRelative[] = L"..\\..\\third_party\\lzma_sdk\\Executable";
 const wchar_t kB7[] = L"B7";
 const wchar_t kBl[] = L"BL";
-const wchar_t kChrome7z[] = L"chrome.7z";
 const wchar_t kChromeBin[] = L"Chrome-bin";
 const wchar_t kChromePacked7z[] = L"chrome.packed.7z";
 const wchar_t kExe[] = L"exe";

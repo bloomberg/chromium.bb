@@ -19,8 +19,6 @@ namespace remoting {
 
 namespace {
 
-const wchar_t kWindowClassFormat[] = L"Chromoting_LocalInputMonitorWin_%p";
-
 // From the HID Usage Tables specification.
 const USHORT kGenericDesktopPage = 1;
 const USHORT kMouseUsage = 2;

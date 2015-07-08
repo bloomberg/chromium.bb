@@ -16,6 +16,7 @@
 
 namespace {
 
+#if !defined(_WIN64)
 // We must make sure not to include modules here that are likely to get unloaded
 // because the scanning of the module is not done within a loader lock, so is
 // not resilient to changes made to the modules list.
@@ -24,6 +25,7 @@ const wchar_t* const kModulesToScan[] = {
   L"kernel32.dll",
   L"user32.dll"
 };
+#endif  // !defined(_WIN64)
 
 bool AddressBeyondRange(const ModuleInfo& module, uintptr_t address) {
   return module.base_address + module.size < address;
