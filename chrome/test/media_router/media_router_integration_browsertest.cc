@@ -84,6 +84,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Basic) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
+  ExecuteJavaScriptAPI(web_contents, "waitUntilDeviceAvailable();");
   content::TestNavigationObserver test_navigation_observer(web_contents, 1);
   test_navigation_observer.StartWatchingNewWebContents();
   ExecuteJavaScriptAPI(web_contents, "startSession();");

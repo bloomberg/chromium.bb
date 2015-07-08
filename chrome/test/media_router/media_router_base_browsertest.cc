@@ -14,6 +14,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/switches.h"
+
 
 namespace {
 // Command line argument to specify CRX extension location.
@@ -28,6 +30,8 @@ MediaRouterBaseBrowserTest::MediaRouterBaseBrowserTest()
     : extension_load_event_(false, false), extension_host_created_(false) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableMediaRouter);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      extensions::switches::kEnableExtensionActionRedesign);
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kEnableBlinkFeatures, "Presentation");
 }

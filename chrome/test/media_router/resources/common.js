@@ -10,24 +10,32 @@
 var startSessionPromise = null;
 var currentSession = null;
 var presentation = window.navigator.presentation;
-
+var presUrl = "http://www.google.com/#__testprovider__=true";
 
 /**
- * Waits until one device is available then starts session.
+ * Waits until one device is available.
+ */
+function waitUntilDeviceAvailable() {
+  presentation.getAvailability(presUrl).then(function(availability) {
+    console.log('availability ' + availability.value + '\n');
+    if (availability.value) {
+      sendResult(true, '');
+    } else {
+      sendResult(false, 'device unavailable');
+    }
+  }).catch(function(){
+    sendResult(false, 'got error');
+  });
+}
+
+/**
+ * Starts session.
  */
 function startSession() {
-  presentation.onavailablechange = function (e) {
-    console.log('onavailablechange ' + e.available + '\n');
-    if (!e.available) {
-      sendResult(false, 'device unavailable');
-    } else {
-      var presId = Math.random().toFixed(6).substr(2);
-      // Start new session
-      startSessionPromise = presentation.startSession(
-        "http://www.google.com/#__testprovider__=true", presId)
-      sendResult(true, '');
-    }
-  };
+  var presId = Math.random().toFixed(6).substr(2);
+  startSessionPromise = presentation.startSession(presUrl, presId);
+  console.log('start session');
+  sendResult(true, '');
 }
 
 /**
