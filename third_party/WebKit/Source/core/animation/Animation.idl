@@ -37,8 +37,7 @@ enum AnimationPlayState { "idle", "pending", "running", "paused", "finished" };
     NoInterfaceObject,
 ] interface Animation : EventTarget {
     // TODO(dstockwell): Add timeline property.
-    // TODO(dstockwell): Rename source to effect.
-    [RuntimeEnabled=WebAnimationsAPI] attribute AnimationEffectReadOnly? source;
+    [RuntimeEnabled=WebAnimationsAPI] attribute AnimationEffectReadOnly? effect;
     [Measure] attribute double?    startTime;
     [Measure] attribute double?    currentTime;
     [Measure] attribute double     playbackRate;

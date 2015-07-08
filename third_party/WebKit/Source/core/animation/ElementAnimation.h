@@ -80,8 +80,8 @@ public:
             return animationss;
 
         for (const auto& animation : element.document().timeline().getAnimations()) {
-            ASSERT(animation->source());
-            if (toKeyframeEffect(animation->source())->target() == element && (animation->source()->isCurrent() || animation->source()->isInEffect()))
+            ASSERT(animation->effect());
+            if (toKeyframeEffect(animation->effect())->target() == element && (animation->effect()->isCurrent() || animation->effect()->isInEffect()))
                 animationss.append(animation);
         }
         return animationss;

@@ -53,10 +53,10 @@ void ElementAnimations::updateAnimationFlags(ComputedStyle& style)
 {
     for (const auto& entry : m_animations) {
         const Animation& animation = *entry.key;
-        ASSERT(animation.source());
+        ASSERT(animation.effect());
         // FIXME: Needs to consider AnimationGroup once added.
-        ASSERT(animation.source()->isAnimation());
-        const KeyframeEffect& effect = *toKeyframeEffect(animation.source());
+        ASSERT(animation.effect()->isAnimation());
+        const KeyframeEffect& effect = *toKeyframeEffect(animation.effect());
         if (effect.isCurrent()) {
             if (effect.affects(PropertyHandle(CSSPropertyOpacity)))
                 style.setHasCurrentOpacityAnimation(true);

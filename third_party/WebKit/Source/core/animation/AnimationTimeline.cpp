@@ -116,7 +116,7 @@ WillBeHeapVector<RefPtrWillBeMember<Animation>> AnimationTimeline::getAnimations
 {
     WillBeHeapVector<RefPtrWillBeMember<Animation>> animations;
     for (const auto& animation : m_animations) {
-        if (animation->source() && (animation->source()->isCurrent() || animation->source()->isInEffect()))
+        if (animation->effect() && (animation->effect()->isCurrent() || animation->effect()->isInEffect()))
             animations.append(animation);
     }
     std::sort(animations.begin(), animations.end(), compareAnimations);
@@ -250,7 +250,7 @@ void AnimationTimeline::setCurrentTimeInternal(double currentTime)
         // The Player needs a timing update to pick up a new time.
         animation->setOutdated();
         // Any corresponding compositor animation will need to be restarted. Marking the
-        // source changed forces this.
+        // effect changed forces this.
         animation->setCompositorPending(true);
     }
 }
@@ -301,7 +301,7 @@ void AnimationTimeline::setPlaybackRate(double playbackRate)
 
     for (const auto& animation : m_animations) {
         // Corresponding compositor animation may need to be restarted to pick up
-        // the new playback rate. Marking the source changed forces this.
+        // the new playback rate. Marking the effect changed forces this.
         animation->setCompositorPending(true);
     }
 }

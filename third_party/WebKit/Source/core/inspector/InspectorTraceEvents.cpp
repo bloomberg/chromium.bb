@@ -742,10 +742,10 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorAnimationEvent::data(c
     RefPtr<TracedValue> value = TracedValue::create();
     value->setString("id", String::number(player.sequenceNumber()));
     value->setString("state", player.playState());
-    if (const AnimationEffect* source = player.source()) {
-        value->setString("name", source->name());
-        if (source->isAnimation()) {
-            if (Element* target = toKeyframeEffect(source)->target())
+    if (const AnimationEffect* effect = player.effect()) {
+        value->setString("name", effect->name());
+        if (effect->isAnimation()) {
+            if (Element* target = toKeyframeEffect(effect)->target())
                 setNodeInfo(value.get(), target, "nodeId", "nodeName");
         }
     }

@@ -119,7 +119,7 @@ void KeyframeEffect::specifiedTimingChanged()
 {
     if (animation()) {
         // FIXME: Needs to consider groups when added.
-        ASSERT(animation()->source() == this);
+        ASSERT(animation()->effect() == this);
         animation()->setCompositorPending(true);
     }
 }

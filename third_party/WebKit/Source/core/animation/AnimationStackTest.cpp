@@ -125,7 +125,7 @@ TEST_F(AnimationAnimationStackTest, ClearedEffectsRemoved)
     EXPECT_EQ(1u, result.size());
     EXPECT_TRUE(interpolationValue(result, CSSPropertyFontSize)->equals(AnimatableDouble::create(1).get()));
 
-    animation->setSource(0);
+    animation->setEffect(0);
     result = AnimationStack::activeInterpolations(&element->elementAnimations()->defaultStack(), 0, 0, KeyframeEffect::DefaultPriority, 0);
     EXPECT_EQ(0u, result.size());
 }

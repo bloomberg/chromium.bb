@@ -2,7 +2,7 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<!-- This tests that players get updated even if they have previously had their source content removed or go out of effect. -->
+<!-- This tests that players get updated even if they have previously had their effect removed or go out of effect. -->
 
 <div id='element'></div>
 
@@ -23,13 +23,13 @@ test(function() {
 test(function() {
     var player = document.timeline.play(keyframeEffect);
     assert_equals(getComputedStyle(element).left, '0px');
-    var source = player.source
-    player.source = null;
+    var effect = player.effect
+    player.effect = null;
     assert_equals(getComputedStyle(element).left, 'auto');
 
-    player.source = source;
+    player.effect = effect;
     assert_equals(getComputedStyle(element).left, '0px');
 
     player.finish();
-}, 'Player updated after clear and set source');
+}, 'Player updated after clear and set effect');
 </script>

@@ -18,7 +18,7 @@ test(function() {
 
 test(function() {
     var animation = element.animate(keyframes, {fill: 'both', duration: 2000, iterations: 3});
-    var keyframeEffect = animation.source;
+    var keyframeEffect = animation.effect;
     animation.currentTime = -1000;
     assert_equals(keyframeEffect.computedTiming.localTime, -1000, 'localTime');
     assert_equals(keyframeEffect.computedTiming.currentIteration, 0);
@@ -35,7 +35,7 @@ test(function() {
 
 test(function() {
     var animation = element.animate(keyframes);
-    var keyframeEffect = animation.source;
+    var keyframeEffect = animation.effect;
     animation.currentTime = -1;
     assert_equals(keyframeEffect.computedTiming.currentIteration, null);
     animation.currentTime = 1;

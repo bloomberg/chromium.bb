@@ -11,10 +11,10 @@ test(function() {
 
   assert_equals(player.currentTime, 1000);
 
-  player.source.timing.duration = 1500;
+  player.effect.timing.duration = 1500;
   document.timeline.currentTime = 2000;
 
   assert_equals(player.startTime, -1000);
   assert_equals(player.currentTime, 1500);
-}, 'Extending source content should not cause a change in start time.');
+}, 'Extending effect should not cause a change in start time.');
 </script>

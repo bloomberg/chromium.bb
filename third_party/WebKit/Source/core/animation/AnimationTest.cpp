@@ -58,7 +58,7 @@ protected:
         timeline = AnimationTimeline::create(document.get());
         animation = timeline->play(0);
         animation->setStartTime(0);
-        animation->setSource(makeAnimation().get());
+        animation->setEffect(makeAnimation().get());
     }
 
     void startTimeline()
@@ -425,9 +425,9 @@ TEST_F(AnimationAnimationTest, ReverseDoesNothingWithPlaybackRateZero)
     EXPECT_EQ(10, animation->currentTimeInternal());
 }
 
-TEST_F(AnimationAnimationTest, ReverseDoesNotSeekWithNoSource)
+TEST_F(AnimationAnimationTest, ReverseDoesNotSeekWithNoEffect)
 {
-    animation->setSource(0);
+    animation->setEffect(0);
     animation->setCurrentTimeInternal(10);
     animation->reverse();
     EXPECT_EQ(10, animation->currentTimeInternal());
@@ -476,7 +476,7 @@ TEST_F(AnimationAnimationTest, Finish)
     EXPECT_FALSE(exceptionState.hadException());
 }
 
-TEST_F(AnimationAnimationTest, FinishAfterSourceEnd)
+TEST_F(AnimationAnimationTest, FinishAfterEffectEnd)
 {
     animation->setCurrentTime(40 * 1000);
     animation->finish(exceptionState);
@@ -504,7 +504,7 @@ TEST_F(AnimationAnimationTest, FinishRaisesException)
     Timing timing;
     timing.iterationDuration = 1;
     timing.iterationCount = std::numeric_limits<double>::infinity();
-    animation->setSource(KeyframeEffect::create(0, nullptr, timing).get());
+    animation->setEffect(KeyframeEffect::create(0, nullptr, timing).get());
     animation->setCurrentTimeInternal(10);
 
     animation->finish(exceptionState);
@@ -513,7 +513,7 @@ TEST_F(AnimationAnimationTest, FinishRaisesException)
     EXPECT_EQ(InvalidStateError, exceptionState.code());
 }
 
-TEST_F(AnimationAnimationTest, LimitingAtSourceEnd)
+TEST_F(AnimationAnimationTest, LimitingAtEffectEnd)
 {
     simulateFrame(30);
     EXPECT_EQ(30, animation->currentTimeInternal());
@@ -536,9 +536,9 @@ TEST_F(AnimationAnimationTest, LimitingAtStart)
     EXPECT_FALSE(animation->paused());
 }
 
-TEST_F(AnimationAnimationTest, LimitingWithNoSource)
+TEST_F(AnimationAnimationTest, LimitingWithNoEffect)
 {
-    animation->setSource(0);
+    animation->setEffect(0);
     EXPECT_TRUE(animation->limited());
     simulateFrame(30);
     EXPECT_EQ(0, animation->currentTimeInternal());
@@ -617,37 +617,37 @@ TEST_F(AnimationAnimationTest, SetPlaybackRateMax)
 }
 
 
-TEST_F(AnimationAnimationTest, SetSource)
+TEST_F(AnimationAnimationTest, SetEffect)
 {
     animation = timeline->play(0);
     animation->setStartTime(0);
-    RefPtrWillBeRawPtr<AnimationEffect> source1 = makeAnimation();
-    RefPtrWillBeRawPtr<AnimationEffect> source2 = makeAnimation();
-    animation->setSource(source1.get());
-    EXPECT_EQ(source1, animation->source());
+    RefPtrWillBeRawPtr<AnimationEffect> effect1 = makeAnimation();
+    RefPtrWillBeRawPtr<AnimationEffect> effect2 = makeAnimation();
+    animation->setEffect(effect1.get());
+    EXPECT_EQ(effect1, animation->effect());
     EXPECT_EQ(0, animation->currentTimeInternal());
     animation->setCurrentTimeInternal(15);
-    animation->setSource(source2.get());
+    animation->setEffect(effect2.get());
     EXPECT_EQ(15, animation->currentTimeInternal());
-    EXPECT_EQ(0, source1->animation());
-    EXPECT_EQ(animation.get(), source2->animation());
-    EXPECT_EQ(source2, animation->source());
+    EXPECT_EQ(0, effect1->animation());
+    EXPECT_EQ(animation.get(), effect2->animation());
+    EXPECT_EQ(effect2, animation->effect());
 }
 
-TEST_F(AnimationAnimationTest, SetSourceLimitsAnimation)
+TEST_F(AnimationAnimationTest, SetEffectLimitsAnimation)
 {
     animation->setCurrentTimeInternal(20);
-    animation->setSource(makeAnimation(10).get());
+    animation->setEffect(makeAnimation(10).get());
     EXPECT_EQ(20, animation->currentTimeInternal());
     EXPECT_TRUE(animation->limited());
     simulateFrame(10);
     EXPECT_EQ(20, animation->currentTimeInternal());
 }
 
-TEST_F(AnimationAnimationTest, SetSourceUnlimitsAnimation)
+TEST_F(AnimationAnimationTest, SetEffectUnlimitsAnimation)
 {
     animation->setCurrentTimeInternal(40);
-    animation->setSource(makeAnimation(60).get());
+    animation->setEffect(makeAnimation(60).get());
     EXPECT_FALSE(animation->limited());
     EXPECT_EQ(40, animation->currentTimeInternal());
     simulateFrame(10);
@@ -665,13 +665,13 @@ TEST_F(AnimationAnimationTest, EmptyAnimationsDontUpdateEffects)
     EXPECT_EQ(std::numeric_limits<double>::infinity(), animation->timeToEffectChange());
 }
 
-TEST_F(AnimationAnimationTest, AnimationsDisassociateFromSource)
+TEST_F(AnimationAnimationTest, AnimationsDisassociateFromEffect)
 {
-    AnimationEffect* animationNode = animation->source();
+    AnimationEffect* animationNode = animation->effect();
     Animation* animation2 = timeline->play(animationNode);
-    EXPECT_EQ(0, animation->source());
-    animation->setSource(animationNode);
-    EXPECT_EQ(0, animation2->source());
+    EXPECT_EQ(0, animation->effect());
+    animation->setEffect(animationNode);
+    EXPECT_EQ(0, animation2->effect());
 }
 
 TEST_F(AnimationAnimationTest, AnimationsReturnTimeToNextEffect)

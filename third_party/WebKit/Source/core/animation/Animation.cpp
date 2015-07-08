@@ -58,14 +58,14 @@ static unsigned nextSequenceNumber()
 
 }
 
-PassRefPtrWillBeRawPtr<Animation> Animation::create(AnimationEffect* source, AnimationTimeline* timeline)
+PassRefPtrWillBeRawPtr<Animation> Animation::create(AnimationEffect* effect, AnimationTimeline* timeline)
 {
     if (!timeline) {
         // FIXME: Support creating animations without a timeline.
         return nullptr;
     }
 
-    RefPtrWillBeRawPtr<Animation> animation = adoptRefWillBeNoop(new Animation(timeline->document()->contextDocument().get(), *timeline, source));
+    RefPtrWillBeRawPtr<Animation> animation = adoptRefWillBeNoop(new Animation(timeline->document()->contextDocument().get(), *timeline, effect));
     animation->suspendIfNeeded();
 
     if (timeline) {
@@ -101,7 +101,7 @@ Animation::Animation(ExecutionContext* executionContext, AnimationTimeline& time
     if (m_content) {
         if (m_content->animation()) {
             m_content->animation()->cancel();
-            m_content->animation()->setSource(0);
+            m_content->animation()->setEffect(0);
         }
         m_content->attach(this);
     }
@@ -127,14 +127,14 @@ void Animation::detachFromTimeline()
 }
 #endif
 
-double Animation::sourceEnd() const
+double Animation::effectEnd() const
 {
     return m_content ? m_content->endTimeInternal() : 0;
 }
 
 bool Animation::limited(double currentTime) const
 {
-    return (m_playbackRate < 0 && currentTime <= 0) || (m_playbackRate > 0 && currentTime >= sourceEnd());
+    return (m_playbackRate < 0 && currentTime <= 0) || (m_playbackRate > 0 && currentTime >= effectEnd());
 }
 
 void Animation::setCurrentTime(double newCurrentTime)
@@ -189,15 +189,15 @@ void Animation::updateCurrentTimingState(TimingUpdateReason reason)
                 // seek of the timeline.
                 newCurrentTime = calculateCurrentTime();
             } else if (!limited(m_holdTime)) {
-                // The hold time became unlimited, eg. due to the source content
+                // The hold time became unlimited, eg. due to the effect
                 // becoming longer.
-                newCurrentTime = clampTo<double>(calculateCurrentTime(), 0, sourceEnd());
+                newCurrentTime = clampTo<double>(calculateCurrentTime(), 0, effectEnd());
             }
         }
         setCurrentTimeInternal(newCurrentTime, reason);
     } else if (limited(calculateCurrentTime())) {
         m_held = true;
-        m_holdTime = m_playbackRate < 0 ? 0 : sourceEnd();
+        m_holdTime = m_playbackRate < 0 ? 0 : effectEnd();
     }
 }
 
@@ -255,7 +255,7 @@ void Animation::preCommit(int compositorGroup, bool startOnCompositor)
     PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand, DoNotSetCompositorPending);
 
     bool softChange = m_compositorState && (paused() || m_compositorState->playbackRate != m_playbackRate);
-    bool hardChange = m_compositorState && (m_compositorState->sourceChanged || m_compositorState->startTime != m_startTime);
+    bool hardChange = m_compositorState && (m_compositorState->effectChanged || m_compositorState->startTime != m_startTime);
 
     // FIXME: softChange && !hardChange should generate a Pause/ThenStart,
     // not a Cancel, but we can't communicate these to the compositor yet.
@@ -420,8 +420,8 @@ void Animation::setStartTimeInternal(double newStartTime)
         // Force a new, limited, current time.
         m_held = false;
         double currentTime = calculateCurrentTime();
-        if (m_playbackRate > 0 && currentTime > sourceEnd()) {
-            currentTime = sourceEnd();
+        if (m_playbackRate > 0 && currentTime > effectEnd()) {
+            currentTime = effectEnd();
         } else if (m_playbackRate < 0 && currentTime < 0) {
             currentTime = 0;
         }
@@ -442,26 +442,26 @@ void Animation::setStartTimeInternal(double newStartTime)
 bool Animation::clipped(double time)
 {
     ASSERT(!isNull(time));
-    return time <= m_startClip || time > m_endClip + sourceEnd();
+    return time <= m_startClip || time > m_endClip + effectEnd();
 }
 
-void Animation::setSource(AnimationEffect* newSource)
+void Animation::setEffect(AnimationEffect* newEffect)
 {
-    if (m_content == newSource)
+    if (m_content == newEffect)
         return;
-    PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand, SetCompositorPendingWithSourceChanged);
+    PlayStateUpdateScope updateScope(*this, TimingUpdateOnDemand, SetCompositorPendingWithEffectChanged);
 
     double storedCurrentTime = currentTimeInternal();
     if (m_content)
         m_content->detach();
-    m_content = newSource;
-    if (newSource) {
+    m_content = newEffect;
+    if (newEffect) {
         // FIXME: This logic needs to be updated once groups are implemented
-        if (newSource->animation()) {
-            newSource->animation()->cancel();
-            newSource->animation()->setSource(0);
+        if (newEffect->animation()) {
+            newEffect->animation()->cancel();
+            newEffect->animation()->setEffect(0);
         }
-        newSource->attach(this);
+        newEffect->attach(this);
         setOutdated();
     }
     setCurrentTimeInternal(storedCurrentTime, TimingUpdateOnDemand);
@@ -558,12 +558,12 @@ void Animation::play()
     if (!m_content)
         return;
     double currentTime = this->currentTimeInternal();
-    if (m_playbackRate > 0 && (currentTime < 0 || currentTime >= sourceEnd())) {
+    if (m_playbackRate > 0 && (currentTime < 0 || currentTime >= effectEnd())) {
         m_startTime = nullValue();
         setCurrentTimeInternal(0, TimingUpdateOnDemand);
-    } else if (m_playbackRate < 0 && (currentTime <= 0 || currentTime > sourceEnd())) {
+    } else if (m_playbackRate < 0 && (currentTime <= 0 || currentTime > effectEnd())) {
         m_startTime = nullValue();
-        setCurrentTimeInternal(sourceEnd(), TimingUpdateOnDemand);
+        setCurrentTimeInternal(effectEnd(), TimingUpdateOnDemand);
     }
 }
 
@@ -584,12 +584,12 @@ void Animation::finish(ExceptionState& exceptionState)
     if (!m_playbackRate || playStateInternal() == Idle) {
         return;
     }
-    if (m_playbackRate > 0 && sourceEnd() == std::numeric_limits<double>::infinity()) {
-        exceptionState.throwDOMException(InvalidStateError, "Animation has source content whose end time is infinity.");
+    if (m_playbackRate > 0 && effectEnd() == std::numeric_limits<double>::infinity()) {
+        exceptionState.throwDOMException(InvalidStateError, "Animation has effect whose end time is infinity.");
         return;
     }
 
-    double newCurrentTime = m_playbackRate < 0 ? 0 : sourceEnd();
+    double newCurrentTime = m_playbackRate < 0 ? 0 : effectEnd();
     setCurrentTimeInternal(newCurrentTime, TimingUpdateOnDemand);
     if (!paused()) {
         m_startTime = calculateStartTime(newCurrentTime);
@@ -703,7 +703,7 @@ void Animation::setOutdated()
 bool Animation::canStartAnimationOnCompositor() const
 {
     // FIXME: Timeline playback rates should be compositable
-    if (m_playbackRate == 0 || (std::isinf(sourceEnd()) && m_playbackRate < 0) || (timeline() && timeline()->playbackRate() != 1))
+    if (m_playbackRate == 0 || (std::isinf(effectEnd()) && m_playbackRate < 0) || (timeline() && timeline()->playbackRate() != 1))
         return false;
 
     return m_timeline && m_content && m_content->isAnimation() && playing();
@@ -726,33 +726,33 @@ bool Animation::maybeStartAnimationOnCompositor()
 
     double startTime = timeline()->zeroTime() + startTimeInternal();
     if (reversed) {
-        startTime -= sourceEnd() / fabs(m_playbackRate);
+        startTime -= effectEnd() / fabs(m_playbackRate);
     }
 
     double timeOffset = 0;
     if (std::isnan(startTime)) {
-        timeOffset = reversed ? sourceEnd() - currentTimeInternal() : currentTimeInternal();
+        timeOffset = reversed ? effectEnd() - currentTimeInternal() : currentTimeInternal();
         timeOffset = timeOffset / fabs(m_playbackRate);
     }
     ASSERT(m_compositorGroup != 0);
     return toKeyframeEffect(m_content.get())->maybeStartAnimationOnCompositor(m_compositorGroup, startTime, timeOffset, m_playbackRate);
 }
 
-void Animation::setCompositorPending(bool sourceChanged)
+void Animation::setCompositorPending(bool effectChanged)
 {
     // FIXME: KeyframeEffect could notify this directly?
     if (!hasActiveAnimationsOnCompositor()) {
         destroyCompositorPlayer();
         m_compositorState.release();
     }
-    if (sourceChanged && m_compositorState) {
-        m_compositorState->sourceChanged = true;
+    if (effectChanged && m_compositorState) {
+        m_compositorState->effectChanged = true;
     }
     if (m_compositorPending || m_isPausedForTesting) {
         return;
     }
 
-    if (sourceChanged || !m_compositorState
+    if (effectChanged || !m_compositorState
         || !playing() || m_compositorState->playbackRate != m_playbackRate
         || m_compositorState->startTime != m_startTime) {
         m_compositorPending = true;
@@ -850,8 +850,8 @@ double Animation::timeToEffectChange()
     double currentTime = calculateCurrentTime();
     if (m_held) {
         if (limited(currentTime)) {
-            if (m_playbackRate > 0 && m_endClip + sourceEnd() > currentTime)
-                return m_endClip + sourceEnd() - currentTime;
+            if (m_playbackRate > 0 && m_endClip + effectEnd() > currentTime)
+                return m_endClip + effectEnd() - currentTime;
             if (m_playbackRate < 0 && m_startClip <= currentTime)
                 return m_startClip - currentTime;
         }
@@ -875,11 +875,11 @@ double Animation::clipTimeToEffectChange(double result) const
     if (m_playbackRate > 0) {
         if (currentTime <= m_startClip)
             result = std::min(result, (m_startClip - currentTime) / m_playbackRate);
-        else if (currentTime < m_endClip + sourceEnd())
-            result = std::min(result, (m_endClip + sourceEnd() - currentTime) / m_playbackRate);
+        else if (currentTime < m_endClip + effectEnd())
+            result = std::min(result, (m_endClip + effectEnd() - currentTime) / m_playbackRate);
     } else {
-        if (currentTime >= m_endClip + sourceEnd())
-            result = std::min(result, (currentTime - m_endClip + sourceEnd()) / -m_playbackRate);
+        if (currentTime >= m_endClip + effectEnd())
+            result = std::min(result, (currentTime - m_endClip + effectEnd()) / -m_playbackRate);
         else if (currentTime > m_startClip)
             result = std::min(result, (currentTime - m_startClip) / -m_playbackRate);
     }
@@ -1051,7 +1051,7 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope()
     case SetCompositorPending:
         m_animation->setCompositorPending();
         break;
-    case SetCompositorPendingWithSourceChanged:
+    case SetCompositorPendingWithEffectChanged:
         m_animation->setCompositorPending(true);
         break;
     case DoNotSetCompositorPending:

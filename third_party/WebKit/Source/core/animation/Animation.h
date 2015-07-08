@@ -138,9 +138,9 @@ public:
     void setStartClip(double t) { setStartClipInternal(t / 1000); }
     void setEndClip(double t) { setEndClipInternal(t / 1000); }
 
-    const AnimationEffect* source() const { return m_content.get(); }
-    AnimationEffect* source() { return m_content.get(); }
-    void setSource(AnimationEffect*);
+    const AnimationEffect* effect() const { return m_content.get(); }
+    AnimationEffect* effect() { return m_content.get(); }
+    void setEffect(AnimationEffect*);
 
     // Pausing via this method is not reflected in the value returned by
     // paused() and must never overlap with pausing via pause().
@@ -158,7 +158,7 @@ public:
     void restartAnimationOnCompositor();
     void cancelIncompatibleAnimationsOnCompositor();
     bool hasActiveAnimationsOnCompositor();
-    void setCompositorPending(bool sourceChanged = false);
+    void setCompositorPending(bool effectChanged = false);
     void notifyCompositorStartTime(double timelineTime);
     void notifyStartTime(double timelineTime);
     // WebCompositorAnimationPlayerClient implementation.
@@ -186,7 +186,7 @@ private:
 
     void clearOutdated();
 
-    double sourceEnd() const;
+    double effectEnd() const;
     bool limited(double currentTime) const;
 
     AnimationPlayState calculatePlayState();
@@ -259,19 +259,19 @@ private:
             : startTime(animation.m_startTime)
             , holdTime(animation.m_holdTime)
             , playbackRate(animation.m_playbackRate)
-            , sourceChanged(false)
+            , effectChanged(false)
             , pendingAction(Start)
         { }
         double startTime;
         double holdTime;
         double playbackRate;
-        bool sourceChanged;
+        bool effectChanged;
         CompositorAction pendingAction;
     };
 
     enum CompositorPendingChange {
         SetCompositorPending,
-        SetCompositorPendingWithSourceChanged,
+        SetCompositorPendingWithEffectChanged,
         DoNotSetCompositorPending,
     };
 
