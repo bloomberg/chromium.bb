@@ -214,10 +214,17 @@ void CardUnmaskPromptControllerImpl::NewCardLinkClicked() {
 }
 
 base::string16 CardUnmaskPromptControllerImpl::GetWindowTitle() const {
+#if defined(OS_IOS)
+  // The iOS UI has less room for the title and places a "Verify" button right
+  // next to it so the full title ("Verify your" + type and last four) is
+  // unnecessary.
+  return card_.TypeAndLastFourDigits();
+#else
   int ids = ShouldRequestExpirationDate()
       ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_UPDATE_TITLE
       : IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE;
   return l10n_util::GetStringFUTF16(ids, card_.TypeAndLastFourDigits());
+#endif
 }
 
 base::string16 CardUnmaskPromptControllerImpl::GetInstructionsMessage() const {
