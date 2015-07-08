@@ -63,8 +63,8 @@ class MockVisitor : public SpdyFramerVisitorInterface {
                     bool exclusive,
                     bool fin,
                     bool end));
-  MOCK_METHOD2(OnWindowUpdate, void(SpdyStreamId stream_id,
-                                    uint32 delta_window_size));
+  MOCK_METHOD2(OnWindowUpdate,
+               void(SpdyStreamId stream_id, int delta_window_size));
   MOCK_METHOD2(OnCredentialFrameData, bool(const char* credential_data,
                                            size_t len));
   MOCK_METHOD1(OnBlocked, void(SpdyStreamId stream_id));

@@ -231,7 +231,7 @@ void BufferedSpdyFramer::OnGoAway(SpdyStreamId last_accepted_stream_id,
 }
 
 void BufferedSpdyFramer::OnWindowUpdate(SpdyStreamId stream_id,
-                                        uint32 delta_window_size) {
+                                        int delta_window_size) {
   visitor_->OnWindowUpdate(stream_id, delta_window_size);
 }
 

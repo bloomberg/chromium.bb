@@ -122,8 +122,7 @@ class QuicHeadersStream::SpdyFramerVisitor
     }
   }
 
-  void OnWindowUpdate(SpdyStreamId stream_id,
-                      uint32 delta_window_size) override {
+  void OnWindowUpdate(SpdyStreamId stream_id, int delta_window_size) override {
     CloseConnection("SPDY WINDOW_UPDATE frame received.");
   }
 

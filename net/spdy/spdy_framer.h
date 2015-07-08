@@ -246,7 +246,7 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
 
   // Called when a WINDOW_UPDATE frame has been parsed.
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
-                              uint32 delta_window_size) = 0;
+                              int delta_window_size) = 0;
 
   // Called when a goaway frame opaque data is available.
   // |goaway_data| A buffer containing the opaque GOAWAY data chunk received.

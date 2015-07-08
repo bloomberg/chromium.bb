@@ -253,8 +253,7 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
                    SpdyRstStreamStatus status) override {}
   void OnGoAway(SpdyStreamId last_accepted_stream_id,
                 SpdyGoAwayStatus status) override {}
-  void OnWindowUpdate(SpdyStreamId stream_id,
-                      uint32 delta_window_size) override {}
+  void OnWindowUpdate(SpdyStreamId stream_id, int delta_window_size) override {}
   void OnPushPromise(SpdyStreamId stream_id,
                      SpdyStreamId promised_stream_id,
                      const SpdyHeaderBlock& headers) override {}

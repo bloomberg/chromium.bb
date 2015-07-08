@@ -831,8 +831,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   void OnStreamPadding(SpdyStreamId stream_id, size_t len) override;
   void OnSettings(bool clear_persisted) override;
   void OnSetting(SpdySettingsIds id, uint8 flags, uint32 value) override;
-  void OnWindowUpdate(SpdyStreamId stream_id,
-                      uint32 delta_window_size) override;
+  void OnWindowUpdate(SpdyStreamId stream_id, int delta_window_size) override;
   void OnPushPromise(SpdyStreamId stream_id,
                      SpdyStreamId promised_stream_id,
                      const SpdyHeaderBlock& headers) override;
@@ -880,7 +879,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // window size to overflow, does nothing.
   //
   // If session flow control is turned off, this must not be called.
-  void IncreaseSendWindowSize(int32 delta_window_size);
+  void IncreaseSendWindowSize(int delta_window_size);
 
   // If session flow control is turned on, called by CreateDataFrame()
   // (which is in turn called by a stream) to decrease this session's

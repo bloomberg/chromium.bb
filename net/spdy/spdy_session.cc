@@ -2493,10 +2493,9 @@ void SpdySession::OnPing(SpdyPingId unique_id, bool is_ack) {
 }
 
 void SpdySession::OnWindowUpdate(SpdyStreamId stream_id,
-                                 uint32 delta_window_size) {
+                                 int delta_window_size) {
   CHECK(in_io_loop_);
 
-  DCHECK_LE(delta_window_size, static_cast<uint32>(kint32max));
   net_log_.AddEvent(NetLog::TYPE_HTTP2_SESSION_RECEIVED_WINDOW_UPDATE_FRAME,
                     base::Bind(&NetLogSpdyWindowUpdateFrameCallback, stream_id,
                                delta_window_size));
@@ -2510,7 +2509,7 @@ void SpdySession::OnWindowUpdate(SpdyStreamId stream_id,
       return;
     }
 
-    if (delta_window_size < 1u) {
+    if (delta_window_size < 1) {
       RecordProtocolErrorHistogram(PROTOCOL_ERROR_INVALID_WINDOW_UPDATE_SIZE);
       DoDrainSession(
           ERR_SPDY_PROTOCOL_ERROR,
@@ -2519,7 +2518,7 @@ void SpdySession::OnWindowUpdate(SpdyStreamId stream_id,
       return;
     }
 
-    IncreaseSendWindowSize(static_cast<int32>(delta_window_size));
+    IncreaseSendWindowSize(delta_window_size);
   } else {
     // WINDOW_UPDATE for a stream.
     if (flow_control_state_ < FLOW_CONTROL_STREAM) {
@@ -2540,18 +2539,17 @@ void SpdySession::OnWindowUpdate(SpdyStreamId stream_id,
     SpdyStream* stream = it->second.stream;
     CHECK_EQ(stream->stream_id(), stream_id);
 
-    if (delta_window_size < 1u) {
-      ResetStreamIterator(it,
-                          RST_STREAM_FLOW_CONTROL_ERROR,
+    if (delta_window_size < 1) {
+      ResetStreamIterator(it, RST_STREAM_FLOW_CONTROL_ERROR,
                           base::StringPrintf(
                               "Received WINDOW_UPDATE with an invalid "
-                              "delta_window_size %ud", delta_window_size));
+                              "delta_window_size %d",
+                              delta_window_size));
       return;
     }
 
     CHECK_EQ(it->second.stream->stream_id(), stream_id);
-    it->second.stream->IncreaseSendWindowSize(
-        static_cast<int32>(delta_window_size));
+    it->second.stream->IncreaseSendWindowSize(delta_window_size);
   }
 }
 
@@ -3096,15 +3094,15 @@ void SpdySession::OnWriteBufferConsumed(
     // window by the number of discarded bytes. (Although if we're
     // discarding part of a frame, it's probably because of a write
     // error and we'll be tearing down the session soon.)
-    size_t remaining_payload_bytes = std::min(consume_size, frame_payload_size);
-    DCHECK_GT(remaining_payload_bytes, 0u);
-    IncreaseSendWindowSize(static_cast<int32>(remaining_payload_bytes));
+    int remaining_payload_bytes = std::min(consume_size, frame_payload_size);
+    DCHECK_GT(remaining_payload_bytes, 0);
+    IncreaseSendWindowSize(remaining_payload_bytes);
   }
   // For consumed bytes, the send window is increased when we receive
   // a WINDOW_UPDATE frame.
 }
 
-void SpdySession::IncreaseSendWindowSize(int32 delta_window_size) {
+void SpdySession::IncreaseSendWindowSize(int delta_window_size) {
   // We can be called with |in_io_loop_| set if a SpdyBuffer is
   // deleted (e.g., a stream is closed due to incoming data).
 

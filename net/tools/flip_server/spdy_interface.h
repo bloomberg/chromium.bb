@@ -128,8 +128,7 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
                 SpdyGoAwayStatus status) override {}
 
   // Called when a WINDOW_UPDATE frame has been parsed.
-  void OnWindowUpdate(SpdyStreamId stream_id,
-                      uint32 delta_window_size) override {}
+  void OnWindowUpdate(SpdyStreamId stream_id, int delta_window_size) override {}
 
   // Called when a PUSH_PROMISE frame has been parsed.
   void OnPushPromise(SpdyStreamId stream_id,

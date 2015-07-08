@@ -114,8 +114,7 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
   void OnRstStream(const SpdyFrame& frame) {}
   void OnGoAway(const SpdyFrame& frame) {}
   void OnPing(const SpdyFrame& frame) {}
-  void OnWindowUpdate(SpdyStreamId stream_id,
-                      uint32 delta_window_size) override {}
+  void OnWindowUpdate(SpdyStreamId stream_id, int delta_window_size) override {}
 
   void OnPushPromise(SpdyStreamId stream_id,
                      SpdyStreamId promised_stream_id,

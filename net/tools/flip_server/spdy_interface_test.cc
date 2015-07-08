@@ -71,7 +71,7 @@ class SpdyFramerVisitor : public BufferedSpdyFramerVisitorInterface {
   MOCK_METHOD2(OnPing, void(SpdyPingId unique_id, bool is_ack));
   MOCK_METHOD2(OnRstStream, void(SpdyStreamId, SpdyRstStreamStatus));
   MOCK_METHOD2(OnGoAway, void(SpdyStreamId, SpdyGoAwayStatus));
-  MOCK_METHOD2(OnWindowUpdate, void(SpdyStreamId, uint32));
+  MOCK_METHOD2(OnWindowUpdate, void(SpdyStreamId, int));
   MOCK_METHOD3(OnPushPromise,
                void(SpdyStreamId, SpdyStreamId, const SpdyHeaderBlock&));
   MOCK_METHOD2(OnUnknownFrame, bool(SpdyStreamId stream_id, int frame_type));

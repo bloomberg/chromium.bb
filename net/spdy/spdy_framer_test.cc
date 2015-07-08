@@ -173,7 +173,8 @@ class SpdyFramerTestUtil {
       size_ += framer.GetHeadersMinimumSize();
     }
 
-    virtual void OnWindowUpdate(SpdyStreamId stream_id, int delta_window_size) {
+    void OnWindowUpdate(SpdyStreamId stream_id,
+                        int delta_window_size) override {
       LOG(FATAL);
     }
 
@@ -208,11 +209,6 @@ class SpdyFramerTestUtil {
     char* ReleaseBuffer() {
       CHECK(finished_);
       return buffer_.release();
-    }
-
-    void OnWindowUpdate(SpdyStreamId stream_id,
-                        uint32 delta_window_size) override {
-      LOG(FATAL);
     }
 
     size_t size() const {
@@ -421,8 +417,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     header_exclusive_ = exclusive;
   }
 
-  void OnWindowUpdate(SpdyStreamId stream_id,
-                      uint32 delta_window_size) override {
+  void OnWindowUpdate(SpdyStreamId stream_id, int delta_window_size) override {
     last_window_update_stream_ = stream_id;
     last_window_update_delta_ = delta_window_size;
   }
@@ -553,7 +548,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   SpdyAltSvcIR test_altsvc_ir_;
   bool on_unknown_frame_result_;
   SpdyStreamId last_window_update_stream_;
-  uint32 last_window_update_delta_;
+  int last_window_update_delta_;
   SpdyStreamId last_push_promise_stream_;
   SpdyStreamId last_push_promise_promised_stream_;
   int data_bytes_;
@@ -4278,7 +4273,7 @@ TEST_P(SpdyFramerTest, ReadWindowUpdate) {
       reinterpret_cast<unsigned char*>(control_frame->data()),
       control_frame->size());
   EXPECT_EQ(1u, visitor.last_window_update_stream_);
-  EXPECT_EQ(2u, visitor.last_window_update_delta_);
+  EXPECT_EQ(2, visitor.last_window_update_delta_);
 }
 
 TEST_P(SpdyFramerTest, ReceiveCredentialFrame) {
@@ -4344,7 +4339,7 @@ TEST_P(SpdyFramerTest, ReadCredentialFrameFollowedByAnotherFrame) {
       multiple_frame_data.length());
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(1u, visitor.last_window_update_stream_);
-  EXPECT_EQ(2u, visitor.last_window_update_delta_);
+  EXPECT_EQ(2, visitor.last_window_update_delta_);
 }
 
 TEST_P(SpdyFramerTest, ReadCompressedPushPromise) {
