@@ -154,7 +154,7 @@ PassRefPtr<TypeBuilder::Animation::AnimationPlayer> InspectorAnimationAgent::bui
     } else {
         // Keyframe based animations
         keyframeRule = buildObjectForAnimationKeyframes(toKeyframeEffect(player.source()));
-        animationType = cssAnimations.isAnimationForInspector(player) ? AnimationType::WebAnimation : AnimationType::CSSAnimation;
+        animationType = cssAnimations.isAnimationForInspector(player) ? AnimationType::CSSAnimation : AnimationType::WebAnimation;
     }
 
     String id = String::number(player.sequenceNumber());

@@ -1,5 +1,23 @@
 <html>
 <head>
+<style type="text/css">
+#node {
+    transition: background-color 150ms cubic-bezier(0, 0.5, 0.5, 1);
+}
+
+#node.css-anim {
+    animation: anim 300ms ease-in-out;
+}
+
+@keyframes anim {
+    from {
+        width: 100px;
+    }
+    to {
+        width: 200px;
+    }
+}
+</style>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/elements-test.js"></script>
 <script>
@@ -24,6 +42,16 @@ function cancelAnimation()
 function startAnimationWithStepTiming()
 {
     player = node.animate([{ width: "100px", easing: "step(5, end)" }, { width: "200px", easing: "step-start" }], 200);
+}
+
+function startCSSAnimation()
+{
+    node.classList.add("css-anim");
+}
+
+function startCSSTransition()
+{
+    node.style.backgroundColor = "blue";
 }
 
 var initialize_Animations = function() {
@@ -80,6 +108,24 @@ function test()
     function step5()
     {
         InspectorTest.addResult(">>>> Animation with step timing function");
+        InspectorTest.dumpAnimationTimeline(timeline);
+        timeline._reset();
+        InspectorTest.waitForAnimationAdded(step6);
+        InspectorTest.evaluateInPage("startCSSAnimation()");
+    }
+
+    function step6()
+    {
+        InspectorTest.addResult(">>>> CSS animation started");
+        InspectorTest.dumpAnimationTimeline(timeline);
+        timeline._reset();
+        InspectorTest.waitForAnimationAdded(step7);
+        InspectorTest.evaluateInPage("startCSSTransition()");
+    }
+
+    function step7()
+    {
+        InspectorTest.addResult(">>>> CSS transition started");
         InspectorTest.dumpAnimationTimeline(timeline);
         InspectorTest.completeTest();
     }
