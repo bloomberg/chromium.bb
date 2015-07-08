@@ -33,6 +33,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/editing/Editor.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/SpellCheckRequester.h"
 #include "core/editing/TextCheckingHelper.h"
 #include "core/editing/VisibleUnits.h"
@@ -953,7 +954,8 @@ void SpellChecker::cancelCheck()
 
 void SpellChecker::requestTextChecking(const Element& element)
 {
-    RefPtrWillBeRawPtr<Range> rangeToCheck = rangeOfContents(const_cast<Element*>(&element));
+    const EphemeralRange range = EphemeralRange::rangeOfContents(element);
+    RefPtrWillBeRawPtr<Range> rangeToCheck = Range::create(element.document(), range.startPosition(), range.endPosition());
     m_spellCheckRequester->requestCheckingFor(SpellCheckRequest::create(TextCheckingTypeSpelling | TextCheckingTypeGrammar, TextCheckingProcessBatch, rangeToCheck, rangeToCheck));
 }
 

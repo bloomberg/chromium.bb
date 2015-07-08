@@ -36,6 +36,7 @@
 #include "core/dom/Range.h"
 #include "core/dom/RenderedDocumentMarker.h"
 #include "core/dom/Text.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "wtf/PassRefPtr.h"
@@ -78,8 +79,8 @@ void DocumentMarkerControllerTest::markNodeContents(PassRefPtrWillBeRawPtr<Node>
     // Force layoutObjects to be created; TextIterator, which is used in
     // DocumentMarkerControllerTest::addMarker(), needs them.
     document().updateLayout();
-    RefPtrWillBeRawPtr<Range> range = rangeOfContents(node.get());
-    markerController().addMarker(range->startPosition(), range->endPosition(), DocumentMarker::Spelling);
+    auto range = EphemeralRange::rangeOfContents(*node);
+    markerController().addMarker(range.startPosition(), range.endPosition(), DocumentMarker::Spelling);
 }
 
 void DocumentMarkerControllerTest::setBodyInnerHTML(const char* bodyContent)

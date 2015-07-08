@@ -44,6 +44,7 @@
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/Range.h"
 #include "core/editing/Editor.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SpellChecker.h"
 #include "core/editing/VisiblePosition.h"
@@ -5368,10 +5369,10 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultErasesMarkers)
     NonThrowableExceptionState exceptionState;
     document->execCommand("InsertText", false, "welcome ", exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
-    RefPtrWillBeRawPtr<Range> range = rangeOfContents(element->toNode());
-    document->markers().addMarker(range->startPosition(), range->endPosition(), DocumentMarker::Spelling);
-    document->markers().addMarker(range->startPosition(), range->endPosition(), DocumentMarker::Grammar);
-    document->markers().addMarker(range->startPosition(), range->endPosition(), DocumentMarker::InvisibleSpellcheck);
+    auto range = EphemeralRange::rangeOfContents(*element);
+    document->markers().addMarker(range.startPosition(), range.endPosition(), DocumentMarker::Spelling);
+    document->markers().addMarker(range.startPosition(), range.endPosition(), DocumentMarker::Grammar);
+    document->markers().addMarker(range.startPosition(), range.endPosition(), DocumentMarker::InvisibleSpellcheck);
     EXPECT_EQ(3U, document->markers().markers().size());
 
     spellcheck.kickNoResults();

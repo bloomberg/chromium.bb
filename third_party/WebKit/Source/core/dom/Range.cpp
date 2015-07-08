@@ -1451,14 +1451,6 @@ bool areRangesEqual(const Range* a, const Range* b)
     return a->startPosition() == b->startPosition() && a->endPosition() == b->endPosition();
 }
 
-PassRefPtrWillBeRawPtr<Range> rangeOfContents(Node* node)
-{
-    ASSERT(node);
-    RefPtrWillBeRawPtr<Range> range = Range::create(node->document());
-    range->selectNodeContents(node, IGNORE_EXCEPTION);
-    return range.release();
-}
-
 static inline void boundaryNodeChildrenChanged(RangeBoundaryPoint& boundary, ContainerNode* container)
 {
     if (!boundary.childBefore())

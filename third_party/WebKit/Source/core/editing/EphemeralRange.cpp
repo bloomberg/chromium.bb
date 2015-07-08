@@ -100,6 +100,11 @@ bool EphemeralRange::isNotNull() const
     return m_startPosition.isNotNull();
 }
 
+EphemeralRange EphemeralRange::rangeOfContents(const Node& node)
+{
+    return EphemeralRange(Position::firstPositionInNode(&const_cast<Node&>(node)), Position::lastPositionInNode(&const_cast<Node&>(node)));
+}
+
 #if ENABLE(ASSERT)
 bool EphemeralRange::isValid() const
 {

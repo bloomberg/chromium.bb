@@ -30,6 +30,7 @@
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/Range.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/iterators/TextIterator.h"
 
@@ -82,8 +83,8 @@ PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRangeFor(const ContainerNode
     TextIteratorBehaviorFlags behaviorFlags = TextIteratorEmitsObjectReplacementCharacter;
     if (getRangeFor == ForSelection)
         behaviorFlags |= TextIteratorEmitsCharactersBetweenAllVisiblePositions;
-    auto range = rangeOfContents(const_cast<ContainerNode*>(&scope));
-    TextIterator it(range->startPosition(), range->endPosition(), behaviorFlags);
+    auto range = EphemeralRange::rangeOfContents(scope);
+    TextIterator it(range.startPosition(), range.endPosition(), behaviorFlags);
 
     // FIXME: the atEnd() check shouldn't be necessary, workaround for <http://bugs.webkit.org/show_bug.cgi?id=6289>.
     if (!start() && !length() && it.atEnd()) {

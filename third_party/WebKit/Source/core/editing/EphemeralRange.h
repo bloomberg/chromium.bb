@@ -63,6 +63,10 @@ public:
         visitor->trace(m_endPosition);
     }
 
+    // |node| should be in-document and valid for anchor node of
+    // |PositionAlgorithm<Strategy>|.
+    static EphemeralRange rangeOfContents(const Node& /* node */);
+
 private:
     bool isValid() const;
 
