@@ -16,7 +16,6 @@
 #include "ipc/mojo/ipc_mojo_bootstrap.h"
 #include "ipc/mojo/ipc_mojo_handle_attachment.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 
 #if defined(OS_POSIX) && !defined(OS_NACL)
 #include "ipc/ipc_platform_file_attachment_posix.h"
@@ -55,9 +54,7 @@ class MojoChannelFactory : public ChannelFactory {
 
 //------------------------------------------------------------------------------
 
-class ClientChannelMojo : public ChannelMojo,
-                          public ClientChannel,
-                          public mojo::ErrorHandler {
+class ClientChannelMojo : public ChannelMojo, public ClientChannel {
  public:
   ClientChannelMojo(scoped_refptr<base::TaskRunner> io_runner,
                     const ChannelHandle& handle,
@@ -66,8 +63,6 @@ class ClientChannelMojo : public ChannelMojo,
   ~ClientChannelMojo() override;
   // MojoBootstrap::Delegate implementation
   void OnPipeAvailable(mojo::embedder::ScopedPlatformHandle handle) override;
-  // mojo::ErrorHandler implementation
-  void OnConnectionError() override;
 
   // ClientChannel implementation
   void Init(
@@ -77,6 +72,7 @@ class ClientChannelMojo : public ChannelMojo,
 
  private:
   void BindPipe(mojo::ScopedMessagePipeHandle handle);
+  void OnConnectionError();
 
   mojo::Binding<ClientChannel> binding_;
   base::WeakPtrFactory<ClientChannelMojo> weak_factory_;
@@ -102,10 +98,6 @@ void ClientChannelMojo::OnPipeAvailable(
                                                 weak_factory_.GetWeakPtr()));
 }
 
-void ClientChannelMojo::OnConnectionError() {
-  listener()->OnChannelError();
-}
-
 void ClientChannelMojo::Init(
     mojo::ScopedMessagePipeHandle pipe,
     int32_t peer_pid,
@@ -118,9 +110,13 @@ void ClientChannelMojo::BindPipe(mojo::ScopedMessagePipeHandle handle) {
   binding_.Bind(handle.Pass());
 }
 
+void ClientChannelMojo::OnConnectionError() {
+  listener()->OnChannelError();
+}
+
 //------------------------------------------------------------------------------
 
-class ServerChannelMojo : public ChannelMojo, public mojo::ErrorHandler {
+class ServerChannelMojo : public ChannelMojo {
  public:
   ServerChannelMojo(scoped_refptr<base::TaskRunner> io_runner,
                     const ChannelHandle& handle,
@@ -130,14 +126,13 @@ class ServerChannelMojo : public ChannelMojo, public mojo::ErrorHandler {
 
   // MojoBootstrap::Delegate implementation
   void OnPipeAvailable(mojo::embedder::ScopedPlatformHandle handle) override;
-  // mojo::ErrorHandler implementation
-  void OnConnectionError() override;
   // Channel override
   void Close() override;
 
  private:
   void InitClientChannel(mojo::ScopedMessagePipeHandle peer_handle,
                          mojo::ScopedMessagePipeHandle handle);
+  void OnConnectionError();
 
   // ClientChannelClient implementation
   void ClientChannelWasInitialized(int32_t peer_pid);
@@ -177,30 +172,31 @@ void ServerChannelMojo::OnPipeAvailable(
                  weak_factory_.GetWeakPtr(), base::Passed(&peer)));
 }
 
+void ServerChannelMojo::Close() {
+  client_channel_.reset();
+  message_pipe_.reset();
+  ChannelMojo::Close();
+}
+
 void ServerChannelMojo::InitClientChannel(
     mojo::ScopedMessagePipeHandle peer_handle,
     mojo::ScopedMessagePipeHandle handle) {
   client_channel_.Bind(
       mojo::InterfacePtrInfo<ClientChannel>(handle.Pass(), 0u));
-  client_channel_.set_error_handler(this);
+  client_channel_.set_connection_error_handler(base::Bind(
+      &ServerChannelMojo::OnConnectionError, base::Unretained(this)));
   client_channel_->Init(
       peer_handle.Pass(), static_cast<int32_t>(GetSelfPID()),
       base::Bind(&ServerChannelMojo::ClientChannelWasInitialized,
                  base::Unretained(this)));
 }
 
-void ServerChannelMojo::ClientChannelWasInitialized(int32_t peer_pid) {
-  InitMessageReader(message_pipe_.Pass(), peer_pid);
-}
-
 void ServerChannelMojo::OnConnectionError() {
   listener()->OnChannelError();
 }
 
-void ServerChannelMojo::Close() {
-  client_channel_.reset();
-  message_pipe_.reset();
-  ChannelMojo::Close();
+void ServerChannelMojo::ClientChannelWasInitialized(int32_t peer_pid) {
+  InitMessageReader(message_pipe_.Pass(), peer_pid);
 }
 
 #if defined(OS_POSIX) && !defined(OS_NACL)
