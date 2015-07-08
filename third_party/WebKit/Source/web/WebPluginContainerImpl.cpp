@@ -528,16 +528,20 @@ bool WebPluginContainerImpl::isRectTopmost(const WebRect& rect)
     if (!frame)
         return false;
 
-    IntRect documentRect(x() + rect.x, y() + rect.y, rect.width, rect.height);
-    // Clip to the frame's visible area.
-    documentRect.intersect(frame->view()->frameRect());
-    if (documentRect.isEmpty())
+    IntRect windowRect, clipRect, unobscuredRect;
+    Vector<IntRect> cutOutRects;
+    calculateGeometry(windowRect, clipRect, unobscuredRect, cutOutRects);
+
+    // Clip the query rect to the unobscured area of the plugin.
+    IntRect queryRect(rect);
+    queryRect.intersect(unobscuredRect);
+    if (queryRect.isEmpty())
         return false;
     // hitTestResultAtPoint() takes a padding rectangle.
     // FIXME: We'll be off by 1 when the width or height is even.
-    LayoutPoint center = documentRect.center();
+    LayoutPoint center = queryRect.center();
     // Make the rect we're checking (the point surrounded by padding rects) contained inside the requested rect. (Note that -1/2 is 0.)
-    LayoutSize padding((documentRect.width() - 1) / 2, (documentRect.height() - 1) / 2);
+    LayoutSize padding((queryRect.width() - 1) / 2, (queryRect.height() - 1) / 2);
     HitTestResult result = frame->eventHandler().hitTestResultAtPoint(center, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ListBased, padding);
     const HitTestResult::NodeSet& nodes = result.listBasedTestResult();
     if (nodes.size() != 1)
