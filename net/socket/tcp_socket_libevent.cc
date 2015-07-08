@@ -114,6 +114,14 @@ void RegisterTCPFastOpenIntentAndSupport(bool user_enabled,
 }
 #endif
 
+#if defined(TCP_INFO)
+bool GetTcpInfo(SocketDescriptor fd, tcp_info* info) {
+  socklen_t info_len = sizeof(tcp_info);
+  return getsockopt(fd, IPPROTO_TCP, TCP_INFO, info, &info_len) == 0 &&
+         info_len == sizeof(tcp_info);
+}
+#endif  // defined(TCP_INFO)
+
 }  // namespace
 
 //-----------------------------------------------------------------------------
@@ -720,13 +728,10 @@ void TCPSocketLibevent::UpdateTCPFastOpenStatusAfterRead() {
 #if defined(TCP_INFO)
   // Probe to see the if the socket used TCP FastOpen.
   tcp_info info;
-  socklen_t info_len = sizeof(tcp_info);
-  getsockopt_success = getsockopt(socket_->socket_fd(), IPPROTO_TCP, TCP_INFO,
-                                  &info, &info_len) == 0 &&
-                       info_len == sizeof(tcp_info);
-  server_acked_data = getsockopt_success &&
-                      (info.tcpi_options & TCPI_OPT_SYN_DATA);
-#endif
+  getsockopt_success = GetTcpInfo(socket_->socket_fd(), &info);
+  server_acked_data =
+      getsockopt_success && (info.tcpi_options & TCPI_OPT_SYN_DATA);
+#endif  // defined(TCP_INFO)
 
   if (getsockopt_success) {
     if (tcp_fastopen_status_ == TCP_FASTOPEN_FAST_CONNECT_RETURN) {
@@ -744,6 +749,26 @@ void TCPSocketLibevent::UpdateTCPFastOpenStatusAfterRead() {
          TCP_FASTOPEN_SYN_DATA_GETSOCKOPT_FAILED :
          TCP_FASTOPEN_NO_SYN_DATA_GETSOCKOPT_FAILED);
   }
+}
+
+bool TCPSocketLibevent::GetEstimatedRoundTripTime(
+    base::TimeDelta* out_rtt) const {
+  DCHECK(out_rtt);
+  if (!socket_)
+    return false;
+
+#if defined(TCP_INFO)
+  tcp_info info;
+  if (GetTcpInfo(socket_->socket_fd(), &info)) {
+    // tcpi_rtt is zero when the kernel doesn't have an RTT estimate,
+    // and possibly in other cases such as connections to localhost.
+    if (info.tcpi_rtt > 0) {
+      *out_rtt = base::TimeDelta::FromMicroseconds(info.tcpi_rtt);
+      return true;
+    }
+  }
+#endif  // defined(TCP_INFO)
+  return false;
 }
 
 }  // namespace net

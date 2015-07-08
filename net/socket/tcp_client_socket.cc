@@ -6,7 +6,9 @@
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/time/time.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -38,6 +40,7 @@ TCPClientSocket::TCPClientSocket(scoped_ptr<TCPSocket> connected_socket,
 }
 
 TCPClientSocket::~TCPClientSocket() {
+  Disconnect();
 }
 
 int TCPClientSocket::Bind(const IPEndPoint& address) {
@@ -184,6 +187,7 @@ void TCPClientSocket::Disconnect() {
 }
 
 void TCPClientSocket::DoDisconnect() {
+  EmitTCPMetricsHistogramsOnDisconnect();
   // If connecting or already connected, record that the socket has been
   // disconnected.
   previously_disconnected_ = socket_->IsValid() && current_address_index_ >= 0;
@@ -348,6 +352,15 @@ int TCPClientSocket::OpenSocket(AddressFamily family) {
   socket_->SetDefaultOptionsForClient();
 
   return OK;
+}
+
+void TCPClientSocket::EmitTCPMetricsHistogramsOnDisconnect() {
+  base::TimeDelta rtt;
+  if (socket_->GetEstimatedRoundTripTime(&rtt)) {
+    UMA_HISTOGRAM_CUSTOM_TIMES("Net.TcpRtt.AtDisconnect", rtt,
+                               base::TimeDelta::FromMilliseconds(1),
+                               base::TimeDelta::FromMinutes(10), 100);
+  }
 }
 
 }  // namespace net

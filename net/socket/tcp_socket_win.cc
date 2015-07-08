@@ -1043,4 +1043,11 @@ void TCPSocketWin::DidSignalRead() {
   base::ResetAndReturn(&read_callback_).Run(rv);
 }
 
+bool TCPSocketWin::GetEstimatedRoundTripTime(base::TimeDelta* out_rtt) const {
+  DCHECK(out_rtt);
+  // TODO(bmcquade): Consider implementing using
+  // GetPerTcpConnectionEStats/GetPerTcp6ConnectionEStats.
+  return false;
+}
+
 }  // namespace net

@@ -23544,6 +23544,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.TcpRtt.AtDisconnect" units="milliseconds">
+  <owner>bmcquade@chromium.org</owner>
+  <summary>
+    The kernel's estimated TCP round trip time. Recorded for each TCP socket, at
+    the time it is disconnected.
+  </summary>
+</histogram>
+
 <histogram name="Net.TCPSocketType" enum="HttpSocketType">
   <obsolete>
     Was only used for HTTP[S] connections, renamed to Net.HTTPSocketType.

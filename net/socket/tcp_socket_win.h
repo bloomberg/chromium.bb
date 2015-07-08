@@ -73,6 +73,11 @@ class NET_EXPORT TCPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe),
   bool SetKeepAlive(bool enable, int delay);
   bool SetNoDelay(bool no_delay);
 
+  // Gets the estimated RTT. Returns false if the RTT is
+  // unavailable. May also return false when estimated RTT is 0.
+  bool GetEstimatedRoundTripTime(base::TimeDelta* out_rtt) const
+      WARN_UNUSED_RESULT;
+
   void Close();
 
   // Setter/Getter methods for TCP FastOpen socket option.

@@ -96,6 +96,10 @@ class NET_EXPORT TCPClientSocket : public StreamSocket {
 
   int OpenSocket(AddressFamily family);
 
+  // Emits histograms for TCP metrics, at the time the socket is
+  // disconnected.
+  void EmitTCPMetricsHistogramsOnDisconnect();
+
   scoped_ptr<TCPSocket> socket_;
 
   // Local IP address and port we are bound to. Set to NULL if Bind()
