@@ -322,11 +322,7 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
                                            context_->storage()->NewVersionId(),
                                            context_));
   new_version()->set_force_bypass_cache_for_scripts(force_bypass_cache_);
-  bool pause_after_download = job_type_ == UPDATE_JOB;
-  if (pause_after_download)
-    new_version()->embedded_worker()->AddListener(this);
   new_version()->StartWorker(
-      pause_after_download,
       base::Bind(&ServiceWorkerRegisterJob::OnStartWorkerFinished,
                  weak_factory_.GetWeakPtr()));
 }
@@ -335,6 +331,23 @@ void ServiceWorkerRegisterJob::OnStartWorkerFinished(
     ServiceWorkerStatusCode status) {
   if (status == SERVICE_WORKER_OK) {
     InstallAndContinue();
+    return;
+  }
+
+  // The updated worker is identical to the incumbent.
+  if (status == SERVICE_WORKER_ERROR_EXISTS) {
+    // Only bump the last check time when we've bypassed the browser cache.
+    base::TimeDelta time_since_last_check =
+        base::Time::Now() - registration()->last_update_check();
+    if (time_since_last_check > base::TimeDelta::FromHours(
+                                    kServiceWorkerScriptMaxCacheAgeInHours) ||
+        new_version()->force_bypass_cache_for_scripts()) {
+      registration()->set_last_update_check(base::Time::Now());
+      context_->storage()->UpdateLastUpdateCheckTime(registration());
+    }
+
+    ResolvePromise(SERVICE_WORKER_OK, std::string(), registration());
+    Complete(status, "The updated worker is identical to the incumbent.");
     return;
   }
 
@@ -481,8 +494,6 @@ void ServiceWorkerRegisterJob::CompleteInternal(
     if (registration()->waiting_version() || registration()->active_version())
       registration()->set_is_uninstalled(false);
   }
-  if (new_version())
-    new_version()->embedded_worker()->RemoveListener(this);
 }
 
 void ServiceWorkerRegisterJob::ResolvePromise(
@@ -501,61 +512,6 @@ void ServiceWorkerRegisterJob::ResolvePromise(
     it->Run(status, status_message, registration);
   }
   callbacks_.clear();
-}
-
-void ServiceWorkerRegisterJob::OnPausedAfterDownload() {
-  // This happens prior to OnStartWorkerFinished time.
-  scoped_refptr<ServiceWorkerVersion> most_recent_version =
-      registration()->waiting_version() ?
-          registration()->waiting_version() :
-          registration()->active_version();
-
-  if (!most_recent_version) {
-    OnCompareScriptResourcesComplete(SERVICE_WORKER_OK, false /* are_equal */);
-    return;
-  }
-
-  int64 most_recent_script_id =
-      most_recent_version->script_cache_map()->LookupResourceId(script_url_);
-  int64 new_script_id =
-      new_version()->script_cache_map()->LookupResourceId(script_url_);
-
-  // TODO(michaeln): It would be better to compare as the new resource
-  // is being downloaded and to avoid writing it to disk until we know
-  // its needed.
-  context_->storage()->CompareScriptResources(
-      most_recent_script_id,
-      new_script_id,
-      base::Bind(&ServiceWorkerRegisterJob::OnCompareScriptResourcesComplete,
-                 weak_factory_.GetWeakPtr()));
-}
-
-bool ServiceWorkerRegisterJob::OnMessageReceived(const IPC::Message& message) {
-  return false;
-}
-
-void ServiceWorkerRegisterJob::OnCompareScriptResourcesComplete(
-    ServiceWorkerStatusCode status,
-    bool are_equal) {
-  if (are_equal) {
-    // Only bump the last check time when we've bypassed the browser cache.
-    base::TimeDelta time_since_last_check =
-        base::Time::Now() - registration()->last_update_check();
-    if (time_since_last_check > base::TimeDelta::FromHours(
-                                    kServiceWorkerScriptMaxCacheAgeInHours) ||
-        new_version()->force_bypass_cache_for_scripts()) {
-      registration()->set_last_update_check(base::Time::Now());
-      context_->storage()->UpdateLastUpdateCheckTime(registration());
-    }
-
-    ResolvePromise(SERVICE_WORKER_OK, std::string(), registration());
-    Complete(SERVICE_WORKER_ERROR_EXISTS);
-    return;
-  }
-
-  // Proceed with really starting the worker.
-  new_version()->embedded_worker()->ResumeAfterDownload();
-  new_version()->embedded_worker()->RemoveListener(this);
 }
 
 void ServiceWorkerRegisterJob::AddRegistrationToMatchingProviderHosts(

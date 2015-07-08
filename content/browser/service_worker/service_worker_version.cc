@@ -608,12 +608,6 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
 }
 
 void ServiceWorkerVersion::StartWorker(const StatusCallback& callback) {
-  StartWorker(false, callback);
-}
-
-void ServiceWorkerVersion::StartWorker(
-    bool pause_after_download,
-    const StatusCallback& callback) {
   if (!context_) {
     RecordStartWorkerResult(SERVICE_WORKER_ERROR_ABORT);
     RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_ABORT));
@@ -633,7 +627,6 @@ void ServiceWorkerVersion::StartWorker(
       scope_.GetOrigin(),
       base::Bind(&ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker,
                  weak_factory_.GetWeakPtr(),
-                 pause_after_download,
                  callback));
 }
 
@@ -1721,7 +1714,6 @@ void ServiceWorkerVersion::OnStashMessagePort(int message_port_id,
 }
 
 void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
-    bool pause_after_download,
     const StatusCallback& callback,
     ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& protect) {
@@ -1753,19 +1745,20 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
       // Keep the live registration while starting the worker.
       start_callbacks_.push_back(
           base::Bind(&RunStartWorkerCallback, callback, protect));
-      StartWorkerInternal(pause_after_download);
+      StartWorkerInternal();
       return;
   }
 }
 
-void ServiceWorkerVersion::StartWorkerInternal(bool pause_after_download) {
+void ServiceWorkerVersion::StartWorkerInternal() {
   if (!metrics_)
     metrics_.reset(new Metrics(this));
+
   if (!timeout_timer_.IsRunning())
     StartTimeoutTimer();
   if (running_status() == STOPPED) {
     embedded_worker_->Start(
-        version_id_, scope_, script_url_, pause_after_download,
+        version_id_, scope_, script_url_,
         base::Bind(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,
                    weak_factory_.GetWeakPtr()));
   }
@@ -2178,7 +2171,7 @@ void ServiceWorkerVersion::OnStoppedInternal(
   FOR_EACH_OBSERVER(Listener, listeners_, OnRunningStateChanged(this));
 
   if (should_restart)
-    StartWorkerInternal(false /* pause_after_download */);
+    StartWorkerInternal();
 }
 
 }  // namespace content

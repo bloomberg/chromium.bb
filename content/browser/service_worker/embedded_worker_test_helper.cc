@@ -87,8 +87,6 @@ bool EmbeddedWorkerTestHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(EmbeddedWorkerMsg_StopWorker, OnStopWorkerStub)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerContextMsg_MessageToWorker,
                         OnMessageToWorkerStub)
-    IPC_MESSAGE_HANDLER(EmbeddedWorkerMsg_ResumeAfterDownload,
-                        OnResumeAfterDownloadStub)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -108,26 +106,12 @@ void EmbeddedWorkerTestHelper::ShutdownContext() {
   wrapper_ = NULL;
 }
 
-void EmbeddedWorkerTestHelper::OnStartWorker(
-    int embedded_worker_id,
-    int64 service_worker_version_id,
-    const GURL& scope,
-    const GURL& script_url,
-    bool pause_after_download) {
+void EmbeddedWorkerTestHelper::OnStartWorker(int embedded_worker_id,
+                                             int64 service_worker_version_id,
+                                             const GURL& scope,
+                                             const GURL& script_url) {
   embedded_worker_id_service_worker_version_id_map_[embedded_worker_id] =
       service_worker_version_id;
-  if (pause_after_download) {
-    SimulatePausedAfterDownload(embedded_worker_id);
-    return;
-  }
-  SimulateWorkerReadyForInspection(embedded_worker_id);
-  SimulateWorkerScriptCached(embedded_worker_id);
-  SimulateWorkerScriptLoaded(next_thread_id_++, embedded_worker_id);
-  SimulateWorkerScriptEvaluated(embedded_worker_id);
-  SimulateWorkerStarted(embedded_worker_id);
-}
-
-void EmbeddedWorkerTestHelper::OnResumeAfterDownload(int embedded_worker_id) {
   SimulateWorkerReadyForInspection(embedded_worker_id);
   SimulateWorkerScriptCached(embedded_worker_id);
   SimulateWorkerScriptLoaded(next_thread_id_++, embedded_worker_id);
@@ -206,13 +190,6 @@ void EmbeddedWorkerTestHelper::OnSyncEvent(int embedded_worker_id,
       blink::WebServiceWorkerEventResultCompleted));
 }
 
-void EmbeddedWorkerTestHelper::SimulatePausedAfterDownload(
-      int embedded_worker_id) {
-  EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
-  ASSERT_TRUE(worker != NULL);
-  registry()->OnPausedAfterDownload(worker->process_id(), embedded_worker_id);
-}
-
 void EmbeddedWorkerTestHelper::SimulateWorkerReadyForInspection(
     int embedded_worker_id) {
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
@@ -284,23 +261,9 @@ void EmbeddedWorkerTestHelper::OnStartWorkerStub(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&EmbeddedWorkerTestHelper::OnStartWorker,
-                 weak_factory_.GetWeakPtr(),
-                 params.embedded_worker_id,
-                 params.service_worker_version_id,
-                 params.scope,
-                 params.script_url,
-                 params.pause_after_download));
-}
-
-void EmbeddedWorkerTestHelper::OnResumeAfterDownloadStub(
-      int embedded_worker_id) {
-  EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
-  ASSERT_TRUE(worker != NULL);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&EmbeddedWorkerTestHelper::OnResumeAfterDownload,
-                 weak_factory_.GetWeakPtr(),
-                 embedded_worker_id));
+                 weak_factory_.GetWeakPtr(), params.embedded_worker_id,
+                 params.service_worker_version_id, params.scope,
+                 params.script_url));
 }
 
 void EmbeddedWorkerTestHelper::OnStopWorkerStub(int embedded_worker_id) {

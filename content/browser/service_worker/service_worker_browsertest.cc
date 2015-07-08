@@ -347,8 +347,7 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
   using self = EmbeddedWorkerBrowserTest;
 
   EmbeddedWorkerBrowserTest()
-      : last_worker_status_(EmbeddedWorkerInstance::STOPPED),
-        pause_mode_(DONT_PAUSE) {}
+      : last_worker_status_(EmbeddedWorkerInstance::STOPPED) {}
   ~EmbeddedWorkerBrowserTest() override {}
 
   void TearDownOnIOThread() override {
@@ -388,7 +387,6 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
         service_worker_version_id,
         pattern,
         script_url,
-        pause_mode_ != DONT_PAUSE,
         base::Bind(&EmbeddedWorkerBrowserTest::StartOnIOThread2, this));
   }
 
@@ -429,14 +427,6 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
     last_worker_status_ = worker_->status();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done_closure_);
   }
-  void OnPausedAfterDownload() override {
-    if (pause_mode_ == PAUSE_THEN_RESUME)
-      worker_->ResumeAfterDownload();
-    else if (pause_mode_ == PAUSE_THEN_STOP)
-      worker_->Stop();
-    else
-      ASSERT_TRUE(false);
-  }
   void OnReportException(const base::string16& error_message,
                          int line_number,
                          int column_number,
@@ -450,12 +440,6 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
 
   scoped_ptr<EmbeddedWorkerInstance> worker_;
   EmbeddedWorkerInstance::Status last_worker_status_;
-
-  enum {
-    DONT_PAUSE,
-    PAUSE_THEN_RESUME,
-    PAUSE_THEN_STOP,
-  } pause_mode_;
 
   // Called by EmbeddedWorkerInstance::Observer overrides so that
   // test code can wait for the worker status notifications.
@@ -831,34 +815,6 @@ IN_PROC_BROWSER_TEST_F(EmbeddedWorkerBrowserTest, StartAndStop) {
                           base::Bind(&self::StopOnIOThread, this));
   stop_run_loop.Run();
 
-  ASSERT_EQ(EmbeddedWorkerInstance::STOPPED, last_worker_status_);
-}
-
-#if defined(OS_LINUX)
-// Flaky on Linux 32-bit: http://crbug.com/498688.
-#define MAYBE_StartPaused_ThenResume DISABLED_StartPaused_ThenResume
-#else
-#define MAYBE_StartPaused_ThenResume StartPaused_ThenResume
-#endif
-IN_PROC_BROWSER_TEST_F(EmbeddedWorkerBrowserTest,
-                       MAYBE_StartPaused_ThenResume) {
-  pause_mode_ = PAUSE_THEN_RESUME;
-  base::RunLoop start_run_loop;
-  done_closure_ = start_run_loop.QuitClosure();
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&self::StartOnIOThread, this));
-  start_run_loop.Run();
-  ASSERT_EQ(EmbeddedWorkerInstance::RUNNING, last_worker_status_);
-}
-
-IN_PROC_BROWSER_TEST_F(EmbeddedWorkerBrowserTest,
-                       StartPaused_ThenStop) {
-  pause_mode_ = PAUSE_THEN_STOP;
-  base::RunLoop start_run_loop;
-  done_closure_ = start_run_loop.QuitClosure();
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&self::StartOnIOThread, this));
-  start_run_loop.Run();
   ASSERT_EQ(EmbeddedWorkerInstance::STOPPED, last_worker_status_);
 }
 

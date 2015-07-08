@@ -24,7 +24,6 @@ IPC_STRUCT_BEGIN(EmbeddedWorkerMsg_StartWorker_Params)
   IPC_STRUCT_MEMBER(GURL, scope)
   IPC_STRUCT_MEMBER(GURL, script_url)
   IPC_STRUCT_MEMBER(int, worker_devtools_agent_route_id)
-  IPC_STRUCT_MEMBER(bool, pause_after_download)
   IPC_STRUCT_MEMBER(bool, wait_for_debugger)
   IPC_STRUCT_MEMBER(content::V8CacheOptions, v8_cache_options)
 IPC_STRUCT_END()
@@ -44,18 +43,8 @@ IPC_STRUCT_END()
 IPC_MESSAGE_CONTROL1(EmbeddedWorkerMsg_StartWorker,
                      EmbeddedWorkerMsg_StartWorker_Params /* params */)
 
-// Browser -> Renderer message to resume a worker that has been started
-// with the pause_after_download option.
-IPC_MESSAGE_CONTROL1(EmbeddedWorkerMsg_ResumeAfterDownload,
-                     int /* embedded_worker_id */)
-
 // Browser -> Renderer message to stop (terminate) the embedded worker.
 IPC_MESSAGE_CONTROL1(EmbeddedWorkerMsg_StopWorker,
-                     int /* embedded_worker_id */)
-
-// Renderer -> Browser message to indicate that the worker script has been
-// downloaded and the embedded worker is in paused state.
-IPC_MESSAGE_CONTROL1(EmbeddedWorkerHostMsg_DidPauseAfterDownload,
                      int /* embedded_worker_id */)
 
 // Renderer -> Browser message to indicate that the worker is ready for

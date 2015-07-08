@@ -135,7 +135,6 @@ EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
 void EmbeddedWorkerInstance::Start(int64 service_worker_version_id,
                                    const GURL& scope,
                                    const GURL& script_url,
-                                   bool pause_after_download,
                                    const StatusCallback& callback) {
   if (!context_) {
     callback.Run(SERVICE_WORKER_ERROR_ABORT);
@@ -159,7 +158,6 @@ void EmbeddedWorkerInstance::Start(int64 service_worker_version_id,
   params->scope = scope;
   params->script_url = script_url;
   params->worker_devtools_agent_route_id = MSG_ROUTING_NONE;
-  params->pause_after_download = pause_after_download;
   params->wait_for_debugger = false;
   params->v8_cache_options = GetV8CacheOptions();
   context_->process_manager()->AllocateWorkerProcess(
@@ -192,13 +190,6 @@ void EmbeddedWorkerInstance::StopIfIdle() {
     return;
   }
   Stop();
-}
-
-void EmbeddedWorkerInstance::ResumeAfterDownload() {
-  DCHECK_EQ(STARTING, status_);
-  registry_->Send(
-      process_id_,
-      new EmbeddedWorkerMsg_ResumeAfterDownload(embedded_worker_id_));
 }
 
 ServiceWorkerStatusCode EmbeddedWorkerInstance::SendMessage(
@@ -300,9 +291,9 @@ void EmbeddedWorkerInstance::SendStartWorker(
   }
   params->worker_devtools_agent_route_id = worker_devtools_agent_route_id;
   params->wait_for_debugger = wait_for_debugger;
-  if (params->pause_after_download || params->wait_for_debugger) {
-    // We don't measure the start time when pause_after_download or
-    // wait_for_debugger flag is set. So we set the NULL time here.
+  if (params->wait_for_debugger) {
+    // We don't measure the start time when wait_for_debugger flag is set. So we
+    // set the NULL time here.
     start_timing_ = base::TimeTicks();
   } else {
     DCHECK(!start_timing_.is_null());
@@ -392,14 +383,6 @@ void EmbeddedWorkerInstance::OnDetached() {
   Status old_status = status_;
   ReleaseProcess();
   FOR_EACH_OBSERVER(Listener, listener_list_, OnDetached(old_status));
-}
-
-void EmbeddedWorkerInstance::OnPausedAfterDownload() {
-  // Stop can be requested before getting this far.
-  if (status_ == STOPPING)
-    return;
-  DCHECK(status_ == STARTING);
-  FOR_EACH_OBSERVER(Listener, listener_list_, OnPausedAfterDownload());
 }
 
 bool EmbeddedWorkerInstance::OnMessageReceived(const IPC::Message& message) {

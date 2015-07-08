@@ -73,7 +73,6 @@ class ServiceWorkerContextClient
 
   // WebServiceWorkerContextClient overrides.
   virtual blink::WebURL scope() const;
-  virtual void didPauseAfterDownload();
   virtual void getClients(const blink::WebServiceWorkerClientQueryOptions&,
                           blink::WebServiceWorkerClientsCallbacks*);
   virtual void openWindow(const blink::WebURL&,

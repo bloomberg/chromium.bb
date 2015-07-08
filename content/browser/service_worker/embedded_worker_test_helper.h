@@ -84,9 +84,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   virtual void OnStartWorker(int embedded_worker_id,
                              int64 service_worker_version_id,
                              const GURL& scope,
-                             const GURL& script_url,
-                             bool pause_after_download);
-  virtual void OnResumeAfterDownload(int embedded_worker_id);
+                             const GURL& script_url);
   virtual void OnStopWorker(int embedded_worker_id);
   virtual bool OnMessageToWorker(int thread_id,
                                  int embedded_worker_id,
@@ -108,7 +106,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
   // These functions simulate sending an EmbeddedHostMsg message to the
   // browser.
-  void SimulatePausedAfterDownload(int embedded_worker_id);
   void SimulateWorkerReadyForInspection(int embedded_worker_id);
   void SimulateWorkerScriptCached(int embedded_worker_id);
   void SimulateWorkerScriptLoaded(int thread_id, int embedded_worker_id);
@@ -121,7 +118,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
  private:
   void OnStartWorkerStub(const EmbeddedWorkerMsg_StartWorker_Params& params);
-  void OnResumeAfterDownloadStub(int embedded_worker_id);
   void OnStopWorkerStub(int embedded_worker_id);
   void OnMessageToWorkerStub(int thread_id,
                              int embedded_worker_id,

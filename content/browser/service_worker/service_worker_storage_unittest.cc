@@ -125,13 +125,6 @@ void GetUserDataForAllRegistrationsCallback(
   *status_out = status;
 }
 
-void OnCompareComplete(
-    ServiceWorkerStatusCode* status_out, bool* are_equal_out,
-    ServiceWorkerStatusCode status, bool are_equal) {
-  *status_out = status;
-  *are_equal_out = are_equal;
-}
-
 void WriteResponse(
     ServiceWorkerStorage* storage, int64 id,
     const std::string& headers,
@@ -216,15 +209,6 @@ bool VerifyBasicResponse(ServiceWorkerStorage* storage, int64 id,
   EXPECT_TRUE(status_match);
   EXPECT_TRUE(data_match);
   return status_match && data_match;
-}
-
-void WriteResponseOfSize(ServiceWorkerStorage* storage, int64 id,
-                         char val, int size) {
-  const char kHttpHeaders[] = "HTTP/1.0 200 HONKYDORY\00";
-  std::string headers(kHttpHeaders, arraysize(kHttpHeaders));
-  scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(size);
-  memset(buffer->data(), val, size);
-  WriteResponse(storage, id, headers, buffer.get(), size);
 }
 
 int WriteResponseMetadata(ServiceWorkerStorage* storage,
@@ -1487,70 +1471,6 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
   EXPECT_EQ(SERVICE_WORKER_OK,
             FindRegistrationForDocument(kDocumentUrl, &found_registration));
   EXPECT_EQ(live_registration2, found_registration);
-}
-
-TEST_F(ServiceWorkerStorageTest, CompareResources) {
-  LazyInitialize();
-
-  // Compare two small responses containing the same data.
-  WriteBasicResponse(storage(), 1);
-  WriteBasicResponse(storage(), 2);
-  ServiceWorkerStatusCode status = static_cast<ServiceWorkerStatusCode>(-1);
-  bool are_equal = false;
-  storage()->CompareScriptResources(
-      1, 2,
-      base::Bind(&OnCompareComplete, &status, &are_equal));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
-  EXPECT_TRUE(are_equal);
-
-  // Compare two small responses with different data.
-  const char kHttpHeaders[] = "HTTP/1.0 200 HONKYDORY\0\0";
-  const char kHttpBody[] = "Goodbye";
-  std::string headers(kHttpHeaders, arraysize(kHttpHeaders));
-  WriteStringResponse(storage(), 3, headers, std::string(kHttpBody));
-  status = static_cast<ServiceWorkerStatusCode>(-1);
-  are_equal = true;
-  storage()->CompareScriptResources(
-      1, 3,
-      base::Bind(&OnCompareComplete, &status, &are_equal));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
-  EXPECT_FALSE(are_equal);
-
-  // Compare two large responses with the same data.
-  const int k32K = 32 * 1024;
-  WriteResponseOfSize(storage(), 4, 'a', k32K);
-  WriteResponseOfSize(storage(), 5, 'a', k32K);
-  status = static_cast<ServiceWorkerStatusCode>(-1);
-  are_equal = false;
-  storage()->CompareScriptResources(
-      4, 5,
-      base::Bind(&OnCompareComplete, &status, &are_equal));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
-  EXPECT_TRUE(are_equal);
-
-  // Compare a large and small response.
-  status = static_cast<ServiceWorkerStatusCode>(-1);
-  are_equal = true;
-  storage()->CompareScriptResources(
-      1, 5,
-      base::Bind(&OnCompareComplete, &status, &are_equal));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
-  EXPECT_FALSE(are_equal);
-
-  // Compare two large responses with different data.
-  WriteResponseOfSize(storage(), 6, 'b', k32K);
-  status = static_cast<ServiceWorkerStatusCode>(-1);
-  are_equal = true;
-  storage()->CompareScriptResources(
-      5, 6,
-      base::Bind(&OnCompareComplete, &status, &are_equal));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
-  EXPECT_FALSE(are_equal);
 }
 
 }  // namespace content

@@ -47,9 +47,8 @@ class EmbeddedWorkerInstanceTest : public testing::Test {
                                       const GURL& url) {
     ServiceWorkerStatusCode status;
     base::RunLoop run_loop;
-    worker->Start(id, pattern, url, false,
-                  base::Bind(&SaveStatusAndCall, &status,
-                             run_loop.QuitClosure()));
+    worker->Start(id, pattern, url, base::Bind(&SaveStatusAndCall, &status,
+                                               run_loop.QuitClosure()));
     run_loop.Run();
     return status;
   }
@@ -89,7 +88,6 @@ TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
       service_worker_version_id,
       pattern,
       url,
-      false,
       base::Bind(&SaveStatusAndCall, &status, run_loop.QuitClosure()));
   EXPECT_EQ(EmbeddedWorkerInstance::STARTING, worker->status());
   run_loop.Run();

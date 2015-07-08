@@ -196,8 +196,6 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
                         OnWorkerStarted)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerStopped,
                         OnWorkerStopped)
-    IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_DidPauseAfterDownload,
-                        OnPausedAfterDownload)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_ReportException,
                         OnReportException)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_ReportConsoleMessage,
@@ -934,16 +932,6 @@ void ServiceWorkerDispatcherHost::OnWorkerStopped(int embedded_worker_id) {
   if (!registry->CanHandle(embedded_worker_id))
     return;
   registry->OnWorkerStopped(render_process_id_, embedded_worker_id);
-}
-
-void ServiceWorkerDispatcherHost::OnPausedAfterDownload(
-    int embedded_worker_id) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerDispatcherHost::OnPausedAfterDownload");
-  if (!GetContext())
-    return;
-  GetContext()->embedded_worker_registry()->OnPausedAfterDownload(
-      render_process_id_, embedded_worker_id);
 }
 
 void ServiceWorkerDispatcherHost::OnReportException(

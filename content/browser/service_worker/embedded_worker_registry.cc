@@ -143,16 +143,6 @@ void EmbeddedWorkerRegistry::OnWorkerStopped(
   found->second->OnStopped();
 }
 
-void EmbeddedWorkerRegistry::OnPausedAfterDownload(
-    int process_id, int embedded_worker_id) {
-  WorkerInstanceMap::iterator found = worker_map_.find(embedded_worker_id);
-  DCHECK(found != worker_map_.end());
-  DCHECK_EQ(found->second->process_id(), process_id);
-  if (found == worker_map_.end() || found->second->process_id() != process_id)
-    return;
-  found->second->OnPausedAfterDownload();
-}
-
 void EmbeddedWorkerRegistry::OnReportException(
     int embedded_worker_id,
     const base::string16& error_message,

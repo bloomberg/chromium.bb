@@ -362,8 +362,7 @@ class FailToStartWorkerTestHelper : public EmbeddedWorkerTestHelper {
   void OnStartWorker(int embedded_worker_id,
                      int64 service_worker_version_id,
                      const GURL& scope,
-                     const GURL& script_url,
-                     bool pause_after_download) override {
+                     const GURL& script_url) override {
     EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
     registry()->OnWorkerStopped(worker->process_id(), embedded_worker_id);
   }
@@ -816,15 +815,19 @@ class UpdateJobTestHelper
   void OnStartWorker(int embedded_worker_id,
                      int64 version_id,
                      const GURL& scope,
-                     const GURL& script,
-                     bool pause_after_download) override {
+                     const GURL& script) override {
     const std::string kMockScriptBody = "mock_script";
     const uint64 kMockScriptSize = 19284;
     ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);
+    ServiceWorkerRegistration* registration =
+        context()->GetLiveRegistration(version->registration_id());
+    bool is_update = registration->active_version() &&
+                     version != registration->active_version();
+
     ASSERT_TRUE(version);
     version->AddListener(this);
 
-    if (!pause_after_download) {
+    if (!is_update) {
       // Spoof caching the script for the initial version.
       int64 resource_id = storage()->NewResourceId();
       version->script_cache_map()->NotifyStartedCaching(script, resource_id);
@@ -832,18 +835,21 @@ class UpdateJobTestHelper
       version->script_cache_map()->NotifyFinishedCaching(
           script, kMockScriptSize, net::URLRequestStatus(), std::string());
     } else {
+      if (script.GetOrigin() == kNoChangeOrigin) {
+        version->SetStartWorkerStatusCode(SERVICE_WORKER_ERROR_EXISTS);
+        EmbeddedWorkerTestHelper::OnStopWorker(embedded_worker_id);
+        return;
+      }
+
       // Spoof caching the script for the new version.
       int64 resource_id = storage()->NewResourceId();
       version->script_cache_map()->NotifyStartedCaching(script, resource_id);
-      if (script.GetOrigin() == kNoChangeOrigin)
-        WriteStringResponse(storage(), resource_id, kMockScriptBody);
-      else
-        WriteStringResponse(storage(), resource_id, "mock_different_script");
+      WriteStringResponse(storage(), resource_id, "mock_different_script");
       version->script_cache_map()->NotifyFinishedCaching(
           script, kMockScriptSize, net::URLRequestStatus(), std::string());
     }
-    EmbeddedWorkerTestHelper::OnStartWorker(
-        embedded_worker_id, version_id, scope, script, pause_after_download);
+    EmbeddedWorkerTestHelper::OnStartWorker(embedded_worker_id, version_id,
+                                            scope, script);
   }
 
   // ServiceWorkerRegistration::Listener overrides
@@ -893,22 +899,20 @@ class EvictIncumbentVersionHelper : public UpdateJobTestHelper {
   void OnStartWorker(int embedded_worker_id,
                      int64 version_id,
                      const GURL& scope,
-                     const GURL& script,
-                     bool pause_after_download) override {
-    if (pause_after_download) {
+                     const GURL& script) override {
+    ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);
+    ServiceWorkerRegistration* registration =
+        context()->GetLiveRegistration(version->registration_id());
+    bool is_update = registration->active_version() &&
+                     version != registration->active_version();
+    if (is_update) {
       // Evict the incumbent worker.
-      ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);
-      ASSERT_TRUE(version);
-      ServiceWorkerRegistration* registration =
-          context()->GetLiveRegistration(version->registration_id());
-      ASSERT_TRUE(registration);
-      ASSERT_TRUE(registration->active_version());
       ASSERT_FALSE(registration->waiting_version());
       registration->DeleteVersion(
           make_scoped_refptr(registration->active_version()));
     }
     UpdateJobTestHelper::OnStartWorker(embedded_worker_id, version_id, scope,
-                                       script, pause_after_download);
+                                       script);
   }
 
   void OnRegistrationFailed(ServiceWorkerRegistration* registration) override {
@@ -957,6 +961,31 @@ TEST_F(ServiceWorkerJobTest, Update_NoChange) {
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT,
             update_helper->state_change_log_[0].status);
   EXPECT_FALSE(update_helper->update_found_);
+}
+
+TEST_F(ServiceWorkerJobTest, Update_BumpLastUpdateCheckTime) {
+  const base::Time kToday = base::Time::Now();
+  const base::Time kYesterday =
+      kToday - base::TimeDelta::FromDays(1) - base::TimeDelta::FromHours(1);
+  UpdateJobTestHelper* update_helper =
+      new UpdateJobTestHelper(render_process_id_);
+  helper_.reset(update_helper);
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      update_helper->SetupInitialRegistration(kNoChangeOrigin);
+
+  // Run an update where the last update check was less than 24 hours ago. The
+  // check time shouldn't change, as we didn't bypass cache.
+  registration->set_last_update_check(kToday);
+  registration->active_version()->StartUpdate();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(kToday, registration->last_update_check());
+
+  // Run an update where the last update check was over 24 hours ago. The
+  // check time should change, as the cache was bypassed.
+  registration->set_last_update_check(kYesterday);
+  registration->active_version()->StartUpdate();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_LT(kYesterday, registration->last_update_check());
 }
 
 TEST_F(ServiceWorkerJobTest, Update_NewVersion) {

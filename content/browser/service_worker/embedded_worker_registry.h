@@ -78,7 +78,6 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
                                bool success);
   void OnWorkerStarted(int process_id, int embedded_worker_id);
   void OnWorkerStopped(int process_id, int embedded_worker_id);
-  void OnPausedAfterDownload(int process_id, int embedded_worker_id);
   void OnReportException(int embedded_worker_id,
                          const base::string16& error_message,
                          int line_number,

@@ -275,10 +275,6 @@ blink::WebURL ServiceWorkerContextClient::scope() const {
   return service_worker_scope_;
 }
 
-void ServiceWorkerContextClient::didPauseAfterDownload() {
-  Send(new EmbeddedWorkerHostMsg_DidPauseAfterDownload(embedded_worker_id_));
-}
-
 void ServiceWorkerContextClient::getClients(
     const blink::WebServiceWorkerClientQueryOptions& weboptions,
     blink::WebServiceWorkerClientsCallbacks* callbacks) {

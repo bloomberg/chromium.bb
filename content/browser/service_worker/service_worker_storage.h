@@ -61,9 +61,6 @@ class CONTENT_EXPORT ServiceWorkerStorage
   typedef base::Callback<void(const std::vector<ServiceWorkerRegistrationInfo>&
                                   registrations)> GetRegistrationsInfosCallback;
   typedef base::Callback<
-      void(ServiceWorkerStatusCode status, bool are_equal)>
-          CompareCallback;
-  typedef base::Callback<
       void(const std::string& data, ServiceWorkerStatusCode status)>
           GetUserDataCallback;
   typedef base::Callback<void(
@@ -158,10 +155,6 @@ class CONTENT_EXPORT ServiceWorkerStorage
   // Removes |id| from uncommitted list, adds it to the
   // purgeable list and purges it.
   void DoomUncommittedResponse(int64 id);
-
-  // Compares only the response bodies.
-  void CompareScriptResources(int64 lhs_id, int64 rhs_id,
-                              const CompareCallback& callback);
 
   // Provide a storage mechanism to read/write arbitrary data associated with
   // a registration. Each registration has its own key namespace. Stored data

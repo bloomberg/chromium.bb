@@ -152,13 +152,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // This returns OK (success) if the worker is already running.
   void StartWorker(const StatusCallback& callback);
 
-  // Starts an embedded worker for this version.
-  // |pause_after_download| notifies worker to pause after download finished
-  // which could be resumed by EmbeddedWorkerInstance::ResumeAfterDownload.
-  // This returns OK (success) if the worker is already running.
-  void StartWorker(bool pause_after_download,
-                   const StatusCallback& callback);
-
   // Stops an embedded worker for this version.
   // This returns OK (success) if the worker is already stopped.
   void StopWorker(const StatusCallback& callback);
@@ -465,11 +458,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
                              const ServiceWorkerClientInfo& client);
 
   void DidEnsureLiveRegistrationForStartWorker(
-      bool pause_after_download,
       const StatusCallback& callback,
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& protect);
-  void StartWorkerInternal(bool pause_after_download);
+  void StartWorkerInternal();
 
   void DidSkipWaiting(int request_id);
 

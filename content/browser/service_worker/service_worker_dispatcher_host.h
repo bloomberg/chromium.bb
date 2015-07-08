@@ -114,7 +114,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   void OnWorkerScriptEvaluated(int embedded_worker_id, bool success);
   void OnWorkerStarted(int embedded_worker_id);
   void OnWorkerStopped(int embedded_worker_id);
-  void OnPausedAfterDownload(int embedded_worker_id);
   void OnReportException(int embedded_worker_id,
                          const base::string16& error_message,
                          int line_number,
