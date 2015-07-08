@@ -351,12 +351,12 @@ void NinjaBinaryTargetWriter::WriteCompilerVars(
   EscapeOptions opts = GetFlagOptions();
   if (used_types.Get(SOURCE_C) || used_types.Get(SOURCE_CPP) ||
       used_types.Get(SOURCE_M) || used_types.Get(SOURCE_MM) ||
-      used_types.Get(SOURCE_ASM)) {
+      used_types.Get(SOURCE_S) || used_types.Get(SOURCE_ASM)) {
     WriteOneFlag(SUBSTITUTION_CFLAGS, false, Toolchain::TYPE_NONE,
                  &ConfigValues::cflags, opts);
   }
   if (used_types.Get(SOURCE_C) || used_types.Get(SOURCE_M) ||
-      used_types.Get(SOURCE_ASM)) {
+      used_types.Get(SOURCE_S) || used_types.Get(SOURCE_ASM)) {
     WriteOneFlag(SUBSTITUTION_CFLAGS_C, has_precompiled_headers,
                  Toolchain::TYPE_CC, &ConfigValues::cflags_c, opts);
   }
