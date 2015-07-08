@@ -35,8 +35,6 @@ namespace blink {
 
 class CORE_EXPORT ActiveDOMObject : public ContextLifecycleObserver {
 public:
-    static unsigned instanceCount();
-
     ActiveDOMObject(ExecutionContext*);
 
     // suspendIfNeeded() should be called exactly once after object construction to synchronize
@@ -65,8 +63,6 @@ private:
 #if ENABLE(ASSERT)
     bool m_suspendIfNeededCalled;
 #endif
-
-    static unsigned s_instanceCount;
 };
 
 } // namespace blink

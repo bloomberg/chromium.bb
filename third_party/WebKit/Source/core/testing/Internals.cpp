@@ -97,10 +97,10 @@
 #include "core/input/EventHandler.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/InspectorConsoleAgent.h"
-#include "core/inspector/InspectorCounters.h"
 #include "core/inspector/InspectorFrontendChannel.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorOverlay.h"
+#include "core/inspector/InstanceCounters.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/layout/LayoutMenuList.h"
 #include "core/layout/LayoutObject.h"
@@ -1535,12 +1535,12 @@ void Internals::toggleOverwriteModeEnabled(Document* document)
 
 unsigned Internals::numberOfLiveNodes() const
 {
-    return InspectorCounters::counterValue(InspectorCounters::NodeCounter);
+    return InstanceCounters::counterValue(InstanceCounters::NodeCounter);
 }
 
 unsigned Internals::numberOfLiveDocuments() const
 {
-    return InspectorCounters::counterValue(InspectorCounters::DocumentCounter);
+    return InstanceCounters::counterValue(InstanceCounters::DocumentCounter);
 }
 
 String Internals::dumpRefCountedInstanceCounts() const

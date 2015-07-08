@@ -320,7 +320,6 @@ public:
 #endif
 
     static LayoutObject* createObject(Element*, const ComputedStyle&);
-    static unsigned instanceCount() { return s_instanceCount; }
 
     // LayoutObjects are allocated out of the rendering partition.
     void* operator new(size_t);
@@ -1433,8 +1432,6 @@ private:
     // This stores the position in the paint invalidation backing's coordinate.
     // It is used to detect layoutObject shifts that forces a full invalidation.
     LayoutPoint m_previousPositionFromPaintInvalidationBacking;
-
-    static unsigned s_instanceCount;
 };
 
 // FIXME: remove this once the layout object lifecycle ASSERTS are no longer hit.

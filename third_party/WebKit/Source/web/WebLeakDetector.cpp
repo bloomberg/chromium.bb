@@ -39,7 +39,7 @@
 #include "core/dom/Document.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/inspector/InspectorCounters.h"
+#include "core/inspector/InstanceCounters.h"
 #include "core/layout/LayoutObject.h"
 #include "modules/webaudio/AudioNode.h"
 #include "platform/Timer.h"
@@ -128,15 +128,15 @@ void WebLeakDetectorImpl::delayedReport(Timer<WebLeakDetectorImpl>*)
     ASSERT(m_client);
 
     WebLeakDetectorClient::Result result;
-    result.numberOfLiveAudioNodes = AudioHandler::instanceCount();
-    result.numberOfLiveDocuments = InspectorCounters::counterValue(InspectorCounters::DocumentCounter);
-    result.numberOfLiveNodes = InspectorCounters::counterValue(InspectorCounters::NodeCounter);
-    result.numberOfLiveLayoutObjects = LayoutObject::instanceCount();
+    result.numberOfLiveAudioNodes = InstanceCounters::counterValue(InstanceCounters::AudioHandlerCounter);
+    result.numberOfLiveDocuments = InstanceCounters::counterValue(InstanceCounters::DocumentCounter);
+    result.numberOfLiveNodes = InstanceCounters::counterValue(InstanceCounters::NodeCounter);
+    result.numberOfLiveLayoutObjects = InstanceCounters::counterValue(InstanceCounters::LayoutObjectCounter);
     result.numberOfLiveRenderObjects = result.numberOfLiveLayoutObjects;
-    result.numberOfLiveResources = Resource::instanceCount();
-    result.numberOfLiveActiveDOMObjects = ActiveDOMObject::instanceCount();
-    result.numberOfLiveScriptPromises = ScriptPromise::instanceCount();
-    result.numberOfLiveFrames = Frame::instanceCount();
+    result.numberOfLiveResources = InstanceCounters::counterValue(InstanceCounters::ResourceCounter);
+    result.numberOfLiveActiveDOMObjects = InstanceCounters::counterValue(InstanceCounters::ActiveDOMObjectCounter);
+    result.numberOfLiveScriptPromises = InstanceCounters::counterValue(InstanceCounters::ScriptPromiseCounter);
+    result.numberOfLiveFrames = InstanceCounters::counterValue(InstanceCounters::FrameCounter);
 
     m_client->onLeakDetectionComplete(result);
 

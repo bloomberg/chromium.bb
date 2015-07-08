@@ -129,8 +129,6 @@ public:
     void setIsLoading(bool isLoading) { m_isLoading = isLoading; }
     bool isLoading() const { return m_isLoading; }
 
-    static unsigned instanceCount() { return s_instanceCount; }
-
 protected:
     Frame(FrameClient*, FrameHost*, FrameOwner*);
 
@@ -146,8 +144,6 @@ private:
     // Needed to identify Frame Timing requests.
     int64_t m_frameID;
     bool m_isLoading;
-
-    static unsigned s_instanceCount;
 };
 
 inline FrameClient* Frame::client() const

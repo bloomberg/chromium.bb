@@ -131,8 +131,6 @@ public:
 
     static v8::Local<v8::Promise> rejectRaw(ScriptState*, v8::Local<v8::Value>);
 
-    static unsigned instanceCount();
-
     // This is a utility class intended to be used internally.
     // ScriptPromiseResolver is for general purpose.
     class CORE_EXPORT InternalResolver final {
@@ -154,8 +152,6 @@ private:
 
     RefPtr<ScriptState> m_scriptState;
     ScriptValue m_promise;
-
-    static unsigned s_instanceCount;
 };
 
 } // namespace blink

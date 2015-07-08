@@ -29,13 +29,13 @@
 */
 
 #include "config.h"
-#include "core/inspector/InspectorCounters.h"
+#include "core/inspector/InstanceCounters.h"
 
 namespace blink {
 
-int InspectorCounters::s_counters[CounterTypeLength];
+int InstanceCounters::s_counters[CounterTypeLength];
 
-int InspectorCounters::counterValue(CounterType type)
+int InstanceCounters::counterValue(CounterType type)
 {
     return s_counters[type];
 }

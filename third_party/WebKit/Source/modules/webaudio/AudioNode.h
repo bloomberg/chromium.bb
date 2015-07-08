@@ -98,7 +98,6 @@ public:
     // lock is held.
     // Do not release resources used by an audio rendering thread in dispose().
     virtual void dispose();
-    static unsigned instanceCount() { return s_instanceCount; }
 
     // node() returns a valid object until dispose() is called.  This returns
     // nullptr after dispose().  We must not call node() in an audio rendering
@@ -263,7 +262,6 @@ private:
     static bool s_isNodeCountInitialized;
     static int s_nodeCount[NodeTypeEnd];
 #endif
-    static unsigned s_instanceCount;
 
 protected:
     unsigned m_channelCount;

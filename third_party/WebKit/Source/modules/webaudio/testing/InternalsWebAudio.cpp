@@ -5,13 +5,14 @@
 #include "config.h"
 #include "modules/webaudio/testing/InternalsWebAudio.h"
 
+#include "core/inspector/InstanceCounters.h"
 #include "modules/webaudio/AudioNode.h"
 
 namespace blink {
 
 unsigned InternalsWebAudio::audioHandlerCount(Internals& internals)
 {
-    return AudioHandler::instanceCount();
+    return InstanceCounters::counterValue(InstanceCounters::AudioHandlerCounter);
 }
 
 } // namespace blink

@@ -671,9 +671,9 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorUpdateCountersEvent::d
 {
     RefPtr<TracedValue> value = TracedValue::create();
     if (isMainThread()) {
-        value->setInteger("documents", InspectorCounters::counterValue(InspectorCounters::DocumentCounter));
-        value->setInteger("nodes", InspectorCounters::counterValue(InspectorCounters::NodeCounter));
-        value->setInteger("jsEventListeners", InspectorCounters::counterValue(InspectorCounters::JSEventListenerCounter));
+        value->setInteger("documents", InstanceCounters::counterValue(InstanceCounters::DocumentCounter));
+        value->setInteger("nodes", InstanceCounters::counterValue(InstanceCounters::NodeCounter));
+        value->setInteger("jsEventListeners", InstanceCounters::counterValue(InstanceCounters::JSEventListenerCounter));
     }
     value->setDouble("jsHeapSizeUsed", static_cast<double>(usedHeapSize()));
     return value.release();

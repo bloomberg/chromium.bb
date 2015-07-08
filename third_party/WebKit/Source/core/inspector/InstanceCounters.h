@@ -28,8 +28,8 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef InspectorCounters_h
-#define InspectorCounters_h
+#ifndef InstanceCounters_h
+#define InstanceCounters_h
 
 #include "core/CoreExport.h"
 #include "wtf/FastAllocBase.h"
@@ -40,13 +40,21 @@
 
 namespace blink {
 
-class InspectorCounters {
+class InstanceCounters {
 public:
     enum CounterType {
+        ActiveDOMObjectCounter,
+        AudioHandlerCounter,
         DocumentCounter,
-        NodeCounter,
+        FrameCounter,
         JSEventListenerCounter,
-        CounterTypeLength
+        LayoutObjectCounter,
+        NodeCounter,
+        ResourceCounter,
+        ScriptPromiseCounter,
+
+        // This value must be the last.
+        CounterTypeLength,
     };
 
     static inline void incrementCounter(CounterType type)
@@ -64,11 +72,11 @@ public:
     CORE_EXPORT static int counterValue(CounterType);
 
 private:
-    InspectorCounters();
+    InstanceCounters();
 
     CORE_EXPORT static int s_counters[CounterTypeLength];
 };
 
 } // namespace blink
 
-#endif // !defined(InspectorCounters_h)
+#endif // !defined(InstanceCounters_h)

@@ -271,7 +271,7 @@ Node::Node(TreeScope* treeScope, ConstructionType type)
 #if !defined(NDEBUG) || (defined(DUMP_NODE_STATISTICS) && DUMP_NODE_STATISTICS)
     trackForDebugging();
 #endif
-    InspectorCounters::incrementCounter(InspectorCounters::NodeCounter);
+    InstanceCounters::incrementCounter(InstanceCounters::NodeCounter);
 }
 
 Node::~Node()
@@ -313,7 +313,7 @@ Node::~Node()
     RELEASE_ASSERT(hasRareData() || !layoutObject());
 #endif
 
-    InspectorCounters::decrementCounter(InspectorCounters::NodeCounter);
+    InstanceCounters::decrementCounter(InstanceCounters::NodeCounter);
 }
 
 #if !ENABLE(OILPAN)

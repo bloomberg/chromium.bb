@@ -36,11 +36,10 @@
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/DOMException.h"
+#include "core/inspector/InstanceCounters.h"
 #include <v8.h>
 
 namespace blink {
-
-unsigned ScriptPromise::s_instanceCount = 0;
 
 ScriptPromise::InternalResolver::InternalResolver(ScriptState* scriptState)
     : m_resolver(scriptState, v8::Promise::Resolver::New(scriptState->context())) { }
@@ -184,25 +183,19 @@ v8::Local<v8::Promise> ScriptPromise::rejectRaw(ScriptState* scriptState, v8::Lo
     return promise;
 }
 
-unsigned ScriptPromise::instanceCount()
-{
-    ASSERT(isMainThread());
-    return s_instanceCount;
-}
-
 void ScriptPromise::increaseInstanceCount()
 {
     // An instance is only counted only on the main thread. This is because the
     // leak detector can detect leaks on the main thread so far. We plan to fix
     // the leak detector to work on worker threads (crbug.com/507224).
     if (isMainThread())
-        ++s_instanceCount;
+        InstanceCounters::incrementCounter(InstanceCounters::ScriptPromiseCounter);
 }
 
 void ScriptPromise::decreaseInstanceCount()
 {
     if (isMainThread())
-        --s_instanceCount;
+        InstanceCounters::decrementCounter(InstanceCounters::ScriptPromiseCounter);
 }
 
 } // namespace blink

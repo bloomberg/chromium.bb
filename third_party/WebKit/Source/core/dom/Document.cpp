@@ -163,9 +163,9 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/InspectorCounters.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "core/inspector/InstanceCounters.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutPart.h"
@@ -505,7 +505,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
         m_nodeListCounts[i] = 0;
 #endif
 
-    InspectorCounters::incrementCounter(InspectorCounters::DocumentCounter);
+    InstanceCounters::incrementCounter(InstanceCounters::DocumentCounter);
 
     m_lifecycle.advanceTo(DocumentLifecycle::Inactive);
 
@@ -588,7 +588,7 @@ Document::~Document()
 #endif
 #endif
 
-    InspectorCounters::decrementCounter(InspectorCounters::DocumentCounter);
+    InstanceCounters::decrementCounter(InstanceCounters::DocumentCounter);
 }
 
 #if !ENABLE(OILPAN)

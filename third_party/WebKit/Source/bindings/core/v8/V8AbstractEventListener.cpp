@@ -38,7 +38,7 @@
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "core/events/BeforeUnloadEvent.h"
 #include "core/events/Event.h"
-#include "core/inspector/InspectorCounters.h"
+#include "core/inspector/InstanceCounters.h"
 #include "core/workers/WorkerGlobalScope.h"
 
 namespace blink {
@@ -50,7 +50,7 @@ V8AbstractEventListener::V8AbstractEventListener(bool isAttribute, DOMWrapperWor
     , m_isolate(isolate)
 {
     if (isMainThread())
-        InspectorCounters::incrementCounter(InspectorCounters::JSEventListenerCounter);
+        InstanceCounters::incrementCounter(InstanceCounters::JSEventListenerCounter);
 }
 
 V8AbstractEventListener::~V8AbstractEventListener()
@@ -60,7 +60,7 @@ V8AbstractEventListener::~V8AbstractEventListener()
         V8EventListenerList::clearWrapper(m_listener.newLocal(isolate()), m_isAttribute, isolate());
     }
     if (isMainThread())
-        InspectorCounters::decrementCounter(InspectorCounters::JSEventListenerCounter);
+        InstanceCounters::decrementCounter(InstanceCounters::JSEventListenerCounter);
 }
 
 void V8AbstractEventListener::handleEvent(ExecutionContext* executionContext, Event* event)

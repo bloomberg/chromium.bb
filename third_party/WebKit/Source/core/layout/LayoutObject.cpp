@@ -223,7 +223,6 @@ LayoutObject* LayoutObject::createObject(Element* element, const ComputedStyle& 
 }
 
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, layoutObjectCounter, ("LayoutObject"));
-unsigned LayoutObject::s_instanceCount = 0;
 
 LayoutObject::LayoutObject(Node* node)
     : ImageResourceClient()
@@ -241,7 +240,7 @@ LayoutObject::LayoutObject(Node* node)
 #ifndef NDEBUG
     layoutObjectCounter.increment();
 #endif
-    ++s_instanceCount;
+    InstanceCounters::incrementCounter(InstanceCounters::LayoutObjectCounter);
 }
 
 LayoutObject::~LayoutObject()
@@ -250,7 +249,7 @@ LayoutObject::~LayoutObject()
 #ifndef NDEBUG
     layoutObjectCounter.decrement();
 #endif
-    --s_instanceCount;
+    InstanceCounters::decrementCounter(InstanceCounters::LayoutObjectCounter);
 }
 
 bool LayoutObject::isDescendantOf(const LayoutObject* obj) const

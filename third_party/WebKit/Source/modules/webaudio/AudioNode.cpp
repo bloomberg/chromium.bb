@@ -28,6 +28,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/inspector/InstanceCounters.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
@@ -40,8 +41,6 @@
 #endif
 
 namespace blink {
-
-unsigned AudioHandler::s_instanceCount = 0;
 
 AudioHandler::AudioHandler(NodeType nodeType, AudioNode& node, float sampleRate)
     : m_isInitialized(false)
@@ -66,7 +65,7 @@ AudioHandler::AudioHandler(NodeType nodeType, AudioNode& node, float sampleRate)
         atexit(AudioHandler::printNodeCounts);
     }
 #endif
-    ++s_instanceCount;
+    InstanceCounters::incrementCounter(InstanceCounters::AudioHandlerCounter);
 }
 
 AudioHandler::~AudioHandler()
@@ -74,7 +73,7 @@ AudioHandler::~AudioHandler()
     ASSERT(isMainThread());
     // dispose() should be called.
     ASSERT(!node());
-    --s_instanceCount;
+    InstanceCounters::decrementCounter(InstanceCounters::AudioHandlerCounter);
 #if DEBUG_AUDIONODE_REFERENCES
     --s_nodeCount[nodeType()];
     fprintf(stderr, "%p: %2d: AudioNode::~AudioNode() %d [%d]\n",
