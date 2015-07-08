@@ -8,13 +8,20 @@ source_set("filters") {
     "cma_renderer.h",
     "demuxer_stream_adapter.cc",
     "demuxer_stream_adapter.h",
-  ]
-
-  deps = [
-    "//base",
-    "//chromecast/media/cma/base",
-    "//media",
+    "hole_frame_factory.cc",
+    "hole_frame_factory.h",
   ]
 
   configs += [ "//chromecast:config" ]
+
+  deps = [
+    "//base",
+    "//chromecast/base",
+    "//chromecast/media/cma/base",
+    "//chromecast/media/cma/pipeline",
+    "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/command_buffer/common",
+    "//media",
+    "//ui/gfx/geometry",
+  ]
 }

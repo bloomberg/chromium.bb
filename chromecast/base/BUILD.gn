@@ -13,11 +13,6 @@ source_set("base") {
     "chromecast_switches.h",
     "error_codes.cc",
     "error_codes.h",
-    "metrics/cast_histograms.h",
-    "metrics/cast_metrics_helper.cc",
-    "metrics/cast_metrics_helper.h",
-    "metrics/grouped_histogram.cc",
-    "metrics/grouped_histogram.h",
     "path_utils.cc",
     "path_utils.h",
     "process_utils.cc",
@@ -26,11 +21,15 @@ source_set("base") {
     "serializers.h",
   ]
 
+  configs += [ "//chromecast:config" ]
+
+  public_deps = [
+    "//chromecast/base/metrics",
+  ]
+
   deps = [
     "//base",
   ]
-
-  configs += [ "//chromecast:config" ]
 }
 
 test("cast_base_unittests") {
@@ -43,7 +42,9 @@ test("cast_base_unittests") {
 
   deps = [
     ":base",
+    "//base",
     "//base/test:run_all_unittests",
+    "//base/test:test_support",
     "//testing/gtest",
   ]
 }

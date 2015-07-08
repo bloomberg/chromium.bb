@@ -5,6 +5,10 @@
 import("//build/config/crypto.gni")
 import("//chromecast/chromecast.gni")
 
+declare_args() {
+  libcast_media_target = ""
+}
+
 source_set("base") {
   sources = [
     "decrypt_context.cc",
@@ -19,20 +23,38 @@ source_set("base") {
     "switching_media_renderer.h",
   ]
 
+  configs += [ "//chromecast:config" ]
+
   deps = [
     "//base",
     "//crypto",
     "//crypto:platform",
+    "//media",
     "//third_party/widevine/cdm:version_h",
   ]
 
-  configs += [ "//chromecast:config" ]
-
   if (is_chromecast_chrome_branded) {
     deps += [
+      "${libcast_media_target}",
       # TODO(gyp): add dependency on internal/chromecast_internal:media_base_internal
     ]
   } else {
     sources += [ "key_systems_common_simple.cc" ]
+
+    deps += [ ":libcast_media_default" ]
   }
+}
+
+shared_library("libcast_media_default") {
+  output_name = "libcast_media_1.0"
+
+  sources = [
+    "cast_media_default.cc",
+  ]
+
+  configs += [ "//chromecast:config" ]
+
+  deps = [
+    "//chromecast/public",
+  ]
 }

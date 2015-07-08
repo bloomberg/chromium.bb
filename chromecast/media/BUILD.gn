@@ -14,7 +14,6 @@ group("media") {
 
 test("cast_media_unittests") {
   sources = [
-    "//media/base",
     "cma/backend/audio_video_pipeline_device_unittest.cc",
     "cma/base/balanced_media_task_runner_unittest.cc",
     "cma/base/buffering_controller_unittest.cc",
@@ -40,17 +39,19 @@ test("cast_media_unittests") {
     "cma/test/run_all_unittests.cc",
   ]
 
+  configs += [ "//chromecast:config" ]
+
   deps = [
     ":media",
     "//base",
     "//base:i18n",
     "//base/test:test_support",
     "//chromecast/base/metrics:test_support",
+    "//chromecast/public",
     "//media",
     "//media/base:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/gfx/geometry",
   ]
-
-  configs += [ "//chromecast:config" ]
 }

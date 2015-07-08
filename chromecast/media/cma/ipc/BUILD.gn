@@ -13,9 +13,10 @@ source_set("ipc") {
     "media_message_type.h",
   ]
 
+  configs += [ "//chromecast:config" ]
+
   deps = [
     "//base",
+    "//chromecast/media/cma/base",
   ]
-
-  configs += [ "//chromecast:config" ]
 }

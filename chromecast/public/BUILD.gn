@@ -1,0 +1,19 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("public") {
+  sources = [
+    "cast_egl_platform.h",
+    "cast_egl_platform_shlib.h",
+    "cast_media_shlib.h",
+    "cast_sys_info.h",
+    "chromecast_export.h",
+    "graphics_properties_shlib.h",
+    "graphics_types.h",
+    "osd_plane.h",
+    "osd_plane_shlib.h",
+    "osd_surface.h",
+    "video_plane.h",
+  ]
+}

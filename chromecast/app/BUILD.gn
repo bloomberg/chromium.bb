@@ -4,23 +4,27 @@
 
 import("//testing/test.gni")
 
-component("cast_crash_client") {
+source_set("cast_crash_client") {
   sources = [
-    "android/cast_crash_reporter_client_androic.cc",
+    "android/cast_crash_reporter_client_android.cc",
     "android/cast_crash_reporter_client_android.h",
     "linux/cast_crash_reporter_client.cc",
     "linux/cast_crash_reporter_client.h",
   ]
 
+  configs += [ "//chromecast:config" ]
+
   deps = [
+    "//base",
+    "//chromecast/base",
     "//chromecast/crash",
     "//components/crash/app",
+    "//components/crash/app:lib",
     "//content/public/common",
   ]
-
-  configs += [ "//chromecast:config" ]
 }
 
+# TODO(kmackay) Consider renaming this.
 test("cast_shell_unittests") {
   sources = [
     "linux/cast_crash_reporter_client_unittest.cc",
@@ -28,7 +32,10 @@ test("cast_shell_unittests") {
 
   deps = [
     ":cast_crash_client",
+    "//base",
     "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//chromecast/crash",
     "//testing/gtest",
   ]
 }

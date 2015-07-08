@@ -11,11 +11,11 @@ source_set("metrics") {
     "grouped_histogram.h",
   ]
 
-  deps = [
-    "//chromecast/base",
-  ]
-
   configs += [ "//chromecast:config" ]
+
+  deps = [
+    "//base",
+  ]
 }
 
 source_set("test_support") {
@@ -26,9 +26,12 @@ source_set("test_support") {
     "cast_metrics_test_helper.h",
   ]
 
-  deps = [
+  public_deps = [
     ":metrics",
-    "//chromecast/base",
+  ]
+
+  deps = [
+    "//base",
   ]
 
   configs += [ "//chromecast:config" ]

@@ -21,15 +21,21 @@ source_set("base") {
     "decoder_buffer_adapter.h",
     "decoder_buffer_base.cc",
     "decoder_buffer_base.h",
+    "decoder_config_adapter.cc",
+    "decoder_config_adapter.h",
     "media_task_runner.cc",
     "media_task_runner.h",
+    "simple_media_task_runner.cc",
+    "simple_media_task_runner.h",
   ]
+
+  configs += [ "//chromecast:config" ]
 
   deps = [
     "//base",
     "//chromecast/base",
+    "//chromecast/base/metrics",
     "//media",
+    "//media:shared_memory_support",
   ]
-
-  configs += [ "//chromecast:config" ]
 }

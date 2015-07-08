@@ -18,11 +18,13 @@ source_set("ipc_streamer") {
     "video_decoder_config_marshaller.h",
   ]
 
+  configs += [ "//chromecast:config" ]
+
   deps = [
     "//base",
     "//chromecast/media/cma/base",
+    "//chromecast/media/cma/ipc",
     "//media",
+    "//ui/gfx/geometry",
   ]
-
-  configs += [ "//chromecast:config" ]
 }
