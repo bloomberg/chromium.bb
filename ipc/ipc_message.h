@@ -207,8 +207,8 @@ class IPC_EXPORT Message : public base::Pickle {
   }
   // Called to trace when message is received.
   void TraceMessageEnd() {
-    TRACE_EVENT_FLOW_END0(TRACE_DISABLED_BY_DEFAULT("ipc.flow"), "IPC",
-        header()->flags);
+    TRACE_EVENT_FLOW_END_BIND_TO_ENCLOSING0(
+        TRACE_DISABLED_BY_DEFAULT("ipc.flow"), "IPC", header()->flags);
   }
 
  protected:
