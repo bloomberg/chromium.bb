@@ -282,27 +282,6 @@ WebElement WebDocument::createElement(const WebString& tagName)
     return element;
 }
 
-WebSize WebDocument::scrollOffset() const
-{
-    if (FrameView* view = constUnwrap<Document>()->view())
-        return view->scrollOffset();
-    return WebSize();
-}
-
-WebSize WebDocument::minimumScrollOffset() const
-{
-    if (FrameView* view = constUnwrap<Document>()->view())
-        return toIntSize(view->minimumScrollPosition());
-    return WebSize();
-}
-
-WebSize WebDocument::maximumScrollOffset() const
-{
-    if (FrameView* view = constUnwrap<Document>()->view())
-        return toIntSize(view->maximumScrollPosition());
-    return WebSize();
-}
-
 WebAXObject WebDocument::accessibilityObject() const
 {
     const Document* document = constUnwrap<Document>();
