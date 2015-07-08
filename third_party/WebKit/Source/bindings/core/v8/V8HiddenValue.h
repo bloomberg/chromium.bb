@@ -38,6 +38,7 @@ class ScriptWrappable;
     V(port2) \
     V(state) \
     V(stringData) \
+    V(testInterfaces) \
     V(thenableHiddenPromise) \
     V(toStringString) \
     V(injectedScriptNative) \

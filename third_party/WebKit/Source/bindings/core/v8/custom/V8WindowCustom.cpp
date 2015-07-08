@@ -262,6 +262,41 @@ void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValueFast(info, openedWindow.release(), impl);
 }
 
+// We lazy create interfaces like testRunner and internals on first access
+// inside layout tests since creating the bindings is expensive. Then we store
+// them in a hidden Map on the window so that later accesses will reuse the same
+// wrapper.
+static bool installTestInterfaceIfNeeded(LocalFrame& frame, v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    if (!LayoutTestSupport::isRunningLayoutTest())
+        return false;
+
+    v8::Isolate* isolate = info.GetIsolate();
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
+    AtomicString propName = toCoreAtomicString(name);
+
+    v8::Local<v8::Map> interfaces = V8HiddenValue::getHiddenValue(isolate, info.Holder(), V8HiddenValue::testInterfaces(isolate)).As<v8::Map>();
+    if (interfaces.IsEmpty()) {
+        interfaces = v8::Map::New(isolate);
+        V8HiddenValue::setHiddenValue(isolate, info.Holder(), V8HiddenValue::testInterfaces(isolate), interfaces);
+    }
+
+    v8::Local<v8::Value> result = v8CallOrCrash(interfaces->Get(context, name));
+    if (!result->IsUndefined()) {
+        v8SetReturnValue(info, result);
+        return true;
+    }
+
+    v8::Local<v8::Value> interface = frame.loader().client()->createTestInterface(propName);
+    if (!interface.IsEmpty()) {
+        v8CallOrCrash(interfaces->Set(context, name, interface));
+        v8SetReturnValue(info, interface);
+        return true;
+    }
+
+    return false;
+}
+
 void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     if (!name->IsString())
@@ -292,24 +327,6 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::Pro
     if (!info.Holder()->GetRealNamedProperty(info.GetIsolate()->GetCurrentContext(), nameString).IsEmpty())
         return;
 
-    if (frame->isLocalFrame() && LayoutTestSupport::isRunningLayoutTest()) {
-        // We lazy create interfaces like testRunner and internals on first
-        // access inside layout tests since creating the bindings is expensive.
-        // Then we store them on the window so that later access will reuse the
-        // same value by finding the property in the above GetRealNamedProperty
-        // call.
-        //
-        // This is does mean that window.hasOwnProperty("internals") will return
-        // false until the first usage of window.internals in tests, but should
-        // otherwise not be noticable.
-        v8::Local<v8::Value> interface = toLocalFrame(frame)->loader().client()->createTestInterface(propName);
-        if (!interface.IsEmpty()) {
-            v8CallOrCrash(info.Holder()->Set(info.GetIsolate()->GetCurrentContext(), name, interface));
-            v8SetReturnValue(info, interface);
-            return;
-        }
-    }
-
     // Frame could have been detached in call to GetRealNamedProperty.
     frame = window->frame();
     // window is detached.
@@ -318,6 +335,9 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::Pro
 
     // If the frame is remote, the caller will never be able to access further named results.
     if (!frame->isLocalFrame())
+        return;
+
+    if (installTestInterfaceIfNeeded(toLocalFrame(*frame), nameString, info))
         return;
 
     // Search named items in the document.
