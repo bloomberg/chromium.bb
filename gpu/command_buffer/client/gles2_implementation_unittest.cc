@@ -408,7 +408,9 @@ class GLES2ImplementationTest : public testing::Test {
                     bool bind_generates_resource_client,
                     bool bind_generates_resource_service,
                     bool lose_context_when_out_of_memory,
-                    bool transfer_buffer_initialize_fail) {
+                    bool transfer_buffer_initialize_fail,
+                    bool sync_query,
+                    bool occlusion_query_boolean) {
       command_buffer_.reset(new StrictMock<MockClientCommandBuffer>());
       if (!command_buffer_->Initialize())
         return false;
@@ -451,6 +453,8 @@ class GLES2ImplementationTest : public testing::Test {
       capabilities.max_uniform_buffer_bindings = kMaxUniformBufferBindings;
       capabilities.bind_generates_resource_chromium =
           bind_generates_resource_service ? 1 : 0;
+      capabilities.sync_query = sync_query;
+      capabilities.occlusion_query_boolean = occlusion_query_boolean;
       EXPECT_CALL(*gpu_control_, GetCapabilities())
           .WillOnce(testing::Return(capabilities));
 
@@ -541,12 +545,16 @@ class GLES2ImplementationTest : public testing::Test {
         : bind_generates_resource_client(true),
           bind_generates_resource_service(true),
           lose_context_when_out_of_memory(false),
-          transfer_buffer_initialize_fail(false) {}
+          transfer_buffer_initialize_fail(false),
+          sync_query(true),
+          occlusion_query_boolean(true) {}
 
     bool bind_generates_resource_client;
     bool bind_generates_resource_service;
     bool lose_context_when_out_of_memory;
     bool transfer_buffer_initialize_fail;
+    bool sync_query;
+    bool occlusion_query_boolean;
   };
 
   bool Initialize(const ContextInitOptions& init_options) {
@@ -559,7 +567,9 @@ class GLES2ImplementationTest : public testing::Test {
               init_options.bind_generates_resource_client,
               init_options.bind_generates_resource_service,
               init_options.lose_context_when_out_of_memory,
-              init_options.transfer_buffer_initialize_fail))
+              init_options.transfer_buffer_initialize_fail,
+              init_options.sync_query,
+              init_options.occlusion_query_boolean))
         success = false;
     }
 
@@ -3179,6 +3189,33 @@ TEST_F(GLES2ImplementationTest, BeginEndQueryEXT) {
   ClearCommands();
   gl_->GetQueryObjectuivEXT(id1, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
   EXPECT_EQ(0u, available);
+}
+
+TEST_F(GLES2ImplementationManualInitTest, BadQueryTargets) {
+  ContextInitOptions init_options;
+  init_options.sync_query = false;
+  init_options.occlusion_query_boolean = false;
+  ASSERT_TRUE(Initialize(init_options));
+
+  GLuint id = 0;
+  gl_->GenQueriesEXT(1, &id);
+  ClearCommands();
+
+  gl_->BeginQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM, id);
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+  EXPECT_EQ(nullptr, GetQuery(id));
+
+  gl_->BeginQueryEXT(GL_ANY_SAMPLES_PASSED, id);
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+  EXPECT_EQ(nullptr, GetQuery(id));
+
+  gl_->BeginQueryEXT(GL_ANY_SAMPLES_PASSED_CONSERVATIVE, id);
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+  EXPECT_EQ(nullptr, GetQuery(id));
+
+  gl_->BeginQueryEXT(0x123, id);
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+  EXPECT_EQ(nullptr, GetQuery(id));
 }
 
 TEST_F(GLES2ImplementationTest, ErrorQuery) {

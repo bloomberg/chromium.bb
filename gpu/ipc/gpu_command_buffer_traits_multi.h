@@ -94,6 +94,8 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::Capabilities)
   IPC_STRUCT_TRAITS_MEMBER(blend_equation_advanced)
   IPC_STRUCT_TRAITS_MEMBER(blend_equation_advanced_coherent)
   IPC_STRUCT_TRAITS_MEMBER(texture_rg)
+  IPC_STRUCT_TRAITS_MEMBER(render_buffer_format_bgra8888)
+  IPC_STRUCT_TRAITS_MEMBER(occlusion_query_boolean)
 
   IPC_STRUCT_TRAITS_MEMBER(major_version)
   IPC_STRUCT_TRAITS_MEMBER(minor_version)

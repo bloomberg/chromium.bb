@@ -3147,6 +3147,8 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
       feature_info_->workarounds().max_copy_texture_chromium_size;
   caps.render_buffer_format_bgra8888 =
       feature_info_->feature_flags().ext_render_buffer_format_bgra8888;
+  caps.occlusion_query_boolean =
+      feature_info_->feature_flags().occlusion_query_boolean;
   return caps;
 }
 
@@ -11563,7 +11565,9 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(uint32 immediate_data_size,
         return error::kNoError;
       }
       break;
-    default:
+    case GL_SAMPLES_PASSED:
+    case GL_ANY_SAMPLES_PASSED:
+    case GL_ANY_SAMPLES_PASSED_CONSERVATIVE:
       if (!features().occlusion_query_boolean) {
         LOCAL_SET_GL_ERROR(
             GL_INVALID_OPERATION, "glBeginQueryEXT",
@@ -11571,6 +11575,11 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(uint32 immediate_data_size,
         return error::kNoError;
       }
       break;
+    default:
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_OPERATION, "glBeginQueryEXT",
+          "unknown query target");
+      return error::kNoError;
   }
 
   if (state_.current_queries.find(target) != state_.current_queries.end()) {

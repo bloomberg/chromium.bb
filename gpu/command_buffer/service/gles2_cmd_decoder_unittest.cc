@@ -846,6 +846,47 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
   ResetDecoder();
 }
 
+TEST_P(GLES2DecoderManualInitTest, BeginInvalidTargetQueryFails) {
+  InitState init;
+  init.extensions = "";
+  init.gl_version = "opengl es 2.0";
+  init.has_alpha = true;
+  init.request_alpha = true;
+  init.bind_generates_resource = true;
+  InitDecoder(init);
+
+  GenHelper<GenQueriesEXTImmediate>(kNewClientId);
+
+  BeginQueryEXT begin_cmd;
+  begin_cmd.Init(GL_COMMANDS_COMPLETED_CHROMIUM,
+                 kNewClientId,
+                 kSharedMemoryId,
+                 kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  begin_cmd.Init(GL_ANY_SAMPLES_PASSED,
+                 kNewClientId,
+                 kSharedMemoryId,
+                 kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  begin_cmd.Init(GL_ANY_SAMPLES_PASSED_CONSERVATIVE,
+                 kNewClientId,
+                 kSharedMemoryId,
+                 kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  begin_cmd.Init(0xdeadbeef,
+                 kNewClientId,
+                 kSharedMemoryId,
+                 kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
 TEST_P(GLES2DecoderTest, IsEnabledReturnsCachedValue) {
   // NOTE: There are no expectations because no GL functions should be
   // called for DEPTH_TEST or STENCIL_TEST

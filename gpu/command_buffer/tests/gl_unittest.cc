@@ -108,6 +108,7 @@ TEST_F(GLTest, FeatureFlagsMatchCapabilities) {
   EXPECT_EQ(caps.texture_rg, flags.ext_texture_rg);
   EXPECT_EQ(caps.render_buffer_format_bgra8888,
             flags.ext_render_buffer_format_bgra8888);
+  EXPECT_EQ(caps.occlusion_query_boolean, flags.occlusion_query_boolean);
 }
 
 TEST_F(GLTest, GetString) {

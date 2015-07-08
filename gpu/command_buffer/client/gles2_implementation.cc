@@ -4784,6 +4784,37 @@ void GLES2Implementation::BeginQueryEXT(GLenum target, GLuint id) {
                  << GLES2Util::GetStringQueryTarget(target)
                  << ", " << id << ")");
 
+  // Check capabilities
+  switch (target) {
+    case GL_COMMANDS_ISSUED_CHROMIUM:
+    case GL_LATENCY_QUERY_CHROMIUM:
+    case GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM:
+    case GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM:
+    case GL_GET_ERROR_QUERY_CHROMIUM:
+      break;
+    case GL_COMMANDS_COMPLETED_CHROMIUM:
+      if (!capabilities_.sync_query) {
+        SetGLError(
+            GL_INVALID_OPERATION, "glBeginQueryEXT",
+            "not enabled for commands completed queries");
+        return;
+      }
+      break;
+    case GL_ANY_SAMPLES_PASSED:
+    case GL_ANY_SAMPLES_PASSED_CONSERVATIVE:
+      if (!capabilities_.occlusion_query_boolean) {
+        SetGLError(
+            GL_INVALID_OPERATION, "glBeginQueryEXT",
+            "not enabled for occlusion queries");
+        return;
+      }
+      break;
+    default:
+      SetGLError(
+          GL_INVALID_OPERATION, "glBeginQueryEXT", "unknown query target");
+      return;
+  }
+
   // if any outstanding queries INV_OP
   if (query_tracker_->GetCurrentQuery(target)) {
     SetGLError(
