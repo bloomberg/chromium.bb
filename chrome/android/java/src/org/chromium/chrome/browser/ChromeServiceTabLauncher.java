@@ -7,7 +7,6 @@ package org.chromium.chrome.browser;
 import android.content.Context;
 
 import org.chromium.chrome.browser.document.DocumentMetricIds;
-import org.chromium.chrome.browser.document.TabDelegateImpl;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate.AsyncTabCreationParams;
@@ -45,7 +44,7 @@ public class ChromeServiceTabLauncher extends ServiceTabLauncher {
         additionalParams.documentStartedBy = intentSource;
         additionalParams.requestId = requestId;
 
-        TabDelegate tabDelegate = new TabDelegateImpl(incognito);
+        TabDelegate tabDelegate = new TabDelegate(incognito);
         tabDelegate.createNewTab(
                 loadUrlParams, TabLaunchType.FROM_MENU_OR_OVERVIEW, null, additionalParams);
     }

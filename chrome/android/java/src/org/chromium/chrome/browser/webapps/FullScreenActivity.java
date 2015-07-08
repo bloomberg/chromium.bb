@@ -12,10 +12,10 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
-import org.chromium.chrome.browser.document.TabDelegateImpl;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
+import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.content_public.browser.LoadUrlParams;
 
@@ -34,8 +34,8 @@ public abstract class FullScreenActivity extends ChromeActivity
         implements FullScreenActivityTab.TopControlsVisibilityDelegate {
     private FullScreenActivityTab mTab;
 
-    private final TabDelegateImpl mRegularTabCreator = new TabDelegateImpl(false);
-    private final TabDelegateImpl mIncognitoTabCreator = new TabDelegateImpl(true);
+    private final TabDelegate mRegularTabCreator = new TabDelegate(false);
+    private final TabDelegate mIncognitoTabCreator = new TabDelegate(true);
 
     @Override
     protected void onNewIntent(Intent intent) {

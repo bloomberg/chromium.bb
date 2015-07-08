@@ -8,8 +8,8 @@ import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 
 /** Mocks out calls to the TabCreatorManager and TabCreators. */
 public class MockDocumentTabCreatorManager implements TabCreatorManager {
-    MockTabDelegate mRegularTabCreator = new MockTabDelegate();
-    MockTabDelegate mIncognitoTabCreator = new MockTabDelegate();
+    MockTabDelegate mRegularTabCreator = new MockTabDelegate(false);
+    MockTabDelegate mIncognitoTabCreator = new MockTabDelegate(true);
 
     @Override
     public MockTabDelegate getTabCreator(boolean incognito) {

@@ -14,10 +14,9 @@ import org.chromium.content_public.browser.WebContents;
 /**
  * Mocks out calls to get Tabs for the DocumentTabModel.
  */
-public class MockTabDelegate implements TabDelegate {
-    @Override
-    public boolean createsTabsAsynchronously() {
-        return true;
+public class MockTabDelegate extends TabDelegate {
+    public MockTabDelegate(boolean incognito) {
+        super(incognito);
     }
 
     @Override

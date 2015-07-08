@@ -43,7 +43,6 @@ import org.chromium.chrome.browser.banners.AppDetailsDelegate;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.document.IncognitoDocumentActivity;
-import org.chromium.chrome.browser.document.TabDelegateImpl;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.feedback.EmptyFeedbackReporter;
@@ -87,6 +86,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.document.StorageDelegate;
+import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
@@ -765,7 +765,7 @@ public class ChromeApplication extends ContentApplication {
         if (sDocumentTabModelSelector == null) {
             sDocumentTabModelSelector = new DocumentTabModelSelector(
                     new ActivityDelegate(DocumentActivity.class, IncognitoDocumentActivity.class),
-                    new StorageDelegate(), new TabDelegateImpl(false), new TabDelegateImpl(true));
+                    new StorageDelegate(), new TabDelegate(false), new TabDelegate(true));
         }
         return sDocumentTabModelSelector;
     }

@@ -53,6 +53,7 @@ import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelImpl;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.document.OffTheRecordDocumentTabModel;
 import org.chromium.chrome.browser.tabmodel.document.StorageDelegate;
+import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 
 import java.io.File;
 import java.io.IOException;
@@ -124,11 +125,11 @@ public class DocumentMigrationHelper {
     }
 
     private static class MigrationTabCreatorManager implements TabCreatorManager {
-        TabDelegateImpl mRegularTabCreator = new TabDelegateImpl(false);
-        TabDelegateImpl mIncognitoTabCreator = new TabDelegateImpl(true);
+        TabDelegate mRegularTabCreator = new TabDelegate(false);
+        TabDelegate mIncognitoTabCreator = new TabDelegate(true);
 
         @Override
-        public TabDelegateImpl getTabCreator(boolean incognito) {
+        public TabDelegate getTabCreator(boolean incognito) {
             return incognito ? mIncognitoTabCreator : mRegularTabCreator;
         }
     }
