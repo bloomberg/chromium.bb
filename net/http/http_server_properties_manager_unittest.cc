@@ -522,7 +522,7 @@ TEST_F(HttpServerPropertiesManagerTest, GetAlternativeServices) {
 
   HostPortPair spdy_server_mail("mail.google.com", 80);
   EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
-  const AlternativeService alternative_service(NPN_SPDY_4, "mail.google.com",
+  const AlternativeService alternative_service(NPN_HTTP_2, "mail.google.com",
                                                443);
   http_server_props_manager_->SetAlternativeService(spdy_server_mail,
                                                     alternative_service, 1.0);
@@ -547,7 +547,7 @@ TEST_F(HttpServerPropertiesManagerTest, SetAlternativeServices) {
   HostPortPair spdy_server_mail("mail.google.com", 80);
   EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
   AlternativeServiceInfoVector alternative_service_info_vector;
-  const AlternativeService alternative_service1(NPN_SPDY_4, "mail.google.com",
+  const AlternativeService alternative_service1(NPN_HTTP_2, "mail.google.com",
                                                 443);
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo(alternative_service1, 1.0));
@@ -574,7 +574,7 @@ TEST_F(HttpServerPropertiesManagerTest, SetAlternativeServices) {
 TEST_F(HttpServerPropertiesManagerTest, SetAlternativeServicesEmpty) {
   HostPortPair spdy_server_mail("mail.google.com", 80);
   EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
-  const AlternativeService alternative_service(NPN_SPDY_4, "mail.google.com",
+  const AlternativeService alternative_service(NPN_HTTP_2, "mail.google.com",
                                                443);
   http_server_props_manager_->SetAlternativeServices(
       spdy_server_mail, AlternativeServiceInfoVector());
@@ -593,7 +593,7 @@ TEST_F(HttpServerPropertiesManagerTest, ClearAlternativeServices) {
 
   HostPortPair spdy_server_mail("mail.google.com", 80);
   EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
-  AlternativeService alternative_service(NPN_SPDY_4, "mail.google.com", 443);
+  AlternativeService alternative_service(NPN_HTTP_2, "mail.google.com", 443);
   http_server_props_manager_->SetAlternativeService(spdy_server_mail,
                                                     alternative_service, 1.0);
   ExpectScheduleUpdatePrefsOnNetworkThread();
@@ -613,7 +613,7 @@ TEST_F(HttpServerPropertiesManagerTest, ConfirmAlternativeService) {
 
   HostPortPair spdy_server_mail("mail.google.com", 80);
   EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
-  AlternativeService alternative_service(NPN_SPDY_4, "mail.google.com", 443);
+  AlternativeService alternative_service(NPN_HTTP_2, "mail.google.com", 443);
 
   ExpectScheduleUpdatePrefsOnNetworkThread();
   http_server_props_manager_->SetAlternativeService(spdy_server_mail,
@@ -704,7 +704,7 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
 
   HostPortPair spdy_server_mail("mail.google.com", 443);
   http_server_props_manager_->SetSupportsSpdy(spdy_server_mail, true);
-  AlternativeService alternative_service(NPN_SPDY_4, "mail.google.com", 443);
+  AlternativeService alternative_service(NPN_HTTP_2, "mail.google.com", 443);
   http_server_props_manager_->SetAlternativeService(spdy_server_mail,
                                                     alternative_service, 1.0);
   IPAddressNumber actual_address;
@@ -820,7 +820,7 @@ TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
         http_server_props_manager_->GetAlternativeServices(
             HostPortPair::FromString(server));
     ASSERT_EQ(1u, alternative_service_vector.size());
-    EXPECT_EQ(NPN_SPDY_4, alternative_service_vector[0].protocol);
+    EXPECT_EQ(NPN_HTTP_2, alternative_service_vector[0].protocol);
     EXPECT_EQ(i, alternative_service_vector[0].port);
   }
 
@@ -838,10 +838,10 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
 
   // Set alternate protocol.
   AlternativeServiceInfoVector alternative_service_info_vector;
-  AlternativeService www_alternative_service1(NPN_SPDY_4, "", 443);
+  AlternativeService www_alternative_service1(NPN_HTTP_2, "", 443);
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo(www_alternative_service1, 1.0));
-  AlternativeService www_alternative_service2(NPN_SPDY_4, "www.google.com",
+  AlternativeService www_alternative_service2(NPN_HTTP_2, "www.google.com",
                                               1234);
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo(www_alternative_service2, 0.7));

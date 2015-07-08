@@ -53,8 +53,8 @@ const char* AlternateProtocolToString(AlternateProtocol protocol) {
     case DEPRECATED_NPN_SPDY_2:
     case NPN_SPDY_3:
     case NPN_SPDY_3_1:
-    case NPN_SPDY_4_14:
-    case NPN_SPDY_4:
+    case NPN_HTTP_2_14:
+    case NPN_HTTP_2:
     case QUIC:
       DCHECK(IsAlternateProtocolValid(protocol));
       return kAlternateProtocolStrings[
@@ -85,9 +85,9 @@ AlternateProtocol AlternateProtocolFromNextProto(NextProto next_proto) {
     case kProtoSPDY31:
       return NPN_SPDY_3_1;
     case kProtoHTTP2_14:
-      return NPN_SPDY_4_14;
+      return NPN_HTTP_2_14;
     case kProtoHTTP2:
-      return NPN_SPDY_4;
+      return NPN_HTTP_2;
     case kProtoQUIC1SPDY3:
       return QUIC;
 
