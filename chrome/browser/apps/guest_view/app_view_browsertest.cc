@@ -214,7 +214,17 @@ IN_PROC_BROWSER_TEST_F(AppViewTest, KillGuestWithInvalidInstanceID) {
   exit_observer.WaitUntilRenderProcessHostKilled();
 }
 
-IN_PROC_BROWSER_TEST_F(AppViewTest, KillGuestCommunicatingWithWrongAppView) {
+// Failing on msan bot: crbug.com/507940
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_KillGuestCommunicatingWithWrongAppViewPaste \
+        DISABLED_KillGuestCommunicatingWithWrongAppViewPaste
+#else
+#define MAYBE_KillGuestCommunicatingWithWrongAppView \
+        KillGuestCommunicatingWithWrongAppView
+#endif
+
+IN_PROC_BROWSER_TEST_F(AppViewTest,
+                       MAYBE_KillGuestCommunicatingWithWrongAppView) {
   const extensions::Extension* host_app =
       LoadAndLaunchPlatformApp("app_view/host_app", "AppViewTest.LAUNCHED");
   const extensions::Extension* mock_guest_extension =
