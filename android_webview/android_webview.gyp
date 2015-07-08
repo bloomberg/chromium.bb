@@ -369,6 +369,7 @@
         'has_java_resources': 1,
         'R_package': 'org.chromium.android_webview',
         'R_package_relpath': 'org/chromium/android_webview',
+        'android_manifest_path': '../android_webview/apk/java/AndroidManifest.xml', # for lint
       },
       'includes': [ '../build/java.gypi' ],
     },

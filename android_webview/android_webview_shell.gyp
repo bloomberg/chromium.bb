@@ -16,6 +16,7 @@
         'is_test_apk': 1,
         'test_type': 'instrumentation',
         'isolate_file': 'android_webview_shell_test_apk.isolate',
+        'android_manifest_path': 'tools/WebViewShell/AndroidManifest.xml', # for lint
       },
       'includes': [
         '../build/java_apk.gypi',
