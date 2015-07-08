@@ -961,6 +961,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
                 moveTaskToBack(true);
             }
             RecordUserAction.record("SystemBack");
+            Log.i(TAG, "handleBackPressed() - currentTab is null");
             return true;
         }
 
@@ -968,20 +969,24 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
         if (mLayoutManager.overviewVisible() && !isTablet()) {
             mLayoutManager.hideOverview(true);
             // TODO(benm): Record any user metrics in this case?
+            Log.i(TAG, "handleBackPressed() - hide overview");
             return true;
         }
 
         if (isFullscreenVideoPlaying()) {
             ContentVideoView.getContentVideoView().exitFullscreen(false);
+            Log.i(TAG, "handleBackPressed() - exit fullscreen video");
             return true;
         }
 
         if (getFullscreenManager().getPersistentFullscreenMode()) {
             getFullscreenManager().setPersistentFullscreenMode(false);
+            Log.i(TAG, "handleBackPressed() - exit fullscreen");
             return true;
         }
 
         if (!getToolbarManager().back()) {
+            Log.i(TAG, "handleBackPressed() - no back stack");
             final TabLaunchType type = currentTab.getLaunchType();
             final String associatedApp = currentTab.getAppAssociatedWith();
             final int parentId = currentTab.getParentId();
@@ -992,6 +997,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
             // actual redirected URL is a different system language based help url.
             if (type == TabLaunchType.FROM_MENU_OR_OVERVIEW && helpUrl) {
                 getCurrentTabModel().closeTab(currentTab);
+                Log.i(TAG, "handleBackPressed() - help url");
                 return true;
             }
 
@@ -1013,6 +1019,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
                     && !TextUtils.equals(associatedApp, getPackageName()));
 
             if (minimizeApp) {
+                Log.i(TAG, "handleBackPressed() - moveTaskToBack");
                 moveTaskToBack(true);
                 if (shouldCloseTab) {
                     // In the case of closing a tab upon minimalization, don't allow the close
@@ -1029,6 +1036,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
                 getCurrentTabModel().closeTab(currentTab, true, false, false);
             }
         } else {
+            Log.i(TAG, "handleBackPressed() - moving back in navigation");
             RecordUserAction.record("SystemBackForNavigation");
             RecordUserAction.record("MobileTabClobbered");
         }
