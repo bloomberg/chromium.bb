@@ -35,6 +35,7 @@
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/GlyphPageTreeNode.h"
 #include "platform/fonts/SimpleFontData.h"
+#include "platform/fonts/shaping/HarfBuzzFace.h"
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
 #include "platform/fonts/shaping/SimpleShaper.h"
 #include "platform/geometry/FloatRect.h"
@@ -60,12 +61,16 @@ Font::Font()
 
 Font::Font(const FontDescription& fd)
     : m_fontDescription(fd)
+    , m_canShapeWordByWord(0)
+    , m_shapeWordByWordComputed(0)
 {
 }
 
 Font::Font(const Font& other)
     : m_fontDescription(other.m_fontDescription)
     , m_fontFallbackList(other.m_fontFallbackList)
+    , m_canShapeWordByWord(0)
+    , m_shapeWordByWordComputed(0)
 {
 }
 
@@ -73,6 +78,8 @@ Font& Font::operator=(const Font& other)
 {
     m_fontDescription = other.m_fontDescription;
     m_fontFallbackList = other.m_fontFallbackList;
+    m_canShapeWordByWord = other.m_canShapeWordByWord;
+    m_shapeWordByWordComputed = other.m_shapeWordByWordComputed;
     return *this;
 }
 
@@ -103,10 +110,17 @@ float Font::buildGlyphBuffer(const TextRunPaintInfo& runInfo, GlyphBuffer& glyph
     const GlyphData* emphasisData) const
 {
     if (codePath(runInfo) == ComplexPath) {
-        HarfBuzzShaper shaper(this, runInfo.run, emphasisData);
-        shaper.setDrawRange(runInfo.from, runInfo.to);
-        shaper.shape(&glyphBuffer);
-        return shaper.totalWidth();
+        float width;
+        CachingWordShaper& shaper = m_fontFallbackList->cachingWordShaper();
+        if (emphasisData) {
+            width = shaper.fillGlyphBufferForTextEmphasis(this, runInfo.run,
+                emphasisData, &glyphBuffer, runInfo.from, runInfo.to);
+        } else {
+            width = shaper.fillGlyphBuffer(this, runInfo.run, nullptr,
+                &glyphBuffer, runInfo.from, runInfo.to);
+        }
+
+        return width;
     }
 
     SimpleShaper shaper(this, runInfo.run, emphasisData, nullptr /* fallbackFonts */, nullptr);
@@ -336,6 +350,25 @@ CodePath Font::codePath(const TextRunPaintInfo& runInfo) const
     // Start from 0 since drawing and highlighting also measure the characters before run->from.
     return Character::characterRangeCodePath(run.characters16(), run.length());
 }
+
+bool Font::canShapeWordByWord() const
+{
+    if (!m_shapeWordByWordComputed) {
+        m_canShapeWordByWord = computeCanShapeWordByWord();
+        m_shapeWordByWordComputed = true;
+    }
+    return m_canShapeWordByWord;
+};
+
+bool Font::computeCanShapeWordByWord() const
+{
+    if (!fontDescription().typesettingFeatures())
+        return true;
+
+    const FontPlatformData& platformData = primaryFont()->platformData();
+    TypesettingFeatures features = fontDescription().typesettingFeatures();
+    return !platformData.hasSpaceInLigaturesOrKerning(features);
+};
 
 void Font::willUseFontData(UChar32 character) const
 {
@@ -663,39 +696,11 @@ void Font::drawTextBlob(SkCanvas* canvas, const SkPaint& paint, const SkTextBlob
     canvas->drawTextBlob(blob, origin.x(), origin.y(), paint);
 }
 
-float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* outGlyphBounds) const
+float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* glyphBounds) const
 {
-    bool hasWordSpacingOrLetterSpacing = fontDescription().wordSpacing()
-        || fontDescription().letterSpacing();
-    // Word spacing and letter spacing can change the width of a word.
-    // If a tab occurs inside a word, the width of the word varies based on its
-    // position on the line.
-    bool isCacheable = !hasWordSpacingOrLetterSpacing && !run.allowTabs();
-
-    WidthCacheEntry* cacheEntry = isCacheable
-        ? m_fontFallbackList->widthCache().add(run, WidthCacheEntry())
-        : 0;
-    if (cacheEntry && cacheEntry->isValid()) {
-        if (outGlyphBounds)
-            *outGlyphBounds = cacheEntry->glyphBounds;
-        return cacheEntry->width;
-    }
-
-    FloatRect glyphBounds;
-    HarfBuzzShaper shaper(this, run, nullptr, fallbackFonts, &glyphBounds);
-    if (!shaper.shape())
-        return 0;
-
-    float result = shaper.totalWidth();
-
-    if (cacheEntry && (!fallbackFonts || fallbackFonts->isEmpty())) {
-        cacheEntry->glyphBounds = glyphBounds;
-        cacheEntry->width = result;
-    }
-
-    if (outGlyphBounds)
-        *outGlyphBounds = glyphBounds;
-    return result;
+    CachingWordShaper& shaper = m_fontFallbackList->cachingWordShaper();
+    float width = shaper.width(this, run, fallbackFonts, glyphBounds);
+    return width;
 }
 
 // Return the code point index for the given |x| offset into the text run.
@@ -703,19 +708,18 @@ int Font::offsetForPositionForComplexText(const TextRun& run, float xFloat,
     bool includePartialGlyphs) const
 {
     HarfBuzzShaper shaper(this, run);
-    if (!shaper.shape())
+    RefPtr<ShapeResult> shapeResult = shaper.shapeResult();
+    if (!shapeResult)
         return 0;
-    return shaper.offsetForPosition(xFloat);
+    return shapeResult->offsetForPosition(xFloat);
 }
 
 // Return the rectangle for selecting the given range of code-points in the TextRun.
 FloatRect Font::selectionRectForComplexText(const TextRun& run,
     const FloatPoint& point, int height, int from, int to) const
 {
-    HarfBuzzShaper shaper(this, run);
-    if (!shaper.shape())
-        return FloatRect();
-    return shaper.selectionRect(point, height, from, to);
+    CachingWordShaper& shaper = m_fontFallbackList->cachingWordShaper();
+    return shaper.selectionRect(this, run, point, height, from, to);
 }
 
 void Font::drawGlyphBuffer(SkCanvas* canvas, const SkPaint& paint, const TextRunPaintInfo& runInfo, const GlyphBuffer& glyphBuffer, const FloatPoint& point, float deviceScaleFactor) const

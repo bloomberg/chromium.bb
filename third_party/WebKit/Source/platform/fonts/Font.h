@@ -30,6 +30,7 @@
 #include "platform/fonts/FontFallbackList.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/TextBlob.h"
+#include "platform/text/TabSize.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/TextPath.h"
 #include "wtf/HashMap.h"
@@ -105,6 +106,17 @@ public:
     GlyphData glyphDataForCharacter(UChar32&, bool mirror, bool normalizeSpace = false, FontDataVariant = AutoVariant) const;
     CodePath codePath(const TextRunPaintInfo&) const;
 
+    // Whether the font supports shaping word by word instead of shaping the
+    // full run in one go. Allows better caching for fonts where space cannot
+    // participate in kerning and/or ligatures.
+    bool canShapeWordByWord() const;
+
+    void setCanShapeWordByWordForTesting(bool b)
+    {
+        m_canShapeWordByWord = b;
+        m_shapeWordByWordComputed = true;
+    }
+
 private:
     enum ForTextEmphasisOrNot { NotForTextEmphasis, ForTextEmphasis };
 
@@ -129,6 +141,8 @@ private:
     int offsetForPositionForComplexText(const TextRun&, float position, bool includePartialGlyphs) const;
     FloatRect selectionRectForComplexText(const TextRun&, const FloatPoint&, int h, int from, int to) const;
 
+    bool computeCanShapeWordByWord() const;
+
     friend struct SimpleShaper;
 
 public:
@@ -147,6 +161,8 @@ private:
 
     FontDescription m_fontDescription;
     mutable RefPtr<FontFallbackList> m_fontFallbackList;
+    mutable unsigned m_canShapeWordByWord : 1;
+    mutable unsigned m_shapeWordByWordComputed : 1;
 };
 
 inline Font::~Font()

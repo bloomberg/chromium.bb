@@ -357,7 +357,7 @@ hb_face_t* HarfBuzzFace::createFace()
     return face;
 }
 
-hb_font_t* HarfBuzzFace::createFont()
+hb_font_t* HarfBuzzFace::createFont() const
 {
     HarfBuzzFontData* hbFontData = new HarfBuzzFontData(m_glyphCacheForFaceCacheEntry, m_face);
     m_platformData->setupPaint(&hbFontData->m_paint);

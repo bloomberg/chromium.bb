@@ -53,7 +53,8 @@ public:
     }
     ~HarfBuzzFace();
 
-    hb_font_t* createFont();
+    hb_font_t* createFont() const;
+    hb_face_t* face() const { return m_face; }
 
     void setScriptForVerticalGlyphSubstitution(hb_buffer_t*);
 

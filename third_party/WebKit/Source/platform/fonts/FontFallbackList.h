@@ -23,7 +23,7 @@
 
 #include "platform/fonts/FontSelector.h"
 #include "platform/fonts/SimpleFontData.h"
-#include "platform/fonts/WidthCache.h"
+#include "platform/fonts/shaping/CachingWordShaper.h"
 #include "wtf/Forward.h"
 #include "wtf/MainThread.h"
 
@@ -74,7 +74,7 @@ public:
     unsigned fontSelectorVersion() const { return m_fontSelectorVersion; }
     unsigned generation() const { return m_generation; }
 
-    WidthCache& widthCache() const { return m_widthCache; }
+    CachingWordShaper& cachingWordShaper() const { return m_cachingWordShaper; }
 
     const SimpleFontData* primarySimpleFontData(const FontDescription& fontDescription)
     {
@@ -112,7 +112,7 @@ private:
     GlyphPageTreeNodeBase* m_pageZero;
     mutable const SimpleFontData* m_cachedPrimarySimpleFontData;
     RefPtrWillBePersistent<FontSelector> m_fontSelector;
-    mutable WidthCache m_widthCache;
+    mutable CachingWordShaper m_cachingWordShaper;
     unsigned m_fontSelectorVersion;
     mutable int m_familyIndex;
     unsigned short m_generation;

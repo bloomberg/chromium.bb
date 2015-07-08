@@ -95,6 +95,7 @@ public:
 
     SkTypeface* typeface() const;
     HarfBuzzFace* harfBuzzFace() const;
+    bool hasSpaceInLigaturesOrKerning(TypesettingFeatures) const;
     SkFontID uniqueID() const;
     unsigned hash() const;
 

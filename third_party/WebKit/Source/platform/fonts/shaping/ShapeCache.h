@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2015 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,10 +24,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WidthCache_h
-#define WidthCache_h
+#ifndef ShapeCache_h
+#define ShapeCache_h
 
-#include "platform/geometry/FloatRectOutsets.h"
+#include "platform/fonts/shaping/HarfBuzzShaper.h"
 #include "platform/text/TextRun.h"
 #include "wtf/Forward.h"
 #include "wtf/HashFunctions.h"
@@ -36,17 +37,20 @@
 
 namespace blink {
 
-struct WidthCacheEntry {
-    WidthCacheEntry()
+class Font;
+class GlyphBuffer;
+class SimpleFontData;
+class HarfBuzzShaper;
+
+struct ShapeCacheEntry {
+    ShapeCacheEntry()
     {
-        width = std::numeric_limits<float>::quiet_NaN();
+        m_shapeResult = nullptr;
     }
-    bool isValid() const { return !std::isnan(width); }
-    float width;
-    FloatRect glyphBounds;
+    RefPtr<ShapeResult> m_shapeResult;
 };
 
-class WidthCache {
+class ShapeCache {
 private:
     // Used to optimize small strings as hash table keys. Avoids malloc'ing an out-of-line StringImpl.
     class SmallStringKey {
@@ -54,17 +58,17 @@ private:
         static unsigned capacity() { return s_capacity; }
 
         SmallStringKey()
-            : m_length(s_emptyValueLength)
+            : m_length(s_emptyValueLength), m_direction(LTR)
         {
         }
 
         SmallStringKey(WTF::HashTableDeletedValueType)
-            : m_length(s_deletedValueLength)
+            : m_length(s_deletedValueLength), m_direction(LTR)
         {
         }
 
-        template<typename CharacterType> SmallStringKey(CharacterType* characters, unsigned short length)
-            : m_length(length)
+        template<typename CharacterType> SmallStringKey(CharacterType* characters, unsigned short length, TextDirection direction)
+            : m_length(length), m_direction(direction)
         {
             ASSERT(length <= s_capacity);
 
@@ -91,6 +95,7 @@ private:
 
         const UChar* characters() const { return m_characters; }
         unsigned short length() const { return m_length; }
+        TextDirection direction() const { return static_cast<TextDirection>(m_direction); }
         unsigned hash() const { return m_hash; }
 
         bool isHashTableDeletedValue() const { return m_length == s_deletedValueLength; }
@@ -102,7 +107,8 @@ private:
         static const unsigned s_deletedValueLength = s_capacity + 2;
 
         unsigned m_hash;
-        unsigned short m_length;
+        unsigned m_length : 15;
+        unsigned m_direction : 1;
         UChar m_characters[s_capacity];
     };
 
@@ -121,21 +127,12 @@ private:
     friend bool operator==(const SmallStringKey&, const SmallStringKey&);
 
 public:
-    WidthCache()
-        : m_interval(s_maxInterval)
-        , m_countdown(m_interval)
-    {
-    }
+    ShapeCache() { }
 
-    WidthCacheEntry* add(const TextRun& run, WidthCacheEntry entry)
+    ShapeCacheEntry* add(const TextRun& run, ShapeCacheEntry entry)
     {
         if (static_cast<unsigned>(run.length()) > SmallStringKey::capacity())
             return 0;
-
-        if (m_countdown > 0) {
-            --m_countdown;
-            return 0;
-        }
 
         return addSlowCase(run, entry);
     }
@@ -143,70 +140,73 @@ public:
     void clear()
     {
         m_singleCharMap.clear();
-        m_map.clear();
+        m_shortStringMap.clear();
     }
 
 private:
-    WidthCacheEntry* addSlowCase(const TextRun& run, WidthCacheEntry entry)
+    ShapeCacheEntry* addSlowCase(const TextRun& run, ShapeCacheEntry entry)
     {
         int length = run.length();
         bool isNewEntry;
-        WidthCacheEntry *value;
+        ShapeCacheEntry *value;
         if (length == 1) {
-            SingleCharMap::AddResult addResult = m_singleCharMap.add(run[0], entry);
+            uint32_t key = run[0];
+            // All current codepointsin UTF-32 are bewteen 0x0 and 0x10FFFF,
+            // as such use bit 32 to indicate direction.
+            if (run.direction() == RTL)
+                key |= (1u << 31);
+            SingleCharMap::AddResult addResult = m_singleCharMap.add(key, entry);
             isNewEntry = addResult.isNewEntry;
             value = &addResult.storedValue->value;
         } else {
             SmallStringKey smallStringKey;
             if (run.is8Bit())
-                smallStringKey = SmallStringKey(run.characters8(), length);
+                smallStringKey = SmallStringKey(run.characters8(), length, run.direction());
             else
-                smallStringKey = SmallStringKey(run.characters16(), length);
+                smallStringKey = SmallStringKey(run.characters16(), length, run.direction());
 
-            Map::AddResult addResult = m_map.add(smallStringKey, entry);
+            SmallStringMap::AddResult addResult = m_shortStringMap.add(smallStringKey, entry);
             isNewEntry = addResult.isNewEntry;
             value = &addResult.storedValue->value;
         }
 
         // Cache hit: ramp up by sampling the next few words.
         if (!isNewEntry) {
-            m_interval = s_minInterval;
             return value;
         }
 
-        // Cache miss: ramp down by increasing our sampling interval.
-        if (m_interval < s_maxInterval)
-            ++m_interval;
-        m_countdown = m_interval;
-
-        if ((m_singleCharMap.size() + m_map.size()) < s_maxSize)
+        if (m_singleCharMap.size() + m_shortStringMap.size() < s_maxSize) {
             return value;
+        }
 
         // No need to be fancy: we're just trying to avoid pathological growth.
         m_singleCharMap.clear();
-        m_map.clear();
+        m_shortStringMap.clear();
+
         return 0;
     }
 
-    typedef HashMap<SmallStringKey, WidthCacheEntry, SmallStringKeyHash, SmallStringKeyHashTraits> Map;
-    typedef HashMap<uint32_t, WidthCacheEntry, DefaultHash<uint32_t>::Hash, WTF::UnsignedWithZeroKeyHashTraits<uint32_t>> SingleCharMap;
-    static const int s_minInterval = -3; // A cache hit pays for about 3 cache misses.
-    static const int s_maxInterval = 20; // Sampling at this interval has almost no overhead.
-    static const unsigned s_maxSize = 500000; // Just enough to guard against pathological growth.
+    typedef HashMap<SmallStringKey, ShapeCacheEntry, SmallStringKeyHash, SmallStringKeyHashTraits> SmallStringMap;
+    typedef HashMap<uint32_t, ShapeCacheEntry, DefaultHash<uint32_t>::Hash, WTF::UnsignedWithZeroKeyHashTraits<uint32_t>> SingleCharMap;
 
-    int m_interval;
-    int m_countdown;
+    // Hard limit to guard against pathological growth. The expected number of
+    // cache entries is a lot lower given the average word count for a web page
+    // is well below 1,000 and even full length books rarely have over 10,000
+    // unique words [1]. 1: http://www.mine-control.com/zack/guttenberg/
+    // 2,500 seems like a resonable number.
+    static const unsigned s_maxSize = 2500;
+
     SingleCharMap m_singleCharMap;
-    Map m_map;
+    SmallStringMap m_shortStringMap;
 };
 
-inline bool operator==(const WidthCache::SmallStringKey& a, const WidthCache::SmallStringKey& b)
+inline bool operator==(const ShapeCache::SmallStringKey& a, const ShapeCache::SmallStringKey& b)
 {
-    if (a.length() != b.length())
+    if (a.length() != b.length() || a.direction() != b.direction())
         return false;
     return WTF::equal(a.characters(), b.characters(), a.length());
 }
 
 } // namespace blink
 
-#endif // WidthCache_h
+#endif // ShapeCache_h

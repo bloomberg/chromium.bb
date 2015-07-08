@@ -23,6 +23,9 @@
 
 #include "SkEndian.h"
 #include "SkTypeface.h"
+#include "hb-ot.h"
+#include "hb.h"
+#include "platform/fonts/Character.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/shaping/HarfBuzzFace.h"
 #include "wtf/HashMap.h"
@@ -266,6 +269,56 @@ HarfBuzzFace* FontPlatformData::harfBuzzFace() const
         m_harfBuzzFace = HarfBuzzFace::create(const_cast<FontPlatformData*>(this), uniqueID());
 
     return m_harfBuzzFace.get();
+}
+
+static inline bool tableHasSpace(hb_face_t* face, hb_set_t* glyphs,
+    hb_tag_t tag, hb_codepoint_t space)
+{
+    unsigned count = hb_ot_layout_table_get_lookup_count(face, tag);
+    for (unsigned i = 0; i < count; i++) {
+        hb_ot_layout_lookup_collect_glyphs(face, tag, i, glyphs, glyphs, glyphs,
+            0);
+        if (hb_set_has(glyphs, space))
+            return true;
+    }
+    return false;
+}
+
+bool FontPlatformData::hasSpaceInLigaturesOrKerning(
+    TypesettingFeatures features) const
+{
+    const HarfBuzzFace* hbFace = harfBuzzFace();
+    if (!hbFace)
+        return true;
+
+    hb_face_t* face = hbFace->face();
+    ASSERT(face);
+    hb_font_t* font = hbFace->createFont();
+    ASSERT(font);
+
+    hb_codepoint_t space;
+    // If the space glyph isn't present in the font then each space character
+    // will be rendering using a fallback font, which grantees that it cannot
+    // affect the shape of the preceding word.
+    if (!hb_font_get_glyph(font, spaceCharacter, 0, &space))
+        return true;
+
+    if (!hb_ot_layout_has_substitution(face)
+        && !hb_ot_layout_has_positioning(face)) {
+        return true;
+    }
+
+    bool foundSpaceInTable = false;
+    hb_set_t* glyphs = hb_set_create();
+    if (features & Kerning)
+        foundSpaceInTable = tableHasSpace(face, glyphs, HB_OT_TAG_GPOS, space);
+    if (!foundSpaceInTable && (features & Ligatures))
+        foundSpaceInTable = tableHasSpace(face, glyphs, HB_OT_TAG_GSUB, space);
+
+    hb_set_destroy(glyphs);
+    hb_font_destroy(font);
+
+    return foundSpaceInTable;
 }
 
 unsigned FontPlatformData::hash() const
