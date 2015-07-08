@@ -157,10 +157,8 @@ const FindInPageEntry kFindInPageEntryZero = {{0.0, 0.0}, 0};
 
 - (void)disableWithCompletionHandler:(ProceduralBlock)completionHandler {
   DCHECK(completionHandler);
-  base::WeakNSObject<FindInPageModel> weakFindInPageModel(findInPageModel_);
   [self evaluate:kFindInPageDisable
       stringResultHandler:^(NSString* result, NSError* error) {
-        [weakFindInPageModel setEnabled:NO];
         completionHandler();
       }];
 }

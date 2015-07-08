@@ -264,9 +264,13 @@ const NSTimeInterval kRecurringPumpDelay = .01;
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
   base::WeakNSObject<FindInPageController> weakSelf(self);
   ProceduralBlock handler = ^{
-    web::WebState* webState = [self webState];
-    if (webState)
-      DOMAlteringLock::FromWebState(webState)->Release(self);
+    base::scoped_nsobject<FindInPageController> strongSelf([weakSelf retain]);
+    if (strongSelf) {
+      [strongSelf.get().findInPageModel setEnabled:NO];
+      web::WebState* webState = [strongSelf webState];
+      if (webState)
+        DOMAlteringLock::FromWebState(webState)->Release(strongSelf);
+    }
     if (completionHandler)
       completionHandler();
   };
