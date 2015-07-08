@@ -94,6 +94,7 @@ if (!is_mac) {
       "//base/third_party/dynamic_annotations",
       "//skia",
       "//testing/gtest",
+      "//third_party/WebKit/public:blink",
       "//ui/gfx/geometry",
       "//ui/gfx:test_support",
       "//cc",
