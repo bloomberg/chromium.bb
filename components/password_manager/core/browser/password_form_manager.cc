@@ -645,8 +645,8 @@ void PasswordFormManager::UpdateLogin() {
 
   // Update the new preferred login.
   if (!selected_username_.empty()) {
-    // An other possible username is selected. We set this selected username
-    // as the real username. Given that |username_value| is part of the Sync and
+    // Username has changed. We set this selected username as the real
+    // username. Given that |username_value| is part of the Sync and
     // PasswordStore primary key, the old primary key must be supplied.
     PasswordForm old_primary_key(pending_credentials_);
     pending_credentials_.username_value = selected_username_;
@@ -738,7 +738,10 @@ void PasswordFormManager::CheckForAccountCreationForm(
     // Only upload if this is the first time the password has been used.
     // Otherwise the credentials have been used on the same field before so
     // they aren't from an account creation form.
-    if (pending->times_used == 1) {
+    // Also bypass uploading if the username was edited. Offering generation
+    // in cases where we currently save the wrong username isn't great.
+    // TODO(gcasto): Determine if generation should be offered in this case.
+    if (pending->times_used == 1 && selected_username_.empty()) {
       if (UploadPasswordForm(pending->form_data,
                              autofill::ACCOUNT_CREATION_PASSWORD)) {
         pending->generation_upload_status =
@@ -795,6 +798,11 @@ void PasswordFormManager::CreatePendingCredentials() {
       is_new_login_ = true;
       user_action_ = password_changed ? kUserActionChoosePslMatch
                                       : kUserActionOverridePassword;
+
+      // Since this credential will not overwrite a previously saved credential,
+      // username_value can be updated now.
+      if (!selected_username_.empty())
+        pending_credentials_.username_value = selected_username_;
 
       // Update credential to reflect that it has been used for submission.
       // If this isn't updated, then password generation uploads are off for

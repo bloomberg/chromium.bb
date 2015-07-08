@@ -37,8 +37,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   // be used for any other autofill activity.
   bool TextFieldDidEndEditing(const blink::WebInputElement& element);
   bool TextDidChangeInTextField(const blink::WebInputElement& element);
-  bool TextFieldHandlingKeyDown(const blink::WebInputElement& element,
-                                const blink::WebKeyboardEvent& event);
 
   // Function that should be called whenever the value of |element| changes due
   // to user input. This is separate from TextDidChangeInTextField() as that
@@ -91,15 +89,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
       const blink::WebSecurityOrigin& origin);
 
  private:
-  enum OtherPossibleUsernamesUsage {
-    NOTHING_TO_AUTOFILL,
-    OTHER_POSSIBLE_USERNAMES_ABSENT,
-    OTHER_POSSIBLE_USERNAMES_PRESENT,
-    OTHER_POSSIBLE_USERNAME_SHOWN,
-    OTHER_POSSIBLE_USERNAME_SELECTED,
-    OTHER_POSSIBLE_USERNAMES_MAX
-  };
-
   // Ways to restrict which passwords are saved in ProvisionallySavePassword.
   enum ProvisionallySaveRestriction {
     RESTRICTION_NONE,
@@ -109,7 +98,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   struct PasswordInfo {
     blink::WebInputElement password_field;
     PasswordFormFillData fill_data;
-    bool backspace_pressed_last;
     // The user manually edited the password more recently than the username was
     // changed.
     bool password_was_edited_last;
@@ -225,13 +213,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
       const blink::WebInputElement** username_element,
       PasswordInfo** password_info);
 
-  // Fills |login_input| and |password| with the most relevant suggestion from
-  // |fill_data| and shows a popup with other suggestions.
-  void PerformInlineAutocomplete(
-      const blink::WebInputElement& username,
-      const blink::WebInputElement& password,
-      const PasswordFormFillData& fill_data);
-
   // Invoked when the frame is closing.
   void FrameClosing();
 
@@ -244,6 +225,10 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   // their previous filled state.
   void ClearPreview(blink::WebInputElement* username,
                     blink::WebInputElement* password);
+
+  // Helper function to create a PasswordForm for a given |form|.
+  scoped_ptr<PasswordForm> CreateSubmittedPasswordForm(
+      const blink::WebFormElement& form);
 
   // Extracts a PasswordForm from |form| and saves it as
   // |provisionally_saved_form_|, as long as it satisfies |restriction|.
@@ -263,9 +248,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   LoginToPasswordInfoKeyMap login_to_password_info_key_;
   // A (sort-of) reverse map to |login_to_password_info_|.
   PasswordToLoginMap password_to_username_;
-
-  // Used for UMA stats.
-  OtherPossibleUsernamesUsage usernames_usage_;
 
   // Set if the user might be submitting a password form on the current page,
   // but the submit may still fail (i.e. doesn't pass JavaScript validation).

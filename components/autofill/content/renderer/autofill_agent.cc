@@ -449,11 +449,6 @@ void AutofillAgent::TextFieldDidChangeImpl(
 
 void AutofillAgent::textFieldDidReceiveKeyDown(const WebInputElement& element,
                                                const WebKeyboardEvent& event) {
-  if (password_autofill_agent_->TextFieldHandlingKeyDown(element, event)) {
-    element_ = element;
-    return;
-  }
-
   if (event.windowsKeyCode == ui::VKEY_DOWN ||
       event.windowsKeyCode == ui::VKEY_UP) {
     ShowSuggestionsOptions options;

@@ -275,25 +275,20 @@ void LogHTMLForm(SavePasswordProgressLogger* logger,
                       GURL(form.action().utf8()));
 }
 
-// Sets |suggestions_present| to true if there are any suggestions to be derived
-// from |fill_data|. Unless |show_all| is true, only considers suggestions with
-// usernames having |current_username| as a prefix. Returns true if a username
-// from the |fill_data.other_possible_usernames| would be included in the
-// suggestions.
-bool GetSuggestionsStats(const PasswordFormFillData& fill_data,
-                         const base::string16& current_username,
-                         bool show_all,
-                         bool* suggestions_present) {
-  *suggestions_present = false;
-  base::string16 current_username_lower = base::i18n::ToLower(current_username);
 
+// Returns true if there are any suggestions to be derived from |fill_data|.
+// Unless |show_all| is true, only considers suggestions with usernames having
+// |current_username| as a prefix.
+bool CanShowSuggestion(const PasswordFormFillData& fill_data,
+                       const base::string16& current_username,
+                       bool show_all) {
+  base::string16 current_username_lower = base::i18n::ToLower(current_username);
   for (const auto& usernames : fill_data.other_possible_usernames) {
     for (size_t i = 0; i < usernames.second.size(); ++i) {
       if (show_all ||
           base::StartsWith(
               base::i18n::ToLower(base::string16(usernames.second[i])),
               current_username_lower, base::CompareCase::SENSITIVE)) {
-        *suggestions_present = true;
         return true;
       }
     }
@@ -302,8 +297,7 @@ bool GetSuggestionsStats(const PasswordFormFillData& fill_data,
   if (show_all ||
       base::StartsWith(base::i18n::ToLower(fill_data.username_field.value),
                        current_username_lower, base::CompareCase::SENSITIVE)) {
-    *suggestions_present = true;
-    return false;
+    return true;
   }
 
   for (const auto& login : fill_data.additional_logins) {
@@ -311,8 +305,7 @@ bool GetSuggestionsStats(const PasswordFormFillData& fill_data,
         base::StartsWith(base::i18n::ToLower(login.first),
                          current_username_lower,
                          base::CompareCase::SENSITIVE)) {
-      *suggestions_present = true;
-      return false;
+      return true;
     }
   }
 
@@ -343,20 +336,18 @@ bool HasExactMatchSuggestion(const PasswordFormFillData& fill_data,
 
 // This function attempts to fill |username_element| and |password_element|
 // with values from |fill_data|. The |password_element| will only have the
-// |suggestedValue| set, and will be registered for copying that to the real
-// value through |registration_callback|. The function returns true when
-// selected username comes from |fill_data.other_possible_usernames|. |options|
-// should be a bitwise mask of FillUserNameAndPasswordOptions values.
+// suggestedValue set, and will be registered for copying that to the real
+// value through |registration_callback|. If a match is found, return true and
+// |nonscript_modified_values| will be modified with the autofilled credentials.
 bool FillUserNameAndPassword(
     blink::WebInputElement* username_element,
     blink::WebInputElement* password_element,
     const PasswordFormFillData& fill_data,
     bool exact_username_match,
     bool set_selection,
-    std::map<const blink::WebInputElement, blink::WebString>&
+    std::map<const blink::WebInputElement, blink::WebString>*
         nonscript_modified_values,
     base::Callback<void(blink::WebInputElement*)> registration_callback) {
-  bool other_possible_username_selected = false;
   // Don't fill username if password can't be set.
   if (!IsElementAutocompletable(*password_element))
     return false;
@@ -398,7 +389,6 @@ bool FillUserNameAndPassword(
         for (size_t i = 0; i < iter->second.size(); ++i) {
           if (DoUsernamesMatch(
                   iter->second[i], current_username, exact_username_match)) {
-            other_possible_username_selected = true;
             username = iter->second[i];
             password = iter->first.password;
             break;
@@ -410,7 +400,7 @@ bool FillUserNameAndPassword(
     }
   }
   if (password.empty())
-    return other_possible_username_selected;  // No match was found.
+    return false;
 
   // TODO(tkent): Check maxlength and pattern for both username and password
   // fields.
@@ -419,7 +409,7 @@ bool FillUserNameAndPassword(
   if (!username_element->isNull() &&
       IsElementAutocompletable(*username_element)) {
     username_element->setValue(username, true);
-    nonscript_modified_values[*username_element] = username;
+    (*nonscript_modified_values)[*username_element] = username;
     username_element->setAutofilled(true);
 
     if (set_selection) {
@@ -429,18 +419,18 @@ bool FillUserNameAndPassword(
   } else if (current_username != username) {
     // If the username can't be filled and it doesn't match a saved password
     // as is, don't autofill a password.
-    return other_possible_username_selected;
+    return false;
   }
 
   // Wait to fill in the password until a user gesture occurs. This is to make
   // sure that we do not fill in the DOM with a password until we believe the
   // user is intentionally interacting with the page.
   password_element->setSuggestedValue(password);
-  nonscript_modified_values[*password_element] = password;
+  (*nonscript_modified_values)[*password_element] = password;
   registration_callback.Run(password_element);
 
   password_element->setAutofilled(true);
-  return other_possible_username_selected;
+  return true;
 }
 
 // Attempts to fill |username_element| and |password_element| with the
@@ -449,13 +439,13 @@ bool FillUserNameAndPassword(
 // attempts to fill the password matching the already filled username, if
 // such a password exists. The |password_element| will have the
 // |suggestedValue| set, and |suggestedValue| will be registered for copying to
-// the real value through |registration_callback|. Returns true when the
-// username gets selected from |other_possible_usernames|, else returns false.
+// the real value through |registration_callback|. Returns true if the password
+// is filled.
 bool FillFormOnPasswordReceived(
     const PasswordFormFillData& fill_data,
     blink::WebInputElement username_element,
     blink::WebInputElement password_element,
-    std::map<const blink::WebInputElement, blink::WebString>&
+    std::map<const blink::WebInputElement, blink::WebString>*
         nonscript_modified_values,
     base::Callback<void(blink::WebInputElement*)> registration_callback) {
   // Do not fill if the password field is in a chain of iframes not having
@@ -568,7 +558,6 @@ bool IsFormVisible(
 PasswordAutofillAgent::PasswordAutofillAgent(content::RenderFrame* render_frame)
     : content::RenderFrameObserver(render_frame),
       legacy_(render_frame->GetRenderView(), this),
-      usernames_usage_(NOTHING_TO_AUTOFILL),
       logging_state_active_(false),
       was_username_autofilled_(false),
       was_password_autofilled_(false),
@@ -645,13 +634,11 @@ bool PasswordAutofillAgent::TextFieldDidEndEditing(
 
   // Do not set selection when ending an editing session, otherwise it can
   // mess with focus.
-  if (FillUserNameAndPassword(
-          &username, &password, fill_data, true, false,
-          nonscript_modified_values_,
-          base::Bind(&PasswordValueGatekeeper::RegisterElement,
-                     base::Unretained(&gatekeeper_)))) {
-    usernames_usage_ = OTHER_POSSIBLE_USERNAME_SELECTED;
-  }
+  FillUserNameAndPassword(
+      &username, &password, fill_data, true, false,
+      &nonscript_modified_values_,
+      base::Bind(&PasswordValueGatekeeper::RegisterElement,
+                 base::Unretained(&gatekeeper_)));
   return true;
 }
 
@@ -664,61 +651,27 @@ bool PasswordAutofillAgent::TextDidChangeInTextField(
   if (iter == login_to_password_info_.end())
     return false;
 
-  // The input text is being changed, so any autofilled password is now
-  // outdated.
   mutable_element.setAutofilled(false);
   iter->second.password_was_edited_last = false;
-
-  blink::WebInputElement password = iter->second.password_field;
-  if (password.isAutofilled()) {
-    password.setValue(base::string16(), true);
-    password.setAutofilled(false);
-  }
 
   // If wait_for_username is true we will fill when the username loses focus.
   if (iter->second.fill_data.wait_for_username)
     return false;
 
   if (!element.isText() || !IsElementAutocompletable(element) ||
-      !IsElementAutocompletable(password)) {
+      !IsElementAutocompletable(iter->second.password_field)) {
     return false;
   }
 
-  // Don't inline autocomplete if the user is deleting, that would be confusing.
-  // But refresh the popup.  Note, since this is ours, return true to signal
-  // no further processing is required.
-  if (iter->second.backspace_pressed_last) {
-    ShowSuggestionPopup(iter->second.fill_data, element, false, false);
-    return true;
-  }
-
-  blink::WebString name = element.nameForAutofill();
-  if (name.isEmpty())
+  if (element.nameForAutofill().isEmpty())
     return false;  // If the field has no name, then we won't have values.
 
   // Don't attempt to autofill with values that are too large.
   if (element.value().length() > kMaximumTextSizeForAutocomplete)
     return false;
 
-  // The caret position should have already been updated.
-  PerformInlineAutocomplete(element, password, iter->second.fill_data);
-  return true;
-}
-
-bool PasswordAutofillAgent::TextFieldHandlingKeyDown(
-    const blink::WebInputElement& element,
-    const blink::WebKeyboardEvent& event) {
-  // If using the new Autofill UI that lives in the browser, it will handle
-  // keypresses before this function. This is not currently an issue but if
-  // the keys handled there or here change, this issue may appear.
-
-  LoginToPasswordInfoMap::iterator iter = login_to_password_info_.find(element);
-  if (iter == login_to_password_info_.end())
-    return false;
-
-  int win_key_code = event.windowsKeyCode;
-  iter->second.backspace_pressed_last =
-      (win_key_code == ui::VKEY_BACK || win_key_code == ui::VKEY_DELETE);
+  // Show the popup with the list of available usernames.
+  ShowSuggestionPopup(iter->second.fill_data, element, false, false);
   return true;
 }
 
@@ -1057,11 +1010,6 @@ void PasswordAutofillAgent::DidCommitProvisionalLoad(
 
 void PasswordAutofillAgent::DidStartLoading() {
   did_stop_loading_ = false;
-  if (usernames_usage_ != NOTHING_TO_AUTOFILL) {
-    UMA_HISTOGRAM_ENUMERATION("PasswordManager.OtherPossibleUsernamesUsage",
-                              usernames_usage_, OTHER_POSSIBLE_USERNAMES_MAX);
-    usernames_usage_ = NOTHING_TO_AUTOFILL;
-  }
 }
 
 void PasswordAutofillAgent::DidStopLoading() {
@@ -1218,12 +1166,6 @@ void PasswordAutofillAgent::LegacyDidStartProvisionalLoad(
 void PasswordAutofillAgent::OnFillPasswordForm(
     int key,
     const PasswordFormFillData& form_data) {
-  if (usernames_usage_ == NOTHING_TO_AUTOFILL) {
-    if (form_data.other_possible_usernames.size())
-      usernames_usage_ = OTHER_POSSIBLE_USERNAMES_PRESENT;
-    else if (usernames_usage_ == NOTHING_TO_AUTOFILL)
-      usernames_usage_ = OTHER_POSSIBLE_USERNAMES_ABSENT;
-  }
 
   FormElementsList forms;
   // We own the FormElements* in forms.
@@ -1259,15 +1201,14 @@ void PasswordAutofillAgent::OnFillPasswordForm(
 
     // If wait_for_username is true, we don't want to initially fill the form
     // until the user types in a valid username.
-    if (!form_data.wait_for_username &&
-        FillFormOnPasswordReceived(
-            form_data,
-            username_element,
-            password_element,
-            nonscript_modified_values_,
-            base::Bind(&PasswordValueGatekeeper::RegisterElement,
-                       base::Unretained(&gatekeeper_)))) {
-      usernames_usage_ = OTHER_POSSIBLE_USERNAME_SELECTED;
+    if (!form_data.wait_for_username) {
+      FillFormOnPasswordReceived(
+          form_data,
+          username_element,
+          password_element,
+          &nonscript_modified_values_,
+          base::Bind(&PasswordValueGatekeeper::RegisterElement,
+                     base::Unretained(&gatekeeper_)));
     }
 
     PasswordInfo password_info;
@@ -1311,8 +1252,7 @@ void PasswordAutofillAgent::OnFindFocusedPasswordForm() {
 // PasswordAutofillAgent, private:
 
 PasswordAutofillAgent::PasswordInfo::PasswordInfo()
-    : backspace_pressed_last(false),
-      password_was_edited_last(false),
+    : password_was_edited_last(false),
       username_was_edited(false) {
 }
 
@@ -1368,50 +1308,7 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
   Send(new AutofillHostMsg_ShowPasswordSuggestions(
       routing_id(), key_it->second, field.text_direction, username_string,
       options, bounding_box_scaled));
-
-  bool suggestions_present = false;
-  if (GetSuggestionsStats(fill_data, username_string, show_all,
-                          &suggestions_present)) {
-    usernames_usage_ = OTHER_POSSIBLE_USERNAME_SHOWN;
-  }
-  return suggestions_present;
-}
-
-void PasswordAutofillAgent::PerformInlineAutocomplete(
-    const blink::WebInputElement& username_input,
-    const blink::WebInputElement& password_input,
-    const PasswordFormFillData& fill_data) {
-  DCHECK(!fill_data.wait_for_username);
-
-  // We need non-const versions of the username and password inputs.
-  blink::WebInputElement username = username_input;
-  blink::WebInputElement password = password_input;
-
-  // Don't inline autocomplete if the caret is not at the end.
-  // TODO(jcivelli): is there a better way to test the caret location?
-  if (username.selectionStart() != username.selectionEnd() ||
-      username.selectionEnd() != static_cast<int>(username.value().length())) {
-    return;
-  }
-
-  // Show the popup with the list of available usernames.
-  ShowSuggestionPopup(fill_data, username, false, false);
-
-#if !defined(OS_ANDROID)
-  // Fill the user and password field with the most relevant match. Android
-  // only fills in the fields after the user clicks on the suggestion popup.
-  if (FillUserNameAndPassword(
-          &username,
-          &password,
-          fill_data,
-          false /* exact_username_match */,
-          true /* set selection */,
-          nonscript_modified_values_,
-          base::Bind(&PasswordValueGatekeeper::RegisterElement,
-                     base::Unretained(&gatekeeper_)))) {
-    usernames_usage_ = OTHER_POSSIBLE_USERNAME_SELECTED;
-  }
-#endif
+  return CanShowSuggestion(fill_data, username_string, show_all);
 }
 
 void PasswordAutofillAgent::FrameClosing() {

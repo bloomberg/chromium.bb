@@ -971,6 +971,7 @@
       'browser/extensions/window_open_interactive_apitest.cc',
       'browser/mouseleave_browsertest.cc',
       'browser/password_manager/password_generation_interactive_uitest.cc',
+      'browser/password_manager/password_manager_interactive_uitest.cc',
       'browser/renderer_context_menu/render_view_context_menu_browsertest_util.cc',
       'browser/renderer_context_menu/render_view_context_menu_browsertest_util.h',
       'browser/task_manager/task_manager_browsertest_util.cc',

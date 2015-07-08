@@ -1739,6 +1739,8 @@
         'browser/password_manager/mock_password_store_service.h',
         'browser/password_manager/null_password_store_service.cc',
         'browser/password_manager/null_password_store_service.h',
+        'browser/password_manager/password_manager_test_base.cc',
+        'browser/password_manager/password_manager_test_base.h',
         'browser/password_manager/test_password_store_service.cc',
         'browser/password_manager/test_password_store_service.h',
         'browser/prefs/pref_service_mock_factory.cc',

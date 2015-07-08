@@ -413,7 +413,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     const IPC::Message* message =
         render_thread_->sink().GetFirstMessageMatching(
             AutofillHostMsg_ShowPasswordSuggestions::ID);
-    EXPECT_TRUE(message);
+    ASSERT_TRUE(message);
     base::Tuple<int, base::i18n::TextDirection, base::string16, int, gfx::RectF>
         args;
     AutofillHostMsg_ShowPasswordSuggestions::Read(message, &args);
@@ -659,8 +659,7 @@ TEST_F(PasswordAutofillAgentTest, InitialAutocompleteForMatchingFilledField) {
   CheckTextFieldsState(kAliceUsername, true, kAlicePassword, true);
 }
 
-// Tests that editing the password clears the autocompleted password field.
-TEST_F(PasswordAutofillAgentTest, PasswordClearOnEdit) {
+TEST_F(PasswordAutofillAgentTest, PasswordNotClearedOnEdit) {
   // Simulate the browser sending back the login info, it triggers the
   // autocomplete.
   SimulateOnFillPasswordForm(fill_data_);
@@ -668,8 +667,8 @@ TEST_F(PasswordAutofillAgentTest, PasswordClearOnEdit) {
   // Simulate the user changing the username to some unknown username.
   SimulateUsernameChange("alicia");
 
-  // The password should have been cleared.
-  CheckTextFieldsState("alicia", false, std::string(), false);
+  // The password should not have been cleared.
+  CheckTextFieldsDOMState("alicia", false, kAlicePassword, true);
 }
 
 // Tests that we only autocomplete on focus lost and with a full username match
@@ -708,67 +707,6 @@ TEST_F(PasswordAutofillAgentTest, WaitUsername) {
   static_cast<blink::WebAutofillClient*>(autofill_agent_)
       ->textFieldDidEndEditing(username_element_);
   CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);
-}
-
-// Tests that inline autocompletion works properly.
-TEST_F(PasswordAutofillAgentTest, InlineAutocomplete) {
-  // Simulate the browser sending back the login info.
-  SimulateOnFillPasswordForm(fill_data_);
-
-  ClearUsernameAndPasswordFields();
-
-  // Simulate the user typing in the first letter of 'alice', a stored
-  // username.
-  SimulateUsernameChange("a");
-  // Both the username and password text fields should reflect selection of the
-  // stored login.
-  CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);
-  // And the selection should have been set to 'lice', the last 4 letters.
-  CheckUsernameSelection(1, 5);
-
-  // Now the user types the next letter of the same username, 'l'.
-  SimulateUserTypingASCIICharacter('l', true);
-  // Now the fields should have the same value, but the selection should have a
-  // different start value.
-  CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);
-  CheckUsernameSelection(2, 5);
-
-  // Test that backspace will erase the selection and will stop autocompletion.
-  SimulateUserTypingASCIICharacter(ui::VKEY_BACK, true);
-  CheckTextFieldsState("al", false, std::string(), false);
-  CheckUsernameSelection(2, 2);  // No selection.
-
-  // Now lets say the user goes astray from the stored username and types the
-  // letter 'f', spelling 'alf'.  We don't know alf (that's just sad), so in
-  // practice the username should no longer be 'alice' and the selected range
-  // should be empty.
-  SimulateUserTypingASCIICharacter('f', true);
-  CheckTextFieldsState("alf", false, std::string(), false);
-  CheckUsernameSelection(3, 3);  // No selection.
-
-  // Ok, so now the user removes all the text and enters the letter 'b'.
-  SimulateUsernameChange("b");
-  // The username and password fields should match the 'bob' entry.
-  CheckTextFieldsDOMState(kBobUsername, true, kBobPassword, true);
-  CheckUsernameSelection(1, 3);
-
-  // Then, the user again removes all the text and types an uppercase 'C'.
-  SimulateUsernameChange("C");
-  // The username and password fields should match the 'Carol' entry.
-  CheckTextFieldsDOMState(kCarolUsername, true, kCarolPassword, true);
-  CheckUsernameSelection(1, 5);
-
-  // The user removes all the text and types a lowercase 'c'.  We only
-  // want case-sensitive autocompletion, so the username and the selected range
-  // should be empty.
-  SimulateUsernameChange("c");
-  CheckTextFieldsState("c", false, std::string(), false);
-  CheckUsernameSelection(1, 1);
-
-  // Check that we complete other_possible_usernames as well.
-  SimulateUsernameChange("R");
-  CheckTextFieldsDOMState(kCarolAlternateUsername, true, kCarolPassword, true);
-  CheckUsernameSelection(1, 17);
 }
 
 TEST_F(PasswordAutofillAgentTest, IsWebNodeVisibleTest) {
@@ -1190,47 +1128,6 @@ TEST_F(PasswordAutofillAgentTest,
   CheckUsernameSelection(0, 0);
 }
 
-// Tests that |ClearPreview| properly restores the original selection range of
-// username field that has initially been filled by inline autocomplete.
-TEST_F(PasswordAutofillAgentTest, ClearPreviewWithInlineAutocompletedUsername) {
-  // Simulate the browser sending back the login info.
-  SimulateOnFillPasswordForm(fill_data_);
-
-  // Clear the text fields to start fresh.
-  ClearUsernameAndPasswordFields();
-
-  // Simulate the user typing in the first letter of 'alice', a stored username.
-  SimulateUsernameChange("a");
-  // Both the username and password text fields should reflect selection of the
-  // stored login.
-  CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);
-  // The selection should have been set to 'lice', the last 4 letters.
-  CheckUsernameSelection(1, 5);
-
-  EXPECT_TRUE(password_autofill_agent_->PreviewSuggestion(
-      username_element_, "alicia", "secret"));
-  EXPECT_EQ(
-      "alicia",
-      static_cast<std::string>(username_element_.suggestedValue().utf8()));
-  EXPECT_TRUE(username_element_.isAutofilled());
-  EXPECT_EQ(
-      "secret",
-      static_cast<std::string>(password_element_.suggestedValue().utf8()));
-  EXPECT_TRUE(password_element_.isAutofilled());
-  CheckUsernameSelection(1, 6);
-
-  EXPECT_TRUE(
-      password_autofill_agent_->DidClearAutofillSelection(username_element_));
-
-  EXPECT_EQ(kAliceUsername, username_element_.value().utf8());
-  EXPECT_TRUE(username_element_.suggestedValue().isEmpty());
-  EXPECT_TRUE(username_element_.isAutofilled());
-  EXPECT_EQ(kAlicePassword, password_element_.value().utf8());
-  EXPECT_TRUE(password_element_.suggestedValue().isEmpty());
-  EXPECT_TRUE(password_element_.isAutofilled());
-  CheckUsernameSelection(1, 5);
-}
-
 // Tests that logging is off by default.
 TEST_F(PasswordAutofillAgentTest, OnChangeLoggingState_NoMessage) {
   render_thread_->sink().ClearMessages();
@@ -1331,16 +1228,6 @@ TEST_F(PasswordAutofillAgentTest, CredentialsOnClick) {
       ->FormControlElementClicked(username_element_, true);
   CheckSuggestions("baz", true);
   ClearUsernameAndPasswordFields();
-
-  // Now simulate a user typing in the first letter of the username and then
-  // clicking on the username element. While the typing of the first letter will
-  // inline autocomplete, clicking on the element should still produce a full
-  // suggestion list.
-  SimulateUsernameChange("a");
-  render_thread_->sink().ClearMessages();
-  static_cast<PageClickListener*>(autofill_agent_)
-      ->FormControlElementClicked(username_element_, true);
-  CheckSuggestions(kAliceUsername, true);
 }
 
 // Tests that there are no autosuggestions from the password manager when the
@@ -1523,22 +1410,6 @@ TEST_F(PasswordAutofillAgentTest,
   CheckTextFieldsDOMState(old_username, true, new_password, false);
   // The password should not have a suggested value.
   CheckTextFieldsState(old_username, true, std::string(), false);
-}
-
-TEST_F(PasswordAutofillAgentTest,
-       InlineAutocompleteOverwritesManuallyEditedPassword) {
-  // Simulate the browser sending back the login info.
-  SimulateOnFillPasswordForm(fill_data_);
-
-  ClearUsernameAndPasswordFields();
-
-  // The user enters a password
-  SimulatePasswordChange("someOtherPassword");
-
-  // Simulate the user typing a stored username.
-  SimulateUsernameChange(kAliceUsername);
-  // The autofileld password should replace the typed one.
-  CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);
 }
 
 // The user types in a username and a password, but then just before sending
@@ -1732,7 +1603,7 @@ TEST_F(PasswordAutofillAgentTest, ShowPopupNoUsername) {
   // Simulate the browser sending back the login info for an initial page load.
   SimulateOnFillPasswordForm(fill_data_);
 
-  password_element_.setValue("");
+  password_element_.setValue("123");
   password_element_.setAutofilled(false);
 
   SimulateSuggestionChoiceOfUsernameAndPassword(

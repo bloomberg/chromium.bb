@@ -310,6 +310,12 @@ class PasswordFormManager : public PasswordStoreConsumer {
   bool UpdatePendingCredentialsIfOtherPossibleUsername(
       const base::string16& username);
 
+  // Returns true if |form| is a username update of a credential already in
+  // |best_matches_|. Sets |pending_credentials_| to the appropriate
+  // PasswordForm if it returns true.
+  bool UpdatePendingCredentialsIfUsernameChanged(
+      const autofill::PasswordForm& form);
+
   // Update state to reflect that |credential| was used. This is broken out from
   // UpdateLogin() so that PSL matches can also be properly updated.
   void UpdateMetadataForUsage(const autofill::PasswordForm& credential);
