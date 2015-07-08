@@ -106,4 +106,8 @@ std::string ChromeBrowserProvider::GetVersionString() {
   return std::string();
 }
 
+std::string ChromeBrowserProvider::GetVersionNumber() {
+  return std::string();
+}
+
 }  // namespace ios

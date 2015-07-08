@@ -99,6 +99,8 @@ class ChromeBrowserProvider {
   virtual std::string GetProductVersionWithPrefix(const std::string& prefix);
   // Returns a version string to be displayed in "About Chromium" dialog.
   virtual std::string GetVersionString();
+  // Version number, e.g. "6.0.490.1".
+  virtual std::string GetVersionNumber();
 };
 
 }  // namespace ios

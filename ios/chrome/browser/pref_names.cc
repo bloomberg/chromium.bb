@@ -47,6 +47,14 @@ const char kOTRStashStatePathSystemBackupExcluded[] =
 // devices that share an iCloud account.
 const char kIosHandoffToOtherDevices[] = "ios.handoff_to_other_devices";
 
+// True if the previous session exited cleanly.
+// This can be different from kStabilityExitedCleanly, because the last run of
+// the program may not have included a browsing session, and thus the last run
+// of the program may have happened after the run that included the last
+// session.
+const char kLastSessionExitedCleanly[] =
+    "ios.user_experience_metrics.last_session_exited_cleanly";
+
 // Preference that hold a boolean indicating whether metrics reporting should
 // be limited to wifi (when enabled).
 const char kMetricsReportingWifiOnly[] =
