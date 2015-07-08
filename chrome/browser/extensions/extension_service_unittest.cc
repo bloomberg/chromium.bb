@@ -31,7 +31,6 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/app_sync_data.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/chrome_app_sorting.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -169,7 +168,6 @@ using content::PluginService;
 using extensions::APIPermission;
 using extensions::APIPermissionSet;
 using extensions::AppSorting;
-using extensions::AppSyncData;
 using extensions::Blacklist;
 using extensions::CrxInstaller;
 using extensions::Extension;
@@ -6193,8 +6191,8 @@ TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettings) {
         extension_sync_service()->GetAllSyncData(syncer::APPS);
     ASSERT_EQ(list.size(), 1U);
 
-    scoped_ptr<AppSyncData> app_sync_data =
-        AppSyncData::CreateFromSyncData(list[0]);
+    scoped_ptr<ExtensionSyncData> app_sync_data =
+        ExtensionSyncData::CreateFromSyncData(list[0]);
     EXPECT_TRUE(initial_ordinal.Equals(app_sync_data->app_launch_ordinal()));
     EXPECT_TRUE(initial_ordinal.Equals(app_sync_data->page_ordinal()));
   }
@@ -6206,8 +6204,8 @@ TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettings) {
         extension_sync_service()->GetAllSyncData(syncer::APPS);
     ASSERT_EQ(list.size(), 1U);
 
-    scoped_ptr<AppSyncData> app_sync_data =
-        AppSyncData::CreateFromSyncData(list[0]);
+    scoped_ptr<ExtensionSyncData> app_sync_data =
+        ExtensionSyncData::CreateFromSyncData(list[0]);
     ASSERT_TRUE(app_sync_data.get());
     EXPECT_TRUE(initial_ordinal.LessThan(app_sync_data->app_launch_ordinal()));
     EXPECT_TRUE(initial_ordinal.Equals(app_sync_data->page_ordinal()));
@@ -6219,8 +6217,8 @@ TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettings) {
         extension_sync_service()->GetAllSyncData(syncer::APPS);
     ASSERT_EQ(list.size(), 1U);
 
-    scoped_ptr<AppSyncData> app_sync_data =
-        AppSyncData::CreateFromSyncData(list[0]);
+    scoped_ptr<ExtensionSyncData> app_sync_data =
+        ExtensionSyncData::CreateFromSyncData(list[0]);
     ASSERT_TRUE(app_sync_data.get());
     EXPECT_TRUE(initial_ordinal.LessThan(app_sync_data->app_launch_ordinal()));
     EXPECT_TRUE(initial_ordinal.LessThan(app_sync_data->page_ordinal()));
@@ -6260,9 +6258,9 @@ TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettingsOnExtensionMoved) {
         extension_sync_service()->GetAllSyncData(syncer::APPS);
     ASSERT_EQ(list.size(), 3U);
 
-    scoped_ptr<AppSyncData> data[kAppCount];
+    scoped_ptr<ExtensionSyncData> data[kAppCount];
     for (size_t i = 0; i < kAppCount; ++i) {
-      data[i] = AppSyncData::CreateFromSyncData(list[i]);
+      data[i] = ExtensionSyncData::CreateFromSyncData(list[i]);
       ASSERT_TRUE(data[i].get());
     }
 

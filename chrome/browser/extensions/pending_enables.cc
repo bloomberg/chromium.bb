@@ -21,12 +21,12 @@ PendingEnables::PendingEnables(scoped_ptr<sync_driver::SyncPrefs> sync_prefs,
 PendingEnables::~PendingEnables() {
 }
 
-void PendingEnables::OnExtensionEnabled(const std::string& extension_id) {
+void PendingEnables::Add(const std::string& extension_id) {
   if (IsWaitingForSync())
     ids_.insert(extension_id);
 }
 
-void PendingEnables::OnExtensionDisabled(const std::string& extension_id) {
+void PendingEnables::Remove(const std::string& extension_id) {
   if (IsWaitingForSync())
     ids_.erase(extension_id);
 }
@@ -36,7 +36,7 @@ void PendingEnables::OnSyncStarted(ExtensionService* service) {
        it != ids_.end(); ++it) {
     const Extension* extension = service->GetExtensionById(*it, true);
     if (extension)
-      sync_bundle_->SyncChangeIfNeeded(*extension);
+      sync_bundle_->PushSyncChangeIfNeeded(*extension);
   }
   ids_.clear();
 }

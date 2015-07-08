@@ -743,13 +743,13 @@ bool ExtensionService::UninstallExtension(
     return false;
   }
 
-  syncer::SyncChange sync_change;
+  syncer::SyncData sync_data;
   // Don't sync the uninstall if we're going to reinstall the extension
   // momentarily.
   if (extension_sync_service_ &&
       reason != extensions::UNINSTALL_REASON_REINSTALL) {
-     sync_change = extension_sync_service_->PrepareToSyncUninstallExtension(
-        extension.get(), is_ready());
+    sync_data = extension_sync_service_->PrepareToSyncUninstallExtension(
+        *extension);
   }
 
   InstallVerifier::Get(GetBrowserContext())->Remove(extension->id());
@@ -783,9 +783,9 @@ bool ExtensionService::UninstallExtension(
   ExtensionRegistry::Get(profile_)
       ->TriggerOnUninstalled(extension.get(), reason);
 
-  if (sync_change.IsValid()) {
+  if (sync_data.IsValid()) {
     extension_sync_service_->ProcessSyncUninstallExtension(extension->id(),
-                                                           sync_change);
+                                                           sync_data);
   }
 
   delayed_installs_.Remove(extension->id());
@@ -1689,11 +1689,8 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
     }
 #endif
   }
-  if (disable_reasons != Extension::DISABLE_NONE) {
-    extension_prefs_->AddDisableReason(
-        extension->id(),
-        static_cast<Extension::DisableReason>(disable_reasons));
-  }
+  if (disable_reasons != Extension::DISABLE_NONE)
+    extension_prefs_->AddDisableReasons(extension->id(), disable_reasons);
 }
 
 void ExtensionService::UpdateActiveExtensionsInCrashReporter() {

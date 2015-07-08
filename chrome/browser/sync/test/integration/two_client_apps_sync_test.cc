@@ -5,9 +5,9 @@
 #include "base/basictypes.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/app_sync_data.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -400,23 +400,23 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, UnexpectedLaunchType) {
   ExtensionSyncService* extension_sync_service =
       ExtensionSyncService::Get(GetProfile(1));
 
-  extensions::AppSyncData original_data(
-      extension_sync_service->GetAppSyncData(*extension));
+  extensions::ExtensionSyncData original_data(
+      extension_sync_service->CreateSyncData(*extension));
 
   // Create an invalid launch type and ensure it doesn't get down-synced. This
   // simulates the case of a future launch type being added which old versions
   // don't yet understand.
-  extensions::AppSyncData invalid_launch_type_data(
+  extensions::ExtensionSyncData invalid_launch_type_data(
       *extension,
-      original_data.extension_sync_data().enabled(),
-      original_data.extension_sync_data().disable_reasons(),
-      original_data.extension_sync_data().incognito_enabled(),
-      original_data.extension_sync_data().remote_install(),
-      original_data.extension_sync_data().all_urls_enabled(),
+      original_data.enabled(),
+      original_data.disable_reasons(),
+      original_data.incognito_enabled(),
+      original_data.remote_install(),
+      original_data.all_urls_enabled(),
       original_data.app_launch_ordinal(),
       original_data.page_ordinal(),
       extensions::NUM_LAUNCH_TYPES);
-  extension_sync_service->ProcessAppSyncData(invalid_launch_type_data);
+  extension_sync_service->ApplySyncData(invalid_launch_type_data);
 
   // The launch type should remain the same.
   ASSERT_TRUE(AwaitAllProfilesHaveSameApps());

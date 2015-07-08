@@ -37,8 +37,8 @@ class PendingEnables {
   // Called when an extension is enabled / disabled locally.
   // These will check the sync state and figure out whether the change
   // needs to be remembered for syncing when syncing starts.
-  void OnExtensionEnabled(const std::string& extension_id);
-  void OnExtensionDisabled(const std::string& extension_id);
+  void Add(const std::string& extension_id);
+  void Remove(const std::string& extension_id);
 
   // Called when |sync_bundle_| is ready to accept sync changes.
   // Uses |service| to look up extensions from extension ids.

@@ -8,29 +8,24 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
-#include "chrome/browser/extensions/app_sync_bundle.h"
-#include "chrome/browser/extensions/extension_sync_bundle.h"
-#include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/pending_enables.h"
+#include "chrome/browser/extensions/sync_bundle.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
-#include "sync/api/string_ordinal.h"
-#include "sync/api/sync_change.h"
 #include "sync/api/syncable_service.h"
 
 class Profile;
 
-namespace base {
-class SequencedTaskRunner;
-}
-
 namespace extensions {
-class AppSyncData;
+class Extension;
+class ExtensionSet;
+class ExtensionSyncData;
 }  // namespace extensions
 
 namespace syncer {
+class SyncChange;
+class SyncChangeProcessor;
 class SyncErrorFactory;
 }
 
@@ -46,14 +41,24 @@ class ExtensionSyncService : public syncer::SyncableService,
   // Convenience function to get the ExtensionSyncService for a BrowserContext.
   static ExtensionSyncService* Get(content::BrowserContext* context);
 
-  const extensions::ExtensionPrefs& extension_prefs() const {
-    return *extension_prefs_;
-  }
+  // Extracts the data needed to sync the uninstall of |extension|, but doesn't
+  // actually sync anything now. Call |ProcessSyncUninstallExtension| later with
+  // the returned SyncData to actually commit the change.
+  syncer::SyncData PrepareToSyncUninstallExtension(
+      const extensions::Extension& extension);
+  // Commit a sync uninstall that was previously prepared with
+  // PrepareToSyncUninstallExtension.
+  void ProcessSyncUninstallExtension(const std::string& extension_id,
+                                     const syncer::SyncData& sync_data);
+
+  void SyncEnableExtension(const extensions::Extension& extension);
+  void SyncDisableExtension(const extensions::Extension& extension);
+
+  void SyncOrderingChange(const std::string& extension_id);
 
   // Notifies Sync (if needed) of a newly-installed extension or a change to
   // an existing extension.
-  virtual void SyncExtensionChangeIfNeeded(
-      const extensions::Extension& extension);
+  void SyncExtensionChangeIfNeeded(const extensions::Extension& extension);
 
   // syncer::SyncableService implementation.
   syncer::SyncMergeResult MergeDataAndStartSyncing(
@@ -67,66 +72,48 @@ class ExtensionSyncService : public syncer::SyncableService,
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 
-  // Gets the sync data for the given extension, assuming that the extension is
-  // syncable.
-  extensions::ExtensionSyncData GetExtensionSyncData(
+  // Creates the ExtensionSyncData for the given app/extension.
+  extensions::ExtensionSyncData CreateSyncData(
       const extensions::Extension& extension) const;
 
-  // Gets the sync data for the given app, assuming that the app is
-  // syncable.
-  extensions::AppSyncData GetAppSyncData(
-      const extensions::Extension& extension) const;
-
-  // Gets the ExtensionSyncData for all extensions.
-  std::vector<extensions::ExtensionSyncData> GetExtensionSyncDataList() const;
-
-  // Gets the AppSyncData for all extensions.
-  std::vector<extensions::AppSyncData> GetAppSyncDataList() const;
-
-  // Applies the change specified passed in by either ExtensionSyncData or
-  // AppSyncData to the current system.
+  // Applies the change specified passed in by either ExtensionSyncData to the
+  // current system.
   // Returns false if the changes were not completely applied and were added
   // to the pending list to be tried again.
-  bool ProcessExtensionSyncData(
-      const extensions::ExtensionSyncData& extension_sync_data);
-  bool ProcessAppSyncData(const extensions::AppSyncData& app_sync_data);
-
-  // Processes the bookmark app specific parts of an AppSyncData.
-  void ProcessBookmarkAppSyncData(const extensions::AppSyncData& app_sync_data);
-
-  syncer::SyncChange PrepareToSyncUninstallExtension(
-      const extensions::Extension* extension,
-      bool extensions_ready);
-  void ProcessSyncUninstallExtension(const std::string& extension_id,
-                                     const syncer::SyncChange& sync_change);
-
-  void SyncEnableExtension(const extensions::Extension& extension);
-  void SyncDisableExtension(const extensions::Extension& extension);
-
-  void SyncOrderingChange(const std::string& extension_id);
+  bool ApplySyncData(const extensions::ExtensionSyncData& extension_sync_data);
 
   // |flare| provides a StartSyncFlare to the SyncableService. See
-  // sync_start_util for more.
+  // sync_start_util for more. Public for testing.
   void SetSyncStartFlare(const syncer::SyncableService::StartSyncFlare& flare);
 
-  Profile* profile() { return profile_; }
-
  private:
-  // Return true if the sync type of |extension| matches |type|.
-  bool IsCorrectSyncType(const extensions::Extension& extension,
-                         syncer::ModelType type)
-      const;
-
   // Whether the given extension has been enabled before sync has started.
   bool IsPendingEnable(const std::string& extension_id) const;
 
-  // Handles setting the extension specific values in |extension_sync_data| to
+  // Gets the SyncBundle for the given |type|.
+  extensions::SyncBundle* GetSyncBundle(syncer::ModelType type);
+  const extensions::SyncBundle* GetSyncBundle(syncer::ModelType type) const;
+
+  // Gets the ExtensionSyncData for all apps or extensions.
+  std::vector<extensions::ExtensionSyncData> GetSyncDataList(
+      syncer::ModelType type) const;
+
+  void FillSyncDataList(
+      const extensions::ExtensionSet& extensions,
+      syncer::ModelType type,
+      std::vector<extensions::ExtensionSyncData>* sync_data_list) const;
+
+  // Handles applying the extension specific values in |extension_sync_data| to
   // the current system.
   // Returns false if the changes were not completely applied and need to be
   // tried again later.
-  bool ProcessExtensionSyncDataHelper(
+  bool ApplyExtensionSyncDataHelper(
       const extensions::ExtensionSyncData& extension_sync_data,
       syncer::ModelType type);
+
+  // Processes the bookmark app specific parts of an AppSyncData.
+  void ApplyBookmarkAppSyncData(
+      const extensions::ExtensionSyncData& extension_sync_data);
 
   // The normal profile associated with this ExtensionService.
   Profile* profile_;
@@ -136,15 +123,14 @@ class ExtensionSyncService : public syncer::SyncableService,
 
   ExtensionService* extension_service_;
 
-  extensions::AppSyncBundle app_sync_bundle_;
-  extensions::ExtensionSyncBundle extension_sync_bundle_;
+  extensions::SyncBundle app_sync_bundle_;
+  extensions::SyncBundle extension_sync_bundle_;
 
   // Set of extensions/apps that have been enabled before sync has started.
+  // TODO(treib,kalman): This seems wrong. Why are enables special, as opposed
+  // to disables, or any other changes?
   extensions::PendingEnables pending_app_enables_;
   extensions::PendingEnables pending_extension_enables_;
-
-  // Sequenced task runner for extension related file operations.
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   // Run()ning tells sync to try and start soon, because syncable changes
   // have started happening. It will cause sync to call us back
