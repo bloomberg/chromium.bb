@@ -540,7 +540,7 @@ def RunSandboxedCompiler(use_sz):
                                              is_pnacl, use_sz)
   command = '${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ${SEL_UNIVERSAL_FLAGS} '
   if use_sz:
-    command += '-B ${IRT_BLOB} -- ${PNACL_SZ_SB}'
+    command += '-- ${PNACL_SZ_SB}'
   else:
     command += '-- ${LLC_SB}'
   driver_tools.Run(command,

@@ -241,7 +241,7 @@ def RunLDSandboxed():
 
   native_libs_dirname = pathtools.tosys(GetNativeLibsDirname(other_inputs))
   Run('${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ' +
-      '${SEL_UNIVERSAL_FLAGS} -a -B ${IRT_BLOB} ' +
+      '${SEL_UNIVERSAL_FLAGS} -a ' +
       '-E NACL_IRT_OPEN_RESOURCE_BASE=' + native_libs_dirname + ' ' +
       '-E NACL_IRT_OPEN_RESOURCE_REMAP=' +
       'libpnacl_irt_shim.a:libpnacl_irt_shim_dummy.a' +

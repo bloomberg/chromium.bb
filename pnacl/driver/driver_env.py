@@ -135,7 +135,7 @@ INITIAL_ENV = {
   'SEL_UNIVERSAL_PREFIX': '${USE_EMULATOR ? ${EMULATOR}}',
   'SEL_UNIVERSAL'       : '${SCONS_STAGING}/sel_universal${EXEC_EXT}',
   # NOTE: -Q skips sel_ldr qualification tests, -c -c skips validation
-  'SEL_UNIVERSAL_FLAGS' : '--abort_on_error ' +
+  'SEL_UNIVERSAL_FLAGS' : '--abort_on_error -B ${IRT_BLOB} ' +
                           '${USE_EMULATOR ? -Q -c -c --command_prefix ${EMULATOR}}',
 
   'IRT_STAGING'         : '${IRT_STAGING_%ARCH%}',
