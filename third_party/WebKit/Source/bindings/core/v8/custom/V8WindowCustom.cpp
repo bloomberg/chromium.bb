@@ -349,16 +349,28 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::Pro
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), frame, DoNotReportSecurityError))
         return;
 
-    if (toHTMLDocument(doc)->hasNamedItem(propName) || doc->hasElementWithId(propName)) {
-        RefPtrWillBeRawPtr<HTMLCollection> items = doc->windowNamedItems(propName);
-        if (!items->isEmpty()) {
-            if (items->hasExactlyOneItem()) {
-                v8SetReturnValueFast(info, items->item(0), window);
-                return;
-            }
-            v8SetReturnValueFast(info, items.release(), window);
+    bool hasNamedItem = toHTMLDocument(doc)->hasNamedItem(propName);
+    bool hasIdItem = doc->hasElementWithId(propName);
+
+    if (!hasNamedItem && !hasIdItem)
+        return;
+
+    if (!hasNamedItem && hasIdItem && !doc->containsMultipleElementsWithId(propName)) {
+        v8SetReturnValueFast(info, doc->getElementById(propName), window);
+        return;
+    }
+
+    RefPtrWillBeRawPtr<HTMLCollection> items = doc->windowNamedItems(propName);
+    if (!items->isEmpty()) {
+        // TODO(esprehn): Firefox doesn't return an HTMLCollection here if there's
+        // multiple with the same name, but Chrome and Safari does. What's the
+        // right behavior?
+        if (items->hasExactlyOneItem()) {
+            v8SetReturnValueFast(info, items->item(0), window);
             return;
         }
+        v8SetReturnValueFast(info, items.release(), window);
+        return;
     }
 }
 
