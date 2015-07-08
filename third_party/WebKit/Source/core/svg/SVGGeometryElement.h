@@ -52,7 +52,7 @@ protected:
     SVGGeometryElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);
 
 private:
-    bool isSVGGeometryElement() const override final { return true; }
+    bool isSVGGeometryElement() const final { return true; }
 };
 
 inline bool isSVGGeometryElement(const SVGElement& element)

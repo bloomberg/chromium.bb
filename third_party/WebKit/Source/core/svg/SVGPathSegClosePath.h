@@ -42,8 +42,8 @@ private:
     SVGPathSegClosePath(SVGPathElement* element)
         : SVGPathSeg(element) { }
 
-    virtual unsigned short pathSegType() const override { return PATHSEG_CLOSEPATH; }
-    virtual String pathSegTypeAsLetter() const override { return "Z"; }
+    unsigned short pathSegType() const override { return PATHSEG_CLOSEPATH; }
+    String pathSegTypeAsLetter() const override { return "Z"; }
 };
 
 } // namespace blink

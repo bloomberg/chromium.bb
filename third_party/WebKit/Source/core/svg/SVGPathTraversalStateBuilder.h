@@ -36,11 +36,11 @@ public:
     float totalLength();
     FloatPoint currentPoint();
 
-    virtual void incrementPathSegmentCount() override;
-    virtual bool continueConsuming() override;
+    void incrementPathSegmentCount() override;
+    bool continueConsuming() override;
 
 private:
-    virtual void emitSegment(const PathSegmentData&) override;
+    void emitSegment(const PathSegmentData&) override;
 
     PathTraversalState m_traversalState;
     unsigned m_segmentIndex;

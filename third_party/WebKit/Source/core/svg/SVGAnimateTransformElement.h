@@ -38,9 +38,9 @@ public:
 private:
     explicit SVGAnimateTransformElement(Document&);
 
-    virtual bool hasValidAttributeType() override;
+    bool hasValidAttributeType() override;
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
     SVGTransformType m_type;
 };

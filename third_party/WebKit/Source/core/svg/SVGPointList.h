@@ -48,16 +48,16 @@ public:
         return adoptRefWillBeNoop(new SVGPointList());
     }
 
-    virtual ~SVGPointList();
+    ~SVGPointList() override;
 
     void setValueAsString(const String&, ExceptionState&);
 
     // SVGPropertyBase:
-    virtual String valueAsString() const override;
+    String valueAsString() const override;
 
-    virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
-    virtual float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*) override;
+    void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
+    float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*) override;
 
     static AnimatedPropertyType classType() { return AnimatedPoints; }
 

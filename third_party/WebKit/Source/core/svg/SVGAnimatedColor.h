@@ -47,12 +47,12 @@ public:
         return adoptRefWillBeNoop(new SVGColorProperty(styleColor));
     }
 
-    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
-    virtual String valueAsString() const override;
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
+    String valueAsString() const override;
 
-    virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
-    virtual float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*) override;
+    void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
+    float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*) override;
 
     static AnimatedPropertyType classType() { return AnimatedColor; }
 

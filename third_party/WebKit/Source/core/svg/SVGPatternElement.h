@@ -47,7 +47,7 @@ public:
 
     void collectPatternAttributes(PatternAttributes&) const;
 
-    virtual AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const override;
+    AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const override;
 
     SVGAnimatedLength* x() const { return m_x.get(); }
     SVGAnimatedLength* y() const { return m_y.get(); }
@@ -65,15 +65,15 @@ public:
 private:
     explicit SVGPatternElement(Document&);
 
-    virtual bool isValid() const override { return SVGTests::isValid(document()); }
-    virtual bool needsPendingResourceHandling() const override { return false; }
+    bool isValid() const override { return SVGTests::isValid(document()); }
+    bool needsPendingResourceHandling() const override { return false; }
 
-    virtual void svgAttributeChanged(const QualifiedName&) override;
-    virtual void childrenChanged(const ChildrenChange&) override;
+    void svgAttributeChanged(const QualifiedName&) override;
+    void childrenChanged(const ChildrenChange&) override;
 
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
-    virtual bool selfHasRelativeLengths() const override;
+    bool selfHasRelativeLengths() const override;
 
     RefPtrWillBeMember<SVGAnimatedLength> m_x;
     RefPtrWillBeMember<SVGAnimatedLength> m_y;

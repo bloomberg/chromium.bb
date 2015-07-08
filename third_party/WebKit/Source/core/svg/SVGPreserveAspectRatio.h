@@ -75,14 +75,14 @@ public:
                            float logicWidth, float logicHeight,
                            float physWidth, float physHeight) const;
 
-    virtual String valueAsString() const override;
+    String valueAsString() const override;
     virtual void setValueAsString(const String&, ExceptionState&);
     bool parse(const UChar*& ptr, const UChar* end, bool validate);
     bool parse(const LChar*& ptr, const LChar* end, bool validate);
 
-    virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
-    virtual float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
+    void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
+    float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
 
     static AnimatedPropertyType classType() { return AnimatedPreserveAspectRatio; }
 

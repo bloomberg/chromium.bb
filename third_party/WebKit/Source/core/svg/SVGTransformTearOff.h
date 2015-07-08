@@ -57,7 +57,7 @@ public:
         return adoptRefWillBeNoop(new SVGTransformTearOff(target, contextElement, propertyIsAnimVal, attributeName));
     }
 
-    virtual ~SVGTransformTearOff();
+    ~SVGTransformTearOff() override;
 
     unsigned short transformType() { return target()->transformType(); }
     SVGMatrixTearOff* matrix();

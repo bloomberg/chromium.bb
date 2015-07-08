@@ -46,8 +46,8 @@ public:
 private:
     explicit SVGFEDropShadowElement(Document&);
 
-    virtual void svgAttributeChanged(const QualifiedName&) override;
-    virtual PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    void svgAttributeChanged(const QualifiedName&) override;
+    PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
     static const AtomicString& stdDeviationXIdentifier();
     static const AtomicString& stdDeviationYIdentifier();

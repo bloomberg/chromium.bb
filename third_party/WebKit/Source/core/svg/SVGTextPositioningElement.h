@@ -45,8 +45,8 @@ public:
 protected:
     SVGTextPositioningElement(const QualifiedName&, Document&);
 
-    virtual void svgAttributeChanged(const QualifiedName&) override final;
-    virtual bool isTextPositioning() const override final { return true; }
+    void svgAttributeChanged(const QualifiedName&) final;
+    bool isTextPositioning() const final { return true; }
 
     RefPtrWillBeMember<SVGAnimatedLengthList> m_x;
     RefPtrWillBeMember<SVGAnimatedLengthList> m_y;

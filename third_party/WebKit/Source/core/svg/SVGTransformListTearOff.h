@@ -47,7 +47,7 @@ public:
         return adoptRefWillBeNoop(new SVGTransformListTearOff(target, contextElement, propertyIsAnimVal, attributeName));
     }
 
-    virtual ~SVGTransformListTearOff();
+    ~SVGTransformListTearOff() override;
 
     PassRefPtrWillBeRawPtr<SVGTransformTearOff> createSVGTransformFromMatrix(PassRefPtrWillBeRawPtr<SVGMatrixTearOff>) const;
     PassRefPtrWillBeRawPtr<SVGTransformTearOff> consolidate(ExceptionState&);

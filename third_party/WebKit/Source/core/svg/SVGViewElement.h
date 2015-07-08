@@ -51,9 +51,9 @@ public:
 private:
     explicit SVGViewElement(Document&);
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
-    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+    bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 
     RefPtrWillBeMember<SVGStaticStringList> m_viewTarget;
 };

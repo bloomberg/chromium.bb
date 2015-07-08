@@ -57,14 +57,14 @@ public:
 private:
     explicit SVGFilterElement(Document&);
 
-    virtual bool needsPendingResourceHandling() const override { return false; }
+    bool needsPendingResourceHandling() const override { return false; }
 
-    virtual void svgAttributeChanged(const QualifiedName&) override;
-    virtual void childrenChanged(const ChildrenChange&) override;
+    void svgAttributeChanged(const QualifiedName&) override;
+    void childrenChanged(const ChildrenChange&) override;
 
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
-    virtual bool selfHasRelativeLengths() const override;
+    bool selfHasRelativeLengths() const override;
 
     RefPtrWillBeMember<SVGAnimatedLength> m_x;
     RefPtrWillBeMember<SVGAnimatedLength> m_y;

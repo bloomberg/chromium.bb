@@ -34,7 +34,7 @@ public:
 
 private:
     explicit SVGSetElement(Document&);
-    virtual void updateAnimationMode() override;
+    void updateAnimationMode() override;
 };
 
 } // namespace blink

@@ -132,7 +132,7 @@ public:
         m_target = target;
     }
 
-    virtual AnimatedPropertyType type() const override
+    AnimatedPropertyType type() const override
     {
         return Property::classType();
     }

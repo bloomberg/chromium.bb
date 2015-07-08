@@ -52,7 +52,7 @@ public:
         return adoptRefWillBeNoop(new RepeatEvent(type, false, false, repeat));
     }
 
-    virtual ~RepeatEvent() { }
+    ~RepeatEvent() override {}
 
     int repeat() const { return m_repeat; }
 
@@ -119,7 +119,7 @@ public:
             : nullptr;
     }
 
-    virtual bool operator==(const EventListener& other) override;
+    bool operator==(const EventListener& other) override;
 
     void disconnectAnimation()
     {
@@ -134,7 +134,7 @@ private:
     {
     }
 
-    virtual void handleEvent(ExecutionContext*, Event*) override;
+    void handleEvent(ExecutionContext*, Event*) override;
 
     SVGSMILElement* m_animation;
     SVGSMILElement::Condition* m_condition;

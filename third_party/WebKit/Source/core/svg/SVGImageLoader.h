@@ -35,7 +35,7 @@ public:
 
 private:
     explicit SVGImageLoader(SVGImageElement*);
-    virtual void dispatchLoadEvent() override;
+    void dispatchLoadEvent() override;
 };
 
 } // namespace blink

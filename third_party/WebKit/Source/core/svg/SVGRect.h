@@ -62,12 +62,12 @@ public:
     void setWidth(float f) { m_value.setWidth(f); }
     void setHeight(float f) { m_value.setHeight(f); }
 
-    virtual String valueAsString() const override;
+    String valueAsString() const override;
     void setValueAsString(const String&, ExceptionState&);
 
-    virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
-    virtual float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
+    void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
+    float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
 
     bool isValid() const { return m_isValid; }
     void setInvalid();

@@ -65,10 +65,10 @@ public:
         return adoptRefWillBeNoop(new SVGTransform(affineTransform));
     }
 
-    virtual ~SVGTransform();
+    ~SVGTransform() override;
 
     PassRefPtrWillBeRawPtr<SVGTransform> clone() const;
-    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
 
     SVGTransformType transformType() const { return m_transformType; }
 
@@ -92,11 +92,11 @@ public:
     FloatPoint translate() const;
     FloatSize scale() const;
 
-    virtual String valueAsString() const override;
+    String valueAsString() const override;
 
-    virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
-    virtual float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
+    void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
+    float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
 
     static AnimatedPropertyType classType() { return AnimatedTransform; }
 

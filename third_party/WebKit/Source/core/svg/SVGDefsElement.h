@@ -31,12 +31,12 @@ class SVGDefsElement final : public SVGGraphicsElement {
 public:
     DECLARE_NODE_FACTORY(SVGDefsElement);
 
-    virtual bool supportsFocus() const override { return false; }
+    bool supportsFocus() const override { return false; }
 
 private:
     explicit SVGDefsElement(Document&);
 
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
 };
 
 } // namespace blink

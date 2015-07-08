@@ -44,7 +44,7 @@ protected:
     Path asPathFromPoints() const;
 
 private:
-    virtual void svgAttributeChanged(const QualifiedName&) override final;
+    void svgAttributeChanged(const QualifiedName&) final;
 
 private:
     RefPtrWillBeMember<SVGAnimatedPointList> m_points;

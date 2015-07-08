@@ -40,7 +40,7 @@ class SVGUseElement final : public SVGGraphicsElement,
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGUseElement);
 public:
     static PassRefPtrWillBeRawPtr<SVGUseElement> create(Document&);
-    virtual ~SVGUseElement();
+    ~SVGUseElement() override;
 
     void invalidateShadowTree();
 
@@ -53,7 +53,7 @@ public:
     SVGAnimatedLength* width() const { return m_width.get(); }
     SVGAnimatedLength* height() const { return m_height.get(); }
 
-    virtual void buildPendingResource() override;
+    void buildPendingResource() override;
 
     void dispatchPendingEvent(SVGUseEventSender*);
     void toClipPath(Path&) const;
@@ -63,26 +63,26 @@ public:
 private:
     explicit SVGUseElement(Document&);
 
-    virtual bool isPresentationAttribute(const QualifiedName&) const override;
-    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
-    virtual bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
+    bool isPresentationAttribute(const QualifiedName&) const override;
+    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+    bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
 
-    virtual bool isStructurallyExternal() const override { return !hrefString().isNull() && isExternalURIReference(hrefString(), document()); }
+    bool isStructurallyExternal() const override { return !hrefString().isNull() && isExternalURIReference(hrefString(), document()); }
 
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void removedFrom(ContainerNode*) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void removedFrom(ContainerNode*) override;
 
-    virtual void svgAttributeChanged(const QualifiedName&) override;
+    void svgAttributeChanged(const QualifiedName&) override;
 
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
     void clearResourceReferences();
     void buildShadowAndInstanceTree(SVGElement* target);
 
     void scheduleShadowTreeRecreation();
-    virtual bool haveLoadedRequiredResources() override { return !isStructurallyExternal() || m_haveFiredLoadEvent; }
+    bool haveLoadedRequiredResources() override { return !isStructurallyExternal() || m_haveFiredLoadEvent; }
 
-    virtual bool selfHasRelativeLengths() const override;
+    bool selfHasRelativeLengths() const override;
 
     // Instance tree handling
     bool buildShadowTree(SVGElement* target, SVGElement* targetInstance, bool foundUse);
@@ -97,7 +97,7 @@ private:
     bool resourceIsStillLoading();
     Document* externalDocument() const;
     bool instanceTreeIsLoading(SVGElement*);
-    virtual void notifyFinished(Resource*) override;
+    void notifyFinished(Resource*) override;
     TreeScope* referencedScope() const;
     void setDocumentResource(ResourcePtr<DocumentResource>);
 

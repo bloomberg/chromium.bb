@@ -48,12 +48,12 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGSMILElement);
 public:
     SVGSMILElement(const QualifiedName&, Document&);
-    virtual ~SVGSMILElement();
+    ~SVGSMILElement() override;
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual void svgAttributeChanged(const QualifiedName&) override;
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void removedFrom(ContainerNode*) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void svgAttributeChanged(const QualifiedName&) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void removedFrom(ContainerNode*) override;
 
     virtual bool hasValidAttributeType() = 0;
     virtual bool hasValidAttributeName();
@@ -136,7 +136,7 @@ protected:
     void unscheduleIfScheduled();
 
 private:
-    virtual void buildPendingResource() override;
+    void buildPendingResource() override;
     void clearResourceAndEventBaseReferences();
     void clearConditions();
 
@@ -144,7 +144,7 @@ private:
     void endedActiveInterval();
     virtual void updateAnimation(float percent, unsigned repeat, SVGSMILElement* resultElement) = 0;
 
-    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+    bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 
     enum BeginOrEnd {
         Begin,

@@ -37,20 +37,20 @@ class SVGStyleElement final : public SVGElement
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGStyleElement);
 public:
     static PassRefPtrWillBeRawPtr<SVGStyleElement> create(Document&, bool createdByParser);
-    virtual ~SVGStyleElement();
+    ~SVGStyleElement() override;
 
     using StyleElement::sheet;
 
     bool disabled() const;
     void setDisabled(bool);
 
-    virtual const AtomicString& type() const override;
+    const AtomicString& type() const override;
     void setType(const AtomicString&);
 
-    virtual const AtomicString& media() const override;
+    const AtomicString& media() const override;
     void setMedia(const AtomicString&);
 
-    virtual String title() const override;
+    String title() const override;
     void setTitle(const AtomicString&);
 
     void dispatchPendingEvent(SVGStyleEventSender*);
@@ -60,18 +60,18 @@ public:
 private:
     SVGStyleElement(Document&, bool createdByParser);
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void didNotifySubtreeInsertionsToDocument() override;
-    virtual void removedFrom(ContainerNode*) override;
-    virtual void childrenChanged(const ChildrenChange&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void didNotifySubtreeInsertionsToDocument() override;
+    void removedFrom(ContainerNode*) override;
+    void childrenChanged(const ChildrenChange&) override;
 
-    virtual void finishParsingChildren() override;
-    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+    void finishParsingChildren() override;
+    bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 
-    virtual bool sheetLoaded() override { return StyleElement::sheetLoaded(document()); }
-    virtual void notifyLoadedSheetAndAllCriticalSubresources(LoadedSheetErrorStatus) override;
-    virtual void startLoadingDynamicSheet() override { StyleElement::startLoadingDynamicSheet(document()); }
+    bool sheetLoaded() override { return StyleElement::sheetLoaded(document()); }
+    void notifyLoadedSheetAndAllCriticalSubresources(LoadedSheetErrorStatus) override;
+    void startLoadingDynamicSheet() override { StyleElement::startLoadingDynamicSheet(document()); }
 };
 
 } // namespace blink

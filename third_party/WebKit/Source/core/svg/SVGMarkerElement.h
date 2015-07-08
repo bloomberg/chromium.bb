@@ -77,15 +77,15 @@ public:
 private:
     explicit SVGMarkerElement(Document&);
 
-    virtual bool needsPendingResourceHandling() const override { return false; }
+    bool needsPendingResourceHandling() const override { return false; }
 
-    virtual void svgAttributeChanged(const QualifiedName&) override;
-    virtual void childrenChanged(const ChildrenChange&) override;
+    void svgAttributeChanged(const QualifiedName&) override;
+    void childrenChanged(const ChildrenChange&) override;
 
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override { return true; }
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    bool layoutObjectIsNeeded(const ComputedStyle&) override { return true; }
 
-    virtual bool selfHasRelativeLengths() const override;
+    bool selfHasRelativeLengths() const override;
 
     RefPtrWillBeMember<SVGAnimatedLength> m_refX;
     RefPtrWillBeMember<SVGAnimatedLength> m_refY;

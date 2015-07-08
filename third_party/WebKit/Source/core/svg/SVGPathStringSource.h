@@ -31,9 +31,9 @@ public:
     explicit SVGPathStringSource(const String&);
 
 private:
-    virtual bool hasMoreData() const override;
-    virtual SVGPathSegType peekSegmentType() override;
-    virtual PathSegmentData parseSegment() override;
+    bool hasMoreData() const override;
+    SVGPathSegType peekSegmentType() override;
+    PathSegmentData parseSegment() override;
 
     void eatWhitespace();
     float parseNumberWithError();

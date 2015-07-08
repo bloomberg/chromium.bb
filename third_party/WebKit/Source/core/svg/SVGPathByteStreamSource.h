@@ -35,9 +35,9 @@ public:
     }
 
 private:
-    virtual bool hasMoreData() const override;
-    virtual SVGPathSegType peekSegmentType() override;
-    virtual PathSegmentData parseSegment() override;
+    bool hasMoreData() const override;
+    SVGPathSegType peekSegmentType() override;
+    PathSegmentData parseSegment() override;
 
 #if COMPILER(MSVC)
 #pragma warning(disable: 4701)

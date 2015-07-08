@@ -53,18 +53,18 @@ typedef WillBeHeapHashSet<RawPtrWillBeMember<SVGElement>> SVGElementSet;
 class CORE_EXPORT SVGElement : public Element {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~SVGElement();
-    virtual void attach(const AttachContext&) override;
-    virtual void detach(const AttachContext&) override;
+    ~SVGElement() override;
+    void attach(const AttachContext&) override;
+    void detach(const AttachContext&) override;
 
-    virtual short tabIndex() const override;
-    virtual bool supportsFocus() const override { return false; }
+    short tabIndex() const override;
+    bool supportsFocus() const override { return false; }
 
     bool isOutermostSVGSVGElement() const;
 
     bool hasTagName(const SVGQualifiedName& name) const { return hasLocalName(name.localName()); }
 
-    virtual String title() const override;
+    String title() const override;
     bool hasRelativeLengths() const { return !m_elementsWithRelativeLengths.isEmpty(); }
     static bool isAnimatableCSSProperty(const QualifiedName&);
 
@@ -128,7 +128,7 @@ public:
 
     void synchronizeAnimatedSVGAttribute(const QualifiedName&) const;
 
-    virtual PassRefPtr<ComputedStyle> customStyleForLayoutObject() override final;
+    PassRefPtr<ComputedStyle> customStyleForLayoutObject() final;
 
 #if ENABLE(ASSERT)
     virtual bool isAnimatableAttribute(const QualifiedName&) const;
@@ -140,8 +140,8 @@ public:
 
     virtual bool haveLoadedRequiredResources();
 
-    virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override final;
-    virtual bool removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override final;
+    bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) final;
+    bool removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) final;
 
     void invalidateRelativeLengthClients(SubtreeLayoutScope* = 0);
 
@@ -185,21 +185,21 @@ public:
 
     static const AtomicString& eventParameterName();
 
-    virtual bool isPresentationAttribute(const QualifiedName&) const override;
+    bool isPresentationAttribute(const QualifiedName&) const override;
     virtual bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const { return false; }
 
 protected:
     SVGElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
-    virtual void attributeChanged(const QualifiedName&, const AtomicString&, AttributeModificationReason = ModifiedDirectly) override;
+    void attributeChanged(const QualifiedName&, const AtomicString&, AttributeModificationReason = ModifiedDirectly) override;
 
-    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
 
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void removedFrom(ContainerNode*) override;
-    virtual void childrenChanged(const ChildrenChange&) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void removedFrom(ContainerNode*) override;
+    void childrenChanged(const ChildrenChange&) override;
 
     static CSSPropertyID cssPropertyIdForSVGAttributeName(const QualifiedName&);
     void updateRelativeLengthsInformation() { updateRelativeLengthsInformation(selfHasRelativeLengths(), this); }
@@ -226,8 +226,8 @@ private:
     bool isStyledElement() const = delete; // This will catch anyone doing an unnecessary check.
 
     const ComputedStyle* ensureComputedStyle(PseudoId = NOPSEUDO);
-    virtual const ComputedStyle* virtualEnsureComputedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) override final { return ensureComputedStyle(pseudoElementSpecifier); }
-    virtual void willRecalcStyle(StyleRecalcChange) override;
+    const ComputedStyle* virtualEnsureComputedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) final { return ensureComputedStyle(pseudoElementSpecifier); }
+    void willRecalcStyle(StyleRecalcChange) override;
 
     void buildPendingResourcesIfNeeded();
 

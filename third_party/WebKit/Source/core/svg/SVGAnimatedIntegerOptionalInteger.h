@@ -49,9 +49,9 @@ public:
         return adoptRefWillBeNoop(new SVGAnimatedIntegerOptionalInteger(contextElement, attributeName, initialFirstValue, initialSecondValue));
     }
 
-    virtual void setAnimatedValue(PassRefPtrWillBeRawPtr<SVGPropertyBase>) override;
-    virtual bool needsSynchronizeAttribute() override;
-    virtual void animationEnded() override;
+    void setAnimatedValue(PassRefPtrWillBeRawPtr<SVGPropertyBase>) override;
+    bool needsSynchronizeAttribute() override;
+    void animationEnded() override;
 
     SVGAnimatedInteger* firstInteger() { return m_firstInteger.get(); }
     SVGAnimatedInteger* secondInteger() { return m_secondInteger.get(); }

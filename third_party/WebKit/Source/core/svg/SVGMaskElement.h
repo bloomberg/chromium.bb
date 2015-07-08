@@ -50,18 +50,18 @@ public:
 private:
     explicit SVGMaskElement(Document&);
 
-    virtual bool isValid() const override { return SVGTests::isValid(document()); }
-    virtual bool needsPendingResourceHandling() const override { return false; }
+    bool isValid() const override { return SVGTests::isValid(document()); }
+    bool needsPendingResourceHandling() const override { return false; }
 
-    virtual bool isPresentationAttribute(const QualifiedName&) const override;
-    virtual bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
-    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
-    virtual void svgAttributeChanged(const QualifiedName&) override;
-    virtual void childrenChanged(const ChildrenChange&) override;
+    bool isPresentationAttribute(const QualifiedName&) const override;
+    bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
+    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+    void svgAttributeChanged(const QualifiedName&) override;
+    void childrenChanged(const ChildrenChange&) override;
 
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
-    virtual bool selfHasRelativeLengths() const override;
+    bool selfHasRelativeLengths() const override;
 
     RefPtrWillBeMember<SVGAnimatedLength> m_x;
     RefPtrWillBeMember<SVGAnimatedLength> m_y;

@@ -80,8 +80,7 @@ private:
     friend class SVGImageChromeClient;
     friend class SVGImageForContainer;
 
-    virtual ~SVGImage();
-
+    ~SVGImage() override;
 
     String filenameExtension() const override;
 

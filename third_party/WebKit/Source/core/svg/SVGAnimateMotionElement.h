@@ -29,7 +29,7 @@ namespace blink {
 class SVGAnimateMotionElement final : public SVGAnimationElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    virtual ~SVGAnimateMotionElement();
+    ~SVGAnimateMotionElement() override;
 
     DECLARE_NODE_FACTORY(SVGAnimateMotionElement);
     void updateAnimationPath();
@@ -37,19 +37,19 @@ public:
 private:
     explicit SVGAnimateMotionElement(Document&);
 
-    virtual bool hasValidAttributeType() override;
-    virtual bool hasValidAttributeName() override;
+    bool hasValidAttributeType() override;
+    bool hasValidAttributeName() override;
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
-    virtual void resetAnimatedType() override;
-    virtual void clearAnimatedType() override;
-    virtual bool calculateToAtEndOfDurationValue(const String& toAtEndOfDurationString) override;
-    virtual bool calculateFromAndToValues(const String& fromString, const String& toString) override;
-    virtual bool calculateFromAndByValues(const String& fromString, const String& byString) override;
-    virtual void calculateAnimatedValue(float percentage, unsigned repeatCount, SVGSMILElement* resultElement) override;
-    virtual void applyResultsToTarget() override;
-    virtual float calculateDistance(const String& fromString, const String& toString) override;
+    void resetAnimatedType() override;
+    void clearAnimatedType() override;
+    bool calculateToAtEndOfDurationValue(const String& toAtEndOfDurationString) override;
+    bool calculateFromAndToValues(const String& fromString, const String& toString) override;
+    bool calculateFromAndByValues(const String& fromString, const String& byString) override;
+    void calculateAnimatedValue(float percentage, unsigned repeatCount, SVGSMILElement* resultElement) override;
+    void applyResultsToTarget() override;
+    float calculateDistance(const String& fromString, const String& toString) override;
 
     enum RotateMode {
         RotateAngle,
@@ -60,7 +60,7 @@ private:
 
     bool m_hasToPointAtEndOfDuration;
 
-    virtual void updateAnimationMode() override;
+    void updateAnimationMode() override;
 
     // Note: we do not support percentage values for to/from coords as the spec implies we should (opera doesn't either)
     FloatPoint m_fromPoint;

@@ -57,17 +57,17 @@ public:
 protected:
     SVGFilterPrimitiveStandardAttributes(const QualifiedName&, Document&);
 
-    virtual void svgAttributeChanged(const QualifiedName&) override;
-    virtual void childrenChanged(const ChildrenChange&) override;
+    void svgAttributeChanged(const QualifiedName&) override;
+    void childrenChanged(const ChildrenChange&) override;
 
     void invalidate();
     void primitiveAttributeChanged(const QualifiedName&);
 
 private:
-    virtual bool isFilterEffect() const override final { return true; }
+    bool isFilterEffect() const final { return true; }
 
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override final;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    bool layoutObjectIsNeeded(const ComputedStyle&) final;
 
     RefPtrWillBeMember<SVGAnimatedLength> m_x;
     RefPtrWillBeMember<SVGAnimatedLength> m_y;

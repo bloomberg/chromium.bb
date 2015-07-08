@@ -124,28 +124,28 @@ public:
 
 private:
     explicit SVGSVGElement(Document&);
-    virtual ~SVGSVGElement();
+    ~SVGSVGElement() override;
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual bool isPresentationAttribute(const QualifiedName&) const override;
-    virtual bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
-    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    bool isPresentationAttribute(const QualifiedName&) const override;
+    bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
+    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
 
-    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override;
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    bool layoutObjectIsNeeded(const ComputedStyle&) override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void removedFrom(ContainerNode*) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void removedFrom(ContainerNode*) override;
 
-    virtual void svgAttributeChanged(const QualifiedName&) override;
+    void svgAttributeChanged(const QualifiedName&) override;
 
-    virtual bool selfHasRelativeLengths() const override;
+    bool selfHasRelativeLengths() const override;
 
     void inheritViewAttributes(SVGViewElement*);
 
     void updateCurrentTranslate();
 
-    virtual void finishParsingChildren() override;
+    void finishParsingChildren() override;
 
     enum CheckIntersectionOrEnclosure {
         CheckIntersection,
@@ -160,7 +160,7 @@ private:
     RefPtrWillBeMember<SVGAnimatedLength> m_width;
     RefPtrWillBeMember<SVGAnimatedLength> m_height;
 
-    virtual AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const override;
+    AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const override;
 
     bool m_useCurrentView;
     RefPtrWillBeMember<SMILTimeContainer> m_timeContainer;

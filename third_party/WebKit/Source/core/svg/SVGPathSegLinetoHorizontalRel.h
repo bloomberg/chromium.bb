@@ -43,8 +43,8 @@ private:
     SVGPathSegLinetoHorizontalRel(SVGPathElement* element, float x)
         : SVGPathSegLinetoHorizontal(element, x) { }
 
-    virtual unsigned short pathSegType() const override { return PATHSEG_LINETO_HORIZONTAL_REL; }
-    virtual String pathSegTypeAsLetter() const override { return "h"; }
+    unsigned short pathSegType() const override { return PATHSEG_LINETO_HORIZONTAL_REL; }
+    String pathSegTypeAsLetter() const override { return "h"; }
 };
 
 } // namespace blink

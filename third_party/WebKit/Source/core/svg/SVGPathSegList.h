@@ -58,7 +58,7 @@ public:
         return nullptr;
     }
 
-    virtual ~SVGPathSegList();
+    ~SVGPathSegList() override;
 
     const SVGPathByteStream* byteStream() const;
     void clearByteStream() { m_byteStream.clear(); }
@@ -134,14 +134,14 @@ public:
     PassRefPtrWillBeRawPtr<ItemPropertyType> appendItem(PassRefPtrWillBeRawPtr<ItemPropertyType> passItem);
 
     // SVGPropertyBase:
-    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
-    virtual PassRefPtrWillBeRawPtr<SVGPathSegList> clone() override;
-    virtual String valueAsString() const override;
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
+    PassRefPtrWillBeRawPtr<SVGPathSegList> clone() override;
+    String valueAsString() const override;
     void setValueAsString(const String&, ExceptionState&);
 
-    virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
-    virtual float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*) override;
+    void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
+    float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*) override;
 
     static AnimatedPropertyType classType() { return AnimatedPath; }
 

@@ -33,11 +33,11 @@ public:
 private:
     explicit SVGTitleElement(Document&);
 
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void removedFrom(ContainerNode*) override;
-    virtual void childrenChanged(const ChildrenChange&) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void removedFrom(ContainerNode*) override;
+    void childrenChanged(const ChildrenChange&) override;
 
-    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+    bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 };
 
 } // namespace blink

@@ -39,9 +39,9 @@ public:
 private:
     explicit SVGSymbolElement(Document&);
 
-    virtual void svgAttributeChanged(const QualifiedName&) override;
+    void svgAttributeChanged(const QualifiedName&) override;
 
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
 };
 
 } // namespace blink

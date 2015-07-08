@@ -58,9 +58,9 @@ public:
 private:
     explicit SVGFEConvolveMatrixElement(Document&);
 
-    virtual bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
-    virtual void svgAttributeChanged(const QualifiedName&) override;
-    virtual PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
+    void svgAttributeChanged(const QualifiedName&) override;
+    PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
     RefPtrWillBeMember<SVGAnimatedNumber> m_bias;
     RefPtrWillBeMember<SVGAnimatedNumber> m_divisor;

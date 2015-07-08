@@ -40,7 +40,7 @@ class SVGPathElement;
 
 class SVGAnimatedPath : public SVGAnimatedProperty<SVGPathSegList> {
 public:
-    virtual ~SVGAnimatedPath();
+    ~SVGAnimatedPath() override;
 
     static PassRefPtrWillBeRawPtr<SVGAnimatedPath> create(SVGPathElement* contextElement, const QualifiedName& attributeName)
     {

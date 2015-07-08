@@ -40,19 +40,19 @@ class SVGDiscardElement final : public SVGSMILElement {
 public:
     DECLARE_NODE_FACTORY(SVGDiscardElement);
 
-    virtual bool isSVGDiscardElement() const override { return true; }
+    bool isSVGDiscardElement() const override { return true; }
 private:
     explicit SVGDiscardElement(Document&);
 
-    virtual void resetAnimatedType() override { }
-    virtual void clearAnimatedType() override { }
-    virtual void applyResultsToTarget() override { }
-    virtual bool hasValidAttributeType() override;
-    virtual bool hasValidAttributeName() override;
-    virtual void animationAttributeChanged() override { }
+    void resetAnimatedType() override { }
+    void clearAnimatedType() override { }
+    void applyResultsToTarget() override { }
+    bool hasValidAttributeType() override;
+    bool hasValidAttributeName() override;
+    void animationAttributeChanged() override { }
 
-    virtual void startedActiveInterval() override { }
-    virtual void updateAnimation(float percent, unsigned repeat, SVGSMILElement* resultElement) override { }
+    void startedActiveInterval() override { }
+    void updateAnimation(float percent, unsigned repeat, SVGSMILElement* resultElement) override { }
 };
 
 } // namespace blink

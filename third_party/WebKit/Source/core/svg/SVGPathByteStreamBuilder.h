@@ -31,10 +31,10 @@ public:
     SVGPathByteStreamBuilder(SVGPathByteStream&);
 
 private:
-    virtual void incrementPathSegmentCount() override { }
-    virtual bool continueConsuming() override { return true; }
+    void incrementPathSegmentCount() override { }
+    bool continueConsuming() override { return true; }
 
-    virtual void emitSegment(const PathSegmentData&) override;
+    void emitSegment(const PathSegmentData&) override;
 
     SVGPathByteStream& m_byteStream;
 };

@@ -37,7 +37,7 @@ class SVGMPathElement final : public SVGElement,
 public:
     DECLARE_NODE_FACTORY(SVGMPathElement);
 
-    virtual ~SVGMPathElement();
+    ~SVGMPathElement() override;
 
     SVGPathElement* pathElement();
 
@@ -48,14 +48,14 @@ public:
 private:
     explicit SVGMPathElement(Document&);
 
-    virtual void buildPendingResource() override;
+    void buildPendingResource() override;
     void clearResourceReferences();
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void removedFrom(ContainerNode*) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void removedFrom(ContainerNode*) override;
 
-    virtual void svgAttributeChanged(const QualifiedName&) override;
+    void svgAttributeChanged(const QualifiedName&) override;
 
-    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+    bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
     void notifyParentOfPathChange(ContainerNode*);
 
 };

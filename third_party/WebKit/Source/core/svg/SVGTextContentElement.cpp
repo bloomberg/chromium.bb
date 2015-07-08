@@ -55,7 +55,7 @@ public:
         return adoptRefWillBeNoop(new SVGAnimatedTextLength(contextElement));
     }
 
-    virtual SVGLengthTearOff* baseVal() override
+    SVGLengthTearOff* baseVal() override
     {
         SVGTextContentElement* textContentElement = toSVGTextContentElement(contextElement());
         if (!textContentElement->textLengthIsSpecifiedByUser())

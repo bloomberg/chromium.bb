@@ -39,7 +39,7 @@ class CORE_EXPORT SVGGraphicsElement : public SVGElement, public SVGTests {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGGraphicsElement);
 public:
-    virtual ~SVGGraphicsElement();
+    ~SVGGraphicsElement() override;
 
     enum StyleUpdateStrategy { AllowStyleUpdate, DisallowStyleUpdate };
 
@@ -53,15 +53,15 @@ public:
     SVGElement* nearestViewportElement() const;
     SVGElement* farthestViewportElement() const;
 
-    virtual AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const override { return calculateAnimatedLocalTransform(); }
+    AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const override { return calculateAnimatedLocalTransform(); }
     bool hasAnimatedLocalTransform() const;
     AffineTransform calculateAnimatedLocalTransform() const;
-    virtual AffineTransform* animateMotionTransform() override;
+    AffineTransform* animateMotionTransform() override;
 
     virtual FloatRect getBBox();
     PassRefPtrWillBeRawPtr<SVGRectTearOff> getBBoxFromJavascript();
 
-    virtual bool isValid() const override final { return SVGTests::isValid(document()); }
+    bool isValid() const final { return SVGTests::isValid(document()); }
 
     SVGAnimatedTransformList* transform() { return m_transform.get(); }
     const SVGAnimatedTransformList* transform() const { return m_transform.get(); }
@@ -74,14 +74,14 @@ public:
 protected:
     SVGGraphicsElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);
 
-    virtual bool supportsFocus() const override { return Element::supportsFocus() || hasFocusEventListeners(); }
+    bool supportsFocus() const override { return Element::supportsFocus() || hasFocusEventListeners(); }
 
-    virtual void svgAttributeChanged(const QualifiedName&) override;
+    void svgAttributeChanged(const QualifiedName&) override;
 
     RefPtrWillBeMember<SVGAnimatedTransformList> m_transform;
 
 private:
-    virtual bool isSVGGraphicsElement() const override final { return true; }
+    bool isSVGGraphicsElement() const final { return true; }
 };
 
 inline bool isSVGGraphicsElement(const SVGElement& element)

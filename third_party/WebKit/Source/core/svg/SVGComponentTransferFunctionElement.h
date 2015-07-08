@@ -50,9 +50,9 @@ public:
 protected:
     SVGComponentTransferFunctionElement(const QualifiedName&, Document&);
 
-    virtual void svgAttributeChanged(const QualifiedName&) override final;
+    void svgAttributeChanged(const QualifiedName&) final;
 
-    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override final { return false; }
+    bool layoutObjectIsNeeded(const ComputedStyle&) final { return false; }
 
 private:
     RefPtrWillBeMember<SVGAnimatedNumberList> m_tableValues;

@@ -48,15 +48,15 @@ public:
         return adoptRefWillBeNoop(new SVGStaticStringList(contextElement, attributeName));
     }
 
-    virtual ~SVGStaticStringList();
+    ~SVGStaticStringList() override;
 
     // SVGAnimatedPropertyBase:
-    virtual SVGPropertyBase* currentValueBase() override;
-    virtual bool isAnimating() const override;
-    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> createAnimatedValue() override;
-    virtual void setAnimatedValue(PassRefPtrWillBeRawPtr<SVGPropertyBase>) override;
-    virtual void animationEnded() override;
-    virtual bool needsSynchronizeAttribute() override;
+    SVGPropertyBase* currentValueBase() override;
+    bool isAnimating() const override;
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> createAnimatedValue() override;
+    void setAnimatedValue(PassRefPtrWillBeRawPtr<SVGPropertyBase>) override;
+    void animationEnded() override;
+    bool needsSynchronizeAttribute() override;
 
     void setBaseValueAsString(const String& value, SVGParsingError& parseError);
 

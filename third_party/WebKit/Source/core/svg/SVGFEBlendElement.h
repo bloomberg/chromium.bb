@@ -63,9 +63,9 @@ public:
 private:
     explicit SVGFEBlendElement(Document&);
 
-    virtual bool setFilterEffectAttribute(FilterEffect*, const QualifiedName& attrName) override;
-    virtual void svgAttributeChanged(const QualifiedName&) override;
-    virtual PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    bool setFilterEffectAttribute(FilterEffect*, const QualifiedName& attrName) override;
+    void svgAttributeChanged(const QualifiedName&) override;
+    PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
     RefPtrWillBeMember<SVGAnimatedString> m_in1;
     RefPtrWillBeMember<SVGAnimatedString> m_in2;

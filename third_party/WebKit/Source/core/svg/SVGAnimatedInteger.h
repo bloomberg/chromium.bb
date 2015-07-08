@@ -48,7 +48,7 @@ public:
         return adoptRefWillBeNoop(new SVGAnimatedInteger(contextElement, attributeName, initialValue));
     }
 
-    virtual void synchronizeAttribute() override;
+    void synchronizeAttribute() override;
 
     void setParentOptionalInteger(SVGAnimatedIntegerOptionalInteger* numberOptionalInteger)
     {

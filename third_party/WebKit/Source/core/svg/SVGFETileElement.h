@@ -38,8 +38,8 @@ public:
 private:
     explicit SVGFETileElement(Document&);
 
-    virtual void svgAttributeChanged(const QualifiedName&) override;
-    virtual PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    void svgAttributeChanged(const QualifiedName&) override;
+    PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
     RefPtrWillBeMember<SVGAnimatedString> m_in1;
 };

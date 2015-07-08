@@ -54,12 +54,12 @@ public:
     float value() const { return m_value; }
     void setValue(float value) { m_value = value; }
 
-    virtual String valueAsString() const override;
+    String valueAsString() const override;
     virtual void setValueAsString(const String&, ExceptionState&);
 
-    virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
-    virtual float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
+    void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
+    float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
 
     static AnimatedPropertyType classType() { return AnimatedNumber; }
 
@@ -90,8 +90,8 @@ public:
         return adoptRefWillBeNoop(new SVGNumberAcceptPercentage(value));
     }
 
-    virtual PassRefPtrWillBeRawPtr<SVGNumber> clone() const override;
-    virtual void setValueAsString(const String&, ExceptionState&) override;
+    PassRefPtrWillBeRawPtr<SVGNumber> clone() const override;
+    void setValueAsString(const String&, ExceptionState&) override;
 
 private:
     explicit SVGNumberAcceptPercentage(float);

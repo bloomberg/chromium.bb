@@ -35,10 +35,10 @@ public:
     SVGPathBuilder(Path& path) : m_path(path), m_closed(true) { }
 
 private:
-    virtual void incrementPathSegmentCount() override { }
-    virtual bool continueConsuming() override { return true; }
+    void incrementPathSegmentCount() override { }
+    bool continueConsuming() override { return true; }
 
-    virtual void emitSegment(const PathSegmentData&) override;
+    void emitSegment(const PathSegmentData&) override;
 
     Path& m_path;
     bool m_closed;

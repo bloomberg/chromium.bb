@@ -96,17 +96,17 @@ public:
 
     void pathSegListChanged(ListModification = ListModificationUnknown);
 
-    virtual FloatRect getBBox() override;
+    FloatRect getBBox() override;
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit SVGPathElement(Document&);
 
-    virtual void svgAttributeChanged(const QualifiedName&) override;
+    void svgAttributeChanged(const QualifiedName&) override;
 
-    virtual Node::InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void removedFrom(ContainerNode*) override;
+    Node::InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void removedFrom(ContainerNode*) override;
 
     void invalidateMPathDependencies();
 

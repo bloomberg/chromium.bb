@@ -43,8 +43,8 @@ private:
     SVGPathSegMovetoAbs(SVGPathElement* element, float x, float y)
         : SVGPathSegSingleCoordinate(element, x, y) { }
 
-    virtual unsigned short pathSegType() const override { return PATHSEG_MOVETO_ABS; }
-    virtual String pathSegTypeAsLetter() const override { return "M"; }
+    unsigned short pathSegType() const override { return PATHSEG_MOVETO_ABS; }
+    String pathSegTypeAsLetter() const override { return "M"; }
 };
 
 } // namespace blink

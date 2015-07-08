@@ -67,10 +67,10 @@ protected:
     SVGFELightElement(const QualifiedName&, Document&);
 
 private:
-    virtual void svgAttributeChanged(const QualifiedName&) override final;
-    virtual void childrenChanged(const ChildrenChange&) override final;
+    void svgAttributeChanged(const QualifiedName&) final;
+    void childrenChanged(const ChildrenChange&) final;
 
-    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+    bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 
     RefPtrWillBeMember<SVGAnimatedNumber> m_azimuth;
     RefPtrWillBeMember<SVGAnimatedNumber> m_elevation;

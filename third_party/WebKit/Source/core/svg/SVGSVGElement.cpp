@@ -178,7 +178,7 @@ public:
         return adoptRefWillBeNoop(new SVGCurrentTranslateTearOff(contextElement));
     }
 
-    virtual void commitChange() override
+    void commitChange() override
     {
         ASSERT(contextElement());
         toSVGSVGElement(contextElement())->updateCurrentTranslate();

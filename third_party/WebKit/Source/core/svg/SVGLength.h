@@ -48,7 +48,7 @@ public:
     }
 
     PassRefPtrWillBeRawPtr<SVGLength> clone() const;
-    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
 
     SVGLengthType unitType() const { return static_cast<SVGLengthType>(m_unitType); }
     CSSPrimitiveValue::UnitType cssUnitTypeQuirk() const
@@ -84,7 +84,7 @@ public:
     // Scale the input value by this SVGLength. Higher precision than input * valueAsPercentage().
     float scaleByPercentage(float) const;
 
-    virtual String valueAsString() const override;
+    String valueAsString() const override;
     void setValueAsString(const String&, ExceptionState&);
 
     void newValueSpecifiedUnits(SVGLengthType, float valueInSpecifiedUnits);
@@ -112,9 +112,9 @@ public:
 
     PassRefPtrWillBeRawPtr<SVGLength> blend(PassRefPtrWillBeRawPtr<SVGLength> from, float progress) const;
 
-    virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
-    virtual float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
+    void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
+    float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
 
     static AnimatedPropertyType classType() { return AnimatedLength; }
 

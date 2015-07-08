@@ -41,27 +41,27 @@ public:
         return adoptRef(new SVGImageForContainer(image, containerSize, zoom));
     }
 
-    virtual bool isSVGImage() const override { return true; }
+    bool isSVGImage() const override { return true; }
 
-    virtual IntSize size() const override;
+    IntSize size() const override;
     void setURL(const KURL& url) { m_image->setURL(url); }
 
-    virtual bool usesContainerSize() const override { return m_image->usesContainerSize(); }
-    virtual bool hasRelativeWidth() const override { return m_image->hasRelativeWidth(); }
-    virtual bool hasRelativeHeight() const override { return m_image->hasRelativeHeight(); }
-    virtual void computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) override
+    bool usesContainerSize() const override { return m_image->usesContainerSize(); }
+    bool hasRelativeWidth() const override { return m_image->hasRelativeWidth(); }
+    bool hasRelativeHeight() const override { return m_image->hasRelativeHeight(); }
+    void computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) override
     {
         m_image->computeIntrinsicDimensions(intrinsicWidth, intrinsicHeight, intrinsicRatio);
     }
 
     void draw(SkCanvas*, const SkPaint&, const FloatRect&, const FloatRect&, RespectImageOrientationEnum, ImageClampingMode) override;
 
-    virtual void drawPattern(GraphicsContext*, const FloatRect&, const FloatSize&, const FloatPoint&, SkXfermode::Mode, const FloatRect&, const IntSize& repeatSpacing) override;
+    void drawPattern(GraphicsContext*, const FloatRect&, const FloatSize&, const FloatPoint&, SkXfermode::Mode, const FloatRect&, const IntSize& repeatSpacing) override;
 
     // FIXME: Implement this to be less conservative.
-    virtual bool currentFrameKnownToBeOpaque() override { return false; }
+    bool currentFrameKnownToBeOpaque() override { return false; }
 
-    virtual bool bitmapForCurrentFrame(SkBitmap*) override;
+    bool bitmapForCurrentFrame(SkBitmap*) override;
 
 private:
     SVGImageForContainer(SVGImage* image, const FloatSize& containerSize, float zoom)
@@ -71,7 +71,7 @@ private:
     {
     }
 
-    virtual void destroyDecodedData(bool) override { }
+    void destroyDecodedData(bool) override { }
 
     SVGImage* m_image;
     const FloatSize m_containerSize;

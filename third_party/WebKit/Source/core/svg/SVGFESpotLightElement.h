@@ -32,7 +32,7 @@ public:
 private:
     explicit SVGFESpotLightElement(Document&);
 
-    virtual PassRefPtr<LightSource> lightSource(Filter*) const override;
+    PassRefPtr<LightSource> lightSource(Filter*) const override;
 };
 
 } // namespace blink

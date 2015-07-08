@@ -47,16 +47,16 @@ public:
         return adoptRefWillBeNoop(new SVGAnimatedAngle(contextElement));
     }
 
-    virtual ~SVGAnimatedAngle();
+    ~SVGAnimatedAngle() override;
 
     SVGAnimatedEnumeration<SVGMarkerOrientType>* orientType() { return m_orientType.get(); }
 
     // SVGAnimatedPropertyBase:
 
-    virtual void synchronizeAttribute() override;
+    void synchronizeAttribute() override;
 
-    virtual void setAnimatedValue(PassRefPtrWillBeRawPtr<SVGPropertyBase>) override;
-    virtual void animationEnded() override;
+    void setAnimatedValue(PassRefPtrWillBeRawPtr<SVGPropertyBase>) override;
+    void animationEnded() override;
 
     DECLARE_VIRTUAL_TRACE();
 

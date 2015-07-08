@@ -56,12 +56,12 @@ public:
 protected:
     SVGGradientElement(const QualifiedName&, Document&);
 
-    virtual void svgAttributeChanged(const QualifiedName&) override;
+    void svgAttributeChanged(const QualifiedName&) override;
 
 private:
-    virtual bool needsPendingResourceHandling() const override final { return false; }
+    bool needsPendingResourceHandling() const final { return false; }
 
-    virtual void childrenChanged(const ChildrenChange&) override final;
+    void childrenChanged(const ChildrenChange&) final;
 
     RefPtrWillBeMember<SVGAnimatedTransformList> m_gradientTransform;
     RefPtrWillBeMember<SVGAnimatedEnumeration<SVGSpreadMethodType>> m_spreadMethod;

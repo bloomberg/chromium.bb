@@ -45,7 +45,7 @@ public:
     ScriptLoader* loader() const { return m_loader.get(); }
 
 #if ENABLE(ASSERT)
-    virtual bool isAnimatableAttribute(const QualifiedName&) const override;
+    bool isAnimatableAttribute(const QualifiedName&) const override;
 #endif
 
     DECLARE_VIRTUAL_TRACE();
@@ -53,33 +53,33 @@ public:
 private:
     SVGScriptElement(Document&, bool wasInsertedByParser, bool alreadyStarted);
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void didNotifySubtreeInsertionsToDocument() override;
-    virtual void childrenChanged(const ChildrenChange&) override;
-    virtual void didMoveToNewDocument(Document& oldDocument) override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void didNotifySubtreeInsertionsToDocument() override;
+    void childrenChanged(const ChildrenChange&) override;
+    void didMoveToNewDocument(Document& oldDocument) override;
 
-    virtual void svgAttributeChanged(const QualifiedName&) override;
-    virtual bool isURLAttribute(const Attribute&) const override;
-    virtual bool isStructurallyExternal() const override { return hasSourceAttribute(); }
-    virtual void finishParsingChildren() override;
+    void svgAttributeChanged(const QualifiedName&) override;
+    bool isURLAttribute(const Attribute&) const override;
+    bool isStructurallyExternal() const override { return hasSourceAttribute(); }
+    void finishParsingChildren() override;
 
-    virtual bool haveLoadedRequiredResources() override;
+    bool haveLoadedRequiredResources() override;
 
-    virtual String sourceAttributeValue() const override;
-    virtual String charsetAttributeValue() const override;
-    virtual String typeAttributeValue() const override;
-    virtual String languageAttributeValue() const override;
-    virtual String forAttributeValue() const override;
-    virtual String eventAttributeValue() const override;
-    virtual bool asyncAttributeValue() const override;
-    virtual bool deferAttributeValue() const override;
-    virtual bool hasSourceAttribute() const override;
+    String sourceAttributeValue() const override;
+    String charsetAttributeValue() const override;
+    String typeAttributeValue() const override;
+    String languageAttributeValue() const override;
+    String forAttributeValue() const override;
+    String eventAttributeValue() const override;
+    bool asyncAttributeValue() const override;
+    bool deferAttributeValue() const override;
+    bool hasSourceAttribute() const override;
 
-    virtual void dispatchLoadEvent() override;
+    void dispatchLoadEvent() override;
 
-    virtual PassRefPtrWillBeRawPtr<Element> cloneElementWithoutAttributesAndChildren() override;
-    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+    PassRefPtrWillBeRawPtr<Element> cloneElementWithoutAttributesAndChildren() override;
+    bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 
     OwnPtrWillBeMember<ScriptLoader> m_loader;
 };

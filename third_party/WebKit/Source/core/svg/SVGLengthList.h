@@ -48,19 +48,19 @@ public:
         return adoptRefWillBeNoop(new SVGLengthList(mode));
     }
 
-    virtual ~SVGLengthList();
+    ~SVGLengthList() override;
 
     void setValueAsString(const String&, ExceptionState&);
 
     // SVGPropertyBase:
-    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
-    virtual PassRefPtrWillBeRawPtr<SVGLengthList> clone() override;
-    virtual String valueAsString() const override;
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
+    PassRefPtrWillBeRawPtr<SVGLengthList> clone() override;
+    String valueAsString() const override;
     SVGLengthMode unitMode() const { return m_mode; }
 
-    virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
-    virtual float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*) override;
+    void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
+    float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*) override;
 
     static AnimatedPropertyType classType() { return AnimatedLengthList; }
 
@@ -69,7 +69,7 @@ private:
 
     // Create SVGLength items used to adjust the list length
     // when animation from/to lists are longer than this list.
-    virtual PassRefPtrWillBeRawPtr<SVGLength> createPaddingItem() const override;
+    PassRefPtrWillBeRawPtr<SVGLength> createPaddingItem() const override;
 
     template <typename CharType>
     void parseInternal(const CharType*& ptr, const CharType* end, ExceptionState&);

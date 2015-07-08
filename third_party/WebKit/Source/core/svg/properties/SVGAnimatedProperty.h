@@ -126,12 +126,12 @@ public:
         return const_cast<SVGAnimatedPropertyCommon*>(this)->currentValue();
     }
 
-    virtual SVGPropertyBase* currentValueBase() override
+    SVGPropertyBase* currentValueBase() override
     {
         return currentValue();
     }
 
-    virtual bool isAnimating() const override
+    bool isAnimating() const override
     {
         return m_currentValue;
     }
@@ -146,19 +146,19 @@ public:
             parseError = ParsingAttributeFailedError;
     }
 
-    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> createAnimatedValue() override
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> createAnimatedValue() override
     {
         return m_baseValue->clone();
     }
 
-    virtual void setAnimatedValue(PassRefPtrWillBeRawPtr<SVGPropertyBase> passValue) override
+    void setAnimatedValue(PassRefPtrWillBeRawPtr<SVGPropertyBase> passValue) override
     {
         RefPtrWillBeRawPtr<SVGPropertyBase> value = passValue;
         ASSERT(value->type() == Property::classType());
         m_currentValue = static_pointer_cast<Property>(value.release());
     }
 
-    virtual void animationEnded() override
+    void animationEnded() override
     {
         m_currentValue.clear();
 
@@ -190,14 +190,14 @@ private:
 template <typename Property, typename TearOffType = typename Property::TearOffType, typename PrimitiveType = typename Property::PrimitiveType>
 class SVGAnimatedProperty : public SVGAnimatedPropertyCommon<Property> {
 public:
-    virtual bool needsSynchronizeAttribute() override
+    bool needsSynchronizeAttribute() override
     {
         // DOM attribute synchronization is only needed if tear-off is being touched from javascript or the property is being animated.
         // This prevents unnecessary attribute creation on target element.
         return m_baseValueUpdated || this->isAnimating();
     }
 
-    virtual void synchronizeAttribute() override
+    void synchronizeAttribute() override
     {
         SVGAnimatedPropertyBase::synchronizeAttribute();
         m_baseValueUpdated = false;
@@ -254,19 +254,19 @@ public:
         return adoptRefWillBeNoop(new SVGAnimatedProperty<Property>(contextElement, attributeName, initialValue));
     }
 
-    virtual void setAnimatedValue(PassRefPtrWillBeRawPtr<SVGPropertyBase> value) override
+    void setAnimatedValue(PassRefPtrWillBeRawPtr<SVGPropertyBase> value) override
     {
         SVGAnimatedPropertyCommon<Property>::setAnimatedValue(value);
         updateAnimValTearOffIfNeeded();
     }
 
-    virtual void animationEnded() override
+    void animationEnded() override
     {
         SVGAnimatedPropertyCommon<Property>::animationEnded();
         updateAnimValTearOffIfNeeded();
     }
 
-    virtual bool needsSynchronizeAttribute() override
+    bool needsSynchronizeAttribute() override
     {
         // DOM attribute synchronization is only needed if tear-off is being touched from javascript or the property is being animated.
         // This prevents unnecessary attribute creation on target element.

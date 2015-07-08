@@ -38,7 +38,7 @@ class SVGCursorElement final : public SVGElement,
 public:
     DECLARE_NODE_FACTORY(SVGCursorElement);
 
-    virtual ~SVGCursorElement();
+    ~SVGCursorElement() override;
 
     void addClient(SVGElement*);
 #if !ENABLE(OILPAN)
@@ -54,11 +54,11 @@ public:
 private:
     explicit SVGCursorElement(Document&);
 
-    virtual bool isValid() const override { return SVGTests::isValid(document()); }
+    bool isValid() const override { return SVGTests::isValid(document()); }
 
-    virtual void svgAttributeChanged(const QualifiedName&) override;
+    void svgAttributeChanged(const QualifiedName&) override;
 
-    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+    bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 
     RefPtrWillBeMember<SVGAnimatedLength> m_x;
     RefPtrWillBeMember<SVGAnimatedLength> m_y;

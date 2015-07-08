@@ -44,8 +44,8 @@ public:
 private:
     explicit SVGFEGaussianBlurElement(Document&);
 
-    virtual void svgAttributeChanged(const QualifiedName&) override;
-    virtual PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    void svgAttributeChanged(const QualifiedName&) override;
+    PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
     RefPtrWillBeMember<SVGAnimatedNumberOptionalNumber> m_stdDeviation;
     RefPtrWillBeMember<SVGAnimatedString> m_in1;

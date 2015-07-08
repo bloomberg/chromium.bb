@@ -68,20 +68,20 @@ public:
 private:
     explicit SVGTextPathElement(Document&);
 
-    virtual ~SVGTextPathElement();
+    ~SVGTextPathElement() override;
 
     void clearResourceReferences();
 
-    virtual void buildPendingResource() override;
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) override;
-    virtual void removedFrom(ContainerNode*) override;
+    void buildPendingResource() override;
+    InsertionNotificationRequest insertedInto(ContainerNode*) override;
+    void removedFrom(ContainerNode*) override;
 
-    virtual void svgAttributeChanged(const QualifiedName&) override;
+    void svgAttributeChanged(const QualifiedName&) override;
 
-    virtual LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    virtual bool layoutObjectIsNeeded(const ComputedStyle&) override;
+    LayoutObject* createLayoutObject(const ComputedStyle&) override;
+    bool layoutObjectIsNeeded(const ComputedStyle&) override;
 
-    virtual bool selfHasRelativeLengths() const override;
+    bool selfHasRelativeLengths() const override;
 
     RefPtrWillBeMember<SVGAnimatedLength> m_startOffset;
     RefPtrWillBeMember<SVGAnimatedEnumeration<SVGTextPathMethodType>> m_method;

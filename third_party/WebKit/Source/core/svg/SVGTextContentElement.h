@@ -70,14 +70,14 @@ public:
 protected:
     SVGTextContentElement(const QualifiedName&, Document&);
 
-    virtual bool isPresentationAttribute(const QualifiedName&) const override final;
-    virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override final;
-    virtual void svgAttributeChanged(const QualifiedName&) override;
+    bool isPresentationAttribute(const QualifiedName&) const final;
+    void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) final;
+    void svgAttributeChanged(const QualifiedName&) override;
 
-    virtual bool selfHasRelativeLengths() const override;
+    bool selfHasRelativeLengths() const override;
 
 private:
-    virtual bool isTextContent() const override final { return true; }
+    bool isTextContent() const final { return true; }
 
     RefPtrWillBeMember<SVGAnimatedLength> m_textLength;
     bool m_textLengthIsSpecifiedByUser;

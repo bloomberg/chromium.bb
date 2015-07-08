@@ -54,17 +54,17 @@ public:
     }
 
     PassRefPtrWillBeRawPtr<SVGString> clone() const { return create(m_value); }
-    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String& value) const override
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String& value) const override
     {
         return create(value);
     }
 
-    virtual String valueAsString() const override { return m_value; }
+    String valueAsString() const override { return m_value; }
     void setValueAsString(const String& value, ExceptionState&) { m_value = value; }
 
-    virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
-    virtual float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*) override;
+    void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
+    float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*) override;
 
     const String& value() const { return m_value; }
     void setValue(const String& value) { m_value = value; }

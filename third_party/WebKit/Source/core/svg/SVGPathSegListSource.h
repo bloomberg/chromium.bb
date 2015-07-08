@@ -31,9 +31,9 @@ public:
     SVGPathSegListSource(SVGPathSegList::ConstIterator, SVGPathSegList::ConstIterator);
 
 private:
-    virtual bool hasMoreData() const override;
-    virtual SVGPathSegType peekSegmentType() override;
-    virtual PathSegmentData parseSegment() override;
+    bool hasMoreData() const override;
+    SVGPathSegType peekSegmentType() override;
+    PathSegmentData parseSegment() override;
 
     SVGPathSegList::ConstIterator m_itCurrent;
     SVGPathSegList::ConstIterator m_itEnd;

@@ -53,7 +53,7 @@ public:
         SVG_ANGLETYPE_GRAD = SVGAngle::SVG_ANGLETYPE_GRAD
     };
 
-    virtual ~SVGAngleTearOff();
+    ~SVGAngleTearOff() override;
 
     unsigned short unitType() { return hasExposedAngleUnit() ? target()->unitType() : SVGAngle::SVG_ANGLETYPE_UNKNOWN; }
 
