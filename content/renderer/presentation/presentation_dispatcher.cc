@@ -114,6 +114,12 @@ void PresentationDispatcher::startSession(
     const blink::WebString& presentationUrl,
     const blink::WebString& presentationId,
     blink::WebPresentationSessionClientCallbacks* callback) {
+  startSession(presentationUrl, callback);
+}
+
+void PresentationDispatcher::startSession(
+    const blink::WebString& presentationUrl,
+    blink::WebPresentationSessionClientCallbacks* callback) {
   DCHECK(callback);
   ConnectToPresentationServiceIfNeeded();
 
@@ -122,7 +128,6 @@ void PresentationDispatcher::startSession(
   // to be destroyed so we transfer its ownership to the mojo callback.
   presentation_service_->StartSession(
       presentationUrl.utf8(),
-      presentationId.utf8(),
       base::Bind(&PresentationDispatcher::OnSessionCreated,
           base::Unretained(this),
           base::Owned(callback)));

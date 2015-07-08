@@ -37,6 +37,10 @@ class CONTENT_EXPORT PresentationDispatcher
   virtual void updateAvailableChangeWatched(bool watched);
   virtual void startSession(
       const blink::WebString& presentationUrl,
+      blink::WebPresentationSessionClientCallbacks* callback);
+  // TODO(mlamouri): remove this one when the one above is used by Blink.
+  virtual void startSession(
+      const blink::WebString& presentationUrl,
       const blink::WebString& presentationId,
       blink::WebPresentationSessionClientCallbacks* callback);
   virtual void joinSession(

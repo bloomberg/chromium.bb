@@ -548,7 +548,6 @@ void PresentationServiceDelegateImpl::StartSession(
     int render_process_id,
     int render_frame_id,
     const std::string& presentation_url,
-    const std::string& presentation_id,
     const PresentationSessionSuccessCallback& success_cb,
     const PresentationSessionErrorCallback& error_cb) {
   if (presentation_url.empty() || !IsValidPresentationUrl(presentation_url)) {
@@ -557,16 +556,16 @@ void PresentationServiceDelegateImpl::StartSession(
     return;
   }
   RenderFrameHostId render_frame_host_id(render_process_id, render_frame_id);
-  std::string final_presentation_id =
-      presentation_id.empty()
-          ? frame_manager_->GetDefaultPresentationId(render_frame_host_id)
-          : presentation_id;
-  if (final_presentation_id.empty())
-    // TODO(imcheng): Remove presentation_id argument entirely if required
-    // by Presentation API spec.
-    final_presentation_id = base::GenerateGUID();
+
+  // TODO(mlamouri,avayvod): don't use the default presentation id provided by
+  // the frame when we implement the new default presentation model.
+  std::string presentation_id =
+      frame_manager_->GetDefaultPresentationId(render_frame_host_id);
+  if (presentation_id.empty())
+    presentation_id = base::GenerateGUID();
+
   scoped_ptr<CreateSessionRequest> context(new CreateSessionRequest(
-      presentation_url, final_presentation_id,
+      presentation_url, presentation_id,
       GetLastCommittedURLForFrame(render_frame_host_id),
       base::Bind(&PresentationServiceDelegateImpl::OnStartSessionSucceeded,
                  weak_factory_.GetWeakPtr(), render_process_id, render_frame_id,

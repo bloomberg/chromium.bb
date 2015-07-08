@@ -101,15 +101,12 @@ class CONTENT_EXPORT PresentationServiceDelegate {
       const std::string& default_presentation_url,
       const std::string& default_presentation_id) = 0;
 
-  // Starts a new presentation session.
+  // Starts a new presentation session. The presentation id of the session will
+  // be the default presentation ID if any or a generated one otherwise.
   // Typically, the embedder will allow the user to select a screen to show
   // |presentation_url|.
   // |render_process_id|, |render_frame_id|: ID of originating frame.
   // |presentation_url|: URL of the presentation.
-  // |presentation_id|: The caller may provide an non-empty string to be used
-  // as the ID of the presentation. If empty, the default presentation ID
-  // will be used. If both are empty, the embedder will automatically generate
-  // one.
   // |success_cb|: Invoked with session info, if presentation session started
   // successfully.
   // |error_cb|: Invoked with error reason, if presentation session did not
@@ -118,7 +115,6 @@ class CONTENT_EXPORT PresentationServiceDelegate {
       int render_process_id,
       int render_frame_id,
       const std::string& presentation_url,
-      const std::string& presentation_id,
       const PresentationSessionSuccessCallback& success_cb,
       const PresentationSessionErrorCallback& error_cb) = 0;
 

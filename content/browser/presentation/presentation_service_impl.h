@@ -178,7 +178,6 @@ class CONTENT_EXPORT PresentationServiceImpl
       const DefaultSessionMojoCallback& callback) override;
   void StartSession(
       const mojo::String& presentation_url,
-      const mojo::String& presentation_id,
       const NewSessionMojoCallback& callback) override;
   void JoinSession(
       const mojo::String& presentation_url,

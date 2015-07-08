@@ -83,12 +83,11 @@ class MockPresentationServiceDelegate : public PresentationServiceDelegate {
           int routing_id,
           const std::string& default_presentation_url,
           const std::string& default_presentation_id));
-  MOCK_METHOD6(StartSession,
+  MOCK_METHOD5(StartSession,
       void(
           int render_process_id,
           int render_frame_id,
           const std::string& presentation_url,
-          const std::string& presentation_id,
           const PresentationSessionSuccessCallback& success_cb,
           const PresentationSessionErrorCallback& error_cb));
   MOCK_METHOD6(JoinSession,
@@ -463,17 +462,15 @@ TEST_F(PresentationServiceImplTest, SetSameDefaultPresentationUrl) {
 TEST_F(PresentationServiceImplTest, StartSessionSuccess) {
   service_ptr_->StartSession(
       kPresentationUrl,
-      kPresentationId,
       base::Bind(
           &PresentationServiceImplTest::ExpectNewSessionMojoCallbackSuccess,
           base::Unretained(this)));
   base::RunLoop run_loop;
   base::Callback<void(const PresentationSessionInfo&)> success_cb;
-  EXPECT_CALL(mock_delegate_, StartSession(
-      _, _, Eq(kPresentationUrl), Eq(kPresentationId), _, _))
+  EXPECT_CALL(mock_delegate_, StartSession(_, _, Eq(kPresentationUrl), _, _))
       .WillOnce(DoAll(
             InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
-            SaveArg<4>(&success_cb)));
+            SaveArg<3>(&success_cb)));
   run_loop.Run();
   success_cb.Run(PresentationSessionInfo(kPresentationUrl, kPresentationId));
   SaveQuitClosureAndRunLoop();
@@ -482,17 +479,15 @@ TEST_F(PresentationServiceImplTest, StartSessionSuccess) {
 TEST_F(PresentationServiceImplTest, StartSessionError) {
   service_ptr_->StartSession(
       kPresentationUrl,
-      kPresentationId,
       base::Bind(
           &PresentationServiceImplTest::ExpectNewSessionMojoCallbackError,
           base::Unretained(this)));
   base::RunLoop run_loop;
   base::Callback<void(const PresentationError&)> error_cb;
-  EXPECT_CALL(mock_delegate_, StartSession(
-      _, _, Eq(kPresentationUrl), Eq(kPresentationId), _, _))
+  EXPECT_CALL(mock_delegate_, StartSession(_, _, Eq(kPresentationUrl), _, _))
       .WillOnce(DoAll(
             InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
-            SaveArg<5>(&error_cb)));
+            SaveArg<4>(&error_cb)));
   run_loop.Run();
   error_cb.Run(PresentationError(PRESENTATION_ERROR_UNKNOWN, "Error message"));
   SaveQuitClosureAndRunLoop();
@@ -584,15 +579,13 @@ TEST_F(PresentationServiceImplTest, ReceiveSessionMessagesAfterReset) {
 
 TEST_F(PresentationServiceImplTest, StartSessionInProgress) {
   std::string presentation_url1("http://fooUrl");
-  std::string presentation_id1("presentationId1");
   std::string presentation_url2("http://barUrl");
-  std::string presentation_id2("presentationId2");
-  service_ptr_->StartSession(presentation_url1, presentation_id1,
+  service_ptr_->StartSession(presentation_url1,
                              base::Bind(&DoNothing));
   // This request should fail immediately, since there is already a StartSession
   // in progress.
   service_ptr_->StartSession(
-      presentation_url2, presentation_id2,
+      presentation_url2,
       base::Bind(
           &PresentationServiceImplTest::ExpectNewSessionMojoCallbackError,
           base::Unretained(this)));

@@ -233,7 +233,6 @@ void PresentationServiceImpl::ListenForDefaultSessionStart(
 
 void PresentationServiceImpl::StartSession(
     const mojo::String& presentation_url,
-    const mojo::String& presentation_id,
     const NewSessionMojoCallback& callback) {
   DVLOG(2) << "StartSession";
   if (!delegate_) {
@@ -251,7 +250,7 @@ void PresentationServiceImpl::StartSession(
   start_session_request_id_ = GetNextRequestSessionId();
   pending_start_session_cb_.reset(new NewSessionMojoCallbackWrapper(callback));
   delegate_->StartSession(
-      render_process_id_, render_frame_id_, presentation_url, presentation_id,
+      render_process_id_, render_frame_id_, presentation_url,
       base::Bind(&PresentationServiceImpl::OnStartSessionSucceeded,
                  weak_factory_.GetWeakPtr(), start_session_request_id_),
       base::Bind(&PresentationServiceImpl::OnStartSessionError,
@@ -639,4 +638,3 @@ void PresentationServiceImpl::DefaultSessionStartContext::Reset() {
 }
 
 }  // namespace content
-

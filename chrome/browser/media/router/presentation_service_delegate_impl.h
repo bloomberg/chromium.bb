@@ -77,7 +77,6 @@ class PresentationServiceDelegateImpl
   void StartSession(int render_process_id,
                     int render_frame_id,
                     const std::string& presentation_url,
-                    const std::string& presentation_id,
                     const PresentationSessionSuccessCallback& success_cb,
                     const PresentationSessionErrorCallback& error_cb) override;
   void JoinSession(int render_process_id,
