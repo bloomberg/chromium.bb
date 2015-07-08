@@ -36,7 +36,6 @@ import re
 import shutil
 import subprocess
 import tempfile
-from ssim import compute_ssim
 
 
 # #######################################################################################################################
@@ -654,7 +653,7 @@ def calculate_frame_progress(histogram, start, final):
                     target -= this_match
         total += channel_total
         matched += channel_matched
-    progress = (float(matched) / float(total))
+    progress = (float(matched) / float(total)) if total else 1
     return math.floor(progress * 100)
 
 
@@ -682,6 +681,7 @@ def calculate_speed_index(progress):
 
 
 def calculate_perceptual_speed_index(progress, directory):
+    from ssim import compute_ssim
     per_si = 0
     last_ms = progress[0]['time']
     x = len(progress)
@@ -848,11 +848,12 @@ def main():
                 video_to_frames(options.video, directory, options.force, orange_file, options.viewport, options.full,
                                 options.timeline)
             calculate_histograms(directory, histogram_file, options.force)
+            metrics = calculate_visual_metrics(histogram_file, options.start, options.end, options.perceptual,
+                                               directory)
             # Perceptual SI computation works on png's only
             if options.dir is not None and options.quality is not None and options.perceptual is False:
                 convert_to_jpeg(directory, options.quality)
-            metrics = calculate_visual_metrics(histogram_file, options.start, options.end, options.perceptual,
-                                               directory)
+
             if metrics is not None:
                 ok = True
                 for metric in metrics:
