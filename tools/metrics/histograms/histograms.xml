@@ -67999,11 +67999,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="CERT_AUTHORITY_INVALID"/>
   <int value="3" label="CERT_CONTAINS_ERRORS"/>
   <int value="4" label="CERT_NO_REVOCATION_MECHANISM"/>
-  <int value="5" label="CERT_REVOKED"/>
-  <int value="6" label="CERT_INVALID"/>
-  <int value="7" label="CERT_WEAK_SIGNATURE_ALGORITHM"/>
-  <int value="8" label="CERT_WEAK_KEY"/>
-  <int value="9" label="UNKNOWN"/>
+  <int value="5" label="CERT_UNABLE_TO_CHECK_REVOCATION"/>
+  <int value="6" label="CERT_REVOKED"/>
+  <int value="7" label="CERT_INVALID"/>
+  <int value="8" label="CERT_WEAK_SIGNATURE_ALGORITHM"/>
+  <int value="9" label="CERT_WEAK_KEY"/>
+  <int value="10" label="CERT_NAME_CONSTRAINT_VIOLATION"/>
+  <int value="11" label="UNKNOWN"/>
+  <int value="12" label="CERT_WEAK_KEY_DH"/>
+  <int value="13" label="CERT_PINNED_KEY_MISSING"/>
+  <int value="14" label="CERT_VALIDITY_TOO_LONG"/>
 </enum>
 
 <enum name="SSLFailureState" type="int">
