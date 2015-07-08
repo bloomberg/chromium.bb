@@ -746,7 +746,8 @@ class KeySilkCasesPageSet(story.StorySet):
     self.AddStory(SVGIconRaster(self, run_no_page_interactions))
     self.AddStory(UpdateHistoryState(self, run_no_page_interactions))
     self.AddStory(SilkFinance(self, run_no_page_interactions))
-    self.AddStory(PolymerTopeka(self, run_no_page_interactions))
+    # Flaky interaction steps on Android; crbug.com/507865
+    # self.AddStory(PolymerTopeka(self, run_no_page_interactions))
     self.AddStory(Masonry(self, run_no_page_interactions))
 
     for page in self:
