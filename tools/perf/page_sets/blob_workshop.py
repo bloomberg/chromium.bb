@@ -81,7 +81,7 @@ class BlobWorkshopPageSet(story.StorySet):
     self.AddStory(
         BlobMassCreate('10MBx30', [10 * 1024 * 1024] * 30, self))
     self.AddStory(
-        BlobMassCreate('100MBx5', [100 * 1024 * 1024] * 5, self))
+        BlobMassCreate('80MBx5', [80 * 1024 * 1024] * 5, self))
 
     self.AddStory(BlobCreateThenRead('2Bx200', [2] * 200, self))
     self.AddStory(BlobCreateThenRead('1KBx200', [1024] * 200, self))
@@ -91,4 +91,4 @@ class BlobWorkshopPageSet(story.StorySet):
     self.AddStory(
         BlobCreateThenRead('10MBx30', [10 * 1024 * 1024] * 30, self))
     self.AddStory(
-        BlobCreateThenRead('100MBx5', [100 * 1024 * 1024] * 5, self))
+        BlobCreateThenRead('80MBx5', [80 * 1024 * 1024] * 5, self))
