@@ -64,7 +64,6 @@ public:
     BLINK_EXPORT WebString attributeLocalName(unsigned index) const;
     BLINK_EXPORT WebString attributeValue(unsigned index) const;
     BLINK_EXPORT unsigned attributeCount() const;
-    BLINK_EXPORT WebNode shadowRoot() const;
 
     // Returns the bounds of the element in viewport space. The bounds
     // have been adjusted to include any transformations. This view is

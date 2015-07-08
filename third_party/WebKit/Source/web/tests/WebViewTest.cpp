@@ -1781,26 +1781,6 @@ TEST_F(WebViewTest, SetCompositionFromExistingTextTriggersAutofillTextChange)
     frame->setAutofillClient(0);
 }
 
-TEST_F(WebViewTest, ShadowRoot)
-{
-    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("shadow_dom_test.html"));
-    WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(m_baseURL + "shadow_dom_test.html", true);
-
-    WebDocument document = webViewImpl->mainFrame()->document();
-    {
-        WebElement elementWithShadowRoot = document.getElementById("shadowroot");
-        EXPECT_FALSE(elementWithShadowRoot.isNull());
-        WebNode shadowRoot = elementWithShadowRoot.shadowRoot();
-        EXPECT_FALSE(shadowRoot.isNull());
-    }
-    {
-        WebElement elementWithoutShadowRoot = document.getElementById("noshadowroot");
-        EXPECT_FALSE(elementWithoutShadowRoot.isNull());
-        WebNode shadowRoot = elementWithoutShadowRoot.shadowRoot();
-        EXPECT_TRUE(shadowRoot.isNull());
-    }
-}
-
 class ViewCreatingWebViewClient : public FrameTestHelpers::TestWebViewClient {
 public:
     ViewCreatingWebViewClient()

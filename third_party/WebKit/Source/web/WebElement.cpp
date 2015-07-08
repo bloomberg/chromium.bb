@@ -36,7 +36,6 @@
 #include "core/dom/Fullscreen.h"
 #include "core/dom/NamedNodeMap.h"
 #include "core/dom/custom/CustomElementProcessingStack.h"
-#include "core/dom/shadow/ShadowRoot.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutObject.h"
 #include "public/platform/WebRect.h"
@@ -104,14 +103,6 @@ unsigned WebElement::attributeCount() const
     if (!constUnwrap<Element>()->hasAttributes())
         return 0;
     return constUnwrap<Element>()->attributes().size();
-}
-
-WebNode WebElement::shadowRoot() const
-{
-    ShadowRoot* shadowRoot = constUnwrap<Element>()->shadowRoot();
-    if (!shadowRoot)
-        return WebNode();
-    return WebNode(shadowRoot->toNode());
 }
 
 WebString WebElement::attributeLocalName(unsigned index) const
