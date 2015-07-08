@@ -6,6 +6,7 @@
 
 #import <WebKit/WebKit.h>
 
+#include "base/ios/ios_util.h"
 #include "base/ios/weak_nsobject.h"
 #include "base/json/json_reader.h"
 #import "base/mac/scoped_nsobject.h"
@@ -578,7 +579,8 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 }
 
 - (CRWWKWebViewCrashDetector*)newCrashDetectorWithWebView:(WKWebView*)webView {
-  if (!webView)
+  // iOS9 provides crash detection API.
+  if (!webView || base::ios::IsRunningOnIOS9OrLater())
     return nil;
 
   base::WeakNSObject<CRWWKWebViewWebController> weakSelf(self);
@@ -1114,6 +1116,10 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
                   NSURLCredential *credential))completionHandler {
   NOTIMPLEMENTED();
   completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
+}
+
+- (void)webViewWebContentProcessDidTerminate:(WKWebView*)webView {
+  [self webViewWebProcessDidCrash];
 }
 
 #pragma mark WKUIDelegate Methods
