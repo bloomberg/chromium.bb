@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "url/gurl.h"
 
@@ -19,11 +20,11 @@ struct OfflinePageItem {
  public:
   OfflinePageItem();
   OfflinePageItem(const GURL& url,
-                  const std::string& title,
+                  const base::string16& title,
                   const base::FilePath& file_path,
                   int64 file_size);
   OfflinePageItem(const GURL& url,
-                  const std::string& title,
+                  const base::string16& title,
                   const base::FilePath& file_path,
                   int64 file_size,
                   const base::Time& creation_time);
@@ -35,7 +36,7 @@ struct OfflinePageItem {
   // The URL of the page.
   GURL url;
   // The title of the page.
-  std::string title;
+  base::string16 title;
   // Version of the offline page item.
   int version;
   // The file path to the archive with a local copy of the page.

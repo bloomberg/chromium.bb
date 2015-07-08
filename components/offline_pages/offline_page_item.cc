@@ -18,7 +18,7 @@ OfflinePageItem::OfflinePageItem()
 }
 
 OfflinePageItem::OfflinePageItem(const GURL& url,
-                                 const std::string& title,
+                                 const base::string16& title,
                                  const base::FilePath& file_path,
                                  int64 file_size)
     : url(url),
@@ -29,7 +29,7 @@ OfflinePageItem::OfflinePageItem(const GURL& url,
 }
 
 OfflinePageItem::OfflinePageItem(const GURL& url,
-                                 const std::string& title,
+                                 const base::string16& title,
                                  const base::FilePath& file_path,
                                  int64 file_size,
                                  const base::Time& creation_time)

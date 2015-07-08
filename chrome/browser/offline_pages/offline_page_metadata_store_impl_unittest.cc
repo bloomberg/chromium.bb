@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/offline_pages/offline_pages.pb.h"
 #include "components/leveldb_proto/proto_database_impl.h"
 #include "components/offline_pages/offline_page_item.h"
@@ -22,7 +23,7 @@ namespace offline_pages {
 namespace {
 
 const char kTestURL[] = "https://example.com";
-const char kTestTitle[] = "Example site title";
+const base::string16 kTestTitle = base::ASCIIToUTF16("Example site title");
 const base::FilePath::CharType kFilePath[] =
     FILE_PATH_LITERAL("/offline_pages/example_com.mhtml");
 int64 kFileSize = 234567;
@@ -247,7 +248,8 @@ TEST_F(OfflinePageMetadataStoreImplTest, AddRemoveMultipleOfflinePages) {
                                  base::FilePath(kFilePath), kFileSize);
   base::FilePath file_path_2 =
       base::FilePath(FILE_PATH_LITERAL("//other.page.com.mhtml"));
-  OfflinePageItem offline_page_2(GURL("https://other.page.com"), "Other page",
+  OfflinePageItem offline_page_2(GURL("https://other.page.com"),
+                                 base::ASCIIToUTF16("Other page"),
                                  file_path_2, 12345, base::Time::Now());
   store->AddOfflinePage(
       offline_page_1,
