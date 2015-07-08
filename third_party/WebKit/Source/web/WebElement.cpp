@@ -133,11 +133,6 @@ WebString WebElement::textContent() const
     return constUnwrap<Element>()->textContent();
 }
 
-WebString WebElement::computeInheritedLanguage() const
-{
-    return WebString(constUnwrap<Element>()->computeInheritedLanguage());
-}
-
 void WebElement::requestFullScreen()
 {
     Element* element = unwrap<Element>();

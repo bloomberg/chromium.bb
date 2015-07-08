@@ -66,12 +66,6 @@ public:
     BLINK_EXPORT unsigned attributeCount() const;
     BLINK_EXPORT WebNode shadowRoot() const;
 
-    // Returns the language code specified for this element. This attribute
-    // is inherited, so the returned value is drawn from the closest parent
-    // element that has the lang attribute set, or from the HTTP
-    // "Content-Language" header as a fallback.
-    BLINK_EXPORT WebString computeInheritedLanguage() const;
-
     // Returns the bounds of the element in viewport space. The bounds
     // have been adjusted to include any transformations. This view is
     // also called the Root View in Blink.
