@@ -50,7 +50,6 @@ public:
     void didFailRedirectCheck() override;
 
     void start();
-    void cancel();
     void dispose();
 
 private:
@@ -255,25 +254,6 @@ void FetchManager::Loader::start()
     // "The result of performing an HTTP fetch using |request| with the
     // |CORS flag| set."
     performHTTPFetch(true, false);
-}
-
-void FetchManager::Loader::cancel()
-{
-    m_finished = true;
-    if (m_loader) {
-        m_loader->cancel();
-        m_loader.clear();
-    }
-    if (m_resolver) {
-        // Note: In the current implementation this branch is never taken
-        // because this function can be called only through the body stream.
-        ScriptState* scriptState = m_resolver->scriptState();
-        ScriptState::Scope scope(scriptState);
-        m_resolver->reject(V8ThrowException::createTypeError(scriptState->isolate(), "fetch is cancelled"));
-        m_resolver.clear();
-    }
-
-    notifyFinished();
 }
 
 void FetchManager::Loader::dispose()

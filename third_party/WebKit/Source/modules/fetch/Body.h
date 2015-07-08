@@ -81,8 +81,6 @@ protected:
     void setBody(BodyStreamBuffer* /* buffer */);
 
 private:
-    void pullSource();
-    void readAllFromStream();
     ScriptPromise readAsync(ScriptState*, ResponseType);
     void resolveWithEmptyDataSynchronously();
     void readAsyncFromDrainingBodyStreamBuffer(PassOwnPtr<DrainingBodyStreamBuffer>, const String& mimeType);
