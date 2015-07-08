@@ -379,12 +379,14 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
     @Override
     public void openBookmark(BookmarkId bookmark, int launchLocation) {
         clearSelection();
-        NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_BOOKMARK);
-        RecordHistogram.recordEnumeratedHistogram("Stars.LaunchLocation", launchLocation,
-                LaunchLocation.COUNT);
-        EnhancedBookmarkUtils.openBookmark(mActivity,
-                mEnhancedBookmarksModel.getBookmarkById(bookmark).getUrl());
-        finishActivityOnPhone();
+        if (mEnhancedBookmarksModel.getBookmarkById(bookmark) != null) {
+            NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_BOOKMARK);
+            RecordHistogram.recordEnumeratedHistogram("Stars.LaunchLocation", launchLocation,
+                    LaunchLocation.COUNT);
+            EnhancedBookmarkUtils.openBookmark(mActivity,
+                    mEnhancedBookmarksModel.getBookmarkById(bookmark).getUrl());
+            finishActivityOnPhone();
+        }
     }
 
     @Override
