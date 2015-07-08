@@ -114,7 +114,7 @@ CastContentRendererClient::GetRendererMessageFilters() {
 
 void CastContentRendererClient::RenderThreadStarted() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-#if defined(USE_NSS_CERTS)
+#if !defined(USE_OPENSSL)
   // Note: Copied from chrome_render_process_observer.cc to fix b/8676652.
   //
   // On platforms where the system NSS shared libraries are used,
