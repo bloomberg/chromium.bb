@@ -1632,6 +1632,8 @@ crbug.com/505429 [ Mavericks Retina Win ] http/tests/websocket/close-code-and-re
 
 crbug.com/505795 [ Win Mac ] virtual/antialiasedtext/fast/text/emphasis-ellipsis-complextext.html [ Pass ImageOnlyFailure ]
 
+crbug.com/506669 fast/repaint/outline-continuations.html [ NeedsRebaseline ]
+
 crbug.com/506312 imported/csswg-test/css-pseudo-4/first-letter-001.html [ ImageOnlyFailure ]
 crbug.com/506312 imported/csswg-test/css-writing-modes-3/text-combine-upright-inherit-all-001.html [ ImageOnlyFailure ]
 

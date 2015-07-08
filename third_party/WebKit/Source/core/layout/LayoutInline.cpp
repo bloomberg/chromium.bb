@@ -151,32 +151,32 @@ static LayoutObject* inFlowPositionedInlineAncestor(LayoutObject* p)
     return nullptr;
 }
 
-static void updateStyleOfAnonymousBlockContinuations(LayoutObject* block, const ComputedStyle& newStyle, const ComputedStyle& oldStyle)
+static void updateStyleOfAnonymousBlockContinuations(LayoutObject* block, const ComputedStyle& newStyle, const ComputedStyle& oldStyle, LayoutObject* containingBlockOfEndOfContinuation)
 {
-    for (;block && block->isAnonymousBlock(); block = block->nextSibling()) {
+    // If an inline's outline or in-flow positioning has changed then any descendant blocks will need to change their styles accordingly.
+    bool updateOutline = !newStyle.isOutlineEquivalent(&oldStyle);
+    bool updatePosition = newStyle.position() != oldStyle.position() && (newStyle.hasInFlowPosition() || oldStyle.hasInFlowPosition());
+    if (!updateOutline && !updatePosition)
+        return;
+
+    for (; block && block != containingBlockOfEndOfContinuation && block->isAnonymousBlock(); block = block->nextSibling()) {
         if (!toLayoutBlock(block)->isAnonymousBlockContinuation())
             continue;
 
-        RefPtr<ComputedStyle> newBlockStyle;
+        RefPtr<ComputedStyle> newBlockStyle = ComputedStyle::clone(block->styleRef());
 
-        if (!block->style()->isOutlineEquivalent(&newStyle)) {
-            newBlockStyle = ComputedStyle::clone(block->styleRef());
+        if (updateOutline)
             newBlockStyle->setOutlineFromStyle(newStyle);
-        }
 
-        if (block->style()->position() != newStyle.position()) {
+        if (updatePosition) {
             // If we are no longer in-flow positioned but our descendant block(s) still have an in-flow positioned ancestor then
             // their containing anonymous block should keep its in-flow positioning.
-            if (oldStyle.hasInFlowPosition()
-                && inFlowPositionedInlineAncestor(toLayoutBlock(block)->inlineElementContinuation()))
+            if (oldStyle.hasInFlowPosition() && inFlowPositionedInlineAncestor(toLayoutBlock(block)->inlineElementContinuation()))
                 continue;
-            if (!newBlockStyle)
-                newBlockStyle = ComputedStyle::clone(block->styleRef());
             newBlockStyle->setPosition(newStyle.position());
         }
 
-        if (newBlockStyle)
-            block->setStyle(newBlockStyle);
+        block->setStyle(newBlockStyle);
     }
 }
 
@@ -192,22 +192,20 @@ void LayoutInline::styleDidChange(StyleDifference diff, const ComputedStyle* old
     // need to pass its style on to anyone else.
     const ComputedStyle& newStyle = styleRef();
     LayoutInline* continuation = inlineElementContinuation();
+    LayoutInline* endOfContinuation = nullptr;
     for (LayoutInline* currCont = continuation; currCont; currCont = currCont->inlineElementContinuation()) {
         LayoutBoxModelObject* nextCont = currCont->continuation();
         currCont->setContinuation(nullptr);
         currCont->setStyle(mutableStyle());
         currCont->setContinuation(nextCont);
+        endOfContinuation = currCont;
     }
 
-    // If an inline's outline or in-flow positioning has changed then any descendant blocks will need to change their styles accordingly.
-    // Do this by updating the styles of the descendant blocks' containing anonymous blocks - there may be more than one.
-    if (continuation && oldStyle
-        && (!newStyle.isOutlineEquivalent(oldStyle)
-            || (newStyle.position() != oldStyle->position() && (newStyle.hasInFlowPosition() || oldStyle->hasInFlowPosition())))) {
-        // If any descendant blocks exist then they will be in the next anonymous block and its siblings.
+    if (continuation && oldStyle) {
+        ASSERT(endOfContinuation);
         LayoutObject* block = containingBlock()->nextSibling();
         if (block && block->isAnonymousBlock())
-            updateStyleOfAnonymousBlockContinuations(block, newStyle, *oldStyle);
+            updateStyleOfAnonymousBlockContinuations(block, newStyle, *oldStyle, endOfContinuation->containingBlock());
     }
 
     if (!alwaysCreateLineBoxes()) {
