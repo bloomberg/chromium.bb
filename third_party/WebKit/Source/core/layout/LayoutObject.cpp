@@ -1552,6 +1552,9 @@ void LayoutObject::showLayoutObject(int printedCharacters) const
     if (isText() && toLayoutText(this)->isTextFragment())
         printedCharacters += fprintf(stderr, " \"%s\" ", toLayoutText(this)->text().ascii().data());
 
+    if (virtualContinuation())
+        printedCharacters += fprintf(stderr, " continuation=%p", virtualContinuation());
+
     if (node()) {
         if (printedCharacters)
             for (; printedCharacters < showTreeCharacterOffset; printedCharacters++)
