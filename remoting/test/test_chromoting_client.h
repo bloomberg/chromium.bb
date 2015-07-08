@@ -36,11 +36,13 @@ namespace test {
 // Must be used from a thread running an IO message loop.
 // RemoteConnectionObserver objects must not destroy this class within a
 // callback.
+// A VideoRenderer can be passed in to customize the connection.
 class TestChromotingClient : public ClientUserInterface,
                              public protocol::ClipboardStub,
                              public protocol::CursorShapeStub {
  public:
   TestChromotingClient();
+  explicit TestChromotingClient(scoped_ptr<VideoRenderer> video_renderer);
   ~TestChromotingClient() override;
 
   // Starts a chromoting connection with the specified remote host.

@@ -147,6 +147,7 @@
       'type': 'static_library',
       'dependencies': [
         '../remoting/proto/chromotocol.gyp:chromotocol_proto_lib',
+        '<(DEPTH)/third_party/webrtc/modules/modules.gyp:desktop_capture',
         'remoting_test_driver_common',
       ],
       'defines': [
@@ -157,6 +158,8 @@
         'test/app_remoting_connected_client_fixture.h',
         'test/app_remoting_connection_helper.cc',
         'test/app_remoting_connection_helper.h',
+        'test/app_remoting_latency_test_fixture.cc',
+        'test/app_remoting_latency_test_fixture.h',
         'test/app_remoting_report_issue_request.cc',
         'test/app_remoting_report_issue_request.h',
         'test/app_remoting_service_urls.cc',
@@ -313,6 +316,8 @@
         'host/resizing_host_observer_unittest.cc',
         'host/screen_resolution_unittest.cc',
         'host/server_log_entry_host_unittest.cc',
+        'host/setup/mock_oauth_client.cc',
+        'host/setup/mock_oauth_client.h',
         'host/setup/me2me_native_messaging_host.cc',
         'host/setup/me2me_native_messaging_host.h',
         'host/setup/me2me_native_messaging_host_unittest.cc',

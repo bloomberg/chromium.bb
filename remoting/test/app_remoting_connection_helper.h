@@ -30,21 +30,23 @@ typedef base::Callback<void(const protocol::ExtensionMessage& message)>
     HostMessageReceivedCallback;
 
 // Creates a connection to a remote host which is available for tests to use.
-// All callbacks must occur on the same thread the object was created on.
+// A TestChromotingClient is required from caller.
 class AppRemotingConnectionHelper
     : public RemoteConnectionObserver {
  public:
-  AppRemotingConnectionHelper(
+  explicit AppRemotingConnectionHelper(
       const RemoteApplicationDetails& application_details);
   ~AppRemotingConnectionHelper() override;
 
   // Initialize internal structures.
-  void Initialize();
+  void Initialize(scoped_ptr<TestChromotingClient> test_chromoting_client);
 
   // Starts a connection with the remote host.
+  // NOTE: Initialize() must be called before calling this method.
   bool StartConnection();
 
-  // Stubs used to send messages to the remote host.
+  // Stubs used to send messages to the remote host. Caller should not release
+  // the objects.
   protocol::ClipboardStub* clipboard_forwarder();
   protocol::HostStub* host_stub();
   protocol::InputStub* input_stub();

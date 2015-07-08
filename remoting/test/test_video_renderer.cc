@@ -14,7 +14,6 @@
 #include "remoting/codec/video_decoder_vpx.h"
 #include "remoting/proto/video.pb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
-#include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 
 namespace remoting {
 namespace test {
@@ -38,6 +37,13 @@ class TestVideoRenderer::Core {
   // Returns a copy of the current buffer.
   scoped_ptr<webrtc::DesktopFrame> GetBufferForTest() const;
 
+  // Set expected image pattern for comparison and the callback will be called
+  // when the pattern is matched.
+  void SetImagePatternAndMatchedCallback(
+      const webrtc::DesktopRect& expected_rect,
+      const RgbaColor& expected_color,
+      const base::Closure& image_pattern_matched_callback);
+
  private:
   // Used to ensure Core methods are called on the same thread.
   base::ThreadChecker thread_checker_;
@@ -59,6 +65,17 @@ class TestVideoRenderer::Core {
 
   // Protects access to |buffer_|.
   mutable base::Lock lock_;
+
+  // Used to store the expected image pattern.
+  webrtc::DesktopRect expected_rect_;
+  RgbaColor expected_color_;
+
+  // Maintains accumulating image pattern.
+  webrtc::DesktopRect accumulating_rect_;
+  RgbaColor accumulating_color_;
+
+  // Used to store the callback when expected pattern is matched.
+  base::Closure image_pattern_matched_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -154,6 +171,21 @@ void TestVideoRenderer::Core::ProcessVideoPacket(
   }
 
   main_task_runner_->PostTask(FROM_HERE, done);
+
+  // TODO(liaoyuke): Update |accumulating_rect_| and |accumulating_color_|, then
+  // compare to the expected image pattern to check whether the pattern is
+  // matched or not and update |image_pattern_matched| accordingly.
+}
+
+void TestVideoRenderer::Core::SetImagePatternAndMatchedCallback(
+    const webrtc::DesktopRect& expected_rect,
+    const RgbaColor& expected_color,
+    const base::Closure& image_pattern_matched_callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  expected_rect_ = expected_rect;
+  expected_color_ = expected_color;
+  image_pattern_matched_callback_ = image_pattern_matched_callback;
 }
 
 TestVideoRenderer::TestVideoRenderer()
@@ -239,6 +271,19 @@ scoped_ptr<webrtc::DesktopFrame> TestVideoRenderer::GetBufferForTest() const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   return core_->GetBufferForTest();
+}
+
+void TestVideoRenderer::SetImagePatternAndMatchedCallback(
+    const webrtc::DesktopRect& expected_rect,
+    const RgbaColor& expected_color,
+    const base::Closure& image_pattern_matched_callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  DVLOG(2) << "TestVideoRenderer::SetImagePatternAndMatchedCallback() Called";
+  video_decode_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&Core::SetImagePatternAndMatchedCallback,
+                            base::Unretained(core_.get()), expected_rect,
+                            expected_color, image_pattern_matched_callback));
 }
 
 }  // namespace test

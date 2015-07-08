@@ -20,7 +20,10 @@ class SingleThreadTaskRunner;
 
 namespace webrtc {
 class DesktopFrame;
+class DesktopRect;
 }
+
+typedef uint32 RgbaColor;
 
 namespace remoting {
 namespace test {
@@ -48,6 +51,18 @@ class TestVideoRenderer : public VideoRenderer, public protocol::VideoStub {
 
   // Returns a copy of the current buffer.
   scoped_ptr<webrtc::DesktopFrame> GetBufferForTest() const;
+
+  // Gets a weak pointer for this object.
+  base::WeakPtr<TestVideoRenderer> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
+  // Set expected image pattern for comparison and the callback will be called
+  // when the pattern is matched.
+  void SetImagePatternAndMatchedCallback(
+      const webrtc::DesktopRect& expected_rect,
+      const RgbaColor& expected_color,
+      const base::Closure& image_pattern_matched_callback);
 
  private:
   // The actual implementation resides in Core class.

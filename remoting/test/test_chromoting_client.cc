@@ -134,6 +134,12 @@ TestChromotingClient::TestChromotingClient()
       connection_error_code_(protocol::OK) {
 }
 
+TestChromotingClient::TestChromotingClient(
+    scoped_ptr<VideoRenderer> video_renderer)
+    : video_renderer_(video_renderer.Pass()) {
+  TestChromotingClient();
+}
+
 TestChromotingClient::~TestChromotingClient() {
   // Ensure any connections are closed and the members are destroyed in the
   // appropriate order.
@@ -158,7 +164,10 @@ void TestChromotingClient::StartConnection(
 
   client_context_.reset(new ClientContext(base::ThreadTaskRunnerHandle::Get()));
 
-  video_renderer_.reset(new TestVideoRenderer());
+  // Check to see if the user passed in a customized video renderer.
+  if (!video_renderer_) {
+    video_renderer_.reset(new TestVideoRenderer());
+  }
 
   chromoting_client_.reset(new ChromotingClient(client_context_.get(),
                                                 this,  // client_user_interface.

@@ -42,8 +42,9 @@ AppRemotingConnectionHelper::~AppRemotingConnectionHelper() {
   base::RunLoop().RunUntilIdle();
 }
 
-void AppRemotingConnectionHelper::Initialize() {
-  client_.reset(new TestChromotingClient());
+void AppRemotingConnectionHelper::Initialize(
+    scoped_ptr<TestChromotingClient> test_chromoting_client) {
+  client_ = test_chromoting_client.Pass();
   client_->AddRemoteConnectionObserver(this);
 }
 
@@ -58,6 +59,7 @@ void AppRemotingConnectionHelper::ResetHostMessageReceivedCallback() {
 
 bool AppRemotingConnectionHelper::StartConnection() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(client_);
 
   RemoteHostInfo remote_host_info;
   remoting::test::AppRemotingSharedData->GetRemoteHostInfoForApplicationId(

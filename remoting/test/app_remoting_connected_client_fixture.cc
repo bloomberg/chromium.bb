@@ -47,7 +47,7 @@ AppRemotingConnectedClientFixture::~AppRemotingConnectedClientFixture() {
 void AppRemotingConnectedClientFixture::SetUp() {
   connection_helper_.reset(
       new AppRemotingConnectionHelper(application_details_));
-  connection_helper_->Initialize();
+  connection_helper_->Initialize(make_scoped_ptr(new TestChromotingClient()));
   if (!connection_helper_->StartConnection()) {
     LOG(ERROR) << "Remote host connection could not be established.";
     FAIL();
