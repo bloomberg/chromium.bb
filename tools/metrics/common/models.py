@@ -149,6 +149,8 @@ class ObjectNodeType(NodeType):
       if child.multiple:
         obj[child.attr] = [child.node_type.Unmarshall(n) for n in nodes]
       else:
+        if not nodes:
+          raise ValueError("Missing required tag '%s'" % child.node_type.tag)
         obj[child.attr] = child.node_type.Unmarshall(nodes[0])
     return obj
 

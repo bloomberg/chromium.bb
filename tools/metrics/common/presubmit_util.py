@@ -52,8 +52,7 @@ def DoPresubmitMain(argv, original_filename, backup_filename, script_name,
   try:
     pretty = prettyFn(original_xml)
   except Exception as e:
-    logging.error('Aborting parsing due to fatal errors:')
-    logging.error(e)
+    logging.exception('Aborting parsing due to fatal errors:')
     sys.exit(1)
 
   if original_xml == pretty:
