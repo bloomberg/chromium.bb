@@ -54,12 +54,11 @@ GURL GetAbsoluteSrcUrl(const blink::WebElement& element) {
   return GetAbsoluteUrl(element, element.getAttribute("src"));
 }
 
-blink::WebElement GetImgChild(const blink::WebElement& element) {
+blink::WebElement GetImgChild(const blink::WebNode& node) {
   // This implementation is incomplete (for example if is an area tag) but
   // matches the original WebViewClassic implementation.
 
-  blink::WebElementCollection collection =
-      element.getElementsByHTMLTagName("img");
+  blink::WebElementCollection collection = node.getElementsByHTMLTagName("img");
   DCHECK(!collection.isNull());
   return collection.firstItem();
 }
@@ -179,9 +178,9 @@ void AwRenderViewExt::OnDocumentHasImagesRequest(int id) {
   if (render_view()) {
     blink::WebView* webview = render_view()->GetWebView();
     if (webview) {
-      blink::WebVector<blink::WebElement> images;
-      webview->mainFrame()->document().images(images);
-      hasImages = !images.isEmpty();
+      blink::WebDocument document = webview->mainFrame()->document();
+      const blink::WebElement child_img = GetImgChild(document);
+      hasImages = !child_img.isNull();
     }
   }
   Send(new AwViewHostMsg_DocumentHasImagesResponse(routing_id(), id,
