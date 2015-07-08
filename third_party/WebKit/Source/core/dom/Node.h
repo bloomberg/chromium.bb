@@ -469,7 +469,7 @@ public:
 
     unsigned nodeIndex() const;
 
-    // Returns the DOM ownerDocument attribute. This method never returns NULL, except in the case
+    // Returns the DOM ownerDocument attribute. This method never returns null, except in the case
     // of a Document node.
     Document* ownerDocument() const;
 

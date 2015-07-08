@@ -75,9 +75,9 @@ PassRefPtrWillBeRawPtr<ChildListMutationAccumulator> ChildListMutationAccumulato
 {
     AccumulatorMap::AddResult result = accumulatorMap().add(&target, nullptr);
     RefPtrWillBeRawPtr<ChildListMutationAccumulator> accumulator;
-    if (!result.isNewEntry)
+    if (!result.isNewEntry) {
         accumulator = result.storedValue->value;
-    else {
+    } else {
         accumulator = adoptRefWillBeNoop(new ChildListMutationAccumulator(PassRefPtrWillBeRawPtr<Node>(target), MutationObserverInterestGroup::createForChildListMutation(target)));
         result.storedValue->value = accumulator.get();
     }
@@ -125,8 +125,9 @@ void ChildListMutationAccumulator::willRemoveChild(PassRefPtrWillBeRawPtr<Node> 
         m_previousSibling = child->previousSibling();
         m_nextSibling = child->nextSibling();
         m_lastAdded = child->previousSibling();
-    } else
+    } else {
         m_nextSibling = child->nextSibling();
+    }
 
     m_removedNodes.append(child.release());
 }

@@ -281,9 +281,9 @@ PassRefPtrWillBeRawPtr<Attr> Element::detachAttribute(size_t index)
     ASSERT(elementData());
     const Attribute& attribute = elementData()->attributes().at(index);
     RefPtrWillBeRawPtr<Attr> attrNode = attrIfExists(attribute.name());
-    if (attrNode)
+    if (attrNode) {
         detachAttrNodeAtIndex(attrNode.get(), index);
-    else {
+    } else {
         attrNode = Attr::create(document(), attribute.name(), attribute.value());
         removeAttributeInternal(index, NotInSynchronizationOfLazyAttribute);
     }
@@ -3235,9 +3235,9 @@ void Element::cloneDataFromElement(const Element& other)
 
 void Element::createUniqueElementData()
 {
-    if (!m_elementData)
+    if (!m_elementData) {
         m_elementData = UniqueElementData::create();
-    else {
+    } else {
         ASSERT(!m_elementData->isUnique());
         m_elementData = toShareableElementData(m_elementData)->makeUniqueCopy();
     }

@@ -104,7 +104,7 @@ public:
 
     // These are always DOM compliant values.  Editing positions like [img, 0] (aka [img, before])
     // will return img->parentNode() and img->nodeIndex() from these functions.
-    Node* containerNode() const; // NULL for a before/after position anchored to a node with no parent
+    Node* containerNode() const; // null for a before/after position anchored to a node with no parent
     Text* containerText() const;
 
     int computeOffsetInContainerNode() const;  // O(n) for before/after-anchored positions, O(1) for parent-anchored positions

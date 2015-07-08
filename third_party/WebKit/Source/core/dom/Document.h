@@ -564,7 +564,7 @@ public:
 
     enum CompatibilityMode { QuirksMode, LimitedQuirksMode, NoQuirksMode };
 
-    void setCompatibilityMode(CompatibilityMode m);
+    void setCompatibilityMode(CompatibilityMode);
     CompatibilityMode compatibilityMode() const { return m_compatibilityMode; }
 
     String compatMode() const;

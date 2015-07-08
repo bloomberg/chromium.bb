@@ -172,14 +172,14 @@ struct QualifiedNameHash {
 
 namespace WTF {
 
-    template<> struct DefaultHash<blink::QualifiedName> {
-        typedef blink::QualifiedNameHash Hash;
-    };
+template<> struct DefaultHash<blink::QualifiedName> {
+    typedef blink::QualifiedNameHash Hash;
+};
 
-    template<> struct HashTraits<blink::QualifiedName> : SimpleClassHashTraits<blink::QualifiedName> {
-        static const bool emptyValueIsZero = false;
-        static blink::QualifiedName emptyValue() { return blink::QualifiedName::null(); }
-    };
+template<> struct HashTraits<blink::QualifiedName> : SimpleClassHashTraits<blink::QualifiedName> {
+    static const bool emptyValueIsZero = false;
+    static blink::QualifiedName emptyValue() { return blink::QualifiedName::null(); }
+};
 }
 
 #endif

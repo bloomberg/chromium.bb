@@ -142,8 +142,7 @@ inline DocumentMarkerDetails* DocumentMarker::details() const
     return m_details.get();
 }
 
-class DocumentMarkerDetails : public RefCountedWillBeGarbageCollectedFinalized<DocumentMarkerDetails>
-{
+class DocumentMarkerDetails : public RefCountedWillBeGarbageCollectedFinalized<DocumentMarkerDetails> {
 public:
     DocumentMarkerDetails() { }
     virtual ~DocumentMarkerDetails();

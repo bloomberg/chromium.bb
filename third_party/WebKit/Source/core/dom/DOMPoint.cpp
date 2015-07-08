@@ -4,6 +4,7 @@
 
 #include "config.h"
 #include "core/dom/DOMPoint.h"
+
 #include "core/dom/DOMPointInit.h"
 
 namespace blink {

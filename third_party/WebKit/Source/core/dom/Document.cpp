@@ -82,9 +82,9 @@
 #include "core/dom/Microtask.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/NodeChildRemovalTracker.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeFilter.h"
 #include "core/dom/NodeIterator.h"
-#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/NodeWithIndex.h"
@@ -1313,9 +1313,9 @@ void Document::updateTitle(const String& title)
 void Document::setTitle(const String& title)
 {
     // Title set by JavaScript -- overrides any title elements.
-    if (!isHTMLDocument() && !isXHTMLDocument())
+    if (!isHTMLDocument() && !isXHTMLDocument()) {
         m_titleElement = nullptr;
-    else if (!m_titleElement) {
+    } else if (!m_titleElement) {
         HTMLElement* headElement = head();
         if (!headElement)
             return;
@@ -2797,7 +2797,7 @@ void Document::write(const SegmentedString& text, Document* ownerDocument, Excep
     m_writeRecursionIsTooDeep = (m_writeRecursionDepth > cMaxWriteRecursionDepth) || m_writeRecursionIsTooDeep;
 
     if (m_writeRecursionIsTooDeep)
-       return;
+        return;
 
     bool hasInsertionPoint = m_parser && m_parser->hasInsertionPoint();
 
@@ -3270,9 +3270,10 @@ bool Document::childTypeAllowed(NodeType type) const
     case ELEMENT_NODE:
         // Documents may contain no more than one of each of these.
         // (One Element and one DocumentType.)
-        for (Node& c : NodeTraversal::childrenOf(*this))
+        for (Node& c : NodeTraversal::childrenOf(*this)) {
             if (c.nodeType() == type)
                 return false;
+        }
         return true;
     }
     return false;

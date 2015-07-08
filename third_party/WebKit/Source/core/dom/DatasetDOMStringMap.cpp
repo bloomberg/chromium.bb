@@ -56,14 +56,15 @@ static String convertAttributeNameToPropertyName(const String& name)
     unsigned length = name.length();
     for (unsigned i = 5; i < length; ++i) {
         UChar character = name[i];
-        if (character != '-')
+        if (character != '-') {
             stringBuilder.append(character);
-        else {
+        } else {
             if ((i + 1 < length) && isASCIILower(name[i + 1])) {
                 stringBuilder.append(toASCIIUpper(name[i + 1]));
                 ++i;
-            } else
+            } else {
                 stringBuilder.append(character);
+            }
         }
     }
 
@@ -77,9 +78,9 @@ static bool propertyNameMatchesAttributeName(const CharType1* propertyName, cons
     unsigned p = 0;
     bool wordBoundary = false;
     while (a < attributeLength && p < propertyLength) {
-        if (attributeName[a] == '-' && a + 1 < attributeLength && isASCIILower(attributeName[a + 1]))
+        if (attributeName[a] == '-' && a + 1 < attributeLength && isASCIILower(attributeName[a + 1])) {
             wordBoundary = true;
-        else {
+        } else {
             if ((wordBoundary ? toASCIIUpper(attributeName[a]) : attributeName[a]) != propertyName[p])
                 return false;
             p++;
@@ -133,8 +134,9 @@ static AtomicString convertPropertyNameToAttributeName(const String& name)
         if (isASCIIUpper(character)) {
             builder.append('-');
             builder.append(toASCIILower(character));
-        } else
+        } else {
             builder.append(character);
+        }
     }
 
     return builder.toAtomicString();

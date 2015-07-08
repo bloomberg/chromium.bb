@@ -253,7 +253,7 @@ public:
 
     void scheduleSVGFilterLayerUpdateHack();
 
-    void setBooleanAttribute(const QualifiedName& name, bool);
+    void setBooleanAttribute(const QualifiedName&, bool);
 
     virtual const StylePropertySet* additionalPresentationAttributeStyle() { return nullptr; }
     void invalidateStyleAttribute();
