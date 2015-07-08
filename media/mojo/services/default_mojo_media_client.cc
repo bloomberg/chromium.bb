@@ -4,23 +4,14 @@
 
 #include "media/mojo/services/mojo_media_client.h"
 
-#include "base/files/file_path.h"
-#include "base/path_service.h"
+#include "base/memory/scoped_ptr.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_output_stream_sink.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/base/media.h"
 #include "media/base/null_video_sink.h"
-#include "media/filters/opus_audio_decoder.h"
-
-#if !defined(MEDIA_DISABLE_FFMPEG)
-#include "media/filters/ffmpeg_audio_decoder.h"
-#include "media/filters/ffmpeg_video_decoder.h"
-#endif
-
-#if !defined(MEDIA_DISABLE_LIBVPX)
-#include "media/filters/vpx_video_decoder.h"
-#endif
+#include "media/renderers/default_renderer_factory.h"
+#include "media/renderers/gpu_video_accelerator_factories.h"
 
 namespace media {
 namespace internal {
@@ -46,37 +37,24 @@ class DefaultMojoMediaClient : public PlatformMojoMediaClient {
         audio_manager->GetDefaultOutputStreamParameters()));
   }
 
+  scoped_ptr<RendererFactory> GetRendererFactory(
+      const scoped_refptr<MediaLog>& media_log) override {
+    return make_scoped_ptr(new DefaultRendererFactory(media_log, nullptr,
+                                                      *audio_hardware_config_));
+  }
+
   ScopedVector<AudioDecoder> GetAudioDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      const LogCB& media_log_cb) override {
-    ScopedVector<AudioDecoder> audio_decoders;
-
-#if !defined(MEDIA_DISABLE_FFMPEG)
-    audio_decoders.push_back(
-        new FFmpegAudioDecoder(media_task_runner, media_log_cb));
-    audio_decoders.push_back(new OpusAudioDecoder(media_task_runner));
-#endif
-
-    return audio_decoders.Pass();
+      const scoped_refptr<MediaLog>& media_log) override {
+    NOTREACHED();
+    return ScopedVector<AudioDecoder>();
   }
 
   ScopedVector<VideoDecoder> GetVideoDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      const LogCB& media_log_cb) override {
-    ScopedVector<VideoDecoder> video_decoders;
-
-    // TODO(dalecurtis): If we ever need GPU video decoders, we'll need to
-    // figure out how to retrieve the GpuVideoAcceleratorFactories...
-
-#if !defined(MEDIA_DISABLE_LIBVPX)
-    video_decoders.push_back(new VpxVideoDecoder(media_task_runner));
-#endif
-
-#if !defined(MEDIA_DISABLE_FFMPEG)
-    video_decoders.push_back(new FFmpegVideoDecoder(media_task_runner));
-#endif
-
-    return video_decoders.Pass();
+      const scoped_refptr<MediaLog>& media_log) override {
+    NOTREACHED();
+    return ScopedVector<VideoDecoder>();
   }
 
   scoped_refptr<AudioRendererSink> GetAudioRendererSink() override {

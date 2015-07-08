@@ -12,6 +12,7 @@
 #include "media/base/audio_hardware_config.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/media_log.h"
+#include "media/base/renderer_factory.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_renderer_sink.h"
 
@@ -23,17 +24,23 @@ class PlatformMojoMediaClient {
  public:
   virtual ~PlatformMojoMediaClient() {};
 
-  // The list of audio or video decoders for use with the AudioRenderer or
-  // VideoRenderer respectively.  Ownership of the decoders is passed to the
-  // caller.  The methods on each decoder will only be called on
-  // |media_task_runner|.  |media_log_cb| should be used to log errors or
-  // important status information.
+  // Returns the RendererFactory to be used by MojoRendererService. If returns
+  // null, a RendererImpl will be used with audio/video decoders provided in
+  // GetAudioDecoders() and GetVideoDecoders().
+  virtual scoped_ptr<RendererFactory> GetRendererFactory(
+      const scoped_refptr<MediaLog>& media_log) = 0;
+
+  // The list of audio or video decoders for use with RendererImpl when
+  // GetRendererFactory() returns null. Ownership of the decoders is passed to
+  // the caller. The methods on each decoder will only be called on
+  // |media_task_runner|. |media_log| should be used to log errors or important
+  // status information.
   virtual ScopedVector<AudioDecoder> GetAudioDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      const LogCB& media_log_cb) = 0;
+      const scoped_refptr<MediaLog>& media_log) = 0;
   virtual ScopedVector<VideoDecoder> GetVideoDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      const LogCB& media_log_cb) = 0;
+      const scoped_refptr<MediaLog>& media_log) = 0;
 
   // The output sink used for rendering audio or video respectively.
   virtual scoped_refptr<AudioRendererSink> GetAudioRendererSink() = 0;
@@ -52,12 +59,14 @@ class MojoMediaClient {
   static MojoMediaClient* Get();
 
   // Copy of the PlatformMojoMediaClient interface.
+  scoped_ptr<RendererFactory> GetRendererFactory(
+      const scoped_refptr<MediaLog>& media_log);
   ScopedVector<AudioDecoder> GetAudioDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      const LogCB& media_log_cb);
+      const scoped_refptr<MediaLog>& media_log);
   ScopedVector<VideoDecoder> GetVideoDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      const LogCB& media_log_cb);
+      const scoped_refptr<MediaLog>& media_log);
   scoped_refptr<AudioRendererSink> GetAudioRendererSink();
   scoped_ptr<VideoRendererSink> GetVideoRendererSink(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);

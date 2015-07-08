@@ -12,6 +12,9 @@
 
 namespace media {
 
+class MediaLog;
+class RendererFactory;
+
 class MojoMediaApplication
     : public mojo::ApplicationDelegate,
       public mojo::InterfaceFactory<mojo::ContentDecryptionModule>,
@@ -38,7 +41,11 @@ class MojoMediaApplication
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojo::MediaRenderer> request) final;
 
+  RendererFactory* GetRendererFactory();
+
   MojoCdmServiceContext cdm_service_context_;
+  scoped_ptr<RendererFactory> renderer_factory_;
+  scoped_refptr<MediaLog> media_log_;
 };
 
 }  // namespace media

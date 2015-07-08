@@ -18,16 +18,21 @@ MojoMediaClient* MojoMediaClient::Get() {
   return g_mojo_media_client.Pointer();
 }
 
+scoped_ptr<RendererFactory> MojoMediaClient::GetRendererFactory(
+    const scoped_refptr<MediaLog>& media_log) {
+  return mojo_media_client_->GetRendererFactory(media_log);
+}
+
 ScopedVector<AudioDecoder> MojoMediaClient::GetAudioDecoders(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-    const LogCB& media_log_cb) {
-  return mojo_media_client_->GetAudioDecoders(media_task_runner, media_log_cb);
+    const scoped_refptr<MediaLog>& media_log) {
+  return mojo_media_client_->GetAudioDecoders(media_task_runner, media_log);
 }
 
 ScopedVector<VideoDecoder> MojoMediaClient::GetVideoDecoders(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-    const LogCB& media_log_cb) {
-  return mojo_media_client_->GetVideoDecoders(media_task_runner, media_log_cb);
+    const scoped_refptr<MediaLog>& media_log) {
+  return mojo_media_client_->GetVideoDecoders(media_task_runner, media_log);
 }
 
 scoped_refptr<AudioRendererSink> MojoMediaClient::GetAudioRendererSink() {

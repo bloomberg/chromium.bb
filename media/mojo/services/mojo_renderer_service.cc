@@ -14,6 +14,7 @@
 #include "media/base/cdm_context.h"
 #include "media/base/decryptor.h"
 #include "media/base/media_log.h"
+#include "media/base/renderer_factory.h"
 #include "media/base/video_renderer.h"
 #include "media/base/video_renderer_sink.h"
 #include "media/mojo/services/demuxer_stream_provider_shim.h"
@@ -29,6 +30,8 @@ const int kTimeUpdateIntervalMs = 50;
 
 MojoRendererService::MojoRendererService(
     CdmContextProvider* cdm_context_provider,
+    RendererFactory* renderer_factory,
+    const scoped_refptr<MediaLog>& media_log,
     mojo::InterfaceRequest<mojo::MediaRenderer> request)
     : binding_(this, request.Pass()),
       cdm_context_provider_(cdm_context_provider),
@@ -40,28 +43,26 @@ MojoRendererService::MojoRendererService(
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner(
       base::MessageLoop::current()->task_runner());
-  scoped_refptr<MediaLog> media_log(new MediaLog());
   MojoMediaClient* mojo_media_client = MojoMediaClient::Get();
   audio_renderer_sink_ = mojo_media_client->GetAudioRendererSink();
   video_renderer_sink_ = mojo_media_client->GetVideoRendererSink(task_runner);
 
-  scoped_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
-      task_runner, audio_renderer_sink_.get(),
-      mojo_media_client->GetAudioDecoders(task_runner,
-                                        base::Bind(&MediaLog::AddLogEvent,
-                                                   media_log)).Pass(),
-      mojo_media_client->GetAudioHardwareConfig(), media_log));
-
-  scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
-      task_runner, video_renderer_sink_.get(),
-      mojo_media_client->GetVideoDecoders(task_runner,
-                                        base::Bind(&MediaLog::AddLogEvent,
-                                                   media_log)).Pass(),
-      true, nullptr, media_log));
-
   // Create renderer.
-  renderer_.reset(new RendererImpl(
-      task_runner, audio_renderer.Pass(), video_renderer.Pass()));
+  if (renderer_factory) {
+    renderer_ = renderer_factory->CreateRenderer(
+        task_runner, audio_renderer_sink_.get(), video_renderer_sink_.get());
+  } else {
+    scoped_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
+        task_runner, audio_renderer_sink_.get(),
+        mojo_media_client->GetAudioDecoders(task_runner, media_log).Pass(),
+        mojo_media_client->GetAudioHardwareConfig(), media_log));
+    scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
+        task_runner, video_renderer_sink_.get(),
+        mojo_media_client->GetVideoDecoders(task_runner, media_log).Pass(),
+        true, nullptr, media_log));
+    renderer_.reset(new RendererImpl(task_runner, audio_renderer.Pass(),
+                                     video_renderer.Pass()));
+  }
 }
 
 MojoRendererService::~MojoRendererService() {

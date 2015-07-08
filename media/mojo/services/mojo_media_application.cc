@@ -5,7 +5,10 @@
 #include "media/mojo/services/mojo_media_application.h"
 
 #include "base/logging.h"
+#include "media/base/media_log.h"
+#include "media/base/renderer_factory.h"
 #include "media/mojo/services/mojo_cdm_service.h"
+#include "media/mojo/services/mojo_media_client.h"
 #include "media/mojo/services/mojo_renderer_service.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -24,7 +27,8 @@ scoped_ptr<mojo::ApplicationDelegate> MojoMediaApplication::CreateApp() {
   return scoped_ptr<mojo::ApplicationDelegate>(new MojoMediaApplication());
 }
 
-MojoMediaApplication::MojoMediaApplication() {
+// TODO(xhwang): Hook up MediaLog when possible.
+MojoMediaApplication::MojoMediaApplication() : media_log_(new MediaLog()) {
 }
 
 MojoMediaApplication::~MojoMediaApplication() {
@@ -56,7 +60,14 @@ void MojoMediaApplication::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mojo::MediaRenderer> request) {
   // The created object is owned by the pipe.
-  new MojoRendererService(&cdm_service_context_, request.Pass());
+  new MojoRendererService(&cdm_service_context_, GetRendererFactory(),
+                          media_log_, request.Pass());
+}
+
+RendererFactory* MojoMediaApplication::GetRendererFactory() {
+  if (!renderer_factory_)
+    renderer_factory_ = MojoMediaClient::Get()->GetRendererFactory(media_log_);
+  return renderer_factory_.get();
 }
 
 }  // namespace media

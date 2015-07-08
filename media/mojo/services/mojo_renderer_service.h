@@ -27,7 +27,9 @@ namespace media {
 class AudioRendererSink;
 class DemuxerStreamProviderShim;
 class CdmContextProvider;
+class MediaLog;
 class Renderer;
+class RendererFactory;
 class VideoRendererSink;
 
 // A mojo::MediaRenderer implementation that uses media::AudioRenderer to
@@ -38,6 +40,8 @@ class MEDIA_EXPORT MojoRendererService
   // |cdm_context_provider| can be used to find the CdmContext to support
   // encrypted media. If null, encrypted media is not supported.
   MojoRendererService(CdmContextProvider* cdm_context_provider,
+                      RendererFactory* renderer_factory,
+                      const scoped_refptr<MediaLog>& media_log,
                       mojo::InterfaceRequest<mojo::MediaRenderer> request);
   ~MojoRendererService() final;
 
