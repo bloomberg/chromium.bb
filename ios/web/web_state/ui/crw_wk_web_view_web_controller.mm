@@ -22,6 +22,7 @@
 #import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
 #import "ios/web/ui_web_view_util.h"
 #include "ios/web/web_state/blocked_popup_info.h"
+#import "ios/web/web_state/error_translation_util.h"
 #include "ios/web/web_state/frame_info.h"
 #import "ios/web/web_state/js/crw_js_window_id_manager.h"
 #import "ios/web/web_state/js/page_script_util.h"
@@ -1046,6 +1047,19 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   [self discardPendingReferrerString];
 
   error = WKWebViewErrorWithSource(error, PROVISIONAL_LOAD);
+
+#if defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
+  // For WKWebViews, the underlying errors for errors reported by the net stack
+  // are not copied over when transferring the errors from the IO thread.  For
+  // cancelled errors that trigger load abortions, translate the error early to
+  // trigger |-discardNonCommittedEntries| from |-handleLoadError:inMainFrame:|.
+  if (error.code == NSURLErrorCancelled &&
+      [self shouldAbortLoadForCancelledError:error] &&
+      !error.userInfo[NSUnderlyingErrorKey]) {
+    error = web::NetErrorFromError(error);
+  }
+#endif  // defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
+
 #if !defined(ENABLE_CHROME_NET_STACK_FOR_WKWEBVIEW)
   if (web::IsWKWebViewSSLError(error))
     [self handleSSLError:error];
