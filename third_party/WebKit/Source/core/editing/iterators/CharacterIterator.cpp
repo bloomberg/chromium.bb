@@ -98,21 +98,17 @@ void CharacterIterator::initialize()
         m_textIterator.advance();
 }
 
-PassRefPtrWillBeRawPtr<Range> CharacterIterator::createRange() const
+EphemeralRange CharacterIterator::range() const
 {
-    RefPtrWillBeRawPtr<Range> r = m_textIterator.createRange();
-    if (!m_textIterator.atEnd()) {
-        if (m_textIterator.length() <= 1) {
-            ASSERT(!m_runOffset);
-        } else {
-            Node* n = r->startContainer();
-            ASSERT(n == r->endContainer());
-            int offset = r->startOffset() + m_runOffset;
-            r->setStart(n, offset, ASSERT_NO_EXCEPTION);
-            r->setEnd(n, offset + 1, ASSERT_NO_EXCEPTION);
-        }
-    }
-    return r.release();
+    EphemeralRange range(m_textIterator.createRange().get());
+    if (m_textIterator.atEnd() || m_textIterator.length() <= 1)
+        return range;
+    Position startPosition = range.startPosition().parentAnchoredEquivalent();
+    Position endPosition = range.endPosition().parentAnchoredEquivalent();
+    Node* node = startPosition.containerNode();
+    ASSERT(node == endPosition.containerNode());
+    int offset = startPosition.offsetInContainerNode() + m_runOffset;
+    return EphemeralRange(Position(node, offset), Position(node, offset + 1));
 }
 
 Document* CharacterIterator::ownerDocument() const

@@ -28,6 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/Range.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/iterators/TextIteratorFlags.h"
 #include "platform/heap/Heap.h"
@@ -53,7 +54,7 @@ public:
     void appendTextTo(BufferType& output) { m_textIterator.text().appendTextTo(output, m_runOffset); }
 
     int characterOffset() const { return m_offset; }
-    PassRefPtrWillBeRawPtr<Range> createRange() const;
+    EphemeralRange range() const;
 
     Document* ownerDocument() const;
     Node* currentContainer() const;

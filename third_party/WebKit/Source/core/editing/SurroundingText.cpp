@@ -73,11 +73,9 @@ void SurroundingText::initialize(const Position& startPosition, const Position& 
     if (!forwardIterator.atEnd())
         forwardIterator.advance(maxLength - halfMaxLength);
 
-    RefPtrWillBeRawPtr<Range> forwardRange = forwardIterator.createRange();
-    if (!forwardRange || !Range::create(*document, endPosition, forwardRange->startPosition())->text().length()) {
-        ASSERT(forwardRange);
+    EphemeralRange forwardRange = forwardIterator.range();
+    if (forwardRange.isNull() || !Range::create(*document, endPosition, forwardRange.startPosition())->text().length())
         return;
-    }
 
     // Same as with the forward range but with the backward range. The range
     // starts at the document's start and ends at the selection start and will
@@ -88,7 +86,7 @@ void SurroundingText::initialize(const Position& startPosition, const Position& 
 
     m_startOffsetInContent = Range::create(*document, backwardsIterator.endPosition(), startPosition)->text().length();
     m_endOffsetInContent = Range::create(*document, backwardsIterator.endPosition(), endPosition)->text().length();
-    m_contentRange = Range::create(*document, backwardsIterator.endPosition(), forwardRange->startPosition());
+    m_contentRange = Range::create(*document, backwardsIterator.endPosition(), forwardRange.startPosition());
     ASSERT(m_contentRange);
 }
 
