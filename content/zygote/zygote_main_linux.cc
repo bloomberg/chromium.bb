@@ -341,9 +341,13 @@ static void ZygotePreSandboxInit() {
   // Pass BoringSSL a copy of the /dev/urandom file descriptor so RAND_bytes
   // will work inside the sandbox.
   RAND_set_urandom_fd(base::GetUrandomFD());
-#else
+#endif
+#if !defined(USE_OPENSSL) || defined(USE_NSS_CERTS)
   // NSS libraries are loaded before sandbox is activated. This is to allow
   // successful initialization of NSS which tries to load extra library files.
+  //
+  // TODO(davidben): This can be removed from USE_OPENSSL builds when remoting
+  // no longer depends on it. https://crbug.com/506323.
   crypto::LoadNSSLibraries();
 #endif
 #if defined(ENABLE_PLUGINS)
