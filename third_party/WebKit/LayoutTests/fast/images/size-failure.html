@@ -1,8 +1,17 @@
 <html>
   <head>
     <script>
-      if (window.testRunner)
+      if (window.testRunner) {
         testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+
+        // Force a pixel dump to cover raterization issues if any.
+        onload = function() {
+          testRunner.capturePixelsAsyncThen(function() {
+            testRunner.notifyDone();
+          });
+        };
+      }
     </script>
 
    </head>
