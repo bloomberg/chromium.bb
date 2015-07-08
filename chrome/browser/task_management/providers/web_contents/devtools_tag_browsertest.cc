@@ -3,9 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/devtools/devtools_window_testing.h"
-#include "chrome/browser/task_management/providers/task_provider_observer.h"
 #include "chrome/browser/task_management/providers/web_contents/web_contents_tags_manager.h"
-#include "chrome/browser/task_management/providers/web_contents/web_contents_task_provider.h"
+#include "chrome/browser/task_management/task_management_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -24,13 +23,10 @@ const char kTestPage2[] = "files/devtools/navigate_back.html";
 // properly by a DevToolsTag and that the TagsManager records these tags. It
 // will also test that the WebContentsTaskProvider will be able to provide the
 // appropriate DevToolsTask.
-class DevToolsTagTest
-    : public InProcessBrowserTest,
-      public TaskProviderObserver {
+class DevToolsTagTest : public InProcessBrowserTest {
  public:
   DevToolsTagTest()
-      : devtools_window_(nullptr),
-        provided_tasks_() {
+      : devtools_window_(nullptr) {
     CHECK(test_server()->Start());
   }
 
@@ -50,28 +46,12 @@ class DevToolsTagTest
     DevToolsWindowTesting::CloseDevToolsWindowSync(devtools_window_);
   }
 
-  // task_management::Task_providerObserver:
-  void TaskAdded(Task* task) override {
-    CHECK(task);
-    ASSERT_FALSE(provided_tasks_.count(task));
-    provided_tasks_.insert(task);
-  }
-
-  void TaskRemoved(Task* task) override {
-    CHECK(task);
-    ASSERT_TRUE(provided_tasks_.count(task));
-    provided_tasks_.erase(task);
-  }
-
   WebContentsTagsManager* tags_manager() const {
     return WebContentsTagsManager::GetInstance();
   }
 
-  const std::set<Task*>& provided_tasks() const { return provided_tasks_; }
-
  private:
   DevToolsWindow* devtools_window_;
-  std::set<Task*> provided_tasks_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsTagTest);
 };
@@ -79,52 +59,48 @@ class DevToolsTagTest
 // Tests that opening a DevToolsWindow will result in tagging its main
 // WebContents and that tag will be recorded by the TagsManager.
 IN_PROC_BROWSER_TEST_F(DevToolsTagTest, TagsManagerRecordsATag) {
-  EXPECT_TRUE(tags_manager()->tracked_tags().empty());
+  // Browser tests start with a single tab.
+  EXPECT_EQ(1U, tags_manager()->tracked_tags().size());
 
-  // Loading a page will not result in tagging its WebContents.
-  // TODO(afakhry): Once we start tagging the tab contents, this will change.
-  // Fix it.
+  // Navigating the same tab to the test page won't change the number of tracked
+  // tags. No devtools yet.
   LoadTestPage(kTestPage1);
-  EXPECT_TRUE(tags_manager()->tracked_tags().empty());
+  EXPECT_EQ(1U, tags_manager()->tracked_tags().size());
 
   // Test both docked and undocked devtools.
   OpenDevToolsWindow(true);
-  EXPECT_FALSE(tags_manager()->tracked_tags().empty());
-  EXPECT_EQ(1U, tags_manager()->tracked_tags().size());
+  EXPECT_EQ(2U, tags_manager()->tracked_tags().size());
   CloseDevToolsWindow();
-  EXPECT_TRUE(tags_manager()->tracked_tags().empty());
+  EXPECT_EQ(1U, tags_manager()->tracked_tags().size());
 
   // For the undocked devtools there will be two tags one for the main contents
   // and one for the toolbox contents
   OpenDevToolsWindow(false);
-  EXPECT_FALSE(tags_manager()->tracked_tags().empty());
-  EXPECT_EQ(2U, tags_manager()->tracked_tags().size());
+  EXPECT_EQ(3U, tags_manager()->tracked_tags().size());
   CloseDevToolsWindow();
-  EXPECT_TRUE(tags_manager()->tracked_tags().empty());
+  EXPECT_EQ(1U, tags_manager()->tracked_tags().size());
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsTagTest, DevToolsTaskIsProvided) {
-  EXPECT_TRUE(provided_tasks().empty());
-  EXPECT_TRUE(tags_manager()->tracked_tags().empty());
+  MockWebContentsTaskManager task_manager;
+  EXPECT_TRUE(task_manager.tasks().empty());
+  // Browser tests start with a single tab.
+  EXPECT_EQ(1U, tags_manager()->tracked_tags().size());
 
-  WebContentsTaskProvider provider;
-  provider.SetObserver(this);
+  task_manager.StartObserving();
 
-  // Still empty, no pre-existing tasks.
-  EXPECT_TRUE(provided_tasks().empty());
+  // The pre-existing tab is provided.
+  EXPECT_EQ(1U, task_manager.tasks().size());
 
   LoadTestPage(kTestPage1);
-  // TODO(afakhry): This will change soon.
-  EXPECT_TRUE(provided_tasks().empty());
-  EXPECT_TRUE(tags_manager()->tracked_tags().empty());
+  EXPECT_EQ(1U, tags_manager()->tracked_tags().size());
+  EXPECT_EQ(1U, task_manager.tasks().size());
 
   OpenDevToolsWindow(true);
-  EXPECT_FALSE(tags_manager()->tracked_tags().empty());
-  EXPECT_EQ(1U, tags_manager()->tracked_tags().size());
-  EXPECT_FALSE(provided_tasks().empty());
-  EXPECT_EQ(1U, provided_tasks().size());
+  EXPECT_EQ(2U, tags_manager()->tracked_tags().size());
+  EXPECT_EQ(2U, task_manager.tasks().size());
 
-  const Task* task = *provided_tasks().begin();
+  const Task* task = task_manager.tasks().back();
   EXPECT_EQ(Task::RENDERER, task->GetType());
 
   // Navigating to a new page will not change the title of the devtools main
@@ -135,8 +111,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsTagTest, DevToolsTaskIsProvided) {
   EXPECT_EQ(title1, title2);
 
   CloseDevToolsWindow();
-  EXPECT_TRUE(provided_tasks().empty());
-  EXPECT_TRUE(tags_manager()->tracked_tags().empty());
+  EXPECT_EQ(1U, tags_manager()->tracked_tags().size());
+  EXPECT_EQ(1U, task_manager.tasks().size());
 }
 
 }  // namespace task_management

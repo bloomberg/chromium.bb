@@ -49,9 +49,8 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "chrome/browser/safe_browsing/test_database_manager.h"
-#include "chrome/browser/task_management/providers/task_provider_observer.h"
 #include "chrome/browser/task_management/providers/web_contents/web_contents_tags_manager.h"
-#include "chrome/browser/task_management/providers/web_contents/web_contents_task_provider.h"
+#include "chrome/browser/task_management/task_management_browsertest_util.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -4088,92 +4087,58 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithNaCl,
 
 namespace {
 
-// Defines a test class for testing that will act as a mock task manager.
-class MockTaskManager : public task_management::TaskProviderObserver {
- public:
-  MockTaskManager() {}
-  ~MockTaskManager() override {}
+base::string16 GetPrerenderTitlePrefix() {
+  return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PRERENDER_PREFIX,
+                                    base::string16());
+}
 
-  // task_management::Task_providerObserver:
-  void TaskAdded(task_management::Task* task) override {
-    EXPECT_FALSE(ContainsKey(provided_tasks_, task));
-    provided_tasks_.insert(task);
-  }
-
-  void TaskRemoved(task_management::Task* task) override {
-    EXPECT_TRUE(ContainsKey(provided_tasks_, task));
-    provided_tasks_.erase(task);
-  }
-
-  base::string16 GetPrerenderTitlePrefix() const {
-    return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PRERENDER_PREFIX,
-                                      base::string16());
-  }
-
-  const std::set<task_management::WebContentsTag*>& tracked_tags() const {
-    return task_management::WebContentsTagsManager::GetInstance()->
-        tracked_tags();
-  }
-
-  const std::set<task_management::Task*>& provided_tasks() const {
-    return provided_tasks_;
-  }
-
- private:
-  std::set<task_management::Task*> provided_tasks_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockTaskManager);
-};
+const std::set<task_management::WebContentsTag*>& GetTrackedTags() {
+  return task_management::WebContentsTagsManager::GetInstance()->
+      tracked_tags();
+}
 
 // Tests the correct recording of tags for the prerender WebContents.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, TaskManagementTagsBasic) {
-  MockTaskManager task_manager;
-  EXPECT_TRUE(task_manager.tracked_tags().empty());
+  // Browser tests start with a single tab.
+  EXPECT_EQ(1U, GetTrackedTags().size());
 
   // Start prerendering a page and make sure it's correctly tagged.
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
-  EXPECT_FALSE(task_manager.tracked_tags().empty());
-
-  // TODO(afakhry): Once we start tagging the tab contents the below tests
-  // must be changed.
-  EXPECT_EQ(1U, task_manager.tracked_tags().size());
+  EXPECT_EQ(2U, GetTrackedTags().size());
 
   // Swap in the prerendered content and make sure its tag is removed.
   NavigateToDestURL();
-  EXPECT_TRUE(task_manager.tracked_tags().empty());
+  EXPECT_EQ(1U, GetTrackedTags().size());
 }
 
 // Tests that the task manager will be provided by tasks that correspond to
 // prerendered WebContents.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, TaskManagementTasksProvided) {
-  MockTaskManager task_manager;
-  EXPECT_TRUE(task_manager.tracked_tags().empty());
+  task_management::MockWebContentsTaskManager task_manager;
+  // Browser tests start with a single tab.
+  EXPECT_EQ(1U, GetTrackedTags().size());
 
-  task_management::WebContentsTaskProvider provider;
-  provider.SetObserver(&task_manager);
+  task_manager.StartObserving();
 
-  // Still empty, no pre-existing tasks.
-  EXPECT_TRUE(task_manager.provided_tasks().empty());
+  // The pre-existing tab is provided.
+  EXPECT_EQ(1U, task_manager.tasks().size());
 
   // Start prerendering a page.
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
-  EXPECT_FALSE(task_manager.tracked_tags().empty());
 
-  // TODO(afakhry): The below may not be true after we support more tags.
-  EXPECT_EQ(1U, task_manager.tracked_tags().size());
-  ASSERT_EQ(1U, task_manager.provided_tasks().size());
+  EXPECT_EQ(2U, GetTrackedTags().size());
+  ASSERT_EQ(2U, task_manager.tasks().size());
 
-  const task_management::Task* task = *task_manager.provided_tasks().begin();
+  const task_management::Task* task = task_manager.tasks().back();
   EXPECT_EQ(task_management::Task::RENDERER, task->GetType());
   const base::string16 title = task->title();
-  const base::string16 expected_prefix = task_manager.GetPrerenderTitlePrefix();
+  const base::string16 expected_prefix = GetPrerenderTitlePrefix();
   EXPECT_TRUE(base::StartsWith(title,
                                expected_prefix,
                                base::CompareCase::INSENSITIVE_ASCII));
 
   NavigateToDestURL();
-  // TODO(afakhry): The below may not be true after we support more tags.
-  EXPECT_TRUE(task_manager.provided_tasks().empty());
+  EXPECT_EQ(1U, task_manager.tasks().size());
 }
 
 }  // namespace
