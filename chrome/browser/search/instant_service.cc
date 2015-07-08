@@ -38,7 +38,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/sys_color_change_listener.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/search/local_ntp_source.h"
@@ -338,7 +337,7 @@ void InstantService::OnThemeChanged(ThemeService* theme_service) {
                      SkColorGetB(header_color));
 
   // Invert colors if needed.
-  if (gfx::IsInvertedColorScheme()) {
+  if (color_utils::IsInvertedColorScheme()) {
     background_color = color_utils::InvertColor(background_color);
     text_color = color_utils::InvertColor(text_color);
     link_color = color_utils::InvertColor(link_color);

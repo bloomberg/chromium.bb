@@ -103,6 +103,11 @@ GFX_EXPORT SkColor InvertColor(SkColor color);
 // Gets a Windows system color as a SkColor
 GFX_EXPORT SkColor GetSysSkColor(int which);
 
+// Returns true only if Chrome should use an inverted color scheme - which is
+// only true if the system has high-contrast mode enabled and and is using a
+// light-on-dark color scheme.
+GFX_EXPORT bool IsInvertedColorScheme();
+
 }  // namespace color_utils
 
 #endif  // UI_GFX_COLOR_UTILS_H_

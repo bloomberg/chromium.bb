@@ -12,7 +12,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/gfx/sys_color_change_listener.h"
 #include "ui/resources/grit/ui_resources.h"
 
 namespace {
@@ -124,7 +123,7 @@ bool CommonThemeGetSystemColor(NativeTheme::ColorId color_id, SkColor* color) {
       return false;
   }
 
-  if (gfx::IsInvertedColorScheme()) {
+  if (color_utils::IsInvertedColorScheme()) {
     switch (color_id) {
       case NativeTheme::kColorId_FocusedMenuItemBackgroundColor:
         *color = kMenuInvertedSchemeHighlightBackgroundColor;

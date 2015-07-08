@@ -8,9 +8,9 @@
 #include "base/logging.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/vector2d.h"
-#include "ui/gfx/sys_color_change_listener.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -394,7 +394,7 @@ void LabelButton::ResetColorsFromNativeTheme() {
   // Certain styles do not change text color when hovered or pressed.
   bool constant_text_color = false;
   // Use hardcoded colors for inverted color scheme support and STYLE_BUTTON.
-  if (gfx::IsInvertedColorScheme()) {
+  if (color_utils::IsInvertedColorScheme()) {
     constant_text_color = true;
     colors[STATE_NORMAL] = SK_ColorWHITE;
     label_->SetBackgroundColor(SK_ColorBLACK);

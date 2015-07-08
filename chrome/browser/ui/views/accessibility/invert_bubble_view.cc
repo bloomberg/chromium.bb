@@ -17,7 +17,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/gfx/sys_color_change_listener.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -160,7 +160,7 @@ void MaybeShowInvertBubbleView(BrowserView* browser_view) {
   Browser* browser = browser_view->browser();
   PrefService* pref_service = browser->profile()->GetPrefs();
   views::View* anchor = browser_view->toolbar()->app_menu();
-  if (gfx::IsInvertedColorScheme() && anchor && anchor->GetWidget() &&
+  if (color_utils::IsInvertedColorScheme() && anchor && anchor->GetWidget() &&
       !pref_service->GetBoolean(prefs::kInvertNotificationShown)) {
     pref_service->SetBoolean(prefs::kInvertNotificationShown, true);
     InvertBubbleView* delegate = new InvertBubbleView(browser, anchor);

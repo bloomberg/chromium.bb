@@ -280,8 +280,6 @@
         'swap_result.h',
         'switches.cc',
         'switches.h',
-        'sys_color_change_listener.cc',
-        'sys_color_change_listener.h',
         'text_constants.h',
         'text_elider.cc',
         'text_elider.h',
@@ -347,6 +345,8 @@
             'gdi_util.h',
             'icon_util.cc',
             'icon_util.h',
+            'sys_color_change_listener.cc',
+            'sys_color_change_listener.h',
           ],
           # TODO(jschuh): C4267: http://crbug.com/167187 size_t -> int
           # C4324 is structure was padded due to __declspec(align()), which is

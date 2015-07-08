@@ -319,4 +319,11 @@ SkColor GetSysSkColor(int which) {
 #endif
 }
 
+// OS_WIN implementation lives in sys_color_change_listener.cc
+#if !defined(OS_WIN)
+bool IsInvertedColorScheme() {
+  return false;
+}
+#endif  // !defined(OS_WIN)
+
 }  // namespace color_utils

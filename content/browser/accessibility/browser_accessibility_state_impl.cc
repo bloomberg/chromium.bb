@@ -11,7 +11,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
-#include "ui/gfx/sys_color_change_listener.h"
+#include "ui/gfx/color_utils.h"
 
 namespace content {
 
@@ -112,7 +112,7 @@ void BrowserAccessibilityStateImpl::UpdateHistograms() {
 
   UMA_HISTOGRAM_BOOLEAN("Accessibility.State", IsAccessibleBrowser());
   UMA_HISTOGRAM_BOOLEAN("Accessibility.InvertedColors",
-                        gfx::IsInvertedColorScheme());
+                        color_utils::IsInvertedColorScheme());
   UMA_HISTOGRAM_BOOLEAN("Accessibility.ManuallyEnabled",
                         base::CommandLine::ForCurrentProcess()->HasSwitch(
                             switches::kForceRendererAccessibility));

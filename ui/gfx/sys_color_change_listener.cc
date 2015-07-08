@@ -4,9 +4,7 @@
 
 #include "ui/gfx/sys_color_change_listener.h"
 
-#if defined(OS_WIN)
 #include <windows.h>
-#endif
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -15,12 +13,7 @@
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "ui/gfx/color_utils.h"
-
-#if defined(OS_WIN)
 #include "ui/gfx/win/singleton_hwnd_observer.h"
-#endif
-
-namespace gfx {
 
 namespace {
 
@@ -28,7 +21,6 @@ bool g_is_inverted_color_scheme = false;
 bool g_is_inverted_color_scheme_initialized = false;
 
 void UpdateInvertedColorScheme() {
-#if defined(OS_WIN)
   int foreground_luminance = color_utils::GetLuminanceForColor(
       color_utils::GetSysSkColor(COLOR_WINDOWTEXT));
   int background_luminance = color_utils::GetLuminanceForColor(
@@ -40,10 +32,11 @@ void UpdateInvertedColorScheme() {
       ((high_contrast.dwFlags & HCF_HIGHCONTRASTON) != 0) &&
       foreground_luminance > background_luminance;
   g_is_inverted_color_scheme_initialized = true;
-#endif
 }
 
 }  // namespace
+
+namespace color_utils {
 
 bool IsInvertedColorScheme() {
   if (!g_is_inverted_color_scheme_initialized)
@@ -51,7 +44,10 @@ bool IsInvertedColorScheme() {
   return g_is_inverted_color_scheme;
 }
 
-#if defined(OS_WIN)
+}  // namespace color_utils
+
+namespace gfx {
+
 class SysColorChangeObserver {
  public:
   static SysColorChangeObserver* GetInstance();
@@ -101,20 +97,15 @@ void SysColorChangeObserver::OnWndProc(HWND hwnd,
     FOR_EACH_OBSERVER(SysColorChangeListener, listeners_, OnSysColorChange());
   }
 }
-#endif
 
 ScopedSysColorChangeListener::ScopedSysColorChangeListener(
     SysColorChangeListener* listener)
     : listener_(listener) {
-#if defined(OS_WIN)
   SysColorChangeObserver::GetInstance()->AddListener(listener_);
-#endif
 }
 
 ScopedSysColorChangeListener::~ScopedSysColorChangeListener() {
-#if defined(OS_WIN)
   SysColorChangeObserver::GetInstance()->RemoveListener(listener_);
-#endif
 }
 
 }  // namespace gfx

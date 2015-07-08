@@ -331,6 +331,8 @@ component("gfx") {
       "gdi_util.h",
       "icon_util.cc",
       "icon_util.h",
+      "sys_color_change_listener.cc",
+      "sys_color_change_listener.h",
     ]
   }
 

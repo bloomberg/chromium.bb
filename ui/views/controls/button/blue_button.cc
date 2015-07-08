@@ -5,8 +5,8 @@
 #include "ui/views/controls/button/blue_button.h"
 
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/vector2d.h"
-#include "ui/gfx/sys_color_change_listener.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/resources/grit/views_resources.h"
@@ -27,7 +27,7 @@ BlueButton::~BlueButton() {}
 
 void BlueButton::ResetColorsFromNativeTheme() {
   LabelButton::ResetColorsFromNativeTheme();
-  if (!gfx::IsInvertedColorScheme()) {
+  if (!color_utils::IsInvertedColorScheme()) {
     SetTextColor(STATE_NORMAL, GetNativeTheme()->
         GetSystemColor(ui::NativeTheme::kColorId_BlueButtonEnabledColor));
     SetTextColor(STATE_HOVERED, GetNativeTheme()->

@@ -58,7 +58,6 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/sys_color_change_listener.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -114,7 +113,7 @@ SkColor GetThemeColor(ui::ThemeProvider* tp, int id) {
   SkColor color = tp->GetColor(id);
   // If web contents are being inverted because the system is in high-contrast
   // mode, any system theme colors we use must be inverted too to cancel out.
-  return gfx::IsInvertedColorScheme() ?
+  return color_utils::IsInvertedColorScheme() ?
       color_utils::InvertColor(color) : color;
 }
 

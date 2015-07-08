@@ -5,17 +5,10 @@
 #ifndef UI_GFX_SYS_COLOR_CHANGE_LISTENER_H_
 #define UI_GFX_SYS_COLOR_CHANGE_LISTENER_H_
 
-#include "base/basictypes.h"
-#include "third_party/skia/include/core/SkColor.h"
+#include "base/macros.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {
-
-// Returns true only if Chrome should use an inverted color scheme - which is
-// only true if the system has high-contrast mode enabled and and is using a
-// light-on-dark color scheme. To be notified when this status changes, use
-// ScopedSysColorChangeListener, below.
-GFX_EXPORT bool IsInvertedColorScheme();
 
 // Interface for classes that want to listen to system color changes.
 class GFX_EXPORT SysColorChangeListener {
