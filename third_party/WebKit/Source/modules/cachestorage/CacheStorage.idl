@@ -6,7 +6,6 @@
 [
     GarbageCollected,
     Exposed=(Window,Worker),
-    RuntimeEnabled=ServiceWorkerCache,
     TypeChecking=Interface,
 ] interface CacheStorage {
   [CallWith=ScriptState] Promise<boolean> has(DOMString cacheName);

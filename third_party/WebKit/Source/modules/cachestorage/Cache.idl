@@ -7,7 +7,6 @@
 [
     GarbageCollected,
     Exposed=(Window,Worker),
-    RuntimeEnabled=ServiceWorkerCache,
     TypeChecking=Interface,
 ] interface Cache {
     [CallWith=ScriptState, RaisesException] Promise<Response> match(RequestInfo request, optional CacheQueryOptions options);
