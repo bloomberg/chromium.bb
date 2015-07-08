@@ -394,4 +394,24 @@ TEST(BusTest, ListenForServiceOwnerChange) {
   EXPECT_TRUE(bus->shutdown_completed());
 }
 
+TEST(BusTest, GetConnectionName) {
+  Bus::Options options;
+  scoped_refptr<Bus> bus = new Bus(options);
+
+  // Connection name is empty since bus is not connected.
+  EXPECT_FALSE(bus->is_connected());
+  EXPECT_TRUE(bus->GetConnectionName().empty());
+
+  // Connect bus to D-Bus.
+  bus->Connect();
+
+  // Connection name is not empty after connection is established.
+  EXPECT_TRUE(bus->is_connected());
+  EXPECT_FALSE(bus->GetConnectionName().empty());
+
+  // Shut down synchronously.
+  bus->ShutdownAndBlock();
+  EXPECT_TRUE(bus->shutdown_completed());
+}
+
 }  // namespace dbus

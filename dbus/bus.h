@@ -586,6 +586,10 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
       const std::string& service_name,
       const GetServiceOwnerCallback& callback);
 
+  // Return the unique name of the bus connnection if it is connected to
+  // D-BUS. Otherwise, return an empty string.
+  std::string GetConnectionName();
+
   // Returns true if the bus is connected to D-Bus.
   bool is_connected() { return connection_ != NULL; }
 

@@ -1020,6 +1020,12 @@ void Bus::UnlistenForServiceOwnerChangeInternal(
     RemoveFilterFunction(Bus::OnServiceOwnerChangedFilter, this);
 }
 
+std::string Bus::GetConnectionName() {
+  if (!connection_)
+    return "";
+  return dbus_bus_get_unique_name(connection_);
+}
+
 dbus_bool_t Bus::OnAddWatch(DBusWatch* raw_watch) {
   AssertOnDBusThread();
 
