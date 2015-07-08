@@ -48,6 +48,8 @@ static_library("omnibox") {
     "omnibox_field_trial.h",
     "omnibox_log.cc",
     "omnibox_log.h",
+    "omnibox_popup_model_observer.h",
+    "omnibox_popup_view.h",
     "omnibox_pref_names.cc",
     "omnibox_pref_names.h",
     "omnibox_switches.cc",

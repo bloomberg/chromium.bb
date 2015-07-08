@@ -2676,8 +2676,6 @@
       'browser/ui/omnibox/omnibox_navigation_observer.h',
       'browser/ui/omnibox/omnibox_popup_model.cc',
       'browser/ui/omnibox/omnibox_popup_model.h',
-      'browser/ui/omnibox/omnibox_popup_model_observer.h',
-      'browser/ui/omnibox/omnibox_popup_view.h',
     ],
     'chrome_browser_ui_plugin_sources': [
       'browser/ui/hung_plugin_tab_helper.cc',

@@ -8,8 +8,8 @@
 // communication with the view.  Since the model is shared between platforms,
 // we need to define an interface that all view implementations will share.
 
-#ifndef CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_VIEW_H_
-#define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_VIEW_H_
+#ifndef COMPONENTS_OMNIBOX_OMNIBOX_POPUP_VIEW_H_
+#define COMPONENTS_OMNIBOX_OMNIBOX_POPUP_VIEW_H_
 
 #include "build/build_config.h"
 
@@ -46,4 +46,4 @@ class OmniboxPopupView {
   virtual void OnDragCanceled() = 0;
 };
 
-#endif  // CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_VIEW_H_
+#endif  // COMPONENTS_OMNIBOX_OMNIBOX_POPUP_VIEW_H_

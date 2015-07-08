@@ -83,6 +83,8 @@
         'omnibox/omnibox_field_trial.h',
         'omnibox/omnibox_log.cc',
         'omnibox/omnibox_log.h',
+        'omnibox/omnibox_popup_model_observer.h',
+        'omnibox/omnibox_popup_view.h',
         'omnibox/omnibox_pref_names.cc',
         'omnibox/omnibox_pref_names.h',
         'omnibox/omnibox_switches.cc',
