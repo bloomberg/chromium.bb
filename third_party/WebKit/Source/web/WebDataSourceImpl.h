@@ -75,8 +75,6 @@ public:
     PassOwnPtr<WebPluginLoadObserver> releasePluginLoadObserver() { return m_pluginLoadObserver.release(); }
     static void setNextPluginLoadObserver(PassOwnPtr<WebPluginLoadObserver>);
 
-    // Need to eagerly finalize the ExtraData.
-    EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
 
 private:
