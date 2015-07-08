@@ -23,9 +23,7 @@ namespace chromeos {
 namespace options {
 
 PowerHandler::PowerHandler() {
-  this->show_power_status_ = switches::PowerOverlayEnabled() ||
-      (PowerStatus::Get()->IsBatteryPresent() &&
-       PowerStatus::Get()->SupportsDualRoleDevices());
+  this->show_power_status_ = switches::PowerOverlayEnabled();
 }
 
 PowerHandler::~PowerHandler() {
