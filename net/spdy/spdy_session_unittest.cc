@@ -48,6 +48,12 @@ base::TimeTicks TheNearFuture() {
   return base::TimeTicks::Now() + g_time_delta;
 }
 
+base::TimeTicks SlowReads() {
+  g_time_delta +=
+      base::TimeDelta::FromMilliseconds(2 * kYieldAfterDurationMilliseconds);
+  return base::TimeTicks::Now() + g_time_delta;
+}
+
 }  // namespace
 
 class SpdySessionTest : public PlatformTest,
@@ -2607,11 +2613,11 @@ TEST_P(SpdySessionTest, ReadDataWithoutYielding) {
     CreateMockWrite(*req1, 0),
   };
 
-  // Build buffer of size kMaxReadBytesWithoutYielding / 4
+  // Build buffer of size kYieldAfterBytesRead / 4
   // (-spdy_data_frame_size).
-  ASSERT_EQ(32 * 1024, kMaxReadBytesWithoutYielding);
+  ASSERT_EQ(32 * 1024, kYieldAfterBytesRead);
   const int kPayloadSize =
-      kMaxReadBytesWithoutYielding / 4 - framer.GetControlFrameHeaderSize();
+      kYieldAfterBytesRead / 4 - framer.GetControlFrameHeaderSize();
   TestDataStream test_stream;
   scoped_refptr<IOBuffer> payload(new IOBuffer(kPayloadSize));
   char* payload_data = payload->data();
@@ -2683,6 +2689,71 @@ TEST_P(SpdySessionTest, ReadDataWithoutYielding) {
   EXPECT_TRUE(data.AllReadDataConsumed());
 }
 
+// Test that SpdySession::DoReadLoop yields if more than
+// |kYieldAfterDurationMilliseconds| has passed.  This test uses a mock time
+// function that makes the response frame look very slow to read.
+TEST_P(SpdySessionTest, TestYieldingSlowReads) {
+  session_deps_.host_resolver->set_synchronous_mode(true);
+  session_deps_.time_func = SlowReads;
+
+  BufferedSpdyFramer framer(spdy_util_.spdy_version(), false);
+
+  scoped_ptr<SpdyFrame> req1(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, false, 1, MEDIUM, true));
+  MockWrite writes[] = {
+      CreateMockWrite(*req1, 0),
+  };
+
+  scoped_ptr<SpdyFrame> resp1(
+      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+
+  MockRead reads[] = {
+      CreateMockRead(*resp1, 1), MockRead(ASYNC, 0, 2)  // EOF
+  };
+
+  // Create SpdySession and SpdyStream and send the request.
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  CreateNetworkSession();
+
+  base::WeakPtr<SpdySession> session =
+      CreateInsecureSpdySession(http_session_, key_, BoundNetLog());
+
+  GURL url1(kDefaultURL);
+  base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session, url1, MEDIUM, BoundNetLog());
+  ASSERT_TRUE(spdy_stream1.get() != nullptr);
+  EXPECT_EQ(0u, spdy_stream1->stream_id());
+  test::StreamDelegateDoNothing delegate1(spdy_stream1);
+  spdy_stream1->SetDelegate(&delegate1);
+
+  scoped_ptr<SpdyHeaderBlock> headers1(
+      spdy_util_.ConstructGetHeaderBlock(url1.spec()));
+  spdy_stream1->SendRequestHeaders(headers1.Pass(), NO_MORE_DATA_TO_SEND);
+  EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
+
+  // Set up the TaskObserver to verify that SpdySession::DoReadLoop posts a
+  // task.
+  SpdySessionTestTaskObserver observer("spdy_session.cc", "DoReadLoop");
+
+  EXPECT_EQ(0u, delegate1.stream_id());
+  EXPECT_EQ(0u, observer.executed_count());
+
+  // Read all the data and verify that SpdySession::DoReadLoop has posted a
+  // task.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, delegate1.stream_id());
+  EXPECT_FALSE(spdy_stream1);
+
+  // Verify task that the observer's executed_count is 1, which indicates DoRead
+  // has posted only one task and thus yielded though there is data available
+  // for it to read.
+  EXPECT_EQ(1u, observer.executed_count());
+  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.AllReadDataConsumed());
+}
+
 // Test that SpdySession::DoReadLoop yields while reading the
 // data. This test makes 32k + 1 bytes of data available on the socket
 // for reading. It then verifies that DoRead has yielded even though
@@ -2699,11 +2770,11 @@ TEST_P(SpdySessionTest, TestYieldingDuringReadData) {
     CreateMockWrite(*req1, 0),
   };
 
-  // Build buffer of size kMaxReadBytesWithoutYielding / 4
+  // Build buffer of size kYieldAfterBytesRead / 4
   // (-spdy_data_frame_size).
-  ASSERT_EQ(32 * 1024, kMaxReadBytesWithoutYielding);
+  ASSERT_EQ(32 * 1024, kYieldAfterBytesRead);
   const int kPayloadSize =
-      kMaxReadBytesWithoutYielding / 4 - framer.GetControlFrameHeaderSize();
+      kYieldAfterBytesRead / 4 - framer.GetControlFrameHeaderSize();
   TestDataStream test_stream;
   scoped_refptr<IOBuffer> payload(new IOBuffer(kPayloadSize));
   char* payload_data = payload->data();
@@ -2752,8 +2823,7 @@ TEST_P(SpdySessionTest, TestYieldingDuringReadData) {
   spdy_stream1->SendRequestHeaders(headers1.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream1->HasUrlFromHeaders());
 
-  // Set up the TaskObserver to verify SpdySession::DoReadLoop posts a
-  // task.
+  // Set up the TaskObserver to verify SpdySession::DoReadLoop posts a task.
   SpdySessionTestTaskObserver observer("spdy_session.cc", "DoReadLoop");
 
   // Run until 1st read.
@@ -2762,8 +2832,7 @@ TEST_P(SpdySessionTest, TestYieldingDuringReadData) {
   EXPECT_EQ(1u, delegate1.stream_id());
   EXPECT_EQ(0u, observer.executed_count());
 
-  // Read all the data and verify SpdySession::DoReadLoop has posted a
-  // task.
+  // Read all the data and verify SpdySession::DoReadLoop has posted a task.
   data.CompleteRead();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(spdy_stream1);
@@ -2798,12 +2867,12 @@ TEST_P(SpdySessionTest, TestYieldingDuringAsyncReadData) {
     CreateMockWrite(*req1, 0),
   };
 
-  // Build buffer of size kMaxReadBytesWithoutYielding / 4
+  // Build buffer of size kYieldAfterBytesRead / 4
   // (-spdy_data_frame_size).
-  ASSERT_EQ(32 * 1024, kMaxReadBytesWithoutYielding);
+  ASSERT_EQ(32 * 1024, kYieldAfterBytesRead);
   TestDataStream test_stream;
   const int kEightKPayloadSize =
-      kMaxReadBytesWithoutYielding / 4 - framer.GetControlFrameHeaderSize();
+      kYieldAfterBytesRead / 4 - framer.GetControlFrameHeaderSize();
   scoped_refptr<IOBuffer> eightk_payload(new IOBuffer(kEightKPayloadSize));
   char* eightk_payload_data = eightk_payload->data();
   test_stream.GetBytes(eightk_payload_data, kEightKPayloadSize);

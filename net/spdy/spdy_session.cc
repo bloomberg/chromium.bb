@@ -1346,7 +1346,7 @@ void SpdySession::EnqueueResetStreamFrame(SpdyStreamId stream_id,
 }
 
 void SpdySession::PumpReadLoop(ReadState expected_read_state, int result) {
-  // TODO(pkasting): Remove ScopedTracker below once crbug.com/462774 is fixed.
+  // TODO(bnc): Remove ScopedTracker below once crbug.com/462774 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION("462774 SpdySession::PumpReadLoop"));
 
@@ -1364,6 +1364,9 @@ int SpdySession::DoReadLoop(ReadState expected_read_state, int result) {
   in_io_loop_ = true;
 
   int bytes_read_without_yielding = 0;
+  const base::TimeTicks yield_after_time =
+      time_func_() +
+      base::TimeDelta::FromMilliseconds(kYieldAfterDurationMilliseconds);
 
   // Loop until the session is draining, the read becomes blocked, or
   // the read limit is exceeded.
@@ -1389,7 +1392,8 @@ int SpdySession::DoReadLoop(ReadState expected_read_state, int result) {
     if (result == ERR_IO_PENDING)
       break;
 
-    if (bytes_read_without_yielding > kMaxReadBytesWithoutYielding) {
+    if (bytes_read_without_yielding > kYieldAfterBytesRead ||
+        time_func_() > yield_after_time) {
       read_state_ = READ_STATE_DO_READ;
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
