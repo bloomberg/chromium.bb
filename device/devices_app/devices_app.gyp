@@ -57,5 +57,27 @@
         'device_usb_mojo_bindings',
       ],
     },
+    {
+      'target_name': 'devices_app_public_cpp',
+      'type': 'static_library',
+      'sources': [
+        'public/cpp/constants.cc',
+        'public/cpp/constants.h',
+      ],
+      'dependencies': [
+        'devices_app_lib',
+      ],
+    },
+    {
+      'target_name': 'devices_app_public_cpp_factory',
+      'type': 'static_library',
+      'sources': [
+        'public/cpp/devices_app_factory.cc',
+        'public/cpp/devices_app_factory.h',
+      ],
+      'dependencies': [
+        'devices_app_lib',
+      ],
+    },
   ],
 }

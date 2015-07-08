@@ -104,7 +104,7 @@ include_rules = [
   "+courgette",
   "+device/bluetooth",
   "+device/core",
-  "+device/devices_app",
+  "+device/devices_app/public",
   "+device/hid",
   "+device/usb",
   "+device/media_transfer_protocol",
@@ -122,6 +122,7 @@ include_rules = [
   "+jni",
   "+media/audio", # For media audio hang monitor.
   "+media/base",  # For media switches
+  "+mojo/application/public/cpp",
   "+policy",  # For generated headers and source
   "+ppapi/c",  # For various types.
   "+ppapi/host",

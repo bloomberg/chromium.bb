@@ -40,8 +40,8 @@ mojo_native_application("devices") {
   ]
 
   deps = [
-    ":lib",
     "//base",
+    "//device/devices_app/public/cpp:factory",
     "//mojo/application/public/cpp",
   ]
 
