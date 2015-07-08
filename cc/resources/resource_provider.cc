@@ -1384,6 +1384,7 @@ void ResourceProvider::TransferResource(GLES2Interface* gl,
     DCHECK(source->origin == Resource::INTERNAL);
     if (source->image_id) {
       DCHECK(source->dirty_image);
+      gl->BindTexture(resource->mailbox_holder.texture_target, source->gl_id);
       BindImageForSampling(source);
     }
     // This is a resource allocated by the compositor, we need to produce it.
