@@ -6,24 +6,137 @@
 
 #include <algorithm>
 
+#include "cc/animation/animation_delegate.h"
+#include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_player.h"
 #include "cc/animation/animation_registrar.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
+#include "cc/animation/scroll_offset_animation_curve.h"
+#include "cc/animation/timing_function.h"
 #include "ui/gfx/geometry/box_f.h"
+#include "ui/gfx/geometry/scroll_offset.h"
 
 namespace cc {
 
-scoped_ptr<AnimationHost> AnimationHost::Create() {
-  return make_scoped_ptr(new AnimationHost);
+class AnimationHost::ScrollOffsetAnimations : public AnimationDelegate {
+ public:
+  explicit ScrollOffsetAnimations(AnimationHost* animation_host)
+      : animation_host_(animation_host),
+        scroll_offset_timeline_(
+            AnimationTimeline::Create(AnimationIdProvider::NextTimelineId())),
+        scroll_offset_animation_player_(
+            AnimationPlayer::Create(AnimationIdProvider::NextPlayerId())) {
+    scroll_offset_timeline_->set_is_impl_only(true);
+    scroll_offset_animation_player_->set_layer_animation_delegate(this);
+
+    animation_host_->AddAnimationTimeline(scroll_offset_timeline_.get());
+    scroll_offset_timeline_->AttachPlayer(
+        scroll_offset_animation_player_.get());
+  }
+
+  ~ScrollOffsetAnimations() override {
+    scroll_offset_timeline_->DetachPlayer(
+        scroll_offset_animation_player_.get());
+    animation_host_->RemoveAnimationTimeline(scroll_offset_timeline_.get());
+  }
+
+  void ScrollAnimationCreate(int layer_id,
+                             const gfx::ScrollOffset& target_offset,
+                             const gfx::ScrollOffset& current_offset) {
+    scoped_ptr<ScrollOffsetAnimationCurve> curve =
+        ScrollOffsetAnimationCurve::Create(target_offset,
+                                           EaseInOutTimingFunction::Create());
+    curve->SetInitialValue(current_offset);
+
+    scoped_ptr<Animation> animation = Animation::Create(
+        curve.Pass(), AnimationIdProvider::NextAnimationId(),
+        AnimationIdProvider::NextGroupId(), Animation::SCROLL_OFFSET);
+    animation->set_is_impl_only(true);
+
+    DCHECK(scroll_offset_animation_player_);
+    DCHECK(scroll_offset_animation_player_->animation_timeline());
+
+    if (scroll_offset_animation_player_->layer_id() != layer_id) {
+      if (scroll_offset_animation_player_->layer_id())
+        scroll_offset_animation_player_->DetachLayer();
+      scroll_offset_animation_player_->AttachLayer(layer_id);
+    }
+
+    scroll_offset_animation_player_->AddAnimation(animation.Pass());
+  }
+
+  bool ScrollAnimationUpdateTarget(int layer_id,
+                                   const gfx::Vector2dF& scroll_delta,
+                                   const gfx::ScrollOffset& max_scroll_offset,
+                                   base::TimeTicks frame_monotonic_time) {
+    DCHECK(scroll_offset_animation_player_);
+    DCHECK_EQ(layer_id, scroll_offset_animation_player_->layer_id());
+
+    Animation* animation = scroll_offset_animation_player_->element_animations()
+                               ->layer_animation_controller()
+                               ->GetAnimation(Animation::SCROLL_OFFSET);
+    if (!animation) {
+      scroll_offset_animation_player_->DetachLayer();
+      return false;
+    }
+
+    ScrollOffsetAnimationCurve* curve =
+        animation->curve()->ToScrollOffsetAnimationCurve();
+
+    gfx::ScrollOffset new_target =
+        gfx::ScrollOffsetWithDelta(curve->target_value(), scroll_delta);
+    new_target.SetToMax(gfx::ScrollOffset());
+    new_target.SetToMin(max_scroll_offset);
+
+    curve->UpdateTarget(animation->TrimTimeToCurrentIteration(
+                                       frame_monotonic_time).InSecondsF(),
+                        new_target);
+
+    return true;
+  }
+
+  // AnimationDelegate implementation.
+  void NotifyAnimationStarted(base::TimeTicks monotonic_time,
+                              Animation::TargetProperty target_property,
+                              int group) override {}
+  void NotifyAnimationFinished(base::TimeTicks monotonic_time,
+                               Animation::TargetProperty target_property,
+                               int group) override {
+    DCHECK_EQ(target_property, Animation::SCROLL_OFFSET);
+    DCHECK(animation_host_->mutator_host_client());
+    animation_host_->mutator_host_client()->ScrollOffsetAnimationFinished();
+  }
+
+ private:
+  AnimationHost* animation_host_;
+  scoped_refptr<AnimationTimeline> scroll_offset_timeline_;
+
+  // We have just one player for impl-only scroll offset animations.
+  // I.e. only one layer can have an impl-only scroll offset animation at
+  // any given time.
+  scoped_refptr<AnimationPlayer> scroll_offset_animation_player_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScrollOffsetAnimations);
+};
+
+scoped_ptr<AnimationHost> AnimationHost::Create(
+    ThreadInstance thread_instance) {
+  return make_scoped_ptr(new AnimationHost(thread_instance));
 }
 
-AnimationHost::AnimationHost()
+AnimationHost::AnimationHost(ThreadInstance thread_instance)
     : animation_registrar_(AnimationRegistrar::Create()),
-      mutator_host_client_(nullptr) {
+      mutator_host_client_(nullptr),
+      thread_instance_(thread_instance) {
+  if (thread_instance_ == ThreadInstance::IMPL)
+    scroll_offset_animations_ =
+        make_scoped_ptr(new ScrollOffsetAnimations(this));
 }
 
 AnimationHost::~AnimationHost() {
+  scroll_offset_animations_ = nullptr;
+
   ClearTimelines();
   DCHECK(!mutator_host_client());
   DCHECK(layer_to_element_animations_map_.empty());
@@ -374,6 +487,25 @@ bool AnimationHost::HasAnyAnimation(int layer_id) const {
 bool AnimationHost::HasActiveAnimation(int layer_id) const {
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
   return controller ? controller->HasActiveAnimation() : false;
+}
+
+void AnimationHost::ImplOnlyScrollAnimationCreate(
+    int layer_id,
+    const gfx::ScrollOffset& target_offset,
+    const gfx::ScrollOffset& current_offset) {
+  DCHECK(scroll_offset_animations_);
+  scroll_offset_animations_->ScrollAnimationCreate(layer_id, target_offset,
+                                                   current_offset);
+}
+
+bool AnimationHost::ImplOnlyScrollAnimationUpdateTarget(
+    int layer_id,
+    const gfx::Vector2dF& scroll_delta,
+    const gfx::ScrollOffset& max_scroll_offset,
+    base::TimeTicks frame_monotonic_time) {
+  DCHECK(scroll_offset_animations_);
+  return scroll_offset_animations_->ScrollAnimationUpdateTarget(
+      layer_id, scroll_delta, max_scroll_offset, frame_monotonic_time);
 }
 
 }  // namespace cc

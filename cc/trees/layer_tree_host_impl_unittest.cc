@@ -433,6 +433,16 @@ class LayerTreeHostImplTest : public testing::Test,
   base::TimeDelta requested_animation_delay_;
 };
 
+// A test fixture for new animation timelines tests.
+class LayerTreeHostImplTimelinesTest : public LayerTreeHostImplTest {
+ public:
+  void SetUp() override {
+    LayerTreeSettings settings = DefaultSettings();
+    settings.use_compositor_animation_timelines = true;
+    CreateHostImpl(settings, CreateOutputSurface());
+  }
+};
+
 TEST_F(LayerTreeHostImplTest, NotifyIfCanDrawChanged) {
   bool always_draw = false;
   CheckNotifyCalledIfCanDrawChanged(always_draw);
@@ -7615,6 +7625,49 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformReflectedInNextDraw) {
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
+  SetupScrollAndContentsLayers(gfx::Size(100, 200));
+  DrawFrame();
+
+  base::TimeTicks start_time =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(100);
+
+  EXPECT_EQ(InputHandler::SCROLL_STARTED,
+            host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, 50)));
+
+  LayerImpl* scrolling_layer = host_impl_->CurrentlyScrollingLayer();
+
+  host_impl_->Animate(start_time);
+  host_impl_->UpdateAnimationState(true);
+
+  EXPECT_EQ(gfx::ScrollOffset(), scrolling_layer->CurrentScrollOffset());
+
+  host_impl_->Animate(start_time + base::TimeDelta::FromMilliseconds(50));
+  host_impl_->UpdateAnimationState(true);
+
+  float y = scrolling_layer->CurrentScrollOffset().y();
+  EXPECT_TRUE(y > 1 && y < 49);
+
+  // Update target.
+  EXPECT_EQ(InputHandler::SCROLL_STARTED,
+            host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, 50)));
+
+  host_impl_->Animate(start_time + base::TimeDelta::FromMilliseconds(200));
+  host_impl_->UpdateAnimationState(true);
+
+  y = scrolling_layer->CurrentScrollOffset().y();
+  EXPECT_TRUE(y > 50 && y < 100);
+  EXPECT_EQ(scrolling_layer, host_impl_->CurrentlyScrollingLayer());
+
+  host_impl_->Animate(start_time + base::TimeDelta::FromMilliseconds(250));
+  host_impl_->UpdateAnimationState(true);
+
+  EXPECT_VECTOR_EQ(gfx::ScrollOffset(0, 100),
+                   scrolling_layer->CurrentScrollOffset());
+  EXPECT_EQ(NULL, host_impl_->CurrentlyScrollingLayer());
+}
+
+// Evolved from LayerTreeHostImplTest.ScrollAnimated.
+TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimated) {
   SetupScrollAndContentsLayers(gfx::Size(100, 200));
   DrawFrame();
 

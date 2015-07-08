@@ -15,6 +15,10 @@
 #include "cc/base/cc_export.h"
 #include "cc/trees/mutator_host_client.h"
 
+namespace gfx {
+class ScrollOffset;
+}
+
 namespace cc {
 
 class AnimationPlayer;
@@ -40,7 +44,7 @@ typedef std::vector<scoped_refptr<AnimationTimeline>> AnimationTimelineList;
 // we want to merge AnimationRegistrar into AnimationHost.
 class CC_EXPORT AnimationHost {
  public:
-  static scoped_ptr<AnimationHost> Create();
+  static scoped_ptr<AnimationHost> Create(ThreadInstance thread_instance);
   virtual ~AnimationHost();
 
   void AddAnimationTimeline(scoped_refptr<AnimationTimeline> timeline);
@@ -120,8 +124,17 @@ class CC_EXPORT AnimationHost {
   bool HasAnyAnimation(int layer_id) const;
   bool HasActiveAnimation(int layer_id) const;
 
+  void ImplOnlyScrollAnimationCreate(int layer_id,
+                                     const gfx::ScrollOffset& target_offset,
+                                     const gfx::ScrollOffset& current_offset);
+  bool ImplOnlyScrollAnimationUpdateTarget(
+      int layer_id,
+      const gfx::Vector2dF& scroll_delta,
+      const gfx::ScrollOffset& max_scroll_offset,
+      base::TimeTicks frame_monotonic_time);
+
  private:
-  AnimationHost();
+  explicit AnimationHost(ThreadInstance thread_instance);
 
   void PushTimelinesToImplThread(AnimationHost* host_impl) const;
   void RemoveTimelinesFromImplThread(AnimationHost* host_impl) const;
@@ -140,6 +153,11 @@ class CC_EXPORT AnimationHost {
   AnimationTimelineList timelines_;
   scoped_ptr<AnimationRegistrar> animation_registrar_;
   MutatorHostClient* mutator_host_client_;
+
+  class ScrollOffsetAnimations;
+  scoped_ptr<ScrollOffsetAnimations> scroll_offset_animations_;
+
+  const ThreadInstance thread_instance_;
 
   DISALLOW_COPY_AND_ASSIGN(AnimationHost);
 };

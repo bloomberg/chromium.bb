@@ -577,6 +577,184 @@ class LayerTreeHostTimelinesTestCheckerboardDoesntStartAnimations
 MULTI_THREAD_TEST_F(
     LayerTreeHostTimelinesTestCheckerboardDoesntStartAnimations);
 
+// Verifies that scroll offset animations are only accepted when impl-scrolling
+// is supported, and that when scroll offset animations are accepted,
+// scroll offset updates are sent back to the main thread.
+// Evolved from LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
+class LayerTreeHostTimelinesTestScrollOffsetChangesArePropagated
+    : public LayerTreeHostTimelinesTest {
+ public:
+  LayerTreeHostTimelinesTestScrollOffsetChangesArePropagated() {}
+
+  void SetupTree() override {
+    LayerTreeHostTimelinesTest::SetupTree();
+
+    scroll_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
+    scroll_layer_->SetScrollClipLayerId(layer_tree_host()->root_layer()->id());
+    scroll_layer_->SetBounds(gfx::Size(1000, 1000));
+    scroll_layer_->SetScrollOffset(gfx::ScrollOffset(10, 20));
+    layer_tree_host()->root_layer()->AddChild(scroll_layer_);
+
+    AttachPlayersToTimeline();
+    player_child_->AttachLayer(scroll_layer_->id());
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DidCommit() override {
+    switch (layer_tree_host()->source_frame_number()) {
+      case 1: {
+        scoped_ptr<ScrollOffsetAnimationCurve> curve(
+            ScrollOffsetAnimationCurve::Create(
+                gfx::ScrollOffset(500.f, 550.f),
+                EaseInOutTimingFunction::Create()));
+        scoped_ptr<Animation> animation(
+            Animation::Create(curve.Pass(), 1, 0, Animation::SCROLL_OFFSET));
+        animation->set_needs_synchronized_start_time(true);
+        bool impl_scrolling_supported =
+            layer_tree_host()->proxy()->SupportsImplScrolling();
+        if (impl_scrolling_supported)
+          player_child_->AddAnimation(animation.Pass());
+        else
+          EndTest();
+        break;
+      }
+      default:
+        if (scroll_layer_->scroll_offset().x() > 10 &&
+            scroll_layer_->scroll_offset().y() > 20)
+          EndTest();
+    }
+  }
+
+  void AfterTest() override {}
+
+ private:
+  FakeContentLayerClient client_;
+  scoped_refptr<FakePictureLayer> scroll_layer_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostTimelinesTestScrollOffsetChangesArePropagated);
+
+// Verifies that when the main thread removes a scroll animation and sets a new
+// scroll position, the active tree takes on exactly this new scroll position
+// after activation, and the main thread doesn't receive a spurious scroll
+// delta.
+// Evolved from LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
+class LayerTreeHostTimelinesTestScrollOffsetAnimationRemoval
+    : public LayerTreeHostTimelinesTest {
+ public:
+  LayerTreeHostTimelinesTestScrollOffsetAnimationRemoval()
+      : final_postion_(50.0, 100.0) {}
+
+  void SetupTree() override {
+    LayerTreeHostTimelinesTest::SetupTree();
+
+    scroll_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
+    scroll_layer_->SetScrollClipLayerId(layer_tree_host()->root_layer()->id());
+    scroll_layer_->SetBounds(gfx::Size(10000, 10000));
+    scroll_layer_->SetScrollOffset(gfx::ScrollOffset(100.0, 200.0));
+    layer_tree_host()->root_layer()->AddChild(scroll_layer_);
+
+    scoped_ptr<ScrollOffsetAnimationCurve> curve(
+        ScrollOffsetAnimationCurve::Create(gfx::ScrollOffset(6500.f, 7500.f),
+                                           EaseInOutTimingFunction::Create()));
+    scoped_ptr<Animation> animation(
+        Animation::Create(curve.Pass(), 1, 0, Animation::SCROLL_OFFSET));
+    animation->set_needs_synchronized_start_time(true);
+
+    AttachPlayersToTimeline();
+    player_child_->AttachLayer(scroll_layer_->id());
+    player_child_->AddAnimation(animation.Pass());
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void BeginMainFrame(const BeginFrameArgs& args) override {
+    switch (layer_tree_host()->source_frame_number()) {
+      case 0:
+        break;
+      case 1: {
+        Animation* animation = player_child_->element_animations()
+                                   ->layer_animation_controller()
+                                   ->GetAnimation(Animation::SCROLL_OFFSET);
+        player_child_->RemoveAnimation(animation->id());
+        scroll_layer_->SetScrollOffset(final_postion_);
+        break;
+      }
+      default:
+        EXPECT_EQ(final_postion_, scroll_layer_->scroll_offset());
+    }
+  }
+
+  void BeginCommitOnThread(LayerTreeHostImpl* host_impl) override {
+    host_impl->BlockNotifyReadyToActivateForTesting(true);
+  }
+
+  void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
+                                  const BeginFrameArgs& args) override {
+    if (!host_impl->pending_tree())
+      return;
+
+    if (!host_impl->active_tree()->root_layer()) {
+      host_impl->BlockNotifyReadyToActivateForTesting(false);
+      return;
+    }
+
+    scoped_refptr<AnimationTimeline> timeline_impl =
+        host_impl->animation_host()->GetTimelineById(timeline_id_);
+    scoped_refptr<AnimationPlayer> player_impl =
+        timeline_impl->GetPlayerById(player_child_id_);
+
+    LayerImpl* scroll_layer_impl =
+        host_impl->active_tree()->root_layer()->children()[0];
+    Animation* animation = player_impl->element_animations()
+                               ->layer_animation_controller()
+                               ->GetAnimation(Animation::SCROLL_OFFSET);
+
+    if (!animation || animation->run_state() != Animation::RUNNING) {
+      host_impl->BlockNotifyReadyToActivateForTesting(false);
+      return;
+    }
+
+    // Block activation until the running animation has a chance to produce a
+    // scroll delta.
+    gfx::Vector2dF scroll_delta = scroll_layer_impl->ScrollDelta();
+    if (scroll_delta.x() < 1.f || scroll_delta.y() < 1.f)
+      return;
+
+    host_impl->BlockNotifyReadyToActivateForTesting(false);
+  }
+
+  void WillActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
+    if (host_impl->pending_tree()->source_frame_number() != 1)
+      return;
+    LayerImpl* scroll_layer_impl =
+        host_impl->pending_tree()->root_layer()->children()[0];
+    EXPECT_EQ(final_postion_, scroll_layer_impl->CurrentScrollOffset());
+  }
+
+  void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
+    if (host_impl->active_tree()->source_frame_number() != 1)
+      return;
+    LayerImpl* scroll_layer_impl =
+        host_impl->active_tree()->root_layer()->children()[0];
+    EXPECT_EQ(final_postion_, scroll_layer_impl->CurrentScrollOffset());
+    EndTest();
+  }
+
+  void AfterTest() override {
+    EXPECT_EQ(final_postion_, scroll_layer_->scroll_offset());
+  }
+
+ private:
+  FakeContentLayerClient client_;
+  scoped_refptr<FakePictureLayer> scroll_layer_;
+  const gfx::ScrollOffset final_postion_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTimelinesTestScrollOffsetAnimationRemoval);
+
 // When animations are simultaneously added to an existing layer and to a new
 // layer, they should start at the same time, even when there's already a
 // running animation on the existing layer.

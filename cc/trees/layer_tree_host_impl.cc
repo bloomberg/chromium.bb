@@ -242,7 +242,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       frame_timing_tracker_(FrameTimingTracker::Create(this)) {
   if (settings.use_compositor_animation_timelines) {
     if (settings.accelerated_animation_enabled) {
-      animation_host_ = AnimationHost::Create();
+      animation_host_ = AnimationHost::Create(ThreadInstance::IMPL);
       animation_host_->SetMutatorHostClient(this);
       animation_host_->SetSupportsScrollAnimations(
           proxy_->SupportsImplScrolling());
@@ -3434,6 +3434,10 @@ void LayerTreeHostImpl::ScrollAnimationCreate(
     LayerImpl* layer_impl,
     const gfx::ScrollOffset& target_offset,
     const gfx::ScrollOffset& current_offset) {
+  if (animation_host_)
+    return animation_host_->ImplOnlyScrollAnimationCreate(
+        layer_impl->id(), target_offset, current_offset);
+
   scoped_ptr<ScrollOffsetAnimationCurve> curve =
       ScrollOffsetAnimationCurve::Create(target_offset,
                                          EaseInOutTimingFunction::Create());
@@ -3450,6 +3454,11 @@ void LayerTreeHostImpl::ScrollAnimationCreate(
 bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(
     LayerImpl* layer_impl,
     const gfx::Vector2dF& scroll_delta) {
+  if (animation_host_)
+    return animation_host_->ImplOnlyScrollAnimationUpdateTarget(
+        layer_impl->id(), scroll_delta, layer_impl->MaxScrollOffset(),
+        CurrentBeginFrameArgs().frame_time);
+
   Animation* animation =
       layer_impl->layer_animation_controller()
           ? layer_impl->layer_animation_controller()->GetAnimation(
@@ -3584,6 +3593,21 @@ void LayerTreeHostImpl::SetLayerScrollOffsetMutated(
     SetTreeLayerScrollOffsetMutated(layer_id, pending_tree(), scroll_offset);
     SetTreeLayerScrollOffsetMutated(layer_id, recycle_tree(), scroll_offset);
   }
+}
+
+void LayerTreeHostImpl::ScrollOffsetAnimationFinished() {
+  ScrollEnd();
+}
+
+gfx::ScrollOffset LayerTreeHostImpl::GetScrollOffsetForAnimation(
+    int layer_id) const {
+  if (active_tree()) {
+    LayerAnimationValueProvider* layer = active_tree()->LayerById(layer_id);
+    if (layer)
+      return layer->ScrollOffsetForAnimation();
+  }
+
+  return gfx::ScrollOffset();
 }
 
 }  // namespace cc

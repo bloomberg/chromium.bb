@@ -28,7 +28,9 @@ bool FakeProxy::BeginMainFrameRequested() const { return false; }
 
 bool FakeProxy::CommitRequested() const { return false; }
 
-bool FakeProxy::SupportsImplScrolling() const { return false; }
+bool FakeProxy::SupportsImplScrolling() const {
+  return true;
+}
 
 bool FakeProxy::MainFrameWillHappenForTesting() {
   return false;

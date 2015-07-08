@@ -124,7 +124,7 @@ LayerTreeHost::LayerTreeHost(InitParams* params)
 
   if (settings_.accelerated_animation_enabled) {
     if (settings_.use_compositor_animation_timelines) {
-      animation_host_ = AnimationHost::Create();
+      animation_host_ = AnimationHost::Create(ThreadInstance::MAIN);
       animation_host_->SetMutatorHostClient(this);
     } else {
       animation_registrar_ = AnimationRegistrar::Create();
@@ -1147,6 +1147,13 @@ void LayerTreeHost::SetLayerScrollOffsetMutated(
   LayerAnimationValueObserver* layer = LayerById(layer_id);
   DCHECK(layer);
   layer->OnScrollOffsetAnimated(scroll_offset);
+}
+
+gfx::ScrollOffset LayerTreeHost::GetScrollOffsetForAnimation(
+    int layer_id) const {
+  LayerAnimationValueProvider* layer = LayerById(layer_id);
+  DCHECK(layer);
+  return layer->ScrollOffsetForAnimation();
 }
 
 bool LayerTreeHost::ScrollOffsetAnimationWasInterrupted(

@@ -35,8 +35,9 @@ void TestLayer::ClearMutatedProperties() {
     mutated_properties_[i] = false;
 }
 
-TestHostClient::TestHostClient()
-    : host_(AnimationHost::Create()), mutators_need_commit_(false) {
+TestHostClient::TestHostClient(ThreadInstance thread_instance)
+    : host_(AnimationHost::Create(thread_instance)),
+      mutators_need_commit_(false) {
   host_->SetMutatorHostClient(this);
 }
 
@@ -95,6 +96,11 @@ void TestHostClient::SetLayerScrollOffsetMutated(
     const gfx::ScrollOffset& scroll_offset) {
   TestLayer* layer = FindTestLayer(layer_id, tree_type);
   layer->set_scroll_offset(scroll_offset);
+}
+
+gfx::ScrollOffset TestHostClient::GetScrollOffsetForAnimation(
+    int layer_id) const {
+  return gfx::ScrollOffset();
 }
 
 void TestHostClient::RegisterLayer(int layer_id, LayerTreeType tree_type) {
@@ -192,7 +198,11 @@ void TestAnimationDelegate::NotifyAnimationFinished(
 }
 
 AnimationTimelinesTest::AnimationTimelinesTest()
-    : timeline_id_(AnimationIdProvider::NextTimelineId()),
+    : client_(ThreadInstance::MAIN),
+      client_impl_(ThreadInstance::IMPL),
+      host_(nullptr),
+      host_impl_(nullptr),
+      timeline_id_(AnimationIdProvider::NextTimelineId()),
       player_id_(AnimationIdProvider::NextPlayerId()),
       layer_id_(1) {
   host_ = client_.host();

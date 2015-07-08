@@ -68,7 +68,7 @@ class TestLayer {
 
 class TestHostClient : public MutatorHostClient {
  public:
-  TestHostClient();
+  explicit TestHostClient(ThreadInstance thread_instance);
   ~TestHostClient();
 
   void ClearMutatedProperties();
@@ -93,6 +93,9 @@ class TestHostClient : public MutatorHostClient {
       int layer_id,
       LayerTreeType tree_type,
       const gfx::ScrollOffset& scroll_offset) override;
+
+  void ScrollOffsetAnimationFinished() override {}
+  gfx::ScrollOffset GetScrollOffsetForAnimation(int layer_id) const override;
 
   bool mutators_need_commit() const { return mutators_need_commit_; }
   void set_mutators_need_commit(bool need) { mutators_need_commit_ = need; }

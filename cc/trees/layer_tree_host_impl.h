@@ -262,6 +262,8 @@ class CC_EXPORT LayerTreeHostImpl
       int layer_id,
       LayerTreeType tree_type,
       const gfx::ScrollOffset& scroll_offset) override;
+  void ScrollOffsetAnimationFinished() override;
+  gfx::ScrollOffset GetScrollOffsetForAnimation(int layer_id) const override;
 
   virtual void PrepareTiles();
 

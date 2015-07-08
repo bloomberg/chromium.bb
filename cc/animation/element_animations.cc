@@ -37,7 +37,8 @@ class ElementAnimations::ValueObserver : public LayerAnimationValueObserver {
   }
 
   void OnAnimationWaitingForDeletion() override {
-    // TODO(loyso): implement it.
+    // TODO(loyso): See Layer::OnAnimationWaitingForDeletion. But we always do
+    // PushProperties for AnimationTimelines for now.
   }
 
   bool IsActive() const override { return tree_type_ == LayerTreeType::ACTIVE; }
@@ -236,7 +237,13 @@ void ElementAnimations::NotifyAnimationFinished(
 }
 
 gfx::ScrollOffset ElementAnimations::ScrollOffsetForAnimation() const {
-  // TODO(loyso): implement it.
+  DCHECK(layer_animation_controller_);
+  if (animation_host()) {
+    DCHECK(animation_host()->mutator_host_client());
+    return animation_host()->mutator_host_client()->GetScrollOffsetForAnimation(
+        layer_id());
+  }
+
   return gfx::ScrollOffset();
 }
 
