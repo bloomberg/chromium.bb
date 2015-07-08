@@ -80,6 +80,8 @@ ScriptValue InjectedScriptManager::createInjectedScript(const String& scriptSour
 
 bool InjectedScriptManager::canAccessInspectedWindow(ScriptState* scriptState)
 {
+    if (!scriptState->contextIsValid())
+        return false;
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Object> global = scriptState->context()->Global();
     if (global.IsEmpty())
