@@ -52,7 +52,9 @@ public class UmaSessionStats implements NetworkChangeNotifier.ConnectionTypeObse
         mReportingPermissionManager = PrivacyPreferencesManager.getInstance(context);
     }
 
-    private void recordPageLoadStats(Tab tab) {
+    private void recordPageLoadStats(int tabId) {
+        Tab tab = mTabModelSelector.getTabById(tabId);
+        if (tab == null) return;
         WebContents webContents = tab.getWebContents();
         boolean isDesktopUserAgent = webContents != null
                 && webContents.getNavigationController().getUseDesktopUserAgent();
@@ -96,7 +98,7 @@ public class UmaSessionStats implements NetworkChangeNotifier.ConnectionTypeObse
             mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelector) {
                 @Override
                 public void onPageLoadFinished(Tab tab) {
-                    recordPageLoadStats(tab);
+                    recordPageLoadStats(tab.getId());
                 }
             };
         }
