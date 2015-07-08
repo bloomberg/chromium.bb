@@ -275,13 +275,14 @@ static bool installTestInterfaceIfNeeded(LocalFrame& frame, v8::Local<v8::String
     v8::Local<v8::Context> context = isolate->GetCurrentContext();
     AtomicString propName = toCoreAtomicString(name);
 
-    v8::Local<v8::Map> interfaces = V8HiddenValue::getHiddenValue(isolate, info.Holder(), V8HiddenValue::testInterfaces(isolate)).As<v8::Map>();
+    v8::Local<v8::Value> interfaces = V8HiddenValue::getHiddenValue(isolate, info.Holder(), V8HiddenValue::testInterfaces(isolate));
     if (interfaces.IsEmpty()) {
         interfaces = v8::Map::New(isolate);
         V8HiddenValue::setHiddenValue(isolate, info.Holder(), V8HiddenValue::testInterfaces(isolate), interfaces);
     }
 
-    v8::Local<v8::Value> result = v8CallOrCrash(interfaces->Get(context, name));
+    v8::Local<v8::Map> interfacesMap = interfaces.As<v8::Map>();
+    v8::Local<v8::Value> result = v8CallOrCrash(interfacesMap->Get(context, name));
     if (!result->IsUndefined()) {
         v8SetReturnValue(info, result);
         return true;
@@ -289,7 +290,7 @@ static bool installTestInterfaceIfNeeded(LocalFrame& frame, v8::Local<v8::String
 
     v8::Local<v8::Value> interface = frame.loader().client()->createTestInterface(propName);
     if (!interface.IsEmpty()) {
-        v8CallOrCrash(interfaces->Set(context, name, interface));
+        v8CallOrCrash(interfacesMap->Set(context, name, interface));
         v8SetReturnValue(info, interface);
         return true;
     }
