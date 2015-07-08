@@ -811,6 +811,13 @@ const Experiment kExperiments[] = {
      kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kSilentDebuggerExtensionAPI)},
 #if defined(ENABLE_SPELLCHECK)
+#if defined(OS_ANDROID)
+    {"enable-android-spellchecker",
+      IDS_OPTIONS_ENABLE_SPELLCHECK,
+      IDS_OPTIONS_ENABLE_ANDROID_SPELLCHECKER_DESCRIPTION,
+      kOsAndroid,
+      SINGLE_VALUE_TYPE(switches::kEnableAndroidSpellChecker)},
+#endif
     {"spellcheck-autocorrect",
      IDS_FLAGS_SPELLCHECK_AUTOCORRECT,
      IDS_FLAGS_SPELLCHECK_AUTOCORRECT_DESCRIPTION,

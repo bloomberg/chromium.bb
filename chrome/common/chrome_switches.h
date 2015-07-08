@@ -273,6 +273,9 @@ extern const char kSpeculativeResourcePrefetchingDisabled[];
 extern const char kSpeculativeResourcePrefetchingEnabled[];
 extern const char kSpeculativeResourcePrefetchingLearning[];
 #if defined(ENABLE_SPELLCHECK)
+#if defined(OS_ANDROID)
+extern const char kEnableAndroidSpellChecker[];
+#endif
 extern const char kEnableMultilingualSpellChecker[];
 extern const char kEnableSpellingAutoCorrect[];
 extern const char kEnableSpellingFeedbackFieldTrial[];

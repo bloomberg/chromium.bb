@@ -995,6 +995,11 @@ const char kSpeculativeResourcePrefetchingLearning[] = "learning";
 const char kSpeculativeResourcePrefetchingEnabled[] = "enabled";
 
 #if defined(ENABLE_SPELLCHECK)
+#if defined(OS_ANDROID)
+// Enables use of the Android spellchecker.
+const char kEnableAndroidSpellChecker[] = "enable-android-spellchecker";
+#endif
+
 // Enables the multilingual spellchecker.
 const char kEnableMultilingualSpellChecker[] =
     "enable-multilingual-spellchecker";

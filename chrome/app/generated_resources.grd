@@ -12393,6 +12393,11 @@ The following application will be launched if you accept this request:
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGE_AND_INPUT_SETTINGS" desc="Button title for invoking the 'Language and input options' panel.">
         Language and input settings...
       </message>
+      <if expr="is_android">
+        <message name="IDS_OPTIONS_ENABLE_ANDROID_SPELLCHECKER_DESCRIPTION" desc="The description for the flag to enable use of the Android spellchecker.">
+          Enables use of the Android spellchecker.
+        </message>
+      </if>
       <if expr="not is_macosx">
         <message name="IDS_OPTIONS_ENABLE_SPELLCHECK" desc="The documentation string of the 'Enable spellcheck' option">
           Enable spell checking
