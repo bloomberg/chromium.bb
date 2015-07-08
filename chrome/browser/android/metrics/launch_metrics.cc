@@ -43,19 +43,30 @@ static void RecordLaunch(JNIEnv* env, jclass caller, jboolean standalone,
         base::Time::Now());
   }
 
-  int action = standalone ? HOME_SCREEN_LAUNCH_STANDALONE
-                          : HOME_SCREEN_LAUNCH_SHORTCUT;
-  std::string rappor_metric = standalone ? "Launch.HomeScreen.Standalone"
-                                         : "Launch.HomeScreen.Shortcut";
-
-  UMA_HISTOGRAM_ENUMERATION("Launch.HomeScreen", action,
-                            HOME_SCREEN_LAUNCH_COUNT);
+  std::string rappor_metric_source;
+  if (source == ShortcutInfo::SOURCE_ADD_TO_HOMESCREEN)
+    rappor_metric_source = "Launch.HomeScreenSource.AddToHomeScreen";
+  else if (source == ShortcutInfo::SOURCE_APP_BANNER)
+    rappor_metric_source = "Launch.HomeScreenSource.AppBanner";
+  else
+    rappor_metric_source = "Launch.HomeScreenSource.Unknown";
 
   UMA_HISTOGRAM_ENUMERATION("Launch.HomeScreenSource", source,
                             ShortcutInfo::SOURCE_COUNT);
 
   rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
-                                          rappor_metric, url);
+                                          rappor_metric_source, url);
+
+  int action = standalone ? HOME_SCREEN_LAUNCH_STANDALONE
+                          : HOME_SCREEN_LAUNCH_SHORTCUT;
+  std::string rappor_metric_action = standalone ? "Launch.HomeScreen.Standalone"
+                                                : "Launch.HomeScreen.Shortcut";
+
+  UMA_HISTOGRAM_ENUMERATION("Launch.HomeScreen", action,
+                            HOME_SCREEN_LAUNCH_COUNT);
+
+  rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
+                                          rappor_metric_action, url);
 }
 
 };  // namespace metrics
