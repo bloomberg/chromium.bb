@@ -521,8 +521,9 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     if (!existingResource->canReuse(request))
         return Reload;
 
-    // Never use cache entries for downloadToFile requests. The caller expects the resource in a file.
-    if (request.downloadToFile())
+    // Never use cache entries for downloadToFile / useStreamOnResponse
+    // requests. The data will be delivered through other paths.
+    if (request.downloadToFile() || request.useStreamOnResponse())
         return Reload;
 
     // Certain requests (e.g., XHRs) might have manually set headers that require revalidation.
