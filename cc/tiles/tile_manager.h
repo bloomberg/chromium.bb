@@ -106,8 +106,6 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
 
   static scoped_ptr<TileManager> Create(TileManagerClient* client,
                                         base::SequencedTaskRunner* task_runner,
-                                        ResourcePool* resource_pool,
-                                        TileTaskRunner* tile_task_runner,
                                         size_t scheduled_raster_task_limit);
   ~TileManager() override;
 
@@ -116,7 +114,18 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
   // activation are prepared, or failed to prepare due to OOM.
   // - Runs client_->NotifyReadyToDraw() when all tiles required draw are
   // prepared, or failed to prepare due to OOM.
-  void PrepareTiles(const GlobalStateThatImpactsTilePriority& state);
+  bool PrepareTiles(const GlobalStateThatImpactsTilePriority& state);
+
+  // Synchronously finish any in progress work, cancel the rest, and clean up as
+  // much resources as possible. Also, prevents any future work until a
+  // SetResources call.
+  void FinishTasksAndCleanUp();
+
+  // Set the new given resource pool and tile task runner. Note that
+  // FinishTasksAndCleanUp must be called in between consecutive calls to
+  // SetResources.
+  void SetResources(ResourcePool* resource_pool,
+                    TileTaskRunner* tile_task_runner);
 
   // This causes any completed raster work to finalize, so that tiles get up to
   // date draw information.
@@ -196,8 +205,6 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
  protected:
   TileManager(TileManagerClient* client,
               const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-              ResourcePool* resource_pool,
-              TileTaskRunner* tile_task_runner,
               size_t scheduled_raster_task_limit);
 
   void FreeResourcesForReleasedTiles();
