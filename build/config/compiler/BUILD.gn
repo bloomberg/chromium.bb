@@ -805,7 +805,6 @@ if (is_win) {
       "-Wno-microsoft",  # http://crbug.com/505296
       "-Wno-missing-braces",  # http://crbug.com/505297
       "-Wno-msvc-include",  # http://crbug.com/505299
-      "-Wno-overloaded-virtual",  # http://crbug.com/505301
       "-Wno-pointer-sign",  # http://crbug.com/505303
       "-Wno-reorder",  # http://crbug.com/505304
       "-Wno-switch",  # http://crbug.com/505308
@@ -992,6 +991,14 @@ config("no_chromium_code") {
     # not support this option, since they are usually using gcc 4.2.1, which
     # does not have this flag yet.
     cflags += [ "-Wno-unused-result" ]
+  }
+
+  if (is_clang) {
+    cflags += [
+      # TODO(mgiuca): Move this suppression into individual third-party
+      # libraries as required. http://crbug.com/505301.
+      "-Wno-overloaded-virtual",
+    ]
   }
 
   if (is_linux || is_android) {

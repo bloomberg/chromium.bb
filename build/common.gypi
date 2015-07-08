@@ -3094,6 +3094,13 @@
         'variables': { 'clang_warning_flags': ['-Wno-shift-negative-value']},
       }],
       ['chromium_code==0', {
+        'variables': {
+          'clang_warning_flags': [
+            # TODO(mgiuca): Move this suppression into individual third-party
+            # libraries as required. http://crbug.com/505301.
+            '-Wno-overloaded-virtual',
+          ],
+        },
         'conditions': [
           [ 'os_posix==1 and OS!="mac" and OS!="ios"', {
             # We don't want to get warnings from third-party code,
@@ -5713,7 +5720,6 @@
                   '-Wno-microsoft',  # http://crbug.com/505296
                   '-Wno-missing-braces',  # http://crbug.com/505297
                   '-Wno-msvc-include',  # http://crbug.com/505299
-                  '-Wno-overloaded-virtual',  # http://crbug.com/505301
                   '-Wno-pointer-sign',  # http://crbug.com/505303
                   '-Wno-reorder',  # http://crbug.com/505304
                   '-Wno-switch',  # http://crbug.com/505308
