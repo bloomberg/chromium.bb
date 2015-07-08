@@ -35,13 +35,10 @@ class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
   void Init();
 
   // Called from Java when the user manually enables sync
-  void EnableSync(JNIEnv* env, jobject obj);
+  void RequestStart(JNIEnv* env, jobject obj);
 
   // Called from Java when the user manually disables sync
-  void DisableSync(JNIEnv* env, jobject obj);
-
-  // Called from Java when the user signs in to Chrome. Starts up sync.
-  void SignInSync(JNIEnv* env, jobject obj);
+  void RequestStop(JNIEnv* env, jobject obj);
 
   // Called from Java when the user signs out of Chrome
   void SignOutSync(JNIEnv* env, jobject obj);

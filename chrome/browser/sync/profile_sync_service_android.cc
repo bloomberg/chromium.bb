@@ -150,41 +150,14 @@ void ProfileSyncServiceAndroid::SetPassphrasePrompted(JNIEnv* env,
   sync_prefs_->SetPassphrasePrompted(prompted);
 }
 
-void ProfileSyncServiceAndroid::EnableSync(JNIEnv* env, jobject) {
+void ProfileSyncServiceAndroid::RequestStart(JNIEnv* env, jobject) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Don't need to do anything if we're already enabled.
-  if (!sync_service_->IsSyncRequested())
-    sync_service_->RequestStart();
-  else
-    DVLOG(2) << "Ignoring call to EnableSync() because sync is already enabled";
-}
-
-void ProfileSyncServiceAndroid::DisableSync(JNIEnv* env, jobject) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Don't need to do anything if we're already disabled.
-  if (sync_service_->IsSyncRequested()) {
-    sync_service_->RequestStop(ProfileSyncService::KEEP_DATA);
-  } else {
-    DVLOG(2)
-        << "Ignoring call to DisableSync() because sync is already disabled";
-  }
-}
-
-void ProfileSyncServiceAndroid::SignInSync(JNIEnv* env, jobject) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Just return if sync already has everything it needs to start up (sync
-  // should start up automatically as long as it has credentials). This can
-  // happen normally if (for example) the user closes and reopens the sync
-  // settings window quickly during initial startup.
-  if (sync_service_->CanSyncStart() &&
-      sync_service_->IsOAuthRefreshTokenAvailable() &&
-      sync_service_->HasSyncSetupCompleted()) {
-    return;
-  }
-
-  // Request that sync starts. If we don't have credentials yet, this will
-  // let sync start once credentials arrive.
   sync_service_->RequestStart();
+}
+
+void ProfileSyncServiceAndroid::RequestStop(JNIEnv* env, jobject) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  sync_service_->RequestStop(ProfileSyncService::KEEP_DATA);
 }
 
 void ProfileSyncServiceAndroid::SignOutSync(JNIEnv* env, jobject) {

@@ -162,16 +162,6 @@ public class ProfileSyncService {
         nativeSignOutSync(mNativeProfileSyncServiceAndroid);
     }
 
-    /**
-     * Signs in to sync, using the currently signed-in account.
-     */
-    public void syncSignIn() {
-        nativeSignInSync(mNativeProfileSyncServiceAndroid);
-        // Notify listeners right away that the sync state has changed (native side does not do
-        // this)
-        syncStateChanged();
-    }
-
     public String querySyncStatus() {
         ThreadUtils.assertOnUiThread();
         return nativeQuerySyncStatusSummary(mNativeProfileSyncServiceAndroid);
@@ -530,15 +520,15 @@ public class ProfileSyncService {
     /**
      * Starts the sync engine.
      */
-    public void enableSync() {
-        nativeEnableSync(mNativeProfileSyncServiceAndroid);
+    public void requestStart() {
+        nativeRequestStart(mNativeProfileSyncServiceAndroid);
     }
 
     /**
      * Stops the sync engine.
      */
-    public void disableSync() {
-        nativeDisableSync(mNativeProfileSyncServiceAndroid);
+    public void requestStop() {
+        nativeRequestStop(mNativeProfileSyncServiceAndroid);
     }
 
     /**
@@ -644,10 +634,9 @@ public class ProfileSyncService {
 
     // Native methods
     private native long nativeInit();
-    private native void nativeEnableSync(long nativeProfileSyncServiceAndroid);
-    private native void nativeDisableSync(long nativeProfileSyncServiceAndroid);
+    private native void nativeRequestStart(long nativeProfileSyncServiceAndroid);
+    private native void nativeRequestStop(long nativeProfileSyncServiceAndroid);
     private native void nativeFlushDirectory(long nativeProfileSyncServiceAndroid);
-    private native void nativeSignInSync(long nativeProfileSyncServiceAndroid);
     private native void nativeSignOutSync(long nativeProfileSyncServiceAndroid);
     private native boolean nativeSetSyncSessionsId(
             long nativeProfileSyncServiceAndroid, String tag);

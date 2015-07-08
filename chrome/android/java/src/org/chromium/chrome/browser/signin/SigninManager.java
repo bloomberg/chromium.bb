@@ -412,7 +412,7 @@ public class SigninManager {
         if (AndroidSyncSettings.isSyncEnabled(mContext)
                 && !profileSyncService.hasSyncSetupCompleted()) {
             profileSyncService.setSetupInProgress(true);
-            profileSyncService.syncSignIn();
+            profileSyncService.requestStart();
         }
 
         if (mSignInFlowObserver != null) mSignInFlowObserver.onSigninComplete();

@@ -215,7 +215,7 @@ public class SigninHelper {
             } else {
                 // We should have set up sync but for some reason it's not enabled. Tell the sync
                 // engine to start.
-                mProfileSyncService.syncSignIn();
+                mProfileSyncService.requestStart();
             }
         }
     }
