@@ -27,8 +27,8 @@ static const int64_t kMicrosecondsPerSecond =
 
 NaCl::ConditionVariable::ConditionVariable()
   : run_state_(RUNNING),
-    allocation_counter_(0),
-    recycling_list_size_(0) {
+    recycling_list_size_(0),
+    allocation_counter_(0) {
 }
 
 NaCl::ConditionVariable::~ConditionVariable() {
