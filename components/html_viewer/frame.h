@@ -143,7 +143,6 @@ class Frame : public blink::WebFrameClient,
       blink::WebTreeScopeType scope,
       const blink::WebString& frame_ame,
       blink::WebSandboxFlags sandbox_flags);
-  virtual void frameDetached(blink::WebFrame* frame);
   virtual void frameDetached(blink::WebFrame* frame,
                              blink::WebFrameClient::DetachType type);
   virtual blink::WebCookieJar* cookieJar(blink::WebLocalFrame* frame);

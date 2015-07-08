@@ -2150,10 +2150,6 @@ void RenderFrameImpl::didDisownOpener(blink::WebLocalFrame* frame) {
   Send(new FrameHostMsg_DidDisownOpener(routing_id_));
 }
 
-void RenderFrameImpl::frameDetached(blink::WebFrame* frame) {
-  frameDetached(frame, DetachType::Remove);
-}
-
 void RenderFrameImpl::frameDetached(blink::WebFrame* frame, DetachType type) {
   // NOTE: This function is called on the frame that is being detached and not
   // the parent frame.  This is different from createChildFrame() which is

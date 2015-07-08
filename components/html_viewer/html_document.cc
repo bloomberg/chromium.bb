@@ -338,10 +338,6 @@ blink::WebFrame* HTMLDocument::createChildFrame(
   return child_frame;
 }
 
-void HTMLDocument::frameDetached(blink::WebFrame* frame) {
-  frameDetached(frame, DetachType::Remove);
-}
-
 void HTMLDocument::frameDetached(blink::WebFrame* frame, DetachType type) {
   DCHECK(type == DetachType::Remove);
   if (frame->parent())

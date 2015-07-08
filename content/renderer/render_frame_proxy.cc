@@ -341,10 +341,6 @@ void RenderFrameProxy::OnDidUpdateOrigin(const url::Origin& origin) {
       blink::WebString::fromUTF8(origin.string())));
 }
 
-void RenderFrameProxy::frameDetached() {
-  frameDetached(DetachType::Remove);
-}
-
 void RenderFrameProxy::frameDetached(DetachType type) {
   if (type == DetachType::Remove && web_frame_->parent()) {
     web_frame_->parent()->removeChild(web_frame_);

@@ -416,10 +416,6 @@ blink::WebFrame* Frame::createChildFrame(blink::WebLocalFrame* parent,
   return child_web_frame;
 }
 
-void Frame::frameDetached(blink::WebFrame* frame) {
-  frameDetached(frame, blink::WebFrameClient::DetachType::Remove);
-}
-
 void Frame::frameDetached(blink::WebFrame* web_frame,
                           blink::WebFrameClient::DetachType type) {
   if (type == blink::WebFrameClient::DetachType::Swap) {
