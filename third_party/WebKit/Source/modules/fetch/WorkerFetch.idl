@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 [
-    RuntimeEnabled=GlobalFetch,
     ImplementedAs=GlobalFetch,
 ] partial interface WorkerGlobalScope {
     [CallWith=ScriptState, RaisesException] Promise<Response> fetch(RequestInfo input, optional Dictionary init);

@@ -86,7 +86,6 @@ LinkPreconnect status=experimental
 LinkPreload status=experimental
 LinkHeader status=experimental
 FractionalScrollOffsets status=experimental
-GlobalFetch status=stable
 Media status=stable
 MediaCapture
 MediaController depends_on=Media, status=experimental

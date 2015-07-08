@@ -9,8 +9,7 @@ typedef Dictionary OpenEndedDictionary;
     Constructor(Headers input),
     Constructor(OpenEndedDictionary input),
     Constructor(sequence<sequence<ByteString>> input),
-    // TODO(jeremyarcher): remove GlobalFetch qualifier once fetch(...) is exposed. 
-    Exposed(Window GlobalFetch, DedicatedWorker GlobalFetch, SharedWorker GlobalFetch, ServiceWorker GlobalFetch),
+    Exposed=(Window,Worker),
     RaisesException=Constructor,
     GarbageCollected,
     TypeChecking=Interface,
