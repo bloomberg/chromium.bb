@@ -810,7 +810,6 @@
             '../breakpad/breakpad.gyp:symupload#host',
             '../breakpad/breakpad.gyp:minidump_dump#host',
             '../breakpad/breakpad.gyp:minidump_stackwalk#host',
-            '../build/android/tests/multiple_proguards/multiple_proguards.gyp:multiple_proguards_test_apk',
             '../build/android/pylib/device/commands/commands.gyp:chromium_commands',
             '../cc/blink/cc_blink_tests.gyp:cc_blink_unittests',
             '../cc/cc_tests.gyp:cc_perftests_apk',

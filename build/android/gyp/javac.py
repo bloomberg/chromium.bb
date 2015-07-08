@@ -66,7 +66,7 @@ ERRORPRONE_OPTIONS = [
 ]
 
 def DoJavac(
-    classpath, classes_dir, chromium_code,
+    bootclasspath, classpath, classes_dir, chromium_code,
     use_errorprone_path, java_files):
   """Runs javac.
 
@@ -91,6 +91,10 @@ def DoJavac(
       '-target', '1.7',
       '-classpath', ':'.join(classpath),
       '-d', classes_dir]
+
+  if bootclasspath:
+    javac_args.extend(['-bootclasspath', ':'.join(bootclasspath)])
+
   if chromium_code:
     # TODO(aurimas): re-enable '-Xlint:deprecation' checks once they are fixed.
     javac_args.extend(['-Xlint:unchecked'])
@@ -181,6 +185,12 @@ def main(argv):
       default=[],
       help='List of srcjars to include in compilation.')
   parser.add_option(
+      '--bootclasspath',
+      action='append',
+      default=[],
+      help='Boot classpath for javac. If this is specified multiple times, '
+      'they will all be appended to construct the classpath.')
+  parser.add_option(
       '--classpath',
       action='append',
       help='Classpath for javac. If this is specified multiple times, they '
@@ -223,6 +233,10 @@ def main(argv):
   if options.main_class and not options.jar_path:
     parser.error('--main-class requires --jar-path')
 
+  bootclasspath = []
+  for arg in options.bootclasspath:
+    bootclasspath += build_utils.ParseGypList(arg)
+
   classpath = []
   for arg in options.classpath:
     classpath += build_utils.ParseGypList(arg)
@@ -236,7 +250,7 @@ def main(argv):
     src_gendirs = build_utils.ParseGypList(options.src_gendirs)
     java_files += build_utils.FindInDirectories(src_gendirs, '*.java')
 
-  input_files = classpath + java_srcjars + java_files
+  input_files = bootclasspath + classpath + java_srcjars + java_files
   with build_utils.TempDir() as temp_dir:
     classes_dir = os.path.join(temp_dir, 'classes')
     os.makedirs(classes_dir)
@@ -259,6 +273,7 @@ def main(argv):
 
     if len(java_files) != 0:
       DoJavac(
+          bootclasspath,
           classpath,
           classes_dir,
           options.chromium_code,

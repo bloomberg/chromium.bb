@@ -860,6 +860,7 @@
       ],
       'action': [
         'python', '<(DEPTH)/build/android/gyp/javac.py',
+        '--bootclasspath=<(android_sdk_jar)',
         '--classpath=>(input_jars_paths) <(android_sdk_jar)',
         '--src-gendirs=>(gen_src_dirs)',
         '--javac-includes=<(javac_includes)',
