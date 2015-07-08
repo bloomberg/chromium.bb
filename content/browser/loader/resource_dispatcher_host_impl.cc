@@ -856,39 +856,39 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
     // Record time to success and error for the most common errors, and for
     // the aggregate remainder errors.
     base::TimeDelta request_loading_time(
-        base::Time::Now() - loader->request()->request_time());
+        base::TimeTicks::Now() - loader->request()->creation_time());
     switch (loader->request()->status().error()) {
       case net::OK:
         UMA_HISTOGRAM_LONG_TIMES(
-            "Net.RequestTime.Success", request_loading_time);
+            "Net.RequestTime2.Success", request_loading_time);
         break;
       case net::ERR_ABORTED:
         UMA_HISTOGRAM_LONG_TIMES(
-            "Net.RequestTime.ErrAborted", request_loading_time);
+            "Net.RequestTime2.ErrAborted", request_loading_time);
         break;
       case net::ERR_CONNECTION_RESET:
         UMA_HISTOGRAM_LONG_TIMES(
-            "Net.RequestTime.ErrConnectionReset", request_loading_time);
+            "Net.RequestTime2.ErrConnectionReset", request_loading_time);
         break;
       case net::ERR_CONNECTION_TIMED_OUT:
         UMA_HISTOGRAM_LONG_TIMES(
-            "Net.RequestTime.ErrConnectionTimedOut", request_loading_time);
+            "Net.RequestTime2.ErrConnectionTimedOut", request_loading_time);
         break;
       case net::ERR_INTERNET_DISCONNECTED:
         UMA_HISTOGRAM_LONG_TIMES(
-            "Net.RequestTime.ErrInternetDisconnected", request_loading_time);
+            "Net.RequestTime2.ErrInternetDisconnected", request_loading_time);
         break;
       case net::ERR_NAME_NOT_RESOLVED:
         UMA_HISTOGRAM_LONG_TIMES(
-            "Net.RequestTime.ErrNameNotResolved", request_loading_time);
+            "Net.RequestTime2.ErrNameNotResolved", request_loading_time);
         break;
       case net::ERR_TIMED_OUT:
         UMA_HISTOGRAM_LONG_TIMES(
-            "Net.RequestTime.ErrTimedOut", request_loading_time);
+            "Net.RequestTime2.ErrTimedOut", request_loading_time);
         break;
       default:
         UMA_HISTOGRAM_LONG_TIMES(
-            "Net.RequestTime.MiscError", request_loading_time);
+            "Net.RequestTime2.MiscError", request_loading_time);
         break;
     }
 
