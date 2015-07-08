@@ -6,7 +6,7 @@
 
 // Renewal message header. External Clear Key implementation returns this as
 // part of renewal messages.
-var RENEWAL_MESSAGE_HEADER = 'RENEWAL';
+var PREFIXED_EME_RENEWAL_MESSAGE_HEADER = 'RENEWAL';
 
 // Default key used to encrypt many media files used in browser tests.
 var KEY = new Uint8Array([0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14, 0xd2, 0x7b,
@@ -20,11 +20,19 @@ var DEFAULT_MEDIA_FILE = 'http://shadi.kir/alcatraz/Chrome_44-enc_av.webm';
 var KEY_ID = '0123456789012345';
 
 // Unique strings to identify test result expectations.
-var KEY_ERROR = 'KEY_ERROR';
-var FILE_IO_TEST_RESULT_HEADER = 'FILEIOTESTRESULT';
 var FILE_IO_TEST_SUCCESS = 'FILE_IO_TEST_SUCCESS';
-var PREFIXED_API_LOAD_SESSION_HEADER = 'LOAD_SESSION|';
 var NOTSUPPORTEDERROR = 'NOTSUPPORTEDERROR';
+var EME_GENERATEREQUEST_FAILED = 'EME_GENERATEREQUEST_FAILED';
+var EME_LOAD_FAILED = 'EME_LOAD_FAILED';
+var EME_UPDATE_FAILED = 'EME_UPDATE_FAILED';
+var EME_ERROR_EVENT = 'EME_ERROR_EVENT';
+var EME_MESSAGE_UNEXPECTED_TYPE = 'EME_MESSAGE_UNEXPECTED_TYPE';
+var PREFIXED_EME_RENEWAL_MISSING_HEADER = 'PREFIXED_EME_RENEWAL_MISSING_HEADER';
+var PREFIXED_EME_ERROR_EVENT = 'PREFIXED_EME_ERROR_EVENT';
+
+// Headers used when testing file I/O.
+var FILE_IO_TEST_RESULT_HEADER = 'FILEIOTESTRESULT';
+var PREFIXED_EME_API_LOAD_SESSION_HEADER = 'LOAD_SESSION|';
 
 // Available EME key systems to use.
 var PREFIXED_CLEARKEY = 'webkit-org.w3.clearkey';

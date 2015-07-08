@@ -29,11 +29,13 @@ PlayerUtils.registerDefaultEventListeners = function(player) {
       });
     }
   }
-  // List of events that fail tests.
-  var failingEvents = ['error', 'abort'];
-  for (var i = 0; i < failingEvents.length; i++) {
-    player.video.addEventListener(failingEvents[i], Utils.failTest);
-  }
+
+  player.video.addEventListener('error', function(error) {
+    // This most likely happens on pipeline failures (e.g. when the CDM
+    // crashes).
+    Utils.timeLog('onHTMLElementError', error);
+    Utils.failTest(error);
+  });
 };
 
 // Register the necessary event handlers needed when playing encrypted content
@@ -51,13 +53,10 @@ PlayerUtils.registerEMEEventListeners = function(player) {
           if (message.messageType != 'license-request') {
             Utils.failTest('Unexpected message type "' + message.messageType +
                                '" received.',
-                           KEY_ERROR);
+                           EME_MESSAGE_UNEXPECTED_TYPE);
           }
         }
         player.onMessage(message);
-      });
-      mediaKeySession.addEventListener('error', function(error) {
-        Utils.failTest(error, KEY_ERROR);
       });
     }
 
@@ -68,7 +67,7 @@ PlayerUtils.registerEMEEventListeners = function(player) {
             message.target.mediaKeys.createSession('persistent-license');
         addMediaKeySessionListeners(session);
         session.load(player.testConfig.sessionToLoad)
-            .catch(function(error) { Utils.failTest(error, KEY_ERROR); });
+            .catch(function(error) { Utils.failTest(error, EME_LOAD_FAILED); });
       } else {
         Utils.timeLog('Creating new media key session for initDataType: ' +
                       message.initDataType + ', initData: ' +
@@ -81,7 +80,7 @@ PlayerUtils.registerEMEEventListeners = function(player) {
               // the decoder actually detects and reports the error.
               if (this.testConfig.keySystem !=
                   'org.chromium.externalclearkey.crash') {
-                Utils.failTest(error, KEY_ERROR);
+                Utils.failTest(error, EME_GENERATEREQUEST_FAILED);
               }
             });
       }
@@ -118,8 +117,9 @@ PlayerUtils.registerPrefixedEMEEventListeners = function(player) {
     var initData = message.initData;
     if (player.testConfig.sessionToLoad) {
       Utils.timeLog('Loading session: ' + player.testConfig.sessionToLoad);
-      initData = Utils.convertToUint8Array(
-          PREFIXED_API_LOAD_SESSION_HEADER + player.testConfig.sessionToLoad);
+      initData =
+          Utils.convertToUint8Array(PREFIXED_EME_API_LOAD_SESSION_HEADER +
+                                    player.testConfig.sessionToLoad);
     }
     Utils.timeLog(player.testConfig.keySystem +
                   ' Generate key request, initData: ' +
@@ -138,8 +138,11 @@ PlayerUtils.registerPrefixedEMEEventListeners = function(player) {
   });
 
   player.video.addEventListener('webkitkeyerror', function(error) {
-    Utils.timeLog('onWebkitKeyError', error);
-    Utils.failTest(error, KEY_ERROR);
+    Utils.timeLog('onWebkitKeyError',
+                  'KeySystem: ' + error.keySystem + ', sessionId: ' +
+                      error.sessionId + ', errorCode: ' + error.errorCode.code +
+                      ', systemCode: ' + error.systemCode);
+    Utils.failTest(error, PREFIXED_EME_ERROR_EVENT);
   });
 
   player.video.addEventListener('webkitkeymessage', function(message) {

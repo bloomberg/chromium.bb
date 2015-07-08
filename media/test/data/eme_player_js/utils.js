@@ -206,7 +206,7 @@ Utils.isRenewalMessage = function(message) {
 
   if (!Utils.isRenewalMessagePrefixed(message.message)) {
     Utils.failTest('license-renewal message doesn\'t contain expected header',
-                   KEY_ERROR);
+                   PREFIXED_EME_RENEWAL_MISSING_HEADER);
   }
   return true;
 };
@@ -215,7 +215,7 @@ Utils.isRenewalMessage = function(message) {
 // message and finding a known string.
 Utils.isRenewalMessagePrefixed = function(msg) {
   return Utils.hasPrefix(Utils.convertToUint8Array(msg),
-                         RENEWAL_MESSAGE_HEADER);
+                         PREFIXED_EME_RENEWAL_MESSAGE_HEADER);
 };
 
 Utils.resetTitleChange = function() {

@@ -29,7 +29,7 @@ ClearKeyPlayer.prototype.onMessage = function(message) {
     // Ignore the error if a crash is expected. This ensures that the decoder
     // actually detects and reports the error.
     if (this.testConfig.keySystem != 'org.chromium.externalclearkey.crash') {
-      Utils.failTest(error, KEY_ERROR);
+      Utils.failTest(error, EME_UPDATE_FAILED);
     }
   });
 };

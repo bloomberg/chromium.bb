@@ -64,9 +64,16 @@ const char kLoadableSession[] = "LoadableSession";
 const char kUnknownSession[] = "UnknownSession";
 
 // EME-specific test results and errors.
-const char kEmeKeyError[] = "KEY_ERROR";
-const char kEmeNotSupportedError[] = "NOTSUPPORTEDERROR";
 const char kFileIOTestSuccess[] = "FILE_IO_TEST_SUCCESS";
+const char kEmeNotSupportedError[] = "NOTSUPPORTEDERROR";
+const char kEmeGenerateRequestFailed[] = "EME_GENERATEREQUEST_FAILED";
+const char kEmeLoadFailed[] = "EME_LOAD_FAILED";
+const char kEmeUpdateFailed[] = "EME_UPDATE_FAILED";
+const char kEmeErrorEvent[] = "EME_ERROR_EVENT";
+const char kEmeMessageUnexpectedType[] = "EME_MESSAGE_UNEXPECTED_TYPE";
+const char kPrefixedEmeRenewalMissingHeader[] =
+    "PREFIXED_EME_RENEWAL_MISSING_HEADER";
+const char kPrefixedEmeErrorEvent[] = "PREFIXED_EME_ERROR_EVENT";
 
 const char kDefaultEmePlayer[] = "eme_player.html";
 
@@ -174,8 +181,11 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
                                    SrcType src_type,
                                    EmeVersion eme_version) {
     std::string expected_title = kEnded;
-    if (!IsPlayBackPossible(key_system))
-      expected_title = kEmeKeyError;
+    if (!IsPlayBackPossible(key_system)) {
+      expected_title = (eme_version == EmeVersion::UNPREFIXED)
+                           ? kEmeUpdateFailed
+                           : kPrefixedEmeErrorEvent;
+    }
 
     RunEncryptedMediaTest(kDefaultEmePlayer, media_file, media_type, key_system,
                           src_type, eme_version, kNoSessionToLoad, false,
@@ -231,7 +241,16 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
   void AddWaitForTitles(content::TitleWatcher* title_watcher) override {
     MediaBrowserTest::AddWaitForTitles(title_watcher);
     title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEmeNotSupportedError));
-    title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEmeKeyError));
+    title_watcher->AlsoWaitForTitle(
+        base::ASCIIToUTF16(kEmeGenerateRequestFailed));
+    title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEmeLoadFailed));
+    title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEmeUpdateFailed));
+    title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEmeErrorEvent));
+    title_watcher->AlsoWaitForTitle(
+        base::ASCIIToUTF16(kEmeMessageUnexpectedType));
+    title_watcher->AlsoWaitForTitle(
+        base::ASCIIToUTF16(kPrefixedEmeRenewalMissingHeader));
+    title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kPrefixedEmeErrorEvent));
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -421,10 +440,14 @@ class EncryptedMediaTest
   }
 
   void RunInvalidResponseTest() {
-    RunEncryptedMediaTest(kDefaultEmePlayer, "bear-320x240-av_enc-av.webm",
-                          kWebMAudioVideo, CurrentKeySystem(),
-                          CurrentSourceType(), CurrentEmeVersion(),
-                          kNoSessionToLoad, true, PlayTwice::NO, kEmeKeyError);
+    std::string expected_response =
+        (CurrentEmeVersion() == EmeVersion::UNPREFIXED)
+            ? kEmeUpdateFailed
+            : kPrefixedEmeErrorEvent;
+    RunEncryptedMediaTest(
+        kDefaultEmePlayer, "bear-320x240-av_enc-av.webm", kWebMAudioVideo,
+        CurrentKeySystem(), CurrentSourceType(), CurrentEmeVersion(),
+        kNoSessionToLoad, true, PlayTwice::NO, expected_response);
   }
 
   void TestFrameSizeChange() {
@@ -683,12 +706,14 @@ IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, LoadLoadableSession) {
 }
 
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, LoadUnknownSession) {
-  // TODO(xhwang): Add a specific error for this failure, e.g. kSessionNotFound.
-  TestPlaybackCase(kUnknownSession, kEmeKeyError);
+  // TODO(jrummell): Load should not fail -- it should return false instead.
+  // http://crbug.com/507736
+  TestPlaybackCase(kUnknownSession, kEmeLoadFailed);
 }
 
 IN_PROC_BROWSER_TEST_F(ECKPrefixedEncryptedMediaTest, InitializeCDMFail) {
-  TestNonPlaybackCases(kExternalClearKeyInitializeFailKeySystem, kEmeKeyError);
+  TestNonPlaybackCases(kExternalClearKeyInitializeFailKeySystem,
+                       kPrefixedEmeErrorEvent);
 }
 
 // When CDM crashes, we should still get a decode error.
@@ -719,7 +744,6 @@ IN_PROC_BROWSER_TEST_F(ECKPrefixedEncryptedMediaTest, LoadLoadableSession) {
 }
 
 IN_PROC_BROWSER_TEST_F(ECKPrefixedEncryptedMediaTest, LoadUnknownSession) {
-  // TODO(xhwang): Add a specific error for this failure, e.g. kSessionNotFound.
-  TestPlaybackCase(kUnknownSession, kEmeKeyError);
+  TestPlaybackCase(kUnknownSession, kPrefixedEmeErrorEvent);
 }
 #endif  // defined(ENABLE_PEPPER_CDMS)
