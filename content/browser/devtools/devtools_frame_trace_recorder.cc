@@ -136,8 +136,12 @@ void DevToolsFrameTraceRecorder::OnSwapCompositorFrame(
     pending_frame_data_ = nullptr;
     return;
   }
-  if (pending_frame_data_.get())
+
+  bool is_new_trace;
+  TRACE_EVENT_IS_NEW_TRACE(&is_new_trace);
+  if (!is_new_trace && pending_frame_data_)
     pending_frame_data_->CaptureFrame(host);
+
   pending_frame_data_ = new DevToolsFrameTraceRecorderData(frame_metadata);
 }
 
