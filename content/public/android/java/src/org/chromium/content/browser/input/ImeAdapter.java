@@ -61,11 +61,6 @@ public class ImeAdapter {
         void onImeEvent();
 
         /**
-         * Called when a request to hide the keyboard is sent to InputMethodManager.
-         */
-        void onDismissInput();
-
-        /**
          * Called when the keyboard could not be shown due to the hardware keyboard being present.
          */
         void onKeyboardBoundsUnchanged();
@@ -289,7 +284,6 @@ public class ImeAdapter {
             mInputMethodManagerWrapper.hideSoftInputFromWindow(view.getWindowToken(), 0,
                     unzoomIfNeeded ? mViewEmbedder.getNewShowKeyboardReceiver() : null);
         }
-        mViewEmbedder.onDismissInput();
     }
 
     private boolean hasInputType() {

@@ -742,11 +742,6 @@ public class ContentViewCore implements
                     }
 
                     @Override
-                    public void onDismissInput() {
-                        getContentViewClient().onImeStateChangeRequested(false);
-                    }
-
-                    @Override
                     public void onKeyboardBoundsUnchanged() {
                         assert mWebContents != null;
                         mWebContents.scrollFocusedEditableNodeIntoView();
@@ -783,9 +778,6 @@ public class ContentViewCore implements
                         return new ResultReceiver(new Handler()) {
                             @Override
                             public void onReceiveResult(int resultCode, Bundle resultData) {
-                                getContentViewClient().onImeStateChangeRequested(
-                                        resultCode == InputMethodManager.RESULT_SHOWN
-                                        || resultCode == InputMethodManager.RESULT_UNCHANGED_SHOWN);
                                 if (resultCode == InputMethodManager.RESULT_SHOWN) {
                                     // If OSK is newly shown, delay the form focus until
                                     // the onSizeChanged (in order to adjust relative to the
@@ -2296,14 +2288,10 @@ public class ContentViewCore implements
         // because ImeAdapter does so asynchronouly with a delay, and
         // by the time when ImeAdapter dismisses the input, the
         // containerView may have lost focus.
-        // We cannot trust ContentViewClient#onImeStateChangeRequested to
-        // hide the input window because it has an empty default implementation.
-        // So we need to explicitly hide the input method window here.
         if (mInputMethodManagerWrapper.isActive(mContainerView)) {
             mInputMethodManagerWrapper.hideSoftInputFromWindow(
                     mContainerView.getWindowToken(), 0, null);
         }
-        getContentViewClient().onImeStateChangeRequested(false);
     }
 
     @SuppressWarnings("unused")
@@ -2391,8 +2379,8 @@ public class ContentViewCore implements
             boolean isNonImeChange) {
         try {
             TraceEvent.begin("ContentViewCore.updateImeAdapter");
-            mFocusedNodeEditable = (textInputType != TextInputType.NONE);
-            if (!mFocusedNodeEditable) hidePastePopup();
+            boolean focusedNodeEditable = (textInputType != TextInputType.NONE);
+            if (!focusedNodeEditable) hidePastePopup();
 
             mImeAdapter.updateKeyboardVisibility(
                     nativeImeAdapterAndroid, textInputType, textInputFlags, showImeIfNeeded);
@@ -2403,6 +2391,11 @@ public class ContentViewCore implements
             }
 
             if (mActionMode != null) mActionMode.invalidate();
+
+            if (focusedNodeEditable != mFocusedNodeEditable) {
+                mFocusedNodeEditable = focusedNodeEditable;
+                getContentViewClient().onFocusedNodeEditabilityChanged(mFocusedNodeEditable);
+            }
         } finally {
             TraceEvent.end("ContentViewCore.updateImeAdapter");
         }

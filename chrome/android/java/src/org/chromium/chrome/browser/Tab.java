@@ -196,7 +196,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
     private boolean mIsClosing;
     private boolean mIsShowingErrorPage;
-    private boolean mIsImeShowing;
 
     private Bitmap mFavicon;
 
@@ -521,9 +520,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         }
 
         @Override
-        public void onImeStateChangeRequested(boolean requestShow) {
+        public void onFocusedNodeEditabilityChanged(boolean editable) {
             if (getFullscreenManager() == null) return;
-            mIsImeShowing = requestShow;
             updateFullscreenEnabledState();
         }
     }
@@ -1326,7 +1324,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             mFullscreenHungRendererToken = FullscreenManager.INVALID_TOKEN;
             mPreviousFullscreenOverdrawBottomHeight = Float.NaN;
         }
-        mIsImeShowing = false;
 
         hideInternal();
 
@@ -2490,7 +2487,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
         enableHidingTopControls &=
                 !AccessibilityUtil.isAccessibilityEnabled(getApplicationContext());
-        enableHidingTopControls &= !mIsImeShowing;
+        enableHidingTopControls &= !mContentViewCore.isFocusedNodeEditable();
         enableHidingTopControls &= !mIsShowingErrorPage;
         enableHidingTopControls &= !webContents.isShowingInterstitialPage();
         enableHidingTopControls &= (mFullscreenManager != null);

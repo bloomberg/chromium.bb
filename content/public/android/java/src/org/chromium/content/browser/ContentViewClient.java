@@ -73,12 +73,11 @@ public class ContentViewClient {
     }
 
     /**
-     * Notified when a change to the IME was requested.
+     * Notified when the editability of the focused node changes.
      *
-     * @param requestShow Whether the IME was requested to be shown (may already be showing
-     *                    though).
+     * @param editable Whether the focused node is editable.
      */
-    public void onImeStateChangeRequested(boolean requestShow) {
+    public void onFocusedNodeEditabilityChanged(boolean editable) {
     }
 
     /**

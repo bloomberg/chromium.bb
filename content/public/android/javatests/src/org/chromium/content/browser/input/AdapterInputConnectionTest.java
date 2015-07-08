@@ -231,9 +231,6 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
         public void onImeEvent() {}
 
         @Override
-        public void onDismissInput() {}
-
-        @Override
         public void onKeyboardBoundsUnchanged() {}
 
         @Override

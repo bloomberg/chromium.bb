@@ -43,6 +43,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
 
+    private static final String LONG_HTML_WITH_AUTO_FOCUS_INPUT_TEST_PAGE =
+            UrlUtils.encodeHtmlDataUri("<html>"
+                    + "<body style='height:10000px;'>"
+                    + "<p>The text input is focused automatically on load."
+                    + " The top controls should not hide when page is scrolled.</p><br/>"
+                    + "<input id=\"input_text\" type=\"text\" autofocus/>"
+                    + "</body>"
+                    + "</html>");
+
     private static final String LONG_HTML_TEST_PAGE = UrlUtils.encodeHtmlDataUri(
             "<html><body style='height:10000px;'></body></html>");
     private static final String LONG_FULLSCREEN_API_HTML_TEST_PAGE = UrlUtils.encodeHtmlDataUri(
@@ -320,6 +329,35 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         scrollTopControls(false);
     }
 
+    @LargeTest
+    @Feature({"Fullscreen"})
+    public void testTopControlsShownWhenInputIsFocused()
+            throws InterruptedException, ExecutionException {
+        startMainActivityWithURL(LONG_HTML_WITH_AUTO_FOCUS_INPUT_TEST_PAGE);
+
+        ChromeFullscreenManager fullscreenManager = getActivity().getFullscreenManager();
+        assertEquals(fullscreenManager.getControlOffset(), 0f);
+
+        fullscreenManager.setAnimationDurationsForTest(1, 1);
+
+        int topControlsHeight = fullscreenManager.getTopControlsHeight();
+        float dragX = 50f;
+        float dragStartY = topControlsHeight * 3;
+        float dragEndY = dragStartY - topControlsHeight * 2;
+        long downTime = SystemClock.uptimeMillis();
+        dragStart(dragX, dragStartY, downTime);
+        dragTo(dragX, dragX, dragStartY, dragEndY, 100, downTime);
+        dragEnd(dragX, dragEndY, downTime);
+        assertTrue(waitForNoBrowserTopControlsOffset());
+        assertEquals(fullscreenManager.getControlOffset(), 0f);
+
+        Tab tab = getActivity().getActivityTab();
+        singleClickView(tab.getView());
+        waitForEditableNodeToLoseFocus(tab);
+        scrollTopControls(false);
+        scrollTopControls(true);
+    }
+
     private void scrollTopControls(boolean show) throws InterruptedException, ExecutionException {
         ChromeFullscreenManager fullscreenManager = getActivity().getFullscreenManager();
         int topControlsHeight = fullscreenManager.getTopControlsHeight();
@@ -481,6 +519,16 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
                     fail(e.getMessage());
                     return false;
                 }
+            }
+        });
+    }
+
+    private boolean waitForEditableNodeToLoseFocus(final Tab tab) throws InterruptedException {
+        return CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                ContentViewCore contentViewCore = tab.getContentViewCore();
+                return !contentViewCore.isFocusedNodeEditable();
             }
         });
     }
