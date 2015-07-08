@@ -38,7 +38,11 @@ public class ReaderModeButtonView extends SwipableOverlayView {
      */
     public static ReaderModeButtonView create(ContentViewCore contentViewCore,
                                               ReaderModeButtonViewDelegate buttonViewDelegate) {
+        if (contentViewCore == null) return null;
+        if (contentViewCore.getWebContents() == null) return null;
         Context context = contentViewCore.getContext();
+        if (context == null) return null;
+
         ReaderModeButtonView view =
                 (ReaderModeButtonView) LayoutInflater.from(context)
                         .inflate(R.layout.reader_mode_view, null);
