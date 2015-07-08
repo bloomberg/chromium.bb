@@ -28,12 +28,12 @@ int translation_mode = 0;
 int errors = 0;
 int count = 0;
 
-int
+void
 simple_error (const char *msg, yaml_event_t *event) {
   error_at_line(EXIT_FAILURE, 0, file_name, event->start_mark.line, "%s", msg);
 }
 
-int
+void
 yaml_error (yaml_event_type_t expected, yaml_event_t *event) {
   error_at_line(EXIT_FAILURE, 0, file_name, event->start_mark.line,
 		"Expected %s (actual %s)",
