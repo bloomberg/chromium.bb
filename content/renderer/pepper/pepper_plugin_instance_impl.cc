@@ -2605,8 +2605,19 @@ PP_Bool PepperPluginInstanceImpl::SetFullscreen(PP_Instance instance,
 
 PP_Bool PepperPluginInstanceImpl::GetScreenSize(PP_Instance instance,
                                                 PP_Size* size) {
-  blink::WebScreenInfo info = render_frame()->GetRenderWidget()->screenInfo();
-  *size = PP_MakeSize(info.rect.width, info.rect.height);
+  if (flash_fullscreen_) {
+    // Workaround for Flash rendering bug: Flash is assuming the fullscreen view
+    // size will be equal to the physical screen size.  However, the fullscreen
+    // view is sized by the browser UI, and may not be the same size as the
+    // screen or the desktop.  Therefore, report the view size as the screen
+    // size when in fullscreen mode.  http://crbug.com/506016
+    // TODO(miu): Remove this workaround once Flash has been fixed.
+    *size = view_data_.rect.size;
+  } else {
+    // All other cases: Report the screen size.
+    blink::WebScreenInfo info = render_frame()->GetRenderWidget()->screenInfo();
+    *size = PP_MakeSize(info.rect.width, info.rect.height);
+  }
   return PP_TRUE;
 }
 
@@ -3195,6 +3206,11 @@ void PepperPluginInstanceImpl::KeepSizeAttributesBeforeFullscreen() {
 void PepperPluginInstanceImpl::SetSizeAttributesForFullscreen() {
   if (!render_frame_)
     return;
+
+  // TODO(miu): Revisit this logic.  If the style must be modified for correct
+  // behavior, the width and height should probably be set to 100%, rather than
+  // a fixed screen size.
+
   blink::WebScreenInfo info = render_frame_->GetRenderWidget()->screenInfo();
   screen_size_for_fullscreen_ = gfx::Size(info.rect.width, info.rect.height);
   std::string width = base::IntToString(screen_size_for_fullscreen_.width());
