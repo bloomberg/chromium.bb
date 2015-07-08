@@ -243,7 +243,11 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
             } else if (isExpanded()) {
                 peekPanel(StateChangeReason.SEARCH_BAR_TAP);
             } else if (isMaximized()) {
-                mManagementDelegate.promoteToTab(true);
+                // TODO(twellington): check if click happened inside close button,
+                // using ContextualSearchPanelFeatures.isCloseButtonAvailable().
+                if (ContextualSearchPanelFeatures.isSearchTermRefiningAvailable()) {
+                    mManagementDelegate.promoteToTab(true);
+                }
             }
         }
     }

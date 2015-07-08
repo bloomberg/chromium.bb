@@ -15,7 +15,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchOptOutPromo.ContextualSearchPromoHost;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.privacy.ContextualSearchPreferenceFragment;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -26,6 +25,21 @@ import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
  */
 abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandler
         implements ContextualSearchPromoHost {
+
+    /**
+     * The margin top of the Contextual Search Bar in dps.
+     */
+    private static final float SEARCH_BAR_MARGIN_TOP_DP = 16.f;
+
+    /**
+     * The side padding of Search Bar icons in dps.
+     */
+    private static final float SEARCH_BAR_ICON_SIDE_PADDING_DP = 16.f;
+
+    /**
+     * The height of the Search Bar's border in dps.
+     */
+    private static final float SEARCH_BAR_BORDER_HEIGHT_DP = 1.f;
 
     /**
      * The height of the expanded Contextual Search Panel relative to the height
@@ -71,57 +85,42 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     /**
      * The opacity of the search icon when the Panel is peeking.
      */
-    private static final float SEARCH_ICON_OPACITY_PEEKED = 0.f;
+    private static final float SEARCH_ICON_OPACITY_STATE_PEEKED = 0.f;
 
     /**
      * The opacity of the search icon when the Panel is expanded.
      */
-    private static final float SEARCH_ICON_OPACITY_EXPANDED = 0.f;
+    private static final float SEARCH_ICON_OPACITY_STATE_EXPANDED = 0.f;
 
     /**
      * The opacity of the search icon when the Panel is maximized.
      */
-    private static final float SEARCH_ICON_OPACITY_MAXIMIZED = 1.f;
-
-    /**
-     * The margin top of the Contextual Search Bar in dps.
-     */
-    private static final float SEARCH_BAR_MARGIN_TOP_DP = 16.f;
-
-    /**
-     * The side padding of Search Bar icons in dps.
-     */
-    private static final float SEARCH_BAR_ICON_SIDE_PADDING_DP = 16.f;
-
-    /**
-     * The height of the Search Bar's border in dps.
-     */
-    private static final float SEARCH_BAR_BORDER_HEIGHT_DP = 1.f;
+    private static final float SEARCH_ICON_OPACITY_STATE_MAXIMIZED = 1.f;
 
     /**
      * The opacity of the arrow icon when the Panel is peeking.
      */
-    private static final float ARROW_ICON_OPACITY_PEEKED = 1.f;
+    private static final float ARROW_ICON_OPACITY_STATE_PEEKED = 1.f;
 
     /**
      * The opacity of the arrow icon when the Panel is expanded.
      */
-    private static final float ARROW_ICON_OPACITY_EXPANDED = 1.f;
+    private static final float ARROW_ICON_OPACITY_STATE_EXPANDED = 1.f;
 
     /**
      * The opacity of the arrow icon when the Panel is maximized.
      */
-    private static final float ARROW_ICON_OPACITY_MAXIMIZED = 0.f;
+    private static final float ARROW_ICON_OPACITY_STATE_MAXIMIZED = 0.f;
 
     /**
      * The rotation of the arrow icon when the Panel is peeking.
      */
-    private static final float ARROW_ICON_ROTATION_PEEKED = -90.f;
+    private static final float ARROW_ICON_ROTATION_STATE_PEEKED = -90.f;
 
     /**
      * The rotation of the arrow icon when the Panel is expanded.
      */
-    private static final float ARROW_ICON_ROTATION_EXPANDED = -270.f;
+    private static final float ARROW_ICON_ROTATION_STATE_EXPANDED = -270.f;
 
     /**
      * The height of the Progress Bar in dps.
@@ -428,6 +427,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     private boolean mSearchBarShadowVisible = false;
     private float mSearchBarShadowOpacity = 0.f;
 
+    private boolean mSearchProviderIconVisible;
     private float mSearchProviderIconOpacity;
 
     private float mSearchIconOpacity;
@@ -499,10 +499,24 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     }
 
     /**
+     * @return Whether the side search provider icon is visible .
+     */
+    public boolean isSideSearchProviderIconVisible() {
+        return ContextualSearchPanelFeatures.isSideSearchProviderIconAvailable();
+    }
+
+    /**
      * @return The opacity of the search provider's icon.
      */
     public float getSearchProviderIconOpacity() {
         return mSearchProviderIconOpacity;
+    }
+
+    /**
+     * @return Whether the search icon is visible.
+     */
+    public boolean isSearchIconVisible() {
+        return ContextualSearchPanelFeatures.isSearchIconAvailable();
     }
 
     /**
@@ -516,7 +530,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      * @return Whether the arrow icon is visible.
      */
     public boolean isArrowIconVisible() {
-        return ContextualSearchFieldTrial.isArrowIconEnabled();
+        return ContextualSearchPanelFeatures.isArrowIconAvailable();
     }
 
     /**
@@ -906,11 +920,11 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         mSearchProviderIconOpacity = SEARCH_PROVIDER_ICON_OPACITY_STATE_PEEKED;
 
         // Search icon opacity.
-        mSearchIconOpacity = SEARCH_ICON_OPACITY_PEEKED;
+        mSearchIconOpacity = SEARCH_ICON_OPACITY_STATE_PEEKED;
 
         // Arrow Icon.
-        mArrowIconOpacity = ARROW_ICON_OPACITY_PEEKED;
-        mArrowIconRotation = ARROW_ICON_ROTATION_PEEKED;
+        mArrowIconOpacity = ARROW_ICON_OPACITY_STATE_PEEKED;
+        mArrowIconRotation = ARROW_ICON_ROTATION_STATE_PEEKED;
 
         // Progress Bar.
         mProgressBarOpacity = 0.f;
@@ -958,16 +972,16 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         mSearchBarBorderY = searchBarHeight - SEARCH_BAR_BORDER_HEIGHT_DP + 1;
 
         // Search provider icon opacity.
-        mSearchProviderIconOpacity = SEARCH_PROVIDER_ICON_OPACITY_STATE_PEEKED;
+        mSearchProviderIconOpacity = SEARCH_PROVIDER_ICON_OPACITY_STATE_EXPANDED;
 
         // Search icon opacity.
-        mSearchIconOpacity = SEARCH_ICON_OPACITY_EXPANDED;
+        mSearchIconOpacity = SEARCH_ICON_OPACITY_STATE_EXPANDED;
 
         // Arrow Icon.
-        mArrowIconOpacity = ARROW_ICON_OPACITY_EXPANDED;
+        mArrowIconOpacity = ARROW_ICON_OPACITY_STATE_EXPANDED;
         mArrowIconRotation = Math.round(MathUtils.interpolate(
-                ARROW_ICON_ROTATION_PEEKED,
-                ARROW_ICON_ROTATION_EXPANDED,
+                ARROW_ICON_ROTATION_STATE_PEEKED,
+                ARROW_ICON_ROTATION_STATE_EXPANDED,
                 percentage));
 
         // Progress Bar.
@@ -1019,25 +1033,30 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         mSearchBarTextOpacity = 1.f;
 
         // Search provider icon opacity.
-        float searchProviderIconOpacity = MathUtils.interpolate(
-                SEARCH_PROVIDER_ICON_OPACITY_STATE_EXPANDED,
-                SEARCH_PROVIDER_ICON_OPACITY_STATE_MAXIMIZED,
-                percentage);
+        float searchProviderIconOpacity;
+        if (isSideSearchProviderIconVisible()) {
+            searchProviderIconOpacity = SEARCH_PROVIDER_ICON_OPACITY_STATE_EXPANDED;
+        } else {
+            searchProviderIconOpacity = MathUtils.interpolate(
+                    SEARCH_PROVIDER_ICON_OPACITY_STATE_EXPANDED,
+                    SEARCH_PROVIDER_ICON_OPACITY_STATE_MAXIMIZED,
+                    percentage);
+        }
         mSearchProviderIconOpacity = searchProviderIconOpacity;
 
         // Search icon opacity.
         float searchIconOpacity = MathUtils.interpolate(
-                SEARCH_ICON_OPACITY_EXPANDED,
-                SEARCH_ICON_OPACITY_MAXIMIZED,
+                SEARCH_ICON_OPACITY_STATE_EXPANDED,
+                SEARCH_ICON_OPACITY_STATE_MAXIMIZED,
                 percentage);
         mSearchIconOpacity = searchIconOpacity;
 
         // Arrow Icon.
         mArrowIconOpacity = MathUtils.interpolate(
-                ARROW_ICON_OPACITY_EXPANDED,
-                ARROW_ICON_OPACITY_MAXIMIZED,
+                ARROW_ICON_OPACITY_STATE_EXPANDED,
+                ARROW_ICON_OPACITY_STATE_MAXIMIZED,
                 percentage);
-        mArrowIconRotation = ARROW_ICON_ROTATION_EXPANDED;
+        mArrowIconRotation = ARROW_ICON_ROTATION_STATE_EXPANDED;
 
         // Progress Bar.
         mProgressBarOpacity = 1.f;

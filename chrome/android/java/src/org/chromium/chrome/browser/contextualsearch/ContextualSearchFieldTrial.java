@@ -37,7 +37,10 @@ public class ContextualSearchFieldTrial {
     static final String TAP_PREFETCH_LIMIT_FOR_DECIDED = "tap_prefetch_limit_for_decided";
     static final String TAP_RESOLVE_LIMIT_FOR_UNDECIDED = "tap_resolve_limit_for_undecided";
     static final String TAP_PREFETCH_LIMIT_FOR_UNDECIDED = "tap_prefetch_limit_for_undecided";
+
     static final String ARROW_ICON_ENABLED = "contextual_search_arrow_icon_enabled";
+    static final String SIDE_SEARCH_PROVIDER_ICON_ENABLED =
+            "contextual_search_side_search_provider_icon_enabled";
 
     private static final String CHINESE_LANGUAGE_CODE = "zh";
     private static final String JAPANESE_LANGUAGE_CODE = "ja";
@@ -238,6 +241,13 @@ public class ContextualSearchFieldTrial {
      */
     public static boolean isArrowIconEnabled() {
         return getBooleanParam(ARROW_ICON_ENABLED);
+    }
+
+    /**
+     * @return {@code true} Whether the search provider icon should be displayed on the side.
+     */
+    public static boolean isSideSearchProviderIconEnabled() {
+        return getBooleanParam(SIDE_SEARCH_PROVIDER_ICON_ENABLED);
     }
 
     // --------------------------------------------------------------------------------------------
