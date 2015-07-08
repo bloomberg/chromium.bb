@@ -906,7 +906,7 @@ if (!is_android) {
         #'app_mode_app_support',  TODO(GYP)
         "//chrome",
         #'../components/components.gyp:breakpad_stubs',  TODO(GYP)
-        #'../third_party/ocmock/ocmock.gyp:ocmock',  TODO(GYP)
+        "//third_party/ocmock",
       ]
       sources += [
         "../browser/media_galleries/fileapi/iphoto_data_provider_browsertest.cc",
@@ -1597,7 +1597,7 @@ if (!is_android) {
       # on disk so it can pull from it.
       deps += [
         "//third_party/google_toolbox_for_mac",
-        # "//third_party/ocmock", # TODO(GYP)
+        "//third_party/ocmock",
       ]
 
       # TODO(mark): We really want this for all non-static library targets,
