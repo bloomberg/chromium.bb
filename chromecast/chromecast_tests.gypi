@@ -36,6 +36,7 @@
       ],
       'sources': [
         'crash/cast_crashdump_uploader_unittest.cc',
+        'crash/linux/dummy_minidump_generator_unittest.cc',
         'crash/linux/dump_info_unittest.cc',
         'crash/linux/synchronized_minidump_manager_unittest.cc',
         'crash/linux/minidump_writer_unittest.cc',

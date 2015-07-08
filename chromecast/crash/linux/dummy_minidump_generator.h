@@ -23,7 +23,20 @@ class DummyMinidumpGenerator : public MinidumpGenerator {
   // MinidumpGenerator implementation:
   bool Generate(const std::string& minidump_path) override;
 
+  // Provide access to internal utility for testing.
+  bool CopyAndDeleteForTest(const std::string& dest_path) {
+    return CopyAndDelete(dest_path);
+  }
+
  private:
+  // Copies the contents of the file at |existing_minidump_path_| to the file at
+  // |dest_path|. If the copy operation succeeds, delete the file at
+  // |existing_minidump_path_|. Returns false if |existing_minidump_path_| can't
+  // be opened, or if the copy operation fails. Ideally, we would use Chrome
+  // utilities for a task like this, but we must ensure that this operation can
+  // occur on any thread (regardless of IO restrictions).
+  bool CopyAndDelete(const std::string& dest_path);
+
   const std::string existing_minidump_path_;
 
   DISALLOW_COPY_AND_ASSIGN(DummyMinidumpGenerator);
