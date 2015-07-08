@@ -453,6 +453,21 @@ CORE_EXPORT PositionInComposedTree toPositionInComposedTree(const Position&);
 Position toPositionInDOMTree(const Position&);
 CORE_EXPORT Position toPositionInDOMTree(const PositionInComposedTree&);
 
+template <typename Strategy>
+PositionAlgorithm<Strategy> fromPositionInDOMTree(const Position&);
+
+template <>
+inline Position fromPositionInDOMTree<EditingStrategy>(const Position& position)
+{
+    return position;
+}
+
+template <>
+inline PositionInComposedTree fromPositionInDOMTree<EditingInComposedTreeStrategy>(const Position& position)
+{
+    return toPositionInComposedTree(position);
+}
+
 } // namespace blink
 
 #ifndef NDEBUG

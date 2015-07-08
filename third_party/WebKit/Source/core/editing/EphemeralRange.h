@@ -12,10 +12,10 @@ namespace blink {
 class Document;
 class Range;
 
-// Unlike |Range| objects, |EphemeralRange| objects aren't relocated. You
-// should not use |EphemeralRange| objects after DOM modification.
+// Unlike |Range| objects, |EphemeralRangeTemplate| objects aren't relocated.
+// You should not use |EphemeralRangeTemplate| objects after DOM modification.
 //
-// EphemeralRange is supposed to use returning or passing start and end
+// EphemeralRangeTemplate is supposed to use returning or passing start and end
 // position.
 //
 //  Example usage:
@@ -25,7 +25,7 @@ class Range;
 //    consumeRange2(range.get());
 //
 //  Above code should be:
-//    EphemeralRange range = produceRange();
+//    EphemeralRangeTemplate range = produceRange();
 //    consumeRange(range);
 //    ... no DOM modification ...
 //    consumeRange2(range);
@@ -34,23 +34,24 @@ class Range;
 //  object list in |Document| for relocation. These operations are redundant
 //  if |Range| objects doesn't live after DOM mutation.
 //
-class CORE_EXPORT EphemeralRange final {
+template <typename Strategy>
+class CORE_TEMPLATE_CLASS_EXPORT EphemeralRangeTemplate final {
     STACK_ALLOCATED();
 public:
-    EphemeralRange(const Position& start, const Position& end);
-    EphemeralRange(const EphemeralRange& other);
+    EphemeralRangeTemplate(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end);
+    EphemeralRangeTemplate(const EphemeralRangeTemplate& other);
     // |position| should be null or in-document.
-    explicit EphemeralRange(const Position& /* position */);
-    // When |range| is nullptr, |EphemeralRange| is null.
-    explicit EphemeralRange(const Range* /* range */);
-    EphemeralRange();
-    ~EphemeralRange();
+    explicit EphemeralRangeTemplate(const PositionAlgorithm<Strategy>& /* position */);
+    // When |range| is nullptr, |EphemeralRangeTemplate| is null.
+    explicit EphemeralRangeTemplate(const Range* /* range */);
+    EphemeralRangeTemplate();
+    ~EphemeralRangeTemplate();
 
-    EphemeralRange& operator=(const EphemeralRange& other);
+    EphemeralRangeTemplate<Strategy>& operator=(const EphemeralRangeTemplate<Strategy>& other);
 
     Document& document() const;
-    Position startPosition() const;
-    Position endPosition() const;
+    PositionAlgorithm<Strategy> startPosition() const;
+    PositionAlgorithm<Strategy> endPosition() const;
 
     // Returns true if |m_startPositoin| == |m_endPosition| or |isNull()|.
     bool isCollapsed() const;
@@ -65,17 +66,20 @@ public:
 
     // |node| should be in-document and valid for anchor node of
     // |PositionAlgorithm<Strategy>|.
-    static EphemeralRange rangeOfContents(const Node& /* node */);
+    static EphemeralRangeTemplate<Strategy> rangeOfContents(const Node& /* node */);
 
 private:
     bool isValid() const;
 
-    Position m_startPosition;
-    Position m_endPosition;
+    PositionAlgorithm<Strategy> m_startPosition;
+    PositionAlgorithm<Strategy> m_endPosition;
 #if ENABLE(ASSERT)
     uint64_t m_domTreeVersion;
 #endif
 };
+
+extern template class CORE_EXTERN_TEMPLATE_EXPORT EphemeralRangeTemplate<EditingStrategy>;
+using EphemeralRange = EphemeralRangeTemplate<EditingStrategy>;
 
 } // namespace blink
 
