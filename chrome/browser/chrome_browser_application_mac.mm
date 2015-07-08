@@ -5,6 +5,7 @@
 #import "chrome/browser/chrome_browser_application_mac.h"
 
 #import "base/auto_reset.h"
+#include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/stack_trace.h"
 #import "base/logging.h"
@@ -17,6 +18,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #import "chrome/common/mac/objc_zombie.h"
 #include "content/public/browser/browser_accessibility_state.h"
@@ -473,8 +475,17 @@ void SwizzleInit() {
   // instrumentations, so a big switch with each bunch instrumented is required.
   switch (event.type) {
     case NSLeftMouseDown:
+    case NSRightMouseDown: {
+      // In kiosk mode, we want to prevent context menus from appearing,
+      // so simply discard menu-generating events instead of passing them along.
+      bool kioskMode = base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kKioskMode);
+      bool ctrlDown = [event modifierFlags] & NSControlKeyMask;
+      if (kioskMode && ([event type] == NSRightMouseDown || ctrlDown))
+        break;
+    }
+    // FALL THROUGH
     case NSLeftMouseUp:
-    case NSRightMouseDown:
     case NSRightMouseUp:
     case NSMouseMoved:
     case NSLeftMouseDragged:

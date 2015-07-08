@@ -10,6 +10,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
@@ -38,6 +39,7 @@
 #include "chrome/browser/ui/webui/extensions/extension_basic_info.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -115,6 +117,12 @@ void AppLauncherHandler::CreateAppInfo(
   // chrome/browser/resources/ntp4/page_list_view.js in @typedef for AppInfo.
   // Please update it whenever you add or remove any keys here.
   value->Clear();
+
+  // Communicate the kiosk flag so the apps page can disable showing the
+  // context menu in kiosk mode.
+  value->SetBoolean(
+      "kioskMode",
+      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode));
 
   // The Extension class 'helpfully' wraps bidi control characters that
   // impede our ability to determine directionality.

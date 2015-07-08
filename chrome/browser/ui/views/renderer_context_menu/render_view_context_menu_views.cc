@@ -4,9 +4,11 @@
 
 #include "chrome/browser/ui/views/renderer_context_menu/render_view_context_menu_views.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/renderer_context_menu/views/toolkit_delegate_views.h"
 #include "content/public/browser/render_view_host.h"
@@ -211,6 +213,9 @@ void RenderViewContextMenuViews::AppendPlatformEditableItems() {
 }
 
 void RenderViewContextMenuViews::Show() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
+    return;
+
   // Menus need a Widget to work. If we're not the active tab we won't
   // necessarily be in a widget.
   views::Widget* top_level_widget = GetTopLevelWidget();

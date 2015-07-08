@@ -27,6 +27,7 @@
  *            is_component: boolean,
  *            is_webstore: boolean,
  *            kioskEnabled: boolean,
+ *            kioskMode: boolean,
  *            kioskOnly: boolean,
  *            launch_container: number,
  *            launch_type: number,

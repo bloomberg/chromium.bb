@@ -4,10 +4,12 @@
 
 #include "chrome/browser/ui/views/bookmarks/bookmark_context_menu.h"
 
+#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/views/controls/menu/menu_item_view.h"
@@ -62,6 +64,9 @@ BookmarkContextMenu::~BookmarkContextMenu() {
 
 void BookmarkContextMenu::RunMenuAt(const gfx::Point& point,
                                     ui::MenuSourceType source_type) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
+    return;
+
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BOOKMARK_CONTEXT_MENU_SHOWN,
       content::Source<BookmarkContextMenu>(this),

@@ -278,8 +278,11 @@ cr.define('ntp', function() {
       this.appContents_.__defineGetter__('contextMenu', function() {
         return self.contextMenu;
       });
-      this.appContents_.addEventListener('contextmenu',
-                                         cr.ui.contextMenuHandler);
+
+      if (!this.appData_.kioskMode) {
+        this.appContents_.addEventListener('contextmenu',
+                                           cr.ui.contextMenuHandler);
+      }
 
       this.addEventListener('mousedown', this.onMousedown_, true);
       this.addEventListener('keydown', this.onKeydown_);
