@@ -22637,12 +22637,45 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicStreamFactory.DisabledReasons"
+    enum="QuicDisabledReason">
+  <owner>ckrasic@chromium.org</owner>
+  <summary>
+    Rrecords reasons QUIC is disabled (for all ports), if sufficent recent
+    connections experience: public reset post crypto handshake, or timeouts with
+    streams open. QUIC is disabled until the next reboot of Chrome. Logged
+    during session close.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicStreamFactory.PublicResetsPostHandshake"
+    units="resets">
+  <owner>ckrasic@chromium.org</owner>
+  <summary>
+    Captures the maximum number of public resets post handshake that occurred
+    within a window of recent connections (default 20). Will help inform the
+    choice of threshold to disable QUIC for clients that experience pathalogical
+    errors. Logged during session close.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicStreamFactory.QuicIsDisabled" enum="Ports">
   <owner>rtenneti@chromium.org</owner>
   <summary>
     Recorded whenever QUIC is disabled for a port due to repeated lossy
     connections (high packet loss on multiple consecutive connections). QUIC is
     disabled until next reboot of Chrome.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicStreamFactory.TimeoutsWithOpenStreams"
+    units="timeouts">
+  <owner>ckrasic@chromium.org</owner>
+  <summary>
+    Captures the maximum number of connection timeouts with streams open that
+    occurred within a window of recent connections (default 20). Will help
+    inform the choice of threshold to disable QUIC for clients that experience
+    pathalogical errors. Logged during session close.
   </summary>
 </histogram>
 
@@ -65414,6 +65447,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="THREE_PACKETS_LOST"/>
   <int value="4" label="FOUR_PACKETS_LOST"/>
   <int value="5" label="FIVE_PACKETS_LOST"/>
+</enum>
+
+<enum name="QuicDisabledReason" type="int">
+  <int value="1" label="Public reset post handshake"/>
+  <int value="2" label="Timeout with open streams"/>
+  <int value="3" label="Bad packet loss rate"/>
 </enum>
 
 <enum name="QuicDiskCacheAPICall" type="int">

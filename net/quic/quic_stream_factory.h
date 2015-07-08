@@ -20,6 +20,7 @@
 #include "net/log/net_log.h"
 #include "net/proxy/proxy_server.h"
 #include "net/quic/network_connection.h"
+#include "net/quic/quic_client_session.h"
 #include "net/quic/quic_config.h"
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/quic_http_stream.h"
@@ -121,6 +122,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool prefer_aes,
       int max_number_of_lossy_connections,
       float packet_loss_threshold,
+      int max_recent_disabled_reasons,
+      int threshold_timeouts_with_streams_open,
+      int threshold_public_resets_post_handshake,
       int socket_receive_buffer_size,
       const QuicTagVector& connection_options);
   ~QuicStreamFactory() override;
@@ -150,6 +154,13 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Returns true if QUIC is disabled for this port.
   bool IsQuicDisabled(uint16 port);
+
+  // Returns reason QUIC is disabled for this port, or QUIC_DISABLED_NOT if not.
+  QuicClientSession::QuicDisabledReason QuicDisabledReason(uint16 port) const;
+
+  // Returns reason QUIC is disabled as string for net-internals, or
+  // returns empty string if QUIC is not disabled.
+  const char* QuicDisabledReasonString() const;
 
   // Called by a session when it becomes idle.
   void OnIdleSession(QuicClientSession* session);
@@ -244,6 +255,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   typedef std::map<QuicStreamRequest*, QuicServerId> RequestMap;
   typedef std::set<QuicStreamRequest*> RequestSet;
   typedef std::map<QuicServerId, RequestSet> ServerIDRequestsMap;
+  typedef std::deque<enum QuicClientSession::QuicDisabledReason>
+      DisabledReasonsQueue;
 
   // Creates a job which doesn't wait for server config to be loaded from the
   // disk cache. This job is started via a PostTask.
@@ -290,6 +303,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   void ProcessGoingAwaySession(QuicClientSession* session,
                                const QuicServerId& server_id,
                                bool was_session_active);
+
+  // Collect stats from recent connections, possibly disabling Quic.
+  void MaybeDisableQuic(QuicClientSession* session);
 
   bool require_confirmation_;
   HostResolver* host_resolver_;
@@ -368,6 +384,21 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   float packet_loss_threshold_;
   // Count number of lossy connections by port.
   std::map<uint16, int> number_of_lossy_connections_;
+
+  // Keep track of stats for recently closed connections, using a
+  // bounded queue.
+  int max_disabled_reasons_;
+  DisabledReasonsQueue disabled_reasons_;
+  // Events that can trigger disabling QUIC
+  int num_public_resets_post_handshake_;
+  int num_timeouts_with_open_streams_;
+  // Keep track the largest values for UMA histograms, that will help
+  // determine good threshold values.
+  int max_public_resets_post_handshake_;
+  int max_timeouts_with_open_streams_;
+  // Thresholds if greater than zero, determine when to
+  int threshold_timeouts_with_open_streams_;
+  int threshold_public_resets_post_handshake_;
 
   // Size of the UDP receive buffer.
   int socket_receive_buffer_size_;

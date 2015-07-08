@@ -44,6 +44,18 @@ class QuicClientSessionPeer;
 class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase,
                                              public QuicPacketReader::Visitor {
  public:
+  // Reasons to disable QUIC, that is under certain pathological
+  // connection errors.  Note: these values must be kept in sync with
+  // the corresponding values of QuicDisabledReason in:
+  // tools/metrics/histograms/histograms.xml
+  enum QuicDisabledReason {
+    QUIC_DISABLED_NOT = 0,  // default, not disabled
+    QUIC_DISABLED_PUBLIC_RESET_POST_HANDSHAKE = 1,
+    QUIC_DISABLED_TIMEOUT_WITH_OPEN_STREAMS = 2,
+    QUIC_DISABLED_BAD_PACKET_LOSS_RATE = 3,
+    QUIC_DISABLED_MAX = 4,
+  };
+
   // An interface for observing events on a session.
   class NET_EXPORT_PRIVATE Observer {
    public:
@@ -194,6 +206,8 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase,
 
   const QuicServerId& server_id() const { return server_id_; }
 
+  QuicDisabledReason disabled_reason() const { return disabled_reason_; }
+
  protected:
   // QuicSession methods:
   QuicDataStream* CreateIncomingDynamicStream(QuicStreamId id) override;
@@ -261,6 +275,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase,
   // True when the session is going away, and streams may no longer be created
   // on this session. Existing stream will continue to be processed.
   bool going_away_;
+  QuicDisabledReason disabled_reason_;
   base::WeakPtrFactory<QuicClientSession> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicClientSession);

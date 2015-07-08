@@ -60,6 +60,11 @@ const int32 kSpdyStreamMaxRecvWindowSize = 6 * 1024 * 1024;    //  6 MB
 // and does not consume "too much" memory.
 const int32 kQuicSocketReceiveBufferSize = 1024 * 1024;  // 1MB
 
+// Number of recent connections to consider for certain thresholds
+// that trigger disabling QUIC.  E.g. disable QUIC if PUBLIC_RESET was
+// received post handshake for at least 2 of 20 recent connections.
+const int32 kQuicMaxRecentDisabledReasons = 20;
+
 HttpNetworkSession::Params::Params()
     : client_socket_factory(NULL),
       host_resolver(NULL),
@@ -106,6 +111,9 @@ HttpNetworkSession::Params::Params()
       quic_max_packet_length(kDefaultMaxPacketSize),
       enable_user_alternate_protocol_ports(false),
       quic_crypto_client_stream_factory(NULL),
+      quic_max_recent_disabled_reasons(kQuicMaxRecentDisabledReasons),
+      quic_threshold_public_resets_post_handshake(0),
+      quic_threshold_timeouts_streams_open(0),
       proxy_delegate(NULL) {
   quic_supported_versions.push_back(QUIC_VERSION_25);
 }
@@ -151,6 +159,9 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
           params.quic_max_number_of_lossy_connections,
           params.quic_packet_loss_threshold,
           params.quic_socket_receive_buffer_size,
+          params.quic_max_recent_disabled_reasons,
+          params.quic_threshold_public_resets_post_handshake,
+          params.quic_threshold_timeouts_streams_open,
           params.quic_connection_options),
       spdy_session_pool_(params.host_resolver,
                          params.ssl_config_service,
@@ -278,6 +289,8 @@ scoped_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
                   params_.origin_to_force_quic_on.ToString());
   dict->SetDouble("alternative_service_probability_threshold",
                   params_.alternative_service_probability_threshold);
+  dict->SetString("disabled_reason",
+                  quic_stream_factory_.QuicDisabledReasonString());
   return dict.Pass();
 }
 

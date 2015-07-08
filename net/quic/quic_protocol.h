@@ -542,6 +542,10 @@ enum QuicErrorCode {
   QUIC_CONNECTION_CANCELLED = 70,
   // Disabled QUIC because of high packet loss rate.
   QUIC_BAD_PACKET_LOSS_RATE = 71,
+  // Disabled QUIC because of too many PUBLIC_RESETs post handshake.
+  QUIC_PUBLIC_RESETS_POST_HANDSHAKE = 73,
+  // Disabled QUIC because of too many timeouts with streams open.
+  QUIC_TIMEOUTS_WITH_OPEN_STREAMS = 74,
 
   // Crypto errors.
 
@@ -601,7 +605,7 @@ enum QuicErrorCode {
   QUIC_VERSION_NEGOTIATION_MISMATCH = 55,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 73,
+  QUIC_LAST_ERROR = 75,
 };
 
 struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {

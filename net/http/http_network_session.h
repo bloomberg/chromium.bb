@@ -126,6 +126,9 @@ class NET_EXPORT HttpNetworkSession
     bool enable_user_alternate_protocol_ports;
     QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory;
     QuicVersionVector quic_supported_versions;
+    int quic_max_recent_disabled_reasons;
+    int quic_threshold_public_resets_post_handshake;
+    int quic_threshold_timeouts_streams_open;
     QuicTagVector quic_connection_options;
     ProxyDelegate* proxy_delegate;
   };

@@ -184,6 +184,7 @@ QuicClientSession::QuicClientSession(
       dns_resolution_end_time_(dns_resolution_end_time),
       logger_(new QuicConnectionLogger(this, connection_description, net_log_)),
       going_away_(false),
+      disabled_reason_(QUIC_DISABLED_NOT),
       weak_factory_(this) {
   crypto_stream_.reset(
       crypto_client_stream_factory
@@ -676,6 +677,7 @@ void QuicClientSession::OnConnectionClosed(QuicErrorCode error,
         GetNumOpenStreams());
     if (IsCryptoHandshakeConfirmed()) {
       if (GetNumOpenStreams() > 0) {
+        disabled_reason_ = QUIC_DISABLED_TIMEOUT_WITH_OPEN_STREAMS;
         UMA_HISTOGRAM_BOOLEAN(
             "Net.QuicSession.TimedOutWithOpenStreams.HasUnackedPackets",
             connection()->sent_packet_manager().HasUnackedPackets());
@@ -722,6 +724,8 @@ void QuicClientSession::OnConnectionClosed(QuicErrorCode error,
           "Net.QuicSession.ConnectionClose.HandshakeFailureUnknown.QuicError",
           error);
     }
+  } else if (error == QUIC_PUBLIC_RESET) {
+    disabled_reason_ = QUIC_DISABLED_PUBLIC_RESET_POST_HANDSHAKE;
   }
 
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.QuicVersion",

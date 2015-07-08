@@ -570,6 +570,9 @@ QuicStreamFactory::QuicStreamFactory(
     bool prefer_aes,
     int max_number_of_lossy_connections,
     float packet_loss_threshold,
+    int max_disabled_reasons,
+    int threshold_public_resets_post_handshake,
+    int threshold_timeouts_with_open_streams,
     int socket_receive_buffer_size,
     const QuicTagVector& connection_options)
     : require_confirmation_(true),
@@ -596,6 +599,15 @@ QuicStreamFactory::QuicStreamFactory(
       prefer_aes_(prefer_aes),
       max_number_of_lossy_connections_(max_number_of_lossy_connections),
       packet_loss_threshold_(packet_loss_threshold),
+      max_disabled_reasons_(max_disabled_reasons),
+      num_public_resets_post_handshake_(0),
+      num_timeouts_with_open_streams_(0),
+      max_public_resets_post_handshake_(0),
+      max_timeouts_with_open_streams_(0),
+      threshold_timeouts_with_open_streams_(
+          threshold_timeouts_with_open_streams),
+      threshold_public_resets_post_handshake_(
+          threshold_public_resets_post_handshake),
       socket_receive_buffer_size_(socket_receive_buffer_size),
       port_seed_(random_generator_->RandUint64()),
       check_persisted_supports_quic_(true),
@@ -838,9 +850,45 @@ scoped_ptr<QuicHttpStream> QuicStreamFactory::CreateFromSession(
   return scoped_ptr<QuicHttpStream>(new QuicHttpStream(session->GetWeakPtr()));
 }
 
+QuicClientSession::QuicDisabledReason QuicStreamFactory::QuicDisabledReason(
+    uint16 port) const {
+  if (max_number_of_lossy_connections_ > 0 &&
+      number_of_lossy_connections_.find(port) !=
+          number_of_lossy_connections_.end() &&
+      number_of_lossy_connections_.at(port) >=
+          max_number_of_lossy_connections_) {
+    return QuicClientSession::QUIC_DISABLED_BAD_PACKET_LOSS_RATE;
+  }
+  if (threshold_public_resets_post_handshake_ > 0 &&
+      num_public_resets_post_handshake_ >=
+          threshold_public_resets_post_handshake_) {
+    return QuicClientSession::QUIC_DISABLED_PUBLIC_RESET_POST_HANDSHAKE;
+  }
+  if (threshold_timeouts_with_open_streams_ > 0 &&
+      num_timeouts_with_open_streams_ >=
+          threshold_timeouts_with_open_streams_) {
+    return QuicClientSession::QUIC_DISABLED_TIMEOUT_WITH_OPEN_STREAMS;
+  }
+  return QuicClientSession::QUIC_DISABLED_NOT;
+}
+
+const char* QuicStreamFactory::QuicDisabledReasonString() const {
+  // TODO(ckrasic) - better solution for port/lossy connections?
+  const uint16 port = 443;
+  switch (QuicDisabledReason(port)) {
+    case QuicClientSession::QUIC_DISABLED_BAD_PACKET_LOSS_RATE:
+      return "Bad packet loss rate.";
+    case QuicClientSession::QUIC_DISABLED_PUBLIC_RESET_POST_HANDSHAKE:
+      return "Public resets after successful handshakes.";
+    case QuicClientSession::QUIC_DISABLED_TIMEOUT_WITH_OPEN_STREAMS:
+      return "Connection timeouts with streams open.";
+    default:
+      return "";
+  }
+}
+
 bool QuicStreamFactory::IsQuicDisabled(uint16 port) {
-  return max_number_of_lossy_connections_ > 0 &&
-         number_of_lossy_connections_[port] >= max_number_of_lossy_connections_;
+  return QuicDisabledReason(port) != QuicClientSession::QUIC_DISABLED_NOT;
 }
 
 bool QuicStreamFactory::OnHandshakeConfirmed(QuicClientSession* session,
@@ -914,8 +962,67 @@ void QuicStreamFactory::OnSessionGoingAway(QuicClientSession* session) {
   session_aliases_.erase(session);
 }
 
+void QuicStreamFactory::MaybeDisableQuic(QuicClientSession* session) {
+  DCHECK(session);
+  uint16 port = session->server_id().port();
+  if (IsQuicDisabled(port))
+    return;
+
+  // Expire the oldest disabled_reason if appropriate.  This enforces that we
+  // only consider the max_disabled_reasons_ most recent sessions.
+  QuicClientSession::QuicDisabledReason disabled_reason;
+  if (static_cast<int>(disabled_reasons_.size()) == max_disabled_reasons_) {
+    disabled_reason = disabled_reasons_.front();
+    disabled_reasons_.pop_front();
+    if (disabled_reason ==
+        QuicClientSession::QUIC_DISABLED_PUBLIC_RESET_POST_HANDSHAKE) {
+      --num_public_resets_post_handshake_;
+    } else if (disabled_reason ==
+               QuicClientSession::QUIC_DISABLED_TIMEOUT_WITH_OPEN_STREAMS) {
+      --num_timeouts_with_open_streams_;
+    }
+  }
+  disabled_reason = session->disabled_reason();
+  disabled_reasons_.push_back(disabled_reason);
+  if (disabled_reason ==
+      QuicClientSession::QUIC_DISABLED_PUBLIC_RESET_POST_HANDSHAKE) {
+    ++num_public_resets_post_handshake_;
+  } else if (disabled_reason ==
+             QuicClientSession::QUIC_DISABLED_TIMEOUT_WITH_OPEN_STREAMS) {
+    ++num_timeouts_with_open_streams_;
+  }
+  if (num_timeouts_with_open_streams_ > max_timeouts_with_open_streams_) {
+    max_timeouts_with_open_streams_ = num_timeouts_with_open_streams_;
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicStreamFactory.TimeoutsWithOpenStreams",
+                                num_timeouts_with_open_streams_, 0, 20, 10);
+  }
+
+  if (num_public_resets_post_handshake_ > max_public_resets_post_handshake_) {
+    max_public_resets_post_handshake_ = num_public_resets_post_handshake_;
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Net.QuicStreamFactory.PublicResetsPostHandshake",
+        num_public_resets_post_handshake_, 0, 20, 10);
+  }
+
+  if (IsQuicDisabled(port)) {
+    if (disabled_reason ==
+        QuicClientSession::QUIC_DISABLED_PUBLIC_RESET_POST_HANDSHAKE) {
+      session->CloseSessionOnErrorAndNotifyFactoryLater(
+          ERR_ABORTED, QUIC_PUBLIC_RESETS_POST_HANDSHAKE);
+    } else if (disabled_reason ==
+               QuicClientSession::QUIC_DISABLED_TIMEOUT_WITH_OPEN_STREAMS) {
+      session->CloseSessionOnErrorAndNotifyFactoryLater(
+          ERR_ABORTED, QUIC_TIMEOUTS_WITH_OPEN_STREAMS);
+    }
+    UMA_HISTOGRAM_ENUMERATION("Net.QuicStreamFactory.DisabledReasons",
+                              disabled_reason,
+                              QuicClientSession::QUIC_DISABLED_MAX);
+  }
+}
+
 void QuicStreamFactory::OnSessionClosed(QuicClientSession* session) {
   DCHECK_EQ(0u, session->GetNumOpenStreams());
+  MaybeDisableQuic(session);
   OnSessionGoingAway(session);
   delete session;
   all_sessions_.erase(session);

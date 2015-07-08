@@ -10,6 +10,7 @@
     <li>Origin To Force QUIC On: <span jscontent="origin_to_force_quic_on"></span></li>
     <li>QUIC connection options: <span jscontent="connection_options"></span></li>
     <li>Consistent Port Selection Enabled: <span jscontent="!!enable_quic_port_selection"></span></li>
+    <li jsdisplay="$this.disabled_reason && disabled_reason.length > 0">QUIC dynamically disabled: <span jscontent="disabled_reason"></span></li>
   </ul>
 
   <h4>QUIC sessions</h4>
