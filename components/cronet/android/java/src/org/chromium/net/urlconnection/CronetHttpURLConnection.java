@@ -4,9 +4,9 @@
 
 package org.chromium.net.urlconnection;
 
-import android.util.Log;
 import android.util.Pair;
 
+import org.chromium.base.Log;
 import org.chromium.net.ExtendedResponseInfo;
 import org.chromium.net.ResponseInfo;
 import org.chromium.net.UploadDataProvider;
@@ -37,7 +37,7 @@ import java.util.TreeMap;
  * attempted.
  */
 public class CronetHttpURLConnection extends HttpURLConnection {
-    private static final String TAG = "CronetHttpURLConnection";
+    private static final String TAG = "cr.CronetHttpURLConn";
     private static final String CONTENT_LENGTH = "Content-Length";
     private final UrlRequestContext mUrlRequestContext;
     private final MessageLoop mMessageLoop;
@@ -197,23 +197,29 @@ public class CronetHttpURLConnection extends HttpURLConnection {
                 throw new ProtocolException(
                         "Cannot write to OutputStream after receiving response.");
             }
-            long fixedStreamingModeContentLength = getStreamingModeContentLength();
-            if (fixedStreamingModeContentLength != -1) {
-                mOutputStream = new CronetFixedModeOutputStream(this,
-                        fixedStreamingModeContentLength, mMessageLoop);
+            if (isChunkedUpload()) {
+                mOutputStream = new CronetChunkedOutputStream(this, chunkLength, mMessageLoop);
                 // Start the request now since all headers can be sent.
                 startRequest();
             } else {
-                // For the buffered case, start the request only when
-                // content-length bytes are received, or when a
-                // connect action is initiated by the consumer.
-                Log.d(TAG, "Outputstream is being buffered in memory.");
-                String length = getRequestProperty(CONTENT_LENGTH);
-                if (length == null) {
-                    mOutputStream = new CronetBufferedOutputStream(this);
+                long fixedStreamingModeContentLength = getStreamingModeContentLength();
+                if (fixedStreamingModeContentLength != -1) {
+                    mOutputStream = new CronetFixedModeOutputStream(
+                            this, fixedStreamingModeContentLength, mMessageLoop);
+                    // Start the request now since all headers can be sent.
+                    startRequest();
                 } else {
-                    long lengthParsed = Long.parseLong(length);
-                    mOutputStream = new CronetBufferedOutputStream(this, lengthParsed);
+                    // For the buffered case, start the request only when
+                    // content-length bytes are received, or when a
+                    // connect action is initiated by the consumer.
+                    Log.d(TAG, "Outputstream is being buffered in memory.");
+                    String length = getRequestProperty(CONTENT_LENGTH);
+                    if (length == null) {
+                        mOutputStream = new CronetBufferedOutputStream(this);
+                    } else {
+                        long lengthParsed = Long.parseLong(length);
+                        mOutputStream = new CronetBufferedOutputStream(this, lengthParsed);
+                    }
                 }
             }
         }
@@ -252,7 +258,7 @@ public class CronetHttpURLConnection extends HttpURLConnection {
             if (mOutputStream != null) {
                 mRequest.setUploadDataProvider(
                         (UploadDataProvider) mOutputStream, mMessageLoop);
-                if (getRequestProperty(CONTENT_LENGTH) == null) {
+                if (getRequestProperty(CONTENT_LENGTH) == null && !isChunkedUpload()) {
                     addRequestProperty(CONTENT_LENGTH,
                             Long.toString(((UploadDataProvider) mOutputStream).getLength()));
                 }
@@ -384,15 +390,6 @@ public class CronetHttpURLConnection extends HttpURLConnection {
     }
 
     /**
-     * Sets chunked streaming mode.
-     */
-    @Override
-    public void setChunkedStreamingMode(int chunklen) {
-        // TODO(xunjieli): implement this.
-        throw new UnsupportedOperationException("Chunked mode not supported yet");
-    }
-
-    /**
      * Used by {@link CronetInputStream} to get more data from the network
      * stack. This should only be called after the request has started. Note
      * that this call might block if there isn't any more data to be read.
@@ -491,6 +488,10 @@ public class CronetHttpURLConnection extends HttpURLConnection {
         // Check to see if enough data has been received.
         if (mOutputStream != null) {
             mOutputStream.checkReceivedEnoughContent();
+            if (isChunkedUpload()) {
+                // Write last chunk.
+                mOutputStream.close();
+            }
         }
         if (!mHasResponse) {
             startRequest();
@@ -531,5 +532,13 @@ public class CronetHttpURLConnection extends HttpURLConnection {
             return null;
         }
         return headers.get(pos);
+    }
+
+    /**
+     * Returns whether the client has used {@link #setChunkedStreamingMode} to
+     * set chunked encoding for upload.
+     */
+    private boolean isChunkedUpload() {
+        return chunkLength > 0;
     }
 }

@@ -264,6 +264,7 @@
               '**/CronetUrlRequestFactory.java',
               '**/RequestPriority.java',
               '**/urlconnection/CronetBufferedOutputStream.java',
+              '**/urlconnection/CronetChunkedOutputStream.java',
               '**/urlconnection/CronetFixedModeOutputStream.java',
               '**/urlconnection/CronetInputStream.java',
               '**/urlconnection/CronetHttpURLConnection.java',
