@@ -62,7 +62,7 @@ TEST_F(ResourceFetcherTest, StartLoadAfterFrameDetach)
     KURL secureURL(ParsedURLString, "https://secureorigin.test/image.png");
     // Try to request a url. The request should fail, no resource should be returned,
     // and no resource should be present in the cache.
-    RefPtrWillBeRawPtr<ResourceFetcher> fetcher = ResourceFetcher::create(nullptr);
+    ResourceFetcher* fetcher = ResourceFetcher::create(nullptr);
     FetchRequest fetchRequest = FetchRequest(ResourceRequest(secureURL), FetchInitiatorInfo());
     ResourcePtr<Resource> resource = fetcher->requestResource(fetchRequest, TestResourceFactory());
     EXPECT_EQ(resource.get(), static_cast<Resource*>(nullptr));

@@ -602,6 +602,7 @@ void DocumentLoader::detachFromFrame()
         return;
 
     m_fetcher->clearContext();
+
     m_applicationCacheHost->detachFromDocumentLoader();
     m_applicationCacheHost.clear();
     WeakIdentifierMap<DocumentLoader>::notifyObjectDestroyed(this);

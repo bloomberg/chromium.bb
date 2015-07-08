@@ -340,7 +340,7 @@ protected:
 
     ResourceRequest m_resourceRequest;
     AtomicString m_accept;
-    RefPtrWillBeMember<ResourceLoader> m_loader;
+    PersistentWillBeMember<ResourceLoader> m_loader;
     ResourceLoaderOptions m_options;
 
     ResourceResponse m_response;

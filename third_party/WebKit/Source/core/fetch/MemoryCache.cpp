@@ -38,7 +38,7 @@
 
 namespace blink {
 
-static OwnPtrWillBePersistent<MemoryCache>* gMemoryCache;
+static Persistent<MemoryCache>* gMemoryCache;
 
 static const unsigned cDefaultCacheCapacity = 8192 * 1024;
 static const unsigned cDeferredPruneDeadCapacityFactor = 2;
@@ -50,24 +50,22 @@ MemoryCache* memoryCache()
 {
     ASSERT(WTF::isMainThread());
     if (!gMemoryCache)
-        gMemoryCache = new OwnPtrWillBePersistent<MemoryCache>(MemoryCache::create());
+        gMemoryCache = new Persistent<MemoryCache>(MemoryCache::create());
     return gMemoryCache->get();
 }
 
-PassOwnPtrWillBeRawPtr<MemoryCache> replaceMemoryCacheForTesting(PassOwnPtrWillBeRawPtr<MemoryCache> cache)
+MemoryCache* replaceMemoryCacheForTesting(MemoryCache* cache)
 {
 #if ENABLE(OILPAN)
     // Move m_liveResources content to keep Resource objects alive.
     for (const auto& resource : memoryCache()->m_liveResources)
         cache->m_liveResources.add(resource);
     memoryCache()->m_liveResources.clear();
-#else
-    // Make sure we have non-empty gMemoryCache.
-    memoryCache();
 #endif
-    OwnPtrWillBeRawPtr<MemoryCache> oldCache = gMemoryCache->release();
+    memoryCache();
+    MemoryCache* oldCache = gMemoryCache->release();
     *gMemoryCache = cache;
-    return oldCache.release();
+    return oldCache;
 }
 
 DEFINE_TRACE(MemoryCacheEntry)
@@ -78,12 +76,10 @@ DEFINE_TRACE(MemoryCacheEntry)
     visitor->trace(m_nextInAllResourcesList);
 }
 
-#if ENABLE(OILPAN)
 void MemoryCacheEntry::dispose()
 {
     m_resource.clear();
 }
-#endif
 
 DEFINE_TRACE(MemoryCacheLRUList)
 {
@@ -115,9 +111,9 @@ inline MemoryCache::MemoryCache()
 #endif
 }
 
-PassOwnPtrWillBeRawPtr<MemoryCache> MemoryCache::create()
+MemoryCache* MemoryCache::create()
 {
-    return adoptPtrWillBeNoop(new MemoryCache());
+    return new MemoryCache;
 }
 
 MemoryCache::~MemoryCache()
@@ -128,11 +124,11 @@ MemoryCache::~MemoryCache()
 
 DEFINE_TRACE(MemoryCache)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_allResources);
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(m_liveDecodedResources); ++i)
         visitor->trace(m_liveDecodedResources[i]);
     visitor->trace(m_resourceMaps);
+#if ENABLE(OILPAN)
     visitor->trace(m_liveResources);
 #endif
 }
@@ -159,7 +155,7 @@ String MemoryCache::defaultCacheIdentifier()
 MemoryCache::ResourceMap* MemoryCache::ensureResourceMap(const String& cacheIdentifier)
 {
     if (!m_resourceMaps.contains(cacheIdentifier)) {
-        ResourceMapIndex::AddResult result = m_resourceMaps.add(cacheIdentifier, adoptPtrWillBeNoop(new ResourceMap()));
+        ResourceMapIndex::AddResult result = m_resourceMaps.add(cacheIdentifier, new ResourceMap);
         RELEASE_ASSERT(result.isNewEntry);
     }
     return m_resourceMaps.get(cacheIdentifier);
@@ -416,17 +412,12 @@ bool MemoryCache::evict(MemoryCacheEntry* entry)
     ASSERT(resources);
     ResourceMap::iterator it = resources->find(resource->url());
     ASSERT(it != resources->end());
-#if ENABLE(OILPAN)
+
     MemoryCacheEntry* entryPtr = it->value;
-#else
-    OwnPtr<MemoryCacheEntry> entryPtr;
-    entryPtr.swap(it->value);
-#endif
     resources->remove(it);
-#if ENABLE(OILPAN)
     if (entryPtr)
         entryPtr->dispose();
-#endif
+
     return canDelete;
 }
 
@@ -789,29 +780,21 @@ void MemoryCache::updateFramePaintTimestamp()
     m_lastFramePaintTimeStamp = currentTime();
 }
 
-#if ENABLE(OILPAN)
 void MemoryCache::registerLiveResource(Resource& resource)
 {
+#if ENABLE(OILPAN)
     ASSERT(!m_liveResources.contains(&resource));
     m_liveResources.add(&resource);
+#endif
 }
 
 void MemoryCache::unregisterLiveResource(Resource& resource)
 {
+#if ENABLE(OILPAN)
     ASSERT(m_liveResources.contains(&resource));
     m_liveResources.remove(&resource);
-}
-
-#else
-
-void MemoryCache::registerLiveResource(Resource&)
-{
-}
-
-void MemoryCache::unregisterLiveResource(Resource&)
-{
-}
 #endif
+}
 
 #ifdef MEMORY_CACHE_STATS
 

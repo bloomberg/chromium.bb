@@ -1185,7 +1185,7 @@ private:
     // redundant with oilpan.
     RawPtrWillBeMember<HTMLImportsController> m_importsController;
 
-    RefPtrWillBeMember<ResourceFetcher> m_fetcher;
+    PersistentWillBeMember<ResourceFetcher> m_fetcher;
     RefPtrWillBeMember<DocumentParser> m_parser;
     unsigned m_activeParserCount;
     RefPtrWillBeMember<ContextFeatures> m_contextFeatures;

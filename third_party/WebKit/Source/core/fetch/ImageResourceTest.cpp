@@ -84,14 +84,14 @@ static Vector<unsigned char> jpegImage()
 
 TEST(ImageResourceTest, MultipartImage)
 {
-    RefPtrWillBeRawPtr<ResourceFetcher> fetcher = ResourceFetcher::create(nullptr);
+    ResourceFetcher* fetcher = ResourceFetcher::create(nullptr);
     KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
     URLTestHelpers::registerMockedURLLoad(testURL, "cancelTest.html", "text/html");
 
     // Emulate starting a real load, but don't expect any "real" WebURLLoaderClient callbacks.
     ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest(testURL), nullptr);
     cachedImage->setIdentifier(createUniqueIdentifier());
-    cachedImage->load(fetcher.get(), ResourceLoaderOptions());
+    cachedImage->load(fetcher, ResourceLoaderOptions());
     Platform::current()->unitTestSupport()->unregisterMockedURL(testURL);
 
     MockImageResourceClient client;
@@ -143,13 +143,13 @@ TEST(ImageResourceTest, CancelOnDetach)
     KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
     URLTestHelpers::registerMockedURLLoad(testURL, "cancelTest.html", "text/html");
 
-    RefPtrWillBeRawPtr<ResourceFetcher> fetcher = ResourceFetcher::create(nullptr);
+    ResourceFetcher* fetcher = ResourceFetcher::create(nullptr);
 
     // Emulate starting a real load.
     ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest(testURL), nullptr);
     cachedImage->setIdentifier(createUniqueIdentifier());
 
-    cachedImage->load(fetcher.get(), ResourceLoaderOptions());
+    cachedImage->load(fetcher, ResourceLoaderOptions());
     memoryCache()->add(cachedImage.get());
 
     MockImageResourceClient client;

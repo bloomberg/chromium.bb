@@ -51,11 +51,11 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<ResourceLoader> ResourceLoader::create(ResourceFetcher* fetcher, Resource* resource, const ResourceRequest& request, const ResourceLoaderOptions& options)
+ResourceLoader* ResourceLoader::create(ResourceFetcher* fetcher, Resource* resource, const ResourceRequest& request, const ResourceLoaderOptions& options)
 {
-    RefPtrWillBeRawPtr<ResourceLoader> loader(adoptRefWillBeNoop(new ResourceLoader(fetcher, resource, options)));
+    ResourceLoader* loader = new ResourceLoader(fetcher, resource, options);
     loader->init(request);
-    return loader.release();
+    return loader;
 }
 
 ResourceLoader::ResourceLoader(ResourceFetcher* fetcher, Resource* resource, const ResourceLoaderOptions& options)
@@ -189,7 +189,6 @@ void ResourceLoader::attachThreadedDataReceiver(PassRefPtrWillBeRawPtr<ThreadedD
 void ResourceLoader::didDownloadData(WebURLLoader*, int length, int encodedDataLength)
 {
     ASSERT(m_state != Terminated);
-    RefPtrWillBeRawPtr<ResourceLoader> protect(this);
     RELEASE_ASSERT(m_connectionState == ConnectionStateReceivedResponse);
     m_fetcher->didDownloadData(m_resource, length, encodedDataLength);
     if (m_state == Terminated)
@@ -243,10 +242,6 @@ void ResourceLoader::cancel(const ResourceError& error)
 
     ResourceError nonNullError = error.isNull() ? ResourceError::cancelledError(m_request.url()) : error;
 
-    // This function calls out to clients at several points that might do
-    // something that causes the last reference to this object to go away.
-    RefPtrWillBeRawPtr<ResourceLoader> protector(this);
-
     WTF_LOG(ResourceLoading, "Cancelled load of '%s'.\n", m_resource->url().string().latin1().data());
     if (m_state == Initialized)
         m_state = Finishing;
@@ -272,7 +267,6 @@ void ResourceLoader::cancel(const ResourceError& error)
 void ResourceLoader::willSendRequest(WebURLLoader*, WebURLRequest& passedNewRequest, const WebURLResponse& passedRedirectResponse)
 {
     ASSERT(m_state != Terminated);
-    RefPtrWillBeRawPtr<ResourceLoader> protect(this);
 
     ResourceRequest& newRequest(applyOptions(passedNewRequest.toMutableResourceRequest()));
 
@@ -365,9 +359,6 @@ void ResourceLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& res
         }
     }
 
-    // Reference the object in this method since the additional processing can do
-    // anything including removing the last reference to this object.
-    RefPtrWillBeRawPtr<ResourceLoader> protect(this);
     m_resource->responseReceived(resourceResponse, handle.release());
     if (m_state == Terminated)
         return;
@@ -424,10 +415,6 @@ void ResourceLoader::didReceiveData(WebURLLoader*, const char* data, int length,
         return;
     ASSERT(m_state == Initialized);
 
-    // Reference the object in this method since the additional processing can do
-    // anything including removing the last reference to this object.
-    RefPtrWillBeRawPtr<ResourceLoader> protect(this);
-
     // FIXME: If we get a resource with more than 2B bytes, this code won't do the right thing.
     // However, with today's computers and networking speeds, this won't happen in practice.
     // Could be an issue with a giant local file.
@@ -447,7 +434,6 @@ void ResourceLoader::didFinishLoading(WebURLLoader*, double finishTime, int64_t 
     ASSERT(m_state != Terminated);
     WTF_LOG(ResourceLoading, "Received '%s'.", m_resource->url().string().latin1().data());
 
-    RefPtrWillBeRawPtr<ResourceLoader> protect(this);
     ResourcePtr<Resource> protectResource(m_resource);
     m_state = Finishing;
     m_resource->setLoadFinishTime(finishTime);
@@ -469,8 +455,6 @@ void ResourceLoader::didFail(WebURLLoader*, const WebURLError& error)
     ASSERT(m_state != Terminated);
     WTF_LOG(ResourceLoading, "Failed to load '%s'.\n", m_resource->url().string().latin1().data());
 
-    RefPtrWillBeRawPtr<ResourceLoader> protect(this);
-    RefPtrWillBeRawPtr<ResourceFetcher> protectFetcher(m_fetcher.get());
     ResourcePtr<Resource> protectResource(m_resource);
     m_state = Finishing;
     m_resource->setResourceError(error);
@@ -503,8 +487,6 @@ void ResourceLoader::requestSynchronously()
     // downloadToFile is not supported for synchronous requests.
     ASSERT(!m_request.downloadToFile());
 
-    RefPtrWillBeRawPtr<ResourceLoader> protect(this);
-    RefPtrWillBeRawPtr<ResourceFetcher> protectFetcher(m_fetcher.get());
     ResourcePtr<Resource> protectResource(m_resource);
 
     RELEASE_ASSERT(m_connectionState == ConnectionStateNew);

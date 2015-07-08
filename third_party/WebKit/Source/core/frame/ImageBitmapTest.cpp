@@ -74,7 +74,7 @@ protected:
     }
 
     SkBitmap m_bitmap, m_bitmap2;
-    OwnPtrWillBePersistent<MemoryCache> m_globalMemoryCache;
+    Persistent<MemoryCache> m_globalMemoryCache;
 };
 
 // Verifies that the image resource held by an ImageBitmap is the same as the

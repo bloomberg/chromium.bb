@@ -45,9 +45,9 @@ class ResourceError;
 class ResourceFetcher;
 class ThreadedDataReceiver;
 
-class CORE_EXPORT ResourceLoader final : public RefCountedWillBeGarbageCollectedFinalized<ResourceLoader>, protected WebURLLoaderClient {
+class CORE_EXPORT ResourceLoader final : public GarbageCollectedFinalized<ResourceLoader>, protected WebURLLoaderClient {
 public:
-    static PassRefPtrWillBeRawPtr<ResourceLoader> create(ResourceFetcher*, Resource*, const ResourceRequest&, const ResourceLoaderOptions&);
+    static ResourceLoader* create(ResourceFetcher*, Resource*, const ResourceRequest&, const ResourceLoaderOptions&);
     virtual ~ResourceLoader();
     DECLARE_TRACE();
 
@@ -102,7 +102,7 @@ private:
     ResourceRequest& applyOptions(ResourceRequest&) const;
 
     OwnPtr<WebURLLoader> m_loader;
-    RefPtrWillBeMember<ResourceFetcher> m_fetcher;
+    Member<ResourceFetcher> m_fetcher;
 
     ResourceRequest m_request;
     ResourceRequest m_originalRequest; // Before redirects.

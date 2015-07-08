@@ -62,14 +62,14 @@ class ResourceLoaderSet;
 // and enforces a bunch of security checks and rules for resource revalidation.
 // Its lifetime is roughly per-DocumentLoader, in that it is generally created
 // in the DocumentLoader constructor and loses its ability to generate network
-// requests when the DocumentLoader is destroyed. Documents also hold a
-// RefPtr<ResourceFetcher> for their lifetime (and will create one if they
+// requests when the DocumentLoader is destroyed. Documents also hold a pointer
+// to ResourceFetcher for their lifetime (and will create one if they
 // are initialized without a LocalFrame), so a Document can keep a ResourceFetcher
 // alive past detach if scripts still reference the Document.
-class CORE_EXPORT ResourceFetcher : public RefCountedWillBeGarbageCollectedFinalized<ResourceFetcher> {
-    WTF_MAKE_NONCOPYABLE(ResourceFetcher); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ResourceFetcher);
+class CORE_EXPORT ResourceFetcher : public GarbageCollectedFinalized<ResourceFetcher> {
+    WTF_MAKE_NONCOPYABLE(ResourceFetcher);
 public:
-    static PassRefPtrWillBeRawPtr<ResourceFetcher> create(PassOwnPtrWillBeRawPtr<FetchContext> context) { return adoptRefWillBeNoop(new ResourceFetcher(context)); }
+    static ResourceFetcher* create(FetchContext* context) { return new ResourceFetcher(context); }
     virtual ~ResourceFetcher();
     DECLARE_VIRTUAL_TRACE();
 
@@ -149,7 +149,7 @@ public:
 private:
     friend class ResourceCacheValidationSuppressor;
 
-    explicit ResourceFetcher(PassOwnPtrWillBeRawPtr<FetchContext>);
+    explicit ResourceFetcher(FetchContext*);
 
     ResourcePtr<Resource> createResourceForRevalidation(const FetchRequest&, Resource*, const ResourceFactory&);
     ResourcePtr<Resource> createResourceForLoading(FetchRequest&, const String& charset, const ResourceFactory&);
@@ -173,7 +173,7 @@ private:
 
     void willTerminateResourceLoader(ResourceLoader*);
 
-    OwnPtrWillBeMember<FetchContext> m_context;
+    Member<FetchContext> m_context;
 
     HashSet<String> m_validatedURLs;
     mutable DocumentResourceMap m_documentResources;
@@ -189,8 +189,8 @@ private:
 
     Vector<OwnPtr<ResourceTimingInfo>> m_scheduledResourceTimingReports;
 
-    OwnPtrWillBeMember<ResourceLoaderSet> m_loaders;
-    OwnPtrWillBeMember<ResourceLoaderSet> m_nonBlockingLoaders;
+    Member<ResourceLoaderSet> m_loaders;
+    Member<ResourceLoaderSet> m_nonBlockingLoaders;
 
     // Used in hit rate histograms.
     class DeadResourceStatsRecorder {
@@ -232,7 +232,7 @@ public:
             m_loader->m_allowStaleResources = m_previousState;
     }
 private:
-    RawPtrWillBeMember<ResourceFetcher> m_loader;
+    Member<ResourceFetcher> m_loader;
     bool m_previousState;
 };
 

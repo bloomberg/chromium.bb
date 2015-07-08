@@ -36,7 +36,7 @@ namespace blink {
 
 FetchContext& FetchContext::nullInstance()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<FetchContext>, instance, (adoptPtrWillBeNoop(new FetchContext)));
+    DEFINE_STATIC_LOCAL(Persistent<FetchContext>, instance, (new FetchContext));
     return *instance;
 }
 

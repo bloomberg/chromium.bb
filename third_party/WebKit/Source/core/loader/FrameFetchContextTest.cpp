@@ -116,7 +116,7 @@ protected:
     // as the ResourceFetcher and Document live due to indirect usage.
     RefPtrWillBePersistent<DocumentLoader> documentLoader;
     RefPtrWillBePersistent<Document> document;
-    FetchContext* fetchContext;
+    Persistent<FetchContext> fetchContext;
 };
 
 TEST_F(FrameFetchContextUpgradeTest, UpgradeInsecureResourceRequests)
@@ -232,7 +232,7 @@ protected:
         dummyPageHolder->page().setDeviceScaleFactor(1.0);
         documentLoader = DocumentLoader::create(&dummyPageHolder->frame(), ResourceRequest("http://www.example.com"), SubstituteData());
         document = toHTMLDocument(&dummyPageHolder->document());
-        fetchContext = &documentLoader->fetcher()->context();
+        fetchContext = static_cast<FrameFetchContext*>(&documentLoader->fetcher()->context());
         FrameFetchContext::provideDocumentToContext(*fetchContext, document.get());
     }
 
@@ -263,7 +263,7 @@ protected:
     // as the ResourceFetcher and Document live due to indirect usage.
     RefPtrWillBePersistent<DocumentLoader> documentLoader;
     RefPtrWillBePersistent<Document> document;
-    FetchContext* fetchContext;
+    Persistent<FrameFetchContext> fetchContext;
 };
 
 TEST_F(FrameFetchContextHintsTest, MonitorDPRHints)
