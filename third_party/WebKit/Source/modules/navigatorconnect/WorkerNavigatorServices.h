@@ -5,6 +5,7 @@
 #ifndef WorkerNavigatorServices_h
 #define WorkerNavigatorServices_h
 
+#include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 
@@ -14,7 +15,7 @@ class ExecutionContext;
 class ServicePortCollection;
 class WorkerNavigator;
 
-class WorkerNavigatorServices final : public GarbageCollectedFinalized<WorkerNavigatorServices>, public HeapSupplement<WorkerNavigator> {
+class MODULES_EXPORT WorkerNavigatorServices final : public GarbageCollectedFinalized<WorkerNavigatorServices>, public HeapSupplement<WorkerNavigator> {
     USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorServices);
     WTF_MAKE_NONCOPYABLE(WorkerNavigatorServices);
 public:

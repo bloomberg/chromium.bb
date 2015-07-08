@@ -32,6 +32,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/ExceptionCode.h"
 
@@ -48,6 +49,12 @@ ScriptPromise ExceptionState::reject(ScriptState* scriptState)
     ScriptPromise promise = ScriptPromise::reject(scriptState, m_exception.newLocal(scriptState->isolate()));
     clearException();
     return promise;
+}
+
+void ExceptionState::reject(ScriptPromiseResolver* resolver)
+{
+    resolver->reject(m_exception.newLocal(resolver->scriptState()->isolate()));
+    clearException();
 }
 
 void ExceptionState::throwDOMException(const ExceptionCode& ec, const String& message)

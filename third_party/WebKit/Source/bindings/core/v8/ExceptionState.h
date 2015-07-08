@@ -43,6 +43,7 @@
 namespace blink {
 
 typedef int ExceptionCode;
+class ScriptPromiseResolver;
 class ScriptState;
 
 class CORE_EXPORT ExceptionState {
@@ -99,6 +100,9 @@ public:
 
     // This method clears out the exception which |this| has.
     ScriptPromise reject(ScriptState*);
+
+    // This method clears out the exception which |this| has.
+    void reject(ScriptPromiseResolver*);
 
     Context context() const { return m_context; }
     const char* propertyName() const { return m_propertyName; }

@@ -856,6 +856,11 @@ interface ServicePortCollection
     setter onclose
     setter onconnect
     setter onmessage
+interface ServicePortConnectEvent
+    getter origin
+    getter targetURL
+    method constructor
+    method respondWith
 interface ServiceWorkerGlobalScope
     getter clients
     getter onactivate

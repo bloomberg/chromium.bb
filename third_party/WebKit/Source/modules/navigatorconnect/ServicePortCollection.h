@@ -10,6 +10,7 @@
 #include "core/events/EventTarget.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/modules/navigator_services/WebServicePortCallbacks.h"
 #include "public/platform/modules/navigator_services/WebServicePortProvider.h"
 #include "public/platform/modules/navigator_services/WebServicePortProviderClient.h"
 #include "wtf/RefCounted.h"
@@ -56,6 +57,8 @@ public:
 
     // WebServicePortProviderClient overrides.
     void postMessage(WebServicePortID, const WebString&, const WebMessagePortChannelArray&) override;
+
+    void dispatchConnectEvent(PassOwnPtr<WebServicePortConnectEventCallbacks>, const WebURL& targetURL, const WebString& origin, WebServicePortID);
 
     DECLARE_VIRTUAL_TRACE();
 

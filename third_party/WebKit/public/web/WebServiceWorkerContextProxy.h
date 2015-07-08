@@ -33,6 +33,7 @@
 
 #include "public/platform/WebGeofencingEventType.h"
 #include "public/platform/WebMessagePortChannel.h"
+#include "public/platform/modules/navigator_services/WebServicePortCallbacks.h"
 
 namespace blink {
 
@@ -66,6 +67,9 @@ public:
     virtual void dispatchCrossOriginConnectEvent(int eventID, const WebCrossOriginServiceWorkerClient&) = 0;
 
     virtual void dispatchCrossOriginMessageEvent(const WebCrossOriginServiceWorkerClient&, const WebString& message, const WebMessagePortChannelArray&) = 0;
+
+    // Passes ownership of the callbacks.
+    virtual void dispatchServicePortConnectEvent(WebServicePortConnectEventCallbacks*, const WebURL& targetURL, const WebString& origin, WebServicePortID) = 0;
 
     // Once the ServiceWorker has finished handling the sync event
     // didHandleSyncEvent is called on the context client.

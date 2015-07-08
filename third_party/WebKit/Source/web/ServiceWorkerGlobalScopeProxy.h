@@ -78,6 +78,7 @@ public:
     void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) override;
     void dispatchNotificationClickEvent(int, int64_t notificationID, const WebNotificationData&) override;
     void dispatchPushEvent(int, const WebString& data) override;
+    void dispatchServicePortConnectEvent(WebServicePortConnectEventCallbacks*, const WebURL& targetURL, const WebString& origin, WebServicePortID) override;
     void dispatchSyncEvent(int) override;
     void addStashedMessagePorts(const WebMessagePortChannelArray&, const WebVector<WebString>& webChannelNames) override;
 

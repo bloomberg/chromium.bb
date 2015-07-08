@@ -5,17 +5,16 @@
 #ifndef WebServicePortProvider_h
 #define WebServicePortProvider_h
 
-#include "public/platform/WebCallbacks.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/navigator_services/WebServicePort.h"
+#include "public/platform/modules/navigator_services/WebServicePortCallbacks.h"
 
 namespace blink {
 
 class WebString;
 class WebURL;
 
-using WebServicePortConnectCallbacks = WebCallbacks<WebServicePortID, void>;
 
 // One instance of this class is associated with each ServicePortCollection.
 // When a ServicePortCollection is destroyed the WebServicePortProvider

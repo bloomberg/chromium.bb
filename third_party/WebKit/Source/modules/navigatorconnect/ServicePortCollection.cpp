@@ -12,7 +12,10 @@
 #include "core/dom/MessagePort.h"
 #include "core/events/MessageEvent.h"
 #include "modules/EventTargetModules.h"
+#include "modules/navigatorconnect/AcceptConnectionObserver.h"
 #include "modules/navigatorconnect/ServicePort.h"
+#include "modules/navigatorconnect/ServicePortConnectEvent.h"
+#include "modules/navigatorconnect/ServicePortConnectEventInit.h"
 #include "modules/navigatorconnect/ServicePortConnectOptions.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/navigator_services/WebServicePortProvider.h"
@@ -144,6 +147,17 @@ void ServicePortCollection::postMessage(WebServicePortID portId, const WebString
     RefPtrWillBeRawPtr<Event> evt = MessageEvent::create(ports.release(), message.release());
     // TODO(mek): Lookup ServicePort and set events source attribute.
     dispatchEvent(evt.release(), ASSERT_NO_EXCEPTION);
+}
+
+void ServicePortCollection::dispatchConnectEvent(PassOwnPtr<WebServicePortConnectEventCallbacks> callbacks, const WebURL& targetURL, const WebString& origin, WebServicePortID portID)
+{
+    AcceptConnectionObserver* observer = AcceptConnectionObserver::create(this, callbacks, portID, targetURL);
+    ServicePortConnectEventInit init;
+    init.setTargetURL(targetURL.string());
+    init.setOrigin(origin);
+    RefPtrWillBeRawPtr<Event> event = ServicePortConnectEvent::create(EventTypeNames::connect, init, observer);
+    dispatchEvent(event.release());
+    observer->didDispatchEvent();
 }
 
 DEFINE_TRACE(ServicePortCollection)
