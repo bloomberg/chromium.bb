@@ -5780,6 +5780,7 @@ DEFINE_TRACE(Document)
     visitor->trace(m_timeline);
     visitor->trace(m_compositorPendingAnimations);
     visitor->trace(m_contextDocument);
+    visitor->trace(m_canvasFontCache);
     WillBeHeapSupplementable<Document>::trace(visitor);
 #endif
     TreeScope::trace(visitor);
