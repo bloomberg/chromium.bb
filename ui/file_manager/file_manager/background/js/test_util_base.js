@@ -161,6 +161,35 @@ test.util.sync.resizeWindow = function(contentWindow, width, height) {
 };
 
 /**
+ * Maximizes the window.
+ * @param {Window} contentWindow Window to be tested.
+ * @return {boolean} True for success.
+ */
+test.util.sync.maximizeWindow = function(contentWindow) {
+  window.background.appWindows[contentWindow.appID].maximize();
+  return true;
+};
+
+/**
+ * Restores the window state (maximized/minimized/etc...).
+ * @param {Window} contentWindow Window to be tested.
+ * @return {boolean} True for success.
+ */
+test.util.sync.restoreWindow = function(contentWindow) {
+  window.background.appWindows[contentWindow.appID].restore();
+  return true;
+};
+
+/**
+ * Returns whether the window is miximized or not.
+ * @param {Window} contentWindow Window to be tested.
+ * @return {boolean} True if the window is maximized now.
+ */
+test.util.sync.isWindowMaximized = function(contentWindow) {
+  return window.background.appWindows[contentWindow.appID].isMaximized();
+};
+
+/**
  * Queries all elements.
  *
  * @param {Window} contentWindow Window to be tested.

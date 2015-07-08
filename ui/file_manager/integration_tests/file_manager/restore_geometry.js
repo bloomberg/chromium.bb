@@ -49,3 +49,55 @@ testcase.restoreGeometry = function() {
     }
   ]);
 };
+
+testcase.restoreGeometryMaximizedState = function() {
+  var appId;
+  var appId2;
+  StepsRunner.run([
+    // Set up File Manager.
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
+    },
+    // Maximize the window
+    function(inAppId) {
+      appId = inAppId;
+      remoteCall.callRemoteTestUtil('maximizeWindow', appId, [], this.next);
+    },
+    // Check that the first window is maximized.
+    function() {
+      return repeatUntil(function() {
+        return remoteCall.callRemoteTestUtil('isWindowMaximized', appId, [])
+            .then(function(isMaximized) {
+              if (isMaximized)
+                return true;
+              else
+                return pending('Waiting window maximized...');
+            });
+      }).then(this.next);
+    },
+    // Close the window.
+    function() {
+      remoteCall.closeWindowAndWait(appId).then(this.next);
+    },
+    // Open a Files.app window again.
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
+    },
+    // Check that the newly opened window is maximized initially.
+    function(inAppId) {
+      appId2 = inAppId;
+      return repeatUntil(function() {
+        return remoteCall.callRemoteTestUtil('isWindowMaximized', appId2, [])
+            .then(function(isMaximized) {
+              if (isMaximized)
+                return true;
+              else
+                return pending('Waiting window maximized...');
+            });
+      }).then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+};

@@ -235,7 +235,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     MAYBE_RestoreGeometry,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "restoreGeometry"),
-                      TestParameter(IN_GUEST_MODE, "restoreGeometry")));
+                      TestParameter(IN_GUEST_MODE, "restoreGeometry"),
+                      TestParameter(NOT_IN_GUEST_MODE,
+                                    "restoreGeometryMaximizedState")));
 
 #if defined(DISABLE_SLOW_FILESAPP_TESTS)
 #define MAYBE_Traverse DISABLED_Traverse
