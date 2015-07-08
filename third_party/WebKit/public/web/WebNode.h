@@ -124,7 +124,6 @@ public:
 
     BLINK_EXPORT bool containsIncludingShadowDOM(const WebNode&) const;
     BLINK_EXPORT WebPluginContainer* pluginContainer() const;
-    BLINK_EXPORT WebElement shadowHost() const;
 
     BLINK_EXPORT bool isInsideFocusableElementOrARIAWidget() const;
     BLINK_EXPORT WebAXObject accessibilityObject();
