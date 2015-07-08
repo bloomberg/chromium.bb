@@ -92,7 +92,7 @@ bool IsArraySorted(const LangToOffset* first, const LangToOffset* last,
   if (last - first > 1) {
     for (--last; first != last; ++first) {
        if (!(std::wstring(first->language) < (first + 1)->language) ||
-           byNameAndOffset && !(first->offset < (first + 1)->offset)) {
+           (byNameAndOffset && !(first->offset < (first + 1)->offset))) {
          return false;
        }
     }

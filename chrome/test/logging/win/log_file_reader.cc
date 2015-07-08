@@ -179,13 +179,11 @@ bool LogFileReader::OnTraceEvent(const EVENT_TRACE* event) {
   const intptr_t* backtrace = NULL;
 
   // See TraceEventETWProvider::TraceEvent.
-  if (parser.ReadString(&name) &&
-      parser.ReadPointer(&id) &&
+  if (parser.ReadString(&name) && parser.ReadPointer(&id) &&
       parser.ReadString(&extra) &&
       (parser.empty() ||
-       parser.ReadDWORD(&stack_depth) &&
-       parser.ReadPointerArray(stack_depth, &backtrace) &&
-       parser.empty())) {
+       (parser.ReadDWORD(&stack_depth) &&
+        parser.ReadPointerArray(stack_depth, &backtrace) && parser.empty()))) {
     delegate_->OnTraceEvent(event, name,
         EventTypeToTraceType(event->Header.Class.Type), id, extra, stack_depth,
         backtrace);

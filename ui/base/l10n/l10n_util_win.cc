@@ -143,7 +143,7 @@ bool NeedOverrideDefaultUIFont(base::string16* override_font_family,
   //    font scaler.
   // 2) The resource bundle is not available for some reason and
   //    ui_font_family is empty.
-  if (ui_font_family == L"default" && scaler100 == 100 ||
+  if ((ui_font_family == L"default" && scaler100 == 100) ||
       ui_font_family.empty())
     return false;
   if (override_font_family && font_size_scaler) {

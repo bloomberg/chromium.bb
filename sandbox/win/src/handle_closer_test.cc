@@ -78,7 +78,7 @@ SBOX_TESTS_COMMAND int CheckForFileHandles(int argc, wchar_t **argv) {
   if (argc < 2)
     return SBOX_TEST_FAILED_TO_RUN_TEST;
   bool should_find = argv[0][0] == L'Y';
-  if (argv[0][1] != L'\0' || !should_find && argv[0][0] != L'N')
+  if (argv[0][1] != L'\0' || (!should_find && argv[0][0] != L'N'))
     return SBOX_TEST_FAILED_TO_RUN_TEST;
 
   static int state = BEFORE_INIT;
