@@ -116,7 +116,7 @@ Polymer({
 
     /**
      * The list of available sinks.
-     * @type {!Array<!media_router.Sink}
+     * @type {!Array<!media_router.Sink>}
      */
     sinkList: {
       type: Array,
