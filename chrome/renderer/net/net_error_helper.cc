@@ -262,7 +262,7 @@ void NetErrorHelper::FetchNavigationCorrections(
   correction_fetcher_->Start(
       frame,
       blink::WebURLRequest::RequestContextInternal,
-      blink::WebURLRequest::FrameTypeTopLevel,
+      blink::WebURLRequest::FrameTypeNone,
       content::ResourceFetcher::PLATFORM_LOADER,
       base::Bind(&NetErrorHelper::OnNavigationCorrectionsFetched,
                  base::Unretained(this)));
