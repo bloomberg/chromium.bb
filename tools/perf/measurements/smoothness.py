@@ -45,7 +45,7 @@ class Smoothness(page_test.PageTest):
     self._tbm = timeline_based_measurement.TimelineBasedMeasurement(
         timeline_based_measurement.Options(category_filter),
         _CustomResultsWrapper)
-    self._tbm.WillRunUserStory(
+    self._tbm.WillRunStory(
         tracing_controller, page.GetSyntheticDelayCategories())
 
   def ValidateAndMeasurePage(self, _, tab, results):
@@ -54,7 +54,7 @@ class Smoothness(page_test.PageTest):
 
   def CleanUpAfterPage(self, _, tab):
     tracing_controller = tab.browser.platform.tracing_controller
-    self._tbm.DidRunUserStory(tracing_controller)
+    self._tbm.DidRunStory(tracing_controller)
     tab.ExecuteJavaScript('window.gc();')
 
 

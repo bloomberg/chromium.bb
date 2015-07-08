@@ -9,13 +9,13 @@ from telemetry.page import shared_page_state
 class AndroidScreenRestorationSharedState(shared_page_state.SharedPageState):
   """ Ensures the screen is on before and after each user story is run. """
 
-  def WillRunUserStory(self, page):
-    super(AndroidScreenRestorationSharedState, self).WillRunUserStory(page)
+  def WillRunStory(self, page):
+    super(AndroidScreenRestorationSharedState, self).WillRunStory(page)
     self._EnsureScreenOn()
 
-  def DidRunUserStory(self, results):
+  def DidRunStory(self, results):
     try:
-      super(AndroidScreenRestorationSharedState, self).DidRunUserStory(results)
+      super(AndroidScreenRestorationSharedState, self).DidRunStory(results)
     finally:
       self._EnsureScreenOn()
 

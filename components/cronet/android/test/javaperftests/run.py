@@ -152,7 +152,7 @@ class CronetPerfTestStorySet(story.StorySet):
   def __init__(self, adb):
     super(CronetPerfTestStorySet, self).__init__()
     # Create and add Cronet perf test AndroidStory.
-    self.AddUserStory(CronetPerfTestAndroidStory(adb))
+    self.AddStory(CronetPerfTestAndroidStory(adb))
 
 
 class CronetPerfTestMeasurement(
@@ -165,8 +165,7 @@ class CronetPerfTestMeasurement(
     super(CronetPerfTestMeasurement, self).__init__(options)
     self._adb = adb
 
-  def WillRunUserStory(self, tracing_controller,
-                       synthetic_delay_categories=None):
+  def WillRunStory(self, tracing_controller, synthetic_delay_categories=None):
     # Skip parent implementation which doesn't apply to Cronet perf test app as
     # it is not a browser with a timeline interface.
     pass
