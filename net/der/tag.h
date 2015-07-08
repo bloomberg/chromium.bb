@@ -52,7 +52,15 @@ const uint8_t kTagNumberMask = 0x1F;
 const uint8_t kTagConstructionMask = 0x20;
 const uint8_t kTagClassMask = 0xC0;
 
-NET_EXPORT Tag ContextSpecificConstructed(uint8_t base);
+// Creates the value for the outter tag of an explicitly tagged type.
+//
+// The ASN.1 keyword for this is:
+//     [class_number] EXPLICIT
+//
+// (Note, the EXPLICIT may be omitted if the entire schema is in
+// EXPLICIT mode, the default)
+NET_EXPORT Tag ContextSpecificConstructed(uint8_t class_number);
+
 NET_EXPORT Tag ContextSpecificPrimitive(uint8_t base);
 NET_EXPORT bool IsConstructed(Tag tag);
 

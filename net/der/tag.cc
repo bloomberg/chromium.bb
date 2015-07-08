@@ -9,9 +9,10 @@ namespace net {
 
 namespace der {
 
-Tag ContextSpecificConstructed(uint8_t base) {
-  DCHECK_EQ(base, base & kTagNumberMask);
-  return (base & kTagNumberMask) | kTagConstructed | kTagContextSpecific;
+Tag ContextSpecificConstructed(uint8_t class_number) {
+  DCHECK_EQ(class_number, class_number & kTagNumberMask);
+  return (class_number & kTagNumberMask) | kTagConstructed |
+         kTagContextSpecific;
 }
 
 Tag ContextSpecificPrimitive(uint8_t base) {
