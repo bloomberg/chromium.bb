@@ -22,6 +22,7 @@
 #ifndef StyleResolver_h
 #define StyleResolver_h
 
+#include "core/CoreExport.h"
 #include "core/animation/PropertyHandle.h"
 #include "core/css/ElementRuleCollector.h"
 #include "core/css/PseudoStyleRequest.h"
@@ -80,7 +81,7 @@ const unsigned styleSharingMaxDepth = 32;
 typedef WillBeHeapDeque<RawPtrWillBeMember<Element>, styleSharingListSize> StyleSharingList;
 
 // This class selects a ComputedStyle for a given element based on a collection of stylesheets.
-class StyleResolver final : public NoBaseWillBeGarbageCollectedFinalized<StyleResolver> {
+class CORE_EXPORT StyleResolver final : public NoBaseWillBeGarbageCollectedFinalized<StyleResolver> {
     WTF_MAKE_NONCOPYABLE(StyleResolver); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleResolver);
 public:
     explicit StyleResolver(Document&);
@@ -228,7 +229,9 @@ private:
     void matchPageRulesForList(WillBeHeapVector<RawPtrWillBeMember<StyleRulePage>>& matchedRules, const WillBeHeapVector<RawPtrWillBeMember<StyleRulePage>>&, bool isLeftPage, bool isFirstPage, const String& pageName);
     void collectViewportRules();
 
-    bool isLeftPage(int pageIndex) const;
+    // FIXME: These functions appear to be unused, and previously isLeftPage lacked an implementaion.
+    // They should be removed unless there are plans to use them in the near future.
+    bool isLeftPage(int pageIndex) const { return false; }
     bool isRightPage(int pageIndex) const { return !isLeftPage(pageIndex); }
     bool isFirstPage(int pageIndex) const;
     String pageName(int pageIndex) const;

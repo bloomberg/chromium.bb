@@ -27,14 +27,14 @@
 #define CanvasRenderingContext2D_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "bindings/core/v8/UnionTypesCore.h"
-#include "core/CoreExport.h"
-#include "core/html/canvas/Canvas2DContextAttributes.h"
+#include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
-#include "core/html/canvas/CanvasPathMethods.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
-#include "core/html/canvas/CanvasRenderingContext2DState.h"
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
+#include "modules/ModulesExport.h"
+#include "modules/canvas2d/Canvas2DContextAttributes.h"
+#include "modules/canvas2d/CanvasPathMethods.h"
+#include "modules/canvas2d/CanvasRenderingContext2DState.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -60,7 +60,7 @@ class TextMetrics;
 
 typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmap CanvasImageSourceUnion;
 
-class CORE_EXPORT CanvasRenderingContext2D final : public CanvasRenderingContext, public CanvasPathMethods {
+class MODULES_EXPORT CanvasRenderingContext2D final : public CanvasRenderingContext, public CanvasPathMethods {
     DEFINE_WRAPPERTYPEINFO();
 public:
     class Factory : public CanvasRenderingContextFactory {
@@ -118,10 +118,10 @@ public:
     float globalAlpha() const;
     void setGlobalAlpha(float);
 
-    bool isContextLost() const;
+    bool isContextLost() const override;
 
     bool shouldAntialias() const;
-    void setShouldAntialias(bool);
+    void setShouldAntialias(bool) override;
 
     String globalCompositeOperation() const;
     void setGlobalCompositeOperation(const String&);
@@ -159,7 +159,7 @@ public:
     void scrollPathIntoView();
     void scrollPathIntoView(Path2D*);
 
-    void clearRect(float x, float y, float width, float height);
+    void clearRect(float x, float y, float width, float height) override;
     void fillRect(float x, float y, float width, float height);
     void strokeRect(float x, float y, float width, float height);
 
@@ -178,10 +178,10 @@ public:
     void putImageData(ImageData*, float dx, float dy);
     void putImageData(ImageData*, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight);
 
-    void reset();
+    void reset() override;
 
     String font() const;
-    void setFont(const String&);
+    void setFont(const String&) override;
 
     String textAlign() const;
     void setTextAlign(const String&);
@@ -210,21 +210,12 @@ public:
     void removeHitRegion(const String& id);
     void clearHitRegions();
     HitRegion* hitRegionAtPoint(const LayoutPoint&);
-    unsigned hitRegionsCount() const;
+    unsigned hitRegionsCount() const override;
 
-    enum LostContextMode {
-        NotLostContext,
+    void loseContext(LostContextMode) override;
+    void didSetSurfaceSize() override;
 
-        // Lost context occurred at the graphics system level.
-        RealLostContext,
-
-        // Lost context occurred due to internal implementation reasons.
-        SyntheticLostContext,
-    };
-    void loseContext(LostContextMode);
-    void didSetSurfaceSize();
-
-    void restoreCanvasMatrixClipStack();
+    void restoreCanvasMatrixClipStack() override;
 
 private:
     friend class CanvasRenderingContext2DAutoRestoreSkCanvas;

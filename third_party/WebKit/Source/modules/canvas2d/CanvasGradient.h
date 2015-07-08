@@ -28,7 +28,7 @@
 #define CanvasGradient_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/CoreExport.h"
+#include "modules/ModulesExport.h"
 #include "platform/graphics/Gradient.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -39,7 +39,7 @@ namespace blink {
 
 class ExceptionState;
 
-class CORE_EXPORT CanvasGradient final : public RefCountedWillBeGarbageCollectedFinalized<CanvasGradient>, public ScriptWrappable {
+class MODULES_EXPORT CanvasGradient final : public RefCountedWillBeGarbageCollectedFinalized<CanvasGradient>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<CanvasGradient> create(const FloatPoint& p0, const FloatPoint& p1)

@@ -8,7 +8,8 @@
 
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLDocument.h"
-#include "core/html/canvas/CanvasRenderingContext2D.h"
+#include "core/html/canvas/CanvasContextCreationAttributes.h"
+#include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
@@ -27,7 +28,7 @@ protected:
     DummyPageHolder& page() const { return *m_dummyPageHolder; }
     HTMLDocument& document() const { return *m_document; }
     HTMLCanvasElement& canvasElement() const { return *m_canvasElement; }
-    CanvasRenderingContext2D* context2d() const;
+    CanvasRenderingContext* context2d() const;
     CanvasFontCache* cache() { return m_document->canvasFontCache(); }
 
 private:
@@ -39,13 +40,13 @@ private:
 CanvasFontCacheTest::CanvasFontCacheTest()
 { }
 
-CanvasRenderingContext2D* CanvasFontCacheTest::context2d() const
+CanvasRenderingContext* CanvasFontCacheTest::context2d() const
 {
     // If the following check fails, perhaps you forgot to call createContext
     // in your test?
     EXPECT_NE(nullptr, canvasElement().renderingContext());
     EXPECT_TRUE(canvasElement().renderingContext()->is2d());
-    return static_cast<CanvasRenderingContext2D*>(canvasElement().renderingContext());
+    return canvasElement().renderingContext();
 }
 
 void CanvasFontCacheTest::SetUp()

@@ -4622,6 +4622,12 @@ void WebGLRenderingContextBase::viewport(GLint x, GLint y, GLsizei width, GLsize
     webContext()->viewport(x, y, width, height);
 }
 
+// Added to provide a unified interface with CanvasRenderingContext2D. Prefer calling forceLostContext instead.
+void WebGLRenderingContextBase::loseContext(LostContextMode mode)
+{
+    forceLostContext(mode, Manual);
+}
+
 void WebGLRenderingContextBase::forceLostContext(LostContextMode mode, AutoRecoveryMethod autoRecoveryMethod)
 {
     if (isContextLost()) {

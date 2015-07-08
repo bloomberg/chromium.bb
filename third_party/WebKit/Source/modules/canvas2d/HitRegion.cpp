@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/html/canvas/HitRegion.h"
+#include "modules/canvas2d/HitRegion.h"
 
 #include "core/dom/AXObjectCache.h"
 #include "core/layout/LayoutBoxModelObject.h"

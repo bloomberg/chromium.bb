@@ -29,9 +29,9 @@
 #define Path2D_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/html/canvas/CanvasPathMethods.h"
 #include "core/svg/SVGMatrixTearOff.h"
 #include "core/svg/SVGPathUtilities.h"
+#include "modules/canvas2d/CanvasPathMethods.h"
 #include "platform/heap/Handle.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/PassRefPtr.h"

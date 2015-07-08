@@ -26,6 +26,7 @@
 #ifndef FilterEffectBuilder_h
 #define FilterEffectBuilder_h
 
+#include "core/CoreExport.h"
 #include "platform/graphics/filters/FilterEffect.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
@@ -39,7 +40,7 @@ class FilterOperations;
 class ReferenceFilter;
 class Element;
 
-class FilterEffectBuilder final : public RefCountedWillBeGarbageCollectedFinalized<FilterEffectBuilder> {
+class CORE_EXPORT FilterEffectBuilder final : public RefCountedWillBeGarbageCollectedFinalized<FilterEffectBuilder> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(FilterEffectBuilder);
 public:
     static PassRefPtrWillBeRawPtr<FilterEffectBuilder> create()

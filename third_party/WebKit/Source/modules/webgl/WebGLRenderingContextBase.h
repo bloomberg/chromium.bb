@@ -324,19 +324,6 @@ public:
     void viewport(GLint x, GLint y, GLsizei width, GLsizei height);
 
     // WEBGL_lose_context support
-    enum LostContextMode {
-        NotLostContext,
-
-        // Lost context occurred at the graphics system level.
-        RealLostContext,
-
-        // Lost context provoked by WEBGL_lose_context.
-        WebGLLoseContextLostContext,
-
-        // Lost context occurred due to internal implementation reasons.
-        SyntheticLostContext,
-    };
-
     enum AutoRecoveryMethod {
         // Don't restore automatically.
         Manual,
@@ -347,6 +334,7 @@ public:
         // Restore as soon as possible.
         Auto
     };
+    void loseContext(LostContextMode) override;
     void forceLostContext(LostContextMode, AutoRecoveryMethod);
     void forceRestoreContext();
     void loseContextImpl(LostContextMode, AutoRecoveryMethod);

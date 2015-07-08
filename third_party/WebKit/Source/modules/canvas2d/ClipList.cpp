@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "core/html/canvas/ClipList.h"
+#include "modules/canvas2d/ClipList.h"
 
 #include "platform/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkCanvas.h"

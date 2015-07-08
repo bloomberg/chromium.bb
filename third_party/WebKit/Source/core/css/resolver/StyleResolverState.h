@@ -23,7 +23,7 @@
 #define StyleResolverState_h
 
 #include "core/CSSPropertyNames.h"
-
+#include "core/CoreExport.h"
 #include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/css/resolver/CSSToStyleMap.h"
@@ -41,7 +41,7 @@ namespace blink {
 class CSSAnimationUpdate;
 class FontDescription;
 
-class StyleResolverState {
+class CORE_EXPORT StyleResolverState {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(StyleResolverState);
 public:

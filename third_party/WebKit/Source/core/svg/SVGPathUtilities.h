@@ -20,6 +20,7 @@
 #ifndef SVGPathUtilities_h
 #define SVGPathUtilities_h
 
+#include "core/CoreExport.h"
 #include "core/svg/SVGPathParser.h"
 #include "platform/geometry/FloatPoint.h"
 #include "wtf/text/WTFString.h"
@@ -30,7 +31,7 @@ class Path;
 class SVGPathByteStream;
 
 // String/SVGPathByteStream -> Path
-bool buildPathFromString(const String&, Path&);
+bool CORE_EXPORT buildPathFromString(const String&, Path&);
 bool buildPathFromByteStream(const SVGPathByteStream&, Path&);
 
 // String -> SVGPathByteStream

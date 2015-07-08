@@ -32,7 +32,6 @@
 
 // TODO(philipj): This should be part of the ImageBitmapFactories interface.
 [
-    ImplementedAs=ImageBitmapFactories,
     RuntimeEnabled=ExperimentalCanvasFeatures,
     TypeChecking=Interface,
 ] partial interface Window {

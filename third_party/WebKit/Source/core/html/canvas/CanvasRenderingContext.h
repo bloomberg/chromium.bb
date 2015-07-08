@@ -83,8 +83,29 @@ public:
 
     virtual WebLayer* platformLayer() const { return nullptr; }
 
+    enum LostContextMode {
+        NotLostContext,
+
+        // Lost context occurred at the graphics system level.
+        RealLostContext,
+
+        // Lost context provoked by WEBGL_lose_context.
+        WebGLLoseContextLostContext,
+
+        // Lost context occurred due to internal implementation reasons.
+        SyntheticLostContext,
+    };
+    virtual void loseContext(LostContextMode) { }
+
     // Canvas2D-specific interface
     virtual bool is2d() const { return false; }
+    virtual void restoreCanvasMatrixClipStack() { }
+    virtual void reset() { }
+    virtual void clearRect(float x, float y, float width, float height) { }
+    virtual void didSetSurfaceSize() { }
+    virtual void setShouldAntialias(bool) { }
+    virtual unsigned hitRegionsCount() const { return 0; }
+    virtual void setFont(const String&) { };
 
     // WebGL-specific interface
     virtual bool is3d() const { return false; }

@@ -6,7 +6,7 @@
 #define HitRegion_h
 
 #include "core/dom/Element.h"
-#include "core/html/canvas/HitRegionOptions.h"
+#include "modules/canvas2d/HitRegionOptions.h"
 #include "platform/graphics/Path.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"

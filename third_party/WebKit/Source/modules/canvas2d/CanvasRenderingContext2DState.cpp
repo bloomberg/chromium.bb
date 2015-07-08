@@ -4,17 +4,17 @@
 
 #include "config.h"
 
-#include "core/html/canvas/CanvasRenderingContext2DState.h"
+#include "modules/canvas2d/CanvasRenderingContext2DState.h"
 
 #include "core/css/CSSFontSelector.h"
 #include "core/css/resolver/FilterOperationResolver.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "core/html/canvas/CanvasGradient.h"
-#include "core/html/canvas/CanvasPattern.h"
-#include "core/html/canvas/CanvasStyle.h"
 #include "core/paint/FilterEffectBuilder.h"
 #include "core/style/ComputedStyle.h"
+#include "modules/canvas2d/CanvasGradient.h"
+#include "modules/canvas2d/CanvasPattern.h"
+#include "modules/canvas2d/CanvasStyle.h"
 #include "platform/graphics/DrawLooperBuilder.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/skia/SkiaUtils.h"

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/html/canvas/ContextAttributeHelpers.h"
+#include "modules/canvas2d/ContextAttributeHelpers.h"
 
 namespace blink {
 

@@ -104,6 +104,7 @@ public:
     ScriptValue getContext(ScriptState*, const String&, const CanvasContextCreationAttributes&);
     // Called by Document::getCSSCanvasContext as well as above getContext().
     CanvasRenderingContext* getCanvasRenderingContext(const String&, const CanvasContextCreationAttributes&);
+
     bool isPaintable() const;
 
     static String toEncodingMimeType(const String& mimeType);
@@ -119,6 +120,7 @@ public:
     SkCanvas* drawingCanvas() const;
     SkCanvas* existingDrawingCanvas() const;
 
+    void setRenderingContext(PassOwnPtrWillBeRawPtr<CanvasRenderingContext>);
     CanvasRenderingContext* renderingContext() const { return m_context.get(); }
 
     void ensureUnacceleratedImageBuffer();
@@ -168,6 +170,7 @@ public:
     void createImageBufferUsingSurfaceForTesting(PassOwnPtr<ImageBufferSurface>);
 
     static void registerRenderingContextFactory(PassOwnPtr<CanvasRenderingContextFactory>);
+    void updateExternallyAllocatedMemory() const;
 
 protected:
     void didMoveToNewDocument(Document& oldDocument) override;
@@ -194,8 +197,6 @@ private:
     void setSurfaceSize(const IntSize&);
 
     bool paintsIntoCanvasBuffer() const;
-
-    void updateExternallyAllocatedMemory() const;
 
     String toDataURLInternal(const String& mimeType, const double* quality, SourceDrawingBuffer) const;
 

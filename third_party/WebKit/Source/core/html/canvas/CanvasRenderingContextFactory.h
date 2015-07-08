@@ -17,8 +17,6 @@ class HTMLCanvasElement;
 
 class CORE_EXPORT CanvasRenderingContextFactory {
 public:
-    static void init();
-
     virtual ~CanvasRenderingContextFactory() { }
 
     virtual PassOwnPtrWillBeRawPtr<CanvasRenderingContext> create(HTMLCanvasElement*, const CanvasContextCreationAttributes&, Document&) = 0;

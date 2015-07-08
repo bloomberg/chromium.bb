@@ -29,14 +29,14 @@
 #ifndef CanvasPathMethods_h
 #define CanvasPathMethods_h
 
-#include "core/CoreExport.h"
+#include "modules/ModulesExport.h"
 #include "platform/graphics/Path.h"
 
 namespace blink {
 
 class ExceptionState;
 
-class CORE_EXPORT CanvasPathMethods {
+class MODULES_EXPORT CanvasPathMethods {
 public:
     virtual ~CanvasPathMethods() { }
 

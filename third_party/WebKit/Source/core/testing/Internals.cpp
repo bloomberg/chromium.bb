@@ -90,7 +90,6 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/canvas/CanvasFontCache.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
-#include "core/html/canvas/CanvasRenderingContext2D.h"
 #include "core/html/forms/FormController.h"
 #include "core/html/shadow/PluginPlaceholderElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
@@ -2370,7 +2369,7 @@ void Internals::setNetworkConnectionInfo(const String& type, ExceptionState& exc
 
 unsigned Internals::countHitRegions(CanvasRenderingContext* context)
 {
-    return toCanvasRenderingContext2D(context)->hitRegionsCount();
+    return context->hitRegionsCount();
 }
 
 bool Internals::isInCanvasFontCache(Document* document, const String& fontString)

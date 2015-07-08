@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/RefCounted.h"
@@ -44,7 +45,7 @@ class SVGTransformTearOff;
 // SVGMatrixTearOff wraps a AffineTransform for Javascript.
 // Its instance can either hold a static value, or this can be teared off from |SVGTransform.matrix|.
 // This does not derive from SVGPropertyTearOff, as its instances are never tied to an animated property nor an XML attribute.
-class SVGMatrixTearOff final : public RefCountedWillBeGarbageCollectedFinalized<SVGMatrixTearOff>, public ScriptWrappable {
+class CORE_EXPORT SVGMatrixTearOff final : public RefCountedWillBeGarbageCollectedFinalized<SVGMatrixTearOff>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<SVGMatrixTearOff> create(const AffineTransform& value)

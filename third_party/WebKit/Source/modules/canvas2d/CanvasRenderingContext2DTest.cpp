@@ -3,16 +3,18 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/html/canvas/CanvasRenderingContext2D.h"
+#include "modules/canvas2d/CanvasRenderingContext2D.h"
 
 #include "core/frame/FrameView.h"
 #include "core/frame/ImageBitmap.h"
+#include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/ImageData.h"
-#include "core/html/canvas/CanvasGradient.h"
-#include "core/html/canvas/CanvasPattern.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
+#include "modules/canvas2d/CanvasGradient.h"
+#include "modules/canvas2d/CanvasPattern.h"
+#include "modules/webgl/WebGLRenderingContext.h"
 #include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "platform/graphics/RecordingImageBufferSurface.h"
 #include "platform/graphics/StaticBitmapImage.h"

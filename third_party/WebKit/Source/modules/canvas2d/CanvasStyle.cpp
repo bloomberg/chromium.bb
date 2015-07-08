@@ -27,14 +27,14 @@
  */
 
 #include "config.h"
-#include "core/html/canvas/CanvasStyle.h"
+#include "modules/canvas2d/CanvasStyle.h"
 
 #include "core/CSSPropertyNames.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/html/HTMLCanvasElement.h"
-#include "core/html/canvas/CanvasGradient.h"
-#include "core/html/canvas/CanvasPattern.h"
+#include "modules/canvas2d/CanvasGradient.h"
+#include "modules/canvas2d/CanvasPattern.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {

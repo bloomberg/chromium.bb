@@ -37,11 +37,7 @@
 #include "core/fileapi/Blob.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalDOMWindow.h"
-#include "core/html/HTMLCanvasElement.h"
-#include "core/html/HTMLImageElement.h"
-#include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
-#include "core/html/canvas/CanvasRenderingContext2D.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/SharedBuffer.h"
 #include "platform/graphics/BitmapImage.h"
@@ -50,20 +46,6 @@
 #include <v8.h>
 
 namespace blink {
-
-static LayoutSize sizeFor(HTMLImageElement* image)
-{
-    if (ImageResource* cachedImage = image->cachedImage())
-        return cachedImage->imageSizeForLayoutObject(image->layoutObject(), 1.0f); // FIXME: Not sure about this.
-    return LayoutSize();
-}
-
-static IntSize sizeFor(HTMLVideoElement* video)
-{
-    if (WebMediaPlayer* webMediaPlayer = video->webMediaPlayer())
-        return webMediaPlayer->naturalSize();
-    return IntSize();
-}
 
 static ScriptPromise fulfillImageBitmap(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ImageBitmap> imageBitmap)
 {
@@ -75,111 +57,6 @@ static ScriptPromise fulfillImageBitmap(ScriptState* scriptState, PassRefPtrWill
         resolver->reject(ScriptValue(scriptState, v8::Null(scriptState->isolate())));
     }
     return promise;
-}
-
-ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, HTMLImageElement* image, ExceptionState& exceptionState)
-{
-    LayoutSize s = sizeFor(image);
-    return createImageBitmap(scriptState, eventTarget, image, 0, 0, s.width(), s.height(), exceptionState);
-}
-
-ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, HTMLImageElement* image, int sx, int sy, int sw, int sh, ExceptionState& exceptionState)
-{
-    // This variant does not work in worker threads.
-    ASSERT(eventTarget.toDOMWindow());
-
-    if (!image->cachedImage()) {
-        exceptionState.throwDOMException(InvalidStateError, "No image can be retrieved from the provided element.");
-        return ScriptPromise();
-    }
-    if (image->cachedImage()->image()->isSVGImage()) {
-        exceptionState.throwDOMException(InvalidStateError, "The image element contains an SVG image, which is unsupported.");
-        return ScriptPromise();
-    }
-    if (!sw || !sh) {
-        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
-        return ScriptPromise();
-    }
-    if (!image->cachedImage()->image()->currentFrameHasSingleSecurityOrigin()) {
-        exceptionState.throwSecurityError("The source image contains image data from multiple origins.");
-        return ScriptPromise();
-    }
-    Document* document = eventTarget.toDOMWindow()->document();
-    if (!image->cachedImage()->passesAccessControlCheck(document->securityOrigin()) && document->securityOrigin()->taintsCanvas(image->src())) {
-        exceptionState.throwSecurityError("Cross-origin access to the source image is denied.");
-        return ScriptPromise();
-    }
-    // FIXME: make ImageBitmap creation asynchronous crbug.com/258082
-    return fulfillImageBitmap(scriptState, ImageBitmap::create(image, IntRect(sx, sy, sw, sh)));
-}
-
-ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, HTMLVideoElement* video, ExceptionState& exceptionState)
-{
-    IntSize s = sizeFor(video);
-    return createImageBitmap(scriptState, eventTarget, video, 0, 0, s.width(), s.height(), exceptionState);
-}
-
-ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, HTMLVideoElement* video, int sx, int sy, int sw, int sh, ExceptionState& exceptionState)
-{
-    // This variant does not work in worker threads.
-    ASSERT(eventTarget.toDOMWindow());
-
-    if (video->networkState() == HTMLMediaElement::NETWORK_EMPTY) {
-        exceptionState.throwDOMException(InvalidStateError, "The provided element has not retrieved data.");
-        return ScriptPromise();
-    }
-    if (video->readyState() <= HTMLMediaElement::HAVE_METADATA) {
-        exceptionState.throwDOMException(InvalidStateError, "The provided element's player has no current data.");
-        return ScriptPromise();
-    }
-    if (!sw || !sh) {
-        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
-        return ScriptPromise();
-    }
-    if (!video->hasSingleSecurityOrigin()) {
-        exceptionState.throwSecurityError("The source video contains image data from multiple origins.");
-        return ScriptPromise();
-    }
-    if (!video->webMediaPlayer()->didPassCORSAccessCheck()
-        && eventTarget.toDOMWindow()->document()->securityOrigin()->taintsCanvas(video->currentSrc())) {
-        exceptionState.throwSecurityError("Cross-origin access to the source video is denied.");
-        return ScriptPromise();
-    }
-    // FIXME: make ImageBitmap creation asynchronous crbug.com/258082
-    return fulfillImageBitmap(scriptState, ImageBitmap::create(video, IntRect(sx, sy, sw, sh)));
-}
-
-ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, CanvasRenderingContext2D* context, ExceptionState& exceptionState)
-{
-    return createImageBitmap(scriptState, eventTarget, context->canvas(), exceptionState);
-}
-
-ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, CanvasRenderingContext2D* context, int sx, int sy, int sw, int sh, ExceptionState& exceptionState)
-{
-    return createImageBitmap(scriptState, eventTarget, context->canvas(), sx, sy, sw, sh, exceptionState);
-}
-
-ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, HTMLCanvasElement* canvas, ExceptionState& exceptionState)
-{
-    return createImageBitmap(scriptState, eventTarget, canvas, 0, 0, canvas->width(), canvas->height(), exceptionState);
-}
-
-ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, HTMLCanvasElement* canvas, int sx, int sy, int sw, int sh, ExceptionState& exceptionState)
-{
-    // This variant does not work in worker threads.
-    ASSERT(eventTarget.toDOMWindow());
-
-    if (!canvas->originClean()) {
-        exceptionState.throwSecurityError("The canvas element provided is tainted with cross-origin data.");
-        return ScriptPromise();
-    }
-    if (!sw || !sh) {
-        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
-        return ScriptPromise();
-    }
-
-    // FIXME: make ImageBitmap creation asynchronous crbug.com/258082
-    return fulfillImageBitmap(scriptState, canvas->isPaintable() ? ImageBitmap::create(canvas, IntRect(sx, sy, sw, sh)) : nullptr);
 }
 
 ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, Blob* blob, ExceptionState& exceptionState)

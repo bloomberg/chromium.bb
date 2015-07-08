@@ -5,8 +5,8 @@
 #ifndef ContextAttributeHelpers_h
 #define ContextAttributeHelpers_h
 
-#include "core/html/canvas/Canvas2DContextAttributes.h"
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
+#include "modules/canvas2d/Canvas2DContextAttributes.h"
 
 namespace blink {
 

@@ -14,6 +14,7 @@
 #include "modules/EventTargetModulesNames.h"
 #include "modules/IndexedDBNames.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
+#include "modules/canvas2d/CanvasRenderingContext2D.h"
 #include "modules/compositorworker/CompositorWorkerManager.h"
 #include "modules/filesystem/DraggedIsolatedFileSystemImpl.h"
 #include "modules/webdatabase/DatabaseManager.h"
@@ -41,6 +42,7 @@ void ModulesInitializer::init()
         CompositorWorkerManager::initialize();
 
     // Canvas context types must be registered with the HTMLCanvasElement.
+    HTMLCanvasElement::registerRenderingContextFactory(adoptPtr(new CanvasRenderingContext2D::Factory()));
     HTMLCanvasElement::registerRenderingContextFactory(adoptPtr(new WebGLRenderingContext::Factory()));
     HTMLCanvasElement::registerRenderingContextFactory(adoptPtr(new WebGL2RenderingContext::Factory()));
 

@@ -6,7 +6,7 @@
 #define CanvasRenderingContext2DState_h
 
 #include "core/css/CSSFontSelectorClient.h"
-#include "core/html/canvas/ClipList.h"
+#include "modules/canvas2d/ClipList.h"
 #include "platform/fonts/Font.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/Vector.h"

@@ -8,8 +8,8 @@
 #include "core/events/MouseEvent.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
-#include "core/html/canvas/CanvasRenderingContext2D.h"
-#include "core/html/canvas/HitRegion.h"
+#include "modules/canvas2d/CanvasRenderingContext2D.h"
+#include "modules/canvas2d/HitRegion.h"
 
 namespace blink {
 

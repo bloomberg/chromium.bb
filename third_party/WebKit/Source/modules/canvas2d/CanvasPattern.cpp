@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/html/canvas/CanvasPattern.h"
+#include "modules/canvas2d/CanvasPattern.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"

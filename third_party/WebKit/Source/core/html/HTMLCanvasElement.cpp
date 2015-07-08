@@ -40,7 +40,6 @@
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/html/canvas/CanvasFontCache.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
-#include "core/html/canvas/CanvasRenderingContext2D.h"
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
 #include "core/layout/LayoutHTMLCanvas.h"
 #include "core/paint/DeprecatedPaintLayer.h"
@@ -306,8 +305,8 @@ void HTMLCanvasElement::didFinalizeFrame()
 
 void HTMLCanvasElement::restoreCanvasMatrixClipStack()
 {
-    if (m_context && m_context->is2d())
-        toCanvasRenderingContext2D(m_context.get())->restoreCanvasMatrixClipStack();
+    if (m_context)
+        m_context->restoreCanvasMatrixClipStack();
 }
 
 void HTMLCanvasElement::doDeferredPaintInvalidation()
@@ -360,7 +359,7 @@ void HTMLCanvasElement::reset()
         h = DefaultHeight;
 
     if (m_context && m_context->is2d())
-        toCanvasRenderingContext2D(m_context.get())->reset();
+        m_context->reset();
 
     IntSize oldSize = size();
     IntSize newSize(w, h);
@@ -370,7 +369,7 @@ void HTMLCanvasElement::reset()
     if (hadImageBuffer && oldSize == newSize && m_context && m_context->is2d() && !buffer()->isRecording()) {
         if (!m_imageBufferIsClear) {
             m_imageBufferIsClear = true;
-            toCanvasRenderingContext2D(m_context.get())->clearRect(0, 0, width(), height());
+            m_context->clearRect(0, 0, width(), height());
         }
         return;
     }
@@ -445,7 +444,7 @@ void HTMLCanvasElement::setSurfaceSize(const IntSize& size)
     discardImageBuffer();
     clearCopiedImage();
     if (m_context && m_context->is2d() && m_context->isContextLost()) {
-        toCanvasRenderingContext2D(m_context.get())->didSetSurfaceSize();
+        m_context->didSetSurfaceSize();
     }
 }
 
@@ -623,7 +622,7 @@ void HTMLCanvasElement::createImageBuffer()
 {
     createImageBufferInternal(nullptr);
     if (m_didFailToCreateImageBuffer && m_context->is2d())
-        toCanvasRenderingContext2D(m_context.get())->loseContext(CanvasRenderingContext2D::SyntheticLostContext);
+        m_context->loseContext(CanvasRenderingContext::SyntheticLostContext);
 }
 
 void HTMLCanvasElement::createImageBufferInternal(PassOwnPtr<ImageBufferSurface> externalSurface)
@@ -666,7 +665,7 @@ void HTMLCanvasElement::createImageBufferInternal(PassOwnPtr<ImageBufferSurface>
     // rendering mode is accelerated or not. For consistency, we don't want to apply AA in accelerated
     // canvases but not in unaccelerated canvases.
     if (!msaaSampleCount && document().settings() && !document().settings()->antialiased2dCanvasEnabled())
-        toCanvasRenderingContext2D(m_context.get())->setShouldAntialias(false);
+        m_context->setShouldAntialias(false);
 
     if (m_context)
         setNeedsCompositingUpdate();
@@ -675,7 +674,7 @@ void HTMLCanvasElement::createImageBufferInternal(PassOwnPtr<ImageBufferSurface>
 void HTMLCanvasElement::notifySurfaceInvalid()
 {
     if (m_context && m_context->is2d())
-        toCanvasRenderingContext2D(m_context.get())->loseContext(CanvasRenderingContext2D::RealLostContext);
+        m_context->loseContext(CanvasRenderingContext::RealLostContext);
 }
 
 DEFINE_TRACE(HTMLCanvasElement)

@@ -33,7 +33,7 @@
  */
 
 #include "config.h"
-#include "core/html/canvas/CanvasPathMethods.h"
+#include "modules/canvas2d/CanvasPathMethods.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
