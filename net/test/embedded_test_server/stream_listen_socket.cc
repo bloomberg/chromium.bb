@@ -88,7 +88,7 @@ void StreamListenSocket::Send(const string& str, bool append_linefeed) {
   Send(str.data(), static_cast<int>(str.length()), append_linefeed);
 }
 
-int StreamListenSocket::GetLocalAddress(IPEndPoint* address) {
+int StreamListenSocket::GetLocalAddress(IPEndPoint* address) const {
   SockaddrStorage storage;
   if (getsockname(socket_, storage.addr, &storage.addr_len)) {
 #if defined(OS_WIN)

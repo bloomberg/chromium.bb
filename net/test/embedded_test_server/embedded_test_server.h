@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
+#include "net/base/address_list.h"
 #include "net/test/embedded_test_server/tcp_listen_socket.h"
 #include "url/gurl.h"
 
@@ -26,6 +27,7 @@ class FilePath;
 namespace net {
 namespace test_server {
 
+class EmbeddedTestServerConnectionListener;
 class HttpConnection;
 class HttpResponse;
 struct HttpRequest;
@@ -108,6 +110,11 @@ class EmbeddedTestServer : public StreamListenSocket::Delegate {
   EmbeddedTestServer();
   ~EmbeddedTestServer() override;
 
+  // Sets a connection listener, that would be notified when various connection
+  // events happen. May only be called before the server is started. Caller
+  // maintains ownership of the listener.
+  void SetConnectionListener(EmbeddedTestServerConnectionListener* listener);
+
   // Initializes and waits until the server is ready to accept requests.
   bool InitializeAndWaitUntilReady() WARN_UNUSED_RESULT;
 
@@ -134,6 +141,9 @@ class EmbeddedTestServer : public StreamListenSocket::Delegate {
   // resolved to 127.0.0.1.
   GURL GetURL(const std::string& hostname,
               const std::string& relative_url) const;
+
+  // Returns the address list needed to connect to the server.
+  bool GetAddressList(net::AddressList* address_list) const WARN_UNUSED_RESULT;
 
   // Returns the port number used by the server.
   uint16 port() const { return port_; }
@@ -188,6 +198,7 @@ class EmbeddedTestServer : public StreamListenSocket::Delegate {
   scoped_ptr<base::Thread> io_thread_;
 
   scoped_ptr<HttpListenSocket> listen_socket_;
+  EmbeddedTestServerConnectionListener* connection_listener_;
   uint16 port_;
   GURL base_url_;
 

@@ -74,7 +74,7 @@ class StreamListenSocket :
 
   // Copies the local address to |address|. Returns a network error code.
   // This method is virtual to support unit testing.
-  virtual int GetLocalAddress(IPEndPoint* address);
+  virtual int GetLocalAddress(IPEndPoint* address) const;
   // Copies the peer address to |address|. Returns a network error code.
   // This method is virtual to support unit testing.
   virtual int GetPeerAddress(IPEndPoint* address);

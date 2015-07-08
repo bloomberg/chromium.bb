@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_metrics.h"
 #include "base/run_loop.h"
@@ -18,6 +19,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
 #include "net/test/embedded_test_server/http_connection.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -124,8 +126,7 @@ void HttpListenSocket::DetachFromThread() {
 }
 
 EmbeddedTestServer::EmbeddedTestServer()
-    : port_(0),
-      weak_factory_(this) {
+    : connection_listener_(nullptr), port_(0), weak_factory_(this) {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
@@ -135,6 +136,12 @@ EmbeddedTestServer::~EmbeddedTestServer() {
   if (Started() && !ShutdownAndWaitUntilComplete()) {
     LOG(ERROR) << "EmbeddedTestServer failed to shut down.";
   }
+}
+
+void EmbeddedTestServer::SetConnectionListener(
+    EmbeddedTestServerConnectionListener* listener) {
+  DCHECK(!Started());
+  connection_listener_ = listener;
 }
 
 bool EmbeddedTestServer::InitializeAndWaitUntilReady() {
@@ -277,6 +284,18 @@ GURL EmbeddedTestServer::GetURL(
   return local_url.ReplaceComponents(replace_host);
 }
 
+bool EmbeddedTestServer::GetAddressList(net::AddressList* address_list) const {
+  if (!listen_socket_)
+    return false;
+  IPEndPoint endpoint;
+  int result = listen_socket_->GetLocalAddress(&endpoint);
+  if (result != OK)
+    return false;
+
+  *address_list = net::AddressList(endpoint);
+  return true;
+}
+
 void EmbeddedTestServer::ServeFilesFromDirectory(
     const base::FilePath& directory) {
   RegisterRequestHandler(base::Bind(&HandleFileRequest, directory));
@@ -287,23 +306,25 @@ void EmbeddedTestServer::RegisterRequestHandler(
   request_handlers_.push_back(callback);
 }
 
-void EmbeddedTestServer::DidAccept(
-    StreamListenSocket* server,
-    scoped_ptr<StreamListenSocket> connection) {
+void EmbeddedTestServer::DidAccept(StreamListenSocket* server,
+                                   scoped_ptr<StreamListenSocket> connection) {
   DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
+  if (connection_listener_)
+    connection_listener_->AcceptedSocket(*connection);
 
   HttpConnection* http_connection = new HttpConnection(
-      connection.Pass(),
-      base::Bind(&EmbeddedTestServer::HandleRequest,
-                 weak_factory_.GetWeakPtr()));
+      connection.Pass(), base::Bind(&EmbeddedTestServer::HandleRequest,
+                                    weak_factory_.GetWeakPtr()));
   // TODO(szym): Make HttpConnection the StreamListenSocket delegate.
   connections_[http_connection->socket_.get()] = http_connection;
 }
 
 void EmbeddedTestServer::DidRead(StreamListenSocket* connection,
-                         const char* data,
-                         int length) {
+                                 const char* data,
+                                 int length) {
   DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
+  if (connection_listener_)
+    connection_listener_->ReadFromSocket(*connection);
 
   HttpConnection* http_connection = FindConnection(connection);
   if (http_connection == NULL) {
