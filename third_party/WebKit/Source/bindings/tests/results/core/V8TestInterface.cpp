@@ -2217,9 +2217,8 @@ void V8TestInterface::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* scr
     V8WrapperInstantiationScope scope(creationContext, isolate);
     TestInterfaceImplementation* referencedName = impl->referencedName();
     if (referencedName) {
-        if (!DOMDataStore::containsWrapper(referencedName, isolate))
-            referencedName->wrap(isolate, creationContext);
-        DOMDataStore::setWrapperReference(wrapper, referencedName, isolate);
+        if (DOMDataStore::containsWrapper(referencedName, isolate))
+            DOMDataStore::setWrapperReference(wrapper, referencedName, isolate);
     }
 }
 

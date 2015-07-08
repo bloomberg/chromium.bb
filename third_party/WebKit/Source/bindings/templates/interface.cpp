@@ -564,9 +564,8 @@ void {{v8_class}}::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* script
     V8WrapperInstantiationScope scope(creationContext, isolate);
     {{set_wrapper_reference_to.cpp_type}} {{set_wrapper_reference_to.name}} = impl->{{set_wrapper_reference_to.name}}();
     if ({{set_wrapper_reference_to.name}}) {
-        if (!DOMDataStore::containsWrapper({{set_wrapper_reference_to.name}}, isolate))
-            {{set_wrapper_reference_to.name}}->wrap(isolate, creationContext);
-        DOMDataStore::setWrapperReference(wrapper, {{set_wrapper_reference_to.name}}, isolate);
+        if (DOMDataStore::containsWrapper({{set_wrapper_reference_to.name}}, isolate))
+            DOMDataStore::setWrapperReference(wrapper, {{set_wrapper_reference_to.name}}, isolate);
     }
     {% endif %}
     {% if set_wrapper_reference_from %}
