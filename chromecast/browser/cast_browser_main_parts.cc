@@ -59,8 +59,8 @@
 #endif
 
 #if defined(USE_AURA)
+#include "chromecast/graphics/cast_screen.h"
 #include "ui/aura/env.h"
-#include "ui/aura/test/test_screen.h"
 #include "ui/gfx/screen.h"
 #endif
 
@@ -272,9 +272,10 @@ int CastBrowserMainParts::PreCreateThreads() {
   // is assumed as an interface to access display information, e.g. from metrics
   // code.  See CastContentWindow::CreateWindowTree for update when resolution
   // is available.
+  cast_browser_process_->SetCastScreen(make_scoped_ptr(new CastScreen));
   DCHECK(!gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE));
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE,
-                                 aura::TestScreen::Create(gfx::Size(0, 0)));
+                                 cast_browser_process_->cast_screen());
 #endif
 
 #if !defined(OS_ANDROID)

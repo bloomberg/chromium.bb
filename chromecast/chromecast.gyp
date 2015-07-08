@@ -362,6 +362,8 @@
           'sources': [
             'browser/metrics/external_metrics.cc',
             'browser/metrics/external_metrics.h',
+            'graphics/cast_screen.cc',
+            'graphics/cast_screen.h',
           ],
           'dependencies': [
             '../components/components.gyp:metrics_serialization',

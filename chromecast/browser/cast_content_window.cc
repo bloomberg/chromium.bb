@@ -8,16 +8,17 @@
 #include "base/threading/thread_restrictions.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
+#include "chromecast/browser/cast_browser_process.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
 
 #if defined(USE_AURA)
+#include "chromecast/graphics/cast_screen.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/test/test_focus_client.h"
-#include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #endif
@@ -70,19 +71,13 @@ void CastContentWindow::CreateWindowTree(
     content::WebContents* web_contents) {
 #if defined(USE_AURA)
   // Aura initialization
-  // TODO(lcwu): We only need a minimal implementation of gfx::Screen
-  // and aura's TestScreen will do for us now. We should change to use
-  // ozone's screen implementation when it is ready.
-  gfx::Screen* old_screen =
-      gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE);
-  if (!old_screen || old_screen->GetPrimaryDisplay().size() != initial_size) {
-    gfx::Screen* new_screen = aura::TestScreen::Create(initial_size);
-    DCHECK(new_screen) << "New screen not created.";
-    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, new_screen);
-    if (old_screen) {
-      delete old_screen;
-    }
-  }
+  CastScreen* cast_screen =
+      shell::CastBrowserProcess::GetInstance()->cast_screen();
+  if (!gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE))
+    gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, cast_screen);
+  if (cast_screen->GetPrimaryDisplay().size() != initial_size)
+    cast_screen->UpdateDisplaySize(initial_size);
+
   CHECK(aura::Env::GetInstance());
   window_tree_host_.reset(
       aura::WindowTreeHost::Create(gfx::Rect(initial_size)));

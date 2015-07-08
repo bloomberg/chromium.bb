@@ -17,6 +17,7 @@ class CrashDumpManager;
 
 namespace chromecast {
 class CastService;
+class CastScreen;
 class ConnectivityChecker;
 
 namespace metrics {
@@ -40,6 +41,9 @@ class CastBrowserProcess {
 
   void SetBrowserContext(scoped_ptr<CastBrowserContext> browser_context);
   void SetCastService(scoped_ptr<CastService> cast_service);
+#if defined(USE_AURA)
+  void SetCastScreen(scoped_ptr<CastScreen> cast_screen);
+#endif  // defined(USE_AURA)
   void SetMetricsHelper(scoped_ptr<metrics::CastMetricsHelper> metrics_helper);
   void SetMetricsServiceClient(
       scoped_ptr<metrics::CastMetricsServiceClient> metrics_service_client);
@@ -57,6 +61,9 @@ class CastBrowserProcess {
 
   CastBrowserContext* browser_context() const { return browser_context_.get(); }
   CastService* cast_service() const { return cast_service_.get(); }
+#if defined(USE_AURA)
+  CastScreen* cast_screen() const { return cast_screen_.get(); }
+#endif  // defined(USE_AURA)
   metrics::CastMetricsServiceClient* metrics_service_client() const {
     return metrics_service_client_.get();
   }
@@ -73,6 +80,9 @@ class CastBrowserProcess {
   // Note: The following order should match the order they are set in
   // CastBrowserMainParts.
   scoped_ptr<metrics::CastMetricsHelper> metrics_helper_;
+#if defined(USE_AURA)
+  scoped_ptr<CastScreen> cast_screen_;
+#endif  // defined(USE_AURA)
   scoped_ptr<PrefService> pref_service_;
   scoped_refptr<ConnectivityChecker> connectivity_checker_;
   scoped_ptr<CastBrowserContext> browser_context_;
