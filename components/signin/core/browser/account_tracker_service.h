@@ -10,17 +10,15 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
-class AccountInfoFetcher;
-class OAuth2TokenService;
+
 class PrefService;
-class RefreshTokenAnnotationRequest;
 class SigninClient;
 
 namespace base {
@@ -30,16 +28,11 @@ class DictionaryValue;
 // AccountTrackerService is a KeyedService that retrieves and caches GAIA
 // information about Google Accounts.
 class AccountTrackerService : public KeyedService,
-                              public OAuth2TokenService::Observer,
                               public base::NonThreadSafe {
  public:
   // Name of the preference property that persists the account information
   // tracked by this service.
   static const char kAccountInfoPref[];
-
-  // Name of the preference that tracks the int64 representation of the last
-  // time the AccountTrackerService was updated.
-  static const char kAccountTrackerServiceLastUpdate[];
 
   // TODO(mlerman): Remove all references to Profile::kNoHostedDomainFound in
   // favour of this.
@@ -96,12 +89,7 @@ class AccountTrackerService : public KeyedService,
   // Take a SigninClient rather than a PrefService and a URLRequestContextGetter
   // since RequestContext cannot be created at startup.
   // (see http://crbug.com/171406)
-  void Initialize(OAuth2TokenService* token_service,
-                  SigninClient* signin_client);
-
-  // To be called after the Profile is fully initialized; permits network
-  // calls to be executed.
-  void EnableNetworkFetches();
+  void Initialize(SigninClient* signin_client);
 
   // Returns the list of known accounts and for which gaia IDs
   // have been fetched.
@@ -109,10 +97,6 @@ class AccountTrackerService : public KeyedService,
   AccountInfo GetAccountInfo(const std::string& account_id);
   AccountInfo FindAccountInfoByGaiaId(const std::string& gaia_id);
   AccountInfo FindAccountInfoByEmail(const std::string& email);
-
-  // Indicates if all user information has been fetched. If the result is false,
-  // there are still unfininshed fetchers.
-  virtual bool IsAllUserInfoFetched() const;
 
   // Picks the correct account_id for the specified account depending on the
   // migration state.
@@ -140,23 +124,8 @@ class AccountTrackerService : public KeyedService,
       const std::vector<std::string>* service_flags);
 
  private:
-  friend class AccountInfoFetcher;
-
-  // These methods are called by fetchers.
-  void OnUserInfoFetchSuccess(AccountInfoFetcher* fetcher,
-                              const base::DictionaryValue* user_info,
-                              const std::vector<std::string>* service_flags);
-  void OnUserInfoFetchFailure(AccountInfoFetcher* fetcher);
-
-  // Refreshes the AccountInfo associated with |account_id| if it's invalid or
-  // if |force_remote_fetch| is true.
-  void RefreshAccountInfo(
-      const std::string& account_id, bool force_remote_fetch);
-
-  // OAuth2TokenService::Observer implementation.
-  void OnRefreshTokenAvailable(const std::string& account_id) override;
-  void OnRefreshTokenRevoked(const std::string& account_id) override;
-
+  friend class AccountFetcherService;
+  friend class FakeAccountFetcherService;
   struct AccountState {
     AccountInfo info;
   };
@@ -165,42 +134,17 @@ class AccountTrackerService : public KeyedService,
   void NotifyAccountUpdateFailed(const std::string& account_id);
   void NotifyAccountRemoved(const AccountState& state);
 
-  void StartFetchingInvalidAccounts();
   void StartTrackingAccount(const std::string& account_id);
   void StopTrackingAccount(const std::string& account_id);
-
-  // Virtual so that tests can override the network fetching behaviour.
-  virtual void StartFetchingUserInfo(const std::string& account_id);
-  void DeleteFetcher(AccountInfoFetcher* fetcher);
 
   // Load the current state of the account info from the preferences file.
   void LoadFromPrefs();
   void SaveToPrefs(const AccountState& account);
   void RemoveFromPrefs(const AccountState& account);
 
-  void LoadFromTokenService();
-  void RefreshFromTokenService();
-
-  // Virtual so that tests can override the network fetching behaviour.
-  virtual void SendRefreshTokenAnnotationRequest(const std::string& account_id);
-  void RefreshTokenAnnotationRequestDone(const std::string& account_id);
-
-  void ScheduleNextRefreshFromTokenService();
-
-  OAuth2TokenService* token_service_;  // Not owned.
   SigninClient* signin_client_;  // Not owned.
-  std::map<std::string, AccountInfoFetcher*> user_info_requests_;
   std::map<std::string, AccountState> accounts_;
   base::ObserverList<Observer> observer_list_;
-  bool shutdown_called_;
-  bool network_fetches_enabled_;
-  std::list<std::string> pending_user_info_fetches_;
-  base::Time last_updated_;
-  base::OneShotTimer<AccountTrackerService> timer_;
-
-  // Holds references to refresh token annotation requests keyed by account_id.
-  base::ScopedPtrHashMap<std::string, scoped_ptr<RefreshTokenAnnotationRequest>>
-      refresh_token_annotation_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountTrackerService);
 };

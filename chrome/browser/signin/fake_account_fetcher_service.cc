@@ -1,36 +1,38 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/fake_account_tracker_service.h"
+#include "chrome/browser/signin/fake_account_fetcher_service.h"
 
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 
 // static
-scoped_ptr<KeyedService> FakeAccountTrackerService::Build(
+scoped_ptr<KeyedService> FakeAccountFetcherService::BuildForTests(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
-  FakeAccountTrackerService* service = new FakeAccountTrackerService();
-  service->Initialize(
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-      ChromeSigninClientFactory::GetForProfile(profile));
+  FakeAccountFetcherService* service = new FakeAccountFetcherService();
+  service->Initialize(ChromeSigninClientFactory::GetForProfile(profile),
+                      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+                      AccountTrackerServiceFactory::GetForProfile(profile));
   return scoped_ptr<KeyedService>(service);
 }
 
-FakeAccountTrackerService::FakeAccountTrackerService() {}
+FakeAccountFetcherService::FakeAccountFetcherService() {}
 
-FakeAccountTrackerService::~FakeAccountTrackerService() {}
+FakeAccountFetcherService::~FakeAccountFetcherService() {}
 
-void FakeAccountTrackerService::StartFetchingUserInfo(
+void FakeAccountFetcherService::StartFetchingUserInfo(
     const std::string& account_id) {
   // In tests, don't do actual network fetch.
 }
 
-void FakeAccountTrackerService::FakeUserInfoFetchSuccess(
+void FakeAccountFetcherService::FakeUserInfoFetchSuccess(
     const std::string& email,
     const std::string& gaia,
     const std::string& hosted_domain,
@@ -47,11 +49,13 @@ void FakeAccountTrackerService::FakeUserInfoFetchSuccess(
   user_info.SetString("locale", locale);
   user_info.SetString("picture", picture_url);
   std::vector<std::string> service_flags;
-  SetAccountStateFromUserInfo(
-      PickAccountIdForAccount(gaia, email), &user_info, &service_flags);
+  account_tracker_service()->SetAccountStateFromUserInfo(
+      account_tracker_service()->PickAccountIdForAccount(gaia, email),
+      &user_info,
+      &service_flags);
 }
 
-void FakeAccountTrackerService::SendRefreshTokenAnnotationRequest(
+void FakeAccountFetcherService::SendRefreshTokenAnnotationRequest(
     const std::string& account_id) {
   // In tests, don't do actual network fetch.
 }

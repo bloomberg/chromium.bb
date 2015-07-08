@@ -19,6 +19,7 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/os_crypt/os_crypt.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/common/signin_pref_names.h"
 
@@ -48,8 +49,7 @@ scoped_ptr<PrefService> PrefServiceForTesting() {
   registry->RegisterListPref(AccountTrackerService::kAccountInfoPref);
   registry->RegisterIntegerPref(::prefs::kAccountIdMigrationState,
                                 AccountTrackerService::MIGRATION_NOT_STARTED);
-  registry->RegisterInt64Pref(
-      AccountTrackerService::kAccountTrackerServiceLastUpdate, 0);
+  registry->RegisterInt64Pref(AccountFetcherService::kLastUpdatePref, 0);
 
   base::PrefServiceFactory factory;
   factory.set_user_prefs(make_scoped_refptr(new TestingPrefStore()));

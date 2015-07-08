@@ -1,12 +1,12 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_FAKE_ACCOUNT_TRACKER_SERVICE_H_
-#define CHROME_BROWSER_SIGNIN_FAKE_ACCOUNT_TRACKER_SERVICE_H_
+#ifndef CHROME_BROWSER_SIGNIN_FAKE_ACCOUNT_FETCHER_SERVICE_H_
+#define CHROME_BROWSER_SIGNIN_FAKE_ACCOUNT_FETCHER_SERVICE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/account_fetcher_service.h"
 
 class KeyedService;
 
@@ -17,10 +17,8 @@ class BrowserContext;
 // AccountTrackerService is a KeyedService that retrieves and caches GAIA
 // information about Google Accounts.  This fake class can be used in tests
 // to prevent AccountTrackerService from sending network requests.
-class FakeAccountTrackerService : public AccountTrackerService {
+class FakeAccountFetcherService : public AccountFetcherService {
  public:
-  static scoped_ptr<KeyedService> Build(content::BrowserContext* context);
-
   void FakeUserInfoFetchSuccess(const std::string& email,
                                 const std::string& gaia,
                                 const std::string& hosted_domain,
@@ -29,15 +27,18 @@ class FakeAccountTrackerService : public AccountTrackerService {
                                 const std::string& locale,
                                 const std::string& picture_url);
 
- private:
-  FakeAccountTrackerService();
-  ~FakeAccountTrackerService() override;
+  static scoped_ptr<KeyedService> BuildForTests(
+      content::BrowserContext* context);
 
+  FakeAccountFetcherService();
+  ~FakeAccountFetcherService() override;
+
+ private:
   void StartFetchingUserInfo(const std::string& account_id) override;
   void SendRefreshTokenAnnotationRequest(
       const std::string& account_id) override;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeAccountTrackerService);
+  DISALLOW_COPY_AND_ASSIGN(FakeAccountFetcherService);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_FAKE_ACCOUNT_TRACKER_SERVICE_H_
+#endif  // CHROME_BROWSER_SIGNIN_FAKE_ACCOUNT_FETCHER_SERVICE_H_

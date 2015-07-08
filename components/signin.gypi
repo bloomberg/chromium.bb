@@ -48,6 +48,8 @@
         # Note: file list duplicated in GN build.
         'signin/core/browser/about_signin_internals.cc',
         'signin/core/browser/about_signin_internals.h',
+        'signin/core/browser/account_fetcher_service.cc',
+        'signin/core/browser/account_fetcher_service.h',
         'signin/core/browser/account_reconcilor.cc',
         'signin/core/browser/account_reconcilor.h',
         'signin/core/browser/account_tracker_service.cc',

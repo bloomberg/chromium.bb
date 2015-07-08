@@ -42,6 +42,7 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
+#include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -175,6 +176,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 
   AboutSigninInternalsFactory::GetInstance();
   AccountTrackerServiceFactory::GetInstance();
+  AccountFetcherServiceFactory::GetInstance();
   autofill::PersonalDataManagerFactory::GetInstance();
 #if !defined(OS_ANDROID)
   AutomaticProfileResetterFactory::GetInstance();

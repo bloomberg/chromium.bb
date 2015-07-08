@@ -7,13 +7,15 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
+#include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
-#include "chrome/browser/signin/fake_account_tracker_service.h"
+#include "chrome/browser/signin/fake_account_fetcher_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/test_signin_client_builder.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -42,14 +44,16 @@ class ProfileDownloaderTest : public testing::Test,
     TestingProfile::Builder builder;
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                               &BuildAutoIssuingFakeProfileOAuth2TokenService);
-    builder.AddTestingFactory(AccountTrackerServiceFactory::GetInstance(),
-                              FakeAccountTrackerService::Build);
+    builder.AddTestingFactory(AccountFetcherServiceFactory::GetInstance(),
+                              FakeAccountFetcherService::BuildForTests);
     builder.AddTestingFactory(ChromeSigninClientFactory::GetInstance(),
                               signin::BuildTestSigninClient);
 
     profile_ = builder.Build();
-    account_tracker_service_ = static_cast<FakeAccountTrackerService*>(
-        AccountTrackerServiceFactory::GetForProfile(profile_.get()));
+    account_tracker_service_ =
+        AccountTrackerServiceFactory::GetForProfile(profile_.get());
+    account_fetcher_service_ = static_cast<FakeAccountFetcherService*>(
+        AccountFetcherServiceFactory::GetForProfile(profile_.get()));
     signin_client_ = static_cast<TestSigninClient*>(
         ChromeSigninClientFactory::GetForProfile(profile_.get()));
     signin_client_->SetURLRequestContext(profile_->GetRequestContext());
@@ -68,7 +72,7 @@ class ProfileDownloaderTest : public testing::Test,
       ProfileDownloaderDelegate::FailureReason reason) override {}
 
   void SimulateUserInfoSuccess() {
-    account_tracker_service_->FakeUserInfoFetchSuccess(
+    account_fetcher_service_->FakeUserInfoFetchSuccess(
       kTestEmail,
       kTestGaia,
       kTestHostedDomain,
@@ -78,7 +82,8 @@ class ProfileDownloaderTest : public testing::Test,
       kTestPictureURL);
   }
 
-  FakeAccountTrackerService* account_tracker_service_;
+  AccountTrackerService* account_tracker_service_;
+  FakeAccountFetcherService* account_fetcher_service_;
   content::TestBrowserThreadBundle thread_bundle_;
   TestSigninClient* signin_client_;
   scoped_ptr<Profile> profile_;

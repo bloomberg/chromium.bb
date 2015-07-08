@@ -7,11 +7,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/common/signin_pref_names.h"
 
 AccountTrackerServiceFactory::AccountTrackerServiceFactory()
@@ -19,7 +17,6 @@ AccountTrackerServiceFactory::AccountTrackerServiceFactory()
         "AccountTrackerServiceFactory",
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ChromeSigninClientFactory::GetInstance());
-  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
 }
 
 AccountTrackerServiceFactory::~AccountTrackerServiceFactory() {
@@ -42,16 +39,12 @@ void AccountTrackerServiceFactory::RegisterProfilePrefs(
   registry->RegisterListPref(AccountTrackerService::kAccountInfoPref);
   registry->RegisterIntegerPref(prefs::kAccountIdMigrationState,
                                 AccountTrackerService::MIGRATION_NOT_STARTED);
-  registry->RegisterInt64Pref(
-      AccountTrackerService::kAccountTrackerServiceLastUpdate, 0);
 }
 
 KeyedService* AccountTrackerServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
   AccountTrackerService* service = new AccountTrackerService();
-  service->Initialize(
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-      ChromeSigninClientFactory::GetForProfile(profile));
+  service->Initialize(ChromeSigninClientFactory::GetForProfile(profile));
   return service;
 }

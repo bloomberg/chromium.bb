@@ -6,6 +6,8 @@ static_library("browser") {
   sources = [
     "about_signin_internals.cc",
     "about_signin_internals.h",
+    "account_fetcher_service.cc",
+    "account_fetcher_service.h",
     "account_reconcilor.cc",
     "account_reconcilor.h",
     "account_tracker_service.cc",

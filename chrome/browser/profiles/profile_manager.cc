@@ -36,6 +36,7 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/cross_device_promo.h"
@@ -58,6 +59,7 @@
 #include "components/bookmarks/browser/startup_task_runner_service.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -1096,7 +1098,7 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
       MaybeActivateDataReductionProxy(true);
 
   GaiaCookieManagerServiceFactory::GetForProfile(profile)->Init();
-  AccountTrackerServiceFactory::GetForProfile(profile)->EnableNetworkFetches();
+  AccountFetcherServiceFactory::GetForProfile(profile)->EnableNetworkFetches();
   AccountReconcilorFactory::GetForProfile(profile);
 }
 
