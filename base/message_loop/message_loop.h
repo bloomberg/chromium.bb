@@ -296,9 +296,16 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   const std::string& thread_name() const { return thread_name_; }
 
   // Gets the TaskRunner associated with this message loop.
-  // TODO(skyostil): Change this to return a const reference to a refptr
-  // once the internal type matches what is being returned (crbug.com/465354).
-  scoped_refptr<SingleThreadTaskRunner> task_runner() { return task_runner_; }
+  const scoped_refptr<SingleThreadTaskRunner>& task_runner() {
+    return task_runner_;
+  }
+
+  // Sets a new TaskRunner for this message loop. The message loop must already
+  // have been bound to a thread prior to this call, and the task runner must
+  // belong to that thread. Note that changing the task runner will also affect
+  // the ThreadTaskRunnerHandle for the target thread. Must be called on the
+  // thread to which the message loop is bound.
+  void SetTaskRunner(scoped_refptr<SingleThreadTaskRunner> task_runner);
 
   // Enables or disables the recursive task processing. This happens in the case
   // of recursive message loops. Some unwanted message loop may occurs when
@@ -521,8 +528,11 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
 
   scoped_refptr<internal::IncomingTaskQueue> incoming_task_queue_;
 
+  // A task runner which we haven't bound to a thread yet.
+  scoped_refptr<internal::MessageLoopTaskRunner> unbound_task_runner_;
+
   // The task runner associated with this message loop.
-  scoped_refptr<internal::MessageLoopTaskRunner> task_runner_;
+  scoped_refptr<SingleThreadTaskRunner> task_runner_;
   scoped_ptr<ThreadTaskRunnerHandle> thread_task_runner_handle_;
 
   template <class T, class R> friend class base::subtle::DeleteHelperInternal;
