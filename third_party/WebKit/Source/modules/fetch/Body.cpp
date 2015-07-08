@@ -76,7 +76,8 @@ public:
     {
         m_reader.clear();
         m_stream->close();
-        m_bodyStreamBuffer = BodyStreamBuffer::createEmpty();
+        if (m_bodyStreamBuffer)
+            m_bodyStreamBuffer = BodyStreamBuffer::createEmpty();
 #if ENABLE(ASSERT)
         m_isCloseCalled = true;
 #endif
@@ -86,7 +87,8 @@ public:
     {
         m_reader.clear();
         m_stream->error(DOMException::create(NetworkError, "network error"));
-        m_bodyStreamBuffer = BodyStreamBuffer::create(createFetchDataConsumerHandleFromWebHandle(createUnexpectedErrorDataConsumerHandle()));
+        if (m_bodyStreamBuffer)
+            m_bodyStreamBuffer = BodyStreamBuffer::create(createFetchDataConsumerHandleFromWebHandle(createUnexpectedErrorDataConsumerHandle()));
 #if ENABLE(ASSERT)
         m_isErrorCalled = true;
 #endif
