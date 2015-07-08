@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "content/browser/service_worker/service_worker_database.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerResponseError.h"
 
 class GURL;
 
@@ -133,6 +134,11 @@ class ServiceWorkerMetrics {
   static void RecordURLRequestJobResult(bool is_main_resource,
                                         URLRequestJobResult result);
 
+  // Records the error code provided when the renderer returns a response with
+  // status zero to a fetch request.
+  static void RecordStatusZeroResponseError(
+      bool is_main_resource,
+      blink::WebServiceWorkerResponseError error);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerMetrics);

@@ -263,7 +263,8 @@ class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
         SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
         ServiceWorkerResponse(
             GURL(), 200, "OK", blink::WebServiceWorkerResponseTypeDefault,
-            ServiceWorkerHeaderMap(), std::string(), 0, GURL())));
+            ServiceWorkerHeaderMap(), std::string(), 0, GURL(),
+            blink::WebServiceWorkerResponseErrorUnknown)));
   }
 
  private:
@@ -313,17 +314,12 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
                     int request_id,
                     const ServiceWorkerFetchRequest& request) override {
     SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
-        embedded_worker_id,
-        request_id,
+        embedded_worker_id, request_id,
         SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
-        ServiceWorkerResponse(GURL(),
-                              200,
-                              "OK",
-                              blink::WebServiceWorkerResponseTypeDefault,
-                              ServiceWorkerHeaderMap(),
-                              blob_uuid_,
-                              blob_size_,
-                              GURL())));
+        ServiceWorkerResponse(
+            GURL(), 200, "OK", blink::WebServiceWorkerResponseTypeDefault,
+            ServiceWorkerHeaderMap(), blob_uuid_, blob_size_, GURL(),
+            blink::WebServiceWorkerResponseErrorUnknown)));
   }
 
   std::string blob_uuid_;
@@ -370,17 +366,12 @@ class StreamResponder : public EmbeddedWorkerTestHelper {
                     int request_id,
                     const ServiceWorkerFetchRequest& request) override {
     SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
-        embedded_worker_id,
-        request_id,
+        embedded_worker_id, request_id,
         SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
-        ServiceWorkerResponse(GURL(),
-                              200,
-                              "OK",
+        ServiceWorkerResponse(GURL(), 200, "OK",
                               blink::WebServiceWorkerResponseTypeDefault,
-                              ServiceWorkerHeaderMap(),
-                              "",
-                              0,
-                              stream_url_)));
+                              ServiceWorkerHeaderMap(), "", 0, stream_url_,
+                              blink::WebServiceWorkerResponseErrorUnknown)));
   }
 
   const GURL stream_url_;

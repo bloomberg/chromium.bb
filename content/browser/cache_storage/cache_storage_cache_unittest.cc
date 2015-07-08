@@ -240,11 +240,13 @@ class CacheStorageCacheTest : public testing::Test {
     body_response_ = ServiceWorkerResponse(
         GURL("http://example.com/body.html"), 200, "OK",
         blink::WebServiceWorkerResponseTypeDefault, headers,
-        blob_handle_->uuid(), expected_blob_data_.size(), GURL());
+        blob_handle_->uuid(), expected_blob_data_.size(), GURL(),
+        blink::WebServiceWorkerResponseErrorUnknown);
 
     no_body_response_ = ServiceWorkerResponse(
         GURL("http://example.com/no_body.html"), 200, "OK",
-        blink::WebServiceWorkerResponseTypeDefault, headers, "", 0, GURL());
+        blink::WebServiceWorkerResponseTypeDefault, headers, "", 0, GURL(),
+        blink::WebServiceWorkerResponseErrorUnknown);
   }
 
   scoped_ptr<ServiceWorkerFetchRequest> CopyFetchRequest(
@@ -765,7 +767,8 @@ TEST_F(CacheStorageCacheTest, CaselessServiceWorkerResponseHeaders) {
   // headers so that it can quickly lookup vary headers.
   ServiceWorkerResponse response(GURL("http://www.example.com"), 200, "OK",
                                  blink::WebServiceWorkerResponseTypeDefault,
-                                 ServiceWorkerHeaderMap(), "", 0, GURL());
+                                 ServiceWorkerHeaderMap(), "", 0, GURL(),
+                                 blink::WebServiceWorkerResponseErrorUnknown);
   response.headers["content-type"] = "foo";
   response.headers["Content-Type"] = "bar";
   EXPECT_EQ("bar", response.headers["content-type"]);

@@ -80,12 +80,12 @@ ServiceWorkerResponse ResponseFromWebResponse(
   GetServiceWorkerHeaderMapFromWebResponse(web_response, &headers);
   // We don't support streaming for cache.
   DCHECK(web_response.streamURL().isEmpty());
-  return ServiceWorkerResponse(web_response.url(), web_response.status(),
-                               base::UTF16ToASCII(web_response.statusText()),
-                               web_response.responseType(), headers,
-                               base::UTF16ToASCII(web_response.blobUUID()),
-                               web_response.blobSize(),
-                               web_response.streamURL());
+  return ServiceWorkerResponse(
+      web_response.url(), web_response.status(),
+      base::UTF16ToASCII(web_response.statusText()),
+      web_response.responseType(), headers,
+      base::UTF16ToASCII(web_response.blobUUID()), web_response.blobSize(),
+      web_response.streamURL(), blink::WebServiceWorkerResponseErrorUnknown);
 }
 
 CacheStorageCacheQueryParams QueryParamsFromWebQueryParams(

@@ -16,6 +16,7 @@
 #include "content/public/common/request_context_type.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerClientType.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerResponseError.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerResponseType.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerState.h"
 #include "url/gurl.h"
@@ -141,7 +142,8 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
                         const ServiceWorkerHeaderMap& headers,
                         const std::string& blob_uuid,
                         uint64 blob_size,
-                        const GURL& stream_url);
+                        const GURL& stream_url,
+                        blink::WebServiceWorkerResponseError error);
   ~ServiceWorkerResponse();
 
   GURL url;
@@ -152,6 +154,7 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
   std::string blob_uuid;
   uint64 blob_size;
   GURL stream_url;
+  blink::WebServiceWorkerResponseError error;
 };
 
 // Represents initialization info for a WebServiceWorker object.

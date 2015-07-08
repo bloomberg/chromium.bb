@@ -478,14 +478,11 @@ void ServiceWorkerContextClient::didHandleFetchEvent(
 
   ServiceWorkerHeaderMap headers;
   GetServiceWorkerHeaderMapFromWebResponse(web_response, &headers);
-  ServiceWorkerResponse response(web_response.url(),
-                                 web_response.status(),
-                                 web_response.statusText().utf8(),
-                                 web_response.responseType(),
-                                 headers,
-                                 web_response.blobUUID().utf8(),
-                                 web_response.blobSize(),
-                                 web_response.streamURL());
+  ServiceWorkerResponse response(
+      web_response.url(), web_response.status(),
+      web_response.statusText().utf8(), web_response.responseType(), headers,
+      web_response.blobUUID().utf8(), web_response.blobSize(),
+      web_response.streamURL(), web_response.error());
   Send(new ServiceWorkerHostMsg_FetchEventFinished(
       GetRoutingID(), request_id,
       SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,

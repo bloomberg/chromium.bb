@@ -172,6 +172,8 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   void SetResponseBodyType(ResponseBodyType type);
   bool ShouldRecordResult();
   void RecordResult(ServiceWorkerMetrics::URLRequestJobResult result);
+  void RecordStatusZeroResponseError(
+      blink::WebServiceWorkerResponseError error);
 
   // Releases the resources for streaming.
   void ClearStream();

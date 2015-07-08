@@ -37861,11 +37861,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.URLRequestJob.MainResource.StatusZeroError"
+    enum="ServiceWorkerResponseError">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    Records the error provided when the renderer returns a response with status
+    code zero to a main resource request forwarded to a Service Worker (i.e.,
+    ServiceWorker.URLRequestJob.MainResource.Result was
+    REQUEST_JOB_ERROR_RESPONSE_STATUS_ZERO).
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.URLRequestJob.Subresource.Result"
     enum="ServiceWorkerURLRequestJobResult">
   <owner>falken@chromium.org</owner>
   <summary>
     Records the result of a subresource request forwarded to a Service Worker.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.URLRequestJob.Subresource.StatusZeroError"
+    enum="ServiceWorkerResponseError">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    Records the error provided when the renderer returns a response with status
+    code zero to a subresource request forwarded to a Service Worker (i.e.,
+    ServiceWorker.URLRequestJob.Subresource.Result was
+    REQUEST_JOB_ERROR_RESPONSE_STATUS_ZERO).
   </summary>
 </histogram>
 
@@ -66512,6 +66534,17 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="OK"/>
   <int value="1" label="Read headers error"/>
   <int value="2" label="Read data error"/>
+</enum>
+
+<enum name="ServiceWorkerResponseError" type="int">
+  <int value="0" label="ErrorUnknown"/>
+  <int value="1" label="ErrorPromiseRejected"/>
+  <int value="2" label="ErrorDefaultPrevented"/>
+  <int value="3" label="ErrorNoV8Instance"/>
+  <int value="4" label="ErrorResponseTypeError"/>
+  <int value="5" label="ErrorResponseTypeOpaque"/>
+  <int value="6" label="ErrorResponseTypeNotBasicOrDefault"/>
+  <int value="7" label="ErrorBodyUsed"/>
 </enum>
 
 <enum name="ServiceWorkerStatusCode" type="int">

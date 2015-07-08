@@ -183,4 +183,18 @@ void ServiceWorkerMetrics::RecordURLRequestJobResult(
   }
 }
 
+void ServiceWorkerMetrics::RecordStatusZeroResponseError(
+    bool is_main_resource,
+    blink::WebServiceWorkerResponseError error) {
+  if (is_main_resource) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "ServiceWorker.URLRequestJob.MainResource.StatusZeroError", error,
+        blink::WebServiceWorkerResponseErrorLast + 1);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(
+        "ServiceWorker.URLRequestJob.Subresource.StatusZeroError", error,
+        blink::WebServiceWorkerResponseErrorLast + 1);
+  }
+}
+
 }  // namespace content

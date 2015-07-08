@@ -499,7 +499,8 @@ void CacheStorageCache::MatchDidReadMetadata(
       request->url, metadata->response().status_code(),
       metadata->response().status_text(),
       ProtoResponseTypeToWebResponseType(metadata->response().response_type()),
-      ServiceWorkerHeaderMap(), "", 0, GURL()));
+      ServiceWorkerHeaderMap(), "", 0, GURL(),
+      blink::WebServiceWorkerResponseErrorUnknown));
 
   if (metadata->response().has_url())
     response->url = GURL(metadata->response().url());
@@ -570,7 +571,8 @@ void CacheStorageCache::Put(const CacheStorageBatchOperation& operation,
       operation.response.url, operation.response.status_code,
       operation.response.status_text, operation.response.response_type,
       operation.response.headers, operation.response.blob_uuid,
-      operation.response.blob_size, operation.response.stream_url));
+      operation.response.blob_size, operation.response.stream_url,
+      operation.response.error));
 
   scoped_ptr<storage::BlobDataHandle> blob_data_handle;
 

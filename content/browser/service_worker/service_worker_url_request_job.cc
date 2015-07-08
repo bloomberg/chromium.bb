@@ -579,11 +579,10 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   // We should have a response now.
   DCHECK_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, fetch_result);
 
-  // A response with status code 0 occurs when the respondWith promise was
-  // rejected or preventDefault() was called with no response provided.
-  // In this case, return a network error.
+  // A response with status code 0 is Blink telling us to respond with network
+  // error.
   if (response.status_code == 0) {
-    RecordResult(ServiceWorkerMetrics::REQUEST_JOB_ERROR_RESPONSE_STATUS_ZERO);
+    RecordStatusZeroResponseError(response.error);
     NotifyDone(
         net::URLRequestStatus(net::URLRequestStatus::FAILED, net::ERR_FAILED));
     return;
@@ -714,14 +713,28 @@ bool ServiceWorkerURLRequestJob::ShouldRecordResult() {
 
 void ServiceWorkerURLRequestJob::RecordResult(
     ServiceWorkerMetrics::URLRequestJobResult result) {
-  DCHECK(ShouldRecordResult());
-  // It violates style guidelines to handle a DCHECK fail condition but if there
+  // It violates style guidelines to handle a NOTREACHED() failure but if there
   // is a bug don't let it corrupt UMA results by double-counting.
-  if (!ShouldRecordResult())
+  if (!ShouldRecordResult()) {
+    NOTREACHED();
     return;
+  }
   did_record_result_ = true;
   ServiceWorkerMetrics::RecordURLRequestJobResult(is_main_resource_load_,
                                                   result);
+}
+
+void ServiceWorkerURLRequestJob::RecordStatusZeroResponseError(
+    blink::WebServiceWorkerResponseError error) {
+  // It violates style guidelines to handle a NOTREACHED() failure but if there
+  // is a bug don't let it corrupt UMA results by double-counting.
+  if (!ShouldRecordResult()) {
+    NOTREACHED();
+    return;
+  }
+  RecordResult(ServiceWorkerMetrics::REQUEST_JOB_ERROR_RESPONSE_STATUS_ZERO);
+  ServiceWorkerMetrics::RecordStatusZeroResponseError(is_main_resource_load_,
+                                                      error);
 }
 
 void ServiceWorkerURLRequestJob::ClearStream() {
