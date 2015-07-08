@@ -72,11 +72,10 @@ void ExternalComponentLoader::StartLoading() {
   }
 #endif
 
-
-#if defined(ENABLE_MEDIA_ROUTER)
+#if defined(ENABLE_MEDIA_ROUTER) && defined(GOOGLE_CHROME_BUILD)
   if (switches::MediaRouterEnabled())
     AddExternalExtension(extension_misc::kMediaRouterStableExtensionId);
-#endif  // defined(ENABLE_MEDIA_ROUTER)
+#endif  // defined(ENABLE_MEDIA_ROUTER) && defined(GOOGLE_CHROME_BUILD)
 
 #if defined(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
   std::string google_now_extension_id;
