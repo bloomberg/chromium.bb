@@ -275,7 +275,7 @@ private:
 
     Element* findEventTargetFromSelection() const;
 
-    PassRefPtrWillBeRawPtr<Range> rangeOfString(const String&, Range*, FindOptions);
+    PassRefPtrWillBeRawPtr<Range> findRangeOfString(const String&, Range*, FindOptions);
 
     SpellChecker& spellChecker() const;
 

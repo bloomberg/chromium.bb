@@ -1145,7 +1145,7 @@ bool Editor::findString(const String& target, FindOptions options)
 {
     VisibleSelection selection = frame().selection().selection();
 
-    RefPtrWillBeRawPtr<Range> resultRange = rangeOfString(target, selection.firstRange().get(), static_cast<FindOptions>(options | FindAPICall));
+    RefPtrWillBeRawPtr<Range> resultRange = findRangeOfString(target, selection.firstRange().get(), static_cast<FindOptions>(options | FindAPICall));
 
     if (!resultRange)
         return false;
@@ -1157,7 +1157,7 @@ bool Editor::findString(const String& target, FindOptions options)
 
 PassRefPtrWillBeRawPtr<Range> Editor::findStringAndScrollToVisible(const String& target, Range* previousMatch, FindOptions options)
 {
-    RefPtrWillBeRawPtr<Range> nextMatch = rangeOfString(target, previousMatch, options);
+    RefPtrWillBeRawPtr<Range> nextMatch = findRangeOfString(target, previousMatch, options);
     if (!nextMatch)
         return nullptr;
 
@@ -1198,7 +1198,7 @@ static PassRefPtrWillBeRawPtr<Range> findStringBetweenPositions(const String& ta
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<Range> Editor::rangeOfString(const String& target, Range* referenceRange, FindOptions options)
+PassRefPtrWillBeRawPtr<Range> Editor::findRangeOfString(const String& target, Range* referenceRange, FindOptions options)
 {
     if (target.isEmpty())
         return nullptr;
