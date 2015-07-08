@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/browser/media/cma_message_loop.h"
+#include "chromecast/media/base/media_message_loop.h"
 
 #include "base/threading/thread.h"
 
@@ -10,21 +10,21 @@ namespace chromecast {
 namespace media {
 
 // static
-scoped_refptr<base::SingleThreadTaskRunner> CmaMessageLoop::GetTaskRunner() {
+scoped_refptr<base::SingleThreadTaskRunner> MediaMessageLoop::GetTaskRunner() {
   return GetInstance()->thread_->task_runner();
 }
 
 // static
-CmaMessageLoop* CmaMessageLoop::GetInstance() {
-  return Singleton<CmaMessageLoop>::get();
+MediaMessageLoop* MediaMessageLoop::GetInstance() {
+  return Singleton<MediaMessageLoop>::get();
 }
 
-CmaMessageLoop::CmaMessageLoop()
+MediaMessageLoop::MediaMessageLoop()
   : thread_(new base::Thread("CmaThread")) {
   thread_->Start();
 }
 
-CmaMessageLoop::~CmaMessageLoop() {
+MediaMessageLoop::~MediaMessageLoop() {
   // This will automatically shutdown the thread.
 }
 

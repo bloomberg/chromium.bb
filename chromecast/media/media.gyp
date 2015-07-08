@@ -37,6 +37,8 @@
         'base/media_caps.h',
         'base/media_codec_support.cc',
         'base/media_codec_support.h',
+        'base/media_message_loop.cc',
+        'base/media_message_loop.h',
         'base/switching_media_renderer.cc',
         'base/switching_media_renderer.h',
       ],

@@ -10,9 +10,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
-#include "chromecast/browser/media/cma_message_loop.h"
 #include "chromecast/browser/media/media_pipeline_host.h"
 #include "chromecast/common/media/cma_messages.h"
+#include "chromecast/media/base/media_message_loop.h"
 #include "chromecast/media/cdm/browser_cdm_cast.h"
 #include "chromecast/media/cma/pipeline/av_pipeline_client.h"
 #include "chromecast/media/cma/pipeline/media_pipeline_client.h"
@@ -54,7 +54,7 @@ uint64_t GetPipelineCmaId(int process_id, int media_id) {
 }
 
 MediaPipelineHost* GetMediaPipeline(int process_id, int media_id) {
-  DCHECK(CmaMessageLoop::GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(MediaMessageLoop::GetTaskRunner()->BelongsToCurrentThread());
   MediaPipelineCmaMap::iterator it =
       g_pipeline_map_cma.Get().find(GetPipelineCmaId(process_id, media_id));
   if (it == g_pipeline_map_cma.Get().end())
@@ -63,7 +63,7 @@ MediaPipelineHost* GetMediaPipeline(int process_id, int media_id) {
 }
 
 void SetMediaPipeline(int process_id, int media_id, MediaPipelineHost* host) {
-  DCHECK(CmaMessageLoop::GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(MediaMessageLoop::GetTaskRunner()->BelongsToCurrentThread());
   std::pair<MediaPipelineCmaMap::iterator, bool> ret =
       g_pipeline_map_cma.Get().insert(
           std::make_pair(GetPipelineCmaId(process_id, media_id), host));
@@ -75,7 +75,7 @@ void SetMediaPipeline(int process_id, int media_id, MediaPipelineHost* host) {
 void DestroyMediaPipeline(int process_id,
                           int media_id,
                           scoped_ptr<MediaPipelineHost> media_pipeline) {
-  DCHECK(CmaMessageLoop::GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(MediaMessageLoop::GetTaskRunner()->BelongsToCurrentThread());
   MediaPipelineCmaMap::iterator it =
       g_pipeline_map_cma.Get().find(GetPipelineCmaId(process_id, media_id));
   if (it != g_pipeline_map_cma.Get().end())
@@ -119,7 +119,7 @@ void SetCdmOnUiThread(
 
   BrowserCdmCast* browser_cdm_cast =
       static_cast<BrowserCdmCastUi*>(cdm)->browser_cdm_cast();
-  CmaMessageLoop::GetTaskRunner()->PostTask(
+  MediaMessageLoop::GetTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&SetCdmOnCmaThread,
                  render_process_id,
@@ -303,7 +303,7 @@ CmaMessageFilterHost::CmaMessageFilterHost(
     : content::BrowserMessageFilter(CastMediaMsgStart),
       process_id_(render_process_id),
       create_pipeline_device_cb_(create_pipeline_device_cb),
-      task_runner_(CmaMessageLoop::GetTaskRunner()),
+      task_runner_(MediaMessageLoop::GetTaskRunner()),
       weak_factory_(this) {
   weak_this_ = weak_factory_.GetWeakPtr();
 }

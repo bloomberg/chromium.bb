@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_BROWSER_MEDIA_CMA_MESSAGE_LOOP_H_
-#define CHROMECAST_BROWSER_MEDIA_CMA_MESSAGE_LOOP_H_
+#ifndef CHROMECAST_MEDIA_BASE_MEDIA_MESSAGE_LOOP_H_
+#define CHROMECAST_MEDIA_BASE_MEDIA_MESSAGE_LOOP_H_
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -17,25 +17,25 @@ class Thread;
 namespace chromecast {
 namespace media {
 
-class CmaMessageLoop {
+class MediaMessageLoop {
  public:
   static scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
 
  private:
-  friend struct DefaultSingletonTraits<CmaMessageLoop>;
-  friend class Singleton<CmaMessageLoop>;
+  friend struct DefaultSingletonTraits<MediaMessageLoop>;
+  friend class Singleton<MediaMessageLoop>;
 
-  static CmaMessageLoop* GetInstance();
+  static MediaMessageLoop* GetInstance();
 
-  CmaMessageLoop();
-  ~CmaMessageLoop();
+  MediaMessageLoop();
+  ~MediaMessageLoop();
 
   scoped_ptr<base::Thread> thread_;
 
-  DISALLOW_COPY_AND_ASSIGN(CmaMessageLoop);
+  DISALLOW_COPY_AND_ASSIGN(MediaMessageLoop);
 };
 
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_BROWSER_MEDIA_CMA_MESSAGE_LOOP_H_
+#endif  // CHROMECAST_MEDIA_BASE_MEDIA_MESSAGE_LOOP_H_
