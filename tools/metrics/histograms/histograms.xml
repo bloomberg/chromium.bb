@@ -27667,7 +27667,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated as of Chrome 32. See PasswordManagerActionsTakenWithPsl
   </obsolete>
-  <owner>dubroy@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
   <summary>
     Stats documenting how we handle every form containing a password, bucketed
@@ -27677,7 +27676,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PasswordManager.ActionsTakenV3"
     enum="PasswordManagerActionsTakenV3">
-  <owner>dubroy@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -27691,7 +27689,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated as of 3/18/2014. See PasswordManagerActionsTakenV3.
   </obsolete>
-  <owner>dubroy@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -27872,7 +27869,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PasswordManager.Enabled" enum="BooleanEnabled">
-  <owner>dubroy@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
   <summary>
     Indicates whether the password manager is enabled when a tab is opened. This
@@ -27922,7 +27918,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PasswordManager.InfoBarResponse" enum="InfoBarResponse">
-  <owner>dubroy@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
   <summary>
     The distribution of responses to the &quot;Do you want Chrome to remember
@@ -27978,7 +27973,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PasswordManager.NumPasswordsDeletedByBulkDelete">
-  <owner>dubroy@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
   <summary>
     Number of passwords deleted when the user chooses to clear passwords via the
@@ -27994,7 +27988,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PasswordManager.NumPasswordsDeletedWhenBlacklisting">
-  <owner>dubroy@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
   <summary>
     When the user chooses to never remember passwords for a form, we remove all
@@ -28004,7 +27997,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PasswordManager.NumPasswordsNotShown">
-  <owner>dubroy@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
   <summary>
     The password manager only shows those credentials that are considered the
@@ -28015,7 +28007,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PasswordManager.OsPasswordStatus"
     enum="PasswordManagerOsPasswordStatus">
-  <owner>dubroy@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
   <owner>wfh@chromium.org</owner>
   <summary>
@@ -28025,7 +28016,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PasswordManager.OtherPossibleUsernamesUsage"
     enum="OtherPossibleUsernamesUsage">
-  <owner>dubroy@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
   <summary>
     Breakdown of how other possible usernames are displayed. Recorded every time
@@ -28044,7 +28034,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PasswordManager.ProvisionalSaveFailure"
     enum="ProvisionalSaveFailure">
-  <owner>dubroy@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
   <summary>
     Breakdown of cases where a password is submitted, but we don't even try and
@@ -28054,7 +28043,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PasswordManager.PslDomainMatchTriggering"
     enum="PasswordManagerPslDomainMatchTriggering">
-  <owner>dubroy@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -28066,7 +28054,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PasswordManager.SavePasswordPromptDisappearedQuickly"
     enum="Boolean">
-  <owner>dubroy@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
   <summary>
     Indicates whether the save password prompt disappeared in less than one
@@ -28077,14 +28064,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PasswordManager.SavePasswordPromptDisplayed" enum="Boolean">
-  <owner>dubroy@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
   <summary>Indicates whether the save password prompt was displayed.</summary>
 </histogram>
 
 <histogram name="PasswordManager.SavePasswordPromptResponse"
     enum="SavePasswordPromptResponseType">
-  <owner>dubroy@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
   <summary>
     Breakdown of which response the user selected from the save password prompt.
