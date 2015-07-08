@@ -414,9 +414,9 @@ CertificateList X509Certificate::CreateCertificateListFromBytes(
   if (format & FORMAT_PKCS7)
     pem_headers.push_back(kPKCS7Header);
 
-  PEMTokenizer pem_tok(data_string, pem_headers);
-  while (pem_tok.GetNext()) {
-    std::string decoded(pem_tok.data());
+  PEMTokenizer pem_tokenizer(data_string, pem_headers);
+  while (pem_tokenizer.GetNext()) {
+    std::string decoded(pem_tokenizer.data());
 
     OSCertHandle handle = NULL;
     if (format & FORMAT_PEM_CERT_SEQUENCE)
