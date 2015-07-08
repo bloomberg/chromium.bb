@@ -1580,7 +1580,7 @@ bind_workspace_manager(struct wl_client *client,
 
 static void
 touch_move_grab_down(struct weston_touch_grab *grab, uint32_t time,
-		     int touch_id, wl_fixed_t sx, wl_fixed_t sy)
+		     int touch_id, wl_fixed_t x, wl_fixed_t y)
 {
 }
 
@@ -1602,7 +1602,7 @@ touch_move_grab_up(struct weston_touch_grab *grab, uint32_t time, int touch_id)
 
 static void
 touch_move_grab_motion(struct weston_touch_grab *grab, uint32_t time,
-		       int touch_id, wl_fixed_t sx, wl_fixed_t sy)
+		       int touch_id, wl_fixed_t x, wl_fixed_t y)
 {
 	struct weston_touch_move_grab *move = (struct weston_touch_move_grab *) grab;
 	struct shell_surface *shsurf = move->base.shsurf;
@@ -3291,7 +3291,7 @@ static const struct weston_pointer_grab_interface popup_grab_interface = {
 
 static void
 touch_popup_grab_down(struct weston_touch_grab *grab, uint32_t time,
-		      int touch_id, wl_fixed_t sx, wl_fixed_t sy)
+		      int touch_id, wl_fixed_t x, wl_fixed_t y)
 {
 	struct wl_resource *resource;
 	struct shell_seat *shseat =
@@ -3299,6 +3299,9 @@ touch_popup_grab_down(struct weston_touch_grab *grab, uint32_t time,
 	struct wl_display *display = shseat->seat->compositor->wl_display;
 	uint32_t serial;
 	struct wl_list *resource_list;
+	wl_fixed_t sx, sy;
+
+	weston_view_from_global_fixed(grab->touch->focus, x, y, &sx, &sy);
 
 	resource_list = &grab->touch->focus_resource_list;
 	if (!wl_list_empty(resource_list)) {
@@ -3332,10 +3335,13 @@ touch_popup_grab_up(struct weston_touch_grab *grab, uint32_t time, int touch_id)
 
 static void
 touch_popup_grab_motion(struct weston_touch_grab *grab, uint32_t time,
-			int touch_id, wl_fixed_t sx, wl_fixed_t sy)
+			int touch_id, wl_fixed_t x, wl_fixed_t y)
 {
 	struct wl_resource *resource;
 	struct wl_list *resource_list;
+	wl_fixed_t sx, sy;
+
+	weston_view_from_global_fixed(grab->touch->focus, x, y, &sx, &sy);
 
 	resource_list = &grab->touch->focus_resource_list;
 	if (!wl_list_empty(resource_list)) {

@@ -480,7 +480,7 @@ drag_grab_touch_focus(struct weston_touch_drag *drag)
 
 static void
 drag_grab_touch_motion(struct weston_touch_grab *grab, uint32_t time,
-		int touch_id, wl_fixed_t sx, wl_fixed_t sy)
+		int touch_id, wl_fixed_t x, wl_fixed_t y)
 {
 	struct weston_touch_drag *touch_drag =
 		container_of(grab, struct weston_touch_drag, grab);

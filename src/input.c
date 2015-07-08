@@ -236,13 +236,16 @@ static const struct weston_pointer_grab_interface
 
 static void
 default_grab_touch_down(struct weston_touch_grab *grab, uint32_t time,
-			int touch_id, wl_fixed_t sx, wl_fixed_t sy)
+			int touch_id, wl_fixed_t x, wl_fixed_t y)
 {
 	struct weston_touch *touch = grab->touch;
 	struct wl_display *display = touch->seat->compositor->wl_display;
 	uint32_t serial;
 	struct wl_resource *resource;
 	struct wl_list *resource_list;
+	wl_fixed_t sx, sy;
+
+	weston_view_from_global_fixed(touch->focus, x, y, &sx, &sy);
 
 	resource_list = &touch->focus_resource_list;
 
@@ -276,11 +279,14 @@ default_grab_touch_up(struct weston_touch_grab *grab,
 
 static void
 default_grab_touch_motion(struct weston_touch_grab *grab, uint32_t time,
-			  int touch_id, wl_fixed_t sx, wl_fixed_t sy)
+			  int touch_id, wl_fixed_t x, wl_fixed_t y)
 {
 	struct weston_touch *touch = grab->touch;
 	struct wl_resource *resource;
 	struct wl_list *resource_list;
+	wl_fixed_t sx, sy;
+
+	weston_view_from_global_fixed(touch->focus, x, y, &sx, &sy);
 
 	resource_list = &touch->focus_resource_list;
 
@@ -1535,10 +1541,7 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 		if (touch->num_tp == 1) {
 			ev = weston_compositor_pick_view(ec, x, y, &sx, &sy);
 			weston_touch_set_focus(touch, ev);
-		} else if (touch->focus) {
-			ev = touch->focus;
-			weston_view_from_global_fixed(ev, x, y, &sx, &sy);
-		} else {
+		} else if (!touch->focus) {
 			/* Unexpected condition: We have non-initial touch but
 			 * there is no focused surface.
 			 */
@@ -1550,7 +1553,7 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 		weston_compositor_run_touch_binding(ec, touch,
 						    time, touch_type);
 
-		grab->interface->down(grab, time, touch_id, sx, sy);
+		grab->interface->down(grab, time, touch_id, x, y);
 		if (touch->num_tp == 1) {
 			touch->grab_serial =
 				wl_display_get_serial(ec->wl_display);
@@ -1566,8 +1569,7 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 		if (!ev)
 			break;
 
-		weston_view_from_global_fixed(ev, x, y, &sx, &sy);
-		grab->interface->motion(grab, time, touch_id, sx, sy);
+		grab->interface->motion(grab, time, touch_id, x, y);
 		break;
 	case WL_TOUCH_UP:
 		if (touch->num_tp == 0) {
