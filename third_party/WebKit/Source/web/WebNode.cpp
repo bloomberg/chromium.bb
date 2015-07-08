@@ -251,11 +251,6 @@ WebElement WebNode::querySelector(const WebString& tag, WebExceptionCode& ec) co
     return element;
 }
 
-WebElement WebNode::rootEditableElement() const
-{
-    return WebElement(m_private->rootEditableElement());
-}
-
 bool WebNode::focused() const
 {
     return m_private->focused();
