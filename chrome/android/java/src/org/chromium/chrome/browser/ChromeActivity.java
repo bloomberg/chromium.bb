@@ -14,6 +14,7 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
@@ -141,6 +142,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      */
     private static final int NO_CONTROL_CONTAINER = -1;
 
+    /** Prevents race conditions when deleting snapshot database. */
+    private static final Object SNAPSHOT_DATABASE_LOCK = new Object();
     private static final String SNAPSHOT_DATABASE_REMOVED = "snapshot_database_removed";
     private static final String SNAPSHOT_DATABASE_NAME = "snapshots.db";
 
@@ -1359,18 +1362,21 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * in Chrome M41.
      */
     private void removeSnapshotDatabase() {
-        // Temporarily allowing disk access. TODO: Fix. See http://crbug.com/493181
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        StrictMode.allowThreadDiskWrites();
-        try {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-            if (!prefs.getBoolean(SNAPSHOT_DATABASE_REMOVED, false)) {
-                deleteDatabase(SNAPSHOT_DATABASE_NAME);
-                prefs.edit().putBoolean(SNAPSHOT_DATABASE_REMOVED, true).apply();
+        final Context appContext = getApplicationContext();
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                synchronized (SNAPSHOT_DATABASE_LOCK) {
+                    SharedPreferences prefs =
+                            PreferenceManager.getDefaultSharedPreferences(appContext);
+                    if (!prefs.getBoolean(SNAPSHOT_DATABASE_REMOVED, false)) {
+                        deleteDatabase(SNAPSHOT_DATABASE_NAME);
+                        prefs.edit().putBoolean(SNAPSHOT_DATABASE_REMOVED, true).apply();
+                    }
+                }
+                return null;
             }
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @Override
