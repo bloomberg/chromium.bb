@@ -68,7 +68,7 @@ class PpapiDispatcher : public proxy::PluginDispatcher::PluginDelegate,
   // PluginProxyDelegate implementation.
   IPC::Sender* GetBrowserSender() override;
   std::string GetUILanguage() override;
-  void PreCacheFont(const void* logfontw) override;
+  void PreCacheFontForFlash(const void* logfontw) override;
   void SetActiveURL(const std::string& url) override;
   PP_Resource CreateBrowserFont(proxy::Connection connection,
                                 PP_Instance instance,

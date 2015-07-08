@@ -112,7 +112,7 @@ std::string PpapiDispatcher::GetUILanguage() {
   return std::string();
 }
 
-void PpapiDispatcher::PreCacheFont(const void* logfontw) {
+void PpapiDispatcher::PreCacheFontForFlash(const void* logfontw) {
   NOTIMPLEMENTED();
 }
 

@@ -287,7 +287,7 @@ std::string PluginProxyTestHarness::PluginDelegateMock::GetUILanguage() {
   return std::string("en-US");
 }
 
-void PluginProxyTestHarness::PluginDelegateMock::PreCacheFont(
+void PluginProxyTestHarness::PluginDelegateMock::PreCacheFontForFlash(
     const void* logfontw) {
 }
 

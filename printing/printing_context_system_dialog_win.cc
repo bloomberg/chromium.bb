@@ -96,7 +96,7 @@ HRESULT PrintingContextSytemDialogWin::ShowPrintDialog(PRINTDLGEX* options) {
   return PrintDlgEx(options);
 }
 
-bool PrintingContextSytemDialogWin::InitializeSettings(
+bool PrintingContextSytemDialogWin::InitializeSettingsWithRanges(
     const DEVMODE& dev_mode,
     const std::wstring& new_device_name,
     const PRINTPAGERANGE* ranges,
@@ -181,11 +181,9 @@ PrintingContext::Result PrintingContextSytemDialogWin::ParseDialogResultEx(
       if (dialog_options.Flags & PD_SELECTION) {
         print_selection_only = true;
       }
-      success = InitializeSettings(*dev_mode,
-                                   device_name,
-                                   page_ranges,
-                                   num_page_ranges,
-                                   print_selection_only);
+      success =
+          InitializeSettingsWithRanges(*dev_mode, device_name, page_ranges,
+                                       num_page_ranges, print_selection_only);
     }
 
     if (!success && dialog_options.hDC) {
@@ -247,7 +245,8 @@ PrintingContext::Result PrintingContextSytemDialogWin::ParseDialogResult(
   bool success = false;
   if (dev_mode && !device_name.empty()) {
     set_context(dialog_options.hDC);
-    success = InitializeSettings(*dev_mode, device_name, NULL, 0, false);
+    success =
+        InitializeSettingsWithRanges(*dev_mode, device_name, NULL, 0, false);
   }
 
   if (!success && dialog_options.hDC) {

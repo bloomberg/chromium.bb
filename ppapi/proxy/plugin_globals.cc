@@ -150,7 +150,7 @@ std::string PluginGlobals::GetCmdLine() {
 
 void PluginGlobals::PreCacheFontForFlash(const void* logfontw) {
   ProxyAutoUnlock unlock;
-  plugin_proxy_delegate_->PreCacheFont(logfontw);
+  plugin_proxy_delegate_->PreCacheFontForFlash(logfontw);
 }
 
 void PluginGlobals::LogWithSource(PP_Instance instance,

@@ -235,7 +235,7 @@ std::string PpapiThread::GetUILanguage() {
   return command_line->GetSwitchValueASCII(switches::kLang);
 }
 
-void PpapiThread::PreCacheFont(const void* logfontw) {
+void PpapiThread::PreCacheFontForFlash(const void* logfontw) {
 #if defined(OS_WIN)
   ChildThreadImpl::PreCacheFont(*static_cast<const LOGFONTW*>(logfontw));
 #endif

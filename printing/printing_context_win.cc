@@ -370,33 +370,4 @@ HWND PrintingContextWin::GetRootWindow(gfx::NativeView view) {
   return window;
 }
 
-scoped_ptr<DEVMODE, base::FreeDeleter> PrintingContextWin::ShowPrintDialog(
-    HANDLE printer,
-    gfx::NativeView parent_view,
-    DEVMODE* dev_mode) {
-  // Note that this cannot use ui::BaseShellDialog as the print dialog is
-  // system modal: opening it from a background thread can cause Windows to
-  // get the wrong Z-order which will make the print dialog appear behind the
-  // browser frame (but still being modal) so neither the browser frame nor
-  // the print dialog will get any input. See http://crbug.com/342697
-  // http://crbug.com/180997 for details.
-  base::MessageLoop::ScopedNestableTaskAllower allow(
-      base::MessageLoop::current());
-
-  bool canceled = false;
-  scoped_ptr<DEVMODE, base::FreeDeleter> result =
-      PromptDevMode(printer,
-                    settings_.device_name(),
-                    dev_mode,
-                    GetRootWindow(parent_view),
-                    &canceled);
-
-  if (canceled) {
-    result.reset();
-    abort_printing_ = true;
-  }
-
-  return result.Pass();
-}
-
 }  // namespace printing

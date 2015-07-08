@@ -53,11 +53,6 @@ class PRINTING_EXPORT PrintingContextWin : public PrintingContext {
   void set_context(HDC context) { context_ = context; }
 
  private:
-  virtual scoped_ptr<DEVMODE, base::FreeDeleter> ShowPrintDialog(
-      HANDLE printer,
-      gfx::NativeView parent_view,
-      DEVMODE* dev_mode);
-
   // Used in response to the user canceling the printing.
   static BOOL CALLBACK AbortProc(HDC hdc, int nCode);
 
