@@ -1673,6 +1673,7 @@ String CanvasRenderingContext2D::font() const
     if (!state().hasRealizedFont())
         return defaultFont;
 
+    canvas()->document().canvasFontCache()->willUseCurrentFont();
     StringBuilder serializedFont;
     const FontDescription& fontDescription = state().font().fontDescription();
 
@@ -1908,8 +1909,6 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
     if (maxWidth && (!std::isfinite(*maxWidth) || *maxWidth <= 0))
         return;
 
-    FontCachePurgePreventer fontCachePurgePreventer;
-
     const Font& font = accessFont();
     const FontMetrics& fontMetrics = font.fontMetrics();
 
@@ -1995,6 +1994,7 @@ const Font& CanvasRenderingContext2D::accessFont()
 {
     if (!state().hasRealizedFont())
         setFont(state().unparsedFont());
+    canvas()->document().canvasFontCache()->willUseCurrentFont();
     return state().font();
 }
 

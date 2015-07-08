@@ -8,6 +8,7 @@
 
 #include "core/css/parser/CSSParser.h"
 #include "core/dom/Document.h"
+#include "platform/fonts/FontCache.h"
 #include "public/platform/Platform.h"
 
 namespace {
@@ -27,6 +28,7 @@ CanvasFontCache::CanvasFontCache(Document& document)
 
 CanvasFontCache::~CanvasFontCache()
 {
+    m_mainCachePurgePreventer.clear();
     if (m_pruningScheduled) {
         Platform::current()->currentThread()->removeTaskObserver(this);
     }
@@ -80,11 +82,12 @@ MutableStylePropertySet* CanvasFontCache::parseFont(const String& fontString)
 void CanvasFontCache::didProcessTask()
 {
     ASSERT(m_pruningScheduled);
+    ASSERT(m_mainCachePurgePreventer);
     while (m_fetchedFonts.size() > maxFonts()) {
         m_fetchedFonts.remove(m_fontLRUList.first());
         m_fontLRUList.removeFirst();
     }
-
+    m_mainCachePurgePreventer.clear();
     Platform::current()->currentThread()->removeTaskObserver(this);
     m_pruningScheduled = false;
 }
@@ -93,8 +96,8 @@ void CanvasFontCache::schedulePruningIfNeeded()
 {
     if (m_pruningScheduled)
         return;
-    if (m_fetchedFonts.size() <= maxFonts())
-        return;
+    ASSERT(!m_mainCachePurgePreventer);
+    m_mainCachePurgePreventer = adoptPtr(new FontCachePurgePreventer);
     Platform::current()->currentThread()->addTaskObserver(this);
     m_pruningScheduled = true;
 }

@@ -16,6 +16,7 @@
 namespace blink {
 
 class Document;
+class FontCachePurgePreventer;
 
 class CORE_EXPORT CanvasFontCache final : public NoBaseWillBeGarbageCollectedFinalized<CanvasFontCache>, public WebThread::TaskObserver {
 public:
@@ -33,6 +34,8 @@ public:
     static unsigned maxFonts();
     unsigned hardMaxFonts();
 
+    void willUseCurrentFont() { schedulePruningIfNeeded(); }
+
     // TaskObserver implementation
     virtual void didProcessTask();
     virtual void willProcessTask() { }
@@ -49,6 +52,7 @@ private:
 
     MutableStylePropertyMap m_fetchedFonts;
     ListHashSet<String> m_fontLRUList;
+    OwnPtr<FontCachePurgePreventer> m_mainCachePurgePreventer;
     Document* m_document;
     bool m_pruningScheduled;
 };
