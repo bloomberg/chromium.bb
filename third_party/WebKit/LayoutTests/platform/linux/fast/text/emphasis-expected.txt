@@ -25,9 +25,9 @@ layer at (0,0) size 785x746 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutInline {SPAN} at (0,0) size 213x27
           LayoutText {#text} at (3,45) size 213x27
             text run at (3,45) width 213: "consectetur adipiscing"
-        LayoutText {#text} at (216,45) size 129x27
+        LayoutText {#text} at (216,45) size 130x27
           text run at (216,45) width 6: " "
-          text run at (222,45) width 123: "elit. Aliquam"
+          text run at (222,45) width 124: "elit. Aliquam"
         LayoutInline {SPAN} at (0,0) size 109x27
           LayoutText {#text} at (3,73) size 109x27
             text run at (3,73) width 109: "odio sa\x{300}pien"
