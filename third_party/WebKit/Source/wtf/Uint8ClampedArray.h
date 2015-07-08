@@ -42,7 +42,7 @@ public:
     using TypedArrayBase<unsigned char>::set;
     inline void set(unsigned index, double value);
 
-    virtual ViewType type() const override
+    ViewType type() const override
     {
         return TypeUint8Clamped;
     }

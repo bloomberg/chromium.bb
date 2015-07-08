@@ -41,7 +41,7 @@ public:
     using TypedArrayBase<short>::set;
     using IntegralTypedArrayBase<short>::set;
 
-    virtual ViewType type() const override
+    ViewType type() const override
     {
         return TypeInt16;
     }

@@ -51,7 +51,7 @@ public:
         TypedArrayBase<double>::data()[index] = static_cast<double>(value);
     }
 
-    virtual ViewType type() const override
+    ViewType type() const override
     {
         return TypeFloat64;
     }

@@ -40,7 +40,7 @@ public:
     using TypedArrayBase<int>::set;
     using IntegralTypedArrayBase<int>::set;
 
-    virtual ViewType type() const override
+    ViewType type() const override
     {
         return TypeInt32;
     }

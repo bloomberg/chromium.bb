@@ -49,7 +49,7 @@ public:
         TypedArrayBase<float>::data()[index] = static_cast<float>(value);
     }
 
-    virtual ViewType type() const override
+    ViewType type() const override
     {
         return TypeFloat32;
     }

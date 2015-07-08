@@ -42,7 +42,7 @@ public:
     using TypedArrayBase<unsigned char>::set;
     using IntegralTypedArrayBase<unsigned char>::set;
 
-    virtual ViewType type() const override
+    ViewType type() const override
     {
         return TypeUint8;
     }

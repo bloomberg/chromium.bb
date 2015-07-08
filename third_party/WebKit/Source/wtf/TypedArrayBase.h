@@ -52,7 +52,7 @@ public:
         return m_length;
     }
 
-    virtual unsigned byteLength() const override final
+    unsigned byteLength() const final
     {
         return m_length * sizeof(T);
     }
@@ -108,7 +108,7 @@ protected:
         return create<Subclass>(buffer.release(), 0, length);
     }
 
-    virtual void neuter() override final
+    void neuter() final
     {
         ArrayBufferView::neuter();
         m_length = 0;

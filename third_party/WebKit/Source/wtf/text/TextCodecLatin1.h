@@ -36,9 +36,9 @@ public:
     static void registerCodecs(TextCodecRegistrar);
 
 private:
-    virtual String decode(const char*, size_t length, FlushBehavior, bool stopOnError, bool& sawError) override;
-    virtual CString encode(const UChar*, size_t length, UnencodableHandling) override;
-    virtual CString encode(const LChar*, size_t length, UnencodableHandling) override;
+    String decode(const char*, size_t length, FlushBehavior, bool stopOnError, bool& sawError) override;
+    CString encode(const UChar*, size_t length, UnencodableHandling) override;
+    CString encode(const LChar*, size_t length, UnencodableHandling) override;
 
     template<typename CharType>
     CString encodeCommon(const CharType*, size_t length, UnencodableHandling);
