@@ -279,6 +279,16 @@ times.  Each click executes the <code>insertOrderedList</code> command.</p>
 <p>On every second click, the table will move down.</p>
 
 <h3>
+    <a name="bugfix-overflowFind">bugfix/overflowFind</a>
+    (Shezan Baig)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FoverflowFind">view changes</a>]</span>
+</h3>
+<p>Open <a href="repros/overflowFind.html">this link</a> in Chrome and search
+for the string "text".  The text will scroll and the "hidden" search result
+will be highlighted.  This branch makes it so that text hidden by ellipsis are
+not included when finding text.</p>
+
+<h3>
     <a name="bugfix-removeSpellingMarker">bugfix/removeSpellingMarker</a>
     (Tianyin Zhang; D38695085)
     <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FremoveSpellingMarker">view changes</a>]</span>
