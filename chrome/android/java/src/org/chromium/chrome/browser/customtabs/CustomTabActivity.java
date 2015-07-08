@@ -13,6 +13,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -38,6 +39,7 @@ import org.chromium.content_public.browser.NavigationEntry;
  * The activity for custom tabs. It will be launched on top of a client's task.
  */
 public class CustomTabActivity extends ChromeActivity {
+    private static final String TAG = "cr.CustomTabActivity";
     private static CustomTabContentHandler sActiveContentHandler;
 
     private CustomTab mTab;
@@ -69,6 +71,11 @@ public class CustomTabActivity extends ChromeActivity {
      */
     public static boolean handleInActiveContentIfNeeded(Intent intent) {
         if (sActiveContentHandler == null) return false;
+
+        if (sActiveContentHandler.shouldIgnoreIntent(intent)) {
+            Log.w(TAG, "Incoming intent to Custom Tab was ignored.");
+            return false;
+        }
 
         long intentSessionId = intent.getLongExtra(
                 CustomTabIntentDataProvider.EXTRA_CUSTOM_TABS_SESSION_ID,
@@ -179,6 +186,11 @@ public class CustomTabActivity extends ChromeActivity {
             @Override
             public long getSessionId() {
                 return mSessionId;
+            }
+
+            @Override
+            public boolean shouldIgnoreIntent(Intent intent) {
+                return mIntentHandler.shouldIgnoreIntent(CustomTabActivity.this, intent);
             }
         };
         super.finishNativeInitialization();

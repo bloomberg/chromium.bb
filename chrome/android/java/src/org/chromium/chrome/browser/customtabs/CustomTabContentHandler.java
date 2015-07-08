@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import android.content.Intent;
+
 import org.chromium.content_public.browser.LoadUrlParams;
 
 /**
@@ -25,4 +27,11 @@ public interface CustomTabContentHandler {
      * @return The session id this {@link CustomTabContentHandler} is associated with.
      */
     long getSessionId();
+
+    /**
+     * Check whether an intent is valid or should be ignored within this content handler.
+     * @param intent The intent to check.
+     * @return Whether the intent should be ignored.
+     */
+    boolean shouldIgnoreIntent(Intent intent);
 }
