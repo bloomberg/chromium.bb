@@ -84,6 +84,11 @@ public class IntentHandler {
     public static final String EXTRA_PARENT_TAB_ID = "com.android.chrome.parent_tab_id";
 
     /**
+     * Intent to bring the parent Activity back, if the parent Tab lives in a different Activity.
+     */
+    public static final String EXTRA_PARENT_INTENT = "com.android.chrome.parent_intent";
+
+    /**
      * Transition type is only set internally by a first-party app and has to be signed.
      */
     public static final String EXTRA_PAGE_TRANSITION_TYPE = "com.google.chrome.transition_type";

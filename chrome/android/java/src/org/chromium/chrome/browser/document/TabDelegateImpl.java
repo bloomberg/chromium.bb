@@ -11,7 +11,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabState;
@@ -24,6 +24,8 @@ import org.chromium.components.service_tab_launcher.ServiceTabLauncher;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PageTransition;
+
+import java.lang.ref.WeakReference;
 
 import javax.annotation.Nullable;
 
@@ -97,15 +99,12 @@ public class TabDelegateImpl implements TabDelegate {
         boolean isWebContentsPaused =
                 startedBy != DocumentMetricIds.STARTED_BY_CHROME_HOME_RECENT_TABS;
 
+        Activity parentActivity = getActivityForTabId(parentId);
+
         if (FeatureUtilities.isDocumentMode(context)) {
             PendingDocumentData data = new PendingDocumentData();
             data.webContents = webContents;
             data.webContentsPaused = isWebContentsPaused;
-
-            // Determine information about the parent Activity.
-            Tab parentTab = parentId == Tab.INVALID_TAB_ID ? null
-                    : ChromeApplication.getDocumentTabModelSelector().getTabById(parentId);
-            Activity parentActivity = getActivityFromTab(parentTab);
 
             ChromeLauncherActivity.launchDocumentInstance(parentActivity, mIsIncognito,
                     ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND, url, startedBy, pageTransition,
@@ -120,6 +119,12 @@ public class TabDelegateImpl implements TabDelegate {
             tabbedIntent.putExtra(IntentHandler.EXTRA_WEB_CONTENTS_PAUSED, isWebContentsPaused);
             tabbedIntent.putExtra(IntentHandler.EXTRA_PAGE_TRANSITION_TYPE, pageTransition);
             tabbedIntent.putExtra(IntentHandler.EXTRA_PARENT_TAB_ID, parentId);
+
+            if (parentActivity != null && parentActivity.getIntent() != null) {
+                tabbedIntent.putExtra(
+                        IntentHandler.EXTRA_PARENT_INTENT, parentActivity.getIntent());
+            }
+
             tabbedIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             IntentHandler.startActivityForTrustedIntent(tabbedIntent, context);
         }
@@ -221,5 +226,20 @@ public class TabDelegateImpl implements TabDelegate {
     private Activity getActivityFromTab(Tab tab) {
         return tab == null || tab.getWindowAndroid() == null
                 ? null : tab.getWindowAndroid().getActivity().get();
+    }
+
+    /** @return Running Activity that owns the given Tab, null if the Activity couldn't be found. */
+    private Activity getActivityForTabId(int id) {
+        if (id == Tab.INVALID_TAB_ID) return null;
+
+        for (WeakReference<Activity> ref : ApplicationStatus.getRunningActivities()) {
+            if (!(ref.get() instanceof ChromeActivity)) continue;
+
+            ChromeActivity activity = (ChromeActivity) ref.get();
+            if (activity == null) continue;
+
+            if (activity.getTabModelSelector().getModelForTabId(id) != null) return activity;
+        }
+        return null;
     }
 }

@@ -485,6 +485,10 @@ public class ChromeLauncherActivity extends Activity
         intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, incognito);
         intent.putExtra(IntentHandler.EXTRA_PAGE_TRANSITION_TYPE, pageTransitionType);
         intent.putExtra(IntentHandler.EXTRA_STARTED_BY, intentSource);
+        if (activity != null && activity.getIntent() != null) {
+            intent.putExtra(IntentHandler.EXTRA_PARENT_INTENT, activity.getIntent());
+        }
+
         intent.putExtra(EXTRA_LAUNCH_MODE, launchMode);
         IntentHandler.addTrustedIntentExtras(intent, context);
 

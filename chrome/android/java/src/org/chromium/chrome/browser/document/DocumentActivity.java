@@ -466,6 +466,13 @@ public class DocumentActivity extends ChromeActivity {
                 getWindowAndroid(), determineLastKnownUrl(),
                 pendingData != null ? pendingData.webContents : null,
                 pendingData != null ? pendingData.webContentsPaused : false, tabState);
+
+        if (pendingData != null && pendingData.webContents != null) {
+            Intent parentIntent = IntentUtils.safeGetParcelableExtra(getIntent(),
+                    IntentHandler.EXTRA_PARENT_INTENT);
+            mDocumentTab.setParentIntent(parentIntent);
+        }
+
         if (mTabModel.isNativeInitialized()) {
             mTabModel.addTab(getIntent(), mDocumentTab);
         } else {

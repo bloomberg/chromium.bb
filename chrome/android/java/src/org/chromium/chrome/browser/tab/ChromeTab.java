@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tab;
 
 import android.annotation.TargetApi;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
@@ -42,6 +43,7 @@ import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
 import org.chromium.chrome.browser.crash.MinidumpUploadService;
+import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeActivityDelegate;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.download.ChromeDownloadDelegate;
@@ -65,6 +67,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
@@ -139,7 +142,28 @@ public class ChromeTab extends Tab {
     private final Runnable mCloseContentsRunnable = new Runnable() {
         @Override
         public void run() {
+            boolean isSelected = mActivity.getTabModelSelector().getCurrentTab() == ChromeTab.this;
             mActivity.getTabModelSelector().closeTab(ChromeTab.this);
+
+            // If the parent Tab belongs to another Activity, fire the Intent to bring it back.
+            if (isSelected && getParentIntent() != null
+                    && mActivity.getIntent() != getParentIntent()) {
+                boolean mayLaunch = FeatureUtilities.isDocumentMode(mActivity)
+                        ? isParentInAndroidOverview() : true;
+                if (mayLaunch) mActivity.startActivity(getParentIntent());
+            }
+        }
+
+        /** If the API allows it, returns whether a Task still exists for the parent Activity. */
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+        private boolean isParentInAndroidOverview() {
+            ActivityManager activityManager =
+                    (ActivityManager) mActivity.getSystemService(Context.ACTIVITY_SERVICE);
+            for (ActivityManager.AppTask task : activityManager.getAppTasks()) {
+                Intent taskIntent = DocumentUtils.getBaseIntentFromTask(task);
+                if (taskIntent != null && taskIntent.filterEquals(getParentIntent())) return true;
+            }
+            return false;
         }
     };
 

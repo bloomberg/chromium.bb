@@ -30,6 +30,7 @@ import org.chromium.chrome.test.util.browser.TabLoadObserver;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
+import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.common.ScreenOrientationValues;
 
 import java.lang.ref.WeakReference;
@@ -317,5 +318,16 @@ public class WebappModeTest extends MultiActivityTestBase {
                 SUCCESS_URL, webappActivity.getActivityTab().getUrl());
         assertNotSame("Wrong Activity in foreground",
                 webappActivity, ApplicationStatus.getLastTrackedFocusedActivity());
+
+        // Close the child window to kick the user back to the WebappActivity.
+        JavaScriptUtils.executeJavaScript(
+                secondActivity.getActivityTab().getWebContents(), "window.close()");
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return webappActivity == ApplicationStatus.getLastTrackedFocusedActivity();
+            }
+        }));
+        MultiActivityTestBase.waitUntilChromeInForeground();
     }
 }

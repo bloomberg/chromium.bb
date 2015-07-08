@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.text.TextUtils;
@@ -180,6 +181,13 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * closed.
      */
     private int mParentId = INVALID_TAB_ID;
+
+    /**
+     * If this tab was opened from another tab in another Activity, this is the Intent that can be
+     * fired to bring the parent Activity back.
+     * TODO(dfalcantara): Remove this mechanism when we have a global TabManager.
+     */
+    private Intent mParentIntent;
 
     /**
      * Whether the tab should be grouped with its parent tab.
@@ -2717,6 +2725,22 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     public TabUma getTabUma() {
         return mTabUma;
+    }
+
+    /**
+     * Sets the Intent that can be fired to restart the Activity of this Tab's parent.
+     * Should only be called if the Tab was launched via a different Activity.
+     * @return Intent that can be fired to restart the parent Activity.
+     */
+    public void setParentIntent(Intent parentIntent) {
+        mParentIntent = parentIntent;
+    }
+
+    /**
+     * @return Intent that can be fired to restart the parent Activity.
+     */
+    protected Intent getParentIntent() {
+        return mParentIntent;
     }
 
     /**
