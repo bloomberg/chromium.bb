@@ -288,6 +288,11 @@
             'gesture_detection/gesture_configuration_default.cc',
           ],
         }],
+        ['use_aura==1 and OS=="android"', {
+          'sources!': [
+            'gesture_detection/gesture_configuration_aura.cc',
+          ],
+        }],
       ],
     },
     {
