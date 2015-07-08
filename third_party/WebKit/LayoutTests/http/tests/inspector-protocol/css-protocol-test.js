@@ -155,4 +155,24 @@ InspectorTest.loadAndDumpMatchingRules = function(documentNodeId, selector, call
     }
 }
 
+InspectorTest.loadAndDumpInlineAndMatchingRules = function(documentNodeId, selector, callback, omitLog)
+{
+    InspectorTest.requestNodeId(documentNodeId, selector, nodeIdLoaded);
+    var nodeId;
+    function nodeIdLoaded(id)
+    {
+        nodeId = id;
+        InspectorTest.sendCommandOrDie("CSS.getInlineStylesForNode", { "nodeId": nodeId }, onInline);
+    }
+
+    function onInline(result)
+    {
+        if (!omitLog)
+            InspectorTest.log("Dumping inline style: ");
+        InspectorTest.log("{");
+        InspectorTest.dumpStyle(result.inlineStyle, 0);
+        InspectorTest.log("}");
+        InspectorTest.loadAndDumpMatchingRulesForNode(nodeId, callback, omitLog)
+    }
+}
 }

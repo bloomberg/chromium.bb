@@ -1672,22 +1672,27 @@ bool InspectorStyleSheetForInlineStyle::getText(String* result)
 
 PassRefPtrWillBeRawPtr<InspectorStyle> InspectorStyleSheetForInlineStyle::inspectorStyle(RefPtrWillBeRawPtr<CSSStyleDeclaration> style)
 {
-    if (!m_inspectorStyle) {
-        const String& text = elementStyleText();
-        RefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceData = nullptr;
-        if (text.isEmpty()) {
-            ruleSourceData = CSSRuleSourceData::create(StyleRule::Style);
-            ruleSourceData->ruleBodyRange.start = 0;
-            ruleSourceData->ruleBodyRange.end = 0;
-        } else {
-            RuleSourceDataList ruleSourceDataResult;
-            StyleSheetHandler handler(text, &m_element->document(), &ruleSourceDataResult);
-            CSSParser::parseDeclarationListForInspector(parserContextForDocument(&m_element->document()), text, handler);
-            ruleSourceData = ruleSourceDataResult.first().release();
-        }
-        m_inspectorStyle = InspectorStyle::create(m_element->style(), ruleSourceData, this);
-    }
+    if (!m_inspectorStyle)
+        m_inspectorStyle = InspectorStyle::create(m_element->style(), ruleSourceData(), this);
+
     return m_inspectorStyle;
+}
+
+RefPtrWillBeRawPtr<CSSRuleSourceData> InspectorStyleSheetForInlineStyle::ruleSourceData()
+{
+    const String& text = elementStyleText();
+    RefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceData = nullptr;
+    if (text.isEmpty()) {
+        ruleSourceData = CSSRuleSourceData::create(StyleRule::Style);
+        ruleSourceData->ruleBodyRange.start = 0;
+        ruleSourceData->ruleBodyRange.end = 0;
+    } else {
+        RuleSourceDataList ruleSourceDataResult;
+        StyleSheetHandler handler(text, &m_element->document(), &ruleSourceDataResult);
+        CSSParser::parseDeclarationListForInspector(parserContextForDocument(&m_element->document()), text, handler);
+        ruleSourceData = ruleSourceDataResult.first().release();
+    }
+    return ruleSourceData;
 }
 
 CSSStyleDeclaration* InspectorStyleSheetForInlineStyle::inlineStyle()

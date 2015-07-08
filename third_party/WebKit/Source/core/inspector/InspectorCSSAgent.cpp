@@ -942,22 +942,30 @@ void InspectorCSSAgent::setStyleText(ErrorString* errorString, const String& sty
     if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, range, &selectorRange))
         return;
 
+    CSSStyleDeclaration* style = setStyleText(errorString, inspectorStyleSheet, selectorRange, text);
+    if (style)
+        result = inspectorStyleSheet->buildObjectForStyle(style);
+}
+
+CSSStyleDeclaration* InspectorCSSAgent::setStyleText(ErrorString* errorString, InspectorStyleSheetBase* inspectorStyleSheet, const SourceRange& range, const String& text)
+{
     TrackExceptionState exceptionState;
     if (inspectorStyleSheet->isInlineStyle()) {
         InspectorStyleSheetForInlineStyle* inlineStyleSheet = static_cast<InspectorStyleSheetForInlineStyle*>(inspectorStyleSheet);
         RefPtrWillBeRawPtr<SetElementStyleAction> action = adoptRefWillBeNoop(new SetElementStyleAction(inlineStyleSheet, text));
         bool success = m_domAgent->history()->perform(action, exceptionState);
         if (success)
-            result = inspectorStyleSheet->buildObjectForStyle(inlineStyleSheet->inlineStyle());
+            return inlineStyleSheet->inlineStyle();
     } else {
-        RefPtrWillBeRawPtr<ModifyRuleAction> action = adoptRefWillBeNoop(new ModifyRuleAction(ModifyRuleAction::SetStyleText, static_cast<InspectorStyleSheet*>(inspectorStyleSheet), selectorRange, text));
+        RefPtrWillBeRawPtr<ModifyRuleAction> action = adoptRefWillBeNoop(new ModifyRuleAction(ModifyRuleAction::SetStyleText, static_cast<InspectorStyleSheet*>(inspectorStyleSheet), range, text));
         bool success = m_domAgent->history()->perform(action, exceptionState);
         if (success) {
             RefPtrWillBeRawPtr<CSSStyleRule> rule = InspectorCSSAgent::asCSSStyleRule(action->takeRule().get());
-            result = inspectorStyleSheet->buildObjectForStyle(rule->style());
+            return rule->style();
         }
     }
     *errorString = InspectorDOMAgent::toErrorString(exceptionState);
+    return nullptr;
 }
 
 void InspectorCSSAgent::setMediaText(ErrorString* errorString, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& text, RefPtr<TypeBuilder::CSS::CSSMedia>& result)
@@ -1560,8 +1568,19 @@ void InspectorCSSAgent::setCSSPropertyValue(ErrorString* errorString, Element* e
     String shorthand =  shorthands.size() > 0 ? getPropertyNameString(shorthands[0].id()) : String();
     String longhand = getPropertyNameString(propertyId);
 
-    CSSStyleRule* foundRule = nullptr;
+    CSSStyleDeclaration* foundStyle = nullptr;
+    bool isImportant = false;
+
+    CSSStyleDeclaration* inlineStyle =  element->style();
+    if (inlineStyle && !inlineStyle->getPropertyValue(longhand).isEmpty()) {
+        foundStyle = inlineStyle;
+        isImportant = inlineStyle->getPropertyPriority(longhand) == "important";
+    }
+
     for (unsigned i = 0, size = ruleList->length(); i < size; ++i) {
+        if (isImportant)
+            break;
+
         if (ruleList->item(size - i - 1)->type() != CSSRule::STYLE_RULE)
             continue;
 
@@ -1576,19 +1595,26 @@ void InspectorCSSAgent::setCSSPropertyValue(ErrorString* errorString, Element* e
         if (style->getPropertyValue(longhand).isEmpty())
             continue;
 
-        bool isImportant = style->getPropertyPriority(longhand) == "important";
-        if (isImportant || !foundRule)
-            foundRule = rule;
-
-        if (isImportant)
-            break;
+        isImportant = style->getPropertyPriority(longhand) == "important";
+        if (isImportant || !foundStyle)
+            foundStyle = style;
     }
 
-    if (!foundRule || !foundRule->parentStyleSheet())
+    if (!foundStyle || !foundStyle->parentStyleSheet())
         return;
 
-    InspectorStyleSheet* inspectorStyleSheet =  bindStyleSheet(foundRule->parentStyleSheet());
-    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = inspectorStyleSheet->sourceDataForRule(foundRule);
+    InspectorStyleSheetBase* inspectorStyleSheet =  nullptr;
+    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = nullptr;
+    if (foundStyle == inlineStyle) {
+        InspectorStyleSheetForInlineStyle* inlineStyleSheet = asInspectorStyleSheet(element);
+        inspectorStyleSheet = inlineStyleSheet;
+        sourceData = inlineStyleSheet->ruleSourceData();
+    } else {
+        InspectorStyleSheet* styleSheet =  bindStyleSheet(foundStyle->parentStyleSheet());
+        inspectorStyleSheet = styleSheet;
+        sourceData = styleSheet->sourceDataForRule(foundStyle->parentRule());
+    }
+
     if (!sourceData)
         return;
 
@@ -1627,11 +1653,7 @@ void InspectorCSSAgent::setCSSPropertyValue(ErrorString* errorString, Element* e
     SourceRange bodyRange = sourceData->ruleBodyRange;
     String styleText = styleSheetText.substring(bodyRange.start, bodyRange.length());
     styleText.replace(declaration.range.start - bodyRange.start, declaration.range.length(), newPropertyText);
-
-    RefPtrWillBeRawPtr<ModifyRuleAction> action = adoptRefWillBeNoop(new ModifyRuleAction(ModifyRuleAction::SetStyleText, inspectorStyleSheet, bodyRange, styleText));
-    TrackExceptionState exceptionState;
-    m_domAgent->history()->perform(action, exceptionState);
-    *errorString = InspectorDOMAgent::toErrorString(exceptionState);
+    setStyleText(errorString, inspectorStyleSheet, bodyRange, styleText);
 }
 
 void InspectorCSSAgent::setEffectivePropertyValueForNode(ErrorString* errorString, int nodeId, const String& propertyName, const String& value)

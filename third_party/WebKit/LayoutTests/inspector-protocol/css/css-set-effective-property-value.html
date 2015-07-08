@@ -29,7 +29,7 @@ function test()
     function onInspectedNodeId(nodeId)
     {
         updateProperty = updateActiveProperty.bind(null, nodeId);
-        InspectorTest.loadAndDumpMatchingRules(documentNodeId, "#inspected", InspectorTest.runTestSuite.bind(InspectorTest, testSuite));
+        InspectorTest.loadAndDumpInlineAndMatchingRules(documentNodeId, "#inspected", InspectorTest.runTestSuite.bind(InspectorTest, testSuite));
     }
 
     function updateActiveProperty(nodeId, property, value, onSuccess)
@@ -39,7 +39,7 @@ function test()
 
     function dumpUndoAndNext(next)
     {
-        return InspectorTest.loadAndDumpMatchingRules.bind(InspectorTest, documentNodeId, "#inspected", InspectorTest.undoAndNext(next));
+        return InspectorTest.loadAndDumpInlineAndMatchingRules.bind(InspectorTest, documentNodeId, "#inspected", InspectorTest.undoAndNext(next));
     }
 
     var testSuite = [
@@ -57,6 +57,16 @@ function test()
         {
             updateProperty("margin-left", "101px", dumpUndoAndNext(next));
         },
+
+        function testChangeInlineProperty(next)
+        {
+            updateProperty("padding-top", "101px", dumpUndoAndNext(next));
+        },
+
+        function testChangeInlineImportantProperty(next)
+        {
+            updateProperty("margin-top", "101px", dumpUndoAndNext(next));
+        },
     ]
 }
 
@@ -64,6 +74,6 @@ function test()
 </head>
 <body onload="runTest();">
 <p>The test verifies functionality of protocol method CSS.setStyleText.</p>
-<div id="inspected"></div>
+<div id="inspected" style="padding-top: 55px; margin-top: 33px !important;"></div>
 </body>
 </html>

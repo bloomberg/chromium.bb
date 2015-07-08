@@ -195,6 +195,7 @@ public:
     virtual bool setText(const String&, ExceptionState&) override;
     virtual bool getText(String* result) override;
     CSSStyleDeclaration* inlineStyle();
+    RefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceData();
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -169,6 +169,7 @@ private:
 
     void updateActiveStyleSheets(Document*, StyleSheetsUpdateType);
     void setActiveStyleSheets(Document*, const WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet> >&, StyleSheetsUpdateType);
+    CSSStyleDeclaration* setStyleText(ErrorString*, InspectorStyleSheetBase*, const SourceRange&, const String&);
 
     void collectPlatformFontsForLayoutObject(LayoutObject*, HashCountedSet<String>*);
 
