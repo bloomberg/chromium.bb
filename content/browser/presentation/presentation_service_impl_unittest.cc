@@ -139,6 +139,9 @@ class MockPresentationServiceClient :
       presentation::PresentationSessionState new_state) override {
     NOTIMPLEMENTED();
   }
+  void OnScreenAvailabilityNotSupported() override {
+    NOTIMPLEMENTED();
+  }
 };
 
 class PresentationServiceImplTest : public RenderViewHostImplTestHarness {

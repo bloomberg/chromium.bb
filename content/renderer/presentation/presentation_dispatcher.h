@@ -77,6 +77,7 @@ class CONTENT_EXPORT PresentationDispatcher
   void OnSessionStateChanged(
       presentation::PresentationSessionInfoPtr session_info,
       presentation::PresentationSessionState new_state) override;
+  void OnScreenAvailabilityNotSupported() override;
 
   void OnSessionCreated(
       blink::WebPresentationSessionClientCallbacks* callback,

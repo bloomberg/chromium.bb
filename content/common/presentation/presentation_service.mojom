@@ -95,7 +95,7 @@ interface PresentationService {
   // the send requests and invalidate all pending requests. This occurs
   // for eg., when frame is deleted or navigated away.
   SendSessionMessage(SessionMessage message_request) => (bool success);
-  
+
   // Called when closeSession() is called by the frame.
   CloseSession(string presentation_url, string presentation_id);
 
@@ -112,7 +112,16 @@ interface PresentationService {
 };
 
 interface PresentationServiceClient {
-  // See PresentationSerivce::ListenForScreenAvailability.
+  // Called when the client tries to listen for screen availability changes but
+  // it is not supported by the device or underlying platform. This can also be
+  // called if the device is currently in a mode where it can't do screen
+  // discoveries (eg. low battery).
+  OnScreenAvailabilityNotSupported();
+
+  // Called when the client is listening for screen availability and the state
+  // changes. When the client starts to listen for screen availability, this
+  // method will always be called to give the current known state. It will then
+  // be called to notify of state updates.
   OnScreenAvailabilityUpdated(bool available);
 
   // See PresentationService::ListenForSessionStateChange.

@@ -348,9 +348,29 @@ void PresentationDispatcher::OnScreenAvailabilityUpdated(bool available) {
   for (auto observer : availability_observers_)
     observer->availabilityChanged(available);
 
+  for (auto observer : availability_observers_)
+    observer->availabilityChanged(available);
+
   for (AvailabilityCallbacksMap::iterator iter(&availability_callbacks_);
        !iter.IsAtEnd(); iter.Advance()) {
     iter.GetCurrentValue()->onSuccess(new bool(available));
+  }
+  availability_callbacks_.Clear();
+
+  UpdateListeningState();
+}
+
+void PresentationDispatcher::OnScreenAvailabilityNotSupported() {
+  DCHECK(listening_state_ == ListeningState::Waiting);
+
+  for (AvailabilityCallbacksMap::iterator iter(&availability_callbacks_);
+       !iter.IsAtEnd(); iter.Advance()) {
+    iter.GetCurrentValue()->onError(new blink::WebPresentationError(
+        blink::WebPresentationError::ErrorTypeAvailabilityNotSupported,
+        blink::WebString::fromUTF8(
+            "getAvailability() isn't supported at the moment. It can be due to"
+            "a permanent or temporary system limitation. It is recommended to"
+            "try to blindly start a session in that case.")));
   }
   availability_callbacks_.Clear();
 
