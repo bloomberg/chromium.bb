@@ -109,6 +109,8 @@ template("mojom") {
       "$generator_root/generators/js_templates/module.amd.tmpl",
       "$generator_root/generators/js_templates/module_definition.tmpl",
       "$generator_root/generators/js_templates/struct_definition.tmpl",
+      "$generator_root/generators/js_templates/union_definition.tmpl",
+      "$generator_root/generators/js_templates/validation_macros.tmpl",
       "$generator_root/generators/python_templates/module.py.tmpl",
       "$generator_root/generators/python_templates/module_macros.tmpl",
       "$generator_root/generators/mojom_cpp_generator.py",

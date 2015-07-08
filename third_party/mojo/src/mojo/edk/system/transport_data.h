@@ -9,7 +9,6 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
@@ -17,6 +16,7 @@
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/system_impl_export.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {
@@ -182,7 +182,7 @@ class MOJO_SYSTEM_IMPL_EXPORT TransportData {
   // TODO(vtl): With C++11, change it to a vector of |ScopedPlatformHandle|s.
   embedder::ScopedPlatformHandleVectorPtr platform_handles_;
 
-  DISALLOW_COPY_AND_ASSIGN(TransportData);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(TransportData);
 };
 
 }  // namespace system

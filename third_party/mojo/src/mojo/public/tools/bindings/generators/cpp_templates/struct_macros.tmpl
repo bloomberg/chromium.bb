@@ -45,13 +45,13 @@
 {%-   set kind = pf.field.kind %}
 {%-   if kind|is_object_kind %}
 {%-     if kind|is_array_kind %}
-  const mojo::internal::ArrayValidateParams {{name}}_validate_params =
-      {{kind|get_array_validate_params|indent(10)}};
+  const mojo::internal::ArrayValidateParams {{name}}_validate_params(
+      {{kind|get_array_validate_params_ctor_args|indent(10)}});
   mojo::SerializeArray_(mojo::internal::Forward({{input_field}}), {{buffer}},
       &{{output}}->{{name}}.ptr, &{{name}}_validate_params);
 {%-     elif kind|is_map_kind %}
-  const mojo::internal::ArrayValidateParams {{name}}_validate_params =
-      {{kind.value_kind|get_map_validate_params|indent(10)}};
+  const mojo::internal::ArrayValidateParams {{name}}_validate_params(
+      {{kind.value_kind|get_map_validate_params_ctor_args|indent(10)}});
   mojo::SerializeMap_(
       mojo::internal::Forward({{input_field}}), {{buffer}}, &{{output}}->{{name}}.ptr,
       &{{name}}_validate_params);

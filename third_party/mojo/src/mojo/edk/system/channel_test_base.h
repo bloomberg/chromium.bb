@@ -7,12 +7,12 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/test_io_thread.h"
 #include "mojo/edk/embedder/simple_platform_support.h"
 #include "mojo/edk/system/channel.h"
+#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -56,7 +56,7 @@ class ChannelTestBase : public testing::Test {
   scoped_ptr<RawChannel> raw_channels_[2];
   scoped_refptr<Channel> channels_[2];
 
-  DISALLOW_COPY_AND_ASSIGN(ChannelTestBase);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ChannelTestBase);
 };
 
 }  // namespace test

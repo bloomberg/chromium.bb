@@ -43,9 +43,9 @@ class MojoEventStream extends Stream<List<int>> {
         return _handleWatcherClose(immediate: immediate);
       } else {
         _localClose();
-        return new Future.value(null);
       }
     }
+    return new Future.value(null);
   }
 
   StreamSubscription<List<int>> listen(void onData(List event),

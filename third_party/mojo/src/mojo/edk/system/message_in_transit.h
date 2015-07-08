@@ -11,13 +11,13 @@
 #include <ostream>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/edk/system/channel_endpoint_id.h"
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/memory.h"
 #include "mojo/edk/system/system_impl_export.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {
@@ -150,7 +150,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
     // Though this struct is trivial, disallow copy and assign, since it doesn't
     // own its data. (If you're copying/assigning this, you're probably doing
     // something wrong.)
-    DISALLOW_COPY_AND_ASSIGN(View);
+    MOJO_DISALLOW_COPY_AND_ASSIGN(View);
   };
 
   // |bytes| is optional; if null, the message data will be zero-initialized.
@@ -281,7 +281,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // some reason.)
   scoped_ptr<DispatcherVector> dispatchers_;
 
-  DISALLOW_COPY_AND_ASSIGN(MessageInTransit);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(MessageInTransit);
 };
 
 // So logging macros and |DCHECK_EQ()|, etc. work.

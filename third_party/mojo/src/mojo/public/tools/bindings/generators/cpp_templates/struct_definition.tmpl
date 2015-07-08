@@ -29,14 +29,14 @@
   }
 {%-   endif %}
 {%-   if kind|is_array_kind or kind|is_string_kind %}
-  const mojo::internal::ArrayValidateParams {{name}}_validate_params =
-      {{kind|get_array_validate_params|indent(6)}};
+  const mojo::internal::ArrayValidateParams {{name}}_validate_params(
+      {{kind|get_array_validate_params_ctor_args|indent(6)}});
   if (!{{wrapper_type}}::Data_::Validate(
               mojo::internal::DecodePointerRaw(&object->{{name}}.offset),
               bounds_checker, &{{name}}_validate_params)) {
 {%-   elif kind|is_map_kind %}
-  const mojo::internal::ArrayValidateParams {{name}}_validate_params =
-      {{kind.value_kind|get_map_validate_params|indent(6)}};
+  const mojo::internal::ArrayValidateParams {{name}}_validate_params(
+      {{kind.value_kind|get_map_validate_params_ctor_args|indent(6)}});
   if (!{{wrapper_type}}::Data_::Validate(
               mojo::internal::DecodePointerRaw(&object->{{name}}.offset),
               bounds_checker, &{{name}}_validate_params)) {

@@ -5,8 +5,6 @@
 #include "mojo/edk/system/message_pipe.h"
 
 #include "base/memory/ref_counted.h"
-#include "base/threading/platform_thread.h"  // For |Sleep()|.
-#include "base/time/time.h"
 #include "mojo/edk/system/waiter.h"
 #include "mojo/edk/system/waiter_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"

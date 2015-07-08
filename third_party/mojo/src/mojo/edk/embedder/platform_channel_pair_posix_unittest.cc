@@ -20,12 +20,12 @@
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "mojo/edk/embedder/platform_channel_utils_posix.h"
 #include "mojo/edk/embedder/platform_handle.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/test/test_utils.h"
+#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -59,7 +59,7 @@ class PlatformChannelPairPosixTest : public testing::Test {
  private:
   struct sigaction old_action_;
 
-  DISALLOW_COPY_AND_ASSIGN(PlatformChannelPairPosixTest);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(PlatformChannelPairPosixTest);
 };
 
 TEST_F(PlatformChannelPairPosixTest, NoSigPipe) {

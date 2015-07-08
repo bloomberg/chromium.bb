@@ -5,7 +5,6 @@
 #include "mojo/edk/system/channel_manager.h"
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/task_runner.h"
@@ -16,6 +15,7 @@
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/channel_endpoint.h"
 #include "mojo/edk/system/message_pipe_dispatcher.h"
+#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -41,7 +41,7 @@ class ChannelManagerTest : public testing::Test {
   // before it (and should outlive it).
   ChannelManager channel_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChannelManagerTest);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ChannelManagerTest);
 };
 
 TEST_F(ChannelManagerTest, Basic) {
@@ -147,7 +147,7 @@ class OtherThread : public base::SimpleThread {
   ChannelId channel_id_;
   base::Closure quit_closure_;
 
-  DISALLOW_COPY_AND_ASSIGN(OtherThread);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(OtherThread);
 };
 
 TEST_F(ChannelManagerTest, CallsFromOtherThread) {

@@ -4,13 +4,13 @@
 
 #include "mojo/edk/system/channel_endpoint.h"
 
-#include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "mojo/edk/system/channel_test_base.h"
 #include "mojo/edk/system/message_in_transit_queue.h"
 #include "mojo/edk/system/message_in_transit_test_utils.h"
 #include "mojo/edk/system/test_channel_endpoint_client.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {
@@ -40,7 +40,7 @@ class ChannelEndpointTest : public test::ChannelTestBase {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ChannelEndpointTest);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ChannelEndpointTest);
 };
 
 TEST_F(ChannelEndpointTest, Basic) {

@@ -46,6 +46,10 @@ define("mojo/public/js/codec", [
     this.next = base;
   }
 
+  Decoder.prototype.align = function() {
+    this.next = align(this.next);
+  };
+
   Decoder.prototype.skip = function(offset) {
     this.next += offset;
   };
@@ -212,6 +216,10 @@ define("mojo/public/js/codec", [
     this.base = base;
     this.next = base;
   }
+
+  Encoder.prototype.align = function() {
+    this.next = align(this.next);
+  };
 
   Encoder.prototype.skip = function(offset) {
     this.next += offset;

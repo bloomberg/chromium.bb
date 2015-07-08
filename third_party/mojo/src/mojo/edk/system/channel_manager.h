@@ -9,11 +9,11 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/hash_tables.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/channel_id.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace base {
 class TaskRunner;
@@ -142,7 +142,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelManager {
       base::hash_map<ChannelId, scoped_refptr<Channel>>;
   ChannelIdToChannelMap channels_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChannelManager);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ChannelManager);
 };
 
 }  // namespace system

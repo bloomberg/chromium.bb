@@ -9,10 +9,10 @@
 #include <vector>
 
 #include "base/containers/hash_tables.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/types.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {
@@ -135,7 +135,7 @@ class MOJO_SYSTEM_IMPL_EXPORT HandleTable {
   HandleToEntryMap handle_to_entry_map_;
   MojoHandle next_handle_;  // Invariant: never |MOJO_HANDLE_INVALID|.
 
-  DISALLOW_COPY_AND_ASSIGN(HandleTable);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(HandleTable);
 };
 
 }  // namespace system

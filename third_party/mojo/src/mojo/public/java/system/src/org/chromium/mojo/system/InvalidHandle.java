@@ -82,7 +82,7 @@ public class InvalidHandle implements UntypedHandle, MessagePipeHandle, Consumer
      */
     @Override
     public int releaseNativeHandle() {
-        return -1;
+        return 0;
     }
 
     /**

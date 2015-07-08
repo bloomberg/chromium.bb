@@ -5,21 +5,24 @@
 #ifndef MOJO_EDK_SYSTEM_PLATFORM_HANDLE_DISPATCHER_H_
 #define MOJO_EDK_SYSTEM_PLATFORM_HANDLE_DISPATCHER_H_
 
-#include "base/macros.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/simple_dispatcher.h"
 #include "mojo/edk/system/system_impl_export.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {
 
 // A dispatcher that simply wraps/transports a |PlatformHandle| (only for use by
 // the embedder).
-class MOJO_SYSTEM_IMPL_EXPORT PlatformHandleDispatcher
+class MOJO_SYSTEM_IMPL_EXPORT PlatformHandleDispatcher final
     : public SimpleDispatcher {
  public:
-  explicit PlatformHandleDispatcher(
-      embedder::ScopedPlatformHandle platform_handle);
+  static scoped_refptr<PlatformHandleDispatcher> Create(
+      embedder::ScopedPlatformHandle platform_handle) {
+    return make_scoped_refptr(
+        new PlatformHandleDispatcher(platform_handle.Pass()));
+  }
 
   embedder::ScopedPlatformHandle PassPlatformHandle();
 
@@ -35,6 +38,8 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformHandleDispatcher
       embedder::PlatformHandleVector* platform_handles);
 
  private:
+  explicit PlatformHandleDispatcher(
+      embedder::ScopedPlatformHandle platform_handle);
   ~PlatformHandleDispatcher() override;
 
   // |Dispatcher| protected methods:
@@ -52,7 +57,7 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformHandleDispatcher
 
   embedder::ScopedPlatformHandle platform_handle_;
 
-  DISALLOW_COPY_AND_ASSIGN(PlatformHandleDispatcher);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(PlatformHandleDispatcher);
 };
 
 }  // namespace system

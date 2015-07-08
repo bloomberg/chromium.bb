@@ -15,9 +15,8 @@ if (!mojo::internal::ValidateEncodedPointer(&{{field_expr}}->offset)) {
 {%- endmacro %}
 
 {%- macro validate_array_or_string(field_expr, field) -%}
-const mojo::internal::ArrayValidateParams
-    {{field.name}}_validate_params =
-        {{field.kind|get_array_validate_params|indent(8)}};
+const mojo::internal::ArrayValidateParams {{field.name}}_validate_params(
+    {{field.kind|get_array_validate_params_ctor_args|indent(4)}});
 if (!{{field.kind|cpp_wrapper_type}}::Data_::Validate(
         mojo::internal::DecodePointerRaw(&{{field_expr}}->offset),
         bounds_checker, &{{field.name}}_validate_params)) {

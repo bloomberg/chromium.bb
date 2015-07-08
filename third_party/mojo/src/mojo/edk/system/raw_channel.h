@@ -5,17 +5,17 @@
 #ifndef MOJO_EDK_SYSTEM_RAW_CHANNEL_H_
 #define MOJO_EDK_SYSTEM_RAW_CHANNEL_H_
 
-#include <deque>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/message_in_transit.h"
+#include "mojo/edk/system/message_in_transit_queue.h"
 #include "mojo/edk/system/system_impl_export.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace base {
 class MessageLoopForIO;
@@ -142,7 +142,7 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
     std::vector<char> buffer_;
     size_t num_valid_bytes_;
 
-    DISALLOW_COPY_AND_ASSIGN(ReadBuffer);
+    MOJO_DISALLOW_COPY_AND_ASSIGN(ReadBuffer);
   };
 
   class MOJO_SYSTEM_IMPL_EXPORT WriteBuffer {
@@ -166,6 +166,9 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
     // |GetSerializedPlatformHandleSize()| bytes per handle). Once all platform
     // handles have been sent, the message data should be written next (see
     // |GetBuffers()|).
+    // TODO(vtl): Maybe this method should be const, but
+    // |PlatformHandle::CloseIfNecessary()| isn't const (and actually modifies
+    // state).
     void GetPlatformHandlesToSend(size_t* num_platform_handles,
                                   embedder::PlatformHandle** platform_handles,
                                   void** serialization_data);
@@ -181,9 +184,7 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
 
     const size_t serialized_platform_handle_size_;
 
-    // TODO(vtl): When C++11 is available, switch this to a deque of
-    // |scoped_ptr|/|unique_ptr|s.
-    std::deque<MessageInTransit*> message_queue_;
+    MessageInTransitQueue message_queue_;
     // Platform handles are sent before the message data, but doing so may
     // require several passes. |platform_handles_offset_| indicates the position
     // in the first message's vector of platform handles to send next.
@@ -193,7 +194,7 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
     // write.
     size_t data_offset_;
 
-    DISALLOW_COPY_AND_ASSIGN(WriteBuffer);
+    MOJO_DISALLOW_COPY_AND_ASSIGN(WriteBuffer);
   };
 
   RawChannel();
@@ -323,7 +324,7 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // are only used/invalidated on the I/O thread.
   base::WeakPtrFactory<RawChannel> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(RawChannel);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(RawChannel);
 };
 
 }  // namespace system

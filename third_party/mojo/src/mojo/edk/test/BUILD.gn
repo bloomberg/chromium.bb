@@ -25,6 +25,8 @@ mojo_edk_source_set("test_support") {
   ]
 
   mojo_edk_deps = [ "mojo/edk/system" ]
+
+  mojo_sdk_public_deps = [ "mojo/public/cpp/system" ]
 }
 
 mojo_edk_source_set("run_all_unittests") {
@@ -70,6 +72,8 @@ mojo_edk_source_set("test_support_impl") {
   ]
 
   mojo_sdk_deps = [ "mojo/public/c/test_support" ]
+
+  mojo_sdk_public_deps = [ "mojo/public/cpp/system" ]
 
   sources = [
     "test_support_impl.cc",

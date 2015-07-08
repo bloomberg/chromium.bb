@@ -8,10 +8,8 @@
 #include <stdint.h>
 
 #include "base/containers/hash_tables.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
@@ -22,6 +20,7 @@
 #include "mojo/edk/system/raw_channel.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/types.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 
@@ -50,7 +49,7 @@ class MessageInTransitQueue;
 // |ChannelEndpointClient| (e.g., |MessagePipe|), |ChannelEndpoint|, |Channel|.
 // Thus |Channel| may not call into |ChannelEndpoint| with |Channel|'s lock
 // held.
-class MOJO_SYSTEM_IMPL_EXPORT Channel
+class MOJO_SYSTEM_IMPL_EXPORT Channel final
     : public base::RefCountedThreadSafe<Channel>,
       public RawChannel::Delegate {
  public:
@@ -205,10 +204,10 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 
   // Handles errors (e.g., invalid messages) from the remote side. Callable from
   // any thread.
-  void HandleRemoteError(const base::StringPiece& error_message);
+  void HandleRemoteError(const char* error_message);
   // Handles internal errors/failures from the local side. Callable from any
   // thread.
-  void HandleLocalError(const base::StringPiece& error_message);
+  void HandleLocalError(const char* error_message);
 
   // Helper for |SerializeEndpoint...()|: Attaches the given (non-bootstrap)
   // endpoint to this channel and runs it. This assigns the endpoint both local
@@ -263,7 +262,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // if/when we wrap).
   RemoteChannelEndpointIdGenerator remote_id_generator_;
 
-  DISALLOW_COPY_AND_ASSIGN(Channel);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(Channel);
 };
 
 }  // namespace system

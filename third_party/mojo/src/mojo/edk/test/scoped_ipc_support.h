@@ -6,7 +6,6 @@
 #define MOJO_EDK_TEST_SCOPED_IPC_SUPPORT_H_
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_runner.h"
@@ -15,6 +14,7 @@
 #include "mojo/edk/embedder/process_type.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/embedder/slave_process_delegate.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace test {
@@ -39,7 +39,7 @@ class ScopedIPCSupportHelper {
   // Set after shut down.
   base::WaitableEvent event_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedIPCSupportHelper);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ScopedIPCSupportHelper);
 };
 
 }  // namespace internal
@@ -61,7 +61,7 @@ class ScopedIPCSupport : public embedder::ProcessDelegate {
 
   internal::ScopedIPCSupportHelper helper_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedIPCSupport);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ScopedIPCSupport);
 };
 
 // Like |ScopedIPCSupport|, but with |ProcessType::MASTER|. It will (optionally)
@@ -84,7 +84,7 @@ class ScopedMasterIPCSupport : public embedder::MasterProcessDelegate {
   internal::ScopedIPCSupportHelper helper_;
   base::Callback<void(embedder::SlaveInfo slave_info)> on_slave_disconnect_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedMasterIPCSupport);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ScopedMasterIPCSupport);
 };
 
 // Like |ScopedIPCSupport|, but with |ProcessType::SLAVE|. It will (optionally)
@@ -107,7 +107,7 @@ class ScopedSlaveIPCSupport : public embedder::SlaveProcessDelegate {
   internal::ScopedIPCSupportHelper helper_;
   base::Closure on_master_disconnect_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedSlaveIPCSupport);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(ScopedSlaveIPCSupport);
 };
 
 }  // namespace test

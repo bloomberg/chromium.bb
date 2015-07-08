@@ -5,15 +5,13 @@
 #include "mojo/edk/embedder/simple_platform_shared_buffer.h"
 
 #include <stdint.h>
-#include <sys/mman.h>   // For |mmap()|/|munmap()|.
+#include <sys/mman.h>   // For |PROT_...|.
 #include <sys/types.h>  // For |off_t|.
-#include <unistd.h>
 
 #include <limits>
 
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "mojo/edk/embedder/platform_handle.h"
 #include "third_party/ashmem/ashmem.h"
 

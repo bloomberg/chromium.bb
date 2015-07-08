@@ -202,7 +202,7 @@ TEST_F(AsyncHandleWaiterTest, RestartWaitingWhileSignaled) {
   EXPECT_TRUE(handler.IsClosingHandled());
 
   // |HandlerThatReenters::RestartAndClose| already closed it.
-  ignore_result(pipe_to_read_.release());
+  ::ignore_result(pipe_to_read_.release());
 }
 
 class AsyncHandleWaiterIOObserverTest : public testing::Test {

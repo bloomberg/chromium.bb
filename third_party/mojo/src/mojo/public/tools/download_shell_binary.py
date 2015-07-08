@@ -15,10 +15,6 @@ BINARY_FOR_PLATFORM = {
     "android-arm" : "MojoShell.apk"
 }
 
-if not sys.platform.startswith("linux"):
-  print "Not supported for your platform"
-  sys.exit(0)
-
 CURRENT_PATH = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(CURRENT_PATH, "pylib"))
 import gs
@@ -41,7 +37,15 @@ def download(tools_directory, version_file):
   except IOError:
     pass  # If the stamp file does not exist we need to download new binaries.
 
-  for platform in ["linux-x64", "android-arm"]:
+  if sys.platform.startswith("linux"):
+    platforms = ["linux-x64", "android-arm"]
+  elif sys.platform == "darwin":
+    platforms = ["android-arm"]
+  else:
+    print "No prebuilt shell available for %s" % sys.platform
+    return 0
+
+  for platform in platforms:
     download_version_for_platform(version, platform, tools_directory)
 
   with open(stamp_path, 'w') as stamp_file:

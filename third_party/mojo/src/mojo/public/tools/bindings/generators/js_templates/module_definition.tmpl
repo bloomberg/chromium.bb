@@ -14,6 +14,12 @@
 {%-   include "struct_definition.tmpl" %}
 {%- endfor -%}
 
+{#--- Union definitions #}
+{%- from "union_definition.tmpl" import union_def %}
+{%- for union in unions %}
+{{union_def(union)|indent(2)}}
+{%- endfor %}
+
 {#--- Interface definitions #}
 {%- for interface in interfaces -%}
 {%-   include "interface_definition.tmpl" %}
@@ -28,6 +34,9 @@
 {%- endfor %}
 {%- for struct in structs if struct.exported %}
   exports.{{struct.name}} = {{struct.name}};
+{%- endfor %}
+{%- for union in unions %}
+  exports.{{union.name}} = {{union.name}};
 {%- endfor %}
 {%- for interface in interfaces %}
   exports.{{interface.name}} = {{interface.name}};

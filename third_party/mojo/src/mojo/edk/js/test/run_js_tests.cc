@@ -53,6 +53,10 @@ TEST(JSTest, struct) {
   RunTest("struct_unittests.js", true);
 }
 
+TEST(JSTest, union) {
+  RunTest("union_unittests.js", true);
+}
+
 TEST(JSTest, validation) {
   RunTest("validation_unittests.js", true);
 }

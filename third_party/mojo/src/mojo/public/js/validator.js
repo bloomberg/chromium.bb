@@ -22,6 +22,8 @@ define("mojo/public/js/validator", [
         'VALIDATION_ERROR_MESSAGE_HEADER_MISSING_REQUEST_ID',
     DIFFERENT_SIZED_ARRAYS_IN_MAP:
         'VALIDATION_ERROR_DIFFERENT_SIZED_ARRAYS_IN_MAP',
+    INVALID_UNION_SIZE: 'VALIDATION_ERROR_INVALID_UNION_SIZE',
+    UNEXPECTED_NULL_UNION: 'VALIDATION_ERROR_UNEXPECTED_NULL_UNION',
   };
 
   var NULL_MOJO_POINTER = "NULL_MOJO_POINTER";
@@ -173,6 +175,14 @@ define("mojo/public/js/validator", [
     return Number.isSafeInteger(bufferOffset) ? bufferOffset : null;
   }
 
+  Validator.prototype.decodeUnionSize = function(offset) {
+    return this.message.buffer.getUint32(offset);
+  };
+
+  Validator.prototype.decodeUnionTag = function(offset) {
+    return this.message.buffer.getUint32(offset + 4);
+  };
+
   Validator.prototype.validateArrayPointer = function(
       offset, elementSize, elementType, nullable, expectedDimensionSizes,
       currentDimension) {
@@ -199,6 +209,30 @@ define("mojo/public/js/validator", [
           validationError.NONE : validationError.UNEXPECTED_NULL_POINTER;
 
     return structClass.validate(this, structOffset);
+  }
+
+  Validator.prototype.validateUnion = function(
+      offset, unionClass, nullable) {
+    var size = this.message.buffer.getUint32(offset);
+    if (size == 0) {
+      return nullable ?
+          validationError.NONE : validationError.UNEXPECTED_NULL_UNION;
+    }
+
+    return unionClass.validate(this, offset);
+  }
+
+  Validator.prototype.validateNestedUnion = function(
+      offset, unionClass, nullable) {
+    var unionOffset = this.decodePointer(offset);
+    if (unionOffset === null)
+      return validationError.ILLEGAL_POINTER;
+
+    if (unionOffset === NULL_MOJO_POINTER)
+      return nullable ?
+          validationError.NONE : validationError.UNEXPECTED_NULL_UNION;
+
+    return this.validateUnion(unionOffset, unionClass, nullable);
   }
 
   // This method assumes that the array at arrayPointerOffset has

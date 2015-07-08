@@ -5,12 +5,12 @@
 #ifndef MOJO_EDK_EMBEDDER_PLATFORM_CHANNEL_PAIR_H_
 #define MOJO_EDK_EMBEDDER_PLATFORM_CHANNEL_PAIR_H_
 
-#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/launch.h"
 #include "build/build_config.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace base {
 class CommandLine;
@@ -85,7 +85,7 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformChannelPair {
   ScopedPlatformHandle server_handle_;
   ScopedPlatformHandle client_handle_;
 
-  DISALLOW_COPY_AND_ASSIGN(PlatformChannelPair);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(PlatformChannelPair);
 };
 
 }  // namespace embedder

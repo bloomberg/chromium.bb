@@ -5,8 +5,8 @@
 #include "mojo/edk/system/handle_table.h"
 
 #include <limits>
+
 #include "base/logging.h"
-#include "base/macros.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/dispatcher.h"
 

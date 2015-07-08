@@ -6,19 +6,17 @@
 
 #include <windows.h>
 
-#include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process.h"
 #include "base/synchronization/lock.h"
 #include "base/win/windows_version.h"
 #include "mojo/edk/embedder/platform_handle.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {
@@ -70,7 +68,7 @@ VistaOrHigherFunctions::VistaOrHigherFunctions()
 base::LazyInstance<VistaOrHigherFunctions> g_vista_or_higher_functions =
     LAZY_INSTANCE_INITIALIZER;
 
-class RawChannelWin : public RawChannel {
+class RawChannelWin final : public RawChannel {
  public:
   RawChannelWin(embedder::ScopedPlatformHandle handle);
   ~RawChannelWin() override;
@@ -158,7 +156,7 @@ class RawChannelWin : public RawChannel {
     size_t platform_handles_written_;
     base::MessageLoopForIO::IOContext write_context_;
 
-    DISALLOW_COPY_AND_ASSIGN(RawChannelIOHandler);
+    MOJO_DISALLOW_COPY_AND_ASSIGN(RawChannelIOHandler);
   };
 
   // |RawChannel| private methods:
@@ -181,7 +179,7 @@ class RawChannelWin : public RawChannel {
 
   const bool skip_completion_port_on_success_;
 
-  DISALLOW_COPY_AND_ASSIGN(RawChannelWin);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(RawChannelWin);
 };
 
 RawChannelWin::RawChannelIOHandler::RawChannelIOHandler(
@@ -254,18 +252,20 @@ void RawChannelWin::RawChannelIOHandler::OnIOCompleted(
   DCHECK(!owner_ ||
          base::MessageLoop::current() == owner_->message_loop_for_io());
 
-  {
-    // Suppress self-destruction inside |OnReadCompleted()|, etc. (in case they
-    // result in a call to |Shutdown()|).
-    base::AutoReset<bool> resetter(&suppress_self_destruct_, true);
+  // Suppress self-destruction inside |OnReadCompleted()|, etc. (in case they
+  // result in a call to |Shutdown()|).
+  bool old_suppress_self_destruct = suppress_self_destruct_;
+  suppress_self_destruct_ = true;
 
-    if (context == &read_context_)
-      OnReadCompleted(bytes_transferred, error);
-    else if (context == &write_context_)
-      OnWriteCompleted(bytes_transferred, error);
-    else
-      NOTREACHED();
-  }
+  if (context == &read_context_)
+    OnReadCompleted(bytes_transferred, error);
+  else if (context == &write_context_)
+    OnWriteCompleted(bytes_transferred, error);
+  else
+    NOTREACHED();
+
+  // Maybe allow self-destruction again.
+  suppress_self_destruct_ = old_suppress_self_destruct;
 
   if (ShouldSelfDestruct())
     delete this;

@@ -11,9 +11,6 @@
 namespace mojo {
 namespace system {
 
-DataPipeConsumerDispatcher::DataPipeConsumerDispatcher() {
-}
-
 void DataPipeConsumerDispatcher::Init(scoped_refptr<DataPipe> data_pipe) {
   DCHECK(data_pipe);
   data_pipe_ = data_pipe;
@@ -33,10 +30,12 @@ DataPipeConsumerDispatcher::Deserialize(Channel* channel,
     return nullptr;
   DCHECK(data_pipe);
 
-  scoped_refptr<DataPipeConsumerDispatcher> dispatcher(
-      new DataPipeConsumerDispatcher());
+  scoped_refptr<DataPipeConsumerDispatcher> dispatcher = Create();
   dispatcher->Init(data_pipe);
   return dispatcher;
+}
+
+DataPipeConsumerDispatcher::DataPipeConsumerDispatcher() {
 }
 
 DataPipeConsumerDispatcher::~DataPipeConsumerDispatcher() {
@@ -59,8 +58,7 @@ scoped_refptr<Dispatcher>
 DataPipeConsumerDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
   lock().AssertAcquired();
 
-  scoped_refptr<DataPipeConsumerDispatcher> rv =
-      new DataPipeConsumerDispatcher();
+  scoped_refptr<DataPipeConsumerDispatcher> rv = Create();
   rv->Init(data_pipe_);
   data_pipe_ = nullptr;
   return scoped_refptr<Dispatcher>(rv.get());

@@ -5,11 +5,11 @@
 #ifndef MOJO_EDK_SYSTEM_LOCAL_DATA_PIPE_IMPL_H_
 #define MOJO_EDK_SYSTEM_LOCAL_DATA_PIPE_IMPL_H_
 
-#include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/edk/system/data_pipe_impl.h"
 #include "mojo/edk/system/system_impl_export.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {
@@ -19,7 +19,7 @@ class MessageInTransitQueue;
 // |LocalDataPipeImpl| is a subclass that "implements" |DataPipe| for data pipes
 // whose producer and consumer are both local. See |DataPipeImpl| for more
 // details.
-class MOJO_SYSTEM_IMPL_EXPORT LocalDataPipeImpl : public DataPipeImpl {
+class MOJO_SYSTEM_IMPL_EXPORT LocalDataPipeImpl final : public DataPipeImpl {
  public:
   LocalDataPipeImpl();
   ~LocalDataPipeImpl() override;
@@ -87,7 +87,7 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalDataPipeImpl : public DataPipeImpl {
   size_t start_index_;
   size_t current_num_bytes_;
 
-  DISALLOW_COPY_AND_ASSIGN(LocalDataPipeImpl);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(LocalDataPipeImpl);
 };
 
 }  // namespace system

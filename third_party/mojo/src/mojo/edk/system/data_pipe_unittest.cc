@@ -10,6 +10,7 @@
 #include <limits>
 
 #include "mojo/edk/system/configuration.h"
+#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -80,7 +81,7 @@ TEST(DataPipeTest, ValidateCreateOptionsValid) {
   // Different flags.
   MojoCreateDataPipeOptionsFlags flags_values[] = {
       MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE};
-  for (size_t i = 0; i < arraysize(flags_values); i++) {
+  for (size_t i = 0; i < MOJO_ARRAYSIZE(flags_values); i++) {
     const MojoCreateDataPipeOptionsFlags flags = flags_values[i];
 
     // Flags member, but nothing beyond.

@@ -14,7 +14,6 @@
 
 #include <algorithm>
 
-#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/edk/system/channel.h"
@@ -30,7 +29,7 @@ namespace system {
 
 // Assert some things about some things defined in data_pipe_impl.h (don't make
 // the assertions there, to avoid including message_in_transit.h).
-static_assert(ALIGNOF(SerializedDataPipeConsumerDispatcher) ==
+static_assert(MOJO_ALIGNOF(SerializedDataPipeConsumerDispatcher) ==
                   MessageInTransit::kMessageAlignment,
               "Wrong alignment");
 static_assert(sizeof(SerializedDataPipeConsumerDispatcher) %

@@ -7,14 +7,13 @@
 
 #include <stdint.h>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/simple_thread.h"
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/handle_signals_state.h"
 #include "mojo/edk/system/waiter.h"
 #include "mojo/public/c/system/types.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 namespace system {
@@ -60,7 +59,7 @@ class SimpleWaiterThread : public base::SimpleThread {
   uint32_t* const context_;
   Waiter waiter_;
 
-  DISALLOW_COPY_AND_ASSIGN(SimpleWaiterThread);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(SimpleWaiterThread);
 };
 
 // This is a more complex and realistic thread that has a |Waiter|, on which it
@@ -95,7 +94,7 @@ class WaiterThread : public base::SimpleThread {
 
   Waiter waiter_;
 
-  DISALLOW_COPY_AND_ASSIGN(WaiterThread);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(WaiterThread);
 };
 
 }  // namespace test

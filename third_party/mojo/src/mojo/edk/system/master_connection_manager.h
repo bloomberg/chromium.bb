@@ -8,13 +8,13 @@
 #include <stdint.h>
 
 #include "base/containers/hash_tables.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/connection_manager.h"
 #include "mojo/edk/system/system_impl_export.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace base {
 class TaskRunner;
@@ -36,7 +36,7 @@ namespace system {
 // its internal, private thread), with condition that |Init()| be called before
 // anything else and |Shutdown()| be called before destruction (and no other
 // public methods may be called during/after |Shutdown()|).
-class MOJO_SYSTEM_IMPL_EXPORT MasterConnectionManager
+class MOJO_SYSTEM_IMPL_EXPORT MasterConnectionManager final
     : public ConnectionManager {
  public:
   // Note: None of the public methods may be called from |private_thread_|.
@@ -142,7 +142,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MasterConnectionManager
   base::hash_map<ConnectionIdentifier, PendingConnectionInfo*>
       pending_connections_;  // Owns its values.
 
-  DISALLOW_COPY_AND_ASSIGN(MasterConnectionManager);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(MasterConnectionManager);
 };
 
 }  // namespace system
