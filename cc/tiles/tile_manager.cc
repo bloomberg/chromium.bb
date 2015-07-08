@@ -228,19 +228,24 @@ RasterTaskCompletionStatsAsValue(const RasterTaskCompletionStats& stats) {
 scoped_ptr<TileManager> TileManager::Create(
     TileManagerClient* client,
     base::SequencedTaskRunner* task_runner,
+    ResourcePool* resource_pool,
+    TileTaskRunner* tile_task_runner,
     size_t scheduled_raster_task_limit) {
-  return make_scoped_ptr(
-      new TileManager(client, task_runner, scheduled_raster_task_limit));
+  return make_scoped_ptr(new TileManager(client, task_runner, resource_pool,
+                                         tile_task_runner,
+                                         scheduled_raster_task_limit));
 }
 
 TileManager::TileManager(
     TileManagerClient* client,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    ResourcePool* resource_pool,
+    TileTaskRunner* tile_task_runner,
     size_t scheduled_raster_task_limit)
     : client_(client),
       task_runner_(task_runner),
-      resource_pool_(nullptr),
-      tile_task_runner_(nullptr),
+      resource_pool_(resource_pool),
+      tile_task_runner_(tile_task_runner),
       scheduled_raster_task_limit_(scheduled_raster_task_limit),
       all_tiles_that_need_to_be_rasterized_are_scheduled_(true),
       did_check_for_completed_tasks_since_last_schedule_tasks_(true),
@@ -254,16 +259,12 @@ TileManager::TileManager(
                                          base::Unretained(this))),
       has_scheduled_tile_tasks_(false),
       prepare_tiles_count_(0u) {
+  tile_task_runner_->SetClient(this);
 }
 
 TileManager::~TileManager() {
-  FinishTasksAndCleanUp();
-}
-
-void TileManager::FinishTasksAndCleanUp() {
-  if (!tile_task_runner_)
-    return;
-
+  // Reset global state and manage. This should cause
+  // our memory usage to drop to zero.
   global_state_ = GlobalStateThatImpactsTilePriority();
 
   TileTaskQueue empty;
@@ -277,21 +278,6 @@ void TileManager::FinishTasksAndCleanUp() {
 
   FreeResourcesForReleasedTiles();
   CleanUpReleasedTiles();
-
-  tile_task_runner_ = nullptr;
-  resource_pool_ = nullptr;
-  more_tiles_need_prepare_check_notifier_.Cancel();
-  signals_check_notifier_.Cancel();
-}
-
-void TileManager::SetResources(ResourcePool* resource_pool,
-                               TileTaskRunner* tile_task_runner) {
-  DCHECK(!tile_task_runner_);
-  DCHECK(tile_task_runner);
-
-  resource_pool_ = resource_pool;
-  tile_task_runner_ = tile_task_runner;
-  tile_task_runner_->SetClient(this);
 }
 
 void TileManager::Release(Tile* tile) {
@@ -338,8 +324,6 @@ void TileManager::CleanUpReleasedTiles() {
 void TileManager::DidFinishRunningTileTasks(TaskSet task_set) {
   TRACE_EVENT1("cc", "TileManager::DidFinishRunningTileTasks", "task_set",
                TaskSetName(task_set));
-  DCHECK(resource_pool_);
-  DCHECK(tile_task_runner_);
 
   switch (task_set) {
     case ALL: {
@@ -376,18 +360,12 @@ void TileManager::DidFinishRunningTileTasks(TaskSet task_set) {
   NOTREACHED();
 }
 
-bool TileManager::PrepareTiles(
+void TileManager::PrepareTiles(
     const GlobalStateThatImpactsTilePriority& state) {
   ++prepare_tiles_count_;
 
   TRACE_EVENT1("cc", "TileManager::PrepareTiles", "prepare_tiles_id",
                prepare_tiles_count_);
-
-  if (!tile_task_runner_) {
-    TRACE_EVENT_INSTANT0("cc", "PrepareTiles aborted",
-                         TRACE_EVENT_SCOPE_THREAD);
-    return false;
-  }
 
   signals_.reset();
   global_state_ = state;
@@ -425,16 +403,10 @@ bool TileManager::PrepareTiles(
   TRACE_COUNTER_ID1("cc", "unused_memory_bytes", this,
                     resource_pool_->total_memory_usage_bytes() -
                         resource_pool_->acquired_memory_usage_bytes());
-  return true;
 }
 
 void TileManager::Flush() {
   TRACE_EVENT0("cc", "TileManager::Flush");
-
-  if (!tile_task_runner_) {
-    TRACE_EVENT_INSTANT0("cc", "Flush aborted", TRACE_EVENT_SCOPE_THREAD);
-    return;
-  }
 
   tile_task_runner_->CheckForCompletedTasks();
 
@@ -531,9 +503,6 @@ void TileManager::AssignGpuMemoryToTiles(
     size_t scheduled_raster_task_limit,
     PrioritizedTileVector* tiles_that_need_to_be_rasterized) {
   TRACE_EVENT_BEGIN0("cc", "TileManager::AssignGpuMemoryToTiles");
-
-  DCHECK(resource_pool_);
-  DCHECK(tile_task_runner_);
 
   // Maintain the list of released resources that can potentially be re-used
   // or deleted. If this operation becomes expensive too, only do this after
@@ -852,9 +821,6 @@ ScopedTilePtr TileManager::CreateTile(const gfx::Size& desired_texture_size,
                                       int layer_id,
                                       int source_frame_number,
                                       int flags) {
-  // We need to have a tile task worker pool to do anything meaningful with
-  // tiles.
-  DCHECK(tile_task_runner_);
   ScopedTilePtr tile(new Tile(this, desired_texture_size, content_rect,
                               contents_scale, layer_id, source_frame_number,
                               flags));

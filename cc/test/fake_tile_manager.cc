@@ -72,16 +72,18 @@ base::LazyInstance<FakeTileTaskRunnerImpl> g_fake_tile_task_runner =
 FakeTileManager::FakeTileManager(TileManagerClient* client)
     : TileManager(client,
                   base::ThreadTaskRunnerHandle::Get(),
+                  nullptr,
+                  g_fake_tile_task_runner.Pointer(),
                   std::numeric_limits<size_t>::max()) {
-  SetResources(nullptr, g_fake_tile_task_runner.Pointer());
 }
 
 FakeTileManager::FakeTileManager(TileManagerClient* client,
                                  ResourcePool* resource_pool)
     : TileManager(client,
                   base::ThreadTaskRunnerHandle::Get(),
+                  resource_pool,
+                  g_fake_tile_task_runner.Pointer(),
                   std::numeric_limits<size_t>::max()) {
-  SetResources(resource_pool, g_fake_tile_task_runner.Pointer());
 }
 
 FakeTileManager::~FakeTileManager() {}

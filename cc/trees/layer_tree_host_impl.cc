@@ -200,12 +200,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
     : client_(client),
       proxy_(proxy),
       current_begin_frame_tracker_(BEGINFRAMETRACKER_FROM_HERE),
-      tile_manager_(
-          TileManager::Create(this,
-                              GetTaskRunner(),
-                              IsSynchronousSingleThreaded()
-                                  ? std::numeric_limits<size_t>::max()
-                                  : settings.scheduled_raster_task_limit)),
       content_is_suitable_for_gpu_rasterization_(true),
       has_gpu_rasterization_trigger_(false),
       use_gpu_rasterization_(false),
@@ -312,7 +306,7 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
     animation_host_->SetMutatorHostClient(nullptr);
   }
 
-  CleanUpTileManager();
+  DestroyTileManager();
 }
 
 void LayerTreeHostImpl::BeginMainFrameAborted(CommitEarlyOutReason reason) {
@@ -354,10 +348,9 @@ void LayerTreeHostImpl::CommitComplete() {
   bool update_lcd_text = true;
   sync_tree()->UpdateDrawProperties(update_lcd_text);
   // Start working on newly created tiles immediately if needed.
-  // TODO(vmpstr): Investigate always having PrepareTiles issue
-  // NotifyReadyToActivate, instead of handling it here.
-  bool did_prepare_tiles = PrepareTiles();
-  if (!did_prepare_tiles) {
+  if (tile_manager_ && tile_priorities_dirty_) {
+    PrepareTiles();
+  } else {
     NotifyReadyToActivate();
 
     // Ensure we get ReadyToDraw signal even when PrepareTiles not run. This
@@ -433,16 +426,16 @@ void LayerTreeHostImpl::Animate(base::TimeTicks monotonic_time) {
   AnimateTopControls(monotonic_time);
 }
 
-bool LayerTreeHostImpl::PrepareTiles() {
+void LayerTreeHostImpl::PrepareTiles() {
+  if (!tile_manager_)
+    return;
   if (!tile_priorities_dirty_)
-    return false;
+    return;
 
   client_->WillPrepareTiles();
-  bool did_prepare_tiles = tile_manager_->PrepareTiles(global_tile_state_);
-  if (did_prepare_tiles)
-    tile_priorities_dirty_ = false;
+  tile_priorities_dirty_ = false;
+  tile_manager_->PrepareTiles(global_tile_state_);
   client_->DidPrepareTiles();
-  return did_prepare_tiles;
 }
 
 void LayerTreeHostImpl::StartPageScaleAnimation(
@@ -1192,7 +1185,7 @@ size_t LayerTreeHostImpl::SourceAnimationFrameNumberForTesting() const {
 
 void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
     const ManagedMemoryPolicy& policy) {
-  if (!resource_pool_)
+  if (!tile_manager_)
     return;
 
   global_tile_state_.hard_memory_limit_in_bytes = 0;
@@ -1344,11 +1337,14 @@ void LayerTreeHostImpl::SetMemoryPolicy(const ManagedMemoryPolicy& policy) {
   // This is short term solution to synchronously drop tile resources when
   // using synchronous compositing to avoid memory usage regression.
   // TODO(boliu): crbug.com/499004 to track removing this.
-  if (!policy.bytes_limit_when_visible && resource_pool_ &&
+  if (!policy.bytes_limit_when_visible && tile_manager_ &&
       settings_.using_synchronous_renderer_compositor) {
     ReleaseTreeResources();
-    CleanUpTileManager();
-    CreateTileManagerResources();
+    // TileManager destruction will synchronoulsy wait for all tile workers to
+    // be cancelled or completed. This allows all resources to be freed
+    // synchronously.
+    DestroyTileManager();
+    CreateAndSetTileManager();
     RecreateTreeResources();
   }
 }
@@ -1455,7 +1451,9 @@ void LayerTreeHostImpl::ReclaimResources(const CompositorFrameAck* ack) {
 
   // In OOM, we now might be able to release more resources that were held
   // because they were exported.
-  if (resource_pool_) {
+  if (tile_manager_) {
+    DCHECK(resource_pool_);
+
     resource_pool_->CheckBusyResources(false);
     resource_pool_->ReduceResourceUsage();
   }
@@ -1700,13 +1698,11 @@ void LayerTreeHostImpl::UpdateTreeResourcesForGpuRasterizationIfNeeded() {
     return;
 
   // Clean up and replace existing tile manager with another one that uses
-  // appropriate rasterizer. Only do this however if we already have a
-  // resource pool, since otherwise we might not be able to create a new
-  // one.
+  // appropriate rasterizer.
   ReleaseTreeResources();
-  if (resource_pool_) {
-    CleanUpTileManager();
-    CreateTileManagerResources();
+  if (tile_manager_) {
+    DestroyTileManager();
+    CreateAndSetTileManager();
   }
   RecreateTreeResources();
 
@@ -2070,11 +2066,24 @@ void LayerTreeHostImpl::CreateAndSetRenderer() {
   client_->UpdateRendererCapabilitiesOnImplThread();
 }
 
-void LayerTreeHostImpl::CreateTileManagerResources() {
+void LayerTreeHostImpl::CreateAndSetTileManager() {
+  DCHECK(!tile_manager_);
+  DCHECK(output_surface_);
+  DCHECK(resource_provider_);
+
   CreateResourceAndTileTaskWorkerPool(&tile_task_worker_pool_, &resource_pool_,
                                       &staging_resource_pool_);
-  tile_manager_->SetResources(resource_pool_.get(),
-                              tile_task_worker_pool_->AsTileTaskRunner());
+  DCHECK(tile_task_worker_pool_);
+  DCHECK(resource_pool_);
+
+  DCHECK(GetTaskRunner());
+  size_t scheduled_raster_task_limit =
+      IsSynchronousSingleThreaded() ? std::numeric_limits<size_t>::max()
+                                    : settings_.scheduled_raster_task_limit;
+  tile_manager_ = TileManager::Create(
+      this, GetTaskRunner(), resource_pool_.get(),
+      tile_task_worker_pool_->AsTileTaskRunner(), scheduled_raster_task_limit);
+
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
 }
 
@@ -2194,8 +2203,8 @@ void LayerTreeHostImpl::PostFrameTimingEvents(
                                              main_frame_events.Pass());
 }
 
-void LayerTreeHostImpl::CleanUpTileManager() {
-  tile_manager_->FinishTasksAndCleanUp();
+void LayerTreeHostImpl::DestroyTileManager() {
+  tile_manager_ = nullptr;
   resource_pool_ = nullptr;
   staging_resource_pool_ = nullptr;
   tile_task_worker_pool_ = nullptr;
@@ -2217,7 +2226,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
 
   // Note: order is important here.
   renderer_ = nullptr;
-  CleanUpTileManager();
+  DestroyTileManager();
   resource_provider_ = nullptr;
   output_surface_ = nullptr;
 
@@ -2242,7 +2251,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
   // Since the new renderer may be capable of MSAA, update status here.
   UpdateGpuRasterizationStatus();
 
-  CreateTileManagerResources();
+  CreateAndSetTileManager();
   RecreateTreeResources();
 
   // Initialize vsync parameters to sane values.
