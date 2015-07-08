@@ -59,6 +59,11 @@ public:
     WebEmbeddedWorkerImpl(PassOwnPtr<WebServiceWorkerContextClient>, PassOwnPtr<WebWorkerContentSettingsClientProxy>);
     ~WebEmbeddedWorkerImpl() override;
 
+    // Terminate all WebEmbeddedWorkerImpl for testing purposes.
+    // Note that this only schedules termination and
+    // does not synchronously wait for it to complete.
+    static void terminateAll();
+
     // WebEmbeddedWorker overrides.
     void startWorkerContext(const WebEmbeddedWorkerStartData&) override;
     void resumeAfterDownload() override;
