@@ -618,8 +618,6 @@ test("media_unittests") {
   if (proprietary_codecs) {
     sources += [
       "cdm/cenc_utils_unittest.cc",
-      "filters/ffmpeg_aac_bitstream_converter_unittest.cc",
-      "filters/ffmpeg_h264_to_annex_b_bitstream_converter_unittest.cc",
       "filters/h264_to_annex_b_bitstream_converter_unittest.cc",
       "formats/common/stream_parser_test_base.cc",
       "formats/common/stream_parser_test_base.h",
@@ -641,6 +639,12 @@ test("media_unittests") {
       "formats/mpeg/adts_stream_parser_unittest.cc",
       "formats/mpeg/mpeg1_audio_stream_parser_unittest.cc",
     ]
+    if (media_use_ffmpeg) {
+      sources += [
+        "filters/ffmpeg_aac_bitstream_converter_unittest.cc",
+        "filters/ffmpeg_h264_to_annex_b_bitstream_converter_unittest.cc",
+      ]
+    }
   }
 
   if (is_mac || is_ios) {
