@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/trace_event/trace_event.h"
@@ -370,12 +369,6 @@ void Compositor::Layout() {
 }
 
 void Compositor::RequestNewOutputSurface() {
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/466870
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "466870 Compositor::RequestNewOutputSurface"));
-
   context_factory_->CreateOutputSurface(weak_ptr_factory_.GetWeakPtr());
 }
 

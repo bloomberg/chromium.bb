@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/simple_thread.h"
@@ -197,11 +196,6 @@ void GpuProcessTransportFactory::CreateOutputSurface(
   DCHECK(!!compositor);
   PerCompositorData* data = per_compositor_data_[compositor.get()];
   if (!data) {
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/466870
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile1(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "466870 GpuProcessTransportFactory::CreateOutputSurface1"));
     data = CreatePerCompositorData(compositor.get());
   } else {
     // TODO(piman): Use GpuSurfaceTracker to map ids to surfaces instead of an
@@ -210,21 +204,9 @@ void GpuProcessTransportFactory::CreateOutputSurface(
     data->surface = nullptr;
   }
 
-  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/466870
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "466870 GpuProcessTransportFactory::CreateOutputSurface2"));
-
   bool create_gpu_output_surface =
       ShouldCreateGpuOutputSurface(compositor.get());
   if (create_gpu_output_surface) {
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/466870
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile3(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "466870 GpuProcessTransportFactory::CreateOutputSurface3"));
-
     CauseForGpuLaunch cause =
         CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
     BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(
@@ -232,12 +214,6 @@ void GpuProcessTransportFactory::CreateOutputSurface(
                           callback_factory_.GetWeakPtr(), compositor,
                           create_gpu_output_surface, 0));
   } else {
-    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/466870
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile4(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "466870 GpuProcessTransportFactory::CreateOutputSurface4"));
-
     EstablishedGpuChannel(compositor, create_gpu_output_surface, 0);
   }
 }
