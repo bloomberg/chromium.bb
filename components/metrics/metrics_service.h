@@ -154,6 +154,9 @@ class MetricsService : public base::HistogramFlattener {
   // an int64 containing seconds since the epoch.
   int64 GetMetricsReportingEnabledDate();
 
+  // Returns true if the last session exited cleanly.
+  bool WasLastShutdownClean() const;
+
   // Returns the preferred entropy provider used to seed persistent activities
   // based on whether or not metrics reporting will be permitted on this client.
   //

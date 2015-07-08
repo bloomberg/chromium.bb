@@ -379,6 +379,10 @@ int64 MetricsService::GetMetricsReportingEnabledDate() {
   return local_state_->GetInt64(prefs::kMetricsReportingEnabledTimestamp);
 }
 
+bool MetricsService::WasLastShutdownClean() const {
+  return clean_exit_beacon_.exited_cleanly();
+}
+
 scoped_ptr<const base::FieldTrial::EntropyProvider>
 MetricsService::CreateEntropyProvider() {
   // TODO(asvitkine): Refactor the code so that MetricsService does not expose
