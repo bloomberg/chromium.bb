@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/content_settings/permission_queue_controller.h"
+#include "chrome/browser/permissions/permission_queue_controller.h"
 
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/chrome_notification_types.h"

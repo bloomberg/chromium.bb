@@ -5,7 +5,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/content_settings/permission_context_uma_util.h"
+#include "chrome/browser/permissions/permission_context_uma_util.h"
 #include "components/rappor/rappor_utils.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/common/origin_util.h"

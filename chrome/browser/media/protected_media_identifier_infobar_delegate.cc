@@ -4,8 +4,8 @@
 
 #include "chrome/browser/media/protected_media_identifier_infobar_delegate.h"
 
-#include "chrome/browser/content_settings/permission_queue_controller.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/permissions/permission_queue_controller.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"

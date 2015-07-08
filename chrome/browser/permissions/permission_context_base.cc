@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/content_settings/permission_context_base.h"
+#include "chrome/browser/permissions/permission_context_base.h"
 
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/content_settings/permission_bubble_request_impl.h"
-#include "chrome/browser/content_settings/permission_context_uma_util.h"
-#include "chrome/browser/content_settings/permission_queue_controller.h"
+#include "chrome/browser/permissions/permission_bubble_request_impl.h"
+#include "chrome/browser/permissions/permission_context_uma_util.h"
+#include "chrome/browser/permissions/permission_queue_controller.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"

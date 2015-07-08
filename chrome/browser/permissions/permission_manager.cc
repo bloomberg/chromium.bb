@@ -5,8 +5,8 @@
 #include "chrome/browser/permissions/permission_manager.h"
 
 #include "base/callback.h"
-#include "chrome/browser/content_settings/permission_context_base.h"
 #include "chrome/browser/permissions/permission_context.h"
+#include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"

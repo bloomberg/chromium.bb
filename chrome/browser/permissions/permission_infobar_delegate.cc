@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/content_settings/permission_infobar_delegate.h"
+#include "chrome/browser/permissions/permission_infobar_delegate.h"
 
-#include "chrome/browser/content_settings/permission_context_uma_util.h"
-#include "chrome/browser/content_settings/permission_queue_controller.h"
+#include "chrome/browser/permissions/permission_context_uma_util.h"
+#include "chrome/browser/permissions/permission_queue_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "ui/base/l10n/l10n_util.h"

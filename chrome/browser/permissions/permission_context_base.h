@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CONTENT_SETTINGS_PERMISSION_CONTEXT_BASE_H_
-#define CHROME_BROWSER_CONTENT_SETTINGS_PERMISSION_CONTEXT_BASE_H_
+#ifndef CHROME_BROWSER_PERMISSIONS_PERMISSION_CONTEXT_BASE_H_
+#define CHROME_BROWSER_PERMISSIONS_PERMISSION_CONTEXT_BASE_H_
 
 #include "base/callback.h"
 #include "base/containers/scoped_ptr_hash_map.h"
@@ -142,4 +142,4 @@ class PermissionContextBase : public KeyedService {
   base::WeakPtrFactory<PermissionContextBase> weak_factory_;
 };
 
-#endif  // CHROME_BROWSER_CONTENT_SETTINGS_PERMISSION_CONTEXT_BASE_H_
+#endif  // CHROME_BROWSER_PERMISSIONS_PERMISSION_CONTEXT_BASE_H_

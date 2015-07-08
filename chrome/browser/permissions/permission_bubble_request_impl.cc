@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/content_settings/permission_bubble_request_impl.h"
+#include "chrome/browser/permissions/permission_bubble_request_impl.h"
 
-#include "chrome/browser/content_settings/permission_context_base.h"
-#include "chrome/browser/content_settings/permission_context_uma_util.h"
+#include "chrome/browser/permissions/permission_context_base.h"
+#include "chrome/browser/permissions/permission_context_uma_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"

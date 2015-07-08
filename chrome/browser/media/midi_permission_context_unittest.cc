@@ -5,8 +5,8 @@
 #include "chrome/browser/media/midi_permission_context.h"
 
 #include "base/bind.h"
-#include "chrome/browser/content_settings/permission_queue_controller.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/permissions/permission_queue_controller.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"

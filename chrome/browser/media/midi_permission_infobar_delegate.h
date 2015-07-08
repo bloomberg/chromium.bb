@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_MEDIA_MIDI_PERMISSION_INFOBAR_DELEGATE_H_
 
 #include <string>
-#include "chrome/browser/content_settings/permission_infobar_delegate.h"
+#include "chrome/browser/permissions/permission_infobar_delegate.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 
 class GURL;

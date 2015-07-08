@@ -4,9 +4,9 @@
 
 #include "chrome/browser/push_messaging/push_messaging_permission_context.h"
 
-#include "chrome/browser/content_settings/permission_context_uma_util.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/notifications/notification_permission_context_factory.h"
+#include "chrome/browser/permissions/permission_context_uma_util.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"

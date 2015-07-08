@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/content_settings/permission_queue_controller.h"
+#include "chrome/browser/permissions/permission_queue_controller.h"
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/content_settings/permission_context_uma_util.h"
 #include "chrome/browser/geolocation/geolocation_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/midi_permission_infobar_delegate.h"
 #include "chrome/browser/notifications/notification_permission_infobar_delegate.h"
+#include "chrome/browser/permissions/permission_context_uma_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/pref_names.h"
