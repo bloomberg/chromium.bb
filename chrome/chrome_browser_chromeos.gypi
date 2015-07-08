@@ -71,8 +71,6 @@
         'browser/chromeos/camera_presence_notifier.h',
         'browser/chromeos/chrome_browser_main_chromeos.cc',
         'browser/chromeos/chrome_browser_main_chromeos.h',
-        'browser/chromeos/chromeos_utils.cc',
-        'browser/chromeos/chromeos_utils.h',
         'browser/chromeos/customization/customization_document.cc',
         'browser/chromeos/customization/customization_document.h',
         'browser/chromeos/customization/customization_wallpaper_downloader.cc',
