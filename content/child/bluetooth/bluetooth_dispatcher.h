@@ -65,6 +65,9 @@ class BluetoothDispatcher : public WorkerTaskRunner::Observer {
       blink::WebBluetoothGetCharacteristicCallbacks* callbacks);
   void readValue(const blink::WebString& characteristic_instance_id,
                  blink::WebBluetoothReadValueCallbacks* callbacks);
+  void writeValue(const blink::WebString& characteristic_instance_id,
+                  const std::vector<uint8_t>& value,
+                  blink::WebBluetoothWriteValueCallbacks*);
 
   // WorkerTaskRunner::Observer implementation.
   void OnWorkerRunLoopStopped() override;
@@ -109,6 +112,11 @@ class BluetoothDispatcher : public WorkerTaskRunner::Observer {
                         int request_id,
                         BluetoothError error_type,
                         const std::string& error_message);
+  void OnWriteValueSuccess(int thread_id, int request_id);
+  void OnWriteValueError(int thread_id,
+                         int request_id,
+                         BluetoothError error_type,
+                         const std::string& error_message);
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
@@ -130,6 +138,8 @@ class BluetoothDispatcher : public WorkerTaskRunner::Observer {
   // Tracks requests to read from a characteristics.
   IDMap<blink::WebBluetoothReadValueCallbacks, IDMapOwnPointer>
       pending_read_value_requests_;
+  IDMap<blink::WebBluetoothWriteValueCallbacks, IDMapOwnPointer>
+      pending_write_value_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDispatcher);
 };

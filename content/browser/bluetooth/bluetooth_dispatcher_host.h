@@ -77,6 +77,10 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   void OnReadValue(int thread_id,
                    int request_id,
                    const std::string& characteristic_instance_id);
+  void OnWriteValue(int thread_id,
+                    int request_id,
+                    const std::string& characteristic_instance_id,
+                    const std::vector<uint8_t>& value);
 
   // Callbacks for BluetoothAdapter::StartDiscoverySession.
   void OnDiscoverySessionStarted(
@@ -127,6 +131,12 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
       int thread_id,
       int request_id,
       device::BluetoothGattService::GattErrorCode);
+
+  // Callbacks for BluetoothGattCharacteristic::WriteRemoteCharacteristic.
+  void OnWriteValueSuccess(int thread_id, int request_id);
+  void OnWriteValueFailed(int thread_id,
+                          int request_id,
+                          device::BluetoothGattService::GattErrorCode);
 
   // Maps to get the object's parent based on it's instanceID
   // Map of service_instance_id to device_instance_id.

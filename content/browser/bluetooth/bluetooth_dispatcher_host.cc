@@ -189,6 +189,7 @@ bool BluetoothDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_GetPrimaryService, OnGetPrimaryService)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_GetCharacteristic, OnGetCharacteristic)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_ReadValue, OnReadValue)
+  IPC_MESSAGE_HANDLER(BluetoothHostMsg_WriteValue, OnWriteValue)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -432,6 +433,72 @@ void BluetoothDispatcherHost::OnReadValue(
                  weak_ptr_factory_.GetWeakPtr(), thread_id, request_id));
 }
 
+void BluetoothDispatcherHost::OnWriteValue(
+    int thread_id,
+    int request_id,
+    const std::string& characteristic_instance_id,
+    const std::vector<uint8_t>& value) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Length check per step 3 of writeValue algorithm:
+  // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothgattcharacteristic-writevalue
+  // We perform the length check on the renderer side. So if we
+  // get a value with length > 512, we can assume it's a hostile
+  // renderer and kill it.
+  if (value.size() > 512) {
+    bad_message::ReceivedBadMessage(
+        this, bad_message::BDH_INVALID_WRITE_VALUE_LENGTH);
+    return;
+  }
+
+  auto characteristic_iter =
+      characteristic_to_service_.find(characteristic_instance_id);
+  // A characteristic_instance_id not in the map implies a hostile renderer
+  // because a renderer obtains the characteristic id from this class and
+  // it will be added to the map at that time.
+  if (characteristic_iter == characteristic_to_service_.end()) {
+    bad_message::ReceivedBadMessage(this,
+                                    bad_message::BDH_INVALID_CHARACTERISTIC_ID);
+    return;
+  }
+  const std::string& service_instance_id = characteristic_iter->second;
+
+  auto device_iter = service_to_device_.find(service_instance_id);
+
+  CHECK(device_iter != service_to_device_.end());
+
+  device::BluetoothDevice* device =
+      adapter_->GetDevice(device_iter->second /* device_instance_id */);
+  if (device == nullptr) {  // See "NETWORK_ERROR Note" above.
+    Send(new BluetoothMsg_WriteCharacteristicValueError(
+        thread_id, request_id, BluetoothError::NETWORK,
+        kDeviceNoLongerInRange));
+    return;
+  }
+
+  BluetoothGattService* service = device->GetGattService(service_instance_id);
+  if (service == nullptr) {
+    Send(new BluetoothMsg_WriteCharacteristicValueError(
+        thread_id, request_id, BluetoothError::INVALID_STATE,
+        kServiceNoLongerExists));
+    return;
+  }
+
+  BluetoothGattCharacteristic* characteristic =
+      service->GetCharacteristic(characteristic_instance_id);
+  if (characteristic == nullptr) {
+    Send(new BluetoothMsg_WriteCharacteristicValueError(
+        thread_id, request_id, BluetoothError::INVALID_STATE,
+        kCharacteristicNoLongerExits));
+    return;
+  }
+  characteristic->WriteRemoteCharacteristic(
+      value, base::Bind(&BluetoothDispatcherHost::OnWriteValueSuccess,
+                        weak_ptr_factory_.GetWeakPtr(), thread_id, request_id),
+      base::Bind(&BluetoothDispatcherHost::OnWriteValueFailed,
+                 weak_ptr_factory_.GetWeakPtr(), thread_id, request_id));
+}
+
 void BluetoothDispatcherHost::OnDiscoverySessionStarted(
     int thread_id,
     int request_id,
@@ -579,6 +646,21 @@ void BluetoothDispatcherHost::OnCharacteristicReadValueError(
     device::BluetoothGattService::GattErrorCode error_code) {
   std::pair<BluetoothError, std::string> error = TranslateGATTError(error_code);
   Send(new BluetoothMsg_ReadCharacteristicValueError(
+      thread_id, request_id, error.first, error.second));
+}
+
+void BluetoothDispatcherHost::OnWriteValueSuccess(int thread_id,
+                                                  int request_id) {
+  Send(new BluetoothMsg_WriteCharacteristicValueSuccess(thread_id, request_id));
+}
+
+void BluetoothDispatcherHost::OnWriteValueFailed(
+    int thread_id,
+    int request_id,
+    device::BluetoothGattService::GattErrorCode error_code) {
+  std::pair<BluetoothError, std::string> error = TranslateGATTError(error_code);
+
+  Send(new BluetoothMsg_WriteCharacteristicValueError(
       thread_id, request_id, error.first, error.second));
 }
 

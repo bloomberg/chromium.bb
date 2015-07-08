@@ -163,6 +163,10 @@ void BluetoothDispatcher::OnMessageReceived(const IPC::Message& msg) {
                       OnReadValueSuccess);
   IPC_MESSAGE_HANDLER(BluetoothMsg_ReadCharacteristicValueError,
                       OnReadValueError);
+  IPC_MESSAGE_HANDLER(BluetoothMsg_WriteCharacteristicValueSuccess,
+                      OnWriteValueSuccess);
+  IPC_MESSAGE_HANDLER(BluetoothMsg_WriteCharacteristicValueError,
+                      OnWriteValueError);
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << "Unhandled message:" << msg.type();
@@ -231,6 +235,16 @@ void BluetoothDispatcher::readValue(
   int request_id = pending_read_value_requests_.Add(callbacks);
   Send(new BluetoothHostMsg_ReadValue(CurrentWorkerId(), request_id,
                                       characteristic_instance_id.utf8()));
+}
+
+void BluetoothDispatcher::writeValue(
+    const blink::WebString& characteristic_instance_id,
+    const std::vector<uint8_t>& value,
+    blink::WebBluetoothWriteValueCallbacks* callbacks) {
+  int request_id = pending_write_value_requests_.Add(callbacks);
+
+  Send(new BluetoothHostMsg_WriteValue(
+      CurrentWorkerId(), request_id, characteristic_instance_id.utf8(), value));
 }
 
 void BluetoothDispatcher::OnWorkerRunLoopStopped() {
@@ -402,6 +416,28 @@ void BluetoothDispatcher::OnReadValueError(int thread_id,
           WebString::fromUTF8(error_message)));
 
   pending_read_value_requests_.Remove(request_id);
+}
+
+void BluetoothDispatcher::OnWriteValueSuccess(int thread_id, int request_id) {
+  DCHECK(pending_write_value_requests_.Lookup(request_id)) << request_id;
+
+  pending_write_value_requests_.Lookup(request_id)->onSuccess();
+
+  pending_write_value_requests_.Remove(request_id);
+}
+
+void BluetoothDispatcher::OnWriteValueError(int thread_id,
+                                            int request_id,
+                                            BluetoothError error_type,
+                                            const std::string& error_message) {
+  DCHECK(pending_write_value_requests_.Lookup(request_id)) << request_id;
+
+  pending_write_value_requests_.Lookup(request_id)
+      ->onError(
+          new WebBluetoothError(WebBluetoothErrorFromBluetoothError(error_type),
+                                WebString::fromUTF8(error_message)));
+
+  pending_write_value_requests_.Remove(request_id);
 }
 
 }  // namespace content

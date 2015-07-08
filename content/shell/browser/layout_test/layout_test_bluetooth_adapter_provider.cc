@@ -272,6 +272,10 @@ LayoutTestBluetoothAdapterProvider::GetEmptyDevice(
   ON_CALL(*device_name_characteristic, ReadRemoteCharacteristic(_, _))
       .WillByDefault(RunCallback<0>(device_name_value));
 
+  ON_CALL(*device_name_characteristic, WriteRemoteCharacteristic(_, _, _))
+      .WillByDefault(RunCallback<2 /* error callback */>(
+          BluetoothGattService::GATT_ERROR_NOT_PERMITTED));
+
   generic_access->AddMockCharacteristic(device_name_characteristic.Pass());
 
   scoped_ptr<NiceMock<MockBluetoothGattCharacteristic>> reconnection_address(
@@ -281,6 +285,9 @@ LayoutTestBluetoothAdapterProvider::GetEmptyDevice(
   ON_CALL(*reconnection_address, ReadRemoteCharacteristic(_, _))
       .WillByDefault(
           RunCallback<1>(BluetoothGattService::GATT_ERROR_NOT_PERMITTED));
+
+  ON_CALL(*reconnection_address, WriteRemoteCharacteristic(_, _, _))
+      .WillByDefault(RunCallback<1 /* success callback */>());
 
   generic_access->AddMockCharacteristic(reconnection_address.Pass());
 

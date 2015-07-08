@@ -101,8 +101,9 @@ class LayoutTestBluetoothAdapterProvider {
   //  - |GetUUIDs| returns a list with two UUIDs: "1800" and "1801".
   //  - |GetGattServices| returns a list with one service "Generic Access".
   //    "Generic Access" has a "Device Name" characteristic, with a value of
-  //    "Empty Mock Device Name", and a "Reconnection Address" characteristic
-  //    which can't be read.
+  //    "Empty Mock Device Name" that can be read but not written, and a
+  //    "Reconnection Address" characteristic which can't be read, but can be
+  //    written.
   static scoped_ptr<testing::NiceMock<device::MockBluetoothDevice>>
   GetEmptyDevice(device::MockBluetoothAdapter* adapter,
                  const std::string& device_name = "Empty Mock Device");

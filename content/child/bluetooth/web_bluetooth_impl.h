@@ -41,6 +41,9 @@ class CONTENT_EXPORT WebBluetoothImpl
       blink::WebBluetoothGetCharacteristicCallbacks* callbacks) override;
   void readValue(const blink::WebString& characteristic_instance_id,
                  blink::WebBluetoothReadValueCallbacks* callbacks) override;
+  void writeValue(const blink::WebString& characteristic_instance_id,
+                  const std::vector<uint8_t>& value,
+                  blink::WebBluetoothWriteValueCallbacks*) override;
 
  private:
   BluetoothDispatcher* GetDispatcher();
