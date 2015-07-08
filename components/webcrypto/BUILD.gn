@@ -32,6 +32,7 @@ source_set("webcrypto") {
     "//base",
     "//crypto",
     "//crypto:platform",
+    "//third_party/WebKit/public:blink",
   ]
 
   if (!use_openssl) {
