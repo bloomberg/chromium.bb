@@ -6,7 +6,6 @@
 
 from __future__ import print_function
 
-from chromite.cli import command
 from chromite.cli import command_unittest
 from chromite.cli import flash
 from chromite.cli.cros import cros_flash
@@ -93,18 +92,9 @@ class CrosFlashTest(cros_test_lib.MockTempDirTestCase,
     self.cmd_mock.inst.Run()
     self.VerifyFlashParameters(self.DEVICE, self.IMAGE)
 
-  def testBrilloFlashEntersChroot(self):
-    """Test that brillo flash enters the chroot."""
-    self.SetupCommandMock([self.DEVICE, self.IMAGE])
-    self.PatchObject(command, 'GetToolset', return_value='brillo')
-    enter_chroot = self.PatchObject(commandline, 'RunInsideChroot')
-    self.cmd_mock.inst.Run()
-    self.assertTrue(enter_chroot.called)
-
-  def testCrosFlashDoesNotEnterChroot(self):
+  def testDoesNotEnterChroot(self):
     """Test that cros flash doesn't enter the chroot."""
     self.SetupCommandMock([self.DEVICE, self.IMAGE])
-    self.PatchObject(command, 'GetToolset', return_value='cros')
     enter_chroot = self.PatchObject(commandline, 'RunInsideChroot')
     self.cmd_mock.inst.Run()
     self.assertFalse(enter_chroot.called)

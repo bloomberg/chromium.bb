@@ -10,6 +10,7 @@ import argparse
 import glob
 import os
 
+from chromite.cbuildbot import constants
 from chromite.cli import command
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib_unittest
@@ -61,15 +62,12 @@ class TestCommandTest(cros_test_lib.MockTestCase):
     else:
       self.fail('Invalid command was accepted by the CommandDecorator')
 
-  def testCrosAddDeviceArgument(self):
-    """Tests CliCommand.AddDeviceArgument() for `cros`."""
-    self.PatchObject(command, 'GetToolset', return_value='cros')
+  def testAddDeviceArgument(self):
+    """Tests CliCommand.AddDeviceArgument()."""
     parser = argparse.ArgumentParser()
     command.CliCommand.AddDeviceArgument(parser)
-    # cros should have a positional device argument.
+    # Device should be a positional argument.
     parser.parse_args(['device'])
-    with self.assertRaises(SystemExit):
-      parser.parse_args(['--device', 'device'])
 
 
 class MockCommand(partial_mock.PartialMock):
@@ -112,25 +110,25 @@ class CommandTest(cros_test_lib.MockTestCase):
     self.PatchObject(glob, 'glob',
                      return_value=[fake_command_file, filtered_file])
 
-    self.assertEqual(command._FindModules(mydir, 'cros'), [fake_command_file])
+    self.assertEqual(command._FindModules(mydir), [fake_command_file])
 
   def testLoadCommands(self):
     """Tests import commands correctly."""
     fake_module = 'cros_command_test'
-    fake_command_file = '%s.py' % fake_module
-    module_path = ('chromite', 'cli', 'cros', fake_module)
+    fake_command_file = os.path.join(constants.CHROMITE_DIR, 'foo', fake_module)
+    module_path = ['chromite', 'foo', fake_module]
 
     self.PatchObject(command, '_FindModules', return_value=[fake_command_file])
     # The code doesn't use the return value, so stub it out lazy-like.
     load_mock = self.PatchObject(cros_import, 'ImportModule', return_value=None)
 
-    command._ImportCommands('cros')
+    command._ImportCommands()
 
     load_mock.assert_called_with(module_path)
 
   def testListCrosCommands(self):
     """Tests we get a sane `cros` list back."""
-    cros_commands = command.ListCommands('cros')
+    cros_commands = command.ListCommands()
     # Pick some commands that are likely to not go away.
     self.assertIn('chrome-sdk', cros_commands)
     self.assertIn('flash', cros_commands)
