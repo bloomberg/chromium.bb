@@ -58,6 +58,7 @@ public class WebappUrlBar extends FrameLayout implements View.OnLayoutChangeList
 
         mUrlBar = new TextView(context);
         mUrlBar.setSingleLine(true);
+        mUrlBar.setGravity(Gravity.CENTER_VERTICAL);
         mUrlBar.setMovementMethod(ScrollingMovementMethod.getInstance());
         mUrlBar.setHorizontalFadingEdgeEnabled(true);
         mSeparator = new View(context);
