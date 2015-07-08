@@ -291,19 +291,9 @@ ErrorConsoleExtensionSettingsWebUITest.prototype = {
   },
 };
 
-GEN('#if defined(OS_CHROMEOS)');  // Flaky on ChromeOS; http://crbug.com/499884.
-GEN('#define MAYBE_testErrorListButtonVisibility ' +
-    'DISABLED_testErrorListButtonVisibility');
-GEN('#elif defined(OS_WIN)');  // Flaky on Win7 dbg; http://crbug.com/463245.
-GEN('#define MAYBE_testErrorListButtonVisibility ' +
-    'DISABLED_testErrorListButtonVisibility');
-GEN('#else');
-GEN('#define MAYBE_testErrorListButtonVisibility ' +
-    'testErrorListButtonVisibility');
-GEN('#endif');
-
+// Flaky on all platforms: http://crbug.com/499884, http://crbug.com/463245.
 TEST_F('ErrorConsoleExtensionSettingsWebUITest',
-       'MAYBE_testErrorListButtonVisibility', function() {
+       'DISABLED_testErrorListButtonVisibility', function() {
   var testButtonVisibility = function() {
     var extensionList = $('extension-list-wrapper');
 
