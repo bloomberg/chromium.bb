@@ -21,6 +21,7 @@ import json
 import logging
 import optparse
 import os
+import platform
 import re
 import stat
 import subprocess
@@ -374,85 +375,24 @@ def _SymbolizeSnippetsInJSON(options, json_file_name):
     print stderr
 
 
-def _MainMac(options, args, extra_env):
-  """Runs the test on mac."""
+def _Main(options, args, extra_env):
+  """Using the target build configuration, run the executable given in the
+  first non-option argument, passing any following arguments to that
+  executable.
+
+  Args:
+    options: Command-line options for this invocation of runtest.py.
+    args: Command and arguments for the test.
+    extra_env: A dictionary of extra environment variables to set.
+
+  Returns:
+    Exit status code.
+  """
   if len(args) < 1:
     raise chromium_utils.MissingArgument('Usage: %s' % USAGE)
 
-  test_exe = args[0]
-  if options.run_python_script:
-    build_dir = os.path.normpath(os.path.abspath(options.build_dir))
-    test_exe_path = test_exe
-  else:
-    build_dir = os.path.normpath(os.path.abspath(options.build_dir))
-    test_exe_path = os.path.join(build_dir, options.target, test_exe)
-
-  # Nuke anything that appears to be stale chrome items in the temporary
-  # directory from previous test runs (i.e.- from crashes or unittest leaks).
-  slave_utils.RemoveChromeTemporaryFiles()
-
-  if options.run_shell_script:
-    command = ['bash', test_exe_path]
-  elif options.run_python_script:
-    command = [sys.executable, test_exe]
-  else:
-    command = _BuildTestBinaryCommand(build_dir, test_exe_path, options)
-  command.extend(args[1:])
-
-  log_processor_class = _SelectLogProcessor(options)
-  log_processor = _CreateLogProcessor(log_processor_class, options)
-
-  if options.generate_json_file:
-    if os.path.exists(options.test_output_xml):
-      # remove the old XML output file.
-      os.remove(options.test_output_xml)
-
-  try:
-    if _UsingGtestJson(options):
-      json_file_name = log_processor.PrepareJSONFile(
-          options.test_launcher_summary_output)
-      command.append('--test-launcher-summary-output=%s' % json_file_name)
-
-    pipes = []
-    if options.use_symbolization_script:
-      pipes = [_GetSanitizerSymbolizeCommand()]
-
-    command = _GenerateRunIsolatedCommand(build_dir, test_exe_path, options,
-                                          command)
-    result = _RunGTestCommand(options, command, extra_env, pipes=pipes)
-  finally:
-    if _UsingGtestJson(options):
-      log_processor.ProcessJSONFile(options.build_dir)
-
-  if options.generate_json_file:
-    if not _GenerateJSONForTestResults(options, log_processor):
-      return 1
-
-  if options.annotate:
-    annotation_utils.annotate(
-        options.test_type, result, log_processor,
-        perf_dashboard_id=options.perf_dashboard_id)
-
-  return result
-
-
-def _MainLinux(options, args, extra_env):
-  """Runs the test on Linux."""
-  import platform
   xvfb_path = os.path.join(os.path.dirname(sys.argv[0]), '..', '..',
                            'third_party', 'xvfb', platform.architecture()[0])
-
-  if len(args) < 1:
-    raise chromium_utils.MissingArgument('Usage: %s' % USAGE)
-
-  build_dir = os.path.normpath(os.path.abspath(options.build_dir))
-  if options.slave_name:
-    slave_name = options.slave_name
-  else:
-    slave_name = slave_utils.SlaveBuildName(build_dir)
-  bin_dir = os.path.join(build_dir, options.target)
-
-  # Figure out what we want for a special frame buffer directory.
   special_xvfb_dir = None
   fp_chromeos = options.factory_properties.get('chromeos', None)
   if (fp_chromeos or
@@ -460,44 +400,43 @@ def _MainLinux(options, args, extra_env):
       slave_utils.GypFlagIsOn(options, 'chromeos')):
     special_xvfb_dir = xvfb_path
 
+  build_dir = os.path.normpath(os.path.abspath(options.build_dir))
+  bin_dir = os.path.join(build_dir, options.target)
+  slave_name = options.slave_name or slave_utils.SlaveBuildName(build_dir)
+
   test_exe = args[0]
   if options.run_python_script:
     test_exe_path = test_exe
   else:
     test_exe_path = os.path.join(bin_dir, test_exe)
+
   if not os.path.exists(test_exe_path):
     if options.factory_properties.get('succeed_on_missing_exe', False):
       print '%s missing but succeed_on_missing_exe used, exiting' % (
           test_exe_path)
       return 0
-    msg = 'Unable to find %s' % test_exe_path
-    raise chromium_utils.PathNotFound(msg)
+    raise chromium_utils.PathNotFound('Unable to find %s' % test_exe_path)
 
-  # Unset http_proxy and HTTPS_PROXY environment variables.  When set, this
-  # causes some tests to hang.  See http://crbug.com/139638 for more info.
-  if 'http_proxy' in os.environ:
-    del os.environ['http_proxy']
-    print 'Deleted http_proxy environment variable.'
-  if 'HTTPS_PROXY' in os.environ:
-    del os.environ['HTTPS_PROXY']
-    print 'Deleted HTTPS_PROXY environment variable.'
+  if sys.platform == 'linux2':
+    # Unset http_proxy and HTTPS_PROXY environment variables.  When set, this
+    # causes some tests to hang.  See http://crbug.com/139638 for more info.
+    if 'http_proxy' in os.environ:
+      del os.environ['http_proxy']
+      print 'Deleted http_proxy environment variable.'
+    if 'HTTPS_PROXY' in os.environ:
+      del os.environ['HTTPS_PROXY']
+      print 'Deleted HTTPS_PROXY environment variable.'
 
-  # Path to SUID sandbox binary. This must be installed on all bots.
-  extra_env['CHROME_DEVEL_SANDBOX'] = CHROME_SANDBOX_PATH
+    # Path to SUID sandbox binary. This must be installed on all bots.
+    extra_env['CHROME_DEVEL_SANDBOX'] = CHROME_SANDBOX_PATH
 
-  # Nuke anything that appears to be stale chrome items in the temporary
-  # directory from previous test runs (i.e.- from crashes or unittest leaks).
-  slave_utils.RemoveChromeTemporaryFiles()
-
-  extra_env['LD_LIBRARY_PATH'] = ''
-
-  if options.enable_lsan:
-    # Use the debug version of libstdc++ under LSan. If we don't, there will be
-    # a lot of incomplete stack traces in the reports.
-    extra_env['LD_LIBRARY_PATH'] += '/usr/lib/x86_64-linux-gnu/debug:'
-
-  extra_env['LD_LIBRARY_PATH'] += '%s:%s/lib:%s/lib.target' % (bin_dir, bin_dir,
-                                                               bin_dir)
+    extra_env['LD_LIBRARY_PATH'] = ''
+    if options.enable_lsan:
+      # Use the debug version of libstdc++ under LSan. If we don't, there will
+      # be a lot of incomplete stack traces in the reports.
+      extra_env['LD_LIBRARY_PATH'] += '/usr/lib/x86_64-linux-gnu/debug:'
+    extra_env['LD_LIBRARY_PATH'] += '%s:%s/lib:%s/lib.target' % (
+        bin_dir, bin_dir, bin_dir)
 
   if options.run_shell_script:
     command = ['bash', test_exe_path]
@@ -506,6 +445,10 @@ def _MainLinux(options, args, extra_env):
   else:
     command = _BuildTestBinaryCommand(build_dir, test_exe_path, options)
   command.extend(args[1:])
+
+  # Nuke anything that appears to be stale chrome items in the temporary
+  # directory from previous test runs (i.e.- from crashes or unittest leaks).
+  slave_utils.RemoveChromeTemporaryFiles()
 
   log_processor_class = _SelectLogProcessor(options)
   log_processor = _CreateLogProcessor(log_processor_class, options)
@@ -516,16 +459,15 @@ def _MainLinux(options, args, extra_env):
       os.remove(options.test_output_xml)
 
   try:
-    start_xvfb = False
-    json_file_name = None
-
     # TODO(dpranke): checking on test_exe is a temporary hack until we
     # can change the buildbot master to pass --xvfb instead of --no-xvfb
     # for these two steps. See
     # https://code.google.com/p/chromium/issues/detail?id=179814
-    start_xvfb = (options.xvfb or
-                  'layout_test_wrapper' in test_exe or
-                  'devtools_perf_test_wrapper' in test_exe)
+    start_xvfb = (
+        sys.platform == 'linux2' and (
+            options.xvfb or
+            'layout_test_wrapper' in test_exe or
+            'devtools_perf_test_wrapper' in test_exe))
     if start_xvfb:
       xvfb.StartVirtualX(
           slave_name, bin_dir,
@@ -554,82 +496,6 @@ def _MainLinux(options, args, extra_env):
     if _UsingGtestJson(options):
       if options.use_symbolization_script:
         _SymbolizeSnippetsInJSON(options, json_file_name)
-      log_processor.ProcessJSONFile(options.build_dir)
-
-  if options.generate_json_file:
-    if not _GenerateJSONForTestResults(options, log_processor):
-      return 1
-
-  if options.annotate:
-    annotation_utils.annotate(
-        options.test_type, result, log_processor,
-        perf_dashboard_id=options.perf_dashboard_id)
-
-  return result
-
-
-def _MainWin(options, args, extra_env):
-  """Runs tests on windows.
-
-  Using the target build configuration, run the executable given in the
-  first non-option argument, passing any following arguments to that
-  executable.
-
-  Args:
-    options: Command-line options for this invocation of runtest.py.
-    args: Command and arguments for the test.
-    extra_env: A dictionary of extra environment variables to set.
-
-  Returns:
-    Exit status code.
-  """
-  if len(args) < 1:
-    raise chromium_utils.MissingArgument('Usage: %s' % USAGE)
-
-  test_exe = args[0]
-  build_dir = os.path.abspath(options.build_dir)
-  if options.run_python_script:
-    test_exe_path = test_exe
-  else:
-    test_exe_path = os.path.join(build_dir, options.target, test_exe)
-
-  if not os.path.exists(test_exe_path):
-    if options.factory_properties.get('succeed_on_missing_exe', False):
-      print '%s missing but succeed_on_missing_exe used, exiting' % (
-          test_exe_path)
-      return 0
-    raise chromium_utils.PathNotFound('Unable to find %s' % test_exe_path)
-
-  if options.run_python_script:
-    command = [sys.executable, test_exe]
-  else:
-    command = _BuildTestBinaryCommand(build_dir, test_exe_path, options)
-
-  command.extend(args[1:])
-
-  # Nuke anything that appears to be stale chrome items in the temporary
-  # directory from previous test runs (i.e.- from crashes or unittest leaks).
-  slave_utils.RemoveChromeTemporaryFiles()
-
-  log_processor_class = _SelectLogProcessor(options)
-  log_processor = _CreateLogProcessor(log_processor_class, options)
-
-  if options.generate_json_file:
-    if os.path.exists(options.test_output_xml):
-      # remove the old XML output file.
-      os.remove(options.test_output_xml)
-
-  try:
-    if _UsingGtestJson(options):
-      json_file_name = log_processor.PrepareJSONFile(
-          options.test_launcher_summary_output)
-      command.append('--test-launcher-summary-output=%s' % json_file_name)
-
-    command = _GenerateRunIsolatedCommand(build_dir, test_exe_path, options,
-                                          command)
-    result = _RunGTestCommand(options, command, extra_env)
-  finally:
-    if _UsingGtestJson(options):
       log_processor.ProcessJSONFile(options.build_dir)
 
   if options.generate_json_file:
@@ -943,17 +809,7 @@ def main():
           '--results-directory is required with --generate-json-file=True')
       return 1
 
-    if sys.platform.startswith('darwin'):
-      result = _MainMac(options, args, extra_env)
-    elif sys.platform == 'win32':
-      result = _MainWin(options, args, extra_env)
-    elif sys.platform == 'linux2':
-      result = _MainLinux(options, args, extra_env)
-    else:
-      sys.stderr.write('Unknown sys.platform value %s\n' % repr(sys.platform))
-      return 1
-
-    return result
+    return _Main(options, args, extra_env)
   finally:
     if did_launch_dbus:
       # It looks like the command line argument --exit-with-session
