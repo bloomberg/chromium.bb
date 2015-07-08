@@ -25,16 +25,16 @@ var EXTENSION_VIEW_API_METHODS = [
 
 ExtensionViewImpl.prototype.load = function(src) {
   return new Promise(function(resolve, reject) {
-    if (src) {
-      this.loadQueue.push({src: src, resolve: resolve, reject: reject});
-      this.loadNextSrc();
-    } else {
-      reject('Failed to load: src is null.');
-    }
+    this.loadQueue.push({src: src, resolve: resolve, reject: reject});
+    this.loadNextSrc();
   }.bind(this))
-  .then(function() {
+  .then(function onLoadResolved() {
     this.pendingLoad = null;
     this.loadNextSrc();
+  }.bind(this), function onLoadRejected() {
+    this.pendingLoad = null;
+    this.loadNextSrc();
+    reject('Failed to load.');
   }.bind(this));
 };
 

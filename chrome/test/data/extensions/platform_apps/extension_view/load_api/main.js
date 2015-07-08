@@ -114,6 +114,26 @@ function testLoadAPIFunction(extensionIdOne, extensionIdTwo) {
     .then(function onLoadResolved() {
       embedder.test.fail();
     }, function onLoadRejected() {
+      runStepSix();
+    });
+  };
+
+  var runStepSix = function() {
+    // Call load with a valid extension Id and src after an invalid call.
+    extensionview.load(extensionScheme + extensionIdOne + '/' + srcTwo)
+    .then(function onLoadResolved() {
+      runStepSeven();
+    }, function onLoadRejected() {
+      embedder.test.fail();
+    });
+  };
+
+  var runStepSeven = function() {
+    // Call load with a null extension.
+    extensionview.load(null)
+    .then(function onLoadResolved() {
+      embedder.test.fail();
+    }, function onLoadRejected() {
       embedder.test.succeed();
     });
   };
