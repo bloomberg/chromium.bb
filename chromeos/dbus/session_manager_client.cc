@@ -604,7 +604,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
     std::vector<std::string> state_keys;
     if (!response) {
       LOG(ERROR) << "Failed to call "
-                 << login_manager::kSessionManagerStartSession;
+                 << login_manager::kSessionManagerGetServerBackedStateKeys;
     } else {
       dbus::MessageReader reader(response);
       dbus::MessageReader array_reader(NULL);
