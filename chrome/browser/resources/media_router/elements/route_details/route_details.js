@@ -23,9 +23,7 @@ Polymer({
      */
     backToSinkPickerText_: {
       type: String,
-      value: function() {
-        return loadTimeData.getString('backToSinkPicker');
-      },
+      value: loadTimeData.getString('backToSinkPicker'),
     },
 
     /**
@@ -53,9 +51,7 @@ Polymer({
      */
     stopCastingButtonText_: {
       type: String,
-      value: function() {
-        return loadTimeData.getString('stopCastingButton');
-      },
+      value: loadTimeData.getString('stopCastingButton'),
     },
   },
 

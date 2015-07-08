@@ -98,9 +98,7 @@ Polymer({
      */
     selectCastModeHeaderText_: {
       type: String,
-      value: function() {
-        return loadTimeData.getString('selectCastModeHeader');
-      },
+      value: loadTimeData.getString('selectCastModeHeader'),
     },
 
     /**
