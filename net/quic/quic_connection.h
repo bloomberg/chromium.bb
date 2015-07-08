@@ -59,6 +59,35 @@ class PacketSavingConnection;
 class QuicConnectionPeer;
 }  // namespace test
 
+// The initial number of packets between MTU probes.  After each attempt the
+// number is doubled.
+const QuicPacketCount kPacketsBetweenMtuProbesBase = 100;
+
+// The number of MTU probes that get sent before giving up.
+const size_t kMtuDiscoveryAttempts = 3;
+
+// Ensure that exponential back-off does not result in an integer overflow.
+// The number of packets can be potentially capped, but that is not useful at
+// current kMtuDiscoveryAttempts value, and hence is not implemented at present.
+static_assert(kMtuDiscoveryAttempts + 8 < 8 * sizeof(QuicPacketSequenceNumber),
+              "The number of MTU discovery attempts is too high");
+static_assert(kPacketsBetweenMtuProbesBase < (1 << 8),
+              "The initial number of packets between MTU probes is too high");
+
+// The incresed packet size targeted when doing path MTU discovery.
+const QuicByteCount kMtuDiscoveryTargetPacketSizeHigh = 1450;
+const QuicByteCount kMtuDiscoveryTargetPacketSizeLow = 1430;
+
+static_assert(kMtuDiscoveryTargetPacketSizeLow <= kMaxPacketSize,
+              "MTU discovery target is too large");
+static_assert(kMtuDiscoveryTargetPacketSizeHigh <= kMaxPacketSize,
+              "MTU discovery target is too large");
+
+static_assert(kMtuDiscoveryTargetPacketSizeLow > kDefaultMaxPacketSize,
+              "MTU discovery target does not exceed the default packet size");
+static_assert(kMtuDiscoveryTargetPacketSizeHigh > kDefaultMaxPacketSize,
+              "MTU discovery target does not exceed the default packet size");
+
 // Class that receives callbacks from the connection when frames are received
 // and when other interesting events happen.
 class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
@@ -564,6 +593,10 @@ class NET_EXPORT_PRIVATE QuicConnection
   // |target_mtu|.
   void SendMtuDiscoveryPacket(QuicByteCount target_mtu);
 
+  // Sends an MTU discovery packet of size |mtu_discovery_target_| and updates
+  // the MTU discovery alarm.
+  void DiscoverMtu();
+
  protected:
   // Packets which have not been written to the wire.
   // Owns the QuicPacket* packet.
@@ -697,6 +730,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Sets the retransmission alarm based on SentPacketManager.
   void SetRetransmissionAlarm();
 
+  // Sets the MTU discovery alarm if necessary.
+  void MaybeSetMtuAlarm();
+
   // On arrival of a new packet, checks to see if the socket addresses have
   // changed since the last packet we saw on this connection.
   void CheckForAddressMigration(const IPEndPoint& self_address,
@@ -809,6 +845,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   scoped_ptr<QuicAlarm> timeout_alarm_;
   // An alarm that fires when a ping should be sent.
   scoped_ptr<QuicAlarm> ping_alarm_;
+  // An alarm that fires when an MTU probe should be sent.
+  scoped_ptr<QuicAlarm> mtu_discovery_alarm_;
 
   // Neither visitor is owned by this class.
   QuicConnectionVisitorInterface* visitor_;
@@ -880,6 +918,22 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // True if this is a secure QUIC connection.
   bool is_secure_;
+
+  // The size of the packet we are targeting while doing path MTU discovery.
+  QuicByteCount mtu_discovery_target_;
+
+  // The number of MTU probes already sent.
+  size_t mtu_probe_count_;
+
+  // The number of packets between MTU probes.
+  QuicPacketCount packets_between_mtu_probes_;
+
+  // The sequence number of the packet after which the next MTU probe will be
+  // sent.
+  QuicPacketSequenceNumber next_mtu_probe_at_;
+
+  // The size of the largest packet received from peer.
+  QuicByteCount largest_received_packet_size_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);
 };

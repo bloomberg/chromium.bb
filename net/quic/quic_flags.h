@@ -23,5 +23,6 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_dont_ack_acks;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_send_fec_packet_only_on_fec_alarm;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_is_useless_packet;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_delay_retransmission_alarm;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_do_path_mtu_discovery;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

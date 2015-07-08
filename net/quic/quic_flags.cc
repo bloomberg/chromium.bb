@@ -58,3 +58,6 @@ bool FLAGS_quic_use_is_useless_packet = true;
 // Delay setting QUIC's retransmission alarm until an ack is fully
 // processed or a write is complete.
 bool FLAGS_quic_delay_retransmission_alarm = true;
+
+// Enables server-side path MTU discovery in QUIC.
+bool FLAGS_quic_do_path_mtu_discovery = true;

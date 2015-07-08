@@ -63,6 +63,7 @@ struct NET_EXPORT_PRIVATE QuicConnectionStats {
   int64 min_rtt_us;  // Minimum RTT in microseconds.
   int64 srtt_us;  // Smoothed RTT in microseconds.
   QuicByteCount max_packet_size;
+  QuicByteCount max_received_packet_size;
   QuicBandwidth estimated_bandwidth;
 
   // Reordering stats for received packets.

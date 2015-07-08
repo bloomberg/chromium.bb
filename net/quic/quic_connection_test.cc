@@ -515,6 +515,27 @@ class TestConnection : public QuicConnection {
     QuicConnectionPeer::SetPerspective(this, perspective);
   }
 
+  // Enable path MTU discovery.  Assumes that the test is performed from the
+  // client perspective and the higher value of MTU target is used.
+  void EnablePathMtuDiscovery(MockSendAlgorithm* send_algorithm) {
+    ASSERT_EQ(Perspective::IS_CLIENT, perspective());
+
+    FLAGS_quic_do_path_mtu_discovery = true;
+
+    QuicConfig config;
+    QuicTagVector connection_options;
+    connection_options.push_back(kMTUH);
+    config.SetConnectionOptionsToSend(connection_options);
+    EXPECT_CALL(*send_algorithm, SetFromConfig(_, _));
+    SetFromConfig(config);
+
+    // Normally, the pacing would be disabled in the test, but calling
+    // SetFromConfig enables it.  Set nearly-infinite bandwidth to make the
+    // pacing algorithm work.
+    EXPECT_CALL(*send_algorithm, PacingRate())
+        .WillRepeatedly(Return(QuicBandwidth::FromKBytesPerSecond(10000)));
+  }
+
   TestConnectionHelper::TestAlarm* GetAckAlarm() {
     return reinterpret_cast<TestConnectionHelper::TestAlarm*>(
         QuicConnectionPeer::GetAckAlarm(this));
@@ -548,6 +569,11 @@ class TestConnection : public QuicConnection {
   TestConnectionHelper::TestAlarm* GetTimeoutAlarm() {
     return reinterpret_cast<TestConnectionHelper::TestAlarm*>(
         QuicConnectionPeer::GetTimeoutAlarm(this));
+  }
+
+  TestConnectionHelper::TestAlarm* GetMtuDiscoveryAlarm() {
+    return reinterpret_cast<TestConnectionHelper::TestAlarm*>(
+        QuicConnectionPeer::GetMtuDiscoveryAlarm(this));
   }
 
   using QuicConnection::SelectMutualVersion;
@@ -3131,6 +3157,7 @@ TEST_P(QuicConnectionTest, InitialTimeout) {
   EXPECT_FALSE(connection_.GetResumeWritesAlarm()->IsSet());
   EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
   EXPECT_FALSE(connection_.GetSendAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetMtuDiscoveryAlarm()->IsSet());
 }
 
 TEST_P(QuicConnectionTest, OverallTimeout) {
@@ -3254,6 +3281,147 @@ TEST_P(QuicConnectionTest, SendMtuDiscoveryPacket) {
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
   connection_.SendStreamDataWithString(3, data, 0, kFin, nullptr);
   EXPECT_EQ(4u, creator_->sequence_number());
+}
+
+// Tests whether MTU discovery does not happen when it is not explicitly enabled
+// by the connection options.
+TEST_P(QuicConnectionTest, MtuDiscoveryDisabled) {
+  EXPECT_TRUE(connection_.connected());
+
+  // Restore the current value FLAGS_quic_do_path_mtu_discovery after the test.
+  ValueRestore<bool> old_flag(&FLAGS_quic_do_path_mtu_discovery, true);
+
+  const QuicPacketCount number_of_packets = kPacketsBetweenMtuProbesBase * 2;
+  for (QuicPacketCount i = 0; i < number_of_packets; i++) {
+    SendStreamDataToPeer(3, ".", i, /*fin=*/false, nullptr);
+    EXPECT_FALSE(connection_.GetMtuDiscoveryAlarm()->IsSet());
+  }
+}
+
+// Tests whether MTU discovery works when the probe gets acknowledged on the
+// first try.
+TEST_P(QuicConnectionTest, MtuDiscoveryEnabled) {
+  EXPECT_TRUE(connection_.connected());
+
+  // Restore the current value FLAGS_quic_do_path_mtu_discovery after the test.
+  ValueRestore<bool> old_flag(&FLAGS_quic_do_path_mtu_discovery, true);
+  connection_.EnablePathMtuDiscovery(send_algorithm_);
+
+  // Send enough packets so that the next one triggers path MTU discovery.
+  for (QuicPacketCount i = 0; i < kPacketsBetweenMtuProbesBase - 1; i++) {
+    SendStreamDataToPeer(3, ".", i, /*fin=*/false, nullptr);
+    ASSERT_FALSE(connection_.GetMtuDiscoveryAlarm()->IsSet());
+  }
+
+  // Trigger the probe.
+  SendStreamDataToPeer(3, "!", kPacketsBetweenMtuProbesBase,
+                       /*fin=*/false, nullptr);
+  ASSERT_TRUE(connection_.GetMtuDiscoveryAlarm()->IsSet());
+  QuicByteCount probe_size;
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&probe_size), Return(true)));
+  connection_.GetMtuDiscoveryAlarm()->Fire();
+  EXPECT_EQ(kMtuDiscoveryTargetPacketSizeHigh, probe_size);
+
+  const QuicPacketCount probe_sequence_number =
+      kPacketsBetweenMtuProbesBase + 1;
+  ASSERT_EQ(probe_sequence_number, creator_->sequence_number());
+
+  // Acknowledge all packets sent so far.
+  QuicAckFrame probe_ack = InitAckFrame(probe_sequence_number);
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
+  ProcessAckPacket(&probe_ack);
+  EXPECT_EQ(kMtuDiscoveryTargetPacketSizeHigh, connection_.max_packet_length());
+
+  // Send more packets, and ensure that none of them sets the alarm.
+  for (QuicPacketCount i = 0; i < 4 * kPacketsBetweenMtuProbesBase; i++) {
+    SendStreamDataToPeer(3, ".", i, /*fin=*/false, nullptr);
+    ASSERT_FALSE(connection_.GetMtuDiscoveryAlarm()->IsSet());
+  }
+}
+
+// Tests whether MTU discovery works correctly when the probes never get
+// acknowledged.
+TEST_P(QuicConnectionTest, MtuDiscoveryFailed) {
+  EXPECT_TRUE(connection_.connected());
+
+  // Restore the current value FLAGS_quic_do_path_mtu_discovery after the test.
+  ValueRestore<bool> old_flag(&FLAGS_quic_do_path_mtu_discovery, true);
+  connection_.EnablePathMtuDiscovery(send_algorithm_);
+
+  const QuicTime::Delta rtt = QuicTime::Delta::FromMilliseconds(100);
+
+  // This tests sends more packets than strictly necessary to make sure that if
+  // the connection was to send more discovery packets than needed, those would
+  // get caught as well.
+  const QuicPacketCount number_of_packets =
+      kPacketsBetweenMtuProbesBase * (1 << (kMtuDiscoveryAttempts + 1));
+  vector<QuicPacketSequenceNumber> mtu_discovery_packets;
+  // Called by the first ack.
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  // Called on many acks.
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _))
+      .Times(AnyNumber());
+  for (QuicPacketCount i = 0; i < number_of_packets; i++) {
+    SendStreamDataToPeer(3, "!", i, /*fin=*/false, nullptr);
+    clock_.AdvanceTime(rtt);
+
+    // Receive an ACK, which marks all data packets as received, and all MTU
+    // discovery packets as missing.
+    QuicAckFrame ack = InitAckFrame(creator_->sequence_number());
+    ack.missing_packets = SequenceNumberSet(mtu_discovery_packets.begin(),
+                                            mtu_discovery_packets.end());
+    ProcessAckPacket(&ack);
+
+    // Trigger MTU probe if it would be scheduled now.
+    if (!connection_.GetMtuDiscoveryAlarm()->IsSet()) {
+      continue;
+    }
+
+    // Fire the alarm.  The alarm should cause a packet to be sent.
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
+        .WillOnce(Return(true));
+    connection_.GetMtuDiscoveryAlarm()->Fire();
+    // Record the sequence number of the MTU discovery packet in order to
+    // mark it as NACK'd.
+    mtu_discovery_packets.push_back(creator_->sequence_number());
+  }
+
+  // Ensure the number of packets between probes grows exponentially by checking
+  // it against the closed-form expression for the sequence number.
+  ASSERT_EQ(kMtuDiscoveryAttempts, mtu_discovery_packets.size());
+  for (QuicPacketSequenceNumber i = 0; i < kMtuDiscoveryAttempts; i++) {
+    // 2^0 + 2^1 + 2^2 + ... + 2^n = 2^(n + 1) - 1
+    const QuicPacketCount packets_between_probes =
+        kPacketsBetweenMtuProbesBase * ((1 << (i + 1)) - 1);
+    EXPECT_EQ(packets_between_probes + (i + 1), mtu_discovery_packets[i]);
+  }
+
+  EXPECT_FALSE(connection_.GetMtuDiscoveryAlarm()->IsSet());
+  EXPECT_EQ(kDefaultMaxPacketSize, connection_.max_packet_length());
+}
+
+TEST_P(QuicConnectionTest, NoMtuDiscoveryAfterConnectionClosed) {
+  EXPECT_TRUE(connection_.connected());
+
+  // Restore the current value FLAGS_quic_do_path_mtu_discovery after the test.
+  ValueRestore<bool> old_flag(&FLAGS_quic_do_path_mtu_discovery, true);
+  connection_.EnablePathMtuDiscovery(send_algorithm_);
+
+  // Send enough packets so that the next one triggers path MTU discovery.
+  for (QuicPacketCount i = 0; i < kPacketsBetweenMtuProbesBase - 1; i++) {
+    SendStreamDataToPeer(3, ".", i, /*fin=*/false, nullptr);
+    ASSERT_FALSE(connection_.GetMtuDiscoveryAlarm()->IsSet());
+  }
+
+  SendStreamDataToPeer(3, "!", kPacketsBetweenMtuProbesBase,
+                       /*fin=*/false, nullptr);
+  EXPECT_TRUE(connection_.GetMtuDiscoveryAlarm()->IsSet());
+
+  EXPECT_CALL(visitor_, OnConnectionClosed(_, _));
+  connection_.CloseConnection(QUIC_INTERNAL_ERROR, /*from_peer=*/false);
+  EXPECT_FALSE(connection_.GetMtuDiscoveryAlarm()->IsSet());
 }
 
 TEST_P(QuicConnectionTest, TimeoutAfterSend) {

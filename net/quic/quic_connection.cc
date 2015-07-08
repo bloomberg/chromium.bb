@@ -162,6 +162,23 @@ class PingAlarm : public QuicAlarm::Delegate {
   DISALLOW_COPY_AND_ASSIGN(PingAlarm);
 };
 
+class MtuDiscoveryAlarm : public QuicAlarm::Delegate {
+ public:
+  explicit MtuDiscoveryAlarm(QuicConnection* connection)
+      : connection_(connection) {}
+
+  QuicTime OnAlarm() override {
+    connection_->DiscoverMtu();
+    // DiscoverMtu() handles rescheduling the alarm by itself.
+    return QuicTime::Zero();
+  }
+
+ private:
+  QuicConnection* connection_;
+
+  DISALLOW_COPY_AND_ASSIGN(MtuDiscoveryAlarm);
+};
+
 // This alarm may be scheduled when an FEC protected packet is sent out.
 class FecAlarm : public QuicAlarm::Delegate {
  public:
@@ -273,6 +290,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       resume_writes_alarm_(helper->CreateAlarm(new SendAlarm(this))),
       timeout_alarm_(helper->CreateAlarm(new TimeoutAlarm(this))),
       ping_alarm_(helper->CreateAlarm(new PingAlarm(this))),
+      mtu_discovery_alarm_(helper->CreateAlarm(new MtuDiscoveryAlarm(this))),
       visitor_(nullptr),
       debug_visitor_(nullptr),
       packet_generator_(connection_id_, &framer_, random_generator_, this),
@@ -297,7 +315,12 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       self_ip_changed_(false),
       self_port_changed_(false),
       can_truncate_connection_ids_(true),
-      is_secure_(is_secure) {
+      is_secure_(is_secure),
+      mtu_discovery_target_(0),
+      mtu_probe_count_(0),
+      packets_between_mtu_probes_(kPacketsBetweenMtuProbesBase),
+      next_mtu_probe_at_(kPacketsBetweenMtuProbesBase),
+      largest_received_packet_size_(0) {
   DVLOG(1) << ENDPOINT << "Created connection with connection_id: "
            << connection_id;
   framer_.set_visitor(this);
@@ -345,6 +368,13 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   if (FLAGS_quic_send_fec_packet_only_on_fec_alarm &&
       config.HasClientSentConnectionOption(kFSPA, perspective_)) {
     packet_generator_.set_fec_send_policy(FecSendPolicy::FEC_ALARM_TRIGGER);
+  }
+
+  if (config.HasClientSentConnectionOption(kMTUH, perspective_)) {
+    mtu_discovery_target_ = kMtuDiscoveryTargetPacketSizeHigh;
+  }
+  if (config.HasClientSentConnectionOption(kMTUL, perspective_)) {
+    mtu_discovery_target_ = kMtuDiscoveryTargetPacketSizeLow;
   }
 }
 
@@ -1244,6 +1274,7 @@ const QuicConnectionStats& QuicConnection::GetStats() {
 
   stats_.estimated_bandwidth = sent_packet_manager_.BandwidthEstimate();
   stats_.max_packet_size = packet_generator_.GetMaxPacketLength();
+  stats_.max_received_packet_size = largest_received_packet_size_;
   return stats_;
 }
 
@@ -1375,6 +1406,10 @@ bool QuicConnection::ProcessValidatedPacket() {
   time_of_last_received_packet_ = clock_->Now();
   DVLOG(1) << ENDPOINT << "time of last received packet: "
            << time_of_last_received_packet_.ToDebuggingValue();
+
+  if (last_size_ > largest_received_packet_size_) {
+    largest_received_packet_size_ = last_size_;
+  }
 
   if (perspective_ == Perspective::IS_SERVER &&
       encryption_level_ == ENCRYPTION_NONE &&
@@ -1584,6 +1619,7 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
   }
   SetPingAlarm();
   MaybeSetFecAlarm(sequence_number);
+  MaybeSetMtuAlarm();
   DVLOG(1) << ENDPOINT << "time we began writing last sent packet: "
            << packet_send_time.ToDebuggingValue();
 
@@ -1979,6 +2015,7 @@ void QuicConnection::CloseConnection(QuicErrorCode error, bool from_peer) {
   retransmission_alarm_->Cancel();
   send_alarm_->Cancel();
   timeout_alarm_->Cancel();
+  mtu_discovery_alarm_->Cancel();
 }
 
 void QuicConnection::SendGoAway(QuicErrorCode error,
@@ -2140,6 +2177,33 @@ void QuicConnection::SetRetransmissionAlarm() {
                                 QuicTime::Delta::FromMilliseconds(1));
 }
 
+void QuicConnection::MaybeSetMtuAlarm() {
+  if (!FLAGS_quic_do_path_mtu_discovery) {
+    return;
+  }
+
+  // Do not set the alarm if the target size is less than the current size.
+  // This covers the case when |mtu_discovery_target_| is at its default value,
+  // zero.
+  if (mtu_discovery_target_ <= max_packet_length()) {
+    return;
+  }
+
+  if (mtu_probe_count_ >= kMtuDiscoveryAttempts) {
+    return;
+  }
+
+  if (mtu_discovery_alarm_->IsSet()) {
+    return;
+  }
+
+  if (sequence_number_of_last_sent_packet_ >= next_mtu_probe_at_) {
+    // Use an alarm to send the MTU probe to ensure that no ScopedPacketBundlers
+    // are active.
+    mtu_discovery_alarm_->Set(clock_->ApproximateNow());
+  }
+}
+
 QuicConnection::ScopedPacketBundler::ScopedPacketBundler(
     QuicConnection* connection,
     AckBundling send_ack)
@@ -2237,6 +2301,29 @@ void QuicConnection::SendMtuDiscoveryPacket(QuicByteCount target_mtu) {
   // Send the probe.
   packet_generator_.GenerateMtuDiscoveryPacket(
       target_mtu, last_mtu_discovery_ack_listener.get());
+}
+
+void QuicConnection::DiscoverMtu() {
+  DCHECK(!mtu_discovery_alarm_->IsSet());
+
+  // Chcek if the MTU has been already increased.
+  if (mtu_discovery_target_ <= max_packet_length()) {
+    return;
+  }
+
+  // Schedule the next probe *before* sending the current one.  This is
+  // important, otherwise, when SendMtuDiscoveryPacket() is called,
+  // MaybeSetMtuAlarm() will not realize that the probe has been just sent, and
+  // will reschedule this probe again.
+  packets_between_mtu_probes_ *= 2;
+  next_mtu_probe_at_ =
+      sequence_number_of_last_sent_packet_ + packets_between_mtu_probes_ + 1;
+  ++mtu_probe_count_;
+
+  DVLOG(2) << "Sending a path MTU discovery packet #" << mtu_probe_count_;
+  SendMtuDiscoveryPacket(mtu_discovery_target_);
+
+  DCHECK(!mtu_discovery_alarm_->IsSet());
 }
 
 }  // namespace net

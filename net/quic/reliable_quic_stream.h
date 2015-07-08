@@ -196,7 +196,6 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   // Helper method that returns FecProtection to use when writing.
   FecProtection GetFecProtection();
 
-  //
   bool fin_buffered() const { return fin_buffered_; }
 
   const QuicSession* session() const { return session_; }

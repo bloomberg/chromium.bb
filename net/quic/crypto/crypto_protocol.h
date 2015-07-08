@@ -86,6 +86,10 @@ const QuicTag kFSPA = TAG('F', 'S', 'P', 'A');
 const QuicTag kBWRE = TAG('B', 'W', 'R', 'E');  // Bandwidth resumption.
 const QuicTag kBWMX = TAG('B', 'W', 'M', 'X');  // Max bandwidth resumption.
 
+// Enable path MTU discovery experiment.
+const QuicTag kMTUH = TAG('M', 'T', 'U', 'H');  // High-target MTU discovery.
+const QuicTag kMTUL = TAG('M', 'T', 'U', 'L');  // Low-target MTU discovery.
+
 // Proof types (i.e. certificate types)
 // NOTE: although it would be silly to do so, specifying both kX509 and kX59R
 // is allowed and is equivalent to specifying only kX509.
