@@ -172,6 +172,12 @@ bool GLSurfaceWGL::InitializeOneOff() {
   return true;
 }
 
+void GLSurfaceWGL::InitializeOneOffForTesting() {
+  if (g_display == NULL) {
+    g_display = new DisplayWGL;
+  }
+}
+
 HDC GLSurfaceWGL::GetDisplayDC() {
   return g_display->device_context();
 }

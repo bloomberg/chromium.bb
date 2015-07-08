@@ -5,10 +5,15 @@
 #ifndef UI_GL_GL_WGL_API_IMPLEMENTATION_H_
 #define UI_GL_GL_WGL_API_IMPLEMENTATION_H_
 
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_export.h"
 
+namespace base {
+class CommandLine;
+}
 namespace gfx {
 
 class GLContext;
@@ -39,6 +44,16 @@ class GL_EXPORT RealWGLApi : public WGLApiBase {
   RealWGLApi();
   ~RealWGLApi() override;
   void Initialize(DriverWGL* driver);
+  void InitializeWithCommandLine(DriverWGL* driver,
+                                 base::CommandLine* command_line);
+
+  const char* wglGetExtensionsStringARBFn(HDC hDC) override;
+  const char* wglGetExtensionsStringEXTFn() override;
+ private:
+
+  std::vector<std::string> disabled_exts_;
+  std::string filtered_arb_exts_;
+  std::string filtered_ext_exts_;
 };
 
 // Inserts a TRACE for every WGL call.

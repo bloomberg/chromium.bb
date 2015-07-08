@@ -29,13 +29,10 @@ std::string DriverOSMESA::GetPlatformExtensions() {
 #if defined(OS_WIN)
 std::string DriverWGL::GetPlatformExtensions() {
   const char* str = nullptr;
-  if (g_driver_wgl.fn.wglGetExtensionsStringARBFn) {
-    str = g_driver_wgl.fn.wglGetExtensionsStringARBFn(
-        GLSurfaceWGL::GetDisplayDC());
-  } else if (g_driver_wgl.fn.wglGetExtensionsStringEXTFn) {
-    str = g_driver_wgl.fn.wglGetExtensionsStringEXTFn();
-  }
-  return str ? std::string(str) : "";
+  str = wglGetExtensionsStringARB(GLSurfaceWGL::GetDisplayDC());
+  if (str)
+    return str;
+  return wglGetExtensionsStringEXT();
 }
 #endif
 
@@ -57,9 +54,7 @@ std::string DriverEGL::GetClientExtensions() {
 
 #if defined(USE_X11)
 std::string DriverGLX::GetPlatformExtensions() {
-  DCHECK(g_driver_glx.fn.glXQueryExtensionsStringFn);
-  const char* str =
-      g_driver_glx.fn.glXQueryExtensionsStringFn(gfx::GetXDisplay(), 0);
+  const char* str = glXQueryExtensionsString(gfx::GetXDisplay(), 0);
   return str ? std::string(str) : "";
 }
 #endif

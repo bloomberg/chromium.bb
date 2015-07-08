@@ -38,6 +38,16 @@
             'test/egl_initialization_displays_unittest.cc',
           ],
         }],
+        ['OS == "linux" and use_x11 == 1', {
+          'sources': [
+            'glx_api_unittest.cc',
+          ],
+        }],
+        ['OS == "win"', {
+          'sources': [
+            'wgl_api_unittest.cc',
+          ],
+        }],
       ],
     }
   ],

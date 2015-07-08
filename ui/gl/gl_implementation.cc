@@ -10,6 +10,8 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 
@@ -152,6 +154,26 @@ void InitializeNullDrawGLBindings() {
 
 bool HasInitializedNullDrawGLBindings() {
   return HasInitializedNullDrawGLBindingsGL();
+}
+
+std::string FilterGLExtensionList(
+    const char* extensions,
+    const std::vector<std::string>& disabled_extensions) {
+  if (extensions == NULL)
+    return "";
+
+  std::vector<std::string> extension_vec;
+  base::SplitString(extensions, ' ', &extension_vec);
+
+  auto is_disabled = [&disabled_extensions](const std::string& ext) {
+    return std::find(disabled_extensions.begin(), disabled_extensions.end(),
+                     ext) != disabled_extensions.end();
+  };
+  extension_vec.erase(
+      std::remove_if(extension_vec.begin(), extension_vec.end(), is_disabled),
+      extension_vec.end());
+
+  return JoinString(extension_vec, " ");
 }
 
 DisableNullDrawGLBindings::DisableNullDrawGLBindings() {

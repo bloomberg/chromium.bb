@@ -10,26 +10,6 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 
-namespace {
-
-std::string FilterExtensionList(
-    const char* extensions,
-    const std::vector<std::string>& disabled_extensions) {
-  if (extensions == NULL)
-    return "";
-  std::vector<std::string> extension_vec = base::SplitString(
-      extensions, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  extension_vec.erase(std::remove_if(
-      extension_vec.begin(), extension_vec.end(),
-      [&disabled_extensions](const std::string& ext) {
-        return std::find(disabled_extensions.begin(), disabled_extensions.end(),
-                         ext) != disabled_extensions.end();
-      }), extension_vec.end());
-  return JoinString(extension_vec, " ");
-}
-
-}  // namespace
-
 namespace gfx {
 
 RealEGLApi* g_real_egl;
@@ -105,8 +85,8 @@ const char* RealEGLApi::eglQueryStringFn(EGLDisplay dpy, EGLint name) {
     auto it = filtered_exts_.find(dpy);
     if (it == filtered_exts_.end()) {
       it = filtered_exts_.insert(std::make_pair(
-          dpy, FilterExtensionList(EGLApiBase::eglQueryStringFn(dpy, name),
-                                   disabled_exts_))).first;
+          dpy, FilterGLExtensionList(EGLApiBase::eglQueryStringFn(dpy, name),
+                                     disabled_exts_))).first;
     }
     return (*it).second.c_str();
   }
