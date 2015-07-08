@@ -115,47 +115,6 @@ cr.define('downloads', function() {
     return ItemView.foregroundImages_[x];
   };
 
-  /** @private {Array<{img: HTMLImageElement, url: string}>} */
-  ItemView.iconsToLoad_ = [];
-
-  /**
-   * Load the provided |url| into |img.src| after appending ?scale=.
-   * @param {!HTMLImageElement} img An <img> to show the loaded image in.
-   * @param {string} url A remote image URL to load.
-   */
-  ItemView.loadScaledIcon = function(img, url) {
-    var scale = '?scale=' + window.devicePixelRatio + 'x';
-    ItemView.iconsToLoad_.push({img: img, url: url + scale});
-    ItemView.loadNextIcon_();
-  };
-
-  /** @private */
-  ItemView.loadNextIcon_ = function() {
-    if (ItemView.isIconLoading_)
-      return;
-
-    ItemView.isIconLoading_ = true;
-
-    while (ItemView.iconsToLoad_.length) {
-      var request = ItemView.iconsToLoad_.shift();
-      var img = request.img;
-
-      if (img.src == request.url)
-        continue;
-
-      img.onabort = img.onerror = img.onload = function() {
-        ItemView.isIconLoading_ = false;
-        ItemView.loadNextIcon_();
-      };
-
-      img.src = request.url;
-      return;
-    }
-
-    // If we reached here, there's no more work to do.
-    ItemView.isIconLoading_ = false;
-  };
-
   ItemView.prototype = {
     /** @param {!downloads.Data} data */
     update: function(data) {
@@ -179,7 +138,8 @@ cr.define('downloads', function() {
         this.description_.classList.toggle('malware', !dangerousFile);
 
         var idr = dangerousFile ? 'IDR_WARNING' : 'IDR_SAFEBROWSING_WARNING';
-        ItemView.loadScaledIcon(this.dangerImg_, 'chrome://theme/' + idr);
+        downloads.IconLoader.loadScaledIcon(this.dangerImg_,
+                                            'chrome://theme/' + idr);
 
         var showMalwareControls =
             dangerType == downloads.DangerType.DANGEROUS_CONTENT ||
@@ -191,8 +151,8 @@ cr.define('downloads', function() {
         this.discard_.hidden = showMalwareControls;
         this.save_.hidden = showMalwareControls;
       } else {
-        var path = encodeURIComponent(data.file_path);
-        ItemView.loadScaledIcon(this.safeImg_, 'chrome://fileicon/' + path);
+        var iconUrl = 'chrome://fileicon/' + encodeURIComponent(data.file_path);
+        downloads.IconLoader.loadScaledIcon(this.safeImg_, iconUrl);
 
         /** @const */ var isInProgress =
             data.state == downloads.States.IN_PROGRESS;

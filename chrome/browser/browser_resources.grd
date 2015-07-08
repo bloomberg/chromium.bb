@@ -129,6 +129,7 @@
       <if expr="not is_android">
         <include name="IDR_DOWNLOAD_CONSTANTS_JS" file="resources\downloads\constants.js" type="BINDATA" />
         <include name="IDR_DOWNLOAD_FOCUS_ROW_JS" file="resources\downloads\focus_row.js" type="BINDATA" />
+        <include name="IDR_DOWNLOAD_ICON_LOADER_JS" file="resources\downloads\icon_loader.js" type="BINDATA" />
         <include name="IDR_DOWNLOAD_ITEM_JS" file="resources\downloads\item.js" type="BINDATA" />
         <include name="IDR_DOWNLOAD_ITEM_VIEW_JS" file="resources\downloads\item_view.js" type="BINDATA" />
         <include name="IDR_DOWNLOAD_MANAGER_JS" file="resources\downloads\manager.js" type="BINDATA" />

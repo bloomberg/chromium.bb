@@ -91,6 +91,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath("constants.js", IDR_DOWNLOAD_CONSTANTS_JS);
+  source->AddResourcePath("icon_loader.js", IDR_DOWNLOAD_ICON_LOADER_JS);
 
   if (switches::MdDownloadsEnabled()) {
     source->AddResourcePath("manager.js", IDR_MD_DOWNLOAD_MANAGER_JS);
