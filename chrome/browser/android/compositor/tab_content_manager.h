@@ -37,7 +37,13 @@ class TabContentManager : public ThumbnailCacheObserver {
   static TabContentManager* FromJavaObject(jobject jobj);
 
   TabContentManager(JNIEnv* env,
-                    jobject obj);
+                    jobject obj,
+                    jstring disk_cache_path,
+                    jint default_cache_size,
+                    jint approximation_cache_size,
+                    jint compression_queue_max_size,
+                    jint write_queue_max_size,
+                    jboolean use_approximation_thumbnail);
 
   virtual ~TabContentManager();
 
@@ -67,9 +73,6 @@ class TabContentManager : public ThumbnailCacheObserver {
   // Callback for when the thumbnail decompression for tab_id is done.
   void OnFinishDecompressThumbnail(int tab_id, bool success, SkBitmap bitmap);
   // JNI methods.
-  void SetThumbnailCache(JNIEnv* env,
-                         jobject obj,
-                         jlong thumbnail_cache_ptr);
   jboolean HasFullCachedThumbnail(JNIEnv* env, jobject obj, jint tab_id);
   void CacheTab(JNIEnv* env,
                 jobject obj,
@@ -103,10 +106,7 @@ class TabContentManager : public ThumbnailCacheObserver {
                              float thumbnail_scale,
                              const SkBitmap& bitmap);
 
-  // Do not access directly as it may not be initialized yet, use the getter.
   scoped_ptr<ThumbnailCache> thumbnail_cache_;
-  ThumbnailCache* GetThumbnailCache();
-
   ThumbnailLayerMap static_layer_cache_;
   LayerMap live_layer_list_;
   TabReadbackRequestMap pending_tab_readbacks_;

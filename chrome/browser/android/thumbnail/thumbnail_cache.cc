@@ -127,7 +127,9 @@ ThumbnailCache::ThumbnailCache(const std::string& disk_cache_path_str,
       cache_(default_cache_size),
       approximation_cache_(approximation_cache_size),
       ui_resource_provider_(NULL),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+}
 
 ThumbnailCache::~ThumbnailCache() {
   SetUIResourceProvider(NULL);

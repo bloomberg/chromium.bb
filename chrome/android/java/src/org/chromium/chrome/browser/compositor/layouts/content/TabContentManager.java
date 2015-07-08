@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.compositor.layouts.content;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.os.AsyncTask;
 import android.util.SparseArray;
 import android.view.View;
 
@@ -25,7 +24,6 @@ import org.chromium.ui.base.DeviceFormFactor;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * The TabContentManager is responsible for serving tab contents to the UI components. Contents
@@ -35,11 +33,10 @@ import java.util.concurrent.ExecutionException;
 public class TabContentManager {
     private static final String THUMBNAIL_DIRECTORY = "textures";
     private final Context mContext;
+    private final File mThumbnailsDir;
+    private final float mThumbnailScale;
+    private final int mFullResThumbnailsMaxSize;
     private final ContentOffsetProvider mContentOffsetProvider;
-
-    private File mThumbnailsDir;
-    private float mThumbnailScale;
-    private int mFullResThumbnailsMaxSize;
     private int[] mPriorityTabIds;
     private long mNativeTabContentManager;
 
@@ -60,7 +57,6 @@ public class TabContentManager {
             new SparseArray<TabContentManager.DecompressThumbnailCallback>();
 
     private boolean mSnapshotsEnabled;
-    private AsyncTask<Void, Void, Long> mNativeThumbnailCacheInitTask;
 
     /**
      * The Java interface for listening to thumbnail changes.
@@ -100,72 +96,48 @@ public class TabContentManager {
         mContentOffsetProvider = contentOffsetProvider;
         mSnapshotsEnabled = snapshotsEnabled;
 
-        mNativeTabContentManager = nativeInit();
-        startThumbnailCacheInitTask();
-    }
+        mThumbnailsDir = mContext.getDir(THUMBNAIL_DIRECTORY, Context.MODE_PRIVATE);
+        String diskCachePath = mThumbnailsDir.getAbsolutePath();
 
-    /**
-     *
-     */
-    private void startThumbnailCacheInitTask() {
-        mNativeThumbnailCacheInitTask = new AsyncTask<Void, Void, Long>() {
-            @Override
-            protected Long doInBackground(Void... unused) {
-                mThumbnailsDir = mContext.getDir(THUMBNAIL_DIRECTORY, Context.MODE_PRIVATE);
-                String diskCachePath = mThumbnailsDir.getAbsolutePath();
+        // Override the cache size on the command line with --thumbnails=100
+        int defaultCacheSize = getIntegerResourceWithOverride(mContext,
+                R.integer.default_thumbnail_cache_size, ChromeSwitches.THUMBNAILS);
 
-                // Override the cache size on the command line with --thumbnails=100
-                int defaultCacheSize = getIntegerResourceWithOverride(mContext,
-                        R.integer.default_thumbnail_cache_size, ChromeSwitches.THUMBNAILS);
+        mFullResThumbnailsMaxSize = defaultCacheSize;
 
-                mFullResThumbnailsMaxSize = defaultCacheSize;
+        int compressionQueueMaxSize = mContext.getResources().getInteger(
+                R.integer.default_compression_queue_size);
+        int writeQueueMaxSize = mContext.getResources().getInteger(
+                R.integer.default_write_queue_size);
 
-                int compressionQueueMaxSize = mContext.getResources().getInteger(
-                        R.integer.default_compression_queue_size);
-                int writeQueueMaxSize = mContext.getResources().getInteger(
-                        R.integer.default_write_queue_size);
+        // Override the cache size on the command line with
+        // --approximation-thumbnails=100
+        int approximationCacheSize = getIntegerResourceWithOverride(mContext,
+                R.integer.default_approximation_thumbnail_cache_size,
+                ChromeSwitches.APPROXIMATION_THUMBNAILS);
 
-                // Override the cache size on the command line with
-                // --approximation-thumbnails=100
-                int approximationCacheSize = getIntegerResourceWithOverride(mContext,
-                        R.integer.default_approximation_thumbnail_cache_size,
-                        ChromeSwitches.APPROXIMATION_THUMBNAILS);
-
-                float thumbnailScale = 1.f;
-                boolean useApproximationThumbnails;
-                float deviceDensity = mContext.getResources().getDisplayMetrics().density;
-                if (DeviceFormFactor.isTablet(mContext)) {
-                    // Scale all tablets to MDPI.
-                    thumbnailScale = 1.f / deviceDensity;
-                    useApproximationThumbnails = false;
-                } else {
-                    // For phones, reduce the amount of memory usage by capturing a lower-res
-                    // thumbnail for devices with resolution higher than HDPI (crbug.com/357740).
-                    if (deviceDensity > 1.5f) {
-                        thumbnailScale = 1.5f / deviceDensity;
-                    }
-                    useApproximationThumbnails = true;
-                }
-                mThumbnailScale = thumbnailScale;
-
-                mPriorityTabIds = new int[mFullResThumbnailsMaxSize];
-
-                return nativeCreateThumbnailCache(diskCachePath, defaultCacheSize,
-                        approximationCacheSize, compressionQueueMaxSize, writeQueueMaxSize,
-                        useApproximationThumbnails);
+        float thumbnailScale = 1.f;
+        boolean useApproximationThumbnails;
+        float deviceDensity = mContext.getResources().getDisplayMetrics().density;
+        if (DeviceFormFactor.isTablet(mContext)) {
+            // Scale all tablets to MDPI.
+            thumbnailScale = 1.f / deviceDensity;
+            useApproximationThumbnails = false;
+        } else {
+            // For phones, reduce the amount of memory usage by capturing a lower-res thumbnail for
+            // devices with resolution higher than HDPI (crbug.com/357740).
+            if (deviceDensity > 1.5f) {
+                thumbnailScale = 1.5f / deviceDensity;
             }
+            useApproximationThumbnails = true;
+        }
+        mThumbnailScale = thumbnailScale;
 
-            @Override
-            protected void onPostExecute(Long resultThumbnailCache) {
-                if (resultThumbnailCache != 0) {
-                    if (mNativeTabContentManager != 0) {
-                        nativeSetThumbnailCache(mNativeTabContentManager, resultThumbnailCache);
-                    } else {
-                        nativeDestroyThumbnailCache(resultThumbnailCache);
-                    }
-                }
-            }
-        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        mPriorityTabIds = new int[mFullResThumbnailsMaxSize];
+
+        mNativeTabContentManager = nativeInit(diskCachePath, defaultCacheSize,
+                approximationCacheSize, compressionQueueMaxSize, writeQueueMaxSize,
+                useApproximationThumbnails);
     }
 
     /**
@@ -176,16 +148,6 @@ public class TabContentManager {
             nativeDestroy(mNativeTabContentManager);
             mNativeTabContentManager = 0;
         }
-    }
-
-    @CalledByNative
-    private long blockOnThumbnailCacheCreation() {
-        try {
-            return mNativeThumbnailCacheInitTask.get();
-        } catch (InterruptedException e) {
-        } catch (ExecutionException e) {
-        }
-        return 0;
     }
 
     @CalledByNative
@@ -369,10 +331,8 @@ public class TabContentManager {
      * @param modelSelector The selector that answers whether a tab is currently present.
      */
     public void cleanupPersistentData(TabModelSelector modelSelector) {
-        if (mNativeTabContentManager == 0) return;
-
         File[] files = mThumbnailsDir.listFiles();
-        if (files == null) return;
+        if (files == null || mNativeTabContentManager == 0) return;
 
         for (File file : files) {
             try {
@@ -405,13 +365,9 @@ public class TabContentManager {
     }
 
     // Class Object Methods
-    private native long nativeInit();
-    private static native long nativeCreateThumbnailCache(String diskCachePath,
-            int defaultCacheSize, int approximationCacheSize, int compressionQueueMaxSize,
-            int writeQueueMaxSize, boolean useApproximationThumbnail);
-    private static native void nativeDestroyThumbnailCache(long thumbnailCachePtr);
-    private native void nativeSetThumbnailCache(long nativeTabContentManager,
-            long thumbnailCachePtr);
+    private native long nativeInit(String diskCachePath, int defaultCacheSize,
+            int approximationCacheSize, int compressionQueueMaxSize, int writeQueueMaxSize,
+            boolean useApproximationThumbnail);
     private native boolean nativeHasFullCachedThumbnail(long nativeTabContentManager, int tabId);
     private native void nativeCacheTab(long nativeTabContentManager, Object tab,
             Object contentViewCore, float thumbnailScale);
