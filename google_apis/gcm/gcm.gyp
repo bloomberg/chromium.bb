@@ -69,6 +69,8 @@
         'engine/gcm_unregistration_request_handler.h',
         'engine/gservices_settings.cc',
         'engine/gservices_settings.h',
+        'engine/gservices_switches.cc',
+        'engine/gservices_switches.h',
         'engine/heartbeat_manager.cc',
         'engine/heartbeat_manager.h',
         'engine/instance_id_delete_token_request_handler.cc',

@@ -5,10 +5,12 @@
 #include "google_apis/gcm/engine/gservices_settings.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "google_apis/gcm/engine/gservices_switches.h"
 
 namespace {
 // The expected time in seconds between periodic checkins.
@@ -334,8 +336,14 @@ GURL GServicesSettings::GetMCSFallbackEndpoint() const {
 
 GURL GServicesSettings::GetRegistrationURL() const {
   SettingsMap::const_iterator iter = settings_.find(kRegistrationURLKey);
-  if (iter == settings_.end() || iter->second.empty())
-    return GURL(kDefaultRegistrationURL);
+  if (iter == settings_.end() || iter->second.empty()) {
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    if (!command_line->HasSwitch(switches::kGCMRegistrationURL))
+      return GURL(kDefaultRegistrationURL);
+
+    return GURL(
+        command_line->GetSwitchValueASCII(switches::kGCMRegistrationURL));
+  }
   return GURL(iter->second);
 }
 
