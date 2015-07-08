@@ -81,10 +81,12 @@ WebIDBKey WebIDBKey::createNull()
     return key;
 }
 
+#if BLINK_WEB_IMPLEMENTATION || !LINK_CORE_MODULES_SEPARATELY
 void WebIDBKey::reset()
 {
     m_private.reset();
 }
+#endif
 
 void WebIDBKey::assign(const WebIDBKey& value)
 {
