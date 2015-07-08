@@ -92,6 +92,7 @@ class DocumentNameCollection;
 class DocumentParser;
 class DocumentState;
 class DocumentType;
+class DocumentVisibilityObserver;
 class Element;
 class ElementDataCache;
 class ElementRegistrationOptions;
@@ -199,30 +200,6 @@ enum DocumentClass {
 };
 
 using DocumentClassFlags = unsigned char;
-
-class Document;
-
-class CORE_EXPORT DocumentVisibilityObserver : public WillBeGarbageCollectedMixin {
-public:
-    DocumentVisibilityObserver(Document&);
-    virtual ~DocumentVisibilityObserver();
-
-    virtual void didChangeVisibilityState(PageVisibilityState) = 0;
-
-    // Classes that inherit Node and DocumentVisibilityObserver must have a
-    // virtual override of Node::didMoveToNewDocument that calls
-    // DocumentVisibilityObserver::setDocument
-    void setObservedDocument(Document&);
-
-protected:
-    DECLARE_VIRTUAL_TRACE();
-
-private:
-    void registerObserver(Document&);
-    void unregisterObserver();
-
-    RawPtrWillBeMember<Document> m_document;
-};
 
 class CORE_EXPORT Document : public ContainerNode, public TreeScope, public SecurityContext, public ExecutionContext
     , public WillBeHeapSupplementable<Document>, public DocumentLifecycleNotifier {

@@ -2224,6 +2224,7 @@
             'dom/DocumentTiming.cpp',
             'dom/DocumentTiming.h',
             'dom/DocumentType.cpp',
+            'dom/DocumentVisibilityObserver.cpp',
             'dom/Element.cpp',
             'dom/Element.h',
             'dom/ElementData.cpp',

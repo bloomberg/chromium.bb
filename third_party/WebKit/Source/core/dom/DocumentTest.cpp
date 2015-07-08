@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/dom/Document.h"
 
+#include "core/dom/DocumentVisibilityObserver.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLLinkElement.h"

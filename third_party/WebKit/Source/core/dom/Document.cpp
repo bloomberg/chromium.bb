@@ -365,46 +365,6 @@ private:
     }
 };
 
-DocumentVisibilityObserver::DocumentVisibilityObserver(Document& document)
-    : m_document(nullptr)
-{
-    registerObserver(document);
-}
-
-DocumentVisibilityObserver::~DocumentVisibilityObserver()
-{
-#if !ENABLE(OILPAN)
-    unregisterObserver();
-#endif
-}
-
-DEFINE_TRACE(DocumentVisibilityObserver)
-{
-    visitor->trace(m_document);
-}
-
-void DocumentVisibilityObserver::unregisterObserver()
-{
-    if (m_document) {
-        m_document->unregisterVisibilityObserver(this);
-        m_document = nullptr;
-    }
-}
-
-void DocumentVisibilityObserver::registerObserver(Document& document)
-{
-    ASSERT(!m_document);
-    m_document = &document;
-    if (m_document)
-        m_document->registerVisibilityObserver(this);
-}
-
-void DocumentVisibilityObserver::setObservedDocument(Document& document)
-{
-    unregisterObserver();
-    registerObserver(document);
-}
-
 Document::Document(const DocumentInit& initializer, DocumentClassFlags documentClasses)
     : ContainerNode(0, CreateDocument)
     , TreeScope(*this)
