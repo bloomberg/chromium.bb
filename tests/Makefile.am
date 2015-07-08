@@ -210,7 +210,6 @@ dist_yaml_TESTS =				\
 	en-GB-g2_backward.yaml			\
 	en-GB-g2_harness.yaml			\
 	en-gb-g1_harness.yaml			\
-	en-ueb-g1_harness.yaml			\
 	en-ueb-g2-dictionary_harness.yaml	\
 	en-us-g2-dictionary_harness.yaml	\
 	en-us-g2-end-emphasis_harness.yaml	\
