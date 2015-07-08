@@ -2042,12 +2042,12 @@ WebDevToolsAgent* WebLocalFrameImpl::devToolsAgent()
     return m_devToolsAgent.get();
 }
 
-void WebLocalFrameImpl::sendPings(const WebNode& linkNode, const WebURL& destinationURL)
+void WebLocalFrameImpl::sendPings(const WebNode& contextNode, const WebURL& destinationURL)
 {
     ASSERT(frame());
-    const Node* node = linkNode.constUnwrap<Node>();
-    if (isHTMLAnchorElement(node))
-        toHTMLAnchorElement(node)->sendPings(destinationURL);
+    Element* anchor = contextNode.constUnwrap<Node>()->enclosingLinkEventParentOrSelf();
+    if (isHTMLAnchorElement(anchor))
+        toHTMLAnchorElement(anchor)->sendPings(destinationURL);
 }
 
 WebURLRequest WebLocalFrameImpl::requestFromHistoryItem(const WebHistoryItem& item,

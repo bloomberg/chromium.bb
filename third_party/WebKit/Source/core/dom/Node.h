@@ -316,7 +316,7 @@ public:
     ContainerNode* nonShadowBoundaryParentNode() const;
 
     // Returns the enclosing event parent Element (or self) that, when clicked, would trigger a navigation.
-    Element* enclosingLinkEventParentOrSelf();
+    Element* enclosingLinkEventParentOrSelf() const;
 
     // These low-level calls give the caller responsibility for maintaining the integrity of the tree.
     void setPreviousSibling(Node* previous) { m_previous = previous; }

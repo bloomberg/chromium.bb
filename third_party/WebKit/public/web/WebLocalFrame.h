@@ -60,7 +60,7 @@ public:
     virtual WebDevToolsAgent* devToolsAgent() = 0;
 
     // Navigation Ping --------------------------------------------------------
-    virtual void sendPings(const WebNode& linkNode, const WebURL& destinationURL) = 0;
+    virtual void sendPings(const WebNode& contextNode, const WebURL& destinationURL) = 0;
 
     // Navigation ----------------------------------------------------------
 

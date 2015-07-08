@@ -240,7 +240,7 @@ public:
     WebAutofillClient* autofillClient() override;
     void setDevToolsAgentClient(WebDevToolsAgentClient*) override;
     WebDevToolsAgent* devToolsAgent() override;
-    void sendPings(const WebNode& linkNode, const WebURL& destinationURL) override;
+    void sendPings(const WebNode& contextNode, const WebURL& destinationURL) override;
     WebURLRequest requestFromHistoryItem(const WebHistoryItem&, WebURLRequest::CachePolicy)
         const override;
     WebURLRequest requestForReload(WebFrameLoadType, const WebURL&) const override;

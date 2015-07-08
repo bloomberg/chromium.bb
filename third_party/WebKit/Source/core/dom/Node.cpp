@@ -1763,9 +1763,9 @@ void Node::showTreeForThisAcrossFrame() const
 
 // --------
 
-Element* Node::enclosingLinkEventParentOrSelf()
+Element* Node::enclosingLinkEventParentOrSelf() const
 {
-    for (Node* node = this; node; node = ComposedTreeTraversal::parent(*node)) {
+    for (Node* node = const_cast<Node*>(this); node; node = ComposedTreeTraversal::parent(*node)) {
         // For imagemaps, the enclosing link node is the associated area element not the image itself.
         // So we don't let images be the enclosingLinkNode, even though isLink sometimes returns true
         // for them.
