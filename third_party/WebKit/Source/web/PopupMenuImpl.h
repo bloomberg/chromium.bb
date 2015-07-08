@@ -21,7 +21,7 @@ class HTMLOptionElement;
 class PopupMenuImpl final : public PopupMenu, public PagePopupClient {
 public:
     static PassRefPtrWillBeRawPtr<PopupMenuImpl> create(ChromeClientImpl*, PopupMenuClient*);
-    virtual ~PopupMenuImpl();
+    ~PopupMenuImpl() override;
 
     void update();
 

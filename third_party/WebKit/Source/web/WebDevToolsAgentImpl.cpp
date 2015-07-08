@@ -259,7 +259,7 @@ public:
     {
     }
 
-    virtual ~DebuggerTask() { }
+    ~DebuggerTask() override {}
     virtual void run()
     {
         WebDevToolsAgent* webagent = m_descriptor->agent();

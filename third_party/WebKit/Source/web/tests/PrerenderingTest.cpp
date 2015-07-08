@@ -94,7 +94,7 @@ public:
 
 private:
     // From WebPrerendererClient:
-    virtual void willAddPrerender(WebPrerender* prerender) override
+    void willAddPrerender(WebPrerender* prerender) override
     {
         prerender->setExtraData(m_extraData.leakPtr());
 
@@ -113,7 +113,7 @@ public:
         initialize(this);
     }
 
-    virtual ~TestPrerenderingSupport()
+    ~TestPrerenderingSupport() override
     {
         shutdown();
     }
@@ -155,17 +155,17 @@ private:
     };
 
     // From WebPrerenderingSupport:
-    virtual void add(const WebPrerender& prerender) override
+    void add(const WebPrerender& prerender) override
     {
         m_addedPrerenders.push_back(prerender);
     }
 
-    virtual void cancel(const WebPrerender& prerender) override
+    void cancel(const WebPrerender& prerender) override
     {
         m_canceledPrerenders.push_back(prerender);
     }
 
-    virtual void abandon(const WebPrerender& prerender) override
+    void abandon(const WebPrerender& prerender) override
     {
         m_abandonedPrerenders.push_back(prerender);
     }
@@ -328,7 +328,7 @@ TEST_F(PrerenderingTest, ExtraData)
             *alive = true;
         }
 
-        virtual ~TestExtraData() { *m_alive = false; }
+        ~TestExtraData() override { *m_alive = false; }
 
     private:
         bool* m_alive;

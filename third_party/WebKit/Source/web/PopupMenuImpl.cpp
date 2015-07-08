@@ -40,14 +40,14 @@ public:
 
     // We don't override willUseFontData() for now because the old PopupListBox
     // only worked with fonts loaded when opening the popup.
-    virtual PassRefPtr<FontData> getFontData(const FontDescription&, const AtomicString&) override;
+    PassRefPtr<FontData> getFontData(const FontDescription&, const AtomicString&) override;
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
     PopupMenuCSSFontSelector(Document*, CSSFontSelector*);
 
-    virtual void fontsNeedUpdate(CSSFontSelector*) override;
+    void fontsNeedUpdate(CSSFontSelector*) override;
 
     RefPtrWillBeMember<CSSFontSelector> m_ownerFontSelector;
 };

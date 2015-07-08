@@ -67,9 +67,9 @@ public:
         ASSERT(m_client);
     }
 
-    virtual ~WebLeakDetectorImpl() { }
+    ~WebLeakDetectorImpl() override {}
 
-    virtual void collectGarbageAndGetDOMCounts(WebLocalFrame*) override;
+    void collectGarbageAndGetDOMCounts(WebLocalFrame*) override;
 
 private:
     void delayedGCAndReport(Timer<WebLeakDetectorImpl>*);

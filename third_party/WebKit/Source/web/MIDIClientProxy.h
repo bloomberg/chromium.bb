@@ -47,8 +47,8 @@ public:
     }
 
     // MIDIClient
-    virtual void requestSysexPermission(MIDIAccessInitializer*) override;
-    virtual void cancelSysexPermissionRequest(MIDIAccessInitializer*) override;
+    void requestSysexPermission(MIDIAccessInitializer*) override;
+    void cancelSysexPermissionRequest(MIDIAccessInitializer*) override;
 
 private:
     explicit MIDIClientProxy(WebMIDIClient*);

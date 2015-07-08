@@ -104,10 +104,10 @@ class TestWebFrameClient : public WebFrameClient {
 public:
     TestWebFrameClient();
 
-    virtual WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType, const WebString& frameName, WebSandboxFlags) override;
-    virtual void frameDetached(WebFrame*, DetachType) override;
-    virtual void didStartLoading(bool) override;
-    virtual void didStopLoading() override;
+    WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType, const WebString& frameName, WebSandboxFlags) override;
+    void frameDetached(WebFrame*, DetachType) override;
+    void didStartLoading(bool) override;
+    void didStopLoading() override;
 
     bool isLoading() { return m_loadsInProgress > 0; }
     void waitForLoadToComplete();
@@ -139,8 +139,8 @@ private:
 class TestWebViewClient : public WebViewClient {
 public:
     virtual ~TestWebViewClient() { }
-    virtual void initializeLayerTreeView() override;
-    virtual WebLayerTreeView* layerTreeView() override { return m_layerTreeView.get(); }
+    void initializeLayerTreeView() override;
+    WebLayerTreeView* layerTreeView() override { return m_layerTreeView.get(); }
 
 private:
     OwnPtr<WebLayerTreeView> m_layerTreeView;

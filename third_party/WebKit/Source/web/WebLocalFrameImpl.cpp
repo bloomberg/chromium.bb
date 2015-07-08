@@ -336,7 +336,7 @@ public:
     {
     }
 
-    virtual ~ChromePrintContext() { }
+    ~ChromePrintContext() override {}
 
     virtual void begin(float width, float height)
     {
@@ -486,30 +486,30 @@ public:
     {
     }
 
-    virtual ~ChromePluginPrintContext() { }
+    ~ChromePluginPrintContext() override {}
 
-    virtual void begin(float width, float height) override
+    void begin(float width, float height) override
     {
     }
 
-    virtual void end() override
+    void end() override
     {
         m_plugin->printEnd();
     }
 
-    virtual float getPageShrink(int pageNumber) const override
+    float getPageShrink(int pageNumber) const override
     {
         // We don't shrink the page (maybe we should ask the widget ??)
         return 1.0;
     }
 
-    virtual void computePageRects(const FloatRect& printRect, float headerHeight, float footerHeight, float userScaleFactor, float& outPageHeight) override
+    void computePageRects(const FloatRect& printRect, float headerHeight, float footerHeight, float userScaleFactor, float& outPageHeight) override
     {
         m_printParams.printContentArea = IntRect(printRect);
         m_pageRects.fill(IntRect(printRect), m_plugin->printBegin(m_printParams));
     }
 
-    virtual void computePageRectsWithPageSize(const FloatSize& pageSizeInPixels) override
+    void computePageRectsWithPageSize(const FloatSize& pageSizeInPixels) override
     {
         ASSERT_NOT_REACHED();
     }
@@ -518,7 +518,7 @@ protected:
     // Spools the printed page, a subrect of frame(). Skip the scale step.
     // NativeTheme doesn't play well with scaling. Scaling is done browser side
     // instead. Returns the scale to be applied.
-    virtual float spoolPage(GraphicsContext& context, int pageNumber) override
+    float spoolPage(GraphicsContext& context, int pageNumber) override
     {
         IntRect pageRect = m_pageRects[pageNumber];
         m_plugin->printPage(pageNumber, &context, pageRect);

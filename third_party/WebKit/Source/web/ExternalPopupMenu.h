@@ -53,7 +53,7 @@ struct WebPopupMenuInfo;
 class ExternalPopupMenu final : public PopupMenu, public WebExternalPopupMenuClient {
 public:
     ExternalPopupMenu(LocalFrame&, PopupMenuClient*, WebViewImpl&);
-    virtual ~ExternalPopupMenu();
+    ~ExternalPopupMenu() override;
 
     // Fills |info| with the popup menu information contained in the
     // PopupMenuClient associated with this ExternalPopupMenu.
@@ -67,16 +67,16 @@ public:
 
 private:
     // PopupMenu methods:
-    virtual void show(const FloatQuad& controlPosition, const IntSize&, int index) override;
-    virtual void hide() override;
-    virtual void updateFromElement() override;
-    virtual void disconnectClient() override;
+    void show(const FloatQuad& controlPosition, const IntSize&, int index) override;
+    void hide() override;
+    void updateFromElement() override;
+    void disconnectClient() override;
 
     // WebExternalPopupClient methods:
-    virtual void didChangeSelection(int index) override;
-    virtual void didAcceptIndex(int index) override;
-    virtual void didAcceptIndices(const WebVector<int>& indices) override;
-    virtual void didCancel() override;
+    void didChangeSelection(int index) override;
+    void didAcceptIndex(int index) override;
+    void didAcceptIndices(const WebVector<int>& indices) override;
+    void didCancel() override;
 
     void dispatchEvent(Timer<ExternalPopupMenu>*);
 

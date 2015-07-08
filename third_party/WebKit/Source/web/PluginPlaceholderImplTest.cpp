@@ -31,7 +31,7 @@ using HTMLNames::scriptTag;
 class MockWebPluginPlaceholder : public WebPluginPlaceholder {
 public:
     static PassOwnPtr<MockWebPluginPlaceholder> create() { return adoptPtr(new MockWebPluginPlaceholder); }
-    virtual ~MockWebPluginPlaceholder() { }
+    ~MockWebPluginPlaceholder() override { }
 
     MOCK_CONST_METHOD0(message, WebString());
     MOCK_CONST_METHOD0(isCloseable, bool());

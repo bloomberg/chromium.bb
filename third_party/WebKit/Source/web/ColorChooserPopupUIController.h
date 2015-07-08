@@ -44,25 +44,25 @@ public:
         return adoptPtrWillBeNoop(new ColorChooserPopupUIController(frame, chromeClient, client));
     }
 
-    virtual ~ColorChooserPopupUIController();
+    ~ColorChooserPopupUIController() override;
 
     // ColorChooserUIController functions:
-    virtual void openUI() override;
+    void openUI() override;
 
     // ColorChooser functions
-    virtual void endChooser() override;
-    virtual AXObject* rootAXObject() override;
+    void endChooser() override;
+    AXObject* rootAXObject() override;
 
     // PagePopupClient functions:
-    virtual IntSize contentSize() override;
-    virtual void writeDocument(SharedBuffer*) override;
-    virtual void selectFontsFromOwnerDocument(Document&) override { }
-    virtual Locale& locale() override;
-    virtual void setValueAndClosePopup(int, const String&) override;
-    virtual void setValue(const String&) override;
-    virtual void closePopup() override;
-    virtual Element& ownerElement() override;
-    virtual void didClosePopup() override;
+    IntSize contentSize() override;
+    void writeDocument(SharedBuffer*) override;
+    void selectFontsFromOwnerDocument(Document&) override { }
+    Locale& locale() override;
+    void setValueAndClosePopup(int, const String&) override;
+    void setValue(const String&) override;
+    void closePopup() override;
+    Element& ownerElement() override;
+    void didClosePopup() override;
 
 private:
     ColorChooserPopupUIController(LocalFrame*, ChromeClientImpl*, ColorChooserClient*);

@@ -295,7 +295,7 @@ public:
     {
     }
 
-    virtual bool handleInputEvent(const WebInputEvent& event, WebCursorInfo&) override
+    bool handleInputEvent(const WebInputEvent& event, WebCursorInfo&) override
     {
         m_lastEventType = event.type;
         return true;
@@ -307,7 +307,7 @@ private:
 };
 
 class EventTestPluginWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
-    virtual WebPlugin* createPlugin(WebLocalFrame* frame, const WebPluginParams& params) override
+    WebPlugin* createPlugin(WebLocalFrame* frame, const WebPluginParams& params) override
     {
         if (params.mimeType == WebString::fromUTF8("application/x-webkit-test-webplugin"))
             return new EventTestPlugin(frame, params);

@@ -49,8 +49,8 @@ public:
         return adoptPtrWillBeNoop(new WorkerGlobalScopeProxyProviderImpl());
     }
 
-    virtual ~WorkerGlobalScopeProxyProviderImpl() { }
-    virtual WorkerGlobalScopeProxy* createWorkerGlobalScopeProxy(Worker*) override;
+    ~WorkerGlobalScopeProxyProviderImpl() override { }
+    WorkerGlobalScopeProxy* createWorkerGlobalScopeProxy(Worker*) override;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { WorkerGlobalScopeProxyProvider::trace(visitor); }
 

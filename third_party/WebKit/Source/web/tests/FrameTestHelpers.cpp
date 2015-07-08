@@ -79,7 +79,7 @@ public:
     {
     }
 
-    virtual void run() override
+    void run() override
     {
         Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
         if (m_client->isLoading())
@@ -106,7 +106,7 @@ public:
     {
     }
 
-    virtual void run() override
+    void run() override
     {
         m_frame->loadRequest(m_request);
     }
@@ -125,7 +125,7 @@ public:
     {
     }
 
-    virtual void run() override
+    void run() override
     {
         m_frame->loadHTMLString(WebData(m_html.data(), m_html.size()), m_baseURL);
     }
@@ -146,7 +146,7 @@ public:
     {
     }
 
-    virtual void run() override
+    void run() override
     {
         m_frame->loadHistoryItem(m_item, m_loadType, m_cachePolicy);
     }
@@ -166,7 +166,7 @@ public:
     {
     }
 
-    virtual void run() override
+    void run() override
     {
         m_frame->reload(m_ignoreCache);
     }

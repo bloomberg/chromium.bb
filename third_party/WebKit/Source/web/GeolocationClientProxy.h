@@ -42,15 +42,15 @@ public:
         return adoptPtrWillBeNoop(new GeolocationClientProxy(client));
     }
 
-    virtual ~GeolocationClientProxy();
+    ~GeolocationClientProxy() override;
     void setController(GeolocationController*);
-    virtual void startUpdating() override;
-    virtual void stopUpdating() override;
-    virtual void setEnableHighAccuracy(bool) override;
-    virtual GeolocationPosition* lastPosition() override;
+    void startUpdating() override;
+    void stopUpdating() override;
+    void setEnableHighAccuracy(bool) override;
+    GeolocationPosition* lastPosition() override;
 
-    virtual void requestPermission(Geolocation*) override;
-    virtual void cancelPermissionRequest(Geolocation*) override;
+    void requestPermission(Geolocation*) override;
+    void cancelPermissionRequest(Geolocation*) override;
 
     DECLARE_VIRTUAL_TRACE();
 

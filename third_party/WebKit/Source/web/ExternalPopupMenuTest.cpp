@@ -81,7 +81,7 @@ public:
     ExternalPopupMenuDisplayNoneItemsTest() { }
 
 protected:
-    virtual void SetUp() override
+    void SetUp() override
     {
         m_popupMenuClient.setListSize(kListSize);
 
@@ -117,7 +117,7 @@ TEST_F(ExternalPopupMenuDisplayNoneItemsTest, IndexMappingTest)
 
 class ExternalPopupMenuWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
-    virtual WebExternalPopupMenu* createExternalPopupMenu(const WebPopupMenuInfo&, WebExternalPopupMenuClient*) override
+    WebExternalPopupMenu* createExternalPopupMenu(const WebPopupMenuInfo&, WebExternalPopupMenuClient*) override
     {
         return &m_mockWebExternalPopupMenu;
     }
@@ -127,11 +127,11 @@ public:
     }
 private:
     class MockWebExternalPopupMenu : public WebExternalPopupMenu {
-        virtual void show(const WebRect& bounds) override
+        void show(const WebRect& bounds) override
         {
             m_shownBounds = bounds;
         }
-        virtual void close() override { }
+        void close() override { }
 
     public:
         WebRect shownBounds() const

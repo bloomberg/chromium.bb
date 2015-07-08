@@ -15,8 +15,8 @@ class StorageClientImpl : public StorageClient {
 public:
     explicit StorageClientImpl(WebViewImpl*);
 
-    virtual PassOwnPtr<StorageNamespace> createSessionStorageNamespace() override;
-    virtual bool canAccessStorage(LocalFrame*, StorageType) const override;
+    PassOwnPtr<StorageNamespace> createSessionStorageNamespace() override;
+    bool canAccessStorage(LocalFrame*, StorageType) const override;
 
 private:
     WebViewImpl* m_webView;

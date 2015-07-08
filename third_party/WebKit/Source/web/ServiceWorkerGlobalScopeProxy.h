@@ -65,32 +65,32 @@ class ServiceWorkerGlobalScopeProxy final
     WTF_MAKE_NONCOPYABLE(ServiceWorkerGlobalScopeProxy);
 public:
     static PassOwnPtr<ServiceWorkerGlobalScopeProxy> create(WebEmbeddedWorkerImpl&, Document&, WebServiceWorkerContextClient&);
-    virtual ~ServiceWorkerGlobalScopeProxy();
+    ~ServiceWorkerGlobalScopeProxy() override;
 
     // WebServiceWorkerContextProxy overrides:
-    virtual void setRegistration(WebServiceWorkerRegistration*) override;
-    virtual void dispatchActivateEvent(int) override;
-    virtual void dispatchCrossOriginConnectEvent(int, const WebCrossOriginServiceWorkerClient&) override;
-    virtual void dispatchCrossOriginMessageEvent(const WebCrossOriginServiceWorkerClient&, const WebString& message, const WebMessagePortChannelArray&) override;
-    virtual void dispatchFetchEvent(int, const WebServiceWorkerRequest&) override;
-    virtual void dispatchGeofencingEvent(int, WebGeofencingEventType, const WebString& regionID, const WebCircularGeofencingRegion&) override;
-    virtual void dispatchInstallEvent(int) override;
-    virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) override;
-    virtual void dispatchNotificationClickEvent(int, int64_t notificationID, const WebNotificationData&) override;
-    virtual void dispatchPushEvent(int, const WebString& data) override;
-    virtual void dispatchSyncEvent(int) override;
-    virtual void addStashedMessagePorts(const WebMessagePortChannelArray&, const WebVector<WebString>& webChannelNames) override;
+    void setRegistration(WebServiceWorkerRegistration*) override;
+    void dispatchActivateEvent(int) override;
+    void dispatchCrossOriginConnectEvent(int, const WebCrossOriginServiceWorkerClient&) override;
+    void dispatchCrossOriginMessageEvent(const WebCrossOriginServiceWorkerClient&, const WebString& message, const WebMessagePortChannelArray&) override;
+    void dispatchFetchEvent(int, const WebServiceWorkerRequest&) override;
+    void dispatchGeofencingEvent(int, WebGeofencingEventType, const WebString& regionID, const WebCircularGeofencingRegion&) override;
+    void dispatchInstallEvent(int) override;
+    void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) override;
+    void dispatchNotificationClickEvent(int, int64_t notificationID, const WebNotificationData&) override;
+    void dispatchPushEvent(int, const WebString& data) override;
+    void dispatchSyncEvent(int) override;
+    void addStashedMessagePorts(const WebMessagePortChannelArray&, const WebVector<WebString>& webChannelNames) override;
 
     // WorkerReportingProxy overrides:
-    virtual void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId) override;
-    virtual void reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override;
-    virtual void postMessageToPageInspector(const String&) override;
-    virtual void postWorkerConsoleAgentEnabled() override { }
-    virtual void didEvaluateWorkerScript(bool success) override;
-    virtual void workerGlobalScopeStarted(WorkerGlobalScope*) override;
-    virtual void workerGlobalScopeClosed() override;
-    virtual void willDestroyWorkerGlobalScope() override;
-    virtual void workerThreadTerminated() override;
+    void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId) override;
+    void reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override;
+    void postMessageToPageInspector(const String&) override;
+    void postWorkerConsoleAgentEnabled() override { }
+    void didEvaluateWorkerScript(bool success) override;
+    void workerGlobalScopeStarted(WorkerGlobalScope*) override;
+    void workerGlobalScopeClosed() override;
+    void willDestroyWorkerGlobalScope() override;
+    void workerThreadTerminated() override;
 
 private:
     ServiceWorkerGlobalScopeProxy(WebEmbeddedWorkerImpl&, Document&, WebServiceWorkerContextClient&);

@@ -14,7 +14,7 @@ public:
     MediaKeysClientImpl();
 
     // MediaKeysClient implementation.
-    virtual WebEncryptedMediaClient* encryptedMediaClient(ExecutionContext*) override;
+    WebEncryptedMediaClient* encryptedMediaClient(ExecutionContext*) override;
 };
 
 } // namespace blink

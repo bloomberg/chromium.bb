@@ -67,8 +67,8 @@ public:
 
 private:
     // WebSharedWorkerConnector::ConnectListener overrides.
-    virtual void connected() override;
-    virtual void scriptLoadFailed() override;
+    void connected() override;
+    void scriptLoadFailed() override;
 
     RefPtrWillBePersistent<SharedWorker> m_worker;
     KURL m_url;

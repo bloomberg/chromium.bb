@@ -35,9 +35,9 @@ class GraphicsLayerFactoryChromium final : public GraphicsLayerFactory {
 public:
     explicit GraphicsLayerFactoryChromium(WebViewImpl*);
 
-    virtual ~GraphicsLayerFactoryChromium();
+    ~GraphicsLayerFactoryChromium() override;
 
-    virtual PassOwnPtr<GraphicsLayer> createGraphicsLayer(GraphicsLayerClient*) override;
+    PassOwnPtr<GraphicsLayer> createGraphicsLayer(GraphicsLayerClient*) override;
 
 private:
     // The owner of this GraphicsLayerFactoryChromium.

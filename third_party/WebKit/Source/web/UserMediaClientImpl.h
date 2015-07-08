@@ -46,11 +46,11 @@ public:
     explicit UserMediaClientImpl(WebLocalFrameImpl*);
 
     // UserMediaClient ----------------------------------------------
-    virtual void requestUserMedia(UserMediaRequest*) override;
-    virtual void cancelUserMediaRequest(UserMediaRequest*) override;
-    virtual void requestMediaDevices(MediaDevicesRequest*) override;
-    virtual void cancelMediaDevicesRequest(MediaDevicesRequest*) override;
-    virtual void requestSources(MediaStreamTrackSourcesRequest*) override;
+    void requestUserMedia(UserMediaRequest*) override;
+    void cancelUserMediaRequest(UserMediaRequest*) override;
+    void requestMediaDevices(MediaDevicesRequest*) override;
+    void cancelMediaDevicesRequest(MediaDevicesRequest*) override;
+    void requestSources(MediaStreamTrackSourcesRequest*) override;
 
 private:
     UserMediaClientImpl();

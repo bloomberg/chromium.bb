@@ -66,13 +66,13 @@ public:
     MOCK_CONST_METHOD0(scrollbarsCanBeActive, bool());
     MOCK_CONST_METHOD0(scrollableAreaBoundingBox, IntRect());
 
-    virtual bool userInputScrollable(ScrollbarOrientation) const override { return true; }
-    virtual bool shouldPlaceVerticalScrollbarOnLeft() const override { return false; }
-    virtual IntPoint scrollPosition() const override { return IntPoint(); }
-    virtual int visibleHeight() const override { return 768; }
-    virtual int visibleWidth() const override { return 1024; }
-    virtual bool scrollAnimatorEnabled() const override { return m_scrollAnimatorEnabled; }
-    virtual int pageStep(ScrollbarOrientation) const override { return 0; }
+    bool userInputScrollable(ScrollbarOrientation) const override { return true; }
+    bool shouldPlaceVerticalScrollbarOnLeft() const override { return false; }
+    IntPoint scrollPosition() const override { return IntPoint(); }
+    int visibleHeight() const override { return 768; }
+    int visibleWidth() const override { return 1024; }
+    bool scrollAnimatorEnabled() const override { return m_scrollAnimatorEnabled; }
+    int pageStep(ScrollbarOrientation) const override { return 0; }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {

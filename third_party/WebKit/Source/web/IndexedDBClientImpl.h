@@ -39,7 +39,7 @@ class IndexedDBClientImpl final : public IndexedDBClient {
 public:
     static IndexedDBClient* create();
 
-    virtual bool allowIndexedDB(ExecutionContext*, const String& name) override;
+    bool allowIndexedDB(ExecutionContext*, const String& name) override;
 
 private:
     IndexedDBClientImpl() { }

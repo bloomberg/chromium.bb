@@ -23,9 +23,9 @@ public:
     {
     }
 
-    virtual ~WebNotificationPermissionCallbackImpl() { }
+    ~WebNotificationPermissionCallbackImpl() override { }
 
-    virtual void permissionRequestComplete(WebNotificationPermission permission) override
+    void permissionRequestComplete(WebNotificationPermission permission) override
     {
         if (m_callback)
             m_callback->handleEvent(Notification::permissionString(permission));

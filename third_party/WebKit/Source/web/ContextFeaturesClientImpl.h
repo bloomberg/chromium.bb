@@ -42,8 +42,8 @@ public:
         return adoptPtr(new ContextFeaturesClientImpl());
     }
 
-    virtual bool isEnabled(Document*, ContextFeatures::FeatureType, bool defaultValue) override;
-    virtual void urlDidChange(Document*) override;
+    bool isEnabled(Document*, ContextFeatures::FeatureType, bool defaultValue) override;
+    void urlDidChange(Document*) override;
 
 private:
     ContextFeaturesClientImpl() { }

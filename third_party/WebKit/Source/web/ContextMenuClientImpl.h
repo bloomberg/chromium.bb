@@ -41,9 +41,9 @@ struct WebContextMenuData;
 class ContextMenuClientImpl final : public ContextMenuClient {
 public:
     explicit ContextMenuClientImpl(WebViewImpl* webView) : m_webView(webView) { }
-    virtual ~ContextMenuClientImpl() {}
-    virtual void showContextMenu(const ContextMenu*) override;
-    virtual void clearContextMenu() override;
+    ~ContextMenuClientImpl() override {}
+    void showContextMenu(const ContextMenu*) override;
+    void clearContextMenu() override;
 private:
     void populateCustomMenuItems(const ContextMenu*, WebContextMenuData*);
     WebViewImpl* m_webView;

@@ -56,19 +56,19 @@ public:
     }
 
     // WebDataSource methods:
-    virtual const WebURLRequest& originalRequest() const override;
-    virtual const WebURLRequest& request() const override;
-    virtual const WebURLResponse& response() const override;
-    virtual bool hasUnreachableURL() const override;
-    virtual WebURL unreachableURL() const override;
-    virtual void appendRedirect(const WebURL&) override;
-    virtual void redirectChain(WebVector<WebURL>&) const override;
-    virtual bool isClientRedirect() const override;
-    virtual bool replacesCurrentHistoryItem() const override;
-    virtual WebNavigationType navigationType() const override;
-    virtual ExtraData* extraData() const override;
-    virtual void setExtraData(ExtraData*) override;
-    virtual void setNavigationStartTime(double) override;
+    const WebURLRequest& originalRequest() const override;
+    const WebURLRequest& request() const override;
+    const WebURLResponse& response() const override;
+    bool hasUnreachableURL() const override;
+    WebURL unreachableURL() const override;
+    void appendRedirect(const WebURL&) override;
+    void redirectChain(WebVector<WebURL>&) const override;
+    bool isClientRedirect() const override;
+    bool replacesCurrentHistoryItem() const override;
+    WebNavigationType navigationType() const override;
+    ExtraData* extraData() const override;
+    void setExtraData(ExtraData*) override;
+    void setNavigationStartTime(double) override;
 
     static WebNavigationType toWebNavigationType(NavigationType);
 
@@ -79,8 +79,8 @@ public:
 
 private:
     WebDataSourceImpl(LocalFrame*, const ResourceRequest&, const SubstituteData&);
-    virtual ~WebDataSourceImpl();
-    virtual void detachFromFrame() override;
+    ~WebDataSourceImpl() override;
+    void detachFromFrame() override;
 
     // Mutable because the const getters will magically sync these to the
     // latest version from WebKit.

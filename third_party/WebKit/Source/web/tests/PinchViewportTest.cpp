@@ -129,7 +129,7 @@ public:
         webViewImpl()->setDefaultPageScaleLimits(0.25f, 5);
     }
 
-    virtual ~PinchViewportTest()
+    ~PinchViewportTest() override
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }

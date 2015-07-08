@@ -176,7 +176,7 @@ protected:
     {
     }
 
-    virtual ~WebFrameTest()
+    ~WebFrameTest() override
     {
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }
@@ -268,7 +268,7 @@ class ParameterizedWebFrameTest
     , public FrameTestHelpers::SettingOverrider {
 public:
 
-    virtual void overrideSettings(WebSettings* settings)
+    void overrideSettings(WebSettings* settings)
     {
         switch (GetParam()) {
         case Default:
@@ -533,7 +533,7 @@ TEST_P(ParameterizedWebFrameTest, DidClearWindowObjectIsNotRecursive)
 class CSSCallbackWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     CSSCallbackWebFrameClient() : m_updateCount(0) { }
-    virtual void didMatchCSS(WebLocalFrame*, const WebVector<WebString>& newlyMatchingSelectors, const WebVector<WebString>& stoppedMatchingSelectors) override;
+    void didMatchCSS(WebLocalFrame*, const WebVector<WebString>& newlyMatchingSelectors, const WebVector<WebString>& stoppedMatchingSelectors) override;
 
     std::map<WebLocalFrame*, std::set<std::string>> m_matchedSelectors;
     int m_updateCount;
@@ -845,7 +845,7 @@ namespace {
 
 class FixedLayoutTestWebViewClient : public FrameTestHelpers::TestWebViewClient {
  public:
-    virtual WebScreenInfo screenInfo() override { return m_screenInfo; }
+    WebScreenInfo screenInfo() override { return m_screenInfo; }
 
     WebScreenInfo m_screenInfo;
 };
@@ -3173,7 +3173,7 @@ TEST_P(ParameterizedWebFrameTest, FirstRectForCharacterRangeWithPinchZoom)
 }
 class TestReloadDoesntRedirectWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
-    virtual WebNavigationPolicy decidePolicyForNavigation(const NavigationPolicyInfo& info) override
+    WebNavigationPolicy decidePolicyForNavigation(const NavigationPolicyInfo& info) override
     {
         EXPECT_FALSE(info.isRedirect);
         return WebNavigationPolicyCurrentTab;
@@ -3202,7 +3202,7 @@ public:
     {
     }
 
-    virtual void run() override
+    void run() override
     {
         m_frame->reloadWithOverrideURL(m_url, m_ignoreCache);
     }
@@ -3372,7 +3372,7 @@ public:
         int worldId;
     };
 
-    virtual ~ContextLifetimeTestWebFrameClient()
+    ~ContextLifetimeTestWebFrameClient() override
     {
         reset();
     }
@@ -3393,12 +3393,12 @@ public:
     std::vector<Notification*> releaseNotifications;
 
  private:
-    virtual void didCreateScriptContext(WebLocalFrame* frame, v8::Local<v8::Context> context, int extensionGroup, int worldId) override
+    void didCreateScriptContext(WebLocalFrame* frame, v8::Local<v8::Context> context, int extensionGroup, int worldId) override
     {
         createNotifications.push_back(new Notification(frame, context, worldId));
     }
 
-    virtual void willReleaseScriptContext(WebLocalFrame* frame, v8::Local<v8::Context> context, int worldId) override
+    void willReleaseScriptContext(WebLocalFrame* frame, v8::Local<v8::Context> context, int worldId) override
     {
         releaseNotifications.push_back(new Notification(frame, context, worldId));
     }
@@ -3661,7 +3661,7 @@ TEST_P(ParameterizedWebFrameTest, GetFullHtmlOfPage)
 
 class TestExecuteScriptDuringDidCreateScriptContext : public FrameTestHelpers::TestWebFrameClient {
 public:
-    virtual void didCreateScriptContext(WebLocalFrame* frame, v8::Local<v8::Context> context, int extensionGroup, int worldId) override
+    void didCreateScriptContext(WebLocalFrame* frame, v8::Local<v8::Context> context, int extensionGroup, int worldId) override
     {
         frame->executeScript(WebScriptSource("window.history = 'replaced';"));
     }
@@ -3686,7 +3686,7 @@ public:
     {
     }
 
-    virtual void reportFindInPageMatchCount(int, int count, bool finalUpdate) override
+    void reportFindInPageMatchCount(int, int count, bool finalUpdate) override
     {
         m_count = count;
         if (finalUpdate)
@@ -4477,26 +4477,26 @@ TEST_P(ParameterizedWebFrameTest, MoveCaretStaysHorizontallyAlignedWhenMoved)
 class CompositedSelectionBoundsTestLayerTreeView : public WebLayerTreeView {
 public:
     CompositedSelectionBoundsTestLayerTreeView() : m_selectionCleared(false) { }
-    virtual ~CompositedSelectionBoundsTestLayerTreeView() { }
+    ~CompositedSelectionBoundsTestLayerTreeView() override { }
 
-    virtual void setRootLayer(const WebLayer&)  override { }
-    virtual void clearRootLayer()  override { }
-    virtual void setViewportSize(const WebSize& deviceViewportSize)  override { }
-    virtual WebSize deviceViewportSize() const  override { return WebSize(); }
-    virtual void setDeviceScaleFactor(float) override { }
-    virtual float deviceScaleFactor() const  override { return 1.f; }
-    virtual void setBackgroundColor(WebColor)  override { }
-    virtual void setHasTransparentBackground(bool)  override { }
-    virtual void setVisible(bool)  override { }
-    virtual void setPageScaleFactorAndLimits(float pageScaleFactor, float minimum, float maximum)  override { }
-    virtual void startPageScaleAnimation(const WebPoint& destination, bool useAnchor, float newPageScale, double durationSec)  override { }
-    virtual void setNeedsAnimate()  override { }
-    virtual void finishAllRendering()  override { }
-    virtual void registerSelection(const WebSelection& selection) override
+    void setRootLayer(const WebLayer&)  override { }
+    void clearRootLayer()  override { }
+    void setViewportSize(const WebSize& deviceViewportSize)  override { }
+    WebSize deviceViewportSize() const  override { return WebSize(); }
+    void setDeviceScaleFactor(float) override { }
+    float deviceScaleFactor() const  override { return 1.f; }
+    void setBackgroundColor(WebColor)  override { }
+    void setHasTransparentBackground(bool)  override { }
+    void setVisible(bool)  override { }
+    void setPageScaleFactorAndLimits(float pageScaleFactor, float minimum, float maximum)  override { }
+    void startPageScaleAnimation(const WebPoint& destination, bool useAnchor, float newPageScale, double durationSec)  override { }
+    void setNeedsAnimate()  override { }
+    void finishAllRendering()  override { }
+    void registerSelection(const WebSelection& selection) override
     {
         m_selection = adoptPtr(new WebSelection(selection));
     }
-    virtual void clearSelection() override
+    void clearSelection() override
     {
         m_selectionCleared = true;
         m_selection.clear();
@@ -4520,8 +4520,8 @@ private:
 
 class CompositedSelectionBoundsTestWebViewClient : public FrameTestHelpers::TestWebViewClient {
 public:
-    virtual ~CompositedSelectionBoundsTestWebViewClient() { }
-    virtual WebLayerTreeView* layerTreeView() override { return &m_testLayerTreeView; }
+    ~CompositedSelectionBoundsTestWebViewClient() override {}
+    WebLayerTreeView* layerTreeView() override { return &m_testLayerTreeView; }
 
     CompositedSelectionBoundsTestLayerTreeView& selectionLayerTreeView() { return m_testLayerTreeView; }
 
@@ -4695,7 +4695,7 @@ TEST_P(ParameterizedWebFrameTest, CompositedSelectionBoundsCleared)
 
 class DisambiguationPopupTestWebViewClient : public FrameTestHelpers::TestWebViewClient {
 public:
-    virtual bool didTapMultipleTargets(const WebSize&, const WebRect&, const WebVector<WebRect>& targetRects) override
+    bool didTapMultipleTargets(const WebSize&, const WebRect&, const WebVector<WebRect>& targetRects) override
     {
         EXPECT_GE(targetRects.size(), 2u);
         m_triggered = true;
@@ -5042,18 +5042,18 @@ public:
     {
     }
 
-    virtual void didCommitProvisionalLoad(WebLocalFrame*, const WebHistoryItem&, WebHistoryCommitType) override
+    void didCommitProvisionalLoad(WebLocalFrame*, const WebHistoryItem&, WebHistoryCommitType) override
     {
         m_numBodies = 0;
         m_didLoad = true;
     }
 
-    virtual void didCreateDocumentElement(WebLocalFrame*) override
+    void didCreateDocumentElement(WebLocalFrame*) override
     {
         EXPECT_EQ(0, m_numBodies);
     }
 
-    virtual void willInsertBody(WebLocalFrame*) override
+    void willInsertBody(WebLocalFrame*) override
     {
         m_numBodies++;
     }
@@ -5100,7 +5100,7 @@ class SpellCheckClient : public WebSpellCheckClient {
 public:
     explicit SpellCheckClient(uint32_t hash = 0) : m_numberOfTimesChecked(0), m_hash(hash) { }
     virtual ~SpellCheckClient() { }
-    virtual void requestCheckingOfText(const WebString&, const WebVector<uint32_t>&, const WebVector<unsigned>&, WebTextCheckingCompletion* completion) override
+    void requestCheckingOfText(const WebString&, const WebVector<uint32_t>&, const WebVector<unsigned>&, WebTextCheckingCompletion* completion) override
     {
         ++m_numberOfTimesChecked;
         Vector<WebTextCheckingResult> results;
@@ -5600,7 +5600,7 @@ public:
     bool wasFrameScrolled() const { return m_didScrollFrame; }
 
     // WebFrameClient:
-    virtual void didChangeScrollOffset(WebLocalFrame* frame) override
+    void didChangeScrollOffset(WebLocalFrame* frame) override
     {
         if (frame->parent())
             return;
@@ -5703,7 +5703,7 @@ TEST_P(ParameterizedWebFrameTest, FirstPartyForCookiesForRedirect)
 class TestNavigationPolicyWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
 
-    virtual void didNavigateWithinPage(WebLocalFrame*, const WebHistoryItem&, WebHistoryCommitType) override
+    void didNavigateWithinPage(WebLocalFrame*, const WebHistoryItem&, WebHistoryCommitType) override
     {
         EXPECT_TRUE(false);
     }
@@ -5744,7 +5744,7 @@ public:
     {
     }
 
-    virtual WebNavigationPolicy decidePolicyForNavigation(const NavigationPolicyInfo& info) override
+    WebNavigationPolicy decidePolicyForNavigation(const NavigationPolicyInfo& info) override
     {
         m_decidePolicyCallCount++;
         return info.defaultPolicy;
@@ -5910,7 +5910,7 @@ public:
         TestWebFrameClient::didStopLoading();
     }
 
-    virtual void willSendRequest(WebLocalFrame* frame, unsigned, WebURLRequest& request, const WebURLResponse&) override
+    void willSendRequest(WebLocalFrame* frame, unsigned, WebURLRequest& request, const WebURLResponse&) override
     {
         m_policy = request.cachePolicy();
         m_willSendRequestCallCount++;
@@ -6058,7 +6058,7 @@ public:
     {
     }
 
-    virtual void didStartLoading(bool toDifferentDocument) override
+    void didStartLoading(bool toDifferentDocument) override
     {
         TestWebFrameClient::didStartLoading(toDifferentDocument);
         m_startLoadingCount++;
@@ -6066,7 +6066,7 @@ public:
             m_differentDocumentStartCount++;
     }
 
-    virtual void didStopLoading() override
+    void didStopLoading() override
     {
         TestWebFrameClient::didStopLoading();
         m_stopLoadingCount++;
@@ -6101,7 +6101,7 @@ public:
     {
     }
 
-    virtual void didNavigateWithinPage(WebLocalFrame*, const WebHistoryItem&, WebHistoryCommitType type) override
+    void didNavigateWithinPage(WebLocalFrame*, const WebHistoryItem&, WebHistoryCommitType type) override
     {
         m_lastCommitType = type;
     }
@@ -6272,7 +6272,7 @@ class FailCreateChildFrame : public FrameTestHelpers::TestWebFrameClient {
 public:
     FailCreateChildFrame() : m_callCount(0) { }
 
-    virtual WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType scope, const WebString& frameName, WebSandboxFlags sandboxFlags) override
+    WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType scope, const WebString& frameName, WebSandboxFlags sandboxFlags) override
     {
         ++m_callCount;
         return 0;
@@ -6703,7 +6703,7 @@ TEST_P(ParameterizedWebFrameTest, HasVisibleContentOnHiddenFrames)
 class ManifestChangeWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     ManifestChangeWebFrameClient() : m_manifestChangeCount(0) { }
-    virtual void didChangeManifest(WebLocalFrame*) override
+    void didChangeManifest(WebLocalFrame*) override
     {
         ++m_manifestChangeCount;
     }
@@ -6793,7 +6793,7 @@ TEST_P(ParameterizedWebFrameTest, ManifestCSPFetchSelfReportOnly)
 class DefaultPresentationChangeWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     DefaultPresentationChangeWebFrameClient() : m_defaultPresentationChangeCount(0) { }
-    virtual void didChangeDefaultPresentation(WebLocalFrame*) override
+    void didChangeDefaultPresentation(WebLocalFrame*) override
     {
         ++m_defaultPresentationChangeCount;
     }
@@ -7544,7 +7544,7 @@ TEST_P(ParameterizedWebFrameTest, RemoteFrameInitialCommitType)
 class MockDocumentThreadableLoaderClient : public DocumentThreadableLoaderClient {
 public:
     MockDocumentThreadableLoaderClient() : m_failed(false) { }
-    virtual void didFail(const ResourceError&) override { m_failed = true;}
+    void didFail(const ResourceError&) override { m_failed = true;}
 
     void reset() { m_failed = false; }
     bool failed() { return m_failed; }

@@ -338,7 +338,7 @@ int main(int argc, char* argv[])
             // Do nothing: make blink::Platform use the default crypto-randoms.
         }
 
-        virtual void screenColorProfile(WebVector<char>* profile) override
+        void screenColorProfile(WebVector<char>* profile) override
         {
             getScreenColorProfile(profile); // Returns a whacked color profile.
         }

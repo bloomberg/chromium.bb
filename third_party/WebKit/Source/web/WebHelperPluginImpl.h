@@ -53,14 +53,14 @@ class WebHelperPluginImpl final : public WebHelperPlugin {
     WTF_MAKE_FAST_ALLOCATED(WebHelperPluginImpl);
 public:
     // WebHelperPlugin methods:
-    virtual WebPlugin* getPlugin() override;
-    virtual void destroy() override;
+    WebPlugin* getPlugin() override;
+    void destroy() override;
 
 private:
     friend class WebHelperPlugin;
 
     WebHelperPluginImpl();
-    virtual ~WebHelperPluginImpl();
+    ~WebHelperPluginImpl() override;
 
     bool initialize(const String& pluginType, WebLocalFrameImpl*);
     void reallyDestroy(Timer<WebHelperPluginImpl>*);

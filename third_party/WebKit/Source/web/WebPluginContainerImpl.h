@@ -70,59 +70,59 @@ public:
     }
 
     // PluginView methods
-    virtual WebLayer* platformLayer() const override;
-    virtual v8::Local<v8::Object> scriptableObject(v8::Isolate*) override;
-    virtual bool getFormValue(String&) override;
-    virtual bool supportsKeyboardFocus() const override;
-    virtual bool supportsInputMethod() const override;
-    virtual bool canProcessDrag() const override;
-    virtual bool wantsWheelEvents() override;
-    virtual void layoutIfNeeded() override;
-    virtual void invalidatePaintIfNeeded() override { issuePaintInvalidations(); }
+    WebLayer* platformLayer() const override;
+    v8::Local<v8::Object> scriptableObject(v8::Isolate*) override;
+    bool getFormValue(String&) override;
+    bool supportsKeyboardFocus() const override;
+    bool supportsInputMethod() const override;
+    bool canProcessDrag() const override;
+    bool wantsWheelEvents() override;
+    void layoutIfNeeded() override;
+    void invalidatePaintIfNeeded() override { issuePaintInvalidations(); }
 
     // Widget methods
-    virtual void setFrameRect(const IntRect&) override;
-    virtual void paint(GraphicsContext*, const IntRect&) override;
-    virtual void invalidateRect(const IntRect&) override;
-    virtual void setFocus(bool, WebFocusType) override;
-    virtual void show() override;
-    virtual void hide() override;
-    virtual void handleEvent(Event*) override;
-    virtual void frameRectsChanged() override;
-    virtual void setParentVisible(bool) override;
-    virtual void setParent(Widget*) override;
-    virtual void widgetPositionsUpdated() override;
-    virtual bool isPluginContainer() const override { return true; }
-    virtual void eventListenersRemoved() override;
-    virtual bool pluginShouldPersist() const override;
+    void setFrameRect(const IntRect&) override;
+    void paint(GraphicsContext*, const IntRect&) override;
+    void invalidateRect(const IntRect&) override;
+    void setFocus(bool, WebFocusType) override;
+    void show() override;
+    void hide() override;
+    void handleEvent(Event*) override;
+    void frameRectsChanged() override;
+    void setParentVisible(bool) override;
+    void setParent(Widget*) override;
+    void widgetPositionsUpdated() override;
+    bool isPluginContainer() const override { return true; }
+    void eventListenersRemoved() override;
+    bool pluginShouldPersist() const override;
 
     // WebPluginContainer methods
-    virtual WebElement element() override;
-    virtual void invalidate() override;
-    virtual void invalidateRect(const WebRect&) override;
-    virtual void scrollRect(const WebRect&) override;
-    virtual void setNeedsLayout() override;
-    virtual void reportGeometry() override;
-    virtual void allowScriptObjects() override;
-    virtual void clearScriptObjects() override;
-    virtual NPObject* scriptableObjectForElement() override;
-    virtual v8::Local<v8::Object> v8ObjectForElement() override;
-    virtual WebString executeScriptURL(const WebURL&, bool popupsAllowed) override;
-    virtual void loadFrameRequest(const WebURLRequest&, const WebString& target, bool notifyNeeded, void* notifyData) override;
-    virtual void zoomLevelChanged(double zoomLevel) override;
-    virtual bool isRectTopmost(const WebRect&) override;
-    virtual void requestTouchEventType(TouchEventRequestType) override;
-    virtual void setWantsWheelEvents(bool) override;
-    virtual WebPoint rootFrameToLocalPoint(const WebPoint&) override;
-    virtual WebPoint localToRootFramePoint(const WebPoint&) override;
+    WebElement element() override;
+    void invalidate() override;
+    void invalidateRect(const WebRect&) override;
+    void scrollRect(const WebRect&) override;
+    void setNeedsLayout() override;
+    void reportGeometry() override;
+    void allowScriptObjects() override;
+    void clearScriptObjects() override;
+    NPObject* scriptableObjectForElement() override;
+    v8::Local<v8::Object> v8ObjectForElement() override;
+    WebString executeScriptURL(const WebURL&, bool popupsAllowed) override;
+    void loadFrameRequest(const WebURLRequest&, const WebString& target, bool notifyNeeded, void* notifyData) override;
+    void zoomLevelChanged(double zoomLevel) override;
+    bool isRectTopmost(const WebRect&) override;
+    void requestTouchEventType(TouchEventRequestType) override;
+    void setWantsWheelEvents(bool) override;
+    WebPoint rootFrameToLocalPoint(const WebPoint&) override;
+    WebPoint localToRootFramePoint(const WebPoint&) override;
 
     // This cannot be null.
-    virtual WebPlugin* plugin() override { return m_webPlugin; }
-    virtual void setPlugin(WebPlugin*) override;
+    WebPlugin* plugin() override { return m_webPlugin; }
+    void setPlugin(WebPlugin*) override;
 
-    virtual float deviceScaleFactor() override;
-    virtual float pageScaleFactor() override;
-    virtual float pageZoomFactor() override;
+    float deviceScaleFactor() override;
+    float pageScaleFactor() override;
+    float pageZoomFactor() override;
 
     virtual void setWebLayer(WebLayer*);
 
@@ -151,24 +151,24 @@ public:
     bool executeEditCommand(const WebString& name, const WebString& value);
 
     // Resource load events for the plugin's source data:
-    virtual void didReceiveResponse(const ResourceResponse&) override;
-    virtual void didReceiveData(const char *data, int dataLength) override;
-    virtual void didFinishLoading() override;
-    virtual void didFailLoading(const ResourceError&) override;
+    void didReceiveResponse(const ResourceResponse&) override;
+    void didReceiveData(const char *data, int dataLength) override;
+    void didFinishLoading() override;
+    void didFailLoading(const ResourceError&) override;
 
     void willDestroyPluginLoadObserver(WebPluginLoadObserver*);
 
     DECLARE_VIRTUAL_TRACE();
-    virtual void dispose() override;
+    void dispose() override;
 
 #if ENABLE(OILPAN)
-    virtual LocalFrame* pluginFrame() const override { return frame(); }
-    virtual void shouldDisposePlugin() override;
+    LocalFrame* pluginFrame() const override { return frame(); }
+    void shouldDisposePlugin() override;
 #endif
 
 private:
     WebPluginContainerImpl(HTMLPlugInElement*, WebPlugin*);
-    virtual ~WebPluginContainerImpl();
+    ~WebPluginContainerImpl() override;
 
     void handleMouseEvent(MouseEvent*);
     void handleDragEvent(MouseEvent*);

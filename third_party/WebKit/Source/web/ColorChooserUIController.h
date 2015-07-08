@@ -46,19 +46,19 @@ public:
         return adoptPtrWillBeNoop(new ColorChooserUIController(frame, client));
     }
 
-    virtual ~ColorChooserUIController();
+    ~ColorChooserUIController() override;
     DECLARE_VIRTUAL_TRACE();
 
     virtual void openUI();
 
     // ColorChooser functions:
-    virtual void setSelectedColor(const Color&) override final;
-    virtual void endChooser() override;
-    virtual AXObject* rootAXObject() override;
+    void setSelectedColor(const Color&) final;
+    void endChooser() override;
+    AXObject* rootAXObject() override;
 
     // WebColorChooserClient functions:
-    virtual void didChooseColor(const WebColor&) override final;
-    virtual void didEndChooser() override final;
+    void didChooseColor(const WebColor&) final;
+    void didEndChooser() final;
 
 protected:
     ColorChooserUIController(LocalFrame*, ColorChooserClient*);

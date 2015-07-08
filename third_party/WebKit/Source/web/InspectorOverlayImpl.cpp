@@ -70,17 +70,17 @@ public:
         , m_overlay(overlay)
     { }
 
-    virtual void setCursor(const Cursor& cursor) override
+    void setCursor(const Cursor& cursor) override
     {
         m_client.setCursor(cursor);
     }
 
-    virtual void setToolTip(const String& tooltip, TextDirection direction) override
+    void setToolTip(const String& tooltip, TextDirection direction) override
     {
         m_client.setToolTip(tooltip, direction);
     }
 
-    virtual void invalidateRect(const IntRect&) override
+    void invalidateRect(const IntRect&) override
     {
         m_overlay->invalidate();
     }

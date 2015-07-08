@@ -45,8 +45,8 @@ public:
     {
     }
 
-    virtual void didFinishCheckingText(const WebVector<WebTextCheckingResult>&) override;
-    virtual void didCancelCheckingText() override;
+    void didFinishCheckingText(const WebVector<WebTextCheckingResult>&) override;
+    void didCancelCheckingText() override;
 
 private:
     virtual ~WebTextCheckingCompletionImpl() { }

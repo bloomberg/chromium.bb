@@ -20,9 +20,9 @@ class SuspendableScriptExecutor final : public RefCountedWillBeRefCountedGarbage
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SuspendableScriptExecutor);
 public:
     static void createAndRun(LocalFrame*, int worldID, const WillBeHeapVector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback*);
-    virtual ~SuspendableScriptExecutor();
+    ~SuspendableScriptExecutor() override;
 
-    virtual void contextDestroyed() override;
+    void contextDestroyed() override;
 
     // Eager finalization is needed to promptly stop this timer object.
     // (see DOMTimer comment for more.)
@@ -32,7 +32,7 @@ public:
 private:
     SuspendableScriptExecutor(LocalFrame*, int worldID, const WillBeHeapVector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback*);
 
-    virtual void fired() override;
+    void fired() override;
 
     void run();
     void executeAndDestroySelf();

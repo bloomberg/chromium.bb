@@ -46,143 +46,143 @@ class WebPluginLoadObserver;
 class FrameLoaderClientImpl final : public FrameLoaderClient {
 public:
     explicit FrameLoaderClientImpl(WebLocalFrameImpl* webFrame);
-    virtual ~FrameLoaderClientImpl();
+    ~FrameLoaderClientImpl() override;
 
     WebLocalFrameImpl* webFrame() const { return m_webFrame; }
 
     // FrameLoaderClient ----------------------------------------------
 
-    virtual void didCreateNewDocument() override;
+    void didCreateNewDocument() override;
     // Notifies the WebView delegate that the JS window object has been cleared,
     // giving it a chance to bind native objects to the window before script
     // parsing begins.
-    virtual void dispatchDidClearWindowObjectInMainWorld() override;
-    virtual void documentElementAvailable() override;
+    void dispatchDidClearWindowObjectInMainWorld() override;
+    void documentElementAvailable() override;
 
-    virtual void didCreateScriptContext(v8::Local<v8::Context>, int extensionGroup, int worldId) override;
-    virtual void willReleaseScriptContext(v8::Local<v8::Context>, int worldId) override;
+    void didCreateScriptContext(v8::Local<v8::Context>, int extensionGroup, int worldId) override;
+    void willReleaseScriptContext(v8::Local<v8::Context>, int worldId) override;
 
     // Returns true if we should allow the given V8 extension to be added to
     // the script context at the currently loading page and given extension group.
-    virtual bool allowScriptExtension(const String& extensionName, int extensionGroup, int worldId) override;
+    bool allowScriptExtension(const String& extensionName, int extensionGroup, int worldId) override;
 
-    virtual bool hasWebView() const override;
-    virtual bool inShadowTree() const override;
-    virtual Frame* opener() const override;
-    virtual void setOpener(Frame*) override;
-    virtual Frame* parent() const override;
-    virtual Frame* top() const override;
-    virtual Frame* previousSibling() const override;
-    virtual Frame* nextSibling() const override;
-    virtual Frame* firstChild() const override;
-    virtual Frame* lastChild() const override;
-    virtual void willBeDetached() override;
-    virtual void detached(FrameDetachType) override;
-    virtual void dispatchWillSendRequest(DocumentLoader*, unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse) override;
-    virtual void dispatchDidReceiveResponse(DocumentLoader*, unsigned long identifier, const ResourceResponse&) override;
-    virtual void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority, int intraPriorityValue) override;
-    virtual void dispatchDidFinishLoading(DocumentLoader*, unsigned long identifier) override;
-    virtual void dispatchDidLoadResourceFromMemoryCache(const ResourceRequest&, const ResourceResponse&) override;
-    virtual void dispatchDidHandleOnloadEvents() override;
-    virtual void dispatchDidReceiveServerRedirectForProvisionalLoad() override;
-    virtual void dispatchDidNavigateWithinPage(HistoryItem*, HistoryCommitType) override;
-    virtual void dispatchWillClose() override;
-    virtual void dispatchDidStartProvisionalLoad(double triggeringEventTime) override;
-    virtual void dispatchDidReceiveTitle(const String&) override;
-    virtual void dispatchDidChangeIcons(IconType) override;
-    virtual void dispatchDidCommitLoad(HistoryItem*, HistoryCommitType) override;
-    virtual void dispatchDidFailProvisionalLoad(const ResourceError&, HistoryCommitType) override;
-    virtual void dispatchDidFailLoad(const ResourceError&, HistoryCommitType) override;
-    virtual void dispatchDidFinishDocumentLoad() override;
-    virtual void dispatchDidFinishLoad() override;
-    virtual void dispatchDidFirstVisuallyNonEmptyLayout() override;
+    bool hasWebView() const override;
+    bool inShadowTree() const override;
+    Frame* opener() const override;
+    void setOpener(Frame*) override;
+    Frame* parent() const override;
+    Frame* top() const override;
+    Frame* previousSibling() const override;
+    Frame* nextSibling() const override;
+    Frame* firstChild() const override;
+    Frame* lastChild() const override;
+    void willBeDetached() override;
+    void detached(FrameDetachType) override;
+    void dispatchWillSendRequest(DocumentLoader*, unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse) override;
+    void dispatchDidReceiveResponse(DocumentLoader*, unsigned long identifier, const ResourceResponse&) override;
+    void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority, int intraPriorityValue) override;
+    void dispatchDidFinishLoading(DocumentLoader*, unsigned long identifier) override;
+    void dispatchDidLoadResourceFromMemoryCache(const ResourceRequest&, const ResourceResponse&) override;
+    void dispatchDidHandleOnloadEvents() override;
+    void dispatchDidReceiveServerRedirectForProvisionalLoad() override;
+    void dispatchDidNavigateWithinPage(HistoryItem*, HistoryCommitType) override;
+    void dispatchWillClose() override;
+    void dispatchDidStartProvisionalLoad(double triggeringEventTime) override;
+    void dispatchDidReceiveTitle(const String&) override;
+    void dispatchDidChangeIcons(IconType) override;
+    void dispatchDidCommitLoad(HistoryItem*, HistoryCommitType) override;
+    void dispatchDidFailProvisionalLoad(const ResourceError&, HistoryCommitType) override;
+    void dispatchDidFailLoad(const ResourceError&, HistoryCommitType) override;
+    void dispatchDidFinishDocumentLoad() override;
+    void dispatchDidFinishLoad() override;
+    void dispatchDidFirstVisuallyNonEmptyLayout() override;
 
-    virtual void dispatchDidChangeThemeColor() override;
-    virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationPolicy) override;
-    virtual void dispatchWillRequestResource(FetchRequest*) override;
-    virtual void dispatchWillSendSubmitEvent(HTMLFormElement*) override;
-    virtual void dispatchWillSubmitForm(HTMLFormElement*) override;
-    virtual void didStartLoading(LoadStartType) override;
-    virtual void didStopLoading() override;
-    virtual void progressEstimateChanged(double progressEstimate) override;
-    virtual void loadURLExternally(const ResourceRequest&, NavigationPolicy, const String& suggestedName = String()) override;
-    virtual bool navigateBackForward(int offset) const override;
-    virtual void didAccessInitialDocument() override;
-    virtual void didDisplayInsecureContent() override;
-    virtual void didRunInsecureContent(SecurityOrigin*, const KURL& insecureURL) override;
-    virtual void didDetectXSS(const KURL&, bool didBlockEntirePage) override;
-    virtual void didDispatchPingLoader(const KURL&) override;
-    virtual void selectorMatchChanged(const Vector<String>& addedSelectors, const Vector<String>& removedSelectors) override;
-    virtual PassRefPtrWillBeRawPtr<DocumentLoader> createDocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&) override;
-    virtual WTF::String userAgent(const KURL&) override;
-    virtual WTF::String doNotTrackValue() override;
-    virtual void transitionToCommittedForNewPage() override;
-    virtual PassRefPtrWillBeRawPtr<LocalFrame> createFrame(const FrameLoadRequest&, const WTF::AtomicString& name, HTMLFrameOwnerElement*) override;
+    void dispatchDidChangeThemeColor() override;
+    NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationPolicy) override;
+    void dispatchWillRequestResource(FetchRequest*) override;
+    void dispatchWillSendSubmitEvent(HTMLFormElement*) override;
+    void dispatchWillSubmitForm(HTMLFormElement*) override;
+    void didStartLoading(LoadStartType) override;
+    void didStopLoading() override;
+    void progressEstimateChanged(double progressEstimate) override;
+    void loadURLExternally(const ResourceRequest&, NavigationPolicy, const String& suggestedName = String()) override;
+    bool navigateBackForward(int offset) const override;
+    void didAccessInitialDocument() override;
+    void didDisplayInsecureContent() override;
+    void didRunInsecureContent(SecurityOrigin*, const KURL& insecureURL) override;
+    void didDetectXSS(const KURL&, bool didBlockEntirePage) override;
+    void didDispatchPingLoader(const KURL&) override;
+    void selectorMatchChanged(const Vector<String>& addedSelectors, const Vector<String>& removedSelectors) override;
+    PassRefPtrWillBeRawPtr<DocumentLoader> createDocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&) override;
+    WTF::String userAgent(const KURL&) override;
+    WTF::String doNotTrackValue() override;
+    void transitionToCommittedForNewPage() override;
+    PassRefPtrWillBeRawPtr<LocalFrame> createFrame(const FrameLoadRequest&, const WTF::AtomicString& name, HTMLFrameOwnerElement*) override;
     virtual bool canCreatePluginWithoutRenderer(const String& mimeType) const;
-    virtual PassOwnPtrWillBeRawPtr<PluginPlaceholder> createPluginPlaceholder(
+    PassOwnPtrWillBeRawPtr<PluginPlaceholder> createPluginPlaceholder(
         Document&, const KURL&,
         const Vector<String>& paramNames, const Vector<String>& paramValues,
         const String& mimeType, bool loadManually) override;
-    virtual PassRefPtrWillBeRawPtr<Widget> createPlugin(
+    PassRefPtrWillBeRawPtr<Widget> createPlugin(
         HTMLPlugInElement*, const KURL&,
         const Vector<WTF::String>&, const Vector<WTF::String>&,
         const WTF::String&, bool loadManually, DetachedPluginPolicy) override;
-    virtual PassRefPtrWillBeRawPtr<Widget> createJavaAppletWidget(
+    PassRefPtrWillBeRawPtr<Widget> createJavaAppletWidget(
         HTMLAppletElement*,
         const KURL& /* base_url */,
         const Vector<WTF::String>& paramNames,
         const Vector<WTF::String>& paramValues) override;
-    virtual ObjectContentType objectContentType(
+    ObjectContentType objectContentType(
         const KURL&, const WTF::String& mimeType, bool shouldPreferPlugInsForImages) override;
-    virtual void didChangeScrollOffset() override;
-    virtual void didUpdateCurrentHistoryItem() override;
-    virtual void didRemoveAllPendingStylesheet() override;
-    virtual bool allowScript(bool enabledPerSettings) override;
-    virtual bool allowScriptFromSource(bool enabledPerSettings, const KURL& scriptURL) override;
-    virtual bool allowPlugins(bool enabledPerSettings) override;
-    virtual bool allowImage(bool enabledPerSettings, const KURL& imageURL) override;
-    virtual bool allowMedia(const KURL& mediaURL) override;
-    virtual bool allowDisplayingInsecureContent(bool enabledPerSettings, SecurityOrigin*, const KURL&) override;
-    virtual bool allowRunningInsecureContent(bool enabledPerSettings, SecurityOrigin*, const KURL&) override;
-    virtual void didNotAllowScript() override;
-    virtual void didNotAllowPlugins() override;
+    void didChangeScrollOffset() override;
+    void didUpdateCurrentHistoryItem() override;
+    void didRemoveAllPendingStylesheet() override;
+    bool allowScript(bool enabledPerSettings) override;
+    bool allowScriptFromSource(bool enabledPerSettings, const KURL& scriptURL) override;
+    bool allowPlugins(bool enabledPerSettings) override;
+    bool allowImage(bool enabledPerSettings, const KURL& imageURL) override;
+    bool allowMedia(const KURL& mediaURL) override;
+    bool allowDisplayingInsecureContent(bool enabledPerSettings, SecurityOrigin*, const KURL&) override;
+    bool allowRunningInsecureContent(bool enabledPerSettings, SecurityOrigin*, const KURL&) override;
+    void didNotAllowScript() override;
+    void didNotAllowPlugins() override;
 
-    virtual WebCookieJar* cookieJar() const override;
-    virtual bool willCheckAndDispatchMessageEvent(SecurityOrigin* target, MessageEvent*, LocalFrame* sourceFrame) const override;
-    virtual void didChangeName(const String&) override;
-    virtual void didChangeSandboxFlags(Frame* childFrame, SandboxFlags) override;
+    WebCookieJar* cookieJar() const override;
+    bool willCheckAndDispatchMessageEvent(SecurityOrigin* target, MessageEvent*, LocalFrame* sourceFrame) const override;
+    void didChangeName(const String&) override;
+    void didChangeSandboxFlags(Frame* childFrame, SandboxFlags) override;
 
-    virtual void dispatchWillOpenWebSocket(WebSocketHandle*) override;
+    void dispatchWillOpenWebSocket(WebSocketHandle*) override;
 
-    virtual void dispatchWillStartUsingPeerConnectionHandler(WebRTCPeerConnectionHandler*) override;
+    void dispatchWillStartUsingPeerConnectionHandler(WebRTCPeerConnectionHandler*) override;
 
-    virtual void didRequestAutocomplete(HTMLFormElement*) override;
+    void didRequestAutocomplete(HTMLFormElement*) override;
 
-    virtual bool allowWebGL(bool enabledPerSettings) override;
-    virtual void didLoseWebGLContext(int arbRobustnessContextLostReason) override;
+    bool allowWebGL(bool enabledPerSettings) override;
+    void didLoseWebGLContext(int arbRobustnessContextLostReason) override;
 
-    virtual void dispatchWillInsertBody() override;
+    void dispatchWillInsertBody() override;
 
-    virtual v8::Local<v8::Value> createTestInterface(const AtomicString& name) override;
+    v8::Local<v8::Value> createTestInterface(const AtomicString& name) override;
 
-    virtual PassOwnPtr<WebServiceWorkerProvider> createServiceWorkerProvider() override;
-    virtual bool isControlledByServiceWorker(DocumentLoader&) override;
-    virtual int64_t serviceWorkerID(DocumentLoader&) override;
-    virtual SharedWorkerRepositoryClient* sharedWorkerRepositoryClient() override;
+    PassOwnPtr<WebServiceWorkerProvider> createServiceWorkerProvider() override;
+    bool isControlledByServiceWorker(DocumentLoader&) override;
+    int64_t serviceWorkerID(DocumentLoader&) override;
+    SharedWorkerRepositoryClient* sharedWorkerRepositoryClient() override;
 
-    virtual PassOwnPtr<WebApplicationCacheHost> createApplicationCacheHost(WebApplicationCacheHostClient*) override;
+    PassOwnPtr<WebApplicationCacheHost> createApplicationCacheHost(WebApplicationCacheHostClient*) override;
 
-    virtual void didStopAllLoaders() override;
+    void didStopAllLoaders() override;
 
-    virtual void dispatchDidChangeManifest() override;
+    void dispatchDidChangeManifest() override;
 
-    virtual void dispatchDidChangeDefaultPresentation() override;
+    void dispatchDidChangeDefaultPresentation() override;
 
-    virtual unsigned backForwardLength() override;
+    unsigned backForwardLength() override;
 
-    virtual void suddenTerminationDisablerChanged(bool present, SuddenTerminationDisablerType) override;
+    void suddenTerminationDisablerChanged(bool present, SuddenTerminationDisablerType) override;
 private:
-    virtual bool isFrameLoaderClientImpl() const override { return true; }
+    bool isFrameLoaderClientImpl() const override { return true; }
 
     PassOwnPtr<WebPluginLoadObserver> pluginLoadObserver(DocumentLoader*);
 

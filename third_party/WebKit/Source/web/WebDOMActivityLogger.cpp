@@ -47,22 +47,22 @@ public:
     {
     }
 
-    virtual void logGetter(const String& apiName) override
+    void logGetter(const String& apiName) override
     {
         m_domActivityLogger->logGetter(WebString(apiName), getURL(), getTitle());
     }
 
-    virtual void logSetter(const String& apiName, const v8::Local<v8::Value>& newValue) override
+    void logSetter(const String& apiName, const v8::Local<v8::Value>& newValue) override
     {
         m_domActivityLogger->logSetter(WebString(apiName), newValue, getURL(), getTitle());
     }
 
-    virtual void logMethod(const String& apiName, int argc, const v8::Local<v8::Value>* argv) override
+    void logMethod(const String& apiName, int argc, const v8::Local<v8::Value>* argv) override
     {
         m_domActivityLogger->logMethod(WebString(apiName), argc, argv, getURL(), getTitle());
     }
 
-    virtual void logEvent(const String& eventName, int argc, const String* argv) override
+    void logEvent(const String& eventName, int argc, const String* argv) override
     {
         Vector<WebString> webStringArgv;
         for (int i = 0; i < argc; i++)

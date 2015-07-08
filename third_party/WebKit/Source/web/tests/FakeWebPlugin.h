@@ -48,25 +48,25 @@ public:
     FakeWebPlugin(WebFrame*, const WebPluginParams&);
 
     // WebPlugin methods:
-    virtual bool initialize(WebPluginContainer*) override;
-    virtual void destroy() override;
-    virtual NPObject* scriptableObject() override { return 0; }
-    virtual bool canProcessDrag() const override { return false; }
-    virtual void layoutIfNeeded() override { }
-    virtual void paint(WebCanvas*, const WebRect&) override { }
-    virtual void updateGeometry(const WebRect& clientRect, const WebRect& clipRect, const WebRect& windowClipRect, const WebVector<WebRect>& cutOutsRects, bool isVisible) override { }
-    virtual void updateFocus(bool, WebFocusType) override { }
-    virtual void updateVisibility(bool) override { }
-    virtual bool acceptsInputEvents() override { return true; }
-    virtual bool handleInputEvent(const WebInputEvent&, WebCursorInfo&) override { return false; }
-    virtual bool handleDragStatusUpdate(WebDragStatus, const WebDragData&, WebDragOperationsMask, const WebPoint& position, const WebPoint& screenPosition) override { return false; }
-    virtual void didReceiveResponse(const WebURLResponse&) override { }
-    virtual void didReceiveData(const char* data, int dataLength) override { }
-    virtual void didFinishLoading() override { }
-    virtual void didFailLoading(const WebURLError&) override { }
-    virtual void didFinishLoadingFrameRequest(const WebURL&, void* notifyData) override { }
-    virtual void didFailLoadingFrameRequest(const WebURL&, void* notifyData, const WebURLError&) override { }
-    virtual bool isPlaceholder() override { return false; }
+    bool initialize(WebPluginContainer*) override;
+    void destroy() override;
+    NPObject* scriptableObject() override { return 0; }
+    bool canProcessDrag() const override { return false; }
+    void layoutIfNeeded() override { }
+    void paint(WebCanvas*, const WebRect&) override { }
+    void updateGeometry(const WebRect& clientRect, const WebRect& clipRect, const WebRect& windowClipRect, const WebVector<WebRect>& cutOutsRects, bool isVisible) override { }
+    void updateFocus(bool, WebFocusType) override { }
+    void updateVisibility(bool) override { }
+    bool acceptsInputEvents() override { return true; }
+    bool handleInputEvent(const WebInputEvent&, WebCursorInfo&) override { return false; }
+    bool handleDragStatusUpdate(WebDragStatus, const WebDragData&, WebDragOperationsMask, const WebPoint& position, const WebPoint& screenPosition) override { return false; }
+    void didReceiveResponse(const WebURLResponse&) override { }
+    void didReceiveData(const char* data, int dataLength) override { }
+    void didFinishLoading() override { }
+    void didFailLoading(const WebURLError&) override { }
+    void didFinishLoadingFrameRequest(const WebURL&, void* notifyData) override { }
+    void didFailLoadingFrameRequest(const WebURL&, void* notifyData, const WebURLError&) override { }
+    bool isPlaceholder() override { return false; }
 
 protected:
     virtual ~FakeWebPlugin();

@@ -50,21 +50,21 @@ class WebURL;
 class WebSocketImpl final : public WebSocket {
 public:
     WebSocketImpl(const WebDocument&, WebSocketClient*);
-    virtual ~WebSocketImpl();
+    ~WebSocketImpl() override;
 
     bool isNull() const { return !m_private; }
 
-    virtual BinaryType binaryType() const override;
-    virtual bool setBinaryType(BinaryType) override;
-    virtual void connect(const WebURL&, const WebString& protocol) override;
-    virtual WebString subprotocol() override;
-    virtual WebString extensions() override;
-    virtual bool sendText(const WebString&) override;
-    virtual bool sendArrayBuffer(const WebArrayBuffer&) override;
-    virtual unsigned long bufferedAmount() const override;
-    virtual void close(int code, const WebString& reason) override;
-    virtual void fail(const WebString& reason) override;
-    virtual void disconnect() override;
+    BinaryType binaryType() const override;
+    bool setBinaryType(BinaryType) override;
+    void connect(const WebURL&, const WebString& protocol) override;
+    WebString subprotocol() override;
+    WebString extensions() override;
+    bool sendText(const WebString&) override;
+    bool sendArrayBuffer(const WebArrayBuffer&) override;
+    unsigned long bufferedAmount() const override;
+    void close(int code, const WebString& reason) override;
+    void fail(const WebString& reason) override;
+    void disconnect() override;
 
     // WebSocketChannelClient methods proxied by WebSocketChannelClientProxy.
     void didConnect(const String& subprotocol, const String& extensions);

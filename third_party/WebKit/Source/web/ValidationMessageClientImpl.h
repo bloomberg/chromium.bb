@@ -41,7 +41,7 @@ class ValidationMessageClientImpl final : public NoBaseWillBeGarbageCollectedFin
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ValidationMessageClientImpl);
 public:
     static PassOwnPtrWillBeRawPtr<ValidationMessageClientImpl> create(WebViewImpl&);
-    virtual ~ValidationMessageClientImpl();
+    ~ValidationMessageClientImpl() override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -50,11 +50,11 @@ private:
     void checkAnchorStatus(Timer<ValidationMessageClientImpl>*);
     FrameView* currentView();
 
-    virtual void showValidationMessage(const Element& anchor, const String& message, TextDirection messageDir, const String& subMessage, TextDirection subMessageDir) override;
-    virtual void hideValidationMessage(const Element& anchor) override;
-    virtual bool isValidationMessageVisible(const Element& anchor) override;
-    virtual void documentDetached(const Document&) override;
-    virtual void willBeDestroyed() override;
+    void showValidationMessage(const Element& anchor, const String& message, TextDirection messageDir, const String& subMessage, TextDirection subMessageDir) override;
+    void hideValidationMessage(const Element& anchor) override;
+    bool isValidationMessageVisible(const Element& anchor) override;
+    void documentDetached(const Document&) override;
+    void willBeDestroyed() override;
 
     WebViewImpl& m_webView;
     RawPtrWillBeMember<const Element> m_currentAnchor;

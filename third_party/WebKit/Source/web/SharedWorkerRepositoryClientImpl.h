@@ -48,10 +48,10 @@ public:
         return adoptPtr(new SharedWorkerRepositoryClientImpl(client));
     }
 
-    virtual ~SharedWorkerRepositoryClientImpl() { }
+    ~SharedWorkerRepositoryClientImpl() override { }
 
-    virtual void connect(PassRefPtrWillBeRawPtr<SharedWorker>, PassOwnPtr<WebMessagePortChannel>, const KURL&, const String& name, ExceptionState&) override;
-    virtual void documentDetached(Document*) override;
+    void connect(PassRefPtrWillBeRawPtr<SharedWorker>, PassOwnPtr<WebMessagePortChannel>, const KURL&, const String& name, ExceptionState&) override;
+    void documentDetached(Document*) override;
 
 private:
     explicit SharedWorkerRepositoryClientImpl(WebSharedWorkerRepositoryClient*);

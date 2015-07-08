@@ -42,13 +42,13 @@ class WebViewImpl;
 class EditorClientImpl final : public EditorClient {
 public:
     explicit EditorClientImpl(WebViewImpl*);
-    virtual ~EditorClientImpl();
+    ~EditorClientImpl() override;
 
-    virtual void respondToChangedContents() override;
-    virtual void respondToChangedSelection(LocalFrame*, SelectionType) override;
-    virtual bool canCopyCut(LocalFrame*, bool defaultValue) const override;
-    virtual bool canPaste(LocalFrame*, bool defaultValue) const override;
-    virtual bool handleKeyboardEvent() override;
+    void respondToChangedContents() override;
+    void respondToChangedSelection(LocalFrame*, SelectionType) override;
+    bool canCopyCut(LocalFrame*, bool defaultValue) const override;
+    bool canPaste(LocalFrame*, bool defaultValue) const override;
+    bool handleKeyboardEvent() override;
 
 private:
     WebViewImpl* m_webView;

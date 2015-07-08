@@ -47,7 +47,7 @@ class WebDevToolsFrontendImpl final : public WebDevToolsFrontend, public Inspect
     WTF_MAKE_NONCOPYABLE(WebDevToolsFrontendImpl);
 public:
     WebDevToolsFrontendImpl(WebLocalFrameImpl*, WebDevToolsFrontendClient*);
-    virtual ~WebDevToolsFrontendImpl();
+    ~WebDevToolsFrontendImpl() override;
 
     void didClearWindowObject(WebLocalFrameImpl*);
 

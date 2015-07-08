@@ -40,10 +40,10 @@ class LocalFileSystemClient final : public FileSystemClient {
 public:
     static PassOwnPtr<FileSystemClient> create();
 
-    virtual ~LocalFileSystemClient();
+    ~LocalFileSystemClient() override;
 
-    virtual bool requestFileSystemAccessSync(ExecutionContext*) override;
-    virtual void requestFileSystemAccessAsync(ExecutionContext*, PassOwnPtr<ContentSettingCallbacks>) override;
+    bool requestFileSystemAccessSync(ExecutionContext*) override;
+    void requestFileSystemAccessAsync(ExecutionContext*, PassOwnPtr<ContentSettingCallbacks>) override;
 
 private:
     LocalFileSystemClient();

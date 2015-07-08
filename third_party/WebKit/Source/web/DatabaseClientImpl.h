@@ -41,10 +41,10 @@ class DatabaseClientImpl final : public NoBaseWillBeGarbageCollectedFinalized<Da
 public:
     static PassOwnPtrWillBeRawPtr<DatabaseClientImpl> create();
 
-    virtual ~DatabaseClientImpl();
+    ~DatabaseClientImpl() override;
     DECLARE_VIRTUAL_TRACE();
 
-    virtual bool allowDatabase(ExecutionContext*, const String& name, const String& displayName, unsigned long estimatedSize) override;
+    bool allowDatabase(ExecutionContext*, const String& name, const String& displayName, unsigned long estimatedSize) override;
 
 private:
     DatabaseClientImpl();

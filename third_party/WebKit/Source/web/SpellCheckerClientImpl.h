@@ -43,22 +43,22 @@ class SpellCheckerClientImpl final : public SpellCheckerClient, public TextCheck
 public:
     explicit SpellCheckerClientImpl(WebViewImpl*);
 
-    virtual ~SpellCheckerClientImpl();
+    ~SpellCheckerClientImpl() override;
 
-    virtual bool isContinuousSpellCheckingEnabled() override;
-    virtual void toggleContinuousSpellChecking() override;
-    virtual bool isGrammarCheckingEnabled() override;
-    virtual bool shouldEraseMarkersAfterChangeSelection(TextCheckingType) const override;
-    virtual void checkSpellingOfString(const String&, int* misspellingLocation, int* misspellingLength) override;
-    virtual void checkGrammarOfString(const String&, WTF::Vector<GrammarDetail>&,
+    bool isContinuousSpellCheckingEnabled() override;
+    void toggleContinuousSpellChecking() override;
+    bool isGrammarCheckingEnabled() override;
+    bool shouldEraseMarkersAfterChangeSelection(TextCheckingType) const override;
+    void checkSpellingOfString(const String&, int* misspellingLocation, int* misspellingLength) override;
+    void checkGrammarOfString(const String&, Vector<GrammarDetail>&,
         int* badGrammarLocation, int* badGrammarLength) override;
-    virtual WTF::String getAutoCorrectSuggestionForMisspelledWord(const WTF::String&) override;
-    virtual void updateSpellingUIWithMisspelledWord(const WTF::String&) override;
-    virtual void showSpellingUI(bool show) override;
-    virtual bool spellingUIIsShowing() override;
-    virtual void requestCheckingOfString(PassRefPtrWillBeRawPtr<TextCheckingRequest>) override;
+    String getAutoCorrectSuggestionForMisspelledWord(const String&) override;
+    void updateSpellingUIWithMisspelledWord(const String&) override;
+    void showSpellingUI(bool show) override;
+    bool spellingUIIsShowing() override;
+    void requestCheckingOfString(PassRefPtrWillBeRawPtr<TextCheckingRequest>) override;
 
-    virtual TextCheckerClient& textChecker() override { return *this; }
+    TextCheckerClient& textChecker() override { return *this; }
 
 private:
     // Returns whether or not the focused control needs spell-checking.

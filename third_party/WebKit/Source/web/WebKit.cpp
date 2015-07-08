@@ -71,11 +71,11 @@ namespace {
 
 class EndOfTaskRunner : public WebThread::TaskObserver {
 public:
-    virtual void willProcessTask() override
+    void willProcessTask() override
     {
         AnimationClock::notifyTaskStart();
     }
-    virtual void didProcessTask() override
+    void didProcessTask() override
     {
         Microtask::performCheckpoint(mainThreadIsolate());
         V8GCController::reportDOMMemoryUsageToV8(mainThreadIsolate());

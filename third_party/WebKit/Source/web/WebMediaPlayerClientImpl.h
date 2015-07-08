@@ -55,45 +55,45 @@ class WebMediaPlayerClientImpl final : public MediaPlayer, public WebMediaPlayer
 public:
     static PassOwnPtr<MediaPlayer> create(MediaPlayerClient*);
 
-    virtual ~WebMediaPlayerClientImpl();
+    ~WebMediaPlayerClientImpl() override;
 
     // WebMediaPlayerClient methods:
-    virtual void networkStateChanged() override;
-    virtual void readyStateChanged() override;
-    virtual void timeChanged() override;
-    virtual void repaint() override;
-    virtual void durationChanged() override;
-    virtual void sizeChanged() override;
-    virtual void playbackStateChanged() override;
+    void networkStateChanged() override;
+    void readyStateChanged() override;
+    void timeChanged() override;
+    void repaint() override;
+    void durationChanged() override;
+    void sizeChanged() override;
+    void playbackStateChanged() override;
 
     // WebEncryptedMediaPlayerClient methods:
-    virtual void keyAdded(const WebString& keySystem, const WebString& sessionId) override;
-    virtual void keyError(const WebString& keySystem, const WebString& sessionId, MediaKeyErrorCode, unsigned short systemCode) override;
-    virtual void keyMessage(const WebString& keySystem, const WebString& sessionId, const unsigned char* message, unsigned messageLength, const WebURL& defaultURL) override;
-    virtual void encrypted(WebEncryptedMediaInitDataType, const unsigned char* initData, unsigned initDataLength) override;
-    virtual void didBlockPlaybackWaitingForKey() override;
-    virtual void didResumePlaybackBlockedForKey() override;
+    void keyAdded(const WebString& keySystem, const WebString& sessionId) override;
+    void keyError(const WebString& keySystem, const WebString& sessionId, MediaKeyErrorCode, unsigned short systemCode) override;
+    void keyMessage(const WebString& keySystem, const WebString& sessionId, const unsigned char* message, unsigned messageLength, const WebURL& defaultURL) override;
+    void encrypted(WebEncryptedMediaInitDataType, const unsigned char* initData, unsigned initDataLength) override;
+    void didBlockPlaybackWaitingForKey() override;
+    void didResumePlaybackBlockedForKey() override;
 
-    virtual void setWebLayer(WebLayer*) override;
-    virtual WebMediaPlayer::TrackId addAudioTrack(const WebString& id, AudioTrackKind, const WebString& label, const WebString& language, bool enabled) override;
-    virtual void removeAudioTrack(WebMediaPlayer::TrackId) override;
-    virtual WebMediaPlayer::TrackId addVideoTrack(const WebString& id, VideoTrackKind, const WebString& label, const WebString& language, bool selected) override;
-    virtual void removeVideoTrack(WebMediaPlayer::TrackId) override;
-    virtual void addTextTrack(WebInbandTextTrack*) override;
-    virtual void removeTextTrack(WebInbandTextTrack*) override;
-    virtual void mediaSourceOpened(WebMediaSource*) override;
-    virtual void requestSeek(double) override;
-    virtual void remoteRouteAvailabilityChanged(bool) override;
-    virtual void connectedToRemoteDevice() override;
-    virtual void disconnectedFromRemoteDevice() override;
+    void setWebLayer(WebLayer*) override;
+    WebMediaPlayer::TrackId addAudioTrack(const WebString& id, AudioTrackKind, const WebString& label, const WebString& language, bool enabled) override;
+    void removeAudioTrack(WebMediaPlayer::TrackId) override;
+    WebMediaPlayer::TrackId addVideoTrack(const WebString& id, VideoTrackKind, const WebString& label, const WebString& language, bool selected) override;
+    void removeVideoTrack(WebMediaPlayer::TrackId) override;
+    void addTextTrack(WebInbandTextTrack*) override;
+    void removeTextTrack(WebInbandTextTrack*) override;
+    void mediaSourceOpened(WebMediaSource*) override;
+    void requestSeek(double) override;
+    void remoteRouteAvailabilityChanged(bool) override;
+    void connectedToRemoteDevice() override;
+    void disconnectedFromRemoteDevice() override;
 
     // MediaPlayer methods:
-    virtual WebMediaPlayer* webMediaPlayer() const override;
-    virtual void load(WebMediaPlayer::LoadType, const WTF::String& url, WebMediaPlayer::CORSMode) override;
-    virtual void setPreload(MediaPlayer::Preload) override;
+    WebMediaPlayer* webMediaPlayer() const override;
+    void load(WebMediaPlayer::LoadType, const WTF::String& url, WebMediaPlayer::CORSMode) override;
+    void setPreload(MediaPlayer::Preload) override;
 
 #if ENABLE(WEB_AUDIO)
-    virtual AudioSourceProvider* audioSourceProvider() override;
+    AudioSourceProvider* audioSourceProvider() override;
 #endif
 
 private:
@@ -115,10 +115,10 @@ private:
         {
         }
 
-        virtual ~AudioClientImpl() { }
+        ~AudioClientImpl() override { }
 
         // WebAudioSourceProviderClient
-        virtual void setFormat(size_t numberOfChannels, float sampleRate) override;
+        void setFormat(size_t numberOfChannels, float sampleRate) override;
 
         DECLARE_TRACE();
 
@@ -136,14 +136,14 @@ private:
         {
         }
 
-        virtual ~AudioSourceProviderImpl() { }
+        ~AudioSourceProviderImpl() override { }
 
         // Wraps the given WebAudioSourceProvider.
         void wrap(WebAudioSourceProvider*);
 
         // AudioSourceProvider
-        virtual void setClient(AudioSourceProviderClient*) override;
-        virtual void provideInput(AudioBus*, size_t framesToProcess) override;
+        void setClient(AudioSourceProviderClient*) override;
+        void provideInput(AudioBus*, size_t framesToProcess) override;
 
     private:
         WebAudioSourceProvider* m_webAudioSourceProvider;

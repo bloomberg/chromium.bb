@@ -42,7 +42,7 @@ class DragClientImpl final : public DragClient {
 public:
     explicit DragClientImpl(WebViewImpl* webView) : m_webView(webView) { }
 
-    virtual DragDestinationAction actionMaskForDrag(DragData*) override;
+    DragDestinationAction actionMaskForDrag(DragData*) override;
     virtual void startDrag(
         DragImage*,
         const IntPoint& dragImageOrigin,

@@ -47,7 +47,7 @@ class WebViewImpl;
 class LinkHighlight final : public WebContentLayerClient, public WebCompositorAnimationDelegate, LinkHighlightClient {
 public:
     static PassOwnPtr<LinkHighlight> create(Node*, WebViewImpl*);
-    virtual ~LinkHighlight();
+    ~LinkHighlight() override;
 
     WebContentLayer* contentLayer();
     WebLayer* clipLayer();
@@ -55,17 +55,17 @@ public:
     void updateGeometry();
 
     // WebContentLayerClient implementation.
-    virtual void paintContents(WebCanvas*, const WebRect& clipRect, WebContentLayerClient::PaintingControlSetting) override;
-    virtual void paintContents(WebDisplayItemList*, const WebRect& clipRect, WebContentLayerClient::PaintingControlSetting) override;
+    void paintContents(WebCanvas*, const WebRect& clipRect, WebContentLayerClient::PaintingControlSetting) override;
+    void paintContents(WebDisplayItemList*, const WebRect& clipRect, WebContentLayerClient::PaintingControlSetting) override;
 
     // WebCompositorAnimationDelegate implementation.
-    virtual void notifyAnimationStarted(double monotonicTime, int group) override;
-    virtual void notifyAnimationFinished(double monotonicTime, int group) override;
+    void notifyAnimationStarted(double monotonicTime, int group) override;
+    void notifyAnimationFinished(double monotonicTime, int group) override;
 
     // LinkHighlightClient implementation.
-    virtual void invalidate() override;
-    virtual WebLayer* layer() override;
-    virtual void clearCurrentGraphicsLayer() override;
+    void invalidate() override;
+    WebLayer* layer() override;
+    void clearCurrentGraphicsLayer() override;
 
     GraphicsLayer* currentGraphicsLayerForTesting() const { return m_currentGraphicsLayer; }
 

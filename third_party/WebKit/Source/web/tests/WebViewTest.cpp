@@ -1275,7 +1275,7 @@ public:
     }
 
     // WebViewClient methods
-    virtual void printPage(WebLocalFrame*) override
+    void printPage(WebLocalFrame*) override
     {
         m_printCalled = true;
     }
@@ -1304,7 +1304,7 @@ public:
     {
     }
 
-    virtual void run() override
+    void run() override
     {
         const WebPoint clientPoint(0, 0);
         const WebPoint screenPoint(0, 0);
@@ -1364,18 +1364,18 @@ class ContentDetectorClient : public FrameTestHelpers::TestWebViewClient {
 public:
     ContentDetectorClient() { reset(); }
 
-    virtual WebContentDetectionResult detectContentAround(const WebHitTestResult& hitTest) override
+    WebContentDetectionResult detectContentAround(const WebHitTestResult& hitTest) override
     {
         m_contentDetectionRequested = true;
         return m_contentDetectionResult;
     }
 
-    virtual void scheduleContentIntent(const WebURL& url) override
+    void scheduleContentIntent(const WebURL& url) override
     {
         m_scheduledIntentURL = url;
     }
 
-    virtual void cancelScheduledContentIntents() override
+    void cancelScheduledContentIntents() override
     {
         m_pendingIntentsCancelled = true;
     }
@@ -1609,12 +1609,12 @@ public:
         , m_textChangesFromUserGesture(0)
         , m_textChangesWhileIgnored(0)
         , m_textChangesWhileNotIgnored(0)
-        , m_userGestureNotificationsCount(0) { }
+        , m_userGestureNotificationsCount(0) {}
 
-    virtual ~MockAutofillClient() { }
+    ~MockAutofillClient() override {}
 
-    virtual void setIgnoreTextChanges(bool ignore) override { m_ignoreTextChanges = ignore; }
-    virtual void textFieldDidChange(const WebFormControlElement&) override
+    void setIgnoreTextChanges(bool ignore) override { m_ignoreTextChanges = ignore; }
+    void textFieldDidChange(const WebFormControlElement&) override
     {
         if (m_ignoreTextChanges)
             ++m_textChangesWhileIgnored;
@@ -1624,7 +1624,7 @@ public:
         if (UserGestureIndicator::processingUserGesture())
             ++m_textChangesFromUserGesture;
     }
-    virtual void firstUserGestureObserved() override { ++m_userGestureNotificationsCount; }
+    void firstUserGestureObserved() override { ++m_userGestureNotificationsCount; }
 
     void clearChangeCounts()
     {
@@ -1809,13 +1809,13 @@ public:
     }
 
     // WebViewClient methods
-    virtual WebView* createView(WebLocalFrame*, const WebURLRequest&, const WebWindowFeatures&, const WebString& name, WebNavigationPolicy, bool) override
+    WebView* createView(WebLocalFrame*, const WebURLRequest&, const WebWindowFeatures&, const WebString& name, WebNavigationPolicy, bool) override
     {
         return m_webViewHelper.initialize(true, 0, 0);
     }
 
     // WebWidgetClient methods
-    virtual void didFocus() override
+    void didFocus() override
     {
         m_didFocusCalled = true;
     }
@@ -2090,7 +2090,7 @@ TEST_F(WebViewTest, SmartClipReturnsEmptyStringsWhenUserSelectIsNone)
 class CreateChildCounterFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     CreateChildCounterFrameClient() : m_count(0) { }
-    virtual WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType, const WebString& frameName, WebSandboxFlags) override;
+    WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType, const WebString& frameName, WebSandboxFlags) override;
 
     int count() const { return m_count; }
 
@@ -2163,7 +2163,7 @@ TEST_F(WebViewTest, AddFrameInChildInNavigateUnload)
 class TouchEventHandlerWebViewClient : public FrameTestHelpers::TestWebViewClient {
 public:
     // WebWidgetClient methods
-    virtual void hasTouchEventHandlers(bool state) override
+    void hasTouchEventHandlers(bool state) override
     {
         m_hasTouchEventHandlerCount[state]++;
     }
@@ -2341,7 +2341,7 @@ public:
     NonUserInputTextUpdateWebViewClient() : m_textIsUpdated(false) { }
 
     // WebWidgetClient methods
-    virtual void didUpdateTextOfFocusedElementByNonUserInput() override
+    void didUpdateTextOfFocusedElementByNonUserInput() override
     {
         m_textIsUpdated = true;
     }
@@ -2641,7 +2641,7 @@ TEST_F(WebViewTest, PreferredSize)
 
 class UnhandledTapWebViewClient : public FrameTestHelpers::TestWebViewClient {
 public:
-    virtual void showUnhandledTapUIIfNeeded(const WebPoint& tappedPosition, const WebNode& tappedNode, bool pageChanged) override
+    void showUnhandledTapUIIfNeeded(const WebPoint& tappedPosition, const WebNode& tappedNode, bool pageChanged) override
     {
         m_wasCalled = true;
         m_tappedPosition = tappedPosition;

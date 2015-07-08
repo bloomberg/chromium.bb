@@ -33,13 +33,13 @@ public:
 #if ENABLE(OILPAN)
     ~PluginPlaceholderImpl();
 #else
-    virtual ~PluginPlaceholderImpl() override;
+    ~PluginPlaceholderImpl() override;
 #endif
 
     DECLARE_VIRTUAL_TRACE();
 
     // PluginPlaceholder methods
-    virtual void loadIntoContainer(ContainerNode&) override;
+    void loadIntoContainer(ContainerNode&) override;
 
     // Visible for testing.
     WebPluginPlaceholder* webPluginPlaceholder() const { return m_webPluginPlaceholder.get(); }

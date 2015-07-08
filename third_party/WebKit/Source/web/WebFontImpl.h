@@ -43,20 +43,20 @@ class WebFontImpl final : public WebFont {
 public:
     explicit WebFontImpl(const FontDescription&);
 
-    virtual WebFontDescription fontDescription() const override;
+    WebFontDescription fontDescription() const override;
 
-    virtual int ascent() const override;
-    virtual int descent() const override;
-    virtual int height() const override;
-    virtual int lineSpacing() const override;
-    virtual float xHeight() const override;
+    int ascent() const override;
+    int descent() const override;
+    int height() const override;
+    int lineSpacing() const override;
+    float xHeight() const override;
 
-    virtual void drawText(WebCanvas*, const WebTextRun&, const WebFloatPoint& leftBaseline, WebColor,
+    void drawText(WebCanvas*, const WebTextRun&, const WebFloatPoint& leftBaseline, WebColor,
         const WebRect& clip) const override;
 
-    virtual int calculateWidth(const WebTextRun&) const override;
-    virtual int offsetForPosition(const WebTextRun&, float position) const override;
-    virtual WebFloatRect selectionRectForText(const WebTextRun&, const WebFloatPoint& leftBaseline,
+    int calculateWidth(const WebTextRun&) const override;
+    int offsetForPosition(const WebTextRun&, float position) const override;
+    WebFloatRect selectionRectForText(const WebTextRun&, const WebFloatPoint& leftBaseline,
         int height, int from = 0, int to = -1) const override;
 
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
