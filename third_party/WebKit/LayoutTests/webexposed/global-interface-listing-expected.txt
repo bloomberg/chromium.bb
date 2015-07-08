@@ -302,6 +302,7 @@ interface BluetoothGATTCharacteristic
     getter uuid
     method constructor
     method readValue
+    method writeValue
 interface BluetoothGATTRemoteServer
     getter connected
     method constructor

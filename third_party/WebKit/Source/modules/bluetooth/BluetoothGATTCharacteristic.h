@@ -6,6 +6,7 @@
 #define BluetoothGATTCharacteristic_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/dom/DOMArrayPiece.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/bluetooth/WebBluetoothGATTCharacteristic.h"
 #include "wtf/PassOwnPtr.h"
@@ -42,6 +43,7 @@ public:
     // IDL exposed interface:
     String uuid() { return m_webCharacteristic->uuid; }
     ScriptPromise readValue(ScriptState*);
+    ScriptPromise writeValue(ScriptState*, const DOMArrayPiece&);
 
 private:
     OwnPtr<WebBluetoothGATTCharacteristic> m_webCharacteristic;

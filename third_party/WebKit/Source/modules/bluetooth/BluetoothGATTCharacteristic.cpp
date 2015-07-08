@@ -41,4 +41,26 @@ ScriptPromise BluetoothGATTCharacteristic::readValue(ScriptState* scriptState)
     return promise;
 }
 
+ScriptPromise BluetoothGATTCharacteristic::writeValue(ScriptState* scriptState, const DOMArrayPiece& value)
+{
+    WebBluetooth* webbluetooth = Platform::current()->bluetooth();
+    // Partial implementation of writeValue algorithm:
+    // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothgattcharacteristic-writevalue
+
+    // Let valueVector be a copy of the bytes held by value.
+    std::vector<uint8_t> valueVector(value.bytes(), value.bytes() + value.byteLength());
+    // If bytes is more than 512 bytes long (the maximum length of an attribute
+    // value, per Long Attribute Values) return a promise rejected with an
+    // InvalidModificationError and abort.
+    if (valueVector.size() > 512)
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidModificationError, "Value can't exceed 512 bytes."));
+
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+
+    ScriptPromise promise = resolver->promise();
+    webbluetooth->writeValue(m_webCharacteristic->characteristicInstanceID, valueVector, new CallbackPromiseAdapter<void, BluetoothError>(resolver));
+
+    return promise;
+}
+
 } // namespace blink

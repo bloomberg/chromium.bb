@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharness-helpers.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="bluetooth-helpers.js"></script>
+<script>
+test(function(t) { assert_exists(window, 'testRunner'); t.done(); },
+     'window.testRunner is required for the following tests.');
+
+sequential_promise_test(function() {
+  testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
+  return navigator.bluetooth.requestDevice({
+    filters: [{services: ['generic_access']}]
+  }).then(function(device) {
+    return device.connectGATT();
+  }).then(function(gattServer) {
+    return gattServer.getPrimaryService('generic_access');
+  }).then(function(service) {
+    return service.getCharacteristic('device_name');
+  }).then(function(characteristic) {
+    testRunner.setBluetoothMockDataSet('EmptyAdapter');
+    return characteristic.writeValue(new ArrayBuffer(1 /* length */)).then(function() {
+      assert_unreached('Device went out of range, should fail.');
+    }, function(e) {
+      assert_equals(e.name, 'NetworkError');
+      assert_equals(e.message, 'Bluetooth Device is no longer in range.');
+    });
+  });
+}, 'Device goes out of range. Reject with NetworkError.');
+
+sequential_promise_test(function() {
+  testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
+  return navigator.bluetooth.requestDevice({
+    filters: [{services: ['generic_access']}]
+  }).then(function(device) {
+    return device.connectGATT();
+  }).then(function(gattServer) {
+    return gattServer.getPrimaryService('generic_access');
+  }).then(function(service) {
+    return service.getCharacteristic('device_name'); // Unwritable characteristic
+  }).then(function(characteristic) {
+    return characteristic.writeValue(new ArrayBuffer(1 /* length */)).then(function() {
+      assert_unreached('Characteristic is not writable. Should fail.');
+    }, function(e) {
+      assert_equals(e.name, 'NotSupportedError');
+      assert_equals(e.message, 'GATT operation not permitted.');
+    });
+  });
+}, 'Characteristic is not writable. Reject with NotSupportedError.');
+
+// TODO(ortuno): Add a test for when a characteristic gets removed.
+// http://crbug.com/499552
+
+sequential_promise_test(function() {
+  testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
+  return navigator.bluetooth.requestDevice({
+    filters: [{services: ['generic_access']}]
+  }).then(function(device) {
+    return device.connectGATT();
+  }).then(function(gattServer) {
+    return gattServer.getPrimaryService('generic_access');
+  }).then(function(service) {
+    return service.getCharacteristic('reconnection_address');
+  }).then(function(characteristic) {
+    return characteristic.writeValue(new Uint8Array(513 /* length */)).then(function() {
+      assert_unreached('Value is too long. Should fail.');
+    }, function(e) {
+      assert_equals(e.name, 'InvalidModificationError');
+      assert_equals(e.message, 'Value can\'t exceed 512 bytes.');
+    });
+  });
+}, 'Trying to write more than 512 bytes should return an error.');
+
+sequential_promise_test(function() {
+  testRunner.setBluetoothMockDataSet('ConnectableDeviceAdapter');
+  return navigator.bluetooth.requestDevice({
+    filters: [{services: ['generic_access']}]
+  }).then(function(device) {
+    return device.connectGATT();
+  }).then(function(gattServer) {
+    return gattServer.getPrimaryService('generic_access');
+  }).then(function(service) {
+    return service.getCharacteristic('reconnection_address');
+  }).then(function(characteristic) {
+    return Promise.all([characteristic.writeValue(new Uint8Array(1 /* length */)),
+                       characteristic.writeValue(new ArrayBuffer(1 /* length */)),
+                       characteristic.writeValue(new DataView(new ArrayBuffer(1 /* length */)))]);
+  });
+}, 'A regular write request to a writable characteristic should succeed.');
+</script>
