@@ -108,10 +108,25 @@ class MEDIA_EXPORT LogHelper {
 #define MEDIA_LOG(level, logger) \
   LogHelper((MediaLog::MEDIALOG_##level), (logger)).stream()
 
-// Logs only while count < max. Increments count for each log. Use LAZY_STREAM
-// to avoid wasteful evaluation of subsequent stream arguments.
-#define LIMITED_MEDIA_LOG(level, logger, count, max) \
-  LAZY_STREAM(MEDIA_LOG(level, logger), (count) < (max) && ((count)++ || true))
+// Logs only while |count| < |max|, increments |count| for each log, and warns
+// in the log if |count| has just reached |max|.
+// Multiple short-circuit evaluations are involved in this macro:
+// 1) LAZY_STREAM avoids wasteful MEDIA_LOG and evaluation of subsequent stream
+//    arguments if |count| is >= |max|, and
+// 2) the |condition| given to LAZY_STREAM itself short-circuits to prevent
+//    incrementing |count| beyond |max|.
+// Note that LAZY_STREAM guarantees exactly one evaluation of |condition|, so
+// |count| will be incremented at most once each time this macro runs.
+// The "|| true" portion of |condition| lets logging occur correctly when
+// |count| < |max| and |count|++ is 0.
+// TODO(wolenetz,chcunningham): Consider using a helper class instead of a macro
+// to improve readability.
+#define LIMITED_MEDIA_LOG(level, logger, count, max)                          \
+  LAZY_STREAM(MEDIA_LOG(level, logger),                                       \
+              (count) < (max) && ((count)++ || true))                         \
+      << (((count) == (max)) ? "(Log limit reached. Further similar entries " \
+                               "may be suppressed): "                         \
+                             : "")
 
 }  // namespace media
 
