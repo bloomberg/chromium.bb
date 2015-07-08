@@ -31,24 +31,28 @@
 
 namespace blink {
 
-class BackwardsCharacterIterator {
+template <typename Strategy>
+class BackwardsCharacterIteratorAlgorithm {
     STACK_ALLOCATED();
 public:
-    BackwardsCharacterIterator(const Position&, const Position&, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+    BackwardsCharacterIteratorAlgorithm(const PositionAlgorithm<Strategy>&, const PositionAlgorithm<Strategy>&, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 
     void advance(int);
 
     bool atEnd() const { return m_textIterator.atEnd(); }
 
-    Position endPosition() const;
+    PositionAlgorithm<Strategy> endPosition() const;
 
 private:
     int m_offset;
     int m_runOffset;
     bool m_atBreak;
 
-    SimplifiedBackwardsTextIterator m_textIterator;
+    SimplifiedBackwardsTextIteratorAlgorithm<Strategy> m_textIterator;
 };
+
+extern template class CORE_EXTERN_TEMPLATE_EXPORT BackwardsCharacterIteratorAlgorithm<EditingStrategy>;
+using BackwardsCharacterIterator = BackwardsCharacterIteratorAlgorithm<EditingStrategy>;
 
 } // namespace blink
 

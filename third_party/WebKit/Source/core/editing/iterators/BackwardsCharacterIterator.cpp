@@ -29,7 +29,8 @@
 
 namespace blink {
 
-BackwardsCharacterIterator::BackwardsCharacterIterator(const Position& start, const Position& end, TextIteratorBehaviorFlags behavior)
+template <typename Strategy>
+BackwardsCharacterIteratorAlgorithm<Strategy>::BackwardsCharacterIteratorAlgorithm(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, TextIteratorBehaviorFlags behavior)
     : m_offset(0)
     , m_runOffset(0)
     , m_atBreak(true)
@@ -39,19 +40,21 @@ BackwardsCharacterIterator::BackwardsCharacterIterator(const Position& start, co
         m_textIterator.advance();
 }
 
-Position BackwardsCharacterIterator::endPosition() const
+template <typename Strategy>
+PositionAlgorithm<Strategy> BackwardsCharacterIteratorAlgorithm<Strategy>::endPosition() const
 {
     if (!m_textIterator.atEnd()) {
         if (m_textIterator.length() > 1) {
             Node* n = m_textIterator.startContainer();
-            return createLegacyEditingPosition(n, m_textIterator.endOffset() - m_runOffset);
+            return PositionAlgorithm<Strategy>::createLegacyEditingPosition(n, m_textIterator.endOffset() - m_runOffset);
         }
         ASSERT(!m_runOffset);
     }
     return m_textIterator.endPosition();
 }
 
-void BackwardsCharacterIterator::advance(int count)
+template <typename Strategy>
+void BackwardsCharacterIteratorAlgorithm<Strategy>::advance(int count)
 {
     if (count <= 0) {
         ASSERT(!count);
@@ -89,5 +92,7 @@ void BackwardsCharacterIterator::advance(int count)
     m_atBreak = true;
     m_runOffset = 0;
 }
+
+template class CORE_TEMPLATE_EXPORT BackwardsCharacterIteratorAlgorithm<EditingStrategy>;
 
 } // namespace blink
