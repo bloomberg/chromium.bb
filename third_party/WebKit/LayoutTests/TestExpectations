@@ -1268,15 +1268,6 @@ crbug.com/442512 svg/dom/viewspec-viewtargetparams.html [ Pass ImageOnlyFailure 
 crbug.com/442512 svg/dom/viewspec-zoomandpanparams.html [ Pass ImageOnlyFailure ]
 crbug.com/442512 svg/dom/complex-svgView-specification.html [ Pass ImageOnlyFailure ]
 
-crbug.com/410929 [ Mac Win ] virtual/gpu/fast/canvas/canvas-toDataURL-jpeg-maximum-quality.html [ NeedsRebaseline ]
-crbug.com/410929 [ Mac ] virtual/gpu/fast/canvas/canvas-text-space-characters.html [ NeedsRebaseline ]
-crbug.com/410929 [ Linux Win ] virtual/gpu/fast/canvas/toDataURL-alpha.html [ NeedsRebaseline ]
-crbug.com/410929 [ Mac ] virtual/gpu/fast/canvas/canvas-text-baseline.html [ NeedsRebaseline ]
-crbug.com/410929 virtual/gpu/fast/canvas/canvas-text-alignment.html [ NeedsRebaseline ]
-crbug.com/410929 virtual/gpu/fast/canvas/canvas-toDataURL-webp.html [ NeedsRebaseline ]
-crbug.com/410929 [ Mac ] virtual/gpu/fast/canvas/shadow-offset-1.html [ NeedsRebaseline ]
-crbug.com/410929 [ Linux Win ] virtual/gpu/fast/canvas/toDataURL-alpha-stability.html [ NeedsRebaseline ]
-
 crbug.com/441705 fast/media/media-svg-crash.html [ Pass Failure ]
 
 crbug.com/410949 http/tests/security/local-image-from-remote-whitelisted.html [ Pass Failure ]
