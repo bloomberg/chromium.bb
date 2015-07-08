@@ -54,3 +54,7 @@ bool FLAGS_quic_send_fec_packet_only_on_fec_alarm = true;
 // Change from using IsPacketRemovable to IsPacketUseless in
 // QuicUnackedPacketMap.
 bool FLAGS_quic_use_is_useless_packet = true;
+
+// Delay setting QUIC's retransmission alarm until an ack is fully
+// processed or a write is complete.
+bool FLAGS_quic_delay_retransmission_alarm = true;

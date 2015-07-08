@@ -128,9 +128,9 @@ bool QuicStreamSequencer::MaybeCloseStream() {
   return false;
 }
 
-int QuicStreamSequencer::GetReadableRegions(iovec* iov, size_t iov_len) {
+int QuicStreamSequencer::GetReadableRegions(iovec* iov, size_t iov_len) const {
   DCHECK(!blocked_);
-  FrameMap::iterator it = buffered_frames_.begin();
+  FrameMap::const_iterator it = buffered_frames_.begin();
   size_t index = 0;
   QuicStreamOffset offset = num_bytes_consumed_;
   while (it != buffered_frames_.end() && index < iov_len) {

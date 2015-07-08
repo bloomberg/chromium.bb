@@ -1393,11 +1393,9 @@ TEST_P(QuicConnectionTest, TooManySentPackets) {
   // We're receive buffer limited, so the connection won't try to write more.
   EXPECT_CALL(visitor_, OnCanWrite()).Times(0);
 
-  // Nack every packet except the last one, leaving a huge gap.
+  // Nack the first packet and ack the rest, leaving a huge gap.
   QuicAckFrame frame1 = InitAckFrame(num_packets);
-  for (QuicPacketSequenceNumber i = 1; i < num_packets; ++i) {
-    NackPacket(i, &frame1);
-  }
+  NackPacket(1, &frame1);
   ProcessAckPacket(&frame1);
 }
 
@@ -1408,9 +1406,9 @@ TEST_P(QuicConnectionTest, TooManyReceivedPackets) {
   EXPECT_CALL(visitor_, OnConnectionClosed(
                             QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS, false));
 
-  // Miss every other packet for 5000 packets.
-  for (QuicPacketSequenceNumber i = 1; i < kMaxTrackedPackets; ++i) {
-    ProcessPacket(i * 2);
+  // Miss 99 of every 100 packets for 5500 packets.
+  for (QuicPacketSequenceNumber i = 1; i < kMaxTrackedPackets + 500; i += 100) {
+    ProcessPacket(i);
     if (!connection_.connected()) {
       break;
     }
@@ -3238,11 +3236,9 @@ TEST_P(QuicConnectionTest, SendMtuDiscoveryPacket) {
   // so the MTU should be at its old value.
   const string data(kDefaultMaxPacketSize + 1, '.');
   QuicByteCount size_before_mtu_change;
-  // OnPacketSent will be called twice, but only the size of the first packet
-  // will be stored.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
-      .Times(2)
-      .WillOnce(DoAll(SaveArg<3>(&size_before_mtu_change), Return(true)));
+      .WillOnce(DoAll(SaveArg<3>(&size_before_mtu_change), Return(true)))
+      .WillOnce(Return(true));
   connection_.SendStreamDataWithString(3, data, 0, kFin, nullptr);
   EXPECT_EQ(3u, creator_->sequence_number());
   EXPECT_EQ(kDefaultMaxPacketSize, size_before_mtu_change);
@@ -4011,7 +4007,7 @@ TEST_P(QuicConnectionTest, CheckSendStats) {
   EXPECT_CALL(*loss_algorithm_, DetectLostPackets(_, _, _, _))
       .WillOnce(Return(lost_packets));
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
-  EXPECT_CALL(visitor_, OnCanWrite()).Times(2);
+  EXPECT_CALL(visitor_, OnCanWrite());
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   ProcessAckPacket(&nack_three);
 

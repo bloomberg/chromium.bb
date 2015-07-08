@@ -235,12 +235,13 @@ ssize_t QuicTestClient::SendRequest(const string& uri) {
   return SendMessage(message);
 }
 
-void QuicTestClient::SendRequestsAndWaitForLastResponse(
+void QuicTestClient::SendRequestsAndWaitForResponses(
     const vector<string>& url_list) {
   for (const string& url : url_list) {
     SendRequest(url);
   }
-  WaitForResponse();
+  while (client()->WaitForEvents()) {
+  }
   return;
 }
 

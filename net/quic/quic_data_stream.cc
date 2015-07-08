@@ -62,7 +62,7 @@ size_t QuicDataStream::Readv(const struct iovec* iov, size_t iov_len) {
   return sequencer()->Readv(iov, iov_len);
 }
 
-int QuicDataStream::GetReadableRegions(iovec* iov, size_t iov_len) {
+int QuicDataStream::GetReadableRegions(iovec* iov, size_t iov_len) const {
   DCHECK(FinishedReadingHeaders());
   return sequencer()->GetReadableRegions(iov, iov_len);
 }

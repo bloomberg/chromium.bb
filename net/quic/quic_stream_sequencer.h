@@ -40,7 +40,7 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
 
   // Fills in up to iov_len iovecs with the next readable regions.  Returns the
   // number of iovs used.  Non-destructive of the underlying data.
-  int GetReadableRegions(iovec* iov, size_t iov_len);
+  int GetReadableRegions(iovec* iov, size_t iov_len) const;
 
   // Copies the data into the iov_len buffers provided.  Returns the number of
   // bytes read.  Any buffered data no longer in use will be released.

@@ -160,6 +160,8 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   // Returns the version of QUIC being used for this stream.
   QuicVersion version() const;
 
+  bool fin_received() const { return fin_received_; }
+
  protected:
   // Sends as much of 'data' to the connection as the connection will consume,
   // and then buffers any remaining data in queued_data_.

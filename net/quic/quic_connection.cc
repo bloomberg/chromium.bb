@@ -265,6 +265,8 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       ack_queued_(false),
       num_packets_received_since_last_ack_sent_(0),
       stop_waiting_count_(0),
+      delay_setting_retransmission_alarm_(false),
+      pending_retransmission_alarm_(false),
       ack_alarm_(helper->CreateAlarm(new AckAlarm(this))),
       retransmission_alarm_(helper->CreateAlarm(new RetransmissionAlarm(this))),
       send_alarm_(helper->CreateAlarm(new SendAlarm(this))),
@@ -701,15 +703,10 @@ void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
                                      time_of_last_received_packet_);
   sent_entropy_manager_.ClearEntropyBefore(
       sent_packet_manager_.least_packet_awaited_by_peer() - 1);
-  if (sent_packet_manager_.HasPendingRetransmissions()) {
-    WriteIfNotBlocked();
-  }
 
   // Always reset the retransmission alarm when an ack comes in, since we now
   // have a better estimate of the current rtt than when it was set.
-  QuicTime retransmission_time = sent_packet_manager_.GetRetransmissionTime();
-  retransmission_alarm_->Update(retransmission_time,
-                                QuicTime::Delta::FromMilliseconds(1));
+  SetRetransmissionAlarm();
 }
 
 void QuicConnection::ProcessStopWaitingFrame(
@@ -1116,9 +1113,7 @@ void QuicConnection::MaybeSendInResponseToPacket() {
 
   // Now that we have received an ack, we might be able to send packets which
   // are queued locally, or drain streams which are blocked.
-  if (CanWrite(HAS_RETRANSMITTABLE_DATA)) {
-    OnCanWrite();
-  }
+  WriteIfNotBlocked();
 }
 
 void QuicConnection::SendVersionNegotiationPacket() {
@@ -1178,6 +1173,7 @@ QuicConsumedData QuicConnection::SendStreamData(
   // right thing: check ack_queued_, and then check undecryptable packets and
   // also if there is possibility of revival. Only bundle an ack if there's no
   // processing left that may cause received_info_ to change.
+  ScopedRetransmissionScheduler alarm_delayer(this);
   ScopedPacketBundler ack_bundler(this, BUNDLE_PENDING_ACK);
   return packet_generator_.ConsumeData(id, iov, offset, fin, fec_protection,
                                        delegate);
@@ -1271,6 +1267,7 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
   stats_.bytes_received += packet.length();
   ++stats_.packets_received;
 
+  ScopedRetransmissionScheduler alarm_delayer(this);
   if (!framer_.ProcessPacket(packet)) {
     // If we are unable to decrypt this packet, it might be
     // because the CHLO or SHLO packet was lost.
@@ -1450,9 +1447,7 @@ void QuicConnection::RetransmitUnackedPackets(
 void QuicConnection::NeuterUnencryptedPackets() {
   sent_packet_manager_.NeuterUnencryptedPackets();
   // This may have changed the retransmission timer, so re-arm it.
-  QuicTime retransmission_time = sent_packet_manager_.GetRetransmissionTime();
-  retransmission_alarm_->Update(retransmission_time,
-                                QuicTime::Delta::FromMilliseconds(1));
+  SetRetransmissionAlarm();
 }
 
 bool QuicConnection::ShouldGeneratePacket(
@@ -1608,8 +1603,7 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
       IsRetransmittable(*packet));
 
   if (reset_retransmission_alarm || !retransmission_alarm_->IsSet()) {
-    retransmission_alarm_->Update(sent_packet_manager_.GetRetransmissionTime(),
-                                  QuicTime::Delta::FromMilliseconds(1));
+    SetRetransmissionAlarm();
   }
 
   stats_.bytes_sent += result.bytes_written;
@@ -1792,11 +1786,10 @@ void QuicConnection::OnRetransmissionTimeout() {
 
   // Ensure the retransmission alarm is always set if there are unacked packets
   // and nothing waiting to be sent.
+  // This happens if the loss algorithm invokes a timer based loss, but the
+  // packet doesn't need to be retransmitted.
   if (!HasQueuedData() && !retransmission_alarm_->IsSet()) {
-    QuicTime rto_timeout = sent_packet_manager_.GetRetransmissionTime();
-    if (rto_timeout.IsInitialized()) {
-      retransmission_alarm_->Set(rto_timeout);
-    }
+    SetRetransmissionAlarm();
   }
 }
 
@@ -2137,6 +2130,16 @@ void QuicConnection::SetPingAlarm() {
                       QuicTime::Delta::FromSeconds(1));
 }
 
+void QuicConnection::SetRetransmissionAlarm() {
+  if (delay_setting_retransmission_alarm_) {
+    pending_retransmission_alarm_ = true;
+    return;
+  }
+  QuicTime retransmission_time = sent_packet_manager_.GetRetransmissionTime();
+  retransmission_alarm_->Update(retransmission_time,
+                                QuicTime::Delta::FromMilliseconds(1));
+}
+
 QuicConnection::ScopedPacketBundler::ScopedPacketBundler(
     QuicConnection* connection,
     AckBundling send_ack)
@@ -2173,6 +2176,28 @@ QuicConnection::ScopedPacketBundler::~ScopedPacketBundler() {
   }
   DCHECK_EQ(already_in_batch_mode_,
             connection_->packet_generator_.InBatchMode());
+}
+
+QuicConnection::ScopedRetransmissionScheduler::ScopedRetransmissionScheduler(
+    QuicConnection* connection)
+    : connection_(connection),
+      already_delayed_(connection_->delay_setting_retransmission_alarm_) {
+  if (FLAGS_quic_delay_retransmission_alarm) {
+    return;
+  }
+  connection_->delay_setting_retransmission_alarm_ = true;
+}
+
+QuicConnection::ScopedRetransmissionScheduler::
+    ~ScopedRetransmissionScheduler() {
+  if (FLAGS_quic_delay_retransmission_alarm || already_delayed_) {
+    return;
+  }
+  connection_->delay_setting_retransmission_alarm_ = false;
+  if (connection_->pending_retransmission_alarm_) {
+    connection_->SetRetransmissionAlarm();
+    connection_->pending_retransmission_alarm_ = false;
+  }
 }
 
 HasRetransmittableData QuicConnection::IsRetransmittable(

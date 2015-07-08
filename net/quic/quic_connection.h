@@ -535,6 +535,21 @@ class NET_EXPORT_PRIVATE QuicConnection
     bool already_in_batch_mode_;
   };
 
+  // Delays setting the retransmission alarm until the scope is exited.
+  // When nested, only the outermost scheduler will set the alarm, and inner
+  // ones have no effect.
+  class NET_EXPORT_PRIVATE ScopedRetransmissionScheduler {
+   public:
+    explicit ScopedRetransmissionScheduler(QuicConnection* connection);
+    ~ScopedRetransmissionScheduler();
+
+   private:
+    QuicConnection* connection_;
+    // Set to the connection's delay_setting_retransmission_alarm_ value in the
+    // constructor and when true, causes this class to do nothing.
+    const bool already_delayed_;
+  };
+
   QuicPacketSequenceNumber sequence_number_of_last_sent_packet() const {
     return sequence_number_of_last_sent_packet_;
   }
@@ -679,6 +694,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Sets the ping alarm to the appropriate value, if any.
   void SetPingAlarm();
 
+  // Sets the retransmission alarm based on SentPacketManager.
+  void SetRetransmissionAlarm();
+
   // On arrival of a new packet, checks to see if the socket addresses have
   // changed since the last packet we saw on this connection.
   void CheckForAddressMigration(const IPEndPoint& self_address,
@@ -770,6 +788,12 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Indicates how many consecutive times an ack has arrived which indicates
   // the peer needs to stop waiting for some packets.
   int stop_waiting_count_;
+
+  // Indicates the retransmit alarm is going to be set by the
+  // ScopedRetransmitAlarmDelayer
+  bool delay_setting_retransmission_alarm_;
+  // Indicates the retransmission alarm needs to be set.
+  bool pending_retransmission_alarm_;
 
   // An alarm that fires when an ACK should be sent to the peer.
   scoped_ptr<QuicAlarm> ack_alarm_;
