@@ -745,7 +745,7 @@ static inline LayoutUnit calculateMinimumPageHeight(const ComputedStyle& style, 
     return lineBottom - lineTop;
 }
 
-void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, LayoutUnit& delta, LayoutFlowThread* flowThread)
+void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, LayoutUnit& delta)
 {
     // FIXME: For now we paginate using line overflow. This ensures that lines don't overlap at all when we
     // put a strut between them for pagination purposes. However, this really isn't the desired layout, since

@@ -859,7 +859,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
 
                 if (paginated) {
                     LayoutUnit adjustment = 0;
-                    adjustLinePositionForPagination(*lineBox, adjustment, layoutState.flowThread());
+                    adjustLinePositionForPagination(*lineBox, adjustment);
                     if (adjustment) {
                         LayoutUnit oldLineWidth = availableLogicalWidthForLine(oldLogicalHeight, layoutState.lineInfo().isFirstLine());
                         lineBox->moveInBlockDirection(adjustment.toFloat());
@@ -988,7 +988,7 @@ void LayoutBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState)
                 line->attachLine();
                 if (paginated) {
                     delta -= line->paginationStrut();
-                    adjustLinePositionForPagination(*line, delta, layoutState.flowThread());
+                    adjustLinePositionForPagination(*line, delta);
                 }
                 if (delta) {
                     layoutState.updatePaintInvalidationRangeFromBox(line, delta);
@@ -1649,7 +1649,7 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(LineLayoutState& layoutSt
         for (curr = firstRootBox(); curr && !curr->isDirty(); curr = curr->nextRootBox()) {
             if (paginated) {
                 paginationDelta -= curr->paginationStrut();
-                adjustLinePositionForPagination(*curr, paginationDelta, layoutState.flowThread());
+                adjustLinePositionForPagination(*curr, paginationDelta);
                 if (paginationDelta) {
                     if (containsFloats() || !layoutState.floats().isEmpty()) {
                         // FIXME: Do better eventually.  For now if we ever shift because of pagination and floats are present just go to a full layout.
@@ -1819,7 +1819,7 @@ bool LayoutBlockFlow::checkPaginationAndFloatsAtEndLine(LineLayoutState& layoutS
                 // strut yet.
                 LayoutUnit oldPaginationStrut = lineBox->paginationStrut();
                 lineDelta -= oldPaginationStrut;
-                adjustLinePositionForPagination(*lineBox, lineDelta, layoutState.flowThread());
+                adjustLinePositionForPagination(*lineBox, lineDelta);
                 lineBox->setPaginationStrut(oldPaginationStrut);
             }
         }
