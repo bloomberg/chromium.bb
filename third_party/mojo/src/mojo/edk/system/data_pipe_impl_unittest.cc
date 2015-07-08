@@ -1647,7 +1647,7 @@ TYPED_TEST(DataPipeImplTest, AllOrNone) {
   this->ConsumerClose();
 }
 
-TYPED_TEST(DataPipeImplTest, TwoPhaseAllOrNone) {
+TYPED_TEST(DataPipeImplTest, DISABLED_TwoPhaseAllOrNone) {
   const MojoCreateDataPipeOptions options = {
       kSizeOfOptions,                           // |struct_size|.
       MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
