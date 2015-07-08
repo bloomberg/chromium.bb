@@ -106,6 +106,7 @@ embedder.registerAndWaitForPostMessage_ = function(
 embedder.assertCorrectEvent_ = function(e) {
   embedder.test.assertEq('filesystem', e.permission);
   embedder.test.assertTrue(!!e.url);
+  embedder.test.assertEq(e.url, e.request.url);
   embedder.test.assertTrue(e.url.indexOf(embedder.baseGuestURL) == 0);
 };
 

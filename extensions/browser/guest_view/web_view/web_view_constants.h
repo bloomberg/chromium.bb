@@ -89,6 +89,7 @@ extern const char kProcessId[];
 extern const char kProgress[];
 extern const char kReason[];
 extern const char kRequestId[];
+extern const char kRequestInfo[];
 extern const char kSourceId[];
 extern const char kTargetURL[];
 extern const char kWindowID[];

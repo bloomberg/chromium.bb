@@ -83,6 +83,7 @@ const char kProcessId[] = "processId";
 const char kProgress[] = "progress";
 const char kReason[] = "reason";
 const char kRequestId[] = "requestId";
+const char kRequestInfo[] = "requestInfo";
 const char kSourceId[] = "sourceId";
 const char kTargetURL[] = "targetUrl";
 const char kWindowID[] = "windowId";

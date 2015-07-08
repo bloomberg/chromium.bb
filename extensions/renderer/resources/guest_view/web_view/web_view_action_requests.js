@@ -29,6 +29,12 @@ function WebViewActionRequest(webViewImpl, event, webViewEvent, interfaceName) {
   this.guestInstanceId = this.webViewImpl.guest.getId();
   this.requestId = event.requestId;
   this.actionTaken = false;
+
+  // Add on the request information specific to the request type.
+  for (var infoName in this.event.requestInfo) {
+    this.event[infoName] = this.event.requestInfo[infoName];
+    this.webViewEvent[infoName] = this.event.requestInfo[infoName];
+  }
 }
 
 // Performs the default action for the request.
@@ -215,19 +221,28 @@ function PermissionRequest(webViewImpl, event, webViewEvent) {
 
 PermissionRequest.prototype.__proto__ = WebViewActionRequest.prototype;
 
+PermissionRequest.prototype.allow = function() {
+  this.validateCall();
+  WebViewInternal.setPermission(this.guestInstanceId, this.requestId, 'allow');
+};
+
+PermissionRequest.prototype.deny = function() {
+  this.validateCall();
+  WebViewInternal.setPermission(this.guestInstanceId, this.requestId, 'deny');
+};
+
 PermissionRequest.prototype.getInterfaceObject = function() {
-  return {
-    allow: function() {
-      this.validateCall();
-      WebViewInternal.setPermission(
-          this.guestInstanceId, this.requestId, 'allow');
-    }.bind(this),
-    deny: function() {
-      this.validateCall();
-      WebViewInternal.setPermission(
-          this.guestInstanceId, this.requestId, 'deny');
-    }.bind(this)
+  var request = {
+    allow: this.allow.bind(this),
+    deny: this.deny.bind(this)
   };
+
+  // Add on the request information specific to the request type.
+  for (var infoName in this.event.requestInfo) {
+    request[infoName] = this.event.requestInfo[infoName];
+  }
+
+  return $Object.freeze(request);
 };
 
 PermissionRequest.prototype.showWarningMessage = function() {
@@ -261,22 +276,13 @@ function FullscreenPermissionRequest(webViewImpl, event, webViewEvent) {
 
 FullscreenPermissionRequest.prototype.__proto__ = PermissionRequest.prototype;
 
-FullscreenPermissionRequest.prototype.getInterfaceObject = function() {
-  return {
-    allow: function() {
-      this.validateCall();
-      WebViewInternal.setPermission(
-          this.guestInstanceId, this.requestId, 'allow');
-      // Now make the <webview> element go fullscreen.
-      this.webViewImpl.makeElementFullscreen();
-    }.bind(this),
-    deny: function() {
-      this.validateCall();
-      WebViewInternal.setPermission(
-          this.guestInstanceId, this.requestId, 'deny');
-    }.bind(this)
-  };
+FullscreenPermissionRequest.prototype.allow = function() {
+  PermissionRequest.prototype.allow.call(this);
+  // Now make the <webview> element go fullscreen.
+  this.webViewImpl.makeElementFullscreen();
 };
+
+// -----------------------------------------------------------------------------
 
 var WebViewActionRequests = {
   WebViewActionRequest: WebViewActionRequest,

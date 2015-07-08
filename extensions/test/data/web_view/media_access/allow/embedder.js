@@ -54,12 +54,12 @@ embedder.assertCorrectMediaEvent_ = function(e) {
     embedder.failTest('wrong permission: ' + e.permission);
     return false;
   }
-  if (!e.url) {
+  if (!e.url || !e.request.url) {
     embedder.failTest('No url property in event');
     return false;
   }
   if (e.url.indexOf(embedder.baseGuestURL)) {
-    embedder.failTest('Wrong url: ' + e.rul +
+    embedder.failTest('Wrong url: ' + e.url +
         ', expected url to start with ' + embedder.baseGuestURL);
     return false;
   }

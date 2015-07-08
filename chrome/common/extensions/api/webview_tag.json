@@ -1314,11 +1314,6 @@
             "enum": ["media", "geolocation", "pointerLock", "download", "loadplugin", "filesystem", "fullscreen"]
           },
           {
-            "name": "requestId",
-            "description": "A number which uniquely identifies this request from the guest.",
-            "type": "integer"
-          },
-          {
             "name": "request",
             "type": "object",
             "properties": {},
