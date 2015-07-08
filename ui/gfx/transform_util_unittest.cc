@@ -192,5 +192,18 @@ TEST(TransformUtilTest, TransformAboutPivot) {
   EXPECT_EQ(Point(-11, -20).ToString(), point.ToString());
 }
 
+TEST(TransformUtilTest, BlendOppositeQuaternions) {
+  DecomposedTransform first;
+  DecomposedTransform second;
+  second.quaternion[3] = -second.quaternion[3];
+
+  DecomposedTransform result;
+  BlendDecomposedTransforms(&result, first, second, 0.25);
+  for (size_t i = 0; i < 4; ++i) {
+    EXPECT_TRUE(std::isfinite(result.quaternion[i]));
+    EXPECT_FALSE(std::isnan(result.quaternion[i]));
+  }
+}
+
 }  // namespace
 }  // namespace gfx

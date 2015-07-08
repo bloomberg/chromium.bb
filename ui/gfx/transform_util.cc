@@ -73,6 +73,18 @@ bool Slerp(SkMScalar out[4],
     return true;
   }
 
+  // TODO(vmpstr): In case the product is -1, the vectors are exactly opposite
+  // of each other. In this case, it's technically not correct to just pick one
+  // of the vectors, we instead need to pick how to interpolate. However, the
+  // spec isn't clear on this. If we don't handle the -1 case explicitly, it
+  // results in inf and nans however, which is worse. See crbug.com/506543 for
+  // more discussion.
+  if (std::abs(product + 1.0) < epsilon) {
+    for (int i = 0; i < 4; ++i)
+      out[i] = q1[i];
+    return true;
+  }
+
   double denom = std::sqrt(1.0 - product * product);
   double theta = std::acos(product);
   double w = std::sin(progress * theta) * (1.0 / denom);
