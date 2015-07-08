@@ -34,6 +34,7 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -305,6 +306,21 @@ void ChromeAutofillClient::LinkClicked(const GURL& url,
                                        WindowOpenDisposition disposition) {
   web_contents()->OpenURL(content::OpenURLParams(
       url, content::Referrer(), disposition, ui::PAGE_TRANSITION_LINK, false));
+}
+
+bool ChromeAutofillClient::IsContextSecure(const GURL& form_origin) {
+  content::SSLStatus ssl_status;
+  content::NavigationEntry* navigation_entry =
+      web_contents()->GetController().GetLastCommittedEntry();
+  if (!navigation_entry)
+     return false;
+
+  ssl_status = navigation_entry->GetSSL();
+  // Note: If changing the implementation below, also change
+  // AwAutofillClient::IsContextSecure. See crbug.com/505388
+  return ssl_status.security_style ==
+      content::SECURITY_STYLE_AUTHENTICATED &&
+      ssl_status.content_status == content::SSLStatus::NORMAL_CONTENT;
 }
 
 }  // namespace autofill

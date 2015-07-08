@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/base/window_open_disposition.h"
+#include "url/gurl.h"
 
 class IdentityProvider;
 
@@ -173,6 +174,9 @@ class AutofillClient {
   // Opens |url| with the supplied |disposition|.
   virtual void LinkClicked(const GURL& url,
                            WindowOpenDisposition disposition) = 0;
+
+  // If the context is secure.
+  virtual bool IsContextSecure(const GURL& form_origin) = 0;
 };
 
 }  // namespace autofill

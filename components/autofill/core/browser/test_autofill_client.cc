@@ -11,7 +11,8 @@ namespace autofill {
 TestAutofillClient::TestAutofillClient()
     : token_service_(new FakeOAuth2TokenService()),
       identity_provider_(new FakeIdentityProvider(token_service_.get())),
-      rappor_service_(new rappor::TestRapporService()) {
+      rappor_service_(new rappor::TestRapporService()),
+      is_context_secure_(true) {
 }
 TestAutofillClient::~TestAutofillClient() {
 }
@@ -104,4 +105,7 @@ void TestAutofillClient::LinkClicked(const GURL& url,
                                      WindowOpenDisposition disposition) {
 }
 
+bool TestAutofillClient::IsContextSecure(const GURL& form_origin) {
+  return is_context_secure_;
+}
 }  // namespace autofill

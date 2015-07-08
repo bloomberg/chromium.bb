@@ -90,6 +90,7 @@ class AwAutofillClient : public autofill::AutofillClient,
                              const base::string16& profile_full_name) override;
   void OnFirstUserGestureObserved() override;
   void LinkClicked(const GURL& url, WindowOpenDisposition disposition) override;
+  bool IsContextSecure(const GURL& form_origin) override;
 
   void SuggestionSelected(JNIEnv* env, jobject obj, jint position);
 

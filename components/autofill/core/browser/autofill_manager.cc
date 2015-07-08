@@ -87,10 +87,6 @@ bool SectionIsAutofilled(const FormStructure& form_structure,
   return false;
 }
 
-bool FormIsHTTPS(const FormStructure& form) {
-  return form.source_url().SchemeIs(url::kHttpsScheme);
-}
-
 // Uses the existing personal data in |profiles| and |credit_cards| to determine
 // possible field types for the |submitted_form|.  This is potentially
 // expensive -- on the order of 50ms even for a small set of |stored_data|.
@@ -492,9 +488,11 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
           GetProfileSuggestions(*form_structure, field, *autofill_field);
     }
     if (!suggestions.empty()) {
-      // Don't provide credit card suggestions for non-HTTPS pages. However,
-      // do provide a warning to the user.
-      if (is_filling_credit_card && !FormIsHTTPS(*form_structure)) {
+      // Don't provide credit card suggestions for non-secure pages. However,
+      // do provide a warning to the user. This will generate warnings on pages
+      // with mixed content (which includes forms with an http target).
+      if (is_filling_credit_card &&
+          !client_->IsContextSecure(form_structure->source_url())) {
         Suggestion warning_suggestion(l10n_util::GetStringUTF16(
             IDS_AUTOFILL_WARNING_INSECURE_CONNECTION));
         warning_suggestion.frontend_id = POPUP_ITEM_ID_WARNING_MESSAGE;

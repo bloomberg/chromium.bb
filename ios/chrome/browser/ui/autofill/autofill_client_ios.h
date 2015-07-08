@@ -79,6 +79,7 @@ class AutofillClientIOS : public AutofillClient {
   void OnFirstUserGestureObserved() override;
   void LinkClicked(const GURL& url, WindowOpenDisposition disposition) override;
   scoped_refptr<AutofillWebDataService> GetDatabase() override;
+  bool IsContextSecure(const GURL& form_origin) override;
 
  private:
   ios::ChromeBrowserState* browser_state_;

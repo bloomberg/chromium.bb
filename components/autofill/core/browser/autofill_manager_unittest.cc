@@ -214,39 +214,6 @@ class TestPersonalDataManager : public PersonalDataManager {
   DISALLOW_COPY_AND_ASSIGN(TestPersonalDataManager);
 };
 
-// Populates |form| with data corresponding to a simple credit card form.
-// Note that this actually appends fields to the form data, which can be useful
-// for building up more complex test forms.
-void CreateTestCreditCardFormData(FormData* form,
-                                  bool is_https,
-                                  bool use_month_type) {
-  form->name = ASCIIToUTF16("MyForm");
-  if (is_https) {
-    form->origin = GURL("https://myform.com/form.html");
-    form->action = GURL("https://myform.com/submit.html");
-  } else {
-    form->origin = GURL("http://myform.com/form.html");
-    form->action = GURL("http://myform.com/submit.html");
-  }
-  form->user_submitted = true;
-
-  FormFieldData field;
-  test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
-  form->fields.push_back(field);
-  test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
-  form->fields.push_back(field);
-  if (use_month_type) {
-    test::CreateTestFormField(
-        "Expiration Date", "ccmonth", "", "month", &field);
-    form->fields.push_back(field);
-  } else {
-    test::CreateTestFormField("Expiration Date", "ccmonth", "", "text", &field);
-    form->fields.push_back(field);
-    test::CreateTestFormField("", "ccyear", "", "text", &field);
-    form->fields.push_back(field);
-  }
-}
-
 void ExpectFilledField(const char* expected_label,
                        const char* expected_name,
                        const char* expected_value,
@@ -731,6 +698,57 @@ class AutofillManagerTest : public testing::Test {
     return autofill_manager_->WillFillCreditCardNumber(form, field);
   }
 
+  // Populates |form| with data corresponding to a simple credit card form.
+  // Note that this actually appends fields to the form data, which can be
+  // useful for building up more complex test forms.
+  void CreateTestCreditCardFormData(FormData* form,
+                                    bool is_https,
+                                    bool use_month_type) {
+    form->name = ASCIIToUTF16("MyForm");
+    if (is_https) {
+      form->origin = GURL("https://myform.com/form.html");
+      form->action = GURL("https://myform.com/submit.html");
+    } else {
+      form->origin = GURL("http://myform.com/form.html");
+      form->action = GURL("http://myform.com/submit.html");
+      autofill_client_.set_is_context_secure(false);
+    }
+    form->user_submitted = true;
+
+    FormFieldData field;
+    test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
+    form->fields.push_back(field);
+    test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
+    form->fields.push_back(field);
+    if (use_month_type) {
+      test::CreateTestFormField(
+          "Expiration Date", "ccmonth", "", "month", &field);
+      form->fields.push_back(field);
+    } else {
+      test::CreateTestFormField("Expiration Date", "ccmonth", "", "text",
+                                &field);
+      form->fields.push_back(field);
+      test::CreateTestFormField("", "ccyear", "", "text", &field);
+      form->fields.push_back(field);
+    }
+  }
+
+  // Tests if credit card data gets saved
+  void TestSaveCreditCards(bool is_https) {
+    // Set up our form data.
+    FormData form;
+    CreateTestCreditCardFormData(&form, is_https, false);
+    std::vector<FormData> forms(1, form);
+    FormsSeen(forms);
+
+    // Edit the data, and submit
+    form.fields[1].value = ASCIIToUTF16("4111111111111111");
+    form.fields[2].value = ASCIIToUTF16("11");
+    form.fields[3].value = ASCIIToUTF16("2017");
+    EXPECT_CALL(autofill_client_, ConfirmSaveCreditCard(_)).Times(1);
+    FormSubmitted(form);
+  }
+
  protected:
   base::MessageLoop message_loop_;
   MockAutofillClient autofill_client_;
@@ -978,7 +996,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
 }
 
 // Test that we return a warning explaining that credit card profile suggestions
-// are unavailable when the form is not https.
+// are unavailable when the form is not secure.
 TEST_F(AutofillManagerTest, GetCreditCardSuggestionsNonHTTPS) {
   // Set up our form data.
   FormData form;
@@ -2445,6 +2463,16 @@ TEST_F(AutofillManagerTest, FormSubmittedWithDefaultValues) {
   // the filled data, since the filled form is effectively missing an address.
   FormSubmitted(response_data);
   EXPECT_EQ(1, personal_data_.num_times_save_imported_profile_called());
+}
+
+// Tests that credit card data are saved for forms on https
+TEST_F(AutofillManagerTest, ImportFormDataCreditCardHTTPS) {
+  TestSaveCreditCards(true);
+}
+
+// Tests that credit card data are saved for forms on http
+TEST_F(AutofillManagerTest, ImportFormDataCreditCardHTTP) {
+  TestSaveCreditCards(false);
 }
 
 // Checks that resetting the auxiliary profile enabled preference does the right

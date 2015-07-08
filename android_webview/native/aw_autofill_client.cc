@@ -21,7 +21,9 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/ssl_status.h"
 #include "jni/AwAutofillClient_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -178,6 +180,22 @@ void AwAutofillClient::OnFirstUserGestureObserved() {
 void AwAutofillClient::LinkClicked(const GURL& url,
                                    WindowOpenDisposition disposition) {
   NOTIMPLEMENTED();
+}
+
+bool AwAutofillClient::IsContextSecure(const GURL& form_origin) {
+  content::SSLStatus ssl_status;
+  content::NavigationEntry* navigation_entry =
+      web_contents_->GetController().GetLastCommittedEntry();
+  if (!navigation_entry)
+     return false;
+
+  ssl_status = navigation_entry->GetSSL();
+  // Note: The implementation below is a copy of the one in
+  // ChromeAutofillClient::IsContextSecure, and should be kept in sync
+  // until crbug.com/505388 gets implemented.
+  return ssl_status.security_style ==
+      content::SECURITY_STYLE_AUTHENTICATED &&
+      ssl_status.content_status == content::SSLStatus::NORMAL_CONTENT;
 }
 
 void AwAutofillClient::SuggestionSelected(JNIEnv* env,

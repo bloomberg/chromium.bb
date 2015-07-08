@@ -56,6 +56,11 @@ class TestAutofillClient : public AutofillClient {
                              const base::string16& profile_full_name) override;
   void OnFirstUserGestureObserved() override;
   void LinkClicked(const GURL& url, WindowOpenDisposition disposition) override;
+  bool IsContextSecure(const GURL& form_origin) override;
+
+  void set_is_context_secure(bool is_context_secure) {
+    is_context_secure_ = is_context_secure;
+  };
 
   void SetPrefs(scoped_ptr<PrefService> prefs) { prefs_ = prefs.Pass(); }
 
@@ -69,6 +74,8 @@ class TestAutofillClient : public AutofillClient {
   scoped_ptr<FakeOAuth2TokenService> token_service_;
   scoped_ptr<FakeIdentityProvider> identity_provider_;
   scoped_ptr<rappor::TestRapporService> rappor_service_;
+
+  bool is_context_secure_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillClient);
 };

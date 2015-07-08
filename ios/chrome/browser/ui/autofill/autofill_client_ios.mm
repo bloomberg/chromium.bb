@@ -153,6 +153,12 @@ scoped_refptr<AutofillWebDataService> AutofillClientIOS::GetDatabase() {
       browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
 }
 
+bool AutofillClientIOS::IsContextSecure(const GURL& form_origin) {
+  // TODO (sigbjorn): Return if the context is secure, not just
+  // the form_origin. See crbug.com/505388.
+  return form_origin.SchemeIsCryptographic();
+}
+
 void AutofillClientIOS::OnFirstUserGestureObserved() {
   // TODO(gcasto): [Merge 306796] http://crbug.com/439425 Verify if this method
   // needs a real implementation or not.
