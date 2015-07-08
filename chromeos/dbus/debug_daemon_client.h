@@ -15,10 +15,6 @@
 #include "chromeos/dbus/dbus_client.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace metrics {
-class PerfDataProto;
-}
-
 namespace chromeos {
 
 // DebugDaemonClient is used to communicate with the debug daemon.
@@ -93,8 +89,25 @@ class CHROMEOS_EXPORT DebugDaemonClient : public DBusClient {
       GetPerfDataCallback;
 
   // Runs perf for |duration| seconds and returns data collected.
+  // TODO(sque): This is being replaced by GetPerfOutput(). Remove this function
+  // and the above callback typedef when the new function is running.
   virtual void GetPerfData(uint32_t duration,
                            const GetPerfDataCallback& callback) = 0;
+
+  // Called once GetPerfOutput() is complete only if the the data is
+  // successfully obtained from debugd.
+  // Arguments:
+  // - The status from running perf.
+  // - Output from "perf record", in PerfDataProto format.
+  // - Output from "perf stat", in PerfStatProto format.
+  using GetPerfOutputCallback =
+      base::Callback<void(int status,
+                          const std::vector<uint8>& perf_data,
+                          const std::vector<uint8>& perf_stat)>;
+
+  // Runs perf for |duration| seconds and returns data collected.
+  virtual void GetPerfOutput(uint32_t duration,
+                             const GetPerfOutputCallback& callback) = 0;
 
   // Callback type for GetScrubbedLogs(), GetAllLogs() or GetUserLogFiles().
   typedef base::Callback<void(bool succeeded,

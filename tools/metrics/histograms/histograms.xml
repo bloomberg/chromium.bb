@@ -57994,7 +57994,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </int>
   <int value="5" label="Protobuf returned by debugd not deserialized.">
     Perf data was collected and sent to Chrome as a serialized protobuf but it
-    could be deserialized by Chrome.
+    could not be deserialized by Chrome.
+  </int>
+  <int value="6" label="Illegal data returned by debugd.">
+    The perf data sent back to Chrome by debugd is invalid.
   </int>
 </enum>
 

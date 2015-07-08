@@ -2,27 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/metrics/perf_provider_chromeos.h"
+
 #include <string>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/metrics/perf_provider_chromeos.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/metrics/windowed_incognito_observer.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_list_observer.h"
-#include "chrome/common/chrome_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
-#include "content/public/browser/notification_service.h"
 
 namespace {
 
@@ -72,6 +65,7 @@ enum GetPerfDataOutcome {
   INCOGNITO_ACTIVE,
   INCOGNITO_LAUNCHED,
   PROTOBUF_NOT_PARSED,
+  ILLEGAL_DATA_RETURNED,
   NUM_OUTCOMES
 };
 
@@ -93,35 +87,7 @@ bool IsNormalUserLoggedIn() {
 
 }  // namespace
 
-
 namespace metrics {
-
-// This class must be created and used on the UI thread. It watches for any
-// incognito window being opened from the time it is instantiated to the time it
-// is destroyed.
-class WindowedIncognitoObserver : public chrome::BrowserListObserver {
- public:
-  WindowedIncognitoObserver() : incognito_launched_(false) {
-    BrowserList::AddObserver(this);
-  }
-
-  ~WindowedIncognitoObserver() override { BrowserList::RemoveObserver(this); }
-
-  // This method can be checked to see whether any incognito window has been
-  // opened since the time this object was created.
-  bool incognito_launched() {
-    return incognito_launched_;
-  }
-
- private:
-  // chrome::BrowserListObserver implementation.
-  void OnBrowserAdded(Browser* browser) override {
-    if (browser->profile()->IsOffTheRecord())
-      incognito_launched_ = true;
-  }
-
-  bool incognito_launched_;
-};
 
 PerfProvider::PerfProvider()
       : login_observer_(this),
@@ -165,6 +131,57 @@ bool PerfProvider::GetSampledProfiles(
 
   AddToPerfHistogram(SUCCESS);
   return true;
+}
+
+void PerfProvider::ParseOutputProtoIfValid(
+    scoped_ptr<WindowedIncognitoObserver> incognito_observer,
+    scoped_ptr<SampledProfile> sampled_profile,
+    int result,
+    const std::vector<uint8>& perf_data,
+    const std::vector<uint8>& perf_stat) {
+  DCHECK(CalledOnValidThread());
+
+  if (incognito_observer->incognito_launched()) {
+    AddToPerfHistogram(INCOGNITO_LAUNCHED);
+    return;
+  }
+
+  if (result != 0 || (perf_data.empty() && perf_stat.empty())) {
+    AddToPerfHistogram(PROTOBUF_NOT_PARSED);
+    return;
+  }
+
+  if (!perf_data.empty() && !perf_stat.empty()) {
+    AddToPerfHistogram(ILLEGAL_DATA_RETURNED);
+    return;
+  }
+
+  if (!perf_data.empty()) {
+    PerfDataProto perf_data_proto;
+    if (!perf_data_proto.ParseFromArray(perf_data.data(), perf_data.size())) {
+      AddToPerfHistogram(PROTOBUF_NOT_PARSED);
+      return;
+    }
+    sampled_profile->set_ms_after_boot(
+        perf_data_proto.timestamp_sec() * base::Time::kMillisecondsPerSecond);
+    sampled_profile->mutable_perf_data()->Swap(&perf_data_proto);
+  } else {
+    DCHECK(!perf_stat.empty());
+    PerfStatProto perf_stat_proto;
+    if (!perf_stat_proto.ParseFromArray(perf_stat.data(), perf_stat.size())) {
+      AddToPerfHistogram(PROTOBUF_NOT_PARSED);
+      return;
+    }
+    sampled_profile->mutable_perf_stat()->Swap(&perf_stat_proto);
+  }
+
+  DCHECK(!login_time_.is_null());
+  sampled_profile->set_ms_after_login(
+      (base::TimeTicks::Now() - login_time_).InMilliseconds());
+
+  // Add the collected data to the container of collected SampledProfiles.
+  cached_perf_data_.resize(cached_perf_data_.size() + 1);
+  cached_perf_data_.back().Swap(sampled_profile.get());
 }
 
 PerfProvider::LoginObserver::LoginObserver(PerfProvider* perf_provider)
@@ -321,11 +338,11 @@ void PerfProvider::CollectIfNecessary(
   base::TimeDelta collection_duration = base::TimeDelta::FromSeconds(
       kPerfCommandDurationDefaultSeconds);
 
-  client->GetPerfData(collection_duration.InSeconds(),
-                      base::Bind(&PerfProvider::ParseProtoIfValid,
-                                 weak_factory_.GetWeakPtr(),
-                                 base::Passed(&incognito_observer),
-                                 base::Passed(&sampled_profile)));
+  client->GetPerfOutput(
+      collection_duration.InSeconds(),
+      base::Bind(&PerfProvider::ParseOutputProtoIfValid,
+                 weak_factory_.GetWeakPtr(), base::Passed(&incognito_observer),
+                 base::Passed(&sampled_profile)));
 }
 
 void PerfProvider::DoPeriodicCollection() {
@@ -358,42 +375,6 @@ void PerfProvider::CollectPerfDataAfterSessionRestore(
 
   CollectIfNecessary(sampled_profile.Pass());
   last_session_restore_collection_time_ = base::TimeTicks::Now();
-}
-
-void PerfProvider::ParseProtoIfValid(
-    scoped_ptr<WindowedIncognitoObserver> incognito_observer,
-    scoped_ptr<SampledProfile> sampled_profile,
-    const std::vector<uint8>& data) {
-  DCHECK(CalledOnValidThread());
-
-  if (incognito_observer->incognito_launched()) {
-    AddToPerfHistogram(INCOGNITO_LAUNCHED);
-    return;
-  }
-
-  PerfDataProto perf_data_proto;
-  if (!perf_data_proto.ParseFromArray(data.data(), data.size())) {
-    AddToPerfHistogram(PROTOBUF_NOT_PARSED);
-    return;
-  }
-
-  // Populate a profile collection protobuf with the collected perf data and
-  // extra metadata.
-  cached_perf_data_.resize(cached_perf_data_.size() + 1);
-  SampledProfile& collection_data = cached_perf_data_.back();
-  collection_data.Swap(sampled_profile.get());
-
-  // Fill out remaining fields of the SampledProfile protobuf.
-  collection_data.set_ms_after_boot(
-      perf_data_proto.timestamp_sec() * base::Time::kMillisecondsPerSecond);
-
-  DCHECK(!login_time_.is_null());
-  collection_data.
-      set_ms_after_login((base::TimeTicks::Now() - login_time_)
-          .InMilliseconds());
-
-  // Finally, store the perf data itself.
-  collection_data.mutable_perf_data()->Swap(&perf_data_proto);
 }
 
 }  // namespace metrics

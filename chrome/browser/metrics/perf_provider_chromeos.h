@@ -34,6 +34,24 @@ class PerfProvider : public base::NonThreadSafe,
   // stored profile data. Returns true if it wrote to |sampled_profiles|.
   bool GetSampledProfiles(std::vector<SampledProfile>* sampled_profiles);
 
+ protected:
+  // Parses a PerfDataProto from serialized data |perf_data|, if it exists.
+  // Parses a PerfStatProto from serialized data |perf_stat|, if it exists.
+  // Only one of these may contain data. If both |perf_data| and |perf_stat|
+  // contain data, it is counted as an error and neither is parsed.
+  // |incognito_observer| indicates whether an incognito window had been opened
+  // during the profile collection period. If there was an incognito window,
+  // discard the incoming data.
+  // |trigger_event| is the cause of the perf data collection.
+  // |result| is the return value of running perf/quipper. It is 0 if successful
+  // and nonzero if not successful.
+  void ParseOutputProtoIfValid(
+      scoped_ptr<WindowedIncognitoObserver> incognito_observer,
+      scoped_ptr<SampledProfile> sampled_profile,
+      int result,
+      const std::vector<uint8>& perf_data,
+      const std::vector<uint8>& perf_stat);
+
  private:
   // Class that listens for changes to the login state. When a normal user logs
   // in, it updates PerfProvider to start collecting data.
@@ -92,15 +110,6 @@ class PerfProvider : public base::NonThreadSafe,
   void CollectPerfDataAfterSessionRestore(
       const base::TimeDelta& time_after_restore,
       int num_tabs_restored);
-
-  // Parses a perf data protobuf from the |data| passed in only if the
-  // |incognito_observer| indicates that no incognito window had been opened
-  // during the profile collection period.
-  // |trigger_event| is the cause of the perf data collection.
-  void ParseProtoIfValid(
-      scoped_ptr<WindowedIncognitoObserver> incognito_observer,
-      scoped_ptr<SampledProfile> sampled_profile,
-      const std::vector<uint8>& data);
 
   // Vector of SampledProfile protobufs containing perf profiles.
   std::vector<SampledProfile> cached_perf_data_;

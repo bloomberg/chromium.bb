@@ -893,6 +893,8 @@
       'browser/media/protected_media_identifier_permission_context_factory.h',
       'browser/metrics/chromeos_metrics_provider.cc',
       'browser/metrics/chromeos_metrics_provider.h',
+      'browser/metrics/windowed_incognito_observer.cc',
+      'browser/metrics/windowed_incognito_observer.h',
       'browser/renderer_host/offline_resource_throttle.cc',
       'browser/renderer_host/offline_resource_throttle.h',
       # This is technically also dependent on enable_plugins but we don't
