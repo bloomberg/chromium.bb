@@ -85,7 +85,7 @@ String createShorthandValue(Document* document, const String& shorthand, const S
     String text = " div { " + shorthand  + ": " + oldText + "; }";
     CSSParser::parseSheet(CSSParserContext(*document, 0), styleSheetContents.get(), text);
 
-    RefPtr<CSSStyleSheet> styleSheet = CSSStyleSheet::create(styleSheetContents);
+    RefPtrWillBeRawPtr<CSSStyleSheet> styleSheet = CSSStyleSheet::create(styleSheetContents);
     CSSStyleRule* rule = toCSSStyleRule(styleSheet->item(0));
     CSSStyleDeclaration* style = rule->style();
     TrackExceptionState exceptionState;
