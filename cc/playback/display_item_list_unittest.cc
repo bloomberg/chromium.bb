@@ -284,7 +284,8 @@ TEST(DisplayItemListTest, CompactingItems) {
   EXPECT_EQ(0, memcmp(pixels, expected_pixels, 4 * 100 * 100));
 }
 
-TEST(DisplayItemListTest, PictureMemoryUsage) {
+TEST(DisplayItemListTest, ApproximateMemoryUsage) {
+  const int kNumCommandsInTestSkPicture = 1000;
   scoped_refptr<DisplayItemList> list;
   size_t memory_usage;
 
@@ -294,20 +295,19 @@ TEST(DisplayItemListTest, PictureMemoryUsage) {
   SkPaint blue_paint;
   blue_paint.setColor(SK_ColorBLUE);
   SkCanvas* canvas = recorder.beginRecording(gfx::RectFToSkRect(layer_rect));
-  for (int i = 0; i < 100; i++)
+  for (int i = 0; i < kNumCommandsInTestSkPicture; i++)
     canvas->drawPaint(blue_paint);
   skia::RefPtr<SkPicture> picture =
       skia::AdoptRef(recorder.endRecordingAsPicture());
   size_t picture_size = SkPictureUtils::ApproximateBytesUsed(picture.get());
-  ASSERT_GE(picture_size, 100 * sizeof(SkPaint));
-  ASSERT_LE(picture_size, 200 * sizeof(SkPaint));
+  ASSERT_GE(picture_size, kNumCommandsInTestSkPicture * sizeof(blue_paint));
 
   // Using a cached picture, we should get about the right size.
   list = DisplayItemList::Create(layer_rect, true);
   auto* item = list->CreateAndAppendItem<DrawingDisplayItem>();
   item->SetNew(picture);
   list->Finalize();
-  memory_usage = list->PictureMemoryUsage();
+  memory_usage = list->ApproximateMemoryUsage();
   EXPECT_GE(memory_usage, picture_size);
   EXPECT_LE(memory_usage, 2 * picture_size);
 
@@ -316,7 +316,7 @@ TEST(DisplayItemListTest, PictureMemoryUsage) {
   item = list->CreateAndAppendItem<DrawingDisplayItem>();
   item->SetNew(picture);
   list->Finalize();
-  memory_usage = list->PictureMemoryUsage();
+  memory_usage = list->ApproximateMemoryUsage();
   EXPECT_GE(memory_usage, picture_size);
   EXPECT_LE(memory_usage, 2 * picture_size);
 
@@ -329,7 +329,7 @@ TEST(DisplayItemListTest, PictureMemoryUsage) {
   item = list->CreateAndAppendItem<DrawingDisplayItem>();
   item->SetNew(picture);
   list->Finalize();
-  memory_usage = list->PictureMemoryUsage();
+  memory_usage = list->ApproximateMemoryUsage();
   EXPECT_EQ(static_cast<size_t>(0), memory_usage);
 }
 

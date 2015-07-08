@@ -48,7 +48,8 @@ DisplayItemList::DisplayItemList(gfx::Rect layer_rect,
       layer_rect_(layer_rect),
       is_suitable_for_gpu_rasterization_(true),
       approximate_op_count_(0),
-      picture_memory_usage_(0) {
+      picture_memory_usage_(0),
+      external_memory_usage_(0) {
 #if DCHECK_IS_ON()
   needs_process_ = false;
 #endif
@@ -153,7 +154,7 @@ void DisplayItemList::ProcessAppendedItems() {
     if (retain_individual_display_items_) {
       // Warning: this double-counts SkPicture data if use_cached_picture_ is
       // also true.
-      picture_memory_usage_ += item->picture_memory_usage();
+      external_memory_usage_ += item->external_memory_usage();
     }
   }
 
@@ -193,7 +194,7 @@ void DisplayItemList::Finalize() {
     DCHECK(!picture_);
     picture_ = skia::AdoptRef(recorder_->endRecordingAsPicture());
     DCHECK(picture_);
-    picture_memory_usage_ +=
+    picture_memory_usage_ =
         SkPictureUtils::ApproximateBytesUsed(picture_.get());
     recorder_.reset();
     canvas_.clear();
@@ -213,14 +214,26 @@ int DisplayItemList::ApproximateOpCount() const {
   return approximate_op_count_;
 }
 
-size_t DisplayItemList::PictureMemoryUsage() const {
+size_t DisplayItemList::ApproximateMemoryUsage() const {
   DCHECK(ProcessAppendedItemsCalled());
   // We double-count in this case. Produce zero to avoid being misleading.
   if (use_cached_picture_ && retain_individual_display_items_)
     return 0;
 
   DCHECK_IMPLIES(use_cached_picture_, picture_);
-  return picture_memory_usage_;
+
+  size_t memory_usage = sizeof(*this);
+
+  // Memory outside this class due to |items_|.
+  memory_usage += items_.GetCapacityInBytes() + external_memory_usage_;
+
+  // Memory outside this class due to |picture|.
+  memory_usage += picture_memory_usage_;
+
+  // TODO(jbroman): Does anything else owned by this class substantially
+  // contribute to memory usage?
+
+  return memory_usage;
 }
 
 scoped_refptr<base::trace_event::ConvertableToTraceFormat>

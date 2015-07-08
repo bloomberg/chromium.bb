@@ -163,6 +163,8 @@ class CC_EXPORT ListContainerBase {
 
   size_t MaxSizeForDerivedClass() const;
 
+  size_t GetCapacityInBytes() const;
+
   // Unlike the ListContainer method, this one does not invoke element
   // destructors.
   void clear();
@@ -310,6 +312,7 @@ class ListContainer : public ListContainerBase {
 
   using ListContainerBase::size;
   using ListContainerBase::empty;
+  using ListContainerBase::GetCapacityInBytes;
 
   void clear() {
     for (Iterator i = begin(); i != end(); ++i) {

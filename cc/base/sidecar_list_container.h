@@ -47,6 +47,7 @@ class SidecarListContainer {
   // Forward most of the reading logic to ListContainer.
   bool empty() const { return list_.empty(); }
   size_t size() const { return list_.size(); }
+  size_t GetCapacityInBytes() const { return list_.GetCapacityInBytes(); }
   ConstIterator begin() const { return list_.begin(); }
   ConstIterator end() const { return list_.end(); }
 

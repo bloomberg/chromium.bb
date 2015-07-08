@@ -70,7 +70,7 @@ class CC_EXPORT DisplayItemList
 
   bool IsSuitableForGpuRasterization() const;
   int ApproximateOpCount() const;
-  size_t PictureMemoryUsage() const;
+  size_t ApproximateMemoryUsage() const;
 
   bool RetainsIndividualDisplayItems() const;
 
@@ -114,13 +114,18 @@ class CC_EXPORT DisplayItemList
   gfx::Rect layer_rect_;
   bool is_suitable_for_gpu_rasterization_;
   int approximate_op_count_;
+
+  // Memory usage due to the cached SkPicture.
   size_t picture_memory_usage_;
+
+  // Memory usage due to external data held by display items.
+  size_t external_memory_usage_;
 
   scoped_ptr<PixelRefMap> pixel_refs_;
 
   friend class base::RefCountedThreadSafe<DisplayItemList>;
   friend class PixelRefMap::Iterator;
-  FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, PictureMemoryUsage);
+  FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, ApproximateMemoryUsage);
   DISALLOW_COPY_AND_ASSIGN(DisplayItemList);
 };
 

@@ -24,12 +24,11 @@ void ClipDisplayItem::SetNew(gfx::Rect clip_rect,
   clip_rect_ = clip_rect;
   rounded_clip_rects_ = rounded_clip_rects;
 
-  size_t memory_usage = sizeof(gfx::Rect);
-  for (size_t i = 0; i < rounded_clip_rects_.size(); ++i) {
-    memory_usage += sizeof(rounded_clip_rects_[i]);
-  }
+  size_t external_memory_usage =
+      rounded_clip_rects_.capacity() * sizeof(rounded_clip_rects_[0]);
+
   DisplayItem::SetNew(true /* suitable_for_gpu_raster */, 1 /* op_count */,
-                      memory_usage);
+                      external_memory_usage);
 }
 
 void ClipDisplayItem::Raster(SkCanvas* canvas,
@@ -77,7 +76,7 @@ void ClipDisplayItem::AsValueInto(base::trace_event::TracedValue* array) const {
 
 EndClipDisplayItem::EndClipDisplayItem() {
   DisplayItem::SetNew(true /* suitable_for_gpu_raster */, 0 /* op_count */,
-                      0 /* memory_usage */);
+                      0 /* external_memory_usage */);
 }
 
 EndClipDisplayItem::~EndClipDisplayItem() {

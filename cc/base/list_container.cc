@@ -120,10 +120,8 @@ class ListContainerBase::ListContainerCharAllocator {
 
   size_t Capacity() const {
     size_t capacity_sum = 0;
-    for (ScopedPtrVector<InnerList>::const_iterator iter = storage_.begin();
-         iter != storage_.end(); ++iter) {
-      capacity_sum += (*iter)->capacity;
-    }
+    for (const auto& inner_list : storage_)
+      capacity_sum += inner_list->capacity;
     return capacity_sum;
   }
 
@@ -423,6 +421,10 @@ bool ListContainerBase::empty() const {
 
 size_t ListContainerBase::MaxSizeForDerivedClass() const {
   return data_->element_size();
+}
+
+size_t ListContainerBase::GetCapacityInBytes() const {
+  return data_->Capacity() * data_->element_size();
 }
 
 void ListContainerBase::clear() {

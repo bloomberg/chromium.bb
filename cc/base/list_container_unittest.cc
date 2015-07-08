@@ -4,6 +4,7 @@
 
 #include "cc/base/list_container.h"
 
+#include <algorithm>
 #include <vector>
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1041,6 +1042,39 @@ TEST(ListContainerTest, Swap) {
 
   // Ensure pointers are still valid after swapping.
   EXPECT_EQ(pre_swap_list_1_front, list_2.front());
+}
+
+TEST(ListContainerTest, GetCapacityInBytes) {
+  const int iterations = 500;
+  const size_t initial_capacity = 10;
+  const size_t upper_bound_on_min_capacity = initial_capacity;
+
+  // At time of writing, removing elements from the end can cause up to 7x the
+  // memory required to be consumed, in the worst case, since we can have up to
+  // two trailing inner lists that are empty (for 2*size + 4*size in unused
+  // memory, due to the exponential growth strategy).
+  const size_t max_waste_factor = 8;
+
+  ListContainer<DerivedElement> list(LargestDerivedElementSize(),
+                                     initial_capacity);
+
+  // The capacity should grow with the list.
+  for (int i = 0; i < iterations; i++) {
+    size_t capacity = list.GetCapacityInBytes();
+    ASSERT_GE(capacity, list.size() * LargestDerivedElementSize());
+    ASSERT_LE(capacity, std::max(list.size(), upper_bound_on_min_capacity) *
+                            max_waste_factor * LargestDerivedElementSize());
+    list.AllocateAndConstruct<DerivedElement1>();
+  }
+
+  // The capacity should shrink with the list.
+  for (int i = 0; i < iterations; i++) {
+    size_t capacity = list.GetCapacityInBytes();
+    ASSERT_GE(capacity, list.size() * LargestDerivedElementSize());
+    ASSERT_LE(capacity, std::max(list.size(), upper_bound_on_min_capacity) *
+                            max_waste_factor * LargestDerivedElementSize());
+    list.RemoveLast();
+  }
 }
 
 }  // namespace

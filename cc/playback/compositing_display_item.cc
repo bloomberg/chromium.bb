@@ -31,10 +31,9 @@ void CompositingDisplayItem::SetNew(uint8_t alpha,
   color_filter_ = cf;
 
   // TODO(pdr): Include color_filter's memory here.
-  size_t memory_usage =
-      sizeof(float) + sizeof(bool) + sizeof(SkRect) + sizeof(SkXfermode::Mode);
+  size_t external_memory_usage = 0;
   DisplayItem::SetNew(true /* suitable_for_gpu_raster */, 1 /* op_count */,
-                      memory_usage);
+                      external_memory_usage);
 }
 
 void CompositingDisplayItem::Raster(
@@ -61,7 +60,7 @@ void CompositingDisplayItem::AsValueInto(
 
 EndCompositingDisplayItem::EndCompositingDisplayItem() {
   DisplayItem::SetNew(true /* suitable_for_gpu_raster */, 0 /* op_count */,
-                      0 /* memory_usage */);
+                      0 /* external_memory_usage */);
 }
 
 EndCompositingDisplayItem::~EndCompositingDisplayItem() {

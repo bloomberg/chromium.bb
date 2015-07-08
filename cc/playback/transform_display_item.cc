@@ -20,9 +20,8 @@ TransformDisplayItem::~TransformDisplayItem() {
 void TransformDisplayItem::SetNew(const gfx::Transform& transform) {
   transform_ = transform;
 
-  size_t memory_usage = sizeof(gfx::Transform);
   DisplayItem::SetNew(true /* suitable_for_gpu_raster */, 1 /* op_count */,
-                      memory_usage);
+                      0 /* external_memory_usage */);
 }
 
 void TransformDisplayItem::Raster(SkCanvas* canvas,
@@ -41,7 +40,7 @@ void TransformDisplayItem::AsValueInto(
 
 EndTransformDisplayItem::EndTransformDisplayItem() {
   DisplayItem::SetNew(true /* suitable_for_gpu_raster */, 0 /* op_count */,
-                      0 /* memory_usage */);
+                      0 /* external_memory_usage */);
 }
 
 EndTransformDisplayItem::~EndTransformDisplayItem() {
