@@ -103,6 +103,10 @@ public:
 
     GLenum getDrawBuffer(GLenum);
 
+    void readBuffer(const GLenum colorBuffer) { m_readBuffer = colorBuffer; }
+
+    GLenum getReadBuffer() const { return m_readBuffer; }
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:
@@ -134,6 +138,8 @@ private:
 
     Vector<GLenum> m_drawBuffers;
     Vector<GLenum> m_filteredDrawBuffers;
+
+    GLenum m_readBuffer;
 };
 
 } // namespace blink

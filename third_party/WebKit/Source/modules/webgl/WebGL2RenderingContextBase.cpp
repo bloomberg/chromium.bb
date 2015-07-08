@@ -174,6 +174,38 @@ void WebGL2RenderingContextBase::readBuffer(GLenum mode)
     if (isContextLost())
         return;
 
+    switch (mode) {
+    case GL_BACK:
+    case GL_NONE:
+    case GL_COLOR_ATTACHMENT0:
+        break;
+    default:
+        if (mode > GL_COLOR_ATTACHMENT0
+            && mode < static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + maxColorAttachments()))
+            break;
+        synthesizeGLError(GL_INVALID_ENUM, "readBuffer", "invalid read buffer");
+        return;
+    }
+
+    WebGLFramebuffer* readFramebufferBinding = getFramebufferBinding(GL_READ_FRAMEBUFFER);
+    if (!readFramebufferBinding) {
+        ASSERT(drawingBuffer());
+        if (mode != GL_BACK && mode != GL_NONE) {
+            synthesizeGLError(GL_INVALID_OPERATION, "readBuffer", "invalid read buffer");
+            return;
+        }
+        m_readBufferOfDefaultFramebuffer = mode;
+        // translate GL_BACK to GL_COLOR_ATTACHMENT0, because the default
+        // framebuffer for WebGL is not fb 0, it is an internal fbo.
+        if (mode == GL_BACK)
+            mode = GL_COLOR_ATTACHMENT0;
+    } else {
+        if (mode == GL_BACK) {
+            synthesizeGLError(GL_INVALID_OPERATION, "readBuffer", "invalid read buffer");
+            return;
+        }
+        readFramebufferBinding->readBuffer(mode);
+    }
     webContext()->readBuffer(mode);
 }
 
@@ -1777,7 +1809,17 @@ ScriptValue WebGL2RenderingContextBase::getParameter(ScriptState* scriptState, G
     case GL_RASTERIZER_DISCARD:
         return getBooleanParameter(scriptState, pname);
     case GL_READ_BUFFER:
-        return getUnsignedIntParameter(scriptState, pname);
+        {
+            GLenum value = 0;
+            if (!isContextLost()) {
+                WebGLFramebuffer* readFramebufferBinding = getFramebufferBinding(GL_READ_FRAMEBUFFER);
+                if (!readFramebufferBinding)
+                    value = m_readBufferOfDefaultFramebuffer;
+                else
+                    value = readFramebufferBinding->getReadBuffer();
+            }
+            return WebGLAny(scriptState, value);
+        }
     case GL_READ_FRAMEBUFFER_BINDING:
         return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_readFramebufferBinding.get()));
     case GL_SAMPLE_ALPHA_TO_COVERAGE:

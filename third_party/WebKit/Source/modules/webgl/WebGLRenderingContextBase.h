@@ -558,6 +558,8 @@ protected:
     bool m_drawBuffersWebGLRequirementsChecked;
     bool m_drawBuffersSupported;
 
+    GLenum m_readBufferOfDefaultFramebuffer;
+
     GLint m_packAlignment;
     GLint m_unpackAlignment;
     bool m_unpackFlipY;
@@ -850,6 +852,10 @@ protected:
     // Helper function to validate compressed texture dimensions are valid for
     // the given format.
     bool validateCompressedTexSubDimensions(const char* functionName, GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, WebGLTexture*);
+
+    // Helper function to validate that the image is attached to read buffer
+    // when reading from FBO (readPixels/copyTexImage2D/copyTexSubImage2D).
+    bool validateReadBufferAttachment(const char* functionName, const WebGLFramebuffer* readFramebufferBinding);
 
     // Helper function to validate mode for draw{Arrays/Elements}.
     bool validateDrawMode(const char* functionName, GLenum);

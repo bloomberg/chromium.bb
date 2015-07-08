@@ -279,6 +279,7 @@ WebGLFramebuffer::WebGLFramebuffer(WebGLRenderingContextBase* ctx)
     : WebGLContextObject(ctx)
     , m_object(ctx->webContext()->createFramebuffer())
     , m_hasEverBeenBound(false)
+    , m_readBuffer(GL_COLOR_ATTACHMENT0)
 {
 }
 

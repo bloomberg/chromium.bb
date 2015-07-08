@@ -727,6 +727,8 @@ void WebGLRenderingContextBase::initializeNewContext()
 
     m_backDrawBuffer = GL_BACK;
 
+    m_readBufferOfDefaultFramebuffer = GL_BACK;
+
     if (isWebGL2OrHigher()) {
         m_defaultVertexArrayObject = WebGLVertexArrayObject::create(this, WebGLVertexArrayObjectBase::VaoTypeDefault);
     } else {
@@ -1543,6 +1545,26 @@ bool WebGLRenderingContextBase::validateSettableTexFormat(const char* functionNa
     return true;
 }
 
+bool WebGLRenderingContextBase::validateReadBufferAttachment(const char* functionName, const WebGLFramebuffer* readFramebufferBinding)
+{
+    if (readFramebufferBinding) {
+        GLenum readBuffer = readFramebufferBinding->getReadBuffer();
+        if (readBuffer == GL_NONE) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "read buffer is GL_NONE");
+            return false;
+        }
+        WebGLSharedObject* attachmentObject = readFramebufferBinding->getAttachmentObject(readBuffer);
+        if (!attachmentObject) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, "no image attached to read buffer");
+            return false;
+        }
+    } else if (m_readBufferOfDefaultFramebuffer == GL_NONE) {
+        synthesizeGLError(GL_INVALID_OPERATION, functionName, "read buffer is GL_NONE");
+        return false;
+    }
+    return true;
+}
+
 void WebGLRenderingContextBase::copyTexImage2D(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border)
 {
     if (isContextLost())
@@ -1573,6 +1595,8 @@ void WebGLRenderingContextBase::copyTexImage2D(GLenum target, GLint level, GLenu
         synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, "copyTexImage2D", reason);
         return;
     }
+    if (!validateReadBufferAttachment("copyTexImage2D", readFramebufferBinding))
+        return;
     clearIfComposited();
     ScopedDrawingBufferBinder binder(drawingBuffer(), readFramebufferBinding);
     webContext()->copyTexImage2D(target, level, internalformat, x, y, width, height, border);
@@ -1618,6 +1642,8 @@ void WebGLRenderingContextBase::copyTexSubImage2D(GLenum target, GLint level, GL
         synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, "copyTexSubImage2D", reason);
         return;
     }
+    if (!validateReadBufferAttachment("copyTexSubImage2D", readFramebufferBinding))
+        return;
     clearIfComposited();
     ScopedDrawingBufferBinder binder(drawingBuffer(), readFramebufferBinding);
     webContext()->copyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
@@ -3358,6 +3384,9 @@ void WebGLRenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLsi
         synthesizeGLError(GL_INVALID_OPERATION, "readPixels", "ArrayBufferView not large enough for dimensions");
         return;
     }
+
+    if (!validateReadBufferAttachment("readPixels", readFramebufferBinding))
+        return;
 
     clearIfComposited();
     void* data = pixels->baseAddress();
