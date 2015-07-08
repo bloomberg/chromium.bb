@@ -37,39 +37,19 @@ void NetErrorPageController::Install(content::RenderFrame* render_frame) {
 }
 
 bool NetErrorPageController::ShowSavedCopyButtonClick() {
-  if (!render_frame())
-    return false;
-
-  NetErrorHelper* net_error_helper =
-      content::RenderFrameObserverTracker<NetErrorHelper>::Get(render_frame());
-  DCHECK(net_error_helper);
-  net_error_helper->ShowSavedCopyButtonPressed();
-
-  return true;
+  return ButtonClick(error_page::NetErrorHelperCore::SHOW_SAVED_COPY_BUTTON);
 }
 
 bool NetErrorPageController::ReloadButtonClick() {
-  if (!render_frame())
-    return false;
-
-  NetErrorHelper* net_error_helper =
-      content::RenderFrameObserverTracker<NetErrorHelper>::Get(render_frame());
-  DCHECK(net_error_helper);
-  net_error_helper->ReloadButtonPressed();
-
-  return true;
+  return ButtonClick(error_page::NetErrorHelperCore::RELOAD_BUTTON);
 }
 
 bool NetErrorPageController::DetailsButtonClick() {
-  if (!render_frame())
-    return false;
+  return ButtonClick(error_page::NetErrorHelperCore::MORE_BUTTON);
+}
 
-  NetErrorHelper* net_error_helper =
-      content::RenderFrameObserverTracker<NetErrorHelper>::Get(render_frame());
-  DCHECK(net_error_helper);
-  net_error_helper->MoreButtonPressed();
-
-  return true;
+bool NetErrorPageController::TrackEasterEgg() {
+  return ButtonClick(error_page::NetErrorHelperCore::EASTER_EGG);
 }
 
 bool NetErrorPageController::TrackClick(const gin::Arguments& args) {
@@ -86,14 +66,18 @@ bool NetErrorPageController::TrackClick(const gin::Arguments& args) {
   return true;
 }
 
-void NetErrorPageController::TrackEasterEgg() {
+bool NetErrorPageController::ButtonClick(
+    error_page::NetErrorHelperCore::Button button) {
   if (!render_frame())
-    return;
+    return false;
 
   NetErrorHelper* net_error_helper =
       content::RenderFrameObserverTracker<NetErrorHelper>::Get(render_frame());
   DCHECK(net_error_helper);
-  net_error_helper->TrackActivatedEasterEgg();
+
+  net_error_helper->ButtonPressed(button);
+
+  return true;
 }
 
 NetErrorPageController::NetErrorPageController(

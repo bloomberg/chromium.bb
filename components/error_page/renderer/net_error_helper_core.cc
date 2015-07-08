@@ -38,6 +38,21 @@ namespace error_page {
 
 namespace {
 
+// Recorded when a user interacts with an error page, part of investigation into
+// http://crbug.com/500556.  Note that these are flags that can be or-ed
+// together.
+// TODO(mmenke): Remove when http://crbug.com/500556 is fixed.
+enum ErrorPageUnexpectedStateFlags {
+  // According to blink, the page reporting a button press is not an error page.
+  ERROR_PAGE_BUTTON_PRESS_FOR_NON_ERROR_PAGE_URL = 0x1,
+  // NetErrorHelperCore's state machine things the current page is not an error
+  // page.
+  ERROR_PAGE_BUTTON_PRESS_WITH_NO_ERROR_INFO     = 0x2,
+
+  // Must be strictly greater than a value with all flags set.
+  ERROR_PAGE_BUTTON_PRESS_MAX                    = 0x4,
+};
+
 struct CorrectionTypeToResourceTable {
   int resource_id;
   const char* correction_type;
@@ -896,7 +911,28 @@ bool NetErrorHelperCore::ShouldSuppressErrorPage(FrameType frame_type,
   return true;
 }
 
-void NetErrorHelperCore::ExecuteButtonPress(Button button) {
+void NetErrorHelperCore::ExecuteButtonPress(bool is_error_page, Button button) {
+  // UMA to investigate http://crbug.com/500556.
+  // TODO(mmenke): Remove when the issue is fixed.
+  int button_press_info = 0;
+  if (!is_error_page)
+    button_press_info |= ERROR_PAGE_BUTTON_PRESS_FOR_NON_ERROR_PAGE_URL;
+  if (!committed_error_page_info_)
+    button_press_info |= ERROR_PAGE_BUTTON_PRESS_WITH_NO_ERROR_INFO;
+  UMA_HISTOGRAM_ENUMERATION("Net.ErrorPageButtonPressUnexpectedStates",
+                            button_press_info,
+                            ERROR_PAGE_BUTTON_PRESS_MAX);
+  if (button_press_info != 0) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Net.ErrorPageButtonPressedWhileInUnexpectedState",
+        button, BUTTON_MAX);
+  }
+
+  // Unclear why this happens.
+  // TODO(mmenke): Remove when http://crbug.com/500556 is fixed.
+  if (!committed_error_page_info_)
+    return;
+
   switch (button) {
     case RELOAD_BUTTON:
       chrome_common_net::RecordEvent(
@@ -928,6 +964,7 @@ void NetErrorHelperCore::ExecuteButtonPress(Button button) {
       chrome_common_net::RecordEvent(
           chrome_common_net::NETWORK_ERROR_EASTER_EGG_ACTIVATED);
       return;
+    case BUTTON_MAX:
     case NO_BUTTON:
       NOTREACHED();
       return;

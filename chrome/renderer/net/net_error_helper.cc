@@ -92,20 +92,11 @@ NetErrorHelper::~NetErrorHelper() {
   RenderThread::Get()->RemoveObserver(this);
 }
 
-void NetErrorHelper::ReloadButtonPressed() {
-  core_->ExecuteButtonPress(NetErrorHelperCore::RELOAD_BUTTON);
-}
-
-void NetErrorHelper::ShowSavedCopyButtonPressed() {
-  core_->ExecuteButtonPress(NetErrorHelperCore::SHOW_SAVED_COPY_BUTTON);
-}
-
-void NetErrorHelper::MoreButtonPressed() {
-  core_->ExecuteButtonPress(NetErrorHelperCore::MORE_BUTTON);
-}
-
-void NetErrorHelper::TrackActivatedEasterEgg() {
-  core_->ExecuteButtonPress(NetErrorHelperCore::EASTER_EGG);
+void NetErrorHelper::ButtonPressed(
+    error_page::NetErrorHelperCore::Button button) {
+  GURL url = render_frame()->GetWebFrame()->document().url();
+  bool is_error_page = (url == GURL(content::kUnreachableWebDataURL));
+  core_->ExecuteButtonPress(is_error_page, button);
 }
 
 void NetErrorHelper::DidStartProvisionalLoad() {

@@ -48,6 +48,7 @@ class NetErrorHelperCore {
     SHOW_SAVED_COPY_BUTTON,
     MORE_BUTTON,
     EASTER_EGG,
+    BUTTON_MAX,
   };
 
   // The Delegate handles all interaction with the RenderView, WebFrame, and
@@ -184,7 +185,11 @@ class NetErrorHelperCore {
   // Execute the effect of pressing the specified button.
   // Note that the visual effects of the 'MORE' button are taken
   // care of in JavaScript.
-  void ExecuteButtonPress(Button button);
+  //
+  // |is_error_page| indicates if the button press came from an actual error
+  // page or some other source. It should always be true, but may not be.
+  // Included as part of an investigation into http://crbug.com/500556.
+  void ExecuteButtonPress(bool is_error_page, Button button);
 
   // Reports to the correction service that the link with the given tracking
   // ID was clicked.  Only pages generated with information from the service

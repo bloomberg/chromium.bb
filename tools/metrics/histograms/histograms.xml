@@ -20360,6 +20360,29 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.ErrorPageButtonPressedWhileInUnexpectedState"
+    enum="ErrorPageButton">
+  <owner>mmenke@chromium.org</owner>
+  <summary>
+    Temporary histogram to investigate http://crbug.com/500556.  Records which
+    button on the network error page was pushed when either the URL Blink
+    reports for the page is not the internal error page URL or the
+    NetErrorHelper core has no error information for the current page (or both).
+  </summary>
+</histogram>
+
+<histogram name="Net.ErrorPageButtonPressUnexpectedStates"
+    enum="ErrorPageUnexpectedStates">
+  <owner>mmenke@chromium.org</owner>
+  <summary>
+    Temporary histogram to investigate http://crbug.com/500556.  Records
+    whether, when the handler for a button press on the network error page runs,
+    which of the following are or are not true:  The URL Blink reports for the
+    page is not the internal error page URL or the NetErrorHelper core has no
+    error information for the current page.
+  </summary>
+</histogram>
+
 <histogram name="Net.ErrorPageCounts" enum="NetErrorPageEvents">
   <owner>rdsmith@chromium.org</owner>
   <owner>ellyjones@chromium.org</owner>
@@ -54206,6 +54229,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="11002" label="WSATRY_AGAIN"/>
   <int value="11003" label="WSA_ANO_RECOVERY"/>
   <int value="11004" label="WSANO_DATA"/>
+</enum>
+
+<enum name="ErrorPageButton" type="int">
+  <int value="0" label="NO_BUTTON"/>
+  <int value="1" label="RELOAD_BUTTON"/>
+  <int value="2" label="SHOW_SAVED_COPY_BUTTON"/>
+  <int value="3" label="MORE_BUTTON"/>
+  <int value="4" label="EASTER_EGG"/>
+</enum>
+
+<enum name="ErrorPageUnexpectedStates" type="int">
+  <int value="0" label="OK"/>
+  <int value="1" label="NON_ERROR_PAGE_URL"/>
+  <int value="2" label="NO_ERROR_INFO"/>
+  <int value="3" label="NON_ERROR_PAGE_URL_AND_NO_ERROR_INFO"/>
 </enum>
 
 <enum name="EventHitTest" type="int">
