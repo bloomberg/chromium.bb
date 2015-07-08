@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.externalnav;
 
-import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -15,6 +14,7 @@ import android.webkit.WebView;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
@@ -60,7 +60,7 @@ public class ExternalNavigationHandler {
      *
      * @param activity The activity to launch an external intent from.
      */
-    public ExternalNavigationHandler(Activity activity) {
+    public ExternalNavigationHandler(ChromeActivity activity) {
         this(new ExternalNavigationDelegateImpl(activity));
     }
 

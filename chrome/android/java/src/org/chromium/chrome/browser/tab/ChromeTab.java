@@ -1380,7 +1380,7 @@ public class ChromeTab extends Tab {
         // url, we would like to close it as we will load this url in a
         // different Activity.
         if (shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent()) {
-            getChromeWebContentsDelegateAndroid().closeContents();
+            mActivity.getTabModelSelector().closeTab(this);
         } else if (mTabRedirectHandler.isOnNavigation()) {
             int lastCommittedEntryIndexBeforeNavigation =
                     mTabRedirectHandler.getLastCommittedEntryIndexBeforeStartingNavigation();

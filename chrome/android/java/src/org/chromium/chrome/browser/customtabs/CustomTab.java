@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
@@ -235,7 +234,7 @@ public class CustomTab extends ChromeTab {
         /**
          * Constructs a new instance of {@link CustomTabNavigationDelegate}.
          */
-        public CustomTabNavigationDelegate(Activity activity) {
+        public CustomTabNavigationDelegate(ChromeActivity activity) {
             super(activity);
         }
 
