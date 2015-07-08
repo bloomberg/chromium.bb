@@ -103,7 +103,8 @@ PluginURLFetcher::PluginURLFetcher(PluginStreamUrl* plugin_stream,
       copy_stream_data_(copy_stream_data),
       data_offset_(0),
       pending_failure_notification_(false),
-      request_id_(-1) {
+      request_id_(-1),
+      weak_factory_(this) {
   RequestInfo request_info;
   request_info.method = method;
   request_info.url = url;
@@ -377,4 +378,28 @@ void PluginURLFetcher::OnCompletedRequest(
   }
 }
 
+void PluginURLFetcher::OnReceivedCompletedResponse(
+    const content::ResourceResponseInfo& info,
+    scoped_ptr<ReceivedData> data,
+    int error_code,
+    bool was_ignored_by_handler,
+    bool stale_copy_in_cache,
+    const std::string& security_info,
+    const base::TimeTicks& completion_time,
+    int64 total_transfer_size) {
+  // |this| can be deleted on each callback. |weak_this| is placed here to
+  // detect the deletion.
+  base::WeakPtr<PluginURLFetcher> weak_this = weak_factory_.GetWeakPtr();
+  OnReceivedResponse(info);
+
+  if (!weak_this)
+    return;
+  if (data)
+    OnReceivedData(data.Pass());
+
+  if (!weak_this)
+    return;
+  OnCompletedRequest(error_code, was_ignored_by_handler, stale_copy_in_cache,
+                     security_info, completion_time, total_transfer_size);
+}
 }  // namespace content

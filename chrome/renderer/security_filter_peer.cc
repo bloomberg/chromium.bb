@@ -78,25 +78,6 @@ bool SecurityFilterPeer::OnReceivedRedirect(
   return false;
 }
 
-void SecurityFilterPeer::OnReceivedResponse(
-    const content::ResourceResponseInfo& info) {
-  NOTREACHED();
-}
-
-void SecurityFilterPeer::OnReceivedData(scoped_ptr<ReceivedData> data) {
-  NOTREACHED();
-}
-
-void SecurityFilterPeer::OnCompletedRequest(
-    int error_code,
-    bool was_ignored_by_handler,
-    bool stale_copy_in_cache,
-    const std::string& security_info,
-    const base::TimeTicks& completion_time,
-    int64 total_transfer_size) {
-  NOTREACHED();
-}
-
 // static
 void ProcessResponseInfo(const content::ResourceResponseInfo& info_in,
                          content::ResourceResponseInfo* info_out,
@@ -156,21 +137,34 @@ void BufferedPeer::OnCompletedRequest(int error_code,
   // Give sub-classes a chance at altering the data.
   if (error_code != net::OK || !DataReady()) {
     // Pretend we failed to load the resource.
-    original_peer_->OnReceivedResponse(response_info_);
-    original_peer_->OnCompletedRequest(net::ERR_ABORTED, false,
-                                       stale_copy_in_cache,
-                                       security_info, completion_time,
-                                       total_transfer_size);
+    original_peer_->OnReceivedCompletedResponse(
+        response_info_, nullptr, net::ERR_ABORTED, false, stale_copy_in_cache,
+        security_info, completion_time, total_transfer_size);
     return;
   }
 
-  original_peer_->OnReceivedResponse(response_info_);
-  if (!data_.empty())
-    original_peer_->OnReceivedData(make_scoped_ptr(
-        new content::FixedReceivedData(data_.data(), data_.size(), -1)));
-  original_peer_->OnCompletedRequest(error_code, was_ignored_by_handler,
-                                     stale_copy_in_cache, security_info,
-                                     completion_time, total_transfer_size);
+  scoped_ptr<content::FixedReceivedData> data_to_pass(
+      data_.empty() ? nullptr : new content::FixedReceivedData(
+                                    data_.data(), data_.size(), -1));
+  original_peer_->OnReceivedCompletedResponse(
+      response_info_, data_to_pass.Pass(), error_code, was_ignored_by_handler,
+      stale_copy_in_cache, security_info, completion_time, total_transfer_size);
+}
+
+void BufferedPeer::OnReceivedCompletedResponse(
+    const content::ResourceResponseInfo& info,
+    scoped_ptr<ReceivedData> data,
+    int error_code,
+    bool was_ignored_by_handler,
+    bool stale_copy_in_cache,
+    const std::string& security_info,
+    const base::TimeTicks& completion_time,
+    int64 total_transfer_size) {
+  // Make sure we delete ourselves at the end of this call.
+  scoped_ptr<BufferedPeer> this_deleter(this);
+  original_peer_->OnReceivedCompletedResponse(
+      info, data.Pass(), error_code, was_ignored_by_handler,
+      stale_copy_in_cache, security_info, completion_time, total_transfer_size);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -202,21 +196,35 @@ void ReplaceContentPeer::OnCompletedRequest(
     const std::string& security_info,
     const base::TimeTicks& completion_time,
     int64 total_transfer_size) {
+  // Make sure we delete ourselves at the end of this call.
+  scoped_ptr<ReplaceContentPeer> this_deleter(this);
+
   content::ResourceResponseInfo info;
   ProcessResponseInfo(info, &info, mime_type_);
   info.security_info = security_info;
   info.content_length = static_cast<int>(data_.size());
-  original_peer_->OnReceivedResponse(info);
-  if (!data_.empty())
-    original_peer_->OnReceivedData(make_scoped_ptr(
-        new content::FixedReceivedData(data_.data(), data_.size(), -1)));
-  original_peer_->OnCompletedRequest(net::OK,
-                                     false,
-                                     stale_copy_in_cache,
-                                     security_info,
-                                     completion_time,
-                                     total_transfer_size);
 
-  // The request processing is complete, we must delete ourselves.
-  delete this;
+  scoped_ptr<content::FixedReceivedData> data_to_pass(
+      data_.empty() ? nullptr : new content::FixedReceivedData(
+                                    data_.data(), data_.size(), -1));
+  original_peer_->OnReceivedCompletedResponse(
+      response_info_, data_to_pass.Pass(), net::OK, false, stale_copy_in_cache,
+      security_info, completion_time, total_transfer_size);
+}
+
+void ReplaceContentPeer::OnReceivedCompletedResponse(
+    const content::ResourceResponseInfo& info,
+    scoped_ptr<ReceivedData> data,
+    int error_code,
+    bool was_ignored_by_handler,
+    bool stale_copy_in_cache,
+    const std::string& security_info,
+    const base::TimeTicks& completion_time,
+    int64 total_transfer_size) {
+  // Make sure we delete ourselves at the end of this call.
+  scoped_ptr<ReplaceContentPeer> this_deleter(this);
+
+  original_peer_->OnReceivedCompletedResponse(
+      info, data.Pass(), error_code, was_ignored_by_handler,
+      stale_copy_in_cache, security_info, completion_time, total_transfer_size);
 }
