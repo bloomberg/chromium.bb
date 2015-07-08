@@ -33,7 +33,7 @@ class SelectorForTest : public TaskQueueSelector {
   void AsValueInto(base::trace_event::TracedValue* state) const override {}
 };
 
-// Always selects queue 0.
+// Always selects the oldest non-empty queue.
 class AutomaticSelectorForTest : public SelectorForTest {
  public:
   AutomaticSelectorForTest() {}
@@ -45,11 +45,20 @@ class AutomaticSelectorForTest : public SelectorForTest {
   }
 
   bool SelectWorkQueueToService(size_t* out_queue_index) override {
+    size_t oldest = (size_t) kInvalidIndex;
     for (size_t i = 0; i < work_queues_.size(); i++) {
-      if (!work_queues_[i]->empty()) {
-        *out_queue_index = i;
-        return true;
+      if (work_queues_[i]->empty())
+        continue;
+      // Note the TaskQueue < operator actually implements > hence the odd
+      // comparison below.
+      if (oldest == kInvalidIndex ||
+          work_queues_[oldest]->front() < work_queues_[i]->front()) {
+        oldest = i;
       }
+    }
+    if (oldest != kInvalidIndex) {
+      *out_queue_index = oldest;
+      return true;
     }
     return false;
   }
@@ -66,6 +75,8 @@ class AutomaticSelectorForTest : public SelectorForTest {
 
  private:
   std::vector<const base::TaskQueue*> work_queues_;
+
+  enum { kInvalidIndex = 0xffffffff };
 
   DISALLOW_COPY_AND_ASSIGN(AutomaticSelectorForTest);
 };
@@ -1240,6 +1251,50 @@ TEST_F(TaskQueueManagerTest, GetQueueState) {
             manager_->GetQueueState(0));
   EXPECT_EQ(TaskQueueManager::QueueState::EMPTY,
             manager_->GetQueueState(1));
+}
+
+TEST_F(TaskQueueManagerTest, DelayedTaskDoesNotSkipAHeadOfNonDelayedTask) {
+  Initialize(2u, SelectorType::Automatic);
+
+  scoped_refptr<base::SingleThreadTaskRunner> runners[2] = {
+      manager_->TaskRunnerForQueue(0), manager_->TaskRunnerForQueue(1)};
+
+  std::vector<int> run_order;
+
+  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(10);
+  runners[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order),
+                              delay);
+  runners[1]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
+  runners[1]->PostTask(FROM_HERE, base::Bind(&TestTask, 3, &run_order));
+
+  now_src_->Advance(delay * 2);
+  // After task 2 has run, the automatic selector will have to choose between
+  // tasks 1 and 3.  The sequence numbers are used to choose between the two
+  // tasks and if they are correct task 1 will run last.
+  test_task_runner_->RunUntilIdle();
+
+  EXPECT_THAT(run_order, ElementsAre(2, 3, 1));
+}
+
+TEST_F(TaskQueueManagerTest, DelayedTaskDoesNotSkipAHeadOfShorterDelayedTask) {
+  Initialize(2u, SelectorType::Automatic);
+
+  scoped_refptr<base::SingleThreadTaskRunner> runners[2] = {
+      manager_->TaskRunnerForQueue(0), manager_->TaskRunnerForQueue(1)};
+
+  std::vector<int> run_order;
+
+  base::TimeDelta delay1 = base::TimeDelta::FromMilliseconds(10);
+  base::TimeDelta delay2 = base::TimeDelta::FromMilliseconds(5);
+  runners[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order),
+                              delay1);
+  runners[1]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order),
+                              delay2);
+
+  now_src_->Advance(delay1 * 2);
+  test_task_runner_->RunUntilIdle();
+
+  EXPECT_THAT(run_order, ElementsAre(2, 1));
 }
 
 }  // namespace scheduler

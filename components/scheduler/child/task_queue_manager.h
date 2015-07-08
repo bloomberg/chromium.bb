@@ -178,9 +178,8 @@ class SCHEDULER_EXPORT TaskQueueManager : public TaskQueueSelector::Observer {
     ~DeletionSentinel() {}
   };
 
-  // Called by the task queue to register a new pending task and allocate a
-  // sequence number for it.
-  void DidQueueTask(base::PendingTask* pending_task);
+  // Called by the task queue to register a new pending task.
+  void DidQueueTask(const base::PendingTask& pending_task);
 
   // Post a task to call DoWork() on the main task runner.  Only one pending
   // DoWork is allowed from the main thread, to prevent an explosion of pending
@@ -223,6 +222,8 @@ class SCHEDULER_EXPORT TaskQueueManager : public TaskQueueSelector::Observer {
   internal::TaskQueue* Queue(size_t queue_index) const;
 
   base::TimeTicks Now() const;
+
+  int GetNextSequenceNumber();
 
   scoped_refptr<base::trace_event::ConvertableToTraceFormat>
   AsValueWithSelectorResult(bool should_run, size_t selected_queue) const;

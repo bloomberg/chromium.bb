@@ -126,6 +126,9 @@ class TaskQueue : public base::SingleThreadTaskRunner {
   bool TaskIsOlderThanQueuedTasks(const base::PendingTask* task);
   bool ShouldAutoPumpQueueLocked(bool should_trigger_wakeup,
                                  const base::PendingTask* previous_task);
+
+  // Push the task onto the |incoming_queue_| and allocate a sequence number
+  // for it.
   void EnqueueTaskLocked(const base::PendingTask& pending_task);
 
   void TraceQueueSize(bool is_locked) const;
@@ -196,7 +199,7 @@ bool TaskQueue::PostDelayedTaskImpl(const tracked_objects::Location& from_here,
 
   base::PendingTask pending_task(from_here, task, base::TimeTicks(),
                                  task_type != TaskType::NON_NESTABLE);
-  task_queue_manager_->DidQueueTask(&pending_task);
+  task_queue_manager_->DidQueueTask(pending_task);
 
   if (delay > base::TimeDelta()) {
     base::TimeTicks now = task_queue_manager_->Now();
@@ -368,6 +371,8 @@ void TaskQueue::EnqueueTaskLocked(const base::PendingTask& pending_task) {
       incoming_queue_.empty())
     task_queue_manager_->MaybePostDoWorkOnMainRunner();
   incoming_queue_.push(pending_task);
+  incoming_queue_.back().sequence_num =
+      task_queue_manager_->GetNextSequenceNumber();
 
   if (!pending_task.delayed_run_time.is_null()) {
     // Clear the delayed run time because we've already applied the delay
@@ -658,9 +663,8 @@ bool TaskQueueManager::SelectWorkQueueToService(size_t* out_queue_index) {
   return should_run;
 }
 
-void TaskQueueManager::DidQueueTask(base::PendingTask* pending_task) {
-  pending_task->sequence_num = task_sequence_num_.GetNext();
-  task_annotator_.DidQueueTask("TaskQueueManager::PostTask", *pending_task);
+void TaskQueueManager::DidQueueTask(const base::PendingTask& pending_task) {
+  task_annotator_.DidQueueTask("TaskQueueManager::PostTask", pending_task);
 }
 
 bool TaskQueueManager::ProcessTaskFromWorkQueue(
@@ -753,6 +757,10 @@ uint64 TaskQueueManager::GetAndClearTaskWasRunOnQueueBitmap() {
 
 base::TimeTicks TaskQueueManager::Now() const {
   return time_source_->NowTicks();
+}
+
+int TaskQueueManager::GetNextSequenceNumber() {
+  return task_sequence_num_.GetNext();
 }
 
 scoped_refptr<base::trace_event::ConvertableToTraceFormat>
