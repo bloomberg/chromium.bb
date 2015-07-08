@@ -32,16 +32,12 @@ img {
 }
 
 #navigation {
-  max-height: 100vh;
-  overflow: auto;
   padding-top: 20px;
   width: 150px;
 }
 
 #content {
   -webkit-flex: 1;
-  max-height: 100vh;
-  overflow: auto;
 }
 
 #caption {
@@ -409,4 +405,21 @@ img {
 
 #port-forwarding-config-buttons > label {
   flex-grow: 1
+}
+
+@media (max-width: 47em) {
+  #navigation,
+  #content {
+    overflow: visible;
+  }
+}
+@media (min-width: 47em) {
+  #container {
+    height: 100vh;
+  }
+  #navigation,
+  #content {
+    height: 100vh;
+    overflow: auto;
+  }
 }
