@@ -51,7 +51,7 @@ public:
     ShadowRoot* oldestShadowRoot() const { return m_shadowRoots.tail(); }
     ElementShadow* containingShadow() const;
 
-    ShadowRoot& addShadowRoot(Element& shadowHost, ShadowRoot::ShadowRootType);
+    ShadowRoot& addShadowRoot(Element& shadowHost, ShadowRootType);
 
     bool hasSameStyles(const ElementShadow*) const;
 

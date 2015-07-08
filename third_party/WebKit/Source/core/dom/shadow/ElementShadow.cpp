@@ -143,15 +143,15 @@ ElementShadow::~ElementShadow()
 #endif
 }
 
-ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRoot::ShadowRootType type)
+ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRootType type)
 {
     EventDispatchForbiddenScope assertNoEventDispatch;
     ScriptForbiddenScope forbidScript;
 
-    if (type == ShadowRoot::OpenShadowRoot) {
+    if (type == ShadowRootType::Open) {
         if (!youngestShadowRoot()) {
             shadowHost.willAddFirstOpenShadowRoot();
-        } else if (youngestShadowRoot()->type() == ShadowRoot::UserAgentShadowRoot) {
+        } else if (youngestShadowRoot()->type() == ShadowRootType::UserAgent) {
             shadowHost.willAddFirstOpenShadowRoot();
             UseCounter::countDeprecation(shadowHost.document(), UseCounter::ElementCreateShadowRootMultipleWithUserAgentShadowRoot);
         } else {

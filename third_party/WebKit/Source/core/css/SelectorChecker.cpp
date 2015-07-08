@@ -297,7 +297,7 @@ SelectorChecker::Match SelectorChecker::matchForSubSelector(const SelectorChecki
 
 static inline bool isOpenShadowRoot(const Node* node)
 {
-    return node && node->isShadowRoot() && toShadowRoot(node)->type() == ShadowRoot::OpenShadowRoot;
+    return node && node->isShadowRoot() && toShadowRoot(node)->type() == ShadowRootType::Open;
 }
 
 SelectorChecker::Match SelectorChecker::matchForPseudoShadow(const SelectorCheckingContext& context, const ContainerNode* node, MatchResult& result) const
@@ -418,7 +418,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             if (!context.isUARule)
                 UseCounter::countDeprecation(context.element->document(), UseCounter::CSSDeepCombinator);
             if (ShadowRoot* root = context.element->containingShadowRoot()) {
-                if (root->type() == ShadowRoot::UserAgentShadowRoot)
+                if (root->type() == ShadowRootType::UserAgent)
                     return SelectorFailsCompletely;
             }
 
@@ -1010,7 +1010,7 @@ bool SelectorChecker::checkPseudoElement(const SelectorCheckingContext& context,
     case CSSSelector::PseudoWebKitCustomElement:
         {
             if (ShadowRoot* root = element.containingShadowRoot())
-                return root->type() == ShadowRoot::UserAgentShadowRoot && element.shadowPseudoId() == selector.value();
+                return root->type() == ShadowRootType::UserAgent && element.shadowPseudoId() == selector.value();
             return false;
         }
     case CSSSelector::PseudoContent:

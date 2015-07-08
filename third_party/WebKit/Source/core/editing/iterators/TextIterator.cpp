@@ -279,7 +279,7 @@ void TextIteratorAlgorithm<Strategy>::advance()
             if (m_iterationProgress < HandledOpenShadowRoots) {
                 if (entersOpenShadowRoots() && m_node->isElementNode() && toElement(m_node)->hasOpenShadowRoot()) {
                     ShadowRoot* youngestShadowRoot = toElement(m_node)->shadowRoot();
-                    ASSERT(youngestShadowRoot->type() == ShadowRoot::OpenShadowRoot);
+                    ASSERT(youngestShadowRoot->type() == ShadowRootType::Open);
                     m_node = youngestShadowRoot;
                     m_iterationProgress = HandledNone;
                     ++m_shadowDepth;
@@ -294,7 +294,7 @@ void TextIteratorAlgorithm<Strategy>::advance()
             if (m_iterationProgress < HandledUserAgentShadowRoot) {
                 if (entersTextControls() && layoutObject->isTextControl()) {
                     ShadowRoot* userAgentShadowRoot = toElement(m_node)->userAgentShadowRoot();
-                    ASSERT(userAgentShadowRoot->type() == ShadowRoot::UserAgentShadowRoot);
+                    ASSERT(userAgentShadowRoot->type() == ShadowRootType::UserAgent);
                     m_node = userAgentShadowRoot;
                     m_iterationProgress = HandledNone;
                     ++m_shadowDepth;
@@ -363,9 +363,9 @@ void TextIteratorAlgorithm<Strategy>::advance()
                     // 4. Reached the top of a shadow root. If it's created by author, then try to visit the next
                     // sibling shadow root, if any.
                     ShadowRoot* shadowRoot = toShadowRoot(m_node);
-                    if (shadowRoot->type() == ShadowRoot::OpenShadowRoot) {
+                    if (shadowRoot->type() == ShadowRootType::Open) {
                         ShadowRoot* nextShadowRoot = shadowRoot->olderShadowRoot();
-                        if (nextShadowRoot && nextShadowRoot->type() == ShadowRoot::OpenShadowRoot) {
+                        if (nextShadowRoot && nextShadowRoot->type() == ShadowRootType::Open) {
                             m_fullyClippedStack.pop();
                             m_node = nextShadowRoot;
                             m_iterationProgress = HandledNone;
@@ -380,7 +380,7 @@ void TextIteratorAlgorithm<Strategy>::advance()
                         }
                     } else {
                         // If we are in a user-agent shadow root, then go back to the host.
-                        ASSERT(shadowRoot->type() == ShadowRoot::UserAgentShadowRoot);
+                        ASSERT(shadowRoot->type() == ShadowRootType::UserAgent);
                         m_node = shadowRoot->host();
                         m_iterationProgress = HandledUserAgentShadowRoot;
                         --m_shadowDepth;

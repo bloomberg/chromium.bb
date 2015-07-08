@@ -44,6 +44,11 @@ class InsertionPoint;
 class ShadowRootRareData;
 class StyleSheetList;
 
+enum class ShadowRootType {
+    UserAgent,
+    Open
+};
+
 class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope, public DoublyLinkedListNode<ShadowRoot> {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ShadowRoot);
@@ -52,11 +57,6 @@ public:
     // FIXME: Current implementation does not work well if a shadow root is dynamically created.
     // So multiple shadow subtrees in several elements are prohibited.
     // See https://github.com/w3c/webcomponents/issues/102 and http://crbug.com/234020
-    enum ShadowRootType {
-        UserAgentShadowRoot = 0,
-        OpenShadowRoot
-    };
-
     static PassRefPtrWillBeRawPtr<ShadowRoot> create(Document& document, ShadowRootType type)
     {
         return adoptRefWillBeNoop(new ShadowRoot(document, type));
@@ -74,7 +74,7 @@ public:
     ShadowRoot* youngerShadowRoot() const { return prev(); }
 
     ShadowRoot* olderShadowRootForBindings() const;
-    bool shouldExposeToBindings() const { return type() == OpenShadowRoot; }
+    bool shouldExposeToBindings() const { return type() == ShadowRootType::Open; }
 
     bool isYoungest() const { return !youngerShadowRoot(); }
     bool isOldest() const { return !olderShadowRoot(); }

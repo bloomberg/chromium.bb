@@ -165,7 +165,7 @@ static bool shouldBypassMainWorldCSP(Element* element)
 
     // Main world CSP is bypassed for style elements in user agent shadow DOM.
     ShadowRoot* root = element->containingShadowRoot();
-    if (root && root->type() == ShadowRoot::UserAgentShadowRoot)
+    if (root && root->type() == ShadowRootType::UserAgent)
         return true;
 
     return false;

@@ -1868,7 +1868,7 @@ PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(ExceptionState& exc
         return nullptr;
     }
 
-    return PassRefPtrWillBeRawPtr<ShadowRoot>(ensureShadow().addShadowRoot(*this, ShadowRoot::OpenShadowRoot));
+    return PassRefPtrWillBeRawPtr<ShadowRoot>(ensureShadow().addShadowRoot(*this, ShadowRootType::Open));
 }
 
 ShadowRoot* Element::shadowRoot() const
@@ -1877,7 +1877,7 @@ ShadowRoot* Element::shadowRoot() const
     if (!elementShadow)
         return nullptr;
     ShadowRoot* shadowRoot = elementShadow->youngestShadowRoot();
-    if (shadowRoot->type() == ShadowRoot::OpenShadowRoot)
+    if (shadowRoot->type() == ShadowRootType::Open)
         return shadowRoot;
     return nullptr;
 }
@@ -1886,7 +1886,7 @@ ShadowRoot* Element::userAgentShadowRoot() const
 {
     if (ElementShadow* elementShadow = shadow()) {
         if (ShadowRoot* shadowRoot = elementShadow->oldestShadowRoot()) {
-            ASSERT(shadowRoot->type() == ShadowRoot::UserAgentShadowRoot);
+            ASSERT(shadowRoot->type() == ShadowRootType::UserAgent);
             return shadowRoot;
         }
     }
@@ -1898,7 +1898,7 @@ ShadowRoot& Element::ensureUserAgentShadowRoot()
 {
     if (ShadowRoot* shadowRoot = userAgentShadowRoot())
         return *shadowRoot;
-    ShadowRoot& shadowRoot = ensureShadow().addShadowRoot(*this, ShadowRoot::UserAgentShadowRoot);
+    ShadowRoot& shadowRoot = ensureShadow().addShadowRoot(*this, ShadowRootType::UserAgent);
     didAddUserAgentShadowRoot(shadowRoot);
     return shadowRoot;
 }
@@ -2566,7 +2566,7 @@ String Element::textFromChildren()
 const AtomicString& Element::shadowPseudoId() const
 {
     if (ShadowRoot* root = containingShadowRoot()) {
-        if (root->type() == ShadowRoot::UserAgentShadowRoot)
+        if (root->type() == ShadowRootType::UserAgent)
             return fastGetAttribute(pseudoAttr);
     }
     return nullAtom;

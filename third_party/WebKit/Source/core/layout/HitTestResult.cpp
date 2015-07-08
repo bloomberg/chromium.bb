@@ -188,7 +188,7 @@ void HitTestResult::setToShadowHostIfInUserAgentShadowRoot()
 {
     if (Node* node = innerNode()) {
         if (ShadowRoot* containingShadowRoot = node->containingShadowRoot()) {
-            if (containingShadowRoot->type() == ShadowRoot::UserAgentShadowRoot)
+            if (containingShadowRoot->type() == ShadowRootType::UserAgent)
                 setInnerNode(node->shadowHost());
         }
     }
@@ -201,7 +201,7 @@ HTMLAreaElement* HitTestResult::imageAreaForImage() const
     if (isHTMLImageElement(m_innerNode)) {
         imageElement = toHTMLImageElement(m_innerNode);
     } else if (m_innerNode->isInShadowTree()) {
-        if (m_innerNode->containingShadowRoot()->type() == ShadowRoot::UserAgentShadowRoot) {
+        if (m_innerNode->containingShadowRoot()->type() == ShadowRootType::UserAgent) {
             if (isHTMLImageElement(m_innerNode->shadowHost()))
                 imageElement = toHTMLImageElement(m_innerNode->shadowHost());
         }
