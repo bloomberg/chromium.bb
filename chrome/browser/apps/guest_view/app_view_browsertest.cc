@@ -216,8 +216,8 @@ IN_PROC_BROWSER_TEST_F(AppViewTest, KillGuestWithInvalidInstanceID) {
 
 // Failing on msan bot: crbug.com/507940
 #if defined(MEMORY_SANITIZER)
-#define MAYBE_KillGuestCommunicatingWithWrongAppViewPaste \
-        DISABLED_KillGuestCommunicatingWithWrongAppViewPaste
+#define MAYBE_KillGuestCommunicatingWithWrongAppView \
+        DISABLED_KillGuestCommunicatingWithWrongAppView
 #else
 #define MAYBE_KillGuestCommunicatingWithWrongAppView \
         KillGuestCommunicatingWithWrongAppView
