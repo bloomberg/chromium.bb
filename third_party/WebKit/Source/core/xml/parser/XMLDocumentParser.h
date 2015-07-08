@@ -159,7 +159,7 @@ private:
 
     SegmentedString m_originalSourceForTransform;
 
-    xmlParserCtxtPtr context() const { return m_context ? m_context->context() : 0; };
+    xmlParserCtxtPtr context() const { return m_context ? m_context->context() : 0; }
     RefPtr<XMLParserContext> m_context;
     Deque<OwnPtr<PendingCallback>> m_pendingCallbacks;
     Vector<xmlChar> m_bufferedText;

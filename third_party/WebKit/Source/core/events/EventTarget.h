@@ -148,7 +148,7 @@ public:
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
-    virtual bool keepEventInNode(Event*) { return false; };
+    virtual bool keepEventInNode(Event*) { return false; }
 
 protected:
     EventTarget();

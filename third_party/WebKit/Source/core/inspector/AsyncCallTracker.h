@@ -67,17 +67,17 @@ public:
     void didInstallTimer(ExecutionContext*, int timerId, int timeout, bool singleShot);
     void didRemoveTimer(ExecutionContext*, int timerId);
     bool willFireTimer(ExecutionContext*, int timerId);
-    void didFireTimer() { didFireAsyncCall(); };
+    void didFireTimer() { didFireAsyncCall(); }
 
     void didRequestAnimationFrame(ExecutionContext*, int callbackId);
     void didCancelAnimationFrame(ExecutionContext*, int callbackId);
     bool willFireAnimationFrame(ExecutionContext*, int callbackId);
-    void didFireAnimationFrame() { didFireAsyncCall(); };
+    void didFireAnimationFrame() { didFireAsyncCall(); }
 
     void didEnqueueEvent(EventTarget*, Event*);
     void didRemoveEvent(EventTarget*, Event*);
     void willHandleEvent(EventTarget*, Event*, EventListener*, bool useCapture);
-    void didHandleEvent() { didFireAsyncCall(); };
+    void didHandleEvent() { didFireAsyncCall(); }
 
     void willLoadXHR(XMLHttpRequest*, ThreadableLoaderClient*, const AtomicString& method, const KURL&, bool async, PassRefPtr<FormData> body, const HTTPHeaderMap& headers, bool includeCrendentials);
     void didDispatchXHRLoadendEvent(XMLHttpRequest*);
@@ -85,18 +85,18 @@ public:
     void didEnqueueMutationRecord(ExecutionContext*, MutationObserver*);
     void didClearAllMutationRecords(ExecutionContext*, MutationObserver*);
     void willDeliverMutationRecords(ExecutionContext*, MutationObserver*);
-    void didDeliverMutationRecords() { didFireAsyncCall(); };
+    void didDeliverMutationRecords() { didFireAsyncCall(); }
 
     void didPostExecutionContextTask(ExecutionContext*, ExecutionContextTask*);
     void didKillAllExecutionContextTasks(ExecutionContext*);
     void willPerformExecutionContextTask(ExecutionContext*, ExecutionContextTask*);
-    void didPerformExecutionContextTask() { didFireAsyncCall(); };
+    void didPerformExecutionContextTask() { didFireAsyncCall(); }
 
     int traceAsyncOperationStarting(ExecutionContext*, const String& operationName, int prevOperationId = 0);
     void traceAsyncOperationCompleted(ExecutionContext*, int operationId);
     void traceAsyncOperationCompletedCallbackStarting(ExecutionContext*, int operationId);
     void traceAsyncCallbackStarting(ExecutionContext*, int operationId);
-    void traceAsyncCallbackCompleted() { didFireAsyncCall(); };
+    void traceAsyncCallbackCompleted() { didFireAsyncCall(); }
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -120,7 +120,7 @@ protected:
     // it will (if necessary) recalculate timings and (if necessary) call
     // updateChildrenAndEffects.
     void updateInheritedTime(double inheritedTime, TimingUpdateReason) const;
-    void invalidate() const { m_needsUpdate = true; };
+    void invalidate() const { m_needsUpdate = true; }
     bool requiresIterationEvents() const { return m_eventDelegate && m_eventDelegate->requiresIterationEvents(*this); }
     void clearEventDelegate() { m_eventDelegate = nullptr; }
 
@@ -138,7 +138,7 @@ protected:
     double repeatedDuration() const;
 
     virtual void updateChildrenAndEffects() const = 0;
-    virtual double intrinsicIterationDuration() const { return 0; };
+    virtual double intrinsicIterationDuration() const { return 0; }
     virtual double calculateTimeToEffectChange(bool forwards, double localTime, double timeToNextIteration) const = 0;
     virtual void specifiedTimingChanged() { }
 

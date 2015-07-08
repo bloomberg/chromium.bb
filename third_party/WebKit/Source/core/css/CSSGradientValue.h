@@ -54,7 +54,7 @@ enum CSSGradientRepeat { NonRepeating, Repeating };
 struct CSSGradientColorStop {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
-    CSSGradientColorStop() : m_colorIsDerivedFromElement(false) { };
+    CSSGradientColorStop() : m_colorIsDerivedFromElement(false) { }
     RefPtrWillBeMember<CSSPrimitiveValue> m_position; // percentage or length
     RefPtrWillBeMember<CSSPrimitiveValue> m_color;
     bool m_colorIsDerivedFromElement;

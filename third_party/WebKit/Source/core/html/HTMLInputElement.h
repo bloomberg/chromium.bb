@@ -117,7 +117,7 @@ public:
     // Checks if the specified string would be a valid value.
     // We should not call this for types with no string value such as CHECKBOX and RADIO.
     bool isValidValue(const String&) const;
-    bool hasDirtyValue() const { return !m_valueIfDirty.isNull(); };
+    bool hasDirtyValue() const { return !m_valueIfDirty.isNull(); }
 
     String sanitizeValue(const String&) const;
 

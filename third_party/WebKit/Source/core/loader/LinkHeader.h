@@ -16,10 +16,10 @@ public:
     template <typename CharType>
     LinkHeader(CharType*& position, CharType* end);
 
-    const String url() const { return m_url; };
-    const String rel() const { return m_rel; };
+    const String url() const { return m_url; }
+    const String rel() const { return m_rel; }
     CrossOriginAttributeValue crossOrigin() const { return m_crossOrigin; }
-    bool valid() const { return m_isValid; };
+    bool valid() const { return m_isValid; }
 
     enum LinkParameterName {
         LinkParameterUnknown,

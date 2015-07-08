@@ -65,7 +65,7 @@ public:
     String altText() const final;
 
     ImageResource* cachedImage() const { return imageLoader().image(); }
-    void setImageResource(ImageResource* i) { imageLoader().setImage(i); };
+    void setImageResource(ImageResource* i) { imageLoader().setImage(i); }
 
     void setLoadingImageDocument() { imageLoader().setLoadingImageDocument(); }
 

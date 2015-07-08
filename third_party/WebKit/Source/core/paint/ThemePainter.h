@@ -41,7 +41,7 @@ public:
     bool paintBorderOnly(LayoutObject*, const PaintInfo&, const IntRect&);
     bool paintDecorations(LayoutObject*, const PaintInfo&, const IntRect&);
 
-    virtual bool paintCapsLockIndicator(LayoutObject*, const PaintInfo&, const IntRect&) { return 0; };
+    virtual bool paintCapsLockIndicator(LayoutObject*, const PaintInfo&, const IntRect&) { return 0; }
     void paintSliderTicks(LayoutObject*, const PaintInfo&, const IntRect&);
 
 protected:

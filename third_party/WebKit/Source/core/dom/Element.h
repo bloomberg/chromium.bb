@@ -460,7 +460,7 @@ public:
     bool hasPendingResources() const { return hasElementFlag(HasPendingResources); }
     void setHasPendingResources() { setElementFlag(HasPendingResources); }
     void clearHasPendingResources() { clearElementFlag(HasPendingResources); }
-    virtual void buildPendingResource() { };
+    virtual void buildPendingResource() { }
 
     void setCustomElementDefinition(PassRefPtrWillBeRawPtr<CustomElementDefinition>);
     CustomElementDefinition* customElementDefinition() const;
@@ -548,7 +548,7 @@ protected:
 
     Node* insertAdjacent(const String& where, Node* newChild, ExceptionState&);
 
-    virtual void parserDidSetAttributes() { };
+    virtual void parserDidSetAttributes() { }
 
     void scrollLayoutBoxBy(const ScrollToOptions&);
     void scrollLayoutBoxTo(const ScrollToOptions&);

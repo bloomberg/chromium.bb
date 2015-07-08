@@ -129,7 +129,7 @@ private:
     void doUpdateFromElement(BypassMainWorldBehavior, UpdateFromElementBehavior);
 
     virtual void dispatchLoadEvent() = 0;
-    virtual void noImageResourceToLoad() { };
+    virtual void noImageResourceToLoad() { }
 
     void updatedHasPendingEvent();
 

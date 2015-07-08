@@ -39,7 +39,7 @@ class CORE_EXPORT DOMURLUtils : public DOMURLUtilsReadOnly {
 public:
     virtual void setURL(const KURL&) = 0;
     virtual void setInput(const String&) = 0;
-    ~DOMURLUtils() override { };
+    ~DOMURLUtils() override { }
 
     void setHref(const String&);
 

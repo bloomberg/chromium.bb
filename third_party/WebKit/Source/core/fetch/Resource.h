@@ -245,7 +245,7 @@ public:
     bool lock();
 
     void setCacheIdentifier(const String& cacheIdentifier) { m_cacheIdentifier = cacheIdentifier; }
-    String cacheIdentifier() const { return m_cacheIdentifier; };
+    String cacheIdentifier() const { return m_cacheIdentifier; }
 
     virtual void didSendData(unsigned long long /* bytesSent */, unsigned long long /* totalBytesToBeSent */) { }
     virtual void didDownloadData(int) { }

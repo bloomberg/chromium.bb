@@ -38,7 +38,7 @@ public:
     virtual ~LayoutQuote();
     void attachQuote();
 
-    virtual const char* name() const override { return "LayoutQuote"; };
+    virtual const char* name() const override { return "LayoutQuote"; }
 
 private:
     void detachQuote();

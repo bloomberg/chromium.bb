@@ -72,7 +72,7 @@ public:
     typename Strategy::PositionType startPositionInCurrentContainer() const;
     typename Strategy::PositionType endPositionInCurrentContainer() const;
 
-    const TextIteratorTextState& text() const { return m_textState; };
+    const TextIteratorTextState& text() const { return m_textState; }
     int length() const { return m_textState.length(); }
 
     bool breaksAtReplacedElement() { return !(m_behavior & TextIteratorDoesNotBreakAtReplacedElement); }

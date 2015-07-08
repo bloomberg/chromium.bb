@@ -44,15 +44,15 @@ class EventDispatcher;
 class EventDispatchMediator : public RefCountedWillBeGarbageCollectedFinalized<EventDispatchMediator> {
 public:
     static PassRefPtrWillBeRawPtr<EventDispatchMediator> create(PassRefPtrWillBeRawPtr<Event>);
-    virtual ~EventDispatchMediator() { };
+    virtual ~EventDispatchMediator() { }
     DECLARE_VIRTUAL_TRACE();
     virtual bool dispatchEvent(EventDispatcher&) const;
-    Event& event() const { return *m_event; };
+    Event& event() const { return *m_event; }
 
 protected:
     explicit EventDispatchMediator(PassRefPtrWillBeRawPtr<Event>);
-    EventDispatchMediator() { };
-    void setEvent(PassRefPtrWillBeRawPtr<Event> event) { ASSERT(event.get()); m_event = event; };
+    EventDispatchMediator() { }
+    void setEvent(PassRefPtrWillBeRawPtr<Event> event) { ASSERT(event.get()); m_event = event; }
 
 private:
     RefPtrWillBeMember<Event> m_event;

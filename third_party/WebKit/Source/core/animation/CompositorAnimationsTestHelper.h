@@ -72,7 +72,7 @@ private:
 public:
     // Target Property is set through the constructor.
     WebCompositorAnimationMock(WebCompositorAnimation::TargetProperty p) : m_property(p) { }
-    virtual WebCompositorAnimation::TargetProperty targetProperty() const { return m_property; };
+    virtual WebCompositorAnimation::TargetProperty targetProperty() const { return m_property; }
 
     MOCK_METHOD0(id, int());
     MOCK_METHOD0(group, int());
@@ -117,7 +117,7 @@ public:
 
     MOCK_CONST_METHOD1_T(getValue, float(double)); // Only on WebFloatAnimationCurve, but can't hurt to have here.
 
-    virtual WebCompositorAnimationCurve::AnimationCurveType type() const { return CurveId; };
+    virtual WebCompositorAnimationCurve::AnimationCurveType type() const { return CurveId; }
 
     MOCK_METHOD0(delete_, void());
     ~WebCompositorAnimationCurveMock() { delete_(); }
@@ -131,7 +131,7 @@ namespace blink {
 
 class AnimationCompositorAnimationsTestBase : public ::testing::Test {
 public:
-    AnimationCompositorAnimationsTestBase() : m_proxyPlatform(&m_mockCompositor) { };
+    AnimationCompositorAnimationsTestBase() : m_proxyPlatform(&m_mockCompositor) { }
 
     class WebCompositorSupportMock : public WebCompositorSupport {
     public:

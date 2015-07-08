@@ -143,4 +143,4 @@ LayoutRect ScrollAlignment::getRectToExpose(const LayoutRect& visibleRect, const
     return LayoutRect(LayoutPoint(x, y), visibleRect.size());
 }
 
-}; // namespace blink
+} // namespace blink

@@ -65,7 +65,7 @@ public:
     virtual void reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override;
     virtual void postMessageToPageInspector(const String&) override;
     virtual void postWorkerConsoleAgentEnabled() override;
-    virtual void didEvaluateWorkerScript(bool success) override { };
+    virtual void didEvaluateWorkerScript(bool success) override { }
     virtual void workerGlobalScopeStarted(WorkerGlobalScope*) override { }
     virtual void workerGlobalScopeClosed() override;
     virtual void workerThreadTerminated() override;

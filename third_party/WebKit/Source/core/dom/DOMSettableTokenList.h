@@ -72,7 +72,7 @@ public:
     void setValue(const AtomicString&) override;
 
     const SpaceSplitString& tokens() const { return m_tokens; }
-    void setObserver(DOMSettableTokenListObserver* observer) { m_observer = observer; };
+    void setObserver(DOMSettableTokenListObserver* observer) { m_observer = observer; }
 
     DECLARE_VIRTUAL_TRACE();
 

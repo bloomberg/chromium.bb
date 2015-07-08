@@ -37,7 +37,7 @@ class CORE_EXPORT DOMURLUtilsReadOnly {
 public:
     virtual KURL url() const = 0;
     virtual String input() const = 0;
-    virtual ~DOMURLUtilsReadOnly() { };
+    virtual ~DOMURLUtilsReadOnly() { }
 
     String href();
 

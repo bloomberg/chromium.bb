@@ -151,15 +151,15 @@ public:
     void attachRootGraphicsLayer(GraphicsLayer*, LocalFrame* localRoot) override { }
 
     void needTouchEvents(bool) override { }
-    void setTouchAction(TouchAction) override { };
+    void setTouchAction(TouchAction) override { }
 
     void didAssociateFormControls(const WillBeHeapVector<RefPtrWillBeMember<Element>>&, LocalFrame*) override { }
 
     void annotatedRegionsChanged() override { }
     String acceptLanguages() override;
 
-    void registerPopupOpeningObserver(PopupOpeningObserver*) override { };
-    void unregisterPopupOpeningObserver(PopupOpeningObserver*) override { };
+    void registerPopupOpeningObserver(PopupOpeningObserver*) override { }
+    void unregisterPopupOpeningObserver(PopupOpeningObserver*) override { }
 };
 
 class CORE_EXPORT EmptyFrameLoaderClient : public FrameLoaderClient {
@@ -201,7 +201,7 @@ public:
     virtual void dispatchDidFinishDocumentLoad() override { }
     virtual void dispatchDidFinishLoad() override { }
     virtual void dispatchDidFirstVisuallyNonEmptyLayout() override { }
-    virtual void dispatchDidChangeThemeColor() override { };
+    virtual void dispatchDidChangeThemeColor() override { }
 
     virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationPolicy) override;
 

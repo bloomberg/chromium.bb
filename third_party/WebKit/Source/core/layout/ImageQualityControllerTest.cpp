@@ -74,7 +74,7 @@ public:
     void destroyDecodedData(bool) override { }
     void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) override { }
 
-    bool isBitmapImage() const override { return true; };
+    bool isBitmapImage() const override { return true; }
 };
 
 TEST_F(ImageQualityControllerTest, LowQualityFilterForContrast)
@@ -94,7 +94,7 @@ public:
     void destroyDecodedData(bool) override { }
     void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) override { }
 
-    bool isBitmapImage() const override { return true; };
+    bool isBitmapImage() const override { return true; }
 };
 
 TEST_F(ImageQualityControllerTest, MediumQualityFilterForUnscaledImage)

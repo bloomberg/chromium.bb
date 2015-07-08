@@ -19,8 +19,8 @@ public:
     {
     }
 
-    bool specifiesBackground() const { return m_specifiesBackground; };
-    bool specifiesBorder() const { return m_specifiesBorder; };
+    bool specifiesBackground() const { return m_specifiesBackground; }
+    bool specifiesBorder() const { return m_specifiesBorder; }
 
 private:
     bool m_specifiesBackground;

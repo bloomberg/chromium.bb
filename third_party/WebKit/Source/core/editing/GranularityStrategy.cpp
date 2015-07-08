@@ -65,7 +65,7 @@ SelectionStrategy CharacterGranularityStrategy::GetType() const
     return SelectionStrategy::Character;
 }
 
-void CharacterGranularityStrategy::Clear() { };
+void CharacterGranularityStrategy::Clear() { }
 
 VisibleSelection CharacterGranularityStrategy::updateExtent(const IntPoint& extentPoint, LocalFrame* frame)
 {

@@ -45,7 +45,7 @@ public:
 
     // CanvasImageSource implementation
     virtual PassRefPtr<Image> getSourceImageForCanvas(SourceImageMode, SourceImageStatus*) const override;
-    virtual bool wouldTaintOrigin(SecurityOrigin*) const override { return false; };
+    virtual bool wouldTaintOrigin(SecurityOrigin*) const override { return false; }
     virtual void adjustDrawRects(FloatRect* srcRect, FloatRect* dstRect) const override;
     virtual FloatSize elementSize() const override;
 

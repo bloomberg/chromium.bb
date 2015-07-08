@@ -73,7 +73,7 @@ public:
 
     // Used to copy plugin-types into a plugin document in a nested
     // browsing context.
-    bool hasPluginTypes() const { return !!m_pluginTypes; };
+    bool hasPluginTypes() const { return !!m_pluginTypes; }
     const String& pluginTypesText() const;
 
     bool shouldSendCSPHeader(Resource::Type) const;

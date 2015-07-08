@@ -44,6 +44,6 @@ private:
 };
 
 
-}; // namespace blink
+} // namespace blink
 
 #endif // SinkDocument_h

@@ -176,8 +176,8 @@ public:
     virtual IntPoint minimumScrollPosition() const override;
     virtual IntPoint maximumScrollPosition() const override;
     virtual DoublePoint maximumScrollPositionDouble() const override;
-    virtual int visibleHeight() const override { return visibleRect().height(); };
-    virtual int visibleWidth() const override { return visibleRect().width(); };
+    virtual int visibleHeight() const override { return visibleRect().height(); }
+    virtual int visibleWidth() const override { return visibleRect().width(); }
     virtual IntSize contentsSize() const override;
     virtual bool scrollbarsCanBeActive() const override { return false; }
     virtual IntRect scrollableAreaBoundingBox() const override;

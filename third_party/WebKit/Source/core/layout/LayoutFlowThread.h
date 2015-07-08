@@ -48,7 +48,7 @@ typedef ListHashSet<LayoutMultiColumnSet*> LayoutMultiColumnSetList;
 class CORE_EXPORT LayoutFlowThread: public LayoutBlockFlow {
 public:
     LayoutFlowThread();
-    virtual ~LayoutFlowThread() { };
+    virtual ~LayoutFlowThread() { }
 
     virtual bool isLayoutFlowThread() const override final { return true; }
     virtual bool isLayoutMultiColumnFlowThread() const { return false; }

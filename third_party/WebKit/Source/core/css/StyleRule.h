@@ -80,7 +80,7 @@ public:
     PassRefPtrWillBeRawPtr<CSSRule> createCSSOMWrapper(CSSRule* parentRule) const;
 
     DECLARE_TRACE();
-    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { };
+    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { }
     void finalizeGarbageCollectedObject();
 
     // ~StyleRuleBase should be public, because non-public ~StyleRuleBase
@@ -269,7 +269,7 @@ class StyleRuleCharset : public StyleRuleBase {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(StyleRuleCharset);
 public:
     static PassRefPtrWillBeRawPtr<StyleRuleCharset> create() { return adoptRefWillBeNoop(new StyleRuleCharset()); }
-    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { StyleRuleBase::traceAfterDispatch(visitor); };
+    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { StyleRuleBase::traceAfterDispatch(visitor); }
 
 private:
     StyleRuleCharset() : StyleRuleBase(Charset) { }

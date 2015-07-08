@@ -587,8 +587,8 @@ public:
 
     virtual void updateDragState(bool dragOn);
 
-    LayoutView* view() const { return document().layoutView(); };
-    FrameView* frameView() const { return document().view(); };
+    LayoutView* view() const { return document().layoutView(); }
+    FrameView* frameView() const { return document().view(); }
 
     bool isRooted() const;
 
@@ -1171,7 +1171,7 @@ protected:
 
     // Add hit-test rects for this layoutObject only to the provided list. layerOffset is the offset
     // of this layoutObject within the current layer that should be used for each result.
-    virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const { };
+    virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const { }
 
     virtual PaintInvalidationReason paintInvalidationReason(const LayoutBoxModelObject& paintInvalidationContainer,
         const LayoutRect& oldPaintInvalidationRect, const LayoutPoint& oldPositionFromPaintInvalidationBacking,

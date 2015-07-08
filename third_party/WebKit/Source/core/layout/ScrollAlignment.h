@@ -80,6 +80,6 @@ struct CORE_EXPORT ScrollAlignment {
 };
 
 
-}; // namespace blink
+} // namespace blink
 
 #endif // ScrollAlignment_h
