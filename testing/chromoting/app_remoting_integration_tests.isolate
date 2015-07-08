@@ -12,7 +12,9 @@
           '--username=appremotingtestdriver_chromium_01@lgtestuser.com',
           '--environment=staging',
           '--refresh-token-file=../../remoting/tools/internal/refresh_tokens.json',
-          '--verbosity=2',
+          '--show-host-availability',
+          '--release-hosts-after-tests',
+          '--verbosity=1',
         ],
         'files': [
           '../xvfb.py',
