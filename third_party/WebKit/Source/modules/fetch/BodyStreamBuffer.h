@@ -29,7 +29,7 @@ public:
     FetchDataConsumerHandle* handle() const;
     PassOwnPtr<FetchDataConsumerHandle> releaseHandle();
 
-    class DrainingStreamNotificationClient : public GarbageCollectedMixin {
+    class MODULES_EXPORT DrainingStreamNotificationClient : public GarbageCollectedMixin {
     public:
         virtual ~DrainingStreamNotificationClient() { }
         // Called after FetchDataLoader::Client methods.

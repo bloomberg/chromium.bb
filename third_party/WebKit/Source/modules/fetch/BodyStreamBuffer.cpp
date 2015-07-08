@@ -159,8 +159,8 @@ PassRefPtr<BlobDataHandle> DrainingBodyStreamBuffer::drainAsBlobDataHandle(Fetch
 DrainingBodyStreamBuffer::DrainingBodyStreamBuffer(BodyStreamBuffer* buffer, BodyStreamBuffer::DrainingStreamNotificationClient* client)
     : m_buffer(buffer)
 {
-    if (client)
-        m_buffer->setDrainingStreamNotificationClient(client);
+    ASSERT(client);
+    m_buffer->setDrainingStreamNotificationClient(client);
 }
 
 } // namespace blink

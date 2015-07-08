@@ -346,6 +346,15 @@ Response* Response::clone(ExceptionState& exceptionState)
     return r;
 }
 
+bool Response::hasPendingActivity() const
+{
+    if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
+        return false;
+    if (m_isInternalDrained)
+        return true;
+    return Body::hasPendingActivity();
+}
+
 void Response::populateWebServiceWorkerResponse(WebServiceWorkerResponse& response)
 {
     m_response->populateWebServiceWorkerResponse(response);
@@ -355,6 +364,7 @@ Response::Response(ExecutionContext* context)
     : Body(context)
     , m_response(FetchResponseData::create())
     , m_headers(Headers::create(m_response->headerList()))
+    , m_isInternalDrained(false)
 {
     m_headers->setGuard(Headers::ResponseGuard);
 }
@@ -363,6 +373,7 @@ Response::Response(ExecutionContext* context, FetchResponseData* response)
     : Body(context)
     , m_response(response)
     , m_headers(Headers::create(m_response->headerList()))
+    , m_isInternalDrained(false)
 {
     m_headers->setGuard(Headers::ResponseGuard);
 
@@ -370,7 +381,7 @@ Response::Response(ExecutionContext* context, FetchResponseData* response)
 }
 
 Response::Response(ExecutionContext* context, FetchResponseData* response, Headers* headers)
-    : Body(context) , m_response(response) , m_headers(headers)
+    : Body(context) , m_response(response) , m_headers(headers), m_isInternalDrained(false)
 {
     refreshBody();
 }
@@ -405,9 +416,16 @@ PassOwnPtr<DrainingBodyStreamBuffer> Response::createInternalDrainingStream()
     if (BodyStreamBuffer* buffer = m_response->internalBuffer()) {
         if (buffer == m_response->buffer())
             return createDrainingStream();
-        return DrainingBodyStreamBuffer::create(buffer, nullptr);
+        m_isInternalDrained = true;
+        return DrainingBodyStreamBuffer::create(buffer, this);
     }
     return nullptr;
+}
+
+void Response::didFetchDataLoadFinishedFromDrainingStream()
+{
+    ASSERT(m_isInternalDrained);
+    m_isInternalDrained = false;
 }
 
 void Response::refreshBody()

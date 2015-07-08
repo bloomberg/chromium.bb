@@ -220,6 +220,15 @@ test(function() {
   }, 'Response throw error test');
 
 promise_test(function(t) {
+    var res = new Response();
+    return consume(res.body.getReader()).then(function(chunks) {
+        return decode(chunks);
+      }).then(function(text) {
+        assert_equals(text, '');
+      });
+  }, 'Read empty response\'s content');
+
+promise_test(function(t) {
     var res = new Response('hello');
     return consume(res.body.getReader()).then(function(chunks) {
         return decode(chunks);

@@ -46,6 +46,8 @@ public:
     {
         m_stream = stream;
         stream->didSourceStart();
+        if (!m_bodyStreamBuffer)
+            close();
     }
     // Creates a new BodyStreamBuffer to drain the data.
     PassOwnPtr<DrainingBodyStreamBuffer> createDrainingStream()
