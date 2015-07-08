@@ -76,7 +76,18 @@ var simple_entries = [
     name: 'top_secret_cat',
     request: new Request('http://tom:j3rry@example.com/cat'),
     response: new Response('')
-  }
+  },
+  {
+    name: 'non_2xx_response',
+    request: new Request('http://example.com/non2xx'),
+    response: new Response('', {status: 404, statusText: 'nope'})
+  },
+
+  {
+    name: 'error_response',
+    request: new Request('http://example.com/error'),
+    response: Response.error()
+  },
 ];
 
 // A set of Request/Response pairs to be used with prepopulated_cache_test().
@@ -446,6 +457,28 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
                         'Cache.match should not find a match');
       });
   }, 'Cache.match with POST Request');
+
+prepopulated_cache_test(simple_entries, function(cache, entries) {
+    var response = entries.non_2xx_response.response;
+    return cache.match(entries.non_2xx_response.request.url)
+      .then(function(result) {
+          assert_object_equals_fixed(
+              result, entries.non_2xx_response.response,
+              'Cache.match should return a Response object that has the ' +
+                  'same properties as a stored non-2xx response.');
+        });
+  }, 'Cache.match with a non-2xx Response');
+
+prepopulated_cache_test(simple_entries, function(cache, entries) {
+    var response = entries.error_response.response;
+    return cache.match(entries.error_response.request.url)
+      .then(function(result) {
+          assert_object_equals_fixed(
+              result, entries.error_response.response,
+              'Cache.match should return a Response object that has the ' +
+                  'same properties as a stored network error response.');
+        });
+  }, 'Cache.match with a network error Response');
 
 // Helpers ---
 

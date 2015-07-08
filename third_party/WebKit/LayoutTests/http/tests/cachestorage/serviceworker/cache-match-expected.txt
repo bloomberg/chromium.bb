@@ -24,5 +24,7 @@ FAIL Cache.matchAll with "ignoreVary" parameter promise_test: Unhandled rejectio
 PASS Cache.match with Request and Response objects with different URLs 
 PASS Cache.match invoked multiple times for the same Request/Response 
 FAIL Cache.match with POST Request assert_equals: Cache.match should not find a match expected (undefined) undefined but got (object) object "[object Response]"
+PASS Cache.match with a non-2xx Response 
+PASS Cache.match with a network error Response 
 Harness: the test ran to completion.
 

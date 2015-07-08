@@ -26,7 +26,7 @@ namespace {
 FetchResponseData* createFetchResponseDataFromWebResponse(ExecutionContext* executionContext, const WebServiceWorkerResponse& webResponse)
 {
     FetchResponseData* response = 0;
-    if (200 <= webResponse.status() && webResponse.status() < 300)
+    if (webResponse.status() > 0)
         response = FetchResponseData::create();
     else
         response = FetchResponseData::createNetworkErrorResponse();
