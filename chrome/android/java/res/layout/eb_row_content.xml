@@ -5,11 +5,8 @@
      found in the LICENSE file.
 -->
 
-<view class="org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkItem"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:chrome="http://schemas.android.com/apk/res-auto"
-    android:layout_width="wrap_content"
-    android:layout_height="48dp" >
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:chrome="http://schemas.android.com/apk/res-auto" >
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,10 +16,8 @@
 
         <ImageView
             android:id="@+id/bookmark_image"
-            android:layout_width="@dimen/enhanced_bookmark_item_icon_size"
-            android:layout_height="@dimen/enhanced_bookmark_item_icon_size"
-            android:layout_marginEnd="24dp"
-            android:layout_marginStart="24dp"
+            android:layout_width="64dp"
+            android:layout_height="match_parent"
             android:contentDescription="@null"
             android:scaleType="center" />
 
@@ -32,7 +27,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:singleLine="true"
-            android:textColor="#d9000000"
+            android:textAlignment="viewStart"
+            android:textColor="@color/default_text_color"
             android:textSize="16sp" />
 
         <org.chromium.chrome.browser.widget.TintedImageButton
@@ -52,4 +48,4 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-</view>
+</merge>

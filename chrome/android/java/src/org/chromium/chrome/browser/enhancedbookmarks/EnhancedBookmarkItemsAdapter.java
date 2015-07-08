@@ -9,10 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
-import android.widget.Checkable;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.R;
@@ -29,22 +26,6 @@ import java.util.List;
  */
 class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements
         EnhancedBookmarkUIObserver, PromoHeaderShowingChangeListener {
-
-    /**
-     * An abstraction for the common functionalities for {@link EnhancedBookmarkFolder} and
-     * {@link EnhancedBookmarkItem}
-     */
-    interface BookmarkGrid extends OnClickListener, Checkable {
-        /**
-         * Sets the bookmarkId the object is holding. Corresponding UI changes might occur.
-         */
-        void setBookmarkId(BookmarkId id);
-
-        /**
-         * @return The bookmark that the object is holding.
-         */
-        BookmarkId getBookmarkId();
-    }
 
     private static final int PROMO_HEADER_VIEW = 0;
     private static final int FOLDER_VIEW = 1;
@@ -211,19 +192,19 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         switch (viewType) {
             case PROMO_HEADER_VIEW:
                 return mPromoHeaderManager.createHolder(parent);
-            case FOLDER_VIEW:
-                EnhancedBookmarkFolder folder = (EnhancedBookmarkFolder) LayoutInflater.from(
-                        parent.getContext()).inflate(R.layout.eb_folder, parent, false);
-                folder.setDelegate(mDelegate);
-                return new ItemViewHolder(folder, mDelegate);
             case DIVIDER_VIEW:
                 return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(
                         R.layout.eb_divider, parent, false)) {};
+            case FOLDER_VIEW:
+                EnhancedBookmarkFolderRow folder = (EnhancedBookmarkFolderRow) LayoutInflater
+                        .from(parent.getContext()).inflate(R.layout.eb_folder_row, parent, false);
+                folder.onEnhancedBookmarkDelegateInitialized(mDelegate);
+                return new ItemViewHolder(folder);
             case BOOKMARK_VIEW:
-                EnhancedBookmarkItem item = (EnhancedBookmarkItem) LayoutInflater.from(
-                        parent.getContext()).inflate(R.layout.eb_item, parent, false);
+                EnhancedBookmarkBookmarkRow item = (EnhancedBookmarkBookmarkRow) LayoutInflater
+                        .from(parent.getContext()).inflate(R.layout.eb_bookmark_row, parent, false);
                 item.onEnhancedBookmarkDelegateInitialized(mDelegate);
-                return new ItemViewHolder(item, mDelegate);
+                return new ItemViewHolder(item);
             default:
                 assert false;
                 return null;
@@ -236,14 +217,13 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         BookmarkId id = getItem(position);
         switch (getItemViewType(position)) {
             case PROMO_HEADER_VIEW:
-                break;
-            case FOLDER_VIEW:
-                ((ItemViewHolder) holder).setBookmarkId(id);
-                break;
             case DIVIDER_VIEW:
                 break;
+            case FOLDER_VIEW:
+                ((EnhancedBookmarkRow) holder.itemView).setBookmarkId(id);
+                break;
             case BOOKMARK_VIEW:
-                ((ItemViewHolder) holder).setBookmarkId(id);
+                ((EnhancedBookmarkRow) holder.itemView).setBookmarkId(id);
                 break;
             default:
                 assert false : "View type not supported!";
@@ -295,35 +275,9 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     @Override
     public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {}
 
-    private static class ItemViewHolder extends RecyclerView.ViewHolder implements OnClickListener,
-            OnLongClickListener {
-        private EnhancedBookmarkDelegate mDelegate;
-        private BookmarkGrid mGrid;
-
-        public ItemViewHolder(View view, EnhancedBookmarkDelegate delegate) {
+    private static class ItemViewHolder extends RecyclerView.ViewHolder {
+        private ItemViewHolder(View view) {
             super(view);
-            mGrid = (BookmarkGrid) view;
-            mDelegate = delegate;
-            view.setOnClickListener(this);
-            view.setOnLongClickListener(this);
-        }
-
-        public void setBookmarkId(BookmarkId id) {
-            mGrid.setBookmarkId(id);
-            mGrid.setChecked(mDelegate.isBookmarkSelected(mGrid.getBookmarkId()));
-        }
-
-        @Override
-        public boolean onLongClick(View v) {
-            mGrid.setChecked(mDelegate.toggleSelectionForBookmark(mGrid.getBookmarkId()));
-            return true;
-        }
-
-        @Override
-        public void onClick(View v) {
-            if (mDelegate.isSelectionEnabled()) onLongClick(v);
-            else mGrid.onClick(itemView);
         }
     }
-
 }
