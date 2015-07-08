@@ -37,6 +37,7 @@
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "grit/extensions_strings.h"
 #include "net/base/escape.h"
+#include "net/base/filename_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -268,6 +269,13 @@ bool ValidateExtension(const Extension* extension,
   if (!CheckForIllegalFilenames(extension->path(), &warning))
     warnings->push_back(InstallWarning(warning));
 
+  // Check that the extension does not include any Windows reserved filenames.
+  std::string windows_reserved_warning;
+  if (!CheckForWindowsReservedFilenames(extension->path(),
+                                        &windows_reserved_warning)) {
+    warnings->push_back(InstallWarning(windows_reserved_warning));
+  }
+
   // Check that extensions don't include private key files.
   std::vector<base::FilePath> private_keys =
       FindPrivateKeyFiles(extension->path());
@@ -338,6 +346,7 @@ bool CheckForIllegalFilenames(const base::FilePath& extension_path,
   base::FilePath file;
   while (!(file = all_files.Next()).empty()) {
     base::FilePath::StringType filename = file.BaseName().value();
+
     // Skip all that don't start with "_".
     if (filename.find_first_of(FILE_PATH_LITERAL("_")) != 0)
       continue;
@@ -347,6 +356,28 @@ bool CheckForIllegalFilenames(const base::FilePath& extension_path,
           "Cannot load extension with file or directory name %s. "
           "Filenames starting with \"_\" are reserved for use by the system.",
           file.BaseName().AsUTF8Unsafe().c_str());
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool CheckForWindowsReservedFilenames(const base::FilePath& extension_dir,
+                                      std::string* error) {
+  const int kFilesAndDirectories =
+      base::FileEnumerator::DIRECTORIES | base::FileEnumerator::FILES;
+  base::FileEnumerator traversal(extension_dir, true, kFilesAndDirectories);
+
+  for (base::FilePath current = traversal.Next(); !current.empty();
+       current = traversal.Next()) {
+    base::FilePath::StringType filename = current.BaseName().value();
+    bool is_reserved_filename = net::IsReservedNameOnWindows(filename);
+    if (is_reserved_filename) {
+      *error = base::StringPrintf(
+          "Cannot load extension with file or directory name %s. "
+          "The filename is illegal.",
+          current.BaseName().AsUTF8Unsafe().c_str());
       return false;
     }
   }

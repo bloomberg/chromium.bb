@@ -89,6 +89,13 @@ std::vector<base::FilePath> FindPrivateKeyFiles(
 bool CheckForIllegalFilenames(const base::FilePath& extension_path,
                               std::string* error);
 
+// We need to reserve the names of special Windows filenames, such as
+// "com2.zip."
+// If any files or directories are found to be using a reserved Windows
+// filename, we return false, and set error message.
+bool CheckForWindowsReservedFilenames(const base::FilePath& extension_dir,
+                                      std::string* error);
+
 // Returns a path to a temporary directory for unpacking an extension that will
 // be installed into |extensions_dir|. Creates the directory if necessary.
 // The directory will be on the same file system as |extensions_dir| so

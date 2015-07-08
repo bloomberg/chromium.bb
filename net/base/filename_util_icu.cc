@@ -26,7 +26,8 @@ bool IsSafePortablePathComponent(const base::FilePath& component) {
          FilePathToString16(component, &component16) &&
          base::i18n::IsFilenameLegal(component16) &&
          !IsShellIntegratedExtension(extension) &&
-         (sanitized == component.value()) && !IsReservedName(component.value());
+         (sanitized == component.value()) &&
+         !IsReservedNameOnWindows(component.value());
 }
 
 bool IsSafePortableRelativePath(const base::FilePath& path) {

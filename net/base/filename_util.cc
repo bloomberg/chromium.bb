@@ -141,7 +141,7 @@ void GenerateSafeFileName(const std::string& mime_type,
   // Prepend "_" to the file name if it's a reserved name
   base::FilePath::StringType leaf_name = file_path->BaseName().value();
   DCHECK(!leaf_name.empty());
-  if (IsReservedName(leaf_name)) {
+  if (IsReservedNameOnWindows(leaf_name)) {
     leaf_name = base::FilePath::StringType(FILE_PATH_LITERAL("_")) + leaf_name;
     *file_path = file_path->DirName();
     if (file_path->value() == base::FilePath::kCurrentDirectory) {
@@ -151,6 +151,46 @@ void GenerateSafeFileName(const std::string& mime_type,
     }
   }
 #endif
+}
+
+bool IsReservedNameOnWindows(const base::FilePath::StringType& filename) {
+  // This list is taken from the MSDN article "Naming a file"
+  // http://msdn2.microsoft.com/en-us/library/aa365247(VS.85).aspx
+  // I also added clock$ because GetSaveFileName seems to consider it as a
+  // reserved name too.
+  static const char* const known_devices[] = {
+      "con",  "prn",  "aux",  "nul",  "com1", "com2", "com3",  "com4",
+      "com5", "com6", "com7", "com8", "com9", "lpt1", "lpt2",  "lpt3",
+      "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9", "clock$"};
+#if defined(OS_WIN)
+  std::string filename_lower =
+      base::StringToLowerASCII(base::WideToUTF8(filename));
+#elif defined(OS_POSIX)
+  std::string filename_lower = base::StringToLowerASCII(filename);
+#endif
+
+  for (size_t i = 0; i < arraysize(known_devices); ++i) {
+    // Exact match.
+    if (filename_lower == known_devices[i])
+      return true;
+    // Starts with "DEVICE.".
+    if (filename_lower.find(std::string(known_devices[i]) + ".") == 0)
+      return true;
+  }
+
+  static const char* const magic_names[] = {
+      // These file names are used by the "Customize folder" feature of the
+      // shell.
+      "desktop.ini",
+      "thumbs.db",
+  };
+
+  for (size_t i = 0; i < arraysize(magic_names); ++i) {
+    if (filename_lower == magic_names[i])
+      return true;
+  }
+
+  return false;
 }
 
 }  // namespace net

@@ -115,6 +115,13 @@ static const base::FilePath::CharType* kUnsafePortableBasenames[] = {
 #endif
 };
 
+static const base::FilePath::CharType* kUnsafePortableBasenamesForWindows[] = {
+    FILE_PATH_LITERAL("con"),
+    FILE_PATH_LITERAL("con.zip"),
+    FILE_PATH_LITERAL("NUL"),
+    FILE_PATH_LITERAL("NUL.zip"),
+};
+
 static const base::FilePath::CharType* kSafePortableRelativePaths[] = {
     FILE_PATH_LITERAL("a/a"),
 #if defined(OS_WIN)
@@ -1406,6 +1413,20 @@ TEST(FilenameUtilTest, GenerateFileName) {
     GenerateFilenameCase test_case = generation_tests[i];
     test_case.referrer_charset = "GBK";
     RunGenerateFileNameTestCase(&test_case);
+  }
+}
+
+TEST(FilenameUtilTest, IsReservedNameOnWindows) {
+  for (size_t i = 0; i < arraysize(kSafePortableBasenames); ++i) {
+    EXPECT_FALSE(IsReservedNameOnWindows(
+        base::FilePath(kSafePortableBasenames[i]).value()))
+        << kSafePortableBasenames[i];
+  }
+
+  for (size_t i = 0; i < arraysize(kUnsafePortableBasenamesForWindows); ++i) {
+    EXPECT_TRUE(IsReservedNameOnWindows(
+        base::FilePath(kUnsafePortableBasenamesForWindows[i]).value()))
+        << kUnsafePortableBasenamesForWindows[i];
   }
 }
 

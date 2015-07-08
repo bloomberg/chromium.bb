@@ -26,8 +26,6 @@ void SanitizeGeneratedFileName(base::FilePath::StringType* filename,
 
 bool IsShellIntegratedExtension(const base::FilePath::StringType& extension);
 
-bool IsReservedName(const base::FilePath::StringType& filename);
-
 void EnsureSafeExtension(const std::string& mime_type,
                          bool ignore_extension,
                          base::FilePath* file_name);

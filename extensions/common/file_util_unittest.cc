@@ -187,6 +187,40 @@ TEST_F(FileUtilTest, CheckIllegalFilenamesReservedAndIllegal) {
   EXPECT_FALSE(file_util::CheckForIllegalFilenames(temp.path(), &error));
 }
 
+// These tests do not work on Windows, because it is illegal to create a
+// file/directory with a Windows reserved name. Because we cannot create a
+// file that will cause the test to fail, let's skip the test.
+#if !defined(OS_WIN)
+TEST_F(FileUtilTest, CheckIllegalFilenamesDirectoryWindowsReserved) {
+  base::ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+
+  base::FilePath src_path = temp.path().AppendASCII("aux");
+  ASSERT_TRUE(base::CreateDirectory(src_path));
+
+  std::string error;
+  EXPECT_FALSE(
+      file_util::CheckForWindowsReservedFilenames(temp.path(), &error));
+}
+
+TEST_F(FileUtilTest,
+       CheckIllegalFilenamesWindowsReservedFilenameWithExtension) {
+  base::ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+
+  base::FilePath src_path = temp.path().AppendASCII("some_dir");
+  ASSERT_TRUE(base::CreateDirectory(src_path));
+
+  std::string data = "{ \"name\": { \"message\": \"foobar\" } }";
+  ASSERT_TRUE(base::WriteFile(src_path.AppendASCII("lpt1.txt"), data.c_str(),
+                              data.length()));
+
+  std::string error;
+  EXPECT_FALSE(
+      file_util::CheckForWindowsReservedFilenames(temp.path(), &error));
+}
+#endif
+
 TEST_F(FileUtilTest, LoadExtensionGivesHelpfullErrorOnMissingManifest) {
   base::FilePath install_dir;
   ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &install_dir));
