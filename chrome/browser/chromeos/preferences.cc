@@ -244,17 +244,14 @@ void Preferences::RegisterProfilePrefs(
   // We don't sync wake-on-wifi related prefs because they are device specific.
   registry->RegisterBooleanPref(prefs::kWakeOnWifiSsid, true);
 
-  // Mobile plan notifications default to on.
-  registry->RegisterBooleanPref(
-      prefs::kShowPlanNotifications,
-      true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-
   // 3G first-time usage promo will be shown at least once.
   registry->RegisterBooleanPref(prefs::kShow3gPromoNotification, true);
 
   // Number of times Data Saver prompt has been shown on 3G data network.
-  registry->RegisterIntegerPref(prefs::kDataSaverPromptsShown, 0);
+  registry->RegisterIntegerPref(
+      prefs::kDataSaverPromptsShown,
+      0,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
   // Initially all existing users would see "What's new" for current version
   // after update.
