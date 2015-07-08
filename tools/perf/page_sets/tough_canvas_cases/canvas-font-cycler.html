@@ -3,8 +3,7 @@
 <body>
 <canvas id='c'></canvas>
 <script>
-var fontNameList = ["Palatino Linotype", "Georgia", "Times New Roman", "Arial", "Arial Black", "cursive", "Impact", "Tahoma", "Helvetica", "Verdana", "Geneva", "sans-serif", "Courier", "Monaco"]
-var fontStyleList = ["", "italic", "oblique"];
+var fontNameList = ["Palatino Linotype", "Times New Roman", "Arial", "sans-serif"]
 var fontWeightList = ["", "bold", "bolder", "lighter"];
 var fontSizeList = ["10pt", "15pt", "20pt", "small", "large", "15px", "20mm"];
 
@@ -12,19 +11,18 @@ var canvas = document.getElementById("c");
 var ctx = canvas.getContext("2d");
 
 function doFrame() {
-	var fontString;
 	canvas.width = canvas.width;
-    fontNameList.forEach(function(fontName) {
-        fontStyleList.forEach(function(fontStyle) {
+    for (var i = 0; i < 20; i++) {
+        fontNameList.forEach(function(fontName) {
             fontWeightList.forEach(function(fontWeight) {
                 fontSizeList.forEach(function(fontSize) {
-                    ctx.font = fontStyle + " " + fontWeight + " " + fontSize + " " + fontName;
+                    ctx.font = fontWeight + " " + fontSize + " " + fontName;
                     // Use the font to make sure the font is completely resolved (has no pending lazy inits)
                     ctx.fillText("Test", 0, 50);
                 });
             });
         });
-    });
+    }
     requestAnimationFrame(doFrame);
 }
 requestAnimationFrame(doFrame);
