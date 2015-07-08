@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/shell/common/shell_switches.h"
+#include "ui/gfx/win/direct_write.h"
 
 #define SIZEOF_STRUCT_WITH_SPECIFIED_LAST_MEMBER(struct_name, member) \
     offsetof(struct_name, member) + \
@@ -36,34 +37,35 @@ bool SetupFonts() {
   base::FilePath font_path =
       base_path.Append(FILE_PATH_LITERAL("/AHEM____.TTF"));
 
-  // We do two registrations:
+  // We do one of two registrations:
   // 1. For GDI font rendering via ::AddFontMemResourceEx.
   // 2. For DirectWrite rendering by appending a command line flag that tells
   //    the sandbox policy/warmup to grant access to the given path.
+  if (gfx::win::ShouldUseDirectWrite()) {
+    // DirectWrite sandbox registration.
+    base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
+    command_line.AppendSwitchASCII(switches::kRegisterFontFiles,
+                                   base::WideToUTF8(font_path.value()));
+  } else {
+    // GDI registration.
+    std::string font_buffer;
+    if (!base::ReadFileToString(font_path, &font_buffer)) {
+      std::cerr << "Failed to load font " << base::WideToUTF8(font_path.value())
+                << "\n";
+      return false;
+    }
 
-  // GDI registration.
-  std::string font_buffer;
-  if (!base::ReadFileToString(font_path, &font_buffer)) {
-    std::cerr << "Failed to load font " << base::WideToUTF8(font_path.value())
-              << "\n";
-    return false;
+    DWORD num_fonts = 1;
+    HANDLE font_handle =
+        ::AddFontMemResourceEx(const_cast<char*>(font_buffer.c_str()),
+                               font_buffer.length(),
+                               0,
+                               &num_fonts);
+    if (!font_handle) {
+      std::cerr << "Failed to register Ahem font\n";
+      return false;
+    }
   }
-
-  DWORD num_fonts = 1;
-  HANDLE font_handle =
-      ::AddFontMemResourceEx(const_cast<char*>(font_buffer.c_str()),
-                             font_buffer.length(),
-                             0,
-                             &num_fonts);
-  if (!font_handle) {
-    std::cerr << "Failed to register Ahem font\n";
-    return false;
-  }
-
-  // DirectWrite sandbox registration.
-  base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
-  command_line.AppendSwitchASCII(switches::kRegisterFontFiles,
-                                 base::WideToUTF8(font_path.value()));
 
   return true;
 }
