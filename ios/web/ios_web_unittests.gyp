@@ -35,6 +35,7 @@
         'navigation/navigation_manager_impl_unittest.mm',
         'navigation/nscoder_util_unittest.mm',
         'net/cert_policy_unittest.cc',
+        'net/cert_verifier_block_adapter_unittest.cc',
         'net/clients/crw_csp_network_client_unittest.mm',
         'net/clients/crw_js_injection_network_client_unittest.mm',
         'net/clients/crw_passkit_network_client_unittest.mm',
