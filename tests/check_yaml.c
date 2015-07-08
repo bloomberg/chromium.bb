@@ -1,10 +1,15 @@
-#include <yaml.h>
+#include <config.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
 #include <error.h>
 #include "liblouis.h"
 #include "brl_checks.h"
+
+#define EXIT_SKIPPED 77
+
+#ifdef HAVE_LIBYAML
+#include <yaml.h>
 
 const char* event_names[] = {"YAML_NO_EVENT", "YAML_STREAM_START_EVENT", "YAML_STREAM_END_EVENT",
 			     "YAML_DOCUMENT_START_EVENT", "YAML_DOCUMENT_END_EVENT",
@@ -366,12 +371,20 @@ read_tests(yaml_parser_t *parser, char *tables_list, int direction, int hyphenat
   }
 }
 
+#endif
+
 int
 main(int argc, char *argv[]) {
   if (argc != 2) {
     printf("Usage: %s file.yaml\n", argv[0]);
     return 0;
   }
+
+#ifndef HAVE_LIBYAML
+  fprintf(stderr, "Skipping tests for %s as libyaml was not found\n", argv[1]);
+  return EXIT_SKIPPED;
+
+#else
 
   FILE *file;
   yaml_parser_t parser;
@@ -465,4 +478,7 @@ main(int argc, char *argv[]) {
 	 count, errors, ((errors != 1) ? "s" : ""));
 
   return errors ? 1 : 0;
+
+#endif
 }
+
