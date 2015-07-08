@@ -13,6 +13,7 @@
     <item name="fre_pager" type="id"/>
     <item name="menu_item_enter_anim_id" type="id" />
     <item name="permission_intent_override" type="id" />
+    <item name="permission_type" type="id"/>
     <item name="refine_view_id" type="id"/>
     <item name="tabswitcher_multiple_drawable" type="id"/>
     <item name="tabswitcher_single_drawable" type="id"/>

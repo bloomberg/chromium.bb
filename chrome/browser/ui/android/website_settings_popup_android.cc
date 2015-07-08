@@ -128,6 +128,8 @@ void WebsiteSettingsPopupAndroid::SetPermissionInfo(
           static_cast<jint>(user_specified_settings_to_display[permission]));
     }
   }
+
+  Java_WebsiteSettingsPopup_updatePermissionDisplay(env, popup_jobject_.obj());
 }
 
 void WebsiteSettingsPopupAndroid::SetSelectedTab(

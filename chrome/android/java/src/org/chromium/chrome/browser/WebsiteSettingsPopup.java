@@ -54,10 +54,13 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ssl.ConnectionSecurity;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.toolbar.ToolbarModel;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.base.WindowAndroid.PermissionCallback;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 import java.net.URI;
@@ -219,6 +222,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
     private final Context mContext;
     private final Profile mProfile;
     private final WebContents mWebContents;
+    private final WindowAndroid mWindowAndroid;
 
     // A pointer to the C++ object for this UI.
     private final long mNativeWebsiteSettingsPopup;
@@ -265,6 +269,9 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
     // Whether to use the read-only permissions list.
     private boolean mIsReadOnlyDialog;
 
+    // Permissions available to be displayed in mPermissionsList.
+    private List<PageInfoPermissionEntry> mDisplayedPermissions;
+
     /**
      * Creates the WebsiteSettingsPopup, but does not display it. Also initializes the corresponding
      * C++ object and saves a pointer to it.
@@ -278,6 +285,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         mProfile = profile;
         mWebContents = webContents;
         mIsReadOnlyDialog = enableReadOnlyPopup();
+        mWindowAndroid = ContentViewCore.fromWebContents(mWebContents).getWindowAndroid();
 
         // Find the container and all it's important subviews.
         int containerLayout = R.layout.website_settings_editable;
@@ -314,11 +322,12 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         // TODO(sashab,finnur): Make this button visible for well-formed, non-internal URLs.
         mSiteSettingsButton.setVisibility(View.GONE);
 
-        if (enableReadOnlyPopup()) {
+        if (mIsReadOnlyDialog) {
             mCopyUrlButton = null;
             mHorizontalSeparator = null;
             mLowerDialogArea = null;
             mSiteSettingsButton.setVisibility(View.VISIBLE);
+            mDisplayedPermissions = new ArrayList<PageInfoPermissionEntry>();
         } else {
             mCopyUrlButton =
                     (Button) mContainer.findViewById(R.id.website_settings_copy_url_button);
@@ -603,7 +612,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         setVisibilityOfPermissionsList(true);
 
         if (mIsReadOnlyDialog) {
-            addReadOnlyPermissionSection(name, type, currentSetting);
+            mDisplayedPermissions.add(new PageInfoPermissionEntry(name, type, currentSetting));
             return;
         }
 
@@ -649,24 +658,41 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         mPermissionsList.addView(permissionRow);
     }
 
-    private void addReadOnlyPermissionSection(String name, int type, int currentSetting) {
+    /**
+     * Update the permissions view based on the contents of mDisplayedPermissions.
+     */
+    @CalledByNative
+    private void updatePermissionDisplay() {
+        if (mIsReadOnlyDialog) {
+            mPermissionsList.removeAllViews();
+            for (PageInfoPermissionEntry permission : mDisplayedPermissions) {
+                addReadOnlyPermissionSection(permission);
+            }
+        }
+    }
+
+    private void addReadOnlyPermissionSection(PageInfoPermissionEntry permission) {
         View permissionRow = LayoutInflater.from(mContext).inflate(
                 R.layout.website_settings_permission_row, null);
 
         ImageView permissionIcon = (ImageView) permissionRow.findViewById(
                 R.id.website_settings_permission_icon);
-        permissionIcon.setImageResource(getImageResourceForPermission(type));
+        permissionIcon.setImageResource(getImageResourceForPermission(permission.type));
 
-        if (currentSetting == ContentSetting.ALLOW) {
+        if (permission.value == ContentSetting.ALLOW) {
             int warningTextResource = 0;
 
-            if (type == ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION
+            // If warningTextResource is non-zero, then the view must be tagged with either
+            // permission_intent_override or permission_type.
+            if (permission.type == ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION
                     && isAndroidLocationDisabled()) {
                 warningTextResource = R.string.page_info_android_location_blocked;
                 permissionRow.setTag(R.id.permission_intent_override,
                         new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-            } else if (!hasAndroidPermission(type)) {
+            } else if (!hasAndroidPermission(permission.type)) {
                 warningTextResource = R.string.page_info_android_permission_blocked;
+                permissionRow.setTag(R.id.permission_type,
+                        getAndroidPermissionForContentSetting(permission.type));
             }
 
             if (warningTextResource != 0) {
@@ -686,14 +712,14 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         TextView permissionStatus = (TextView) permissionRow.findViewById(
                 R.id.website_settings_permission_status);
         SpannableStringBuilder builder = new SpannableStringBuilder();
-        SpannableString nameString = new SpannableString(name);
+        SpannableString nameString = new SpannableString(permission.name);
         final StyleSpan boldSpan = new StyleSpan(android.graphics.Typeface.BOLD);
         nameString.setSpan(boldSpan, 0, nameString.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
 
         builder.append(nameString);
         builder.append(" – ");  // en-dash.
         String status_text = "";
-        switch (currentSetting) {
+        switch (permission.value) {
             case ContentSetting.ALLOW:
                 status_text =
                         mContext.getResources().getString(R.string.page_info_permission_allowed);
@@ -703,7 +729,8 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
                         mContext.getResources().getString(R.string.page_info_permission_blocked);
                 break;
             default:
-                assert false : "Invalid setting " + currentSetting + " for permission " + type;
+                assert false : "Invalid setting " + permission.value + " for permission "
+                        + permission.type;
         }
         builder.append(status_text);
         permissionStatus.setText(builder);
@@ -807,6 +834,25 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
             });
         } else if (view.getId() == R.id.website_settings_permission_row) {
             final Object intentOverride = view.getTag(R.id.permission_intent_override);
+
+            if (intentOverride == null && mWindowAndroid != null) {
+                // Try and immediately request missing Android permissions where possible.
+                final String permissionType = (String) view.getTag(R.id.permission_type);
+                if (mWindowAndroid.canRequestPermission(permissionType)) {
+                    final String[] permissionRequest = new String[] {permissionType};
+                    mWindowAndroid.requestPermissions(permissionRequest, new PermissionCallback() {
+                        @Override
+                        public void onRequestPermissionsResult(
+                                String[] permissions, int[] grantResults) {
+                            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                                updatePermissionDisplay();
+                            }
+                        }
+                    });
+                    return;
+                }
+            }
+
             runAfterDismiss(new Runnable() {
                 @Override
                 public void run() {
