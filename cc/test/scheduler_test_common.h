@@ -19,20 +19,20 @@ namespace cc {
 
 class RenderingStatsInstrumentation;
 
-class FakeTimeSourceClient : public TimeSourceClient {
+class FakeDelayBasedTimeSourceClient : public DelayBasedTimeSourceClient {
  public:
-  FakeTimeSourceClient() : tick_called_(false) {}
+  FakeDelayBasedTimeSourceClient() : tick_called_(false) {}
   void Reset() { tick_called_ = false; }
   bool TickCalled() const { return tick_called_; }
 
-  // TimeSourceClient implementation.
+  // DelayBasedTimeSourceClient implementation.
   void OnTimerTick() override;
 
  protected:
   bool tick_called_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FakeTimeSourceClient);
+  DISALLOW_COPY_AND_ASSIGN(FakeDelayBasedTimeSourceClient);
 };
 
 class FakeDelayBasedTimeSource : public DelayBasedTimeSource {

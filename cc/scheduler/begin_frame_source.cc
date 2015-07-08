@@ -221,8 +221,7 @@ SyntheticBeginFrameSource::SyntheticBeginFrameSource(
 }
 
 SyntheticBeginFrameSource::~SyntheticBeginFrameSource() {
-  if (NeedsBeginFrames())
-    time_source_->SetActive(false);
+  time_source_->SetActive(false);
 }
 
 void SyntheticBeginFrameSource::OnUpdateVSyncParameters(
@@ -239,7 +238,7 @@ BeginFrameArgs SyntheticBeginFrameSource::CreateBeginFrameArgs(
                                 time_source_->Interval(), type);
 }
 
-// TimeSourceClient support
+// DelayBasedTimeSourceClient support
 void SyntheticBeginFrameSource::OnTimerTick() {
   CallOnBeginFrame(CreateBeginFrameArgs(time_source_->LastTickTime(),
                                         BeginFrameArgs::NORMAL));
@@ -251,6 +250,7 @@ void SyntheticBeginFrameSource::OnNeedsBeginFramesChange(
   base::TimeTicks missed_tick_time =
       time_source_->SetActive(needs_begin_frames);
   if (!missed_tick_time.is_null()) {
+    DCHECK(needs_begin_frames);
     CallOnBeginFrame(
         CreateBeginFrameArgs(missed_tick_time, BeginFrameArgs::MISSED));
   }

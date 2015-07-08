@@ -11,7 +11,7 @@
 
 namespace cc {
 
-void FakeTimeSourceClient::OnTimerTick() {
+void FakeDelayBasedTimeSourceClient::OnTimerTick() {
   tick_called_ = true;
 }
 

@@ -207,7 +207,7 @@ class CC_EXPORT BackToBackBeginFrameSource : public BeginFrameSourceBase {
 // A frame source which is locked to an external parameters provides from a
 // vsync source and generates BeginFrameArgs for it.
 class CC_EXPORT SyntheticBeginFrameSource : public BeginFrameSourceBase,
-                                            public TimeSourceClient {
+                                            public DelayBasedTimeSourceClient {
  public:
   static scoped_ptr<SyntheticBeginFrameSource> Create(
       base::SingleThreadTaskRunner* task_runner,
@@ -220,7 +220,7 @@ class CC_EXPORT SyntheticBeginFrameSource : public BeginFrameSourceBase,
   // Tracing
   void AsValueInto(base::trace_event::TracedValue* dict) const override;
 
-  // TimeSourceClient
+  // DelayBasedTimeSourceClient
   void OnTimerTick() override;
 
  protected:
