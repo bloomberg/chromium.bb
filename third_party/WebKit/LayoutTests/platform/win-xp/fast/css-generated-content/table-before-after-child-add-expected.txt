@@ -14,6 +14,7 @@ layer at (0,0) size 800x600
                 LayoutInline {<pseudo:before>} at (0,0) size 59x19
                   LayoutTextFragment (anonymous) at (0,0) size 59x19
                     text run at (0,0) width 59: "BEFORE"
+                LayoutText {#text} at (0,0) size 0x0
               LayoutBlockFlow {DIV} at (0,20) size 74x20
                 LayoutText {#text} at (0,0) size 74x19
                   text run at (0,0) width 74: "CONTENT"

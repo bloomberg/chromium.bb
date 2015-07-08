@@ -133,6 +133,8 @@ layer at (0,0) size 785x1226 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                       LayoutTableCell {TD} at (2,42) size 22x38 [r=0 c=1 rs=1 cs=1]
                         LayoutText {#text} at (1,1) size 19x36
                           text run at (1,1) width 36: "Cell 2"
+              LayoutBlockFlow (anonymous) at (26,0) size 0x116
+                LayoutText {#text} at (0,0) size 0x0
               LayoutBlockFlow {TR} at (26,0) size 26x116
                 LayoutTable (anonymous) at (0,0) size 26x82
                   LayoutTableSection (anonymous) at (0,0) size 26x82
@@ -143,6 +145,8 @@ layer at (0,0) size 785x1226 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                       LayoutTableCell {TD} at (2,42) size 22x38 [r=0 c=1 rs=1 cs=1]
                         LayoutText {#text} at (1,1) size 19x36
                           text run at (1,1) width 36: "Cell 4"
+              LayoutBlockFlow (anonymous) at (52,0) size 0x116
+                LayoutText {#text} at (0,0) size 0x0
       LayoutTable (anonymous) at (0,586) size 102x622
         LayoutTableSection (anonymous) at (0,0) size 102x622
           LayoutTableRow (anonymous) at (0,0) size 102x622

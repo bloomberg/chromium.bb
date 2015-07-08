@@ -15,3 +15,5 @@ layer at (0,0) size 800x62
                   LayoutBlockFlow {TD} at (0,0) size 262x22
                     LayoutText {#text} at (1,1) size 260x19
                       text run at (1,1) width 260: "This is the second of two lines on this page."
+                LayoutBlockFlow (anonymous) at (0,22) size 262x0
+                  LayoutText {#text} at (0,0) size 0x0

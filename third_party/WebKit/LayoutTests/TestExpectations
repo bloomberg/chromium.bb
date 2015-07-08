@@ -106,25 +106,6 @@ crbug.com/449242 [ Mac Debug ] fast/css/word-spacing-characters-complex-text.htm
 
 crbug.com/438589 fast/repaint/obscured-background-no-repaint.html [ Failure Pass ]
 
-crbug.com/473832 css2.1/20110323/dynamic-top-change-002.htm [ NeedsRebaseline ]
-crbug.com/473832 fast/block/float/float-not-removed-from-pre-block.html [ NeedsRebaseline ]
-crbug.com/473832 fast/css-generated-content/015.html [ NeedsRebaseline ]
-crbug.com/473832 fast/css-generated-content/table-before-after-child-add.html [ NeedsRebaseline ]
-crbug.com/473832 fast/table/add-before-anonymous-child.html [ NeedsRebaseline ]
-crbug.com/473832 fast/table/table-after-child-in-table.html [ NeedsRebaseline ]
-crbug.com/473832 fast/table/table-before-child-in-table.html [ NeedsRebaseline ]
-crbug.com/473832 fast/table/table-cell-after-child-in-table.html [ NeedsRebaseline ]
-crbug.com/473832 fast/table/table-display-types-strict.html [ NeedsRebaseline ]
-crbug.com/473832 fast/table/table-display-types-vertical.html [ NeedsRebaseline ]
-crbug.com/473832 fast/table/table-display-types.html [ NeedsRebaseline ]
-crbug.com/473832 fast/table/table-row-after-child-in-table.html [ NeedsRebaseline ]
-crbug.com/473832 fast/table/table-row-before-after-content-around-table-cell.html [ NeedsRebaseline ]
-crbug.com/473832 fast/table/table-row-split2.html [ NeedsRebaseline ]
-crbug.com/473832 fast/table/table-section-split2.html [ NeedsRebaseline ]
-crbug.com/473832 tables/mozilla/bugs/bug2479-1.html [ NeedsRebaseline ]
-crbug.com/473832 tables/mozilla/bugs/bug30985.html [ NeedsRebaseline ]
-crbug.com/473832 tables/mozilla/bugs/bug72359.xml [ NeedsRebaseline ]
-
 # Crashing after V8 roll to 3.28.43.1.
 crbug.com/398306 fast/events/before-unload-return-bad-value.html [ Crash Timeout Pass ]
 

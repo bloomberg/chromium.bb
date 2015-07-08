@@ -115,6 +115,8 @@ layer at (0,0) size 800x492
                         LayoutTableCell {TD} at (45,2) size 41x20 [r=0 c=1 rs=1 cs=1]
                           LayoutText {#text} at (1,1) size 39x17
                             text run at (1,1) width 39: "Cell 2"
+                LayoutBlockFlow (anonymous) at (0,24) size 88x0
+                  LayoutText {#text} at (0,0) size 0x0
                 LayoutBlockFlow {TR} at (0,24) size 88x24
                   LayoutTable (anonymous) at (0,0) size 88x24
                     LayoutTableSection (anonymous) at (0,0) size 88x24
@@ -125,6 +127,8 @@ layer at (0,0) size 800x492
                         LayoutTableCell {TD} at (45,2) size 41x20 [r=0 c=1 rs=1 cs=1]
                           LayoutText {#text} at (1,1) size 39x17
                             text run at (1,1) width 39: "Cell 4"
+                LayoutBlockFlow (anonymous) at (0,48) size 88x0
+                  LayoutText {#text} at (0,0) size 0x0
       LayoutTable (anonymous) at (0,274) size 302x200
         LayoutTableSection (anonymous) at (0,0) size 302x200
           LayoutTableRow (anonymous) at (0,0) size 302x200
