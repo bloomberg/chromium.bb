@@ -7,6 +7,8 @@
 
 #include <map>
 #include <string>
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/containers/mru_cache.h"
 #include "base/memory/weak_ptr.h"
@@ -199,7 +201,9 @@ struct NET_EXPORT ServerNetworkStats {
   QuicBandwidth bandwidth_estimate;
 };
 
-typedef base::MRUCache<HostPortPair, AlternativeServiceInfo>
+typedef std::vector<AlternativeService> AlternativeServiceVector;
+typedef std::vector<AlternativeServiceInfo> AlternativeServiceInfoVector;
+typedef base::MRUCache<HostPortPair, AlternativeServiceInfoVector>
     AlternativeServiceMap;
 typedef base::MRUCache<HostPortPair, SettingsMap> SpdySettingsMap;
 typedef base::MRUCache<HostPortPair, ServerNetworkStats> ServerNetworkStatsMap;
@@ -247,45 +251,63 @@ class NET_EXPORT HttpServerProperties {
   virtual void MaybeForceHTTP11(const HostPortPair& server,
                                 SSLConfig* ssl_config) = 0;
 
-  // Returns the alternative service for |origin| if it has probability equal to
-  // or exceeding threshold, or else the forced AlternateProtocol if there is
-  // one, or else one with UNINITIALIZED_ALTERNATE_PROTOCOL.
-  virtual AlternativeService GetAlternativeService(
+  // Return all alternative services for |origin| with probability greater than
+  // or equal to the threshold, including broken ones.
+  // Returned alternative services never have empty hostnames.
+  virtual AlternativeServiceVector GetAlternativeServices(
       const HostPortPair& origin) = 0;
 
-  // Sets the alternative service for |origin|.
-  virtual void SetAlternativeService(
+  // Set a single alternative service for |origin|.  Previous alternative
+  // services for |origin| are discarded.
+  // |alternative_service.host| may be empty.
+  // Return true if |alternative_service_map_| is changed.
+  virtual bool SetAlternativeService(
       const HostPortPair& origin,
       const AlternativeService& alternative_service,
       double alternative_probability) = 0;
 
+  // Set alternative services for |origin|.  Previous alternative services for
+  // |origin| are discarded.
+  // Hostnames in |alternative_service_info_vector| may be empty.
+  // Return true if |alternative_service_map_| is changed.
+  virtual bool SetAlternativeServices(
+      const HostPortPair& origin,
+      const AlternativeServiceInfoVector& alternative_service_info_vector) = 0;
+
   // Marks |alternative_service| as broken.
+  // |alternative_service.host| must not be empty.
   virtual void MarkAlternativeServiceBroken(
       const AlternativeService& alternative_service) = 0;
 
   // Marks |alternative_service| as recently broken.
+  // |alternative_service.host| must not be empty.
   virtual void MarkAlternativeServiceRecentlyBroken(
       const AlternativeService& alternative_service) = 0;
 
   // Returns true iff |alternative_service| is currently broken.
+  // |alternative_service.host| must not be empty.
   virtual bool IsAlternativeServiceBroken(
       const AlternativeService& alternative_service) const = 0;
 
   // Returns true iff |alternative_service| was recently broken.
+  // |alternative_service.host| must not be empty.
   virtual bool WasAlternativeServiceRecentlyBroken(
       const AlternativeService& alternative_service) = 0;
 
   // Confirms that |alternative_service| is working.
+  // |alternative_service.host| must not be empty.
   virtual void ConfirmAlternativeService(
       const AlternativeService& alternative_service) = 0;
 
-  // Clears the alternative service for |origin|.
-  virtual void ClearAlternativeService(const HostPortPair& origin) = 0;
+  // Clear all alternative services for |origin|.
+  virtual void ClearAlternativeServices(const HostPortPair& origin) = 0;
 
   // Returns all alternative service mappings.
+  // Returned alternative services may have empty hostnames.
   virtual const AlternativeServiceMap& alternative_service_map() const = 0;
 
   // Returns all alternative service mappings as human readable strings.
+  // Empty alternative service hostnames will be printed as such.
   virtual scoped_ptr<base::Value> GetAlternativeServiceInfoAsValue() const = 0;
 
   // Sets the threshold to be used when evaluating alternative service

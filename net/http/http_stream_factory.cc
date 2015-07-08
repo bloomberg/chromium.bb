@@ -86,7 +86,7 @@ void HttpStreamFactory::ProcessAlternateProtocol(
   }
 
   if (!is_valid || protocol == UNINITIALIZED_ALTERNATE_PROTOCOL) {
-    http_server_properties->ClearAlternativeService(http_host_port_pair);
+    http_server_properties->ClearAlternativeServices(http_host_port_pair);
     return;
   }
 

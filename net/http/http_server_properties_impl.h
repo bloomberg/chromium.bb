@@ -87,10 +87,14 @@ class NET_EXPORT HttpServerPropertiesImpl
   void SetHTTP11Required(const HostPortPair& server) override;
   void MaybeForceHTTP11(const HostPortPair& server,
                         SSLConfig* ssl_config) override;
-  AlternativeService GetAlternativeService(const HostPortPair& origin) override;
-  void SetAlternativeService(const HostPortPair& origin,
+  AlternativeServiceVector GetAlternativeServices(
+      const HostPortPair& origin) override;
+  bool SetAlternativeService(const HostPortPair& origin,
                              const AlternativeService& alternative_service,
                              double alternative_probability) override;
+  bool SetAlternativeServices(const HostPortPair& origin,
+                              const AlternativeServiceInfoVector&
+                                  alternative_service_info_vector) override;
   void MarkAlternativeServiceBroken(
       const AlternativeService& alternative_service) override;
   void MarkAlternativeServiceRecentlyBroken(
@@ -101,7 +105,7 @@ class NET_EXPORT HttpServerPropertiesImpl
       const AlternativeService& alternative_service) override;
   void ConfirmAlternativeService(
       const AlternativeService& alternative_service) override;
-  void ClearAlternativeService(const HostPortPair& origin) override;
+  void ClearAlternativeServices(const HostPortPair& origin) override;
   const AlternativeServiceMap& alternative_service_map() const override;
   scoped_ptr<base::Value> GetAlternativeServiceInfoAsValue() const override;
   void SetAlternativeServiceProbabilityThreshold(double threshold) override;

@@ -684,13 +684,21 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
     if (http_server_properties_) {
       const AlternativeServiceMap& alternative_service_map =
           http_server_properties_->alternative_service_map();
-      AlternativeServiceMap::const_iterator it =
+      AlternativeServiceMap::const_iterator map_it =
           alternative_service_map.Peek(server_id.host_port_pair());
-      if (it == alternative_service_map.end() ||
-          it->second.alternative_service.protocol != QUIC) {
+      if (map_it != alternative_service_map.end()) {
+        const AlternativeServiceInfoVector& alternative_service_info_vector =
+            map_it->second;
+        AlternativeServiceInfoVector::const_iterator it;
+        for (it = alternative_service_info_vector.begin();
+             it != alternative_service_info_vector.end(); ++it) {
+          if (it->alternative_service.protocol == QUIC)
+            break;
+        }
         // If there is no entry for QUIC, consider that as a new server and
         // don't wait for Cache thread to load the data for that server.
-        load_from_disk_cache = false;
+        if (it == alternative_service_info_vector.end())
+          load_from_disk_cache = false;
       }
     }
     if (load_from_disk_cache && CryptoConfigCacheIsEmpty(server_id)) {
@@ -1212,10 +1220,14 @@ void QuicStreamFactory::InitializeCachedStateInCryptoConfig(
 
   if (http_server_properties_) {
     if (quic_supported_servers_at_startup_.empty()) {
-      for (const std::pair<const HostPortPair, AlternativeServiceInfo>&
+      for (const std::pair<const HostPortPair, AlternativeServiceInfoVector>&
                key_value : http_server_properties_->alternative_service_map()) {
-        if (key_value.second.alternative_service.protocol == QUIC) {
-          quic_supported_servers_at_startup_.insert(key_value.first);
+        for (const AlternativeServiceInfo& alternative_service_info :
+             key_value.second) {
+          if (alternative_service_info.alternative_service.protocol == QUIC) {
+            quic_supported_servers_at_startup_.insert(key_value.first);
+            break;
+          }
         }
       }
     }

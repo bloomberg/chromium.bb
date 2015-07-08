@@ -87,10 +87,14 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   void SetHTTP11Required(const HostPortPair& server) override;
   void MaybeForceHTTP11(const HostPortPair& server,
                         SSLConfig* ssl_config) override;
-  AlternativeService GetAlternativeService(const HostPortPair& origin) override;
-  void SetAlternativeService(const HostPortPair& origin,
+  AlternativeServiceVector GetAlternativeServices(
+      const HostPortPair& origin) override;
+  bool SetAlternativeService(const HostPortPair& origin,
                              const AlternativeService& alternative_service,
                              double alternative_probability) override;
+  bool SetAlternativeServices(const HostPortPair& origin,
+                              const AlternativeServiceInfoVector&
+                                  alternative_service_info_vector) override;
   void MarkAlternativeServiceBroken(
       const AlternativeService& alternative_service) override;
   void MarkAlternativeServiceRecentlyBroken(
@@ -101,7 +105,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
       const AlternativeService& alternative_service) override;
   void ConfirmAlternativeService(
       const AlternativeService& alternative_service) override;
-  void ClearAlternativeService(const HostPortPair& origin) override;
+  void ClearAlternativeServices(const HostPortPair& origin) override;
   const AlternativeServiceMap& alternative_service_map() const override;
   scoped_ptr<base::Value> GetAlternativeServiceInfoAsValue() const override;
   void SetAlternativeServiceProbabilityThreshold(double threshold) override;
@@ -128,7 +132,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   enum Location {
     SUPPORTS_SPDY = 0,
     HTTP_11_REQUIRED = 1,
-    SET_ALTERNATIVE_SERVICE = 2,
+    SET_ALTERNATIVE_SERVICES = 2,
     MARK_ALTERNATIVE_SERVICE_BROKEN = 3,
     MARK_ALTERNATIVE_SERVICE_RECENTLY_BROKEN = 4,
     CONFIRM_ALTERNATIVE_SERVICE = 5,
@@ -222,7 +226,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   void SaveSpdySettingsToServerPrefs(const SettingsMap* spdy_settings_map,
                                      base::DictionaryValue* server_pref_dict);
   void SaveAlternativeServiceToServerPrefs(
-      const AlternativeServiceInfo* alternative_service_info,
+      const AlternativeServiceInfoVector* alternative_service_info_vector,
       base::DictionaryValue* server_pref_dict);
   void SaveNetworkStatsToServerPrefs(
       const ServerNetworkStats* server_network_stats,

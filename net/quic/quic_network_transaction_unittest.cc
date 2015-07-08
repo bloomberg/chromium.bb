@@ -331,18 +331,19 @@ class QuicNetworkTransactionTest
 
   void ExpectBrokenAlternateProtocolMapping() {
     const HostPortPair origin = HostPortPair::FromURL(request_.url);
-    const AlternativeService alternative_service =
-        http_server_properties_.GetAlternativeService(origin);
-    EXPECT_NE(UNINITIALIZED_ALTERNATE_PROTOCOL, alternative_service.protocol);
+    const AlternativeServiceVector alternative_service_vector =
+        http_server_properties_.GetAlternativeServices(origin);
+    EXPECT_EQ(1u, alternative_service_vector.size());
     EXPECT_TRUE(http_server_properties_.IsAlternativeServiceBroken(
-        alternative_service));
+        alternative_service_vector[0]));
   }
 
   void ExpectQuicAlternateProtocolMapping() {
-    const AlternativeService alternative_service =
-        http_server_properties_.GetAlternativeService(
-            HostPortPair::FromURL(request_.url));
-    EXPECT_EQ(QUIC, alternative_service.protocol);
+    const HostPortPair origin = HostPortPair::FromURL(request_.url);
+    const AlternativeServiceVector alternative_service_vector =
+        http_server_properties_.GetAlternativeServices(origin);
+    EXPECT_EQ(1u, alternative_service_vector.size());
+    EXPECT_EQ(QUIC, alternative_service_vector[0].protocol);
   }
 
   void AddHangingNonAlternateProtocolSocketData() {

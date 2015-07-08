@@ -8746,9 +8746,9 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternateProtocolHeader) {
   HostPortPair http_host_port_pair("www.example.org", 80);
   HttpServerProperties& http_server_properties =
       *session->http_server_properties();
-  AlternativeService alternative_service =
-      http_server_properties.GetAlternativeService(http_host_port_pair);
-  EXPECT_EQ(alternative_service.protocol, UNINITIALIZED_ALTERNATE_PROTOCOL);
+  AlternativeServiceVector alternative_service_vector =
+      http_server_properties.GetAlternativeServices(http_host_port_pair);
+  EXPECT_TRUE(alternative_service_vector.empty());
 
   EXPECT_EQ(OK, callback.WaitForResult());
 
@@ -8763,11 +8763,12 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternateProtocolHeader) {
   ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
   EXPECT_EQ("hello world", response_data);
 
-  alternative_service =
-      http_server_properties.GetAlternativeService(http_host_port_pair);
-  EXPECT_EQ(443, alternative_service.port);
+  alternative_service_vector =
+      http_server_properties.GetAlternativeServices(http_host_port_pair);
+  ASSERT_EQ(1u, alternative_service_vector.size());
+  EXPECT_EQ(443, alternative_service_vector[0].port);
   EXPECT_EQ(AlternateProtocolFromNextProto(GetParam()),
-            alternative_service.protocol);
+            alternative_service_vector[0].protocol);
 }
 
 TEST_P(HttpNetworkTransactionTest, EmptyAlternateProtocolHeader) {
@@ -8801,9 +8802,10 @@ TEST_P(HttpNetworkTransactionTest, EmptyAlternateProtocolHeader) {
   http_server_properties.SetAlternativeService(http_host_port_pair,
                                                alternative_service, 1.0);
 
-  alternative_service =
-      http_server_properties.GetAlternativeService(http_host_port_pair);
-  EXPECT_EQ(alternative_service.protocol, QUIC);
+  AlternativeServiceVector alternative_service_vector =
+      http_server_properties.GetAlternativeServices(http_host_port_pair);
+  ASSERT_EQ(1u, alternative_service_vector.size());
+  EXPECT_EQ(QUIC, alternative_service_vector[0].protocol);
 
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
@@ -8824,9 +8826,9 @@ TEST_P(HttpNetworkTransactionTest, EmptyAlternateProtocolHeader) {
   ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
   EXPECT_EQ("hello world", response_data);
 
-  alternative_service =
-      http_server_properties.GetAlternativeService(http_host_port_pair);
-  EXPECT_EQ(alternative_service.protocol, UNINITIALIZED_ALTERNATE_PROTOCOL);
+  alternative_service_vector =
+      http_server_properties.GetAlternativeServices(http_host_port_pair);
+  EXPECT_TRUE(alternative_service_vector.empty());
 }
 
 TEST_P(HttpNetworkTransactionTest,
@@ -8859,9 +8861,9 @@ TEST_P(HttpNetworkTransactionTest,
   const HostPortPair host_port_pair = HostPortPair::FromURL(request.url);
   // Port must be < 1024, or the header will be ignored (since initial port was
   // port 80 (another restricted port).
-  AlternativeService alternative_service(
+  const AlternativeService alternative_service(
       AlternateProtocolFromNextProto(GetParam()), "www.example.org",
-      666); /* port is ignored by MockConnect anyway */
+      666);  // Port is ignored by MockConnect anyway.
   http_server_properties->SetAlternativeService(host_port_pair,
                                                 alternative_service, 1.0);
 
@@ -8882,11 +8884,12 @@ TEST_P(HttpNetworkTransactionTest,
   ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
   EXPECT_EQ("hello world", response_data);
 
-  alternative_service =
-      http_server_properties->GetAlternativeService(host_port_pair);
-  EXPECT_NE(UNINITIALIZED_ALTERNATE_PROTOCOL, alternative_service.protocol);
-  EXPECT_TRUE(
-      http_server_properties->IsAlternativeServiceBroken(alternative_service));
+  const AlternativeServiceVector alternative_service_vector =
+      http_server_properties->GetAlternativeServices(host_port_pair);
+  ASSERT_EQ(1u, alternative_service_vector.size());
+  EXPECT_EQ(alternative_service, alternative_service_vector[0]);
+  EXPECT_TRUE(http_server_properties->IsAlternativeServiceBroken(
+      alternative_service_vector[0]));
 }
 
 TEST_P(HttpNetworkTransactionTest,

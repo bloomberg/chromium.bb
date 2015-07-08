@@ -93,9 +93,12 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestStreamInternal(
                      proxy_ssl_config, net_log.net_log());
   request->AttachJob(job);
 
-  AlternativeService alternative_service =
-      GetAlternativeServiceFor(request_info.url);
-  if (alternative_service.protocol != UNINITIALIZED_ALTERNATE_PROTOCOL) {
+  const AlternativeServiceVector alternative_service_vector =
+      GetAlternativeServicesFor(request_info.url);
+  if (!alternative_service_vector.empty()) {
+    // TODO(bnc): Pass on multiple alternative services to Job.
+    const AlternativeService& alternative_service =
+        alternative_service_vector[0];
     // Never share connection with other jobs for FTP requests.
     DCHECK(!request_info.url.SchemeIs("ftp"));
 
@@ -125,8 +128,13 @@ void HttpStreamFactoryImpl::PreconnectStreams(
     const SSLConfig& server_ssl_config,
     const SSLConfig& proxy_ssl_config) {
   DCHECK(!for_websockets_);
-  AlternativeService alternative_service =
-      GetAlternativeServiceFor(request_info.url);
+  AlternativeService alternative_service;
+  AlternativeServiceVector alternative_service_vector =
+      GetAlternativeServicesFor(request_info.url);
+  if (!alternative_service_vector.empty()) {
+    // TODO(bnc): Pass on multiple alternative services to Job.
+    alternative_service = alternative_service_vector[0];
+  }
   Job* job =
       new Job(this, session_, request_info, priority, server_ssl_config,
               proxy_ssl_config, alternative_service, session_->net_log());
@@ -138,70 +146,72 @@ const HostMappingRules* HttpStreamFactoryImpl::GetHostMappingRules() const {
   return session_->params().host_mapping_rules;
 }
 
-AlternativeService HttpStreamFactoryImpl::GetAlternativeServiceFor(
+AlternativeServiceVector HttpStreamFactoryImpl::GetAlternativeServicesFor(
     const GURL& original_url) {
-  const AlternativeService kNoAlternativeService;
-
   if (!session_->params().use_alternate_protocols)
-    return kNoAlternativeService;
+    return AlternativeServiceVector();
 
   if (original_url.SchemeIs("ftp"))
-    return kNoAlternativeService;
+    return AlternativeServiceVector();
 
   HostPortPair origin = HostPortPair::FromURL(original_url);
   HttpServerProperties& http_server_properties =
       *session_->http_server_properties();
-  const AlternativeService alternative_service =
-      http_server_properties.GetAlternativeService(origin);
+  const AlternativeServiceVector alternative_service_vector =
+      http_server_properties.GetAlternativeServices(origin);
+  if (alternative_service_vector.empty())
+    return AlternativeServiceVector();
 
-  if (alternative_service.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL)
-    return kNoAlternativeService;
-  if (http_server_properties.IsAlternativeServiceBroken(alternative_service)) {
-    HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_BROKEN);
-    return kNoAlternativeService;
+  AlternativeServiceVector enabled_alternative_service_vector;
+  for (const AlternativeService& alternative_service :
+       alternative_service_vector) {
+    DCHECK(IsAlternateProtocolValid(alternative_service.protocol));
+    if (http_server_properties.IsAlternativeServiceBroken(
+            alternative_service)) {
+      HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_BROKEN);
+      continue;
+    }
+
+    // Some shared unix systems may have user home directories (like
+    // http://foo.com/~mike) which allow users to emit headers.  This is a bad
+    // idea already, but with Alternate-Protocol, it provides the ability for a
+    // single user on a multi-user system to hijack the alternate protocol.
+    // These systems also enforce ports <1024 as restricted ports.  So don't
+    // allow protocol upgrades to user-controllable ports.
+    const int kUnrestrictedPort = 1024;
+    if (!session_->params().enable_user_alternate_protocol_ports &&
+        (alternative_service.port >= kUnrestrictedPort &&
+         origin.port() < kUnrestrictedPort))
+      continue;
+
+    origin.set_port(alternative_service.port);
+    if (alternative_service.protocol >= NPN_SPDY_MINIMUM_VERSION &&
+        alternative_service.protocol <= NPN_SPDY_MAXIMUM_VERSION) {
+      if (!HttpStreamFactory::spdy_enabled())
+        continue;
+
+      if (session_->HasSpdyExclusion(origin))
+        continue;
+
+      enabled_alternative_service_vector.push_back(alternative_service);
+      continue;
+    }
+
+    DCHECK_EQ(QUIC, alternative_service.protocol);
+    if (!session_->params().enable_quic)
+      continue;
+
+    if (session_->quic_stream_factory()->IsQuicDisabled(origin.port()))
+      continue;
+
+    if (session_->params().disable_insecure_quic &&
+        !original_url.SchemeIs("https")) {
+      continue;
+    }
+
+    enabled_alternative_service_vector.push_back(alternative_service);
   }
-  if (!IsAlternateProtocolValid(alternative_service.protocol)) {
-    NOTREACHED();
-    return kNoAlternativeService;
-  }
-
-  // Some shared unix systems may have user home directories (like
-  // http://foo.com/~mike) which allow users to emit headers.  This is a bad
-  // idea already, but with Alternate-Protocol, it provides the ability for a
-  // single user on a multi-user system to hijack the alternate protocol.
-  // These systems also enforce ports <1024 as restricted ports.  So don't
-  // allow protocol upgrades to user-controllable ports.
-  const int kUnrestrictedPort = 1024;
-  if (!session_->params().enable_user_alternate_protocol_ports &&
-      (alternative_service.port >= kUnrestrictedPort &&
-       origin.port() < kUnrestrictedPort))
-    return kNoAlternativeService;
-
-  origin.set_port(alternative_service.port);
-  if (alternative_service.protocol >= NPN_SPDY_MINIMUM_VERSION &&
-      alternative_service.protocol <= NPN_SPDY_MAXIMUM_VERSION) {
-    if (!HttpStreamFactory::spdy_enabled())
-      return kNoAlternativeService;
-
-    if (session_->HasSpdyExclusion(origin))
-      return kNoAlternativeService;
-
-    return alternative_service;
-  }
-
-  DCHECK_EQ(QUIC, alternative_service.protocol);
-  if (!session_->params().enable_quic)
-    return kNoAlternativeService;
-
-  if (session_->quic_stream_factory()->IsQuicDisabled(origin.port()))
-    return kNoAlternativeService;
-
-  if (session_->params().disable_insecure_quic &&
-      !original_url.SchemeIs("https")) {
-    return kNoAlternativeService;
-  }
-
-  return alternative_service;
+  return enabled_alternative_service_vector;
 }
 
 void HttpStreamFactoryImpl::OrphanJob(Job* job, const Request* request) {
