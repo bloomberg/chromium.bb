@@ -18,6 +18,13 @@
         android:layout_marginEnd="12dp"
         android:contentDescription="@null" />
 
+    <View
+        android:layout_width="@dimen/icon_most_visited_icon_size"
+        android:layout_height="@dimen/icon_most_visited_icon_size"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:background="@drawable/icon_most_visited_item_highlight" />
+
     <TextView
         android:id="@+id/most_visited_title"
         android:layout_width="72dp"

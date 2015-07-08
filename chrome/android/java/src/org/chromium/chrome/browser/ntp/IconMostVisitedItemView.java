@@ -5,9 +5,6 @@
 package org.chromium.chrome.browser.ntp;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
@@ -21,10 +18,6 @@ import org.chromium.chrome.R;
  * icon isn't available, displays a rounded rectangle with a single letter in its place.
  */
 public class IconMostVisitedItemView extends FrameLayout {
-
-    private static final int HIGHLIGHT_COLOR = 0x550099cc;
-
-    private boolean mLastDrawnPressed;
 
     /**
      * Constructor for inflating from XML.
@@ -46,28 +39,5 @@ public class IconMostVisitedItemView extends FrameLayout {
     public void setIcon(Drawable icon) {
         ImageView iconView = (ImageView) findViewById(R.id.most_visited_icon);
         iconView.setImageDrawable(icon);
-    }
-
-    @Override
-    public void setPressed(boolean pressed) {
-        super.setPressed(pressed);
-        if (isPressed() != mLastDrawnPressed) invalidate();
-    }
-
-    @Override
-    protected void dispatchDraw(Canvas canvas) {
-        super.dispatchDraw(canvas);
-
-        // Draw highlight overlay over the child views when this view is pressed.
-        if (isPressed()) {
-            Paint highlightPaint = new Paint();
-            highlightPaint.setColor(HIGHLIGHT_COLOR);
-            highlightPaint.setAntiAlias(true);
-            RectF highlightRect = new RectF(0, 0, getWidth(), getHeight());
-            int cornerRadius = getResources().getDimensionPixelOffset(
-                    R.dimen.most_visited_bg_corner_radius);
-            canvas.drawRoundRect(highlightRect, cornerRadius, cornerRadius, highlightPaint);
-        }
-        mLastDrawnPressed = isPressed();
     }
 }

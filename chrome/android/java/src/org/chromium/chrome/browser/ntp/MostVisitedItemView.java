@@ -7,14 +7,11 @@ package org.chromium.chrome.browser.ntp;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.widget.LinearLayout;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -25,16 +22,14 @@ import org.chromium.chrome.R;
  * long-pressed to trigger a context menu with options to "open in new tab", "open in incognito
  * tab", or "remove".
  */
-public class MostVisitedItemView extends LinearLayout {
+public class MostVisitedItemView extends FrameLayout {
 
-    private static final int HIGHLIGHT_COLOR = 0x550099cc;
     private static final int MISSING_FAVICON_COLOR = 0xffe6e6e8;
 
     private TextView mTitleView;
     private MostVisitedThumbnail mThumbnailView;
     private int mFaviconSize;
     private int mTitlePaddingStart;
-    private boolean mLastDrawnPressed;
 
     /**
      * Constructor for inflating from XML.
@@ -86,28 +81,5 @@ public class MostVisitedItemView extends LinearLayout {
         d.setBounds(0, 0, mFaviconSize, mFaviconSize);
         ApiCompatibilityUtils.setCompoundDrawablesRelative(mTitleView, d, null, null, null);
         ApiCompatibilityUtils.setPaddingRelative(mTitleView, mTitlePaddingStart, 0, 0, 0);
-    }
-
-    @Override
-    public void setPressed(boolean pressed) {
-        super.setPressed(pressed);
-        if (isPressed() != mLastDrawnPressed) invalidate();
-    }
-
-    @Override
-    protected void dispatchDraw(Canvas canvas) {
-        super.dispatchDraw(canvas);
-
-        // Draw highlight overlay over the child views when this view is pressed.
-        if (isPressed()) {
-            Paint highlightPaint = new Paint();
-            highlightPaint.setColor(HIGHLIGHT_COLOR);
-            highlightPaint.setAntiAlias(true);
-            RectF highlightRect = new RectF(0, 0, getWidth(), getHeight());
-            int cornerRadius = getResources().getDimensionPixelOffset(
-                    R.dimen.most_visited_bg_corner_radius);
-            canvas.drawRoundRect(highlightRect, cornerRadius, cornerRadius, highlightPaint);
-        }
-        mLastDrawnPressed = isPressed();
     }
 }
