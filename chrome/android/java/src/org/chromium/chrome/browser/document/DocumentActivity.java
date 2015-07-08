@@ -76,6 +76,12 @@ import org.chromium.ui.base.PageTransition;
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class DocumentActivity extends ChromeActivity {
+    // Legacy class names to match Chrome pre-44 activity names. See crbug.com/503807
+    public static final String LEGACY_CLASS_NAME =
+            "com.google.android.apps.chrome.document.DocumentActivity";
+    public static final String LEGACY_INCOGNITO_CLASS_NAME =
+            "com.google.android.apps.chrome.document.IncognitoDocumentActivity";
+
     protected static final String KEY_INITIAL_URL = "DocumentActivity.KEY_INITIAL_URL";
 
     private static final String TAG = "DocumentActivity";
@@ -876,7 +882,9 @@ public class DocumentActivity extends ChromeActivity {
      */
     public static boolean isDocumentActivity(String className) {
         return TextUtils.equals(className, IncognitoDocumentActivity.class.getName())
-                || TextUtils.equals(className, DocumentActivity.class.getName());
+                || TextUtils.equals(className, DocumentActivity.class.getName())
+                || TextUtils.equals(className, LEGACY_CLASS_NAME)
+                || TextUtils.equals(className, LEGACY_INCOGNITO_CLASS_NAME);
     }
 
     /**

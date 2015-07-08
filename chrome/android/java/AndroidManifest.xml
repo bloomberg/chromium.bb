@@ -194,6 +194,9 @@ by a child template that "extends" this file.
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc"
             android:hardwareAccelerated="true">
         </activity>
+        <activity-alias android:name="com.google.android.apps.chrome.document.DocumentActivity"
+            android:targetActivity="org.chromium.chrome.browser.document.DocumentActivity"
+            android:exported="false"/>
         <activity android:name="org.chromium.chrome.browser.document.IncognitoDocumentActivity"
             android:icon="@mipmap/incognito_app_icon"
             android:exported="false"
@@ -205,6 +208,9 @@ by a child template that "extends" this file.
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc"
             android:hardwareAccelerated="true">
         </activity>
+        <activity-alias android:name="com.google.android.apps.chrome.document.IncognitoDocumentActivity"
+            android:targetActivity="org.chromium.chrome.browser.document.IncognitoDocumentActivity"
+            android:exported="false"/>
         <activity android:name="org.chromium.chrome.browser.customtabs.CustomTabActivity"
             android:theme="@style/MainTheme"
             android:exported="false"

@@ -18,6 +18,7 @@ import android.text.TextUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel.Entry;
 
@@ -63,6 +64,9 @@ public class ActivityDelegate {
     public boolean isValidActivity(boolean isIncognito, Intent intent) {
         if (intent == null) return false;
         String desiredClassName = isIncognito ? mIncognitoClass.getName() : mRegularClass.getName();
+        String desiredLegacyClassName = isIncognito
+                ? DocumentActivity.LEGACY_INCOGNITO_CLASS_NAME
+                : DocumentActivity.LEGACY_CLASS_NAME;
         String className = null;
         if (intent.getComponent() == null) {
             Context context = ApplicationStatus.getApplicationContext();
@@ -73,7 +77,8 @@ public class ActivityDelegate {
             className = intent.getComponent().getClassName();
         }
 
-        return TextUtils.equals(className, desiredClassName);
+        return TextUtils.equals(className, desiredClassName)
+                || TextUtils.equals(className, desiredLegacyClassName);
     }
 
     /**
