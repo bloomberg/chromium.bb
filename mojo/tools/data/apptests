@@ -40,11 +40,6 @@ tests = [
     "type": "gtest_isolated",
     "args": ["--use-headless-config"]
   },
-  {
-    "test": "mojo:mandoline_browser_apptests",
-    "type": "gtest_isolated",
-    "args": ["--use-headless-config"]
-  },
 ]
 
 # TODO(msw): Get these tests passing on Android too. http://crbug.com/486220
@@ -64,6 +59,11 @@ if config.target_os != config.OS_ANDROID:
       "type": "gtest_isolated",
       "args": ["--use-test-config", "--oopifs",
                "--enable-html-viewer-test-interface"]
+    },
+    {
+      "test": "mojo:mandoline_browser_apptests",
+      "type": "gtest_isolated",
+      "args": ["--use-headless-config"]
     },
     {
       "test": "mojo:mandoline_frame_apptests",
