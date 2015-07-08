@@ -26,7 +26,7 @@
 #ifndef SimplifiedBackwardsTextIterator_h
 #define SimplifiedBackwardsTextIterator_h
 
-#include "core/dom/Range.h"
+#include "core/dom/Position.h"
 #include "core/editing/iterators/FullyClippedStateStack.h"
 #include "core/editing/iterators/TextIteratorFlags.h"
 #include "platform/heap/Heap.h"
@@ -39,10 +39,11 @@ class LayoutTextFragment;
 // Iterates through the DOM range, returning all the text, and 0-length boundaries
 // at points where replaced elements break up the text flow. The text comes back in
 // chunks so as to optimize for performance of the iteration.
-class SimplifiedBackwardsTextIterator {
+template <typename Strategy>
+class SimplifiedBackwardsTextIteratorAlgorithm {
     STACK_ALLOCATED();
 public:
-    SimplifiedBackwardsTextIterator(const Position& start, const Position& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+    SimplifiedBackwardsTextIteratorAlgorithm(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 
     bool atEnd() const { return !m_positionNode || m_shouldStop; }
     void advance();
@@ -64,8 +65,8 @@ public:
 
     Node* startContainer() const;
     int endOffset() const;
-    Position startPosition() const;
-    Position endPosition() const;
+    PositionAlgorithm<Strategy> startPosition() const;
+    PositionAlgorithm<Strategy> endPosition() const;
 
 private:
     void init(Node* startNode, Node* endNode, int startOffset, int endOffset);
@@ -119,6 +120,9 @@ private:
     // Used in pasting inside password field.
     bool m_emitsOriginalText;
 };
+
+extern template class CORE_EXTERN_TEMPLATE_EXPORT SimplifiedBackwardsTextIteratorAlgorithm<EditingStrategy>;
+using SimplifiedBackwardsTextIterator = SimplifiedBackwardsTextIteratorAlgorithm<EditingStrategy>;
 
 } // namespace blink
 

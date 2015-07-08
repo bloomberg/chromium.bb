@@ -58,7 +58,8 @@ static int maxOffsetIncludingCollapsedSpaces(Node* node)
     return offset;
 }
 
-SimplifiedBackwardsTextIterator::SimplifiedBackwardsTextIterator(const Position& start, const Position& end, TextIteratorBehaviorFlags behavior)
+template <typename Strategy>
+SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::SimplifiedBackwardsTextIteratorAlgorithm(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, TextIteratorBehaviorFlags behavior)
     : m_node(nullptr)
     , m_offset(0)
     , m_handledNode(false)
@@ -91,7 +92,8 @@ SimplifiedBackwardsTextIterator::SimplifiedBackwardsTextIterator(const Position&
     init(startNode, endNode, startOffset, endOffset);
 }
 
-void SimplifiedBackwardsTextIterator::init(Node* startNode, Node* endNode, int startOffset, int endOffset)
+template <typename Strategy>
+void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::init(Node* startNode, Node* endNode, int startOffset, int endOffset)
 {
     if (!startNode->offsetInCharacters() && startOffset >= 0) {
         // NodeTraversal::childAt() will return 0 if the offset is out of range. We rely on this behavior
@@ -131,7 +133,8 @@ void SimplifiedBackwardsTextIterator::init(Node* startNode, Node* endNode, int s
     advance();
 }
 
-void SimplifiedBackwardsTextIterator::advance()
+template <typename Strategy>
+void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::advance()
 {
     ASSERT(m_positionNode);
 
@@ -213,7 +216,8 @@ void SimplifiedBackwardsTextIterator::advance()
     }
 }
 
-bool SimplifiedBackwardsTextIterator::handleTextNode()
+template <typename Strategy>
+bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::handleTextNode()
 {
     int startOffset;
     int offsetInNode;
@@ -243,7 +247,8 @@ bool SimplifiedBackwardsTextIterator::handleTextNode()
     return !m_shouldHandleFirstLetter;
 }
 
-LayoutText* SimplifiedBackwardsTextIterator::handleFirstLetter(int& startOffset, int& offsetInNode)
+template <typename Strategy>
+LayoutText* SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::handleFirstLetter(int& startOffset, int& offsetInNode)
 {
     LayoutText* layoutObject = toLayoutText(m_node->layoutObject());
     startOffset = (m_node == m_startNode) ? m_startOffset : 0;
@@ -284,7 +289,8 @@ LayoutText* SimplifiedBackwardsTextIterator::handleFirstLetter(int& startOffset,
     return firstLetterLayoutObject;
 }
 
-bool SimplifiedBackwardsTextIterator::handleReplacedElement()
+template <typename Strategy>
+bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::handleReplacedElement()
 {
     unsigned index = m_node->nodeIndex();
     // We want replaced elements to behave like punctuation for boundary
@@ -295,7 +301,8 @@ bool SimplifiedBackwardsTextIterator::handleReplacedElement()
     return true;
 }
 
-bool SimplifiedBackwardsTextIterator::handleNonTextNode()
+template <typename Strategy>
+bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::handleNonTextNode()
 {
     // We can use a linefeed in place of a tab because this simple iterator is only used to
     // find boundaries, not actual content. A linefeed breaks words, sentences, and paragraphs.
@@ -308,7 +315,8 @@ bool SimplifiedBackwardsTextIterator::handleNonTextNode()
     return true;
 }
 
-void SimplifiedBackwardsTextIterator::exitNode()
+template <typename Strategy>
+void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::exitNode()
 {
     if (TextIterator::shouldEmitNewlineForNode(m_node, m_emitsOriginalText) || TextIterator::shouldEmitNewlineBeforeNode(*m_node) || TextIterator::shouldEmitTabBeforeNode(m_node)) {
         // The start of this emitted range is wrong. Ensuring correctness would require
@@ -317,7 +325,8 @@ void SimplifiedBackwardsTextIterator::exitNode()
     }
 }
 
-void SimplifiedBackwardsTextIterator::emitCharacter(UChar c, Node* node, int startOffset, int endOffset)
+template <typename Strategy>
+void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::emitCharacter(UChar c, Node* node, int startOffset, int endOffset)
 {
     m_singleCharacterBuffer = c;
     m_positionNode = node;
@@ -327,7 +336,8 @@ void SimplifiedBackwardsTextIterator::emitCharacter(UChar c, Node* node, int sta
     m_textLength = 1;
 }
 
-bool SimplifiedBackwardsTextIterator::advanceRespectingRange(Node* next)
+template <typename Strategy>
+bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::advanceRespectingRange(Node* next)
 {
     if (!next)
         return false;
@@ -338,32 +348,39 @@ bool SimplifiedBackwardsTextIterator::advanceRespectingRange(Node* next)
     return true;
 }
 
-Node* SimplifiedBackwardsTextIterator::startContainer() const
+template <typename Strategy>
+Node* SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::startContainer() const
 {
     if (m_positionNode)
         return m_positionNode;
     return m_startNode;
 }
 
-int SimplifiedBackwardsTextIterator::endOffset() const
+template <typename Strategy>
+int SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::endOffset() const
 {
     if (m_positionNode)
         return m_positionEndOffset;
     return m_startOffset;
 }
 
-Position SimplifiedBackwardsTextIterator::startPosition() const
+template <typename Strategy>
+PositionAlgorithm<Strategy> SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::startPosition() const
 {
     if (m_positionNode)
-        return createLegacyEditingPosition(m_positionNode, m_positionStartOffset);
-    return createLegacyEditingPosition(m_startNode, m_startOffset);
+        return PositionAlgorithm<Strategy>::createLegacyEditingPosition(m_positionNode, m_positionStartOffset);
+    return PositionAlgorithm<Strategy>::createLegacyEditingPosition(m_startNode, m_startOffset);
 }
 
-Position SimplifiedBackwardsTextIterator::endPosition() const
+template <typename Strategy>
+PositionAlgorithm<Strategy>SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::endPosition() const
 {
     if (m_positionNode)
-        return createLegacyEditingPosition(m_positionNode, m_positionEndOffset);
-    return createLegacyEditingPosition(m_startNode, m_startOffset);
+        return PositionAlgorithm<Strategy>::createLegacyEditingPosition(m_positionNode, m_positionEndOffset);
+    return PositionAlgorithm<Strategy>::createLegacyEditingPosition(m_startNode, m_startOffset);
 }
+
+template class CORE_TEMPLATE_EXPORT SimplifiedBackwardsTextIteratorAlgorithm<EditingStrategy>;
+
 
 } // namespace blink
