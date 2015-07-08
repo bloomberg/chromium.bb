@@ -2456,7 +2456,7 @@
           "comment": "Universal Accent: Example 1",
           "xfail": false,
           "input": "Forlì",
-          "output": "⠠⠋⠕⠗⠇⠈⠊"
+          "output": "⠠⠋⠕⠗⠇⠘⠊"
         }
       ]
     },
@@ -2486,7 +2486,7 @@
           "comment": "Universal Accent: Example 4",
           "xfail": false,
           "input": "Dvořák",
-          "output": "⠠⠙⠧⠕⠈⠗⠈⠁⠅"
+          "output": "⠠⠙⠧⠕⠈⠗⠡⠅"
         }
       ]
     },
@@ -2506,7 +2506,7 @@
           "comment": "Universal Accent: Example 6",
           "xfail": false,
           "input": "français",
-          "output": "⠋⠗⠁⠝⠈⠉⠁⠊⠎"
+          "output": "⠋⠗⠁⠝⠯⠁⠊⠎"
         }
       ]
     },
@@ -2526,7 +2526,7 @@
           "comment": "Universal Accent: Example 8",
           "xfail": false,
           "input": "Łódź",
-          "output": "⠠⠈⠇⠈⠕⠙⠈⠵"
+          "output": "⠠⠈⠇⠹⠙⠈⠵"
         }
       ]
     },
@@ -2536,7 +2536,7 @@
           "comment": "Universal Accent: Example 9",
           "xfail": false,
           "input": "ođđasat",
-          "output": "⠕⠈⠙⠈⠙⠁⠎⠁⠞"
+          "output": "⠕⠹⠹⠁⠎⠁⠞"
         }
       ]
     },
@@ -2546,7 +2546,7 @@
           "comment": "Universal Accent: Example 10",
           "xfail": false,
           "input": "Han fór opp.",
-          "output": "⠠⠓⠁⠝ ⠋⠈⠕⠗ ⠕⠏⠏⠄"
+          "output": "⠠⠓⠁⠝ ⠋⠹⠗ ⠕⠏⠏⠄"
         }
       ]
     },
@@ -2556,7 +2556,7 @@
           "comment": "Universal Accent: Example 11",
           "xfail": false,
           "input": "Málaga",
-          "output": "⠠⠍⠈⠁⠇⠁⠛⠁"
+          "output": "⠠⠍⠡⠇⠁⠛⠁"
         }
       ]
     },
@@ -2566,7 +2566,7 @@
           "comment": "Universal Accent: Example 12",
           "xfail": false,
           "input": "Bartók",
-          "output": "⠠⠃⠁⠗⠞⠈⠕⠅"
+          "output": "⠠⠃⠁⠗⠞⠹⠅"
         }
       ]
     },
@@ -2585,7 +2585,7 @@
         {
           "comment": "Universal Accent: Example 14",
           "xfail": false,
-          "input": "où ",
+          "input": "où",
           "output": "⠕⠘⠥"
         }
       ]
@@ -2605,7 +2605,7 @@
           "comment": "Universal Accent: Example 16",
           "xfail": false,
           "input": "lātus",
-          "output": "⠇⠘⠁⠞⠥⠎"
+          "output": "⠇⠈⠁⠞⠥⠎"
         }
       ]
     },
@@ -2615,7 +2615,7 @@
           "comment": "Universal Accent: Example 17",
           "xfail": false,
           "input": "São Paulo",
-          "output": "⠎⠹⠁⠕ ⠠⠏⠁⠥⠇⠕"
+          "output": "⠠⠎⠈⠁⠕ ⠠⠏⠁⠥⠇⠕"
         }
       ]
     },
@@ -2625,7 +2625,7 @@
           "comment": "Universal Accent: Example 18",
           "xfail": false,
           "input": "España",
-          "output": "⠠⠑⠎⠏⠁⠹⠝⠁"
+          "output": "⠠⠑⠎⠏⠁⠈⠝⠁"
         }
       ]
     },
@@ -2634,7 +2634,7 @@
         {
           "comment": "Universal Accent: Example 19",
           "input": "Citroën",
-          "output": "⠠⠉⠊⠞⠗⠕⠒⠑⠝"
+          "output": "⠠⠉⠊⠞⠗⠕⠈⠑⠝"
         }
       ]
     },
@@ -2644,7 +2644,7 @@
           "comment": "Universal Accent: Example 20",
           "xfail": false,
           "input": "że",
-          "output": "⠒⠵⠑"
+          "output": "⠈⠵⠑"
         }
       ]
     },
@@ -2672,7 +2672,7 @@
           "comment": "Universal Accent: Example 23",
           "xfail": false,
           "input": "ĵus",
-          "output": "⠨⠚⠥⠎"
+          "output": "⠈⠚⠥⠎"
         }
       ]
     },
@@ -2682,7 +2682,7 @@
           "comment": "Universal Accent: Example 24",
           "xfail": false,
           "input": "sápmelaš",
-          "output": "⠎⠈⠁⠏⠍⠑⠇⠁⠨⠎"
+          "output": "⠎⠡⠏⠍⠑⠇⠁⠈⠎"
         }
       ]
     },
@@ -2692,7 +2692,7 @@
           "comment": "Universal Accent: Example 25",
           "xfail": false,
           "input": "Dvořák",
-          "output": "⠠⠙⠧⠕⠨⠗⠈⠁⠅"
+          "output": "⠠⠙⠧⠕⠈⠗⠡⠅"
         }
       ]
     },
@@ -2702,7 +2702,7 @@
           "comment": "Universal Accent: Example 26",
           "xfail": false,
           "input": "lătus",
-          "output": "⠇⠲⠁⠞⠥⠎"
+          "output": "⠇⠈⠁⠞⠥⠎"
         }
       ]
     },
@@ -2712,7 +2712,7 @@
           "comment": "Universal Accent: Example 27",
           "xfail": false,
           "input": "aŭ",
-          "output": "⠁⠲⠥"
+          "output": "⠁⠈⠥"
         }
       ]
     },
@@ -2722,7 +2722,7 @@
           "comment": "Universal Accent: Example 28",
           "xfail": false,
           "input": "Brăila",
-          "output": "⠠⠃⠗⠲⠁⠊⠇⠁"
+          "output": "⠠⠃⠗⠈⠁⠊⠇⠁"
         }
       ]
     },
@@ -2732,7 +2732,7 @@
           "comment": "Universal Accent: Example 29",
           "xfail": false,
           "input": "dům",
-          "output": "⠙⠲⠥⠍"
+          "output": "⠙⠈⠥⠍"
         }
       ]
     },
@@ -2742,7 +2742,7 @@
           "comment": "Sign under the character: Example 1",
           "xfail": false,
           "input": "français",
-          "output": "⠋⠗⠁⠝⠖⠉⠁⠊⠎"
+          "output": "⠋⠗⠁⠝⠯⠁⠊⠎"
         }
       ]
     },
@@ -2752,7 +2752,7 @@
           "comment": "Sign under the character: Example 2",
           "xfail": false,
           "input": "Moçambique",
-          "output": "⠠⠍⠕⠖⠉⠁⠍⠃⠊⠟⠥⠑"
+          "output": "⠠⠍⠕⠯⠁⠍⠃⠊⠟⠥⠑"
         }
       ]
     },
@@ -2762,7 +2762,7 @@
           "comment": "Sign under the character: Example 3",
           "xfail": false,
           "input": "Constanţa",
-          "output": "⠠⠉⠕⠝⠎⠞⠁⠝⠖⠞⠁"
+          "output": "⠠⠉⠕⠝⠎⠞⠁⠝⠈⠞⠁"
         }
       ]
     },
@@ -2772,7 +2772,7 @@
           "comment": "Sign under the character: Example 4",
           "xfail": false,
           "input": "Częstochowa",
-          "output": "⠠⠉⠵⠖⠑⠎⠞⠕⠉⠓⠕⠺⠁"
+          "output": "⠠⠉⠵⠈⠑⠎⠞⠕⠉⠓⠕⠺⠁"
         }
       ]
     },
@@ -2782,7 +2782,7 @@
           "comment": "Strikethrough: Example 1",
           "xfail": false,
           "input": "Łódź",
-          "output": "⠠⠔⠇⠈⠕⠙⠈⠵"
+          "output": "⠠⠈⠇⠹⠙⠈⠵"
         }
       ]
     },
@@ -2792,7 +2792,7 @@
           "comment": "Strikethrough: Example 2",
           "xfail": false,
           "input": "ođđasat",
-          "output": "⠕⠔⠙⠔⠙⠁⠎⠁⠞"
+          "output": "⠕⠹⠹⠁⠎⠁⠞"
         }
       ]
     },
@@ -2802,7 +2802,7 @@
           "comment": "Strikethrough: Example 3",
           "xfail": false,
           "input": "Bláalóniđ",
-          "output": "⠠⠃⠇⠈⠁⠁⠇⠈⠕⠝⠊⠔⠙"
+          "output": "⠠⠃⠇⠡⠁⠇⠹⠝⠊⠹"
         }
       ]
     },
@@ -2812,7 +2812,7 @@
           "comment": "Strikethrough: Example 4",
           "xfail": false,
           "input": "Ruoŧŧa",
-          "output": "⠠⠗⠥⠕⠔⠞⠔⠞⠁"
+          "output": "⠠⠗⠥⠕⠳⠳⠁"
         }
       ]
     },

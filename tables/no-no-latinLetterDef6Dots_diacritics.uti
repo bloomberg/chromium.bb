@@ -221,10 +221,10 @@ lowercase  ꬴ  4-15    # Latin Small Letter E with Flourish
 uplow Ꝓꝓ 4-1234       # Latin Letter P with Flourish
 uplow Àà 4-1          # Latin Letter a with Grave
 uplow Èè 4-15         # Latin Letter E with Grave
-uplow Ìì 4-24         # Latin Letter I with Grave
+uplow Ìì 45-24         # Latin Letter I with Grave
 uplow Ǹǹ 4-1345       # Latin Letter N with Grave
 uplow Òò 4-135        # Latin Letter O with Grave
-uplow Ùù 4-136        # Latin Letter U with Grave
+uplow Ùù 45-136        # Latin Letter U with Grave
 uplow Ẁẁ 4-2456       # Latin Letter W with Grave
 uplow Ỳỳ 4-13456      # Latin Letter Y with Grave
 uplow Ꝉꝉ 4-123        # Latin Letter L with High Stroke
