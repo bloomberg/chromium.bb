@@ -50,9 +50,12 @@ class SimplePasswordStoreMacTest : public testing::Test {
         FROM_HERE,
         base::Bind(&InitOnBackgroundThread, base::Unretained(login_db.get())));
     store_ = new SimplePasswordStoreMac(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-        file_task_runner, login_db.Pass());
-    ASSERT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare()));
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI), nullptr,
+        scoped_ptr<password_manager::LoginDatabase>());
+    file_task_runner->PostTask(
+        FROM_HERE,
+        base::Bind(&SimplePasswordStoreMac::InitWithTaskRunner, store_,
+                   file_task_runner, base::Passed(&login_db)));
     // Make sure deferred initialization is finished.
     FinishAsyncProcessing();
   }

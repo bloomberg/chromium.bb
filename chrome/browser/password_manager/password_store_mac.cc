@@ -960,8 +960,8 @@ PasswordStoreMac::~PasswordStoreMac() {}
 
 void PasswordStoreMac::InitWithTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> background_task_runner) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   db_thread_runner_ = background_task_runner;
+  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
 }
 
 PasswordStoreMac::MigrationResult PasswordStoreMac::ImportFromKeychain() {
@@ -1050,7 +1050,8 @@ PasswordStoreMac::MigrationResult PasswordStoreMac::ImportFromKeychain() {
 void PasswordStoreMac::set_login_metadata_db(
     password_manager::LoginDatabase* login_db) {
   login_metadata_db_ = login_db;
-  login_metadata_db_->set_clear_password_values(true);
+  if (login_metadata_db_)
+    login_metadata_db_->set_clear_password_values(true);
 }
 
 bool PasswordStoreMac::Init(

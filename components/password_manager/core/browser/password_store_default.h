@@ -68,6 +68,10 @@ class PasswordStoreDefault : public PasswordStore {
     return login_db_->DeleteAndRecreateDatabaseFile();
   }
 
+  void set_login_db(scoped_ptr<password_manager::LoginDatabase> login_db) {
+    login_db_.swap(login_db);
+  }
+
  private:
   // Resets |login_db_| on the background thread.
   void ResetLoginDB();

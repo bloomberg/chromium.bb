@@ -11,17 +11,19 @@
 // owner is responsible for the thread lifetime.
 class SimplePasswordStoreMac : public password_manager::PasswordStoreDefault {
  public:
+  // Passes the arguments to PasswordStoreDefault. |background_task_runner| and
+  // |login_db| can be overwritten later in InitWithTaskRunner().
   SimplePasswordStoreMac(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
       scoped_refptr<base::SingleThreadTaskRunner> background_thread_runner,
       scoped_ptr<password_manager::LoginDatabase> login_db);
 
-  // Just hides the parent method. All the initialization is to be done by
-  // PasswordStoreProxyMac that is an owner of the class.
-  bool Init(const syncer::SyncableService::StartSyncFlare& flare) override;
-
-  // Clean |background_thread_runner_|.
-  void Shutdown() override;
+  // Sets the background thread and LoginDatabase. |login_db| should be already
+  // inited. The method isn't necessary to call if the constructor already got
+  // the correct parameters.
+  void InitWithTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> background_task_runner,
+      scoped_ptr<password_manager::LoginDatabase> login_db);
 
   using PasswordStoreDefault::GetBackgroundTaskRunner;
 
@@ -29,6 +31,8 @@ class SimplePasswordStoreMac : public password_manager::PasswordStoreDefault {
   ~SimplePasswordStoreMac() override;
 
  private:
+  bool Init(const syncer::SyncableService::StartSyncFlare& flare) override;
+
   DISALLOW_COPY_AND_ASSIGN(SimplePasswordStoreMac);
 };
 
