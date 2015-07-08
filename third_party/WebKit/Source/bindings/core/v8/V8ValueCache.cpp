@@ -50,6 +50,11 @@ void StringCacheMapTraits::DisposeWeak(const v8::WeakCallbackInfo<WeakCallbackDa
     data.GetParameter()->deref();
 }
 
+void StringCacheMapTraits::OnWeakCallback(const v8::WeakCallbackInfo<WeakCallbackDataType>& data)
+{
+    V8PerIsolateData::from(data.GetIsolate())->stringCache()->InvalidateLastString();
+}
+
 void StringCache::dispose()
 {
     // The MapType::Dispose callback calls StringCache::InvalidateLastString,

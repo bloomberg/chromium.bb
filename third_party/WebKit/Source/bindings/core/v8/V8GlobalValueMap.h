@@ -80,6 +80,8 @@ public:
         return KeyType();
     }
 
+    static void OnWeakCallback(const v8::WeakCallbackInfo<WeakCallbackDataType>& data) {}
+
     // Dispose traits:
     static void Dispose(v8::Isolate* isolate, v8::Global<ValueType> value, KeyType key) { }
     static void DisposeWeak(const v8::WeakCallbackInfo<WeakCallbackDataType>& data) { }

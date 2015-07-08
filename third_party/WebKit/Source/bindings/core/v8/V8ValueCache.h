@@ -56,6 +56,8 @@ public:
         return data.GetParameter();
     }
 
+    static void OnWeakCallback(const v8::WeakCallbackInfo<WeakCallbackDataType>&);
+
     static void Dispose(v8::Isolate*, v8::Global<v8::String> value, StringImpl* key);
     static void DisposeWeak(const v8::WeakCallbackInfo<WeakCallbackDataType>&);
 };

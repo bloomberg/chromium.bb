@@ -69,6 +69,7 @@ private:
         typedef v8::GlobalValueMap<int, v8::Object, IdToPromiseMapTraits> MapType;
 
         static WeakCallbackDataType* WeakCallbackParameter(MapType*, int key, v8::Local<v8::Object>& value);
+        static void OnWeakCallback(const v8::WeakCallbackInfo<WeakCallbackDataType>&) { }
         // This method will be called if the value is removed from the map.
         static void DisposeCallbackData(WeakCallbackDataType*);
         // This method is called if weakly referenced value is collected.

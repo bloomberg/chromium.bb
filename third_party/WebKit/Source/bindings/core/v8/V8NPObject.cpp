@@ -189,6 +189,7 @@ public:
     }
 
     // Dispose traits:
+    static void OnWeakCallback(const v8::WeakCallbackInfo<WeakCallbackDataType>& data) { }
     static void Dispose(v8::Isolate* isolate, v8::Global<v8::FunctionTemplate> value, PrivateIdentifier* key) { }
     static void DisposeWeak(const v8::WeakCallbackInfo<WeakCallbackDataType>& data) { }
 };
