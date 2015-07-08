@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.policy.providers;
+package org.chromium.policy;
 
 import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
@@ -14,40 +14,56 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.UserManager;
 
-import org.chromium.chrome.browser.policy.PolicyProvider;
-
 /**
- * Policy provider for Android's App Restriction Schema.
+ * Retrieves app restrictions and provides them to a {@link Delegate} object as Bundles.
+ * Retrieving the restrictions is done asynchronously.
  */
-public final class AppRestrictionsProvider extends PolicyProvider {
+public class AppRestrictionsProvider {
+    /** Delegate to notify when restrictions have been received. */
+    public interface Delegate {
+        /** Called when new restrictions are available. */
+        public void notifyNewAppRestrictionsAvailable(Bundle newAppRestrictions);
+    }
+
+    private final UserManager mUserManager;
+    private final Context mContext;
+    private final Delegate mDelegate;
     private final BroadcastReceiver mAppRestrictionsChangedReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            refresh();
+            refreshRestrictions();
         }
     };
-    private final UserManager mUserManager;
 
     /**
-     * Register to receive the intent for App Restrictions.
+     * @param context The application context.
+     * @param appRestrictionsProviderDelegate Object to be notified when new restrictions
+     *  are available.
      */
-    public AppRestrictionsProvider(Context context) {
-        super(context);
+    public AppRestrictionsProvider(Context context, Delegate appRestrictionsProviderDelegate) {
+        mContext = context;
+        mDelegate = appRestrictionsProviderDelegate;
         mUserManager = getUserManager();
     }
 
-    @Override
+    /**
+     * Start listening for restrictions changes. Does nothing if this is not supported by the
+     * platform.
+     */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    protected void startListeningForPolicyChanges() {
+    public void startListening() {
         if (!isChangeIntentSupported()) return;
         mContext.registerReceiver(mAppRestrictionsChangedReceiver,
                 new IntentFilter(Intent.ACTION_APPLICATION_RESTRICTIONS_CHANGED));
     }
 
-    @Override
-    public void refresh() {
+    /**
+     * Asynchronously retrieve the restrictions.
+     * {@link Delegate#notifyNewAppRestrictionsAvailable(Bundle)} will be called as a result.
+     */
+    public void refreshRestrictions() {
         if (!isRestrictionsSupported()) {
-            notifySettingsAvailable(new Bundle());
+            mDelegate.notifyNewAppRestrictionsAvailable(new Bundle());
             return;
         }
 
@@ -59,17 +75,19 @@ public final class AppRestrictionsProvider extends PolicyProvider {
 
             @Override
             protected void onPostExecute(Bundle result) {
-                notifySettingsAvailable(result);
+                mDelegate.notifyNewAppRestrictionsAvailable(result);
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
-    @Override
-    public void destroy() {
+    /**
+     * Stop listening for restrictions changes. Does nothing if this is not supported by the
+     * platform.
+     */
+    public void stopListening() {
         if (isChangeIntentSupported()) {
             mContext.unregisterReceiver(mAppRestrictionsChangedReceiver);
         }
-        super.destroy();
     }
 
     /**

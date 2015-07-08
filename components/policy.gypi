@@ -103,7 +103,7 @@
             {
               'inputs': [
                 'policy/resources/policy_templates.json',
-		'<(DEPTH)/chrome/VERSION',
+                '<(DEPTH)/chrome/VERSION',
                 '<(generate_policy_source_script_path)',
               ],
               'outputs': [
@@ -124,7 +124,7 @@
                 '--cloud-policy-protobuf=<(cloud_policy_proto_path)',
                 '--cloud-policy-decoder=<(protobuf_decoder_path)',
                 '--app-restrictions-definition=<(app_restrictions_path)',
-		'<(DEPTH)/chrome/VERSION',
+                '<(DEPTH)/chrome/VERSION',
                 '<(OS)',
                 '<(chromeos)',
                 'policy/resources/policy_templates.json',
@@ -382,7 +382,19 @@
               'dependencies_res_zip_paths': ['<(resources_zip)'],
             },
           },
-        }
+        },
+        {
+          # GN: //components/policy/android:policy_java
+          'target_name': 'policy_java',
+          'type': 'none',
+          'dependencies': [
+            '../base/base.gyp:base_java',
+          ],
+          'variables': {
+            'java_in_dir': 'policy/android/java',
+          },
+          'includes': [ '../build/java.gypi' ],
+        },
       ],
     }],
     ['OS=="win" and target_arch=="ia32" and configuration_policy==1', {

@@ -63,7 +63,7 @@ import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomiza
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyManager;
 import org.chromium.chrome.browser.policy.PolicyManager.PolicyChangeListener;
-import org.chromium.chrome.browser.policy.providers.AppRestrictionsProvider;
+import org.chromium.chrome.browser.policy.providers.AppRestrictionsPolicyProvider;
 import org.chromium.chrome.browser.preferences.AccessibilityPreferences;
 import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -704,7 +704,7 @@ public class ChromeApplication extends ContentApplication {
      * @param manager The {@link PolicyManager} to register the providers with.
      */
     protected void registerPolicyProviders(PolicyManager manager) {
-        manager.registerProvider(new AppRestrictionsProvider(getApplicationContext()));
+        manager.registerProvider(new AppRestrictionsPolicyProvider(getApplicationContext()));
     }
 
     /**

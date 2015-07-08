@@ -599,6 +599,7 @@
             '../components/components.gyp:invalidation_java',
             '../components/components.gyp:navigation_interception_java',
             '../components/components.gyp:service_tab_launcher_java',
+            '../components/components.gyp:policy_java',
             '../components/components.gyp:precache_java',
             '../components/components.gyp:variations_java',
             '../components/components.gyp:web_contents_delegate_android_java',
