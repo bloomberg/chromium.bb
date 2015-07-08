@@ -107,16 +107,18 @@ GpuJpegDecodeAcceleratorHost::~GpuJpegDecodeAcceleratorHost() {
   DCHECK(CalledOnValidThread());
   Send(new AcceleratedJpegDecoderMsg_Destroy(decoder_route_id_));
 
-  channel_->RemoveRoute(decoder_route_id_);
+  if (receiver_) {
+    channel_->RemoveRoute(decoder_route_id_);
 
-  // Invalidate weak ptr of |receiver_|. After that, no more messages will be
-  // routed to |receiver_| on IO thread.
-  base::WaitableEvent event(false, false);
-  io_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&Receiver::InvalidateWeakPtr,
-                 base::Unretained(receiver_.get()), base::Unretained(&event)));
-  event.Wait();
+    // Invalidate weak ptr of |receiver_|. After that, no more messages will be
+    // routed to |receiver_| on IO thread.
+    base::WaitableEvent event(false, false);
+    io_task_runner_->PostTask(FROM_HERE,
+                              base::Bind(&Receiver::InvalidateWeakPtr,
+                                         base::Unretained(receiver_.get()),
+                                         base::Unretained(&event)));
+    event.Wait();
+  }
 }
 
 bool GpuJpegDecodeAcceleratorHost::Initialize(
