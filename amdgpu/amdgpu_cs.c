@@ -383,7 +383,6 @@ int amdgpu_cs_query_fence_status(struct amdgpu_cs_query_fence *fence,
 				 uint32_t *expired)
 {
 	amdgpu_context_handle context;
-	uint64_t *signaled_fence;
 	uint64_t *expired_fence;
 	unsigned ip_type, ip_instance;
 	uint32_t ring;
@@ -405,8 +404,6 @@ int amdgpu_cs_query_fence_status(struct amdgpu_cs_query_fence *fence,
 	ip_type = fence->ip_type;
 	ip_instance = fence->ip_instance;
 	ring = fence->ring;
-	signaled_fence = context->fence_cpu;
-	signaled_fence += amdgpu_cs_fence_index(ip_type, ring);
 	expired_fence = &context->expired_fences[ip_type][ip_instance][ring];
 	*expired = false;
 
@@ -418,17 +415,25 @@ int amdgpu_cs_query_fence_status(struct amdgpu_cs_query_fence *fence,
 		return 0;
 	}
 
-	if (fence->fence <= *signaled_fence) {
-		/* This fence value is signaled already. */
-		*expired_fence = *signaled_fence;
-		pthread_mutex_unlock(&context->sequence_mutex);
-		*expired = true;
-		return 0;
-	}
+	/* Check the user fence only if the IP supports user fences. */
+	if (fence->ip_type != AMDGPU_HW_IP_UVD &&
+	    fence->ip_type != AMDGPU_HW_IP_VCE) {
+		uint64_t *signaled_fence = context->fence_cpu;
+		signaled_fence += amdgpu_cs_fence_index(ip_type, ring);
 
-	if (fence->timeout_ns == 0) {
-		pthread_mutex_unlock(&context->sequence_mutex);
-		return 0;
+		if (fence->fence <= *signaled_fence) {
+			/* This fence value is signaled already. */
+			*expired_fence = *signaled_fence;
+			pthread_mutex_unlock(&context->sequence_mutex);
+			*expired = true;
+			return 0;
+		}
+
+		/* Checking the user fence is enough. */
+		if (fence->timeout_ns == 0) {
+			pthread_mutex_unlock(&context->sequence_mutex);
+			return 0;
+		}
 	}
 
 	pthread_mutex_unlock(&context->sequence_mutex);
