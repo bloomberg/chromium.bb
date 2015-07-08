@@ -643,18 +643,20 @@ void ExternalProviderImpl::CreateExternalProviders(
                     Extension::WAS_INSTALLED_BY_DEFAULT)));
 #endif
 
-    provider_list->push_back(
-        linked_ptr<ExternalProviderInterface>(
-            new ExternalProviderImpl(
-                service,
-                new ExtensionMigrator(profile,
-                                      extension_misc::kDriveHostedAppId,
-                                      extension_misc::kDriveExtensionId),
-                profile,
-                Manifest::EXTERNAL_PREF,
-                Manifest::EXTERNAL_PREF_DOWNLOAD,
-                Extension::FROM_WEBSTORE |
-                    Extension::WAS_INSTALLED_BY_DEFAULT)));
+    scoped_ptr<ExternalProviderImpl> drive_migration_provider(
+        new ExternalProviderImpl(
+            service,
+            new ExtensionMigrator(profile,
+                                  extension_misc::kDriveHostedAppId,
+                                  extension_misc::kDriveExtensionId),
+            profile,
+            Manifest::EXTERNAL_PREF,
+            Manifest::EXTERNAL_PREF_DOWNLOAD,
+            Extension::FROM_WEBSTORE |
+                Extension::WAS_INSTALLED_BY_DEFAULT));
+    drive_migration_provider->set_auto_acknowledge(true);
+    provider_list->push_back(linked_ptr<ExternalProviderInterface>(
+        drive_migration_provider.release()));
   }
 
   provider_list->push_back(
