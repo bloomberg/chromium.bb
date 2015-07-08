@@ -554,6 +554,11 @@ class Settings(object):
   def GetBugPrefix(self):
     return self._GetRietveldConfig('bug-prefix', error_ok=True)
 
+  def GetIsSkipDependencyUpload(self, branch_name):
+    """Returns true if specified branch should skip dep uploads."""
+    return self._GetBranchConfig(branch_name, 'skip-deps-uploads',
+                                 error_ok=True)
+
   def GetRunPostUploadHook(self):
     run_post_upload_hook = self._GetRietveldConfig(
         'run-post-upload-hook', error_ok=True)
@@ -604,6 +609,9 @@ class Settings(object):
 
   def _GetRietveldConfig(self, param, **kwargs):
     return self._GetConfig('rietveld.' + param, **kwargs)
+
+  def _GetBranchConfig(self, branch_name, param, **kwargs):
+    return self._GetConfig('branch.' + branch_name + '.' + param, **kwargs)
 
   def _GetConfig(self, param, **kwargs):
     self.LazyUpdateIfNeeded()
@@ -2191,21 +2199,27 @@ def RietveldUpload(options, args, cl, change):
     if remote is '.':
       # A local branch is being tracked.
       local_branch = ShortBranchName(upstream_branch)
-      auth_config = auth.extract_auth_config_from_options(options)
-      branch_cl = Changelist(branchref=local_branch, auth_config=auth_config)
-      branch_cl_issue_url = branch_cl.GetIssueURL()
-      branch_cl_issue = branch_cl.GetIssue()
-      branch_cl_patchset = branch_cl.GetPatchset()
-      if branch_cl_issue_url and branch_cl_issue and branch_cl_patchset:
-        upload_args.extend(
-            ['--depends_on_patchset', '%s:%s' % (
-                 branch_cl_issue, branch_cl_patchset)])
+      if settings.GetIsSkipDependencyUpload(local_branch):
         print
-        print ('The current branch (%s) is tracking a local branch (%s) with '
-               'an associated CL.') % (cl.GetBranch(), local_branch)
-        print 'Adding %s/#ps%s as a dependency patchset.' % (
-            branch_cl_issue_url, branch_cl_patchset)
+        print ('Skipping dependency patchset upload because git config '
+               'branch.%s.skip-deps-uploads is set to True.' % local_branch)
         print
+      else:
+        auth_config = auth.extract_auth_config_from_options(options)
+        branch_cl = Changelist(branchref=local_branch, auth_config=auth_config)
+        branch_cl_issue_url = branch_cl.GetIssueURL()
+        branch_cl_issue = branch_cl.GetIssue()
+        branch_cl_patchset = branch_cl.GetPatchset()
+        if branch_cl_issue_url and branch_cl_issue and branch_cl_patchset:
+          upload_args.extend(
+              ['--depends_on_patchset', '%s:%s' % (
+                   branch_cl_issue, branch_cl_patchset)])
+          print
+          print ('The current branch (%s) is tracking a local branch (%s) with '
+                 'an associated CL.') % (cl.GetBranch(), local_branch)
+          print 'Adding %s/#ps%s as a dependency patchset.' % (
+              branch_cl_issue_url, branch_cl_patchset)
+          print
 
   project = settings.GetProject()
   if project:
@@ -2256,7 +2270,14 @@ def cleanup_list(l):
 
 @subcommand.usage('[args to "git diff"]')
 def CMDupload(parser, args):
-  """Uploads the current changelist to codereview."""
+  """Uploads the current changelist to codereview.
+
+  Can skip dependency patchset uploads for a branch by running:
+    git config branch.branch_name.skip-deps-uploads True
+  To unset run:
+    git config --unset branch.branch_name.skip-deps-uploads
+  Can also set the above globally by using the --global flag.
+  """
   parser.add_option('--bypass-hooks', action='store_true', dest='bypass_hooks',
                     help='bypass upload presubmit hook')
   parser.add_option('--bypass-watchlists', action='store_true',
