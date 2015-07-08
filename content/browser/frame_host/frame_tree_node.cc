@@ -14,6 +14,7 @@
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/common/frame_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 
@@ -358,6 +359,21 @@ void FrameTreeNode::DidStopLoading() {
 void FrameTreeNode::DidChangeLoadProgress(double load_progress) {
   loading_progress_ = load_progress;
   frame_tree_->UpdateLoadProgress();
+}
+
+bool FrameTreeNode::StopLoading() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    ResetNavigationRequest(false);
+  }
+
+  // TODO(nasko): see if child frames should send IPCs in site-per-process
+  // mode.
+  if (!IsMainFrame())
+    return true;
+
+  render_manager_.Stop();
+  return true;
 }
 
 }  // namespace content

@@ -192,6 +192,11 @@ class CONTENT_EXPORT FrameTreeNode {
   // the WebContents.
   void DidChangeLoadProgress(double load_progress);
 
+  // Called when the user directed the page to stop loading. Stops all loads
+  // happening in the FrameTreeNode. This method should be used with
+  // FrameTree::ForEach to stop all loads in the entire FrameTree.
+  bool StopLoading();
+
  private:
   class OpenerDestroyedObserver;
 

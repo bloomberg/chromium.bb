@@ -318,12 +318,22 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
 void RenderFrameHostManager::Stop() {
   render_frame_host_->Stop();
 
-  // If we are navigating cross-process, we should stop the pending renderers.
-  // This will lead to a DidFailProvisionalLoad, which will properly destroy
-  // them.
+  // If a cross-process navigation is happening, the pending RenderFrameHost
+  // should stop. This will lead to a DidFailProvisionalLoad, which will
+  // properly destroy it.
   if (pending_render_frame_host_) {
     pending_render_frame_host_->Send(new FrameMsg_Stop(
         pending_render_frame_host_->GetRoutingID()));
+  }
+
+  // PlzNavigate: a loading speculative RenderFrameHost should also stop.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation)) {
+    if (speculative_render_frame_host_ &&
+        speculative_render_frame_host_->is_loading()) {
+      speculative_render_frame_host_->Send(
+          new FrameMsg_Stop(speculative_render_frame_host_->GetRoutingID()));
+    }
   }
 }
 

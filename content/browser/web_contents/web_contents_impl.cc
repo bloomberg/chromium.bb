@@ -1241,7 +1241,7 @@ void WebContentsImpl::AttachToOuterWebContentsFrame(
 }
 
 void WebContentsImpl::Stop() {
-  GetRenderManager()->Stop();
+  frame_tree_.ForEach(base::Bind(&FrameTreeNode::StopLoading));
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, NavigationStopped());
 }
 
