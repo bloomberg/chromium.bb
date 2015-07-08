@@ -40,6 +40,10 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#ifdef HAVE_SYS_MKDEV_H
+#include <sys/mkdev.h>
+#endif
 
 #include "libdrm_macros.h"
 #include "internal.h"
