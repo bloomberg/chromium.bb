@@ -1776,7 +1776,7 @@
 
         'android_libcpp_root': '<(android_libcpp_root)',
         'android_libcpp_include': '<(android_libcpp_root)/libcxx/include',
-        'android_libcpp_libs_dir': '<(android_libcpp_root)/libs/<(android_app_abi)',
+        'android_libcpp_libs_dir%': '<(android_libcpp_root)/libs/<(android_app_abi)',
         'host_os%': '<(host_os)',
 
         # Location of the "objcopy" binary, used by both gyp and scripts.
