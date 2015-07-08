@@ -11,10 +11,6 @@
 #include "base/timer/timer.h"
 #include "ui/views/view.h"
 
-namespace gfx {
-class ImageSkia;
-}
-
 namespace views {
 
 // Throbbers display an animation, usually used as a status indicator.
@@ -45,9 +41,6 @@ class VIEWS_EXPORT Throbber : public View {
 
   // Whether or not we should display a checkmark.
   bool checked_;
-
-  // The checkmark image. Will be null until it's used (if ever).
-  const gfx::ImageSkia* checkmark_;
 
   DISALLOW_COPY_AND_ASSIGN(Throbber);
 };

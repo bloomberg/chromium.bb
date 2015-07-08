@@ -10,6 +10,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_throbber.h"
+#include "ui/gfx/vector_icons.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -17,7 +18,14 @@
 
 namespace views {
 
-Throbber::Throbber() : checked_(false), checkmark_(nullptr) {
+// The default diameter of a Throbber. If you change this, also change
+// kCheckmarkDipSize.
+static const int kDefaultDiameter = 16;
+// The size of the checkmark, in DIP. This magic number matches the default
+// diamater plus padding inherent in the checkmark SVG.
+static const int kCheckmarkDipSize = 18;
+
+Throbber::Throbber() : checked_(false) {
 }
 
 Throbber::~Throbber() {
@@ -52,28 +60,23 @@ void Throbber::SetChecked(bool checked) {
 }
 
 gfx::Size Throbber::GetPreferredSize() const {
-  const int kDefaultDiameter = 16;
   return gfx::Size(kDefaultDiameter, kDefaultDiameter);
 }
 
 void Throbber::OnPaint(gfx::Canvas* canvas) {
+  SkColor color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_ThrobberSpinningColor);
+
   if (!IsRunning()) {
     if (checked_) {
-      if (!checkmark_) {
-        checkmark_ = ui::ResourceBundle::GetSharedInstance()
-                         .GetImageNamed(IDR_CHECKMARK)
-                         .ToImageSkia();
-      }
-
-      int checkmark_x = (width() - checkmark_->width()) / 2;
-      int checkmark_y = (height() - checkmark_->height()) / 2;
-      canvas->DrawImageInt(*checkmark_, checkmark_x, checkmark_y);
+      canvas->Translate(gfx::Vector2d((width() - kCheckmarkDipSize) / 2,
+                                      (height() - kCheckmarkDipSize) / 2));
+      gfx::PaintVectorIcon(canvas, gfx::VectorIconId::CHECK_CIRCLE,
+                           kCheckmarkDipSize, color);
     }
     return;
   }
 
-  SkColor color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_ThrobberSpinningColor);
   base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time_;
   gfx::PaintThrobberSpinning(canvas, GetContentsBounds(), color, elapsed_time);
 }

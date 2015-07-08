@@ -235,8 +235,9 @@ class EditableProfilePhoto : public views::LabelButton {
     const SkColor kBackgroundColor = SkColorSetARGB(65, 255, 255, 255);
     photo_overlay_->set_background(
         views::Background::CreateSolidBackground(kBackgroundColor));
-    photo_overlay_->SetImage(*ui::ResourceBundle::GetSharedInstance().
-        GetImageSkiaNamed(IDR_ICON_PROFILES_EDIT_CAMERA));
+    photo_overlay_->SetVectorIcon(gfx::VectorIconId::PHOTO_CAMERA,
+                                  SkColorSetRGB(0x33, 0x33, 0x33),
+                                  gfx::Size(48, 48));
 
     photo_overlay_->SetSize(bounds.size());
     photo_overlay_->SetVisible(false);

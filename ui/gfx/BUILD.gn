@@ -210,6 +210,8 @@ component("gfx") {
     "ui_gfx_exports.cc",
     "utf16_indexing.cc",
     "utf16_indexing.h",
+    "vector_icons.cc",
+    "vector_icons.h",
     "vsync_provider.h",
     "win/direct_write.cc",
     "win/direct_write.h",
@@ -319,6 +321,14 @@ component("gfx") {
     ]
   } else {
     sources -= [ "canvas_notimplemented.cc" ]
+  }
+
+  # Non desktop.
+  if (is_ios || is_android) {
+    sources -= [
+      "vector_icons.cc",
+      "vector_icons.h",
+    ]
   }
 
   # Windows.

@@ -21,7 +21,7 @@ TEST(ResourcesUtil, SpotCheckIds) {
     {"IDR_INFOBAR_COOKIE", IDR_INFOBAR_COOKIE},
     {"IDR_PAGEINFO_BAD", IDR_PAGEINFO_BAD},
     // IDRs from ui/resources/ui_resources.grd should be valid.
-    {"IDR_CHECKMARK", IDR_CHECKMARK},
+    {"IDR_FOLDER_CLOSED", IDR_FOLDER_CLOSED},
 #if defined(OS_CHROMEOS)
     // Check IDRs from ui/chromeos/resources/ui_chromeos_resources.grd.
     {"IDR_LOGIN_DEFAULT_USER", IDR_LOGIN_DEFAULT_USER},

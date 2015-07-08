@@ -31,6 +31,8 @@ const char ImageView::kViewClassName[] = "ImageView";
 
 ImageView::ImageView()
     : image_size_set_(false),
+      vector_id_(gfx::VectorIconId::VECTOR_ICON_NONE),
+      vector_color_(SK_ColorGREEN),
       horiz_alignment_(CENTER),
       vert_alignment_(CENTER),
       interactive_(true),
@@ -67,17 +69,18 @@ const gfx::ImageSkia& ImageView::GetImage() {
   return image_;
 }
 
+void ImageView::SetVectorIcon(gfx::VectorIconId id,
+                              SkColor color,
+                              const gfx::Size& image_size) {
+  SetImageSize(image_size);
+  vector_id_ = id;
+  vector_color_ = color;
+}
+
 void ImageView::SetImageSize(const gfx::Size& image_size) {
   image_size_set_ = true;
   image_size_ = image_size;
   PreferredSizeChanged();
-}
-
-bool ImageView::GetImageSize(gfx::Size* image_size) const {
-  DCHECK(image_size);
-  if (image_size_set_)
-    *image_size = image_size_;
-  return image_size_set_;
 }
 
 gfx::Rect ImageView::GetImageBounds() const {
@@ -97,8 +100,7 @@ void ImageView::SetFocusPainter(scoped_ptr<Painter> focus_painter) {
 gfx::Size ImageView::GetPreferredSize() const {
   gfx::Insets insets = GetInsets();
   if (image_size_set_) {
-    gfx::Size image_size;
-    GetImageSize(&image_size);
+    gfx::Size image_size = image_size_;
     image_size.Enlarge(insets.width(), insets.height());
     return image_size;
   }
@@ -161,6 +163,7 @@ void ImageView::OnBlur() {
 void ImageView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
   OnPaintImage(canvas);
+  OnPaintVectorIcon(canvas);
   Painter::PaintFocusPainter(this, canvas, focus_painter_.get());
 }
 
@@ -238,6 +241,15 @@ void ImageView::OnPaintImage(gfx::Canvas* canvas) {
     canvas->DrawImageInt(image_, image_bounds.x(), image_bounds.y());
   }
   last_painted_bitmap_pixels_ = GetBitmapPixels(image_, last_paint_scale_);
+}
+
+void ImageView::OnPaintVectorIcon(gfx::Canvas* canvas) {
+  if (vector_id_ == gfx::VectorIconId::VECTOR_ICON_NONE)
+    return;
+
+  DCHECK(image_size_set_);
+  canvas->Translate(ComputeImageOrigin(image_size_).OffsetFromOrigin());
+  gfx::PaintVectorIcon(canvas, vector_id_, image_size_.width(), vector_color_);
 }
 
 }  // namespace views

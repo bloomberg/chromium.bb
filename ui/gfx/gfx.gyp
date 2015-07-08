@@ -295,6 +295,8 @@
         'ui_gfx_exports.cc',
         'utf16_indexing.cc',
         'utf16_indexing.h',
+        'vector_icons.cc',
+        'vector_icons.h',
         'vsync_provider.h',
         'win/direct_write.cc',
         'win/direct_write.h',
@@ -404,6 +406,8 @@
             'render_text_harfbuzz.cc',
             'render_text_harfbuzz.h',
             'text_utils_skia.cc',
+            'vector_icons.cc',
+            'vector_icons.h',
           ],
         }],
         ['use_x11==1', {
