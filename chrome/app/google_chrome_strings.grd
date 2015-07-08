@@ -888,7 +888,7 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
 
       <if expr="is_macosx">
         <message name="IDS_OPTIONS_PASSWORDS_MAC_WARNING" desc="The warning for OS X that passwords are shared across profiles in the keychain.">
-          On Mac, passwords are saved to your Keychain and may be accessed or synced by other Chrome users sharing this OS X account.
+          On Mac, passwords may be saved to your Keychain and accessed or synced by other Chrome users sharing this OS X account.
         </message>
         <message name="IDS_AUTOFILL_ADDRESS_BOOK_PROMPT_DESCRIPTION" desc="Text to show in dialog requesting permission to access the user's Address Book contents.">
           Details from your contacts can help you fill out forms more quickly in Chrome.
