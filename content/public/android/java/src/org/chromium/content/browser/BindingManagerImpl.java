@@ -9,6 +9,7 @@ import android.content.ComponentCallbacks2;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Build;
+import android.os.Handler;
 import android.util.LruCache;
 import android.util.SparseArray;
 
@@ -30,6 +31,10 @@ class BindingManagerImpl implements BindingManager {
     // non-low-memory devices).
     private static final long DETACH_AS_ACTIVE_HIGH_END_DELAY_MILLIS = 1 * 1000;
 
+    // Delays used when clearing moderate binding pool when onSentToBackground happens.
+    private static final long MODERATE_BINDING_POOL_CLEARER_DELAY_MILLIS = 10 * 1000;
+    private static final long MODERATE_BINDING_POOL_CLEARER_DELAY_MILLIS_ON_TESTING = 100;
+
     // These fields allow to override the parameters for testing - see
     // createBindingManagerForTesting().
     private final long mRemoveStrongBindingDelay;
@@ -39,6 +44,9 @@ class BindingManagerImpl implements BindingManager {
             extends LruCache<Integer, ManagedConnection> implements ComponentCallbacks2 {
         private final float mLowReduceRatio;
         private final float mHighReduceRatio;
+        private final Object mDelayedClearerLock = new Object();
+        private Runnable mDelayedClearer;
+        private final Handler mHandler = new Handler(ThreadUtils.getUiThreadLooper());
 
         public ModerateBindingPool(int maxSize, float lowReduceRatio, float highReduceRatio) {
             super(maxSize);
@@ -55,6 +63,9 @@ class BindingManagerImpl implements BindingManager {
                     reduce(mLowReduceRatio);
                 } else if (level <= TRIM_MEMORY_RUNNING_LOW) {
                     reduce(mHighReduceRatio);
+                } else if (level == TRIM_MEMORY_UI_HIDDEN) {
+                    // This will be handled by |mDelayedClearer|.
+                    return;
                 } else {
                     evictAll();
                 }
@@ -115,6 +126,38 @@ class BindingManagerImpl implements BindingManager {
                 ManagedConnection newValue) {
             if (oldValue != newValue) {
                 oldValue.removeModerateBinding();
+            }
+        }
+
+        void onSentToBackground(final boolean onTesting) {
+            if (size() == 0) return;
+            synchronized (mDelayedClearerLock) {
+                mDelayedClearer = new Runnable() {
+                    @Override
+                    public void run() {
+                        synchronized (mDelayedClearerLock) {
+                            if (mDelayedClearer == null) return;
+                            mDelayedClearer = null;
+                        }
+                        Log.i(TAG, "Release moderate connections: %d", size());
+                        if (!onTesting) {
+                            RecordHistogram.recordCountHistogram(
+                                    "Android.ModerateBindingCount", size());
+                        }
+                        evictAll();
+                    }
+                };
+                mHandler.postDelayed(mDelayedClearer, onTesting
+                                ? MODERATE_BINDING_POOL_CLEARER_DELAY_MILLIS_ON_TESTING
+                                : MODERATE_BINDING_POOL_CLEARER_DELAY_MILLIS);
+            }
+        }
+
+        void onBroughtToForeground() {
+            synchronized (mDelayedClearerLock) {
+                if (mDelayedClearer == null) return;
+                mHandler.removeCallbacks(mDelayedClearer);
+                mDelayedClearer = null;
             }
         }
     }
@@ -379,14 +422,7 @@ class BindingManagerImpl implements BindingManager {
                 mBoundForBackgroundPeriod = mLastInForeground;
             }
         }
-        if (mModerateBindingPool != null) {
-            Log.i(TAG, "Release moderate connections: %d", mModerateBindingPool.size());
-            if (!mOnTesting) {
-                RecordHistogram.recordCountHistogram(
-                        "Android.ModerateBindingCount", mModerateBindingPool.size());
-            }
-            mModerateBindingPool.evictAll();
-        }
+        if (mModerateBindingPool != null) mModerateBindingPool.onSentToBackground(mOnTesting);
     }
 
     @Override
@@ -395,6 +431,7 @@ class BindingManagerImpl implements BindingManager {
             mBoundForBackgroundPeriod.setBoundForBackgroundPeriod(false);
             mBoundForBackgroundPeriod = null;
         }
+        if (mModerateBindingPool != null) mModerateBindingPool.onBroughtToForeground();
     }
 
     @Override

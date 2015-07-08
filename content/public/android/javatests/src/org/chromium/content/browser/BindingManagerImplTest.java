@@ -10,6 +10,7 @@ import static android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE;
 
 import android.app.Application;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
@@ -458,7 +459,7 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
     }
 
     /**
-     * Verifies that onSentToBackground() drops all the moderate bindings, and
+     * Verifies that onSentToBackground() drops all the moderate bindings after some delay, and
      * onBroughtToForeground() doesn't recover them.
      */
     @SmallTest
@@ -467,7 +468,7 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
         // This test applies only to the moderate-binding manager.
         final BindingManagerImpl manager = mModerateBindingManager;
 
-        MockChildProcessConnection[] connections = new MockChildProcessConnection[4];
+        MockChildProcessConnection[] connections = new MockChildProcessConnection[3];
         for (int i = 0; i < connections.length; i++) {
             connections[i] = new MockChildProcessConnection(i + 1);
             manager.addNewConnection(connections[i].getPid(), connections[i]);
@@ -482,8 +483,36 @@ public class BindingManagerImplTest extends InstrumentationTestCase {
             assertTrue(connection.isModerateBindingBound());
         }
 
-        // Call onSentToBackground() and verify that all the moderate bindings drop.
+        // Exclude lastInForeground because it will be kept in foreground when onSentToBackground()
+        // is called as |mLastInForeground|.
+        MockChildProcessConnection lastInForeground = new MockChildProcessConnection(0);
+        manager.addNewConnection(lastInForeground.getPid(), lastInForeground);
+        manager.setInForeground(lastInForeground.getPid(), true);
+        manager.setInForeground(lastInForeground.getPid(), false);
+        getInstrumentation().waitForIdleSync();
+
+        // Verify that leaving the application for a short time doesn't clear the moderate bindings.
         manager.onSentToBackground();
+        for (MockChildProcessConnection connection : connections) {
+            assertTrue(connection.isModerateBindingBound());
+        }
+        assertTrue(lastInForeground.isStrongBindingBound());
+        assertFalse(lastInForeground.isModerateBindingBound());
+        manager.onBroughtToForeground();
+        SystemClock.sleep(500);
+        for (MockChildProcessConnection connection : connections) {
+            assertTrue(connection.isModerateBindingBound());
+        }
+
+        // Call onSentToBackground() and verify that all the moderate bindings drop after some
+        // delay.
+        manager.onSentToBackground();
+        for (MockChildProcessConnection connection : connections) {
+            assertTrue(connection.isModerateBindingBound());
+        }
+        assertTrue(lastInForeground.isStrongBindingBound());
+        assertFalse(lastInForeground.isModerateBindingBound());
+        SystemClock.sleep(500);
         for (MockChildProcessConnection connection : connections) {
             assertFalse(connection.isModerateBindingBound());
         }
