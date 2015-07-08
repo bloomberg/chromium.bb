@@ -124,6 +124,12 @@
         }],
       ],
       'defines': ['CLD2_DYNAMIC_MODE'],
+      'variables': {
+        'clang_warning_flags': [
+          # The generated files don't have braces around subobject initializers.
+          '-Wno-missing-braces',
+        ],
+      },
     },
 
     {
@@ -168,6 +174,12 @@
           'sources+': ['<@(cld2_data_largest_sources)']
         }],
       ],
+      'variables': {
+        'clang_warning_flags': [
+          # The generated files don't have braces around subobject initializers.
+          '-Wno-missing-braces',
+        ],
+      },
     },
 
     {

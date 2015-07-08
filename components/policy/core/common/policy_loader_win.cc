@@ -84,8 +84,13 @@ const char* kInsecurePolicies[] = {
     key::kRestoreOnStartupURLs
 };
 
+#pragma warning(push)
+#pragma warning(disable: 4068)  // unknown pragmas
+// TODO(dcheng): Remove pragma once http://llvm.org/PR24007 is fixed.
+#pragma clang diagnostic ignored "-Wmissing-braces"
 // The GUID of the registry settings group policy extension.
 GUID kRegistrySettingsCSEGUID = REGISTRY_EXTENSION_GUID;
+#pragma warning(pop)
 
 // The list of possible errors that can occur while collecting information about
 // the current enterprise environment.

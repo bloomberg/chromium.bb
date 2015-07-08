@@ -20,8 +20,15 @@ shared_library("IAccessible2Proxy") {
     "IAccessible2Proxy.def",
   ]
 
+  config("IAccessible2Proxy_warnings") {
+    if (is_clang) {
+      # MIDL generated code has a habit of omitting optional braces.
+      cflags = [ "-Wno-missing-braces" ]
+    }
+  }
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [ ":IAccessible2Proxy_warnings" ]
 
   defines = [ "REGISTER_PROXY_DLL" ]
 

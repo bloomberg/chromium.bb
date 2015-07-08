@@ -46,8 +46,15 @@ source_set("cld2_data") {
     "src/public",
   ]
 
+  config("cld2_data_warnings") {
+    if (is_clang) {
+      # The generated files don't have braces around subobject initializers.
+      cflags = [ "-Wno-missing-braces" ]
+    }
+  }
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [ ":cld2_data_warnings" ]
 }
 
 # As in the corresponding gyp file, this just builds the core interfaces for

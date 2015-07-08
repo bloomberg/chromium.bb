@@ -251,7 +251,7 @@ WindowsVersion GetWindowsVersion() {
 // Windows API are not available. We always invoke this function after checking
 // that current OS is Vista or later.
 bool VerifyAdminGroup() {
-  SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
+  SID_IDENTIFIER_AUTHORITY NtAuthority = {SECURITY_NT_AUTHORITY};
   PSID Group;
   BOOL check = ::AllocateAndInitializeSid(&NtAuthority, 2,
                                           SECURITY_BUILTIN_DOMAIN_RID,

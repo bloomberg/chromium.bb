@@ -88,16 +88,14 @@
                 '-Wno-header-hygiene',
                 # atlgdi.h does an intentional assignment in an if conditional.
                 '-Wno-parentheses',
+                # atlgdi.h fails with -Wreorder enabled.
+                '-Wno-reorder',
+                # atlgdi.h doesn't use braces around subobject initializers.
+                '-Wno-missing-braces',
               ],
             },
           }],
         ],
-      },
-      'variables': {
-        'clang_warning_flags': [
-          # atlgdi.h fails with -Wreorder enabled.
-          '-Wno-reorder',
-        ]
       },
     },
     {

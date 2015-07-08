@@ -94,7 +94,7 @@ const int kChromeChannelPollTimerMs = 100;
 // modifiers: Combination with Alt, Ctrl, Shift, etc.
 void SendKeySequence(
     WORD mnemonic_char, KeyModifier modifiers) {
-  INPUT keys[4] = {0};  // Keyboard events
+  INPUT keys[4] = {};  // Keyboard events
   int key_count = 0;  // Number of generated events
 
   if (modifiers & SHIFT) {

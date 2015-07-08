@@ -89,6 +89,12 @@
         '<(SHARED_INTERMEDIATE_DIR)/remoting/host/chromoting_lib.dlldata.c',
         '<(SHARED_INTERMEDIATE_DIR)/remoting/host/chromoting_lib_p.c',
       ],
+      'variables': {
+        'clang_warning_flags': [
+          # MIDL generated code has a habit of omitting optional braces.
+          '-Wno-missing-braces',
+        ],
+      },
     },  # end of target 'remoting_lib_ps'
 
     # Regenerates 'chromoting_lib.rc' (used to embed 'chromoting_lib.tlb'
