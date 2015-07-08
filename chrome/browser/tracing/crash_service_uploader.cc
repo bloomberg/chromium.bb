@@ -102,6 +102,7 @@ void TraceCrashServiceUploader::OnURLFetchUploadProgress(
 
 void TraceCrashServiceUploader::DoUpload(
     const std::string& file_contents,
+    UploadMode upload_mode,
     scoped_ptr<base::DictionaryValue> metadata,
     const UploadProgressCallback& progress_callback,
     const UploadDoneCallback& done_callback) {
@@ -109,13 +110,14 @@ void TraceCrashServiceUploader::DoUpload(
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&TraceCrashServiceUploader::DoUploadOnFileThread,
-                 base::Unretained(this), file_contents, upload_url_,
-                 base::Passed(metadata.Pass()), progress_callback,
+                 base::Unretained(this), file_contents, upload_mode,
+                 upload_url_, base::Passed(metadata.Pass()), progress_callback,
                  done_callback));
 }
 
 void TraceCrashServiceUploader::DoUploadOnFileThread(
     const std::string& file_contents,
+    UploadMode upload_mode,
     const std::string& upload_url,
     scoped_ptr<base::DictionaryValue> metadata,
     const UploadProgressCallback& progress_callback,
@@ -164,18 +166,28 @@ void TraceCrashServiceUploader::DoUploadOnFileThread(
     return;
   }
 
-  scoped_ptr<char[]> compressed_contents(new char[kMaxUploadBytes]);
-  int compressed_bytes;
-  if (!Compress(file_contents, kMaxUploadBytes, compressed_contents.get(),
-                &compressed_bytes)) {
-    OnUploadError("Compressing file failed.");
-    return;
+  std::string compressed_contents;
+  if (upload_mode == COMPRESSED_UPLOAD) {
+    scoped_ptr<char[]> compressed_buffer(new char[kMaxUploadBytes]);
+    int compressed_bytes;
+    if (!Compress(file_contents, kMaxUploadBytes, compressed_buffer.get(),
+                  &compressed_bytes)) {
+      OnUploadError("Compressing file failed.");
+      return;
+    }
+    compressed_contents =
+        std::string(compressed_buffer.get(), compressed_bytes);
+  } else {
+    if (file_contents.size() >= kMaxUploadBytes) {
+      OnUploadError("File is too large to upload.");
+      return;
+    }
+    compressed_contents = file_contents;
   }
 
   std::string post_data;
   SetupMultipart(product, version, metadata.Pass(), "trace.json.gz",
-                 std::string(compressed_contents.get(), compressed_bytes),
-                 &post_data);
+                 compressed_contents, &post_data);
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,

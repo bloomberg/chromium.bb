@@ -316,7 +316,9 @@ void TracingUI::DoUploadBase64Encoded(const base::ListValue* args) {
   std::string file_contents;
   base::Base64Decode(file_contents_base64, &file_contents);
 
-  DoUploadInternal(file_contents);
+  // doUploadBase64 is used to upload binary data which is assumed to already
+  // be compressed.
+  DoUploadInternal(file_contents, TraceUploader::UNCOMPRESSED_UPLOAD);
 }
 
 void TracingUI::DoUpload(const base::ListValue* args) {
@@ -327,10 +329,11 @@ void TracingUI::DoUpload(const base::ListValue* args) {
     return;
   }
 
-  DoUploadInternal(file_contents);
+  DoUploadInternal(file_contents, TraceUploader::COMPRESSED_UPLOAD);
 }
 
-void TracingUI::DoUploadInternal(const std::string& file_contents) {
+void TracingUI::DoUploadInternal(const std::string& file_contents,
+                                 TraceUploader::UploadMode upload_mode) {
   if (!delegate_) {
     web_ui()->CallJavascriptFunction("onUploadError",
                                      base::StringValue("Not implemented"));
@@ -353,8 +356,8 @@ void TracingUI::DoUploadInternal(const std::string& file_contents) {
   trace_uploader_ = delegate_->GetTraceUploader(
       web_ui()->GetWebContents()->GetBrowserContext()->GetRequestContext());
   DCHECK(trace_uploader_);
-  trace_uploader_->DoUpload(file_contents, nullptr, progress_callback,
-                            done_callback);
+  trace_uploader_->DoUpload(file_contents, upload_mode, nullptr,
+                            progress_callback, done_callback);
   // TODO(mmandlis): Add support for stopping the upload in progress.
 }
 

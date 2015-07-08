@@ -46,8 +46,8 @@ void UploadCallback(const std::string& upload_url,
     uploader->SetUploadURL(upload_url);
 
   uploader->DoUpload(
-      file_contents->data(), metadata.Pass(),
-      content::TraceUploader::UploadProgressCallback(),
+      file_contents->data(), content::TraceUploader::UNCOMPRESSED_UPLOAD,
+      metadata.Pass(), content::TraceUploader::UploadProgressCallback(),
       base::Bind(&OnUploadComplete, base::Owned(uploader), callback));
 }
 

@@ -47,12 +47,14 @@ class TraceCrashServiceUploader : public content::TraceUploader,
 
   // content::TraceUploader
   void DoUpload(const std::string& file_contents,
+                UploadMode upload_mode,
                 scoped_ptr<base::DictionaryValue> metadata,
                 const UploadProgressCallback& progress_callback,
                 const UploadDoneCallback& done_callback) override;
 
  private:
   void DoUploadOnFileThread(const std::string& file_contents,
+                            UploadMode upload_mode,
                             const std::string& upload_url,
                             scoped_ptr<base::DictionaryValue> metadata,
                             const UploadProgressCallback& progress_callback,

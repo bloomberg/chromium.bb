@@ -39,8 +39,8 @@ void UploadCallback(const scoped_refptr<base::RefCountedString>& file_contents,
       g_browser_process->system_request_context());
 
   uploader->DoUpload(
-      file_contents->data(), metadata.Pass(),
-      content::TraceUploader::UploadProgressCallback(),
+      file_contents->data(), content::TraceUploader::UNCOMPRESSED_UPLOAD,
+      metadata.Pass(), content::TraceUploader::UploadProgressCallback(),
       base::Bind(&OnUploadComplete, base::Owned(uploader), callback));
 }
 
