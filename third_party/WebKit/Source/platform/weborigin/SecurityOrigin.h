@@ -146,14 +146,14 @@ public:
     // WARNING: This is an extremely powerful ability. Use with caution!
     void grantUniversalAccess();
 
-    bool canAccessDatabase() const { return !isUnique(); };
-    bool canAccessLocalStorage() const { return !isUnique(); };
+    bool canAccessDatabase() const { return !isUnique(); }
+    bool canAccessLocalStorage() const { return !isUnique(); }
     bool canAccessSharedWorkers() const { return !isUnique(); }
     bool canAccessServiceWorkers() const { return !isUnique(); }
     bool canAccessCookies() const { return !isUnique(); }
     bool canAccessPasswordManager() const { return !isUnique(); }
     bool canAccessFileSystem() const { return !isUnique(); }
-    bool canAccessCacheStorage() const { return !isUnique(); };
+    bool canAccessCacheStorage() const { return !isUnique(); }
 
     // Technically, we should always allow access to sessionStorage, but we
     // currently don't handle creating a sessionStorage area for unique

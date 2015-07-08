@@ -393,13 +393,13 @@ public:
     // the input data contains invalid UTF-8 sequences.
     static String fromUTF8(const LChar*, size_t);
     static String fromUTF8(const LChar*);
-    static String fromUTF8(const char* s, size_t length) { return fromUTF8(reinterpret_cast<const LChar*>(s), length); };
-    static String fromUTF8(const char* s) { return fromUTF8(reinterpret_cast<const LChar*>(s)); };
+    static String fromUTF8(const char* s, size_t length) { return fromUTF8(reinterpret_cast<const LChar*>(s), length); }
+    static String fromUTF8(const char* s) { return fromUTF8(reinterpret_cast<const LChar*>(s)); }
     static String fromUTF8(const CString&);
 
     // Tries to convert the passed in string to UTF-8, but will fall back to Latin-1 if the string is not valid UTF-8.
     static String fromUTF8WithLatin1Fallback(const LChar*, size_t);
-    static String fromUTF8WithLatin1Fallback(const char* s, size_t length) { return fromUTF8WithLatin1Fallback(reinterpret_cast<const LChar*>(s), length); };
+    static String fromUTF8WithLatin1Fallback(const char* s, size_t length) { return fromUTF8WithLatin1Fallback(reinterpret_cast<const LChar*>(s), length); }
 
     bool containsOnlyASCII() const;
     bool containsOnlyLatin1() const;

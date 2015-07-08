@@ -40,7 +40,7 @@ public:
     virtual void provideInput(const WebVector<float*>& audioData, size_t numberOfFrames) = 0;
 
     // If a client is set, we call it back when the audio format is available.
-    virtual void setClient(WebAudioSourceProviderClient*) { };
+    virtual void setClient(WebAudioSourceProviderClient*) { }
 };
 
 } // WebKit

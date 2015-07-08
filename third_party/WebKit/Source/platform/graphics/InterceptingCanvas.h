@@ -65,8 +65,8 @@ public:
     void resetStepCount() { m_callCount = 0; }
 
 protected:
-    explicit InterceptingCanvasBase(SkBitmap bitmap) : SkCanvas(bitmap), m_callNestingDepth(0), m_callCount(0) { };
-    InterceptingCanvasBase(int width, int height) : SkCanvas(width, height), m_callNestingDepth(0), m_callCount(0) { };
+    explicit InterceptingCanvasBase(SkBitmap bitmap) : SkCanvas(bitmap), m_callNestingDepth(0), m_callCount(0) { }
+    InterceptingCanvasBase(int width, int height) : SkCanvas(width, height), m_callNestingDepth(0), m_callCount(0) { }
 
     void unrollDrawPicture(const SkPicture*, const SkMatrix*, const SkPaint*, SkPicture::AbortCallback*);
 
@@ -115,8 +115,8 @@ template<typename DerivedCanvas> class CanvasInterceptor { };
 template<typename DerivedCanvas, typename Interceptor = CanvasInterceptor<DerivedCanvas>>
     class InterceptingCanvas : public InterceptingCanvasBase {
 protected:
-    explicit InterceptingCanvas(SkBitmap bitmap) : InterceptingCanvasBase(bitmap) { };
-    InterceptingCanvas(int width, int height) : InterceptingCanvasBase(width, height) { };
+    explicit InterceptingCanvas(SkBitmap bitmap) : InterceptingCanvasBase(bitmap) { }
+    InterceptingCanvas(int width, int height) : InterceptingCanvasBase(width, height) { }
 
     void onDrawPaint(const SkPaint& paint) override
     {

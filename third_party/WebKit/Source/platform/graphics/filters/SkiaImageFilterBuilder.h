@@ -51,7 +51,7 @@ public:
     PassRefPtr<SkImageFilter> transformColorSpace(
         SkImageFilter* input, ColorSpace srcColorSpace, ColorSpace dstColorSpace);
 
-    void setCropOffset(const FloatSize& cropOffset) { m_cropOffset = cropOffset; };
+    void setCropOffset(const FloatSize& cropOffset) { m_cropOffset = cropOffset; }
     FloatSize cropOffset() { return m_cropOffset; }
 
 private:

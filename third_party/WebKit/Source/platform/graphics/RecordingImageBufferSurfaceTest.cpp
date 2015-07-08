@@ -36,7 +36,7 @@ public:
 
     // ImageBufferClient implementation
     void notifySurfaceInvalid() override { }
-    bool isDirty() override { return m_isDirty; };
+    bool isDirty() override { return m_isDirty; }
     void didFinalizeFrame() override
     {
         if (m_isDirty) {
@@ -55,7 +55,7 @@ public:
         m_imageBuffer->finalizeFrame(dirtyRect);
         ASSERT_FALSE(m_isDirty);
     }
-    void restoreCanvasMatrixClipStack() override { };
+    void restoreCanvasMatrixClipStack() override { }
 
     void fakeDraw()
     {

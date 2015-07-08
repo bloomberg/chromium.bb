@@ -676,10 +676,10 @@ public:
 #if ENABLE(ASSERT) || ENABLE(GC_PROFILING)
     BasePage* findPageFromAddress(Address);
 #endif
-    virtual void takeFreelistSnapshot(const String& dumpBaseName) { };
+    virtual void takeFreelistSnapshot(const String& dumpBaseName) { }
 #if ENABLE(GC_PROFILING)
     void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
-    virtual void snapshotFreeList(TracedValue&) { };
+    virtual void snapshotFreeList(TracedValue&) { }
 
     void countMarkedObjects(ClassAgeCountsMap&) const;
     void countObjectsToSweep(ClassAgeCountsMap&) const;

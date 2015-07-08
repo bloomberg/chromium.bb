@@ -46,9 +46,9 @@ public:
     virtual ~StorageQuotaCallbacks() { }
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
-    virtual void didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes) { ASSERT_NOT_REACHED(); };
-    virtual void didGrantStorageQuota(unsigned long long usageInBytes, unsigned long long grantedQuotaInBytes) { ASSERT_NOT_REACHED(); };
-    virtual void didFail(WebStorageQuotaError) { ASSERT_NOT_REACHED(); };
+    virtual void didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes) { ASSERT_NOT_REACHED(); }
+    virtual void didGrantStorageQuota(unsigned long long usageInBytes, unsigned long long grantedQuotaInBytes) { ASSERT_NOT_REACHED(); }
+    virtual void didFail(WebStorageQuotaError) { ASSERT_NOT_REACHED(); }
 };
 
 } // namespace blink

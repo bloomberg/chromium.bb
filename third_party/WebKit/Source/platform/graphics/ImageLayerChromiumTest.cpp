@@ -95,7 +95,7 @@ private:
 class GraphicsLayerForTesting : public GraphicsLayer {
 public:
     explicit GraphicsLayerForTesting(GraphicsLayerClient* client)
-        : GraphicsLayer(client) { };
+        : GraphicsLayer(client) { }
 
     WebLayer* contentsLayer() const { return GraphicsLayer::contentsLayer(); }
 };

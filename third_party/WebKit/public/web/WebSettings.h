@@ -114,7 +114,7 @@ public:
     virtual void setAcceleratedCompositingEnabled(bool) = 0;
     virtual void setPreferCompositingToLCDTextEnabled(bool) = 0;
     // Not implemented yet, see http://crbug.com/178119
-    virtual void setAcceleratedCompositingForTransitionEnabled(bool) { };
+    virtual void setAcceleratedCompositingForTransitionEnabled(bool) { }
     // If set to true, allows frames with an https origin to display passive
     // contents at an insecure URL. Otherwise, disallows it. The
     // FrameLoaderClient set to the frame may override the value set by this

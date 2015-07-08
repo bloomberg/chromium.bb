@@ -237,4 +237,4 @@ TextStream& FEConvolveMatrix::externalRepresentation(TextStream& ts, int indent)
     return ts;
 }
 
-}; // namespace blink
+} // namespace blink

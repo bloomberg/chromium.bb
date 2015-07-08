@@ -34,7 +34,7 @@ public:
 
     // PasswordCredential.idl
     const String& password() const;
-    DOMFormData* formData() const { return m_formData; };
+    DOMFormData* formData() const { return m_formData; }
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -48,7 +48,7 @@ public:
     int thumbPosition(ScrollbarThemeClient*) override;
     int thumbLength(ScrollbarThemeClient*) override;
 
-    bool hasButtons(ScrollbarThemeClient*) override { return false; };
+    bool hasButtons(ScrollbarThemeClient*) override { return false; }
     bool hasThumb(ScrollbarThemeClient*) override;
 
     IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;

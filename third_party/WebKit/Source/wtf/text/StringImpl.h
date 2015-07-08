@@ -119,7 +119,7 @@ class WTF_EXPORT StringImpl {
 private:
     // StringImpls are allocated out of the WTF buffer partition.
     void* operator new(size_t);
-    void* operator new(size_t, void* ptr) { return ptr; };
+    void* operator new(size_t, void* ptr) { return ptr; }
     void operator delete(void*);
 
     // Used to construct static strings, which have an special refCount that can never hit zero.

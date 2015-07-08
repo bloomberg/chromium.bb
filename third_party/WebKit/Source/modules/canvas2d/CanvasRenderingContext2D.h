@@ -67,14 +67,14 @@ public:
         WTF_MAKE_NONCOPYABLE(Factory);
     public:
         Factory() {}
-        ~Factory() override {};
+        ~Factory() override {}
 
         PassOwnPtrWillBeRawPtr<CanvasRenderingContext> create(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document& document) override
         {
             return adoptPtrWillBeNoop(new CanvasRenderingContext2D(canvas, attrs, document));
         }
         CanvasRenderingContext::ContextType contextType() const override { return CanvasRenderingContext::Context2d; }
-        void onError(HTMLCanvasElement*, const String& error) override { };
+        void onError(HTMLCanvasElement*, const String& error) override { }
     };
 
     ~CanvasRenderingContext2D() override;

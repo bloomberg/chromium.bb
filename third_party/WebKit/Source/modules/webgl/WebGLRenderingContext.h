@@ -40,7 +40,7 @@ public:
         WTF_MAKE_NONCOPYABLE(Factory);
     public:
         Factory() {}
-        ~Factory() override {};
+        ~Factory() override {}
 
         PassOwnPtrWillBeRawPtr<CanvasRenderingContext> create(HTMLCanvasElement*, const CanvasContextCreationAttributes&, Document&) override;
         CanvasRenderingContext::ContextType contextType() const override { return CanvasRenderingContext::ContextWebgl; }

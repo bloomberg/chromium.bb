@@ -537,8 +537,8 @@ public:
     virtual bool deprecatedExposesTitleUIElement() const { return true; }
     virtual AXObject* deprecatedTitleUIElement() const { return 0; }
     virtual String deprecatedPlaceholder() const { return String(); }
-    virtual void deprecatedAriaDescribedbyElements(AccessibilityChildrenVector& describedby) const { };
-    virtual void deprecatedAriaLabelledbyElements(AccessibilityChildrenVector& labelledby) const { };
+    virtual void deprecatedAriaDescribedbyElements(AccessibilityChildrenVector& describedby) const { }
+    virtual void deprecatedAriaLabelledbyElements(AccessibilityChildrenVector& labelledby) const { }
     virtual String deprecatedAccessibilityDescription() const { return String(); }
     virtual String deprecatedTitle(TextUnderElementMode mode = TextUnderElementAll) const { return String(); }
     virtual String deprecatedHelpText() const { return String(); }
@@ -625,7 +625,7 @@ public:
     virtual String ariaDescribedByAttribute() const { return String(); }
     virtual void ariaFlowToElements(AccessibilityChildrenVector&) const { }
     virtual void ariaControlsElements(AccessibilityChildrenVector&) const { }
-    virtual void ariaOwnsElements(AccessibilityChildrenVector& owns) const { };
+    virtual void ariaOwnsElements(AccessibilityChildrenVector& owns) const { }
     virtual bool ariaHasPopup() const { return false; }
     bool isMultiline() const;
     virtual bool isRichlyEditable() const { return false; }

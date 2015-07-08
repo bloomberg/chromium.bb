@@ -79,7 +79,7 @@ public:
     void reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override;
     void postMessageToPageInspector(const WTF::String&) override;
     void postWorkerConsoleAgentEnabled() override { }
-    void didEvaluateWorkerScript(bool success) override { };
+    void didEvaluateWorkerScript(bool success) override { }
     void workerGlobalScopeStarted(WorkerGlobalScope*) override;
     void workerGlobalScopeClosed() override;
     void workerThreadTerminated() override;

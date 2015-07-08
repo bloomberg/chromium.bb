@@ -64,7 +64,7 @@ public:
     virtual ~GraphicsLayerClient() {}
 
     // Callback for when compositor animation started.
-    virtual void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime, int group) { };
+    virtual void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime, int group) { }
 
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) = 0;
     virtual bool isTrackingPaintInvalidations() const { return false; }

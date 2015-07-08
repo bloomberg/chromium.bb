@@ -43,7 +43,7 @@ private:
     friend class CString;
     friend class RefCounted<CStringBuffer>;
     // CStringBuffers are allocated out of the WTF buffer partition.
-    void* operator new(size_t, void* ptr) { return ptr; };
+    void* operator new(size_t, void* ptr) { return ptr; }
     void operator delete(void*);
 
     static PassRefPtr<CStringBuffer> createUninitialized(size_t length);

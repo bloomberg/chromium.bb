@@ -86,4 +86,4 @@ TextStream& SpotLightSource::externalRepresentation(TextStream& ts) const
     return ts;
 }
 
-}; // namespace blink
+} // namespace blink

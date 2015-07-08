@@ -180,7 +180,7 @@ public:
     bool paintRenderingResultsToImageData(int&, int&, SourceDrawingBuffer, WTF::ArrayBufferContents&);
 
     int sampleCount() const { return m_sampleCount; }
-    bool explicitResolveOfMultisampleData() const { return m_multisampleMode == ExplicitResolve; };
+    bool explicitResolveOfMultisampleData() const { return m_multisampleMode == ExplicitResolve; }
 
     // Bind to m_drawFramebufferBinding or m_readFramebufferBinding if it's not 0.
     // Otherwise, bind to the default FBO.

@@ -205,8 +205,8 @@ public:
     virtual WebVector<std::pair<int64_t, WebRect>> frameTimingRequests() const = 0;
 
     // FIXME: Make pure once cc is updated.  crbug.com/347272
-    virtual void setScrollBlocksOn(WebScrollBlocksOn) { };
-    virtual WebScrollBlocksOn scrollBlocksOn() const { return WebScrollBlocksOnNone;};
+    virtual void setScrollBlocksOn(WebScrollBlocksOn) { }
+    virtual WebScrollBlocksOn scrollBlocksOn() const { return WebScrollBlocksOnNone; }
 
     virtual void setIsContainerForFixedPositionLayers(bool) = 0;
     virtual bool isContainerForFixedPositionLayers() const = 0;

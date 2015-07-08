@@ -67,4 +67,4 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState, const RequestDe
 
 }
 
-}; // blink
+} // namespace blink

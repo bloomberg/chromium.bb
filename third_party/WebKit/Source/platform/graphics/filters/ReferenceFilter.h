@@ -52,7 +52,7 @@ public:
     ~ReferenceFilter() override;
     DECLARE_VIRTUAL_TRACE();
 
-    IntRect sourceImageRect() const override { return IntRect(); };
+    IntRect sourceImageRect() const override { return IntRect(); }
 
     void setLastEffect(PassRefPtrWillBeRawPtr<FilterEffect>);
     FilterEffect* lastEffect() const { return m_lastEffect.get(); }

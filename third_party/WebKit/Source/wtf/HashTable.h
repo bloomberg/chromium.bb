@@ -486,7 +486,7 @@ namespace WTF {
         typedef std::pair<ValueType*, bool> LookupType;
         typedef std::pair<LookupType, unsigned> FullLookupType;
 
-        LookupType lookupForWriting(const Key& key) { return lookupForWriting<IdentityTranslatorType>(key); };
+        LookupType lookupForWriting(const Key& key) { return lookupForWriting<IdentityTranslatorType>(key); }
         template<typename HashTranslator, typename T> FullLookupType fullLookupForWriting(const T&);
         template<typename HashTranslator, typename T> LookupType lookupForWriting(const T&);
 

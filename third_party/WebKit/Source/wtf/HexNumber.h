@@ -38,7 +38,7 @@ inline const LChar* hexDigitsForMode(HexConversionMode mode)
     return mode == Lowercase ? lowerHexDigits : upperHexDigits;
 }
 
-}; // namespace Internal
+} // namespace Internal
 
 template<typename T>
 inline void appendByteAsHex(unsigned char byte, T& destination, HexConversionMode mode = Uppercase)

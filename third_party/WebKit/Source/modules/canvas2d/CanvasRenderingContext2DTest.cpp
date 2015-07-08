@@ -192,7 +192,7 @@ public:
     MOCK_METHOD2(canvasChanged, void(HTMLCanvasElement*, const FloatRect&));
     MOCK_METHOD1(canvasResized, void(HTMLCanvasElement*));
 #if !ENABLE(OILPAN)
-    void canvasDestroyed(HTMLCanvasElement*) override { };
+    void canvasDestroyed(HTMLCanvasElement*) override { }
 #endif
 };
 

@@ -90,7 +90,7 @@ public:
 
     // Registers a stream URL referring to the stream identified by the
     // specified srcURL.
-    virtual void registerStreamURL(const WebURL&, const WebURL& srcURL) { BLINK_ASSERT_NOT_REACHED(); };
+    virtual void registerStreamURL(const WebURL&, const WebURL& srcURL) { BLINK_ASSERT_NOT_REACHED(); }
 
     // Add data to the stream referred by the URL.
     virtual void addDataToStream(const WebURL&, const char* data, size_t length) { BLINK_ASSERT_NOT_REACHED(); }

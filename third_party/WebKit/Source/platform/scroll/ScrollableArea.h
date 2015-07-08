@@ -80,7 +80,7 @@ public:
 
     // The window that hosts the ScrollableArea. The ScrollableArea will communicate scrolls and repaints to the
     // host window in the window's coordinate space.
-    virtual HostWindow* hostWindow() const { return 0; };
+    virtual HostWindow* hostWindow() const { return 0; }
 
     virtual ScrollResultOneDimensional userScroll(ScrollDirectionPhysical, ScrollGranularity, float delta = 1);
 

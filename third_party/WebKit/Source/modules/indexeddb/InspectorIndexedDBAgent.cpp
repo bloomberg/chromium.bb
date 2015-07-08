@@ -137,7 +137,7 @@ class ExecutableWithDatabase : public RefCounted<ExecutableWithDatabase> {
 public:
     ExecutableWithDatabase(ScriptState* scriptState)
         : m_scriptState(scriptState) { }
-    virtual ~ExecutableWithDatabase() { };
+    virtual ~ExecutableWithDatabase() { }
     void start(IDBFactory*, SecurityOrigin*, const String& databaseName);
     virtual void execute(IDBDatabase*) = 0;
     virtual RequestCallback* requestCallback() = 0;

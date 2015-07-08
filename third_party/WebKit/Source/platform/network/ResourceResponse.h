@@ -171,7 +171,7 @@ public:
     void setServiceWorkerResponseType(WebServiceWorkerResponseType value) { m_serviceWorkerResponseType = value; }
 
     const KURL& originalURLViaServiceWorker() const { return m_originalURLViaServiceWorker; }
-    void setOriginalURLViaServiceWorker(const KURL& url) { m_originalURLViaServiceWorker = url; };
+    void setOriginalURLViaServiceWorker(const KURL& url) { m_originalURLViaServiceWorker = url; }
 
     bool isMultipartPayload() const { return m_isMultipartPayload; }
     void setIsMultipartPayload(bool value) { m_isMultipartPayload = value; }

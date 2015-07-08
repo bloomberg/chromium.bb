@@ -68,6 +68,6 @@ private:
     WebSpeechRecognizer* m_recognizer;
 };
 
-}; // namespace blink
+} // namespace blink
 
 #endif // SpeechRecognitionClientProxy_h
