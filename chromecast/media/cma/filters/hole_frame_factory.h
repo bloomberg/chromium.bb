@@ -28,8 +28,8 @@ namespace media {
 // All calls (including ctor/dtor) must be on media thread.
 class HoleFrameFactory {
  public:
-  HoleFrameFactory(const scoped_refptr<::media::GpuVideoAcceleratorFactories>&
-                       gpu_factories);
+  explicit HoleFrameFactory(const scoped_refptr<
+      ::media::GpuVideoAcceleratorFactories>& gpu_factories);
   ~HoleFrameFactory();
 
   scoped_refptr<::media::VideoFrame> CreateHoleFrame(const gfx::Size& size);
@@ -39,6 +39,7 @@ class HoleFrameFactory {
   gpu::Mailbox mailbox_;
   GLuint texture_;
   GLuint image_id_;
+  GLuint sync_point_;
   bool use_legacy_hole_punching_;
 
   DISALLOW_COPY_AND_ASSIGN(HoleFrameFactory);

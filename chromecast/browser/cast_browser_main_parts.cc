@@ -34,6 +34,7 @@
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/platform_client_auth.h"
 #include "chromecast/media/base/key_systems_common.h"
+#include "chromecast/media/base/media_message_loop.h"
 #include "chromecast/net/connectivity_checker.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/cast_sys_info.h"
@@ -324,7 +325,9 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   cast_browser_process_->SetRemoteDebuggingServer(
       make_scoped_ptr(new RemoteDebuggingServer()));
 
-  media::CastMediaShlib::Initialize(cmd_line->argv());
+  media::MediaMessageLoop::GetTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&media::CastMediaShlib::Initialize, cmd_line->argv()));
   ::media::InitializeMediaLibrary();
 
   cast_browser_process_->SetCastService(CastService::Create(
@@ -390,7 +393,10 @@ void CastBrowserMainParts::PostMainMessageLoopRun() {
   DeregisterKillOnAlarm();
 #endif
 
-  media::CastMediaShlib::Finalize();
+  // Finalize CastMediaShlib on media thread to ensure it's not accessed
+  // after Finalize.
+  media::MediaMessageLoop::GetTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&media::CastMediaShlib::Finalize));
 }
 
 }  // namespace shell

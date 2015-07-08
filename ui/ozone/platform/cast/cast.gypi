@@ -26,6 +26,7 @@
         '../gfx/gfx.gyp:gfx_geometry',
         '../../base/base.gyp:base',
         '../../chromecast/chromecast.gyp:cast_public_api',
+        '../../chromecast/media/media.gyp:media_base',
       ],
       'defines': [
         'OZONE_IMPLEMENTATION',

@@ -21,6 +21,7 @@ HoleFrameFactory::HoleFrameFactory(
     : gpu_factories_(gpu_factories),
       texture_(0),
       image_id_(0),
+      sync_point_(0),
       use_legacy_hole_punching_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kEnableLegacyHolePunching)) {
@@ -36,6 +37,8 @@ HoleFrameFactory::HoleFrameFactory(
 
     gl->GenMailboxCHROMIUM(mailbox_.name);
     gl->ProduceTextureDirectCHROMIUM(texture_, GL_TEXTURE_2D, mailbox_.name);
+
+    sync_point_ = gl->InsertSyncPointCHROMIUM();
   }
 }
 
@@ -61,7 +64,7 @@ scoped_refptr<::media::VideoFrame> HoleFrameFactory::CreateHoleFrame(
   scoped_refptr<::media::VideoFrame> frame =
       ::media::VideoFrame::WrapNativeTexture(
           ::media::VideoFrame::XRGB,
-          gpu::MailboxHolder(mailbox_, GL_TEXTURE_2D, 0),
+          gpu::MailboxHolder(mailbox_, GL_TEXTURE_2D, sync_point_),
           ::media::VideoFrame::ReleaseMailboxCB(),
           size,                // coded_size
           gfx::Rect(size),     // visible rect
