@@ -81,13 +81,13 @@ ScopedJavaLocalRef<jobject> WalkAXTreeDepthFirst(JNIEnv* env,
     size =  node->GetFloatAttribute(ui::AX_ATTR_FONT_SIZE);
     text_style = node->GetIntAttribute(ui::AX_ATTR_TEXT_STYLE);
   }
-
   ScopedJavaLocalRef<jobject> j_node =
       Java_WebContentsImpl_createAccessibilitySnapshotNode(env,
           scale_factor * location.x(), scale_factor * location.y(),
           scale_factor * node->GetScrollX(), scale_factor * node->GetScrollY(),
           scale_factor * location.width(), scale_factor * location.height(),
-          j_text.obj(), color, bgcolor, size, text_style, j_class.obj());
+          j_text.obj(), color, bgcolor, scale_factor * size, text_style,
+          j_class.obj());
 
   for(uint32 i = 0; i < node->PlatformChildCount(); i++) {
     BrowserAccessibilityAndroid* child =

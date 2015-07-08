@@ -223,6 +223,7 @@ ContentViewCoreImpl::ContentViewCoreImpl(
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
       root_layer_(cc::SolidColorLayer::Create(Compositor::LayerSettings())),
       dpi_scale_(GetPrimaryDisplayDeviceScaleFactor()),
+      page_scale_(1),
       view_android_(new ui::ViewAndroid(view_android_delegate, window_android)),
       window_android_(window_android),
       device_orientation_(0),
