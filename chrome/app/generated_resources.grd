@@ -10244,7 +10244,7 @@ I don't think this site should be blocked!
         Aw, Snap!
       </message>
       <message name="IDS_SAD_TAB_MESSAGE" desc="The message displayed on the sad tab page." formatter_data="android_java">
-        Something went wrong while displaying this webpage. To continue, reload or go to another page.
+        Something went wrong while displaying this webpage. Closing the apps and tabs that you don’t need may help by making more memory available.
       </message>
       <message name="IDS_SAD_TAB_HELP_MESSAGE" desc="The help message displayed on the sad tab page, with IDS_SAD_TAB_HELP_LINK embedded as a link to help.">
         If you're seeing this frequently, try these <ph name="HELP_LINK">$1<ex>suggestions</ex></ph>.
@@ -10255,24 +10255,21 @@ I don't think this site should be blocked!
       <message name="IDS_SAD_TAB_RELOAD_LABEL" desc="Button label in the sad tab page for reloading a page." formatter_data="android_java">
         Reload
       </message>
-
+      <message name="IDS_CRASHED_TAB_FEEDBACK_MESSAGE" desc="The text to auto-populate the feedback page with. The triple single quotes are needed to preserve the line break.">
+        Tab crashed feedback.
+'''
+      </message>
+      <message name="IDS_CRASHED_TAB_FEEDBACK_LINK" desc="The text for the feedback link on the crashed tab page.">
+        Send feedback
+      </message>
       <!-- Killed Tab Strings -->
-      <message name="IDS_KILLED_TAB_TITLE" desc="The title of the killed tab page that is shown when a tab is killed by the OS. This is intended to be a humorous exclamation of dismay.">
-        He's dead, Jim!
-      </message>
-      <message name="IDS_KILLED_TAB_MESSAGE" desc="The message displayed on the killed tab page.">
-        The webpage was terminated unexpectedly. To continue, reload or go to another page.
-      </message>
       <if expr="chromeos">
         <message name="IDS_KILLED_TAB_BY_OOM_MESSAGE" desc="The message displayed on the killed tab page when the page was killed by an out of memory error.">
           Either Chrome ran out of memory or the process for the webpage was terminated for some other reason.  To continue, reload or go to another page.
         </message>
       </if>
-      <message name="IDS_KILLED_TAB_FEEDBACK_LINK" desc="The text for the feedback link on the killed tab page.">
-        Send feedback to help improve Chrome
-      </message>
-      <message name="IDS_KILLED_TAB_FEEDBACK_MESSAGE" desc="The text to auto-populate the feedback page with.">
-Dead Jim feedback.
+      <message name="IDS_KILLED_TAB_FEEDBACK_MESSAGE" desc="The text to auto-populate the feedback page with. The triple single quotes are needed to preserve the line break.">
+        Tab killed feedback.
 '''
       </message>
 

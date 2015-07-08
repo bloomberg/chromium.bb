@@ -6,10 +6,7 @@
 
 #include <string>
 
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/url_constants.h"
@@ -23,12 +20,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/blue_button.h"
-#include "ui/views/controls/button/label_button.h"
-#include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
-#include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
@@ -45,6 +39,7 @@ namespace {
 const int kMaxContentWidth = 600;
 const int kMinColumnWidth = 120;
 const char kCategoryTagCrash[] = "Crash";
+const int kCrashesBeforeFeedbackIsDisplayed = 1;
 
 void RecordKillCreated() {
   static int killed = 0;
@@ -84,8 +79,7 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
       painted_(false),
       message_(nullptr),
       help_link_(nullptr),
-      feedback_link_(nullptr),
-      reload_button_(nullptr),
+      action_button_(nullptr),
       title_(nullptr),
       help_message_(nullptr) {
   DCHECK(web_contents);
@@ -94,6 +88,9 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
   // tab discard events in memory::OomPriorityManager so they can be directly
   // compared.
   // TODO(jamescook): Maybe track time between sad tabs?
+  static int total_crashes = 0;
+  total_crashes++;
+
   switch (kind_) {
     case chrome::SAD_TAB_KIND_CRASHED: {
       static int crashed = 0;
@@ -144,11 +141,9 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
   layout->StartRow(0, column_set_id);
   layout->AddView(image, 2, 1);
 
-  const bool is_crashed_type = kind_ == chrome::SAD_TAB_KIND_CRASHED;
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
-  title_ = CreateLabel(l10n_util::GetStringUTF16(
-      is_crashed_type ? IDS_SAD_TAB_TITLE : IDS_KILLED_TAB_TITLE));
+  title_ = CreateLabel(l10n_util::GetStringUTF16(IDS_SAD_TAB_TITLE));
   title_->SetFontList(rb.GetFontList(ui::ResourceBundle::LargeFont));
   title_->SetMultiLine(true);
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -159,9 +154,7 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
   const SkColor text_color = GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_LabelDisabledColor);
 
-  int message_id =
-      is_crashed_type ? IDS_SAD_TAB_MESSAGE : IDS_KILLED_TAB_MESSAGE;
-
+  int message_id = IDS_SAD_TAB_MESSAGE;
 #if defined(OS_CHROMEOS)
   if (kind_ == chrome::SAD_TAB_KIND_KILLED_BY_OOM)
     message_id = IDS_KILLED_TAB_BY_OOM_MESSAGE;
@@ -179,68 +172,22 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
                   views::GridLayout::LEADING);
 
   if (web_contents_) {
-    reload_button_ = new views::BlueButton(
-        this, l10n_util::GetStringUTF16(IDS_SAD_TAB_RELOAD_LABEL));
-
-    if (is_crashed_type) {
-      size_t offset = 0;
-      base::string16 help_text(
-          l10n_util::GetStringFUTF16(IDS_SAD_TAB_HELP_MESSAGE,
-                                     base::string16(), &offset));
-
-      base::string16 link_text =
-          l10n_util::GetStringUTF16(IDS_SAD_TAB_HELP_LINK);
-
-      base::string16 help_prefix = help_text.substr(0, offset);
-      base::string16 help_suffix = help_text.substr(offset);
-      base::string16 help_message_string = help_prefix;
-      help_message_string.append(link_text).append(help_suffix);
-
-      help_message_ = new views::StyledLabel(help_message_string, this);
-
-      views::StyledLabel::RangeStyleInfo link_style =
-          views::StyledLabel::RangeStyleInfo::CreateForLink();
-      link_style.font_style = gfx::Font::UNDERLINE;
-      link_style.color = text_color;
-
-      views::StyledLabel::RangeStyleInfo normal_style =
-          views::StyledLabel::RangeStyleInfo();
-      normal_style.color = text_color;
-
-      help_message_->SetDefaultStyle(normal_style);
-      help_message_->SetLineHeight(views::kPanelSubVerticalSpacing);
-
-      help_message_->AddStyleRange(
-          gfx::Range(help_prefix.length(),
-                     help_prefix.length() + link_text.length()),
-          link_style);
-
-      layout->StartRowWithPadding(0, column_set_id, 0, views::kPanelVertMargin);
-      layout->AddView(help_message_, 2, 1, views::GridLayout::LEADING,
-                      views::GridLayout::TRAILING);
-      layout->StartRowWithPadding(0, column_set_id, 0,
-                                  views::kPanelVerticalSpacing);
-      layout->SkipColumns(1);
-    } else {
-      feedback_link_ = CreateLink(
-          l10n_util::GetStringUTF16(IDS_KILLED_TAB_FEEDBACK_LINK), text_color);
-      feedback_link_->SetLineHeight(views::kPanelSubVerticalSpacing);
-      feedback_link_->SetMultiLine(true);
-      feedback_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-
-      layout->StartRowWithPadding(0, column_set_id, 0,
-                                  views::kPanelSubVerticalSpacing);
-      layout->AddView(feedback_link_, 2, 1, views::GridLayout::LEADING,
-                      views::GridLayout::LEADING);
-
-      help_link_ =
-          CreateLink(l10n_util::GetStringUTF16(IDS_LEARN_MORE), text_color);
-      layout->StartRowWithPadding(0, column_set_id, 0,
-                                  views::kPanelVerticalSpacing);
-      layout->AddView(help_link_, 1, 1, views::GridLayout::LEADING,
-                      views::GridLayout::CENTER);
-    }
-    layout->AddView(reload_button_, 1, 1, views::GridLayout::TRAILING,
+    // In the cases of multiple crashes in a session the 'Feedback' button
+    // replaces the 'Reload' button as primary action.
+    int button_type = total_crashes > kCrashesBeforeFeedbackIsDisplayed ?
+        SAD_TAB_BUTTON_FEEDBACK : SAD_TAB_BUTTON_RELOAD;
+    action_button_ = new views::BlueButton(this,
+        l10n_util::GetStringUTF16(button_type == SAD_TAB_BUTTON_FEEDBACK
+                                  ? IDS_CRASHED_TAB_FEEDBACK_LINK
+                                  : IDS_SAD_TAB_RELOAD_LABEL));
+    action_button_->set_tag(button_type);
+    help_link_ =
+        CreateLink(l10n_util::GetStringUTF16(IDS_LEARN_MORE), text_color);
+    layout->StartRowWithPadding(0, column_set_id, 0,
+                                views::kPanelVerticalSpacing);
+    layout->AddView(help_link_, 1, 1, views::GridLayout::LEADING,
+                    views::GridLayout::CENTER);
+    layout->AddView(action_button_, 1, 1, views::GridLayout::TRAILING,
                     views::GridLayout::LEADING);
   }
   layout->AddPaddingRow(2, views::kPanelSubVerticalSpacing);
@@ -250,31 +197,25 @@ SadTabView::~SadTabView() {}
 
 void SadTabView::LinkClicked(views::Link* source, int event_flags) {
   DCHECK(web_contents_);
-  if (source == help_link_) {
-    GURL help_url((kind_ == chrome::SAD_TAB_KIND_CRASHED) ?
-        chrome::kCrashReasonURL : chrome::kKillReasonURL);
-    OpenURLParams params(
-        help_url, content::Referrer(), CURRENT_TAB,
-        ui::PAGE_TRANSITION_LINK, false);
-    web_contents_->OpenURL(params);
-  } else if (source == feedback_link_) {
-    chrome::ShowFeedbackPage(
-        chrome::FindBrowserWithWebContents(web_contents_),
-        l10n_util::GetStringUTF8(IDS_KILLED_TAB_FEEDBACK_MESSAGE),
-        std::string(kCategoryTagCrash));
-  }
-}
-
-void SadTabView::StyledLabelLinkClicked(const gfx::Range& range,
-                                        int event_flags) {
-  LinkClicked(help_link_, event_flags);
+  OpenURLParams params(GURL(chrome::kCrashReasonURL), content::Referrer(),
+                       CURRENT_TAB, ui::PAGE_TRANSITION_LINK, false);
+  web_contents_->OpenURL(params);
 }
 
 void SadTabView::ButtonPressed(views::Button* sender,
                                const ui::Event& event) {
   DCHECK(web_contents_);
-  DCHECK_EQ(reload_button_, sender);
-  web_contents_->GetController().Reload(true);
+  DCHECK_EQ(action_button_, sender);
+
+  if (action_button_->tag() == SAD_TAB_BUTTON_FEEDBACK) {
+    chrome::ShowFeedbackPage(
+        chrome::FindBrowserWithWebContents(web_contents_),
+        l10n_util::GetStringUTF8(kind_ == chrome::SAD_TAB_KIND_CRASHED ?
+            IDS_CRASHED_TAB_FEEDBACK_MESSAGE : IDS_KILLED_TAB_FEEDBACK_MESSAGE),
+        std::string(kCategoryTagCrash));
+  } else {
+    web_contents_->GetController().Reload(true);
+  }
 }
 
 void SadTabView::Layout() {
@@ -283,9 +224,6 @@ void SadTabView::Layout() {
       std::min(width() - views::kPanelSubVerticalSpacing * 2, kMaxContentWidth);
   message_->SizeToFit(max_width);
   title_->SizeToFit(max_width);
-
-  if (feedback_link_ != nullptr)
-    feedback_link_->SizeToFit(max_width);
 
   if (help_message_ != nullptr)
     help_message_->SizeToFit(max_width);
