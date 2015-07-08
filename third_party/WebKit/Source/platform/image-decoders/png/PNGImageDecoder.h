@@ -38,11 +38,11 @@ class PLATFORM_EXPORT PNGImageDecoder : public ImageDecoder {
     WTF_MAKE_NONCOPYABLE(PNGImageDecoder);
 public:
     PNGImageDecoder(ImageSource::AlphaOption, ImageSource::GammaAndColorProfileOption, size_t maxDecodedBytes);
-    virtual ~PNGImageDecoder();
+    ~PNGImageDecoder() override;
 
     // ImageDecoder:
-    virtual String filenameExtension() const override { return "png"; }
-    virtual bool hasColorProfile() const override { return m_hasColorProfile; }
+    String filenameExtension() const override { return "png"; }
+    bool hasColorProfile() const override { return m_hasColorProfile; }
 
     // Callbacks from libpng
     void headerAvailable();
@@ -51,8 +51,8 @@ public:
 
 private:
     // ImageDecoder:
-    virtual void decodeSize() override { decode(true); }
-    virtual void decode(size_t) override { decode(false); }
+    void decodeSize() override { decode(true); }
+    void decode(size_t) override { decode(false); }
 
     // Decodes the image.  If |onlySize| is true, stops decoding after
     // calculating the image size.  If decoding fails but there is no more

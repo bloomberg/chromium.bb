@@ -35,9 +35,9 @@ public:
     WebBlendMode blendMode() const;
     bool setBlendMode(WebBlendMode);
 
-    virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
+    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
 
-    virtual TextStream& externalRepresentation(TextStream&, int indention) const override;
+    TextStream& externalRepresentation(TextStream&, int indention) const override;
 
 private:
     FEBlend(Filter*, WebBlendMode);

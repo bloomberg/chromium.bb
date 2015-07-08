@@ -18,7 +18,7 @@ public:
     static PassRefPtr<TestCustomFontData> create() { return adoptRef(new TestCustomFontData()); }
 private:
     TestCustomFontData() { }
-    virtual bool isLoadingFallback() const override { return true; }
+    bool isLoadingFallback() const override { return true; }
 };
 
 class TestSimpleFontData : public SimpleFontData {

@@ -20,22 +20,22 @@ public:
     {
     }
 
-    virtual void markHeader(HeapObjectHeader* header, TraceCallback callback) override
+    void markHeader(HeapObjectHeader* header, TraceCallback callback) override
     {
         Impl::markHeader(header, header->payload(), callback);
     }
 
-    virtual void mark(const void* objectPointer, TraceCallback callback) override
+    void mark(const void* objectPointer, TraceCallback callback) override
     {
         Impl::mark(objectPointer, callback);
     }
 
-    virtual void registerDelayedMarkNoTracing(const void* object) override
+    void registerDelayedMarkNoTracing(const void* object) override
     {
         Impl::registerDelayedMarkNoTracing(object);
     }
 
-    virtual void registerWeakMembers(const void* closure, const void* objectPointer, WeakCallback callback) override
+    void registerWeakMembers(const void* closure, const void* objectPointer, WeakCallback callback) override
     {
         Impl::registerWeakMembers(closure, objectPointer, callback);
     }
@@ -52,13 +52,13 @@ public:
     }
 #endif
 
-    virtual bool ensureMarked(const void* objectPointer) override
+    bool ensureMarked(const void* objectPointer) override
     {
         return Impl::ensureMarked(objectPointer);
     }
 
 protected:
-    virtual void registerWeakCellWithCallback(void** cell, WeakCallback callback) override
+    void registerWeakCellWithCallback(void** cell, WeakCallback callback) override
     {
         Impl::registerWeakCellWithCallback(cell, callback);
     }

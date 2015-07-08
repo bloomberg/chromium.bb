@@ -38,11 +38,11 @@ public:
     void beginArray();
     void beginDictionary();
 
-    virtual String asTraceFormat() const override;
+    String asTraceFormat() const override;
 
 private:
     TracedValue();
-    virtual ~TracedValue();
+    ~TracedValue() override;
 
     JSONObject* currentDictionary() const;
     JSONArray* currentArray() const;

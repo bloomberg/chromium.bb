@@ -178,8 +178,8 @@ public:
         return new ConsumerWrapper(consumer);
     }
 
-    virtual void setFormat(size_t numberOfChannels, float sampleRate) override;
-    virtual void consumeAudio(AudioBus*, size_t numberOfFrames) override;
+    void setFormat(size_t numberOfChannels, float sampleRate) override;
+    void consumeAudio(AudioBus*, size_t numberOfFrames) override;
 
     WebAudioDestinationConsumer* consumer() { return m_consumer; }
 

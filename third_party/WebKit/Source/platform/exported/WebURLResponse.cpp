@@ -49,7 +49,7 @@ class ExtraDataContainer : public ResourceResponse::ExtraData {
 public:
     static PassRefPtr<ExtraDataContainer> create(WebURLResponse::ExtraData* extraData) { return adoptRef(new ExtraDataContainer(extraData)); }
 
-    virtual ~ExtraDataContainer() { }
+    ~ExtraDataContainer() override {}
 
     WebURLResponse::ExtraData* extraData() const { return m_extraData.get(); }
 

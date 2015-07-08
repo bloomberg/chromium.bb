@@ -41,9 +41,9 @@ public:
 
     virtual bool canBlendWith(const TransformOperation& other) const;
 private:
-    virtual OperationType type() const override { return m_type; }
+    OperationType type() const override { return m_type; }
 
-    virtual bool operator==(const TransformOperation& o) const override
+    bool operator==(const TransformOperation& o) const override
     {
         if (!isSameType(o))
             return false;
@@ -51,12 +51,12 @@ private:
         return m_angleX == s->m_angleX && m_angleY == s->m_angleY;
     }
 
-    virtual void apply(TransformationMatrix& transform, const FloatSize&) const override
+    void apply(TransformationMatrix& transform, const FloatSize&) const override
     {
         transform.skew(m_angleX, m_angleY);
     }
 
-    virtual PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) override;
+    PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) override;
 
     SkewTransformOperation(double angleX, double angleY, OperationType type)
         : m_angleX(angleX)

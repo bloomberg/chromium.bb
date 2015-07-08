@@ -15,11 +15,11 @@ class PLATFORM_EXPORT PlatformFederatedCredential final : public PlatformCredent
     WTF_MAKE_NONCOPYABLE(PlatformFederatedCredential);
 public:
     static PlatformFederatedCredential* create(const String& id, const KURL& federation, const String& name, const KURL& iconURL);
-    virtual ~PlatformFederatedCredential();
+    ~PlatformFederatedCredential() override;
 
     const KURL& provider() const { return m_provider; }
 
-    virtual bool isFederated() override { return true; }
+    bool isFederated() override { return true; }
 
 private:
     PlatformFederatedCredential(const String& id, const KURL& federation, const String& name, const KURL& iconURL);

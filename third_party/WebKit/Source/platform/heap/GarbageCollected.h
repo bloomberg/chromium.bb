@@ -120,7 +120,7 @@ public:
 
 #define DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(VISITOR, TYPE)           \
     public:                                                             \
-    virtual void adjustAndMark(VISITOR visitor) const override          \
+    void adjustAndMark(VISITOR visitor) const override                  \
     {                                                                   \
         typedef WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<TYPE>::Type, blink::GarbageCollected> IsSubclassOfGarbageCollected; \
         static_assert(IsSubclassOfGarbageCollected::value, "only garbage collected objects can have garbage collected mixins"); \
@@ -189,7 +189,7 @@ public:
     DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(blink::InlinedGlobalMarkingVisitor, TYPE) \
     DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE)             \
 public:                                                                 \
-    virtual bool isHeapObjectAlive() const override                     \
+    bool isHeapObjectAlive() const override                             \
     {                                                                   \
         return Heap::isHeapObjectAlive(this);                           \
     }                                                                   \

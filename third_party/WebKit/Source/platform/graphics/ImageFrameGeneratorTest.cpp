@@ -52,7 +52,7 @@ SkImageInfo imageInfo()
 
 class ImageFrameGeneratorTest : public ::testing::Test, public MockImageDecoderClient {
 public:
-    virtual void SetUp() override
+    void SetUp() override
     {
         ImageDecodingStore::instance().setCacheLimitInBytes(1024 * 1024);
         m_data = SharedBuffer::create();
@@ -64,31 +64,31 @@ public:
         m_frameCount = 1;
     }
 
-    virtual void TearDown() override
+    void TearDown() override
     {
         ImageDecodingStore::instance().clear();
     }
 
-    virtual void decoderBeingDestroyed() override
+    void decoderBeingDestroyed() override
     {
         ++m_decodersDestroyed;
     }
 
-    virtual void decodeRequested() override
+    void decodeRequested() override
     {
         ++m_decodeRequestCount;
     }
 
-    virtual ImageFrame::Status status() override
+    ImageFrame::Status status() override
     {
         ImageFrame::Status currentStatus = m_status;
         m_status = m_nextFrameStatus;
         return currentStatus;
     }
 
-    virtual size_t frameCount() override { return m_frameCount; }
-    virtual int repetitionCount() const override { return m_frameCount == 1 ? cAnimationNone:cAnimationLoopOnce; }
-    virtual float frameDuration() const override { return 0; }
+    size_t frameCount() override { return m_frameCount; }
+    int repetitionCount() const override { return m_frameCount == 1 ? cAnimationNone:cAnimationLoopOnce; }
+    float frameDuration() const override { return 0; }
 
 protected:
     void useMockImageDecoderFactory()

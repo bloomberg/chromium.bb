@@ -58,7 +58,7 @@ public:
     // This allows constructing a BitmapImage with a forced non-default orientation.
     static PassRefPtr<BitmapImage> createWithOrientationForTesting(const SkBitmap&, ImageOrientation);
 
-    virtual ~BitmapImage();
+    ~BitmapImage() override;
 
     bool isBitmapImage() const override;
     bool isLazyDecodedBitmap() override;
@@ -83,9 +83,9 @@ public:
     void resetAnimation() override;
     bool maybeAnimated() override;
 
-    virtual void setAnimationPolicy(ImageAnimationPolicy policy) override { m_animationPolicy = policy; }
-    virtual ImageAnimationPolicy animationPolicy() override { return m_animationPolicy; }
-    virtual void advanceTime(double deltaTimeInSeconds) override;
+    void setAnimationPolicy(ImageAnimationPolicy policy) override { m_animationPolicy = policy; }
+    ImageAnimationPolicy animationPolicy() override { return m_animationPolicy; }
+    void advanceTime(double deltaTimeInSeconds) override;
 
     bool bitmapForCurrentFrame(SkBitmap*) override;
     PassRefPtr<Image> imageForDefaultFrame() override;

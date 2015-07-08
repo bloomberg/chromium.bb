@@ -47,7 +47,7 @@ class PLATFORM_EXPORT ScrollAnimatorMac : public ScrollAnimator {
 
 public:
     ScrollAnimatorMac(ScrollableArea*);
-    virtual ~ScrollAnimatorMac();
+    ~ScrollAnimatorMac() override;
 
     void immediateScrollToPointForScrollAnimation(const FloatPoint& newPosition);
     bool haveScrolledSincePageLoad() const { return m_haveScrolledSincePageLoad; }
@@ -80,39 +80,39 @@ private:
     Timer<ScrollAnimatorMac> m_sendContentAreaScrolledTimer;
     FloatSize m_contentAreaScrolledTimerScrollDelta;
 
-    virtual ScrollResultOneDimensional userScroll(ScrollbarOrientation, ScrollGranularity, float step, float delta) override;
-    virtual void scrollToOffsetWithoutAnimation(const FloatPoint&) override;
+    ScrollResultOneDimensional userScroll(ScrollbarOrientation, ScrollGranularity, float step, float delta) override;
+    void scrollToOffsetWithoutAnimation(const FloatPoint&) override;
 
-    virtual void handleWheelEventPhase(PlatformWheelEventPhase) override;
+    void handleWheelEventPhase(PlatformWheelEventPhase) override;
 
-    virtual void cancelAnimations() override;
-    virtual void setIsActive() override;
+    void cancelAnimations() override;
+    void setIsActive() override;
 
-    virtual void contentAreaWillPaint() const override;
-    virtual void mouseEnteredContentArea() const override;
-    virtual void mouseExitedContentArea() const override;
-    virtual void mouseMovedInContentArea() const override;
-    virtual void mouseEnteredScrollbar(Scrollbar*) const override;
-    virtual void mouseExitedScrollbar(Scrollbar*) const override;
-    virtual void willStartLiveResize() override;
-    virtual void contentsResized() const override;
-    virtual void willEndLiveResize() override;
-    virtual void contentAreaDidShow() const override;
-    virtual void contentAreaDidHide() const override;
+    void contentAreaWillPaint() const override;
+    void mouseEnteredContentArea() const override;
+    void mouseExitedContentArea() const override;
+    void mouseMovedInContentArea() const override;
+    void mouseEnteredScrollbar(Scrollbar*) const override;
+    void mouseExitedScrollbar(Scrollbar*) const override;
+    void willStartLiveResize() override;
+    void contentsResized() const override;
+    void willEndLiveResize() override;
+    void contentAreaDidShow() const override;
+    void contentAreaDidHide() const override;
     void didBeginScrollGesture() const;
     void didEndScrollGesture() const;
     void mayBeginScrollGesture() const;
 
-    virtual void finishCurrentScrollAnimations() override;
+    void finishCurrentScrollAnimations() override;
 
-    virtual void didAddVerticalScrollbar(Scrollbar*) override;
-    virtual void willRemoveVerticalScrollbar(Scrollbar*) override;
-    virtual void didAddHorizontalScrollbar(Scrollbar*) override;
-    virtual void willRemoveHorizontalScrollbar(Scrollbar*) override;
+    void didAddVerticalScrollbar(Scrollbar*) override;
+    void willRemoveVerticalScrollbar(Scrollbar*) override;
+    void didAddHorizontalScrollbar(Scrollbar*) override;
+    void willRemoveHorizontalScrollbar(Scrollbar*) override;
 
-    virtual bool shouldScrollbarParticipateInHitTesting(Scrollbar*) override;
+    bool shouldScrollbarParticipateInHitTesting(Scrollbar*) override;
 
-    virtual void notifyContentAreaScrolled(const FloatSize& delta) override;
+    void notifyContentAreaScrolled(const FloatSize& delta) override;
 
     FloatPoint adjustScrollPositionIfNecessary(const FloatPoint&) const;
 

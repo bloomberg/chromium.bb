@@ -47,18 +47,18 @@ public:
 
     virtual bool canBlendWith(const TransformOperation& other) const;
 
-    virtual void apply(TransformationMatrix& transform, const FloatSize&) const override
+    void apply(TransformationMatrix& transform, const FloatSize&) const override
     {
         transform.scale3d(m_x, m_y, m_z);
     }
-    virtual PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) override;
+    PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) override;
 
     static bool isMatchingOperationType(OperationType type) { return type == Scale || type == ScaleX || type == ScaleY || type == ScaleZ || type == Scale3D; }
 
 private:
-    virtual OperationType type() const override { return m_type; }
+    OperationType type() const override { return m_type; }
 
-    virtual bool operator==(const TransformOperation& o) const override
+    bool operator==(const TransformOperation& o) const override
     {
         if (!isSameType(o))
             return false;

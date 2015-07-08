@@ -24,13 +24,13 @@ public:
         , m_webFilterOperations(filterOperations)
         , m_bounds(bounds) { }
 
-    virtual void replay(GraphicsContext&) override;
-    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
-    virtual bool drawsContent() const override;
+    void replay(GraphicsContext&) override;
+    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    bool drawsContent() const override;
 
 private:
 #ifndef NDEBUG
-    virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
+    void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
 
     // FIXME: m_imageFilter should be replaced with m_webFilterOperations when copying data to the compositor.
@@ -44,12 +44,12 @@ public:
     EndFilterDisplayItem(const DisplayItemClientWrapper& client)
         : PairedEndDisplayItem(client, EndFilter) { }
 
-    virtual void replay(GraphicsContext&) override;
-    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    void replay(GraphicsContext&) override;
+    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
 #if ENABLE(ASSERT)
-    virtual bool isEndAndPairedWith(DisplayItem::Type otherType) const override final { return otherType == BeginFilter; }
+    bool isEndAndPairedWith(DisplayItem::Type otherType) const final { return otherType == BeginFilter; }
 #endif
 };
 

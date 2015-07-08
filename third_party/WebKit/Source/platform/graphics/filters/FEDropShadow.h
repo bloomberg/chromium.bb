@@ -48,10 +48,10 @@ public:
     float shadowOpacity() const { return m_shadowOpacity; }
     void setShadowOpacity(float shadowOpacity) { m_shadowOpacity = shadowOpacity; }
 
-    virtual FloatRect mapRect(const FloatRect&, bool forward = true) override final;
+    FloatRect mapRect(const FloatRect&, bool forward = true) final;
 
-    virtual TextStream& externalRepresentation(TextStream&, int indention) const override;
-    virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
+    TextStream& externalRepresentation(TextStream&, int indention) const override;
+    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
 
 private:
     FEDropShadow(Filter*, float, float, float, float, const Color&, float);

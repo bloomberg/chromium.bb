@@ -37,23 +37,23 @@ namespace blink {
 
 class PLATFORM_EXPORT ScrollbarThemeMacNonOverlayAPI : public ScrollbarThemeMacCommon {
 public:
-    virtual int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) override;
-    virtual bool usesOverlayScrollbars() const override { return false; }
-    virtual ScrollbarButtonsPlacement buttonsPlacement() const override;
+    int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) override;
+    bool usesOverlayScrollbars() const override { return false; }
+    ScrollbarButtonsPlacement buttonsPlacement() const override;
 
-    virtual bool paint(ScrollbarThemeClient*, GraphicsContext*, const IntRect& damageRect) override;
+    bool paint(ScrollbarThemeClient*, GraphicsContext*, const IntRect& damageRect) override;
 
 protected:
-    virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false) override;
-    virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
-    virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
+    IntRect trackRect(ScrollbarThemeClient*, bool painting = false) override;
+    IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
+    IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
 
-    virtual void updateButtonPlacement() override;
+    void updateButtonPlacement() override;
 
-    virtual bool hasButtons(ScrollbarThemeClient*) override;
-    virtual bool hasThumb(ScrollbarThemeClient*) override;
+    bool hasButtons(ScrollbarThemeClient*) override;
+    bool hasThumb(ScrollbarThemeClient*) override;
 
-    virtual int minimumThumbLength(ScrollbarThemeClient*) override;
+    int minimumThumbLength(ScrollbarThemeClient*) override;
 };
 
 }

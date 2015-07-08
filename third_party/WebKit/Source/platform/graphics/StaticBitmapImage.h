@@ -11,7 +11,7 @@ namespace blink {
 
 class PLATFORM_EXPORT StaticBitmapImage : public Image {
 public:
-    virtual ~StaticBitmapImage();
+    ~StaticBitmapImage() override;
 
     bool isImmutableBitmap() override { return true; }
 

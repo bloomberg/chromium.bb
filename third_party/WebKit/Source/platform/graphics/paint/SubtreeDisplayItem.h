@@ -19,8 +19,8 @@ public:
         ASSERT(isSubtreeCachedType(type));
     }
 
-    virtual void replay(GraphicsContext&) override final { ASSERT_NOT_REACHED(); }
-    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override final { ASSERT_NOT_REACHED(); }
+    void replay(GraphicsContext&) final { ASSERT_NOT_REACHED(); }
+    void appendToWebDisplayItemList(WebDisplayItemList*) const final { ASSERT_NOT_REACHED(); }
 };
 
 class PLATFORM_EXPORT BeginSubtreeDisplayItem : public PairedBeginDisplayItem {
@@ -41,7 +41,7 @@ public:
     }
 
 #if ENABLE(ASSERT)
-    virtual bool isEndAndPairedWith(DisplayItem::Type otherType) const override final { return DisplayItem::isBeginSubtreeType(otherType); }
+    bool isEndAndPairedWith(DisplayItem::Type otherType) const final { return DisplayItem::isBeginSubtreeType(otherType); }
 #endif
 };
 

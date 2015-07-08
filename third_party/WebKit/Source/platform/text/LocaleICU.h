@@ -47,29 +47,29 @@ namespace blink {
 class PLATFORM_EXPORT LocaleICU : public Locale {
 public:
     static PassOwnPtr<LocaleICU> create(const char* localeString);
-    virtual ~LocaleICU();
+    ~LocaleICU() override;
 
-    virtual const Vector<String>& weekDayShortLabels() override;
-    virtual unsigned firstDayOfWeek() override;
-    virtual bool isRTL() override;
-    virtual String dateFormat() override;
-    virtual String monthFormat() override;
-    virtual String shortMonthFormat() override;
-    virtual String timeFormat() override;
-    virtual String shortTimeFormat() override;
-    virtual String dateTimeFormatWithSeconds() override;
-    virtual String dateTimeFormatWithoutSeconds() override;
-    virtual const Vector<String>& monthLabels() override;
-    virtual const Vector<String>& shortMonthLabels() override;
-    virtual const Vector<String>& standAloneMonthLabels() override;
-    virtual const Vector<String>& shortStandAloneMonthLabels() override;
-    virtual const Vector<String>& timeAMPMLabels() override;
+    const Vector<String>& weekDayShortLabels() override;
+    unsigned firstDayOfWeek() override;
+    bool isRTL() override;
+    String dateFormat() override;
+    String monthFormat() override;
+    String shortMonthFormat() override;
+    String timeFormat() override;
+    String shortTimeFormat() override;
+    String dateTimeFormatWithSeconds() override;
+    String dateTimeFormatWithoutSeconds() override;
+    const Vector<String>& monthLabels() override;
+    const Vector<String>& shortMonthLabels() override;
+    const Vector<String>& standAloneMonthLabels() override;
+    const Vector<String>& shortStandAloneMonthLabels() override;
+    const Vector<String>& timeAMPMLabels() override;
 
 private:
     explicit LocaleICU(const char*);
     String decimalSymbol(UNumberFormatSymbol);
     String decimalTextAttribute(UNumberFormatTextAttribute);
-    virtual void initializeLocaleData() override;
+    void initializeLocaleData() override;
 
     bool detectSignAndGetDigitRange(const String& input, bool& isNegative, unsigned& startIndex, unsigned& endIndex);
     unsigned matchedDecimalSymbolIndex(const String& input, unsigned& position);

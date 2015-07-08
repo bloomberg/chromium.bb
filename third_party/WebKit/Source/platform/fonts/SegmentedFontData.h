@@ -57,7 +57,7 @@ class PLATFORM_EXPORT SegmentedFontData : public FontData {
 public:
     static PassRefPtr<SegmentedFontData> create() { return adoptRef(new SegmentedFontData); }
 
-    virtual ~SegmentedFontData();
+    ~SegmentedFontData() override;
 
     void appendRange(const FontDataRange& range) { m_ranges.append(range); }
     unsigned numRanges() const { return m_ranges.size(); }
@@ -67,13 +67,13 @@ public:
 private:
     SegmentedFontData() { }
 
-    virtual const SimpleFontData* fontDataForCharacter(UChar32) const override;
+    const SimpleFontData* fontDataForCharacter(UChar32) const override;
 
-    virtual bool isCustomFont() const override;
-    virtual bool isLoading() const override;
-    virtual bool isLoadingFallback() const override;
-    virtual bool isSegmented() const override;
-    virtual bool shouldSkipDrawing() const override;
+    bool isCustomFont() const override;
+    bool isLoading() const override;
+    bool isLoadingFallback() const override;
+    bool isSegmented() const override;
+    bool shouldSkipDrawing() const override;
 
     Vector<FontDataRange, 1> m_ranges;
 };

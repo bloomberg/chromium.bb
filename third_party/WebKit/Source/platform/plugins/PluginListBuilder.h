@@ -42,9 +42,9 @@ public:
     PluginListBuilder(Vector<PluginInfo>* results) : m_results(results) { }
 
     // WebPluginListBuilder methods:
-    virtual void addPlugin(const WebString& name, const WebString& description, const WebString& fileName) override;
-    virtual void addMediaTypeToLastPlugin(const WebString& name, const WebString& description) override;
-    virtual void addFileExtensionToLastMediaType(const WebString& extension) override;
+    void addPlugin(const WebString& name, const WebString& description, const WebString& fileName) override;
+    void addMediaTypeToLastPlugin(const WebString& name, const WebString& description) override;
+    void addFileExtensionToLastMediaType(const WebString& extension) override;
 
 private:
     Vector<PluginInfo>* m_results;

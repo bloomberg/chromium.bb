@@ -59,12 +59,12 @@ public:
     bool stitchTiles() const;
     bool setStitchTiles(bool);
 
-    virtual TextStream& externalRepresentation(TextStream&, int indention) const override;
+    TextStream& externalRepresentation(TextStream&, int indention) const override;
 
 private:
     FETurbulence(Filter*, TurbulenceType, float, float, int, float, bool);
 
-    virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
+    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
     SkShader* createShader();
 
     TurbulenceType m_type;

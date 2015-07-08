@@ -258,7 +258,7 @@ private:
     public:
         CurrentThreadMock() : m_taskObserver(0), m_task(0) { }
 
-        virtual ~CurrentThreadMock()
+        ~CurrentThreadMock() override
         {
             EXPECT_EQ((Task*)0, m_task);
         }
@@ -269,28 +269,28 @@ private:
             m_task = task;
         }
 
-        virtual void postDelayedTask(const WebTraceLocation&, Task*, long long delayMs) override { ASSERT_NOT_REACHED(); };
+        void postDelayedTask(const WebTraceLocation&, Task*, long long delayMs) override { ASSERT_NOT_REACHED(); };
 
-        virtual bool isCurrentThread() const override { return true; }
-        virtual PlatformThreadId threadId() const override
+        bool isCurrentThread() const override { return true; }
+        PlatformThreadId threadId() const override
         {
             ASSERT_NOT_REACHED();
             return 0;
         }
 
-        virtual void addTaskObserver(TaskObserver* taskObserver) override
+        void addTaskObserver(TaskObserver* taskObserver) override
         {
             EXPECT_EQ((TaskObserver*)0, m_taskObserver);
             m_taskObserver = taskObserver;
         }
 
-        virtual void removeTaskObserver(TaskObserver* taskObserver) override
+        void removeTaskObserver(TaskObserver* taskObserver) override
         {
             EXPECT_EQ(m_taskObserver, taskObserver);
             m_taskObserver = 0;
         }
 
-        virtual WebScheduler* scheduler() const override
+        WebScheduler* scheduler() const override
         {
             ASSERT_NOT_REACHED();
             return nullptr;
@@ -318,7 +318,7 @@ private:
     public:
         CurrentThreadPlatformMock() { }
         virtual void cryptographicallyRandomValues(unsigned char* buffer, size_t length) { ASSERT_NOT_REACHED(); }
-        virtual WebThread* currentThread() override { return &m_currentThread; }
+        WebThread* currentThread() override { return &m_currentThread; }
 
         void enterRunLoop() { m_currentThread.enterRunLoop(); }
     private:
@@ -335,7 +335,7 @@ private:
 class TestWrapperTask_ ## TEST_METHOD : public WebThread::Task {                           \
     public:                                                                                       \
         TestWrapperTask_ ## TEST_METHOD(RecordingImageBufferSurfaceTest* test) : m_test(test) { } \
-        virtual void run() override { m_test->TEST_METHOD(); }                                    \
+        void run() override { m_test->TEST_METHOD(); }                                    \
     private:                                                                                      \
         RecordingImageBufferSurfaceTest* m_test;                                                  \
 };

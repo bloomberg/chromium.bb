@@ -50,7 +50,7 @@ class WebMediaStreamTrack;
 class PLATFORM_EXPORT MediaStreamCenter final : public WebMediaStreamCenterClient {
     WTF_MAKE_NONCOPYABLE(MediaStreamCenter);
 public:
-    virtual ~MediaStreamCenter();
+    ~MediaStreamCenter() override;
 
     static MediaStreamCenter& instance();
 
@@ -66,7 +66,7 @@ public:
     void didStopLocalMediaStream(MediaStreamDescriptor*);
 
     // blink::WebMediaStreamCenterClient
-    virtual void stopLocalMediaStream(const WebMediaStream&) override;
+    void stopLocalMediaStream(const WebMediaStream&) override;
 
 private:
     MediaStreamCenter();

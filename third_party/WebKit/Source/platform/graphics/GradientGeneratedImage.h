@@ -42,9 +42,7 @@ public:
         return adoptRef(new GradientGeneratedImage(generator, size));
     }
 
-    virtual ~GradientGeneratedImage()
-    {
-    }
+    ~GradientGeneratedImage() override {}
 
 protected:
     void draw(SkCanvas*, const SkPaint&, const FloatRect&, const FloatRect&, RespectImageOrientationEnum, ImageClampingMode) override;

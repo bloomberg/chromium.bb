@@ -262,16 +262,16 @@ private:
     bool m_parkedAllThreads; // False if we fail to park all threads
 };
 
-#define DEFINE_VISITOR_METHODS(Type)                                       \
-    virtual void mark(const Type* object, TraceCallback callback) override \
-    {                                                                      \
-        if (object)                                                        \
-            m_count++;                                                     \
-    }                                                                      \
-    virtual bool isMarked(const Type*) override { return false; }          \
-    virtual bool ensureMarked(const Type* objectPointer) override          \
-    {                                                                      \
-        return ensureMarked(objectPointer);                                \
+#define DEFINE_VISITOR_METHODS(Type)                               \
+    void mark(const Type* object, TraceCallback callback) override \
+    {                                                              \
+        if (object)                                                \
+            m_count++;                                             \
+    }                                                              \
+    bool isMarked(const Type*) override { return false; }          \
+    bool ensureMarked(const Type* objectPointer) override          \
+    {                                                              \
+        return ensureMarked(objectPointer);                        \
     }
 
 class CountingVisitor : public Visitor {
@@ -282,26 +282,26 @@ public:
     {
     }
 
-    virtual void mark(const void* object, TraceCallback) override
+    void mark(const void* object, TraceCallback) override
     {
         if (object)
             m_count++;
     }
 
-    virtual void markHeader(HeapObjectHeader* header, TraceCallback callback) override
+    void markHeader(HeapObjectHeader* header, TraceCallback callback) override
     {
         ASSERT(header->payload());
         m_count++;
     }
 
-    virtual void registerDelayedMarkNoTracing(const void*) override { }
-    virtual void registerWeakMembers(const void*, const void*, WeakCallback) override { }
-    virtual void registerWeakTable(const void*, EphemeronCallback, EphemeronCallback) override { }
+    void registerDelayedMarkNoTracing(const void*) override { }
+    void registerWeakMembers(const void*, const void*, WeakCallback) override { }
+    void registerWeakTable(const void*, EphemeronCallback, EphemeronCallback) override { }
 #if ENABLE(ASSERT)
-    virtual bool weakTableRegistered(const void*) override { return false; }
+    bool weakTableRegistered(const void*) override { return false; }
 #endif
-    virtual void registerWeakCellWithCallback(void**, WeakCallback) override { }
-    virtual bool ensureMarked(const void* objectPointer) override
+    void registerWeakCellWithCallback(void**, WeakCallback) override { }
+    bool ensureMarked(const void* objectPointer) override
     {
         if (!objectPointer || HeapObjectHeader::fromPayload(objectPointer)->isMarked())
             return false;
@@ -371,7 +371,7 @@ public:
         return new HeapTestSubClass();
     }
 
-    virtual ~HeapTestSubClass()
+    ~HeapTestSubClass() override
     {
         EXPECT_EQ(classMagic, m_magic);
         ++s_destructorCalls;
@@ -499,7 +499,7 @@ public:
     }
 
 protected:
-    virtual void runThread() override
+    void runThread() override
     {
         ThreadState::attach();
 
@@ -551,7 +551,7 @@ public:
     }
 
 private:
-    virtual void runThread() override
+    void runThread() override
     {
         ThreadState::attach();
 
@@ -645,7 +645,7 @@ protected:
         RefPtr<RefCountedChain> m_refCountedChain;
     };
 
-    virtual void runThread() override
+    void runThread() override
     {
         ThreadState::attach();
 
@@ -1004,11 +1004,11 @@ private:
 
 int RefCountedAndGarbageCollected2::s_destructorCalls = 0;
 
-#define DEFINE_VISITOR_METHODS(Type)                                       \
-    virtual void mark(const Type* object, TraceCallback callback) override \
-    {                                                                      \
-        mark(object);                                                      \
-    }                                                                      \
+#define DEFINE_VISITOR_METHODS(Type)                               \
+    void mark(const Type* object, TraceCallback callback) override \
+    {                                                              \
+        mark(object);                                              \
+    }                                                              \
 
 class RefCountedGarbageCollectedVisitor : public CountingVisitor {
 public:
@@ -1032,12 +1032,12 @@ public:
         m_count++;
     }
 
-    virtual void mark(const void* ptr, TraceCallback) override
+    void mark(const void* ptr, TraceCallback) override
     {
         mark(ptr);
     }
 
-    virtual void markHeader(HeapObjectHeader* header, TraceCallback callback) override
+    void markHeader(HeapObjectHeader* header, TraceCallback callback) override
     {
         mark(header->payload());
     }
@@ -1436,7 +1436,7 @@ public:
         return adoptRefWillBeNoop(new SubClass(pointsBack));
     }
 
-    virtual ~SubClass()
+    ~SubClass() override
     {
         --s_aliveCount;
     }
@@ -2006,7 +2006,7 @@ public:
         return new SimpleFinalizedEagerObject();
     }
 
-    virtual ~SimpleFinalizedEagerObject()
+    ~SimpleFinalizedEagerObject() override
     {
         ++s_destructorCalls;
     }

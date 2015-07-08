@@ -31,17 +31,17 @@ class PLATFORM_EXPORT FEGaussianBlur : public FilterEffect {
 public:
     static PassRefPtrWillBeRawPtr<FEGaussianBlur> create(Filter*, float, float);
 
-    virtual FloatRect mapRect(const FloatRect&, bool forward = true) override final;
-    virtual FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) override;
+    FloatRect mapRect(const FloatRect&, bool forward = true) final;
+    FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) override;
     static IntSize calculateKernelSize(Filter*, const FloatPoint& std);
     static IntSize calculateUnscaledKernelSize(const FloatPoint& std);
 
-    virtual TextStream& externalRepresentation(TextStream&, int indention) const override;
+    TextStream& externalRepresentation(TextStream&, int indention) const override;
 
 private:
     FEGaussianBlur(Filter*, float, float);
 
-    virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
+    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
 
     float m_stdX;
     float m_stdY;

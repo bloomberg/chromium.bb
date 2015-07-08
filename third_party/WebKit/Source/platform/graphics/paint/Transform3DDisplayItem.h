@@ -21,8 +21,8 @@ public:
         ASSERT(DisplayItem::isTransform3DType(type));
     }
 
-    virtual void replay(GraphicsContext&) override;
-    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    void replay(GraphicsContext&) override;
+    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
     const TransformationMatrix& transform() const { return m_transform; }
 
@@ -38,12 +38,12 @@ public:
         ASSERT(DisplayItem::isEndTransform3DType(type));
     }
 
-    virtual void replay(GraphicsContext&) override;
-    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    void replay(GraphicsContext&) override;
+    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
 #if ENABLE(ASSERT)
-    virtual bool isEndAndPairedWith(DisplayItem::Type otherType) const override final
+    bool isEndAndPairedWith(DisplayItem::Type otherType) const final
     {
         return DisplayItem::transform3DTypeToEndTransform3DType(otherType) == type();
     }

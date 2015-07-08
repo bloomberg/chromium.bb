@@ -16,13 +16,13 @@ class PLATFORM_EXPORT StereoPanner final : public Spatializer {
 public:
     explicit StereoPanner(float sampleRate);
 
-    virtual void panWithSampleAccurateValues(const AudioBus* inputBus, AudioBus* outputBuf, const float* panValues, size_t framesToProcess) override;
-    virtual void panToTargetValue(const AudioBus* inputBus, AudioBus* outputBuf, float panValue, size_t framesToProcess) override;
+    void panWithSampleAccurateValues(const AudioBus* inputBus, AudioBus* outputBuf, const float* panValues, size_t framesToProcess) override;
+    void panToTargetValue(const AudioBus* inputBus, AudioBus* outputBuf, float panValue, size_t framesToProcess) override;
 
-    virtual void reset() override { }
+    void reset() override { }
 
-    virtual double tailTime() const override { return 0; }
-    virtual double latencyTime() const override { return 0; }
+    double tailTime() const override { return 0; }
+    double latencyTime() const override { return 0; }
 
 private:
     bool m_isFirstRender;

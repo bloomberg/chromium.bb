@@ -37,11 +37,11 @@ public:
     float dy() const;
     void setDy(float);
 
-    virtual FloatRect mapRect(const FloatRect&, bool forward = true) override final;
+    FloatRect mapRect(const FloatRect&, bool forward = true) final;
 
-    virtual TextStream& externalRepresentation(TextStream&, int indention) const override;
+    TextStream& externalRepresentation(TextStream&, int indention) const override;
 
-    virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
+    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
 
 private:
     FEOffset(Filter*, float dx, float dy);

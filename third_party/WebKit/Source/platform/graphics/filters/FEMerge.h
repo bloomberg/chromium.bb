@@ -31,9 +31,9 @@ class PLATFORM_EXPORT FEMerge : public FilterEffect {
 public:
     static PassRefPtrWillBeRawPtr<FEMerge> create(Filter*);
 
-    virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
+    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
 
-    virtual TextStream& externalRepresentation(TextStream&, int indention) const override;
+    TextStream& externalRepresentation(TextStream&, int indention) const override;
 
 private:
     explicit FEMerge(Filter*);

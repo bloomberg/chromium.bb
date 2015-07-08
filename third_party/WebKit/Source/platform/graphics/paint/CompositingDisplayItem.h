@@ -29,12 +29,12 @@ public:
             m_bounds = FloatRect(*bounds);
     }
 
-    virtual void replay(GraphicsContext&) override;
-    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    void replay(GraphicsContext&) override;
+    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
 #ifndef NDEBUG
-    virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
+    void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
     const SkXfermode::Mode m_xferMode;
     const float m_opacity;
@@ -48,12 +48,12 @@ public:
     EndCompositingDisplayItem(const DisplayItemClientWrapper& client)
         : PairedEndDisplayItem(client, EndCompositing) { }
 
-    virtual void replay(GraphicsContext&) override;
-    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    void replay(GraphicsContext&) override;
+    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
 #if ENABLE(ASSERT)
-    virtual bool isEndAndPairedWith(DisplayItem::Type otherType) const override final { return otherType == BeginCompositing; }
+    bool isEndAndPairedWith(DisplayItem::Type otherType) const final { return otherType == BeginCompositing; }
 #endif
 };
 

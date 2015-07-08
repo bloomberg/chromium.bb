@@ -40,23 +40,23 @@ class PLATFORM_EXPORT WEBPImageDecoder : public ImageDecoder {
     WTF_MAKE_NONCOPYABLE(WEBPImageDecoder);
 public:
     WEBPImageDecoder(ImageSource::AlphaOption, ImageSource::GammaAndColorProfileOption, size_t maxDecodedBytes);
-    virtual ~WEBPImageDecoder();
+    ~WEBPImageDecoder() override;
 
     // ImageDecoder:
-    virtual String filenameExtension() const override { return "webp"; }
-    virtual bool hasColorProfile() const override { return m_hasColorProfile; }
-    virtual void setData(SharedBuffer* data, bool allDataReceived) override;
-    virtual int repetitionCount() const override;
-    virtual bool frameIsCompleteAtIndex(size_t) const override;
-    virtual float frameDurationAtIndex(size_t) const override;
-    virtual size_t clearCacheExceptFrame(size_t) override;
+    String filenameExtension() const override { return "webp"; }
+    bool hasColorProfile() const override { return m_hasColorProfile; }
+    void setData(SharedBuffer* data, bool allDataReceived) override;
+    int repetitionCount() const override;
+    bool frameIsCompleteAtIndex(size_t) const override;
+    float frameDurationAtIndex(size_t) const override;
+    size_t clearCacheExceptFrame(size_t) override;
 
 private:
     // ImageDecoder:
     virtual void decodeSize() { updateDemuxer(); }
-    virtual size_t decodeFrameCount() override;
-    virtual void initializeNewFrame(size_t) override;
-    virtual void decode(size_t) override;
+    size_t decodeFrameCount() override;
+    void initializeNewFrame(size_t) override;
+    void decode(size_t) override;
 
     bool decodeSingleFrame(const uint8_t* dataBytes, size_t dataSize, size_t frameIndex);
 
@@ -78,7 +78,7 @@ private:
     bool updateDemuxer();
     bool initFrameBuffer(size_t frameIndex);
     void applyPostProcessing(size_t frameIndex);
-    virtual void clearFrameBuffer(size_t frameIndex) override;
+    void clearFrameBuffer(size_t frameIndex) override;
 
     WebPDemuxer* m_demux;
     WebPDemuxState m_demuxState;

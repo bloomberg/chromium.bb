@@ -198,7 +198,7 @@ private:
             m_tokens.append(Token(fieldType, count));
         }
 
-        virtual void visitLiteral(const String& string) override
+        void visitLiteral(const String& string) override
         {
             m_tokens.append(Token(string));
         }

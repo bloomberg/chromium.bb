@@ -13,10 +13,10 @@ class PLATFORM_EXPORT PicturePattern : public Pattern {
 public:
     static PassRefPtr<PicturePattern> create(PassRefPtr<const SkPicture>, RepeatMode);
 
-    virtual ~PicturePattern();
+    ~PicturePattern() override;
 
 protected:
-    virtual PassRefPtr<SkShader> createShader() override;
+    PassRefPtr<SkShader> createShader() override;
 
 private:
     PicturePattern(PassRefPtr<const SkPicture>, RepeatMode);

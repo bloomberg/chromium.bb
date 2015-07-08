@@ -528,14 +528,14 @@ public:
     DepthStencilTrackingContext()
         : m_nextRenderBufferId(1)
         , m_stencilAttachment(0)
-        , m_depthAttachment(0) { }
-    virtual ~DepthStencilTrackingContext() { }
+        , m_depthAttachment(0) {}
+    ~DepthStencilTrackingContext() override {}
 
     int numAllocatedRenderBuffer() const { return m_nextRenderBufferId - 1; }
     WebGLId stencilAttachment() const { return m_stencilAttachment; }
     WebGLId depthAttachment() const { return m_depthAttachment; }
 
-    virtual WebString getString(WGC3Denum type) override
+    WebString getString(WGC3Denum type) override
     {
         if (type == GL_EXTENSIONS) {
             return WebString::fromUTF8("GL_OES_packed_depth_stencil");
@@ -543,12 +543,12 @@ public:
         return WebString();
     }
 
-    virtual WebGLId createRenderbuffer() override
+    WebGLId createRenderbuffer() override
     {
         return ++m_nextRenderBufferId;
     }
 
-    virtual void framebufferRenderbuffer(WGC3Denum target, WGC3Denum attachment, WGC3Denum renderbuffertarget, WebGLId renderbuffer) override
+    void framebufferRenderbuffer(WGC3Denum target, WGC3Denum attachment, WGC3Denum renderbuffertarget, WebGLId renderbuffer) override
     {
         if (attachment == GL_STENCIL_ATTACHMENT) {
             m_stencilAttachment = renderbuffer;
@@ -557,7 +557,7 @@ public:
         }
     }
 
-    virtual void getIntegerv(WGC3Denum ptype, WGC3Dint* value) override
+    void getIntegerv(WGC3Denum ptype, WGC3Dint* value) override
     {
         switch (ptype) {
         case GL_DEPTH_BITS:

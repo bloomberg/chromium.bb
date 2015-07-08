@@ -41,16 +41,16 @@ public:
         return adoptRef(new CrossfadeGeneratedImage(fromImage, toImage, percentage, crossfadeSize, size));
     }
 
-    virtual void setContainerSize(const IntSize&) override { }
-    virtual bool usesContainerSize() const override { return false; }
-    virtual bool hasRelativeWidth() const override { return false; }
-    virtual bool hasRelativeHeight() const override { return false; }
+    void setContainerSize(const IntSize&) override { }
+    bool usesContainerSize() const override { return false; }
+    bool hasRelativeWidth() const override { return false; }
+    bool hasRelativeHeight() const override { return false; }
 
-    virtual IntSize size() const override { return m_crossfadeSize; }
+    IntSize size() const override { return m_crossfadeSize; }
 
 protected:
     void draw(SkCanvas*, const SkPaint&, const FloatRect&, const FloatRect&, RespectImageOrientationEnum, ImageClampingMode) override;
-    virtual void drawTile(GraphicsContext*, const FloatRect&) final;
+    void drawTile(GraphicsContext*, const FloatRect&) final;
 
     CrossfadeGeneratedImage(Image* fromImage, Image* toImage, float percentage, IntSize crossfadeSize, const IntSize&);
 

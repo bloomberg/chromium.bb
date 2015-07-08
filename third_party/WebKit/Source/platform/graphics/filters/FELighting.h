@@ -39,7 +39,7 @@ class LightSource;
 
 class PLATFORM_EXPORT FELighting : public FilterEffect {
 public:
-    virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
+    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
 
 protected:
     enum LightingType {
@@ -47,8 +47,8 @@ protected:
         SpecularLighting
     };
 
-    virtual FloatRect mapPaintRect(const FloatRect&, bool forward = true) override final;
-    virtual bool affectsTransparentPixels() override { return true; }
+    FloatRect mapPaintRect(const FloatRect&, bool forward = true) final;
+    bool affectsTransparentPixels() override { return true; }
 
     FELighting(Filter*, LightingType, const Color&, float, float, float, float, float, float, PassRefPtr<LightSource>);
 

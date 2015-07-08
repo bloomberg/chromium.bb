@@ -33,22 +33,22 @@ namespace blink {
 // Scrollbar theme used in image snapshots, to eliminate appearance differences between platforms.
 class PLATFORM_EXPORT ScrollbarThemeMock : public ScrollbarTheme {
 public:
-    virtual int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) override;
-    virtual bool usesOverlayScrollbars() const override;
+    int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) override;
+    bool usesOverlayScrollbars() const override;
 
 protected:
-    virtual bool hasButtons(ScrollbarThemeClient*) override { return false; }
-    virtual bool hasThumb(ScrollbarThemeClient*) override { return true; }
+    bool hasButtons(ScrollbarThemeClient*) override { return false; }
+    bool hasThumb(ScrollbarThemeClient*) override { return true; }
 
-    virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool /*painting*/ = false) override { return IntRect(); }
-    virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool /*painting*/ = false) override { return IntRect(); }
-    virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false) override;
+    IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool /*painting*/ = false) override { return IntRect(); }
+    IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool /*painting*/ = false) override { return IntRect(); }
+    IntRect trackRect(ScrollbarThemeClient*, bool painting = false) override;
 
-    virtual void paintTrackBackground(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
-    virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
+    void paintTrackBackground(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
+    void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
 
 private:
-    virtual bool isMockTheme() const override final { return true; }
+    bool isMockTheme() const final { return true; }
 };
 
 }

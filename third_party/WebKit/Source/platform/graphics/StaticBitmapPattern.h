@@ -13,13 +13,13 @@ class PLATFORM_EXPORT StaticBitmapPattern : public BitmapPatternBase {
 public:
     static PassRefPtr<Pattern> create(PassRefPtr<Image> tileImage, RepeatMode);
 
-    virtual ~StaticBitmapPattern();
+    ~StaticBitmapPattern() override;
 
 protected:
-    virtual PassRefPtr<SkShader> createShader() override;
+    PassRefPtr<SkShader> createShader() override;
 
-    virtual SkImageInfo getBitmapInfo() override;
-    virtual void drawBitmapToCanvas(SkCanvas&, SkPaint&) override;
+    SkImageInfo getBitmapInfo() override;
+    void drawBitmapToCanvas(SkCanvas&, SkPaint&) override;
 
 private:
     StaticBitmapPattern(PassRefPtr<SkImage>, RepeatMode);

@@ -58,15 +58,15 @@ public:
     float k4() const;
     bool setK4(float);
 
-    virtual FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) override;
+    FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) override;
 
-    virtual TextStream& externalRepresentation(TextStream&, int indention) const override;
+    TextStream& externalRepresentation(TextStream&, int indention) const override;
 
-    virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
-    virtual PassRefPtr<SkImageFilter> createImageFilterWithoutValidation(SkiaImageFilterBuilder*) override;
+    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
+    PassRefPtr<SkImageFilter> createImageFilterWithoutValidation(SkiaImageFilterBuilder*) override;
 
 protected:
-    virtual bool mayProduceInvalidPreMultipliedPixels() override { return m_type == FECOMPOSITE_OPERATOR_ARITHMETIC; }
+    bool mayProduceInvalidPreMultipliedPixels() override { return m_type == FECOMPOSITE_OPERATOR_ARITHMETIC; }
 
 private:
     FEComposite(Filter*, const CompositeOperationType&, float, float, float, float);

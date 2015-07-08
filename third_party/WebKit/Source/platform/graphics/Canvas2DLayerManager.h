@@ -37,7 +37,7 @@ public:
     static Canvas2DLayerManager& get();
 
     void init(size_t maxBytesAllocated, size_t targetBytesAllocated);
-    virtual ~Canvas2DLayerManager();
+    ~Canvas2DLayerManager() override;
 
     void layerTransientResourceAllocationChanged(Canvas2DLayerBridge*, intptr_t deltaBytes = 0);
     void layerDidDraw(Canvas2DLayerBridge*);
@@ -49,8 +49,8 @@ private:
     // internal methods
     void freeMemoryIfNecessary();
     void addLayerToList(Canvas2DLayerBridge*);
-    virtual void willProcessTask() override;
-    virtual void didProcessTask() override;
+    void willProcessTask() override;
+    void didProcessTask() override;
 
     size_t m_bytesAllocated;
     size_t m_maxBytesAllocated;

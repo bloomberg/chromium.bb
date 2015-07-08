@@ -57,7 +57,7 @@ public:
         return adoptRef(new SimpleFontData(platformData, customData, isTextOrientationFallback));
     }
 
-    virtual ~SimpleFontData();
+    ~SimpleFontData() override;
 
     const FontPlatformData& platformData() const { return m_platformData; }
     const OpenTypeVerticalData* verticalData() const { return m_verticalData.get(); }
@@ -112,15 +112,15 @@ public:
     Glyph zeroGlyph() const { return m_zeroGlyph; }
     void setZeroGlyph(Glyph zeroGlyph) { m_zeroGlyph = zeroGlyph; }
 
-    virtual const SimpleFontData* fontDataForCharacter(UChar32) const override;
+    const SimpleFontData* fontDataForCharacter(UChar32) const override;
 
     Glyph glyphForCharacter(UChar32) const;
 
-    virtual bool isCustomFont() const override { return m_customFontData; }
-    virtual bool isLoading() const override { return m_customFontData ? m_customFontData->isLoading() : false; }
-    virtual bool isLoadingFallback() const override { return m_customFontData ? m_customFontData->isLoadingFallback() : false; }
-    virtual bool isSegmented() const override;
-    virtual bool shouldSkipDrawing() const override { return m_customFontData && m_customFontData->shouldSkipDrawing(); }
+    bool isCustomFont() const override { return m_customFontData; }
+    bool isLoading() const override { return m_customFontData ? m_customFontData->isLoading() : false; }
+    bool isLoadingFallback() const override { return m_customFontData ? m_customFontData->isLoadingFallback() : false; }
+    bool isSegmented() const override;
+    bool shouldSkipDrawing() const override { return m_customFontData && m_customFontData->shouldSkipDrawing(); }
 
     const GlyphData& missingGlyphData() const { return m_missingGlyphData; }
     void setMissingGlyphData(const GlyphData& glyphData) { m_missingGlyphData = glyphData; }

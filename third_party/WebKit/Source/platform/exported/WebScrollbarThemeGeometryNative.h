@@ -41,23 +41,23 @@ public:
     static PassOwnPtr<WebScrollbarThemeGeometryNative> create(ScrollbarTheme*);
 
     // WebScrollbarThemeGeometry overrides
-    virtual WebScrollbarThemeGeometryNative* clone() const override;
-    virtual int thumbPosition(WebScrollbar*) override;
-    virtual int thumbLength(WebScrollbar*) override;
-    virtual int trackPosition(WebScrollbar*) override;
-    virtual int trackLength(WebScrollbar*) override;
-    virtual bool hasButtons(WebScrollbar*) override;
-    virtual bool hasThumb(WebScrollbar*) override;
-    virtual WebRect trackRect(WebScrollbar*) override;
-    virtual WebRect thumbRect(WebScrollbar*) override;
-    virtual int minimumThumbLength(WebScrollbar*) override;
-    virtual int scrollbarThickness(WebScrollbar*) override;
-    virtual WebRect backButtonStartRect(WebScrollbar*) override;
-    virtual WebRect backButtonEndRect(WebScrollbar*) override;
-    virtual WebRect forwardButtonStartRect(WebScrollbar*) override;
-    virtual WebRect forwardButtonEndRect(WebScrollbar*) override;
-    virtual WebRect constrainTrackRectToTrackPieces(WebScrollbar*, const WebRect&) override;
-    virtual void splitTrack(WebScrollbar*, const WebRect& track, WebRect& startTrack, WebRect& thumb, WebRect& endTrack) override;
+    WebScrollbarThemeGeometryNative* clone() const override;
+    int thumbPosition(WebScrollbar*) override;
+    int thumbLength(WebScrollbar*) override;
+    int trackPosition(WebScrollbar*) override;
+    int trackLength(WebScrollbar*) override;
+    bool hasButtons(WebScrollbar*) override;
+    bool hasThumb(WebScrollbar*) override;
+    WebRect trackRect(WebScrollbar*) override;
+    WebRect thumbRect(WebScrollbar*) override;
+    int minimumThumbLength(WebScrollbar*) override;
+    int scrollbarThickness(WebScrollbar*) override;
+    WebRect backButtonStartRect(WebScrollbar*) override;
+    WebRect backButtonEndRect(WebScrollbar*) override;
+    WebRect forwardButtonStartRect(WebScrollbar*) override;
+    WebRect forwardButtonEndRect(WebScrollbar*) override;
+    WebRect constrainTrackRectToTrackPieces(WebScrollbar*, const WebRect&) override;
+    void splitTrack(WebScrollbar*, const WebRect& track, WebRect& startTrack, WebRect& thumb, WebRect& endTrack) override;
 
 private:
     explicit WebScrollbarThemeGeometryNative(ScrollbarTheme*);

@@ -15,11 +15,11 @@ class PLATFORM_EXPORT PlatformPasswordCredential final : public PlatformCredenti
     WTF_MAKE_NONCOPYABLE(PlatformPasswordCredential);
 public:
     static PlatformPasswordCredential* create(const String& id, const String& password, const String& name, const KURL& iconURL);
-    virtual ~PlatformPasswordCredential();
+    ~PlatformPasswordCredential() override;
 
     const String& password() const { return m_password; }
 
-    virtual bool isPassword() override { return true; }
+    bool isPassword() override { return true; }
 
 private:
     PlatformPasswordCredential(const String& id, const String& password, const String& name, const KURL& iconURL);

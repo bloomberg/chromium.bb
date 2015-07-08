@@ -147,14 +147,14 @@ public:
         return adoptRef(new JSONBasicValue(value));
     }
 
-    virtual bool asBoolean(bool* output) const override;
-    virtual bool asNumber(double* output) const override;
-    virtual bool asNumber(long* output) const override;
-    virtual bool asNumber(int* output) const override;
-    virtual bool asNumber(unsigned long* output) const override;
-    virtual bool asNumber(unsigned* output) const override;
+    bool asBoolean(bool* output) const override;
+    bool asNumber(double* output) const override;
+    bool asNumber(long* output) const override;
+    bool asNumber(int* output) const override;
+    bool asNumber(unsigned long* output) const override;
+    bool asNumber(unsigned* output) const override;
 
-    virtual void writeJSON(StringBuilder* output) const override;
+    void writeJSON(StringBuilder* output) const override;
 
 private:
     explicit JSONBasicValue(bool value) : JSONValue(TypeBoolean), m_boolValue(value) { }
@@ -179,9 +179,9 @@ public:
         return adoptRef(new JSONString(value));
     }
 
-    virtual bool asString(String* output) const override;
+    bool asString(String* output) const override;
 
-    virtual void writeJSON(StringBuilder* output) const override;
+    void writeJSON(StringBuilder* output) const override;
 
 private:
     explicit JSONString(const String& value) : JSONValue(TypeString), m_stringValue(value) { }
@@ -198,17 +198,17 @@ public:
     typedef Dictionary::iterator iterator;
     typedef Dictionary::const_iterator const_iterator;
 
-    virtual PassRefPtr<JSONObject> asObject() override;
+    PassRefPtr<JSONObject> asObject() override;
     JSONObject* openAccessors();
 
-    virtual void writeJSON(StringBuilder* output) const override;
+    void writeJSON(StringBuilder* output) const override;
 
     int size() const { return m_data.size(); }
 
 protected:
-    virtual ~JSONObjectBase();
+    ~JSONObjectBase() override;
 
-    virtual bool asObject(RefPtr<JSONObject>* output) override;
+    bool asObject(RefPtr<JSONObject>* output) override;
 
     void setBoolean(const String& name, bool);
     void setNumber(const String& name, double);
@@ -234,7 +234,7 @@ protected:
 
     void remove(const String& name);
 
-    virtual void prettyWriteJSONInternal(StringBuilder* output, int depth) const override;
+    void prettyWriteJSONInternal(StringBuilder* output, int depth) const override;
 
     iterator begin() { return m_data.begin(); }
     iterator end() { return m_data.end(); }
@@ -287,16 +287,16 @@ public:
     typedef Vector<RefPtr<JSONValue>>::iterator iterator;
     typedef Vector<RefPtr<JSONValue>>::const_iterator const_iterator;
 
-    virtual PassRefPtr<JSONArray> asArray() override;
+    PassRefPtr<JSONArray> asArray() override;
 
     unsigned length() const { return m_data.size(); }
 
-    virtual void writeJSON(StringBuilder* output) const override;
+    void writeJSON(StringBuilder* output) const override;
 
 protected:
-    virtual ~JSONArrayBase();
+    ~JSONArrayBase() override;
 
-    virtual bool asArray(RefPtr<JSONArray>* output) override;
+    bool asArray(RefPtr<JSONArray>* output) override;
 
     void pushBoolean(bool);
     void pushInt(int);
@@ -308,7 +308,7 @@ protected:
 
     PassRefPtr<JSONValue> get(size_t index);
 
-    virtual void prettyWriteJSONInternal(StringBuilder* output, int depth) const override;
+    void prettyWriteJSONInternal(StringBuilder* output, int depth) const override;
 
     iterator begin() { return m_data.begin(); }
     iterator end() { return m_data.end(); }

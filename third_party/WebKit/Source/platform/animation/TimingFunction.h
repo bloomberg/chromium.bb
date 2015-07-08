@@ -101,13 +101,13 @@ public:
         return linear;
     }
 
-    virtual ~LinearTimingFunction() { }
+    ~LinearTimingFunction() override { }
 
-    virtual String toString() const override;
+    String toString() const override;
 
-    virtual double evaluate(double fraction, double) const override;
-    virtual void range(double* minValue, double* maxValue) const override;
-    virtual void partition(Vector<PartitionRegion>& regions) const override;
+    double evaluate(double fraction, double) const override;
+    void range(double* minValue, double* maxValue) const override;
+    void partition(Vector<PartitionRegion>& regions) const override;
 private:
     LinearTimingFunction()
         : TimingFunction(LinearFunction)
@@ -159,13 +159,13 @@ public:
         }
     }
 
-    virtual ~CubicBezierTimingFunction() { }
+    ~CubicBezierTimingFunction() override { }
 
-    virtual String toString() const override;
+    String toString() const override;
 
-    virtual double evaluate(double fraction, double accuracy) const override;
-    virtual void range(double* minValue, double* maxValue) const override;
-    virtual void partition(Vector<PartitionRegion>& regions) const override;
+    double evaluate(double fraction, double accuracy) const override;
+    void range(double* minValue, double* maxValue) const override;
+    void partition(Vector<PartitionRegion>& regions) const override;
 
     double x1() const { return m_x1; }
     double y1() const { return m_y1; }
@@ -230,13 +230,13 @@ public:
     }
 
 
-    virtual ~StepsTimingFunction() { }
+    ~StepsTimingFunction() override { }
 
-    virtual String toString() const override;
+    String toString() const override;
 
-    virtual double evaluate(double fraction, double) const override;
-    virtual void range(double* minValue, double* maxValue) const override;
-    virtual void partition(Vector<PartitionRegion>& regions) const override;
+    double evaluate(double fraction, double) const override;
+    void range(double* minValue, double* maxValue) const override;
+    void partition(Vector<PartitionRegion>& regions) const override;
 
     int numberOfSteps() const { return m_steps; }
     StepAtPosition stepAtPosition() const { return m_stepAtPosition; }

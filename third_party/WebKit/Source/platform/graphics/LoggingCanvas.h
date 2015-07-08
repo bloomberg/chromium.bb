@@ -41,37 +41,37 @@ public:
     LoggingCanvas(int width, int height);
     PassRefPtr<JSONArray> log();
 
-    virtual void onDrawPaint(const SkPaint&) override;
-    virtual void onDrawPoints(PointMode, size_t count, const SkPoint pts[], const SkPaint&) override;
-    virtual void onDrawRect(const SkRect&, const SkPaint&) override;
-    virtual void onDrawOval(const SkRect&, const SkPaint&) override;
-    virtual void onDrawRRect(const SkRRect&, const SkPaint&) override;
-    virtual void onDrawPath(const SkPath&, const SkPaint&) override;
-    virtual void onDrawBitmap(const SkBitmap&, SkScalar left, SkScalar top, const SkPaint*) override;
-    virtual void onDrawBitmapRect(const SkBitmap&, const SkRect* src, const SkRect& dst, const SkPaint*, DrawBitmapRectFlags) override;
-    virtual void onDrawBitmapNine(const SkBitmap&, const SkIRect& center, const SkRect& dst, const SkPaint*) override;
-    virtual void onDrawImage(const SkImage*, SkScalar, SkScalar, const SkPaint*) override;
-    virtual void onDrawImageRect(const SkImage*, const SkRect* src, const SkRect& dst, const SkPaint*) override;
-    virtual void onDrawSprite(const SkBitmap&, int left, int top, const SkPaint*) override;
+    void onDrawPaint(const SkPaint&) override;
+    void onDrawPoints(PointMode, size_t count, const SkPoint pts[], const SkPaint&) override;
+    void onDrawRect(const SkRect&, const SkPaint&) override;
+    void onDrawOval(const SkRect&, const SkPaint&) override;
+    void onDrawRRect(const SkRRect&, const SkPaint&) override;
+    void onDrawPath(const SkPath&, const SkPaint&) override;
+    void onDrawBitmap(const SkBitmap&, SkScalar left, SkScalar top, const SkPaint*) override;
+    void onDrawBitmapRect(const SkBitmap&, const SkRect* src, const SkRect& dst, const SkPaint*, DrawBitmapRectFlags) override;
+    void onDrawBitmapNine(const SkBitmap&, const SkIRect& center, const SkRect& dst, const SkPaint*) override;
+    void onDrawImage(const SkImage*, SkScalar, SkScalar, const SkPaint*) override;
+    void onDrawImageRect(const SkImage*, const SkRect* src, const SkRect& dst, const SkPaint*) override;
+    void onDrawSprite(const SkBitmap&, int left, int top, const SkPaint*) override;
     virtual void onDrawVertices(VertexMode vmode, int vertexCount, const SkPoint vertices[], const SkPoint texs[],
         const SkColor colors[], SkXfermode* xmode, const uint16_t indices[], int indexCount, const SkPaint&) override;
 
-    virtual void onDrawDRRect(const SkRRect& outer, const SkRRect& inner, const SkPaint&) override;
-    virtual void onDrawText(const void* text, size_t byteLength, SkScalar x, SkScalar y, const SkPaint&) override;
-    virtual void onDrawPosText(const void* text, size_t byteLength, const SkPoint pos[], const SkPaint&) override;
-    virtual void onDrawPosTextH(const void* text, size_t byteLength, const SkScalar xpos[], SkScalar constY, const SkPaint&) override;
-    virtual void onDrawTextOnPath(const void* text, size_t byteLength, const SkPath&, const SkMatrix*, const SkPaint&) override;
-    virtual void onDrawTextBlob(const SkTextBlob*, SkScalar x, SkScalar y, const SkPaint&) override;
-    virtual void onClipRect(const SkRect&, SkRegion::Op, ClipEdgeStyle) override;
-    virtual void onClipRRect(const SkRRect&, SkRegion::Op, ClipEdgeStyle) override;
-    virtual void onClipPath(const SkPath&, SkRegion::Op, ClipEdgeStyle) override;
-    virtual void onClipRegion(const SkRegion&, SkRegion::Op) override;
+    void onDrawDRRect(const SkRRect& outer, const SkRRect& inner, const SkPaint&) override;
+    void onDrawText(const void* text, size_t byteLength, SkScalar x, SkScalar y, const SkPaint&) override;
+    void onDrawPosText(const void* text, size_t byteLength, const SkPoint pos[], const SkPaint&) override;
+    void onDrawPosTextH(const void* text, size_t byteLength, const SkScalar xpos[], SkScalar constY, const SkPaint&) override;
+    void onDrawTextOnPath(const void* text, size_t byteLength, const SkPath&, const SkMatrix*, const SkPaint&) override;
+    void onDrawTextBlob(const SkTextBlob*, SkScalar x, SkScalar y, const SkPaint&) override;
+    void onClipRect(const SkRect&, SkRegion::Op, ClipEdgeStyle) override;
+    void onClipRRect(const SkRRect&, SkRegion::Op, ClipEdgeStyle) override;
+    void onClipPath(const SkPath&, SkRegion::Op, ClipEdgeStyle) override;
+    void onClipRegion(const SkRegion&, SkRegion::Op) override;
     virtual void onDrawPicture(const SkPicture*, const SkMatrix*, const SkPaint*);
-    virtual void didSetMatrix(const SkMatrix&) override;
-    virtual void didConcat(const SkMatrix&) override;
-    virtual void willSave() override;
+    void didSetMatrix(const SkMatrix&) override;
+    void didConcat(const SkMatrix&) override;
+    void willSave() override;
     SaveLayerStrategy willSaveLayer(const SkRect* bounds, const SkPaint*, SaveFlags) override;
-    virtual void willRestore() override;
+    void willRestore() override;
 
 private:
     friend class AutoLogger;

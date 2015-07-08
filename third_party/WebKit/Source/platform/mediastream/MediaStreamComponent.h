@@ -84,13 +84,13 @@ private:
         {
         }
 
-        virtual ~AudioSourceProviderImpl() { }
+        ~AudioSourceProviderImpl() override {}
 
         // Wraps the given blink::WebAudioSourceProvider to blink::AudioSourceProvider.
         void wrap(WebAudioSourceProvider*);
 
         // blink::AudioSourceProvider
-        virtual void provideInput(AudioBus*, size_t framesToProcess) override;
+        void provideInput(AudioBus*, size_t framesToProcess) override;
 
     private:
         WebAudioSourceProvider* m_webAudioSourceProvider;

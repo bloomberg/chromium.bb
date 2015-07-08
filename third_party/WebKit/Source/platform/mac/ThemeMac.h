@@ -36,8 +36,8 @@ namespace blink {
 
 class ThemeMac : public Theme {
 public:
-    ThemeMac() { }
-    virtual ~ThemeMac() { }
+    ThemeMac() {}
+    ~ThemeMac() override {}
 
     virtual int baselinePositionAdjustment(ControlPart) const;
 

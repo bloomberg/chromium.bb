@@ -57,9 +57,9 @@ private:
 
     public:
         explicit CancellableTask(WeakPtr<CancellableTaskFactory> weakPtr)
-            : m_weakPtr(weakPtr) { }
+            : m_weakPtr(weakPtr) {}
 
-        virtual ~CancellableTask() { }
+        ~CancellableTask() override {}
 
         void run() override;
 

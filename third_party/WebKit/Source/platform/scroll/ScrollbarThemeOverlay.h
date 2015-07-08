@@ -39,25 +39,25 @@ public:
 
     ScrollbarThemeOverlay(int thumbThickness, int scrollbarMargin, HitTestBehavior);
     ScrollbarThemeOverlay(int thumbThickness, int scrollbarMargin, HitTestBehavior, Color);
-    virtual ~ScrollbarThemeOverlay() { }
+    ~ScrollbarThemeOverlay() override {}
 
-    virtual int scrollbarThickness(ScrollbarControlSize) override;
-    virtual int scrollbarMargin() const override;
-    virtual bool usesOverlayScrollbars() const override;
+    int scrollbarThickness(ScrollbarControlSize) override;
+    int scrollbarMargin() const override;
+    bool usesOverlayScrollbars() const override;
 
-    virtual int thumbPosition(ScrollbarThemeClient*) override;
-    virtual int thumbLength(ScrollbarThemeClient*) override;
+    int thumbPosition(ScrollbarThemeClient*) override;
+    int thumbLength(ScrollbarThemeClient*) override;
 
-    virtual bool hasButtons(ScrollbarThemeClient*) override { return false; };
-    virtual bool hasThumb(ScrollbarThemeClient*) override;
+    bool hasButtons(ScrollbarThemeClient*) override { return false; };
+    bool hasThumb(ScrollbarThemeClient*) override;
 
-    virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
-    virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
-    virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false) override;
-    virtual int thumbThickness(ScrollbarThemeClient*) override;
+    IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
+    IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
+    IntRect trackRect(ScrollbarThemeClient*, bool painting = false) override;
+    int thumbThickness(ScrollbarThemeClient*) override;
 
-    virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
-    virtual ScrollbarPart hitTest(ScrollbarThemeClient*, const IntPoint&) override;
+    void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
+    ScrollbarPart hitTest(ScrollbarThemeClient*, const IntPoint&) override;
 
 private:
     int m_thumbThickness;

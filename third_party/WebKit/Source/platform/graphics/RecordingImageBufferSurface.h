@@ -31,7 +31,7 @@ class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {
     WTF_MAKE_NONCOPYABLE(RecordingImageBufferSurface); WTF_MAKE_FAST_ALLOCATED(RecordingImageBufferSurface);
 public:
     RecordingImageBufferSurface(const IntSize&, PassOwnPtr<RecordingImageBufferFallbackSurfaceFactory> fallbackFactory, OpacityMode = NonOpaque);
-    virtual ~RecordingImageBufferSurface();
+    ~RecordingImageBufferSurface() override;
 
     // Implementation of ImageBufferSurface interfaces
     SkCanvas* canvas() const override;
@@ -42,7 +42,7 @@ public:
     bool isRecording() const override { return !m_fallbackSurface; }
     void willAccessPixels() override;
     void willOverwriteCanvas() override;
-    void finalizeFrame(const FloatRect&) override;
+    virtual void finalizeFrame(const FloatRect&);
     void setImageBuffer(ImageBuffer*) override;
     PassRefPtr<SkImage> newImageSnapshot() const override;
     void draw(GraphicsContext*, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode) override;

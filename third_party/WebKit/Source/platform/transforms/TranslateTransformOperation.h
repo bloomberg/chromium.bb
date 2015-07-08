@@ -52,7 +52,7 @@ public:
     Length y() const { return m_y; }
     double z() const { return m_z; }
 
-    virtual void apply(TransformationMatrix& transform, const FloatSize& borderBoxSize) const override
+    void apply(TransformationMatrix& transform, const FloatSize& borderBoxSize) const override
     {
         transform.translate3d(x(borderBoxSize), y(borderBoxSize), z());
     }
@@ -60,9 +60,9 @@ public:
     static bool isMatchingOperationType(OperationType type) { return type == Translate || type == TranslateX || type == TranslateY || type == TranslateZ || type == Translate3D; }
 
 private:
-    virtual OperationType type() const override { return m_type; }
+    OperationType type() const override { return m_type; }
 
-    virtual bool operator==(const TransformOperation& o) const override
+    bool operator==(const TransformOperation& o) const override
     {
         if (!isSameType(o))
             return false;
@@ -70,9 +70,9 @@ private:
         return m_x == t->m_x && m_y == t->m_y && m_z == t->m_z;
     }
 
-    virtual PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) override;
+    PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) override;
 
-    virtual bool dependsOnBoxSize() const override
+    bool dependsOnBoxSize() const override
     {
         return m_x.hasPercent() || m_y.hasPercent();
     }

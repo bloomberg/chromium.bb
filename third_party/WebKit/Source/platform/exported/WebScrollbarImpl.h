@@ -40,26 +40,26 @@ public:
     }
 
     // Implement WebScrollbar methods
-    virtual bool isOverlay() const override;
-    virtual int value() const override;
-    virtual WebPoint location() const override;
-    virtual WebSize size() const override;
-    virtual bool enabled() const override;
-    virtual int maximum() const override;
-    virtual int totalSize() const override;
-    virtual bool isScrollableAreaActive() const override;
-    virtual void getTickmarks(WebVector<WebRect>& tickmarks) const override;
-    virtual ScrollbarControlSize controlSize() const override;
-    virtual ScrollbarPart pressedPart() const override;
-    virtual ScrollbarPart hoveredPart() const override;
-    virtual ScrollbarOverlayStyle scrollbarOverlayStyle() const override;
-    virtual bool isCustomScrollbar() const override;
-    virtual Orientation orientation() const override;
-    virtual bool isLeftSideVerticalScrollbar() const override;
-    virtual bool isAlphaLocked() const override;
-    virtual void setIsAlphaLocked(bool) override;
-    virtual float elasticOverscroll() const override;
-    virtual void setElasticOverscroll(float) override;
+    bool isOverlay() const override;
+    int value() const override;
+    WebPoint location() const override;
+    WebSize size() const override;
+    bool enabled() const override;
+    int maximum() const override;
+    int totalSize() const override;
+    bool isScrollableAreaActive() const override;
+    void getTickmarks(WebVector<WebRect>& tickmarks) const override;
+    ScrollbarControlSize controlSize() const override;
+    ScrollbarPart pressedPart() const override;
+    ScrollbarPart hoveredPart() const override;
+    ScrollbarOverlayStyle scrollbarOverlayStyle() const override;
+    bool isCustomScrollbar() const override;
+    Orientation orientation() const override;
+    bool isLeftSideVerticalScrollbar() const override;
+    bool isAlphaLocked() const override;
+    void setIsAlphaLocked(bool) override;
+    float elasticOverscroll() const override;
+    void setElasticOverscroll(float) override;
 
 private:
     explicit WebScrollbarImpl(Scrollbar*);

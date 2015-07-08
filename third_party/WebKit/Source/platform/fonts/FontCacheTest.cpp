@@ -14,9 +14,9 @@ namespace blink {
 
 class EmptyPlatform : public Platform {
 public:
-    EmptyPlatform() { }
-    virtual ~EmptyPlatform() { }
-    virtual void cryptographicallyRandomValues(unsigned char* buffer, size_t length) override { }
+    EmptyPlatform() {}
+    ~EmptyPlatform() override {}
+    void cryptographicallyRandomValues(unsigned char* buffer, size_t length) override { }
 };
 
 TEST(FontCache, getLastResortFallbackFont)

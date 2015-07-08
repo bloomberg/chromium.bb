@@ -21,12 +21,12 @@ public:
         ASSERT(isScrollType(type));
     }
 
-    virtual void replay(GraphicsContext&) override;
-    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    void replay(GraphicsContext&) override;
+    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
 #ifndef NDEBUG
-    virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override final;
+    void dumpPropertiesAsDebugString(WTF::StringBuilder&) const final;
 #endif
 
     const IntSize m_currentOffset;
@@ -40,12 +40,12 @@ public:
         ASSERT(isEndScrollType(type));
     }
 
-    virtual void replay(GraphicsContext&) override;
-    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    void replay(GraphicsContext&) override;
+    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
 #if ENABLE(ASSERT)
-    virtual bool isEndAndPairedWith(DisplayItem::Type otherType) const override final { return DisplayItem::isScrollType(otherType); }
+    bool isEndAndPairedWith(DisplayItem::Type otherType) const final { return DisplayItem::isScrollType(otherType); }
 #endif
 };
 

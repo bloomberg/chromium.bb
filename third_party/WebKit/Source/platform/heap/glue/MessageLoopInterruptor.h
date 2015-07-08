@@ -41,7 +41,7 @@ class MessageLoopInterruptor : public ThreadState::Interruptor {
 public:
     explicit MessageLoopInterruptor(WebThread* thread) : m_thread(thread) { }
 
-    virtual void requestInterrupt() override
+    void requestInterrupt() override
     {
         // GCTask has an empty run() method. Its only purpose is to guarantee
         // that MessageLoop will have a task to process which will result
@@ -54,7 +54,7 @@ private:
     public:
         virtual ~GCTask() { }
 
-        virtual void run() override
+        void run() override
         {
             // Don't do anything here because we don't know if this is
             // a nested event loop or not. PendingGCRunner::didProcessTask

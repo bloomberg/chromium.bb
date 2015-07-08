@@ -61,45 +61,45 @@ public:
         m_client->decoderBeingDestroyed();
     }
 
-    virtual IntSize decodedSize() const override
+    IntSize decodedSize() const override
     {
         return m_client->decodedSize().isEmpty() ? size() : m_client->decodedSize();
     }
 
-    virtual String filenameExtension() const override
+    String filenameExtension() const override
     {
         return "mock";
     }
 
-    virtual int repetitionCount() const override
+    int repetitionCount() const override
     {
         return m_client->repetitionCount();
     }
 
-    virtual bool frameIsCompleteAtIndex(size_t) const override
+    bool frameIsCompleteAtIndex(size_t) const override
     {
         return m_client->status() == ImageFrame::FrameComplete;
     }
 
-    virtual float frameDurationAtIndex(size_t) const override
+    float frameDurationAtIndex(size_t) const override
     {
         return m_client->frameDuration();
     }
 
-    virtual size_t clearCacheExceptFrame(size_t) override { return 0; }
+    size_t clearCacheExceptFrame(size_t) override { return 0; }
 
 private:
-    virtual void decodeSize() override { }
+    void decodeSize() override { }
 
-    virtual size_t decodeFrameCount() override { return m_client->frameCount(); }
+    size_t decodeFrameCount() override { return m_client->frameCount(); }
 
-    virtual void decode(size_t index) override
+    void decode(size_t index) override
     {
         m_client->decodeRequested();
         m_frameBufferCache[index].setStatus(m_client->status());
     }
 
-    virtual void initializeNewFrame(size_t index) override
+    void initializeNewFrame(size_t index) override
     {
         m_frameBufferCache[index].setSize(size().width(), size().height());
         m_frameBufferCache[index].setHasAlpha(false);
@@ -120,7 +120,7 @@ public:
         return adoptPtr(new MockImageDecoderFactory(client, decodedSize));
     }
 
-    virtual PassOwnPtr<ImageDecoder> create() override
+    PassOwnPtr<ImageDecoder> create() override
     {
         OwnPtr<MockImageDecoder> decoder = MockImageDecoder::create(m_client);
         decoder->setSize(m_decodedSize.width(), m_decodedSize.height());

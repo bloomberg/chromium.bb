@@ -17,8 +17,8 @@ public:
     BeginFixedPositionDisplayItem(const DisplayItemClientWrapper& client)
         : PairedBeginDisplayItem(client, BeginFixedPosition) { }
 
-    virtual void replay(GraphicsContext&) override final { }
-    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override final;
+    void replay(GraphicsContext&) final { }
+    void appendToWebDisplayItemList(WebDisplayItemList*) const final;
 };
 
 class PLATFORM_EXPORT EndFixedPositionDisplayItem : public PairedEndDisplayItem {
@@ -26,12 +26,12 @@ public:
     EndFixedPositionDisplayItem(const DisplayItemClientWrapper& client)
         : PairedEndDisplayItem(client, EndFixedPosition) { }
 
-    virtual void replay(GraphicsContext&) override final { }
-    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override final;
+    void replay(GraphicsContext&) final { }
+    void appendToWebDisplayItemList(WebDisplayItemList*) const final;
 
 private:
 #if ENABLE(ASSERT)
-    virtual bool isEndAndPairedWith(DisplayItem::Type otherType) const override final { return otherType == BeginFixedPosition; }
+    bool isEndAndPairedWith(DisplayItem::Type otherType) const final { return otherType == BeginFixedPosition; }
 #endif
 };
 

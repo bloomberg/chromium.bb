@@ -48,7 +48,7 @@ class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback, 
     WTF_MAKE_NONCOPYABLE(AudioDestination);
 public:
     AudioDestination(AudioIOCallback&, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate);
-    virtual ~AudioDestination();
+    ~AudioDestination() override;
 
     // Pass in (numberOfInputChannels > 0) if live/local audio input is desired.
     // Port-specific device identification information for live/local input streams can be passed in the inputDeviceId.
@@ -61,10 +61,10 @@ public:
     float sampleRate() const { return m_sampleRate; }
 
     // WebAudioDevice::RenderCallback
-    virtual void render(const WebVector<float*>& sourceData, const WebVector<float*>& audioData, size_t numberOfFrames) override;
+    void render(const WebVector<float*>& sourceData, const WebVector<float*>& audioData, size_t numberOfFrames) override;
 
     // AudioSourceProvider
-    virtual void provideInput(AudioBus*, size_t framesToProcess) override;
+    void provideInput(AudioBus*, size_t framesToProcess) override;
 
     static float hardwareSampleRate();
 

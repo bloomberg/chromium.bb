@@ -48,7 +48,7 @@ public:
             m_layerBridge->flush();
     }
 
-    virtual ~Canvas2DImageBufferSurface()
+    ~Canvas2DImageBufferSurface() override
     {
         if (m_layerBridge)
             m_layerBridge->beginDestruction();

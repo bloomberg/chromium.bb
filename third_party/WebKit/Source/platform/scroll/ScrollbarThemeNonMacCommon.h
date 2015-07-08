@@ -37,15 +37,15 @@ namespace blink {
 
 class PLATFORM_EXPORT ScrollbarThemeNonMacCommon : public ScrollbarTheme {
 protected:
-    virtual bool hasButtons(ScrollbarThemeClient*) override { return true; }
-    virtual bool hasThumb(ScrollbarThemeClient*) override;
+    bool hasButtons(ScrollbarThemeClient*) override { return true; }
+    bool hasThumb(ScrollbarThemeClient*) override;
 
-    virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
-    virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
-    virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false) override;
+    IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
+    IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) override;
+    IntRect trackRect(ScrollbarThemeClient*, bool painting = false) override;
 
-    virtual void paintTrackBackground(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
-    virtual void paintTickmarks(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
+    void paintTrackBackground(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
+    void paintTickmarks(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) override;
 
     virtual IntSize buttonSize(ScrollbarThemeClient*) = 0;
 };

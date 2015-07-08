@@ -45,7 +45,7 @@ public:
     {
     }
 
-    virtual void run() override
+    void run() override
     {
         (*m_closure)();
     }

@@ -42,7 +42,7 @@ class ExtraDataContainer : public Prerender::ExtraData {
 public:
     static PassRefPtr<ExtraDataContainer> create(WebPrerender::ExtraData* extraData) { return adoptRef(new ExtraDataContainer(extraData)); }
 
-    virtual ~ExtraDataContainer() { }
+    ~ExtraDataContainer() override {}
 
     WebPrerender::ExtraData* extraData() const { return m_extraData.get(); }
 

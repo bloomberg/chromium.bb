@@ -25,11 +25,11 @@ protected:
     const DisplayItems& newPaintListBeforeUpdate() { return displayItemList().m_newDisplayItems; }
 
 private:
-    virtual void SetUp() override
+    void SetUp() override
     {
         RuntimeEnabledFeatures::setSlimmingPaintEnabled(true);
     }
-    virtual void TearDown() override
+    void TearDown() override
     {
         RuntimeEnabledFeatures::setSlimmingPaintEnabled(m_originalSlimmingPaintEnabled);
     }
@@ -59,8 +59,8 @@ class TestDisplayItem : public DisplayItem {
 public:
     TestDisplayItem(const TestDisplayItemClient& client, Type type) : DisplayItem(client, type) { }
 
-    virtual void replay(GraphicsContext&) override final { ASSERT_NOT_REACHED(); }
-    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override final { ASSERT_NOT_REACHED(); }
+    void replay(GraphicsContext&) final { ASSERT_NOT_REACHED(); }
+    void appendToWebDisplayItemList(WebDisplayItemList*) const final { ASSERT_NOT_REACHED(); }
 };
 
 #ifndef NDEBUG

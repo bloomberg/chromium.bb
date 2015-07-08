@@ -45,9 +45,9 @@ public:
     }
 
 private:
-    virtual OperationType type() const override { return Matrix3D; }
+    OperationType type() const override { return Matrix3D; }
 
-    virtual bool operator==(const TransformOperation& o) const override
+    bool operator==(const TransformOperation& o) const override
     {
         if (!isSameType(o))
             return false;
@@ -55,12 +55,12 @@ private:
         return m_matrix == m->m_matrix;
     }
 
-    virtual void apply(TransformationMatrix& transform, const FloatSize&) const override
+    void apply(TransformationMatrix& transform, const FloatSize&) const override
     {
         transform.multiply(TransformationMatrix(m_matrix));
     }
 
-    virtual PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) override;
+    PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) override;
 
     Matrix3DTransformOperation(const TransformationMatrix& mat)
     {

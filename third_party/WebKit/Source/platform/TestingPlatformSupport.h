@@ -40,12 +40,12 @@ namespace blink {
 class TestingDiscardableMemory : public WebDiscardableMemory {
 public:
     explicit TestingDiscardableMemory(size_t);
-    virtual ~TestingDiscardableMemory();
+    ~TestingDiscardableMemory() override;
 
     // WebDiscardableMemory:
-    virtual bool lock() override;
-    virtual void* data() override;
-    virtual void unlock() override;
+    bool lock() override;
+    void* data() override;
+    void unlock() override;
 
 private:
     Vector<char> m_data;
@@ -62,13 +62,13 @@ public:
 
     explicit TestingPlatformSupport(const Config&);
 
-    virtual ~TestingPlatformSupport();
+    ~TestingPlatformSupport() override;
 
     // Platform:
-    virtual WebDiscardableMemory* allocateAndLockDiscardableMemory(size_t bytes) override;
-    virtual void cryptographicallyRandomValues(unsigned char* buffer, size_t length) override;
-    virtual const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) override;
-    virtual WebString defaultLocale() override;
+    WebDiscardableMemory* allocateAndLockDiscardableMemory(size_t bytes) override;
+    void cryptographicallyRandomValues(unsigned char* buffer, size_t length) override;
+    const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) override;
+    WebString defaultLocale() override;
 
 private:
     const Config m_config;

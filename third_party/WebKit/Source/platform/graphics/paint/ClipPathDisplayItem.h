@@ -19,13 +19,13 @@ public:
         : PairedBeginDisplayItem(client, BeginClipPath)
         , m_clipPath(clipPath.skPath()) { }
 
-    virtual void replay(GraphicsContext&) override;
-    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    void replay(GraphicsContext&) override;
+    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
     const SkPath m_clipPath;
 #ifndef NDEBUG
-    virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
+    void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
 };
 
@@ -34,12 +34,12 @@ public:
     EndClipPathDisplayItem(const DisplayItemClientWrapper& client)
         : PairedEndDisplayItem(client, EndClipPath) { }
 
-    virtual void replay(GraphicsContext&) override;
-    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    void replay(GraphicsContext&) override;
+    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
 #if ENABLE(ASSERT)
-    virtual bool isEndAndPairedWith(DisplayItem::Type otherType) const override final { return otherType == BeginClipPath; }
+    bool isEndAndPairedWith(DisplayItem::Type otherType) const final { return otherType == BeginClipPath; }
 #endif
 };
 

@@ -41,19 +41,19 @@ class PNGImageDecoder;
 class PLATFORM_EXPORT ICOImageDecoder : public ImageDecoder {
 public:
     ICOImageDecoder(ImageSource::AlphaOption, ImageSource::GammaAndColorProfileOption, size_t maxDecodedBytes);
-    virtual ~ICOImageDecoder();
+    ~ICOImageDecoder() override;
 
     // ImageDecoder:
-    virtual String filenameExtension() const override { return "ico"; }
-    virtual void setData(SharedBuffer*, bool allDataReceived) override;
-    virtual IntSize size() const override;
-    virtual IntSize frameSizeAtIndex(size_t) const override;
-    virtual bool setSize(unsigned width, unsigned height) override;
+    String filenameExtension() const override { return "ico"; }
+    void setData(SharedBuffer*, bool allDataReceived) override;
+    IntSize size() const override;
+    IntSize frameSizeAtIndex(size_t) const override;
+    bool setSize(unsigned width, unsigned height) override;
     // CAUTION: setFailed() deletes all readers and decoders.  Be careful to
     // avoid accessing deleted memory, especially when calling this from
     // inside BMPImageReader!
-    virtual bool setFailed() override;
-    virtual bool hotSpot(IntPoint&) const override;
+    bool setFailed() override;
+    bool hotSpot(IntPoint&) const override;
 
 private:
     enum ImageType {
@@ -80,8 +80,8 @@ private:
 
     // ImageDecoder:
     virtual void decodeSize() { decode(0, true); }
-    virtual size_t decodeFrameCount() override;
-    virtual void decode(size_t index) override { decode(index, false); }
+    size_t decodeFrameCount() override;
+    void decode(size_t index) override { decode(index, false); }
 
     inline uint16_t readUint16(int offset) const
     {

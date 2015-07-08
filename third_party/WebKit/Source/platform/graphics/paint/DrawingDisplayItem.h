@@ -39,8 +39,8 @@ public:
     }
 
     virtual void replay(GraphicsContext&);
-    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
-    virtual bool drawsContent() const override;
+    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    bool drawsContent() const override;
 
     const SkPicture* picture() const { return m_picture.get(); }
 
@@ -50,7 +50,7 @@ public:
 
 private:
 #ifndef NDEBUG
-    virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
+    void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
 
     RefPtr<const SkPicture> m_picture;

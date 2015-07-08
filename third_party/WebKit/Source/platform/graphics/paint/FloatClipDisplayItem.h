@@ -23,12 +23,12 @@ public:
         ASSERT(isFloatClipType(type));
     }
 
-    virtual void replay(GraphicsContext&) override;
-    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    void replay(GraphicsContext&) override;
+    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
 #ifndef NDEBUG
-    virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
+    void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
 
     const FloatRect m_clipRect;
@@ -42,12 +42,12 @@ public:
         ASSERT(isEndFloatClipType(type));
     }
 
-    virtual void replay(GraphicsContext&) override;
-    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    void replay(GraphicsContext&) override;
+    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
 #if ENABLE(ASSERT)
-    virtual bool isEndAndPairedWith(DisplayItem::Type otherType) const override final { return DisplayItem::isFloatClipType(otherType); }
+    bool isEndAndPairedWith(DisplayItem::Type otherType) const final { return DisplayItem::isFloatClipType(otherType); }
 #endif
 };
 

@@ -87,12 +87,12 @@ class PLATFORM_EXPORT GraphicsLayer : public GraphicsContextPainter, public WebC
 public:
     static PassOwnPtr<GraphicsLayer> create(GraphicsLayerFactory*, GraphicsLayerClient*);
 
-    virtual ~GraphicsLayer();
+    ~GraphicsLayer() override;
 
     GraphicsLayerClient* client() const { return m_client; }
 
     // WebLayerClient implementation.
-    virtual WebGraphicsLayerDebugInfo* takeDebugInfoFor(WebLayer*) override;
+    WebGraphicsLayerDebugInfo* takeDebugInfoFor(WebLayer*) override;
 
     GraphicsLayerDebugInfo& debugInfo();
 
@@ -249,16 +249,16 @@ public:
     static void unregisterContentsLayer(WebLayer*);
 
     // GraphicsContextPainter implementation.
-    virtual void paint(GraphicsContext&, const IntRect& clip) override;
+    void paint(GraphicsContext&, const IntRect& clip) override;
 
     // WebCompositorAnimationDelegate implementation.
-    virtual void notifyAnimationStarted(double monotonicTime, int group) override;
-    virtual void notifyAnimationFinished(double monotonicTime, int group) override;
+    void notifyAnimationStarted(double monotonicTime, int group) override;
+    void notifyAnimationFinished(double monotonicTime, int group) override;
 
     // WebLayerScrollClient implementation.
-    virtual void didScroll() override;
+    void didScroll() override;
 
-    virtual DisplayItemList* displayItemList() override;
+    DisplayItemList* displayItemList() override;
 
     // Exposed for tests.
     virtual WebLayer* contentsLayer() const { return m_contentsLayer; }

@@ -155,13 +155,13 @@ public:
     }
 
 protected:
-    virtual void fired() override
+    void fired() override
     {
         (m_object->*m_function)(this);
     }
 
     NO_LAZY_SWEEP_SANITIZE_ADDRESS
-    virtual bool canFire() const override
+    bool canFire() const override
     {
         // Oilpan: if a timer fires while Oilpan heaps are being lazily
         // swept, it is not safe to proceed if the object is about to

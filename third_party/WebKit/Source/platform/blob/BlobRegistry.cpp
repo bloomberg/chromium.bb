@@ -55,7 +55,7 @@ namespace blink {
 class BlobOriginCache : public SecurityOriginCache {
 public:
     BlobOriginCache();
-    virtual SecurityOrigin* cachedOrigin(const KURL&) override;
+    SecurityOrigin* cachedOrigin(const KURL&) override;
 };
 
 static WebBlobRegistry* blobRegistry()

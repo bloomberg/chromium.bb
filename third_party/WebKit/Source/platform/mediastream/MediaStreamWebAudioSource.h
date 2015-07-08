@@ -46,13 +46,13 @@ class MediaStreamWebAudioSource : public AudioSourceProvider {
 public:
     static PassOwnPtr<MediaStreamWebAudioSource> create(PassOwnPtr<WebAudioSourceProvider> provider) { return adoptPtr(new MediaStreamWebAudioSource(provider)); }
 
-    virtual ~MediaStreamWebAudioSource();
+    ~MediaStreamWebAudioSource() override;
 
 private:
     explicit MediaStreamWebAudioSource(PassOwnPtr<WebAudioSourceProvider>);
 
     // blink::AudioSourceProvider implementation.
-    virtual void provideInput(AudioBus*, size_t framesToProcess) override;
+    void provideInput(AudioBus*, size_t framesToProcess) override;
 
     OwnPtr<WebAudioSourceProvider> m_webAudioSourceProvider;
 };

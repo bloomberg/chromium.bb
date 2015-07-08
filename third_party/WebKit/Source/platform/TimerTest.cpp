@@ -661,7 +661,7 @@ class MockTimerWithAlignment : public TimerBase {
 public:
     MockTimerWithAlignment() : m_lastFireTime(0.0), m_alignedFireTime(0.0) { }
 
-    virtual void fired() override
+    void fired() override
     {
     }
 

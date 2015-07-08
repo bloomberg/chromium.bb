@@ -449,17 +449,17 @@ public:
         return payload() <= address && address < payloadEnd();
     }
 
-    virtual size_t objectPayloadSizeForTesting() override;
-    virtual bool isEmpty() override;
-    virtual void removeFromHeap() override;
-    virtual void sweep() override;
-    virtual void makeConsistentForGC() override;
-    virtual void makeConsistentForMutator() override;
+    size_t objectPayloadSizeForTesting() override;
+    bool isEmpty() override;
+    void removeFromHeap() override;
+    void sweep() override;
+    void makeConsistentForGC() override;
+    void makeConsistentForMutator() override;
 #if defined(ADDRESS_SANITIZER)
-    virtual void poisonObjects(ThreadState::ObjectsToPoison, ThreadState::Poisoning) override;
+    void poisonObjects(ThreadState::ObjectsToPoison, ThreadState::Poisoning) override;
 #endif
-    virtual void checkAndMarkPointer(Visitor*, Address) override;
-    virtual void markOrphaned() override;
+    void checkAndMarkPointer(Visitor*, Address) override;
+    void markOrphaned() override;
 
     void takeSnapshot(String dumpBaseName, size_t pageIndex, size_t* outFreeSize, size_t* outFreeCount) override;
 #if ENABLE(GC_PROFILING)
@@ -473,9 +473,9 @@ public:
     // Returns true for the whole blinkPageSize page that the page is on, even
     // for the header, and the unmapped guard page at the start. That ensures
     // the result can be used to populate the negative page cache.
-    virtual bool contains(Address) override;
+    bool contains(Address) override;
 #endif
-    virtual size_t size() override { return blinkPageSize; }
+    size_t size() override { return blinkPageSize; }
     static size_t pageHeaderSize()
     {
         // Compute the amount of padding we have to add to a header to make
@@ -514,17 +514,17 @@ public:
         return payload() <= address && address < payloadEnd();
     }
 
-    virtual size_t objectPayloadSizeForTesting() override;
-    virtual bool isEmpty() override;
-    virtual void removeFromHeap() override;
-    virtual void sweep() override;
-    virtual void makeConsistentForGC() override;
-    virtual void makeConsistentForMutator() override;
+    size_t objectPayloadSizeForTesting() override;
+    bool isEmpty() override;
+    void removeFromHeap() override;
+    void sweep() override;
+    void makeConsistentForGC() override;
+    void makeConsistentForMutator() override;
 #if defined(ADDRESS_SANITIZER)
-    virtual void poisonObjects(ThreadState::ObjectsToPoison, ThreadState::Poisoning) override;
+    void poisonObjects(ThreadState::ObjectsToPoison, ThreadState::Poisoning) override;
 #endif
-    virtual void checkAndMarkPointer(Visitor*, Address) override;
-    virtual void markOrphaned() override;
+    void checkAndMarkPointer(Visitor*, Address) override;
+    void markOrphaned() override;
 
     void takeSnapshot(String dumpBaseName, size_t pageIndex, size_t* outFreeSize, size_t* outFreeCount) override;
 #if ENABLE(GC_PROFILING)
@@ -538,7 +538,7 @@ public:
     // Returns true for any address that is on one of the pages that this
     // large object uses. That ensures that we can use a negative result to
     // populate the negative page cache.
-    virtual bool contains(Address) override;
+    bool contains(Address) override;
 #endif
     virtual size_t size()
     {
@@ -551,7 +551,7 @@ public:
         size_t paddingSize = (sizeof(LargeObjectPage) + allocationGranularity - (sizeof(HeapObjectHeader) % allocationGranularity)) % allocationGranularity;
         return sizeof(LargeObjectPage) + paddingSize;
     }
-    virtual bool isLargeObjectPage() override { return true; }
+    bool isLargeObjectPage() override { return true; }
 
     HeapObjectHeader* heapObjectHeader()
     {
@@ -731,9 +731,9 @@ public:
         ASSERT(findPageFromAddress(address + size - 1));
         m_freeList.addToFreeList(address, size);
     }
-    virtual void clearFreeLists() override;
+    void clearFreeLists() override;
 #if ENABLE(ASSERT)
-    virtual bool isConsistentForGC() override;
+    bool isConsistentForGC() override;
     bool pagesToBeSweptContains(Address);
 #endif
     void takeFreelistSnapshot(const String& dumpBaseName) override;
@@ -753,7 +753,7 @@ public:
 
 private:
     void allocatePage();
-    virtual Address lazySweepPages(size_t, size_t gcInfoIndex) override;
+    Address lazySweepPages(size_t, size_t gcInfoIndex) override;
     Address outOfLineAllocate(size_t allocationSize, size_t gcInfoIndex);
     Address currentAllocationPoint() const { return m_currentAllocationPoint; }
     size_t remainingAllocationSize() const { return m_remainingAllocationSize; }
@@ -783,11 +783,11 @@ public:
     Address allocateLargeObjectPage(size_t, size_t gcInfoIndex);
     void freeLargeObjectPage(LargeObjectPage*);
 #if ENABLE(ASSERT)
-    virtual bool isConsistentForGC() override { return true; }
+    bool isConsistentForGC() override { return true; }
 #endif
 private:
     Address doAllocateLargeObjectPage(size_t, size_t gcInfoIndex);
-    virtual Address lazySweepPages(size_t, size_t gcInfoIndex) override;
+    Address lazySweepPages(size_t, size_t gcInfoIndex) override;
 };
 
 // Mask an address down to the enclosing oilpan heap base page.  All oilpan heap

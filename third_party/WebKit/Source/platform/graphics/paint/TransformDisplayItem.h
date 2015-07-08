@@ -17,12 +17,12 @@ public:
         : PairedBeginDisplayItem(client, BeginTransform)
         , m_transform(transform) { }
 
-    virtual void replay(GraphicsContext&) override;
-    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    void replay(GraphicsContext&) override;
+    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
 #ifndef NDEBUG
-    virtual void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override final;
+    void dumpPropertiesAsDebugString(WTF::StringBuilder&) const final;
 #endif
 
     const AffineTransform m_transform;
@@ -33,12 +33,12 @@ public:
     EndTransformDisplayItem(const DisplayItemClientWrapper& client)
         : PairedEndDisplayItem(client, EndTransform) { }
 
-    virtual void replay(GraphicsContext&) override;
-    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
+    void replay(GraphicsContext&) override;
+    void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
 #if ENABLE(ASSERT)
-    virtual bool isEndAndPairedWith(DisplayItem::Type otherType) const override final { return otherType == BeginTransform; }
+    bool isEndAndPairedWith(DisplayItem::Type otherType) const final { return otherType == BeginTransform; }
 #endif
 };
 

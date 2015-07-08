@@ -354,7 +354,7 @@ protected:
     PairedBeginDisplayItem(const DisplayItemClientWrapper& client, Type type) : DisplayItem(client, type) { }
 
 private:
-    virtual bool isBegin() const override final { return true; }
+    bool isBegin() const final { return true; }
 };
 
 class PLATFORM_EXPORT PairedEndDisplayItem : public DisplayItem {
@@ -362,11 +362,11 @@ protected:
     PairedEndDisplayItem(const DisplayItemClientWrapper& client, Type type) : DisplayItem(client, type) { }
 
 #if ENABLE(ASSERT)
-    virtual bool isEndAndPairedWith(DisplayItem::Type otherType) const override = 0;
+    bool isEndAndPairedWith(DisplayItem::Type otherType) const override = 0;
 #endif
 
 private:
-    virtual bool isEnd() const override final { return true; }
+    bool isEnd() const final { return true; }
 };
 
 } // namespace blink

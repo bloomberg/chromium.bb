@@ -48,16 +48,16 @@ public:
     float scale() const;
     bool setScale(float);
 
-    virtual FloatRect mapPaintRect(const FloatRect&, bool forward = true) override final;
+    FloatRect mapPaintRect(const FloatRect&, bool forward = true) final;
 
-    virtual TextStream& externalRepresentation(TextStream&, int indention) const override;
+    TextStream& externalRepresentation(TextStream&, int indention) const override;
 
     FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) override;
 
 private:
     FEDisplacementMap(Filter*, ChannelSelectorType xChannelSelector, ChannelSelectorType yChannelSelector, float);
 
-    virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
+    PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
 
     ChannelSelectorType m_xChannelSelector;
     ChannelSelectorType m_yChannelSelector;
