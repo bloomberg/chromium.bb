@@ -145,7 +145,7 @@ function hasSubscription() {
   }).catch(sendErrorToTest);
 }
 
-addEventListener('message', function(event) {
+navigator.serviceWorker.addEventListener('message', function(event) {
   var message = JSON.parse(event.data);
   if (message.type == 'push')
     resultQueue.push(message.data);
