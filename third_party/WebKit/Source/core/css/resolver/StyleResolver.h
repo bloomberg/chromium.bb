@@ -56,15 +56,12 @@ class ContainerNode;
 class Document;
 class Element;
 class Interpolation;
+class MatchResult;
 class MediaQueryEvaluator;
-class RuleData;
 class ScopedStyleResolver;
 class StylePropertySet;
 class StyleRule;
-class StyleRulePage;
 class ViewportStyleResolver;
-
-class MatchResult;
 
 enum StyleSharingBehavior {
     AllowStyleSharing,
@@ -200,7 +197,6 @@ private:
     void adjustComputedStyle(StyleResolverState&, Element*);
 
     void appendCSSStyleSheet(CSSStyleSheet&);
-    void addRulesFromSheet(CSSStyleSheet&, TreeScope*, unsigned);
 
     void collectPseudoRulesForElement(Element*, ElementRuleCollector&, PseudoId, unsigned rulesToInclude);
     void matchRuleSet(ElementRuleCollector&, RuleSet*);
@@ -209,8 +205,6 @@ private:
     void matchAllRules(StyleResolverState&, ElementRuleCollector&, bool includeSMILProperties);
     void collectFeatures();
     void resetRuleFeatures();
-
-    bool fastRejectSelector(const RuleData&) const;
 
     void applyMatchedProperties(StyleResolverState&, const MatchResult&);
     bool applyAnimatedProperties(StyleResolverState&, const Element* animatingElement);
@@ -225,17 +219,6 @@ private:
     template <CSSPropertyPriority priority>
     void applyAllProperty(StyleResolverState&, CSSValue*, bool inheritedOnly);
 
-    void matchPageRules(MatchResult&, RuleSet*, bool isLeftPage, bool isFirstPage, const String& pageName);
-    void matchPageRulesForList(WillBeHeapVector<RawPtrWillBeMember<StyleRulePage>>& matchedRules, const WillBeHeapVector<RawPtrWillBeMember<StyleRulePage>>&, bool isLeftPage, bool isFirstPage, const String& pageName);
-    void collectViewportRules();
-
-    // FIXME: These functions appear to be unused, and previously isLeftPage lacked an implementaion.
-    // They should be removed unless there are plans to use them in the near future.
-    bool isLeftPage(int pageIndex) const { return false; }
-    bool isRightPage(int pageIndex) const { return !isLeftPage(pageIndex); }
-    bool isFirstPage(int pageIndex) const;
-    String pageName(int pageIndex) const;
-
     bool pseudoStyleForElementInternal(Element&, const PseudoStyleRequest&, const ComputedStyle* parentStyle, StyleResolverState&);
 
     PassRefPtrWillBeRawPtr<PseudoElement> createPseudoElement(Element* parent, PseudoId);
@@ -243,8 +226,6 @@ private:
     Document& document() { return *m_document; }
 
     static ComputedStyle* s_styleNotYetAvailable;
-
-    void cacheBorderAndBackground();
 
     MatchedPropertiesCache m_matchedPropertiesCache;
 
