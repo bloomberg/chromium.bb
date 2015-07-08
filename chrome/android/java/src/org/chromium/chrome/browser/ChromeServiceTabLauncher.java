@@ -5,14 +5,12 @@
 package org.chromium.chrome.browser;
 
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 
-import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentMetricIds;
+import org.chromium.chrome.browser.document.TabDelegateImpl;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
-import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.tabmodel.document.TabDelegate.AsyncTabCreationParams;
 import org.chromium.components.service_tab_launcher.ServiceTabLauncher;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
@@ -38,36 +36,17 @@ public class ChromeServiceTabLauncher extends ServiceTabLauncher {
         // tab is being launched. Right now this is gated by a check in the native implementation.
         int intentSource = DocumentMetricIds.STARTED_BY_WINDOW_OPEN;
 
-        if (FeatureUtilities.isDocumentMode(context)) {
-            LoadUrlParams loadUrlParams = new LoadUrlParams(url, PageTransition.LINK);
-            loadUrlParams.setPostData(postData);
-            loadUrlParams.setVerbatimHeaders(extraHeaders);
-            loadUrlParams.setReferrer(new Referrer(referrerUrl, referrerPolicy));
+        LoadUrlParams loadUrlParams = new LoadUrlParams(url, PageTransition.LINK);
+        loadUrlParams.setPostData(postData);
+        loadUrlParams.setVerbatimHeaders(extraHeaders);
+        loadUrlParams.setReferrer(new Referrer(referrerUrl, referrerPolicy));
 
-            TabDelegate tabDelegate =
-                    ChromeApplication.getDocumentTabModelSelector().getTabCreator(incognito);
-            tabDelegate.createNewDocumentTab(loadUrlParams, TabLaunchType.FROM_MENU_OR_OVERVIEW,
-                    null, ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND, intentSource, requestId);
-            return;
-        }
+        AsyncTabCreationParams additionalParams = new AsyncTabCreationParams();
+        additionalParams.documentStartedBy = intentSource;
+        additionalParams.requestId = requestId;
 
-        Intent intent = new Intent(context, ChromeLauncherActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setAction(Intent.ACTION_VIEW);
-
-        intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, incognito);
-        intent.putExtra(IntentHandler.EXTRA_PAGE_TRANSITION_TYPE, PageTransition.LINK);
-        intent.putExtra(IntentHandler.EXTRA_STARTED_BY, intentSource);
-
-        intent.putExtra(ServiceTabLauncher.LAUNCH_REQUEST_ID_EXTRA, requestId);
-
-        // TODO(peter): We should include the referrer, extra headers and the post data in the
-        // new tab request where supported by the tabbed activity.
-
-        intent.setData(Uri.parse(url));
-
-        IntentHandler.addTrustedIntentExtras(intent, context);
-
-        context.startActivity(intent);
+        TabDelegate tabDelegate = new TabDelegateImpl(incognito);
+        tabDelegate.createNewTab(
+                loadUrlParams, TabLaunchType.FROM_MENU_OR_OVERVIEW, null, additionalParams);
     }
 }

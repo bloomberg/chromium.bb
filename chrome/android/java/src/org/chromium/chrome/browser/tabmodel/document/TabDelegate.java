@@ -5,15 +5,31 @@
 package org.chromium.chrome.browser.tabmodel.document;
 
 import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.document.DocumentMetricIds;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 
+import javax.annotation.Nullable;
+
 /**
  * Provides Tabs to a DocumentTabModel.
  */
 public interface TabDelegate extends TabCreator {
+    /** Optional parameters for creating a Tab asynchronously. */
+    public static final class AsyncTabCreationParams {
+        /** How to start a document mode Tab. */
+        public int documentLaunchMode = ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND;
+
+        /** What caused a document mode Tab to be created. */
+        public int documentStartedBy = DocumentMetricIds.STARTED_BY_UNKNOWN;
+
+        /** Used by the ServiceTabLauncher. */
+        public Integer requestId;
+    }
+
     /**
      * Creates a Tab to host the given WebContents asynchronously.
      * @param webContents WebContents that has been pre-created.
@@ -26,15 +42,12 @@ public interface TabDelegate extends TabCreator {
             WebContents webContents, int parentId, TabLaunchType type, String url, int startedBy);
 
      /**
-      * Creates a new DocumentTab asynchronously.  Generally, you should use createNewTab() instead.
-      * @param loadUrlParams parameters of the url load.
-      * @param type Information about how the tab was launched.
-      * @param parent the parent tab, if present.
-      * @param documentLaunchMode Launch mode for the DocumentActivity.
-      * @param documentStartedBy Reason that the DocumentActivity is being started.
-      *        {@see DocumentMetricIds}.
-      * @param requestId ServiceTabLauncher ID for the request.
+     * Creates a Tab to host the given WebContents asynchronously.
+      * @param loadUrlParams      Parameters of the url load.
+      * @param type               Information about how the tab was launched.
+      * @param parent             The parent tab, if it exists.
+      * @param additionalParams   Additional parameters to load.
       */
-    void createNewDocumentTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent,
-            int documentLaunchMode, int documentStartedBy, Integer requestId);
+    void createNewTab(LoadUrlParams loadUrlParams, TabLaunchType type, @Nullable Tab parent,
+            AsyncTabCreationParams additionalParams);
 }

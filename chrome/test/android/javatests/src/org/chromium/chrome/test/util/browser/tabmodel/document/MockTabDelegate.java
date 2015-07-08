@@ -57,7 +57,7 @@ public class MockTabDelegate implements TabDelegate {
     }
 
     @Override
-    public void createNewDocumentTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent,
-            int documentLaunchMode, int documentStartedBy, Integer requestId) {
+    public void createNewTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent,
+            TabDelegate.AsyncTabCreationParams params) {
     }
 }

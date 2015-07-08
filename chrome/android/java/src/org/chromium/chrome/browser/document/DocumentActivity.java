@@ -695,10 +695,12 @@ public class DocumentActivity extends ChromeActivity {
                 searchContentViewCore.getWebContents().getNavigationController().getPendingEntry();
         String url = entry != null
                 ? entry.getUrl() : searchContentViewCore.getWebContents().getUrl();
-        getTabCreator(false).createNewDocumentTab(new LoadUrlParams(url, PageTransition.LINK),
-                TabLaunchType.FROM_MENU_OR_OVERVIEW, getActivityTab(),
-                ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND,
-                DocumentMetricIds.STARTED_BY_CONTEXTUAL_SEARCH, null);
+
+        TabDelegate.AsyncTabCreationParams asyncParams = new TabDelegate.AsyncTabCreationParams();
+        asyncParams.documentStartedBy = DocumentMetricIds.STARTED_BY_CONTEXTUAL_SEARCH;
+
+        getTabCreator(false).createNewTab(new LoadUrlParams(url, PageTransition.LINK),
+                TabLaunchType.FROM_MENU_OR_OVERVIEW, getActivityTab(), asyncParams);
         return false;
     }
 
