@@ -177,6 +177,14 @@ def SetProperties(device, options):
   else:
     device_settings.ConfigureContentSettings(
         device, device_settings.ENABLE_LOCATION_SETTINGS)
+
+  if options.enable_mock_location:
+    device_settings.ConfigureContentSettings(
+        device, device_settings.ENABLE_MOCK_LOCATION_SETTINGS)
+  else:
+    device_settings.ConfigureContentSettings(
+        device, device_settings.DISABLE_MOCK_LOCATION_SETTINGS)
+
   device_settings.SetLockScreenSettings(device)
   if options.disable_network:
     device_settings.ConfigureContentSettings(
@@ -305,6 +313,8 @@ def main():
                       ' level before trying to continue')
   parser.add_argument('--disable-location', action='store_true',
                       help='disable Google location services on devices')
+  parser.add_argument('--enable-mock-location', action='store_true',
+                      default=False, help='Set ALLOW_MOCK_LOCATION to true')
   parser.add_argument('--disable-network', action='store_true',
                       help='disable network access on devices')
   parser.add_argument('--disable-java-debug', action='store_false',
