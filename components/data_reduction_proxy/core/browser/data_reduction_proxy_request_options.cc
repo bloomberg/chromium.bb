@@ -28,7 +28,7 @@
 #include "net/proxy/proxy_server.h"
 #include "net/url_request/url_request.h"
 
-#if !defined(OS_IOS)
+#if defined(USE_GOOGLE_API_KEYS_FOR_AUTH_KEY)
 #include "google_apis/google_api_keys.h"
 #endif
 
@@ -343,14 +343,15 @@ std::string DataReductionProxyRequestOptions::GetDefaultKey() const {
       *base::CommandLine::ForCurrentProcess();
   std::string key =
     command_line.GetSwitchValueASCII(switches::kDataReductionProxyKey);
-// iOS gets the default key from a preprocessor constant. All other
-// platforms get the key from google_apis
+// Chrome on iOS gets the default key from a preprocessor constant. Chrome on
+// Android and Chrome on desktop get the key from google_apis. Cronet and
+// Webview have no default key.
 #if defined(OS_IOS)
 #if defined(SPDY_PROXY_AUTH_VALUE)
   if (key.empty())
     key = SPDY_PROXY_AUTH_VALUE;
 #endif
-#else
+#elif USE_GOOGLE_API_KEYS_FOR_AUTH_KEY
   if (key.empty()) {
     key = google_apis::GetSpdyProxyAuthValue();
   }

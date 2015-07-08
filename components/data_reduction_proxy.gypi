@@ -183,14 +183,18 @@
       'target_name': 'data_reduction_proxy_core_browser',
       'type': 'static_library',
       'conditions': [
-        ['OS != "android" and OS != "ios"', {
-          'dependencies' : [
-            '../google_apis/google_apis.gyp:google_apis',
+        ['OS != "ios"', {
+          'defines': [
+            'USE_GOOGLE_API_KEYS_FOR_AUTH_KEY' 
           ]
         }],
       ],
+      'defines': [
+        'USE_GOOGLE_API_KEYS'
+      ],
       'dependencies': [
         '<@(data_reduction_proxy_core_browser_deps)',
+        '../google_apis/google_apis.gyp:google_apis',
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
         'data_reduction_proxy_core_common',

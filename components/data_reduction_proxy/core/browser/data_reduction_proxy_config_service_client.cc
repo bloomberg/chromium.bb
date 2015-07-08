@@ -24,7 +24,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
-#include "google_apis/google_api_keys.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
@@ -33,6 +32,10 @@
 #include "net/proxy/proxy_server.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
+
+#if defined(USE_GOOGLE_API_KEYS)
+#include "google_apis/google_api_keys.h"
+#endif
 
 namespace data_reduction_proxy {
 
@@ -51,8 +54,10 @@ const char kUMAConfigServiceFetchFailedAttemptsBeforeSuccess[] =
 const char kUMAConfigServiceFetchLatency[] =
     "DataReductionProxy.ConfigService.FetchLatency";
 
+#if defined(USE_GOOGLE_API_KEYS)
 // Used in all Data Reduction Proxy URLs to specify API Key.
 const char kApiKeyName[] = "key";
+#endif
 
 // This is the default backoff policy used to communicate with the Data
 // Reduction Proxy configuration service.
@@ -103,11 +108,12 @@ base::TimeDelta CalculateNextConfigRefreshTime(
 
 GURL AddApiKeyToUrl(const GURL& url) {
   GURL new_url = url;
+#if defined(USE_GOOGLE_API_KEYS)
   std::string api_key = google_apis::GetAPIKey();
   if (google_apis::HasKeysConfigured() && !api_key.empty()) {
     new_url = net::AppendOrReplaceQueryParameter(url, kApiKeyName, api_key);
   }
-
+#endif
   return net::AppendOrReplaceQueryParameter(new_url, "alt", "proto");
 }
 
