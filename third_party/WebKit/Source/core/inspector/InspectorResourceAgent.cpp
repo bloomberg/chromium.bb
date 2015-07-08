@@ -197,6 +197,7 @@ static PassRefPtr<TypeBuilder::Network::ResourceTiming> buildObjectForTiming(con
         .setSslStart(timing.calculateMillisecondDelta(timing.sslStart()))
         .setSslEnd(timing.calculateMillisecondDelta(timing.sslEnd()))
         .setWorkerStart(timing.calculateMillisecondDelta(timing.workerStart()))
+        .setWorkerReady(timing.calculateMillisecondDelta(timing.workerReady()))
         .setSendStart(timing.calculateMillisecondDelta(timing.sendStart()))
         .setSendEnd(timing.calculateMillisecondDelta(timing.sendEnd()))
         .setReceiveHeadersEnd(timing.calculateMillisecondDelta(timing.receiveHeadersEnd()))
