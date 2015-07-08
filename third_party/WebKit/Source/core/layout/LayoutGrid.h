@@ -32,6 +32,7 @@
 
 namespace blink {
 
+struct ContentAlignmentData;
 struct GridCoordinate;
 struct GridSpan;
 class GridTrack;
@@ -125,7 +126,7 @@ private:
     void layoutGridItems();
     void layoutPositionedObjects(bool relayoutChildren, PositionedLayoutBehavior = DefaultLayout);
     void offsetAndBreadthForPositionedChild(const LayoutBox&, GridTrackSizingDirection, bool startIsAuto, bool endIsAuto, LayoutUnit& offset, LayoutUnit& breadth);
-    void populateGridPositions(const GridSizingData&);
+    void populateGridPositions(GridSizingData&, LayoutUnit availableSpaceForColumns, LayoutUnit availableSpaceForRows);
 
     typedef struct GridItemsSpanGroupRange GridItemsSpanGroupRange;
     LayoutUnit currentItemSizeForTrackSizeComputationPhase(TrackSizeComputationPhase, LayoutBox&, GridTrackSizingDirection, Vector<GridTrack>& columnTracks);
@@ -142,14 +143,16 @@ private:
     LayoutUnit maxContentForChild(LayoutBox&, GridTrackSizingDirection, Vector<GridTrack>& columnTracks);
     GridAxisPosition columnAxisPositionForChild(const LayoutBox&) const;
     GridAxisPosition rowAxisPositionForChild(const LayoutBox&) const;
-    LayoutUnit columnPositionForChild(const LayoutBox&) const;
-    LayoutUnit rowPositionForChild(const LayoutBox&) const;
-    void computeContentPositionAndDistributionRowOffset(LayoutUnit availableFreeSpace, GridSizingData&) const;
-    void computeContentPositionAndDistributionColumnOffset(LayoutUnit availableFreeSpace, GridSizingData&) const;
+    LayoutUnit rowAxisOffsetForChild(const LayoutBox&) const;
+    LayoutUnit columnAxisOffsetForChild(const LayoutBox&) const;
+    ContentAlignmentData computeContentPositionAndDistributionOffset(GridTrackSizingDirection, LayoutUnit availableFreeSpace, unsigned numberOfGridTracks) const;
     LayoutPoint findChildLogicalPosition(const LayoutBox&, GridSizingData&) const;
     GridCoordinate cachedGridCoordinate(const LayoutBox&) const;
 
     LayoutUnit gridAreaBreadthForChild(const LayoutBox& child, GridTrackSizingDirection, const Vector<GridTrack>&) const;
+    LayoutUnit gridAreaBreadthForChildIncludingAlignmentOffsets(const LayoutBox&, GridTrackSizingDirection, const GridSizingData&) const;
+
+    void applyStretchAlignmentToTracksIfNeeded(GridTrackSizingDirection, GridSizingData&, LayoutUnit availableSpace);
 
     virtual void paintChildren(const PaintInfo&, const LayoutPoint&) override;
     bool allowedToStretchLogicalHeightForChild(const LayoutBox& child) const;
