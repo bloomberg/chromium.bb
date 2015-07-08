@@ -697,8 +697,7 @@ TEST_F(AlternateProtocolServerPropertiesTest,
 
   HttpServerPropertiesImplPeer::ExpireBrokenAlternateProtocolMappings(impl_);
   EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
-  // TODO(bnc): Test WasAlternativeServiceRecentlyBroken once it's changed to
-  // take AlternativeService as argument.
+  EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
 }
 
 typedef HttpServerPropertiesImplTest SpdySettingsServerPropertiesTest;
