@@ -77,7 +77,6 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="third_party/android_protobuf/src/java/src/main/java" including="com/google/protobuf/nano/*"/>
     <classpathentry kind="src" path="third_party/android_swipe_refresh/java/src"/>
     <classpathentry kind="src" path="third_party/cacheinvalidation/src/java"/>
-    <classpathentry kind="src" path="third_party/eyesfree/src/android/java/src"/>
     <classpathentry kind="src" path="third_party/junit/src/src/main/java"/>
     <classpathentry kind="src" path="third_party/mockito/src/src"/>
     <classpathentry kind="src" path="tools/android/findbugs_plugin/src"/>
@@ -103,7 +102,6 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="out/Debug/gen/enums/content_gamepad_mapping"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/content_setting_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/content_settings_type_java"/>
-    <classpathentry kind="src" path="out/Debug/gen/enums/enhanced_bookmarks_launch_location_srcjar"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/gesture_event_type_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/invalidate_types_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/media_android_imageformat"/>
