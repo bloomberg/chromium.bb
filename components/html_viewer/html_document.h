@@ -40,6 +40,7 @@ namespace html_viewer {
 
 class AxProviderImpl;
 class DevToolsAgentImpl;
+class GeolocationClientImpl;
 class GlobalState;
 class WebLayerTreeViewImpl;
 
@@ -117,6 +118,7 @@ class HTMLDocument : public blink::WebViewClient,
   virtual blink::WebCookieJar* cookieJar(blink::WebLocalFrame* frame);
   virtual blink::WebNavigationPolicy decidePolicyForNavigation(
       const NavigationPolicyInfo& info);
+  virtual blink::WebGeolocationClient* geolocationClient();
 
   virtual void didAddMessageToConsole(const blink::WebConsoleMessage& message,
                                       const blink::WebString& source_name,
@@ -167,6 +169,7 @@ class HTMLDocument : public blink::WebViewClient,
   mojo::ViewManagerClientFactory view_manager_client_factory_;
   scoped_ptr<WebLayerTreeViewImpl> web_layer_tree_view_impl_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_thread_;
+  scoped_ptr<GeolocationClientImpl> geolocation_client_impl_;
 
   // HTMLDocument owns these pointers; binding requests after document load.
   std::set<mojo::InterfaceRequest<mojo::AxProvider>*> ax_provider_requests_;

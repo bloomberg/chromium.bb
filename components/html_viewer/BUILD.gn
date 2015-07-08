@@ -78,6 +78,8 @@ source_set("lib") {
     "frame_tree_manager.cc",
     "frame_tree_manager.h",
     "frame_tree_manager_delegate.h",
+    "geolocation_client_impl.cc",
+    "geolocation_client_impl.h",
     "global_state.cc",
     "global_state.h",
     "html_document.cc",

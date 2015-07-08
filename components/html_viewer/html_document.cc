@@ -16,6 +16,7 @@
 #include "components/html_viewer/blink_input_events_type_converters.h"
 #include "components/html_viewer/blink_url_request_type_converters.h"
 #include "components/html_viewer/devtools_agent_impl.h"
+#include "components/html_viewer/geolocation_client_impl.h"
 #include "components/html_viewer/global_state.h"
 #include "components/html_viewer/media_factory.h"
 #include "components/html_viewer/web_layer_tree_view_impl.h"
@@ -378,6 +379,12 @@ blink::WebNavigationPolicy HTMLDocument::decidePolicyForNavigation(
   }
 
   return blink::WebNavigationPolicyIgnore;
+}
+
+blink::WebGeolocationClient* HTMLDocument::geolocationClient() {
+  if (!geolocation_client_impl_)
+    geolocation_client_impl_.reset(new GeolocationClientImpl);
+  return geolocation_client_impl_.get();
 }
 
 void HTMLDocument::didAddMessageToConsole(
