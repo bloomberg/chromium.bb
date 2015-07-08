@@ -199,6 +199,13 @@ bool Display::DrawAndSwap() {
 
   if (should_draw && !avoid_swap) {
     swapped_since_resize_ = true;
+    for (auto& latency : frame->metadata.latency_info) {
+      TRACE_EVENT_FLOW_STEP0(
+          "input,benchmark",
+          "LatencyInfo.Flow",
+          TRACE_ID_DONT_MANGLE(latency.trace_id),
+          "Display::DrawAndSwap");
+    }
     renderer_->SwapBuffers(frame->metadata);
   } else {
     stored_latency_info_.insert(stored_latency_info_.end(),
