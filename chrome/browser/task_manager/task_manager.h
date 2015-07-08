@@ -21,6 +21,7 @@
 #include "third_party/WebKit/public/web/WebCache.h"
 
 class PrefRegistrySimple;
+class PrivateWorkingSetSnapshot;
 class TaskManagerModel;
 class TaskManagerModelGpuDataManagerObserver;
 
@@ -284,6 +285,10 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   // Updates the values for all rows.
   void Refresh();
 
+  // Do a bulk repopulation of the physical_memory data on platforms where that
+  // is faster.
+  void RefreshPhysicalMemoryFromWorkingSetSnapshot();
+
   void NotifyVideoMemoryUsageStats(
       const content::GPUVideoMemoryUsageStats& video_memory_usage_stats);
 
@@ -528,6 +533,10 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   std::vector<BytesReadParam> bytes_read_buffer_;
 
   std::vector<base::Closure> on_data_ready_callbacks_;
+
+#if defined(OS_WIN)
+  scoped_ptr<PrivateWorkingSetSnapshot> working_set_snapshot_;
+#endif
 
   // All per-Resource values are stored here.
   mutable PerResourceCache per_resource_cache_;
