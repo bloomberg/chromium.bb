@@ -1429,8 +1429,14 @@ void Element::removedFrom(ContainerNode* insertionPoint)
 
     clearElementFlag(IsInCanvasSubtree);
 
-    if (hasRareData())
-        elementRareData()->clearRestyleFlags();
+    if (hasRareData()) {
+        ElementRareData* data = elementRareData();
+
+        data->clearRestyleFlags();
+
+        if (ElementAnimations* elementAnimations = data->elementAnimations())
+            elementAnimations->cssAnimations().cancel();
+    }
 }
 
 void Element::attach(const AttachContext& context)
