@@ -115,7 +115,7 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventPpapiProcessSortIndex);
 
-#if defined(OS_LINUX) && defined(USE_NSS_CERTS)
+#if defined(OS_LINUX) && !defined(USE_OPENSSL)
   // Some out-of-process PPAPI plugins use NSS.
   // NSS must be initialized before enabling the sandbox below.
   crypto::InitNSSSafely();
