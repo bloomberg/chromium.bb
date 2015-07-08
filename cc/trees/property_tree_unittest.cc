@@ -422,6 +422,68 @@ TEST(PropertyTreeTest, ComputeTransformWithSublayerScale) {
                                   transform);
 }
 
+TEST(PropertyTreeTest, ComputeTransformToTargetWithZeroSublayerScale) {
+  TransformTree tree;
+  TransformNode& root = *tree.Node(0);
+  root.data.target_id = 0;
+  tree.UpdateTransforms(0);
+
+  TransformNode grand_parent;
+  grand_parent.data.local.Scale(2.f, 0.f);
+  grand_parent.data.target_id = 0;
+  grand_parent.data.source_node_id = 0;
+  grand_parent.data.needs_sublayer_scale = true;
+  int grand_parent_id = tree.Insert(grand_parent, 0);
+  tree.Node(grand_parent_id)->data.content_target_id = grand_parent_id;
+  tree.UpdateTransforms(grand_parent_id);
+
+  TransformNode parent;
+  parent.data.local.Translate(1.f, 1.f);
+  parent.data.target_id = grand_parent_id;
+  parent.data.content_target_id = grand_parent_id;
+  parent.data.source_node_id = grand_parent_id;
+  int parent_id = tree.Insert(parent, grand_parent_id);
+  tree.UpdateTransforms(parent_id);
+
+  TransformNode child;
+  child.data.local.Translate(3.f, 4.f);
+  child.data.target_id = grand_parent_id;
+  child.data.content_target_id = grand_parent_id;
+  child.data.source_node_id = parent_id;
+  int child_id = tree.Insert(child, parent_id);
+  tree.UpdateTransforms(child_id);
+
+  gfx::Transform expected_transform;
+  expected_transform.Translate(4.f, 5.f);
+
+  gfx::Transform transform;
+  bool success = tree.ComputeTransform(child_id, grand_parent_id, &transform);
+  EXPECT_TRUE(success);
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform, transform);
+
+  tree.Node(grand_parent_id)->data.local.MakeIdentity();
+  tree.Node(grand_parent_id)->data.local.Scale(0.f, 2.f);
+  tree.Node(grand_parent_id)->data.needs_local_transform_update = true;
+  tree.set_needs_update(true);
+
+  ComputeTransforms(&tree);
+
+  success = tree.ComputeTransform(child_id, grand_parent_id, &transform);
+  EXPECT_TRUE(success);
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform, transform);
+
+  tree.Node(grand_parent_id)->data.local.MakeIdentity();
+  tree.Node(grand_parent_id)->data.local.Scale(0.f, 0.f);
+  tree.Node(grand_parent_id)->data.needs_local_transform_update = true;
+  tree.set_needs_update(true);
+
+  ComputeTransforms(&tree);
+
+  success = tree.ComputeTransform(child_id, grand_parent_id, &transform);
+  EXPECT_TRUE(success);
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform, transform);
+}
+
 TEST(PropertyTreeTest, FlatteningWhenDestinationHasOnlyFlatAncestors) {
   // This tests that flattening is performed correctly when
   // destination and its ancestors are flat, but there are 3d transforms

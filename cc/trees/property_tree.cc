@@ -216,12 +216,21 @@ bool TransformTree::CombineTransformsBetween(int source_id,
   // path from the source to the destination (this is traversing upward), and
   // then we visit these nodes in reverse order, flattening as needed. We
   // early-out if we get to a node whose target node is the destination, since
-  // we can then re-use the target space transform stored at that node.
+  // we can then re-use the target space transform stored at that node. However,
+  // we cannot re-use a stored target space transform if the destination has a
+  // zero sublayer scale, since stored target space transforms have sublayer
+  // scale baked in, but we need to compute an unscaled transform.
   std::vector<int> source_to_destination;
   source_to_destination.push_back(current->id);
   current = parent(current);
+  bool destination_has_non_zero_sublayer_scale =
+      dest->data.sublayer_scale.x() != 0.f &&
+      dest->data.sublayer_scale.y() != 0.f;
+  DCHECK(destination_has_non_zero_sublayer_scale ||
+         !dest->data.ancestors_are_invertible);
   for (; current && current->id > dest_id; current = parent(current)) {
-    if (current->data.target_id == dest_id &&
+    if (destination_has_non_zero_sublayer_scale &&
+        current->data.target_id == dest_id &&
         current->data.content_target_id == dest_id)
       break;
     source_to_destination.push_back(current->id);
