@@ -51,6 +51,7 @@ class AndroidShell(object):
   """
   def __init__(self, config):
     self.adb_path = constants.GetAdbPath()
+    self.config = config
     self.paths = Paths(config)
     self.device = None
     self.shell_args = []
@@ -181,10 +182,20 @@ class AndroidShell(object):
 
   def _GetLocalGdbPath(self):
     """Returns the path to the android gdb."""
-    return os.path.join(self.paths.src_root, "third_party", "android_tools",
-                        "ndk", "toolchains", "arm-linux-androideabi-4.9",
-                        "prebuilt", "linux-x86_64", "bin",
-                        "arm-linux-androideabi-gdb")
+    if self.config.target_cpu == "arm":
+      return os.path.join(constants.ANDROID_NDK_ROOT, "toolchains",
+                          "arm-linux-androideabi-4.9", "prebuilt",
+                          "linux-x86_64", "bin", "arm-linux-androideabi-gdb")
+    elif self.config.target_cpu == "x86":
+      return os.path.join(constants.ANDROID_NDK_ROOT, "toolchains",
+                          "x86-4.9", "prebuilt", "linux-x86_64", "bin",
+                          "i686-linux-android-gdb")
+    elif self.config.target_cpu == "x64":
+      return os.path.join(constants.ANDROID_NDK_ROOT, "toolchains",
+                          "x86_64-4.9", "prebuilt", "linux-x86_64", "bin",
+                          "x86_64-linux-android-gdb")
+    else:
+      raise Exception("Unknown target_cpu: %s" % self.config.target_cpu)
 
   def _WaitForProcessIdAndStartGdb(self, process):
     """
