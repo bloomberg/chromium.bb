@@ -426,6 +426,7 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
         // there is no need for animations to be double buffered.
         mailboxInfo.m_image.clear();
     } else {
+        webContext->flush();
         mailboxInfo.m_mailbox.syncPoint = webContext->insertSyncPoint();
     }
     webContext->bindTexture(GL_TEXTURE_2D, 0);
