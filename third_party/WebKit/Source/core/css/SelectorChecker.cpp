@@ -393,7 +393,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             Match match = matchSelector(nextContext, result);
             if (match == SelectorMatches || match == SelectorFailsAllSiblings || match == SelectorFailsCompletely)
                 return match;
-        };
+        }
         return SelectorFailsAllSiblings;
 
     case CSSSelector::ShadowPseudo:
