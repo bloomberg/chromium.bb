@@ -284,8 +284,8 @@ class MockConnectionManager : public ServerConnectionManager {
                          sync_pb::ClientToServerResponse* response);
   void ProcessCommit(sync_pb::ClientToServerMessage* csm,
                      sync_pb::ClientToServerResponse* response_buffer);
-  void ProcessClearData(sync_pb::ClientToServerMessage* csm,
-                        sync_pb::ClientToServerResponse* response);
+  void ProcessClearServerData(sync_pb::ClientToServerMessage* csm,
+                              sync_pb::ClientToServerResponse* response);
   void AddDefaultBookmarkData(sync_pb::SyncEntity* entity, bool is_folder);
 
   // Determine if one entry in a commit should be rejected with a conflict.

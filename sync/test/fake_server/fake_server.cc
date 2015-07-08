@@ -275,6 +275,11 @@ void FakeServer::HandleCommand(const string& request,
                                       message.invalidator_client_id(),
                                       response_proto.mutable_commit());
         break;
+      case sync_pb::ClientToServerMessage::CLEAR_SERVER_DATA:
+        ClearServerData();
+        response_proto.mutable_clear_server_data();
+        success = true;
+        break;
       default:
         *error_code = net::ERR_NOT_IMPLEMENTED;
         *response_code = 0;

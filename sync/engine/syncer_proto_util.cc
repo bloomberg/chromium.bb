@@ -314,7 +314,7 @@ base::TimeDelta SyncerProtoUtil::GetThrottleDelay(
 
 namespace {
 
-// Helper function for an assertion in PostClientToServerMessage.
+// Returns true iff |message| is an initial GetUpdates request.
 bool IsVeryFirstGetUpdates(const ClientToServerMessage& message) {
   if (!message.has_get_updates())
     return false;
@@ -323,6 +323,18 @@ bool IsVeryFirstGetUpdates(const ClientToServerMessage& message) {
     if (!message.get_updates().from_progress_marker(i).token().empty())
       return false;
   }
+  return true;
+}
+
+// Returns true iff |message| should contain a store birthday.
+bool IsBirthdayRequired(const ClientToServerMessage& message) {
+  if (message.has_clear_server_data())
+    return false;
+  if (message.has_commit())
+    return true;
+  if (message.has_get_updates())
+    return !IsVeryFirstGetUpdates(message);
+  NOTIMPLEMENTED();
   return true;
 }
 
@@ -357,7 +369,7 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
   // Add must-have fields.
   SetProtocolVersion(msg);
   AddRequestBirthday(session->context()->directory(), msg);
-  DCHECK(msg->has_store_birthday() || IsVeryFirstGetUpdates(*msg));
+  DCHECK(msg->has_store_birthday() || !IsBirthdayRequired(*msg));
   AddBagOfChips(session->context()->directory(), msg);
   msg->set_api_key(google_apis::GetAPIKey());
   msg->mutable_client_status()->CopyFrom(session->context()->client_status());

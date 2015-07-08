@@ -136,13 +136,18 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
   }
   bool result = true;
   EXPECT_TRUE(!store_birthday_sent_ || post.has_store_birthday() ||
-              post.message_contents() == ClientToServerMessage::AUTHENTICATE);
+              post.message_contents() == ClientToServerMessage::AUTHENTICATE ||
+              post.message_contents() ==
+                  ClientToServerMessage::CLEAR_SERVER_DATA);
   store_birthday_sent_ = true;
 
   if (post.message_contents() == ClientToServerMessage::COMMIT) {
     ProcessCommit(&post, &response);
   } else if (post.message_contents() == ClientToServerMessage::GET_UPDATES) {
     ProcessGetUpdates(&post, &response);
+  } else if (post.message_contents() ==
+             ClientToServerMessage::CLEAR_SERVER_DATA) {
+    ProcessClearServerData(&post, &response);
   } else {
     EXPECT_TRUE(false) << "Unknown/unsupported ClientToServerMessage";
     return false;
@@ -642,6 +647,14 @@ void MockConnectionManager::ProcessCommit(
     response_buffer->mutable_client_command()->CopyFrom(
         *commit_client_command_.get());
   }
+}
+
+void MockConnectionManager::ProcessClearServerData(
+    sync_pb::ClientToServerMessage* csm,
+    sync_pb::ClientToServerResponse* response) {
+  CHECK(csm->has_clear_server_data());
+  ASSERT_EQ(csm->message_contents(), ClientToServerMessage::CLEAR_SERVER_DATA);
+  response->mutable_clear_server_data();
 }
 
 sync_pb::SyncEntity* MockConnectionManager::AddUpdateDirectory(

@@ -665,6 +665,22 @@ message AuthenticateMessage {
   required string auth_token = 1;
 };
 
+// Message from a client asking the server to clear its data.
+//
+// A client makes a ClearServerData request when it transitions to passphrase
+// encryption to ensure the server deletes any plaintext data that may have been
+// synced previously.
+message ClearServerDataMessage {
+  // No arguments needed as the store birthday and user identifier are part of
+  // an enclosing message.
+};
+
+// Response to a ClearServerData request.
+message ClearServerDataResponse {
+  // No result fields necessary. Success/failure is indicated in
+  // ClientToServerResponse.
+};
+
 message DeprecatedMessage1 {
 };
 
@@ -721,8 +737,13 @@ message ClientToServerMessage {
     GET_UPDATES = 2;
     AUTHENTICATE = 3;
     DEPRECATED_4 = 4;
+    CLEAR_SERVER_DATA = 5;
   }
 
+  // Each ClientToServerMessage contains one request defined by the
+  // message_contents. Each type has a corresponding message field that will be
+  // present iff the message is of that type. E.g. a commit message will have a
+  // message_contents of COMMIT and its commit field will be present.
   required Contents message_contents = 3;
   optional CommitMessage commit = 4;
   optional GetUpdatesMessage get_updates = 5;
@@ -756,6 +777,10 @@ message ClientToServerMessage {
   // Sending the ID here allows the server to not send notifications of our own
   // changes to our invalidator.
   optional string invalidator_client_id = 14;
+
+  // Identifies this ClientToServerMessage as a clear server data request. This
+  // field is present when message_contents is CLEAR_SERVER_DATA.
+  optional ClearServerDataMessage clear_server_data = 15;
 };
 
 // This request allows the client to convert a specific crash identifier
@@ -978,6 +1003,10 @@ message ClientToServerResponse {
   // The new per-client state for this client. If set, should be persisted and
   // sent with any subsequent ClientToServerMessages.
   optional ChipBag new_bag_of_chips = 14;
+
+  // Present if this ClientToServerResponse is in response to a ClearServerData
+  // request.
+  optional ClearServerDataResponse clear_server_data = 15;
 };
 
 // A message to notify the server of certain sync events. Idempotent. Send these
