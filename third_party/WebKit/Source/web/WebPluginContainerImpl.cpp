@@ -92,8 +92,6 @@
 #include "web/WebViewImpl.h"
 #include "wtf/Assertions.h"
 
-#include <base/debug/stack_trace.h>
-
 namespace blink {
 
 // Public methods --------------------------------------------------------------
