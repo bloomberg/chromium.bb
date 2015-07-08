@@ -2302,11 +2302,20 @@ void CompositedDeprecatedPaintLayerMapping::removeLayerFromSquashingGraphicsLaye
 
 void CompositedDeprecatedPaintLayerMapping::finishAccumulatingSquashingLayers(size_t nextSquashedLayerIndex)
 {
-    // Any additional squashed Layers in the array no longer exist, and removing invalidates the
-    // squashingLayer contents.
     if (nextSquashedLayerIndex < m_squashedLayers.size()) {
-        for (size_t i = m_squashedLayers.size(); i > nextSquashedLayerIndex; --i)
-            m_squashedLayers[i-1].paintLayer->setGroupedMapping(nullptr, DeprecatedPaintLayer::DoNotInvalidateLayerAndRemoveFromMapping);
+        // Any additional squashed Layers in the array no longer belong here, but they might have been
+        // added already at an earlier index. Clear pointers on those that do not appear in the valid set
+        // before removing all the extra entries.
+        for (size_t i = nextSquashedLayerIndex; i < m_squashedLayers.size(); ++i) {
+            DeprecatedPaintLayer* layerToRemove = m_squashedLayers[i].paintLayer;
+            size_t previousIndex = 0;
+            for (; previousIndex < nextSquashedLayerIndex; ++previousIndex) {
+                if (m_squashedLayers[previousIndex].paintLayer == layerToRemove)
+                    break;
+            }
+            if (previousIndex == nextSquashedLayerIndex)
+                layerToRemove->setGroupedMapping(nullptr, DeprecatedPaintLayer::DoNotInvalidateLayerAndRemoveFromMapping);
+        }
         m_squashedLayers.remove(nextSquashedLayerIndex, m_squashedLayers.size() - nextSquashedLayerIndex);
     }
 }
