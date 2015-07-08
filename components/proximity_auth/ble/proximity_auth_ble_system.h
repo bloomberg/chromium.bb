@@ -15,6 +15,9 @@
 #include "components/proximity_auth/cryptauth/cryptauth_client.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 
+class PrefRegistrySimple;
+class PrefService;
+
 namespace device {
 class BluetoothGattConnection;
 }
@@ -23,6 +26,7 @@ namespace proximity_auth {
 
 class BluetoothLowEnergyConnection;
 class BluetoothLowEnergyConnectionFinder;
+class BluetoothLowEnergyDeviceWhitelist;
 class Connection;
 class ConnectionFinder;
 class ProximityAuthClient;
@@ -37,8 +41,12 @@ class ProximityAuthBleSystem : public ScreenlockBridge::Observer,
   ProximityAuthBleSystem(
       ScreenlockBridge* screenlock_bridge,
       ProximityAuthClient* proximity_auth_client,
-      scoped_ptr<CryptAuthClientFactory> cryptauth_client_factory);
+      scoped_ptr<CryptAuthClientFactory> cryptauth_client_factory,
+      PrefService* pref_service);
   ~ProximityAuthBleSystem() override;
+
+  // Registers the prefs used by this class
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // ScreenlockBridge::Observer:
   void OnScreenDidLock(
@@ -83,6 +91,10 @@ class ProximityAuthBleSystem : public ScreenlockBridge::Observer,
   // Fetches the the public keys of devices that can be used as unlock keys.
   void GetUnlockKeys();
 
+  // Checks if the devices in |device_whitelist_| have their public keys
+  // registered in CryptAuth (|unlock_keys_|), removes the ones that do not.
+  void RemoveStaleWhitelistedDevices();
+
   // Callbacks for cryptauth::CryptAuthClient::GetMyDevices.
   void OnGetMyDevices(const cryptauth::GetMyDevicesResponse& response);
   void OnGetMyDevicesError(const std::string& error);
@@ -96,6 +108,10 @@ class ProximityAuthBleSystem : public ScreenlockBridge::Observer,
 
   // Stop polling for screen state of the remote device, if currently active.
   void StopPollingScreenState();
+
+  // Checks if |message| contains a valid public key (registered in
+  // |unlock_keys_|). If so, returns the public key in |out_public_key|.
+  bool HasUnlockKey(const std::string& message, std::string* out_public_key);
 
   scoped_ptr<ScreenlockBridgeAdapter> screenlock_bridge_;
 
@@ -115,7 +131,11 @@ class ProximityAuthBleSystem : public ScreenlockBridge::Observer,
 
   scoped_ptr<Connection> connection_;
 
+  scoped_ptr<BluetoothLowEnergyDeviceWhitelist> device_whitelist_;
+
   const base::TimeDelta polling_interval_;
+
+  bool device_authenticated_;
 
   bool is_polling_screen_state_;
 

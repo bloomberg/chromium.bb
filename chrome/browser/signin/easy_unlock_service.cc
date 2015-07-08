@@ -286,6 +286,10 @@ void EasyUnlockService::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
   proximity_auth::CryptAuthEnrollmentManager::RegisterPrefs(registry);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery))
+    proximity_auth::ProximityAuthBleSystem::RegisterPrefs(registry);
 }
 
 // static
@@ -715,7 +719,7 @@ void EasyUnlockService::UpdateAppState() {
       proximity_auth_ble_system_.reset(
           new proximity_auth::ProximityAuthBleSystem(
               proximity_auth::ScreenlockBridge::Get(), &proximity_auth_client_,
-              CreateCryptAuthClientFactory()));
+              CreateCryptAuthClientFactory(), profile_->GetPrefs()));
     }
 
 #if defined(OS_CHROMEOS)

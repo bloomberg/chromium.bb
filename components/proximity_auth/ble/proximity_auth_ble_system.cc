@@ -4,12 +4,16 @@
 
 #include "components/proximity_auth/ble/proximity_auth_ble_system.h"
 
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection.h"
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection_finder.h"
+#include "components/proximity_auth/ble/bluetooth_low_energy_device_whitelist.h"
 #include "components/proximity_auth/ble/fake_wire_message.h"
 #include "components/proximity_auth/connection.h"
 #include "components/proximity_auth/cryptauth/base64url.h"
@@ -42,6 +46,9 @@ const char kScreenUnlocked[] = "Screen Unlocked";
 
 // String send to poll the remote device screen state.
 const char kPollScreenState[] = "PollScreenState";
+
+// String prefix received with the public key.
+const char kPublicKeyMessagePrefix[] = "PublicKey:";
 
 // BluetoothLowEnergyConnection parameter, number of attempts to send a write
 // request before failing.
@@ -78,11 +85,14 @@ void ProximityAuthBleSystem::ScreenlockBridgeAdapter::Unlock(
 ProximityAuthBleSystem::ProximityAuthBleSystem(
     ScreenlockBridge* screenlock_bridge,
     ProximityAuthClient* proximity_auth_client,
-    scoped_ptr<CryptAuthClientFactory> cryptauth_client_factory)
+    scoped_ptr<CryptAuthClientFactory> cryptauth_client_factory,
+    PrefService* pref_service)
     : screenlock_bridge_(new ProximityAuthBleSystem::ScreenlockBridgeAdapter(
           screenlock_bridge)),
       proximity_auth_client_(proximity_auth_client),
       cryptauth_client_factory_(cryptauth_client_factory.Pass()),
+      device_whitelist_(new BluetoothLowEnergyDeviceWhitelist(pref_service)),
+      device_authenticated_(false),
       is_polling_screen_state_(false),
       weak_ptr_factory_(this) {
   PA_LOG(INFO) << "Starting Proximity Auth over Bluetooth Low Energy.";
@@ -107,6 +117,10 @@ ProximityAuthBleSystem::~ProximityAuthBleSystem() {
     connection_->RemoveObserver(this);
 }
 
+void ProximityAuthBleSystem::RegisterPrefs(PrefRegistrySimple* registry) {
+  BluetoothLowEnergyDeviceWhitelist::RegisterPrefs(registry);
+}
+
 void ProximityAuthBleSystem::OnGetMyDevices(
     const cryptauth::GetMyDevicesResponse& response) {
   PA_LOG(INFO) << "Found " << response.devices_size()
@@ -125,6 +139,8 @@ void ProximityAuthBleSystem::OnGetMyDevices(
     }
   }
   PA_LOG(INFO) << "Found " << unlock_keys_.size() << " unlock keys.";
+
+  RemoveStaleWhitelistedDevices();
 }
 
 void ProximityAuthBleSystem::OnGetMyDevicesError(const std::string& error) {
@@ -135,6 +151,7 @@ void ProximityAuthBleSystem::OnGetMyDevicesError(const std::string& error) {
 // calling |GetUnlockKeys| from the constructor cause |GetMyDevices| to always
 // return an error.
 void ProximityAuthBleSystem::GetUnlockKeys() {
+  PA_LOG(INFO) << "Fetching unlock keys.";
   if (cryptauth_client_factory_) {
     cryptauth_client_ = cryptauth_client_factory_->CreateInstance();
     cryptauth::GetMyDevicesRequest request;
@@ -144,6 +161,22 @@ void ProximityAuthBleSystem::GetUnlockKeys() {
         base::Bind(&ProximityAuthBleSystem::OnGetMyDevicesError,
                    weak_ptr_factory_.GetWeakPtr()));
   }
+}
+
+void ProximityAuthBleSystem::RemoveStaleWhitelistedDevices() {
+  PA_LOG(INFO) << "Removing stale whitelist devices.";
+  std::vector<std::string> public_keys = device_whitelist_->GetPublicKeys();
+  PA_LOG(INFO) << "There were " << public_keys.size()
+               << " whitelisted devices.";
+
+  for (const auto& public_key : public_keys) {
+    if (unlock_keys_.find(public_key) == unlock_keys_.end()) {
+      PA_LOG(INFO) << "Removing device: " << public_key;
+      device_whitelist_->RemoveDeviceWithPublicKey(public_key);
+    }
+  }
+  public_keys = device_whitelist_->GetPublicKeys();
+  PA_LOG(INFO) << "There are " << public_keys.size() << " whitelisted devices.";
 }
 
 void ProximityAuthBleSystem::OnScreenDidLock(
@@ -169,7 +202,7 @@ void ProximityAuthBleSystem::OnScreenDidLock(
 ConnectionFinder* ProximityAuthBleSystem::CreateConnectionFinder() {
   return new BluetoothLowEnergyConnectionFinder(
       kSmartLockServiceUUID, kToPeripheralCharUUID, kFromPeripheralCharUUID,
-      kMaxNumberOfTries);
+      device_whitelist_.get(), kMaxNumberOfTries);
 }
 
 void ProximityAuthBleSystem::OnScreenDidUnlock(
@@ -189,6 +222,7 @@ void ProximityAuthBleSystem::OnScreenDidUnlock(
     // created.
     connection_->RemoveObserver(this);
     connection_->Disconnect();
+    device_authenticated_ = false;
   }
 
   connection_.reset();
@@ -204,6 +238,31 @@ void ProximityAuthBleSystem::OnMessageReceived(const Connection& connection,
   // TODO(sacomoto): change this when WireMessage is fully implemented.
   PA_LOG(INFO) << "Message received: " << message.payload();
 
+  // The first message should contain a public key registered in |unlock_keys_|
+  // to authenticate the device.
+  if (!device_authenticated_) {
+    std::string out_public_key;
+    if (HasUnlockKey(message.payload(), &out_public_key)) {
+      PA_LOG(INFO) << "Device authenticated. Adding "
+                   << connection_->remote_device().bluetooth_address << ", "
+                   << out_public_key << " to whitelist.";
+      device_whitelist_->AddOrUpdateDevice(
+          connection_->remote_device().bluetooth_address, out_public_key);
+      device_authenticated_ = true;
+
+      // Only start polling the screen state if the device is authenticated.
+      if (!is_polling_screen_state_) {
+        is_polling_screen_state_ = true;
+        StartPollingScreenState();
+      }
+
+    } else {
+      PA_LOG(INFO) << "Key not found. Authentication failed.";
+      connection_->Disconnect();
+    }
+    return;
+  }
+
   // Unlock the screen when the remote device sends an unlock signal.
   //
   // Note that this magically unlocks Chrome (no user interaction is needed).
@@ -218,22 +277,18 @@ void ProximityAuthBleSystem::OnMessageReceived(const Connection& connection,
 void ProximityAuthBleSystem::OnConnectionFound(
     scoped_ptr<Connection> connection) {
   PA_LOG(INFO) << "Connection found.";
+  DCHECK(connection);
 
   connection_ = connection.Pass();
-  if (connection_) {
-    connection_->AddObserver(this);
-
-    if (!is_polling_screen_state_) {
-      is_polling_screen_state_ = true;
-      StartPollingScreenState();
-    }
-  }
+  connection_->AddObserver(this);
 }
 
 void ProximityAuthBleSystem::OnConnectionStatusChanged(
     Connection* connection,
     Connection::Status old_status,
     Connection::Status new_status) {
+  PA_LOG(INFO) << "OnConnectionStatusChanged: " << old_status << " -> "
+               << new_status;
   if (old_status == Connection::CONNECTED &&
       new_status == Connection::DISCONNECTED) {
     StopPollingScreenState();
@@ -249,6 +304,7 @@ void ProximityAuthBleSystem::OnConnectionStatusChanged(
 }
 
 void ProximityAuthBleSystem::StartPollingScreenState() {
+  PA_LOG(INFO) << "Start polling.";
   if (is_polling_screen_state_) {
     if (!connection_ || !connection_->IsConnected()) {
       PA_LOG(INFO) << "Polling stopped.";
@@ -260,7 +316,7 @@ void ProximityAuthBleSystem::StartPollingScreenState() {
     connection_->SendMessage(
         make_scoped_ptr(new FakeWireMessage(kPollScreenState)));
 
-    // Schedules the next message in |kPollingIntervalSeconds| ms.
+    // Schedules the next message in |kPollingIntervalSeconds| s.
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::Bind(&ProximityAuthBleSystem::StartPollingScreenState,
                               weak_ptr_factory_.GetWeakPtr()),
@@ -270,6 +326,17 @@ void ProximityAuthBleSystem::StartPollingScreenState() {
 
 void ProximityAuthBleSystem::StopPollingScreenState() {
   is_polling_screen_state_ = false;
+}
+
+bool ProximityAuthBleSystem::HasUnlockKey(const std::string& message,
+                                          std::string* out_public_key) {
+  std::string message_prefix(kPublicKeyMessagePrefix);
+  if (message.substr(0, message_prefix.size()) != message_prefix)
+    return false;
+  std::string public_key = message.substr(message_prefix.size());
+  if (out_public_key)
+    (*out_public_key) = public_key;
+  return unlock_keys_.find(public_key) != unlock_keys_.end();
 }
 
 }  // namespace proximity_auth

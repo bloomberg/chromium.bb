@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection.h"
+#include "components/proximity_auth/ble/bluetooth_low_energy_device_whitelist.h"
 #include "components/proximity_auth/connection.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -27,7 +28,7 @@ using device::BluetoothDiscoveryFilter;
 
 namespace proximity_auth {
 namespace {
-const int kMinDiscoveryRSSI = -100;
+const int kMinDiscoveryRSSI = -90;
 const int kDelayAfterGattConnectionMilliseconds = 1000;
 }  // namespace
 
@@ -35,11 +36,13 @@ BluetoothLowEnergyConnectionFinder::BluetoothLowEnergyConnectionFinder(
     const std::string& remote_service_uuid,
     const std::string& to_peripheral_char_uuid,
     const std::string& from_peripheral_char_uuid,
+    const BluetoothLowEnergyDeviceWhitelist* device_whitelist,
     int max_number_of_tries)
     : remote_service_uuid_(device::BluetoothUUID(remote_service_uuid)),
       to_peripheral_char_uuid_(device::BluetoothUUID(to_peripheral_char_uuid)),
       from_peripheral_char_uuid_(
           device::BluetoothUUID(from_peripheral_char_uuid)),
+      device_whitelist_(device_whitelist),
       connected_(false),
       max_number_of_tries_(max_number_of_tries),
       delay_after_gatt_connection_(base::TimeDelta::FromMilliseconds(
@@ -133,8 +136,14 @@ void BluetoothLowEnergyConnectionFinder::HandleDeviceUpdated(
     PA_LOG(INFO) << "Pending connection to device " << device->GetAddress();
     return;
   }
-  if (HasService(device) && device->IsPaired()) {
-    PA_LOG(INFO) << "Connecting to paired device " << device->GetAddress();
+  if (device->IsPaired() &&
+      (HasService(device) ||
+       device_whitelist_->HasDeviceWithAddress(device->GetAddress()))) {
+    PA_LOG(INFO) << "Connecting to paired device " << device->GetAddress()
+                 << " with service (" << HasService(device)
+                 << ") or is whitelisted ("
+                 << device_whitelist_->HasDeviceWithAddress(
+                        device->GetAddress()) << ")";
     pending_connections_.insert(device);
     CreateGattConnection(device);
   }
@@ -330,6 +339,8 @@ void BluetoothLowEnergyConnectionFinder::OnConnectionStatusChanged(
     Connection::Status old_status,
     Connection::Status new_status) {
   DCHECK_EQ(connection, connection_.get());
+  PA_LOG(INFO) << "OnConnectionStatusChanged: " << old_status << " -> "
+               << new_status;
 
   if (!connection_callback_.is_null() && connection_->IsConnected()) {
     adapter_->RemoveObserver(this);

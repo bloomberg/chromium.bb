@@ -24,6 +24,8 @@
 
 namespace proximity_auth {
 
+class BluetoothLowEnergyDeviceWhitelist;
+
 // This ConnectionFinder implementation is specialized in finding a Bluetooth
 // Low Energy remote device.
 class BluetoothLowEnergyConnectionFinder
@@ -35,6 +37,7 @@ class BluetoothLowEnergyConnectionFinder
       const std::string& remote_service_uuid,
       const std::string& to_peripheral_char_uuid,
       const std::string& from_peripheral_char_uuid,
+      const BluetoothLowEnergyDeviceWhitelist* device_whitelist,
       int max_number_of_tries);
   ~BluetoothLowEnergyConnectionFinder() override;
 
@@ -130,6 +133,10 @@ class BluetoothLowEnergyConnectionFinder
 
   // Characteristic used to receive data from the remote device.
   device::BluetoothUUID from_peripheral_char_uuid_;
+
+  // Devices in |device_whitelist_| don't need to have |remote_service_uuid_|
+  // cached or advertised. Not owned, must outlive this instance.
+  const BluetoothLowEnergyDeviceWhitelist* device_whitelist_;
 
   // The Bluetooth adapter over which the Bluetooth connection will be made.
   scoped_refptr<device::BluetoothAdapter> adapter_;

@@ -96,6 +96,7 @@ void BluetoothLowEnergyConnection::Disconnect() {
   if (sub_status_ != SubStatus::DISCONNECTED) {
     ClearWriteRequestsQueue();
     StopNotifySession();
+    characteristic_finder_.reset();
     if (gatt_connection_) {
       PA_LOG(INFO) << "Disconnect from device "
                    << gatt_connection_->GetDeviceAddress();
