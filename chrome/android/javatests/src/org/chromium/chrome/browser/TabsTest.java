@@ -16,6 +16,7 @@ import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.test.suitebuilder.annotation.Smoke;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 
@@ -53,6 +54,7 @@ import org.chromium.chrome.browser.toolbar.ToolbarPhone;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
+import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.ContentViewCore;
@@ -92,6 +94,14 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
     private static final long WAIT_RESIZE_TIMEOUT_MS = 3000;
 
     private static final int STRESSFUL_TAB_COUNT = 100;
+
+    private static final String INITIAL_SIZE_TEST_URL = UrlUtils.encodeHtmlDataUri(
+            "<html><head><meta name=\"viewport\" content=\"width=device-width\">"
+            + "<script>"
+            + "  document.writeln(window.innerWidth + ',' + window.innerHeight);"
+            + "</script></head>"
+            + "<body>"
+            + "</body></html>");
 
     private static final String RESIZE_TEST_URL = UrlUtils.encodeHtmlDataUri(
             "<html><head><script>"
@@ -247,6 +257,41 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
                 assertEquals(tabCount, getActivity().getCurrentTabModel().getCount());
             }
         });
+    }
+
+    /**
+     * Verify that opening a new tab and navigating immediately sets a size on the newly created
+     * renderer. https://crbug.com/434477.
+     * @throws InterruptedException
+     * @throws TimeoutException
+     */
+    @SmallTest
+    public void testNewTabSetsContentViewSize() throws InterruptedException, TimeoutException {
+        ChromeTabUtils.newTabFromMenu(getInstrumentation(), getActivity());
+
+        // Make sure we're on the NTP
+        Tab tab = getActivity().getActivityTab();
+        ChromeTabUtils.waitForTabPageLoaded(tab, (String) null);
+        assertTrue("NTP never fully loaded.", NewTabPageTestUtils.waitForNtpLoaded(tab));
+
+        loadUrl(INITIAL_SIZE_TEST_URL);
+
+        final WebContents webContents = tab.getWebContents();
+        String innerText = JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                webContents, "document.body.innerText").replace("\"", "");
+
+        DisplayMetrics metrics = getActivity().getResources().getDisplayMetrics();
+        float expectedWidth = metrics.widthPixels / metrics.density;
+
+        String[] nums = innerText.split(",");
+        assertTrue(nums.length == 2);
+        int innerWidth = Integer.parseInt(nums[0]);
+        int innerHeight = Integer.parseInt(nums[1]);
+
+        assertEquals((int) expectedWidth, innerWidth);
+
+        // Height can be affected by top controls so just make sure it's non-0.
+        assertTrue("innerHeight was not set by page load time", innerHeight > 0);
     }
 
     static class SimulateClickOnMainThread implements Runnable {
