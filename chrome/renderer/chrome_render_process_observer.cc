@@ -16,7 +16,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
-#include "base/native_library.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -253,16 +252,12 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver()
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && defined(USE_NSS_CERTS)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(USE_OPENSSL)
   // On platforms where we use system NSS shared libraries,
   // initialize NSS now because it won't be able to load the .so's
   // after we engage the sandbox.
   if (!command_line.HasSwitch(switches::kSingleProcess))
     crypto::InitNSSSafely();
-#elif defined(OS_WIN)
-  // crypt32.dll is used to decode X509 certificates for Chromoting.
-  // Only load this library when the feature is enabled.
-  base::LoadNativeLibrary(base::FilePath(L"crypt32.dll"), NULL);
 #endif
   // Setup initial set of crash dump data for Field Trials in this renderer.
   chrome_variations::SetChildProcessLoggingVariationList();
