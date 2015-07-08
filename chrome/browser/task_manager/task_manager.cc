@@ -322,7 +322,10 @@ base::ProcessId TaskManagerModel::GetProcessId(int index) const {
   PerResourceValues& values(GetPerResourceValues(index));
   if (!values.is_process_id_valid) {
     values.is_process_id_valid = true;
-    values.process_id = base::GetProcId(GetResource(index)->GetProcess());
+    base::ProcessHandle process(GetResource(index)->GetProcess());
+    DCHECK(process);
+    values.process_id = base::GetProcId(process);
+    DCHECK(values.process_id);
   }
   return values.process_id;
 }
@@ -927,6 +930,7 @@ WebContents* TaskManagerModel::GetResourceWebContents(int index) const {
 
 void TaskManagerModel::AddResource(Resource* resource) {
   base::ProcessHandle process = resource->GetProcess();
+  DCHECK(process);
 
   GroupMap::iterator group_iter = group_map_.find(process);
   int new_entry_index = 0;
