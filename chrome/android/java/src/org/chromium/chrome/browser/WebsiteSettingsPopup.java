@@ -581,6 +581,15 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
                            == PackageManager.PERMISSION_GRANTED);
     }
 
+    private boolean isAndroidLocationDisabled() {
+        try {
+            return Settings.Secure.getInt(mContext.getContentResolver(),
+                    Settings.Secure.LOCATION_MODE) == Settings.Secure.LOCATION_MODE_OFF;
+        } catch (Settings.SettingNotFoundException e) {
+            return false;
+        }
+    }
+
     /**
      * Adds a new row for the given permission.
      *
@@ -648,16 +657,30 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
                 R.id.website_settings_permission_icon);
         permissionIcon.setImageResource(getImageResourceForPermission(type));
 
-        if (!hasAndroidPermission(type) && currentSetting == ContentSetting.ALLOW) {
-            View permissionUnavailable = permissionRow.findViewById(
-                    R.id.website_settings_permission_unavailable_message);
-            permissionUnavailable.setVisibility(View.VISIBLE);
+        if (currentSetting == ContentSetting.ALLOW) {
+            int warningTextResource = 0;
 
-            permissionIcon.setImageResource(R.drawable.exclamation_triangle);
-            permissionIcon.setColorFilter(
-                    mContext.getResources().getColor(R.color.website_settings_popup_text_link));
+            if (type == ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION
+                    && isAndroidLocationDisabled()) {
+                warningTextResource = R.string.page_info_android_location_blocked;
+                permissionRow.setTag(R.id.permission_intent_override,
+                        new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+            } else if (!hasAndroidPermission(type)) {
+                warningTextResource = R.string.page_info_android_permission_blocked;
+            }
 
-            permissionRow.setOnClickListener(this);
+            if (warningTextResource != 0) {
+                TextView permissionUnavailable = (TextView) permissionRow.findViewById(
+                        R.id.website_settings_permission_unavailable_message);
+                permissionUnavailable.setVisibility(View.VISIBLE);
+                permissionUnavailable.setText(warningTextResource);
+
+                permissionIcon.setImageResource(R.drawable.exclamation_triangle);
+                permissionIcon.setColorFilter(
+                        mContext.getResources().getColor(R.color.website_settings_popup_text_link));
+
+                permissionRow.setOnClickListener(this);
+            }
         }
 
         TextView permissionStatus = (TextView) permissionRow.findViewById(
@@ -783,12 +806,17 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
                 }
             });
         } else if (view.getId() == R.id.website_settings_permission_row) {
+            final Object intentOverride = view.getTag(R.id.permission_intent_override);
             runAfterDismiss(new Runnable() {
                 @Override
                 public void run() {
-                    Intent settingsIntent =
-                            new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                    settingsIntent.setData(Uri.parse("package:" + mContext.getPackageName()));
+                    Intent settingsIntent;
+                    if (intentOverride != null) {
+                        settingsIntent = (Intent) intentOverride;
+                    } else {
+                        settingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        settingsIntent.setData(Uri.parse("package:" + mContext.getPackageName()));
+                    }
                     settingsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     mContext.startActivity(settingsIntent);
                 }

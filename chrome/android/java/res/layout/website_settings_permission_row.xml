@@ -31,7 +31,6 @@
         android:layout_below="@id/website_settings_permission_status"
         android:layout_toEndOf="@id/website_settings_permission_icon"
         android:lineSpacingExtra="6dp"
-        android:text="@string/page_info_android_permission_blocked"
         android:textColor="@color/website_settings_popup_text_link"
         android:textSize="14sp"
         android:visibility="gone" />
