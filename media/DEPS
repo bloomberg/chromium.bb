@@ -1,6 +1,5 @@
 # Do NOT add net/ or ui/base without a great reason, they're huge!
 include_rules = [
-  "+chromeos/audio",
   "+crypto",
   "+device/udev_linux",
   "+device/usb",

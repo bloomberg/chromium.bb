@@ -41,20 +41,6 @@ struct CHROMEOS_EXPORT AudioDevice {
   static std::string GetTypeString(chromeos::AudioDeviceType type);
   static chromeos::AudioDeviceType GetAudioType(const std::string& node_type);
 
-  // Indicates that an input or output audio device is for simple usage like
-  // playback or recording for user. In contrast, audio device such as
-  // loopback, always on keyword recognition (AOKR), and keyboard mic are
-  // not for simple usage.
-  bool is_for_simple_usage() {
-    return (type == AUDIO_TYPE_HEADPHONE ||
-            type == AUDIO_TYPE_INTERNAL_MIC ||
-            type == AUDIO_TYPE_MIC ||
-            type == AUDIO_TYPE_USB ||
-            type == AUDIO_TYPE_BLUETOOTH ||
-            type == AUDIO_TYPE_HDMI ||
-            type == AUDIO_TYPE_INTERNAL_SPEAKER);
-  }
-
   bool is_input;
   uint64 id;
   std::string display_name;

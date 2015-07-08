@@ -128,8 +128,6 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   virtual uint64_t GetPrimaryActiveInputNode() const;
 
   // Gets the audio devices back in |device_list|.
-  // This call can be invoked from I/O thread or UI thread because
-  // it does not need to access CrasAudioClient on DBus.
   virtual void GetAudioDevices(AudioDeviceList* device_list) const;
 
   virtual bool GetPrimaryActiveOutputDevice(AudioDevice* device) const;
