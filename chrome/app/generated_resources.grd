@@ -12483,7 +12483,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 
       <if expr="use_titlecase">
         <message name="IDS_HISTORY_RECENT_TABS_MENU" desc="In Title Case: The title of the History and Recent Tabs menu in the wrench menu.">
-          History and Recent Tabs
+          &amp;History and Recent Tabs
         </message>
         <message name="IDS_RECENT_TABS_MENU" desc="In Title Case: The title of the Recent Tabs menu in the wrench menu.">
           Recent Tabs
@@ -12500,7 +12500,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </if>
       <if expr="not use_titlecase">
         <message name="IDS_HISTORY_RECENT_TABS_MENU" desc="The title of the History and Recent Tabs menu in the wrench menu.">
-          History and recent tabs
+          &amp;History and recent tabs
         </message>
         <message name="IDS_RECENT_TABS_MENU" desc="The title of the Recent Tabs menu in the wrench menu.">
           Recent tabs

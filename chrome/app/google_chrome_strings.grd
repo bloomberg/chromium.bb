@@ -1295,11 +1295,11 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
         </message>
         <message name="IDS_WIN_DESKTOP_RESTART"
                  desc="Text for the menu item to restart Chrome in desktop mode. Applies to Windows 8 only">
-          Relaunch Chrome on the desktop
+          &amp;Relaunch Chrome on the desktop
         </message>
         <message name="IDS_WIN8_METRO_RESTART"
                  desc="Text for the menu item to restart Chrome in metro. Applies to Windows 8 only">
-          Relaunch Chrome in Windows 8 mode
+          &amp;Relaunch Chrome in Windows 8 mode
         </message>
         <message name="IDS_WIN8_PROMPT_TO_CLOSE_APPS_FOR_METRO"
                  desc="Modal message box prompt shown to the user after requesting to relaunch in Windows 8 mode while packaged apps are running, which will require all packaged apps to be closed and then restarted. Dialog is shown with choices: OK, Cancel.">
