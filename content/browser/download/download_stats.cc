@@ -70,6 +70,8 @@ void RecordContentDispositionCountFlag(
 
 // Do not insert, delete, or reorder; this is being histogrammed. Append only.
 // All of the download_extensions.cc file types should be in this list.
+// TODO(asanka): This enum and the UMA metrics for dangerous/malicious downloads
+// should be moved to //chrome/browser/download.
 const base::FilePath::CharType* kDangerousFileTypes[] = {
   FILE_PATH_LITERAL(".ad"),
   FILE_PATH_LITERAL(".ade"),
@@ -194,8 +196,19 @@ const base::FilePath::CharType* kDangerousFileTypes[] = {
   FILE_PATH_LITERAL(".xhtml"),
   FILE_PATH_LITERAL(".xml"),
   FILE_PATH_LITERAL(".xsl"),
-  FILE_PATH_LITERAL(".xslt")
-  FILE_PATH_LITERAL(".website")
+  FILE_PATH_LITERAL(".xslt"),
+  FILE_PATH_LITERAL(".website"),
+  FILE_PATH_LITERAL(".msh1"),
+  FILE_PATH_LITERAL(".msh2"),
+  FILE_PATH_LITERAL(".msh1xml"),
+  FILE_PATH_LITERAL(".msh2xml"),
+  FILE_PATH_LITERAL(".ps1"),
+  FILE_PATH_LITERAL(".ps1xml"),
+  FILE_PATH_LITERAL(".ps2"),
+  FILE_PATH_LITERAL(".ps2xml"),
+  FILE_PATH_LITERAL(".psc1"),
+  FILE_PATH_LITERAL(".psc2"),
+  FILE_PATH_LITERAL(".xnk"),
 };
 
 // Maps extensions to their matching UMA histogram int value.

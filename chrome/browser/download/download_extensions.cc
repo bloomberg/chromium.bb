@@ -110,11 +110,35 @@ const struct FileType {
     // installation.
     {"crx", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
 
-  // Windows, all file categories.
+    // Windows, all file categories. The list is in alphabetical order of
+    // extensions. Exceptions are made for logical groupings of file types.
+    //
+    // Some file descriptions are based on
+    // https://support.office.com/article/Blocked-attachments-in-Outlook-3811cddc-17c3-4279-a30c-060ba0207372
 #if defined(OS_WIN)
     {"ad", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
-    {"ade", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
-    {"adp", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
+
+    // Microsoft Access related.
+    {"ade", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},  // Project extension
+    {"adp", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},  // Project.
+    {"mad", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},  // Module Shortcut.
+    {"maf", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
+    {"mag", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},  // Diagram Shortcut.
+    {"mam", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},  // Macro Shortcut.
+    {"maq", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},  // Query Shortcut.
+    {"mar", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},  // Report Shortcut.
+    {"mas", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},  // Stored Procedures.
+    {"mat", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},  // Table Shortcut.
+    {"mav", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},  // View Shortcut.
+    {"maw", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},  // Data Access Page.
+    {"mda", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},  // Access Add-in.
+    {"mdb", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},  // Database.
+    {"mde", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},  // Database.
+    {"mdt", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},  // Add-in Data.
+    {"mdw", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},  // Workgroup Information.
+    {"mdz", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},  // Wizard Template.
+
+    // Executable Application.
     {"app", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
 
     // Microsoft ClickOnce depolyment manifest. By default, opens with
@@ -156,6 +180,7 @@ const struct FileType {
     {"drv", DANGEROUS, DISALLOW_AUTO_OPEN},
     {"exe", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 
+    // Microsoft FoxPro Compiled Source.
     {"fxp", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
     {"grp", DANGEROUS, ALLOW_AUTO_OPEN},
 
@@ -174,12 +199,17 @@ const struct FileType {
     // Generic configuration file.
     {"ini", DANGEROUS, ALLOW_AUTO_OPEN},
 
+    // Microsoft IIS Internet Communication Settings.
     {"ins", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
+
+    // Microsoft IIS Internet Service Provider Settings.
     {"isp", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
 
     // JavaScript file. May open using Windows Script Host with user level
     // privileges.
     {"js", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+
+    // JScript encoded script file.
     {"jse", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 
     // Shortcuts. May open anything.
@@ -188,30 +218,14 @@ const struct FileType {
     // .local files affect DLL search path for .exe file with same base name.
     {"local", DANGEROUS, ALLOW_AUTO_OPEN},
 
-    {"mad", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
-    {"maf", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
-    {"mag", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
-    {"mam", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
-
     // While being a generic name, having a .manifest file with the same
     // basename as .exe file (foo.exe + foo.exe.manifest) changes the dll search
     // order for the .exe file. Downloading this kind of file to the users'
     // download directory is almost always the wrong thing to do.
     {"manifest", DANGEROUS, ALLOW_AUTO_OPEN},
 
-    {"maq", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
-    {"mar", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
-    {"mas", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
-    {"mat", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
+    // Media Attachment Unit.
     {"mau", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
-    {"mav", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
-    {"maw", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
-    {"mda", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
-    {"mdb", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
-    {"mde", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
-    {"mdt", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
-    {"mdw", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
-    {"mdz", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
 
     // Multipart HTML.
     {"mht", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
@@ -223,18 +237,26 @@ const struct FileType {
     // Microsoft Management Console Snap-in. Contains executable code.
     {"msc", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 
-    {"msh", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
-    {"mshxml", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
+    // Microsoft Shell.
+    {"msh", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"msh1", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"msh2", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"mshxml", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"msh1xml", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"msh2xml", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 
-    // Windows Installer
+    // Windows Installer.
     {"msi", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
     {"msp", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
     {"mst", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 
-    // ActiveX Control
-    {"ocx", DANGEROUS, ALLOW_AUTO_OPEN},
+    // ActiveX Control.
+    {"ocx", DANGEROUS, DISALLOW_AUTO_OPEN},
 
+    // Microsoft Office Profile Settings File.
     {"ops", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
+
+    // Microsoft Visual Test.
     {"pcd", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
 
     // Program Information File. Originally intended to configure execution
@@ -242,50 +264,74 @@ const struct FileType {
     // code. But Windows may execute a PIF file that is sniffed as a PE file.
     {"pif", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 
+    // Developer Studio Build Log.
     {"plg", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
+
+    // Windows System File.
     {"prf", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
+
+    // Program File.
     {"prg", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
+
+    // Microsoft Exchange Address Book File. Microsoft Outlook Personal Folder
+    // File.
     {"pst", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
+
+    // Microsoft Windows PowerShell.
+    {"ps1", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"ps1xml", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"ps2", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"ps2xml", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"psc1", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"psc2", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 
     // Registry file. Opening may cause registry settings to change. Users still
     // need to click through a prompt. So we could consider relaxing the
     // DISALLOW_AUTO_OPEN restriction.
     {"reg", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 
+    // Microsoft Windows Explorer Command.
     {"scf", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
 
-    // These are also executables.
+    // Microsoft Windows Screen Saver.
     {"scr", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 
+    // Microsoft Windows Script Component. Microsoft FoxPro Screen.
     {"sct", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
+
+    // Microsoft Windows Shortcut into a document.
     {"shb", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
+
+    // Shell Scrap Object File.
     {"shs", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
 
     // System executable. Windows tries hard to prevent you from opening these
     // types of files.
     {"sys", DANGEROUS, DISALLOW_AUTO_OPEN},
 
-    // Internet Shortcut. See description for .website below.
-    {"url", DANGEROUS, DISALLOW_AUTO_OPEN},
-
-    {"vb", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
-
-    // VBScript files. My open with Windows Script Host and execute with user
-    // privileges.
-    {"vbe", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
-    {"vbs", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
-
-    {"vsd", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
-    {"vsmacros", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
-    {"vss", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
-    {"vst", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
-    {"vsw", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
-
     // Internet Shortcut (new since IE9). Both .url and .website are .ini files
     // that describe a shortcut that points to a URL. They can point at
     // anything. Dropping a download of this type and opening it automatically
     // can in effect sidestep origin restrictions etc.
+    {"url", DANGEROUS, DISALLOW_AUTO_OPEN},
     {"website", DANGEROUS, DISALLOW_AUTO_OPEN},
+
+    // VBScript files. My open with Windows Script Host and execute with user
+    // privileges.
+    {"vb", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"vbe", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"vbs", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+
+    {"vsd", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
+
+    // Microsoft Visual Studio Binary-based Macro Project.
+    {"vsmacros", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
+
+    {"vss", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
+    {"vst", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
+
+    // Microsoft Visio Workspace.
+    {"vsw", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
 
     // Windows Script Host related.
     {"ws", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
@@ -295,6 +341,9 @@ const struct FileType {
 
     // XAML Browser Application.
     {"xbap", DANGEROUS, DISALLOW_AUTO_OPEN},
+
+    // Microsoft Exchange Public Folder Shortcut.
+    {"xnk", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
 #endif  // OS_WIN
 
   // Java.

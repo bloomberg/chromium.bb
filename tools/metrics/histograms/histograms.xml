@@ -52961,6 +52961,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="123" label="xsl"/>
   <int value="124" label="xslt"/>
   <int value="125" label="website"/>
+  <int value="126" label="msh1"/>
+  <int value="127" label="msh2"/>
+  <int value="128" label="msh1xml"/>
+  <int value="129" label="msh2xml"/>
+  <int value="130" label="ps1"/>
+  <int value="131" label="ps1xml"/>
+  <int value="132" label="ps2"/>
+  <int value="133" label="ps2xml"/>
+  <int value="134" label="psc1"/>
+  <int value="135" label="psc2"/>
+  <int value="136" label="xnk"/>
 </enum>
 
 <enum name="DownloadItem.DangerType" type="int">
