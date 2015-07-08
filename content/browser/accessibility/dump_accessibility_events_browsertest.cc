@@ -209,8 +209,16 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("listbox-focus.html"));
 }
 
+// Flaky on Windows: http://crbug.com/486861
+#if defined(OS_WIN)
+#define MAYBE_AccessibilityEventsListboxNext \
+  DISABLED_AccessibilityEventsListboxNext
+#else
+#define MAYBE_AccessibilityEventsListboxNext AccessibilityEventsListboxNext
+#endif
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
-                       AccessibilityEventsListboxNext) {
+                       MAYBE_AccessibilityEventsListboxNext) {
   RunEventTest(FILE_PATH_LITERAL("listbox-next.html"));
 }
 
