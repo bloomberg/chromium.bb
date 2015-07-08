@@ -378,6 +378,7 @@ pre {
 }
 
 .feedbackButton {
+  -webkit-user-select: none;
   background-color: #FFFFFF;
   border-radius: 3px;
   color: #4285F4;
@@ -388,6 +389,7 @@ pre {
   padding-top: 8px;
   text-align: center;
   text-transform: uppercase;
+  user-select: none;
   width: 40%;
 }
 
