@@ -310,7 +310,7 @@ class CreateSessionDescriptionRequest
 
  protected:
   ~CreateSessionDescriptionRequest() override {
-    DCHECK(webkit_request_.isNull());
+    CHECK(webkit_request_.isNull());
   }
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
