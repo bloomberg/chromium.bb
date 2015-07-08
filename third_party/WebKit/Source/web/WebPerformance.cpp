@@ -166,6 +166,11 @@ double WebPerformance::loadEventEnd() const
     return millisecondsToSeconds(m_private->timing()->loadEventEnd());
 }
 
+double WebPerformance::firstLayout() const
+{
+    return millisecondsToSeconds(m_private->timing()->firstLayout());
+}
+
 WebPerformance::WebPerformance(const PassRefPtrWillBeRawPtr<Performance>& performance)
     : m_private(performance)
 {

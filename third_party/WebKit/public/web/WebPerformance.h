@@ -84,6 +84,7 @@ public:
     BLINK_EXPORT double domComplete() const;
     BLINK_EXPORT double loadEventStart() const;
     BLINK_EXPORT double loadEventEnd() const;
+    BLINK_EXPORT double firstLayout() const;
 
 #if BLINK_IMPLEMENTATION
     WebPerformance(const PassRefPtrWillBeRawPtr<Performance>&);

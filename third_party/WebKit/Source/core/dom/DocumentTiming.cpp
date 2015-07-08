@@ -15,6 +15,7 @@ DocumentTiming::DocumentTiming()
     , m_domContentLoadedEventStart(0.0)
     , m_domContentLoadedEventEnd(0.0)
     , m_domComplete(0.0)
+    , m_firstLayout(0.0)
 {
 }
 
@@ -46,6 +47,12 @@ void DocumentTiming::setDomComplete(double domComplete)
 {
     TRACE_EVENT_MARK_WITH_TIMESTAMP("blink.user_timing", "domComplete", domComplete);
     m_domComplete = domComplete;
+}
+
+void DocumentTiming::setFirstLayout(double firstLayout)
+{
+    TRACE_EVENT_MARK_WITH_TIMESTAMP("blink.user_timing", "firstLayout", firstLayout);
+    m_firstLayout = firstLayout;
 }
 
 } // namespace blink

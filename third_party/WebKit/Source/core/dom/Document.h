@@ -454,6 +454,7 @@ public:
     void updateLayoutTreeIfNeeded() { updateLayoutTree(NoChange); }
     void updateLayoutTreeForNodeIfNeeded(Node*);
     void updateLayout();
+    void layoutUpdated();
     enum RunPostLayoutTasks {
         RunPostLayoutTasksAsyhnchronously,
         RunPostLayoutTasksSynchronously,

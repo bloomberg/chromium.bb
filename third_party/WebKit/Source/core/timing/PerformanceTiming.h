@@ -76,6 +76,7 @@ public:
     unsigned long long domComplete() const;
     unsigned long long loadEventStart() const;
     unsigned long long loadEventEnd() const;
+    unsigned long long firstLayout() const;
 
     ScriptValue toJSONForBinding(ScriptState*);
 

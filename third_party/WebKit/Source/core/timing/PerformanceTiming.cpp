@@ -313,6 +313,15 @@ unsigned long long PerformanceTiming::loadEventEnd() const
     return monotonicTimeToIntegerMilliseconds(timing->loadEventEnd());
 }
 
+unsigned long long PerformanceTiming::firstLayout() const
+{
+    const DocumentTiming* timing = documentTiming();
+    if (!timing)
+        return 0;
+
+    return monotonicTimeToIntegerMilliseconds(timing->firstLayout());
+}
+
 DocumentLoader* PerformanceTiming::documentLoader() const
 {
     if (!m_frame)

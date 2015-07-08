@@ -37,12 +37,14 @@ public:
     void setDomContentLoadedEventStart(double);
     void setDomContentLoadedEventEnd(double);
     void setDomComplete(double);
+    void setFirstLayout(double);
 
     double domLoading() const { return m_domLoading; }
     double domInteractive() const { return m_domInteractive; }
     double domContentLoadedEventStart() const { return m_domContentLoadedEventStart; }
     double domContentLoadedEventEnd() const { return m_domContentLoadedEventEnd; }
     double domComplete() const { return m_domComplete; }
+    double firstLayout() const { return m_firstLayout; }
 
 private:
     double m_domLoading;
@@ -50,6 +52,7 @@ private:
     double m_domContentLoadedEventStart;
     double m_domContentLoadedEventEnd;
     double m_domComplete;
+    double m_firstLayout;
 };
 
 }

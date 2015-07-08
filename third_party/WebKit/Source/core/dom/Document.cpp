@@ -1940,6 +1940,20 @@ void Document::updateLayout()
         lifecycle().advanceTo(DocumentLifecycle::LayoutClean);
 }
 
+void Document::layoutUpdated()
+{
+    markers().updateRenderedRectsForMarkers();
+
+    // The layout system may perform layouts with pending stylesheets. When
+    // recording first layout time, we ignore these layouts, since painting is
+    // suppressed for them. We're interested in tracking the time of the
+    // first real or 'paintable' layout.
+    if (isRenderingReady() && body() && !styleEngine().hasPendingSheets()) {
+        if (!m_documentTiming.firstLayout())
+            m_documentTiming.setFirstLayout(monotonicallyIncreasingTime());
+    }
+}
+
 void Document::setNeedsFocusedElementCheck()
 {
     setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));
