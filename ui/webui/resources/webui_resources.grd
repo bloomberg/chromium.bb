@@ -381,6 +381,8 @@ without changes to the corresponding grd file. -->
                  file="js/media_common.js" type="chrome_html" />
       <structure name="IDR_WEBUI_JS_PARSE_HTML_SUBSET"
                  file="js/parse_html_subset.js" type="chrome_html" />
+      <structure name="IDR_WEBUI_JS_POLYMER_CONFIG"
+                 file="js/polymer_config.js" type="chrome_html" />
       <structure name="IDR_WEBUI_JS_UTIL"
                  file="js/util.js" type="chrome_html" flattenhtml="true" />
       <structure name="IDR_WEBUI_JS_WEBUI_RESOURCE_TEST"

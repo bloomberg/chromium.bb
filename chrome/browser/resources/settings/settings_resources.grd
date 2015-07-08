@@ -137,9 +137,6 @@
       <structure name="IDR_SETTINGS_PRIVACY_PAGE_JS"
                  file="privacy_page/privacy_page.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_POLYMER_CONFIG_JS"
-                 file="polymer_config.js"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_ROUTES_HTML"
                  file="routes.html"
                  type="chrome_html" />

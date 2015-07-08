@@ -83,7 +83,6 @@ const char kOobeJSPath[] = "oobe.js";
 const char kKeyboardUtilsJSPath[] = "keyboard_utils.js";
 const char kCustomElementsHTMLPath[] = "custom_elements.html";
 const char kCustomElementsJSPath[] = "custom_elements.js";
-const char kPolymerConfigJSPath[] = "polymer_config.js";
 
 // Paths for deferred resource loading.
 const char kEnrollmentHTMLPath[] = "enrollment.html";
@@ -113,7 +112,6 @@ content::WebUIDataSource* CreateOobeUIDataSource(
     source->AddResourcePath(kCustomElementsJSPath,
                             IDR_CUSTOM_ELEMENTS_LOGIN_JS);
   }
-  source->AddResourcePath(kPolymerConfigJSPath, IDR_POLYMER_CONFIG_JS);
   source->AddResourcePath(kKeyboardUtilsJSPath, IDR_KEYBOARD_UTILS_JS);
   source->OverrideContentSecurityPolicyFrameSrc(
       base::StringPrintf(
