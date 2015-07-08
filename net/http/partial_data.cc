@@ -223,18 +223,14 @@ void PartialData::PrepareCacheValidation(disk_cache::Entry* entry,
     current_range_end_ = cached_start_ + cached_min_len_ - 1;
     if (len == cached_min_len_)
       final_range_ = true;
-    headers->SetHeader(
-        HttpRequestHeaders::kRange,
-        HttpByteRange::Bounded(current_range_start_, current_range_end_)
-            .GetHeaderValue());
   } else {
     // This range is not in the cache.
     current_range_end_ = cached_start_ - 1;
-    headers->SetHeader(
-        HttpRequestHeaders::kRange,
-        HttpByteRange::Bounded(current_range_start_, current_range_end_)
-            .GetHeaderValue());
   }
+  headers->SetHeader(
+      HttpRequestHeaders::kRange,
+      HttpByteRange::Bounded(current_range_start_, current_range_end_)
+          .GetHeaderValue());
 }
 
 bool PartialData::IsCurrentRangeCached() const {
