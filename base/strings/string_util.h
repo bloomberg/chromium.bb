@@ -338,8 +338,9 @@ BASE_EXPORT bool EqualsASCII(const string16& a, const StringPiece& b);
 // base/i18n so it can use ICU.
 //
 // If you need to do Unicode-aware case-insensitive StartsWith/EndsWith, it's
-// best to just call base::i18n::ToLower() on the arguements, and then use the
-// results to a case-sensitive comparison.
+// best to call base::i18n::ToLower() or base::i18n::FoldCase() (see
+// base/i18n/case_conversion.h for usage advice) on the arguments, and then use
+// the results to a case-sensitive comparison.
 enum class CompareCase {
   SENSITIVE,
   INSENSITIVE_ASCII,
