@@ -501,6 +501,7 @@ class PrintWebViewHelper
   PrintPreviewContext print_preview_context_;
   bool is_loading_;
   bool is_scripted_preview_delayed_;
+  int ipc_nesting_level_;
 
   // Used to fix a race condition where the source is a PDF and print preview
   // hangs because RequestPrintPreview is called before DidStopLoading() is
