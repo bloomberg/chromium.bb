@@ -190,8 +190,6 @@ group("all_components") {
       "//components/favicon/core",  # Blocked on keyed service.
       "//components/favicon_base",  # Should work, needs checking.
       "//components/feedback",  # Blocked on content.
-      "//components/gcm_driver",  # Should work, needs checking.
-      "//components/gcm_driver/instance_id",  # Should work, needs checking.
       "//components/google/core/browser",  # Should work, needs checking.
       "//components/history/core/browser",  # Should work, needs checking.
       "//components/history/core/common",  # Should work, needs checking.
@@ -287,6 +285,8 @@ test("components_unittests") {
     "//components/dom_distiller/core:unit_tests",
     "//components/domain_reliability:unit_tests",
     "//components/favicon_base:unit_tests",
+    "//components/gcm_driver:unit_tests",
+    "//components/gcm_driver/instance_id:unit_tests",
     "//components/google/core/browser:unit_tests",
     "//components/invalidation/impl:unittests",
     "//components/login:unit_tests",
@@ -311,14 +311,16 @@ test("components_unittests") {
     "//ui/resources:ui_test_pak",
   ]
 
-  if (is_android) {
-    isolate_file = "components_unittests.isolate"
-  }
-
   data_deps = [ ":components_tests_pak" ]
 
   if (is_android) {
+    isolate_file = "components_unittests.isolate"
+
     deps += [ "//content/public/android:content_java" ]
+    deps -= [
+      "//components/gcm_driver:unit_tests",
+      "//components/gcm_driver/instance_id:unit_tests",
+    ]
   }
 
   if (!is_android && !is_ios) {

@@ -31,6 +31,7 @@ source_set("instance_id") {
   }
 }
 
+# GYP version: components/gcm_driver.gypi:instance_id_test_support
 source_set("test_support") {
   testonly = true
   sources = [
@@ -41,6 +42,19 @@ source_set("test_support") {
   deps = [
     ":instance_id",
     "//components/gcm_driver:test_support",
+    "//testing/gtest",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "instance_id_driver_unittest.cc",
+  ]
+
+  deps = [
+    ":instance_id",
+    ":test_support",
     "//testing/gtest",
   ]
 }

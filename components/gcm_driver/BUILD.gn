@@ -81,6 +81,7 @@ static_library("gcm_driver") {
   }
 }
 
+# GYP version: components/gcm_driver.gypi:gcm_driver_test_support
 static_library("test_support") {
   testonly = true
   sources = [
@@ -97,7 +98,7 @@ static_library("test_support") {
   deps = [
     ":gcm_driver",
     "//base",
-    "//google_apis/gcm",
+    "//google_apis/gcm:test_support",
     "//testing/gtest",
   ]
 
@@ -108,6 +109,25 @@ static_library("test_support") {
       "fake_gcm_client_factory.cc",
       "fake_gcm_client_factory.h",
     ]
-    deps -= [ "//google_apis/gcm" ]
+    deps -= [ "//google_apis/gcm:test_support" ]
   }
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "gcm_account_mapper_unittest.cc",
+    "gcm_channel_status_request_unittest.cc",
+    "gcm_client_impl_unittest.cc",
+    "gcm_delayed_task_controller_unittest.cc",
+    "gcm_driver_desktop_unittest.cc",
+    "gcm_stats_recorder_impl_unittest.cc",
+  ]
+
+  deps = [
+    ":gcm_driver",
+    ":test_support",
+    "//testing/gtest",
+    "//third_party/protobuf:protobuf_lite",
+  ]
 }
