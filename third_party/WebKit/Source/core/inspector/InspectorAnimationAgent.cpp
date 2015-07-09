@@ -177,32 +177,6 @@ PassRefPtr<TypeBuilder::Animation::AnimationPlayer> InspectorAnimationAgent::bui
     return playerObject.release();
 }
 
-PassRefPtr<TypeBuilder::Array<TypeBuilder::Animation::AnimationPlayer>> InspectorAnimationAgent::buildArrayForAnimations(Element& element, const WillBeHeapVector<RefPtrWillBeMember<Animation>> players)
-{
-    RefPtr<TypeBuilder::Array<TypeBuilder::Animation::AnimationPlayer> > animationPlayersArray = TypeBuilder::Array<TypeBuilder::Animation::AnimationPlayer>::create();
-    for (const auto& it : players) {
-        Animation& player = *(it.get());
-        KeyframeEffect* animation = toKeyframeEffect(player.effect());
-        if (!element.contains(animation->target()))
-            continue;
-        animationPlayersArray->addItem(buildObjectForAnimationPlayer(player));
-    }
-    return animationPlayersArray.release();
-}
-
-void InspectorAnimationAgent::getAnimationPlayersForNode(ErrorString* errorString, int nodeId, bool includeSubtreeAnimations, RefPtr<TypeBuilder::Array<TypeBuilder::Animation::AnimationPlayer> >& animationPlayersArray)
-{
-    Element* element = m_domAgent->assertElement(errorString, nodeId);
-    if (!element)
-        return;
-    WillBeHeapVector<RefPtrWillBeMember<Animation>> players;
-    if (!includeSubtreeAnimations)
-        players = ElementAnimation::getAnimations(*element);
-    else
-        players = element->ownerDocument()->timeline().getAnimations();
-    animationPlayersArray = buildArrayForAnimations(*element, players);
-}
-
 void InspectorAnimationAgent::getPlaybackRate(ErrorString*, double* playbackRate)
 {
     *playbackRate = referenceTimeline().playbackRate();

@@ -36,7 +36,6 @@ public:
     void didCommitLoadForLocalFrame(LocalFrame*) override;
 
     // Protocol method implementations
-    virtual void getAnimationPlayersForNode(ErrorString*, int nodeId, bool includeSubtreeAnimations, RefPtr<TypeBuilder::Array<TypeBuilder::Animation::AnimationPlayer> >& animationPlayersArray) override;
     virtual void getPlaybackRate(ErrorString*, double* playbackRate) override;
     virtual void setPlaybackRate(ErrorString*, double playbackRate) override;
     virtual void setCurrentTime(ErrorString*, double currentTime) override;
@@ -62,7 +61,6 @@ private:
 
     PassRefPtr<TypeBuilder::Animation::AnimationPlayer> buildObjectForAnimationPlayer(Animation&);
     PassRefPtr<TypeBuilder::Animation::AnimationPlayer> buildObjectForAnimationPlayer(Animation&, AnimationType, PassRefPtr<TypeBuilder::Animation::KeyframesRule> keyframeRule = nullptr);
-    PassRefPtr<TypeBuilder::Array<TypeBuilder::Animation::AnimationPlayer>> buildArrayForAnimations(Element&, const WillBeHeapVector<RefPtrWillBeMember<Animation>>);
     double normalizedStartTime(Animation&);
     AnimationTimeline& referenceTimeline();
 
