@@ -204,14 +204,14 @@ LayoutRect InlineTextBox::localSelectionRect(int startPos, int endPos)
     bool respectHyphen = ePos == m_len && hasHyphen();
     TextRun textRun = constructTextRun(styleToUse, font, respectHyphen ? &charactersWithHyphen : 0);
 
-    LayoutPoint startingPoint = LayoutPoint(logicalLeft(), selTop.toFloat());
+    LayoutPoint startingPoint = LayoutPoint(logicalLeft(), selTop);
     LayoutRect r;
     if (sPos || ePos != static_cast<int>(m_len)) {
         r = LayoutRect(enclosingIntRect(font.selectionRectForText(textRun, FloatPoint(startingPoint), selHeight, sPos, ePos)));
     } else { // Avoid computing the font width when the entire line box is selected as an optimization.
         // FIXME: the call to rawValue() below is temporary and should be removed once the transition
         // to LayoutUnit-based types is complete (crbug.com/321237)
-        r = LayoutRect(enclosingIntRect(LayoutRect(startingPoint, LayoutSize(m_logicalWidth, selHeight.toFloat()))));
+        r = LayoutRect(enclosingIntRect(LayoutRect(startingPoint, LayoutSize(m_logicalWidth, selHeight))));
     }
 
     LayoutUnit logicalWidth = r.width();

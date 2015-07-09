@@ -625,7 +625,7 @@ BidiRun* LayoutBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
                 LayoutBox* layoutBox = toLayoutBox(r->m_object);
                 if (layoutBox->isRubyRun())
                     setMarginsForRubyRun(r, toLayoutRubyRun(layoutBox), previousObject, lineInfo);
-                r->m_box->setLogicalWidth(logicalWidthForChild(*layoutBox).toFloat());
+                r->m_box->setLogicalWidth(logicalWidthForChild(*layoutBox));
                 totalLogicalWidth += marginStartForChild(*layoutBox) + marginEndForChild(*layoutBox);
                 needsWordSpacing = true;
             }
@@ -661,7 +661,7 @@ void LayoutBlockFlow::computeBlockDirectionPositionsForLine(RootInlineBox* lineB
         // Align positioned boxes with the top of the line box.  This is
         // a reasonable approximation of an appropriate y position.
         if (r->m_object->isOutOfFlowPositioned())
-            r->m_box->setLogicalTop(logicalHeight().toFloat());
+            r->m_box->setLogicalTop(logicalHeight());
 
         // Position is used to properly position both replaced elements and
         // to update the static normal flow x/y of positioned elements.
@@ -862,7 +862,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
                     adjustLinePositionForPagination(*lineBox, adjustment);
                     if (adjustment) {
                         LayoutUnit oldLineWidth = availableLogicalWidthForLine(oldLogicalHeight, layoutState.lineInfo().isFirstLine());
-                        lineBox->moveInBlockDirection(adjustment.toFloat());
+                        lineBox->moveInBlockDirection(adjustment);
                         if (layoutState.usesPaintInvalidationBounds())
                             layoutState.updatePaintInvalidationRangeFromBox(lineBox);
 
@@ -992,7 +992,7 @@ void LayoutBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState)
                 }
                 if (delta) {
                     layoutState.updatePaintInvalidationRangeFromBox(line, delta);
-                    line->moveInBlockDirection(delta.toFloat());
+                    line->moveInBlockDirection(delta);
                 }
                 if (Vector<LayoutBox*>* cleanLineFloats = line->floatsPtr()) {
                     for (auto* box : *cleanLineFloats) {
@@ -1496,8 +1496,8 @@ void LayoutBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
     if (styleToUse.collapseWhiteSpace())
         stripTrailingSpace(inlineMax, inlineMin, trailingSpaceChild);
 
-    minLogicalWidth = std::max(minLogicalWidth, LayoutUnit::fromFloatCeil(inlineMin.toFloat()));
-    maxLogicalWidth = std::max(maxLogicalWidth, LayoutUnit::fromFloatCeil(inlineMax.toFloat()));
+    minLogicalWidth = std::max(minLogicalWidth, inlineMin);
+    maxLogicalWidth = std::max(maxLogicalWidth, inlineMax);
 }
 
 void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& paintInvalidationLogicalTop, LayoutUnit& paintInvalidationLogicalBottom, LayoutUnit afterEdge)
@@ -1658,7 +1658,7 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(LineLayoutState& layoutSt
                     }
 
                     layoutState.updatePaintInvalidationRangeFromBox(curr, paginationDelta);
-                    curr->moveInBlockDirection(paginationDelta.toFloat());
+                    curr->moveInBlockDirection(paginationDelta);
                 }
             }
 
@@ -1921,7 +1921,7 @@ void LayoutBlockFlow::deleteEllipsisLineBoxes()
             curr->clearTruncation();
 
             // Shift the line back where it belongs if we cannot accomodate an ellipsis.
-            LayoutUnit logicalLeft = logicalLeftOffsetForLine(curr->lineTop(), firstLine).toFloat();
+            LayoutUnit logicalLeft = logicalLeftOffsetForLine(curr->lineTop(), firstLine);
             LayoutUnit availableLogicalWidth = logicalRightOffsetForLine(curr->lineTop(), false) - logicalLeft;
             LayoutUnit totalLogicalWidth = curr->logicalWidth();
             updateLogicalWidthForAlignment(textAlign, curr, 0, logicalLeft, totalLogicalWidth, availableLogicalWidth, 0);
