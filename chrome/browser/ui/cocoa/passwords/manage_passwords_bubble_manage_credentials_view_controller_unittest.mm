@@ -13,16 +13,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 
-@interface ManageCredentialItemViewController (Testing)
-@property(nonatomic, readonly) const autofill::PasswordForm& passwordForm;
-@end
-
-@implementation ManageCredentialItemViewController (Testing)
-- (const autofill::PasswordForm&)passwordForm {
-  return passwordForm_;
-}
-@end
-
 @interface ManagePasswordsBubbleManageCredentialsViewTestDelegate
     : NSObject<ManagePasswordsBubbleContentViewDelegate> {
   BOOL dismissed_;

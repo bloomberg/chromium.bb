@@ -15,23 +15,6 @@
 #include "testing/gtest_mac.h"
 #import "ui/base/cocoa/hover_image_button.h"
 
-@interface ManageCredentialItemViewController (Testing)
-@property(nonatomic, readonly) const autofill::PasswordForm& passwordForm;
-@property(nonatomic, readonly) NSView* contentView;
-@end
-
-@implementation ManageCredentialItemViewController (Testing)
-
-- (const autofill::PasswordForm&)passwordForm {
-  return passwordForm_;
-}
-
-- (NSView*)contentView {
-  return contentView_.get();
-}
-
-@end
-
 @interface ManageCredentialItemView (Testing)
 @property(nonatomic, readonly) HoverImageButton* deleteButton;
 @property(nonatomic, readonly) CredentialItemView* credentialItem;

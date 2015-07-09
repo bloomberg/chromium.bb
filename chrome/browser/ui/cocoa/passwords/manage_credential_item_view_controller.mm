@@ -205,3 +205,15 @@ void LayOutItem(NSView* item, NSView* leftSubview, NSView* rightSubview) {
               action:@selector(undoDelete:)]);
 }
 @end
+
+@implementation ManageCredentialItemViewController (Testing)
+
+- (const autofill::PasswordForm&)passwordForm {
+  return passwordForm_;
+}
+
+- (NSView*)contentView {
+  return contentView_.get();
+}
+
+@end

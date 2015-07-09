@@ -42,4 +42,9 @@ class ManagePasswordsBubbleModel;
                   delegate:(id<CredentialItemDelegate>)delegate;
 @end
 
+@interface ManageCredentialItemViewController (Testing)
+@property(nonatomic, readonly) const autofill::PasswordForm& passwordForm;
+@property(nonatomic, readonly) NSView* contentView;
+@end
+
 #endif  // CHROME_BROWSER_UI_COCOA_PASSWORDS_MANAGE_CREDENTIAL_ITEM_VIEW_CONTROLLER_H_
