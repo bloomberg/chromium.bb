@@ -233,8 +233,6 @@ public:
     virtual bool isWebView() const { return false; }
     // Returns true if the WebWidget created is of type WebPagePopup.
     virtual bool isPagePopup() const { return false; }
-    // Returns true if the WebWidget created is of type WebPopupMenu.
-    virtual bool isPopupMenu() const { return false; }
 
     // The WebLayerTreeView initialized on this WebWidgetClient will be going away and
     // is no longer safe to access.
