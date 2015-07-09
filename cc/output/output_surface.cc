@@ -237,4 +237,8 @@ void OutputSurface::SetWorkerContextShouldAggressivelyFreeResources(
   }
 }
 
+bool OutputSurface::SurfaceIsSuspendForRecycle() const {
+  return false;
+}
+
 }  // namespace cc

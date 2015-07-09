@@ -148,6 +148,9 @@ bool Display::DrawAndSwap() {
   if (!output_surface_)
     return false;
 
+  if (output_surface_->SurfaceIsSuspendForRecycle())
+    return false;
+
   scoped_ptr<CompositorFrame> frame =
       aggregator_->Aggregate(current_surface_id_);
   if (!frame)

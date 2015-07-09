@@ -156,6 +156,9 @@ class CC_EXPORT OutputSurface {
   // appropriate.
   virtual void SetWorkerContextShouldAggressivelyFreeResources(bool is_visible);
 
+  // If this returns true, then the surface will not attempt to draw.
+  virtual bool SurfaceIsSuspendForRecycle() const;
+
  protected:
   OutputSurfaceClient* client_;
 

@@ -39,6 +39,7 @@ class GpuBrowserCompositorOutputSurface
   // cc::OutputSurface implementation.
   void SwapBuffers(cc::CompositorFrame* frame) override;
   bool BindToClient(cc::OutputSurfaceClient* client) override;
+  bool SurfaceIsSuspendForRecycle() const override;
 
 #if defined(OS_MACOSX)
   void OnSurfaceDisplayed() override;

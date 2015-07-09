@@ -153,4 +153,12 @@ bool GpuBrowserCompositorOutputSurface::
 }
 #endif
 
+bool GpuBrowserCompositorOutputSurface::SurfaceIsSuspendForRecycle() const {
+#if defined(OS_MACOSX)
+  return should_show_frames_state_ == SHOULD_NOT_SHOW_FRAMES_SUSPENDED;
+#else
+  return false;
+#endif
+}
+
 }  // namespace content
