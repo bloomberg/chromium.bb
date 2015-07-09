@@ -329,7 +329,6 @@ class TestPageHandler(testserver_base.BasePageHandler):
       self.AuthDigestHandler,
       self.SlowServerHandler,
       self.ChunkedServerHandler,
-      self.ContentTypeHandler,
       self.NoContentHandler,
       self.ServerRedirectHandler,
       self.CrossSiteRedirectHandler,
@@ -1374,23 +1373,6 @@ class TestPageHandler(testserver_base.BasePageHandler):
       self.sendChunkHelp('*' * chunkedSettings['chunkSize'])
       self.wfile.flush() # Keep in mind that we start flushing only after 1kb.
     self.sendChunkHelp('')
-    return True
-
-  def ContentTypeHandler(self):
-    """Returns a string of html with the given content type.  E.g.,
-    /contenttype?text/css returns an html file with the Content-Type
-    header set to text/css."""
-
-    if not self._ShouldHandleRequest("/contenttype"):
-      return False
-    query_char = self.path.find('?')
-    content_type = self.path[query_char + 1:].strip()
-    if not content_type:
-      content_type = 'text/html'
-    self.send_response(200)
-    self.send_header('Content-Type', content_type)
-    self.end_headers()
-    self.wfile.write("<html>\n<body>\n<p>HTML text</p>\n</body>\n</html>\n")
     return True
 
   def NoContentHandler(self):
