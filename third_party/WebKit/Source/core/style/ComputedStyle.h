@@ -1818,7 +1818,7 @@ private:
 
     void appendContent(PassOwnPtr<ContentData>);
     void addAppliedTextDecoration(const AppliedTextDecoration&);
-    void applyMotionPathTransform(TransformationMatrix&) const;
+    void applyMotionPathTransform(float originX, float originY, TransformationMatrix&) const;
 
     bool diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle& other) const;
     bool diffNeedsFullLayout(const ComputedStyle& other) const;

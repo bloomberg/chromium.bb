@@ -927,10 +927,15 @@ void ComputedStyle::applyTransform(TransformationMatrix& result, const FloatRect
     float offsetX = transformOriginX().type() == Percent ? boundingBox.x() : 0;
     float offsetY = transformOriginY().type() == Percent ? boundingBox.y() : 0;
 
+    float originX = 0;
+    float originY = 0;
+    float originZ = 0;
+
     if (applyTransformOrigin) {
-        result.translate3d(floatValueForLength(transformOriginX(), boundingBox.width()) + offsetX,
-            floatValueForLength(transformOriginY(), boundingBox.height()) + offsetY,
-            transformOriginZ());
+        originX = floatValueForLength(transformOriginX(), boundingBox.width()) + offsetX;
+        originY = floatValueForLength(transformOriginY(), boundingBox.height()) + offsetY;
+        originZ = transformOriginZ();
+        result.translate3d(originX, originY, originZ);
     }
 
     if (applyIndependentTransformProperties == IncludeIndependentTransformProperties) {
@@ -945,7 +950,7 @@ void ComputedStyle::applyTransform(TransformationMatrix& result, const FloatRect
     }
 
     if (applyMotionPath == ComputedStyle::IncludeMotionPath)
-        applyMotionPathTransform(result);
+        applyMotionPathTransform(originX, originY, result);
 
     const Vector<RefPtr<TransformOperation>>& transformOperations = transform().operations();
     unsigned size = transformOperations.size();
@@ -953,13 +958,11 @@ void ComputedStyle::applyTransform(TransformationMatrix& result, const FloatRect
         transformOperations[i]->apply(result, boundingBox.size());
 
     if (applyTransformOrigin) {
-        result.translate3d(-floatValueForLength(transformOriginX(), boundingBox.width()) - offsetX,
-            -floatValueForLength(transformOriginY(), boundingBox.height()) - offsetY,
-            -transformOriginZ());
+        result.translate3d(-originX, -originY, -originZ);
     }
 }
 
-void ComputedStyle::applyMotionPathTransform(TransformationMatrix& transform) const
+void ComputedStyle::applyMotionPathTransform(float originX, float originY, TransformationMatrix& transform) const
 {
     const StyleMotionData& motionData = rareNonInheritedData->m_transform->m_motion;
     ASSERT(motionData.m_path && motionData.m_path->isPathStyleMotionPath());
@@ -982,7 +985,7 @@ void ComputedStyle::applyMotionPathTransform(TransformationMatrix& transform) co
     if (motionData.m_rotationType == MotionRotationFixed)
         angle = 0;
 
-    transform.translate(point.x(), point.y());
+    transform.translate(point.x() - originX, point.y() - originY);
     transform.rotate(angle + motionData.m_rotation);
 }
 
