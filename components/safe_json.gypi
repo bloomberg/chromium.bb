@@ -7,7 +7,6 @@
     {
       # GN version: //components/safe_json
       'target_name': 'safe_json',
-      #'type': '<(component)',
       'type': 'static_library',
       'dependencies': [
         'safe_json_parser_message_filter',
@@ -18,9 +17,6 @@
       ],
       'include_dirs': [
         '..',
-      ],
-      'defines': [
-        'SAFE_JSON_IMPLEMENTATION',
       ],
       'sources': [
         'safe_json/safe_json_parser.cc',
