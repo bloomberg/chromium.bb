@@ -426,6 +426,26 @@ bool LayoutBoxModelObject::calculateHasBoxDecorations() const
     return hasBackground() || styleToUse.hasBorderDecoration() || styleToUse.hasAppearance() || styleToUse.boxShadow();
 }
 
+bool LayoutBoxModelObject::hasNonEmptyLayoutSize() const
+{
+    for (const LayoutBoxModelObject* root = this; root; root = root->continuation()) {
+        for (const LayoutObject* object = root; object; object = object->nextInPreOrder(object)) {
+            if (object->isBox()) {
+                const LayoutBox& box = toLayoutBox(*object);
+                if (box.logicalHeight() && box.logicalWidth())
+                    return true;
+            } else if (object->isLayoutInline()) {
+                const LayoutInline& layoutInline = toLayoutInline(*object);
+                if (!layoutInline.linesVisualOverflowBoundingBox().isEmpty())
+                    return true;
+            } else {
+                ASSERT(object->isText());
+            }
+        }
+    }
+    return false;
+}
+
 void LayoutBoxModelObject::updateFromStyle()
 {
     const ComputedStyle& styleToUse = styleRef();

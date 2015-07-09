@@ -200,6 +200,8 @@ public:
     ClientRectList* getClientRects();
     ClientRect* getBoundingClientRect();
 
+    bool hasNonEmptyLayoutSize() const;
+
     const AtomicString& computedRole();
     String computedName();
 

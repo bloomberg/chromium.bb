@@ -909,6 +909,15 @@ void Element::decrementProxyCount()
         setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::CompositorProxy));
 }
 
+bool Element::hasNonEmptyLayoutSize() const
+{
+    document().updateLayoutIgnorePendingStylesheets();
+
+    if (LayoutBoxModelObject* box = layoutBoxModelObject())
+        return box->hasNonEmptyLayoutSize();
+    return false;
+}
+
 IntRect Element::boundsInViewportSpace()
 {
     document().updateLayoutIgnorePendingStylesheets();

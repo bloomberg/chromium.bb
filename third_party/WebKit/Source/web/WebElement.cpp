@@ -36,10 +36,8 @@
 #include "core/dom/Fullscreen.h"
 #include "core/dom/NamedNodeMap.h"
 #include "core/dom/custom/CustomElementProcessingStack.h"
-#include "core/layout/LayoutBoxModelObject.h"
-#include "core/layout/LayoutObject.h"
+#include "platform/graphics/Image.h"
 #include "public/platform/WebRect.h"
-#include "public/web/WebDocument.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
@@ -128,6 +126,11 @@ void WebElement::requestFullScreen()
 {
     Element* element = unwrap<Element>();
     Fullscreen::from(element->document()).requestFullscreen(*element, Fullscreen::PrefixedRequest);
+}
+
+bool WebElement::hasNonEmptyLayoutSize() const
+{
+    return constUnwrap<Element>()->hasNonEmptyLayoutSize();
 }
 
 WebRect WebElement::boundsInViewportSpace()

@@ -65,6 +65,9 @@ public:
     BLINK_EXPORT WebString attributeValue(unsigned index) const;
     BLINK_EXPORT unsigned attributeCount() const;
 
+    // If this element takes up space in the layout of the page.
+    BLINK_EXPORT bool hasNonEmptyLayoutSize() const;
+
     // Returns the bounds of the element in viewport space. The bounds
     // have been adjusted to include any transformations. This view is
     // also called the Root View in Blink.
