@@ -1,6 +1,5 @@
 include_rules = [
   "+chrome/grit",  # For generated headers
-  "+chrome_elf",
   "+components/autofill/content/common",
   "+components/autofill/content/renderer",
   "+components/autofill/core/common",

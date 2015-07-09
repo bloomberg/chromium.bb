@@ -263,7 +263,6 @@ if (is_multi_dll_chrome) {
     ]
 
     if (is_win) {
-      deps += [ "//chrome_elf" ]
       # TODO(GYP): PGO on Windows.
       # ['chrome_pgo_phase==1', {
       #   'msvs_settings': {

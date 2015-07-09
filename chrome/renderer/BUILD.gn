@@ -159,10 +159,7 @@ static_library("renderer") {
     deps += [ "//third_party/mach_override" ]
   }
   if (is_win) {
-    deps += [
-      "//chrome_elf",
-      "//third_party/wtl",
-    ]
+    deps += [ "//third_party/wtl" ]
   }
   if (!is_android) {
     sources +=

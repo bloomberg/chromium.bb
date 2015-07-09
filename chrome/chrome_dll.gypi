@@ -352,9 +352,6 @@
           ],
           'conditions': [
             ['OS=="win"', {
-              'dependencies': [
-                '<(DEPTH)/chrome_elf/chrome_elf.gyp:chrome_elf',
-              ],
               'conditions': [
                 ['chrome_pgo_phase==1', {
                   'msvs_settings': {

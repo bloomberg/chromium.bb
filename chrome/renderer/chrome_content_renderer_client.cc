@@ -154,10 +154,6 @@
 #include "chrome/renderer/media/webrtc_logging_message_filter.h"
 #endif
 
-#if defined(OS_WIN)
-#include "chrome_elf/blacklist/blacklist.h"
-#endif
-
 using autofill::AutofillAgent;
 using autofill::PasswordAutofillAgent;
 using autofill::PasswordGenerationAgent;
@@ -501,13 +497,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy(
       extension_resource_scheme);
 
-#if defined(OS_WIN)
-  // Report if the renderer process has been patched by chrome_elf.
-  // TODO(csharp): Remove once the renderer is no longer getting
-  // patched this way.
-  if (blacklist::IsBlacklistInitialized())
-    UMA_HISTOGRAM_BOOLEAN("Blacklist.PatchedInRenderer", true);
-#endif
 #if defined(ENABLE_PRINT_PREVIEW)
   pdf_print_client_.reset(new ChromePDFPrintClient());
   pdf::PepperPDFHost::SetPrintClient(pdf_print_client_.get());
