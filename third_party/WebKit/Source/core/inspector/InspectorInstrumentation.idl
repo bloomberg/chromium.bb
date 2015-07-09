@@ -420,7 +420,7 @@ interface InspectorConsoleInstrumentation {
 
 class ConsoleMessage;
 
-    [Console, Debugger]
+    [Console]
     void addMessageToConsole(ExecutionContext* context, ConsoleMessage* consoleMessage);
 
     [Profiler, Inline=FastReturn]

@@ -36,6 +36,7 @@ namespace blink {
 class ConsoleMessage;
 class ConsoleMessageStorage;
 class InjectedScriptManager;
+class InspectorDebuggerAgent;
 
 typedef String ErrorString;
 
@@ -45,6 +46,8 @@ public:
     explicit InspectorConsoleAgent(InjectedScriptManager*);
     virtual ~InspectorConsoleAgent();
     DECLARE_VIRTUAL_TRACE();
+
+    void setDebuggerAgent(InspectorDebuggerAgent* debuggerAgent) { m_debuggerAgent = debuggerAgent; }
 
     void enable(ErrorString*) override;
     bool enabled() { return m_enabled; }
@@ -63,6 +66,7 @@ protected:
     virtual void disableStackCapturingIfNeeded() = 0;
 
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
+    RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
     bool m_enabled;
 };
 

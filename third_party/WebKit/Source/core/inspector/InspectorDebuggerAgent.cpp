@@ -38,7 +38,6 @@
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/dom/Microtask.h"
 #include "core/inspector/AsyncCallChain.h"
-#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
@@ -308,13 +307,6 @@ void InspectorDebuggerAgent::setSkipAllPauses(ErrorString*, bool skipped)
 bool InspectorDebuggerAgent::isPaused()
 {
     return debugger().isPaused();
-}
-
-void InspectorDebuggerAgent::addMessageToConsole(ConsoleMessage* consoleMessage)
-{
-    ASSERT(enabled());
-    if (consoleMessage->type() == AssertMessageType && debugger().pauseOnExceptionsState() != V8Debugger::DontPauseOnExceptions)
-        breakProgram(InspectorFrontend::Debugger::Reason::Assert, nullptr);
 }
 
 static PassRefPtr<JSONObject> buildObjectForBreakpointCookie(const String& url, int lineNumber, int columnNumber, const String& condition, bool isRegex)

@@ -472,6 +472,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
     m_agents.append(InspectorHeapProfilerAgent::create(injectedScriptManager));
 
     m_pageAgent->setDeferredAgents(debuggerAgent, m_cssAgent);
+    m_pageConsoleAgent->setDebuggerAgent(debuggerAgent);
 
     MainThreadDebugger* mainThreadDebugger = MainThreadDebugger::instance();
     m_injectedScriptManager->injectedScriptHost()->init(

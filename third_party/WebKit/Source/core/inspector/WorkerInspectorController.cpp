@@ -142,6 +142,7 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
 
     OwnPtrWillBeRawPtr<WorkerConsoleAgent> workerConsoleAgent = WorkerConsoleAgent::create(m_injectedScriptManager.get(), workerGlobalScope);
     WorkerConsoleAgent* workerConsoleAgentPtr = workerConsoleAgent.get();
+    workerConsoleAgentPtr->setDebuggerAgent(m_workerDebuggerAgent);
     m_agents.append(workerConsoleAgent.release());
 
     m_agents.append(InspectorTimelineAgent::create());
