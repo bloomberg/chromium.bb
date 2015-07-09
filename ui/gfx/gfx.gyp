@@ -94,7 +94,7 @@
         'GFX_IMPLEMENTATION',
       ],
       'include_dirs': [
-        '<(DEPTH)/third_party/icu/source/common'
+        '<(DEPTH)/third_party/icu/source/common',
       ],
       'sources': [
         'android/device_display_info.cc',
@@ -404,6 +404,42 @@
             'render_text_harfbuzz.cc',
             'render_text_harfbuzz.h',
             'text_utils_skia.cc',
+          ],
+        }, {  # desktop platforms
+          'variables': {
+            'vector_icons_cc_file': '<(INTERMEDIATE_DIR)/ui/gfx/vector_icons.cc',
+            'vector_icons_public_h_file': '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/vector_icons_public.h',
+          },
+          'include_dirs': [
+            '<(SHARED_INTERMEDIATE_DIR)>',
+          ],
+          'sources': [
+            '<(vector_icons_cc_file)',
+            '<(vector_icons_public_h_file)',
+
+            'paint_vector_icon.cc',
+            'paint_vector_icon.h',
+            'vector_icons.h',
+          ],
+          'actions': [
+            {
+              # GN version: //ui/gfx:aggregate_vector_icons
+              'action_name': 'aggregate_vector_icons',
+              'inputs': [
+                'vector_icons/',
+              ],
+              'outputs': [
+                '<(vector_icons_cc_file)',
+                '<(vector_icons_public_h_file)',
+              ],
+              'action': [ 'python',
+                          'vector_icons/aggregate_vector_icons.py',
+                          '--working_directory=vector_icons/',
+                          '--output_cc=<(vector_icons_cc_file)',
+                          '--output_h=<(vector_icons_public_h_file)',
+              ],
+              'message': 'Aggregating vector resources.',
+            },
           ],
         }],
         ['use_x11==1', {

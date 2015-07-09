@@ -5,7 +5,9 @@
 #ifndef UI_VIEWS_CONTROLS_IMAGE_VIEW_H_
 #define UI_VIEWS_CONTROLS_IMAGE_VIEW_H_
 
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/view.h"
 
 namespace gfx {
@@ -52,13 +54,14 @@ class VIEWS_EXPORT ImageView : public View {
   // The returned image is still owned by the ImageView.
   const gfx::ImageSkia& GetImage();
 
+  // Tells the view to draw a monochrome vector image identified by |id| using
+  // |color|. The size of the view and the image will be set to |image_size|.
+  void SetVectorIcon(gfx::VectorIconId id,
+                     SkColor color,
+                     const gfx::Size& image_size);
+
   // Set the desired image size for the receiving ImageView.
   void SetImageSize(const gfx::Size& image_size);
-
-  // Return the preferred size for the receiving view. Returns false if the
-  // preferred size is not defined, which means that the view uses the image
-  // size.
-  bool GetImageSize(gfx::Size* image_size) const;
 
   // Returns the actual bounds of the visible image inside the view.
   gfx::Rect GetImageBounds() const;
@@ -96,6 +99,8 @@ class VIEWS_EXPORT ImageView : public View {
  private:
   void OnPaintImage(gfx::Canvas* canvas);
 
+  void OnPaintVectorIcon(gfx::Canvas* canvas);
+
   // Returns true if |img| is the same as the last image we painted. This is
   // intended to be a quick check, not exhaustive. In other words it's possible
   // for this to return false even though the images are in fact equal.
@@ -113,6 +118,14 @@ class VIEWS_EXPORT ImageView : public View {
 
   // The underlying image.
   gfx::ImageSkia image_;
+
+  // The ID of the vector icon that should be drawn, or gfx::VECTOR_ICON_NONE.
+  // This is drawn in addition to |image_|, but in most cases you probably want
+  // one or the other and not both.
+  gfx::VectorIconId vector_id_;
+
+  // The color to use when drawing the vector icon.
+  SkColor vector_color_;
 
   // Horizontal alignment.
   Alignment horiz_alignment_;

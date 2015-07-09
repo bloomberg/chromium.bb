@@ -103,7 +103,6 @@
       <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_BADGE_CENTER" file="common/browser_action_badge_center.png" />
       <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_BADGE_LEFT" file="common/browser_action_badge_left.png" />
       <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_BADGE_RIGHT" file="common/browser_action_badge_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_CHECKMARK" file="common/checkmark.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_2" file="close_2.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_2_H" file="close_2_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_2_MASK" file="close_2_mask.png" />
