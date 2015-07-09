@@ -214,8 +214,7 @@ always work 5-2456
 always world 456-2456
 always young 5-13456
 
-#   easier to define specific exceptions as words
-
+#   easier to define specific exceptions
 word there 5-2346
 word these 45-2346
 word those 45-1456
@@ -247,41 +246,13 @@ word rabbity 1235-1-23-24-2345-13456
 
 #   10.9   Shortforms
 
-always afternoon 1-124-1345 afternoons
-always deceive 145-14-1236
-always deceiving 145-14-1236-1245
-always declare 145-14-123
-always first 124-34
-always much 134-16
-always ourselves 1256-1235-1236-234
-always perceive 1234-12456-14-1236
-always perceiving 1234-12456-14-1236-1245
-always perhaps 1234-12456-125
-always quick 12345-13
-always receive 1235-14-1236
-always receiving 1235-14-1236-1245
-always rejoice 1235-245-14
-always rejoicing 1235-245-14-1245
-always together 2345-1245-1235
-prfword children 16-1345
-prfword necessary 1345-15-14 unnecessary
-prfword paid 1234-145
-sufword above 1-12-1236
-sufword after 1-124
-sufword afterward 1-124-2456
-sufword before 23-124
-sufword conceive 25-14-1236
-sufword conceiving 25-14-1236-1245
-sufword could 14-145
-sufword good 1245-145
-sufword great 1245-1235-2345
-sufword letter 123-1235
-sufword little 123-123
-sufword should 146-145
-sufword would 2456-145
 word about 1-12
+sufword above 1-12-1236
 word according 1-14
 word across 1-14-1235
+sufword after 1-124
+always afternoon 1-124-1345 afternoons
+sufword afterward 1-124-2456
 word again 1-1245
 word against 1-1245-34
 word almost 1-123-134
@@ -291,32 +262,60 @@ word although 1-123-1456
 word altogether 1-123-2345
 word always 1-123-2456
 word because 23-14
+sufword before 23-124
 word behind 23-125
 word below 23-123
 word beneath 23-1345
 word beyond 23-13456
 word blind 12-123
 word braille 12-1235-123
+prfword children 16-1345
+sufword conceive 25-14-1236
+sufword conceiving 25-14-1236-1245
+sufword could 14-145
+always deceive 145-14-1236
+always deceiving 145-14-1236-1245
+always declare 145-14-123
 word declaring 145-14-123-1245
 word either 15-24
+always first 124-34
 word friend 124-1235
+sufword good 1245-145
+always great 1245-1235-2345
 word herself 125-12456-124
 word him 125-134
 word himself 125-134-124
 word immediate 24-134-134
 word its 1346-234
 word itself 1346-124
+sufword letter 123-1235
+sufword little 123-123
+always much 134-16
 word must 134-34
 word myself 134-13456-124
+prfword necessary 1345-15-14 unnecessary
 word neither 1345-15-24
 word oneself 5-135-124
+always ourselves 1256-1235-1236-234
+prfword paid 1234-145
+always perceive 1234-12456-14-1236
+always perceiving 1234-12456-14-1236-1245
+always perhaps 1234-12456-125
+always quick 12345-13
+always receive 1235-14-1236
+always receiving 1235-14-1236-1245
+always rejoice 1235-245-14
+always rejoicing 1235-245-14-1245
 word said 234-145
+sufword should 146-145
 word such 234-16
 word themselves 2346-134-1236-234
 word thyself 1456-13456-124
 word today 2345-145
+always together 2345-1245-1235
 word tomorrow 2345-134
 word tonight 2345-1345
+sufword would 2456-145
 word your 13456-1235
 word yourself 13456-1235-124
 word yourselves 13456-1235-1236-234
