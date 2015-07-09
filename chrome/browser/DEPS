@@ -57,7 +57,7 @@ include_rules = [
   "+components/navigation_metrics",
   "+components/network_hints",
   "+components/network_time",
-  "+components/omnibox",
+  "+components/omnibox/browser",
   "+components/os_crypt",
   "+components/password_manager",
   "+components/pdf/browser",

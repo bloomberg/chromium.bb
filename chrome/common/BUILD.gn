@@ -63,6 +63,7 @@ static_library("common") {
     "//components/favicon_base",
     "//components/json_schema",
     "//components/metrics",
+    "//components/omnibox/common",
     "//components/policy:policy_component_common",
     "//components/translate/core/common",
     "//components/variations",

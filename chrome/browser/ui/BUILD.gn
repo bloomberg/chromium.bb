@@ -50,6 +50,7 @@ source_set("ui") {
     "//components/auto_login_parser",
     "//components/dom_distiller/webui",
     "//components/invalidation/impl",
+    "//components/omnibox/common",
     "//components/onc",
     "//components/password_manager/core/browser",
     "//components/resources",

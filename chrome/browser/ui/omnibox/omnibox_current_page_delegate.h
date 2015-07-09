@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/common/instant_types.h"
-#include "chrome/common/omnibox_focus_state.h"
+#include "components/omnibox/common/omnibox_focus_state.h"
 #include "ui/base/window_open_disposition.h"
 
 class GURL;

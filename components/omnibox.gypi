@@ -112,6 +112,18 @@
       ],
     },
     {
+      # GN version: //components/omnibox/common
+      'target_name': 'omnibox_common',
+      'type': 'none',
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        # Note: sources list duplicated in GN build.
+        'components/omnibox/omnibox_focus_state.h',
+      ],
+    },
+    {
       # Protobuf compiler / generator for the InMemoryURLIndex caching
       # protocol buffer.
       # GN version: //components/omnibox:in_memory_url_index_cache_proto

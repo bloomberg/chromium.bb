@@ -19,6 +19,7 @@ include_rules = [
   "+chrome/test",
   "+components/content_settings/core/common",
   "+components/error_page/common",
+  "+components/omnibox/common",
   "+components/url_fixer",
   "+components/variations",
   "+content/public/common",

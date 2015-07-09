@@ -2748,6 +2748,7 @@
         '../components/components.gyp:dom_distiller_core',
         '../components/components.gyp:dom_distiller_webui',
         '../components/components.gyp:invalidation_impl',
+        '../components/components.gyp:omnibox_common',
         '../components/components.gyp:onc_component',
         '../components/components.gyp:password_manager_core_browser',
         '../components/components.gyp:sync_driver',

@@ -258,6 +258,7 @@
         '../components/components.gyp:data_reduction_proxy_core_common',
         '../components/components.gyp:guest_view_renderer',
         '../components/components.gyp:network_hints_renderer',
+        '../components/components.gyp:omnibox_common',
         '../components/components.gyp:error_page_renderer',
         '../components/components.gyp:startup_metric_utils',
         '../components/components.gyp:password_manager_content_renderer',

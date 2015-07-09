@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_OMNIBOX_FOCUS_STATE_H_
-#define CHROME_COMMON_OMNIBOX_FOCUS_STATE_H_
+#ifndef COMPONENTS_OMNIBOX_COMMON_OMNIBOX_FOCUS_STATE_H_
+#define COMPONENTS_OMNIBOX_COMMON_OMNIBOX_FOCUS_STATE_H_
 
 // Omnibox focus state.
 enum OmniboxFocusState {
@@ -39,4 +39,4 @@ enum OmniboxFocusChangeReason {
   OMNIBOX_FOCUS_CHANGE_REASON_LAST = OMNIBOX_FOCUS_CHANGE_TYPING
 };
 
-#endif  // CHROME_COMMON_OMNIBOX_FOCUS_STATE_H_
+#endif  // COMPONENTS_OMNIBOX_COMMON_OMNIBOX_FOCUS_STATE_H_
