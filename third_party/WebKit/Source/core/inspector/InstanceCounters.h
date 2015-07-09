@@ -52,6 +52,7 @@ public:
         NodeCounter,
         ResourceCounter,
         ScriptPromiseCounter,
+        V8PerContextDataCounter,
 
         // This value must be the last.
         CounterTypeLength,

@@ -34,6 +34,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
+#include "core/inspector/InstanceCounters.h"
 #include "wtf/StringExtras.h"
 
 #include <stdlib.h>
@@ -56,10 +57,15 @@ V8PerContextData::V8PerContextData(v8::Local<v8::Context> context)
     v8::Local<v8::Value> objectValue = context->Global()->Get(context, v8AtomicString(m_isolate, "Error")).ToLocalChecked();
     v8::Local<v8::Value> prototypeValue = objectValue.As<v8::Object>()->Get(context, v8AtomicString(m_isolate, "prototype")).ToLocalChecked();
     m_errorPrototype.set(m_isolate, prototypeValue);
+
+    if (isMainThread())
+        InstanceCounters::incrementCounter(InstanceCounters::V8PerContextDataCounter);
 }
 
 V8PerContextData::~V8PerContextData()
 {
+    if (isMainThread())
+        InstanceCounters::decrementCounter(InstanceCounters::V8PerContextDataCounter);
 }
 
 PassOwnPtr<V8PerContextData> V8PerContextData::create(v8::Local<v8::Context> context)
