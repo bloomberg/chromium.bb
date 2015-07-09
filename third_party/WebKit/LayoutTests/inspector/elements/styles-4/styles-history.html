@@ -76,8 +76,8 @@ function test()
                 function step1(style)
                 {
                     var property = style.getLiveProperty("margin");
+                    InspectorTest.addSniffer(WebInspector.UISourceCode.prototype, "addRevision", dumpHistory(next));
                     property.setText("margin:30px;", true, true);
-                    InspectorTest.runAfterPendingDispatches(dumpHistory(next));
                 }
             }
         ]);

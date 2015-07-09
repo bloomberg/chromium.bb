@@ -10,17 +10,16 @@ var initialize_AdditionalPreload = function() {
 
 function test()
 {
-    if (!window.eventSender || !window.textInputController) {
-        document.write("This test does not work in manual mode.");
-        InspectorTest.completeTest();
-        return;
-    }
-
     InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
-    InspectorTest.addSniffer(WebInspector.UISourceCode.prototype, "addRevision", revisionAdded);
 
     var treeElement;
     var hasResourceChanged;
+
+    var revisionAdded = false;
+    var testFinished = false;
+    var displayName = null;
+
+    InspectorTest.addSniffer(WebInspector.UISourceCode.prototype, "addRevision", onRevisionAdded);
 
     function step1()
     {
@@ -91,13 +90,25 @@ function test()
         {
             InspectorTest.addNewRule(null, function() {
                 InspectorTest.dumpSelectedElementStyles(true, false, true);
-                InspectorTest.completeTest();
+                testFinished = true;
+                maybeCompleteTest();
             });
         }
     }
-    function revisionAdded(revision)
+
+    function maybeCompleteTest()
     {
-        InspectorTest.addResult("Revision added: " + this.displayName());
+        if (!revisionAdded || !testFinished)
+            return;
+        InspectorTest.addResult("Revision added: " + displayName);
+        InspectorTest.completeTest();
+    }
+
+    function onRevisionAdded(revision)
+    {
+        revisionAdded = true;
+        displayName = this.displayName();
+        maybeCompleteTest();
     }
 }
 

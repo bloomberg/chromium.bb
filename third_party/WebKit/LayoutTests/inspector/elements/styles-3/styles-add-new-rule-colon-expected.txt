@@ -1,7 +1,6 @@
 Tests that adding a new rule works after switching nodes.
 
 Text
-Revision added: inspector-stylesheet
 After adding new rule (inspected):
 [expanded] 
 element.style  { ()
@@ -27,4 +26,5 @@ div#other  { (inspector-stylesheet:5 -> inspector-stylesheet:5:1)
 div  { (user agent stylesheet)
     display: block;
 
+Revision added: inspector-stylesheet
 
