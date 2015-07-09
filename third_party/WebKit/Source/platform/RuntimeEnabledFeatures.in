@@ -58,6 +58,7 @@ Database status=stable
 DecodeToYUV status=experimental
 DeviceLight status=experimental
 DisplayList2dCanvas status=stable
+DOMConvenienceAPI status=experimental
 ForceDisplayList2dCanvas
 EncryptedMedia status=stable
 EnumerateDevices status=stable

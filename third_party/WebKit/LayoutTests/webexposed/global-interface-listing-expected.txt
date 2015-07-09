@@ -529,12 +529,15 @@ interface CharacterData
     getter length
     getter nextElementSibling
     getter previousElementSibling
+    method after
     method appendData
+    method before
     method constructor
     method deleteData
     method insertData
     method remove
     method replaceData
+    method replaceWith
     method substringData
     setter data
 interface CircularGeofencingRegion
@@ -1031,6 +1034,7 @@ interface Document
     getter xmlStandalone
     getter xmlVersion
     method adoptNode
+    method append
     method caretRangeFromPoint
     method close
     method constructor
@@ -1067,6 +1071,7 @@ interface Document
     method hasFocus
     method importNode
     method open
+    method prepend
     method queryCommandEnabled
     method queryCommandIndeterm
     method queryCommandState
@@ -1184,16 +1189,21 @@ interface DocumentFragment
     getter children
     getter firstElementChild
     getter lastElementChild
+    method append
     method constructor
     method getElementById
+    method prepend
     method querySelector
     method querySelectorAll
 interface DocumentType
     getter name
     getter publicId
     getter systemId
+    method after
+    method before
     method constructor
     method remove
+    method replaceWith
 interface DynamicsCompressorNode
     getter attack
     getter knee
@@ -1250,7 +1260,10 @@ interface Element
     getter scrollWidth
     getter shadowRoot
     getter tagName
+    method after
     method animate
+    method append
+    method before
     method closest
     method constructor
     method createShadowRoot
@@ -1272,12 +1285,14 @@ interface Element
     method insertAdjacentHTML
     method insertAdjacentText
     method matches
+    method prepend
     method querySelector
     method querySelectorAll
     method remove
     method removeAttribute
     method removeAttributeNS
     method removeAttributeNode
+    method replaceWith
     method requestFullscreen
     method requestPointerLock
     method scroll

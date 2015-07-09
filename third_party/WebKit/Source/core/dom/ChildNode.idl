@@ -26,9 +26,8 @@
     LegacyTreatAsPartialInterface,
     NoInterfaceObject, // Always used on target of 'implements'
 ] interface ChildNode {
-    // [Unscopeable] void before((Node or DOMString)... nodes);
-    // [Unscopeable] void after((Node or DOMString)... nodes);
-    // [Unscopeable] void replaceWith((Node or DOMString)... nodes);
-    // TODO(philipj): remove() should be [Unscopeable]. crbug.com/462916
-    [RaisesException, CustomElementCallbacks] void remove();
+    [Unscopeable, RaisesException, CustomElementCallbacks, RuntimeEnabled=DOMConvenienceAPI] void before((Node or DOMString) ... nodes);
+    [Unscopeable, RaisesException, CustomElementCallbacks, RuntimeEnabled=DOMConvenienceAPI] void after((Node or DOMString)... nodes);
+    [Unscopeable, RaisesException, CustomElementCallbacks, RuntimeEnabled=DOMConvenienceAPI] void replaceWith((Node or DOMString)... nodes);
+    [Unscopeable, RaisesException, CustomElementCallbacks] void remove();
 };
