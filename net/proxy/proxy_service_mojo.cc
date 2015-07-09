@@ -37,8 +37,7 @@ ProxyService* CreateProxyServiceUsingMojoFactory(
       make_scoped_ptr(new ProxyResolverFactoryMojo(
           mojo_proxy_factory, host_resolver,
           base::Bind(&NetworkDelegateErrorObserver::Create, network_delegate,
-                     base::ThreadTaskRunnerHandle::Get()),
-          net_log)),
+                     base::ThreadTaskRunnerHandle::Get()))),
       net_log);
 
   // Configure fetchers to use for PAC script downloads and auto-detect.

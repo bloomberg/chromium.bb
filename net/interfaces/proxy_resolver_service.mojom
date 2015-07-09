@@ -32,31 +32,27 @@ struct ProxyServer {
 interface ProxyResolver {
   // Use a ProxyResolverRequestClient instead of returning a result so we can
   // cancel in-flight requests by destroying the client.
+  // TODO(amistry): Add BoundNetLog.
   GetProxyForUrl(string url, ProxyResolverRequestClient client);
 };
 
 interface ProxyResolverRequestClient {
   ReportResult(int32 error, array<ProxyServer>? proxy_servers);
+};
 
-  Alert(string error);
-  OnError(int32 line_number, string error);
-
-  ResolveDns(HostResolverRequestInfo request_info,
-             HostResolverRequestClient client);
+interface ProxyResolverErrorObserver {
+  OnPacScriptError(int32 line_number, string error);
 };
 
 interface ProxyResolverFactory {
+  // TODO(amistry): Add NetLog.
   CreateResolver(string pac_script,
                  ProxyResolver& resolver,
+                 HostResolver host_resolver,
+                 ProxyResolverErrorObserver? error_observer,
                  ProxyResolverFactoryRequestClient client);
 };
 
 interface ProxyResolverFactoryRequestClient {
   ReportResult(int32 error);
-
-  Alert(string error);
-  OnError(int32 line_number, string error);
-
-  ResolveDns(HostResolverRequestInfo request_info,
-             HostResolverRequestClient client);
 };

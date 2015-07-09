@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_checker.h"
-#include "base/values.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/common/url_type_converters.h"
 #include "net/base/load_states.h"
@@ -29,66 +28,36 @@
 namespace net {
 namespace {
 
-scoped_ptr<base::Value> NetLogErrorCallback(
-    int line_number,
-    const base::string16* message,
-    NetLogCaptureMode /* capture_mode */) {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger("line_number", line_number);
-  dict->SetString("message", *message);
-  return dict.Pass();
-}
-
-// A mixin that forwards logging to (Bound)NetLog and ProxyResolverErrorObserver
-// and DNS requests to a MojoHostResolverImpl, which is implemented in terms of
-// a HostResolver.
-template <typename ClientInterface>
-class ClientMixin : public ClientInterface {
+class ErrorObserverHolder : public interfaces::ProxyResolverErrorObserver {
  public:
-  ClientMixin(HostResolver* host_resolver,
-              ProxyResolverErrorObserver* error_observer,
-              NetLog* net_log,
-              const BoundNetLog& bound_net_log)
-      : host_resolver_(host_resolver, bound_net_log),
-        error_observer_(error_observer),
-        net_log_(net_log),
-        bound_net_log_(bound_net_log) {}
+  ErrorObserverHolder(
+      scoped_ptr<net::ProxyResolverErrorObserver> error_observer,
+      mojo::InterfaceRequest<interfaces::ProxyResolverErrorObserver> request);
+  ~ErrorObserverHolder() override;
 
-  // Overridden from ClientInterface:
-  void Alert(const mojo::String& message) override {
-    base::string16 message_str = message.To<base::string16>();
-    auto callback = NetLog::StringCallback("message", &message_str);
-    bound_net_log_.AddEvent(NetLog::TYPE_PAC_JAVASCRIPT_ALERT, callback);
-    if (net_log_)
-      net_log_->AddGlobalEntry(NetLog::TYPE_PAC_JAVASCRIPT_ALERT, callback);
-  }
-
-  void OnError(int32_t line_number, const mojo::String& message) override {
-    base::string16 message_str = message.To<base::string16>();
-    auto callback = base::Bind(&NetLogErrorCallback, line_number, &message_str);
-    bound_net_log_.AddEvent(NetLog::TYPE_PAC_JAVASCRIPT_ERROR, callback);
-    if (net_log_)
-      net_log_->AddGlobalEntry(NetLog::TYPE_PAC_JAVASCRIPT_ERROR, callback);
-    if (error_observer_)
-      error_observer_->OnPACScriptError(line_number, message_str);
-  }
-
-  void ResolveDns(interfaces::HostResolverRequestInfoPtr request_info,
-                  interfaces::HostResolverRequestClientPtr client) override {
-    host_resolver_.Resolve(request_info.Pass(), client.Pass());
-  }
-
- protected:
-  bool dns_request_in_progress() {
-    return host_resolver_.request_in_progress();
-  }
+  void OnPacScriptError(int32_t line_number,
+                        const mojo::String& error) override;
 
  private:
-  MojoHostResolverImpl host_resolver_;
-  ProxyResolverErrorObserver* const error_observer_;
-  NetLog* const net_log_;
-  const BoundNetLog bound_net_log_;
+  scoped_ptr<net::ProxyResolverErrorObserver> error_observer_;
+  mojo::Binding<interfaces::ProxyResolverErrorObserver> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(ErrorObserverHolder);
 };
+
+ErrorObserverHolder::ErrorObserverHolder(
+    scoped_ptr<net::ProxyResolverErrorObserver> error_observer,
+    mojo::InterfaceRequest<interfaces::ProxyResolverErrorObserver> request)
+    : error_observer_(error_observer.Pass()), binding_(this, request.Pass()) {
+}
+
+ErrorObserverHolder::~ErrorObserverHolder() = default;
+
+void ErrorObserverHolder::OnPacScriptError(int32_t line_number,
+                                           const mojo::String& error) {
+  DCHECK(error_observer_);
+  error_observer_->OnPACScriptError(line_number, error.To<base::string16>());
+}
 
 // Implementation of ProxyResolver that connects to a Mojo service to evaluate
 // PAC scripts. This implementation only knows about Mojo services, and
@@ -104,12 +73,13 @@ class ProxyResolverMojo : public ProxyResolver {
   // |host_resolver| as the DNS resolver, using |host_resolver_binding| to
   // communicate with it. When deleted, the closure contained within
   // |on_delete_callback_runner| will be run.
+  // TODO(amistry): Add NetLog.
   ProxyResolverMojo(
       interfaces::ProxyResolverPtr resolver_ptr,
-      HostResolver* host_resolver,
+      scoped_ptr<interfaces::HostResolver> host_resolver,
+      scoped_ptr<mojo::Binding<interfaces::HostResolver>> host_resolver_binding,
       scoped_ptr<base::ScopedClosureRunner> on_delete_callback_runner,
-      scoped_ptr<ProxyResolverErrorObserver> error_observer,
-      NetLog* net_log);
+      scoped_ptr<ErrorObserverHolder> error_observer);
   ~ProxyResolverMojo() override;
 
   // ProxyResolver implementation:
@@ -132,11 +102,12 @@ class ProxyResolverMojo : public ProxyResolver {
   // Connection to the Mojo proxy resolver.
   interfaces::ProxyResolverPtr mojo_proxy_resolver_ptr_;
 
-  HostResolver* host_resolver_;
+  // Mojo host resolver service and binding.
+  scoped_ptr<interfaces::HostResolver> mojo_host_resolver_;
+  scoped_ptr<mojo::Binding<interfaces::HostResolver>>
+      mojo_host_resolver_binding_;
 
-  scoped_ptr<ProxyResolverErrorObserver> error_observer_;
-
-  NetLog* net_log_;
+  scoped_ptr<ErrorObserverHolder> error_observer_;
 
   std::set<Job*> pending_jobs_;
 
@@ -147,21 +118,19 @@ class ProxyResolverMojo : public ProxyResolver {
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverMojo);
 };
 
-class ProxyResolverMojo::Job
-    : public ClientMixin<interfaces::ProxyResolverRequestClient> {
+class ProxyResolverMojo::Job : public interfaces::ProxyResolverRequestClient {
  public:
   Job(ProxyResolverMojo* resolver,
       const GURL& url,
       ProxyInfo* results,
-      const CompletionCallback& callback,
-      const BoundNetLog& net_log);
+      const CompletionCallback& callback);
   ~Job() override;
 
   // Cancels the job and prevents the callback from being run.
   void Cancel();
 
   // Returns the LoadState of this job.
-  LoadState GetLoadState();
+  LoadState load_state() { return LOAD_STATE_RESOLVING_PROXY_FOR_URL; }
 
  private:
   // Mojo error handler.
@@ -184,14 +153,8 @@ class ProxyResolverMojo::Job
 ProxyResolverMojo::Job::Job(ProxyResolverMojo* resolver,
                             const GURL& url,
                             ProxyInfo* results,
-                            const CompletionCallback& callback,
-                            const BoundNetLog& net_log)
-    : ClientMixin<interfaces::ProxyResolverRequestClient>(
-          resolver->host_resolver_,
-          resolver->error_observer_.get(),
-          resolver->net_log_,
-          net_log),
-      resolver_(resolver),
+                            const CompletionCallback& callback)
+    : resolver_(resolver),
       url_(url),
       results_(results),
       callback_(callback),
@@ -215,11 +178,6 @@ void ProxyResolverMojo::Job::Cancel() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback_.is_null());
   callback_.Reset();
-}
-
-LoadState ProxyResolverMojo::Job::GetLoadState() {
-  return dns_request_in_progress() ? LOAD_STATE_RESOLVING_HOST_IN_PROXY_SCRIPT
-                                   : LOAD_STATE_RESOLVING_PROXY_FOR_URL;
 }
 
 void ProxyResolverMojo::Job::OnConnectionError() {
@@ -247,14 +205,14 @@ void ProxyResolverMojo::Job::ReportResult(
 
 ProxyResolverMojo::ProxyResolverMojo(
     interfaces::ProxyResolverPtr resolver_ptr,
-    HostResolver* host_resolver,
+    scoped_ptr<interfaces::HostResolver> host_resolver,
+    scoped_ptr<mojo::Binding<interfaces::HostResolver>> host_resolver_binding,
     scoped_ptr<base::ScopedClosureRunner> on_delete_callback_runner,
-    scoped_ptr<ProxyResolverErrorObserver> error_observer,
-    NetLog* net_log)
+    scoped_ptr<ErrorObserverHolder> error_observer)
     : mojo_proxy_resolver_ptr_(resolver_ptr.Pass()),
-      host_resolver_(host_resolver),
+      mojo_host_resolver_(host_resolver.Pass()),
+      mojo_host_resolver_binding_(host_resolver_binding.Pass()),
       error_observer_(error_observer.Pass()),
-      net_log_(net_log),
       on_delete_callback_runner_(on_delete_callback_runner.Pass()) {
   mojo_proxy_resolver_ptr_.set_connection_error_handler(base::Bind(
       &ProxyResolverMojo::OnConnectionError, base::Unretained(this)));
@@ -291,7 +249,7 @@ int ProxyResolverMojo::GetProxyForURL(const GURL& url,
   if (!mojo_proxy_resolver_ptr_)
     return ERR_PAC_SCRIPT_TERMINATED;
 
-  Job* job = new Job(this, url, results, callback, net_log);
+  Job* job = new Job(this, url, results, callback);
   bool inserted = pending_jobs_.insert(job).second;
   DCHECK(inserted);
   *request = job;
@@ -310,40 +268,42 @@ void ProxyResolverMojo::CancelRequest(RequestHandle request) {
 LoadState ProxyResolverMojo::GetLoadState(RequestHandle request) const {
   Job* job = static_cast<Job*>(request);
   CHECK_EQ(1u, pending_jobs_.count(job));
-  return job->GetLoadState();
+  return job->load_state();
 }
 
 }  // namespace
 
-// A Job to create a ProxyResolver instance.
-//
-// Note: a Job instance is not tied to a particular resolve request, and hence
-// there is no per-request logging to be done (any netlog events are only sent
-// globally) so this always uses an empty BoundNetLog.
 class ProxyResolverFactoryMojo::Job
-    : public ClientMixin<interfaces::ProxyResolverFactoryRequestClient>,
+    : public interfaces::ProxyResolverFactoryRequestClient,
       public ProxyResolverFactory::Request {
  public:
   Job(ProxyResolverFactoryMojo* factory,
       const scoped_refptr<ProxyResolverScriptData>& pac_script,
       scoped_ptr<ProxyResolver>* resolver,
-      const CompletionCallback& callback,
-      scoped_ptr<ProxyResolverErrorObserver> error_observer)
-      : ClientMixin<interfaces::ProxyResolverFactoryRequestClient>(
-            factory->host_resolver_,
-            error_observer.get(),
-            factory->net_log_,
-            BoundNetLog()),
-        factory_(factory),
+      const CompletionCallback& callback)
+      : factory_(factory),
         resolver_(resolver),
         callback_(callback),
         binding_(this),
-        error_observer_(error_observer.Pass()) {
+        host_resolver_(new MojoHostResolverImpl(factory_->host_resolver_)),
+        host_resolver_binding_(
+            new mojo::Binding<interfaces::HostResolver>(host_resolver_.get())) {
+    interfaces::HostResolverPtr host_resolver_ptr;
     interfaces::ProxyResolverFactoryRequestClientPtr client_ptr;
+    interfaces::ProxyResolverErrorObserverPtr error_observer_ptr;
     binding_.Bind(mojo::GetProxy(&client_ptr));
+    if (!factory_->error_observer_factory_.is_null()) {
+      scoped_ptr<ProxyResolverErrorObserver> error_observer =
+          factory_->error_observer_factory_.Run();
+      if (error_observer) {
+        error_observer_.reset(new ErrorObserverHolder(
+            error_observer.Pass(), mojo::GetProxy(&error_observer_ptr)));
+      }
+    }
+    host_resolver_binding_->Bind(mojo::GetProxy(&host_resolver_ptr));
     on_delete_callback_runner_ = factory_->mojo_proxy_factory_->CreateResolver(
         mojo::String::From(pac_script->utf16()), mojo::GetProxy(&resolver_ptr_),
-        client_ptr.Pass());
+        host_resolver_ptr.Pass(), error_observer_ptr.Pass(), client_ptr.Pass());
     resolver_ptr_.set_connection_error_handler(
         base::Bind(&ProxyResolverFactoryMojo::Job::OnConnectionError,
                    base::Unretained(this)));
@@ -359,10 +319,10 @@ class ProxyResolverFactoryMojo::Job
     resolver_ptr_.set_connection_error_handler(mojo::Closure());
     binding_.set_connection_error_handler(mojo::Closure());
     if (error == OK) {
-      resolver_->reset(
-          new ProxyResolverMojo(resolver_ptr_.Pass(), factory_->host_resolver_,
-                                on_delete_callback_runner_.Pass(),
-                                error_observer_.Pass(), factory_->net_log_));
+      resolver_->reset(new ProxyResolverMojo(
+          resolver_ptr_.Pass(), host_resolver_.Pass(),
+          host_resolver_binding_.Pass(), on_delete_callback_runner_.Pass(),
+          error_observer_.Pass()));
     }
     on_delete_callback_runner_.reset();
     callback_.Run(error);
@@ -373,21 +333,21 @@ class ProxyResolverFactoryMojo::Job
   const CompletionCallback callback_;
   interfaces::ProxyResolverPtr resolver_ptr_;
   mojo::Binding<interfaces::ProxyResolverFactoryRequestClient> binding_;
+  scoped_ptr<interfaces::HostResolver> host_resolver_;
+  scoped_ptr<mojo::Binding<interfaces::HostResolver>> host_resolver_binding_;
   scoped_ptr<base::ScopedClosureRunner> on_delete_callback_runner_;
-  scoped_ptr<ProxyResolverErrorObserver> error_observer_;
+  scoped_ptr<ErrorObserverHolder> error_observer_;
 };
 
 ProxyResolverFactoryMojo::ProxyResolverFactoryMojo(
     MojoProxyResolverFactory* mojo_proxy_factory,
     HostResolver* host_resolver,
     const base::Callback<scoped_ptr<ProxyResolverErrorObserver>()>&
-        error_observer_factory,
-    NetLog* net_log)
+        error_observer_factory)
     : ProxyResolverFactory(true),
       mojo_proxy_factory_(mojo_proxy_factory),
       host_resolver_(host_resolver),
-      error_observer_factory_(error_observer_factory),
-      net_log_(net_log) {
+      error_observer_factory_(error_observer_factory) {
 }
 
 ProxyResolverFactoryMojo::~ProxyResolverFactoryMojo() = default;
@@ -403,10 +363,7 @@ int ProxyResolverFactoryMojo::CreateProxyResolver(
       pac_script->utf16().empty()) {
     return ERR_PAC_SCRIPT_FAILED;
   }
-  request->reset(new Job(this, pac_script, resolver, callback,
-                         error_observer_factory_.is_null()
-                             ? nullptr
-                             : error_observer_factory_.Run()));
+  request->reset(new Job(this, pac_script, resolver, callback));
   return ERR_IO_PENDING;
 }
 

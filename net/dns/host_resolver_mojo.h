@@ -5,6 +5,7 @@
 #ifndef NET_DNS_HOST_RESOLVER_MOJO_H_
 #define NET_DNS_HOST_RESOLVER_MOJO_H_
 
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "net/dns/host_cache.h"
@@ -15,19 +16,12 @@ namespace net {
 class AddressList;
 class BoundNetLog;
 
-// A HostResolver implementation that converts requests to mojo types and
-// forwards them to a mojo Impl interface.
+// A HostResolver implementation that delegates to an interfaces::HostResolver
+// mojo interface.
 class HostResolverMojo : public HostResolver {
  public:
-  class Impl {
-   public:
-    virtual ~Impl() = default;
-    virtual void ResolveDns(interfaces::HostResolverRequestInfoPtr,
-                            interfaces::HostResolverRequestClientPtr) = 0;
-  };
-
-  // |impl| must outlive |this|.
-  explicit HostResolverMojo(Impl* impl);
+  HostResolverMojo(interfaces::HostResolverPtr resolver,
+                   const base::Closure& disconnect_callback);
   ~HostResolverMojo() override;
 
   // HostResolver overrides.
@@ -43,14 +37,23 @@ class HostResolverMojo : public HostResolver {
   void CancelRequest(RequestHandle req) override;
   HostCache* GetHostCache() override;
 
+  void set_disconnect_callback(const base::Closure& disconnect_callback) {
+    disconnect_callback_ = disconnect_callback;
+  }
+
  private:
   class Job;
+
+  // Mojo error handler.
+  void OnConnectionError();
 
   int ResolveFromCacheInternal(const RequestInfo& info,
                                const HostCache::Key& key,
                                AddressList* addresses);
 
-  Impl* const impl_;
+  interfaces::HostResolverPtr resolver_;
+
+  base::Closure disconnect_callback_;
 
   scoped_ptr<HostCache> host_cache_;
   base::WeakPtrFactory<HostCache> host_cache_weak_factory_;

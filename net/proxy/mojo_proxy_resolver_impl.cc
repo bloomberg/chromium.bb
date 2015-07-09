@@ -8,11 +8,9 @@
 #include "mojo/common/url_type_converters.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log.h"
-#include "net/proxy/mojo_proxy_resolver_v8_tracing_bindings.h"
 #include "net/proxy/mojo_proxy_type_converters.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_resolver_script_data.h"
-#include "net/proxy/proxy_resolver_v8_tracing.h"
 
 namespace net {
 
@@ -42,13 +40,11 @@ class MojoProxyResolverImpl::Job {
   net::ProxyResolver::RequestHandle request_handle_;
   bool done_;
 
-  base::WeakPtrFactory<interfaces::ProxyResolverRequestClient> weak_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(Job);
 };
 
 MojoProxyResolverImpl::MojoProxyResolverImpl(
-    scoped_ptr<ProxyResolverV8Tracing> resolver)
+    scoped_ptr<net::ProxyResolver> resolver)
     : resolver_(resolver.Pass()) {
 }
 
@@ -83,8 +79,7 @@ MojoProxyResolverImpl::Job::Job(
       client_(client.Pass()),
       url_(url),
       request_handle_(nullptr),
-      done_(false),
-      weak_factory_(client_.get()) {
+      done_(false) {
 }
 
 MojoProxyResolverImpl::Job::~Job() {
@@ -93,11 +88,13 @@ MojoProxyResolverImpl::Job::~Job() {
 }
 
 void MojoProxyResolverImpl::Job::Start() {
-  resolver_->resolver_->GetProxyForURL(
+  int result = resolver_->resolver_->GetProxyForURL(
       url_, &result_, base::Bind(&Job::GetProxyDone, base::Unretained(this)),
-      &request_handle_,
-      make_scoped_ptr(new MojoProxyResolverV8TracingBindings<
-          interfaces::ProxyResolverRequestClient>(weak_factory_.GetWeakPtr())));
+      &request_handle_, BoundNetLog());
+  if (result != ERR_IO_PENDING) {
+    GetProxyDone(result);
+    return;
+  }
   client_.set_connection_error_handler(base::Bind(
       &MojoProxyResolverImpl::Job::OnConnectionError, base::Unretained(this)));
   resolver_->request_handle_to_job_.insert(

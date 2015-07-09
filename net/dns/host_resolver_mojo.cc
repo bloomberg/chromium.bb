@@ -49,10 +49,16 @@ class HostResolverMojo::Job : public interfaces::HostResolverRequestClient {
   base::WeakPtr<HostCache> host_cache_;
 };
 
-HostResolverMojo::HostResolverMojo(Impl* impl)
-    : impl_(impl),
+HostResolverMojo::HostResolverMojo(interfaces::HostResolverPtr resolver,
+                                   const base::Closure& disconnect_callback)
+    : resolver_(resolver.Pass()),
+      disconnect_callback_(disconnect_callback),
       host_cache_(HostCache::CreateDefaultCache()),
       host_cache_weak_factory_(host_cache_.get()) {
+  if (!disconnect_callback_.is_null()) {
+    resolver_.set_connection_error_handler(base::Bind(
+        &HostResolverMojo::OnConnectionError, base::Unretained(this)));
+  }
 }
 
 HostResolverMojo::~HostResolverMojo() = default;
@@ -77,8 +83,8 @@ int HostResolverMojo::Resolve(const RequestInfo& info,
   interfaces::HostResolverRequestClientPtr handle;
   *request_handle = new Job(key, addresses, callback, mojo::GetProxy(&handle),
                             host_cache_weak_factory_.GetWeakPtr());
-  impl_->ResolveDns(interfaces::HostResolverRequestInfo::From(info),
-                    handle.Pass());
+  resolver_->Resolve(interfaces::HostResolverRequestInfo::From(info),
+                     handle.Pass());
   return ERR_IO_PENDING;
 }
 
@@ -99,6 +105,11 @@ void HostResolverMojo::CancelRequest(RequestHandle req) {
 
 HostCache* HostResolverMojo::GetHostCache() {
   return host_cache_.get();
+}
+
+void HostResolverMojo::OnConnectionError() {
+  DCHECK(!disconnect_callback_.is_null());
+  disconnect_callback_.Run();
 }
 
 int HostResolverMojo::ResolveFromCacheInternal(const RequestInfo& info,

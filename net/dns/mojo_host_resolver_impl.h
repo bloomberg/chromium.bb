@@ -10,27 +10,21 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "net/interfaces/host_resolver_service.mojom.h"
-#include "net/log/net_log.h"
 
 namespace net {
 
 class HostResolver;
 
-// MojoHostResolverImpl handles mojo host resolution requests. Inbound Mojo
-// requests are sent to the HostResolver passed into the constructor. When
-// destroyed, any outstanding resolver requests are cancelled. If a request's
-// HostResolverRequestClient is shut down, the associated resolver request is
-// cancelled.
-class MojoHostResolverImpl {
+// This is the implementation of the HostResolver Mojo interface.
+// Inbound Mojo requests are sent to the HostResolver passed into the
+// constructor. When destroyed, any outstanding resolver requests are cancelled.
+// If a request's HostResolverRequestClient is shut down, the associated
+// resolver request is cancelled.
+class MojoHostResolverImpl : public interfaces::HostResolver {
  public:
   // |resolver| is expected to outlive |this|.
-  MojoHostResolverImpl(net::HostResolver* resolver, const BoundNetLog& net_log);
-  ~MojoHostResolverImpl();
-
-  void Resolve(interfaces::HostResolverRequestInfoPtr request_info,
-               interfaces::HostResolverRequestClientPtr client);
-
-  bool request_in_progress() { return !pending_jobs_.empty(); }
+  explicit MojoHostResolverImpl(net::HostResolver* resolver);
+  ~MojoHostResolverImpl() override;
 
  private:
   class Job;
@@ -38,11 +32,12 @@ class MojoHostResolverImpl {
   // Removes |job| from the set of pending jobs, and deletes it.
   void DeleteJob(Job* job);
 
+  // Overridden from net::interfaces::HostResolver:
+  void Resolve(interfaces::HostResolverRequestInfoPtr request_info,
+               interfaces::HostResolverRequestClientPtr client) override;
+
   // Resolver for resolving incoming requests. Not owned.
   net::HostResolver* resolver_;
-
-  // The BoundNetLog to be passed to |resolver_| for all requests.
-  const BoundNetLog net_log_;
 
   // All pending jobs, so they can be cancelled when this service is destroyed.
   // Owns all jobs.
