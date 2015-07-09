@@ -1387,7 +1387,7 @@ private:
 
     ClientHintsPreferences m_clientHintsPreferences;
 
-    OwnPtrWillBeMember<CanvasFontCache> m_canvasFontCache;
+    PersistentWillBeMember<CanvasFontCache> m_canvasFontCache;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT WillBeHeapSupplement<Document>;

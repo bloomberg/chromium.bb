@@ -18,11 +18,11 @@ namespace blink {
 class Document;
 class FontCachePurgePreventer;
 
-class CORE_EXPORT CanvasFontCache final : public NoBaseWillBeGarbageCollectedFinalized<CanvasFontCache>, public WebThread::TaskObserver {
+class CORE_EXPORT CanvasFontCache final : public GarbageCollectedFinalized<CanvasFontCache>, public WebThread::TaskObserver {
 public:
-    static PassOwnPtrWillBeRawPtr<CanvasFontCache> create(Document& document)
+    static CanvasFontCache* create(Document& document)
     {
-        return adoptPtrWillBeNoop(new CanvasFontCache(document));
+        return new CanvasFontCache(document);
     }
 
     MutableStylePropertySet* parseFont(const String&);
@@ -46,14 +46,14 @@ public:
     ~CanvasFontCache();
 
 private:
-    CanvasFontCache(Document&);
+    explicit CanvasFontCache(Document&);
     void schedulePruningIfNeeded();
     typedef WillBeHeapHashMap<String, RefPtrWillBeMember<MutableStylePropertySet>> MutableStylePropertyMap;
 
     MutableStylePropertyMap m_fetchedFonts;
     ListHashSet<String> m_fontLRUList;
     OwnPtr<FontCachePurgePreventer> m_mainCachePurgePreventer;
-    Document* m_document;
+    RawPtrWillBeMember<Document> m_document;
     bool m_pruningScheduled;
 };
 
