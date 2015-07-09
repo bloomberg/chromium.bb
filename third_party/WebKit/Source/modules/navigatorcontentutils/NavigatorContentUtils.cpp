@@ -32,7 +32,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
-#include "core/page/Page.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -138,9 +137,9 @@ static bool verifyCustomHandlerScheme(const String& scheme, ExceptionState& exce
     return false;
 }
 
-NavigatorContentUtils* NavigatorContentUtils::from(Page& page)
+NavigatorContentUtils* NavigatorContentUtils::from(LocalFrame& frame)
 {
-    return static_cast<NavigatorContentUtils*>(WillBeHeapSupplement<Page>::from(page, supplementName()));
+    return static_cast<NavigatorContentUtils*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName()));
 }
 
 NavigatorContentUtils::~NavigatorContentUtils()
@@ -166,8 +165,7 @@ void NavigatorContentUtils::registerProtocolHandler(Navigator& navigator, const 
     if (!verifyCustomHandlerScheme(scheme, exceptionState))
         return;
 
-    ASSERT(navigator.frame()->page());
-    NavigatorContentUtils::from(*navigator.frame()->page())->client()->registerProtocolHandler(scheme, document->completeURL(url), title);
+    NavigatorContentUtils::from(*navigator.frame())->client()->registerProtocolHandler(scheme, document->completeURL(url), title);
 }
 
 static String customHandlersStateString(const NavigatorContentUtilsClient::CustomHandlersState state)
@@ -207,8 +205,7 @@ String NavigatorContentUtils::isProtocolHandlerRegistered(Navigator& navigator, 
     if (!verifyCustomHandlerScheme(scheme, exceptionState))
         return declined;
 
-    ASSERT(navigator.frame()->page());
-    return customHandlersStateString(NavigatorContentUtils::from(*navigator.frame()->page())->client()->isProtocolHandlerRegistered(scheme, document->completeURL(url)));
+    return customHandlersStateString(NavigatorContentUtils::from(*navigator.frame())->client()->isProtocolHandlerRegistered(scheme, document->completeURL(url)));
 }
 
 void NavigatorContentUtils::unregisterProtocolHandler(Navigator& navigator, const String& scheme, const String& url, ExceptionState& exceptionState)
@@ -225,8 +222,7 @@ void NavigatorContentUtils::unregisterProtocolHandler(Navigator& navigator, cons
     if (!verifyCustomHandlerScheme(scheme, exceptionState))
         return;
 
-    ASSERT(navigator.frame()->page());
-    NavigatorContentUtils::from(*navigator.frame()->page())->client()->unregisterProtocolHandler(scheme, document->completeURL(url));
+    NavigatorContentUtils::from(*navigator.frame())->client()->unregisterProtocolHandler(scheme, document->completeURL(url));
 }
 
 const char* NavigatorContentUtils::supplementName()
@@ -234,9 +230,9 @@ const char* NavigatorContentUtils::supplementName()
     return "NavigatorContentUtils";
 }
 
-void provideNavigatorContentUtilsTo(Page& page, PassOwnPtr<NavigatorContentUtilsClient> client)
+void provideNavigatorContentUtilsTo(LocalFrame& frame, PassOwnPtr<NavigatorContentUtilsClient> client)
 {
-    NavigatorContentUtils::provideTo(page, NavigatorContentUtils::supplementName(), NavigatorContentUtils::create(client));
+    NavigatorContentUtils::provideTo(frame, NavigatorContentUtils::supplementName(), NavigatorContentUtils::create(client));
 }
 
 } // namespace blink

@@ -32,7 +32,7 @@
 
 namespace blink {
 
-class Page;
+class LocalFrame;
 
 class NavigatorContentUtilsClient {
 public:
@@ -49,7 +49,7 @@ public:
     virtual void unregisterProtocolHandler(const String& scheme, const KURL&) = 0;
 };
 
-MODULES_EXPORT void provideNavigatorContentUtilsTo(Page&, PassOwnPtr<NavigatorContentUtilsClient>);
+MODULES_EXPORT void provideNavigatorContentUtilsTo(LocalFrame&, PassOwnPtr<NavigatorContentUtilsClient>);
 
 }
 

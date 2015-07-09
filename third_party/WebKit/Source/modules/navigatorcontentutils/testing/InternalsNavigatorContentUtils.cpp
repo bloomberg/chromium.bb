@@ -15,7 +15,7 @@ namespace blink {
 void InternalsNavigatorContentUtils::setNavigatorContentUtilsClientMock(Internals&, Document* document)
 {
     ASSERT(document && document->page());
-    NavigatorContentUtils* navigatorContentUtils = NavigatorContentUtils::from(*document->page());
+    NavigatorContentUtils* navigatorContentUtils = NavigatorContentUtils::from(*document->frame());
     navigatorContentUtils->setClientForTest(adoptPtr(new NavigatorContentUtilsClientMock()));
 }
 

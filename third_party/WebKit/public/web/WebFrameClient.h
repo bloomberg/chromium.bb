@@ -41,6 +41,7 @@
 #include "WebIconURL.h"
 #include "WebNavigationPolicy.h"
 #include "WebNavigationType.h"
+#include "WebNavigatorContentUtilsClient.h"
 #include "WebSandboxFlags.h"
 #include "WebTextDirection.h"
 #include "public/platform/WebCommon.h"
@@ -645,6 +646,22 @@ public:
 
     // App Banners ---------------------------------------------------------
     virtual WebAppBannerClient* appBannerClient() { return 0; }
+
+    // Navigator Content Utils  --------------------------------------------
+
+    // Registers a new URL handler for the given protocol.
+    virtual void registerProtocolHandler(const WebString& scheme,
+        const WebURL& url,
+        const WebString& title) { }
+
+    // Unregisters a given URL handler for the given protocol.
+    virtual void unregisterProtocolHandler(const WebString& scheme, const WebURL& url) { }
+
+    // Check if a given URL handler is registered for the given protocol.
+    virtual WebCustomHandlersState isProtocolHandlerRegistered(const WebString& scheme, const WebURL& url)
+    {
+        return WebCustomHandlersNew;
+    }
 
 protected:
     virtual ~WebFrameClient() { }

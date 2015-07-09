@@ -40,7 +40,6 @@
 #include "WebFileChooserCompletion.h"
 #include "WebFileChooserParams.h"
 #include "WebFrame.h"
-#include "WebNavigatorContentUtilsClient.h"
 #include "WebPopupType.h"
 #include "WebTextAffinity.h"
 #include "WebTextDirection.h"
@@ -244,22 +243,6 @@ public:
 
     // Informs the browser that the page scale has changed.
     virtual void pageScaleFactorChanged() { }
-
-    // Navigator Content Utils  --------------------------------------------
-
-    // Registers a new URL handler for the given protocol.
-    virtual void registerProtocolHandler(const WebString& scheme,
-        const WebURL& url,
-        const WebString& title) { }
-
-    // Unregisters a given URL handler for the given protocol.
-    virtual void unregisterProtocolHandler(const WebString& scheme, const WebURL& url) { }
-
-    // Check if a given URL handler is registered for the given protocol.
-    virtual WebCustomHandlersState isProtocolHandlerRegistered(const WebString& scheme, const WebURL& url)
-    {
-        return WebCustomHandlersNew;
-    }
 
 
     // Visibility -----------------------------------------------------------
