@@ -732,7 +732,7 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   // Register native methods.
   jclass linker_class;
   if (!InitClassReference(env,
-                          "org/chromium/base/library_loader/Linker",
+                          "org/chromium/base/library_loader/LegacyLinker",
                           &linker_class))
     return -1;
 

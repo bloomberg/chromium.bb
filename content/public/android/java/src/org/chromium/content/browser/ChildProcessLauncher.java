@@ -271,9 +271,10 @@ public class ChildProcessLauncher {
     private static long sLinkerLoadAddress = 0;
 
     private static ChromiumLinkerParams getLinkerParamsForNewConnection() {
+        Linker linker = Linker.getInstance();
         if (!sLinkerInitialized) {
-            if (Linker.isUsed()) {
-                sLinkerLoadAddress = Linker.getBaseLoadAddress();
+            if (linker.isUsed()) {
+                sLinkerLoadAddress = linker.getBaseLoadAddress();
                 if (sLinkerLoadAddress == 0) {
                     Log.i(TAG, "Shared RELRO support disabled!");
                 }
@@ -287,7 +288,7 @@ public class ChildProcessLauncher {
         final boolean waitForSharedRelros = true;
         return new ChromiumLinkerParams(sLinkerLoadAddress,
                                 waitForSharedRelros,
-                                Linker.getTestRunnerClassName());
+                                linker.getTestRunnerClassName());
     }
 
     private static ChildProcessConnection allocateBoundConnection(Context context,
@@ -620,7 +621,7 @@ public class ChildProcessLauncher {
                                    filesToBeMapped,
                                    createCallback(childProcessId, callbackType),
                                    connectionCallback,
-                                   Linker.getSharedRelros());
+                                   Linker.getInstance().getSharedRelros());
     }
 
     /**

@@ -77,10 +77,11 @@ public class ChromiumLinkerTestActivity extends Activity {
         if (hasLowMemoryDeviceSwitch) {
             memoryDeviceConfig = Linker.MEMORY_DEVICE_CONFIG_LOW;
         }
-        Linker.setMemoryDeviceConfig(memoryDeviceConfig);
+        Linker linker = Linker.getInstance();
+        linker.setMemoryDeviceConfig(memoryDeviceConfig);
 
         // Register the test runner class by name.
-        Linker.setTestRunnerClassName(LinkerTests.class.getName());
+        linker.setTestRunnerClassName(LinkerTests.class.getName());
 
         // Load the library in the browser process, this will also run the test
         // runner in this process.

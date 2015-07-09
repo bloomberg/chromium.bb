@@ -96,7 +96,7 @@ public class ChildProcessService extends Service {
                 System.arraycopy(fdInfosAsParcelable, 0, mFdInfos, 0, fdInfosAsParcelable.length);
                 Bundle sharedRelros = args.getBundle(Linker.EXTRA_LINKER_SHARED_RELROS);
                 if (sharedRelros != null) {
-                    Linker.useSharedRelros(sharedRelros);
+                    Linker.getInstance().useSharedRelros(sharedRelros);
                     sharedRelros = null;
                 }
                 mMainThread.notifyAll();
@@ -136,7 +136,8 @@ public class ChildProcessService extends Service {
                         }
                     }
                     CommandLine.init(mCommandLineParams);
-                    boolean useLinker = Linker.isUsed();
+                    Linker linker = Linker.getInstance();
+                    boolean useLinker = linker.isUsed();
                     boolean requestedSharedRelro = false;
                     if (useLinker) {
                         synchronized (mMainThread) {
@@ -147,11 +148,11 @@ public class ChildProcessService extends Service {
                         assert mLinkerParams != null;
                         if (mLinkerParams.mWaitForSharedRelro) {
                             requestedSharedRelro = true;
-                            Linker.initServiceProcess(mLinkerParams.mBaseLoadAddress);
+                            linker.initServiceProcess(mLinkerParams.mBaseLoadAddress);
                         } else {
-                            Linker.disableSharedRelros();
+                            linker.disableSharedRelros();
                         }
-                        Linker.setTestRunnerClassName(mLinkerParams.mTestRunnerClassName);
+                        linker.setTestRunnerClassName(mLinkerParams.mTestRunnerClassName);
                     }
                     boolean isLoaded = false;
                     if (CommandLine.getInstance().hasSwitch(
@@ -174,7 +175,7 @@ public class ChildProcessService extends Service {
                         }
                     }
                     if (!isLoaded && requestedSharedRelro) {
-                        Linker.disableSharedRelros();
+                        linker.disableSharedRelros();
                         try {
                             LibraryLoader.get(LibraryProcessType.PROCESS_CHILD)
                                     .loadNow(getApplicationContext());

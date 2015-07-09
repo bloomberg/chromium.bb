@@ -11,11 +11,11 @@ import android.content.pm.PackageInfo;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.SystemClock;
-import android.util.Log;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.CommandLine;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.Log;
 import org.chromium.base.PackageUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.RecordHistogram;
@@ -40,7 +40,7 @@ import javax.annotation.Nullable;
  */
 @JNINamespace("base::android")
 public class LibraryLoader {
-    private static final String TAG = "LibraryLoader";
+    private static final String TAG = "cr.library_loader";
 
     // Set to true to enable debug logs.
     private static final boolean DEBUG = false;
@@ -193,19 +193,20 @@ public class LibraryLoader {
                 assert !mInitialized;
 
                 long startTime = SystemClock.uptimeMillis();
-                boolean useChromiumLinker = Linker.isUsed();
+                Linker linker = Linker.getInstance();
+                boolean useChromiumLinker = linker.isUsed();
 
                 if (useChromiumLinker) {
                     // Determine the APK file path.
                     String apkFilePath = getLibraryApkPath(context);
                     // Load libraries using the Chromium linker.
-                    Linker.prepareLibraryLoad();
+                    linker.prepareLibraryLoad();
 
                     for (String library : NativeLibraries.LIBRARIES) {
                         // Don't self-load the linker. This is because the build system is
                         // not clever enough to understand that all the libraries packaged
                         // in the final .apk don't need to be explicitly loaded.
-                        if (Linker.isChromiumLinkerLibrary(library)) {
+                        if (linker.isChromiumLinkerLibrary(library)) {
                             if (DEBUG) Log.i(TAG, "ignoring self-linker load");
                             continue;
                         }
@@ -213,7 +214,7 @@ public class LibraryLoader {
                         // Determine where the library should be loaded from.
                         String zipFilePath = null;
                         String libFilePath = System.mapLibraryName(library);
-                        if (Linker.isInZipFile()) {
+                        if (linker.isInZipFile()) {
                             // Load directly from the APK.
                             zipFilePath = apkFilePath;
                             Log.i(TAG,
@@ -225,7 +226,7 @@ public class LibraryLoader {
 
                         // Load the library.
                         boolean isLoaded = false;
-                        if (Linker.isUsingBrowserSharedRelros()) {
+                        if (linker.isUsingBrowserSharedRelros()) {
                             mIsUsingBrowserSharedRelros = true;
                             try {
                                 loadLibrary(zipFilePath, libFilePath);
@@ -233,7 +234,7 @@ public class LibraryLoader {
                             } catch (UnsatisfiedLinkError e) {
                                 Log.w(TAG, "Failed to load native library with shared RELRO, "
                                         + "retrying without");
-                                Linker.disableSharedRelros();
+                                linker.disableSharedRelros();
                                 mLoadAtFixedAddressFailed = true;
                             }
                         }
@@ -242,7 +243,7 @@ public class LibraryLoader {
                         }
                     }
 
-                    Linker.finishLibraryLoad();
+                    linker.finishLibraryLoad();
                 } else {
                     // Load libraries using the system linker.
                     for (String library : NativeLibraries.LIBRARIES) {
@@ -264,7 +265,7 @@ public class LibraryLoader {
         }
         // Check that the version of the library we have loaded matches the version we expect
         Log.i(TAG, String.format(
-                "Expected native library version number \"%s\","
+                "Expected native library version number \"%s\", "
                         + "actual native library version number \"%s\"",
                 NativeLibraries.sVersionNumber,
                 nativeGetVersionNumber()));
@@ -301,7 +302,7 @@ public class LibraryLoader {
     // Load a native shared library with the Chromium linker. If the zip file
     // path is not null, the library is loaded directly from the zip file.
     private void loadLibrary(@Nullable String zipFilePath, String libFilePath) {
-        Linker.loadLibrary(zipFilePath, libFilePath);
+        Linker.getInstance().loadLibrary(zipFilePath, libFilePath);
         if (zipFilePath != null) {
             mLibraryWasLoadedFromApk = true;
         }
@@ -371,7 +372,7 @@ public class LibraryLoader {
     // Record Chromium linker histogram state for the main browser process. Called from
     // onNativeInitializationComplete().
     private void recordBrowserProcessHistogram(Context context) {
-        if (Linker.isUsed()) {
+        if (Linker.getInstance().isUsed()) {
             nativeRecordChromiumAndroidLinkerBrowserHistogram(mIsUsingBrowserSharedRelros,
                                                               mLoadAtFixedAddressFailed,
                                                               getLibraryLoadFromApkStatus(context),
@@ -382,7 +383,7 @@ public class LibraryLoader {
     // Returns the device's status for loading a library directly from the APK file.
     // This method can only be called when the Chromium linker is used.
     private int getLibraryLoadFromApkStatus(Context context) {
-        assert Linker.isUsed();
+        assert Linker.getInstance().isUsed();
 
         if (mLibraryWasLoadedFromApk) {
             return LibraryLoadFromApkStatusCodes.SUCCESSFUL;
@@ -398,7 +399,7 @@ public class LibraryLoader {
     // RecordChromiumAndroidLinkerRendererHistogram() will record it correctly.
     public void registerRendererProcessHistogram(boolean requestedSharedRelro,
                                                  boolean loadAtFixedAddressFailed) {
-        if (Linker.isUsed()) {
+        if (Linker.getInstance().isUsed()) {
             nativeRegisterChromiumAndroidLinkerRendererHistogram(requestedSharedRelro,
                                                                  loadAtFixedAddressFailed,
                                                                  mLibraryLoadTimeMs);
