@@ -18,7 +18,7 @@
           '../../../../ui/webui/resources/js/event_tracker.js',
           '../../../../ui/webui/resources/js/util.js',
           'constants.js',
-          'icon_loader.js',
+          'throttled_icon_loader.js',
           'item_view.js',
           'focus_row.js',
         ],

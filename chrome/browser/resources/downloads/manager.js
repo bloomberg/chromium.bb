@@ -32,6 +32,17 @@ cr.define('downloads', function() {
     },
 
     /**
+     * @return {number} A guess at how many items could be visible at once.
+     * @private
+     */
+    guesstimateNumberOfVisibleItems_: function() {
+      var headerHeight = document.querySelector('header').offsetHeight;
+      var summaryHeight = $('downloads-summary').offsetHeight;
+      var nonItemSpace = headerHeight + summaryHeight;
+      return Math.floor((window.innerHeight - nonItemSpace) / 46) + 1;
+    },
+
+    /**
      * Called when all items need to be updated.
      * @param {!Array<!downloads.Data>} list A list of new download data.
      * @private
@@ -45,12 +56,18 @@ cr.define('downloads', function() {
       /** @private {!Array<!downloads.ItemView>} */
       this.items_ = [];
 
+      if (!this.iconLoader_) {
+        var guesstimate = Math.max(this.guesstimateNumberOfVisibleItems_(), 1);
+        /** @private {downloads.ThrottledIconLoader} */
+        this.iconLoader_ = new downloads.ThrottledIconLoader(guesstimate);
+      }
+
       for (var i = 0; i < list.length; ++i) {
         var data = list[i];
         var id = data.id;
 
         // Re-use old items when possible (saves work, preserves focus).
-        var item = oldIdMap[id] || new downloads.ItemView;
+        var item = oldIdMap[id] || new downloads.ItemView(this.iconLoader_);
 
         this.idMap_[id] = item;  // Associated by ID for fast lookup.
         this.items_.push(item);  // Add to sorted list for order.

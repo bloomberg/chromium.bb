@@ -5,9 +5,13 @@
 cr.define('downloads', function() {
   /**
    * Creates and updates the DOM representation for a download.
+   * @param {!downloads.ThrottledIconLoader} iconLoader
    * @constructor
    */
-  function ItemView() {
+  function ItemView(iconLoader) {
+    /** @private {!downloads.ThrottledIconLoader} */
+    this.iconLoader_ = iconLoader;
+
     this.node = $('templates').querySelector('.download').cloneNode(true);
 
     this.safe_ = this.queryRequired_('.safe');
@@ -138,8 +142,8 @@ cr.define('downloads', function() {
         this.description_.classList.toggle('malware', !dangerousFile);
 
         var idr = dangerousFile ? 'IDR_WARNING' : 'IDR_SAFEBROWSING_WARNING';
-        downloads.IconLoader.loadScaledIcon(this.dangerImg_,
-                                            'chrome://theme/' + idr);
+        var iconUrl = 'chrome://theme/' + idr;
+        this.iconLoader_.loadScaledIcon(this.dangerImg_, iconUrl);
 
         var showMalwareControls =
             dangerType == downloads.DangerType.DANGEROUS_CONTENT ||
@@ -152,7 +156,7 @@ cr.define('downloads', function() {
         this.save_.hidden = showMalwareControls;
       } else {
         var iconUrl = 'chrome://fileicon/' + encodeURIComponent(data.file_path);
-        downloads.IconLoader.loadScaledIcon(this.safeImg_, iconUrl);
+        this.iconLoader_.loadScaledIcon(this.safeImg_, iconUrl);
 
         /** @const */ var isInProgress =
             data.state == downloads.States.IN_PROGRESS;
