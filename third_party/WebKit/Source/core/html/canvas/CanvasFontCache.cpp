@@ -117,6 +117,7 @@ DEFINE_TRACE(CanvasFontCache)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_fetchedFonts);
+    visitor->trace(m_document);
 #endif
 }
 
