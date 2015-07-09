@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// See: https://dvcs.w3.org/hg/webperf/raw-file/tip/specs/PerformanceTimeline/Overview.html
+// https://w3c.github.io/performance-timeline/#the-performanceentry-interface
 [
     GarbageCollected,
 ] interface PerformanceEntry {
@@ -36,4 +36,6 @@
     readonly attribute DOMString entryType;
     readonly attribute double startTime;
     readonly attribute double duration;
+
+    serializer = {attribute};
 };

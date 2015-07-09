@@ -360,7 +360,7 @@ ResourceLoadTiming* PerformanceTiming::resourceLoadTiming() const
     return loader->response().resourceLoadTiming();
 }
 
-ScriptValue PerformanceTiming::toJSONForBinding(ScriptState* scriptState)
+ScriptValue PerformanceTiming::toJSONForBinding(ScriptState* scriptState) const
 {
     V8ObjectBuilder result(scriptState);
     result.addNumber("navigationStart", navigationStart());

@@ -94,6 +94,10 @@ logValue('window.performance.timing');
 // PerformanceTiming supports a serializer.
 var jsonizedTiming = JSON.parse(JSON.stringify(window.performance.timing));
 logValue('jsonizedTiming');
+// PerformanceEntry supports a serializer.
+window.performance.measure('request');
+var jsonizedEntry = JSON.parse(JSON.stringify(window.performance.getEntriesByName('request')[0]));
+logValue('jsonizedEntry');
 window.performance.navigation = 'navigation is not replaceable';
 logValue('window.performance.navigation');
 window.performance = 'performance is replaceable';

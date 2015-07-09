@@ -39,6 +39,9 @@
 
 namespace blink {
 
+class ScriptState;
+class ScriptValue;
+
 class CORE_EXPORT PerformanceEntry : public GarbageCollectedFinalized<PerformanceEntry>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -48,6 +51,8 @@ public:
     String entryType() const;
     double startTime() const;
     double duration() const;
+
+    ScriptValue toJSONForBinding(ScriptState*) const;
 
     virtual bool isResource() { return false; }
     virtual bool isRender() { return false; }

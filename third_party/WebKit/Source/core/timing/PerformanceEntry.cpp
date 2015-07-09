@@ -31,6 +31,9 @@
 #include "config.h"
 #include "core/timing/PerformanceEntry.h"
 
+#include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/V8ObjectBuilder.h"
+
 namespace blink {
 
 PerformanceEntry::PerformanceEntry(const String& name, const String& entryType, double startTime, double finishTime)
@@ -63,6 +66,16 @@ double PerformanceEntry::startTime() const
 double PerformanceEntry::duration() const
 {
     return m_duration;
+}
+
+ScriptValue PerformanceEntry::toJSONForBinding(ScriptState* scriptState) const
+{
+    V8ObjectBuilder result(scriptState);
+    result.addString("name", name());
+    result.addString("entryType", entryType());
+    result.addNumber("startTime", startTime());
+    result.addNumber("duration", duration());
+    return result.scriptValue();
 }
 
 } // namespace blink

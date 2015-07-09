@@ -3503,6 +3503,7 @@ interface PerformanceEntry
     getter name
     getter startTime
     method constructor
+    method toJSON
 interface PerformanceMark
     method constructor
 interface PerformanceMeasure
