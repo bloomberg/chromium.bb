@@ -22,42 +22,54 @@ def _JSONToCString16(json_string_literal):
     escape_index = c_string_literal.find('\\', escape_index + 6)
   return c_string_literal
 
-def _GenerateString(content, lines):
+def _GenerateString(content, lines, indent='  '):
   """Generates an UTF-8 string to be included in a static structure initializer.
   If content is not specified, uses NULL.
   """
   if content is None:
-    lines.append('  NULL,')
+    lines.append(indent + 'NULL,')
   else:
     # json.dumps quotes the string and escape characters as required.
-    lines.append('  %s,' % json.dumps(content))
+    lines.append(indent + '%s,' % json.dumps(content))
 
-def _GenerateString16(content, lines):
+def _GenerateString16(content, lines, indent='  '):
   """Generates an UTF-16 string to be included in a static structure
   initializer. If content is not specified, uses NULL.
   """
   if content is None:
-    lines.append('  NULL,')
+    lines.append(indent + 'NULL,')
   else:
     # json.dumps quotes the string and escape characters as required.
-    lines.append('  L%s,' % _JSONToCString16(json.dumps(content)))
+    lines.append(indent + 'L%s,' % _JSONToCString16(json.dumps(content)))
 
-def _GenerateArray(element_name, field_info, content, lines):
+def _GenerateArrayVariableName(element_name, field_name, field_name_count):
+  # Generates a unique variable name for an array variable.
+  var = 'array_%s_%s' % (element_name, field_name)
+  if var not in field_name_count:
+    field_name_count[var] = 0
+    return var
+  new_var = '%s_%d' % (var, field_name_count[var])
+  field_name_count[var] += 1
+  return new_var
+
+def _GenerateArray(element_name, field_info, content, lines, indent,
+                   field_name_count):
   """Generates an array to be included in a static structure initializer. If
   content is not specified, uses NULL. The array is assigned to a temporary
   variable which is initialized before the structure.
   """
   if content is None:
-    lines.append('  NULL,')
-    lines.append('  0,')  # Size of the array.
+    lines.append(indent + 'NULL,')
+    lines.append(indent + '0,')  # Size of the array.
     return
 
   # Create a new array variable and use it in the structure initializer.
   # This prohibits nested arrays. Add a clash detection and renaming mechanism
   # to solve the problem.
-  var = 'array_%s_%s' % (element_name, field_info['field']);
-  lines.append('  %s,' % var)
-  lines.append('  %s,' % len(content))  # Size of the array.
+  var = _GenerateArrayVariableName(element_name, field_info['field'],
+                                   field_name_count)
+  lines.append(indent + '%s,' % var)
+  lines.append(indent + '%s,' % len(content))  # Size of the array.
   # Generate the array content.
   array_lines = []
   field_info['contents']['field'] = var;
@@ -65,7 +77,7 @@ def _GenerateArray(element_name, field_info, content, lines):
                      field_info['contents']) + '[] = {')
   for subcontent in content:
     GenerateFieldContent(element_name, field_info['contents'], subcontent,
-                         array_lines)
+                         array_lines, indent, field_name_count)
   array_lines.append('};')
   # Prepend the generated array so it is initialized before the structure.
   lines.reverse()
@@ -73,7 +85,25 @@ def _GenerateArray(element_name, field_info, content, lines):
   lines.extend(array_lines)
   lines.reverse()
 
-def GenerateFieldContent(element_name, field_info, content, lines):
+def _GenerateStruct(element_name, field_info, content, lines, indent,
+                    field_name_count):
+  """Generates a struct to be included in a static structure initializer. If
+  content is not specified, uses {0}.
+  """
+  if content is None:
+    lines.append(indent + '{0},')
+    return
+
+  fields = field_info['fields']
+  lines.append(indent + '{')
+  for field in fields:
+    subcontent = content.get(field['field'])
+    GenerateFieldContent(element_name, field, subcontent, lines, '  ' + indent,
+                         field_name_count)
+  lines.append(indent + '},')
+
+def GenerateFieldContent(element_name, field_info, content, lines, indent,
+                         field_name_count):
   """Generate the content of a field to be included in the static structure
   initializer. If the field's content is not specified, uses the default value
   if one exists.
@@ -82,17 +112,21 @@ def GenerateFieldContent(element_name, field_info, content, lines):
     content = field_info.get('default', None)
   type = field_info['type']
   if type == 'int' or type == 'enum':
-    lines.append('  %s,' % content)
+    lines.append('%s%s,' % (indent, content))
   elif type == 'string':
-    _GenerateString(content, lines)
+    _GenerateString(content, lines, indent)
   elif type == 'string16':
-    _GenerateString16(content, lines)
+    _GenerateString16(content, lines, indent)
   elif type == 'array':
-    _GenerateArray(element_name, field_info, content, lines)
+    _GenerateArray(element_name, field_info, content, lines, indent,
+                   field_name_count)
+  elif type == 'struct':
+    _GenerateStruct(element_name, field_info, content, lines, indent,
+                    field_name_count)
   else:
     raise RuntimeError('Unknown field type "%s"' % type)
 
-def GenerateElement(type_name, schema, element_name, element):
+def GenerateElement(type_name, schema, element_name, element, field_name_count):
   """Generate the static structure initializer for one element.
   """
   lines = [];
@@ -102,11 +136,12 @@ def GenerateElement(type_name, schema, element_name, element):
     if (content == None and not field_info.get('optional', False)):
       raise RuntimeError('Mandatory field "%s" omitted in element "%s".' %
                          (field_info['field'], element_name))
-    GenerateFieldContent(element_name, field_info, content, lines)
+    GenerateFieldContent(element_name, field_info, content, lines, '  ',
+                         field_name_count)
   lines.append('};')
   return '\n'.join(lines)
 
-def GenerateElements(type_name, schema, description):
+def GenerateElements(type_name, schema, description, field_name_count={}):
   """Generate the static structure initializer for all the elements in the
   description['elements'] dictionary, as well as for any variables in
   description['int_variables'].
@@ -117,6 +152,7 @@ def GenerateElements(type_name, schema, description):
   result.append('')
 
   for element_name, element in description.get('elements', {}).items():
-    result.append(GenerateElement(type_name, schema, element_name, element))
+    result.append(GenerateElement(type_name, schema, element_name, element,
+                                  field_name_count))
     result.append('')
   return '\n'.join(result)

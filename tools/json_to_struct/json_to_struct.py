@@ -12,7 +12,7 @@
 #   "schema": [           // Fields of the generated structure.
 #     {
 #       "field": "my_enum_field",
-#       "type": "enum",   // Either: int, string, string16, enum, array.
+#       "type": "enum",   // Either: int, string, string16, enum, array, struct.
 #       "default": "RED", // Optional. Cannot be used for array.
 #       "ctype": "Color"  // Only for enum, specify the C type.
 #     },
@@ -22,6 +22,15 @@
 #       "contents": {
 #         "type": "int"   // Either: int, string, string16, enum, array.
 #       }
+#     },
+#     {
+#       "field": "my_struct_field",
+#       "type_name": "PointStuct",
+#       "type": "struct",
+#       "fields": [
+#         {"field": "x", "type": "int"},
+#         {"field": "y", "type": "int"}
+#       ]
 #     },
 #     ...
 #   ]
@@ -39,6 +48,7 @@
 #       "my_string_field": "foo bar",
 #       "my_enum_field": "BLACK",
 #       "my_int_array_field": [ 1, 2, 3, 5, 7 ],
+#       "my_struct_field": {"x": 1, "y": 2}
 #     },
 #     "my_other_const_variable": {
 #       ...
@@ -119,7 +129,7 @@ def _GenerateH(basepath, fileroot, head, namespace, schema, description):
       schema['type_name'], schema['schema']))
     f.write('\n')
 
-    for var_name, value in description.get('int_variables', []).items():
+    for var_name, value in description.get('int_variables', {}).items():
       f.write('extern const int %s;\n' % var_name)
     f.write('\n')
 

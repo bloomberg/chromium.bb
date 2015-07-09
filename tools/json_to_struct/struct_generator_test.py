@@ -54,5 +54,32 @@ class StructGeneratorTest(unittest.TestCase):
         '};\n')
     self.assertEquals(struct, GenerateStruct('MyTypeName', schema))
 
+  def testGenerateArrayOfStruct(self):
+    schema = [
+      {
+        'type': 'array',
+        'field': 'bar_bar',
+        'contents': {
+          'type': 'struct',
+          'type_name': 'InnerTypeName',
+          'fields': [
+            {'type': 'string', 'field': 'key'},
+            {'type': 'string', 'field': 'value'},
+          ]
+        }
+      }
+    ]
+    struct = (
+        'struct InnerTypeName {\n'
+        '  const char* const key;\n'
+        '  const char* const value;\n'
+        '};\n'
+        '\n'
+        'struct MyTypeName {\n'
+        '  const InnerTypeName * bar_bar;\n'
+        '  const size_t bar_bar_size;\n'
+        '};\n')
+    self.assertEquals(struct, GenerateStruct('MyTypeName', schema))
+
 if __name__ == '__main__':
   unittest.main()
