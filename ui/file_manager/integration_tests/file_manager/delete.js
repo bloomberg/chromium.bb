@@ -45,8 +45,12 @@ testcase.deleteOneItemFromToolbar = function() {
   testPromise(setupAndWaitUntilReady(null, RootPath.DOWNALOD).then(
       function(windowId) {
         // Confirm entries in the directory before the deletion.
-        return remoteCall.waitForFiles(windowId, beforeDeletion
-            ).then(function() {
+        //
+        // Ignore last modified time since file manager sometimes fails to get
+        // last modified time of files.
+        // TODO(yawano): Fix the root cause and remove this temporary fix.
+        return remoteCall.waitForFiles(windowId, beforeDeletion,
+            {ignoreLastModifiedTime: true}).then(function() {
           // Select My Desktop Background.png
           return remoteCall.callRemoteTestUtil(
               'selectFile', windowId, ['My Desktop Background.png']);
@@ -68,7 +72,8 @@ testcase.deleteOneItemFromToolbar = function() {
               'fakeMouseClick', windowId, ['button.cr-dialog-ok']);
         }).then(function() {
           // Confirm the file is removed.
-          return remoteCall.waitForFiles(windowId, afterDeletion);
+          return remoteCall.waitForFiles(windowId, afterDeletion,
+              {ignoreLastModifiedTime: true});
         });
       }));
 };
