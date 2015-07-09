@@ -45,6 +45,7 @@ WorkerScriptLoader::WorkerScriptLoader()
     : m_responseCallback(nullptr)
     , m_finishedCallback(nullptr)
     , m_failed(false)
+    , m_needToCancel(false)
     , m_identifier(0)
     , m_appCacheID(0)
     , m_requestContext(WebURLRequest::RequestContextWorker)
@@ -53,6 +54,12 @@ WorkerScriptLoader::WorkerScriptLoader()
 
 WorkerScriptLoader::~WorkerScriptLoader()
 {
+    // If |m_threadableLoader| is still working, we have to cancel it here.
+    // Otherwise WorkerScriptLoader::didFail() of the deleted |this| will be
+    // called from DocumentThreadableLoader::notifyFinished() when the frame
+    // will be destroyed.
+    if (m_needToCancel)
+        cancel();
 }
 
 void WorkerScriptLoader::loadSynchronously(ExecutionContext& executionContext, const KURL& url, CrossOriginRequestPolicy crossOriginRequestPolicy)
@@ -93,6 +100,7 @@ void WorkerScriptLoader::loadAsynchronously(ExecutionContext& executionContext, 
     ResourceLoaderOptions resourceLoaderOptions;
     resourceLoaderOptions.allowCredentials = AllowStoredCredentials;
 
+    m_needToCancel = true;
     m_threadableLoader = ThreadableLoader::create(executionContext, this, *request, options, resourceLoaderOptions);
     if (m_failed)
         notifyFinished();
@@ -155,6 +163,7 @@ void WorkerScriptLoader::didReceiveCachedMetadata(const char* data, int size)
 
 void WorkerScriptLoader::didFinishLoading(unsigned long identifier, double)
 {
+    m_needToCancel = false;
     if (!m_failed && m_decoder)
         m_script.append(m_decoder->flush());
 
@@ -163,16 +172,20 @@ void WorkerScriptLoader::didFinishLoading(unsigned long identifier, double)
 
 void WorkerScriptLoader::didFail(const ResourceError&)
 {
+    m_needToCancel = false;
     notifyError();
 }
 
 void WorkerScriptLoader::didFailRedirectCheck()
 {
+    // When didFailRedirectCheck() is called, the ResourceLoader for the script
+    // is not canceled yet. So we don't reset |m_needToCancel| here.
     notifyError();
 }
 
 void WorkerScriptLoader::cancel()
 {
+    m_needToCancel = false;
     if (m_threadableLoader)
         m_threadableLoader->cancel();
 }

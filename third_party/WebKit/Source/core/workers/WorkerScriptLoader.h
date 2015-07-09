@@ -105,6 +105,7 @@ private:
     KURL m_url;
     KURL m_responseURL;
     bool m_failed;
+    bool m_needToCancel;
     unsigned long m_identifier;
     long long m_appCacheID;
     OwnPtr<Vector<char>> m_cachedMetadata;
