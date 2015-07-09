@@ -63,7 +63,9 @@ class AwContentsClientBridgeBase {
       const content::JavaScriptDialogManager::DialogClosedCallback& callback)
       = 0;
 
-  virtual bool ShouldOverrideUrlLoading(const base::string16& url) = 0;
+  virtual bool ShouldOverrideUrlLoading(const base::string16& url,
+                                        bool has_user_gesture,
+                                        bool is_redirect) = 0;
 };
 
 }  // namespace android_webview

@@ -17,7 +17,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.provider.Browser;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.ConsoleMessage;
@@ -26,6 +25,7 @@ import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 
 import org.chromium.android_webview.permission.AwPermissionRequest;
+import org.chromium.base.Log;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.SelectActionMode;
@@ -44,7 +44,7 @@ import java.util.HashMap;
  * i.e.: all methods in this class should either be final, or abstract.
  */
 public abstract class AwContentsClient {
-    private static final String TAG = "AwContentsClient";
+    private static final String TAG = "cr.AwContentsClient";
     private final AwContentsClientCallbackHelper mCallbackHelper;
 
     // Last background color reported from the renderer. Holds the sentinal value INVALID_COLOR
@@ -157,7 +157,12 @@ public abstract class AwContentsClient {
     public abstract void onDownloadStart(String url, String userAgent, String contentDisposition,
             String mimeType, long contentLength);
 
-    public static boolean sendBrowsingIntent(Context context, String url) {
+    public static boolean sendBrowsingIntent(Context context, String url, boolean hasUserGesture,
+            boolean isRedirect) {
+        if (!hasUserGesture && !isRedirect) {
+            Log.w(TAG, "Denied starting an intent without a user gesture, URI " + url);
+            return true;
+        }
         Intent intent;
         // Perform generic parsing of the URI to turn it into an Intent.
         try {

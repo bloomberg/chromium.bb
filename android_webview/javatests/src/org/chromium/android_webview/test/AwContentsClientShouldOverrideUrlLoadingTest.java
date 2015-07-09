@@ -17,6 +17,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
+import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -939,19 +940,27 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
                         }
                     });
             final AwContents awContents = awTestContainerView.getAwContents();
-            // Clicking on a link should create an intent.
-            final String htmlWithLink = "<html><title>Click Title</title><body><a id='link' href='"
-                    + testUrl + "'>Click this!</a></body></html>";
+            awContents.getSettings().setJavaScriptEnabled(true);
+            final String pageTitle = "Click Title";
+            final String htmlWithLink = "<html><title>" + pageTitle + "</title>"
+                    + "<body><a id='link' href='" + testUrl + "'>Click this!</a></body></html>";
             final String urlWithLink = mWebServer.setResponse(
                     "/html_with_link.html", htmlWithLink, CommonResources.getTextHtmlHeaders(true));
+
             loadUrlAsync(awContents, urlWithLink);
             pollOnUiThread(new Callable<Boolean>() {
                 @Override
                 public Boolean call() {
-                    return awContents.getTitle().equals("Click Title");
+                    return awContents.getTitle().equals(pageTitle);
                 }
             });
-            awContents.getSettings().setJavaScriptEnabled(true);
+            // Executing JS code that tries to navigate somewhere should not create an intent.
+            assertEquals("\"" + testUrl + "\"", JSUtils.executeJavaScriptAndWaitForResult(
+                            this, awContents, new OnEvaluateJavaScriptResultHelper(),
+                            "document.location.href='" + testUrl + "'"));
+            assertNull(getActivity().getLastSentIntent());
+
+            // Clicking on a link should create an intent.
             DOMUtils.clickNode(this, awContents.getContentViewCore(), "link");
             pollOnUiThread(new Callable<Boolean>() {
                 @Override
@@ -960,6 +969,53 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
                 }
             });
             assertEquals(testUrl, getActivity().getLastSentIntent().getData().toString());
+        } finally {
+            getActivity().setIgnoreStartActivity(false);
+        }
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testNullContentsClientClickableContent() throws Throwable {
+        try {
+            // The test will fire real intents through the test activity.
+            // Need to temporarily suppress startActivity otherwise there will be a
+            // handler selection window and the test can't dismiss that.
+            getActivity().setIgnoreStartActivity(true);
+            AwTestContainerView awTestContainerView =
+                    createAwTestContainerViewOnMainSync(new NullContentsClient() {
+                        @Override
+                        public boolean hasWebViewClient() {
+                            return false;
+                        }
+                    });
+            final AwContents awContents = awTestContainerView.getAwContents();
+            final String pageTitle = "Click Title";
+            final String testEmail = "nobody@example.org";
+            final String testUrl = mWebServer.setResponse("/email_test.html",
+                    "<html><head><title>" + pageTitle + "</title></head>"
+                    + "<body><span id='email'>" + testEmail + "</span></body>", null);
+
+            // JS is required for the click simulator.
+            awContents.getSettings().setJavaScriptEnabled(true);
+            loadUrlAsync(awContents, testUrl);
+            pollOnUiThread(new Callable<Boolean>() {
+                @Override
+                public Boolean call() {
+                    return awContents.getTitle().equals(pageTitle);
+                }
+            });
+
+            // Clicking on an email should create an intent.
+            DOMUtils.clickNode(this, awContents.getContentViewCore(), "email");
+            pollOnUiThread(new Callable<Boolean>() {
+                @Override
+                public Boolean call() {
+                    return getActivity().getLastSentIntent() != null;
+                }
+            });
+            assertEquals("mailto:" + testEmail.replace("@", "%40"),
+                    getActivity().getLastSentIntent().getData().toString());
         } finally {
             getActivity().setIgnoreStartActivity(false);
         }

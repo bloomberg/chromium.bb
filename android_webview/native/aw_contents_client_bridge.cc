@@ -341,7 +341,7 @@ void AwContentsClientBridge::RunBeforeUnloadDialog(
 }
 
 bool AwContentsClientBridge::ShouldOverrideUrlLoading(
-    const base::string16& url) {
+    const base::string16& url, bool has_user_gesture, bool is_redirect) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
@@ -351,7 +351,7 @@ bool AwContentsClientBridge::ShouldOverrideUrlLoading(
       "shouldOverrideUrlLoading");
   return Java_AwContentsClientBridge_shouldOverrideUrlLoading(
       env, obj.obj(),
-      jurl.obj());
+      jurl.obj(), has_user_gesture, is_redirect);
 }
 
 void AwContentsClientBridge::ConfirmJsResult(JNIEnv* env,

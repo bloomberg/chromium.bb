@@ -59,6 +59,8 @@ public:
 
   void OnShouldOverrideUrlLoading(int routing_id,
                                   const base::string16& url,
+                                  bool has_user_gesture,
+                                  bool is_redirect,
                                   bool* ignore_navigation);
   void OnSubFrameCreated(int parent_render_frame_id, int child_render_frame_id);
 
@@ -99,13 +101,16 @@ bool AwContentsMessageFilter::OnMessageReceived(const IPC::Message& message) {
 void AwContentsMessageFilter::OnShouldOverrideUrlLoading(
     int render_frame_id,
     const base::string16& url,
+    bool has_user_gesture,
+    bool is_redirect,
     bool* ignore_navigation) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   *ignore_navigation = false;
   AwContentsClientBridgeBase* client =
       AwContentsClientBridgeBase::FromID(process_id_, render_frame_id);
   if (client) {
-    *ignore_navigation = client->ShouldOverrideUrlLoading(url);
+    *ignore_navigation =
+        client->ShouldOverrideUrlLoading(url, has_user_gesture, is_redirect);
   } else {
     LOG(WARNING) << "Failed to find the associated render view host for url: "
                  << url;

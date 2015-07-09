@@ -112,10 +112,11 @@ bool AwContentRendererClient::HandleNavigation(
 
   bool ignore_navigation = false;
   base::string16 url =  request.url().string();
+  bool has_user_gesture = request.hasUserGesture();
 
   int render_frame_id = render_frame->GetRoutingID();
   RenderThread::Get()->Send(new AwViewHostMsg_ShouldOverrideUrlLoading(
-      render_frame_id, url, &ignore_navigation));
+      render_frame_id, url, has_user_gesture, is_redirect, &ignore_navigation));
   return ignore_navigation;
 }
 

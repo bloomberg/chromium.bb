@@ -260,11 +260,12 @@ public class AwContentsClientBridge {
     }
 
     @CalledByNative
-    private boolean shouldOverrideUrlLoading(String url) {
+    private boolean shouldOverrideUrlLoading(String url, boolean hasUserGesture,
+            boolean isRedirect) {
         if (mClient.hasWebViewClient()) {
             return mClient.shouldOverrideUrlLoading(url);
         } else {
-            return AwContentsClient.sendBrowsingIntent(mContext, url);
+            return AwContentsClient.sendBrowsingIntent(mContext, url, hasUserGesture, isRedirect);
         }
     }
 
