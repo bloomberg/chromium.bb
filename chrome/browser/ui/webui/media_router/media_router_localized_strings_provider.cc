@@ -38,6 +38,11 @@ void AddIssuesActionsStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("okButton", IDS_MEDIA_ROUTER_OK_BUTTON);
 }
 
+void AddSinkListStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString("deviceMissing",
+                                  IDS_MEDIA_ROUTER_DEVICE_MISSING);
+}
+
 }  // namespace
 
 namespace media_router {
@@ -46,6 +51,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source) {
   AddMediaRouterStrings(html_source);
   AddRouteDetailsStrings(html_source);
   AddIssuesActionsStrings(html_source);
+  AddSinkListStrings(html_source);
   html_source->SetJsonPath(kLocalizedStringsFile);
 }
 

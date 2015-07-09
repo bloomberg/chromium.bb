@@ -40,6 +40,14 @@
   background-color: rgb(33, 150, 243);
 }
 
+#device-missing {
+  align-items: center;
+  color: rgb(33, 150, 243);
+  display: flex;
+  height: 150px;
+  justify-content: center;
+}
+
 #header-text {
   -webkit-padding-start: 5px;
   flex-grow: 1;

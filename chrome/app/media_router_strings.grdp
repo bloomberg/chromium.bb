@@ -61,4 +61,9 @@
   <message name="IDS_MEDIA_ROUTER_STOP_CASTING_BUTTON" desc="Text of Stop casting button.">
     Stop casting
   </message>
+
+  <!-- Sink List -->
+  <message name="IDS_MEDIA_ROUTER_DEVICE_MISSING" desc="Text to display when no devices are found.">
+    Device missing?
+  </message>
 </grit-part>

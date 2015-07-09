@@ -15,7 +15,8 @@
         class$="[[currentView_]]"
         hidden$="[[computeHeaderHidden_(currentView_, issue)]]">
       <div id="header-text">
-        <span hidden$="[[computeSinkListHidden_(currentView_, issue)]]"
+        <span
+            hidden$="[[computeSinkListViewHidden_(currentView_, issue)]]"
             >[[headerText]]</span>
         <span hidden$="[[computeCastModeHidden_(currentView_)]]"
             >[[selectCastModeHeaderText_]]</span>
@@ -41,32 +42,42 @@
         sink="[[computeSinkForCurrentRoute_(currentRoute_)]]"
         on-back-click="showSinkList_"
         on-close-route-click="showSinkList_"
-        hidden$="[[computerRouteDetailsHidden_(currentView_, issue)]]">
+        hidden$="[[computeRouteDetailsHidden_(currentView_, issue)]]">
     </route-details>
-    <paper-menu id="sink-list"
-        hidden$="[[computeSinkListHidden_(currentView_, issue)]]">
-      <template is="dom-repeat" id="sinkList" items="[[sinkList]]">
-        <paper-item class="sink" on-click="onSinkClick_">
-          <div class="sink-content">
-            <div>
-              <!-- TODO(apacible): Show device icon based on device type. -->
-              <iron-icon icon="hardware:tv"
-                  class$="[[computeSinkIconClass_(item.id, sinkToRouteMap_)]]">
-              </iron-icon>
-            </div>
-            <div>
-              <div class="sink-text">
-                <span>[[item.name]]</span>
+   <!-- TODO(kdresner): Don't show this until we've given a little
+    bit of time to actually discover devices. Maybe show a spinner
+    during this time. -->
+    <div
+        hidden$="[[computeSinkListViewHidden_(currentView_, issue)]]">
+      <div id="device-missing"
+           hidden$="[[!computeSinkListHidden_(sinkList)]]">
+        <span>[[deviceMissingText_]]</span>
+      </div>
+      <paper-menu id="sink-list"
+          hidden$="[[computeSinkListHidden_(currentView_, issue)]]">
+        <template is="dom-repeat" id="sinkList" items="[[sinkList]]">
+          <paper-item class="sink" on-click="onSinkClick_">
+            <div class="sink-content">
+              <div>
+                <!-- TODO(apacible): Show device icon based on device type. -->
+                <iron-icon icon="hardware:tv"
+                    class$="[[computeSinkIconClass_(item.id, sinkToRouteMap_)]]">
+                </iron-icon>
               </div>
-              <div class="sink-text route"
-                  hidden$="[[computeRouteInSinkListHidden_(item.id)]]">
-                <span>[[computeRouteInSinkListValue_(item.id)]]</span>
+              <div>
+                <div class="sink-text">
+                  <span>[[item.name]]</span>
+                </div>
+                <div class="sink-text route"
+                     hidden$="[[computeRouteInSinkListHidden_(item.id)]]">
+                  <span>[[computeRouteInSinkListValue_(item.id)]]</span>
+                </div>
               </div>
             </div>
-          </div>
-        </paper-item>
-      </template>
-    </paper-menu>
+          </paper-item>
+        </template>
+      </paper-menu>
+    </div>
   </template>
   <script src="media_router_container.js"></script>
 </dom-module>

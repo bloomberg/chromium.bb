@@ -52,6 +52,15 @@ Polymer({
     },
 
     /**
+     * The text for when there are no devices.
+     * @private {string}
+     */
+    deviceMissingText_: {
+      type: String,
+      value: loadTimeData.getString('deviceMissing'),
+    },
+
+    /**
      * The header text.
      * @type {string}
      */
@@ -211,7 +220,7 @@ Polymer({
    * @return {boolean} Whether or not to hide the route details.
    * @private
    */
-  computerRouteDetailsHidden_: function(view, issue) {
+  computeRouteDetailsHidden_: function(view, issue) {
     return view != MediaRouterContainerView.ROUTE_DETAILS ||
         (issue && issue.isBlocking);
   },
@@ -257,12 +266,21 @@ Polymer({
   },
 
   /**
-   * @param {!MediaRouterContainerView} view The current view.
-   * @param {?media_router.Issue} issue The current issue.
+   * @param {!Array<!media_router.Sink>} The list of sinks.
    * @return {boolean} Whether or not to hide the sink list.
    * @private
    */
-  computeSinkListHidden_: function(view, issue) {
+  computeSinkListHidden_: function(sinkList) {
+    return sinkList.length == 0;
+  },
+
+  /**
+   * @param {!MediaRouterContainerView} view The current view.
+   * @param {?media_router.Issue} issue The current issue.
+   * @return {boolean} Whether or not to hide entire the sink list view.
+   * @private
+   */
+  computeSinkListViewHidden_: function(view, issue) {
     return view != MediaRouterContainerView.SINK_LIST ||
         (issue && issue.isBlocking);
   },
