@@ -15,6 +15,7 @@
           '--test-launcher-batch-limit=400',
         ],
         'files': [
+          '<(PRODUCT_DIR)/angle_deqp_libgles2.dll',
           '<(PRODUCT_DIR)/angle_deqp_tests<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/deqp_support/deqp_test_expectations.txt',
           '<(PRODUCT_DIR)/deqp_support/dEQP-GLES2-cases.txt.gz',
