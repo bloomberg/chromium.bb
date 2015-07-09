@@ -69,7 +69,9 @@ V8AsyncCallTracker::V8AsyncCallTracker(InspectorDebuggerAgent* debuggerAgent) : 
 V8AsyncCallTracker::~V8AsyncCallTracker()
 {
     ASSERT(m_contextAsyncOperationMap.isEmpty());
+#if !ENABLE(OILPAN)
     m_debuggerAgent->removeAsyncCallTrackingListener(this);
+#endif
 }
 
 DEFINE_TRACE(V8AsyncCallTracker)

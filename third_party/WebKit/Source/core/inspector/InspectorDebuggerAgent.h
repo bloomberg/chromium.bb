@@ -306,7 +306,7 @@ private:
     int m_currentAsyncOperationId;
     bool m_pendingTraceAsyncOperationCompleted;
     bool m_startingStepIntoAsync;
-    WillBeHeapVector<RawPtrWillBeMember<AsyncCallTrackingListener>> m_asyncCallTrackingListeners;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<AsyncCallTrackingListener>> m_asyncCallTrackingListeners;
     V8GlobalValueMap<String, v8::Script, v8::kNotWeak> m_compiledScripts;
 };
 

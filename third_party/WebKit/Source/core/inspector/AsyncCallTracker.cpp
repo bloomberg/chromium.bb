@@ -144,7 +144,9 @@ AsyncCallTracker::AsyncCallTracker(InspectorDebuggerAgent* debuggerAgent, Instru
 
 AsyncCallTracker::~AsyncCallTracker()
 {
+#if !ENABLE(OILPAN)
     m_debuggerAgent->removeAsyncCallTrackingListener(this);
+#endif
 }
 
 void AsyncCallTracker::asyncCallTrackingStateChanged(bool tracking)

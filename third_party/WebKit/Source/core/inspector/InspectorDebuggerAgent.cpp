@@ -1321,15 +1321,12 @@ void InspectorDebuggerAgent::scriptExecutionBlockedByCSP(const String& directive
 
 void InspectorDebuggerAgent::addAsyncCallTrackingListener(AsyncCallTrackingListener* listener)
 {
-    m_asyncCallTrackingListeners.append(listener);
+    m_asyncCallTrackingListeners.add(listener);
 }
 
 void InspectorDebuggerAgent::removeAsyncCallTrackingListener(AsyncCallTrackingListener* listener)
 {
-    size_t index = m_asyncCallTrackingListeners.find(listener);
-    if (index == kNotFound)
-        return;
-    m_asyncCallTrackingListeners.remove(index);
+    m_asyncCallTrackingListeners.remove(listener);
 }
 
 void InspectorDebuggerAgent::willCallFunction(ExecutionContext*, const DevToolsFunctionInfo& info)
