@@ -100,7 +100,7 @@ void CharacterIterator::initialize()
 
 EphemeralRange CharacterIterator::range() const
 {
-    EphemeralRange range(m_textIterator.createRange().get());
+    EphemeralRange range = m_textIterator.range();
     if (m_textIterator.atEnd() || m_textIterator.length() <= 1)
         return range;
     Position startPosition = range.startPosition().parentAnchoredEquivalent();

@@ -153,10 +153,10 @@ void TextIteratorTextState::emitText(Node* textNode, LayoutText* layoutObject, i
     m_hasEmitted = true;
 }
 
-PassRefPtrWillBeRawPtr<Range> TextIteratorTextState::createRange() const
+EphemeralRange TextIteratorTextState::range() const
 {
     flushPositionOffsets();
-    return Range::create(positionNode()->document(), positionNode(), positionStartOffset(), positionNode(), positionEndOffset());
+    return EphemeralRange(Position(positionNode(), positionStartOffset()), Position(positionNode(), positionEndOffset()));
 }
 
 } // namespace blink

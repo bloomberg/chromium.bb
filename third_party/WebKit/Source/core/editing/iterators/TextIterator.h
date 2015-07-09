@@ -63,7 +63,7 @@ public:
     void advance();
     bool isInsideReplacedElement() const;
 
-    PassRefPtrWillBeRawPtr<Range> createRange() const;
+    EphemeralRange range() const;
     Node* node() const;
 
     Document* ownerDocument() const;

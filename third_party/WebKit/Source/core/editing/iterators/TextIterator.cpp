@@ -971,17 +971,17 @@ void TextIteratorAlgorithm<Strategy>::emitText(Node* textNode, LayoutText* layou
 }
 
 template<typename Strategy>
-PassRefPtrWillBeRawPtr<Range> TextIteratorAlgorithm<Strategy>::createRange() const
+EphemeralRange TextIteratorAlgorithm<Strategy>::range() const
 {
     // use the current run information, if we have it
     if (m_textState.positionNode())
-        return m_textState.createRange();
+        return m_textState.range();
 
     // otherwise, return the end of the overall range we were given
     if (m_endContainer)
-        return Range::create(m_endContainer->document(), m_endContainer, m_endOffset, m_endContainer, m_endOffset);
+        return EphemeralRange(Position(m_endContainer, m_endOffset));
 
-    return nullptr;
+    return EphemeralRange();
 }
 
 template<typename Strategy>
