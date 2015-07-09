@@ -9,7 +9,7 @@
         'depends': [
           '<@(cws_widget_container)',
           '../../../../third_party/jstemplate/compiled_resources.gyp:jstemplate',
-          '../../../../ui/webui/resources/js/i18n_template_no_process.js',
+          '../../../../ui/webui/resources/js/compiled_resources.gyp:i18n_template_no_process',
           '../../../../ui/webui/resources/js/load_time_data.js',
         ],
         'externs': [

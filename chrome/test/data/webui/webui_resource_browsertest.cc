@@ -71,6 +71,12 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, EventTargetTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("event_target_test.html")));
 }
 
+IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, I18nProcessTest) {
+  AddLibrary(IDR_WEBUI_JS_LOAD_TIME_DATA);
+  AddLibrary(IDR_WEBUI_JS_I18N_TEMPLATE_NO_PROCESS);
+  RunTest(base::FilePath(FILE_PATH_LITERAL("i18n_process_test.html")));
+}
+
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, ListTest) {
   AddLibrary(IDR_WEBUI_JS_CR);
   AddLibrary(IDR_WEBUI_JS_CR_EVENT_TARGET);

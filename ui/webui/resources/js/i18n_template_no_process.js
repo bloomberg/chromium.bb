@@ -26,6 +26,7 @@
  */
 
 var i18nTemplate = (function() {
+  'use strict';
   /**
    * This provides the handlers for the templating engine. The key is used as
    * the attribute name and the value is the function that gets called for every
@@ -111,21 +112,32 @@ var i18nTemplate = (function() {
   };
 
   var attributeNames = Object.keys(handlers);
-  // Chrome for iOS must use Apple's UIWebView, which (as of April 2015) does
-  // not have native shadow DOM support. If shadow DOM is supported (or
-  // polyfilled), search for i18n attributes using the /deep/ selector;
-  // otherwise, do not attempt to search within the shadow DOM.
-  var selector =
-      (window.document.body && window.document.body.createShadowRoot) ?
-      'html /deep/ [' + attributeNames.join('],[') + ']' :
-      '[' + attributeNames.join('],[') + ']';
+  var selector = '[' + attributeNames.join('],[') + ']';
 
   /**
    * Processes a DOM tree with the {@code dictionary} map.
-   * @param {Document|Element} root The root of the DOM tree to process.
+   * @param {Document|DocumentFragment|Element} root The root of the DOM tree to
+   *     process.
    * @param {LoadTimeData} dictionary The dictionary to draw from.
    */
   function process(root, dictionary) {
+    var importLinks = root.querySelectorAll('link[rel=import]');
+    for (var i = 0; i < importLinks.length; ++i) {
+      var importLink = /** @type {!HTMLLinkElement} */(importLinks[i]);
+      if (!importLink.import) {
+        // Happens when a <link rel=import> is inside a <template>.
+        // TODO(dbeam): should we log an error if we detect that here?
+        continue;
+      }
+      process(importLink.import, dictionary);
+    }
+
+    var templates = root.querySelectorAll('template');
+    for (var i = 0; i < templates.length; ++i) {
+      var template = /** @type {HTMLTemplateElement} */(templates[i]);
+      process(template.content, dictionary);
+    }
+
     var elements = root.querySelectorAll(selector);
     for (var element, i = 0; element = elements[i]; i++) {
       for (var j = 0; j < attributeNames.length; j++) {
@@ -135,8 +147,9 @@ var i18nTemplate = (function() {
           handlers[name](element, attribute, dictionary);
       }
     }
+
     var doc = root instanceof Document ? root : root.ownerDocument;
-    if (doc)
+    if (doc && doc.documentElement)
       doc.documentElement.classList.add('i18n-processed');
   }
 
