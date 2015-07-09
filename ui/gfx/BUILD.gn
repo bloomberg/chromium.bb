@@ -325,7 +325,7 @@ component("gfx") {
   }
 
   # Desktop only.
-  if (!is_ios && !is_android) {
+  if (use_aura || (!is_ios && !is_android)) {
     sources += [
       "paint_vector_icon.cc",
       "paint_vector_icon.h",
