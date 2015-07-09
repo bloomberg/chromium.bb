@@ -372,9 +372,7 @@ public:
     // WaitableEvent -------------------------------------------------------
 
     // Creates an embedder-defined waitable event object.
-    // TODO(toyoshim): remove no arguments version once embedder supports
-    // two arguments version.
-    virtual WebWaitableEvent* createWaitableEvent() { return nullptr; }
+    WebWaitableEvent* createWaitableEvent() { return createWaitableEvent(WebWaitableEvent::ResetPolicy::Auto, WebWaitableEvent::InitialState::NonSignaled); }
     virtual WebWaitableEvent* createWaitableEvent(WebWaitableEvent::ResetPolicy, WebWaitableEvent::InitialState) { return nullptr; }
 
     // Waits on multiple events and returns the event object that has been
