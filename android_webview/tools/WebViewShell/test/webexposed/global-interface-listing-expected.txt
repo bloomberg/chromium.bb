@@ -757,6 +757,7 @@ interface Document
     getter xmlVersion
     method adoptNode
     method caretRangeFromPoint
+    method close
     method constructor
     method createAttribute
     method createAttributeNS
@@ -789,6 +790,7 @@ interface Document
     method getSelection
     method hasFocus
     method importNode
+    method open
     method queryCommandEnabled
     method queryCommandIndeterm
     method queryCommandState
@@ -799,6 +801,8 @@ interface Document
     method registerElement
     method webkitCancelFullScreen
     method webkitExitFullscreen
+    method write
+    method writeln
     setter body
     setter cookie
     setter designMode
@@ -1420,12 +1424,8 @@ interface HTMLDocument
     getter vlinkColor
     method captureEvents
     method clear
-    method close
     method constructor
-    method open
     method releaseEvents
-    method write
-    method writeln
     setter alinkColor
     setter all
     setter bgColor
@@ -2676,6 +2676,10 @@ interface MIDIPort
     method constructor
     method open
     setter onstatechange
+interface MediaDevices
+    method constructor
+    method enumerateDevices
+    method getUserMedia
 interface MediaElementAudioSourceNode
     getter mediaElement
     method constructor
@@ -2907,6 +2911,7 @@ interface Navigator
     getter language
     getter languages
     getter maxTouchPoints
+    getter mediaDevices
     getter mimeTypes
     getter onLine
     getter platform
@@ -3076,6 +3081,7 @@ interface PerformanceEntry
     getter name
     getter startTime
     method constructor
+    method toJSON
 interface PerformanceMark
     method constructor
 interface PerformanceMeasure
@@ -3178,10 +3184,6 @@ interface RadioNodeList
 interface Range
     attribute END_TO_END
     attribute END_TO_START
-    attribute NODE_AFTER
-    attribute NODE_BEFORE
-    attribute NODE_BEFORE_AND_AFTER
-    attribute NODE_INSIDE
     attribute START_TO_END
     attribute START_TO_START
     getter collapsed
@@ -3194,7 +3196,6 @@ interface Range
     method cloneRange
     method collapse
     method compareBoundaryPoints
-    method compareNode
     method comparePoint
     method constructor
     method createContextualFragment
