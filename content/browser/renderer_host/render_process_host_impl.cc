@@ -848,8 +848,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(browser_demuxer_android_.get());
 #endif
 #if defined(ENABLE_BROWSER_CDMS)
-  browser_cdm_manager_ = new BrowserCdmManager(GetID(), NULL);
-  AddFilter(browser_cdm_manager_.get());
+  AddFilter(new BrowserCdmManager(GetID(), NULL));
 #endif
 
   WebSocketDispatcherHost::GetRequestContextCallback
@@ -1024,7 +1023,10 @@ void RenderProcessHostImpl::SendUpdateValueState(unsigned int target,
 media::BrowserCdm* RenderProcessHostImpl::GetBrowserCdm(int render_frame_id,
                                                         int cdm_id) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return browser_cdm_manager_->GetCdm(render_frame_id, cdm_id);
+  BrowserCdmManager* manager = BrowserCdmManager::FromProcess(GetID());
+  if (!manager)
+    return nullptr;
+  return manager->GetCdm(render_frame_id, cdm_id);
 }
 #endif
 
@@ -1686,9 +1688,6 @@ void RenderProcessHostImpl::Cleanup() {
     // The following members should be cleared in ProcessDied() as well!
     gpu_message_filter_ = NULL;
     message_port_message_filter_ = NULL;
-#if defined(ENABLE_BROWSER_CDMS)
-    browser_cdm_manager_ = NULL;
-#endif
 
     RemoveUserData(kSessionStorageHolderKey);
 
@@ -2129,9 +2128,6 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
 
   gpu_message_filter_ = NULL;
   message_port_message_filter_ = NULL;
-#if defined(ENABLE_BROWSER_CDMS)
-  browser_cdm_manager_ = NULL;
-#endif
   RemoveUserData(kSessionStorageHolderKey);
 
   IDMap<IPC::Listener>::iterator iter(&listeners_);

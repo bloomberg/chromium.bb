@@ -308,8 +308,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 // app isn't stripped of debug symbols, this takes about five minutes to
 // complete and isn't conducive to quick turnarounds. As we don't currently
 // strip the app on the build bots, this is bad times.
-// Also disabled on Android (http://crbug.com/506188).
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_MACOSX)
 #define MAYBE_CrossSiteAfterCrash DISABLED_CrossSiteAfterCrash
 #else
 #define MAYBE_CrossSiteAfterCrash CrossSiteAfterCrash

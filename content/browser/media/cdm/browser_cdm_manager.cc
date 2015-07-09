@@ -17,7 +17,7 @@
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "media/base/browser_cdm.h"
 #include "media/base/browser_cdm_factory.h"
@@ -105,20 +105,55 @@ void CdmPromiseInternal<std::string>::resolve(const std::string& session_id) {
 typedef CdmPromiseInternal<> SimplePromise;
 typedef CdmPromiseInternal<std::string> NewSessionPromise;
 
-}  // namespace
-
 // Render process ID to BrowserCdmManager map.
 typedef std::map<int, BrowserCdmManager*> BrowserCdmManagerMap;
 base::LazyInstance<BrowserCdmManagerMap>::Leaky g_browser_cdm_manager_map =
     LAZY_INSTANCE_INITIALIZER;
 
+// Keeps the BrowserCdmManager alive, and in the global map, for as long as the
+// RenderProcessHost is connected to the child process. This class is a
+// self-owned observer.
+class BrowserCdmManagerProcessWatcher : public RenderProcessHostObserver {
+ public:
+  BrowserCdmManagerProcessWatcher(
+      int render_process_id,
+      const scoped_refptr<BrowserCdmManager>& manager)
+      : browser_cdm_manager_(manager) {
+    RenderProcessHost::FromID(render_process_id)->AddObserver(this);
+    CHECK(g_browser_cdm_manager_map.Get()
+              .insert(std::make_pair(render_process_id, manager.get()))
+              .second);
+  }
+
+  // RenderProcessHostObserver:
+  void RenderProcessExited(RenderProcessHost* host,
+                           base::TerminationStatus /* status */,
+                           int /* exit_code */) override {
+    RemoveHostObserverAndDestroy(host);
+  }
+
+  void RenderProcessHostDestroyed(RenderProcessHost* host) override {
+    RemoveHostObserverAndDestroy(host);
+  }
+
+ private:
+  void RemoveHostObserverAndDestroy(RenderProcessHost* host) {
+    CHECK(g_browser_cdm_manager_map.Get().erase(host->GetID()));
+    host->RemoveObserver(this);
+    delete this;
+  }
+
+  const scoped_refptr<BrowserCdmManager> browser_cdm_manager_;
+};
+
+}  // namespace
+
+// static
 BrowserCdmManager* BrowserCdmManager::FromProcess(int render_process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (!g_browser_cdm_manager_map.Get().count(render_process_id))
-    return NULL;
-
-  return g_browser_cdm_manager_map.Get()[render_process_id];
+  auto& map = g_browser_cdm_manager_map.Get();
+  auto iterator = map.find(render_process_id);
+  return (iterator == map.end()) ? nullptr : iterator->second;
 }
 
 BrowserCdmManager::BrowserCdmManager(
@@ -131,23 +166,18 @@ BrowserCdmManager::BrowserCdmManager(
   DVLOG(1) << __FUNCTION__ << ": " << render_process_id_;
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  new BrowserCdmManagerProcessWatcher(render_process_id, this);
+
   if (!task_runner_.get()) {
     task_runner_ =
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
   }
-
-  DCHECK(!g_browser_cdm_manager_map.Get().count(render_process_id_))
-      << render_process_id_;
-  g_browser_cdm_manager_map.Get()[render_process_id] = this;
 }
 
 BrowserCdmManager::~BrowserCdmManager() {
   DVLOG(1) << __FUNCTION__ << ": " << render_process_id_;
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(g_browser_cdm_manager_map.Get().count(render_process_id_));
-  DCHECK_EQ(this, g_browser_cdm_manager_map.Get()[render_process_id_]);
-
-  g_browser_cdm_manager_map.Get().erase(render_process_id_);
+  DCHECK(g_browser_cdm_manager_map.Get().count(render_process_id_) == 0);
 }
 
 // Makes sure BrowserCdmManager is always deleted on the Browser UI thread.
