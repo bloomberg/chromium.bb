@@ -58,10 +58,6 @@ class WebContentsTaskProvider : public TaskProvider {
   typedef std::map<content::WebContents*, WebContentsEntry*> EntryMap;
   EntryMap entries_map_;
 
-  // True if this provider is listening to WebContentsTags and updating its
-  // observers, false otherwise.
-  bool is_updating_;
-
   DISALLOW_COPY_AND_ASSIGN(WebContentsTaskProvider);
 };
 

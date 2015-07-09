@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/task_management/providers/web_contents/prerender_tag.h"
+#include "chrome/browser/task_management/providers/web_contents/web_contents_tags_manager.h"
 
 namespace task_management {
 

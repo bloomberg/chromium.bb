@@ -17,7 +17,6 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/task_management/web_contents_tags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
@@ -60,9 +59,6 @@ class BrowserNavigatorWebContentsAdoption {
  public:
   static void AttachTabHelpers(content::WebContents* contents) {
     TabHelpers::AttachTabHelpers(contents);
-
-    // Make the tab show up in the task manager.
-    task_management::WebContentsTags::CreateForTabContents(contents);
   }
 };
 

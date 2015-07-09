@@ -55,13 +55,6 @@ class RendererTask : public Task {
   static const gfx::ImageSkia* GetFaviconFromWebContents(
       content::WebContents* web_contents);
 
-  // Prefixes the given renderer |title| with the appropriate string based on
-  // whether it's an app, an extension, or incognito.
-  static const base::string16 PrefixRendererTitle(const base::string16& title,
-                                                  bool is_app,
-                                                  bool is_extension,
-                                                  bool is_incognito);
-
   content::WebContents* web_contents() const { return web_contents_; }
 
  private:

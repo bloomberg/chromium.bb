@@ -11,11 +11,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace task_management {
 
@@ -141,31 +139,6 @@ const gfx::ImageSkia* RendererTask::GetFaviconFromWebContents(
     return nullptr;
 
   return image.ToImageSkia();
-}
-
-// static
-const base::string16 RendererTask::PrefixRendererTitle(
-    const base::string16& title,
-    bool is_app,
-    bool is_extension,
-    bool is_incognito) {
-  int message_id = IDS_TASK_MANAGER_TAB_PREFIX;
-
-  if (is_incognito && !is_app && !is_extension) {
-    message_id = IDS_TASK_MANAGER_TAB_INCOGNITO_PREFIX;
-  } else if (is_app) {
-    if (is_incognito)
-      message_id = IDS_TASK_MANAGER_APP_INCOGNITO_PREFIX;
-    else
-      message_id = IDS_TASK_MANAGER_APP_PREFIX;
-  } else if (is_extension) {
-    if (is_incognito)
-      message_id = IDS_TASK_MANAGER_EXTENSION_INCOGNITO_PREFIX;
-    else
-      message_id = IDS_TASK_MANAGER_EXTENSION_PREFIX;
-  }
-
-  return l10n_util::GetStringFUTF16(message_id, title);
 }
 
 }  // namespace task_management
