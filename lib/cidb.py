@@ -63,7 +63,11 @@ def _IsRetryableException(e):
   # exception types inherit from one another, so we fall back to string matching
   # on the exception name. See crbug.com/483654
   if 'OperationalError' in str(type(e)):
-    error_code = e.orig.args[0]
+    # Unwrap the error till we get to the error raised by the DB backend.
+    e_orig = e
+    while hasattr(e_orig, 'orig'):
+      e_orig = e_orig.orig
+    error_code = e_orig.args[0] if len(e_orig.args) > 0 else -1
     if error_code in _RETRYABLE_OPERATIONAL_ERROR_CODES:
       logging.info('Encountered retryable cidb exception %s, retrying....', e)
       return True
@@ -97,8 +101,7 @@ def minimum_schema(min_version):
 
 class StrictModeListener(sqlalchemy.interfaces.PoolListener):
   """This listener ensures that STRICT_ALL_TABLES for all connections."""
-  # pylint: disable=W0613
-  def connect(self, dbapi_con, *args, **kwargs):
+  def connect(self, dbapi_con, *_args, **_kwargs):
     cur = dbapi_con.cursor()
     cur.execute("SET SESSION sql_mode='STRICT_ALL_TABLES'")
     cur.close()
