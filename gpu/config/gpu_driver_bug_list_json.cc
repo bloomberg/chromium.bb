@@ -1280,13 +1280,13 @@ LONG_STRING_CONST(
     },
     {
       "id": 110,
-      "description": "EGL Sync server causes crashes on Adreno 3xx drivers",
+      "description": "EGL Sync server causes crashes on Adreno 2xx and 3xx drivers",
       "cr_bugs": [482298],
       "os": {
         "type": "android"
       },
       "gl_vendor": "Qualcomm.*",
-      "gl_renderer": "Adreno \\(TM\\) 3.*",
+      "gl_renderer": "Adreno \\(TM\\) [23].*",
       "driver_version": {
         "op": "<",
         "value": "95"
