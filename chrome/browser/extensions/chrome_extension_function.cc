@@ -25,24 +25,6 @@ Profile* ChromeUIThreadExtensionFunction::GetProfile() const {
   return Profile::FromBrowserContext(context_);
 }
 
-bool ChromeUIThreadExtensionFunction::CanOperateOnWindow(
-    const extensions::WindowController* window_controller) const {
-  // |extension()| is NULL for unit tests only.
-  if (extension() != NULL &&
-      !window_controller->IsVisibleToExtension(extension())) {
-    return false;
-  }
-
-  if (GetProfile() == window_controller->profile())
-    return true;
-
-  if (!include_incognito())
-    return false;
-
-  return GetProfile()->HasOffTheRecordProfile() &&
-         GetProfile()->GetOffTheRecordProfile() == window_controller->profile();
-}
-
 // TODO(stevenjb): Replace this with GetExtensionWindowController().
 Browser* ChromeUIThreadExtensionFunction::GetCurrentBrowser() {
   // If the delegate has an associated browser, return it.
@@ -94,7 +76,7 @@ ChromeUIThreadExtensionFunction::GetExtensionWindowController() {
   }
 
   return extensions::WindowControllerList::GetInstance()
-      ->CurrentWindowForFunction(ChromeExtensionFunctionDetails(this));
+      ->CurrentWindowForFunction(this);
 }
 
 content::WebContents*

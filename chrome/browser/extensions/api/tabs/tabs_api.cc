@@ -346,7 +346,7 @@ bool WindowsGetAllFunction::RunSync() {
   for (WindowControllerList::ControllerList::const_iterator iter =
            windows.begin();
        iter != windows.end(); ++iter) {
-    if (!this->CanOperateOnWindow(*iter))
+    if (!windows_util::CanOperateOnWindow(this, *iter))
       continue;
     if (populate_tabs)
       window_list->Append((*iter)->CreateWindowValueWithTabs(extension()));

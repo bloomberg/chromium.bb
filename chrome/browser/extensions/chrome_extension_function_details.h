@@ -30,11 +30,6 @@ class ChromeExtensionFunctionDetails {
 
   Profile* GetProfile() const;
 
-  // Returns true if this function (and the profile and extension that it was
-  // invoked from) can operate on the window wrapped by |window_controller|.
-  bool CanOperateOnWindow(
-      const extensions::WindowController* window_controller) const;
-
   // Gets the "current" browser, if any.
   //
   // Many extension APIs operate relative to the current browser, which is the

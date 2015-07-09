@@ -31,24 +31,6 @@ Profile* ChromeExtensionFunctionDetails::GetProfile() const {
   return Profile::FromBrowserContext(function_->browser_context());
 }
 
-bool ChromeExtensionFunctionDetails::CanOperateOnWindow(
-    const extensions::WindowController* window_controller) const {
-  // |extension()| is NULL for unit tests only.
-  if (function_->extension() != NULL &&
-      !window_controller->IsVisibleToExtension(function_->extension())) {
-    return false;
-  }
-
-  if (GetProfile() == window_controller->profile())
-    return true;
-
-  if (!function_->include_incognito())
-    return false;
-
-  return GetProfile()->HasOffTheRecordProfile() &&
-         GetProfile()->GetOffTheRecordProfile() == window_controller->profile();
-}
-
 // TODO(stevenjb): Replace this with GetExtensionWindowController().
 Browser* ChromeExtensionFunctionDetails::GetCurrentBrowser() const {
   // If the delegate has an associated browser, return it.
@@ -99,7 +81,7 @@ ChromeExtensionFunctionDetails::GetExtensionWindowController() const {
   }
 
   return extensions::WindowControllerList::GetInstance()
-      ->CurrentWindowForFunction(*this);
+      ->CurrentWindowForFunction(function_);
 }
 
 content::WebContents*
