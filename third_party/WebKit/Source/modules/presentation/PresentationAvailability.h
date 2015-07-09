@@ -6,6 +6,7 @@
 #define PresentationAvailability_h
 
 #include "core/dom/ActiveDOMObject.h"
+#include "core/dom/DocumentVisibilityObserver.h"
 #include "core/events/EventTarget.h"
 #include "public/platform/modules/presentation/WebPresentationAvailabilityObserver.h"
 
@@ -21,6 +22,7 @@ class ScriptPromiseResolver;
 class PresentationAvailability final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<PresentationAvailability>
     , public ActiveDOMObject
+    , public DocumentVisibilityObserver
     , public WebPresentationAvailabilityObserver {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(PresentationAvailability);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PresentationAvailability);
@@ -42,6 +44,9 @@ public:
     void resume() override;
     void stop() override;
 
+    // DocumentVisibilityObserver implementation.
+    void didChangeVisibilityState(PageVisibilityState) override;
+
     bool value() const;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
@@ -49,13 +54,23 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
+    // Current state of the ActiveDOMObject. It is Active when created. It
+    // becomes Suspended when suspend() is called and moves back to Active if
+    // resume() is called. It becomes Inactive when stop() is called or at
+    // destruction time.
+    enum class State : char {
+        Active,
+        Suspended,
+        Inactive,
+    };
+
     PresentationAvailability(ExecutionContext*, bool);
 
-    void startListening();
-    void stopListening();
+    void setState(State);
+    void updateListening();
 
     bool m_value;
-    bool m_listening;
+    State m_state;
 };
 
 } // namespace blink

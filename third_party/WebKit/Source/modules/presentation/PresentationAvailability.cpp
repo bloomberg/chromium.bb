@@ -35,20 +35,22 @@ PresentationAvailability* PresentationAvailability::take(ScriptPromiseResolver* 
 {
     PresentationAvailability* presentationAvailability = new PresentationAvailability(resolver->executionContext(), value);
     presentationAvailability->suspendIfNeeded();
-    presentationAvailability->startListening();
+    presentationAvailability->updateListening();
     return presentationAvailability;
 }
 
 PresentationAvailability::PresentationAvailability(ExecutionContext* executionContext, bool value)
     : ActiveDOMObject(executionContext)
+    , DocumentVisibilityObserver(*toDocument(executionContext))
     , m_value(value)
-    , m_listening(false)
+    , m_state(State::Active)
 {
+    ASSERT(executionContext->isDocument());
 }
 
 PresentationAvailability::~PresentationAvailability()
 {
-    stopListening();
+    setState(State::Inactive);
 }
 
 const AtomicString& PresentationAvailability::interfaceName() const
@@ -72,47 +74,45 @@ void PresentationAvailability::availabilityChanged(bool value)
 
 bool PresentationAvailability::hasPendingActivity() const
 {
-    return m_listening;
+    return m_state != State::Inactive;
 }
 
 void PresentationAvailability::resume()
 {
-    startListening();
+    setState(State::Active);
 }
 
 void PresentationAvailability::suspend()
 {
-    stopListening();
+    setState(State::Suspended);
 }
 
 void PresentationAvailability::stop()
 {
-    stopListening();
+    setState(State::Inactive);
 }
 
-void PresentationAvailability::startListening()
+void PresentationAvailability::didChangeVisibilityState(PageVisibilityState visibility)
 {
-    ASSERT(!m_listening);
+    updateListening();
+}
 
+void PresentationAvailability::setState(State state)
+{
+    m_state = state;
+    updateListening();
+}
+
+void PresentationAvailability::updateListening()
+{
     WebPresentationClient* client = presentationClient(executionContext());
     if (!client)
         return;
-    m_listening = true;
-    client->startListening(this);
-}
 
-void PresentationAvailability::stopListening()
-{
-    if (!m_listening)
-        return;
-
-    ASSERT(executionContext());
-
-    m_listening = false;
-    WebPresentationClient* client = presentationClient(executionContext());
-    if (!client)
-        return;
-    client->stopListening(this);
+    if (m_state == State::Active && (toDocument(executionContext())->pageVisibilityState() == PageVisibilityStateVisible))
+        client->startListening(this);
+    else
+        client->stopListening(this);
 }
 
 bool PresentationAvailability::value() const
@@ -123,6 +123,7 @@ bool PresentationAvailability::value() const
 DEFINE_TRACE(PresentationAvailability)
 {
     RefCountedGarbageCollectedEventTargetWithInlineData<PresentationAvailability>::trace(visitor);
+    DocumentVisibilityObserver::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 
