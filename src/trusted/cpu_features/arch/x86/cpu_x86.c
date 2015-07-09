@@ -285,7 +285,7 @@ static void asm_CPUID(uint32_t op, volatile uint32_t reg[4]) {
                    : "a"(op)
                    : "cc");
 #elif NACL_WINDOWS
-  __cpuid((uint32_t*)reg, op);
+  __cpuid((int*)reg, op);
 #else
 # error Unsupported platform
 #endif
@@ -335,7 +335,7 @@ static void asm_CPUIDx(uint32_t op, volatile uint32_t reg[4], uint32_t ecx) {
   reg[2] = 0;
   reg[3] = 0;
 #else
-  __cpuidex((uint32_t*)reg, op, ecx);
+  __cpuidex((int*)reg, op, ecx);
 #endif
 #else /* NACL_WINDOWS, but _MSC_VER is not defined */
 /* This is Windows but not MSVC: who knows if __cpuidex is available?  */
