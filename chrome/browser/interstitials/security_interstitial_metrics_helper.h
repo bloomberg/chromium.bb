@@ -51,6 +51,8 @@ class SecurityInterstitialMetricsHelper {
 
   enum RapporReporting {
     REPORT_RAPPOR,
+    // Only use this for safe-browsing interstitials.
+    REPORT_RAPPOR_FOR_SAFE_BROWSING,
     SKIP_RAPPOR,
   };
 
@@ -59,7 +61,7 @@ class SecurityInterstitialMetricsHelper {
   //   uma_prefix: Histogram prefix for UMA.
   //               examples: "phishing", "ssl_overridable"
   //   rappor_prefix: Metric prefix for Rappor.
-  //               examples: "phishing", "ssl"
+  //               examples: "phishing", "ssl2"
   //   rappor_reporting: Used to skip rappor rapporting if desired.
   //   sampling_event_name: Event name for Experience Sampling.
   //                        e.g. "phishing_interstitial_"

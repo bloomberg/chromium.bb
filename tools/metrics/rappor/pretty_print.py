@@ -62,6 +62,7 @@ _FLAGS_FIELD_TYPE = models.ObjectNodeType('flags-field',
     string_attributes=['name'],
     children=[
       models.ChildType('flags', _FLAG_TYPE, True),
+      models.ChildType('summary', _SUMMARY_TYPE, False),
     ])
 
 _RAPPOR_METRIC_TYPE = models.ObjectNodeType('rappor-metric',

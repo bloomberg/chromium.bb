@@ -100,7 +100,7 @@ enum SSLExpirationAndDecision {
 };
 
 // Rappor prefix
-const char kSSLRapporPrefix[] = "ssl";
+const char kSSLRapporPrefix[] = "ssl2";
 
 void RecordSSLExpirationPageEventState(bool expired_but_previously_allowed,
                                        bool proceed,

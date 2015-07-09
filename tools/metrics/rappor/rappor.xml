@@ -38,6 +38,16 @@ components/rappor/rappor_service.cc.
       reporting-level="FINE"/>
 </rappor-parameters>
 
+<rappor-parameters name="SAFEBROWSING_RAPPOR_TYPE">
+  <summary>
+    Parameters for metrics related to Safe Browsing, collected from all user
+    with safe browsing enabled.
+  </summary>
+  <parameters num-cohorts="128" bytes="1" hash-functions="2" fake-prob="0.5"
+      fake-one-prob="0.5" one-coin-prob="0.75" zero-coin-prob="0.25"
+      reporting-level="COARSE"/>
+</rappor-parameters>
+
 <rappor-parameters name="UMA_RAPPOR_TYPE">
   <summary>
     Parameters suitable for metrics from UMA opt-in users.
@@ -496,36 +506,95 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
-<rappor-metric name="interstitial.harmful.domain" type="COARSE_RAPPOR_TYPE">
+<rappor-metric name="interstitial.harmful" type="SAFEBROWSING_RAPPOR_TYPE">
   <owner>nparker@chromium.org</owner>
   <summary>
     The domain+registry of a URL that triggered a safe-browsing UWS
     interstitial.
   </summary>
+  <string-field name="domain">
+    <summary>
+      The domain+registry of a URL that triggered a safe-browsing UWS
+      interstitial.
+    </summary>
+  </string-field>
+  <flags-field name="flags">
+    <flag>Bit 0: DID_PROCEED</flag>
+    <flag>Bit 1: IS_REPEAT_VISIT</flag>
+    <summary>
+      Bitfield of the state from a safe-browsing UWS warning interstitial.
+    </summary>
+  </flags-field>
 </rappor-metric>
 
-<rappor-metric name="interstitial.malware.domain" type="COARSE_RAPPOR_TYPE">
+<rappor-metric name="interstitial.malware" type="SAFEBROWSING_RAPPOR_TYPE">
   <owner>nparker@chromium.org</owner>
   <summary>
     The domain+registry of a URL that triggered a safe-browsing malware
     interstitial.
   </summary>
+  <string-field name="domain">
+    <summary>
+      The domain+registry of a URL that triggered a safe-browsing malware
+      interstitial.
+    </summary>
+  </string-field>
+  <flags-field name="flags">
+    <flag>Bit 0: DID_PROCEED</flag>
+    <flag>Bit 1: IS_REPEAT_VISIT</flag>
+    <summary>
+      Bitfield of the state from a safe-browsing malware warning interstitial.
+    </summary>
+  </flags-field>
 </rappor-metric>
 
-<rappor-metric name="interstitial.phishing.domain" type="COARSE_RAPPOR_TYPE">
+<rappor-metric name="interstitial.phishing" type="SAFEBROWSING_RAPPOR_TYPE">
   <owner>nparker@chromium.org</owner>
   <summary>
     The domain+registry of a URL that triggered a safe-browsing phishing
     interstitial.
   </summary>
+  <string-field name="domain">
+    <summary>
+      The domain+registry of a URL that triggered a safe-browsing phishing
+      interstitial.
+    </summary>
+  </string-field>
+  <flags-field name="flags">
+    <flag>Bit 0: DID_PROCEED</flag>
+    <flag>Bit 1: IS_REPEAT_VISIT</flag>
+    <summary>
+      Bitfield of the state from a safe-browsing phishing warning interstitial.
+    </summary>
+  </flags-field>
 </rappor-metric>
 
 <rappor-metric name="interstitial.ssl.domain" type="COARSE_RAPPOR_TYPE">
   <owner>nparker@chromium.org</owner>
   <summary>
-    The domain+registry of a URL that triggered an SSL interstitial.     Domains
-    for bad-clock warnings are not reported.
+    ** DEPRECATED.  Replaced by insterstitial.ssl2.domain on 2015-07-07 since
+    the type changed.**  The domain+registry of a URL that triggered an SSL
+    interstitial.  Domains for bad-clock warnings are not reported.
   </summary>
+</rappor-metric>
+
+<rappor-metric name="interstitial.ssl2" type="UMA_RAPPOR_TYPE">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    The domain+registry of a URL that triggered an SSL interstitial.
+  </summary>
+  <string-field name="domain">
+    <summary>
+      The domain+registry of a URL that triggered an SSL interstitial.
+    </summary>
+  </string-field>
+  <flags-field name="flags">
+    <flag>Bit 0: DID_PROCEED</flag>
+    <flag>Bit 1: IS_REPEAT_VISIT</flag>
+    <summary>
+      Bitfield of the state from an SSL warning interstitial.
+    </summary>
+  </flags-field>
 </rappor-metric>
 
 </rappor-metrics>

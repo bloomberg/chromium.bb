@@ -204,13 +204,14 @@ bool RapporService::ExportMetrics(RapporReports* reports) {
     report->set_name_hash(metrics::HashMetricName(kv.first));
     ByteVector bytes = metric->GetReport(secret_);
     report->set_bits(std::string(bytes.begin(), bytes.end()));
+    DVLOG(2) << "Exporting metric " << kv.first;
   }
   STLDeleteValues(&metrics_map_);
 
   sampler_.ExportMetrics(secret_, reports);
 
   DVLOG(2) << "Generated a report with " << reports->report_size()
-           << "metrics.";
+           << " metrics.";
   return reports->report_size() > 0;
 }
 
@@ -288,6 +289,7 @@ void RapporService::RecordSampleObj(const std::string& metric_name,
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!RecordingAllowed(sample->parameters()))
     return;
+  DVLOG(1) << "Recording sample of metric \"" << metric_name << "\"";
   sampler_.AddSample(metric_name, sample.Pass());
 }
 

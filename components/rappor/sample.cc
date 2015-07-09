@@ -29,6 +29,8 @@ Sample::~Sample() {
 
 void Sample::SetStringField(const std::string& field_name,
                             const std::string& value) {
+  DVLOG(2) << "Recording sample \"" << value
+           << "\" for sample metric field \"" << field_name << "\"";
   DCHECK_EQ(0u, sizes_[field_name]);
   fields_[field_name] = internal::GetBloomBits(
       parameters_.bloom_filter_size_bytes,
@@ -41,6 +43,8 @@ void Sample::SetStringField(const std::string& field_name,
 void Sample::SetFlagsField(const std::string& field_name,
                            uint64_t flags,
                            size_t num_flags) {
+  DVLOG(2) << "Recording flags " << flags
+           << " for sample metric field \"" << field_name << "\"";
   DCHECK_EQ(0u, sizes_[field_name]);
   DCHECK_GT(num_flags, 0u);
   DCHECK_LE(num_flags, 64u);
@@ -66,6 +70,7 @@ void Sample::ExportMetrics(const std::string& secret,
     report->set_name_hash(metrics::HashMetricName(
         metric_name + "." + kv.first));
     report->set_bits(std::string(report_bytes.begin(), report_bytes.end()));
+    DVLOG(2) << "Exporting sample " << metric_name << "." << kv.first;
   }
 }
 

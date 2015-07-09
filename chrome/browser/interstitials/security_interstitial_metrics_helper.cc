@@ -21,6 +21,15 @@
 #include "chrome/browser/extensions/api/experience_sampling_private/experience_sampling.h"
 #endif
 
+namespace {
+// Used for setting bits in Rappor's "interstitial.*.flags"
+enum InterstitialFlagBits {
+  DID_PROCEED = 0,
+  IS_REPEAT_VISIT = 1,
+  HIGHEST_USED_BIT = 1
+};
+}  // namespace
+
 SecurityInterstitialMetricsHelper::SecurityInterstitialMetricsHelper(
     content::WebContents* web_contents,
     const GURL& request_url,
@@ -69,19 +78,37 @@ void SecurityInterstitialMetricsHelper::RecordUserDecision(
 
   // Rappor
   rappor::RapporService* rappor_service = g_browser_process->rappor_service();
-  if (rappor_service && rappor_reporting_ == REPORT_RAPPOR &&
+  if (rappor_service &&
+      (rappor_reporting_ == REPORT_RAPPOR ||
+       rappor_reporting_ == REPORT_RAPPOR_FOR_SAFE_BROWSING) &&
       (decision == PROCEED || decision == DONT_PROCEED)) {
-    // |domain| will be empty for hosts w/o TLDs
-    const std::string domain = rappor::GetDomainAndRegistrySampleFromGURL(
-        request_url_);
+    const rappor::RapporType rappor_type =
+        rappor_reporting_ == REPORT_RAPPOR_FOR_SAFE_BROWSING
+            ? rappor::SAFEBROWSING_RAPPOR_TYPE
+            : rappor::UMA_RAPPOR_TYPE;
 
-    // e.g. "interstitial.malware.domain" or "interstitial.ssl.domain"
-    const std::string metric_name =
-        "interstitial." + rappor_prefix_ + ".domain";
-    rappor_service->RecordSample(metric_name, rappor::COARSE_RAPPOR_TYPE,
-                                 domain);
-    // TODO(nparker): Add reporting of (num_visits > 0) and decision
-    // once http://crbug.com/451647 is fixed.
+    scoped_ptr<rappor::Sample> sample =
+        rappor_service->CreateSample(rappor_type);
+
+    // This will populate, for example, "intersitial.malware.domain" or
+    // "interstitial.ssl2.domain".  |domain| will be empty for hosts w/o TLDs.
+    const std::string domain =
+        rappor::GetDomainAndRegistrySampleFromGURL(request_url_);
+    sample->SetStringField("domain", domain);
+
+    // Only report history and decision if we have history data.
+    if (num_visits_ >= 0) {
+      int flags = 0;
+      if (decision == PROCEED)
+        flags |= 1 << InterstitialFlagBits::DID_PROCEED;
+      if (num_visits_ > 0)
+        flags |= 1 << InterstitialFlagBits::IS_REPEAT_VISIT;
+      // e.g. "interstitial.malware.flags"
+      sample->SetFlagsField("flags", flags,
+                            InterstitialFlagBits::HIGHEST_USED_BIT + 1);
+    }
+    rappor_service->RecordSampleObj("interstitial." + rappor_prefix_,
+                                    sample.Pass());
   }
 
 #if defined(ENABLE_EXTENSIONS)

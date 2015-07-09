@@ -170,7 +170,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
   // Use same prefix for UMA as for Rappor.
   set_metrics_helper(new SecurityInterstitialMetricsHelper(
       web_contents, request_url(), GetMetricPrefix(), GetRapporPrefix(),
-      SecurityInterstitialMetricsHelper::REPORT_RAPPOR,
+      SecurityInterstitialMetricsHelper::REPORT_RAPPOR_FOR_SAFE_BROWSING,
       GetSamplingEventName()));
   metrics_helper()->RecordUserDecision(SecurityInterstitialMetricsHelper::SHOW);
   metrics_helper()->RecordUserInteraction(
