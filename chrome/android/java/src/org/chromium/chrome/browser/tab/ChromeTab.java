@@ -489,7 +489,7 @@ public class ChromeTab extends Tab {
             if ((flags & InvalidateTypes.TAB) != 0) {
                 MediaNotificationService.updateMediaNotificationForTab(
                         getApplicationContext(), getId(), isCapturingAudio(),
-                        isCapturingVideo(), hasAudibleAudio(), getUrl());
+                        isCapturingVideo(), false, getUrl());
             }
             super.navigationStateChanged(flags);
         }
