@@ -347,7 +347,20 @@ class ResourceScheduler::Client {
     }
   }
 
-  RequestSet RemoveAllRequests() {
+  RequestSet StartAndRemoveAllRequests() {
+    // First start any pending requests so that they will be moved into
+    // in_flight_requests_. This may exceed the limits
+    // kMaxNumDelayableRequestsPerClient, kMaxNumDelayableRequestsPerHost and
+    // kMaxNumThrottledRequestsPerClient, so this method must not do anything
+    // that depends on those limits before calling ClearInFlightRequests()
+    // below.
+    while (!pending_requests_.IsEmpty()) {
+      ScheduledResourceRequest* request =
+          *pending_requests_.GetNextHighestIterator();
+      pending_requests_.Erase(request);
+      // StartRequest() may modify pending_requests_. TODO(ricea): Does it?
+      StartRequest(request);
+    }
     RequestSet unowned_requests;
     for (RequestSet::iterator it = in_flight_requests_.begin();
          it != in_flight_requests_.end(); ++it) {
@@ -959,10 +972,10 @@ void ResourceScheduler::OnClientDeleted(int child_id, int route_id) {
     return;
 
   Client* client = it->second;
-  // FYI, ResourceDispatcherHost cancels all of the requests after this function
-  // is called. It should end up canceling all of the requests except for a
-  // cross-renderer navigation.
-  RequestSet client_unowned_requests = client->RemoveAllRequests();
+  // ResourceDispatcherHost cancels all requests except for cross-renderer
+  // navigations, async revalidations and detachable requests after
+  // OnClientDeleted() returns.
+  RequestSet client_unowned_requests = client->StartAndRemoveAllRequests();
   for (RequestSet::iterator it = client_unowned_requests.begin();
        it != client_unowned_requests.end(); ++it) {
     unowned_requests_.insert(*it);

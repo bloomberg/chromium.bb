@@ -2319,6 +2319,47 @@ TEST_F(ResourceSchedulerTest, OutstandingRequestLimitDelays) {
   EXPECT_TRUE(low2->started());
 }
 
+// Async revalidations which are not started when the tab is closed must be
+// started at some point, or they will hang around forever and prevent other
+// async revalidations to the same URL from being issued.
+TEST_F(ResourceSchedulerTest, RequestStartedAfterClientDeleted) {
+  scheduler_->OnClientCreated(kChildId2, kRouteId2, false, false);
+  scoped_ptr<TestRequest> high(NewRequestWithChildAndRoute(
+      "http://host/high", net::HIGHEST, kChildId2, kRouteId2));
+  scoped_ptr<TestRequest> lowest1(NewRequestWithChildAndRoute(
+      "http://host/lowest", net::LOWEST, kChildId2, kRouteId2));
+  scoped_ptr<TestRequest> lowest2(NewRequestWithChildAndRoute(
+      "http://host/lowest", net::LOWEST, kChildId2, kRouteId2));
+  EXPECT_FALSE(lowest2->started());
+  scheduler_->OnClientDeleted(kChildId2, kRouteId2);
+  high.reset();
+  lowest1.reset();
+  EXPECT_TRUE(lowest2->started());
+}
+
+// The ResourceScheduler::Client destructor calls
+// LoadAnyStartablePendingRequests(), which may start some pending requests.
+// This test is to verify that requests will be started at some point
+// even if they were not started by the destructor.
+TEST_F(ResourceSchedulerTest, RequestStartedAfterClientDeletedManyDelayable) {
+  scheduler_->OnClientCreated(kChildId2, kRouteId2, false, false);
+  scoped_ptr<TestRequest> high(NewRequestWithChildAndRoute(
+      "http://host/high", net::HIGHEST, kChildId2, kRouteId2));
+  const int kMaxNumDelayableRequestsPerClient = 10;
+  ScopedVector<TestRequest> delayable_requests;
+  for (int i = 0; i < kMaxNumDelayableRequestsPerClient + 1; ++i) {
+    delayable_requests.push_back(NewRequestWithChildAndRoute(
+        "http://host/lowest", net::LOWEST, kChildId2, kRouteId2));
+  }
+  scoped_ptr<TestRequest> lowest(NewRequestWithChildAndRoute(
+      "http://host/lowest", net::LOWEST, kChildId2, kRouteId2));
+  EXPECT_FALSE(lowest->started());
+  scheduler_->OnClientDeleted(kChildId2, kRouteId2);
+  high.reset();
+  delayable_requests.clear();
+  EXPECT_TRUE(lowest->started());
+}
+
 }  // unnamed namespace
 
 }  // namespace content
