@@ -772,3 +772,13 @@ system call NtCreateEvent
 ntdll.dll!RtlDosPathNameToNtPathName_U_WithStatus
 ntdll.dll!RtlDosPathNameToNtPathName_U_WithStatus
 ntdll.dll!RtlIntegerToUnicodeString
+
+UNADDRESSABLE ACCESS
+name=http://crbug.com/508634
+...
+*!blink::FocusController::focusedOrMainFrame
+*!content::RenderWidget::UpdateSelectionBounds
+*!content::RenderWidget::WillBeginCompositorFrame
+*!base::internal::InvokeHelper<>::MakeItSo
+*!base::internal::Invoker<>::Run
+*!base::debug::TaskAnnotator::RunTask
