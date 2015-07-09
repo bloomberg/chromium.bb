@@ -174,7 +174,7 @@ void MojoShellContext::ConnectToApplicationOnOwnThread(
   mojo::URLRequestPtr url_request = mojo::URLRequest::New();
   url_request->url = mojo::String::From(url);
   application_manager_->ConnectToApplication(
-      url_request.Pass(), requestor_url, request.Pass(),
+      url_request.Pass(), std::string(), requestor_url, request.Pass(),
       exposed_services.Pass(), base::Bind(&base::DoNothing));
 }
 

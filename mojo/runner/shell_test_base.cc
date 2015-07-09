@@ -51,7 +51,7 @@ ScopedMessagePipeHandle ShellTestBase::ConnectToService(
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From(application_url.spec());
   shell_context_.application_manager()->ConnectToApplication(
-      request.Pass(), GURL(), GetProxy(&services), nullptr,
+      request.Pass(), std::string(), GURL(), GetProxy(&services), nullptr,
       base::Bind(&QuitIfRunning));
   MessagePipe pipe;
   services->ConnectToService(service_name, pipe.handle1.Pass());

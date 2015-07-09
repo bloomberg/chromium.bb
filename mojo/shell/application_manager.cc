@@ -14,6 +14,7 @@
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/error_handler.h"
+#include "mojo/shell/content_handler_connection.h"
 #include "mojo/shell/fetcher.h"
 #include "mojo/shell/local_fetcher.h"
 #include "mojo/shell/network_fetcher.h"
@@ -31,45 +32,6 @@ namespace {
 bool has_created_instance = false;
 
 }  // namespace
-
-class ApplicationManager::ContentHandlerConnection : public ErrorHandler {
- public:
-  ContentHandlerConnection(ApplicationManager* manager,
-                           const GURL& content_handler_url,
-                           const GURL& requestor_url,
-                           const std::string& qualifier)
-      : manager_(manager),
-        content_handler_url_(content_handler_url),
-        content_handler_qualifier_(qualifier) {
-    ServiceProviderPtr services;
-    mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From(content_handler_url.spec());
-    manager->ConnectToApplicationInternal(
-        request.Pass(), qualifier, requestor_url, GetProxy(&services),
-        nullptr, base::Closure());
-    MessagePipe pipe;
-    content_handler_.Bind(
-        InterfacePtrInfo<ContentHandler>(pipe.handle0.Pass(), 0u));
-    services->ConnectToService(ContentHandler::Name_, pipe.handle1.Pass());
-    content_handler_.set_error_handler(this);
-  }
-
-  ContentHandler* content_handler() { return content_handler_.get(); }
-
-  GURL content_handler_url() { return content_handler_url_; }
-  std::string content_handler_qualifier() { return content_handler_qualifier_; }
-
- private:
-  // ErrorHandler implementation:
-  void OnConnectionError() override { manager_->OnContentHandlerError(this); }
-
-  ApplicationManager* manager_;
-  GURL content_handler_url_;
-  std::string content_handler_qualifier_;
-  ContentHandlerPtr content_handler_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentHandlerConnection);
-};
 
 // static
 ApplicationManager::TestAPI::TestAPI(ApplicationManager* manager)
@@ -93,7 +55,9 @@ ApplicationManager::ApplicationManager(Delegate* delegate)
 }
 
 ApplicationManager::~ApplicationManager() {
-  STLDeleteValues(&url_to_content_handler_);
+  URLToContentHandlerMap url_to_content_handler(url_to_content_handler_);
+  for (auto& pair : url_to_content_handler)
+    pair.second->CloseConnection();
   TerminateShellConnections();
   STLDeleteValues(&url_to_loader_);
   STLDeleteValues(&scheme_to_loader_);
@@ -104,17 +68,6 @@ void ApplicationManager::TerminateShellConnections() {
 }
 
 void ApplicationManager::ConnectToApplication(
-    mojo::URLRequestPtr requested_url,
-    const GURL& requestor_url,
-    InterfaceRequest<ServiceProvider> services,
-    ServiceProviderPtr exposed_services,
-    const base::Closure& on_application_end) {
-  ConnectToApplicationInternal(
-      requested_url.Pass(), std::string(), requestor_url, services.Pass(),
-      exposed_services.Pass(), on_application_end);
-}
-
-void ApplicationManager::ConnectToApplicationInternal(
     mojo::URLRequestPtr requested_url,
     const std::string& qualifier,
     const GURL& requestor_url,
@@ -313,9 +266,9 @@ void ApplicationManager::HandleFetchCallback(
     header->name = "Referer";
     header->value = fetcher->GetRedirectReferer().spec();
     request->headers.push_back(header.Pass());
-    ConnectToApplicationInternal(request.Pass(), qualifier, requestor_url,
-                                 services.Pass(), exposed_services.Pass(),
-                                 on_application_end);
+    ConnectToApplication(request.Pass(), qualifier, requestor_url,
+                         services.Pass(), exposed_services.Pass(),
+                         on_application_end);
     return;
   }
 
@@ -523,14 +476,13 @@ void ApplicationManager::OnShellImplError(ShellImpl* shell_impl) {
     on_application_end.Run();
 }
 
-void ApplicationManager::OnContentHandlerError(
+void ApplicationManager::OnContentHandlerConnectionClosed(
     ContentHandlerConnection* content_handler) {
   // Remove the mapping to the content handler.
   auto it = url_to_content_handler_.find(
       std::make_pair(content_handler->content_handler_url(),
                      content_handler->content_handler_qualifier()));
   DCHECK(it != url_to_content_handler_.end());
-  delete it->second;
   url_to_content_handler_.erase(it);
 }
 
@@ -540,8 +492,8 @@ ScopedMessagePipeHandle ApplicationManager::ConnectToServiceByName(
   ServiceProviderPtr services;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From(application_url.spec());
-  ConnectToApplication(request.Pass(), GURL(), GetProxy(&services), nullptr,
-                       base::Closure());
+  ConnectToApplication(request.Pass(), std::string(), GURL(),
+                       GetProxy(&services), nullptr, base::Closure());
   MessagePipe pipe;
   services->ConnectToService(interface_name, pipe.handle1.Pass());
   return pipe.handle0.Pass();

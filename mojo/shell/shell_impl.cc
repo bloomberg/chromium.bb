@@ -70,9 +70,9 @@ void ShellImpl::ConnectToApplication(mojo::URLRequestPtr app_request,
     LOG(ERROR) << "Error: invalid URL: " << app_request;
     return;
   }
-  manager_->ConnectToApplication(app_request.Pass(), identity_.url,
-                                 services.Pass(), exposed_services.Pass(),
-                                 base::Closure());
+  manager_->ConnectToApplication(app_request.Pass(), std::string(),
+                                 identity_.url, services.Pass(),
+                                 exposed_services.Pass(), base::Closure());
 }
 
 void ShellImpl::QuitApplication() {
@@ -93,7 +93,8 @@ void ShellImpl::OnConnectionError() {
   for (auto request : queued_client_requests) {
     mojo::URLRequestPtr url(mojo::URLRequest::New());
     url->url = mojo::String::From(request->requested_url.spec());
-    manager->ConnectToApplication(url.Pass(), request->requestor_url,
+    manager->ConnectToApplication(url.Pass(), std::string(),
+                                  request->requestor_url,
                                   request->services.Pass(),
                                   request->exposed_services.Pass(),
                                   base::Closure());

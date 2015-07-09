@@ -10,6 +10,8 @@
       'shell/application_loader.h',
       'shell/application_manager.cc',
       'shell/application_manager.h',
+      'shell/content_handler_connection.cc',
+      'shell/content_handler_connection.h',
       'shell/data_pipe_peek.cc',
       'shell/data_pipe_peek.h',
       'shell/fetcher.cc',
