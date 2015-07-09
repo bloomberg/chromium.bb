@@ -5738,7 +5738,6 @@
                   '-Wno-incompatible-pointer-types',  # http://crbug.com/504696
                   '-Wno-microsoft',  # http://crbug.com/505296
                   '-Wno-missing-braces',  # http://crbug.com/505297
-                  '-Wno-msvc-include',  # http://crbug.com/505299
                   '-Wno-pointer-sign',  # http://crbug.com/505303
                   '-Wno-reorder',  # http://crbug.com/505304
                   '-Wno-switch',  # http://crbug.com/505308
