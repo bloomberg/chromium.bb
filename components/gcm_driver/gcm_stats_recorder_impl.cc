@@ -133,6 +133,8 @@ std::string GetUnregistrationStatusString(
       return "HTTP_NOT_OK";
     case gcm::UnregistrationRequest::UNKNOWN_ERROR:
       return "UNKNOWN_ERROR";
+    case gcm::UnregistrationRequest::REACHED_MAX_RETRIES:
+      return "REACHED_MAX_RETRIES";
     default:
       NOTREACHED();
       return "UNKNOWN_STATUS";
