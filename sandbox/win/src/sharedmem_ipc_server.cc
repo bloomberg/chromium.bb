@@ -5,6 +5,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/stl_util.h"
 #include "sandbox/win/src/sharedmem_ipc_server.h"
 #include "sandbox/win/src/sharedmem_ipc_client.h"
 #include "sandbox/win/src/sandbox.h"
@@ -51,14 +52,7 @@ SharedMemIPCServer::~SharedMemIPCServer() {
     // Better to leak than to crash.
     return;
   }
-  // Free the IPC signal events.
-  ServerContexts::iterator it;
-  for (it = server_contexts_.begin(); it != server_contexts_.end(); ++it) {
-    ServerControl* context = (*it);
-    ::CloseHandle(context->ping_event);
-    ::CloseHandle(context->pong_event);
-    delete context;
-  }
+  STLDeleteElements(&server_contexts_);
 
   if (client_control_)
     ::UnmapViewOfFile(client_control_);
@@ -126,7 +120,7 @@ bool SharedMemIPCServer::Init(void* shared_mem, uint32 shared_size,
     // Advance to the next channel.
     base_start += channel_size;
     // Register the ping event with the threadpool.
-    thread_provider_->RegisterWait(this, service_context->ping_event,
+    thread_provider_->RegisterWait(this, service_context->ping_event.Get(),
                                    ThreadPingEventReady, service_context);
   }
   if (!::DuplicateHandle(::GetCurrentProcess(), g_alive_mutex,
@@ -397,24 +391,28 @@ void __stdcall SharedMemIPCServer::ThreadPingEventReady(void* context,
   CrossCallParams* call_params = reinterpret_cast<CrossCallParams*>(buffer);
   memcpy(call_params->GetCallReturn(), &call_result, sizeof(call_result));
   ::InterlockedExchange(&service_context->channel->state, kAckChannel);
-  ::SetEvent(service_context->pong_event);
+  ::SetEvent(service_context->pong_event.Get());
 }
 
-bool SharedMemIPCServer::MakeEvents(HANDLE* server_ping, HANDLE* server_pong,
+bool SharedMemIPCServer::MakeEvents(base::win::ScopedHandle* server_ping,
+                                    base::win::ScopedHandle* server_pong,
                                     HANDLE* client_ping, HANDLE* client_pong) {
   // Note that the IPC client has no right to delete the events. That would
   // cause problems. The server *owns* the events.
   const DWORD kDesiredAccess = SYNCHRONIZE | EVENT_MODIFY_STATE;
 
   // The events are auto reset, and start not signaled.
-  *server_ping = ::CreateEventW(NULL, FALSE, FALSE, NULL);
-  if (!::DuplicateHandle(::GetCurrentProcess(), *server_ping, target_process_,
-                         client_ping, kDesiredAccess, FALSE, 0)) {
+  server_ping->Set(::CreateEventW(NULL, FALSE, FALSE, NULL));
+  if (!::DuplicateHandle(::GetCurrentProcess(), server_ping->Get(),
+                         target_process_, client_ping, kDesiredAccess, FALSE,
+                         0)) {
     return false;
   }
-  *server_pong = ::CreateEventW(NULL, FALSE, FALSE, NULL);
-  if (!::DuplicateHandle(::GetCurrentProcess(), *server_pong, target_process_,
-                         client_pong, kDesiredAccess, FALSE, 0)) {
+
+  server_pong->Set(::CreateEventW(NULL, FALSE, FALSE, NULL));
+  if (!::DuplicateHandle(::GetCurrentProcess(), server_pong->Get(),
+                         target_process_, client_pong, kDesiredAccess, FALSE,
+                         0)) {
     return false;
   }
   return true;

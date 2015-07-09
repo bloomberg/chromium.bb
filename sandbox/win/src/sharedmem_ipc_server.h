@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/win/scoped_handle.h"
 #include "sandbox/win/src/crosscall_params.h"
 #include "sandbox/win/src/crosscall_server.h"
 #include "sandbox/win/src/sharedmem_ipc_client.h"
@@ -63,7 +64,8 @@ class SharedMemIPCServer {
 
   // Makes the client and server events. This function is called once
   // per channel.
-  bool MakeEvents(HANDLE* server_ping, HANDLE* server_pong,
+  bool MakeEvents(base::win::ScopedHandle* server_ping,
+                  base::win::ScopedHandle* server_pong,
                   HANDLE* client_ping, HANDLE* client_pong);
 
   // A copy this structure is maintained per channel.
@@ -73,9 +75,9 @@ class SharedMemIPCServer {
   // call or about threading issues.
   struct ServerControl {
     // This channel server ping event.
-    HANDLE ping_event;
+    base::win::ScopedHandle ping_event;
     // This channel server pong event.
-    HANDLE pong_event;
+    base::win::ScopedHandle pong_event;
     // The size of this channel.
     uint32 channel_size;
     // The pointer to the actual channel data.

@@ -614,10 +614,10 @@ TEST(IPCTest, SharedMemServerTests) {
   UnitTestIPCDispatcher dispatcher;
   // Since we are directly calling InvokeCallback, most of this structure
   // can be set to NULL.
-  sandbox::SharedMemIPCServer::ServerControl srv_control = {
-      NULL, NULL, kIPCChannelSize, NULL,
-      reinterpret_cast<char*>(client_control),
-      NULL, &dispatcher, {0} };
+  sandbox::SharedMemIPCServer::ServerControl srv_control = {};
+  srv_control.channel_size = kIPCChannelSize;
+  srv_control.shared_base = reinterpret_cast<char*>(client_control);
+  srv_control.dispatcher = &dispatcher;
 
   sandbox::CrossCallReturn call_return = {0};
   EXPECT_TRUE(SharedMemIPCServer::InvokeCallback(&srv_control, buff,
