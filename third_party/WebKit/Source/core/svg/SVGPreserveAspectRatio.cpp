@@ -66,18 +66,6 @@ bool SVGPreserveAspectRatio::parseInternal(const CharType*& ptr, const CharType*
     if (!skipOptionalSVGSpaces(ptr, end))
         return false;
 
-    if (*ptr == 'd') {
-        if (!skipString(ptr, end, "defer"))
-            return false;
-
-        // FIXME: We just ignore the "defer" here.
-        if (ptr == end)
-            return true;
-
-        if (!skipOptionalSVGSpaces(ptr, end))
-            return false;
-    }
-
     if (*ptr == 'n') {
         if (!skipString(ptr, end, "none"))
             return false;
