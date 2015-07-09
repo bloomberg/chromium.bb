@@ -1883,10 +1883,6 @@ void CompositedDeprecatedPaintLayerMapping::updateImageContents()
     if (!image)
         return;
 
-    // We have to wait until the image is fully loaded before setting it on the layer.
-    if (!cachedImage->isLoaded())
-        return;
-
     // This is a no-op if the layer doesn't have an inner layer for the image.
     m_graphicsLayer->setContentsToImage(image);
 
