@@ -1326,6 +1326,7 @@ void InspectorDebuggerAgent::addAsyncCallTrackingListener(AsyncCallTrackingListe
 
 void InspectorDebuggerAgent::removeAsyncCallTrackingListener(AsyncCallTrackingListener* listener)
 {
+    ASSERT(m_asyncCallTrackingListeners.contains(listener));
     m_asyncCallTrackingListeners.remove(listener);
 }
 
