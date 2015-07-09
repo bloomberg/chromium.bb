@@ -19,7 +19,6 @@
           '../../../../ui/webui/resources/js/util.js',
           'constants.js',
           'icon_loader.js',
-          'item.js',
           'item_view.js',
           'focus_row.js',
         ],

@@ -39,10 +39,10 @@ cr.define('downloads', function() {
     updateAll_: function(list) {
       var oldIdMap = this.idMap_ || {};
 
-      /** @private {!Object<!downloads.Item>} */
+      /** @private {!Object<!downloads.ItemView>} */
       this.idMap_ = {};
 
-      /** @private {!Array<!downloads.Item>} */
+      /** @private {!Array<!downloads.ItemView>} */
       this.items_ = [];
 
       for (var i = 0; i < list.length; ++i) {
@@ -50,18 +50,18 @@ cr.define('downloads', function() {
         var id = data.id;
 
         // Re-use old items when possible (saves work, preserves focus).
-        var item = oldIdMap[id] || new downloads.Item;
+        var item = oldIdMap[id] || new downloads.ItemView;
 
         this.idMap_[id] = item;  // Associated by ID for fast lookup.
         this.items_.push(item);  // Add to sorted list for order.
 
         // Render |item| but don't actually add to the DOM yet. |this.items_|
         // must be fully created to be able to find the right spot to insert.
-        item.render(data);
+        item.update(data);
 
         // Collapse redundant dates.
         var prev = list[i - 1];
-        item.view.dateContainer.hidden =
+        item.dateContainer.hidden =
             prev && prev.date_string == data.date_string;
 
         delete oldIdMap[id];
@@ -69,23 +69,25 @@ cr.define('downloads', function() {
 
       // Remove stale, previously rendered items from the DOM.
       for (var id in oldIdMap) {
-        oldIdMap[id].unrender();
+        var oldNode = oldIdMap[id].node;
+        if (oldNode.parentNode)
+          oldNode.parentNode.removeChild(oldNode);
         delete oldIdMap[id];
       }
 
       for (var i = 0; i < this.items_.length; ++i) {
         var item = this.items_[i];
-        if (item.view.node.parentNode)  // Already in the DOM; skip.
+        if (item.node.parentNode)  // Already in the DOM; skip.
           continue;
 
         var before = null;
         // Find the next rendered item after this one, and insert before it.
         for (var j = i + 1; !before && j < this.items_.length; ++j) {
-          if (this.items_[j].view.node.parentNode)
-            before = this.items_[j].view.node;
+          if (this.items_[j].node.parentNode)
+            before = this.items_[j].node;
         }
         // If |before| is null, |item| will just get added at the end.
-        this.node_.insertBefore(item.view.node, before);
+        this.node_.insertBefore(item.node, before);
       }
 
       var noDownloadsOrResults = $('no-downloads-or-results');
@@ -110,7 +112,7 @@ cr.define('downloads', function() {
       var activeElement = document.activeElement;
 
       var item = this.idMap_[data.id];
-      item.render(data);
+      item.update(data);
       var focusRow = this.decorateItem_(item);
 
       if (focusRow.contains(activeElement) &&
@@ -143,13 +145,13 @@ cr.define('downloads', function() {
     },
 
     /**
-     * @param {!downloads.Item} item An item to decorate as a FocusRow.
+     * @param {!downloads.ItemView} item An item to decorate as a FocusRow.
      * @return {!downloads.FocusRow} |item| decorated as a FocusRow.
      * @private
      */
     decorateItem_: function(item) {
-      downloads.FocusRow.decorate(item.view.node, item.view, this.node_);
-      return assertInstanceof(item.view.node, downloads.FocusRow);
+      downloads.FocusRow.decorate(item.node, item, this.node_);
+      return assertInstanceof(item.node, downloads.FocusRow);
     },
 
     /**

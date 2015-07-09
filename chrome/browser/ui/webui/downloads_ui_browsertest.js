@@ -51,7 +51,7 @@ TEST_F('BaseDownloadsWebUITest', 'PauseResumeFocus', function() {
   downloads.Manager.updateItem(freshestDownload);
 
   var manager = downloads.Manager.getInstance();
-  var node = manager.idMap_[freshestDownload.id].view.node;
+  var node = manager.idMap_[freshestDownload.id].node;
   var pause = node.querySelector('.pause');
   var resume = node.querySelector('.resume');
 

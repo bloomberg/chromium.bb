@@ -97,7 +97,6 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
     source->AddResourcePath("manager.js", IDR_MD_DOWNLOAD_MANAGER_JS);
     source->SetDefaultResource(IDR_MD_DOWNLOADS_HTML);
   } else {
-    source->AddResourcePath("item.js", IDR_DOWNLOAD_ITEM_JS);
     source->AddResourcePath("item_view.js", IDR_DOWNLOAD_ITEM_VIEW_JS);
     source->AddResourcePath("focus_row.js", IDR_DOWNLOAD_FOCUS_ROW_JS);
     source->AddResourcePath("manager.js", IDR_DOWNLOAD_MANAGER_JS);
