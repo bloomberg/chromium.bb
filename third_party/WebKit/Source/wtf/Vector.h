@@ -423,11 +423,12 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         inline bool shrinkBuffer(size_t newCapacity)
         {
             ASSERT(newCapacity < capacity());
-            size_t newSize = allocationSize(newCapacity);
-            if (!Allocator::shrinkVectorBacking(m_buffer, allocationSize(capacity()), newSize))
-                return false;
-            m_capacity = newSize / sizeof(T);
-            return true;
+            size_t sizeToAllocate = allocationSize(newCapacity);
+            if (Allocator::shrinkVectorBacking(m_buffer, allocationSize(capacity()), sizeToAllocate)) {
+                m_capacity = sizeToAllocate / sizeof(T);
+                return true;
+            }
+            return false;
         }
 
         void resetBufferPointer()

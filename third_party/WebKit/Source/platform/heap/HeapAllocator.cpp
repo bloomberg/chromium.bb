@@ -86,20 +86,20 @@ bool HeapAllocator::expandHashTableBacking(void* address, size_t newSize)
     return backingExpand(address, newSize);
 }
 
-void HeapAllocator::backingShrink(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
+bool HeapAllocator::backingShrink(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
 {
     // We shrink the object only if the shrinking will make a non-small
     // prompt-free block.
     // FIXME: Optimize the threshold size.
     if (quantizedCurrentSize <= quantizedShrunkSize + sizeof(HeapObjectHeader) + sizeof(void*) * 32)
-        return;
+        return true;
 
     if (!address)
-        return;
+        return true;
 
     ThreadState* state = ThreadState::current();
     if (state->sweepForbidden())
-        return;
+        return false;
     ASSERT(!state->isInGC());
     ASSERT(state->isAllocationAllowed());
 
@@ -107,14 +107,25 @@ void HeapAllocator::backingShrink(void* address, size_t quantizedCurrentSize, si
     // Don't shrink backings allocated on other threads.
     BasePage* page = pageFromObject(address);
     if (page->isLargeObjectPage() || page->heap()->threadState() != state)
-        return;
+        return false;
 
     HeapObjectHeader* header = HeapObjectHeader::fromPayload(address);
     ASSERT(header->checkHeader());
     NormalPageHeap* heap = static_cast<NormalPage*>(page)->heapForNormalPage();
-    bool succeed = heap->shrinkObject(header, quantizedShrunkSize);
-    if (succeed)
+    bool succeededAtAllocationPoint = heap->shrinkObject(header, quantizedShrunkSize);
+    if (succeededAtAllocationPoint)
         state->allocationPointAdjusted(heap->heapIndex());
+    return true;
+}
+
+bool HeapAllocator::shrinkVectorBacking(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
+{
+    return backingShrink(address, quantizedCurrentSize, quantizedShrunkSize);
+}
+
+bool HeapAllocator::shrinkInlineVectorBacking(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
+{
+    return backingShrink(address, quantizedCurrentSize, quantizedShrunkSize);
 }
 
 } // namespace blink

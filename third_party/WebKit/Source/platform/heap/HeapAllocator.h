@@ -23,7 +23,7 @@ namespace blink {
 
 // This is a static-only class used as a trait on collections to make them heap
 // allocated.  However see also HeapListHashSetAllocator.
-class HeapAllocator {
+class PLATFORM_EXPORT HeapAllocator {
 public:
     using Visitor = blink::Visitor;
     static const bool isGarbageCollected = true;
@@ -52,14 +52,9 @@ public:
         NormalPageHeap* heap = static_cast<NormalPageHeap*>(state->expandedVectorBackingHeap(gcInfoIndex));
         return reinterpret_cast<T*>(heap->allocateObject(Heap::allocationSizeFromSize(size), gcInfoIndex));
     }
-    PLATFORM_EXPORT static void freeVectorBacking(void*);
-    PLATFORM_EXPORT static bool expandVectorBacking(void*, size_t);
-    static inline bool shrinkVectorBacking(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
-    {
-        // Returns always true, so the inlining in turn enables call site simplifications.
-        backingShrink(address, quantizedCurrentSize, quantizedShrunkSize);
-        return true;
-    }
+    static void freeVectorBacking(void*);
+    static bool expandVectorBacking(void*, size_t);
+    static bool shrinkVectorBacking(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize);
     template <typename T>
     static T* allocateInlineVectorBacking(size_t size)
     {
@@ -67,13 +62,9 @@ public:
         ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
         return reinterpret_cast<T*>(Heap::allocateOnHeapIndex(state, size, ThreadState::InlineVectorHeapIndex, gcInfoIndex));
     }
-    PLATFORM_EXPORT static void freeInlineVectorBacking(void*);
-    PLATFORM_EXPORT static bool expandInlineVectorBacking(void*, size_t);
-    static inline bool shrinkInlineVectorBacking(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
-    {
-        backingShrink(address, quantizedCurrentSize, quantizedShrunkSize);
-        return true;
-    }
+    static void freeInlineVectorBacking(void*);
+    static bool expandInlineVectorBacking(void*, size_t);
+    static bool shrinkInlineVectorBacking(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize);
 
     template <typename T, typename HashTable>
     static T* allocateHashTableBacking(size_t size)
@@ -87,8 +78,8 @@ public:
     {
         return allocateHashTableBacking<T, HashTable>(size);
     }
-    PLATFORM_EXPORT static void freeHashTableBacking(void* address);
-    PLATFORM_EXPORT static bool expandHashTableBacking(void*, size_t);
+    static void freeHashTableBacking(void* address);
+    static bool expandHashTableBacking(void*, size_t);
 
     template <typename Return, typename Metadata>
     static Return malloc(size_t size)
@@ -197,7 +188,7 @@ public:
 private:
     static void backingFree(void*);
     static bool backingExpand(void*, size_t);
-    PLATFORM_EXPORT static void backingShrink(void*, size_t quantizedCurrentSize, size_t quantizedShrunkSize);
+    static bool backingShrink(void*, size_t quantizedCurrentSize, size_t quantizedShrunkSize);
 
     template<typename T, size_t u, typename V> friend class WTF::Vector;
     template<typename T, typename U, typename V, typename W> friend class WTF::HashSet;
