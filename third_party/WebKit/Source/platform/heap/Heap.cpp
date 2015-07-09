@@ -620,7 +620,6 @@ void NormalPageHeap::allocatePage()
         //    [ guard os page | ... payload ... | guard os page ]
         //    ^---{ aligned to blink page size }
         PageMemoryRegion* region = PageMemoryRegion::allocateNormalPages();
-        threadState()->allocatedRegionsSinceLastGC().append(region);
 
         // Setup the PageMemory object for each of the pages in the region.
         size_t offset = 0;
@@ -1003,7 +1002,6 @@ Address LargeObjectHeap::doAllocateLargeObjectPage(size_t allocationSize, size_t
 
     threadState()->shouldFlushHeapDoesNotContainCache();
     PageMemory* pageMemory = PageMemory::allocate(largeObjectSize);
-    threadState()->allocatedRegionsSinceLastGC().append(pageMemory->region());
     Address largeObjectAddress = pageMemory->writableStart();
     Address headerAddress = largeObjectAddress + LargeObjectPage::pageHeaderSize();
 #if ENABLE(ASSERT)

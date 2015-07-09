@@ -56,8 +56,6 @@ class CrossThreadPersistentRegion;
 struct GCInfo;
 class GarbageCollectedMixinConstructorMarker;
 class HeapObjectHeader;
-class PageMemoryRegion;
-class PageMemory;
 class PersistentRegion;
 class BaseHeap;
 class SafePointAwareMutexLocker;
@@ -387,7 +385,6 @@ public:
     }
     bool sweepForbidden() const { return m_sweepForbidden; }
 
-    void prepareRegionTree();
     void flushHeapDoesNotContainCacheIfNeeded();
 
     // Safepoint related functionality.
@@ -565,8 +562,6 @@ public:
         ASSERT(m_orderedPreFinalizers.contains(PreFinalizer(self, T::invokePreFinalizer)));
         m_orderedPreFinalizers.remove(PreFinalizer(self, &T::invokePreFinalizer));
     }
-
-    Vector<PageMemoryRegion*>& allocatedRegionsSinceLastGC() { return m_allocatedRegionsSinceLastGC; }
 
     void shouldFlushHeapDoesNotContainCache() { m_shouldFlushHeapDoesNotContainCache = true; }
 
@@ -763,8 +758,6 @@ private:
 #if defined(ADDRESS_SANITIZER)
     void* m_asanFakeStack;
 #endif
-
-    Vector<PageMemoryRegion*> m_allocatedRegionsSinceLastGC;
 
 #if ENABLE(GC_PROFILING)
     double m_nextFreeListSnapshotTime;
