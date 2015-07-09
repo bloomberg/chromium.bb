@@ -90,6 +90,9 @@ class MEDIA_EXPORT AudioConverter {
   // to each input's ProvideInput for more data.
   int ChunkSize() const;
 
+  // See SincResampler::PrimeWithSilence.
+  void PrimeWithSilence();
+
   bool empty() const { return transform_inputs_.empty(); }
 
  private:

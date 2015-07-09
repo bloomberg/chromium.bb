@@ -117,6 +117,12 @@ int AudioConverter::ChunkSize() const {
   return resampler_->ChunkSize();
 }
 
+void AudioConverter::PrimeWithSilence() {
+  if (resampler_) {
+    resampler_->PrimeWithSilence();
+  }
+}
+
 void AudioConverter::ConvertWithDelay(const base::TimeDelta& initial_delay,
                                       AudioBus* dest) {
   initial_delay_ = initial_delay;

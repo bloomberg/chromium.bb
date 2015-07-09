@@ -119,5 +119,10 @@ double MultiChannelResampler::BufferedFrames() const {
   return resamplers_[0]->BufferedFrames();
 }
 
+void MultiChannelResampler::PrimeWithSilence() {
+  DCHECK(!resamplers_.empty());
+  for (size_t i = 0; i < resamplers_.size(); ++i)
+    resamplers_[i]->PrimeWithSilence();
+}
 
 }  // namespace media
