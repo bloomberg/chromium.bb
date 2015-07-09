@@ -15,7 +15,7 @@ namespace banners {
 
 const char kRendererRequestCancel[] =
     "renderer has requested the banner prompt be cancelled";
-const char kManifestEmpty[] = "manifest is empty";
+const char kManifestEmpty[] = "manifest is empty or missing";
 const char kCannotDetermineBestIcon[] =
     "could not determine the best icon to use";
 const char kNoMatchingServiceWorker[] =
@@ -24,7 +24,7 @@ const char kNoMatchingServiceWorker[] =
     "start URL from the manifest";
 const char kNoIconAvailable[] = "no icon available to display";
 const char kBannerAlreadyAdded[] =
-    "the banner has already been added to the homescreen";
+    "site requesting the banner has already been added";
 const char kUserNavigatedBeforeBannerShown[] =
     "the user navigated before the banner could be shown";
 const char kStartURLNotValid[] = "start URL in manifest is not valid";
