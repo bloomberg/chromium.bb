@@ -33,6 +33,12 @@ class DepsUpdater(object):
         wpt_import_text = self.update('web-platform-tests',
                                       'https://chromium.googlesource.com/external/w3c/web-platform-tests.git')
 
+        for resource in ['testharnessreport.js', 'vendor-prefix.js']:
+            source = self.path_from_webkit_base('LayoutTests', 'resources', resource)
+            destination = self.path_from_webkit_base('LayoutTests', 'imported', 'web-platform-tests', 'resources', resource)
+            self.copyfile(source, destination)
+            self.run(['git', 'add', destination])
+
         css_import_text = self.update('csswg-test',
                                       'https://chromium.googlesource.com/external/w3c/csswg-test.git')
 
@@ -80,6 +86,7 @@ class DepsUpdater(object):
         self.cd('')
         self.run(['git', 'clone', url])
         self.cd(re.compile('.*/([^/]+)\.git').match(url).group(1))
+        self.run(['git', 'submodule', 'update', '--init', '--recursive'])
 
         self.print_('## noting the revision we are importing')
         master_commitish = self.run(['git', 'show-ref', 'origin/master'])[1].split()[0]
@@ -168,6 +175,11 @@ class DepsUpdater(object):
         if self.verbose:
             self.print_('cd %s' % dest)
         self.fs.chdir(dest)
+
+    def copyfile(self, source, destination):
+        if self.verbose:
+            self.print_('cp %s %s' % (source, destination))
+        self.fs.copyfile(source, destination)
 
     def remove(self, *comps):
         dest = self.path_from_webkit_base(*comps)
