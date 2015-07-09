@@ -36,9 +36,7 @@ import config
 
 from slave import annotation_utils
 from slave import build_directory
-from slave import crash_utils
 from slave import gtest_slave_utils
-from slave import results_dashboard
 from slave import slave_utils
 from slave import xvfb
 
@@ -441,9 +439,7 @@ def _Main(options, args, extra_env):
       return 1
 
   if options.annotate:
-    annotation_utils.annotate(
-        options.test_type, result, log_processor,
-        perf_dashboard_id=options.perf_dashboard_id)
+    annotation_utils.annotate(options.test_type, result, log_processor)
 
   return result
 
@@ -681,9 +677,6 @@ def main():
   logging.basicConfig(level=logging.DEBUG)
   logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 
-  if not options.perf_dashboard_id:
-    options.perf_dashboard_id = options.factory_properties.get('test_name')
-
   options.test_type = options.test_type or options.factory_properties.get(
       'step_name', '')
 
@@ -722,21 +715,6 @@ def main():
     if options.total_shards and options.shard_index:
       extra_env['GTEST_TOTAL_SHARDS'] = str(options.total_shards)
       extra_env['GTEST_SHARD_INDEX'] = str(options.shard_index - 1)
-
-    # If perf config is passed via command line, parse the string into a dict.
-    if options.perf_config:
-      try:
-        options.perf_config = ast.literal_eval(options.perf_config)
-        assert type(options.perf_config) is dict, (
-            'Value of --perf-config couldn\'t be evaluated into a dict.')
-      except (exceptions.SyntaxError, ValueError):
-        option_parser.error('Failed to parse --perf-config value into a dict: '
-                            '%s' % options.perf_config)
-        return 1
-
-    # Allow factory property 'perf_config' as well during a transition period.
-    options.perf_config = (options.perf_config or
-                           options.factory_properties.get('perf_config'))
 
     if options.results_directory:
       options.test_output_xml = os.path.normpath(os.path.abspath(os.path.join(
