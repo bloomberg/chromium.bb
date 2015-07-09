@@ -720,7 +720,7 @@ void UpdateCheckDriver::OnUpgradeError(GoogleUpdateErrorCode error_code,
   hresult_ = hresult;
   installer_exit_code_ = installer_exit_code;
   base::string16 error_msg =
-      base::StringPrintf(L"%d: <a href='%s0x%X' target=_blank>0x%X</a>",
+      base::StringPrintf(L"%d: <a href='%ls0x%X' target=_blank>0x%X</a>",
                          error_code_, base::UTF8ToUTF16(
                              chrome::kUpgradeHelpCenterBaseURL).c_str(),
                          hresult_, hresult_);
