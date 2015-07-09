@@ -3754,6 +3754,26 @@ blink::WebAppBannerClient* RenderFrameImpl::appBannerClient() {
   return app_banner_client_.get();
 }
 
+void RenderFrameImpl::registerProtocolHandler(const WebString& scheme,
+                                              const WebURL& url,
+                                              const WebString& title) {
+  bool user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
+  Send(new FrameHostMsg_RegisterProtocolHandler(routing_id_,
+                                                base::UTF16ToUTF8(scheme),
+                                                url,
+                                                title,
+                                                user_gesture));
+}
+
+void RenderFrameImpl::unregisterProtocolHandler(const WebString& scheme,
+                                                const WebURL& url) {
+  bool user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
+  Send(new FrameHostMsg_UnregisterProtocolHandler(routing_id_,
+                                                  base::UTF16ToUTF8(scheme),
+                                                  url,
+                                                  user_gesture));
+}
+
 #if defined(ENABLE_WEBVR)
 blink::WebVRClient* RenderFrameImpl::webVRClient() {
   if (!vr_dispatcher_)

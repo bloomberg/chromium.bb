@@ -540,6 +540,11 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual bool exitFullscreen();
   virtual blink::WebPermissionClient* permissionClient();
   virtual blink::WebAppBannerClient* appBannerClient();
+  virtual void registerProtocolHandler(const blink::WebString& scheme,
+                                       const blink::WebURL& url,
+                                       const blink::WebString& title);
+  virtual void unregisterProtocolHandler(const blink::WebString& scheme,
+                                         const blink::WebURL& url);
 
 #if defined(ENABLE_WEBVR)
   blink::WebVRClient* webVRClient() override;

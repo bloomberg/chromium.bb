@@ -599,6 +599,10 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                         OnRegisterProtocolHandler)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UnregisterProtocolHandler,
                         OnUnregisterProtocolHandler)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_RegisterProtocolHandler,
+                        OnRegisterProtocolHandler)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_UnregisterProtocolHandler,
+                        OnUnregisterProtocolHandler)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Find_Reply, OnFindReply)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebUISend, OnWebUISend)

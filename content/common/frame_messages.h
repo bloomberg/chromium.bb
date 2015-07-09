@@ -973,6 +973,19 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_TextSurroundingSelectionResponse,
                     size_t, /* startOffset */
                     size_t /* endOffset */)
 
+// Register a new handler for URL requests with the given scheme.
+IPC_MESSAGE_ROUTED4(FrameHostMsg_RegisterProtocolHandler,
+                    std::string /* scheme */,
+                    GURL /* url */,
+                    base::string16 /* title */,
+                    bool /* user_gesture */)
+
+// Unregister the registered handler for URL requests with the given scheme.
+IPC_MESSAGE_ROUTED3(FrameHostMsg_UnregisterProtocolHandler,
+                    std::string /* scheme */,
+                    GURL /* url */,
+                    bool /* user_gesture */)
+
 // PlzNavigate
 // Tells the browser to perform a navigation.
 IPC_MESSAGE_ROUTED3(FrameHostMsg_BeginNavigation,
