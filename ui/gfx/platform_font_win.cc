@@ -4,10 +4,12 @@
 
 #include "ui/gfx/platform_font_win.h"
 
-#include <algorithm>
 #include <dwrite.h>
 #include <math.h>
+#include <wchar.h>
 #include <windows.h>
+
+#include <algorithm>
 
 #include "base/debug/alias.h"
 #include "base/logging.h"
@@ -202,8 +204,8 @@ HRESULT GetMatchingDirectWriteFont(LOGFONT* font_info,
       return E_FAIL;
     }
 
-    if (base::strncmp16(font_info->lfFaceName, metrics.lfMessageFont.lfFaceName,
-                        arraysize(font_info->lfFaceName))) {
+    if (wcsncmp(font_info->lfFaceName, metrics.lfMessageFont.lfFaceName,
+                arraysize(font_info->lfFaceName))) {
       // First try the GDI compat route to get a matching DirectWrite font. If
       // that succeeds we are good. If not find a matching font from the font
       // collection.

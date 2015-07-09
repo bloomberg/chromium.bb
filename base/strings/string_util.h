@@ -36,9 +36,6 @@ int strcasecmp(const char* s1, const char* s2);
 // s2 > s1 according to a lexicographic comparison.
 int strncasecmp(const char* s1, const char* s2, size_t count);
 
-// Same as strncmp but for char16 strings.
-int strncmp16(const char16* s1, const char16* s2, size_t count);
-
 // Wrapper for vsnprintf that always null-terminates and always returns the
 // number of characters that would be in an untruncated formatted
 // string, even when truncation occurs.
