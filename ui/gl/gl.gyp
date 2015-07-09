@@ -214,6 +214,10 @@
               '-ldwmapi.lib',
             ],
           },
+          'dependencies': [
+            '<(DEPTH)/third_party/angle/src/angle.gyp:libEGL',
+            '<(DEPTH)/third_party/angle/src/angle.gyp:libGLESv2',
+          ],
         }],
         ['OS=="mac"', {
           'sources': [

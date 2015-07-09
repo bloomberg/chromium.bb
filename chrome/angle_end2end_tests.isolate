@@ -4,7 +4,6 @@
 {
   'includes': [
     '../base/base.isolate',
-    '../third_party/angle/angle.isolate',
   ],
   'conditions': [
     ['OS=="win" or OS=="linux"', {
@@ -14,6 +13,27 @@
         ],
         'files': [
           '<(PRODUCT_DIR)/angle_end2end_tests<(EXECUTABLE_SUFFIX)',
+        ],
+      },
+    }],
+    # TODO(kbr): the inlining of these dependencies from angle.isolate
+    # is needed temporarily until ANGLE rolls forward and a new
+    # isolate expressing these dependencies on all of ANGLE's
+    # supported platforms is provided. crbug.com/501604
+    ['OS=="win"', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/d3dcompiler_47.dll',
+          '<(PRODUCT_DIR)/libEGL.dll',
+          '<(PRODUCT_DIR)/libGLESv2.dll',
+        ],
+      },
+    }],
+    ['OS=="linux"', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/lib/libEGL.so',
+          '<(PRODUCT_DIR)/lib/libGLESv2.so',
         ],
       },
     }],
