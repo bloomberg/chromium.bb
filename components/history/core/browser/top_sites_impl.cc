@@ -592,6 +592,14 @@ bool TopSitesImpl::loaded() const {
 
 bool TopSitesImpl::AddForcedURL(const GURL& url, const base::Time& time) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!loaded_) {
+    // Optimally we could cache this and apply it after the load completes, but
+    // in practice it's not an issue since AddForcedURL will be called again
+    // next time the user hits the NTP.
+    return false;
+  }
+
   size_t num_forced = cache_->GetNumForcedURLs();
   MostVisitedURLList new_list(cache_->top_sites());
   MostVisitedURL new_url;
