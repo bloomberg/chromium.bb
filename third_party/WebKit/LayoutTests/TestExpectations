@@ -188,8 +188,6 @@ crbug.com/330083 imported/web-platform-tests/shadow-dom/user-interaction/active-
 crbug.com/330083 imported/web-platform-tests/shadow-dom/user-interaction/focus-navigation/test-003.html [ Crash Pass ]
 crbug.com/330083 imported/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-002.html [ Failure ]
 
-crbug.com/507629 svg/custom/preserve-aspect-ratio-syntax.svg [ NeedsRebaseline ]
-
 crbug.com/442235 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-002.html [ Failure ]
 crbug.com/442235 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-003.html [ Failure ]
 crbug.com/442235 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-005.html [ Failure ]
