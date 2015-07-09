@@ -130,6 +130,7 @@
       'data_reduction_proxy/core/browser/data_reduction_proxy_request_options_unittest.cc',
       'data_reduction_proxy/core/browser/data_reduction_proxy_settings_unittest.cc',
       'data_reduction_proxy/core/browser/data_reduction_proxy_tamper_detection_unittest.cc',
+      'data_reduction_proxy/core/browser/data_usage_store_unittest.cc',
       'data_reduction_proxy/core/common/data_reduction_proxy_client_config_parser_unittest.cc',
       'data_reduction_proxy/core/common/data_reduction_proxy_event_store_unittest.cc',
       'data_reduction_proxy/core/common/data_reduction_proxy_headers_unittest.cc',

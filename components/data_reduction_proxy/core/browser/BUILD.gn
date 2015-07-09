@@ -44,6 +44,14 @@ static_library("browser") {
     "data_reduction_proxy_settings.h",
     "data_reduction_proxy_tamper_detection.cc",
     "data_reduction_proxy_tamper_detection.h",
+    "data_store.cc",
+    "data_store.h",
+    "data_store_impl.cc",
+    "data_store_impl.h",
+    "data_usage_store.cc",
+    "data_usage_store.h",
+    "db_data_owner.cc",
+    "db_data_owner.h",
   ]
 
   deps = [
@@ -55,6 +63,7 @@ static_library("browser") {
     "//crypto",
     "//google_apis",
     "//net",
+    "//third_party/leveldatabase",
     "//url",
   ]
 
@@ -112,6 +121,7 @@ source_set("unit_tests") {
     "data_reduction_proxy_prefs_unittest.cc",
     "data_reduction_proxy_request_options_unittest.cc",
     "data_reduction_proxy_settings_unittest.cc",
+    "data_usage_store_unittest.cc",
   ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]

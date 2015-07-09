@@ -4803,6 +4803,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.LevelDBOpenStatus"
+    enum="DataReductionProxyStoreStatus">
+  <owner>kundaji@chromium.org</owner>
+  <summary>Status of calling Open() on Data Reduction Proxy LevelDB.</summary>
+</histogram>
+
 <histogram name="DataReductionProxy.LoFi.ImplicitOptOutAction"
     enum="DataReductionProxyLoFiImplicitOptOutAction">
   <owner>bengr@chromium.org</owner>
@@ -52508,6 +52514,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="0" label="Proxy not available"/>
   <int value="1" label="Proxy available but not enabled"/>
   <int value="2" label="Proxy available and enabled"/>
+</enum>
+
+<enum name="DataReductionProxyStoreStatus" type="int">
+  <int value="0" label="OK"/>
+  <int value="1" label="NOT_FOUND"/>
+  <int value="2" label="CORRUPTED"/>
+  <int value="3" label="IO_ERROR"/>
+  <int value="4" label="MISC_ERROR"/>
 </enum>
 
 <enum name="DataReductionProxyUIAction" type="int">
