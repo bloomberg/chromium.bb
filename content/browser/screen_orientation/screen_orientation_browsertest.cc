@@ -107,8 +107,14 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
 // used Aura. It could be set as !defined(OS_MACOSX) but the rule below will
 // actually support MacOS X if and when it switches to Aura.
 #if defined(USE_AURA) || defined(OS_ANDROID)
+// Flaky on Chrome OS: http://crbug.com/468259
+#if defined(OS_CHROMEOS)
+#define MAYBE_ScreenOrientationChange DISABLED_ScreenOrientationChange
+#else
+#define MAYBE_ScreenOrientationChange ScreenOrientationChange
+#endif
 IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest,
-                       ScreenOrientationChange) {
+                       MAYBE_ScreenOrientationChange) {
   std::string types[] = { "portrait-primary",
                           "portrait-secondary",
                           "landscape-primary",
@@ -144,8 +150,14 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest,
 }
 #endif // defined(USE_AURA) || defined(OS_ANDROID)
 
+// Flaky on Chrome OS: http://crbug.com/468259
+#if defined(OS_CHROMEOS)
+#define MAYBE_WindowOrientationChange DISABLED_WindowOrientationChange
+#else
+#define MAYBE_WindowOrientationChange WindowOrientationChange
+#endif
 IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest,
-                       WindowOrientationChange) {
+                       MAYBE_WindowOrientationChange) {
   GURL test_url = GetTestUrl("screen_orientation",
                              "screen_orientation_windoworientationchange.html");
 
