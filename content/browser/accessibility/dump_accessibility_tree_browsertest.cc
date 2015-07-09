@@ -1156,7 +1156,14 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityTitle) {
   RunHtmlTest(FILE_PATH_LITERAL("title.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityTransition) {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+// Flaky on Win/Mac: crbug.com/508532
+#define MAYBE_AccessibilityTransition DISABLED_AccessibilityTransition
+#else
+#define MAYBE_AccessibilityTransition AccessibilityTransition
+#endif
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       MAYBE_AccessibilityTransition) {
   RunHtmlTest(FILE_PATH_LITERAL("transition.html"));
 }
 
