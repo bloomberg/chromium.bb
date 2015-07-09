@@ -52,22 +52,21 @@ class PictureLayerImplPerfTest : public testing::Test {
     host_impl_.InitializeRenderer(FakeOutputSurface::Create3d());
   }
 
-  void SetupPendingTree(const gfx::Size& layer_bounds,
-                        const gfx::Size& tile_size) {
+  void SetupActiveTree(const gfx::Size& layer_bounds,
+                       const gfx::Size& tile_size) {
     scoped_refptr<FakePicturePileImpl> pile =
         FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
-    host_impl_.CreatePendingTree();
-    LayerTreeImpl* pending_tree = host_impl_.pending_tree();
-    pending_tree->DetachLayerTree();
+    LayerTreeImpl* active_tree = host_impl_.active_tree();
+    active_tree->DetachLayerTree();
 
-    scoped_ptr<FakePictureLayerImpl> pending_layer =
-        FakePictureLayerImpl::CreateWithRasterSource(pending_tree, 7, pile);
-    pending_layer->SetDrawsContent(true);
-    pending_layer->SetHasRenderSurface(true);
-    pending_tree->SetRootLayer(pending_layer.Pass());
+    scoped_ptr<FakePictureLayerImpl> active_layer =
+        FakePictureLayerImpl::CreateWithRasterSource(active_tree, 7, pile);
+    active_layer->SetDrawsContent(true);
+    active_layer->SetHasRenderSurface(true);
+    active_tree->SetRootLayer(active_layer.Pass());
 
-    pending_layer_ = static_cast<FakePictureLayerImpl*>(
-        host_impl_.pending_tree()->LayerById(7));
+    active_layer_ = static_cast<FakePictureLayerImpl*>(
+        host_impl_.active_tree()->LayerById(7));
   }
 
   void RunRasterQueueConstructAndIterateTest(const std::string& test_name,
@@ -75,13 +74,13 @@ class PictureLayerImplPerfTest : public testing::Test {
                                              const gfx::Size& viewport_size) {
     host_impl_.SetViewportSize(viewport_size);
     bool update_lcd_text = false;
-    host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
+    host_impl_.active_tree()->UpdateDrawProperties(update_lcd_text);
 
     timer_.Reset();
     do {
       int count = num_tiles;
       scoped_ptr<TilingSetRasterQueueAll> queue(new TilingSetRasterQueueAll(
-          pending_layer_->picture_layer_tiling_set(), false));
+          active_layer_->picture_layer_tiling_set(), false));
       while (count--) {
         ASSERT_TRUE(!queue->IsEmpty()) << "count: " << count;
         ASSERT_TRUE(queue->Top().tile()) << "count: " << count;
@@ -97,15 +96,15 @@ class PictureLayerImplPerfTest : public testing::Test {
   void RunRasterQueueConstructTest(const std::string& test_name,
                                    const gfx::Rect& viewport) {
     host_impl_.SetViewportSize(viewport.size());
-    pending_layer_->PushScrollOffsetFromMainThread(
+    active_layer_->PushScrollOffsetFromMainThreadAndClobberActiveValue(
         gfx::ScrollOffset(viewport.x(), viewport.y()));
     bool update_lcd_text = false;
-    host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
+    host_impl_.active_tree()->UpdateDrawProperties(update_lcd_text);
 
     timer_.Reset();
     do {
       scoped_ptr<TilingSetRasterQueueAll> queue(new TilingSetRasterQueueAll(
-          pending_layer_->picture_layer_tiling_set(), false));
+          active_layer_->picture_layer_tiling_set(), false));
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
@@ -118,14 +117,15 @@ class PictureLayerImplPerfTest : public testing::Test {
       int num_tiles,
       const gfx::Size& viewport_size) {
     host_impl_.SetViewportSize(viewport_size);
+    active_layer_->MarkAllTilingsUsed();
     bool update_lcd_text = false;
-    host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
+    host_impl_.active_tree()->UpdateDrawProperties(update_lcd_text);
 
     timer_.Reset();
     do {
       int count = num_tiles;
       scoped_ptr<TilingSetEvictionQueue> queue(new TilingSetEvictionQueue(
-          pending_layer_->picture_layer_tiling_set()));
+          active_layer_->picture_layer_tiling_set()));
       while (count--) {
         ASSERT_TRUE(!queue->IsEmpty()) << "count: " << count;
         ASSERT_TRUE(queue->Top().tile()) << "count: " << count;
@@ -142,15 +142,16 @@ class PictureLayerImplPerfTest : public testing::Test {
   void RunEvictionQueueConstructTest(const std::string& test_name,
                                      const gfx::Rect& viewport) {
     host_impl_.SetViewportSize(viewport.size());
-    pending_layer_->PushScrollOffsetFromMainThread(
+    active_layer_->PushScrollOffsetFromMainThreadAndClobberActiveValue(
         gfx::ScrollOffset(viewport.x(), viewport.y()));
+    active_layer_->MarkAllTilingsUsed();
     bool update_lcd_text = false;
-    host_impl_.pending_tree()->UpdateDrawProperties(update_lcd_text);
+    host_impl_.active_tree()->UpdateDrawProperties(update_lcd_text);
 
     timer_.Reset();
     do {
       scoped_ptr<TilingSetEvictionQueue> queue(new TilingSetEvictionQueue(
-          pending_layer_->picture_layer_tiling_set()));
+          active_layer_->picture_layer_tiling_set()));
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
@@ -163,7 +164,7 @@ class PictureLayerImplPerfTest : public testing::Test {
   TestTaskGraphRunner task_graph_runner_;
   FakeImplProxy proxy_;
   FakeLayerTreeHostImpl host_impl_;
-  FakePictureLayerImpl* pending_layer_;
+  FakePictureLayerImpl* active_layer_;
   LapTimer timer_;
 
  private:
@@ -171,15 +172,15 @@ class PictureLayerImplPerfTest : public testing::Test {
 };
 
 TEST_F(PictureLayerImplPerfTest, TilingSetRasterQueueConstructAndIterate) {
-  SetupPendingTree(gfx::Size(10000, 10000), gfx::Size(256, 256));
+  SetupActiveTree(gfx::Size(10000, 10000), gfx::Size(256, 256));
 
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
 
-  pending_layer_->AddTiling(low_res_factor);
-  pending_layer_->AddTiling(0.3f);
-  pending_layer_->AddTiling(0.7f);
-  pending_layer_->AddTiling(1.0f);
-  pending_layer_->AddTiling(2.0f);
+  active_layer_->AddTiling(low_res_factor);
+  active_layer_->AddTiling(0.3f);
+  active_layer_->AddTiling(0.7f);
+  active_layer_->AddTiling(1.0f);
+  active_layer_->AddTiling(2.0f);
 
   RunRasterQueueConstructAndIterateTest("32_100x100", 32, gfx::Size(100, 100));
   RunRasterQueueConstructAndIterateTest("32_500x500", 32, gfx::Size(500, 500));
@@ -188,15 +189,15 @@ TEST_F(PictureLayerImplPerfTest, TilingSetRasterQueueConstructAndIterate) {
 }
 
 TEST_F(PictureLayerImplPerfTest, TilingSetRasterQueueConstruct) {
-  SetupPendingTree(gfx::Size(10000, 10000), gfx::Size(256, 256));
+  SetupActiveTree(gfx::Size(10000, 10000), gfx::Size(256, 256));
 
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
 
-  pending_layer_->AddTiling(low_res_factor);
-  pending_layer_->AddTiling(0.3f);
-  pending_layer_->AddTiling(0.7f);
-  pending_layer_->AddTiling(1.0f);
-  pending_layer_->AddTiling(2.0f);
+  active_layer_->AddTiling(low_res_factor);
+  active_layer_->AddTiling(0.3f);
+  active_layer_->AddTiling(0.7f);
+  active_layer_->AddTiling(1.0f);
+  active_layer_->AddTiling(2.0f);
 
   RunRasterQueueConstructTest("0_0_100x100", gfx::Rect(0, 0, 100, 100));
   RunRasterQueueConstructTest("5000_0_100x100", gfx::Rect(5000, 0, 100, 100));
@@ -204,16 +205,16 @@ TEST_F(PictureLayerImplPerfTest, TilingSetRasterQueueConstruct) {
 }
 
 TEST_F(PictureLayerImplPerfTest, TilingSetEvictionQueueConstructAndIterate) {
-  SetupPendingTree(gfx::Size(10000, 10000), gfx::Size(256, 256));
+  SetupActiveTree(gfx::Size(10000, 10000), gfx::Size(256, 256));
 
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
 
   std::vector<Tile*> all_tiles;
-  AddTiling(low_res_factor, pending_layer_, &all_tiles);
-  AddTiling(0.3f, pending_layer_, &all_tiles);
-  AddTiling(0.7f, pending_layer_, &all_tiles);
-  AddTiling(1.0f, pending_layer_, &all_tiles);
-  AddTiling(2.0f, pending_layer_, &all_tiles);
+  AddTiling(low_res_factor, active_layer_, &all_tiles);
+  AddTiling(0.3f, active_layer_, &all_tiles);
+  AddTiling(0.7f, active_layer_, &all_tiles);
+  AddTiling(1.0f, active_layer_, &all_tiles);
+  AddTiling(2.0f, active_layer_, &all_tiles);
 
   ASSERT_TRUE(host_impl_.tile_manager() != nullptr);
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(all_tiles);
@@ -229,16 +230,16 @@ TEST_F(PictureLayerImplPerfTest, TilingSetEvictionQueueConstructAndIterate) {
 }
 
 TEST_F(PictureLayerImplPerfTest, TilingSetEvictionQueueConstruct) {
-  SetupPendingTree(gfx::Size(10000, 10000), gfx::Size(256, 256));
+  SetupActiveTree(gfx::Size(10000, 10000), gfx::Size(256, 256));
 
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
 
   std::vector<Tile*> all_tiles;
-  AddTiling(low_res_factor, pending_layer_, &all_tiles);
-  AddTiling(0.3f, pending_layer_, &all_tiles);
-  AddTiling(0.7f, pending_layer_, &all_tiles);
-  AddTiling(1.0f, pending_layer_, &all_tiles);
-  AddTiling(2.0f, pending_layer_, &all_tiles);
+  AddTiling(low_res_factor, active_layer_, &all_tiles);
+  AddTiling(0.3f, active_layer_, &all_tiles);
+  AddTiling(0.7f, active_layer_, &all_tiles);
+  AddTiling(1.0f, active_layer_, &all_tiles);
+  AddTiling(2.0f, active_layer_, &all_tiles);
 
   ASSERT_TRUE(host_impl_.tile_manager() != nullptr);
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(all_tiles);
