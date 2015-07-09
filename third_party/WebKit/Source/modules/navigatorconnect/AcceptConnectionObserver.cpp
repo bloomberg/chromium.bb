@@ -200,6 +200,7 @@ AcceptConnectionObserver::AcceptConnectionObserver(ServicePortCollection* collec
 DEFINE_TRACE(AcceptConnectionObserver)
 {
     visitor->trace(m_collection);
+    visitor->trace(m_resolver);
     ContextLifecycleObserver::trace(visitor);
 }
 
