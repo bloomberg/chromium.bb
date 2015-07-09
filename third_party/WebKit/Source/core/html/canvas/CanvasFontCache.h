@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/css/StylePropertySet.h"
+#include "platform/fonts/Font.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebThread.h"
 #include "wtf/HashMap.h"
@@ -35,6 +36,7 @@ public:
     unsigned hardMaxFonts();
 
     void willUseCurrentFont() { schedulePruningIfNeeded(); }
+    bool getFontUsingDefaultStyle(const String&, Font&);
 
     // TaskObserver implementation
     virtual void didProcessTask();
@@ -50,10 +52,12 @@ private:
     void schedulePruningIfNeeded();
     typedef WillBeHeapHashMap<String, RefPtrWillBeMember<MutableStylePropertySet>> MutableStylePropertyMap;
 
+    HashMap<String, Font> m_fontsResolvedUsingDefaultStyle;
     MutableStylePropertyMap m_fetchedFonts;
     ListHashSet<String> m_fontLRUList;
     OwnPtr<FontCachePurgePreventer> m_mainCachePurgePreventer;
     RawPtrWillBeMember<Document> m_document;
+    RefPtr<ComputedStyle> m_defaultFontStyle;
     bool m_pruningScheduled;
 };
 

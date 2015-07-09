@@ -7,7 +7,9 @@
 #include "core/html/canvas/CanvasFontCache.h"
 
 #include "core/css/parser/CSSParser.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/fonts/FontCache.h"
 #include "public/platform/Platform.h"
 
@@ -16,6 +18,8 @@ namespace {
 const unsigned CanvasFontCacheMaxFonts = 50;
 const unsigned CanvasFontCacheHardMaxFonts = 250;
 const unsigned CanvasFontCacheHiddenMaxFonts = 1;
+const int defaultFontSize = 10;
+const char defaultFontFamily[] = "sans-serif";
 
 }
 
@@ -24,7 +28,17 @@ namespace blink {
 CanvasFontCache::CanvasFontCache(Document& document)
     : m_document(&document)
     , m_pruningScheduled(false)
-{ }
+{
+    FontFamily fontFamily;
+    fontFamily.setFamily(defaultFontFamily);
+    FontDescription defaultFontDescription;
+    defaultFontDescription.setFamily(fontFamily);
+    defaultFontDescription.setSpecifiedSize(defaultFontSize);
+    defaultFontDescription.setComputedSize(defaultFontSize);
+    m_defaultFontStyle = ComputedStyle::create();
+    m_defaultFontStyle->setFontDescription(defaultFontDescription);
+    m_defaultFontStyle->font().update(m_defaultFontStyle->font().fontSelector());
+}
 
 CanvasFontCache::~CanvasFontCache()
 {
@@ -42,6 +56,29 @@ unsigned CanvasFontCache::maxFonts()
 unsigned CanvasFontCache::hardMaxFonts()
 {
     return m_document->hidden() ? CanvasFontCacheHiddenMaxFonts : CanvasFontCacheHardMaxFonts;
+}
+
+bool CanvasFontCache::getFontUsingDefaultStyle(const String& fontString, Font& resolvedFont)
+{
+    HashMap<String, Font>::iterator i = m_fontsResolvedUsingDefaultStyle.find(fontString);
+    if (i != m_fontsResolvedUsingDefaultStyle.end()) {
+        ASSERT(m_fontLRUList.contains(fontString));
+        m_fontLRUList.remove(fontString);
+        m_fontLRUList.add(fontString);
+        resolvedFont = i->value;
+        return true;
+    }
+
+    // Addition to LRU list taken care of inside parseFont
+    MutableStylePropertySet* parsedStyle = parseFont(fontString);
+    if (!parsedStyle)
+        return false;
+
+    RefPtr<ComputedStyle> fontStyle = ComputedStyle::clone(*m_defaultFontStyle.get());
+    m_document->ensureStyleResolver().computeFont(fontStyle.get(), *parsedStyle);
+    m_fontsResolvedUsingDefaultStyle.add(fontString, fontStyle->font());
+    resolvedFont = m_fontsResolvedUsingDefaultStyle.find(fontString)->value;
+    return true;
 }
 
 MutableStylePropertySet* CanvasFontCache::parseFont(const String& fontString)
@@ -71,6 +108,7 @@ MutableStylePropertySet* CanvasFontCache::parseFont(const String& fontString)
             ASSERT(m_fetchedFonts.size() == hardMaxFonts() + 1);
             ASSERT(m_fontLRUList.size() == hardMaxFonts() + 1);
             m_fetchedFonts.remove(m_fontLRUList.first());
+            m_fontsResolvedUsingDefaultStyle.remove(m_fontLRUList.first());
             m_fontLRUList.removeFirst();
         }
     }
@@ -85,6 +123,7 @@ void CanvasFontCache::didProcessTask()
     ASSERT(m_mainCachePurgePreventer);
     while (m_fetchedFonts.size() > maxFonts()) {
         m_fetchedFonts.remove(m_fontLRUList.first());
+        m_fontsResolvedUsingDefaultStyle.remove(m_fontLRUList.first());
         m_fontLRUList.removeFirst();
     }
     m_mainCachePurgePreventer.clear();

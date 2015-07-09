@@ -76,8 +76,6 @@
 
 namespace blink {
 
-static const int defaultFontSize = 10;
-static const char defaultFontFamily[] = "sans-serif";
 static const char defaultFont[] = "10px sans-serif";
 static const char inherit[] = "inherit";
 static const char rtl[] = "rtl";
@@ -1715,41 +1713,35 @@ void CanvasRenderingContext2D::setFont(const String& newFont)
     if (!canvas()->document().frame())
         return;
 
-    MutableStylePropertySet* parsedStyle = canvas()->document().canvasFontCache()->parseFont(newFont);
+    CanvasFontCache* canvasFontCache = canvas()->document().canvasFontCache();
 
-    if (!parsedStyle)
-        return;
+    // Map the <canvas> font into the text style. If the font uses keywords like larger/smaller, these will work
+    // relative to the canvas.
+    RefPtr<ComputedStyle> fontStyle;
+    canvas()->document().updateLayoutTreeForNodeIfNeeded(canvas());
+    const ComputedStyle* computedStyle = canvas()->ensureComputedStyle();
+    if (computedStyle) {
+        MutableStylePropertySet* parsedStyle = canvasFontCache->parseFont(newFont);
+        if (!parsedStyle)
+            return;
+        fontStyle = ComputedStyle::create();
+        FontDescription elementFontDescription(computedStyle->fontDescription());
+        // Reset the computed size to avoid inheriting the zoom factor from the <canvas> element.
+        elementFontDescription.setComputedSize(elementFontDescription.specifiedSize());
+        fontStyle->setFontDescription(elementFontDescription);
+        fontStyle->font().update(fontStyle->font().fontSelector());
+        canvas()->document().ensureStyleResolver().computeFont(fontStyle.get(), *parsedStyle);
+        modifiableState().setFont(fontStyle->font(), canvas()->document().styleEngine().fontSelector());
+    } else {
+        Font resolvedFont;
+        if (!canvasFontCache->getFontUsingDefaultStyle(newFont, resolvedFont))
+            return;
+        modifiableState().setFont(resolvedFont, canvas()->document().styleEngine().fontSelector());
+    }
 
     // The parse succeeded.
     String newFontSafeCopy(newFont); // Create a string copy since newFont can be deleted inside realizeSaves.
     modifiableState().setUnparsedFont(newFontSafeCopy);
-
-    // Map the <canvas> font into the text style. If the font uses keywords like larger/smaller, these will work
-    // relative to the canvas.
-    RefPtr<ComputedStyle> newStyle = ComputedStyle::create();
-    canvas()->document().updateLayoutTreeForNodeIfNeeded(canvas());
-    if (const ComputedStyle* computedStyle = canvas()->ensureComputedStyle()) {
-        FontDescription elementFontDescription(computedStyle->fontDescription());
-        // Reset the computed size to avoid inheriting the zoom factor from the <canvas> element.
-        elementFontDescription.setComputedSize(elementFontDescription.specifiedSize());
-        newStyle->setFontDescription(elementFontDescription);
-    } else {
-        FontFamily fontFamily;
-        fontFamily.setFamily(defaultFontFamily);
-
-        FontDescription defaultFontDescription;
-        defaultFontDescription.setFamily(fontFamily);
-        defaultFontDescription.setSpecifiedSize(defaultFontSize);
-        defaultFontDescription.setComputedSize(defaultFontSize);
-
-        newStyle->setFontDescription(defaultFontDescription);
-    }
-
-    newStyle->font().update(newStyle->font().fontSelector());
-
-    canvas()->document().ensureStyleResolver().computeFont(newStyle.get(), *parsedStyle);
-
-    modifiableState().setFont(newStyle->font(), canvas()->document().styleEngine().fontSelector());
 }
 
 String CanvasRenderingContext2D::textAlign() const
