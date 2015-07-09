@@ -369,9 +369,6 @@ struct amdgpu_cs_query_fence {
 	/** In which context IB was sent to execution */
 	amdgpu_context_handle context;
 
-	/** Timeout in nanoseconds. */
-	uint64_t timeout_ns;
-
 	/** To which HW IP type the fence belongs */
 	unsigned ip_type;
 
@@ -380,9 +377,6 @@ struct amdgpu_cs_query_fence {
 
 	/** Ring index of the HW IP */
 	uint32_t ring;
-
-	/** Flags */
-	uint64_t flags;
 
 	/** Specify fence for which we need to check submission status.*/
 	uint64_t fence;
@@ -908,8 +902,9 @@ int amdgpu_cs_submit(amdgpu_context_handle context,
 /**
  *  Query status of Command Buffer Submission
  *
- * \param   dev	    - \c [in] Device handle. See #amdgpu_device_initialize()
  * \param   fence   - \c [in] Structure describing fence to query
+ * \param   timeout_ns - \c [in] Timeout value to wait
+ * \param   flags   - \c [in] Flags for the query
  * \param   expired - \c [out] If fence expired or not.\n
  *				0  – if fence is not expired\n
  *				!0 - otherwise
@@ -925,6 +920,8 @@ int amdgpu_cs_submit(amdgpu_context_handle context,
  * \sa amdgpu_cs_submit()
 */
 int amdgpu_cs_query_fence_status(struct amdgpu_cs_query_fence *fence,
+				 uint64_t timeout_ns,
+				 uint64_t flags,
 				 uint32_t *expired);
 
 /*

@@ -165,10 +165,11 @@ static int submit(unsigned ndw, unsigned ip)
 	resources[num_resources-1] = ib_handle;
 
 	fence_status.context = context_handle;
-	fence_status.timeout_ns = AMDGPU_TIMEOUT_INFINITE;
 	fence_status.ip_type = ip;
 
-	r = amdgpu_cs_query_fence_status(&fence_status, &expired);
+	r = amdgpu_cs_query_fence_status(&fence_status,
+					 AMDGPU_TIMEOUT_INFINITE,
+					 0, &expired);
 	if (r)
 		return r;
 

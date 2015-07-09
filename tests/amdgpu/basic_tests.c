@@ -215,10 +215,11 @@ static void amdgpu_command_submission_gfx_separate_ibs(void)
 	CU_ASSERT_EQUAL(r, 0);
 
 	fence_status.context = context_handle;
-	fence_status.timeout_ns = AMDGPU_TIMEOUT_INFINITE;
 	fence_status.ip_type = AMDGPU_HW_IP_GFX;
 
-	r = amdgpu_cs_query_fence_status(&fence_status, &expired);
+	r = amdgpu_cs_query_fence_status(&fence_status,
+					 AMDGPU_TIMEOUT_INFINITE,
+					 0, &expired);
 	CU_ASSERT_EQUAL(r, 0);
 
 	r = amdgpu_bo_free(ib_result_handle);
@@ -289,10 +290,11 @@ static void amdgpu_command_submission_gfx_shared_ib(void)
 	CU_ASSERT_EQUAL(r, 0);
 
 	fence_status.context = context_handle;
-	fence_status.timeout_ns = AMDGPU_TIMEOUT_INFINITE;
 	fence_status.ip_type = AMDGPU_HW_IP_GFX;
 
-	r = amdgpu_cs_query_fence_status(&fence_status, &expired);
+	r = amdgpu_cs_query_fence_status(&fence_status,
+					 AMDGPU_TIMEOUT_INFINITE,
+					 0, &expired);
 	CU_ASSERT_EQUAL(r, 0);
 
 	r = amdgpu_bo_free(ib_result_handle);
@@ -362,11 +364,12 @@ static void amdgpu_command_submission_compute(void)
 		CU_ASSERT_EQUAL(r, 0);
 
 		fence_status.context = context_handle;
-		fence_status.timeout_ns = AMDGPU_TIMEOUT_INFINITE;
 		fence_status.ip_type = AMDGPU_HW_IP_COMPUTE;
 		fence_status.ring = instance;
 
-		r = amdgpu_cs_query_fence_status(&fence_status, &expired);
+		r = amdgpu_cs_query_fence_status(&fence_status,
+						 AMDGPU_TIMEOUT_INFINITE,
+						 0, &expired);
 		CU_ASSERT_EQUAL(r, 0);
 
 		r = amdgpu_bo_list_destroy(bo_list);
@@ -446,10 +449,11 @@ static void amdgpu_sdma_test_exec_cs(amdgpu_context_handle context_handle,
 	fence_status.ip_type = AMDGPU_HW_IP_DMA;
 	fence_status.ring = ibs_request->ring;
 	fence_status.context = context_handle;
-	fence_status.timeout_ns = AMDGPU_TIMEOUT_INFINITE;
 
 	/* wait for IB accomplished */
-	r = amdgpu_cs_query_fence_status(&fence_status, &expired);
+	r = amdgpu_cs_query_fence_status(&fence_status,
+					 AMDGPU_TIMEOUT_INFINITE,
+					 0, &expired);
 	CU_ASSERT_EQUAL(r, 0);
 	CU_ASSERT_EQUAL(expired, true);
 

@@ -380,6 +380,8 @@ static int amdgpu_ioctl_wait_cs(amdgpu_context_handle context,
 }
 
 int amdgpu_cs_query_fence_status(struct amdgpu_cs_query_fence *fence,
+				 uint64_t timeout_ns,
+				 uint64_t flags,
 				 uint32_t *expired)
 {
 	amdgpu_context_handle context;
@@ -430,7 +432,7 @@ int amdgpu_cs_query_fence_status(struct amdgpu_cs_query_fence *fence,
 		}
 
 		/* Checking the user fence is enough. */
-		if (fence->timeout_ns == 0) {
+		if (timeout_ns == 0) {
 			pthread_mutex_unlock(&context->sequence_mutex);
 			return 0;
 		}
@@ -439,8 +441,8 @@ int amdgpu_cs_query_fence_status(struct amdgpu_cs_query_fence *fence,
 	pthread_mutex_unlock(&context->sequence_mutex);
 
 	r = amdgpu_ioctl_wait_cs(context, ip_type, ip_instance, ring,
-				 fence->fence, fence->timeout_ns,
-				 fence->flags, &busy);
+				 fence->fence, timeout_ns,
+				 flags, &busy);
 	if (!r && !busy) {
 		*expired = true;
 		pthread_mutex_lock(&context->sequence_mutex);
