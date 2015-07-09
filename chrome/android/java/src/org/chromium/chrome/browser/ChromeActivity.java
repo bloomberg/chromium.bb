@@ -215,7 +215,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         mWindowAndroid = ((ChromeApplication) getApplicationContext())
                 .createActivityWindowAndroid(this);
         mWindowAndroid.restoreInstanceState(getSavedInstanceState());
-        mSnackbarManager = new SnackbarManager(findViewById(android.R.id.content));
+        mSnackbarManager = new SnackbarManager(getWindow());
         mLoFiBarPopupController = new LoFiBarPopupController(this, getSnackbarManager());
 
         // Low end device UI should be allowed only after a fresh install or when the data has

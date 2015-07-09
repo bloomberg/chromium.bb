@@ -46,7 +46,7 @@ public class UndoIntegrationTest extends ChromeTabbedActivityTestBase {
     @Override
     public void startMainActivity() throws InterruptedException {
         CommandLine.getInstance().appendSwitch(ChromeSwitches.ENABLE_HIGH_END_UI_UNDO);
-        SnackbarManager.setTimeoutForTesting(1500);
+        SnackbarManager.setDurationForTesting(1500);
         startMainActivityOnBlankPage();
     }
 

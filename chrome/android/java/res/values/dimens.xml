@@ -254,10 +254,10 @@
     <dimen name="recent_tabs_visible_separator_padding">8dp</dimen>
     <dimen name="recent_tabs_promo_padding">16dp</dimen>
 
-    <!-- Undo bar -->
-    <dimen name="undo_bar_height">48dp</dimen>
-    <dimen name="undo_bar_tablet_width">450dp</dimen>
-    <dimen name="undo_bar_tablet_margin">24dp</dimen>
+    <!-- Snackbars -->
+    <dimen name="snackbar_min_height">48dp</dimen>
+    <dimen name="snackbar_tablet_width">450dp</dimen>
+    <dimen name="snackbar_tablet_margin">24dp</dimen>
 
     <!-- Bookmarks widget dimensions -->
     <dimen name="widget_thumbnail_height">94dp</dimen>

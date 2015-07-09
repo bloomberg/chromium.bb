@@ -4,35 +4,35 @@
      found in the LICENSE file. -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/undobar"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/undo_bar_height"
+    android:layout_height="wrap_content"
     android:background="#282C32"
-    android:orientation="horizontal" >
+    android:minHeight="@dimen/snackbar_min_height"
+    android:orientation="horizontal"
+    android:paddingTop="14dp"
+    android:paddingBottom="14dp" >
 
     <org.chromium.chrome.browser.snackbar.TemplatePreservingTextView
-        android:id="@+id/undobar_message"
+        android:id="@+id/snackbar_message"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_gravity="start|center_vertical"
         android:layout_marginStart="24dp"
         android:layout_weight="1"
-        android:singleLine="true"
         android:textAlignment="viewStart"
         android:textColor="@android:color/white"
         android:textSize="14sp" />
 
     <TextView
-        android:id="@+id/undobar_button"
+        android:id="@+id/snackbar_button"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:fontFamily="sans-serif-medium"
         android:gravity="center_vertical"
         android:paddingEnd="24dp"
         android:paddingStart="24dp"
-        android:text="@string/undo_bar_button_text"
         android:textAllCaps="true"
-        android:textColor="@color/snack_bar_button_color"
+        android:textColor="@color/snackbar_button_color"
         android:textSize="14sp" />
 
 </LinearLayout>

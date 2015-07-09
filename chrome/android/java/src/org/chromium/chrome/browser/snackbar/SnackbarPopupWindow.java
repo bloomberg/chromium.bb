@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
@@ -14,10 +15,10 @@ import org.chromium.chrome.R;
 import org.chromium.ui.base.DeviceFormFactor;
 
 /**
- * Visual representation of a snackbar. On phone it has weight the same as entire activity, on
- * tablet it has a fixed width anchored at start-bottom corner of current window.
+ * Visual representation of a snackbar. On phone it fills the width of the activity; on tablet it
+ * has a fixed width and is anchored at the start-bottom corner of the current window.
  */
-public class SnackbarPopupWindow extends PopupWindow {
+class SnackbarPopupWindow extends PopupWindow {
     private final TemplatePreservingTextView mMessageView;
     private final TextView mActionButtonView;
     private final int mAnimationDuration;
@@ -25,19 +26,15 @@ public class SnackbarPopupWindow extends PopupWindow {
     /**
      * Creates an instance of the {@link SnackbarPopupWindow}.
      * @param parent Parent View the popup window anchors to
-     * @param listener An {@link OnClickListener} that will be called when the undo button is
+     * @param listener An {@link OnClickListener} that will be called when the action button is
      *                 clicked.
-     * @param template Format String to display on popup (e.g. "Closed %s").
-     * @param description Text showing at start of snackbar.
-     * @param actionText Text of action button at the end of snackbar.
+     * @param snackbar The snackbar to be displayed.
      */
-    public SnackbarPopupWindow(View parent, OnClickListener listener, String template,
-            String description, String actionText) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.snack_bar, null);
+    SnackbarPopupWindow(View parent, OnClickListener listener, Snackbar snackbar) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.snackbar, null);
         setContentView(view);
-        mMessageView = (TemplatePreservingTextView) view.findViewById(R.id.undobar_message);
-        mActionButtonView = (TextView) view.findViewById(R.id.undobar_button);
-        setTextViews(template, description, actionText, false);
+        mMessageView = (TemplatePreservingTextView) view.findViewById(R.id.snackbar_message);
+        mActionButtonView = (TextView) view.findViewById(R.id.snackbar_button);
         mAnimationDuration = view.getResources().getInteger(
                 android.R.integer.config_mediumAnimTime);
         mActionButtonView.setOnClickListener(listener);
@@ -45,11 +42,12 @@ public class SnackbarPopupWindow extends PopupWindow {
         // Set width and height of popup window
         boolean isTablet = DeviceFormFactor.isTablet(parent.getContext());
         setWidth(isTablet
-                ? parent.getResources().getDimensionPixelSize(R.dimen.undo_bar_tablet_width)
+                ? parent.getResources().getDimensionPixelSize(R.dimen.snackbar_tablet_width)
                 : parent.getWidth());
 
-        setHeight(parent.getResources().getDimensionPixelSize(R.dimen.undo_bar_height));
-        setAnimationStyle(R.style.SnackbarAnimation);
+        setWindowLayoutMode(0, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        update(snackbar, false);
     }
 
     @Override
@@ -60,21 +58,19 @@ public class SnackbarPopupWindow extends PopupWindow {
     }
 
     /**
-     * Sets the text of TextViews in snackbar. If this popup bar is already visible it
-     * will animate the new text alpha, otherwise it will only set the text.
-     * @param template Template that description textview takes to format string.
-     * @param description The content text of that show at start of snackbar.
-     * @param actionText Text for action button to show.
-     * @param animate Whether or not to animate the text in or set it.
+     * Updates the view to display data from the given snackbar.
+     *
+     * @param snackbar The snackbar to display
+     * @param animate Whether or not to animate the text in or set it immediately
      */
-    public void setTextViews(String template, String description, String actionText,
-            boolean animate) {
-        mMessageView.setTemplate(template);
-        setViewText(mMessageView, description, animate);
-        setViewText(mActionButtonView, actionText, animate);
+    void update(Snackbar snackbar, boolean animate) {
+        mMessageView.setMaxLines(snackbar.getSingleLine() ? 1 : Integer.MAX_VALUE);
+        mMessageView.setTemplate(snackbar.getTemplateText());
+        setViewText(mMessageView, snackbar.getText(), animate);
+        setViewText(mActionButtonView, snackbar.getActionText(), animate);
     }
 
-    private void setViewText(TextView view, String text, boolean animate) {
+    private void setViewText(TextView view, CharSequence text, boolean animate) {
         if (view.getText().toString().equals(text)) return;
         view.animate().cancel();
         if (animate) {
@@ -90,7 +86,7 @@ public class SnackbarPopupWindow extends PopupWindow {
      * Sends an accessibility event to mMessageView announcing that this window was added so that
      * the mMessageView content description is read aloud if accessibility is enabled.
      */
-    public void announceforAccessibility() {
+    void announceforAccessibility() {
         mMessageView.announceForAccessibility(mMessageView.getContentDescription());
     }
 }

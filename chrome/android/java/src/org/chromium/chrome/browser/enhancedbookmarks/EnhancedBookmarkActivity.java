@@ -25,7 +25,7 @@ public class EnhancedBookmarkActivity extends EnhancedBookmarkActivityBase imple
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mSnackbarManager = new SnackbarManager(findViewById(android.R.id.content));
+        mSnackbarManager = new SnackbarManager(getWindow());
         mBookmarkManager = new EnhancedBookmarkManager(this);
         setContentView(mBookmarkManager.getView());
         EnhancedBookmarkUtils.setTaskDescriptionInDocumentMode(this, getString(R.string.bookmarks));
