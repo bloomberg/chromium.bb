@@ -82,8 +82,12 @@ const uint8_t orphanedZapValue = 240;
 // In production builds, memory is not zapped (for performance). The memory
 // is just zeroed out when it is added to the free list.
 #if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
-#define FILL_ZERO_IF_PRODUCTION(address, size) FreeList::zapFreedMemory(address, size)
-#define FILL_ZERO_IF_NOT_PRODUCTION(address, size) memset((address), 0, (size))
+#define FILL_ZERO_IF_PRODUCTION(address, size) \
+    FreeList::zapFreedMemory(address, size);   \
+    ASAN_POISON_MEMORY_REGION(address, size)
+#define FILL_ZERO_IF_NOT_PRODUCTION(address, size) \
+    memset((address), 0, (size));                  \
+    ASAN_UNPOISON_MEMORY_REGION(address, size)
 #else
 #define FILL_ZERO_IF_PRODUCTION(address, size) memset((address), 0, (size))
 #define FILL_ZERO_IF_NOT_PRODUCTION(address, size) do { } while (false)
@@ -1317,7 +1321,6 @@ inline Address NormalPageHeap::allocateObject(size_t allocationSize, size_t gcIn
         ASSERT(!(reinterpret_cast<uintptr_t>(result) & allocationMask));
 
         // Unpoison the memory used for the object (payload).
-        ASAN_UNPOISON_MEMORY_REGION(result, allocationSize - sizeof(HeapObjectHeader));
         FILL_ZERO_IF_NOT_PRODUCTION(result, allocationSize - sizeof(HeapObjectHeader));
         ASSERT(findPageFromAddress(headerAddress + allocationSize - 1));
         return result;
