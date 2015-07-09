@@ -4,9 +4,8 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/task_management/providers/task_provider_observer.h"
 #include "chrome/browser/task_management/providers/web_contents/web_contents_tags_manager.h"
-#include "chrome/browser/task_management/providers/web_contents/web_contents_task_provider.h"
+#include "chrome/browser/task_management/task_management_browsertest_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/switches.h"
@@ -18,9 +17,7 @@ namespace task_management {
 // properly and the TagsManager records these tags. It is also used to test that
 // the WebContentsTaskProvider will be able to provide the appropriate
 // BackgroundContentsTask.
-class BackgroundContentsTagTest
-    : public ExtensionBrowserTest,
-      public TaskProviderObserver {
+class BackgroundContentsTagTest : public ExtensionBrowserTest {
  public:
   BackgroundContentsTagTest() {}
   ~BackgroundContentsTagTest() override {}
@@ -37,109 +34,92 @@ class BackgroundContentsTagTest
                                       base::UTF8ToUTF16(extension->name()));
   }
 
-  // task_management::Task_providerObserver:
-  void TaskAdded(Task* task) override {
-    CHECK(task);
-    ASSERT_FALSE(provided_tasks_.count(task));
-    provided_tasks_.insert(task);
-  }
-
-  void TaskRemoved(Task* task) override {
-    CHECK(task);
-    ASSERT_TRUE(provided_tasks_.count(task));
-    provided_tasks_.erase(task);
-  }
-
   WebContentsTagsManager* tags_manager() const {
     return WebContentsTagsManager::GetInstance();
   }
 
-  const std::set<Task*>& provided_tasks() const { return provided_tasks_; }
-
  protected:
-  // ExtensionApiTest:
+  // ExtensionBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Pass flags to make testing apps easier.
     ExtensionBrowserTest::SetUpCommandLine(command_line);
     test_data_dir_ = test_data_dir_.AppendASCII("api_test");
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisablePopupBlocking);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        extensions::switches::kAllowHTTPBackgroundPage);
+    command_line->AppendSwitch(switches::kDisableRendererBackgrounding);
+    command_line->AppendSwitch(switches::kDisablePopupBlocking);
+    command_line->AppendSwitch(extensions::switches::kAllowHTTPBackgroundPage);
   }
 
  private:
-  std::set<Task*> provided_tasks_;
-
   DISALLOW_COPY_AND_ASSIGN(BackgroundContentsTagTest);
 };
 
 // Tests that loading an extension that has a background contents will result in
 // the tags manager recording a WebContentsTag.
 IN_PROC_BROWSER_TEST_F(BackgroundContentsTagTest, TagsManagerRecordsATag) {
-  EXPECT_TRUE(provided_tasks().empty());
-  EXPECT_TRUE(tags_manager()->tracked_tags().empty());
-  EXPECT_TRUE(LoadBackgroundExtension());
-  EXPECT_FALSE(tags_manager()->tracked_tags().empty());
+  // Browser tests start with only one tab available.
   EXPECT_EQ(1U, tags_manager()->tracked_tags().size());
-  EXPECT_TRUE(provided_tasks().empty());
+  auto extension = LoadBackgroundExtension();
+  ASSERT_NE(nullptr, extension);
+  EXPECT_EQ(2U, tags_manager()->tracked_tags().size());
+
+  // Unload the extension.
+  UnloadExtension(extension->id());
+  EXPECT_EQ(1U, tags_manager()->tracked_tags().size());
 }
 
 // Tests that background contents creation while the provider is being observed
 // will also provide tasks.
 IN_PROC_BROWSER_TEST_F(BackgroundContentsTagTest, TasksProvidedWhileObserving) {
-  EXPECT_TRUE(provided_tasks().empty());
-  EXPECT_TRUE(tags_manager()->tracked_tags().empty());
+  MockWebContentsTaskManager task_manager;
+  EXPECT_TRUE(task_manager.tasks().empty());
+  // Browser tests start with only one tab available.
+  EXPECT_EQ(1U, tags_manager()->tracked_tags().size());
 
-  WebContentsTaskProvider provider;
-  provider.SetObserver(this);
+  task_manager.StartObserving();
 
-  // Still empty, no pre-existing tasks.
-  EXPECT_TRUE(provided_tasks().empty());
+  // The pre-existing tab is provided.
+  EXPECT_EQ(1U, task_manager.tasks().size());
 
   auto extension = LoadBackgroundExtension();
   ASSERT_NE(nullptr, extension);
-  EXPECT_FALSE(tags_manager()->tracked_tags().empty());
-  EXPECT_EQ(1U, tags_manager()->tracked_tags().size());
-  EXPECT_FALSE(provided_tasks().empty());
-  EXPECT_EQ(1U, provided_tasks().size());
+  EXPECT_EQ(2U, tags_manager()->tracked_tags().size());
+  EXPECT_EQ(2U, task_manager.tasks().size());
 
-  // Now check the provided task.
-  const Task* task = *provided_tasks().begin();
+  // Now check the newly provided task.
+  const Task* task = task_manager.tasks().back();
   EXPECT_EQ(Task::RENDERER, task->GetType());
   EXPECT_EQ(GetBackgroundTaskExpectedName(extension), task->title());
 
   // Unload the extension.
   UnloadExtension(extension->id());
-  EXPECT_TRUE(provided_tasks().empty());
-  EXPECT_TRUE(tags_manager()->tracked_tags().empty());
+  EXPECT_EQ(1U, task_manager.tasks().size());
+  EXPECT_EQ(1U, tags_manager()->tracked_tags().size());
 }
 
 // Tests providing a pre-existing background task to the observing operation.
 IN_PROC_BROWSER_TEST_F(BackgroundContentsTagTest, PreExistingTasksAreProvided) {
-  EXPECT_TRUE(provided_tasks().empty());
-  EXPECT_TRUE(tags_manager()->tracked_tags().empty());
+  MockWebContentsTaskManager task_manager;
+  EXPECT_TRUE(task_manager.tasks().empty());
+  // Browser tests start with only one tab available.
+  EXPECT_EQ(1U, tags_manager()->tracked_tags().size());
   auto extension = LoadBackgroundExtension();
   ASSERT_NE(nullptr, extension);
-  EXPECT_FALSE(tags_manager()->tracked_tags().empty());
-  EXPECT_EQ(1U, tags_manager()->tracked_tags().size());
+  EXPECT_EQ(2U, tags_manager()->tracked_tags().size());
 
-  WebContentsTaskProvider provider;
-  provider.SetObserver(this);
+  task_manager.StartObserving();
 
   // Pre-existing task will be provided to us.
-  EXPECT_FALSE(provided_tasks().empty());
-  EXPECT_EQ(1U, provided_tasks().size());
+  EXPECT_EQ(2U, task_manager.tasks().size());
 
   // Now check the provided task.
-  const Task* task = *provided_tasks().begin();
+  const Task* task = task_manager.tasks().back();
   EXPECT_EQ(Task::RENDERER, task->GetType());
   EXPECT_EQ(GetBackgroundTaskExpectedName(extension), task->title());
 
   // Unload the extension.
   UnloadExtension(extension->id());
-  EXPECT_TRUE(provided_tasks().empty());
-  EXPECT_TRUE(tags_manager()->tracked_tags().empty());
+  EXPECT_EQ(1U, task_manager.tasks().size());
+  EXPECT_EQ(1U, tags_manager()->tracked_tags().size());
 }
 
 }  // namespace task_management

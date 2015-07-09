@@ -255,11 +255,15 @@ void WebContentsEntry::ClearTaskForFrame(RenderFrameHost* render_frame_host) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-WebContentsTaskProvider::WebContentsTaskProvider() : entries_map_() {
+WebContentsTaskProvider::WebContentsTaskProvider()
+    : entries_map_(),
+      is_updating_(false) {
 }
 
 WebContentsTaskProvider::~WebContentsTaskProvider() {
-  STLDeleteValues(&entries_map_);
+  if (is_updating_) {
+    StopUpdating();
+  }
 }
 
 void WebContentsTaskProvider::OnWebContentsTagCreated(
@@ -328,6 +332,8 @@ bool WebContentsTaskProvider::HasWebContents(
 }
 
 void WebContentsTaskProvider::StartUpdating() {
+  is_updating_ = true;
+
   // 1- Collect all pre-existing WebContents from the WebContentsTagsManager.
   WebContentsTagsManager* tags_manager = WebContentsTagsManager::GetInstance();
   for (auto& tag : tags_manager->tracked_tags())
@@ -338,6 +344,8 @@ void WebContentsTaskProvider::StartUpdating() {
 }
 
 void WebContentsTaskProvider::StopUpdating() {
+  is_updating_ = false;
+
   // 1- Stop observing.
   WebContentsTagsManager::GetInstance()->ClearProvider();
 

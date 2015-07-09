@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_TASK_MANAGEMENT_PROVIDERS_WEB_CONTENTS_WEB_CONTENTS_TAGS_MANAGER_H_
 #define CHROME_BROWSER_TASK_MANAGEMENT_PROVIDERS_WEB_CONTENTS_WEB_CONTENTS_TAGS_MANAGER_H_
 
-#include <set>
+#include <vector>
 
 #include "chrome/browser/task_management/providers/web_contents/web_contents_tag.h"
 
@@ -39,7 +39,7 @@ class WebContentsTagsManager {
   // or else the corresponding task for the |tag| will continue to exist.
   void ClearFromProvider(const WebContentsTag* tag);
 
-  const std::set<WebContentsTag*>& tracked_tags() const {
+  const std::vector<WebContentsTag*>& tracked_tags() const {
     return tracked_tags_;
   }
 
@@ -53,7 +53,7 @@ class WebContentsTagsManager {
   WebContentsTaskProvider* provider_;
 
   // A set of all the WebContentsTags seen so far.
-  std::set<WebContentsTag*> tracked_tags_;
+  std::vector<WebContentsTag*> tracked_tags_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsTagsManager);
 };

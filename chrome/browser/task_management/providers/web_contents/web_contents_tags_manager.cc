@@ -16,7 +16,7 @@ WebContentsTagsManager* WebContentsTagsManager::GetInstance() {
 
 void WebContentsTagsManager::AddTag(WebContentsTag* tag) {
   DCHECK(tag);
-  tracked_tags_.insert(tag);
+  tracked_tags_.push_back(tag);
 
   if (provider_)
     provider_->OnWebContentsTagCreated(tag);
@@ -24,7 +24,9 @@ void WebContentsTagsManager::AddTag(WebContentsTag* tag) {
 
 void WebContentsTagsManager::RemoveTag(WebContentsTag* tag) {
   DCHECK(tag);
-  tracked_tags_.erase(tag);
+  tracked_tags_.erase(std::find(tracked_tags_.begin(),
+                                tracked_tags_.end(),
+                                tag));
 
   // No need to inform the provider here. The provider will create an entry
   // for each WebContents it's tracking which is a WebContentsObserver and
