@@ -4,12 +4,12 @@
 
 package org.chromium.chrome.browser.crash;
 
-import android.util.Log;
-
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.regex.Matcher;
@@ -30,8 +30,11 @@ public class CrashFileManager {
     @VisibleForTesting
     static final String CRASH_DUMP_LOGFILE = CRASH_DUMP_DIR + "/uploads.log";
 
+    private static final Pattern MINIDUMP_FIRST_TRY_PATTERN =
+            Pattern.compile("\\.dmp([0-9]*)$\\z");
+
     private static final Pattern MINIDUMP_PATTERN =
-            Pattern.compile("\\.dmp([0-9]*)(.try[0-9])?\\z");
+            Pattern.compile("\\.dmp([0-9]*)(\\.try[0-9])?\\z");
 
     private static final Pattern UPLOADED_MINIDUMP_PATTERN = Pattern.compile("\\.up([0-9]*)\\z");
 
@@ -64,6 +67,10 @@ public class CrashFileManager {
             Log.w(TAG, "Unable to delete " + fileToDelete.getAbsolutePath());
         }
         return isSuccess;
+    }
+
+    public File[] getMinidumpWithoutLogcat() {
+        return getMatchingFiles(MINIDUMP_FIRST_TRY_PATTERN);
     }
 
     public static String tryIncrementAttemptNumber(File mFileToUpload) {
@@ -190,6 +197,23 @@ public class CrashFileManager {
     @VisibleForTesting
     File getCrashDirectory() {
         return new File(mCacheDir, CRASH_DUMP_DIR);
+    }
+
+    public File createNewTempFile(String name) throws IOException {
+        File f = new File(getCrashDirectory(), name);
+        if (f.exists()) {
+            if (f.delete()) {
+                f = new File(getCrashDirectory(), name);
+            } else {
+                Log.w(TAG, "Unable to delete previous logfile"
+                        + f.getAbsolutePath());
+            }
+        }
+        return f;
+    }
+
+    File getCrashFile(String filename) {
+        return new File(getCrashDirectory(), filename);
     }
 
     File getCrashUploadLogFile() {

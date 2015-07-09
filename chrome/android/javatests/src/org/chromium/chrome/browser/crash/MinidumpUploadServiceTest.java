@@ -62,6 +62,8 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
         Intent findAndUploadLastCrashIntent =
                 MinidumpUploadService.createFindAndUploadLastCrashIntent(context);
         service.onCreate();
+        findAndUploadLastCrashIntent.putExtra(
+                MinidumpUploadService.FINISHED_LOGCAT_EXTRACTION_KEY, true);
         service.onHandleIntent(findAndUploadLastCrashIntent);
 
         // Verify.
@@ -98,6 +100,8 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
         // Run test.
         Intent findAndUploadLastCrashIntent =
                 MinidumpUploadService.createFindAndUploadLastCrashIntent(context);
+        findAndUploadLastCrashIntent.putExtra(
+                MinidumpUploadService.FINISHED_LOGCAT_EXTRACTION_KEY, true);
         service.onCreate();
         service.onHandleIntent(findAndUploadLastCrashIntent);
 
@@ -140,6 +144,8 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
         // Run test.
         Intent findAndUploadAllCrashesIntent =
                 MinidumpUploadService.createFindAndUploadAllCrashesIntent(context);
+        findAndUploadAllCrashesIntent.putExtra(
+                MinidumpUploadService.FINISHED_LOGCAT_EXTRACTION_KEY, true);
         service.onCreate();
         service.onHandleIntent(findAndUploadAllCrashesIntent);
 
@@ -298,6 +304,8 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
         // Run test.
         Intent uploadIntent =
                 MinidumpUploadService.createUploadIntent(context, minidumpFile, logfile);
+        uploadIntent.putExtra(
+                MinidumpUploadService.FINISHED_LOGCAT_EXTRACTION_KEY, true);
         service.onCreate();
         service.onHandleIntent(uploadIntent);
 

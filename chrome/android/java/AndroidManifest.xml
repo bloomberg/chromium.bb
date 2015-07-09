@@ -540,6 +540,10 @@ by a child template that "extends" this file.
               <category android:name="android.intent.category.CUSTOM_TABS" />
             </intent-filter>
         </service>
+        <service android:name="org.chromium.chrome.browser.crash.LogcatExtractionService"
+                 android:exported="false"/>
+        <service android:name="org.chromium.chrome.browser.crash.MinidumpPreparationService"
+                 android:exported="false"/>
         <service android:name="org.chromium.chrome.browser.crash.MinidumpUploadService"
             android:exported="false"/>
 

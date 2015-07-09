@@ -40,6 +40,7 @@ public class MinidumpUploadService extends IntentService {
     @VisibleForTesting
     static final String FILE_TO_UPLOAD_KEY = "minidump_file";
     static final String UPLOAD_LOG_KEY = "upload_log";
+    static final String FINISHED_LOGCAT_EXTRACTION_KEY = "upload_extraction_completed";
 
     /**
      * The number of times we will try to upload a crash.
@@ -50,6 +51,25 @@ public class MinidumpUploadService extends IntentService {
     public MinidumpUploadService() {
         super(TAG);
         setIntentRedelivery(true);
+    }
+
+    /**
+     * Attempts to populate logcat dumps to be associated with the minidumps
+     * if they do not already exists.
+     */
+    private void tryPopulateLogcat(Intent redirectAction) {
+        redirectAction.putExtra(FINISHED_LOGCAT_EXTRACTION_KEY, true);
+
+        Context context = getApplicationContext();
+        CrashFileManager fileManager = new CrashFileManager(context.getCacheDir());
+        File[] dumps = fileManager.getMinidumpWithoutLogcat();
+
+        if (dumps.length == 0) {
+            onHandleIntent(redirectAction);
+            return;
+        }
+        context.startService(LogcatExtractionService.createLogcatExtractionTask(
+                context, dumps, redirectAction));
     }
 
     @Override
@@ -75,7 +95,12 @@ public class MinidumpUploadService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         if (intent == null) return;
-        if (ACTION_FIND_LAST.equals(intent.getAction())) {
+        if (!intent.getBooleanExtra(FINISHED_LOGCAT_EXTRACTION_KEY, false)) {
+            // The current intent was sent before a chance to gather some
+            // logcat information. tryPopulateLogcat will re-send the
+            // same action once it has a go at gather logcat.
+            tryPopulateLogcat(intent);
+        } else if (ACTION_FIND_LAST.equals(intent.getAction())) {
             handleFindAndUploadLastCrash(intent);
         } else if (ACTION_FIND_ALL.equals(intent.getAction())) {
             handleFindAndUploadAllCrashes();
@@ -123,6 +148,9 @@ public class MinidumpUploadService extends IntentService {
         File minidumpFile = minidumpFiles[0];
         File logfile = fileManager.getCrashUploadLogFile();
         Intent uploadIntent = createUploadIntent(getApplicationContext(), minidumpFile, logfile);
+
+        // We should have at least one chance to secure logcat to the minidump now.
+        uploadIntent.putExtra(FINISHED_LOGCAT_EXTRACTION_KEY, true);
         startService(uploadIntent);
     }
 
@@ -174,7 +202,7 @@ public class MinidumpUploadService extends IntentService {
         File minidumpFile = new File(minidumpFileName);
         if (!minidumpFile.isFile()) {
             Log.w(TAG, "Cannot upload crash data since specified minidump "
-                    + minidumpFileName + "is not present.");
+                    + minidumpFileName + " is not present.");
             return;
         }
         int tries = CrashFileManager.readAttemptNumber(minidumpFileName);
