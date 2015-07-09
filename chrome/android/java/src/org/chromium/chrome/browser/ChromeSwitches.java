@@ -163,7 +163,7 @@ public abstract class ChromeSwitches {
     public static final String DISABLE_DOMAIN_RELIABILITY = "disable-domain-reliability";
 
     /**
-     * Enable use of native Android spellchecker.
+     * Enable use of Android's built-in spellchecker.
      * Native switch - switches::kEnableAndroidSpellChecker
      */
     public static final String ENABLE_ANDROID_SPELLCHECKER = "enable-android-spellchecker";

@@ -72,7 +72,7 @@ void SpellCheckProvider::RequestTextChecking(
   last_request_.clear();
   last_results_.assign(blink::WebVector<blink::WebTextCheckingResult>());
 
-#if defined(OS_MACOSX)
+#if defined(USE_PLATFORM_SPELLCHECKER)
   // Text check (unified request for grammar and spell check) is only
   // available for browser process, so we ask the system spellchecker
   // over IPC or return an empty result if the checker is not
@@ -88,17 +88,17 @@ void SpellCheckProvider::RequestTextChecking(
       text_check_completions_.Add(completion),
       base::string16(text),
       markers));
-#endif  // !OS_MACOSX
+#endif  // !USE_PLATFORM_SPELLCHECKER
 }
 
 bool SpellCheckProvider::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SpellCheckProvider, message)
-#if !defined(OS_MACOSX)
+#if !defined(USE_PLATFORM_SPELLCHECKER)
     IPC_MESSAGE_HANDLER(SpellCheckMsg_RespondSpellingService,
                         OnRespondSpellingService)
 #endif
-#if defined(OS_MACOSX)
+#if defined(USE_PLATFORM_SPELLCHECKER)
     IPC_MESSAGE_HANDLER(SpellCheckMsg_AdvanceToNextMisspelling,
                         OnAdvanceToNextMisspelling)
     IPC_MESSAGE_HANDLER(SpellCheckMsg_RespondTextCheck, OnRespondTextCheck)
@@ -110,7 +110,7 @@ bool SpellCheckProvider::OnMessageReceived(const IPC::Message& message) {
 }
 
 void SpellCheckProvider::FocusedNodeChanged(const blink::WebNode& unused) {
-#if defined(OS_MACOSX)
+#if defined(USE_PLATFORM_SPELLCHECKER)
   WebFrame* frame = render_view()->GetWebView()->focusedFrame();
   WebElement element = frame->document().isNull() ? WebElement() :
       frame->document().focusedElement();
@@ -120,7 +120,7 @@ void SpellCheckProvider::FocusedNodeChanged(const blink::WebNode& unused) {
       frame->isContinuousSpellCheckingEnabled();
 
   Send(new SpellCheckHostMsg_ToggleSpellCheck(routing_id(), enabled, checked));
-#endif  // OS_MACOSX
+#endif  // USE_PLATFORM_SPELLCHECKER
 }
 
 void SpellCheckProvider::spellCheck(
@@ -186,7 +186,7 @@ WebString SpellCheckProvider::autoCorrectWord(const WebString& word) {
 }
 
 void SpellCheckProvider::showSpellingUI(bool show) {
-#if defined(OS_MACOSX)
+#if defined(USE_PLATFORM_SPELLCHECKER)
   UMA_HISTOGRAM_BOOLEAN("SpellCheck.api.showUI", show);
   Send(new SpellCheckHostMsg_ShowSpellingPanel(routing_id(), show));
 #endif
@@ -198,13 +198,13 @@ bool SpellCheckProvider::isShowingSpellingUI() {
 
 void SpellCheckProvider::updateSpellingUIWithMisspelledWord(
     const WebString& word) {
-#if defined(OS_MACOSX)
+#if defined(USE_PLATFORM_SPELLCHECKER)
   Send(new SpellCheckHostMsg_UpdateSpellingPanelWithMisspelledWord(routing_id(),
                                                                    word));
 #endif
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(USE_PLATFORM_SPELLCHECKER)
 void SpellCheckProvider::OnRespondSpellingService(
     int identifier,
     bool succeeded,
@@ -253,7 +253,7 @@ bool SpellCheckProvider::HasWordCharacters(
   return false;
 }
 
-#if defined(OS_MACOSX)
+#if defined(USE_PLATFORM_SPELLCHECKER)
 void SpellCheckProvider::OnAdvanceToNextMisspelling() {
   if (!render_view()->GetWebView())
     return;

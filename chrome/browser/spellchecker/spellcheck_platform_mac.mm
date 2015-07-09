@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Integration with OS X native spellchecker.
+// Integration with OS X built-in spellchecker.
 
 #include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
 

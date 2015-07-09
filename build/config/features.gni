@@ -125,6 +125,9 @@ use_udev = is_linux
 # Enable the spell checker.
 enable_spellcheck = !is_android
 
+# Use the operating system's spellchecker rather than hunspell.
+use_platform_spellchecker = is_android || is_mac
+
 enable_pepper_cdms = enable_plugins && (is_linux || is_mac || is_win)
 
 # Enable basic printing support and UI.

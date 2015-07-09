@@ -386,7 +386,7 @@ void SpellCheck::PostDelayedSpellCheckTask(SpellcheckRequest* request) {
 }
 #endif
 
-#if !defined(OS_MACOSX)  // Mac uses its native engine instead.
+#if !defined(OS_MACOSX)  // Mac uses its platform engine instead.
 void SpellCheck::PerformSpellCheck(SpellcheckRequest* param) {
   DCHECK(param);
 

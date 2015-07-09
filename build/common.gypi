@@ -567,6 +567,10 @@
       # Enable spell checker.
       'enable_spellcheck%': 1,
 
+      # Use the operating system spellchecker, e.g. NSSpellChecker on Mac or
+      # SpellCheckerSession on Android.
+      'use_platform_spellchecker%': 0,
+
       # Webrtc compilation is enabled by default. Set to 0 to disable.
       'enable_webrtc%': 1,
 
@@ -817,6 +821,11 @@
           'enable_print_preview%': 0,
           'enable_task_manager%':0,
           'video_hole%': 1,
+        }],
+
+        # OSX has a built-in spellchecker can be utilized.
+        ['OS=="mac"', {
+          'use_platform_spellchecker%': 1,
         }],
 
         # Android OS includes support for proprietary codecs regardless of
@@ -1194,6 +1203,7 @@
     'enable_basic_printing%': '<(enable_basic_printing)',
     'enable_print_preview%': '<(enable_print_preview)',
     'enable_spellcheck%': '<(enable_spellcheck)',
+    'use_platform_spellchecker%': '<(use_platform_spellchecker)',
     'enable_google_now%': '<(enable_google_now)',
     'cld_version%': '<(cld_version)',
     'cld2_table_size%': '<(cld2_table_size)',
@@ -2984,6 +2994,9 @@
       }],
       ['enable_spellcheck==1', {
         'defines': ['ENABLE_SPELLCHECK=1'],
+      }],
+      ['use_platform_spellchecker', {
+        'defines': ['USE_PLATFORM_SPELLCHECKER=1'],
       }],
       ['enable_captive_portal_detection==1', {
         'defines': ['ENABLE_CAPTIVE_PORTAL_DETECTION=1'],
