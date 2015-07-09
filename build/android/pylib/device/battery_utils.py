@@ -80,9 +80,9 @@ _DEVICE_PROFILES = [
         'echo Connected > '
         '/sys/bus/i2c/drivers/bq2419x/0-006b/input_cable_state && '
         'dumpsys battery set ac 0 && dumpsys battery set usb 0'),
-    'charge_counter': None,
-    'voltage': '/sys/class/power_supply/max170xx_battery/voltage_now',
-    'current': '/sys/class/power_supply/max170xx_battery/current_now',
+    'charge_counter': '/sys/class/power_supply/battery/charge_counter_ext',
+    'voltage': '/sys/class/power_supply/battery/voltage_now',
+    'current': '/sys/class/power_supply/battery/current_now',
   },
   {
     'name': 'Nexus 10',
