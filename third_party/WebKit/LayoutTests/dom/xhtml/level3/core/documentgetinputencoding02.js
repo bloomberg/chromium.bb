@@ -95,7 +95,7 @@ function documentgetinputencoding02() {
       }
       doc = load(docRef, "doc", "barfoo");
       domImpl = doc.implementation;
-docElem = doc.documentElement;
+      docElem = doc.documentElement;
 
       rootNS = docElem.namespaceURI;
 
@@ -104,8 +104,7 @@ docElem = doc.documentElement;
       newDoc = domImpl.createDocument(rootNS,rootName,nullDocType);
       encodingName = newDoc.inputEncoding;
 
-      assertNull("documentgetinputencoding02",encodingName);
-
+      assertEquals("documentgetinputencoding02", "UTF-8", encodingName);
 }
 
 function runTest() {

@@ -36,7 +36,8 @@
 namespace blink {
 
 DocumentEncodingData::DocumentEncodingData()
-    : m_wasDetectedHeuristically(false)
+    : m_encoding(UTF8Encoding())
+    , m_wasDetectedHeuristically(false)
     , m_sawDecodingError(false)
 {
 }

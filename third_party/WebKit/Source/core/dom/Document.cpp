@@ -4287,6 +4287,7 @@ void Document::setEncodingData(const DocumentEncodingData& newData)
         m_titleElement->setTextContent(correctlyDecodedTitle);
     }
 
+    ASSERT(newData.encoding().isValid());
     m_encodingData = newData;
 
     // FIXME: Should be removed as part of https://code.google.com/p/chromium/issues/detail?id=319643
