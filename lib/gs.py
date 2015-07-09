@@ -253,7 +253,7 @@ class GSContext(object):
   # (1*sleep) the first time, then (2*sleep), continuing via attempt * sleep.
   DEFAULT_SLEEP_TIME = 60
 
-  GSUTIL_VERSION = '4.12'
+  GSUTIL_VERSION = '4.13'
   GSUTIL_TAR = 'gsutil_%s.tar.gz' % GSUTIL_VERSION
   GSUTIL_URL = (PUBLIC_BASE_HTTPS_URL +
                 'chromeos-mirror/gentoo/distfiles/%s' % GSUTIL_TAR)
@@ -957,11 +957,13 @@ class GSContext(object):
     try:
       res = self.DoCommand(['stat', path], redirect_stdout=True, **kwargs)
     except GSCommandError as e:
-      # Because the 'gsutil stat' command returns errors on stdout (unlike other
-      # commands), we have to look for standard errors ourselves.
-      # That behavior is different from any other command and is handled
-      # here specially. See b/16020252.
-      if e.result.output.startswith('No URLs matched'):
+      # Because the 'gsutil stat' command logs errors itself (instead of
+      # raising errors internally like other commands), we have to look
+      # for errors ourselves.  See the bug report here:
+      # https://github.com/GoogleCloudPlatform/gsutil/issues/
+      # Example line:
+      # INFO 0713 05:58:12.451810 stat.py] No URLs matched gs://bucket/file
+      if re.match(r'INFO [ 0-9:.]* stat.py\] No URLs matched', e.result.error):
         raise GSNoSuchKey(path)
 
       # No idea what this is, so just choke.

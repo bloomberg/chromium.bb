@@ -1119,6 +1119,10 @@ class StatTest(AbstractGSContextTest):
         Metageneration:   1
       """
 
+  # When stat throws an error.  It's a special snow flake.
+  STAT_ERROR_OUTPUT = ('INFO 0713 05:58:12.451810 stat.py] '
+                       'No URLs matched gs://abc/1')
+
   def testStat(self):
     """Test ability to get the generation of a file."""
     self.gs_mock.AddCmdResult(['stat', 'gs://abc/1'],
@@ -1158,7 +1162,7 @@ class StatTest(AbstractGSContextTest):
   def testStatNoExist(self):
     """Test ability to get the generation of a file."""
     self.gs_mock.AddCmdResult(['stat', 'gs://abc/1'],
-                              output='No URLs matched gs://abc/1',
+                              error=self.STAT_ERROR_OUTPUT,
                               returncode=1)
     ctx = gs.GSContext()
     self.assertRaises(gs.GSNoSuchKey, ctx.Stat, 'gs://abc/1')
