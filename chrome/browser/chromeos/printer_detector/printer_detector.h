@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "device/usb/usb_service.h"
 
@@ -31,12 +32,12 @@ namespace chromeos {
 // The notification is shown only for active user's profile.
 class PrinterDetector : public KeyedService,
                         public device::UsbService::Observer {
- private:
-  friend class PrinterDetectorFactory;
-  friend class PrinterDetectorAppSearchEnabledTest;
-
+ public:
   explicit PrinterDetector(Profile* profile);
   ~PrinterDetector() override;
+
+ private:
+  friend class PrinterDetectorAppSearchEnabledTest;
 
   void SetNotificationUIManagerForTesting(NotificationUIManager* manager);
 
@@ -51,6 +52,7 @@ class PrinterDetector : public KeyedService,
 
   Profile* profile_;
   NotificationUIManager* notification_ui_manager_;
+  ScopedObserver<device::UsbService, device::UsbService::Observer> observer_;
   base::WeakPtrFactory<PrinterDetector> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrinterDetector);

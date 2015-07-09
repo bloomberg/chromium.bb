@@ -254,6 +254,7 @@ namespace chromeos {
 PrinterDetector::PrinterDetector(Profile* profile)
     : profile_(profile),
       notification_ui_manager_(nullptr),
+      observer_(this),
       weak_ptr_factory_(this) {
   extensions::ExtensionSystem::Get(profile)->ready().Post(
       FROM_HERE,
@@ -264,11 +265,14 @@ PrinterDetector::~PrinterDetector() {
 }
 
 void PrinterDetector::Shutdown() {
-  device::DeviceClient::Get()->GetUsbService()->RemoveObserver(this);
 }
 
 void PrinterDetector::Initialize() {
-  device::DeviceClient::Get()->GetUsbService()->AddObserver(this);
+  device::UsbService* usb_service =
+      device::DeviceClient::Get()->GetUsbService();
+  if (!usb_service)
+    return;
+  observer_.Add(usb_service);
 }
 
 void PrinterDetector::OnDeviceAdded(scoped_refptr<device::UsbDevice> device) {

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/printer_detector/printer_detector.h"
 
-#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -17,7 +16,6 @@
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/chromeos_switches.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "device/core/device_client.h"
@@ -104,8 +102,15 @@ class FakeDeviceClient : public device::DeviceClient {
   DISALLOW_COPY_AND_ASSIGN(FakeDeviceClient);
 };
 
+scoped_ptr<KeyedService> CreatePrinterDetector(
+    content::BrowserContext* context) {
+  return scoped_ptr<KeyedService>(
+      new chromeos::PrinterDetector(Profile::FromBrowserContext(context)));
+}
+
 }  // namespace
 
+// TODO(tbarzic): Rename this test.
 class PrinterDetectorAppSearchEnabledTest : public testing::Test {
  public:
   PrinterDetectorAppSearchEnabledTest()
@@ -115,18 +120,14 @@ class PrinterDetectorAppSearchEnabledTest : public testing::Test {
   ~PrinterDetectorAppSearchEnabledTest() override = default;
 
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnablePrinterAppSearch);
     device_client_.set_usb_service(&usb_service_);
     // Make sure the profile is created after adding the switch and setting up
     // device client.
     profile_.reset(new TestingProfile());
+    chromeos::PrinterDetectorFactory::GetInstance()->SetTestingFactoryAndUse(
+        profile_.get(), &CreatePrinterDetector);
+    AddTestUser();
     SetExtensionSystemReady(profile_.get());
-  }
-
-  void TearDown() override {
-    // Destroy the profile before fake device client.
-    profile_.reset();
   }
 
  protected:
@@ -180,18 +181,14 @@ class PrinterDetectorAppSearchEnabledTest : public testing::Test {
   StubNotificationUIManager notification_ui_manager_;
   user_manager::FakeUserManager* user_manager_;
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
-  scoped_ptr<TestingProfile> profile_;
-
- private:
   device::MockUsbService usb_service_;
+  scoped_ptr<TestingProfile> profile_;
   FakeDeviceClient device_client_;
 
   DISALLOW_COPY_AND_ASSIGN(PrinterDetectorAppSearchEnabledTest);
 };
 
 TEST_F(PrinterDetectorAppSearchEnabledTest, ShowFindAppNotification) {
-  AddTestUser();
-
   InvokeUsbAdded(123, 456, kPrinterInterfaceClass);
 
   ASSERT_EQ(1u, notification_ui_manager_.GetNotificationCount());
@@ -204,8 +201,6 @@ TEST_F(PrinterDetectorAppSearchEnabledTest, ShowFindAppNotification) {
 }
 
 TEST_F(PrinterDetectorAppSearchEnabledTest, ShowAppFoundNotification) {
-  AddTestUser();
-
   scoped_refptr<extensions::Extension> extension = CreateTestExtension(
       ListBuilder()
           .Append("usb")
@@ -232,8 +227,6 @@ TEST_F(PrinterDetectorAppSearchEnabledTest, ShowAppFoundNotification) {
 
 TEST_F(PrinterDetectorAppSearchEnabledTest,
        UsbHandlerExists_NotPrinterProvider) {
-  AddTestUser();
-
   scoped_refptr<extensions::Extension> extension = CreateTestExtension(
       ListBuilder()
           .Append("usb")
@@ -259,8 +252,6 @@ TEST_F(PrinterDetectorAppSearchEnabledTest,
 
 TEST_F(PrinterDetectorAppSearchEnabledTest,
        PrinterProvider_DifferentUsbProductId) {
-  AddTestUser();
-
   scoped_refptr<extensions::Extension> extension = CreateTestExtension(
       ListBuilder()
           .Append("usb")
@@ -287,8 +278,6 @@ TEST_F(PrinterDetectorAppSearchEnabledTest,
 
 TEST_F(PrinterDetectorAppSearchEnabledTest,
        PrinterProvider_UsbPrinters_NotFound) {
-  AddTestUser();
-
   scoped_refptr<extensions::Extension> extension =
       CreateTestExtension(
           ListBuilder().Append("usb").Append("printerProvider").Pass(),
@@ -313,8 +302,6 @@ TEST_F(PrinterDetectorAppSearchEnabledTest,
 
 TEST_F(PrinterDetectorAppSearchEnabledTest,
        PrinterProvider_UsbPrinters_WithProductId) {
-  AddTestUser();
-
   scoped_refptr<extensions::Extension> extension =
       CreateTestExtension(
           ListBuilder().Append("usb").Append("printerProvider").Pass(),
@@ -339,8 +326,6 @@ TEST_F(PrinterDetectorAppSearchEnabledTest,
 
 TEST_F(PrinterDetectorAppSearchEnabledTest,
        PrinterProvider_UsbPrinters_WithInterfaceClass) {
-  AddTestUser();
-
   scoped_refptr<extensions::Extension> extension =
       CreateTestExtension(
           ListBuilder().Append("usb").Append("printerProvider").Pass(),
@@ -365,8 +350,6 @@ TEST_F(PrinterDetectorAppSearchEnabledTest,
 }
 
 TEST_F(PrinterDetectorAppSearchEnabledTest, IgnoreNonPrinters) {
-  AddTestUser();
-
   scoped_refptr<extensions::Extension> extension =
       CreateTestExtension(
           ListBuilder().Append("usb").Append("printerProvider").Pass(),
