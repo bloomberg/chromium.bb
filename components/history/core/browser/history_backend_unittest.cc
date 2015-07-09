@@ -3073,20 +3073,8 @@ TEST_F(HistoryBackendTest, RecordTopHostsMetrics) {
                            history::SOURCE_BROWSED);
   }
 
-  // Extract list of histogram samples.
-  std::vector<std::pair<HistogramBase::Sample, HistogramBase::Count>> samples;
-  scoped_ptr<base::HistogramSamples> snapshot =
-      histogram.GetHistogramSamplesSinceCreation(
-          "History.TopHostsVisitsByRank");
-  for (auto it = snapshot->Iterator(); !it->Done(); it->Next()) {
-    HistogramBase::Sample sample;
-    HistogramBase::Count count;
-    it->Get(&sample, nullptr, &count);
-    samples.push_back(std::make_pair(sample, count));
-  }
-
-  EXPECT_THAT(samples,
-              ElementsAre(std::make_pair(1, 1), std::make_pair(51, 1)));
+  EXPECT_THAT(histogram.GetAllSamples("History.TopHostsVisitsByRank"),
+              ElementsAre(base::Bucket(1, 1), base::Bucket(51, 1)));
 }
 
 TEST_F(HistoryBackendTest, UpdateVisitDuration) {
