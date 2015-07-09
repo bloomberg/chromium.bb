@@ -10,10 +10,12 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram_samples.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_quality.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -23,12 +25,13 @@
 
 namespace net {
 
-TEST(NetworkQualityEstimatorTest, TestPeakKbpsFastestRTTUpdates) {
+TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
   net::test_server::EmbeddedTestServer embedded_test_server;
   embedded_test_server.ServeFilesFromDirectory(
       base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
   ASSERT_TRUE(embedded_test_server.InitializeAndWaitUntilReady());
 
+  base::HistogramTester histogram_tester;
   // Enable requests to local host to be used for network quality estimation.
   std::map<std::string, std::string> variation_params;
   NetworkQualityEstimator estimator(variation_params, true, true);
@@ -45,35 +48,49 @@ TEST(NetworkQualityEstimatorTest, TestPeakKbpsFastestRTTUpdates) {
   scoped_ptr<URLRequest> request(
       context.CreateRequest(embedded_test_server.GetURL("/echo.html"),
                             DEFAULT_PRIORITY, &test_delegate));
+  request->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME);
   request->Start();
 
   base::RunLoop().Run();
 
   // Both RTT and downstream throughput should be updated.
   estimator.NotifyDataReceived(*request, 1000, 1000);
-  {
-    NetworkQuality network_quality = estimator.GetPeakEstimate();
-    EXPECT_LT(network_quality.rtt(), base::TimeDelta::Max());
-    EXPECT_GE(network_quality.downstream_throughput_kbps(), 1);
-  }
+  NetworkQuality network_quality = estimator.GetPeakEstimate();
+  EXPECT_GE(network_quality.rtt(), base::TimeDelta());
+  EXPECT_LT(network_quality.rtt(), base::TimeDelta::Max());
+  EXPECT_GE(network_quality.downstream_throughput_kbps(), 1);
+
+  EXPECT_NEAR(network_quality.rtt().InMilliseconds(),
+              estimator.GetEstimate(100).rtt().InMilliseconds(), 1);
 
   // Check UMA histograms.
-  base::HistogramTester histogram_tester;
   histogram_tester.ExpectTotalCount("NQE.PeakKbps.Unknown", 0);
   histogram_tester.ExpectTotalCount("NQE.FastestRTT.Unknown", 0);
+
+  histogram_tester.ExpectTotalCount("NQE.RatioEstimatedToActualRTT.Unknown", 0);
+
+  estimator.NotifyDataReceived(*request, 1000, 1000);
+  histogram_tester.ExpectTotalCount("NQE.RTTObservations.Unknown", 1);
 
   estimator.OnConnectionTypeChanged(
       NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI);
   histogram_tester.ExpectTotalCount("NQE.PeakKbps.Unknown", 1);
   histogram_tester.ExpectTotalCount("NQE.FastestRTT.Unknown", 1);
-  {
-    NetworkQuality network_quality = estimator.GetPeakEstimate();
-    EXPECT_EQ(estimator.current_connection_type_,
-              NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI);
-    EXPECT_EQ(NetworkQuality::InvalidRTT(), network_quality.rtt());
-    EXPECT_EQ(NetworkQuality::kInvalidThroughput,
-              network_quality.downstream_throughput_kbps());
-  }
+
+  histogram_tester.ExpectTotalCount("NQE.RatioMedianRTT.WiFi", 0);
+
+  histogram_tester.ExpectTotalCount("NQE.RTT.Percentile0.Unknown", 1);
+  histogram_tester.ExpectTotalCount("NQE.RTT.Percentile10.Unknown", 1);
+  histogram_tester.ExpectTotalCount("NQE.RTT.Percentile50.Unknown", 1);
+  histogram_tester.ExpectTotalCount("NQE.RTT.Percentile90.Unknown", 1);
+  histogram_tester.ExpectTotalCount("NQE.RTT.Percentile100.Unknown", 1);
+
+  network_quality = estimator.GetPeakEstimate();
+  EXPECT_EQ(estimator.current_connection_type_,
+            NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI);
+  EXPECT_EQ(NetworkQuality::InvalidRTT(), network_quality.rtt());
+  EXPECT_EQ(NetworkQuality::kInvalidThroughput,
+            network_quality.downstream_throughput_kbps());
 }
 
 TEST(NetworkQualityEstimatorTest, StoreObservations) {

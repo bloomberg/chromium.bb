@@ -26679,7 +26679,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NQE.DifferenceActualAndEstimatedRTT" units="milliseconds">
+  <owner>bengr@chromium.org</owner>
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Difference between the actual RTT observation and the estimated RTT. This
+    metric is recorded on every request when the actual observation is higher
+    than the estimated value.
+  </summary>
+</histogram>
+
+<histogram name="NQE.DifferenceEstimatedAndActualRTT" units="milliseconds">
+  <owner>bengr@chromium.org</owner>
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Difference between the estimated RTT and the actual RTT observation. This
+    metric is recorded on every request when the estimated value is higher than
+    the actual observation.
+  </summary>
+</histogram>
+
 <histogram name="NQE.FastestRTT" units="milliseconds">
+  <owner>bengr@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
     Rough estimate of the fastest round-trip-time, before a connectivity change
@@ -26692,13 +26713,45 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NQE.PeakKbps" units="Kbps">
+  <owner>bengr@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
-    Rough estimate of peak throughput, before a connectivity change is detected.
+    Rough estimate of downstream peak throughput, before a connectivity change
+    is detected.
 
     This metric is recorded when a connectivity change is detected. This will
     miss data from users whose connection type never changes and will be biased
     to users whose connection type changes frequently.
+  </summary>
+</histogram>
+
+<histogram name="NQE.RatioEstimatedToActualRTT" units="100 times">
+  <owner>bengr@chromium.org</owner>
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Ratio of the estimated RTT to the actual RTT observation multiplied by 100.
+  </summary>
+</histogram>
+
+<histogram name="NQE.RTT" units="milliseconds">
+  <owner>bengr@chromium.org</owner>
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Rough estimate of the computed round-trip-time at different percentiles,
+    before a connectivity change is detected.
+
+    This metric is recorded when a connectivity change is detected. This will
+    miss data from users whose connection type never changes and will be biased
+    to users whose connection type changes frequently.
+  </summary>
+</histogram>
+
+<histogram name="NQE.RTTObservations" units="milliseconds">
+  <owner>bengr@chromium.org</owner>
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    RTT observations made by network quality estimator, recorded on every
+    request.
   </summary>
 </histogram>
 
@@ -73079,6 +73132,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="NewTabPage.LoadTime"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="NQE.DifferentPercentiles" separator=".">
+  <suffix name="Percentile0" label="0th percentile"/>
+  <suffix name="Percentile10" label="10th percentile"/>
+  <suffix name="Percentile50" label="50th percentile"/>
+  <suffix name="Percentile90" label="90th percentile"/>
+  <suffix name="Percentile100" label="100th percentile"/>
+  <affected-histogram name="NQE.RTT"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="NQE.NetworkTypes" separator=".">
   <suffix name="Unknown" label="On Unknown network"/>
   <suffix name="Ethernet" label="On Ethernet network"/>
@@ -73088,8 +73150,17 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="4G" label="On 4G network"/>
   <suffix name="None" label="With no detected network"/>
   <suffix name="Bluetooth" label="On Bluetooth network"/>
+  <affected-histogram name="NQE.DifferenceActualAndEstimatedRTT"/>
+  <affected-histogram name="NQE.DifferenceEstimatedAndActualRTT"/>
   <affected-histogram name="NQE.FastestRTT"/>
   <affected-histogram name="NQE.PeakKbps"/>
+  <affected-histogram name="NQE.RatioEstimatedToActualRTT"/>
+  <affected-histogram name="NQE.RTT.Percentile0"/>
+  <affected-histogram name="NQE.RTT.Percentile10"/>
+  <affected-histogram name="NQE.RTT.Percentile100"/>
+  <affected-histogram name="NQE.RTT.Percentile50"/>
+  <affected-histogram name="NQE.RTT.Percentile90"/>
+  <affected-histogram name="NQE.RTTObservations"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="OffDomainInclusionAbortReason" separator=".">

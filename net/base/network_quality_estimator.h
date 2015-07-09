@@ -49,7 +49,8 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // weight to the recent observations. |median| must not be nullptr. Returns
   // true only if an estimate of the network quality is available (enough
   // observations must be available to make an estimate). Virtualized for
-  // testing.
+  // testing. If the estimate is not available, |median| is set to the default
+  // value.
   virtual bool GetEstimate(NetworkQuality* median) const;
 
   // Notifies NetworkQualityEstimator that a response has been received.
@@ -64,8 +65,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, StoreObservations);
-  FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
-                           TestPeakKbpsFastestRTTUpdates);
+  FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, TestKbpsRTTUpdates);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, TestAddObservation);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, ObtainOperatingParams);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, HalfLifeParam);
@@ -225,6 +225,10 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // be slower than the returned estimate with 0.1 probability.
   NetworkQuality GetEstimate(int percentile) const;
 
+  // Records the UMA related to RTT.
+  void RecordRTTUMA(int32_t estimated_value_msec,
+                    int32_t actual_value_msec) const;
+
   // Determines if the requests to local host can be used in estimating the
   // network quality. Set to true only for tests.
   const bool allow_localhost_requests_;
@@ -262,6 +266,9 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // ConnectionType.
   NetworkQuality
       default_observations_[NetworkChangeNotifier::CONNECTION_LAST + 1];
+
+  // Estimated network quality. Updated on mainframe requests.
+  NetworkQuality estimated_median_network_quality_;
 
   base::ThreadChecker thread_checker_;
 

@@ -13,7 +13,10 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_base.h"
+#include "base/strings/safe_sprintf.h"
 #include "base/strings/string_number_conversions.h"
+#include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
@@ -22,7 +25,7 @@
 namespace {
 
 // Maximum number of observations that can be held in the ObservationBuffer.
-const size_t kMaximumObservationsBufferSize = 500;
+const size_t kMaximumObservationsBufferSize = 300;
 
 // Default value of the half life (in seconds) for computing time weighted
 // percentiles. Every half life, the weight of all observations reduces by
@@ -33,11 +36,32 @@ const int kDefaultHalfLifeSeconds = 60;
 // seconds) of the observations.
 const char kHalfLifeSecondsParamName[] = "HalfLifeSeconds";
 
-// Name of the different connection types. Used for matching the connection
-// type to the variation parameters. Names must be in the same order as
-// NetworkChangeNotifier::ConnectionType enum.
-const char* const kConnectionTypeNames[] =
-    {"Unknown", "Ethernet", "WiFi", "2G", "3G", "4G", "None", "Bluetooth"};
+// Returns a descriptive name corresponding to |connection_type|.
+const char* GetNameForConnectionType(
+    net::NetworkChangeNotifier::ConnectionType connection_type) {
+  switch (connection_type) {
+    case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
+      return "Unknown";
+    case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
+      return "Ethernet";
+    case net::NetworkChangeNotifier::CONNECTION_WIFI:
+      return "WiFi";
+    case net::NetworkChangeNotifier::CONNECTION_2G:
+      return "2G";
+    case net::NetworkChangeNotifier::CONNECTION_3G:
+      return "3G";
+    case net::NetworkChangeNotifier::CONNECTION_4G:
+      return "4G";
+    case net::NetworkChangeNotifier::CONNECTION_NONE:
+      return "None";
+    case net::NetworkChangeNotifier::CONNECTION_BLUETOOTH:
+      return "Bluetooth";
+    default:
+      NOTREACHED();
+      break;
+  }
+  return "";
+}
 
 // Suffix of the name of the variation parameter that contains the default RTT
 // observation (in milliseconds). Complete name of the variation parameter
@@ -70,6 +94,23 @@ double GetWeightMultiplierPerSecond(
   return exp(log(0.5) / half_life_seconds);
 }
 
+// Returns the histogram that should be used to record the given statistic.
+// |max_limit| is the maximum value that can be stored in the histogram.
+base::HistogramBase* GetHistogram(
+    const std::string& statistic_name,
+    net::NetworkChangeNotifier::ConnectionType type,
+    int32_t max_limit) {
+  const base::LinearHistogram::Sample kLowerLimit = 1;
+  DCHECK_GT(max_limit, kLowerLimit);
+  const size_t kBucketCount = 50;
+
+  // Prefix of network quality estimator histograms.
+  const char prefix[] = "NQE.";
+  return base::Histogram::FactoryGet(
+      prefix + statistic_name + GetNameForConnectionType(type), kLowerLimit,
+      max_limit, kBucketCount, base::HistogramBase::kUmaTargetedHistogramFlag);
+}
+
 }  // namespace
 
 namespace net {
@@ -96,9 +137,6 @@ NetworkQualityEstimator::NetworkQualityEstimator(
                 "Minimum request duration must be > 0");
   static_assert(kDefaultHalfLifeSeconds > 0,
                 "Default half life duration must be > 0");
-  static_assert(arraysize(kConnectionTypeNames) ==
-                    NetworkChangeNotifier::CONNECTION_LAST + 1,
-                "ConnectionType name count should match");
 
   ObtainOperatingParams(variation_params);
   AddDefaultEstimates();
@@ -109,11 +147,13 @@ void NetworkQualityEstimator::ObtainOperatingParams(
     const std::map<std::string, std::string>& variation_params) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  for (size_t i = 0; i < arraysize(kConnectionTypeNames); ++i) {
+  for (size_t i = 0; i <= NetworkChangeNotifier::CONNECTION_LAST; ++i) {
+    NetworkChangeNotifier::ConnectionType type =
+        static_cast<NetworkChangeNotifier::ConnectionType>(i);
     int32_t variations_value = kMinimumRTTVariationParameterMsec - 1;
     // Name of the parameter that holds the RTT value for this connection type.
     std::string rtt_parameter_name =
-        std::string(kConnectionTypeNames[i])
+        std::string(GetNameForConnectionType(type))
             .append(kDefaultRTTMsecObservationSuffix);
     auto it = variation_params.find(rtt_parameter_name);
     if (it != variation_params.end() &&
@@ -128,7 +168,7 @@ void NetworkQualityEstimator::ObtainOperatingParams(
     // Name of the parameter that holds the Kbps value for this connection
     // type.
     std::string kbps_parameter_name =
-        std::string(kConnectionTypeNames[i])
+        std::string(GetNameForConnectionType(type))
             .append(kDefaultKbpsObservationSuffix);
     it = variation_params.find(kbps_parameter_name);
     if (it != variation_params.end() &&
@@ -182,6 +222,11 @@ void NetworkQualityEstimator::NotifyDataReceived(
     return;
   }
 
+  // Update |estimated_median_network_quality_| if this is a main frame
+  // request.
+  if (request.load_flags() & LOAD_MAIN_FRAME)
+    GetEstimate(&estimated_median_network_quality_);
+
   base::TimeTicks now = base::TimeTicks::Now();
   LoadTimingInfo load_timing_info;
   request.GetLoadTimingInfo(&load_timing_info);
@@ -210,6 +255,13 @@ void NetworkQualityEstimator::NotifyDataReceived(
 
     rtt_msec_observations_.AddObservation(
         Observation(observed_rtt.InMilliseconds(), now));
+
+    // Compare the RTT observation with the estimated value and record it.
+    if (estimated_median_network_quality_.rtt() !=
+        NetworkQuality::InvalidRTT()) {
+      RecordRTTUMA(estimated_median_network_quality_.rtt().InMilliseconds(),
+                   observed_rtt.InMilliseconds());
+    }
   }
 
   // Time since the resource was requested.
@@ -246,6 +298,41 @@ void NetworkQualityEstimator::NotifyDataReceived(
       kbps_observations_.AddObservation(Observation(kbps, now));
     }
   }
+}
+
+void NetworkQualityEstimator::RecordRTTUMA(int32_t estimated_value_msec,
+                                           int32_t actual_value_msec) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Record the difference between the actual and the estimated value.
+  if (estimated_value_msec >= actual_value_msec) {
+    base::HistogramBase* difference_rtt =
+        GetHistogram("DifferenceRTTEstimatedAndActual.",
+                     current_connection_type_, 10 * 1000);  // 10 seconds
+    difference_rtt->Add(estimated_value_msec - actual_value_msec);
+  } else {
+    base::HistogramBase* difference_rtt =
+        GetHistogram("DifferenceRTTActualAndEstimated.",
+                     current_connection_type_, 10 * 1000);  // 10 seconds
+    difference_rtt->Add(actual_value_msec - estimated_value_msec);
+  }
+
+  // Record all the RTT observations.
+  base::HistogramBase* rtt_observations =
+      GetHistogram("RTTObservations.", current_connection_type_,
+                   10 * 1000);  // 10 seconds upper bound
+  rtt_observations->Add(actual_value_msec);
+
+  if (actual_value_msec == 0)
+    return;
+
+  int32 ratio = (estimated_value_msec * 100) / actual_value_msec;
+
+  // Record the accuracy of estimation by recording the ratio of estimated
+  // value to the actual value.
+  base::HistogramBase* ratio_median_rtt = GetHistogram(
+      "RatioEstimatedToActualRTT.", current_connection_type_, 1000);
+  ratio_median_rtt->Add(ratio);
 }
 
 void NetworkQualityEstimator::OnConnectionTypeChanged(
@@ -333,6 +420,29 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
     }
   }
 
+  NetworkQuality network_quality;
+  if (GetEstimate(&network_quality)) {
+    // Add the 50th percentile value.
+    base::HistogramBase* rtt_percentile =
+        GetHistogram("RTT.Percentile50.", current_connection_type_,
+                     10 * 1000);  // 10 seconds
+    rtt_percentile->Add(network_quality.rtt().InMilliseconds());
+
+    // Add the remaining percentile values.
+    static const int kPercentiles[] = {0, 10, 90, 100};
+    for (size_t i = 0; i < arraysize(kPercentiles); ++i) {
+      network_quality = GetEstimate(kPercentiles[i]);
+
+      char percentile_stringified[20];
+      base::strings::SafeSPrintf(percentile_stringified, "%d", kPercentiles[i]);
+
+      rtt_percentile = GetHistogram(
+          "RTT.Percentile" + std::string(percentile_stringified) + ".",
+          current_connection_type_, 10 * 1000);  // 10 seconds
+      rtt_percentile->Add(network_quality.rtt().InMilliseconds());
+    }
+  }
+
   last_connection_change_ = base::TimeTicks::Now();
   peak_kbps_since_last_connection_change_ = NetworkQuality::kInvalidThroughput;
   fastest_rtt_since_last_connection_change_ = NetworkQuality::InvalidRTT();
@@ -341,6 +451,7 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
   current_connection_type_ = type;
 
   AddDefaultEstimates();
+  estimated_median_network_quality_ = NetworkQuality();
 }
 
 NetworkQuality NetworkQualityEstimator::GetPeakEstimate() const {
