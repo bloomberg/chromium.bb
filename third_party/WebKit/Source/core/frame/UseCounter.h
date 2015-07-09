@@ -769,6 +769,7 @@ public:
         V8StorageEvent_InitStorageEvent_Method = 871,
         V8TouchEvent_InitTouchEvent_Method = 872,
         V8UIEvent_InitUIEvent_Method = 873,
+        V8Document_CreateTouch_Method = 874,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
