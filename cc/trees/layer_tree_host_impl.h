@@ -564,7 +564,7 @@ class CC_EXPORT LayerTreeHostImpl
   gfx::Vector2dF ScrollLayer(LayerImpl* layer_impl,
                              const gfx::Vector2dF& delta,
                              const gfx::Point& viewport_point,
-                             bool is_direct_manipulation);
+                             bool is_wheel_scroll);
 
   // Record main frame timing information.
   // |start_of_main_frame_args| is the BeginFrameArgs of the beginning of the

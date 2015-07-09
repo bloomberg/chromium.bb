@@ -445,8 +445,6 @@ void RenderWidgetCompositor::Initialize() {
   settings.use_external_begin_frame_source = true;
 
 #elif !defined(OS_MACOSX)
-  settings.report_overscroll_only_for_scrollable_axes = false;
-
   if (ui::IsOverlayScrollbarEnabled()) {
     settings.scrollbar_animator = cc::LayerTreeSettings::THINNING;
     settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
