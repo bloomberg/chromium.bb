@@ -106,7 +106,7 @@ EphemeralRange CharacterIterator::range() const
     Position startPosition = range.startPosition().parentAnchoredEquivalent();
     Position endPosition = range.endPosition().parentAnchoredEquivalent();
     Node* node = startPosition.containerNode();
-    ASSERT(node == endPosition.containerNode());
+    ASSERT_UNUSED(endPosition, node == endPosition.containerNode());
     int offset = startPosition.offsetInContainerNode() + m_runOffset;
     return EphemeralRange(Position(node, offset), Position(node, offset + 1));
 }
