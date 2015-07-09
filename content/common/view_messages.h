@@ -1439,19 +1439,6 @@ IPC_MESSAGE_CONTROL3(ViewHostMsg_DidGenerateCacheableMetadata,
                      base::Time /* expected_response_time */,
                      std::vector<char> /* data */)
 
-// Register a new handler for URL requests with the given scheme.
-IPC_MESSAGE_ROUTED4(ViewHostMsg_RegisterProtocolHandler,
-                    std::string /* scheme */,
-                    GURL /* url */,
-                    base::string16 /* title */,
-                    bool /* user_gesture */)
-
-// Unregister the registered handler for URL requests with the given scheme.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_UnregisterProtocolHandler,
-                    std::string /* scheme */,
-                    GURL /* url */,
-                    bool /* user_gesture */)
-
 // Send back a string to be recorded by UserMetrics.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_UserMetricsRecordAction,
                      std::string /* action */)

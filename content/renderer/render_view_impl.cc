@@ -3535,26 +3535,6 @@ double RenderViewImpl::zoomFactorToZoomLevel(double factor) const {
   return ZoomFactorToZoomLevel(factor);
 }
 
-void RenderViewImpl::registerProtocolHandler(const WebString& scheme,
-                                             const WebURL& url,
-                                             const WebString& title) {
-  bool user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
-  Send(new ViewHostMsg_RegisterProtocolHandler(routing_id_,
-                                               base::UTF16ToUTF8(scheme),
-                                               url,
-                                               title,
-                                               user_gesture));
-}
-
-void RenderViewImpl::unregisterProtocolHandler(const WebString& scheme,
-                                               const WebURL& url) {
-  bool user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
-  Send(new ViewHostMsg_UnregisterProtocolHandler(routing_id_,
-                                                 base::UTF16ToUTF8(scheme),
-                                                 url,
-                                                 user_gesture));
-}
-
 blink::WebPageVisibilityState RenderViewImpl::visibilityState() const {
   blink::WebPageVisibilityState current_state = is_hidden() ?
       blink::WebPageVisibilityStateHidden :

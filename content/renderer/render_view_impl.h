@@ -393,11 +393,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void pageScaleFactorChanged();
   virtual double zoomLevelToZoomFactor(double zoom_level) const;
   virtual double zoomFactorToZoomLevel(double factor) const;
-  virtual void registerProtocolHandler(const blink::WebString& scheme,
-                                       const blink::WebURL& url,
-                                       const blink::WebString& title);
-  virtual void unregisterProtocolHandler(const blink::WebString& scheme,
-                                         const blink::WebURL& url);
   virtual blink::WebPageVisibilityState visibilityState() const;
   virtual void draggableRegionsChanged();
 
