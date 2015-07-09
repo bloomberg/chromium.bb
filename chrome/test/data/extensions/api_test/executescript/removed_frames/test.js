@@ -37,12 +37,10 @@ chrome.test.getConfig(function(config) {
   chrome.test.runTests([
    function() {
       waitForCommittedAndRun(injectAndDeleteIframeFromMainFrame, 2, url);
+    },
+    function() {
+      waitForCommittedAndRun(injectAndDeleteIframeFromIframe, 2, url);
     }
-    // This is another great test to have, but currently it crashes in blink.
-    // TODO(devlin): Fix the crash in blink and enable this!
-    // function() {
-    //   waitForCommittedAndRun(injectAndDeleteIframeFromIframe, 2, url);
-    // }
   ]);
 });
 
