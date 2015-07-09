@@ -1458,7 +1458,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       first_run::IsChromeFirstRun(), ping_delay < 0,
       base::TimeDelta::FromMilliseconds(abs(ping_delay)),
       ChromeRLZTrackerDelegate::IsGoogleDefaultSearch(profile_),
-      ChromeRLZTrackerDelegate::IsGoogleHomePage(profile_),
+      ChromeRLZTrackerDelegate::IsGoogleHomepage(profile_),
       ChromeRLZTrackerDelegate::IsGoogleInStartpages(profile_));
 #endif  // defined(ENABLE_RLZ) && !defined(OS_CHROMEOS)
 
