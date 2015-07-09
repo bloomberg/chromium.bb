@@ -212,12 +212,17 @@ private:
         ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
         ASSERT(state->checkThread());
         m_persistentNode = state->persistentRegion()->allocatePersistentNode(this, TraceMethodDelegate<Persistent<T>, &Persistent<T>::trace>::trampoline);
+#if ENABLE(ASSERT)
+        m_state = state;
+#endif
     }
 
     void uninitialize()
     {
         ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
         ASSERT(state->checkThread());
+        // Persistent handle must be created and destructed in the same thread.
+        ASSERT(m_state == state);
         state->persistentRegion()->freePersistentNode(m_persistentNode);
     }
 
@@ -253,6 +258,9 @@ private:
     // m_raw is accessed most, so put it at the first field.
     T* m_raw;
     PersistentNode* m_persistentNode;
+#if ENABLE(ASSERT)
+    ThreadState* m_state;
+#endif
 };
 
 // Unlike Persistent, we can destruct a CrossThreadPersistent in a thread
@@ -489,16 +497,24 @@ private:
         ThreadState* state = ThreadState::current();
         ASSERT(state->checkThread());
         m_persistentNode = state->persistentRegion()->allocatePersistentNode(this, TraceMethodDelegate<PersistentHeapCollectionBase<Collection>, &PersistentHeapCollectionBase<Collection>::trace>::trampoline);
+#if ENABLE(ASSERT)
+        m_state = state;
+#endif
     }
 
     void uninitialize()
     {
         ThreadState* state = ThreadState::current();
         ASSERT(state->checkThread());
+        // Persistent handle must be created and destructed in the same thread.
+        ASSERT(m_state == state);
         state->persistentRegion()->freePersistentNode(m_persistentNode);
     }
 
     PersistentNode* m_persistentNode;
+#if ENABLE(ASSERT)
+    ThreadState* m_state;
+#endif
 };
 
 template<
