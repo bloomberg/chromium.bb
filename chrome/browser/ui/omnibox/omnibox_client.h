@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_CURRENT_PAGE_DELEGATE_H_
-#define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_CURRENT_PAGE_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_CLIENT_H_
+#define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_CLIENT_H_
 
 #include "base/basictypes.h"
 #include "chrome/common/instant_types.h"
@@ -19,13 +19,13 @@ namespace content {
 class NavigationController;
 }
 
-// A class that abstracts omnibox functionality that depends on the current
-// tab/page (e.g., getting information about the current page, retrieving
-// objects associated with the current tab, or performing operations that rely
-// on such objects under the hood).
-class OmniboxCurrentPageDelegate {
+// Interface that allows the omnibox component to interact with its embedder
+// (e.g., getting information about the current page, retrieving objects
+// associated with the current tab, or performing operations that rely on such
+// objects under the hood).
+class OmniboxClient {
  public:
-  virtual ~OmniboxCurrentPageDelegate() {}
+  virtual ~OmniboxClient() {}
 
   // Returns whether there is any associated current page.  For example, during
   // startup or shutdown, the omnibox may exist but have no attached page.
@@ -70,4 +70,4 @@ class OmniboxCurrentPageDelegate {
   virtual void SetSuggestionToPrefetch(const InstantSuggestion& suggestion) = 0;
 };
 
-#endif  // CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_CURRENT_PAGE_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_CLIENT_H_

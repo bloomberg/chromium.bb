@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/omnibox/omnibox_current_page_delegate_impl.h"
+#include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
@@ -23,48 +23,48 @@
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
-OmniboxCurrentPageDelegateImpl::OmniboxCurrentPageDelegateImpl(
+ChromeOmniboxClient::ChromeOmniboxClient(
     OmniboxEditController* controller,
     Profile* profile)
     : controller_(controller),
       profile_(profile) {}
 
-OmniboxCurrentPageDelegateImpl::~OmniboxCurrentPageDelegateImpl() {}
+ChromeOmniboxClient::~ChromeOmniboxClient() {}
 
-bool OmniboxCurrentPageDelegateImpl::CurrentPageExists() const {
+bool ChromeOmniboxClient::CurrentPageExists() const {
   return (controller_->GetWebContents() != NULL);
 }
 
-const GURL& OmniboxCurrentPageDelegateImpl::GetURL() const {
+const GURL& ChromeOmniboxClient::GetURL() const {
   return controller_->GetWebContents()->GetURL();
 }
 
-bool OmniboxCurrentPageDelegateImpl::IsInstantNTP() const {
+bool ChromeOmniboxClient::IsInstantNTP() const {
   return chrome::IsInstantNTP(controller_->GetWebContents());
 }
 
-bool OmniboxCurrentPageDelegateImpl::IsSearchResultsPage() const {
+bool ChromeOmniboxClient::IsSearchResultsPage() const {
   Profile* profile = Profile::FromBrowserContext(
       controller_->GetWebContents()->GetBrowserContext());
   return TemplateURLServiceFactory::GetForProfile(profile)->
       IsSearchResultsPageFromDefaultSearchProvider(GetURL());
 }
 
-bool OmniboxCurrentPageDelegateImpl::IsLoading() const {
+bool ChromeOmniboxClient::IsLoading() const {
   return controller_->GetWebContents()->IsLoading();
 }
 
 content::NavigationController&
-    OmniboxCurrentPageDelegateImpl::GetNavigationController() const {
+    ChromeOmniboxClient::GetNavigationController() const {
   return controller_->GetWebContents()->GetController();
 }
 
-const SessionID& OmniboxCurrentPageDelegateImpl::GetSessionID() const {
+const SessionID& ChromeOmniboxClient::GetSessionID() const {
   return SessionTabHelper::FromWebContents(
       controller_->GetWebContents())->session_id();
 }
 
-bool OmniboxCurrentPageDelegateImpl::ProcessExtensionKeyword(
+bool ChromeOmniboxClient::ProcessExtensionKeyword(
     TemplateURL* template_url,
     const AutocompleteMatch& match,
     WindowOpenDisposition disposition) {
@@ -86,14 +86,14 @@ bool OmniboxCurrentPageDelegateImpl::ProcessExtensionKeyword(
   return true;
 }
 
-void OmniboxCurrentPageDelegateImpl::OnInputStateChanged() {
+void ChromeOmniboxClient::OnInputStateChanged() {
   if (!controller_->GetWebContents())
     return;
   SearchTabHelper::FromWebContents(
       controller_->GetWebContents())->OmniboxInputStateChanged();
 }
 
-void OmniboxCurrentPageDelegateImpl::OnFocusChanged(
+void ChromeOmniboxClient::OnFocusChanged(
     OmniboxFocusState state,
     OmniboxFocusChangeReason reason) {
   if (!controller_->GetWebContents())
@@ -102,7 +102,7 @@ void OmniboxCurrentPageDelegateImpl::OnFocusChanged(
       controller_->GetWebContents())->OmniboxFocusChanged(state, reason);
 }
 
-void OmniboxCurrentPageDelegateImpl::DoPrerender(
+void ChromeOmniboxClient::DoPrerender(
     const AutocompleteMatch& match) {
   content::WebContents* web_contents = controller_->GetWebContents();
   gfx::Rect container_bounds = web_contents->GetContainerBounds();
@@ -123,7 +123,7 @@ void OmniboxCurrentPageDelegateImpl::DoPrerender(
           container_bounds.size());
 }
 
-void OmniboxCurrentPageDelegateImpl::SetSuggestionToPrefetch(
+void ChromeOmniboxClient::SetSuggestionToPrefetch(
       const InstantSuggestion& suggestion) {
   DCHECK(chrome::IsInstantExtendedAPIEnabled());
   content::WebContents* web_contents = controller_->GetWebContents();

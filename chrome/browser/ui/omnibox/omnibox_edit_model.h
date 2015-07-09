@@ -23,7 +23,7 @@
 
 class AutocompleteController;
 class AutocompleteResult;
-class OmniboxCurrentPageDelegate;
+class OmniboxClient;
 class OmniboxEditController;
 class OmniboxPopupModel;
 class OmniboxView;
@@ -445,7 +445,7 @@ class OmniboxEditModel {
 
   OmniboxEditController* controller_;
 
-  scoped_ptr<OmniboxCurrentPageDelegate> delegate_;
+  scoped_ptr<OmniboxClient> client_;
 
   OmniboxFocusState focus_state_;
 

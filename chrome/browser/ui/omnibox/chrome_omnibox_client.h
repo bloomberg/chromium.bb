@@ -2,22 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_CURRENT_PAGE_DELEGATE_IMPL_H_
-#define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_CURRENT_PAGE_DELEGATE_IMPL_H_
+#ifndef CHROME_BROWSER_UI_OMNIBOX_CHROME_OMNIBOX_CLIENT_H_
+#define CHROME_BROWSER_UI_OMNIBOX_CHROME_OMNIBOX_CLIENT_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/omnibox/omnibox_current_page_delegate.h"
+#include "chrome/browser/ui/omnibox/omnibox_client.h"
 
 class OmniboxEditController;
 class Profile;
 
-class OmniboxCurrentPageDelegateImpl : public OmniboxCurrentPageDelegate {
+class ChromeOmniboxClient : public OmniboxClient {
  public:
-  explicit OmniboxCurrentPageDelegateImpl(OmniboxEditController* controller,
-                                          Profile* profile);
-  ~OmniboxCurrentPageDelegateImpl() override;
+  ChromeOmniboxClient(OmniboxEditController* controller, Profile* profile);
+  ~ChromeOmniboxClient() override;
 
-  // OmniboxCurrentPageDelegate.
+  // OmniboxClient.
   bool CurrentPageExists() const override;
   const GURL& GetURL() const override;
   bool IsInstantNTP() const override;
@@ -38,7 +37,7 @@ class OmniboxCurrentPageDelegateImpl : public OmniboxCurrentPageDelegate {
   OmniboxEditController* controller_;
   Profile* profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(OmniboxCurrentPageDelegateImpl);
+  DISALLOW_COPY_AND_ASSIGN(ChromeOmniboxClient);
 };
 
-#endif  // CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_CURRENT_PAGE_DELEGATE_IMPL_H_
+#endif  // CHROME_BROWSER_UI_OMNIBOX_CHROME_OMNIBOX_CLIENT_H_

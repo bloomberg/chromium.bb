@@ -36,7 +36,7 @@
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/omnibox/omnibox_current_page_delegate_impl.h"
+#include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_navigation_observer.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
@@ -219,7 +219,7 @@ OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
       in_revert_(false),
       allow_exact_keyword_match_(false) {
   omnibox_controller_.reset(new OmniboxController(this, profile));
-  delegate_.reset(new OmniboxCurrentPageDelegateImpl(controller, profile));
+  client_.reset(new ChromeOmniboxClient(controller, profile));
 }
 
 OmniboxEditModel::~OmniboxEditModel() {
@@ -400,12 +400,12 @@ void OmniboxEditModel::OnChanged() {
       // It's possible that there is no current page, for instance if the tab
       // has been closed or on return from a sleep state.
       // (http://crbug.com/105689)
-      if (!delegate_->CurrentPageExists())
+      if (!client_->CurrentPageExists())
         break;
       // Ask for prerendering if the destination URL is different than the
       // current URL.
-      if (current_match.destination_url != delegate_->GetURL())
-        delegate_->DoPrerender(current_match);
+      if (current_match.destination_url != client_->GetURL())
+        client_->DoPrerender(current_match);
       break;
     case AutocompleteActionPredictor::ACTION_PRECONNECT:
       omnibox_controller_->DoPreconnect(current_match);
@@ -421,7 +421,7 @@ void OmniboxEditModel::GetDataForURLExport(GURL* url,
                                            base::string16* title,
                                            gfx::Image* favicon) {
   *url = CurrentMatch(NULL).destination_url;
-  if (*url == delegate_->GetURL()) {
+  if (*url == client_->GetURL()) {
     content::WebContents* web_contents = controller_->GetWebContents();
     *title = web_contents->GetTitle();
     *favicon = favicon::ContentFaviconDriver::FromWebContents(web_contents)
@@ -535,7 +535,7 @@ void OmniboxEditModel::SetInputInProgress(bool in_progress) {
   controller_->Update(NULL);
 
   if (user_input_in_progress_ || !in_revert_)
-    delegate_->OnInputStateChanged();
+    client_->OnInputStateChanged();
 }
 
 void OmniboxEditModel::Revert() {
@@ -594,8 +594,8 @@ void OmniboxEditModel::StartAutocomplete(
   }
 
   GURL current_url =
-      (delegate_->CurrentPageExists() && view_->IsIndicatingQueryRefinement()) ?
-      delegate_->GetURL() : GURL();
+      (client_->CurrentPageExists() && view_->IsIndicatingQueryRefinement()) ?
+      client_->GetURL() : GURL();
   input_ = AutocompleteInput(
       user_text_, cursor_position, std::string(), current_url, ClassifyPage(),
       prevent_inline_autocomplete || just_deleted_text_ ||
@@ -755,7 +755,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       input_text, base::string16::npos, std::string(),
       // Somehow we can occasionally get here with no active tab.  It's not
       // clear why this happens.
-      delegate_->CurrentPageExists() ? delegate_->GetURL() : GURL(),
+      client_->CurrentPageExists() ? client_->GetURL() : GURL(),
       ClassifyPage(), false, false, true, true, false,
       ChromeAutocompleteSchemeClassifier(profile_));
   scoped_ptr<OmniboxNavigationObserver> observer(
@@ -811,11 +811,11 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       << "omnibox text at same time or before the most recent time the "
       << "default match changed.";
 
-  if ((disposition == CURRENT_TAB) && delegate_->CurrentPageExists()) {
+  if ((disposition == CURRENT_TAB) && client_->CurrentPageExists()) {
     // If we know the destination is being opened in the current tab,
     // we can easily get the tab ID.  (If it's being opened in a new
     // tab, we don't know the tab ID yet.)
-    log.tab_id = delegate_->GetSessionID().id();
+    log.tab_id = client_->GetSessionID().id();
   }
   autocomplete_controller()->AddProvidersInfo(&log.providers_info);
   content::NotificationService::current()->Notify(
@@ -836,8 +836,8 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       // keyword mode.
 
       // Don't increment usage count for extension keywords.
-      if (delegate_->ProcessExtensionKeyword(template_url, match,
-                                             disposition)) {
+      if (client_->ProcessExtensionKeyword(template_url, match,
+                                           disposition)) {
         observer->OnSuccessfulNavigation();
         if (disposition != NEW_BACKGROUND_TAB)
           view_->RevertAll();
@@ -954,7 +954,7 @@ void OmniboxEditModel::AcceptTemporaryTextAsUserText() {
   has_temporary_text_ = false;
 
   if (user_input_in_progress_ || !in_revert_)
-    delegate_->OnInputStateChanged();
+    client_->OnInputStateChanged();
 }
 
 void OmniboxEditModel::ClearKeyword() {
@@ -1043,19 +1043,19 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
   // the OnSetFocus() call after the process of handling the paste has kicked
   // off).
   // TODO(hfung): Remove this when crbug/271590 is fixed.
-  if (delegate_->CurrentPageExists() && !user_input_in_progress_) {
+  if (client_->CurrentPageExists() && !user_input_in_progress_) {
     // We avoid PermanentURL() here because it's not guaranteed to give us the
     // actual underlying current URL, e.g. if we're on the NTP and the
     // |permanent_text_| is empty.
     input_ = AutocompleteInput(permanent_text_, base::string16::npos,
-                               std::string(), delegate_->GetURL(),
+                               std::string(), client_->GetURL(),
                                ClassifyPage(), false, false, true, true, true,
                                ChromeAutocompleteSchemeClassifier(profile_));
     autocomplete_controller()->Start(input_);
   }
 
   if (user_input_in_progress_ || !in_revert_)
-    delegate_->OnInputStateChanged();
+    client_->OnInputStateChanged();
 }
 
 void OmniboxEditModel::SetCaretVisibility(bool visible) {
@@ -1068,7 +1068,7 @@ void OmniboxEditModel::SetCaretVisibility(bool visible) {
 
 void OmniboxEditModel::OnWillKillFocus() {
   if (user_input_in_progress_ || !in_revert_)
-    delegate_->OnInputStateChanged();
+    client_->OnInputStateChanged();
 }
 
 void OmniboxEditModel::OnKillFocus() {
@@ -1094,8 +1094,8 @@ bool OmniboxEditModel::OnEscapeKeyPressed() {
   // We do not clear the pending entry from the omnibox when a load is first
   // stopped.  If the user presses Escape while stopped, whether editing or not,
   // we clear it.
-  if (delegate_->CurrentPageExists() && !delegate_->IsLoading()) {
-    delegate_->GetNavigationController().DiscardNonCommittedEntries();
+  if (client_->CurrentPageExists() && !client_->IsLoading()) {
+    client_->GetNavigationController().DiscardNonCommittedEntries();
     view_->Update();
   }
 
@@ -1378,7 +1378,7 @@ void OmniboxEditModel::OnCurrentMatchChanged() {
 
 void OmniboxEditModel::SetSuggestionToPrefetch(
     const InstantSuggestion& suggestion) {
-  delegate_->SetSuggestionToPrefetch(suggestion);
+  client_->SetSuggestionToPrefetch(suggestion);
 }
 
 // static
@@ -1430,7 +1430,7 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
     match->type = AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED;
     match->provider = autocomplete_controller()->search_provider();
     match->destination_url =
-        delegate_->GetNavigationController().GetVisibleEntry()->GetURL();
+        client_->GetNavigationController().GetVisibleEntry()->GetURL();
     match->transition = ui::PAGE_TRANSITION_RELOAD;
   } else if (query_in_progress() ||
              (popup_model() && popup_model()->IsOpen())) {
@@ -1527,16 +1527,16 @@ bool OmniboxEditModel::IsSpaceCharForAcceptingKeyword(wchar_t c) {
 }
 
 OmniboxEventProto::PageClassification OmniboxEditModel::ClassifyPage() const {
-  if (!delegate_->CurrentPageExists())
+  if (!client_->CurrentPageExists())
     return OmniboxEventProto::OTHER;
-  if (delegate_->IsInstantNTP()) {
+  if (client_->IsInstantNTP()) {
     // Note that we treat OMNIBOX as the source if focus_source_ is INVALID,
     // i.e., if input isn't actually in progress.
     return (focus_source_ == FAKEBOX) ?
         OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS :
         OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS;
   }
-  const GURL& gurl = delegate_->GetURL();
+  const GURL& gurl = client_->GetURL();
   if (!gurl.is_valid())
     return OmniboxEventProto::INVALID_SPEC;
   const std::string& url = gurl.spec();
@@ -1548,7 +1548,7 @@ OmniboxEventProto::PageClassification OmniboxEditModel::ClassifyPage() const {
     return OmniboxEventProto::HOME_PAGE;
   if (controller_->GetToolbarModel()->WouldPerformSearchTermReplacement(true))
     return OmniboxEventProto::SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT;
-  if (delegate_->IsSearchResultsPage())
+  if (client_->IsSearchResultsPage())
     return OmniboxEventProto::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT;
   return OmniboxEventProto::OTHER;
 }
@@ -1575,5 +1575,5 @@ void OmniboxEditModel::SetFocusState(OmniboxFocusState state,
       is_caret_visible() != was_caret_visible)
     view_->ApplyCaretVisibility();
 
-  delegate_->OnFocusChanged(focus_state_, reason);
+  client_->OnFocusChanged(focus_state_, reason);
 }
