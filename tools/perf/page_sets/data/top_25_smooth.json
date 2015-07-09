@@ -1,18 +1,11 @@
 {
-    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
+    "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating.", 
     "archives": {
-        "top_25_003.wpr": [
-            "Facebook"
-        ], 
-        "top_25_001.wpr": [
-            "https://plus.google.com/110031535020051778989/posts"
-        ], 
         "top_25_002.wpr": [
             "https://www.google.com/search?q=cats&tbm=isch"
         ], 
         "top_25_000.wpr": [
             "https://www.google.com/#hl=en&q=barack+obama", 
-            "https://mail.google.com/mail/", 
             "https://www.google.com/calendar/", 
             "https://drive.google.com", 
             "https://docs.google.com/document/d/1X-IKNjtEnx-WW5JIKRLsyhz5sbsat3mfTpAPUSX3_s4/view", 
@@ -35,6 +28,15 @@
             "http://answers.yahoo.com", 
             "http://sports.yahoo.com/", 
             "http://techcrunch.com"
+        ], 
+        "top_25_003.wpr": [
+            "Facebook"
+        ], 
+        "top_25_006.wpr": [
+            "https://mail.google.com/mail/"
+        ], 
+        "top_25_001.wpr": [
+            "https://plus.google.com/110031535020051778989/posts"
         ]
     }
 }
