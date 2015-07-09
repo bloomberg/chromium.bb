@@ -137,6 +137,7 @@ crbug.com/490511 imported/web-platform-tests/html/webappapis/scripting/processin
 crbug.com/490511 imported/web-platform-tests/html/webappapis/scripting/processing-model-2/compile-error-in-setTimeout.html [ Failure ]
 crbug.com/490511 imported/web-platform-tests/html/webappapis/scripting/processing-model-2/runtime-error-in-setInterval.html [ Failure ]
 crbug.com/490511 imported/web-platform-tests/html/webappapis/scripting/processing-model-2/runtime-error-in-setTimeout.html [ Failure ]
+crbug.com/490511 imported/web-platform-tests/html/webappapis/system-state-and-capabilities/the-navigator-object/navigatorlanguage.html [ Failure ]
 crbug.com/490511 imported/web-platform-tests/html/syntax/parsing/html5lib_pending-spec-changes-plain-text-unsafe.html [ Crash Pass ]
 crbug.com/490511 imported/web-platform-tests/html/syntax/parsing/html5lib_tests19.html [ Failure Pass Slow ]
 crbug.com/490511 imported/web-platform-tests/html/syntax/parsing/html5lib_tests2.html [ Failure Pass Slow ]
@@ -365,14 +366,13 @@ crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-vr
 crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-vrl-224.xht [ ImageOnlyFailure ]
 
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/bidi-normal-011.html [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/bidi-plaintext-011.html [ ImageOnlyFailure ]
 crbug.com/410320 imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001.html [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-002.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-003.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-004.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-005.xht [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-value-all-and-inherit-001.htm [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-layout-rules-001.html [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-inherit-all-001.html [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-inherit-all-002.html [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001e.html [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/writing-mode-stretch-001.html [ ImageOnlyFailure ]
 
@@ -1624,7 +1624,6 @@ crbug.com/505429 [ Mavericks Retina Win ] http/tests/websocket/close-code-and-re
 crbug.com/505795 [ Win Mac ] virtual/antialiasedtext/fast/text/emphasis-ellipsis-complextext.html [ Pass ImageOnlyFailure ]
 
 crbug.com/506312 imported/csswg-test/css-pseudo-4/first-letter-001.html [ ImageOnlyFailure ]
-crbug.com/506312 imported/csswg-test/css-writing-modes-3/text-combine-upright-inherit-all-001.html [ ImageOnlyFailure ]
 
 crbug.com/508252 fast/forms/time-multiple-fields/time-multiple-fields-preserve-value-after-history-back.html [ Pass Failure ]
 
