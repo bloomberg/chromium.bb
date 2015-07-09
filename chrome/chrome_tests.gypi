@@ -539,6 +539,8 @@
       'browser/ui/webui/ntp/new_tab_ui_browsertest.cc',
       'browser/ui/webui/options/clear_browser_data_browsertest.cc',
       'browser/ui/webui/options/content_settings_exception_area_browsertest.cc',
+      'browser/ui/webui/options/multilanguage_options_browsertest.cc',
+      'browser/ui/webui/options/multilanguage_options_browsertest.h',
       'browser/ui/webui/options/options_browsertest.cc',
       'browser/ui/webui/options/options_ui_browsertest.cc',
       'browser/ui/webui/options/options_ui_browsertest.h',
@@ -903,6 +905,7 @@
       'browser/ui/webui/options/language_options_browsertest.js',
       'browser/ui/webui/options/language_options_dictionary_download_browsertest.js',
       'browser/ui/webui/options/manage_profile_browsertest.js',
+      'browser/ui/webui/options/multilanguage_options_webui_browsertest.js',
       'browser/ui/webui/options/options_browsertest.js',
       'browser/ui/webui/options/options_browsertest_base.js',
       'browser/ui/webui/options/password_manager_browsertest.js',
@@ -2368,6 +2371,9 @@
             'renderer/safe_browsing/phishing_classifier_browsertest.cc',
             'renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc',
             'renderer/safe_browsing/phishing_dom_feature_extractor_browsertest.cc',
+            # This tests the language options UI features that do not exist on
+            # Mac.
+            'browser/ui/webui/options/multilanguage_options_webui_browsertest.js',
           ],
         }],  # OS=="mac"
         ['OS=="mac" or OS=="win"', {

@@ -43,7 +43,10 @@ class SpellCheckerSubMenuObserver : public RenderViewContextMenuObserver {
   // Hunspell spelling submenu.
   // The radio items representing languages available for spellchecking.
   int language_group_;
-  int language_selected_;
+  // The number of languages currently selected for spellchecking, which are
+  // also the first elements in |languages_|.
+  size_t num_selected_languages_;
+  // A vector of all languages available for spellchecking.
   std::vector<std::string> languages_;
 #endif  // !OS_MACOSX
 

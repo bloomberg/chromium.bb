@@ -4,6 +4,8 @@
 
 #include "chrome/browser/renderer_context_menu/spellchecker_submenu_observer.h"
 
+#include <algorithm>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/prefs/pref_member.h"
@@ -32,7 +34,7 @@ SpellCheckerSubMenuObserver::SpellCheckerSubMenuObserver(
     : proxy_(proxy),
       submenu_model_(delegate),
       language_group_(group),
-      language_selected_(0) {
+      num_selected_languages_(0) {
   DCHECK(proxy_);
 }
 
@@ -46,17 +48,25 @@ void SpellCheckerSubMenuObserver::InitMenu(
   // Add available spell-checker languages to the sub menu.
   content::BrowserContext* browser_context = proxy_->GetBrowserContext();
   DCHECK(browser_context);
-  language_selected_ =
+  num_selected_languages_ =
       SpellcheckService::GetSpellCheckLanguages(browser_context, &languages_);
   DCHECK(languages_.size() <
          IDC_SPELLCHECK_LANGUAGES_LAST - IDC_SPELLCHECK_LANGUAGES_FIRST);
   const std::string app_locale = g_browser_process->GetApplicationLocale();
-  for (size_t i = 0; i < languages_.size(); ++i) {
-    base::string16 display_name(
-        l10n_util::GetDisplayNameForLocale(languages_[i], app_locale, true));
-    submenu_model_.AddRadioItem(IDC_SPELLCHECK_LANGUAGES_FIRST + i,
-                                display_name,
-                                language_group_);
+
+  if (chrome::spellcheck_common::IsMultilingualSpellcheckEnabled()) {
+    for (size_t i = 0; i < languages_.size(); ++i) {
+      submenu_model_.AddCheckItem(
+          IDC_SPELLCHECK_LANGUAGES_FIRST + i,
+          l10n_util::GetDisplayNameForLocale(languages_[i], app_locale, true));
+    }
+  } else {
+    for (size_t i = 0; i < languages_.size(); ++i) {
+      submenu_model_.AddRadioItem(
+          IDC_SPELLCHECK_LANGUAGES_FIRST + i,
+          l10n_util::GetDisplayNameForLocale(languages_[i], app_locale, true),
+          language_group_);
+    }
   }
 
   // Add an item that opens the 'fonts and languages options' page.
@@ -121,7 +131,8 @@ bool SpellCheckerSubMenuObserver::IsCommandIdChecked(int command_id) {
 
   if (command_id >= IDC_SPELLCHECK_LANGUAGES_FIRST &&
       command_id < IDC_SPELLCHECK_LANGUAGES_LAST) {
-    return language_selected_ == command_id - IDC_SPELLCHECK_LANGUAGES_FIRST;
+    return num_selected_languages_ >
+           static_cast<size_t>(command_id - IDC_SPELLCHECK_LANGUAGES_FIRST);
   }
 
   // Check box for 'Check Spelling while typing'.
@@ -161,14 +172,30 @@ void SpellCheckerSubMenuObserver::ExecuteCommand(int command_id) {
   // Check to see if one of the spell check language ids have been clicked.
   Profile* profile = Profile::FromBrowserContext(proxy_->GetBrowserContext());
   DCHECK(profile);
+
   if (command_id >= IDC_SPELLCHECK_LANGUAGES_FIRST &&
       command_id < IDC_SPELLCHECK_LANGUAGES_LAST) {
-    const size_t language = command_id - IDC_SPELLCHECK_LANGUAGES_FIRST;
-    if (profile && language < languages_.size()) {
-      StringListPrefMember dictionary_language;
-      dictionary_language.Init(prefs::kSpellCheckDictionaries,
-                               profile->GetPrefs());
-      dictionary_language.SetValue(
+    size_t language = command_id - IDC_SPELLCHECK_LANGUAGES_FIRST;
+    DCHECK_LT(language, languages_.size());
+    StringListPrefMember dictionaries_pref;
+    dictionaries_pref.Init(prefs::kSpellCheckDictionaries, profile->GetPrefs());
+
+    if (chrome::spellcheck_common::IsMultilingualSpellcheckEnabled()) {
+      std::vector<std::string> dictionary_languages =
+          dictionaries_pref.GetValue();
+
+      auto found_language =
+          std::find(dictionary_languages.begin(), dictionary_languages.end(),
+                    languages_[language]);
+
+      if (found_language != dictionary_languages.end())
+        dictionary_languages.erase(found_language);
+      else
+        dictionary_languages.push_back(languages_[language]);
+
+      dictionaries_pref.SetValue(dictionary_languages);
+    } else {
+      dictionaries_pref.SetValue(
           std::vector<std::string>(1, languages_[language]));
     }
     return;

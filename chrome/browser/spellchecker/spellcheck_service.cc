@@ -8,6 +8,7 @@
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
+#include "base/supports_user_data.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/spellchecker/feedback_sender.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
@@ -42,7 +43,6 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PrefService* prefs = user_prefs::UserPrefs::Get(context);
   pref_change_registrar_.Init(prefs);
-
   StringListPrefMember dictionaries_pref;
   dictionaries_pref.Init(prefs::kSpellCheckDictionaries, prefs);
   std::string first_of_dictionaries;
@@ -78,7 +78,7 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
                  base::Unretained(this)));
   pref_change_registrar_.Add(
       prefs::kSpellCheckDictionaries,
-      base::Bind(&SpellcheckService::OnSpellCheckDictionaryChanged,
+      base::Bind(&SpellcheckService::OnSpellCheckDictionariesChanged,
                  base::Unretained(this)));
   if (!chrome::spellcheck_common::IsMultilingualSpellcheckEnabled()) {
     pref_change_registrar_.Add(
@@ -86,12 +86,13 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
         base::Bind(&SpellcheckService::OnUseSpellingServiceChanged,
                    base::Unretained(this)));
   }
+
   pref_change_registrar_.Add(
       prefs::kEnableContinuousSpellcheck,
       base::Bind(&SpellcheckService::InitForAllRenderers,
                  base::Unretained(this)));
 
-  OnSpellCheckDictionaryChanged();
+  OnSpellCheckDictionariesChanged();
 
   custom_dictionary_.reset(new SpellcheckCustomDictionary(context_->GetPath()));
   custom_dictionary_->AddObserver(this);
@@ -111,32 +112,22 @@ base::WeakPtr<SpellcheckService> SpellcheckService::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
+#if !defined(OS_MACOSX)
 // static
-int SpellcheckService::GetSpellCheckLanguages(
+size_t SpellcheckService::GetSpellCheckLanguages(
     base::SupportsUserData* context,
     std::vector<std::string>* languages) {
   PrefService* prefs = user_prefs::UserPrefs::Get(context);
   StringPrefMember accept_languages_pref;
   accept_languages_pref.Init(prefs::kAcceptLanguages, prefs);
 
-  std::string dictionary_language;
-  prefs->GetList(prefs::kSpellCheckDictionaries)
-      ->GetString(0, &dictionary_language);
-
-  // Now scan through the list of accept languages, and find possible mappings
-  // from this list to the existing list of spell check languages.
   std::vector<std::string> accept_languages;
-
-#if defined(OS_MACOSX)
-  if (spellcheck_mac::SpellCheckerAvailable())
-    spellcheck_mac::GetAvailableLanguages(&accept_languages);
-  else
-    base::SplitString(accept_languages_pref.GetValue(), ',', &accept_languages);
-#else
   base::SplitString(accept_languages_pref.GetValue(), ',', &accept_languages);
-#endif  // !OS_MACOSX
 
-  languages->push_back(dictionary_language);
+  StringListPrefMember dictionaries_pref;
+  dictionaries_pref.Init(prefs::kSpellCheckDictionaries, prefs);
+  *languages = dictionaries_pref.GetValue();
+  size_t enabled_spellcheck_languages = languages->size();
 
   for (std::vector<std::string>::const_iterator i = accept_languages.begin();
        i != accept_languages.end(); ++i) {
@@ -149,13 +140,9 @@ int SpellcheckService::GetSpellCheckLanguages(
     }
   }
 
-  for (size_t i = 0; i < languages->size(); ++i) {
-    if ((*languages)[i] == dictionary_language)
-      return i;
-  }
-
-  return -1;
+  return enabled_spellcheck_languages;
 }
+#endif  // !OS_MACOSX
 
 // static
 bool SpellcheckService::SignalStatusEvent(
@@ -299,7 +286,7 @@ void SpellcheckService::OnEnableAutoSpellCorrectChanged() {
   }
 }
 
-void SpellcheckService::OnSpellCheckDictionaryChanged() {
+void SpellcheckService::OnSpellCheckDictionariesChanged() {
   if (hunspell_dictionary_.get())
     hunspell_dictionary_->RemoveObserver(this);
   PrefService* prefs = user_prefs::UserPrefs::Get(context_);

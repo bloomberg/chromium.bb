@@ -64,13 +64,15 @@ class SpellcheckService : public KeyedService,
 
   base::WeakPtr<SpellcheckService> GetWeakPtr();
 
-  // This function computes a vector of strings which are to be displayed in
-  // the context menu over a text area for changing spell check languages. It
-  // returns the index of the current spell check language in the vector.
+#if !defined(OS_MACOSX)
+  // Computes |languages| to display in the context menu over a text area for
+  // changing spellcheck languages. Returns the number of languages that are
+  // enabled, which are always at the beginning of |languages|.
   // TODO(port): this should take a vector of base::string16, but the
   // implementation has some dependencies in l10n util that need porting first.
-  static int GetSpellCheckLanguages(base::SupportsUserData* context,
-                                    std::vector<std::string>* languages);
+  static size_t GetSpellCheckLanguages(base::SupportsUserData* context,
+                                       std::vector<std::string>* languages);
+#endif  // !OS_MACOSX
 
   // Signals the event attached by AttachTestEvent() to report the specified
   // event to browser tests. This function is called by this class and its
@@ -142,9 +144,9 @@ class SpellcheckService : public KeyedService,
   // be enabled.
   void OnEnableAutoSpellCorrectChanged();
 
-  // Reacts to a change in user preference on which language should be used for
+  // Reacts to a change in user preference on which languages should be used for
   // spellchecking.
-  void OnSpellCheckDictionaryChanged();
+  void OnSpellCheckDictionariesChanged();
 
   // Notification handler for changes to prefs::kSpellCheckUseSpellingService.
   void OnUseSpellingServiceChanged();

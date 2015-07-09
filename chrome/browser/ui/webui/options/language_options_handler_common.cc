@@ -132,6 +132,10 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
   localized_strings->SetBoolean("enableSpellingAutoCorrect",
                                 enable_spelling_auto_correct);
 
+  localized_strings->SetBoolean(
+      "enableMultilingualSpellChecker",
+      chrome::spellcheck_common::IsMultilingualSpellcheckEnabled());
+
   Profile* profile = Profile::FromWebUI(web_ui());
   PrefService* prefs = profile->GetPrefs();
   std::string default_target_language =
@@ -254,7 +258,6 @@ void LanguageOptionsHandlerCommon::SpellCheckLanguageChangeCallback(
     const base::ListValue* args) {
   const std::string language_code =
       base::UTF16ToASCII(ExtractStringValue(args));
-  CHECK(!language_code.empty());
   const std::string action = base::StringPrintf(
       "LanguageOptions_SpellCheckLanguageChange_%s", language_code.c_str());
   content::RecordComputedAction(action);

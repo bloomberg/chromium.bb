@@ -41,11 +41,16 @@
      dictionary pane. -->
 <if expr="not is_macosx">
         <div id="language-options-spellcheck" class="language-options-contents">
-          <button id="language-options-spell-check-language-button"
+          <div class="checkbox" id="spellcheck-language-checkbox-container">
+            <label>
+              <input type="checkbox" id="spellcheck-language-checkbox">
+              <span i18n-content="useThisForSpellChecking"></span>
+            </label>
+          </div>
+          <button id="spellcheck-language-button"
               i18n-content="useThisForSpellChecking">
           </button>
-          <span id="language-options-spell-check-language-message" hidden>
-          </span>
+          <span id="spellcheck-language-message" hidden></span>
           <span id="language-options-dictionary-downloading-message"
               i18n-content="downloadingDictionary" hidden>
           </span>
@@ -111,9 +116,9 @@
           i18n-content="languageDictionaryOverlayTitle"></a>
 </if>
 <if expr="not chromeos and not is_macosx">
-      <div id="spell-check-option" class="checkbox">
+      <div class="checkbox">
         <label>
-          <input id="enable-spell-check" pref="browser.enable_spellchecking"
+          <input id="enable-spellcheck" pref="browser.enable_spellchecking"
               metric="Options_SpellCheck" type="checkbox">
           <span i18n-content="enableSpellCheck"></span>
         </label>

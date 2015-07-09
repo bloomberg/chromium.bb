@@ -36,7 +36,7 @@ TEST_F('LanguagesOptionsDictionaryDownloadWebUITest',
        'testdictionaryDownloadSuccess',
        function() {
   options.LanguageOptions.onDictionaryDownloadSuccess('en-US');
-  expectFalse($('language-options-spell-check-language-message').hidden);
+  expectFalse($('spellcheck-language-message').hidden);
   expectTrue($('language-options-dictionary-downloading-message').hidden);
   expectTrue($('language-options-dictionary-download-failed-message').hidden);
   expectTrue(
@@ -49,7 +49,7 @@ TEST_F('LanguagesOptionsDictionaryDownloadWebUITest',
        'testdictionaryDownloadProgress',
        function() {
   options.LanguageOptions.onDictionaryDownloadBegin('en-US');
-  expectTrue($('language-options-spell-check-language-message').hidden);
+  expectTrue($('spellcheck-language-message').hidden);
   expectFalse($('language-options-dictionary-downloading-message').hidden);
   expectTrue($('language-options-dictionary-download-failed-message').hidden);
   expectTrue(
@@ -66,7 +66,7 @@ TEST_F('LanguagesOptionsDictionaryDownloadWebUITest',
 
   // First failure shows a short error message.
   options.LanguageOptions.onDictionaryDownloadFailure('en-US');
-  expectTrue($('language-options-spell-check-language-message').hidden);
+  expectTrue($('spellcheck-language-message').hidden);
   expectTrue($('language-options-dictionary-downloading-message').hidden);
   expectFalse($('language-options-dictionary-download-failed-message').hidden);
   expectTrue(
@@ -74,14 +74,14 @@ TEST_F('LanguagesOptionsDictionaryDownloadWebUITest',
 
   // Second and all following failures show a longer error message.
   options.LanguageOptions.onDictionaryDownloadFailure('en-US');
-  expectTrue($('language-options-spell-check-language-message').hidden);
+  expectTrue($('spellcheck-language-message').hidden);
   expectTrue($('language-options-dictionary-downloading-message').hidden);
   expectFalse($('language-options-dictionary-download-failed-message').hidden);
   expectFalse(
       $('language-options-dictionary-download-fail-help-message').hidden);
 
   options.LanguageOptions.onDictionaryDownloadFailure('en-US');
-  expectTrue($('language-options-spell-check-language-message').hidden);
+  expectTrue($('spellcheck-language-message').hidden);
   expectTrue($('language-options-dictionary-downloading-message').hidden);
   expectFalse($('language-options-dictionary-download-failed-message').hidden);
   expectFalse(
