@@ -2,31 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar_unittest.h"
 
 #include "base/command_line.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
-#include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
-#include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/extensions/extension_toolbar_icon_surfacing_bubble_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_delegate.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/browser_with_test_window_test.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/feature_switch.h"
 
 namespace {
 
@@ -87,90 +83,15 @@ std::string VerifyToolbarOrderForBar(
 
 }  // namespace
 
-// A cross-platform unit test for the ToolbarActionsBar that uses the
-// TestToolbarActionsBarHelper to create the platform-specific containers.
-// TODO(devlin): Since this *does* use the real platform containers, in theory,
-// we can move all the BrowserActionsBarBrowserTests to be unittests. See about
-// doing this.
-class ToolbarActionsBarUnitTest : public BrowserWithTestWindowTest {
- public:
-  ToolbarActionsBarUnitTest() : toolbar_model_(nullptr), use_redesign_(false) {}
+ToolbarActionsBarUnitTest::ToolbarActionsBarUnitTest()
+    : toolbar_model_(nullptr),
+      use_redesign_(false) {}
 
-  // A constructor to allow subclasses to override the redesign value.
-  explicit ToolbarActionsBarUnitTest(bool use_redesign)
-      : toolbar_model_(nullptr),
-        use_redesign_(use_redesign) {}
+ToolbarActionsBarUnitTest::ToolbarActionsBarUnitTest(bool use_redesign)
+    : toolbar_model_(nullptr),
+      use_redesign_(use_redesign) {}
 
-  ~ToolbarActionsBarUnitTest() override {}
-
- protected:
-  void SetUp() override;
-  void TearDown() override;
-
-  // Activates the tab at the given |index| in the tab strip model.
-  void ActivateTab(int index);
-
-  // Set whether or not the given |action| wants to run on the |web_contents|.
-  void SetActionWantsToRunOnTab(ExtensionAction* action,
-                                content::WebContents* web_contents,
-                                bool wants_to_run);
-
-  // Creates an extension with the given |name| and |action_type|, adds it to
-  // the associated extension service, and returns the created extension. (It's
-  // safe to ignore the returned value.)
-  scoped_refptr<const extensions::Extension> CreateAndAddExtension(
-      const std::string& name,
-      extensions::extension_action_test_util::ActionType action_type);
-
-  // Verifies that the toolbar is in order specified by |expected_names|, has
-  // the total action count of |total_size|, and has the same |visible_count|.
-  // This verifies that both the ToolbarActionsBar and the associated
-  // (platform-specific) view is correct.
-  // We use expected names (instead of ids) because they're much more readable
-  // in a debug message. These aren't enforced to be unique, so don't make
-  // duplicates.
-  // If any of these is wrong, returns testing::AssertionFailure() with a
-  // message.
-  testing::AssertionResult VerifyToolbarOrder(
-      const char* expected_names[],
-      size_t total_size,
-      size_t visible_count) WARN_UNUSED_RESULT;
-
-  ToolbarActionsBar* toolbar_actions_bar() {
-    return browser_action_test_util_->GetToolbarActionsBar();
-  }
-  ToolbarActionsBar* overflow_bar() {
-    return overflow_browser_action_test_util_->GetToolbarActionsBar();
-  }
-  extensions::ExtensionToolbarModel* toolbar_model() {
-    return toolbar_model_;
-  }
-  BrowserActionTestUtil* browser_action_test_util() {
-    return browser_action_test_util_.get();
-  }
-  BrowserActionTestUtil* overflow_browser_action_test_util() {
-    return overflow_browser_action_test_util_.get();
-  }
-
- private:
-  // The associated ExtensionToolbarModel (owned by the keyed service setup).
-  extensions::ExtensionToolbarModel* toolbar_model_;
-
-  // A BrowserActionTestUtil object constructed with the associated
-  // ToolbarActionsBar.
-  scoped_ptr<BrowserActionTestUtil> browser_action_test_util_;
-
-  // The overflow container's BrowserActionTestUtil (only non-null if
-  // |use_redesign| is true).
-  scoped_ptr<BrowserActionTestUtil> overflow_browser_action_test_util_;
-
-  // True if the extension action redesign switch should be enabled.
-  bool use_redesign_;
-
-  scoped_ptr<extensions::FeatureSwitch::ScopedOverride> redesign_switch_;
-
-  DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBarUnitTest);
-};
+ToolbarActionsBarUnitTest::~ToolbarActionsBarUnitTest() {}
 
 void ToolbarActionsBarUnitTest::SetUp() {
   if (use_redesign_) {
@@ -264,6 +185,11 @@ testing::AssertionResult ToolbarActionsBarUnitTest::VerifyToolbarOrder(
       testing::AssertionFailure() << "main bar error:\n" << main_bar_error <<
           "overflow bar error:\n" << overflow_bar_error;
 }
+
+ToolbarActionsBarRedesignUnitTest::ToolbarActionsBarRedesignUnitTest()
+    : ToolbarActionsBarUnitTest(true) {}
+
+ToolbarActionsBarRedesignUnitTest::~ToolbarActionsBarRedesignUnitTest() {}
 
 TEST_F(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
   // Add three extensions to the profile; this is the easiest way to have
@@ -407,15 +333,6 @@ TEST_F(ToolbarActionsBarUnitTest, ToolbarActionsReorderOnPrefChange) {
     EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 3u));
   }
 }
-
-class ToolbarActionsBarRedesignUnitTest : public ToolbarActionsBarUnitTest {
- public:
-  ToolbarActionsBarRedesignUnitTest() : ToolbarActionsBarUnitTest(true) {}
-  ~ToolbarActionsBarRedesignUnitTest() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBarRedesignUnitTest);
-};
 
 TEST_F(ToolbarActionsBarRedesignUnitTest, IconSurfacingBubbleAppearance) {
   // Without showing anything new, we shouldn't show the bubble, and should

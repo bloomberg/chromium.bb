@@ -81,9 +81,6 @@ void WrenchIconPainter::Paint(gfx::Canvas* canvas,
     case BEZEL_PRESSED:
       resource_id = IDR_TOOLBAR_BEZEL_PRESSED;
       break;
-    case BEZEL_RAISED:
-      resource_id = IDR_TOOLBAR_BEZEL_RAISED;
-      break;
   }
 
   if (resource_id) {

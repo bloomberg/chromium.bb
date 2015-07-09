@@ -76,9 +76,6 @@ ToolbarActionView::ToolbarActionView(
       content::Source<ThemeService>(
           ThemeServiceFactory::GetForProfile(profile_)));
 
-  wants_to_run_border_ = CreateDefaultBorder();
-  DecorateWantsToRunBorder(wants_to_run_border_.get());
-
   // If the button is within a menu, we need to make it focusable in order to
   // have it accessible via keyboard navigation.
   if (delegate_->ShownInsideMenu())
@@ -91,16 +88,6 @@ ToolbarActionView::~ToolbarActionView() {
   if (context_menu_owner == this)
     context_menu_owner = nullptr;
   view_controller_->SetDelegate(nullptr);
-}
-
-void ToolbarActionView::DecorateWantsToRunBorder(
-    views::LabelButtonBorder* border) {
-  // Create a special border for when the action wants to run, which gives the
-  // button a "popped out" state.
-  static const int kRaisedImages[] = IMAGE_GRID(IDR_TEXTBUTTON_RAISED);
-  border->SetPainter(false,
-                     views::Button::STATE_NORMAL,
-                     views::Painter::CreateImageGridPainter(kRaisedImages));
 }
 
 gfx::Size ToolbarActionView::GetPreferredSize() const {
@@ -121,13 +108,6 @@ void ToolbarActionView::ViewHierarchyChanged(
   }
 
   MenuButton::ViewHierarchyChanged(details);
-}
-
-void ToolbarActionView::OnPaintBorder(gfx::Canvas* canvas) {
-  if (!wants_to_run_)
-    views::MenuButton::OnPaintBorder(canvas);
-  else
-    wants_to_run_border_->Paint(*this, canvas);
 }
 
 void ToolbarActionView::GetAccessibleState(ui::AXViewState* state) {

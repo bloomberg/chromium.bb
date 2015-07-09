@@ -1548,6 +1548,7 @@
       'browser/ui/content_settings/content_setting_bubble_model_unittest.cc',
       'browser/ui/content_settings/content_setting_image_model_unittest.cc',
       'browser/ui/elide_url_unittest.cc',  # URL elider not used on Android.
+      'browser/ui/extensions/extension_action_view_controller_unittest.cc',
       'browser/ui/exclusive_access/fullscreen_controller_state_unittest.cc',
       'browser/ui/omnibox/omnibox_controller_unittest.cc',
       'browser/ui/omnibox/omnibox_edit_unittest.cc',
@@ -1579,6 +1580,7 @@
       'browser/ui/toolbar/test_toolbar_model.cc',
       'browser/ui/toolbar/test_toolbar_model.h',
       'browser/ui/toolbar/toolbar_actions_bar_unittest.cc',
+      'browser/ui/toolbar/toolbar_actions_bar_unittest.h',
       'browser/ui/toolbar/toolbar_model_unittest.cc',
       'browser/ui/toolbar/wrench_icon_painter_unittest.cc',
       'browser/ui/toolbar/wrench_menu_model_unittest.cc',

@@ -389,14 +389,6 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
   if (!webContents)
     return;
 
-  if (viewController_->WantsToRun(webContents)) {
-    [[self cell] setImageID:IDR_BROWSER_ACTION_R
-        forButtonState:image_button_cell::kDefaultState];
-  } else {
-    [[self cell] setImageID:IDR_BROWSER_ACTION
-        forButtonState:image_button_cell::kDefaultState];
-  }
-
   base::string16 tooltip = viewController_->GetTooltip(webContents);
   [self setToolTip:(tooltip.empty() ? nil : base::SysUTF16ToNSString(tooltip))];
 
@@ -510,6 +502,11 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
 
 - (void)setTestContextMenu:(NSMenu*)testContextMenu {
   testContextMenu_ = testContextMenu;
+}
+
+- (BOOL)wantsToRunForTesting {
+  return viewController_->WantsToRun(
+      [browserActionsController_ currentWebContents]);
 }
 
 @end

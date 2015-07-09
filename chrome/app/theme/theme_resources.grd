@@ -148,7 +148,6 @@
       <if expr="is_macosx or is_ios">
         <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_H" file="common/browser_action_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_P" file="common/browser_action_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_R" file="common/browser_action_raised.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTIONS_OVERFLOW" file="common/browser_actions_overflow_normal.png" />
       <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTIONS_OVERFLOW_H" file="common/browser_actions_overflow_hover.png" />
@@ -976,7 +975,6 @@
 
       <structure type="chrome_scaled_image" name="IDR_TOOLBAR_BEZEL_HOVER" file="common/browser_toolbar_bezel_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_TOOLBAR_BEZEL_PRESSED" file="common/browser_toolbar_bezel_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_TOOLBAR_BEZEL_RAISED" file="common/browser_toolbar_bezel_raised.png" />
       <structure type="chrome_scaled_image" name="IDR_TOOLS_BAR" file="common/browser_tools_bar.png" />
       <structure type="chrome_scaled_image" name="IDR_TOOLS_BAR_LOW" file="common/browser_tools_bar_low.png" />
       <structure type="chrome_scaled_image" name="IDR_TOOLS_BAR_MEDIUM" file="common/browser_tools_bar_medium.png" />

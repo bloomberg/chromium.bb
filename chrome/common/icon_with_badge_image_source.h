@@ -38,16 +38,35 @@ class IconWithBadgeImageSource : public gfx::CanvasImageSource {
 
   void SetIcon(const gfx::Image& icon);
   void SetBadge(scoped_ptr<Badge> badge);
+  void set_grayscale(bool grayscale) { grayscale_ = grayscale; }
+  void set_paint_decoration(bool paint_decoration) {
+    paint_decoration_ = paint_decoration;
+  }
+
+  bool grayscale() const { return grayscale_; }
+  bool paint_decoration() const { return paint_decoration_; }
 
  private:
   // gfx::CanvasImageSource:
   void Draw(gfx::Canvas* canvas) override;
+
+  // Paints a decoration over the base icon to indicate that the action wants to
+  // run.
+  void PaintDecoration(gfx::Canvas* canvas);
 
   // The base icon to draw.
   gfx::Image icon_;
 
   // An optional badge to draw over the base icon.
   scoped_ptr<Badge> badge_;
+
+  // Whether or not the icon should be grayscaled (e.g., to show it is
+  // disabled).
+  bool grayscale_;
+
+  // Whether or not to paint a decoration over the base icon to indicate the
+  // represented action wants to run.
+  bool paint_decoration_;
 
   DISALLOW_COPY_AND_ASSIGN(IconWithBadgeImageSource);
 };

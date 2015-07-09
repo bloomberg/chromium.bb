@@ -4,9 +4,12 @@
 
 #include "chrome/common/icon_with_badge_image_source.h"
 
+#include <algorithm>
+
 #include "chrome/common/badge_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/image/image_skia_operations.h"
 
 IconWithBadgeImageSource::Badge::Badge(std::string text,
                                        SkColor text_color,
@@ -17,7 +20,9 @@ IconWithBadgeImageSource::Badge::Badge(std::string text,
 IconWithBadgeImageSource::Badge::~Badge() {}
 
 IconWithBadgeImageSource::IconWithBadgeImageSource(const gfx::Size& size)
-    : gfx::CanvasImageSource(size, false) {
+    : gfx::CanvasImageSource(size, false),
+      grayscale_(false),
+      paint_decoration_(false) {
 }
 
 IconWithBadgeImageSource::~IconWithBadgeImageSource() {
@@ -38,7 +43,9 @@ void IconWithBadgeImageSource::Draw(gfx::Canvas* canvas) {
   int x_offset = std::floor((size().width() - icon_.Width()) / 2.0);
   int y_offset = std::floor((size().height() - icon_.Height()) / 2.0);
   gfx::ImageSkia skia = icon_.AsImageSkia();
-  canvas->DrawImageInt(icon_.AsImageSkia(), x_offset, y_offset);
+  if (grayscale_)
+    skia = gfx::ImageSkiaOperations::CreateHSLShiftedImage(skia, {-1, 0, 0.6});
+  canvas->DrawImageInt(skia, x_offset, y_offset);
 
   // Draw a badge on the provided browser action icon's canvas.
   // TODO(devlin): Pull PaintBadge() into here.
@@ -47,4 +54,29 @@ void IconWithBadgeImageSource::Draw(gfx::Canvas* canvas) {
                            badge_->text_color, badge_->background_color,
                            size().width());
   }
+
+  if (paint_decoration_)
+    PaintDecoration(canvas);
 }
+
+void IconWithBadgeImageSource::PaintDecoration(gfx::Canvas* canvas) {
+  static const SkColor decoration_color = SkColorSetARGB(255, 70, 142, 226);
+
+  int major_radius = std::ceil(size().width() / 5.0);
+  int minor_radius = std::ceil(major_radius / 2.0);
+  gfx::Point center_point(major_radius + 1,
+                          size().height() - (major_radius) - 1);
+  SkPaint paint;
+  paint.setAntiAlias(true);
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setColor(SK_ColorTRANSPARENT);
+  paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+  canvas->DrawCircle(center_point,
+                     major_radius,
+                     paint);
+  paint.setColor(decoration_color);
+  canvas->DrawCircle(center_point,
+                     minor_radius,
+                     paint);
+}
+

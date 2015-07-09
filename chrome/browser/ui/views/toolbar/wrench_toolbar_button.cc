@@ -10,7 +10,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "extensions/common/feature_switch.h"
 #include "grit/theme_resources.h"
@@ -45,13 +44,6 @@ void WrenchToolbarButton::SetSeverity(WrenchIconPainter::Severity severity,
 void WrenchToolbarButton::SetOverflowedToolbarActionWantsToRun(
     bool wants_to_run) {
   overflowed_toolbar_action_wants_to_run_for_testing_ = wants_to_run;
-  scoped_ptr<views::LabelButtonBorder> border = CreateDefaultBorder();
-  if (wants_to_run) {
-    // We use the same style of border as the ToolbarActionViews do to indicate
-    // an action wants to run.
-    ToolbarActionView::DecorateWantsToRunBorder(border.get());
-  }
-  SetBorder(border.Pass());
   SchedulePaint();
 }
 

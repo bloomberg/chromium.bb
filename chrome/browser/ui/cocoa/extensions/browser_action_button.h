@@ -90,6 +90,8 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
 @interface BrowserActionButton(TestingAPI)
 // Sets a context menu to use for testing purposes.
 - (void)setTestContextMenu:(NSMenu*)testContextMenu;
+// Returns true if the action wants to run.
+- (BOOL)wantsToRunForTesting;
 @end
 
 @interface BrowserActionCell : ImageButtonCell {

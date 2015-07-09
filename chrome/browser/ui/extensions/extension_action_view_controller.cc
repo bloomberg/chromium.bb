@@ -85,21 +85,8 @@ gfx::Image ExtensionActionViewController::GetIcon(
   if (!ExtensionIsValid())
     return gfx::Image();
 
-  int tab_id = SessionTabHelper::IdForTab(web_contents);
-  scoped_ptr<IconWithBadgeImageSource> image_source(
-      new IconWithBadgeImageSource(size));
-  image_source->SetIcon(icon_factory_.GetIcon(tab_id));
-  scoped_ptr<IconWithBadgeImageSource::Badge> badge;
-  std::string badge_text = extension_action_->GetBadgeText(tab_id);
-  if (!badge_text.empty()) {
-    badge.reset(new IconWithBadgeImageSource::Badge(
-            badge_text,
-            extension_action_->GetBadgeTextColor(tab_id),
-            extension_action_->GetBadgeBackgroundColor(tab_id)));
-  }
-  image_source->SetBadge(badge.Pass());
-
-  return gfx::Image(gfx::ImageSkia(image_source.release(), size));
+  return gfx::Image(
+      gfx::ImageSkia(GetIconImageSource(web_contents, size).release(), size));
 }
 
 base::string16 ExtensionActionViewController::GetActionName() const {
@@ -279,6 +266,13 @@ bool ExtensionActionViewController::GetExtensionCommand(
       extension_->id(), CommandService::ACTIVE, command, NULL);
 }
 
+scoped_ptr<IconWithBadgeImageSource>
+ExtensionActionViewController::GetIconImageSourceForTesting(
+    content::WebContents* web_contents,
+    const gfx::Size& size) {
+  return GetIconImageSource(web_contents, size);
+}
+
 ExtensionActionViewController*
 ExtensionActionViewController::GetPreferredPopupViewController() {
   if (toolbar_actions_bar_ && toolbar_actions_bar_->in_overflow_mode()) {
@@ -360,4 +354,40 @@ void ExtensionActionViewController::OnPopupClosed() {
       toolbar_actions_bar_->UndoPopOut();
   }
   view_delegate_->OnPopupClosed();
+}
+
+scoped_ptr<IconWithBadgeImageSource>
+ExtensionActionViewController::GetIconImageSource(
+    content::WebContents* web_contents,
+    const gfx::Size& size) {
+  int tab_id = SessionTabHelper::IdForTab(web_contents);
+  scoped_ptr<IconWithBadgeImageSource> image_source(
+      new IconWithBadgeImageSource(size));
+  image_source->SetIcon(icon_factory_.GetIcon(tab_id));
+  scoped_ptr<IconWithBadgeImageSource::Badge> badge;
+  std::string badge_text = extension_action_->GetBadgeText(tab_id);
+  if (!badge_text.empty()) {
+    badge.reset(new IconWithBadgeImageSource::Badge(
+            badge_text,
+            extension_action_->GetBadgeTextColor(tab_id),
+            extension_action_->GetBadgeBackgroundColor(tab_id)));
+  }
+  image_source->SetBadge(badge.Pass());
+
+  // Greyscaling disabled actions and having a special wants-to-run decoration
+  // are gated on the toolbar redesign.
+  if (extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()) {
+    // If the extension doesn't want to run on the active web contents, we
+    // grayscale it to indicate that.
+    image_source->set_grayscale(!IsEnabled(web_contents));
+    // If the action *does* want to run on the active web contents and is also
+    // overflowed, we add a decoration so that the user can see which overflowed
+    // action wants to run (since they wouldn't be able to see the change from
+    // grayscale to color).
+    bool is_overflow =
+        toolbar_actions_bar_ && toolbar_actions_bar_->in_overflow_mode();
+    image_source->set_paint_decoration(WantsToRun(web_contents) && is_overflow);
+  }
+
+  return image_source.Pass();
 }

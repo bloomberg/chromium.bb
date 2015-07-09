@@ -224,15 +224,6 @@
       <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_TOP" file="common/textbutton_pressed_top.png" />
       <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_TOP_LEFT" file="common/textbutton_pressed_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_TOP_RIGHT" file="common/textbutton_pressed_top_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_RAISED_BOTTOM" file="common/textbutton_raised_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_RAISED_BOTTOM_LEFT" file="common/textbutton_raised_bottom_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_RAISED_BOTTOM_RIGHT" file="common/textbutton_raised_bottom_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_RAISED_CENTER" file="common/textbutton_raised_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_RAISED_LEFT" file="common/textbutton_raised_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_RAISED_RIGHT" file="common/textbutton_raised_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_RAISED_TOP" file="common/textbutton_raised_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_RAISED_TOP_LEFT" file="common/textbutton_raised_top_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_RAISED_TOP_RIGHT" file="common/textbutton_raised_top_right.png" />
       <structure type="chrome_scaled_image" name="IDR_WINDOW_BOTTOM_CENTER" file="common/window_bottom_center.png" />
       <structure type="chrome_scaled_image" name="IDR_WINDOW_BOTTOM_LEFT_CORNER" file="common/window_bottom_left_corner.png" />
       <structure type="chrome_scaled_image" name="IDR_WINDOW_BOTTOM_RIGHT_CORNER" file="common/window_bottom_right_corner.png" />

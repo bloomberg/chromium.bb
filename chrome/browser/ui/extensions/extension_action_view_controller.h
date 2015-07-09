@@ -17,6 +17,7 @@ class Browser;
 class ExtensionAction;
 class ExtensionActionPlatformDelegate;
 class GURL;
+class IconWithBadgeImageSource;
 class ToolbarActionsBar;
 
 namespace extensions {
@@ -89,6 +90,10 @@ class ExtensionActionViewController
     icon_observer_ = icon_observer;
   }
 
+  scoped_ptr<IconWithBadgeImageSource> GetIconImageSourceForTesting(
+      content::WebContents* web_contents,
+      const gfx::Size& size);
+
  private:
   // ExtensionActionIconFactory::Observer:
   void OnIconUpdated() override;
@@ -131,6 +136,11 @@ class ExtensionActionViewController
 
   // Handles cleanup after the popup closes.
   void OnPopupClosed();
+
+  // Returns the image source for the icon.
+  scoped_ptr<IconWithBadgeImageSource> GetIconImageSource(
+      content::WebContents* web_contents,
+      const gfx::Size& size);
 
   // The extension associated with the action we're displaying.
   scoped_refptr<const extensions::Extension> extension_;

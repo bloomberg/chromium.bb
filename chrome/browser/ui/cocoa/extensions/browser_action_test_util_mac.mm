@@ -180,20 +180,7 @@ bool BrowserActionTestUtil::HidePopup() {
 }
 
 bool BrowserActionTestUtil::ActionButtonWantsToRun(size_t index) {
-  BrowserActionsController* controller =
-      GetController(browser_, test_helper_.get());
-  ui::ThemeProvider* themeProvider =
-      [[[controller containerView] window] themeProvider];
-  DCHECK(themeProvider);
-  NSImage* wantsToRunImage =
-      themeProvider->GetNSImageNamed(IDR_BROWSER_ACTION_R);
-  BrowserActionButton* button = [controller buttonWithIndex:index];
-  BrowserActionCell* cell =
-      base::mac::ObjCCastStrict<BrowserActionCell>([button cell]);
-  NSImage* actualImage = [cell imageForState:image_button_cell::kDefaultState
-                                        view:button];
-
-  return wantsToRunImage == actualImage;
+  return [GetButton(browser_, test_helper_.get(), index) wantsToRunForTesting];
 }
 
 bool BrowserActionTestUtil::OverflowedActionButtonWantsToRun() {

@@ -28,7 +28,6 @@ class WrenchIconPainter : gfx::AnimationDelegate {
     BEZEL_NONE,
     BEZEL_HOVER,
     BEZEL_PRESSED,
-    BEZEL_RAISED,
   };
 
   enum Severity {

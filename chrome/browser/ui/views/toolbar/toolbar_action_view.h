@@ -65,10 +65,6 @@ class ToolbarActionView : public views::MenuButton,
                     Delegate* delegate);
   ~ToolbarActionView() override;
 
-  // Modifies the given |border| in order to display a "popped out" for when
-  // an action wants to run.
-  static void DecorateWantsToRunBorder(views::LabelButtonBorder* border);
-
   // views::MenuButton:
   void GetAccessibleState(ui::AXViewState* state) override;
 
@@ -117,7 +113,6 @@ class ToolbarActionView : public views::MenuButton,
   void OnDragDone() override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
-  void OnPaintBorder(gfx::Canvas* canvas) override;
 
   // ToolbarActionViewDelegateViews:
   views::View* GetAsView() override;
@@ -159,9 +154,6 @@ class ToolbarActionView : public views::MenuButton,
   // The cached value of whether or not the action wants to run on the current
   // tab.
   bool wants_to_run_;
-
-  // A special border to draw when the action wants to run.
-  scoped_ptr<views::LabelButtonBorder> wants_to_run_border_;
 
   // Responsible for running the menu.
   scoped_ptr<views::MenuRunner> menu_runner_;
