@@ -19,9 +19,7 @@ import android.view.ViewGroup;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.shell.ChromeShellActivity;
-import org.chromium.chrome.shell.ChromeShellTestBase;
-import org.chromium.chrome.shell.R;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.CallbackHelper;
 
 import java.lang.reflect.Method;
@@ -30,7 +28,8 @@ import java.util.concurrent.TimeoutException;
 /**
  * Tests for the SmartClipProvider.
  */
-public class SmartClipProviderTest extends ChromeShellTestBase implements Handler.Callback {
+public class SmartClipProviderTest
+        extends ChromeActivityTestCaseBase<ChromeActivity> implements Handler.Callback {
     // This is a key for meta-data in the package manifest. It should NOT
     // change, as OEMs will use it when they look for the SmartClipProvider
     // interface.
@@ -74,7 +73,7 @@ public class SmartClipProviderTest extends ChromeShellTestBase implements Handle
         private Rect mRect;
     }
 
-    private ChromeShellActivity mActivity;
+    private ChromeActivity mActivity;
     private MyCallbackHelper mCallbackHelper;
     private HandlerThread mHandlerThread;
     private Handler mHandler;
@@ -82,10 +81,19 @@ public class SmartClipProviderTest extends ChromeShellTestBase implements Handle
     private Method mSetSmartClipResultHandlerMethod;
     private Method mExtractSmartClipDataMethod;
 
+    public SmartClipProviderTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
+    }
+
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        mActivity = launchChromeShellWithBlankPage();
+        mActivity = getActivity();
         mCallbackHelper = new MyCallbackHelper();
         mHandlerThread = new HandlerThread("ContentViewTest thread");
         mHandlerThread.start();
@@ -164,10 +172,8 @@ public class SmartClipProviderTest extends ChromeShellTestBase implements Handle
                 // This emulates what OEM will be doing when they want to call
                 // functions on SmartClipProvider through view hierarchy.
 
-                // Implementation of SmartClipProvider such as ContentView or
-                // JellyBeanContentView can be found somewhere under content_container.
-                Object scp = findSmartClipProvider(
-                        getActivity().findViewById(R.id.content_container));
+                Object scp =
+                        findSmartClipProvider(getActivity().findViewById(android.R.id.content));
                 assertNotNull(scp);
                 try {
                     mSetSmartClipResultHandlerMethod.invoke(scp, mHandler);
