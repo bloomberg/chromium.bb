@@ -31,8 +31,7 @@ base::WeakPtr<BluetoothAdapterAndroid> BluetoothAdapterAndroid::Create(
   BluetoothAdapterAndroid* adapter = new BluetoothAdapterAndroid();
 
   adapter->j_adapter_.Reset(Java_ChromeBluetoothAdapter_create(
-      AttachCurrentThread(), reinterpret_cast<intptr_t>(adapter),
-      java_bluetooth_adapter_wrapper));
+      AttachCurrentThread(), java_bluetooth_adapter_wrapper));
 
   return adapter->weak_ptr_factory_.GetWeakPtr();
 }
@@ -127,49 +126,30 @@ void BluetoothAdapterAndroid::RegisterAdvertisement(
   error_callback.Run(BluetoothAdvertisement::ERROR_UNSUPPORTED_PLATFORM);
 }
 
-void BluetoothAdapterAndroid::OnScanFailed(JNIEnv* env, jobject obj) {
-  MarkDiscoverySessionsAsInactive();
-}
-
 BluetoothAdapterAndroid::BluetoothAdapterAndroid() : weak_ptr_factory_(this) {
 }
 
 BluetoothAdapterAndroid::~BluetoothAdapterAndroid() {
-  Java_ChromeBluetoothAdapter_onBluetoothAdapterAndroidDestruction(
-      AttachCurrentThread(), j_adapter_.obj());
 }
 
 void BluetoothAdapterAndroid::AddDiscoverySession(
     BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  // TODO(scheib): Support filters crbug.com/490401
-  if (Java_ChromeBluetoothAdapter_addDiscoverySession(AttachCurrentThread(),
-                                                      j_adapter_.obj())) {
-    callback.Run();
-  } else {
-    error_callback.Run();
-  }
+  error_callback.Run();
 }
 
 void BluetoothAdapterAndroid::RemoveDiscoverySession(
     BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  if (Java_ChromeBluetoothAdapter_removeDiscoverySession(AttachCurrentThread(),
-                                                         j_adapter_.obj())) {
-    callback.Run();
-  } else {
-    error_callback.Run();
-  }
+  error_callback.Run();
 }
 
 void BluetoothAdapterAndroid::SetDiscoveryFilter(
     scoped_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  // TODO(scheib): Support filters crbug.com/490401
-  NOTIMPLEMENTED();
   error_callback.Run();
 }
 
