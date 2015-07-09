@@ -59,23 +59,23 @@ enum FragmentShaderId {
 const char* vertex_shader_source[NUM_VERTEX_SHADERS] = {
   // VERTEX_SHADER_COPY_TEXTURE
   SHADER(
-    uniform mat4 u_matrix;
+    uniform vec2 u_vertex_translate;
     uniform vec2 u_half_size;
     attribute vec4 a_position;
     varying TexCoordPrecision vec2 v_uv;
     void main(void) {
-      gl_Position = u_matrix * a_position;
+      gl_Position = a_position + vec4(u_vertex_translate, 0.0, 0.0);
       v_uv = a_position.xy * vec2(u_half_size.s, u_half_size.t) +
              vec2(u_half_size.s, u_half_size.t);
     }),
   // VERTEX_SHADER_COPY_TEXTURE_FLIP_Y
   SHADER(
-    uniform mat4 u_matrix;
+    uniform vec2 u_vertex_translate;
     uniform vec2 u_half_size;
     attribute vec4 a_position;
     varying TexCoordPrecision vec2 v_uv;
     void main(void) {
-      gl_Position = u_matrix * a_position;
+      gl_Position = a_position + vec4(u_vertex_translate, 0.0, 0.0);
       v_uv = a_position.xy * vec2(u_half_size.s, -u_half_size.t) +
              vec2(u_half_size.s, u_half_size.t);
     }),
@@ -85,24 +85,30 @@ const char* fragment_shader_source[NUM_FRAGMENT_SHADERS] = {
   // FRAGMENT_SHADER_COPY_TEXTURE_*
   FRAGMENT_SHADERS(
     uniform SamplerType u_sampler;
+    uniform mat4 u_tex_coord_transform;
     varying TexCoordPrecision vec2 v_uv;
     void main(void) {
-      gl_FragColor = TextureLookup(u_sampler, v_uv.st);
+      TexCoordPrecision vec4 uv = u_tex_coord_transform * vec4(v_uv, 0, 1);
+      gl_FragColor = TextureLookup(u_sampler, uv.st);
     }),
   // FRAGMENT_SHADER_COPY_TEXTURE_PREMULTIPLY_ALPHA_*
   FRAGMENT_SHADERS(
     uniform SamplerType u_sampler;
+    uniform mat4 u_tex_coord_transform;
     varying TexCoordPrecision vec2 v_uv;
     void main(void) {
-      gl_FragColor = TextureLookup(u_sampler, v_uv.st);
+      TexCoordPrecision vec4 uv = u_tex_coord_transform * vec4(v_uv, 0, 1);
+      gl_FragColor = TextureLookup(u_sampler, uv.st);
       gl_FragColor.rgb *= gl_FragColor.a;
     }),
   // FRAGMENT_SHADER_COPY_TEXTURE_UNPREMULTIPLY_ALPHA_*
   FRAGMENT_SHADERS(
     uniform SamplerType u_sampler;
+    uniform mat4 u_tex_coord_transform;
     varying TexCoordPrecision vec2 v_uv;
     void main(void) {
-      gl_FragColor = TextureLookup(u_sampler, v_uv.st);
+      TexCoordPrecision vec4 uv = u_tex_coord_transform * vec4(v_uv, 0, 1);
+      gl_FragColor = TextureLookup(u_sampler, uv.st);
       if (gl_FragColor.a > 0.0)
         gl_FragColor.rgb /= gl_FragColor.a;
     }),
@@ -272,17 +278,6 @@ void DoCopyTexSubImage2D(const gpu::gles2::GLES2Decoder* decoder,
   decoder->RestoreTextureUnitBindings(0);
   decoder->RestoreActiveTexture();
   decoder->RestoreFramebufferBindings();
-}
-
-// Copy from SkMatrix44::preTranslate
-void PreTranslate(GLfloat* matrix, GLfloat dx, GLfloat dy, GLfloat dz) {
-  if (!dx && !dy && !dz)
-    return;
-
-  for (int i = 0; i < 4; ++i) {
-    matrix[(3 * 4) + i] = matrix[(0 * 4) + i] * dx + matrix[(1 * 4) + i] * dy +
-                          matrix[(2 * 4) + i] * dz + matrix[(3 * 4) + i];
-  }
 }
 
 }  // namespace
@@ -515,28 +510,31 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureInternal(
     if (!linked)
       DLOG(ERROR) << "CopyTextureCHROMIUM: program link failure.";
 #endif
-    info->matrix_handle = glGetUniformLocation(info->program, "u_matrix");
+    info->vertex_translate_handle = glGetUniformLocation(info->program,
+                                                         "u_vertex_translate");
+    info->tex_coord_transform_handle =
+        glGetUniformLocation(info->program, "u_tex_coord_transform");
     info->half_size_handle = glGetUniformLocation(info->program, "u_half_size");
     info->sampler_handle = glGetUniformLocation(info->program, "u_sampler");
   }
   glUseProgram(info->program);
 
+  glUniformMatrix4fv(info->tex_coord_transform_handle, 1, GL_FALSE,
+                     transform_matrix);
+
   GLint x_translate = xoffset - x;
   GLint y_translate = yoffset - y;
   if (!x_translate && !y_translate) {
-    glUniformMatrix4fv(info->matrix_handle, 1, GL_FALSE, transform_matrix);
+    glUniform2f(info->vertex_translate_handle, 0.0f, 0.0f);
   } else {
     // transform offsets from ([0, dest_width], [0, dest_height]) coord.
     // to ([-1, 1], [-1, 1]) coord.
     GLfloat x_translate_on_vertex = ((2.f * x_translate) / dest_width);
     GLfloat y_translate_on_vertex = ((2.f * y_translate) / dest_height);
 
-    // Pass view_matrix * offset_matrix to the program.
-    GLfloat view_transform[16];
-    memcpy(view_transform, transform_matrix, 16 * sizeof(GLfloat));
-    PreTranslate(view_transform, x_translate_on_vertex, y_translate_on_vertex,
-                 0);
-    glUniformMatrix4fv(info->matrix_handle, 1, GL_FALSE, view_transform);
+    // Pass translation to the shader program.
+    glUniform2f(info->vertex_translate_handle, x_translate_on_vertex,
+                y_translate_on_vertex);
   }
   if (source_target == GL_TEXTURE_RECTANGLE_ARB)
     glUniform2f(info->half_size_handle, source_width / 2.0f,
