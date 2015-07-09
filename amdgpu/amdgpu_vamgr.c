@@ -23,6 +23,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include "amdgpu.h"
 #include "amdgpu_drm.h"
 #include "amdgpu_internal.h"
@@ -222,4 +223,47 @@ void amdgpu_vamgr_free_va(struct amdgpu_bo_va_mgr *mgr,
 	}
 out:
 	pthread_mutex_unlock(&mgr->bo_va_mutex);
+}
+
+int amdgpu_va_range_alloc(amdgpu_device_handle dev,
+			  enum amdgpu_gpu_va_range va_range_type,
+			  uint64_t size,
+			  uint64_t va_base_alignment,
+			  uint64_t va_base_required,
+			  uint64_t *va_base_allocated,
+			  amdgpu_va_handle *va_range_handle)
+{
+	va_base_alignment = MAX2(va_base_alignment, dev->vamgr->va_alignment);
+	size = ALIGN(size, vamgr.va_alignment);
+
+	*va_base_allocated = amdgpu_vamgr_find_va(dev->vamgr, size,
+					va_base_alignment, va_base_required);
+
+	if (*va_base_allocated != AMDGPU_INVALID_VA_ADDRESS) {
+		struct amdgpu_va* va;
+		va = calloc(1, sizeof(struct amdgpu_va));
+		if(!va){
+			amdgpu_vamgr_free_va(dev->vamgr, *va_base_allocated, size);
+			return -ENOMEM;
+		}
+		va->dev = dev;
+		va->address = *va_base_allocated;
+		va->size = size;
+		va->range = va_range_type;
+		*va_range_handle = va;
+	} else {
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+int amdgpu_va_range_free(amdgpu_va_handle va_range_handle)
+{
+	if(!va_range_handle || !va_range_handle->address)
+		return 0;
+	amdgpu_vamgr_free_va(va_range_handle->dev->vamgr, va_range_handle->address,
+			va_range_handle->size);
+	free(va_range_handle);
+	return 0;
 }

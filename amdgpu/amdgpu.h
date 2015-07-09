@@ -83,6 +83,12 @@ enum amdgpu_bo_handle_type {
 	amdgpu_bo_handle_type_dma_buf_fd = 2
 };
 
+/** Define known types of GPU VM VA ranges */
+enum amdgpu_gpu_va_range
+{
+	/** Allocate from "normal"/general range */
+	amdgpu_gpu_va_range_general = 0
+};
 
 /*--------------------------------------------------------------------------*/
 /* -------------------------- Datatypes ----------------------------------- */
@@ -113,6 +119,10 @@ typedef struct amdgpu_bo *amdgpu_bo_handle;
  */
 typedef struct amdgpu_bo_list *amdgpu_bo_list_handle;
 
+/**
+ * Define handle to be used to work with VA allocated ranges
+ */
+typedef struct amdgpu_va *amdgpu_va_handle;
 
 /*--------------------------------------------------------------------------*/
 /* -------------------------- Structures ---------------------------------- */
@@ -1088,5 +1098,61 @@ int amdgpu_query_gds_info(amdgpu_device_handle dev,
 int amdgpu_read_mm_registers(amdgpu_device_handle dev, unsigned dword_offset,
 			     unsigned count, uint32_t instance, uint32_t flags,
 			     uint32_t *values);
+
+/**
+ * Allocate virtual address range
+ *
+ * \param dev - [in] Device handle. See #amdgpu_device_initialize()
+ * \param va_range_type - \c [in] Type of MC va range from which to allocate
+ * \param size - \c [in] Size of range. Size must be correctly* aligned.
+ * It is client responsibility to correctly aligned size based on the future
+ * usage of allocated range.
+ * \param va_base_alignment - \c [in] Overwrite base address alignment
+ * requirement for GPU VM MC virtual
+ * address assignment. Must be multiple of size alignments received as
+ * 'amdgpu_buffer_size_alignments'.
+ * If 0 use the default one.
+ * \param va_base_required - \c [in] Specified required va base address.
+ * If 0 then library choose available one.
+ * If !0 value will be passed and those value already "in use" then
+ * corresponding error status will be returned.
+ * \param va_base_allocated - \c [out] On return: Allocated VA base to be used
+ * by client.
+ * \param va_range_handle - \c [out] On return: Handle assigned to allocation
+ *
+ * \return 0 on success\n
+ * >0 - AMD specific error code\n
+ * <0 - Negative POSIX Error code
+ *
+ * \notes \n
+ * It is client responsibility to correctly handle VA assignments and usage.
+ * Neither kernel driver nor libdrm_amdpgu are able to prevent and
+ * detect wrong va assignemnt.
+ *
+ * It is client responsibility to correctly handle multi-GPU cases and to pass
+ * the corresponding arrays of all devices handles where corresponding VA will
+ * be used.
+ *
+*/
+int amdgpu_va_range_alloc(amdgpu_device_handle dev,
+			   enum amdgpu_gpu_va_range va_range_type,
+			   uint64_t size,
+			   uint64_t va_base_alignment,
+			   uint64_t va_base_required,
+			   uint64_t *va_base_allocated,
+			   amdgpu_va_handle *va_range_handle);
+
+/**
+ * Free previously allocated virtual address range
+ *
+ *
+ * \param va_range_handle - \c [in] Handle assigned to VA allocation
+ *
+ * \return 0 on success\n
+ * >0 - AMD specific error code\n
+ * <0 - Negative POSIX Error code
+ *
+*/
+int amdgpu_va_range_free(amdgpu_va_handle va_range_handle);
 
 #endif /* #ifdef _AMDGPU_H_ */

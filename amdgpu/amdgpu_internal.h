@@ -58,6 +58,13 @@ struct amdgpu_bo_va_mgr {
 	uint32_t va_alignment;
 };
 
+struct amdgpu_va {
+	amdgpu_device_handle dev;
+	uint64_t address;
+	uint64_t size;
+	enum amdgpu_gpu_va_range range;
+};
+
 struct amdgpu_device {
 	atomic_t refcount;
 	int fd;
@@ -124,7 +131,7 @@ struct amdgpu_bo_va_mgr* amdgpu_vamgr_get_global(struct amdgpu_device *dev);
 void amdgpu_vamgr_reference(struct amdgpu_bo_va_mgr **dst, struct amdgpu_bo_va_mgr *src);
 
 uint64_t amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr, uint64_t size,
-				uint64_t alignment, uint64_t base_preferred);
+				uint64_t alignment, uint64_t base_required);
 
 void amdgpu_vamgr_free_va(struct amdgpu_bo_va_mgr *mgr, uint64_t va, 
 				uint64_t size);
