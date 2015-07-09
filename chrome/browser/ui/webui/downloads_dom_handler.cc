@@ -325,6 +325,9 @@ void DownloadsDOMHandler::OnDownloadCreated(
 void DownloadsDOMHandler::OnDownloadUpdated(
     content::DownloadManager* manager,
     content::DownloadItem* download_item) {
+  if (update_scheduled_)
+    return;
+
   bool showing_new_item = false;
 
   if (new_downloads_.count(download_item->GetId())) {
