@@ -6,12 +6,8 @@ from core import perf_benchmark
 
 from measurements import webrtc
 import page_sets
-from telemetry import benchmark
 
 
-# http://crbug.com/501383
-# http://crbug.com/508344
-@benchmark.Disabled('android')
 class WebRTC(perf_benchmark.PerfBenchmark):
   """Obtains WebRTC metrics for a real-time video tests."""
   test = webrtc.WebRTC
