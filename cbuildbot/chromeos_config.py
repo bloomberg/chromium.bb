@@ -1882,6 +1882,7 @@ def GetConfig():
       health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com',
                                'tree'],
       afdo_use=False,
+      branch_util_test=True,
   )
 
   ### Release config groups.
