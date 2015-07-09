@@ -245,6 +245,7 @@ void CmaRenderer::InitializeAudioPipeline() {
           base::Bind(&CmaRenderer::OnAudioPipelineInitializeDone, weak_this_,
                      stream != nullptr));
   if (!stream) {
+    CMALOG(kLogControl) << __FUNCTION__ << ": no audio stream, skipping init.";
     audio_initialization_done_cb.Run(::media::PIPELINE_OK);
     return;
   }
@@ -273,6 +274,7 @@ void CmaRenderer::InitializeAudioPipeline() {
 void CmaRenderer::OnAudioPipelineInitializeDone(
     bool audio_stream_present,
     ::media::PipelineStatus status) {
+  CMALOG(kLogControl) << __FUNCTION__ << ": state=" << state_;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // OnError() may be fired at any time, even before initialization is complete.
@@ -302,6 +304,7 @@ void CmaRenderer::InitializeVideoPipeline() {
           base::Bind(&CmaRenderer::OnVideoPipelineInitializeDone, weak_this_,
                      stream != nullptr));
   if (!stream) {
+    CMALOG(kLogControl) << __FUNCTION__ << ": no video stream, skipping init.";
     video_initialization_done_cb.Run(::media::PIPELINE_OK);
     return;
   }
@@ -338,6 +341,7 @@ void CmaRenderer::InitializeVideoPipeline() {
 void CmaRenderer::OnVideoPipelineInitializeDone(
     bool video_stream_present,
     ::media::PipelineStatus status) {
+  CMALOG(kLogControl) << __FUNCTION__ << ": state=" << state_;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // OnError() may be fired at any time, even before initialization is complete.
