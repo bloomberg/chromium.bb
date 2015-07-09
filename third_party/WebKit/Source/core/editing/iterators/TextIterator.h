@@ -28,6 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/Range.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/FindOptions.h"
 #include "core/editing/iterators/FullyClippedStateStack.h"
 #include "core/editing/iterators/TextIteratorFlags.h"
@@ -42,7 +43,7 @@ class LayoutText;
 class LayoutTextFragment;
 
 CORE_EXPORT String plainText(const Position& start, const Position& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
-CORE_EXPORT void findPlainText(const Position& inputStart, const Position& inputEnd, const String&, FindOptions, Position& resultStart, Position& resultEnd);
+CORE_EXPORT EphemeralRange findPlainText(const Position& inputStart, const Position& inputEnd, const String&, FindOptions);
 
 String plainText(const PositionInComposedTree& start, const PositionInComposedTree& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 

@@ -299,19 +299,17 @@ void TextFinder::scopeStringMatches(int identifier, const WebString& searchText,
         // than the timeout value, and is not interruptible as it is currently
         // written. We may need to rewrite it with interruptibility in mind, or
         // find an alternative.
-        Position resultStart;
-        Position resultEnd;
-        findPlainText(searchStart, searchEnd, searchText, options.matchCase ? 0 : CaseInsensitive, resultStart, resultEnd);
-        if (resultStart == resultEnd) {
+        EphemeralRange result = findPlainText(searchStart, searchEnd, searchText, options.matchCase ? 0 : CaseInsensitive);
+        if (result.isCollapsed()) {
             // Not found.
             break;
         }
 
-        RefPtrWillBeRawPtr<Range> resultRange = Range::create(*resultStart.document(), resultStart, resultEnd);
+        RefPtrWillBeRawPtr<Range> resultRange = Range::create(result.document(), result.startPosition(), result.endPosition());
         if (resultRange->collapsed()) {
             // resultRange will be collapsed if the matched text spans over multiple TreeScopes.
             // FIXME: Show such matches to users.
-            searchStart = resultEnd;
+            searchStart = result.endPosition();
             continue;
         }
 
@@ -356,9 +354,9 @@ void TextFinder::scopeStringMatches(int identifier, const WebString& searchText,
         // result range. There is no need to use a VisiblePosition here,
         // since findPlainText will use a TextIterator to go over the visible
         // text nodes.
-        searchStart = resultEnd;
+        searchStart = result.endPosition();
 
-        m_resumeScopingFromRange = Range::create(*resultStart.document(), resultEnd, resultEnd);
+        m_resumeScopingFromRange = Range::create(result.document(), result.endPosition(), result.endPosition());
         timedOut = (currentTime() - startTime) >= maxScopingDuration;
     } while (!timedOut);
 

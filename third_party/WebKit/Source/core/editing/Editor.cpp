@@ -1172,6 +1172,7 @@ PassRefPtrWillBeRawPtr<Range> Editor::findStringAndScrollToVisible(const String&
     return nextMatch.release();
 }
 
+// TODO(yosin) We should return |EphemeralRange| rather than |Range|.
 static PassRefPtrWillBeRawPtr<Range> findStringBetweenPositions(const String& target, const Position& start, const Position& end, FindOptions options)
 {
     Position searchStart(start);
@@ -1180,23 +1181,21 @@ static PassRefPtrWillBeRawPtr<Range> findStringBetweenPositions(const String& ta
     bool forward = !(options & Backwards);
 
     while (true) {
-        Position resultStart;
-        Position resultEnd;
-        findPlainText(searchStart, searchEnd, target, options, resultStart, resultEnd);
-        if (resultStart == resultEnd)
+        EphemeralRange resultRange = findPlainText(searchStart, searchEnd, target, options);
+        if (resultRange.isCollapsed())
             return nullptr;
 
-        RefPtrWillBeRawPtr<Range> resultRange = Range::create(*resultStart.document(), resultStart, resultEnd);
-        if (!resultRange->collapsed())
-            return resultRange.release();
+        RefPtrWillBeRawPtr<Range> rangeObject = Range::create(resultRange.document(), resultRange.startPosition(), resultRange.endPosition());
+        if (!rangeObject->collapsed())
+            return rangeObject.release();
 
         // Found text spans over multiple TreeScopes. Since it's impossible to return such section as a Range,
         // we skip this match and seek for the next occurrence.
         // FIXME: Handle this case.
         if (forward)
-            searchStart = resultStart.next();
+            searchStart = resultRange.startPosition().next();
         else
-            searchEnd = resultEnd.previous();
+            searchEnd = resultRange.endPosition().previous();
     }
 
     ASSERT_NOT_REACHED();

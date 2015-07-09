@@ -390,10 +390,8 @@ TEST_F(TextIteratorTest, FindPlainTextInvalidTarget)
 
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(invalidUStrings); ++i) {
         String invalidTarget(invalidUStrings[i]);
-        Position foundStart;
-        Position foundEnd;
-        findPlainText(range->startPosition(), range->endPosition(), invalidTarget, 0, foundStart, foundEnd);
-        RefPtrWillBeRawPtr<Range> actualRange = Range::create(document(), foundStart, foundEnd);
+        EphemeralRange foundRange = findPlainText(range->startPosition(), range->endPosition(), invalidTarget, 0);
+        RefPtrWillBeRawPtr<Range> actualRange = Range::create(document(), foundRange.startPosition(), foundRange.endPosition());
         EXPECT_TRUE(areRangesEqual(expectedRange.get(), actualRange.get()));
     }
 }

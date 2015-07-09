@@ -599,13 +599,11 @@ tryAgain:
 
 static const TextIteratorBehaviorFlags iteratorFlagsForFindPlainText = TextIteratorEntersTextControls | TextIteratorEntersOpenShadowRoots | TextIteratorDoesNotBreakAtReplacedElement;
 
-void findPlainText(const Position& inputStart, const Position& inputEnd, const String& target, FindOptions options, Position& resultStart, Position& resultEnd)
+EphemeralRange findPlainText(const Position& inputStart, const Position& inputEnd, const String& target, FindOptions options)
 {
-    resultStart.clear();
-    resultEnd.clear();
     // CharacterIterator requires layoutObjects to be up-to-date.
     if (!inputStart.inDocument())
-        return;
+        return EphemeralRange();
     ASSERT(inputStart.document() == inputEnd.document());
 
     // FIXME: Reduce the code duplication with above (but how?).
@@ -617,18 +615,12 @@ void findPlainText(const Position& inputStart, const Position& inputEnd, const S
             behavior |= TextIteratorForWindowFind;
         CharacterIterator findIterator(inputStart, inputEnd, behavior);
         matchLength = findPlainTextInternal(findIterator, target, options, matchStart);
-        if (!matchLength) {
-            const Position& collapseTo = options & Backwards ? inputStart : inputEnd;
-            resultStart = collapseTo;
-            resultEnd = collapseTo;
-            return;
-        }
+        if (!matchLength)
+            return EphemeralRange(options & Backwards ? inputStart : inputEnd);
     }
 
     CharacterIterator computeRangeIterator(inputStart, inputEnd, iteratorFlagsForFindPlainText);
-    EphemeralRange resultRange = computeRangeIterator.calculateCharacterSubrange(matchStart, matchLength);
-    resultStart = resultRange.startPosition();
-    resultEnd = resultRange.endPosition();
+    return computeRangeIterator.calculateCharacterSubrange(matchStart, matchLength);
 }
 
 } // namespace blink
