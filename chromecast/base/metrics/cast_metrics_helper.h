@@ -79,10 +79,6 @@ class CastMetricsHelper {
   // Logs UMA record of the time the app made its first paint.
   virtual void LogTimeToFirstPaint();
 
-  // Logs UMA record of the elapsed time from the app launch
-  // to the time first video frame is displayed.
-  virtual void LogTimeToDisplayVideo();
-
   // Logs UMA record of the time needed to re-buffer A/V.
   virtual void LogTimeToBufferAv(BufferingType buffering_type,
                                  base::TimeDelta time);
@@ -143,11 +139,6 @@ class CastMetricsHelper {
   std::string app_id_;
   std::string session_id_;
   std::string sdk_version_;
-
-  // Whether a new app start time has been stored but not recorded.
-  // After the startup time has been used to generate an UMA event,
-  // this is set to false.
-  bool new_startup_time_;
 
   base::TimeTicks previous_video_stat_sample_time_;
 

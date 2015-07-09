@@ -119,7 +119,6 @@ void CastMetricsHelper::UpdateCurrentAppInfo(const std::string& app_id,
   app_id_ = app_id;
   session_id_ = session_id;
   app_start_time_ = base::TimeTicks::Now();
-  new_startup_time_ = true;
   TagAppStartForGroupedHistograms(app_id_);
   sdk_version_.clear();
 }
@@ -154,19 +153,6 @@ void CastMetricsHelper::LogTimeToFirstPaint() {
   base::TimeDelta launch_time = base::TimeTicks::Now() - app_start_time_;
   const std::string uma_name(GetMetricsNameWithAppName("Startup",
                                                        "TimeToFirstPaint"));
-  LogMediumTimeHistogramEvent(uma_name, launch_time);
-  LOG(INFO) << uma_name << " is " << launch_time.InSecondsF() << " seconds.";
-}
-
-void CastMetricsHelper::LogTimeToDisplayVideo() {
-  if (!new_startup_time_) {  // For faster check.
-    return;
-  }
-  MAKE_SURE_THREAD(LogTimeToDisplayVideo);
-  new_startup_time_ = false;
-  base::TimeDelta launch_time = base::TimeTicks::Now() - app_start_time_;
-  const std::string uma_name(GetMetricsNameWithAppName("Startup",
-                                                       "TimeToDisplayVideo"));
   LogMediumTimeHistogramEvent(uma_name, launch_time);
   LOG(INFO) << uma_name << " is " << launch_time.InSecondsF() << " seconds.";
 }

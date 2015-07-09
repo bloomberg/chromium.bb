@@ -42368,6 +42368,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Startup.ChromeCast.TimeToDisplayVideo" units="milliseconds">
+  <obsolete>
+    Deprecated 7/2015. To be replaced with Cast events.
+  </obsolete>
   <owner>jeremy@chromium.org</owner>
   <summary>
     The elapsed time from the ChromeCast application launch to the first video
@@ -42528,6 +42531,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Startup.Fling.TimeToDisplayVideo" units="milliseconds">
+  <obsolete>
+    Deprecated 7/2015. To be replaced with Cast events.
+  </obsolete>
   <owner>jeremy@chromium.org</owner>
   <summary>
     The elapsed time from the Fling application launch to the first video frame
