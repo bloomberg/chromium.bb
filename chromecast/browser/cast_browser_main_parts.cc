@@ -179,10 +179,12 @@ DefaultCommandLineSwitch g_default_switches[] = {
   // This is needed for now to enable the egltest Ozone platform to work with
   // current Linux/NVidia OpenGL drivers.
   { switches::kIgnoreGpuBlacklist, ""},
-#elif defined(ARCH_CPU_ARM_FAMILY) && !defined(DISABLE_DISPLAY)
+#elif defined(ARCH_CPU_ARM_FAMILY)
   // On Linux arm, enable CMA pipeline by default.
   { switches::kEnableCmaMediaPipeline, "" },
+#if !defined(DISABLE_DISPLAY)
   { switches::kEnableHardwareOverlays, "" },
+#endif
 #endif
 #endif  // defined(OS_LINUX)
   // Needed to fix a bug where the raster thread doesn't get scheduled for a
