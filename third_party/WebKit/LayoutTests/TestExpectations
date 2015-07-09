@@ -977,14 +977,14 @@ crbug.com/357465 [ Linux Release ] virtual/threaded/animations/keyframe-timing-f
 
 crbug.com/231921 [ Linux ] fast/text/descent-clip-in-scaled-page.html [ Pass ImageOnlyFailure ]
 
-crbug.com/504837 virtual/gpu/fast/canvas/canvas-arc-circumference-fill.html [ NeedsManualRebaseline ]
-crbug.com/504837 virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ NeedsManualRebaseline ]
-crbug.com/504837 virtual/gpu/fast/canvas/canvas-composite.html [ NeedsManualRebaseline ]
-crbug.com/504837 virtual/gpu/fast/canvas/canvas-ellipse-circumference-fill.html [ NeedsManualRebaseline ]
-crbug.com/504837 virtual/gpu/fast/canvas/canvas-imageSmoothingEnabled-patterns.html [ NeedsManualRebaseline ]
-crbug.com/504837 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsManualRebaseline ]
-crbug.com/504837 virtual/gpu/fast/canvas/fill-stroke-clip-reset-path.html [ NeedsManualRebaseline ]
-crbug.com/504837 virtual/gpu/fast/canvas/image-object-in-canvas.html [ NeedsManualRebaseline ]
+crbug.com/504837 virtual/gpu/fast/canvas/canvas-arc-circumference-fill.html [ NeedsRebaseline ]
+crbug.com/504837 virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ NeedsRebaseline ]
+crbug.com/504837 virtual/gpu/fast/canvas/canvas-composite.html [ NeedsRebaseline ]
+crbug.com/504837 virtual/gpu/fast/canvas/canvas-ellipse-circumference-fill.html [ NeedsRebaseline ]
+crbug.com/504837 virtual/gpu/fast/canvas/canvas-imageSmoothingEnabled-patterns.html [ NeedsRebaseline ]
+crbug.com/504837 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
+crbug.com/504837 virtual/gpu/fast/canvas/fill-stroke-clip-reset-path.html [ NeedsRebaseline ]
+crbug.com/504837 virtual/gpu/fast/canvas/image-object-in-canvas.html [ NeedsRebaseline ]
 
 crbug.com/353087 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/the-content-html-element/test-004.html [ Failure ]
 crbug.com/353087 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-003.html [ Failure ]
