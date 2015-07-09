@@ -30,6 +30,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/ParserContentPolicy.h"
 #include "core/dom/Position.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/HTMLInterchange.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -50,6 +51,9 @@ enum EChildrenOnly { IncludeNode, ChildrenOnly };
 enum EAbsoluteURLs { DoNotResolveURLs, ResolveAllURLs, ResolveNonLocalURLs };
 enum class ConvertBlocksToInlines { NotConvert, Convert };
 
+PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromText(const EphemeralRange& context, const String& text);
+// TODO(yosin) We should get rid of |createFragmentFromText()| with |Range| for
+// Oilpan.
 PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromText(Range* context, const String& text);
 PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromMarkup(Document&, const String& markup, const String& baseURL, ParserContentPolicy = AllowScriptingContent);
 PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromMarkupWithContext(Document&, const String& markup, unsigned fragmentStart, unsigned fragmentEnd, const String& baseURL, ParserContentPolicy);

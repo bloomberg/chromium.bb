@@ -450,9 +450,9 @@ bool isPlainTextMarkup(Node* node)
     return element.hasChildCount(2) && isTabHTMLSpanElementTextNode(element.firstChild()->firstChild()) && element.lastChild()->isTextNode();
 }
 
-static bool shouldPreserveNewline(const Range& range)
+static bool shouldPreserveNewline(const EphemeralRange& range)
 {
-    if (Node* node = range.firstNode()) {
+    if (Node* node = range.startPosition().nodeAsRangeFirstNode()) {
         if (LayoutObject* layoutObject = node->layoutObject())
             return layoutObject->style()->preserveNewline();
     }
@@ -467,10 +467,15 @@ static bool shouldPreserveNewline(const Range& range)
 
 PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromText(Range* context, const String& text)
 {
-    if (!context)
+    return createFragmentFromText(EphemeralRange(context), text);
+}
+
+PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromText(const EphemeralRange& context, const String& text)
+{
+    if (context.isNull())
         return nullptr;
 
-    Document& document = context->ownerDocument();
+    Document& document = context.document();
     RefPtrWillBeRawPtr<DocumentFragment> fragment = document.createDocumentFragment();
 
     if (text.isEmpty())
@@ -480,7 +485,7 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromText(Range* context, 
     string.replace("\r\n", "\n");
     string.replace('\r', '\n');
 
-    if (shouldPreserveNewline(*context)) {
+    if (shouldPreserveNewline(context)) {
         fragment->appendChild(document.createTextNode(string));
         if (string.endsWith('\n')) {
             RefPtrWillBeRawPtr<HTMLBRElement> element = createBreakElement(document);
@@ -497,12 +502,12 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromText(Range* context, 
     }
 
     // Break string into paragraphs. Extra line breaks turn into empty paragraphs.
-    Element* block = enclosingBlock(context->firstNode());
+    Element* block = enclosingBlock(context.startPosition().nodeAsRangeFirstNode());
     bool useClonesOfEnclosingBlock = block
         && !isHTMLBodyElement(*block)
         && !isHTMLHtmlElement(*block)
-        && block != editableRootForPosition(context->startPosition());
-    bool useLineBreak = enclosingTextFormControl(context->startPosition());
+        && block != editableRootForPosition(context.startPosition());
+    bool useLineBreak = enclosingTextFormControl(context.startPosition());
 
     Vector<String> list;
     string.split('\n', true, list); // true gets us empty strings in the list
