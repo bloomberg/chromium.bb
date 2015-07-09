@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchOptOutPromo.ContextualSearchPromoHost;
@@ -18,6 +19,7 @@ import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.Context
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.privacy.ContextualSearchPreferenceFragment;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
 /**
@@ -121,6 +123,26 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      * The rotation of the arrow icon when the Panel is expanded.
      */
     private static final float ARROW_ICON_ROTATION_STATE_EXPANDED = -270.f;
+
+    /**
+     * The opacity of the close icon when the Panel is peeking.
+     */
+    private static final float CLOSE_ICON_OPACITY_STATE_PEEKED = 0.f;
+
+    /**
+     * The opacity of the close icon when the Panel is expanded.
+     */
+    private static final float CLOSE_ICON_OPACITY_STATE_EXPANDED = 0.f;
+
+    /**
+     * The opacity of the close icon when the Panel is maximized.
+     */
+    private static final float CLOSE_ICON_OPACITY_STATE_MAXIMIZED = 1.f;
+
+    /**
+     * The id of the close icon drawable.
+     */
+    public static final int CLOSE_ICON_DRAWABLE_ID = R.drawable.btn_close;
 
     /**
      * The height of the Progress Bar in dps.
@@ -435,6 +457,9 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     private float mArrowIconOpacity;
     private float mArrowIconRotation;
 
+    private float mCloseIconOpacity;
+    private float mCloseIconWidth;
+
     /**
      * @return The top margin of the Contextual Search Bar.
      */
@@ -545,6 +570,42 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      */
     public float getArrowIconRotation() {
         return mArrowIconRotation;
+    }
+
+    /**
+     * @return The opacity of the close icon.
+     */
+    public float getCloseIconOpacity() {
+        return mCloseIconOpacity;
+    }
+
+    /**
+     * @return The width/height of the close icon.
+     */
+    public float getCloseIconDimension() {
+        if (mCloseIconWidth == 0) {
+            mCloseIconWidth = ApiCompatibilityUtils.getDrawable(mContext.getResources(),
+                    CLOSE_ICON_DRAWABLE_ID).getIntrinsicWidth() * mPxToDp;
+        }
+        return mCloseIconWidth;
+    }
+
+    /**
+     * @return The Y coordinate of the close icon.
+     */
+    public float getCloseIconY() {
+        return (getSearchBarHeight() - getCloseIconDimension()) / 2;
+    }
+
+    /**
+     * @return The X coordinate of the close icon.
+     */
+    public float getCloseIconX() {
+        if (LocalizationUtils.isLayoutRtl()) {
+            return getSearchBarMarginSide();
+        } else {
+            return getWidth() - getSearchBarMarginSide() - getCloseIconDimension();
+        }
     }
 
     // --------------------------------------------------------------------------------------------
@@ -926,6 +987,9 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         mArrowIconOpacity = ARROW_ICON_OPACITY_STATE_PEEKED;
         mArrowIconRotation = ARROW_ICON_ROTATION_STATE_PEEKED;
 
+        // Close icon opacity.
+        mCloseIconOpacity = CLOSE_ICON_OPACITY_STATE_PEEKED;
+
         // Progress Bar.
         mProgressBarOpacity = 0.f;
 
@@ -984,6 +1048,9 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
                 ARROW_ICON_ROTATION_STATE_EXPANDED,
                 percentage));
 
+        // Close icon opacity.
+        mCloseIconOpacity = CLOSE_ICON_OPACITY_STATE_EXPANDED;
+
         // Progress Bar.
         float peekedHeight = getPanelHeightFromState(PanelState.PEEKED);
         float threshold = PROGRESS_BAR_VISIBILITY_THRESHOLD_DP / mPxToDp;
@@ -1032,6 +1099,17 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         // Search Bar text opacity.
         mSearchBarTextOpacity = 1.f;
 
+        // Determine fading element opacities. If both the arrow icon and close
+        // icon are visible, the arrow icon needs to finish fading out before
+        // the close icon starts fading in. Any other elements fading in or
+        // fading out should use the same percentage.
+        float fadingOutPercentage = percentage;
+        float fadingInPercentage = percentage;
+        if (isArrowIconVisible() && ContextualSearchPanelFeatures.isCloseButtonAvailable()) {
+            fadingOutPercentage = Math.min(percentage, .5f) / .5f;
+            fadingInPercentage = Math.max(percentage - .5f, 0.f) / .5f;
+        }
+
         // Search provider icon opacity.
         float searchProviderIconOpacity;
         if (isSideSearchProviderIconVisible()) {
@@ -1040,7 +1118,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
             searchProviderIconOpacity = MathUtils.interpolate(
                     SEARCH_PROVIDER_ICON_OPACITY_STATE_EXPANDED,
                     SEARCH_PROVIDER_ICON_OPACITY_STATE_MAXIMIZED,
-                    percentage);
+                    fadingOutPercentage);
         }
         mSearchProviderIconOpacity = searchProviderIconOpacity;
 
@@ -1048,15 +1126,21 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         float searchIconOpacity = MathUtils.interpolate(
                 SEARCH_ICON_OPACITY_STATE_EXPANDED,
                 SEARCH_ICON_OPACITY_STATE_MAXIMIZED,
-                percentage);
+                fadingInPercentage);
         mSearchIconOpacity = searchIconOpacity;
 
         // Arrow Icon.
         mArrowIconOpacity = MathUtils.interpolate(
                 ARROW_ICON_OPACITY_STATE_EXPANDED,
                 ARROW_ICON_OPACITY_STATE_MAXIMIZED,
-                percentage);
+                fadingOutPercentage);
         mArrowIconRotation = ARROW_ICON_ROTATION_STATE_EXPANDED;
+
+        // Close icon opacity.
+        mCloseIconOpacity = MathUtils.interpolate(
+                CLOSE_ICON_OPACITY_STATE_EXPANDED,
+                CLOSE_ICON_OPACITY_STATE_MAXIMIZED,
+                fadingInPercentage);
 
         // Progress Bar.
         mProgressBarOpacity = 1.f;

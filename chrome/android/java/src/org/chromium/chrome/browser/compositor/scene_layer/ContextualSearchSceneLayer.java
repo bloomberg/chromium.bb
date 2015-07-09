@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.compositor.scene_layer;
 import org.chromium.base.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
+import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanelFeatures;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.ui.resources.ResourceManager;
 
@@ -64,6 +65,9 @@ public class ContextualSearchSceneLayer extends SceneLayer {
         float arrowIconOpacity = mSearchPanel.getArrowIconOpacity();
         float arrowIconRotation = mSearchPanel.getArrowIconRotation();
 
+        boolean closeIconVisible = ContextualSearchPanelFeatures.isCloseButtonAvailable();
+        float closeIconOpacity = mSearchPanel.getCloseIconOpacity();
+
         boolean isProgressBarVisible = mSearchPanel.isProgressBarVisible();
         float progressBarY = mSearchPanel.getProgressBarY();
         float progressBarHeight = mSearchPanel.getProgressBarHeight();
@@ -77,6 +81,7 @@ public class ContextualSearchSceneLayer extends SceneLayer {
                 R.drawable.blue_google_icon,
                 R.drawable.ic_search,
                 R.drawable.breadcrumb_arrow,
+                ContextualSearchPanel.CLOSE_ICON_DRAWABLE_ID,
                 R.drawable.progress_bar_background,
                 R.drawable.progress_bar_foreground,
                 R.id.contextual_search_opt_out_promo,
@@ -102,6 +107,8 @@ public class ContextualSearchSceneLayer extends SceneLayer {
                 arrowIconVisible,
                 arrowIconOpacity,
                 arrowIconRotation,
+                closeIconVisible,
+                closeIconOpacity,
                 isProgressBarVisible,
                 progressBarY * mDpToPx,
                 progressBarHeight * mDpToPx,
@@ -136,6 +143,7 @@ public class ContextualSearchSceneLayer extends SceneLayer {
             int searchProviderIconResourceId,
             int searchIconResourceId,
             int arrowUpResourceId,
+            int closeIconResourceId,
             int progressBarBackgroundResourceId,
             int progressBarResourceId,
             int searchPromoResourceId,
@@ -161,6 +169,8 @@ public class ContextualSearchSceneLayer extends SceneLayer {
             boolean arrowIconVisible,
             float arrowIconOpacity,
             float arrowIconRotation,
+            boolean closeIconVisible,
+            float closeIconOpacity,
             boolean isProgressBarVisible,
             float progressBarY,
             float progressBarHeight,

@@ -38,6 +38,7 @@ void ContextualSearchLayer::SetProperties(
     int search_provider_icon_resource_id,
     int search_icon_resource_id,
     int arrow_up_resource_id,
+    int close_icon_resource_id,
     int progress_bar_background_resource_id,
     int progress_bar_resource_id,
     int search_promo_resource_id,
@@ -63,6 +64,8 @@ void ContextualSearchLayer::SetProperties(
     bool arrow_icon_visible,
     float arrow_icon_opacity,
     float arrow_icon_rotation,
+    bool close_icon_visible,
+    float close_icon_opacity,
     bool progress_bar_visible,
     float progress_bar_y,
     float progress_bar_height,
@@ -229,6 +232,42 @@ void ContextualSearchLayer::SetProperties(
   } else {
     if (arrow_icon_.get() && arrow_icon_->parent())
       arrow_icon_->RemoveFromParent();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Close Icon
+  // ---------------------------------------------------------------------------
+  if (close_icon_visible) {
+    // Grab the Close Icon resource.
+    ui::ResourceManager::Resource* close_icon_resource =
+        resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
+                                       close_icon_resource_id);
+    if (close_icon_->parent() != layer_) {
+      layer_->AddChild(close_icon_);
+    }
+
+    // Positions the icon at the end of the Search Bar.
+    float close_icon_left;
+    if (is_rtl) {
+      close_icon_left = search_bar_margin_side;
+    } else {
+      close_icon_left = search_panel_width -
+          close_icon_resource->size.width() - search_bar_margin_side;
+    }
+
+    // Centers the Close Icon vertically in the Search Bar.
+    float close_icon_top = search_bar_margin_top +
+        (search_bar_height - search_bar_margin_top) / 2 -
+        close_icon_resource->size.height() / 2;
+
+    close_icon_->SetUIResourceId(close_icon_resource->ui_resource->id());
+    close_icon_->SetBounds(close_icon_resource->size);
+    close_icon_->SetPosition(
+        gfx::PointF(close_icon_left, close_icon_top));
+    close_icon_->SetOpacity(close_icon_opacity);
+  } else {
+    if (close_icon_.get() && close_icon_->parent())
+      close_icon_->RemoveFromParent();
   }
 
   // ---------------------------------------------------------------------------
@@ -400,6 +439,8 @@ ContextualSearchLayer::ContextualSearchLayer(
           cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
       arrow_icon_(
           cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
+      close_icon_(
+          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
       content_view_container_(
           cc::Layer::Create(content::Compositor::LayerSettings())),
       search_bar_border_(
@@ -433,6 +474,9 @@ ContextualSearchLayer::ContextualSearchLayer(
 
   // Arrow Icon
   arrow_icon_->SetIsDrawable(true);
+
+  // Close Icon
+  close_icon_->SetIsDrawable(true);
 
   // Search Opt Out Promo
   search_promo_container_->SetIsDrawable(true);

@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 import android.content.Context;
 import android.os.Handler;
 
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 
@@ -48,7 +47,8 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
         SWIPE,
         FLING,
         OPTIN,
-        OPTOUT;
+        OPTOUT,
+        CLOSE_BUTTON;
     }
 
     /**
@@ -243,10 +243,12 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
             } else if (isExpanded()) {
                 peekPanel(StateChangeReason.SEARCH_BAR_TAP);
             } else if (isMaximized()) {
-                // TODO(twellington): check if click happened inside close button,
-                // using ContextualSearchPanelFeatures.isCloseButtonAvailable().
                 if (ContextualSearchPanelFeatures.isSearchTermRefiningAvailable()) {
                     mManagementDelegate.promoteToTab(true);
+                }
+                if (ContextualSearchPanelFeatures.isCloseButtonAvailable()
+                        && isCoordinateInsideCloseButton(x, y)) {
+                    closePanel(StateChangeReason.CLOSE_BUTTON, true);
                 }
             }
         }
@@ -286,6 +288,17 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
      */
     private boolean isYCoordinateInsideBasePage(float y) {
         return y < getOffsetY();
+    }
+
+    /**
+     * @param x The x coordinate in dp.
+     * @param y The y coordinate in dp.
+     * @return Whether the given |x| |y| coordinate is inside the close button.
+     */
+    private boolean isCoordinateInsideCloseButton(float x, float y) {
+        boolean isInY = y >= getCloseIconY() && y <= (getCloseIconY() + getCloseIconDimension());
+        boolean isInX = x >= getCloseIconX() && x <= (getCloseIconX() + getCloseIconDimension());
+        return isInY && isInX;
     }
 
     /**

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 
 /**
  * A utility class meant to determine whether certain features are available in the Search Panel.
@@ -33,23 +34,20 @@ public class ContextualSearchPanelFeatures {
      * @return {@code true} Whether the side search icon is available.
      */
     public static boolean isSearchIconAvailable() {
-        // TODO(twellington): check for custom tabs.
-        return !isSideSearchProviderIconAvailable();
+        return !isSideSearchProviderIconAvailable() && !FeatureUtilities.getCustomTabVisible();
     }
 
     /**
      * @return {@code true} Whether search term refining is available.
      */
     public static boolean isSearchTermRefiningAvailable() {
-        // TODO(twellington): check for custom tabs.
-        return true;
+        return !FeatureUtilities.getCustomTabVisible();
     }
 
     /**
      * @return {@code true} Whether the close button is available.
      */
     public static boolean isCloseButtonAvailable() {
-        // TODO(twellington): check for custom tabs.
-        return false;
+        return FeatureUtilities.getCustomTabVisible();
     }
 }
