@@ -6,7 +6,17 @@
 
 #include "base/logging.h"
 #include "base/values.h"
-#include "chromeos/network/network_event_log.h"
+#include "components/device_event_log/device_event_log.h"
+
+namespace {
+
+bool SuppressError(const std::string& dbus_error_message) {
+  if (dbus_error_message == "Wake on WiFi not supported")
+    return true;
+  return false;
+}
+
+}  // namespace
 
 namespace chromeos {
 namespace network_handler {
@@ -60,19 +70,21 @@ void ShillErrorCallbackFunction(const std::string& error_name,
                                 const ErrorCallback& error_callback,
                                 const std::string& dbus_error_name,
                                 const std::string& dbus_error_message) {
-  std::string detail;
+  std::string detail = error_name + ": ";
   if (!path.empty())
     detail += path + ": ";
   detail += dbus_error_name;
   if (!dbus_error_message.empty())
     detail += ": " + dbus_error_message;
-  NET_LOG_ERROR(error_name, detail);
+  device_event_log::LogLevel log_level =
+      SuppressError(dbus_error_message) ? device_event_log::LOG_LEVEL_DEBUG
+                                        : device_event_log::LOG_LEVEL_ERROR;
+  DEVICE_LOG(::device_event_log::LOG_TYPE_NETWORK, log_level) << detail;
 
   if (error_callback.is_null())
     return;
-  scoped_ptr<base::DictionaryValue> error_data(
-      CreateDBusErrorData(path, error_name, detail,
-                          dbus_error_name, dbus_error_message));
+  scoped_ptr<base::DictionaryValue> error_data(CreateDBusErrorData(
+      path, error_name, detail, dbus_error_name, dbus_error_message));
   error_callback.Run(error_name, error_data.Pass());
 }
 
@@ -82,9 +94,8 @@ void GetPropertiesCallback(const DictionaryResultCallback& callback,
                            DBusMethodCallStatus call_status,
                            const base::DictionaryValue& value) {
   if (call_status != DBUS_METHOD_CALL_SUCCESS) {
-    NET_LOG_ERROR(
-        base::StringPrintf("GetProperties failed. Status: %d", call_status),
-        path);
+    NET_LOG(ERROR) << "GetProperties failed: " << path
+                   << " Status: " << call_status;
     RunErrorCallback(
         error_callback, path, kDBusFailedError, kDBusFailedErrorMessage);
   } else if (!callback.is_null()) {
