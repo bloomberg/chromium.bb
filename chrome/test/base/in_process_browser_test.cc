@@ -54,6 +54,7 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "chrome/test/base/scoped_bundle_swizzler_mac.h"
 #endif
 
 #if defined(OS_WIN)
@@ -186,6 +187,10 @@ InProcessBrowserTest::InProcessBrowserTest()
   // ContentMain. However that is after tests' constructors or SetUp methods,
   // which sometimes need it. So just override it.
   CHECK(PathService::Override(chrome::DIR_TEST_DATA, test_data_dir));
+
+#if defined(OS_MACOSX)
+  bundle_swizzler_.reset(new ScopedBundleSwizzlerMac);
+#endif
 }
 
 InProcessBrowserTest::~InProcessBrowserTest() {

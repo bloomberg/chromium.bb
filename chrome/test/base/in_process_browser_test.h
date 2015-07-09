@@ -34,6 +34,9 @@ class ScopedCOMInitializer;
 
 class Browser;
 class Profile;
+#if defined(OS_MACOSX)
+class ScopedBundleSwizzlerMac;
+#endif  // defined(OS_MACOSX)
 
 namespace content {
 class ContentRendererClient;
@@ -224,6 +227,7 @@ class InProcessBrowserTest : public content::BrowserTestBase {
 
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool* autorelease_pool_;
+  scoped_ptr<ScopedBundleSwizzlerMac> bundle_swizzler_;
 #endif  // OS_MACOSX
 
 #if defined(OS_WIN)

@@ -1825,6 +1825,8 @@
         'test/base/profile_mock.h',
         'test/base/scoped_browser_locale.cc',
         'test/base/scoped_browser_locale.h',
+        'test/base/scoped_bundle_swizzler_mac.h',
+        'test/base/scoped_bundle_swizzler_mac.mm',
         'test/base/scoped_testing_local_state.cc',
         'test/base/scoped_testing_local_state.h',
         'test/base/test_browser_window.cc',
@@ -2053,6 +2055,7 @@
           'dependencies': [
             '../breakpad/breakpad.gyp:breakpad',
             '../components/components.gyp:crash_component',
+            '../third_party/ocmock/ocmock.gyp:*',
           ],
           'sources': [
             'app/chrome_crash_reporter_client.cc',

@@ -44,6 +44,8 @@ source_set("test_support") {
     "base/profile_mock.h",
     "base/scoped_browser_locale.cc",
     "base/scoped_browser_locale.h",
+    "base/scoped_bundle_swizzler_mac.h",
+    "base/scoped_bundle_swizzler_mac.mm",
     "base/scoped_testing_local_state.cc",
     "base/scoped_testing_local_state.h",
     "base/test_browser_window.cc",
@@ -161,6 +163,9 @@ source_set("test_support") {
 
   if (is_linux) {
     deps += [ "//crypto:platform" ]
+  }
+  if (is_mac) {
+    # deps += [ '../third_party/ocmock/ocmock.gyp:ocmock' ] TODO(GYP)
   }
   if (is_win) {
     deps += [ "//third_party/wtl" ]

@@ -20,5 +20,6 @@ include_rules = [
   "+media/base",
   "+sandbox/win/tests",
   "+third_party/mojo/src/mojo/edk/embedder",
+  "+third_party/ocmock",
   "+win8/test",
 ]
