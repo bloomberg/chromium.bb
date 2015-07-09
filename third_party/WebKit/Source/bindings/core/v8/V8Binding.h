@@ -773,7 +773,7 @@ VectorType toImplArray(v8::Local<v8::Value> value, int argumentIndex, v8::Isolat
         return VectorType();
     }
 
-    if (length > WTF::DefaultAllocatorQuantizer::kMaxUnquantizedAllocation / sizeof(ValueType)) {
+    if (length > WTF::kGenericMaxDirectMapped / sizeof(ValueType)) {
         exceptionState.throwTypeError("Array length exceeds supported limit.");
         return VectorType();
     }

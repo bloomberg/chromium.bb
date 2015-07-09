@@ -338,7 +338,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         size_t allocationSize(size_t capacity) const
         {
-            return Allocator::Quantizer::template quantizedSize<T>(capacity);
+            return Allocator::template quantizedSize<T>(capacity);
         }
 
         T* buffer() { return m_buffer; }

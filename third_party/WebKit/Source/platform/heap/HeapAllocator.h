@@ -21,25 +21,19 @@
 
 namespace blink {
 
-class HeapAllocatorQuantizer {
-public:
-    template<typename T>
-    static size_t quantizedSize(size_t count)
-    {
-        RELEASE_ASSERT(count <= kMaxUnquantizedAllocation / sizeof(T));
-        return Heap::roundedAllocationSize(count * sizeof(T));
-    }
-    static const size_t kMaxUnquantizedAllocation = maxHeapObjectSize;
-};
-
 // This is a static-only class used as a trait on collections to make them heap
 // allocated.  However see also HeapListHashSetAllocator.
 class HeapAllocator {
 public:
-    using Quantizer = HeapAllocatorQuantizer;
     using Visitor = blink::Visitor;
     static const bool isGarbageCollected = true;
 
+    template<typename T>
+    static size_t quantizedSize(size_t count)
+    {
+        RELEASE_ASSERT(count <= maxHeapObjectSize / sizeof(T));
+        return Heap::allocationSizeFromSize(count * sizeof(T)) - sizeof(HeapObjectHeader);
+    }
     template <typename T>
     static T* allocateVectorBacking(size_t size)
     {

@@ -945,10 +945,6 @@ public:
         allocationSize = (allocationSize + allocationMask) & ~allocationMask;
         return allocationSize;
     }
-    static inline size_t roundedAllocationSize(size_t size)
-    {
-        return allocationSizeFromSize(size) - sizeof(HeapObjectHeader);
-    }
     static Address allocateOnHeapIndex(ThreadState*, size_t, int heapIndex, size_t gcInfoIndex);
     template<typename T> static Address allocate(size_t, bool eagerlySweep = false);
     template<typename T> static Address reallocate(void* previous, size_t);

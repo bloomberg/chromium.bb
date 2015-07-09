@@ -46,23 +46,17 @@ namespace WTF {
 
 class DefaultAllocatorDummyVisitor;
 
-class DefaultAllocatorQuantizer {
-public:
-    template<typename T>
-    static size_t quantizedSize(size_t count)
-    {
-        RELEASE_ASSERT(count <= kMaxUnquantizedAllocation / sizeof(T));
-        return partitionAllocActualSize(Partitions::bufferPartition(), count * sizeof(T));
-    }
-    static const size_t kMaxUnquantizedAllocation = kGenericMaxDirectMapped;
-};
-
 class DefaultAllocator {
 public:
-    typedef DefaultAllocatorQuantizer Quantizer;
     typedef DefaultAllocatorDummyVisitor Visitor;
     static const bool isGarbageCollected = false;
 
+    template<typename T>
+    static size_t quantizedSize(size_t count)
+    {
+        RELEASE_ASSERT(count <= kGenericMaxDirectMapped / sizeof(T));
+        return partitionAllocActualSize(Partitions::bufferPartition(), count * sizeof(T));
+    }
     template <typename T>
     static T* allocateVectorBacking(size_t size)
     {
