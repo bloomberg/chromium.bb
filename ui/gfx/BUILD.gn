@@ -20,9 +20,6 @@ source_set("gfx_export") {
   ]
 }
 
-vector_icons_cc_file = "$target_gen_dir/vector_icons.cc"
-vector_icons_public_h_file = "$target_gen_dir/vector_icons_public.h"
-
 component("gfx") {
   sources = [
     "android/device_display_info.cc",
@@ -324,18 +321,6 @@ component("gfx") {
     sources -= [ "canvas_notimplemented.cc" ]
   }
 
-  # Desktop only.
-  if (use_aura || (!is_ios && !is_android)) {
-    sources += [
-      "paint_vector_icon.cc",
-      "paint_vector_icon.h",
-      "vector_icons.h",
-      vector_icons_cc_file,
-      vector_icons_public_h_file,
-    ]
-    deps += [ ":aggregate_vector_icons" ]
-  }
-
   # Windows.
   if (is_win) {
     cflags = [ "/wd4324" ]  # Structure was padded due to __declspec(align()), which is
@@ -386,24 +371,6 @@ component("gfx") {
   if (use_cairo) {
     configs += [ "//build/config/linux:pangocairo" ]
   }
-}
-
-# GYP version: ui/gfx/gfx.gyp:aggregate_vector_icons
-action("aggregate_vector_icons") {
-  script = "vector_icons/aggregate_vector_icons.py"
-  sources = [
-    "vector_icons",
-  ]
-  outputs = [
-    vector_icons_cc_file,
-    vector_icons_public_h_file,
-  ]
-
-  args = [
-    "--working_directory=" + rebase_path("vector_icons/"),
-    "--output_cc=" + rebase_path(vector_icons_cc_file, root_build_dir),
-    "--output_h=" + rebase_path(vector_icons_public_h_file, root_build_dir),
-  ]
 }
 
 # Looking for gfx_geometry? It's //ui/gfx/geometry:geometry
