@@ -630,10 +630,6 @@ crbug.com/378610 [ Win7 ] svg/custom/focus-ring-text.svg [ ImageOnlyFailure ]
 
 crbug.com/371725 http/tests/webfont/slow-loading.html [ Pass ImageOnlyFailure Timeout ]
 
-# Minor pixel differences with chromium CL https://codereview.chromium.org/1207143002/.
-# FIXME(wangxianzhu): Rebaseline after the CL lands.
-crbug.com/502152 css3/filters/filter-change-repaint-composited.html [ NeedsManualRebaseline ]
-
 crbug.com/474987 [ Win7 Mac ] css3/flexbox/auto-margins.html [ ImageOnlyFailure ]
 
 crbug.com/393157 [ Mac ] virtual/threaded/printing/print-document-without-documentElement-crash.html [ Pass Crash ]
