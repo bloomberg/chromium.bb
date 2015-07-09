@@ -111,7 +111,7 @@ MediaManager.prototype.getMime = function() {
 
   return new Promise(function(fulfill, reject) {
     chrome.fileManagerPrivate.getEntryProperties(
-        [this.entry_.toURL()], ['contentMimeType', 'thumbnailUrl'], fulfill);
+        [this.entry_], ['contentMimeType', 'thumbnailUrl'], fulfill);
   }.bind(this)).then(function(props) {
     if (!props || !props[0]) {
       return Promise.reject('Mime fetch failed.');

@@ -54885,7 +54885,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="74" label="DELETED_FILEMANAGERPRIVATE_CLEARDRIVECACHE"/>
   <int value="75" label="SERIAL_GETCONTROLSIGNALS"/>
   <int value="76" label="DELETED_DEVELOPERPRIVATE_ENABLE"/>
-  <int value="77" label="FILEMANAGERPRIVATE_GETENTRYPROPERTIES"/>
+  <int value="77" label="FILEMANAGERPRIVATEINTERNAL_GETENTRYPROPERTIES"/>
   <int value="78" label="USB_FINDDEVICES"/>
   <int value="79" label="BOOKMARKMANAGERPRIVATE_DROP"/>
   <int value="80" label="DELETED_FILEMANAGERPRIVATE_GETFILETRANSFERS"/>

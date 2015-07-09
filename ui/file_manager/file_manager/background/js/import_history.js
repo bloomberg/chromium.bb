@@ -1030,34 +1030,39 @@ importer.DriveSyncWatcher.prototype.checkSyncStatus_ =
  *     file has been synced to the named destination.
  * @private
  */
-importer.DriveSyncWatcher.prototype.getSyncStatus_ =
-    function(url) {
-  return new Promise(
-      /** @this {importer.DriveSyncWatcher} */
-      function(resolve, reject) {
-        // TODO(smckay): User Metadata Cache...once it is available
-        // in the background.
-        chrome.fileManagerPrivate.getEntryProperties(
-            [url],
-            ['dirty'],
-            /**
-             * @param {!Array<Object>} propertiesList
-             * @this {importer.DriveSyncWatcher}
-             */
-            function(propertiesList) {
-              console.assert(
-                  propertiesList.length === 1,
-                  'Got an unexpected number of results.');
-              if (chrome.runtime.lastError) {
-                reject(chrome.runtime.lastError);
-              } else {
-                var data = propertiesList[0];
-                resolve(!data['dirty']);
-              }
-            }.bind(this));
-      }.bind(this))
-      .catch(
-          importer.getLogger().catcher('drive-sync-watcher-get-sync-status'));
+importer.DriveSyncWatcher.prototype.getSyncStatus_ = function(url) {
+  util.URLsToEntries([url])
+    .then(
+        /** @this {importer.DriveSyncWatcher} */
+        function(results) {
+          if (results.entries.length)
+            return Promise.reject();
+          return new Promise(
+              /** @this {importer.DriveSyncWatcher} */
+              function(resolve, reject) {
+                // TODO(smckay): User Metadata Cache...once it is available
+                // in the background.
+                chrome.fileManagerPrivate.getEntryProperties(
+                    [results.entries[0]],
+                    ['dirty'],
+                    /**
+                     * @param {!Array<Object>} propertiesList
+                     * @this {importer.DriveSyncWatcher}
+                     */
+                    function(propertiesList) {
+                      console.assert(
+                          propertiesList.length === 1,
+                          'Got an unexpected number of results.');
+                      if (chrome.runtime.lastError) {
+                        reject(chrome.runtime.lastError);
+                      } else {
+                        var data = propertiesList[0];
+                        resolve(!data['dirty']);
+                      }
+                    }.bind(this));
+              }.bind(this));
+        })
+    .catch(importer.getLogger().catcher('drive-sync-watcher-get-sync-status'));
 };
 
 /**

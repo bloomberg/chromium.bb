@@ -16,10 +16,10 @@ function testExternalMetadataProviderBasic(callback) {
   // Mocking chrome API.
   window.chrome = {
     fileManagerPrivate: {
-      getEntryProperties: function(urls, names, callback) {
-        assertEquals(2, urls.length);
-        assertEquals('filesystem://A', urls[0]);
-        assertEquals('filesystem://B', urls[1]);
+      getEntryProperties: function(entries, names, callback) {
+        assertEquals(2, entries.length);
+        assertEquals('filesystem://A', entries[0].toURL());
+        assertEquals('filesystem://B', entries[1].toURL());
         assertEquals(2, names.length);
         assertEquals('modificationTime', names[0]);
         assertEquals('size', names[1]);

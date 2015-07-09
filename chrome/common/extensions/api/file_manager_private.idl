@@ -729,13 +729,14 @@ interface Functions {
                          SimpleCallback callback);
 
   // Requests additional properties for files.
-  // |fileUrls| list of URLs of files
+  // |entries| list of entries
   // |names| list of requested properties by their names.
   // |callback| Completion callback. May return less than requested properties
   //     if some are not available. In the same time, it can return properties
   //     which were not requested (if it's cheap to compute them).
+  [nocompile]
   static void getEntryProperties(
-      DOMString[] fileUrls,
+      [instanceOf=Entry] object[] entries,
       EntryPropertyName[] names,
       GetEntryPropertiesCallback callback);
 

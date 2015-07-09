@@ -15,9 +15,15 @@ namespace fileManagerPrivateInternal {
   };
 
   callback ResolveIsolatedEntriesCallback = void(EntryDescription[] entries);
+  callback GetEntryPropertiesCallback = void(
+      fileManagerPrivate.EntryProperties[] entryProperties);
 
   interface Functions {
     static void resolveIsolatedEntries(DOMString[] urls,
                                        ResolveIsolatedEntriesCallback callback);
+    static void getEntryProperties(
+        DOMString[] urls,
+        fileManagerPrivate.EntryPropertyName[] names,
+        GetEntryPropertiesCallback callback);
   };
 };

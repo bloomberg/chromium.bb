@@ -47,10 +47,9 @@ ExternalMetadataProvider.prototype.get = function(requests) {
   if (!requests.length)
     return Promise.resolve([]);
   return new Promise(function(fulfill) {
-    var urls = [];
-    for (var i = 0; i < requests.length; i++) {
-      urls.push(requests[i].entry.toURL());
-    }
+    var entries = requests.map(function(request) {
+      return request.entry;
+    });
     var nameMap = [];
     for (var i = 0; i < requests.length; i++) {
       for (var j = 0; j < requests[i].names.length; j++) {
@@ -58,7 +57,7 @@ ExternalMetadataProvider.prototype.get = function(requests) {
       }
     }
     chrome.fileManagerPrivate.getEntryProperties(
-        urls,
+        entries,
         Object.keys(nameMap),
         function(results) {
           if (!chrome.runtime.lastError)

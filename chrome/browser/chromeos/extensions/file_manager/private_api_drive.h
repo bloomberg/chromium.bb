@@ -38,16 +38,16 @@ struct EntryProperties;
 // Retrieves property information for an entry and returns it as a dictionary.
 // On error, returns a dictionary with the key "error" set to the error number
 // (base::File::Error).
-class FileManagerPrivateGetEntryPropertiesFunction
+class FileManagerPrivateInternalGetEntryPropertiesFunction
     : public LoggedAsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.getEntryProperties",
-                             FILEMANAGERPRIVATE_GETENTRYPROPERTIES)
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.getEntryProperties",
+                             FILEMANAGERPRIVATEINTERNAL_GETENTRYPROPERTIES)
 
-  FileManagerPrivateGetEntryPropertiesFunction();
+  FileManagerPrivateInternalGetEntryPropertiesFunction();
 
  protected:
-  ~FileManagerPrivateGetEntryPropertiesFunction() override;
+  ~FileManagerPrivateInternalGetEntryPropertiesFunction() override;
 
   // AsyncExtensionFunction overrides.
   bool RunAsync() override;

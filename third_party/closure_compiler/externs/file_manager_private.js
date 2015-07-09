@@ -334,12 +334,12 @@ chrome.fileManagerPrivate.selectFile = function(selectedPath, index, forOpening,
 /**
  * Requests additional properties for files. |fileUrls| list of URLs of files
  * |callback|
- * @param {!Array<string>} fileUrls
+ * @param {!Array<!Entry>} entries
  * @param {!Array<string>} names
  * @param {!Function} callback |entryProperties| A dictionary containing
  * properties of the requested entries.
  */
-chrome.fileManagerPrivate.getEntryProperties = function(fileUrls, names, callback) {};
+chrome.fileManagerPrivate.getEntryProperties = function(entries, names, callback) {};
 
 /**
  * Pins/unpins a Drive file in the cache. |fileUrl| URL of a file to pin/unpin.

@@ -68,6 +68,14 @@ binding.registerCustomHook(function(bindingsAPI) {
       }));
     });
   });
+
+  apiFunctions.setHandleRequest('getEntryProperties',
+                                function(entries, names, callback) {
+    var urls = entries.map(function(entry) {
+      return fileBrowserHandlerNatives.GetEntryURL(entry);
+    });
+    fileManagerPrivateInternal.getEntryProperties(urls, names, callback);
+  });
 });
 
 eventBindings.registerArgumentMassager(
