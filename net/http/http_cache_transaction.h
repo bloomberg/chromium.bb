@@ -351,10 +351,6 @@ class HttpCache::Transaction : public HttpTransaction {
   // Fixes the response headers to match expectations for a HEAD request.
   void FixHeadersForHead();
 
-  // Changes the response code of a range request to be 416 (Requested range not
-  // satisfiable).
-  void FailRangeRequest();
-
   // Setups the transaction for reading from the cache entry.
   int SetupEntryForRead();
 
@@ -373,11 +369,6 @@ class HttpCache::Transaction : public HttpTransaction {
   // Called to write response_ to the cache entry. |truncated| indicates if the
   // entry should be marked as incomplete.
   int WriteResponseInfoToEntry(bool truncated);
-
-  // Called to append response data to the cache entry.  Returns a network error
-  // code.
-  int AppendResponseDataToEntry(IOBuffer* data, int data_len,
-                                const CompletionCallback& callback);
 
   // Called when we are done writing to the cache entry.
   void DoneWritingToEntry(bool success);

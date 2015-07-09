@@ -1860,7 +1860,12 @@ int HttpCache::Transaction::DoCacheWriteData(int num_bytes) {
       net_log_.BeginEvent(NetLog::TYPE_HTTP_CACHE_WRITE_DATA);
   }
 
-  return AppendResponseDataToEntry(read_buf_.get(), num_bytes, io_callback_);
+  if (!entry_ || !num_bytes)
+    return num_bytes;
+
+  int current_size = entry_->disk_entry->GetDataSize(kResponseContentIndex);
+  return WriteToEntry(kResponseContentIndex, current_size, read_buf_.get(),
+                      num_bytes, io_callback_);
 }
 
 int HttpCache::Transaction::DoCacheWriteDataComplete(int result) {
@@ -2474,8 +2479,12 @@ bool HttpCache::Transaction::ValidatePartialResponse() {
       DoomPartialEntry(true);
       mode_ = NONE;
     } else {
-      if (response_code == 304)
-        FailRangeRequest();
+      if (response_code == 304) {
+        // Change the response code of the request to be 416 (Requested range
+        // not satisfiable).
+        response_ = *new_response_;
+        partial_->FixResponseHeaders(response_.headers.get(), false);
+      }
       IgnoreRangeRequest();
     }
     return true;
@@ -2579,11 +2588,6 @@ void HttpCache::Transaction::FixHeadersForHead() {
   }
 }
 
-void HttpCache::Transaction::FailRangeRequest() {
-  response_ = *new_response_;
-  partial_->FixResponseHeaders(response_.headers.get(), false);
-}
-
 int HttpCache::Transaction::SetupEntryForRead() {
   if (network_trans_)
     ResetNetworkTransaction();
@@ -2680,16 +2684,6 @@ int HttpCache::Transaction::WriteResponseInfoToEntry(bool truncated) {
   io_buf_len_ = data->pickle()->size();
   return entry_->disk_entry->WriteData(kResponseInfoIndex, 0, data.get(),
                                        io_buf_len_, io_callback_, true);
-}
-
-int HttpCache::Transaction::AppendResponseDataToEntry(
-    IOBuffer* data, int data_len, const CompletionCallback& callback) {
-  if (!entry_ || !data_len)
-    return data_len;
-
-  int current_size = entry_->disk_entry->GetDataSize(kResponseContentIndex);
-  return WriteToEntry(kResponseContentIndex, current_size, data, data_len,
-                      callback);
 }
 
 void HttpCache::Transaction::DoneWritingToEntry(bool success) {
