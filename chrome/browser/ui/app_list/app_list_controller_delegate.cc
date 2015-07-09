@@ -28,7 +28,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 #if defined(ENABLE_RLZ)
-#include "chrome/browser/rlz/rlz.h"
+#include "components/rlz/rlz_tracker.h"
 #endif
 
 using extensions::ExtensionRegistry;
@@ -213,6 +213,6 @@ void AppListControllerDelegate::GetApps(Profile* profile,
 
 void AppListControllerDelegate::OnSearchStarted() {
 #if defined(ENABLE_RLZ)
-  RLZTracker::RecordAppListSearch();
+  rlz::RLZTracker::RecordAppListSearch();
 #endif
 }

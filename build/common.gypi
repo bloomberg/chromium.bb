@@ -1494,6 +1494,7 @@
 
     # Whether we are using the rlz library or not.  Platforms like Android send
     # rlz codes for searches but do not use the library.
+    'enable_rlz_support%': 0,
     'enable_rlz%': 0,
 
     # Turns on the i18n support in V8.
@@ -2320,9 +2321,15 @@
         'release_valgrind_build': 1,
       }],
 
-      # Enable RLZ on Win, Mac, iOS and ChromeOS.
-      ['branding=="Chrome" and (OS=="win" or OS=="mac" or OS=="ios" or chromeos==1)', {
-        'enable_rlz%': 1,
+      # RLZ library is used on Win, Mac, iOS and ChromeOS.
+      ['OS=="win" or OS=="mac" or OS=="ios" or chromeos==1', {
+        'enable_rlz_support%': 1,
+        'conditions': [
+          # RLZ is enabled for "Chrome" builds.
+          ['branding=="Chrome"', {
+            'enable_rlz%': 1,
+          }],
+        ],
       }],
 
       # Set default compiler flags depending on ARM version.

@@ -2435,12 +2435,8 @@
       'browser/profiles/storage_partition_descriptor.h',
     ],
     'chrome_browser_rlz_sources': [
-      'browser/rlz/rlz.cc',
-      'browser/rlz/rlz.h',
-      'browser/rlz/rlz_chromeos.cc',
-      'browser/rlz/rlz_ios.mm',
-      'browser/rlz/rlz_mac.cc',
-      'browser/rlz/rlz_win.cc',
+      'browser/rlz/chrome_rlz_tracker_delegate.cc',
+      'browser/rlz/chrome_rlz_tracker_delegate.h',
     ],
     # "Safe Browsing Basic" files used for safe browsing in full mode
     # (safe_browsing=1), mobile (=2), and mobile-extended (=3).
@@ -3714,9 +3710,8 @@
           },
         }],
         ['enable_rlz==1', {
-          'sources': [ '<@(chrome_browser_rlz_sources)' ],
           'dependencies': [
-            '../rlz/rlz.gyp:rlz_lib',
+            'browser_rlz',
           ],
         }],
         # Temporary fix to break the browser target into smaller chunks so it
@@ -4085,5 +4080,24 @@
         },
       ],
     },],
+    ['enable_rlz_support==1', {
+      'targets': [
+        {
+          # GN version: // chrome/browser:rlz
+          'target_name': 'browser_rlz',
+          'type': 'static_library',
+          'sources': [
+            '<@(chrome_browser_rlz_sources)',
+          ],
+          'dependencies': [
+            '../components/components.gyp:google_core_browser',
+            '../components/components.gyp:omnibox_browser',
+            '../components/components.gyp:rlz',
+            '../components/components.gyp:search_engines',
+            '../rlz/rlz.gyp:rlz_lib',
+          ],
+        },
+      ],
+    }],
   ],
 }

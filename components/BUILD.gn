@@ -313,6 +313,10 @@ test("components_unittests") {
 
   data_deps = [ ":components_tests_pak" ]
 
+  if (enable_rlz_support) {
+    deps += [ "//components/rlz:unit_tests" ]
+  }
+
   if (is_android) {
     isolate_file = "components_unittests.isolate"
 

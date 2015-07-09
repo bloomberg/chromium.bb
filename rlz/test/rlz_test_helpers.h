@@ -19,7 +19,7 @@
 #endif
 
 // A test helper class that constructs and destructs platform dependent machine
-// state. It's used by src/chrome/browser/rlz/rlz_unittest.cc and
+// state. It's used by src/components/rlz/rlz_tracker_unittest.cc and
 // src/rlz/lib/rlz_lib_test.cc
 class RlzLibTestNoMachineStateHelper {
  public:

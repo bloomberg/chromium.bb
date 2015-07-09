@@ -43,7 +43,6 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
@@ -101,6 +100,10 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "chrome/browser/apps/app_launch_for_metro_restart_win.h"
+#endif
+
+#if defined(ENABLE_RLZ)
+#include "components/rlz/rlz_tracker.h"
 #endif
 
 using content::ChildProcessSecurityPolicy;
@@ -788,8 +791,8 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(
 
 #if defined(ENABLE_RLZ) && !defined(OS_IOS)
     if (process_startup && google_util::IsGoogleHomePageUrl(tabs[i].url)) {
-      params.extra_headers = RLZTracker::GetAccessPointHttpHeader(
-          RLZTracker::ChromeHomePage());
+      params.extra_headers = rlz::RLZTracker::GetAccessPointHttpHeader(
+          rlz::RLZTracker::ChromeHomePage());
     }
 #endif  // defined(ENABLE_RLZ) && !defined(OS_IOS)
 
