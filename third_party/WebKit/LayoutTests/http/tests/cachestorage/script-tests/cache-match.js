@@ -450,7 +450,7 @@ cache_test(function(cache) {
   }, 'Cache.match invoked multiple times for the same Request/Response');
 
 prepopulated_cache_test(simple_entries, function(cache, entries) {
-    var request = new Request(entries.a.request, {method: 'POST'});
+    var request = new Request(entries.a.request.clone(), {method: 'POST'});
     return cache.match(request)
       .then(function(result) {
           assert_equals(result, undefined,
