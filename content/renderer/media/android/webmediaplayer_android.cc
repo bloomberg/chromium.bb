@@ -952,8 +952,10 @@ void WebMediaPlayerAndroid::OnDidExitFullscreen() {
     SetNeedsEstablishPeer(true);
   // We had the fullscreen surface connected to Android MediaPlayer,
   // so reconnect our surface texture for embedded playback.
-  if (!paused() && needs_establish_peer_)
+  if (!paused() && needs_establish_peer_) {
+    TryCreateStreamTextureProxyIfNeeded();
     EstablishSurfaceTexturePeer();
+  }
 
 #if defined(VIDEO_HOLE)
   if (!paused() && needs_external_surface_)
@@ -1212,7 +1214,7 @@ void WebMediaPlayerAndroid::ReallocateVideoFrame() {
     if (!natural_size_.isEmpty()) {
       // Now we finally know that "stream texture" and "video frame" won't
       // be needed. EME uses "external surface" and "video hole" instead.
-      ResetStreamTextureProxy();
+      RemoveSurfaceTextureAndProxy();
       scoped_refptr<VideoFrame> new_frame =
           VideoFrame::CreateHoleFrame(natural_size_);
       SetCurrentFrameInternal(new_frame);
@@ -1291,6 +1293,16 @@ void WebMediaPlayerAndroid::PutCurrentFrame() {
 void WebMediaPlayerAndroid::ResetStreamTextureProxy() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
+  RemoveSurfaceTextureAndProxy();
+
+  TryCreateStreamTextureProxyIfNeeded();
+  if (needs_establish_peer_ && is_playing_)
+    EstablishSurfaceTexturePeer();
+}
+
+void WebMediaPlayerAndroid::RemoveSurfaceTextureAndProxy() {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+
   if (stream_id_) {
     GLES2Interface* gl = stream_texture_factory_->ContextGL();
     gl->DeleteTextures(1, &texture_id_);
@@ -1304,10 +1316,6 @@ void WebMediaPlayerAndroid::ResetStreamTextureProxy() {
   needs_establish_peer_ = !needs_external_surface_ && !is_remote_ &&
                           !is_fullscreen_ &&
                           (hasVideo() || IsHLSStream());
-
-  TryCreateStreamTextureProxyIfNeeded();
-  if (needs_establish_peer_ && is_playing_)
-    EstablishSurfaceTexturePeer();
 }
 
 void WebMediaPlayerAndroid::TryCreateStreamTextureProxyIfNeeded() {
