@@ -116,7 +116,7 @@ bool IsHistoryAndBookmarkRowValid(const HistoryAndBookmarkRow& row) {
 
 void RunNotifyFaviconChanged(HistoryBackendNotifier* notifier,
                              scoped_ptr<std::set<GURL>> urls) {
-  notifier->NotifyFaviconChanged(*(urls.get()));
+  notifier->NotifyFaviconsChanged(*(urls.get()), GURL());
 }
 
 void RunNotifyURLsModified(HistoryBackendNotifier* notifier,

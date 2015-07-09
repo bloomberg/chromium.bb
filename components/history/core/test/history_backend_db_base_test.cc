@@ -37,7 +37,8 @@ class BackendDelegate : public HistoryBackend::Delegate {
     // synchronously, so we don't have to do anything fancy.
     history_test_->in_mem_backend_.swap(backend);
   }
-  void NotifyFaviconChanged(const std::set<GURL>& url) override {}
+  void NotifyFaviconsChanged(const std::set<GURL>& page_urls,
+                             const GURL& icon_url) override {}
   void NotifyURLVisited(ui::PageTransition transition,
                         const URLRow& row,
                         const RedirectList& redirects,

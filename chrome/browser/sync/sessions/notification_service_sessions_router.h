@@ -51,15 +51,21 @@ class NotificationServiceSessionsRouter
   // from WebContents.
   void OnNavigationBlocked(content::WebContents* web_contents);
 
-  // Called when the urls of favicon changed.
-  void OnFaviconChanged(const std::set<GURL>& changed_favicons);
+  // Called when the favicons for the given page URLs
+  // (e.g. http://www.google.com) and the given icon URL (e.g.
+  // http://www.google.com/favicon.ico) have changed. It is valid to call
+  // OnFaviconsChanged() with non-empty |page_urls| and an empty |icon_url|
+  // and vice versa.
+  void OnFaviconsChanged(const std::set<GURL>& page_urls,
+                         const GURL& icon_url);
 
   LocalSessionEventHandler* handler_;
   content::NotificationRegistrar registrar_;
   Profile* const profile_;
   syncer::SyncableService::StartSyncFlare flare_;
 
-  scoped_ptr<base::CallbackList<void(const std::set<GURL>&)>::Subscription>
+  scoped_ptr<base::CallbackList<void(const std::set<GURL>&,
+                                     const GURL&)>::Subscription>
       favicon_changed_subscription_;
 
   base::WeakPtrFactory<NotificationServiceSessionsRouter> weak_ptr_factory_;

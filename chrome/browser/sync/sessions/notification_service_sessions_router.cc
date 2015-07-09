@@ -61,8 +61,8 @@ NotificationServiceSessionsRouter::NotificationServiceSessionsRouter(
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS);
   if (history_service) {
-    favicon_changed_subscription_ = history_service->AddFaviconChangedCallback(
-        base::Bind(&NotificationServiceSessionsRouter::OnFaviconChanged,
+    favicon_changed_subscription_ = history_service->AddFaviconsChangedCallback(
+        base::Bind(&NotificationServiceSessionsRouter::OnFaviconsChanged,
                    base::Unretained(this)));
   }
 #if defined(ENABLE_SUPERVISED_USERS)
@@ -155,10 +155,11 @@ void NotificationServiceSessionsRouter::OnNavigationBlocked(
   handler_->OnLocalTabModified(tab);
 }
 
-void NotificationServiceSessionsRouter::OnFaviconChanged(
-    const std::set<GURL>& changed_favicons) {
+void NotificationServiceSessionsRouter::OnFaviconsChanged(
+    const std::set<GURL>& page_urls,
+    const GURL& icon_url) {
   if (handler_)
-    handler_->OnFaviconPageUrlsUpdated(changed_favicons);
+    handler_->OnFaviconsChanged(page_urls, icon_url);
 }
 
 void NotificationServiceSessionsRouter::StartRoutingTo(

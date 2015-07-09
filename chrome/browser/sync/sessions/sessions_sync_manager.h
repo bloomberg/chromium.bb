@@ -63,12 +63,13 @@ class LocalSessionEventHandler {
   virtual void OnLocalTabModified(SyncedTabDelegate* modified_tab) = 0;
 
   // A local navigation occurred that triggered updates to favicon data for
-  // each URL in |updated_page_urls|.  This is routed through Sessions Sync so
-  // that we can filter (exclude) favicon updates for pages that aren't
-  // currently part of the set of local open tabs, and pass relevant updates
-  // on to FaviconCache for out-of-band favicon syncing.
-  virtual void OnFaviconPageUrlsUpdated(
-      const std::set<GURL>& updated_page_urls) = 0;
+  // each page URL in |page_urls| (e.g. http://www.google.com) and the icon URL
+  // |icon_url| (e.g. http://www.google.com/favicon.ico). This is routed through
+  // Sessions Sync so that we can filter (exclude) favicon updates for pages
+  // that aren't currently part of the set of local open tabs, and pass relevant
+  // updates on to FaviconCache for out-of-band favicon syncing.
+  virtual void OnFaviconsChanged(const std::set<GURL>& page_urls,
+                                 const GURL& icon_url) = 0;
 };
 
 // The LocalSessionEventRouter is responsible for hooking itself up to various
@@ -122,8 +123,8 @@ class SessionsSyncManager : public syncer::SyncableService,
 
   // LocalSessionEventHandler implementation.
   void OnLocalTabModified(SyncedTabDelegate* modified_tab) override;
-  void OnFaviconPageUrlsUpdated(
-      const std::set<GURL>& updated_favicon_page_urls) override;
+  void OnFaviconsChanged(const std::set<GURL>& page_urls,
+                         const GURL& icon_url) override;
 
   // Returns the tag used to uniquely identify this machine's session in the
   // sync model.

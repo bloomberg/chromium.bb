@@ -119,11 +119,12 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
                               history_service_, base::Passed(&backend)));
   }
 
-  void NotifyFaviconChanged(const std::set<GURL>& urls) override {
+  void NotifyFaviconsChanged(const std::set<GURL>& page_urls,
+                             const GURL& icon_url) override {
     // Send the notification to the history service on the main thread.
     service_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&HistoryService::NotifyFaviconChanged,
-                              history_service_, urls));
+        FROM_HERE, base::Bind(&HistoryService::NotifyFaviconsChanged,
+                              history_service_, page_urls, icon_url));
   }
 
   void NotifyURLVisited(ui::PageTransition transition,
@@ -1130,17 +1131,18 @@ void HistoryService::NotifyKeywordSearchTermDeleted(URLID url_id) {
                     OnKeywordSearchTermDeleted(this, url_id));
 }
 
-scoped_ptr<base::CallbackList<void(const std::set<GURL>&)>::Subscription>
-HistoryService::AddFaviconChangedCallback(
-    const HistoryService::OnFaviconChangedCallback& callback) {
+scoped_ptr<base::CallbackList<void(const std::set<GURL>&,
+                                   const GURL&)>::Subscription>
+HistoryService::AddFaviconsChangedCallback(
+    const HistoryService::OnFaviconsChangedCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   return favicon_changed_callback_list_.Add(callback);
 }
 
-void HistoryService::NotifyFaviconChanged(
-    const std::set<GURL>& changed_favicons) {
+void HistoryService::NotifyFaviconsChanged(const std::set<GURL>& page_urls,
+                                           const GURL& icon_url) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  favicon_changed_callback_list_.Notify(changed_favicons);
+  favicon_changed_callback_list_.Notify(page_urls, icon_url);
 }
 
 }  // namespace history

@@ -160,7 +160,8 @@ class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
   }
 
   // HistoryBackendNotifier:
-  void NotifyFaviconChanged(const std::set<GURL>& urls) override {}
+  void NotifyFaviconsChanged(const std::set<GURL>& page_urls,
+                             const GURL& icon_url) override {}
   void NotifyURLVisited(ui::PageTransition transition,
                         const URLRow& row,
                         const RedirectList& redirects,

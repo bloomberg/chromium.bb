@@ -57,8 +57,9 @@ class HistoryClientImpl : public history::HistoryClient,
   base::Callback<void(const std::set<GURL>&)> on_bookmarks_removed_;
 
   // Subscription for notifications of changes to favicons.
-  scoped_ptr<base::CallbackList<void(const std::set<GURL>&)>::Subscription>
-      favicon_changed_subscription_;
+  scoped_ptr<base::CallbackList<void(const std::set<GURL>&,
+                                     const GURL&)>::Subscription>
+      favicons_changed_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryClientImpl);
 };

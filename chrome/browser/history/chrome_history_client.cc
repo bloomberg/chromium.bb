@@ -31,9 +31,10 @@ void ChromeHistoryClient::OnHistoryServiceCreated(
     on_bookmarks_removed_ =
         base::Bind(&history::HistoryService::URLsNoLongerBookmarked,
                    base::Unretained(history_service));
-    favicon_changed_subscription_ = history_service->AddFaviconChangedCallback(
-        base::Bind(&bookmarks::BookmarkModel::OnFaviconChanged,
-                   base::Unretained(bookmark_model_)));
+    favicons_changed_subscription_ =
+        history_service->AddFaviconsChangedCallback(
+            base::Bind(&bookmarks::BookmarkModel::OnFaviconsChanged,
+                       base::Unretained(bookmark_model_)));
     bookmark_model_->AddObserver(this);
     is_bookmark_model_observer_ = true;
   }
@@ -51,7 +52,7 @@ void ChromeHistoryClient::Shutdown() {
     if (is_bookmark_model_observer_) {
       is_bookmark_model_observer_ = false;
       bookmark_model_->RemoveObserver(this);
-      favicon_changed_subscription_.reset();
+      favicons_changed_subscription_.reset();
       on_bookmarks_removed_.Reset();
     }
     bookmark_model_->Shutdown();

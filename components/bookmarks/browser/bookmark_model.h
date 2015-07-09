@@ -297,15 +297,20 @@ class BookmarkModel : public KeyedService {
   void SetNodeSyncTransactionVersion(const BookmarkNode* node,
                                      int64_t sync_transaction_version);
 
-  // Notify BookmarkModel that the favicons for |urls| have changed and have to
-  // be refetched. This notification is sent by BookmarkClient.
-  void OnFaviconChanged(const std::set<GURL>& urls);
+  // Notify BookmarkModel that the favicons for the given page URLs (e.g.
+  // http://www.google.com) and the given icon URL (e.g.
+  // http://www.google.com/favicon.ico) have changed. It is valid to call
+  // OnFaviconsChanged() with non-empty |page_urls| and an empty |icon_url| and
+  // vice versa.
+  void OnFaviconsChanged(const std::set<GURL>& page_urls,
+                         const GURL& icon_url);
 
   // Returns the client used by this BookmarkModel.
   BookmarkClient* client() const { return client_; }
 
  private:
   friend class BookmarkCodecTest;
+  friend class BookmarkModelFaviconTest;
   friend class BookmarkStorage;
   friend class ScopedGroupBookmarkActions;
   friend class TestBookmarkClient;

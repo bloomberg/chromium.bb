@@ -457,14 +457,20 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
       scoped_ptr<HistoryDBTask> task,
       base::CancelableTaskTracker* tracker);
 
-  // This callback is invoked when favicon change for urls.
-  typedef base::Callback<void(const std::set<GURL>&)> OnFaviconChangedCallback;
+  // Callback for when favicon data changes. Contains a std::set of page URLs
+  // (e.g. http://www.google.com) for which the favicon data has changed and the
+  // icon URL (e.g. http://www.google.com/favicon.ico) for which the favicon
+  // data has changed. It is valid to call the callback with non-empty
+  // "page URLs" and no "icon URL" and vice versa.
+  typedef base::Callback<void(const std::set<GURL>&, const GURL&)>
+      OnFaviconsChangedCallback;
 
   // Add a callback to the list. The callback will remain registered until the
-  // returned Subscription is destroyed. This must occurs before HistoryService
-  // is destroyed.
-  scoped_ptr<base::CallbackList<void(const std::set<GURL>&)>::Subscription>
-  AddFaviconChangedCallback(const OnFaviconChangedCallback& callback)
+  // returned Subscription is destroyed. The Subscription must be destroyed
+  // before HistoryService is destroyed.
+  scoped_ptr<base::CallbackList<void(const std::set<GURL>&,
+                                     const GURL&)>::Subscription>
+  AddFaviconsChangedCallback(const OnFaviconsChangedCallback& callback)
       WARN_UNUSED_RESULT;
 
   // Testing -------------------------------------------------------------------
@@ -774,8 +780,13 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // specified priority. The task will have ownership taken.
   void ScheduleTask(SchedulePriority priority, const base::Closure& task);
 
-  // Invokes all callback registered by AddFaviconChangedCallback.
-  void NotifyFaviconChanged(const std::set<GURL>& changed_favicons);
+  // Called when the favicons for the given page URLs (e.g.
+  // http://www.google.com) and the given icon URL (e.g.
+  // http://www.google.com/favicon.ico) have changed. It is valid to call
+  // NotifyFaviconsChanged() with non-empty |page_urls| and an empty |icon_url|
+  // and vice versa.
+  void NotifyFaviconsChanged(const std::set<GURL>& page_urls,
+                             const GURL& icon_url);
 
   base::ThreadChecker thread_checker_;
 
@@ -809,7 +820,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   bool backend_loaded_;
 
   base::ObserverList<HistoryServiceObserver> observers_;
-  base::CallbackList<void(const std::set<GURL>&)>
+  base::CallbackList<void(const std::set<GURL>&, const GURL&)>
       favicon_changed_callback_list_;
 
   DeleteDirectiveHandler delete_directive_handler_;

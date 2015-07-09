@@ -279,6 +279,48 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   CheckFaviconExpired(0, icon_url);
 }
 
+// When two bookmarks use the same icon URL, both bookmarks use the same row
+// in the favicons table in the Favicons database. Test that when the favicon
+// is updated for one bookmark it is also updated for the other bookmark. This
+// ensures that sync has the most up to date data and prevents sync from
+// reverting the newly updated bookmark favicon back to the old favicon.
+// crbug.com/485657
+IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
+                       SC_SetFaviconTwoBookmarksSameIconURL) {
+  const GURL page_url1("http://www.google.com/a");
+  const GURL page_url2("http://www.google.com/b");
+  const GURL icon_url("http://www.google.com/favicon.ico");
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  const BookmarkNode* bookmark01 = AddURL(0, kGenericURLTitle, page_url1);
+  ASSERT_TRUE(bookmark01 != nullptr);
+  const BookmarkNode* bookmark02 = AddURL(0, kGenericURLTitle, page_url2);
+  ASSERT_TRUE(bookmark02 != nullptr);
+
+  SetFavicon(0, bookmark01, icon_url, CreateFavicon(SK_ColorWHITE),
+             bookmarks_helper::FROM_UI);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  // Set |page_url2| with the new (blue) favicon at |icon_url|. The sync favicon
+  // for both |page_url1| and |page_url2| should be updated to the blue one.
+  SetFavicon(0, bookmark02, icon_url, CreateFavicon(SK_ColorBLUE),
+             bookmarks_helper::FROM_UI);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  // Set the title for |page_url1|. This should not revert either of the
+  // bookmark favicons back to white.
+  const char kNewTitle[] = "New Title";
+  ASSERT_STRNE(kGenericURLTitle, kNewTitle);
+  const BookmarkNode* bookmark11 = GetUniqueNodeByURL(1, page_url1);
+  SetTitle(1, bookmark11, std::string(kNewTitle));
+  ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
+  ASSERT_TRUE(AllModelsMatchVerifier());
+}
+
 // Test Scribe ID - 370560.
 IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_AddNonHTTPBMs) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";

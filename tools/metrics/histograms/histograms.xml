@@ -2602,10 +2602,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Bookmarks.LaunchDepth">
   <owner>yfriedman@chromium.org</owner>
   <summary>
-    Logs the depth of the bookmark in the bookmark tree hiearchy every time a
+    Logs the depth of the bookmark in the bookmark tree hierarchy every time a
     bookmark is launched. Depth indicates how many levels below a permanent
     bookmark folder the bookmark was found in (e.g. a bookmark immediately in
     the bookmark bar has depth 1).
+  </summary>
+</histogram>
+
+<histogram name="Bookmarks.OnFaviconsChangedIconURL" enum="BooleanHit">
+  <owner>pkotwicz@chromium.org</owner>
+  <summary>
+    Logs how frequently BookmarkModel::OnFaviconsChanged() is called with a
+    non-empty |icon_url| to determine whether BookmarkNodes should be cached
+    based on their favicon URLs (e.g. http://www.google.com/favicon.ico) in
+    addition to their page URLs (e.g. http://www.google.com). OnFaviconChanged()
+    is expected to be called less than 10 times per user per day with a
+    non-empty |icon_url|.
   </summary>
 </histogram>
 

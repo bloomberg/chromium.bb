@@ -21,9 +21,12 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
+#include "components/favicon_base/favicon_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/tree_node_iterator.h"
 #include "ui/base/models/tree_node_model.h"
+#include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
 using base::ASCIIToUTF16;
@@ -1181,4 +1184,148 @@ TEST(BookmarkModelTest2, CreateAndRestore) {
 }
 
 }  // namespace
+
+class BookmarkModelFaviconTest : public testing::Test,
+                                 public BookmarkModelObserver {
+ public:
+  BookmarkModelFaviconTest() : model_(client_.CreateModel()) {
+    model_->AddObserver(this);
+  }
+
+  // Emulates the favicon getting asynchronously loaded. In production, the
+  // favicon is asynchronously loaded when BookmarkModel::GetFavicon() is
+  // called.
+  void OnFaviconLoaded(BookmarkNode* node, const GURL& icon_url) {
+      SkBitmap bitmap;
+      bitmap.allocN32Pixels(16, 16);
+      bitmap.eraseColor(SK_ColorBLUE);
+      gfx::Image image = gfx::Image::CreateFrom1xBitmap(bitmap);
+
+      favicon_base::FaviconImageResult image_result;
+      image_result.image = image;
+      image_result.icon_url = icon_url;
+      model_->OnFaviconDataAvailable(node, favicon_base::IconType::FAVICON,
+                                     image_result);
+  }
+
+  bool WasNodeUpdated(const BookmarkNode* node) {
+    return std::find(updated_nodes_.begin(), updated_nodes_.end(), node) !=
+           updated_nodes_.end();
+  }
+
+  void ClearUpdatedNodes() {
+      updated_nodes_.clear();
+  }
+
+ protected:
+  void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override {
+  }
+
+  void BookmarkNodeMoved(BookmarkModel* model,
+                         const BookmarkNode* old_parent,
+                         int old_index,
+                         const BookmarkNode* new_parent,
+                         int new_index) override {}
+
+  void BookmarkNodeAdded(BookmarkModel* model,
+                         const BookmarkNode* parent,
+                         int index) override {}
+
+  void BookmarkNodeRemoved(BookmarkModel* model,
+                           const BookmarkNode* parent,
+                           int old_index,
+                           const BookmarkNode* node,
+                           const std::set<GURL>& removed_urls) override {}
+
+  void BookmarkNodeChanged(BookmarkModel* model,
+                           const BookmarkNode* node) override {}
+
+  void BookmarkNodeFaviconChanged(BookmarkModel* model,
+                                  const BookmarkNode* node) override {
+    updated_nodes_.push_back(node);
+  }
+
+  void BookmarkNodeChildrenReordered(BookmarkModel* model,
+                                     const BookmarkNode* node) override {}
+
+  void BookmarkAllUserNodesRemoved(
+      BookmarkModel* model,
+      const std::set<GURL>& removed_urls) override {
+  }
+
+  TestBookmarkClient client_;
+  scoped_ptr<BookmarkModel> model_;
+  std::vector<const BookmarkNode*> updated_nodes_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BookmarkModelFaviconTest);
+};
+
+// Test that BookmarkModel::OnFaviconsChanged() sends a notification that the
+// favicon changed to each BookmarkNode which has either a matching page URL
+// (e.g. http://www.google.com) or a matching icon URL
+// (e.g. http://www.google.com/favicon.ico).
+TEST_F(BookmarkModelFaviconTest, FaviconsChangedObserver) {
+  const BookmarkNode* root = model_->bookmark_bar_node();
+  base::string16 kTitle(ASCIIToUTF16("foo"));
+  GURL kPageURL1("http://www.google.com");
+  GURL kPageURL2("http://www.google.ca");
+  GURL kPageURL3("http://www.amazon.com");
+  GURL kFaviconURL12("http://www.google.com/favicon.ico");
+  GURL kFaviconURL3("http://www.amazon.com/favicon.ico");
+
+  const BookmarkNode* node1 = model_->AddURL(root, 0, kTitle, kPageURL1);
+  const BookmarkNode* node2 = model_->AddURL(root, 0, kTitle, kPageURL2);
+  const BookmarkNode* node3 = model_->AddURL(root, 0, kTitle, kPageURL3);
+  const BookmarkNode* node4 = model_->AddURL(root, 0, kTitle, kPageURL3);
+
+  {
+    OnFaviconLoaded(AsMutable(node1), kFaviconURL12);
+    OnFaviconLoaded(AsMutable(node2), kFaviconURL12);
+    OnFaviconLoaded(AsMutable(node3), kFaviconURL3);
+    OnFaviconLoaded(AsMutable(node4), kFaviconURL3);
+
+    ClearUpdatedNodes();
+    std::set<GURL> changed_page_urls;
+    changed_page_urls.insert(kPageURL2);
+    changed_page_urls.insert(kPageURL3);
+    model_->OnFaviconsChanged(changed_page_urls, GURL());
+    ASSERT_EQ(3u, updated_nodes_.size());
+    EXPECT_TRUE(WasNodeUpdated(node2));
+    EXPECT_TRUE(WasNodeUpdated(node3));
+    EXPECT_TRUE(WasNodeUpdated(node4));
+  }
+
+  {
+    // Reset the favicon data because BookmarkModel::OnFaviconsChanged() clears
+    // the BookmarkNode's favicon data for all of the BookmarkNodes whose
+    // favicon data changed.
+    OnFaviconLoaded(AsMutable(node1), kFaviconURL12);
+    OnFaviconLoaded(AsMutable(node2), kFaviconURL12);
+    OnFaviconLoaded(AsMutable(node3), kFaviconURL3);
+    OnFaviconLoaded(AsMutable(node4), kFaviconURL3);
+
+    ClearUpdatedNodes();
+    model_->OnFaviconsChanged(std::set<GURL>(), kFaviconURL12);
+    ASSERT_EQ(2u, updated_nodes_.size());
+    EXPECT_TRUE(WasNodeUpdated(node1));
+    EXPECT_TRUE(WasNodeUpdated(node2));
+  }
+
+  {
+    OnFaviconLoaded(AsMutable(node1), kFaviconURL12);
+    OnFaviconLoaded(AsMutable(node2), kFaviconURL12);
+    OnFaviconLoaded(AsMutable(node3), kFaviconURL3);
+    OnFaviconLoaded(AsMutable(node4), kFaviconURL3);
+
+    ClearUpdatedNodes();
+    std::set<GURL> changed_page_urls;
+    changed_page_urls.insert(kPageURL1);
+    model_->OnFaviconsChanged(changed_page_urls, kFaviconURL12);
+    ASSERT_EQ(2u, updated_nodes_.size());
+    EXPECT_TRUE(WasNodeUpdated(node1));
+    EXPECT_TRUE(WasNodeUpdated(node2));
+  }
+}
+
 }  // namespace bookmarks

@@ -81,6 +81,7 @@ source_set("unit_tests") {
     "//base:prefs_test_support",
     "//components/bookmarks/common",
     "//components/bookmarks/test",
+    "//components/favicon_base",
     "//components/pref_registry",
     "//testing/gtest",
     "//ui/base",

@@ -76,8 +76,10 @@ class AndroidProviderBackendDelegate : public HistoryBackend::Delegate {
   void NotifyProfileError(sql::InitStatus init_status) override {}
   void SetInMemoryBackend(
       scoped_ptr<InMemoryHistoryBackend> backend) override {}
-  void NotifyFaviconChanged(const std::set<GURL>& url) override {
-    favicon_changed_.reset(new std::set<GURL>(url.begin(), url.end()));
+  void NotifyFaviconsChanged(const std::set<GURL>& page_urls,
+                             const GURL& icon_url) override {
+    favicon_changed_.reset(
+        new std::set<GURL>(page_urls.begin(), page_urls.end()));
   }
   void NotifyURLVisited(ui::PageTransition,
                         const history::URLRow& row,
@@ -123,8 +125,10 @@ class AndroidProviderBackendNotifier : public HistoryBackendNotifier {
   AndroidProviderBackendNotifier() {}
 
   // HistoryBackendNotifier:
-  void NotifyFaviconChanged(const std::set<GURL>& url) override {
-    favicon_changed_.reset(new std::set<GURL>(url.begin(), url.end()));
+  void NotifyFaviconsChanged(const std::set<GURL>& page_urls,
+                             const GURL& icon_url) override {
+    favicon_changed_.reset(
+        new std::set<GURL>(page_urls.begin(), page_urls.end()));
   }
   void NotifyURLVisited(ui::PageTransition,
                         const history::URLRow& row,

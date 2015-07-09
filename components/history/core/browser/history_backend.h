@@ -121,9 +121,13 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
     virtual void SetInMemoryBackend(
         scoped_ptr<InMemoryHistoryBackend> backend) = 0;
 
-    // Notify HistoryService that some URLs favicon changed that will forward
-    // the events to the FaviconChangedObservers in the correct thread.
-    virtual void NotifyFaviconChanged(const std::set<GURL>& urls) = 0;
+    // Notify HistoryService that the favicons for the given page URLs (e.g.
+    // http://www.google.com) and the given icon URL (e.g.
+    // http://www.google.com/favicon.ico) have changed. HistoryService notifies
+    // any registered callbacks. It is valid to call NotifyFaviconsChanged()
+    // with non-empty |page_urls| and an empty |icon_url| and vice versa.
+    virtual void NotifyFaviconsChanged(const std::set<GURL>& page_urls,
+                                       const GURL& icon_url) = 0;
 
     // Notify HistoryService that the user is visiting an URL. The event will
     // be forwarded to the HistoryServiceObservers in the correct thread.
@@ -508,6 +512,18 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
                            MergeIdenticalFaviconDoesNotChangeLastUpdatedTime);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
+                           FaviconChangedNotificationNewFavicon);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
+                           FaviconChangedNotificationBitmapDataChanged);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
+                           FaviconChangedNotificationIconMappingChanged);
+  FRIEND_TEST_ALL_PREFIXES(
+      HistoryBackendTest,
+      FaviconChangedNotificationIconMappingAndBitmapDataChanged);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
+                           FaviconChangedNotificationsMergeCopy);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, NoFaviconChangedNotifications);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
                            UpdateFaviconMappingsAndFetchMultipleIconTypes);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, GetFaviconsFromDBEmpty);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
@@ -722,8 +738,15 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                                 RedirectList* redirect_list);
 
   // Send notification that the favicon has changed for |page_url| and all its
-  // redirects.
+  // redirects. This should be called if the mapping between the page URL
+  // (e.g. http://www.google.com) and the icon URL (e.g.
+  // http://www.google.com/favicon.ico) has changed.
   void SendFaviconChangedNotificationForPageAndRedirects(const GURL& page_url);
+
+  // Send notification that the bitmap data for the favicon at |icon_url| has
+  // changed. Sending this notification is important because the favicon at
+  // |icon_url| may be mapped to hundreds of page URLs.
+  void SendFaviconChangedNotificationForIconURL(const GURL& icon_url);
 
   // Generic stuff -------------------------------------------------------------
 
@@ -732,7 +755,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void ProcessDBTaskImpl();
 
   // HistoryBackendNotifier:
-  void NotifyFaviconChanged(const std::set<GURL>& urls) override;
+  void NotifyFaviconsChanged(const std::set<GURL>& page_urls,
+                             const GURL& icon_url) override;
   void NotifyURLVisited(ui::PageTransition transition,
                         const URLRow& row,
                         const RedirectList& redirects,

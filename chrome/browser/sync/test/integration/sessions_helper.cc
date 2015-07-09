@@ -147,8 +147,8 @@ class TabEventHandler : public browser_sync::LocalSessionEventHandler {
         base::Bind(&TabEventHandler::QuitLoop, weak_factory_.GetWeakPtr()));
   }
 
-  void OnFaviconPageUrlsUpdated(
-      const std::set<GURL>& updated_page_urls) override {
+  void OnFaviconsChanged(const std::set<GURL>& /* page_urls */,
+                         const GURL& /* icon_url */) override {
     // Unwind to ensure SessionsSyncManager has processed the event.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,

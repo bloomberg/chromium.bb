@@ -396,17 +396,17 @@ void SessionsSyncManager::OnLocalTabModified(SyncedTabDelegate* modified_tab) {
   sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
 }
 
-void SessionsSyncManager::OnFaviconPageUrlsUpdated(
-    const std::set<GURL>& updated_favicon_page_urls) {
+void SessionsSyncManager::OnFaviconsChanged(
+    const std::set<GURL>& page_urls,
+    const GURL& /* icon_url */) {
   // TODO(zea): consider a separate container for tabs with outstanding favicon
   // loads so we don't have to iterate through all tabs comparing urls.
-  for (std::set<GURL>::const_iterator i = updated_favicon_page_urls.begin();
-       i != updated_favicon_page_urls.end(); ++i) {
+  for (const GURL& page_url : page_urls) {
     for (TabLinksMap::iterator tab_iter = local_tab_map_.begin();
          tab_iter != local_tab_map_.end();
          ++tab_iter) {
-      if (tab_iter->second->url() == *i)
-        favicon_cache_.OnPageFaviconUpdated(*i);
+      if (tab_iter->second->url() == page_url)
+        favicon_cache_.OnPageFaviconUpdated(page_url);
     }
   }
 }

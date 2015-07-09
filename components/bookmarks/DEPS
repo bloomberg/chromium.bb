@@ -9,3 +9,9 @@ include_rules = [
   "+net/base",
   "+ui",
 ]
+
+specific_include_rules = {
+  "bookmark_model_unittest.cc": [
+    "+third_party/skia",
+  ]
+}
