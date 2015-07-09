@@ -20,6 +20,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/apps/scoped_keep_alive.h"
@@ -46,6 +47,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
@@ -952,6 +954,16 @@ bool TabsQueryFunction::RunSync() {
         continue;
       }
 
+      if (!MatchesBool(params->query_info.audible.get(),
+                       chrome::IsPlayingAudio(web_contents))) {
+        continue;
+      }
+
+      if (!MatchesBool(params->query_info.muted.get(),
+                       chrome::IsTabAudioMuted(web_contents))) {
+        continue;
+      }
+
       if (!title.empty() && !base::MatchPattern(web_contents->GetTitle(),
                                                 base::UTF8ToUTF16(title)))
         continue;
@@ -1226,6 +1238,27 @@ bool TabsUpdateFunction::RunAsync() {
 
     // Update the tab index because it may move when being pinned.
     tab_index = tab_strip->GetIndexOfWebContents(contents);
+  }
+
+  if (params->update_properties.muted.get()) {
+    if (chrome::IsTabAudioMutingFeatureEnabled()) {
+      if (!chrome::CanToggleAudioMute(contents)) {
+        WriteToConsole(
+            content::CONSOLE_MESSAGE_LEVEL_WARNING,
+            base::StringPrintf(
+                "Cannot update mute state for tab %d, tab has audio or video "
+                "currently being captured",
+                tab_id));
+      } else {
+        chrome::SetTabAudioMuted(contents, *params->update_properties.muted,
+                                 extension()->id());
+      }
+    } else {
+      WriteToConsole(content::CONSOLE_MESSAGE_LEVEL_WARNING,
+                     base::StringPrintf(
+                         "Failed to update mute state, --%s must be enabled",
+                         switches::kEnableTabAudioMuting));
+    }
   }
 
   if (params->update_properties.opener_tab_id.get()) {

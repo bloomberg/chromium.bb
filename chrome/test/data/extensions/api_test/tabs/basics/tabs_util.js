@@ -35,10 +35,10 @@ function createWindow(tabUrls, winOptions, callback) {
 // zero arguments.
 function waitForAllTabs(callback) {
   // Wait for all tabs to load.
-  function waitForTabs(){
+  function waitForTabs() {
     chrome.windows.getAll({"populate": true}, function(windows) {
       var ready = true;
-      for (var i in windows){
+      for (var i in windows) {
         for (var j in windows[i].tabs) {
           if (windows[i].tabs[j].status != "complete") {
             ready = false;
@@ -55,4 +55,57 @@ function waitForAllTabs(callback) {
     });
   }
   waitForTabs();
+}
+
+// Like chrome.tabs.query, but with the ability to filter by |tabId| as well.
+// Returns the found tab or null
+function queryForTab(tabId, queryInfo, callback) {
+  chrome.tabs.query(queryInfo,
+    pass(function(tabs) {
+      var foundTabs = tabs.filter(function(tab) {
+        return (tab.id == tabId);
+      });
+      if (callback !== null)
+        callback(foundTabs.length ? foundTabs[0] : null);
+    })
+  );
+}
+
+// Check onUpdated for a queryable attribute such as muted or audible
+// and then check that the tab, a query, and changeInfo are consistent
+// with the expected value.  Does similar checks for each
+// (nonqueryable attribute, expected value) pair in nonqueryableAttribsDict
+// except it does not check the query.
+function onUpdatedExpect(queryableAttrib, expected, nonqueryableAttribsDict) {
+  var onUpdatedCompleted = chrome.test.listenForever(
+    chrome.tabs.onUpdated,
+    function(tabId, changeInfo, tab) {
+      if (nonqueryableAttribsDict !== null) {
+        var nonqueryableAttribs = Object.keys(nonqueryableAttribsDict);
+        nonqueryableAttribs.forEach(function(nonqueryableAttrib) {
+          if (typeof changeInfo[nonqueryableAttrib] !== "undefined") {
+            assertEq(nonqueryableAttribsDict[nonqueryableAttrib],
+                     changeInfo[nonqueryableAttrib]);
+            assertEq(nonqueryableAttribsDict[nonqueryableAttrib],
+                     tab[nonqueryableAttrib]);
+          }
+        });
+      }
+      if (changeInfo.hasOwnProperty(queryableAttrib)) {
+        assertEq(expected, changeInfo[queryableAttrib]);
+        assertEq(expected, tab[queryableAttrib]);
+        var queryInfo = {};
+        queryInfo[queryableAttrib] = expected;
+        queryForTab(tabId, queryInfo, pass(function(tab) {
+          assertEq(expected, tab[queryableAttrib]);
+          queryInfo[queryableAttrib] = !expected;
+
+          queryForTab(tabId, queryInfo, pass(function(tab) {
+            assertEq(null, tab);
+            onUpdatedCompleted();
+          }));
+        }));
+      }
+    }
+  );
 }

@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/linked_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -94,7 +95,9 @@ class TabsEventRouter : public TabStripModelObserver,
 
   // Internal processing of tab updated events. Is called by both TabChangedAt
   // and Observe/NAV_ENTRY_COMMITTED.
-  void TabUpdated(content::WebContents* contents, bool did_navigate);
+  class TabEntry;
+  void TabUpdated(linked_ptr<TabEntry> entry,
+                  scoped_ptr<base::DictionaryValue> changed_properties);
 
   // Triggers a tab updated event if the favicon URL changes.
   void FaviconUrlUpdated(content::WebContents* contents);
@@ -141,42 +144,55 @@ class TabsEventRouter : public TabStripModelObserver,
   //  - distinguish between tab creation and tab insertion
   //  - not send tab-detached after tab-removed
   //  - reduce the "noise" of TabChangedAt() when sending events to extensions
+  //  - remember last muted and audible states to know if there was a change
   class TabEntry {
    public:
-    // Create a new tab entry whose initial state is TAB_COMPLETE.  This
-    // constructor is required because TabEntry objects placed inside an
-    // std::map<> by value.
-    TabEntry();
+    // Create a TabEntry associated with, and tracking state changes to,
+    // |contents|.
+    explicit TabEntry(content::WebContents* contents);
 
-    // Update the load state of the tab based on its WebContents.  Returns true
-    // if the state changed, false otherwise.  Whether the state has changed or
-    // not is used to determine if events needs to be sent to extensions during
-    // processing of TabChangedAt(). This method will "hold" a state-change
-    // to "loading", until the DidNavigate() method which should always follow
-    // it. Returns NULL if no updates should be sent.
-    base::DictionaryValue* UpdateLoadState(
-        const content::WebContents* contents);
+    // Indicate via a list of key/value pairs if a tab is loading based on its
+    // WebContents. Whether the state has changed or not is used to determine
+    // if events needs to be sent to extensions during processing of
+    // TabChangedAt(). If this method indicates that a tab should "hold" a
+    // state-change to "loading", the DidNavigate() method should eventually
+    // send a similar message to undo it. If false, the returned key/value
+    // pairs list is empty.
+    scoped_ptr<base::DictionaryValue> UpdateLoadState();
 
-    // Indicates that a tab load has resulted in a navigation and the
-    // destination url is available for inspection. Returns NULL if no updates
-    // should be sent.
-    base::DictionaryValue* DidNavigate(const content::WebContents* contents);
+    // Indicate via a list of key/value pairs that a tab load has resulted in a
+    // navigation and the destination url is available for inspection. The list
+    // is empty if no updates should be sent.
+    scoped_ptr<base::DictionaryValue> DidNavigate();
+
+    // Update the audible and muted states and return whether they were changed
+    bool SetAudible(bool new_val);
+    bool SetMuted(bool new_val);
+
+    content::WebContents* web_contents() { return contents_; }
 
    private:
+    content::WebContents* contents_;
+
     // Whether we are waiting to fire the 'complete' status change. This will
     // occur the first time the WebContents stops loading after the
     // NAV_ENTRY_COMMITTED was fired. The tab may go back into and out of the
     // loading state subsequently, but we will ignore those changes.
     bool complete_waiting_on_load_;
 
+    // Previous audible and muted states
+    bool was_audible_;
+    bool was_muted_;
+
     GURL url_;
   };
 
-  // Gets the TabEntry for the given |contents|. Returns TabEntry* if
-  // found, NULL if not.
-  TabEntry* GetTabEntry(content::WebContents* contents);
+  // Gets the TabEntry for the given |contents|. Returns linked_ptr<TabEntry>
+  // if found, NULL if not.
+  linked_ptr<TabEntry> GetTabEntry(content::WebContents* contents);
 
-  std::map<int, TabEntry> tab_entries_;
+  using TabEntryMap = std::map<int, linked_ptr<TabEntry>>;
+  TabEntryMap tab_entries_;
 
   // The main profile that owns this event router.
   Profile* profile_;

@@ -29,7 +29,7 @@ chrome.test.runTests([
   },
 
   function getCapturedTabs() {
-    chrome.tabs.create({active:true}, function(secondTab) {
+    chrome.tabs.create({active: true}, function(secondTab) {
       // chrome.tabCapture.capture() will only capture the active tab.
       chrome.test.assertTrue(secondTab.active);
 
@@ -94,6 +94,28 @@ chrome.test.runTests([
       chrome.test.assertTrue(!!stream);
       stream1 = stream;
       tabCapture.capture({audio: true, video: true}, tabMediaRequestCallback2);
+    });
+  },
+
+  function tabIsUnmutedWhenTabCaptured() {
+    var stream1 = null;
+
+    chrome.tabs.getCurrent(function(tab) {
+      var stopListener = chrome.test.listenForever(chrome.tabs.onUpdated,
+          function(tabId, changeInfo, updatedTab) {
+        if ((changeInfo["muted"] === true)) {
+          tabCapture.capture({audio: true}, function(stream) {
+            stream1 = stream;
+          });
+        }
+        else if ((changeInfo["mutedCause"] == "capture") &&
+                 (changeInfo["muted"] === false)) {
+          stream1.stop();
+          stopListener();
+        }
+      });
+
+      chrome.tabs.update(tab.id, {muted: true});
     });
   },
 

@@ -20,6 +20,9 @@
           "highlighted": {"type": "boolean", "description": "Whether the tab is highlighted."},
           "active": {"type": "boolean", "description": "Whether the tab is active in its window. (Does not necessarily mean the window is focused.)"},
           "pinned": {"type": "boolean", "description": "Whether the tab is pinned."},
+          "audible": {"type": "boolean", "optional": true, "description": "Whether the tab has produced sound over the past couple of seconds (but it might not be heard if also muted). Equivalent to whether the speaker audio indicator is showing."},
+          "muted": {"type": "boolean", "optional": true, "description": "Whether the tab is prevented from playing sound (but hasn't necessarily recently produced sound). Equivalent to whether the muted audio indicator is showing."},
+          "mutedCause": {"type": "string", "optional": true, "description": "Indicates what caused the muted setting ('', 'user', 'capture', or an extension id)."},
           "url": {"type": "string", "optional": true, "description": "The URL the tab is displaying. This property is only present if the extension's manifest includes the <code>\"tabs\"</code> permission."},
           "title": {"type": "string", "optional": true, "optional": true, "description": "The title of the tab. This property is only present if the extension's manifest includes the <code>\"tabs\"</code> permission."},
           "favIconUrl": {"type": "string", "optional": true, "optional": true, "description": "The URL of the tab's favicon. This property is only present if the extension's manifest includes the <code>\"tabs\"</code> permission. It may also be an empty string if the tab is loading."},
@@ -393,6 +396,16 @@
                 "optional": true,
                 "description": "Whether the tabs are pinned."
               },
+              "audible": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Whether the tabs are audible."
+              },
+              "muted": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Whether the tabs are muted."
+              },
               "highlighted": {
                 "type": "boolean",
                 "optional": true,
@@ -539,6 +552,11 @@
                 "type": "boolean",
                 "optional": true,
                 "description": "Whether the tab should be pinned."
+              },
+              "muted": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Whether the tab should be muted."
               },
               "openerTabId": {
                 "type": "integer",
@@ -887,6 +905,21 @@
                 "type": "boolean",
                 "optional": true,
                 "description": "The tab's new pinned state."
+              },
+              "audible": {
+                "type": "boolean",
+                "optional": true,
+                "description": "The tab's new audible state."
+              },
+              "muted": {
+                "type": "boolean",
+                "optional": true,
+                "description": "The tab's new muted state."
+              },
+              "mutedCause": {
+                "type": "string",
+                "optional": true,
+                "description": "When the muted state changes, indicates what caused it ('', 'user', 'capture', or an extension id)."
               },
               "favIconUrl": {
                 "type": "string",

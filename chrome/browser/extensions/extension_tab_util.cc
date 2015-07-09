@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/common/extensions/api/tabs.h"
 #include "chrome/common/url_constants.h"
 #include "components/url_fixer/url_fixer.h"
@@ -386,6 +387,12 @@ base::DictionaryValue* ExtensionTabUtil::CreateTabValue(
                    tab_strip && tab_strip->IsTabSelected(tab_index));
   result->SetBoolean(keys::kPinnedKey,
                      tab_strip && tab_strip->IsTabPinned(tab_index));
+  result->SetBoolean(keys::kAudibleKey,
+                     tab_strip && chrome::IsPlayingAudio(contents));
+  result->SetBoolean(keys::kMutedKey,
+                     tab_strip && chrome::IsTabAudioMuted(contents));
+  result->SetString(keys::kMutedCauseKey,
+                    chrome::GetTabAudioMutedCause(contents));
   result->SetBoolean(keys::kIncognitoKey,
                      contents->GetBrowserContext()->IsOffTheRecord());
   result->SetInteger(keys::kWidthKey,

@@ -31,7 +31,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(LastMuteMetadata);
 namespace chrome {
 
 const char kMutedToggleCauseUser[] = "user";
-const char kMutedToggleCauseCapture[] = "auto-forced for capture";
+const char kMutedToggleCauseCapture[] = "capture";
 
 namespace {
 
