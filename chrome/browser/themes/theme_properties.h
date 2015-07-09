@@ -111,8 +111,17 @@ class ThemeProperties {
     GRADIENT_TOOLBAR_BUTTON,
     GRADIENT_TOOLBAR_BUTTON_INACTIVE,
     GRADIENT_TOOLBAR_BUTTON_PRESSED,
-    GRADIENT_TOOLBAR_BUTTON_PRESSED_INACTIVE
+    GRADIENT_TOOLBAR_BUTTON_PRESSED_INACTIVE,
 #endif  // OS_MACOSX
+
+    // TODO(jonross): Upon the completion of Material Design work, evaluate
+    // which of these properties can be moved out of ThemeProperties.
+
+    // Layout Properties for the Toolbar
+    PROPERTY_TOOLBAR_VIEW_LEFT_EDGE_SPACING,
+    PROPERTY_TOOLBAR_VIEW_RIGHT_EDGE_SPACING,
+    PROPERTY_TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT_ASH,
+    PROPERTY_TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT,
   };
 
   // Used by the browser theme pack to parse alignments from something like

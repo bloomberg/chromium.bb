@@ -17,14 +17,15 @@ class MaterialDesignControllerTestAPI;
 // Central controller to handle material design modes.
 class UI_BASE_EXPORT MaterialDesignController {
  public:
-  // The different material design modes.
-  enum class Mode {
-    // Basic material design.
-    MATERIAL_NORMAL,
-    // Material design targeted at mouse/touch hybrid devices.
-    MATERIAL_HYBRID,
+  // The different material design modes. The order cannot be changed without
+  // updating references as these are used as array indices.
+  enum Mode {
     // Classic, non-material design.
-    NON_MATERIAL
+    NON_MATERIAL = 0,
+    // Basic material design.
+    MATERIAL_NORMAL = 1,
+    // Material design targeted at mouse/touch hybrid devices.
+    MATERIAL_HYBRID = 2
   };
 
   // Get the current Mode that should be used by the system.

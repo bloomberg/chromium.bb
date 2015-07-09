@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/themes/browser_theme_pack.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/resources/grit/ui_resources.h"
 
 namespace {
@@ -94,6 +95,23 @@ const SkColor kDefaultColorToolbarBezel = SkColorSetRGB(204, 204, 204);
 const SkColor kDefaultColorToolbarStroke = SkColorSetRGB(103, 103, 103);
 const SkColor kDefaultColorToolbarStrokeInactive = SkColorSetRGB(163, 163, 163);
 #endif
+
+// ----------------------------------------------------------------------------
+// Defaults for layout properties which are not stored in the browser theme
+// pack. The array indices here are the values of
+// ui::MaterialDesignController::Mode, see
+// ui/base/resource/material_design/material_design_controller.h
+
+// The edge graphics have some built-in spacing/shadowing, so we have to adjust
+// our spacing to make it match.
+const int kToolbarViewLeftEdgeSpacing[] = {3, 4, 8};
+const int kToolbarViewRightEdgeSpacing[] = {2, 4, 8};
+
+// Ash doesn't use a rounded content area and its top edge has an extra shadow.
+const int kToolbarViewContentShadowHeightAsh[] = {2, 0, 0};
+
+// Non-ash uses a rounded content area with no shadow in the assets.
+const int kToolbarViewContentShadowHeight[] = {0, 0, 0};
 
 // ----------------------------------------------------------------------------
 
@@ -299,14 +317,23 @@ SkColor ThemeProperties::GetDefaultColor(int id) {
 
 // static
 int ThemeProperties::GetDefaultDisplayProperty(int id) {
+  int mode = ui::MaterialDesignController::GetMode();
   switch (id) {
-    case NTP_BACKGROUND_ALIGNMENT:
+    case ThemeProperties::NTP_BACKGROUND_ALIGNMENT:
       return kDefaultDisplayPropertyNTPAlignment;
-    case NTP_BACKGROUND_TILING:
+    case ThemeProperties::NTP_BACKGROUND_TILING:
       return kDefaultDisplayPropertyNTPTiling;
-    case NTP_LOGO_ALTERNATE:
+    case ThemeProperties::NTP_LOGO_ALTERNATE:
       return kDefaultDisplayPropertyNTPAlternateLogo;
+    case ThemeProperties::PROPERTY_TOOLBAR_VIEW_LEFT_EDGE_SPACING:
+      return kToolbarViewLeftEdgeSpacing[mode];
+    case ThemeProperties::PROPERTY_TOOLBAR_VIEW_RIGHT_EDGE_SPACING:
+      return kToolbarViewRightEdgeSpacing[mode];
+    case ThemeProperties::PROPERTY_TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT_ASH:
+      return kToolbarViewContentShadowHeightAsh[mode];
+    case ThemeProperties::PROPERTY_TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT:
+      return kToolbarViewContentShadowHeight[mode];
+    default:
+      return -1;
   }
-
-  return -1;
 }

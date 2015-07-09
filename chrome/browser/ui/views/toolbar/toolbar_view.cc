@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_commands_global_registry.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -90,17 +91,6 @@ using base::UserMetricsAction;
 using content::WebContents;
 
 namespace {
-
-// The edge graphics have some built-in spacing/shadowing, so we have to adjust
-// our spacing to make it match.
-const int kLeftEdgeSpacing = 3;
-const int kRightEdgeSpacing = 2;
-
-// Ash doesn't use a rounded content area and its top edge has an extra shadow.
-const int kContentShadowHeightAsh = 2;
-
-// Non-ash uses a rounded content area with no shadow in the assets.
-const int kContentShadowHeight = 0;
 
 #if !defined(OS_CHROMEOS)
 bool HasAshShell() {
@@ -496,13 +486,19 @@ bool ToolbarView::GetAcceleratorForCommandId(int command_id,
 
 gfx::Size ToolbarView::GetPreferredSize() const {
   gfx::Size size(location_bar_->GetPreferredSize());
+  ui::ThemeProvider* theme_provider = GetThemeProvider();
   if (is_display_mode_normal()) {
-    int content_width = kLeftEdgeSpacing + back_->GetPreferredSize().width() +
+    int content_width =
+        theme_provider->GetDisplayProperty(
+            ThemeProperties::PROPERTY_TOOLBAR_VIEW_LEFT_EDGE_SPACING) +
+        back_->GetPreferredSize().width() +
         forward_->GetPreferredSize().width() +
         reload_->GetPreferredSize().width() +
         (show_home_button_.GetValue() ? home_->GetPreferredSize().width() : 0) +
         kStandardSpacing + browser_actions_->GetPreferredSize().width() +
-        app_menu_->GetPreferredSize().width() + kRightEdgeSpacing;
+        app_menu_->GetPreferredSize().width() +
+        theme_provider->GetDisplayProperty(
+            ThemeProperties::PROPERTY_TOOLBAR_VIEW_RIGHT_EDGE_SPACING);
     size.Enlarge(content_width, 0);
   }
   return SizeForContentSize(size);
@@ -510,12 +506,18 @@ gfx::Size ToolbarView::GetPreferredSize() const {
 
 gfx::Size ToolbarView::GetMinimumSize() const {
   gfx::Size size(location_bar_->GetMinimumSize());
+  ui::ThemeProvider* theme_provider = GetThemeProvider();
   if (is_display_mode_normal()) {
-    int content_width = kLeftEdgeSpacing + back_->GetMinimumSize().width() +
-        forward_->GetMinimumSize().width() + reload_->GetMinimumSize().width() +
+    int content_width =
+        theme_provider->GetDisplayProperty(
+            ThemeProperties::PROPERTY_TOOLBAR_VIEW_LEFT_EDGE_SPACING) +
+        back_->GetMinimumSize().width() + forward_->GetMinimumSize().width() +
+        reload_->GetMinimumSize().width() +
         (show_home_button_.GetValue() ? home_->GetMinimumSize().width() : 0) +
         kStandardSpacing + browser_actions_->GetMinimumSize().width() +
-        app_menu_->GetMinimumSize().width() + kRightEdgeSpacing;
+        app_menu_->GetMinimumSize().width() +
+        theme_provider->GetDisplayProperty(
+            ThemeProperties::PROPERTY_TOOLBAR_VIEW_RIGHT_EDGE_SPACING);
     size.Enlarge(content_width, 0);
   }
   return SizeForContentSize(size);
@@ -548,11 +550,14 @@ void ToolbarView::Layout() {
   //                http://crbug.com/5540
   bool maximized = browser_->window() && browser_->window()->IsMaximized();
   int back_width = back_->GetPreferredSize().width();
+  ui::ThemeProvider* theme_provider = GetThemeProvider();
+  const int left_edge_spacing = theme_provider->GetDisplayProperty(
+      ThemeProperties::PROPERTY_TOOLBAR_VIEW_LEFT_EDGE_SPACING);
   if (maximized) {
-    back_->SetBounds(0, child_y, back_width + kLeftEdgeSpacing, child_height);
-    back_->SetLeadingMargin(kLeftEdgeSpacing);
+    back_->SetBounds(0, child_y, back_width + left_edge_spacing, child_height);
+    back_->SetLeadingMargin(left_edge_spacing);
   } else {
-    back_->SetBounds(kLeftEdgeSpacing, child_y, back_width, child_height);
+    back_->SetBounds(left_edge_spacing, child_y, back_width, child_height);
     back_->SetLeadingMargin(0);
   }
   int next_element_x = back_->bounds().right();
@@ -578,8 +583,11 @@ void ToolbarView::Layout() {
 
   int browser_actions_width = browser_actions_->GetPreferredSize().width();
   int app_menu_width = app_menu_->GetPreferredSize().width();
-  int available_width = std::max(0, width() - kRightEdgeSpacing -
-      app_menu_width - browser_actions_width - next_element_x);
+  const int right_edge_spacing = theme_provider->GetDisplayProperty(
+      ThemeProperties::PROPERTY_TOOLBAR_VIEW_RIGHT_EDGE_SPACING);
+  int available_width =
+      std::max(0, width() - right_edge_spacing - app_menu_width -
+                      browser_actions_width - next_element_x);
 
   int location_height = location_bar_->GetPreferredSize().height();
   int location_y = (height() - location_height + 1) / 2;
@@ -603,7 +611,7 @@ void ToolbarView::Layout() {
   // Extend the app menu to the screen's right edge in maximized mode just like
   // we extend the back button to the left edge.
   if (maximized)
-    app_menu_width += kRightEdgeSpacing;
+    app_menu_width += right_edge_spacing;
   app_menu_->SetBounds(next_element_x, child_y, app_menu_width, child_height);
 }
 
@@ -789,6 +797,9 @@ void ToolbarView::OnShowHomeButtonChanged() {
 }
 
 int ToolbarView::content_shadow_height() const {
-  return browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH ?
-      kContentShadowHeightAsh : kContentShadowHeight;
+  ui::ThemeProvider* theme_provider = GetThemeProvider();
+  return theme_provider->GetDisplayProperty(
+      browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH
+          ? ThemeProperties::PROPERTY_TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT_ASH
+          : ThemeProperties::PROPERTY_TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT);
 }
