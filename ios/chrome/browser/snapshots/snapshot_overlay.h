@@ -7,24 +7,22 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/mac/scoped_nsobject.h"
-
 // Simple object containing all the information needed to display an overlay
 // view in a snapshot.
-@interface SnapshotOverlay : NSObject {
- @private
-  // The overlay view.
-  base::scoped_nsobject<UIView> view_;
+@interface SnapshotOverlay : NSObject
 
-  // Y offset for the overlay view. Used to adjust the y position of |view_|
-  // within the snapshot.
-  CGFloat yOffset_;
-}
+// Initialize SnapshotOverlay with the given |view| and |yOffset|.
+- (instancetype)initWithView:(UIView*)view
+                     yOffset:(CGFloat)yOffset NS_DESIGNATED_INITIALIZER;
 
-// Initialize SnapshotOverlay with the given view and yOffset.
-- (id)initWithView:(UIView*)view yOffset:(CGFloat)yOffset;
-- (UIView*)view;
-- (CGFloat)yOffset;
+- (instancetype)init NS_UNAVAILABLE;
+
+// The overlay view.
+@property(nonatomic, readonly) UIView* view;
+
+// Y offset for the overlay view. Used to adjust the y position of |_view|
+// within the snapshot.
+@property(nonatomic, readonly) CGFloat yOffset;
 
 @end
 

@@ -5,25 +5,31 @@
 #import "ios/chrome/browser/snapshots/snapshot_overlay.h"
 
 #include "base/logging.h"
+#import "base/mac/scoped_nsobject.h"
 
-@implementation SnapshotOverlay
+@implementation SnapshotOverlay {
+  base::scoped_nsobject<UIView> _view;
+}
 
-- (id)initWithView:(UIView*)view yOffset:(CGFloat)yOffset {
+@synthesize yOffset = _yOffset;
+
+- (instancetype)initWithView:(UIView*)view yOffset:(CGFloat)yOffset {
   self = [super init];
   if (self) {
     DCHECK(view);
-    view_.reset([view retain]);
-    yOffset_ = yOffset;
+    _view.reset([view retain]);
+    _yOffset = yOffset;
   }
   return self;
 }
 
-- (UIView*)view {
-  return view_;
+- (instancetype)init {
+  NOTREACHED();
+  return nil;
 }
 
-- (CGFloat)yOffset {
-  return yOffset_;
+- (UIView*)view {
+  return _view;
 }
 
 @end
