@@ -1220,7 +1220,10 @@ bool HostProcess::OnUdpPortPolicyUpdate(base::DictionaryValue* policies) {
     return false;
   }
 
-  DCHECK(PortRange::Parse(string_value, &udp_port_range_));
+  if (!PortRange::Parse(string_value, &udp_port_range_)) {
+    // PolicyWatcher verifies that the value is formatted correctly.
+    LOG(FATAL) << "Invalid port range: " << string_value;
+  }
   HOST_LOG << "Policy restricts UDP port range to: " << udp_port_range_;
   return true;
 }
