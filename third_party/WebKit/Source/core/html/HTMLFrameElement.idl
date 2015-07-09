@@ -35,5 +35,5 @@ interface HTMLFrameElement : HTMLElement {
 
     // FIXME: The spec defines getSVGDocument() for HTMLIFrameElement,
     // HTMLEmbedElement and HTMLObjectElement, but not here.
-    [CheckSecurity=Node, RaisesException] Document? getSVGDocument();
+    [Measure, CheckSecurity=Node, RaisesException] Document? getSVGDocument();
 };

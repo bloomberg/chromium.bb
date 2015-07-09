@@ -770,6 +770,7 @@ public:
         V8TouchEvent_InitTouchEvent_Method = 872,
         V8UIEvent_InitUIEvent_Method = 873,
         V8Document_CreateTouch_Method = 874,
+        V8HTMLFrameElement_GetSVGDocument_Method = 875,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
