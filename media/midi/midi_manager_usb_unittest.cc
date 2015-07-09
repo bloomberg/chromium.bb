@@ -91,7 +91,7 @@ class FakeMidiManagerClient : public MidiManagerClient {
  public:
   explicit FakeMidiManagerClient(Logger* logger)
       : complete_start_session_(false),
-        result_(MIDI_NOT_SUPPORTED),
+        result_(Result::NOT_SUPPORTED),
         logger_(logger) {}
   ~FakeMidiManagerClient() override {}
 
@@ -107,7 +107,7 @@ class FakeMidiManagerClient : public MidiManagerClient {
 
   void SetOutputPortState(uint32 port_index, MidiPortState state) override {}
 
-  void CompleteStartSession(MidiResult result) override {
+  void CompleteStartSession(Result result) override {
     complete_start_session_ = true;
     result_ = result;
   }
@@ -131,7 +131,7 @@ class FakeMidiManagerClient : public MidiManagerClient {
   }
 
   bool complete_start_session_;
-  MidiResult result_;
+  Result result_;
   MidiPortInfoList input_ports_;
   MidiPortInfoList output_ports_;
 
@@ -163,7 +163,7 @@ class MidiManagerUsbForTesting : public MidiManagerUsb {
       : MidiManagerUsb(device_factory.Pass()) {}
   ~MidiManagerUsbForTesting() override {}
 
-  void CallCompleteInitialization(MidiResult result) {
+  void CallCompleteInitialization(Result result) {
     CompleteInitialization(result);
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();
@@ -201,9 +201,7 @@ class MidiManagerUsbTest : public ::testing::Test {
     return client_->complete_start_session_;
   }
 
-  MidiResult GetInitializationResult() {
-    return client_->result_;
-  }
+  Result GetInitializationResult() { return client_->result_; }
 
   void RunCallbackUntilCallbackInvoked(
       bool result, UsbMidiDevice::Devices* devices) {
@@ -258,7 +256,7 @@ TEST_F(MidiManagerUsbTest, Initialize) {
   devices.push_back(device.Pass());
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
-  EXPECT_EQ(MIDI_OK, GetInitializationResult());
+  EXPECT_EQ(Result::OK, GetInitializationResult());
 
   ASSERT_EQ(1u, input_ports().size());
   EXPECT_EQ("port-0-2", input_ports()[0].id);
@@ -319,7 +317,7 @@ TEST_F(MidiManagerUsbTest, InitializeMultipleDevices) {
   devices.push_back(device2.Pass());
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
-  EXPECT_EQ(MIDI_OK, GetInitializationResult());
+  EXPECT_EQ(Result::OK, GetInitializationResult());
 
   ASSERT_EQ(2u, input_ports().size());
   EXPECT_EQ("port-0-2", input_ports()[0].id);
@@ -368,7 +366,7 @@ TEST_F(MidiManagerUsbTest, InitializeFail) {
 
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(false, NULL);
-  EXPECT_EQ(MIDI_INITIALIZATION_ERROR, GetInitializationResult());
+  EXPECT_EQ(Result::INITIALIZATION_ERROR, GetInitializationResult());
 }
 
 TEST_F(MidiManagerUsbTest, InitializeFailBecauseOfInvalidDescriptors) {
@@ -381,7 +379,7 @@ TEST_F(MidiManagerUsbTest, InitializeFailBecauseOfInvalidDescriptors) {
   devices.push_back(device.Pass());
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
-  EXPECT_EQ(MIDI_INITIALIZATION_ERROR, GetInitializationResult());
+  EXPECT_EQ(Result::INITIALIZATION_ERROR, GetInitializationResult());
   EXPECT_EQ("UsbMidiDevice::GetDescriptors\n", logger_.TakeLog());
 }
 
@@ -415,7 +413,7 @@ TEST_F(MidiManagerUsbTest, Send) {
   devices.push_back(device.Pass());
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
-  EXPECT_EQ(MIDI_OK, GetInitializationResult());
+  EXPECT_EQ(Result::OK, GetInitializationResult());
   ASSERT_EQ(2u, manager_->output_streams().size());
 
   manager_->DispatchSendMidiData(client_.get(), 1, ToVector(data), 0);
@@ -462,7 +460,7 @@ TEST_F(MidiManagerUsbTest, SendFromCompromizedRenderer) {
   devices.push_back(device.Pass());
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
-  EXPECT_EQ(MIDI_OK, GetInitializationResult());
+  EXPECT_EQ(Result::OK, GetInitializationResult());
   ASSERT_EQ(2u, manager_->output_streams().size());
   EXPECT_EQ("UsbMidiDevice::GetDescriptors\n", logger_.TakeLog());
 
@@ -508,7 +506,7 @@ TEST_F(MidiManagerUsbTest, Receive) {
   devices.push_back(device.Pass());
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
-  EXPECT_EQ(MIDI_OK, GetInitializationResult());
+  EXPECT_EQ(Result::OK, GetInitializationResult());
 
   manager_->ReceiveUsbMidiData(device_raw, 2, data, arraysize(data),
                                base::TimeTicks());
@@ -545,7 +543,7 @@ TEST_F(MidiManagerUsbTest, AttachDevice) {
   ScopedVector<UsbMidiDevice> devices;
   EXPECT_FALSE(IsInitializationCallbackInvoked());
   RunCallbackUntilCallbackInvoked(true, &devices);
-  EXPECT_EQ(MIDI_OK, GetInitializationResult());
+  EXPECT_EQ(Result::OK, GetInitializationResult());
 
   ASSERT_EQ(0u, input_ports().size());
   ASSERT_EQ(0u, output_ports().size());

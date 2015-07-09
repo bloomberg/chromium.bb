@@ -23,7 +23,7 @@ void Noop(const MIDIPacketList*, void*, void*) {}
 class FakeMidiManagerClient : public MidiManagerClient {
  public:
   FakeMidiManagerClient()
-      : result_(MIDI_NOT_SUPPORTED),
+      : result_(Result::NOT_SUPPORTED),
         wait_for_result_(true),
         wait_for_port_(true),
         unexpected_callback_(false) {}
@@ -49,7 +49,7 @@ class FakeMidiManagerClient : public MidiManagerClient {
   void SetInputPortState(uint32 port_index, MidiPortState state) override {}
   void SetOutputPortState(uint32 port_index, MidiPortState state) override {}
 
-  void CompleteStartSession(MidiResult result) override {
+  void CompleteStartSession(Result result) override {
     base::AutoLock lock(lock_);
     if (!wait_for_result_)
       unexpected_callback_ = true;
@@ -72,7 +72,7 @@ class FakeMidiManagerClient : public MidiManagerClient {
     return wait_for_port_;
   }
 
-  MidiResult WaitForResult() {
+  Result WaitForResult() {
     while (GetWaitForResult()) {
       base::RunLoop run_loop;
       run_loop.RunUntilIdle();
@@ -91,7 +91,7 @@ class FakeMidiManagerClient : public MidiManagerClient {
 
  private:
   base::Lock lock_;
-  MidiResult result_;
+  Result result_;
   bool wait_for_result_;
   MidiPortInfo info_;
   bool wait_for_port_;
@@ -126,8 +126,8 @@ TEST_F(MidiManagerMacTest, MidiNotification) {
   scoped_ptr<FakeMidiManagerClient> client(new FakeMidiManagerClient);
   StartSession(client.get());
 
-  MidiResult result = client->WaitForResult();
-  EXPECT_EQ(MIDI_OK, result);
+  Result result = client->WaitForResult();
+  EXPECT_EQ(Result::OK, result);
 
   // Create MIDIClient, and MIDIEndpoint as a MIDIDestination. This should
   // notify MIDIManagerMac as a MIDIObjectAddRemoveNotification.

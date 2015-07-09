@@ -6,17 +6,20 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 
 namespace media {
 namespace midi {
 
 MidiManager::MidiManager()
-    : initialized_(false),
-      result_(MIDI_NOT_SUPPORTED) {
+    : initialized_(false), result_(Result::NOT_INITIALIZED) {
 }
 
 MidiManager::~MidiManager() {
+  UMA_HISTOGRAM_ENUMERATION("Media.Midi.ResultOnShutdown",
+                            static_cast<int>(result_),
+                            static_cast<int>(Result::MAX) + 1);
 }
 
 #if !defined(OS_MACOSX) && !defined(OS_WIN) && \
@@ -64,7 +67,7 @@ void MidiManager::StartSession(MidiManagerClient* client) {
     }
     if (too_many_pending_clients_exist) {
       // Return an error immediately if there are too many requests.
-      client->CompleteStartSession(MIDI_INITIALIZATION_ERROR);
+      client->CompleteStartSession(Result::INITIALIZATION_ERROR);
       return;
     }
     // CompleteInitialization() will be called asynchronously when platform
@@ -74,10 +77,10 @@ void MidiManager::StartSession(MidiManagerClient* client) {
 
   // Platform dependent initialization was already finished for previously
   // initialized clients.
-  MidiResult result;
+  Result result;
   {
     base::AutoLock auto_lock(lock_);
-    if (result_ == MIDI_OK) {
+    if (result_ == Result::OK) {
       AddInitialPorts(client);
       clients_.insert(client);
     }
@@ -111,10 +114,10 @@ void MidiManager::DispatchSendMidiData(MidiManagerClient* client,
 }
 
 void MidiManager::StartInitialization() {
-  CompleteInitialization(MIDI_NOT_SUPPORTED);
+  CompleteInitialization(Result::NOT_SUPPORTED);
 }
 
-void MidiManager::CompleteInitialization(MidiResult result) {
+void MidiManager::CompleteInitialization(Result result) {
   DCHECK(session_thread_runner_.get());
   // It is safe to post a task to the IO thread from here because the IO thread
   // should have stopped if the MidiManager is going to be destructed.
@@ -166,7 +169,7 @@ void MidiManager::ReceiveMidiData(
     client->ReceiveMidiData(port_index, data, length, timestamp);
 }
 
-void MidiManager::CompleteInitializationInternal(MidiResult result) {
+void MidiManager::CompleteInitializationInternal(Result result) {
   TRACE_EVENT0("midi", "MidiManager::CompleteInitialization");
 
   base::AutoLock auto_lock(lock_);
@@ -176,7 +179,7 @@ void MidiManager::CompleteInitializationInternal(MidiResult result) {
   result_ = result;
 
   for (auto client : pending_clients_) {
-    if (result_ == MIDI_OK) {
+    if (result_ == Result::OK) {
       AddInitialPorts(client);
       clients_.insert(client);
     }

@@ -185,7 +185,7 @@ void MidiManagerAlsa::StartInitialization() {
       snd_seq_open(&in_client, kAlsaHw, SND_SEQ_OPEN_INPUT, SND_SEQ_NONBLOCK);
   if (err != 0) {
     VLOG(1) << "snd_seq_open fails: " << snd_strerror(err);
-    return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
+    return CompleteInitialization(Result::INITIALIZATION_ERROR);
   }
   in_client_.reset(in_client);
   in_client_id_ = snd_seq_client_id(in_client_.get());
@@ -194,7 +194,7 @@ void MidiManagerAlsa::StartInitialization() {
   err = snd_seq_open(&out_client, kAlsaHw, SND_SEQ_OPEN_OUTPUT, 0);
   if (err != 0) {
     VLOG(1) << "snd_seq_open fails: " << snd_strerror(err);
-    return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
+    return CompleteInitialization(Result::INITIALIZATION_ERROR);
   }
   out_client_.reset(out_client);
   out_client_id_ = snd_seq_client_id(out_client_.get());
@@ -203,12 +203,12 @@ void MidiManagerAlsa::StartInitialization() {
   err = snd_seq_set_client_name(in_client_.get(), "Chrome (input)");
   if (err != 0) {
     VLOG(1) << "snd_seq_set_client_name fails: " << snd_strerror(err);
-    return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
+    return CompleteInitialization(Result::INITIALIZATION_ERROR);
   }
   err = snd_seq_set_client_name(out_client_.get(), "Chrome (output)");
   if (err != 0) {
     VLOG(1) << "snd_seq_set_client_name fails: " << snd_strerror(err);
-    return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
+    return CompleteInitialization(Result::INITIALIZATION_ERROR);
   }
 
   // Create input port.
@@ -217,7 +217,7 @@ void MidiManagerAlsa::StartInitialization() {
   if (in_port_id_ < 0) {
     VLOG(1) << "snd_seq_create_simple_port fails: "
             << snd_strerror(in_port_id_);
-    return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
+    return CompleteInitialization(Result::INITIALIZATION_ERROR);
   }
 
   // Subscribe to the announce port.
@@ -235,7 +235,7 @@ void MidiManagerAlsa::StartInitialization() {
   if (err != 0) {
     VLOG(1) << "snd_seq_subscribe_port on the announce port fails: "
             << snd_strerror(err);
-    return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
+    return CompleteInitialization(Result::INITIALIZATION_ERROR);
   }
 
   // Generate hotplug events for existing ports.
@@ -247,20 +247,20 @@ void MidiManagerAlsa::StartInitialization() {
       device::udev_monitor_new_from_netlink(udev_.get(), kUdev));
   if (!udev_monitor_.get()) {
     VLOG(1) << "udev_monitor_new_from_netlink fails";
-    return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
+    return CompleteInitialization(Result::INITIALIZATION_ERROR);
   }
   err = device::udev_monitor_filter_add_match_subsystem_devtype(
       udev_monitor_.get(), kUdevSubsystemSound, nullptr);
   if (err != 0) {
     VLOG(1) << "udev_monitor_add_match_subsystem fails: "
             << base::safe_strerror(-err);
-    return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
+    return CompleteInitialization(Result::INITIALIZATION_ERROR);
   }
   err = device::udev_monitor_enable_receiving(udev_monitor_.get());
   if (err != 0) {
     VLOG(1) << "udev_monitor_enable_receiving fails: "
             << base::safe_strerror(-err);
-    return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
+    return CompleteInitialization(Result::INITIALIZATION_ERROR);
   }
 
   // Generate hotplug events for existing udev devices.
@@ -272,7 +272,7 @@ void MidiManagerAlsa::StartInitialization() {
       FROM_HERE,
       base::Bind(&MidiManagerAlsa::ScheduleEventLoop, base::Unretained(this)));
 
-  CompleteInitialization(MIDI_OK);
+  CompleteInitialization(Result::OK);
 }
 
 void MidiManagerAlsa::DispatchSendMidiData(MidiManagerClient* client,

@@ -29,7 +29,7 @@ MidiMessageFilter::MidiMessageFilter(
     : sender_(nullptr),
       io_task_runner_(io_task_runner),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      session_result_(media::midi::MIDI_NOT_INITIALIZED),
+      session_result_(media::midi::Result::NOT_INITIALIZED),
       unacknowledged_bytes_sent_(0u) {
 }
 
@@ -39,7 +39,7 @@ void MidiMessageFilter::AddClient(blink::WebMIDIAccessorClient* client) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("midi", "MidiMessageFilter::AddClient");
   clients_waiting_session_queue_.push_back(client);
-  if (session_result_ != media::midi::MIDI_NOT_INITIALIZED) {
+  if (session_result_ != media::midi::Result::NOT_INITIALIZED) {
     HandleClientAdded(session_result_);
   } else if (clients_waiting_session_queue_.size() == 1u) {
     io_task_runner_->PostTask(
@@ -57,7 +57,7 @@ void MidiMessageFilter::RemoveClient(blink::WebMIDIAccessorClient* client) {
   if (it != clients_waiting_session_queue_.end())
     clients_waiting_session_queue_.erase(it);
   if (clients_.empty() && clients_waiting_session_queue_.empty()) {
-    session_result_ = media::midi::MIDI_NOT_INITIALIZED;
+    session_result_ = media::midi::Result::NOT_INITIALIZED;
     inputs_.clear();
     outputs_.clear();
     io_task_runner_->PostTask(
@@ -143,7 +143,7 @@ void MidiMessageFilter::OnChannelClosing() {
   sender_ = nullptr;
 }
 
-void MidiMessageFilter::OnSessionStarted(media::midi::MidiResult result) {
+void MidiMessageFilter::OnSessionStarted(media::midi::Result result) {
   TRACE_EVENT0("midi", "MidiMessageFilter::OnSessionStarted");
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   // Handle on the main JS thread.
@@ -200,19 +200,19 @@ void MidiMessageFilter::OnAcknowledgeSentData(size_t bytes_sent) {
                             this, bytes_sent));
 }
 
-void MidiMessageFilter::HandleClientAdded(media::midi::MidiResult result) {
+void MidiMessageFilter::HandleClientAdded(media::midi::Result result) {
   TRACE_EVENT0("midi", "MidiMessageFilter::HandleClientAdded");
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   session_result_ = result;
   std::string error;
   std::string message;
   switch (result) {
-    case media::midi::MIDI_OK:
+    case media::midi::Result::OK:
       break;
-    case media::midi::MIDI_NOT_SUPPORTED:
+    case media::midi::Result::NOT_SUPPORTED:
       error = "NotSupportedError";
       break;
-    case media::midi::MIDI_INITIALIZATION_ERROR:
+    case media::midi::Result::INITIALIZATION_ERROR:
       error = "InvalidStateError";
       message = "Platform dependent initialization failed.";
       break;
@@ -230,7 +230,7 @@ void MidiMessageFilter::HandleClientAdded(media::midi::MidiResult result) {
   while (!clients_waiting_session_queue_.empty()) {
     auto client = clients_waiting_session_queue_.back();
     clients_waiting_session_queue_.pop_back();
-    if (result == media::midi::MIDI_OK) {
+    if (result == media::midi::Result::OK) {
       // Add the client's input and output ports.
       for (const auto& info : inputs_) {
         client->didAddInputPort(
@@ -250,7 +250,8 @@ void MidiMessageFilter::HandleClientAdded(media::midi::MidiResult result) {
             ToBlinkState(info.state));
       }
     }
-    client->didStartSession(result == media::midi::MIDI_OK, error16, message16);
+    client->didStartSession(result == media::midi::Result::OK, error16,
+                            message16);
     clients_.insert(client);
   }
 }

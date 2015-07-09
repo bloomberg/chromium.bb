@@ -130,9 +130,9 @@ void MidiHost::OnEndSession() {
   midi_manager_->EndSession(this);
 }
 
-void MidiHost::CompleteStartSession(media::midi::MidiResult result) {
+void MidiHost::CompleteStartSession(media::midi::Result result) {
   DCHECK(is_session_requested_);
-  if (result == media::midi::MIDI_OK) {
+  if (result == media::midi::Result::OK) {
     // ChildSecurityPolicy is set just before OnStartSession by
     // MidiDispatcherHost. So we can safely cache the policy.
     has_sys_ex_permission_ = ChildProcessSecurityPolicyImpl::GetInstance()->

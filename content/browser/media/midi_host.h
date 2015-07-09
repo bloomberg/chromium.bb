@@ -38,7 +38,7 @@ class CONTENT_EXPORT MidiHost : public BrowserMessageFilter,
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // MidiManagerClient implementation.
-  void CompleteStartSession(media::midi::MidiResult result) override;
+  void CompleteStartSession(media::midi::Result result) override;
   void AddInputPort(const media::midi::MidiPortInfo& info) override;
   void AddOutputPort(const media::midi::MidiPortInfo& info) override;
   void SetInputPortState(uint32 port,

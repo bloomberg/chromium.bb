@@ -489,7 +489,7 @@ class MidiServiceWinImpl : public MidiServiceWin,
     task_thread_.message_loop()->PostTask(
         FROM_HERE,
         base::Bind(&MidiServiceWinImpl::CompleteInitializationOnTaskThread,
-                   base::Unretained(this), MIDI_OK));
+                   base::Unretained(this), Result::OK));
   }
 
   void SendMidiDataAsync(uint32 port_number,
@@ -1033,7 +1033,7 @@ class MidiServiceWinImpl : public MidiServiceWin,
     state->start_time_initialized = true;
   }
 
-  void CompleteInitializationOnTaskThread(MidiResult result) {
+  void CompleteInitializationOnTaskThread(Result result) {
     AssertOnTaskThread();
     delegate_->OnCompleteInitialization(result);
   }
@@ -1139,7 +1139,7 @@ void MidiManagerWin::DispatchSendMidiData(MidiManagerClient* client,
   client->AccumulateMidiBytesSent(data.size());
 }
 
-void MidiManagerWin::OnCompleteInitialization(MidiResult result) {
+void MidiManagerWin::OnCompleteInitialization(Result result) {
   CompleteInitialization(result);
 }
 

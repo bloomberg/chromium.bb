@@ -25,8 +25,7 @@ void MidiManagerUsb::StartInitialization() {
       base::Bind(&MidiManager::CompleteInitialization, base::Unretained(this)));
 }
 
-void MidiManagerUsb::Initialize(
-    base::Callback<void(MidiResult result)> callback) {
+void MidiManagerUsb::Initialize(base::Callback<void(Result result)> callback) {
   initialize_callback_ = callback;
   scheduler_.reset(new MidiScheduler(this));
   // This is safe because EnumerateDevices cancels the operation on destruction.
@@ -103,18 +102,18 @@ void MidiManagerUsb::OnReceivedData(size_t jack_index,
 void MidiManagerUsb::OnEnumerateDevicesDone(bool result,
                                             UsbMidiDevice::Devices* devices) {
   if (!result) {
-    initialize_callback_.Run(MIDI_INITIALIZATION_ERROR);
+    initialize_callback_.Run(Result::INITIALIZATION_ERROR);
     return;
   }
   input_stream_.reset(new UsbMidiInputStream(this));
   devices->swap(devices_);
   for (size_t i = 0; i < devices_.size(); ++i) {
     if (!AddPorts(devices_[i], static_cast<int>(i))) {
-      initialize_callback_.Run(MIDI_INITIALIZATION_ERROR);
+      initialize_callback_.Run(Result::INITIALIZATION_ERROR);
       return;
     }
   }
-  initialize_callback_.Run(MIDI_OK);
+  initialize_callback_.Run(Result::OK);
 }
 
 bool MidiManagerUsb::AddPorts(UsbMidiDevice* device, int device_id) {

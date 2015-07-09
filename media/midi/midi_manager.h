@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #include "media/midi/midi_export.h"
 #include "media/midi/midi_port_info.h"
-#include "media/midi/midi_result.h"
+#include "media/midi/result.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -43,7 +43,7 @@ class MIDI_EXPORT MidiManagerClient {
 
   // CompleteStartSession() is called when platform dependent preparation is
   // finished.
-  virtual void CompleteStartSession(MidiResult result) = 0;
+  virtual void CompleteStartSession(Result result) = 0;
 
   // ReceiveMidiData() is called when MIDI data has been received from the
   // MIDI system.
@@ -78,8 +78,8 @@ class MIDI_EXPORT MidiManager {
   // A client calls StartSession() to receive and send MIDI data.
   // If the session is ready to start, the MIDI system is lazily initialized
   // and the client is registered to receive MIDI data.
-  // CompleteStartSession() is called with MIDI_OK if the session is started.
-  // Otherwise CompleteStartSession() is called with proper MidiResult code.
+  // CompleteStartSession() is called with Result::OK if the session is started.
+  // Otherwise CompleteStartSession() is called with proper Result code.
   // StartSession() and EndSession() can be called on the Chrome_IOThread.
   // CompleteStartSession() will be invoked on the same Chrome_IOThread.
   void StartSession(MidiManagerClient* client);
@@ -110,20 +110,20 @@ class MIDI_EXPORT MidiManager {
 
   // Initializes the platform dependent MIDI system. MidiManager class has a
   // default implementation that synchronously calls CompleteInitialization()
-  // with MIDI_NOT_SUPPORTED on the caller thread. A derived class for a
+  // with Result::NOT_SUPPORTED on the caller thread. A derived class for a
   // specific platform should override this method correctly.
   // This method is called on Chrome_IOThread thread inside StartSession().
   // Platform dependent initialization can be processed synchronously or
   // asynchronously. When the initialization is completed,
   // CompleteInitialization() should be called with |result|.
-  // |result| should be MIDI_OK on success, otherwise a proper MidiResult.
+  // |result| should be Result::OK on success, otherwise a proper Result.
   virtual void StartInitialization();
 
   // Called from a platform dependent implementation of StartInitialization().
   // It invokes CompleteInitializationInternal() on the thread that calls
   // StartSession() and distributes |result| to MIDIManagerClient objects in
   // |pending_clients_|.
-  void CompleteInitialization(MidiResult result);
+  void CompleteInitialization(Result result);
 
   void AddInputPort(const MidiPortInfo& info);
   void AddOutputPort(const MidiPortInfo& info);
@@ -152,7 +152,7 @@ class MIDI_EXPORT MidiManager {
   }
 
  private:
-  void CompleteInitializationInternal(MidiResult result);
+  void CompleteInitializationInternal(Result result);
   void AddInitialPorts(MidiManagerClient* client);
 
   // Keeps track of all clients who wish to receive MIDI data.
@@ -170,8 +170,8 @@ class MIDI_EXPORT MidiManager {
   bool initialized_;
 
   // Keeps the platform dependent initialization result if initialization is
-  // completed. Otherwise keeps MIDI_NOT_SUPPORTED.
-  MidiResult result_;
+  // completed. Otherwise keeps Result::NOT_INITIALIZED.
+  Result result_;
 
   // Keeps all MidiPortInfo.
   MidiPortInfoList input_ports_;

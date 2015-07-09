@@ -16092,6 +16092,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Midi.ResultOnShutdown" enum="MidiResult">
+  <owner>toyoshim@chromium.org</owner>
+  <summary>The final status of MidiManager on browser shutdown.</summary>
+</histogram>
+
 <histogram name="Media.MSE.AudioCodec" enum="MSECodec">
   <owner>acolwell@chromium.org</owner>
   <summary>
@@ -61726,6 +61731,13 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="MicrophoneMuteResult" type="int">
   <int value="0" label="Muted"/>
   <int value="1" label="Not muted"/>
+</enum>
+
+<enum name="MidiResult" type="int">
+  <int value="0" label="Not initialized"/>
+  <int value="1" label="Successfully initialized"/>
+  <int value="2" label="Not supported"/>
+  <int value="3" label="Generic initialization error"/>
 </enum>
 
 <enum name="MigrationNssToPemNetworkTypes" type="int">

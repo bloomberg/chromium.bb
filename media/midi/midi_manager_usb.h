@@ -70,7 +70,7 @@ class USB_MIDI_EXPORT MidiManagerUsb
   // will be canceled silently (i.e. |callback| will not be called).
   // The function is public just for unit tests. Do not call this function
   // outside code for testing.
-  void Initialize(base::Callback<void(MidiResult result)> callback);
+  void Initialize(base::Callback<void(Result result)> callback);
 
  private:
   void OnEnumerateDevicesDone(bool result, UsbMidiDevice::Devices* devices);
@@ -81,7 +81,7 @@ class USB_MIDI_EXPORT MidiManagerUsb
   ScopedVector<UsbMidiOutputStream> output_streams_;
   scoped_ptr<UsbMidiInputStream> input_stream_;
 
-  base::Callback<void(MidiResult result)> initialize_callback_;
+  base::Callback<void(Result result)> initialize_callback_;
 
   // A map from <endpoint_number, cable_number> to the index of input jacks.
   base::hash_map<std::pair<int, int>, size_t> input_jack_dictionary_;

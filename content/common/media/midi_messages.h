@@ -10,7 +10,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/param_traits_macros.h"
 #include "media/midi/midi_port_info.h"
-#include "media/midi/midi_result.h"
+#include "media/midi/result.h"
 #include "url/gurl.h"
 
 #undef IPC_MESSAGE_EXPORT
@@ -28,8 +28,7 @@ IPC_STRUCT_TRAITS_BEGIN(media::midi::MidiPortInfo)
   IPC_STRUCT_TRAITS_MEMBER(state)
 IPC_STRUCT_TRAITS_END()
 
-IPC_ENUM_TRAITS_MAX_VALUE(media::midi::MidiResult,
-                          media::midi::MIDI_RESULT_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(media::midi::Result, media::midi::Result::MAX)
 
 // Messages for IPC between MidiMessageFilter and MidiHost.
 
@@ -59,8 +58,7 @@ IPC_MESSAGE_CONTROL2(MidiMsg_SetOutputPortState,
                      uint32 /* port */,
                      media::midi::MidiPortState /* state */)
 
-IPC_MESSAGE_CONTROL1(MidiMsg_SessionStarted,
-                     media::midi::MidiResult /* result */)
+IPC_MESSAGE_CONTROL1(MidiMsg_SessionStarted, media::midi::Result /* result */)
 
 IPC_MESSAGE_CONTROL3(MidiMsg_DataReceived,
                      uint32 /* port */,

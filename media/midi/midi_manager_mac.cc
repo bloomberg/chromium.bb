@@ -161,7 +161,7 @@ void MidiManagerMac::InitializeCoreMIDI() {
       MIDIClientCreate(CFSTR("Chrome"), ReceiveMidiNotifyDispatch, this,
                        &midi_client_);
   if (result != noErr || midi_client_ == 0)
-    return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
+    return CompleteInitialization(Result::INITIALIZATION_ERROR);
 
   // Create input and output port.
   DCHECK_EQ(0u, coremidi_input_);
@@ -172,7 +172,7 @@ void MidiManagerMac::InitializeCoreMIDI() {
       this,
       &coremidi_input_);
   if (result != noErr || coremidi_input_ == 0)
-    return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
+    return CompleteInitialization(Result::INITIALIZATION_ERROR);
 
   DCHECK_EQ(0u, coremidi_output_);
   result = MIDIOutputPortCreate(
@@ -180,7 +180,7 @@ void MidiManagerMac::InitializeCoreMIDI() {
       CFSTR("MIDI Output"),
       &coremidi_output_);
   if (result != noErr || coremidi_output_ == 0)
-    return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
+    return CompleteInitialization(Result::INITIALIZATION_ERROR);
 
   // Following loop may miss some newly attached devices, but such device will
   // be captured by ReceiveMidiNotifyDispatch callback.
@@ -224,7 +224,7 @@ void MidiManagerMac::InitializeCoreMIDI() {
   // Allocate maximum size of buffer that CoreMIDI can handle.
   midi_buffer_.resize(kCoreMIDIMaxPacketListSize);
 
-  CompleteInitialization(MIDI_OK);
+  CompleteInitialization(Result::OK);
 }
 
 // static

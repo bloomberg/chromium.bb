@@ -19,7 +19,7 @@ namespace midi {
 class MidiServiceWinDelegate {
  public:
   virtual ~MidiServiceWinDelegate() {}
-  virtual void OnCompleteInitialization(MidiResult result) = 0;
+  virtual void OnCompleteInitialization(Result result) = 0;
   virtual void OnAddInputPort(MidiPortInfo info) = 0;
   virtual void OnAddOutputPort(MidiPortInfo info) = 0;
   virtual void OnSetInputPortState(uint32 port_index, MidiPortState state) = 0;
@@ -53,7 +53,7 @@ class MidiManagerWin final : public MidiManager, public MidiServiceWinDelegate {
                             double timestamp) final;
 
   // MidiServiceWinDelegate overrides:
-  void OnCompleteInitialization(MidiResult result) final;
+  void OnCompleteInitialization(Result result) final;
   void OnAddInputPort(MidiPortInfo info) final;
   void OnAddOutputPort(MidiPortInfo info) final;
   void OnSetInputPortState(uint32 port_index, MidiPortState state) final;
