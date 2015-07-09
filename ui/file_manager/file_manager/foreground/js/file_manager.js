@@ -983,7 +983,7 @@ FileManager.prototype = /** @struct */ {
     // Create spinner controller.
     this.spinnerController_ = new SpinnerController(
         this.ui_.listContainer.spinner);
-    this.spinnerController_.show();
+    this.spinnerController_.blink();
 
     // Create dialog action controller.
     assert(this.launchParams_);

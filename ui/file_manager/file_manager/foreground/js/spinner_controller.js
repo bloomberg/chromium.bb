@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 /**
- * Controller for spinner.
+ * Controller for spinners. Spinner requests can be stacked. Eg. if show()
+ * is called 3 times, the hide callback has to be called 3 times to make the
+ * spinner invisible.
+ *
  * @param {!HTMLElement} element
  * @constructor
  * @extends {cr.EventTarget}
@@ -21,67 +24,76 @@ function SpinnerController(element) {
    * @type {number}
    * @private
    */
-  this.timeoutId_ = 0;
+  this.activeSpinners_ = 0;
+
+  /**
+   * @type {!Object<number, boolean>}
+   * @private
+   */
+  this.pendingSpinnerTimerIds_ = {};
 
   /**
    * @type {number}
    * @private
    */
-  this.blinkHideTimeoutId_ = 0;
+  this.blinkDuration_ = 1000;  // In milliseconds.
 }
 
-SpinnerController.prototype.__proto__ = cr.EventTarget.prototype;
-
 /**
- * Blinks the spinner for a short period of time.
+ * Blinks the spinner for a short period of time. Hides automatically.
  */
 SpinnerController.prototype.blink = function() {
-  this.element_.hidden = false;
-  clearTimeout(this.blinkHideTimeoutId_);
-  this.blinkHideTimeoutId_ = setTimeout(function() {
-    this.element_.hidden = true;
-    this.blinkHideTimeoutId_ = 0;
-  }.bind(this), 1000);
+  var hideCallback = this.show();
+  setTimeout(hideCallback, this.blinkDuration_);
 };
 
 /**
- * Shows the spinner until hide is called.
+ * Shows the spinner immediately until the returned callback is called.
+ * @return {function()} Hide callback.
  */
 SpinnerController.prototype.show = function() {
-  this.element_.hidden = false;
-  clearTimeout(this.blinkHideTimeoutId_);
-  this.blinkHideTimeoutId_ = 0;
-  clearTimeout(this.timeoutId_);
-  this.timeoutId_ = 0;
-  var spinnerShownEvent = new Event('spinner-shown');
-  this.dispatchEvent(spinnerShownEvent);
+  return this.showWithDelay(0, function() {});
 };
 
 /**
- * Hides the spinner.
+ * Shows the spinner until hide is called. The returned callback must be called
+ * when the spinner is not necessary anymore.
+ * @param {number} delay Delay in milliseconds.
+ * @param {function()} callback Show callback.
+ * @return {function()} Hide callback.
  */
-SpinnerController.prototype.hide = function() {
-  // If the current spinner is a blink, then it will hide by itself shortly.
-  if (this.blinkHideTimeoutId_)
-    return;
+SpinnerController.prototype.showWithDelay = function(delay, callback) {
+  var timerId = setTimeout(function() {
+    this.activeSpinners_++;
+    if (this.activeSpinners_ === 1)
+      this.element_.hidden = false;
+    delete this.pendingSpinnerTimerIds_[timerId];
+    callback();
+  }.bind(this), delay);
 
-  this.element_.hidden = true;
-  clearTimeout(this.timeoutId_);
-  this.timeoutId_ = 0;
+  this.pendingSpinnerTimerIds_[timerId] = true;
+  return this.maybeHide_.bind(this, timerId);
 };
 
 /**
- * Shows the spinner after 500ms (unless it's already visible).
+ * @param {number} duration Duration in milliseconds.
  */
-SpinnerController.prototype.showLater = function() {
-  if (!this.element_.hidden) {
-    // If there is an ongoing blink, then keep it visible until hide() is
-    // called.
-    clearTimeout(this.blinkHideTimeoutId_);
-    this.blinkHideTimeoutId_ = 0;
+SpinnerController.prototype.setBlinkDurationForTesting = function(duration) {
+  this.blinkDuration_ = duration;
+};
+
+/**
+ * @param {number} timerId
+ * @private
+ */
+SpinnerController.prototype.maybeHide_ = function(timerId) {
+  if (timerId in this.pendingSpinnerTimerIds_) {
+    clearTimeout(timerId);
+    delete this.pendingSpinnerTimerIds_[timerId];
     return;
   }
 
-  clearTimeout(this.timeoutId_);
-  this.timeoutId_ = setTimeout(this.show.bind(this), 500);
+  this.activeSpinners_--;
+  if (this.activeSpinners_ === 0)
+    this.element_.hidden = true;
 };
