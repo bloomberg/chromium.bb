@@ -4,8 +4,10 @@
  * found in the LICENSE file.
  */
 
+#include <assert.h>
 #include <errno.h>
 
+#include "native_client/src/nonsfi/linux/linux_pthread_private.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_defines.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_structs.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_wrappers.h"
@@ -77,6 +79,94 @@ static void nacl_irt_thread_exit(int32_t *stack_flag) {
 
 static int nacl_irt_thread_nice(const int nice) {
   return 0;
+}
+
+static struct nc_combined_tdb *get_irt_tdb(void *thread_ptr) {
+  struct nc_combined_tdb *tdb = (void *) ((uintptr_t) thread_ptr +
+                                          __nacl_tp_tdb_offset(sizeof(*tdb)));
+  return tdb;
+}
+
+/*
+ * This is the real first entry point for new threads.
+ * Based on code from src/untrusted/irt/irt_thread.c
+ */
+static void irt_start_thread() {
+  struct nc_combined_tdb *tdb = get_irt_tdb(__nacl_read_tp());
+
+  /*
+   * Fetch the user's start routine.
+   */
+  void *(*user_start)(void *) = tdb->tdb.start_func;
+
+  /*
+   * Now do per-thread initialization for the IRT-private C library state.
+   */
+  __newlib_thread_init();
+
+  /*
+   * Finally, run the user code.
+   */
+  (*user_start)(tdb->tdb.state);
+
+  /*
+   * That should never return.  Crash hard if it does.
+   */
+  __builtin_trap();
+}
+
+/*
+ * Creates a thread and initializes the IRT-private TLS area.
+ * Based on code from src/untrusted/irt/irt_thread.c
+ */
+int nacl_user_thread_create(void *(*start_func)(void *), void *stack,
+                            void *thread_ptr) {
+  struct nc_combined_tdb *tdb;
+
+  /*
+   * Before we start the thread, allocate the IRT-private TLS area for it.
+   */
+  size_t combined_size = __nacl_tls_combined_size(sizeof(*tdb));
+  void *combined_area = malloc(combined_size);
+  if (combined_area == NULL)
+    return EAGAIN;
+
+ /*
+  * Note that __nacl_tls_initialize_memory() is not reversible,
+  * because it takes a pointer that need not be aligned and can
+  * return a pointer that is aligned.  In order to
+  * free(combined_area) later, we must save the value of
+  * combined_area.
+  */
+  void *irt_tp = __nacl_tls_initialize_memory(combined_area, sizeof(*tdb));
+  tdb = get_irt_tdb(irt_tp);
+  __nc_initialize_unjoinable_thread(tdb);
+  tdb->tdb.irt_thread_data = combined_area;
+  tdb->tdb.start_func = start_func;
+  tdb->tdb.state = thread_ptr;
+
+  return nacl_irt_thread_create(irt_start_thread, stack, irt_tp);
+}
+
+/*
+ * Destroys a thread created by nacl_user_thread_create.
+ * Based on code from src/untrusted/irt/irt_thread.c
+ */
+void nacl_user_thread_exit(int32_t *stack_flag) {
+  struct nc_combined_tdb *tdb = get_irt_tdb(__nacl_read_tp());
+
+  __nc_tsd_exit();
+
+  /*
+   * Sanity check: Check that this function was not called on a thread
+   * created by the IRT's internal pthread_create().  For such
+   * threads, irt_thread_data == NULL.
+   */
+  assert(tdb->tdb.irt_thread_data != NULL);
+
+  free(tdb->tdb.irt_thread_data);
+
+  nacl_irt_thread_exit(stack_flag);
 }
 
 void __nc_initialize_interfaces(void) {

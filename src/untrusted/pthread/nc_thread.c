@@ -272,8 +272,6 @@ void __nc_initialize_globals(void) {
   __nc_thread_initialized = 1;
 }
 
-#if defined(NACL_IN_IRT)
-
 /*
  * This is used by the IRT for user threads.  We initialize all fields
  * so that we get predictable behaviour in case some IRT code does an
@@ -284,7 +282,7 @@ void __nc_initialize_unjoinable_thread(struct nc_combined_tdb *tdb) {
   tdb->tdb.joinable = 0;
 }
 
-#else
+#if !defined(NACL_IN_IRT)
 
 /*
  * Will be called from the library startup code,

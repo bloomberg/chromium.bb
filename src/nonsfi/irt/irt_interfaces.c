@@ -43,6 +43,10 @@
 #include "native_client/src/nonsfi/irt/irt_icache.h"
 #endif
 
+#if defined(__native_client__)
+# include "native_client/src/nonsfi/linux/linux_pthread_private.h"
+#endif
+
 /*
  * This is an implementation of NaCl's IRT interfaces that runs
  * outside of the NaCl sandbox.
@@ -354,6 +358,19 @@ static void *start_thread(void *arg) {
 
 static int thread_create(void (*start_func)(void), void *stack,
                          void *thread_ptr) {
+#if defined(__native_client__)
+  struct thread_args *args = malloc(sizeof(struct thread_args));
+  if (args == NULL) {
+    return ENOMEM;
+  }
+  args->start_func = start_func;
+  args->thread_ptr = thread_ptr;
+  /* In Linux, it is possible to use the provided stack directly. */
+  int error = nacl_user_thread_create(start_thread, stack, args);
+  if (error != 0)
+    free(args);
+  return error;
+#else
   /*
    * For now, we ignore the stack that user code provides and just use
    * the stack that the host libpthread allocates.
@@ -379,11 +396,16 @@ static int thread_create(void (*start_func)(void), void *stack,
  cleanup:
   pthread_attr_destroy(&attr);
   return error;
+#endif
 }
 
 static void thread_exit(int32_t *stack_flag) {
+#if defined(__native_client__)
+  nacl_user_thread_exit(stack_flag);
+#else
   *stack_flag = 0;  /* Indicate that the user code's stack can be freed. */
   pthread_exit(NULL);
+#endif
 }
 
 static int thread_nice(const int nice) {
