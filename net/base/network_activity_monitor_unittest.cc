@@ -96,7 +96,7 @@ void IncrementBytesSent(uint64_t bytes) {
 TEST_F(NetworkActivityMontiorTest, Threading) {
   std::vector<base::Thread*> threads;
   for (size_t i = 0; i < 3; ++i) {
-    threads.push_back(new base::Thread(base::UintToString(i)));
+    threads.push_back(new base::Thread(base::SizeTToString(i)));
     ASSERT_TRUE(threads.back()->Start());
   }
 

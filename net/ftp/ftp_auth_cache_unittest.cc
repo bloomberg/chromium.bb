@@ -138,13 +138,13 @@ TEST(FtpAuthCacheTest, EvictOldEntries) {
   FtpAuthCache cache;
 
   for (size_t i = 0; i < FtpAuthCache::kMaxEntries; i++) {
-    cache.Add(GURL("ftp://host" + base::IntToString(i)),
+    cache.Add(GURL("ftp://host" + base::SizeTToString(i)),
               AuthCredentials(kUsername, kPassword));
   }
 
   // No entries should be evicted before reaching the limit.
   for (size_t i = 0; i < FtpAuthCache::kMaxEntries; i++) {
-    EXPECT_TRUE(cache.Lookup(GURL("ftp://host" + base::IntToString(i))));
+    EXPECT_TRUE(cache.Lookup(GURL("ftp://host" + base::SizeTToString(i))));
   }
 
   // Adding one entry should cause eviction of the first entry.
@@ -153,7 +153,7 @@ TEST(FtpAuthCacheTest, EvictOldEntries) {
 
   // Remaining entries should not get evicted.
   for (size_t i = 1; i < FtpAuthCache::kMaxEntries; i++) {
-    EXPECT_TRUE(cache.Lookup(GURL("ftp://host" + base::IntToString(i))));
+    EXPECT_TRUE(cache.Lookup(GURL("ftp://host" + base::SizeTToString(i))));
   }
   EXPECT_TRUE(cache.Lookup(GURL("ftp://last_host")));
 }

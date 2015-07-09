@@ -105,7 +105,7 @@ GURL HttpStreamFactory::ApplyHostMappingRules(const GURL& url,
   const HostMappingRules* mapping_rules = GetHostMappingRules();
   if (mapping_rules && mapping_rules->RewriteHost(endpoint)) {
     url::Replacements<char> replacements;
-    const std::string port_str = base::IntToString(endpoint->port());
+    const std::string port_str = base::UintToString(endpoint->port());
     replacements.SetPort(port_str.c_str(), url::Component(0, port_str.size()));
     replacements.SetHost(endpoint->host().c_str(),
                          url::Component(0, endpoint->host().size()));

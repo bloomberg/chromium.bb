@@ -50,7 +50,7 @@ HostPortPair HostPortPair::FromString(const std::string& str) {
 std::string HostPortPair::ToString() const {
   std::string ret(HostForURL());
   ret += ':';
-  ret += base::IntToString(port_);
+  ret += base::UintToString(port_);
   return ret;
 }
 

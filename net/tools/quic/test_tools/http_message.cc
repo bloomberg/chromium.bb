@@ -141,7 +141,7 @@ void HTTPMessage::AddBody(const string& body, bool add_content_length) {
   // Remove any transfer-encoding that was left by a previous body.
   RemoveHeader(kTransferCoding);
   if (add_content_length) {
-    ReplaceHeader(kContentLength, base::IntToString(body.size()));
+    ReplaceHeader(kContentLength, base::SizeTToString(body.size()));
   } else {
     RemoveHeader(kContentLength);
   }

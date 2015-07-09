@@ -713,7 +713,7 @@ int HttpStreamFactoryImpl::Job::DoResolveProxy() {
     GURL::Replacements replacements;
     // new_port needs to be in scope here because GURL::Replacements references
     // the memory contained by it directly.
-    const std::string new_port = base::IntToString(alternative_service_.port);
+    const std::string new_port = base::UintToString(alternative_service_.port);
     replacements.SetSchemeStr("https");
     replacements.SetPortStr(new_port);
     url_for_proxy = url_for_proxy.ReplaceComponents(replacements);

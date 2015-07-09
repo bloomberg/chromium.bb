@@ -842,8 +842,8 @@ scoped_ptr<base::Value> QuicClientSession::GetInfoAsValue(
   for (base::hash_map<QuicStreamId, ReliableQuicStream*>::const_iterator it =
            dynamic_streams().begin();
        it != dynamic_streams().end(); ++it) {
-    stream_list->Append(new base::StringValue(
-        base::Uint64ToString(it->second->id())));
+    stream_list->Append(
+        new base::StringValue(base::UintToString(it->second->id())));
   }
   dict->Set("active_streams", stream_list.Pass());
 

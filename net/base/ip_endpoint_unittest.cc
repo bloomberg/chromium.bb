@@ -163,7 +163,7 @@ TEST_F(IPEndPointTest, ToString) {
     uint16_t port = 100 + index;
     IPEndPoint endpoint(tests[index].ip_address, port);
     const std::string result = endpoint.ToString();
-    EXPECT_EQ(tests[index].host_normalized + ":" + base::IntToString(port),
+    EXPECT_EQ(tests[index].host_normalized + ":" + base::UintToString(port),
               result);
   }
 }

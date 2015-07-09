@@ -2846,7 +2846,7 @@ class URLRequestTestHTTP : public URLRequestTest {
       req->set_upload(CreateSimpleUploadData(kData));
       HttpRequestHeaders headers;
       headers.SetHeader(HttpRequestHeaders::kContentLength,
-                        base::UintToString(arraysize(kData) - 1));
+                        base::SizeTToString(arraysize(kData) - 1));
       req->SetExtraRequestHeaders(headers);
     }
     req->Start();
@@ -3347,7 +3347,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequestPost) {
     r->set_upload(CreateSimpleUploadData(kData));
     HttpRequestHeaders headers;
     headers.SetHeader(HttpRequestHeaders::kContentLength,
-                      base::UintToString(arraysize(kData) - 1));
+                      base::SizeTToString(arraysize(kData) - 1));
     r->SetExtraRequestHeaders(headers);
 
     // Quit after hitting the redirect, so can check the headers.
@@ -6561,7 +6561,7 @@ TEST_F(URLRequestTestHTTP, InterceptPost302RedirectGet) {
   req->set_upload(CreateSimpleUploadData(kData));
   HttpRequestHeaders headers;
   headers.SetHeader(HttpRequestHeaders::kContentLength,
-                    base::UintToString(arraysize(kData) - 1));
+                    base::SizeTToString(arraysize(kData) - 1));
   req->SetExtraRequestHeaders(headers);
 
   URLRequestRedirectJob* job = new URLRequestRedirectJob(
@@ -6586,7 +6586,7 @@ TEST_F(URLRequestTestHTTP, InterceptPost307RedirectPost) {
   req->set_upload(CreateSimpleUploadData(kData));
   HttpRequestHeaders headers;
   headers.SetHeader(HttpRequestHeaders::kContentLength,
-                    base::UintToString(arraysize(kData) - 1));
+                    base::SizeTToString(arraysize(kData) - 1));
   req->SetExtraRequestHeaders(headers);
 
   URLRequestRedirectJob* job = new URLRequestRedirectJob(
