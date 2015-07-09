@@ -16,6 +16,7 @@
 #include "chrome/browser/media/media_access_handler.h"
 #include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/media/permission_bubble_media_access_handler.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
