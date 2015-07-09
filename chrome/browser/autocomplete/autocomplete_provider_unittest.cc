@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/omnibox/autocomplete_provider.h"
+#include "components/omnibox/browser/autocomplete_provider.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -21,12 +21,12 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
-#include "components/omnibox/autocomplete_controller.h"
-#include "components/omnibox/autocomplete_input.h"
-#include "components/omnibox/autocomplete_match.h"
-#include "components/omnibox/autocomplete_provider_listener.h"
-#include "components/omnibox/keyword_provider.h"
-#include "components/omnibox/search_provider.h"
+#include "components/omnibox/browser/autocomplete_controller.h"
+#include "components/omnibox/browser/autocomplete_input.h"
+#include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/autocomplete_provider_listener.h"
+#include "components/omnibox/browser/keyword_provider.h"
+#include "components/omnibox/browser/search_provider.h"
 #include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"

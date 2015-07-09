@@ -10,9 +10,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
-#include "components/omnibox/autocomplete_controller.h"
-#include "components/omnibox/autocomplete_controller_delegate.h"
-#include "components/omnibox/autocomplete_match.h"
+#include "components/omnibox/browser/autocomplete_controller.h"
+#include "components/omnibox/browser/autocomplete_controller_delegate.h"
+#include "components/omnibox/browser/autocomplete_match.h"
 
 class AUtocompleteInput;
 struct AutocompleteMatch;

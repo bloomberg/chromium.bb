@@ -7,7 +7,7 @@
 
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
-#include "components/omnibox/autocomplete_provider_client.h"
+#include "components/omnibox/browser/autocomplete_provider_client.h"
 
 class Profile;
 

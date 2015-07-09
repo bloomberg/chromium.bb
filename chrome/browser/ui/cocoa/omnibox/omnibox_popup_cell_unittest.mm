@@ -9,7 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#include "components/omnibox/suggestion_answer.h"
+#include "components/omnibox/browser/suggestion_answer.h"
 #import "testing/gtest_mac.h"
 
 namespace {

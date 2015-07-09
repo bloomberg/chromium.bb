@@ -19,7 +19,7 @@
 #include "chrome/common/instant_types.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/omnibox/autocomplete_controller.h"
+#include "components/omnibox/browser/autocomplete_controller.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/window/non_client_view.h"

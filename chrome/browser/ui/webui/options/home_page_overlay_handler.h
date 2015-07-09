@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
-#include "components/omnibox/autocomplete_controller_delegate.h"
+#include "components/omnibox/browser/autocomplete_controller_delegate.h"
 
 class AutocompleteController;
 

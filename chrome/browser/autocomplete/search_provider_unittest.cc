@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/omnibox/search_provider.h"
+#include "components/omnibox/browser/search_provider.h"
 
 #include <string>
 
@@ -32,15 +32,15 @@
 #include "components/google/core/browser/google_switches.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
-#include "components/omnibox/autocomplete_controller.h"
-#include "components/omnibox/autocomplete_input.h"
-#include "components/omnibox/autocomplete_match.h"
-#include "components/omnibox/autocomplete_provider.h"
-#include "components/omnibox/autocomplete_provider_listener.h"
-#include "components/omnibox/history_url_provider.h"
-#include "components/omnibox/omnibox_field_trial.h"
-#include "components/omnibox/omnibox_switches.h"
-#include "components/omnibox/suggestion_answer.h"
+#include "components/omnibox/browser/autocomplete_controller.h"
+#include "components/omnibox/browser/autocomplete_input.h"
+#include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/autocomplete_provider.h"
+#include "components/omnibox/browser/autocomplete_provider_listener.h"
+#include "components/omnibox/browser/history_url_provider.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/omnibox_switches.h"
+#include "components/omnibox/browser/suggestion_answer.h"
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/search_terms_data.h"

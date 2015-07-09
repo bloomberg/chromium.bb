@@ -46,7 +46,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/pnacl_host.h"
-#include "components/omnibox/omnibox_pref_names.h"
+#include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/power/origin_power_map.h"
 #include "components/power/origin_power_map_factory.h"

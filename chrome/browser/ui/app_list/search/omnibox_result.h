@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_OMNIBOX_RESULT_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/omnibox/autocomplete_match.h"
+#include "components/omnibox/browser/autocomplete_match.h"
 #include "ui/app_list/search_result.h"
 
 class AppListControllerDelegate;

@@ -90,7 +90,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/infobars/core/infobar.h"
-#include "components/omnibox/autocomplete_controller.h"
+#include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"

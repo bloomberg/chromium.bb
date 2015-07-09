@@ -8,7 +8,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
-#include "components/omnibox/shortcuts_backend.h"
+#include "components/omnibox/browser/shortcuts_backend.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"

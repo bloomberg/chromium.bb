@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/omnibox/suggestion_answer.h"
+#include "components/omnibox/browser/suggestion_answer.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font.h"

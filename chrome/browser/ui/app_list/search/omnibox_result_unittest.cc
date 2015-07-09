@@ -9,8 +9,8 @@
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/omnibox/autocomplete_match.h"
-#include "components/omnibox/autocomplete_match_type.h"
+#include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/search_engines/template_url.h"
 
 namespace app_list {

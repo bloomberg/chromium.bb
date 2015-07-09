@@ -85,7 +85,7 @@
 #include "components/enhanced_bookmarks/bookmark_server_cluster_service.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/network_time/network_time_tracker.h"
-#include "components/omnibox/zero_suggest_provider.h"
+#include "components/omnibox/browser/zero_suggest_provider.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/rappor/rappor_service.h"

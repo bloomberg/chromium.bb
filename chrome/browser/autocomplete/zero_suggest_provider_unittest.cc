@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/omnibox/zero_suggest_provider.h"
+#include "components/omnibox/browser/zero_suggest_provider.h"
 
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
@@ -17,9 +17,9 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
-#include "components/omnibox/autocomplete_provider_listener.h"
-#include "components/omnibox/omnibox_field_trial.h"
-#include "components/omnibox/omnibox_pref_names.h"
+#include "components/omnibox/browser/autocomplete_provider_listener.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/entropy_provider.h"

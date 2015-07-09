@@ -3170,7 +3170,7 @@
         '../components/components.gyp:navigation_metrics',
         '../components/components.gyp:network_time',
         '../components/components.gyp:offline_pages',
-        '../components/components.gyp:omnibox',
+        '../components/components.gyp:omnibox_browser',
         '../components/components.gyp:os_crypt',
         '../components/components.gyp:password_manager_core_browser',
         '../components/components.gyp:password_manager_core_common',

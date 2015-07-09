@@ -8,8 +8,8 @@
 #include "base/basictypes.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
-#include "components/omnibox/autocomplete_controller.h"
-#include "components/omnibox/autocomplete_result.h"
+#include "components/omnibox/browser/autocomplete_controller.h"
+#include "components/omnibox/browser/autocomplete_result.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class OmniboxPopupModelObserver;

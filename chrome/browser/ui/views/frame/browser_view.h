@@ -26,7 +26,7 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
 #include "chrome/browser/ui/views/load_complete_listener.h"
-#include "components/omnibox/omnibox_popup_model_observer.h"
+#include "components/omnibox/browser/omnibox_popup_model_observer.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/native_widget_types.h"

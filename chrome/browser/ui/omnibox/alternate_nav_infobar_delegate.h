@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "components/infobars/core/infobar_delegate.h"
-#include "components/omnibox/autocomplete_match.h"
+#include "components/omnibox/browser/autocomplete_match.h"
 
 class Profile;
 

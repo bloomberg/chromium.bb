@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/omnibox/omnibox_popup_view.h"
+#include "components/omnibox/browser/omnibox_popup_view.h"
 #include "testing/platform_test.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/rect.h"

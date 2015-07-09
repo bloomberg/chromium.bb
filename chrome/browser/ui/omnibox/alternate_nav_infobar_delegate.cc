@@ -12,7 +12,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/infobars/core/infobar.h"
-#include "components/omnibox/shortcuts_backend.h"
+#include "components/omnibox/browser/shortcuts_backend.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"

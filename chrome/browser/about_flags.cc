@@ -30,7 +30,7 @@
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/metrics/metrics_hashes.h"
 #include "components/nacl/common/nacl_switches.h"
-#include "components/omnibox/omnibox_switches.h"
+#include "components/omnibox/browser/omnibox_switches.h"
 #include "components/plugins/common/plugins_switches.h"
 #include "components/proximity_auth/switches.h"
 #include "components/search/search_switches.h"

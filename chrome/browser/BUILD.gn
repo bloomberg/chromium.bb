@@ -123,7 +123,7 @@ source_set("browser") {
     "//components/navigation_metrics",
     "//components/network_time",
     "//components/offline_pages",
-    "//components/omnibox",
+    "//components/omnibox/browser",
     "//components/os_crypt",
     "//components/packed_ct_ev_whitelist",
     "//components/password_manager/core/browser",

@@ -11,9 +11,9 @@
 #include "base/time/time.h"
 #include "chrome/browser/ui/webui/mojo_web_ui_handler.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox.mojom.h"
-#include "components/omnibox/autocomplete_controller_delegate.h"
-#include "components/omnibox/autocomplete_input.h"
-#include "components/omnibox/autocomplete_match.h"
+#include "components/omnibox/browser/autocomplete_controller_delegate.h"
+#include "components/omnibox/browser/autocomplete_input.h"
+#include "components/omnibox/browser/autocomplete_match.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 class AutocompleteController;

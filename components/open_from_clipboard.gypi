@@ -11,7 +11,7 @@
         '../base/base.gyp:base',
         '../url/url.gyp:url_lib',
         'components_strings.gyp:components_strings',
-        'omnibox',
+        'omnibox_browser',
       ],
       'include_dirs': [
         '..',

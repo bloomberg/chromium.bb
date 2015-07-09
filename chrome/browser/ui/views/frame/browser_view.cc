@@ -107,7 +107,7 @@
 #include "components/app_modal/app_modal_dialog.h"
 #include "components/app_modal/app_modal_dialog_queue.h"
 #include "components/app_modal/native_app_modal_dialog.h"
-#include "components/omnibox/omnibox_popup_view.h"
+#include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/translate/core/browser/language_state.h"
 #include "content/app/resources/grit/content_resources.h"

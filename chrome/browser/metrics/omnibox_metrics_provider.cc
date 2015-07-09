@@ -15,10 +15,10 @@
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
-#include "components/omnibox/autocomplete_match.h"
-#include "components/omnibox/autocomplete_provider.h"
-#include "components/omnibox/autocomplete_result.h"
-#include "components/omnibox/omnibox_log.h"
+#include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/autocomplete_provider.h"
+#include "components/omnibox/browser/autocomplete_result.h"
+#include "components/omnibox/browser/omnibox_log.h"
 #include "content/public/browser/notification_service.h"
 
 using metrics::OmniboxEventProto;

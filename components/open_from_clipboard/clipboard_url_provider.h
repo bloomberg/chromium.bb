@@ -6,7 +6,7 @@
 #define COMPONENTS_OPEN_FROM_CLIPBOARD_CLIPBOARD_URL_PROVIDER_H_
 
 #include "base/callback.h"
-#include "components/omnibox/autocomplete_provider.h"
+#include "components/omnibox/browser/autocomplete_provider.h"
 
 class ClipboardRecentContent;
 

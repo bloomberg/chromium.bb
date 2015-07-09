@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/omnibox/autocomplete_input.h"
+#include "components/omnibox/browser/autocomplete_input.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"

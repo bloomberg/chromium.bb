@@ -13,7 +13,7 @@
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/omnibox/shortcuts_backend.h"
+#include "components/omnibox/browser/shortcuts_backend.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {

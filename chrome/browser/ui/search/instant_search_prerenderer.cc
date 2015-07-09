@@ -14,7 +14,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
-#include "components/omnibox/autocomplete_match.h"
+#include "components/omnibox/browser/autocomplete_match.h"
 #include "components/search_engines/template_url_service.h"
 
 namespace {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/omnibox/builtin_provider.h"
+#include "components/omnibox/browser/builtin_provider.h"
 
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
@@ -12,9 +12,9 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
-#include "components/omnibox/autocomplete_input.h"
-#include "components/omnibox/autocomplete_match.h"
-#include "components/omnibox/autocomplete_provider.h"
+#include "components/omnibox/browser/autocomplete_input.h"
+#include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/autocomplete_provider.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"

@@ -21,7 +21,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/google/core/browser/google_util.h"
-#include "components/omnibox/omnibox_field_trial.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/search/search.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/device_form_factor.h"

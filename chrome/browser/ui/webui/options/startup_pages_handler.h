@@ -11,7 +11,7 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
-#include "components/omnibox/autocomplete_controller_delegate.h"
+#include "components/omnibox/browser/autocomplete_controller_delegate.h"
 #include "ui/base/models/table_model_observer.h"
 
 class AutocompleteController;

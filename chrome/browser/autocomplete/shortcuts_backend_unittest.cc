@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/omnibox/shortcuts_backend.h"
+#include "components/omnibox/browser/shortcuts_backend.h"
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
@@ -13,7 +13,7 @@
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/omnibox/shortcuts_database.h"
+#include "components/omnibox/browser/shortcuts_database.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/test/test_browser_thread.h"
 

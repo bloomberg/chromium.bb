@@ -13,7 +13,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "components/metrics/metrics_pref_names.h"
-#include "components/omnibox/omnibox_field_trial.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 #include "chrome/browser/chrome_browser_field_trials_mobile.h"

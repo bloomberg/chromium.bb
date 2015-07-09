@@ -26,7 +26,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/google/core/browser/google_util.h"
-#include "components/omnibox/omnibox_log.h"
+#include "components/omnibox/browser/omnibox_log.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browser_thread.h"

@@ -65,7 +65,7 @@ group("all_components") {
     "//components/navigation_metrics",
     "//components/network_time",
     "//components/offline_pages",
-    "//components/omnibox",
+    "//components/omnibox/browser",
     "//components/onc",
     "//components/os_crypt",
     "//components/packed_ct_ev_whitelist",
@@ -201,7 +201,7 @@ group("all_components") {
       "//components/json_schema",  # Should work, needs checking.
       "//components/keyed_service/content",  # Blocked on content.
       "//components/navigation_interception",  # Blocked on content.
-      "//components/omnibox",  # Should work, needs checking.
+      "//components/omnibox/browser",  # Should work, needs checking.
       "//components/password_manager/content/browser",  # Blocked on content.
       "//components/password_manager/core/browser",  # Should work, needs checking.
       "//components/password_manager/core/common",  # Should work, needs checking.
@@ -293,7 +293,7 @@ test("components_unittests") {
     "//components/metrics:unit_tests",
     "//components/mime_util:unit_tests",
     "//components/offline_pages:unit_tests",
-    "//components/omnibox:unit_tests",
+    "//components/omnibox/browser:unit_tests",
     "//components/packed_ct_ev_whitelist:unit_tests",
     "//components/undo:unit_tests",
     "//components/update_client:unit_tests",

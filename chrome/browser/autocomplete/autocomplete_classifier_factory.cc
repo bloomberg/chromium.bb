@@ -12,8 +12,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/omnibox/autocomplete_classifier.h"
-#include "components/omnibox/autocomplete_controller.h"
+#include "components/omnibox/browser/autocomplete_classifier.h"
+#include "components/omnibox/browser/autocomplete_controller.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_system_provider.h"

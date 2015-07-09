@@ -42,7 +42,7 @@
 #include "components/domain_reliability/service.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/omnibox/omnibox_pref_names.h"
+#include "components/omnibox/browser/omnibox_pref_names.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/local_storage_usage_info.h"

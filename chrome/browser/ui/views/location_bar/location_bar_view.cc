@@ -57,7 +57,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/favicon/content/content_favicon_driver.h"
-#include "components/omnibox/omnibox_popup_view.h"
+#include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/translate/core/browser/language_state.h"

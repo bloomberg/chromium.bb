@@ -46,7 +46,7 @@
 #include "components/app_modal/app_modal_dialog_queue.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_service_observer.h"
-#include "components/omnibox/autocomplete_controller.h"
+#include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/download_item.h"

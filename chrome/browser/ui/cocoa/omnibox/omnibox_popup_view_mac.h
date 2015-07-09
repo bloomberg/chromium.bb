@@ -11,8 +11,8 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_popup_matrix.h"
-#include "components/omnibox/autocomplete_match.h"
-#include "components/omnibox/omnibox_popup_view.h"
+#include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/omnibox_popup_view.h"
 #include "ui/gfx/font.h"
 
 class AutocompleteResult;

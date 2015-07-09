@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/omnibox/autocomplete_controller_delegate.h"
+#include "components/omnibox/browser/autocomplete_controller_delegate.h"
 #include "ui/app_list/search_provider.h"
 
 class AppListControllerDelegate;

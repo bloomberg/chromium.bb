@@ -9,7 +9,7 @@
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_popup_cell.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_popup_view_mac.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
-#include "components/omnibox/autocomplete_result.h"
+#include "components/omnibox/browser/autocomplete_result.h"
 
 namespace {
 

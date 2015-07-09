@@ -100,7 +100,7 @@ source_set("test_support") {
     "//components/gcm_driver/instance_id:test_support",
     "//components/history/core/test:test",
     "//components/metrics:test_support",
-    "//components/omnibox:test_support",
+    "//components/omnibox/browser:test_support",
     "//components/password_manager/core/browser:test_support",
     "//components/pref_registry:test_support",
     "//components/rappor:test_support",

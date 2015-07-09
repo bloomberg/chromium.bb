@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/omnibox/shortcuts_provider.h"
+#include "components/omnibox/browser/shortcuts_provider.h"
 
 #include <math.h>
 
@@ -24,12 +24,12 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_database.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
-#include "components/omnibox/autocomplete_input.h"
-#include "components/omnibox/autocomplete_match.h"
-#include "components/omnibox/autocomplete_provider.h"
-#include "components/omnibox/autocomplete_result.h"
-#include "components/omnibox/in_memory_url_index.h"
-#include "components/omnibox/shortcuts_backend.h"
+#include "components/omnibox/browser/autocomplete_input.h"
+#include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/autocomplete_provider.h"
+#include "components/omnibox/browser/autocomplete_result.h"
+#include "components/omnibox/browser/in_memory_url_index.h"
+#include "components/omnibox/browser/shortcuts_backend.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"

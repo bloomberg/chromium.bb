@@ -13,7 +13,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/omnibox/in_memory_url_index.h"
+#include "components/omnibox/browser/in_memory_url_index.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_constants.h"
 

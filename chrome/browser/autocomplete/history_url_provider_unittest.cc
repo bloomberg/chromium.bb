@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/omnibox/history_url_provider.h"
+#include "components/omnibox/browser/history_url_provider.h"
 
 #include <algorithm>
 
@@ -24,11 +24,11 @@
 #include "components/history/core/browser/url_database.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
-#include "components/omnibox/autocomplete_match.h"
-#include "components/omnibox/autocomplete_provider.h"
-#include "components/omnibox/autocomplete_provider_listener.h"
-#include "components/omnibox/autocomplete_result.h"
-#include "components/omnibox/history_quick_provider.h"
+#include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/autocomplete_provider.h"
+#include "components/omnibox/browser/autocomplete_provider_listener.h"
+#include "components/omnibox/browser/autocomplete_result.h"
+#include "components/omnibox/browser/history_quick_provider.h"
 #include "components/search_engines/default_search_manager.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"

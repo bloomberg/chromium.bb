@@ -19,7 +19,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/history/core/browser/url_database.h"
-#include "components/omnibox/autocomplete_match.h"
+#include "components/omnibox/browser/autocomplete_match.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

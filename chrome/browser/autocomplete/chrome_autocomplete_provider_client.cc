@@ -22,7 +22,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/omnibox/autocomplete_classifier.h"
+#include "components/omnibox/browser/autocomplete_classifier.h"
 #include "content/public/browser/notification_service.h"
 
 #if defined(ENABLE_EXTENSIONS)
