@@ -80,6 +80,7 @@
             ['chromeos==1', {
               'dependencies' : [
                 '../cc/cc.gyp:cc',
+                '../gpu/gpu.gyp:command_buffer_common',
                 '../ppapi/ppapi_internal.gyp:ppapi_host',
                 '../skia/skia.gyp:skia',
                 '../ui/aura/aura.gyp:aura',

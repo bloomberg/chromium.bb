@@ -54,6 +54,11 @@ void AuraDesktopCapturer::Capture(const webrtc::DesktopRegion&) {
 
 void AuraDesktopCapturer::OnFrameCaptured(
     scoped_ptr<cc::CopyOutputResult> result) {
+  if (result->IsEmpty()) {
+    callback_->OnCaptureCompleted(nullptr);
+    return;
+  }
+
   DCHECK(result->HasBitmap());
 
   scoped_ptr<SkBitmap> bitmap = result->TakeBitmap();
