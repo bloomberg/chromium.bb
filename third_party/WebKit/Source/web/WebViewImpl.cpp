@@ -1949,16 +1949,6 @@ void WebViewImpl::compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback
     m_layerTreeView->compositeAndReadbackAsync(callback);
 }
 
-bool WebViewImpl::isTrackingRepaints() const
-{
-    if (!page())
-        return false;
-    if (!page()->mainFrame()->isLocalFrame())
-        return false;
-    FrameView* view = page()->deprecatedLocalMainFrame()->view();
-    return view->isTrackingPaintInvalidations();
-}
-
 void WebViewImpl::themeChanged()
 {
     if (!page())

@@ -124,9 +124,6 @@ public:
     // isAcceleratedCompositingActive() is true.
     virtual void compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback*) { }
 
-    // Returns true if we've started tracking repaint rectangles.
-    virtual bool isTrackingRepaints() const { return false; }
-
     // Indicates that the compositing surface associated with this WebWidget is
     // ready to use.
     virtual void setCompositorSurfaceReady() { }

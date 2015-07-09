@@ -292,11 +292,6 @@ void WebFrameWidgetImpl::compositeAndReadbackAsync(WebCompositeAndReadbackAsyncC
     m_layerTreeView->compositeAndReadbackAsync(callback);
 }
 
-bool WebFrameWidgetImpl::isTrackingRepaints() const
-{
-    return m_localRoot->frameView()->isTrackingPaintInvalidations();
-}
-
 void WebFrameWidgetImpl::themeChanged()
 {
     FrameView* view = m_localRoot->frameView();

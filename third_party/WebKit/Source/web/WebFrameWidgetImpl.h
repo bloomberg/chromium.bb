@@ -80,7 +80,6 @@ public:
     void paint(WebCanvas*, const WebRect&) override;
     void layoutAndPaintAsync(WebLayoutAndPaintAsyncCallback*) override;
     void compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback*) override;
-    bool isTrackingRepaints() const override;
     void themeChanged() override;
     bool handleInputEvent(const WebInputEvent&) override;
     void setCursorVisibilityState(bool isVisible) override;
