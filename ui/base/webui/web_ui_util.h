@@ -21,14 +21,6 @@ namespace webui {
 // so that it can be used in WebUI.
 UI_BASE_EXPORT std::string GetBitmapDataUrl(const SkBitmap& bitmap);
 
-// Convenience routine to get data url that corresponds to given
-// resource_id as a bitmap. This function does not check if the
-// resource for the |resource_id| is a bitmap, therefore it is the
-// caller's responsibility to make sure the resource is indeed a
-// bitmap. Returns empty string if a resource does not exist for given
-// |resource_id|.
-UI_BASE_EXPORT std::string GetBitmapDataUrlFromResource(int resource_id);
-
 // Extracts a disposition from click event arguments. |args| should contain
 // an integer button and booleans alt key, ctrl key, meta key, and shift key
 // (in that order), starting at |start_index|.

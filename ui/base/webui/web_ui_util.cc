@@ -43,23 +43,6 @@ std::string GetBitmapDataUrl(const SkBitmap& bitmap) {
   return str_url;
 }
 
-std::string GetBitmapDataUrlFromResource(int res) {
-  // Load resource icon and covert to base64 encoded data url
-  base::RefCountedStaticMemory* icon_data =
-      ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
-          res, ui::SCALE_FACTOR_100P);
-  if (!icon_data)
-    return std::string();
-  scoped_refptr<base::RefCountedMemory> raw_icon(icon_data);
-  std::string str_url;
-  str_url.insert(str_url.end(),
-    raw_icon->front(),
-    raw_icon->front() + raw_icon->size());
-  base::Base64Encode(str_url, &str_url);
-  str_url.insert(0, "data:image/png;base64,");
-  return str_url;
-}
-
 WindowOpenDisposition GetDispositionFromClick(const base::ListValue* args,
                                               int start_index) {
   double button = 0.0;
