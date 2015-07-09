@@ -1,5 +1,5 @@
 {
-  "x-version": 9,
+  "x-version": 10,
   "google-talk": {
     "mime_types": [
     ],
@@ -115,14 +115,14 @@
     ],
     "versions": [
       {
-        "version": "18.0.0.194",
+        "version": "18.0.0.203",
         "status": "requires_authorization",
-        "reference": "https://helpx.adobe.com/security/products/flash-player/apsb15-14.html"
+        "reference": "https://helpx.adobe.com/security/products/flash-player/apsb15-16.html"
       }
     ],
     "lang": "en-US",
     "name": "Adobe Flash Player",
-    "url": "http://get.adobe.com/flashplayer/",
+    "url": "https://support.google.com/chrome/answer/6258784",
     "help_url": "https://support.google.com/chrome/?p=plugin_flash",
     "displayurl": true,
     "group_name_matcher": "*Shockwave Flash*"
