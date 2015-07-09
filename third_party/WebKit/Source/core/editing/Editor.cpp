@@ -57,6 +57,7 @@
 #include "core/editing/UndoStack.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/editing/iterators/CharacterIterator.h"
 #include "core/editing/markup.h"
 #include "core/events/ClipboardEvent.h"
 #include "core/events/KeyboardEvent.h"

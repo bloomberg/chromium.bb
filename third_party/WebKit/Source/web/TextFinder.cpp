@@ -38,7 +38,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
 #include "core/editing/VisibleSelection.h"
-#include "core/editing/iterators/TextIterator.h"
+#include "core/editing/iterators/CharacterIterator.h"
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutObject.h"
 #include "core/page/Page.h"

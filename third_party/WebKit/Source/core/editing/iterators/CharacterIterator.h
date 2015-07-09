@@ -75,6 +75,8 @@ private:
     TextIterator m_textIterator;
 };
 
+CORE_EXPORT EphemeralRange findPlainText(const Position& inputStart, const Position& inputEnd, const String&, FindOptions);
+
 } // namespace blink
 
 #endif // CharacterIterator_h

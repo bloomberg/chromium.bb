@@ -43,7 +43,6 @@ class LayoutText;
 class LayoutTextFragment;
 
 CORE_EXPORT String plainText(const Position& start, const Position& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
-CORE_EXPORT EphemeralRange findPlainText(const Position& inputStart, const Position& inputEnd, const String&, FindOptions);
 
 String plainText(const PositionInComposedTree& start, const PositionInComposedTree& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 
