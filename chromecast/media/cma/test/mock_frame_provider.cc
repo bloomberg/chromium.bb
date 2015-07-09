@@ -81,6 +81,7 @@ void MockFrameProvider::DoRead(const ReadCB& read_cb) {
         ::media::kCodecH264,
         ::media::VIDEO_CODEC_PROFILE_UNKNOWN,
         ::media::VideoFrame::YV12,
+        ::media::VideoFrame::COLOR_SPACE_UNSPECIFIED,
         coded_size,
         visible_rect,
         natural_size,

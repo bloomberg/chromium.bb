@@ -117,12 +117,15 @@ MEDIA_EXPORT ChannelLayout ChannelLayoutToChromeChannelLayout(int64_t layout,
 MEDIA_EXPORT SampleFormat
     AVSampleFormatToSampleFormat(AVSampleFormat sample_format);
 
-// Converts FFmpeg's pixel formats to its corresponding supported video format.
+// Converts FFmpeg's pixel format to its corresponding supported video format.
 MEDIA_EXPORT VideoFrame::Format PixelFormatToVideoFormat(
     PixelFormat pixel_format);
 
-// Converts video formats to its corresponding FFmpeg's pixel formats.
+// Converts video formats to its corresponding FFmpeg pixel formats.
 PixelFormat VideoFormatToPixelFormat(VideoFrame::Format video_format);
+
+VideoFrame::ColorSpace AVColorSpaceToVideoFrameColorSpace(
+    AVColorSpace color_space);
 
 // Convert FFmpeg UTC representation (YYYY-MM-DD HH:MM:SS) to base::Time.
 // Returns true and sets |*out| if |date_utc| contains a valid

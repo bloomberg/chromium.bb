@@ -59,6 +59,7 @@ void VideoDecoderConfigMarshaller::Write(
   CHECK(msg->WritePod(config.codec()));
   CHECK(msg->WritePod(config.profile()));
   CHECK(msg->WritePod(config.format()));
+  CHECK(msg->WritePod(config.color_space()));
   SizeMarshaller::Write(config.coded_size(), msg);
   RectMarshaller::Write(config.visible_rect(), msg);
   SizeMarshaller::Write(config.natural_size(), msg);
@@ -74,6 +75,7 @@ void VideoDecoderConfigMarshaller::Write(
   ::media::VideoCodec codec;
   ::media::VideoCodecProfile profile;
   ::media::VideoFrame::Format format;
+  ::media::VideoFrame::ColorSpace color_space;
   gfx::Size coded_size;
   gfx::Rect visible_rect;
   gfx::Size natural_size;
@@ -84,6 +86,7 @@ void VideoDecoderConfigMarshaller::Write(
   CHECK(msg->ReadPod(&codec));
   CHECK(msg->ReadPod(&profile));
   CHECK(msg->ReadPod(&format));
+  CHECK(msg->ReadPod(&color_space));
   coded_size = SizeMarshaller::Read(msg);
   visible_rect = RectMarshaller::Read(msg);
   natural_size = SizeMarshaller::Read(msg);
@@ -96,6 +99,8 @@ void VideoDecoderConfigMarshaller::Write(
   CHECK_LE(profile, ::media::VIDEO_CODEC_PROFILE_MAX);
   CHECK_GE(format, ::media::VideoFrame::UNKNOWN);
   CHECK_LE(format, ::media::VideoFrame::FORMAT_MAX);
+  CHECK_GE(color_space, ::media::VideoFrame::COLOR_SPACE_UNSPECIFIED);
+  CHECK_LE(color_space, ::media::VideoFrame::COLOR_SPACE_MAX);
   CHECK_LT(extra_data_size, kMaxExtraDataSize);
   if (extra_data_size > 0) {
     extra_data.reset(new uint8[extra_data_size]);
@@ -103,7 +108,7 @@ void VideoDecoderConfigMarshaller::Write(
   }
 
   return ::media::VideoDecoderConfig(
-      codec, profile, format,
+      codec, profile, format, color_space,
       coded_size, visible_rect, natural_size,
       extra_data.get(), extra_data_size,
       is_encrypted);

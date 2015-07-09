@@ -104,6 +104,15 @@ enum VideoFormat {
   FORMAT_MAX = XRGB,
 };
 
+// Kept in sync with media::VideoFrame::ColorSpace via static_asserts.
+enum ColorSpace {
+  UNSPECIFIED = 0,
+  JPEG = 1,
+  HD_REC709 = 2,
+  SD_REC601 = 3,
+  MAX = SD_REC601,
+};
+
 // See media/base/video_decoder_config.h for descriptions.
 // Kept in sync with media::VideoCodec via static_asserts.
 enum VideoCodec {
@@ -164,6 +173,7 @@ struct VideoDecoderConfig {
   VideoCodec codec;
   VideoCodecProfile profile;
   VideoFormat format;
+  ColorSpace color_space;
   Size coded_size;
   Rect visible_rect;
   Size natural_size;

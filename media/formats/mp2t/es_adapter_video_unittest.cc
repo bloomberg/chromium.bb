@@ -24,14 +24,9 @@ VideoDecoderConfig CreateFakeVideoConfig() {
   gfx::Size coded_size(320, 240);
   gfx::Rect visible_rect(0, 0, 320, 240);
   gfx::Size natural_size(320, 240);
-  return VideoDecoderConfig(
-      kCodecH264,
-      H264PROFILE_MAIN,
-      VideoFrame::I420,
-      coded_size,
-      visible_rect,
-      natural_size,
-      NULL, 0, false);
+  return VideoDecoderConfig(kCodecH264, H264PROFILE_MAIN, VideoFrame::I420,
+                            VideoFrame::COLOR_SPACE_UNSPECIFIED, coded_size,
+                            visible_rect, natural_size, NULL, 0, false);
 }
 
 StreamParserBuffer::BufferQueue

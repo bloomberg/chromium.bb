@@ -54,8 +54,8 @@ void DemuxerStreamForTest::Read(const ReadCB& read_cb) {
   gfx::Size natural_size(640, 480);
   return ::media::VideoDecoderConfig(
       ::media::kCodecH264, ::media::VIDEO_CODEC_PROFILE_UNKNOWN,
-      ::media::VideoFrame::YV12, coded_size, visible_rect, natural_size, NULL,
-      0, false);
+      ::media::VideoFrame::YV12, ::media::VideoFrame::COLOR_SPACE_UNSPECIFIED,
+      coded_size, visible_rect, natural_size, NULL, 0, false);
 }
 
 ::media::DemuxerStream::Type DemuxerStreamForTest::type() const {

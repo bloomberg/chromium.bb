@@ -79,6 +79,7 @@ void ParamTraits<media::VideoDecoderConfig>::Write(
   WriteParam(m, p.codec());
   WriteParam(m, p.profile());
   WriteParam(m, p.format());
+  WriteParam(m, p.color_space());
   WriteParam(m, p.coded_size());
   WriteParam(m, p.visible_rect());
   WriteParam(m, p.natural_size());
@@ -99,21 +100,22 @@ bool ParamTraits<media::VideoDecoderConfig>::Read(
   media::VideoCodec codec;
   media::VideoCodecProfile profile;
   media::VideoFrame::Format format;
+  media::VideoFrame::ColorSpace color_space;
   gfx::Size coded_size;
   gfx::Rect visible_rect;
   gfx::Size natural_size;
   bool is_encrypted;
   std::vector<uint8> extra_data;
   if (!ReadParam(m, iter, &codec) || !ReadParam(m, iter, &profile) ||
-      !ReadParam(m, iter, &format) || !ReadParam(m, iter, &coded_size) ||
-      !ReadParam(m, iter, &visible_rect) ||
+      !ReadParam(m, iter, &format) || !ReadParam(m, iter, &color_space) ||
+      !ReadParam(m, iter, &coded_size) || !ReadParam(m, iter, &visible_rect) ||
       !ReadParam(m, iter, &natural_size) ||
       !ReadParam(m, iter, &is_encrypted) || !ReadParam(m, iter, &extra_data))
     return false;
   const uint8* extra_data_ptr = nullptr;
   if (!extra_data.empty())
     extra_data_ptr = &extra_data[0];
-  *r = media::VideoDecoderConfig(codec, profile, format,
+  *r = media::VideoDecoderConfig(codec, profile, format, color_space,
                                  coded_size, visible_rect, natural_size,
                                  extra_data_ptr, extra_data.size(),
                                  is_encrypted);
