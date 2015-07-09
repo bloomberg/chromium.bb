@@ -400,7 +400,7 @@ void InspectorResourceAgent::didReceiveResourceResponse(LocalFrame* frame, unsig
     Resource* cachedResource = 0;
     if (resourceLoader && !isNotModified)
         cachedResource = resourceLoader->cachedResource();
-    if (!cachedResource || cachedResource->type() == Resource::MainResource)
+    if (!cachedResource)
         cachedResource = InspectorPageAgent::cachedResource(frame, response.url());
 
     if (cachedResource && resourceResponse && response.mimeType().isEmpty()) {
