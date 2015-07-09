@@ -27,7 +27,7 @@
 #include "platform/graphics/GradientGeneratedImage.h"
 
 #include "platform/geometry/FloatRect.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
 

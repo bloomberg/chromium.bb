@@ -20,6 +20,7 @@
 #include "core/paint/PaintInfo.h"
 #include "core/paint/SVGPaintContext.h"
 #include "core/style/ShadowList.h"
+#include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace blink {
 

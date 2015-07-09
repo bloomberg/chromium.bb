@@ -32,7 +32,6 @@
 #include "platform/TraceEvent.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/DeferredImageDecoder.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkCanvas.h"

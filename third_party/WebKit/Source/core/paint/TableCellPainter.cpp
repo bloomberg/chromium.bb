@@ -10,6 +10,7 @@
 #include "core/paint/BoxPainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
+#include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace blink {
 

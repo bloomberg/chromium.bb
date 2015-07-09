@@ -44,9 +44,6 @@
 #include "core/style/ShadowList.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/TransformState.h"
-#include "platform/graphics/DrawLooperBuilder.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/graphics/Path.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {

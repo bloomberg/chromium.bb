@@ -38,7 +38,6 @@
 #include "core/paint/InlineFlowBoxPainter.h"
 #include "core/style/ShadowList.h"
 #include "platform/fonts/Font.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
 
 #include <math.h>
 

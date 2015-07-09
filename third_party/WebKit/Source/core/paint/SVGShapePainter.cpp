@@ -19,6 +19,7 @@
 #include "core/paint/SVGPaintContext.h"
 #include "core/paint/ScopeRecorder.h"
 #include "core/paint/TransformRecorder.h"
+#include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPicture.h"

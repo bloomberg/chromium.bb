@@ -28,7 +28,6 @@
 #include "core/HTMLNames.h"
 #include "core/html/HTMLLegendElement.h"
 #include "core/paint/FieldsetPainter.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
 
 using namespace std;
 

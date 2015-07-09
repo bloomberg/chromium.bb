@@ -29,13 +29,8 @@
 
 #include <Carbon/Carbon.h>
 #include "platform/PlatformMouseEvent.h"
-#include "platform/graphics/Gradient.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/graphics/ImageBuffer.h"
-#include "platform/graphics/Pattern.h"
 #include "platform/mac/ColorMac.h"
 #include "platform/mac/LocalCurrentGraphicsContext.h"
 #include "platform/mac/NSScrollerImpDetails.h"

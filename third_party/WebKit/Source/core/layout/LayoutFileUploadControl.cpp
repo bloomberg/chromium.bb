@@ -33,7 +33,6 @@
 #include "core/layout/TextRunConstructor.h"
 #include "core/paint/FileUploadControlPainter.h"
 #include "platform/fonts/Font.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/text/TextRun.h"
 #include <math.h>

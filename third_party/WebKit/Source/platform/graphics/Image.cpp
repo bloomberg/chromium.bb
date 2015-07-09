@@ -39,7 +39,6 @@
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "third_party/skia/include/core/SkCanvas.h"
