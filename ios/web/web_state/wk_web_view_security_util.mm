@@ -4,6 +4,7 @@
 
 #import "ios/web/web_state/wk_web_view_security_util.h"
 
+#include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_info.h"
@@ -73,6 +74,29 @@ scoped_refptr<net::X509Certificate> CreateCertFromChain(NSArray* certs) {
   }
   return net::X509Certificate::CreateFromHandle(
       reinterpret_cast<SecCertificateRef>(certs[0]), intermediates);
+}
+
+scoped_refptr<net::X509Certificate> CreateCertFromTrust(SecTrustRef trust) {
+  if (!trust)
+    return nullptr;
+
+  CFIndex cert_count = SecTrustGetCertificateCount(trust);
+  if (cert_count == 0) {
+    // At the moment there is no API which allows trust creation w/o certs.
+    return nullptr;
+  }
+
+  net::X509Certificate::OSCertHandles intermediates;
+  for (CFIndex i = 1; i < cert_count; i++) {
+    intermediates.push_back(SecTrustGetCertificateAtIndex(trust, i));
+  }
+  return net::X509Certificate::CreateFromHandle(
+      SecTrustGetCertificateAtIndex(trust, 0), intermediates);
+}
+
+void EnsureFutureTrustEvaluationSucceeds(SecTrustRef trust) {
+  base::ScopedCFTypeRef<CFDataRef> exceptions(SecTrustCopyExceptions(trust));
+  SecTrustSetExceptions(trust, exceptions);
 }
 
 BOOL IsWKWebViewSSLError(NSError* error) {

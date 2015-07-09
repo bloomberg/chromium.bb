@@ -23,6 +23,15 @@ extern NSString* const kNSErrorPeerCertificateChainKey;
 // Returns null if |certs| is nil or empty.
 scoped_refptr<net::X509Certificate> CreateCertFromChain(NSArray* certs);
 
+// Creates a certificate from a SecTrustRef object.
+// Returns null if trust is null or does not have any certs.
+scoped_refptr<net::X509Certificate> CreateCertFromTrust(SecTrustRef trust);
+
+// Makes SecTrustEvaluate call to return kSecTrustResultProceed.
+// Should be called only if the user expilitely agreed to proceed with |trust|
+// or trust represents a valid certificate chain.
+void EnsureFutureTrustEvaluationSucceeds(SecTrustRef trust);
+
 // Returns YES if geven error is a SSL error.
 BOOL IsWKWebViewSSLError(NSError* error);
 

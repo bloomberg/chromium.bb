@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 #include <Security/Security.h>
 
+#include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"
 #include "crypto/rsa_private_key.h"
 #include "ios/web/public/test/web_test_util.h"
@@ -17,12 +18,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+namespace web {
 namespace {
 // Subject for testing self-signed certificate.
 const char kTestSubject[] = "self-signed";
-}  // namespace
 
-namespace web {
 // Returns an autoreleased certificate chain for testing. Chain will contain a
 // single self-signed cert with |subject| as a subject.
 NSArray* MakeTestCertChain(const std::string& subject) {
@@ -33,12 +33,22 @@ NSArray* MakeTestCertChain(const std::string& subject) {
       base::Time::Now() + base::TimeDelta::FromDays(1), &private_key,
       &der_cert);
 
-  SecCertificateRef cert = net::X509Certificate::CreateOSCertHandleFromBytes(
-      der_cert.data(), der_cert.size());
-  NSArray* result = @[ reinterpret_cast<id>(cert) ];
-  CFRelease(cert);
+  base::ScopedCFTypeRef<SecCertificateRef> cert(
+      net::X509Certificate::CreateOSCertHandleFromBytes(der_cert.data(),
+                                                        der_cert.size()));
+  NSArray* result = @[ reinterpret_cast<id>(cert.get()) ];
   return result;
 }
+
+// Returns SecTrustRef object for testing.
+base::ScopedCFTypeRef<SecTrustRef> CreateTestTrust(NSArray* cert_chain) {
+  base::ScopedCFTypeRef<SecPolicyRef> policy(SecPolicyCreateBasicX509());
+  SecTrustRef trust = nullptr;
+  SecTrustCreateWithCertificates(cert_chain, policy, &trust);
+  return base::ScopedCFTypeRef<SecTrustRef>(trust);
+}
+
+}  // namespace
 
 // Test class for wk_web_view_security_util functions.
 typedef PlatformTest WKWebViewSecurityUtilTest;
@@ -46,18 +56,48 @@ typedef PlatformTest WKWebViewSecurityUtilTest;
 // Tests CreateCertFromChain with self-signed cert.
 TEST_F(WKWebViewSecurityUtilTest, CreationCertFromChain) {
   scoped_refptr<net::X509Certificate> cert =
-      web::CreateCertFromChain(MakeTestCertChain(kTestSubject));
+      CreateCertFromChain(MakeTestCertChain(kTestSubject));
   EXPECT_TRUE(cert->subject().GetDisplayName() == kTestSubject);
 }
 
 // Tests CreateCertFromChain with nil chain.
 TEST_F(WKWebViewSecurityUtilTest, CreationCertFromNilChain) {
-  EXPECT_FALSE(web::CreateCertFromChain(nil));
+  EXPECT_FALSE(CreateCertFromChain(nil));
 }
 
 // Tests CreateCertFromChain with empty chain.
 TEST_F(WKWebViewSecurityUtilTest, CreationCertFromEmptyChain) {
-  EXPECT_FALSE(web::CreateCertFromChain(@[]));
+  EXPECT_FALSE(CreateCertFromChain(@[]));
+}
+
+// Tests MakeTrustValid with self-signed cert.
+TEST_F(WKWebViewSecurityUtilTest, MakingTrustValid) {
+  // Create invalid trust object.
+  base::ScopedCFTypeRef<SecTrustRef> trust =
+      CreateTestTrust(MakeTestCertChain(kTestSubject));
+
+  SecTrustResultType result = -1;
+  SecTrustEvaluate(trust, &result);
+  EXPECT_EQ(kSecTrustResultRecoverableTrustFailure, result);
+
+  // Make sure that trust becomes valid after
+  // |EnsureFutureTrustEvaluationSucceeds| call.
+  EnsureFutureTrustEvaluationSucceeds(trust);
+  SecTrustEvaluate(trust, &result);
+  EXPECT_EQ(kSecTrustResultProceed, result);
+}
+
+// Tests CreateCertFromTrust.
+TEST_F(WKWebViewSecurityUtilTest, CreationCertFromTrust) {
+  base::ScopedCFTypeRef<SecTrustRef> trust =
+      CreateTestTrust(MakeTestCertChain(kTestSubject));
+  scoped_refptr<net::X509Certificate> cert = CreateCertFromTrust(trust);
+  EXPECT_TRUE(cert->subject().GetDisplayName() == kTestSubject);
+}
+
+// Tests CreateCertFromTrust with nil trust.
+TEST_F(WKWebViewSecurityUtilTest, CreationCertFromNilTrust) {
+  EXPECT_FALSE(CreateCertFromTrust(nil));
 }
 
 // Tests that IsWKWebViewSSLError returns true for NSError with NSURLErrorDomain
@@ -65,7 +105,7 @@ TEST_F(WKWebViewSecurityUtilTest, CreationCertFromEmptyChain) {
 TEST_F(WKWebViewSecurityUtilTest, CheckSecureConnectionFailedError) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
 
-  EXPECT_TRUE(web::IsWKWebViewSSLError(
+  EXPECT_TRUE(IsWKWebViewSSLError(
       [NSError errorWithDomain:NSURLErrorDomain
                           code:NSURLErrorSecureConnectionFailed
                       userInfo:nil]));
@@ -76,7 +116,7 @@ TEST_F(WKWebViewSecurityUtilTest, CheckSecureConnectionFailedError) {
 TEST_F(WKWebViewSecurityUtilTest, CheckCannotLoadFromNetworkError) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
 
-  EXPECT_TRUE(web::IsWKWebViewSSLError(
+  EXPECT_TRUE(IsWKWebViewSSLError(
       [NSError errorWithDomain:NSURLErrorDomain
                           code:NSURLErrorClientCertificateRequired
                       userInfo:nil]));
@@ -87,7 +127,7 @@ TEST_F(WKWebViewSecurityUtilTest, CheckCannotLoadFromNetworkError) {
 TEST_F(WKWebViewSecurityUtilTest, CheckCannotLoadFromNetworkErrorWithNoDomain) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
 
-  EXPECT_FALSE(web::IsWKWebViewSSLError(
+  EXPECT_FALSE(IsWKWebViewSSLError(
       [NSError errorWithDomain:@""
                           code:NSURLErrorClientCertificateRequired
                       userInfo:nil]));
@@ -98,7 +138,7 @@ TEST_F(WKWebViewSecurityUtilTest, CheckCannotLoadFromNetworkErrorWithNoDomain) {
 TEST_F(WKWebViewSecurityUtilTest, CheckDataLengthExceedsMaximumError) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
 
-  EXPECT_FALSE(web::IsWKWebViewSSLError(
+  EXPECT_FALSE(IsWKWebViewSSLError(
       [NSError errorWithDomain:NSURLErrorDomain
                           code:NSURLErrorDataLengthExceedsMaximum
                       userInfo:nil]));
@@ -109,7 +149,7 @@ TEST_F(WKWebViewSecurityUtilTest, CheckDataLengthExceedsMaximumError) {
 TEST_F(WKWebViewSecurityUtilTest, CheckCannotCreateFileError) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
 
-  EXPECT_FALSE(web::IsWKWebViewSSLError(
+  EXPECT_FALSE(IsWKWebViewSSLError(
       [NSError errorWithDomain:NSURLErrorDomain
                           code:NSURLErrorCannotLoadFromNetwork
                       userInfo:nil]));
@@ -124,7 +164,7 @@ TEST_F(WKWebViewSecurityUtilTest, SSLInfoFromErrorWithoutUserInfo) {
                           code:NSURLErrorServerCertificateHasBadDate
                       userInfo:nil];
   net::SSLInfo info;
-  web::GetSSLInfoFromWKWebViewSSLError(badDateError, &info);
+  GetSSLInfoFromWKWebViewSSLError(badDateError, &info);
   EXPECT_TRUE(info.is_valid());
   EXPECT_EQ(net::CERT_STATUS_DATE_INVALID, info.cert_status);
   info.cert->subject();
@@ -142,7 +182,7 @@ TEST_F(WKWebViewSecurityUtilTest, SSLInfoFromErrorWithoutCert) {
                NSURLErrorFailingURLStringErrorKey : @"https://www.google.com/",
              }];
   net::SSLInfo info;
-  web::GetSSLInfoFromWKWebViewSSLError(untrustedCertError, &info);
+  GetSSLInfoFromWKWebViewSSLError(untrustedCertError, &info);
   EXPECT_TRUE(info.is_valid());
   EXPECT_EQ(net::CERT_STATUS_INVALID, info.cert_status);
   EXPECT_EQ("https://www.google.com/", info.cert->subject().GetDisplayName());
@@ -156,12 +196,12 @@ TEST_F(WKWebViewSecurityUtilTest, SSLInfoFromErrorWithCert) {
       [NSError errorWithDomain:NSURLErrorDomain
                           code:NSURLErrorServerCertificateHasUnknownRoot
                       userInfo:@{
-                        web::kNSErrorPeerCertificateChainKey :
-                                 MakeTestCertChain(kTestSubject),
+                        kNSErrorPeerCertificateChainKey :
+                            MakeTestCertChain(kTestSubject),
                       }];
 
   net::SSLInfo info;
-  web::GetSSLInfoFromWKWebViewSSLError(unknownCertError, &info);
+  GetSSLInfoFromWKWebViewSSLError(unknownCertError, &info);
   EXPECT_TRUE(info.is_valid());
   EXPECT_EQ(net::CERT_STATUS_INVALID, info.cert_status);
   EXPECT_TRUE(info.cert->subject().GetDisplayName() == kTestSubject);
