@@ -23,6 +23,7 @@
 #ifndef LineBreaker_h
 #define LineBreaker_h
 
+#include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/line/InlineIterator.h"
 #include "core/layout/line/LineInfo.h"
 #include "wtf/Vector.h"
@@ -36,7 +37,7 @@ struct LayoutTextInfo;
 class LineBreaker {
 public:
     friend class BreakingContext;
-    LineBreaker(LayoutBlockFlow* block)
+    LineBreaker(LineLayoutBlockFlow block)
         : m_block(block)
     {
         reset();
@@ -53,7 +54,7 @@ private:
 
     void skipLeadingWhitespace(InlineBidiResolver&, LineInfo&, FloatingObject* lastFloatFromPreviousLine, LineWidth&);
 
-    LayoutBlockFlow* m_block;
+    LineLayoutBlockFlow m_block;
     bool m_hyphenated;
     EClear m_clear;
     Vector<LayoutBox*> m_positionedObjects;

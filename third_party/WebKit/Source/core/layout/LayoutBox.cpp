@@ -53,6 +53,7 @@
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
+#include "core/layout/shapes/ShapeOutsideInfo.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
 #include "core/paint/BackgroundImageGeometry.h"
@@ -4754,6 +4755,11 @@ bool LayoutBox::canRenderBorderImage() const
 
     StyleImage* borderImage = style()->borderImage().image();
     return borderImage && borderImage->canRender(*this, style()->effectiveZoom()) && borderImage->isLoaded();
+}
+
+ShapeOutsideInfo* LayoutBox::shapeOutsideInfo() const
+{
+    return ShapeOutsideInfo::isEnabledFor(*this) ? ShapeOutsideInfo::info(*this) : nullptr;
 }
 
 } // namespace blink

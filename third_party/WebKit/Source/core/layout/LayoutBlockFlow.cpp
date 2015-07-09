@@ -47,6 +47,7 @@
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/line/LineBreaker.h"
 #include "core/layout/line/LineWidth.h"
+#include "core/layout/shapes/ShapeOutsideInfo.h"
 #include "core/paint/BlockFlowPainter.h"
 #include "core/paint/ClipScope.h"
 #include "core/paint/DeprecatedPaintLayer.h"

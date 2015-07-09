@@ -27,6 +27,7 @@
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/shapes/ShapeOutsideInfo.h"
 
 using namespace WTF;
 
@@ -515,7 +516,7 @@ inline bool ComputeFloatOffsetForLineLayoutAdapter<FloatingObject::FloatLeft>::u
 {
     LayoutUnit logicalRight = m_layoutObject->logicalRightForFloat(floatingObject);
     if (ShapeOutsideInfo* shapeOutside = floatingObject.layoutObject()->shapeOutsideInfo()) {
-        ShapeOutsideDeltas shapeDeltas = shapeOutside->computeDeltasForContainingBlockLine(*m_layoutObject, floatingObject, m_lineTop, m_lineBottom - m_lineTop);
+        ShapeOutsideDeltas shapeDeltas = shapeOutside->computeDeltasForContainingBlockLine(LineLayoutBlockFlow(const_cast<LayoutBlockFlow*>(m_layoutObject)), floatingObject, m_lineTop, m_lineBottom - m_lineTop);
         if (!shapeDeltas.lineOverlapsShape())
             return false;
 
@@ -534,7 +535,7 @@ inline bool ComputeFloatOffsetForLineLayoutAdapter<FloatingObject::FloatRight>::
 {
     LayoutUnit logicalLeft = m_layoutObject->logicalLeftForFloat(floatingObject);
     if (ShapeOutsideInfo* shapeOutside = floatingObject.layoutObject()->shapeOutsideInfo()) {
-        ShapeOutsideDeltas shapeDeltas = shapeOutside->computeDeltasForContainingBlockLine(*m_layoutObject, floatingObject, m_lineTop, m_lineBottom - m_lineTop);
+        ShapeOutsideDeltas shapeDeltas = shapeOutside->computeDeltasForContainingBlockLine(LineLayoutBlockFlow(const_cast<LayoutBlockFlow*>(m_layoutObject)), floatingObject, m_lineTop, m_lineBottom - m_lineTop);
         if (!shapeDeltas.lineOverlapsShape())
             return false;
 

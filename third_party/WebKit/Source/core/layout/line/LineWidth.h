@@ -30,6 +30,7 @@
 #ifndef LineWidth_h
 #define LineWidth_h
 
+#include "core/layout/api/LineLayoutBlockFlow.h"
 #include "platform/LayoutUnit.h"
 
 namespace blink {
@@ -37,14 +38,13 @@ namespace blink {
 class FloatingObject;
 class LayoutObject;
 class LayoutRubyRun;
-class LayoutBlockFlow;
 
 enum IndentTextOrNot { DoNotIndentText, IndentText };
 enum WhitespaceTreatment { ExcludeWhitespace, IncludeWhitespace };
 
 class LineWidth {
 public:
-    LineWidth(LayoutBlockFlow&, bool isFirstLine, IndentTextOrNot shouldIndentText);
+    LineWidth(LineLayoutBlockFlow, bool isFirstLine, IndentTextOrNot shouldIndentText);
 
     bool fitsOnLine() const { return currentWidth() <= (m_availableWidth + LayoutUnit::epsilon()); }
     bool fitsOnLine(float extra) const { return currentWidth() + extra <= (m_availableWidth + LayoutUnit::epsilon()); }
@@ -75,7 +75,7 @@ private:
     void updateLineDimension(LayoutUnit newLineTop, LayoutUnit newLineWidth, const float& newLineLeft, const float& newLineRight);
     void wrapNextToShapeOutside(bool isFirstLine);
 
-    LayoutBlockFlow& m_block;
+    LineLayoutBlockFlow m_block;
     float m_uncommittedWidth;
     float m_committedWidth;
     float m_overhangWidth; // The amount by which |m_availableWidth| has been inflated to account for possible contraction due to ruby overhang.

@@ -282,7 +282,8 @@ bool ShapeOutsideInfo::isEnabledFor(const LayoutBox& box)
 
     return false;
 }
-ShapeOutsideDeltas ShapeOutsideInfo::computeDeltasForContainingBlockLine(const LayoutBlockFlow& containingBlock, const FloatingObject& floatingObject, LayoutUnit lineTop, LayoutUnit lineHeight)
+
+ShapeOutsideDeltas ShapeOutsideInfo::computeDeltasForContainingBlockLine(const LineLayoutBlockFlow& containingBlock, const FloatingObject& floatingObject, LayoutUnit lineTop, LayoutUnit lineHeight)
 {
     ASSERT(lineHeight >= 0);
 

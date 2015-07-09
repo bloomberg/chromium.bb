@@ -32,6 +32,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextRunConstructor.h"
 #include "core/layout/VerticalPositionCache.h"
+#include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/line/BreakingContextInlineHeaders.h"
 #include "core/layout/line/GlyphOverflow.h"
 #include "core/layout/line/LayoutTextInfo.h"
@@ -783,7 +784,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
     LayoutTextInfo layoutTextInfo;
     VerticalPositionCache verticalPositionCache;
 
-    LineBreaker lineBreaker(this);
+    LineBreaker lineBreaker(LineLayoutBlockFlow(this));
 
     while (!endOfLine.atEnd()) {
         bool logicalWidthIsAvailable = false;
@@ -881,7 +882,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
 
         if (!logicalWidthIsAvailable) {
             for (size_t i = 0; i < lineBreaker.positionedObjects().size(); ++i)
-                setStaticPositions(this, lineBreaker.positionedObjects()[i]);
+                setStaticPositions(LineLayoutBlockFlow(this), lineBreaker.positionedObjects()[i]);
 
             if (!layoutState.lineInfo().isEmpty())
                 layoutState.lineInfo().setFirstLine(false);
@@ -1742,7 +1743,7 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(LineLayoutState& layoutSt
 
     if (last) {
         setLogicalHeight(last->lineBottomWithLeading());
-        InlineIterator iter = InlineIterator(this, last->lineBreakObj(), last->lineBreakPos());
+        InlineIterator iter = InlineIterator(LineLayoutBlockFlow(this), LineLayoutItem(last->lineBreakObj()), last->lineBreakPos());
         resolver.setPosition(iter, numberOfIsolateAncestors(iter));
         resolver.setStatus(last->lineBreakBidiStatus());
     } else {
@@ -1750,7 +1751,7 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(LineLayoutState& layoutSt
         if (style()->unicodeBidi() == Plaintext)
             direction = determinePlaintextDirectionality(this);
         resolver.setStatus(BidiStatus(direction, isOverride(style()->unicodeBidi())));
-        InlineIterator iter = InlineIterator(this, bidiFirstSkippingEmptyInlines(this, resolver.runs(), &resolver), 0);
+        InlineIterator iter = InlineIterator(LineLayoutBlockFlow(this), bidiFirstSkippingEmptyInlines(LineLayoutBlockFlow(this), resolver.runs(), &resolver), 0);
         resolver.setPosition(iter, numberOfIsolateAncestors(iter));
     }
     return curr;
@@ -1794,7 +1795,7 @@ void LayoutBlockFlow::determineEndPosition(LineLayoutState& layoutState, RootInl
     // in the block.
 
     RootInlineBox* prev = last->prevRootBox();
-    cleanLineStart = InlineIterator(this, prev->lineBreakObj(), prev->lineBreakPos());
+    cleanLineStart = InlineIterator(LineLayoutItem(this), LineLayoutItem(prev->lineBreakObj()), prev->lineBreakPos());
     cleanLineBidiStatus = prev->lineBreakBidiStatus();
     layoutState.setEndLineLogicalTop(prev->lineBottomWithLeading());
 
@@ -1890,7 +1891,7 @@ bool LayoutBlockFlow::generatesLineBoxesForInlineChild(LayoutObject* inlineObj)
 {
     ASSERT(inlineObj->parent() == this);
 
-    InlineIterator it(this, inlineObj, 0);
+    InlineIterator it(LineLayoutBlockFlow(this), LineLayoutItem(inlineObj), 0);
     // FIXME: We should pass correct value for WhitespacePosition.
     while (!it.atEnd() && !requiresLineBox(it))
         it.increment();

@@ -897,7 +897,7 @@ bool PositionAlgorithm<Strategy>::hasRenderedNonAnonymousDescendantsWithHeight(L
         if (o->nonPseudoNode()) {
             if ((o->isText() && boundingBoxLogicalHeight(o, toLayoutText(o)->linesBoundingBox()))
                 || (o->isBox() && toLayoutBox(o)->pixelSnappedLogicalHeight())
-                || (o->isLayoutInline() && isEmptyInline(o) && boundingBoxLogicalHeight(o, toLayoutInline(o)->linesBoundingBox())))
+                || (o->isLayoutInline() && isEmptyInline(LineLayoutItem(o)) && boundingBoxLogicalHeight(o, toLayoutInline(o)->linesBoundingBox())))
                 return true;
         }
     }

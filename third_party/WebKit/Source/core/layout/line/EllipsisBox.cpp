@@ -21,7 +21,6 @@
 #include "core/layout/line/EllipsisBox.h"
 
 #include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutBlock.h"
 #include "core/layout/TextRunConstructor.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/line/RootInlineBox.h"

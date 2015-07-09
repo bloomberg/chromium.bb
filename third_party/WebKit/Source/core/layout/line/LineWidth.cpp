@@ -29,13 +29,14 @@
 
 #include "config.h"
 #include "core/layout/line/LineWidth.h"
+#include "core/layout/shapes/ShapeOutsideInfo.h"
 
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutRubyRun.h"
 
 namespace blink {
 
-LineWidth::LineWidth(LayoutBlockFlow& block, bool isFirstLine, IndentTextOrNot shouldIndentText)
+LineWidth::LineWidth(LineLayoutBlockFlow block, bool isFirstLine, IndentTextOrNot shouldIndentText)
     : m_block(block)
     , m_uncommittedWidth(0)
     , m_committedWidth(0)
@@ -119,7 +120,7 @@ void LineWidth::applyOverhang(LayoutRubyRun* rubyRun, LayoutObject* startLayoutO
     m_overhangWidth += startOverhang + endOverhang;
 }
 
-inline static float availableWidthAtOffset(const LayoutBlockFlow& block, const LayoutUnit& offset, bool shouldIndentText, float& newLineLeft,
+inline static float availableWidthAtOffset(LineLayoutBlockFlow block, const LayoutUnit& offset, bool shouldIndentText, float& newLineLeft,
     float& newLineRight, const LayoutUnit& lineHeight = 0)
 {
     newLineLeft = block.logicalLeftOffsetForLine(offset, shouldIndentText, lineHeight).toFloat();
@@ -173,7 +174,7 @@ void LineWidth::fitBelowFloats(bool isFirstLine)
     float newLineLeft = m_left;
     float newLineRight = m_right;
 
-    FloatingObject* lastFloatFromPreviousLine = (m_block.containsFloats() ? m_block.m_floatingObjects->set().last().get() : 0);
+    FloatingObject* lastFloatFromPreviousLine = m_block.lastFloatFromPreviousLine();
         if (lastFloatFromPreviousLine && lastFloatFromPreviousLine->layoutObject()->shapeOutsideInfo())
             return wrapNextToShapeOutside(isFirstLine);
 

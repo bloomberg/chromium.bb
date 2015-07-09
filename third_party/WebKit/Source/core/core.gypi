@@ -499,6 +499,11 @@
             'dom/CommonDefinitions.idl',
         ],
         'webcore_rendering_files': [
+            'layout/api/LineLayoutBlockFlow.h',
+            'layout/api/LineLayoutBox.h',
+            'layout/api/LineLayoutInline.h',
+            'layout/api/LineLayoutItem.h',
+            'layout/api/LineLayoutText.h',
             'layout/BidiRun.h',
             'layout/BidiRunForLine.cpp',
             'layout/BidiRunForLine.h',

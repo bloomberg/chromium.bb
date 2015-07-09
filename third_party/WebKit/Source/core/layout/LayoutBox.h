@@ -26,13 +26,14 @@
 #include "core/CoreExport.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/OverflowModel.h"
-#include "core/layout/shapes/ShapeOutsideInfo.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/ScrollableArea.h"
 
 namespace blink {
 
+class LayoutBlockFlow;
 class LayoutMultiColumnSpannerPlaceholder;
+class ShapeOutsideInfo;
 
 struct PaintInfo;
 
@@ -708,10 +709,7 @@ public:
 
     bool hasSameDirectionAs(const LayoutBox* object) const { return style()->direction() == object->style()->direction(); }
 
-    ShapeOutsideInfo* shapeOutsideInfo() const
-    {
-        return ShapeOutsideInfo::isEnabledFor(*this) ? ShapeOutsideInfo::info(*this) : nullptr;
-    }
+    ShapeOutsideInfo* shapeOutsideInfo() const;
 
     void markShapeOutsideDependentsForLayout()
     {

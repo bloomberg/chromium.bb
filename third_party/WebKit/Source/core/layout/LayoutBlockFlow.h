@@ -239,6 +239,21 @@ public:
 
     virtual const char* name() const override { return "LayoutBlockFlow"; }
 
+    FloatingObject* insertFloatingObject(LayoutBox&);
+
+    // Called from lineWidth, to position the floats added in the last line.
+    // Returns true if and only if it has positioned any floats.
+    bool positionNewFloats(LineWidth* = nullptr);
+
+    bool positionNewFloatOnLine(FloatingObject& newFloat, FloatingObject* lastFloatFromPreviousLine, LineInfo&, LineWidth&);
+
+    LayoutUnit nextFloatLogicalBottomBelow(LayoutUnit, ShapeOutsideFloatOffsetMode = ShapeOutsideFloatMarginBoxOffset) const;
+
+    FloatingObject* lastFloatFromPreviousLine() const
+    {
+        return containsFloats() ? m_floatingObjects->set().last().get() : nullptr;
+    }
+
 protected:
     void rebuildFloatsFromIntruding();
     void layoutInlineChildren(bool relayoutChildren, LayoutUnit& paintInvalidationLogicalTop, LayoutUnit& paintInvalidationLogicalBottom, LayoutUnit afterEdge);
@@ -279,13 +294,8 @@ private:
 
     LayoutPoint computeLogicalLocationForFloat(const FloatingObject&, LayoutUnit logicalTopOffset) const;
 
-    FloatingObject* insertFloatingObject(LayoutBox&);
     void removeFloatingObject(LayoutBox*);
     void removeFloatingObjectsBelow(FloatingObject*, int logicalOffset);
-
-    // Called from lineWidth, to position the floats added in the last line.
-    // Returns true if and only if it has positioned any floats.
-    bool positionNewFloats(LineWidth* = nullptr);
 
     LayoutUnit getClearDelta(LayoutBox* child, LayoutUnit yPos);
 
@@ -295,7 +305,6 @@ private:
     void addOverhangingFloats(LayoutBlockFlow* child, bool makeChildPaintOtherFloats);
 
     LayoutUnit lowestFloatLogicalBottom(FloatingObject::Type = FloatingObject::FloatLeftRight) const;
-    LayoutUnit nextFloatLogicalBottomBelow(LayoutUnit, ShapeOutsideFloatOffsetMode = ShapeOutsideFloatMarginBoxOffset) const;
 
     virtual bool hitTestFloats(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset) override final;
 
@@ -496,7 +505,6 @@ protected:
     OwnPtr<LayoutBlockFlowRareData> m_rareData;
     OwnPtr<FloatingObjects> m_floatingObjects;
 
-    friend class BreakingContext; // FIXME: It uses insertFloatingObject and positionNewFloatOnLine, if we move those out from the private scope/add a helper to LineBreaker, we can remove this friend
     friend class MarginInfo;
     friend class LineBreaker;
     friend class LineWidth; // needs to know FloatingObject
@@ -532,7 +540,6 @@ private:
     void checkLinesForTextOverflow();
     // Positions new floats and also adjust all floats encountered on the line if any of them
     // have to move to the next page/column.
-    bool positionNewFloatOnLine(FloatingObject& newFloat, FloatingObject* lastFloatFromPreviousLine, LineInfo&, LineWidth&);
     void positionDialog();
 
 // END METHODS DEFINED IN LayoutBlockFlowLine
