@@ -127,8 +127,15 @@ public class CustomTabActivity extends ChromeActivity {
         getToolbarManager().setCloseButtonIcon(mIntentDataProvider.getCloseButtonIconResId());
         getToolbarManager().setShowTitle(mIntentDataProvider.getTitleVisibilityState()
                 == CustomTabIntentDataProvider.CUSTOM_TAB_SHOW_PAGE_TITLE);
-        getToolbarManager().updatePrimaryColor(mIntentDataProvider.getToolbarColor());
-        setStatusBarColor(mIntentDataProvider.getToolbarColor());
+        int toolbarColor = mIntentDataProvider.getToolbarColor();
+        getToolbarManager().updatePrimaryColor(toolbarColor);
+        if (toolbarColor != getResources().getColor(R.color.default_primary_color)) {
+            ApiCompatibilityUtils.setStatusBarColor(getWindow(),
+                    BrandColorUtils.computeStatusBarColor(toolbarColor));
+        }
+
+        // Setting task title and icon to be null will preserve the client app's title and icon.
+        ApiCompatibilityUtils.setTaskDescription(this, null, null, toolbarColor);
         if (mIntentDataProvider.shouldShowActionButton()) {
             getToolbarManager().addCustomActionButton(mIntentDataProvider.getActionButtonIcon(),
                     new OnClickListener() {
@@ -225,17 +232,6 @@ public class CustomTabActivity extends ChromeActivity {
         Intent intent = getIntent();
         IntentHandler.addReferrerAndHeaders(params, intent, this);
         mTab.loadUrlAndTrackFromTimestamp(params, timeStamp);
-    }
-
-    /**
-     * Calculate the proper color for status bar and update it. Only works on L and future versions.
-     */
-    private void setStatusBarColor(int color) {
-        // If the client did not specify the toolbar color, we do not change the status bar color.
-        if (color == getResources().getColor(R.color.default_primary_color)) return;
-
-        ApiCompatibilityUtils.setStatusBarColor(getWindow(),
-                BrandColorUtils.computeStatusBarColor(color));
     }
 
     @Override
