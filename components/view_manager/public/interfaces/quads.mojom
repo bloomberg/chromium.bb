@@ -20,9 +20,15 @@ struct CheckerboardQuadState {
   float scale;
 };
 
-// TODO(jamesr): Populate subtype fields.
-struct DebugBorderQuadState {};
+struct DebugBorderQuadState {
+  // Debug border color.
+  Color color;
 
+  // Debug border width.
+  int32 width;
+};
+
+// TODO(jamesr): Populate subtype fields.
 struct IoSurfaceContentQuadState {};
 
 struct RenderPassId {

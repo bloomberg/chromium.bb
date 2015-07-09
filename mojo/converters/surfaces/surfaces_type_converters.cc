@@ -8,6 +8,7 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quads/checkerboard_draw_quad.h"
+#include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/render_pass_draw_quad.h"
@@ -77,6 +78,19 @@ bool ConvertDrawQuad(const QuadPtr& input,
           input->needs_blending,
           input->checkerboard_quad_state->color.To<SkColor>(),
           input->checkerboard_quad_state->scale);
+      break;
+    }
+    case MATERIAL_DEBUG_BORDER: {
+      cc::DebugBorderDrawQuad* debug_border_quad =
+          render_pass->CreateAndAppendDrawQuad<cc::DebugBorderDrawQuad>();
+      debug_border_quad->SetAll(
+          sqs,
+          input->rect.To<gfx::Rect>(),
+          input->opaque_rect.To<gfx::Rect>(),
+          input->visible_rect.To<gfx::Rect>(),
+          input->needs_blending,
+          input->debug_border_quad_state->color.To<SkColor>(),
+          input->debug_border_quad_state->width);
       break;
     }
     case MATERIAL_RENDER_PASS: {
@@ -268,6 +282,16 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
       checkerboard_state->color = Color::From(checkerboard_quad->color);
       checkerboard_state->scale = checkerboard_quad->scale;
       quad->checkerboard_quad_state = checkerboard_state.Pass();
+      break;
+    }
+    case cc::DrawQuad::DEBUG_BORDER: {
+      const cc::DebugBorderDrawQuad* debug_border_quad =
+          cc::DebugBorderDrawQuad::MaterialCast(&input);
+      DebugBorderQuadStatePtr debug_border_state =
+          DebugBorderQuadState::New();
+      debug_border_state->color = Color::From(debug_border_quad->color);
+      debug_border_state->width = debug_border_quad->width;
+      quad->debug_border_quad_state = debug_border_state.Pass();
       break;
     }
     case cc::DrawQuad::RENDER_PASS: {
