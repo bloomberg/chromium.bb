@@ -98,6 +98,8 @@ class CONTENT_EXPORT PresentationDispatcher
 
   void UpdateListeningState();
 
+  void StartListenForMessages();
+
   // Used as a weak reference. Can be null since lifetime is bound to the frame.
   blink::WebPresentationController* controller_;
   presentation::PresentationServicePtr presentation_service_;
@@ -125,6 +127,8 @@ class CONTENT_EXPORT PresentationDispatcher
   using AvailabilityObserversSet =
       std::set<blink::WebPresentationAvailabilityObserver*>;
   AvailabilityObserversSet availability_observers_;
+
+  bool listening_for_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(PresentationDispatcher);
 };

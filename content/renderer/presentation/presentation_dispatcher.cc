@@ -83,7 +83,8 @@ PresentationDispatcher::PresentationDispatcher(RenderFrame* render_frame)
       controller_(nullptr),
       binding_(this),
       listening_state_(ListeningState::Inactive),
-      last_known_availability_(false) {
+      last_known_availability_(false),
+      listening_for_messages_(false) {
 }
 
 PresentationDispatcher::~PresentationDispatcher() {
@@ -342,6 +343,8 @@ void PresentationDispatcher::DidCommitProvisionalLoad(
   // Remove all pending send message requests.
   MessageRequestQueue empty;
   std::swap(message_request_queue_, empty);
+
+  listening_for_messages_ = false;
 }
 
 void PresentationDispatcher::OnScreenAvailabilityUpdated(bool available) {
@@ -395,6 +398,7 @@ void PresentationDispatcher::OnDefaultSessionStarted(
   if (!session_info.is_null()) {
     controller_->didStartDefaultSession(
         new PresentationSessionClient(session_info.Pass()));
+    StartListenForMessages();
   }
 }
 
@@ -413,6 +417,14 @@ void PresentationDispatcher::OnSessionCreated(
 
   DCHECK(!session_info.is_null());
   callback->onSuccess(new PresentationSessionClient(session_info.Pass()));
+  StartListenForMessages();
+}
+
+void PresentationDispatcher::StartListenForMessages() {
+  if (listening_for_messages_)
+    return;
+
+  listening_for_messages_ = true;
   presentation_service_->ListenForSessionMessages(
       base::Bind(&PresentationDispatcher::OnSessionMessagesReceived,
                  base::Unretained(this)));
@@ -432,9 +444,14 @@ void PresentationDispatcher::OnSessionStateChanged(
 
 void PresentationDispatcher::OnSessionMessagesReceived(
     mojo::Array<presentation::SessionMessagePtr> messages) {
+  if (!listening_for_messages_)
+    return; // messages may come after the frame navigated.
+
   // When messages is null, there is an error at presentation service side.
-  if (!controller_ || messages.is_null())
+  if (!controller_ || messages.is_null()) {
+    listening_for_messages_ = false;
     return;
+  }
 
   for (size_t i = 0; i < messages.size(); ++i) {
     if (messages[i]->type ==
