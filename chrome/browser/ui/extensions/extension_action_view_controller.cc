@@ -236,10 +236,12 @@ void ExtensionActionViewController::InspectPopup() {
 }
 
 void ExtensionActionViewController::OnIconUpdated() {
-  if (icon_observer_)
-    icon_observer_->OnIconUpdated();
+  // We update the view first, so that if the observer relies on its UI it can
+  // be ready.
   if (view_delegate_)
     view_delegate_->UpdateState();
+  if (icon_observer_)
+    icon_observer_->OnIconUpdated();
 }
 
 void ExtensionActionViewController::OnExtensionHostDestroyed(
