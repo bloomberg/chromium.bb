@@ -5743,7 +5743,6 @@
                   '-Wno-switch',  # http://crbug.com/505308
                   '-Wno-unknown-pragmas',  # http://crbug.com/505314
                   '-Wno-unused-function',  # http://crbug.com/505316
-                  '-Wno-unused-private-field',  # http://crbug.com/505317
                   '-Wno-unused-value',  # http://crbug.com/505318
                   '-Wno-unused-variable',  # http://crbug.com/505319
                   '-Wno-unused-local-typedef',  # http://crbug.com/411648

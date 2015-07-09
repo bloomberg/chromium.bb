@@ -70,6 +70,8 @@
           # affentry.hxx has NULL as default parameter for a FLAG in two
           # places.
           '-Wno-null-conversion',
+          # hunspell has unused private fields.
+          '-Wno-unused-private-field',
         ],
       },
       # TODO(jschuh): http://crbug.com/167187 size_t -> int

@@ -178,6 +178,8 @@
         'clang_warning_flags': [
           # The generated files don't have braces around subobject initializers.
           '-Wno-missing-braces',
+          # cld_2 contains unused private fields.
+          '-Wno-unused-private-field',
         ],
       },
     },

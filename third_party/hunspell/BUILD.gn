@@ -51,8 +51,17 @@ source_set("hunspell") {
     "src/parsers/textparser.hxx",
   ]
 
+  config("hunspell_warnings") {
+    if (is_clang) {
+      cflags = [ "-Wno-unused-private-field" ]
+    }
+  }
+
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    ":hunspell_warnings",
+  ]
   public_configs = [ ":hunspell_config" ]
 
   defines = [ "OPENOFFICEORG" ]

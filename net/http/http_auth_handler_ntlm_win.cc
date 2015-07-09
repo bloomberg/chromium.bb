@@ -44,7 +44,6 @@ bool HttpAuthHandlerNTLM::AllowsDefaultCredentials() {
 
 HttpAuthHandlerNTLM::Factory::Factory()
     : max_token_length_(0),
-      first_creation_(true),
       is_unsupported_(false) {
 }
 

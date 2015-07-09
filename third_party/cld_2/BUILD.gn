@@ -80,6 +80,15 @@ source_set("cld2_platform_impl") {
   }
 }
 
+config("cld2_warnings") {
+  if (is_clang) {
+    cflags = [
+      # cld_2 has unused private fields.
+      "-Wno-unused-private-field",
+    ]
+  }
+}
+
 static_library("cld2_static") {
   sources = gypi_values.cld2_core_impl_sources
   include_dirs = [
@@ -92,7 +101,10 @@ static_library("cld2_static") {
     ":cld2_data",
   ]
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    ":cld2_warnings",
+  ]
 }
 
 config("cld2_dynamic_mode_config") {
@@ -111,6 +123,7 @@ static_library("cld2_dynamic") {
   configs += [
     ":cld2_dynamic_mode_config",
     "//build/config/compiler:no_chromium_code",
+    ":cld2_warnings",
   ]
 }
 

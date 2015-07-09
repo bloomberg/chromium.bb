@@ -23,7 +23,6 @@ HttpAuthHandlerNegotiate::Factory::Factory()
       resolver_(NULL),
 #if defined(OS_WIN)
       max_token_length_(0),
-      first_creation_(true),
 #endif
       is_unsupported_(false) {
 }

@@ -35,8 +35,7 @@ namespace {
 class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
  public:
   PrintSystemWatcherWin()
-      : delegate_(NULL),
-        did_signal_(false) {
+      : delegate_(NULL) {
   }
   ~PrintSystemWatcherWin() override { Stop(); }
 
@@ -121,7 +120,6 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
   // Returned by FindFirstPrinterChangeNotifier.
   printing::ScopedPrinterChangeHandle printer_change_;
   Delegate* delegate_;           // Delegate to notify
-  bool did_signal_;              // DoneWaiting was called
   std::string printer_info_;     // For crash reporting.
 };
 

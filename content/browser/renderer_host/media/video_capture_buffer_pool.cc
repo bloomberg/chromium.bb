@@ -19,7 +19,13 @@ const int VideoCaptureBufferPool::kInvalidId = -1;
 class SimpleBufferHandle final : public VideoCaptureBufferPool::BufferHandle {
  public:
   SimpleBufferHandle(void* data, size_t size, base::SharedMemoryHandle handle)
-      : data_(data), size_(size), handle_(handle) {}
+      : data_(data),
+        size_(size)
+#if defined(OS_POSIX)
+        , handle_(handle)
+#endif
+  {
+  }
   ~SimpleBufferHandle() override {}
 
   size_t size() const override { return size_; }
@@ -38,7 +44,9 @@ class SimpleBufferHandle final : public VideoCaptureBufferPool::BufferHandle {
  private:
   void* const data_;
   const size_t size_;
+#if defined(OS_POSIX)
   const base::SharedMemoryHandle handle_;
+#endif
 };
 
 // A holder of a GpuMemoryBuffer-backed buffer, Map()ed on ctor and Unmap()ed on

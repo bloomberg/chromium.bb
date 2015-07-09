@@ -60,7 +60,6 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
    private:
 #if defined(NTLM_SSPI)
     ULONG max_token_length_;
-    bool first_creation_;
     bool is_unsupported_;
     scoped_ptr<SSPILibrary> sspi_library_;
 #endif  // defined(NTLM_SSPI)

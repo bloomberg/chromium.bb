@@ -392,8 +392,6 @@ class CrossCallParamsMock : public CrossCallParams {
   CrossCallParamsMock(uint32 tag, uint32 params_count)
       :  CrossCallParams(tag, params_count) {
   }
- private:
-  void* params[4];
 };
 
 void FakeOkAnswerInChannel(void* channel) {
