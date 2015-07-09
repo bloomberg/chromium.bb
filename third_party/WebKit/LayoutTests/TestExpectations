@@ -1273,6 +1273,15 @@ crbug.com/410949 http/tests/security/local-image-from-remote-whitelisted.html [ 
 
 crbug.com/461238 [ Linux Win Debug ] editing/execCommand/delete-non-editable-range-crash.html [ Pass Timeout ]
 
+crbug.com/506639 fast/repaint/fixed-margin-change-repaint.html [ NeedsRebaseline ]
+crbug.com/506639 fast/repaint/fixed-child-move-after-scroll.html [ NeedsRebaseline ]
+crbug.com/506639 fast/repaint/fixed-table-cell.html [ NeedsRebaseline ]
+crbug.com/506639 fast/repaint/fixed-table-overflow.html [ NeedsRebaseline ]
+crbug.com/506639 fast/repaint/fixed-child-of-fixed-move-after-scroll.html [ NeedsRebaseline ]
+crbug.com/506639 fast/repaint/fixed-child-of-transformed-move-after-scroll.html [ NeedsRebaseline ]
+crbug.com/506639 fast/repaint/fixed-move-after-scroll.html [ NeedsRebaseline ]
+crbug.com/506639 fast/repaint/fixed-table-overflow-zindex.html [ NeedsRebaseline ]
+
 crbug.com/364614 [ Mac ] fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
 crbug.com/364614 [ Mac ] virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
 crbug.com/364614 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]

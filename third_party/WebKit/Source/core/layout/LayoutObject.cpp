@@ -1376,6 +1376,16 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(PaintInvalidationS
         m_bitfields.setLastBoxDecorationBackgroundObscured(boxDecorationBackgroundObscured);
     }
 
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        // TODO(trchen): Currently we don't keep track of paint offset of layout objects.
+        // There are corner cases that the display items need to be invalidated for paint offset
+        // mutation, but incurs no pixel difference (i.e. bounds stay the same) so no rect-based
+        // invalidation is issued. See crbug.com/508383
+        // This is a workaround to force display items to update paint offset.
+        if (styleRef().position() == FixedPosition && oldLocation != newLocation)
+            invalidateDisplayItemClientForNonCompositingDescendants();
+    }
+
     if (invalidationReason == PaintInvalidationNone)
         return invalidationReason;
 
