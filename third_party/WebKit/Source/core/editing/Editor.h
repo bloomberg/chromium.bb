@@ -259,7 +259,7 @@ private:
         return *m_frame;
     }
 
-    bool canDeleteRange(Range*) const;
+    bool canDeleteRange(const EphemeralRange&) const;
 
     UndoStack* undoStack() const;
 

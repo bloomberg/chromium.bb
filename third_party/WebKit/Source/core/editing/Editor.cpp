@@ -244,18 +244,18 @@ bool Editor::canDelete() const
     return selection.isRange() && selection.rootEditableElement();
 }
 
-bool Editor::canDeleteRange(Range* range) const
+bool Editor::canDeleteRange(const EphemeralRange& range) const
 {
-    Node* startContainer = range->startContainer();
-    Node* endContainer = range->endContainer();
+    Node* startContainer = range.startPosition().containerNode();
+    Node* endContainer = range.endPosition().containerNode();
     if (!startContainer || !endContainer)
         return false;
 
     if (!startContainer->hasEditableStyle() || !endContainer->hasEditableStyle())
         return false;
 
-    if (range->collapsed()) {
-        VisiblePosition start(range->startPosition(), DOWNSTREAM);
+    if (range.isCollapsed()) {
+        VisiblePosition start(range.startPosition(), DOWNSTREAM);
         VisiblePosition previous = start.previous();
         // FIXME: We sometimes allow deletions at the start of editable roots, like when the caret is in an empty list item.
         if (previous.isNull() || previous.deepEquivalent().deprecatedNode()->rootEditableElement() != startContainer->rootEditableElement())
@@ -532,7 +532,7 @@ bool Editor::shouldDeleteRange(Range* range) const
     if (!range || range->collapsed())
         return false;
 
-    return canDeleteRange(range);
+    return canDeleteRange(EphemeralRange(range));
 }
 
 void Editor::notifyComponentsOnChangedSelection(const VisibleSelection& oldSelection, FrameSelection::SetSelectionOptions options)
