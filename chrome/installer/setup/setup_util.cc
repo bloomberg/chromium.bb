@@ -169,7 +169,14 @@ Version* GetMaxVersionFromArchiveDir(const base::FilePath& chrome_path) {
 }
 
 base::FilePath FindArchiveToPatch(const InstallationState& original_state,
-                                  const InstallerState& installer_state) {
+                                  const InstallerState& installer_state,
+                                  const base::Version& desired_version) {
+  if (desired_version.IsValid()) {
+    base::FilePath archive(installer_state.GetInstallerDirectory(
+        desired_version).Append(kChromeArchive));
+    return base::PathExists(archive) ? archive : base::FilePath();
+  }
+
   // Check based on the version number advertised to Google Update, since that
   // is the value used to select a specific differential update. If an archive
   // can't be found using that, fallback to using the newest version present.

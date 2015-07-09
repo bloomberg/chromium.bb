@@ -155,6 +155,7 @@ extern const char kMsi[];
 extern const char kMultiInstall[];
 extern const char kNewSetupExe[];
 extern const char kOnOsUpgrade[];
+extern const char kPreviousVersion[];
 extern const char kReenableAutoupdates[];
 extern const char kRegisterChromeBrowser[];
 extern const char kRegisterChromeBrowserSuffix[];

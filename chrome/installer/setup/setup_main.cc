@@ -141,7 +141,8 @@ bool UncompressAndPatchChromeArchive(
     const installer::InstallerState& installer_state,
     installer::ArchivePatchHelper* archive_helper,
     installer::ArchiveType* archive_type,
-    installer::InstallStatus* install_status) {
+    installer::InstallStatus* install_status,
+    const base::Version& previous_version) {
   installer_state.UpdateStage(installer::UNCOMPRESSING);
   if (!archive_helper->Uncompress(NULL)) {
     *install_status = installer::UNCOMPRESSION_FAILED;
@@ -160,7 +161,8 @@ bool UncompressAndPatchChromeArchive(
 
   // Find the installed version's archive to serve as the source for patching.
   base::FilePath patch_source(installer::FindArchiveToPatch(original_state,
-                                                            installer_state));
+                                                            installer_state,
+                                                            previous_version));
   if (patch_source.empty()) {
     LOG(ERROR) << "Failed to find archive to patch.";
     *install_status = installer::DIFF_PATCH_SOURCE_MISSING;
@@ -1353,6 +1355,12 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
   base::FilePath uncompressed_archive(cmd_line.GetSwitchValuePath(
       switches::kUncompressedArchive));
   if (uncompressed_archive.empty()) {
+    base::Version previous_version;
+    if (cmd_line.HasSwitch(installer::switches::kPreviousVersion)) {
+      previous_version = base::Version(cmd_line.GetSwitchValueASCII(
+          installer::switches::kPreviousVersion));
+    }
+
     scoped_ptr<ArchivePatchHelper> archive_helper(
         CreateChromeArchiveHelper(setup_exe, cmd_line, installer_state,
                                   unpack_path));
@@ -1363,7 +1371,8 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
                                            installer_state,
                                            archive_helper.get(),
                                            archive_type,
-                                           &install_status)) {
+                                           &install_status,
+                                           previous_version)) {
         DCHECK_NE(install_status, UNKNOWN_STATUS);
         return install_status;
       }

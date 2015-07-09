@@ -52,9 +52,11 @@ int BsdiffPatchFiles(const base::FilePath& src,
 Version* GetMaxVersionFromArchiveDir(const base::FilePath& chrome_path);
 
 // Returns the uncompressed archive of the installed version that serves as the
-// source for patching.
+// source for patching.  If |desired_version| is valid, only the path to that
+// version will be returned, or empty if it doesn't exist.
 base::FilePath FindArchiveToPatch(const InstallationState& original_state,
-                                  const InstallerState& installer_state);
+                                  const InstallerState& installer_state,
+                                  const base::Version& desired_version);
 
 // Spawns a new process that waits for a specified amount of time before
 // attempting to delete |path|.  This is useful for setup to delete the

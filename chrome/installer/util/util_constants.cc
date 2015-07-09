@@ -96,6 +96,9 @@ const char kNewSetupExe[] = "new-setup-exe";
 // Notify the installer that the OS has been upgraded.
 const char kOnOsUpgrade[] = "on-os-upgrade";
 
+// Provide the previous version that patch is for.
+const char kPreviousVersion[] = "previous-version";
+
 // Requests that setup attempt to reenable autoupdates for Chrome.
 const char kReenableAutoupdates[] = "reenable-autoupdates";
 

@@ -375,7 +375,7 @@ const BrowserDistribution::Type FindArchiveToPatchTest::kProductType_ =
 // Test that the path to the advertised product version is found.
 TEST_F(FindArchiveToPatchTest, ProductVersionFound) {
   base::FilePath patch_source(installer::FindArchiveToPatch(
-      *original_state_, *installer_state_));
+      *original_state_, *installer_state_, base::Version()));
   EXPECT_EQ(GetProductVersionArchivePath().value(), patch_source.value());
 }
 
@@ -385,13 +385,13 @@ TEST_F(FindArchiveToPatchTest, MaxVersionFound) {
   // The patch file is absent.
   ASSERT_TRUE(base::DeleteFile(GetProductVersionArchivePath(), false));
   base::FilePath patch_source(installer::FindArchiveToPatch(
-      *original_state_, *installer_state_));
+      *original_state_, *installer_state_, base::Version()));
   EXPECT_EQ(GetMaxVersionArchivePath().value(), patch_source.value());
 
   // The product doesn't appear to be installed, so the max version is found.
   UninstallProduct();
   patch_source = installer::FindArchiveToPatch(
-      *original_state_, *installer_state_);
+      *original_state_, *installer_state_, base::Version());
   EXPECT_EQ(GetMaxVersionArchivePath().value(), patch_source.value());
 }
 
@@ -403,8 +403,23 @@ TEST_F(FindArchiveToPatchTest, NoVersionFound) {
   ASSERT_TRUE(base::DeleteFile(GetMaxVersionArchivePath(), false));
 
   base::FilePath patch_source(installer::FindArchiveToPatch(
-      *original_state_, *installer_state_));
+      *original_state_, *installer_state_, base::Version()));
   EXPECT_EQ(base::FilePath::StringType(), patch_source.value());
+}
+
+TEST_F(FindArchiveToPatchTest, DesiredVersionFound) {
+  base::FilePath patch_source1(installer::FindArchiveToPatch(
+    *original_state_, *installer_state_, product_version_));
+  EXPECT_EQ(GetProductVersionArchivePath().value(), patch_source1.value());
+  base::FilePath patch_source2(installer::FindArchiveToPatch(
+    *original_state_, *installer_state_, max_version_));
+  EXPECT_EQ(GetMaxVersionArchivePath().value(), patch_source2.value());
+}
+
+TEST_F(FindArchiveToPatchTest, DesiredVersionNotFound) {
+  base::FilePath patch_source(installer::FindArchiveToPatch(
+    *original_state_, *installer_state_, base::Version("1.2.3.4")));
+  EXPECT_EQ(base::FilePath().value(), patch_source.value());
 }
 
 namespace {
