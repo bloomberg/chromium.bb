@@ -42,8 +42,8 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
  public:
   MediaStreamDevicesControllerTest()
       : example_url_("https://www.example.com"),
-        example_audio_id_("fake_dev"),
-        example_video_id_("fake_dev"),
+        example_audio_id_("fake_audio_dev"),
+        example_video_id_("fake_video_dev"),
         media_stream_result_(content::NUM_MEDIA_REQUEST_RESULTS) {}
 
   // Dummy callback for when we deny the current request directly.

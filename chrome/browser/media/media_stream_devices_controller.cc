@@ -405,7 +405,7 @@ ContentSetting MediaStreamDevicesController::GetContentSetting(
   if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)
     requested_device_id = request.requested_audio_device_id;
   else if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)
-    requested_device_id = request.requested_audio_device_id;
+    requested_device_id = request.requested_video_device_id;
 
   if (!IsUserAcceptAllowed())
     return CONTENT_SETTING_BLOCK;
