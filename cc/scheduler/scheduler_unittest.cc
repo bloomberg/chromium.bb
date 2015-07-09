@@ -1191,6 +1191,40 @@ TEST_F(SchedulerTest, PrepareTilesOncePerFrame) {
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
 }
 
+TEST_F(SchedulerTest, PrepareTilesFunnelResetOnVisibilityChange) {
+  scoped_ptr<SchedulerClientNeedsPrepareTilesInDraw> client =
+      make_scoped_ptr(new SchedulerClientNeedsPrepareTilesInDraw);
+  scheduler_settings_.use_external_begin_frame_source = true;
+  SetUpScheduler(client.Pass(), true);
+
+  // Simulate a few visibility changes and associated PrepareTiles.
+  for (int i = 0; i < 10; i++) {
+    scheduler_->SetVisible(false);
+    scheduler_->WillPrepareTiles();
+    scheduler_->DidPrepareTiles();
+
+    scheduler_->SetVisible(true);
+    scheduler_->WillPrepareTiles();
+    scheduler_->DidPrepareTiles();
+  }
+
+  client_->Reset();
+  scheduler_->SetNeedsRedraw();
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client_);
+
+  client_->Reset();
+  AdvanceFrame();
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 2);
+  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+
+  client_->Reset();
+  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionPrepareTiles", client_, 1, 2);
+}
+
 TEST_F(SchedulerTest, TriggerBeginFrameDeadlineEarly) {
   SchedulerClientNeedsPrepareTilesInDraw* client =
       new SchedulerClientNeedsPrepareTilesInDraw;

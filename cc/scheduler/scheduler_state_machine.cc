@@ -987,7 +987,11 @@ bool SchedulerStateMachine::MainThreadIsInHighLatencyMode() const {
   return active_tree_needs_first_draw_;
 }
 
-void SchedulerStateMachine::SetVisible(bool visible) { visible_ = visible; }
+void SchedulerStateMachine::SetVisible(bool visible) {
+  visible_ = visible;
+  // TODO(sunnyps): Change the funnel to a bool to avoid hacks like this.
+  prepare_tiles_funnel_ = 0;
+}
 
 void SchedulerStateMachine::SetCanDraw(bool can_draw) { can_draw_ = can_draw; }
 
