@@ -124,10 +124,6 @@ public:
     // isAcceleratedCompositingActive() is true.
     virtual void compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback*) { }
 
-    // Indicates that the compositing surface associated with this WebWidget is
-    // ready to use.
-    virtual void setCompositorSurfaceReady() { }
-
     // Called to inform the WebWidget of a change in theme.
     // Implementors that cache rendered copies of widgets need to re-render
     // on receiving this message
