@@ -212,6 +212,9 @@
         <include name="IDR_PDF_VIEWER_TOOLBAR_CSS" file="pdf/elements/viewer-toolbar/viewer-toolbar.css" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_TOOLBAR_HTML" file="pdf/elements/viewer-toolbar/viewer-toolbar.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_TOOLBAR_JS" file="pdf/elements/viewer-toolbar/viewer-toolbar.js" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_TOOLBAR_DROPDOWN_CSS" file="pdf/elements/viewer-toolbar-dropdown/viewer-toolbar-dropdown.css" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_TOOLBAR_DROPDOWN_HTML" file="pdf/elements/viewer-toolbar-dropdown/viewer-toolbar-dropdown.html" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_TOOLBAR_DROPDOWN_JS" file="pdf/elements/viewer-toolbar-dropdown/viewer-toolbar-dropdown.js" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_ZOOM_BUTTON_CSS" file="pdf/elements/viewer-zoom-toolbar/viewer-zoom-button.css" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_ZOOM_BUTTON_HTML" file="pdf/elements/viewer-zoom-toolbar/viewer-zoom-button.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_ZOOM_BUTTON_JS" file="pdf/elements/viewer-zoom-toolbar/viewer-zoom-button.js" type="BINDATA" />

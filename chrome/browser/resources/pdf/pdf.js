@@ -181,6 +181,8 @@ function PDFViewer(browserApi) {
     this.materialToolbar_.addEventListener('print', this.print_.bind(this));
     this.materialToolbar_.addEventListener('rotate-right',
         this.rotateClockwise_.bind(this));
+    this.materialToolbar_.addEventListener('rotate-left',
+        this.rotateCounterClockwise_.bind(this));
 
     document.body.addEventListener('change-page', function(e) {
       this.viewport_.goToPage(e.detail.page);
@@ -554,10 +556,8 @@ PDFViewer.prototype = {
         break;
       case 'bookmarks':
         this.bookmarks_ = message.data.bookmarks;
-        if (this.isMaterial_ && this.bookmarks_.length !== 0) {
-          $('bookmarks-container').bookmarks = this.bookmarks;
-          this.materialToolbar_.hasBookmarks = true;
-        }
+        if (this.isMaterial_ && this.bookmarks_.length !== 0)
+          this.materialToolbar_.bookmarks = this.bookmarks;
         break;
       case 'setIsSelecting':
         this.viewportScroller_.setEnableScrolling(message.data.isSelecting);

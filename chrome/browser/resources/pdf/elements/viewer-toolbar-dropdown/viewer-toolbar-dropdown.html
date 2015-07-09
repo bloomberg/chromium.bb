@@ -1,0 +1,24 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-material/paper-material.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+
+<dom-module id="viewer-toolbar-dropdown">
+  <link rel="import" type="css" href="viewer-toolbar-dropdown.css">
+  <template>
+    <div on-click="toggleDropdown" id="icon">
+      <paper-icon-button icon="[[dropdownIcon]]"></paper-icon-button>
+      <iron-icon icon="arrow-drop-down" id="arrow"></iron-icon>
+    </div>
+
+    <div id="container">
+      <paper-material id="dropdown" hidden$="[[!dropdownOpen]]">
+        <h1>{{header}}</h1>
+        <div id="scroll-container">
+          <content></content>
+        </div>
+      </paper-material>
+    </div>
+  </template>
+</dom-module>
+
+<script src="viewer-toolbar-dropdown.js"></script>

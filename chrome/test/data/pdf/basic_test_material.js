@@ -10,7 +10,6 @@ var tests = [
   function testHasElements() {
     var elementNames = [
       'viewer-pdf-toolbar',
-      'viewer-bookmarks-content',
       'viewer-zoom-toolbar',
       'viewer-password-screen',
       'viewer-error-screen'
@@ -48,11 +47,36 @@ var tests = [
     chrome.test.assertTrue(shouldIgnoreKeyEvents(toolbar));
 
     // Test case where the active element has a shadow root of its own.
-    toolbar.$.buttons.children[0].focus();
+    toolbar.$.buttons.children[1].focus();
     chrome.test.assertFalse(shouldIgnoreKeyEvents(toolbar));
 
     chrome.test.assertFalse(
         shouldIgnoreKeyEvents(document.getElementById('plugin')));
+
+    chrome.test.succeed();
+  },
+
+  /**
+   * Test that changes to window height bubble down to dropdowns correctly.
+   */
+  function testUiManagerResizeDropdown() {
+    var mockWindow = {
+      addEventListener: function(name, listener) {},  // Pass.
+      innerHeight: 1080
+    };
+    var mockZoomToolbar = {
+      clientHeight: 400
+    };
+    var toolbar = document.getElementById('material-toolbar');
+    var bookmarksDropdown = toolbar.$.bookmarks;
+
+    var uiManager = new UiManager(mockWindow, toolbar, mockZoomToolbar);
+
+    chrome.test.assertTrue(bookmarksDropdown.lowerBound == 680);
+
+    mockWindow.innerHeight = 480;
+    uiManager.resizeDropdowns_();
+    chrome.test.assertTrue(bookmarksDropdown.lowerBound == 80);
 
     chrome.test.succeed();
   }

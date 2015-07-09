@@ -27,7 +27,8 @@ input#input {
   text-align: right;
 }
 
-input#input:focus {
+input#input:focus,
+input#input:hover {
   background-color: rgba(0, 0, 0, 0.5);
   border-radius: 2px;
 }

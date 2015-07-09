@@ -1,0 +1,48 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+:host {
+  display: inline-block;
+  text-align: left;
+}
+
+#container {
+  position: absolute;
+}
+
+paper-material {
+  background-color: rgb(256, 256, 256);
+  border-radius: 4px;
+  padding-bottom: 2px;
+  width: 260px;
+}
+
+#scroll-container {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 6px 0 4px 0;
+}
+
+#icon {
+  cursor: pointer;
+  display: inline-block;
+}
+
+#icon.open {
+  background-color: rgb(25, 27, 29);
+  border-radius: 4px;
+}
+
+#arrow {
+  margin-left: -18px;
+  padding-right: 4px;
+}
+
+h1 {
+  border-bottom: 1px solid rgb(219, 219, 219);
+  color: rgb(33, 33, 33);
+  margin: 0;
+  padding: 16px;
+  @apply(--paper-font-title);
+}

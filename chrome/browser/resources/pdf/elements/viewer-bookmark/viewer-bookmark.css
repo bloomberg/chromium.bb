@@ -2,6 +2,18 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.sub-bookmark {
-  margin-left: 1em;
+#item {
+  -webkit-user-select: none;
+  color: rgb(80, 80, 80);
+  cursor: pointer;
+  min-height: 40px;
+  position: relative;
+  @apply(--paper-font-subhead);
+  @apply(--layout-horizontal);
+  @apply(--layout-center);
+}
+
+#item:hover {
+  background-color: rgb(237, 237, 237);
+  color: rgb(20, 20, 20);
 }

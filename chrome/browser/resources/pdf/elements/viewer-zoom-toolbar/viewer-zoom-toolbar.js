@@ -25,10 +25,6 @@ Polymer({
     this.visible_ = true;
   },
 
-  zoomValueChanged: function() {
-    this.fire('zoom', { zoom: this.zoomValue / 100 });
-  },
-
   fitToPage: function() {
     this.fire('fit-to-page');
   },

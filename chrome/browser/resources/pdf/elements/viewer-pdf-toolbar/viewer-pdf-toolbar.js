@@ -29,9 +29,12 @@
       pageNo: Number,
 
       /**
-       * Whether the document has bookmarks.
+       * Tree of PDF bookmarks (or null if the document has no bookmarks).
        */
-      hasBookmarks: Boolean,
+      bookmarks: {
+        type: Object,
+        value: null
+      },
 
       /**
        * The number of pages in the PDF document.
@@ -109,12 +112,20 @@
       this.$.pageselector.select();
     },
 
-    rotateRight: function() {
-      this.fire('rotate-right');
+    shouldKeepOpen: function() {
+      return this.$.bookmarks.dropdownOpen || this.loadProgress < 100;
     },
 
-    toggleBookmarks: function() {
-      this.fire('toggle-bookmarks');
+    setDropdownLowerBound: function(lowerBound) {
+      this.$.bookmarks.lowerBound = lowerBound;
+    },
+
+    rotateLeft: function() {
+      this.fire('rotate-left');
+    },
+
+    rotateRight: function() {
+      this.fire('rotate-right');
     },
 
     save: function() {

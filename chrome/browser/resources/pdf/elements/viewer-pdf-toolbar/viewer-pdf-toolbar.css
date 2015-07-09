@@ -9,12 +9,6 @@
 }
 
 #title {
-  /* paper-toolbar enforces a layout on anything with a title attribute which
-   * sets `flex: 1`. We must overwrite it here rather than with the 'flex-5'
-   * class.
-   * TODO(tsergeant): Remove this once it is fixed from the Polymer side.
-   */
-  flex: 5;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -33,7 +27,11 @@
 }
 
 #buttons > paper-icon-button {
-  margin-right: 0;
+  margin-right: 8px;
+}
+
+viewer-toolbar-dropdown {
+  margin-right: 4px;
 }
 
 paper-progress {

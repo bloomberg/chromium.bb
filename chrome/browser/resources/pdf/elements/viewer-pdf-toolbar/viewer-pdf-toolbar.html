@@ -9,7 +9,9 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-material/paper-material.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../viewer-bookmarks-content/viewer-bookmarks-content.html">
 <link rel="import" href="../viewer-page-selector/viewer-page-selector.html">
+<link rel="import" href="../viewer-toolbar-dropdown/viewer-toolbar-dropdown.html">
 
 <dom-module id="viewer-pdf-toolbar">
   <link rel="import" type="css" href="viewer-pdf-toolbar.css">
@@ -18,7 +20,7 @@
 
     <paper-progress value="{{loadProgress}}"></paper-progress>
 
-    <paper-toolbar class="core-narrow">
+    <paper-toolbar>
       <div id="aligner" class="horizontal layout center">
         <span id="title" class="invisible flex-5" title="{{docTitle}}">
           <span>{{docTitle}}</span>
@@ -31,10 +33,21 @@
         </div>
 
         <div id="buttons" class="invisible flex-5">
+          <!-- TODO(tsergeant): "Bookmarks" should be localized. -->
+          <viewer-toolbar-dropdown id="bookmarks"
+                                   hidden$="[[!bookmarks]]"
+                                   header="Bookmarks"
+                                   open-icon="bookmark"
+                                   closed-icon="bookmark-border">
+              <viewer-bookmarks-content bookmarks="{{bookmarks}}">
+              </viewer-bookmarks-content>
+          </viewer-toolbar-dropdown>
           <paper-icon-button icon="image:rotate-right"
               on-click="rotateRight"></paper-icon-button>
-          <paper-icon-button icon="bookmark-outline"
-              on-click="toggleBookmarks" hidden></paper-icon-button>
+          <!-- TODO(tsergeant): Replace this placeholder with a more useful
+                button. -->
+          <paper-icon-button icon="image:rotate-left"
+              on-click="rotateLeft"></paper-icon-button>
           <paper-icon-button icon="save"
               on-click="save"></paper-icon-button>
           <paper-icon-button icon="print"
