@@ -361,7 +361,12 @@ void Dispatcher::DidCreateDocumentElement(blink::WebLocalFrame* frame) {
                                 .as_string()));
   }
 
-  content_watcher_->DidCreateDocumentElement(frame);
+  // In testing, the document lifetime events can happen after the render
+  // process shutdown event.
+  // See: http://crbug.com/21508 and http://crbug.com/500851
+  if (content_watcher_) {
+    content_watcher_->DidCreateDocumentElement(frame);
+  }
 }
 
 void Dispatcher::OnExtensionResponse(int request_id,
