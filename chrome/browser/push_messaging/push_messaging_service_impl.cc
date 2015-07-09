@@ -248,7 +248,7 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
 
   // TODO(mvanouwerkerk): Show a warning in the developer console of the
   // Service Worker corresponding to app_id (and/or on an internals page).
-  // TODO(mvanouwerkerk): Is there a way to recover from failure?
+  // See https://crbug.com/508516 for options.
   switch (status) {
     // Call EnforceUserVisibleOnlyRequirements if the message was delivered to
     // the Service Worker JavaScript, even if the website's event handler failed
