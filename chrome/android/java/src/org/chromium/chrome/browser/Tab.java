@@ -1461,11 +1461,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      *                the content in this {@link Tab}.
      */
     public void getAllContentViews(List<View> content) {
-        if (!isNativePage()) {
-            content.add(getView());
-        } else if (mContentViewCore != null) {
-            content.add(mContentViewCore.getContainerView());
-        }
+        if (!isNativePage()) content.add(getView());
         for (int i = 0; i < mOverlayContentViewCores.size(); i++) {
             content.add(mOverlayContentViewCores.get(i).getContainerView());
         }
