@@ -18,6 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
+namespace {
 
 const uint64 kInternalSpeakerId = 10001;
 const uint64 kHeadphoneId = 10002;
@@ -278,6 +279,8 @@ class TestObserver : public chromeos::CrasAudioHandler::AudioObserver {
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
+
+}  // namespace
 
 class CrasAudioHandlerTest : public testing::Test {
  public:
