@@ -6,6 +6,7 @@
 #define NET_HTTP_PARTIAL_DATA_H_
 
 #include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_request_headers.h"
@@ -119,12 +120,11 @@ class PartialData {
   bool initial_validation() const { return initial_validation_; }
 
  private:
-  class Core;
   // Returns the length to use when scanning the cache.
   int GetNextRangeLen();
 
   // Completion routine for our callback.
-  void GetAvailableRangeCompleted(int result, int64 start);
+  void GetAvailableRangeCompleted(int64* start, int result);
 
   int64 current_range_start_;
   int64 current_range_end_;
@@ -139,8 +139,8 @@ class PartialData {
   bool sparse_entry_;
   bool truncated_;  // We have an incomplete 200 stored.
   bool initial_validation_;  // Only used for truncated entries.
-  Core* core_;
   CompletionCallback callback_;
+  base::WeakPtrFactory<PartialData> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PartialData);
 };

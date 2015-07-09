@@ -27,75 +27,6 @@ const int kDataStream = 1;
 
 }  // namespace
 
-// A core object that can be detached from the Partialdata object at destruction
-// so that asynchronous operations cleanup can be performed.
-class PartialData::Core {
- public:
-  // Build a new core object. Lifetime management is automatic.
-  static Core* CreateCore(PartialData* owner) {
-    return new Core(owner);
-  }
-
-  // Wrapper for Entry::GetAvailableRange. If this method returns ERR_IO_PENDING
-  // PartialData::GetAvailableRangeCompleted() will be invoked on the owner
-  // object when finished (unless Cancel() is called first).
-  int GetAvailableRange(disk_cache::Entry* entry, int64 offset, int len,
-                        int64* start);
-
-  // Cancels a pending operation. It is a mistake to call this method if there
-  // is no operation in progress; in fact, there will be no object to do so.
-  void Cancel();
-
- private:
-  explicit Core(PartialData* owner);
-  ~Core();
-
-  // Pending io completion routine.
-  void OnIOComplete(int result);
-
-  PartialData* owner_;
-  int64 start_;
-
-  DISALLOW_COPY_AND_ASSIGN(Core);
-};
-
-PartialData::Core::Core(PartialData* owner)
-    : owner_(owner), start_(0) {
-  DCHECK(!owner_->core_);
-  owner_->core_ = this;
-}
-
-PartialData::Core::~Core() {
-  if (owner_)
-    owner_->core_ = NULL;
-}
-
-void PartialData::Core::Cancel() {
-  DCHECK(owner_);
-  owner_ = NULL;
-}
-
-int PartialData::Core::GetAvailableRange(disk_cache::Entry* entry, int64 offset,
-                                         int len, int64* start) {
-  int rv = entry->GetAvailableRange(
-      offset, len, &start_, base::Bind(&PartialData::Core::OnIOComplete,
-                                       base::Unretained(this)));
-  if (rv != ERR_IO_PENDING) {
-    // The callback will not be invoked. Lets cleanup.
-    *start = start_;
-    delete this;
-  }
-  return rv;
-}
-
-void PartialData::Core::OnIOComplete(int result) {
-  if (owner_)
-    owner_->GetAvailableRangeCompleted(result, start_);
-  delete this;
-}
-
-// -----------------------------------------------------------------------------
-
 PartialData::PartialData()
     : current_range_start_(0),
       current_range_end_(0),
@@ -107,12 +38,10 @@ PartialData::PartialData()
       sparse_entry_(true),
       truncated_(false),
       initial_validation_(false),
-      core_(NULL) {
+      weak_factory_(this) {
 }
 
 PartialData::~PartialData() {
-  if (core_)
-    core_->Cancel();
 }
 
 bool PartialData::Init(const HttpRequestHeaders& headers) {
@@ -173,13 +102,20 @@ int PartialData::ShouldValidateCache(disk_cache::Entry* entry,
 
   if (sparse_entry_) {
     DCHECK(callback_.is_null());
-    Core* core = Core::CreateCore(this);
-    cached_min_len_ = core->GetAvailableRange(entry, current_range_start_, len,
-                                              &cached_start_);
+    int64* start = new int64;
+    // This callback now owns "start". We make sure to keep it
+    // in a local variable since we want to use it later.
+    CompletionCallback cb =
+        base::Bind(&PartialData::GetAvailableRangeCompleted,
+                   weak_factory_.GetWeakPtr(), base::Owned(start));
+    cached_min_len_ =
+        entry->GetAvailableRange(current_range_start_, len, start, cb);
 
     if (cached_min_len_ == ERR_IO_PENDING) {
       callback_ = callback;
       return ERR_IO_PENDING;
+    } else {
+      cached_start_ = *start;
     }
   } else if (!truncated_) {
     if (byte_range_.HasFirstBytePosition() &&
@@ -488,11 +424,11 @@ int PartialData::GetNextRangeLen() {
   return static_cast<int32>(range_len);
 }
 
-void PartialData::GetAvailableRangeCompleted(int result, int64 start) {
+void PartialData::GetAvailableRangeCompleted(int64* start, int result) {
   DCHECK(!callback_.is_null());
   DCHECK_NE(ERR_IO_PENDING, result);
 
-  cached_start_ = start;
+  cached_start_ = *start;
   cached_min_len_ = result;
   if (result >= 0)
     result = 1;  // Return success, go ahead and validate the entry.
