@@ -217,7 +217,7 @@
       {
         "id": "UrlFilter",
         "type": "object",
-        "description": "Filters URLs for various criteria. See <a href='#filtered'>event filtering</a>. All criteria are case sensitive.",
+        "description": "Filters URLs for various criteria. See <a href='events#filtered'>event filtering</a>. All criteria are case sensitive.",
         "nocompile": true,
         "properties": {
           "hostContains": {
