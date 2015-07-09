@@ -129,19 +129,16 @@ TabContentManager* TabContentManager::FromJavaObject(jobject jobj) {
 
 TabContentManager::TabContentManager(JNIEnv* env,
                                      jobject obj,
-                                     jstring disk_cache_path,
                                      jint default_cache_size,
                                      jint approximation_cache_size,
                                      jint compression_queue_max_size,
                                      jint write_queue_max_size,
                                      jboolean use_approximation_thumbnail)
     : weak_java_tab_content_manager_(env, obj), weak_factory_(this) {
-  std::string disk_cache_path_str =
-      base::android::ConvertJavaStringToUTF8(env, disk_cache_path);
   thumbnail_cache_ = make_scoped_ptr(new ThumbnailCache(
-      disk_cache_path_str, (size_t)default_cache_size,
-      (size_t)approximation_cache_size, (size_t)compression_queue_max_size,
-      (size_t)write_queue_max_size, use_approximation_thumbnail));
+      (size_t)default_cache_size, (size_t)approximation_cache_size,
+      (size_t)compression_queue_max_size, (size_t)write_queue_max_size,
+      use_approximation_thumbnail));
   thumbnail_cache_->AddThumbnailCacheObserver(this);
 }
 
@@ -374,14 +371,13 @@ bool RegisterTabContentManager(JNIEnv* env) {
 
 jlong Init(JNIEnv* env,
            jobject obj,
-           jstring disk_cache_path,
            jint default_cache_size,
            jint approximation_cache_size,
            jint compression_queue_max_size,
            jint write_queue_max_size,
            jboolean use_approximation_thumbnail) {
   TabContentManager* manager = new TabContentManager(
-      env, obj, disk_cache_path, default_cache_size, approximation_cache_size,
+      env, obj, default_cache_size, approximation_cache_size,
       compression_queue_max_size, write_queue_max_size,
       use_approximation_thumbnail);
   return reinterpret_cast<intptr_t>(manager);

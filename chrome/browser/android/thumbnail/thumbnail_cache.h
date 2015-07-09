@@ -43,8 +43,7 @@ class ThumbnailCacheObserver {
 
 class ThumbnailCache : ThumbnailDelegate {
  public:
-  ThumbnailCache(const std::string& disk_cache_path_str,
-                 size_t default_cache_size,
+  ThumbnailCache(size_t default_cache_size,
                  size_t approximation_cache_size,
                  size_t compression_queue_max_size,
                  size_t write_queue_max_size,
@@ -73,6 +72,8 @@ class ThumbnailCache : ThumbnailDelegate {
 
   // ThumbnailDelegate implementation
   void InvalidateCachedThumbnail(Thumbnail* thumbnail) override;
+  static base::FilePath GetCacheDirectory();
+  static base::FilePath GetFilePath(TabId tab_id);
 
  private:
   class ThumbnailMetaData {
@@ -91,9 +92,8 @@ class ThumbnailCache : ThumbnailDelegate {
   typedef base::hash_map<TabId, ThumbnailMetaData> ThumbnailMetaDataMap;
 
   void RemoveFromDisk(TabId tab_id);
-  static void RemoveFromDiskTask(const base::FilePath& file_path);
-  static void RemoveFromDiskAtAndAboveIdTask(const base::FilePath& dir_path,
-                                             TabId min_id);
+  static void RemoveFromDiskTask(TabId tab_id);
+  static void RemoveFromDiskAtAndAboveIdTask(TabId min_id);
   void WriteThumbnailIfNecessary(TabId tab_id,
                                  skia::RefPtr<SkPixelRef> compressed_data,
                                  float scale,
@@ -105,8 +105,7 @@ class ThumbnailCache : ThumbnailDelegate {
   void ReadNextThumbnail();
   void MakeSpaceForNewItemIfNecessary(TabId tab_id);
   void RemoveFromReadQueue(TabId tab_id);
-  base::FilePath GetFilePath(TabId tab_id) const;
-  static void WriteTask(const base::FilePath& file_path,
+  static void WriteTask(TabId tab_id,
                         skia::RefPtr<SkPixelRef> compressed_data,
                         float scale,
                         const gfx::Size& content_size,
@@ -130,7 +129,7 @@ class ThumbnailCache : ThumbnailDelegate {
           const gfx::Size& encoded_size);
   static void ReadTask(
       bool decompress,
-      const base::FilePath& file_path,
+      TabId tab_id,
       const base::Callback<
           void(skia::RefPtr<SkPixelRef>, float, const gfx::Size&)>&
           post_read_task);
@@ -143,7 +142,6 @@ class ThumbnailCache : ThumbnailDelegate {
   static std::pair<SkBitmap, float> CreateApproximation(const SkBitmap& bitmap,
                                                         float scale);
 
-  const base::FilePath disk_cache_path_;
   const size_t compression_queue_max_size_;
   const size_t write_queue_max_size_;
   const bool use_approximation_thumbnail_;

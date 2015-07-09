@@ -13,6 +13,7 @@ import android.view.View;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.CommandLine;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.PathUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NativePage;
@@ -31,9 +32,7 @@ import java.util.List;
  */
 @JNINamespace("chrome::android")
 public class TabContentManager {
-    private static final String THUMBNAIL_DIRECTORY = "textures";
     private final Context mContext;
-    private final File mThumbnailsDir;
     private final float mThumbnailScale;
     private final int mFullResThumbnailsMaxSize;
     private final ContentOffsetProvider mContentOffsetProvider;
@@ -96,9 +95,6 @@ public class TabContentManager {
         mContentOffsetProvider = contentOffsetProvider;
         mSnapshotsEnabled = snapshotsEnabled;
 
-        mThumbnailsDir = mContext.getDir(THUMBNAIL_DIRECTORY, Context.MODE_PRIVATE);
-        String diskCachePath = mThumbnailsDir.getAbsolutePath();
-
         // Override the cache size on the command line with --thumbnails=100
         int defaultCacheSize = getIntegerResourceWithOverride(mContext,
                 R.integer.default_thumbnail_cache_size, ChromeSwitches.THUMBNAILS);
@@ -135,7 +131,7 @@ public class TabContentManager {
 
         mPriorityTabIds = new int[mFullResThumbnailsMaxSize];
 
-        mNativeTabContentManager = nativeInit(diskCachePath, defaultCacheSize,
+        mNativeTabContentManager = nativeInit(defaultCacheSize,
                 approximationCacheSize, compressionQueueMaxSize, writeQueueMaxSize,
                 useApproximationThumbnails);
     }
@@ -331,8 +327,9 @@ public class TabContentManager {
      * @param modelSelector The selector that answers whether a tab is currently present.
      */
     public void cleanupPersistentData(TabModelSelector modelSelector) {
-        File[] files = mThumbnailsDir.listFiles();
-        if (files == null || mNativeTabContentManager == 0) return;
+        if (mNativeTabContentManager == 0) return;
+        File[] files = PathUtils.getThumbnailCacheDirectory(mContext).listFiles();
+        if (files == null) return;
 
         for (File file : files) {
             try {
@@ -365,9 +362,8 @@ public class TabContentManager {
     }
 
     // Class Object Methods
-    private native long nativeInit(String diskCachePath, int defaultCacheSize,
-            int approximationCacheSize, int compressionQueueMaxSize, int writeQueueMaxSize,
-            boolean useApproximationThumbnail);
+    private native long nativeInit(int defaultCacheSize, int approximationCacheSize,
+            int compressionQueueMaxSize, int writeQueueMaxSize, boolean useApproximationThumbnail);
     private native boolean nativeHasFullCachedThumbnail(long nativeTabContentManager, int tabId);
     private native void nativeCacheTab(long nativeTabContentManager, Object tab,
             Object contentViewCore, float thumbnailScale);

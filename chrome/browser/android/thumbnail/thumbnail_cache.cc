@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "base/android/path_utils.h"
 #include "base/big_endian.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
@@ -111,14 +112,12 @@ bool WriteBigEndianFloatToFile(base::File& file, float val) {
 
 }  // anonymous namespace
 
-ThumbnailCache::ThumbnailCache(const std::string& disk_cache_path_str,
-                               size_t default_cache_size,
+ThumbnailCache::ThumbnailCache(size_t default_cache_size,
                                size_t approximation_cache_size,
                                size_t compression_queue_max_size,
                                size_t write_queue_max_size,
                                bool use_approximation_thumbnail)
-    : disk_cache_path_(disk_cache_path_str),
-      compression_queue_max_size_(compression_queue_max_size),
+    : compression_queue_max_size_(compression_queue_max_size),
       write_queue_max_size_(write_queue_max_size),
       use_approximation_thumbnail_(use_approximation_thumbnail),
       compression_tasks_count_(0),
@@ -226,7 +225,6 @@ Thumbnail* ThumbnailCache::Get(TabId tab_id,
 void ThumbnailCache::RemoveFromDiskAtAndAboveId(TabId min_id) {
   base::Closure remove_task =
       base::Bind(&ThumbnailCache::RemoveFromDiskAtAndAboveIdTask,
-                 disk_cache_path_,
                  min_id);
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE, remove_task);
@@ -241,6 +239,17 @@ void ThumbnailCache::InvalidateThumbnailIfChanged(TabId tab_id,
   } else if (meta_data_iter->second.url() != url) {
     Remove(tab_id);
   }
+}
+
+base::FilePath ThumbnailCache::GetCacheDirectory() {
+  base::FilePath path;
+  base::android::GetThumbnailCacheDirectory(&path);
+  return path;
+}
+
+base::FilePath ThumbnailCache::GetFilePath(TabId tab_id) {
+  base::FilePath path = GetCacheDirectory();
+  return path.Append(base::IntToString(tab_id));
 }
 
 bool ThumbnailCache::CheckAndUpdateThumbnailMetaData(TabId tab_id,
@@ -309,8 +318,6 @@ void ThumbnailCache::DecompressThumbnailFromFile(
     TabId tab_id,
     const base::Callback<void(bool, SkBitmap)>&
         post_decompress_callback) {
-  base::FilePath file_path = GetFilePath(tab_id);
-
   base::Callback<void(skia::RefPtr<SkPixelRef>, float, const gfx::Size&)>
       decompress_task = base::Bind(
           &ThumbnailCache::DecompressionTask, post_decompress_callback);
@@ -318,25 +325,24 @@ void ThumbnailCache::DecompressThumbnailFromFile(
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&ThumbnailCache::ReadTask, true, file_path, decompress_task));
+      base::Bind(&ThumbnailCache::ReadTask, true, tab_id, decompress_task));
 }
 
 void ThumbnailCache::RemoveFromDisk(TabId tab_id) {
-  base::FilePath file_path = GetFilePath(tab_id);
   base::Closure task =
-      base::Bind(&ThumbnailCache::RemoveFromDiskTask, file_path);
+      base::Bind(&ThumbnailCache::RemoveFromDiskTask, tab_id);
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE, task);
 }
 
-void ThumbnailCache::RemoveFromDiskTask(const base::FilePath& file_path) {
+void ThumbnailCache::RemoveFromDiskTask(TabId tab_id) {
+  base::FilePath file_path = GetFilePath(tab_id);
   if (base::PathExists(file_path))
     base::DeleteFile(file_path, false);
 }
 
-void ThumbnailCache::RemoveFromDiskAtAndAboveIdTask(
-    const base::FilePath& dir_path,
-    TabId min_id) {
+void ThumbnailCache::RemoveFromDiskAtAndAboveIdTask(TabId min_id) {
+  base::FilePath dir_path = GetCacheDirectory();
   base::FileEnumerator enumerator(dir_path, false, base::FileEnumerator::FILES);
   while (true) {
     base::FilePath path = enumerator.Next();
@@ -365,7 +371,7 @@ void ThumbnailCache::WriteThumbnailIfNecessary(
   content::BrowserThread::PostTask(content::BrowserThread::FILE,
                                    FROM_HERE,
                                    base::Bind(&ThumbnailCache::WriteTask,
-                                              GetFilePath(tab_id),
+                                              tab_id,
                                               compressed_data,
                                               scale,
                                               content_size,
@@ -410,8 +416,6 @@ void ThumbnailCache::ReadNextThumbnail() {
   TabId tab_id = read_queue_.front();
   read_in_progress_ = true;
 
-  base::FilePath file_path = GetFilePath(tab_id);
-
   base::Callback<void(skia::RefPtr<SkPixelRef>, float, const gfx::Size&)>
       post_read_task = base::Bind(
           &ThumbnailCache::PostReadTask, weak_factory_.GetWeakPtr(), tab_id);
@@ -419,7 +423,7 @@ void ThumbnailCache::ReadNextThumbnail() {
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&ThumbnailCache::ReadTask, false, file_path, post_read_task));
+      base::Bind(&ThumbnailCache::ReadTask, false, tab_id, post_read_task));
 }
 
 void ThumbnailCache::MakeSpaceForNewItemIfNecessary(TabId tab_id) {
@@ -483,10 +487,6 @@ void ThumbnailCache::InvalidateCachedThumbnail(Thumbnail* thumbnail) {
     approximation_cache_.Remove(tab_id);
 }
 
-base::FilePath ThumbnailCache::GetFilePath(TabId tab_id) const {
-  return disk_cache_path_.Append(base::IntToString(tab_id));
-}
-
 namespace {
 
 bool WriteToFile(base::File& file,
@@ -540,12 +540,14 @@ bool WriteToFile(base::File& file,
 
 }  // anonymous namespace
 
-void ThumbnailCache::WriteTask(const base::FilePath& file_path,
+void ThumbnailCache::WriteTask(TabId tab_id,
                                skia::RefPtr<SkPixelRef> compressed_data,
                                float scale,
                                const gfx::Size& content_size,
                                const base::Callback<void()>& post_write_task) {
   DCHECK(compressed_data);
+
+  base::FilePath file_path = GetFilePath(tab_id);
 
   base::File file(file_path,
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
@@ -746,13 +748,14 @@ bool ReadFromFile(base::File& file,
 
 void ThumbnailCache::ReadTask(
     bool decompress,
-    const base::FilePath& file_path,
+    TabId tab_id,
     const base::Callback<
         void(skia::RefPtr<SkPixelRef>, float, const gfx::Size&)>&
         post_read_task) {
   gfx::Size content_size;
   float scale = 0.f;
   skia::RefPtr<SkPixelRef> compressed_data;
+  base::FilePath file_path = GetFilePath(tab_id);
 
   if (base::PathExists(file_path)) {
     base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);

@@ -38,7 +38,6 @@ class TabContentManager : public ThumbnailCacheObserver {
 
   TabContentManager(JNIEnv* env,
                     jobject obj,
-                    jstring disk_cache_path,
                     jint default_cache_size,
                     jint approximation_cache_size,
                     jint compression_queue_max_size,
