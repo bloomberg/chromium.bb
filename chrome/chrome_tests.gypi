@@ -498,6 +498,7 @@
       'browser/ui/panels/panel_extension_browsertest.cc',
       'browser/ui/passwords/manage_passwords_test.cc',
       'browser/ui/prefs/prefs_tab_helper_browsertest.cc',
+      'browser/ui/profile_error_browsertest.cc',
       'browser/ui/search/new_tab_page_interceptor_browsertest.cc',
       'browser/ui/search_engines/search_engine_tab_helper_browsertest.cc',
       'browser/ui/settings_window_manager_browsertest.cc',

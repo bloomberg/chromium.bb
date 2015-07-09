@@ -8,8 +8,10 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "chrome/browser/ui/simple_message_box_internal.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/startup_metric_utils/startup_metric_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/native_widget_types.h"
@@ -53,7 +55,6 @@ class SimpleMessageBoxViews : public views::DialogDelegate {
   const views::Widget* GetWidget() const override;
 
  private:
-
   // This terminates the nested message-loop.
   void Done();
 
@@ -205,6 +206,10 @@ MessageBoxResult ShowMessageBoxImpl(gfx::NativeWindow parent,
                                     MessageBoxType type,
                                     const base::string16& yes_text,
                                     const base::string16& no_text) {
+  startup_metric_utils::SetNonBrowserUIDisplayed();
+  if (internal::g_should_skip_message_box_for_test)
+    return MESSAGE_BOX_RESULT_YES;
+
   // Views dialogs cannot be shown outside the UI thread message loop or if the
   // ResourceBundle is not initialized yet.
   // Fallback to logging with a default response or a Windows MessageBox.

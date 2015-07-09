@@ -247,6 +247,8 @@
       'browser/ui/settings_window_manager.h',
       'browser/ui/settings_window_manager_observer.h',
       'browser/ui/simple_message_box.h',
+      'browser/ui/simple_message_box_internal.cc',
+      'browser/ui/simple_message_box_internal.h',
       'browser/ui/status_bubble.h',
       'browser/ui/sync/inline_login_dialog.cc',
       'browser/ui/sync/inline_login_dialog.h',

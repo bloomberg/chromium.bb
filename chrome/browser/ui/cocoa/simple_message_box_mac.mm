@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/ui/simple_message_box_internal.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -21,6 +22,8 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
     NOTIMPLEMENTED();
 
   startup_metric_utils::SetNonBrowserUIDisplayed();
+  if (internal::g_should_skip_message_box_for_test)
+    return MESSAGE_BOX_RESULT_YES;
 
   // Ignore the title; it's the window title on other platforms and ignorable.
   NSAlert* alert = [[[NSAlert alloc] init] autorelease];

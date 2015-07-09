@@ -6,6 +6,8 @@
 
 #include "chrome/browser/metrics/first_web_contents_profiler.h"
 
+#include <string>
+
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_info.h"
@@ -17,6 +19,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/metrics/profiler/tracking_synchronizer.h"
 #include "components/metrics/proto/profiler_event.pb.h"
+#include "components/startup_metric_utils/startup_metric_utils.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {
@@ -128,6 +131,10 @@ FirstWebContentsProfiler::FirstWebContentsProfiler(
 void FirstWebContentsProfiler::DidFirstVisuallyNonEmptyPaint() {
   if (collected_paint_metric_)
     return;
+  if (startup_metric_utils::WasNonBrowserUIDisplayed()) {
+    FinishedCollectingMetrics();
+    return;
+  }
 
   collected_paint_metric_ = true;
   if (!process_creation_time_.is_null()) {
@@ -167,6 +174,10 @@ void FirstWebContentsProfiler::DidFirstVisuallyNonEmptyPaint() {
 void FirstWebContentsProfiler::DocumentOnLoadCompletedInMainFrame() {
   if (collected_load_metric_)
     return;
+  if (startup_metric_utils::WasNonBrowserUIDisplayed()) {
+    FinishedCollectingMetrics();
+    return;
+  }
 
   collected_load_metric_ = true;
   if (!process_creation_time_.is_null()) {
