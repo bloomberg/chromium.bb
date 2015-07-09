@@ -189,7 +189,7 @@ deps = {
    Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + '1f2f7df0f4005fb620342d847bbaa1ec54122c68',
 
   'src/third_party/libjingle/source/talk':
-    Var('chromium_git') + '/external/webrtc/trunk/talk.git' + '@' + '03a28d8d659afa07c8b98010356d3d47d573f18c', # commit position 9557
+    Var('chromium_git') + '/external/webrtc/trunk/talk.git' + '@' + '1b25fa26dbb02cd3e213d150f749693040ecb98d', # commit position 9558
 
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/usrsctplib.git' + '@' + '36444a999739e9e408f8f587cb4c3ffeef2e50ac', # from svn revision 9215
