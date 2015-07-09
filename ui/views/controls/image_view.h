@@ -7,7 +7,7 @@
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/vector_icons.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/view.h"
 
 namespace gfx {

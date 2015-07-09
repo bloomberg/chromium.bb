@@ -2,31 +2,51 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This file provides defines needed by PaintVectorIcon and is implemented
+// by the generated file vector_icons.cc.
+
 #ifndef UI_GFX_VECTOR_ICONS_H_
 #define UI_GFX_VECTOR_ICONS_H_
 
-#include "base/basictypes.h"
-#include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/gfx_export.h"
+#include "third_party/skia/include/core/SkScalar.h"
 
 namespace gfx {
 
-class Canvas;
+enum class VectorIconId;
 
-enum class VectorIconId {
-  VECTOR_ICON_NONE,
+// The size of a single side of the square canvas to which path coordinates
+// are relative, in device independent pixels.
+const int kReferenceSizeDip = 48;
 
-  CHECK_CIRCLE,
-  PHOTO_CAMERA,
+// A path command; each correlates to an SVG path command.
+enum CommandType {
+  MOVE_TO,
+  R_MOVE_TO,
+  LINE_TO,
+  R_LINE_TO,
+  H_LINE_TO,
+  R_H_LINE_TO,
+  V_LINE_TO,
+  R_V_LINE_TO,
+  R_CUBIC_TO,
+  CIRCLE,
+  CLOSE,
+  END
 };
 
-// Draws a vector icon identified by |id| onto |canvas| at (0, 0). |dip_size|
-// is the length of a single edge of the square icon, in device independent
-// pixels. |color| is used as the fill.
-GFX_EXPORT void PaintVectorIcon(Canvas* canvas,
-                                VectorIconId id,
-                                size_t dip_size,
-                                SkColor color);
+// A POD that describes either a path command or an argument for it.
+struct PathElement {
+  PathElement(CommandType value) : type(value) {}
+  PathElement(SkScalar value) : arg(value) {}
+
+  union {
+    CommandType type;
+    SkScalar arg;
+  };
+};
+
+// Returns an array of path commands and arguments, terminated by END.
+const PathElement* GetPathForVectorIcon(VectorIconId id);
 
 }  // namespace gfx
 
