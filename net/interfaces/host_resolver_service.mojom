@@ -40,15 +40,6 @@ struct AddressList {
   array<IPEndPoint> addresses;
 };
 
-interface HostResolver {
-  // Use a HostResolverRequestClient instead of returning a result so we can
-  // cancel in-flight requests by destroying the client.  IPC requests in Mojo
-  // cannot be cancelled directly.
-  // TODO(amistry): Add BoundNetLog.
-  Resolve(HostResolverRequestInfo request_info,
-          HostResolverRequestClient client);
-};
-
 interface HostResolverRequestClient {
   // |error| is a value in net::Error.
   ReportResult(int32 error, AddressList? result);

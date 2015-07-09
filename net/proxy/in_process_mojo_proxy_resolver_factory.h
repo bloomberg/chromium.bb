@@ -24,8 +24,6 @@ class InProcessMojoProxyResolverFactory : public MojoProxyResolverFactory {
   scoped_ptr<base::ScopedClosureRunner> CreateResolver(
       const mojo::String& pac_script,
       mojo::InterfaceRequest<interfaces::ProxyResolver> req,
-      interfaces::HostResolverPtr host_resolver,
-      interfaces::ProxyResolverErrorObserverPtr error_observer,
       interfaces::ProxyResolverFactoryRequestClientPtr client) override;
 
  private:
