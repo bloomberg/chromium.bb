@@ -12,11 +12,19 @@
 
 namespace ui {
 class KeyEvent;
+enum class DomKey;
 
 // A class to recognize compose and dead key sequence.
 // Outputs composed character.
 class UI_BASE_IME_EXPORT CharacterComposer {
  public:
+  struct KeystrokeMeaning {
+    KeystrokeMeaning(DomKey k, base::char16 c) : key(k), character(c) {}
+    DomKey key;
+    base::char16 character;
+  };
+  using ComposeBuffer = std::vector<KeystrokeMeaning>;
+
   CharacterComposer();
   ~CharacterComposer();
 
@@ -38,8 +46,6 @@ class UI_BASE_IME_EXPORT CharacterComposer {
   const base::string16& preedit_string() const { return preedit_string_; }
 
  private:
-  friend class CharacterComposerTest;
-
   // An enum to describe composition mode.
   enum CompositionMode {
     // This is the initial state.
@@ -49,33 +55,11 @@ class UI_BASE_IME_EXPORT CharacterComposer {
     HEX_MODE,
   };
 
-  // Filters keypress using IBus defined value.
-  // Returns true if the keypress is recognized as a part of composition
-  // sequence.
-  // |keyval| must be a GDK_KEY_* constant.
-  // |keycode| must be a X key code.
-  // |flags| must be a combination of ui::EF_* flags.
-  //
-  // composed_character() returns non empty string when there is a character
-  // composed after this method returns true.
-  // preedit_string() returns non empty string when there is a preedit string
-  // after this method returns true.
-  // Return values of preedit_string() is empty after this method returns false.
-  // composed_character() may have some characters which are consumed in this
-  // composing session.
-  //
-  //
-  // TODO(nona): Actually a X KeySym is passed to |keyval|, so we should use
-  // XK_* rather than GDK_KEY_*.
-  bool FilterKeyPressInternal(unsigned int keyval, unsigned int keycode,
-                              int flags);
-
   // Filters keypress in key sequence mode.
-  bool FilterKeyPressSequenceMode(unsigned int keyval, int flags);
+  bool FilterKeyPressSequenceMode(const ui::KeyEvent& event);
 
   // Filters keypress in hexadecimal mode.
-  bool FilterKeyPressHexMode(unsigned int keyval, unsigned int keycode,
-                             int flags);
+  bool FilterKeyPressHexMode(const ui::KeyEvent& event);
 
   // Commit a character composed from hexadecimal uncode sequence
   void CommitHex();
@@ -84,7 +68,10 @@ class UI_BASE_IME_EXPORT CharacterComposer {
   void UpdatePreeditStringHexMode();
 
   // Remembers keypresses previously filtered.
-  std::vector<unsigned int> compose_buffer_;
+  std::vector<KeystrokeMeaning> compose_buffer_;
+
+  // Records hexadecimal digits previously filtered.
+  std::vector<unsigned int> hex_buffer_;
 
   // A string representing the composed character.
   base::string16 composed_character_;
@@ -96,6 +83,47 @@ class UI_BASE_IME_EXPORT CharacterComposer {
   CompositionMode composition_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(CharacterComposer);
+};
+
+// Abstract class for determining whether a ComposeBuffer forms a valid
+// character composition sequence.
+class ComposeChecker {
+ public:
+  enum class CheckSequenceResult {
+    // The sequence is not a composition sequence or the prefix of any
+    // composition sequence.
+    NO_MATCH,
+    // The sequence is a prefix of one or more composition sequences.
+    PREFIX_MATCH,
+    // The sequence matches a composition sequence.
+    FULL_MATCH
+  };
+  ComposeChecker() {}
+  virtual ~ComposeChecker() {}
+  virtual CheckSequenceResult CheckSequence(
+      const ui::CharacterComposer::ComposeBuffer& sequence,
+      uint32_t* composed_character) const = 0;
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ComposeChecker);
+};
+
+// Implementation of |ComposeChecker| using a compact generated tree.
+class TreeComposeChecker : public ComposeChecker {
+ public:
+  struct CompositionData {
+    size_t maximum_sequence_length;
+    int tree_entries;
+    const uint16_t* tree;
+  };
+
+  TreeComposeChecker(const CompositionData& data) : data_(data) {}
+  CheckSequenceResult CheckSequence(
+      const ui::CharacterComposer::ComposeBuffer& sequence,
+      uint32_t* composed_character) const override;
+
+ private:
+  bool Find(uint16_t index, uint16_t size, uint16_t key, uint16_t* value) const;
+  const CompositionData& data_;
 };
 
 }  // namespace ui
