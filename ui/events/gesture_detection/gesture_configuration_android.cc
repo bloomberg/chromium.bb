@@ -31,35 +31,27 @@ class GestureConfigurationAndroid : public GestureConfiguration {
 
  private:
   GestureConfigurationAndroid() : GestureConfiguration() {
-    float raw_pixel_to_dip_ratio = 1.f / gfx::Screen::GetNativeScreen()
-                                       ->GetPrimaryDisplay()
-                                       .device_scale_factor();
     set_double_tap_enabled(true);
     set_double_tap_timeout_in_ms(ViewConfiguration::GetDoubleTapTimeoutInMs());
     set_gesture_begin_end_types_enabled(false);
     set_long_press_time_in_ms(ViewConfiguration::GetLongPressTimeoutInMs());
     set_max_distance_between_taps_for_double_tap(
-        ViewConfiguration::GetDoubleTapSlopInPixels() * raw_pixel_to_dip_ratio);
+        ViewConfiguration::GetDoubleTapSlopInDips());
     set_max_fling_velocity(
-        ViewConfiguration::GetMaximumFlingVelocityInPixelsPerSecond() *
-        raw_pixel_to_dip_ratio);
+        ViewConfiguration::GetMaximumFlingVelocityInDipsPerSecond());
     set_max_gesture_bounds_length(kMaxGestureBoundsLengthDips);
     set_max_touch_move_in_pixels_for_click(
-        ViewConfiguration::GetTouchSlopInPixels() * raw_pixel_to_dip_ratio);
+        ViewConfiguration::GetTouchSlopInDips());
     set_min_fling_velocity(
-        ViewConfiguration::GetMinimumFlingVelocityInPixelsPerSecond() *
-        raw_pixel_to_dip_ratio);
+        ViewConfiguration::GetMinimumFlingVelocityInDipsPerSecond());
     set_min_gesture_bounds_length(kMinGestureBoundsLengthDips);
     set_min_pinch_update_span_delta(0.f);
     set_min_scaling_span_in_pixels(
-        ViewConfiguration::GetMinScalingSpanInPixels() *
-        raw_pixel_to_dip_ratio);
+        ViewConfiguration::GetMinScalingSpanInDips());
     set_min_scaling_touch_major(
-        ViewConfiguration::GetMinScalingTouchMajorInPixels() *
-        raw_pixel_to_dip_ratio);
+        ViewConfiguration::GetMinScalingTouchMajorInDips());
     set_show_press_delay_in_ms(ViewConfiguration::GetTapTimeoutInMs());
-    set_span_slop(ViewConfiguration::GetTouchSlopInPixels() * 2.f *
-                  raw_pixel_to_dip_ratio);
+    set_span_slop(ViewConfiguration::GetTouchSlopInDips() * 2.f);
   }
 
   friend struct DefaultSingletonTraits<GestureConfigurationAndroid>;

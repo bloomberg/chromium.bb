@@ -107,16 +107,11 @@ SyntheticGestureTargetAndroid::GetDefaultSyntheticGestureSourceType() const {
 }
 
 float SyntheticGestureTargetAndroid::GetTouchSlopInDips() const {
-  float device_scale_factor =
-      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().device_scale_factor();
-  return gfx::ViewConfiguration::GetTouchSlopInPixels() / device_scale_factor;
+  return gfx::ViewConfiguration::GetTouchSlopInDips();
 }
 
 float SyntheticGestureTargetAndroid::GetMinScalingSpanInDips() const {
-  float device_scale_factor =
-      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().device_scale_factor();
-  return
-      gfx::ViewConfiguration::GetMinScalingSpanInPixels() / device_scale_factor;
+  return gfx::ViewConfiguration::GetMinScalingSpanInDips();
 }
 
 }  // namespace content

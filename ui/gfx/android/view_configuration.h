@@ -22,14 +22,14 @@ class GFX_EXPORT ViewConfiguration {
   // Dimensionless coefficient of friction.
   static float GetScrollFriction();
 
-  static int GetMaximumFlingVelocityInPixelsPerSecond();
-  static int GetMinimumFlingVelocityInPixelsPerSecond();
+  static int GetMaximumFlingVelocityInDipsPerSecond();
+  static int GetMinimumFlingVelocityInDipsPerSecond();
 
-  static int GetTouchSlopInPixels();
-  static int GetDoubleTapSlopInPixels();
+  static int GetTouchSlopInDips();
+  static int GetDoubleTapSlopInDips();
 
-  static int GetMinScalingSpanInPixels();
-  static int GetMinScalingTouchMajorInPixels();
+  static int GetMinScalingSpanInDips();
+  static int GetMinScalingTouchMajorInDips();
 
   // Registers methods with JNI and returns true if succeeded.
   static bool RegisterViewConfiguration(JNIEnv* env);

@@ -30,10 +30,13 @@ public class ViewConfigurationHelper {
 
     private final Context mAppContext;
     private ViewConfiguration mViewConfiguration;
+    private float mDensity;
 
     private ViewConfigurationHelper(Context context) {
         mAppContext = context.getApplicationContext();
         mViewConfiguration = ViewConfiguration.get(mAppContext);
+        mDensity = mAppContext.getResources().getDisplayMetrics().density;
+        assert mDensity > 0;
     }
 
     private void registerListener() {
@@ -51,18 +54,18 @@ public class ViewConfigurationHelper {
     }
 
     private void updateNativeViewConfigurationIfNecessary() {
-        // The ViewConfiguration will differ only if the density has changed.
         ViewConfiguration configuration = ViewConfiguration.get(mAppContext);
-        if (mViewConfiguration == configuration) return;
+        if (mViewConfiguration == configuration) {
+            // The density should remain the same as long as the ViewConfiguration remains the same.
+            assert mDensity == mAppContext.getResources().getDisplayMetrics().density;
+            return;
+        }
 
         mViewConfiguration = configuration;
-        nativeUpdateSharedViewConfiguration(
-                getScaledMaximumFlingVelocity(),
-                getScaledMinimumFlingVelocity(),
-                getScaledTouchSlop(),
-                getScaledDoubleTapSlop(),
-                getScaledMinScalingSpan(),
-                getScaledMinScalingTouchMajor());
+        mDensity = mAppContext.getResources().getDisplayMetrics().density;
+        assert mDensity > 0;
+        nativeUpdateSharedViewConfiguration(getMaximumFlingVelocity(), getMinimumFlingVelocity(),
+                getTouchSlop(), getDoubleTapSlop(), getMinScalingSpan(), getMinScalingTouchMajor());
     }
 
     @CalledByNative
@@ -86,26 +89,35 @@ public class ViewConfigurationHelper {
     }
 
     @CalledByNative
-    private int getScaledMaximumFlingVelocity() {
-        return mViewConfiguration.getScaledMaximumFlingVelocity();
+    private float getMaximumFlingVelocity() {
+        return toDips(mViewConfiguration.getScaledMaximumFlingVelocity());
     }
 
     @CalledByNative
-    private int getScaledMinimumFlingVelocity() {
-        return mViewConfiguration.getScaledMinimumFlingVelocity();
+    private float getMinimumFlingVelocity() {
+        return toDips(mViewConfiguration.getScaledMinimumFlingVelocity());
     }
 
     @CalledByNative
-    private int getScaledTouchSlop() {
-        return mViewConfiguration.getScaledTouchSlop();
+    private float getTouchSlop() {
+        return toDips(mViewConfiguration.getScaledTouchSlop());
     }
 
     @CalledByNative
-    private int getScaledDoubleTapSlop() {
-        return mViewConfiguration.getScaledDoubleTapSlop();
+    private float getDoubleTapSlop() {
+        return toDips(mViewConfiguration.getScaledDoubleTapSlop());
     }
 
     @CalledByNative
+    private float getMinScalingSpan() {
+        return toDips(getScaledMinScalingSpan());
+    }
+
+    @CalledByNative
+    private float getMinScalingTouchMajor() {
+        return toDips(getScaledMinScalingTouchMajor());
+    }
+
     private int getScaledMinScalingSpan() {
         final Resources res = mAppContext.getResources();
         int id = res.getIdentifier("config_minScalingSpan", "dimen", "android");
@@ -120,7 +132,6 @@ public class ViewConfigurationHelper {
         }
     }
 
-    @CalledByNative
     private int getScaledMinScalingTouchMajor() {
         final Resources res = mAppContext.getResources();
         int id = res.getIdentifier("config_minScalingTouchMajor", "dimen", "android");
@@ -135,6 +146,13 @@ public class ViewConfigurationHelper {
         }
     }
 
+    /**
+     * @return the unscaled pixel quantity in DIPs.
+     */
+    private float toDips(int pixels) {
+        return pixels / mDensity;
+    }
+
     @CalledByNative
     private static ViewConfigurationHelper createWithListener(Context context) {
         ViewConfigurationHelper viewConfigurationHelper = new ViewConfigurationHelper(context);
@@ -142,8 +160,7 @@ public class ViewConfigurationHelper {
         return viewConfigurationHelper;
     }
 
-    private native void nativeUpdateSharedViewConfiguration(
-            int scaledMaximumFlingVelocity, int scaledMinimumFlingVelocity,
-            int scaledTouchSlop, int scaledDoubleTapSlop,
-            int scaledMinScalingSpan, int scaledMinScalingTouchMajor);
+    private native void nativeUpdateSharedViewConfiguration(float maximumFlingVelocity,
+            float minimumFlingVelocity, float touchSlop, float doubleTapSlop, float minScalingSpan,
+            float minScalingTouchMajor);
 }
