@@ -965,7 +965,6 @@ crbug.com/357075 [ Win Release ] http/tests/security/contentSecurityPolicy/repor
 crbug.com/357082 [ Win Debug ] virtual/threaded/animations/animation-hit-test.html [ Failure Pass ]
 crbug.com/357084 [ Linux Win Debug ] virtual/threaded/animations/keyframe-timing-functions2.html [ Pass Timeout ]
 crbug.com/357085 [ Win Debug ] virtual/threaded/animations/unanimated-style.html [ Pass Timeout ]
-crbug.com/357088 [ Linux Release ] web-animations-api/timeline-updates-players.html [ Failure Pass ]
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation-file.html [ Crash Pass Slow Timeout ]
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation-filesystem.html [ Crash Pass Slow Timeout ]
 crbug.com/357437 web-animations-api/change-in-animation-frame.html [ Failure Pass ]
@@ -1297,7 +1296,6 @@ crbug.com/445889 fast/inline/fixed-pos-moves-with-abspos-inline-parent.html [ Pa
 
 crbug.com/447425 [ Win Mac Linux ] fast/dynamic/011.html [ Pass Failure ]
 
-crbug.com/448641 [ Debug ] web-animations-api/timeline-updates-players.html [ Crash Pass ]
 crbug.com/448931 permissionclient/image-permissions.html [ Pass Failure ]
 crbug.com/448980 fast/forms/select/styling-option-checked.html [ Pass ImageOnlyFailure ]
 
