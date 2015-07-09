@@ -222,10 +222,18 @@ JavaScript code in the context of the inspected page. You can invoke the
 <code>eval</code> method from a DevTools page, panel or sidebar pane.</p>
 
 <p>By default, the expression is evaluated in the context of the main frame of the
-page. Use the <code>useContentScriptContext: true</code> option to evaluate the
-expression in the same context as the content scripts.</p>
+page. Now, you may be familiar with the DevTools <a href="https://developer.chrome.com/devtools/docs/commandline-api">commandline API</a> features like element inspection (<code>inspect(elem)</code>), breaking on functions (<code>debug(fn)</code>), copying to clipboard  (<code>copy()</code>) and more.  <code>inspectedWindow.eval()</code> uses the same script execution context and options as the code typed at the DevTools console, which allows access to these APIs within the eval. For example, <a href="https://github.com/RedRibbon/SOAK/blob/ffdfad68ffb6051fa2d4e9db0219b3d234ac1ae8/pages/devtools.js#L6-L8">SOAK</a> uses it for inspecting an element:
 
-<p>Calling <code>eval</code> with <code>useContentScriptContext: true</code> does
+<pre>
+    chrome.devtools.inspectedWindow.eval(
+      "inspect($$('head script[data-soak=main]')[0])",
+      function(result, isException) { }
+    );
+</pre>
+
+
+<p>Alternatively, use the <code>useContentScriptContext: true</code> option for <code>inspectedWindow.eval()</code> to evaluate the
+expression in the same context as the content scripts. Calling <code>eval</code> with <code>useContentScriptContext: true</code> does
 not <em>create</em> a content script context, so you must load a context script
 before calling <code>eval</code>, either by calling <code>executeScript</code> or
 by specifying a content script in the <code>manifest.json</code> file.</p>
@@ -276,6 +284,19 @@ chrome.devtools.inspectedWindow.eval("setSelectedElement($0)",
 <p>The <code>useContentScriptContext: true</code> option specifies that the
 expression must be evaluated in the same context as the content scripts, so it can
 access the <code>setSelectedElement</code> method.</p>
+
+
+<h3 id="panel-window">Getting a reference panel's <code>window</code></h3>
+
+To <code>postMessage</code> from a devtools panel, you'll need a reference to its <code>window</code> object. Get a panel's iframe window in from the the <a href="http://developer.chrome.com/extensions/devtools.panels.html#event-ExtensionPanel-onShown"><code>panel.onShown</code></a> event handler:
+
+<pre>
+onShown.addListener(function callback)
+extensionPanel.onShown.addListener(function (extPanelWindow) {
+    extPanelWindow instanceof Window; // true
+    extPanelWindow.postMessage( // …
+});
+</pre>
 
 
 <h3 id="content-script-to-devtools">Messaging from Content Scripts to the DevTools Page</h3>
@@ -363,7 +384,7 @@ backgroundPageConnection.postMessage({
 
 
 <h3 id="evaluated-scripts-to-devtools">Messaging from Injected Scripts to the DevTools Page</h3>
- 
+
 <p>While the above solution works for content scripts, code that is injected
 directly into the page (e.g. through appending a <code>&lt;script&gt;</code> tag
 or through <code>$(ref:inspectedWindow.eval)</code>) requires a different strategy.
@@ -429,7 +450,7 @@ chrome.runtime.onConnect.addListener(function (port) {
         alert("DevTools window opening.");
       }
       openCount++;
-   
+
       port.onDisconnect.addListener(function(port) {
           openCount--;
           if (openCount == 0) {
@@ -449,6 +470,23 @@ var backgroundPageConnection = chrome.runtime.connect({
     name: "devtools-page"
 });
 </pre>
+
+
+<h2 id="examples">DevTools extension examples</h2>
+
+<p>Browse the source of these DevTools extension examples:</p>
+
+<ul>
+
+  <li><a href="https://github.com/PolymerLabs/polymer-devtools-extension">Polymer Devtools Extension</a> - uses many helpers running in the host page to query DOM/JS state to send back to the custom panel.
+  <li><a href="https://github.com/facebook/react-devtools">React DevTools Extension</a> - Uses a submodule of Blink to reuse DevTools UI components.
+  <li><a href="https://github.com/emberjs/ember-inspector">Ember Inspector</a> - Shared extension core with adapters for both Chrome and Firefox.
+  <li><a href="https://github.com/thomasboyt/coquette-inspect">Coquette-inspect</a> - A clean React-based extension with a debugging agent injected into the host page.
+  <li>our <a href="https://developer.chrome.com/devtools/docs/extensions-gallery">DevTools Extension Gallery</a> and <a href="https://developer.chrome.com/devtools/docs/sample-extensions">Sample Extensions</a> have more worthwhile apps to install, try out, and learn from.
+
+
+</ul>
+
 
 <h2 id="more">More information</h2>
 
