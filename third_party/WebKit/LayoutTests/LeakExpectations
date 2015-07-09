@@ -28,8 +28,6 @@ crbug.com/366043 [ Debug ] fast/history/history-traversal-is-asynchronous.html [
 # FIXME: html imports tests are flaky from extra navigation from leak detector
 crbug.com/366477 http/tests/htmlimports/redirect.html [ Failure Pass ]
 
-crbug.com/371264 virtual/deferred/inspector/timeline/timeline-window-filter.html [ Timeout ]
-crbug.com/371264 virtual/implsidepainting/inspector/timeline/timeline-window-filter.html [ Timeout ]
 # crbug.com/371264 also includes inspector/sources/debugger/callstack-placards-discarded.html as a test which times out, but now this is listed as crbug.com/376188.
 
 # The leak detector doesn't wait for worker threads to completely clean up, so leaks are expected.
@@ -54,11 +52,6 @@ crbug.com/364417 editing/selection/user-select-js-property.html [ Leak ]
 crbug.com/364417 fast/events/touch/gesture/context-menu-on-long-tap.html [ Leak ]
 crbug.com/364417 fast/repaint/japanese-rl-selection-clear.html [ Leak ]
 crbug.com/364417 fast/text/international/hebrew-selection.html [ Leak ]
-crbug.com/364417 svg/custom/bug79798.html [ Leak ]
-crbug.com/364417 virtual/slimmingpaint/svg/custom/bug79798.html [ Leak ]
-crbug.com/364417 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-004.html [ Leak ]
-crbug.com/364417 imported/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-001.html [ Leak ]
-crbug.com/364417 imported/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-002.html [ Leak ]
 
 crbug.com/455369 fast/html/marquee-destroyed-without-removed-from-crash.html [ Leak Pass ]
 
@@ -79,7 +72,6 @@ crbug.com/413731 imported/web-platform-tests/shadow-dom/user-interaction/ranges-
 crbug.com/414163 [ Debug ] inspector/sources/debugger/promise-tracker.html [ Crash ]
 
 crbug.com/417752 storage/websql/sql-error-codes.html [ Pass Leak ]
-crbug.com/427628 inspector/sources/debugger/debugger-save-to-temp-var.html [ Leak ]
 crbug.com/427628 inspector/sources/debugger-ui/debugger-save-to-temp-var.html [ Leak ]
 crbug.com/480769 http/tests/inspector/service-workers/user-agent-override.html [ Crash ]
 crbug.com/459576 webaudio/dom-exceptions.html [ Crash ]
@@ -101,22 +93,6 @@ crbug.com/482050 svg/zoom/text/absolute-sized-document-scrollbars.svg [ Leak ]
 crbug.com/482050 svg/zoom/text/relative-sized-document-scrollbars.svg [ Leak ]
 crbug.com/482050 svg/zoom/text/zoom-coords-viewattr-01-b.svg [ Leak ]
 crbug.com/482050 svg/zoom/text/zoom-foreignObject.svg [ Leak ]
-crbug.com/482050 virtual/slimmingpaint/svg/as-object/nested-embedded-svg-size-changes.html [ Leak ]
-crbug.com/482050 virtual/slimmingpaint/svg/custom/hit-test-unclosed-subpaths.svg [ Leak ]
-crbug.com/482050 virtual/slimmingpaint/svg/custom/hit-test-with-br.xhtml [ Leak ]
-crbug.com/482050 virtual/slimmingpaint/svg/custom/js-update-container2.svg [ Leak ]
-crbug.com/482050 virtual/slimmingpaint/svg/custom/prevent-default.svg [ Leak ]
-crbug.com/482050 virtual/slimmingpaint/svg/custom/repaint-shadow.svg [ Leak ]
-crbug.com/482050 virtual/slimmingpaint/svg/custom/scroll-hit-test.xhtml [ Leak ]
-crbug.com/482050 virtual/slimmingpaint/svg/custom/use-event-handler-on-referenced-element.svg [ Leak ]
-crbug.com/482050 virtual/slimmingpaint/svg/custom/use-event-handler-on-use-element.svg [ Leak ]
-crbug.com/482050 virtual/slimmingpaint/svg/dom/SVGPathSegList-xml-dom-synchronization.xhtml [ Leak ]
-crbug.com/482050 virtual/slimmingpaint/svg/zoom/text/absolute-sized-document-no-scrollbars.svg [ Leak ]
-crbug.com/482050 virtual/slimmingpaint/svg/zoom/text/absolute-sized-document-scrollbars.svg [ Leak ]
-crbug.com/482050 virtual/slimmingpaint/svg/zoom/text/relative-sized-document-scrollbars.svg [ Leak ]
-crbug.com/482050 virtual/slimmingpaint/svg/zoom/text/zoom-coords-viewattr-01-b.svg [ Leak ]
-crbug.com/482050 virtual/slimmingpaint/svg/zoom/text/zoom-foreignObject.svg [ Leak ]
-crbug.com/482050 virtual/slimmingpaint/svg/as-background-image/animated-svg-animation-control.html [ Leak ]
 
 crbug.com/504675 app_banner/app-banner-event-prompt.html [ Leak ]
 
