@@ -246,7 +246,6 @@ void DeferredImageDecoder::prepareLazyDecodedFrames()
         return;
 
     for (size_t i = previousSize; i < m_frameData.size(); ++i) {
-        OwnPtr<ImageFrame> frame(adoptPtr(new ImageFrame()));
         m_frameData[i].m_haveMetadata = true;
         m_frameData[i].m_duration = m_actualDecoder->frameDurationAtIndex(i);
         m_frameData[i].m_orientation = m_actualDecoder->orientation();
