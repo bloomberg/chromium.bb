@@ -71,6 +71,17 @@ class WebRtcVideoCapturerAdapter::MediaVideoFrameFactory
     DCHECK(input_frame == &captured_frame_);
     DCHECK(frame_.get());
 
+    const int64_t timestamp_ns = frame_->timestamp().InMicroseconds() *
+                                 base::Time::kNanosecondsPerMicrosecond;
+
+    // Return |frame_| directly if it is texture backed, because there is no
+    // cropping support for texture yet. See http://crbug/503653.
+    if (frame_->HasTextures()) {
+      return new cricket::WebRtcVideoFrame(
+          new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(frame_),
+          captured_frame_.elapsed_time, timestamp_ns);
+    }
+
     // Create a centered cropped visible rect that preservers aspect ratio for
     // cropped natural size.
     gfx::Rect visible_rect = frame_->visible_rect();
@@ -83,9 +94,6 @@ class WebRtcVideoCapturerAdapter::MediaVideoFrameFactory
         media::VideoFrame::WrapVideoFrame(frame_, visible_rect, output_size);
     video_frame->AddDestructionObserver(
         base::Bind(&ReleaseOriginalFrame, frame_));
-
-    const int64_t timestamp_ns = frame_->timestamp().InMicroseconds() *
-                                 base::Time::kNanosecondsPerMicrosecond;
 
     // If no scaling is needed, return a wrapped version of |frame_| directly.
     if (video_frame->natural_size() == video_frame->visible_rect().size()) {
@@ -137,11 +145,10 @@ class WebRtcVideoCapturerAdapter::MediaVideoFrameFactory
 WebRtcVideoCapturerAdapter::WebRtcVideoCapturerAdapter(bool is_screencast)
     : is_screencast_(is_screencast),
       running_(false),
-      first_frame_timestamp_(media::kNoTimestamp()),
-      frame_factory_(new MediaVideoFrameFactory) {
+      first_frame_timestamp_(media::kNoTimestamp()) {
   thread_checker_.DetachFromThread();
   // The base class takes ownership of the frame factory.
-  set_frame_factory(frame_factory_);
+  set_frame_factory(new MediaVideoFrameFactory);
 }
 
 WebRtcVideoCapturerAdapter::~WebRtcVideoCapturerAdapter() {
@@ -208,11 +215,11 @@ void WebRtcVideoCapturerAdapter::OnFrameCaptured(
     const scoped_refptr<media::VideoFrame>& frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("video", "WebRtcVideoCapturerAdapter::OnFrameCaptured");
-  if (!(media::VideoFrame::I420 == frame->format() ||
-        media::VideoFrame::YV12 == frame->format())) {
-    // Some types of sources support textures as output. Since connecting
-    // sources and sinks do not check the format, we need to just ignore
-    // formats that we can not handle.
+  if (!((frame->IsMappable() && (frame->format() == media::VideoFrame::I420 ||
+                                 frame->format() == media::VideoFrame::YV12)) ||
+        frame->HasTextures())) {
+    // Since connecting sources and sinks do not check the format, we need to
+    // just ignore formats that we can not handle.
     NOTREACHED();
     return;
   }
@@ -224,14 +231,15 @@ void WebRtcVideoCapturerAdapter::OnFrameCaptured(
       (frame->timestamp() - first_frame_timestamp_).InMicroseconds() *
       base::Time::kNanosecondsPerMicrosecond;
 
-  // Inject the frame via the VideoFrameFractory.
-  DCHECK(frame_factory_ == frame_factory());
-  frame_factory_->SetFrame(frame, elapsed_time);
+  // Inject the frame via the VideoFrameFactory of base class.
+  MediaVideoFrameFactory* media_video_frame_factory =
+      reinterpret_cast<MediaVideoFrameFactory*>(frame_factory());
+  media_video_frame_factory->SetFrame(frame, elapsed_time);
 
   // This signals to libJingle that a new VideoFrame is available.
-  SignalFrameCaptured(this, frame_factory_->GetCapturedFrame());
+  SignalFrameCaptured(this, media_video_frame_factory->GetCapturedFrame());
 
-  frame_factory_->ReleaseFrame();  // Release the frame ASAP.
+  media_video_frame_factory->ReleaseFrame();  // Release the frame ASAP.
 }
 
 }  // namespace content

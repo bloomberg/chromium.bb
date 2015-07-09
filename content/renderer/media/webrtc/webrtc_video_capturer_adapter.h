@@ -54,10 +54,7 @@ class CONTENT_EXPORT WebRtcVideoCapturerAdapter
   bool running_;
   base::TimeDelta first_frame_timestamp_;
 
-  // This is an alias to the frame_factory_ in the base class
-  // cricket::VideoCapturer.
   class MediaVideoFrameFactory;
-  MediaVideoFrameFactory* frame_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcVideoCapturerAdapter);
 };
