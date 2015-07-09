@@ -2172,6 +2172,9 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame, DetachType type) {
   // sent before setting |is_detaching_| to true.
   is_detaching_ = true;
 
+  if (render_widget_)
+    render_widget_->UnregisterRenderFrame(this);
+
   // We need to clean up subframes by removing them from the map and deleting
   // the RenderFrameImpl.  In contrast, the main frame is owned by its
   // containing RenderViewHost (so that they have the same lifetime), so only
@@ -2181,18 +2184,11 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame, DetachType type) {
   CHECK_EQ(it->second, this);
   g_frame_map.Get().erase(it);
 
-  if (is_subframe_) {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kSitePerProcess) && render_widget_) {
-      render_widget_->UnregisterRenderFrame(this);
-    }
-
-    // Only remove the frame from the renderer's frame tree if the frame is
-    // being detached for removal. For swaps, WebFrame::swap already takes care
-    // of replacing the frame with a RemoteFrame.
-    if (type == DetachType::Remove)
-      frame->parent()->removeChild(frame);
-  }
+  // Only remove the frame from the renderer's frame tree if the frame is
+  // being detached for removal. In the case of a swap, the frame needs to
+  // remain in the tree so WebFrame::swap() can replace it with the new frame.
+  if (is_subframe_ && type == DetachType::Remove)
+    frame->parent()->removeChild(frame);
 
   // |frame| is invalid after here.  Be sure to clear frame_ as well, since this
   // object may not be deleted immediately and other methods may try to access
