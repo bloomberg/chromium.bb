@@ -84,7 +84,7 @@ PresentationSession* Presentation::session() const
     return m_session.get();
 }
 
-ScriptPromise Presentation::startSession(ScriptState* state, const String& presentationUrl, const String& presentationId)
+ScriptPromise Presentation::startSession(ScriptState* state, const String& presentationUrl)
 {
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(state);
     ScriptPromise promise = resolver->promise();
@@ -94,7 +94,7 @@ ScriptPromise Presentation::startSession(ScriptState* state, const String& prese
         resolver->reject(DOMException::create(InvalidStateError, "The object is no longer attached to the frame."));
         return promise;
     }
-    client->startSession(presentationUrl, presentationId, new PresentationSessionClientCallbacks(resolver, this));
+    client->startSession(presentationUrl, new PresentationSessionClientCallbacks(resolver, this));
 
     return promise;
 }

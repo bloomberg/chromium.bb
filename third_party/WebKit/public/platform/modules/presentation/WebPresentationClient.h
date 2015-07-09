@@ -34,7 +34,7 @@ public:
 
     // Called when the frame requests to start a new session.
     // The ownership of the |callbacks| argument is transferred to the embedder.
-    virtual void startSession(const WebString& presentationUrl, const WebString& presentationId, WebPresentationSessionClientCallbacks*) = 0;
+    virtual void startSession(const WebString& presentationUrl, WebPresentationSessionClientCallbacks*) = 0;
 
     // Called when the frame requests to join an existing session.
     // The ownership of the |callbacks| argument is transferred to the embedder.

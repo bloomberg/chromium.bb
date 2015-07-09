@@ -44,7 +44,7 @@ public:
 
     PresentationSession* session() const;
 
-    ScriptPromise startSession(ScriptState*, const String& presentationUrl, const String& presentationId);
+    ScriptPromise startSession(ScriptState*, const String& presentationUrl);
     ScriptPromise joinSession(ScriptState*, const String& presentationUrl, const String& presentationId);
     ScriptPromise getAvailability(ScriptState*, const String& presentationUrl);
 

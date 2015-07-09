@@ -9,8 +9,7 @@
     RuntimeEnabled=Presentation
 ] interface Presentation : EventTarget {
     // This API used by controlling browsing context.
-    // TODO(avayvod): The |presentationId| argument is not in the spec.
-    [CallWith=ScriptState] Promise<PresentationSession> startSession(DOMString url, [Default=Undefined] optional DOMString presentationId);
+    [CallWith=ScriptState] Promise<PresentationSession> startSession(DOMString url);
     // TODO(avayvod): The |presentationId| argument should not be optional.
     [CallWith=ScriptState] Promise<PresentationSession> joinSession(DOMString url, [Default=Undefined] optional DOMString presentationId);
     [CallWith=ScriptState] Promise<PresentationAvailability> getAvailability(DOMString url);
