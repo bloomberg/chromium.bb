@@ -8,6 +8,8 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into gcl.
 """
 
+import filecmp
+
 
 def _CheckTestharnessResults(input_api, output_api):
     expected_files = [f.AbsoluteLocalPath() for f in input_api.AffectedFiles() if f.LocalPath().endswith('-expected.txt') and f.Action() != 'D']
@@ -27,13 +29,55 @@ def _CheckTestharnessResults(input_api, output_api):
     return []
 
 
+def _CheckIdenticalFiles(input_api, output_api):
+    """Verifies that certain files are identical in various locations.
+    These files should always be updated together."""
+
+    dirty_files = set(input_api.LocalPaths())
+
+    groups = [[
+        'resources/testharness.js',
+        'http/tests/resources/testharness.js',
+        'http/tests/w3c/resources/testharness.js',
+    ], [
+        'resources/testharnessreport.js',
+        'http/tests/resources/testharnessreport.js',
+        'http/tests/w3c/resources/testharnessreport.js',
+    ], [
+        'resources/idlharness.js',
+        'http/tests/w3c/resources/idlharness.js',
+    ], [
+        'resources/WebIDLParser.js',
+        'http/tests/w3c/resources/WebIDLParser.js',
+    ]]
+
+    def _absolute_path(s):
+        return input_api.os_path.join(input_api.PresubmitLocalPath(), *s.split('/'))
+
+    def _local_path(s):
+        return input_api.os_path.join('LayoutTests', *s.split('/'))
+
+    errors = []
+    for group in groups:
+        if any(_local_path(p) in dirty_files for p in group):
+            a = group[0]
+            for b in group[1:]:
+                if not filecmp.cmp(_absolute_path(a), _absolute_path(b), shallow=False):
+                    errors.append(output_api.PresubmitError(
+                        'Files that should match differ: (see https://crbug.com/362788)\n' +
+                        '  %s <=> %s' % (_local_path(a), _local_path(b))))
+    return errors
+
+
 def CheckChangeOnUpload(input_api, output_api):
     results = []
     results.extend(_CheckTestharnessResults(input_api, output_api))
+    results.extend(_CheckIdenticalFiles(input_api, output_api))
     return results
 
 
 def CheckChangeOnCommit(input_api, output_api):
     results = []
     results.extend(_CheckTestharnessResults(input_api, output_api))
+    results.extend(_CheckIdenticalFiles(input_api, output_api))
     return results
