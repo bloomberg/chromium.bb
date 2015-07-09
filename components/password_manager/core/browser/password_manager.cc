@@ -17,6 +17,7 @@
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
+#include "components/password_manager/core/browser/keychain_migration_status_mac.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -142,6 +143,10 @@ void PasswordManager::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kPasswordManagerAllowShowPasswords,
                                 true);
   registry->RegisterListPref(prefs::kPasswordManagerGroupsForDomains);
+#if defined(OS_MACOSX)
+  registry->RegisterIntegerPref(prefs::kKeychainMigrationStatus,
+                                static_cast<int>(MigrationStatus::NOT_STARTED));
+#endif
 }
 
 #if defined(OS_WIN)

@@ -41,6 +41,7 @@ static_library("browser") {
     "facet_manager_host.h",
     "import/csv_reader.cc",
     "import/csv_reader.h",
+    "keychain_migration_status_mac.h",
     "log_receiver.h",
     "log_router.cc",
     "log_router.h",

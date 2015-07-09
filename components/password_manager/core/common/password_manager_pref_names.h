@@ -35,6 +35,12 @@ extern const char kOsPasswordBlank[];
 extern const char kOsPasswordLastChanged[];
 #endif
 
+#if defined(OS_MACOSX)
+// The current status of migrating the passwords from the Keychain to the
+// database. Stores a value from MigrationStatus.
+extern const char kKeychainMigrationStatus[];
+#endif
+
 // Boolean controlling whether the password manager allows to retrieve passwords
 // in clear text.
 extern const char kPasswordManagerAllowShowPasswords[];

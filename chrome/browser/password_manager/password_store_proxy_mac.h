@@ -5,8 +5,13 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_PROXY_MAC_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_PROXY_MAC_H_
 
+#include <vector>
+
+#include "base/prefs/pref_member.h"
 #include "base/threading/thread.h"
+#include "components/password_manager/core/browser/keychain_migration_status_mac.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 
 namespace crypto {
 class AppleKeychain;
@@ -28,7 +33,8 @@ class PasswordStoreProxyMac : public password_manager::PasswordStore {
   PasswordStoreProxyMac(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
       scoped_ptr<crypto::AppleKeychain> keychain,
-      scoped_ptr<password_manager::LoginDatabase> login_db);
+      scoped_ptr<password_manager::LoginDatabase> login_db,
+      PrefService* prefs);
 
   bool Init(const syncer::SyncableService::StartSyncFlare& flare) override;
   void Shutdown() override;
@@ -39,6 +45,10 @@ class PasswordStoreProxyMac : public password_manager::PasswordStore {
   password_manager::LoginDatabase* login_metadata_db() {
     return login_metadata_db_.get();
   }
+
+  scoped_refptr<PasswordStoreMac> password_store_mac() {
+    return password_store_mac_;
+  }
 #endif
 
  private:
@@ -47,7 +57,13 @@ class PasswordStoreProxyMac : public password_manager::PasswordStore {
   password_manager::PasswordStore* GetBackend() const;
 
   // Opens LoginDatabase on the background |thread_|.
-  void InitOnBackgroundThread();
+  void InitOnBackgroundThread(password_manager::MigrationStatus status);
+
+  // Writes status to the prefs.
+  void UpdateStatusPref(password_manager::MigrationStatus status);
+
+  // Executes |pending_ui_tasks_| on the UI thread.
+  void FlushPendingTasks();
 
   // PasswordStore:
   void ReportMetricsImpl(const std::string& sync_username,
@@ -82,10 +98,22 @@ class PasswordStoreProxyMac : public password_manager::PasswordStore {
 
   // The login metadata SQL database. If opening the DB on |thread_| fails,
   // |login_metadata_db_| will be reset to NULL for the lifetime of |this|.
+  // The ownership may be transferred to |password_store_simple_|.
   scoped_ptr<password_manager::LoginDatabase> login_metadata_db_;
 
   // Thread that the synchronous methods are run on.
   scoped_ptr<base::Thread> thread_;
+
+  // Current migration status for the profile.
+  IntegerPrefMember migration_status_;
+
+  // List of tasks filled by InitOnBackgroundThread. They can't be just posted
+  // to the UI thread because the message loop can shut down before executing
+  // them. If this is the case then Shutdown() flushes the tasks after stopping
+  // the background thread.
+  // After InitOnBackgroundThread is run once, the queue may not be modified on
+  // the background thread any more.
+  std::vector<base::Closure> pending_ui_tasks_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreProxyMac);
 };

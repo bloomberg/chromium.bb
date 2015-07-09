@@ -10,18 +10,25 @@ SimplePasswordStoreMac::SimplePasswordStoreMac(
     scoped_ptr<password_manager::LoginDatabase> login_db)
     : PasswordStoreDefault(main_thread_runner, background_thread_runner,
                            login_db.Pass()) {
-  this->login_db()->set_clear_password_values(false);
+  if (this->login_db())
+    this->login_db()->set_clear_password_values(false);
 }
 
 SimplePasswordStoreMac::~SimplePasswordStoreMac() {
 }
 
-bool SimplePasswordStoreMac::Init(
-    const syncer::SyncableService::StartSyncFlare& flare) {
-  // All the initialization has to be done by the owner of the object.
-  return true;
+void SimplePasswordStoreMac::InitWithTaskRunner(
+    scoped_refptr<base::SingleThreadTaskRunner> background_task_runner,
+    scoped_ptr<password_manager::LoginDatabase> login_db) {
+  db_thread_runner_ = background_task_runner;
+  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  set_login_db(login_db.Pass());
+  if (this->login_db())
+    this->login_db()->set_clear_password_values(false);
 }
 
-void SimplePasswordStoreMac::Shutdown() {
-  PasswordStoreDefault::Shutdown();
+bool SimplePasswordStoreMac::Init(
+    const syncer::SyncableService::StartSyncFlare& flare) {
+  NOTREACHED();
+  return false;
 }

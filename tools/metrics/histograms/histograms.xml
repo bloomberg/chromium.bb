@@ -28086,6 +28086,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.KeychainMigration.Status"
+    enum="KeychainMigrationStatus">
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    The status of passwords migration from the Keychain. It's recorded shortly
+    after startup.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.KWalletDeserializationStatus"
     enum="BooleanSuccess">
   <owner>gcasto@chromium.org</owner>
@@ -59225,6 +59234,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="0" label="Keyboard was shown."/>
   <int value="1" label="Keyboard was automatically hidden."/>
   <int value="2" label="Keyboard was hidden by the user."/>
+</enum>
+
+<enum name="KeychainMigrationStatus" type="int">
+  <int value="0" label="Migration hasn't started"/>
+  <int value="1" label="Migration succeeded"/>
+  <int value="2" label="Migation failed once"/>
+  <int value="3" label="Migration failed twice"/>
 </enum>
 
 <enum name="LanguageCode" type="int">

@@ -59,6 +59,7 @@
         'password_manager/core/browser/facet_manager_host.h',
         'password_manager/core/browser/import/csv_reader.cc',
         'password_manager/core/browser/import/csv_reader.h',
+        'password_manager/core/browser/keychain_migration_status_mac.h',
         'password_manager/core/browser/log_receiver.h',
         'password_manager/core/browser/log_router.cc',
         'password_manager/core/browser/log_router.h',
