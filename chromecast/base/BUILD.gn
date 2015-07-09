@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//chrome/version.gni")  # TODO layering violation!
+import("//chromecast/chromecast.gni")
 import("//testing/test.gni")
 
 source_set("base") {
@@ -46,6 +47,25 @@ test("cast_base_unittests") {
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//testing/gtest",
+  ]
+}
+
+source_set("cast_sys_info") {
+  sources = [
+    "cast_sys_info_dummy.cc",
+    "cast_sys_info_dummy.h",
+    "cast_sys_info_util.h",
+  ]
+
+  if (!is_chromecast_chrome_branded && !is_android) {
+    sources += [ "cast_sys_info_util_simple.cc" ]
+  }
+
+  # TODO(mbjorge): put cast_sys_info_android in here
+
+  deps = [
+    "//base",
+    "//chromecast/public",
   ]
 }
 
