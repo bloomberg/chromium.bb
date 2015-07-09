@@ -11,7 +11,8 @@
 namespace nacl {
 
 bool IsNonSFIModeEnabled() {
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+#if defined(OS_CHROMEOS) && \
+    (defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARMEL))
   return true;
 #elif defined(OS_LINUX)
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
