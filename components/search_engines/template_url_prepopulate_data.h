@@ -16,7 +16,6 @@
 
 class GURL;
 class PrefService;
-class Profile;
 class SearchTermsData;
 class TemplateURL;
 struct TemplateURLData;

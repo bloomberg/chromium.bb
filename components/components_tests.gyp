@@ -508,8 +508,11 @@
     'search_unittest_sources': [
       'search/search_android_unittest.cc',
       'search/search_unittest.cc',
+    ],
+    'search_engines_unittest_sources': [
       'search_engines/default_search_manager_unittest.cc',
       'search_engines/default_search_policy_handler_unittest.cc',
+      'search_engines/default_search_pref_migration_unittest.cc',
       'search_engines/keyword_table_unittest.cc',
       'search_engines/search_host_to_urls_map_unittest.cc',
       'search_engines/template_url_prepopulate_data_unittest.cc',
@@ -724,6 +727,7 @@
         '<@(query_parser_unittest_sources)',
         '<@(rappor_unittest_sources)',
         '<@(search_unittest_sources)',
+        '<@(search_engines_unittest_sources)',
         '<@(search_provider_logos_unittest_sources)',
         '<@(sessions_unittest_sources)',
         '<@(signin_unittest_sources)',

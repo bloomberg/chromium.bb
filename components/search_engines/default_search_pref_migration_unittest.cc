@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search_engines/default_search_pref_migration.h"
+#include "components/search_engines/default_search_pref_migration.h"
 
 #include <string>
 
@@ -10,18 +10,16 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_pref_service_syncable.h"
-#include "chrome/test/base/testing_profile.h"
+#include "components/pref_registry/testing_pref_service_syncable.h"
+#include "components/search_engines/default_search_manager.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -29,43 +27,36 @@ class DefaultSearchPrefMigrationTest : public testing::Test {
  public:
   DefaultSearchPrefMigrationTest();
 
-  // testing::Test:
-  void SetUp() override;
-
   void SaveDefaultSearchProviderToLegacyPrefs(const TemplateURL* t_url);
 
   scoped_ptr<TemplateURL> CreateKeyword(const std::string& short_name,
                                         const std::string& keyword,
                                         const std::string& url);
 
-  TestingProfile* profile() { return profile_.get(); }
-
   DefaultSearchManager* default_search_manager() {
     return default_search_manager_.get();
   }
 
+  PrefService* pref_service() { return &prefs_; }
+
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
-  base::ScopedTempDir temp_dir_;
-  scoped_ptr<TestingProfile> profile_;
+  user_prefs::TestingPrefServiceSyncable prefs_;
   scoped_ptr<DefaultSearchManager> default_search_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultSearchPrefMigrationTest);
 };
 
 DefaultSearchPrefMigrationTest::DefaultSearchPrefMigrationTest() {
-}
-
-void DefaultSearchPrefMigrationTest::SetUp() {
-  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  profile_.reset(new TestingProfile(temp_dir_.path()));
+  DefaultSearchManager::RegisterProfilePrefs(prefs_.registry());
+  TemplateURLPrepopulateData::RegisterProfilePrefs(prefs_.registry());
+  TemplateURLService::RegisterProfilePrefs(prefs_.registry());
   default_search_manager_.reset(new DefaultSearchManager(
-      profile_->GetPrefs(), DefaultSearchManager::ObserverCallback()));
+      pref_service(), DefaultSearchManager::ObserverCallback()));
 }
 
 void DefaultSearchPrefMigrationTest::SaveDefaultSearchProviderToLegacyPrefs(
     const TemplateURL* t_url) {
-  PrefService* prefs = profile()->GetPrefs();
+  PrefService* prefs = pref_service();
 
   bool enabled = false;
   std::string search_url;
@@ -153,7 +144,7 @@ TEST_F(DefaultSearchPrefMigrationTest, MigrateUserSelectedValue) {
   SaveDefaultSearchProviderToLegacyPrefs(t_url.get());
 
   // Run the migration.
-  ConfigureDefaultSearchPrefMigrationToDictionaryValue(profile()->GetPrefs());
+  ConfigureDefaultSearchPrefMigrationToDictionaryValue(pref_service());
 
   // Test that it was migrated.
   DefaultSearchManager::Source source;
@@ -173,7 +164,7 @@ TEST_F(DefaultSearchPrefMigrationTest, MigrateOnlyOnce) {
   SaveDefaultSearchProviderToLegacyPrefs(t_url.get());
 
   // Run the migration.
-  ConfigureDefaultSearchPrefMigrationToDictionaryValue(profile()->GetPrefs());
+  ConfigureDefaultSearchPrefMigrationToDictionaryValue(pref_service());
 
   // Test that it was migrated.
   DefaultSearchManager::Source source;
@@ -187,7 +178,7 @@ TEST_F(DefaultSearchPrefMigrationTest, MigrateOnlyOnce) {
   default_search_manager()->ClearUserSelectedDefaultSearchEngine();
 
   // Run the migration.
-  ConfigureDefaultSearchPrefMigrationToDictionaryValue(profile()->GetPrefs());
+  ConfigureDefaultSearchPrefMigrationToDictionaryValue(pref_service());
 
   // Test that it was NOT migrated.
   modern_default = default_search_manager()->GetDefaultSearchEngine(&source);
@@ -207,7 +198,7 @@ TEST_F(DefaultSearchPrefMigrationTest, ModernValuePresent) {
   default_search_manager()->SetUserSelectedDefaultSearchEngine(t_url2->data());
 
   // Run the migration.
-  ConfigureDefaultSearchPrefMigrationToDictionaryValue(profile()->GetPrefs());
+  ConfigureDefaultSearchPrefMigrationToDictionaryValue(pref_service());
 
   // Test that no migration occurred. The modern value is left intact.
   DefaultSearchManager::Source source;
@@ -233,7 +224,7 @@ TEST_F(DefaultSearchPrefMigrationTest,
   SaveDefaultSearchProviderToLegacyPrefs(&prepopulated_turl);
 
   // Run the migration.
-  ConfigureDefaultSearchPrefMigrationToDictionaryValue(profile()->GetPrefs());
+  ConfigureDefaultSearchPrefMigrationToDictionaryValue(pref_service());
 
   // Test that the legacy value is not migrated, as it is not user-selected.
   default_search_manager()->GetDefaultSearchEngine(&source);

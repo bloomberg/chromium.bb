@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SEARCH_ENGINES_DEFAULT_SEARCH_PREF_MIGRATION_H_
-#define CHROME_BROWSER_SEARCH_ENGINES_DEFAULT_SEARCH_PREF_MIGRATION_H_
+#ifndef COMPONENTS_SEARCH_ENGINES_DEFAULT_SEARCH_PREF_MIGRATION_H_
+#define COMPONENTS_SEARCH_ENGINES_DEFAULT_SEARCH_PREF_MIGRATION_H_
 
 class PrefService;
 
@@ -14,4 +14,4 @@ class PrefService;
 void ConfigureDefaultSearchPrefMigrationToDictionaryValue(
     PrefService* pref_service);
 
-#endif  // CHROME_BROWSER_SEARCH_ENGINES_DEFAULT_SEARCH_PREF_MIGRATION_H_
+#endif  // COMPONENTS_SEARCH_ENGINES_DEFAULT_SEARCH_PREF_MIGRATION_H_

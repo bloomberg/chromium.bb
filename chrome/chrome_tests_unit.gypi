@@ -222,7 +222,6 @@
       'browser/search/instant_unittest_base.h',
       'browser/search/most_visited_iframe_source_unittest.cc',
       'browser/search/search_android_unittest.cc',
-      'browser/search_engines/default_search_pref_migration_unittest.cc',
       'browser/search_engines/search_provider_install_data_unittest.cc',
       'browser/service_process/service_process_control_mac_unittest.mm',
       'browser/services/gcm/fake_gcm_profile_service.cc',

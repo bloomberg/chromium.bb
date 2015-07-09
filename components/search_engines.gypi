@@ -41,6 +41,8 @@
         'search_engines/default_search_manager.h',
         'search_engines/default_search_policy_handler.cc',
         'search_engines/default_search_policy_handler.h',
+        'search_engines/default_search_pref_migration.cc',
+        'search_engines/default_search_pref_migration.h',
         'search_engines/keyword_table.cc',
         'search_engines/keyword_table.h',
         'search_engines/keyword_web_data_service.cc',

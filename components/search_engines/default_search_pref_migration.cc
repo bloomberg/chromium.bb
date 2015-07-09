@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search_engines/default_search_pref_migration.h"
+#include "components/search_engines/default_search_pref_migration.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
