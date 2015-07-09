@@ -90,7 +90,7 @@ void PlatformWindowAndroid::SurfaceCreated(JNIEnv* env,
 void PlatformWindowAndroid::SurfaceDestroyed(JNIEnv* env, jobject obj) {
   DCHECK(window_);
   ReleaseWindow();
-  // TODO(sad): Call OnClosed() here?
+  delegate_->OnAcceleratedWidgetAvailable(gfx::kNullAcceleratedWidget, 0.f);
 }
 
 void PlatformWindowAndroid::SurfaceSetSize(JNIEnv* env,
