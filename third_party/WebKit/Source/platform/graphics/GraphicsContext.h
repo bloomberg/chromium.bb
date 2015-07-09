@@ -64,11 +64,6 @@ class KURL;
 class PLATFORM_EXPORT GraphicsContext {
     WTF_MAKE_NONCOPYABLE(GraphicsContext); WTF_MAKE_FAST_ALLOCATED(GraphicsContext);
 public:
-    enum AccessMode {
-        ReadOnly,
-        ReadWrite
-    };
-
     enum DisabledMode {
         NothingDisabled = 0, // Run as normal.
         FullyDisabled = 1 // Do absolutely minimal work to remove the cost of the context from performance tests.
