@@ -227,21 +227,21 @@ class TestRenderViewHost
     delete_counter_ = delete_counter;
   }
 
-  // The opener route id passed to CreateRenderView().
-  int opener_route_id() const { return opener_route_id_; }
+  // The opener frame route id passed to CreateRenderView().
+  int opener_frame_route_id() const { return opener_frame_route_id_; }
 
   // RenderWidgetHost overrides (same value, but in the Mock* type)
   MockRenderProcessHost* GetProcess() const override;
 
   bool CreateTestRenderView(const base::string16& frame_name,
-                            int opener_route_id,
+                            int opener_frame_route_id,
                             int proxy_route_id,
                             int32 max_page_id,
                             bool window_was_created_with_opener) override;
 
   // RenderViewHost overrides --------------------------------------------------
 
-  bool CreateRenderView(int opener_route_id,
+  bool CreateRenderView(int opener_frame_route_id,
                         int proxy_route_id,
                         int32 max_page_id,
                         const FrameReplicationState& replicated_frame_state,
@@ -270,8 +270,8 @@ class TestRenderViewHost
   // See set_delete_counter() above. May be NULL.
   int* delete_counter_;
 
-  // See opener_route_id() above.
-  int opener_route_id_;
+  // See opener_frame_route_id() above.
+  int opener_frame_route_id_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderViewHost);
 };

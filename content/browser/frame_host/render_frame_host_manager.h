@@ -121,7 +121,7 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
     // appropriate RenderWidgetHostView type is used.
     virtual bool CreateRenderViewForRenderManager(
         RenderViewHost* render_view_host,
-        int opener_route_id,
+        int opener_frame_routing_id,
         int proxy_routing_id,
         const FrameReplicationState& replicated_frame_state,
         bool for_main_frame_navigation) = 0;
@@ -353,7 +353,6 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // the frame.
   scoped_ptr<RenderFrameHostImpl> CreateRenderFrame(SiteInstance* instance,
                                                     WebUIImpl* web_ui,
-                                                    int opener_route_id,
                                                     int flags,
                                                     int* view_routing_id_ptr);
 
@@ -414,7 +413,7 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // of WebContentsImpl.
   void ResetProxyHosts();
 
-  // Returns the routing id for a RenderFrameHost or RenderFrameHostProxy
+  // Returns the routing id for a RenderFrameHost or RenderFrameProxyHost
   // that has the given SiteInstance and is associated with this
   // RenderFrameHostManager. Returns MSG_ROUTING_NONE if none is found.
   int GetRoutingIdForSiteInstance(SiteInstance* site_instance);
@@ -462,10 +461,15 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // this frame's FrameTree and for its opener chain in the given SiteInstance.
   // This allows other tabs to send cross-process JavaScript calls to their
   // opener(s) and to any other frames in the opener's FrameTree (e.g.,
-  // supporting calls like window.opener.opener.frames[x][y]). Returns the
-  // route ID of this frame's RenderView for |instance|.
-  // TODO(alexmos): Switch this to return RenderFrame routing IDs.
-  int CreateOpenerProxies(SiteInstance* instance);
+  // supporting calls like window.opener.opener.frames[x][y]).
+  void CreateOpenerProxies(SiteInstance* instance);
+
+  // Returns a routing ID for the current FrameTreeNode's opener node in the
+  // given SiteInstance.  May return a routing ID of either a RenderFrameHost
+  // (if opener's current or pending RFH has SiteInstance |instance|) or a
+  // RenderFrameProxyHost.  Returns MSG_ROUTING_NONE if there is no opener, or
+  // if the opener node doesn't have a proxy for |instance|.
+  int GetOpenerRoutingID(SiteInstance* instance);
 
   // Called on the RFHM of the inner WebContents to create a
   // RenderFrameProxyHost in its outer WebContents's SiteInstance,
@@ -611,19 +615,15 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // (2) Create proxies for the new RFH's SiteInstance in its own frame tree;
   // (3) set any additional flags for the new RenderFrame with
   // |create_render_frame_flags|.
-  // Returns the opener's RVH route ID to be used for the new RenderFrame.
-  // TODO(alexmos): switch this to return opener's RFH routing ID instead.
-  int CreateProxiesForNewRenderFrameHost(SiteInstance* old_instance,
-                                         SiteInstance* new_instance,
-                                         int* create_render_frame_flags);
+  void CreateProxiesForNewRenderFrameHost(SiteInstance* old_instance,
+                                          SiteInstance* new_instance,
+                                          int* create_render_frame_flags);
 
   // Create swapped out RenderViews and RenderFrameProxies in the given
   // SiteInstance for all frames on the opener chain of this frame.  Same as
-  // CreateOpenerProxies, but starts from this frame's opener, returning
-  // MSG_ROUTING_NONE if it doesn't exist, and calling CreateOpenerProxies if
-  // it does.
-  // TODO(alexmos): Switch this to return RenderFrame routing IDs.
-  int CreateOpenerProxiesIfNeeded(SiteInstance* instance);
+  // CreateOpenerProxies, but starts from this frame's opener, calling
+  // CreateOpenerProxies on it if it exists and returning otherwise.
+  void CreateOpenerProxiesIfNeeded(SiteInstance* instance);
 
   // Creates a RenderFrameHost and corresponding RenderViewHost if necessary.
   scoped_ptr<RenderFrameHostImpl> CreateRenderFrameHost(SiteInstance* instance,
@@ -640,15 +640,12 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
                                         SiteInstance* new_instance,
                                         int bindings);
 
-  // Sets up the necessary state for a new RenderViewHost with the given opener,
-  // if necessary.  It creates a RenderFrameProxy in the target renderer process
-  // with the given |proxy_routing_id|, which is used to route IPC messages when
-  // in swapped out state.  Returns early if the RenderViewHost has already been
+  // Sets up the necessary state for a new RenderViewHost.  Creates a
+  // RenderFrameProxy in the target renderer process with the given
+  // |proxy_routing_id|, which is used to route IPC messages when in swapped
+  // out state.  Returns early if the RenderViewHost has already been
   // initialized for another RenderFrameHost.
-  // TODO(creis): opener_route_id is currently for the RenderViewHost but should
-  // be for the RenderFrame, since frames can have openers.
   bool InitRenderView(RenderViewHostImpl* render_view_host,
-                      int opener_route_id,
                       int proxy_routing_id,
                       bool for_main_frame_navigation);
 

@@ -58,7 +58,6 @@ using blink::WebURLRequest;
 
 namespace {
 
-const int32 kOpenerId = -2;
 const int32 kRouteId = 5;
 const int32 kMainFrameRouteId = 6;
 const int32 kNewWindowRouteId = 7;
@@ -237,7 +236,7 @@ void RenderViewTest::SetUp() {
   mock_process_.reset(new MockRenderProcess);
 
   ViewMsg_New_Params view_params;
-  view_params.opener_route_id = kOpenerId;
+  view_params.opener_frame_route_id = MSG_ROUTING_NONE;
   view_params.window_was_created_with_opener = false;
   view_params.renderer_preferences = RendererPreferences();
   view_params.web_preferences = WebPreferences();

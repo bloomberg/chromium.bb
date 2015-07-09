@@ -2542,17 +2542,36 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   PostMessageAndWaitForReply(root->child_at(0), "postToPopup('subframe-msg')",
                              "\"done-subframe1\"");
 
-  // TODO(alexmos): Once we propagate subframe opener information to new
-  // RenderViews, try sending a postMessage from the popup to window.opener and
-  // ensure that it reaches subframe1.
+  // Send a postMessage from the popup to window.opener and ensure that it
+  // reaches subframe1.  This verifies that the subframe opener information
+  // propagated to the popup's RenderFrame.  Wait for subframe1 to send a reply
+  // message to the popup.
+  EXPECT_TRUE(ExecuteScript(popup->web_contents(), "window.name = 'popup';"));
+  PostMessageAndWaitForReply(popup_root, "postToOpener('subframe-msg', '*')",
+                             "\"done-popup\"");
 
-  // Verify the total number of received messages for each subframe.  First
-  // subframe and popup should have one message each, and other frames
-  // shouldn't have received any messages.
+  // Second a postMessage from popup2 to window.opener.opener, which should
+  // resolve to subframe1.  This tests opener chains of length greater than 1.
+  // As before, subframe1 will send a reply to popup2.
+  FrameTreeNode* popup2_root =
+      static_cast<WebContentsImpl*>(popup2->web_contents())
+          ->GetFrameTree()
+          ->root();
+  EXPECT_TRUE(ExecuteScript(popup2->web_contents(), "window.name = 'popup2';"));
+  PostMessageAndWaitForReply(popup2_root,
+                             "postToOpenerOfOpener('subframe-msg', '*')",
+                             "\"done-popup2\"");
+
+  // Verify the total number of received messages for each subframe:
+  //  - 3 for first subframe (two from first popup, one from second popup)
+  //  - 2 for popup (both from first subframe)
+  //  - 1 for popup2 (reply from first subframe)
+  //  - 0 for other frames
   EXPECT_EQ(0, GetReceivedMessages(root));
-  EXPECT_EQ(1, GetReceivedMessages(root->child_at(0)));
+  EXPECT_EQ(3, GetReceivedMessages(root->child_at(0)));
   EXPECT_EQ(0, GetReceivedMessages(root->child_at(1)));
-  EXPECT_EQ(1, GetReceivedMessages(popup_root));
+  EXPECT_EQ(2, GetReceivedMessages(popup_root));
+  EXPECT_EQ(1, GetReceivedMessages(popup2_root));
 }
 
 // Check that parent.frames[num] references correct sibling frames when the

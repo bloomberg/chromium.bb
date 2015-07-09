@@ -274,7 +274,7 @@ SiteInstanceImpl* RenderViewHostImpl::GetSiteInstance() const {
 }
 
 bool RenderViewHostImpl::CreateRenderView(
-    int opener_route_id,
+    int opener_frame_route_id,
     int proxy_route_id,
     int32 max_page_id,
     const FrameReplicationState& replicated_frame_state,
@@ -316,7 +316,7 @@ bool RenderViewHostImpl::CreateRenderView(
   params.session_storage_namespace_id =
       delegate_->GetSessionStorageNamespace(instance_.get())->id();
   // Ensure the RenderView sets its opener correctly.
-  params.opener_route_id = opener_route_id;
+  params.opener_frame_route_id = opener_frame_route_id;
   params.swapped_out = !is_active_;
   params.replicated_frame_state = replicated_frame_state;
   params.proxy_routing_id = proxy_route_id;

@@ -137,18 +137,15 @@ bool TestWebContents::CrossProcessNavigationPending() {
 
 bool TestWebContents::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host,
-    int opener_route_id,
+    int opener_frame_routing_id,
     int proxy_routing_id,
     const FrameReplicationState& replicated_frame_state,
     bool for_main_frame) {
   UpdateMaxPageIDIfNecessary(render_view_host);
   // This will go to a TestRenderViewHost.
-  static_cast<RenderViewHostImpl*>(
-      render_view_host)->CreateRenderView(opener_route_id,
-                                          proxy_routing_id,
-                                          -1,
-                                          replicated_frame_state,
-                                          false);
+  static_cast<RenderViewHostImpl*>(render_view_host)
+      ->CreateRenderView(opener_frame_routing_id, proxy_routing_id, -1,
+                         replicated_frame_state, false);
   return true;
 }
 

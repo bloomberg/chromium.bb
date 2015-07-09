@@ -1654,9 +1654,9 @@ TEST_F(RenderFrameHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
   EXPECT_TRUE(
       opener1_manager->GetSwappedOutRenderViewHost(rfh1->GetSiteInstance())
           ->IsRenderViewLive());
-  EXPECT_EQ(opener1_manager->GetSwappedOutRenderViewHost(
-                                 rfh1->GetSiteInstance())->GetRoutingID(),
-            contents()->GetMainFrame()->GetRenderViewHost()->opener_route_id());
+  EXPECT_EQ(
+      opener1_manager->GetRoutingIdForSiteInstance(rfh1->GetSiteInstance()),
+      contents()->GetMainFrame()->GetRenderViewHost()->opener_frame_route_id());
 }
 
 // Test that RenderViewHosts created for WebUI navigations are properly

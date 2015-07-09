@@ -204,7 +204,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   // state.  |replicated_frame_state| contains replicated data for the
   // top-level frame, such as its name and sandbox flags.
   virtual bool CreateRenderView(
-      int opener_route_id,
+      int opener_frame_route_id,
       int proxy_route_id,
       int32 max_page_id,
       const FrameReplicationState& replicated_frame_state,

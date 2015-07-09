@@ -4042,7 +4042,7 @@ int WebContentsImpl::CreateSwappedOutRenderView(
     GetRenderManager()->CreateRenderFrameProxy(instance);
   } else {
     GetRenderManager()->CreateRenderFrame(
-        instance, nullptr, MSG_ROUTING_NONE,
+        instance, nullptr,
         CREATE_RF_SWAPPED_OUT | CREATE_RF_FOR_MAIN_FRAME_NAVIGATION |
             CREATE_RF_HIDDEN,
         &render_view_routing_id);
@@ -4218,7 +4218,7 @@ NavigationEntry*
 
 bool WebContentsImpl::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host,
-    int opener_route_id,
+    int opener_frame_routing_id,
     int proxy_routing_id,
     const FrameReplicationState& replicated_frame_state,
     bool for_main_frame_navigation) {
@@ -4251,12 +4251,10 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
   int32 max_page_id =
       GetMaxPageIDForSiteInstance(render_view_host->GetSiteInstance());
 
-  if (!static_cast<RenderViewHostImpl*>(
-          render_view_host)->CreateRenderView(opener_route_id,
-                                              proxy_routing_id,
-                                              max_page_id,
-                                              replicated_frame_state,
-                                              created_with_opener_)) {
+  if (!static_cast<RenderViewHostImpl*>(render_view_host)
+           ->CreateRenderView(opener_frame_routing_id, proxy_routing_id,
+                              max_page_id, replicated_frame_state,
+                              created_with_opener_)) {
     return false;
   }
 

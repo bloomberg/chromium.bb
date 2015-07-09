@@ -611,6 +611,42 @@ void ApplyBlinkSettings(const base::CommandLine& command_line,
   }
 }
 
+// Looks up and returns the WebFrame corresponding to a given opener frame
+// routing ID.  Also stores the opener's RenderView routing ID into
+// |opener_view_routing_id|.
+WebFrame* ResolveOpener(int opener_frame_routing_id,
+                        int* opener_view_routing_id) {
+  *opener_view_routing_id = MSG_ROUTING_NONE;
+  if (opener_frame_routing_id == MSG_ROUTING_NONE)
+    return nullptr;
+
+  // Opener routing ID could refer to either a RenderFrameProxy or a
+  // RenderFrame, so need to check both.
+  RenderFrameProxy* opener_proxy =
+      RenderFrameProxy::FromRoutingID(opener_frame_routing_id);
+  if (opener_proxy) {
+    *opener_view_routing_id = opener_proxy->render_view()->GetRoutingID();
+
+    // TODO(nasko,alexmos): This check won't be needed once swapped-out:// is
+    // gone.
+    if (opener_proxy->IsMainFrameDetachedFromTree()) {
+      DCHECK(!RenderFrameProxy::IsSwappedOutStateForbidden());
+      return opener_proxy->render_view()->webview()->mainFrame();
+    } else {
+      return opener_proxy->web_frame();
+    }
+  }
+
+  RenderFrameImpl* opener_frame =
+      RenderFrameImpl::FromRoutingID(opener_frame_routing_id);
+  if (opener_frame) {
+    *opener_view_routing_id = opener_frame->render_view()->GetRoutingID();
+    return opener_frame->GetWebFrame();
+  }
+
+  return nullptr;
+}
+
 }  // namespace
 
 RenderViewImpl::RenderViewImpl(const ViewMsg_New_Params& params)
@@ -662,8 +698,13 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
                                 bool was_created_by_renderer) {
   routing_id_ = params.view_id;
   surface_id_ = params.surface_id;
-  if (params.opener_route_id != MSG_ROUTING_NONE && was_created_by_renderer)
-    opener_id_ = params.opener_route_id;
+
+  int opener_view_routing_id;
+  WebFrame* opener_frame =
+      ResolveOpener(params.opener_frame_route_id, &opener_view_routing_id);
+  if (opener_view_routing_id != MSG_ROUTING_NONE && was_created_by_renderer)
+    opener_id_ = opener_view_routing_id;
+
   display_mode_= params.initial_size.display_mode;
 
   // Ensure we start with a valid next_page_id_ from the browser.
@@ -822,13 +863,10 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
 
   GetContentClient()->renderer()->RenderViewCreated(this);
 
-  // If we have an opener_id but we weren't created by a renderer, then
-  // it's the browser asking us to set our opener to another RenderView.
-  if (params.opener_route_id != MSG_ROUTING_NONE && !was_created_by_renderer) {
-    RenderViewImpl* opener_view = FromRoutingID(params.opener_route_id);
-    if (opener_view)
-      webview()->mainFrame()->setOpener(opener_view->webview()->mainFrame());
-  }
+  // If we have an opener_frame but we weren't created by a renderer, then it's
+  // the browser asking us to set our opener to another frame.
+  if (opener_frame && !was_created_by_renderer)
+    webview()->mainFrame()->setOpener(opener_frame);
 
   // If we are initially swapped out, navigate to kSwappedOutURL.
   // This ensures we are in a unique origin that others cannot script.
@@ -1627,7 +1665,11 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   // and rely on the browser sending a WasHidden / WasShown message if it
   // disagrees.
   ViewMsg_New_Params view_params;
-  view_params.opener_route_id = routing_id_;
+
+  RenderFrameImpl* creator_frame = RenderFrameImpl::FromWebFrame(creator);
+  view_params.opener_frame_route_id = creator_frame->GetRoutingID();
+  DCHECK_EQ(routing_id_, creator_frame->render_view()->GetRoutingID());
+
   view_params.window_was_created_with_opener = true;
   view_params.renderer_preferences = renderer_preferences_;
   view_params.web_preferences = webkit_preferences_;

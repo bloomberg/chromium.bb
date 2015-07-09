@@ -277,10 +277,8 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
     dest_render_frame_host->SetUpMojoIfNeeded();
 
     // Recreate the opener chain.
-    int opener_route_id =
-        CreateOpenerProxiesIfNeeded(dest_render_frame_host->GetSiteInstance());
+    CreateOpenerProxiesIfNeeded(dest_render_frame_host->GetSiteInstance());
     if (!InitRenderView(dest_render_frame_host->render_view_host(),
-                        opener_route_id,
                         MSG_ROUTING_NONE,
                         frame_tree_node_->IsMainFrame()))
       return NULL;
@@ -873,10 +871,9 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   // created or has crashed), initialize it.
   if (!navigation_rfh->IsRenderFrameLive()) {
     // Recreate the opener chain.
-    int opener_route_id =
-        CreateOpenerProxiesIfNeeded(navigation_rfh->GetSiteInstance());
-    if (!InitRenderView(navigation_rfh->render_view_host(), opener_route_id,
-                        MSG_ROUTING_NONE, frame_tree_node_->IsMainFrame())) {
+    CreateOpenerProxiesIfNeeded(navigation_rfh->GetSiteInstance());
+    if (!InitRenderView(navigation_rfh->render_view_host(), MSG_ROUTING_NONE,
+                        frame_tree_node_->IsMainFrame())) {
       return nullptr;
     }
 
@@ -1409,23 +1406,21 @@ void RenderFrameHostManager::CreatePendingRenderFrameHost(
   if (!new_instance->GetProcess()->Init())
     return;
 
-  int opener_route_id = CreateProxiesForNewRenderFrameHost(
-      old_instance, new_instance, &create_render_frame_flags);
+  CreateProxiesForNewRenderFrameHost(old_instance, new_instance,
+                                     &create_render_frame_flags);
 
   // Create a non-swapped-out RFH with the given opener.
-  pending_render_frame_host_ =
-      CreateRenderFrame(new_instance, pending_web_ui(), opener_route_id,
-                        create_render_frame_flags, nullptr);
+  pending_render_frame_host_ = CreateRenderFrame(
+      new_instance, pending_web_ui(), create_render_frame_flags, nullptr);
 }
 
-int RenderFrameHostManager::CreateProxiesForNewRenderFrameHost(
+void RenderFrameHostManager::CreateProxiesForNewRenderFrameHost(
     SiteInstance* old_instance,
     SiteInstance* new_instance,
     int* create_render_frame_flags) {
-  int opener_route_id = MSG_ROUTING_NONE;
   // Only create opener proxies if they are in the same BrowsingInstance.
   if (new_instance->IsRelatedSiteInstance(old_instance))
-    opener_route_id = CreateOpenerProxiesIfNeeded(new_instance);
+    CreateOpenerProxiesIfNeeded(new_instance);
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSitePerProcess)) {
     // Ensure that the frame tree has RenderFrameProxyHosts for the new
@@ -1443,7 +1438,6 @@ int RenderFrameHostManager::CreateProxiesForNewRenderFrameHost(
             new_instance)
       *create_render_frame_flags |= CREATE_RF_NEEDS_RENDER_WIDGET_HOST;
   }
-  return opener_route_id;
 }
 
 scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrameHost(
@@ -1501,8 +1495,8 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
     return false;
 
   int create_render_frame_flags = 0;
-  int opener_route_id = CreateProxiesForNewRenderFrameHost(
-      old_instance, new_instance, &create_render_frame_flags);
+  CreateProxiesForNewRenderFrameHost(old_instance, new_instance,
+                                     &create_render_frame_flags);
 
   if (frame_tree_node_->IsMainFrame())
     create_render_frame_flags |= CREATE_RF_FOR_MAIN_FRAME_NAVIGATION;
@@ -1510,7 +1504,7 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
     create_render_frame_flags |= CREATE_RF_HIDDEN;
   speculative_render_frame_host_ =
       CreateRenderFrame(new_instance, speculative_web_ui_.get(),
-                        opener_route_id, create_render_frame_flags, nullptr);
+                        create_render_frame_flags, nullptr);
 
   if (!speculative_render_frame_host_) {
     speculative_web_ui_.reset();
@@ -1522,7 +1516,6 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
 scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
     SiteInstance* instance,
     WebUIImpl* web_ui,
-    int opener_route_id,
     int flags,
     int* view_routing_id_ptr) {
   bool swapped_out = !!(flags & CREATE_RF_SWAPPED_OUT);
@@ -1584,9 +1577,8 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
       proxy->TakeFrameHostOwnership(new_render_frame_host.Pass());
     }
 
-    success =
-        InitRenderView(render_view_host, opener_route_id, proxy_routing_id,
-                       !!(flags & CREATE_RF_FOR_MAIN_FRAME_NAVIGATION));
+    success = InitRenderView(render_view_host, proxy_routing_id,
+                             !!(flags & CREATE_RF_FOR_MAIN_FRAME_NAVIGATION));
     if (success) {
       // Remember that InitRenderView also created the RenderFrameProxy.
       if (swapped_out)
@@ -1671,8 +1663,7 @@ int RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
 
   if (RenderFrameHostManager::IsSwappedOutStateForbidden() &&
       frame_tree_node_->IsMainFrame()) {
-    InitRenderView(
-        render_view_host, MSG_ROUTING_NONE, proxy->GetRoutingID(), true);
+    InitRenderView(render_view_host, proxy->GetRoutingID(), true);
     proxy->set_render_frame_proxy_created(true);
   } else {
     proxy->InitRenderFrameProxy();
@@ -1697,7 +1688,7 @@ void RenderFrameHostManager::EnsureRenderViewInitialized(
     return;
 
   // Recreate the opener chain.
-  int opener_route_id = CreateOpenerProxiesIfNeeded(instance);
+  CreateOpenerProxiesIfNeeded(instance);
 
   // If the proxy in |instance| doesn't exist, this RenderView is not swapped
   // out and shouldn't be reinitialized here.
@@ -1705,8 +1696,7 @@ void RenderFrameHostManager::EnsureRenderViewInitialized(
   if (!proxy)
     return;
 
-  InitRenderView(render_view_host, opener_route_id, proxy->GetRoutingID(),
-                 false);
+  InitRenderView(render_view_host, proxy->GetRoutingID(), false);
   proxy->set_render_frame_proxy_created(true);
 }
 
@@ -1741,7 +1731,6 @@ void RenderFrameHostManager::SetRWHViewForInnerContents(
 
 bool RenderFrameHostManager::InitRenderView(
     RenderViewHostImpl* render_view_host,
-    int opener_route_id,
     int proxy_routing_id,
     bool for_main_frame_navigation) {
   // Ensure the renderer process is initialized before creating the
@@ -1775,12 +1764,12 @@ bool RenderFrameHostManager::InitRenderView(
     }
   }
 
+  int opener_frame_routing_id =
+      GetOpenerRoutingID(render_view_host->GetSiteInstance());
+
   return delegate_->CreateRenderViewForRenderManager(
-      render_view_host,
-      opener_route_id,
-      proxy_routing_id,
-      frame_tree_node_->current_replication_state(),
-      for_main_frame_navigation);
+      render_view_host, opener_frame_routing_id, proxy_routing_id,
+      frame_tree_node_->current_replication_state(), for_main_frame_navigation);
 }
 
 bool RenderFrameHostManager::InitRenderFrame(
@@ -1836,10 +1825,17 @@ int RenderFrameHostManager::GetRoutingIdForSiteInstance(
   if (render_frame_host_->GetSiteInstance() == site_instance)
     return render_frame_host_->GetRoutingID();
 
-  RenderFrameProxyHostMap::iterator iter =
-      proxy_hosts_.find(site_instance->GetId());
-  if (iter != proxy_hosts_.end())
-    return iter->second->GetRoutingID();
+  // If there is a matching pending RFH, only return it if swapped out is
+  // allowed, since otherwise there should be a proxy that should be used
+  // instead.
+  if (pending_render_frame_host_ &&
+      pending_render_frame_host_->GetSiteInstance() == site_instance &&
+      !RenderFrameHostManager::IsSwappedOutStateForbidden())
+    return pending_render_frame_host_->GetRoutingID();
+
+  RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(site_instance);
+  if (proxy)
+    return proxy->GetRoutingID();
 
   return MSG_ROUTING_NONE;
 }
@@ -2282,19 +2278,17 @@ void RenderFrameHostManager::DeleteRenderFrameProxyHost(
   }
 }
 
-int RenderFrameHostManager::CreateOpenerProxiesIfNeeded(
+void RenderFrameHostManager::CreateOpenerProxiesIfNeeded(
     SiteInstance* instance) {
   FrameTreeNode* opener = frame_tree_node_->opener();
   if (!opener)
-    return MSG_ROUTING_NONE;
+    return;
 
   // Create proxies for the opener chain.
-  return opener->render_manager()->CreateOpenerProxies(instance);
+  opener->render_manager()->CreateOpenerProxies(instance);
 }
 
-int RenderFrameHostManager::CreateOpenerProxies(SiteInstance* instance) {
-  int opener_route_id = MSG_ROUTING_NONE;
-
+void RenderFrameHostManager::CreateOpenerProxies(SiteInstance* instance) {
   // If this tab has an opener, recursively create proxies for the nodes on its
   // frame tree.
   // TODO(alexmos): Once we allow frame openers to be updated (which can happen
@@ -2304,39 +2298,43 @@ int RenderFrameHostManager::CreateOpenerProxies(SiteInstance* instance) {
   // be traversed).
   FrameTreeNode* opener = frame_tree_node_->opener();
   if (opener)
-    opener_route_id = opener->render_manager()->CreateOpenerProxies(instance);
+    opener->render_manager()->CreateOpenerProxies(instance);
 
   // If any of the RenderViews (current, pending, or swapped out) for this
-  // FrameTree has the same SiteInstance, use it.  If such a RenderView exists,
-  // that implies that proxies for all nodes in the tree should also exist
-  // (when in site-per-process mode), so it is safe to exit early.
+  // FrameTree has the same SiteInstance, then we can return early, since
+  // proxies for other nodes in the tree should also exist (when in
+  // site-per-process mode).
   FrameTree* frame_tree = frame_tree_node_->frame_tree();
   RenderViewHostImpl* rvh = frame_tree->GetRenderViewHost(instance);
   if (rvh && rvh->IsRenderViewLive())
-    return rvh->GetRoutingID();
+    return;
 
-  int render_view_routing_id = MSG_ROUTING_NONE;
   if (RenderFrameHostManager::IsSwappedOutStateForbidden()) {
     // Ensure that all the nodes in the opener's frame tree have
     // RenderFrameProxyHosts for the new SiteInstance.
     frame_tree->CreateProxiesForSiteInstance(nullptr, instance);
-    rvh = frame_tree->GetRenderViewHost(instance);
-    render_view_routing_id = rvh->GetRoutingID();
   } else if (rvh && !rvh->IsRenderViewLive()) {
     EnsureRenderViewInitialized(rvh, instance);
-    render_view_routing_id = rvh->GetRoutingID();
   } else {
     // Create a swapped out RenderView in the given SiteInstance if none exists,
     // setting its opener to the given route_id.  Since the opener can point to
     // a subframe, do this on the root frame of the opener's frame tree.
     // Return the new view's route_id.
     frame_tree->root()->render_manager()->
-        CreateRenderFrame(instance, nullptr, opener_route_id,
+        CreateRenderFrame(instance, nullptr,
                           CREATE_RF_FOR_MAIN_FRAME_NAVIGATION |
                           CREATE_RF_SWAPPED_OUT | CREATE_RF_HIDDEN,
-                          &render_view_routing_id);
+                          nullptr);
   }
-  return render_view_routing_id;
+}
+
+int RenderFrameHostManager::GetOpenerRoutingID(SiteInstance* instance) {
+  if (!frame_tree_node_->opener())
+    return MSG_ROUTING_NONE;
+
+  return frame_tree_node_->opener()
+      ->render_manager()
+      ->GetRoutingIdForSiteInstance(instance);
 }
 
 }  // namespace content

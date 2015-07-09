@@ -912,16 +912,27 @@ TEST_F(WebContentsImplTest, FindOpenerRVHWhenPending) {
       url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   orig_rfh->PrepareForCommit();
   TestRenderFrameHost* pending_rfh = contents()->GetPendingMainFrame();
+  SiteInstance* instance = pending_rfh->GetSiteInstance();
 
   // While it is still pending, simulate opening a new tab with the first tab
   // as its opener.  This will call CreateOpenerProxies on the opener to ensure
   // that an RVH exists.
-  int opener_routing_id = contents()->GetRenderManager()->CreateOpenerProxies(
-      pending_rfh->GetSiteInstance());
+  scoped_ptr<TestWebContents> popup(
+      TestWebContents::Create(browser_context(), instance));
+  popup->SetOpener(contents());
+  contents()->GetRenderManager()->CreateOpenerProxies(instance);
 
-  // We should find the pending RVH and not create a new one.
-  EXPECT_EQ(pending_rfh->GetRenderViewHost()->GetRoutingID(),
-            opener_routing_id);
+  // If swapped out is allowed, we should find the pending RFH and not create a
+  // new one.  Otherwise, a new proxy should be created for the opener in
+  // |instance|, and we should ensure that its routing ID is returned here.
+  //
+  // TODO(alexmos): Add the latter check once CreateOpenerProxies is fixed to
+  // create a proxy in this case.
+  if (!RenderFrameHostManager::IsSwappedOutStateForbidden()) {
+    int opener_frame_routing_id =
+        popup->GetRenderManager()->GetOpenerRoutingID(instance);
+    EXPECT_EQ(pending_rfh->GetRoutingID(), opener_frame_routing_id);
+  }
 }
 
 // Tests that WebContentsImpl uses the current URL, not the SiteInstance's site,

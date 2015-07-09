@@ -578,7 +578,7 @@ class CONTENT_EXPORT WebContentsImpl
 
   bool CreateRenderViewForRenderManager(
       RenderViewHost* render_view_host,
-      int opener_route_id,
+      int opener_frame_routing_id,
       int proxy_routing_id,
       const FrameReplicationState& replicated_frame_state,
       bool for_main_frame_navigation) override;
