@@ -167,8 +167,6 @@ class AudioInputStreamWrapper {
         AudioManagerBase::kDefaultDeviceId, false, &default_params_)));
     EXPECT_EQ(format(), AudioParameters::AUDIO_PCM_LOW_LATENCY);
     frames_per_buffer_ = default_params_.frames_per_buffer();
-    // We expect the default buffer size to be a 10ms buffer.
-    EXPECT_EQ(frames_per_buffer_, sample_rate() / 100);
   }
 
   ~AudioInputStreamWrapper() {}
