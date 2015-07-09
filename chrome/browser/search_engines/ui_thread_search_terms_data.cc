@@ -28,7 +28,7 @@
 #include "url/gurl.h"
 
 #if defined(ENABLE_RLZ)
-#include "components/rlz/rlz_tracker.h"
+#include "chrome/browser/rlz/rlz.h"
 #endif
 
 using content::BrowserThread;
@@ -82,12 +82,12 @@ base::string16 UIThreadSearchTermsData::GetRlzParameterValue(
     // This call will return false the first time(s) it is called until the
     // value has been cached. This normally would mean that at most one omnibox
     // search might not send the RLZ data but this is not really a problem.
-    rlz_lib::AccessPoint access_point = rlz::RLZTracker::ChromeOmnibox();
+    rlz_lib::AccessPoint access_point = RLZTracker::ChromeOmnibox();
 #if !defined(OS_IOS)
     if (from_app_list)
-      access_point = rlz::RLZTracker::ChromeAppList();
+      access_point = RLZTracker::ChromeAppList();
 #endif
-    rlz::RLZTracker::GetAccessPointRlz(access_point, &rlz_string);
+    RLZTracker::GetAccessPointRlz(access_point, &rlz_string);
   }
 #endif
   return rlz_string;

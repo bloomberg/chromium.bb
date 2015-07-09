@@ -1539,13 +1539,10 @@ if (!is_android) {
     if (is_win || is_mac || is_chromeos) {
       sources += [ "../common/extensions/api/networking_private/networking_private_crypto_unittest.cc" ]
     }
-    if (enable_rlz_support) {
-      sources += [ "../browser/rlz/chrome_rlz_tracker_delegate_unittest.cc" ]
-      deps += [
-        "//chrome/browser:rlz",
-        "//components/rlz",
-        "//rlz:test_support",
-      ]
+    if (enable_rlz) {
+      deps += [ "//rlz:test_support" ]
+    } else {
+      sources -= [ "../browser/rlz/rlz_unittest.cc" ]
     }
     if (is_win) {
       if (!is_component_build) {

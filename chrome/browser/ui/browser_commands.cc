@@ -20,6 +20,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
@@ -102,10 +103,6 @@
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #endif  // defined(ENABLE_PRINT_PREVIEW)
 #endif  // defined(ENABLE_PRINTING)
-
-#if defined(ENABLE_RLZ)
-#include "components/rlz/rlz_tracker.h"
-#endif
 
 namespace {
 const char kOsOverrideForTabletSite[] = "Linux; Android 4.0.3";
@@ -436,8 +433,8 @@ void Home(Browser* browser, WindowOpenDisposition disposition) {
   if (pref_service) {
     if (google_util::IsGoogleHomePageUrl(
         GURL(pref_service->GetString(prefs::kHomePage)))) {
-      extra_headers = rlz::RLZTracker::GetAccessPointHttpHeader(
-          rlz::RLZTracker::ChromeHomePage());
+      extra_headers = RLZTracker::GetAccessPointHttpHeader(
+          RLZTracker::ChromeHomePage());
     }
   }
 #endif  // defined(ENABLE_RLZ) && !defined(OS_IOS)

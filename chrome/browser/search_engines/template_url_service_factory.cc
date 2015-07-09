@@ -13,6 +13,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/search_engines/chrome_template_url_service_client.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/web_data_service_factory.h"
@@ -21,10 +22,6 @@
 #include "components/search_engines/default_search_manager.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url_service.h"
-
-#if defined(ENABLE_RLZ)
-#include "components/rlz/rlz_tracker.h"
-#endif
 
 // static
 TemplateURLService* TemplateURLServiceFactory::GetForProfile(Profile* profile) {
@@ -42,9 +39,11 @@ scoped_ptr<KeyedService> TemplateURLServiceFactory::BuildInstanceFor(
     content::BrowserContext* context) {
   base::Closure dsp_change_callback;
 #if defined(ENABLE_RLZ)
-  dsp_change_callback = base::Bind(
-      base::IgnoreResult(&rlz::RLZTracker::RecordProductEvent), rlz_lib::CHROME,
-      rlz::RLZTracker::ChromeOmnibox(), rlz_lib::SET_TO_GOOGLE);
+  dsp_change_callback =
+      base::Bind(base::IgnoreResult(&RLZTracker::RecordProductEvent),
+                 rlz_lib::CHROME,
+                 RLZTracker::ChromeOmnibox(),
+                 rlz_lib::SET_TO_GOOGLE);
 #endif
   Profile* profile = static_cast<Profile*>(context);
   return make_scoped_ptr(new TemplateURLService(

@@ -488,9 +488,6 @@
       'rappor/rappor_utils_unittest.cc',
       'rappor/sampler_unittest.cc',
     ],
-    'rlz_unittest_sources': [
-      'rlz/rlz_tracker_unittest.cc',
-    ],
     'scheduler_unittest_sources': [
       'scheduler/child/idle_helper_unittest.cc',
       'scheduler/child/nestable_task_runner_for_test.cc',
@@ -867,23 +864,6 @@
         'mime_util/mime_util.gyp:mime_util',
       ],
       'conditions': [
-        ['enable_rlz_support==1', {
-          'sources': [
-            '<@(rlz_unittest_sources)',
-          ],
-          'dependencies': [
-            '../net/net.gyp:net_test_support',
-            '../rlz/rlz.gyp:test_support_rlz',
-            'components.gyp:rlz',
-          ],
-          'conditions': [
-            ['OS == "ios"', {
-              'dependencies': [
-                '../ui/base/ui_base.gyp:ui_base',
-              ],
-            }],
-          ],
-        }],
         ['toolkit_views == 1', {
           'sources': [
             'bookmarks/browser/bookmark_node_data_unittest.cc',

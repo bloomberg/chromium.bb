@@ -65,6 +65,7 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -99,11 +100,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "url/gurl.h"
-
-#if defined(ENABLE_RLZ)
-#include "chrome/browser/rlz/chrome_rlz_tracker_delegate.h"
-#include "components/rlz/rlz_tracker.h"
-#endif
 
 namespace chromeos {
 
@@ -1302,7 +1298,7 @@ void UserSessionManager::InitRlzImpl(Profile* profile, bool disabled) {
   }
   if (disabled != local_state->GetBoolean(prefs::kRLZDisabled)) {
     // When switching to RLZ enabled/disabled state, clear all recorded events.
-    rlz::RLZTracker::ClearRlzState();
+    RLZTracker::ClearRlzState();
     local_state->SetBoolean(prefs::kRLZDisabled, disabled);
   }
   // Init the RLZ library.
@@ -1310,14 +1306,11 @@ void UserSessionManager::InitRlzImpl(Profile* profile, bool disabled) {
       ::first_run::GetPingDelayPrefName().c_str());
   // Negative ping delay means to send ping immediately after a first search is
   // recorded.
-  rlz::RLZTracker::SetRlzDelegate(
-      make_scoped_ptr(new ChromeRLZTrackerDelegate));
-  rlz::RLZTracker::InitRlzDelayed(
-      user_manager::UserManager::Get()->IsCurrentUserNew(), ping_delay < 0,
-      base::TimeDelta::FromMilliseconds(abs(ping_delay)),
-      ChromeRLZTrackerDelegate::IsGoogleDefaultSearch(profile),
-      ChromeRLZTrackerDelegate::IsGoogleHomepage(profile),
-      ChromeRLZTrackerDelegate::IsGoogleInStartpages(profile));
+  RLZTracker::InitRlzFromProfileDelayed(
+      profile,
+      user_manager::UserManager::Get()->IsCurrentUserNew(),
+      ping_delay < 0,
+      base::TimeDelta::FromMilliseconds(abs(ping_delay)));
 #endif
 }
 

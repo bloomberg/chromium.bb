@@ -2,27 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_RLZ_RLZ_TRACKER_H_
-#define COMPONENTS_RLZ_RLZ_TRACKER_H_
+#ifndef CHROME_BROWSER_RLZ_RLZ_H_
+#define CHROME_BROWSER_RLZ_RLZ_H_
+
+#include "build/build_config.h"
+
+#if defined(ENABLE_RLZ)
 
 #include <map>
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string16.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "rlz/lib/rlz_lib.h"
 
+class Profile;
 namespace net {
 class URLRequestContextGetter;
 }
-
-namespace rlz {
-
-class RLZTrackerDelegate;
 
 // RLZ is a library which is used to measure distribution scenarios.
 // Its job is to record certain lifetime events in the registry and to send
@@ -34,12 +36,8 @@ class RLZTrackerDelegate;
 // For partner or bundled installs, the RLZ might send more information
 // according to the terms disclosed in the EULA.
 
-class RLZTracker {
+class RLZTracker : public content::NotificationObserver {
  public:
-  // Sets the RLZTrackerDelegate that should be used by the global RLZTracker
-  // instance. Must be called before calling any other method of RLZTracker.
-  static void SetRlzDelegate(scoped_ptr<RLZTrackerDelegate> delegate);
-
   // Initializes the RLZ library services for use in chrome. Schedules a delayed
   // task that performs the ping and registers some events when 'first-run' is
   // true.
@@ -49,12 +47,10 @@ class RLZTracker {
   // However, we only want this behaviour on first run.
   //
   // If the chrome brand is organic (no partners) then the pings don't occur.
-  static bool InitRlzDelayed(bool first_run,
-                             bool send_ping_immediately,
-                             base::TimeDelta delay,
-                             bool is_google_default_search,
-                             bool is_google_homepage,
-                             bool is_google_in_startpages);
+  static bool InitRlzFromProfileDelayed(Profile* profile,
+                                        bool first_run,
+                                        bool send_ping_immediately,
+                                        base::TimeDelta delay);
 
   // Records an RLZ event. Some events can be access point independent.
   // Returns false it the event could not be recorded. Requires write access
@@ -95,7 +91,7 @@ class RLZTracker {
   // This method is public for use by the Singleton class.
   static RLZTracker* GetInstance();
 
-  // Enables zero delay for InitRlzDelayed. For testing only.
+  // Enables zero delay for InitRlzFromProfileDelayed. For testing only.
   static void EnableZeroDelayForTesting();
 
 #if !defined(OS_IOS)
@@ -107,15 +103,30 @@ class RLZTracker {
   // testing purposes. Production code should never need to call these.
  protected:
   RLZTracker();
-  virtual ~RLZTracker();
+  ~RLZTracker() override;
+
+  // Called by InitRlzFromProfileDelayed with values taken from |profile|.
+  static bool InitRlzDelayed(bool first_run,
+                             bool send_ping_immediately,
+                             base::TimeDelta delay,
+                             bool is_google_default_search,
+                             bool is_google_homepage,
+                             bool is_google_in_startpages);
 
   // Performs initialization of RLZ tracker that is purposefully delayed so
   // that it does not interfere with chrome startup time.
   virtual void DelayedInit();
 
+  // content::NotificationObserver implementation:
+  void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) override;
+
   // Used by test code to override the default RLZTracker instance returned
   // by GetInstance().
-  void set_tracker(RLZTracker* tracker) { tracker_ = tracker; }
+  void set_tracker(RLZTracker* tracker) {
+    tracker_ = tracker;
+  }
 
   // Sends the financial ping to the RLZ servers and invalidates the RLZ string
   // cache since the response from the RLZ server may have changed then.
@@ -126,26 +137,20 @@ class RLZTracker {
   friend struct DefaultSingletonTraits<RLZTracker>;
   friend class base::RefCountedThreadSafe<RLZTracker>;
 
-  // Implementation called from SetRlzDelegate() static method.
-  void SetDelegate(scoped_ptr<RLZTrackerDelegate> delegate);
-
   // Implementation called from InitRlzDelayed() static method.
   bool Init(bool first_run,
             bool send_ping_immediately,
             base::TimeDelta delay,
-            bool is_google_default_search,
-            bool is_google_homepage,
+            bool google_default_search,
+            bool google_default_homepage,
             bool is_google_in_startpages);
-
-  // Implementation called from CleanupRlz static method.
-  void Cleanup();
 
   // Implementation called from RecordProductEvent() static method.
   bool RecordProductEventImpl(rlz_lib::Product product,
                               rlz_lib::AccessPoint point,
                               rlz_lib::Event event_id);
 
-  // Records FIRST_SEARCH event. Passed as bound callback to RLZTrackerDelegate.
+  // Records FIRST_SEARCH event. Called from Observe() on blocking task runner.
   void RecordFirstSearch(rlz_lib::AccessPoint point);
 
   // Implementation called from GetAccessPointRlz() static method.
@@ -198,9 +203,6 @@ class RLZTracker {
   // will be returned from GetInstance() instead of the regular singleton.
   static RLZTracker* tracker_;
 
-  // Delegate abstracting embedder specific knowledge. Must not be null.
-  scoped_ptr<RLZTrackerDelegate> delegate_;
-
   // Configuation data for RLZ tracker. Set by call to Init().
   bool first_run_;
   bool send_ping_immediately_;
@@ -231,12 +233,14 @@ class RLZTracker {
   std::string brand_;
   std::string reactivation_brand_;
 
+  content::NotificationRegistrar registrar_;
+
   // Minimum delay before sending financial ping after initialization.
   base::TimeDelta min_init_delay_;
 
   DISALLOW_COPY_AND_ASSIGN(RLZTracker);
 };
 
-}  // namespace rlz
+#endif  // defined(ENABLE_RLZ)
 
-#endif  // COMPONENTS_RLZ_RLZ_TRACKER_H_
+#endif  // CHROME_BROWSER_RLZ_RLZ_H_

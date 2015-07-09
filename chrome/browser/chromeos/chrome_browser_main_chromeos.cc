@@ -75,6 +75,7 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/ui/ash/network_connect_delegate_chromeos.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -127,10 +128,6 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/touch/touch_device.h"
 #include "ui/events/event_utils.h"
-
-#if defined(ENABLE_RLZ)
-#include "components/rlz/rlz_tracker.h"
-#endif
 
 // Exclude X11 dependents for ozone
 #if defined(USE_X11)

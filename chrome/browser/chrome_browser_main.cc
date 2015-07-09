@@ -223,8 +223,7 @@
 #endif  // defined(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)
 
 #if defined(ENABLE_RLZ)
-#include "chrome/browser/rlz/chrome_rlz_tracker_delegate.h"
-#include "components/rlz/rlz_tracker.h"
+#include "chrome/browser/rlz/rlz.h"
 #endif  // defined(ENABLE_RLZ)
 
 #if defined(ENABLE_WEBRTC)
@@ -1452,14 +1451,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       pref_service->GetInteger(first_run::GetPingDelayPrefName().c_str());
   // Negative ping delay means to send ping immediately after a first search is
   // recorded.
-  rlz::RLZTracker::SetRlzDelegate(
-      make_scoped_ptr(new ChromeRLZTrackerDelegate));
-  rlz::RLZTracker::InitRlzDelayed(
-      first_run::IsChromeFirstRun(), ping_delay < 0,
-      base::TimeDelta::FromMilliseconds(abs(ping_delay)),
-      ChromeRLZTrackerDelegate::IsGoogleDefaultSearch(profile_),
-      ChromeRLZTrackerDelegate::IsGoogleHomePage(profile_),
-      ChromeRLZTrackerDelegate::IsGoogleInStartpages(profile_));
+  RLZTracker::InitRlzFromProfileDelayed(
+      profile_, first_run::IsChromeFirstRun(), ping_delay < 0,
+      base::TimeDelta::FromMilliseconds(abs(ping_delay)));
 #endif  // defined(ENABLE_RLZ) && !defined(OS_CHROMEOS)
 
   // Configure modules that need access to resources.

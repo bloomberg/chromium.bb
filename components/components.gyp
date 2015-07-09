@@ -164,10 +164,5 @@
         'chrome_apps.gypi',
       ],
     }],
-    ['enable_rlz_support==1', {
-      'includes': [
-        'rlz.gypi',
-      ],
-    }]
   ],
 }

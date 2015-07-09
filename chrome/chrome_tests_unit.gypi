@@ -215,6 +215,7 @@
       'browser/renderer_context_menu/render_view_context_menu_test_util.h',
       'browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper_unit_test.mm',
       'browser/resources_util_unittest.cc',
+      'browser/rlz/rlz_unittest.cc',
       'browser/search/contextual_search_policy_handler_android_unittest.cc',
       'browser/search/iframe_source_unittest.cc',
       'browser/search/instant_unittest_base.cc',
@@ -2559,14 +2560,13 @@
             'common/extensions/api/networking_private/networking_private_crypto_unittest.cc',
           ],
         }],
-        ['enable_rlz_support==1', {
-          'sources': [
-            'browser/rlz/chrome_rlz_tracker_delegate_unittest.cc',
-          ],
+        ['enable_rlz!=0', {
           'dependencies': [
-            '../components/components.gyp:rlz',
             '../rlz/rlz.gyp:test_support_rlz',
-            'browser_rlz',
+          ],
+        }, {  # enable_rlz==0
+          'sources!': [
+            'browser/rlz/rlz_unittest.cc',
           ],
         }],
         ['OS=="win" and component!="shared_library"', {
