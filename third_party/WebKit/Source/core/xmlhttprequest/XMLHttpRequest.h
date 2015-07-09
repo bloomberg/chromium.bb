@@ -27,7 +27,6 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DocumentParserClient.h"
 #include "core/loader/ThreadableLoaderClient.h"
-#include "core/streams/ReadableStreamImpl.h"
 #include "core/xmlhttprequest/XMLHttpRequestEventTarget.h"
 #include "core/xmlhttprequest/XMLHttpRequestProgressEventThrottle.h"
 #include "platform/heap/Handle.h"
@@ -57,7 +56,6 @@ class Document;
 class DocumentParser;
 class ExceptionState;
 class ExecutionContext;
-class ReadableStream;
 class ScriptState;
 class SharedBuffer;
 class Stream;
@@ -100,7 +98,6 @@ public:
         ResponseTypeBlob,
         ResponseTypeArrayBuffer,
         ResponseTypeLegacyStream,
-        ResponseTypeStream,
     };
 
     // ActiveDOMObject
@@ -136,7 +133,6 @@ public:
     Blob* responseBlob();
     DOMArrayBuffer* responseArrayBuffer();
     Stream* responseLegacyStream();
-    ReadableStream* responseStream();
     unsigned timeout() const { return m_timeoutMilliseconds; }
     void setTimeout(unsigned timeout, ExceptionState&);
     ResponseTypeCode responseTypeCode() const { return m_responseTypeCode; }
@@ -155,7 +151,6 @@ public:
 
 private:
     class BlobLoader;
-    class ReadableStreamSource;
     XMLHttpRequest(ExecutionContext*, PassRefPtr<SecurityOrigin>);
 
     Document* document() const;
@@ -267,8 +262,6 @@ private:
     unsigned long m_timeoutMilliseconds;
     PersistentWillBeMember<Blob> m_responseBlob;
     PersistentWillBeMember<Stream> m_responseLegacyStream;
-    PersistentWillBeMember<ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>> m_responseStream;
-    PersistentWillBeMember<ReadableStreamSource> m_responseStreamSource;
 
     RefPtr<ThreadableLoader> m_loader;
     State m_state;

@@ -36,7 +36,6 @@ enum XMLHttpRequestResponseType {
     "json",
     "text",
     "legacystream",
-    "stream"
 };
 
 // TODO(philipj): Most DOMString types in the XMLHttpRequest interface should be
