@@ -31,6 +31,17 @@
 
 static struct amdgpu_bo_va_mgr vamgr = {{0}};
 
+int amdgpu_va_range_query(amdgpu_device_handle dev,
+			  enum amdgpu_gpu_va_range type, uint64_t *start, uint64_t *end)
+{
+	if (type == amdgpu_gpu_va_range_general) {
+		*start = dev->dev_info.virtual_address_offset;
+		*end = dev->dev_info.virtual_address_max;
+		return 0;
+	}
+	return -EINVAL;
+}
+
 static void amdgpu_vamgr_init(struct amdgpu_bo_va_mgr *mgr, struct amdgpu_device *dev)
 {
 	mgr->va_offset = dev->dev_info.virtual_address_offset;

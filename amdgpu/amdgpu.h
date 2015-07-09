@@ -1155,4 +1155,25 @@ int amdgpu_va_range_alloc(amdgpu_device_handle dev,
 */
 int amdgpu_va_range_free(amdgpu_va_handle va_range_handle);
 
+/**
+* Query virtual address range
+*
+* UMD can query GPU VM range supported by each device
+* to initialize its own VAM accordingly.
+*
+* \param   dev    - [in] Device handle. See #amdgpu_device_initialize()
+* \param   type   - \c [in] Type of virtual address range
+* \param   offset - \c [out] Start offset of virtual address range
+* \param   size   - \c [out] Size of virtual address range
+*
+* \return   0 on success\n
+*          <0 - Negative POSIX Error code
+*
+*/
+
+int amdgpu_va_range_query(amdgpu_device_handle dev,
+			  enum amdgpu_gpu_va_range type,
+			  uint64_t *start,
+			  uint64_t *end);
+
 #endif /* #ifdef _AMDGPU_H_ */
