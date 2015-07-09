@@ -140,9 +140,18 @@ class MEDIA_EXPORT BoxReader : public BufferReader {
 
   // Read all children, regardless of FourCC. This is used from exactly one box,
   // corresponding to a rather significant inconsistency in the BMFF spec.
-  // Note that this method is mutually exclusive with ScanChildren().
-  template<typename T> bool ReadAllChildren(
-      std::vector<T>* children) WARN_UNUSED_RESULT;
+  // Note that this method is mutually exclusive with ScanChildren() and
+  // ReadAllChildrenAndCheckFourCC().
+  template <typename T>
+  bool ReadAllChildren(std::vector<T>* children) WARN_UNUSED_RESULT;
+
+  // Read all children and verify that the FourCC matches what is expected.
+  // Returns true if all children are successfully parsed and have the correct
+  // box type for |T|. Note that this method is mutually exclusive with
+  // ScanChildren() and ReadAllChildren().
+  template <typename T>
+  bool ReadAllChildrenAndCheckFourCC(std::vector<T>* children)
+      WARN_UNUSED_RESULT;
 
   // Populate the values of 'version()' and 'flags()' from a full box header.
   // Many boxes, but not all, use these values. This call should happen after
@@ -168,6 +177,13 @@ class MEDIA_EXPORT BoxReader : public BufferReader {
   // no more data is coming (i.e. EOS or end of containing box). If |*err| is
   // true, the error is unrecoverable and the stream should be aborted.
   bool ReadHeader(bool* err);
+
+  // Read all children, optionally checking FourCC. Returns true if all
+  // children are successfully parsed and, if |check_box_type|, have the
+  // correct box type for |T|. Note that this method is mutually exclusive
+  // with ScanChildren().
+  template <typename T>
+  bool ReadAllChildrenInternal(std::vector<T>* children, bool check_box_type);
 
   LogCB log_cb_;
   FourCC type_;
@@ -214,8 +230,19 @@ bool BoxReader::MaybeReadChildren(std::vector<T>* children) {
   return true;
 }
 
-template<typename T>
+template <typename T>
 bool BoxReader::ReadAllChildren(std::vector<T>* children) {
+  return ReadAllChildrenInternal(children, false);
+}
+
+template <typename T>
+bool BoxReader::ReadAllChildrenAndCheckFourCC(std::vector<T>* children) {
+  return ReadAllChildrenInternal(children, true);
+}
+
+template <typename T>
+bool BoxReader::ReadAllChildrenInternal(std::vector<T>* children,
+                                        bool check_box_type) {
   DCHECK(!scanned_);
   scanned_ = true;
 
@@ -224,6 +251,7 @@ bool BoxReader::ReadAllChildren(std::vector<T>* children) {
     BoxReader child_reader(&buf_[pos_], size_ - pos_, log_cb_, is_EOS_);
     if (!child_reader.ReadHeader(&err)) break;
     T child;
+    RCHECK(!check_box_type || child_reader.type() == child.BoxType());
     RCHECK(child.Parse(&child_reader));
     children->push_back(child);
     pos_ += child_reader.size();

@@ -30,17 +30,18 @@ static bool ReadAllPsshBoxes(
     std::vector<mp4::FullProtectionSystemSpecificHeader>* pssh_boxes) {
   DCHECK(!input.empty());
 
-  // Verify that |input| contains only 'pssh' boxes. ReadAllChildren() is
-  // templated, so it checks that each box in |input| matches the box type of
-  // the parameter (in this case mp4::ProtectionSystemSpecificHeader is a
-  // 'pssh' box). mp4::ProtectionSystemSpecificHeader doesn't validate the
-  // 'pssh' contents, so this simply verifies that |input| only contains
-  // 'pssh' boxes and nothing else.
+  // Verify that |input| contains only 'pssh' boxes.
+  // ReadAllChildrenAndCheckFourCC() is templated, so it checks that each
+  // box in |input| matches the box type of the parameter (in this case
+  // mp4::ProtectionSystemSpecificHeader is a 'pssh' box).
+  // mp4::ProtectionSystemSpecificHeader doesn't validate the 'pssh' contents,
+  // so this simply verifies that |input| only contains 'pssh' boxes and
+  // nothing else.
   scoped_ptr<mp4::BoxReader> input_reader(
       mp4::BoxReader::ReadConcatentatedBoxes(
           vector_as_array(&input), input.size()));
   std::vector<mp4::ProtectionSystemSpecificHeader> raw_pssh_boxes;
-  if (!input_reader->ReadAllChildren(&raw_pssh_boxes))
+  if (!input_reader->ReadAllChildrenAndCheckFourCC(&raw_pssh_boxes))
     return false;
 
   // Now that we have |input| parsed into |raw_pssh_boxes|, reparse each one
@@ -56,7 +57,7 @@ static bool ReadAllPsshBoxes(
     // ReadAllChildren() appends any successfully parsed box onto it's
     // parameter, so |pssh_boxes| will contain the collection of successfully
     // parsed 'pssh' boxes. If an error occurs, try the next box.
-    if (!raw_pssh_reader->ReadAllChildren(pssh_boxes))
+    if (!raw_pssh_reader->ReadAllChildrenAndCheckFourCC(pssh_boxes))
       continue;
   }
 

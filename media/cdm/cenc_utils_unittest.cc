@@ -522,4 +522,31 @@ TEST_F(CencUtilsTest, GetPsshData_MultiplePssh) {
   EXPECT_EQ(data1, pssh_data);
   EXPECT_NE(data2, pssh_data);
 }
+
+TEST_F(CencUtilsTest, NonPsshData) {
+  // Create a non-'pssh' box.
+  const uint8_t data[] = {
+    0x00, 0x00, 0x00, 0x08,   // size = 8
+    'p',  's',  's',  'g'
+  };
+  std::vector<uint8_t> non_pssh_box(data, data + arraysize(data));
+  EXPECT_FALSE(ValidatePsshInput(non_pssh_box));
+
+  // Make a valid 'pssh' box.
+  std::vector<uint8_t> pssh_box = MakePSSHBox(1, Key1());
+  EXPECT_TRUE(ValidatePsshInput(pssh_box));
+
+  // Concatentate the boxes together (|pssh_box| first).
+  std::vector<uint8_t> boxes;
+  boxes.insert(boxes.end(), pssh_box.begin(), pssh_box.end());
+  boxes.insert(boxes.end(), non_pssh_box.begin(), non_pssh_box.end());
+  EXPECT_FALSE(ValidatePsshInput(boxes));
+
+  // Repeat with |non_pssh_box| first.
+  boxes.clear();
+  boxes.insert(boxes.end(), non_pssh_box.begin(), non_pssh_box.end());
+  boxes.insert(boxes.end(), pssh_box.begin(), pssh_box.end());
+  EXPECT_FALSE(ValidatePsshInput(boxes));
+}
+
 }  // namespace media
