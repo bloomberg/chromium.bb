@@ -62,7 +62,7 @@ static int amdgpu_bo_map(amdgpu_bo_handle bo, uint32_t alignment)
 	memset(&va, 0, sizeof(va));
 
 	bo->virtual_mc_base_address = amdgpu_vamgr_find_va(dev->vamgr,
-					 bo->alloc_size, alignment);
+					 bo->alloc_size, alignment, 0);
 
 	if (bo->virtual_mc_base_address == AMDGPU_INVALID_VA_ADDRESS)
 		return -ENOSPC;

@@ -68,8 +68,8 @@ void amdgpu_vamgr_reference(struct amdgpu_bo_va_mgr **dst,
 	*dst = src;
 }
 
-uint64_t amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr,
-				uint64_t size, uint64_t alignment)
+uint64_t amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr, uint64_t size,
+				uint64_t alignment, uint64_t base_required)
 {
 	struct amdgpu_bo_va_hole *hole, *n;
 	uint64_t offset = 0, waste = 0;
@@ -77,16 +77,27 @@ uint64_t amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr,
 	alignment = MAX2(alignment, mgr->va_alignment);
 	size = ALIGN(size, mgr->va_alignment);
 
+	if (base_required % alignment)
+		return AMDGPU_INVALID_VA_ADDRESS;
+
 	pthread_mutex_lock(&mgr->bo_va_mutex);
 	/* TODO: using more appropriate way to track the holes */
 	/* first look for a hole */
-	LIST_FOR_EACH_ENTRY_SAFE(hole, n, &mgr->va_holes, list) {
-		offset = hole->offset;
-		waste = offset % alignment;
-		waste = waste ? alignment - waste : 0;
-		offset += waste;
-		if (offset >= (hole->offset + hole->size)) {
-			continue;
+	LIST_FOR_EACH_ENTRY_SAFE(hole, n, &vamgr.va_holes, list) {
+		if (base_required) {
+			if(hole->offset > base_required ||
+				(hole->offset + hole->size) < (base_required + size))
+				continue;
+			waste = base_required - hole->offset;
+			offset = base_required;
+		} else {
+			offset = hole->offset;
+			waste = offset % alignment;
+			waste = waste ? alignment - waste : 0;
+			offset += waste;
+			if (offset >= (hole->offset + hole->size)) {
+				continue;
+			}
 		}
 		if (!waste && hole->size == size) {
 			offset = hole->offset;
@@ -97,8 +108,7 @@ uint64_t amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr,
 		}
 		if ((hole->size - waste) > size) {
 			if (waste) {
-				n = calloc(1,
-						sizeof(struct amdgpu_bo_va_hole));
+				n = calloc(1, sizeof(struct amdgpu_bo_va_hole));
 				n->size = waste;
 				n->offset = hole->offset;
 				list_add(&n->list, &hole->list);
@@ -115,9 +125,16 @@ uint64_t amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr,
 		}
 	}
 
-	offset = mgr->va_offset;
-	waste = offset % alignment;
-	waste = waste ? alignment - waste : 0;
+	if (base_required) {
+		if (base_required < mgr->va_offset)
+			return AMDGPU_INVALID_VA_ADDRESS;
+		offset = mgr->va_offset;
+		waste = base_required - mgr->va_offset;
+	} else {
+		offset = mgr->va_offset;
+		waste = offset % alignment;
+		waste = waste ? alignment - waste : 0;
+	}
 
 	if (offset + waste + size > mgr->va_max) {
 		pthread_mutex_unlock(&mgr->bo_va_mutex);
@@ -130,6 +147,7 @@ uint64_t amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr,
 		n->offset = offset;
 		list_add(&n->list, &mgr->va_holes);
 	}
+
 	offset += waste;
 	mgr->va_offset += size + waste;
 	pthread_mutex_unlock(&mgr->bo_va_mutex);

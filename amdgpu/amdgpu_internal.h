@@ -123,8 +123,8 @@ struct amdgpu_bo_va_mgr* amdgpu_vamgr_get_global(struct amdgpu_device *dev);
 
 void amdgpu_vamgr_reference(struct amdgpu_bo_va_mgr **dst, struct amdgpu_bo_va_mgr *src);
 
-uint64_t amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr,
-				uint64_t size, uint64_t alignment);
+uint64_t amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr, uint64_t size,
+				uint64_t alignment, uint64_t base_preferred);
 
 void amdgpu_vamgr_free_va(struct amdgpu_bo_va_mgr *mgr, uint64_t va, 
 				uint64_t size);
