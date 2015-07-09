@@ -89,11 +89,13 @@ class MojoShellContext::Proxy {
   void ConnectToApplication(
       const GURL& url,
       const GURL& requestor_url,
-      mojo::InterfaceRequest<mojo::ServiceProvider> request) {
+      mojo::InterfaceRequest<mojo::ServiceProvider> request,
+      mojo::ServiceProviderPtr exposed_services) {
     if (task_runner_ == base::ThreadTaskRunnerHandle::Get()) {
-      if (shell_context_)
-        shell_context_->ConnectToApplicationOnOwnThread(url, requestor_url,
-                                                        request.Pass());
+      if (shell_context_) {
+        shell_context_->ConnectToApplicationOnOwnThread(
+            url, requestor_url, request.Pass(), exposed_services.Pass());
+      }
     } else {
       // |shell_context_| outlives the main MessageLoop, so it's safe for it to
       // be unretained here.
@@ -101,7 +103,7 @@ class MojoShellContext::Proxy {
           FROM_HERE,
           base::Bind(&MojoShellContext::ConnectToApplicationOnOwnThread,
                      base::Unretained(shell_context_), url, requestor_url,
-                     base::Passed(&request)));
+                     base::Passed(&request), base::Passed(&exposed_services)));
     }
   }
 
@@ -158,19 +160,22 @@ MojoShellContext::~MojoShellContext() {
 void MojoShellContext::ConnectToApplication(
     const GURL& url,
     const GURL& requestor_url,
-    mojo::InterfaceRequest<mojo::ServiceProvider> request) {
-  proxy_.Get()->ConnectToApplication(url, requestor_url, request.Pass());
+    mojo::InterfaceRequest<mojo::ServiceProvider> request,
+    mojo::ServiceProviderPtr exposed_services) {
+  proxy_.Get()->ConnectToApplication(url, requestor_url, request.Pass(),
+                                     exposed_services.Pass());
 }
 
 void MojoShellContext::ConnectToApplicationOnOwnThread(
     const GURL& url,
     const GURL& requestor_url,
-    mojo::InterfaceRequest<mojo::ServiceProvider> request) {
+    mojo::InterfaceRequest<mojo::ServiceProvider> request,
+    mojo::ServiceProviderPtr exposed_services) {
   mojo::URLRequestPtr url_request = mojo::URLRequest::New();
   url_request->url = mojo::String::From(url);
   application_manager_->ConnectToApplication(
       url_request.Pass(), requestor_url, request.Pass(),
-      mojo::ServiceProviderPtr(), base::Bind(&base::DoNothing));
+      exposed_services.Pass(), base::Bind(&base::DoNothing));
 }
 
 GURL MojoShellContext::ResolveMappings(const GURL& url) {

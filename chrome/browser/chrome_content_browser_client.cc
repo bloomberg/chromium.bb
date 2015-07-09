@@ -2411,7 +2411,7 @@ void ChromeContentBrowserClient::PreSpawnRenderer(
 }
 #endif
 
-void ChromeContentBrowserClient::OverrideRenderFrameMojoServices(
+void ChromeContentBrowserClient::OverrideFrameMojoShellServices(
     content::ServiceRegistry* registry,
     content::RenderFrameHost* render_frame_host) {
 #if defined(OS_CHROMEOS)

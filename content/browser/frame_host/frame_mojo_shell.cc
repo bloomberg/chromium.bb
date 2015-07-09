@@ -5,8 +5,11 @@
 #include "content/browser/frame_host/frame_mojo_shell.h"
 
 #include "content/browser/mojo/mojo_shell_context.h"
+#include "content/common/mojo/service_registry_impl.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/common/content_client.h"
 
 namespace content {
 
@@ -22,16 +25,34 @@ void FrameMojoShell::BindRequest(
   bindings_.AddBinding(this, shell_request.Pass());
 }
 
+// TODO(xhwang): Currently no callers are exposing |exposed_services|. So we
+// drop it and replace it with services we provide in the browser. In the
+// future we may need to support both.
 void FrameMojoShell::ConnectToApplication(
     mojo::URLRequestPtr application_url,
     mojo::InterfaceRequest<mojo::ServiceProvider> services,
-    mojo::ServiceProviderPtr exposed_services) {
+    mojo::ServiceProviderPtr /* exposed_services */) {
+  mojo::ServiceProviderPtr frame_services;
+  service_provider_bindings_.AddBinding(GetServiceRegistry(),
+                                        GetProxy(&frame_services));
+
   MojoShellContext::ConnectToApplication(
       GURL(application_url->url), frame_host_->GetSiteInstance()->GetSiteURL(),
-      services.Pass());
+      services.Pass(), frame_services.Pass());
 }
 
 void FrameMojoShell::QuitApplication() {
+}
+
+ServiceRegistryImpl* FrameMojoShell::GetServiceRegistry() {
+  if (!service_registry_) {
+    service_registry_.reset(new ServiceRegistryImpl());
+
+    GetContentClient()->browser()->OverrideFrameMojoShellServices(
+        service_registry_.get(), frame_host_);
+  }
+
+  return service_registry_.get();
 }
 
 }  // namespace content

@@ -578,8 +578,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void OverrideRenderProcessMojoServices(ServiceRegistry* registry) {}
 
   // Allows to override browser Mojo services exposed through the
-  // RenderFrameHost.
-  virtual void OverrideRenderFrameMojoServices(
+  // FrameMojoShell.
+  virtual void OverrideFrameMojoShellServices(
       ServiceRegistry* registry,
       RenderFrameHost* render_frame_host) {}
 

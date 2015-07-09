@@ -21,7 +21,8 @@ scoped_ptr<MojoAppConnection> MojoAppConnection::Create(
 MojoAppConnectionImpl::MojoAppConnectionImpl(const GURL& url,
                                              const GURL& requestor_url) {
   MojoShellContext::ConnectToApplication(url, requestor_url,
-                                         mojo::GetProxy(&services_));
+                                         mojo::GetProxy(&services_),
+                                         mojo::ServiceProviderPtr());
 }
 
 MojoAppConnectionImpl::~MojoAppConnectionImpl() {

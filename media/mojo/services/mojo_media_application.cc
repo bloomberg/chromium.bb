@@ -53,7 +53,8 @@ void MojoMediaApplication::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mojo::ContentDecryptionModule> request) {
   // The created object is owned by the pipe.
-  new MojoCdmService(&cdm_service_context_, request.Pass());
+  new MojoCdmService(&cdm_service_context_, connection->GetServiceProvider(),
+                     request.Pass());
 }
 
 void MojoMediaApplication::Create(

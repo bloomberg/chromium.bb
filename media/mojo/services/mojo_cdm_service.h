@@ -11,7 +11,8 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/media_keys.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/application/public/interfaces/service_provider.mojom.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace media {
 
@@ -22,6 +23,7 @@ class MojoCdmService : public mojo::ContentDecryptionModule {
  public:
   // Constructs a MojoCdmService and strongly binds it to the |request|.
   MojoCdmService(MojoCdmServiceContext* context,
+                 mojo::ServiceProvider* service_provider,
                  mojo::InterfaceRequest<mojo::ContentDecryptionModule> request);
 
   ~MojoCdmService() final;
@@ -79,8 +81,8 @@ class MojoCdmService : public mojo::ContentDecryptionModule {
                             const std::string& error_message);
 
   mojo::StrongBinding<mojo::ContentDecryptionModule> binding_;
-
   MojoCdmServiceContext* context_;
+  mojo::ServiceProvider* service_provider_;
   scoped_ptr<MediaKeys> cdm_;
 
   // Set to a valid CDM ID if the |cdm_| is successfully created.

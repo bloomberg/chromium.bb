@@ -22,9 +22,11 @@ typedef MojoCdmPromise<std::string> NewSessionMojoCdmPromise;
 
 MojoCdmService::MojoCdmService(
     MojoCdmServiceContext* context,
+    mojo::ServiceProvider* service_provider,
     mojo::InterfaceRequest<mojo::ContentDecryptionModule> request)
     : binding_(this, request.Pass()),
       context_(context),
+      service_provider_(service_provider),
       cdm_id_(CdmContext::kInvalidCdmId),
       weak_factory_(this) {
 }

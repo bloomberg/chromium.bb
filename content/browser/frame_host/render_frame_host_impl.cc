@@ -1576,9 +1576,6 @@ void RenderFrameHostImpl::RegisterMojoServices() {
         base::Bind(&VRDeviceManager::BindRequest));
   }
 #endif
-
-  GetContentClient()->browser()->OverrideRenderFrameMojoServices(
-      GetServiceRegistry(), this);
 }
 
 void RenderFrameHostImpl::SetState(RenderFrameHostImplState rfh_state) {

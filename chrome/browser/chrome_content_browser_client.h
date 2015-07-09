@@ -258,7 +258,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   base::string16 GetAppContainerSidForSandboxType(
       int sandbox_type) const override;
 #endif
-  void OverrideRenderFrameMojoServices(
+  void OverrideFrameMojoShellServices(
       content::ServiceRegistry* registry,
       content::RenderFrameHost* render_frame_host) override;
   void RegisterMojoApplications(StaticMojoApplicationMap* apps) override;
