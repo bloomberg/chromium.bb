@@ -1894,18 +1894,6 @@ bool ProfileSyncService::IsCryptographerReady(
   return backend_.get() && backend_->IsCryptographerReady(trans);
 }
 
-void ProfileSyncService::ConfigurePriorityDataTypes() {
-  const syncer::ModelTypeSet priority_types =
-      Intersection(GetPreferredDirectoryDataTypes(),
-                   syncer::PriorityUserTypes());
-  if (!priority_types.Empty()) {
-    const syncer::ConfigureReason reason = HasSyncSetupCompleted() ?
-        syncer::CONFIGURE_REASON_RECONFIGURATION :
-        syncer::CONFIGURE_REASON_NEW_CLIENT;
-    directory_data_type_manager_->Configure(priority_types, reason);
-  }
-}
-
 void ProfileSyncService::ConfigureDataTypeManager() {
   // Don't configure datatypes if the setup UI is still on the screen - this
   // is to help multi-screen setting UIs (like iOS) where they don't want to

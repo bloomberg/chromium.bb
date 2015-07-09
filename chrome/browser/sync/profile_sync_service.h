@@ -708,9 +708,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   void RefreshTypesForTest(syncer::ModelTypeSet types);
 
  protected:
-  // Helper to configure the priority data types.
-  void ConfigurePriorityDataTypes();
-
   // Helper to install and configure a data type manager.
   void ConfigureDataTypeManager();
 

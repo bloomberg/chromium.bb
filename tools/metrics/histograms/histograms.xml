@@ -43354,6 +43354,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Sync.ConfigureDataTypes" enum="SyncModelTypes">
+  <owner>zea@chromium.org</owner>
+  <summary>
+    Breakdown of sync data types being configured at first time signin, restart,
+    or user-initiated reconfiguration. This is different from Sync.CustomTypes
+    in that this captures all active devices, not just those that are choosing a
+    custom sync configuration.
+
+    Note that not all platforms support all data types. As such, comparing
+    across platforms should only look at the common data types.
+  </summary>
+</histogram>
+
 <histogram name="Sync.ConfigureFailed" enum="SyncModelTypes">
   <owner>zea@chromium.org</owner>
   <summary>Count of model association failures for each type.</summary>

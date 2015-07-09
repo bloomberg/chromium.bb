@@ -235,6 +235,19 @@ DataTypeManagerImpl::BuildDataTypeConfigStateMap(
 void DataTypeManagerImpl::Restart(syncer::ConfigureReason reason) {
   DVLOG(1) << "Restarting...";
 
+  // Only record the type histograms for user-triggered configurations or
+  // restarts.
+  if (reason == syncer::CONFIGURE_REASON_RECONFIGURATION ||
+      reason == syncer::CONFIGURE_REASON_NEW_CLIENT ||
+      reason == syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE) {
+    for (syncer::ModelTypeSet::Iterator iter = last_requested_types_.First();
+         iter.Good(); iter.Inc()) {
+      UMA_HISTOGRAM_ENUMERATION("Sync.ConfigureDataTypes",
+                                syncer::ModelTypeToHistogramInt(iter.Get()),
+                                syncer::MODEL_TYPE_COUNT);
+    }
+  }
+
   // Check for new or resolved data type crypto errors.
   if (encryption_handler_->IsPassphraseRequired()) {
     syncer::ModelTypeSet encrypted_types =
