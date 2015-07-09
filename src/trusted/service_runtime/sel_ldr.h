@@ -514,6 +514,9 @@ NaClErrorCode NaClValidateImage(struct NaClApp  *nap) NACL_WUR;
 int NaClAddrIsValidEntryPt(struct NaClApp *nap,
                            uintptr_t      addr);
 
+int NaClAddrIsValidIrtEntryPt(struct NaClApp *nap,
+                              uintptr_t      addr);
+
 /*
  * Takes ownership of descriptor, i.e., when NaCl app closes, it's gone.
  */

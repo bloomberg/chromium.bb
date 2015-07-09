@@ -3283,6 +3283,7 @@ irt_only_tests = [
     'tests/elf_loader/nacl.scons',
     'tests/irt/nacl.scons',
     'tests/irt_compatibility/nacl.scons',
+    'tests/irt_entry_alignment/nacl.scons',
     'tests/irt_ext/nacl.scons',
     'tests/sbrk/nacl.scons',
     'tests/translator_size_limits/nacl.scons',

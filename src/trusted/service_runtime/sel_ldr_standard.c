@@ -459,6 +459,10 @@ NaClErrorCode NaClAppLoadFileDynamically(
   }
   nap->user_entry_pt = nap->initial_entry_pt;
   nap->initial_entry_pt = NaClElfImageGetEntryPoint(image);
+  if (!NaClAddrIsValidIrtEntryPt(nap, nap->initial_entry_pt)) {
+    ret = LOAD_BAD_ENTRY;
+    goto done;
+  }
 
  done:
   NaClElfImageDelete(image);
@@ -472,6 +476,15 @@ int NaClAddrIsValidEntryPt(struct NaClApp *nap,
   }
 
   return addr < nap->static_text_end;
+}
+
+int NaClAddrIsValidIrtEntryPt(struct NaClApp *nap,
+                              uintptr_t      addr) {
+  if (0 != (addr & (nap->bundle_size - 1))) {
+    return 0;
+  }
+
+  return addr < nap->dynamic_text_end;
 }
 
 int NaClReportExitStatus(struct NaClApp *nap, int exit_status) {
