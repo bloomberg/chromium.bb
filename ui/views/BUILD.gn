@@ -113,7 +113,7 @@ component("views") {
       sources += gypi_values.views_desktop_aura_sources
       if (use_x11) {
         sources += gypi_values.views_desktop_aura_x11_sources
-        configs += [ "//build/config/linux:atk" ]
+        configs += [ "//ui/accessibility:atk" ]
       } else if (is_win) {
         sources += gypi_values.views_desktop_aura_win_sources
       } else if (use_ozone) {

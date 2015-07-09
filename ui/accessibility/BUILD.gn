@@ -2,11 +2,40 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
 import("//build/json_schema_api.gni")
 import("//testing/test.gni")
 if (is_android) {
   import("//build/config/android/rules.gni")
+}
+
+if (use_x11) {
+  pkg_config("atk") {
+    packages = [ "atk" ]
+    atk_lib_dir = exec_script(pkg_config_script,
+                              [
+                                "--libdir",
+                                "atk",
+                              ],
+                              "string")
+    defines = [ "ATK_LIB_DIR=\"$atk_lib_dir\"" ]
+  }
+
+  # gn orders flags on a target before flags from configs. The default config
+  # adds -Wall, and these flags have to be after -Wall -- so they need to come
+  # from a config and can't be on the target directly.
+  config("atk_warnings") {
+    cflags = [
+      # glib uses the pre-c++11 typedef-as-static_assert hack.
+      "-Wno-unused-local-typedef",
+
+      # G_DEFINE_TYPE automatically generates a *get_instance_private
+      # inline function after glib 2.37. That's unused. Prevent to
+      # complain about it.
+      "-Wno-unused-function",
+    ]
+  }
 }
 
 component("accessibility") {
@@ -61,8 +90,8 @@ component("accessibility") {
     ]
 
     configs += [
-      "//build/config/linux:atk",
-      "//build/config/linux:atk_warnings",
+      ":atk",
+      ":atk_warnings",
       "//build/config/linux:gconf",
       "//build/config/linux:glib",
     ]
