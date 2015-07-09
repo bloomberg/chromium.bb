@@ -6,6 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/base/socket_stream.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
@@ -23,14 +24,17 @@ const int kVersionPacketLen = 1;
 // # of bytes a tag packet consumes.
 const int kTagPacketLen = 1;
 // Max # of bytes a length packet consumes. A Varint32 can consume up to 5 bytes
-// (the MSB in each byte is reserved for denoting whether more bytes follow).
-// But, the protocol only allows for 4KiB payloads, and the socket stream buffer
-// is only of size 8KiB. As such we should never need more than 2 bytes (max
-// value of 16KiB). Anything higher than that will result in an error, either
-// because the socket stream buffer overflowed or too many bytes were required
-// in the size packet.
+// (the msb in each byte is reserved for denoting whether more bytes follow).
+// Although the protocol only allows for 4KiB payloads currently, and the socket
+// stream buffer is only of size 8KiB, it's possible for certain applications to
+// have larger message sizes. When payload is larger than 4KiB, an temporary
+// in-memory buffer is used instead of the normal in-place socket stream buffer.
 const int kSizePacketLenMin = 1;
-const int kSizePacketLenMax = 2;
+const int kSizePacketLenMax = 5;
+
+// The normal limit for a data packet is 4KiB. Any data packet with a size
+// larger than this uses the temporary in-memory buffer,
+const int kDefaultDataPacketLimit = 1024 * 4;
 
 // The current MCS protocol version.
 const int kMCSVersion = 41;
@@ -50,6 +54,7 @@ ConnectionHandlerImpl::ConnectionHandlerImpl(
       read_callback_(read_callback),
       write_callback_(write_callback),
       connection_callback_(connection_callback),
+      size_packet_so_far_(0),
       weak_ptr_factory_(this) {
 }
 
@@ -203,17 +208,23 @@ void ConnectionHandlerImpl::WaitForData(ProcessingState state) {
       min_bytes_needed = kTagPacketLen + kSizePacketLenMin;
       max_bytes_needed = kTagPacketLen + kSizePacketLenMax;
       break;
-    case MCS_FULL_SIZE:
-      // If in this state, the minimum size packet length must already have been
-      // insufficient, so set both to the max length.
-      min_bytes_needed = kSizePacketLenMax;
+    case MCS_SIZE:
+      min_bytes_needed = size_packet_so_far_ + 1;
       max_bytes_needed = kSizePacketLenMax;
       break;
     case MCS_PROTO_BYTES:
       read_timeout_timer_.Reset();
-      // No variability in the message size, set both to the same.
-      min_bytes_needed = message_size_;
-      max_bytes_needed = message_size_;
+      if (message_size_ < kDefaultDataPacketLimit) {
+        // No variability in the message size, set both to the same.
+        min_bytes_needed = message_size_;
+        max_bytes_needed = message_size_;
+      } else {
+        int bytes_left = message_size_ - payload_input_buffer_.size();
+        if (bytes_left > kDefaultDataPacketLimit)
+          bytes_left = kDefaultDataPacketLimit;
+        min_bytes_needed = bytes_left;
+        max_bytes_needed = bytes_left;
+      }
       break;
     default:
       NOTREACHED();
@@ -265,7 +276,7 @@ void ConnectionHandlerImpl::WaitForData(ProcessingState state) {
     case MCS_TAG_AND_SIZE:
       OnGotMessageTag();
       break;
-    case MCS_FULL_SIZE:
+    case MCS_SIZE:
       OnGotMessageSize();
       break;
     case MCS_PROTO_BYTES:
@@ -326,31 +337,29 @@ void ConnectionHandlerImpl::OnGotMessageSize() {
     return;
   }
 
-  bool need_another_byte = false;
   int prev_byte_count = input_stream_->UnreadByteCount();
   {
     CodedInputStream coded_input_stream(input_stream_.get());
-    if (!coded_input_stream.ReadVarint32(&message_size_))
-      need_another_byte = true;
-  }
-
-  if (need_another_byte) {
-    DVLOG(1) << "Expecting another message size byte.";
-    if (prev_byte_count >= kSizePacketLenMax) {
-      // Already had enough bytes, something else went wrong.
-      LOG(ERROR) << "Failed to process message size, too many bytes needed.";
-      connection_callback_.Run(net::ERR_FILE_TOO_BIG);
+    if (!coded_input_stream.ReadVarint32(&message_size_)) {
+      DVLOG(1) << "Expecting another message size byte.";
+      if (prev_byte_count >= kSizePacketLenMax) {
+        // Already had enough bytes, something else went wrong.
+        LOG(ERROR) << "Failed to process message size";
+        connection_callback_.Run(net::ERR_FILE_TOO_BIG);
+        return;
+      }
+      // Back up by the amount read.
+      int bytes_read = prev_byte_count - input_stream_->UnreadByteCount();
+      input_stream_->BackUp(bytes_read);
+      size_packet_so_far_ = bytes_read;
+      WaitForData(MCS_SIZE);
       return;
     }
-    // Back up by the amount read (should always be 1 byte).
-    int bytes_read = prev_byte_count - input_stream_->UnreadByteCount();
-    DCHECK_EQ(bytes_read, 1);
-    input_stream_->BackUp(bytes_read);
-    WaitForData(MCS_FULL_SIZE);
-    return;
   }
 
   DVLOG(1) << "Proto size: " << message_size_;
+  size_packet_so_far_ = 0;
+  payload_input_buffer_.clear();
 
   if (message_size_ > 0)
     WaitForData(MCS_PROTO_BYTES);
@@ -386,15 +395,50 @@ void ConnectionHandlerImpl::OnGotMessageBytes() {
                 << static_cast<unsigned int>(message_tag_);
      connection_callback_.Run(net::ERR_INVALID_ARGUMENT);
      return;
-   }
+  }
 
-  {
+  if (message_size_ < kDefaultDataPacketLimit) {
     CodedInputStream coded_input_stream(input_stream_.get());
     if (!protobuf->ParsePartialFromCodedStream(&coded_input_stream)) {
       LOG(ERROR) << "Unable to parse GCM message of type "
                  << static_cast<unsigned int>(message_tag_);
       // Reset the connection.
       connection_callback_.Run(net::ERR_FAILED);
+      return;
+    }
+  } else {
+    // Copy any data in the input stream onto the end of the buffer.
+    const void* data_ptr = NULL;
+    int size = 0;
+    input_stream_->Next(&data_ptr, &size);
+    payload_input_buffer_.insert(payload_input_buffer_.end(),
+                                 static_cast<const uint8*>(data_ptr),
+                                 static_cast<const uint8*>(data_ptr) + size);
+    DCHECK_LE(payload_input_buffer_.size(), message_size_);
+
+    if (payload_input_buffer_.size() == message_size_) {
+      ArrayInputStream buffer_input_stream(payload_input_buffer_.data(),
+                                           payload_input_buffer_.size());
+      CodedInputStream coded_input_stream(&buffer_input_stream);
+      if (!protobuf->ParsePartialFromCodedStream(&coded_input_stream)) {
+        LOG(ERROR) << "Unable to parse GCM message of type "
+                   << static_cast<unsigned int>(message_tag_);
+        // Reset the connection.
+        connection_callback_.Run(net::ERR_FAILED);
+        return;
+      }
+    } else {
+      // Continue reading data.
+      DVLOG(1) << "Continuing data read. Buffer size is "
+                << payload_input_buffer_.size()
+                << ", expecting " << message_size_;
+      input_stream_->RebuildBuffer();
+
+      read_timeout_timer_.Start(FROM_HERE,
+                                read_timeout_,
+                                base::Bind(&ConnectionHandlerImpl::OnTimeout,
+                                           weak_ptr_factory_.GetWeakPtr()));
+      WaitForData(MCS_PROTO_BYTES);
       return;
     }
   }
@@ -431,6 +475,8 @@ void ConnectionHandlerImpl::CloseConnection() {
   handshake_complete_ = false;
   message_tag_ = 0;
   message_size_ = 0;
+  size_packet_so_far_ = 0;
+  payload_input_buffer_.clear();
   input_stream_.reset();
   output_stream_.reset();
   weak_ptr_factory_.InvalidateWeakPtrs();

@@ -671,17 +671,19 @@ TEST_F(GCMConnectionHandlerImplTest, SendMsgSocketDisconnected) {
   EXPECT_EQ(net::ERR_CONNECTION_CLOSED, last_error());
 }
 
-// Receive a message whose size field was corrupted and is larger than the
-// socket's buffer. Should fail gracefully with a size error.
-TEST_F(GCMConnectionHandlerImplTest, OutOfBuffer) {
+// Receive a message with a custom data packet that is larger than the
+// default data limit (and the socket buffer limit). Should successfully
+// read the packet by using the in-memory buffer.
+TEST_F(GCMConnectionHandlerImplTest, ExtraLargeDataPacket) {
   std::string handshake_request = EncodeHandshakeRequest();
   WriteList write_list(1, net::MockWrite(net::ASYNC,
                                          handshake_request.c_str(),
                                          handshake_request.size()));
   std::string handshake_response = EncodeHandshakeResponse();
 
-  // Fill a string with 9000 character zero.
-  std::string data_message_proto(9000, '0');
+  const std::string kVeryLongFrom(20000, '0');
+  std::string data_message_proto = BuildDataMessage(kVeryLongFrom,
+                                                    kDataMsgCategory);
   std::string data_message_pkt =
       EncodePacket(kDataMessageStanzaTag, data_message_proto);
   ReadList read_list;
@@ -697,24 +699,25 @@ TEST_F(GCMConnectionHandlerImplTest, OutOfBuffer) {
   Connect(&received_message);
   WaitForMessage();  // The login send.
   WaitForMessage();  // The login response.
-  received_message.reset();
   WaitForMessage();  // The data message.
-  EXPECT_FALSE(received_message.get());
-  EXPECT_EQ(net::ERR_FILE_TOO_BIG, last_error());
+  ASSERT_TRUE(received_message.get());
+  EXPECT_EQ(data_message_proto, received_message->SerializeAsString());
+  EXPECT_EQ(net::OK, last_error());
 }
 
-// Receive a message whose size field was corrupted and takes more than two
-// bytes to encode. Should fail gracefully with a size error.
-TEST_F(GCMConnectionHandlerImplTest, InvalidSizePacket) {
+// Receive two messages with a custom data packet that is larger than the
+// default data limit (and the socket buffer limit). Should successfully
+// read the packet by using the in-memory buffer.
+TEST_F(GCMConnectionHandlerImplTest, 2ExtraLargeDataPacketMsgs) {
   std::string handshake_request = EncodeHandshakeRequest();
   WriteList write_list(1, net::MockWrite(net::ASYNC,
                                          handshake_request.c_str(),
                                          handshake_request.size()));
   std::string handshake_response = EncodeHandshakeResponse();
 
-  // Fill a string with 20000 character zero (which uses more than 2 bytes to
-  // encode the size packet).
-  std::string data_message_proto(20000, '0');
+  const std::string kVeryLongFrom(20000, '0');
+  std::string data_message_proto = BuildDataMessage(kVeryLongFrom,
+                                                    kDataMsgCategory);
   std::string data_message_pkt =
       EncodePacket(kDataMessageStanzaTag, data_message_proto);
   ReadList read_list;
@@ -724,16 +727,24 @@ TEST_F(GCMConnectionHandlerImplTest, InvalidSizePacket) {
   read_list.push_back(net::MockRead(net::ASYNC,
                                     data_message_pkt.c_str(),
                                     data_message_pkt.size()));
+  read_list.push_back(net::MockRead(net::SYNCHRONOUS,
+                                    data_message_pkt.c_str(),
+                                    data_message_pkt.size()));
   BuildSocket(read_list, write_list);
 
   ScopedMessage received_message;
   Connect(&received_message);
   WaitForMessage();  // The login send.
   WaitForMessage();  // The login response.
-  received_message.reset();
   WaitForMessage();  // The data message.
-  EXPECT_FALSE(received_message.get());
-  EXPECT_EQ(net::ERR_FILE_TOO_BIG, last_error());
+  ASSERT_TRUE(received_message.get());
+  EXPECT_EQ(data_message_proto, received_message->SerializeAsString());
+  EXPECT_EQ(net::OK, last_error());
+  received_message.reset();
+  WaitForMessage();  // The second data message.
+  ASSERT_TRUE(received_message.get());
+  EXPECT_EQ(data_message_proto, received_message->SerializeAsString());
+  EXPECT_EQ(net::OK, last_error());
 }
 
 // Make sure a message with an invalid tag is handled gracefully and resets

@@ -5,6 +5,8 @@
 #ifndef GOOGLE_APIS_GCM_ENGINE_CONNECTION_HANDLER_IMPL_H_
 #define GOOGLE_APIS_GCM_ENGINE_CONNECTION_HANDLER_IMPL_H_
 
+#include <vector>
+
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -48,10 +50,8 @@ class GCM_EXPORT ConnectionHandlerImpl : public ConnectionHandler {
     // Processing the tag and size packets (assuming minimum length size
     // packet). Used for normal messages.
     MCS_TAG_AND_SIZE,
-    // Processing a maximum length size packet (for messages with length > 128).
-    // Used when a normal size packet was not sufficient to read the message
-    // size.
-    MCS_FULL_SIZE,
+    // Processing the size packet alone.
+    MCS_SIZE,
     // Processing the protocol buffer bytes (for those messages with non-zero
     // sizes).
     MCS_PROTO_BYTES
@@ -111,6 +111,15 @@ class GCM_EXPORT ConnectionHandlerImpl : public ConnectionHandler {
   ProtoReceivedCallback read_callback_;
   ProtoSentCallback write_callback_;
   ConnectionChangedCallback connection_callback_;
+
+  // The number of bytes of the size packet read so far without finishing the
+  // read. This can be up to but no larger than 5 (the max number of bytes for
+  // a varint32).
+  uint8 size_packet_so_far_;
+  // A temporary input buffer for holding large messages. Will hold
+  // message_size_ bytes for messages larger than the normal size limit (and
+  // will be empty otherwise).
+  std::vector<uint8> payload_input_buffer_;
 
   base::WeakPtrFactory<ConnectionHandlerImpl> weak_ptr_factory_;
 
