@@ -146,6 +146,9 @@ std::string DeriveCommandLine(const GURL& start_url,
 #endif
     ::switches::kTouchDevices,
     ::switches::kTouchEvents,
+#if defined(ENABLE_TOPCHROME_MD)
+    ::switches::kTopChromeMD,
+#endif
     ::switches::kUIDisableThreadedCompositing,
     ::switches::kUIEnableCompositorAnimationTimelines,
     ::switches::kUIPrioritizeInGpuProcess,
