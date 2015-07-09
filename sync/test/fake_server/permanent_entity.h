@@ -41,8 +41,8 @@ class PermanentEntity : public FakeServerEntity {
   // FakeServerEntity implementation.
   std::string GetParentId() const override;
   void SerializeAsProto(sync_pb::SyncEntity* proto) const override;
-  bool IsDeleted() const override;
   bool IsFolder() const override;
+  bool IsPermanent() const override;
 
  private:
   PermanentEntity(const std::string& id,

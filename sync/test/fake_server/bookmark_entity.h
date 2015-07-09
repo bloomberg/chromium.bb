@@ -52,7 +52,6 @@ class BookmarkEntity : public FakeServerEntity {
   // FakeServerEntity implementation.
   std::string GetParentId() const override;
   void SerializeAsProto(sync_pb::SyncEntity* proto) const override;
-  bool IsDeleted() const override;
   bool IsFolder() const override;
 
  private:

@@ -63,6 +63,18 @@ void FakeServerEntity::SetSpecifics(
   specifics_ = updated_specifics;
 }
 
+bool FakeServerEntity::IsDeleted() const {
+  return false;
+}
+
+bool FakeServerEntity::IsFolder() const {
+  return false;
+}
+
+bool FakeServerEntity::IsPermanent() const {
+  return false;
+}
+
 // static
 string FakeServerEntity::CreateId(const ModelType& model_type,
                                   const string& inner_id) {

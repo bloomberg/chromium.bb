@@ -112,10 +112,6 @@ void BookmarkEntity::SerializeAsProto(sync_pb::SyncEntity* proto) const {
   unique_position->CopyFrom(unique_position_);
 }
 
-bool BookmarkEntity::IsDeleted() const {
-  return false;
-}
-
 bool BookmarkEntity::IsFolder() const {
   return is_folder_;
 }

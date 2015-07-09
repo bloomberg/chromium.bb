@@ -45,8 +45,4 @@ bool TombstoneEntity::IsDeleted() const {
   return true;
 }
 
-bool TombstoneEntity::IsFolder() const {
-  return false;
-}
-
 }  // namespace fake_server

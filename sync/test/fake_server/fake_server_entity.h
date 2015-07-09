@@ -43,8 +43,9 @@ class FakeServerEntity {
   // Common data items needed by server
   virtual std::string GetParentId() const = 0;
   virtual void SerializeAsProto(sync_pb::SyncEntity* proto) const = 0;
-  virtual bool IsDeleted() const = 0;
-  virtual bool IsFolder() const = 0;
+  virtual bool IsDeleted() const;
+  virtual bool IsFolder() const;
+  virtual bool IsPermanent() const;
 
  protected:
   // Extracts the ModelType from |id|. If |id| is malformed or does not contain

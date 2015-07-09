@@ -107,12 +107,4 @@ void UniqueClientEntity::SerializeAsProto(sync_pb::SyncEntity* proto) const {
   proto->set_mtime(last_modified_time_);
 }
 
-bool UniqueClientEntity::IsDeleted() const {
-  return false;
-}
-
-bool UniqueClientEntity::IsFolder() const {
-  return false;
-}
-
 }  // namespace fake_server

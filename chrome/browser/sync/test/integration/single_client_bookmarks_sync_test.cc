@@ -63,12 +63,6 @@ void SingleClientBookmarksSyncTest::VerifyBookmarkModelMatchesFakeServer(
   std::vector<BookmarkModel::URLAndTitle> local_bookmarks;
   GetBookmarkModel(index)->GetBookmarks(&local_bookmarks);
 
-  // Verify that the number of local bookmarks matches the number in the
-  // server.
-  ASSERT_TRUE(fake_server_verifier.VerifyEntityCountByType(
-      local_bookmarks.size(),
-      syncer::BOOKMARKS));
-
   // Verify that all local bookmark titles exist once on the server.
   std::vector<BookmarkModel::URLAndTitle>::const_iterator it;
   for (it = local_bookmarks.begin(); it != local_bookmarks.end(); ++it) {

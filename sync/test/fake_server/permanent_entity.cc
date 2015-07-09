@@ -98,11 +98,11 @@ void PermanentEntity::SerializeAsProto(sync_pb::SyncEntity* proto) const {
   proto->set_server_defined_unique_tag(server_defined_unique_tag_);
 }
 
-bool PermanentEntity::IsDeleted() const {
-  return false;
+bool PermanentEntity::IsFolder() const {
+  return true;
 }
 
-bool PermanentEntity::IsFolder() const {
+bool PermanentEntity::IsPermanent() const {
   return true;
 }
 
