@@ -190,6 +190,8 @@ float ShapeResult::fillGlyphBufferForRun(GlyphBuffer* glyphBuffer,
     const RunInfo* run, float initialAdvance, unsigned from, unsigned to,
     unsigned runOffset)
 {
+    if (!run)
+        return 0;
     float advanceSoFar = initialAdvance;
     unsigned numGlyphs = run->m_numGlyphs;
     for (unsigned i = 0; i < numGlyphs; ++i) {
@@ -256,6 +258,9 @@ float ShapeResult::fillGlyphBufferForTextEmphasisRun(GlyphBuffer* glyphBuffer,
     const RunInfo* run, const TextRun& textRun, const GlyphData* emphasisData,
     float initialAdvance, unsigned from, unsigned to, unsigned runOffset)
 {
+    if (!run)
+        return 0;
+
     unsigned graphemesInCluster = 1;
     float clusterAdvance = 0;
 
