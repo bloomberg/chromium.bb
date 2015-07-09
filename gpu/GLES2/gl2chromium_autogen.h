@@ -251,6 +251,7 @@
 #define glEndTransformFeedback GLES2_GET_FUN(EndTransformFeedback)
 #define glGetQueryivEXT GLES2_GET_FUN(GetQueryivEXT)
 #define glGetQueryObjectuivEXT GLES2_GET_FUN(GetQueryObjectuivEXT)
+#define glGetQueryObjectui64vEXT GLES2_GET_FUN(GetQueryObjectui64vEXT)
 #define glInsertEventMarkerEXT GLES2_GET_FUN(InsertEventMarkerEXT)
 #define glPushGroupMarkerEXT GLES2_GET_FUN(PushGroupMarkerEXT)
 #define glPopGroupMarkerEXT GLES2_GET_FUN(PopGroupMarkerEXT)

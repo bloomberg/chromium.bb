@@ -41,7 +41,7 @@ class GPUTimingFake {
   void FakeGLDeleteQueries(GLsizei n, const GLuint* ids);
   void FakeGLBeginQuery(GLenum target, GLuint id);
   void FakeGLEndQuery(GLenum target);
-  void FakeGLGetQueryObjectiv(GLuint id, GLenum pname, GLint* params);
+  void FakeGLGetQueryObjectuiv(GLuint id, GLenum pname, GLuint* params);
   void FakeGLQueryCounter(GLuint id, GLenum target);
   void FakeGLGetInteger64v(GLenum pname, GLint64 * data);
   void FakeGLGetQueryObjectui64v(GLuint id, GLenum pname, GLuint64* params);

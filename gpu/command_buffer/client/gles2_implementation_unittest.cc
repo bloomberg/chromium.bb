@@ -3189,6 +3189,26 @@ TEST_F(GLES2ImplementationTest, BeginEndQueryEXT) {
   ClearCommands();
   gl_->GetQueryObjectuivEXT(id1, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
   EXPECT_EQ(0u, available);
+
+  // Test GetQueryObjectui64vEXT fails if unused id
+  GLuint64 available2 = 0xBDu;
+  ClearCommands();
+  gl_->GetQueryObjectui64vEXT(id2, GL_QUERY_RESULT_AVAILABLE_EXT, &available2);
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(0xBDu, available2);
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+
+  // Test GetQueryObjectui64vEXT fails if bad id
+  ClearCommands();
+  gl_->GetQueryObjectui64vEXT(4567, GL_QUERY_RESULT_AVAILABLE_EXT, &available2);
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(0xBDu, available2);
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+
+  // Test GetQueryObjectui64vEXT CheckResultsAvailable
+  ClearCommands();
+  gl_->GetQueryObjectui64vEXT(id1, GL_QUERY_RESULT_AVAILABLE_EXT, &available2);
+  EXPECT_EQ(0u, available2);
 }
 
 TEST_F(GLES2ImplementationManualInitTest, BadQueryTargets) {

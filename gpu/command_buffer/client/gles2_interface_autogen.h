@@ -597,6 +597,9 @@ virtual void EndQueryEXT(GLenum target) = 0;
 virtual void EndTransformFeedback() = 0;
 virtual void GetQueryivEXT(GLenum target, GLenum pname, GLint* params) = 0;
 virtual void GetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* params) = 0;
+virtual void GetQueryObjectui64vEXT(GLuint id,
+                                    GLenum pname,
+                                    GLuint64* params) = 0;
 virtual void InsertEventMarkerEXT(GLsizei length, const GLchar* marker) = 0;
 virtual void PushGroupMarkerEXT(GLsizei length, const GLchar* marker) = 0;
 virtual void PopGroupMarkerEXT() = 0;

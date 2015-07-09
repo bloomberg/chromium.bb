@@ -3149,6 +3149,8 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
       feature_info_->feature_flags().ext_render_buffer_format_bgra8888;
   caps.occlusion_query_boolean =
       feature_info_->feature_flags().occlusion_query_boolean;
+  caps.timer_queries =
+      query_manager_->GPUTimingAvailable();
   return caps;
 }
 
@@ -11572,6 +11574,15 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(uint32 immediate_data_size,
         LOCAL_SET_GL_ERROR(
             GL_INVALID_OPERATION, "glBeginQueryEXT",
             "not enabled for occlusion queries");
+        return error::kNoError;
+      }
+      break;
+    case GL_TIME_ELAPSED:
+      // TODO(dyen): Also support GL_TIMESTAMP.
+      if (!query_manager_->GPUTimingAvailable()) {
+        LOCAL_SET_GL_ERROR(
+            GL_INVALID_OPERATION, "glBeginQueryEXT",
+            "not enabled for timing queries");
         return error::kNoError;
       }
       break;

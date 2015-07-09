@@ -994,6 +994,10 @@ void GLES2InterfaceStub::GetQueryObjectuivEXT(GLuint /* id */,
                                               GLenum /* pname */,
                                               GLuint* /* params */) {
 }
+void GLES2InterfaceStub::GetQueryObjectui64vEXT(GLuint /* id */,
+                                                GLenum /* pname */,
+                                                GLuint64* /* params */) {
+}
 void GLES2InterfaceStub::InsertEventMarkerEXT(GLsizei /* length */,
                                               const GLchar* /* marker */) {
 }

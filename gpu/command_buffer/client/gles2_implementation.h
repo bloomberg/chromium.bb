@@ -245,6 +245,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   bool GetSyncivHelper(
       GLsync sync, GLenum pname, GLsizei bufsize, GLsizei* length,
       GLint* values);
+  bool GetQueryObjectValueHelper(
+      const char* function_name, GLuint id, GLenum pname, GLuint64* params);
 
   void FreeUnusedSharedMemory();
   void FreeEverything();

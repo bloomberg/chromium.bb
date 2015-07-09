@@ -16,7 +16,9 @@
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence.h"
+#include "ui/gl/gpu_timing.h"
 
 namespace gpu {
 namespace gles2 {
@@ -448,6 +450,61 @@ void CommandsCompletedQuery::Destroy(bool have_context) {
 
 CommandsCompletedQuery::~CommandsCompletedQuery() {}
 
+class TimeElapsedQuery : public QueryManager::Query {
+ public:
+  TimeElapsedQuery(QueryManager* manager,
+                   GLenum target,
+                   int32 shm_id,
+                   uint32 shm_offset);
+
+  // Overridden from QueryManager::Query:
+  bool Begin() override;
+  bool End(base::subtle::Atomic32 submit_count) override;
+  bool Process(bool did_finish) override;
+  void Destroy(bool have_context) override;
+
+ protected:
+  ~TimeElapsedQuery() override;
+
+ private:
+  scoped_ptr<gfx::GPUTimer> gpu_timer_;
+};
+
+TimeElapsedQuery::TimeElapsedQuery(QueryManager* manager,
+                                   GLenum target,
+                                   int32 shm_id,
+                                   uint32 shm_offset)
+    : Query(manager, target, shm_id, shm_offset),
+      gpu_timer_(manager->CreateGPUTimer(true)) {}
+
+bool TimeElapsedQuery::Begin() {
+  gpu_timer_->Start();
+  return true;
+}
+
+bool TimeElapsedQuery::End(base::subtle::Atomic32 submit_count) {
+  gpu_timer_->End();
+  return AddToPendingQueue(submit_count);
+}
+
+bool TimeElapsedQuery::Process(bool did_finish) {
+  if (!gpu_timer_->IsAvailable())
+    return true;
+
+  const uint64_t nano_seconds =
+      gpu_timer_->GetDeltaElapsed() * base::Time::kNanosecondsPerMicrosecond;
+  return MarkAsCompleted(nano_seconds);
+}
+
+void TimeElapsedQuery::Destroy(bool have_context) {
+  if (gpu_timer_.get()) {
+    gpu_timer_->Destroy(have_context);
+    gpu_timer_.reset();
+  }
+}
+
+TimeElapsedQuery::~TimeElapsedQuery() {}
+
 QueryManager::QueryManager(
     GLES2Decoder* decoder,
     FeatureInfo* feature_info)
@@ -461,6 +518,13 @@ QueryManager::QueryManager(
       query_count_(0) {
   DCHECK(!(use_arb_occlusion_query_for_occlusion_query_boolean_ &&
            use_arb_occlusion_query2_for_occlusion_query_boolean_));
+  DCHECK(decoder);
+  gfx::GLContext* context = decoder_->GetGLContext();
+  if (context) {
+    gpu_timing_client_ = context->CreateGPUTimingClient();
+  } else {
+    gpu_timing_client_ = new gfx::GPUTimingClient();
+  }
 }
 
 QueryManager::~QueryManager() {
@@ -506,6 +570,9 @@ QueryManager::Query* QueryManager::CreateQuery(
     case GL_COMMANDS_COMPLETED_CHROMIUM:
       query = new CommandsCompletedQuery(this, target, shm_id, shm_offset);
       break;
+    case GL_TIME_ELAPSED:
+      query = new TimeElapsedQuery(this, target, shm_id, shm_offset);
+      break;
     default: {
       GLuint service_id = 0;
       glGenQueries(1, &service_id);
@@ -519,6 +586,14 @@ QueryManager::Query* QueryManager::CreateQuery(
       queries_.insert(std::make_pair(client_id, query));
   DCHECK(result.second);
   return query.get();
+}
+
+scoped_ptr<gfx::GPUTimer> QueryManager::CreateGPUTimer(bool elapsed_time) {
+  return gpu_timing_client_->CreateGPUTimer(elapsed_time);
+}
+
+bool QueryManager::GPUTimingAvailable() {
+  return gpu_timing_client_->IsAvailable();
 }
 
 void QueryManager::GenQueries(GLsizei n, const GLuint* queries) {

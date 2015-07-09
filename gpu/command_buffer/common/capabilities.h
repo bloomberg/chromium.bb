@@ -134,6 +134,7 @@ struct GPU_EXPORT Capabilities {
   bool texture_rg;
   bool render_buffer_format_bgra8888;
   bool occlusion_query_boolean;
+  bool timer_queries;
 
   int major_version;
   int minor_version;

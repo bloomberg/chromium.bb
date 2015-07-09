@@ -707,6 +707,13 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
         return true;
       }
       break;
+    // TODO(dyen): Also support GL_GPU_DISJOINT_EXT.
+    case GL_TIMESTAMP_EXT:
+      // We convert all GPU timestamps to CPU time.
+      *params = base::saturated_cast<GLint>(
+          (base::TraceTicks::Now() - base::TraceTicks()).InMicroseconds()
+          * base::Time::kNanosecondsPerMicrosecond);
+      return true;
 
     // Non-cached parameters.
     case GL_ALIASED_LINE_WIDTH_RANGE:
@@ -997,6 +1004,11 @@ bool GLES2Implementation::GetInteger64vHelper(GLenum pname, GLint64* params) {
     case GL_MAX_UNIFORM_BLOCK_SIZE:
       *params = capabilities_.max_uniform_block_size;
       return true;
+    case GL_TIMESTAMP_EXT:
+      // We convert all GPU timestamps to CPU time.
+      *params = (base::TraceTicks::Now() - base::TraceTicks()).InMicroseconds()
+                * base::Time::kNanosecondsPerMicrosecond;
+      return true;
     default:
       break;
   }
@@ -1056,6 +1068,62 @@ bool GLES2Implementation::GetSyncivHelper(
     *length = 1;
   }
   return true;
+}
+
+bool GLES2Implementation::GetQueryObjectValueHelper(
+    const char* function_name, GLuint id, GLenum pname, GLuint64* params) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] GetQueryObjectValueHelper("
+                 << id << ", "
+                 << GLES2Util::GetStringQueryObjectParameter(pname) << ", "
+                 << static_cast<const void*>(params) << ")");
+
+  QueryTracker::Query* query = query_tracker_->GetQuery(id);
+  if (!query) {
+    SetGLError(GL_INVALID_OPERATION,
+               function_name, "unknown query id");
+    return false;
+  }
+
+  if (query->Active()) {
+    SetGLError(
+        GL_INVALID_OPERATION,
+        function_name,
+        "query active. Did you to call glEndQueryEXT?");
+    return false;
+  }
+
+  if (query->NeverUsed()) {
+    SetGLError(
+        GL_INVALID_OPERATION,
+        function_name, "Never used. Did you call glBeginQueryEXT?");
+    return false;
+  }
+
+  bool valid_value = false;
+  switch (pname) {
+    case GL_QUERY_RESULT_EXT:
+      if (!query->CheckResultsAvailable(helper_)) {
+        helper_->WaitForToken(query->token());
+        if (!query->CheckResultsAvailable(helper_)) {
+          FinishHelper();
+          CHECK(query->CheckResultsAvailable(helper_));
+        }
+      }
+      *params = query->GetResult();
+      valid_value = true;
+      break;
+    case GL_QUERY_RESULT_AVAILABLE_EXT:
+      *params = query->CheckResultsAvailable(helper_);
+      valid_value = true;
+      break;
+    default:
+      SetGLErrorInvalidEnum(function_name, pname, "pname");
+      break;
+  }
+  GPU_CLIENT_LOG("  " << *params);
+  CheckGLError();
+  return valid_value;
 }
 
 GLuint GLES2Implementation::GetMaxValueInBufferCHROMIUMHelper(
@@ -4809,6 +4877,15 @@ void GLES2Implementation::BeginQueryEXT(GLenum target, GLuint id) {
         return;
       }
       break;
+    // TODO(dyen): Also support GL_TIMESTAMP.
+    case GL_TIME_ELAPSED_EXT:
+      if (!capabilities_.timer_queries) {
+        SetGLError(
+            GL_INVALID_OPERATION, "glBeginQueryEXT",
+            "not enabled for timing queries");
+        return;
+      }
+      break;
     default:
       SetGLError(
           GL_INVALID_OPERATION, "glBeginQueryEXT", "unknown query target");
@@ -4858,8 +4935,11 @@ void GLES2Implementation::GetQueryivEXT(
                  << GLES2Util::GetStringQueryTarget(target) << ", "
                  << GLES2Util::GetStringQueryParameter(pname) << ", "
                  << static_cast<const void*>(params) << ")");
-
-  if (pname != GL_CURRENT_QUERY_EXT) {
+  if (pname == GL_QUERY_COUNTER_BITS_EXT) {
+    // We convert all queries to CPU time so we support 64 bits.
+    *params = 64;
+    return;
+  } else if (pname != GL_CURRENT_QUERY_EXT) {
     SetGLErrorInvalidEnum("glGetQueryivEXT", pname, "pname");
     return;
   }
@@ -4871,51 +4951,16 @@ void GLES2Implementation::GetQueryivEXT(
 
 void GLES2Implementation::GetQueryObjectuivEXT(
     GLuint id, GLenum pname, GLuint* params) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] GetQueryivEXT(" << id << ", "
-                 << GLES2Util::GetStringQueryObjectParameter(pname) << ", "
-                 << static_cast<const void*>(params) << ")");
+  GLuint64 result = 0;
+  if (GetQueryObjectValueHelper("glQueryObjectuivEXT", id, pname, &result))
+    *params = base::saturated_cast<GLuint>(result);
+}
 
-  QueryTracker::Query* query = query_tracker_->GetQuery(id);
-  if (!query) {
-    SetGLError(GL_INVALID_OPERATION, "glQueryObjectuivEXT", "unknown query id");
-    return;
-  }
-
-  if (query->Active()) {
-    SetGLError(
-        GL_INVALID_OPERATION,
-        "glQueryObjectuivEXT", "query active. Did you to call glEndQueryEXT?");
-    return;
-  }
-
-  if (query->NeverUsed()) {
-    SetGLError(
-        GL_INVALID_OPERATION,
-        "glQueryObjectuivEXT", "Never used. Did you call glBeginQueryEXT?");
-    return;
-  }
-
-  switch (pname) {
-    case GL_QUERY_RESULT_EXT:
-      if (!query->CheckResultsAvailable(helper_)) {
-        helper_->WaitForToken(query->token());
-        if (!query->CheckResultsAvailable(helper_)) {
-          FinishHelper();
-          CHECK(query->CheckResultsAvailable(helper_));
-        }
-      }
-      *params = query->GetResult();
-      break;
-    case GL_QUERY_RESULT_AVAILABLE_EXT:
-      *params = query->CheckResultsAvailable(helper_);
-      break;
-    default:
-      SetGLErrorInvalidEnum("glQueryObjectuivEXT", pname, "pname");
-      break;
-  }
-  GPU_CLIENT_LOG("  " << *params);
-  CheckGLError();
+void GLES2Implementation::GetQueryObjectui64vEXT(
+    GLuint id, GLenum pname, GLuint64* params) {
+  GLuint64 result = 0;
+  if (GetQueryObjectValueHelper("glQueryObjectui64vEXT", id, pname, &result))
+    *params = result;
 }
 
 void GLES2Implementation::DrawArraysInstancedANGLE(
