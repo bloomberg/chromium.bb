@@ -1445,8 +1445,10 @@ void XMLHttpRequest::endLoading()
     if (!executionContext()->isDocument() || !document() || !document()->frame() || !document()->frame()->page())
         return;
 
-    if (status() >= 200 && status() < 300)
+    if (status() >= 200 && status() < 300) {
+        document()->frame()->page()->chromeClient().ajaxSucceeded(document()->frame());
         document()->frame()->page()->chromeClient().xhrSucceeded(document()->frame());
+    }
 }
 
 void XMLHttpRequest::didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent)

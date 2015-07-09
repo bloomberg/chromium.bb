@@ -929,6 +929,13 @@ void ChromeClientImpl::xhrSucceeded(LocalFrame* frame)
         webframe->autofillClient()->xhrSucceeded();
 }
 
+void ChromeClientImpl::ajaxSucceeded(LocalFrame* frame)
+{
+    WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(frame);
+    if (webframe->autofillClient())
+        webframe->autofillClient()->ajaxSucceeded();
+}
+
 void ChromeClientImpl::registerViewportLayers() const
 {
     if (m_webView->rootGraphicsLayer() && m_webView->layerTreeView())
