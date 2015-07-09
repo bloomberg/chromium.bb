@@ -39,6 +39,11 @@ class MEDIA_EXPORT FFmpegAACBitstreamConverter
 
   bool header_generated_;
   uint8_t hdr_[kAdtsHeaderSize];
+  int codec_;
+  int audio_profile_;
+  int sample_rate_index_;
+  int channel_configuration_;
+  int frame_length_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegAACBitstreamConverter);
 };

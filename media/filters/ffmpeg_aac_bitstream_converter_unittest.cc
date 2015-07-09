@@ -133,4 +133,41 @@ TEST_F(FFmpegAACBitstreamConverterTest, Conversion_AudioProfileType) {
   EXPECT_FALSE(converter_eld.ConvertPacket(test_packet.get()));
 }
 
+TEST_F(FFmpegAACBitstreamConverterTest, Conversion_MultipleLength) {
+  FFmpegAACBitstreamConverter converter(&test_context_);
+
+  uint8 dummy_packet[1000];
+
+  ScopedAVPacket test_packet(new AVPacket());
+  CreatePacket(test_packet.get(), dummy_packet,
+               sizeof(dummy_packet));
+
+  // Try out the actual conversion (should be successful and allocate new
+  // packet and destroy the old one).
+  EXPECT_TRUE(converter.ConvertPacket(test_packet.get()));
+
+  // Check that the ADTS header frame length matches the packet size
+  int frame_length = ((test_packet->data[3] & 0x03) << 11) |
+                     ((test_packet->data[4] & 0xFF) << 3) |
+                     ((test_packet->data[5] & 0xE0) >> 5);
+
+  EXPECT_EQ(frame_length, test_packet->size);
+
+  // Create a second packet that is 1 byte smaller than the first one
+  ScopedAVPacket second_test_packet(new AVPacket());
+  CreatePacket(second_test_packet.get(), dummy_packet,
+               sizeof(dummy_packet) - 1);
+
+  // Try out the actual conversion (should be successful and allocate new
+  // packet and destroy the old one).
+  EXPECT_TRUE(converter.ConvertPacket(second_test_packet.get()));
+
+  // Check that the ADTS header frame length matches the packet size
+  frame_length = ((second_test_packet->data[3] & 0x03) << 11) |
+                 ((second_test_packet->data[4] & 0xFF) << 3) |
+                 ((second_test_packet->data[5] & 0xE0) >> 5);
+
+  EXPECT_EQ(frame_length, second_test_packet->size);
+}
+
 }  // namespace media
