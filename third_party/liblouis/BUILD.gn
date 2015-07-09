@@ -1,0 +1,47 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+chromevox_braille_out_dir = "$root_out_dir/resources/chromeos/chromevox/braille"
+
+group("liblouis") {
+  data_deps = [
+    ":liblouis_tables",
+    ":liblouis_tables_json",
+  ]
+}
+
+action("liblouis_tables") {
+  script = "copy_tables.py"
+  inputs = [
+    "liblouis_list_tables.py",
+  ]
+  depfile = "$target_gen_dir/tables.d"
+  sources = [
+    "tables.json",
+  ]
+  outputs = [
+    "$depfile.stamp",
+  ]
+  args = [
+           "-D",
+           rebase_path(".", root_build_dir),
+           "-D",
+           rebase_path("src/tables", root_build_dir),
+           "-d",
+           rebase_path("$chromevox_braille_out_dir/tables", root_build_dir),
+           "-e",
+           rebase_path("cvox-common.cti", root_build_dir),
+           "--depfile",
+           rebase_path(depfile, root_build_dir),
+         ] + rebase_path(sources, root_build_dir)
+}
+
+copy("liblouis_tables_json") {
+  sources = [
+    "tables.json",
+  ]
+  outputs = [
+    "$chromevox_braille_out_dir/{{source_file_part}}",
+  ]
+}

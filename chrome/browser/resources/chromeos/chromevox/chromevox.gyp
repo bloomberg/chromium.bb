@@ -8,14 +8,11 @@
       'variables': {
         # Whether to compress the 4 main ChromeVox scripts.
         'chromevox_compress_js%': '1',
-        'chromevox1_background_script_loader_file': 'chromevox/background/loader.js',
-        'chromevox1_content_script_loader_file': 'chromevox/injected/loader.js',
-        'chromevox1_kbexplorer_loader_file': 'chromevox/background/kbexplorer_loader.js',
-        'chromevox1_options_script_loader_file': 'chromevox/background/options_loader.js',
-        'chromevox2_background_script_loader_file': 'cvox2/background/loader.js',
       },
       'includes': [
+        'chromevox_assets.gypi',
         'chromevox_tests.gypi',
+        'chromevox_vars.gypi',
         'common.gypi',
       ],
       'targets': [
@@ -62,13 +59,6 @@
           ],
         },
         {
-          'target_name': 'chromevox_assets',
-          'type': 'none',
-          'includes': [
-            'chromevox_assets.gypi',
-          ],
-        },
-        {
           'target_name': 'chromevox_static_files',
           'type': 'none',
           'copies': [
@@ -81,7 +71,7 @@
               ],
             },
             {
-              'destination': '<(PRODUCT_DIR)/resources/chromeos/chromevox/cvox2/background',
+              'destination': '<(chromevox_dest_dir)/cvox2/background',
               'files': [
                 'cvox2/background/background.html',
               ],

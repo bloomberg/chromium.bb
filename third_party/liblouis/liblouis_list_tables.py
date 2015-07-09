@@ -59,6 +59,17 @@ def ProcessFile(output_set, filename, directories):
     ProcessFile(output_set, include_file, directories)
 
 
+def GetTableFiles(tables_file, directories, extra_files):
+  tables = LoadTablesFile(tables_file)
+  output_set = set()
+  for table in tables:
+    for name in table['fileNames'].split(','):
+      ProcessFile(output_set, name, directories)
+  for name in extra_files:
+    ProcessFile(output_set, name, directories)
+  return output_set
+
+
 def DoMain(argv):
   "Entry point for gyp's pymod_do_main command."
   parser = optparse.OptionParser()
@@ -75,15 +86,8 @@ def DoMain(argv):
     parser.error('Expecting exactly one argument')
   if not options.directories:
     parser.error('At least one --directory option must be specified')
-
-  tables = LoadTablesFile(args[0])
-  output_set = set()
-  for table in tables:
-    for name in table['fileNames'].split(','):
-      ProcessFile(output_set, name, options.directories)
-  for name in options.extra_files:
-    ProcessFile(output_set, name, options.directories)
-  return '\n'.join(output_set)
+  files = GetTableFiles(args[0], options.directories, options.extra_files)
+  return '\n'.join(files)
 
 
 def main(argv):

@@ -8,6 +8,7 @@
 #
 # template_manifest_path: a valid Jinja2 file path.
 # output_manifest_path: file path for the resulting manifest.
+# chromevox_extension_key: The extension key to include in the manifest.
 #
 # The following variables are optional:
 #
@@ -21,7 +22,6 @@
     'generate_manifest_script_path': 'tools/generate_manifest.py',
     'is_guest_manifest%': 0,
     'is_chromevox_classic%': 0,
-    'key': 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDltVl1k15pjRzuZfMc3B69inxwm2bZeZ2O8/zFO+NluHnBm3GJ3fzdOoFGJd+M16I8p7zxxQyHeDMfWYASyCeB8XnUEDKjqNLQfCnncsANzHsYoEbYj2nEUML2P13b9q+AAvpCBpAJ4cZp81e9n1y/vbSXHE4385cgkKueItzikQIDAQAB',
   },
   'includes': [
     '../../../../../build/util/version.gypi',
@@ -41,7 +41,7 @@
         'python',
         '<(generate_manifest_script_path)',
         '--is_guest_manifest=<(is_guest_manifest)',
-        '--key=<(key)',
+        '--key=<(chromevox_extension_key)',
         '--is_chromevox_classic=<(is_chromevox_classic)',
         '--is_js_compressed=<(chromevox_compress_js)',
         '--set_version=<(version_full)',

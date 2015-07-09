@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 GEN_INCLUDE([
-    'chrome/browser/resources/chromeos/chromevox/testing/common.js',
-    'chrome/browser/resources/chromeos/chromevox/testing/callback_helper.js']);
+    'common.js',
+    'callback_helper.js']);
 
 /**
  * Base test fixture for ChromeVox end to end tests.

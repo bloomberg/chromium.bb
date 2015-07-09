@@ -425,14 +425,8 @@ group("extra_resources") {
     ]
   }
 
-  if (enable_chromevox_next) {
-    deps += [
-      #'browser/resources/chromeos/chromevox2/chromevox.gyp:chromevox2',  TODO(GYP)
-    ]
-  } else {
-    deps += [
-      #'browser/resources/chromeos/chromevox/chromevox.gyp:chromevox',  TODO(GYP)
-    ]
+  if (is_chromeos) {
+    deps += [ "//chrome/browser/resources/chromeos/chromevox" ]
   }
 
   if (enable_extensions) {
@@ -715,7 +709,8 @@ template("chrome_repack_material_percent") {
   percent = invoker.percent
 
   repack_name = "${target_name}_repack"
-  repack_output_file = "$root_gen_dir/repack/chrome_material_${percent}_percent.pak"
+  repack_output_file =
+      "$root_gen_dir/repack/chrome_material_${percent}_percent.pak"
 
   copy_name = target_name
 

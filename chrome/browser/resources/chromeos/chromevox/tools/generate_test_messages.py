@@ -34,7 +34,7 @@ def main():
     Die('Output file not specified')
   if len(args) != 1:
     Die('Exactly one input file must be specified')
-  in_file_name = args[0];
+  in_file_name = args[0]
   with open(in_file_name) as in_file:
     json = in_file.read().strip()
   with open(options.output_file, 'w') as out_file:

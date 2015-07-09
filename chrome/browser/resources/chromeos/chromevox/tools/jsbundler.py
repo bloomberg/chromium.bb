@@ -236,10 +236,6 @@ def LinkOrCopyFiles(sources, dest_dir):
     if not os.path.exists(os.path.dirname(dst)):
       os.makedirs(os.path.dirname(dst))
     if os.path.exists(dst):
-      # Avoid clobbering the inode if source and destination refer to the
-      # same file already.
-      if os.path.samefile(src, dst):
-        return
       os.unlink(dst)
     try:
       os.link(src, dst)
@@ -277,6 +273,29 @@ def WriteOutput(bundle, format, out_file, dest_dir):
   out_file.write('\n')
 
 
+def WriteStampfile(stampfile):
+  '''Writes a stamp file.
+
+  Args:
+    stampfile, string: name of stamp file to touch
+  '''
+  with open(stampfile, 'w') as file:
+    os.utime(stampfile, None)
+
+
+def WriteDepfile(depfile, outfile, infiles):
+  '''Writes a depfile.
+
+  Args:
+    depfile, string: name of dep file to write
+    outfile, string: Name of output file to use as the target in the generated
+      .d file.
+    infiles, list: File names to list as dependencies in the .d file.
+  '''
+  content = '%s: %s' % (outfile, ' '.join(infiles))
+  open(depfile, 'w').write(content)
+
+
 def CreateOptionParser():
   parser = optparse.OptionParser(description=__doc__)
   parser.usage = '%prog [options] <top_level_file>...'
@@ -290,6 +309,9 @@ def CreateOptionParser():
   parser.add_option('-r', '--root', dest='roots', action='append', default=[],
                     metavar='ROOT',
                     help='Roots of directory trees to scan for sources.')
+  parser.add_option('-M', '--module', dest='modules', action='append',
+                    default=[], metavar='FILENAME',
+                    help='Source modules to load')
   parser.add_option('-w', '--rewrite_prefix', action='append', default=[],
                     dest='prefix_map', metavar='SPEC',
                     help=('Two path prefixes, separated by colons ' +
@@ -306,7 +328,12 @@ def CreateOptionParser():
   parser.add_option('-x', '--exclude', action='append', default=[],
                     help=('Exclude files whose full path contains a match for '
                           'the given regular expression.  Does not apply to '
-                          'filenames given as arguments.'))
+                          'filenames given as arguments or with the '
+                          '-m option.'))
+  parser.add_option('--depfile', metavar='FILENAME',
+                    help='Store .d style dependencies in FILENAME')
+  parser.add_option('--stampfile', metavar='FILENAME',
+                    help='Write empty stamp file')
   return parser
 
 
@@ -314,15 +341,18 @@ def main():
   options, args = CreateOptionParser().parse_args()
   if len(args) < 1:
     Die('At least one top-level source file must be specified.')
+  if options.depfile and not options.output_file:
+    Die('--depfile requires an output file')
   will_output_source_text = options.mode in ('bundle', 'compressed_bundle')
   path_rewriter = PathRewriter(options.prefix_map)
   exclude = [re.compile(r) for r in options.exclude]
-  sources = ReadSources(options.roots, args, will_output_source_text,
+  sources = ReadSources(options.roots, options.modules + args,
+                        will_output_source_text or len(options.modules) > 0,
                         path_rewriter, exclude)
   if will_output_source_text:
     _MarkAsCompiled(sources)
   bundle = Bundle()
-  if len(options.roots) > 0:
+  if len(options.roots) > 0 or len(options.modules) > 0:
     CalcDeps(bundle, sources, args)
   bundle.Add((sources[name] for name in args))
   if options.mode == 'copy':
@@ -339,7 +369,10 @@ def main():
     finally:
       if options.output_file:
         out_file.close()
-
+  if options.stampfile:
+    WriteStampfile(options.stampfile)
+  if options.depfile:
+    WriteDepfile(options.depfile, options.output_file, bundle.GetInPaths())
 
 if __name__ == '__main__':
   main()
