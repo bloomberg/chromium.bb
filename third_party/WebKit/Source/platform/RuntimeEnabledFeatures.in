@@ -77,7 +77,7 @@ GlobalCacheStorage status=stable
 ImageColorProfiles
 ImageRenderingPixelated status=stable
 IndexedDBExperimental status=experimental
-InputDevice status=test
+InputDevice status=experimental
 InputModeAttribute status=experimental
 KeyboardEventCode status=experimental
 KeyboardEventKey status=test
