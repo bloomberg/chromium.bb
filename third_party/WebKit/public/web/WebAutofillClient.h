@@ -61,7 +61,7 @@ public:
     virtual void setIgnoreTextChanges(bool ignore) { }
 
     virtual void didAssociateFormControls(const WebVector<WebNode>&) { }
-    virtual void ajaxSucceeded() { }
+    virtual void xhrSucceeded() { }
 
 protected:
     virtual ~WebAutofillClient() { }

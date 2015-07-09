@@ -10,17 +10,13 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/DOMArrayBuffer.h"
-#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fetch/FetchUtils.h"
 #include "core/fileapi/Blob.h"
-#include "core/frame/Frame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
 #include "modules/fetch/Body.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/DataConsumerHandleUtil.h"
@@ -64,7 +60,6 @@ private:
     void performHTTPFetch(bool corsFlag, bool corsPreflightFlag);
     void failed(const String& message);
     void notifyFinished();
-    Document* document() const;
 
     RawPtrWillBeMember<FetchManager> m_fetchManager;
     RefPtrWillBeMember<ScriptPromiseResolver> m_resolver;
@@ -72,7 +67,6 @@ private:
     RefPtr<ThreadableLoader> m_loader;
     bool m_failed;
     bool m_finished;
-    int m_responseHttpStatusCode;
 };
 
 FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* fetchManager, PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver, FetchRequestData* request)
@@ -82,7 +76,6 @@ FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* f
     , m_request(request)
     , m_failed(false)
     , m_finished(false)
-    , m_responseHttpStatusCode(0)
 {
 }
 
@@ -102,9 +95,6 @@ DEFINE_TRACE(FetchManager::Loader)
 void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
     ASSERT(handle);
-
-    m_responseHttpStatusCode = response.httpStatusCode();
-
     // Recompute the tainting if the request was redirected to a different
     // origin.
     if (!SecurityOrigin::create(response.url())->isSameSchemeHostPort(m_request->origin().get())) {
@@ -151,12 +141,6 @@ void FetchManager::Loader::didFinishLoading(unsigned long, double)
 {
     ASSERT(!m_failed);
     m_finished = true;
-
-    if (document() && document()->frame() && document()->frame()->page()
-        && m_responseHttpStatusCode >= 200 && m_responseHttpStatusCode < 300) {
-        document()->frame()->page()->chromeClient().ajaxSucceeded(document()->frame());
-    }
-
     notifyFinished();
 }
 
@@ -179,14 +163,6 @@ void FetchManager::Loader::didFailAccessControlCheck(const ResourceError& error)
 void FetchManager::Loader::didFailRedirectCheck()
 {
     failed("Fetch API cannot load " + m_request->url().string() + ". Redirect failed.");
-}
-
-Document* FetchManager::Loader::document() const
-{
-    if (executionContext()->isDocument()) {
-        return toDocument(executionContext());
-    }
-    return nullptr;
 }
 
 void FetchManager::Loader::start()

@@ -227,7 +227,7 @@ public:
     virtual void didEndEditingOnTextField(HTMLInputElement&) { }
     virtual void handleKeyboardEventOnTextField(HTMLInputElement&, KeyboardEvent&) { }
     virtual void textFieldDataListChanged(HTMLInputElement&) { }
-    virtual void ajaxSucceeded(LocalFrame*) { }
+    virtual void xhrSucceeded(LocalFrame*) { }
 
     // Input mehtod editor related functions.
     virtual void didCancelCompositionOnSelectionChange() { }

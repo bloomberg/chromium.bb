@@ -922,11 +922,11 @@ void ChromeClientImpl::textFieldDataListChanged(HTMLInputElement& input)
         webframe->autofillClient()->dataListOptionsChanged(WebInputElement(&input));
 }
 
-void ChromeClientImpl::ajaxSucceeded(LocalFrame* frame)
+void ChromeClientImpl::xhrSucceeded(LocalFrame* frame)
 {
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(frame);
     if (webframe->autofillClient())
-        webframe->autofillClient()->ajaxSucceeded();
+        webframe->autofillClient()->xhrSucceeded();
 }
 
 void ChromeClientImpl::registerViewportLayers() const
