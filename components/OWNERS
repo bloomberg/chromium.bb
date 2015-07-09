@@ -229,6 +229,9 @@ per-file rappor*=asvitkine@chromium.org
 per-file renderer_context_menu*=avi@chromium.org
 per-file renderer_context_menu*=lazyboy@chromium.org
 
+per-file safe_json.gypi=bauerb@chromium.org
+per-file safe_json.gypi=rsesek@chromium.org
+
 per-file search.gypi=kmadhusu@chromium.org
 per-file search.gypi=jered@chromium.org
 per-file search.gypi=samarth@chromium.org
