@@ -47,6 +47,7 @@ void MojoCdmService::SetClient(mojo::ContentDecryptionModuleClientPtr client) {
 void MojoCdmService::Initialize(
     const mojo::String& key_system,
     const mojo::String& security_origin,
+    mojo::CdmConfigPtr cdm_config,
     int32_t cdm_id,
     const mojo::Callback<void(mojo::CdmPromiseResultPtr)>& callback) {
   DVLOG(1) << __FUNCTION__ << ": " << key_system;
@@ -55,7 +56,7 @@ void MojoCdmService::Initialize(
 
   auto weak_this = weak_factory_.GetWeakPtr();
   cdm_factory_->Create(
-      key_system, GURL(security_origin), CdmConfig(),
+      key_system, GURL(security_origin), cdm_config.To<CdmConfig>(),
       base::Bind(&MojoCdmService::OnSessionMessage, weak_this),
       base::Bind(&MojoCdmService::OnSessionClosed, weak_this),
       base::Bind(&MojoCdmService::OnLegacySessionError, weak_this),
@@ -66,7 +67,6 @@ void MojoCdmService::Initialize(
           base::Passed(make_scoped_ptr(new SimpleMojoCdmPromise(callback)))));
 }
 
-// mojo::MediaRenderer implementation.
 void MojoCdmService::SetServerCertificate(
     mojo::Array<uint8_t> certificate_data,
     const mojo::Callback<void(mojo::CdmPromiseResultPtr)>& callback) {

@@ -12,11 +12,12 @@
 
 namespace media {
 class AudioDecoderConfig;
-class VideoDecoderConfig;
 class DecoderBuffer;
 class DecryptConfig;
-struct SubsampleEntry;
+class VideoDecoderConfig;
+struct CdmConfig;
 struct CdmKeyInformation;
+struct SubsampleEntry;
 }
 
 namespace mojo {
@@ -80,6 +81,15 @@ struct TypeConverter<scoped_ptr<media::CdmKeyInformation>,
                      CdmKeyInformationPtr> {
   static scoped_ptr<media::CdmKeyInformation> Convert(
       const CdmKeyInformationPtr& input);
+};
+
+template <>
+struct TypeConverter<CdmConfigPtr, media::CdmConfig> {
+  static CdmConfigPtr Convert(const media::CdmConfig& input);
+};
+template <>
+struct TypeConverter<media::CdmConfig, CdmConfigPtr> {
+  static media::CdmConfig Convert(const CdmConfigPtr& input);
 };
 
 }  // namespace mojo

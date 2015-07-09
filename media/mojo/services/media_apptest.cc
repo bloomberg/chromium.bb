@@ -7,11 +7,13 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "media/base/cdm_config.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "media/cdm/key_system_names.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/interfaces/media_renderer.mojom.h"
+#include "media/mojo/services/media_type_converters.h"
 #include "media/mojo/services/mojo_demuxer_stream_impl.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -77,7 +79,7 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
         .Times(Exactly(1))
         .WillOnce(InvokeWithoutArgs(run_loop_.get(), &base::RunLoop::Quit));
     cdm_->Initialize(
-        key_system, kSecurityOrigin, 1,
+        key_system, kSecurityOrigin, mojo::CdmConfig::From(CdmConfig()), 1,
         base::Bind(&MediaAppTest::OnCdmInitialized, base::Unretained(this)));
   }
 

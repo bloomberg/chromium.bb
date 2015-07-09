@@ -36,6 +36,7 @@ class MojoCdmService : public mojo::ContentDecryptionModule {
   void Initialize(
       const mojo::String& key_system,
       const mojo::String& security_origin,
+      mojo::CdmConfigPtr cdm_config,
       int32_t cdm_id,
       const mojo::Callback<void(mojo::CdmPromiseResultPtr)>& callback) final;
   void SetServerCertificate(

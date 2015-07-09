@@ -6,6 +6,7 @@
 
 #include "media/base/audio_decoder_config.h"
 #include "media/base/buffering_state.h"
+#include "media/base/cdm_config.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
@@ -474,12 +475,32 @@ TypeConverter<CdmKeyInformationPtr, media::CdmKeyInformation>::Convert(
 scoped_ptr<media::CdmKeyInformation> TypeConverter<
     scoped_ptr<media::CdmKeyInformation>,
     CdmKeyInformationPtr>::Convert(const CdmKeyInformationPtr& input) {
-  scoped_ptr<media::CdmKeyInformation> info(new media::CdmKeyInformation);
+  scoped_ptr<media::CdmKeyInformation> info(new media::CdmKeyInformation());
   info->key_id = input->key_id.storage();
   info->status =
       static_cast<media::CdmKeyInformation::KeyStatus>(input->status);
   info->system_code = input->system_code;
   return info.Pass();
+}
+
+// static
+CdmConfigPtr TypeConverter<CdmConfigPtr, media::CdmConfig>::Convert(
+    const media::CdmConfig& input) {
+  CdmConfigPtr config(CdmConfig::New());
+  config->allow_distinctive_identifier = input.allow_distinctive_identifier;
+  config->allow_persistent_state = input.allow_persistent_state;
+  config->use_hw_secure_codecs = input.use_hw_secure_codecs;
+  return config.Pass();
+}
+
+// static
+media::CdmConfig TypeConverter<media::CdmConfig, CdmConfigPtr>::Convert(
+    const CdmConfigPtr& input) {
+  media::CdmConfig config;
+  config.allow_distinctive_identifier = input->allow_distinctive_identifier;
+  config.allow_persistent_state = input->allow_persistent_state;
+  config.use_hw_secure_codecs = input->use_hw_secure_codecs;
+  return config;
 }
 
 }  // namespace mojo

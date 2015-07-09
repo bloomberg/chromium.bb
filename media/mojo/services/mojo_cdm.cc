@@ -87,14 +87,13 @@ MojoCdm::~MojoCdm() {
 
 void MojoCdm::InitializeCdm(const std::string& key_system,
                             const GURL& security_origin,
-                            const media::CdmConfig& /* cdm_config */,
+                            const media::CdmConfig& cdm_config,
                             scoped_ptr<CdmInitializedPromise> promise) {
   DVLOG(1) << __FUNCTION__ << ": " << key_system;
-  // TODO(xhwang): Pass |cdm_config| down.
   remote_cdm_->Initialize(
-      key_system, security_origin.spec(), cdm_id_,
-      base::Bind(&MojoCdm::OnPromiseResult<>, weak_factory_.GetWeakPtr(),
-                 base::Passed(&promise)));
+      key_system, security_origin.spec(), mojo::CdmConfig::From(cdm_config),
+      cdm_id_, base::Bind(&MojoCdm::OnPromiseResult<>,
+                          weak_factory_.GetWeakPtr(), base::Passed(&promise)));
 }
 
 void MojoCdm::SetServerCertificate(const std::vector<uint8_t>& certificate,

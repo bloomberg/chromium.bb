@@ -5,6 +5,7 @@
 #include "media/mojo/services/media_type_converters.h"
 
 #include "media/base/audio_decoder_config.h"
+#include "media/base/cdm_config.h"
 #include "media/base/decoder_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -172,6 +173,21 @@ TEST(MediaTypeConvertersTest, ConvertAudioDecoderConfig_Encrypted) {
   AudioDecoderConfigPtr ptr(AudioDecoderConfig::From(config));
   media::AudioDecoderConfig result(ptr.To<media::AudioDecoderConfig>());
   EXPECT_TRUE(result.Matches(config));
+}
+
+TEST(MediaTypeConvertersTest, ConvertCdmConfig) {
+  media::CdmConfig config;
+  config.allow_distinctive_identifier = true;
+  config.allow_persistent_state = false;
+  config.use_hw_secure_codecs = true;
+
+  CdmConfigPtr ptr(CdmConfig::From(config));
+  media::CdmConfig result(ptr.To<media::CdmConfig>());
+
+  EXPECT_EQ(config.allow_distinctive_identifier,
+            result.allow_distinctive_identifier);
+  EXPECT_EQ(config.allow_persistent_state, result.allow_persistent_state);
+  EXPECT_EQ(config.use_hw_secure_codecs, result.use_hw_secure_codecs);
 }
 
 }  // namespace test
