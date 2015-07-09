@@ -94,7 +94,11 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual blink::WebThread* createThread(const char* name);
   virtual blink::WebThread* currentThread();
   virtual void yieldCurrentThread();
+  // TODO(toyoshim): Remove no arguments version after the transition.
   virtual blink::WebWaitableEvent* createWaitableEvent();
+  virtual blink::WebWaitableEvent* createWaitableEvent(
+      blink::WebWaitableEvent::ResetPolicy policy,
+      blink::WebWaitableEvent::InitialState state);
   virtual blink::WebWaitableEvent* waitMultipleEvents(
       const blink::WebVector<blink::WebWaitableEvent*>& events);
   virtual void decrementStatsCounter(const char* name);
