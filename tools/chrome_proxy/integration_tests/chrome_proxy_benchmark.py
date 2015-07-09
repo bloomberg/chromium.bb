@@ -7,8 +7,8 @@ from integration_tests import chrome_proxy_measurements as measurements
 from integration_tests import chrome_proxy_pagesets as pagesets
 from telemetry import benchmark
 
-NON_SAFE_BROWSING_BROWSERS = ['mac', 'linux', 'win', 'chromeos',
-                              'android-webview', 'android-webview-shell']
+DESKTOP_PLATFORMS = ['mac', 'linux', 'win', 'chromeos']
+WEBVIEW_PLATFORMS = ['android-webview', 'android-webview-shell']
 
 class ChromeProxyClientVersion(ChromeProxyBenchmark):
   tag = 'client_version'
@@ -90,7 +90,7 @@ class ChromeProxyBlockOnce(ChromeProxyBenchmark):
     return 'chrome_proxy_benchmark.block_once.block_once'
 
 
-@benchmark.Disabled(*NON_SAFE_BROWSING_BROWSERS)
+@benchmark.Disabled(*(DESKTOP_PLATFORMS + WEBVIEW_PLATFORMS))
 # Safebrowsing is enabled for Android and iOS.
 class ChromeProxySafeBrowsingOn(ChromeProxyBenchmark):
   tag = 'safebrowsing_on'
@@ -107,7 +107,7 @@ class ChromeProxySafeBrowsingOn(ChromeProxyBenchmark):
     return 'chrome_proxy_benchmark.safebrowsing_on.safebrowsing'
 
 
-@benchmark.Enabled(*NON_SAFE_BROWSING_BROWSERS)
+@benchmark.Enabled(*(DESKTOP_PLATFORMS + WEBVIEW_PLATFORMS))
 # Safebrowsing is switched off for Android Webview and all desktop platforms.
 class ChromeProxySafeBrowsingOff(ChromeProxyBenchmark):
   tag = 'safebrowsing_off'
@@ -180,7 +180,7 @@ class ChromeProxyClientConfig(ChromeProxyBenchmark):
     return 'chrome_proxy_benchmark.client_config.synthetic'
 
 
-@benchmark.Enabled('desktop')
+@benchmark.Enabled(*DESKTOP_PLATFORMS)
 class ChromeProxyVideoDirect(benchmark.Benchmark):
   tag = 'video'
   test = measurements.ChromeProxyVideoValidation
@@ -191,7 +191,7 @@ class ChromeProxyVideoDirect(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.video.direct'
 
 
-@benchmark.Enabled('desktop')
+@benchmark.Enabled(*DESKTOP_PLATFORMS)
 class ChromeProxyVideoProxied(benchmark.Benchmark):
   tag = 'video'
   test = measurements.ChromeProxyVideoValidation
@@ -202,7 +202,7 @@ class ChromeProxyVideoProxied(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.video.proxied'
 
 
-@benchmark.Enabled('desktop')
+@benchmark.Enabled(*DESKTOP_PLATFORMS)
 class ChromeProxyVideoCompare(benchmark.Benchmark):
   """Comparison of direct and proxied video fetches.
 
@@ -218,7 +218,7 @@ class ChromeProxyVideoCompare(benchmark.Benchmark):
   def Name(cls):
     return 'chrome_proxy_benchmark.video.compare'
 
-@benchmark.Enabled('desktop')
+@benchmark.Enabled(*DESKTOP_PLATFORMS)
 class ChromeProxyVideoFrames(benchmark.Benchmark):
   """Check for video frames similar to original video."""
 
@@ -230,7 +230,7 @@ class ChromeProxyVideoFrames(benchmark.Benchmark):
   def Name(cls):
     return 'chrome_proxy_benchmark.video.frames'
 
-@benchmark.Enabled('desktop')
+@benchmark.Enabled(*DESKTOP_PLATFORMS)
 class ChromeProxyVideoAudio(benchmark.Benchmark):
   """Check that audio is similar to original video."""
 
