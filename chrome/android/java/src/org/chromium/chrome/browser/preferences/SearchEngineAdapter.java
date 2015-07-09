@@ -15,8 +15,11 @@ import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.AccessibilityDelegate;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityEvent;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.BaseAdapter;
 import android.widget.RadioButton;
 import android.widget.TextView;
@@ -177,7 +180,7 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
         // it would cause the radio button to disappear.
         // TODO(finnur): Remove the encompassing if statement once we go back to using the AppCompat
         // control.
-        boolean selected = position == mSelectedSearchEnginePosition;
+        final boolean selected = position == mSelectedSearchEnginePosition;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             radioButton.setBackgroundResource(0);
         }
@@ -187,6 +190,25 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
         TemplateUrl templateUrl = mSearchEngines.get(position);
         Resources resources = mContext.getResources();
         description.setText(getSearchEngineNameAndDomain(resources, templateUrl));
+
+        // To improve the explore-by-touch experience, the radio button is hidden from accessibility
+        // and instead, "checked" or "not checked" is read along with the search engine's name, e.g.
+        // "google.com checked" or "google.com not checked".
+        radioButton.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        description.setAccessibilityDelegate(new AccessibilityDelegate() {
+            @Override
+            public void onInitializeAccessibilityEvent(View host, AccessibilityEvent event) {
+                super.onInitializeAccessibilityEvent(host, event);
+                event.setChecked(selected);
+            }
+
+            @Override
+            public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+                info.setCheckable(true);
+                info.setChecked(selected);
+            }
+        });
 
         TextView link = (TextView) view.findViewById(R.id.link);
         link.setVisibility(selected ? View.VISIBLE : View.GONE);
