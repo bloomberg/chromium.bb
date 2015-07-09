@@ -169,20 +169,7 @@ def _GenerateJSONForTestResults(options, log_processor):
   """
   results_map = None
   try:
-    if (os.path.exists(options.test_output_xml) and
-        not _UsingGtestJson(options)):
-      results_map = gtest_slave_utils.GetResultsMapFromXML(
-          options.test_output_xml)
-    else:
-      if _UsingGtestJson(options):
-        sys.stderr.write('using JSON summary output instead of gtest XML\n')
-      else:
-        sys.stderr.write(
-            ('"%s" \\ "%s" doesn\'t exist: Unable to generate JSON from XML, '
-             'using log output.\n') % (os.getcwd(), options.test_output_xml))
-      # The file did not get generated. See if we can generate a results map
-      # from the log output.
-      results_map = gtest_slave_utils.GetResultsMap(log_processor)
+    results_map = gtest_slave_utils.GetResultsMap(log_processor)
   except Exception as e:
     # This error will be caught by the following 'not results_map' statement.
     print 'Error: ', e
@@ -274,57 +261,6 @@ def _UsingGtestJson(options):
   return (options.annotate == 'gtest' and
           not options.run_python_script and
           not options.run_shell_script)
-
-
-def _SelectLogProcessor(options):
-  """Returns a log processor class based on the command line options.
-
-  Args:
-    options: Command-line options (from OptionParser).
-
-  Returns:
-    A log processor class, or None.
-  """
-  if _UsingGtestJson(options):
-    return gtest_utils.GTestJSONParser
-
-  return None
-
-
-def _CreateLogProcessor(log_processor_class, options):
-  """Creates a log processor instance.
-
-  Args:
-    log_processor_class: A subclass of PerformanceLogProcessor or similar class.
-    options: Command-line options (from OptionParser).
-
-  Returns:
-    An instance of a log processor class, or None.
-  """
-  if not log_processor_class:
-    return None
-
-  if log_processor_class.__name__ == 'GTestJSONParser':
-    return log_processor_class(options.build_properties.get('mastername'))
-
-  return None
-
-
-def _WriteLogProcessorResultsToOutput(log_processor, log_output_file):
-  """Writes the log processor's results to a file.
-
-  Args:
-  chartjson_file: Path to the file to write the results.
-    log_processor: An instance of a log processor class, which has been used to
-        process the test output, so it contains the test results.
-  """
-  with open(log_output_file, 'w') as f:
-    results = {
-      'passed': log_processor.PassedTests(),
-      'failed': log_processor.FailedTests(),
-      'flakes': log_processor.FlakyTests(),
-    }
-    json.dump(results, f)
 
 
 def _GenerateRunIsolatedCommand(build_dir, test_exe_path, options, command):
@@ -450,8 +386,10 @@ def _Main(options, args, extra_env):
   # directory from previous test runs (i.e.- from crashes or unittest leaks).
   slave_utils.RemoveChromeTemporaryFiles()
 
-  log_processor_class = _SelectLogProcessor(options)
-  log_processor = _CreateLogProcessor(log_processor_class, options)
+  log_processor = None
+  if _UsingGtestJson(options):
+    log_processor = gtest_utils.GTestJSONParser(
+        options.build_properties.get('mastername'))
 
   if options.generate_json_file:
     if os.path.exists(options.test_output_xml):
