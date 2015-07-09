@@ -1051,10 +1051,15 @@ void Editor::transpose()
 
 void Editor::addToKillRing(Range* range, bool prepend)
 {
+    addToKillRing(EphemeralRange(range), prepend);
+}
+
+void Editor::addToKillRing(const EphemeralRange& range, bool prepend)
+{
     if (m_shouldStartNewKillRingSequence)
         killRing().startNewSequence();
 
-    String text = plainText(range->startPosition(), range->endPosition());
+    String text = plainText(range.startPosition(), range.endPosition());
     if (prepend)
         killRing().prepend(text);
     else

@@ -31,6 +31,7 @@
 #include "core/dom/DocumentMarker.h"
 #include "core/editing/EditAction.h"
 #include "core/editing/EditingBehavior.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/FindOptions.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/VisibleSelection.h"
@@ -193,7 +194,10 @@ public:
 
     PassRefPtrWillBeRawPtr<Range> selectedRange();
 
+    // TODO(yosin) We should get rid of |addToKillRing()| with |Range| for
+    // Oilpan.
     void addToKillRing(Range*, bool prepend);
+    void addToKillRing(const EphemeralRange&, bool prepend);
 
     void pasteAsFragment(PassRefPtrWillBeRawPtr<DocumentFragment>, bool smartReplace, bool matchStyle);
     void pasteAsPlainText(const String&, bool smartReplace);
