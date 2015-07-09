@@ -108,6 +108,8 @@ class HidCompositeFeature(composite_gadget.CompositeFeature):
     self._report_desc = report_desc
     self._features = features
     self._interface_number = interface_number
+    self._in_endpoint = in_endpoint
+    self._out_endpoint = out_endpoint
 
   def Connected(self, gadget):
     super(HidCompositeFeature, self).Connected(gadget)
@@ -253,9 +255,9 @@ class HidCompositeFeature(composite_gadget.CompositeFeature):
       data: Contents of the report.
     """
     if report_id == 0:
-      self.SendPacket(0x81, data)
+      self.SendPacket(self._in_endpoint, data)
     else:
-      self.SendPacket(0x81, struct.pack('B', report_id) + data)
+      self.SendPacket(self._in_endpoint, struct.pack('B', report_id) + data)
 
   def ReceivePacket(self, endpoint, data):
     """Dispatch a report to the appropriate feature.
@@ -267,7 +269,7 @@ class HidCompositeFeature(composite_gadget.CompositeFeature):
       endpoint: Incoming endpoint (must be the Interrupt OUT pipe).
       data: Interrupt packet data.
     """
-    assert endpoint == 0x01
+    assert endpoint == self._out_endpoint
 
     if 0 in self._features:
       self._features[0].SetOutputReport(data)
