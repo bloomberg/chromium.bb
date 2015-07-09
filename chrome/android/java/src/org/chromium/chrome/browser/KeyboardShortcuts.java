@@ -106,7 +106,8 @@ public class KeyboardShortcuts {
         if (event.getRepeatCount() != 0 || KeyEvent.isModifierKey(keyCode)) return false;
         if (!event.isCtrlPressed() && !event.isAltPressed()
                 && keyCode != KeyEvent.KEYCODE_F3
-                && keyCode != KeyEvent.KEYCODE_F5) {
+                && keyCode != KeyEvent.KEYCODE_F5
+                && keyCode != KeyEvent.KEYCODE_FORWARD) {
             return false;
         }
 
@@ -224,6 +225,7 @@ public class KeyboardShortcuts {
                     if (tab != null && tab.canGoBack()) tab.goBack();
                     return true;
                 case ALT | KeyEvent.KEYCODE_DPAD_RIGHT:
+                case KeyEvent.KEYCODE_FORWARD:
                     tab = activity.getActivityTab();
                     if (tab != null && tab.canGoForward()) tab.goForward();
                     return true;

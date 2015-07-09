@@ -79,6 +79,8 @@ KeyboardCode KeyboardCodeFromAndroidKeyCode(int keycode) {
       return VKEY_RSHIFT;
     case AKEYCODE_BACK:
       return VKEY_BROWSER_BACK;
+    case AKEYCODE_FORWARD:
+      return VKEY_BROWSER_FORWARD;
     case AKEYCODE_SPACE:
       return VKEY_SPACE;
     case AKEYCODE_MOVE_HOME:
