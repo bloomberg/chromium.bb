@@ -9,7 +9,7 @@ var runtimeNatives = requireNative('runtime');
 var Binding = require('binding').Binding;
 var Event = require('event_bindings').Event;
 var forEach = require('utils').forEach;
-var renderViewObserverNatives = requireNative('renderViewObserverNatives');
+var renderFrameObserverNatives = requireNative('renderFrameObserverNatives');
 
 var appWindowData = null;
 var currentAppWindow = null;
@@ -118,9 +118,9 @@ appWindow.registerCustomHook(function(bindingsAPI) {
     var view = null;
 
     // When window creation fails, |windowParams| will be undefined.
-    if (windowParams && windowParams.viewId) {
-      view = appWindowNatives.GetView(
-          windowParams.viewId, windowParams.injectTitlebar);
+    if (windowParams && windowParams.frameId) {
+      view = appWindowNatives.GetFrame(
+          windowParams.frameId, windowParams.injectTitlebar);
     }
 
     if (!view) {
@@ -160,8 +160,8 @@ appWindow.registerCustomHook(function(bindingsAPI) {
       }
 
       var willCallback =
-          renderViewObserverNatives.OnDocumentElementCreated(
-              windowParams.viewId,
+          renderFrameObserverNatives.OnDocumentElementCreated(
+              windowParams.frameId,
               function(success) {
                 if (success) {
                   callback(view.chrome.app.window.current());

@@ -9,13 +9,11 @@
 #include "base/command_line.h"
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
-#include "content/public/renderer/render_view_observer.h"
-#include "content/public/renderer/render_view_visitor.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/switches.h"
-#include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "grit/extensions_renderer_resources.h"
@@ -26,21 +24,22 @@
 
 namespace extensions {
 
-class DidCreateDocumentElementObserver : public content::RenderViewObserver {
+class DidCreateDocumentElementObserver : public content::RenderFrameObserver {
  public:
-  DidCreateDocumentElementObserver(content::RenderView* view,
-                                   Dispatcher* dispatcher)
-      : content::RenderViewObserver(view), dispatcher_(dispatcher) {}
+  DidCreateDocumentElementObserver(content::RenderFrame* frame,
+                                   const ScriptContextSet* script_context_set)
+      : content::RenderFrameObserver(frame),
+        script_context_set_(script_context_set) {
+    DCHECK(script_context_set_);
+  }
 
-  void DidCreateDocumentElement(blink::WebLocalFrame* frame) override {
-    DCHECK(frame);
-    DCHECK(dispatcher_);
+  void DidCreateDocumentElement() override {
+    blink::WebLocalFrame* web_frame = render_frame()->GetWebFrame();
     // Don't attempt to inject the titlebar into iframes.
-    if (frame->parent())
+    if (web_frame->parent())
       return;
-    ScriptContext* script_context =
-        dispatcher_->script_context_set().GetByV8Context(
-            frame->mainWorldScriptContext());
+    ScriptContext* script_context = script_context_set_->GetByV8Context(
+        web_frame->mainWorldScriptContext());
     if (!script_context)
       return;
     script_context->module_system()->CallModuleMethod(
@@ -48,22 +47,25 @@ class DidCreateDocumentElementObserver : public content::RenderViewObserver {
   }
 
  private:
-  Dispatcher* dispatcher_;
+  const ScriptContextSet* script_context_set_;
+
+  DISALLOW_COPY_AND_ASSIGN(DidCreateDocumentElementObserver);
 };
 
-AppWindowCustomBindings::AppWindowCustomBindings(Dispatcher* dispatcher,
-                                                 ScriptContext* context)
-    : ObjectBackedNativeHandler(context), dispatcher_(dispatcher) {
-  RouteFunction("GetView",
-      base::Bind(&AppWindowCustomBindings::GetView,
-                 base::Unretained(this)));
+AppWindowCustomBindings::AppWindowCustomBindings(
+    const ScriptContextSet* script_context_set,
+    ScriptContext* context)
+    : ObjectBackedNativeHandler(context),
+      script_context_set_(script_context_set) {
+  RouteFunction("GetFrame", base::Bind(&AppWindowCustomBindings::GetFrame,
+                                       base::Unretained(this)));
 
   RouteFunction("GetWindowControlsHtmlTemplate",
       base::Bind(&AppWindowCustomBindings::GetWindowControlsHtmlTemplate,
                  base::Unretained(this)));
 }
 
-void AppWindowCustomBindings::GetView(
+void AppWindowCustomBindings::GetFrame(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   // TODO(jeremya): convert this to IDL nocompile to get validation, and turn
   // these argument checks into CHECK().
@@ -76,36 +78,37 @@ void AppWindowCustomBindings::GetView(
   if (!args[1]->IsBoolean())
     return;
 
-  int view_id = args[0]->Int32Value();
+  int frame_id = args[0]->Int32Value();
 
   bool inject_titlebar = args[1]->BooleanValue();
 
-  if (view_id == MSG_ROUTING_NONE)
+  if (frame_id == MSG_ROUTING_NONE)
     return;
 
-  content::RenderView* view = content::RenderView::FromRoutingID(view_id);
-  if (!view)
+  content::RenderFrame* app_frame =
+      content::RenderFrame::FromRoutingID(frame_id);
+  if (!app_frame)
     return;
-
-  if (inject_titlebar)
-    new DidCreateDocumentElementObserver(view, dispatcher_);
 
   // TODO(jeremya): it doesn't really make sense to set the opener here, but we
   // need to make sure the security origin is set up before returning the DOM
   // reference. A better way to do this would be to have the browser pass the
   // opener through so opener_id is set in RenderViewImpl's constructor.
-  content::RenderFrame* render_frame = context()->GetRenderFrame();
-  content::RenderView* render_view =
-      render_frame ? render_frame->GetRenderView() : nullptr;
-  if (!render_view)
+  content::RenderFrame* context_render_frame = context()->GetRenderFrame();
+  if (!context_render_frame)
     return;
-  blink::WebFrame* opener = render_view->GetWebView()->mainFrame();
-  blink::WebFrame* frame = view->GetWebView()->mainFrame();
-  frame->setOpener(opener);
-  content::RenderThread::Get()->Send(
-      new ExtensionHostMsg_ResumeRequests(view->GetRoutingID()));
 
-  v8::Local<v8::Value> window = frame->mainWorldScriptContext()->Global();
+  if (inject_titlebar)
+    new DidCreateDocumentElementObserver(app_frame, script_context_set_);
+
+  blink::WebFrame* opener = context_render_frame->GetWebFrame();
+  blink::WebLocalFrame* app_web_frame = app_frame->GetWebFrame();
+  app_web_frame->setOpener(opener);
+  content::RenderThread::Get()->Send(
+      new ExtensionHostMsg_ResumeRequests(app_frame->GetRoutingID()));
+
+  v8::Local<v8::Value> window =
+      app_web_frame->mainWorldScriptContext()->Global();
   args.GetReturnValue().Set(window);
 }
 

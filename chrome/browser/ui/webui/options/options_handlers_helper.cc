@@ -26,7 +26,7 @@ chrome::HostDesktopType GetDesktopType(content::WebUI* web_ui) {
 
   extensions::AppWindow* app_window =
       extensions::AppWindowRegistry::Get(Profile::FromWebUI(web_ui))
-          ->GetAppWindowForRenderViewHost(web_contents->GetRenderViewHost());
+          ->GetAppWindowForWebContents(web_contents);
   if (app_window) {
     return chrome::GetHostDesktopTypeForNativeWindow(
         app_window->GetNativeWindow());

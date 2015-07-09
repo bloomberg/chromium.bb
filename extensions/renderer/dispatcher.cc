@@ -67,7 +67,7 @@
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/print_native_handler.h"
 #include "extensions/renderer/process_info_native_handler.h"
-#include "extensions/renderer/render_view_observer_natives.h"
+#include "extensions/renderer/render_frame_observer_natives.h"
 #include "extensions/renderer/request_sender.h"
 #include "extensions/renderer/runtime_custom_bindings.h"
 #include "extensions/renderer/safe_builtins.h"
@@ -662,8 +662,8 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
       "activityLogger",
       scoped_ptr<NativeHandler>(new APIActivityLogger(context)));
   module_system->RegisterNativeHandler(
-      "renderViewObserverNatives",
-      scoped_ptr<NativeHandler>(new RenderViewObserverNatives(context)));
+      "renderFrameObserverNatives",
+      scoped_ptr<NativeHandler>(new RenderFrameObserverNatives(context)));
 
   // Natives used by multiple APIs.
   module_system->RegisterNativeHandler(
@@ -674,10 +674,13 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   module_system->RegisterNativeHandler(
       "app_runtime",
       scoped_ptr<NativeHandler>(new AppRuntimeCustomBindings(context)));
+  // |dispatcher| is null in unit tests.
+  const ScriptContextSet* script_context_set = dispatcher ?
+      &dispatcher->script_context_set() : nullptr;
   module_system->RegisterNativeHandler(
       "app_window_natives",
-      scoped_ptr<NativeHandler>(
-          new AppWindowCustomBindings(dispatcher, context)));
+      scoped_ptr<NativeHandler>(new AppWindowCustomBindings(
+          script_context_set, context)));
   module_system->RegisterNativeHandler(
       "blob_natives",
       scoped_ptr<NativeHandler>(new BlobNativeHandler(context)));

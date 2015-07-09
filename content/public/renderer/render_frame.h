@@ -55,6 +55,9 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Returns the RenderFrame given a WebFrame.
   static RenderFrame* FromWebFrame(blink::WebFrame* web_frame);
 
+  // Returns the RenderFrame given a routing id.
+  static RenderFrame* FromRoutingID(int routing_id);
+
   // Returns the RenderView associated with this frame.
   virtual RenderView* GetRenderView() = 0;
 

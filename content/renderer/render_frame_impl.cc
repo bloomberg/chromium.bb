@@ -531,7 +531,12 @@ RenderFrameImpl* RenderFrameImpl::Create(RenderViewImpl* render_view,
 }
 
 // static
-RenderFrameImpl* RenderFrameImpl::FromRoutingID(int32 routing_id) {
+RenderFrame* RenderFrame::FromRoutingID(int routing_id) {
+  return RenderFrameImpl::FromRoutingID(routing_id);
+}
+
+// static
+RenderFrameImpl* RenderFrameImpl::FromRoutingID(int routing_id) {
   RoutingIDFrameMap::iterator iter =
       g_routing_id_frame_map.Get().find(routing_id);
   if (iter != g_routing_id_frame_map.Get().end())

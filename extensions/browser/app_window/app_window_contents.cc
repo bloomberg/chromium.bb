@@ -44,12 +44,12 @@ void AppWindowContentsImpl::LoadContents(int32 creator_process_id) {
   // RVH from loading anything until the background page has had a chance to
   // do any initialization it wants. If it's a different process, the new RVH
   // shouldn't communicate with the background page anyway (e.g. sandboxed).
-  if (web_contents_->GetRenderViewHost()->GetProcess()->GetID() ==
+  if (web_contents_->GetMainFrame()->GetProcess()->GetID() ==
       creator_process_id) {
-    SuspendRenderViewHost(web_contents_->GetRenderViewHost());
+    SuspendRenderFrameHost(web_contents_->GetMainFrame());
   } else {
     VLOG(1) << "AppWindow created in new process ("
-            << web_contents_->GetRenderViewHost()->GetProcess()->GetID()
+            << web_contents_->GetMainFrame()->GetProcess()->GetID()
             << ") != creator (" << creator_process_id << "). Routing disabled.";
   }
 
@@ -107,14 +107,14 @@ void AppWindowContentsImpl::UpdateDraggableRegions(
   host_->UpdateDraggableRegions(regions);
 }
 
-void AppWindowContentsImpl::SuspendRenderViewHost(
-    content::RenderViewHost* rvh) {
-  DCHECK(rvh);
+void AppWindowContentsImpl::SuspendRenderFrameHost(
+    content::RenderFrameHost* rfh) {
+  DCHECK(rfh);
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&content::ResourceDispatcherHost::BlockRequestsForRoute,
                  base::Unretained(content::ResourceDispatcherHost::Get()),
-                 rvh->GetProcess()->GetID(), rvh->GetRoutingID()));
+                 rfh->GetProcess()->GetID(), rfh->GetRoutingID()));
 }
 
 }  // namespace extensions

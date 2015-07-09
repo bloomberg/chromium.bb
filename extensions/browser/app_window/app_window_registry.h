@@ -20,7 +20,6 @@
 namespace content {
 class BrowserContext;
 class DevToolsAgentHost;
-class RenderViewHost;
 class WebContents;
 }
 
@@ -85,11 +84,7 @@ class AppWindowRegistry : public KeyedService {
 
   // Helper functions to find app windows with particular attributes.
   AppWindow* GetAppWindowForWebContents(
-      content::WebContents* web_contents) const;
-  // TODO(devlin): Remove this when callers have been updated to use the
-  // above.
-  AppWindow* GetAppWindowForRenderViewHost(
-      content::RenderViewHost* render_view_host) const;
+      const content::WebContents* web_contents) const;
   AppWindow* GetAppWindowForNativeWindow(gfx::NativeWindow window) const;
   // Returns an app window for the given app, or NULL if no app windows are
   // open. If there is a window for the given app that is active, that one will
@@ -104,8 +99,8 @@ class AppWindowRegistry : public KeyedService {
 
   // Returns whether a AppWindow's ID was last known to have a DevToolsAgent
   // attached to it, which should be restored during a reload of a corresponding
-  // newly created |render_view_host|.
-  bool HadDevToolsAttached(content::RenderViewHost* render_view_host) const;
+  // newly created |web_contents|.
+  bool HadDevToolsAttached(content::WebContents* web_contents) const;
 
   class Factory : public BrowserContextKeyedServiceFactory {
    public:
@@ -141,6 +136,14 @@ class AppWindowRegistry : public KeyedService {
   // Bring |app_window| to the front of |app_windows_|. If it is not in the
   // list, add it first.
   void BringToFront(AppWindow* app_window);
+
+  // Create a key that identifies an AppWindow across App reloads. If the window
+  // was given an id in CreateParams, the key is the extension id, a colon
+  // separator, and the AppWindow's |id|. If there is no |id|, the
+  // chrome-extension://extension-id/page.html URL will be used. If the
+  // WebContents is not for a AppWindow, return an empty string.
+  std::string GetWindowKeyForWebContents(
+      content::WebContents* web_contents) const;
 
   content::BrowserContext* context_;
   AppWindowList app_windows_;

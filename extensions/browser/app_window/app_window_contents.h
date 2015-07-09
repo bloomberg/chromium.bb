@@ -7,13 +7,13 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "url/gurl.h"
 
 namespace content {
 class BrowserContext;
+class RenderFrameHost;
 }
 
 namespace extensions {
@@ -43,7 +43,7 @@ class AppWindowContentsImpl : public AppWindowContents,
   bool OnMessageReceived(const IPC::Message& message) override;
 
   void UpdateDraggableRegions(const std::vector<DraggableRegion>& regions);
-  void SuspendRenderViewHost(content::RenderViewHost* rvh);
+  void SuspendRenderFrameHost(content::RenderFrameHost* rfh);
 
   AppWindow* host_;  // This class is owned by |host_|
   GURL url_;

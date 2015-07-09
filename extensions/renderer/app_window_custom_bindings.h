@@ -8,23 +8,24 @@
 #include "extensions/renderer/object_backed_native_handler.h"
 
 namespace extensions {
-class Dispatcher;
+class ScriptContextSet;
 
 // Implements custom bindings for the app.window API.
 class AppWindowCustomBindings : public ObjectBackedNativeHandler {
  public:
-  AppWindowCustomBindings(Dispatcher* dispatcher, ScriptContext* context);
+  AppWindowCustomBindings(const ScriptContextSet* script_context_set,
+                          ScriptContext* context);
 
  private:
-  void GetView(const v8::FunctionCallbackInfo<v8::Value>& args);
+  void GetFrame(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // Return string containing the HTML <template> for the <window-controls>
   // custom element.
   void GetWindowControlsHtmlTemplate(
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  // Dispatcher handle. Not owned.
-  Dispatcher* dispatcher_;
+  // ScriptContextSet handle. Not owned.
+  const ScriptContextSet* script_context_set_;
 
   DISALLOW_COPY_AND_ASSIGN(AppWindowCustomBindings);
 };

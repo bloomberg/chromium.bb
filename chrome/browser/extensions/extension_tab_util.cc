@@ -56,8 +56,7 @@ WindowController* GetAppWindowController(const WebContents* contents) {
   AppWindowRegistry* registry = AppWindowRegistry::Get(profile);
   if (!registry)
     return NULL;
-  AppWindow* app_window =
-      registry->GetAppWindowForRenderViewHost(contents->GetRenderViewHost());
+  AppWindow* app_window = registry->GetAppWindowForWebContents(contents);
   if (!app_window)
     return NULL;
   return WindowControllerList::GetInstance()->FindWindowById(
