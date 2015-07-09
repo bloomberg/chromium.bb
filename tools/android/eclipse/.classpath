@@ -37,11 +37,13 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="components/bookmarks/common/android/java/src"/>
     <classpathentry kind="src" path="components/cronet/android/java/src"/>
     <classpathentry kind="src" path="components/dom_distiller/android/java/src"/>
+    <classpathentry kind="src" path="components/external_video_surface/android/java/src"/>
     <classpathentry kind="src" path="components/gcm_driver/android/java/src"/>
     <classpathentry kind="src" path="components/invalidation/impl/android/java/src"/>
     <classpathentry kind="src" path="components/invalidation/impl/android/javatests/src"/>
     <classpathentry kind="src" path="components/invalidation/impl/android/junit/src"/>
     <classpathentry kind="src" path="components/navigation_interception/android/java/src"/>
+    <classpathentry kind="src" path="components/policy/android/java/src"/>
     <classpathentry kind="src" path="components/precache/android/java/src"/>
     <classpathentry kind="src" path="components/precache/android/javatests/src"/>
     <classpathentry kind="src" path="components/service_tab_launcher/android/java/src"/>
@@ -50,6 +52,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="content/public/android/java/src"/>
     <classpathentry kind="src" path="content/public/android/javatests/src"/>
     <classpathentry kind="src" path="content/public/test/android/javatests/src"/>
+    <classpathentry kind="src" path="content/shell/android/browsertests/src"/>
     <classpathentry kind="src" path="content/shell/android/browsertests_apk/src"/>
     <classpathentry kind="src" path="content/shell/android/java/src"/>
     <classpathentry kind="src" path="content/shell/android/javatests/src"/>
@@ -78,7 +81,10 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="third_party/android_swipe_refresh/java/src"/>
     <classpathentry kind="src" path="third_party/cacheinvalidation/src/java"/>
     <classpathentry kind="src" path="third_party/junit/src/src/main/java"/>
+    <classpathentry kind="src" path="third_party/mockito/src/cglib-and-asm/src"/>
     <classpathentry kind="src" path="third_party/mockito/src/src"/>
+    <classpathentry kind="src" path="third_party/mojo/src/mojo/public/java/bindings/src"/>
+    <classpathentry kind="src" path="third_party/mojo/src/mojo/public/java/system/src"/>
     <classpathentry kind="src" path="tools/android/findbugs_plugin/src"/>
     <classpathentry kind="src" path="tools/android/findbugs_plugin/test/java/src"/>
     <classpathentry kind="src" path="tools/android/memconsumer/java/src"/>
@@ -87,8 +93,10 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="out/Debug/android_webview_test_apk/gen"/>
     <classpathentry kind="src" path="out/Debug/chrome_shell_apk/gen"/>
     <classpathentry kind="src" path="out/Debug/content_shell_apk/gen"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/accessibility_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/activity_type_ids_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/android_resource_type_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/ax_enumerations_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/base_java_application_state"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/base_java_library_load_from_apk_status_codes"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/base_java_library_process_type"/>
@@ -98,14 +106,19 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="out/Debug/gen/enums/certificate_mime_types_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/cert_verify_status_android_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/connection_security_security_levels_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/connectivity_check_result_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/console_message_level_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/content_gamepad_mapping"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/content_setting_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/content_settings_type_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/cronet_url_request_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/enhanced_bookmarks_java_enums_srcjar"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/gesture_event_type_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/invalidate_types_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/media_android_captureapitype"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/media_android_imageformat"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/navigation_controller_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/net_request_priority_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/network_change_notifier_types_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/page_info_connection_type_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/page_transition_types_java"/>
@@ -113,6 +126,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="out/Debug/gen/enums/private_key_types_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/profile_account_management_metrics_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/profile_sync_service_model_type_selection_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/readback_response_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/result_codes_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/screen_orientation_values_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/selection_event_type_java"/>
@@ -122,6 +136,8 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="out/Debug/gen/enums/text_input_type_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/top_controls_state_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/touch_device_types_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/touch_handle_orientation_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/url_request_failed_job_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/web_input_event_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/web_text_input_type"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/window_open_disposition_java"/>
@@ -129,11 +145,14 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="out/Debug/gen/templates/chrome_version_java"/>
     <classpathentry kind="src" path="out/Debug/gen/templates/dom_distiller_core_font_family_java"/>
     <classpathentry kind="src" path="out/Debug/gen/templates/dom_distiller_core_theme_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/templates/load_states_list"/>
     <classpathentry kind="src" path="out/Debug/gen/templates/net_errors_java"/>
     <classpathentry kind="src" path="out/Debug/gen/templates/resource_id_java"/>
     <classpathentry kind="src" path="out/Debug/java_mojo/device_battery_mojo_bindings/src"/>
+    <classpathentry kind="src" path="out/Debug/java_mojo/mojo_public_test_interfaces_mojom/src"/>
     <classpathentry kind="src" path="out/Debug/java_proto/cacheinvalidation_proto_java/src"/>
     <classpathentry kind="src" path="out/Debug/java_proto/document_tab_model_info_proto_java/src"/>
+    <classpathentry kind="src" path="out/Debug/java_proto/test_support_sync_proto_java/src"/>
     <classpathentry kind="src" path="out/Debug/remoting_apk/gen"/>
     <classpathentry kind="lib" path="third_party/android_tools/sdk/extras/google/gcm/gcm-client/dist/gcm.jar" sourcepath="third_party/android_tools/sdk/extras/google/gcm/gcm-client/src"/>
     <classpathentry kind="lib" path="third_party/android_tools/sdk/platforms/android-22/android.jar" sourcepath="third_party/android_tools/sdk/sources/">
@@ -147,6 +166,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="lib" path="third_party/android_tools/sdk/extras/android/support/v7/recyclerview/libs/android-support-v7-recyclerview.jar" sourcepath="third_party/android_tools/sdk/sources"/>
     <classpathentry kind="lib" path="third_party/android_tools/sdk/extras/android/support/v13/android-support-v13.jar" sourcepath="third_party/android_tools/sdk/sources"/>
     <classpathentry kind="lib" path="third_party/android_tools/sdk/extras/android/support/v7/appcompat/libs/android-support-v7-appcompat.jar" sourcepath="third_party/android_tools/sdk/sources"/>
+    <classpathentry kind="lib" path="third_party/findbugs/lib/findbugs.jar"/>
     <classpathentry kind="lib" path="third_party/junit/src/lib/hamcrest-core-1.1.jar"/>
     <classpathentry kind="lib" path="third_party/robolectric/lib/robolectric-2.4-jar-with-dependencies.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/cacheinvalidation_proto_java.jar"/>
