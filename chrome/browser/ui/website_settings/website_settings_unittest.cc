@@ -65,7 +65,6 @@ class MockWebsiteSettingsUI : public WebsiteSettingsUI {
   MOCK_METHOD1(SetPermissionInfo,
                void(const PermissionInfoList& permission_info_list));
   MOCK_METHOD1(SetIdentityInfo, void(const IdentityInfo& identity_info));
-  MOCK_METHOD1(SetFirstVisit, void(const base::string16& first_visit));
   MOCK_METHOD1(SetSelectedTab, void(TabId tab_id));
 };
 
@@ -114,7 +113,6 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
     EXPECT_CALL(*mock_ui, SetPermissionInfo(_));
     EXPECT_CALL(*mock_ui, SetIdentityInfo(_));
     EXPECT_CALL(*mock_ui, SetCookieInfo(_));
-    EXPECT_CALL(*mock_ui, SetFirstVisit(base::string16()));
   }
 
   void SetURL(std::string url) { url_ = GURL(url); }
@@ -178,7 +176,6 @@ TEST_F(WebsiteSettingsTest, OnPermissionsChanged) {
 
   EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
   EXPECT_CALL(*mock_ui(), SetCookieInfo(_));
-  EXPECT_CALL(*mock_ui(), SetFirstVisit(base::string16()));
 
   // SetPermissionInfo() is called once initially, and then again every time
   // OnSitePermissionChanged() is called.
@@ -236,7 +233,6 @@ TEST_F(WebsiteSettingsTest, OnPermissionsChanged_Fullscreen) {
 
   EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
   EXPECT_CALL(*mock_ui(), SetCookieInfo(_));
-  EXPECT_CALL(*mock_ui(), SetFirstVisit(base::string16()));
   EXPECT_CALL(*mock_ui(), SetSelectedTab(
       WebsiteSettingsUI::TAB_ID_PERMISSIONS));
 
@@ -278,7 +274,6 @@ TEST_F(WebsiteSettingsTest, OnPermissionsChanged_Fullscreen) {
 TEST_F(WebsiteSettingsTest, OnSiteDataAccessed) {
   EXPECT_CALL(*mock_ui(), SetPermissionInfo(_));
   EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
-  EXPECT_CALL(*mock_ui(), SetFirstVisit(base::string16()));
   EXPECT_CALL(*mock_ui(), SetCookieInfo(_)).Times(2);
   EXPECT_CALL(*mock_ui(), SetSelectedTab(
       WebsiteSettingsUI::TAB_ID_PERMISSIONS));
@@ -421,7 +416,6 @@ TEST_F(WebsiteSettingsTest, NoInfoBar) {
 TEST_F(WebsiteSettingsTest, ShowInfoBar) {
   EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
   EXPECT_CALL(*mock_ui(), SetCookieInfo(_));
-  EXPECT_CALL(*mock_ui(), SetFirstVisit(base::string16()));
 
   // SetPermissionInfo() is called once initially, and then again every time
   // OnSitePermissionChanged() is called.

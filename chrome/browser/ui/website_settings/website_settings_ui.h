@@ -148,12 +148,6 @@ class WebsiteSettingsUI {
   static const gfx::Image& GetConnectionIcon(
       WebsiteSettings::SiteConnectionStatus status);
 
-  // Returns the icon ID to show along with the first visit information.
-  static int GetFirstVisitIconID(const base::string16& first_visit);
-
-  // Returns the icon to show along with the first visit information.
-  static const gfx::Image& GetFirstVisitIcon(const base::string16& first_visit);
-
   // Sets cookie information.
   virtual void SetCookieInfo(const CookieInfoList& cookie_info_list) = 0;
 
@@ -163,9 +157,6 @@ class WebsiteSettingsUI {
 
   // Sets site identity information.
   virtual void SetIdentityInfo(const IdentityInfo& identity_info) = 0;
-
-  // Sets the first visited data. |first_visit| can be an empty string.
-  virtual void SetFirstVisit(const base::string16& first_visit) = 0;
 
   // Selects the tab with the given |tab_id|.
   virtual void SetSelectedTab(TabId tab_id) = 0;

@@ -5,16 +5,11 @@
 #ifndef CHROME_BROWSER_UI_WEBSITE_SETTINGS_WEBSITE_SETTINGS_H_
 #define CHROME_BROWSER_UI_WEBSITE_SETTINGS_WEBSITE_SETTINGS_H_
 
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "base/task/cancelable_task_tracker.h"
-#include "base/time/time.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/history/core/browser/history_service.h"
 #include "content/public/common/signed_certificate_timestamp_id_and_status.h"
-#include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -109,12 +104,6 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   void OnSitePermissionChanged(ContentSettingsType type,
                                ContentSetting value);
 
-  // Callback used for requests to fetch the number of page visits from history
-  // service and the time of the first visit.
-  void OnGotVisitCountToHost(bool found_visits,
-                             int visit_count,
-                             base::Time first_visit);
-
   // This method is called by the UI when the UI is closing.
   void OnUIClosing();
 
@@ -162,11 +151,6 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   // Sets (presents) the information about the site's identity and connection
   // in the |ui_|.
   void PresentSiteIdentity();
-
-  // Sets (presents) history information about the site in the |ui_|. Passing
-  // base::Time() as value for |first_visit| will clear the history information
-  // in the UI.
-  void PresentHistoryInfo(base::Time first_visit);
 
   // The website settings UI displays information and controls for site
   // specific data (local stored objects like cookies), site specific
@@ -234,9 +218,6 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   // The |HostContentSettingsMap| is the service that provides and manages
   // content settings (aka. site permissions).
   HostContentSettingsMap* content_settings_;
-
-  // Used to request the number of page visits.
-  base::CancelableTaskTracker visit_count_task_tracker_;
 
   // Service for managing SSL error page bypasses. Used to revoke bypass
   // decisions by users.

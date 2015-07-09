@@ -70,11 +70,6 @@ class WebContents;
   NSTextField* connectionStatusDescriptionField_;
   NSView* separatorAfterConnection_;
 
-  NSImageView* firstVisitIcon_;
-  NSTextField* firstVisitHeaderField_;
-  NSTextField* firstVisitDescriptionField_;
-  NSView* separatorAfterFirstVisit_;
-
   // The link button to launch the Help Center article explaining the
   // connection info.
   NSButton* helpButton_;
@@ -128,7 +123,6 @@ class WebsiteSettingsUIBridge : public WebsiteSettingsUI {
   void SetPermissionInfo(
       const PermissionInfoList& permission_info_list) override;
   void SetIdentityInfo(const IdentityInfo& identity_info) override;
-  void SetFirstVisit(const base::string16& first_visit) override;
   void SetSelectedTab(TabId tab_id) override;
 
  private:

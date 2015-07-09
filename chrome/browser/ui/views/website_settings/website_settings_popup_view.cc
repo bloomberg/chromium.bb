@@ -316,7 +316,6 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
       cert_id_(0),
       help_center_link_(nullptr),
       connection_info_content_(nullptr),
-      page_info_content_(nullptr),
       weak_factory_(this) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(kLocationIconVerticalMargin, 0,
@@ -610,20 +609,6 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
   SizeToContents();
 }
 
-void WebsiteSettingsPopupView::SetFirstVisit(
-    const base::string16& first_visit) {
-  ResetConnectionSection(
-      page_info_content_,
-      WebsiteSettingsUI::GetFirstVisitIcon(first_visit),
-      l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_INFO_TITLE),
-      first_visit,
-      nullptr,
-      nullptr);
-  connection_tab_->InvalidateLayout();
-  Layout();
-  SizeToContents();
-}
-
 void WebsiteSettingsPopupView::SetSelectedTab(TabId tab_id) {
   tabbed_pane_->SelectTabAt(tab_id);
 }
@@ -661,13 +646,9 @@ views::View* WebsiteSettingsPopupView::CreateConnectionTab() {
   connection_info_content_ = new views::View();
   pane->AddChildView(connection_info_content_);
 
-  // Add page info section.
   pane->AddChildView(new views::Separator(views::Separator::HORIZONTAL));
-  page_info_content_ = new views::View();
-  pane->AddChildView(page_info_content_);
 
   // Add help center link.
-  pane->AddChildView(new views::Separator(views::Separator::HORIZONTAL));
   help_center_link_ = new views::Link(
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_HELP_CENTER_LINK));
   help_center_link_->set_listener(this);

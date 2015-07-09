@@ -9886,9 +9886,6 @@ I don't think this site should be blocked!
       <message name="IDS_PAGE_INFO_SECURITY_TAB_RENEGOTIATION_MESSAGE" desc="This message is displayed when the server hasn't been updated to fix a recent security issues. TLS here is an acronym and need not be translated. 'renegotiation' is a technical term describing a process of agreeing on a new set of security parameters and secrets. 'extension' here should be taken to mean 'amendment' rather than elongation.">
         The server does not support the TLS renegotiation extension.
       </message>
-      <message name="IDS_PAGE_INFO_SITE_INFO_TITLE" desc="The name of the site information section.">
-        Site information
-      </message>
       <if expr="is_ios">
         <message name="IDS_PAGE_INFO_SECURITY_BUTTON_ACCESSIBILITY_LABEL" desc="The accessibility text for the page security info button">
           Page Security Info
@@ -12229,15 +12226,6 @@ I don't think this site should be blocked!
       </message>
       <message name="IDS_WEBWORKER_CRASHED_PROMPT" desc="Info Bar message to notify about a crashed WebWorker">
         A part of this page (HTML WebWorker) has crashed, so it might not function correctly.
-      </message>
-
-      <message name="IDS_PAGE_INFO_SECURITY_TAB_FIRST_VISITED_TODAY"
-               desc="Message in IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE section displayed when first visited page today">
-        You have never visited this site before today.
-      </message>
-      <message name="IDS_PAGE_INFO_SECURITY_TAB_VISITED_BEFORE_TODAY"
-               desc="Message in IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE section displayed when user has visited page before today">
-        You first visited this site on <ph name="VISIT_DATE">$1<ex>Nov 7, 2007</ex></ph>.
       </message>
 
       <!-- External Protocol Dialog -->

@@ -189,11 +189,6 @@ void ConnectionInfoPopupAndroid::SetSelectedTab(
   NOTIMPLEMENTED();
 }
 
-void ConnectionInfoPopupAndroid::SetFirstVisit(
-    const base::string16& first_visit) {
-  NOTIMPLEMENTED();
-}
-
 // static
 bool
 ConnectionInfoPopupAndroid::RegisterConnectionInfoPopupAndroid(

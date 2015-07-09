@@ -35,7 +35,6 @@ class ConnectionInfoPopupAndroid : public WebsiteSettingsUI {
   void SetPermissionInfo(
       const PermissionInfoList& permission_info_list) override;
   void SetIdentityInfo(const IdentityInfo& identity_info) override;
-  void SetFirstVisit(const base::string16& first_visit) override;
   void SetSelectedTab(WebsiteSettingsUI::TabId tab_id) override;
 
   static bool RegisterConnectionInfoPopupAndroid(JNIEnv* env);

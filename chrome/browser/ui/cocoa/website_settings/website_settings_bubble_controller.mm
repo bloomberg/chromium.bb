@@ -624,25 +624,6 @@ NSColor* IdentityVerifiedTextColor() {
   separatorAfterConnection_ = [self addSeparatorToView:contentView];
   [separatorAfterConnection_ setAutoresizingMask:NSViewWidthSizable];
 
-  firstVisitIcon_ = [self addImageWithSize:imageSize
-                                    toView:contentView
-                                   atPoint:imagePosition];
-  firstVisitHeaderField_ =
-      [self addText:l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_INFO_TITLE)
-           withSize:[NSFont smallSystemFontSize]
-               bold:YES
-             toView:contentView.get()
-            atPoint:textPosition];
-  firstVisitDescriptionField_ =
-      [self addText:base::string16()
-           withSize:[NSFont smallSystemFontSize]
-               bold:NO
-             toView:contentView.get()
-            atPoint:textPosition];
-
-  separatorAfterFirstVisit_ = [self addSeparatorToView:contentView];
-  [separatorAfterFirstVisit_ setAutoresizingMask:NSViewWidthSizable];
-
   NSString* helpButtonText = l10n_util::GetNSString(
       IDS_PAGE_INFO_HELP_CENTER_LINK);
   helpButton_ = [self addLinkButtonWithText:helpButtonText
@@ -742,16 +723,6 @@ NSColor* IdentityVerifiedTextColor() {
                                to:yPos + kVerticalSpacing];
   yPos += kVerticalSpacing;
 
-  // Lay out the last visit section.
-  [self setYPositionOfView:firstVisitIcon_ to:yPos];
-  [self sizeTextFieldHeightToFit:firstVisitHeaderField_];
-  yPos = [self setYPositionOfView:firstVisitHeaderField_ to:yPos];
-  yPos += kConnectionHeadlineSpacing;
-  [self sizeTextFieldHeightToFit:firstVisitDescriptionField_];
-  yPos = [self setYPositionOfView:firstVisitDescriptionField_ to:yPos];
-  yPos = [self setYPositionOfView:separatorAfterFirstVisit_
-                               to:yPos + kVerticalSpacing];
-  yPos += kVerticalSpacing;
   [self setYPositionOfView:helpButton_ to:yPos];
 
   // Adjust the tab view size and place it below the identity status.
@@ -1210,14 +1181,6 @@ NSColor* IdentityVerifiedTextColor() {
   [self performLayout];
 }
 
-- (void)setFirstVisit:(const base::string16&)firstVisit {
-  [firstVisitIcon_ setImage:
-      WebsiteSettingsUI::GetFirstVisitIcon(firstVisit).ToNSImage()];
-  [firstVisitDescriptionField_ setStringValue:
-      base::SysUTF16ToNSString(firstVisit)];
-  [self performLayout];
-}
-
 - (void)setSelectedTab:(WebsiteSettingsUI::TabId)tabId {
   NSInteger index = static_cast<NSInteger>(tabId);
   [segmentedControl_ setSelectedSegment:index];
@@ -1286,10 +1249,6 @@ void WebsiteSettingsUIBridge::SetCookieInfo(
 void WebsiteSettingsUIBridge::SetPermissionInfo(
     const PermissionInfoList& permission_info_list) {
   [bubble_controller_ setPermissionInfo:permission_info_list];
-}
-
-void WebsiteSettingsUIBridge::SetFirstVisit(const base::string16& first_visit) {
-  [bubble_controller_ setFirstVisit:first_visit];
 }
 
 void WebsiteSettingsUIBridge::SetSelectedTab(TabId tab_id) {

@@ -17,7 +17,6 @@
 - (NSTextField*)identityStatusDescriptionField;
 - (NSImageView*)connectionStatusIcon;
 - (NSTextField*)connectionStatusDescriptionField;
-- (NSTextField*)firstVisitDescriptionField;
 - (NSButton*)helpButton;
 @end
 
@@ -50,10 +49,6 @@
 
 - (NSTextField*)connectionStatusDescriptionField {
   return connectionStatusDescriptionField_;
-}
-
-- (NSTextField*)firstVisitDescriptionField {
-  return firstVisitDescriptionField_;
 }
 
 - (NSButton*)helpButton {
@@ -314,13 +309,6 @@ TEST_F(WebsiteSettingsBubbleControllerTest, SetIdentityInfo) {
   link_button = static_cast<NSButton*>([buttons objectAtIndex:1]);
   EXPECT_NSEQ(controller_, [link_button target]);
   EXPECT_TRUE([link_button action] == @selector(showCertificateInfo:));
-}
-
-TEST_F(WebsiteSettingsBubbleControllerTest, SetFirstVisit) {
-  CreateBubble();
-  bridge_->SetFirstVisit(base::ASCIIToUTF16("Yesterday"));
-  EXPECT_NSEQ(@"Yesterday",
-              [[controller_ firstVisitDescriptionField] stringValue]);
 }
 
 TEST_F(WebsiteSettingsBubbleControllerTest, SetPermissionInfo) {

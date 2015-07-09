@@ -7,8 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/field_trial.h"
@@ -168,21 +166,9 @@ WebsiteSettings::WebsiteSettings(
       did_revoke_user_ssl_decisions_(false) {
   Init(profile, url, ssl);
 
-  history::HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile,
-                                           ServiceAccessType::EXPLICIT_ACCESS);
-  if (history_service) {
-    history_service->GetVisibleVisitCountToHost(
-        site_url_,
-        base::Bind(&WebsiteSettings::OnGotVisitCountToHost,
-                   base::Unretained(this)),
-        &visit_count_task_tracker_);
-  }
-
   PresentSitePermissions();
   PresentSiteData();
   PresentSiteIdentity();
-  PresentHistoryInfo(base::Time());
 
   // Every time the Website Settings UI is opened a |WebsiteSettings| object is
   // created. So this counts how ofter the Website Settings UI is opened.
@@ -328,19 +314,6 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
   // Refresh the UI to reflect the new setting.
   PresentSitePermissions();
 #endif
-}
-
-void WebsiteSettings::OnGotVisitCountToHost(bool found_visits,
-                                            int visit_count,
-                                            base::Time first_visit) {
-  if (!found_visits) {
-    // This indicates an error, such as the page's URL scheme wasn't
-    // http/https.
-    first_visit = base::Time();
-  } else if (visit_count == 0) {
-    first_visit = base::Time::Now();
-  }
-  PresentHistoryInfo(first_visit);
 }
 
 void WebsiteSettings::OnSiteDataAccessed() {
@@ -734,8 +707,8 @@ void WebsiteSettings::PresentSiteData() {
 }
 
 void WebsiteSettings::PresentSiteIdentity() {
-  // After initialization the status about the site's connection
-  // and it's identity must be available.
+  // After initialization the status about the site's connection and its
+  // identity must be available.
   DCHECK_NE(site_identity_status_, SITE_IDENTITY_STATUS_UNKNOWN);
   DCHECK_NE(site_connection_status_, SITE_CONNECTION_STATUS_UNKNOWN);
   WebsiteSettingsUI::IdentityInfo info;
@@ -753,27 +726,4 @@ void WebsiteSettings::PresentSiteIdentity() {
   info.cert_id = cert_id_;
   info.show_ssl_decision_revoke_button = show_ssl_decision_revoke_button_;
   ui_->SetIdentityInfo(info);
-}
-
-void WebsiteSettings::PresentHistoryInfo(base::Time first_visit) {
-  if (first_visit == base::Time()) {
-    ui_->SetFirstVisit(base::string16());
-    return;
-  }
-
-  bool visited_before_today = false;
-  base::Time today = base::Time::Now().LocalMidnight();
-  base::Time first_visit_midnight = first_visit.LocalMidnight();
-  visited_before_today = (first_visit_midnight < today);
-
-  base::string16 first_visit_text;
-  if (visited_before_today) {
-    first_visit_text = l10n_util::GetStringFUTF16(
-        IDS_PAGE_INFO_SECURITY_TAB_VISITED_BEFORE_TODAY,
-        base::TimeFormatShortDate(first_visit));
-  } else {
-    first_visit_text = l10n_util::GetStringUTF16(
-        IDS_PAGE_INFO_SECURITY_TAB_FIRST_VISITED_TODAY);
-  }
-  ui_->SetFirstVisit(first_visit_text);
 }

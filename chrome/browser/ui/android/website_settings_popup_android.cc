@@ -138,11 +138,6 @@ void WebsiteSettingsPopupAndroid::SetSelectedTab(
   NOTIMPLEMENTED();
 }
 
-void WebsiteSettingsPopupAndroid::SetFirstVisit(
-    const base::string16& first_visit) {
-  NOTIMPLEMENTED();
-}
-
 // static
 bool WebsiteSettingsPopupAndroid::RegisterWebsiteSettingsPopupAndroid(
     JNIEnv* env) {

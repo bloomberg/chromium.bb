@@ -88,7 +88,6 @@ class WebsiteSettingsPopupView
   void SetPermissionInfo(
       const PermissionInfoList& permission_info_list) override;
   void SetIdentityInfo(const IdentityInfo& identity_info) override;
-  void SetFirstVisit(const base::string16& first_visit) override;
   void SetSelectedTab(TabId tab_id) override;
 
   // Creates the contents of the "Permissions" tab. The ownership of the
@@ -177,7 +176,6 @@ class WebsiteSettingsPopupView
   views::Link* site_settings_link_;
 
   views::View* connection_info_content_;
-  views::View* page_info_content_;
 
   base::WeakPtrFactory<WebsiteSettingsPopupView> weak_factory_;
 
