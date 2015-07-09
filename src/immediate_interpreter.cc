@@ -1417,9 +1417,7 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
     case kGestureTypeSwipe:
       // If a gesturing finger just left, do fling/lift
       if (AnyGesturingFingerLeft(*state_buffer_.Get(0),
-                                 prev_gs_fingers_) &&
-          (current_gesture_type_ != kGestureTypeScroll ||
-           scroll_buffer_.Size() > 0)) {
+                                 prev_gs_fingers_)) {
         current_gesture_type_ =
             current_gesture_type_ == kGestureTypeScroll ?
             kGestureTypeFling : kGestureTypeSwipeLift;
