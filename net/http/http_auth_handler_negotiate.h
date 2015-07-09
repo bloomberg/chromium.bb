@@ -13,7 +13,9 @@
 #include "net/http/http_auth_handler.h"
 #include "net/http/http_auth_handler_factory.h"
 
-#if defined(OS_WIN)
+#if defined(OS_ANDROID)
+#include "net/android/http_auth_negotiate_android.h"
+#elif defined(OS_WIN)
 #include "net/http/http_auth_sspi_win.h"
 #elif defined(OS_POSIX)
 #include "net/http/http_auth_gssapi_posix.h"
@@ -32,7 +34,12 @@ class URLSecurityManager;
 
 class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
  public:
-#if defined(OS_WIN)
+#if defined(OS_ANDROID)
+  typedef net::android::HttpAuthNegotiateAndroid AuthSystem;
+  // For Android this isn't a library, but for the Android Account type, which
+  // indirectly identifies the Kerberos/SPNEGO authentication app.
+  typedef const std::string AuthLibrary;
+#elif defined(OS_WIN)
   typedef SSPILibrary AuthLibrary;
   typedef HttpAuthSSPI AuthSystem;
 #elif defined(OS_POSIX)
@@ -65,8 +72,8 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
 
     // Sets the system library to use, thereby assuming ownership of
     // |auth_library|.
-    void set_library(AuthLibrary* auth_library) {
-      auth_library_.reset(auth_library);
+    void set_library(AuthLibrary* auth_provider) {
+      auth_library_.reset(auth_provider);
     }
 
     int CreateAuthHandler(HttpAuthChallengeTokenizer* challenge,
@@ -89,7 +96,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
     scoped_ptr<AuthLibrary> auth_library_;
   };
 
-  HttpAuthHandlerNegotiate(AuthLibrary* sspi_library,
+  HttpAuthHandlerNegotiate(AuthLibrary* auth_library,
 #if defined(OS_WIN)
                            ULONG max_token_length,
 #endif

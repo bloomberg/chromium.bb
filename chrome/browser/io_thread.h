@@ -457,6 +457,7 @@ class IOThread : public content::BrowserThreadDelegate {
   std::string auth_server_whitelist_;
   std::string auth_delegate_whitelist_;
   std::string gssapi_library_name_;
+  std::string auth_android_negotiate_account_type_;
 
   // This is an instance of the default SSLConfigServiceManager for the current
   // platform and it gets SSL preferences from local_state object.

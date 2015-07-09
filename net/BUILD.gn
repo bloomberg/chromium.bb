@@ -1216,6 +1216,7 @@ if (is_android) {
       "android/java/src/org/chromium/net/AndroidNetworkLibrary.java",
       "android/java/src/org/chromium/net/AndroidPrivateKey.java",
       "android/java/src/org/chromium/net/GURLUtils.java",
+      "android/java/src/org/chromium/net/HttpNegotiateAuthenticator.java",
       "android/java/src/org/chromium/net/NetworkChangeNotifier.java",
       "android/java/src/org/chromium/net/ProxyChangeListener.java",
       "android/java/src/org/chromium/net/X509Util.java",
@@ -1225,6 +1226,7 @@ if (is_android) {
   generate_jni("net_test_jni_headers") {
     sources = [
       "android/javatests/src/org/chromium/net/AndroidKeyStoreTestUtil.java",
+      "test/android/javatests/src/org/chromium/net/test/DummySpnegoAuthenticator.java",
     ]
     jni_package = "net"
   }
@@ -1408,13 +1410,19 @@ if (!is_android && !is_mac) {
 
     if (use_kerberos) {
       defines += [ "USE_KERBEROS" ]
-    } else {
+    }
+
+    # These are excluded on Android, because the actual Kerberos support, which
+    # these test, is in a separate app on Android.
+    if (!use_kerberos || is_android) {
       sources -= [
         "http/http_auth_gssapi_posix_unittest.cc",
-        "http/http_auth_handler_negotiate_unittest.cc",
         "http/mock_gssapi_library_posix.cc",
         "http/mock_gssapi_library_posix.h",
       ]
+    }
+    if (!use_kerberos) {
+      sources -= [ "http/http_auth_handler_negotiate_unittest.cc" ]
     }
 
     if (use_openssl || (!is_desktop_linux && !is_chromeos && !is_ios)) {

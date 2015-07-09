@@ -15,6 +15,8 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/test/test_file_util.h"
+#include "base/test/test_ui_thread_android.h"
+#include "net/android/dummy_spnego_authenticator.h"
 #include "net/android/net_jni_registrar.h"
 #include "url/android/url_jni_registrar.h"
 #endif
@@ -32,9 +34,12 @@ int main(int argc, char** argv) {
 
 #if defined(OS_ANDROID)
   const base::android::RegistrationMethod kNetTestRegisteredMethods[] = {
-    {"NetAndroid", net::android::RegisterJni},
-    {"TestFileUtil", base::RegisterContentUriTestUtils},
-    {"UrlAndroid", url::android::RegisterJni},
+      {"DummySpnegoAuthenticator",
+       net::android::DummySpnegoAuthenticator::RegisterJni},
+      {"NetAndroid", net::android::RegisterJni},
+      {"TestFileUtil", base::RegisterContentUriTestUtils},
+      {"TestUiThreadAndroid", base::RegisterTestUiThreadAndroid},
+      {"UrlAndroid", url::android::RegisterJni},
   };
 
   // Register JNI bindings for android. Doing it early as the test suite setup

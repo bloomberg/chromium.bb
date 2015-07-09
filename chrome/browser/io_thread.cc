@@ -505,6 +505,8 @@ IOThread::IOThread(
   auth_delegate_whitelist_ = local_state->GetString(
       prefs::kAuthNegotiateDelegateWhitelist);
   gssapi_library_name_ = local_state->GetString(prefs::kGSSAPILibraryName);
+  auth_android_negotiate_account_type_ =
+      local_state->GetString(prefs::kAuthAndroidNegotiateAccountType);
   pref_proxy_config_tracker_.reset(
       ProxyServiceFactory::CreatePrefProxyConfigTrackerOfLocalState(
           local_state));
@@ -1039,6 +1041,8 @@ void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kAuthNegotiateDelegateWhitelist,
                                std::string());
   registry->RegisterStringPref(prefs::kGSSAPILibraryName, std::string());
+  registry->RegisterStringPref(prefs::kAuthAndroidNegotiateAccountType,
+                               std::string());
   registry->RegisterStringPref(
       data_reduction_proxy::prefs::kDataReductionProxy, std::string());
   registry->RegisterBooleanPref(prefs::kEnableReferrers, true);
@@ -1067,9 +1071,9 @@ net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
 
   scoped_ptr<net::HttpAuthHandlerRegistryFactory> registry_factory(
       net::HttpAuthHandlerRegistryFactory::Create(
-          supported_schemes, globals_->url_security_manager.get(),
-          resolver, gssapi_library_name_, negotiate_disable_cname_lookup_,
-          negotiate_enable_port_));
+          supported_schemes, globals_->url_security_manager.get(), resolver,
+          gssapi_library_name_, auth_android_negotiate_account_type_,
+          negotiate_disable_cname_lookup_, negotiate_enable_port_));
   return registry_factory.release();
 }
 

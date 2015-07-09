@@ -69,57 +69,56 @@ TEST(HttpAuthTest, ChooseBestChallenge) {
     HttpAuth::Scheme challenge_scheme;
     const char* challenge_realm;
   } tests[] = {
-    {
-      // Basic is the only challenge type, pick it.
-      "Y: Digest realm=\"X\", nonce=\"aaaaaaaaaa\"\n"
-      "www-authenticate: Basic realm=\"BasicRealm\"\n",
+      {
+       // Basic is the only challenge type, pick it.
+       "Y: Digest realm=\"X\", nonce=\"aaaaaaaaaa\"\n"
+       "www-authenticate: Basic realm=\"BasicRealm\"\n",
 
-      HttpAuth::AUTH_SCHEME_BASIC,
-      "BasicRealm",
-    },
-    {
-      // Fake is the only challenge type, but it is unsupported.
-      "Y: Digest realm=\"FooBar\", nonce=\"aaaaaaaaaa\"\n"
-      "www-authenticate: Fake realm=\"FooBar\"\n",
+       HttpAuth::AUTH_SCHEME_BASIC,
+       "BasicRealm",
+      },
+      {
+       // Fake is the only challenge type, but it is unsupported.
+       "Y: Digest realm=\"FooBar\", nonce=\"aaaaaaaaaa\"\n"
+       "www-authenticate: Fake realm=\"FooBar\"\n",
 
-      HttpAuth::AUTH_SCHEME_MAX,
-      "",
-    },
-    {
-      // Pick Digest over Basic.
-      "www-authenticate: Basic realm=\"FooBar\"\n"
-      "www-authenticate: Fake realm=\"FooBar\"\n"
-      "www-authenticate: nonce=\"aaaaaaaaaa\"\n"
-      "www-authenticate: Digest realm=\"DigestRealm\", nonce=\"aaaaaaaaaa\"\n",
+       HttpAuth::AUTH_SCHEME_MAX,
+       "",
+      },
+      {
+       // Pick Digest over Basic.
+       "www-authenticate: Basic realm=\"FooBar\"\n"
+       "www-authenticate: Fake realm=\"FooBar\"\n"
+       "www-authenticate: nonce=\"aaaaaaaaaa\"\n"
+       "www-authenticate: Digest realm=\"DigestRealm\", nonce=\"aaaaaaaaaa\"\n",
 
-      HttpAuth::AUTH_SCHEME_DIGEST,
-      "DigestRealm",
-    },
-    {
-      // Handle an empty header correctly.
-      "Y: Digest realm=\"X\", nonce=\"aaaaaaaaaa\"\n"
-      "www-authenticate:\n",
+       HttpAuth::AUTH_SCHEME_DIGEST,
+       "DigestRealm",
+      },
+      {
+       // Handle an empty header correctly.
+       "Y: Digest realm=\"X\", nonce=\"aaaaaaaaaa\"\n"
+       "www-authenticate:\n",
 
-      HttpAuth::AUTH_SCHEME_MAX,
-      "",
-    },
-    {
-      "WWW-Authenticate: Negotiate\n"
-      "WWW-Authenticate: NTLM\n",
+       HttpAuth::AUTH_SCHEME_MAX,
+       "",
+      },
+      {
+       "WWW-Authenticate: Negotiate\n"
+       "WWW-Authenticate: NTLM\n",
 
-#if defined(USE_KERBEROS)
-      // Choose Negotiate over NTLM on all platforms.
-      // TODO(ahendrickson): This may be flaky on Linux and OSX as it
-      // relies on being able to load one of the known .so files
-      // for gssapi.
-      HttpAuth::AUTH_SCHEME_NEGOTIATE,
+#if defined(USE_KERBEROS) && !defined(OS_ANDROID)
+       // Choose Negotiate over NTLM on all platforms.
+       // TODO(ahendrickson): This may be flaky on Linux and OSX as it
+       // relies on being able to load one of the known .so files
+       // for gssapi.
+       HttpAuth::AUTH_SCHEME_NEGOTIATE,
 #else
-      // On systems that don't use Kerberos fall back to NTLM.
-      HttpAuth::AUTH_SCHEME_NTLM,
+       // On systems that don't use Kerberos fall back to NTLM.
+       HttpAuth::AUTH_SCHEME_NTLM,
 #endif  // defined(USE_KERBEROS)
-      "",
-    }
-  };
+       "",
+      }};
   GURL origin("http://www.example.com");
   std::set<HttpAuth::Scheme> disabled_schemes;
   MockAllowURLSecurityManager url_security_manager;

@@ -10,11 +10,11 @@
     'net_test_extra_libs': [],
     'linux_link_kerberos%': 0,
     'conditions': [
-      ['chromeos==1 or embedded==1 or OS=="android" or OS=="ios"', {
-        # Disable Kerberos on ChromeOS, Android and iOS, at least for now.
+      ['chromeos==1 or embedded==1 or OS=="ios"', {
+        # Disable Kerberos on ChromeOS and iOS, at least for now.
         # It needs configuration (krb5.conf and so on).
         'use_kerberos%': 0,
-      }, {  # chromeos == 0 and embedded==0 and OS!="android" and OS!="ios"
+      }, {  # chromeos == 0 and embedded==0 and OS!="ios"
         'use_kerberos%': 1,
       }],
       ['OS=="android" and target_arch != "ia32"', {
@@ -222,12 +222,19 @@
           'defines': [
             'USE_KERBEROS',
           ],
-        }, { # use_kerberos == 0
+        }],
+        [ 'use_kerberos==0 or OS == "android"', {
+          # These are excluded on Android, because the actual Kerberos support,
+          # which these test, is in a separate app on Android.
           'sources!': [
             'http/http_auth_gssapi_posix_unittest.cc',
-            'http/http_auth_handler_negotiate_unittest.cc',
             'http/mock_gssapi_library_posix.cc',
             'http/mock_gssapi_library_posix.h',
+          ],
+        }],
+       [ 'use_kerberos==0', {
+          'sources!': [
+            'http/http_auth_handler_negotiate_unittest.cc',
           ],
         }],
         [ 'use_openssl == 1 or (desktop_linux == 0 and chromeos == 0 and OS != "ios")', {
@@ -1355,6 +1362,7 @@
             'android/java/src/org/chromium/net/AndroidNetworkLibrary.java',
             'android/java/src/org/chromium/net/AndroidPrivateKey.java',
             'android/java/src/org/chromium/net/GURLUtils.java',
+            'android/java/src/org/chromium/net/HttpNegotiateAuthenticator.java',
             'android/java/src/org/chromium/net/NetStringUtil.java',
             'android/java/src/org/chromium/net/NetworkChangeNotifier.java',
             'android/java/src/org/chromium/net/ProxyChangeListener.java',
@@ -1371,6 +1379,7 @@
           'sources': [
             'android/javatests/src/org/chromium/net/AndroidKeyStoreTestUtil.java',
             'test/android/javatests/src/org/chromium/net/test/EmbeddedTestServer.java',
+            'test/android/javatests/src/org/chromium/net/test/DummySpnegoAuthenticator.java',
           ],
           'variables': {
             'jni_gen_package': 'net/test',
@@ -1418,6 +1427,7 @@
             'net_test_support',
             'url_request_failed_job_java',
             '../base/base.gyp:base_java',
+            'net_java',
             '<@(net_test_extra_libs)',
           ],
           'includes': [ '../build/java.gypi' ],
@@ -1493,6 +1503,7 @@
           'dependencies': [
             'net_java',
             'net_javatests',
+            'net_java_test_support',
             'net_unittests',
           ],
           'conditions': [
@@ -1514,6 +1525,8 @@
           'variables': {
             'test_suite_name': 'net_unittests',
             'isolate_file': 'net_unittests.isolate',
+            'android_manifest_path': 'android/unittest_support/AndroidManifest.xml',
+            'resource_dir': 'android/unittest_support/res',
             'conditions': [
               ['v8_use_external_startup_data==1', {
                 'asset_location': '<(PRODUCT_DIR)/net_unittests_apk/assets',
@@ -1530,6 +1543,26 @@
           },
           'includes': [ '../build/apk_test.gypi' ],
         },
+        {
+          'target_name': 'net_junit_tests',
+          'type': 'none',
+          'dependencies': [
+            'net_java',
+            '../base/base.gyp:base',
+            '../base/base.gyp:base_java_test_support',
+            '../testing/android/junit/junit_test.gyp:junit_test_support',
+          ],
+          'variables': {
+            'main_class': 'org.chromium.testing.local.JunitTestMain',
+            'src_paths': [
+              'android/junit/',
+            ],
+          },
+          'includes': [
+            '../build/host_jar.gypi',
+          ],
+        },
+  
       ],
     }],
     ['OS == "android" or OS == "linux"', {

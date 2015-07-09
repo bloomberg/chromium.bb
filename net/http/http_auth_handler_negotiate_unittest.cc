@@ -4,6 +4,8 @@
 
 #include "net/http/http_auth_handler_negotiate.h"
 
+#include <string>
+
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
@@ -11,7 +13,9 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_request_info.h"
 #include "net/http/mock_allow_url_security_manager.h"
-#if defined(OS_WIN)
+#if defined(OS_ANDROID)
+#include "net/android/dummy_spnego_authenticator.h"
+#elif defined(OS_WIN)
 #include "net/http/mock_sspi_library_win.h"
 #elif defined(OS_POSIX)
 #include "net/http/mock_gssapi_library_posix.h"
@@ -21,7 +25,9 @@
 
 namespace net {
 
-#if defined(OS_WIN)
+#if defined(OS_ANDROID)
+typedef net::android::DummySpnegoAuthenticator MockAuthLibrary;
+#elif defined(OS_WIN)
 typedef MockSSPILibrary MockAuthLibrary;
 #elif defined(OS_POSIX)
 typedef test::MockGSSAPILibrary MockAuthLibrary;
@@ -38,9 +44,21 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest {
     url_security_manager_.reset(new MockAllowURLSecurityManager());
     factory_.reset(new HttpAuthHandlerNegotiate::Factory());
     factory_->set_url_security_manager(url_security_manager_.get());
+#if defined(OS_ANDROID)
+    std::string* authenticator =
+        new std::string("org.chromium.test.DummySpnegoAuthenticator");
+    factory_->set_library(authenticator);
+    MockAuthLibrary::EnsureTestAccountExists();
+#endif
+#if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_ANDROID))
     factory_->set_library(auth_library_);
+#endif
     factory_->set_host_resolver(resolver_.get());
   }
+
+#if defined(OS_ANDROID)
+  void TearDown() override { MockAuthLibrary::RemoveTestAccounts(); }
+#endif
 
   void SetupMocks(MockAuthLibrary* mock_library) {
 #if defined(OS_WIN)
@@ -113,21 +131,21 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest {
         0,                                   // Context flags
         1,                                   // Locally initiated
         1);                                  // Open
-    test::MockGSSAPILibrary::SecurityContextQuery queries[] = {
-    test::MockGSSAPILibrary::SecurityContextQuery(
-        "Negotiate",                    // Package name
-        GSS_S_CONTINUE_NEEDED,          // Major response code
-        0,                              // Minor response code
-        context1,                       // Context
-        NULL,                           // Expected input token
-        kAuthResponse),                 // Output token
-    test::MockGSSAPILibrary::SecurityContextQuery(
-        "Negotiate",                    // Package name
-        GSS_S_COMPLETE,                 // Major response code
-        0,                              // Minor response code
-        context2,                       // Context
-        kAuthResponse,                  // Expected input token
-        kAuthResponse)                  // Output token
+    MockAuthLibrary::SecurityContextQuery queries[] = {
+        MockAuthLibrary::SecurityContextQuery(
+            "Negotiate",            // Package name
+            GSS_S_CONTINUE_NEEDED,  // Major response code
+            0,                      // Minor response code
+            context1,               // Context
+            NULL,                   // Expected input token
+            kAuthResponse),         // Output token
+        MockAuthLibrary::SecurityContextQuery(
+            "Negotiate",     // Package name
+            GSS_S_COMPLETE,  // Major response code
+            0,               // Minor response code
+            context2,        // Context
+            kAuthResponse,   // Expected input token
+            kAuthResponse)   // Output token
     };
 
     for (size_t i = 0; i < arraysize(queries); ++i) {
@@ -154,13 +172,13 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest {
         0,                              // Context flags
         1,                              // Locally initiated
         0);                             // Open
-    test::MockGSSAPILibrary::SecurityContextQuery query(
-        "Negotiate",                    // Package name
-        major_status,                   // Major response code
-        minor_status,                   // Minor response code
-        context,                        // Context
-        NULL,                           // Expected input token
-        NULL);                          // Output token
+    MockAuthLibrary::SecurityContextQuery query(
+        "Negotiate",   // Package name
+        major_status,  // Major response code
+        minor_status,  // Minor response code
+        context,       // Context
+        NULL,          // Expected input token
+        NULL);         // Output token
 
     mock_library->ExpectSecurityContext(query.expected_package,
                                         query.response_code,
@@ -223,8 +241,8 @@ TEST_F(HttpAuthHandlerNegotiateTest, DisableCname) {
   TestCompletionCallback callback;
   HttpRequestInfo request_info;
   std::string token;
-  EXPECT_EQ(OK, auth_handler->GenerateAuthToken(NULL, &request_info,
-                                                callback.callback(), &token));
+  EXPECT_EQ(OK, callback.GetResult(auth_handler->GenerateAuthToken(
+                    NULL, &request_info, callback.callback(), &token)));
 #if defined(OS_WIN)
   EXPECT_EQ("HTTP/alias", auth_handler->spn());
 #elif defined(OS_POSIX)
@@ -241,8 +259,8 @@ TEST_F(HttpAuthHandlerNegotiateTest, DisableCnameStandardPort) {
   TestCompletionCallback callback;
   HttpRequestInfo request_info;
   std::string token;
-  EXPECT_EQ(OK, auth_handler->GenerateAuthToken(NULL, &request_info,
-                                                callback.callback(), &token));
+  EXPECT_EQ(OK, callback.GetResult(auth_handler->GenerateAuthToken(
+                    NULL, &request_info, callback.callback(), &token)));
 #if defined(OS_WIN)
   EXPECT_EQ("HTTP/alias", auth_handler->spn());
 #elif defined(OS_POSIX)
@@ -259,8 +277,8 @@ TEST_F(HttpAuthHandlerNegotiateTest, DisableCnameNonstandardPort) {
   TestCompletionCallback callback;
   HttpRequestInfo request_info;
   std::string token;
-  EXPECT_EQ(OK, auth_handler->GenerateAuthToken(NULL, &request_info,
-                                                callback.callback(), &token));
+  EXPECT_EQ(OK, callback.GetResult(auth_handler->GenerateAuthToken(
+                    NULL, &request_info, callback.callback(), &token)));
 #if defined(OS_WIN)
   EXPECT_EQ("HTTP/alias:500", auth_handler->spn());
 #elif defined(OS_POSIX)
@@ -277,8 +295,8 @@ TEST_F(HttpAuthHandlerNegotiateTest, CnameSync) {
   TestCompletionCallback callback;
   HttpRequestInfo request_info;
   std::string token;
-  EXPECT_EQ(OK, auth_handler->GenerateAuthToken(NULL, &request_info,
-                                                callback.callback(), &token));
+  EXPECT_EQ(OK, callback.GetResult(auth_handler->GenerateAuthToken(
+                    NULL, &request_info, callback.callback(), &token)));
 #if defined(OS_WIN)
   EXPECT_EQ("HTTP/canonical.example.com", auth_handler->spn());
 #elif defined(OS_POSIX)

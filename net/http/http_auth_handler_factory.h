@@ -169,7 +169,12 @@ class NET_EXPORT HttpAuthHandlerRegistryFactory
   // |host_resolver| must not be NULL.
   //
   // |gssapi_library_name| specifies the name of the GSSAPI library that will
-  // be loaded on all platforms except Windows.
+  // be loaded on Posix platforms other than Android. |gssapi_library_name| is
+  // ignored on Android and Windows.
+  //
+  // |auth_android_negotiate_account_type| is an Android account type, used to
+  // find the appropriate authenticator service on Android. It is ignored on
+  // non-Android platforms.
   //
   // |negotiate_disable_cname_lookup| and |negotiate_enable_port| both control
   // how Negotiate does SPN generation, by default these should be false.
@@ -178,6 +183,7 @@ class NET_EXPORT HttpAuthHandlerRegistryFactory
       URLSecurityManager* security_manager,
       HostResolver* host_resolver,
       const std::string& gssapi_library_name,
+      const std::string& auth_android_negotiate_account_type,
       bool negotiate_disable_cname_lookup,
       bool negotiate_enable_port);
 

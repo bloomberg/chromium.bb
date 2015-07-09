@@ -1686,6 +1686,11 @@ const char kAuthNegotiateDelegateWhitelist[] =
 // String that specifies the name of a custom GSSAPI library to load.
 const char kGSSAPILibraryName[] = "auth.gssapi_library_name";
 
+// String that specifies the Android account type to use for Negotiate
+// authentication.
+const char kAuthAndroidNegotiateAccountType[] =
+    "auth.android_negotiate_account_type";
+
 // Boolean that specifies whether to allow basic auth prompting on cross-
 // domain sub-content requests.
 const char kAllowCrossOriginAuthPrompt[] = "auth.allow_cross_origin_prompt";

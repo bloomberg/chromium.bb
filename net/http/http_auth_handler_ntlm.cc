@@ -33,10 +33,8 @@ int HttpAuthHandlerNTLM::GenerateAuthTokenImpl(
     const AuthCredentials* credentials, const HttpRequestInfo* request,
     const CompletionCallback& callback, std::string* auth_token) {
 #if defined(NTLM_SSPI)
-  return auth_sspi_.GenerateAuthToken(
-      credentials,
-      CreateSPN(origin_),
-      auth_token);
+  return auth_sspi_.GenerateAuthToken(credentials, CreateSPN(origin_),
+                                      auth_token, callback);
 #else  // !defined(NTLM_SSPI)
   // TODO(cbentzel): Shouldn't be hitting this case.
   if (!credentials) {

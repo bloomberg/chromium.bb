@@ -30,6 +30,7 @@ android_library("net_java_test_support") {
   DEPRECATED_java_in_dir = "../test/android/javatests/src"
   deps = [
     "//base:base_java",
+    ":net_java",
   ]
   srcjar_deps = [ ":net_java_test_support_enums_srcjar" ]
 }
@@ -75,6 +76,17 @@ java_cpp_enum("net_android_java_enums_srcjar") {
     "org/chromium/net/ConnectionSubtype.java",
     "org/chromium/net/ConnectionType.java",
     "org/chromium/net/PrivateKeyType.java",
+  ]
+}
+
+junit_binary("net_junit_tests") {
+  java_files =
+      [ "junit/src/org/chromium/net/HttpNegotiateAuthenticatorTest.java" ]
+  deps = [
+    ":net_java",
+    "//base:base_java",
+    "//base:base_java_test_support",
+    "//third_party/junit:hamcrest",
   ]
 }
 

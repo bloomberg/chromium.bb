@@ -377,14 +377,9 @@ void MCSProbe::InitializeNetworkState() {
 
   transport_security_state_.reset(new net::TransportSecurityState());
   url_security_manager_.reset(net::URLSecurityManager::Create(NULL, NULL));
-  http_auth_handler_factory_.reset(
-      net::HttpAuthHandlerRegistryFactory::Create(
-          std::vector<std::string>(1, "basic"),
-          url_security_manager_.get(),
-          host_resolver_.get(),
-          std::string(),
-          false,
-          false));
+  http_auth_handler_factory_.reset(net::HttpAuthHandlerRegistryFactory::Create(
+      std::vector<std::string>(1, "basic"), url_security_manager_.get(),
+      host_resolver_.get(), std::string(), std::string(), false, false));
   http_server_properties_.reset(new net::HttpServerPropertiesImpl());
   host_mapping_rules_.reset(new net::HostMappingRules());
   proxy_service_.reset(net::ProxyService::CreateDirectWithNetLog(&net_log_));

@@ -172,7 +172,8 @@ TEST(HttpAuthHandlerFactoryTest, DefaultFactory) {
         server_origin,
         BoundNetLog(),
         &handler);
-#if defined(USE_KERBEROS)
+// Note the default factory doesn't support Kerberos on Android
+#if defined(USE_KERBEROS) && !defined(OS_ANDROID)
     EXPECT_EQ(OK, rv);
     ASSERT_FALSE(handler.get() == NULL);
     EXPECT_EQ(HttpAuth::AUTH_SCHEME_NEGOTIATE, handler->auth_scheme());
@@ -183,7 +184,7 @@ TEST(HttpAuthHandlerFactoryTest, DefaultFactory) {
 #else
     EXPECT_EQ(ERR_UNSUPPORTED_AUTH_SCHEME, rv);
     EXPECT_TRUE(handler.get() == NULL);
-#endif  // defined(USE_KERBEROS)
+#endif  // defined(USE_KERBEROS) && !defined(OS_ANDROID)
   }
 }
 

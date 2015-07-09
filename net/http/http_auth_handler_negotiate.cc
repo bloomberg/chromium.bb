@@ -61,10 +61,14 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
       new HttpAuthHandlerNegotiate(auth_library_.get(), max_token_length_,
                                    url_security_manager(), resolver_,
                                    disable_cname_lookup_, use_port_));
-  if (!tmp_handler->InitFromChallenge(challenge, target, origin, net_log))
-    return ERR_INVALID_RESPONSE;
-  handler->swap(tmp_handler);
-  return OK;
+#elif defined(OS_ANDROID)
+  if (is_unsupported_ || auth_library_->empty() || reason == CREATE_PREEMPTIVE)
+    return ERR_UNSUPPORTED_AUTH_SCHEME;
+  // TODO(cbentzel): Move towards model of parsing in the factory
+  //                 method and only constructing when valid.
+  scoped_ptr<HttpAuthHandler> tmp_handler(new HttpAuthHandlerNegotiate(
+      auth_library_.get(), url_security_manager(), resolver_,
+      disable_cname_lookup_, use_port_));
 #elif defined(OS_POSIX)
   if (is_unsupported_)
     return ERR_UNSUPPORTED_AUTH_SCHEME;
@@ -78,11 +82,11 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
       new HttpAuthHandlerNegotiate(auth_library_.get(), url_security_manager(),
                                    resolver_, disable_cname_lookup_,
                                    use_port_));
+#endif
   if (!tmp_handler->InitFromChallenge(challenge, target, origin, net_log))
     return ERR_INVALID_RESPONSE;
   handler->swap(tmp_handler);
   return OK;
-#endif
 }
 
 HttpAuthHandlerNegotiate::HttpAuthHandlerNegotiate(
@@ -94,7 +98,9 @@ HttpAuthHandlerNegotiate::HttpAuthHandlerNegotiate(
     HostResolver* resolver,
     bool disable_cname_lookup,
     bool use_port)
-#if defined(OS_WIN)
+#if defined(OS_ANDROID)
+    : auth_system_(*auth_library),
+#elif defined(OS_WIN)
     : auth_system_(auth_library, "Negotiate", NEGOSSP_NAME, max_token_length),
 #elif defined(OS_POSIX)
     : auth_system_(auth_library, "Negotiate", CHROME_GSS_SPNEGO_MECH_OID_DESC),
@@ -315,8 +321,10 @@ int HttpAuthHandlerNegotiate::DoResolveCanonicalNameComplete(int rv) {
 int HttpAuthHandlerNegotiate::DoGenerateAuthToken() {
   next_state_ = STATE_GENERATE_AUTH_TOKEN_COMPLETE;
   AuthCredentials* credentials = has_credentials_ ? &credentials_ : NULL;
-  // TODO(cbentzel): This should possibly be done async.
-  return auth_system_.GenerateAuthToken(credentials, spn_, auth_token_);
+  return auth_system_.GenerateAuthToken(
+      credentials, spn_, auth_token_,
+      base::Bind(&HttpAuthHandlerNegotiate::OnIOComplete,
+                 base::Unretained(this)));
 }
 
 int HttpAuthHandlerNegotiate::DoGenerateAuthTokenComplete(int rv) {

@@ -16,7 +16,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
-#include "net/http/http_auth_challenge_tokenizer.h"
+#include "net/http/http_auth_multi_round_parse.h"
 
 // These are defined for the GSSAPI library:
 // Paraphrasing the comments from gssapi.h:
@@ -687,39 +687,18 @@ void HttpAuthGSSAPI::Delegate() {
 
 HttpAuth::AuthorizationResult HttpAuthGSSAPI::ParseChallenge(
     HttpAuthChallengeTokenizer* tok) {
-  // Verify the challenge's auth-scheme.
-  if (!base::LowerCaseEqualsASCII(tok->scheme(),
-                                  base::StringToLowerASCII(scheme_).c_str()))
-    return HttpAuth::AUTHORIZATION_RESULT_INVALID;
-
-  std::string encoded_auth_token = tok->base64_param();
-
-  if (encoded_auth_token.empty()) {
-    // If a context has already been established, an empty Negotiate challenge
-    // should be treated as a rejection of the current attempt.
-    if (scoped_sec_context_.get() != GSS_C_NO_CONTEXT)
-      return HttpAuth::AUTHORIZATION_RESULT_REJECT;
-    DCHECK(decoded_server_auth_token_.empty());
-    return HttpAuth::AUTHORIZATION_RESULT_ACCEPT;
-  } else {
-    // If a context has not already been established, additional tokens should
-    // not be present in the auth challenge.
-    if (scoped_sec_context_.get() == GSS_C_NO_CONTEXT)
-      return HttpAuth::AUTHORIZATION_RESULT_INVALID;
+  if (scoped_sec_context_.get() == GSS_C_NO_CONTEXT) {
+    return net::ParseFirstRoundChallenge(scheme_, tok);
   }
-
-  // Make sure the additional token is base64 encoded.
-  std::string decoded_auth_token;
-  bool base64_rv = base::Base64Decode(encoded_auth_token, &decoded_auth_token);
-  if (!base64_rv)
-    return HttpAuth::AUTHORIZATION_RESULT_INVALID;
-  decoded_server_auth_token_ = decoded_auth_token;
-  return HttpAuth::AUTHORIZATION_RESULT_ACCEPT;
+  std::string encoded_auth_token;
+  return net::ParseLaterRoundChallenge(scheme_, tok, &encoded_auth_token,
+                                       &decoded_server_auth_token_);
 }
 
 int HttpAuthGSSAPI::GenerateAuthToken(const AuthCredentials* credentials,
                                       const std::string& spn,
-                                      std::string* auth_token) {
+                                      std::string* auth_token,
+                                      const CompletionCallback& /*callback*/) {
   DCHECK(auth_token);
 
   gss_buffer_desc input_token = GSS_C_EMPTY_BUFFER;

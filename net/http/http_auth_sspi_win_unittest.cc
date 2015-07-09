@@ -25,6 +25,12 @@ void MatchDomainUserAfterSplit(const std::wstring& combined,
 
 const ULONG kMaxTokenLength = 100;
 
+void UnexpectedCallback(int result) {
+  // At present getting tokens from gssapi is fully synchronous, so the callback
+  // should never be called.
+  ADD_FAILURE();
+}
+
 }  // namespace
 
 TEST(HttpAuthSSPITest, SplitUserAndDomain) {
@@ -84,7 +90,8 @@ TEST(HttpAuthSSPITest, ParseChallenge_TwoRounds) {
   // Generate an auth token and create another thing.
   std::string auth_token;
   EXPECT_EQ(OK, auth_sspi.GenerateAuthToken(NULL, "HTTP/intranet.google.com",
-                                            &auth_token));
+                                            &auth_token,
+                                            base::Bind(&UnexpectedCallback)));
 
   std::string second_challenge_text = "Negotiate Zm9vYmFy";
   HttpAuthChallengeTokenizer second_challenge(second_challenge_text.begin(),
@@ -120,7 +127,8 @@ TEST(HttpAuthSSPITest, ParseChallenge_MissingTokenSecondRound) {
 
   std::string auth_token;
   EXPECT_EQ(OK, auth_sspi.GenerateAuthToken(NULL, "HTTP/intranet.google.com",
-                                            &auth_token));
+                                            &auth_token,
+                                            base::Bind(&UnexpectedCallback)));
   std::string second_challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer second_challenge(second_challenge_text.begin(),
                                               second_challenge_text.end());
@@ -142,7 +150,8 @@ TEST(HttpAuthSSPITest, ParseChallenge_NonBase64EncodedToken) {
 
   std::string auth_token;
   EXPECT_EQ(OK, auth_sspi.GenerateAuthToken(NULL, "HTTP/intranet.google.com",
-                                            &auth_token));
+                                            &auth_token,
+                                            base::Bind(&UnexpectedCallback)));
   std::string second_challenge_text = "Negotiate =happyjoy=";
   HttpAuthChallengeTokenizer second_challenge(second_challenge_text.begin(),
                                               second_challenge_text.end());

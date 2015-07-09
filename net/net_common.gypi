@@ -390,6 +390,8 @@
           'cert/cert_database_openssl.cc',
           'cert/cert_verify_proc_openssl.cc',
           'cert/test_root_certs_openssl.cc',
+          'http/http_auth_gssapi_posix.cc',
+          'http/http_auth_gssapi_posix.h',
         ],
       },
     ],
