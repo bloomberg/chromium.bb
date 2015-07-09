@@ -15,6 +15,10 @@ namespace breakpad {
 class CrashDumpManager;
 }  // namespace breakpad
 
+namespace net {
+class NetLog;
+}  // namespace net
+
 namespace chromecast {
 class CastService;
 class CastScreen;
@@ -58,6 +62,7 @@ class CastBrowserProcess {
 #endif  // defined(OS_ANDROID)
   void SetConnectivityChecker(
       scoped_refptr<ConnectivityChecker> connectivity_checker);
+  void SetNetLog(net::NetLog* net_log);
 
   CastBrowserContext* browser_context() const { return browser_context_.get(); }
   CastService* cast_service() const { return cast_service_.get(); }
@@ -75,6 +80,7 @@ class CastBrowserProcess {
   ConnectivityChecker* connectivity_checker() const {
     return connectivity_checker_.get();
   }
+  net::NetLog* net_log() const { return net_log_; }
 
  private:
   // Note: The following order should match the order they are set in
@@ -93,6 +99,8 @@ class CastBrowserProcess {
   scoped_ptr<breakpad::CrashDumpManager> crash_dump_manager_;
 #endif  // defined(OS_ANDROID)
   scoped_ptr<RemoteDebuggingServer> remote_debugging_server_;
+
+  net::NetLog* net_log_;
 
   // Note: CastService must be destroyed before others.
   scoped_ptr<CastService> cast_service_;

@@ -35,7 +35,8 @@ CastBrowserProcess* CastBrowserProcess::GetInstance() {
   return g_instance;
 }
 
-CastBrowserProcess::CastBrowserProcess() {
+CastBrowserProcess::CastBrowserProcess()
+    : net_log_(nullptr) {
   DCHECK(!g_instance);
   g_instance = this;
 }
@@ -106,6 +107,11 @@ void CastBrowserProcess::SetConnectivityChecker(
     scoped_refptr<ConnectivityChecker> connectivity_checker) {
   DCHECK(!connectivity_checker_);
   connectivity_checker_.swap(connectivity_checker);
+}
+
+void CastBrowserProcess::SetNetLog(net::NetLog* net_log) {
+  DCHECK(!net_log_);
+  net_log_ = net_log;
 }
 
 }  // namespace shell

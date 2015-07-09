@@ -310,6 +310,8 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
           content::BrowserThread::GetMessageLoopProxyForThread(
               content::BrowserThread::IO)));
 
+  cast_browser_process_->SetNetLog(net_log_.get());
+
   url_request_context_factory_->InitializeOnUIThread(net_log_.get());
 
   cast_browser_process_->SetBrowserContext(
