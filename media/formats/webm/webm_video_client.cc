@@ -96,7 +96,7 @@ bool WebMVideoClient::InitializeConfig(
   }
 
   config->Initialize(video_codec, profile, format,
-                     VideoFrame::COLOR_SPACE_HD_REC709, coded_size,
+                     VideoFrame::COLOR_SPACE_UNSPECIFIED, coded_size,
                      visible_rect, natural_size, extra_data, extra_data_size,
                      is_encrypted, true);
   return config->IsValidConfig();

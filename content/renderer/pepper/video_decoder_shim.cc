@@ -374,34 +374,37 @@ void VideoDecoderShim::YUVConverter::Convert(
         0.0f, -0.5f, -0.5f,
     };
 
-    yuv_adjust = yuv_adjust_constrained;
-    yuv_matrix = yuv_to_rgb_rec601;
-
-    int result;
-    if (frame->metadata()->GetInteger(
-            media::VideoFrameMetadata::COLOR_SPACE, &result)) {
-      if (result == media::VideoFrame::COLOR_SPACE_JPEG) {
-        yuv_matrix = yuv_to_rgb_jpeg;
-        yuv_adjust = yuv_adjust_full;
-      } else if (result == media::VideoFrame::COLOR_SPACE_HD_REC709) {
-        yuv_matrix = yuv_to_rgb_rec709;
-      }
-    }
-
     switch (frame->format()) {
       case media::VideoFrame::YV12:  // 420
       case media::VideoFrame::YV12A:
       case media::VideoFrame::I420:
         uv_height_divisor_ = 2;
         uv_width_divisor_ = 2;
+        yuv_adjust = yuv_adjust_constrained;
+        int result;
+        if (frame->metadata()->GetInteger(
+                media::VideoFrameMetadata::COLOR_SPACE, &result)) {
+          if (result == media::VideoFrame::COLOR_SPACE_JPEG) {
+            yuv_matrix = yuv_to_rgb_jpeg;
+            yuv_adjust = yuv_adjust_full;
+          } else {
+            yuv_matrix = yuv_to_rgb_rec709;
+          }
+        } else {
+          yuv_matrix = yuv_to_rgb_rec601;
+        }
         break;
       case media::VideoFrame::YV16:  // 422
         uv_width_divisor_ = 2;
         uv_height_divisor_ = 1;
+        yuv_matrix = yuv_to_rgb_rec601;
+        yuv_adjust = yuv_adjust_constrained;
         break;
       case media::VideoFrame::YV24:  // 444
         uv_width_divisor_ = 1;
         uv_height_divisor_ = 1;
+        yuv_matrix = yuv_to_rgb_rec601;
+        yuv_adjust = yuv_adjust_constrained;
         break;
 
       default:
@@ -861,7 +864,6 @@ bool VideoDecoderShim::Initialize(
       codec,
       profile,
       media::VideoFrame::YV12,
-      media::VideoFrame::COLOR_SPACE_UNSPECIFIED,
       gfx::Size(32, 24),  // Small sizes that won't fail.
       gfx::Rect(32, 24),
       gfx::Size(32, 24),

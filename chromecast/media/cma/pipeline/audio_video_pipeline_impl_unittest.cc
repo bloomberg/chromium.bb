@@ -98,7 +98,6 @@ void AudioVideoPipelineImplTest::Initialize(
       ::media::kCodecH264,
       ::media::H264PROFILE_MAIN,
       ::media::VideoFrame::I420,
-      ::media::VideoFrame::COLOR_SPACE_UNSPECIFIED,
       gfx::Size(640, 480),
       gfx::Rect(0, 0, 640, 480),
       gfx::Size(640, 480),

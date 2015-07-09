@@ -462,6 +462,7 @@ void VpxVideoDecoder::CopyVpxImageTo(const vpx_image* vpx_image,
   VideoFrame::Format codec_format = VideoFrame::YV12;
   int uv_rows = (vpx_image->d_h + 1) / 2;
 
+  VideoFrame::ColorSpace color_space = VideoFrame::COLOR_SPACE_UNSPECIFIED;
   if (vpx_image->fmt == VPX_IMG_FMT_I444) {
     CHECK(!vpx_codec_alpha_);
     codec_format = VideoFrame::YV24;
@@ -469,14 +470,8 @@ void VpxVideoDecoder::CopyVpxImageTo(const vpx_image* vpx_image,
   } else if (vpx_codec_alpha_) {
     codec_format = VideoFrame::YV12A;
   }
-
-  // Default to the color space from the config, but if the bistream specifies
-  // one, prefer that instead.
-  VideoFrame::ColorSpace color_space = config_.color_space();
   if (vpx_image->cs == VPX_CS_BT_709)
     color_space = VideoFrame::COLOR_SPACE_HD_REC709;
-  else if (vpx_image->cs == VPX_CS_BT_601)
-    color_space = VideoFrame::COLOR_SPACE_SD_REC601;
 
   // The mixed |w|/|d_h| in |coded_size| is intentional. Setting the correct
   // coded width is necessary to allow coalesced memory access, which may avoid

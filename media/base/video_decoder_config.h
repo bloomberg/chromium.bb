@@ -78,7 +78,6 @@ class MEDIA_EXPORT VideoDecoderConfig {
   VideoDecoderConfig(VideoCodec codec,
                      VideoCodecProfile profile,
                      VideoFrame::Format format,
-                     VideoFrame::ColorSpace color_space,
                      const gfx::Size& coded_size,
                      const gfx::Rect& visible_rect,
                      const gfx::Size& natural_size,
@@ -113,44 +112,38 @@ class MEDIA_EXPORT VideoDecoderConfig {
 
   std::string GetHumanReadableCodecName() const;
 
-  VideoCodec codec() const { return codec_; }
-  VideoCodecProfile profile() const { return profile_; }
+  VideoCodec codec() const;
+  VideoCodecProfile profile() const;
 
   // Video format used to determine YUV buffer sizes.
-  VideoFrame::Format format() const { return format_; }
-
-  // The default color space of the decoded frames. Decoders should output
-  // frames tagged with this color space unless they find a different value in
-  // the bitstream.
-  VideoFrame::ColorSpace color_space() const { return color_space_; }
+  VideoFrame::Format format() const;
 
   // Width and height of video frame immediately post-decode. Not all pixels
   // in this region are valid.
-  gfx::Size coded_size() const { return coded_size_; }
+  gfx::Size coded_size() const;
 
   // Region of |coded_size_| that is visible.
-  gfx::Rect visible_rect() const { return visible_rect_; }
+  gfx::Rect visible_rect() const;
 
   // Final visible width and height of a video frame with aspect ratio taken
   // into account.
-  gfx::Size natural_size() const { return natural_size_; }
+  gfx::Size natural_size() const;
 
   // Optional byte data required to initialize video decoders, such as H.264
   // AAVC data.
   const uint8* extra_data() const;
-  size_t extra_data_size() const { return extra_data_.size(); }
+  size_t extra_data_size() const;
 
   // Whether the video stream is potentially encrypted.
   // Note that in a potentially encrypted video stream, individual buffers
   // can be encrypted or not encrypted.
-  bool is_encrypted() const { return is_encrypted_; }
+  bool is_encrypted() const;
 
  private:
   VideoCodec codec_;
   VideoCodecProfile profile_;
 
   VideoFrame::Format format_;
-  VideoFrame::ColorSpace color_space_;
 
   gfx::Size coded_size_;
   gfx::Rect visible_rect_;

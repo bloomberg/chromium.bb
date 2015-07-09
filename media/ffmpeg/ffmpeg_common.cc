@@ -431,20 +431,16 @@ void AVStreamToVideoDecoderConfig(
     format = VideoFrame::YV12A;
   }
 
-  // Prefer the color space found by libavcodec if available.
-  VideoFrame::ColorSpace color_space =
-      AVColorSpaceToVideoFrameColorSpace(stream->codec->colorspace);
-  if (color_space == VideoFrame::COLOR_SPACE_UNSPECIFIED) {
-    // Otherwise, assume that SD video is usually Rec.601, and HD is usually
-    // Rec.709.
-    color_space = (natural_size.height() < 720)
-                      ? VideoFrame::COLOR_SPACE_SD_REC601
-                      : VideoFrame::COLOR_SPACE_HD_REC709;
-  }
-
-  config->Initialize(codec, profile, format, color_space, coded_size,
-                     visible_rect, natural_size, stream->codec->extradata,
-                     stream->codec->extradata_size, is_encrypted, record_stats);
+  config->Initialize(codec,
+                     profile,
+                     format,
+                     (stream->codec->colorspace == AVCOL_SPC_BT709)
+                         ? VideoFrame::COLOR_SPACE_HD_REC709
+                         : VideoFrame::COLOR_SPACE_UNSPECIFIED,
+                     coded_size, visible_rect, natural_size,
+                     stream->codec->extradata, stream->codec->extradata_size,
+                     is_encrypted,
+                     record_stats);
 }
 
 void VideoDecoderConfigToAVCodecContext(
@@ -566,22 +562,6 @@ PixelFormat VideoFormatToPixelFormat(VideoFrame::Format video_format) {
       DVLOG(1) << "Unsupported VideoFrame::Format: " << video_format;
   }
   return PIX_FMT_NONE;
-}
-
-VideoFrame::ColorSpace AVColorSpaceToVideoFrameColorSpace(
-    AVColorSpace color_space) {
-  switch (color_space) {
-    case AVCOL_SPC_BT709:
-      return VideoFrame::COLOR_SPACE_HD_REC709;
-    case AVCOL_SPC_SMPTE170M:
-    case AVCOL_SPC_BT470BG:
-      return VideoFrame::COLOR_SPACE_SD_REC601;
-    case AVCOL_SPC_UNSPECIFIED:
-      break;
-    default:
-      DVLOG(1) << "Unknown AVColorSpace: " << color_space;
-  }
-  return VideoFrame::COLOR_SPACE_UNSPECIFIED;
 }
 
 bool FFmpegUTCDateToTime(const char* date_utc, base::Time* out) {

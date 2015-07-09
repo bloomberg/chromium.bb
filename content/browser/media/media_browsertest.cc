@@ -78,12 +78,10 @@ class MediaTest : public testing::WithParamInterface<bool>,
 
   // Run specified color format test with the expected result.
   void RunColorFormatTest(const std::string& media_file,
-                          const std::string& expected_title) {
+                          const std::string& expected) {
     base::FilePath test_file_path =
         media::GetTestDataFilePath("blackwhite.html");
-    std::string final_title = RunTest(
-        GetFileUrlWithQuery(test_file_path, media_file), expected_title);
-    EXPECT_EQ(expected_title, final_title);
+    RunTest(GetFileUrlWithQuery(test_file_path, media_file), expected);
   }
 
   void PlayMedia(const std::string& tag,
@@ -250,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(MediaTest, Yuv420pVp8) {
 }
 
 IN_PROC_BROWSER_TEST_F(MediaTest, Yuv444pVp9) {
-  RunColorFormatTest("yuv444p.webm", kEnded);
+  RunColorFormatTest("yuv444p.webm", "ENDED");
 }
 
 #if defined(USE_PROPRIETARY_CODECS)
@@ -263,9 +261,7 @@ IN_PROC_BROWSER_TEST_F(MediaTest, Yuv420pRec709H264) {
 }
 
 IN_PROC_BROWSER_TEST_F(MediaTest, Yuvj420pH264) {
-  // TODO(watk): Re-enable this when JPEG color range support is fixed.
-  // crbug.com/507455
-  // RunColorFormatTest("yuvj420p.mp4", kEnded);
+  RunColorFormatTest("yuvj420p.mp4", kEnded);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaTest, Yuv422pH264) {

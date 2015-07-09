@@ -282,7 +282,6 @@ bool EsParserH264::UpdateVideoDecoderConfig(const H264SPS* sps) {
       kCodecH264,
       VIDEO_CODEC_PROFILE_UNKNOWN,
       VideoFrame::YV12,
-      VideoFrame::COLOR_SPACE_HD_REC709,
       coded_size,
       visible_rect,
       natural_size,
