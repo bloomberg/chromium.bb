@@ -57,7 +57,7 @@
             android:layout_marginEnd="16dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:contentDescription="@null"
+            android:contentDescription="@string/close"
             />
     </RelativeLayout>
 </org.chromium.chrome.browser.dom_distiller.ReaderModeButtonView>
