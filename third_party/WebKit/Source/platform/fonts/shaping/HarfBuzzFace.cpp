@@ -193,6 +193,11 @@ static hb_bool_t harfBuzzGetGlyph(hb_font_t* hbFont, void* fontData, hb_codepoin
     HarfBuzzFontData* hbFontData = reinterpret_cast<HarfBuzzFontData*>(fontData);
 
     if (variationSelector) {
+#if OS(LINUX)
+        // TODO(kojii): Linux non-official builds cannot use new HB APIs
+        // until crbug.com/462689 resolved or pangoft2 updates its HB.
+        return false;
+#else
         // Skia does not support variation selectors, but hb does.
         // We're not fully ready to switch to hb-ot-font yet,
         // but are good enough to get glyph IDs for OpenType fonts.
@@ -203,6 +208,7 @@ static hb_bool_t harfBuzzGetGlyph(hb_font_t* hbFont, void* fontData, hb_codepoin
         return hb_font_get_glyph(hbFontData->m_hbOpenTypeFont, unicode, variationSelector, glyph);
         // When not found, glyph_func should return false rather than fallback to the base.
         // http://lists.freedesktop.org/archives/harfbuzz/2015-May/004888.html
+#endif
     }
 
     WTF::HashMap<uint32_t, uint16_t>::AddResult result = hbFontData->m_glyphCacheForFaceCacheEntry->add(unicode, 0);

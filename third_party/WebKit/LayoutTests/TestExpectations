@@ -1507,6 +1507,9 @@ crbug.com/479202 fast/forms/select/select-typeahead-with-spacekey.html [ Pass Fa
 crbug.com/485332 [ XP ] virtual/gpu/fast/canvas/canvas-bg-zoom.html [ Failure ]
 crbug.com/485332 [ XP ] virtual/gpu/fast/canvas/canvas-as-image.html [ Failure ]
 
+# Temporary, until we stop use_system_harfbuzz on Linux including non-official builds
+crbug.com/462689 [ Linux ] fast/text/unicode-variation-selector.html [ ImageOnlyFailure ]
+
 # Temporary, until WebAXObjectProxy support lands.
 crbug.com/421771 accessibility/inline-text-box-next-on-line.html [ Skip ]
 
