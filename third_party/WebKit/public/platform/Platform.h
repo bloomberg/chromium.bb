@@ -53,6 +53,7 @@
 #include "WebString.h"
 #include "WebURLError.h"
 #include "WebVector.h"
+#include "WebWaitableEvent.h"
 
 #include <vector>
 
@@ -113,7 +114,6 @@ class WebThread;
 class WebURL;
 class WebURLLoader;
 class WebUnitTestSupport;
-class WebWaitableEvent;
 struct WebLocalizedString;
 struct WebSize;
 
@@ -372,7 +372,10 @@ public:
     // WaitableEvent -------------------------------------------------------
 
     // Creates an embedder-defined waitable event object.
+    // TODO(toyoshim): remove no arguments version once embedder supports
+    // two arguments version.
     virtual WebWaitableEvent* createWaitableEvent() { return nullptr; }
+    virtual WebWaitableEvent* createWaitableEvent(WebWaitableEvent::ResetPolicy, WebWaitableEvent::InitialState) { return nullptr; }
 
     // Waits on multiple events and returns the event object that has been
     // signaled. This may return nullptr if it fails to wait events.

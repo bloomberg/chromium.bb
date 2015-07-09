@@ -39,15 +39,27 @@ namespace blink {
 // wait until another thread to finish some work.
 class WebWaitableEvent {
 public:
-    virtual ~WebWaitableEvent() { }
+    // If ResetPolicy::Manual is specified on creation, to set the event state
+    // to non-signaled, a consumer must call reset().  Otherwise, the system
+    // automatically resets the event state to non-signaled after a single
+    // waiting thread has been released.
+    enum class ResetPolicy { Auto, Manual };
+
+    // Specify the initial state on creation.
+    enum class InitialState { NonSignaled, Signaled };
+
+    virtual ~WebWaitableEvent() {}
+
+    // Puts the event in the un-signaled state.
+    virtual void reset() {}
 
     // Waits indefinitely for the event to be signaled.
-    virtual void wait() = 0;
+    virtual void wait() {}
 
     // Puts the event in the signaled state. Causing any thread blocked on Wait
     // to be woken up. The event state is reset to non-signaled after
     // a waiting thread has been released.
-    virtual void signal() = 0;
+    virtual void signal() {}
 };
 
 } // namespace blink
