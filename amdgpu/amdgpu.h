@@ -57,7 +57,7 @@ struct drm_amdgpu_info_hw_ip;
 #define AMDGPU_TIMEOUT_INFINITE			0xffffffffffffffffull
 
 /**
- * Used in amdgpu_cs_query_fence::flags, meaning that the given timeout
+ * Used in amdgpu_cs_query_fence_status(), meaning that the given timeout
  * is absolute.
  */
 #define AMDGPU_QUERY_FENCE_TIMEOUT_IS_ABSOLUTE     (1 << 0)
@@ -266,13 +266,14 @@ struct amdgpu_gds_resource_info {
 };
 
 /**
- * Structure describing CS dependency
+ * Structure describing CS fence
  *
- * \sa amdgpu_cs_request, amdgpu_cs_submit()
+ * \sa amdgpu_cs_query_fence_status(), amdgpu_cs_request, amdgpu_cs_submit()
  *
 */
-struct amdgpu_cs_dep_info {
-	/** Context to which the fence belongs */
+struct amdgpu_cs_fence {
+
+	/** In which context IB was sent to execution */
 	amdgpu_context_handle context;
 
 	/** To which HW IP type the fence belongs */
@@ -347,7 +348,7 @@ struct amdgpu_cs_request {
 	 * Array of dependencies which need to be met before
 	 * execution can start.
 	 */
-	struct amdgpu_cs_dep_info *dependencies;
+	struct amdgpu_cs_fence *dependencies;
 
 	/** Number of IBs to submit in the field ibs. */
 	uint32_t number_of_ibs;
@@ -356,30 +357,6 @@ struct amdgpu_cs_request {
 	 * IBs to submit. Those IBs will be submit together as single entity
 	 */
 	struct amdgpu_cs_ib_info *ibs;
-};
-
-/**
- * Structure describing request to check submission state using fence
- *
- * \sa amdgpu_cs_query_fence_status()
- *
-*/
-struct amdgpu_cs_query_fence {
-
-	/** In which context IB was sent to execution */
-	amdgpu_context_handle context;
-
-	/** To which HW IP type the fence belongs */
-	unsigned ip_type;
-
-	/** IP instance index if there are several IPs of the same type. */
-	unsigned ip_instance;
-
-	/** Ring index of the HW IP */
-	uint32_t ring;
-
-	/** Specify fence for which we need to check submission status.*/
-	uint64_t fence;
 };
 
 /**
@@ -919,7 +896,7 @@ int amdgpu_cs_submit(amdgpu_context_handle context,
  *
  * \sa amdgpu_cs_submit()
 */
-int amdgpu_cs_query_fence_status(struct amdgpu_cs_query_fence *fence,
+int amdgpu_cs_query_fence_status(struct amdgpu_cs_fence *fence,
 				 uint64_t timeout_ns,
 				 uint64_t flags,
 				 uint32_t *expired);

@@ -259,7 +259,7 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 		}
 
 		for (i = 0; i < ibs_request->number_of_dependencies; ++i) {
-			struct amdgpu_cs_dep_info *info = &ibs_request->dependencies[i];
+			struct amdgpu_cs_fence *info = &ibs_request->dependencies[i];
 			struct drm_amdgpu_cs_chunk_dep *dep = &dependencies[i];
 			dep->ip_type = info->ip_type;
 			dep->ip_instance = info->ip_instance;
@@ -379,7 +379,7 @@ static int amdgpu_ioctl_wait_cs(amdgpu_context_handle context,
 	return 0;
 }
 
-int amdgpu_cs_query_fence_status(struct amdgpu_cs_query_fence *fence,
+int amdgpu_cs_query_fence_status(struct amdgpu_cs_fence *fence,
 				 uint64_t timeout_ns,
 				 uint64_t flags,
 				 uint32_t *expired)

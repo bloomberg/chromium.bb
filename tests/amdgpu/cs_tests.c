@@ -113,7 +113,7 @@ static int submit(unsigned ndw, unsigned ip)
 {
 	struct amdgpu_cs_request ibs_request = {0};
 	struct amdgpu_cs_ib_info ib_info = {0};
-	struct amdgpu_cs_query_fence fence_status = {0};
+	struct amdgpu_cs_fence fence_status = {0};
 	uint32_t expired;
 	int r;
 

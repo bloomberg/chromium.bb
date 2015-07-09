@@ -161,7 +161,7 @@ static void amdgpu_command_submission_gfx_separate_ibs(void)
 	uint64_t ib_result_mc_address, ib_result_ce_mc_address;
 	struct amdgpu_cs_request ibs_request = {0};
 	struct amdgpu_cs_ib_info ib_info[2];
-	struct amdgpu_cs_query_fence fence_status = {0};
+	struct amdgpu_cs_fence fence_status = {0};
 	uint32_t *ptr;
 	uint32_t expired;
 	amdgpu_bo_list_handle bo_list;
@@ -243,7 +243,7 @@ static void amdgpu_command_submission_gfx_shared_ib(void)
 	uint64_t ib_result_mc_address;
 	struct amdgpu_cs_request ibs_request = {0};
 	struct amdgpu_cs_ib_info ib_info[2];
-	struct amdgpu_cs_query_fence fence_status = {0};
+	struct amdgpu_cs_fence fence_status = {0};
 	uint32_t *ptr;
 	uint32_t expired;
 	amdgpu_bo_list_handle bo_list;
@@ -323,7 +323,7 @@ static void amdgpu_command_submission_compute(void)
 	uint64_t ib_result_mc_address;
 	struct amdgpu_cs_request ibs_request;
 	struct amdgpu_cs_ib_info ib_info;
-	struct amdgpu_cs_query_fence fence_status;
+	struct amdgpu_cs_fence fence_status;
 	uint32_t *ptr;
 	uint32_t expired;
 	int i, r, instance;
@@ -358,7 +358,7 @@ static void amdgpu_command_submission_compute(void)
 		ibs_request.ibs = &ib_info;
 		ibs_request.resources = bo_list;
 
-		memset(&fence_status, 0, sizeof(struct amdgpu_cs_query_fence));
+		memset(&fence_status, 0, sizeof(struct amdgpu_cs_fence));
 		r = amdgpu_cs_submit(context_handle, 0,
 				     &ibs_request, 1, &fence_status.fence);
 		CU_ASSERT_EQUAL(r, 0);
@@ -400,7 +400,7 @@ static void amdgpu_sdma_test_exec_cs(amdgpu_context_handle context_handle,
 	amdgpu_bo_handle ib_result_handle;
 	void *ib_result_cpu;
 	uint64_t ib_result_mc_address;
-	struct amdgpu_cs_query_fence fence_status = {0};
+	struct amdgpu_cs_fence fence_status = {0};
 	amdgpu_bo_handle *all_res = alloca(sizeof(resources[0]) * (res_cnt + 1));
 
 	/* prepare CS */
