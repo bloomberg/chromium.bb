@@ -180,20 +180,6 @@ WebElementCollection WebDocument::all()
     return WebElementCollection(unwrap<Document>()->all());
 }
 
-void WebDocument::images(WebVector<WebElement>& results)
-{
-    RefPtrWillBeRawPtr<HTMLCollection> images = unwrap<Document>()->images();
-    size_t sourceLength = images->length();
-    Vector<WebElement> temp;
-    temp.reserveCapacity(sourceLength);
-    for (size_t i = 0; i < sourceLength; ++i) {
-        Element* element = images->item(i);
-        if (element && element->isHTMLElement())
-            temp.append(WebElement(element));
-    }
-    results.assign(temp);
-}
-
 void WebDocument::forms(WebVector<WebFormElement>& results) const
 {
     RefPtrWillBeRawPtr<HTMLCollection> forms = const_cast<Document*>(constUnwrap<Document>())->forms();
