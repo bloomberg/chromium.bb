@@ -130,7 +130,8 @@ using blink::URLTestHelpers::toKURL;
 using blink::FrameTestHelpers::UseMockScrollbarSettings;
 using blink::testing::runPendingTasks;
 using testing::ElementsAre;
-using ::testing::Mock;
+using testing::Mock;
+using testing::_;
 
 namespace blink {
 
@@ -7752,11 +7753,11 @@ TEST_F(WebFrameOverscrollTest, AccumulatedRootOverscrollAndUnsedDeltaValuesOnOve
     Mock::VerifyAndClearExpectations(&client);
 
     // Overscroll is not reported.
-    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
     ScrollUpdate(&webViewHelper, 0, 1);
     Mock::VerifyAndClearExpectations(&client);
 
-    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
     ScrollUpdate(&webViewHelper, 1, 0);
     Mock::VerifyAndClearExpectations(&client);
 
@@ -7766,7 +7767,7 @@ TEST_F(WebFrameOverscrollTest, AccumulatedRootOverscrollAndUnsedDeltaValuesOnOve
     Mock::VerifyAndClearExpectations(&client);
 
     // Overscroll is not reported.
-    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
     ScrollEnd(&webViewHelper);
     Mock::VerifyAndClearExpectations(&client);
 }
@@ -7781,7 +7782,7 @@ TEST_F(WebFrameOverscrollTest, AccumulatedOverscrollAndUnusedDeltaValuesOnDiffer
     ScrollBegin(&webViewHelper);
 
     // Scroll the Div to the end.
-    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
     ScrollUpdate(&webViewHelper, 0, -316);
     Mock::VerifyAndClearExpectations(&client);
 
@@ -7796,7 +7797,7 @@ TEST_F(WebFrameOverscrollTest, AccumulatedOverscrollAndUnusedDeltaValuesOnDiffer
     Mock::VerifyAndClearExpectations(&client);
 
     // Scrolling up, Overscroll is not reported.
-    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(), WebFloatSize())).Times(0);
+    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
     ScrollUpdate(&webViewHelper, 0, -50);
     Mock::VerifyAndClearExpectations(&client);
 
@@ -7816,7 +7817,7 @@ TEST_F(WebFrameOverscrollTest, RootLayerOverscrolledOnInnerDivOverScroll)
     ScrollBegin(&webViewHelper);
 
     // Scroll the Div to the end.
-    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
     ScrollUpdate(&webViewHelper, 0, -316);
     Mock::VerifyAndClearExpectations(&client);
 
@@ -7836,7 +7837,7 @@ TEST_F(WebFrameOverscrollTest, RootLayerOverscrolledOnInnerIFrameOverScroll)
 
     ScrollBegin(&webViewHelper);
     // Scroll the IFrame to the end.
-    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
     ScrollUpdate(&webViewHelper, 0, -320);
     Mock::VerifyAndClearExpectations(&client);
 
@@ -7855,39 +7856,39 @@ TEST_F(WebFrameOverscrollTest, NoOverscrollOnNonScrollableaxes)
 
     // Overscroll is not reported in all the directions.
     ScrollBegin(&webViewHelper);
-    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
     ScrollUpdate(&webViewHelper, 0, -1);
     Mock::VerifyAndClearExpectations(&client);
 
-    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
     ScrollUpdate(&webViewHelper, 0, 1);
     Mock::VerifyAndClearExpectations(&client);
 
-    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
     ScrollUpdate(&webViewHelper, 1, 0);
     Mock::VerifyAndClearExpectations(&client);
 
-    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
     ScrollUpdate(&webViewHelper, -1, 0);
     Mock::VerifyAndClearExpectations(&client);
 
-    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
     ScrollUpdate(&webViewHelper, 1, 1);
     Mock::VerifyAndClearExpectations(&client);
 
-    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
     ScrollUpdate(&webViewHelper, -1, 1);
     Mock::VerifyAndClearExpectations(&client);
 
-    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
     ScrollUpdate(&webViewHelper, 1, -1);
     Mock::VerifyAndClearExpectations(&client);
 
-    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
     ScrollUpdate(&webViewHelper, -1, -1);
     Mock::VerifyAndClearExpectations(&client);
 
-    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
     ScrollEnd(&webViewHelper);
     Mock::VerifyAndClearExpectations(&client);
 }
@@ -7919,7 +7920,7 @@ TEST_F(WebFrameOverscrollTest, ScaledPageRootLayerOverscrolled)
     Mock::VerifyAndClearExpectations(&client);
 
     // Overscroll is not reported.
-    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(33, 33), WebFloatSize())).Times(0);
+    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
     ScrollEnd(&webViewHelper);
     Mock::VerifyAndClearExpectations(&client);
 }
@@ -7933,7 +7934,7 @@ TEST_F(WebFrameOverscrollTest, ReportingLatestOverscrollForElasticOverscroll)
 
     // On disabling ReportWheelOverscroll, overscroll is not reported on MouseWheel.
     webViewHelper.webView()->settings()->setReportWheelOverscroll(false);
-    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(), WebFloatSize())).Times(0);
+    EXPECT_CALL(client, didOverscroll(_, _, _, _)).Times(0);
     ScrollByWheel(&webViewHelper, 10, 10, 1000, 1000);
     Mock::VerifyAndClearExpectations(&client);
 
