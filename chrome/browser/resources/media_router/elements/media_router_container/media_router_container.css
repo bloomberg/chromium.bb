@@ -2,6 +2,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+.active-sink {
+  color: rgb(33, 150, 243);
+}
+
 .cast-mode {
   -webkit-padding-start: 5px;
   cursor: pointer;
@@ -43,10 +47,17 @@
   margin: 0;
 }
 
+.route {
+  color: rgb(150, 150, 150);
+}
+
 .sink {
   -webkit-user-select: none;
   cursor: pointer;
   font-size: 1.0em;
+  line-height: 0;
+  min-height: 0;
+  padding: 14px 0;
 }
 
 .sink:hover {
@@ -54,16 +65,29 @@
   border: 0;
 }
 
+.sink-content {
+  display: flex;
+  flex-direction: row;
+}
+
 .sink-icon {
-  -webkit-padding-end: 10px;
+  -webkit-padding-end: 16px;
+  -webkit-padding-start: 20px;
+  height: 16px;
+  width: 16px;
 }
 
 #sink-list {
   margin: 0;
   max-height: 275px;
   overflow-y: scroll;
+  padding: 0;
 }
 
-.route {
-  color: rgb(119, 119, 119);
+.sink-text {
+  line-height: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 250px;
 }

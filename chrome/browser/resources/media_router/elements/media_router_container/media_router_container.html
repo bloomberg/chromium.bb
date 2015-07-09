@@ -47,13 +47,21 @@
         hidden$="[[computeSinkListHidden_(currentView_, issue)]]">
       <template is="dom-repeat" id="sinkList" items="[[sinkList]]">
         <paper-item class="sink" on-click="onSinkClick_">
-          <!-- TODO(apacible): Show device icon based on device type. -->
-          <iron-icon class="sink-icon" icon="hardware:tv"></iron-icon>
-          <div>
-            <span>[[item.name]]</span>
-            <div class="route"
-                hidden$="[[computeRouteInSinkListHidden_(item.id)]]">
-              <span>[[computeRouteInSinkListValue_(item.id)]]</span>
+          <div class="sink-content">
+            <div>
+              <!-- TODO(apacible): Show device icon based on device type. -->
+              <iron-icon icon="hardware:tv"
+                  class$="[[computeSinkIconClass_(item.id, sinkToRouteMap_)]]">
+              </iron-icon>
+            </div>
+            <div>
+              <div class="sink-text">
+                <span>[[item.name]]</span>
+              </div>
+              <div class="sink-text route"
+                  hidden$="[[computeRouteInSinkListHidden_(item.id)]]">
+                <span>[[computeRouteInSinkListValue_(item.id)]]</span>
+              </div>
             </div>
           </div>
         </paper-item>
