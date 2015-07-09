@@ -4,11 +4,7 @@
 
 package org.chromium.chrome.test;
 
-import android.app.Activity;
-import android.app.Instrumentation;
-import android.content.Intent;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 
 import org.chromium.base.test.util.CommandLineFlags;
@@ -87,19 +83,6 @@ public abstract class ChromeTabbedActivityTestBase extends
                 fail("PAGE_LOAD_FINISHED was not received for tabId=" + tabIds[i]);
             }
         }
-    }
-
-    @Override
-    protected void startActivityCompletely(Intent intent) {
-        Instrumentation.ActivityMonitor monitor = getInstrumentation().addMonitor(
-                ChromeTabbedActivity.class.getName(), null, false);
-        Activity activity = getInstrumentation().startActivitySync(intent);
-        assertNotNull("Main activity did not start", activity);
-        ChromeTabbedActivity tabbedActivity = (ChromeTabbedActivity)
-                monitor.waitForActivityWithTimeout(ACTIVITY_START_TIMEOUT_MS);
-        assertNotNull("ChromeTabbedActivity did not start", tabbedActivity);
-        setActivity(tabbedActivity);
-        Log.d(TAG, "startActivityCompletely <<");
     }
 
     /**
