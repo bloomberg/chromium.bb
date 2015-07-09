@@ -28,6 +28,7 @@ class MockDnsSdRegistry : public DnsSdRegistry {
   MOCK_METHOD1(RemoveObserver, void(DnsSdObserver* observer));
   MOCK_METHOD1(RegisterDnsSdListener, void(const std::string& service_type));
   MOCK_METHOD1(UnregisterDnsSdListener, void(const std::string& service_type));
+  MOCK_METHOD0(ForceDiscovery, void(void));
 
   void DispatchMDnsEvent(const std::string& service_type,
                          const DnsSdServiceList& services) {
@@ -98,6 +99,40 @@ IN_PROC_BROWSER_TEST_F(MDnsAPITest, MAYBE_RegisterListener) {
 
   dns_sd_registry_->DispatchMDnsEvent(service_type, services);
   dns_sd_registry_->DispatchMDnsEvent("_uninteresting._tcp.local", services);
+  dns_sd_registry_->DispatchMDnsEvent(service_type, services);
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+// TODO(justinlin): Win Dbg has a workaround that makes RunExtensionSubtest
+// always return true without actually running the test. Remove when fixed.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_ForceDiscovery DISABLED_ForceDiscovery
+#else
+#define MAYBE_ForceDiscovery ForceDiscovery
+#endif
+// Test loading extension, registering an MDNS listener and dispatching events.
+IN_PROC_BROWSER_TEST_F(MDnsAPITest, MAYBE_ForceDiscovery) {
+  const std::string& service_type = "_googlecast._tcp.local";
+  SetUpTestDnsSdRegistry();
+
+  EXPECT_CALL(*dns_sd_registry_, RegisterDnsSdListener(service_type)).Times(1);
+  EXPECT_CALL(*dns_sd_registry_, UnregisterDnsSdListener(service_type))
+      .Times(1);
+  EXPECT_CALL(*dns_sd_registry_, ForceDiscovery()).Times(1);
+  EXPECT_CALL(*dns_sd_registry_,
+              RemoveObserver(A<extensions::DnsSdRegistry::DnsSdObserver*>()))
+      .Times(1);
+
+  EXPECT_TRUE(RunExtensionSubtest("mdns/api", "force_discovery.html"))
+      << message_;
+
+  extensions::ResultCatcher catcher;
+  DnsSdRegistry::DnsSdServiceList services;
+
+  extensions::DnsSdService service;
+  service.service_name = service_type;
+  services.push_back(service);
+
   dns_sd_registry_->DispatchMDnsEvent(service_type, services);
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }

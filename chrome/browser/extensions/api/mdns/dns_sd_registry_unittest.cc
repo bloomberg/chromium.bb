@@ -15,7 +15,7 @@ class MockDnsSdDeviceLister : public DnsSdDeviceLister {
   MockDnsSdDeviceLister() : DnsSdDeviceLister(NULL, NULL, "") {}
   ~MockDnsSdDeviceLister() override {}
 
-  void Discover(bool force_update) override {}
+  MOCK_METHOD1(Discover, void(bool force_update));
 };
 
 class TestDnsSdRegistry : public DnsSdRegistry {
@@ -32,6 +32,12 @@ class TestDnsSdRegistry : public DnsSdRegistry {
       return 0;
 
     return service_data_map_[service_type].get()->GetListenerCount();
+  }
+
+  MockDnsSdDeviceLister* GetLister(const std::string& service_type) {
+    return listers_.find(service_type) != listers_.end()
+               ? listers_[service_type]
+               : nullptr;
   }
 
   DnsSdDelegate* GetDelegate() {
@@ -92,6 +98,27 @@ TEST_F(DnsSdRegistryTest, RegisterUnregisterListeners) {
 
   registry_->UnregisterDnsSdListener(service_type);
   EXPECT_EQ(0, registry_->GetServiceListenerCount(service_type));
+}
+
+// Tests that verify calls to ForceDiscovery() are propagated to registered
+// listeners.
+TEST_F(DnsSdRegistryTest, ForceDiscovery) {
+  const std::string service_type1 = "_testing1._tcp.local";
+  const std::string service_type2 = "_testing2._tcp.local";
+
+  EXPECT_CALL(observer_,
+              OnDnsSdEvent(service_type1, DnsSdRegistry::DnsSdServiceList()));
+  EXPECT_CALL(observer_,
+              OnDnsSdEvent(service_type2, DnsSdRegistry::DnsSdServiceList()));
+
+  registry_->RegisterDnsSdListener(service_type1);
+  registry_->RegisterDnsSdListener(service_type2);
+  EXPECT_EQ(1, registry_->GetServiceListenerCount(service_type1));
+  EXPECT_EQ(1, registry_->GetServiceListenerCount(service_type2));
+
+  EXPECT_CALL(*registry_->GetLister(service_type1), Discover(false));
+  EXPECT_CALL(*registry_->GetLister(service_type2), Discover(false));
+  registry_->ForceDiscovery();
 }
 
 // Tests registering a listener and receiving an added and updated event.

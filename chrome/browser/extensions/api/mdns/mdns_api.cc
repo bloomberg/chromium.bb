@@ -9,10 +9,10 @@
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/common/extensions/api/mdns.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 
@@ -66,6 +66,12 @@ void MDnsAPI::SetDnsSdRegistryForTesting(
   dns_sd_registry_ = dns_sd_registry.Pass();
   if (dns_sd_registry_.get())
     dns_sd_registry_.get()->AddObserver(this);
+}
+
+void MDnsAPI::ForceDiscovery() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DnsSdRegistry* registry = dns_sd_registry();
+  return registry->ForceDiscovery();
 }
 
 DnsSdRegistry* MDnsAPI::dns_sd_registry() {
@@ -124,7 +130,7 @@ void MDnsAPI::UpdateMDnsListeners() {
       if (i_cur->second > i_prev->second) {
         DVLOG(2) << "Additional listeners added for mDNS service "
                  << i_cur->first;
-        registry->Refresh(i_cur->first);
+        registry->Publish(i_cur->first);
       }
       ++i_cur;
       ++i_prev;
@@ -248,6 +254,21 @@ void MDnsAPI::WriteToConsole(const std::string& service_type,
     if (rfh)
       rfh->AddMessageToConsole(level, logged_message);
   }
+}
+
+MdnsForceDiscoveryFunction::MdnsForceDiscoveryFunction() {
+}
+
+MdnsForceDiscoveryFunction::~MdnsForceDiscoveryFunction() {
+}
+
+AsyncApiFunction::ResponseAction MdnsForceDiscoveryFunction::Run() {
+  MDnsAPI* api = MDnsAPI::Get(browser_context());
+  if (!api) {
+    return RespondNow(Error("Unknown error."));
+  }
+  api->ForceDiscovery();
+  return RespondNow(NoArguments());
 }
 
 }  // namespace extensions

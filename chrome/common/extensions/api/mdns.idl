@@ -23,6 +23,16 @@ namespace mdns {
     DOMString[] serviceData;
   };
 
+  // Callback invoked after ForceDiscovery() has started.
+  callback VoidCallback = void();
+
+  interface Functions {
+    // Immediately issues a multicast DNS query for all service types.
+    // |callback| is invoked immediately. At a later time, queries will be
+    // sent, and any service events will be fired.
+    static void forceDiscovery(VoidCallback callback);
+  };
+
   interface Properties {
     // The maximum number of service instances that will be included in
     // onServiceList events.  If more instances are available, they may be
@@ -37,6 +47,7 @@ namespace mdns {
     // discovering should be specified as the event filter with the
     // 'serviceType' key. Not specifying an event filter will not start any
     // discovery listeners.
-    [supportsFilters=true, maxListeners=10] static void onServiceList(MDnsService[] services);
+    [supportsFilters=true, maxListeners=10] static void onServiceList(
+        MDnsService[] services);
   };
 };

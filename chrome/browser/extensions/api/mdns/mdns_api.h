@@ -13,6 +13,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/extensions/api/mdns/dns_sd_registry.h"
+#include "chrome/common/extensions/api/mdns.h"
+#include "extensions/browser/api/async_api_function.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function.h"
@@ -43,6 +45,11 @@ class MDnsAPI : public BrowserContextKeyedAPI,
 
   // Used to mock out the DnsSdRegistry for testing.
   void SetDnsSdRegistryForTesting(scoped_ptr<DnsSdRegistry> registry);
+
+  // Immediately issues a multicast DNS query for all service types.
+  // NOTE: Discovery queries are sent to all event handlers associated with
+  // |this| service's BrowserContext.
+  void ForceDiscovery();
 
  protected:
   // Retrieve an instance of the registry. Lazily created when needed.
@@ -108,6 +115,21 @@ class MDnsAPI : public BrowserContextKeyedAPI,
   ServiceTypeCounts prev_service_counts_;
 
   DISALLOW_COPY_AND_ASSIGN(MDnsAPI);
+};
+
+class MdnsForceDiscoveryFunction : public UIThreadExtensionFunction {
+ public:
+  MdnsForceDiscoveryFunction();
+
+ protected:
+  ~MdnsForceDiscoveryFunction() override;
+
+ private:
+  // UIThreadExtensionFunction override.
+  ResponseAction Run() override;
+
+  DECLARE_EXTENSION_FUNCTION("mdns.forceDiscovery", MDNS_FORCEDISCOVERY);
+  DISALLOW_COPY_AND_ASSIGN(MdnsForceDiscoveryFunction);
 };
 
 }  // namespace extensions

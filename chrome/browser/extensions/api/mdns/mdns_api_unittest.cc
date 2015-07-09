@@ -95,7 +95,8 @@ class MockDnsSdRegistry : public DnsSdRegistry {
   MOCK_METHOD1(RemoveObserver, void(DnsSdObserver* observer));
   MOCK_METHOD1(RegisterDnsSdListener, void(const std::string& service_type));
   MOCK_METHOD1(UnregisterDnsSdListener, void(const std::string& service_type));
-  MOCK_METHOD1(Refresh, void(const std::string& service_type));
+  MOCK_METHOD1(Publish, void(const std::string&));
+  MOCK_METHOD0(ForceDiscovery, void(void));
 
   void DispatchMDnsEvent(const std::string& service_type,
                          const DnsSdServiceList& services) {
@@ -315,7 +316,7 @@ TEST_F(MDnsAPIDiscoveryTest, ServiceListenersAddedAndRemoved) {
 
   // Listener #3 added with kService2. Should trigger a refresh of kService2.
   AddEventListener(kExtId, kService2, &listeners);
-  EXPECT_CALL(*dns_sd_registry(), Refresh(kService2));
+  EXPECT_CALL(*dns_sd_registry(), Publish(kService2));
   mdns_api_->OnListenerAdded(listener_info);
 
   // Listener #3 removed, should be a no-op since there is still a live
