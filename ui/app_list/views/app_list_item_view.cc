@@ -42,7 +42,6 @@ namespace {
 
 const int kTopPadding = 18;
 const int kIconTitleSpacing = 6;
-const int kProgressBarHorizontalPadding = 12;
 
 // Radius of the folder dropping preview circle.
 const int kFolderPreviewRadius = 40;
@@ -292,8 +291,8 @@ void AppListItemView::Layout() {
   SetTitleSubpixelAA();
 
   gfx::Rect progress_bar_bounds(progress_bar_->GetPreferredSize());
-  progress_bar_bounds.set_x(GetContentsBounds().x() +
-                            kProgressBarHorizontalPadding);
+  progress_bar_bounds.set_x(
+      (GetContentsBounds().width() - progress_bar_bounds.width()) / 2);
   progress_bar_bounds.set_y(title_bounds.y());
   progress_bar_->SetBoundsRect(progress_bar_bounds);
 }
