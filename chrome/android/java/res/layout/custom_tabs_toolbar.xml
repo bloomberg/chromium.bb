@@ -7,47 +7,53 @@
     <org.chromium.chrome.browser.widget.TintedImageButton
         android:id="@+id/close_button"
         style="@style/ToolbarButton"
-        android:layout_gravity="center_vertical"
+        android:layout_gravity="start|center_vertical"
         android:contentDescription="@string/close_tab" />
-    <ImageButton android:id="@+id/security_button"
-        style="@style/LocationBarButton"
-        android:layout_width="@dimen/location_bar_icon_width"
-        android:layout_height="match_parent"
-        android:layout_marginStart="48dp"
-        android:scaleType="center"
-        android:layout_gravity="center_vertical"
-        android:alpha="0"
-        android:visibility="gone"
-        android:contentDescription="@string/accessibility_toolbar_btn_site_info" />
     <FrameLayout
-        android:id="@+id/url_info_container"
-        android:background="@null"
-        android:layout_width="wrap_content"
+        android:id="@+id/location_bar_frame_layout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical" >
-        <TextView
-            android:id="@+id/title_bar"
-            android:background="@null"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:layout_gravity="top"
-            android:maxLines="1"
-            android:ellipsize="end"
-            android:paddingEnd="@dimen/toolbar_edge_padding"
-            android:textSize="@dimen/custom_tabs_title_text_size"
-            android:inputType="none"
+        <ImageButton
+            android:id="@+id/security_button"
+            style="@style/LocationBarButton"
+            android:layout_width="@dimen/location_bar_icon_width"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:alpha="0"
+            android:contentDescription="@string/accessibility_toolbar_btn_site_info"
+            android:scaleType="center"
             android:visibility="gone" />
-        <org.chromium.chrome.browser.omnibox.UrlBar
-            android:id="@+id/url_bar"
-            android:background="@null"
-            android:layout_width="wrap_content"
+        <FrameLayout
+            android:id="@+id/title_url_container"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity ="bottom"
-            android:maxLines="1"
-            android:paddingEnd="@dimen/toolbar_edge_padding"
-            android:textSize="@dimen/location_bar_url_text_size"
-            android:inputType="none" />
+            android:layout_gravity="center_vertical"
+            android:background="@null" >
+            <TextView
+                android:id="@+id/title_bar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top"
+                android:layout_marginBottom="16dp"
+                android:background="@null"
+                android:ellipsize="end"
+                android:inputType="none"
+                android:maxLines="1"
+                android:paddingEnd="@dimen/toolbar_edge_padding"
+                android:textSize="@dimen/custom_tabs_title_text_size"
+                android:visibility="gone" />
+            <org.chromium.chrome.browser.omnibox.UrlBar
+                android:id="@+id/url_bar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:background="@null"
+                android:inputType="none"
+                android:maxLines="1"
+                android:paddingEnd="@dimen/toolbar_edge_padding"
+                android:textSize="@dimen/location_bar_url_text_size" />
+        </FrameLayout>
     </FrameLayout>
     <ImageButton
         android:id="@+id/action_button"

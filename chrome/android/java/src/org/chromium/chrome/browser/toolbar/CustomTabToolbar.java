@@ -61,7 +61,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         View.OnLongClickListener {
     private static final int CUSTOM_TAB_TOOLBAR_SLIDE_DURATION_MS = 200;
     private static final int CUSTOM_TAB_TOOLBAR_FADE_DURATION_MS = 150;
-    private View mUrlInfoContainer;
+    private View mLocationBarFrameLayout;
+    private View mTitleUrlContainer;
     private UrlBar mUrlBar;
     private TextView mTitleBar;
     private ImageView mSecurityButton;
@@ -90,7 +91,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         mUrlBar.setEnabled(false);
         mUrlBar.setAllowFocus(false);
         mTitleBar = (TextView) findViewById(R.id.title_bar);
-        mUrlInfoContainer = findViewById(R.id.url_info_container);
+        mLocationBarFrameLayout = findViewById(R.id.location_bar_frame_layout);
+        mTitleUrlContainer = findViewById(R.id.title_url_container);
         mSecurityButton = (ImageButton) findViewById(R.id.security_button);
         mSecurityIconType = ConnectionSecurityLevel.NONE;
         mCustomActionButton = (ImageButton) findViewById(R.id.action_button);
@@ -104,10 +106,10 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         mSecurityButtonShowAnimator = new AnimatorSet();
         int securityIconButtonWidth =
                 getResources().getDimensionPixelSize(R.dimen.location_bar_icon_width);
-        Animator urlInfoContainerTranslateAnimator =
-                ObjectAnimator.ofFloat(mUrlInfoContainer, TRANSLATION_X, securityIconButtonWidth);
-        urlInfoContainerTranslateAnimator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
-        urlInfoContainerTranslateAnimator.setDuration(CUSTOM_TAB_TOOLBAR_SLIDE_DURATION_MS);
+        Animator titleUrlTranslateAnimator =
+                ObjectAnimator.ofFloat(mTitleUrlContainer, TRANSLATION_X, securityIconButtonWidth);
+        titleUrlTranslateAnimator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
+        titleUrlTranslateAnimator.setDuration(CUSTOM_TAB_TOOLBAR_SLIDE_DURATION_MS);
 
         Animator securityButtonAlphaAnimator = ObjectAnimator.ofFloat(mSecurityButton, ALPHA, 1);
         securityButtonAlphaAnimator.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
@@ -116,12 +118,12 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
             @Override
             public void onAnimationStart(Animator animation) {
                 mSecurityButton.setVisibility(VISIBLE);
-                mUrlInfoContainer.setTranslationX(0);
+                mTitleUrlContainer.setTranslationX(0);
             }
         });
 
         mSecurityButtonShowAnimator.playSequentially(
-                urlInfoContainerTranslateAnimator, securityButtonAlphaAnimator);
+                titleUrlTranslateAnimator, securityButtonAlphaAnimator);
     }
 
     @Override
@@ -407,7 +409,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
 
     private void updateLayoutParams() {
         int startMargin = 0;
-        int urlInfoContainerChildIndex = -1;
+        int locationBarLayoutChildIndex = -1;
         for (int i = 0; i < getChildCount(); i++) {
             View childView = getChildAt(i);
             if (childView.getVisibility() != GONE) {
@@ -416,8 +418,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
                     ApiCompatibilityUtils.setMarginStart(childLayoutParams, startMargin);
                     childView.setLayoutParams(childLayoutParams);
                 }
-                if (childView == mUrlInfoContainer) {
-                    urlInfoContainerChildIndex = i;
+                if (childView == mLocationBarFrameLayout) {
+                    locationBarLayoutChildIndex = i;
                     break;
                 }
                 int widthMeasureSpec;
@@ -447,20 +449,26 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
             }
         }
 
-        assert urlInfoContainerChildIndex != -1;
-        int urlInfoContainerMarginEnd = 0;
-        for (int i = urlInfoContainerChildIndex + 1; i < getChildCount(); i++) {
+        assert locationBarLayoutChildIndex != -1;
+        int locationBarLayoutEndMargin = 0;
+        for (int i = locationBarLayoutChildIndex + 1; i < getChildCount(); i++) {
             View childView = getChildAt(i);
             if (childView.getVisibility() != GONE) {
-                urlInfoContainerMarginEnd += childView.getMeasuredWidth();
+                locationBarLayoutEndMargin += childView.getMeasuredWidth();
             }
         }
-        LayoutParams urlLayoutParams = (LayoutParams) mUrlInfoContainer.getLayoutParams();
+        LayoutParams urlLayoutParams = (LayoutParams) mLocationBarFrameLayout.getLayoutParams();
 
-        if (ApiCompatibilityUtils.getMarginEnd(urlLayoutParams) != urlInfoContainerMarginEnd) {
-            ApiCompatibilityUtils.setMarginEnd(urlLayoutParams, urlInfoContainerMarginEnd);
-            mUrlInfoContainer.setLayoutParams(urlLayoutParams);
+        if (ApiCompatibilityUtils.getMarginEnd(urlLayoutParams) != locationBarLayoutEndMargin) {
+            ApiCompatibilityUtils.setMarginEnd(urlLayoutParams, locationBarLayoutEndMargin);
+            mLocationBarFrameLayout.setLayoutParams(urlLayoutParams);
         }
+
+        // Set left margin of mTitleUrlContainer here to make sure the security icon is always
+        // placed left of the urlbar.
+        LayoutParams lp = (LayoutParams) mTitleUrlContainer.getLayoutParams();
+        lp.leftMargin = mSecurityButton.getMeasuredWidth();
+        mTitleUrlContainer.setLayoutParams(lp);
     }
 
     @Override
