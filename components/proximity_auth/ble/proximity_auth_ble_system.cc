@@ -293,8 +293,11 @@ void ProximityAuthBleSystem::OnConnectionStatusChanged(
       new_status == Connection::DISCONNECTED) {
     StopPollingScreenState();
 
+    // Note: it's not necessary to destroy the |connection_| here, as it's
+    // already in a DISCONNECTED state. Moreover, destroying it here can cause
+    // memory corruption, since the instance |connection_| still accesses some
+    // internal data members after |OnConnectionStatusChanged()| finishes.
     connection_->RemoveObserver(this);
-    connection_.reset();
 
     connection_finder_.reset(CreateConnectionFinder());
     connection_finder_->Find(
@@ -336,7 +339,8 @@ bool ProximityAuthBleSystem::HasUnlockKey(const std::string& message,
   std::string public_key = message.substr(message_prefix.size());
   if (out_public_key)
     (*out_public_key) = public_key;
-  return unlock_keys_.find(public_key) != unlock_keys_.end();
+  return unlock_keys_.find(public_key) != unlock_keys_.end() ||
+         device_whitelist_->HasDeviceWithPublicKey(public_key);
 }
 
 }  // namespace proximity_auth
