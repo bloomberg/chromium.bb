@@ -12,6 +12,7 @@
 
 namespace media {
 
+class CdmFactory;
 class MediaLog;
 class RendererFactory;
 
@@ -42,9 +43,11 @@ class MojoMediaApplication
               mojo::InterfaceRequest<mojo::MediaRenderer> request) final;
 
   RendererFactory* GetRendererFactory();
+  CdmFactory* GetCdmFactory();
 
   MojoCdmServiceContext cdm_service_context_;
   scoped_ptr<RendererFactory> renderer_factory_;
+  scoped_ptr<CdmFactory> cdm_factory_;
   scoped_refptr<MediaLog> media_log_;
 };
 

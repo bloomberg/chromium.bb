@@ -48,6 +48,10 @@ const AudioHardwareConfig& MojoMediaClient::GetAudioHardwareConfig() {
   return mojo_media_client_->GetAudioHardwareConfig();
 }
 
+scoped_ptr<CdmFactory> MojoMediaClient::GetCdmFactory() {
+  return mojo_media_client_->GetCdmFactory();
+}
+
 MojoMediaClient::MojoMediaClient()
     : mojo_media_client_(internal::CreatePlatformMojoMediaClient().Pass()) {
 }

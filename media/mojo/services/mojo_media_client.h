@@ -11,6 +11,7 @@
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_hardware_config.h"
 #include "media/base/audio_renderer_sink.h"
+#include "media/base/cdm_factory.h"
 #include "media/base/media_log.h"
 #include "media/base/renderer_factory.h"
 #include "media/base/video_decoder.h"
@@ -50,6 +51,9 @@ class PlatformMojoMediaClient {
   // The platform's audio hardware configuration.  Note, this must remain
   // constant for the lifetime of the PlatformMojoMediaClient.
   virtual const AudioHardwareConfig& GetAudioHardwareConfig() = 0;
+
+  // Returns the CdmFactory to be used by MojoCdmService.
+  virtual scoped_ptr<CdmFactory> GetCdmFactory() = 0;
 };
 
 class MojoMediaClient {
@@ -71,6 +75,7 @@ class MojoMediaClient {
   scoped_ptr<VideoRendererSink> GetVideoRendererSink(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   const AudioHardwareConfig& GetAudioHardwareConfig();
+  scoped_ptr<CdmFactory> GetCdmFactory();
 
  private:
   friend struct base::DefaultLazyInstanceTraits<MojoMediaClient>;

@@ -5,11 +5,11 @@
 #include "media/mojo/services/mojo_cdm_service.h"
 
 #include "base/bind.h"
+#include "media/base/cdm_config.h"
+#include "media/base/cdm_factory.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/key_systems.h"
-#include "media/cdm/aes_decryptor.h"
 #include "media/mojo/services/media_type_converters.h"
-#include "media/mojo/services/mojo_cdm_promise.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/common/url_type_converters.h"
@@ -17,18 +17,22 @@
 
 namespace media {
 
-typedef MojoCdmPromise<> SimpleMojoCdmPromise;
-typedef MojoCdmPromise<std::string> NewSessionMojoCdmPromise;
+using NewSessionMojoCdmPromise = MojoCdmPromise<std::string>;
+using SimpleMojoCdmPromise = MojoCdmPromise<>;
 
 MojoCdmService::MojoCdmService(
     MojoCdmServiceContext* context,
     mojo::ServiceProvider* service_provider,
+    CdmFactory* cdm_factory,
     mojo::InterfaceRequest<mojo::ContentDecryptionModule> request)
     : binding_(this, request.Pass()),
       context_(context),
       service_provider_(service_provider),
+      cdm_factory_(cdm_factory),
       cdm_id_(CdmContext::kInvalidCdmId),
       weak_factory_(this) {
+  DCHECK(context_);
+  DCHECK(cdm_factory_);
 }
 
 MojoCdmService::~MojoCdmService() {
@@ -49,26 +53,17 @@ void MojoCdmService::Initialize(
   DCHECK(!cdm_);
   DCHECK_NE(CdmContext::kInvalidCdmId, cdm_id);
 
-  SimpleMojoCdmPromise promise(callback);
-
-  // Only AesDecryptor is supported.
-  // TODO(xhwang): Use a CdmFactory to create the CDM here. See
-  // http://crbug.com/495273
-  if (CanUseAesDecryptor(key_system)) {
-    base::WeakPtr<MojoCdmService> weak_this = weak_factory_.GetWeakPtr();
-    cdm_.reset(new AesDecryptor(
-        GURL::EmptyGURL(),
-        base::Bind(&MojoCdmService::OnSessionMessage, weak_this),
-        base::Bind(&MojoCdmService::OnSessionClosed, weak_this),
-        base::Bind(&MojoCdmService::OnSessionKeysChange, weak_this)));
-    cdm_id_ = cdm_id;
-    context_->RegisterCdm(cdm_id_, this);
-    promise.resolve();
-  } else {
-    // TODO(xhwang): This should not happen when KeySystemInfo is properly
-    // populated. See http://crbug.com/469366
-    promise.reject(MediaKeys::NOT_SUPPORTED_ERROR, 0, "Not supported.");
-  }
+  auto weak_this = weak_factory_.GetWeakPtr();
+  cdm_factory_->Create(
+      key_system, GURL(security_origin), CdmConfig(),
+      base::Bind(&MojoCdmService::OnSessionMessage, weak_this),
+      base::Bind(&MojoCdmService::OnSessionClosed, weak_this),
+      base::Bind(&MojoCdmService::OnLegacySessionError, weak_this),
+      base::Bind(&MojoCdmService::OnSessionKeysChange, weak_this),
+      base::Bind(&MojoCdmService::OnSessionExpirationUpdate, weak_this),
+      base::Bind(
+          &MojoCdmService::OnCdmCreated, weak_this, cdm_id,
+          base::Passed(make_scoped_ptr(new SimpleMojoCdmPromise(callback)))));
 }
 
 // mojo::MediaRenderer implementation.
@@ -138,6 +133,23 @@ void MojoCdmService::GetDecryptor(
 
 CdmContext* MojoCdmService::GetCdmContext() {
   return cdm_->GetCdmContext();
+}
+
+void MojoCdmService::OnCdmCreated(int cdm_id,
+                                  scoped_ptr<SimpleMojoCdmPromise> promise,
+                                  scoped_ptr<MediaKeys> cdm,
+                                  const std::string& error_message) {
+  // TODO(xhwang): This should not happen when KeySystemInfo is properly
+  // populated. See http://crbug.com/469366
+  if (!cdm) {
+    promise->reject(MediaKeys::NOT_SUPPORTED_ERROR, 0, error_message);
+    return;
+  }
+
+  cdm_ = cdm.Pass();
+  cdm_id_ = cdm_id;
+  context_->RegisterCdm(cdm_id_, this);
+  promise->resolve();
 }
 
 void MojoCdmService::OnSessionMessage(const std::string& session_id,

@@ -11,11 +11,13 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/media_keys.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
+#include "media/mojo/services/mojo_cdm_promise.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace media {
 
+class CdmFactory;
 class MojoCdmServiceContext;
 
 // A mojo::ContentDecryptionModule implementation backed by a media::MediaKeys.
@@ -24,6 +26,7 @@ class MojoCdmService : public mojo::ContentDecryptionModule {
   // Constructs a MojoCdmService and strongly binds it to the |request|.
   MojoCdmService(MojoCdmServiceContext* context,
                  mojo::ServiceProvider* service_provider,
+                 CdmFactory* cdm_factory,
                  mojo::InterfaceRequest<mojo::ContentDecryptionModule> request);
 
   ~MojoCdmService() final;
@@ -64,6 +67,12 @@ class MojoCdmService : public mojo::ContentDecryptionModule {
   CdmContext* GetCdmContext();
 
  private:
+  // Callback for CdmFactory::Create().
+  void OnCdmCreated(int cdm_id,
+                    scoped_ptr<MojoCdmPromise<>> promise,
+                    scoped_ptr<MediaKeys> cdm,
+                    const std::string& error_message);
+
   // Callbacks for firing session events.
   void OnSessionMessage(const std::string& session_id,
                         MediaKeys::MessageType message_type,
@@ -83,6 +92,7 @@ class MojoCdmService : public mojo::ContentDecryptionModule {
   mojo::StrongBinding<mojo::ContentDecryptionModule> binding_;
   MojoCdmServiceContext* context_;
   mojo::ServiceProvider* service_provider_;
+  CdmFactory* cdm_factory_;
   scoped_ptr<MediaKeys> cdm_;
 
   // Set to a valid CDM ID if the |cdm_| is successfully created.

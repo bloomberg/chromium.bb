@@ -10,6 +10,7 @@
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/base/media.h"
 #include "media/base/null_video_sink.h"
+#include "media/cdm/default_cdm_factory.h"
 #include "media/renderers/default_renderer_factory.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 
@@ -70,6 +71,10 @@ class DefaultMojoMediaClient : public PlatformMojoMediaClient {
 
   const AudioHardwareConfig& GetAudioHardwareConfig() override {
     return *audio_hardware_config_;
+  }
+
+  scoped_ptr<CdmFactory> GetCdmFactory() override {
+    return make_scoped_ptr(new DefaultCdmFactory());
   }
 
  private:

@@ -5,6 +5,7 @@
 #include "media/mojo/services/mojo_media_application.h"
 
 #include "base/logging.h"
+#include "media/base/cdm_factory.h"
 #include "media/base/media_log.h"
 #include "media/base/renderer_factory.h"
 #include "media/mojo/services/mojo_cdm_service.h"
@@ -54,7 +55,7 @@ void MojoMediaApplication::Create(
     mojo::InterfaceRequest<mojo::ContentDecryptionModule> request) {
   // The created object is owned by the pipe.
   new MojoCdmService(&cdm_service_context_, connection->GetServiceProvider(),
-                     request.Pass());
+                     GetCdmFactory(), request.Pass());
 }
 
 void MojoMediaApplication::Create(
@@ -69,6 +70,12 @@ RendererFactory* MojoMediaApplication::GetRendererFactory() {
   if (!renderer_factory_)
     renderer_factory_ = MojoMediaClient::Get()->GetRendererFactory(media_log_);
   return renderer_factory_.get();
+}
+
+CdmFactory* MojoMediaApplication::GetCdmFactory() {
+  if (!cdm_factory_)
+    cdm_factory_ = MojoMediaClient::Get()->GetCdmFactory();
+  return cdm_factory_.get();
 }
 
 }  // namespace media
