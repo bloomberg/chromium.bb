@@ -8,6 +8,14 @@ The dates in the following release notes denote when Chrome and the NaCl SDK
 reached canary status. The stable release is typically 6 weeks later.
 
 
+Chrome/Pepper 45 (10 July 2015)
+================================
+
+Pepper
+------
+
+* UDP Socket Multicast API in stable (PPB_UDP_SOCKET 1.2).
+
 Chrome/Pepper 43 (03 April 2015)
 ================================
 
