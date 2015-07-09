@@ -18,8 +18,7 @@ class UDPSocket : public Socket {
   explicit UDPSocket(const std::string& owner_extension_id);
   ~UDPSocket() override;
 
-  void Connect(const std::string& address,
-               uint16 port,
+  void Connect(const net::AddressList& address,
                const CompletionCallback& callback) override;
   void Disconnect() override;
   int Bind(const std::string& address, uint16 port) override;
@@ -27,8 +26,7 @@ class UDPSocket : public Socket {
   void RecvFrom(int count, const RecvFromCompletionCallback& callback) override;
   void SendTo(scoped_refptr<net::IOBuffer> io_buffer,
               int byte_count,
-              const std::string& address,
-              uint16 port,
+              const net::IPEndPoint& address,
               const CompletionCallback& callback) override;
 
   bool IsConnected() override;

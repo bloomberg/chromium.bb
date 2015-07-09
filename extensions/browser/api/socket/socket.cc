@@ -114,18 +114,6 @@ bool Socket::StringAndPortToIPEndPoint(const std::string& ip_address_str,
   return true;
 }
 
-bool Socket::StringAndPortToAddressList(const std::string& ip_address_str,
-                                        uint16 port,
-                                        net::AddressList* address_list) {
-  DCHECK(address_list);
-  net::IPAddressNumber ip_number;
-  if (!net::ParseIPLiteralToNumber(ip_address_str, &ip_number))
-    return false;
-
-  *address_list = net::AddressList::CreateFromIPAddress(ip_number, port);
-  return true;
-}
-
 void Socket::IPEndPointToStringAndPort(const net::IPEndPoint& address,
                                        std::string* ip_address_str,
                                        uint16* port) {

@@ -244,7 +244,7 @@ void SocketsUdpSendFunction::AsyncWorkStart() {
     return;
   }
 
-  StartDnsLookup(params_->address);
+  StartDnsLookup(net::HostPortPair(params_->address, params_->port));
 }
 
 void SocketsUdpSendFunction::AfterDnsLookup(int lookup_result) {
@@ -263,10 +263,7 @@ void SocketsUdpSendFunction::StartSendTo() {
     return;
   }
 
-  socket->SendTo(io_buffer_,
-                 io_buffer_size_,
-                 resolved_address_,
-                 params_->port,
+  socket->SendTo(io_buffer_, io_buffer_size_, addresses_.front(),
                  base::Bind(&SocketsUdpSendFunction::OnCompleted, this));
 }
 

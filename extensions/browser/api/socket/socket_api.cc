@@ -169,11 +169,11 @@ void SocketAsyncApiFunction::OnFirewallHoleOpened(
 #endif  // OS_CHROMEOS
 
 SocketExtensionWithDnsLookupFunction::SocketExtensionWithDnsLookupFunction()
-    : resource_context_(NULL),
-      request_handle_(new net::HostResolver::RequestHandle),
-      addresses_(new net::AddressList) {}
+    : resource_context_(NULL) {
+}
 
-SocketExtensionWithDnsLookupFunction::~SocketExtensionWithDnsLookupFunction() {}
+SocketExtensionWithDnsLookupFunction::~SocketExtensionWithDnsLookupFunction() {
+}
 
 bool SocketExtensionWithDnsLookupFunction::PrePrepare() {
   if (!SocketAsyncApiFunction::PrePrepare())
@@ -183,25 +183,19 @@ bool SocketExtensionWithDnsLookupFunction::PrePrepare() {
 }
 
 void SocketExtensionWithDnsLookupFunction::StartDnsLookup(
-    const std::string& hostname) {
+    const net::HostPortPair& host_port_pair) {
   net::HostResolver* host_resolver =
       HostResolverWrapper::GetInstance()->GetHostResolver(resource_context_);
   DCHECK(host_resolver);
 
-  // Yes, we are passing zero as the port. There are some interesting but not
-  // presently relevant reasons why HostResolver asks for the port of the
-  // hostname you'd like to resolve, even though it doesn't use that value in
-  // determining its answer.
-  net::HostPortPair host_port_pair(hostname, 0);
+  // RequestHandle is not needed because we never need to cancel requests.
+  net::HostResolver::RequestHandle request_handle;
 
   net::HostResolver::RequestInfo request_info(host_port_pair);
   int resolve_result = host_resolver->Resolve(
-      request_info,
-      net::DEFAULT_PRIORITY,
-      addresses_.get(),
+      request_info, net::DEFAULT_PRIORITY, &addresses_,
       base::Bind(&SocketExtensionWithDnsLookupFunction::OnDnsLookup, this),
-      request_handle_.get(),
-      net::BoundNetLog());
+      &request_handle, net::BoundNetLog());
 
   if (resolve_result != net::ERR_IO_PENDING)
     OnDnsLookup(resolve_result);
@@ -209,8 +203,7 @@ void SocketExtensionWithDnsLookupFunction::StartDnsLookup(
 
 void SocketExtensionWithDnsLookupFunction::OnDnsLookup(int resolve_result) {
   if (resolve_result == net::OK) {
-    DCHECK(!addresses_->empty());
-    resolved_address_ = addresses_->front().ToStringWithoutPort();
+    DCHECK(!addresses_.empty());
   } else {
     error_ = kDnsLookupFailedError;
   }
@@ -312,7 +305,7 @@ void SocketConnectFunction::AsyncWorkStart() {
     return;
   }
 
-  StartDnsLookup(hostname_);
+  StartDnsLookup(net::HostPortPair(hostname_, port_));
 }
 
 void SocketConnectFunction::AfterDnsLookup(int lookup_result) {
@@ -333,8 +326,7 @@ void SocketConnectFunction::StartConnect() {
     return;
   }
 
-  socket->Connect(resolved_address_,
-                  port_,
+  socket->Connect(addresses_,
                   base::Bind(&SocketConnectFunction::OnConnect, this));
 }
 
@@ -637,7 +629,7 @@ void SocketSendToFunction::AsyncWorkStart() {
     }
   }
 
-  StartDnsLookup(hostname_);
+  StartDnsLookup(net::HostPortPair(hostname_, port_));
 }
 
 void SocketSendToFunction::AfterDnsLookup(int lookup_result) {
@@ -658,10 +650,7 @@ void SocketSendToFunction::StartSendTo() {
     return;
   }
 
-  socket->SendTo(io_buffer_,
-                 io_buffer_size_,
-                 resolved_address_,
-                 port_,
+  socket->SendTo(io_buffer_, io_buffer_size_, addresses_.front(),
                  base::Bind(&SocketSendToFunction::OnCompleted, this));
 }
 

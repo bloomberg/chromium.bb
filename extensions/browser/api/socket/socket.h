@@ -70,8 +70,7 @@ class Socket : public ApiResource {
   // Note: |address| contains the resolved IP address, not the hostname of
   // the remote endpoint. In order to upgrade this socket to TLS, callers
   // must also supply the hostname of the endpoint via set_hostname().
-  virtual void Connect(const std::string& address,
-                       uint16 port,
+  virtual void Connect(const net::AddressList& address,
                        const CompletionCallback& callback) = 0;
   virtual void Disconnect() = 0;
   virtual int Bind(const std::string& address, uint16 port) = 0;
@@ -90,8 +89,7 @@ class Socket : public ApiResource {
                         const RecvFromCompletionCallback& callback) = 0;
   virtual void SendTo(scoped_refptr<net::IOBuffer> io_buffer,
                       int byte_count,
-                      const std::string& address,
-                      uint16 port,
+                      const net::IPEndPoint& address,
                       const CompletionCallback& callback) = 0;
 
   virtual bool SetKeepAlive(bool enable, int delay);
@@ -109,9 +107,6 @@ class Socket : public ApiResource {
 
   virtual SocketType GetSocketType() const = 0;
 
-  static bool StringAndPortToAddressList(const std::string& ip_address_str,
-                                         uint16 port,
-                                         net::AddressList* address_list);
   static bool StringAndPortToIPEndPoint(const std::string& ip_address_str,
                                         uint16 port,
                                         net::IPEndPoint* ip_end_point);

@@ -279,7 +279,7 @@ void SocketsTcpConnectFunction::AsyncWorkStart() {
     return;
   }
 
-  StartDnsLookup(params_->peer_address);
+  StartDnsLookup(net::HostPortPair(params_->peer_address, params_->peer_port));
 }
 
 void SocketsTcpConnectFunction::AfterDnsLookup(int lookup_result) {
@@ -298,8 +298,7 @@ void SocketsTcpConnectFunction::StartConnect() {
     return;
   }
 
-  socket->Connect(resolved_address_,
-                  params_->peer_port,
+  socket->Connect(addresses_,
                   base::Bind(&SocketsTcpConnectFunction::OnCompleted, this));
 }
 

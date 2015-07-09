@@ -75,8 +75,7 @@ TLSSocket::~TLSSocket() {
   Disconnect();
 }
 
-void TLSSocket::Connect(const std::string& address,
-                        uint16 port,
+void TLSSocket::Connect(const net::AddressList& address,
                         const CompletionCallback& callback) {
   callback.Run(net::ERR_CONNECTION_FAILED);
 }

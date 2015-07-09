@@ -147,19 +147,16 @@ class SocketExtensionWithDnsLookupFunction : public SocketAsyncApiFunction {
   // AsyncApiFunction:
   bool PrePrepare() override;
 
-  void StartDnsLookup(const std::string& hostname);
+  void StartDnsLookup(const net::HostPortPair& host_port_pair);
   virtual void AfterDnsLookup(int lookup_result) = 0;
 
-  std::string resolved_address_;
+  net::AddressList addresses_;
 
  private:
   void OnDnsLookup(int resolve_result);
 
   // Weak pointer to the resource context.
   content::ResourceContext* resource_context_;
-
-  scoped_ptr<net::HostResolver::RequestHandle> request_handle_;
-  scoped_ptr<net::AddressList> addresses_;
 };
 
 class SocketCreateFunction : public SocketAsyncApiFunction {

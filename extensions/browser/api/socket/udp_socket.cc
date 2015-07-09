@@ -35,20 +35,16 @@ UDPSocket::UDPSocket(const std::string& owner_extension_id)
 
 UDPSocket::~UDPSocket() { Disconnect(); }
 
-void UDPSocket::Connect(const std::string& address,
-                        uint16 port,
+void UDPSocket::Connect(const net::AddressList& address,
                         const CompletionCallback& callback) {
   int result = net::ERR_CONNECTION_FAILED;
   do {
     if (is_connected_)
       break;
 
-    net::IPEndPoint ip_end_point;
-    if (!StringAndPortToIPEndPoint(address, port, &ip_end_point)) {
-      result = net::ERR_ADDRESS_INVALID;
-      break;
-    }
-
+    // UDP API only connects to the first address received from DNS so
+    // connection may not work even if other addresses are reachable.
+    net::IPEndPoint ip_end_point = address.front();
     result = socket_.Open(ip_end_point.GetFamily());
     if (result != net::OK)
       break;
@@ -177,8 +173,7 @@ void UDPSocket::RecvFrom(int count,
 
 void UDPSocket::SendTo(scoped_refptr<net::IOBuffer> io_buffer,
                        int byte_count,
-                       const std::string& address,
-                       uint16 port,
+                       const net::IPEndPoint& address,
                        const CompletionCallback& callback) {
   DCHECK(!callback.is_null());
 
@@ -193,21 +188,13 @@ void UDPSocket::SendTo(scoped_refptr<net::IOBuffer> io_buffer,
 
   int result = net::ERR_FAILED;
   do {
-    net::IPEndPoint ip_end_point;
-    if (!StringAndPortToIPEndPoint(address, port, &ip_end_point)) {
-      result = net::ERR_ADDRESS_INVALID;
-      break;
-    }
-
     if (!socket_.is_connected()) {
       result = net::ERR_SOCKET_NOT_CONNECTED;
       break;
     }
 
     result = socket_.SendTo(
-        io_buffer.get(),
-        byte_count,
-        ip_end_point,
+        io_buffer.get(), byte_count, address,
         base::Bind(&UDPSocket::OnSendToComplete, base::Unretained(this)));
   } while (false);
 

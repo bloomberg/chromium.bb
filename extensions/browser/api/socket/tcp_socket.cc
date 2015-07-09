@@ -77,8 +77,7 @@ TCPSocket* TCPSocket::CreateServerSocketForTesting(
 
 TCPSocket::~TCPSocket() { Disconnect(); }
 
-void TCPSocket::Connect(const std::string& address,
-                        uint16 port,
+void TCPSocket::Connect(const net::AddressList& address,
                         const CompletionCallback& callback) {
   DCHECK(!callback.is_null());
 
@@ -95,14 +94,8 @@ void TCPSocket::Connect(const std::string& address,
     if (is_connected_)
       break;
 
-    net::AddressList address_list;
-    if (!StringAndPortToAddressList(address, port, &address_list)) {
-      result = net::ERR_ADDRESS_INVALID;
-      break;
-    }
-
     socket_.reset(
-        new net::TCPClientSocket(address_list, NULL, net::NetLog::Source()));
+        new net::TCPClientSocket(address, NULL, net::NetLog::Source()));
 
     connect_callback_ = callback;
     result = socket_->Connect(
@@ -170,8 +163,7 @@ void TCPSocket::RecvFrom(int count,
 
 void TCPSocket::SendTo(scoped_refptr<net::IOBuffer> io_buffer,
                        int byte_count,
-                       const std::string& address,
-                       uint16 port,
+                       const net::IPEndPoint& address,
                        const CompletionCallback& callback) {
   callback.Run(net::ERR_FAILED);
 }

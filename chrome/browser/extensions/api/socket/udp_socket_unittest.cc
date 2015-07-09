@@ -36,6 +36,12 @@ static void OnCompleted(int bytes_read,
 static const char test_message[] = "$$TESTMESSAGETESTMESSAGETESTMESSAGETEST$$";
 static const int test_message_length = arraysize(test_message);
 
+net::AddressList CreateAddressList(const char* address_string, int port) {
+  net::IPAddressNumber ip;
+  EXPECT_TRUE(net::ParseIPLiteralToNumber(address_string, &ip));
+  return net::AddressList::CreateFromIPAddress(ip, port);
+}
+
 static void OnSendCompleted(int result) {
   EXPECT_EQ(test_message_length, result);
 }
@@ -46,7 +52,8 @@ TEST(UDPSocketUnitTest, TestUDPSocketRecvFrom) {
 
   // Confirm that we can call two RecvFroms in quick succession without
   // triggering crbug.com/146606.
-  socket.Connect("127.0.0.1", 40000, base::Bind(&OnConnected));
+  socket.Connect(CreateAddressList("127.0.0.1", 40000),
+                 base::Bind(&OnConnected));
   socket.RecvFrom(4096, base::Bind(&OnCompleted));
   socket.RecvFrom(4096, base::Bind(&OnCompleted));
 }
@@ -72,14 +79,14 @@ TEST(UDPSocketUnitTest, TestUDPMulticastTimeToLive) {
   UDPSocket socket("abcdefghijklmnopqrst");
   EXPECT_NE(0, socket.SetMulticastTimeToLive(-1));  // Negative TTL shall fail.
   EXPECT_EQ(0, socket.SetMulticastTimeToLive(3));
-  socket.Connect(kGroup, 13333, base::Bind(&OnConnected));
+  socket.Connect(CreateAddressList(kGroup, 13333), base::Bind(&OnConnected));
 }
 
 TEST(UDPSocketUnitTest, TestUDPMulticastLoopbackMode) {
   const char kGroup[] = "237.132.100.17";
   UDPSocket socket("abcdefghijklmnopqrst");
   EXPECT_EQ(0, socket.SetMulticastLoopbackMode(false));
-  socket.Connect(kGroup, 13333, base::Bind(&OnConnected));
+  socket.Connect(CreateAddressList(kGroup, 13333), base::Bind(&OnConnected));
 }
 
 static void QuitMessageLoop() {
@@ -125,7 +132,8 @@ TEST(UDPSocketUnitTest, TestUDPMulticastRecv) {
 
   // Sender
   EXPECT_EQ(0, src.SetMulticastTimeToLive(0));
-  src.Connect(kGroup, kPort, base::Bind(&SendMulticastPacket, &src));
+  src.Connect(CreateAddressList(kGroup, kPort),
+              base::Bind(&SendMulticastPacket, &src));
 
   // If not received within the test action timeout, quit the message loop.
   io_loop.task_runner()->PostDelayedTask(
