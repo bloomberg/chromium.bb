@@ -148,15 +148,22 @@ bool FindTagInStr(const wchar_t* str,
   return false;
 }
 
-wchar_t* GetNameFromPathExt(wchar_t* path, size_t size) {
-  if (size <= 1)
-    return NULL;
+const wchar_t* GetNameFromPathExt(const wchar_t* path, size_t size) {
+  if (!size)
+    return path;
 
-  wchar_t* current = &path[size - 1];
+  const wchar_t* current = &path[size - 1];
   while (current != path && L'\\' != *current)
     --current;
 
-  return (current == path) ? NULL : (current + 1);
+  // If no path separator found, just return |path|.
+  // Otherwise, return a pointer right after the separator.
+  return ((current == path) && (L'\\' != *current)) ? current : (current + 1);
+}
+
+wchar_t* GetNameFromPathExt(wchar_t* path, size_t size) {
+  return const_cast<wchar_t*>(GetNameFromPathExt(
+    const_cast<const wchar_t*>(path), size));
 }
 
 }  // namespace mini_installer

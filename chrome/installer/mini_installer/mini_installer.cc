@@ -309,9 +309,9 @@ ProcessExitCode RunProcessAndWait(const wchar_t* exe_path, wchar_t* cmdline) {
   return exit_code;
 }
 
-// Append any command line params passed to mini_installer to the given buffer
-// so that they can be passed on to setup.exe. We do not return any error from
-// this method and simply skip making any changes in case of error.
+// Appends any command line params passed to mini_installer to the given buffer
+// so that they can be passed on to setup.exe.
+// |buffer| is unchanged in case of error.
 void AppendCommandLineFlags(const Configuration& configuration,
                             CommandString* buffer) {
   PathString full_exe_path;
@@ -321,16 +321,36 @@ void AppendCommandLineFlags(const Configuration& configuration,
     return;
 
   const wchar_t* exe_name = GetNameFromPathExt(full_exe_path.get(), len);
-  if (exe_name == NULL)
-    return;
 
+  // - configuration.program() returns the first command line argument
+  //   passed into the program (that the user probably typed in this case).
+  //       "mini_installer.exe"
+  //       "mini_installer"
+  //       "out\Release\mini_installer"
+  // - |exe_name| is the executable file of the current process.
+  //       "mini_installer.exe"
+  //
+  // Note that there are three possibilities to handle here.
+  // Receive a cmdline containing:
+  // 1) executable name WITH extension
+  // 2) executable name with NO extension
+  // 3) NO executable name as part of cmdline
   const wchar_t* cmd_to_append = L"";
-  if (!StrEndsWith(configuration.program(), exe_name)) {
-    // Current executable name not in the command line so just append
-    // the whole command line.
+  const wchar_t* arg0 = configuration.program();
+  if (!arg0)
+    return;
+  const wchar_t* arg0_base_name = GetNameFromPathExt(arg0, ::lstrlen(arg0));
+  if (!StrStartsWith(exe_name, arg0_base_name)) {
+    // State 3: NO executable name as part of cmdline.
+    buffer->append(L" ");
     cmd_to_append = configuration.command_line();
   } else if (configuration.argument_count() > 1) {
-    const wchar_t* tmp = SearchStringI(configuration.command_line(), exe_name);
+    // State 1 or 2: Executable name is in cmdline.
+    // - Append everything AFTER the executable name.
+    //   (Using arg0_base_name here to make sure to match with or without
+    //   extension.  Then move to the space following the token.)
+    const wchar_t* tmp = SearchStringI(configuration.command_line(),
+                                       arg0_base_name);
     tmp = SearchStringI(tmp, L" ");
     cmd_to_append = tmp;
   }
@@ -669,8 +689,8 @@ bool GetWorkDir(HMODULE module, PathString* work_dir) {
       return false;  // Can't even get current directory? Return an error.
 
     wchar_t* name = GetNameFromPathExt(base_path.get(), len);
-    if (!name)
-      return false;
+    if (name == base_path.get())
+      return false;  // There was no directory in the string!  Bail out.
 
     *name = L'\0';
 
