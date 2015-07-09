@@ -1,6 +1,4 @@
-CONSOLE WARNING: 'Range.compareNode()' is deprecated. Please use 'Range.compareBoundaryPoints()' instead.
 PASS range.compareBoundaryPoints(0, noRange) threw exception TypeError: Failed to execute 'compareBoundaryPoints' on 'Range': parameter 2 is not of type 'Range'..
-PASS range.compareNode(noNode) threw exception TypeError: Failed to execute 'compareNode' on 'Range': parameter 1 is not of type 'Node'..
 PASS range.comparePoint(noNode, 0) threw exception TypeError: Failed to execute 'comparePoint' on 'Range': parameter 1 is not of type 'Node'..
 PASS range.insertNode(noNode) threw exception TypeError: Failed to execute 'insertNode' on 'Range': parameter 1 is not of type 'Node'..
 PASS range.intersectsNode(noNode) threw exception TypeError: Failed to execute 'intersectsNode' on 'Range': parameter 1 is not of type 'Node'..

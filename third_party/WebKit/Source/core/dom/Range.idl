@@ -77,11 +77,6 @@
     // https://dvcs.w3.org/hg/innerhtml/raw-file/tip/index.html#extensions-to-the-range-interface
     [NewObject, RaisesException, CustomElementCallbacks] DocumentFragment createContextualFragment(DOMString fragment);
 
-    // Non-standard APIs
-    const unsigned short NODE_BEFORE           = 0;
-    const unsigned short NODE_AFTER            = 1;
-    const unsigned short NODE_BEFORE_AND_AFTER = 2;
-    const unsigned short NODE_INSIDE           = 3;
-    [RaisesException, DeprecateAs=RangeCompareNode] short compareNode([Default=Undefined] optional Node refNode);
+    // Non-standard API
     [RaisesException, DeprecateAs=RangeExpand] void expand([Default=Undefined] optional DOMString unit);
 };

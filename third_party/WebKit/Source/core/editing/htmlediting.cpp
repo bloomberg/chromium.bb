@@ -1315,8 +1315,7 @@ VisiblePosition visiblePositionForIndex(int index, ContainerNode* scope)
 // Call this function to determine whether a node is visibly fit inside selectedRange
 bool isNodeVisiblyContainedWithin(Node& node, const Range& selectedRange)
 {
-    // If the node is inside the range, then it surely is contained within
-    if (selectedRange.compareNode(&node, IGNORE_EXCEPTION) == Range::NODE_INSIDE)
+    if (selectedRange.isNodeFullyContained(node))
         return true;
 
     bool startIsVisuallySame = visiblePositionBeforeNode(node) == VisiblePosition(selectedRange.startPosition());

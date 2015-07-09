@@ -1638,11 +1638,12 @@ bool EventHandler::handleMouseFocus(const MouseEventWithHitTestResults& targeted
     // be focused if the user does a mouseup over it, however, because the
     // mouseup will set a selection inside it, which will call
     // FrameSelection::setFocusedNodeIfNeeded.
-    if (element
-        && m_frame->selection().isRange()
-        && m_frame->selection().toNormalizedRange()->compareNode(element, IGNORE_EXCEPTION) == Range::NODE_INSIDE
-        && element->isDescendantOf(m_frame->document()->focusedElement()))
-        return false;
+    if (element && m_frame->selection().isRange()) {
+        if (m_frame->selection().toNormalizedRange()->isNodeFullyContained(*element)
+            && element->isDescendantOf(m_frame->document()->focusedElement()))
+            return false;
+    }
+
 
     // Only change the focus when clicking scrollbars if it can transfered to a
     // mouse focusable node.

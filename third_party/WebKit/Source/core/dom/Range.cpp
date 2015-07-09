@@ -238,7 +238,15 @@ void Range::collapse(bool toStart)
         m_start = m_end;
 }
 
-bool Range::isPointInRange(Node* refNode, int offset, ExceptionState& exceptionState)
+bool Range::isNodeFullyContained(Node& node) const
+{
+    ContainerNode* parentNode = node.parentNode();
+    int nodeIndex = node.nodeIndex();
+    return isPointInRange(parentNode, nodeIndex, IGNORE_EXCEPTION) // starts in the middle of this range, or on the boundary points.
+        && isPointInRange(parentNode, nodeIndex + 1, IGNORE_EXCEPTION); // ends in the middle of this range, or on the boundary points.
+}
+
+bool Range::isPointInRange(Node* refNode, int offset, ExceptionState& exceptionState) const
 {
     if (!refNode) {
         // FIXME: Generated bindings code never calls with null, and neither should other callers!
@@ -291,49 +299,6 @@ short Range::comparePoint(Node* refNode, int offset, ExceptionState& exceptionSt
 
     // point is in the middle of this range, or on the boundary points
     return 0;
-}
-
-Range::CompareResults Range::compareNode(Node* refNode, ExceptionState& exceptionState) const
-{
-    // http://developer.mozilla.org/en/docs/DOM:range.compareNode
-    // This method returns 0, 1, 2, or 3 based on if the node is before, after,
-    // before and after(surrounds), or inside the range, respectively
-
-    if (!refNode) {
-        // FIXME: Generated bindings code never calls with null, and neither should other callers!
-        exceptionState.throwTypeError("The node provided is null.");
-        return NODE_BEFORE;
-    }
-
-    if (!refNode->inActiveDocument()) {
-        // Firefox doesn't throw an exception for this case; it returns 0.
-        return NODE_BEFORE;
-    }
-
-    if (refNode->document() != m_ownerDocument) {
-        // Firefox doesn't throw an exception for this case; it returns 0.
-        return NODE_BEFORE;
-    }
-
-    ContainerNode* parentNode = refNode->parentNode();
-    int nodeIndex = refNode->nodeIndex();
-
-    if (!parentNode) {
-        // if the node is the top document we should return NODE_BEFORE_AND_AFTER
-        // but we throw to match firefox behavior
-        exceptionState.throwDOMException(NotFoundError, "The provided node has no parent.");
-        return NODE_BEFORE;
-    }
-
-    if (comparePoint(parentNode, nodeIndex, exceptionState) < 0) { // starts before
-        if (comparePoint(parentNode, nodeIndex + 1, exceptionState) > 0) // ends after the range
-            return NODE_BEFORE_AND_AFTER;
-        return NODE_BEFORE; // ends before or in the range
-    }
-    // starts at or after the range start
-    if (comparePoint(parentNode, nodeIndex + 1, exceptionState) > 0) // ends after the range
-        return NODE_AFTER;
-    return NODE_INSIDE; // ends inside the range
 }
 
 short Range::compareBoundaryPoints(unsigned how, const Range* sourceRange, ExceptionState& exceptionState) const

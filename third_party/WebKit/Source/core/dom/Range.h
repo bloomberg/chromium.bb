@@ -78,10 +78,10 @@ public:
     void setStart(PassRefPtrWillBeRawPtr<Node> container, int offset, ExceptionState& = ASSERT_NO_EXCEPTION);
     void setEnd(PassRefPtrWillBeRawPtr<Node> container, int offset, ExceptionState& = ASSERT_NO_EXCEPTION);
     void collapse(bool toStart);
-    bool isPointInRange(Node* refNode, int offset, ExceptionState&);
+    bool isNodeFullyContained(Node&) const;
+    bool isPointInRange(Node* refNode, int offset, ExceptionState&) const;
     short comparePoint(Node* refNode, int offset, ExceptionState&) const;
     enum CompareResults { NODE_BEFORE, NODE_AFTER, NODE_BEFORE_AND_AFTER, NODE_INSIDE };
-    CompareResults compareNode(Node* refNode, ExceptionState&) const;
     enum CompareHow { START_TO_START, START_TO_END, END_TO_END, END_TO_START };
     short compareBoundaryPoints(unsigned how, const Range* sourceRange, ExceptionState&) const;
     static short compareBoundaryPoints(Node* containerA, int offsetA, Node* containerB, int offsetB, ExceptionState&);

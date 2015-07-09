@@ -334,7 +334,6 @@ public:
         DocumentCaretRangeFromPoint = 387,
         DocumentGetCSSCanvasContext = 388,
         ElementScrollIntoViewIfNeeded = 389,
-        RangeCompareNode = 392,
         RangeExpand = 393,
         HTMLImageElementX = 396,
         HTMLImageElementY = 397,

@@ -3817,10 +3817,6 @@ interface RadioNodeList
 interface Range
     attribute END_TO_END
     attribute END_TO_START
-    attribute NODE_AFTER
-    attribute NODE_BEFORE
-    attribute NODE_BEFORE_AND_AFTER
-    attribute NODE_INSIDE
     attribute START_TO_END
     attribute START_TO_START
     getter collapsed
@@ -3833,7 +3829,6 @@ interface Range
     method cloneRange
     method collapse
     method compareBoundaryPoints
-    method compareNode
     method comparePoint
     method constructor
     method createContextualFragment
