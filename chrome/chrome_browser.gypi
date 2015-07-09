@@ -1360,6 +1360,8 @@
       'browser/enhanced_bookmarks/enhanced_bookmark_model_factory.h',
       'browser/offline_pages/offline_page_metadata_store_impl.cc',
       'browser/offline_pages/offline_page_metadata_store_impl.h',
+      'browser/offline_pages/offline_page_mhtml_archiver.cc',
+      'browser/offline_pages/offline_page_mhtml_archiver.h',
     ],
     'chrome_browser_bookmark_android_sources': [
       'browser/enhanced_bookmarks/android/enhanced_bookmarks_bridge.cc',

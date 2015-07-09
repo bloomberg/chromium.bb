@@ -42,8 +42,7 @@ class OfflinePageMetadataStore;
 //
 // TODO(fgorski): Things to describe:
 // * how to cancel requests and what to expect
-class OfflinePageModel : public KeyedService,
-                         public OfflinePageArchiver::Client {
+class OfflinePageModel : public KeyedService {
  public:
   // Interface for clients of OfflinePageModel. Methods on the model accepting
   // a Client pointer as a parameter will return their results using one of the
@@ -95,11 +94,6 @@ class OfflinePageModel : public KeyedService,
   // KeyedService implementation.
   void Shutdown() override;
 
-  // OfflinePageArchiver::Client implementation.
-  void OnCreateArchiveDone(OfflinePageArchiver::Request* request,
-                           OfflinePageArchiver::ArchiverResult error,
-                           const base::FilePath& file_path) override;
-
   // Attempts to save a page addressed by |url| offline.
   void SavePage(const GURL& url, Client* client);
 
@@ -113,6 +107,11 @@ class OfflinePageModel : public KeyedService,
   OfflinePageMetadataStore* GetStoreForTesting();
 
  private:
+  // OfflinePageArchiver callback.
+  void OnCreateArchiveDone(OfflinePageArchiver::ArchiverResult result,
+                           const base::FilePath& file_path,
+                           int64 file_size);
+
   // Persistent store for offline page metadata.
   scoped_ptr<OfflinePageMetadataStore> store_;
 

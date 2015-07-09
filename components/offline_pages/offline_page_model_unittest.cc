@@ -4,6 +4,7 @@
 
 #include "components/offline_pages/offline_page_model.h"
 
+#include "base/strings/string16.h"
 #include "components/offline_pages/offline_page_metadata_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -38,40 +39,26 @@ void OfflinePageTestStore::RemoveOfflinePage(const GURL& page_url,
                                              const UpdateCallback& callback) {
 }
 
-class OfflinePageTestArchiverRequest : public OfflinePageArchiver::Request {
- public:
-  explicit OfflinePageTestArchiverRequest(const  GURL& url) : url_(url) {}
-  ~OfflinePageTestArchiverRequest() override {}
-
-  void Cancel() override;
-  const GURL& url() const override { return url_; }
-
- private:
-  GURL url_;
-};
-
-void OfflinePageTestArchiverRequest::Cancel() {
-}
-
-
 class OfflinePageTestArchiver : public OfflinePageArchiver {
  public:
+  OfflinePageTestArchiver();
   ~OfflinePageTestArchiver() override;
 
   // OfflinePageArchiver implementation:
-  scoped_ptr<Request> CreateArchive(const GURL& url,
-                                    Client* client) override;
+  void CreateArchive(const CreateArchiveCallback& callback) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OfflinePageTestArchiver);
 };
+
+OfflinePageTestArchiver::OfflinePageTestArchiver() {
+}
 
 OfflinePageTestArchiver::~OfflinePageTestArchiver() {
 }
 
-scoped_ptr<OfflinePageArchiver::Request> OfflinePageTestArchiver::CreateArchive(
-    const GURL& url,
-    Client* client) {
-  scoped_ptr<OfflinePageTestArchiverRequest> request(
-      new OfflinePageTestArchiverRequest(url));
-  return request.Pass();
+void OfflinePageTestArchiver::CreateArchive(
+    const CreateArchiveCallback& callback) {
 }
 
 class OfflinePageModelTest : public testing::Test {

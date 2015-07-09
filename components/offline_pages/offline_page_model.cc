@@ -24,15 +24,6 @@ OfflinePageModel::~OfflinePageModel() {
 void OfflinePageModel::Shutdown() {
 }
 
-void OfflinePageModel::OnCreateArchiveDone(
-    OfflinePageArchiver::Request* request,
-    OfflinePageArchiver::ArchiverResult result,
-    const base::FilePath& file_path) {
-  // TODO(fgorski): Match request against one of the expected requests
-  // TODO(fgorski): Create an entry in the offline pages metadata store for that
-  //                request.
-}
-
 void OfflinePageModel::SavePage(const GURL& url,
                                 OfflinePageModel::Client* client) {
   NOTIMPLEMENTED();
@@ -49,6 +40,15 @@ void OfflinePageModel::LoadAllPages(OfflinePageModel::Client* client) {
 
 OfflinePageMetadataStore* OfflinePageModel::GetStoreForTesting() {
   return store_.get();
+}
+
+void OfflinePageModel::OnCreateArchiveDone(
+    OfflinePageArchiver::ArchiverResult result,
+    const base::FilePath& file_path,
+    int64 file_size) {
+  // TODO(fgorski): Match request against one of the expected requests
+  // TODO(fgorski): Create an entry in the offline pages metadata store for that
+  //                request.
 }
 
 }  // namespace offline_pages

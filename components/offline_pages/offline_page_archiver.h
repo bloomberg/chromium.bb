@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_ARCHIVER_H_
 #define COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_ARCHIVER_H_
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/strings/string16.h"
 #include "url/gurl.h"
 
 namespace offline_pages {
@@ -43,46 +45,27 @@ namespace offline_pages {
 // to enable to model to reconcile the archives.
 class OfflinePageArchiver {
  public:
-  // Represents an in progress request to archive a page.
-  class Request {
-   public:
-    virtual ~Request() {}
-
-    // Cancels an in progress request to archive a page.
-    virtual void Cancel() = 0;
-    virtual const GURL& url() const = 0;
+  // Results of the archive creation.
+  enum class ArchiverResult {
+    SUCCESSFULLY_CREATED,           // Archive created successfully.
+    ERROR_DEVICE_FULL,              // Cannot save the archive - device is full.
+    ERROR_CANCELED,                 // Caller canceled the request.
+    ERROR_CONTENT_UNAVAILABLE,      // Content to archive is not available.
+    ERROR_ARCHIVE_CREATION_FAILED,  // Creation of archive failed.
   };
 
-  // Errors that will be reported when archive creation fails.
-  enum ArchiverResult {
-    SUCCESSFULLY_CREATED,       // Archive created successfully.
-    ERROR_UNKNOWN,              // Don't know what went wrong.
-    ERROR_DEVICE_FULL,          // Cannot save the archive - device is full.
-    ERROR_CANCELLED,            // Caller cancelled the request.
-    ERROR_CONTENT_UNAVAILABLE,  // Content to archive is not available.
-  };
-
-  // Interface of the clients that requests to archive pages.
-  class Client {
-   public:
-    virtual ~Client() {}
-
-    // Callback called by the archiver when archiver creation is complete.
-    // |result| will indicate SUCCESSFULLY_CREATED upon success, or a specific
-    // error, when it failed.
-    virtual void OnCreateArchiveDone(Request* request,
-                                     ArchiverResult result,
-                                     const base::FilePath& file_path) = 0;
-  };
+  typedef base::Callback<void(OfflinePageArchiver* /* archiver */,
+                              ArchiverResult /* result */,
+                              const GURL& /* url */,
+                              const base::string16& /* title */,
+                              const base::FilePath& /* file_path */,
+                              int64 /* file_size */)> CreateArchiveCallback;
 
   virtual ~OfflinePageArchiver() {}
 
-  // Starts creating the archive. Will pass result by calling methods on the
-  // passed in client. Caller owns the returned request object.
-  // If request is deleted during the archiving, the callback will not be
-  // invoked. The archive might however be created.
-  virtual scoped_ptr<Request> CreateArchive(const GURL& url,
-                                            Client* client) = 0;
+  // Starts creating the archive. Once archive is created |callback| will be
+  // called with the result and additional information.
+  virtual void CreateArchive(const CreateArchiveCallback& callback) = 0;
 };
 
 }  // namespace offline_pages
