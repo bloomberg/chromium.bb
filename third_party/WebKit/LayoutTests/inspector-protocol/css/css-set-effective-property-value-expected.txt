@@ -140,3 +140,52 @@ Running test: testChangeInlineImportantProperty
         margin-top: 15px !important;
     }
 
+Running test: testChangeMissingProperty
+{
+    padding-top: 55px;
+    margin-top: 33px !important;
+    margin-bottom: 101px;
+}
+*#inspected* {    regular
+    margin-left: 10px !important;
+}
+*#inspected* {    regular
+    padding: 10px 20px 30px 40px;
+    padding-top: 50px;
+    padding-right: 20px;
+    padding-bottom: 30px;
+    padding-left: 40px;
+}
+@media (min-width: 1px)
+    *#inspected* {    regular
+        padding-left: 5px;
+        margin-left: 20px;
+        padding-left: 10px;
+        margin-top: 15px !important;
+    }
+
+Running test: testChangeCSSOMEDProperty
+{
+    padding-top: 55px;
+    margin-top: 33px !important;
+    margin-bottom: 101px;
+}
+*#inspected* {    regular    readonly
+    margin-left: 10px;
+    margin-bottom: 10px;
+}
+*#inspected* {    regular
+    padding: 10px 20px 30px 40px;
+    padding-top: 50px;
+    padding-right: 20px;
+    padding-bottom: 30px;
+    padding-left: 40px;
+}
+@media (min-width: 1px)
+    *#inspected* {    regular
+        padding-left: 5px;
+        margin-left: 20px;
+        padding-left: 10px;
+        margin-top: 15px !important;
+    }
+

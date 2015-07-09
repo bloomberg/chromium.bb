@@ -1555,12 +1555,6 @@ void InspectorCSSAgent::setCSSPropertyValue(ErrorString* errorString, Element* e
     }
 
     // Matched rules.
-    StyleResolver& styleResolver = ownerDocument->ensureStyleResolver();
-    element->updateDistribution();
-    RefPtrWillBeRawPtr<CSSRuleList> ruleList = styleResolver.pseudoCSSRulesForElement(element, elementPseudoId, StyleResolver::AllCSSRules);
-
-    if (!ruleList)
-        return;
 
     Vector<StylePropertyShorthand, 4> shorthands;
     getMatchingShorthandsForLonghand(propertyId, &shorthands);
@@ -1577,7 +1571,11 @@ void InspectorCSSAgent::setCSSPropertyValue(ErrorString* errorString, Element* e
         isImportant = inlineStyle->getPropertyPriority(longhand) == "important";
     }
 
-    for (unsigned i = 0, size = ruleList->length(); i < size; ++i) {
+    StyleResolver& styleResolver = ownerDocument->ensureStyleResolver();
+    element->updateDistribution();
+    RefPtrWillBeRawPtr<CSSRuleList> ruleList = styleResolver.pseudoCSSRulesForElement(element, elementPseudoId, StyleResolver::AllCSSRules);
+
+    for (unsigned i = 0, size = ruleList ? ruleList->length() : 0; i < size; ++i) {
         if (isImportant)
             break;
 
@@ -1601,22 +1599,31 @@ void InspectorCSSAgent::setCSSPropertyValue(ErrorString* errorString, Element* e
     }
 
     if (!foundStyle || !foundStyle->parentStyleSheet())
+        foundStyle = inlineStyle;
+
+    if (!foundStyle) {
+        *errorString = "Can't find a style to edit";
         return;
+    }
 
     InspectorStyleSheetBase* inspectorStyleSheet =  nullptr;
     RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = nullptr;
-    if (foundStyle == inlineStyle) {
-        InspectorStyleSheetForInlineStyle* inlineStyleSheet = asInspectorStyleSheet(element);
-        inspectorStyleSheet = inlineStyleSheet;
-        sourceData = inlineStyleSheet->ruleSourceData();
-    } else {
+    if (foundStyle != inlineStyle) {
         InspectorStyleSheet* styleSheet =  bindStyleSheet(foundStyle->parentStyleSheet());
         inspectorStyleSheet = styleSheet;
         sourceData = styleSheet->sourceDataForRule(foundStyle->parentRule());
     }
 
-    if (!sourceData)
+    if (!sourceData) {
+        InspectorStyleSheetForInlineStyle* inlineStyleSheet = asInspectorStyleSheet(element);
+        inspectorStyleSheet = inlineStyleSheet;
+        sourceData = inlineStyleSheet->ruleSourceData();
+    }
+
+    if (!sourceData) {
+        *errorString = "Can't find a source to edit";
         return;
+    }
 
     int foundIndex = -1;
     WillBeHeapVector<CSSPropertySourceData> properties = sourceData->styleSourceData->propertyData;
@@ -1636,23 +1643,25 @@ void InspectorCSSAgent::setCSSPropertyValue(ErrorString* errorString, Element* e
             break;
     }
 
-    if (foundIndex == -1)
-        return;
-
-    CSSPropertySourceData declaration = properties[foundIndex];
-    String newValueText;
-    if (declaration.name == shorthand)
-        newValueText = createShorthandValue(ownerDocument, shorthand, declaration.value, longhand, value);
-    else
-        newValueText = value;
-
-    String newPropertyText = declaration.name + ": " + newValueText + (declaration.important ? " !important" : "") + ";";
+    SourceRange bodyRange = sourceData->ruleBodyRange;
     String styleSheetText;
     inspectorStyleSheet->getText(&styleSheetText);
-
-    SourceRange bodyRange = sourceData->ruleBodyRange;
     String styleText = styleSheetText.substring(bodyRange.start, bodyRange.length());
-    styleText.replace(declaration.range.start - bodyRange.start, declaration.range.length(), newPropertyText);
+
+    if (foundIndex == -1) {
+        String newPropertyText = "\n" + longhand + ": " + value + (isImportant ? " !important" : "") + ";";
+        styleText.append(newPropertyText);
+    } else {
+        CSSPropertySourceData declaration = properties[foundIndex];
+        String newValueText;
+        if (declaration.name == shorthand)
+            newValueText = createShorthandValue(ownerDocument, shorthand, declaration.value, longhand, value);
+        else
+            newValueText = value;
+
+        String newPropertyText = declaration.name + ": " + newValueText + (declaration.important ? " !important" : "") + ";";
+        styleText.replace(declaration.range.start - bodyRange.start, declaration.range.length(), newPropertyText);
+    }
     setStyleText(errorString, inspectorStyleSheet, bodyRange, styleText);
 }
 

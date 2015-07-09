@@ -67,6 +67,21 @@ function test()
         {
             updateProperty("margin-top", "101px", dumpUndoAndNext(next));
         },
+
+        function testChangeMissingProperty(next)
+        {
+            updateProperty("margin-bottom", "101px", dumpUndoAndNext(next));
+        },
+
+        function testChangeCSSOMEDProperty(next)
+        {
+            InspectorTest.evaluateInInspectedPage("document.styleSheets[0].cssRules[0].style.marginBottom = \"10px\"", onEvaluate);
+
+            function onEvaluate()
+            {
+                updateProperty("margin-bottom", "101px", dumpUndoAndNext(next));
+            }
+        },
     ]
 }
 
