@@ -25,12 +25,12 @@ ServiceWorkerMessageEvent::ServiceWorkerMessageEvent(const AtomicString& type, c
             m_sourceAsMessagePort = initializer.source().getAsMessagePort();
     }
     if (initializer.hasPorts())
-        m_ports = adoptPtrWillBeNoop(new MessagePortArray(initializer.ports()));
+        m_ports = new MessagePortArray(initializer.ports());
     if (initializer.hasData())
         m_data = initializer.data();
 }
 
-ServiceWorkerMessageEvent::ServiceWorkerMessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtrWillBeRawPtr<ServiceWorker> source, PassOwnPtrWillBeRawPtr<MessagePortArray> ports)
+ServiceWorkerMessageEvent::ServiceWorkerMessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtrWillBeRawPtr<ServiceWorker> source, MessagePortArray* ports)
     : Event(EventTypeNames::message, false, false)
     , m_serializedData(data)
     , m_origin(origin)

@@ -370,10 +370,10 @@ void ServiceWorkerContainer::dispatchMessageEvent(WebServiceWorker* serviceWorke
     if (!executionContext() || !executionContext()->executingWindow())
         return;
 
-    OwnPtrWillBeRawPtr<MessagePortArray> ports = MessagePort::toMessagePortArray(executionContext(), webChannels);
+    MessagePortArray* ports = MessagePort::toMessagePortArray(executionContext(), webChannels);
     RefPtr<SerializedScriptValue> value = SerializedScriptValueFactory::instance().createFromWire(message);
     RefPtrWillBeRawPtr<ServiceWorker> source = ServiceWorker::from(executionContext(), serviceWorker);
-    dispatchEvent(ServiceWorkerMessageEvent::create(ports.release(), value, source));
+    dispatchEvent(ServiceWorkerMessageEvent::create(ports, value, source));
 }
 
 const AtomicString& ServiceWorkerContainer::interfaceName() const

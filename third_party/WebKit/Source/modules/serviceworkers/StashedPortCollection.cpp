@@ -32,11 +32,11 @@ void StashedPortCollection::addPorts(const StashedMessagePortArray& ports)
     m_ports.appendVector(ports);
 }
 
-PassRefPtrWillBeRawPtr<StashedMessagePort> StashedPortCollection::add(ScriptState* scriptState, const String& name, MessagePort* port)
+StashedMessagePort* StashedPortCollection::add(ScriptState* scriptState, const String& name, MessagePort* port)
 {
     OwnPtr<WebMessagePortChannel> webChannel = port->disentangle();
     ServiceWorkerGlobalScopeClient::from(executionContext())->stashMessagePort(webChannel.get(), name);
-    RefPtrWillBeRawPtr<StashedMessagePort> stashedPort = StashedMessagePort::create(*executionContext(), webChannel.release(), name);
+    StashedMessagePort* stashedPort = StashedMessagePort::create(*executionContext(), webChannel.release(), name);
     m_ports.append(stashedPort);
     return stashedPort;
 }

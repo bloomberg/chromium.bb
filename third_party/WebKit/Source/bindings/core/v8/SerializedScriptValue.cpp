@@ -190,13 +190,13 @@ bool SerializedScriptValue::extractTransferables(v8::Isolate* isolate, v8::Local
         }
         // Validation of Objects implementing an interface, per WebIDL spec 4.1.15.
         if (V8MessagePort::hasInstance(transferrable, isolate)) {
-            RefPtrWillBeRawPtr<MessagePort> port = V8MessagePort::toImpl(v8::Local<v8::Object>::Cast(transferrable));
+            MessagePort* port = V8MessagePort::toImpl(v8::Local<v8::Object>::Cast(transferrable));
             // Check for duplicate MessagePorts.
             if (ports.contains(port)) {
                 exceptionState.throwDOMException(DataCloneError, "Message port at index " + String::number(i) + " is a duplicate of an earlier port.");
                 return false;
             }
-            ports.append(port.release());
+            ports.append(port);
         } else if (V8ArrayBuffer::hasInstance(transferrable, isolate)) {
             RefPtr<DOMArrayBuffer> arrayBuffer = V8ArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(transferrable));
             if (arrayBuffers.contains(arrayBuffer)) {

@@ -42,10 +42,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<MessageEvent> createConnectEvent(PassRefPtrWillBeRawPtr<MessagePort> prpPort)
+PassRefPtrWillBeRawPtr<MessageEvent> createConnectEvent(MessagePort* port)
 {
-    RefPtrWillBeRawPtr<MessagePort> port = prpPort;
-    RefPtrWillBeRawPtr<MessageEvent> event = MessageEvent::create(adoptPtrWillBeNoop(new MessagePortArray(1, port)), String(), String(), port);
+    RefPtrWillBeRawPtr<MessageEvent> event = MessageEvent::create(new MessagePortArray(1, port), String(), String(), port);
     event->initEvent(EventTypeNames::connect, false, false);
     return event.release();
 }

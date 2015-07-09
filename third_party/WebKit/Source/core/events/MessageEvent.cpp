@@ -58,11 +58,11 @@ MessageEvent::MessageEvent(const AtomicString& type, const MessageEventInit& ini
     if (initializer.hasSource() && isValidSource(initializer.source().get()))
         m_source = initializer.source();
     if (initializer.hasPorts())
-        m_ports = adoptPtrWillBeNoop(new MessagePortArray(initializer.ports()));
+        m_ports = new MessagePortArray(initializer.ports());
     ASSERT(isValidSource(m_source.get()));
 }
 
-MessageEvent::MessageEvent(const String& origin, const String& lastEventId, PassRefPtrWillBeRawPtr<EventTarget> source, PassOwnPtrWillBeRawPtr<MessagePortArray> ports)
+MessageEvent::MessageEvent(const String& origin, const String& lastEventId, PassRefPtrWillBeRawPtr<EventTarget> source, MessagePortArray* ports)
     : Event(EventTypeNames::message, false, false)
     , m_dataType(DataTypeScriptValue)
     , m_origin(origin)
@@ -73,7 +73,7 @@ MessageEvent::MessageEvent(const String& origin, const String& lastEventId, Pass
     ASSERT(isValidSource(m_source.get()));
 }
 
-MessageEvent::MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtrWillBeRawPtr<EventTarget> source, PassOwnPtrWillBeRawPtr<MessagePortArray> ports)
+MessageEvent::MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtrWillBeRawPtr<EventTarget> source, MessagePortArray* ports)
     : Event(EventTypeNames::message, false, false)
     , m_dataType(DataTypeSerializedScriptValue)
     , m_dataAsSerializedScriptValue(data)
@@ -138,7 +138,7 @@ PassRefPtrWillBeRawPtr<MessageEvent> MessageEvent::create(const AtomicString& ty
     return adoptRefWillBeNoop(new MessageEvent(type, initializer));
 }
 
-void MessageEvent::initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, ScriptValue data, const String& origin, const String& lastEventId, DOMWindow* source, PassOwnPtrWillBeRawPtr<MessagePortArray> ports)
+void MessageEvent::initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, ScriptValue data, const String& origin, const String& lastEventId, DOMWindow* source, MessagePortArray* ports)
 {
     if (dispatched())
         return;
@@ -153,7 +153,7 @@ void MessageEvent::initMessageEvent(const AtomicString& type, bool canBubble, bo
     m_ports = ports;
 }
 
-void MessageEvent::initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, DOMWindow* source, PassOwnPtrWillBeRawPtr<MessagePortArray> ports)
+void MessageEvent::initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, DOMWindow* source, MessagePortArray* ports)
 {
     if (dispatched())
         return;

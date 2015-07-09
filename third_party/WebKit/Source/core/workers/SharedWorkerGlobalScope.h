@@ -69,7 +69,7 @@ private:
     String m_name;
 };
 
-CORE_EXPORT PassRefPtrWillBeRawPtr<MessageEvent> createConnectEvent(PassRefPtrWillBeRawPtr<MessagePort>);
+CORE_EXPORT PassRefPtrWillBeRawPtr<MessageEvent> createConnectEvent(MessagePort*);
 
 } // namespace blink
 

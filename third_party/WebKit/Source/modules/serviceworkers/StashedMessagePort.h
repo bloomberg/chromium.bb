@@ -13,7 +13,7 @@ namespace blink {
 class ExecutionContext;
 class StashedMessagePort;
 
-using StashedMessagePortArray = WillBeHeapVector<RefPtrWillBeMember<StashedMessagePort>, 1>;
+using StashedMessagePortArray = HeapVector<Member<StashedMessagePort>, 1>;
 
 // Represents a message port that has been stashed. Overrides messageAvailable
 // to dispatch messages as a global event instead of as events on this port.
@@ -21,10 +21,10 @@ class MODULES_EXPORT StashedMessagePort final : public MessagePort {
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(StashedMessagePort);
 public:
-    static PassRefPtrWillBeRawPtr<StashedMessagePort> create(ExecutionContext&, PassOwnPtr<WebMessagePortChannel>, const String& name);
+    static StashedMessagePort* create(ExecutionContext&, PassOwnPtr<WebMessagePortChannel>, const String& name);
     virtual ~StashedMessagePort();
 
-    static PassOwnPtrWillBeRawPtr<StashedMessagePortArray> toStashedMessagePortArray(ExecutionContext*, const WebMessagePortChannelArray&, const WebVector<WebString>& channelKeys);
+    static StashedMessagePortArray* toStashedMessagePortArray(ExecutionContext*, const WebMessagePortChannelArray&, const WebVector<WebString>& channelKeys);
 
     // StashedMessagePort.idl
     String name() const;

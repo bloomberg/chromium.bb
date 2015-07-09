@@ -110,15 +110,15 @@ void V8MessageEvent::initMessageEventMethodCustom(const v8::FunctionCallbackInfo
     TOSTRING_VOID(V8StringResource<>, originArg, info[4]);
     TOSTRING_VOID(V8StringResource<>, lastEventIdArg, info[5]);
     DOMWindow* sourceArg = toDOMWindow(info.GetIsolate(), info[6]);
-    OwnPtrWillBeRawPtr<MessagePortArray> portArray = nullptr;
+    MessagePortArray* portArray = nullptr;
     const int portArrayIndex = 7;
     if (!isUndefinedOrNull(info[portArrayIndex])) {
-        portArray = adoptPtrWillBeNoop(new MessagePortArray);
-        *portArray = toRefPtrWillBeMemberNativeArray<MessagePort, V8MessagePort>(info[portArrayIndex], portArrayIndex + 1, info.GetIsolate(), exceptionState);
+        portArray = new MessagePortArray;
+        *portArray = toMemberNativeArray<MessagePort, V8MessagePort>(info[portArrayIndex], portArrayIndex + 1, info.GetIsolate(), exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
-    event->initMessageEvent(typeArg, canBubbleArg, cancelableArg, ScriptValue(ScriptState::current(info.GetIsolate()), dataArg), originArg, lastEventIdArg, sourceArg, portArray.release());
+    event->initMessageEvent(typeArg, canBubbleArg, cancelableArg, ScriptValue(ScriptState::current(info.GetIsolate()), dataArg), originArg, lastEventIdArg, sourceArg, portArray);
 }
 
 } // namespace blink

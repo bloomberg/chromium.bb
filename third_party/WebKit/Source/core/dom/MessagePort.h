@@ -50,21 +50,20 @@ class ScriptState;
 class SerializedScriptValue;
 
 // The overwhelmingly common case is sending a single port, so handle that efficiently with an inline buffer of size 1.
-typedef WillBeHeapVector<RefPtrWillBeMember<MessagePort>, 1> MessagePortArray;
+typedef HeapVector<Member<MessagePort>, 1> MessagePortArray;
 
 // Not to be confused with WebMessagePortChannelArray; this one uses Vector and OwnPtr instead of WebVector and raw pointers.
 typedef Vector<OwnPtr<WebMessagePortChannel>, 1> MessagePortChannelArray;
 
 class CORE_EXPORT MessagePort
-    : public EventTargetWithInlineData
-    , public RefCountedWillBeNoBase<MessagePort>
+    : public RefCountedGarbageCollectedEventTargetWithInlineData<MessagePort>
     , public ActiveDOMObject
     , public WebMessagePortChannelClient {
     DEFINE_WRAPPERTYPEINFO();
-    REFCOUNTED_EVENT_TARGET(MessagePort);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MessagePort);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MessagePort);
 public:
-    static PassRefPtrWillBeRawPtr<MessagePort> create(ExecutionContext&);
+    static MessagePort* create(ExecutionContext&);
     ~MessagePort() override;
 
     void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
@@ -76,13 +75,13 @@ public:
     PassOwnPtr<WebMessagePortChannel> disentangle();
 
     static PassOwnPtr<WebMessagePortChannelArray> toWebMessagePortChannelArray(PassOwnPtr<MessagePortChannelArray>);
-    static PassOwnPtrWillBeRawPtr<MessagePortArray> toMessagePortArray(ExecutionContext*, const WebMessagePortChannelArray&);
+    static MessagePortArray* toMessagePortArray(ExecutionContext*, const WebMessagePortChannelArray&);
 
     // Returns 0 if there is an exception, or if the passed-in array is 0/empty.
     static PassOwnPtr<MessagePortChannelArray> disentanglePorts(ExecutionContext*, const MessagePortArray*, ExceptionState&);
 
     // Returns 0 if the passed array is 0/empty.
-    static PassOwnPtrWillBeRawPtr<MessagePortArray> entanglePorts(ExecutionContext&, PassOwnPtr<MessagePortChannelArray>);
+    static MessagePortArray* entanglePorts(ExecutionContext&, PassOwnPtr<MessagePortChannelArray>);
 
     bool started() const { return m_started; }
 

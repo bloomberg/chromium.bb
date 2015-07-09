@@ -61,7 +61,7 @@ public:
 private:
     explicit SharedWorker(ExecutionContext*);
 
-    RefPtrWillBeMember<MessagePort> m_port;
+    PersistentWillBeMember<MessagePort> m_port;
     bool m_isBeingConnected;
 };
 

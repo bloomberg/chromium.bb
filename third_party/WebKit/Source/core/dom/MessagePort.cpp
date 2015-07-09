@@ -43,11 +43,11 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<MessagePort> MessagePort::create(ExecutionContext& executionContext)
+MessagePort* MessagePort::create(ExecutionContext& executionContext)
 {
-    RefPtrWillBeRawPtr<MessagePort> port = adoptRefWillBeNoop(new MessagePort(executionContext));
+    MessagePort* port = new MessagePort(executionContext);
     port->suspendIfNeeded();
-    return port.release();
+    return port;
 }
 
 MessagePort::MessagePort(ExecutionContext& executionContext)
@@ -105,16 +105,16 @@ PassOwnPtr<WebMessagePortChannelArray> MessagePort::toWebMessagePortChannelArray
 }
 
 // static
-PassOwnPtrWillBeRawPtr<MessagePortArray> MessagePort::toMessagePortArray(ExecutionContext* context, const WebMessagePortChannelArray& webChannels)
+MessagePortArray* MessagePort::toMessagePortArray(ExecutionContext* context, const WebMessagePortChannelArray& webChannels)
 {
-    OwnPtrWillBeRawPtr<MessagePortArray> ports = nullptr;
+    MessagePortArray* ports = nullptr;
     if (!webChannels.isEmpty()) {
         OwnPtr<MessagePortChannelArray> channels = adoptPtr(new MessagePortChannelArray(webChannels.size()));
         for (size_t i = 0; i < webChannels.size(); ++i)
             (*channels)[i] = adoptPtr(webChannels[i]);
         ports = MessagePort::entanglePorts(*context, channels.release());
     }
-    return ports.release();
+    return ports;
 }
 
 PassOwnPtr<WebMessagePortChannel> MessagePort::disentangle()
@@ -209,8 +209,8 @@ void MessagePort::dispatchMessages()
         if (executionContext()->isWorkerGlobalScope() && toWorkerGlobalScope(executionContext())->isClosing())
             return;
 
-        OwnPtrWillBeRawPtr<MessagePortArray> ports = MessagePort::entanglePorts(*executionContext(), channels.release());
-        RefPtrWillBeRawPtr<Event> evt = MessageEvent::create(ports.release(), message.release());
+        MessagePortArray* ports = MessagePort::entanglePorts(*executionContext(), channels.release());
+        RefPtrWillBeRawPtr<Event> evt = MessageEvent::create(ports, message.release());
 
         dispatchEvent(evt.release(), ASSERT_NO_EXCEPTION);
     }
@@ -257,20 +257,20 @@ PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(ExecutionConte
     return portArray.release();
 }
 
-PassOwnPtrWillBeRawPtr<MessagePortArray> MessagePort::entanglePorts(ExecutionContext& context, PassOwnPtr<MessagePortChannelArray> channels)
+MessagePortArray* MessagePort::entanglePorts(ExecutionContext& context, PassOwnPtr<MessagePortChannelArray> channels)
 {
     // https://html.spec.whatwg.org/multipage/comms.html#message-ports
     // |ports| should be an empty array, not null even when there is no ports.
     if (!channels || !channels->size())
-        return adoptPtrWillBeNoop(new MessagePortArray());
+        return new MessagePortArray;
 
-    OwnPtrWillBeRawPtr<MessagePortArray> portArray = adoptPtrWillBeNoop(new MessagePortArray(channels->size()));
+    MessagePortArray* portArray = new MessagePortArray(channels->size());
     for (unsigned i = 0; i < channels->size(); ++i) {
-        RefPtrWillBeRawPtr<MessagePort> port = MessagePort::create(context);
+        MessagePort* port = MessagePort::create(context);
         port->entangle((*channels)[i].release());
-        (*portArray)[i] = port.release();
+        (*portArray)[i] = port;
     }
-    return portArray.release();
+    return portArray;
 }
 
 DEFINE_TRACE(MessagePort)

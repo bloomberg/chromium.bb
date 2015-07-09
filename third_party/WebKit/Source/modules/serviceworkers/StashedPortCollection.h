@@ -29,7 +29,7 @@ public:
     void addPorts(const StashedMessagePortArray&);
 
     // StashedPortCollection.idl
-    PassRefPtrWillBeRawPtr<StashedMessagePort> add(ScriptState*, const String& name, MessagePort*);
+    StashedMessagePort* add(ScriptState*, const String& name, MessagePort*);
 
     // EventTarget overrides.
     const AtomicString& interfaceName() const override;

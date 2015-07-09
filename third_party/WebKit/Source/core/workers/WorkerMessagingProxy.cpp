@@ -59,8 +59,8 @@ namespace {
 void processMessageOnWorkerGlobalScope(PassRefPtr<SerializedScriptValue> message, PassOwnPtr<MessagePortChannelArray> channels, WorkerObjectProxy* workerObjectProxy, ExecutionContext* scriptContext)
 {
     WorkerGlobalScope* globalScope = toWorkerGlobalScope(scriptContext);
-    OwnPtrWillBeRawPtr<MessagePortArray> ports = MessagePort::entanglePorts(*scriptContext, channels);
-    globalScope->dispatchEvent(MessageEvent::create(ports.release(), message));
+    MessagePortArray* ports = MessagePort::entanglePorts(*scriptContext, channels);
+    globalScope->dispatchEvent(MessageEvent::create(ports, message));
     workerObjectProxy->confirmMessageFromWorkerObject(scriptContext->hasPendingActivity());
 }
 
@@ -121,8 +121,8 @@ void WorkerMessagingProxy::postMessageToWorkerObject(PassRefPtr<SerializedScript
     if (!m_workerObject || m_askedToTerminate)
         return;
 
-    OwnPtrWillBeRawPtr<MessagePortArray> ports = MessagePort::entanglePorts(*m_executionContext.get(), channels);
-    m_workerObject->dispatchEvent(MessageEvent::create(ports.release(), message));
+    MessagePortArray* ports = MessagePort::entanglePorts(*m_executionContext.get(), channels);
+    m_workerObject->dispatchEvent(MessageEvent::create(ports, message));
 }
 
 void WorkerMessagingProxy::postMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue> message, PassOwnPtr<MessagePortChannelArray> channels)

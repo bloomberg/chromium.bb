@@ -51,7 +51,7 @@ class ExceptionState;
 class MessagePort;
 class WebBlobInfo;
 
-typedef WillBeHeapVector<RefPtrWillBeMember<MessagePort>, 1> MessagePortArray;
+typedef HeapVector<Member<MessagePort>, 1> MessagePortArray;
 typedef Vector<RefPtr<DOMArrayBuffer>, 1> ArrayBufferArray;
 typedef HashMap<String, RefPtr<BlobDataHandle>> BlobDataHandleMap;
 typedef Vector<WebBlobInfo> WebBlobInfoArray;

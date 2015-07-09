@@ -14,11 +14,11 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<StashedMessagePort> StashedMessagePort::create(ExecutionContext& executionContext, PassOwnPtr<WebMessagePortChannel> remote, const String& name)
+StashedMessagePort* StashedMessagePort::create(ExecutionContext& executionContext, PassOwnPtr<WebMessagePortChannel> remote, const String& name)
 {
-    RefPtrWillBeRawPtr<StashedMessagePort> port = adoptRefWillBeNoop(new StashedMessagePort(executionContext, remote, name));
+    StashedMessagePort* port = new StashedMessagePort(executionContext, remote, name);
     port->suspendIfNeeded();
-    return port.release();
+    return port;
 }
 
 StashedMessagePort::StashedMessagePort(ExecutionContext& executionContext, PassOwnPtr<WebMessagePortChannel> remote, const String& name)
@@ -32,14 +32,14 @@ StashedMessagePort::~StashedMessagePort()
 {
 }
 
-PassOwnPtrWillBeRawPtr<StashedMessagePortArray> StashedMessagePort::toStashedMessagePortArray(ExecutionContext* context, const WebMessagePortChannelArray& webChannels, const WebVector<WebString>& channelKeys)
+StashedMessagePortArray* StashedMessagePort::toStashedMessagePortArray(ExecutionContext* context, const WebMessagePortChannelArray& webChannels, const WebVector<WebString>& channelKeys)
 {
-    OwnPtrWillBeRawPtr<StashedMessagePortArray> ports = adoptPtrWillBeNoop(new StashedMessagePortArray(webChannels.size()));
+    StashedMessagePortArray* ports = new StashedMessagePortArray(webChannels.size());
     for (size_t i = 0; i < webChannels.size(); ++i) {
         OwnPtr<WebMessagePortChannel> channel(adoptPtr(webChannels[i]));
         (*ports)[i] = StashedMessagePort::create(*context, channel.release(), channelKeys[i]);
     }
-    return ports.release();
+    return ports;
 }
 
 String StashedMessagePort::name() const
@@ -63,8 +63,8 @@ void StashedMessagePort::dispatchMessages()
     RefPtr<SerializedScriptValue> message;
     OwnPtr<MessagePortChannelArray> channels;
     while (tryGetMessage(message, channels)) {
-        OwnPtrWillBeRawPtr<MessagePortArray> ports = MessagePort::entanglePorts(*executionContext(), channels.release());
-        RefPtrWillBeRawPtr<Event> evt = MessageEvent::create(ports.release(), message.release(), String(), String(), this);
+        MessagePortArray* ports = MessagePort::entanglePorts(*executionContext(), channels.release());
+        RefPtrWillBeRawPtr<Event> evt = MessageEvent::create(ports, message.release(), String(), String(), this);
 
         stashedPorts->dispatchEvent(evt.release(), ASSERT_NO_EXCEPTION);
     }

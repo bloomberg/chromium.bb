@@ -286,11 +286,11 @@ void WebSharedWorkerImpl::connect(WebMessagePortChannel* webChannel)
 void WebSharedWorkerImpl::connectTask(PassOwnPtr<WebMessagePortChannel> channel, ExecutionContext* context)
 {
     // Wrap the passed-in channel in a MessagePort, and send it off via a connect event.
-    RefPtrWillBeRawPtr<MessagePort> port = MessagePort::create(*context);
+    MessagePort* port = MessagePort::create(*context);
     port->entangle(channel);
     WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
     ASSERT_WITH_SECURITY_IMPLICATION(workerGlobalScope->isSharedWorkerGlobalScope());
-    workerGlobalScope->dispatchEvent(createConnectEvent(port.release()));
+    workerGlobalScope->dispatchEvent(createConnectEvent(port));
 }
 
 void WebSharedWorkerImpl::startWorkerContext(const WebURL& url, const WebString& name, const WebString& contentSecurityPolicy, WebContentSecurityPolicyType policyType)

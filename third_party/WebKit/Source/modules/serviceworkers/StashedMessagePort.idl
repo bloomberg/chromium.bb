@@ -7,6 +7,7 @@
 [
     Exposed=ServiceWorker,
     RuntimeEnabled=NavigatorConnect,
+    GarbageCollected,
 ] interface StashedMessagePort : MessagePort {
     readonly attribute DOMString name;
 };

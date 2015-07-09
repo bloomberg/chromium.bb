@@ -129,9 +129,9 @@ void ServiceWorkerGlobalScopeProxy::dispatchMessageEvent(const WebString& messag
 {
     ASSERT(m_workerGlobalScope);
 
-    OwnPtrWillBeRawPtr<MessagePortArray> ports = MessagePort::toMessagePortArray(m_workerGlobalScope, webChannels);
+    MessagePortArray* ports = MessagePort::toMessagePortArray(m_workerGlobalScope, webChannels);
     WebSerializedScriptValue value = WebSerializedScriptValue::fromString(message);
-    m_workerGlobalScope->dispatchEvent(MessageEvent::create(ports.release(), value));
+    m_workerGlobalScope->dispatchEvent(MessageEvent::create(ports, value));
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchNotificationClickEvent(int eventID, int64_t notificationID, const WebNotificationData& data)
@@ -185,10 +185,10 @@ void ServiceWorkerGlobalScopeProxy::dispatchCrossOriginConnectEvent(int eventID,
 void ServiceWorkerGlobalScopeProxy::dispatchCrossOriginMessageEvent(const WebCrossOriginServiceWorkerClient& webClient, const WebString& message, const WebMessagePortChannelArray& webChannels)
 {
     ASSERT(m_workerGlobalScope);
-    OwnPtrWillBeRawPtr<MessagePortArray> ports = MessagePort::toMessagePortArray(m_workerGlobalScope, webChannels);
+    MessagePortArray* ports = MessagePort::toMessagePortArray(m_workerGlobalScope, webChannels);
     WebSerializedScriptValue value = WebSerializedScriptValue::fromString(message);
     // FIXME: Have proper source for this MessageEvent.
-    RefPtrWillBeRawPtr<MessageEvent> event = MessageEvent::create(ports.release(), value, webClient.origin.string());
+    RefPtrWillBeRawPtr<MessageEvent> event = MessageEvent::create(ports, value, webClient.origin.string());
     event->setType(EventTypeNames::crossoriginmessage);
     m_workerGlobalScope->dispatchEvent(event);
 }
@@ -196,7 +196,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchCrossOriginMessageEvent(const WebCro
 void ServiceWorkerGlobalScopeProxy::addStashedMessagePorts(const WebMessagePortChannelArray& webChannels, const WebVector<WebString>& webChannelNames)
 {
     ASSERT(m_workerGlobalScope);
-    OwnPtrWillBeRawPtr<StashedMessagePortArray> ports = StashedMessagePort::toStashedMessagePortArray(m_workerGlobalScope, webChannels, webChannelNames);
+    StashedMessagePortArray* ports = StashedMessagePort::toStashedMessagePortArray(m_workerGlobalScope, webChannels, webChannelNames);
     m_workerGlobalScope->ports()->addPorts(*ports);
 }
 
