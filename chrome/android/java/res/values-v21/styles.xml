@@ -58,7 +58,7 @@
         parent="@android:style/TextAppearance.Material.Notification.Title">
     </style>
     <style name="MediaNotificationText"
-        parent="@android:style/TextAppearance.Material.Notification.Line2"/>
+        parent="@android:style/TextAppearance.Material.Notification"/>
     <style name="RemoteNotificationTitle"
         parent="@android:style/TextAppearance.Material.Notification.Title">
         <item name="android:layout_marginBottom">4dp</item>
