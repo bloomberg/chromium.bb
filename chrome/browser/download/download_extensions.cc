@@ -209,7 +209,9 @@ const struct FileType {
     // privileges.
     {"js", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 
-    // JScript encoded script file.
+    // JScript encoded script file. Usually produced by running Microsoft Script
+    // Encoder over a .js file.
+    // See https://msdn.microsoft.com/library/d14c8zsc.aspx
     {"jse", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 
     // Shortcuts. May open anything.
@@ -291,15 +293,19 @@ const struct FileType {
     {"reg", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 
     // Microsoft Windows Explorer Command.
+    // See https://support.microsoft.com/kb/190355 for an example.
     {"scf", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
 
     // Microsoft Windows Screen Saver.
     {"scr", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 
     // Microsoft Windows Script Component. Microsoft FoxPro Screen.
+    // A Script Component is a COM component created using script.
+    // See https://msdn.microsoft.com/library/aa233148.aspx for an example.
     {"sct", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
 
     // Microsoft Windows Shortcut into a document.
+    // See https://support.microsoft.com/kb/212344
     {"shb", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
 
     // Shell Scrap Object File.

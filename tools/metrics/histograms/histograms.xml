@@ -66339,6 +66339,32 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="23" label="TORRENT"/>
   <int value="24" label="WEBSITE"/>
   <int value="25" label="URL"/>
+  <int value="26" label="VBE"/>
+  <int value="27" label="VBS"/>
+  <int value="28" label="JS"/>
+  <int value="29" label="JSE"/>
+  <int value="30" label="MHT"/>
+  <int value="31" label="MHTML"/>
+  <int value="32" label="MSC"/>
+  <int value="33" label="MSP"/>
+  <int value="34" label="MST"/>
+  <int value="35" label="BAS"/>
+  <int value="36" label="HTA"/>
+  <int value="37" label="MSH"/>
+  <int value="38" label="MSH1"/>
+  <int value="39" label="MSH1XML"/>
+  <int value="40" label="MSH2"/>
+  <int value="41" label="MSH2XML"/>
+  <int value="42" label="MSHXML"/>
+  <int value="43" label="PS1"/>
+  <int value="44" label="PS1XML"/>
+  <int value="45" label="PS2"/>
+  <int value="46" label="PS2XML"/>
+  <int value="47" label="PSC1"/>
+  <int value="48" label="PSC2"/>
+  <int value="49" label="SCF"/>
+  <int value="50" label="SCT"/>
+  <int value="51" label="WSF"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary" type="int">
