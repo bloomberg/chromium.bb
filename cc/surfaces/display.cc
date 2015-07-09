@@ -154,7 +154,6 @@ bool Display::DrawAndSwap() {
     return false;
 
   TRACE_EVENT0("cc", "Display::DrawAndSwap");
-  benchmark_instrumentation::IssueDisplayRenderingStatsEvent();
 
   // Run callbacks early to allow pipelining.
   for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
@@ -206,6 +205,7 @@ bool Display::DrawAndSwap() {
           TRACE_ID_DONT_MANGLE(latency.trace_id),
           "Display::DrawAndSwap");
     }
+    benchmark_instrumentation::IssueDisplayRenderingStatsEvent();
     renderer_->SwapBuffers(frame->metadata);
   } else {
     stored_latency_info_.insert(stored_latency_info_.end(),
