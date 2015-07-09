@@ -156,8 +156,6 @@
       'renderer/dom_storage/webstoragearea_impl.h',
       'renderer/dom_storage/webstoragenamespace_impl.cc',
       'renderer/dom_storage/webstoragenamespace_impl.h',
-      'renderer/dom_utils.cc',
-      'renderer/dom_utils.h',
       'renderer/drop_data_builder.cc',
       'renderer/drop_data_builder.h',
       'renderer/fetchers/manifest_fetcher.cc',

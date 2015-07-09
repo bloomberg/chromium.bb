@@ -66,7 +66,6 @@
 #include "content/renderer/context_menu_params_builder.h"
 #include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/dom_automation_controller.h"
-#include "content/renderer/dom_utils.h"
 #include "content/renderer/external_popup_menu.h"
 #include "content/renderer/geolocation_dispatcher.h"
 #include "content/renderer/gpu/gpu_benchmarking_extension.h"
@@ -1239,11 +1238,8 @@ void RenderFrameImpl::OnContextMenuClosed(
       pending_context_menus_.Remove(custom_context.request_id);
     }
   } else {
-    if (custom_context.link_followed.is_valid()) {
-        frame_->sendPings(
-            DomUtils::ExtractParentAnchorNode(context_menu_node_),
-            custom_context.link_followed);
-    }
+    if (custom_context.link_followed.is_valid())
+        frame_->sendPings(context_menu_node_, custom_context.link_followed);
     // Internal request, forward to WebKit.
     context_menu_node_.reset();
   }
