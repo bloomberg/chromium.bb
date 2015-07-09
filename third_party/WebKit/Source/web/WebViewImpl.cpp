@@ -4106,11 +4106,6 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
     suppressInvalidations(false);
 }
 
-void WebViewImpl::scheduleCompositingLayerSync()
-{
-    m_layerTreeView->setNeedsAnimate();
-}
-
 void WebViewImpl::invalidateRect(const IntRect& rect)
 {
     if (m_layerTreeView)

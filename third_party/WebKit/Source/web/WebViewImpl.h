@@ -436,7 +436,6 @@ public:
 
     GraphicsLayer* rootGraphicsLayer();
     void setRootGraphicsLayer(GraphicsLayer*);
-    void scheduleCompositingLayerSync();
     GraphicsLayerFactory* graphicsLayerFactory() const;
     DeprecatedPaintLayerCompositor* compositor() const;
     void registerForAnimations(WebLayer*);
