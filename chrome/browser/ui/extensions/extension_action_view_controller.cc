@@ -218,6 +218,10 @@ void ExtensionActionViewController::RegisterCommand() {
   platform_delegate_->RegisterCommand();
 }
 
+bool ExtensionActionViewController::DisabledClickOpensMenu() const {
+  return extensions::FeatureSwitch::extension_action_redesign()->IsEnabled();
+}
+
 void ExtensionActionViewController::InspectPopup() {
   ExecuteAction(SHOW_POPUP_AND_INSPECT, true);
 }

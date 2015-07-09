@@ -325,9 +325,23 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
   // mouse-up).
   NSPoint location = [self convertPoint:[theEvent locationInWindow]
                                fromView:nil];
+  // Only perform the click if we didn't drag the button.
   if (NSPointInRect(location, [self bounds]) && !isBeingDragged_) {
-    // Only perform the click if we didn't drag the button.
-    [self performClick:self];
+    // There's also a chance that the action is disabled, and the left click
+    // should show the context menu.
+    if (!viewController_->IsEnabled(
+            [browserActionsController_ currentWebContents]) &&
+        viewController_->DisabledClickOpensMenu()) {
+      // No menus-in-menus; see comment in -rightMouseDown:.
+      if ([browserActionsController_ isOverflow]) {
+        [browserActionsController_ mainButtonForId:viewController_->GetId()]->
+            viewControllerDelegate_->ShowContextMenu();
+      } else {
+        [NSMenu popUpContextMenu:[self menu] withEvent:theEvent forView:self];
+      }
+    } else {
+      [self performClick:self];
+    }
   } else {
     // Make sure an ESC to end a drag doesn't trigger 2 endDrags.
     if (isBeingDragged_) {
@@ -398,7 +412,9 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
   if (!image.IsEmpty())
     [self setImage:image.ToNSImage()];
 
-  [self setEnabled:viewController_->IsEnabled(webContents)];
+  BOOL enabled = viewController_->IsEnabled(webContents) ||
+                 viewController_->DisabledClickOpensMenu();
+  [self setEnabled:enabled];
 
   [self setNeedsDisplay:YES];
 }

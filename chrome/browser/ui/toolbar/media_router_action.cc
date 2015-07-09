@@ -100,3 +100,7 @@ MediaRouterAction::GetMediaRouterDialogController() {
   DCHECK(web_contents);
   return MediaRouterDialogController::GetOrCreateForWebContents(web_contents);
 }
+
+bool MediaRouterAction::DisabledClickOpensMenu() const {
+  return false;
+}

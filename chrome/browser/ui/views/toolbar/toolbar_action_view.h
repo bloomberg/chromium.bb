@@ -136,6 +136,12 @@ class ToolbarActionView : public views::MenuButton,
   // Returns true if a menu was closed, false otherwise.
   bool CloseActiveMenuIfNeeded();
 
+  // Unfortunately, due to the dual-nature of a ToolbarActionView as both a
+  // label button and a menu button, activation can happen as part of either
+  // ButtonPressed() or Activate(). Handle both in this function.
+  void HandleActivation(const gfx::Point& menu_point,
+                        ui::MenuSourceType source_type);
+
   // A lock to keep the MenuButton pressed when a menu or popup is visible.
   scoped_ptr<views::MenuButton::PressedLock> pressed_lock_;
 

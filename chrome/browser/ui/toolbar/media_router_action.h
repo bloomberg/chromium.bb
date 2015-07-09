@@ -37,6 +37,7 @@ class MediaRouterAction : public ToolbarActionViewController {
   bool CanDrag() const override;
   bool ExecuteAction(bool by_user) override;
   void UpdateState() override;
+  bool DisabledClickOpensMenu() const override;
 
  private:
   // Returns a reference to the MediaRouterDialogController associated with

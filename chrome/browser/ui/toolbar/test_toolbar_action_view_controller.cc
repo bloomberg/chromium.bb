@@ -15,6 +15,7 @@ TestToolbarActionViewController::TestToolbarActionViewController(
       delegate_(nullptr),
       is_enabled_(true),
       wants_to_run_(false),
+      disabled_click_opens_menu_(false),
       execute_action_count_(0) {
 }
 
@@ -90,6 +91,10 @@ void TestToolbarActionViewController::UpdateState() {
   UpdateDelegate();
 }
 
+bool TestToolbarActionViewController::DisabledClickOpensMenu() const {
+  return disabled_click_opens_menu_;
+}
+
 void TestToolbarActionViewController::ShowPopup(bool by_user) {
   delegate_->OnPopupShown(by_user);
 }
@@ -113,6 +118,12 @@ void TestToolbarActionViewController::SetEnabled(bool is_enabled) {
 
 void TestToolbarActionViewController::SetWantsToRun(bool wants_to_run) {
   wants_to_run_ = wants_to_run;
+  UpdateDelegate();
+}
+
+void TestToolbarActionViewController::SetDisabledClickOpensMenu(
+    bool disabled_click_opens_menu) {
+  disabled_click_opens_menu_ = disabled_click_opens_menu;
   UpdateDelegate();
 }
 

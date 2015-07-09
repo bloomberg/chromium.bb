@@ -64,6 +64,33 @@ class TestToolbarActionViewDelegate : public ToolbarActionView::Delegate {
   DISALLOW_COPY_AND_ASSIGN(TestToolbarActionViewDelegate);
 };
 
+class OpenMenuListener : public views::ContextMenuController {
+ public:
+  explicit OpenMenuListener(views::View* view)
+      : view_(view),
+        opened_menu_(false) {
+    view_->set_context_menu_controller(this);
+  }
+  ~OpenMenuListener() override {
+    view_->set_context_menu_controller(nullptr);
+  }
+
+  void ShowContextMenuForView(views::View* source,
+                              const gfx::Point& point,
+                              ui::MenuSourceType source_type) override {
+    opened_menu_ = true;
+  };
+
+  bool opened_menu() const { return opened_menu_; }
+
+ private:
+  views::View* view_;
+
+  bool opened_menu_;
+
+  DISALLOW_COPY_AND_ASSIGN(OpenMenuListener);
+};
+
 }  // namespace
 
 class ToolbarActionViewUnitTest : public views::ViewsTestBase {
@@ -168,6 +195,19 @@ TEST_F(ToolbarActionViewUnitTest, BasicToolbarActionViewTest) {
   EXPECT_EQ(views::Button::STATE_DISABLED, view.state());
   controller.SetEnabled(true);
   EXPECT_EQ(views::Button::STATE_NORMAL, view.state());
+
+  // Ensure that clicking on an otherwise-disabled action optionally opens the
+  // context menu.
+  controller.SetDisabledClickOpensMenu(true);
+  controller.SetEnabled(false);
+  EXPECT_EQ(views::Button::STATE_NORMAL, view.state());
+  int old_execute_action_count = controller.execute_action_count();
+  {
+    OpenMenuListener menu_listener(&view);
+    view.Activate();
+    EXPECT_TRUE(menu_listener.opened_menu());
+    EXPECT_EQ(old_execute_action_count, controller.execute_action_count());
+  }
 
   // Ensure that the button's want-to-run state reflects that of the controller.
   controller.SetWantsToRun(true);

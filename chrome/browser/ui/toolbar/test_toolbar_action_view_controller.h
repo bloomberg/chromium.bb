@@ -33,6 +33,7 @@ class TestToolbarActionViewController : public ToolbarActionViewController {
   bool CanDrag() const override;
   bool ExecuteAction(bool by_user) override;
   void UpdateState() override;
+  bool DisabledClickOpensMenu() const override;
 
   // Instruct the controller to fake showing a popup.
   void ShowPopup(bool by_user);
@@ -42,6 +43,7 @@ class TestToolbarActionViewController : public ToolbarActionViewController {
   void SetTooltip(const base::string16& tooltip);
   void SetEnabled(bool is_enabled);
   void SetWantsToRun(bool wants_to_run);
+  void SetDisabledClickOpensMenu(bool disabled_click_opens_menu);
 
   int execute_action_count() const { return execute_action_count_; }
 
@@ -64,6 +66,9 @@ class TestToolbarActionViewController : public ToolbarActionViewController {
 
   // Whether or not the action wants to run. Defaults to false.
   bool wants_to_run_;
+
+  // Whether or not a click on a disabled action should open the context menu.
+  bool disabled_click_opens_menu_;
 
   // The number of times the action would have been executed.
   int execute_action_count_;

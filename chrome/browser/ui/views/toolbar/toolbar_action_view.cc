@@ -117,7 +117,20 @@ void ToolbarActionView::GetAccessibleState(ui::AXViewState* state) {
 
 void ToolbarActionView::ButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
-  view_controller_->ExecuteAction(true);
+  gfx::Point menu_point;
+  ui::MenuSourceType type = ui::MENU_SOURCE_NONE;
+  if (event.IsMouseEvent()) {
+    menu_point = static_cast<const ui::MouseEvent&>(event).location();
+    type = ui::MENU_SOURCE_MOUSE;
+  } else if (event.IsKeyEvent()) {
+    menu_point = GetKeyboardContextMenuLocation();
+    type = ui::MENU_SOURCE_KEYBOARD;
+  } else if (event.IsGestureEvent()) {
+    menu_point = static_cast<const ui::GestureEvent&>(event).location();
+    type = ui::MENU_SOURCE_TOUCH;
+  }
+
+  HandleActivation(menu_point, type);
 }
 
 void ToolbarActionView::UpdateState() {
@@ -125,10 +138,12 @@ void ToolbarActionView::UpdateState() {
   if (SessionTabHelper::IdForTab(web_contents) < 0)
     return;
 
-  if (!view_controller_->IsEnabled(web_contents))
-    SetState(views::CustomButton::STATE_DISABLED);
-  else if (state() == views::CustomButton::STATE_DISABLED)
+  if (!view_controller_->IsEnabled(web_contents) &&
+      !view_controller_->DisabledClickOpensMenu()) {
+      SetState(views::CustomButton::STATE_DISABLED);
+  } else if (state() == views::CustomButton::STATE_DISABLED) {
     SetState(views::CustomButton::STATE_NORMAL);
+  }
 
   wants_to_run_ = view_controller_->WantsToRun(web_contents);
 
@@ -162,7 +177,11 @@ bool ToolbarActionView::Activate() {
   if (!view_controller_->HasPopup(GetCurrentWebContents()))
     return true;
 
-  view_controller_->ExecuteAction(true);
+  // Unfortunately, we don't get any of the event points for this call. Since
+  // these are only used for showing a context menu when an action is disabled,
+  // it's not that big a deal. Fake it.
+  // TODO(devlin): This could obviously be improved.
+  HandleActivation(GetKeyboardContextMenuLocation(), ui::MENU_SOURCE_KEYBOARD);
 
   // TODO(erikkay): Run a nested modal loop while the mouse is down to
   // enable menu-like drag-select behavior.
@@ -360,4 +379,17 @@ bool ToolbarActionView::CloseActiveMenuIfNeeded() {
   }
 
   return false;
+}
+
+void ToolbarActionView::HandleActivation(const gfx::Point& menu_point,
+                                         ui::MenuSourceType source_type) {
+  if (!view_controller_->IsEnabled(GetCurrentWebContents())) {
+    // We should only get a button pressed event with a non-enabled action if
+    // the left-click behavior should open the menu.
+    DCHECK(view_controller_->DisabledClickOpensMenu());
+    context_menu_controller()->ShowContextMenuForView(
+        this, menu_point, source_type);
+  } else {
+    view_controller_->ExecuteAction(true);
+  }
 }
