@@ -63,7 +63,7 @@ public:
     Position startPosition() const;
     Position endPosition() const;
 
-    void calculateCharacterSubrange(int offset, int length, Position& startPosition, Position& endPosition);
+    EphemeralRange calculateCharacterSubrange(int offset, int length);
 
 private:
     void initialize();

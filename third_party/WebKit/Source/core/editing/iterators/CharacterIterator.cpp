@@ -212,14 +212,14 @@ void CharacterIterator::advance(int count)
     m_runOffset = 0;
 }
 
-void CharacterIterator::calculateCharacterSubrange(int offset, int length, Position& startPos, Position& endPos)
+EphemeralRange CharacterIterator::calculateCharacterSubrange(int offset, int length)
 {
     advance(offset);
-    startPos = startPosition();
+    const Position startPosition = this->startPosition();
 
     if (length > 1)
         advance(length - 1);
-    endPos = endPosition();
+    return EphemeralRange(startPosition, endPosition());
 }
 
 static const size_t minimumSearchBufferSize = 8192;
@@ -626,7 +626,9 @@ void findPlainText(const Position& inputStart, const Position& inputEnd, const S
     }
 
     CharacterIterator computeRangeIterator(inputStart, inputEnd, iteratorFlagsForFindPlainText);
-    computeRangeIterator.calculateCharacterSubrange(matchStart, matchLength, resultStart, resultEnd);
+    EphemeralRange resultRange = computeRangeIterator.calculateCharacterSubrange(matchStart, matchLength);
+    resultStart = resultRange.startPosition();
+    resultEnd = resultRange.endPosition();
 }
 
 } // namespace blink

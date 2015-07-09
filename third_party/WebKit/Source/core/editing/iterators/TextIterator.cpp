@@ -33,6 +33,7 @@
 #include "core/dom/FirstLetterPseudoElement.h"
 #include "core/dom/Position.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
@@ -1066,17 +1067,19 @@ template<typename Strategy>
 PassRefPtrWillBeRawPtr<Range> TextIteratorAlgorithm<Strategy>::subrange(Range* entireRange, int characterOffset, int characterCount)
 {
     CharacterIterator entireRangeIterator(entireRange->startPosition(), entireRange->endPosition(), TextIteratorEmitsObjectReplacementCharacter);
-    Position start;
-    Position end;
-    entireRangeIterator.calculateCharacterSubrange(characterOffset, characterCount, start, end);
-    return Range::create(entireRange->ownerDocument(), start, end);
+    EphemeralRange range = entireRangeIterator.calculateCharacterSubrange(characterOffset, characterCount);
+    if (range.isNull())
+        return nullptr;
+    return Range::create(range.document(), range.startPosition(), range.endPosition());
 }
 
 template<typename Strategy>
 void TextIteratorAlgorithm<Strategy>::subrange(Position& start, Position& end, int characterOffset, int characterCount)
 {
     CharacterIterator entireRangeIterator(start, end, TextIteratorEmitsObjectReplacementCharacter);
-    entireRangeIterator.calculateCharacterSubrange(characterOffset, characterCount, start, end);
+    EphemeralRange range = entireRangeIterator.calculateCharacterSubrange(characterOffset, characterCount);
+    start = range.startPosition();
+    end = range.endPosition();
 }
 
 // --------
