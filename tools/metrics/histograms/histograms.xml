@@ -28309,6 +28309,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.UserStoredPasswordWithInvalidSSLCert"
+    enum="Boolean">
+  <owner>xunlu@chromium.org</owner>
+  <owner>gcasto@chromium.org</owner>
+  <summary>
+    Whether saved password for HTTPS site had a valid SSL cert when the password
+    was saved.
+  </summary>
+</histogram>
+
 <histogram name="Pepper.InterfaceUsed" enum="PepperInterface">
   <owner>mackinlay@google.com</owner>
   <owner>teravest@chromium.org</owner>

@@ -24,6 +24,7 @@
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
+#include "url/url_constants.h"
 
 using autofill::PasswordForm;
 
@@ -526,6 +527,22 @@ void LoginDatabase::ReportMetrics(const std::string& sync_username,
     UMA_HISTOGRAM_COUNTS_100(
         "PasswordManager.EmptyUsernames.WithoutCorrespondingNonempty",
         num_entries);
+  }
+
+  sql::Statement invalid_ssl_cert_statement(db_.GetCachedStatement(
+      SQL_FROM_HERE, "SELECT origin_url, ssl_valid FROM logins;"));
+
+  if (!invalid_ssl_cert_statement.is_valid())
+    return;
+
+  while (invalid_ssl_cert_statement.Step()) {
+    GURL url = GURL(invalid_ssl_cert_statement.ColumnString(0));
+
+    if (url.SchemeIs(url::kHttpsScheme)) {
+      metrics_util::LogUMAHistogramBoolean(
+          "PasswordManager.UserStoredPasswordWithInvalidSSLCert",
+          invalid_ssl_cert_statement.ColumnInt(1) == 0);
+    }
   }
 }
 
