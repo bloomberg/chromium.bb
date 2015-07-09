@@ -58,10 +58,6 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
                                              std::string* partition_name,
                                              bool* in_memory);
 
-  // Returns guest_view::kInstanceIDNone if |contents| does not correspond to a
-  // WebViewGuest.
-  static int GetViewInstanceId(content::WebContents* contents);
-
   static const char Type[];
 
   // Returns the stored rules registry ID of the given webview. Will generate

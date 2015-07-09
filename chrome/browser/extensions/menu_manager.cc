@@ -23,6 +23,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/context_menu_params.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
@@ -33,7 +34,9 @@
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/text_elider.h"
 
+using content::ChildProcessHost;
 using content::WebContents;
+using guest_view::kInstanceIDNone;
 
 namespace extensions {
 
@@ -341,8 +344,8 @@ const MenuItem::List* MenuManager::MenuItems(
 
 bool MenuManager::AddContextItem(const Extension* extension, MenuItem* item) {
   const MenuItem::ExtensionKey& key = item->id().extension_key;
-  // The item must have a non-empty extension id, and not have already been
-  // added.
+
+  // The item must have a non-empty key, and not have already been added.
   if (key.empty() || ContainsKey(items_by_id_, item->id()))
     return false;
 
@@ -513,9 +516,20 @@ bool MenuManager::RemoveContextMenuItem(const MenuItem::Id& id) {
 
 void MenuManager::RemoveAllContextItems(
     const MenuItem::ExtensionKey& extension_key) {
+  auto it = context_items_.find(extension_key);
+  if (it == context_items_.end())
+    return;
+
+  // We use the |extension_id| from the stored ExtensionKey, since the provided
+  // |extension_key| may leave it empty (if matching solely basted on the
+  // webview IDs).
+  // TODO(paulmeyer): We can get rid of this hack if/when we reliably track
+  // extension IDs at WebView cleanup.
+  std::string extension_id = it->first.extension_id;
+  MenuItem::List& context_items_for_key = it->second;
   MenuItem::List::iterator i;
-  for (i = context_items_[extension_key].begin();
-       i != context_items_[extension_key].end();
+  for (i = context_items_for_key.begin();
+       i != context_items_for_key.end();
        ++i) {
     MenuItem* item = *i;
     items_by_id_.erase(item->id());
@@ -527,9 +541,9 @@ void MenuManager::RemoveAllContextItems(
       items_by_id_.erase(*j);
     }
   }
-  STLDeleteElements(&context_items_[extension_key]);
+  STLDeleteElements(&context_items_for_key);
   context_items_.erase(extension_key);
-  icon_manager_.RemoveIcon(extension_key.extension_id);
+  icon_manager_.RemoveIcon(extension_id);
 }
 
 MenuItem* MenuManager::GetItemById(const MenuItem::Id& id) const {
@@ -886,25 +900,52 @@ void MenuManager::RemoveAllIncognitoContextItems() {
     RemoveContextMenuItem(*remove_iter);
 }
 
-MenuItem::ExtensionKey::ExtensionKey() : webview_instance_id(0) {}
-
-MenuItem::ExtensionKey::ExtensionKey(const std::string& extension_id,
-                                     int webview_instance_id)
-    : extension_id(extension_id), webview_instance_id(webview_instance_id) {}
+MenuItem::ExtensionKey::ExtensionKey()
+    : webview_embedder_process_id(ChildProcessHost::kInvalidUniqueID),
+      webview_instance_id(kInstanceIDNone) {}
 
 MenuItem::ExtensionKey::ExtensionKey(const std::string& extension_id)
-    : extension_id(extension_id), webview_instance_id(0) {}
+    : extension_id(extension_id),
+      webview_embedder_process_id(ChildProcessHost::kInvalidUniqueID),
+      webview_instance_id(kInstanceIDNone) {
+  DCHECK(!extension_id.empty());
+}
+
+MenuItem::ExtensionKey::ExtensionKey(const std::string& extension_id,
+                                     int webview_embedder_process_id,
+                                     int webview_instance_id)
+    : extension_id(extension_id),
+      webview_embedder_process_id(webview_embedder_process_id),
+      webview_instance_id(webview_instance_id) {
+  DCHECK(webview_embedder_process_id != ChildProcessHost::kInvalidUniqueID &&
+         webview_instance_id != kInstanceIDNone);
+}
 
 bool MenuItem::ExtensionKey::operator==(const ExtensionKey& other) const {
-  return extension_id == other.extension_id &&
-         webview_instance_id == other.webview_instance_id;
+  bool webview_ids_match = webview_instance_id == other.webview_instance_id &&
+      webview_embedder_process_id == other.webview_embedder_process_id;
+
+  // If either extension ID is empty, then these ExtensionKeys will be matched
+  // only based on the other IDs.
+  if (extension_id.empty() || other.extension_id.empty())
+    return webview_ids_match;
+
+  return extension_id == other.extension_id && webview_ids_match;
 }
 
 bool MenuItem::ExtensionKey::operator<(const ExtensionKey& other) const {
-  if (extension_id != other.extension_id)
-    return extension_id < other.extension_id;
+  if (webview_embedder_process_id != other.webview_embedder_process_id)
+    return webview_embedder_process_id < other.webview_embedder_process_id;
 
-  return webview_instance_id < other.webview_instance_id;
+  if (webview_instance_id != other.webview_instance_id)
+    return webview_instance_id < other.webview_instance_id;
+
+  // If either extension ID is empty, then these ExtensionKeys will be compared
+  // only based on the other IDs.
+  if (extension_id.empty() || other.extension_id.empty())
+    return false;
+
+  return extension_id < other.extension_id;
 }
 
 bool MenuItem::ExtensionKey::operator!=(const ExtensionKey& other) const {
@@ -912,7 +953,9 @@ bool MenuItem::ExtensionKey::operator!=(const ExtensionKey& other) const {
 }
 
 bool MenuItem::ExtensionKey::empty() const {
-  return extension_id.empty() && !webview_instance_id;
+  return extension_id.empty() &&
+      webview_embedder_process_id == ChildProcessHost::kInvalidUniqueID &&
+      webview_instance_id == kInstanceIDNone;
 }
 
 MenuItem::Id::Id() : incognito(false), uid(0) {}

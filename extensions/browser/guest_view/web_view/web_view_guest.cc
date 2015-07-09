@@ -40,6 +40,7 @@
 #include "extensions/browser/api/guest_view/web_view/web_view_internal_api.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_content_script_manager.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
@@ -234,6 +235,10 @@ void WebViewGuest::CleanUp(int embedder_process_id, int view_instance_id) {
   // Clean up content scripts for the WebView.
   auto csm = WebViewContentScriptManager::Get(browser_context);
   csm->RemoveAllContentScriptsForWebView(embedder_process_id, view_instance_id);
+
+  // Allow an extensions browser client to potentially perform more cleanup.
+  ExtensionsBrowserClient::Get()->CleanUpWebView(embedder_process_id,
+                                                 view_instance_id);
 }
 
 // static
@@ -286,15 +291,6 @@ int WebViewGuest::GetOrGenerateRulesRegistryID(
           GetNextRulesRegistryID();
   web_view_key_to_id_map.Get()[key] = rules_registry_id;
   return rules_registry_id;
-}
-
-// static
-int WebViewGuest::GetViewInstanceId(WebContents* contents) {
-  auto guest = FromWebContents(contents);
-  if (!guest)
-    return guest_view::kInstanceIDNone;
-
-  return guest->view_instance_id();
 }
 
 bool WebViewGuest::CanRunInDetachedState() const {
@@ -434,9 +430,6 @@ int WebViewGuest::GetTaskPrefix() const {
 }
 
 void WebViewGuest::GuestDestroyed() {
-  // Clean up custom context menu items for this guest.
-  if (web_view_guest_delegate_)
-    web_view_guest_delegate_->OnGuestDestroyed();
   RemoveWebViewStateFromIOThread(web_contents());
 }
 

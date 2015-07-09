@@ -29,7 +29,6 @@ class ChromeWebViewGuestDelegate : public WebViewGuestDelegate {
   // WebViewGuestDelegate implementation.
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
   void OnDidInitialize() override;
-  void OnGuestDestroyed() override;
   void OnShowContextMenu(int request_id, const MenuItemVector* items) override;
 
   WebViewGuest* web_view_guest() const { return web_view_guest_; }
@@ -80,4 +79,3 @@ class ChromeWebViewGuestDelegate : public WebViewGuestDelegate {
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_CHROME_WEB_VIEW_GUEST_DELEGATE_H_
-

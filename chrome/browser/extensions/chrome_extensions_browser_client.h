@@ -40,7 +40,7 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
   ChromeExtensionsBrowserClient();
   ~ChromeExtensionsBrowserClient() override;
 
-  // BrowserClient overrides:
+  // ExtensionsBrowserClient overrides:
   bool IsShuttingDown() override;
   bool AreExtensionsDisabled(const base::CommandLine& command_line,
                              content::BrowserContext* context) override;
@@ -105,6 +105,7 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
       content::WebContents* web_contents) override;
   void ReportError(content::BrowserContext* context,
                    scoped_ptr<ExtensionError> error) override;
+  void CleanUpWebView(int embedder_process_id, int view_instance_id) override;
 
  private:
   friend struct base::DefaultLazyInstanceTraits<ChromeExtensionsBrowserClient>;

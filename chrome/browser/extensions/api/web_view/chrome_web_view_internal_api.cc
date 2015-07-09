@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/api/context_menus/context_menus_api_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/chrome_web_view_internal.h"
+#include "content/public/browser/render_process_host.h"
 #include "extensions/common/error_utils.h"
 
 namespace helpers = extensions::context_menus_api_helpers;
@@ -24,7 +25,10 @@ bool ChromeWebViewInternalContextMenusCreateFunction::RunAsync() {
 
   MenuItem::Id id(
       Profile::FromBrowserContext(browser_context())->IsOffTheRecord(),
-      MenuItem::ExtensionKey(extension_id(), params->instance_id));
+      MenuItem::ExtensionKey(
+          extension_id(),
+          GetSenderWebContents()->GetRenderProcessHost()->GetID(),
+          params->instance_id));
 
   if (params->create_properties.id.get()) {
     id.string_uid = *params->create_properties.id;
@@ -55,7 +59,10 @@ bool ChromeWebViewInternalContextMenusUpdateFunction::RunAsync() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   MenuItem::Id item_id(
       profile->IsOffTheRecord(),
-      MenuItem::ExtensionKey(extension_id(), params->instance_id));
+      MenuItem::ExtensionKey(
+          extension_id(),
+          GetSenderWebContents()->GetRenderProcessHost()->GetID(),
+          params->instance_id));
 
   if (params->id.as_string)
     item_id.string_uid = *params->id.as_string;
@@ -80,7 +87,10 @@ bool ChromeWebViewInternalContextMenusRemoveFunction::RunAsync() {
 
   MenuItem::Id id(
       Profile::FromBrowserContext(browser_context())->IsOffTheRecord(),
-      MenuItem::ExtensionKey(extension_id(), params->instance_id));
+      MenuItem::ExtensionKey(
+          extension_id(),
+          GetSenderWebContents()->GetRenderProcessHost()->GetID(),
+          params->instance_id));
 
   if (params->menu_item_id.as_string) {
     id.string_uid = *params->menu_item_id.as_string;
@@ -113,10 +123,11 @@ bool ChromeWebViewInternalContextMenusRemoveAllFunction::RunAsync() {
 
   MenuManager* menu_manager =
       MenuManager::Get(Profile::FromBrowserContext(browser_context()));
+  menu_manager->RemoveAllContextItems(MenuItem::ExtensionKey(
+      extension_id(),
+      GetSenderWebContents()->GetRenderProcessHost()->GetID(),
+      params->instance_id));
 
-  int webview_instance_id = params->instance_id;
-  menu_manager->RemoveAllContextItems(
-      MenuItem::ExtensionKey(extension()->id(), webview_instance_id));
   SendResponse(true);
   return true;
 }

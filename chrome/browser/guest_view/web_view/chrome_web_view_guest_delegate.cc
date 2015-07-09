@@ -69,15 +69,6 @@ void ChromeWebViewGuestDelegate::OnDidInitialize() {
 #endif
 }
 
-void ChromeWebViewGuestDelegate::OnGuestDestroyed() {
-  // Clean up custom context menu items for this guest.
-  MenuManager* menu_manager = MenuManager::Get(
-      Profile::FromBrowserContext(web_view_guest()->browser_context()));
-  menu_manager->RemoveAllContextItems(MenuItem::ExtensionKey(
-      web_view_guest()->owner_host(),
-      web_view_guest()->view_instance_id()));
-}
-
 // static
 scoped_ptr<base::ListValue> ChromeWebViewGuestDelegate::MenuModelToValue(
     const ui::SimpleMenuModel& menu_model) {

@@ -44,17 +44,23 @@ class MenuItem {
   // A list of MenuItems.
   typedef std::vector<MenuItem*> List;
 
-  // Key used to identify which extension a menu item belongs to.
-  // A menu item can also belong to a <webview> inside an extension,
-  // only in that case |webview_instance_id| would be
-  // non-zero (i.e. != guestview::kInstanceIDNone).
+  // Key used to identify which extension a menu item belongs to.  A menu item
+  // can also belong to a <webview>, in which case |webview_embedder_process_id|
+  // and |webview_instance_id| will be non-zero. When two ExtensionKeys are
+  // compared, an empty |extension_id| will match any other extension ID. This
+  // allows menu items belonging to webviews to be found with only the two
+  // webview IDs when the extension ID is not known. This is currently done from
+  // ChromeExtensionsBrowserClient::CleanUpWebView().
   struct ExtensionKey {
     std::string extension_id;
+    int webview_embedder_process_id;
     int webview_instance_id;
 
     ExtensionKey();
-    ExtensionKey(const std::string& extension_id, int webview_instance_id);
     explicit ExtensionKey(const std::string& extension_id);
+    ExtensionKey(const std::string& extension_id,
+                 int webview_embedder_process_id,
+                 int webview_instance_id);
 
     bool operator==(const ExtensionKey& other) const;
     bool operator!=(const ExtensionKey& other) const;

@@ -38,9 +38,6 @@ class WebViewGuestDelegate {
   // Called just after additional initialization is performed.
   virtual void OnDidInitialize() = 0;
 
-  // Called immediately after the guest WebContents has been destroyed.
-  virtual void OnGuestDestroyed() = 0;
-
   // Shows the context menu for the guest.
   // |items| acts as a filter. This restricts the current context's default
   // menu items to contain only the items from |items|.

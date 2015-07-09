@@ -222,6 +222,10 @@ class ExtensionsBrowserClient {
   virtual ExtensionWebContentsObserver* GetExtensionWebContentsObserver(
       content::WebContents* web_contents) = 0;
 
+  // Cleans up browser-side state associated with a WebView that is being
+  // destroyed.
+  virtual void CleanUpWebView(int embedder_process_id, int view_instance_id) {}
+
   // Returns the single instance of |this|.
   static ExtensionsBrowserClient* Get();
 

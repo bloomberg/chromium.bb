@@ -1669,12 +1669,10 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ContextMenusAPI_Basic) {
   // Create and build our test context menu.
   scoped_ptr<TestRenderViewContextMenu> menu(TestRenderViewContextMenu::Create(
       guest_web_contents, page_url, GURL(), GURL()));
-
   // Look for the extension item in the menu, and execute it.
   int command_id = ContextMenuMatcher::ConvertToExtensionsCustomCommandId(0);
   ASSERT_TRUE(menu->IsCommandIdEnabled(command_id));
   menu->ExecuteCommand(command_id, 0);
-
   // Wait for embedder's script to tell us its onclick fired, it does
   // chrome.test.sendMessage('ITEM_CLICKED')
   ASSERT_TRUE(click_listener.WaitUntilSatisfied());
