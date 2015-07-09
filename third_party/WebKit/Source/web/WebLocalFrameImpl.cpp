@@ -2075,7 +2075,6 @@ void WebLocalFrameImpl::load(const WebURLRequest& request, WebFrameLoadType webF
 {
     ASSERT(frame());
     ASSERT(!request.isNull());
-    ASSERT(webFrameLoadType != WebFrameLoadType::RedirectWithLockedBackForwardList);
     const ResourceRequest& resourceRequest = request.toResourceRequest();
 
     if (resourceRequest.url().protocolIs("javascript")
