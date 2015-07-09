@@ -41,6 +41,7 @@ per-file *_mac.h=mark@chromium.org
 per-file *_mac.h=rsesek@chromium.org
 per-file *_mac.h=thakis@chromium.org
 
+per-file media_router_resources.grdp*=kmarshall@chromium.org
 per-file media_router_resources.grdp*=mfoltz@chromium.org
 per-file media_router_resources.grdp*=wez@chromium.org
 
