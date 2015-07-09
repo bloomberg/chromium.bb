@@ -97,8 +97,9 @@ CGFloat GetContentAreaWidth(NSRect cellFrame) {
   return NSWidth(cellFrame) - kTextStartOffset;
 }
 
-NSAttributedString* CreateAnswerString(const base::string16& text,
-                                       NSInteger style_type) {
+NSAttributedString* CreateAnswerStringHelper(const base::string16& text,
+                                             NSInteger style_type,
+                                             bool is_bold) {
   NSDictionary* answer_style = nil;
   switch (style_type) {
     case SuggestionAnswer::ANSWER:
@@ -182,20 +183,84 @@ NSAttributedString* CreateAnswerString(const base::string16& text,
       break;
   }
 
-  // Start out with a string using the default style info.
-  base::scoped_nsobject<NSMutableAttributedString> attributed_string(
-      [[NSMutableAttributedString alloc]
-          initWithString:base::SysUTF16ToNSString(text)
-              attributes:answer_style]);
+  if (is_bold) {
+    NSMutableDictionary* bold_style = [answer_style mutableCopy];
+    // TODO(dschuyler): Account for bolding fonts other than FieldFont.
+    // Field font is the only one currently necessary to bold.
+    [bold_style setObject:BoldFieldFont() forKey:NSFontAttributeName];
+    answer_style = bold_style;
+  }
 
+  return [[[NSAttributedString alloc]
+      initWithString:base::SysUTF16ToNSString(text)
+          attributes:answer_style] autorelease];
+}
+
+NSAttributedString* CreateAnswerString(const base::string16& text,
+                                       NSInteger style_type) {
+  // TODO(dschuyler): make this better.  Right now this only supports unnested
+  // bold tags.  In the future we'll need to flag unexpected tags while adding
+  // support for b, i, u, sub, and sup.  We'll also need to support HTML
+  // entities (&lt; for '<', etc.).
+  const base::string16 begin_tag = base::ASCIIToUTF16("<b>");
+  const base::string16 end_tag = base::ASCIIToUTF16("</b>");
+  size_t begin = 0;
+  base::scoped_nsobject<NSMutableAttributedString> result(
+      [[NSMutableAttributedString alloc] init]);
+  while (true) {
+    size_t end = text.find(begin_tag, begin);
+    if (end == base::string16::npos) {
+      [result
+          appendAttributedString:CreateAnswerStringHelper(
+                                         text.substr(begin),
+                                         style_type, false)];
+      break;
+    }
+    [result appendAttributedString:CreateAnswerStringHelper(
+                                       text.substr(begin, end - begin),
+                                       style_type, false)];
+    begin = end + begin_tag.length();
+    end = text.find(end_tag, begin);
+    if (end == base::string16::npos)
+      break;
+    [result appendAttributedString:CreateAnswerStringHelper(
+                                       text.substr(begin, end - begin),
+                                       style_type, true)];
+    begin = end + end_tag.length();
+  }
+  return result.autorelease();
+}
+
+NSAttributedString* CreateAnswerLine(const SuggestionAnswer::ImageLine& line) {
+  base::scoped_nsobject<NSMutableAttributedString> answer_string(
+      [[NSMutableAttributedString alloc] init]);
+  DCHECK(!line.text_fields().empty());
+  for (const SuggestionAnswer::TextField& text_field : line.text_fields()) {
+    [answer_string
+        appendAttributedString:CreateAnswerString(text_field.text(),
+                                                  text_field.type())];
+  }
+  const base::string16 space(base::ASCIIToUTF16(" "));
+  const SuggestionAnswer::TextField* text_field = line.additional_text();
+  if (text_field) {
+    [answer_string
+        appendAttributedString:CreateAnswerString(space + text_field->text(),
+                                                  text_field->type())];
+  }
+  text_field = line.status_text();
+  if (text_field) {
+    [answer_string
+        appendAttributedString:CreateAnswerString(space + text_field->text(),
+                                                  text_field->type())];
+  }
   base::scoped_nsobject<NSMutableParagraphStyle> style(
       [[NSMutableParagraphStyle alloc] init]);
   [style setLineBreakMode:NSLineBreakByTruncatingTail];
   [style setTighteningFactorForTruncation:0.0];
-  [attributed_string addAttribute:NSParagraphStyleAttributeName
+  [answer_string addAttribute:NSParagraphStyleAttributeName
                             value:style
-                            range:NSMakeRange(0, [attributed_string length])];
-  return attributed_string.autorelease();
+                            range:NSMakeRange(0, [answer_string length])];
+  return answer_string.autorelease();
 }
 
 NSMutableAttributedString* CreateAttributedString(
@@ -321,38 +386,17 @@ NSAttributedString* CreateClassifiedAttributedString(
                                     kACMatchPropertyContentsPrefix)),
                                 ContentTextColor(), textAlignment) retain];
 
-    contents_ = [CreateClassifiedAttributedString(
-        match.contents, ContentTextColor(), match.contents_class) retain];
-
     isAnswer_ = match.answer;
     if (isAnswer_) {
-      base::scoped_nsobject<NSMutableAttributedString> answerString(
-          [[NSMutableAttributedString alloc] init]);
-      DCHECK(!match.answer->second_line().text_fields().empty());
-      for (const SuggestionAnswer::TextField& textField :
-           match.answer->second_line().text_fields()) {
-        [answerString
-            appendAttributedString:CreateAnswerString(textField.text(),
-                                                      textField.type())];
+      contents_ = [CreateAnswerLine(match.answer->first_line()) retain];
+      description_ = [CreateAnswerLine(match.answer->second_line()) retain];
+    } else {
+      contents_ = [CreateClassifiedAttributedString(
+          match.contents, ContentTextColor(), match.contents_class) retain];
+      if (!match.description.empty()) {
+        description_ = [CreateClassifiedAttributedString(
+            match.description, DimTextColor(), match.description_class) retain];
       }
-      const base::string16 space(base::ASCIIToUTF16(" "));
-      const SuggestionAnswer::TextField* textField =
-          match.answer->second_line().additional_text();
-      if (textField) {
-        [answerString
-            appendAttributedString:CreateAnswerString(space + textField->text(),
-                                                      textField->type())];
-      }
-      textField = match.answer->second_line().status_text();
-      if (textField) {
-        [answerString
-            appendAttributedString:CreateAnswerString(space + textField->text(),
-                                                      textField->type())];
-      }
-      description_ = answerString.release();
-    } else if (!match.description.empty()) {
-      description_ = [CreateClassifiedAttributedString(
-          match.description, DimTextColor(), match.description_class) retain];
     }
   }
   return self;
