@@ -90,9 +90,12 @@ public:
     // FIXME: This does not handle [table, 0] correctly.
     Element* rootEditableElement() const { return m_deepPosition.isNotNull() ? m_deepPosition.deprecatedNode()->rootEditableElement() : 0; }
 
+    // TODO(yosin) We should make this function to return |InlineBoxPosition|.
     void getInlineBoxAndOffset(InlineBox*& inlineBox, int& caretOffset) const
     {
-        m_deepPosition.getInlineBoxAndOffset(m_affinity, inlineBox, caretOffset);
+        InlineBoxPosition boxPosition = m_deepPosition.getInlineBoxAndOffset(m_affinity);
+        inlineBox = boxPosition.inlineBox;
+        caretOffset = boxPosition.offsetInBox;
     }
 
     // Rect is local to the returned layoutObject

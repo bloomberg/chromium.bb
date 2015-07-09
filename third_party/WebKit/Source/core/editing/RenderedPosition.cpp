@@ -90,7 +90,9 @@ RenderedPosition::RenderedPosition(const Position& position, EAffinity affinity)
 {
     if (position.isNull())
         return;
-    position.getInlineBoxAndOffset(affinity, m_inlineBox, m_offset);
+    InlineBoxPosition boxPosition = position.getInlineBoxAndOffset(affinity);
+    m_inlineBox = boxPosition.inlineBox;
+    m_offset = boxPosition.offsetInBox;
     if (m_inlineBox)
         m_layoutObject = &m_inlineBox->layoutObject();
     else

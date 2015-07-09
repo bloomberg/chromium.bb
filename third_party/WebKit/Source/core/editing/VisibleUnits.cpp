@@ -372,9 +372,9 @@ static VisiblePosition visualWordPosition(const VisiblePosition& visiblePosition
         if (adjacentCharacterPosition == current || adjacentCharacterPosition.isNull())
             return VisiblePosition();
 
-        InlineBox* box;
-        int offsetInBox;
-        adjacentCharacterPosition.deepEquivalent().getInlineBoxAndOffset(UPSTREAM, box, offsetInBox);
+        InlineBoxPosition boxPosition = adjacentCharacterPosition.deepEquivalent().getInlineBoxAndOffset(UPSTREAM);
+        InlineBox* box = boxPosition.inlineBox;
+        int offsetInBox = boxPosition.offsetInBox;
 
         if (!box)
             break;
@@ -1445,14 +1445,12 @@ LayoutRect localCaretRectOfPosition(const PositionWithAffinity& position, Layout
     if (!layoutObject)
         return LayoutRect();
 
-    InlineBox* inlineBox;
-    int caretOffset;
-    position.position().getInlineBoxAndOffset(position.affinity(), inlineBox, caretOffset);
+    InlineBoxPosition boxPosition = position.position().getInlineBoxAndOffset(position.affinity());
 
-    if (inlineBox)
-        layoutObject = &inlineBox->layoutObject();
+    if (boxPosition.inlineBox)
+        layoutObject = &boxPosition.inlineBox->layoutObject();
 
-    return layoutObject->localCaretRect(inlineBox, caretOffset);
+    return layoutObject->localCaretRect(boxPosition.inlineBox, boxPosition.offsetInBox);
 }
 
 VisiblePosition visiblePositionForContentsPoint(const IntPoint& contentsPoint, LocalFrame* frame)

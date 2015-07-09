@@ -123,9 +123,9 @@ Position VisiblePosition::leftVisuallyDistinctCandidate() const
     TextDirection primaryDirection = p.primaryDirection();
 
     while (true) {
-        InlineBox* box;
-        int offset;
-        p.getInlineBoxAndOffset(m_affinity, primaryDirection, box, offset);
+        InlineBoxPosition boxPosition = p.getInlineBoxAndOffset(m_affinity, primaryDirection);
+        InlineBox* box = boxPosition.inlineBox;
+        int offset = boxPosition.offsetInBox;
         if (!box)
             return primaryDirection == LTR ? previousVisuallyDistinctCandidate(m_deepPosition) : nextVisuallyDistinctCandidate(m_deepPosition);
 
@@ -160,9 +160,7 @@ Position VisiblePosition::leftVisuallyDistinctCandidate() const
                     if (positionOnLeft.isNull())
                         return Position();
 
-                    InlineBox* boxOnLeft;
-                    int offsetOnLeft;
-                    positionOnLeft.getInlineBoxAndOffset(m_affinity, primaryDirection, boxOnLeft, offsetOnLeft);
+                    InlineBox* boxOnLeft = positionOnLeft.getInlineBoxAndOffset(m_affinity, primaryDirection).inlineBox;
                     if (boxOnLeft && boxOnLeft->root() == box->root())
                         return Position();
                     return positionOnLeft;
@@ -287,9 +285,9 @@ Position VisiblePosition::rightVisuallyDistinctCandidate() const
     TextDirection primaryDirection = p.primaryDirection();
 
     while (true) {
-        InlineBox* box;
-        int offset;
-        p.getInlineBoxAndOffset(m_affinity, primaryDirection, box, offset);
+        InlineBoxPosition boxPosition = p.getInlineBoxAndOffset(m_affinity, primaryDirection);
+        InlineBox* box = boxPosition.inlineBox;
+        int offset = boxPosition.offsetInBox;
         if (!box)
             return primaryDirection == LTR ? nextVisuallyDistinctCandidate(m_deepPosition) : previousVisuallyDistinctCandidate(m_deepPosition);
 
@@ -324,9 +322,7 @@ Position VisiblePosition::rightVisuallyDistinctCandidate() const
                     if (positionOnRight.isNull())
                         return Position();
 
-                    InlineBox* boxOnRight;
-                    int offsetOnRight;
-                    positionOnRight.getInlineBoxAndOffset(m_affinity, primaryDirection, boxOnRight, offsetOnRight);
+                    InlineBox* boxOnRight = positionOnRight.getInlineBoxAndOffset(m_affinity, primaryDirection).inlineBox;
                     if (boxOnRight && boxOnRight->root() == box->root())
                         return Position();
                     return positionOnRight;

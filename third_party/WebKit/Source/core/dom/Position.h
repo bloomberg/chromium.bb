@@ -47,6 +47,21 @@ class LayoutObject;
 class Text;
 class TreeScope;
 
+struct InlineBoxPosition {
+    InlineBox* inlineBox;
+    int offsetInBox;
+
+    InlineBoxPosition()
+        : inlineBox(nullptr), offsetInBox(0)
+    {
+    }
+
+    InlineBoxPosition(InlineBox* inlineBox, int offsetInBox)
+        : inlineBox(inlineBox), offsetInBox(offsetInBox)
+    {
+    }
+};
+
 enum PositionMoveType {
     CodePoint,       // Move by a single code point.
     Character,       // Move to the next Unicode character break.
@@ -210,8 +225,10 @@ public:
     bool isRenderedCharacter() const;
     bool rendersInDifferentPosition(const PositionAlgorithm<Strategy>&) const;
 
-    void getInlineBoxAndOffset(EAffinity, InlineBox*&, int& caretOffset) const;
-    void getInlineBoxAndOffset(EAffinity, TextDirection primaryDirection, InlineBox*&, int& caretOffset) const;
+    // TODO(yosin) We should rename |getInlineBoxAndOffset| to
+    // |computeInlineBoxPosition| to avoid function starts with 'get'.
+    InlineBoxPosition getInlineBoxAndOffset(EAffinity) const;
+    InlineBoxPosition getInlineBoxAndOffset(EAffinity, TextDirection primaryDirection) const;
 
     TextDirection primaryDirection() const;
 

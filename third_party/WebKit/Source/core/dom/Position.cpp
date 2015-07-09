@@ -1093,25 +1093,22 @@ bool PositionAlgorithm<Strategy>::rendersInDifferentPosition(const PositionAlgor
     if (layoutObject == posLayoutObject && thisRenderedOffset == posRenderedOffset)
         return false;
 
-    int ignoredCaretOffset;
-    InlineBox* b1;
-    getInlineBoxAndOffset(DOWNSTREAM, b1, ignoredCaretOffset);
-    InlineBox* b2;
-    pos.getInlineBoxAndOffset(DOWNSTREAM, b2, ignoredCaretOffset);
+    InlineBoxPosition boxPosition1 = getInlineBoxAndOffset(DOWNSTREAM);
+    InlineBoxPosition boxPosition2 = pos.getInlineBoxAndOffset(DOWNSTREAM);
 
-    WTF_LOG(Editing, "layoutObject:           %p [%p]\n", layoutObject, b1);
+    WTF_LOG(Editing, "layoutObject:           %p [%p]\n", layoutObject, boxPosition1.inlineBox);
     WTF_LOG(Editing, "thisRenderedOffset:     %d\n", thisRenderedOffset);
-    WTF_LOG(Editing, "posLayoutObject:        %p [%p]\n", posLayoutObject, b2);
+    WTF_LOG(Editing, "posLayoutObject:        %p [%p]\n", posLayoutObject, boxPosition2.inlineBox);
     WTF_LOG(Editing, "posRenderedOffset:      %d\n", posRenderedOffset);
     WTF_LOG(Editing, "node min/max:           %d:%d\n", caretMinOffset(deprecatedNode()), caretMaxOffset(deprecatedNode()));
     WTF_LOG(Editing, "pos node min/max:       %d:%d\n", caretMinOffset(pos.deprecatedNode()), caretMaxOffset(pos.deprecatedNode()));
     WTF_LOG(Editing, "----------------------------------------------------------------------\n");
 
-    if (!b1 || !b2) {
+    if (!boxPosition1.inlineBox || !boxPosition2.inlineBox) {
         return false;
     }
 
-    if (b1->root() != b2->root()) {
+    if (boxPosition1.inlineBox->root() != boxPosition2.inlineBox->root()) {
         return true;
     }
 
@@ -1129,9 +1126,9 @@ bool PositionAlgorithm<Strategy>::rendersInDifferentPosition(const PositionAlgor
 }
 
 template <typename Strategy>
-void PositionAlgorithm<Strategy>::getInlineBoxAndOffset(EAffinity affinity, InlineBox*& inlineBox, int& caretOffset) const
+InlineBoxPosition PositionAlgorithm<Strategy>::getInlineBoxAndOffset(EAffinity affinity) const
 {
-    getInlineBoxAndOffset(affinity, primaryDirection(), inlineBox, caretOffset);
+    return getInlineBoxAndOffset(affinity, primaryDirection());
 }
 
 static bool isNonTextLeafChild(LayoutObject* object)
@@ -1193,9 +1190,10 @@ PositionAlgorithm<Strategy> upstreamIgnoringEditingBoundaries(PositionAlgorithm<
 }
 
 template <typename Strategy>
-void PositionAlgorithm<Strategy>::getInlineBoxAndOffset(EAffinity affinity, TextDirection primaryDirection, InlineBox*& inlineBox, int& caretOffset) const
+InlineBoxPosition PositionAlgorithm<Strategy>::getInlineBoxAndOffset(EAffinity affinity, TextDirection primaryDirection) const
 {
-    caretOffset = deprecatedEditingOffset();
+    InlineBox* inlineBox = nullptr;
+    int caretOffset = deprecatedEditingOffset();
     LayoutObject* layoutObject = m_anchorNode->isShadowRoot() ? toShadowRoot(m_anchorNode)->host()->layoutObject() : m_anchorNode->layoutObject();
 
     if (!layoutObject->isText()) {
@@ -1209,16 +1207,15 @@ void PositionAlgorithm<Strategy>::getInlineBoxAndOffset(EAffinity affinity, Text
             if (equivalent == thisPosition) {
                 equivalent = upstreamIgnoringEditingBoundaries(thisPosition);
                 if (equivalent == thisPosition || downstreamIgnoringEditingBoundaries(equivalent) == thisPosition)
-                    return;
+                    return InlineBoxPosition(inlineBox, caretOffset);
             }
 
-            equivalent.getInlineBoxAndOffset(UPSTREAM, primaryDirection, inlineBox, caretOffset);
-            return;
+            return equivalent.getInlineBoxAndOffset(UPSTREAM, primaryDirection);
         }
         if (layoutObject->isBox()) {
             inlineBox = toLayoutBox(layoutObject)->inlineBoxWrapper();
             if (!inlineBox || (caretOffset > inlineBox->caretMinOffset() && caretOffset < inlineBox->caretMaxOffset()))
-                return;
+                return InlineBoxPosition(inlineBox, caretOffset);
         }
     } else {
         LayoutText* textLayoutObject = toLayoutText(layoutObject);
@@ -1233,10 +1230,8 @@ void PositionAlgorithm<Strategy>::getInlineBoxAndOffset(EAffinity affinity, Text
             if (caretOffset < caretMinOffset || caretOffset > caretMaxOffset || (caretOffset == caretMaxOffset && box->isLineBreak()))
                 continue;
 
-            if (caretOffset > caretMinOffset && caretOffset < caretMaxOffset) {
-                inlineBox = box;
-                return;
-            }
+            if (caretOffset > caretMinOffset && caretOffset < caretMaxOffset)
+                return InlineBoxPosition(box, caretOffset);
 
             if (((caretOffset == caretMaxOffset) ^ (affinity == DOWNSTREAM))
                 || ((caretOffset == caretMinOffset) ^ (affinity == UPSTREAM))
@@ -1254,7 +1249,7 @@ void PositionAlgorithm<Strategy>::getInlineBoxAndOffset(EAffinity affinity, Text
     }
 
     if (!inlineBox)
-        return;
+        return InlineBoxPosition(inlineBox, caretOffset);
 
     unsigned char level = inlineBox->bidiLevel();
 
@@ -1262,7 +1257,7 @@ void PositionAlgorithm<Strategy>::getInlineBoxAndOffset(EAffinity affinity, Text
         if (caretOffset == inlineBox->caretRightmostOffset()) {
             InlineBox* nextBox = inlineBox->nextLeafChild();
             if (!nextBox || nextBox->bidiLevel() >= level)
-                return;
+                return InlineBoxPosition(inlineBox, caretOffset);
 
             level = nextBox->bidiLevel();
             InlineBox* prevBox = inlineBox;
@@ -1271,7 +1266,7 @@ void PositionAlgorithm<Strategy>::getInlineBoxAndOffset(EAffinity affinity, Text
             } while (prevBox && prevBox->bidiLevel() > level);
 
             if (prevBox && prevBox->bidiLevel() == level) // For example, abc FED 123 ^ CBA
-                return;
+                return InlineBoxPosition(inlineBox, caretOffset);
 
             // For example, abc 123 ^ CBA
             while (InlineBox* nextBox = inlineBox->nextLeafChild()) {
@@ -1283,7 +1278,7 @@ void PositionAlgorithm<Strategy>::getInlineBoxAndOffset(EAffinity affinity, Text
         } else {
             InlineBox* prevBox = inlineBox->prevLeafChild();
             if (!prevBox || prevBox->bidiLevel() >= level)
-                return;
+                return InlineBoxPosition(inlineBox, caretOffset);
 
             level = prevBox->bidiLevel();
             InlineBox* nextBox = inlineBox;
@@ -1292,7 +1287,7 @@ void PositionAlgorithm<Strategy>::getInlineBoxAndOffset(EAffinity affinity, Text
             } while (nextBox && nextBox->bidiLevel() > level);
 
             if (nextBox && nextBox->bidiLevel() == level)
-                return;
+                return InlineBoxPosition(inlineBox, caretOffset);
 
             while (InlineBox* prevBox = inlineBox->prevLeafChild()) {
                 if (prevBox->bidiLevel() < level)
@@ -1301,7 +1296,7 @@ void PositionAlgorithm<Strategy>::getInlineBoxAndOffset(EAffinity affinity, Text
             }
             caretOffset = inlineBox->caretLeftmostOffset();
         }
-        return;
+        return InlineBoxPosition(inlineBox, caretOffset);
     }
 
     if (caretOffset == inlineBox->caretLeftmostOffset()) {
@@ -1348,6 +1343,7 @@ void PositionAlgorithm<Strategy>::getInlineBoxAndOffset(EAffinity affinity, Text
             caretOffset = inlineBox->caretRightmostOffset();
         }
     }
+    return InlineBoxPosition(inlineBox, caretOffset);
 }
 
 template <typename Strategy>
