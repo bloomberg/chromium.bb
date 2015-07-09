@@ -79,11 +79,6 @@ bool AllocateSkBitmapTexture(GrContext* gr,
   if (!texture.get())
     return false;
 
-  // A recycled texture may have pending writes. Make sure they are flushed
-  // before the texture is handed over for subsequent operations done outside
-  // of Skia.
-  texture->flushWrites();
-
   SkImageInfo info = SkImageInfo::MakeN32Premul(desc.fWidth, desc.fHeight);
   SkGrPixelRef* pixel_ref = SkNEW_ARGS(SkGrPixelRef, (info, texture.get()));
   if (!pixel_ref)
