@@ -79,7 +79,7 @@ class XMLHttpRequest final
 public:
     static PassRefPtrWillBeRawPtr<XMLHttpRequest> create(ScriptState*);
     static PassRefPtrWillBeRawPtr<XMLHttpRequest> create(ExecutionContext*);
-    virtual ~XMLHttpRequest();
+    ~XMLHttpRequest() override;
 
     // These exact numeric values are important because JS expects them.
     enum State {
@@ -101,15 +101,15 @@ public:
     };
 
     // ActiveDOMObject
-    virtual void contextDestroyed() override;
-    virtual ExecutionContext* executionContext() const override;
-    virtual bool hasPendingActivity() const override;
-    virtual void suspend() override;
-    virtual void resume() override;
-    virtual void stop() override;
+    void contextDestroyed() override;
+    ExecutionContext* executionContext() const override;
+    bool hasPendingActivity() const override;
+    void suspend() override;
+    void resume() override;
+    void stop() override;
 
     // XMLHttpRequestEventTarget
-    virtual const AtomicString& interfaceName() const override;
+    const AtomicString& interfaceName() const override;
 
     // JavaScript attributes and methods
     const KURL& url() const { return m_url; }
@@ -156,15 +156,15 @@ private:
     Document* document() const;
     SecurityOrigin* securityOrigin() const;
 
-    virtual void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
-    virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
-    virtual void didReceiveData(const char* data, unsigned dataLength) override;
+    void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
+    void didReceiveResponse(unsigned long identifier, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
+    void didReceiveData(const char* data, unsigned dataLength) override;
     // When responseType is set to "blob", didDownloadData() is called instead
     // of didReceiveData().
-    virtual void didDownloadData(int dataLength) override;
-    virtual void didFinishLoading(unsigned long identifier, double finishTime) override;
-    virtual void didFail(const ResourceError&) override;
-    virtual void didFailRedirectCheck() override;
+    void didDownloadData(int dataLength) override;
+    void didFinishLoading(unsigned long identifier, double finishTime) override;
+    void didFail(const ResourceError&) override;
+    void didFailRedirectCheck() override;
 
     // BlobLoader notifications.
     void didFinishLoadingInternal();
@@ -174,7 +174,7 @@ private:
     PassRefPtr<BlobDataHandle> createBlobDataHandleFromResponse();
 
     // DocumentParserClient
-    virtual void notifyParserStopped() override;
+    void notifyParserStopped() override;
 
     void endLoading();
 

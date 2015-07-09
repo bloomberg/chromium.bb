@@ -37,9 +37,9 @@ class ScriptResource;
 
 class CORE_EXPORT ScriptResourceClient : public ResourceClient {
 public:
-    virtual ~ScriptResourceClient() { }
+    ~ScriptResourceClient() override {}
     static ResourceClientType expectedType() { return ScriptType; }
-    virtual ResourceClientType resourceClientType() const override final { return expectedType(); }
+    ResourceClientType resourceClientType() const final { return expectedType(); }
 
     virtual void notifyAppendData(ScriptResource* resource) { }
 };
@@ -52,10 +52,10 @@ public:
     // Public for testing
     ScriptResource(const ResourceRequest&, const String& charset);
 
-    virtual ~ScriptResource();
+    ~ScriptResource() override;
 
-    virtual void didAddClient(ResourceClient*) override;
-    virtual void appendData(const char*, unsigned) override;
+    void didAddClient(ResourceClient*) override;
+    void appendData(const char*, unsigned) override;
 
     const String& script();
 

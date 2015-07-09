@@ -55,7 +55,7 @@ public:
     {
         return adoptPtrWillBeNoop(new XMLHttpRequestProgressEventThrottle(eventTarget));
     }
-    virtual ~XMLHttpRequestProgressEventThrottle();
+    ~XMLHttpRequestProgressEventThrottle() override;
 
     enum DeferredEventAction {
         Ignore,
@@ -92,7 +92,7 @@ private:
     class DeferredEvent;
     static const double minimumProgressEventDispatchingIntervalInSeconds;
 
-    virtual void fired() override;
+    void fired() override;
     void dispatchDeferredEvent();
 
     // Non-Oilpan, keep a weak pointer to our XMLHttpRequest object as it is

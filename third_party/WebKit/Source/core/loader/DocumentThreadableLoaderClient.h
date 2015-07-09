@@ -42,7 +42,7 @@ class DocumentThreadableLoaderClient : public ThreadableLoaderClient {
     WTF_MAKE_NONCOPYABLE(DocumentThreadableLoaderClient);
     WTF_MAKE_FAST_ALLOCATED(DocumentThreadableLoaderClient);
 public:
-    bool isDocumentThreadableLoaderClient()  override final { return true; }
+    bool isDocumentThreadableLoaderClient() final { return true; }
 
     virtual void willFollowRedirect(ResourceRequest& /*newRequest*/, const ResourceResponse& /*redirectResponse*/) { }
 

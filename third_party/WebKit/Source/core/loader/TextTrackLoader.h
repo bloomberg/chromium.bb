@@ -40,7 +40,7 @@ class TextTrackLoader;
 
 class TextTrackLoaderClient : public ResourceOwner<RawResource> {
 public:
-    virtual ~TextTrackLoaderClient() { }
+    ~TextTrackLoaderClient() override {}
 
     virtual void newCuesAvailable(TextTrackLoader*) = 0;
     virtual void cueLoadingCompleted(TextTrackLoader*, bool loadingFailed) = 0;
@@ -55,7 +55,7 @@ public:
     {
         return adoptPtrWillBeNoop(new TextTrackLoader(client, document));
     }
-    virtual ~TextTrackLoader();
+    ~TextTrackLoader() override;
 
     bool load(const KURL&, const AtomicString& crossOriginMode);
     void cancelLoad();
@@ -70,13 +70,13 @@ public:
 
 private:
     // RawResourceClient
-    virtual void dataReceived(Resource*, const char* data, unsigned length) override;
-    virtual void notifyFinished(Resource*) override;
+    void dataReceived(Resource*, const char* data, unsigned length) override;
+    void notifyFinished(Resource*) override;
 
     // VTTParserClient
-    virtual void newCuesParsed() override;
-    virtual void newRegionsParsed() override;
-    virtual void fileFailedToParse() override;
+    void newCuesParsed() override;
+    void newRegionsParsed() override;
+    void fileFailedToParse() override;
 
     TextTrackLoader(TextTrackLoaderClient&, Document&);
 

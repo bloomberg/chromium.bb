@@ -54,8 +54,8 @@ public:
 
     XMLHttpRequest* xmlHttpRequest() const { return m_xmlHttpRequest; }
 
-    virtual const AtomicString& interfaceName() const override;
-    virtual ExecutionContext* executionContext() const override;
+    const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const override;
 
     void dispatchEventAndLoadEnd(const AtomicString&, bool, unsigned long long, unsigned long long);
     void dispatchProgressEvent(unsigned long long, unsigned long long);
@@ -68,8 +68,8 @@ private:
     explicit XMLHttpRequestUpload(XMLHttpRequest*);
 
 #if !ENABLE(OILPAN)
-    virtual void refEventTarget() override { ref(); }
-    virtual void derefEventTarget() override { deref(); }
+    void refEventTarget() override { ref(); }
+    void derefEventTarget() override { deref(); }
 #endif
 
     RawPtrWillBeMember<XMLHttpRequest> m_xmlHttpRequest;

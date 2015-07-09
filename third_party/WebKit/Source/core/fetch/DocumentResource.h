@@ -39,14 +39,14 @@ public:
     typedef ResourceClient ClientType;
 
     static ResourcePtr<DocumentResource> fetchSVGDocument(FetchRequest&, ResourceFetcher*);
-    virtual ~DocumentResource();
+    ~DocumentResource() override;
     DECLARE_VIRTUAL_TRACE();
 
     Document* document() const { return m_document.get(); }
 
-    virtual void setEncoding(const String&) override;
-    virtual String encoding() const override;
-    virtual void checkNotify() override;
+    void setEncoding(const String&) override;
+    String encoding() const override;
+    void checkNotify() override;
 
 private:
     class SVGDocumentResourceFactory : public ResourceFactory {
@@ -72,9 +72,9 @@ inline DocumentResource* toDocumentResource(const ResourcePtr<Resource>& ptr) { 
 
 class DocumentResourceClient : public ResourceClient {
 public:
-    virtual ~DocumentResourceClient() { }
+    ~DocumentResourceClient() override {}
     static ResourceClientType expectedType() { return DocumentType; }
-    virtual ResourceClientType resourceClientType() const override { return expectedType(); }
+    ResourceClientType resourceClientType() const override { return expectedType(); }
 };
 
 }

@@ -40,7 +40,7 @@ public:
 
     const String& sheet() const { return m_sheet; }
 
-    virtual void didAddClient(ResourceClient*) override;
+    void didAddClient(ResourceClient*) override;
 
 protected:
     class XSLStyleSheetResourceFactory : public ResourceFactory {
@@ -55,7 +55,7 @@ protected:
     };
     XSLStyleSheetResource(const ResourceRequest&, const String& charset);
 
-    virtual void checkNotify() override;
+    void checkNotify() override;
 
     String m_sheet;
 };

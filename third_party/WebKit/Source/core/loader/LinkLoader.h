@@ -52,16 +52,16 @@ class CORE_EXPORT LinkLoader final : public ResourceOwner<Resource, ResourceClie
     DISALLOW_ALLOCATION();
 public:
     explicit LinkLoader(LinkLoaderClient*);
-    virtual ~LinkLoader();
+    ~LinkLoader() override;
 
     // from ResourceClient
-    virtual void notifyFinished(Resource*) override;
+    void notifyFinished(Resource*) override;
 
     // from PrerenderClient
-    virtual void didStartPrerender() override;
-    virtual void didStopPrerender() override;
-    virtual void didSendLoadForPrerender() override;
-    virtual void didSendDOMContentLoadedForPrerender() override;
+    void didStartPrerender() override;
+    void didStopPrerender() override;
+    void didSendLoadForPrerender() override;
+    void didSendDOMContentLoadedForPrerender() override;
 
     void released();
     bool loadLink(const LinkRelAttribute&, const AtomicString& crossOriginMode, const String& type, const String& as, const KURL&, Document&);

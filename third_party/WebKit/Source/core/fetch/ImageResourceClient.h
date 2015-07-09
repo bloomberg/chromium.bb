@@ -34,9 +34,9 @@ class IntRect;
 
 class CORE_EXPORT ImageResourceClient : public ResourceClient {
 public:
-    virtual ~ImageResourceClient() { }
+    ~ImageResourceClient() override {}
     static ResourceClientType expectedType() { return ImageType; }
-    virtual ResourceClientType resourceClientType() const override final { return expectedType(); }
+    ResourceClientType resourceClientType() const final { return expectedType(); }
 
     // Called whenever a frame of an image changes, either because we got more data from the network or
     // because we are animating. If not null, the IntRect is the changed rect of the image.

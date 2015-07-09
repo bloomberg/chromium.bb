@@ -58,11 +58,11 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
     public:
         static void loadResourceSynchronously(Document&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
         static PassRefPtr<DocumentThreadableLoader> create(Document&, ThreadableLoaderClient*, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
-        virtual ~DocumentThreadableLoader();
+        ~DocumentThreadableLoader() override;
 
-        virtual void overrideTimeout(unsigned long timeout) override;
+        void overrideTimeout(unsigned long timeout) override;
 
-        virtual void cancel() override;
+        void cancel() override;
         void setDefersLoading(bool);
 
     private:

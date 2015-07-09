@@ -48,7 +48,7 @@ class ThreadedDataReceiver;
 class CORE_EXPORT ResourceLoader final : public GarbageCollectedFinalized<ResourceLoader>, protected WebURLLoaderClient {
 public:
     static ResourceLoader* create(ResourceFetcher*, Resource*, const ResourceRequest&, const ResourceLoaderOptions&);
-    virtual ~ResourceLoader();
+    ~ResourceLoader() override;
     DECLARE_TRACE();
 
     void start();

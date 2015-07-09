@@ -53,7 +53,7 @@ public:
         return stream;
     }
 
-    virtual ~Stream();
+    ~Stream() override;
 
     // Returns the internal URL referring to this stream.
     const KURL& url() const { return m_internalURL; }
@@ -80,9 +80,9 @@ public:
     // Implementation of ActiveDOMObject.
     //
     // FIXME: Implement suspend() and resume() when necessary.
-    virtual void suspend() override;
-    virtual void resume() override;
-    virtual void stop() override;
+    void suspend() override;
+    void resume() override;
+    void stop() override;
 
     DECLARE_VIRTUAL_TRACE();
 

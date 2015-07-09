@@ -51,7 +51,7 @@ public:
     unsigned long long position() const { return loaded(); }
     unsigned long long totalSize() const { return total(); }
 
-    virtual const AtomicString& interfaceName() const override { return EventNames::XMLHttpRequestProgressEvent; }
+    const AtomicString& interfaceName() const override { return EventNames::XMLHttpRequestProgressEvent; }
 
     DEFINE_INLINE_VIRTUAL_TRACE() { ProgressEvent::trace(visitor); }
 

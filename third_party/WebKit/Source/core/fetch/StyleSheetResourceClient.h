@@ -35,11 +35,11 @@ class CSSStyleSheetResource;
 
 class StyleSheetResourceClient : public ResourceClient {
 public:
-    virtual ~StyleSheetResourceClient() { }
+    ~StyleSheetResourceClient() override {}
     static ResourceClientType expectedType() { return StyleSheetType; }
-    virtual ResourceClientType resourceClientType() const override final { return expectedType(); }
-    virtual void setCSSStyleSheet(const String& /* href */, const KURL& /* baseURL */, const String& /* charset */, const CSSStyleSheetResource*) { }
-    virtual void setXSLStyleSheet(const String& /* href */, const KURL& /* baseURL */, const String& /* sheet */) { }
+    ResourceClientType resourceClientType() const final { return expectedType(); }
+    virtual void setCSSStyleSheet(const String& /* href */, const KURL& /* baseURL */, const String& /* charset */, const CSSStyleSheetResource*) {}
+    virtual void setXSLStyleSheet(const String& /* href */, const KURL& /* baseURL */, const String& /* sheet */) {}
 };
 
 }

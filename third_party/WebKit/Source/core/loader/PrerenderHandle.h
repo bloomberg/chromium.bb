@@ -56,7 +56,7 @@ public:
     const KURL& url() const;
 
     // From DocumentLifecycleObserver:
-    virtual void documentWasDetached() override;
+    void documentWasDetached() override;
 
     DECLARE_VIRTUAL_TRACE();
 

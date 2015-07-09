@@ -18,12 +18,12 @@ public:
     // call time.
     String decodedText() const;
 
-    virtual void setEncoding(const String&) override;
-    virtual String encoding() const override;
+    void setEncoding(const String&) override;
+    String encoding() const override;
 
 protected:
     TextResource(const ResourceRequest&, Type, const String& mimeType, const String& charset);
-    virtual ~TextResource();
+    ~TextResource() override;
 
 private:
     OwnPtr<TextResourceDecoder> m_decoder;

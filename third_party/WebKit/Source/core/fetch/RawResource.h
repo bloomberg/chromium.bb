@@ -98,9 +98,9 @@ inline RawResource* toRawResource(const ResourcePtr<Resource>& resource)
 
 class CORE_EXPORT RawResourceClient : public ResourceClient {
 public:
-    virtual ~RawResourceClient() { }
+    ~RawResourceClient() override {}
     static ResourceClientType expectedType() { return RawResourceType; }
-    virtual ResourceClientType resourceClientType() const override final { return expectedType(); }
+    ResourceClientType resourceClientType() const final { return expectedType(); }
 
     virtual void dataSent(Resource*, unsigned long long /* bytesSent */, unsigned long long /* totalBytesToBeSent */) { }
     virtual void responseReceived(Resource*, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) { }

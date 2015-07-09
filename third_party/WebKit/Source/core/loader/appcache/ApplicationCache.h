@@ -48,14 +48,14 @@ public:
     {
         return new ApplicationCache(frame);
     }
-    virtual ~ApplicationCache()
+    ~ApplicationCache() override
     {
 #if !ENABLE(OILPAN)
         ASSERT(!m_frame);
 #endif
     }
 
-    virtual void willDestroyGlobalObjectInFrame() override;
+    void willDestroyGlobalObjectInFrame() override;
 
     unsigned short status() const;
     void update(ExceptionState&);
@@ -73,8 +73,8 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(cached);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(obsolete);
 
-    virtual const AtomicString& interfaceName() const override;
-    virtual ExecutionContext* executionContext() const override;
+    const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const override;
 
     static const AtomicString& toEventType(ApplicationCacheHost::EventID);
 

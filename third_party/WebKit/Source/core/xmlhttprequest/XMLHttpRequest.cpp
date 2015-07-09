@@ -144,17 +144,17 @@ public:
     }
 
     // FileReaderLoaderClient functions.
-    virtual void didStartLoading() override { }
-    virtual void didReceiveDataForClient(const char* data, unsigned length) override
+    void didStartLoading() override {}
+    void didReceiveDataForClient(const char* data, unsigned length) override
     {
         ASSERT(length <= INT_MAX);
         m_xhr->didReceiveData(data, length);
     }
-    virtual void didFinishLoading() override
+    void didFinishLoading() override
     {
         m_xhr->didFinishLoadingFromBlob();
     }
-    virtual void didFail(FileError::ErrorCode error) override
+    void didFail(FileError::ErrorCode error) override
     {
         m_xhr->didFailLoadingFromBlob();
     }

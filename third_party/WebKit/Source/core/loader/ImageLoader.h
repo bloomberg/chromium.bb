@@ -61,7 +61,7 @@ typedef EventSender<ImageLoader> ImageEventSender;
 class CORE_EXPORT ImageLoader : public NoBaseWillBeGarbageCollectedFinalized<ImageLoader>, public ImageResourceClient {
 public:
     explicit ImageLoader(Element*);
-    virtual ~ImageLoader();
+    ~ImageLoader() override;
 
     // We must run the destructor in the eager sweeping phase and call
     // m_image->removeClient(this). Otherwise, the ImageResource can invoke
@@ -118,9 +118,9 @@ public:
     void addClient(ImageLoaderClient*);
     void removeClient(ImageLoaderClient*);
 
-    virtual bool getImageAnimationPolicy(ImageResource*, ImageAnimationPolicy&) override final;
+    bool getImageAnimationPolicy(ImageResource*, ImageAnimationPolicy&) final;
 protected:
-    virtual void notifyFinished(Resource*) override;
+    void notifyFinished(Resource*) override;
 
 private:
     class Task;

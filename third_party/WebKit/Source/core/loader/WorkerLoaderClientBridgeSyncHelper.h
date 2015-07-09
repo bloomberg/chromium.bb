@@ -50,22 +50,22 @@ class WorkerLoaderClientBridgeSyncHelper : public ThreadableLoaderClient {
     WTF_MAKE_FAST_ALLOCATED(WorkerLoaderClientBridgeSyncHelper);
 public:
     static PassOwnPtr<WorkerLoaderClientBridgeSyncHelper> create(ThreadableLoaderClientWrapper*, PassOwnPtr<WebWaitableEvent>);
-    virtual ~WorkerLoaderClientBridgeSyncHelper();
+    ~WorkerLoaderClientBridgeSyncHelper() override;
 
     // Called on the worker context thread.
     void run();
 
     // Called on the main thread.
-    virtual void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
-    virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
-    virtual void didReceiveData(const char*, unsigned dataLength) override;
-    virtual void didDownloadData(int dataLength) override;
-    virtual void didReceiveCachedMetadata(const char*, int dataLength) override;
-    virtual void didFinishLoading(unsigned long identifier, double finishTime) override;
-    virtual void didFail(const ResourceError&) override;
-    virtual void didFailAccessControlCheck(const ResourceError&) override;
-    virtual void didFailRedirectCheck() override;
-    virtual void didReceiveResourceTiming(const ResourceTimingInfo&) override;
+    void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
+    void didReceiveResponse(unsigned long identifier, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
+    void didReceiveData(const char*, unsigned dataLength) override;
+    void didDownloadData(int dataLength) override;
+    void didReceiveCachedMetadata(const char*, int dataLength) override;
+    void didFinishLoading(unsigned long identifier, double finishTime) override;
+    void didFail(const ResourceError&) override;
+    void didFailAccessControlCheck(const ResourceError&) override;
+    void didFailRedirectCheck() override;
+    void didReceiveResourceTiming(const ResourceTimingInfo&) override;
 
 private:
     WorkerLoaderClientBridgeSyncHelper(ThreadableLoaderClientWrapper*, PassOwnPtr<WebWaitableEvent>);

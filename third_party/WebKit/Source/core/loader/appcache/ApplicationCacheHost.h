@@ -137,10 +137,10 @@ namespace blink {
         explicit ApplicationCacheHost(DocumentLoader*);
 
         // WebApplicationCacheHostClient implementation
-        virtual void didChangeCacheAssociation() override final;
-        virtual void notifyEventListener(WebApplicationCacheHost::EventID) override final;
-        virtual void notifyProgressEventListener(const WebURL&, int progressTotal, int progressDone) override final;
-        virtual void notifyErrorEventListener(WebApplicationCacheHost::ErrorReason, const WebURL&, int status, const WebString& message) override final;
+        void didChangeCacheAssociation() final;
+        void notifyEventListener(WebApplicationCacheHost::EventID) final;
+        void notifyProgressEventListener(const WebURL&, int progressTotal, int progressDone) final;
+        void notifyErrorEventListener(WebApplicationCacheHost::ErrorReason, const WebURL&, int status, const WebString& message) final;
 
         bool isApplicationCacheEnabled();
         DocumentLoader* documentLoader() const { return m_documentLoader; }

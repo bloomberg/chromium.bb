@@ -123,7 +123,7 @@ protected:
             m_shouldCheckMainWorldContentSecurityPolicy = DoNotCheckContentSecurityPolicy;
     }
 
-    virtual void fire(LocalFrame* frame) override
+    void fire(LocalFrame* frame) override
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         FrameLoadRequest request(originDocument(), m_url, "_self", m_shouldCheckMainWorldContentSecurityPolicy);
@@ -146,9 +146,9 @@ public:
         return adoptPtrWillBeNoop(new ScheduledRedirect(delay, originDocument, url, lockBackForwardList));
     }
 
-    virtual bool shouldStartTimer(LocalFrame* frame) override { return frame->document()->loadEventFinished(); }
+    bool shouldStartTimer(LocalFrame* frame) override { return frame->document()->loadEventFinished(); }
 
-    virtual void fire(LocalFrame* frame) override
+    void fire(LocalFrame* frame) override
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         FrameLoadRequest request(originDocument(), url(), "_self");
@@ -185,7 +185,7 @@ public:
         return adoptPtrWillBeNoop(new ScheduledReload);
     }
 
-    virtual void fire(LocalFrame* frame) override
+    void fire(LocalFrame* frame) override
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         ResourceRequest resourceRequest =
@@ -211,7 +211,7 @@ public:
         return adoptPtrWillBeNoop(new ScheduledPageBlock(originDocument, url));
     }
 
-    virtual void fire(LocalFrame* frame) override
+    void fire(LocalFrame* frame) override
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         SubstituteData substituteData(SharedBuffer::create(), "text/plain", "UTF-8", KURL(), ForceSynchronousLoad);
@@ -235,7 +235,7 @@ public:
         return adoptPtrWillBeNoop(new ScheduledFormSubmission(document, submission, lockBackForwardList));
     }
 
-    virtual void fire(LocalFrame* frame) override
+    void fire(LocalFrame* frame) override
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         FrameLoadRequest frameRequest(originDocument());

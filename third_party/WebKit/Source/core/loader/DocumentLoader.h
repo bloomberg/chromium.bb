@@ -66,7 +66,7 @@ namespace blink {
         {
             return adoptRefWillBeNoop(new DocumentLoader(frame, request, data));
         }
-        virtual ~DocumentLoader();
+        ~DocumentLoader() override;
 
         LocalFrame* frame() const { return m_frame; }
 
@@ -173,11 +173,11 @@ namespace blink {
         void finishedLoading(double finishTime);
         void mainReceivedError(const ResourceError&);
         void cancelLoadAfterXFrameOptionsOrCSPDenied(const ResourceResponse&);
-        virtual void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) override final;
-        virtual void updateRequest(Resource*, const ResourceRequest&) override final;
-        virtual void responseReceived(Resource*, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override final;
-        virtual void dataReceived(Resource*, const char* data, unsigned length) override final;
-        virtual void notifyFinished(Resource*) override final;
+        void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) final;
+        void updateRequest(Resource*, const ResourceRequest&) final;
+        void responseReceived(Resource*, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) final;
+        void dataReceived(Resource*, const char* data, unsigned length) final;
+        void notifyFinished(Resource*) final;
 
         bool maybeLoadEmpty();
 

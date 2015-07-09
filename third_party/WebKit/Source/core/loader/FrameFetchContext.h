@@ -106,9 +106,9 @@ public:
     void addCSPHeaderIfNecessary(Resource::Type, FetchRequest&) override;
     bool isLowPriorityIframe() const override;
 
-    virtual void countClientHintsDPR() override;
-    virtual void countClientHintsResourceWidth() override;
-    virtual void countClientHintsViewportWidth() override;
+    void countClientHintsDPR() override;
+    void countClientHintsResourceWidth() override;
+    void countClientHintsViewportWidth() override;
 
     DECLARE_VIRTUAL_TRACE();
 

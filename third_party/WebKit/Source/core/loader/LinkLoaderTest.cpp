@@ -23,17 +23,17 @@ public:
     {
     }
 
-    virtual bool shouldLoadLink() override
+    bool shouldLoadLink() override
     {
         return m_shouldLoad;
     }
 
-    virtual void linkLoaded() override { }
-    virtual void linkLoadingErrored() override { }
-    virtual void didStartLinkPrerender() override { }
-    virtual void didStopLinkPrerender() override { }
-    virtual void didSendLoadForLinkPrerender() override { }
-    virtual void didSendDOMContentLoadedForLinkPrerender() override { }
+    void linkLoaded() override {}
+    void linkLoadingErrored() override {}
+    void didStartLinkPrerender() override {}
+    void didStopLinkPrerender() override {}
+    void didSendLoadForLinkPrerender() override {}
+    void didSendDOMContentLoadedForLinkPrerender() override {}
 
 private:
     bool m_shouldLoad;

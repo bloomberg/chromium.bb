@@ -223,8 +223,8 @@ public:
     MemoryCacheLiveResourcePriority priority(Resource*) const;
 
     // TaskObserver implementation
-    virtual void willProcessTask() override;
-    virtual void didProcessTask() override;
+    void willProcessTask() override;
+    void didProcessTask() override;
 
     void pruneAll();
 

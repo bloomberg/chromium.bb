@@ -44,15 +44,15 @@ public:
     typedef ResourceClient ClientType;
 
     static ResourcePtr<FontResource> fetch(FetchRequest&, ResourceFetcher*);
-    virtual ~FontResource();
+    ~FontResource() override;
 
-    virtual void load(ResourceFetcher*, const ResourceLoaderOptions&) override;
+    void load(ResourceFetcher*, const ResourceLoaderOptions&) override;
 
-    virtual void didAddClient(ResourceClient*) override;
+    void didAddClient(ResourceClient*) override;
 
-    virtual void allClientsRemoved() override;
+    void allClientsRemoved() override;
     void beginLoadIfNeeded(ResourceFetcher* dl);
-    virtual bool stillNeedsLoad() const override { return m_state != LoadInitiated; }
+    bool stillNeedsLoad() const override { return m_state != LoadInitiated; }
     bool exceedsFontLoadWaitLimit() const { return m_exceedsFontLoadWaitLimit; }
 
     bool loadScheduled() const { return m_state != Unloaded; }
@@ -67,7 +67,7 @@ public:
     FontPlatformData platformDataFromCustomData(float size, bool bold, bool italic, FontOrientation = FontOrientation::Horizontal);
 
 protected:
-    virtual bool isSafeToUnlock() const override;
+    bool isSafeToUnlock() const override;
 
 private:
     class FontResourceFactory : public ResourceFactory {
@@ -82,7 +82,7 @@ private:
     };
     FontResource(const ResourceRequest&);
 
-    virtual void checkNotify() override;
+    void checkNotify() override;
     void fontLoadWaitLimitCallback(Timer<FontResource>*);
 
     enum State { Unloaded, LoadScheduled, LoadInitiated };
@@ -101,12 +101,12 @@ DEFINE_RESOURCE_TYPE_CASTS(Font);
 
 class FontResourceClient : public ResourceClient {
 public:
-    virtual ~FontResourceClient() { }
+    ~FontResourceClient() override {}
     static ResourceClientType expectedType() { return FontType; }
-    virtual ResourceClientType resourceClientType() const override final { return expectedType(); }
-    virtual void fontLoaded(FontResource*) { }
-    virtual void didStartFontLoad(FontResource*) { }
-    virtual void fontLoadWaitLimitExceeded(FontResource*) { }
+    ResourceClientType resourceClientType() const final { return expectedType(); }
+    virtual void fontLoaded(FontResource*) {}
+    virtual void didStartFontLoad(FontResource*) {}
+    virtual void fontLoadWaitLimitExceeded(FontResource*) {}
 };
 
 }

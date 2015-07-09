@@ -20,7 +20,7 @@ public:
     typedef ResourceClient ClientType;
 
     static ResourcePtr<Resource> fetch(Resource::Type, FetchRequest&, ResourceFetcher*);
-    virtual ~LinkFetchResource();
+    ~LinkFetchResource() override;
 
 private:
     class LinkResourceFactory : public ResourceFactory {
