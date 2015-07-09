@@ -152,7 +152,7 @@ bool TegraV4L2Device::Initialize() {
     case kEncoder:
       device_path = kEncoderDevice;
       break;
-    case kImageProcessor:
+    default:
       DVLOG(1) << "Device type " << type_ << " not supported on this platform";
       return false;
   }

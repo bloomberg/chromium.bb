@@ -20,8 +20,14 @@
 #include "media/filters/jpeg_parser.h"
 #include "ui/gfx/geometry/size.h"
 
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+#if defined(OS_CHROMEOS)
+#if defined(ARCH_CPU_X86_FAMILY)
 #include "content/common/gpu/media/vaapi_jpeg_decode_accelerator.h"
+#endif
+#if defined(USE_V4L2_CODEC)
+#include "content/common/gpu/media/v4l2_device.h"
+#include "content/common/gpu/media/v4l2_jpeg_decode_accelerator.h"
+#endif
 #endif
 
 namespace {
@@ -326,6 +332,13 @@ void GpuJpegDecodeAccelerator::AddClient(int32 route_id,
 // update as well.
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
   accelerator.reset(new VaapiJpegDecodeAccelerator(io_task_runner_));
+#elif defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
+  scoped_refptr<V4L2Device> device = V4L2Device::Create(
+      V4L2Device::kJpegDecoder);
+  if (device) {
+    accelerator.reset(new V4L2JpegDecodeAccelerator(
+        device, io_task_runner_));
+  }
 #else
   DVLOG(1) << "HW JPEG decode acceleration not available.";
 #endif

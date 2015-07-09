@@ -40,6 +40,7 @@ class CONTENT_EXPORT V4L2Device
     kDecoder,
     kEncoder,
     kImageProcessor,
+    kJpegDecoder,
   };
 
   // Creates and initializes an appropriate V4L2Device of |type| for the

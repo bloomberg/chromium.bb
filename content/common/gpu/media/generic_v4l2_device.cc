@@ -37,6 +37,7 @@ namespace {
 const char kDecoderDevice[] = "/dev/video-dec";
 const char kEncoderDevice[] = "/dev/video-enc";
 const char kImageProcessorDevice[] = "/dev/image-proc0";
+const char kJpegDecoderDevice[] = "/dev/jpeg-dec";
 }
 
 GenericV4L2Device::GenericV4L2Device(Type type)
@@ -142,6 +143,9 @@ bool GenericV4L2Device::Initialize() {
       break;
     case kImageProcessor:
       device_path = kImageProcessorDevice;
+      break;
+    case kJpegDecoder:
+      device_path = kJpegDecoderDevice;
       break;
   }
 

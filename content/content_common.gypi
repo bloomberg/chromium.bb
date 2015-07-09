@@ -872,6 +872,8 @@
         'common/gpu/media/v4l2_device.h',
         'common/gpu/media/v4l2_image_processor.cc',
         'common/gpu/media/v4l2_image_processor.h',
+        'common/gpu/media/v4l2_jpeg_decode_accelerator.cc',
+        'common/gpu/media/v4l2_jpeg_decode_accelerator.h',
         'common/gpu/media/v4l2_slice_video_decode_accelerator.cc',
         'common/gpu/media/v4l2_slice_video_decode_accelerator.h',
         'common/gpu/media/v4l2_video_decode_accelerator.cc',

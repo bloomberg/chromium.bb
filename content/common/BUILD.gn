@@ -362,6 +362,8 @@ source_set("common") {
         "gpu/media/v4l2_device.h",
         "gpu/media/v4l2_image_processor.cc",
         "gpu/media/v4l2_image_processor.h",
+        "gpu/media/v4l2_jpeg_decode_accelerator.cc",
+        "gpu/media/v4l2_jpeg_decode_accelerator.h",
         "gpu/media/v4l2_slice_video_decode_accelerator.cc",
         "gpu/media/v4l2_slice_video_decode_accelerator.h",
         "gpu/media/v4l2_video_decode_accelerator.cc",

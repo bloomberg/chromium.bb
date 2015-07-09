@@ -160,6 +160,10 @@ void AddV4L2GpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
   // Device node for V4L2 video encode accelerator drivers.
   static const char kDevVideoEncPath[] = "/dev/video-enc";
   permissions->push_back(BrokerFilePermission::ReadWrite(kDevVideoEncPath));
+
+  // Device node for V4L2 JPEG decode accelerator drivers.
+  static const char kDevJpegDecPath[] = "/dev/jpeg-dec";
+  permissions->push_back(BrokerFilePermission::ReadWrite(kDevJpegDecPath));
 }
 
 class GpuBrokerProcessPolicy : public GpuProcessPolicy {
