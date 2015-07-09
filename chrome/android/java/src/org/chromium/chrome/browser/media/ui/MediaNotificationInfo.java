@@ -7,9 +7,9 @@ package org.chromium.chrome.browser.media.ui;
 import android.text.TextUtils;
 
 /**
- * Exposes information about the current media to the external clients.
+ * Exposes information about the current media notification to the external clients.
  */
-public class MediaInfo {
+public class MediaNotificationInfo {
     /**
      * The title of the media.
      */
@@ -31,28 +31,35 @@ public class MediaInfo {
     public final int tabId;
 
     /**
+     * Whether the media notification should be considered as private.
+     */
+    public final boolean isPrivate;
+
+    /**
      * The listener for the control events.
      */
     public final MediaPlaybackListener listener;
 
     /**
-     * Create a new MediaInfo.
+     * Create a new MediaNotificationInfo.
      * @param title
      * @param state
      * @param origin
      * @param tabId
      * @param listener
      */
-    public MediaInfo(
+    public MediaNotificationInfo(
             String title,
             boolean isPaused,
             String origin,
             int tabId,
+            boolean isPrivate,
             MediaPlaybackListener listener) {
         this.title = title;
         this.isPaused = isPaused;
         this.origin = origin;
         this.tabId = tabId;
+        this.isPrivate = isPrivate;
         this.listener = listener;
     }
 
@@ -60,17 +67,23 @@ public class MediaInfo {
      * Copy a media info.
      * @param other the source to copy from.
      */
-    public MediaInfo(MediaInfo other) {
-        this(other.title, other.isPaused, other.origin, other.tabId, other.listener);
+    public MediaNotificationInfo(MediaNotificationInfo other) {
+        this(other.title,
+             other.isPaused,
+             other.origin,
+             other.tabId,
+             other.isPrivate,
+             other.listener);
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj == this) return true;
-        if (!(obj instanceof MediaInfo)) return false;
+        if (!(obj instanceof MediaNotificationInfo)) return false;
 
-        MediaInfo other = (MediaInfo) obj;
+        MediaNotificationInfo other = (MediaNotificationInfo) obj;
         return isPaused == other.isPaused
+                && isPrivate == other.isPrivate
                 && tabId == other.tabId
                 && TextUtils.equals(title, other.title)
                 && TextUtils.equals(origin, other.origin)
@@ -80,6 +93,7 @@ public class MediaInfo {
     @Override
     public int hashCode() {
         int result = isPaused ? 1 : 0;
+        result = 31 * result + (isPrivate ? 1 : 0);
         result = 31 * result + (title == null ? 0 : title.hashCode());
         result = 31 * result + (origin == null ? 0 : origin.hashCode());
         result = 31 * result + tabId;

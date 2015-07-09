@@ -69,11 +69,12 @@ public class MediaSessionTabHelper {
                 }
                 NotificationMediaPlaybackControls.show(
                         ApplicationStatus.getApplicationContext(),
-                        new MediaInfo(
+                        new MediaNotificationInfo(
                                 mTab.getTitle(),
                                 isPaused,
                                 origin,
                                 mTab.getId(),
+                                mTab.isIncognito(),
                                 mControlsListener));
             }
         };

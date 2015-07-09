@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.media.ui;
 
-import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
@@ -64,18 +63,18 @@ public class NotificationMediaPlaybackControls {
         public int onStartCommand(Intent intent, int flags, int startId) {
             if (intent == null
                     || sInstance == null
-                    || sInstance.mMediaInfo == null
-                    || sInstance.mMediaInfo.listener == null) {
+                    || sInstance.mMediaNotificationInfo == null
+                    || sInstance.mMediaNotificationInfo.listener == null) {
                 stopSelf();
                 return START_NOT_STICKY;
             }
 
             String action = intent.getAction();
             if (ACTION_PLAY.equals(action)) {
-                sInstance.mMediaInfo.listener.onPlay();
+                sInstance.mMediaNotificationInfo.listener.onPlay();
                 sInstance.onPlaybackStateChanged(false);
             } else if (ACTION_PAUSE.equals(action)) {
-                sInstance.mMediaInfo.listener.onPause();
+                sInstance.mMediaNotificationInfo.listener.onPause();
                 sInstance.onPlaybackStateChanged(true);
             }
 
@@ -85,19 +84,20 @@ public class NotificationMediaPlaybackControls {
 
     /**
      * Shows the notification with media controls with the specified media info. Replaces/updates
-     * the current notification if already showing. Does nothing if |mediaInfo| hasn't changed from
-     * the last one.
+     * the current notification if already showing. Does nothing if |mediaNotificationInfo| hasn't
+     * changed from the last one.
      *
      * @param applicationContext context to create the notification with
-     * @param mediaInfo information to show in the notification
+     * @param mediaNotificationInfo information to show in the notification
      */
-    public static void show(Context applicationContext, MediaInfo mediaInfo) {
+    public static void show(Context applicationContext,
+                            MediaNotificationInfo mediaNotificationInfo) {
         synchronized (LOCK) {
             if (sInstance == null) {
                 sInstance = new NotificationMediaPlaybackControls(applicationContext);
             }
         }
-        sInstance.showNotification(mediaInfo);
+        sInstance.showNotification(mediaNotificationInfo);
     }
 
     /**
@@ -136,7 +136,7 @@ public class NotificationMediaPlaybackControls {
     private static void onServiceDestroyed() {
         assert sInstance != null;
         assert sInstance.mService != null;
-        sInstance.mNotification = null;
+        sInstance.mNotificationBuilder = null;
         sInstance.mService = null;
     }
 
@@ -149,9 +149,9 @@ public class NotificationMediaPlaybackControls {
 
     private final String mPauseDescription;
 
-    private Notification mNotification;
+    private NotificationCompat.Builder mNotificationBuilder;
 
-    private MediaInfo mMediaInfo;
+    private MediaNotificationInfo mMediaNotificationInfo;
 
     private NotificationMediaPlaybackControls(Context context) {
         mContext = context;
@@ -159,35 +159,36 @@ public class NotificationMediaPlaybackControls {
         mPauseDescription = context.getResources().getString(R.string.accessibility_pause);
     }
 
-    private void showNotification(MediaInfo mediaInfo) {
+    private void showNotification(MediaNotificationInfo mediaNotificationInfo) {
         mContext.startService(new Intent(mContext, ListenerService.class));
 
-        assert mediaInfo != null;
+        assert mediaNotificationInfo != null;
 
-        if (mediaInfo.equals(mMediaInfo)) return;
+        if (mediaNotificationInfo.equals(mMediaNotificationInfo)) return;
 
-        mMediaInfo = mediaInfo;
+        mMediaNotificationInfo = mediaNotificationInfo;
         updateNotification();
     }
 
     private void clearNotification() {
-        mMediaInfo = null;
+        mMediaNotificationInfo = null;
         mContext.stopService(new Intent(mContext, ListenerService.class));
     }
 
     private void hideNotification(int tabId) {
-        if (mMediaInfo == null || tabId != mMediaInfo.tabId) return;
+        if (mMediaNotificationInfo == null || tabId != mMediaNotificationInfo.tabId) return;
         clearNotification();
     }
 
     private void onPlaybackStateChanged(boolean isPaused) {
-        assert mMediaInfo != null;
-        mMediaInfo = new MediaInfo(
-                mMediaInfo.title,
+        assert mMediaNotificationInfo != null;
+        mMediaNotificationInfo = new MediaNotificationInfo(
+                mMediaNotificationInfo.title,
                 isPaused,
-                mMediaInfo.origin,
-                mMediaInfo.tabId,
-                mMediaInfo.listener);
+                mMediaNotificationInfo.origin,
+                mMediaNotificationInfo.tabId,
+                mMediaNotificationInfo.isPrivate,
+                mMediaNotificationInfo.listener);
         updateNotification();
     }
 
@@ -198,15 +199,16 @@ public class NotificationMediaPlaybackControls {
     }
 
     private String getStatus() {
-        if (mMediaInfo.origin != null) {
-            return mContext.getString(R.string.media_notification_link_text, mMediaInfo.origin);
+        if (mMediaNotificationInfo.origin != null) {
+            return mContext.getString(R.string.media_notification_link_text,
+                                      mMediaNotificationInfo.origin);
         }
         return mContext.getString(R.string.media_notification_text_no_link);
     }
 
     private String getTitle() {
-        String mediaTitle = mMediaInfo.title;
-        if (mMediaInfo.isPaused) {
+        String mediaTitle = mMediaNotificationInfo.title;
+        if (mMediaNotificationInfo.isPaused) {
             return mContext.getString(
                     R.string.media_playback_notification_paused_for_media, mediaTitle);
         }
@@ -215,7 +217,7 @@ public class NotificationMediaPlaybackControls {
     }
 
     private PendingIntent createContentIntent() {
-        int tabId = mMediaInfo.tabId;
+        int tabId = mMediaNotificationInfo.tabId;
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, mContext.getPackageName());
         intent.putExtra(TabOpenType.BRING_TAB_TO_FRONT.name(), tabId);
@@ -226,22 +228,18 @@ public class NotificationMediaPlaybackControls {
     private void updateNotification() {
         if (mService == null) return;
 
-        if (mMediaInfo == null) {
+        if (mMediaNotificationInfo == null) {
             // Notification was hidden before we could update it.
-            assert mNotification == null;
+            assert mNotificationBuilder == null;
             return;
         }
 
-        if (mNotification == null) {
-            NotificationCompat.Builder notificationBuilder =
-                    new NotificationCompat.Builder(mContext)
-                            .setSmallIcon(R.drawable.audio_playing)
-                            .setAutoCancel(false)
-                            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                            .setOngoing(true)
-                            .setContent(createContentView())
-                            .setContentIntent(createContentIntent());
-            mNotification = notificationBuilder.build();
+        if (mNotificationBuilder == null) {
+            mNotificationBuilder = new NotificationCompat.Builder(mContext)
+                .setSmallIcon(R.drawable.audio_playing)
+                .setAutoCancel(false)
+                .setOngoing(true)
+                .setContentIntent(createContentIntent());
         }
 
         RemoteViews contentView = createContentView();
@@ -250,7 +248,7 @@ public class NotificationMediaPlaybackControls {
         contentView.setTextViewText(R.id.status, getStatus());
         contentView.setImageViewResource(R.id.icon, R.drawable.audio_playing);
 
-        if (mMediaInfo.isPaused) {
+        if (mMediaNotificationInfo.isPaused) {
             contentView.setImageViewResource(R.id.playpause, R.drawable.ic_vidcontrol_play);
             contentView.setContentDescription(R.id.playpause, mPlayDescription);
             contentView.setOnClickPendingIntent(R.id.playpause,
@@ -262,8 +260,11 @@ public class NotificationMediaPlaybackControls {
                     mService.getPendingIntent(ListenerService.ACTION_PAUSE));
         }
 
-        mNotification.contentView = contentView;
+        mNotificationBuilder.setContent(contentView);
+        mNotificationBuilder.setVisibility(
+                mMediaNotificationInfo.isPrivate ? NotificationCompat.VISIBILITY_PRIVATE
+                                                 : NotificationCompat.VISIBILITY_PUBLIC);
 
-        mService.startForeground(R.id.media_playback_notification, mNotification);
+        mService.startForeground(R.id.media_playback_notification, mNotificationBuilder.build());
     }
 }
