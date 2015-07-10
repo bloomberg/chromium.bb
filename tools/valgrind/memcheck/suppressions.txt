@@ -3168,14 +3168,6 @@
    fun:_ZN16sync_file_system13drive_backend14SyncEngineTest5SetUpEv
 }
 {
-   bug_422485
-   Memcheck:Overlap
-   fun:memcpy@@GLIBC_2.14
-   fun:_ZNK8SkBitmap12copyPixelsToEPvmmb
-   fun:_ZN5blink19ImageFrameGenerator14decodeAndScaleERK11SkImageInfomPvm
-   fun:_ZN5blink22DecodingImageGenerator11onGetPixelsERK11SkImageInfoPvmPjPi
-}
-{
    bug_424056a
    Memcheck:Leak
    fun:malloc
