@@ -133,6 +133,7 @@ component("ime") {
     deps += [
       "//chromeos",
       "//chromeos/ime:gencode",
+      "//ui/events:dom_keycode_converter",
     ]
     if (!use_ozone) {
       sources -= [
