@@ -34,6 +34,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_util.h"
+#include "net/log/net_log.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -41,6 +42,59 @@
 #include "ui/base/page_transition_types.h"
 
 namespace content {
+
+namespace {
+
+net::NetLog::EventType RequestJobResultToNetEventType(
+    ServiceWorkerMetrics::URLRequestJobResult result) {
+  using n = net::NetLog;
+  using m = ServiceWorkerMetrics;
+  switch (result) {
+    case m::REQUEST_JOB_FALLBACK_RESPONSE:
+      return n::TYPE_SERVICE_WORKER_FALLBACK_RESPONSE;
+    case m::REQUEST_JOB_FALLBACK_FOR_CORS:
+      return n::TYPE_SERVICE_WORKER_FALLBACK_FOR_CORS;
+    case m::REQUEST_JOB_HEADERS_ONLY_RESPONSE:
+      return n::TYPE_SERVICE_WORKER_HEADERS_ONLY_RESPONSE;
+    case m::REQUEST_JOB_STREAM_RESPONSE:
+      return n::TYPE_SERVICE_WORKER_STREAM_RESPONSE;
+    case m::REQUEST_JOB_BLOB_RESPONSE:
+      return n::TYPE_SERVICE_WORKER_BLOB_RESPONSE;
+    case m::REQUEST_JOB_ERROR_RESPONSE_STATUS_ZERO:
+      return n::TYPE_SERVICE_WORKER_ERROR_RESPONSE_STATUS_ZERO;
+    case m::REQUEST_JOB_ERROR_BAD_BLOB:
+      return n::TYPE_SERVICE_WORKER_ERROR_BAD_BLOB;
+    case m::REQUEST_JOB_ERROR_NO_PROVIDER_HOST:
+      return n::TYPE_SERVICE_WORKER_ERROR_NO_PROVIDER_HOST;
+    case m::REQUEST_JOB_ERROR_NO_ACTIVE_VERSION:
+      return n::TYPE_SERVICE_WORKER_ERROR_NO_ACTIVE_VERSION;
+    case m::REQUEST_JOB_ERROR_FETCH_EVENT_DISPATCH:
+      return n::TYPE_SERVICE_WORKER_ERROR_FETCH_EVENT_DISPATCH;
+    case m::REQUEST_JOB_ERROR_BLOB_READ:
+      return n::TYPE_SERVICE_WORKER_ERROR_BLOB_READ;
+    case m::REQUEST_JOB_ERROR_STREAM_ABORTED:
+      return n::TYPE_SERVICE_WORKER_ERROR_STREAM_ABORTED;
+    case m::REQUEST_JOB_ERROR_KILLED:
+      return n::TYPE_SERVICE_WORKER_ERROR_KILLED;
+    case m::REQUEST_JOB_ERROR_KILLED_WITH_BLOB:
+      return n::TYPE_SERVICE_WORKER_ERROR_KILLED_WITH_BLOB;
+    case m::REQUEST_JOB_ERROR_KILLED_WITH_STREAM:
+      return n::TYPE_SERVICE_WORKER_ERROR_KILLED_WITH_STREAM;
+    // We can't log if there's no request; fallthrough.
+    case m::REQUEST_JOB_ERROR_NO_REQUEST:
+    // Obsolete types; fallthrough.
+    case m::REQUEST_JOB_ERROR_DESTROYED:
+    case m::REQUEST_JOB_ERROR_DESTROYED_WITH_BLOB:
+    case m::REQUEST_JOB_ERROR_DESTROYED_WITH_STREAM:
+    // Invalid type.
+    case m::NUM_REQUEST_JOB_RESULT_TYPES:
+      NOTREACHED() << result;
+  }
+  NOTREACHED() << result;
+  return n::TYPE_FAILED;
+}
+
+}  // namespace
 
 ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     net::URLRequest* request,
@@ -90,16 +144,6 @@ void ServiceWorkerURLRequestJob::Start() {
 }
 
 void ServiceWorkerURLRequestJob::Kill() {
-  if (ShouldRecordResult()) {
-    ServiceWorkerMetrics::URLRequestJobResult result =
-        ServiceWorkerMetrics::REQUEST_JOB_ERROR_KILLED;
-    if (response_body_type_ == STREAM)
-      result = ServiceWorkerMetrics::REQUEST_JOB_ERROR_KILLED_WITH_STREAM;
-    else if (response_body_type_ == BLOB)
-      result = ServiceWorkerMetrics::REQUEST_JOB_ERROR_KILLED_WITH_BLOB;
-    RecordResult(result);
-  }
-
   net::URLRequestJob::Kill();
   ClearStream();
   fetch_dispatcher_.reset();
@@ -351,14 +395,12 @@ ServiceWorkerURLRequestJob::~ServiceWorkerURLRequestJob() {
 
   if (!ShouldRecordResult())
     return;
-  // TODO(falken): If we don't see many of these, we might merge KILLED and
-  // DESTROYED results together.
   ServiceWorkerMetrics::URLRequestJobResult result =
-      ServiceWorkerMetrics::REQUEST_JOB_ERROR_DESTROYED;
+      ServiceWorkerMetrics::REQUEST_JOB_ERROR_KILLED;
   if (response_body_type_ == STREAM)
-    result = ServiceWorkerMetrics::REQUEST_JOB_ERROR_DESTROYED_WITH_STREAM;
+    result = ServiceWorkerMetrics::REQUEST_JOB_ERROR_KILLED_WITH_STREAM;
   else if (response_body_type_ == BLOB)
-    result = ServiceWorkerMetrics::REQUEST_JOB_ERROR_DESTROYED_WITH_BLOB;
+    result = ServiceWorkerMetrics::REQUEST_JOB_ERROR_KILLED_WITH_BLOB;
   RecordResult(result);
 }
 
@@ -372,6 +414,11 @@ void ServiceWorkerURLRequestJob::MaybeStartRequest() {
 }
 
 void ServiceWorkerURLRequestJob::StartRequest() {
+  if (request()) {
+    request()->net_log().AddEvent(
+        net::NetLog::TYPE_SERVICE_WORKER_START_REQUEST);
+  }
+
   switch (response_type_) {
     case NOT_DETERMINED:
       NOTREACHED();
@@ -722,6 +769,8 @@ void ServiceWorkerURLRequestJob::RecordResult(
   did_record_result_ = true;
   ServiceWorkerMetrics::RecordURLRequestJobResult(is_main_resource_load_,
                                                   result);
+  if (request())
+    request()->net_log().AddEvent(RequestJobResultToNetEventType(result));
 }
 
 void ServiceWorkerURLRequestJob::RecordStatusZeroResponseError(

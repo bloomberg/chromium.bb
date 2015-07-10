@@ -1796,6 +1796,75 @@ EVENT_TYPE(APPCACHE_DELIVERING_ERROR_RESPONSE)
 EVENT_TYPE(APPCACHE_DELIVERING_EXECUTABLE_RESPONSE)
 
 // ------------------------------------------------------------------------
+// Service Worker
+// ------------------------------------------------------------------------
+// This event is emitted when Service Worker starts to handle a request.
+EVENT_TYPE(SERVICE_WORKER_START_REQUEST)
+
+// This event is emitted when Service Worker results in a fallback to network
+// response.
+EVENT_TYPE(SERVICE_WORKER_FALLBACK_RESPONSE)
+
+// This event is emitted when Service Worker results in a fallback to network
+// response, and asks the renderer rather than the browser to do the fallback
+// due to CORS.
+EVENT_TYPE(SERVICE_WORKER_FALLBACK_FOR_CORS)
+
+// This event is emitted when Service Worker responds with a headers-only
+// response.
+EVENT_TYPE(SERVICE_WORKER_HEADERS_ONLY_RESPONSE)
+
+// This event is emitted when Service Worker responds with a stream.
+EVENT_TYPE(SERVICE_WORKER_STREAM_RESPONSE)
+
+// This event is emitted when Service Worker responds with a blob.
+EVENT_TYPE(SERVICE_WORKER_BLOB_RESPONSE)
+
+// This event is emitted when Service Worker instructs the browser
+// to respond with a network error.
+EVENT_TYPE(SERVICE_WORKER_ERROR_RESPONSE_STATUS_ZERO)
+
+// This event is emitted when Service Worker attempts to respond with
+// a blob, but it was not readable.
+EVENT_TYPE(SERVICE_WORKER_ERROR_BAD_BLOB)
+
+// This event is emitted when Service Worker fails to respond because
+// the provider host was null.
+EVENT_TYPE(SERVICE_WORKER_ERROR_NO_PROVIDER_HOST)
+
+// This event is emitted when Service Worker fails to respond because
+// the registration had no active version.
+EVENT_TYPE(SERVICE_WORKER_ERROR_NO_ACTIVE_VERSION)
+
+// This event is emitted when Service Worker fails to respond because
+// the underlying request was detached.
+EVENT_TYPE(SERVICE_WORKER_ERROR_NO_REQUEST)
+
+// This event is emitted when Service Worker fails to respond because
+// the fetch event could not be dispatched to the worker.
+EVENT_TYPE(SERVICE_WORKER_ERROR_FETCH_EVENT_DISPATCH)
+
+// This event is emitted when Service Worker fails to respond because
+// of an error when reading the blob response.
+EVENT_TYPE(SERVICE_WORKER_ERROR_BLOB_READ)
+
+// This event is emitted when Service Worker fails to respond because
+// of an error when reading the stream response.
+EVENT_TYPE(SERVICE_WORKER_ERROR_STREAM_ABORTED)
+
+// This event is emitted when Service Worker is destroyed before it
+// responds.
+EVENT_TYPE(SERVICE_WORKER_ERROR_KILLED)
+
+// This event is emitted when Service Worker is destroyed before it
+// finishes responding with a blob.
+EVENT_TYPE(SERVICE_WORKER_ERROR_KILLED_WITH_BLOB)
+
+// This event is emitted when Service Worker is destroyed before it
+// finishes responding with a stream.
+EVENT_TYPE(SERVICE_WORKER_ERROR_KILLED_WITH_STREAM)
+
+// ------------------------------------------------------------------------
 // Global events
 // ------------------------------------------------------------------------
 // These are events which are not grouped by source id, as they have no
