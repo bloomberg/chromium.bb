@@ -226,7 +226,15 @@ gfx::Size BubbleFrameView::GetMinimumSize() const {
 
 gfx::Size BubbleFrameView::GetMaximumSize() const {
   // A bubble should be non-resizable, so its max size is its preferred size.
+#if defined(OS_WIN)
+  // On Windows, this causes problems, so do not set a maximum size (it doesn't
+  // take the drop shadow area into account, resulting in a too-small window;
+  // see http://crbug.com/506206). This isn't necessary on Windows anyway, since
+  // the OS doesn't give the user controls to resize a bubble.
+  return gfx::Size();
+#else
   return GetPreferredSize();
+#endif
 }
 
 void BubbleFrameView::Layout() {

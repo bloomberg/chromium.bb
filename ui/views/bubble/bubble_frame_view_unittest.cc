@@ -435,10 +435,17 @@ TEST_F(BubbleFrameViewTest, GetMinimumSize) {
 TEST_F(BubbleFrameViewTest, GetMaximumSize) {
   TestBubbleFrameView frame(this);
   gfx::Size maximum_size = frame.GetMaximumSize();
+#if defined(OS_WIN)
+  // On Windows, GetMaximumSize causes problems with DWM, so it should just be 0
+  // (unlimited). See http://crbug.com/506206.
+  EXPECT_EQ(0, maximum_size.width());
+  EXPECT_EQ(0, maximum_size.height());
+#else
   // Should ignore the contents view's maximum size and use the preferred size.
   EXPECT_EQ(kPreferredClientWidth + kExpectedBorderWidth, maximum_size.width());
   EXPECT_EQ(kPreferredClientHeight + kExpectedBorderHeight,
             maximum_size.height());
+#endif
 }
 
 }  // namespace views
