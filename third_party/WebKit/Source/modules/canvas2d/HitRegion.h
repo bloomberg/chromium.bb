@@ -48,11 +48,11 @@ private:
     WindRule m_fillRule;
 };
 
-class HitRegionManager final : public NoBaseWillBeGarbageCollected<HitRegionManager> {
+class HitRegionManager final : public GarbageCollectedFinalized<HitRegionManager> {
     WTF_MAKE_NONCOPYABLE(HitRegionManager);
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(HitRegionManager)
 public:
-    static PassOwnPtrWillBeRawPtr<HitRegionManager> create() { return adoptPtrWillBeNoop(new HitRegionManager()); }
+    static HitRegionManager* create() { return new HitRegionManager; }
+    ~HitRegionManager() { }
 
     void addHitRegion(PassRefPtrWillBeRawPtr<HitRegion>);
 

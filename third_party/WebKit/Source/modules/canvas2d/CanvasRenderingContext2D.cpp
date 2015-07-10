@@ -376,7 +376,7 @@ void CanvasRenderingContext2D::setStrokeStyle(const StringOrCanvasGradientOrCanv
     ASSERT(!style.isNull());
 
     String colorString;
-    RefPtrWillBeRawPtr<CanvasStyle> canvasStyle = nullptr;
+    CanvasStyle* canvasStyle = nullptr;
     if (style.isString()) {
         colorString = style.getAsString();
         if (colorString == state().unparsedStrokeColor())
@@ -392,7 +392,7 @@ void CanvasRenderingContext2D::setStrokeStyle(const StringOrCanvasGradientOrCanv
     } else if (style.isCanvasGradient()) {
         canvasStyle = CanvasStyle::createFromGradient(style.getAsCanvasGradient());
     } else if (style.isCanvasPattern()) {
-        RefPtrWillBeRawPtr<CanvasPattern> canvasPattern = style.getAsCanvasPattern();
+        CanvasPattern* canvasPattern = style.getAsCanvasPattern();
 
         if (canvas()->originClean() && !canvasPattern->originClean())
             canvas()->setOriginTainted();
@@ -402,7 +402,7 @@ void CanvasRenderingContext2D::setStrokeStyle(const StringOrCanvasGradientOrCanv
 
     ASSERT(canvasStyle);
 
-    modifiableState().setStrokeStyle(canvasStyle.release());
+    modifiableState().setStrokeStyle(canvasStyle);
     modifiableState().setUnparsedStrokeColor(colorString);
 }
 
@@ -416,7 +416,7 @@ void CanvasRenderingContext2D::setFillStyle(const StringOrCanvasGradientOrCanvas
     ASSERT(!style.isNull());
     validateStateStack();
     String colorString;
-    RefPtrWillBeRawPtr<CanvasStyle> canvasStyle = nullptr;
+    CanvasStyle* canvasStyle = nullptr;
     if (style.isString()) {
         colorString = style.getAsString();
         if (colorString == state().unparsedFillColor())
@@ -432,7 +432,7 @@ void CanvasRenderingContext2D::setFillStyle(const StringOrCanvasGradientOrCanvas
     } else if (style.isCanvasGradient()) {
         canvasStyle = CanvasStyle::createFromGradient(style.getAsCanvasGradient());
     } else if (style.isCanvasPattern()) {
-        RefPtrWillBeRawPtr<CanvasPattern> canvasPattern = style.getAsCanvasPattern();
+        CanvasPattern* canvasPattern = style.getAsCanvasPattern();
 
         if (canvas()->originClean() && !canvasPattern->originClean())
             canvas()->setOriginTainted();
@@ -441,7 +441,7 @@ void CanvasRenderingContext2D::setFillStyle(const StringOrCanvasGradientOrCanvas
     }
 
     ASSERT(canvasStyle);
-    modifiableState().setFillStyle(canvasStyle.release());
+    modifiableState().setFillStyle(canvasStyle);
     modifiableState().setUnparsedFillColor(colorString);
 }
 
@@ -1455,25 +1455,24 @@ bool CanvasRenderingContext2D::rectContainsTransformedRect(const FloatRect& rect
     return state().transform().mapQuad(quad).containsQuad(transformedQuad);
 }
 
-PassRefPtrWillBeRawPtr<CanvasGradient> CanvasRenderingContext2D::createLinearGradient(float x0, float y0, float x1, float y1)
+CanvasGradient* CanvasRenderingContext2D::createLinearGradient(float x0, float y0, float x1, float y1)
 {
-    RefPtrWillBeRawPtr<CanvasGradient> gradient = CanvasGradient::create(FloatPoint(x0, y0), FloatPoint(x1, y1));
-    return gradient.release();
+    CanvasGradient* gradient = CanvasGradient::create(FloatPoint(x0, y0), FloatPoint(x1, y1));
+    return gradient;
 }
 
-PassRefPtrWillBeRawPtr<CanvasGradient> CanvasRenderingContext2D::createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1, ExceptionState& exceptionState)
+CanvasGradient* CanvasRenderingContext2D::createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1, ExceptionState& exceptionState)
 {
     if (r0 < 0 || r1 < 0) {
         exceptionState.throwDOMException(IndexSizeError, String::format("The %s provided is less than 0.", r0 < 0 ? "r0" : "r1"));
         return nullptr;
     }
 
-    RefPtrWillBeRawPtr<CanvasGradient> gradient = CanvasGradient::create(FloatPoint(x0, y0), r0, FloatPoint(x1, y1), r1);
-    return gradient.release();
+    CanvasGradient* gradient = CanvasGradient::create(FloatPoint(x0, y0), r0, FloatPoint(x1, y1), r1);
+    return gradient;
 }
 
-PassRefPtrWillBeRawPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(const CanvasImageSourceUnion& imageSource,
-    const String& repetitionType, ExceptionState& exceptionState)
+CanvasPattern* CanvasRenderingContext2D::createPattern(const CanvasImageSourceUnion& imageSource, const String& repetitionType, ExceptionState& exceptionState)
 {
     Pattern::RepeatMode repeatMode = CanvasPattern::parseRepetitionType(repetitionType, exceptionState);
     if (exceptionState.hadException())

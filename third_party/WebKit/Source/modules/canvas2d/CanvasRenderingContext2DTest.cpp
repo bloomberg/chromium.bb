@@ -145,14 +145,14 @@ void CanvasRenderingContext2DTest::SetUp()
     m_partialImageData = ImageData::create(IntSize(2, 2));
 
     NonThrowableExceptionState exceptionState;
-    RefPtrWillBeRawPtr<CanvasGradient> opaqueGradient = CanvasGradient::create(FloatPoint(0, 0), FloatPoint(10, 0));
+    CanvasGradient* opaqueGradient = CanvasGradient::create(FloatPoint(0, 0), FloatPoint(10, 0));
     opaqueGradient->addColorStop(0, String("green"), exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
     opaqueGradient->addColorStop(1, String("blue"), exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
     this->opaqueGradient().setCanvasGradient(opaqueGradient);
 
-    RefPtrWillBeRawPtr<CanvasGradient> alphaGradient = CanvasGradient::create(FloatPoint(0, 0), FloatPoint(10, 0));
+    CanvasGradient* alphaGradient = CanvasGradient::create(FloatPoint(0, 0), FloatPoint(10, 0));
     alphaGradient->addColorStop(0, String("green"), exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
     alphaGradient->addColorStop(1, String("rgba(0, 0, 255, 0.5)"), exceptionState);

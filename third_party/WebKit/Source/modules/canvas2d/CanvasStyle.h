@@ -37,42 +37,42 @@ class SkShader;
 
 namespace blink {
 
-    class CanvasGradient;
-    class CanvasPattern;
-    class HTMLCanvasElement;
+class CanvasGradient;
+class CanvasPattern;
+class HTMLCanvasElement;
 
-    class CanvasStyle final : public RefCountedWillBeGarbageCollected<CanvasStyle> {
-    public:
-        static PassRefPtrWillBeRawPtr<CanvasStyle> createFromRGBA(RGBA32 rgba) { return adoptRefWillBeNoop(new CanvasStyle(rgba)); }
-        static PassRefPtrWillBeRawPtr<CanvasStyle> createFromGradient(PassRefPtrWillBeRawPtr<CanvasGradient>);
-        static PassRefPtrWillBeRawPtr<CanvasStyle> createFromPattern(PassRefPtrWillBeRawPtr<CanvasPattern>);
+class CanvasStyle final : public GarbageCollected<CanvasStyle> {
+public:
+    static CanvasStyle* createFromRGBA(RGBA32 rgba) { return new CanvasStyle(rgba); }
+    static CanvasStyle* createFromGradient(CanvasGradient*);
+    static CanvasStyle* createFromPattern(CanvasPattern*);
 
-        String color() const { ASSERT(m_type == ColorRGBA); return Color(m_rgba).serialized(); }
-        CanvasGradient* canvasGradient() const { return m_gradient.get(); }
-        CanvasPattern* canvasPattern() const { return m_pattern.get(); }
+    String color() const { ASSERT(m_type == ColorRGBA); return Color(m_rgba).serialized(); }
+    CanvasGradient* canvasGradient() const { return m_gradient.get(); }
+    CanvasPattern* canvasPattern() const { return m_pattern; }
 
-        SkShader* shader() const;
-        RGBA32 paintColor() const;
+    SkShader* shader() const;
+    RGBA32 paintColor() const;
 
-        bool isEquivalentRGBA(RGBA32 rgba) const { return m_type == ColorRGBA && m_rgba == rgba; }
+    bool isEquivalentRGBA(RGBA32 rgba) const { return m_type == ColorRGBA && m_rgba == rgba; }
 
-        DECLARE_TRACE();
+    DECLARE_TRACE();
 
-    private:
-        enum Type { ColorRGBA, Gradient, ImagePattern };
+private:
+    enum Type { ColorRGBA, Gradient, ImagePattern };
 
-        CanvasStyle(RGBA32 rgba);
-        CanvasStyle(PassRefPtrWillBeRawPtr<CanvasGradient>);
-        CanvasStyle(PassRefPtrWillBeRawPtr<CanvasPattern>);
+    CanvasStyle(RGBA32);
+    CanvasStyle(CanvasGradient*);
+    CanvasStyle(CanvasPattern*);
 
-        Type m_type;
-        RGBA32 m_rgba;
+    Type m_type;
+    RGBA32 m_rgba;
 
-        RefPtrWillBeMember<CanvasGradient> m_gradient;
-        RefPtrWillBeMember<CanvasPattern> m_pattern;
-    };
+    Member<CanvasGradient> m_gradient;
+    Member<CanvasPattern> m_pattern;
+};
 
-    bool parseColorOrCurrentColor(RGBA32& parsedColor, const String& colorString, HTMLCanvasElement*);
+bool parseColorOrCurrentColor(RGBA32& parsedColor, const String& colorString, HTMLCanvasElement*);
 
 } // namespace blink
 

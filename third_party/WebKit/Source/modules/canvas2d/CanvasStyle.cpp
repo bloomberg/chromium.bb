@@ -86,28 +86,28 @@ CanvasStyle::CanvasStyle(RGBA32 rgba)
 {
 }
 
-CanvasStyle::CanvasStyle(PassRefPtrWillBeRawPtr<CanvasGradient> gradient)
+CanvasStyle::CanvasStyle(CanvasGradient* gradient)
     : m_type(Gradient)
     , m_gradient(gradient)
 {
 }
 
-CanvasStyle::CanvasStyle(PassRefPtrWillBeRawPtr<CanvasPattern> pattern)
+CanvasStyle::CanvasStyle(CanvasPattern* pattern)
     : m_type(ImagePattern)
     , m_pattern(pattern)
 {
 }
 
-PassRefPtrWillBeRawPtr<CanvasStyle> CanvasStyle::createFromGradient(PassRefPtrWillBeRawPtr<CanvasGradient> gradient)
+CanvasStyle* CanvasStyle::createFromGradient(CanvasGradient* gradient)
 {
     ASSERT(gradient);
-    return adoptRefWillBeNoop(new CanvasStyle(gradient));
+    return new CanvasStyle(gradient);
 }
 
-PassRefPtrWillBeRawPtr<CanvasStyle> CanvasStyle::createFromPattern(PassRefPtrWillBeRawPtr<CanvasPattern> pattern)
+CanvasStyle* CanvasStyle::createFromPattern(CanvasPattern* pattern)
 {
     ASSERT(pattern);
-    return adoptRefWillBeNoop(new CanvasStyle(pattern));
+    return new CanvasStyle(pattern);
 }
 
 SkShader* CanvasStyle::shader() const

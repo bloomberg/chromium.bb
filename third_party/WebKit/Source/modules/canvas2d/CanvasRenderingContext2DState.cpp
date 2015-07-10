@@ -213,13 +213,13 @@ void CanvasRenderingContext2DState::updateLineDash() const
     m_lineDashDirty = false;
 }
 
-void CanvasRenderingContext2DState::setStrokeStyle(PassRefPtrWillBeRawPtr<CanvasStyle> style)
+void CanvasRenderingContext2DState::setStrokeStyle(CanvasStyle* style)
 {
     m_strokeStyle = style;
     m_strokeStyleDirty = true;
 }
 
-void CanvasRenderingContext2DState::setFillStyle(PassRefPtrWillBeRawPtr<CanvasStyle> style)
+void CanvasRenderingContext2DState::setFillStyle(CanvasStyle* style)
 {
     m_fillStyle = style;
     m_fillStyleDirty = true;

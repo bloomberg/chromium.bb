@@ -169,6 +169,4 @@ DEFINE_TRACE(HitRegionManager)
 #endif
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(HitRegionManager)
-
 } // namespace blink

@@ -168,9 +168,9 @@ public:
     void drawImage(const CanvasImageSourceUnion&, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&);
     void drawImage(CanvasImageSource*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&);
 
-    PassRefPtrWillBeRawPtr<CanvasGradient> createLinearGradient(float x0, float y0, float x1, float y1);
-    PassRefPtrWillBeRawPtr<CanvasGradient> createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1, ExceptionState&);
-    PassRefPtrWillBeRawPtr<CanvasPattern> createPattern(const CanvasImageSourceUnion&, const String& repetitionType, ExceptionState&);
+    CanvasGradient* createLinearGradient(float x0, float y0, float x1, float y1);
+    CanvasGradient* createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1, ExceptionState&);
+    CanvasPattern* createPattern(const CanvasImageSourceUnion&, const String& repetitionType, ExceptionState&);
 
     ImageData* createImageData(ImageData*) const;
     ImageData* createImageData(float width, float height, ExceptionState&) const;
@@ -293,7 +293,7 @@ private:
     WebLayer* platformLayer() const override;
 
     WillBeHeapVector<OwnPtrWillBeMember<CanvasRenderingContext2DState>> m_stateStack;
-    OwnPtrWillBeMember<HitRegionManager> m_hitRegionManager;
+    PersistentWillBeMember<HitRegionManager> m_hitRegionManager;
     AntiAliasingMode m_clipAntialiasing;
     bool m_hasAlpha;
     LostContextMode m_contextLostMode;

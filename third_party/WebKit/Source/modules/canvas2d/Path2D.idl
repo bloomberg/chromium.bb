@@ -32,7 +32,7 @@
     Constructor,
     Constructor(Path2D path),
     Constructor(DOMString text),
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface Path2D {
 
     [RuntimeEnabled=ExperimentalCanvasFeatures, TypeChecking=Interface] void addPath(Path2D path, optional SVGMatrix? transform);

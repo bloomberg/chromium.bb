@@ -86,10 +86,10 @@ public:
     SkImageFilter* getFilter(Element*, const Font&) const;
     bool hasFilter() const { return m_filterValue; }
 
-    void setStrokeStyle(PassRefPtrWillBeRawPtr<CanvasStyle>);
+    void setStrokeStyle(CanvasStyle*);
     CanvasStyle* strokeStyle() const { return m_strokeStyle.get(); }
 
-    void setFillStyle(PassRefPtrWillBeRawPtr<CanvasStyle>);
+    void setFillStyle(CanvasStyle*);
     CanvasStyle* fillStyle() const { return m_fillStyle.get(); }
 
     CanvasStyle* style(PaintType) const;
@@ -175,8 +175,8 @@ private:
 
     String m_unparsedStrokeColor;
     String m_unparsedFillColor;
-    RefPtrWillBeMember<CanvasStyle> m_strokeStyle;
-    RefPtrWillBeMember<CanvasStyle> m_fillStyle;
+    PersistentWillBeMember<CanvasStyle> m_strokeStyle;
+    PersistentWillBeMember<CanvasStyle> m_fillStyle;
 
     mutable SkPaint m_strokePaint;
     mutable SkPaint m_fillPaint;
