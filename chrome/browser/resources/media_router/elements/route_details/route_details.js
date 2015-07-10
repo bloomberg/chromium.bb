@@ -18,15 +18,6 @@ Polymer({
     },
 
     /**
-     * The text for the button to switch to the sink picker view.
-     * @private {string}
-     */
-    backToSinkPickerText_: {
-      type: String,
-      value: loadTimeData.getString('backToSinkPicker'),
-    },
-
-    /**
      * The route to show.
      * @type {?media_router.Route}
      */

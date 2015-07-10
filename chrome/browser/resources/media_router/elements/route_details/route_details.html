@@ -1,29 +1,29 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-toolbar/paper-toolbar.html">
 <dom-module id="route-details">
   <link rel="import" type="css" href="../../media_router_common.css">
   <link rel="import" type="css" href="route_details.css">
   <template>
-    <div>
-      <div id="back-to-devices" on-click="back_">
-        <span>[[backToSinkPickerText_]]</span>
+    <paper-toolbar id="route-details-header">
+      <paper-icon-button icon="arrow-back" id="back-button" on-click="back_">
+      </paper-icon-button>
+      <span id="sink-name">[[sink.name]]</span>
+    </paper-toolbar>
+    <div id="route-information">
+      <div id="route-title">
+        <span>[[route.title]]</span>
       </div>
-      <hr>
-      <div id="route-information">
-        <div id="route-title">
-          <span>[[route.title]]</span>
-        </div>
-        <div id="route-status">
-          <span>[[activityStatus_]]</span>
-        </div>
+      <div id="route-status">
+        <span>[[activityStatus_]]</span>
       </div>
     </div>
-    <div>
-      <paper-button raised id="close-route-button" class="button"
-          on-click="closeRoute_">
-        <span>[[stopCastingButtonText_]]</span>
-      </paper-button>
-    </div>
+    <paper-button raised id="close-route-button" class="button"
+        on-click="closeRoute_">
+      <span>[[stopCastingButtonText_]]</span>
+    </paper-button>
   </template>
 <script src="route_details.js"></script>
 </dom-module>

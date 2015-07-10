@@ -18,8 +18,6 @@ void AddMediaRouterStrings(content::WebUIDataSource* html_source) {
 }
 
 void AddRouteDetailsStrings(content::WebUIDataSource* html_source) {
-  html_source->AddLocalizedString("backToSinkPicker",
-      IDS_MEDIA_ROUTER_BACK_TO_SINK_PICKER);
   html_source->AddLocalizedString("castingActivityStatus",
       IDS_MEDIA_ROUTER_CASTING_ACTIVITY_STATUS);
   html_source->AddLocalizedString("selectCastModeHeader",

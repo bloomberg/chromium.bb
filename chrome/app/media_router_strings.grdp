@@ -52,9 +52,6 @@
   </message>
 
   <!-- Route Details -->
-  <message name="IDS_MEDIA_ROUTER_BACK_TO_SINK_PICKER" desc="Label of back to sink picker button.">
-    Back to device list
-  </message>
   <message name="IDS_MEDIA_ROUTER_CASTING_ACTIVITY_STATUS" desc="Label of activity status.">
     Casting to <ph name="sinkName">$1<ex>Living Room TV</ex></ph>
   </message>

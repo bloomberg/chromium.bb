@@ -43,6 +43,12 @@ cr.define('route_details', function() {
             details.$[elementId].querySelector('span').innerText);
       };
 
+      // Checks whether |expected| and the text in the |elementId| element
+      // are equal given an id.
+      var checkElementTextWithId = function(expected, elementId) {
+        assertEquals(expected, details.$[elementId].innerText);
+      };
+
       // Import route_details.html before running suite.
       suiteSetup(function() {
         return PolymerTest.importHtml(
@@ -76,7 +82,7 @@ cr.define('route_details', function() {
         details.addEventListener('back-click', function() {
           done();
         });
-        MockInteractions.tap(details.$['back-to-devices']);
+        MockInteractions.tap(details.$['back-button']);
       });
 
       // Tests for 'close-route-click' event firing when the
@@ -90,13 +96,12 @@ cr.define('route_details', function() {
 
       // Tests the initial expected text.
       test('initial text setting', function() {
-        checkSpanText(loadTimeData.getString('backToSinkPicker'),
-            'back-to-devices');
         // <paper-button> text is styled as upper case.
         checkSpanText(loadTimeData.getString('stopCastingButton')
             .toUpperCase(), 'close-route-button');
         checkSpanText('', 'route-title');
         checkSpanText('', 'route-status');
+        checkElementTextWithId('', 'sink-name');
       });
 
       // Tests when |route| exists but |sink| is null.
@@ -130,6 +135,7 @@ cr.define('route_details', function() {
         assertEquals(fakeSinkOne, details.sink);
         assertEquals(null, details.route);
         checkSpanText('', 'route-title');
+        checkElementTextWithId(fakeSinkOne.name, 'sink-name');
         checkSpanText(loadTimeData.getStringF('castingActivityStatus',
             fakeSinkOne.name), 'route-status');
 
@@ -137,6 +143,7 @@ cr.define('route_details', function() {
         // be updated.
         details.sink = fakeSinkTwo;
         assertEquals(fakeSinkTwo, details.sink);
+        checkElementTextWithId(fakeSinkTwo.name, 'sink-name');
         checkSpanText(loadTimeData.getStringF('castingActivityStatus',
             fakeSinkTwo.name), 'route-status');
       });
@@ -148,6 +155,7 @@ cr.define('route_details', function() {
         assertEquals(fakeSinkOne, details.sink);
         assertEquals(fakeRouteOne, details.route);
         checkSpanText(fakeRouteOne.title, 'route-title');
+        checkElementTextWithId(fakeSinkOne.name, 'sink-name');
         checkSpanText(loadTimeData.getStringF('castingActivityStatus',
             fakeSinkOne.name), 'route-status');
       });

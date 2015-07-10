@@ -2,24 +2,20 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#back-to-devices {
-  -webkit-padding-start: 10px;
-  color: rgb(20, 86, 218);
-  font-weight: bold;
-  line-height: 2em;
+#close-route-button {
+  background-color: white;
+  color: rgb(33, 150, 243);
+  text-align: -webkit-right;
 }
 
-#back-to-devices:hover {
-  cursor: pointer;
-  text-decoration: underline;
-}
-
-hr {
-  margin: 0;
+#route-details-header {
+  background-color: rgb(33, 150, 243);
+  font-size: 1.4em;
 }
 
 #route-information {
-  -webkit-padding-start: 10px;
+  -webkit-padding-start: 30px;
+  height: 75px;
   line-height: 1.125em;
 }
 
