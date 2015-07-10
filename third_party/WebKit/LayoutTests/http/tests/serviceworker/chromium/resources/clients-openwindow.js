@@ -3,6 +3,7 @@
 // This helper also exposes |client|, |postMessage()|, |runNextTestOrQuit()|,
 // |synthesizeNotificationClick()| and |initialize()|.
 importScripts('sw-test-helpers.js');
+importScripts('../../../resources/get-host-info.js');
 
 var TESTS = [
     function testWithNoNotificationClick() {
@@ -14,7 +15,10 @@ var TESTS = [
 
     function testOpenCrossOriginWindow() {
         synthesizeNotificationClick().then(function(e) {
-            clients.openWindow('https://test.com/').then(function(c) {
+            var cross_origin_url =
+                get_host_info()['HTTP_REMOTE_ORIGIN'] +
+                '/serviceworker/chromium/resources/blank.html';
+            clients.openWindow(cross_origin_url).then(function(c) {
                 self.postMessage('openWindow() can open cross origin windows');
                 self.postMessage('openWindow() result: ' + c);
             }).then(runNextTestOrQuit);
