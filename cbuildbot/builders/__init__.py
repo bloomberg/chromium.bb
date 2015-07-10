@@ -33,6 +33,10 @@ def GetBuilderClass(name):
     cls = builders.GetBuilderClass('simple_builders.SimpleBuilder')
     builder = cls(...)
 
+    If you want a site specific builder class, do:
+    cls = builders.GetBuilderClass('config.my_builders.MyBuilder')
+    builder = cls(...)
+
   Args:
     name: The base name of the builder class.
 
@@ -44,9 +48,22 @@ def GetBuilderClass(name):
   """
   if '.' not in name:
     raise ValueError('name should be "<module>.<builder>" not "%s"' % name)
-  mod_name, builder_class_name = name.split('.')
 
-  target = 'chromite.cbuildbot.builders.%s' % mod_name
+  name_parts = name.split('.')
+
+  # Last part is the class name.
+  builder_class_name = name_parts.pop()
+
+  if name_parts[0] == 'config':
+    # config means pull from the site specific config.
+    # config.my_builders -> chromite.config.my_builders
+    name_parts = ['chromite'] + name_parts
+  else:
+    # Otherwise pull from chromite.
+    # simple_builders -> chromite.cbuidlbot.builders.simple_builders
+    name_parts = ['chromite', 'cbuildbot', 'builders'] + name_parts
+
+  target = '.'.join(name_parts)
   module = cros_import.ImportModule(target)
 
   # See if this module has the builder we care about.
