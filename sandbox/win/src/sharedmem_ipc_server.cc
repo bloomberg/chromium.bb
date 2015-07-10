@@ -28,14 +28,12 @@ SharedMemIPCServer::ServerControl::~ServerControl() {
 
 SharedMemIPCServer::SharedMemIPCServer(HANDLE target_process,
                                        DWORD target_process_id,
-                                       HANDLE target_job,
                                        ThreadProvider* thread_provider,
                                        Dispatcher* dispatcher)
     : client_control_(NULL),
       thread_provider_(thread_provider),
       target_process_(target_process),
       target_process_id_(target_process_id),
-      target_job_object_(target_job),
       call_dispatcher_(dispatcher) {
   // We create a initially owned mutex. If the server dies unexpectedly,
   // the thread that owns it will fail to release the lock and windows will
@@ -111,9 +109,11 @@ bool SharedMemIPCServer::Init(void* shared_mem, uint32 shared_size,
     client_context->channel_base = base_start;
     client_context->state = kFreeChannel;
 
-    // Note that some of these values are available as members of this
-    // object but we put them again into the service_context because we
-    // will be called on a static method (ThreadPingEventReady)
+    // Note that some of these values are available as members of this object
+    // but we put them again into the service_context because we will be called
+    // on a static method (ThreadPingEventReady). In particular, target_process_
+    // is a raw handle that is not owned by this object (it's owned by the
+    // owner of this object), and we are storing it in multiple places.
     service_context->shared_base = reinterpret_cast<char*>(shared_mem);
     service_context->channel_size = channel_size;
     service_context->channel = client_context;
@@ -122,7 +122,6 @@ bool SharedMemIPCServer::Init(void* shared_mem, uint32 shared_size,
     service_context->dispatcher = call_dispatcher_;
     service_context->target_info.process = target_process_;
     service_context->target_info.process_id = target_process_id_;
-    service_context->target_info.job_object = target_job_object_;
     // Advance to the next channel.
     base_start += channel_size;
     // Register the ping event with the threadpool.

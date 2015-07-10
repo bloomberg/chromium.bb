@@ -355,7 +355,7 @@ DWORD TargetProcess::Init(Dispatcher* ipc_dispatcher, void* policy,
   ipc_server_.reset(
       new SharedMemIPCServer(sandbox_process_info_.process_handle(),
                              sandbox_process_info_.process_id(),
-                             job_, thread_pool_, ipc_dispatcher));
+                             thread_pool_, ipc_dispatcher));
 
   if (!ipc_server_->Init(shared_memory, shared_IPC_size, kIPCChannelSize))
     return ERROR_NOT_ENOUGH_MEMORY;

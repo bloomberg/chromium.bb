@@ -37,14 +37,17 @@ namespace sandbox {
 class SharedMemIPCServer {
  public:
   // Creates the IPC server.
-  // target_process: handle to the target process. It must be suspended.
+  // target_process: handle to the target process. It must be suspended. It is
+  // unfortunate to receive a raw handle (and store it inside this object) as
+  // that dilutes ownership of the process, but in practice a SharedMemIPCServer
+  // is owned by TargetProcess, which calls this method, and owns the handle, so
+  // everything is safe. If that changes, we should break this dependency and
+  // duplicate the handle instead.
   // target_process_id: process id of the target process.
-  // target_job: the job object handle associated with the target process.
   // thread_provider: a thread provider object.
   // dispatcher: an object that can service IPC calls.
   SharedMemIPCServer(HANDLE target_process, DWORD target_process_id,
-                     HANDLE target_job, ThreadProvider* thread_provider,
-                     Dispatcher* dispatcher);
+                     ThreadProvider* thread_provider, Dispatcher* dispatcher);
 
   ~SharedMemIPCServer();
 
@@ -117,9 +120,6 @@ class SharedMemIPCServer {
 
   // The target process id associated with the IPC object.
   DWORD target_process_id_;
-
-  // The target object is inside a job too.
-  HANDLE target_job_object_;
 
   // The dispatcher handles 'ready' IPC calls.
   Dispatcher* call_dispatcher_;

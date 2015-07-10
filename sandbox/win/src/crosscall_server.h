@@ -143,7 +143,6 @@ void SetCallSuccess(CrossCallReturn* call_return);
 // process handle and the job object handle that contains the client process.
 struct ClientInfo {
   HANDLE process;
-  HANDLE job_object;
   DWORD process_id;
 };
 
