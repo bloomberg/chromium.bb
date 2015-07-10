@@ -17,6 +17,7 @@
 #include "components/app_modal/javascript_dialog_extensions_client.h"
 #include "components/app_modal/javascript_dialog_manager.h"
 #include "content/public/browser/javascript_dialog_manager.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/browser_test_utils.h"
@@ -213,6 +214,17 @@ const char kBlockingScript[] = "alert('ALERT');";
 
 // A (non-blocking) content script that sends a message.
 const char kNonBlockingScript[] = "chrome.test.sendMessage('done');";
+
+const char kNewTabOverrideManifest[] =
+    "{"
+    "  \"name\": \"New tab override\","
+    "  \"version\": \"0.1\","
+    "  \"manifest_version\": 2,"
+    "  \"description\": \"Foo!\","
+    "  \"chrome_url_overrides\": {\"newtab\": \"newtab.html\"}"
+    "}";
+
+const char kNewTabHtml[] = "<html>NewTabOverride!</html>";
 
 }  // namespace
 
@@ -564,6 +576,43 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
   dialog_helper.CloseDialogs();
   EXPECT_TRUE(RunAllPending(web_contents));
   EXPECT_EQ(1u, dialog_helper.dialog_count());
+}
+
+// Bug fix for crbug.com/507461.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
+                       DocumentStartInjectionFromExtensionTabNavigation) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  TestExtensionDir new_tab_override_dir;
+  new_tab_override_dir.WriteManifest(kNewTabOverrideManifest);
+  new_tab_override_dir.WriteFile(FILE_PATH_LITERAL("newtab.html"), kNewTabHtml);
+  const Extension* new_tab_override =
+      LoadExtension(new_tab_override_dir.unpacked_path());
+  ASSERT_TRUE(new_tab_override);
+
+  TestExtensionDir injector_dir;
+  injector_dir.WriteManifest(
+      base::StringPrintf(kManifest, "injector", "document_start"));
+  injector_dir.WriteFile(FILE_PATH_LITERAL("script.js"), kNonBlockingScript);
+  const Extension* injector = LoadExtension(injector_dir.unpacked_path());
+  ASSERT_TRUE(injector);
+
+  ExtensionTestMessageListener listener("done", false);
+  AddTabAtIndex(0, GURL("chrome://newtab"), ui::PAGE_TRANSITION_LINK);
+  browser()->tab_strip_model()->ActivateTabAt(0, false);
+  content::WebContents* tab_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  EXPECT_EQ(new_tab_override->GetResourceURL("newtab.html"),
+            tab_contents->GetMainFrame()->GetLastCommittedURL());
+  EXPECT_FALSE(listener.was_satisfied());
+  listener.Reset();
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), embedded_test_server()->GetURL("/empty.html"),
+      CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(listener.was_satisfied());
 }
 
 }  // namespace extensions

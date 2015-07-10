@@ -138,8 +138,6 @@ bool ExtensionFrameHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ExtensionMsg_SetTabId, OnExtensionSetTabId)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateBrowserWindowId,
                         OnUpdateBrowserWindowId)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_SetMainFrameExtensionOwner,
-                        OnSetMainFrameExtensionOwner)
     IPC_MESSAGE_HANDLER(ExtensionMsg_NotifyRenderViewType,
                         OnNotifyRendererViewType)
     IPC_MESSAGE_HANDLER(ExtensionMsg_Response, OnExtensionResponse)
@@ -188,11 +186,6 @@ void ExtensionFrameHelper::OnExtensionSetTabId(int tab_id) {
 
 void ExtensionFrameHelper::OnUpdateBrowserWindowId(int browser_window_id) {
   browser_window_id_ = browser_window_id;
-}
-
-void ExtensionFrameHelper::OnSetMainFrameExtensionOwner(
-    const std::string& extension_id) {
-  tab_extension_owner_id_ = extension_id;
 }
 
 void ExtensionFrameHelper::OnNotifyRendererViewType(ViewType type) {

@@ -61,17 +61,6 @@ void ExtensionWebContentsObserver::InitializeRenderFrame(
         ->RegisterRenderFrameHost(web_contents(), render_frame_host,
                                   frame_extension);
   }
-
-  // This can be different from |frame_extension| above in the case of, e.g.,
-  // a non-extension iframe hosted in a chrome-extension:// page.
-  const Extension* main_frame_extension =
-      GetExtensionFromFrame(web_contents()->GetMainFrame());
-  // We notify the render frame that it's in an extension's tab, but not if this
-  // is a hosted app (we don't mind scripting on hosted apps' pages).
-  if (main_frame_extension && !main_frame_extension->is_hosted_app()) {
-    render_frame_host->Send(new ExtensionMsg_SetMainFrameExtensionOwner(
-        render_frame_host->GetRoutingID(), main_frame_extension->id()));
-  }
 }
 
 content::WebContents* ExtensionWebContentsObserver::GetAssociatedWebContents()

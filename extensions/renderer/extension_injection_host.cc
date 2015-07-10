@@ -5,9 +5,11 @@
 #include "extensions/renderer/extension_injection_host.h"
 
 #include "content/public/renderer/render_frame.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/csp_info.h"
-#include "extensions/renderer/extension_frame_helper.h"
+#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace extensions {
 
@@ -53,11 +55,10 @@ PermissionsData::AccessType ExtensionInjectionHost::CanExecuteOnFrame(
   if (tab_id == -1)
     return PermissionsData::ACCESS_ALLOWED;
 
-  const std::string& extension_id =
-      ExtensionFrameHelper::Get(render_frame)->tab_extension_owner_id();
-  // We don't allow injections in any frame of an extension page (unless it's by
-  // the owning extension).
-  if (!extension_id.empty() && extension_id != extension_->id())
+  blink::WebSecurityOrigin top_frame_security_origin =
+      render_frame->GetWebFrame()->top()->securityOrigin();
+  if (top_frame_security_origin.protocol().utf8() == kExtensionScheme &&
+      top_frame_security_origin.host().utf8() != extension_->id())
     return PermissionsData::ACCESS_DENIED;
 
   // Declarative user scripts use "page access" (from "permissions" section in

@@ -56,9 +56,6 @@ class ExtensionFrameHelper
   ViewType view_type() const { return view_type_; }
   int tab_id() const { return tab_id_; }
   int browser_window_id() const { return browser_window_id_; }
-  const std::string& tab_extension_owner_id() const {
-    return tab_extension_owner_id_;
-  }
 
  private:
   // RenderFrameObserver implementation.
@@ -85,7 +82,6 @@ class ExtensionFrameHelper
   void OnExtensionDispatchOnDisconnect(int port_id,
                                        const std::string& error_message);
   void OnExtensionSetTabId(int tab_id);
-  void OnSetMainFrameExtensionOwner(const std::string& extension_id);
   void OnUpdateBrowserWindowId(int browser_window_id);
   void OnNotifyRendererViewType(ViewType view_type);
   void OnExtensionResponse(int request_id,
@@ -106,11 +102,6 @@ class ExtensionFrameHelper
 
   // The id of the browser window the render frame is attached to.
   int browser_window_id_;
-
-  // The id of the extension that "owns" the tab if this is a chrome-extension
-  // page. If it's not a chrome-extension page, |tab_extension_owner_id_| is
-  // empty.
-  std::string tab_extension_owner_id_;
 
   Dispatcher* extension_dispatcher_;
 
