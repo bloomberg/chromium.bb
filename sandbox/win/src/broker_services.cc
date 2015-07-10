@@ -446,10 +446,10 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
     if (stderr_handle != stdout_handle && stderr_handle != INVALID_HANDLE_VALUE)
       inherited_handle_list.push_back(stderr_handle);
 
-    HandleList policy_handle_list = policy_base->GetHandlesBeingShared();
+    const HandleList& policy_handle_list = policy_base->GetHandlesBeingShared();
 
     for (auto handle : policy_handle_list)
-      inherited_handle_list.push_back(handle);
+      inherited_handle_list.push_back(handle->Get());
 
     if (inherited_handle_list.size())
       ++attribute_count;

@@ -29,7 +29,7 @@ class LowLevelPolicy;
 class TargetProcess;
 struct PolicyGlobal;
 
-typedef std::vector<HANDLE> HandleList;
+typedef std::vector<base::win::ScopedHandle*> HandleList;
 
 // We act as a policy dispatcher, implementing the handler for the "ping" IPC,
 // so we have to provide the appropriate handler on the OnMessageReady method.
@@ -104,7 +104,7 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   HANDLE GetStderrHandle();
 
   // Returns the list of handles being shared with the target process.
-  HandleList GetHandlesBeingShared();
+  const HandleList& GetHandlesBeingShared();
 
   // Closes the handles being shared with the target and clears out the list.
   void ClearSharedHandles();
@@ -177,7 +177,7 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   // Contains the list of handles being shared with the target process.
   // This list contains handles other than the stderr/stdout handles which are
   // shared with the target at times.
-  std::vector<HANDLE> handles_to_share_;
+  HandleList handles_to_share_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyBase);
 };
