@@ -23,16 +23,16 @@
   },
   'targets': [
     {
-      # GN: //chrome/android:custom_tabs_service_aidl
+      #GN: //chrome/android::custom_tabs_service_aidl
       'target_name': 'custom_tabs_service_aidl',
       'type': 'none',
       'variables': {
-        'aidl_interface_file': 'java/src/org/chromium/chrome/browser/customtabs/common.aidl',
-        'aidl_import_include': 'java/src/org/chromium/chrome/browser/customtabs',
+        'aidl_interface_file': 'java/src/android/support/customtabs/common.aidl',
+        'aidl_import_include': 'java/src/android/support/customtabs',
       },
       'sources': [
-        'java/src/org/chromium/chrome/browser/customtabs/ICustomTabsConnectionCallback.aidl',
-        'java/src/org/chromium/chrome/browser/customtabs/ICustomTabsConnectionService.aidl',
+        'java/src/android/support/customtabs/ICustomTabsCallback.aidl',
+        'java/src/android/support/customtabs/ICustomTabsService.aidl',
       ],
       'includes': [ '../../build/java_aidl.gypi' ],
     },

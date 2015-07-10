@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.IBinder;
+import android.support.customtabs.CustomTabsIntent;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,6 +32,7 @@ import org.chromium.chrome.browser.document.BrandColorUtils;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -45,7 +48,7 @@ public class CustomTabActivity extends ChromeActivity {
     private CustomTab mTab;
     private FindToolbarManager mFindToolbarManager;
     private CustomTabIntentDataProvider mIntentDataProvider;
-    private long mSessionId;
+    private IBinder mSession;
     private CustomTabContentHandler mCustomTabContentHandler;
 
     // This is to give the right package name while using the client's resources during an
@@ -77,12 +80,9 @@ public class CustomTabActivity extends ChromeActivity {
             return false;
         }
 
-        long intentSessionId = intent.getLongExtra(
-                CustomTabIntentDataProvider.EXTRA_CUSTOM_TABS_SESSION_ID,
-                CustomTabIntentDataProvider.INVALID_SESSION_ID);
-        if (intentSessionId == CustomTabIntentDataProvider.INVALID_SESSION_ID) return false;
+        IBinder session = IntentUtils.safeGetBinderExtra(intent, CustomTabsIntent.EXTRA_SESSION);
+        if (session == null || !session.equals(sActiveContentHandler.getSession())) return false;
 
-        if (sActiveContentHandler.getSessionId() != intentSessionId) return false;
         String url = IntentHandler.getUrlFromIntent(intent);
         if (TextUtils.isEmpty(url)) return false;
         sActiveContentHandler.loadUrlAndTrackFromTimestamp(new LoadUrlParams(url),
@@ -94,7 +94,7 @@ public class CustomTabActivity extends ChromeActivity {
     public void onStart() {
         super.onStart();
         CustomTabsConnection.getInstance(getApplication())
-                .keepAliveForSessionId(mIntentDataProvider.getSessionId(),
+                .keepAliveForSession(mIntentDataProvider.getSession(),
                         mIntentDataProvider.getKeepAliveServiceIntent());
     }
 
@@ -102,7 +102,7 @@ public class CustomTabActivity extends ChromeActivity {
     public void onStop() {
         super.onStop();
         CustomTabsConnection.getInstance(getApplication())
-                .dontKeepAliveForSessionId(mIntentDataProvider.getSessionId());
+                .dontKeepAliveForSession(mIntentDataProvider.getSession());
     }
 
     @Override
@@ -126,7 +126,7 @@ public class CustomTabActivity extends ChromeActivity {
         super.postInflationStartup();
         getToolbarManager().setCloseButtonIcon(mIntentDataProvider.getCloseButtonIconResId());
         getToolbarManager().setShowTitle(mIntentDataProvider.getTitleVisibilityState()
-                == CustomTabIntentDataProvider.CUSTOM_TAB_SHOW_PAGE_TITLE);
+                == CustomTabIntentDataProvider.SHOW_PAGE_TITLE);
         int toolbarColor = mIntentDataProvider.getToolbarColor();
         getToolbarManager().updatePrimaryColor(toolbarColor);
         if (toolbarColor != getResources().getColor(R.color.default_primary_color)) {
@@ -153,16 +153,15 @@ public class CustomTabActivity extends ChromeActivity {
     public void finishNativeInitialization() {
         String url = IntentHandler.getUrlFromIntent(getIntent());
         String referrer = IntentHandler.getReferrerUrlIncludingExtraHeaders(getIntent(), this);
-        mSessionId = mIntentDataProvider.getSessionId();
+        mSession = mIntentDataProvider.getSession();
         // If extra headers have been passed, cancel any current prerender, as
         // prerendering doesn't support extra headers.
         if (IntentHandler.getExtraHeadersFromIntent(getIntent()) != null) {
             CustomTabsConnection.getInstance(getApplication())
-                    .takePrerenderedUrl(mSessionId, "", null);
+                    .takePrerenderedUrl(mSession, "", null);
         }
 
-        mTab = new CustomTab(
-                this, getWindowAndroid(), mSessionId, url, referrer, Tab.INVALID_TAB_ID);
+        mTab = new CustomTab(this, getWindowAndroid(), mSession, url, referrer, Tab.INVALID_TAB_ID);
         getTabModelSelector().setTab(mTab);
 
         ToolbarControlContainer controlContainer = (ToolbarControlContainer) findViewById(
@@ -191,8 +190,8 @@ public class CustomTabActivity extends ChromeActivity {
             }
 
             @Override
-            public long getSessionId() {
-                return mSessionId;
+            public IBinder getSession() {
+                return mSession;
             }
 
             @Override

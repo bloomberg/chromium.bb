@@ -15,6 +15,7 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.customtabs.CustomTabsIntent;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -96,17 +97,16 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         PendingIntent pi = PendingIntent.getBroadcast(getInstrumentation().getTargetContext(), 0,
                 menuIntent, 0);
         Bundle bundle = new Bundle();
-        bundle.putString(CustomTabIntentDataProvider.KEY_CUSTOM_TABS_MENU_TITLE, TEST_MENU_TITLE);
-        bundle.putParcelable(CustomTabIntentDataProvider.KEY_CUSTOM_TABS_PENDING_INTENT, pi);
+        bundle.putString(CustomTabsIntent.KEY_MENU_ITEM_TITLE, TEST_MENU_TITLE);
+        bundle.putParcelable(CustomTabsIntent.KEY_PENDING_INTENT, pi);
         ArrayList<Bundle> menuItems = new ArrayList<Bundle>();
         menuItems.add(bundle);
-        intent.putParcelableArrayListExtra(CustomTabIntentDataProvider.EXTRA_CUSTOM_TABS_MENU_ITEMS,
-                menuItems);
+        intent.putParcelableArrayListExtra(CustomTabsIntent.EXTRA_MENU_ITEMS, menuItems);
         return pi;
     }
 
     private void addToolbarColorToIntent(Intent intent, int color) {
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_CUSTOM_TABS_TOOLBAR_COLOR, color);
+        intent.putExtra(CustomTabsIntent.EXTRA_TOOLBAR_COLOR, color);
     }
 
     /**
@@ -119,12 +119,12 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         actionIntent.setAction(TEST_ACTION);
 
         Bundle bundle = new Bundle();
-        bundle.putParcelable(CustomTabIntentDataProvider.KEY_CUSTOM_TABS_ICON, icon);
+        bundle.putParcelable(CustomTabsIntent.KEY_ICON, icon);
         PendingIntent pi = PendingIntent.getBroadcast(getInstrumentation().getTargetContext(), 0,
                 actionIntent, 0);
-        bundle.putParcelable(CustomTabIntentDataProvider.KEY_CUSTOM_TABS_PENDING_INTENT, pi);
+        bundle.putParcelable(CustomTabsIntent.KEY_PENDING_INTENT, pi);
 
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_CUSTOM_TABS_ACTION_BUTTON_BUNDLE, bundle);
+        intent.putExtra(CustomTabsIntent.EXTRA_ACTION_BUTTON_BUNDLE, bundle);
         return pi;
     }
 

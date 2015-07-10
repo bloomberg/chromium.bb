@@ -6,9 +6,10 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.app.Application;
 import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.Process;
+import android.support.customtabs.ICustomTabsCallback;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
@@ -16,6 +17,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 public class CustomTabsConnectionTest extends InstrumentationTestCase {
     private CustomTabsConnection mCustomTabsConnection;
     private static final String URL = "http://www.google.com";
+    private static final String URL2 = "https://www.android.com";
     private static final String INVALID_SCHEME_URL = "intent://www.google.com";
 
     @Override
@@ -28,30 +30,32 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        mCustomTabsConnection.cleanup(Process.myUid());
+        mCustomTabsConnection.cleanupAll();
     }
 
-    /**
-     * Tests that we can register the callback. Registering null returns an
-     * error code, and multiple registrations are not allowed.
-     */
-    @SmallTest
-    public void testFinishSetup() {
-        assertTrue("It should not be possible to set a null callback.",
-                mCustomTabsConnection.finishSetup(null) != 0);
-        ICustomTabsConnectionCallback cb = new ICustomTabsConnectionCallback.Stub() {
+    private ICustomTabsCallback newDummyCallback() {
+        return new ICustomTabsCallback.Stub() {
             @Override
-            public void onUserNavigationStarted(long sessionId, String url, Bundle extras) {}
+            public void onUserNavigationStarted(Uri url, Bundle extras) {}
             @Override
-            public void onUserNavigationFinished(long sessionId, String url, Bundle extras) {}
+            public void onUserNavigationFinished(Uri url, Bundle extras) {}
             @Override
             public IBinder asBinder() {
                 return this;
             }
         };
-        assertEquals(0, mCustomTabsConnection.finishSetup(cb));
-        assertTrue("It should not be possible to set the callback twice.",
-                mCustomTabsConnection.finishSetup(cb) != 0);
+    }
+
+    /**
+     * Tests that we can create a new session. Registering with a null callback
+     * fails, as well as multiple sessions with the same callback.
+     */
+    @SmallTest
+    public void testNewSession() {
+        assertEquals(false, mCustomTabsConnection.newSession(null));
+        ICustomTabsCallback cb = newDummyCallback();
+        assertEquals(true, mCustomTabsConnection.newSession(cb));
+        assertEquals(false, mCustomTabsConnection.newSession(cb));
     }
 
     /**
@@ -60,39 +64,24 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
      */
     @SmallTest
     public void testCanWarmup() {
-        assertEquals(0, mCustomTabsConnection.warmup(0));
-        // Can call it several times.
-        assertEquals(0, mCustomTabsConnection.warmup(0));
-    }
-
-    /**
-     * Tests that the session ID is positive, multiple sessions can be created,
-     * and {@link CustomTabsConnection#newSession()} doesn't always return
-     * the same session ID.
-     */
-    @SmallTest
-    public void testNewSession() {
-        long sessionId = mCustomTabsConnection.newSession();
-        assertTrue("Session IDs should be strictly positive.", sessionId > 0);
-        assertTrue("Session IDs should be unique.",
-                mCustomTabsConnection.newSession() != sessionId);
+        assertEquals(true, mCustomTabsConnection.warmup(0));
+        assertEquals(true, mCustomTabsConnection.warmup(0));
     }
 
     /**
      * Calls warmup() and mayLaunchUrl(), checks for the expected result
      * (success or failure) and returns the result code.
      */
-    private long assertWarmupAndMayLaunchUrl(long id, String url, boolean shouldSucceed) {
+    private ICustomTabsCallback assertWarmupAndMayLaunchUrl(
+            ICustomTabsCallback cb, String url, boolean shouldSucceed) {
         mCustomTabsConnection.warmup(0);
-        long sessionId = id == 0 ? mCustomTabsConnection.newSession() : id;
-        mCustomTabsConnection.mayLaunchUrl(sessionId, url, null, null);
-        long result = mCustomTabsConnection.mayLaunchUrl(sessionId, url, null, null);
-        if (shouldSucceed) {
-            assertEquals(sessionId, result);
-        } else {
-            assertTrue("The result should be negative to signal failure.", result < 0);
+        if (cb == null) {
+            cb = newDummyCallback();
+            mCustomTabsConnection.newSession(cb);
         }
-        return result;
+        boolean succeeded = mCustomTabsConnection.mayLaunchUrl(cb, Uri.parse(url), null, null);
+        assertEquals(shouldSucceed, succeeded);
+        return shouldSucceed ? cb : null;
     }
 
     /**
@@ -102,8 +91,7 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
      */
     @SmallTest
     public void testNoMayLaunchUrlWithInvalidSessionId() {
-        assertWarmupAndMayLaunchUrl(42, URL, false);
-        assertWarmupAndMayLaunchUrl(-1, URL, false);
+        assertWarmupAndMayLaunchUrl(newDummyCallback(), URL, false);
     }
 
     /**
@@ -113,7 +101,7 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
      */
     @SmallTest
     public void testNoMayLaunchUrlWithInvalidScheme() {
-        assertWarmupAndMayLaunchUrl(0, INVALID_SCHEME_URL, false);
+        assertWarmupAndMayLaunchUrl(null, INVALID_SCHEME_URL, false);
     }
 
     /**
@@ -123,16 +111,28 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
      */
     @SmallTest
     public void testMayLaunchUrl() {
-        assertWarmupAndMayLaunchUrl(0, URL, true);
+        assertWarmupAndMayLaunchUrl(null, URL, true);
     }
 
     /**
-     * Tests that session IDs are forgotten properly.
+     * Tests that
+     * {@link CustomTabsConnection#mayLaunchUrl(long, String, Bundle, List<Bundle>)}
+     * can be called several times with the same, and different URLs.
      */
     @SmallTest
-    public void testForgetsSessionId() {
-        long sessionId = assertWarmupAndMayLaunchUrl(0, URL, true);
-        mCustomTabsConnection.cleanup(Process.myUid());
-        assertWarmupAndMayLaunchUrl(sessionId, URL, false);
+    public void testMultipleMayLaunchUrl() {
+        ICustomTabsCallback cb = assertWarmupAndMayLaunchUrl(null, URL, true);
+        assertWarmupAndMayLaunchUrl(cb, URL, true);
+        assertWarmupAndMayLaunchUrl(cb, URL2, true);
+    }
+
+    /**
+     * Tests that sessions are forgotten properly.
+     */
+    @SmallTest
+    public void testForgetsSession() {
+        ICustomTabsCallback cb = assertWarmupAndMayLaunchUrl(null, URL, true);
+        mCustomTabsConnection.cleanupAll();
+        assertWarmupAndMayLaunchUrl(cb, URL, false);
     }
 }

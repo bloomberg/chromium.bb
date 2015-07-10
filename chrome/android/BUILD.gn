@@ -590,11 +590,11 @@ zip("chrome_version_srcjar") {
 
 #GYP: //chrome/android/chrome_apk.gyp:custom_tabs_service_aidl
 android_aidl("custom_tabs_service_aidl") {
-  import_include = "java/src/org/chromium/chrome/browser/customtabs"
-  interface_file = "java/src/org/chromium/chrome/browser/customtabs/common.aidl"
+  import_include = "java/src/android/support/customtabs"
+  interface_file = "java/src/android/support/customtabs/common.aidl"
   sources = [
-    "java/src/org/chromium/chrome/browser/customtabs/ICustomTabsConnectionCallback.aidl",
-    "java/src/org/chromium/chrome/browser/customtabs/ICustomTabsConnectionService.aidl",
+    "java/src/android/support/customtabs/ICustomTabsCallback.aidl",
+    "java/src/android/support/customtabs/ICustomTabsService.aidl",
   ]
 }
 

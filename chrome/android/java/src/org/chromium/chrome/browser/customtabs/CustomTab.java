@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.customtabs;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
+import android.os.IBinder;
 import android.os.SystemClock;
 import android.os.TransactionTooLargeException;
 import android.text.TextUtils;
@@ -43,7 +44,7 @@ import java.util.concurrent.TimeUnit;
 public class CustomTab extends ChromeTab {
     private static class CustomTabObserver extends EmptyTabObserver {
         private CustomTabsConnection mCustomTabsConnection;
-        private long mSessionId;
+        private IBinder mSession;
         private long mIntentReceivedTimestamp;
         private long mPageLoadStartedTimestamp;
 
@@ -52,9 +53,9 @@ public class CustomTab extends ChromeTab {
         private static final int STATE_WAITING_LOAD_FINISH = 2;
         private int mCurrentState;
 
-        public CustomTabObserver(CustomTabsConnection customTabsConnection, long sessionId) {
+        public CustomTabObserver(CustomTabsConnection customTabsConnection, IBinder session) {
             mCustomTabsConnection = customTabsConnection;
-            mSessionId = sessionId;
+            mSession = session;
             resetPageLoadTracking();
         }
 
@@ -68,7 +69,7 @@ public class CustomTab extends ChromeTab {
 
         @Override
         public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
-            mCustomTabsConnection.registerLaunch(mSessionId, params.getUrl());
+            mCustomTabsConnection.registerLaunch(mSession, params.getUrl());
         }
 
         @Override
@@ -77,13 +78,13 @@ public class CustomTab extends ChromeTab {
                 mPageLoadStartedTimestamp = SystemClock.elapsedRealtime();
                 mCurrentState = STATE_WAITING_LOAD_FINISH;
             }
-            mCustomTabsConnection.notifyPageLoadStarted(mSessionId, url);
+            mCustomTabsConnection.notifyPageLoadStarted(mSession, url);
         }
 
         @Override
         public void onPageLoadFinished(Tab tab) {
             long pageLoadFinishedTimestamp = SystemClock.elapsedRealtime();
-            mCustomTabsConnection.notifyPageLoadFinished(mSessionId, tab.getUrl());
+            mCustomTabsConnection.notifyPageLoadFinished(mSession, tab.getUrl());
             // Both histograms (commit and PLT) are reported here, to make sure
             // that they are always recorded together, and that we only record
             // commits for successful navigations.
@@ -131,19 +132,19 @@ public class CustomTab extends ChromeTab {
      * Construct an CustomTab. It might load a prerendered {@link WebContents} for the URL, if
      * {@link CustomTabsConnectionService} has successfully warmed up for the url.
      */
-    public CustomTab(ChromeActivity activity, WindowAndroid windowAndroid,
-            long sessionId, String url, String referrer, int parentTabId) {
+    public CustomTab(ChromeActivity activity, WindowAndroid windowAndroid, IBinder session,
+            String url, String referrer, int parentTabId) {
         super(TabIdManager.getInstance().generateValidId(Tab.INVALID_TAB_ID), activity, false,
                 windowAndroid, TabLaunchType.FROM_EXTERNAL_APP, parentTabId, null, null);
         CustomTabsConnection customTabsConnection =
                 CustomTabsConnection.getInstance(activity.getApplication());
-        WebContents webContents = customTabsConnection.takePrerenderedUrl(sessionId, url, referrer);
+        WebContents webContents = customTabsConnection.takePrerenderedUrl(session, url, referrer);
         if (webContents == null) {
             webContents = WebContentsFactory.createWebContents(isIncognito(), false);
         }
         initialize(webContents, activity.getTabContentManager(), false);
         getView().requestFocus();
-        mTabObserver = new CustomTabObserver(customTabsConnection, sessionId);
+        mTabObserver = new CustomTabObserver(customTabsConnection, session);
         addObserver(mTabObserver);
     }
 

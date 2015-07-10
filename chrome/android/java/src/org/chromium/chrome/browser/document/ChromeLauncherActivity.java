@@ -21,6 +21,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Browser;
+import android.support.customtabs.CustomTabsIntent;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
@@ -38,7 +39,6 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebappAuthenticator;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.metrics.LaunchHistogram;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
@@ -259,10 +259,7 @@ public class ChromeLauncherActivity extends Activity
      * @return True if the intent is handled here.
      */
     private boolean handleCustomTabActivityIntent() {
-        if (getIntent() == null) return false;
-
-        if (!getIntent().hasExtra(
-                CustomTabIntentDataProvider.EXTRA_CUSTOM_TABS_SESSION_ID)) {
+        if (getIntent() == null || !getIntent().hasExtra(CustomTabsIntent.EXTRA_SESSION)) {
             return false;
         }
 

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.customtabs;
 
 import android.content.Intent;
+import android.os.IBinder;
 
 import org.chromium.content_public.browser.LoadUrlParams;
 
@@ -24,9 +25,9 @@ public interface CustomTabContentHandler {
     void loadUrlAndTrackFromTimestamp(LoadUrlParams params, long timestamp);
 
     /**
-     * @return The session id this {@link CustomTabContentHandler} is associated with.
+     * @return The session this {@link CustomTabContentHandler} is associated with.
      */
-    long getSessionId();
+    IBinder getSession();
 
     /**
      * Check whether an intent is valid or should be ignored within this content handler.

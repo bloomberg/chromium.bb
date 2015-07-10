@@ -13,6 +13,8 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.support.customtabs.CustomTabsIntent;
 import android.text.TextUtils;
 import android.util.Pair;
 
@@ -29,118 +31,51 @@ import java.util.List;
  * {@link CustomTabActivity}.
  */
 public class CustomTabIntentDataProvider {
-    private static final String TAG = "CustomTabIntentDataProvider";
-
-    /**
-     * The category name that the service intent has to have for custom tabs. This
-     * category can also be used to generically resolve to the service component for custom tabs.
-     */
-    public static final String CATEGORY_CUSTOM_TABS = "android.intent.category.CUSTOM_TABS";
-
-    /**
-     * Extra used to match the session. This has to be included in the intent to open in
-     * a custom tab. Can be -1 if there is no session id taken. Its value is a long returned
-     * by {@link ICustomTabsConnectionService#newSession}.
-     */
-    public static final String EXTRA_CUSTOM_TABS_SESSION_ID =
-            "android.support.CUSTOM_TABS:session_id";
+    private static final String TAG = "CustomTabIntentData";
 
     /**
      * Extra used to keep the caller alive. Its value is an Intent.
      */
-    public static final String EXTRA_CUSTOM_TABS_KEEP_ALIVE =
-            "android.support.CUSTOM_TABS:keep_alive";
-
-    /**
-     * Extra that changes the background color for the omnibox. colorRes is an int that specifies a
-     * color.
-     */
-    public static final String EXTRA_CUSTOM_TABS_TOOLBAR_COLOR =
-            "android.support.CUSTOM_TABS:toolbar_color";
+    public static final String EXTRA_KEEP_ALIVE = "android.support.customtabs.extra.KEEP_ALIVE";
 
     /**
      * Extra int that specifies the style of the back button on the toolbar. Default is showing a
      * cross icon.
      */
-    public static final String EXTRA_CUSTOM_TABS_CLOSE_BUTTON_STYLE =
-            "android.support.CUSTOM_TABS:close_button_style";
+    public static final String EXTRA_CLOSE_BUTTON_STYLE =
+            "android.support.customtabs.extra.CLOSE_BUTTON_STYLE";
 
     /**
      * Uses 'X'-like cross icon for close button.
      */
-    public static final int CUSTOM_TAB_CLOSE_BUTTON_CROSS = 0;
+    public static final int CLOSE_BUTTON_CROSS = 0;
 
     /**
      * Uses '<'-like chevron arrow icon for close button.
      */
-    public static final int CUSTOM_TAB_CLOSE_BUTTON_ARROW = 1;
+    public static final int CLOSE_BUTTON_ARROW = 1;
 
     /**
      * Extra int that specifies state for showing the page title. Default is showing only the domain
      * and no information about the title.
      */
-    public static final String EXTRA_CUSTOM_TABS_TITLE_VISIBILITY_STATE =
-            "android.support.CUSTOM_TABS:title_visibility";
+    public static final String EXTRA_TITLE_VISIBILITY_STATE =
+            "android.support.customtabs.extra.TITLE_VISIBILITY";
 
     /**
      * Don't show any title. Shows only the domain.
      */
-    public static final int CUSTOM_TAB_NO_TITLE = 0;
+    public static final int NO_TITLE = 0;
 
     /**
      * Shows the page title and the domain.
      */
-    public static final int CUSTOM_TAB_SHOW_PAGE_TITLE = 1;
-
-    /**
-     * Bundle used for the action button parameters.
-     */
-    public static final String EXTRA_CUSTOM_TABS_ACTION_BUTTON_BUNDLE =
-            "android.support.CUSTOM_TABS:action_button_bundle";
-
-    /**
-     * Key that specifies the Bitmap to be used as the image source for the action button.
-     */
-    public static final String KEY_CUSTOM_TABS_ICON = "android.support.CUSTOM_TABS:icon";
-
-    /**
-     * Key that specifies the PendingIntent to launch when the action button or menu item was
-     * clicked. Chrome will be calling {@link PendingIntent#send()} on clicks after adding the url
-     * as data. The client app can call {@link Intent#getDataString()} to get the url.
-     */
-    public static final String KEY_CUSTOM_TABS_PENDING_INTENT =
-            "android.support.CUSTOM_TABS:pending_intent";
-
-    /**
-     * Use an {@code ArrayList<Bundle>} for specifying menu related params. There should be a
-     * separate Bundle for each custom menu item.
-     */
-    public static final String EXTRA_CUSTOM_TABS_MENU_ITEMS =
-            "android.support.CUSTOM_TABS:menu_items";
-
-    /**
-     * Key for the title of a menu item.
-     */
-    public static final String KEY_CUSTOM_TABS_MENU_TITLE =
-            "android.support.CUSTOM_TABS:menu_title";
-
-    /**
-     * Bundle constructed out of ActivityOptions that Chrome will be running when it finishes
-     * {@link CustomTabActivity}. A similar ActivityOptions for starting Chrome should be
-     * constructed and given to the startActivity() call that launches Chrome.
-     */
-    public static final String EXTRA_CUSTOM_TABS_EXIT_ANIMATION_BUNDLE =
-            "android.support.CUSTOM_TABS:exit_animation_bundle";
-
-    /**
-     * An invalid session ID, used when none is provided in the intent.
-     */
-    public static final long INVALID_SESSION_ID = -1;
+    public static final int SHOW_PAGE_TITLE = 1;
 
     private static final String BUNDLE_PACKAGE_NAME = "android:packageName";
     private static final String BUNDLE_ENTER_ANIMATION_RESOURCE = "android:animEnterRes";
     private static final String BUNDLE_EXIT_ANIMATION_RESOURCE = "android:animExitRes";
-    private final long mSessionId;
+    private final IBinder mSession;
     private final Intent mKeepAliveServiceIntent;
     private final int mTitleVisibilityState;
     private final int mCloseButtonResId;
@@ -158,61 +93,59 @@ public class CustomTabIntentDataProvider {
     public CustomTabIntentDataProvider(Intent intent, Context context) {
         if (intent == null) assert false;
 
-        mSessionId = IntentUtils.safeGetLongExtra(
-                intent, EXTRA_CUSTOM_TABS_SESSION_ID, INVALID_SESSION_ID);
+        mSession = IntentUtils.safeGetBinderExtra(intent, CustomTabsIntent.EXTRA_SESSION);
         retrieveToolbarColor(intent, context);
+        mKeepAliveServiceIntent = IntentUtils.safeGetParcelableExtra(intent, EXTRA_KEEP_ALIVE);
 
-        mKeepAliveServiceIntent = IntentUtils.safeGetParcelableExtra(
-                intent, EXTRA_CUSTOM_TABS_KEEP_ALIVE);
-
-        Bundle actionButtonBundle = IntentUtils.safeGetBundleExtra(
-                intent, EXTRA_CUSTOM_TABS_ACTION_BUTTON_BUNDLE);
+        Bundle actionButtonBundle =
+                IntentUtils.safeGetBundleExtra(intent, CustomTabsIntent.EXTRA_ACTION_BUTTON_BUNDLE);
         if (actionButtonBundle != null) {
-            mIcon = IntentUtils.safeGetParcelable(actionButtonBundle, KEY_CUSTOM_TABS_ICON);
-            if (!checkBitmapSizeWithinBounds(context, mIcon)) {
+            mIcon = IntentUtils.safeGetParcelable(actionButtonBundle, CustomTabsIntent.KEY_ICON);
+            if (mIcon != null && !checkBitmapSizeWithinBounds(context, mIcon)) {
                 mIcon.recycle();
                 mIcon = null;
-            } else {
+            } else if (mIcon != null) {
                 mActionButtonPendingIntent = IntentUtils.safeGetParcelable(
-                        actionButtonBundle, KEY_CUSTOM_TABS_PENDING_INTENT);
+                        actionButtonBundle, CustomTabsIntent.KEY_PENDING_INTENT);
             }
         }
 
-        List<Bundle> menuItems = IntentUtils.getParcelableArrayListExtra(
-                intent, EXTRA_CUSTOM_TABS_MENU_ITEMS);
+        List<Bundle> menuItems =
+                IntentUtils.getParcelableArrayListExtra(intent, CustomTabsIntent.EXTRA_MENU_ITEMS);
         if (menuItems != null) {
             for (Bundle bundle : menuItems) {
-                String title = IntentUtils.safeGetString(bundle, KEY_CUSTOM_TABS_MENU_TITLE);
-                PendingIntent pendingIntent = IntentUtils.safeGetParcelable(
-                        bundle, KEY_CUSTOM_TABS_PENDING_INTENT);
+                String title =
+                        IntentUtils.safeGetString(bundle, CustomTabsIntent.KEY_MENU_ITEM_TITLE);
+                PendingIntent pendingIntent =
+                        IntentUtils.safeGetParcelable(bundle, CustomTabsIntent.KEY_PENDING_INTENT);
                 if (TextUtils.isEmpty(title) || pendingIntent == null) continue;
                 mMenuEntries.add(new Pair<String, PendingIntent>(title, pendingIntent));
             }
         }
 
         mAnimationBundle = IntentUtils.safeGetBundleExtra(
-                intent, EXTRA_CUSTOM_TABS_EXIT_ANIMATION_BUNDLE);
+                intent, CustomTabsIntent.EXTRA_EXIT_ANIMATION_BUNDLE);
 
-        int closeButtonStyle = IntentUtils.safeGetIntExtra(intent,
-                EXTRA_CUSTOM_TABS_CLOSE_BUTTON_STYLE, CUSTOM_TAB_CLOSE_BUTTON_CROSS);
+        int closeButtonStyle =
+                IntentUtils.safeGetIntExtra(intent, EXTRA_CLOSE_BUTTON_STYLE, CLOSE_BUTTON_CROSS);
         switch(closeButtonStyle) {
-            case CustomTabIntentDataProvider.CUSTOM_TAB_CLOSE_BUTTON_ARROW:
+            case CustomTabIntentDataProvider.CLOSE_BUTTON_ARROW:
                 mCloseButtonResId = R.drawable.btn_chevron_left;
                 break;
-            case CustomTabIntentDataProvider.CUSTOM_TAB_CLOSE_BUTTON_CROSS:
+            case CustomTabIntentDataProvider.CLOSE_BUTTON_CROSS:
             default:
                 mCloseButtonResId = R.drawable.btn_close;
         }
 
-        mTitleVisibilityState = IntentUtils.safeGetIntExtra(
-                intent, EXTRA_CUSTOM_TABS_TITLE_VISIBILITY_STATE, CUSTOM_TAB_NO_TITLE);
+        mTitleVisibilityState =
+                IntentUtils.safeGetIntExtra(intent, EXTRA_TITLE_VISIBILITY_STATE, NO_TITLE);
     }
 
     /**
      * Processes the color passed from the client app and updates {@link #mToolbarColor}.
      */
     private void retrieveToolbarColor(Intent intent, Context context) {
-        int color = IntentUtils.safeGetIntExtra(intent, EXTRA_CUSTOM_TABS_TOOLBAR_COLOR,
+        int color = IntentUtils.safeGetIntExtra(intent, CustomTabsIntent.EXTRA_TOOLBAR_COLOR,
                 context.getResources().getColor(R.color.default_primary_color));
         int defaultColor = context.getResources().getColor(R.color.default_primary_color);
 
@@ -225,11 +158,10 @@ public class CustomTabIntentDataProvider {
     }
 
     /**
-     * @return The session ID specified in the intent. Will be
-     *         INVALID_SESSION_ID if it is not set in the intent.
+     * @return The session specified in the intent, or null.
      */
-    public long getSessionId() {
-        return mSessionId;
+    public IBinder getSession() {
+        return mSession;
     }
 
     /**

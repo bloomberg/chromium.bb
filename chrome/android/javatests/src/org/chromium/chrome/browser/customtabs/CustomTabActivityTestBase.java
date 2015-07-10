@@ -9,10 +9,12 @@ import android.app.Instrumentation;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.customtabs.CustomTabsIntent;
 
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -80,7 +82,7 @@ public abstract class CustomTabActivityTestBase extends
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.setComponent(new ComponentName(getInstrumentation().getTargetContext(),
                 ChromeLauncherActivity.class));
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_CUSTOM_TABS_SESSION_ID, -1);
+        IntentUtils.safePutBinderExtra(intent, CustomTabsIntent.EXTRA_SESSION, null);
         return intent;
     }
 }
