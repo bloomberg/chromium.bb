@@ -119,7 +119,7 @@ class TestTranslatorPruned(unittest.TestCase):
     Then it would look like everything is pruned out.  Look for a symbol
     that's guaranteed not to be pruned out.
     """
-    pruned = self.size_of_matching_syms('stream_init.*NaClSrpc',
+    pruned = self.size_of_matching_syms('main',
                                         TestTranslatorPruned.pruned_symbols)
     self.assertNotEqual(pruned, 0)
 
