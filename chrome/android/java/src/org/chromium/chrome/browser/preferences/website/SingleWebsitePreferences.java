@@ -19,6 +19,7 @@ import android.preference.PreferenceScreen;
 import android.support.v7.app.AlertDialog;
 import android.text.format.Formatter;
 import android.widget.ListAdapter;
+import android.widget.ListView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -54,6 +55,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
     public static final String PREF_USAGE = "site_usage";
     public static final String PREF_PERMISSIONS = "site_permissions";
     public static final String PREF_OS_PERMISSIONS_WARNING = "os_permissions_warning";
+    public static final String PREF_OS_PERMISSIONS_WARNING_EXTRA = "os_permissions_warning_extra";
+    public static final String PREF_OS_PERMISSIONS_WARNING_DIVIDER =
+            "os_permissions_warning_divider";
     // Actions at the top (if adding new, see hasUsagePreferences below):
     public static final String PREF_CLEAR_DATA = "clear_data";
     // Buttons:
@@ -135,6 +139,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         getActivity().setTitle(R.string.prefs_content_settings);
+        ListView listView = (ListView) getView().findViewById(android.R.id.list);
+        listView.setDivider(null);
+
         Object extraSite = getArguments().getSerializable(EXTRA_SITE);
         Object extraOrigin = getArguments().getSerializable(EXTRA_ORIGIN);
 
@@ -303,16 +310,27 @@ public class SingleWebsitePreferences extends PreferenceFragment
 
         // Remove the 'permission is off in Android' message if not needed.
         PreferenceScreen preferenceScreen = getPreferenceScreen();
-        if (!showWarningFor(ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION)
-                && !showWarningFor(ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)
-                && !showWarningFor(ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)) {
+        SiteSettingsCategory categoryWithWarning = getWarningCategory();
+        if (categoryWithWarning == null) {
             getPreferenceScreen().removePreference(
                     preferenceScreen.findPreference(PREF_OS_PERMISSIONS_WARNING));
+            getPreferenceScreen().removePreference(
+                    preferenceScreen.findPreference(PREF_OS_PERMISSIONS_WARNING_EXTRA));
+            getPreferenceScreen().removePreference(
+                    preferenceScreen.findPreference(PREF_OS_PERMISSIONS_WARNING_DIVIDER));
         } else {
-            Preference preference = preferenceScreen.findPreference(PREF_OS_PERMISSIONS_WARNING);
-            WebsitePreferences.configurePermissionIsOffPreference(
-                    preference, getActivity(), 0, true);
-            preference.setIcon(getDisabledInAndroidIcon());
+            Preference osWarning = preferenceScreen.findPreference(PREF_OS_PERMISSIONS_WARNING);
+            Preference osWarningExtra =
+                    preferenceScreen.findPreference(PREF_OS_PERMISSIONS_WARNING_EXTRA);
+            categoryWithWarning.configurePermissionIsOffPreferences(
+                    osWarning, osWarningExtra, getActivity(), false);
+            if (osWarning.getTitle() == null) {
+                getPreferenceScreen().removePreference(
+                        preferenceScreen.findPreference(PREF_OS_PERMISSIONS_WARNING));
+            } else if (osWarningExtra.getTitle() == null) {
+                getPreferenceScreen().removePreference(
+                        preferenceScreen.findPreference(PREF_OS_PERMISSIONS_WARNING_EXTRA));
+            }
         }
 
         // Remove categories if no sub-items.
@@ -324,6 +342,27 @@ public class SingleWebsitePreferences extends PreferenceFragment
             Preference heading = preferenceScreen.findPreference(PREF_PERMISSIONS);
             preferenceScreen.removePreference(heading);
         }
+    }
+
+    private SiteSettingsCategory getWarningCategory() {
+        // If more than one per-app permission is disabled in Android, we can pick any category to
+        // show the warning, because they will all show the same warning and all take the user to
+        // the user to the same location. It is preferrable, however, that we give Geolocation some
+        // priority because that category is the only one that potentially shows an additional
+        // warning (when Location is turned off globally).
+        if (showWarningFor(ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION)) {
+            return SiteSettingsCategory.fromContentSettingsType(
+                    ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION);
+        }
+        if (showWarningFor(ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)) {
+            return SiteSettingsCategory.fromContentSettingsType(
+                    ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+        }
+        if (showWarningFor(ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)) {
+            return SiteSettingsCategory.fromContentSettingsType(
+                    ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+        }
+        return null;
     }
 
     private boolean showWarningFor(int type) {
@@ -340,7 +379,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
             default:
                 return false;
         }
-        return !WebsitePreferences.isPermissionEnabledInAndroid(getActivity(), type);
+        SiteSettingsCategory category = SiteSettingsCategory.fromContentSettingsType(type);
+        return category.showPermissionBlockedMessage(getActivity());
     }
 
     private boolean hasUsagePreferences() {
@@ -389,8 +429,10 @@ public class SingleWebsitePreferences extends PreferenceFragment
         }
 
         if (listPreference.isEnabled()) {
-            if (!WebsitePreferences.isPermissionEnabledInAndroid(getActivity(), contentType)) {
-                listPreference.setIcon(getDisabledInAndroidIcon());
+            SiteSettingsCategory category =
+                    SiteSettingsCategory.fromContentSettingsType(contentType);
+            if (category != null && !category.enabledInAndroid(getActivity())) {
+                listPreference.setIcon(category.getDisabledInAndroidIcon(getActivity()));
                 listPreference.setEnabled(false);
             } else {
                 listPreference.setIcon(ContentSettingsResources.getIcon(contentType));
@@ -412,18 +454,6 @@ public class SingleWebsitePreferences extends PreferenceFragment
         icon.mutate();
         int disabledColor = getResources().getColor(
                 R.color.primary_text_disabled_material_light);
-        icon.setColorFilter(disabledColor, PorterDuff.Mode.SRC_IN);
-        return icon;
-    }
-
-    /**
-     * Returns the icon for permissions that have been disabled by Android.
-     */
-    private Drawable getDisabledInAndroidIcon() {
-        Drawable icon = ApiCompatibilityUtils.getDrawable(getResources(),
-                R.drawable.exclamation_triangle);
-        icon.mutate();
-        int disabledColor = getResources().getColor(R.color.pref_accent_color);
         icon.setColorFilter(disabledColor, PorterDuff.Mode.SRC_IN);
         return icon;
     }

@@ -27,8 +27,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
+import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferences;
-import org.chromium.chrome.browser.preferences.website.WebsiteSettingsCategoryFilter;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 
 import java.net.URI;
@@ -187,7 +187,7 @@ public class NotificationUIManager {
             // Notification preferences for all origins.
             fragmentArguments = new Bundle();
             fragmentArguments.putString(WebsitePreferences.EXTRA_CATEGORY,
-                    WebsiteSettingsCategoryFilter.FILTER_PUSH_NOTIFICATIONS);
+                    SiteSettingsCategory.CATEGORY_NOTIFICATIONS);
             fragmentArguments.putString(WebsitePreferences.EXTRA_TITLE,
                     applicationContext.getResources().getString(
                             R.string.push_notifications_permission_title));

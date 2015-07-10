@@ -30,8 +30,7 @@ import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 @SuppressFBWarnings("EQ_COMPARETO_USE_OBJECT_EQUALS")
 class WebsitePreference extends Preference implements FaviconImageCallback {
     private final Website mSite;
-    private final String mCategoryFilter;
-    private final WebsiteSettingsCategoryFilter mFilter;
+    private final SiteSettingsCategory mCategory;
 
     private static final int TEXT_SIZE_SP = 13;
 
@@ -48,11 +47,10 @@ class WebsitePreference extends Preference implements FaviconImageCallback {
     private static final int FAVICON_TEXT_SIZE_DP = 10;
     private static final int FAVICON_BACKGROUND_COLOR = 0xff969696;
 
-    WebsitePreference(Context context, Website site, String categoryFilter) {
+    WebsitePreference(Context context, Website site, SiteSettingsCategory category) {
         super(context);
         mSite = site;
-        mCategoryFilter = categoryFilter;
-        mFilter = new WebsiteSettingsCategoryFilter();
+        mCategory = category;
         setWidgetLayoutResource(R.layout.website_features);
 
         // To make sure the layout stays stable throughout, we assign a
@@ -124,7 +122,7 @@ class WebsitePreference extends Preference implements FaviconImageCallback {
             return super.compareTo(preference);
         }
         WebsitePreference other = (WebsitePreference) preference;
-        if (mFilter.showStorageSites(mCategoryFilter)) {
+        if (mCategory.showStorageSites()) {
             return mSite.compareByStorageTo(other.mSite);
         }
 
@@ -137,7 +135,7 @@ class WebsitePreference extends Preference implements FaviconImageCallback {
 
         TextView usageText = (TextView) view.findViewById(R.id.usage_text);
         usageText.setVisibility(View.GONE);
-        if (mFilter.showStorageSites(mCategoryFilter)) {
+        if (mCategory.showStorageSites()) {
             long totalUsage = mSite.getTotalUsage();
             if (totalUsage > 0) {
                 usageText.setText(Formatter.formatShortFileSize(getContext(), totalUsage));

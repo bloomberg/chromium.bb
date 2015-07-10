@@ -6,6 +6,11 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <org.chromium.chrome.browser.preferences.ChromeBasePreference
         android:key="os_permissions_warning" />
+    <org.chromium.chrome.browser.preferences.ChromeBasePreference
+        android:key="os_permissions_warning_extra" />
+    <Preference
+        android:key="os_permissions_warning_divider"
+        android:layout="@layout/divider_preference" />
     <PreferenceCategory
         android:key="site_heading"
         android:title="@string/website_settings_site_category" />

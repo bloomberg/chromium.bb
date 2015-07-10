@@ -607,7 +607,7 @@ by a child template that "extends" this file.
             android:value="org.chromium.content.browser.SmartClipProvider"/>
         <meta-data android:name="org.chromium.components.service_tab_launcher.SERVICE_TAB_LAUNCHER"
                    android:value="org.chromium.chrome.browser.ChromeServiceTabLauncher" />
-        
+
         {% block extra_application_definitions %}
 
         <!-- Media route controllers to use for remote playback (cast).
@@ -620,7 +620,7 @@ by a child template that "extends" this file.
              controllers with its own list. -->
         <meta-data android:name="org.chromium.content.browser.REMOTE_MEDIA_PLAYERS"
             android:value="org.chromium.chrome.browser.media.remote.DefaultMediaRouteController"/>
-        
+
         {% endblock %}
     </application>
 </manifest>
