@@ -6,7 +6,6 @@
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/ui/toolbar/toolbar_model.h"
 
 void OmniboxEditController::OnAutocompleteAccept(
     const GURL& destination_url,
