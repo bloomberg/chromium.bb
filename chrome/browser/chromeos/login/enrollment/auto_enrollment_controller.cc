@@ -22,8 +22,9 @@ namespace chromeos {
 
 namespace {
 
-// Maximum time to wait before forcing a decision.
-const int kSafeguardTimeoutSeconds = 30;
+// Maximum time to wait before forcing a decision.  Note that download time for
+// state key buckets can be non-negligible, especially on 2G connections.
+const int kSafeguardTimeoutSeconds = 60;
 
 // Returns the int value of the |switch_name| argument, clamped to the [0, 62]
 // interval. Returns 0 if the argument doesn't exist or isn't an int value.

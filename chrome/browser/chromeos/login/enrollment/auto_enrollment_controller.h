@@ -22,8 +22,9 @@ class ServerBackedStateKeysBroker;
 
 namespace chromeos {
 
-// Drives the auto-enrollment check, running an AutoEnrollmentClient if
-// appropriate to make a decision.
+// Drives the forced re-enrollment check (for historical reasons called
+// auto-enrollment check), running an AutoEnrollmentClient if appropriate to
+// make a decision.
 class AutoEnrollmentController {
  public:
   typedef base::CallbackList<void(policy::AutoEnrollmentState)>
