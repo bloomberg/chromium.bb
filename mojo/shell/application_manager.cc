@@ -290,22 +290,32 @@ void ApplicationManager::HandleFetchCallback(
       RegisterShell(app_url, qualifier, requestor_url, services.Pass(),
                     exposed_services.Pass(), on_application_end));
 
+  // For resources that are loaded with content handlers, we group app instances
+  // by site.
+
   // If the response begins with a #!mojo <content-handler-url>, use it.
   GURL content_handler_url;
   std::string shebang;
+  bool enable_multi_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableMultiprocess);
+
   if (fetcher->PeekContentHandler(&shebang, &content_handler_url)) {
-    LoadWithContentHandler(
-        content_handler_url, requestor_url, qualifier, request.Pass(),
-        fetcher->AsURLResponse(blocking_pool_,
-                               static_cast<int>(shebang.size())));
+    URLResponsePtr response(fetcher->AsURLResponse(
+        blocking_pool_, static_cast<int>(shebang.size())));
+    std::string site =
+        enable_multi_process ? response->site.To<std::string>() : std::string();
+    LoadWithContentHandler(content_handler_url, requestor_url, site,
+                           request.Pass(), response.Pass());
     return;
   }
 
   MimeTypeToURLMap::iterator iter = mime_type_to_url_.find(fetcher->MimeType());
   if (iter != mime_type_to_url_.end()) {
-    LoadWithContentHandler(iter->second, requestor_url, qualifier,
-                           request.Pass(),
-                           fetcher->AsURLResponse(blocking_pool_, 0));
+    URLResponsePtr response(fetcher->AsURLResponse(blocking_pool_, 0));
+    std::string site =
+        enable_multi_process ? response->site.To<std::string>() : std::string();
+    LoadWithContentHandler(iter->second, requestor_url, site, request.Pass(),
+                           response.Pass());
     return;
   }
 

@@ -48,6 +48,9 @@ struct URLResponse {
   // The final URL of the response, after redirects have been followed.
   string? url;
 
+  // The site of the URL.
+  string? site;
+
   // The HTTP status code. 0 if not applicable.
   uint32 status_code;
 
