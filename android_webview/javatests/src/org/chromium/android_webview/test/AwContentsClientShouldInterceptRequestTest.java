@@ -250,6 +250,34 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
+    public void testCalledWithCorrectRefererHeader() throws Throwable {
+        final String refererHeaderName = "Referer";
+        final String imageUrl = mWebServer.setResponseBase64(
+                "/" + CommonResources.TEST_IMAGE_FILENAME,
+                CommonResources.FAVICON_DATA_BASE64,
+                CommonResources.getImagePngHeaders(true));
+        final String pageUrl = addPageToTestServer(mWebServer, "/main.html",
+                CommonResources.makeHtmlPageFrom(
+                        "", "<img src=\'" + CommonResources.TEST_IMAGE_FILENAME + "\'>"));
+
+        int callCount = mShouldInterceptRequestHelper.getCallCount();
+        loadUrlAsync(mAwContents, pageUrl);
+        mShouldInterceptRequestHelper.waitForCallback(callCount, 2);
+        assertEquals(2, mShouldInterceptRequestHelper.getUrls().size());
+        assertEquals(pageUrl,
+                mShouldInterceptRequestHelper.getUrls().get(0));
+        Map<String, String> headers =
+                mShouldInterceptRequestHelper.getRequestsForUrl(pageUrl).requestHeaders;
+        assertFalse(headers.containsKey(refererHeaderName));
+        assertEquals(imageUrl,
+                mShouldInterceptRequestHelper.getUrls().get(1));
+        headers = mShouldInterceptRequestHelper.getRequestsForUrl(imageUrl).requestHeaders;
+        assertTrue(headers.containsKey(refererHeaderName));
+        assertEquals(pageUrl, headers.get(refererHeaderName));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testCalledWithCorrectHeadersParam() throws Throwable {
         final String headerName = "X-Test-Header-Name";
         final String headerValue = "TestHeaderValue";

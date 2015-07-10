@@ -49,6 +49,11 @@ AwRequestInterceptor::QueryForAwWebResourceResponse(
   if (!io_thread_client.get())
     return scoped_ptr<AwWebResourceResponse>();
 
+  GURL referrer(request->referrer());
+  if (referrer.is_valid()) {
+    request->SetExtraRequestHeaderByName(net::HttpRequestHeaders::kReferer,
+                                         referrer.spec(), true);
+  }
   return io_thread_client->ShouldInterceptRequest(request).Pass();
 }
 
