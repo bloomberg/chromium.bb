@@ -7,17 +7,14 @@
     <script src='eme_player_js/app_loader.js' type='text/javascript'></script>
     <script type="text/javascript">
       var testConfig;
-      var runEncrypted;
 
       var video = document.querySelector('video');
       var mediaType = 'video/webm; codecs="vorbis, vp8"';
 
-      var MEDIA_1 = 'bear-320x240.webm';
-      var MEDIA_2 = 'bear-640x360.webm';
-      if (runEncrypted) {
-        MEDIA_1 = 'bear-320x240-av_enc-av.webm';
-        MEDIA_2 = 'bear-640x360-av_enc-av.webm';
-      }
+      var CLEAR_MEDIA_1 = 'bear-320x240.webm';
+      var CLEAR_MEDIA_2 = 'bear-640x360.webm';
+      var ENCRYPTED_MEDIA_1 = 'bear-320x240-av_enc-av.webm';
+      var ENCRYPTED_MEDIA_2 = 'bear-640x360-av_enc-av.webm';
 
       var MEDIA_1_WIDTH = 320;
       var MEDIA_1_HEIGHT = 240;
@@ -37,13 +34,14 @@
       function initTestConfig() {
         testConfig = new TestConfig();
         testConfig.loadQueryParams();
-        runEncrypted = testConfig.runEncrypted == 1;
       }
 
       function appendNextSource(mediaSource) {
         console.log('Appending next media source at ' + APPEND_TIME + 'sec.');
         var xhr = new XMLHttpRequest();
-        xhr.open("GET", MEDIA_2);
+        var mediaFile =
+            (testConfig.runEncrypted == 1) ? ENCRYPTED_MEDIA_2 : CLEAR_MEDIA_2;
+        xhr.open("GET", mediaFile);
         xhr.responseType = 'arraybuffer';
         xhr.addEventListener('load', function(e) {
           var onUpdateEnd = function(e) {
@@ -123,13 +121,14 @@
 
       function runTest() {
         initTestConfig();
-        testConfig.mediaFile = MEDIA_1;
+        testConfig.mediaFile =
+            (testConfig.runEncrypted == 1) ? ENCRYPTED_MEDIA_1 : CLEAR_MEDIA_1;
         testConfig.mediaType = mediaType;
         video.addEventListener('timeupdate', onTimeUpdate);
         video.addEventListener('ended', Utils.failTest);
-        var mediaSource = MediaSourceUtils.loadMediaSource(
-            MEDIA_1, mediaType, appendNextSource);
-        if (runEncrypted) {
+        var mediaSource = MediaSourceUtils.loadMediaSourceFromTestConfig(
+            testConfig, appendNextSource);
+        if (testConfig.runEncrypted == 1) {
           var emePlayer = PlayerUtils.createPlayer(video, testConfig);
           emePlayer.registerEventListeners()
               .then(function(player) {
