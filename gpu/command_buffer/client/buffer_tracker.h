@@ -5,16 +5,14 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_BUFFER_TRACKER_H_
 #define GPU_COMMAND_BUFFER_CLIENT_BUFFER_TRACKER_H_
 
-#include <GLES2/gl2.h>
-
-#include <queue>
+#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/macros.h"
 #include "gles2_impl_export.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 
 namespace gpu {
 
-class CommandBufferHelper;
 class MappedMemoryManager;
 
 namespace gles2 {

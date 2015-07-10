@@ -4,8 +4,6 @@
 
 #include "gpu/command_buffer/client/client_context_state.h"
 
-#include "base/logging.h"
-
 namespace gpu {
 namespace gles2 {
 
@@ -22,5 +20,3 @@ ClientContextState::~ClientContextState() {
 
 }  // namespace gles2
 }  // namespace gpu
-
-

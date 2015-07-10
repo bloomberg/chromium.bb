@@ -5,8 +5,6 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_H_
 #define GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_H_
 
-#include <GLES2/gl2.h>
-
 #include <list>
 #include <map>
 #include <queue>
@@ -15,24 +13,22 @@
 #include <utility>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/client/buffer_tracker.h"
 #include "gpu/command_buffer/client/client_context_state.h"
 #include "gpu/command_buffer/client/context_support.h"
-#include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_impl_export.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/mapped_memory.h"
-#include "gpu/command_buffer/client/query_tracker.h"
 #include "gpu/command_buffer/client/ref_counted.h"
-#include "gpu/command_buffer/client/ring_buffer.h"
 #include "gpu/command_buffer/client/share_group.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/debug_marker_manager.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
-#include "gpu/command_buffer/common/id_allocator.h"
 
 #if !defined(NDEBUG) && !defined(__native_client__) && !defined(GLES2_CONFORMANCE_TESTS)  // NOLINT
   #if defined(GLES2_INLINE_OPTIMIZATION)
@@ -99,18 +95,18 @@
     GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION_ASSERT(!ptr || \
         (ptr[0] == static_cast<type>(0) || ptr[0] == static_cast<type>(-1)));
 
-struct GLUniformDefinitionCHROMIUM;
-
 namespace gpu {
 
 class GpuControl;
+class IdAllocator;
 class ScopedTransferBufferPtr;
 class TransferBufferInterface;
 
 namespace gles2 {
 
-class ImageFactory;
+class GLES2CmdHelper;
 class VertexArrayObjectManager;
+class QueryTracker;
 
 class GLES2ImplementationErrorMessageCallback {
  public:

@@ -6,6 +6,7 @@
 
 #include "gpu/command_buffer/client/buffer_tracker.h"
 
+#include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/client/client_test_helper.h"

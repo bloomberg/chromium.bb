@@ -6,9 +6,12 @@
 
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 
+#include <algorithm>
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "gpu/command_buffer/common/buffer.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/trace_event.h"
 
 namespace gpu {

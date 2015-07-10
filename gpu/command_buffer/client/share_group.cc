@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stack>
-#include <vector>
-
 #include "gpu/command_buffer/client/share_group.h"
 
+#include <stack>
+#include <vector>
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
+#include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/program_info_manager.h"
 #include "gpu/command_buffer/common/id_allocator.h"

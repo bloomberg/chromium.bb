@@ -13,6 +13,7 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
+#include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"

@@ -8,15 +8,20 @@
 #define GPU_COMMAND_BUFFER_CLIENT_CMD_BUFFER_HELPER_H_
 
 #include <string.h>
-#include <time.h>
 
+#include "base/basictypes.h"
+#include "base/logging.h"
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/common/command_buffer.h"
-#include "gpu/command_buffer/common/constants.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
+
+class Buffer;
 
 #if !defined(OS_ANDROID)
 #define CMD_HELPER_PERIODIC_FLUSH_CHECK
