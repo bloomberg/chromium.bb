@@ -156,6 +156,10 @@ Polymer({
     },
   },
 
+  ready: function() {
+    this.addEventListener('close-route-click', this.removeRoute);
+  },
+
   /**
    * Adds |route| to |routeList|.
    *
@@ -231,8 +235,8 @@ Polymer({
    *     that is associated with |sinkId|.
    * @private
    */
-  computeRouteInSinkListHidden_: function(sinkId) {
-    return !this.sinkToRouteMap_[sinkId];
+  computeRouteInSinkListHidden_: function(sinkId, sinkToRouteMap) {
+    return !sinkToRouteMap[sinkId];
   },
 
   /**
@@ -240,9 +244,9 @@ Polymer({
    * @return {string} The title value of the route associated with |sinkId|.
    * @private
    */
-  computeRouteInSinkListValue_: function(sinkId) {
-    var route = this.sinkToRouteMap_[sinkId];
-    return route ? this.sinkToRouteMap_[sinkId].title : '';
+  computeRouteInSinkListValue_: function(sinkId, sinkToRouteMap) {
+    var route = sinkToRouteMap[sinkId];
+    return route ? route.title : '';
   },
 
   /**
@@ -346,12 +350,16 @@ Polymer({
    */
   rebuildRouteMaps_: function() {
     this.routeMap_ = {};
-    this.sinkToRouteMap_ = {};
+    // Rebuild |sinkToRouteMap_| with a temporary map to avoid firing the
+    // computed functions prematurely.
+    var tempSinkToRouteMap = {};
 
     this.routeList.forEach(function(route) {
       this.routeMap_[route.id] = route;
-      this.sinkToRouteMap_[route.sinkId] = route;
+      tempSinkToRouteMap[route.sinkId] = route;
     }, this);
+
+    this.sinkToRouteMap_ = tempSinkToRouteMap;
   },
 
   /**

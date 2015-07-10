@@ -72,8 +72,11 @@
                   <span>[[item.name]]</span>
                 </div>
                 <div class="sink-text route"
-                    hidden$="[[computeRouteInSinkListHidden_(item.id)]]">
-                  <span>[[computeRouteInSinkListValue_(item.id)]]</span>
+                     hidden$="[[computeRouteInSinkListHidden_(item.id,
+                     sinkToRouteMap_)]]">
+                  <span>[[
+                      computeRouteInSinkListValue_(item.id, sinkToRouteMap_)
+                          ]]</span>
                 </div>
               </div>
             </div>
