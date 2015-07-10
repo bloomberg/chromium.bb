@@ -795,6 +795,8 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties()
                     RefPtr<TypeBuilder::CSS::ShorthandEntry> entry = TypeBuilder::CSS::ShorthandEntry::create()
                         .setName(shorthand)
                         .setValue(shorthandValue(shorthand));
+                    if (!m_style->getPropertyPriority(name).isEmpty())
+                        entry->setImportant(true);
                     shorthandEntries->addItem(entry);
                 }
             }
@@ -809,10 +811,9 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties()
 
 String InspectorStyle::shorthandValue(const String& shorthandProperty)
 {
+    StringBuilder builder;
     String value = m_style->getPropertyValue(shorthandProperty);
     if (value.isEmpty()) {
-        StringBuilder builder;
-
         for (unsigned i = 0; i < m_style->length(); ++i) {
             String individualProperty = m_style->item(i);
             if (m_style->getPropertyShorthand(individualProperty) != shorthandProperty)
@@ -826,10 +827,14 @@ String InspectorStyle::shorthandValue(const String& shorthandProperty)
                 builder.append(' ');
             builder.append(individualValue);
         }
-
-        return builder.toString();
+    } else {
+        builder.append(value);
     }
-    return value;
+
+    if (!m_style->getPropertyPriority(shorthandProperty).isEmpty())
+        builder.append(" !important");
+
+    return builder.toString();
 }
 
 DEFINE_TRACE(InspectorStyle)
