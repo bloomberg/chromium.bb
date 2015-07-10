@@ -1,0 +1,11 @@
+This is a testharness.js-based test.
+FAIL new DOMException() Illegal constructor
+FAIL new DOMException(): own-ness Illegal constructor
+FAIL new DOMException(undefined) Illegal constructor
+FAIL new DOMException(undefined): own-ness Illegal constructor
+FAIL new DOMException("foo") Illegal constructor
+FAIL new DOMException("foo"): own-ness Illegal constructor
+FAIL new DOMException("bar", "NotSupportedError") Illegal constructor
+FAIL new DOMException("bar", "NotSupportedError"): own-ness Illegal constructor
+Harness: the test ran to completion.
+

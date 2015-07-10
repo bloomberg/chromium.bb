@@ -1,0 +1,21 @@
+This is a testharness.js-based test.
+PASS Object.getPrototypeOf(exception) === DOMException.prototype 
+FAIL exception.hasOwnProperty("name") assert_true: expected true got false
+PASS exception.name === "HierarchyRequestError" 
+FAIL Object.getOwnPropertyDescriptor(exception, "name") Cannot read property 'writable' of undefined
+PASS Object.getOwnPropertyDescriptor(exception, "message") 
+FAIL typeof exception.message === "string" assert_equals: expected "" but got "Failed to execute 'appendChild' on 'Node': The new child element contains the parent."
+PASS Object.prototype.toString.call(exception) === "[object DOMException]" 
+PASS exception.code === DOMException.HIERARCHY_REQUEST_ERR 
+FAIL Object.getOwnPropertyDescriptor(exception, "code") Cannot read property 'writable' of undefined
+PASS In iframe: Object.getPrototypeOf(exception) === DOMException.prototype 
+FAIL In iframe: exception.hasOwnProperty("name") assert_true: expected true got false
+PASS In iframe: exception.name === "HierarchyRequestError" 
+FAIL In iframe: Object.getOwnPropertyDescriptor(exception, "name") Cannot read property 'writable' of undefined
+PASS In iframe: Object.getOwnPropertyDescriptor(exception, "message") 
+FAIL In iframe: typeof exception.message === "string" assert_equals: expected "" but got "Failed to execute 'appendChild' on 'Node': The new child element contains the parent."
+PASS In iframe: Object.prototype.toString.call(exception) === "[object DOMException]" 
+PASS In iframe: exception.code === DOMException.HIERARCHY_REQUEST_ERR 
+FAIL In iframe: Object.getOwnPropertyDescriptor(exception, "code") Cannot read property 'writable' of undefined
+Harness: the test ran to completion.
+

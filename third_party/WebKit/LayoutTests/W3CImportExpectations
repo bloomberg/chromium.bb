@@ -71,7 +71,12 @@ imported/web-platform-tests/FileAPI [ Skip ]
 ## Owners: jsbell@chromium.org
 # imported/web-platform-tests/IndexedDB [ Pass ]
 imported/web-platform-tests/WebCryptoAPI [ Skip ]
-imported/web-platform-tests/WebIDL [ Skip ]
+## Owners: jsbell@chromium.org
+# imported/web-platform-tests/WebIDL [ Pass ]
+imported/web-platform-tests/WebIDL/invalid [ Skip ]
+imported/web-platform-tests/WebIDL/readme.txt [ Skip ]
+imported/web-platform-tests/WebIDL/testable_assertions.txt [ Skip ]
+imported/web-platform-tests/WebIDL/valid [ Skip ]
 imported/web-platform-tests/XMLHttpRequest [ Skip ]
 imported/web-platform-tests/ambient-light [ Skip ]
 imported/web-platform-tests/animation-timing [ Skip ]
