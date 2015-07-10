@@ -121,8 +121,13 @@ class PrecacheFetcher {
   // Non-owning pointer. Should not be NULL.
   PrecacheDelegate* precache_delegate_;
 
+  // Tally of the total number of bytes received from URL fetches, including
+  // config, manifests, and resources.
+  int total_response_bytes_;
+
   scoped_ptr<Fetcher> fetcher_;
 
+  int num_manifest_urls_to_fetch_;
   std::list<GURL> manifest_urls_to_fetch_;
   std::list<GURL> resource_urls_to_fetch_;
 

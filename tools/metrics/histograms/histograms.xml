@@ -31800,6 +31800,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Precache.Fetch.PercentCompleted" units="percentage">
+  <owner>twifkak@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The percent of manifests for which all resources have been downloaded.
+    Logged per prefetch run.
+  </summary>
+</histogram>
+
+<histogram name="Precache.Fetch.ResponseBytes" units="bytes">
+  <owner>twifkak@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The total number of response bytes received from all prefetch requests,
+    including config, manifests, and resources. Logged per prefetch run.
+  </summary>
+</histogram>
+
 <histogram name="Precache.Saved" units="bytes">
   <owner>bengr@chromium.org</owner>
   <summary>

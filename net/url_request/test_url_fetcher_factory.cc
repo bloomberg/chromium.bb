@@ -356,6 +356,7 @@ FakeURLFetcher::FakeURLFetcher(const GURL& url,
   set_status(URLRequestStatus(status, error));
   set_response_code(response_code);
   SetResponseString(response_data);
+  response_bytes_ = response_data.size();
 }
 
 FakeURLFetcher::~FakeURLFetcher() {}
@@ -367,7 +368,14 @@ void FakeURLFetcher::Start() {
 }
 
 void FakeURLFetcher::RunDelegate() {
-  delegate()->OnURLFetchComplete(this);
+  // OnURLFetchDownloadProgress may delete this URLFetcher. We keep track of
+  // this with a weak pointer, and only call OnURLFetchComplete if this still
+  // exists.
+  auto weak_this = weak_factory_.GetWeakPtr();
+  delegate()->OnURLFetchDownloadProgress(this, response_bytes_,
+                                         response_bytes_);
+  if (weak_this.get())
+    delegate()->OnURLFetchComplete(this);
 }
 
 const GURL& FakeURLFetcher::GetURL() const {

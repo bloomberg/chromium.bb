@@ -5,6 +5,8 @@
 #ifndef NET_URL_REQUEST_TEST_URL_FETCHER_FACTORY_H_
 #define NET_URL_REQUEST_TEST_URL_FETCHER_FACTORY_H_
 
+#include <stdint.h>
+
 #include <list>
 #include <map>
 #include <string>
@@ -308,6 +310,7 @@ class FakeURLFetcher : public TestURLFetcher {
   // constructor.
   void RunDelegate();
 
+  int64_t response_bytes_;
   base::WeakPtrFactory<FakeURLFetcher> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeURLFetcher);

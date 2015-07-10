@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/precache/core/precache_switches.h"
 #include "components/precache/core/proto/precache.pb.h"
 #include "net/base/completion_callback.h"
@@ -30,6 +31,11 @@ using net::URLFetcher;
 namespace precache {
 
 namespace {
+
+// The maximum for the Precache.Fetch.ResponseBytes histogram. We set this to a
+// number we expect to be in the 99th percentile for the histogram, give or
+// take.
+const int kMaxResponseBytes = 100 * 1024 * 1024;
 
 GURL GetConfigURL() {
   const base::CommandLine& command_line =
@@ -135,11 +141,16 @@ class PrecacheFetcher::Fetcher : public net::URLFetcherDelegate {
           const base::Callback<void(const URLFetcher&)>& callback,
           bool ignore_response_body);
   ~Fetcher() override {}
+  void OnURLFetchDownloadProgress(const URLFetcher* source,
+                                  int64 current,
+                                  int64 total) override;
   void OnURLFetchComplete(const URLFetcher* source) override;
+  int response_bytes() { return response_bytes_; }
 
  private:
   const base::Callback<void(const URLFetcher&)> callback_;
   scoped_ptr<URLFetcher> url_fetcher_;
+  int response_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(Fetcher);
 };
@@ -149,7 +160,7 @@ PrecacheFetcher::Fetcher::Fetcher(
     const GURL& url,
     const base::Callback<void(const URLFetcher&)>& callback,
     bool ignore_response_body)
-    : callback_(callback) {
+    : callback_(callback), response_bytes_(0) {
   url_fetcher_ = URLFetcher::Create(url, URLFetcher::GET, this);
   url_fetcher_->SetRequestContext(request_context);
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
@@ -159,6 +170,13 @@ PrecacheFetcher::Fetcher::Fetcher(
     url_fetcher_->SaveResponseWithWriter(null_writer.Pass());
   }
   url_fetcher_->Start();
+}
+
+void PrecacheFetcher::Fetcher::OnURLFetchDownloadProgress(
+    const URLFetcher* source,
+    int64 current,
+    int64 total) {
+  response_bytes_ = current;
 }
 
 void PrecacheFetcher::Fetcher::OnURLFetchComplete(const URLFetcher* source) {
@@ -173,7 +191,9 @@ PrecacheFetcher::PrecacheFetcher(
     : starting_hosts_(starting_hosts),
       request_context_(request_context),
       manifest_url_prefix_(manifest_url_prefix),
-      precache_delegate_(precache_delegate) {
+      precache_delegate_(precache_delegate),
+      total_response_bytes_(0),
+      num_manifest_urls_to_fetch_(0) {
   DCHECK(request_context_.get());  // Request context must be non-NULL.
   DCHECK(precache_delegate_);  // Precache delegate must be non-NULL.
 
@@ -184,6 +204,24 @@ PrecacheFetcher::PrecacheFetcher(
 }
 
 PrecacheFetcher::~PrecacheFetcher() {
+  // Number of manifests for which we have downloaded all resources.
+  int manifests_completed =
+      num_manifest_urls_to_fetch_ - manifest_urls_to_fetch_.size();
+
+  // If there are resource URLs left to fetch, the last manifest is not yet
+  // completed.
+  if (!resource_urls_to_fetch_.empty())
+    --manifests_completed;
+
+  DCHECK_GE(manifests_completed, 0);
+  int percent_completed = num_manifest_urls_to_fetch_ == 0
+                              ? 0
+                              : (static_cast<double>(manifests_completed) /
+                                 num_manifest_urls_to_fetch_ * 100);
+  UMA_HISTOGRAM_PERCENTAGE("Precache.Fetch.PercentCompleted",
+                           percent_completed);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Precache.Fetch.ResponseBytes",
+                              total_response_bytes_, 1, kMaxResponseBytes, 50);
 }
 
 void PrecacheFetcher::Start() {
@@ -200,6 +238,8 @@ void PrecacheFetcher::Start() {
 }
 
 void PrecacheFetcher::StartNextFetch() {
+  total_response_bytes_ += fetcher_->response_bytes();
+
   if (!resource_urls_to_fetch_.empty()) {
     // Fetch the next resource URL.
     fetcher_.reset(
@@ -262,6 +302,7 @@ void PrecacheFetcher::OnConfigFetchComplete(const URLFetcher& source) {
 
   for (const std::string& manifest_url : unique_manifest_urls)
     manifest_urls_to_fetch_.push_back(GURL(manifest_url));
+  num_manifest_urls_to_fetch_ = manifest_urls_to_fetch_.size();
 
   StartNextFetch();
 }

@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/test/histogram_tester.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/precache/core/precache_switches.h"
 #include "components/precache/core/proto/precache.pb.h"
@@ -29,6 +30,8 @@ namespace {
 
 class TestURLFetcherCallback {
  public:
+  TestURLFetcherCallback() : total_response_bytes_(0) {}
+
   scoped_ptr<net::FakeURLFetcher> CreateURLFetcher(
       const GURL& url, net::URLFetcherDelegate* delegate,
       const std::string& response_data, net::HttpStatusCode response_code,
@@ -43,6 +46,7 @@ class TestURLFetcherCallback {
       fetcher->set_response_headers(download_headers);
     }
 
+    total_response_bytes_ += response_data.size();
     requested_urls_.insert(url);
     return fetcher.Pass();
   }
@@ -51,9 +55,12 @@ class TestURLFetcherCallback {
     return requested_urls_;
   }
 
+  int total_response_bytes() const { return total_response_bytes_; }
+
  private:
   // Multiset with one entry for each URL requested.
   std::multiset<GURL> requested_urls_;
+  int total_response_bytes_;
 };
 
 class TestPrecacheDelegate : public PrecacheFetcher::PrecacheDelegate {
@@ -77,7 +84,8 @@ class PrecacheFetcherTest : public testing::Test {
             base::ThreadTaskRunnerHandle::Get())),
         factory_(NULL,
                  base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
-                            base::Unretained(&url_callback_))) {}
+                            base::Unretained(&url_callback_))),
+        expected_total_response_bytes_(0) {}
 
  protected:
   base::MessageLoopForUI loop_;
@@ -85,6 +93,7 @@ class PrecacheFetcherTest : public testing::Test {
   TestURLFetcherCallback url_callback_;
   net::FakeURLFetcherFactory factory_;
   TestPrecacheDelegate precache_delegate_;
+  int expected_total_response_bytes_;
 };
 
 const char kConfigURL[] = "http://config-url.com";
@@ -146,11 +155,17 @@ TEST_F(PrecacheFetcherTest, FullPrecache) {
                            PrecacheManifest().SerializeAsString(), net::HTTP_OK,
                            net::URLRequestStatus::SUCCESS);
 
-  PrecacheFetcher precache_fetcher(starting_hosts, request_context_.get(),
-                                   std::string(), &precache_delegate_);
-  precache_fetcher.Start();
+  base::HistogramTester histogram;
 
-  base::MessageLoop::current()->RunUntilIdle();
+  {
+    PrecacheFetcher precache_fetcher(starting_hosts, request_context_.get(),
+                                     std::string(), &precache_delegate_);
+    precache_fetcher.Start();
+
+    base::MessageLoop::current()->RunUntilIdle();
+
+    // Destroy the PrecacheFetcher after it has finished, to record metrics.
+  }
 
   std::multiset<GURL> expected_requested_urls;
   expected_requested_urls.insert(GURL(kConfigURL));
@@ -164,6 +179,10 @@ TEST_F(PrecacheFetcherTest, FullPrecache) {
   EXPECT_EQ(expected_requested_urls, url_callback_.requested_urls());
 
   EXPECT_TRUE(precache_delegate_.was_on_done_called());
+
+  histogram.ExpectUniqueSample("Precache.Fetch.PercentCompleted", 100, 1);
+  histogram.ExpectUniqueSample("Precache.Fetch.ResponseBytes",
+                               url_callback_.total_response_bytes(), 1);
 }
 
 TEST_F(PrecacheFetcherTest, CustomManifestURLPrefix) {
@@ -272,14 +291,16 @@ TEST_F(PrecacheFetcherTest, Cancel) {
   factory_.SetFakeResponse(GURL(kConfigURL), config.SerializeAsString(),
                            net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
-  scoped_ptr<PrecacheFetcher> precache_fetcher(
-      new PrecacheFetcher(starting_hosts, request_context_.get(), std::string(),
-                          &precache_delegate_));
-  precache_fetcher->Start();
+  base::HistogramTester histogram;
 
-  // Destroy the PrecacheFetcher to cancel precaching. This should not cause
-  // OnDone to be called on the precache delegate.
-  precache_fetcher.reset();
+  {
+    PrecacheFetcher precache_fetcher(starting_hosts, request_context_.get(),
+                                     std::string(), &precache_delegate_);
+    precache_fetcher.Start();
+
+    // Destroy the PrecacheFetcher, to cancel precaching and record metrics.
+    // This should not cause OnDone to be called on the precache delegate.
+  }
 
   base::MessageLoop::current()->RunUntilIdle();
 
@@ -288,6 +309,9 @@ TEST_F(PrecacheFetcherTest, Cancel) {
   EXPECT_EQ(expected_requested_urls, url_callback_.requested_urls());
 
   EXPECT_FALSE(precache_delegate_.was_on_done_called());
+
+  histogram.ExpectUniqueSample("Precache.Fetch.PercentCompleted", 0, 1);
+  histogram.ExpectUniqueSample("Precache.Fetch.ResponseBytes", 0, 1);
 }
 
 #if defined(PRECACHE_CONFIG_SETTINGS_URL)
