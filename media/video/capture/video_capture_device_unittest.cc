@@ -467,13 +467,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
   device->StopAndDeAllocate();
 }
 
-// Fails on Android - https://crbug.com/506520.
-#if defined(OS_ANDROID)
-#define MAYBE_GetDeviceSupportedFormats DISABLED_GetDeviceSupportedFormats
-#else
-#define MAYBE_GetDeviceSupportedFormats GetDeviceSupportedFormats
-#endif
-TEST_F(VideoCaptureDeviceTest, MAYBE_GetDeviceSupportedFormats) {
+TEST_F(VideoCaptureDeviceTest, GetDeviceSupportedFormats) {
   // Use PIXEL_FORMAT_MAX to iterate all device names for testing
   // GetDeviceSupportedFormats().
   scoped_ptr<VideoCaptureDevice::Name> name =

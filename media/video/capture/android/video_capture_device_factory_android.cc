@@ -114,7 +114,7 @@ void VideoCaptureDeviceFactoryAndroid::GetDeviceSupportedFormats(
         pixel_format = media::PIXEL_FORMAT_NV21;
         break;
       default:
-        break;
+        continue;
     }
     VideoCaptureFormat capture_format(
         gfx::Size(media::Java_VideoCaptureFactory_getCaptureFormatWidth(env,
