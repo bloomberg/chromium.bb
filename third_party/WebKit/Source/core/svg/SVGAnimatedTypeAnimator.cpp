@@ -21,7 +21,6 @@
 #include "config.h"
 #include "core/svg/SVGAnimatedTypeAnimator.h"
 
-#include "core/css/parser/CSSParser.h"
 #include "core/svg/SVGAnimateTransformElement.h"
 #include "core/svg/SVGAnimatedColor.h"
 #include "core/svg/SVGAnimationElement.h"
@@ -97,7 +96,7 @@ PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGAnimatedTypeAnimator::createPropertyF
 
     switch (m_type) {
     case AnimatedColor:
-        return SVGColorProperty::create(value.isEmpty() ? StyleColor::currentColor() : CSSParser::colorFromRGBColorString(value));
+        return SVGColorProperty::create(value);
     case AnimatedNumber: {
         RefPtrWillBeRawPtr<SVGNumber> property = SVGNumber::create();
         property->setValueAsString(value, IGNORE_EXCEPTION);

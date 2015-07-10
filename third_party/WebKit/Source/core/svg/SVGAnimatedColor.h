@@ -42,9 +42,9 @@ class SVGAnimationElement;
 // FIXME: WebAnimations: Replacable with AnimatableColor once SMIL animations are implemented in WebAnimations.
 class SVGColorProperty final : public SVGPropertyBase {
 public:
-    static PassRefPtrWillBeRawPtr<SVGColorProperty> create(StyleColor styleColor)
+    static PassRefPtrWillBeRawPtr<SVGColorProperty> create(const String& colorString)
     {
-        return adoptRefWillBeNoop(new SVGColorProperty(styleColor));
+        return adoptRefWillBeNoop(new SVGColorProperty(colorString));
     }
 
     PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
@@ -57,11 +57,7 @@ public:
     static AnimatedPropertyType classType() { return AnimatedColor; }
 
 private:
-    explicit SVGColorProperty(StyleColor styleColor)
-        : SVGPropertyBase(classType())
-        , m_styleColor(styleColor)
-    {
-    }
+    explicit SVGColorProperty(const String&);
 
     StyleColor m_styleColor;
 };

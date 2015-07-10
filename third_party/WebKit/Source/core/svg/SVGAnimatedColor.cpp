@@ -18,14 +18,23 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGAnimatedColor.h"
 
+#include "core/css/parser/CSSParser.h"
 #include "core/layout/LayoutObject.h"
 #include "core/svg/ColorDistance.h"
 #include "core/svg/SVGAnimateElement.h"
 
 namespace blink {
+
+SVGColorProperty::SVGColorProperty(const String& colorString)
+    : SVGPropertyBase(classType())
+    , m_styleColor(StyleColor::currentColor())
+{
+    RGBA32 color;
+    if (CSSParser::parseColor(color, colorString.stripWhiteSpace()))
+        m_styleColor = StyleColor(color);
+}
 
 String SVGColorProperty::valueAsString() const
 {
