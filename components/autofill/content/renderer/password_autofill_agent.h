@@ -75,9 +75,9 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   // Called when new form controls are inserted.
   void OnDynamicFormsSeen();
 
-  // Called when an XHR has succesfully completed. Used to determine if
-  // a form has been submitted by XHR without navigation.
-  void XHRSucceeded();
+  // Called when an AJAX has succesfully completed. Used to determine if
+  // a form has been submitted by AJAX without navigation.
+  void AJAXSucceeded();
 
   // Called when the user first interacts with the page after a load. This is a
   // signal to make autofilled values of password input elements accessible to
@@ -238,6 +238,9 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   // Returns true if |provisionally_saved_form_| has enough information that
   // it is likely filled out.
   bool ProvisionallySavedPasswordIsValid();
+
+  // Helper function called when in-page navigation completed
+  void OnSamePageNavigationCompleted();
 
   // Passes through |RenderViewObserver| method to |this|.
   LegacyPasswordAutofillAgent legacy_;

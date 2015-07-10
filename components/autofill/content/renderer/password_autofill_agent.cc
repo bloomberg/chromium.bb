@@ -857,7 +857,11 @@ void PasswordAutofillAgent::OnDynamicFormsSeen() {
   SendPasswordForms(false /* only_visible */);
 }
 
-void PasswordAutofillAgent::XHRSucceeded() {
+void PasswordAutofillAgent::AJAXSucceeded() {
+  OnSamePageNavigationCompleted();
+}
+
+void PasswordAutofillAgent::OnSamePageNavigationCompleted() {
   if (!ProvisionallySavedPasswordIsValid())
     return;
   blink::WebFrame* frame = render_frame()->GetWebFrame();
@@ -989,22 +993,14 @@ void PasswordAutofillAgent::FrameWillClose() {
 
 void PasswordAutofillAgent::DidCommitProvisionalLoad(
     bool is_new_navigation, bool is_same_page_navigation) {
-  if (!ProvisionallySavedPasswordIsValid())
-    return;
   blink::WebFrame* frame = render_frame()->GetWebFrame();
   // TODO(dvadym): check if we need to check if it is main frame navigation
   // http://crbug.com/443155
   if (frame->parent())
     return; // Not a top-level navigation.
 
-  // Prompt to save only if the form disappeared.
-  if (IsFormVisible(frame, provisionally_saved_form_->action))
-    return;
-
   if (is_same_page_navigation) {
-    Send(new AutofillHostMsg_InPageNavigation(routing_id(),
-                                              *provisionally_saved_form_));
-    provisionally_saved_form_.reset();
+    OnSamePageNavigationCompleted();
   }
 }
 

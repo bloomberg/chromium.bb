@@ -141,7 +141,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   virtual void openTextDataListChooser(const blink::WebInputElement& element);
   virtual void dataListOptionsChanged(const blink::WebInputElement& element);
   virtual void firstUserGestureObserved();
-  virtual void xhrSucceeded();
+  virtual void ajaxSucceeded();
 
   void OnFieldTypePredictionsAvailable(
       const std::vector<FormDataPredictions>& forms);

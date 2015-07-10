@@ -546,6 +546,185 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(prompt_observer->IsShowingPrompt());
 }
 
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, PromptForFetchSubmit) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kAshBrowserTests))
+    return;
+#endif
+  NavigateToFile("/password/password_fetch_submit.html");
+
+  // Verify that we show the save password prompt if a form returns false
+  // in its onsubmit handler but instead logs in/navigates via Fetch.
+  // Note that calling 'submit()' on a form with javascript doesn't call
+  // the onsubmit handler, so we click the submit button instead.
+  NavigationObserver observer(WebContents());
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string fill_and_submit =
+      "document.getElementById('username_field').value = 'temp';"
+      "document.getElementById('password_field').value = 'random';"
+      "document.getElementById('submit_button').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  EXPECT_TRUE(prompt_observer->IsShowingPrompt());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       PromptForFetchWithoutOnSubmit) {
+  NavigateToFile("/password/password_fetch_submit.html");
+
+  // Verify that if Fetch navigation occurs and the form is properly filled out,
+  // we try and save the password even though onsubmit hasn't been called.
+  NavigationObserver observer(WebContents());
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string fill_and_navigate =
+      "document.getElementById('username_field').value = 'temp';"
+      "document.getElementById('password_field').value = 'random';"
+      "send_fetch()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_navigate));
+  observer.Wait();
+  EXPECT_TRUE(prompt_observer->IsShowingPrompt());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       PromptForFetchWithNewPasswordsWithoutOnSubmit) {
+  NavigateToFile("/password/password_fetch_submit.html");
+
+  // Verify that if Fetch navigation occurs and the form is properly filled out,
+  // we try and save the password even though onsubmit hasn't been called.
+  // Specifically verify that the password form saving new passwords is treated
+  // the same as a login form.
+  NavigationObserver observer(WebContents());
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string fill_and_navigate =
+      "document.getElementById('signup_username_field').value = 'temp';"
+      "document.getElementById('signup_password_field').value = 'random';"
+      "document.getElementById('confirmation_password_field').value = 'random';"
+      "send_fetch()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_navigate));
+  observer.Wait();
+  EXPECT_TRUE(prompt_observer->IsShowingPrompt());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       PromptForFetchSubmitWithoutNavigation) {
+  NavigateToFile("/password/password_fetch_submit.html");
+
+  // Need to pay attention for a message that XHR has finished since there
+  // is no navigation to wait for.
+  content::DOMMessageQueue message_queue;
+
+  // Verify that if XHR without navigation occurs and the form has been filled
+  // out we try and save the password. Note that in general the submission
+  // doesn't need to be via form.submit(), but for testing purposes it's
+  // necessary since we otherwise ignore changes made to the value of these
+  // fields by script.
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string fill_and_submit =
+      "navigate = false;"
+      "document.getElementById('username_field').value = 'temp';"
+      "document.getElementById('password_field').value = 'random';"
+      "document.getElementById('submit_button').click();";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  std::string message;
+  while (message_queue.WaitForMessage(&message)) {
+    if (message == "\"FETCH_FINISHED\"")
+      break;
+  }
+
+  EXPECT_TRUE(prompt_observer->IsShowingPrompt());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       PromptForFetchSubmitWithoutNavigation_SignupForm) {
+  NavigateToFile("/password/password_fetch_submit.html");
+
+  // Need to pay attention for a message that Fetch has finished since there
+  // is no navigation to wait for.
+  content::DOMMessageQueue message_queue;
+
+  // Verify that if Fetch without navigation occurs and the form has been filled
+  // out we try and save the password. Note that in general the submission
+  // doesn't need to be via form.submit(), but for testing purposes it's
+  // necessary since we otherwise ignore changes made to the value of these
+  // fields by script.
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string fill_and_submit =
+      "navigate = false;"
+      "document.getElementById('signup_username_field').value = 'temp';"
+      "document.getElementById('signup_password_field').value = 'random';"
+      "document.getElementById('confirmation_password_field').value = 'random';"
+      "document.getElementById('signup_submit_button').click();";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  std::string message;
+  while (message_queue.WaitForMessage(&message)) {
+    if (message == "\"FETCH_FINISHED\"")
+      break;
+  }
+
+  EXPECT_TRUE(prompt_observer->IsShowingPrompt());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PasswordManagerBrowserTestBase,
+    NoPromptForFetchSubmitWithoutNavigationWithUnfilledForm) {
+  NavigateToFile("/password/password_fetch_submit.html");
+
+  // Need to pay attention for a message that Fetch has finished since there
+  // is no navigation to wait for.
+  content::DOMMessageQueue message_queue;
+
+  // Verify that if Fetch without navigation occurs and the form has NOT been
+  // filled out we don't prompt.
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string fill_and_submit =
+      "navigate = false;"
+      "document.getElementById('username_field').value = 'temp';"
+      "document.getElementById('submit_button').click();";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  std::string message;
+  while (message_queue.WaitForMessage(&message)) {
+    if (message == "\"FETCH_FINISHED\"")
+      break;
+  }
+
+  EXPECT_FALSE(prompt_observer->IsShowingPrompt());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PasswordManagerBrowserTestBase,
+    NoPromptForFetchSubmitWithoutNavigationWithUnfilledForm_SignupForm) {
+  NavigateToFile("/password/password_fetch_submit.html");
+
+  // Need to pay attention for a message that Fetch has finished since there
+  // is no navigation to wait for.
+  content::DOMMessageQueue message_queue;
+
+  // Verify that if Fetch without navigation occurs and the form has NOT been
+  // filled out we don't prompt.
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string fill_and_submit =
+      "navigate = false;"
+      "document.getElementById('signup_username_field').value = 'temp';"
+      "document.getElementById('signup_submit_button').click();";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  std::string message;
+  while (message_queue.WaitForMessage(&message)) {
+    if (message == "\"FETCH_FINISHED\"")
+      break;
+  }
+
+  EXPECT_FALSE(prompt_observer->IsShowingPrompt());
+}
+
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, NoPromptIfLinkClicked) {
   NavigateToFile("/password/password_form.html");
 
