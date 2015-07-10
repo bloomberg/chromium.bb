@@ -74,8 +74,9 @@ int ChromeBrowserMainPartsAndroid::PreCreateThreads() {
     crash_dump_manager_.reset(new breakpad::CrashDumpManager(crash_dump_dir));
   }
 
-  bool has_splits = base::android::BuildInfo::GetInstance()->has_apk_splits();
-  ui::SetLocalePaksStoredInApk(has_splits);
+  bool has_language_splits =
+      base::android::BuildInfo::GetInstance()->has_language_apk_splits();
+  ui::SetLocalePaksStoredInApk(has_language_splits);
 
   return ChromeBrowserMainParts::PreCreateThreads();
 }

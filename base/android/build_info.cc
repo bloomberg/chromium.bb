@@ -60,7 +60,7 @@ BuildInfo::BuildInfo(JNIEnv* env)
           env, GetApplicationContext()))),
       build_type_(StrDupJString(Java_BuildInfo_getBuildType(env))),
       sdk_int_(Java_BuildInfo_getSdkInt(env)),
-      has_apk_splits_(Java_BuildInfo_hasApkSplits(
+      has_language_apk_splits_(Java_BuildInfo_hasLanguageApkSplits(
           env, GetApplicationContext())),
       java_exception_info_(NULL) {
 }

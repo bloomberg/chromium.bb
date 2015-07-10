@@ -134,13 +134,25 @@ public class BuildInfo {
                  || TextUtils.equals("MNC", Build.VERSION.CODENAME);
     }
 
+    private static boolean isLanguageSplit(String splitName) {
+        // Names look like "config.XX".
+        return splitName.length() == 9 && splitName.startsWith("config.");
+    }
+
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @CalledByNative
-    public static boolean hasApkSplits(Context context) {
+    public static boolean hasLanguageApkSplits(Context context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             return false;
         }
-        ApplicationInfo appInfo = context.getApplicationInfo();
-        return appInfo.splitSourceDirs != null && appInfo.splitSourceDirs.length > 0;
+        PackageInfo packageInfo = PackageUtils.getOwnPackageInfo(context);
+        if (packageInfo.splitNames != null) {
+            for (int i = 0; i < packageInfo.splitNames.length; ++i) {
+                if (isLanguageSplit(packageInfo.splitNames[i])) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
