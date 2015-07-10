@@ -55,7 +55,7 @@
                shortcut="Enter-Ctrl">
       <command id="delete" shortcut="U+007F">
       <command id="refresh" i18n-values="label:REFRESH_BUTTON_LABEL"
-               shortcut="U+0042-Ctrl">
+               shortcut="U+0042-Ctrl" hidden>
       <command id="create-folder-shortcut"
                i18n-values="label:CREATE_FOLDER_SHORTCUT_BUTTON_LABEL">
       <command id="remove-folder-shortcut"
@@ -255,7 +255,7 @@
           <span class="clear"></span>
         </paper-input-container>
       </div>
-      <button id="refresh-button" class="icon-button" tabindex="14"
+      <button id="refresh-button" class="icon-button" tabindex="14" hidden
               i18n-values="aria-label:REFRESH_BUTTON_LABEL"
               command="#refresh" has-tooltip>
         <paper-ripple fit class="recenteringTouch"></paper-ripple>
