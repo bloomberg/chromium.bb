@@ -71,8 +71,6 @@ public:
 protected:
     virtual ~FakeWebPlugin();
 
-    WebPluginContainer* container() const { return m_container; }
-
 private:
     WebFrame* m_frame;
     WebPluginContainer* m_container;
