@@ -28,9 +28,9 @@ void TestVideoEncoder(VideoEncoder* encoder, bool strict);
 
 // Generate test data and test the encoder for a sequence of one "changed"
 // frame followed by one or more "unchanged" frames, and verify that the
-// encoder sends exactly |topoff_frames| of non-empty data for unchanged
+// encoder sends up to |max_topoff_frames| of non-empty data for unchanged
 // frames, after which it returns null frames.
-void TestVideoEncoderEmptyFrames(VideoEncoder* encoder, int topoff_frames);
+void TestVideoEncoderEmptyFrames(VideoEncoder* encoder, int max_topoff_frames);
 
 // Generate test data and test the encoder and decoder pair.
 //

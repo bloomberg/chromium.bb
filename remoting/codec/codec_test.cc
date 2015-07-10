@@ -284,7 +284,8 @@ void TestVideoEncoder(VideoEncoder* encoder, bool strict) {
   }
 }
 
-void TestVideoEncoderEmptyFrames(VideoEncoder* encoder, int topoff_frames) {
+void TestVideoEncoderEmptyFrames(VideoEncoder* encoder,
+                                 int max_topoff_frames) {
   const DesktopSize kSize(640, 480);
   scoped_ptr<DesktopFrame> frame(PrepareFrame(kSize));
 
@@ -292,12 +293,19 @@ void TestVideoEncoderEmptyFrames(VideoEncoder* encoder, int topoff_frames) {
       webrtc::DesktopRect::MakeSize(kSize));
   EXPECT_TRUE(encoder->Encode(*frame));
 
+  int topoff_frames = 0;
   frame->mutable_updated_region()->Clear();
-  for (int i=0; i < topoff_frames; ++i) {
-    EXPECT_TRUE(encoder->Encode(*frame));
+  for (int i = 0; i < max_topoff_frames + 1; ++i) {
+    if (!encoder->Encode(*frame))
+      break;
+    topoff_frames++;
   }
 
-  EXPECT_FALSE(encoder->Encode(*frame));
+  // If top-off is enabled then our random frame contents should always
+  // trigger it, so expect at least one top-off frame - strictly, though,
+  // an encoder may not always need to top-off.
+  EXPECT_GE(topoff_frames, max_topoff_frames ? 1 : 0);
+  EXPECT_LE(topoff_frames, max_topoff_frames);
 }
 
 static void TestEncodeDecodeRects(VideoEncoder* encoder,

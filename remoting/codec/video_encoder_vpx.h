@@ -73,12 +73,10 @@ class VideoEncoderVpx : public VideoEncoder {
 
   // Active map used to optimize out processing of un-changed macroblocks.
   scoped_ptr<uint8[]> active_map_;
-  int active_map_width_ = 0;
-  int active_map_height_ = 0;
+  webrtc::DesktopSize active_map_size_;
 
-  // Number of "top-off" frames we've encoded since we were last passed a
-  // frame containing an actual change. Used only when encoding with top-off.
-  int topoff_frame_count_ = 0;
+  // True if the codec wants unchanged frames to finish topping-off with.
+  bool encode_unchanged_frame_;
 
   // Used to help initialize VideoPackets from DesktopFrames.
   VideoEncoderHelper helper_;

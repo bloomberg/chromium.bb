@@ -162,21 +162,23 @@ TEST(VideoEncoderVpxTest, DpiPropagation) {
   EXPECT_EQ(packet->format().y_dpi(), 97);
 }
 
-TEST(VideoEncoderVerbatimTest, Vp8EncodeUnchangedFrame) {
+TEST(VideoEncoderVpxTest, Vp8EncodeUnchangedFrame) {
   scoped_ptr<VideoEncoderVpx> encoder(VideoEncoderVpx::CreateForVP8());
   TestVideoEncoderEmptyFrames(encoder.get(), 0);
 }
 
-TEST(VideoEncoderVerbatimTest, Vp9LosslessUnchangedFrame) {
+TEST(VideoEncoderVpxTest, Vp9LosslessUnchangedFrame) {
   scoped_ptr<VideoEncoderVpx> encoder(VideoEncoderVpx::CreateForVP9());
   encoder->SetLosslessEncode(true);
   TestVideoEncoderEmptyFrames(encoder.get(), 0);
 }
 
-TEST(VideoEncoderVerbatimTest, Vp9LossyUnchangedFrame) {
+TEST(VideoEncoderVpxTest, Vp9LossyUnchangedFrame) {
   scoped_ptr<VideoEncoderVpx> encoder(VideoEncoderVpx::CreateForVP9());
   encoder->SetLosslessEncode(false);
-  TestVideoEncoderEmptyFrames(encoder.get(), 2);
+  // Expect that VP9+CR should generate no more than 10 top-off frames
+  // per cycle, and take no more than 2 cycles to top-off.
+  TestVideoEncoderEmptyFrames(encoder.get(), 20);
 }
 
 }  // namespace remoting

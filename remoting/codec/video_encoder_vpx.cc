@@ -266,21 +266,9 @@ scoped_ptr<VideoPacket> VideoEncoderVpx::Encode(
   DCHECK_LE(32, frame.size().width());
   DCHECK_LE(32, frame.size().height());
 
-  if (!use_vp9_ || lossless_encode_) {
-    // Neither VP8 nor VP9-lossless support top-off, so ignore unchanged frames.
-    if (frame.updated_region().is_empty())
-      return nullptr;
-  } else {
-    // Let VP9-lossy mode top-off, by continuing to pass it unchanged frames
-    // for a short while.
-    if (frame.updated_region().is_empty()) {
-      if (topoff_frame_count_ == 0)
-        return nullptr;
-      topoff_frame_count_--;
-    } else {
-      topoff_frame_count_ = 2;
-    }
-  }
+  // If there is nothing to encode, and nothing to top-off, then return nothing.
+  if (frame.updated_region().is_empty() && !encode_unchanged_frame_)
+    return nullptr;
 
   base::TimeTicks encode_start_time = base::TimeTicks::Now();
 
@@ -300,8 +288,8 @@ scoped_ptr<VideoPacket> VideoEncoderVpx::Encode(
 
   // Apply active map to the encoder.
   vpx_active_map_t act_map;
-  act_map.rows = active_map_height_;
-  act_map.cols = active_map_width_;
+  act_map.rows = active_map_size_.height();
+  act_map.cols = active_map_size_.width();
   act_map.active_map = active_map_.get();
   if (vpx_codec_control(codec_.get(), VP8E_SET_ACTIVEMAP, &act_map)) {
     LOG(ERROR) << "Unable to apply active map";
@@ -322,6 +310,9 @@ scoped_ptr<VideoPacket> VideoEncoderVpx::Encode(
         << "Failed to fetch active map: "
         << vpx_codec_err_to_string(ret) << "\n";
     UpdateRegionFromActiveMap(&updated_region);
+
+    // If the encoder output no changes then there's nothing left to top-off.
+    encode_unchanged_frame_ = !updated_region.is_empty();
   }
 
   // Read the encoded data.
@@ -357,7 +348,8 @@ scoped_ptr<VideoPacket> VideoEncoderVpx::Encode(
   return packet.Pass();
 }
 
-VideoEncoderVpx::VideoEncoderVpx(bool use_vp9) : use_vp9_(use_vp9) {
+VideoEncoderVpx::VideoEncoderVpx(bool use_vp9)
+    : use_vp9_(use_vp9), encode_unchanged_frame_(false) {
 }
 
 void VideoEncoderVpx::Configure(const webrtc::DesktopSize& size) {
@@ -370,9 +362,11 @@ void VideoEncoderVpx::Configure(const webrtc::DesktopSize& size) {
   FreeImageIfMismatched(lossless_color_, size, &image_, &image_buffer_);
 
   // Initialize active map.
-  active_map_width_ = (size.width() + kMacroBlockSize - 1) / kMacroBlockSize;
-  active_map_height_ = (size.height() + kMacroBlockSize - 1) / kMacroBlockSize;
-  active_map_.reset(new uint8[active_map_width_ * active_map_height_]);
+  active_map_size_ = webrtc::DesktopSize(
+      (size.width() + kMacroBlockSize - 1) / kMacroBlockSize,
+      (size.height() + kMacroBlockSize - 1) / kMacroBlockSize);
+  active_map_.reset(
+      new uint8[active_map_size_.width() * active_map_size_.height()]);
 
   // TODO(wez): Remove this hack once VPX can handle frame size reconfiguration.
   // See https://code.google.com/p/webm/issues/detail?id=912.
@@ -507,7 +501,8 @@ void VideoEncoderVpx::PrepareImage(const webrtc::DesktopFrame& frame,
 void VideoEncoderVpx::SetActiveMapFromRegion(
     const webrtc::DesktopRegion& updated_region) {
   // Clear active map first.
-  memset(active_map_.get(), 0, active_map_width_ * active_map_height_);
+  memset(active_map_.get(), 0,
+         active_map_size_.width() * active_map_size_.height());
 
   // Mark updated areas active.
   for (webrtc::DesktopRegion::Iterator r(updated_region); !r.IsAtEnd();
@@ -517,14 +512,14 @@ void VideoEncoderVpx::SetActiveMapFromRegion(
     int right = (rect.right() - 1) / kMacroBlockSize;
     int top = rect.top() / kMacroBlockSize;
     int bottom = (rect.bottom() - 1) / kMacroBlockSize;
-    DCHECK_LT(right, active_map_width_);
-    DCHECK_LT(bottom, active_map_height_);
+    DCHECK_LT(right, active_map_size_.width());
+    DCHECK_LT(bottom, active_map_size_.height());
 
-    uint8* map = active_map_.get() + top * active_map_width_;
+    uint8* map = active_map_.get() + top * active_map_size_.width();
     for (int y = top; y <= bottom; ++y) {
       for (int x = left; x <= right; ++x)
         map[x] = 1;
-      map += active_map_width_;
+      map += active_map_size_.width();
     }
   }
 }
@@ -532,11 +527,11 @@ void VideoEncoderVpx::SetActiveMapFromRegion(
 void VideoEncoderVpx::UpdateRegionFromActiveMap(
     webrtc::DesktopRegion* updated_region) {
   const uint8* map = active_map_.get();
-  for (int y = 0; y < active_map_height_; ++y) {
-    for (int x0 = 0; x0 < active_map_width_;) {
+  for (int y = 0; y < active_map_size_.height(); ++y) {
+    for (int x0 = 0; x0 < active_map_size_.width();) {
       int x1 = x0;
-      for (; x1 < active_map_width_; ++x1) {
-        if (map[y * active_map_width_ + x1] == 0)
+      for (; x1 < active_map_size_.width(); ++x1) {
+        if (map[y * active_map_size_.width() + x1] == 0)
           break;
       }
       if (x1 > x0) {
