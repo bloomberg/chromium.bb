@@ -28383,6 +28383,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Permissions.Requested.CrossOrigin" enum="PermissionStatus">
+  <owner>keenanb@google.com</owner>
+  <owner>jww@chromium.org</owner>
+  <summary>
+    The embedder's permission setting at the time of a cross-origin iframe
+    permission request for a given permission type. See the corresponding
+    histogram suffixes.
+  </summary>
+</histogram>
+
+<histogram name="Permissions.Requested.SameOrigin" enum="PermissionType">
+  <owner>keenanb@google.com</owner>
+  <owner>jww@chromium.org</owner>
+  <summary>
+    The permission type (geolocation, and such) of a same-origin permission
+    request.
+  </summary>
+</histogram>
+
 <histogram name="Platform.AsvGroup">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -64223,6 +64242,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="IGNORED"/>
 </enum>
 
+<enum name="PermissionStatus" type="int">
+  <int value="0" label="PERMISSION_STATUS_GRANTED"/>
+  <int value="1" label="PERMISSION_STATUS_DENIED"/>
+  <int value="2" label="PERMISSION_STATUS_ASK"/>
+</enum>
+
 <enum name="PermissionType" type="int">
   <int value="0" label="PERMISSION_UNKONWN"/>
   <int value="1" label="PERMISSION_MIDI_SYSEX"/>
@@ -73537,7 +73562,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PerformanceMonitor.HighCPU"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="PermissionActions">
+<histogram_suffixes name="PermissionTypes">
   <suffix name="MidiSysEx" label="Midi SysEx permsision actions"/>
   <suffix name="PushMessaging" label="Push messaging permission actions"/>
   <suffix name="Notifications" label="Notification permission actions"/>
@@ -73546,6 +73571,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="ContentSettings.PermissionActions"/>
   <affected-histogram name="ContentSettings.PermissionActionsInsecureOrigin"/>
   <affected-histogram name="ContentSettings.PermissionActionsSecureOrigin"/>
+  <affected-histogram name="Permissions.Requested.CrossOrigin"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PNaClTranslatorTypes" separator=".">

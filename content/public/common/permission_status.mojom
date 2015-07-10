@@ -7,5 +7,6 @@ module content;
 enum PermissionStatus {
   GRANTED,
   DENIED,
-  ASK
+  ASK,
+  LAST = ASK
 };

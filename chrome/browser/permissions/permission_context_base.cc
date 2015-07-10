@@ -131,7 +131,7 @@ void PermissionContextBase::DecidePermission(
   }
 
   PermissionContextUmaUtil::PermissionRequested(
-      permission_type_, requesting_origin);
+      permission_type_, requesting_origin, embedding_origin, profile_);
 
   if (PermissionBubbleManager::Enabled()) {
     PermissionBubbleManager* bubble_manager =

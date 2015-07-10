@@ -9,18 +9,21 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 
 class GURL;
+class Profile;
 
 // Provides a convenient way of logging UMA for permission related
 // operations.
 class PermissionContextUmaUtil {
  public:
+  static void PermissionRequested(ContentSettingsType permission,
+                                  const GURL& requesting_origin,
+                                  const GURL& embedding_origin,
+                                  Profile* profile);
   static void PermissionGranted(ContentSettingsType permission,
                                 const GURL& requesting_origin);
   static void PermissionDenied(ContentSettingsType permission,
                                const GURL& requesting_origin);
   static void PermissionDismissed(ContentSettingsType permission,
-                                  const GURL& requesting_origin);
-  static void PermissionRequested(ContentSettingsType permission,
                                   const GURL& requesting_origin);
   static void PermissionIgnored(ContentSettingsType permission,
                                 const GURL& requesting_origin);

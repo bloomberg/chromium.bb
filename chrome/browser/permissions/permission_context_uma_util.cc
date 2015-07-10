@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/permissions/permission_context_uma_util.h"
+
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/permissions/permission_context_uma_util.h"
+#include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/rappor/rappor_utils.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/common/origin_util.h"
@@ -139,8 +142,29 @@ void RecordPermissionAction(ContentSettingsType permission,
           requesting_origin);
 }
 
+std::string PermissionTypeToString(PermissionType permission_type) {
+  switch (permission_type) {
+    case PermissionType::MIDI_SYSEX:
+      return "MidiSysex";
+    case PermissionType::PUSH_MESSAGING:
+      return "PushMessaging";
+    case PermissionType::NOTIFICATIONS:
+      return "Notifications";
+    case PermissionType::GEOLOCATION:
+      return "Geolocation";
+    case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+      return "ProtectedMediaIdentifier";
+    case PermissionType::NUM:
+      break;
+  }
+  NOTREACHED();
+  return std::string();
+}
+
 void RecordPermissionRequest(ContentSettingsType permission,
-                             const GURL& requesting_origin) {
+                             const GURL& requesting_origin,
+                             const GURL& embedding_origin,
+                             Profile* profile) {
   bool secure_origin = content::IsOriginSecure(requesting_origin);
   PermissionType type;
   switch (permission) {
@@ -188,6 +212,30 @@ void RecordPermissionRequest(ContentSettingsType permission,
         static_cast<base::HistogramBase::Sample>(type),
         static_cast<base::HistogramBase::Sample>(PermissionType::NUM));
   }
+
+  // In order to gauge the compatibility risk of implementing an improved
+  // iframe permissions security model, we would like to know the ratio of
+  // same-origin to cross-origin permission requests. Our estimate of this
+  // ratio could be somewhat biased by repeated requests coming from a
+  // single frame, but we expect this to be insignificant.
+  if (requesting_origin.GetOrigin() != embedding_origin.GetOrigin()) {
+    content::PermissionManager* manager = profile->GetPermissionManager();
+    if (!manager)
+      return;
+    content::PermissionStatus embedding_permission_status =
+        manager->GetPermissionStatus(type, embedding_origin, embedding_origin);
+
+    base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
+        "Permissions.Requested.CrossOrigin_" + PermissionTypeToString(type), 1,
+        content::PERMISSION_STATUS_LAST, content::PERMISSION_STATUS_LAST + 1,
+        base::HistogramBase::kUmaTargetedHistogramFlag);
+    histogram->Add(embedding_permission_status);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Permissions.Requested.SameOrigin",
+        static_cast<base::HistogramBase::Sample>(type),
+        static_cast<base::HistogramBase::Sample>(PermissionType::NUM));
+  }
 }
 
 } // namespace
@@ -195,8 +243,12 @@ void RecordPermissionRequest(ContentSettingsType permission,
 // Make sure you update histograms.xml permission histogram_suffix if you
 // add new permission
 void PermissionContextUmaUtil::PermissionRequested(
-    ContentSettingsType permission, const GURL& requesting_origin) {
-  RecordPermissionRequest(permission, requesting_origin);
+    ContentSettingsType permission,
+    const GURL& requesting_origin,
+    const GURL& embedding_origin,
+    Profile* profile) {
+  RecordPermissionRequest(permission, requesting_origin, embedding_origin,
+                          profile);
 }
 
 void PermissionContextUmaUtil::PermissionGranted(
