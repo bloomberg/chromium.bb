@@ -21,7 +21,6 @@
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_stats.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/net/predictor.h"
@@ -64,7 +63,6 @@
 #include "components/url_fixer/url_fixer.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/common/constants.h"
@@ -818,10 +816,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
     log.tab_id = client_->GetSessionID().id();
   }
   autocomplete_controller()->AddProvidersInfo(&log.providers_info);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
-      content::Source<Profile>(profile_),
-      content::Details<OmniboxLog>(&log));
+  client_->OnURLOpenedFromOmnibox(&log);
   LOCAL_HISTOGRAM_BOOLEAN("Omnibox.EventCount", true);
   DCHECK(!last_omnibox_focus_.is_null())
       << "An omnibox focus should have occurred before opening a match.";

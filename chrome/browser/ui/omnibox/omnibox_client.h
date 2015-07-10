@@ -14,6 +14,7 @@ class GURL;
 class SessionID;
 class TemplateURL;
 struct AutocompleteMatch;
+struct OmniboxLog;
 
 namespace content {
 class NavigationController;
@@ -62,6 +63,15 @@ class OmniboxClient {
   // Called to notify clients that the omnibox focus state has changed.
   virtual void OnFocusChanged(OmniboxFocusState state,
                               OmniboxFocusChangeReason reason) = 0;
+
+  // Called to notify clients that a URL was opened from the omnibox.
+  // TODO(blundell): Eliminate this method in favor of having all //chrome-
+  // level listeners of the OMNIBOX_OPENED_URL instead observe OmniboxEditModel.
+  // Note that this is not trivial because (a) most of those listeners listen
+  // for the notification from all Profiles and (b) the notification is also
+  // sent from AutocompleteControllerAndroid, and it's unclear which listeners
+  // are also listening from it being sent from there.
+  virtual void OnURLOpenedFromOmnibox(OmniboxLog* log) = 0;
 
   // Performs prerendering for |match|.
   virtual void DoPrerender(const AutocompleteMatch& match) = 0;

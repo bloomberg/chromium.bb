@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
@@ -19,6 +20,7 @@
 #include "components/search/search.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
@@ -100,6 +102,13 @@ void ChromeOmniboxClient::OnFocusChanged(
     return;
   SearchTabHelper::FromWebContents(
       controller_->GetWebContents())->OmniboxFocusChanged(state, reason);
+}
+
+void ChromeOmniboxClient::OnURLOpenedFromOmnibox(OmniboxLog* log) {
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
+      content::Source<Profile>(profile_),
+      content::Details<OmniboxLog>(log));
 }
 
 void ChromeOmniboxClient::DoPrerender(

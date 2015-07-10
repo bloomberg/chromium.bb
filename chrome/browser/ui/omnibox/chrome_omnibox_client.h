@@ -30,6 +30,7 @@ class ChromeOmniboxClient : public OmniboxClient {
   void OnInputStateChanged() override;
   void OnFocusChanged(OmniboxFocusState state,
                       OmniboxFocusChangeReason reason) override;
+  void OnURLOpenedFromOmnibox(OmniboxLog* log) override;
   void DoPrerender(const AutocompleteMatch& match) override;
   void SetSuggestionToPrefetch(const InstantSuggestion& suggestion) override;
 
