@@ -2492,7 +2492,6 @@ void FrameView::updateAllLifecyclePhasesInternal()
     }
 
     ASSERT(lifecycle().state() == DocumentLifecycle::PaintInvalidationClean);
-    RELEASE_ASSERT(!needsLayout());
 }
 
 void FrameView::updatePostLifecycleData()
@@ -2568,8 +2567,6 @@ void FrameView::updateStyleAndLayoutIfNeededRecursive()
 #endif
 
     updateWidgetPositionsIfNeeded();
-
-    RELEASE_ASSERT(!needsLayout());
 }
 
 void FrameView::invalidateTreeIfNeededRecursive()
